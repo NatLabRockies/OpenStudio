@@ -114,9 +114,32 @@ namespace energyplus {
       }
     }
 
-    if (boost::optional<Schedule> schedule_ = modelObject.clothingInsulationSchedule()) {
-      if (auto idf_schedule_ = translateAndMapModelObject(schedule_.get())) {
-        idfObject.setString(PeopleFields::ClothingInsulationScheduleName, idf_schedule_->nameString());
+    // Clothing Insulation
+    // ---
+    // ClothingInsulationSchedule: Only Clothing Insulation Schedule Name should be filled.
+    // DynamicClothingModelASHRAE55: Neither should be filled.
+    // CalculationMethodSchedule: Both Clothing Insulation Calculation Method Schedule Name and Clothing Insulation Schedule Name should be filled.
+
+    // Clothing Insulation Calculation Method
+    const std::string clothingInsulationCalculationMethod = modelObject.clothingInsulationCalculationMethod();
+    idfObject.setString(PeopleFields::ClothingInsulationCalculationMethod, clothingInsulationCalculationMethod);
+
+    // Clothing Insulation Calculation Method Schedule Name
+    if (istringEqual(clothingInsulationCalculationMethod, "CalculationMethodSchedule")) {
+      if (boost::optional<Schedule> schedule_ = modelObject.clothingInsulationCalculationMethodSchedule()) {
+        if (auto idf_schedule_ = translateAndMapModelObject(schedule_.get())) {
+          idfObject.setString(PeopleFields::ClothingInsulationCalculationMethodScheduleName, idf_schedule_->nameString());
+        }
+      }
+    }
+
+    // Clothing Insulation Schedule Name
+    if (istringEqual(clothingInsulationCalculationMethod, "ClothingInsulationSchedule")
+        || istringEqual(clothingInsulationCalculationMethod, "CalculationMethodSchedule")) {
+      if (boost::optional<Schedule> schedule_ = modelObject.clothingInsulationSchedule()) {
+        if (auto idf_schedule_ = translateAndMapModelObject(schedule_.get())) {
+          idfObject.setString(PeopleFields::ClothingInsulationScheduleName, idf_schedule_->nameString());
+        }
       }
     }
 

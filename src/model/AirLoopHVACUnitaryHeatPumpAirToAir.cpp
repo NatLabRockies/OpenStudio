@@ -314,6 +314,12 @@ namespace model {
       return isEmpty(OS_AirLoopHVAC_UnitaryHeatPump_AirToAirFields::DehumidificationControlType);
     }
 
+    double AirLoopHVACUnitaryHeatPumpAirToAir_Impl::dXHeatingCoilSizingRatio() const {
+      boost::optional<double> value = getDouble(OS_AirLoopHVAC_UnitaryHeatPump_AirToAirFields::DXHeatingCoilSizingRatio, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
     bool AirLoopHVACUnitaryHeatPumpAirToAir_Impl::setAvailabilitySchedule(Schedule& schedule) {
       bool result = setSchedule(OS_AirLoopHVAC_UnitaryHeatPump_AirToAirFields::AvailabilityScheduleName, "AirLoopHVACUnitaryHeatPumpAirToAir",
                                 "Availability", schedule);
@@ -508,6 +514,11 @@ namespace model {
       OS_ASSERT(result);
     }
 
+    bool AirLoopHVACUnitaryHeatPumpAirToAir_Impl::setDXHeatingCoilSizingRatio(double dxHeatingCoilSizingRatio) {
+      bool result = setDouble(OS_AirLoopHVAC_UnitaryHeatPump_AirToAirFields::DXHeatingCoilSizingRatio, dxHeatingCoilSizingRatio);
+      return result;
+    }
+
     boost::optional<double> AirLoopHVACUnitaryHeatPumpAirToAir_Impl::autosizedSupplyAirFlowRateDuringCoolingOperation() const {
       return getAutosizedValue("Supply Air Flow Rate During Cooling Operation", "m3/s");
     }
@@ -638,6 +649,7 @@ namespace model {
     autosizeSupplyAirFlowRateDuringCoolingOperation();
     autosizeSupplyAirFlowRateDuringHeatingOperation();
     autosizeMaximumSupplyAirTemperaturefromSupplementalHeater();
+    setDXHeatingCoilSizingRatio(1.0);
   }
 
   IddObjectType AirLoopHVACUnitaryHeatPumpAirToAir::iddObjectType() {
@@ -708,6 +720,10 @@ namespace model {
 
   bool AirLoopHVACUnitaryHeatPumpAirToAir::isDehumidificationControlTypeDefaulted() const {
     return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAir_Impl>()->isDehumidificationControlTypeDefaulted();
+  }
+
+  double AirLoopHVACUnitaryHeatPumpAirToAir::dXHeatingCoilSizingRatio() const {
+    return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAir_Impl>()->dXHeatingCoilSizingRatio();
   }
 
   bool AirLoopHVACUnitaryHeatPumpAirToAir::setSupplyAirFlowRateDuringCoolingOperation(double supplyAirFlowRateDuringCoolingOperation) {
@@ -783,6 +799,10 @@ namespace model {
 
   void AirLoopHVACUnitaryHeatPumpAirToAir::resetDehumidificationControlType() {
     getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAir_Impl>()->resetDehumidificationControlType();
+  }
+
+  bool AirLoopHVACUnitaryHeatPumpAirToAir::setDXHeatingCoilSizingRatio(double dxHeatingCoilSizingRatio) {
+    return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAir_Impl>()->setDXHeatingCoilSizingRatio(dxHeatingCoilSizingRatio);
   }
 
   bool AirLoopHVACUnitaryHeatPumpAirToAir::setAvailabilitySchedule(Schedule& schedule) {

@@ -16,6 +16,7 @@ namespace openstudio {
 namespace model {
 
   class Curve;
+  class AirflowNetworkEquivalentDuct;
 
   namespace detail {
     class CoilCoolingWaterToAirHeatPumpEquationFit_Impl;
@@ -44,6 +45,8 @@ namespace model {
     static IddObjectType iddObjectType();
 
     /** @name Getters */
+
+    Schedule availabilitySchedule() const;
 
     boost::optional<double> ratedAirFlowRate() const;
 
@@ -122,6 +125,8 @@ namespace model {
 
     /** @name Setters */
 
+    bool setAvailabilitySchedule(Schedule& schedule);
+
     bool setRatedAirFlowRate(double ratedAirFlowRate);
 
     void resetRatedAirFlowRate();
@@ -199,6 +204,12 @@ namespace model {
     //@}
     /** @name Other */
     //@{
+
+    /** Returns an equivalent duct object, creating a new one if an object is not already attached. */
+    AirflowNetworkEquivalentDuct getAirflowNetworkEquivalentDuct(double length, double diameter);
+
+    /** Returns the attached equivalent duct object if there is one. */
+    boost::optional<AirflowNetworkEquivalentDuct> airflowNetworkEquivalentDuct() const;
 
     boost::optional<double> autosizedRatedAirFlowRate() const;
 

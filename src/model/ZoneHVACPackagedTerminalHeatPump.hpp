@@ -130,6 +130,8 @@ namespace model {
 
     Schedule supplyAirFanOperatingModeSchedule() const;
 
+    double dXHeatingCoilSizingRatio() const;
+
     //@}
     /** @name Setters */
     //@{
@@ -207,6 +209,8 @@ namespace model {
    *  cycles on and off with the active (heating or cooling) coil. Other values operate the
    *  fan continuously. */
     bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+
+    bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);
 
     //@}
     /** @name Other */

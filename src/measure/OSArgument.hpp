@@ -369,6 +369,8 @@ OPENSTUDIO_ENUM( OSDomainType,
     bool setMaxValue(double maxValue);
     bool setMaxValue(int maxValue);
 
+    void setRequired(bool required);
+
     //@}
     /** @name Serialization */
     //@{

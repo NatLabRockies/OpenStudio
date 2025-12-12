@@ -50,6 +50,7 @@ namespace model {
     static std::vector<std::string> zoneLatentCoolingDesignSupplyAirHumidityRatioInputMethodValues();
     static std::vector<std::string> zoneLatentHeatingDesignSupplyAirHumidityRatioInputMethodValues();
     static std::vector<std::string> validSizingOptionValues();
+    static std::vector<std::string> heatingCoilSizingMethodValues();
 
     /** @name Getters */
     //@{
@@ -165,6 +166,10 @@ namespace model {
     bool isDesignMinimumZoneVentilationEfficiencyDefaulted() const;
 
     std::string sizingOption() const;
+
+    std::string heatingCoilSizingMethod() const;
+
+    double maximumHeatingCapacityToCoolingLoadSizingRatio() const;
 
     //@}
     /** @name Setters */
@@ -287,6 +292,10 @@ namespace model {
     void resetDesignMinimumZoneVentilationEfficiency();
 
     bool setSizingOption(const std::string& sizingOption);
+
+    bool setHeatingCoilSizingMethod(const std::string& heatingCoilSizingMethod);
+
+    bool setMaximumHeatingCapacityToCoolingLoadSizingRatio(double maximumHeatingCapacityToCoolingLoadSizingRatio);
 
     //@}
     /** @name Other */

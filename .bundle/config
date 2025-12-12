@@ -1,0 +1,6 @@
+---
+BUNDLE_WITHOUT: "development"
+BUNDLE_JOBS: "4"
+BUNDLE_RETRY: "5"
+BUNDLE_PATH: "vendor/bundle"
+BUNDLE_TIMEOUT: "60"

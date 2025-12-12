@@ -79,6 +79,12 @@ namespace model {
       /** Returns the work efficiency schedule. */
       boost::optional<Schedule> workEfficiencySchedule() const;
 
+      /** Returns the clothing insulation calculation method. */
+      std::string clothingInsulationCalculationMethod() const;
+
+      /** Returns the clothing insulation calculation method schedule. */
+      boost::optional<Schedule> clothingInsulationCalculationMethodSchedule() const;
+
       /** Returns the clothing insulation schedule. */
       boost::optional<Schedule> clothingInsulationSchedule() const;
 
@@ -122,6 +128,15 @@ namespace model {
 
       /** Resets the work efficiency Schedule. */
       void resetWorkEfficiencySchedule();
+
+      /** Sets the clothing insulation calculation method. */
+      bool setClothingInsulationCalculationMethod(const std::string& clothingInsulationCalculationMethod);
+
+      /** Sets the clothing insulation calculation method schedule. */
+      bool setClothingInsulationCalculationMethodSchedule(Schedule& schedule);
+
+      /** Resets the clothing insulation calculationg method schedule. */
+      void resetClothingInsulationCalculationMethodSchedule();
 
       /** Sets the clothing insulation Schedule. */
       bool setClothingInsulationSchedule(Schedule& schedule);

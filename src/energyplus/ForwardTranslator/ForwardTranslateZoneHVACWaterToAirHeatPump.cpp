@@ -342,7 +342,7 @@ namespace energyplus {
       idfObject.setDouble(ZoneHVAC_WaterToAirHeatPumpFields::MaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation, value.get());
     }
 
-    //Outdoor Dry-bulb Temperature Sensor Node Name
+    // Outdoor Dry-bulb Temperature Sensor Node Name
     idfObject.setString(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorDryBulbTemperatureSensorNodeName, "");
 
     // FanPlacement
@@ -361,6 +361,11 @@ namespace energyplus {
     idfObject.setString(ZoneHVAC_WaterToAirHeatPumpFields::HeatPumpCoilWaterFlowMode, modelObject.heatPumpCoilWaterFlowMode());
 
     // TODO: field 'Design Specification ZoneHVAC Sizing' isn't implemented since the object isn't wrapped in SDK
+
+    // DXHeatingCoilSizingRatio
+    if ((value = modelObject.dXHeatingCoilSizingRatio())) {
+      idfObject.setDouble(ZoneHVAC_WaterToAirHeatPumpFields::DXHeatingCoilSizingRatio, value.get());
+    }
 
     return idfObject;
   }

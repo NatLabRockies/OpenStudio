@@ -8,7 +8,6 @@
 
 #include "../UtilitiesAPI.hpp"
 
-#include "../core/Singleton.hpp"
 #include "Unit.hpp"
 
 #include "../core/Logger.hpp"
@@ -30,12 +29,16 @@ namespace openstudio {
  *
  *  Also provides a function for looking up pretty units without having to
  *  create a unit. */
-class UTILITIES_API UnitFactorySingleton
+class UTILITIES_API UnitFactory
 {
-
-  friend class Singleton<UnitFactorySingleton>;
-
  public:
+  static UnitFactory& instance();
+
+  UnitFactory(const UnitFactory& other) = delete;
+  UnitFactory(UnitFactory&& other) = delete;
+  UnitFactory& operator=(const UnitFactory&) = delete;
+  UnitFactory& operator=(UnitFactory&&) = delete;
+
   /** Units are created by functions that accept no arguments and return
    *  something that can be converted into a Unit::Ptr. */
   using CreateUnitCallback = boost::function<Unit()>;
@@ -69,7 +72,8 @@ class UTILITIES_API UnitFactorySingleton
 
  private:
   REGISTER_LOGGER("openstudio.units.UnitFactory");
-  UnitFactorySingleton();
+  UnitFactory();
+  ~UnitFactory() = default;
 
   using ResultCacheMap = std::map<std::string, boost::optional<Unit>>;
 
@@ -90,60 +94,56 @@ class UTILITIES_API UnitFactorySingleton
   boost::optional<Unit> createUnitSimple(const std::string& unitString, UnitSystem system = UnitSystem::Mixed) const;
 };
 
-/** Typedef for accessing the UnitFactorySingleton as UnitFactory::instance().
- *  \relates UnitFactorySingleton */
-using UnitFactory = openstudio::Singleton<UnitFactorySingleton>;
-
 /** Returns the best match UnitSystem for unitString, in priority order SI, IP, ..., Mixed
- *  \relates UnitFactorySingleton */
+ *  \relates UnitFactory */
 UTILITIES_API UnitSystem getSystem(const std::string& unitString);
 
-/** Returns true if unitString can be created as a unit in system. \relates UnitFactorySingleton */
+/** Returns true if unitString can be created as a unit in system. \relates UnitFactory */
 UTILITIES_API bool isInSystem(const std::string& unitString, UnitSystem system);
 
 /** Returns true if any of unitString's baseUnits are registered in the factory.
- *  \relates UnitFactorySingleton */
+ *  \relates UnitFactory */
 UTILITIES_API bool containsRegisteredBaseUnit(const std::string& unitString);
 
 /** Extracts a unitString from text, if possible. Only returns strings that contain at least one
- *  registered base unit. \relates UnitFactorySingleton */
+ *  registered base unit. \relates UnitFactory */
 UTILITIES_API std::string extractUnitString(const std::string& text);
 
 /** Converts unitString to standard form. Right now, does conversion like people/100 m^2 -->
- *  c(people/m^2). \relates UnitFactorySingleton */
+ *  c(people/m^2). \relates UnitFactory */
 UTILITIES_API std::string convertToStandardForm(const std::string& unitString);
 
 /** Replaces unitString in text, using same finder algorithm as extractUnitString.
- *  \relates UnitFactorySingleton */
+ *  \relates UnitFactory */
 UTILITIES_API std::string replaceUnitString(const std::string& text, const std::string& newUnitString);
 
-/** Returns true if unitString can be turned into a Unit. \relates UnitFactorySingleton */
+/** Returns true if unitString can be turned into a Unit. \relates UnitFactory */
 UTILITIES_API bool isUnitString(const std::string& unitString);
 
-/** Returns a Unit of the type that corresponds to system. \relates UnitFactorySingleton */
+/** Returns a Unit of the type that corresponds to system. \relates UnitFactory */
 UTILITIES_API Unit createDimensionlessUnit(UnitSystem system);
 
 /** Creates a Unit corresponding to unitString (using UnitFactory). User may specify preferred
  *  UnitSystem, and can cast the result to the appropriate class, as desired.
- *  \relates UnitFactorySingleton */
+ *  \relates UnitFactory */
 UTILITIES_API boost::optional<Unit> createUnit(const std::string& unitString, UnitSystem system);
 
 /** Creates a Unit corresponding to unitString (using UnitFactory). Attempts to find the best
- *  UnitSystem for unitString, in priority order SI, IP, ..., Mixed. \relates UnitFactorySingleton */
+ *  UnitSystem for unitString, in priority order SI, IP, ..., Mixed. \relates UnitFactory */
 UTILITIES_API boost::optional<Unit> createUnit(const std::string& unitString);
 
-/** Returns true if uStr1 and uStr2 evaluate to the same unit. \relates UnitFactorySingleton */
+/** Returns true if uStr1 and uStr2 evaluate to the same unit. \relates UnitFactory */
 UTILITIES_API bool unitStringsEqual(const std::string& uStr1, const std::string& uStr2);
 
 /** In IP units, power density is often expressed as W/ft^2, which is actually a
- *  mixed unit. \relates UnitFactorySingleton */
+ *  mixed unit. \relates UnitFactory */
 UTILITIES_API Unit createIPPowerDensity();
 
-/** Make sure crgal^3/min shows up as gal/min. \relates UnitFactorySingleton */
+/** Make sure crgal^3/min shows up as gal/min. \relates UnitFactory */
 UTILITIES_API Unit createGPMVolumetricFlowrate();
 
 /** In IP units, pressure is often expressed as lb_f/in^2, which is actually a mixed
- *  unit. \relates UnitFactorySingleton */
+ *  unit. \relates UnitFactory */
 UTILITIES_API Unit createIPPressure();
 
 }  // namespace openstudio

@@ -132,8 +132,7 @@ namespace model {
       auto [index, parentCoil] = indexAndNameOpt.get();
       const std::string sqlField = "Design Size Stage " + std::to_string(index) + " Nominal Capacity";
 
-      // EPLUS-SQL-INCONSISTENCY
-      return parentCoil.getImpl<CoilHeatingGasMultiStage_Impl>()->getAutosizedValue(sqlField, "W", "Coil:Heating:GasMultiStage");
+      return parentCoil.getImpl<CoilHeatingGasMultiStage_Impl>()->getAutosizedValue(sqlField, "W", "Coil:Heating:Gas:MultiStage");
     }
 
     void CoilHeatingGasMultiStageStageData_Impl::autosize() {

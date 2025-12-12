@@ -7,7 +7,6 @@
 #define UTILITIES_UNITS_SCALEFACTORY_HPP
 
 #include "../UtilitiesAPI.hpp"
-#include "../core/Singleton.hpp"
 #include "../core/Logger.hpp"
 
 #include "Scale.hpp"
@@ -20,14 +19,15 @@ namespace openstudio {
 
 /** Singleton that creates scales based on std::string or exponent.
  *  Access using ScaleFactory::instance().  */
-class UTILITIES_API ScaleFactorySingleton
+class UTILITIES_API ScaleFactory
 {
-
-  friend class Singleton<ScaleFactorySingleton>;
-
  public:
-  /// Destructor.
-  ~ScaleFactorySingleton() = default;
+  static ScaleFactory& instance();
+
+  ScaleFactory(const ScaleFactory& other) = delete;
+  ScaleFactory(ScaleFactory&& other) = delete;
+  ScaleFactory& operator=(const ScaleFactory&) = delete;
+  ScaleFactory& operator=(ScaleFactory&&) = delete;
 
   /** Store a scale callback function for future lookup using the scale exponent or
    *  abbreviation. By default, SI scales are registered during factory construction. */
@@ -37,7 +37,7 @@ class UTILITIES_API ScaleFactorySingleton
   std::vector<Scale> registeredScales();
 
   /** Outputs the scales registered in the factory. */
-  friend UTILITIES_API std::ostream& operator<<(std::ostream& os, const ScaleFactorySingleton& factory);
+  friend UTILITIES_API std::ostream& operator<<(std::ostream& os, const ScaleFactory& factory);
 
   /** Creates a scale from an exponent. Throws if the factory does not have any scales registered.
    *  Returns ScaleConstant with ().value == 0.0 if exponent not in factory. */
@@ -50,7 +50,8 @@ class UTILITIES_API ScaleFactorySingleton
  private:
   REGISTER_LOGGER("openstudio.units.ScaleFactory");
   /// Private constructor initializes ScaleFactory with standard SI scales.
-  ScaleFactorySingleton();
+  ScaleFactory();
+  ~ScaleFactory() = default;
 
   using ExponentLookupMap = std::map<int, ScaleConstant>;
   using AbbreviationLookupMap = std::map<std::string, ScaleConstant>;
@@ -60,11 +61,9 @@ class UTILITIES_API ScaleFactorySingleton
   ScaleConstant m_recoverFromFailedCreate() const;
 };
 
-using ScaleFactory = openstudio::Singleton<ScaleFactorySingleton>;
-
 /** Prints scales that are registered in the factory (and thus available for use in
  *  Units and Quantities). */
-UTILITIES_API std::ostream& operator<<(std::ostream& os, const ScaleFactorySingleton& factory);
+UTILITIES_API std::ostream& operator<<(std::ostream& os, const ScaleFactory& factory);
 
 /** Wrapper around << for SWIG bindings. Prints each scale registered in ScaleFactory,
  *  and thus available for use in Units, Quantities, and bare Scale operations. */

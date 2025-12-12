@@ -376,6 +376,18 @@ namespace energyplus {
       if (s) {
         sizingZone.setSizingOption(s.get());
       }
+
+      // HeatingCoilSizingMethod
+      s = workspaceObject.getString(Sizing_ZoneFields::HeatingCoilSizingMethod);
+      if (s) {
+        sizingZone.setHeatingCoilSizingMethod(s.get());
+      }
+
+      // MaximumHeatingCapacityToCoolingLoadSizingRatio
+      value = workspaceObject.getDouble(Sizing_ZoneFields::MaximumHeatingCapacityToCoolingLoadSizingRatio);
+      if (value) {
+        sizingZone.setMaximumHeatingCapacityToCoolingLoadSizingRatio(value.get());
+      }
     }
 
     return result;

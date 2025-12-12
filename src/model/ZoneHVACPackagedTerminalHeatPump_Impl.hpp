@@ -128,6 +128,8 @@ namespace model {
 
       Schedule supplyAirFanOperatingModeSchedule() const;
 
+      double dXHeatingCoilSizingRatio() const;
+
       boost::optional<double> autosizedSupplyAirFlowRateDuringCoolingOperation() const;
 
       boost::optional<double> autosizedSupplyAirFlowRateDuringHeatingOperation() const;
@@ -219,6 +221,8 @@ namespace model {
       void resetFanPlacement();
 
       bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+
+      bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);
 
       //@}
       /** @name Other */

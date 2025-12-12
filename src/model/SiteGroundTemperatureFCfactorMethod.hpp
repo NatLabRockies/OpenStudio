@@ -27,8 +27,6 @@ namespace model {
     /** @name Constructors and Destructors */
     //@{
 
-    explicit SiteGroundTemperatureFCfactorMethod(Model& model);
-
     virtual ~SiteGroundTemperatureFCfactorMethod() override = default;
     // Default the copy and move operators because the virtual dtor is explicit
     SiteGroundTemperatureFCfactorMethod(const SiteGroundTemperatureFCfactorMethod& other) = default;
@@ -178,6 +176,8 @@ namespace model {
     friend class detail::SiteGroundTemperatureFCfactorMethod_Impl;
 
     explicit SiteGroundTemperatureFCfactorMethod(std::shared_ptr<detail::SiteGroundTemperatureFCfactorMethod_Impl> impl);
+
+    explicit SiteGroundTemperatureFCfactorMethod(Model& model);
 
     /// @endcond
    private:

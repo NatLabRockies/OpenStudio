@@ -1,7 +1,6 @@
 # insert your copyright here
 
 require 'openstudio'
-require 'openstudio/measure/ShowRunnerOutput'
 require 'minitest/autorun'
 require 'fileutils'
 
@@ -154,7 +153,7 @@ class ReportingMeasureNameTest < Minitest::Test
     end
 
     result = runner.result
-    show_output(result)
+    result.showOutput
     assert_equal('Success', result.value.valueName)
     assert_empty(result.stepWarnings)
 
@@ -234,7 +233,7 @@ class ReportingMeasureNameTest < Minitest::Test
     end
 
     result = runner.result
-    show_output(result)
+    result.showOutput
     assert_equal('Success', result.value.valueName)
     assert_empty(result.stepWarnings)
 

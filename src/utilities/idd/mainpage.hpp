@@ -9,7 +9,7 @@ namespace openstudio {
  *
  * \details OpenStudio provides parsing of and programmatic access to Input Data Dictionary (IDD) files,
  * objects, and fields through the OpenStudio utilities library (in the openstudio namespace). IDD files
- * of central importance to OpenStudio are wrapped into the \link IddFactorySingleton IddFactory \endlink,
+ * of central importance to OpenStudio are wrapped into the \link IddFactory IddFactory \endlink,
  * and used to generate IddFileType, IddObjectType, and field-level enumeration classes (see IddEnums.hpp
  * and IddFieldEnums.hxx).
  *
@@ -26,9 +26,9 @@ namespace openstudio {
  * \li IddKey
  * \li IddKeyProperties
  *
- * \link IddFactorySingleton IddFactory\endlink classes and enums
+ * \link IddFactory IddFactory\endlink classes and enums
  *
- * \li \link IddFactorySingleton IddFactory\endlink
+ * \li \link IddFactory IddFactory\endlink
  * \li IddFileType
  * \li IddObjectType
  * \li IddFieldEnums.hxx
@@ -63,9 +63,9 @@ namespace openstudio {
  * OpenStudio for parsing and accessing \link IddFile IddFiles\endlink, and \link IddObject
  * IddObjects\endlink, including the two \link IddFile IddFiles\endlink of central importance to
  * OpenStudio: the current versions of Energy+.idd and OpenStudio.idd, which are best accessed
- * through the \link IddFactorySingleton IddFactory \endlink. (Legacy versions of the
+ * through the \link IddFactory IddFactory \endlink. (Legacy versions of the
  * OpenStudio.idd should also be loaded from disk using the
- * \link IddFactorySingleton IddFactory\endlink, to avoid duplicate parsing effort.)
+ * \link IddFactory IddFactory\endlink, to avoid duplicate parsing effort.)
  *
  * \section parsing_idd File and Object Parsing
  *
@@ -103,7 +103,7 @@ namespace openstudio {
  * a version string is specified, prefixed by '!IDD_Version '. This version string should be the
  * default value for the Version Identifier field in the file's version object ('Version' in the
  * EnergyPlus IDD, 'OS:Version' in the OpenStudio IDD). Version information is generally available
- * through the IddFile, \link IddFactorySingleton IddFactory \endlink, IddFileAndFactoryWrapper,
+ * through the IddFile, \link IddFactory IddFactory \endlink, IddFileAndFactoryWrapper,
  * IdfFile, and Workspace classes.
  *
  * \section usage_idd Programmatic Access
@@ -163,7 +163,7 @@ namespace openstudio {
  *
  * Two particular IddFiles, the current Energy+.idd and OpenStudio.idd, are central to OpenStudio,
  * and so the utilities/idd sub-project provides convenience functionality to support their
- * consistent use throughout the rest of the project via the \link IddFactorySingleton IddFactory
+ * consistent use throughout the rest of the project via the \link IddFactory IddFactory
  * \endlink.
  *
  * The IddFactory is generated from ProposedEnergy+.idd (contains the same information as
@@ -183,7 +183,7 @@ namespace openstudio {
  * IddFieldEnums.hxx should never be included directly; please use it as a table of contents to find
  * the specific files that should be \#included in your source.
  *
- * The \link IddFactorySingleton IddFactory\endlink API and IddFile API are purposefully similar, as
+ * The \link IddFactory IddFactory\endlink API and IddFile API are purposefully similar, as
  * openstudio::IdfFile and openstudio::Workspace can be used with either an explicit IddFile, or with
  * an implicit IDD that is specified by filtering the IddFactory with an IddFileType (typically
  * IddFileType::EnergyPlus or IddFileType::OpenStudio). Instead of each of those classes handling the
@@ -191,8 +191,8 @@ namespace openstudio {
  * embodied in the IddFileAndFactoryWrapper, which explicitly provides a common API to these two
  * in-memory instantiations of IDD.
  *
- * The \link IddFactorySingleton IddFactory\endlink also provides access to older versions of the
- * OpenStudio.idd. In addition to the convenience of the \link IddFactorySingleton::getIddFile
+ * The \link IddFactory IddFactory\endlink also provides access to older versions of the
+ * OpenStudio.idd. In addition to the convenience of the \link IddFactory::getIddFile
  * IddFactory::instance().getIddFile \endlink syntax, accessing the legacy files in this way ensures
  * that each file is only parsed once, which is necessary for some applications (for
  * instance, the openstudio::osversion::VersionTranslator) to have acceptable performance.

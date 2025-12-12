@@ -87,6 +87,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_CoilWaterHeatingAirToWaterHeatPumpPu
   const WorkspaceObject& idf_coil = idfs_coils[0];
 
   EXPECT_EQ("My CoilWaterHeatingAirToWaterHeatPumpPumped", idf_coil.getString(Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::Name).get());
+  EXPECT_EQ("Always On Discrete", idf_coil.getString(Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::AvailabilityScheduleName).get());
   EXPECT_EQ(4000.0, idf_coil.getDouble(Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::RatedHeatingCapacity).get());
   EXPECT_EQ(3.2, idf_coil.getDouble(Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::RatedCOP).get());
   EXPECT_EQ(0.6956, idf_coil.getDouble(Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::RatedSensibleHeatRatio).get());

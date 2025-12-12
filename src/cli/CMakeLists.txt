@@ -614,6 +614,11 @@ if(BUILD_TESTING)
         )
 
       set_tests_properties("${CTEST_NAME}" PROPERTIES TIMEOUT 660 )
+      
+      # Add labels for network-dependent bundle tests
+      if(TEST_NAME MATCHES "bundle" AND NOT TEST_NAME MATCHES "no_bundle")
+        set_tests_properties("${CTEST_NAME}" PROPERTIES LABELS "network;bundle;cli")
+      endif()
     endforeach()
 
   endforeach()

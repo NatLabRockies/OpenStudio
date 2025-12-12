@@ -1,0 +1,39 @@
+
+OS:Version,
+  {6103bc4f-d2da-4bb2-aea8-ff29799ac706}, !- Handle
+  3.10.0;                                 !- Version Identifier
+
+OS:OutputControl:Files,
+  {d9923593-115e-40b5-b52a-4bf3cd160212}, !- Handle
+  No,                                     !- Output CSV
+  Yes,                                    !- Output MTR
+  Yes,                                    !- Output ESO
+  Yes,                                    !- Output EIO
+  Yes,                                    !- Output Tabular
+  Yes,                                    !- Output SQLite
+  Yes,                                    !- Output JSON
+  Yes,                                    !- Output AUDIT
+  Yes,                                    !- Output Space Sizing
+  Yes,                                    !- Output Zone Sizing
+  Yes,                                    !- Output System Sizing
+  Yes,                                    !- Output DXF
+  Yes,                                    !- Output BND
+  Yes,                                    !- Output RDD
+  Yes,                                    !- Output MDD
+  Yes,                                    !- Output MTD
+  Yes,                                    !- Output SHD
+  Yes,                                    !- Output DFS
+  Yes,                                    !- Output GLHE
+  Yes,                                    !- Output DelightIn
+  Yes,                                    !- Output DelightELdmp
+  Yes,                                    !- Output DelightDFdmp
+  Yes,                                    !- Output EDD
+  Yes,                                    !- Output DBG
+  Yes,                                    !- Output PerfLog
+  Yes,                                    !- Output SLN
+  Yes,                                    !- Output SCI
+  Yes,                                    !- Output WRL
+  Yes,                                    !- Output Screen
+  Yes,                                    !- Output ExtShd
+  Yes;                                    !- Output Tarcog
+

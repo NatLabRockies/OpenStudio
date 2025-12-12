@@ -15,7 +15,7 @@
 
 namespace openstudio {
 
-bool ScaleFactorySingleton::registerScale(ScaleConstant scale) {
+bool ScaleFactory::registerScale(ScaleConstant scale) {
 
   bool result = m_exponentMap.insert(ExponentLookupMap::value_type(scale().exponent, scale)).second;
   if (!result) {
@@ -31,7 +31,7 @@ bool ScaleFactorySingleton::registerScale(ScaleConstant scale) {
   return result;
 }
 
-std::vector<Scale> ScaleFactorySingleton::registeredScales() {
+std::vector<Scale> ScaleFactory::registeredScales() {
 
   // make vector<Scale> of the correct length
   std::vector<Scale> result(m_exponentMap.size());
@@ -47,7 +47,7 @@ std::vector<Scale> ScaleFactorySingleton::registeredScales() {
   return result;
 }
 
-ScaleConstant ScaleFactorySingleton::createScale(int exponent) const {
+ScaleConstant ScaleFactory::createScale(int exponent) const {
 
   ExponentLookupMap::const_iterator lookupPair;
   lookupPair = m_exponentMap.find(exponent);
@@ -60,7 +60,7 @@ ScaleConstant ScaleFactorySingleton::createScale(int exponent) const {
   return lookupPair->second;  // return function pointer that encloses const Scale&
 }
 
-ScaleConstant ScaleFactorySingleton::createScale(const std::string& abbr) const {
+ScaleConstant ScaleFactory::createScale(const std::string& abbr) const {
 
   AbbreviationLookupMap::const_iterator lookupPair;
   lookupPair = m_abbreviationMap.find(abbr);
@@ -73,7 +73,12 @@ ScaleConstant ScaleFactorySingleton::createScale(const std::string& abbr) const 
   return lookupPair->second;  // return function pointer that encloses const Scale&
 }
 
-ScaleFactorySingleton::ScaleFactorySingleton() {
+ScaleFactory& ScaleFactory::instance() {
+  static ScaleFactory instance;
+  return instance;
+}
+
+ScaleFactory::ScaleFactory() {
   // default ScaleFactory initialization
   /** \todo Provide functionality for swapping out entire ScaleFactory library or for
    * complete user customization. */
@@ -104,7 +109,7 @@ ScaleFactorySingleton::ScaleFactorySingleton() {
   registerScale(yocto);
 }
 
-ScaleConstant ScaleFactorySingleton::m_recoverFromFailedCreate() const {
+ScaleConstant ScaleFactory::m_recoverFromFailedCreate() const {
 
   // fatal error if no scales are registered since will never get valid scale.
   if (m_exponentMap.empty()) {
@@ -115,7 +120,7 @@ ScaleConstant ScaleFactorySingleton::m_recoverFromFailedCreate() const {
   return notDefined;
 }
 
-std::ostream& operator<<(std::ostream& os, const ScaleFactorySingleton& factory) {
+std::ostream& operator<<(std::ostream& os, const ScaleFactory& factory) {
   for (const auto& map : factory.m_exponentMap) {
     os << map.second() << '\n';  // output scale and go to next line
   }

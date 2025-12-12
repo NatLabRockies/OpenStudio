@@ -55,6 +55,10 @@ namespace model {
 
     boost::optional<double> maximumDifferenceInMonthlyAverageOutdoorAirTemperatures() const;
 
+    double temperatureMultiplier() const;
+
+    double temperatureOffset() const;
+
     //@}
     /** @name Setters */
     //@{
@@ -77,6 +81,10 @@ namespace model {
 
     /** Also sets calculation method to 'Correlation'. */
     void resetMaximumDifferenceInMonthlyAverageOutdoorAirTemperatures();
+
+    bool setTemperatureMultiplier(double temperatureMultiplier);
+
+    bool setTemperatureOffset(double temperatureOffset);
 
     //@}
    protected:

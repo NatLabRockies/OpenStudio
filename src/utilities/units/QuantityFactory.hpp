@@ -8,7 +8,6 @@
 
 #include "../UtilitiesAPI.hpp"
 
-#include "../core/Singleton.hpp"
 #include "Quantity.hpp"
 #include "UnitFactory.hpp"
 
@@ -19,12 +18,16 @@
 
 namespace openstudio {
 
-class UTILITIES_API QuantityFactorySingleton
+class UTILITIES_API QuantityFactory
 {
-
-  friend class Singleton<QuantityFactorySingleton>;
-
  public:
+  static QuantityFactory& instance();
+
+  QuantityFactory(const QuantityFactory& other) = delete;
+  QuantityFactory(QuantityFactory&& other) = delete;
+  QuantityFactory& operator=(const QuantityFactory&) = delete;
+  QuantityFactory& operator=(QuantityFactory&&) = delete;
+
   // FACTORY USE
 
   /** Parses quantity string to separate the value from the unit. Then creates the quantity
@@ -47,10 +50,11 @@ class UTILITIES_API QuantityFactorySingleton
   boost::optional<Quantity> createQuantity(double value, const std::string& unitString, UnitSystem system) const;
 
  private:
+  QuantityFactory() = default;
+  ~QuantityFactory() = default;
+
   REGISTER_LOGGER("openstudio.units.QuantityFactory");
 };
-
-using QuantityFactory = openstudio::Singleton<QuantityFactorySingleton>;
 
 /** Creates a Quantity object from quantityString (a string that matches
  *  openstudio::regexQuantity()). */

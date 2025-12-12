@@ -6,7 +6,6 @@
 %}
 
 // hide shared_ptrs from users, just export helper functions
-%ignore UnitFactorySingleton;
 %ignore UnitFactory;
 %include <utilities/units/UnitFactory.hpp>
 

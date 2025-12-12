@@ -33,6 +33,14 @@ namespace energyplus {
     // Name
     IdfObject idfObject = createRegisterAndNameIdfObject(openstudio::IddObjectType::Coil_Cooling_DX_VariableSpeed, modelObject);
 
+    // AvailabilityScheduleName
+    {
+      auto schedule = modelObject.availabilitySchedule();
+      if (boost::optional<IdfObject> _schedule = translateAndMapModelObject(schedule)) {
+        idfObject.setString(Coil_Cooling_DX_VariableSpeedFields::AvailabilityScheduleName, _schedule->name().get());
+      }
+    }
+
     // IndoorAirInletNodeName
     if (auto node = modelObject.inletModelObject()) {
       idfObject.setString(Coil_Cooling_DX_VariableSpeedFields::IndoorAirInletNodeName, node->name().get());

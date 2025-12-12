@@ -1,0 +1,41 @@
+
+OS:Version,
+  {e66910e7-70f5-41a8-b426-d480b8e88757}, !- Handle
+  3.10.0;                                 !- Version Identifier
+
+OS:People:Definition,
+  {8d37721e-2fa2-41fd-8538-8a902adafc89}, !- Handle
+  People Definition 1,                    !- Name
+  People,                                 !- Number of People Calculation Method
+  0,                                      !- Number of People {people}
+  ,                                       !- People per Space Floor Area {person/m2}
+  ,                                       !- Space Floor Area per Person {m2/person}
+  0.3;                                    !- Fraction Radiant
+
+OS:People,
+  {c94994f3-c214-45dc-b07b-b5df0b228bed}, !- Handle
+  People 1,                               !- Name
+  {8d37721e-2fa2-41fd-8538-8a902adafc89}, !- People Definition Name
+  ,                                       !- Space or SpaceType Name
+  ,                                       !- Number of People Schedule Name
+  ,                                       !- Activity Level Schedule Name
+  ,                                       !- Surface Name/Angle Factor List Name
+  ,                                       !- Work Efficiency Schedule Name
+  {26b7994e-de80-4f7f-a424-69814193928f}, !- Clothing Insulation Schedule Name
+  ,                                       !- Air Velocity Schedule Name
+  1;                                      !- Multiplier
+
+OS:Schedule:Constant,
+  {26b7994e-de80-4f7f-a424-69814193928f}, !- Handle
+  Clothing Insulation Schedule,           !- Name
+  {fb0431eb-40a3-4ccc-a93f-8554e9712b20}, !- Schedule Type Limits Name
+  0;                                      !- Value
+
+OS:ScheduleTypeLimits,
+  {fb0431eb-40a3-4ccc-a93f-8554e9712b20}, !- Handle
+  ClothingInsulation,                     !- Name
+  0,                                      !- Lower Limit Value
+  ,                                       !- Upper Limit Value
+  Continuous,                             !- Numeric Type
+  ClothingInsulation;                     !- Unit Type
+

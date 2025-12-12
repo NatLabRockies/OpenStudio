@@ -183,7 +183,7 @@ TEST(ApplicationPathHelpers, Simple_test_forThisModule) {
   // The expected path is the utilities one, but resolved for symlinks (we don't want to hardcode the version eg openstudio_utilities_tests-2.8.0)
 #if defined(_WIN32)
 #  if defined(NINJA)
-  openstudio::path expectedOpenstudioModulePath = getApplicationBuildDirectory() / toPath("Products/openstudio_utilities_tests");
+  openstudio::path expectedOpenstudioModulePath = getApplicationBuildDirectory() / toPath("Products/openstudio_utilities_tests.exe");
 #  elif _DEBUG
   openstudio::path expectedOpenstudioModulePath = getApplicationBuildDirectory() / toPath("Products/Debug/openstudio_utilities_tests.exe");
 #  else

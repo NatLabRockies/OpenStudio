@@ -49,6 +49,16 @@ namespace energyplus {
       mo.setMaximumDifferenceInMonthlyAverageOutdoorAirTemperatures(value.get());
     }
 
+    value = workspaceObject.getDouble(Site_WaterMainsTemperatureFields::TemperatureMultiplier);
+    if (value) {
+      mo.setTemperatureMultiplier(value.get());
+    }
+
+    value = workspaceObject.getDouble(Site_WaterMainsTemperatureFields::TemperatureOffset);
+    if (value) {
+      mo.setTemperatureOffset(value.get());
+    }
+
     return mo;
   }
 

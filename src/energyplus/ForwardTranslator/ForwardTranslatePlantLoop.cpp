@@ -62,6 +62,10 @@
 #include "../../model/GroundHeatExchangerHorizontalTrench_Impl.hpp"
 #include "../../model/HeatExchangerFluidToFluid.hpp"
 #include "../../model/HeatExchangerFluidToFluid_Impl.hpp"
+#include "../../model/HeatPumpAirToWaterCooling.hpp"
+#include "../../model/HeatPumpAirToWaterCooling_Impl.hpp"
+#include "../../model/HeatPumpAirToWaterHeating.hpp"
+#include "../../model/HeatPumpAirToWaterHeating_Impl.hpp"
 #include "../../model/WaterToAirComponent.hpp"
 #include "../../model/WaterToAirComponent_Impl.hpp"
 #include "../../model/WaterToWaterComponent.hpp"
@@ -296,6 +300,26 @@ namespace energyplus {
               }
             }
           }
+
+          // special case for HeatPumpAirToWaterCooling and HeatPumpAirToWaterHeating
+          if (auto awhp_cc_ = modelObject.optionalCast<HeatPumpAirToWaterCooling>()) {
+            if (auto awhp = awhp_cc_->containingHVACComponent()) {
+              if (auto idf_awhp = this->translateAndMapModelObject(*awhp)) {
+                objectName = idf_awhp->name().get();
+                iddType = idf_awhp->iddObject().name();
+              }
+            }
+          }
+
+          if (auto awhp_hc_ = modelObject.optionalCast<HeatPumpAirToWaterHeating>()) {
+            if (auto awhp = awhp_hc_->containingHVACComponent()) {
+              if (auto idf_awhp = this->translateAndMapModelObject(*awhp)) {
+                objectName = idf_awhp->name().get();
+                iddType = idf_awhp->iddObject().name();
+              }
+            }
+          }
+
         } else if (auto waterToAirComponent = modelObject.optionalCast<WaterToAirComponent>()) {
           if (loop.optionalCast<PlantLoop>()) {
             inletNode = waterToAirComponent->waterInletModelObject()->optionalCast<Node>();

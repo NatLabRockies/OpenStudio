@@ -82,6 +82,7 @@ TEST_F(ModelFixture, HeatPumpAirToWaterFuelFiredHeating_HeatPumpAirToWaterFuelFi
   EXPECT_FALSE(hp.auxiliaryElectricEnergyInputRatioFunctionofTemperatureCurve());
   EXPECT_FALSE(hp.auxiliaryElectricEnergyInputRatioFunctionofPLRCurve());
   EXPECT_EQ(0, hp.standbyElectricPower());
+  EXPECT_EQ(0.25, hp.minimumUnloadingRatio());
 }
 
 TEST_F(ModelFixture, HeatPumpAirToWaterFuelFiredHeating_GettersSetters) {
@@ -123,6 +124,7 @@ TEST_F(ModelFixture, HeatPumpAirToWaterFuelFiredHeating_GettersSetters) {
   CurveQuadratic curve7(m);
   EXPECT_TRUE(hp.setAuxiliaryElectricEnergyInputRatioFunctionofPLRCurve(curve7));
   EXPECT_TRUE(hp.setStandbyElectricPower(13.0));
+  EXPECT_TRUE(hp.setMinimumUnloadingRatio(0.3));
 
   ASSERT_TRUE(hp.companionCoolingHeatPump());
   EXPECT_EQ(companionHP.handle(), hp.companionCoolingHeatPump().get().handle());
@@ -163,6 +165,7 @@ TEST_F(ModelFixture, HeatPumpAirToWaterFuelFiredHeating_GettersSetters) {
   ASSERT_TRUE(hp.auxiliaryElectricEnergyInputRatioFunctionofPLRCurve());
   EXPECT_EQ(curve7.handle(), hp.auxiliaryElectricEnergyInputRatioFunctionofPLRCurve().get().handle());
   EXPECT_EQ(13.0, hp.standbyElectricPower());
+  EXPECT_EQ(0.3, hp.minimumUnloadingRatio());
 
   hp.autosizeNominalHeatingCapacity();
   hp.autosizeDesignFlowRate();

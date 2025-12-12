@@ -17,6 +17,7 @@ namespace model {
 
   class Curve;
   class Schedule;
+  class AirflowNetworkEquivalentDuct;
 
   namespace detail {
     class CoilCoolingDXTwoSpeed_Impl;
@@ -317,6 +318,12 @@ namespace model {
     //@}
     /** @name Other */
     //@{
+
+    /** Returns an equivalent duct object, creating a new one if an object is not already attached. */
+    AirflowNetworkEquivalentDuct getAirflowNetworkEquivalentDuct(double length, double diameter);
+
+    /** Returns the attached equivalent duct object if there is one. */
+    boost::optional<AirflowNetworkEquivalentDuct> airflowNetworkEquivalentDuct() const;
 
     boost::optional<double> autosizedRatedHighSpeedTotalCoolingCapacity() const;
 

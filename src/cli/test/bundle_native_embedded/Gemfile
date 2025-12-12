@@ -1,4 +1,4 @@
-source 'http://rubygems.org'
+source 'https://rubygems.org'
 
 # Rubocop requires 'json' '~> 2.3'
 # It also indirectly, via parser, require 'racc'

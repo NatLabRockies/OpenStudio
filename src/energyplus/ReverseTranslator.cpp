@@ -593,6 +593,10 @@ namespace energyplus {
         modelObject = translateHeatBalanceAlgorithm(workspaceObject);
         break;
       }
+      case openstudio::IddObjectType::HeatPump_AirToWater: {
+        modelObject = translateHeatPumpAirToWater(workspaceObject);
+        break;
+      }
       case openstudio::IddObjectType::HotWaterEquipment: {
         modelObject = translateHotWaterEquipment(workspaceObject);
         break;

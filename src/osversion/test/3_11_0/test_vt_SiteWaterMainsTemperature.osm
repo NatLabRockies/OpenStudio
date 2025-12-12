@@ -1,0 +1,9 @@
+
+OS:Version,
+  {8eaa7162-0bc2-45e3-a0b0-67e13a6ed442}, !- Handle
+  3.10.0;                                 !- Version Identifier
+
+OS:Site:WaterMainsTemperature,
+  {7b6cc74d-15d7-4c99-8167-5a87099ba702}, !- Handle
+  CorrelationFromWeatherFile;             !- Calculation Method
+

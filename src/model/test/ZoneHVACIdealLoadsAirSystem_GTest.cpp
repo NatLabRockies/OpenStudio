@@ -215,6 +215,34 @@ TEST_F(ModelFixture, ZoneHVACIdealLoadsAirSystem_GettersSetters) {
   EXPECT_EQ(0.325, zv_ideal.latentHeatRecoveryEffectiveness());
   zv_ideal.resetLatentHeatRecoveryEffectiveness();
   EXPECT_EQ(0.65, zv_ideal.latentHeatRecoveryEffectiveness());
+
+  // Heating Fuel Efficiency Schedule Name: Optional Object
+  // No Default
+  ScheduleCompact sch4(m);
+  EXPECT_TRUE(zv_ideal.setHeatingFuelEfficiencySchedule(sch4));
+  ASSERT_TRUE(zv_ideal.heatingFuelEfficiencySchedule());
+  EXPECT_EQ(sch4, zv_ideal.heatingFuelEfficiencySchedule().get());
+
+  // Heating Fuel Type: Required String
+  EXPECT_TRUE(zv_ideal.setHeatingFuelType("DistrictHeatingWater"));
+  EXPECT_EQ("DistrictHeatingWater", zv_ideal.heatingFuelType());
+  // Bad Value
+  EXPECT_FALSE(zv_ideal.setHeatingFuelType("BADENUM"));
+  EXPECT_EQ("DistrictHeatingWater", zv_ideal.heatingFuelType());
+
+  // Cooling Fuel Efficiency Schedule Name: Optional Object
+  // No Default
+  ScheduleCompact sch5(m);
+  EXPECT_TRUE(zv_ideal.setCoolingFuelEfficiencySchedule(sch5));
+  ASSERT_TRUE(zv_ideal.coolingFuelEfficiencySchedule());
+  EXPECT_EQ(sch5, zv_ideal.coolingFuelEfficiencySchedule().get());
+
+  // Cooling Fuel Type: Required String
+  EXPECT_TRUE(zv_ideal.setCoolingFuelType("DistrictCooling"));
+  EXPECT_EQ("DistrictCooling", zv_ideal.coolingFuelType());
+  // Bad Value
+  EXPECT_FALSE(zv_ideal.setCoolingFuelType("BADENUM"));
+  EXPECT_EQ("DistrictCooling", zv_ideal.coolingFuelType());
 }
 
 TEST_F(ModelFixture, ZoneHVACIdealLoadsAirSystem_ReturnPlenum) {

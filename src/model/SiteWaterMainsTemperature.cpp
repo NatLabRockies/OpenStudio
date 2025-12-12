@@ -87,6 +87,18 @@ namespace model {
       return getDouble(OS_Site_WaterMainsTemperatureFields::MaximumDifferenceInMonthlyAverageOutdoorAirTemperatures, true);
     }
 
+    double SiteWaterMainsTemperature_Impl::temperatureMultiplier() const {
+      boost::optional<double> value = getDouble(OS_Site_WaterMainsTemperatureFields::TemperatureMultiplier, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    double SiteWaterMainsTemperature_Impl::temperatureOffset() const {
+      boost::optional<double> value = getDouble(OS_Site_WaterMainsTemperatureFields::TemperatureOffset, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
     bool SiteWaterMainsTemperature_Impl::setCalculationMethod(const std::string& calculationMethod) {
       bool result = setString(OS_Site_WaterMainsTemperatureFields::CalculationMethod, calculationMethod);
       return result;
@@ -149,6 +161,16 @@ namespace model {
       OS_ASSERT(result);
     }
 
+    bool SiteWaterMainsTemperature_Impl::setTemperatureMultiplier(double temperatureMultiplier) {
+      const bool result = setDouble(OS_Site_WaterMainsTemperatureFields::TemperatureMultiplier, temperatureMultiplier);
+      return result;
+    }
+
+    bool SiteWaterMainsTemperature_Impl::setTemperatureOffset(double temperatureOffset) {
+      const bool result = setDouble(OS_Site_WaterMainsTemperatureFields::TemperatureOffset, temperatureOffset);
+      return result;
+    }
+
     std::vector<std::string> SiteWaterMainsTemperature_Impl::calculationMethodValues() const {
       return SiteWaterMainsTemperature::calculationMethodValues();
     }
@@ -183,6 +205,10 @@ namespace model {
     OS_ASSERT(getImpl<detail::SiteWaterMainsTemperature_Impl>());
     bool ok = setCalculationMethod("CorrelationFromWeatherFile");
     OS_ASSERT(ok);
+    ok = setTemperatureMultiplier(1.0);
+    OS_ASSERT(ok);
+    ok = setTemperatureOffset(0.0);
+    OS_ASSERT(ok);
   }
 
   IddObjectType SiteWaterMainsTemperature::iddObjectType() {
@@ -214,6 +240,14 @@ namespace model {
     return getImpl<detail::SiteWaterMainsTemperature_Impl>()->maximumDifferenceInMonthlyAverageOutdoorAirTemperatures();
   }
 
+  double SiteWaterMainsTemperature::temperatureMultiplier() const {
+    return getImpl<detail::SiteWaterMainsTemperature_Impl>()->temperatureMultiplier();
+  }
+
+  double SiteWaterMainsTemperature::temperatureOffset() const {
+    return getImpl<detail::SiteWaterMainsTemperature_Impl>()->temperatureOffset();
+  }
+
   bool SiteWaterMainsTemperature::setCalculationMethod(const std::string& calculationMethod) {
     return getImpl<detail::SiteWaterMainsTemperature_Impl>()->setCalculationMethod(calculationMethod);
   }
@@ -242,6 +276,14 @@ namespace model {
 
   void SiteWaterMainsTemperature::resetMaximumDifferenceInMonthlyAverageOutdoorAirTemperatures() {
     getImpl<detail::SiteWaterMainsTemperature_Impl>()->resetMaximumDifferenceInMonthlyAverageOutdoorAirTemperatures();
+  }
+
+  bool SiteWaterMainsTemperature::setTemperatureMultiplier(double temperatureMultiplier) {
+    return getImpl<detail::SiteWaterMainsTemperature_Impl>()->setTemperatureMultiplier(temperatureMultiplier);
+  }
+
+  bool SiteWaterMainsTemperature::setTemperatureOffset(double temperatureOffset) {
+    return getImpl<detail::SiteWaterMainsTemperature_Impl>()->setTemperatureOffset(temperatureOffset);
   }
 
   /// @cond

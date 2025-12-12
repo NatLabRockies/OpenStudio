@@ -79,12 +79,11 @@ TEST_F(ModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_GettersSetters
   EXPECT_TRUE(hp.setHeatingCoil(heatingCoil));
   EXPECT_EQ(heatingCoil, hp.heatingCoil());
 
+  // Deprecated
+  // Coil is NOT a CoilHeatingDXMultiSpeed, so flase
   // Minimum Outdoor Dry-Bulb Temperature for Compressor Operation: Required Double
-  EXPECT_TRUE(hp.setMinimumOutdoorDryBulbTemperatureforCompressorOperation(-18.9));
-  EXPECT_EQ(-18.9, hp.minimumOutdoorDryBulbTemperatureforCompressorOperation());
-  // Bad Value
-  EXPECT_FALSE(hp.setMinimumOutdoorDryBulbTemperatureforCompressorOperation(-30.0));
-  EXPECT_EQ(-18.9, hp.minimumOutdoorDryBulbTemperatureforCompressorOperation());
+  EXPECT_FALSE(hp.setMinimumOutdoorDryBulbTemperatureforCompressorOperation(-18.9));
+  EXPECT_EQ(-1000.0, hp.minimumOutdoorDryBulbTemperatureforCompressorOperation());
 
   // Cooling Coil: Required Object
   CoilCoolingDXMultiSpeed coolingCoil(m);

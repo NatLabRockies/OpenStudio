@@ -11,6 +11,11 @@
 #include "../SiteGroundTemperatureUndisturbedKusudaAchenbach_Impl.hpp"
 #include "../SiteGroundTemperatureUndisturbedXing.hpp"
 #include "../SiteGroundTemperatureUndisturbedXing_Impl.hpp"
+#include "../AirLoopHVAC.hpp"
+#include "../PlantLoop.hpp"
+#include "../Node.hpp"
+#include "../Node_Impl.hpp"
+#include "../AirLoopHVACZoneSplitter.hpp"
 
 using namespace openstudio;
 using namespace openstudio::model;
@@ -243,4 +248,42 @@ TEST_F(ModelFixture, GroundHeatExchangerHorizontalTrench_Clone) {
     EXPECT_EQ(0u, m.getConcreteModelObjects<GroundHeatExchangerHorizontalTrench>().size());
     EXPECT_EQ(1u, m.getConcreteModelObjects<SiteGroundTemperatureUndisturbedXing>().size());
   }
+}
+
+TEST_F(ModelFixture, GroundHeatExchangerHorizontalTrench_addToNode) {
+  Model m;
+  GroundHeatExchangerHorizontalTrench testObject(m);
+
+  AirLoopHVAC airLoop(m);
+
+  Node supplyOutletNode = airLoop.supplyOutletNode();
+
+  EXPECT_FALSE(testObject.addToNode(supplyOutletNode));
+  EXPECT_EQ((unsigned)2, airLoop.supplyComponents().size());
+
+  Node inletNode = airLoop.zoneSplitter().lastOutletModelObject()->cast<Node>();
+
+  EXPECT_FALSE(testObject.addToNode(inletNode));
+  EXPECT_EQ((unsigned)5, airLoop.demandComponents().size());
+
+  PlantLoop plantLoop(m);
+  EXPECT_TRUE(plantLoop.setFluidType("PropyleneGlycol"));
+  EXPECT_TRUE(plantLoop.setGlycolConcentration(50));
+
+  supplyOutletNode = plantLoop.supplyOutletNode();
+  EXPECT_TRUE(testObject.addToNode(supplyOutletNode));
+  EXPECT_EQ((unsigned)7, plantLoop.supplyComponents().size());
+
+  Node demandOutletNode = plantLoop.demandOutletNode();
+  EXPECT_FALSE(testObject.addToNode(demandOutletNode));
+  EXPECT_EQ((unsigned)5, plantLoop.demandComponents().size());
+
+  auto testObjectClone = testObject.clone(m).cast<GroundHeatExchangerHorizontalTrench>();
+  supplyOutletNode = plantLoop.supplyOutletNode();
+
+  EXPECT_TRUE(testObjectClone.addToNode(supplyOutletNode));
+  EXPECT_EQ((unsigned)9, plantLoop.supplyComponents().size());
+
+  EXPECT_EQ(plantLoop.fluidType(), "PropyleneGlycol");
+  EXPECT_EQ(plantLoop.glycolConcentration(), 50);
 }

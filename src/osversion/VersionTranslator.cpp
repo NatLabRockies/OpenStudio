@@ -146,7 +146,8 @@ namespace osversion {
     m_updateMethods[VersionString("3.8.0")] = &VersionTranslator::update_3_7_0_to_3_8_0;
     m_updateMethods[VersionString("3.9.0")] = &VersionTranslator::update_3_8_0_to_3_9_0;
     m_updateMethods[VersionString("3.10.0")] = &VersionTranslator::update_3_9_0_to_3_10_0;
-    // m_updateMethods[VersionString("3.10.0")] = &VersionTranslator::defaultUpdate;
+    m_updateMethods[VersionString("3.11.0")] = &VersionTranslator::update_3_10_0_to_3_11_0;
+    // m_updateMethods[VersionString("3.12.0")] = &VersionTranslator::defaultUpdate;
 
     // List of previous versions that may be updated to this one.
     //   - To increment the translator, add an entry for the version just released (branched for
@@ -184,8 +185,9 @@ namespace osversion {
       VersionString("2.9.1"),  VersionString("3.0.0"),  VersionString("3.0.1"),  VersionString("3.1.0"),  VersionString("3.2.0"),
       VersionString("3.2.1"),  VersionString("3.3.0"),  VersionString("3.4.0"),  VersionString("3.5.0"),  VersionString("3.5.1"),
       VersionString("3.6.0"),  VersionString("3.6.1"),  VersionString("3.7.0"),  VersionString("3.8.0"),  VersionString("3.9.0"),
+      VersionString("3.10.0"),
       // Note: do **not** include the **current** version in m_startVersions, stop at the previous release
-      //VersionString("3.10.0"),
+      //VersionString("3.11.0"),
     };
   }
 
@@ -7979,12 +7981,12 @@ namespace osversion {
     }};
 
     // Could make it a static inside the lambda, except that it won't be reset so if you try to translate twice it fails
-    std::string discreteSchHandleStr;
+    std::string continuousSchHandleStr;
 
-    auto getOrCreateAlwaysOnContinuousSheduleHandleStr = [this, &ss, &idf_3_6_1, &idd_3_7_0, &discreteSchHandleStr]() -> std::string {
-      if (!discreteSchHandleStr.empty()) {
-        LOG(Trace, "Already found 'Always On Continuous' Schedule in model with handle " << discreteSchHandleStr);
-        return discreteSchHandleStr;
+    auto getOrCreateAlwaysOnContinuousScheduleHandleStr = [this, &ss, &idf_3_6_1, &idd_3_7_0, &continuousSchHandleStr]() -> std::string {
+      if (!continuousSchHandleStr.empty()) {
+        LOG(Trace, "Already found 'Always On Continuous' Schedule in model with handle " << continuousSchHandleStr);
+        return continuousSchHandleStr;
       }
 
       const std::string name = "Always On Continuous";
@@ -7995,21 +7997,21 @@ namespace osversion {
           if (istringEqual(name_.get(), name)) {
             if (boost::optional<double> value = object.getDouble(3)) {
               if (equal<double>(value.get(), val)) {
-                discreteSchHandleStr = object.getString(0).get();  // Store in state variable
-                LOG(Trace, "Found existing 'Always On Continuous' Schedule in model with handle " << discreteSchHandleStr);
-                return discreteSchHandleStr;
+                continuousSchHandleStr = object.getString(0).get();  // Store in state variable
+                LOG(Trace, "Found existing 'Always On Continuous' Schedule in model with handle " << continuousSchHandleStr);
+                return continuousSchHandleStr;
               }
             }
           }
         }
       }
 
-      auto discreteSch = IdfObject(idd_3_7_0.getObject("OS:Schedule:Constant").get());
+      auto continuousSch = IdfObject(idd_3_7_0.getObject("OS:Schedule:Constant").get());
 
-      discreteSchHandleStr = toString(createUUID());  // Store in state variable
-      discreteSch.setString(0, discreteSchHandleStr);
-      discreteSch.setString(1, name);
-      discreteSch.setDouble(3, val);
+      continuousSchHandleStr = toString(createUUID());  // Store in state variable
+      continuousSch.setString(0, continuousSchHandleStr);
+      continuousSch.setString(1, name);
+      continuousSch.setDouble(3, val);
 
       IdfObject typeLimits(idd_3_7_0.getObject("OS:ScheduleTypeLimits").get());
       typeLimits.setString(0, toString(createUUID()));
@@ -8019,17 +8021,17 @@ namespace osversion {
       typeLimits.setString(4, "Continuous");
       typeLimits.setString(5, "");
 
-      discreteSch.setString(2, typeLimits.getString(0).get());
+      continuousSch.setString(2, typeLimits.getString(0).get());
 
-      ss << discreteSch;
+      ss << continuousSch;
       ss << typeLimits;
 
       // Register new objects
-      m_new.emplace_back(std::move(discreteSch));
+      m_new.emplace_back(std::move(continuousSch));
       m_new.emplace_back(std::move(typeLimits));
-      LOG(Trace, "Created 'Always On Continuous' Schedule with handle " << discreteSchHandleStr);
+      LOG(Trace, "Created 'Always On Continuous' Schedule with handle " << continuousSchHandleStr);
 
-      return discreteSchHandleStr;
+      return continuousSchHandleStr;
     };
 
     for (const IdfObject& object : idf_3_6_1.objects()) {
@@ -8653,7 +8655,7 @@ namespace osversion {
         }
 
         // Add the new "Capacity Fraction Schedule"
-        newObject.setString(5, getOrCreateAlwaysOnContinuousSheduleHandleStr());
+        newObject.setString(5, getOrCreateAlwaysOnContinuousScheduleHandleStr());
 
         ss << newObject;
         m_refactored.emplace_back(std::move(object), std::move(newObject));
@@ -8672,7 +8674,7 @@ namespace osversion {
           }
         }
         // Add the new "Capacity Fraction Schedule"
-        newObject.setString(5, getOrCreateAlwaysOnContinuousSheduleHandleStr());
+        newObject.setString(5, getOrCreateAlwaysOnContinuousScheduleHandleStr());
 
         ss << newObject;
         m_refactored.emplace_back(std::move(object), std::move(newObject));
@@ -9702,6 +9704,7 @@ namespace osversion {
         // 1 Field has been added from 3.9.0 to 3.10.0:
         // -------------------------------------------
         // * Density Basis * 26
+
         auto iddObject = idd_3_10_0.getObject(iddname);
         IdfObject newObject(iddObject.get());
 
@@ -9721,6 +9724,7 @@ namespace osversion {
         // 1 Field has been added from 3.9.0 to 3.10.0:
         // -------------------------------------------
         // * Density Basis * 13
+
         auto iddObject = idd_3_10_0.getObject(iddname);
         IdfObject newObject(iddObject.get());
 
@@ -9745,5 +9749,481 @@ namespace osversion {
 
   }  // end update_3_9_0_to_3_10_0
 
+  std::string VersionTranslator::update_3_10_0_to_3_11_0(const IdfFile& idf_3_10_0, const IddFileAndFactoryWrapper& idd_3_11_0) {
+    std::stringstream ss;
+    boost::optional<std::string> value;
+
+    ss << idf_3_10_0.header() << '\n' << '\n';
+    IdfFile targetIdf(idd_3_11_0.iddFile());
+    ss << targetIdf.versionObject().get();
+
+    // Could make it a static inside the lambda, except that it won't be reset so if you try to translate twice it fails
+    std::string discreteSchHandleStr;
+
+    auto getOrCreateAlwaysOnDiscreteScheduleHandleStr = [this, &ss, &idf_3_10_0, &idd_3_11_0, &discreteSchHandleStr]() -> std::string {
+      if (!discreteSchHandleStr.empty()) {
+        LOG(Trace, "Already found 'Always On Discrete' Schedule in model with handle " << discreteSchHandleStr);
+        return discreteSchHandleStr;
+      }
+
+      const std::string name = "Always On Discrete";
+      const double val = 1.0;
+      // Add an alwaysOnDiscreteSchedule if one does not already exist
+      for (const IdfObject& object : idf_3_10_0.getObjectsByType(idf_3_10_0.iddFile().getObject("OS:Schedule:Constant").get())) {
+        if (boost::optional<std::string> name_ = object.getString(1)) {
+          if (istringEqual(name_.get(), name)) {
+            if (boost::optional<double> value = object.getDouble(3)) {
+              if (equal<double>(value.get(), val)) {
+                discreteSchHandleStr = object.getString(0).get();  // Store in state variable
+                LOG(Trace, "Found existing 'Always On Discrete' Schedule in model with handle " << discreteSchHandleStr);
+                return discreteSchHandleStr;
+              }
+            }
+          }
+        }
+      }
+
+      auto discreteSch = IdfObject(idd_3_11_0.getObject("OS:Schedule:Constant").get());
+
+      discreteSchHandleStr = toString(createUUID());  // Store in state variable
+      discreteSch.setString(0, discreteSchHandleStr);
+      discreteSch.setString(1, name);
+      discreteSch.setDouble(3, val);
+
+      IdfObject typeLimits(idd_3_11_0.getObject("OS:ScheduleTypeLimits").get());
+      typeLimits.setString(0, toString(createUUID()));
+      typeLimits.setString(1, name + " Limits");
+      typeLimits.setDouble(2, 0.0);
+      typeLimits.setDouble(3, 1.0);
+      typeLimits.setString(4, "Discrete");
+      typeLimits.setString(5, "Availability");
+
+      discreteSch.setString(2, typeLimits.getString(0).get());
+
+      ss << discreteSch;
+      ss << typeLimits;
+
+      // Register new objects
+      m_new.emplace_back(std::move(discreteSch));
+      m_new.emplace_back(std::move(typeLimits));
+      LOG(Trace, "Created 'Always On Discrete' Schedule with handle " << discreteSchHandleStr);
+
+      return discreteSchHandleStr;
+    };
+
+    for (const IdfObject& object : idf_3_10_0.objects()) {
+      auto iddname = object.iddObject().name();
+
+      if ((iddname == "OS:Coil:Cooling:DX:VariableSpeed") || (iddname == "OS:Coil:Heating:DX:VariableSpeed")
+          || (iddname == "OS:Coil:Cooling:WaterToAirHeatPump:EquationFit") || (iddname == "OS:Coil:Heating:WaterToAirHeatPump:EquationFit")
+          || (iddname == "OS:Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit")
+          || (iddname == "OS:Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit") || (iddname == "OS:Coil:WaterHeating:AirToWaterHeatPump")
+          || (iddname == "OS:Coil:WaterHeating:AirToWaterHeatPump:Wrapped") || (iddname == "OS:Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed")) {
+
+        // 1 Field has been inserted from 3.10.0 to 3.11.0:
+        // ------------------------------------------------
+        // * Availability Schedule Name * 2
+
+        auto iddObject = idd_3_11_0.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            if (i < 2) {
+              newObject.setString(i, value.get());
+            } else {
+              newObject.setString(i + 1, value.get());
+            }
+          }
+        }
+
+        // Applicability Schedule
+        newObject.setString(2, getOrCreateAlwaysOnDiscreteScheduleHandleStr());
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+      } else if (iddname == "OS:Site:WaterMainsTemperature") {
+
+        // 2 Fields have been inserted from 3.10.0 to 3.11.0:
+        // ------------------------------------------------
+        // * Temperature Multiplier * 5
+        // * Temperature Offset * 6
+
+        auto iddObject = idd_3_11_0.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            newObject.setString(i, value.get());
+          }
+        }
+
+        newObject.setDouble(5, 1.0);
+        newObject.setDouble(6, 0.0);
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+      } else if (iddname == "OS:ThermalStorage:ChilledWater:Stratified") {
+
+        // 1 Field was made required from 3.10.0 to 3.11.0:
+        // ------------------------------------------------
+        // * Nominal Cooling Capacity * 10
+
+        auto iddObject = idd_3_11_0.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            newObject.setString(i, value.get());
+          }
+        }
+
+        // Default to 0.0 and not Autosize to preserve old behavior
+        if (!object.getDouble(10)) {
+          newObject.setDouble(10, 0.0);
+        }
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+        // But we also add a WaterHeater:Sizing object
+        auto whIddObject = idd_3_11_0.getObject("OS:WaterHeater:Sizing");
+        IdfObject whSizingObj(whIddObject.get());
+
+        // WaterHeaterName
+        whSizingObj.setString(1, toString(object.handle()));
+        // Design Mode
+        whSizingObj.setString(2, "PeakDraw");
+        // Time Storage Can Meet Peak Draw {hr}
+        whSizingObj.setDouble(3, 0.538503);
+        // Time for Tank Recovery {hr}
+        whSizingObj.setDouble(4, 0.0);
+        // Nominal Tank Volume for Autosizing Plant Connections {m3}
+        whSizingObj.setDouble(5, 1.0);
+
+        // Register new WaterHeater:Sizing objects
+        ss << whSizingObj;
+        m_new.emplace_back(std::move(whSizingObj));
+
+      } else if (iddname == "OS:Sizing:Zone") {
+
+        // 2 Fields have been added from 3.10.0 to 3.11.0:
+        // ------------------------------------------------
+        // * Heating Coil Sizing Method * 40
+        // * Maximum Heating Capacity To Cooling Load Sizing Ratio * 41
+
+        auto iddObject = idd_3_11_0.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            newObject.setString(i, value.get());
+          }
+        }
+
+        newObject.setString(40, "None");
+        newObject.setDouble(41, 1.0);
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+      } else if (iddname == "OS:Sizing:System") {
+
+        // 2 Fields have been added from 3.10.0 to 3.11.0:
+        // ------------------------------------------------
+        // * Heating Coil Sizing Method * 39
+        // * Maximum Heating Capacity To Cooling Capacity Sizing Ratio * 40
+
+        auto iddObject = idd_3_11_0.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            newObject.setString(i, value.get());
+          }
+        }
+
+        newObject.setString(39, "None");
+        newObject.setDouble(40, 1.0);
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+      } else if (iddname == "OS:HeatPump:AirToWater:FuelFired:Heating") {
+
+        // 1 Field has been added from 3.10.0 to 3.11.0:
+        // ------------------------------------------------
+        // * Minimum Unloading Ratio * 32
+
+        auto iddObject = idd_3_11_0.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            newObject.setString(i, value.get());
+          }
+        }
+
+        newObject.setDouble(32, 0.25);
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+      } else if (iddname == "OS:HeatPump:AirToWater:FuelFired:Cooling") {
+
+        // 1 Field has been added from 3.10.0 to 3.11.0:
+        // ------------------------------------------------
+        // * Minimum Unloading Ratio * 27
+
+        auto iddObject = idd_3_11_0.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            newObject.setString(i, value.get());
+          }
+        }
+
+        newObject.setDouble(27, 0.25);
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+      } else if (iddname == "OS:ZoneHVAC:PackagedTerminalHeatPump") {
+
+        // 1 Field has been inserted from 3.10.0 to 3.11.0:
+        // ------------------------------------------------
+        // * DX Heating Coil Sizing Ratio * 25
+
+        auto iddObject = idd_3_11_0.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            newObject.setString(i, value.get());
+          }
+        }
+
+        newObject.setDouble(25, 1.0);
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+      } else if (iddname == "OS:ZoneHVAC:WaterToAirHeatPump") {
+
+        // 1 Field has been inserted from 3.10.0 to 3.11.0:
+        // ------------------------------------------------
+        // * DX Heating Coil Sizing Ratio * 25
+
+        auto iddObject = idd_3_11_0.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            newObject.setString(i, value.get());
+          }
+        }
+
+        newObject.setDouble(25, 1.0);
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+      } else if (iddname == "OS:AirLoopHVAC:UnitaryHeatPump:AirToAir") {
+
+        // 1 Field has been inserted from 3.10.0 to 3.11.0:
+        // ------------------------------------------------
+        // * DX Heating Coil Sizing Ratio * 18
+
+        auto iddObject = idd_3_11_0.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            newObject.setString(i, value.get());
+          }
+        }
+
+        newObject.setDouble(18, 1.0);
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+      } else if (iddname == "OS:AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed") {
+
+        // 1 Field has been inserted from 3.10.0 to 3.11.0:
+        // ------------------------------------------------
+        // * DX Heating Coil Sizing Ratio * 10
+
+        auto iddObject = idd_3_11_0.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            newObject.setString(i, value.get());
+          }
+        }
+
+        newObject.setDouble(10, 1.0);
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+      } else if (iddname == "OS:Controller:MechanicalVentilation") {
+
+        // 1 Field has been modified from 3.10.0 to 3.11.0:
+        // ------------------------------------------------
+        // * System Outdoor Air Method * 4 - Removed ProportionalControl as mapping to ProportionalControlBasedonOccupancySchedule
+
+        auto iddObject = idd_3_11_0.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            if (i == 4) {
+              if (istringEqual(value.get(), "ProportionalControl")) {
+                newObject.setString(4, "ProportionalControlBasedonOccupancySchedule");
+              } else {
+                newObject.setString(i, value.get());
+              }
+            } else {
+              newObject.setString(i, value.get());
+            }
+          }
+        }
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+      } else if (iddname == "OS:People") {
+
+        // 2 Fields have been inserted from 3.10.0 to 3.11.0:
+        // ------------------------------------------------
+        // * Clothing Insulation Calculation Method * 8
+        // * Clothing Insulation Calculation Method Schedule Name * 9
+
+        auto iddObject = idd_3_11_0.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            if (i < 8) {
+              newObject.setString(i, value.get());
+            } else {
+              newObject.setString(i + 2, value.get());
+            }
+          }
+        }
+
+        newObject.setString(8, "ClothingInsulationSchedule");
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+      } else if (iddname == "OS:EvaporativeFluidCooler:SingleSpeed") {
+
+        // 1 Field has been inserted from 3.10.0 to 3.10.1:
+        // ------------------------------------------------
+        // * Heat Rejection Capacity and Nominal Capacity Sizing Ratio * 9
+
+        // 3 Fields were made required from 3.10.0 to 3.10.1:
+        // ------------------------------------------------
+        // * Design Entering Water Temperature * 14
+        // * Design Entering Air Temperature * 15
+        // * Design Entering Air Wet-bulb Temperature * 16
+
+        auto iddObject = idd_3_11_0.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            if (i < 9) {
+              newObject.setString(i, value.get());
+            } else {
+              newObject.setString(i + 1, value.get());
+            }
+          }
+        }
+
+        newObject.setDouble(9, 1.25);
+
+        if (!object.getDouble(13)) {
+          newObject.setString(14, "Autosize");
+        }
+
+        if (!object.getDouble(14)) {
+          newObject.setDouble(15, 35.0);
+        }
+
+        if (!object.getDouble(15)) {
+          newObject.setDouble(16, 25.6);
+        }
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+      } else if (iddname == "OS:EvaporativeFluidCooler:TwoSpeed") {
+
+        // 3 Fields were made required from 3.10.0 to 3.10.1:
+        // ------------------------------------------------
+        // * Design Entering Water Temperature * 24
+        // * Design Entering Air Temperature * 25
+        // * Design Entering Air Wet-bulb Temperature * 26
+
+        auto iddObject = idd_3_11_0.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            newObject.setString(i, value.get());
+          }
+        }
+
+        if (!object.getDouble(24)) {
+          newObject.setString(24, "Autosize");
+        }
+
+        if (!object.getDouble(25)) {
+          newObject.setDouble(25, 35.0);
+        }
+
+        if (!object.getDouble(26)) {
+          newObject.setDouble(26, 25.6);
+        }
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+      } else if (iddname == "OS:OutputControl:Files") {
+
+        // 1 Field has been added from 3.10.0 to 3.11.0:
+        // ----------------------------------------------
+        // * Output Plant Component Sizing * 32
+
+        auto iddObject = idd_3_11_0.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            newObject.setString(i, value.get());
+          }
+        }
+
+        newObject.setString(32, "Yes");
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
+        // No-op
+      } else {
+        ss << object;
+      }
+    }
+
+    return ss.str();
+
+  }  // end update_3_10_0_to_3_11_0
 }  // namespace osversion
 }  // namespace openstudio

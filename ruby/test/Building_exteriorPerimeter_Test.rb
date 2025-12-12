@@ -6,7 +6,6 @@
 require 'openstudio'
 require_relative 'model.rb'
 require 'logger'
-require 'openstudio/measure/ShowRunnerOutput'
 require 'fileutils'
 require 'minitest/autorun'
 require 'csv'

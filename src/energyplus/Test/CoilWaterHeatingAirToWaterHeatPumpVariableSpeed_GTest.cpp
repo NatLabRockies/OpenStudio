@@ -62,6 +62,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_CoilWaterHeatingAirToWaterHeatPumpVa
   ASSERT_EQ(1, idfs_coils.size());
   const WorkspaceObject& idf_coil = idfs_coils[0];
 
+  EXPECT_EQ("Always On Discrete", idf_coil.getString(Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::AvailabilityScheduleName).get());
   EXPECT_EQ(1, idf_coil.getInt(Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::NominalSpeedLevel, false).get());
   EXPECT_EQ(4000.0, idf_coil.getDouble(Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::RatedWaterHeatingCapacity, false).get());
   EXPECT_EQ(29.44,
@@ -99,9 +100,9 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_CoilWaterHeatingAirToWaterHeatPumpVa
   EXPECT_EQ(1u, idf_coil.numExtensibleGroups());
 
   auto w_eg = idf_coil.extensibleGroups()[0].cast<WorkspaceExtensibleGroup>();
-  EXPECT_EQ(400.0, w_eg.getDouble(Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedExtensibleFields::RatedWaterHeatingCapacityatSpeed, false).get());
-  EXPECT_EQ(5.0, w_eg.getDouble(Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedExtensibleFields::RatedWaterHeatingCOPatSpeed, false).get());
-  EXPECT_EQ(0.8, w_eg.getDouble(Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedExtensibleFields::RatedSensibleHeatRatioatSpeed, false).get());
+  EXPECT_EQ(400.0, w_eg.getDouble(Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedExtensibleFields::SpeedRatedWaterHeatingCapacity, false).get());
+  EXPECT_EQ(5.0, w_eg.getDouble(Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedExtensibleFields::SpeedRatedWaterHeatingCOP, false).get());
+  EXPECT_EQ(0.8, w_eg.getDouble(Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedExtensibleFields::SpeedRatedSensibleHeatRatio, false).get());
   EXPECT_EQ(0.02014,
             w_eg.getDouble(Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedExtensibleFields::SpeedReferenceUnitRatedAirFlowRate, false).get());
   EXPECT_EQ(0.000018,

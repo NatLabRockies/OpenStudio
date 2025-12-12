@@ -41,7 +41,7 @@
 
 namespace openstudio {
 
-bool UnitFactorySingleton::registerUnit(CreateUnitCallback createFn, UnitSystem system) {
+bool UnitFactory::registerUnit(CreateUnitCallback createFn, UnitSystem system) {
 
   Unit thisUnit = createFn();
   std::string standardString = thisUnit.standardString(false);
@@ -112,7 +112,7 @@ bool UnitFactorySingleton::registerUnit(CreateUnitCallback createFn, UnitSystem 
   return result;
 }
 
-bool UnitFactorySingleton::registerEquivalentString(const std::string& equivalentString, const std::string& standardString) {
+bool UnitFactory::registerEquivalentString(const std::string& equivalentString, const std::string& standardString) {
   // register the pair
   bool result = m_standardStringLookupMap.insert(StandardStringLookupMap::value_type(equivalentString, StringVector(1u, standardString))).second;
 
@@ -124,9 +124,9 @@ bool UnitFactorySingleton::registerEquivalentString(const std::string& equivalen
   return result;
 }
 
-boost::optional<Unit> UnitFactorySingleton::createUnit(const std::string& unitString, UnitSystem system) const {
+boost::optional<Unit> UnitFactory::createUnit(const std::string& unitString, UnitSystem system) const {
   if (m_callbackMaps.empty()) {
-    LOG(Warn, "UnitFactorySingleton::createUnit called, but the maps appear to be empty.");
+    LOG(Warn, "UnitFactory::createUnit called, but the maps appear to be empty.");
   }
 
   std::string resultCacheKey = unitString + " in unit system " + system.valueName();
@@ -242,7 +242,7 @@ boost::optional<Unit> UnitFactorySingleton::createUnit(const std::string& unitSt
   return result;
 }
 
-boost::optional<Unit> UnitFactorySingleton::createUnitSimple(const std::string& unitString, UnitSystem system) const {
+boost::optional<Unit> UnitFactory::createUnitSimple(const std::string& unitString, UnitSystem system) const {
   if (unitString.empty()) {
     Unit result = createDimensionlessUnit(system);
     if (OptionalTemperatureUnit T = result.optionalCast<TemperatureUnit>()) {
@@ -321,7 +321,7 @@ boost::optional<Unit> UnitFactorySingleton::createUnitSimple(const std::string& 
   return candidate;
 }
 
-std::string UnitFactorySingleton::lookupPrettyString(const std::string& standardString) const {
+std::string UnitFactory::lookupPrettyString(const std::string& standardString) const {
 
   PrettyStringLookupMap::const_iterator lookupPair;
   lookupPair = m_prettyStringLookupMap.find(standardString);
@@ -332,7 +332,12 @@ std::string UnitFactorySingleton::lookupPrettyString(const std::string& standard
   }
 }
 
-UnitFactorySingleton::UnitFactorySingleton() {
+UnitFactory& UnitFactory::instance() {
+  static UnitFactory instance;
+  return instance;
+}
+
+UnitFactory::UnitFactory() {
 
   // Celsius Base Units ========================================================
   registerUnit(createCelsiusTemperature);

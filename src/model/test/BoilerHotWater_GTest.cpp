@@ -39,6 +39,12 @@ TEST_F(ModelFixture, BoilerHotWater_BoilerHotWater) {
 
   EXPECT_TRUE(boiler.setOffCycleParasiticFuelLoad(0.8));
   EXPECT_EQ(0.8, boiler.offCycleParasiticFuelLoad());
+
+  EXPECT_TRUE(boiler.setNominalCapacity(1000.0));
+  ASSERT_TRUE(boiler.nominalCapacity());
+  EXPECT_EQ(1000.0, boiler.nominalCapacity().get());
+  EXPECT_FALSE(boiler.setNominalCapacity(0.0));
+  EXPECT_EQ(1000.0, boiler.nominalCapacity().get());
 }
 
 TEST_F(ModelFixture, BoilerHotWater_connections) {

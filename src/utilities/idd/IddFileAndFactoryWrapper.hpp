@@ -12,7 +12,7 @@
 
 namespace openstudio {
 
-/** Wraps the functionality of IddFile and \link IddFactorySingleton IddFactory \endlink
+/** Wraps the functionality of IddFile and \link IddFactory IddFactory \endlink
  *  into one class for use by IdfFile and Workspace. */
 class UTILITIES_API IddFileAndFactoryWrapper
 {
@@ -27,7 +27,7 @@ class UTILITIES_API IddFileAndFactoryWrapper
   IddFileAndFactoryWrapper(const IddFile& iddFile);
 
   /** Construct wrapper that provides access to the iddFileType IddFile through the \link
-   *  IddFactorySingleton IddFactory \endlink. Logs a warning if iddFileType ==
+   *  IddFactory IddFactory \endlink. Logs a warning if iddFileType ==
    *  IddFileType::UserCustom, since this results in an empty IddFile. */
   IddFileAndFactoryWrapper(IddFileType iddFileType);
 
@@ -75,7 +75,7 @@ class UTILITIES_API IddFileAndFactoryWrapper
   std::vector<IddObject> uniqueObjects() const;
 
   /** Get the IddFile, which may have been explicitly specified by the user, or may be implicitly
-   *  specified by reference to the \link IddFactorySingleton IddFactory\endlink. */
+   *  specified by reference to the \link IddFactory IddFactory\endlink. */
   IddFile iddFile() const;
 
   /** Get the IddFileType. If iddFileType() == IddFileType::UserCustom, then the file has been
@@ -87,11 +87,11 @@ class UTILITIES_API IddFileAndFactoryWrapper
   /** @name Setters */
   //@{
 
-  /** Set the IddFile explicitly. This option does not use the \link IddFactorySingleton
+  /** Set the IddFile explicitly. This option does not use the \link IddFactory
    *  IddFactory\endlink. */
   void setIddFile(const IddFile& iddFile);
 
-  /** Set the IddFile by specifying iddFileType. This option uses the \link IddFactorySingleton
+  /** Set the IddFile by specifying iddFileType. This option uses the \link IddFactory
    *  IddFactory\endlink, unless iddFileType == IddFileType::UserCustom, in which case a warning
    *  is logged. */
   void setIddFile(IddFileType iddFileType);

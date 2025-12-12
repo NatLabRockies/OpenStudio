@@ -355,6 +355,12 @@ namespace model {
       return getObject<ModelObject>().getModelObjectTarget<Schedule>(OS_ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanOperatingModeScheduleName);
     }
 
+    double ZoneHVACWaterToAirHeatPump_Impl::dXHeatingCoilSizingRatio() const {
+      boost::optional<double> value = getDouble(OS_ZoneHVAC_WaterToAirHeatPumpFields::DXHeatingCoilSizingRatio, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
     bool ZoneHVACWaterToAirHeatPump_Impl::setAvailabilitySchedule(Schedule& schedule) {
       bool result =
         setSchedule(OS_ZoneHVAC_WaterToAirHeatPumpFields::AvailabilityScheduleName, "ZoneHVACWaterToAirHeatPump", "Availability", schedule);
@@ -602,6 +608,11 @@ namespace model {
     void ZoneHVACWaterToAirHeatPump_Impl::resetSupplyAirFanOperatingModeSchedule() {
       bool result = setString(OS_ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanOperatingModeScheduleName, "");
       OS_ASSERT(result);
+    }
+
+    bool ZoneHVACWaterToAirHeatPump_Impl::setDXHeatingCoilSizingRatio(double dxHeatingCoilSizingRatio) {
+      bool result = setDouble(OS_ZoneHVAC_WaterToAirHeatPumpFields::DXHeatingCoilSizingRatio, dxHeatingCoilSizingRatio);
+      return result;
     }
 
     boost::optional<Schedule> ZoneHVACWaterToAirHeatPump_Impl::optionalAvailabilitySchedule() const {
@@ -871,6 +882,7 @@ namespace model {
     setNoLoadSupplyAirFlowRateControlSetToLowSpeed(true);
     autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
     setString(OS_ZoneHVAC_WaterToAirHeatPumpFields::AvailabilityManagerListName, "");
+    setDXHeatingCoilSizingRatio(1.0);
   }
 
   IddObjectType ZoneHVACWaterToAirHeatPump::iddObjectType() {
@@ -992,6 +1004,10 @@ namespace model {
 
   boost::optional<Schedule> ZoneHVACWaterToAirHeatPump::supplyAirFanOperatingModeSchedule() const {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->supplyAirFanOperatingModeSchedule();
+  }
+
+  double ZoneHVACWaterToAirHeatPump::dXHeatingCoilSizingRatio() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->dXHeatingCoilSizingRatio();
   }
 
   bool ZoneHVACWaterToAirHeatPump::setAvailabilitySchedule(Schedule& schedule) {
@@ -1170,6 +1186,10 @@ namespace model {
 
   void ZoneHVACWaterToAirHeatPump::resetSupplyAirFanOperatingModeSchedule() {
     getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->resetSupplyAirFanOperatingModeSchedule();
+  }
+
+  bool ZoneHVACWaterToAirHeatPump::setDXHeatingCoilSizingRatio(double dxHeatingCoilSizingRatio) {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setDXHeatingCoilSizingRatio(dxHeatingCoilSizingRatio);
   }
 
   /// @cond

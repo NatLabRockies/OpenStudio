@@ -870,6 +870,28 @@ namespace model {
       return result;
     }
 
+    std::string SizingZone_Impl::heatingCoilSizingMethod() const {
+      boost::optional<std::string> value = getString(OS_Sizing_ZoneFields::HeatingCoilSizingMethod, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool SizingZone_Impl::setHeatingCoilSizingMethod(const std::string& heatingCoilSizingMethod) {
+      bool result = setString(OS_Sizing_ZoneFields::HeatingCoilSizingMethod, heatingCoilSizingMethod);
+      return result;
+    }
+
+    double SizingZone_Impl::maximumHeatingCapacityToCoolingLoadSizingRatio() const {
+      boost::optional<double> value = getDouble(OS_Sizing_ZoneFields::MaximumHeatingCapacityToCoolingLoadSizingRatio, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool SizingZone_Impl::setMaximumHeatingCapacityToCoolingLoadSizingRatio(double maximumHeatingCapacityToCoolingLoadSizingRatio) {
+      bool result = setDouble(OS_Sizing_ZoneFields::MaximumHeatingCapacityToCoolingLoadSizingRatio, maximumHeatingCapacityToCoolingLoadSizingRatio);
+      return result;
+    }
+
     void SizingZone_Impl::autosize() {
       autosizeDedicatedOutdoorAirLowSetpointTemperatureforDesign();
       autosizeDedicatedOutdoorAirHighSetpointTemperatureforDesign();
@@ -949,6 +971,10 @@ namespace model {
 
     // New E+ 24.2.0 fields, IDD defaults
     setSizingOption("Coincident");
+
+    // New E+ 25.2.0 fields, IDD defaults
+    setHeatingCoilSizingMethod("None");
+    setMaximumHeatingCapacityToCoolingLoadSizingRatio(1.0);
   }
 
   IddObjectType SizingZone::iddObjectType() {
@@ -988,6 +1014,10 @@ namespace model {
 
   std::vector<std::string> SizingZone::validSizingOptionValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), OS_Sizing_ZoneFields::SizingOption);
+  }
+
+  std::vector<std::string> SizingZone::heatingCoilSizingMethodValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), OS_Sizing_ZoneFields::HeatingCoilSizingMethod);
   }
 
   ThermalZone SizingZone::thermalZone() const {
@@ -1474,6 +1504,22 @@ namespace model {
 
   bool SizingZone::setSizingOption(const std::string& sizingOption) {
     return getImpl<detail::SizingZone_Impl>()->setSizingOption(sizingOption);
+  }
+
+  std::string SizingZone::heatingCoilSizingMethod() const {
+    return getImpl<detail::SizingZone_Impl>()->heatingCoilSizingMethod();
+  }
+
+  bool SizingZone::setHeatingCoilSizingMethod(const std::string& heatingCoilSizingMethod) {
+    return getImpl<detail::SizingZone_Impl>()->setHeatingCoilSizingMethod(heatingCoilSizingMethod);
+  }
+
+  double SizingZone::maximumHeatingCapacityToCoolingLoadSizingRatio() const {
+    return getImpl<detail::SizingZone_Impl>()->maximumHeatingCapacityToCoolingLoadSizingRatio();
+  }
+
+  bool SizingZone::setMaximumHeatingCapacityToCoolingLoadSizingRatio(double maximumHeatingCapacityToCoolingLoadSizingRatio) {
+    return getImpl<detail::SizingZone_Impl>()->setMaximumHeatingCapacityToCoolingLoadSizingRatio(maximumHeatingCapacityToCoolingLoadSizingRatio);
   }
 
   void SizingZone::autosize() {

@@ -39,6 +39,8 @@ namespace model {
 
       virtual IddObjectType iddObjectType() const override;
 
+      virtual std::vector<ScheduleTypeKey> getScheduleTypeKeys(const Schedule& schedule) const override;
+
       // TODO: This is NOT an HVACComponent
       // virtual ComponentType componentType() const override;
       // virtual std::vector<FuelType> coolingFuelTypes() const override;
@@ -48,6 +50,8 @@ namespace model {
       //@}
       /** @name Getters */
       //@{
+
+      Schedule availabilitySchedule() const;
 
       double ratedHeatingCapacity() const;
 
@@ -88,6 +92,8 @@ namespace model {
       //@}
       /** @name Setters */
       //@{
+
+      bool setAvailabilitySchedule(Schedule& schedule);
 
       bool setRatedHeatingCapacity(double ratedHeatingCapacity);
 
@@ -135,6 +141,7 @@ namespace model {
      private:
       REGISTER_LOGGER("openstudio.model.CoilWaterHeatingAirToWaterHeatPumpWrapped");
 
+      boost::optional<Schedule> optionalAvailabilitySchedule() const;
       boost::optional<Curve> optionalHeatingCapacityFunctionofTemperatureCurve() const;
       boost::optional<Curve> optionalHeatingCapacityFunctionofAirFlowFractionCurve() const;
       boost::optional<Curve> optionalHeatingCOPFunctionofTemperatureCurve() const;

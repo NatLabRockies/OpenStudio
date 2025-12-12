@@ -22,9 +22,11 @@ TEST_F(ModelFixture, ExternalInterfaceFunctionalMockupUnitExportToSchedule) {
   Model model;
 
   ExternalInterfaceFunctionalMockupUnitExportToSchedule schedule(model, "FMU name", 10);
-  EXPECT_EQ(10.0, schedule.initialValue());
+  ASSERT_TRUE(schedule.initialValue());
+  EXPECT_EQ(10.0, schedule.initialValue().get());
   schedule.setInitialValue(-0.1);
-  EXPECT_EQ(-0.1, schedule.initialValue());
+  ASSERT_TRUE(schedule.initialValue());
+  EXPECT_EQ(-0.1, schedule.initialValue().get());
   EXPECT_TRUE(checkOrAssignScheduleTypeLimits("Lights", "Lighting", schedule));
   ValidityReport report = schedule.validityReport(StrictnessLevel(StrictnessLevel::Final));
   ASSERT_EQ(0u, report.numErrors());
@@ -41,7 +43,8 @@ TEST_F(ModelFixture, ExternalInterfaceFunctionalMockupUnitExportToSchedule2) {
   Model model;
 
   ExternalInterfaceFunctionalMockupUnitExportToSchedule schedule(model, "FMU name", 10);
-  EXPECT_EQ(10.0, schedule.initialValue());
+  ASSERT_TRUE(schedule.initialValue());
+  EXPECT_EQ(10.0, schedule.initialValue().get());
   EXPECT_EQ("External Interface Functional Mockup Unit Export To Schedule 1", schedule.nameString());
 
   ExternalInterfaceFunctionalMockupUnitExportToSchedule schedule2(model, "FMU 2 name", 10);

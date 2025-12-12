@@ -70,6 +70,12 @@ namespace energyplus {
         evapCooler->setPerformanceInputMethod(s.get());
       }
 
+      // HeatRejectionCapacityandNominalCapacitySizingRatio
+      value = workspaceObject.getDouble(EvaporativeFluidCooler_SingleSpeedFields::HeatRejectionCapacityandNominalCapacitySizingRatio);
+      if (value) {
+        evapCooler->setHeatRejectionCapacityandNominalCapacitySizingRatio(value.get());
+      }
+
       // StandardDesignCapacity
       value = workspaceObject.getDouble(EvaporativeFluidCooler_SingleSpeedFields::StandardDesignCapacity);
       if (value) {
@@ -106,8 +112,13 @@ namespace energyplus {
 
       // DesignEnteringWaterTemperature
       value = workspaceObject.getDouble(EvaporativeFluidCooler_SingleSpeedFields::DesignEnteringWaterTemperature);
+      s = workspaceObject.getString(EvaporativeFluidCooler_SingleSpeedFields::DesignEnteringWaterTemperature);
       if (value) {
         evapCooler->setDesignEnteringWaterTemperature(value.get());
+      } else if (s && istringEqual(s.get(), "Autosize")) {
+        evapCooler->autosizeDesignEnteringWaterTemperature();
+      } else if (s && istringEqual(s.get(), "Autocalculate")) {
+        evapCooler->autosizeDesignEnteringWaterTemperature();
       }
 
       // DesignEnteringAirTemperature

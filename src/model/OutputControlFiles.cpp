@@ -166,6 +166,10 @@ namespace model {
       return getBooleanFieldValue(OS_OutputControl_FilesFields::OutputTarcog);
     }
 
+    bool OutputControlFiles_Impl::outputPlantComponentSizing() const {
+      return getBooleanFieldValue(OS_OutputControl_FilesFields::OutputPlantComponentSizing);
+    }
+
     bool OutputControlFiles_Impl::setOutputCSV(bool outputCSV) {
       return setBooleanFieldValue(OS_OutputControl_FilesFields::OutputCSV, outputCSV);
     }
@@ -288,6 +292,10 @@ namespace model {
 
     bool OutputControlFiles_Impl::setOutputTarcog(bool outputTarcog) {
       return setBooleanFieldValue(OS_OutputControl_FilesFields::OutputTarcog, outputTarcog);
+    }
+
+    bool OutputControlFiles_Impl::setOutputPlantComponentSizing(bool outputPlantComponentSizing) {
+      return setBooleanFieldValue(OS_OutputControl_FilesFields::OutputPlantComponentSizing, outputPlantComponentSizing);
     }
 
   }  // namespace detail
@@ -420,6 +428,10 @@ namespace model {
     return getImpl<detail::OutputControlFiles_Impl>()->outputTarcog();
   }
 
+  bool OutputControlFiles::outputPlantComponentSizing() const {
+    return getImpl<detail::OutputControlFiles_Impl>()->outputPlantComponentSizing();
+  }
+
   bool OutputControlFiles::setOutputCSV(bool outputCSV) {
     return getImpl<detail::OutputControlFiles_Impl>()->setOutputCSV(outputCSV);
   }
@@ -544,6 +556,10 @@ namespace model {
     return getImpl<detail::OutputControlFiles_Impl>()->setOutputTarcog(outputTarcog);
   }
 
+  bool OutputControlFiles::setOutputPlantComponentSizing(bool outputPlantComponentSizing) {
+    return getImpl<detail::OutputControlFiles_Impl>()->setOutputPlantComponentSizing(outputPlantComponentSizing);
+  }
+
   /// @cond
   OutputControlFiles::OutputControlFiles(std::shared_ptr<detail::OutputControlFiles_Impl> impl) : ModelObject(std::move(impl)) {}
   OutputControlFiles::OutputControlFiles(Model& model) : ModelObject(OutputControlFiles::iddObjectType(), model) {
@@ -580,6 +596,7 @@ namespace model {
     setOutputScreen(true);
     setOutputExtShd(true);
     setOutputTarcog(true);
+    setOutputPlantComponentSizing(true);
   }
 
   /// @endcond

@@ -24,7 +24,7 @@ TEST_F(ModelFixture, SiteGroundTemperatureShallow_SiteGroundTemperatureShallow) 
       Model m;
 
       // create a SiteGroundTemperatureShallow object
-      SiteGroundTemperatureShallow groundTemp(m);
+      SiteGroundTemperatureShallow groundTemp = m.getUniqueModelObject<SiteGroundTemperatureShallow>();
       exit(0);
     },
     ::testing::ExitedWithCode(0), "");
@@ -33,7 +33,7 @@ TEST_F(ModelFixture, SiteGroundTemperatureShallow_SiteGroundTemperatureShallow) 
   Model m;
 
   // create a SiteGroundTemperatureShallow object
-  SiteGroundTemperatureShallow groundTemp(m);
+  SiteGroundTemperatureShallow groundTemp = m.getUniqueModelObject<SiteGroundTemperatureShallow>();
 
   // Check to make sure all the fields are defaulted as expected
   EXPECT_TRUE(groundTemp.isJanuarySurfaceGroundTemperatureDefaulted());
@@ -56,7 +56,7 @@ TEST_F(ModelFixture, SiteGroundTemperatureShallow_Clone) {
   Model m;
 
   // Create the object
-  SiteGroundTemperatureShallow groundTemp(m);
+  SiteGroundTemperatureShallow groundTemp = m.getUniqueModelObject<SiteGroundTemperatureShallow>();
 
   // Change some of the fields
   groundTemp.setJanuarySurfaceGroundTemperature(25.0);
@@ -81,7 +81,7 @@ TEST_F(ModelFixture, SiteGroundTemperatureShallow_SetGetFields) {
   Model m;
 
   // Create the object
-  SiteGroundTemperatureShallow groundTemp(m);
+  SiteGroundTemperatureShallow groundTemp = m.getUniqueModelObject<SiteGroundTemperatureShallow>();
 
   // Set the fields
   groundTemp.setJanuarySurfaceGroundTemperature(20.0);

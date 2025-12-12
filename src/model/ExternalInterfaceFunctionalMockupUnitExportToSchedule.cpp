@@ -72,7 +72,9 @@ namespace model {
 
     std::vector<double> ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl::values() const {
       DoubleVector result;
-      result.push_back(initialValue());
+      if (boost::optional<double> _initialValue = initialValue()) {
+        result.push_back(_initialValue.get());
+      }
       return result;
     }
 
@@ -84,12 +86,8 @@ namespace model {
       return "";
     }
 
-    double ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl::initialValue() const {
-      boost::optional<double> value = getDouble(OS_ExternalInterface_FunctionalMockupUnitExport_To_ScheduleFields::InitialValue, true);
-      if (value) {
-        return value.get();
-      }
-      return -9999;
+    boost::optional<double> ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl::initialValue() const {
+      return getDouble(OS_ExternalInterface_FunctionalMockupUnitExport_To_ScheduleFields::InitialValue, true);
     }
 
     bool ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl::setScheduleTypeLimits(const ScheduleTypeLimits& scheduleTypeLimits) {
@@ -124,6 +122,14 @@ namespace model {
   }  // namespace detail
 
   ExternalInterfaceFunctionalMockupUnitExportToSchedule::ExternalInterfaceFunctionalMockupUnitExportToSchedule(const Model& model,
+                                                                                                               const std::string& fMUVariableName)
+    : Schedule(ExternalInterfaceFunctionalMockupUnitExportToSchedule::iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl>());
+
+    setFMUVariableName(fMUVariableName);
+  }
+
+  ExternalInterfaceFunctionalMockupUnitExportToSchedule::ExternalInterfaceFunctionalMockupUnitExportToSchedule(const Model& model,
                                                                                                                const std::string& fMUVariableName,
                                                                                                                double initialValue)
     : Schedule(ExternalInterfaceFunctionalMockupUnitExportToSchedule::iddObjectType(), model) {
@@ -141,7 +147,7 @@ namespace model {
     return getImpl<detail::ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl>()->fMUVariableName();
   }
 
-  double ExternalInterfaceFunctionalMockupUnitExportToSchedule::initialValue() const {
+  boost::optional<double> ExternalInterfaceFunctionalMockupUnitExportToSchedule::initialValue() const {
     return getImpl<detail::ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl>()->initialValue();
   }
 

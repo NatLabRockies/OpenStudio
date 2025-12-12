@@ -1,0 +1,157 @@
+name: Bug Report
+description: Use this template for reporting an issue.
+labels: Triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to submit a report.
+        Include all applicable information to help us reproduce
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: |
+        Provide a general summary of the issue .
+      placeholder: When trying to connect a CoilCoolingDXSingleSpeed to an AirLoopHVAC, I get a crash
+    validations:
+      required: true
+
+  - type: textarea
+    id: current_behavior
+    attributes:
+      label: Current Behavior
+      description: Tell us what happens instead of the expected behavior.
+      placeholder: When trying to do X, I get Y
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected Behavior
+      description: Tell us what happens instead of the expected behavior.
+      placeholder: What I get instead is Z
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: |
+        Provide an unambiguous set of steps to reproduce this bug.
+
+        Provide a OSM model that has the bug and/or code (Ruby, Python) to reproduce.
+
+        You **can supply a link to your OSM if applicable**, or rename it to in.osm.txt and upload it directly here by drag and drop.
+        Ideally, make it a _Minimum, Complete, Verifiable, Example (MCVE)_ by including the smallest possible number of input objects to reproduce the defect.
+
+      placeholder: |
+        1. Create a '...'
+        2. Connect it to '....'
+        3. See error
+      value: |
+        1.
+        2.
+        3.
+        4.
+
+        or
+
+        ```ruby
+        require 'openstudio'
+        include OpenStudio::Model
+        m = Model.new
+        # m = Model.load('path/to/model.osm').get
+        [...]
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: possible_solution
+    attributes:
+      label: Possible Solution
+      description: |
+        Optional, but if you can, suggest a fix/reason for the bug
+    validations:
+      required: false
+
+  - type: dropdown
+    id: operating_system_multiple
+    attributes:
+      label: Operating System affected
+      multiple: true
+      description: You may select more than one.
+      options:
+        - All
+        - macOS x86_64
+        - macOS arm64
+        - Ubuntu 22.04
+        - Ubuntu 24.04
+        - Windows 10
+        - Windows 11
+
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: |
+        Some additional details about your environment for this issue (if relevant)
+
+        To get your platform info, you can run the following commands in your terminal
+
+        <details>
+
+        <summary>Helpers: click to expand</summary>
+
+        * Linux:
+
+        ```bash
+        echo "* Platform (Operating system, version, architecture): **$(lsb_release -is) $(lsb_release -rs) $(uname -m)**"
+        ```
+
+        * macOS:
+
+        ```bash
+        echo "* Platform (Operating system, version, architecture): **$(sw_vers -productName) $(sw_vers -productVersion) $(uname -m)**"
+        ```
+
+        * Windows (PowerShell):
+
+        ```powershell
+        $os = Get-CimInstance Win32_OperatingSystem
+        $release = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").DisplayVersion
+        Write-Output "* Platform (Operating system, version, architecture): **$($os.Caption) $($os.Version) $release $env:PROCESSOR_ARCHITECTURE**"
+        ```
+        </details>
+
+      placeholder: |
+        * Platform (Operating system, version, architecture): **Linux Ubuntu 24.04**
+        or
+        N/A
+    validations:
+      required: true
+
+  - type: input
+    id: os_version
+    attributes:
+      label: Version of OpenStudio
+      description: |
+        Version of OpenStudio (if using an intermediate build, include SHA). `openstudio --version`
+      placeholder: |
+        3.10.0+86d7e215a1
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: |
+        How has this issue affected you? What are you trying to accomplish?
+        Any link to related issues or UnmetHours post?
+    validations:
+      required: false

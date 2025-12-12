@@ -7,7 +7,6 @@
 #define UTILITIES_IDF_IDFREGEX_HPP
 
 #include "../UtilitiesAPI.hpp"
-#include "../core/StaticInitializer.hpp"
 #include <string>
 #include <boost/regex.hpp>
 

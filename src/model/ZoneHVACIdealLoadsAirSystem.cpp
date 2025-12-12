@@ -41,17 +41,21 @@ namespace model {
 
     const std::vector<std::string>& ZoneHVACIdealLoadsAirSystem_Impl::outputVariableNames() const {
       static const std::vector<std::string> result{"Zone Ideal Loads Supply Air Sensible Heating Energy",
+                                                   "Zone Ideal Loads Supply Air Latent Heating Energy",
                                                    "Zone Ideal Loads Supply Air Total Heating Energy",
+                                                   "Zone Ideal Loads Supply Air Total Heating Fuel Energy",
                                                    "Zone Ideal Loads Supply Air Sensible Cooling Energy",
                                                    "Zone Ideal Loads Supply Air Latent Cooling Energy",
                                                    "Zone Ideal Loads Supply Air Total Cooling Energy",
-                                                   "Zone Ideal Loads Supply Air Latent Heating Energy",
+                                                   "Zone Ideal Loads Supply Air Total Cooling Fuel Energy",
                                                    "Zone Ideal Loads Zone Sensible Heating Energy",
                                                    "Zone Ideal Loads Zone Latent Heating Energy",
                                                    "Zone Ideal Loads Zone Total Heating Energy",
+                                                   "Zone Ideal Loads Zone Heating Fuel Energy",
                                                    "Zone Ideal Loads Zone Sensible Cooling Energy",
                                                    "Zone Ideal Loads Zone Latent Cooling Energy",
                                                    "Zone Ideal Loads Zone Total Cooling Energy",
+                                                   "Zone Ideal Loads Zone Cooling Fuel Energy",
                                                    "Zone Ideal Loads Outdoor Air Sensible Heating Energy",
                                                    "Zone Ideal Loads Outdoor Air Latent Heating Energy",
                                                    "Zone Ideal Loads Outdoor Air Total Heating Energy",
@@ -67,15 +71,19 @@ namespace model {
                                                    "Zone Ideal Loads Supply Air Sensible Heating Rate",
                                                    "Zone Ideal Loads Supply Air Latent Heating Rate",
                                                    "Zone Ideal Loads Supply Air Total Heating Rate",
+                                                   "Zone Ideal Loads Supply Air Total Heating Fuel Energy Rate",
                                                    "Zone Ideal Loads Supply Air Sensible Cooling Rate",
                                                    "Zone Ideal Loads Supply Air Latent Cooling Rate",
                                                    "Zone Ideal Loads Supply Air Total Cooling Rate",
+                                                   "Zone Ideal Loads Supply Air Total Cooling Fuel Energy Rate",
                                                    "Zone Ideal Loads Zone Sensible Heating Rate",
                                                    "Zone Ideal Loads Zone Latent Heating Rate",
                                                    "Zone Ideal Loads Zone Total Heating Rate",
+                                                   "Zone Ideal Loads Zone Heating Fuel Energy Rate",
                                                    "Zone Ideal Loads Zone Sensible Cooling Rate",
                                                    "Zone Ideal Loads Zone Latent Cooling Rate",
                                                    "Zone Ideal Loads Zone Total Cooling Rate",
+                                                   "Zone Ideal Loads Zone Cooling Fuel Energy Rate",
                                                    "Zone Ideal Loads Outdoor Air Sensible Heating Rate",
                                                    "Zone Ideal Loads Outdoor Air Latent Heating Rate",
                                                    "Zone Ideal Loads Outdoor Air Total Heating Rate",
@@ -115,6 +123,12 @@ namespace model {
       }
       if (std::find(b, e, OS_ZoneHVAC_IdealLoadsAirSystemFields::CoolingAvailabilityScheduleName) != e) {
         result.push_back(ScheduleTypeKey("ZoneHVACIdealLoadsAirSystem", "Cooling Availability"));
+      }
+      if (std::find(b, e, OS_ZoneHVAC_IdealLoadsAirSystemFields::HeatingFuelEfficiencyScheduleName) != e) {
+        result.push_back(ScheduleTypeKey("ZoneHVACIdealLoadsAirSystem", "Heating Fuel Efficiency"));
+      }
+      if (std::find(b, e, OS_ZoneHVAC_IdealLoadsAirSystemFields::CoolingFuelEfficiencyScheduleName) != e) {
+        result.push_back(ScheduleTypeKey("ZoneHVACIdealLoadsAirSystem", "Cooling Fuel Efficiency"));
       }
       return result;
     }
@@ -334,6 +348,26 @@ namespace model {
 
     bool ZoneHVACIdealLoadsAirSystem_Impl::isLatentHeatRecoveryEffectivenessDefaulted() const {
       return isEmpty(OS_ZoneHVAC_IdealLoadsAirSystemFields::LatentHeatRecoveryEffectiveness);
+    }
+
+    boost::optional<Schedule> ZoneHVACIdealLoadsAirSystem_Impl::heatingFuelEfficiencySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(OS_ZoneHVAC_IdealLoadsAirSystemFields::HeatingFuelEfficiencyScheduleName);
+    }
+
+    std::string ZoneHVACIdealLoadsAirSystem_Impl::heatingFuelType() const {
+      boost::optional<std::string> value = getString(OS_ZoneHVAC_IdealLoadsAirSystemFields::HeatingFuelType, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    boost::optional<Schedule> ZoneHVACIdealLoadsAirSystem_Impl::coolingFuelEfficiencySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(OS_ZoneHVAC_IdealLoadsAirSystemFields::CoolingFuelEfficiencyScheduleName);
+    }
+
+    std::string ZoneHVACIdealLoadsAirSystem_Impl::coolingFuelType() const {
+      boost::optional<std::string> value = getString(OS_ZoneHVAC_IdealLoadsAirSystemFields::CoolingFuelType, true);
+      OS_ASSERT(value);
+      return value.get();
     }
 
     bool ZoneHVACIdealLoadsAirSystem_Impl::setAvailabilitySchedule(Schedule& availabilitySchedule) {
@@ -606,6 +640,38 @@ namespace model {
       OS_ASSERT(result);
     }
 
+    bool ZoneHVACIdealLoadsAirSystem_Impl::setHeatingFuelEfficiencySchedule(Schedule& heatingFuelEfficiencySchedule) {
+      bool result = setSchedule(OS_ZoneHVAC_IdealLoadsAirSystemFields::HeatingFuelEfficiencyScheduleName, "ZoneHVACIdealLoadsAirSystem",
+                                "Heating Fuel Efficiency", heatingFuelEfficiencySchedule);
+      return result;
+    }
+
+    void ZoneHVACIdealLoadsAirSystem_Impl::resetHeatingFuelEfficiencySchedule() {
+      bool result = setString(OS_ZoneHVAC_IdealLoadsAirSystemFields::HeatingFuelEfficiencyScheduleName, "");
+      OS_ASSERT(result);
+    }
+
+    bool ZoneHVACIdealLoadsAirSystem_Impl::setHeatingFuelType(const std::string& heatingFuelType) {
+      bool result = setString(OS_ZoneHVAC_IdealLoadsAirSystemFields::HeatingFuelType, heatingFuelType);
+      return result;
+    }
+
+    bool ZoneHVACIdealLoadsAirSystem_Impl::setCoolingFuelEfficiencySchedule(Schedule& coolingFuelEfficiencySchedule) {
+      bool result = setSchedule(OS_ZoneHVAC_IdealLoadsAirSystemFields::CoolingFuelEfficiencyScheduleName, "ZoneHVACIdealLoadsAirSystem",
+                                "Cooling Fuel Efficiency", coolingFuelEfficiencySchedule);
+      return result;
+    }
+
+    void ZoneHVACIdealLoadsAirSystem_Impl::resetCoolingFuelEfficiencySchedule() {
+      bool result = setString(OS_ZoneHVAC_IdealLoadsAirSystemFields::CoolingFuelEfficiencyScheduleName, "");
+      OS_ASSERT(result);
+    }
+
+    bool ZoneHVACIdealLoadsAirSystem_Impl::setCoolingFuelType(const std::string& coolingFuelType) {
+      bool result = setString(OS_ZoneHVAC_IdealLoadsAirSystemFields::CoolingFuelType, coolingFuelType);
+      return result;
+    }
+
     std::vector<std::string> ZoneHVACIdealLoadsAirSystem_Impl::heatingLimitValues() const {
       return ZoneHVACIdealLoadsAirSystem::heatingLimitValues();
     }
@@ -632,6 +698,14 @@ namespace model {
 
     std::vector<std::string> ZoneHVACIdealLoadsAirSystem_Impl::heatRecoveryTypeValues() const {
       return ZoneHVACIdealLoadsAirSystem::heatRecoveryTypeValues();
+    }
+
+    std::vector<std::string> ZoneHVACIdealLoadsAirSystem_Impl::heatingFuelTypeValues() const {
+      return ZoneHVACIdealLoadsAirSystem::heatingFuelTypeValues();
+    }
+
+    std::vector<std::string> ZoneHVACIdealLoadsAirSystem_Impl::coolingFuelTypeValues() const {
+      return ZoneHVACIdealLoadsAirSystem::coolingFuelTypeValues();
     }
 
     boost::optional<ModelObject> ZoneHVACIdealLoadsAirSystem_Impl::availabilityScheduleAsModelObject() const {
@@ -664,6 +738,24 @@ namespace model {
     boost::optional<ModelObject> ZoneHVACIdealLoadsAirSystem_Impl::designSpecificationOutdoorAirObjectAsModelObject() const {
       OptionalModelObject result;
       OptionalDesignSpecificationOutdoorAir intermediate = designSpecificationOutdoorAirObject();
+      if (intermediate) {
+        result = *intermediate;
+      }
+      return result;
+    }
+
+    boost::optional<ModelObject> ZoneHVACIdealLoadsAirSystem_Impl::heatingFuelEfficiencyScheduleAsModelObject() const {
+      OptionalModelObject result;
+      OptionalSchedule intermediate = heatingFuelEfficiencySchedule();
+      if (intermediate) {
+        result = *intermediate;
+      }
+      return result;
+    }
+
+    boost::optional<ModelObject> ZoneHVACIdealLoadsAirSystem_Impl::coolingFuelEfficiencyScheduleAsModelObject() const {
+      OptionalModelObject result;
+      OptionalSchedule intermediate = coolingFuelEfficiencySchedule();
       if (intermediate) {
         result = *intermediate;
       }
@@ -725,6 +817,36 @@ namespace model {
         }
       } else {
         resetDesignSpecificationOutdoorAirObject();
+      }
+      return true;
+    }
+
+    bool ZoneHVACIdealLoadsAirSystem_Impl::setHeatingFuelEfficiencyScheduleAsModelObject(const boost::optional<ModelObject>& modelObject) {
+      if (modelObject) {
+        OptionalSchedule intermediate = modelObject->optionalCast<Schedule>();
+        if (intermediate) {
+          Schedule schedule(*intermediate);
+          return setHeatingFuelEfficiencySchedule(schedule);
+        } else {
+          return false;
+        }
+      } else {
+        resetHeatingFuelEfficiencySchedule();
+      }
+      return true;
+    }
+
+    bool ZoneHVACIdealLoadsAirSystem_Impl::setCoolingFuelEfficiencyScheduleAsModelObject(const boost::optional<ModelObject>& modelObject) {
+      if (modelObject) {
+        OptionalSchedule intermediate = modelObject->optionalCast<Schedule>();
+        if (intermediate) {
+          Schedule schedule(*intermediate);
+          return setCoolingFuelEfficiencySchedule(schedule);
+        } else {
+          return false;
+        }
+      } else {
+        resetCoolingFuelEfficiencySchedule();
       }
       return true;
     }
@@ -809,6 +931,12 @@ namespace model {
   ZoneHVACIdealLoadsAirSystem::ZoneHVACIdealLoadsAirSystem(const Model& model)
     : ZoneHVACComponent(ZoneHVACIdealLoadsAirSystem::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>());
+
+    bool ok = true;
+    ok = setHeatingFuelType("DistrictHeatingWater");
+    OS_ASSERT(ok);
+    ok = setCoolingFuelType("DistrictCooling");
+    OS_ASSERT(ok);
   }
 
   IddObjectType ZoneHVACIdealLoadsAirSystem::iddObjectType() {
@@ -843,6 +971,14 @@ namespace model {
 
   std::vector<std::string> ZoneHVACIdealLoadsAirSystem::heatRecoveryTypeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), OS_ZoneHVAC_IdealLoadsAirSystemFields::HeatRecoveryType);
+  }
+
+  std::vector<std::string> ZoneHVACIdealLoadsAirSystem::heatingFuelTypeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), OS_ZoneHVAC_IdealLoadsAirSystemFields::HeatingFuelType);
+  }
+
+  std::vector<std::string> ZoneHVACIdealLoadsAirSystem::coolingFuelTypeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), OS_ZoneHVAC_IdealLoadsAirSystemFields::CoolingFuelType);
   }
 
   boost::optional<Schedule> ZoneHVACIdealLoadsAirSystem::availabilitySchedule() const {
@@ -1003,6 +1139,22 @@ namespace model {
 
   bool ZoneHVACIdealLoadsAirSystem::isLatentHeatRecoveryEffectivenessDefaulted() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isLatentHeatRecoveryEffectivenessDefaulted();
+  }
+
+  boost::optional<Schedule> ZoneHVACIdealLoadsAirSystem::heatingFuelEfficiencySchedule() const {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->heatingFuelEfficiencySchedule();
+  }
+
+  std::string ZoneHVACIdealLoadsAirSystem::heatingFuelType() const {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->heatingFuelType();
+  }
+
+  boost::optional<Schedule> ZoneHVACIdealLoadsAirSystem::coolingFuelEfficiencySchedule() const {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->coolingFuelEfficiencySchedule();
+  }
+
+  std::string ZoneHVACIdealLoadsAirSystem::coolingFuelType() const {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->coolingFuelType();
   }
 
   bool ZoneHVACIdealLoadsAirSystem::setAvailabilitySchedule(Schedule& availabilitySchedule) {
@@ -1195,6 +1347,30 @@ namespace model {
 
   void ZoneHVACIdealLoadsAirSystem::resetLatentHeatRecoveryEffectiveness() {
     getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetLatentHeatRecoveryEffectiveness();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setHeatingFuelEfficiencySchedule(Schedule& heatingFuelEfficiencySchedule) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setHeatingFuelEfficiencySchedule(heatingFuelEfficiencySchedule);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetHeatingFuelEfficiencySchedule() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetHeatingFuelEfficiencySchedule();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setHeatingFuelType(const std::string& heatingFuelType) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setHeatingFuelType(heatingFuelType);
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setCoolingFuelEfficiencySchedule(Schedule& coolingFuelEfficiencySchedule) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setCoolingFuelEfficiencySchedule(coolingFuelEfficiencySchedule);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetCoolingFuelEfficiencySchedule() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetCoolingFuelEfficiencySchedule();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setCoolingFuelType(const std::string& coolingFuelType) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setCoolingFuelType(coolingFuelType);
   }
 
   /// @cond

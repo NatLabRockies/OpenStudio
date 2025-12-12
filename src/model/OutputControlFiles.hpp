@@ -101,6 +101,8 @@ namespace model {
 
     bool outputTarcog() const;
 
+    bool outputPlantComponentSizing() const;
+
     //@}
     /** @name Setters */
     //@{
@@ -166,6 +168,8 @@ namespace model {
     bool setOutputExtShd(bool outputExtShd);
 
     bool setOutputTarcog(bool outputTarcog);
+
+    bool setOutputPlantComponentSizing(bool outputPlantComponentSizing);
 
     //@}
     /** @name Other */

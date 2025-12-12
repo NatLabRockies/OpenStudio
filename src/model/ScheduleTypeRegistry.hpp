@@ -8,7 +8,6 @@
 
 #include "ModelAPI.hpp"
 
-#include "../utilities/core/Singleton.hpp"
 #include "../utilities/core/Logger.hpp"
 
 #include <map>
@@ -30,7 +29,7 @@ namespace model {
   {
     /** The name of a class that can point to a schedule. */
     std::string className;
-    /** The display name of that schedule (which is used as a key in ScheduleTypeRegistrySingleton,
+    /** The display name of that schedule (which is used as a key in ScheduleTypeRegistry,
    *  and is also intented for use in UI displays). */
     std::string scheduleDisplayName;
     /** The name of the Relationship that points from the user (of type className) to the Schedule. */
@@ -54,17 +53,17 @@ namespace model {
  * \relates ScheduleType */
   MODEL_API bool isCompatible(const ScheduleType& scheduleType, const ScheduleTypeLimits& candidate, bool isStringent = false);
 
-  /** Singleton class that contains a registry of all types of schedules that can exist in a Model.
- *  Do not use directly, but rather, use the ScheduleTypeRegistry typedef (e.g.
- *  \code
- *  ScheduleType st = ScheduleTypeRegistry::instance().getScheduleType("Lights","Lighting")
- *  \endcode
- *  ). */
-  class MODEL_API ScheduleTypeRegistrySingleton
+  /** Singleton class that contains a registry of all types of schedules that can exist in a Model. */
+  class MODEL_API ScheduleTypeRegistry
   {
-    friend class Singleton<ScheduleTypeRegistrySingleton>;
-
    public:
+    static ScheduleTypeRegistry& instance();
+
+    ScheduleTypeRegistry(const ScheduleTypeRegistry& other) = delete;
+    ScheduleTypeRegistry(ScheduleTypeRegistry&& other) = delete;
+    ScheduleTypeRegistry& operator=(const ScheduleTypeRegistry&) = delete;
+    ScheduleTypeRegistry& operator=(ScheduleTypeRegistry&&) = delete;
+
     /** Returns the names of classes that have \link ScheduleType ScheduleTypes \endlink registered
    *  with the ScheduleTypeRegistry. */
     std::vector<std::string> classNames() const;
@@ -85,34 +84,33 @@ namespace model {
     std::string getDefaultName(const ScheduleType& scheduleType) const;
 
    private:
+    ScheduleTypeRegistry();
+    ~ScheduleTypeRegistry() = default;
+
     REGISTER_LOGGER("openstudio.model.ScheduleTypeRegistry");
-    ScheduleTypeRegistrySingleton();
 
     using ClassNameToScheduleTypesMap = std::map<std::string, std::vector<ScheduleType>>;
     ClassNameToScheduleTypesMap m_classNameToScheduleTypesMap;
   };
 
-  /** \relates ScheduleTypeRegistrySingleton */
-  using ScheduleTypeRegistry = openstudio::Singleton<ScheduleTypeRegistrySingleton>;
-
   /** Returns true if candidate is consistent with the ScheduleType that corresponds to className
  *  and scheduleRelationshipName. Throws if there is no such ScheduleType.
- *  \relates ScheduleTypeRegistrySingleton */
+ *  \relates ScheduleTypeRegistry */
   MODEL_API bool isCompatible(const std::string& className, const std::string& scheduleDisplayName, const ScheduleTypeLimits& candidate);
 
   /** If schedule.scheduleTypeLimtis(), returns true if that ScheduleTypeLimits isCompatible and
  *  otherwise returns false. Otherwise, uses
- *  ScheduleTypeRegistrySingleton::getOrCreateScheduleTypeLimits to find an appropriate
+ *  ScheduleTypeRegistry::getOrCreateScheduleTypeLimits to find an appropriate
  *  ScheduleTypeLimits and then calls Schedule::setScheduleTypeLimtis, which should succeed in
  *  this case. This method is used by all of the ModelObject methods that set schedules.
- *  \relates ScheduleTypeRegistrySingleton */
+ *  \relates ScheduleTypeRegistry */
   MODEL_API bool checkOrAssignScheduleTypeLimits(const std::string& className, const std::string& scheduleDisplayName, Schedule& schedule);
 
   /** Returns all of the ScheduleTypeLimtis already in model that are \link isCompatible
  *  compatible\endlink with className and scheduleDisplayName. May be used instead of
- *  ScheduleTypeRegistrySingleton::getOrCreateScheduleTypeLimits to reduce the number of
+ *  ScheduleTypeRegistry::getOrCreateScheduleTypeLimits to reduce the number of
  *  ScheduleTypeLimits that are ultimately created and present in a model.
- *  \relates ScheduleTypeRegistrySingleton */
+ *  \relates ScheduleTypeRegistry */
   MODEL_API std::vector<ScheduleTypeLimits> getCompatibleScheduleTypeLimits(const Model& model, const std::string& className,
                                                                             const std::string& scheduleDisplayName);
 

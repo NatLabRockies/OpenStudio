@@ -188,6 +188,10 @@ namespace energyplus {
     const double standbyElectricPower = modelObject.standbyElectricPower();
     idfObject.setDouble(HeatPump_AirToWater_FuelFired_HeatingFields::StandbyElectricPower, standbyElectricPower);
 
+    // Minimum Unloading Ratio: Optional Double
+    const double minimumUnloadingRatio = modelObject.minimumUnloadingRatio();
+    idfObject.setDouble(HeatPump_AirToWater_FuelFired_HeatingFields::MinimumUnloadingRatio, minimumUnloadingRatio);
+
     return idfObject;
   }  // End of translate function
 

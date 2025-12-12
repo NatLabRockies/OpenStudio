@@ -6,7 +6,6 @@
 %}
 
 // hide shared_ptrs, expose helper functions
-%ignore QuantityFactorySingleton;
 %ignore QuantityFactory;
 %include <utilities/units/QuantityFactory.hpp>
 

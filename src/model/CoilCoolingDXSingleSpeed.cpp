@@ -103,6 +103,10 @@ namespace model {
       if (auto c_ = crankcaseHeaterCapacityFunctionofTemperatureCurve()) {
         result.emplace_back(std::move(*c_));
       }
+      std::vector<AirflowNetworkEquivalentDuct> myAFNItems =
+        getObject<ModelObject>().getModelObjectSources<AirflowNetworkEquivalentDuct>(AirflowNetworkEquivalentDuct::iddObjectType());
+      result.insert(result.end(), myAFNItems.begin(), myAFNItems.end());
+
       return result;
     }
     // Get all output variable names that could be associated with this object.

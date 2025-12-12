@@ -24,7 +24,7 @@ TEST_F(ModelFixture, SiteGroundTemperatureDeep_SiteGroundTemperatureDeep) {
       Model m;
 
       // create a SiteGroundTemperatureDeep object
-      SiteGroundTemperatureDeep groundTemp(m);
+      SiteGroundTemperatureDeep groundTemp = m.getUniqueModelObject<SiteGroundTemperatureDeep>();
       exit(0);
     },
     ::testing::ExitedWithCode(0), "");
@@ -33,7 +33,7 @@ TEST_F(ModelFixture, SiteGroundTemperatureDeep_SiteGroundTemperatureDeep) {
   Model m;
 
   // create a SiteGroundTemperatureDeep object
-  SiteGroundTemperatureDeep groundTemp(m);
+  SiteGroundTemperatureDeep groundTemp = m.getUniqueModelObject<SiteGroundTemperatureDeep>();
 
   // Check to make sure all the fields are defaulted as expected
   EXPECT_TRUE(groundTemp.isJanuaryDeepGroundTemperatureDefaulted());
@@ -56,7 +56,7 @@ TEST_F(ModelFixture, SiteGroundTemperatureDeep_Clone) {
   Model m;
 
   // Create the object
-  SiteGroundTemperatureDeep groundTemp(m);
+  SiteGroundTemperatureDeep groundTemp = m.getUniqueModelObject<SiteGroundTemperatureDeep>();
 
   // Change some of the fields
   groundTemp.setJanuaryDeepGroundTemperature(25.0);
@@ -81,7 +81,7 @@ TEST_F(ModelFixture, SiteGroundTemperatureDeep_SetGetFields) {
   Model m;
 
   // Create the object
-  SiteGroundTemperatureDeep groundTemp(m);
+  SiteGroundTemperatureDeep groundTemp = m.getUniqueModelObject<SiteGroundTemperatureDeep>();
 
   // Set the fields
   groundTemp.setJanuaryDeepGroundTemperature(20.0);

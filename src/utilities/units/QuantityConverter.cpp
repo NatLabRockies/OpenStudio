@@ -23,7 +23,7 @@
 
 namespace openstudio {
 
-boost::optional<Quantity> QuantityConverterSingleton::convert(const Quantity& q, UnitSystem sys) const {
+boost::optional<Quantity> QuantityConverter::convert(const Quantity& q, UnitSystem sys) const {
   if ((q.system() != UnitSystem::Mixed) && (q.system() == sys)) {
     return q;
   }
@@ -64,7 +64,7 @@ boost::optional<Quantity> QuantityConverterSingleton::convert(const Quantity& q,
   return converted;
 }
 
-boost::optional<Quantity> QuantityConverterSingleton::convert(const Quantity& original, const Unit& targetUnits) const {
+boost::optional<Quantity> QuantityConverter::convert(const Quantity& original, const Unit& targetUnits) const {
   Quantity working(original);
   OptionalQuantity candidate;
 
@@ -93,7 +93,12 @@ boost::optional<Quantity> QuantityConverterSingleton::convert(const Quantity& or
   return result;
 }
 
-QuantityConverterSingleton::QuantityConverterSingleton() {
+QuantityConverter& QuantityConverter::instance() {
+  static QuantityConverter instance;
+  return instance;
+}
+
+QuantityConverter::QuantityConverter() {
   // initialize the quantity converter maps here
 
   const baseUnitConversionFactor toSI[] = {{UnitSystem::SI, "kg", "kg", 1.0, 0},
@@ -247,7 +252,7 @@ QuantityConverterSingleton::QuantityConverterSingleton() {
   }
 }
 
-boost::optional<Quantity> QuantityConverterSingleton::m_convertToSI(const Quantity& original) const {
+boost::optional<Quantity> QuantityConverter::m_convertToSI(const Quantity& original) const {
   // create a working copy of the original
   Quantity working(original);
   // Make sure to work unscaled: 10^0
@@ -312,7 +317,7 @@ boost::optional<Quantity> QuantityConverterSingleton::m_convertToSI(const Quanti
   return result;
 }
 
-Quantity QuantityConverterSingleton::m_convertFromSI(const Quantity& original, const UnitSystem& targetSys) const {
+Quantity QuantityConverter::m_convertFromSI(const Quantity& original, const UnitSystem& targetSys) const {
   Quantity working(original);
 
   // Make sure to work unscaled: 10^0
@@ -368,7 +373,7 @@ Quantity QuantityConverterSingleton::m_convertFromSI(const Quantity& original, c
   return converted;
 }
 
-boost::optional<Quantity> QuantityConverterSingleton::m_convertToTargetFromSI(const Quantity& original, const Unit& targetUnits) const {
+boost::optional<Quantity> QuantityConverter::m_convertToTargetFromSI(const Quantity& original, const Unit& targetUnits) const {
   Quantity working(original);
 
   // Make sure to work unscaled: 10^0

@@ -1,4 +1,4 @@
-source 'http://rubygems.org'
+source 'https://rubygems.org'
 
 gem 'openstudio-workflow', '2.4.0' # This is compatible with bundler 2.4.10 / Ruby 3.2 (OS 3.8+), and already older than currently used at this time
 gem 'tilt', '2.0.8'

@@ -14,6 +14,10 @@
 #include "../CurveLinear.hpp"
 #include "../CurveQuadLinear.hpp"
 #include "../PlantLoop.hpp"
+#include "../Schedule.hpp"
+#include "../Schedule_Impl.hpp"
+#include "../ScheduleConstant.hpp"
+#include "../ScheduleConstant_Impl.hpp"
 
 using namespace openstudio;
 using namespace openstudio::model;
@@ -22,6 +26,13 @@ TEST_F(ModelFixture, CoilHeatingWaterToAirHeatPumpEquationFit_Test) {
   Model model;
   // test constructor.
   CoilHeatingWaterToAirHeatPumpEquationFit coilHeatingWaterToAirHPEquationFit(model);
+
+  // test availability schedule
+  auto alwaysOn = model.alwaysOnDiscreteSchedule();
+  EXPECT_EQ(alwaysOn, coilHeatingWaterToAirHPEquationFit.availabilitySchedule());
+  ScheduleConstant scheduleConstant(model);
+  EXPECT_TRUE(coilHeatingWaterToAirHPEquationFit.setAvailabilitySchedule(scheduleConstant));
+  EXPECT_EQ(scheduleConstant, coilHeatingWaterToAirHPEquationFit.availabilitySchedule());
 
   // test rated air flow rate getter and setter
   EXPECT_TRUE(coilHeatingWaterToAirHPEquationFit.setRatedAirFlowRate(0.1));

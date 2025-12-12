@@ -80,9 +80,9 @@ namespace energyplus {
       }
     }
 
-    // MinimumOutdoorDryBulbTemperatureforCompressorOperation
-    if ((value = modelObject.minimumOutdoorDryBulbTemperatureforCompressorOperation())) {
-      idfObject.setDouble(AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::MinimumOutdoorDryBulbTemperatureforCompressorOperation, value.get());
+    // DXHeatingCoilSizingRatio
+    if ((value = modelObject.dXHeatingCoilSizingRatio())) {
+      idfObject.setDouble(AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::DXHeatingCoilSizingRatio, value.get());
     }
 
     HVACComponent coolingCoil = modelObject.coolingCoil();

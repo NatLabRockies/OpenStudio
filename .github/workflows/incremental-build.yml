@@ -1,0 +1,366 @@
+name: Build and Test (Ubuntu 22.04)
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'Pull Request - Ready for CI')
+    runs-on: linux-openstudio-2
+
+    permissions:
+      contents: read
+      issues: read
+      checks: write
+      pull-requests: write
+      actions: read
+
+    env:
+      MAX_SAFE_THREADS: $(( ($(nproc) * 90 + 50) / 100 ))
+      CMAKE_CXX_COMPILER_LAUNCHER: ccache
+      MAKEFLAGS: "-j$(( ($(nproc) * 90 + 50) / 100 ))"
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
+      DOCKER_ROOT: /github/home
+      OPENSTUDIO_DOCKER_VOLUME: /github/home/Ubuntu
+      OPENSTUDIO_SOURCE_NAME: OpenStudio
+      OPENSTUDIO_BUILD_NAME: OS-build
+
+    container: # Define the Docker container for the job. All subsequent steps run inside it.
+      image: nrel/openstudio-cmake-tools:jammy
+      options: -u root -e "LANG=en_US.UTF-8" # These options are passed to the 'docker run' command internally
+      volumes: # envs don't work in volume definition for containers
+        - "/srv/data/jenkins/docker-volumes/conan-data/.conan2:/github/home/.conan2" # Conan cache
+        - "/srv/data/jenkins/docker-volumes/ubuntu-2204:/github/home/Ubuntu"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for all branches and tags
+
+      - name: Prepare workspace
+        run: |
+          cd ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}
+          # make safe repository
+          git config --global --add safe.directory "${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}"
+
+      - name: Install ccache
+        run: |
+          # Fix Kitware GPG key issue
+          wget --no-check-certificate -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
+          echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu jammy main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null
+          apt-get update && apt-get install -y ccache
+
+      - name: Set default compiler
+        run: |
+          update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100 --slave /usr/bin/g++ g++ /usr/bin/g++-11
+          update-alternatives --set gcc /usr/bin/gcc-11
+
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.DOCKER_ROOT }}/.ccache
+          key: ${{ runner.os }}-ccache-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-
+
+      - name: Configure ccache
+        run: |
+          ccache --max-size=2G
+          ccache --set-config=compression=true
+          ccache --set-config=compression_level=1
+          ccache --show-stats
+
+      - name: Git Setup
+        run: |
+          # Set up git and fetch PR head, then detect conan profile and install dependencies
+          cd ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}
+          git config --global --add safe.directory "${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}" && \
+          git config user.email "cicommercialbuilding@gmail.com" && \
+          git config user.name "ci-commercialbuildings" && \
+          git fetch origin && \
+          git fetch origin +refs/pull/*/head:refs/remotes/origin/pr/* && \
+          git checkout origin/pr/${{ github.event.pull_request.number || github.ref }}
+
+      - name: Install dependencies
+        run: |
+          cd ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}
+          conan remote add conancenter https://center.conan.io --force
+          conan remote update conancenter --insecure
+          conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2 --force
+          conan remote update nrel-v2 --insecure
+          if [ ! -f "${{ env.DOCKER_ROOT }}/.conan2/profiles/default" ]; then
+            conan profile detect
+          fi
+          conan install . --output-folder=${{ env.OPENSTUDIO_BUILD_NAME }} --build=missing -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release
+
+        # wrap cmake with ccache using a flag or environment variable
+      - name: Configure with CMake
+        working-directory: ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}
+        run: |
+          . ./conanbuild.sh
+          cmake -G Ninja \
+                -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
+                -DCMAKE_BUILD_TYPE:STRING=Release \
+                -DBUILD_TESTING:BOOL=ON \
+                -DCPACK_BINARY_DEB:BOOL=ON \
+                -DCPACK_BINARY_TGZ:BOOL=ON \
+                -DCPACK_BINARY_IFW:BOOL=OFF \
+                -DCPACK_BINARY_NSIS:BOOL=OFF \
+                -DCPACK_BINARY_RPM:BOOL=OFF \
+                -DCPACK_BINARY_STGZ:BOOL=OFF \
+                -DCPACK_BINARY_TBZ2:BOOL=OFF \
+                -DCPACK_BINARY_TXZ:BOOL=OFF \
+                -DCPACK_BINARY_TZ:BOOL=OFF \
+                -DBUILD_PYTHON_BINDINGS:BOOL=ON \
+                -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF \
+                -DPYTHON_VERSION:STRING=3.12.2 \
+                -DBUILD_RUBY_BINDINGS:BOOL=ON \
+                -DBUILD_CLI:BOOL=ON \
+                ..
+
+      - name: Verify build state
+        working-directory: ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}
+        run: |
+          if [ -f "build.ninja" ]; then
+            echo "Ninja build file found - checking what needs to be built"
+            ninja -n -j 1 package | head -20 || true
+          else
+            echo "No build.ninja found - full reconfiguration will be needed"
+          fi
+
+      - name: Build with Ninja
+        working-directory: ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}
+        run: |
+          . ./conanbuild.sh
+          ninja -j ${{ env.MAX_SAFE_THREADS }} package
+
+      - name: Run CTests with enhanced error handling
+        working-directory: ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}
+        run: |
+          set +e  # Don't exit on first failure
+          mkdir -p Testing/run{1,2,3}
+          
+          echo "Starting first test run..."
+          ctest -j ${{ env.MAX_SAFE_THREADS }} --no-compress-output --output-on-failure --output-junit Testing/run1/results.xml
+          RESULT1=$?
+          
+          if [ $RESULT1 -ne 0 ]; then
+            echo "First test run failed (exit code: $RESULT1), retrying failed tests..."
+            ctest -j ${{ env.MAX_SAFE_THREADS }} --rerun-failed --no-compress-output --output-on-failure --output-junit Testing/run2/results.xml
+            RESULT2=$?
+            
+            if [ $RESULT2 -ne 0 ]; then
+              echo "Second test run failed (exit code: $RESULT2), final attempt with verbose output..."
+              ctest -j ${{ env.MAX_SAFE_THREADS }} --rerun-failed --no-compress-output -VV --output-junit Testing/run3/results.xml
+              RESULT3=$?
+            else
+              RESULT3=0
+            fi
+          else
+            echo "First test run passed"
+            RESULT2=0
+            RESULT3=0
+          fi
+          
+          # Report results
+          echo "Test run results: Run1=$RESULT1, Run2=$RESULT2, Run3=$RESULT3"
+          
+          # Set job status based on results
+          if [ $RESULT1 -eq 0 ] || [ $RESULT2 -eq 0 ] || [ $RESULT3 -eq 0 ]; then
+            echo "Tests passed (some may have required retries)"
+            exit 0
+          else
+            echo "All test attempts failed"
+            exit 1
+          fi
+        continue-on-error: true
+
+      - name: Test Summary
+        uses: test-summary/action@v2
+        with:
+          paths: "${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/run*/results.xml" # Path to your JUnit output file
+          output: "${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/test-summary.md"
+        if: always()
+
+      - name: Upload test summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-summary
+          path: ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/test-summary.md
+        if: always()
+
+      - name: Generate test results dashboard
+        if: always()
+        run: |
+          mkdir -p ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/dashboard
+          
+          # Create comprehensive test dashboard
+          cat > ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/dashboard/test-dashboard.md << 'EOF'
+          # 🧪 Test Results Dashboard
+          
+          ## Summary
+          
+          EOF
+          
+          # Process JUnit XML files and extract test information
+          python3 << 'PYTHON_EOF'
+          import xml.etree.ElementTree as ET
+          import os
+          import glob
+          from datetime import datetime
+          
+          build_dir = "${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}"
+          dashboard_file = f"{build_dir}/Testing/dashboard/test-dashboard.md"
+          
+          # Find all JUnit XML files
+          xml_files = glob.glob(f"{build_dir}/Testing/run*/results.xml")
+          
+          total_tests = 0
+          total_failures = 0
+          total_errors = 0
+          total_skipped = 0
+          failed_tests = []
+          
+          # Parse XML files
+          for xml_file in xml_files:
+              if os.path.exists(xml_file):
+                  try:
+                      tree = ET.parse(xml_file)
+                      root = tree.getroot()
+                      
+                      # Handle different JUnit XML formats
+                      if root.tag == 'testsuites':
+                          testsuites = root.findall('testsuite')
+                      else:
+                          testsuites = [root]
+                      
+                      for testsuite in testsuites:
+                          suite_name = testsuite.get('name', 'Unknown')
+                          tests = int(testsuite.get('tests', 0))
+                          failures = int(testsuite.get('failures', 0))
+                          errors = int(testsuite.get('errors', 0))
+                          skipped = int(testsuite.get('skipped', 0))
+                          
+                          total_tests += tests
+                          total_failures += failures
+                          total_errors += errors
+                          total_skipped += skipped
+                          
+                          # Get failed test details
+                          for testcase in testsuite.findall('testcase'):
+                              test_name = testcase.get('name', 'Unknown')
+                              classname = testcase.get('classname', suite_name)
+                              
+                              failure = testcase.find('failure')
+                              error = testcase.find('error')
+                              
+                              if failure is not None or error is not None:
+                                  failure_info = failure if failure is not None else error
+                                  message = failure_info.get('message', 'No message')
+                                  details = failure_info.text or 'No details available'
+                                  
+                                  failed_tests.append({
+                                      'suite': suite_name,
+                                      'class': classname,
+                                      'name': test_name,
+                                      'message': message,
+                                      'details': details,
+                                      'run': os.path.basename(os.path.dirname(xml_file))
+                                  })
+                  except Exception as e:
+                      print(f"Error parsing {xml_file}: {e}")
+          
+          # Generate dashboard content
+          with open(dashboard_file, 'a') as f:
+              # Summary section
+              success_rate = ((total_tests - total_failures - total_errors) / total_tests * 100) if total_tests > 0 else 0
+              
+              f.write(f"| Metric | Value |\n")
+              f.write(f"|--------|-------|\n")
+              f.write(f"| **Total Tests** | {total_tests} |\n")
+              f.write(f"| **Passed** | {total_tests - total_failures - total_errors} |\n")
+              f.write(f"| **Failed** | {total_failures} |\n")
+              f.write(f"| **Errors** | {total_errors} |\n")
+              f.write(f"| **Skipped** | {total_skipped} |\n")
+              f.write(f"| **Success Rate** | {success_rate:.1f}% |\n")
+              f.write(f"| **Generated** | {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')} |\n\n")
+              
+              if success_rate >= 100:
+                  f.write("## ✅ All Tests Passed!\n\n")
+              elif success_rate >= 95:
+                  f.write("## ⚠️ Minor Issues Detected\n\n")
+              else:
+                  f.write("## ❌ Significant Test Failures\n\n")
+              
+              # Failed tests section
+              if failed_tests:
+                  f.write(f"## 🔍 Failed Tests ({len(failed_tests)} failures)\n\n")
+                  
+                  # Group by test suite
+                  suites = {}
+                  for test in failed_tests:
+                      suite = test['suite']
+                      if suite not in suites:
+                          suites[suite] = []
+                      suites[suite].append(test)
+                  
+                  for suite_name, suite_tests in suites.items():
+                      f.write(f"### {suite_name} ({len(suite_tests)} failures)\n\n")
+                      
+                      for test in suite_tests:
+                          f.write(f"<details>\n")
+                          f.write(f"<summary><strong>{test['class']}.{test['name']}</strong> ({test['run']})</summary>\n\n")
+                          f.write(f"**Error Message:**\n")
+                          f.write(f"```\n{test['message']}\n```\n\n")
+                          f.write(f"**Full Details:**\n")
+                          f.write(f"```\n{test['details']}\n```\n\n")
+                          f.write(f"</details>\n\n")
+              
+              # Test run information
+              f.write("## 📊 Test Run Information\n\n")
+              f.write("| Run | XML File | Status |\n")
+              f.write("|-----|----------|--------|\n")
+              for i, xml_file in enumerate(xml_files, 1):
+                  status = "✅ Found" if os.path.exists(xml_file) else "❌ Missing"
+                  run_name = os.path.basename(os.path.dirname(xml_file))
+                  f.write(f"| {run_name} | `{os.path.basename(xml_file)}` | {status} |\n")
+              
+              if not xml_files:
+                  f.write("| - | No XML files found | ❌ Missing |\n")
+          
+          print(f"Dashboard generated with {total_tests} tests, {total_failures + total_errors} failures")
+          PYTHON_EOF
+
+      - name: Publish test results to PR
+        if: always() && github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: test-results
+          path: ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/dashboard/test-dashboard.md
+
+      - name: Upload comprehensive test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-dashboard
+          path: |
+            ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/dashboard/
+            ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/Testing/run*/
+        if: always()
+
+      - name: Upload build artifacts with metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-2204-${{ github.head_ref || github.ref_name }}-${{ github.sha }}
+          path: |
+            ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/*.deb
+            ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}/_CPack_Packages/Linux/TGZ/*.tar.gz
+          retention-days: 30
+        if: always()

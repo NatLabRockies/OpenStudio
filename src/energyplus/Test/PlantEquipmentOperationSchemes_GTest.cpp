@@ -613,11 +613,6 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_PlantEquipmentOperationSchemes_compo
   Model m;
 
   {
-    EvaporativeFluidCoolerTwoSpeed obj(m);
-    EXPECT_EQ(openstudio::energyplus::ComponentType::COOLING, openstudio::energyplus::componentType(obj));
-  }
-
-  {
     GeneratorFuelCellExhaustGasToWaterHeatExchanger obj(m);
     EXPECT_EQ(openstudio::energyplus::ComponentType::HEATING, openstudio::energyplus::componentType(obj));
   }

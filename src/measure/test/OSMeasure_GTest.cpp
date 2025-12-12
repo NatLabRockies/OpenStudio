@@ -21,6 +21,7 @@
 #include <utilities/idd/IddEnums.hxx>
 
 #include "../../utilities/core/Finder.hpp"
+#include "../../utilities/core/StringStreamLogSink.hpp"
 #include "../../utilities/filetypes/WorkflowJSON.hpp"
 #include "../../utilities/filetypes/WorkflowStep.hpp"
 
@@ -450,6 +451,93 @@ TEST_F(MeasureFixture, UserScript_TestModelUserScriptDomain) {
   double_arg.setValue(1.0);
   int_arg.setValue(-3);
   EXPECT_FALSE(script.run(model, runner, user_arguments));
+  result = runner.result();
+  ASSERT_TRUE(result.stepResult());
+  EXPECT_EQ(StepResult::Fail, result.stepResult()->value());
+  ASSERT_EQ(1u, result.stepErrors().size());
+  EXPECT_EQ("Integer User argument 'int_arg' has a value '-3' that is not in the domain [0, 2147483647].", result.stepErrors()[0]);
+  EXPECT_EQ(0u, result.stepWarnings().size());
+}
+
+// Test for #5464 - Shouldn't throw an error when a separator is used in the arguments
+class ModelMeasureWithSeparator : public ModelMeasure
+{
+ public:
+  virtual std::string name() const override {
+    return "ModelMeasureWithSeparator";
+  }
+
+  virtual std::vector<OSArgument> arguments(const Model& /*model*/) const override {
+    std::vector<OSArgument> result;
+
+    OSArgument arg = OSArgument::makeDoubleArgument("double_arg", true);
+    arg.setMaxValue(10.0);
+    result.push_back(arg);
+
+    arg = OSArgument::makeSeparatorArgument("separator");
+    result.push_back(arg);
+
+    arg = OSArgument::makeIntegerArgument("int_arg", true);
+    arg.setMinValue(0);
+    result.push_back(arg);
+
+    return result;
+  }
+
+  // remove all spaces and add a new one
+  virtual bool run(Model& model, OSRunner& runner, const std::map<std::string, OSArgument>& user_arguments) const override {
+    ModelMeasure::run(model, runner, user_arguments);  // initializes runner
+
+    return runner.validateUserArguments(arguments(model), user_arguments);
+  }
+};
+
+TEST_F(MeasureFixture, ModelMeasureWithSeparator) {
+  ModelMeasureWithSeparator measure;
+  EXPECT_EQ("ModelMeasureWithSeparator", measure.name());
+
+  Model model;
+
+  std::vector<WorkflowStep> steps;
+  steps.push_back(MeasureStep("dummy"));
+
+  WorkflowJSON workflow;
+  workflow.setWorkflowSteps(steps);
+
+  TestOSRunner runner(workflow);
+  OSArgumentVector arguments = measure.arguments(model);
+  std::map<std::string, OSArgument> argumentMap = convertOSArgumentVectorToMap(arguments);
+  ASSERT_EQ(3, argumentMap.size());
+
+  OSArgument& double_arg = argumentMap["double_arg"];
+  OSArgument& int_arg = argumentMap["int_arg"];
+
+  StringStreamLogSink sink;
+  sink.setLogLevel(Fatal);
+
+  // call with a good value
+  double_arg.setValue(-1.0);
+  int_arg.setValue(1.0);
+  EXPECT_TRUE(measure.run(model, runner, argumentMap));
+
+  EXPECT_EQ(0, sink.logMessages().size()) << sink.string();
+  sink.resetStringStream();
+
+  WorkflowStepResult result = runner.result();
+  ASSERT_TRUE(result.stepResult());
+  EXPECT_EQ(StepResult::Success, result.stepResult()->value());
+  EXPECT_EQ(0u, result.stepErrors().size());
+  EXPECT_EQ(0u, result.stepWarnings().size());
+
+  // Out of bound value for int_arg
+  runner.reset();
+  double_arg.setValue(1.0);
+  int_arg.setValue(-3);
+  EXPECT_FALSE(measure.run(model, runner, argumentMap));
+
+  EXPECT_EQ(0, sink.logMessages().size()) << sink.string();
+  sink.resetStringStream();
+
   result = runner.result();
   ASSERT_TRUE(result.stepResult());
   EXPECT_EQ(StepResult::Fail, result.stepResult()->value());

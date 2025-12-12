@@ -297,6 +297,15 @@ namespace model {
       /** Returns the gas equipment power per person (W/person) of this thermal zone. Does not include space multiplier. Does include equipment multiplier. */
       double gasEquipmentPowerPerPerson() const;
 
+      /** Returns the hot water equipment power (W) of this thermal zone. Does not include space multiplier. Does include equipment multiplier. */
+      double hotWaterEquipmentPower() const;
+
+      /** Returns the hot water equipment power density (W/m^2) of this thermal zone. Does not include space multiplier. Does include equipment multiplier. */
+      double hotWaterEquipmentPowerPerFloorArea() const;
+
+      /** Returns the hot water equipment power per person (W/person) of this thermal zone. Does not include space multiplier. Does include equipment multiplier. */
+      double hotWaterEquipmentPowerPerPerson() const;
+
       /** Returns the infiltration design flow rate (m^3/s) in this thermal zone.
      *  Ignores SpaceInfiltrationEffectiveLeakageArea and SpaceInfiltrationFlowCoefficient objects. Does not include space multiplier. */
       double infiltrationDesignFlowRate() const;

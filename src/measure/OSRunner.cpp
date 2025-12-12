@@ -418,6 +418,10 @@ namespace measure {
     bool result = true;
     std::vector<WorkflowStepValue> stepValues;
     for (const OSArgument& script_argument : script_arguments) {
+      if (script_argument.type().value() == OSArgumentType::Separator) {
+        // skip separators
+        continue;
+      }
       auto it = user_arguments.find(script_argument.name());
       if (it == user_arguments.end()) {
         // script_argument is not in user_arguments

@@ -108,7 +108,7 @@ namespace energyplus {
         LOG(Error, "Flow/Zone value not found for workspace object " << workspaceObject);
       }
     } else if (istringEqual("Flow/Area", *s)) {
-      d = workspaceObject.getDouble(openstudio::ZoneCrossMixingFields::FlowRateperFloor);
+      d = workspaceObject.getDouble(openstudio::ZoneCrossMixingFields::FlowRateperFloorArea);
       if (d) {
         mixing.setFlowRateperFloorArea(*d);
         reverseMixing.setFlowRateperFloorArea(*d);

@@ -49,7 +49,7 @@ class UTILITIES_API IddObject
   std::string name() const;
 
   /** Get object type, as specified by the OPENSTUDIO_ENUM IddObjectType. Similar information to
-   *  name() for \link IddObject IddObjects \endlink stored by the \link IddFactorySingleton
+   *  name() for \link IddObject IddObjects \endlink stored by the \link IddFactory
    *  IddFactory \endlink, that is type() == IddObjectType(name()) and
    *  type().valueDescription() == name(). */
   IddObjectType type() const;

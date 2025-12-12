@@ -70,6 +70,8 @@ namespace model {
                                const boost::optional<FuelType>& fuelType, const boost::optional<InstallLocationType>& installLocationType,
                                const boost::optional<std::string>& specificInstallLocation);
 
+    static std::vector<std::string> reportingFrequencyValues();
+
     //@}
     /** @name Getters */
     //@{

@@ -210,6 +210,12 @@ namespace energyplus {
       idfObject.setString(OutputControl_FilesFields::OutputTarcog, "No");
     }
 
+    if (modelObject.outputPlantComponentSizing()) {
+      idfObject.setString(OutputControl_FilesFields::OutputPlantComponentSizing, "Yes");
+    } else {
+      idfObject.setString(OutputControl_FilesFields::OutputPlantComponentSizing, "No");
+    }
+
     return idfObject;
   }
 

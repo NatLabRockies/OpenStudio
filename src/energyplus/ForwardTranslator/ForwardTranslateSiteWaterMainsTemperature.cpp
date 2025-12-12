@@ -44,6 +44,12 @@ namespace energyplus {
       idfObject.setDouble(Site_WaterMainsTemperatureFields::MaximumDifferenceInMonthlyAverageOutdoorAirTemperatures, *d);
     }
 
+    const double temperatureMultiplier = modelObject.temperatureMultiplier();
+    idfObject.setDouble(Site_WaterMainsTemperatureFields::TemperatureMultiplier, temperatureMultiplier);
+
+    const double temperatureOffset = modelObject.temperatureOffset();
+    idfObject.setDouble(Site_WaterMainsTemperatureFields::TemperatureOffset, temperatureOffset);
+
     return idfObject;
   }
 

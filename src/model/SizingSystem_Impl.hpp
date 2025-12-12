@@ -146,6 +146,10 @@ namespace model {
 
       bool isOccupantDiversityAutosized() const;
 
+      std::string heatingCoilSizingMethod() const;
+
+      double maximumHeatingCapacityToCoolingCapacitySizingRatio() const;
+
       bool setTypeofLoadtoSizeOn(const std::string& typeofLoadtoSizeOn);
 
       void resetTypeofLoadtoSizeOn();
@@ -255,6 +259,10 @@ namespace model {
       bool setOccupantDiversity(double occupantDiversity);
 
       void autosizeOccupantDiversity();
+
+      bool setHeatingCoilSizingMethod(const std::string& heatingCoilSizingMethod);
+
+      bool setMaximumHeatingCapacityToCoolingCapacitySizingRatio(double maximumHeatingCapacityToCoolingCapacitySizingRatio);
 
       AirLoopHVAC airLoopHVAC() const;
 

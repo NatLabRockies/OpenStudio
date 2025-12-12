@@ -76,6 +76,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_CoilHeatingWaterToAirHeatPumpEquatio
   const auto& idf_coil = idf_coils.front();
 
   EXPECT_EQ("My CoilHeatingWaterToAirHeatPumpEquationFit", idf_coil.getString(Coil_Heating_WaterToAirHeatPump_EquationFitFields::Name).get());
+  EXPECT_EQ("Always On Discrete", idf_coil.getString(Coil_Heating_WaterToAirHeatPump_EquationFitFields::AvailabilityScheduleName).get());
   EXPECT_EQ("Coil Water Inlet Node", idf_coil.getString(Coil_Heating_WaterToAirHeatPump_EquationFitFields::WaterInletNodeName).get());
   EXPECT_EQ("Coil Water Outlet Node", idf_coil.getString(Coil_Heating_WaterToAirHeatPump_EquationFitFields::WaterOutletNodeName).get());
   EXPECT_EQ("Coil Air Inlet Node", idf_coil.getString(Coil_Heating_WaterToAirHeatPump_EquationFitFields::AirInletNodeName).get());

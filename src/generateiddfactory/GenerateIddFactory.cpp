@@ -57,158 +57,149 @@ void initializeOutFiles(GenerateIddFactoryOutFiles& outFiles, const std::vector<
                                      << '\n';
 
   // write IddFactory.hxx
-  outFiles.iddFactoryHxx.tempFile << "#ifndef UTILITIES_IDD_IDDFACTORY_HXX" << '\n'
-                                  << "#define UTILITIES_IDD_IDDFACTORY_HXX" << '\n'
-                                  << '\n'
-                                  << "#include <utilities/UtilitiesAPI.hpp>" << '\n'
-                                  << '\n'
-                                  << "#include <utilities/idd/IddObject.hpp>" << '\n'
-                                  << "#include <utilities/idd/IddFile.hpp>" << '\n'
-                                  << "#include <utilities/idd/IddEnums.hpp>" << '\n'
-                                  << "#include <utilities/idd/IddEnums.hxx>" << '\n'
-                                  << '\n'
-                                  << "#include <utilities/core/Singleton.hpp>" << '\n'
-                                  << "#include <utilities/core/Compare.hpp>" << '\n'
-                                  << "#include <utilities/core/Logger.hpp>" << '\n'
-                                  << '\n'
-                                  << "#include <map>" << '\n'
-                                  << '\n'
-                                  << "namespace openstudio{" << '\n'
-                                  << '\n'
-                                  << "/** IddFactorySingleton can return \\link IddObject IddObjects\\endlink and \\link IddFile" << '\n'
-                                  << " *  IddFiles\\endlink for the current version of EnergyPlus and OpenStudio. It can return \\link IddFile "
-                                  << '\n'
-                                  << " *  IddFiles\\endlink only (no link with other methods in this class, for instance, no " << '\n'
-                                  << " *  by-IddObjectType access to individual \\link IddObject IddObjects\\endlink) for " << '\n'
-                                  << " *  previous versions of OpenStudio, back to version 0.7.0. It also supports the default IddObject " << '\n'
-                                  << " *  type, Catchall, which is provided to enable the display of IdfObjects with misspelled type " << '\n'
-                                  << " *  names, and a CommentOnly object. Its primary function is to establish a single set of IDD schema " << '\n'
-                                  << " *  across all of OpenStudio, thereby ensuring consistency and reducing file I-O. " << '\n'
-                                  << " *  " << '\n'
-                                  << " *  IddFactorySingleton should be used through the IddFactory typedef as in" << '\n'
-                                  << " *  \\code" << '\n'
-                                  << " *  IddFile osIddFile = IddFactory::instance().iddFile(IddFileType::OpenStudio);" << '\n'
-                                  << " *  \\endcode */" << '\n'
-                                  << "class UTILITIES_API IddFactorySingleton  {" << '\n'
-                                  << '\n'
-                                  << "  friend class Singleton<IddFactorySingleton>;" << '\n'
-                                  << '\n'
-                                  << " public:" << '\n'
-                                  << "  /** @name Getters */" << '\n'
-                                  << "  //@{ " << '\n'
-                                  << '\n'
-                                  << "  /** Get the file version. Throws if fileType == IddFileType::UserCustom or " << '\n'
-                                  << "   *  IddFileType::WholeFactory. */" << '\n'
-                                  << "  std::string getVersion(IddFileType fileType) const;" << '\n'
-                                  << '\n'
-                                  << "  /** Get the file header. Throws if fileType == IddFileType::UserCustom or " << '\n'
-                                  << "   *  IddFileType::WholeFactory. */" << '\n'
-                                  << "  std::string getHeader(IddFileType fileType) const;" << '\n'
-                                  << '\n'
-                                  << "  /** Return all \\link IddObject IddObjects\\endlink registered in factory. */" << '\n'
-                                  << "  std::vector<IddObject> objects() const;" << '\n'
-                                  << '\n'
-                                  << "  /** Return all \\link IddObject IddObjects\\endlink in IddFileType type. */" << '\n'
-                                  << "  std::vector<IddObject> getObjects(IddFileType fileType) const;" << '\n'
-                                  << '\n'
-                                  << "  /** Return all groups in the factory (e.g. \"\" and \"Simulation Parameters\"). */" << '\n'
-                                  << "  std::vector<std::string> groups() const;" << '\n'
-                                  << '\n'
-                                  << "  /** Return all groups in fileType. */" << '\n'
-                                  << "  std::vector<std::string> getGroups(IddFileType fileType) const;" << '\n'
-                                  << '\n'
-                                  << "  /** Return all \\link IddObject IddObjects\\endlink in group (e.g. \"Simulation Parameters\"). */" << '\n'
-                                  << "  std::vector<IddObject> getObjectsInGroup(const std::string& group) const;" << '\n'
-                                  << '\n'
-                                  << "  /** Return all \\link IddObject IddObjects\\endlink in group and fileType. */" << '\n'
-                                  << "  std::vector<IddObject> getObjectsInGroup(const std::string& group, IddFileType fileType) const;" << '\n'
-                                  << '\n'
-                                  << "  /** Return all \\link IddObject IddObjects\\endlink that match objectRegex. */" << '\n'
-                                  << "  std::vector<IddObject> getObjects(const boost::regex& objectRegex) const;" << '\n'
-                                  << '\n'
-                                  << "  /** Return all \\link IddObject IddObjects\\endlink that match objectRegex and are in fileType. */" << '\n'
-                                  << "  std::vector<IddObject> getObjects(const boost::regex& objectRegex, IddFileType fileType) const;" << '\n'
-                                  << '\n'
-                                  << "  /** Returns the version IddObject for fileType. Throws if fileType == IddFileType::UserCustom " << '\n'
-                                  << "   *  or IddFileType::WholeFactory. */" << '\n'
-                                  << "  IddObject getVersionObject(IddFileType fileType) const;" << '\n'
-                                  << '\n'
-                                  << "  /** Return the IddObject with .name() objectName, if it exists in the factory. */" << '\n'
-                                  << "  boost::optional<IddObject> getObject(const std::string& objectName) const;" << '\n'
-                                  << '\n'
-                                  << "  /** Return the IddObject corresponding to objectType. Returns false if type == " << '\n'
-                                  << "   *  IddObjectType::UserCustom. */" << '\n'
-                                  << "  boost::optional<IddObject> getObject(IddObjectType objectType) const;" << '\n'
-                                  << '\n'
-                                  << "  /** Return all objects in the factory that are required. */" << '\n'
-                                  << "  std::vector<IddObject> requiredObjects() const;" << '\n'
-                                  << '\n'
-                                  << "  /** Return all objects in IddFile fileType that are required. */" << '\n'
-                                  << "  std::vector<IddObject> getRequiredObjects(IddFileType fileType) const;" << '\n'
-                                  << '\n'
-                                  << "  /** Return all objects in the factory that are unique. */" << '\n'
-                                  << "  std::vector<IddObject> uniqueObjects() const;" << '\n'
-                                  << '\n'
-                                  << "  /** Return all objects in IddFile fileType that are unique. */" << '\n'
-                                  << "  std::vector<IddObject> getUniqueObjects(IddFileType fileType) const;" << '\n'
-                                  << '\n'
-                                  << "  /** Return the (current) IddFile corresponding to type. */" << '\n'
-                                  << "  IddFile getIddFile(IddFileType fileType) const;" << '\n'
-                                  << '\n'
-                                  << "  /** Return the IddFile corresponding to type and version. Unless version is equal to " << '\n'
-                                  << "   *  VersionString(getVersion(fileType)), files are loaded from disk and returned as " << '\n'
-                                  << "   *  IddFileType::UserCustom, to distinguish them from the IDD information wrapped by " << '\n'
-                                  << "   *  the IddFactory. At this time, only IddFileType::OpenStudio files are supported, " << '\n'
-                                  << "   *  and only for valid version identifiers >= VersionString(\"0.7.0\"). Returns false " << '\n'
-                                  << "   *  in all other cases. */" << '\n'
-                                  << "  boost::optional<IddFile> getIddFile(IddFileType fileType, const VersionString& version) const;" << '\n'
-                                  << '\n'
-                                  << "  //@}" << '\n'
-                                  << "  /** @name Queries */" << '\n'
-                                  << "  //@{" << '\n'
-                                  << '\n'
-                                  << "  /** Returns true if IddObject of objectType belongs to IddFile of fileType. " << '\n'
-                                  << "   *  IddObjectType::Catchall is in no \\link IddFile IddFiles\\endlink; " << '\n'
-                                  << "   *  IddObjectType::CommentOnly is in all \\link IddFile IddFiles\\endlink. */" << '\n'
-                                  << "  bool isInFile(IddObjectType objectType, IddFileType fileType) const;" << '\n'
-                                  << '\n'
-                                  << "  //@}" << '\n'
-                                  << " private:" << '\n'
-                                  << '\n'
-                                  << "  IddFactorySingleton();" << '\n';
+  outFiles.iddFactoryHxx.tempFile << R"hpp(#ifndef UTILITIES_IDD_IDDFACTORY_HXX
+#define UTILITIES_IDD_IDDFACTORY_HXX
+
+#include <utilities/UtilitiesAPI.hpp>
+
+#include <utilities/idd/IddObject.hpp>
+#include <utilities/idd/IddFile.hpp>
+#include <utilities/idd/IddEnums.hpp>
+#include <utilities/idd/IddEnums.hxx>
+
+#include <utilities/core/Compare.hpp>
+#include <utilities/core/Logger.hpp>
+
+#include <map>
+
+namespace openstudio{
+
+/** IddFactory is a Singleton can return \link IddObject IddObjects\endlink and \link IddFile
+ *  IddFiles\endlink for the current version of EnergyPlus and OpenStudio. It can return \link IddFile
+ *  IddFiles\endlink only (no link with other methods in this class, for instance, no
+ *  by-IddObjectType access to individual \link IddObject IddObjects\endlink) for
+ *  previous versions of OpenStudio, back to version 0.7.0. It also supports the default IddObject
+ *  type, Catchall, which is provided to enable the display of IdfObjects with misspelled type
+ *  names, and a CommentOnly object. Its primary function is to establish a single set of IDD schema
+ *  across all of OpenStudio, thereby ensuring consistency and reducing file I-O.
+ **/
+class UTILITIES_API IddFactory  {
+
+ public:
+
+  static IddFactory& instance();
+
+  IddFactory(const IddFactory& other) = delete;
+  IddFactory(IddFactory&& other) = delete;
+  IddFactory& operator=(const IddFactory&) = delete;
+  IddFactory& operator=(IddFactory&&) = delete;
+
+  /** @name Getters */
+  //@{
+
+  /** Get the file version. Throws if fileType == IddFileType::UserCustom or
+   *  IddFileType::WholeFactory. */
+  std::string getVersion(IddFileType fileType) const;
+
+  /** Get the file header. Throws if fileType == IddFileType::UserCustom or
+   *  IddFileType::WholeFactory. */
+  std::string getHeader(IddFileType fileType) const;
+
+  /** Return all \link IddObject IddObjects\endlink registered in factory. */
+  std::vector<IddObject> objects() const;
+
+  /** Return all \link IddObject IddObjects\endlink in IddFileType type. */
+  std::vector<IddObject> getObjects(IddFileType fileType) const;
+
+  /** Return all groups in the factory (e.g. "" and "Simulation Parameters"). */
+  std::vector<std::string> groups() const;
+
+  /** Return all groups in fileType. */
+  std::vector<std::string> getGroups(IddFileType fileType) const;
+
+  /** Return all \link IddObject IddObjects\endlink in group (e.g. "Simulation Parameters"). */
+  std::vector<IddObject> getObjectsInGroup(const std::string& group) const;
+
+  /** Return all \link IddObject IddObjects\endlink in group and fileType. */
+  std::vector<IddObject> getObjectsInGroup(const std::string& group, IddFileType fileType) const;
+
+  /** Return all \link IddObject IddObjects\endlink that match objectRegex. */
+  std::vector<IddObject> getObjects(const boost::regex& objectRegex) const;
+
+  /** Return all \link IddObject IddObjects\endlink that match objectRegex and are in fileType. */
+  std::vector<IddObject> getObjects(const boost::regex& objectRegex, IddFileType fileType) const;
+
+  /** Returns the version IddObject for fileType. Throws if fileType == IddFileType::UserCustom
+   *  or IddFileType::WholeFactory. */
+  IddObject getVersionObject(IddFileType fileType) const;
+
+  /** Return the IddObject with .name() objectName, if it exists in the factory. */
+  boost::optional<IddObject> getObject(const std::string& objectName) const;
+
+  /** Return the IddObject corresponding to objectType. Returns false if type ==
+   *  IddObjectType::UserCustom. */
+  boost::optional<IddObject> getObject(IddObjectType objectType) const;
+
+  /** Return all objects in the factory that are required. */
+  std::vector<IddObject> requiredObjects() const;
+
+  /** Return all objects in IddFile fileType that are required. */
+  std::vector<IddObject> getRequiredObjects(IddFileType fileType) const;
+
+  /** Return all objects in the factory that are unique. */
+  std::vector<IddObject> uniqueObjects() const;
+
+  /** Return all objects in IddFile fileType that are unique. */
+  std::vector<IddObject> getUniqueObjects(IddFileType fileType) const;
+
+  /** Return the (current) IddFile corresponding to type. */
+  IddFile getIddFile(IddFileType fileType) const;
+
+  /** Return the IddFile corresponding to type and version. Unless version is equal to
+   *  VersionString(getVersion(fileType)), files are loaded from disk and returned as
+   *  IddFileType::UserCustom, to distinguish them from the IDD information wrapped by
+   *  the IddFactory. At this time, only IddFileType::OpenStudio files are supported,
+   *  and only for valid version identifiers >= VersionString("0.7.0"). Returns false
+   *  in all other cases. */
+  boost::optional<IddFile> getIddFile(IddFileType fileType, const VersionString& version) const;
+
+  //@}
+  /** @name Queries */
+  //@{
+
+  /** Returns true if IddObject of objectType belongs to IddFile of fileType.
+   *  IddObjectType::Catchall is in no \link IddFile IddFiles\endlink;
+   *  IddObjectType::CommentOnly is in all \link IddFile IddFiles\endlink. */
+  bool isInFile(IddObjectType objectType, IddFileType fileType) const;
+
+  //@}
+ private:
+
+  IddFactory();
+  ~IddFactory() = default;
+)hpp";
+
   for (const IddFileFactoryData& iddFile : iddFiles) {
     outFiles.iddFactoryHxx.tempFile << "  void register" << iddFile.fileName() << "ObjectsInCallbackMap();" << '\n';
   }
-  outFiles.iddFactoryHxx.tempFile << '\n'
-                                  << "  REGISTER_LOGGER(\"utilities.idd.IddFactory\");" << '\n'
-                                  << '\n'
-                                  << "  typedef std::function<IddObject ()> CreateIddObjectCallback;" << '\n'
-                                  << "  typedef std::map<IddObjectType,CreateIddObjectCallback> IddObjectCallbackMap;" << '\n'
-                                  << "  IddObjectCallbackMap m_callbackMap;" << '\n'
-                                  << '\n'
-                                  << "  typedef std::multimap<IddObjectType,IddFileType> IddObjectSourceFileMap;" << '\n'
-                                  << "  IddObjectSourceFileMap m_sourceFileMap;" << '\n'
-                                  << '\n'
-                                  << "  mutable std::map<VersionString,IddFile> m_osIddFiles;" << '\n'
-                                  << "};" << '\n'
-                                  << '\n'
-                                  << "#if _WIN32 || _MSC_VER" << '\n'
-                                  << "  // Explicitly instantiate and export IddFactorySingleton Singleton template instance" << '\n'
-                                  << "  // so that the same instance is shared between DLLs that link to Utilities.dll." << '\n'
-                                  << "  UTILITIES_TEMPLATE_EXT template class UTILITIES_API openstudio::Singleton<IddFactorySingleton>;" << '\n'
-                                  << "#endif" << '\n'
-                                  << '\n'
-                                  << "/** Convenience typedef for accessing IddFactorySingleton. Usage:" << '\n'
-                                  << " *  \\code" << '\n'
-                                  << " *  unsigned n = IddFactory::instance().objects().size();" << '\n'
-                                  << " *  \\endcode" << '\n'
-                                  << " *  " << '\n'
-                                  << " *  \\relates IddFactorySingleton */" << '\n'
-                                  << "typedef openstudio::Singleton<IddFactorySingleton> IddFactory;" << '\n'
-                                  << '\n'
-                                  << "} // openstudio" << '\n'
-                                  << '\n'
-                                  << "#endif //UTILITIES_IDD_IDDFACTORY_HXX" << '\n';
+
+  outFiles.iddFactoryHxx.tempFile << R"hpp(
+  REGISTER_LOGGER("utilities.idd.IddFactory");
+
+  using CreateIddObjectCallback = std::function<IddObject ()>;
+  using IddObjectCallbackMap = std::map<IddObjectType,CreateIddObjectCallback>;
+  IddObjectCallbackMap m_callbackMap;
+
+  using IddObjectSourceFileMap = std::multimap<IddObjectType,IddFileType>;
+  IddObjectSourceFileMap m_sourceFileMap;
+
+  mutable std::map<VersionString,IddFile> m_osIddFiles;
+};
+
+} // openstudio
+
+#endif //UTILITIES_IDD_IDDFACTORY_HXX
+)hpp";
 
   // start IddFactory.cxx
   outFiles.iddFactoryCxx.tempFile << "#include <utilities/idd/IddFactory.hxx>" << '\n'
@@ -309,14 +300,19 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
                                   << "  }(); // immediately invoked lambda" << '\n'
                                   << '\n'
                                   << "  return object;" << '\n'
-                                  << "}" << '\n';
+                                  << "}" << '\n'
+                                  << '\n';
+
+  // static instance as a Singleton
+  outFiles.iddFactoryCxx.tempFile << R"cpp(IddFactory& IddFactory::instance() {
+  static IddFactory instance;
+  return instance;
+}
+
+)cpp";
 
   // constructor
-  outFiles.iddFactoryCxx.tempFile << '\n'
-                                  << "IddFactorySingleton::IddFactorySingleton() {" << '\n'
-                                  << '\n'
-                                  << "  // initialize callback map" << '\n'
-                                  << '\n';
+  outFiles.iddFactoryCxx.tempFile << "IddFactory::IddFactory() {" << '\n' << '\n' << "  // initialize callback map" << '\n' << '\n';
   // register create functions in the callback map
   // Catchall
   outFiles.iddFactoryCxx.tempFile << "  m_callbackMap.insert(IddObjectCallbackMap::value_type(IddObjectType::Catchall,"
@@ -395,7 +391,7 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
 
   // version and header getters
   outFiles.iddFactoryCxx.tempFile << '\n'
-                                  << "std::string IddFactorySingleton::getVersion(IddFileType fileType) const {" << '\n'
+                                  << "std::string IddFactory::getVersion(IddFileType fileType) const {" << '\n'
                                   << "  std::string result;" << '\n'
                                   << '\n'
                                   << "  switch (fileType.value()) {" << '\n';
@@ -411,7 +407,7 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
                                   << "  return result;" << '\n'
                                   << "}" << '\n'
                                   << '\n'
-                                  << "std::string IddFactorySingleton::getHeader(IddFileType fileType) const {" << '\n'
+                                  << "std::string IddFactory::getHeader(IddFileType fileType) const {" << '\n'
                                   << "  std::stringstream result;" << '\n'
                                   << "  switch (fileType.value()) {" << '\n';
   for (const IddFileFactoryData& idd : iddFiles) {
@@ -448,7 +444,7 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
   // object getters
   outFiles.iddFactoryCxx.tempFile
     << '\n'
-    << "std::vector<IddObject> IddFactorySingleton::objects() const {" << '\n'
+    << "std::vector<IddObject> IddFactory::objects() const {" << '\n'
     << "  IddObjectVector result;" << '\n'
     << '\n'
     << "  for (IddObjectCallbackMap::const_iterator it = m_callbackMap.begin()," << '\n'
@@ -459,7 +455,7 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
     << "  return result;" << '\n'
     << "}" << '\n'
     << '\n'
-    << "std::vector<IddObject> IddFactorySingleton::getObjects(IddFileType fileType) const {" << '\n'
+    << "std::vector<IddObject> IddFactory::getObjects(IddFileType fileType) const {" << '\n'
     << "  IddObjectVector result;" << '\n'
     << '\n'
     << "  for(IddObjectCallbackMap::const_iterator it = m_callbackMap.begin()," << '\n'
@@ -472,7 +468,7 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
     << "  return result;" << '\n'
     << "}" << '\n'
     << '\n'
-    << "std::vector<std::string> IddFactorySingleton::groups() const {" << '\n'
+    << "std::vector<std::string> IddFactory::groups() const {" << '\n'
     << "  StringSet result;" << '\n'
     << "  for (const IddObject& object : objects()) {" << '\n'
     << "    result.insert(object.group());" << '\n'
@@ -480,7 +476,7 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
     << "  return StringVector(result.begin(),result.end());" << '\n'
     << "}" << '\n'
     << '\n'
-    << "std::vector<std::string> IddFactorySingleton::getGroups(IddFileType fileType) const {" << '\n'
+    << "std::vector<std::string> IddFactory::getGroups(IddFileType fileType) const {" << '\n'
     << "  StringSet result;" << '\n'
     << "  for (const IddObject& object : getObjects(fileType)) {" << '\n'
     << "    result.insert(object.group());" << '\n'
@@ -488,7 +484,7 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
     << "  return StringVector(result.begin(),result.end());" << '\n'
     << "}" << '\n'
     << '\n'
-    << "std::vector<IddObject> IddFactorySingleton::getObjectsInGroup(const std::string& group) const {" << '\n'
+    << "std::vector<IddObject> IddFactory::getObjectsInGroup(const std::string& group) const {" << '\n'
     << "  IddObjectVector result;" << '\n'
     << "  for (const IddObject& object : objects()) {" << '\n'
     << "    if (istringEqual(object.group(),group)) {" << '\n'
@@ -498,7 +494,7 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
     << "  return result;" << '\n'
     << "}" << '\n'
     << '\n'
-    << "std::vector<IddObject> IddFactorySingleton::getObjectsInGroup(const std::string& group, IddFileType fileType) const {" << '\n'
+    << "std::vector<IddObject> IddFactory::getObjectsInGroup(const std::string& group, IddFileType fileType) const {" << '\n'
     << "  IddObjectVector result;" << '\n'
     << "  for (const IddObject& object : getObjects(fileType)) {" << '\n'
     << "    if (istringEqual(object.group(),group)) {" << '\n'
@@ -508,7 +504,7 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
     << "  return result;" << '\n'
     << "}" << '\n'
     << '\n'
-    << "std::vector<IddObject> IddFactorySingleton::getObjects(const boost::regex& objectRegex) const {" << '\n'
+    << "std::vector<IddObject> IddFactory::getObjects(const boost::regex& objectRegex) const {" << '\n'
     << "  IddObjectVector result;" << '\n'
     << '\n'
     << "  for (int value : IddObjectType::getValues()) {" << '\n'
@@ -525,7 +521,7 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
     << "  return result;" << '\n'
     << "}" << '\n'
     << '\n'
-    << "std::vector<IddObject> IddFactorySingleton::getObjects(const boost::regex& objectRegex," << '\n'
+    << "std::vector<IddObject> IddFactory::getObjects(const boost::regex& objectRegex," << '\n'
     << "                                                       IddFileType fileType) const " << '\n'
     << "{" << '\n'
     << "  IddObjectVector result;" << '\n'
@@ -545,7 +541,7 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
     << "  return result;" << '\n'
     << "}" << '\n'
     << '\n'
-    << "IddObject IddFactorySingleton::getVersionObject(IddFileType fileType) const {" << '\n'
+    << "IddObject IddFactory::getVersionObject(IddFileType fileType) const {" << '\n'
     << "  if (fileType == IddFileType::EnergyPlus) {" << '\n'
     << "    return getObject(IddObjectType(IddObjectType::Version)).get();" << '\n'
     << "  }" << '\n'
@@ -558,7 +554,7 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
     << "  return IddObject();" << '\n'
     << "}" << '\n'
     << '\n'
-    << "boost::optional<IddObject> IddFactorySingleton::getObject(const std::string& objectName) const" << '\n'
+    << "boost::optional<IddObject> IddFactory::getObject(const std::string& objectName) const" << '\n'
     << "{" << '\n'
     << "  OptionalIddObject result;" << '\n'
     << '\n'
@@ -572,7 +568,7 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
     << "  return result;" << '\n'
     << "}" << '\n'
     << '\n'
-    << "boost::optional<IddObject> IddFactorySingleton::getObject(IddObjectType objectType) const" << '\n'
+    << "boost::optional<IddObject> IddFactory::getObject(IddObjectType objectType) const" << '\n'
     << "{" << '\n'
     << "  OptionalIddObject result;" << '\n'
     << '\n'
@@ -591,7 +587,7 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
 
   // required, unique, and required or unique objects
   outFiles.iddFactoryCxx.tempFile << '\n'
-                                  << "std::vector<IddObject> IddFactorySingleton::requiredObjects() const {" << '\n'
+                                  << "std::vector<IddObject> IddFactory::requiredObjects() const {" << '\n'
                                   << '\n'
                                   << "  IddObjectVector result;" << '\n'
                                   << '\n'
@@ -606,7 +602,7 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
                                   << "  return result;" << '\n'
                                   << "}" << '\n'
                                   << '\n'
-                                  << "std::vector<IddObject> IddFactorySingleton::getRequiredObjects(IddFileType fileType) const {" << '\n'
+                                  << "std::vector<IddObject> IddFactory::getRequiredObjects(IddFileType fileType) const {" << '\n'
                                   << '\n'
                                   << "  IddObjectVector result; " << '\n'
                                   << '\n'
@@ -623,7 +619,7 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
                                   << "  return result;" << '\n'
                                   << "}" << '\n'
                                   << '\n'
-                                  << "std::vector<IddObject> IddFactorySingleton::uniqueObjects() const {" << '\n'
+                                  << "std::vector<IddObject> IddFactory::uniqueObjects() const {" << '\n'
                                   << '\n'
                                   << "  IddObjectVector result;" << '\n'
                                   << '\n'
@@ -638,7 +634,7 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
                                   << "  return result;" << '\n'
                                   << "}" << '\n'
                                   << '\n'
-                                  << "std::vector<IddObject> IddFactorySingleton::getUniqueObjects(IddFileType fileType) const {" << '\n'
+                                  << "std::vector<IddObject> IddFactory::getUniqueObjects(IddFileType fileType) const {" << '\n'
                                   << '\n'
                                   << "  IddObjectVector result; " << '\n'
                                   << '\n'
@@ -657,79 +653,79 @@ void completeOutFiles(const IddFileFactoryDataVector& iddFiles, GenerateIddFacto
                                   << "}" << '\n';
 
   // iddFile getters
-  outFiles.iddFactoryCxx.tempFile
-    << '\n'
-    << "IddFile IddFactorySingleton::getIddFile(IddFileType fileType) const {" << '\n'
-    << "  IddFile result;" << '\n'
-    << '\n'
-    << "  if (fileType == IddFileType::UserCustom) {" << '\n'
-    << "    return result; " << '\n'
-    << "  }" << '\n'
-    << '\n'
-    << "  // Add the IddObjects." << '\n'
-    << "  for(IddObjectCallbackMap::const_iterator it = m_callbackMap.begin()," << '\n'
-    << "      itend = m_callbackMap.end(); it != itend; ++it) {" << '\n'
-    << "    if (isInFile(it->first,fileType)) {" << '\n'
-    << "      result.addObject(it->second());" << '\n'
-    << "    }" << '\n'
-    << "  }" << '\n'
-    << '\n'
-    << "  // Set the file version and header." << '\n'
-    << "  try {" << '\n'
-    << "    result.setVersion(getVersion(fileType));" << '\n'
-    << "    result.setHeader(getHeader(fileType));" << '\n'
-    << "  }" << '\n'
-    << "  catch (...) {}" << '\n'
-    << '\n'
-    << "  return result;" << '\n'
-    << "}" << '\n'
-    << '\n'
-    << "boost::optional<IddFile> IddFactorySingleton::getIddFile(IddFileType fileType, const VersionString& version) const {" << '\n'
-    << "  OptionalIddFile result;" << '\n'
-    << '\n'
-    << "  if (fileType == IddFileType::UserCustom) {" << '\n'
-    << "    return result; " << '\n'
-    << "  }" << '\n'
-    << '\n'
-    << "  if (fileType == IddFileType::WholeFactory) {" << '\n'
-    << "    LOG(Warn,\"Cannot return the WholeFactory IddFile by version.\");" << '\n'
-    << "    return result;" << '\n'
-    << "  }" << '\n'
-    << '\n'
-    << "  if (fileType == IddFileType::EnergyPlus) {" << '\n'
-    << "    LOG(Warn,\"At this time, OpenStudio cannot return EnergyPlus IDD files by version.\");" << '\n'
-    << "    return result;" << '\n'
-    << "  }" << '\n'
-    << '\n'
-    << "  VersionString currentVersion(openStudioVersion());" << '\n'
-    << "  OS_ASSERT(fileType == IddFileType::OpenStudio);" << '\n'
-    << "  if (version == currentVersion) {" << '\n'
-    << "    return getIddFile(fileType);" << '\n'
-    << "  }" << '\n'
-    << "  else {" << '\n'
-    << "    std::map<VersionString, IddFile>::const_iterator it = m_osIddFiles.find(version);" << '\n'
-    << "    if (it != m_osIddFiles.end()) {" << '\n'
-    << "      return it->second;" << '\n'
-    << "    }" << '\n'
-    << "    std::string iddPath = \":/idd/versions\";" << '\n'
-    << "    std::stringstream folderString;" << '\n'
-    << "    folderString << version.major() << \"_\" << version.minor() << \"_\" << version.patch().get();" << '\n'
-    << "    iddPath += \"/\" + folderString.str() + \"/OpenStudio.idd\";" << '\n'
-    << "    if (::openstudio::embedded_files::hasFile(iddPath) && (version < currentVersion)) {" << '\n'
-    << "      std::stringstream ss;" << '\n'
-    << "      ss << ::openstudio::embedded_files::getFileAsString(iddPath);" << '\n'
-    << "      result = IddFile::load(ss);" << '\n'
-    << "    }" << '\n'
-    << "    if (result) {" << '\n'
-    << "      m_osIddFiles[version] = *result;" << '\n'
-    << "    }" << '\n'
-    << "  }" << '\n'
-    << "  return result;" << '\n'
-    << "}" << '\n';
+  outFiles.iddFactoryCxx.tempFile << '\n'
+                                  << "IddFile IddFactory::getIddFile(IddFileType fileType) const {" << '\n'
+                                  << "  IddFile result;" << '\n'
+                                  << '\n'
+                                  << "  if (fileType == IddFileType::UserCustom) {" << '\n'
+                                  << "    return result; " << '\n'
+                                  << "  }" << '\n'
+                                  << '\n'
+                                  << "  // Add the IddObjects." << '\n'
+                                  << "  for(IddObjectCallbackMap::const_iterator it = m_callbackMap.begin()," << '\n'
+                                  << "      itend = m_callbackMap.end(); it != itend; ++it) {" << '\n'
+                                  << "    if (isInFile(it->first,fileType)) {" << '\n'
+                                  << "      result.addObject(it->second());" << '\n'
+                                  << "    }" << '\n'
+                                  << "  }" << '\n'
+                                  << '\n'
+                                  << "  // Set the file version and header." << '\n'
+                                  << "  try {" << '\n'
+                                  << "    result.setVersion(getVersion(fileType));" << '\n'
+                                  << "    result.setHeader(getHeader(fileType));" << '\n'
+                                  << "  }" << '\n'
+                                  << "  catch (...) {}" << '\n'
+                                  << '\n'
+                                  << "  return result;" << '\n'
+                                  << "}" << '\n'
+                                  << '\n'
+                                  << "boost::optional<IddFile> IddFactory::getIddFile(IddFileType fileType, const VersionString& version) const {"
+                                  << '\n'
+                                  << "  OptionalIddFile result;" << '\n'
+                                  << '\n'
+                                  << "  if (fileType == IddFileType::UserCustom) {" << '\n'
+                                  << "    return result; " << '\n'
+                                  << "  }" << '\n'
+                                  << '\n'
+                                  << "  if (fileType == IddFileType::WholeFactory) {" << '\n'
+                                  << "    LOG(Warn,\"Cannot return the WholeFactory IddFile by version.\");" << '\n'
+                                  << "    return result;" << '\n'
+                                  << "  }" << '\n'
+                                  << '\n'
+                                  << "  if (fileType == IddFileType::EnergyPlus) {" << '\n'
+                                  << "    LOG(Warn,\"At this time, OpenStudio cannot return EnergyPlus IDD files by version.\");" << '\n'
+                                  << "    return result;" << '\n'
+                                  << "  }" << '\n'
+                                  << '\n'
+                                  << "  VersionString currentVersion(openStudioVersion());" << '\n'
+                                  << "  OS_ASSERT(fileType == IddFileType::OpenStudio);" << '\n'
+                                  << "  if (version == currentVersion) {" << '\n'
+                                  << "    return getIddFile(fileType);" << '\n'
+                                  << "  }" << '\n'
+                                  << "  else {" << '\n'
+                                  << "    std::map<VersionString, IddFile>::const_iterator it = m_osIddFiles.find(version);" << '\n'
+                                  << "    if (it != m_osIddFiles.end()) {" << '\n'
+                                  << "      return it->second;" << '\n'
+                                  << "    }" << '\n'
+                                  << "    std::string iddPath = \":/idd/versions\";" << '\n'
+                                  << "    std::stringstream folderString;" << '\n'
+                                  << "    folderString << version.major() << \"_\" << version.minor() << \"_\" << version.patch().get();" << '\n'
+                                  << "    iddPath += \"/\" + folderString.str() + \"/OpenStudio.idd\";" << '\n'
+                                  << "    if (::openstudio::embedded_files::hasFile(iddPath) && (version < currentVersion)) {" << '\n'
+                                  << "      std::stringstream ss;" << '\n'
+                                  << "      ss << ::openstudio::embedded_files::getFileAsString(iddPath);" << '\n'
+                                  << "      result = IddFile::load(ss);" << '\n'
+                                  << "    }" << '\n'
+                                  << "    if (result) {" << '\n'
+                                  << "      m_osIddFiles[version] = *result;" << '\n'
+                                  << "    }" << '\n'
+                                  << "  }" << '\n'
+                                  << "  return result;" << '\n'
+                                  << "}" << '\n';
 
   // query whether object is in file
   outFiles.iddFactoryCxx.tempFile << '\n'
-                                  << "bool IddFactorySingleton::isInFile(IddObjectType objectType, IddFileType fileType) const {" << '\n'
+                                  << "bool IddFactory::isInFile(IddObjectType objectType, IddFileType fileType) const {" << '\n'
                                   << "  typedef IddObjectSourceFileMap::const_iterator const_iterator;" << '\n'
                                   << "  std::pair<const_iterator,const_iterator> range;" << '\n'
                                   << "  range = m_sourceFileMap.equal_range(objectType);" << '\n'

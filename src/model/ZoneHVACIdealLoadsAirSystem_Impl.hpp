@@ -136,6 +136,14 @@ namespace model {
 
       bool isLatentHeatRecoveryEffectivenessDefaulted() const;
 
+      boost::optional<Schedule> heatingFuelEfficiencySchedule() const;
+
+      std::string heatingFuelType() const;
+
+      boost::optional<Schedule> coolingFuelEfficiencySchedule() const;
+
+      std::string coolingFuelType() const;
+
       boost::optional<double> autosizedMaximumHeatingAirFlowRate() const;
 
       boost::optional<double> autosizedMaximumSensibleHeatingCapacity() const;
@@ -252,6 +260,18 @@ namespace model {
 
       void resetLatentHeatRecoveryEffectiveness();
 
+      bool setHeatingFuelEfficiencySchedule(Schedule& heatingFuelEfficiencySchedule);
+
+      void resetHeatingFuelEfficiencySchedule();
+
+      bool setHeatingFuelType(const std::string& heatingFuelType);
+
+      bool setCoolingFuelEfficiencySchedule(Schedule& coolingFuelEfficiencySchedule);
+
+      void resetCoolingFuelEfficiencySchedule();
+
+      bool setCoolingFuelType(const std::string& coolingFuelType);
+
       //@}
       /** @name Other */
       //@{
@@ -268,15 +288,21 @@ namespace model {
       std::vector<std::string> demandControlledVentilationTypeValues() const;
       std::vector<std::string> outdoorAirEconomizerTypeValues() const;
       std::vector<std::string> heatRecoveryTypeValues() const;
+      std::vector<std::string> heatingFuelTypeValues() const;
+      std::vector<std::string> coolingFuelTypeValues() const;
       boost::optional<ModelObject> availabilityScheduleAsModelObject() const;
       boost::optional<ModelObject> heatingAvailabilityScheduleAsModelObject() const;
       boost::optional<ModelObject> coolingAvailabilityScheduleAsModelObject() const;
       boost::optional<ModelObject> designSpecificationOutdoorAirObjectAsModelObject() const;
+      boost::optional<ModelObject> heatingFuelEfficiencyScheduleAsModelObject() const;
+      boost::optional<ModelObject> coolingFuelEfficiencyScheduleAsModelObject() const;
 
       bool setAvailabilityScheduleAsModelObject(const boost::optional<ModelObject>& modelObject);
       bool setHeatingAvailabilityScheduleAsModelObject(const boost::optional<ModelObject>& modelObject);
       bool setCoolingAvailabilityScheduleAsModelObject(const boost::optional<ModelObject>& modelObject);
       bool setDesignSpecificationOutdoorAirObjectAsModelObject(const boost::optional<ModelObject>& modelObject);
+      bool setHeatingFuelEfficiencyScheduleAsModelObject(const boost::optional<ModelObject>& modelObject);
+      bool setCoolingFuelEfficiencyScheduleAsModelObject(const boost::optional<ModelObject>& modelObject);
     };
 
   }  // namespace detail

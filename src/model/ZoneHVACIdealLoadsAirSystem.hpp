@@ -57,6 +57,10 @@ namespace model {
 
     static std::vector<std::string> heatRecoveryTypeValues();
 
+    static std::vector<std::string> heatingFuelTypeValues();
+
+    static std::vector<std::string> coolingFuelTypeValues();
+
     /** @name Getters */
     //@{
 
@@ -118,6 +122,7 @@ namespace model {
 
     bool isHumidificationControlTypeDefaulted() const;
 
+    // TODO: should replace this with a "Control For Outdoor Air" field
     boost::optional<DesignSpecificationOutdoorAir> designSpecificationOutdoorAirObject() const;
 
     std::string demandControlledVentilationType() const;
@@ -139,6 +144,14 @@ namespace model {
     double latentHeatRecoveryEffectiveness() const;
 
     bool isLatentHeatRecoveryEffectivenessDefaulted() const;
+
+    boost::optional<Schedule> heatingFuelEfficiencySchedule() const;
+
+    std::string heatingFuelType() const;
+
+    boost::optional<Schedule> coolingFuelEfficiencySchedule() const;
+
+    std::string coolingFuelType() const;
 
     //@}
     /** @name Setters */
@@ -239,6 +252,18 @@ namespace model {
     bool setLatentHeatRecoveryEffectiveness(double latentHeatRecoveryEffectiveness);
 
     void resetLatentHeatRecoveryEffectiveness();
+
+    bool setHeatingFuelEfficiencySchedule(Schedule& heatingFuelEfficiencySchedule);
+
+    void resetHeatingFuelEfficiencySchedule();
+
+    bool setHeatingFuelType(const std::string& heatingFuelType);
+
+    bool setCoolingFuelEfficiencySchedule(Schedule& coolingFuelEfficiencySchedule);
+
+    void resetCoolingFuelEfficiencySchedule();
+
+    bool setCoolingFuelType(const std::string& coolingFuelType);
 
     //@}
     /** @name Other */

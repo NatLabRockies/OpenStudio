@@ -9,7 +9,6 @@
 #include <set>
 #include <map>
 #include <vector>
-#include "StaticInitializer.hpp"
 #include <boost/preprocessor.hpp>
 #include <boost/optional.hpp>
 #include <boost/algorithm/string/predicate.hpp>
