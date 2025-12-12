@@ -38,6 +38,18 @@ set(openstudio_modelica_swig_src
 #macro(MAKE_SWIG_TARGET NAME SIMPLENAME KEY_I_FILE I_FILES PARENT_TARGET PARENT_SWIG_TARGETS)
 MAKE_SWIG_TARGET(OpenStudioModelica modelica "${CMAKE_CURRENT_SOURCE_DIR}/Modelica.i" "${openstudio_modelica_swig_src}" openstudio_modelica OpenStudioUtilities)
 
+if(TARGET ruby_OpenStudioModelica)
+  target_link_libraries(ruby_OpenStudioModelica PRIVATE openstudiolib)
+endif()
+
+if(TARGET python_OpenStudioModelica)
+  target_link_libraries(python_OpenStudioModelica PRIVATE openstudiolib)
+endif()
+
+if(TARGET python_package_OpenStudioModelica)
+  target_link_libraries(python_package_OpenStudioModelica PRIVATE openstudiolib)
+endif()
+
 add_executable(antdemo
   main.cpp
 )
