@@ -49,13 +49,12 @@ class ModelicaFileImpl : public std::enable_shared_from_this<ModelicaFileImpl>
 
   template <typename T, class Derived>
   void addModelicaSyntax(ModelicaSyntax<T, Derived>* syntax) {
-    m_syntaxStore.emplace_back(syntax);
+    m_syntaxStore.emplace_back(std::make_unique<ModelicaSyntaxWrapper>(syntax));
   }
 
   template <typename T, class Derived>
   void removeModelicaSyntax(ModelicaSyntax<T, Derived>* syntax) {
-    m_syntaxStore.erase(std::remove_if(m_syntaxStore.begin(), m_syntaxStore.end(), [syntax](const auto& wrapper) { return wrapper == syntax; }),
-                        m_syntaxStore.end());
+    std::erase_if(m_syntaxStore, [syntax](const auto& wrapper) { return *wrapper == syntax; });
   }
 
  private:
@@ -63,7 +62,7 @@ class ModelicaFileImpl : public std::enable_shared_from_this<ModelicaFileImpl>
   std::unique_ptr<modelicaLexer> m_modelicaLexer{nullptr};
   std::unique_ptr<antlr4::CommonTokenStream> m_tokenStream{nullptr};
   std::unique_ptr<modelicaParser> m_modelicaParser{nullptr};
-  std::vector<ModelicaSyntaxWrapper> m_syntaxStore;
+  std::vector<std::unique_ptr<ModelicaSyntaxWrapper>> m_syntaxStore;
   // cppcheck-suppress unusedStructMember
   std::unordered_map<std::string, std::unique_ptr<ClassDefinitionImpl>> m_classDefinitions;
   // cppcheck-suppress unusedStructMember

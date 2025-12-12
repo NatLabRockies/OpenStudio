@@ -62,7 +62,9 @@ modelicaParser* ModelicaFileImpl::parser() const {
 
 void ModelicaFileImpl::updateCTX() {
   for (auto& syntax : m_syntaxStore) {
-    syntax.updateCTX();
+    if (syntax) {
+      syntax->updateCTX();
+    }
   }
 }
 
