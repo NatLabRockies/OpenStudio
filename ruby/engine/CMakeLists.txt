@@ -132,6 +132,7 @@ add_library(rubyengine
   RubyEngine.hpp
   RubyEngine.cpp
   InitRubyEngine.cpp
+  OpenSSLCpuidWorkaround.cpp
   GC_Value.hpp
   ${OUTPUT}
   "${CMAKE_CURRENT_BINARY_DIR}/embedded_scripting_wrap.cxx"
