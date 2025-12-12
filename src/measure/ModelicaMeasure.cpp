@@ -12,7 +12,7 @@
 namespace openstudio {
 namespace measure {
 
-  ModelicaMeasure::ModelicaMeasure() : OSMeasure(MeasureType::ModelicaMeasure) {};
+  ModelicaMeasure::ModelicaMeasure() : OSMeasure(MeasureType::ModelicaMeasure){};
 
   std::vector<OSArgument> ModelicaMeasure::arguments(const openstudio::model::Model& /*model*/, const openstudio::Workspace& /*workspace*/) const {
     return {};
