@@ -26,7 +26,7 @@ target_link_libraries(
 target_link_libraries(
  openstudiolib
  INTERFACE
- Boost::boost
+ boost::boost
  JsonCpp::JsonCpp
  cpprestsdk::cpprestsdk
  openssl::openssl

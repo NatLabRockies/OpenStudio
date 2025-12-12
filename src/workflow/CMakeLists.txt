@@ -32,7 +32,7 @@ target_link_libraries(openstudio_workflow PUBLIC openstudiolib)
 if(BUILD_TESTING)
   set(openstudio_workflow_test_depends
     openstudio_workflow
-    Boost::boost # Maybe at some point replace with openstudiolib more simply
+    boost::boost # Maybe at some point replace with openstudiolib more simply
     fmt::fmt
   )
 

@@ -269,6 +269,12 @@ if (NOT Boost_NO_BOOST_CMAKE)
     if (Boost_FIND_COMPONENTS)
       message(STATUS "Found Boost components:\n   ${Boost_FIND_COMPONENTS}")
     endif()
+
+    # Add alias for Boost::boost if it doesn't exist but boost::boost does
+    if(TARGET boost::boost AND NOT TARGET Boost::boost)
+      add_library(Boost::boost ALIAS boost::boost)
+    endif()
+
     # Restore project's policies
     cmake_policy(POP)
     return()
@@ -1996,6 +2002,11 @@ if(Boost_FOUND)
       set_target_properties(Boost::boost PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}")
     endif()
+  endif()
+
+  # Add alias for boost::boost if it doesn't exist but Boost::boost does
+  if(TARGET Boost::boost AND NOT TARGET boost::boost)
+    add_library(boost::boost ALIAS Boost::boost)
   endif()
 
   foreach(COMPONENT ${Boost_FIND_COMPONENTS})

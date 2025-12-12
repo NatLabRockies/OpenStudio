@@ -1,7 +1,7 @@
 add_executable(install_utility main.cpp)
 
 target_link_libraries(install_utility
-  Boost::boost
+  boost::boost
   # boost::boost_filesystem
 )
 
