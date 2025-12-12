@@ -31,6 +31,12 @@ target_link_libraries(openstudio_modelica
   ${openstudio_modelica_depends}
 )
 
+target_compile_definitions(openstudio_modelica
+  PRIVATE
+  openstudio_modelica_EXPORTS
+  SHARED_OS_LIBS
+)
+
 set(openstudio_modelica_swig_src
   Modelica.i
 )
