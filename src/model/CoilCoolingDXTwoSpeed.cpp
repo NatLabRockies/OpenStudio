@@ -25,6 +25,8 @@
 #include "AirLoopHVACOutdoorAirSystem_Impl.hpp"
 #include "AirLoopHVACDedicatedOutdoorAirSystem.hpp"
 #include "AirLoopHVACDedicatedOutdoorAirSystem_Impl.hpp"
+#include "AirflowNetworkEquivalentDuct.hpp"
+#include "AirflowNetworkEquivalentDuct_Impl.hpp"
 #include "Model.hpp"
 #include <utilities/idd/OS_Coil_Cooling_DX_TwoSpeed_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -89,6 +91,9 @@ namespace model {
       if (OptionalCurve intermediate = optionalLowSpeedEnergyInputRatioFunctionOfTemperatureCurve()) {
         result.push_back(*intermediate);
       }
+      std::vector<AirflowNetworkEquivalentDuct> myAFNItems =
+        getObject<ModelObject>().getModelObjectSources<AirflowNetworkEquivalentDuct>(AirflowNetworkEquivalentDuct::iddObjectType());
+      result.insert(result.end(), myAFNItems.begin(), myAFNItems.end());
 
       return result;
     }
@@ -710,6 +715,32 @@ namespace model {
             return airLoopHVACUnitarySystem;
           }
         }
+      }
+      return boost::none;
+    }
+
+    AirflowNetworkEquivalentDuct CoilCoolingDXTwoSpeed_Impl::getAirflowNetworkEquivalentDuct(double length, double diameter) {
+      boost::optional<AirflowNetworkEquivalentDuct> opt = airflowNetworkEquivalentDuct();
+      if (opt) {
+        if (opt->airPathLength() != length) {
+          opt->setAirPathLength(length);
+        }
+        if (opt->airPathHydraulicDiameter() != diameter) {
+          opt->setAirPathHydraulicDiameter(diameter);
+        }
+      }
+      return AirflowNetworkEquivalentDuct(model(), length, diameter, handle());
+    }
+
+    boost::optional<AirflowNetworkEquivalentDuct> CoilCoolingDXTwoSpeed_Impl::airflowNetworkEquivalentDuct() const {
+      std::vector<AirflowNetworkEquivalentDuct> myAFN =
+        getObject<ModelObject>().getModelObjectSources<AirflowNetworkEquivalentDuct>(AirflowNetworkEquivalentDuct::iddObjectType());
+      auto count = myAFN.size();
+      if (count == 1) {
+        return myAFN[0];
+      } else if (count > 1) {
+        LOG(Warn, briefDescription() << " has more than one AirflowNetwork EquivalentDuct attached, returning first.");
+        return myAFN[0];
       }
       return boost::none;
     }
@@ -1405,6 +1436,14 @@ namespace model {
   bool CoilCoolingDXTwoSpeed::setRatedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2023(double ratedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2023) {
     return getImpl<detail::CoilCoolingDXTwoSpeed_Impl>()->setRatedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2023(
       ratedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2023);
+  }
+
+  AirflowNetworkEquivalentDuct CoilCoolingDXTwoSpeed::getAirflowNetworkEquivalentDuct(double length, double diameter) {
+    return getImpl<detail::CoilCoolingDXTwoSpeed_Impl>()->getAirflowNetworkEquivalentDuct(length, diameter);
+  }
+
+  boost::optional<AirflowNetworkEquivalentDuct> CoilCoolingDXTwoSpeed::airflowNetworkEquivalentDuct() const {
+    return getImpl<detail::CoilCoolingDXTwoSpeed_Impl>()->airflowNetworkEquivalentDuct();
   }
 
   boost::optional<double> CoilCoolingDXTwoSpeed::autosizedRatedHighSpeedTotalCoolingCapacity() const {

@@ -980,6 +980,44 @@ namespace model {
       return ep / np;
     }
 
+    double ThermalZone_Impl::hotWaterEquipmentPower() const {
+      double result(0.0);
+      for (const Space& space : spaces()) {
+        result += space.hotWaterEquipmentPower();
+      }
+      return result;
+    }
+
+    double ThermalZone_Impl::hotWaterEquipmentPowerPerFloorArea() const {
+      double area = floorArea();
+      double ep = hotWaterEquipmentPower();
+      if (equal(area, 0.0)) {
+        if (equal(ep, 0.0)) {
+          return 0.0;
+        }
+        if (spaces().size() == 1u) {
+          return spaces()[0].hotWaterEquipmentPowerPerFloorArea();
+        }
+        LOG_AND_THROW("Calculation would require division by 0.");
+      }
+      return ep / area;
+    }
+
+    double ThermalZone_Impl::hotWaterEquipmentPowerPerPerson() const {
+      double np = numberOfPeople();
+      double ep = hotWaterEquipmentPower();
+      if (equal(np, 0.0)) {
+        if (equal(ep, 0.0)) {
+          return 0.0;
+        }
+        if (spaces().size() == 1u) {
+          return spaces()[0].hotWaterEquipmentPowerPerPerson();
+        }
+        LOG_AND_THROW("Calculation would require division by 0.");
+      }
+      return ep / np;
+    }
+
     double ThermalZone_Impl::infiltrationDesignFlowRate() const {
       double result(0.0);
       for (const Space& space : spaces()) {
@@ -3074,6 +3112,18 @@ SELECT {} FROM ZoneSizes
 
   double ThermalZone::gasEquipmentPowerPerPerson() const {
     return getImpl<detail::ThermalZone_Impl>()->gasEquipmentPowerPerPerson();
+  }
+
+  double ThermalZone::hotWaterEquipmentPower() const {
+    return getImpl<detail::ThermalZone_Impl>()->hotWaterEquipmentPower();
+  }
+
+  double ThermalZone::hotWaterEquipmentPowerPerFloorArea() const {
+    return getImpl<detail::ThermalZone_Impl>()->hotWaterEquipmentPowerPerFloorArea();
+  }
+
+  double ThermalZone::hotWaterEquipmentPowerPerPerson() const {
+    return getImpl<detail::ThermalZone_Impl>()->hotWaterEquipmentPowerPerPerson();
   }
 
   double ThermalZone::infiltrationDesignFlowRate() const {

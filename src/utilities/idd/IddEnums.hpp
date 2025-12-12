@@ -22,7 +22,7 @@ namespace openstudio {
  *
  *  UserCustom \link openstudio::IddFile IddFiles\endlink are loaded directly from disk, and
  *  typically correspond to old or under-development versions of EnergyPlus or OpenStudio. The
- *  rest of the enumeration values designate subsets of the \link openstudio::IddFactorySingleton
+ *  rest of the enumeration values designate subsets of the \link openstudio::IddFactory
  *  IddFactory\endlink (the current versions of the EnergyPlus and OpenStudio IDDs, and all
  *  objects in the factory). */
 #ifdef SWIG
@@ -71,15 +71,15 @@ using OptionalIddFileTypeSet = boost::optional<std::set<IddFileType>>;
 
 /** \class IddObjectType
  *  \brief Enumeration of the \link openstudio::IddObject IddObject\endlink types available
- *  through the \link openstudio::IddFactorySingleton IddFactory\endlink.
+ *  through the \link openstudio::IddFactory IddFactory\endlink.
  *  \details Catchall is the default constructed \link openstudio::IddObject IddObject\endlink
  *  type. UserCustom is the default type for \link openstudio::IddObject IddObjects\endlink
  *  constructed by \link openstudio::IddObject::load IddObject::load\endlink. UserCustom objects
  *  must be referenced by name through an \link openstudio::IddFile IddFile\endlink or \link
  *  openstudio::IddFileAndFactoryWrapper IddFileAndFactoryWrapper\endlink. They cannot be
- *  accessed through the \link openstudio::IddFactorySingleton IddFactory\endlink (by name or
+ *  accessed through the \link openstudio::IddFactory IddFactory\endlink (by name or
  *  type). CommentOnly is a convenience object for capturing standalone comments in IDFs. All other
- *  types are derived from the IDD files used to create \link openstudio::IddFactorySingleton
+ *  types are derived from the IDD files used to create \link openstudio::IddFactory
  *  IddFactory\endlink. See the OPENSTUDIO_ENUM documentation in utilities/core/Enum.hpp.
  * */
 #ifdef SWIG

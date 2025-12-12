@@ -3730,9 +3730,15 @@ TEST_F(ModelFixture, Space_Convexity) {
     s_->setYOrigin(y);
     EXPECT_FALSE(s_->isConvex());
     // Roof and floor
-    EXPECT_EQ(2, s_->findNonConvexSurfaces().size());
-    EXPECT_EQ("hShapedPolygon Floor", s_->findNonConvexSurfaces().front().nameString());
-    EXPECT_EQ("hShapedPolygon RoofCeiling", s_->findNonConvexSurfaces().back().nameString());
+    auto nonConvexSurfaces = s_->findNonConvexSurfaces();
+    EXPECT_EQ(2u, nonConvexSurfaces.size());
+    std::vector<std::string> names;
+    for (const auto& surf : nonConvexSurfaces) {
+      names.push_back(surf.nameString());
+    }
+    std::sort(names.begin(), names.end());
+    EXPECT_EQ("hShapedPolygon Floor", names[0]);
+    EXPECT_EQ("hShapedPolygon RoofCeiling", names[1]);
   }
 
   {

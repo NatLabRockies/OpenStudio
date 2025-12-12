@@ -188,6 +188,38 @@ namespace energyplus {
       zoneHVACIdealLoadsAirSystem.setLatentHeatRecoveryEffectiveness(*d);
     }
 
+    // heating fuel efficiency schedule name
+    target = workspaceObject.getTarget(ZoneHVAC_IdealLoadsAirSystemFields::HeatingFuelEfficiencyScheduleName);
+    if (target) {
+      OptionalModelObject heatingFuelEfficiencySchedule = translateAndMapWorkspaceObject(*target);
+      if (heatingFuelEfficiencySchedule) {
+        zoneHVACIdealLoadsAirSystem.setPointer(OS_ZoneHVAC_IdealLoadsAirSystemFields::HeatingFuelEfficiencyScheduleName,
+                                               heatingFuelEfficiencySchedule->handle());
+      }
+    }
+
+    // heating fuel type
+    s = workspaceObject.getString(ZoneHVAC_IdealLoadsAirSystemFields::HeatingFuelType);
+    if (s) {
+      zoneHVACIdealLoadsAirSystem.setHeatingFuelType(*s);
+    }
+
+    // cooling fuel efficiency schedule name
+    target = workspaceObject.getTarget(ZoneHVAC_IdealLoadsAirSystemFields::CoolingFuelEfficiencyScheduleName);
+    if (target) {
+      OptionalModelObject coolingFuelEfficiencySchedule = translateAndMapWorkspaceObject(*target);
+      if (coolingFuelEfficiencySchedule) {
+        zoneHVACIdealLoadsAirSystem.setPointer(OS_ZoneHVAC_IdealLoadsAirSystemFields::CoolingFuelEfficiencyScheduleName,
+                                               coolingFuelEfficiencySchedule->handle());
+      }
+    }
+
+    // cooling fuel type
+    s = workspaceObject.getString(ZoneHVAC_IdealLoadsAirSystemFields::CoolingFuelType);
+    if (s) {
+      zoneHVACIdealLoadsAirSystem.setCoolingFuelType(*s);
+    }
+
     return zoneHVACIdealLoadsAirSystem;
   }
 

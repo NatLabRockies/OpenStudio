@@ -368,6 +368,41 @@ namespace model {
 
     double getGasEquipmentPowerPerPerson(double floorArea, double numPeople) const;
 
+    /** Returns the total hot water equipment power per space floor area, if it can be calculated
+   *  directly from the underlying hotWaterEquipment() data (without knowing floorArea and
+   *  numPeople). */
+    boost::optional<double> hotWaterEquipmentPowerPerFloorArea() const;
+
+    /** Sets the hotWaterEquipmentPowerPerFloorArea, using hotWaterEquipment()[0], if it exists,
+   *  as a template for the remaining HotWaterEquipment and HotWaterEquipmentDefinition parameters.
+   *  All other hotWaterEquipment() in this SpaceType will be removed. */
+    bool setHotWaterEquipmentPowerPerFloorArea(double hotWaterEquipmentPowerPerFloorArea);
+
+    /** Sets the hotWaterEquipmentPowerPerFloorArea, using templateHotWaterEquipment as a template
+   *  for the remaining HotWaterEquipment and HotWaterEquipmentDefinition parameters. All other
+   *  hotWaterEquipment() in this SpaceType will be removed. */
+    bool setHotWaterEquipmentPowerPerFloorArea(double hotWaterEquipmentPowerPerFloorArea, const HotWaterEquipment& templateHotWaterEquipment);
+
+    /** Returns the total hot water equipment power per person, if it can be calculated directly from
+   *  the underlying hotWaterEquipment() data (without knowing floorArea and numPeople). */
+    boost::optional<double> hotWaterEquipmentPowerPerPerson() const;
+
+    /** Sets the hotWaterEquipmentPowerPerPerson, using hotWaterEquipment()[0], if it exists,
+   *  as a template for the remaining HotWaterEquipment and HotWaterEquipmentDefinition parameters.
+   *  All other hotWaterEquipment() in this SpaceType will be removed. */
+    bool setHotWaterEquipmentPowerPerPerson(double hotWaterEquipmentPowerPerPerson);
+
+    /** Sets the hotWaterEquipmentPowerPerPerson, using templateHotWaterEquipment as a template
+   *  for the remaining HotWaterEquipment and HotWaterEquipmentDefinition parameters. All other
+   *  hotWaterEquipment() in this SpaceType will be removed. */
+    bool setHotWaterEquipmentPowerPerPerson(double hotWaterEquipmentPowerPerPerson, const HotWaterEquipment& templateHotWaterEquipment);
+
+    double getHotWaterEquipmentDesignLevel(double floorArea, double numPeople) const;
+
+    double getHotWaterEquipmentPowerPerFloorArea(double floorArea, double numPeople) const;
+
+    double getHotWaterEquipmentPowerPerPerson(double floorArea, double numPeople) const;
+
     // Returns the floor area in the building using this SpaceType.  Includes Space multipliers.
     double floorArea() const;
 

@@ -7,7 +7,6 @@
 #define UTILITIES_UNITS_QUANTITYCONVERTER_HPP
 
 #include "../UtilitiesAPI.hpp"
-#include "../core/Singleton.hpp"
 #include "../core/Logger.hpp"
 
 #include "Unit.hpp"
@@ -66,19 +65,24 @@ struct baseUnitConversionFactor
 
 /** Singleton for converting quantities to different \link UnitSystem unit systems \endlink or
  *  to targeted \link Unit units \endlink */
-class UTILITIES_API QuantityConverterSingleton
+class UTILITIES_API QuantityConverter
 {
-
-  friend class Singleton<QuantityConverterSingleton>;
-
  public:
+  static QuantityConverter& instance();
+
+  QuantityConverter(const QuantityConverter& other) = delete;
+  QuantityConverter(QuantityConverter&& other) = delete;
+  QuantityConverter& operator=(const QuantityConverter&) = delete;
+  QuantityConverter& operator=(QuantityConverter&&) = delete;
+
   boost::optional<Quantity> convert(const Quantity& q, UnitSystem sys) const;
 
   boost::optional<Quantity> convert(const Quantity& original, const Unit& targetUnits) const;
 
  private:
   REGISTER_LOGGER("openstudio.units.QuantityConverter");
-  QuantityConverterSingleton();
+  QuantityConverter();
+  ~QuantityConverter() = default;
 
   using BaseUnitConversionMap = std::map<std::string, baseUnitConversionFactor>;
   using UnitSystemConversionMultiMap = std::multimap<UnitSystem, baseUnitConversionFactor>;
@@ -93,24 +97,21 @@ class UTILITIES_API QuantityConverterSingleton
   boost::optional<Quantity> m_convertToTargetFromSI(const Quantity& original, const Unit& targetUnits) const;
 };
 
-/** \relates QuantityConverterSingleton */
-using QuantityConverter = openstudio::Singleton<QuantityConverterSingleton>;
-
-/** Non-member function to simplify interface for users. \relates QuantityConverterSingleton */
+/** Non-member function to simplify interface for users. \relates QuantityConverter */
 UTILITIES_API boost::optional<double> convert(double original, const std::string& originalUnits, const std::string& finalUnits);
 
-/** Non-member function to simplify interface for users. \relates QuantityConverterSingleton */
+/** Non-member function to simplify interface for users. \relates QuantityConverter */
 UTILITIES_API boost::optional<Quantity> convert(const Quantity& original, UnitSystem sys);
 
 /** Non-member function that uses just two calls to QuantityConverter to convert an entire
- *  OSQuantityVector. \relates QuantityConverterSingleton \relates OSQuantityVector */
+ *  OSQuantityVector. \relates QuantityConverter \relates OSQuantityVector */
 UTILITIES_API OSQuantityVector convert(const OSQuantityVector& original, UnitSystem sys);
 
-/** Non-member function to simplify interface for users. \relates QuantityConverterSingleton */
+/** Non-member function to simplify interface for users. \relates QuantityConverter */
 UTILITIES_API boost::optional<Quantity> convert(const Quantity& original, const Unit& targetUnits);
 
 /** Non-member function that uses just two calls to QuantityConverter to convert an entire
- *  OSQuantityVector. \relates QuantityConverterSingleton \relates OSQuantityVector */
+ *  OSQuantityVector. \relates QuantityConverter \relates OSQuantityVector */
 UTILITIES_API OSQuantityVector convert(const OSQuantityVector& original, const Unit& targetUnits);
 
 }  // namespace openstudio

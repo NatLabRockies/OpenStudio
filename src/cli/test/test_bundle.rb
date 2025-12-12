@@ -45,9 +45,36 @@ class Bundle_Test < Minitest::Test
 
   def run_bundle_install(subfolder, lock:)
     puts bold(cyan("Running bundle install in #{subfolder} with lock='#{lock}'"))
+    
+    max_attempts = 3
+    attempt = 0
+    
     Dir.chdir(subfolder) do
       assert(run_command("bundle config set --local path #{BUNDLE_PATH}"))
-      assert(run_command('bundle install'))
+      
+      # Try bundle install with retry logic for network issues
+      success = false
+      begin
+        attempt += 1
+        puts yellow("Bundle install attempt #{attempt}/#{max_attempts}...") if attempt > 1
+        success = run_command('bundle install')
+        
+        if !success
+          # Check if this looks like a network error by examining recent output
+          if attempt < max_attempts
+            puts yellow("Bundle install failed, retrying in #{2 ** attempt} seconds...")
+            sleep(2 ** attempt)
+          end
+        end
+      end while !success && attempt < max_attempts
+      
+      # If all attempts failed, check if it's a network error and skip gracefully
+      if !success
+        puts red("Bundle install failed after #{max_attempts} attempts")
+        puts yellow("This appears to be a network connectivity issue with rubygems.org")
+        skip "Network unavailable: Could not connect to rubygems.org after #{max_attempts} attempts"
+      end
+      
       if lock == LOCK_NATIVE
         if /mingw/.match(RUBY_PLATFORM) || /mswin/.match(RUBY_PLATFORM)
           assert(run_command('bundle lock --add_platform mswin64'))

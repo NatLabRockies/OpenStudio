@@ -10,7 +10,10 @@
 //#include <model/Node_Impl.hpp>
 #include "../ZoneHVACComponent.hpp"
 #include "../ZoneHVACComponent_Impl.hpp"
-
+#include "../Schedule.hpp"
+#include "../Schedule_Impl.hpp"
+#include "../ScheduleConstant.hpp"
+#include "../ScheduleConstant_Impl.hpp"
 #include "../CoilCoolingWaterToAirHeatPumpEquationFit.hpp"
 #include "../CoilCoolingWaterToAirHeatPumpEquationFit_Impl.hpp"
 
@@ -73,6 +76,12 @@ TEST_F(ModelFixture, CoilCoolingWaterToAirHeatPumpEquationFit_Check_Getters_and_
 
   Model model;
   CoilCoolingWaterToAirHeatPumpEquationFit coilCoolingWaterToAirHeatPumpEquationFit(model);
+
+  auto alwaysOn = model.alwaysOnDiscreteSchedule();
+  EXPECT_EQ(alwaysOn, coilCoolingWaterToAirHeatPumpEquationFit.availabilitySchedule());
+  ScheduleConstant scheduleConstant(model);
+  EXPECT_TRUE(coilCoolingWaterToAirHeatPumpEquationFit.setAvailabilitySchedule(scheduleConstant));
+  EXPECT_EQ(scheduleConstant, coilCoolingWaterToAirHeatPumpEquationFit.availabilitySchedule());
 
   // Field N1 Rated Air Flow Rate. Test set and get Rated Air Flow Rate, and test default, autosize and reset functions
 

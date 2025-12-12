@@ -23,6 +23,7 @@
 
 #include <utilities/idd/OS_People_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/IddFactory.hxx>
 
 #include "../utilities/core/Assert.hpp"
 
@@ -102,6 +103,9 @@ namespace model {
       }
       if (std::find(b, e, OS_PeopleFields::WorkEfficiencyScheduleName) != e) {
         result.emplace_back("People", "Work Efficiency");
+      }
+      if (std::find(b, e, OS_PeopleFields::ClothingInsulationCalculationMethodScheduleName) != e) {
+        result.emplace_back("People", "Clothing Insulation Calculation Method");
       }
       if (std::find(b, e, OS_PeopleFields::ClothingInsulationScheduleName) != e) {
         result.emplace_back("People", "Clothing Insulation");
@@ -317,8 +321,33 @@ namespace model {
       OS_ASSERT(result);
     }
 
+    std::string People_Impl::clothingInsulationCalculationMethod() const {
+      boost::optional<std::string> value = getString(OS_PeopleFields::ClothingInsulationCalculationMethod, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    boost::optional<Schedule> People_Impl::clothingInsulationCalculationMethodSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(OS_PeopleFields::ClothingInsulationCalculationMethodScheduleName);
+    }
+
     boost::optional<Schedule> People_Impl::clothingInsulationSchedule() const {
       return getObject<ModelObject>().getModelObjectTarget<Schedule>(OS_PeopleFields::ClothingInsulationScheduleName);
+    }
+
+    bool People_Impl::setClothingInsulationCalculationMethod(const std::string& clothingInsulationCalculationMethod) {
+      const bool result = setString(OS_PeopleFields::ClothingInsulationCalculationMethod, clothingInsulationCalculationMethod);
+      return result;
+    }
+
+    bool People_Impl::setClothingInsulationCalculationMethodSchedule(Schedule& schedule) {
+      return setSchedule(OS_PeopleFields::ClothingInsulationCalculationMethodScheduleName, "People", "Clothing Insulation Calculation Method",
+                         schedule);
+    }
+
+    void People_Impl::resetClothingInsulationCalculationMethodSchedule() {
+      bool result = setString(OS_PeopleFields::ClothingInsulationCalculationMethodScheduleName, "");
+      OS_ASSERT(result);
     }
 
     bool People_Impl::setClothingInsulationSchedule(Schedule& schedule) {
@@ -611,11 +640,17 @@ namespace model {
 
     bool test = this->setMultiplier(1.0);
     OS_ASSERT(test);
+    test = setClothingInsulationCalculationMethod("ClothingInsulationSchedule");
+    OS_ASSERT(test);
   }
 
   IddObjectType People::iddObjectType() {
     IddObjectType result(IddObjectType::OS_People);
     return result;
+  }
+
+  std::vector<std::string> People::clothingInsulationCalculationMethodValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), OS_PeopleFields::ClothingInsulationCalculationMethod);
   }
 
   bool People::setMultiplier(double multiplier) {
@@ -678,8 +713,28 @@ namespace model {
     getImpl<detail::People_Impl>()->resetWorkEfficiencySchedule();
   }
 
+  std::string People::clothingInsulationCalculationMethod() const {
+    return getImpl<detail::People_Impl>()->clothingInsulationCalculationMethod();
+  }
+
+  boost::optional<Schedule> People::clothingInsulationCalculationMethodSchedule() const {
+    return getImpl<detail::People_Impl>()->clothingInsulationCalculationMethodSchedule();
+  }
+
   boost::optional<Schedule> People::clothingInsulationSchedule() const {
     return getImpl<detail::People_Impl>()->clothingInsulationSchedule();
+  }
+
+  bool People::setClothingInsulationCalculationMethod(const std::string& clothingInsulationCalculationMethod) {
+    return getImpl<detail::People_Impl>()->setClothingInsulationCalculationMethod(clothingInsulationCalculationMethod);
+  }
+
+  bool People::setClothingInsulationCalculationMethodSchedule(Schedule& schedule) {
+    return getImpl<detail::People_Impl>()->setClothingInsulationCalculationMethodSchedule(schedule);
+  }
+
+  void People::resetClothingInsulationCalculationMethodSchedule() {
+    getImpl<detail::People_Impl>()->resetClothingInsulationCalculationMethodSchedule();
   }
 
   bool People::setClothingInsulationSchedule(Schedule& schedule) {

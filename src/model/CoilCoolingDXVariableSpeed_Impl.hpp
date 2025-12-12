@@ -74,6 +74,8 @@ namespace model {
       /** @name Getters */
       //@{
 
+      Schedule availabilitySchedule() const;
+
       int nominalSpeedLevel() const;
 
       boost::optional<double> grossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevel() const;
@@ -125,6 +127,8 @@ namespace model {
       //@}
       /** @name Setters */
       //@{
+
+      bool setAvailabilitySchedule(Schedule& schedule);
 
       bool setNominalSpeedLevel(int nominalSpeedLevel);
 
@@ -203,6 +207,10 @@ namespace model {
 
       void removeAllSpeeds();
 
+      AirflowNetworkEquivalentDuct getAirflowNetworkEquivalentDuct(double length, double diameter);
+
+      boost::optional<AirflowNetworkEquivalentDuct> airflowNetworkEquivalentDuct() const;
+
       // Autosize methods
       boost::optional<double> autosizedGrossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevel() const;
 
@@ -218,6 +226,7 @@ namespace model {
       // Optional getters for use by methods like children() so can remove() if the constructor fails.
       // There are other ways for the public versions of these getters to fail--perhaps all required
       // objects should be returned as boost::optionals
+      boost::optional<Schedule> optionalAvailabilitySchedule() const;
       boost::optional<Curve> optionalEnergyPartLoadFractionCurve() const;
     };
 

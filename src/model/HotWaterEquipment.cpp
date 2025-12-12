@@ -232,6 +232,30 @@ namespace model {
       return result;
     }
 
+    boost::optional<double> HotWaterEquipment_Impl::designLevel() const {
+      OptionalDouble result = hotWaterEquipmentDefinition().designLevel();
+      if (result) {
+        return result.get() * multiplier();
+      }
+      return result;
+    }
+
+    boost::optional<double> HotWaterEquipment_Impl::powerPerFloorArea() const {
+      OptionalDouble result = hotWaterEquipmentDefinition().wattsperSpaceFloorArea();
+      if (result) {
+        return result.get() * multiplier();
+      }
+      return result;
+    }
+
+    boost::optional<double> HotWaterEquipment_Impl::powerPerPerson() const {
+      OptionalDouble result = hotWaterEquipmentDefinition().wattsperPerson();
+      if (result) {
+        return result.get() * multiplier();
+      }
+      return result;
+    }
+
     double HotWaterEquipment_Impl::getDesignLevel(double floorArea, double numPeople) const {
       return hotWaterEquipmentDefinition().getDesignLevel(floorArea, numPeople) * multiplier();
     }
@@ -361,6 +385,18 @@ namespace model {
 
   bool HotWaterEquipment::setHotWaterEquipmentDefinition(const HotWaterEquipmentDefinition& hotWaterEquipmentDefinition) {
     return getImpl<detail::HotWaterEquipment_Impl>()->setHotWaterEquipmentDefinition(hotWaterEquipmentDefinition);
+  }
+
+  boost::optional<double> HotWaterEquipment::designLevel() const {
+    return getImpl<detail::HotWaterEquipment_Impl>()->designLevel();
+  }
+
+  boost::optional<double> HotWaterEquipment::powerPerFloorArea() const {
+    return getImpl<detail::HotWaterEquipment_Impl>()->powerPerFloorArea();
+  }
+
+  boost::optional<double> HotWaterEquipment::powerPerPerson() const {
+    return getImpl<detail::HotWaterEquipment_Impl>()->powerPerPerson();
   }
 
   double HotWaterEquipment::getDesignLevel(double floorArea, double numPeople) const {

@@ -94,6 +94,8 @@ TEST_F(ModelFixture, SizingSystem_SizingSystem) {
   EXPECT_EQ("OnOff", sizingSystem.centralCoolingCapacityControlMethod());
   EXPECT_FALSE(sizingSystem.occupantDiversity());
   EXPECT_TRUE(sizingSystem.isOccupantDiversityAutosized());
+  EXPECT_EQ("None", sizingSystem.heatingCoilSizingMethod());
+  EXPECT_EQ(1.0, sizingSystem.maximumHeatingCapacityToCoolingCapacitySizingRatio());
 }
 
 TEST_F(ModelFixture, SizingSystem_GettersSetters) {
@@ -138,6 +140,8 @@ TEST_F(ModelFixture, SizingSystem_GettersSetters) {
   EXPECT_TRUE(sizingSystem.setFractionofAutosizedHeatingDesignCapacity(25));
   EXPECT_TRUE(sizingSystem.setCentralCoolingCapacityControlMethod("VAV"));
   EXPECT_TRUE(sizingSystem.setOccupantDiversity(0.5));
+  EXPECT_TRUE(sizingSystem.setHeatingCoilSizingMethod("GreaterOfHeatingOrCooling"));
+  EXPECT_TRUE(sizingSystem.setMaximumHeatingCapacityToCoolingCapacitySizingRatio(3.0));
 
   EXPECT_EQ("VentilationRequirement", sizingSystem.typeofLoadtoSizeOn());
   EXPECT_FALSE(sizingSystem.isTypeofLoadtoSizeOnDefaulted());
@@ -199,6 +203,8 @@ TEST_F(ModelFixture, SizingSystem_GettersSetters) {
   ASSERT_TRUE(sizingSystem.occupantDiversity());
   EXPECT_EQ(0.5, sizingSystem.occupantDiversity().get());
   EXPECT_FALSE(sizingSystem.isOccupantDiversityAutosized());
+  EXPECT_EQ("GreaterOfHeatingOrCooling", sizingSystem.heatingCoilSizingMethod());
+  EXPECT_EQ(3.0, sizingSystem.maximumHeatingCapacityToCoolingCapacitySizingRatio());
 
   sizingSystem.resetTypeofLoadtoSizeOn();
   sizingSystem.resetDesignOutdoorAirFlowRate();

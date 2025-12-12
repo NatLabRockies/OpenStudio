@@ -76,12 +76,8 @@ namespace model {
       return "";
     }
 
-    double ExternalInterfaceFunctionalMockupUnitExportToActuator_Impl::initialValue() const {
-      boost::optional<double> value = getDouble(OS_ExternalInterface_FunctionalMockupUnitExport_To_ActuatorFields::InitialValue, true);
-      if (value) {
-        return value.get();
-      }
-      return -9999;
+    boost::optional<double> ExternalInterfaceFunctionalMockupUnitExportToActuator_Impl::initialValue() const {
+      return getDouble(OS_ExternalInterface_FunctionalMockupUnitExport_To_ActuatorFields::InitialValue, true);
     }
 
     bool ExternalInterfaceFunctionalMockupUnitExportToActuator_Impl::setActuatedComponentUnique(const ModelObject& modelObject) {
@@ -116,6 +112,22 @@ namespace model {
     }
 
   }  // namespace detail
+
+  ExternalInterfaceFunctionalMockupUnitExportToActuator::ExternalInterfaceFunctionalMockupUnitExportToActuator(
+    const ModelObject& modelObject, const std::string& actuatedComponentType, const std::string& actuatedComponentControlType,
+    const std::string& fMUVariableName)
+    : ModelObject(ExternalInterfaceFunctionalMockupUnitExportToActuator::iddObjectType(), modelObject.model()) {
+    OS_ASSERT(getImpl<detail::ExternalInterfaceFunctionalMockupUnitExportToActuator_Impl>());
+
+    bool ok = setActuatedComponentUnique(modelObject);
+    if (!ok) {
+      remove();
+      LOG_AND_THROW("Unable to set " << briefDescription() << "'s ActuatedComponentUnique to " << modelObject.nameString() << ".");
+    }
+    setActuatedComponentType(actuatedComponentType);
+    setActuatedComponentControlType(actuatedComponentControlType);
+    setFMUVariableName(fMUVariableName);
+  }
 
   ExternalInterfaceFunctionalMockupUnitExportToActuator::ExternalInterfaceFunctionalMockupUnitExportToActuator(
     const ModelObject& modelObject, const std::string& actuatedComponentType, const std::string& actuatedComponentControlType,
@@ -154,7 +166,7 @@ namespace model {
     return getImpl<detail::ExternalInterfaceFunctionalMockupUnitExportToActuator_Impl>()->fMUVariableName();
   }
 
-  double ExternalInterfaceFunctionalMockupUnitExportToActuator::initialValue() const {
+  boost::optional<double> ExternalInterfaceFunctionalMockupUnitExportToActuator::initialValue() const {
     return getImpl<detail::ExternalInterfaceFunctionalMockupUnitExportToActuator_Impl>()->initialValue();
   }
 

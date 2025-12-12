@@ -60,8 +60,6 @@ set(core_src
   core/Queue.hpp
   core/RubyInterpreter.hpp
   core/RubyException.hpp
-  core/Singleton.hpp
-  core/StaticInitializer.hpp
   core/String.hpp
   core/String.cpp
   core/StringHelpers.hpp
@@ -398,7 +396,6 @@ set(${target_name}_swig_src
   core/Exception.i
   core/Logger.i
   core/Path.i
-  core/Singleton.i
   core/System.i
   core/UUID.i
   core/UnzipFile.i

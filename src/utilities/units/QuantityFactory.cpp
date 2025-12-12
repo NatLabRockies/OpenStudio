@@ -17,7 +17,12 @@ using std::dynamic_pointer_cast;
 
 namespace openstudio {
 
-boost::optional<Quantity> QuantityFactorySingleton::createQuantity(const std::string& quantityString) const {
+QuantityFactory& QuantityFactory::instance() {
+  static QuantityFactory instance;
+  return instance;
+}
+
+boost::optional<Quantity> QuantityFactory::createQuantity(const std::string& quantityString) const {
   OptionalQuantity result;
   StringPair strings = decomposeQuantityString(quantityString);
   try {
@@ -29,7 +34,7 @@ boost::optional<Quantity> QuantityFactorySingleton::createQuantity(const std::st
   return result;
 }
 
-boost::optional<Quantity> QuantityFactorySingleton::createQuantity(const std::string& quantityString, UnitSystem system) const {
+boost::optional<Quantity> QuantityFactory::createQuantity(const std::string& quantityString, UnitSystem system) const {
   OptionalQuantity result;
   StringPair strings = decomposeQuantityString(quantityString);
   try {
@@ -41,7 +46,7 @@ boost::optional<Quantity> QuantityFactorySingleton::createQuantity(const std::st
   return result;
 }
 
-boost::optional<Quantity> QuantityFactorySingleton::createQuantity(double value, const std::string& unitString) const {
+boost::optional<Quantity> QuantityFactory::createQuantity(double value, const std::string& unitString) const {
   // create return variable, and try to create unit
   OptionalQuantity result;
   UnitSystem system = getSystem(unitString);
@@ -52,7 +57,7 @@ boost::optional<Quantity> QuantityFactorySingleton::createQuantity(double value,
   return result;
 }
 
-boost::optional<Quantity> QuantityFactorySingleton::createQuantity(double value, const std::string& unitString, UnitSystem system) const {
+boost::optional<Quantity> QuantityFactory::createQuantity(double value, const std::string& unitString, UnitSystem system) const {
   // create return variable, and try to create unit
   OptionalQuantity result;
   OptionalUnit unit = UnitFactory::instance().createUnit(unitString, system);

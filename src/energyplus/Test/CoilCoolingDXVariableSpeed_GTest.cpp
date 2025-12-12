@@ -135,6 +135,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_CoilCoolingDXVariableSpeed) {
   const WorkspaceObject& idf_coil = idfs_coils[0];
 
   EXPECT_EQ("Coil Cooling DX VSD", idf_coil.getString(Coil_Cooling_DX_VariableSpeedFields::Name).get());
+  EXPECT_EQ("Always On Discrete", idf_coil.getString(Coil_Cooling_DX_VariableSpeedFields::AvailabilityScheduleName).get());
   EXPECT_EQ("Inlet Node", idf_coil.getString(Coil_Cooling_DX_VariableSpeedFields::IndoorAirInletNodeName).get());
   EXPECT_EQ("Outlet Node", idf_coil.getString(Coil_Cooling_DX_VariableSpeedFields::IndoorAirOutletNodeName).get());
 

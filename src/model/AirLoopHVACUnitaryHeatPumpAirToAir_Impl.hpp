@@ -109,6 +109,8 @@ namespace model {
 
       bool isDehumidificationControlTypeDefaulted() const;
 
+      double dXHeatingCoilSizingRatio() const;
+
       boost::optional<double> autosizedSupplyAirFlowRateDuringCoolingOperation() const;
 
       boost::optional<double> autosizedSupplyAirFlowRateDuringHeatingOperation() const;
@@ -176,6 +178,8 @@ namespace model {
       bool setDehumidificationControlType(const std::string& dehumidificationControlType);
 
       void resetDehumidificationControlType();
+
+      bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);
 
       //@}
       /** @name Other */

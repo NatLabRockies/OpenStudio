@@ -68,8 +68,10 @@ TEST_F(ModelFixture, ControllerMechanicalVentilation_SystemOutdoorAirMethod) {
   EXPECT_TRUE(sz.setSystemOutdoorAirMethod("ZoneSum"));
   EXPECT_TRUE(controller_mv.isSystemOutdoorAirMethodDefaulted());
   EXPECT_EQ("ZoneSum", controller_mv.systemOutdoorAirMethod());
-  controller_mv.setSystemOutdoorAirMethod("ProportionalControlBasedOnOccupancySchedule");
+  EXPECT_TRUE(controller_mv.setSystemOutdoorAirMethod("ProportionalControlBasedOnOccupancySchedule"));
   EXPECT_FALSE(controller_mv.isSystemOutdoorAirMethodDefaulted());
+  EXPECT_EQ("ProportionalControlBasedOnOccupancySchedule", controller_mv.systemOutdoorAirMethod());
+  EXPECT_FALSE(controller_mv.setSystemOutdoorAirMethod("ProportionalControl"));
   EXPECT_EQ("ProportionalControlBasedOnOccupancySchedule", controller_mv.systemOutdoorAirMethod());
 }
 

@@ -186,6 +186,8 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_SizingZone) {
   }
 
   EXPECT_TRUE(sz.setSizingOption("NonCoincident"));
+  EXPECT_TRUE(sz.setHeatingCoilSizingMethod("GreaterOfHeatingOrCooling"));
+  EXPECT_TRUE(sz.setMaximumHeatingCapacityToCoolingLoadSizingRatio(3.0));
 
   {
     Workspace w = ft.translateModel(m);
@@ -195,6 +197,8 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_SizingZone) {
     WorkspaceObject idf_sz(idfObjs[0]);
 
     EXPECT_EQ("NonCoincident", idf_sz.getString(Sizing_ZoneFields::TypeofSpaceSumtoUse).get());
+    EXPECT_EQ("GreaterOfHeatingOrCooling", idf_sz.getString(Sizing_ZoneFields::HeatingCoilSizingMethod).get());
+    EXPECT_EQ(3.0, idf_sz.getDouble(Sizing_ZoneFields::MaximumHeatingCapacityToCoolingLoadSizingRatio).get());
   }
 }
 
@@ -272,6 +276,10 @@ TEST_F(EnergyPlusFixture, ReverseTranslator_SizingZone) {
   wo_humSch.setName("humSch");
   EXPECT_TRUE(wo_humSch.setDouble(Schedule_ConstantFields::HourlyValue, 40.0));
   EXPECT_TRUE(wo_sz.setPointer(Sizing_ZoneFields::ZoneHumidistatHumidificationSetPointScheduleName, wo_humSch.handle()));
+
+  EXPECT_TRUE(wo_sz.setString(Sizing_ZoneFields::TypeofSpaceSumtoUse, "NonCoincident"));
+  EXPECT_TRUE(wo_sz.setString(Sizing_ZoneFields::HeatingCoilSizingMethod, "GreaterOfHeatingOrCooling"));
+  EXPECT_TRUE(wo_sz.setDouble(Sizing_ZoneFields::MaximumHeatingCapacityToCoolingLoadSizingRatio, 3.0));
 
   // RT
   Model m = rt.translateWorkspace(w);
@@ -356,4 +364,8 @@ TEST_F(EnergyPlusFixture, ReverseTranslator_SizingZone) {
 
   EXPECT_FALSE(sz.isDesignMinimumZoneVentilationEfficiencyDefaulted());
   EXPECT_EQ(0.5, sz.designMinimumZoneVentilationEfficiency());
+
+  EXPECT_EQ("NonCoincident", sz.sizingOption());
+  EXPECT_EQ("GreaterOfHeatingOrCooling", sz.heatingCoilSizingMethod());
+  EXPECT_EQ(3.0, sz.maximumHeatingCapacityToCoolingLoadSizingRatio());
 }

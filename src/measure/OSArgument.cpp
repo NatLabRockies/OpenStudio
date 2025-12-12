@@ -818,6 +818,10 @@ namespace measure {
     return true;
   }
 
+  void OSArgument::setRequired(bool required) {
+    m_required = required;
+  }
+
   bool OSArgument::setStringInternal(OSArgumentVariant& argVar, const std::string& value) {
     bool result = false;
 

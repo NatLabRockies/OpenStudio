@@ -10,8 +10,6 @@
 #include "ModelObject_Impl.hpp"
 #include "OutputMeter.hpp"
 
-#include "../utilities/core/StaticInitializer.hpp"
-
 namespace openstudio {
 
 class EndUseType;

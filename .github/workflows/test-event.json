@@ -1,0 +1,7 @@
+{
+  "ref": "refs/heads/develop",
+  "inputs": {
+    "publish_to_s3": "false",
+    "skip_docker_trigger": "true"
+  }
+}

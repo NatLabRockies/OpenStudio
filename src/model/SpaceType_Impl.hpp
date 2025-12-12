@@ -343,6 +343,26 @@ namespace model {
 
       double getGasEquipmentPowerPerPerson(double floorArea, double numPeople) const;
 
+      boost::optional<double> hotWaterEquipmentPowerPerFloorArea() const;
+
+      bool setHotWaterEquipmentPowerPerFloorArea(double hotWaterEquipmentPowerPerFloorArea);
+
+      bool setHotWaterEquipmentPowerPerFloorArea(double hotWaterEquipmentPowerPerFloorArea,
+                                                 const boost::optional<HotWaterEquipment>& templateHotWaterEquipment);
+
+      boost::optional<double> hotWaterEquipmentPowerPerPerson() const;
+
+      bool setHotWaterEquipmentPowerPerPerson(double hotWaterEquipmentPowerPerPerson);
+
+      bool setHotWaterEquipmentPowerPerPerson(double hotWaterEquipmentPowerPerPerson,
+                                              const boost::optional<HotWaterEquipment>& templateHotWaterEquipment);
+
+      double getHotWaterEquipmentDesignLevel(double floorArea, double numPeople) const;
+
+      double getHotWaterEquipmentPowerPerFloorArea(double floorArea, double numPeople) const;
+
+      double getHotWaterEquipmentPowerPerPerson(double floorArea, double numPeople) const;
+
       double floorArea() const;
 
       boost::optional<std::string> setNameProtected(const std::string& newName);

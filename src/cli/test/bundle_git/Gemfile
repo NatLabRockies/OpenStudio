@@ -1,4 +1,4 @@
-source 'http://rubygems.org'
+source 'https://rubygems.org'
 
 gem 'xml-simple'
 # gem 'openstudio-extension', git: 'https://github.com/NREL/openstudio-extension-gem.git', ref: 'v0.8.0'

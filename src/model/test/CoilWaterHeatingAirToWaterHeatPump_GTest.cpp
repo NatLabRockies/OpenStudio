@@ -9,6 +9,10 @@
 #include "../CoilWaterHeatingAirToWaterHeatPump_Impl.hpp"
 #include "../Curve.hpp"
 #include "../TableLookup.hpp"
+#include "../Schedule.hpp"
+#include "../Schedule_Impl.hpp"
+#include "../ScheduleConstant.hpp"
+#include "../ScheduleConstant_Impl.hpp"
 
 using namespace openstudio;
 using namespace openstudio::model;
@@ -29,6 +33,13 @@ TEST_F(ModelFixture, CoilWaterHeatingAirToWaterHeatPump) {
   {
     Model m;
     CoilWaterHeatingAirToWaterHeatPump coil(m);
+
+    auto alwaysOn = m.alwaysOnDiscreteSchedule();
+    EXPECT_EQ(alwaysOn, coil.availabilitySchedule());
+    ScheduleConstant scheduleConstant(m);
+    EXPECT_TRUE(coil.setAvailabilitySchedule(scheduleConstant));
+    EXPECT_EQ(scheduleConstant, coil.availabilitySchedule());
+
     {
       auto curve = coil.heatingCapacityFunctionofTemperatureCurve();
       EXPECT_FALSE(curve.handle().isNull());

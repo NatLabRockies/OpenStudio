@@ -12,6 +12,8 @@
 #include "ZoneHVACWaterToAirHeatPump_Impl.hpp"
 #include "AirLoopHVACUnitarySystem.hpp"
 #include "AirLoopHVACUnitarySystem_Impl.hpp"
+#include "AirflowNetworkEquivalentDuct.hpp"
+#include "AirflowNetworkEquivalentDuct_Impl.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
 #include "Node_Impl.hpp"
@@ -22,6 +24,9 @@
 #include "CurveQuintLinear_Impl.hpp"
 #include "Curve.hpp"
 #include "Curve_Impl.hpp"
+#include "Schedule.hpp"
+#include "Schedule_Impl.hpp"
+#include "ScheduleTypeRegistry.hpp"
 
 #include <utilities/idd/OS_Coil_Cooling_WaterToAirHeatPump_EquationFit_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -83,12 +88,52 @@ namespace model {
       return CoilCoolingWaterToAirHeatPumpEquationFit::iddObjectType();
     }
 
+    std::vector<ScheduleTypeKey> CoilCoolingWaterToAirHeatPumpEquationFit_Impl::getScheduleTypeKeys(const Schedule& schedule) const {
+      std::vector<ScheduleTypeKey> result;
+      UnsignedVector fieldIndices = getSourceIndices(schedule.handle());
+      UnsignedVector::const_iterator b(fieldIndices.begin());
+      UnsignedVector::const_iterator e(fieldIndices.end());
+      if (std::find(b, e, OS_Coil_Cooling_WaterToAirHeatPump_EquationFitFields::AvailabilityScheduleName) != e) {
+        result.push_back(ScheduleTypeKey("CoilCoolingWaterToAirHeatPumpEquationFit", "Availability Schedule"));
+      }
+      return result;
+    }
+
     std::vector<openstudio::IdfObject> CoilCoolingWaterToAirHeatPumpEquationFit_Impl::remove() {
       if (isRemovable()) {
         return WaterToAirComponent_Impl::remove();
       }
 
       return {};
+    }
+
+    std::vector<ModelObject> CoilCoolingWaterToAirHeatPumpEquationFit_Impl::children() const {
+      std::vector<ModelObject> children;
+
+      std::vector<AirflowNetworkEquivalentDuct> myAFNItems =
+        getObject<ModelObject>().getModelObjectSources<AirflowNetworkEquivalentDuct>(AirflowNetworkEquivalentDuct::iddObjectType());
+      children.insert(children.end(), myAFNItems.begin(), myAFNItems.end());
+
+      return children;
+    }
+
+    boost::optional<Schedule> CoilCoolingWaterToAirHeatPumpEquationFit_Impl::optionalAvailabilitySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(OS_Coil_Cooling_WaterToAirHeatPump_EquationFitFields::AvailabilityScheduleName);
+    }
+
+    Schedule CoilCoolingWaterToAirHeatPumpEquationFit_Impl::availabilitySchedule() const {
+      boost::optional<Schedule> value = optionalAvailabilitySchedule();
+      if (!value) {
+        // it is an error if we get here, however we don't want to crash
+        // so we hook up to global always on schedule
+        LOG(Error, "Required availability schedule not set, using 'Always On' schedule");
+        value = this->model().alwaysOnDiscreteSchedule();
+        OS_ASSERT(value);
+        const_cast<CoilCoolingWaterToAirHeatPumpEquationFit_Impl*>(this)->setAvailabilitySchedule(*value);
+        value = optionalAvailabilitySchedule();
+      }
+      OS_ASSERT(value);
+      return value.get();
     }
 
     boost::optional<double> CoilCoolingWaterToAirHeatPumpEquationFit_Impl::ratedAirFlowRate() const {
@@ -198,6 +243,12 @@ namespace model {
         LOG_AND_THROW(briefDescription() << " does not have a Total Cooling Capacity Curve attached.");
       }
       return *value;
+    }
+
+    bool CoilCoolingWaterToAirHeatPumpEquationFit_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      bool result = setSchedule(OS_Coil_Cooling_WaterToAirHeatPump_EquationFitFields::AvailabilityScheduleName,
+                                "CoilCoolingWaterToAirHeatPumpEquationFit", "Availability Schedule", schedule);
+      return result;
     }
 
     bool CoilCoolingWaterToAirHeatPumpEquationFit_Impl::setTotalCoolingCapacityCurve(const Curve& totalCoolingCapacityCurve) {
@@ -498,6 +549,33 @@ namespace model {
 
       return boost::none;
     }
+
+    AirflowNetworkEquivalentDuct CoilCoolingWaterToAirHeatPumpEquationFit_Impl::getAirflowNetworkEquivalentDuct(double length, double diameter) {
+      boost::optional<AirflowNetworkEquivalentDuct> opt = airflowNetworkEquivalentDuct();
+      if (opt) {
+        if (opt->airPathLength() != length) {
+          opt->setAirPathLength(length);
+        }
+        if (opt->airPathHydraulicDiameter() != diameter) {
+          opt->setAirPathHydraulicDiameter(diameter);
+        }
+      }
+      return AirflowNetworkEquivalentDuct(model(), length, diameter, handle());
+    }
+
+    boost::optional<AirflowNetworkEquivalentDuct> CoilCoolingWaterToAirHeatPumpEquationFit_Impl::airflowNetworkEquivalentDuct() const {
+      std::vector<AirflowNetworkEquivalentDuct> myAFN =
+        getObject<ModelObject>().getModelObjectSources<AirflowNetworkEquivalentDuct>(AirflowNetworkEquivalentDuct::iddObjectType());
+      auto count = myAFN.size();
+      if (count == 1) {
+        return myAFN[0];
+      } else if (count > 1) {
+        LOG(Warn, briefDescription() << " has more than one AirflowNetwork EquivalentDuct attached, returning first.");
+        return myAFN[0];
+      }
+      return boost::none;
+    }
+
     boost::optional<double> CoilCoolingWaterToAirHeatPumpEquationFit_Impl::autosizedRatedAirFlowRate() const {
       // EPLUS-SQL-INCONSISTENCY
       return getAutosizedValue("Design Size Rated Air Flow Rate", "m3/s", "COIL:COOLING:WATERTOAIRHEATPUMP:EQUATIONFIT");
@@ -606,7 +684,11 @@ namespace model {
     : WaterToAirComponent(CoilCoolingWaterToAirHeatPumpEquationFit::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CoilCoolingWaterToAirHeatPumpEquationFit_Impl>());
 
-    bool ok = setTotalCoolingCapacityCurve(totalCoolingCapacityCurve);
+    auto always_on = model.alwaysOnDiscreteSchedule();
+    bool ok = setAvailabilitySchedule(always_on);
+    OS_ASSERT(ok);
+
+    ok = setTotalCoolingCapacityCurve(totalCoolingCapacityCurve);
     OS_ASSERT(ok);
 
     ok = setSensibleCoolingCapacityCurve(sensibleCoolingCapacityCurve);
@@ -622,6 +704,10 @@ namespace model {
     : WaterToAirComponent(CoilCoolingWaterToAirHeatPumpEquationFit::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CoilCoolingWaterToAirHeatPumpEquationFit_Impl>());
 
+    auto always_on = model.alwaysOnDiscreteSchedule();
+    bool ok = setAvailabilitySchedule(always_on);
+    OS_ASSERT(ok);
+
     CurveQuadLinear totalCoolingCapacityCurve(model);
     totalCoolingCapacityCurve.setName("TotCoolCapCurve");
     totalCoolingCapacityCurve.setCoefficient1Constant(-0.68126221);
@@ -629,7 +715,7 @@ namespace model {
     totalCoolingCapacityCurve.setCoefficient3x(-0.93611888);
     totalCoolingCapacityCurve.setCoefficient4y(0.02081177);
     totalCoolingCapacityCurve.setCoefficient5z(0.008438868);
-    bool ok = setTotalCoolingCapacityCurve(totalCoolingCapacityCurve);
+    ok = setTotalCoolingCapacityCurve(totalCoolingCapacityCurve);
     OS_ASSERT(ok);
 
     CurveQuintLinear sensibleCoolingCapacityCurve(model);
@@ -658,6 +744,10 @@ namespace model {
 
   IddObjectType CoilCoolingWaterToAirHeatPumpEquationFit::iddObjectType() {
     return {IddObjectType::OS_Coil_Cooling_WaterToAirHeatPump_EquationFit};
+  }
+
+  Schedule CoilCoolingWaterToAirHeatPumpEquationFit::availabilitySchedule() const {
+    return getImpl<detail::CoilCoolingWaterToAirHeatPumpEquationFit_Impl>()->availabilitySchedule();
   }
 
   boost::optional<double> CoilCoolingWaterToAirHeatPumpEquationFit::ratedAirFlowRate() const {
@@ -745,6 +835,10 @@ namespace model {
       ->isRatioofInitialMoistureEvaporationRateandSteadyStateLatentCapacityDefaulted();
   }
 
+  bool CoilCoolingWaterToAirHeatPumpEquationFit::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::CoilCoolingWaterToAirHeatPumpEquationFit_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
   bool CoilCoolingWaterToAirHeatPumpEquationFit::setRatedAirFlowRate(double ratedAirFlowRate) {
     return getImpl<detail::CoilCoolingWaterToAirHeatPumpEquationFit_Impl>()->setRatedAirFlowRate(ratedAirFlowRate);
   }
@@ -829,6 +923,14 @@ namespace model {
 
   void CoilCoolingWaterToAirHeatPumpEquationFit::resetRatioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity() {
     getImpl<detail::CoilCoolingWaterToAirHeatPumpEquationFit_Impl>()->resetRatioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity();
+  }
+
+  AirflowNetworkEquivalentDuct CoilCoolingWaterToAirHeatPumpEquationFit::getAirflowNetworkEquivalentDuct(double length, double diameter) {
+    return getImpl<detail::CoilCoolingWaterToAirHeatPumpEquationFit_Impl>()->getAirflowNetworkEquivalentDuct(length, diameter);
+  }
+
+  boost::optional<AirflowNetworkEquivalentDuct> CoilCoolingWaterToAirHeatPumpEquationFit::airflowNetworkEquivalentDuct() const {
+    return getImpl<detail::CoilCoolingWaterToAirHeatPumpEquationFit_Impl>()->airflowNetworkEquivalentDuct();
   }
 
   boost::optional<double> CoilCoolingWaterToAirHeatPumpEquationFit::autosizedRatedAirFlowRate() const {

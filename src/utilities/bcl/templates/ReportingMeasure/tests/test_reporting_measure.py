@@ -169,7 +169,7 @@ class TestReportingMeasureName:
             os.chdir(start_dir)
 
         result = runner.result()
-        print(result)
+        result.showOutput
         assert result.value().valueName() == "Success"
         assert len(result.stepWarnings()) == 0
 
@@ -252,7 +252,7 @@ class TestReportingMeasureName:
             os.chdir(start_dir)
 
         result = runner.result()
-        print(result)
+        result.showOutput
         assert result.value().valueName() == "Success"
         assert len(result.stepWarnings()) == 0
 

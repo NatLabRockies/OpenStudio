@@ -63,7 +63,7 @@ class TestModelMeasureName:
         result = runner.result()
 
         # show the output
-        # show_output(result)
+        result.showOutput
         print(f"results: {result}")
 
         # assert that it failed
@@ -117,7 +117,7 @@ class TestModelMeasureName:
         result = runner.result()
 
         # show the output
-        # show_output(result)
+        result.showOutput
         print(f"results: {result}")
 
         # assert that it ran correctly

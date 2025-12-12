@@ -118,6 +118,8 @@ namespace model {
 
     double standbyElectricPower() const;
 
+    double minimumUnloadingRatio() const;
+
     //@}
     /** @name Setters */
     //@{
@@ -189,6 +191,8 @@ namespace model {
     void resetAuxiliaryElectricEnergyInputRatioFunctionofPLRCurve();
 
     bool setStandbyElectricPower(double standbyElectricPower);
+
+    bool setMinimumUnloadingRatio(double minimumUnloadingRatio);
 
     //@}
     /** @name Other */

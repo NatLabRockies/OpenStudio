@@ -31,6 +31,14 @@ namespace energyplus {
       idfObject.setName(*s);
     }
 
+    // AvailabilityScheduleName
+    {
+      auto schedule = modelObject.availabilitySchedule();
+      if (boost::optional<IdfObject> _schedule = translateAndMapModelObject(schedule)) {
+        idfObject.setString(Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::AvailabilityScheduleName, _schedule->name().get());
+      }
+    }
+
     {
       auto value = modelObject.ratedHeatingCapacity();
       idfObject.setDouble(Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::RatedHeatingCapacity, value);

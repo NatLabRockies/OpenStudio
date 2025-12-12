@@ -11,6 +11,12 @@
 #include "../Curve_Impl.hpp"
 #include "../CurveLinear.hpp"
 #include "../CoilCoolingDXVariableSpeedSpeedData.hpp"
+#include "../Schedule.hpp"
+#include "../Schedule_Impl.hpp"
+#include "../ScheduleConstant.hpp"
+#include "../ScheduleConstant_Impl.hpp"
+#include "../ScheduleTypeLimits.hpp"
+#include "../ScheduleTypeLimits_Impl.hpp"
 
 using namespace openstudio;
 using namespace openstudio::model;
@@ -26,6 +32,15 @@ TEST_F(ModelFixture, CoilCoolingDXVariableSpeed) {
       exit(0);
     },
     ::testing::ExitedWithCode(0), "");
+
+  Model m;
+  CoilCoolingDXVariableSpeed coil(m);
+
+  auto alwaysOn = m.alwaysOnDiscreteSchedule();
+  EXPECT_EQ(alwaysOn, coil.availabilitySchedule());
+  ScheduleConstant scheduleConstant(m);
+  EXPECT_TRUE(coil.setAvailabilitySchedule(scheduleConstant));
+  EXPECT_EQ(scheduleConstant, coil.availabilitySchedule());
 }
 
 TEST_F(ModelFixture, CoilCoolingDXVariableSpeed_Speeds) {
@@ -51,8 +66,10 @@ TEST_F(ModelFixture, CoilCoolingDXVariableSpeed_Remove) {
   coil.remove();
 
   auto curves = m.getModelObjects<model::Curve>();
+  auto schedules = m.getConcreteModelObjects<model::ScheduleConstant>();
+  auto limits = m.getConcreteModelObjects<model::ScheduleTypeLimits>();
 
-  EXPECT_EQ(count, m.modelObjects().size() - curves.size());
+  EXPECT_EQ(count + schedules.size() + limits.size(), m.modelObjects().size() - curves.size());
 }
 
 TEST_F(ModelFixture, CoilCoolingDXVariableSpeed_MinOATCompressor) {

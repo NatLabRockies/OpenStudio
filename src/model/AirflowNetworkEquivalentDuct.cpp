@@ -84,6 +84,16 @@ namespace model {
             return std::string("Coil:Heating:Desuperheater");
           case IddObjectType::OS_Coil_Cooling_DX:
             return std::string("Coil:Cooling:DX");
+          case IddObjectType::OS_Coil_Cooling_DX_SingleSpeed_ThermalStorage:
+            return std::string("Coil:Cooling:DX:SingleSpeed:ThermalStorage");
+          case IddObjectType::OS_Coil_Cooling_WaterToAirHeatPump_EquationFit:
+            return std::string("Coil:Cooling:WaterToAirHeatPump:EquationFit");
+          case IddObjectType::OS_Coil_Heating_WaterToAirHeatPump_EquationFit:
+            return std::string("Coil:Heating:WaterToAirHeatPump:EquationFit");
+          case IddObjectType::OS_Coil_Cooling_WaterToAirHeatPump_VariableSpeedEquationFit:
+            return std::string("Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit");
+          case IddObjectType::OS_Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFit:
+            return std::string("Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit");
           default:
             return boost::none;
         }

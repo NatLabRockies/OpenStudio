@@ -7,6 +7,7 @@
 
 #include <utilities/core/ApplicationPathHelpers.hpp>
 #include <utilities/core/PathHelpers.hpp>
+#include <OpenStudio.hxx>
 
 using namespace openstudio;
 

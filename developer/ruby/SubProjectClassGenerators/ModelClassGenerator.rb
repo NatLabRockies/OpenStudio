@@ -10,6 +10,7 @@
 #
 ######################################################################
 
+require 'pathname'
 require File.dirname(__FILE__) + '/SubProjectClassGenerator.rb'
 
 class ModelObjectField
@@ -191,9 +192,9 @@ class ModelObjectField
 
   def setterArgumentName
     result = getterName
-    if (isObjectList?)
-      result = OpenStudio::toLowerCamelCase(objectListClassName)
-    end
+    # if (isObjectList?)
+    #   result = OpenStudio::toLowerCamelCase(objectListClassName)
+    # end
     return result
   end
 
@@ -237,7 +238,13 @@ class ModelObjectField
         result = "std::string"
       end
     elsif isObjectList?
-      result = objectListClassName
+      if ["UnivariateFunctions", "BivariateFunctions"].include?(objectListClassName)
+        result = "Curve"
+      elsif objectListClassName == "Connection"
+        result = "Node"
+      else
+        result = objectListClassName
+      end
     elsif isNode?
       result = "Node"
     end
@@ -316,6 +323,10 @@ class ModelObjectField
     elsif isObjectList?
       if isSchedule?
         result = objectListClassName + "&"
+      elsif ["UnivariateFunctions", "BivariateFunctions"].include?(objectListClassName)
+        result = "const Curve&"
+      elsif objectListClassName == "Connection"
+        result = "const Node&"
       else
         result = "const " + objectListClassName + "&"
       end
@@ -406,7 +417,6 @@ class ModelClassGenerator < SubProjectClassGenerator
 
   def initialize(className, baseClassName, pImpl, qobject, iddObjectType)
     super(className, baseClassName, pImpl, qobject)
-    @iddObjectType = iddObjectType
     @hasRealFields = false
     @hasScheduleFields = false
 
@@ -421,14 +431,25 @@ class ModelClassGenerator < SubProjectClassGenerator
       'WaterToWaterComponent',
       'ZoneHVACComponent'].include?(baseClassName)
 
-    if not @iddObjectType.empty?
+    if not iddObjectType.empty?
       require 'openstudio'
 
       raise "ModelObjects follow the pImpl idiom. Add -p to the command line." if not @pImpl
 
-      @iddObjectType = @iddObjectType.to_IddObjectType
-      @idfObject = OpenStudio::IdfObject.new(@iddObjectType)
-      @iddObject = @idfObject.iddObject
+      begin
+        @iddObjectType = iddObjectType.to_IddObjectType
+        idfObject = OpenStudio::IdfObject.new(iddObjectType)
+        @iddObject = idfObject.iddObject
+      rescue
+        idd_path = (Pathname.new(Dir.pwd) / "../../resources/model/OpenStudio.idd").realpath
+        raise "Could not find IDD on disk at #{idd_path}" if not idd_path.file?
+        iddFile = OpenStudio::IddFile.load(idd_path.to_s).get()
+        iddObject_ = iddFile.getObject(iddObjectType)
+        raise "Could not find #{iddObjectType} in the OpenStudio.idd at #{idd_path}" if iddObject_.empty?
+        @iddObject = iddObject_.get
+        @iddObjectType = FakeIddObjectType.new(iddObjectType)
+      end
+
 
       # Find required non-extensible fields, split out by object-list and data
       @nonextensibleFields = []
@@ -463,7 +484,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def cppIncludes()
     result = String.new
 
-    if @idfObject
+    if @iddObject
 
       # include object list field classes
       # include IddFactory.hxx if there is a non-boolean choice field
@@ -476,6 +497,11 @@ class ModelClassGenerator < SubProjectClassGenerator
 
       preamble = "// TODO: Check the following class names against object getters and setters.\n"
       @objectListClassNames.each { |className|
+        if ["UnivariateFunctions", "BivariateFunctions"].include?(className)
+          className = "Curve"
+        elsif className == "Connection"
+          className = "Node"
+        end
         result << preamble
         result << "#include \"" << className << ".hpp\"\n"
         result << "#include \"" << className << "_Impl.hpp\"\n"
@@ -528,9 +554,14 @@ class ModelClassGenerator < SubProjectClassGenerator
 
   def hppSubProjectForwardDeclarations
     result = String.new
-    if @idfObject
+    if @iddObject
       preamble = "  // TODO: Check the following class names against object getters and setters.\n"
       @objectListClassNames.each { |className|
+        if ["UnivariateFunctions", "BivariateFunctions"].include?(className)
+          className = "Curve"
+        elsif className == "Connection"
+          className = "Node"
+        end
         result << preamble
         result << "  class " << className << ";\n"
         preamble = ""
@@ -542,7 +573,7 @@ class ModelClassGenerator < SubProjectClassGenerator
 
   def implHppSubProjectForwardDeclarations
     result = String.new
-    if @idfObject
+    if @iddObject
       result = hppSubProjectForwardDeclarations
     end
     return result
@@ -551,7 +582,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def hppPreClass()
     result = String.new
 
-    if @idfObject
+    if @iddObject
       result << "  /** " << className << " is a " << baseClassName
       result << " that wraps the OpenStudio IDD object '" << iddObjectType.valueDescription
       result << "'. */\n"
@@ -565,7 +596,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def hppConstructors()
     result = String.new
 
-    if @idfObject
+    if @iddObject
 
       if (not @iddObject.properties.unique)
         result << "    explicit " << className << "(const Model& model);\n\n"
@@ -581,7 +612,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def implHppConstructors()
     result = String.new
 
-    if @idfObject
+    if @iddObject
 
       implConstructorStart = String.new
       implConstructorStart << "      " << @className << "_Impl("
@@ -608,7 +639,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def cppConstructors()
     result = String.new
 
-    if @idfObject
+    if @iddObject
 
 
       implConstructorStart = String.new
@@ -641,7 +672,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def cppPublicClassConstructors()
     result = String.new
 
-    if @idfObject
+    if @iddObject
 
       if (not iddObject.properties.unique)
 
@@ -686,7 +717,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def hppPublicMethods()
     result = String.new
 
-    if @idfObject
+    if @iddObject
 
       result << "    static IddObjectType iddObjectType();\n\n"
 
@@ -720,8 +751,6 @@ class ModelClassGenerator < SubProjectClassGenerator
 
         if field.canAutosize?
           result << "    bool " << field.isAutosizeName << "() const;\n\n"
-          # Get the autosized value from the sql file
-          result << "    boost::optional <double> " << field.autosizedName << "();\n\n"
         end
 
         if field.canAutocalculate?
@@ -786,6 +815,15 @@ class ModelClassGenerator < SubProjectClassGenerator
 
       result << "    /** @name Other */\n"
       result << "    //@{\n\n"
+
+      # If there are any autosizeable fields, need to add bulk autosize
+      if @autosizedGetterNames.size > 0
+        result << "    // Autosize methods\n\n"
+        @autosizedGetterNames.each do |autosizedGetterName|
+          result << "    boost::optional<double> " << autosizedGetterName << "() const;\n"
+        end
+      end
+
       result << "    //@}\n"
 
     else
@@ -798,7 +836,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def implHppPublicMethods()
     result = String.new
 
-    if @idfObject
+    if @iddObject
 
       result << "      /** @name Virtual Methods */\n"
 
@@ -811,6 +849,78 @@ class ModelClassGenerator < SubProjectClassGenerator
 
       if @hasScheduleFields
         result << "      virtual std::vector<ScheduleTypeKey> getScheduleTypeKeys(const Schedule& schedule) const override;\n\n"
+      end
+
+      if @derivesHVACComponent || @baseClassName == 'ParentObject' || @baseClassName == 'ResourceObject'
+        result << "      // TODO: You may need to override these since base is " << @baseClassName << "\n"
+        result << "      // virtual ModelObject clone(Model model) const override;\n\n"
+
+        result << "      // virtual std::vector<ModelObject> children() const override;\n"
+        result << "      // virtual std::vector<IddObjectType> allowableChildTypes() const override;\n\n"
+
+        result << "      // virtual std::vector<IdfObject> remove() override;\n\n"
+      end
+
+      if @derivesHVACComponent
+        result << "      // Overrides from "<< @baseClassName << "\n"
+        if @baseClassName == 'StraightComponent'
+          result << "      virtual unsigned inletPort() const override;\n"
+          result << "      virtual unsigned outletPort() const override;\n\n"
+
+          result << "      virtual bool addToNode(Node& node) override;\n\n"
+        elsif @baseClassName == 'WaterToWaterComponent'
+          result << "      virtual unsigned supplyInletPort() const override;\n"
+          result << "      virtual unsigned supplyOutletPort() const override;\n\n"
+
+          result << "      virtual unsigned demandInletPort() const override;\n"
+          result << "      virtual unsigned demandOutletPort() const override;\n\n"
+
+          result << "      virtual bool addToNode(Node& node) override;\n\n"
+
+          result << "      // TODO: You may need to override these if you have a tertiary loop (Heat Recovery for eg)\n"
+          result << "      // virtual unsigned tertiaryInletPort() const override;\n"
+          result << "      // virtual unsigned tertiaryOutletPort() const override;\n"
+          result << "      // virtual bool addToTertiaryNode(Node& node) override;\n\n"
+
+          result << "      virtual bool addToNode(Node& node) override;\n\n"
+        elsif @baseClassName == 'AirToAirComponent'
+          result << "      virtual unsigned primaryAirInletPort() const override;\n"
+          result << "      virtual unsigned primaryAirOutletPort() const override;\n\n"
+
+          result << "      virtual unsigned secondaryAirInletPort() const override;\n"
+          result << "      virtual unsigned secondaryAirOutletPort() const override;\n\n"
+
+          result << "      virtual bool addToNode(Node& node) override;\n\n"
+        elsif @baseClassName == 'WaterToAirComponent'
+          result << "      virtual unsigned supplyInletPort() const override;\n"
+          result << "      virtual unsigned supplyOutletPort() const override;\n\n"
+
+          result << "      virtual unsigned demandInletPort() const override;\n"
+          result << "      virtual unsigned demandOutletPort() const override;\n\n"
+
+          result << "      virtual bool addToNode(Node& node) override;\n\n"
+        elsif @baseClassName == 'ZoneHVACComponent'
+          result << "      virtual unsigned inletPort() const override;\n"
+          result << "      virtual unsigned outletPort() const override;\n\n"
+
+          result << "      virtual bool addToNode(Node& node) override;\n\n"
+        else
+          result << "      // TODO: You probably need to override at least this one\n"
+          result << "      virtual bool addToNode(Node& node) override;\n\n"
+        end
+
+        result << "      // TODO: If your component can be contained, override these\n"
+        result << "      // virtual boost::optional<HVACComponent> containingHVACComponent() const override;\n"
+        result << "      // virtual boost::optional<Mixer> containingZoneHVACComponent() const override;\n"
+        result << "      // virtual boost::optional<SetpointManager> containingStraightComponent() const override;\n"
+      end
+
+      # If there are any autosizeable fields, need to add bulk autosize
+      # and applySizingValues methods.  These methods are assumed
+      # to be overrides from the method declared in HVACComponent.
+      if @autosizedGetterNames.size > 0
+        result << "      virtual void autosize() override;\n\n"
+        result << "      virtual void applySizingValues() override;\n\n"
       end
 
       if @derivesHVACComponent
@@ -843,8 +953,6 @@ class ModelClassGenerator < SubProjectClassGenerator
 
         if field.canAutosize?
           result << "      bool " << field.isAutosizeName << "() const;\n\n"
-          # Get the autosized value from the sql file
-          result << "      boost::optional <double> " << field.autosizedName << "();\n\n"
         end
 
         if field.canAutocalculate?
@@ -899,16 +1007,7 @@ class ModelClassGenerator < SubProjectClassGenerator
         end
       }
 
-      # If there are any autosizeable fields, need to add bulk autosize
-      # and applySizingValues methods.  These methods are assumed
-      # to be overrides from the method declared in HVACComponent.
-      if @autosizedGetterNames.size > 0
-        result << "      virtual void autosize() override;\n\n"
-        result << "      virtual void applySizingValues() override;\n\n"
-      end
-
       # Extensible field setters
-
       if (@iddObject.properties.extensible)
         result << "      // TODO: Handle this object's extensible fields.\n\n"
       end
@@ -917,6 +1016,15 @@ class ModelClassGenerator < SubProjectClassGenerator
 
       result << "      /** @name Other */\n"
       result << "      //@{\n\n"
+
+      # If there are any autosizeable fields, need to add bulk autosize
+      if @autosizedGetterNames.size > 0
+        result << "      // Autosize methods\n\n"
+        @autosizedGetterNames.each do |autosizedGetterName|
+          result << "      boost::optional<double> " << autosizedGetterName << "() const;\n"
+        end
+      end
+
       result << "      //@}\n"
 
     else
@@ -929,7 +1037,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def cppPublicMethods()
     result = String.new
 
-    if @idfObject
+    if @iddObject
 
       result << "    const std::vector<std::string>& " << @className << "_Impl::outputVariableNames() const {\n"
       result << "      static std::vector<std::string> result;\n"
@@ -1054,7 +1162,7 @@ class ModelClassGenerator < SubProjectClassGenerator
           result << "    }\n\n"
 
           # Get the autosized value from the sql file
-          result << "    boost::optional <double> " << @className << "_Impl::" << field.autosizedName << "() {\n"
+          result << "    boost::optional <double> " << @className << "_Impl::" << field.autosizedName << "() const {\n"
           result << "      return getAutosizedValue(\"TODO_CHECK_SQL #{field.name}\", \"#{field.sqlUnitString}\");\n"
           result << "    }\n\n"
 
@@ -1195,7 +1303,7 @@ class ModelClassGenerator < SubProjectClassGenerator
         @autosizedGetterNames.each do |name|
           setter_name = name.gsub('autosized','set')
           result << "      if (boost::optional<double> val_ = #{name}()) {\n"
-          result << "        #{setter_name}(*val_));\n"
+          result << "        #{setter_name}(*val_);\n"
           result << "      }\n\n"
         end
         result << "    }\n\n"
@@ -1212,7 +1320,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def cppPublicClassPublicMethods()
     result = String.new
 
-    if @idfObject
+    if @iddObject
 
       result << "  IddObjectType " << @className << "::iddObjectType() {\n"
       result << "    return {IddObjectType::" << @iddObjectType.valueName << "};\n"
@@ -1252,7 +1360,7 @@ class ModelClassGenerator < SubProjectClassGenerator
           result << "  }\n\n"
 
           # Get the autosized value from the sql file
-          result << "  boost::optional <double> " << @className << "::" << field.autosizedName << "() {\n"
+          result << "  boost::optional <double> " << @className << "::" << field.autosizedName << "() const {\n"
           result << "    return getImpl<detail::" << @className << "_Impl>()->#{field.autosizedName}();\n"
           result << "  }\n\n"
         end
@@ -1306,7 +1414,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def hppProtectedFriends()
     result = String.new
 
-    if @idfObject
+    if @iddObject
       result << "    friend class Model;\n"
       result << "    friend class IdfObject;\n"
       result << "    friend class openstudio::detail::IdfObject_Impl;\n"
@@ -1318,7 +1426,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def hppProtectedMethods()
     result = String.new
 
-    if @idfObject
+    if @iddObject
 
       if (@iddObject.properties.unique)
         result << "    explicit " << @className << "(Model& model);\n\n"
@@ -1334,7 +1442,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def implHppProtectedMethods()
     result = String.new
 
-    if @idfObject
+    if @iddObject
 
     else
       result = super
@@ -1346,7 +1454,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def cppProtectedMethods()
     result = String.new
 
-    if @idfObject
+    if @iddObject
 
     else
       result = super
@@ -1358,7 +1466,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def cppPublicClassProtectedMethods()
     result = String.new
 
-    if @idfObject
+    if @iddObject
 
       if (iddObject.properties.unique)
         result << "  " << @className << "::" << @className << "(Model& model)\n"
@@ -1375,7 +1483,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def implHppPrivateMethods()
     result = String.new
 
-    if @idfObject
+    if @iddObject
 
       # Optional getters for required objects
       any = false
@@ -1403,7 +1511,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def cppPrivateMethods()
     result = String.new
 
-    if @idfObject
+    if @iddObject
 
       # Optional getters for required objects
       @nonextensibleFields.each { |field|
@@ -1431,6 +1539,11 @@ class ModelClassGenerator < SubProjectClassGenerator
 
     # Check for ObjectList fields, to see which we need to include
     @objectListClassNames.each { |className|
+      if ["UnivariateFunctions", "BivariateFunctions"].include?(className)
+          className = "Curve"
+      elsif className == "Connection"
+          className = "Node"
+      end
       result << preamble
       result << "#include \"../" << className << ".hpp\"\n"
       result << "#include \"../" << className << "_Impl.hpp\"\n\n"
@@ -1685,7 +1798,7 @@ class ModelClassGenerator < SubProjectClassGenerator
   def aux()
     result = String.new
     if @hasScheduleFields
-      result << "// TODO: Copy-paste this starter text into ScheduleTypeRegistry.cpp, in the ScheduleTypeRegistrySingleton\n"
+      result << "// TODO: Copy-paste this starter text into ScheduleTypeRegistry.cpp\n"
       result << "// constructor. Read the EnergyPlus Input-Output reference and fill out the ScheduleTypeLimits information\n"
       result << "// accordingly.\n"
       @nonextensibleFields.each { |field|

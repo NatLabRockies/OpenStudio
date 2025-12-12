@@ -357,6 +357,12 @@ namespace model {
       return value.get();
     }
 
+    double ZoneHVACPackagedTerminalHeatPump_Impl::dXHeatingCoilSizingRatio() const {
+      boost::optional<double> value = getDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::DXHeatingCoilSizingRatio, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
     bool ZoneHVACPackagedTerminalHeatPump_Impl::setAvailabilitySchedule(Schedule& schedule) {
       bool result = setSchedule(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::AvailabilityScheduleName, "ZoneHVACPackagedTerminalHeatPump",
                                 "Availability", schedule);
@@ -619,6 +625,11 @@ namespace model {
     bool ZoneHVACPackagedTerminalHeatPump_Impl::setSupplyAirFanOperatingModeSchedule(Schedule& schedule) {
       bool result = setSchedule(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFanOperatingModeScheduleName, "ZoneHVACPackagedTerminalHeatPump",
                                 "Supply Air Fan Operating Mode", schedule);
+      return result;
+    }
+
+    bool ZoneHVACPackagedTerminalHeatPump_Impl::setDXHeatingCoilSizingRatio(double dxHeatingCoilSizingRatio) {
+      bool result = setDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::DXHeatingCoilSizingRatio, dxHeatingCoilSizingRatio);
       return result;
     }
 
@@ -890,6 +901,7 @@ namespace model {
     autosizeSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded();
     setNoLoadSupplyAirFlowRateControlSetToLowSpeed(true);
     autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
+    setDXHeatingCoilSizingRatio(1.0);
   }
 
   IddObjectType ZoneHVACPackagedTerminalHeatPump::iddObjectType() {
@@ -1160,6 +1172,10 @@ namespace model {
     return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->setSupplyAirFanOperatingModeSchedule(schedule);
   }
 
+  bool ZoneHVACPackagedTerminalHeatPump::setDXHeatingCoilSizingRatio(double dxHeatingCoilSizingRatio) {
+    return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->setDXHeatingCoilSizingRatio(dxHeatingCoilSizingRatio);
+  }
+
   bool ZoneHVACPackagedTerminalHeatPump::setSupplyAirFan(HVACComponent& hvacComponent) {
     return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->setSupplyAirFan(hvacComponent);
   }
@@ -1182,6 +1198,10 @@ namespace model {
 
   Schedule ZoneHVACPackagedTerminalHeatPump::supplyAirFanOperatingModeSchedule() const {
     return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->supplyAirFanOperatingModeSchedule();
+  }
+
+  double ZoneHVACPackagedTerminalHeatPump::dXHeatingCoilSizingRatio() const {
+    return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->dXHeatingCoilSizingRatio();
   }
 
   HVACComponent ZoneHVACPackagedTerminalHeatPump::supplyAirFan() const {

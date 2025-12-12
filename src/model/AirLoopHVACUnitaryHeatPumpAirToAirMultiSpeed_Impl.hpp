@@ -72,7 +72,7 @@ namespace model {
 
       HVACComponent heatingCoil() const;
 
-      double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
+      double dXHeatingCoilSizingRatio() const;
 
       HVACComponent coolingCoil() const;
 
@@ -180,7 +180,7 @@ namespace model {
 
       bool setHeatingCoil(const HVACComponent& coil);
 
-      bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);
+      bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);
 
       bool setCoolingCoil(const HVACComponent& coil);
 

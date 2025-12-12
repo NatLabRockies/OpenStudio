@@ -271,6 +271,15 @@ namespace energyplus {
       }
     }
 
+    if (boost::optional<std::string> _outputPlantComponentSizing =
+          workspaceObject.getString(OutputControl_FilesFields::OutputPlantComponentSizing, true)) {
+      if (istringEqual("Yes", _outputPlantComponentSizing.get())) {
+        modelObject.setOutputPlantComponentSizing(true);
+      } else {
+        modelObject.setOutputPlantComponentSizing(false);
+      }
+    }
+
     result = modelObject;
     return result;
 

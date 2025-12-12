@@ -29,6 +29,8 @@
 #include "CoilSystemCoolingDXHeatExchangerAssisted_Impl.hpp"
 #include "CoilSystemIntegratedHeatPumpAirSource.hpp"
 #include "CoilSystemIntegratedHeatPumpAirSource_Impl.hpp"
+#include "AirflowNetworkEquivalentDuct.hpp"
+#include "AirflowNetworkEquivalentDuct_Impl.hpp"
 
 #include "Model.hpp"
 #include "Model_Impl.hpp"
@@ -109,6 +111,9 @@ namespace model {
       UnsignedVector fieldIndices = getSourceIndices(schedule.handle());
       UnsignedVector::const_iterator b(fieldIndices.begin());
       UnsignedVector::const_iterator e(fieldIndices.end());
+      if (std::find(b, e, OS_Coil_Cooling_DX_VariableSpeedFields::AvailabilityScheduleName) != e) {
+        result.push_back(ScheduleTypeKey("CoilCoolingDXVariableSpeed", "Availability Schedule"));
+      }
       if (std::find(b, e, OS_Coil_Cooling_DX_VariableSpeedFields::BasinHeaterOperatingScheduleName) != e) {
         result.push_back(ScheduleTypeKey("CoilCoolingDXVariableSpeed", "Basin Heater Operating"));
       }
@@ -121,6 +126,25 @@ namespace model {
 
     unsigned CoilCoolingDXVariableSpeed_Impl::outletPort() const {
       return OS_Coil_Cooling_DX_VariableSpeedFields::IndoorAirOutletNodeName;
+    }
+
+    boost::optional<Schedule> CoilCoolingDXVariableSpeed_Impl::optionalAvailabilitySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(OS_Coil_Cooling_DX_VariableSpeedFields::AvailabilityScheduleName);
+    }
+
+    Schedule CoilCoolingDXVariableSpeed_Impl::availabilitySchedule() const {
+      boost::optional<Schedule> value = optionalAvailabilitySchedule();
+      if (!value) {
+        // it is an error if we get here, however we don't want to crash
+        // so we hook up to global always on schedule
+        LOG(Error, "Required availability schedule not set, using 'Always On' schedule");
+        value = this->model().alwaysOnDiscreteSchedule();
+        OS_ASSERT(value);
+        const_cast<CoilCoolingDXVariableSpeed_Impl*>(this)->setAvailabilitySchedule(*value);
+        value = optionalAvailabilitySchedule();
+      }
+      OS_ASSERT(value);
+      return value.get();
     }
 
     int CoilCoolingDXVariableSpeed_Impl::nominalSpeedLevel() const {
@@ -235,6 +259,12 @@ namespace model {
 
     boost::optional<Schedule> CoilCoolingDXVariableSpeed_Impl::basinHeaterOperatingSchedule() const {
       return getObject<ModelObject>().getModelObjectTarget<Schedule>(OS_Coil_Cooling_DX_VariableSpeedFields::BasinHeaterOperatingScheduleName);
+    }
+
+    bool CoilCoolingDXVariableSpeed_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      bool result = setSchedule(OS_Coil_Cooling_DX_VariableSpeedFields::AvailabilityScheduleName, "CoilCoolingDXVariableSpeed",
+                                "Availability Schedule", schedule);
+      return result;
     }
 
     bool CoilCoolingDXVariableSpeed_Impl::setNominalSpeedLevel(int nominalSpeedLevel) {
@@ -487,6 +517,9 @@ namespace model {
           children.push_back(mo);
         }
       }
+      std::vector<AirflowNetworkEquivalentDuct> myAFNItems =
+        getObject<ModelObject>().getModelObjectSources<AirflowNetworkEquivalentDuct>(AirflowNetworkEquivalentDuct::iddObjectType());
+      children.insert(children.end(), myAFNItems.begin(), myAFNItems.end());
       return children;
     }
 
@@ -670,6 +703,32 @@ namespace model {
       return result;
     }
 
+    AirflowNetworkEquivalentDuct CoilCoolingDXVariableSpeed_Impl::getAirflowNetworkEquivalentDuct(double length, double diameter) {
+      boost::optional<AirflowNetworkEquivalentDuct> opt = airflowNetworkEquivalentDuct();
+      if (opt) {
+        if (opt->airPathLength() != length) {
+          opt->setAirPathLength(length);
+        }
+        if (opt->airPathHydraulicDiameter() != diameter) {
+          opt->setAirPathHydraulicDiameter(diameter);
+        }
+      }
+      return AirflowNetworkEquivalentDuct(model(), length, diameter, handle());
+    }
+
+    boost::optional<AirflowNetworkEquivalentDuct> CoilCoolingDXVariableSpeed_Impl::airflowNetworkEquivalentDuct() const {
+      std::vector<AirflowNetworkEquivalentDuct> myAFN =
+        getObject<ModelObject>().getModelObjectSources<AirflowNetworkEquivalentDuct>(AirflowNetworkEquivalentDuct::iddObjectType());
+      auto count = myAFN.size();
+      if (count == 1) {
+        return myAFN[0];
+      } else if (count > 1) {
+        LOG(Warn, briefDescription() << " has more than one AirflowNetwork EquivalentDuct attached, returning first.");
+        return myAFN[0];
+      }
+      return boost::none;
+    }
+
     boost::optional<double> CoilCoolingDXVariableSpeed_Impl::autosizedGrossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevel() const {
       // EPLUS-SQL-INCONSISTENCY
       return getAutosizedValue("Design Size Rated Total Cooling Capacity", "W", "COIL:COOLING:DX:VARIABLESPEED");
@@ -730,8 +789,11 @@ namespace model {
   CoilCoolingDXVariableSpeed::CoilCoolingDXVariableSpeed(const Model& model) : StraightComponent(CoilCoolingDXVariableSpeed::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CoilCoolingDXVariableSpeed_Impl>());
 
-    bool ok = true;
-    setNominalSpeedLevel(1);
+    auto always_on = model.alwaysOnDiscreteSchedule();
+    bool ok = setAvailabilitySchedule(always_on);
+    OS_ASSERT(ok);
+    ok = setNominalSpeedLevel(1);
+    OS_ASSERT(ok);
     autosizeGrossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevel();
     autosizeRatedAirFlowRateAtSelectedNominalSpeedLevel();
     ok = setNominalTimeforCondensatetoBeginLeavingtheCoil(0);
@@ -782,8 +844,11 @@ namespace model {
     : StraightComponent(CoilCoolingDXVariableSpeed::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CoilCoolingDXVariableSpeed_Impl>());
 
-    bool ok = true;
-    setNominalSpeedLevel(1);
+    auto always_on = model.alwaysOnDiscreteSchedule();
+    bool ok = setAvailabilitySchedule(always_on);
+    OS_ASSERT(ok);
+    ok = setNominalSpeedLevel(1);
+    OS_ASSERT(ok);
     autosizeGrossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevel();
     autosizeRatedAirFlowRateAtSelectedNominalSpeedLevel();
     ok = setNominalTimeforCondensatetoBeginLeavingtheCoil(0);
@@ -828,6 +893,10 @@ namespace model {
 
   std::vector<std::string> CoilCoolingDXVariableSpeed::condenserTypeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), OS_Coil_Cooling_DX_VariableSpeedFields::CondenserType);
+  }
+
+  Schedule CoilCoolingDXVariableSpeed::availabilitySchedule() const {
+    return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->availabilitySchedule();
   }
 
   int CoilCoolingDXVariableSpeed::nominalSpeedLevel() const {
@@ -904,6 +973,10 @@ namespace model {
 
   boost::optional<Schedule> CoilCoolingDXVariableSpeed::basinHeaterOperatingSchedule() const {
     return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->basinHeaterOperatingSchedule();
+  }
+
+  bool CoilCoolingDXVariableSpeed::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->setAvailabilitySchedule(schedule);
   }
 
   bool CoilCoolingDXVariableSpeed::setNominalSpeedLevel(int nominalSpeedLevel) {
@@ -1084,6 +1157,14 @@ namespace model {
 
   boost::optional<double> CoilCoolingDXVariableSpeed::autosizedEvaporativeCondenserPumpRatedPowerConsumption() const {
     return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->autosizedEvaporativeCondenserPumpRatedPowerConsumption();
+  }
+
+  AirflowNetworkEquivalentDuct CoilCoolingDXVariableSpeed::getAirflowNetworkEquivalentDuct(double length, double diameter) {
+    return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->getAirflowNetworkEquivalentDuct(length, diameter);
+  }
+
+  boost::optional<AirflowNetworkEquivalentDuct> CoilCoolingDXVariableSpeed::airflowNetworkEquivalentDuct() const {
+    return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->airflowNetworkEquivalentDuct();
   }
 
 }  // namespace model

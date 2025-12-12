@@ -81,6 +81,8 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_SizingSystem) {
   EXPECT_EQ(1.0, idf_ss.getDouble(Sizing_SystemFields::FractionofAutosizedHeatingDesignCapacity, false).get());
   EXPECT_EQ("OnOff", idf_ss.getString(Sizing_SystemFields::CentralCoolingCapacityControlMethod, false).get());
   EXPECT_EQ("Autosize", idf_ss.getString(Sizing_SystemFields::OccupantDiversity, false).get());
+  EXPECT_EQ("None", idf_ss.getString(Sizing_SystemFields::HeatingCoilSizingMethod, false).get());
+  EXPECT_EQ(1.0, idf_ss.getDouble(Sizing_SystemFields::MaximumHeatingCapacityToCoolingCapacitySizingRatio, false).get());
 }
 
 TEST_F(EnergyPlusFixture, DISABLED_ReverseTranslator_SizingSystem) {
@@ -132,6 +134,8 @@ TEST_F(EnergyPlusFixture, DISABLED_ReverseTranslator_SizingSystem) {
   idfObject2.setDouble(Sizing_SystemFields::FractionofAutosizedHeatingDesignCapacity, 1.0);
   idfObject2.setString(Sizing_SystemFields::CentralCoolingCapacityControlMethod, "OnOff");
   idfObject2.setString(Sizing_SystemFields::OccupantDiversity, "Autosize");
+  idfObject2.setString(Sizing_SystemFields::HeatingCoilSizingMethod, "GreaterOfHeatingOrCooling");
+  idfObject2.setDouble(Sizing_SystemFields::MaximumHeatingCapacityToCoolingCapacitySizingRatio, 3.0);
 
   openstudio::WorkspaceObject epSizingSystem = workspace.addObject(idfObject2).get();
 
@@ -199,4 +203,6 @@ TEST_F(EnergyPlusFixture, DISABLED_ReverseTranslator_SizingSystem) {
   EXPECT_EQ("OnOff", sizingSystem.centralCoolingCapacityControlMethod());
   EXPECT_FALSE(sizingSystem.occupantDiversity());
   EXPECT_TRUE(sizingSystem.isOccupantDiversityAutosized());
+  EXPECT_EQ("GreaterOfHeatingOrCooling", sizingSystem.heatingCoilSizingMethod());
+  EXPECT_EQ(3.0, sizingSystem.maximumHeatingCapacityToCoolingCapacitySizingRatio());
 }

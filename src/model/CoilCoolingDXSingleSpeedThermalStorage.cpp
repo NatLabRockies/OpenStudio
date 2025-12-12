@@ -20,6 +20,8 @@
 #include "AirLoopHVACOutdoorAirSystem_Impl.hpp"
 #include "AirLoopHVACDedicatedOutdoorAirSystem.hpp"
 #include "AirLoopHVACDedicatedOutdoorAirSystem_Impl.hpp"
+#include "AirflowNetworkEquivalentDuct.hpp"
+#include "AirflowNetworkEquivalentDuct_Impl.hpp"
 #include "Node.hpp"
 #include "Node_Impl.hpp"
 
@@ -353,6 +355,10 @@ namespace model {
         result.push_back(curve.get());
       }
 
+      std::vector<AirflowNetworkEquivalentDuct> myAFNItems =
+        getObject<ModelObject>().getModelObjectSources<AirflowNetworkEquivalentDuct>(AirflowNetworkEquivalentDuct::iddObjectType());
+      result.insert(result.end(), myAFNItems.begin(), myAFNItems.end());
+
       return result;
     }
 
@@ -487,6 +493,32 @@ namespace model {
         result = openstudio::istringEqual(value.get(), "autosize");
       }
       return result;
+    }
+
+    AirflowNetworkEquivalentDuct CoilCoolingDXSingleSpeedThermalStorage_Impl::getAirflowNetworkEquivalentDuct(double length, double diameter) {
+      boost::optional<AirflowNetworkEquivalentDuct> opt = airflowNetworkEquivalentDuct();
+      if (opt) {
+        if (opt->airPathLength() != length) {
+          opt->setAirPathLength(length);
+        }
+        if (opt->airPathHydraulicDiameter() != diameter) {
+          opt->setAirPathHydraulicDiameter(diameter);
+        }
+      }
+      return AirflowNetworkEquivalentDuct(model(), length, diameter, handle());
+    }
+
+    boost::optional<AirflowNetworkEquivalentDuct> CoilCoolingDXSingleSpeedThermalStorage_Impl::airflowNetworkEquivalentDuct() const {
+      std::vector<AirflowNetworkEquivalentDuct> myAFN =
+        getObject<ModelObject>().getModelObjectSources<AirflowNetworkEquivalentDuct>(AirflowNetworkEquivalentDuct::iddObjectType());
+      auto count = myAFN.size();
+      if (count == 1) {
+        return myAFN[0];
+      } else if (count > 1) {
+        LOG(Warn, briefDescription() << " has more than one AirflowNetwork EquivalentDuct attached, returning first.");
+        return myAFN[0];
+      }
+      return boost::none;
     }
 
     boost::optional<double> CoilCoolingDXSingleSpeedThermalStorage_Impl::autosizedCoolingOnlyModeRatedTotalEvaporatorCoolingCapacity() {
@@ -3359,6 +3391,14 @@ namespace model {
 
   void CoilCoolingDXSingleSpeedThermalStorage::resetBasinHeaterAvailabilitySchedule() {
     getImpl<detail::CoilCoolingDXSingleSpeedThermalStorage_Impl>()->resetBasinHeaterAvailabilitySchedule();
+  }
+
+  AirflowNetworkEquivalentDuct CoilCoolingDXSingleSpeedThermalStorage::getAirflowNetworkEquivalentDuct(double length, double diameter) {
+    return getImpl<detail::CoilCoolingDXSingleSpeedThermalStorage_Impl>()->getAirflowNetworkEquivalentDuct(length, diameter);
+  }
+
+  boost::optional<AirflowNetworkEquivalentDuct> CoilCoolingDXSingleSpeedThermalStorage::airflowNetworkEquivalentDuct() const {
+    return getImpl<detail::CoilCoolingDXSingleSpeedThermalStorage_Impl>()->airflowNetworkEquivalentDuct();
   }
 
   // bool CoilCoolingDXSingleSpeedThermalStorage::setSupplyWaterStorageTank(const WaterStorageTank& waterStorageTank) {

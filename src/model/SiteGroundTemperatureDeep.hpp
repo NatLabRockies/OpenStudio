@@ -27,8 +27,6 @@ namespace model {
     /** @name Constructors and Destructors */
     //@{
 
-    explicit SiteGroundTemperatureDeep(Model& model);
-
     virtual ~SiteGroundTemperatureDeep() override = default;
     // Default the copy and move operators because the virtual dtor is explicit
     SiteGroundTemperatureDeep(const SiteGroundTemperatureDeep& other) = default;
@@ -178,6 +176,8 @@ namespace model {
     friend class detail::SiteGroundTemperatureDeep_Impl;
 
     explicit SiteGroundTemperatureDeep(std::shared_ptr<detail::SiteGroundTemperatureDeep_Impl> impl);
+
+    explicit SiteGroundTemperatureDeep(Model& model);
 
     /// @endcond
    private:

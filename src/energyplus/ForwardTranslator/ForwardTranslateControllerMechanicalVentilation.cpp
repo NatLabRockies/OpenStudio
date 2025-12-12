@@ -90,12 +90,7 @@ namespace energyplus {
     // System Outdoor Air Method
     s = modelObject.systemOutdoorAirMethod();
     if (s) {
-      if (istringEqual("ProportionalControl", s.get())) {
-        idfObject.setString(openstudio::Controller_MechanicalVentilationFields::SystemOutdoorAirMethod,
-                            "ProportionalControlBasedonOccupancySchedule");
-      } else {
-        idfObject.setString(openstudio::Controller_MechanicalVentilationFields::SystemOutdoorAirMethod, s.get());
-      }
+      idfObject.setString(openstudio::Controller_MechanicalVentilationFields::SystemOutdoorAirMethod, s.get());
     }
 
     // Extensible Groups for DSOAs are no longer pushed in translateSizingZone to retain order of the file, because:

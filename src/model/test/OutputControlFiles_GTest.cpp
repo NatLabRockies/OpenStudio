@@ -201,4 +201,10 @@ TEST_F(ModelFixture, OutputControlFiles_GettersSetters) {
   EXPECT_FALSE(outputControlFiles.outputTarcog());
   EXPECT_TRUE(outputControlFiles.setOutputTarcog(true));
   EXPECT_TRUE(outputControlFiles.outputTarcog());
+
+  EXPECT_TRUE(outputControlFiles.outputPlantComponentSizing());
+  EXPECT_TRUE(outputControlFiles.setOutputPlantComponentSizing(false));
+  EXPECT_FALSE(outputControlFiles.outputPlantComponentSizing());
+  EXPECT_TRUE(outputControlFiles.setOutputPlantComponentSizing(true));
+  EXPECT_TRUE(outputControlFiles.outputPlantComponentSizing());
 }

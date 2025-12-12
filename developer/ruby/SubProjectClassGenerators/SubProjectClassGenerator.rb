@@ -285,3 +285,11 @@ class SubProjectClassGenerator
   end
 
 end
+
+class FakeIddObjectType
+  attr_accessor :valueName, :valueDescription
+  def initialize(iddObjectTypeName)
+    @valueName = iddObjectTypeName.gsub(':', '_')
+    @valueDescription = iddObjectTypeName
+  end
+end

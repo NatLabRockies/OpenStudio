@@ -229,10 +229,18 @@ end
 
 subprojectInTitleCase = sourceFolders[0].gsub(/\b\w/){$&.upcase}
 
-hpp << "#include <" << sourceFolders[0] << "/" << subprojectInTitleCase << "API.hpp>\n"
+if sourceFolders[0] == "model"
+  hpp << "#include \"ModelAPI.hpp\"\n"
+else
+  hpp << "#include <" << sourceFolders[0] << "/" << subprojectInTitleCase << "API.hpp>\n"
+end
 cpp << "#include \"" << className << ".hpp\"\n"
 if pImpl
-  implHpp << "#include <" << sourceFolders[0] << "/" << subprojectInTitleCase << "API.hpp>\n"
+  if sourceFolders[0] == "model"
+    implHpp << "#include \"ModelAPI.hpp\"\n"
+  else
+    implHpp << "#include <" << sourceFolders[0] << "/" << subprojectInTitleCase << "API.hpp>\n"
+  end
   cpp << "#include \"" << className << "_Impl.hpp\"\n\n"
 end
 

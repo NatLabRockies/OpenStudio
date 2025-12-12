@@ -24,7 +24,7 @@ TEST_F(ModelFixture, SiteGroundTemperatureBuildingSurface_SiteGroundTemperatureB
       Model m;
 
       // create a SiteGroundTemperatureBuildingSurface object
-      SiteGroundTemperatureBuildingSurface groundTemp(m);
+      SiteGroundTemperatureBuildingSurface groundTemp = m.getUniqueModelObject<SiteGroundTemperatureBuildingSurface>();
       exit(0);
     },
     ::testing::ExitedWithCode(0), "");
@@ -33,7 +33,7 @@ TEST_F(ModelFixture, SiteGroundTemperatureBuildingSurface_SiteGroundTemperatureB
   Model m;
 
   // create a SiteGroundTemperatureBuildingSurface object
-  SiteGroundTemperatureBuildingSurface groundTemp(m);
+  SiteGroundTemperatureBuildingSurface groundTemp = m.getUniqueModelObject<SiteGroundTemperatureBuildingSurface>();
 
   // Check to make sure all the fields are defaulted as expected
   EXPECT_TRUE(groundTemp.isJanuaryGroundTemperatureDefaulted());
@@ -56,7 +56,7 @@ TEST_F(ModelFixture, SiteGroundTemperatureBuildingSurface_Clone) {
   Model m;
 
   // Create the object
-  SiteGroundTemperatureBuildingSurface groundTemp(m);
+  SiteGroundTemperatureBuildingSurface groundTemp = m.getUniqueModelObject<SiteGroundTemperatureBuildingSurface>();
 
   // Change some of the fields
   groundTemp.setJanuaryGroundTemperature(25.0);
@@ -81,7 +81,7 @@ TEST_F(ModelFixture, SiteGroundTemperatureBuildingSurface_SetGetFields) {
   Model m;
 
   // Create the object
-  SiteGroundTemperatureBuildingSurface groundTemp(m);
+  SiteGroundTemperatureBuildingSurface groundTemp = m.getUniqueModelObject<SiteGroundTemperatureBuildingSurface>();
 
   // Set the fields
   groundTemp.setJanuaryGroundTemperature(20.0);

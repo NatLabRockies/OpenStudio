@@ -15,6 +15,7 @@ namespace model {
 
   class CoilHeatingDXVariableSpeedSpeedData;
   class Curve;
+  class AirflowNetworkEquivalentDuct;
 
   namespace detail {
 
@@ -50,6 +51,8 @@ namespace model {
 
     /** @name Getters */
     //@{
+
+    Schedule availabilitySchedule() const;
 
     int nominalSpeedLevel() const;
 
@@ -90,6 +93,8 @@ namespace model {
     //@}
     /** @name Setters */
     //@{
+
+    bool setAvailabilitySchedule(Schedule& schedule);
 
     bool setNominalSpeedLevel(int nominalSpeedLevel);
 
@@ -143,6 +148,12 @@ namespace model {
     void removeSpeed(const CoilHeatingDXVariableSpeedSpeedData& speed);
 
     void removeAllSpeeds();
+
+    /** Returns an equivalent duct object, creating a new one if an object is not already attached. */
+    AirflowNetworkEquivalentDuct getAirflowNetworkEquivalentDuct(double length, double diameter);
+
+    /** Returns the attached equivalent duct object if there is one. */
+    boost::optional<AirflowNetworkEquivalentDuct> airflowNetworkEquivalentDuct() const;
 
     boost::optional<double> autosizedRatedHeatingCapacityAtSelectedNominalSpeedLevel() const;
 

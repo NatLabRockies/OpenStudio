@@ -404,6 +404,10 @@ namespace model {
     return result;
   }
 
+  std::vector<std::string> OutputMeter::reportingFrequencyValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), OS_Output_MeterFields::ReportingFrequency);
+  }
+
   boost::regex OutputMeter::meterRegex() {
     // DLM: Must put more specific terms, e.g. HeatingCoils, before less specific terms, e.g. Heating
     static const boost::regex result(

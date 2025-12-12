@@ -13,6 +13,10 @@
 #include "CurveBiquadratic_Impl.hpp"
 #include "CurveQuadratic.hpp"
 #include "CurveQuadratic_Impl.hpp"
+#include "Schedule.hpp"
+#include "Schedule_Impl.hpp"
+#include "ScheduleTypeRegistry.hpp"
+
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/OS_Coil_WaterHeating_AirToWaterHeatPump_FieldEnums.hxx>
 #include "../utilities/core/Assert.hpp"
@@ -61,6 +65,36 @@ namespace model {
 
     IddObjectType CoilWaterHeatingAirToWaterHeatPump_Impl::iddObjectType() const {
       return CoilWaterHeatingAirToWaterHeatPump::iddObjectType();
+    }
+
+    std::vector<ScheduleTypeKey> CoilWaterHeatingAirToWaterHeatPump_Impl::getScheduleTypeKeys(const Schedule& schedule) const {
+      std::vector<ScheduleTypeKey> result;
+      UnsignedVector fieldIndices = getSourceIndices(schedule.handle());
+      UnsignedVector::const_iterator b(fieldIndices.begin());
+      UnsignedVector::const_iterator e(fieldIndices.end());
+      if (std::find(b, e, OS_Coil_WaterHeating_AirToWaterHeatPumpFields::AvailabilityScheduleName) != e) {
+        result.push_back(ScheduleTypeKey("CoilWaterHeatingAirToWaterHeatPump", "Availability Schedule"));
+      }
+      return result;
+    }
+
+    boost::optional<Schedule> CoilWaterHeatingAirToWaterHeatPump_Impl::optionalAvailabilitySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(OS_Coil_WaterHeating_AirToWaterHeatPumpFields::AvailabilityScheduleName);
+    }
+
+    Schedule CoilWaterHeatingAirToWaterHeatPump_Impl::availabilitySchedule() const {
+      boost::optional<Schedule> value = optionalAvailabilitySchedule();
+      if (!value) {
+        // it is an error if we get here, however we don't want to crash
+        // so we hook up to global always on schedule
+        LOG(Error, "Required availability schedule not set, using 'Always On' schedule");
+        value = this->model().alwaysOnDiscreteSchedule();
+        OS_ASSERT(value);
+        const_cast<CoilWaterHeatingAirToWaterHeatPump_Impl*>(this)->setAvailabilitySchedule(*value);
+        value = optionalAvailabilitySchedule();
+      }
+      OS_ASSERT(value);
+      return value.get();
     }
 
     double CoilWaterHeatingAirToWaterHeatPump_Impl::ratedHeatingCapacity() const {
@@ -230,6 +264,12 @@ namespace model {
         LOG_AND_THROW(briefDescription() << " does not have an Part Load Fraction Correlation Curve attached.");
       }
       return value.get();
+    }
+
+    bool CoilWaterHeatingAirToWaterHeatPump_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      bool result = setSchedule(OS_Coil_WaterHeating_AirToWaterHeatPumpFields::AvailabilityScheduleName, "CoilWaterHeatingAirToWaterHeatPump",
+                                "Availability Schedule", schedule);
+      return result;
     }
 
     bool CoilWaterHeatingAirToWaterHeatPump_Impl::setRatedHeatingCapacity(double ratedHeatingCapacity) {
@@ -497,6 +537,10 @@ namespace model {
     : HVACComponent(CoilWaterHeatingAirToWaterHeatPump::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CoilWaterHeatingAirToWaterHeatPump_Impl>());
 
+    auto always_on = model.alwaysOnDiscreteSchedule();
+    bool ok = setAvailabilitySchedule(always_on);
+    OS_ASSERT(ok);
+
     setRatedHeatingCapacity(4000.0);
     setRatedCOP(3.2);
     setRatedSensibleHeatRatio(0.6956);
@@ -608,6 +652,10 @@ namespace model {
     : HVACComponent(CoilWaterHeatingAirToWaterHeatPump::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CoilWaterHeatingAirToWaterHeatPump_Impl>());
 
+    auto always_on = model.alwaysOnDiscreteSchedule();
+    bool ok = setAvailabilitySchedule(always_on);
+    OS_ASSERT(ok);
+
     setRatedHeatingCapacity(4000.0);
     setRatedCOP(3.2);
     setRatedSensibleHeatRatio(0.6956);
@@ -641,6 +689,10 @@ namespace model {
   std::vector<std::string> CoilWaterHeatingAirToWaterHeatPump::evaporatorAirTemperatureTypeforCurveObjectsValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                           OS_Coil_WaterHeating_AirToWaterHeatPumpFields::EvaporatorAirTemperatureTypeforCurveObjects);
+  }
+
+  Schedule CoilWaterHeatingAirToWaterHeatPump::availabilitySchedule() const {
+    return getImpl<detail::CoilWaterHeatingAirToWaterHeatPump_Impl>()->availabilitySchedule();
   }
 
   double CoilWaterHeatingAirToWaterHeatPump::ratedHeatingCapacity() const {
@@ -741,6 +793,10 @@ namespace model {
 
   Curve CoilWaterHeatingAirToWaterHeatPump::partLoadFractionCorrelationCurve() const {
     return getImpl<detail::CoilWaterHeatingAirToWaterHeatPump_Impl>()->partLoadFractionCorrelationCurve();
+  }
+
+  bool CoilWaterHeatingAirToWaterHeatPump::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::CoilWaterHeatingAirToWaterHeatPump_Impl>()->setAvailabilitySchedule(schedule);
   }
 
   bool CoilWaterHeatingAirToWaterHeatPump::setRatedHeatingCapacity(double ratedHeatingCapacity) {

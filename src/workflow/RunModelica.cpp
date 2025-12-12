@@ -478,7 +478,8 @@ clearMessages();
     return mosPath;
   }
 
-  [[maybe_unused]] openstudio::path createDymolaScript(const WorkflowJSON& workflowJSON, const ModelicaSetup& setup, const measure::ModelicaParameters& params) {
+  [[maybe_unused]] openstudio::path createDymolaScript(const WorkflowJSON& workflowJSON, const ModelicaSetup& setup,
+                                                       const measure::ModelicaParameters& params) {
     auto seedModelicaModel = workflowJSON.seedModelicaModel();
     OS_ASSERT(seedModelicaModel);
 
@@ -604,8 +605,8 @@ void OSWorkflow::runModelica() {
       ModelicaTagParserState stderrTagState;
 
       // Reads a stream line-by-line, mirroring output to disk while optionally echoing and extracting tagged payloads.
-      auto reader = [this, &detectedModelicaResultPath](bp::ipstream& stream, std::ofstream& ofs, bool parseTaggedOutput, ModelicaTagParserState& tagState,
-                                                        bool echo) {
+      auto reader = [this, &detectedModelicaResultPath](bp::ipstream& stream, std::ofstream& ofs, bool parseTaggedOutput,
+                                                        ModelicaTagParserState& tagState, bool echo) {
         std::string line;
         while (std::getline(stream, line)) {
           if (!line.empty() && line.back() == '\r') {

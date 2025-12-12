@@ -64,6 +64,8 @@ namespace model {
 
     std::string performanceInputMethod() const;
 
+    double heatRejectionCapacityandNominalCapacitySizingRatio() const;
+
     boost::optional<double> standardDesignCapacity() const;
 
     boost::optional<double> ufactorTimesAreaValueatDesignAirFlowRate() const;
@@ -78,9 +80,11 @@ namespace model {
 
     boost::optional<double> designEnteringWaterTemperature() const;
 
-    boost::optional<double> designEnteringAirTemperature() const;
+    bool isDesignEnteringWaterTemperatureAutosized() const;
 
-    boost::optional<double> designEnteringAirWetbulbTemperature() const;
+    double designEnteringAirTemperature() const;
+
+    double designEnteringAirWetbulbTemperature() const;
 
     std::string capacityControl() const;
 
@@ -126,6 +130,8 @@ namespace model {
 
     bool setPerformanceInputMethod(const std::string& performanceInputMethod);
 
+    bool setHeatRejectionCapacityandNominalCapacitySizingRatio(double heatRejectionCapacityandNominalCapacitySizingRatio);
+
     bool setStandardDesignCapacity(double standardDesignCapacity);
 
     void resetStandardDesignCapacity();
@@ -148,15 +154,11 @@ namespace model {
 
     bool setDesignEnteringWaterTemperature(double designEnteringWaterTemperature);
 
-    void resetDesignEnteringWaterTemperature();
+    void autosizeDesignEnteringWaterTemperature();
 
     bool setDesignEnteringAirTemperature(double designEnteringAirTemperature);
 
-    void resetDesignEnteringAirTemperature();
-
     bool setDesignEnteringAirWetbulbTemperature(double designEnteringAirWetbulbTemperature);
-
-    void resetDesignEnteringAirWetbulbTemperature();
 
     bool setCapacityControl(const std::string& capacityControl);
 
@@ -201,6 +203,8 @@ namespace model {
     boost::optional<double> autosizedUfactorTimesAreaValueatDesignAirFlowRate() const;
 
     boost::optional<double> autosizedDesignWaterFlowRate() const;
+
+    boost::optional<double> autosizedDesignEnteringWaterTemperature() const;
 
     //@}
    protected:

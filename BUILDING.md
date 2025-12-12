@@ -135,3 +135,97 @@ conan install . --output-folder=../OS-build-release --build=missing \
    -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release \
    --lockfile-partial --lockfile-out=conan.lock
 ```
+
+## Running Tests
+
+After building, you can run the test suite using CTest:
+
+```shell
+cd ../OS-build-release
+ctest --output-on-failure
+```
+
+### Test Filtering
+
+OpenStudio tests are organized with labels for selective execution:
+
+**Run tests excluding network-dependent tests** (useful for offline work or unreliable connections):
+```shell
+ctest -LE network --output-on-failure
+```
+
+**Run only specific test categories**:
+```shell
+# Bundle/gem tests
+ctest -L bundle --output-on-failure
+
+# CLI tests
+ctest -L cli --output-on-failure
+
+# Geometry tests
+ctest -L geometry --output-on-failure
+
+# Previously flaky tests (for verification)
+ctest -L flaky --output-on-failure
+```
+
+**Run a specific test by name**:
+```shell
+ctest -R "ModelFixture.Space_Convexity" --output-on-failure
+```
+
+### Handling Flaky Tests
+
+Some tests may occasionally fail due to network issues or race conditions. Use the `--repeat` flag:
+
+```shell
+# Repeat until the test passes (max 10 times)
+ctest -R "test_bundle" --repeat until-pass:10 --output-on-failure
+```
+
+### Troubleshooting Bundle Tests
+
+Bundle tests require network access to rubygems.org. If they fail:
+
+1. **Check network connectivity**: Ensure you can reach `rubygems.org`
+2. **Skip network tests**: Use `ctest -LE network` to skip them
+3. **Configure Bundler retries**: The project includes `.bundle/config` with retry settings
+4. **Increase timeout**: Set `BUNDLE_TIMEOUT` environment variable:
+   ```shell
+   export BUNDLE_TIMEOUT=120
+   ctest -R "test_bundle" --output-on-failure
+   ```
+
+### Test Utility Scripts
+
+For CI and development workflows, use the test utilities:
+
+```shell
+# Source the utility functions
+source ci/test_utils.sh
+
+# Show available functions
+show_test_utils_help
+
+# Run tests offline (excluding network tests)
+run_tests_offline
+
+# Run network tests with safety checks
+run_network_tests_safe
+
+# Verify flaky tests are fixed (run 20 times)
+run_flaky_tests 20
+
+# Run a specific test with retry logic
+run_test_with_retry "ModelFixture.Building_Clone" 3
+```
+
+### Parallel Test Execution
+
+To speed up testing, run tests in parallel:
+
+```shell
+ctest -j8 --output-on-failure  # Run with 8 parallel jobs
+```
+
+**Note**: Some tests may interfere with each other when run in parallel. If you encounter issues, run tests serially or use labels to isolate problematic tests.

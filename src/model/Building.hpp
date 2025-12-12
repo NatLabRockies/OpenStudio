@@ -269,6 +269,15 @@ namespace model {
     /** Returns the gas equipment power per person (W/person) of this building. */
     double gasEquipmentPowerPerPerson() const;
 
+    /** Returns the hot water equipment power (W) of this building. */
+    double hotWaterEquipmentPower() const;
+
+    /** Returns the hot water equipment power density (W/m^2) of this building. */
+    double hotWaterEquipmentPowerPerFloorArea() const;
+
+    /** Returns the hot water equipment power per person (W/person) of this building. */
+    double hotWaterEquipmentPowerPerPerson() const;
+
     /** Returns the infiltration design flow rate (m^3/s) of this building. Ignores
    *  SpaceInfiltrationEffectiveLeakageArea and SpaceInfiltrationFlowCoefficient objects. */
     double infiltrationDesignFlowRate() const;

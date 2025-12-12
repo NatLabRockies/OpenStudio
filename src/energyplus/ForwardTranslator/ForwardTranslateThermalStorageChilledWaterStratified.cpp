@@ -10,11 +10,14 @@
 #include "../../model/Node.hpp"
 #include "../../model/Node_Impl.hpp"
 #include "../../model/ThermalStorageChilledWaterStratified.hpp"
-#include "../../model/ThermalStorageChilledWaterStratified_Impl.hpp"
 #include "../../model/ThermalZone.hpp"
-#include "../../model/ThermalZone_Impl.hpp"
-#include <utilities/idd/ThermalStorage_ChilledWater_Stratified_FieldEnums.hxx>
+#include "../../model/WaterHeaterSizing.hpp"
+
 #include "../../utilities/idd/IddEnums.hpp"
+#include "../../utilities/core/Compare.hpp"
+
+#include <utilities/idd/ThermalStorage_ChilledWater_Stratified_FieldEnums.hxx>
+#include <utilities/idd/OS_ThermalStorage_ChilledWater_Stratified_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 
@@ -24,106 +27,90 @@ namespace openstudio {
 
 namespace energyplus {
 
-  boost::optional<IdfObject> ForwardTranslator::translateThermalStorageChilledWaterStratified(ThermalStorageChilledWaterStratified& modelObject) {
-    boost::optional<std::string> s;
-    boost::optional<double> value;
-    boost::optional<Schedule> schedule;
+  boost::optional<IdfObject>
+    ForwardTranslator::translateThermalStorageChilledWaterStratified(model::ThermalStorageChilledWaterStratified& modelObject) {
 
-    // Name
+    // Instantiate an IdfObject of the class to store the values
     IdfObject idfObject = createRegisterAndNameIdfObject(openstudio::IddObjectType::ThermalStorage_ChilledWater_Stratified, modelObject);
 
-    // Tank Volume
-    value = modelObject.tankVolume();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::TankVolume, value.get());
+    // Trigger translation of the WaterHeater:Sizing object, if any
+    bool hasWaterHeaterSizing = true;
+    try {
+      auto siz = modelObject.waterHeaterSizing();
+      translateAndMapModelObject(siz);
+    } catch (...) {
+      hasWaterHeaterSizing = false;
     }
+
+    // Tank Volume
+    const double tankVolume = modelObject.tankVolume();
+    idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::TankVolume, tankVolume);
 
     // Tank Height
-    value = modelObject.tankHeight();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::TankHeight, value.get());
-    }
+    const double tankHeight = modelObject.tankHeight();
+    idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::TankHeight, tankHeight);
 
     // Tank Shape
-    s = modelObject.tankShape();
-    if (s) {
-      idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::TankShape, s.get());
-    }
+    const std::string tankShape = modelObject.tankShape();
+    idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::TankShape, tankShape);
 
     // Tank Perimeter
-    value = modelObject.tankPerimeter();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::TankPerimeter, value.get());
+    if (auto tankPerimeter_ = modelObject.tankPerimeter()) {
+      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::TankPerimeter, tankPerimeter_.get());
     }
 
-    // SetpointTemperatureScheduleName
-    schedule = modelObject.setpointTemperatureSchedule();
-    if (schedule) {
-      auto _schedule = translateAndMapModelObject(schedule.get());
-
-      if (_schedule) {
-        idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::SetpointTemperatureScheduleName, _schedule->name().get());
+    // Setpoint Temperature Schedule Name
+    if (auto setpointTemperatureSchedule_ = modelObject.setpointTemperatureSchedule()) {
+      if (auto wo_ = translateAndMapModelObject(setpointTemperatureSchedule_.get())) {
+        idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::SetpointTemperatureScheduleName, wo_->nameString());
       }
     }
 
-    // DeadbandTemperatureDifference
-    value = modelObject.deadbandTemperatureDifference();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::DeadbandTemperatureDifference, value.get());
-    }
+    // Deadband Temperature Difference
+    const double deadbandTemperatureDifference = modelObject.deadbandTemperatureDifference();
+    idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::DeadbandTemperatureDifference, deadbandTemperatureDifference);
 
-    // TemperatureSensorHeight
-    value = modelObject.temperatureSensorHeight();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::TemperatureSensorHeight, value.get());
+    // Temperature Sensor Height
+    if (auto temperatureSensorHeight_ = modelObject.temperatureSensorHeight()) {
+      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::TemperatureSensorHeight, temperatureSensorHeight_.get());
     }
 
     // Minimum Temperature Limit
-    value = modelObject.minimumTemperatureLimit();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::MinimumTemperatureLimit, value.get());
+    if (auto minimumTemperatureLimit_ = modelObject.minimumTemperatureLimit()) {
+      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::MinimumTemperatureLimit, minimumTemperatureLimit_.get());
     }
 
-    // NominalCoolingCapacity
-    value = modelObject.nominalCoolingCapacity();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::NominalCoolingCapacity, value.get());
+    // Nominal Cooling Capacity
+    if (auto nominalCoolingCapacity_ = modelObject.nominalCoolingCapacity()) {
+      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::NominalCoolingCapacity, nominalCoolingCapacity_.get());
     }
 
     // Ambient Temperature Indicator
-    s = modelObject.ambientTemperatureIndicator();
-    if (s) {
-      if (istringEqual(s.get(), "ThermalZone")) {
-        idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureIndicator, "Zone");
-      } else {
-        idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureIndicator, s.get());
-      }
+    std::string ambientTemperatureIndicator = modelObject.ambientTemperatureIndicator();
+    if (openstudio::istringEqual(ambientTemperatureIndicator, "ThermalZone")) {
+      ambientTemperatureIndicator = "Zone";
     }
+    idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureIndicator, ambientTemperatureIndicator);
 
     // Ambient Temperature Schedule Name
-    schedule = modelObject.ambientTemperatureSchedule();
-    if (schedule) {
-      auto _schedule = translateAndMapModelObject(schedule.get());
-
-      if (_schedule) {
-        idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureScheduleName, _schedule->name().get());
+    if (auto ambientTemperatureSchedule_ = modelObject.ambientTemperatureSchedule()) {
+      if (auto wo_ = translateAndMapModelObject(ambientTemperatureSchedule_.get())) {
+        idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureScheduleName, wo_->nameString());
       }
     }
 
     // Ambient Temperature Zone Name
-    if (auto zone = modelObject.ambientTemperatureThermalZone()) {
-      auto _zone = translateAndMapModelObject(zone.get());
-
-      if (_zone) {
-        idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureZoneName, _zone->name().get());
+    if (auto ambientTemperatureZone_ = modelObject.ambientTemperatureThermalZone()) {
+      if (auto wo_ = translateAndMapModelObject(ambientTemperatureZone_.get())) {
+        idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureZoneName, wo_->nameString());
       }
     }
 
     // Ambient Temperature Outdoor Air Node Name
-    s = modelObject.ambientTemperatureOutdoorAirNodeName();
-    if (s && (!s->empty())) {
-      idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureOutdoorAirNodeName, s.get());
-    } else if (istringEqual(modelObject.ambientTemperatureIndicator(), "Outdoors")) {
+    if (auto ambientTemperatureOutdoorAirNodeName_ = modelObject.ambientTemperatureOutdoorAirNodeName();
+        ambientTemperatureOutdoorAirNodeName_ && !ambientTemperatureOutdoorAirNodeName_->empty()) {
+      idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureOutdoorAirNodeName, *ambientTemperatureOutdoorAirNodeName_);
+    } else if (istringEqual(ambientTemperatureIndicator, "Outdoors")) {
       auto name = modelObject.name().get() + " OA Node";
       IdfObject oaNodeListIdf(openstudio::IddObjectType::OutdoorAir_NodeList);
       oaNodeListIdf.setString(0, name);
@@ -133,14 +120,14 @@ namespace energyplus {
     }
 
     // Uniform Skin Loss Coefficient per Unit Area to Ambient Temperature
-    value = modelObject.uniformSkinLossCoefficientperUnitAreatoAmbientTemperature();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::UniformSkinLossCoefficientperUnitAreatoAmbientTemperature, value.get());
+    if (auto uniformSkinLossCoefficientperUnitAreatoAmbientTemperature_ = modelObject.uniformSkinLossCoefficientperUnitAreatoAmbientTemperature()) {
+      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::UniformSkinLossCoefficientperUnitAreatoAmbientTemperature,
+                          uniformSkinLossCoefficientperUnitAreatoAmbientTemperature_.get());
     }
 
     // Use Side Inlet Node Name
-    if (auto mo = modelObject.supplyInletModelObject()) {
-      if (auto node = mo->optionalCast<Node>()) {
+    if (auto mo_ = modelObject.supplyInletModelObject()) {
+      if (auto node = mo_->optionalCast<Node>()) {
         translateAndMapModelObject(node.get());
 
         idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::UseSideInletNodeName, node->name().get());
@@ -148,60 +135,53 @@ namespace energyplus {
     }
 
     // Use Side Outlet Node Name
-    if (auto mo = modelObject.supplyOutletModelObject()) {
-      if (auto node = mo->optionalCast<Node>()) {
+    if (auto mo_ = modelObject.supplyOutletModelObject()) {
+      if (auto node = mo_->optionalCast<Node>()) {
         translateAndMapModelObject(node.get());
 
         idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::UseSideOutletNodeName, node->name().get());
       }
     }
 
-    // UseSideHeatTransferEffectiveness
-    value = modelObject.useSideHeatTransferEffectiveness();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::UseSideHeatTransferEffectiveness, value.get());
-    }
+    // Use Side Heat Transfer Effectiveness
+    const double useSideHeatTransferEffectiveness = modelObject.useSideHeatTransferEffectiveness();
+    idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::UseSideHeatTransferEffectiveness, useSideHeatTransferEffectiveness);
 
-    // UseSideAvailabilityScheduleName
-    if ((schedule = modelObject.useSideAvailabilitySchedule())) {
-      auto _schedule = translateAndMapModelObject(schedule.get());
-
-      if (_schedule) {
-        idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::UseSideAvailabilityScheduleName, _schedule->name().get());
+    // Use Side Availability Schedule Name
+    if (auto useSideAvailabilitySchedule_ = modelObject.useSideAvailabilitySchedule()) {
+      if (auto wo_ = translateAndMapModelObject(useSideAvailabilitySchedule_.get())) {
+        idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::UseSideAvailabilityScheduleName, wo_->nameString());
       }
-    }
-
-    // Use Side Outlet Height
-    value = modelObject.useSideOutletHeight();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::UseSideOutletHeight, value.get());
     }
 
     // Use Side Inlet Height
     if (modelObject.isUseSideInletHeightAutocalculated()) {
       idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::UseSideInletHeight, "Autocalculate");
     } else {
-      value = modelObject.useSideInletHeight();
-
-      if (value) {
-        idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::UseSideInletHeight, value.get());
+      if (auto useSideInletHeight_ = modelObject.useSideInletHeight()) {
+        idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::UseSideInletHeight, useSideInletHeight_.get());
       }
     }
+
+    // Use Side Outlet Height
+    const double useSideOutletHeight = modelObject.useSideOutletHeight();
+    idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::UseSideOutletHeight, useSideOutletHeight);
 
     // Use Side Design Flow Rate
     if (modelObject.isUseSideDesignFlowRateAutosized()) {
       idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::UseSideDesignFlowRate, "Autosize");
+      if (!hasWaterHeaterSizing) {
+        LOG(Error, modelObject.briefDescription() << " has its Tank Volume autosized but it does not have a WaterHeaterSizing object attached");
+      }
     } else {
-      value = modelObject.useSideDesignFlowRate();
-
-      if (value) {
-        idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::UseSideDesignFlowRate, value.get());
+      if (auto useSideDesignFlowRate_ = modelObject.useSideDesignFlowRate()) {
+        idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::UseSideDesignFlowRate, useSideDesignFlowRate_.get());
       }
     }
 
     // Source Side Inlet Node Name
-    if (auto mo = modelObject.demandInletModelObject()) {
-      if (auto node = mo->optionalCast<Node>()) {
+    if (auto mo_ = modelObject.demandInletModelObject()) {
+      if (auto node = mo_->optionalCast<Node>()) {
         translateAndMapModelObject(node.get());
 
         idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::SourceSideInletNodeName, node->name().get());
@@ -209,142 +189,76 @@ namespace energyplus {
     }
 
     // Source Side Outlet Node Name
-    if (auto mo = modelObject.demandOutletModelObject()) {
-      if (auto node = mo->optionalCast<Node>()) {
+    if (auto mo_ = modelObject.demandOutletModelObject()) {
+      if (auto node = mo_->optionalCast<Node>()) {
         translateAndMapModelObject(node.get());
 
         idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::SourceSideOutletNodeName, node->name().get());
       }
     }
 
-    // SourceSideHeatTransferEffectiveness
-    value = modelObject.sourceSideHeatTransferEffectiveness();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::SourceSideHeatTransferEffectiveness, value.get());
-    }
+    // Source Side Heat Transfer Effectiveness
+    const double sourceSideHeatTransferEffectiveness = modelObject.sourceSideHeatTransferEffectiveness();
+    idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::SourceSideHeatTransferEffectiveness, sourceSideHeatTransferEffectiveness);
 
-    // SourceSideAvailabilityScheduleName
-    if ((schedule = modelObject.sourceSideAvailabilitySchedule())) {
-      auto _schedule = translateAndMapModelObject(schedule.get());
-
-      if (_schedule) {
-        idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::SourceSideAvailabilityScheduleName, _schedule->name().get());
+    // Source Side Availability Schedule Name
+    if (auto sourceSideAvailabilitySchedule_ = modelObject.sourceSideAvailabilitySchedule()) {
+      if (auto wo_ = translateAndMapModelObject(sourceSideAvailabilitySchedule_.get())) {
+        idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::SourceSideAvailabilityScheduleName, wo_->nameString());
       }
     }
+
+    // Source Side Inlet Height
+    const double sourceSideInletHeight = modelObject.sourceSideInletHeight();
+    idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::SourceSideInletHeight, sourceSideInletHeight);
 
     // Source Side Outlet Height
     if (modelObject.isSourceSideOutletHeightAutocalculated()) {
       idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::SourceSideOutletHeight, "Autocalculate");
     } else {
-      value = modelObject.sourceSideOutletHeight();
-
-      if (value) {
-        idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::SourceSideOutletHeight, value.get());
+      if (auto sourceSideOutletHeight_ = modelObject.sourceSideOutletHeight()) {
+        idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::SourceSideOutletHeight, sourceSideOutletHeight_.get());
       }
-    }
-
-    // Source Side Inlet Height
-    value = modelObject.sourceSideInletHeight();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::SourceSideInletHeight, value.get());
     }
 
     // Source Side Design Flow Rate
     if (modelObject.isSourceSideDesignFlowRateAutosized()) {
       idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::SourceSideDesignFlowRate, "Autosize");
+      if (!hasWaterHeaterSizing) {
+        LOG(Error, modelObject.briefDescription() << " has its Tank Volume autosized but it does not have a WaterHeaterSizing object attached");
+      }
     } else {
-      value = modelObject.sourceSideDesignFlowRate();
-
-      if (value) {
-        idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::SourceSideDesignFlowRate, value.get());
+      if (auto sourceSideDesignFlowRate_ = modelObject.sourceSideDesignFlowRate()) {
+        idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::SourceSideDesignFlowRate, sourceSideDesignFlowRate_.get());
       }
     }
 
-    // TankRecoveryTime
-    value = modelObject.tankRecoveryTime();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::TankRecoveryTime, value.get());
-    }
+    // Tank Recovery Time
+    const double tankRecoveryTime = modelObject.tankRecoveryTime();
+    idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::TankRecoveryTime, tankRecoveryTime);
 
     // Inlet Mode
-    s = modelObject.inletMode();
-    if (s) {
-      idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::InletMode, s.get());
-    }
+    const std::string inletMode = modelObject.inletMode();
+    idfObject.setString(ThermalStorage_ChilledWater_StratifiedFields::InletMode, inletMode);
 
     // Number of Nodes
-    auto num_nodes = modelObject.numberofNodes();
-    idfObject.setInt(ThermalStorage_ChilledWater_StratifiedFields::NumberofNodes, num_nodes);
+    const int numberofNodes = modelObject.numberofNodes();
+    idfObject.setInt(ThermalStorage_ChilledWater_StratifiedFields::NumberofNodes, numberofNodes);
 
     // Additional Destratification Conductivity
-    value = modelObject.additionalDestratificationConductivity();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::AdditionalDestratificationConductivity, value.get());
-    }
+    const double additionalDestratificationConductivity = modelObject.additionalDestratificationConductivity();
+    idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::AdditionalDestratificationConductivity, additionalDestratificationConductivity);
 
-    // Node 1 Additional Loss Coefficient
-    value = modelObject.node1AdditionalLossCoefficient();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::Node1AdditionalLossCoefficient, value.get());
-    }
-
-    // Node 2 Additional Loss Coefficient
-    value = modelObject.node2AdditionalLossCoefficient();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::Node2AdditionalLossCoefficient, value.get());
-    }
-
-    // Node 3 Additional Loss Coefficient
-    value = modelObject.node3AdditionalLossCoefficient();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::Node3AdditionalLossCoefficient, value.get());
-    }
-
-    // Node 4 Additional Loss Coefficient
-    value = modelObject.node4AdditionalLossCoefficient();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::Node4AdditionalLossCoefficient, value.get());
-    }
-
-    // Node 5 Additional Loss Coefficient
-    value = modelObject.node5AdditionalLossCoefficient();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::Node5AdditionalLossCoefficient, value.get());
-    }
-
-    // Node 6 Additional Loss Coefficient
-    value = modelObject.node6AdditionalLossCoefficient();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::Node6AdditionalLossCoefficient, value.get());
-    }
-
-    // Node 7 Additional Loss Coefficient
-    value = modelObject.node7AdditionalLossCoefficient();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::Node7AdditionalLossCoefficient, value.get());
-    }
-
-    // Node 8 Additional Loss Coefficient
-    value = modelObject.node8AdditionalLossCoefficient();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::Node8AdditionalLossCoefficient, value.get());
-    }
-
-    // Node 9 Additional Loss Coefficient
-    value = modelObject.node9AdditionalLossCoefficient();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::Node9AdditionalLossCoefficient, value.get());
-    }
-
-    // Node 10 Additional Loss Coefficient
-    value = modelObject.node10AdditionalLossCoefficient();
-    if (value) {
-      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::Node10AdditionalLossCoefficient, value.get());
+    // Node 1-10 Additional Loss Coefficient
+    // Avoid a warning by only setting up to number of nodes
+    for (unsigned i = 0; i < static_cast<unsigned>(numberofNodes); ++i) {
+      const double os_value =
+        modelObject.getDouble(OS_ThermalStorage_ChilledWater_StratifiedFields::Node1AdditionalLossCoefficient + i, true).value_or(0.0);
+      idfObject.setDouble(ThermalStorage_ChilledWater_StratifiedFields::Node1AdditionalLossCoefficient + i, os_value);
     }
 
     return idfObject;
-  }
+  }  // End of translate function
 
-}  // namespace energyplus
-
-}  // namespace openstudio
+}  // end namespace energyplus
+}  // end namespace openstudio

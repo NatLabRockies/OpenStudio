@@ -6,7 +6,6 @@
 %}
 
 // hide shared_ptrs, expose helper functions
-%ignore QuantityConverterSingleton;
 %ignore QuantityConverter;
 %include <utilities/units/QuantityConverter.hpp>
 

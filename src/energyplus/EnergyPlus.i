@@ -42,7 +42,6 @@
 
 // Ignore Static Initializers
 %ignore openstudio::energyplus::detail;
-%ignore StaticInitializer;
 %ignore ForwardTranslatorInitializer;
 %ignore openstudio::energyplus::detail::ForwardTranslatorInitializer;
 

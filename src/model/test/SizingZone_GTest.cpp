@@ -416,4 +416,24 @@ TEST_F(ModelFixture, SizingZone_GettersSetters) {
   // Bad Value
   EXPECT_FALSE(sz.setSizingOption("BADENUM"));
   EXPECT_EQ("NonCoincident", sz.sizingOption());
+
+  // Heating Coil Sizing Method: String
+  // Default value from IDD, set in Ctor
+  EXPECT_EQ("None", sz.heatingCoilSizingMethod());
+  // Set
+  EXPECT_TRUE(sz.setHeatingCoilSizingMethod("GreaterOfHeatingOrCooling"));
+  EXPECT_EQ("GreaterOfHeatingOrCooling", sz.heatingCoilSizingMethod());
+  // Bad Value
+  EXPECT_FALSE(sz.setHeatingCoilSizingMethod("BADENUM"));
+  EXPECT_EQ("GreaterOfHeatingOrCooling", sz.heatingCoilSizingMethod());
+
+  // Maximum Heating Capacity To Cooling Load Sizing Ratio: Double
+  // Default value from IDD, set in Ctor
+  EXPECT_EQ(1.0, sz.maximumHeatingCapacityToCoolingLoadSizingRatio());
+  // Set
+  EXPECT_TRUE(sz.setMaximumHeatingCapacityToCoolingLoadSizingRatio(3.0));
+  EXPECT_EQ(3.0, sz.maximumHeatingCapacityToCoolingLoadSizingRatio());
+  // Bad Value
+  EXPECT_FALSE(sz.setMaximumHeatingCapacityToCoolingLoadSizingRatio(0.5));
+  EXPECT_EQ(3.0, sz.maximumHeatingCapacityToCoolingLoadSizingRatio());
 }

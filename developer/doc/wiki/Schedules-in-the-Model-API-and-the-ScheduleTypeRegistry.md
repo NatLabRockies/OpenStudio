@@ -107,10 +107,10 @@ This should be somewhat self-explanatory since the functions are well-named, but
 2. If not, try to either find a compatible `ScheduleTypeLimits` or create a new one to set it to the `Schedule`
     * **That part can be quite confusing the first time you realize it happens behind the scenes when you call a setter and your `Schedule` now has a `ScheduleTypeLimits`. This is also why you can't have a setter take in a `const Schedule&`**: `bool setOpeningAreaFractionSchedule(Schedule&);` works, but `bool setOpeningAreaFractionSchedule(const Schedule&);` doesn't, since the `Schedule` passed can be modified.
 
-Both of these flow branches will call into `getScheduleType`, which uses the entries you have manually set in the ScheduleTypeRegistrySingleton around [here](https://github.com/NREL/OpenStudio/blob/develop/src/model/ScheduleTypeRegistry.cpp#L118-L125):
+Both of these flow branches will call into `getScheduleType`, which uses the entries you have manually set in the ScheduleTypeRegistry around [here](https://github.com/NREL/OpenStudio/blob/develop/src/model/ScheduleTypeRegistry.cpp#L118-L125):
 
 ```c++
-ScheduleTypeRegistrySingleton::ScheduleTypeRegistrySingleton()
+ScheduleTypeRegistry::ScheduleTypeRegistry()
 {
   // className, scheduleDisplayName, scheduleRelationshipName, isContinuous, unitType, lowerLimitValue, upperLimitValue;
 
@@ -133,6 +133,6 @@ For 1) above , the definition of [isCompatible](https://github.com/NREL/OpenStud
 
 ### When you don't already have a `ScheduleTypeLimits` assigned
 
-For 2) when you are using a `Schedule` that doesn't already have a `ScheduleTypeLimits`, it'll loop on all `ScheduleTypeLimits` in the model, and call `isCompatible` on them and return the first one that matches the requirements. 
+For 2) when you are using a `Schedule` that doesn't already have a `ScheduleTypeLimits`, it'll loop on all `ScheduleTypeLimits` in the model, and call `isCompatible` on them and return the first one that matches the requirements.
 
-**If not it'll create a new one with the requirements**. cf [ScheduleTypeRegistrySingleton::getOrCreateScheduleTypeLimits](https://github.com/NREL/OpenStudio/blob/8ae4d883ed1a6ba704aa8b60003646de69a00f39/src/model/ScheduleTypeRegistry.cpp#L77-L116)
+**If not it'll create a new one with the requirements**. cf [ScheduleTypeRegistry::getOrCreateScheduleTypeLimits](https://github.com/NREL/OpenStudio/blob/8ae4d883ed1a6ba704aa8b60003646de69a00f39/src/model/ScheduleTypeRegistry.cpp#L77-L116)

@@ -203,6 +203,10 @@ namespace energyplus {
 
     boost::optional<model::ModelObject> translateHeatBalanceAlgorithm(const WorkspaceObject& workspaceObject);
 
+    boost::optional<model::ModelObject> translateHeatPumpAirToWater(const WorkspaceObject& workspaceObject);
+    boost::optional<model::ModelObject> translateHeatPumpAirToWaterCooling(const WorkspaceObject& workspaceObject);
+    boost::optional<model::ModelObject> translateHeatPumpAirToWaterHeating(const WorkspaceObject& workspaceObject);
+
     boost::optional<model::ModelObject> translateHotWaterEquipment(const WorkspaceObject& workspaceObject);
 
     boost::optional<model::ModelObject> translateInternalMass(const WorkspaceObject& workspaceObject);

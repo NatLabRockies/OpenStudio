@@ -26,7 +26,7 @@ namespace model {
  *     \li OS:Schedule:VariableInterval
  *
  *  For detailed information on ScheduleTypeLimits, please see ScheduleBase and
- *  \link ScheduleTypeRegistrySingleton ScheduleTypeRegistry \endlink. In general, ModelObject
+ *  \link ScheduleTypeRegistry ScheduleTypeRegistry \endlink. In general, ModelObject
  *  setters that take a Schedule will fail if the ScheduleTypeLimits are set and are incompatible
  *  with the proposed use. This ensures that the Schedule is written using units and bounds
  *  expected by the user object (e.g. fractional for lighting schedules, W for people activity

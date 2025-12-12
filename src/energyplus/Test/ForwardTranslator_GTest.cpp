@@ -527,12 +527,14 @@ TEST_F(EnergyPlusFixture, ForwardTranslatorTest_TranslateSiteWaterMainsTemperatu
   ASSERT_EQ(1u, workspace.numObjectsOfType(IddObjectType::Site_WaterMainsTemperature));
 
   IdfObject watertempIdf = workspace.getObjectsByType(IddObjectType::Site_WaterMainsTemperature)[0];
-  EXPECT_EQ(unsigned(4), watertempIdf.numFields());
+  EXPECT_EQ(unsigned(6), watertempIdf.numFields());
 
   EXPECT_EQ("Correlation", *(watertempIdf.getString(0)));
   EXPECT_EQ("", *(watertempIdf.getString(1)));
   EXPECT_EQ(9.69, *(watertempIdf.getDouble(2)));
   EXPECT_EQ(28.1, *(watertempIdf.getDouble(3)));
+  EXPECT_EQ(1.0, *(watertempIdf.getDouble(4)));
+  EXPECT_EQ(0.0, *(watertempIdf.getDouble(5)));
 }
 
 /*

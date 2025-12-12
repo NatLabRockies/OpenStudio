@@ -23,7 +23,7 @@ namespace model {
   /** ScheduleBase is a ResourceObject that serves as a base class for Schedule and ScheduleDay,
  *  that is, objects with ScheduleTypeLimits. This class provides getters and setters for
  *  ScheduleTypeLimits. Note that while users can explicitly set their own ScheduleTypeLimits,
- *  we recommend using the \link ScheduleTypeRegistrySingleton ScheduleTypeRegistry\endlink and
+ *  we recommend using the \link ScheduleTypeRegistry ScheduleTypeRegistry\endlink and
  *  related non-member functions, or letting user \link ModelObject ModelObjects\endlink set
  *  this field, instead. */
   class MODEL_API ScheduleBase : public ResourceObject

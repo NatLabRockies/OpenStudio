@@ -70,6 +70,8 @@
 #include "GasEquipmentDefinition_Impl.hpp"
 #include "HotWaterEquipment.hpp"
 #include "HotWaterEquipment_Impl.hpp"
+#include "HotWaterEquipmentDefinition.hpp"
+#include "HotWaterEquipmentDefinition_Impl.hpp"
 #include "SteamEquipment.hpp"
 #include "SteamEquipment_Impl.hpp"
 #include "OtherEquipment.hpp"
@@ -1071,8 +1073,12 @@ namespace model {
         return value.get();
       }
 
+      // get all surfaces, sort so results are repeatable
+      std::vector<Surface> surfaces = this->surfaces();
+      std::sort(surfaces.begin(), surfaces.end(), IdfObjectNameLess());
+
       double result = 0;
-      for (const Surface& surface : this->surfaces()) {
+      for (const Surface& surface : surfaces) {
         if (istringEqual(surface.surfaceType(), "Floor")) {
           if (surface.isAirWall()) {
             continue;
@@ -2090,6 +2096,242 @@ namespace model {
           }
           allMyEquipment = spaceType->gasEquipment();
           for (GasEquipment& equipment : allMyEquipment) {
+            equipment.remove();
+          }
+        }
+      }
+
+      return true;
+    }
+
+    double Space_Impl::hotWaterEquipmentPower() const {
+      double result(0.0);
+      double area = floorArea();
+      double numPeople = numberOfPeople();
+
+      for (const HotWaterEquipment& equipment : hotWaterEquipment()) {
+        result += equipment.getDesignLevel(area, numPeople);
+      }
+
+      if (OptionalSpaceType spaceType = this->spaceType()) {
+        for (const HotWaterEquipment& equipment : spaceType->hotWaterEquipment()) {
+          result += equipment.getDesignLevel(area, numPeople);
+        }
+      }
+
+      return result;
+    }
+
+    bool Space_Impl::setHotWaterEquipmentPower(double hotWaterEquipmentPower) {
+      OptionalHotWaterEquipment templateEquipment;
+      HotWaterEquipmentVector myEquipment = hotWaterEquipment();
+      if (myEquipment.empty()) {
+        if (OptionalSpaceType st = spaceType()) {
+          myEquipment = st->hotWaterEquipment();
+        }
+      }
+      if (!myEquipment.empty()) {
+        templateEquipment = myEquipment[0];
+      }
+      return setHotWaterEquipmentPower(hotWaterEquipmentPower, templateEquipment);
+    }
+
+    bool Space_Impl::setHotWaterEquipmentPower(double hotWaterEquipmentPower, const boost::optional<HotWaterEquipment>& templateHotWaterEquipment) {
+      if (hotWaterEquipmentPower < 0.0) {
+        LOG(Error, "Space cannot set hotWaterEquipmentPower to " << hotWaterEquipmentPower << ", the value must be >= 0.0.");
+        return false;
+      }
+
+      // create or modify Lights and LightsDefinition object
+      OptionalHotWaterEquipment myEquipment = getMySpaceLoadInstance<HotWaterEquipment, HotWaterEquipmentDefinition>(templateHotWaterEquipment);
+      if (!myEquipment) {
+        LOG(Error, "The templateHotWaterEquipment object must be in the same Model as this Space.");
+        return false;
+      }
+
+      // set space and power level
+      bool ok(true);
+      myEquipment->makeUnique();
+      ok = myEquipment->setSpace(getObject<Space>());
+      OS_ASSERT(ok);
+      ok = myEquipment->hotWaterEquipmentDefinition().setDesignLevel(hotWaterEquipmentPower);
+      OS_ASSERT(ok);
+      ok = myEquipment->setMultiplier(1);
+      OS_ASSERT(ok);
+
+      // remove all other equipment from space
+      HotWaterEquipmentVector allMyEquipment = hotWaterEquipment();
+      removeAllButOneSpaceLoadInstance<HotWaterEquipment>(allMyEquipment, *myEquipment);
+
+      // handle space type
+      if (OptionalSpaceType spaceType = this->spaceType()) {
+        if (!spaceType->hotWaterEquipment().empty()) {
+          // if spaceType is used by multiple ParentObjects (includes Space, Building, excludes
+          // SpaceLoadInstances), create and use clone instead of original
+          if (spaceType->getModelObjectSources<ParentObject>().size() > 1u) {
+            spaceType = spaceType->clone().cast<SpaceType>();
+            setSpaceType(*spaceType);
+          }
+          allMyEquipment = spaceType->hotWaterEquipment();
+          for (HotWaterEquipment& equipment : allMyEquipment) {
+            equipment.remove();
+          }
+        }
+      }
+
+      return true;
+    }
+
+    double Space_Impl::hotWaterEquipmentPowerPerFloorArea() const {
+      double result(0.0);
+      double area = floorArea();
+      double numPeople = numberOfPeople();
+
+      for (const HotWaterEquipment& equipment : hotWaterEquipment()) {
+        result += equipment.getPowerPerFloorArea(area, numPeople);
+      }
+
+      if (OptionalSpaceType spaceType = this->spaceType()) {
+        for (const HotWaterEquipment& equipment : spaceType->hotWaterEquipment()) {
+          result += equipment.getPowerPerFloorArea(area, numPeople);
+        }
+      }
+
+      return result;
+    }
+
+    bool Space_Impl::setHotWaterEquipmentPowerPerFloorArea(double hotWaterEquipmentPowerPerFloorArea) {
+      OptionalHotWaterEquipment templateEquipment;
+      HotWaterEquipmentVector myEquipment = hotWaterEquipment();
+      if (myEquipment.empty()) {
+        if (OptionalSpaceType st = spaceType()) {
+          myEquipment = st->hotWaterEquipment();
+        }
+      }
+      if (!myEquipment.empty()) {
+        templateEquipment = myEquipment[0];
+      }
+      return setHotWaterEquipmentPowerPerFloorArea(hotWaterEquipmentPowerPerFloorArea, templateEquipment);
+    }
+
+    bool Space_Impl::setHotWaterEquipmentPowerPerFloorArea(double hotWaterEquipmentPowerPerFloorArea,
+                                                           const boost::optional<HotWaterEquipment>& templateHotWaterEquipment) {
+      if (hotWaterEquipmentPowerPerFloorArea < 0.0) {
+        LOG(Error, "Space cannot set hotWaterEquipmentPowerPerFloorArea to " << hotWaterEquipmentPowerPerFloorArea << ", the value must be >= 0.0.");
+        return false;
+      }
+
+      // create or modify Lights and LightsDefinition object
+      OptionalHotWaterEquipment myEquipment = getMySpaceLoadInstance<HotWaterEquipment, HotWaterEquipmentDefinition>(templateHotWaterEquipment);
+      if (!myEquipment) {
+        LOG(Error, "The templateHotWaterEquipment object must be in the same Model as this Space.");
+        return false;
+      }
+
+      // set space and power level
+      bool ok(true);
+      myEquipment->makeUnique();
+      ok = myEquipment->setSpace(getObject<Space>());
+      OS_ASSERT(ok);
+      ok = myEquipment->hotWaterEquipmentDefinition().setWattsperSpaceFloorArea(hotWaterEquipmentPowerPerFloorArea);
+      OS_ASSERT(ok);
+      ok = myEquipment->setMultiplier(1);
+      OS_ASSERT(ok);
+
+      // remove all other equipment from space
+      HotWaterEquipmentVector allMyEquipment = hotWaterEquipment();
+      removeAllButOneSpaceLoadInstance<HotWaterEquipment>(allMyEquipment, *myEquipment);
+
+      // handle space type
+      if (OptionalSpaceType spaceType = this->spaceType()) {
+        if (!spaceType->hotWaterEquipment().empty()) {
+          // if spaceType is used by multiple ParentObjects (includes Space, Building, excludes
+          // SpaceLoadInstances), create and use clone instead of original
+          if (spaceType->getModelObjectSources<ParentObject>().size() > 1u) {
+            spaceType = spaceType->clone().cast<SpaceType>();
+            setSpaceType(*spaceType);
+          }
+          allMyEquipment = spaceType->hotWaterEquipment();
+          for (HotWaterEquipment& equipment : allMyEquipment) {
+            equipment.remove();
+          }
+        }
+      }
+
+      return true;
+    }
+
+    double Space_Impl::hotWaterEquipmentPowerPerPerson() const {
+      double result(0.0);
+      double area = floorArea();
+      double numPeople = numberOfPeople();
+
+      for (const HotWaterEquipment& equipment : hotWaterEquipment()) {
+        result += equipment.getPowerPerPerson(area, numPeople);
+      }
+
+      if (OptionalSpaceType spaceType = this->spaceType()) {
+        for (const HotWaterEquipment& equipment : spaceType->hotWaterEquipment()) {
+          result += equipment.getPowerPerPerson(area, numPeople);
+        }
+      }
+
+      return result;
+    }
+
+    bool Space_Impl::setHotWaterEquipmentPowerPerPerson(double hotWaterEquipmentPowerPerPerson) {
+      OptionalHotWaterEquipment templateEquipment;
+      HotWaterEquipmentVector myEquipment = hotWaterEquipment();
+      if (myEquipment.empty()) {
+        if (OptionalSpaceType st = spaceType()) {
+          myEquipment = st->hotWaterEquipment();
+        }
+      }
+      if (!myEquipment.empty()) {
+        templateEquipment = myEquipment[0];
+      }
+      return setHotWaterEquipmentPowerPerPerson(hotWaterEquipmentPowerPerPerson, templateEquipment);
+    }
+
+    bool Space_Impl::setHotWaterEquipmentPowerPerPerson(double hotWaterEquipmentPowerPerPerson,
+                                                        const boost::optional<HotWaterEquipment>& templateHotWaterEquipment) {
+      if (hotWaterEquipmentPowerPerPerson < 0.0) {
+        LOG(Error, "Space cannot set hotWaterEquipmentPowerPerPerson to " << hotWaterEquipmentPowerPerPerson << ", the value must be >= 0.0.");
+        return false;
+      }
+
+      // create or modify Lights and LightsDefinition object
+      OptionalHotWaterEquipment myEquipment = getMySpaceLoadInstance<HotWaterEquipment, HotWaterEquipmentDefinition>(templateHotWaterEquipment);
+      if (!myEquipment) {
+        LOG(Error, "The templateHotWaterEquipment object must be in the same Model as this Space.");
+        return false;
+      }
+
+      // set space and power level
+      bool ok(true);
+      myEquipment->makeUnique();
+      ok = myEquipment->setSpace(getObject<Space>());
+      OS_ASSERT(ok);
+      ok = myEquipment->hotWaterEquipmentDefinition().setWattsperPerson(hotWaterEquipmentPowerPerPerson);
+      OS_ASSERT(ok);
+      ok = myEquipment->setMultiplier(1);
+      OS_ASSERT(ok);
+
+      // remove all other equipment from space
+      HotWaterEquipmentVector allMyEquipment = hotWaterEquipment();
+      removeAllButOneSpaceLoadInstance<HotWaterEquipment>(allMyEquipment, *myEquipment);
+
+      // handle space type
+      if (OptionalSpaceType spaceType = this->spaceType()) {
+        if (!spaceType->hotWaterEquipment().empty()) {
+          // if spaceType is used by multiple ParentObjects (includes Space, Building, excludes
+          // SpaceLoadInstances), create and use clone instead of original
+          if (spaceType->getModelObjectSources<ParentObject>().size() > 1u) {
+            spaceType = spaceType->clone().cast<SpaceType>();
+            setSpaceType(*spaceType);
+          }
+          allMyEquipment = spaceType->hotWaterEquipment();
+          for (HotWaterEquipment& equipment : allMyEquipment) {
             equipment.remove();
           }
         }
@@ -3623,6 +3865,42 @@ namespace model {
 
   bool Space::setGasEquipmentPowerPerPerson(double gasEquipmentPowerPerPerson, const GasEquipment& templateGasEquipment) {
     return getImpl<detail::Space_Impl>()->setGasEquipmentPowerPerPerson(gasEquipmentPowerPerPerson, templateGasEquipment);
+  }
+
+  double Space::hotWaterEquipmentPower() const {
+    return getImpl<detail::Space_Impl>()->hotWaterEquipmentPower();
+  }
+
+  bool Space::setHotWaterEquipmentPower(double hotWaterEquipmentPower) {
+    return getImpl<detail::Space_Impl>()->setHotWaterEquipmentPower(hotWaterEquipmentPower);
+  }
+
+  bool Space::setHotWaterEquipmentPower(double hotWaterEquipmentPower, const HotWaterEquipment& templateHotWaterEquipment) {
+    return getImpl<detail::Space_Impl>()->setHotWaterEquipmentPower(hotWaterEquipmentPower, templateHotWaterEquipment);
+  }
+
+  double Space::hotWaterEquipmentPowerPerFloorArea() const {
+    return getImpl<detail::Space_Impl>()->hotWaterEquipmentPowerPerFloorArea();
+  }
+
+  bool Space::setHotWaterEquipmentPowerPerFloorArea(double hotWaterEquipmentPowerPerFloorArea) {
+    return getImpl<detail::Space_Impl>()->setHotWaterEquipmentPowerPerFloorArea(hotWaterEquipmentPowerPerFloorArea);
+  }
+
+  bool Space::setHotWaterEquipmentPowerPerFloorArea(double hotWaterEquipmentPowerPerFloorArea, const HotWaterEquipment& templateHotWaterEquipment) {
+    return getImpl<detail::Space_Impl>()->setHotWaterEquipmentPowerPerFloorArea(hotWaterEquipmentPowerPerFloorArea, templateHotWaterEquipment);
+  }
+
+  double Space::hotWaterEquipmentPowerPerPerson() const {
+    return getImpl<detail::Space_Impl>()->hotWaterEquipmentPowerPerPerson();
+  }
+
+  bool Space::setHotWaterEquipmentPowerPerPerson(double hotWaterEquipmentPowerPerPerson) {
+    return getImpl<detail::Space_Impl>()->setHotWaterEquipmentPowerPerPerson(hotWaterEquipmentPowerPerPerson);
+  }
+
+  bool Space::setHotWaterEquipmentPowerPerPerson(double hotWaterEquipmentPowerPerPerson, const HotWaterEquipment& templateHotWaterEquipment) {
+    return getImpl<detail::Space_Impl>()->setHotWaterEquipmentPowerPerPerson(hotWaterEquipmentPowerPerPerson, templateHotWaterEquipment);
   }
 
   double Space::infiltrationDesignFlowRate() const {

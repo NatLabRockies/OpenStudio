@@ -76,6 +76,7 @@
 %include <utilities/idd/IddObject.hpp>
 %include <utilities/idd/IddFile.hpp>
 %include <utilities/idd/IddFileAndFactoryWrapper.hpp>
+%include <utilities/idd/IddFactory.hxx>
 
 %extend openstudio::IddKey{
   std::string __str__() const{

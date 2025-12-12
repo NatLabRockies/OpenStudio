@@ -211,6 +211,8 @@ namespace detail {
     void setStdErr(const std::string& stdErr);
     void resetStdErr();
 
+    void showOutput() const;
+
    private:
     REGISTER_LOGGER("openstudio.WorkflowStepResult");
 

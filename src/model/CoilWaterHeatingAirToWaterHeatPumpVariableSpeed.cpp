@@ -22,6 +22,7 @@
 #include "CoilSystemIntegratedHeatPumpAirSource_Impl.hpp"
 #include "WaterHeaterHeatPump.hpp"
 #include "WaterHeaterHeatPump_Impl.hpp"
+#include "ScheduleTypeRegistry.hpp"
 
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -84,6 +85,17 @@ namespace model {
 
     IddObjectType CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::iddObjectType() const {
       return CoilWaterHeatingAirToWaterHeatPumpVariableSpeed::iddObjectType();
+    }
+
+    std::vector<ScheduleTypeKey> CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::getScheduleTypeKeys(const Schedule& schedule) const {
+      std::vector<ScheduleTypeKey> result;
+      UnsignedVector fieldIndices = getSourceIndices(schedule.handle());
+      UnsignedVector::const_iterator b(fieldIndices.begin());
+      UnsignedVector::const_iterator e(fieldIndices.end());
+      if (std::find(b, e, OS_Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::AvailabilityScheduleName) != e) {
+        result.push_back(ScheduleTypeKey("CoilWaterHeatingAirToWaterHeatPumpVariableSpeed", "Availability Schedule"));
+      }
+      return result;
     }
 
     std::vector<ModelObject> CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::children() const {
@@ -175,6 +187,26 @@ namespace model {
       if (val) {
         setRatedCondenserWaterFlowRate(val.get());
       }
+    }
+
+    boost::optional<Schedule> CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::optionalAvailabilitySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        OS_Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::AvailabilityScheduleName);
+    }
+
+    Schedule CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::availabilitySchedule() const {
+      boost::optional<Schedule> value = optionalAvailabilitySchedule();
+      if (!value) {
+        // it is an error if we get here, however we don't want to crash
+        // so we hook up to global always on schedule
+        LOG(Error, "Required availability schedule not set, using 'Always On' schedule");
+        value = this->model().alwaysOnDiscreteSchedule();
+        OS_ASSERT(value);
+        const_cast<CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl*>(this)->setAvailabilitySchedule(*value);
+        value = optionalAvailabilitySchedule();
+      }
+      OS_ASSERT(value);
+      return value.get();
     }
 
     int CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::nominalSpeedLevel() const {
@@ -295,6 +327,12 @@ namespace model {
         LOG_AND_THROW(briefDescription() << " does not have a Part Load Fraction Correlation Curve attached.");
       }
       return value.get();
+    }
+
+    bool CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      bool result = setSchedule(OS_Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::AvailabilityScheduleName,
+                                "CoilWaterHeatingAirToWaterHeatPumpVariableSpeed", "Availability Schedule", schedule);
+      return result;
     }
 
     bool CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::setNominalSpeedLevel(int nominalSpeedLevel) {
@@ -533,7 +571,9 @@ namespace model {
     partLoadFraction.setMinimumValueofx(0.0);
     partLoadFraction.setMaximumValueofx(1.0);
 
-    bool ok = true;
+    auto always_on = model.alwaysOnDiscreteSchedule();
+    bool ok = setAvailabilitySchedule(always_on);
+    OS_ASSERT(ok);
     ok = setNominalSpeedLevel(1);
     OS_ASSERT(ok);
     ok = setRatedWaterHeatingCapacity(4000.0);  // ASIHPMixedTank.idf
@@ -572,6 +612,10 @@ namespace model {
 
   IddObjectType CoilWaterHeatingAirToWaterHeatPumpVariableSpeed::iddObjectType() {
     return {IddObjectType::OS_Coil_WaterHeating_AirToWaterHeatPump_VariableSpeed};
+  }
+
+  Schedule CoilWaterHeatingAirToWaterHeatPumpVariableSpeed::availabilitySchedule() const {
+    return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl>()->availabilitySchedule();
   }
 
   int CoilWaterHeatingAirToWaterHeatPumpVariableSpeed::nominalSpeedLevel() const {
@@ -640,6 +684,10 @@ namespace model {
 
   Curve CoilWaterHeatingAirToWaterHeatPumpVariableSpeed::partLoadFractionCorrelationCurve() const {
     return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl>()->partLoadFractionCorrelationCurve();
+  }
+
+  bool CoilWaterHeatingAirToWaterHeatPumpVariableSpeed::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl>()->setAvailabilitySchedule(schedule);
   }
 
   bool CoilWaterHeatingAirToWaterHeatPumpVariableSpeed::setNominalSpeedLevel(int nominalSpeedLevel) {

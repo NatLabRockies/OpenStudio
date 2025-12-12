@@ -1,0 +1,158 @@
+
+OS:Version,
+  {5eea10ec-8ea0-415b-a88a-f911b888ebe4}, !- Handle
+  3.10.0;                                 !- Version Identifier
+
+OS:HeatPump:AirToWater:FuelFired:Heating,
+  {a4f7d157-4173-4500-847a-f4e8b62fc16d}, !- Handle
+  Heat Pump Air To Water Fuel Fired Heating 1, !- Name
+  ,                                       !- Water Inlet Node Name
+  ,                                       !- Water Outlet Node Name
+  ,                                       !- Air Source Node Name
+  ,                                       !- Companion Cooling Heat Pump Name
+  NaturalGas,                             !- Fuel Type
+  ,                                       !- End-Use Subcategory
+  autosize,                               !- Nominal Heating Capacity {W}
+  1,                                      !- Nominal COP {W/W}
+  autosize,                               !- Design Flow Rate {m3/s}
+  60,                                     !- Design Supply Temperature {C}
+  11.1,                                   !- Design Temperature Lift {deltaC}
+  1,                                      !- Sizing Factor
+  NotModulated,                           !- Flow Mode
+  DryBulb,                                !- Outdoor Air Temperature Curve Input Variable
+  EnteringCondenser,                      !- Water Temperature Curve Input Variable
+  {24e5ba24-bf44-4a0d-ad0e-d39cdfd276b5}, !- Normalized Capacity Function of Temperature Curve Name
+  {92081435-dd0e-406a-9c91-24f3d9a5cbca}, !- Fuel Energy Input Ratio Function of Temperature Curve Name
+  {d0f68b12-0931-420a-9746-26724e1ad500}, !- Fuel Energy Input Ratio Function of PLR Curve Name
+  0.1,                                    !- Minimum Part Load Ratio
+  1,                                      !- Maximum Part Load Ratio
+  Timed,                                  !- Defrost Control Type
+  0,                                      !- Defrost Operation Time Fraction
+  ,                                       !- Fuel Energy Input Ratio Defrost Adjustment Curve Name
+  0,                                      !- Resistive Defrost Heater Capacity {W}
+  5,                                      !- Maximum Outdoor Dry-bulb Temperature for Defrost Operation {C}
+  ,                                       !- Cycling Ratio Factor Curve Name
+  0,                                      !- Nominal Auxiliary Electric Power {W}
+  ,                                       !- Auxiliary Electric Energy Input Ratio Function of Temperature Curve Name
+  ,                                       !- Auxiliary Electric Energy Input Ratio Function of PLR Curve Name
+  0;                                      !- Standby Electric Power {W}
+
+OS:Curve:Biquadratic,
+  {24e5ba24-bf44-4a0d-ad0e-d39cdfd276b5}, !- Handle
+  GAHP Heating CapFT,                     !- Name
+  1,                                      !- Coefficient1 Constant
+  0,                                      !- Coefficient2 x
+  0,                                      !- Coefficient3 x**2
+  0,                                      !- Coefficient4 y
+  0,                                      !- Coefficient5 y**2
+  0,                                      !- Coefficient6 x*y
+  5,                                      !- Minimum Value of x
+  10,                                     !- Maximum Value of x
+  24,                                     !- Minimum Value of y
+  35,                                     !- Maximum Value of y
+  ,                                       !- Minimum Curve Output
+  ,                                       !- Maximum Curve Output
+  Temperature,                            !- Input Unit Type for X
+  Temperature;                            !- Input Unit Type for Y
+
+OS:Curve:Biquadratic,
+  {92081435-dd0e-406a-9c91-24f3d9a5cbca}, !- Handle
+  GAHP Heating EIRFT,                     !- Name
+  1,                                      !- Coefficient1 Constant
+  0,                                      !- Coefficient2 x
+  0,                                      !- Coefficient3 x**2
+  0,                                      !- Coefficient4 y
+  0,                                      !- Coefficient5 y**2
+  0,                                      !- Coefficient6 x*y
+  5,                                      !- Minimum Value of x
+  10,                                     !- Maximum Value of x
+  24,                                     !- Minimum Value of y
+  35,                                     !- Maximum Value of y
+  ,                                       !- Minimum Curve Output
+  ,                                       !- Maximum Curve Output
+  Temperature,                            !- Input Unit Type for X
+  Temperature;                            !- Input Unit Type for Y
+
+OS:Curve:Quadratic,
+  {d0f68b12-0931-420a-9746-26724e1ad500}, !- Handle
+  GAHP Heating EIRFPLR,                   !- Name
+  1,                                      !- Coefficient1 Constant
+  0,                                      !- Coefficient2 x
+  0,                                      !- Coefficient3 x**2
+  0,                                      !- Minimum Value of x
+  1;                                      !- Maximum Value of x
+
+OS:HeatPump:AirToWater:FuelFired:Cooling,
+  {ccd6e898-6acf-4ce7-a984-26f9557525d1}, !- Handle
+  Heat Pump Air To Water Fuel Fired Cooling 1, !- Name
+  ,                                       !- Water Inlet Node Name
+  ,                                       !- Water Outlet Node Name
+  ,                                       !- Air Source Node Name
+  ,                                       !- Companion Heating Heat Pump Name
+  NaturalGas,                             !- Fuel Type
+  ,                                       !- End-Use Subcategory
+  autosize,                               !- Nominal Cooling Capacity {W}
+  1,                                      !- Nominal COP {W/W}
+  autosize,                               !- Design Flow Rate {m3/s}
+  7,                                      !- Design Supply Temperature {C}
+  11.1,                                   !- Design Temperature Lift {deltaC}
+  1,                                      !- Sizing Factor
+  NotModulated,                           !- Flow Mode
+  DryBulb,                                !- Outdoor Air Temperature Curve Input Variable
+  EnteringEvaporator,                     !- Water Temperature Curve Input Variable
+  {03f6c14c-4682-4bd4-a2f3-bf03b0bd5463}, !- Normalized Capacity Function of Temperature Curve Name
+  {02c95b68-2aa5-459b-9f95-e33826ee8920}, !- Fuel Energy Input Ratio Function of Temperature Curve Name
+  {94dc7ee4-6db0-4157-a1be-753f3de237f9}, !- Fuel Energy Input Ratio Function of PLR Curve Name
+  0.1,                                    !- Minimum Part Load Ratio
+  1,                                      !- Maximum Part Load Ratio
+  ,                                       !- Cycling Ratio Factor Curve Name
+  0,                                      !- Nominal Auxiliary Electric Power {W}
+  ,                                       !- Auxiliary Electric Energy Input Ratio Function of Temperature Curve Name
+  ,                                       !- Auxiliary Electric Energy Input Ratio Function of PLR Curve Name
+  0;                                      !- Standby Electric Power {W}
+
+OS:Curve:Biquadratic,
+  {03f6c14c-4682-4bd4-a2f3-bf03b0bd5463}, !- Handle
+  GAHP Cooling CapFT,                     !- Name
+  1,                                      !- Coefficient1 Constant
+  0,                                      !- Coefficient2 x
+  0,                                      !- Coefficient3 x**2
+  0,                                      !- Coefficient4 y
+  0,                                      !- Coefficient5 y**2
+  0,                                      !- Coefficient6 x*y
+  5,                                      !- Minimum Value of x
+  10,                                     !- Maximum Value of x
+  24,                                     !- Minimum Value of y
+  35,                                     !- Maximum Value of y
+  ,                                       !- Minimum Curve Output
+  ,                                       !- Maximum Curve Output
+  Temperature,                            !- Input Unit Type for X
+  Temperature;                            !- Input Unit Type for Y
+
+OS:Curve:Biquadratic,
+  {02c95b68-2aa5-459b-9f95-e33826ee8920}, !- Handle
+  GAHP Cooling EIRFT,                     !- Name
+  1,                                      !- Coefficient1 Constant
+  0,                                      !- Coefficient2 x
+  0,                                      !- Coefficient3 x**2
+  0,                                      !- Coefficient4 y
+  0,                                      !- Coefficient5 y**2
+  0,                                      !- Coefficient6 x*y
+  5,                                      !- Minimum Value of x
+  10,                                     !- Maximum Value of x
+  24,                                     !- Minimum Value of y
+  35,                                     !- Maximum Value of y
+  ,                                       !- Minimum Curve Output
+  ,                                       !- Maximum Curve Output
+  Temperature,                            !- Input Unit Type for X
+  Temperature;                            !- Input Unit Type for Y
+
+OS:Curve:Quadratic,
+  {94dc7ee4-6db0-4157-a1be-753f3de237f9}, !- Handle
+  GAHP Cooling EIRFPLR,                   !- Name
+  1,                                      !- Coefficient1 Constant
+  0,                                      !- Coefficient2 x
+  0,                                      !- Coefficient3 x**2
+  0,                                      !- Minimum Value of x
+  1;                                      !- Maximum Value of x
+

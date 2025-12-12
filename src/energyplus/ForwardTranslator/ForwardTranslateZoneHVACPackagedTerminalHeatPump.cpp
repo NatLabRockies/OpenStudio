@@ -424,6 +424,12 @@ namespace energyplus {
       idfObject.setString(ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFanOperatingModeScheduleName, _schedule->name().get());
     }
 
+    // DXHeatingCoilSizingRatio
+
+    if ((value = modelObject.dXHeatingCoilSizingRatio())) {
+      idfObject.setDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::DXHeatingCoilSizingRatio, value.get());
+    }
+
     return idfObject;
   }
 

@@ -7,7 +7,6 @@
 #define UTILITIES_IDD_IDDREGEX_HPP
 
 #include "../UtilitiesAPI.hpp"
-#include "../core/StaticInitializer.hpp"
 #include <boost/regex.hpp>
 
 namespace openstudio {

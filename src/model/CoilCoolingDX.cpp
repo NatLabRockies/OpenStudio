@@ -119,6 +119,32 @@ namespace model {
       return result;
     }
 
+    AirflowNetworkEquivalentDuct CoilCoolingDX_Impl::getAirflowNetworkEquivalentDuct(double length, double diameter) {
+      boost::optional<AirflowNetworkEquivalentDuct> opt = airflowNetworkEquivalentDuct();
+      if (opt) {
+        if (opt->airPathLength() != length) {
+          opt->setAirPathLength(length);
+        }
+        if (opt->airPathHydraulicDiameter() != diameter) {
+          opt->setAirPathHydraulicDiameter(diameter);
+        }
+      }
+      return AirflowNetworkEquivalentDuct(model(), length, diameter, handle());
+    }
+
+    boost::optional<AirflowNetworkEquivalentDuct> CoilCoolingDX_Impl::airflowNetworkEquivalentDuct() const {
+      std::vector<AirflowNetworkEquivalentDuct> myAFN =
+        getObject<ModelObject>().getModelObjectSources<AirflowNetworkEquivalentDuct>(AirflowNetworkEquivalentDuct::iddObjectType());
+      auto count = myAFN.size();
+      if (count == 1) {
+        return myAFN[0];
+      } else if (count > 1) {
+        LOG(Warn, briefDescription() << " has more than one AirflowNetwork EquivalentDuct attached, returning first.");
+        return myAFN[0];
+      }
+      return boost::none;
+    }
+
     boost::optional<HVACComponent> CoilCoolingDX_Impl::containingHVACComponent() const {
       // AirLoopHVACUnitarySystem
       {
@@ -372,6 +398,14 @@ namespace model {
 
   bool CoilCoolingDX::setPerformanceObject(const CoilCoolingDXCurveFitPerformance& coilCoolingDXCurveFitPerformance) {
     return getImpl<detail::CoilCoolingDX_Impl>()->setPerformanceObject(coilCoolingDXCurveFitPerformance);
+  }
+
+  AirflowNetworkEquivalentDuct CoilCoolingDX::getAirflowNetworkEquivalentDuct(double length, double diameter) {
+    return getImpl<detail::CoilCoolingDX_Impl>()->getAirflowNetworkEquivalentDuct(length, diameter);
+  }
+
+  boost::optional<AirflowNetworkEquivalentDuct> CoilCoolingDX::airflowNetworkEquivalentDuct() const {
+    return getImpl<detail::CoilCoolingDX_Impl>()->airflowNetworkEquivalentDuct();
   }
 
   //boost::optional<std::string> CoilCoolingDX::condenserInletNodeName() const {

@@ -228,6 +228,7 @@ set(${target_name}_src
   ForwardTranslator/ForwardTranslateHeatExchangerDesiccantBalancedFlow.cpp
   ForwardTranslator/ForwardTranslateHeatExchangerDesiccantBalancedFlowPerformanceDataType1.cpp
   ForwardTranslator/ForwardTranslateHeatExchangerFluidToFluid.cpp
+  ForwardTranslator/ForwardTranslateHeatPumpAirToWater.cpp
   ForwardTranslator/ForwardTranslateHeatPumpAirToWaterFuelFiredHeating.cpp
   ForwardTranslator/ForwardTranslateHeatPumpAirToWaterFuelFiredCooling.cpp
   ForwardTranslator/ForwardTranslateHeatPumpWaterToWaterEquationFitCooling.cpp
@@ -546,6 +547,7 @@ set(${target_name}_src
   ReverseTranslator/ReverseTranslateGeneratorMicroTurbine.cpp
   ReverseTranslator/ReverseTranslateGeneratorWindTurbine.cpp
   ReverseTranslator/ReverseTranslateHeatBalanceAlgorithm.cpp
+  ReverseTranslator/ReverseTranslateHeatPumpAirToWater.cpp
   ReverseTranslator/ReverseTranslateHotWaterEquipment.cpp
   ReverseTranslator/ReverseTranslateInternalMass.cpp
   ReverseTranslator/ReverseTranslateLights.cpp
@@ -752,6 +754,8 @@ set(${target_name}_test_src
   Test/EMS_GTest.cpp
   Test/EnvironmentalImpactFactors_GTest.cpp
   Test/EvaporativeCoolerDirectResearchSpecial_GTest.cpp
+  Test/EvaporativeFluidCoolerSingleSpeed_GTest.cpp
+  Test/EvaporativeFluidCoolerTwoSpeed_GTest.cpp
   Test/ExteriorLights_GTest.cpp
   Test/ExteriorFuelEquipment_GTest.cpp
   Test/ExteriorWaterEquipment_GTest.cpp
@@ -769,6 +773,7 @@ set(${target_name}_test_src
   Test/GroundHeatExchangerVertical_GTest.cpp
   Test/HeatExchangerDesiccantBalancedFlow_GTest.cpp
   Test/HeatExchangerDesiccantBalancedFlowPerformanceDataType1_GTest.cpp
+  Test/HeatPumpAirToWater_GTest.cpp
   Test/HeatPumpAirToWaterFuelFired_GTest.cpp
   Test/HeatPumpWaterToWaterEquationFit_GTest.cpp
   Test/HeatPumpPlantLoopEIR_GTest.cpp
@@ -784,7 +789,6 @@ set(${target_name}_test_src
   Test/MaterialPropertyMoisturePenetrationDepthSettings_GTest.cpp
   Test/MaterialPropertyPhaseChange_GTest.cpp
   Test/MaterialPropertyPhaseChangeHysteresis_GTest.cpp
-  Test/Meter_GTest.cpp
   Test/OutputControlFiles_GTest.cpp
   Test/OutputControlReportingTolerances_GTest.cpp
   Test/OutputControlResilienceSummaries_GTest.cpp
@@ -793,6 +797,7 @@ set(${target_name}_test_src
   Test/OutputDebuggingData_GTest.cpp
   Test/OutputDiagnostics_GTest.cpp
   Test/OutputJSON_GTest.cpp
+  Test/OutputMeter_GTest.cpp
   Test/OutputSQLite_GTest.cpp
   Test/OutputEnvironmentalImpactFactors_GTest.cpp
   Test/OutputTableSummaryReports_GTest.cpp
@@ -858,6 +863,7 @@ set(${target_name}_test_src
   Test/ZoneAirHeatBalanceAlgorithm_GTest.cpp
   Test/ZoneHVACBaseboardRadiantConvectiveWater_GTest.cpp
   Test/ZoneHVACEvaporativeCoolerUnit_GTest.cpp
+  Test/ZoneHVACIdealLoadsAirSystem_GTest.cpp
   Test/ZoneHVACLowTemperatureRadiantElectric_GTest.cpp
   Test/ZoneHVACLowTempRadiantConstFlow_GTest.cpp
   Test/ZoneHVACLowTempRadiantVarFlow_GTest.cpp

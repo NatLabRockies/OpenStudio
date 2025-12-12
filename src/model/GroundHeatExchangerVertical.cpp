@@ -353,14 +353,10 @@ namespace model {
       return OS_GroundHeatExchanger_VerticalFields::OutletNodeName;
     }
 
-    // addToNode
     bool GroundHeatExchangerVertical_Impl::addToNode(Node& node) {
-      if (boost::optional<PlantLoop> plant = node.plantLoop()) {
-        if (plant->supplyComponent(node.handle())) {
-          if (StraightComponent_Impl::addToNode(node)) {
-            plant->setFluidType("Water");
-            return true;
-          }
+      if (auto plant = node.plantLoop()) {
+        if (!plant->demandComponent(node.handle())) {
+          return StraightComponent_Impl::addToNode(node);
         }
       }
 

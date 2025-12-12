@@ -41,6 +41,8 @@
 #include "GasEquipmentDefinition_Impl.hpp"
 #include "HotWaterEquipment.hpp"
 #include "HotWaterEquipment_Impl.hpp"
+#include "HotWaterEquipmentDefinition.hpp"
+#include "HotWaterEquipmentDefinition_Impl.hpp"
 #include "SteamEquipment.hpp"
 #include "SteamEquipment_Impl.hpp"
 #include "OtherEquipment.hpp"
@@ -1178,6 +1180,138 @@ namespace model {
       return result;
     }
 
+    boost::optional<double> SpaceType_Impl::hotWaterEquipmentPowerPerFloorArea() const {
+      double result(0.0);
+      for (const HotWaterEquipment& equipment : hotWaterEquipment()) {
+        OptionalDouble temp = equipment.powerPerFloorArea();
+        if (temp) {
+          result += temp.get();
+        } else {
+          return boost::none;
+        }
+      }
+      return result;
+    }
+
+    bool SpaceType_Impl::setHotWaterEquipmentPowerPerFloorArea(double hotWaterEquipmentPowerPerFloorArea) {
+      OptionalHotWaterEquipment templateEquipment;
+      HotWaterEquipmentVector myEquipment = hotWaterEquipment();
+      if (!myEquipment.empty()) {
+        templateEquipment = myEquipment[0];
+      }
+      return setHotWaterEquipmentPowerPerFloorArea(hotWaterEquipmentPowerPerFloorArea, templateEquipment);
+    }
+
+    bool SpaceType_Impl::setHotWaterEquipmentPowerPerFloorArea(double hotWaterEquipmentPowerPerFloorArea,
+                                                               const boost::optional<HotWaterEquipment>& templateHotWaterEquipment) {
+      if (hotWaterEquipmentPowerPerFloorArea < 0.0) {
+        LOG(Error, "SpaceType cannot set hotWaterEquipmentPowerPerFloorArea " << hotWaterEquipmentPowerPerFloorArea << ", the value must be >= 0.0.");
+        return false;
+      }
+
+      // create or modify HotWaterEquipment and HotWaterEquipmentDefinition object
+      OptionalHotWaterEquipment myEquipment = getMySpaceLoadInstance<HotWaterEquipment, HotWaterEquipmentDefinition>(templateHotWaterEquipment);
+      if (!myEquipment) {
+        LOG(Error, "The templateHotWaterEquipment object must be in the same Model as this SpaceType.");
+        return false;
+      }
+
+      // set space type and equipment WattsperSpaceFloorArea
+      bool ok(true);
+      OS_ASSERT(myEquipment);
+      myEquipment->makeUnique();
+      ok = myEquipment->setSpaceType(getObject<SpaceType>());
+      OS_ASSERT(ok);
+      ok = myEquipment->hotWaterEquipmentDefinition().setWattsperSpaceFloorArea(hotWaterEquipmentPowerPerFloorArea);
+      OS_ASSERT(ok);
+      ok = myEquipment->setMultiplier(1);
+      OS_ASSERT(ok);
+
+      // remove all other equipment
+      HotWaterEquipmentVector allMyEquipment = hotWaterEquipment();
+      removeAllButOneSpaceLoadInstance<HotWaterEquipment>(allMyEquipment, *myEquipment);
+
+      return true;
+    }
+
+    boost::optional<double> SpaceType_Impl::hotWaterEquipmentPowerPerPerson() const {
+      double result(0.0);
+      for (const HotWaterEquipment& equipment : hotWaterEquipment()) {
+        OptionalDouble temp = equipment.powerPerPerson();
+        if (temp) {
+          result += temp.get();
+        } else {
+          return boost::none;
+        }
+      }
+      return result;
+    }
+
+    bool SpaceType_Impl::setHotWaterEquipmentPowerPerPerson(double hotWaterEquipmentPowerPerPerson) {
+      OptionalHotWaterEquipment templateEquipment;
+      HotWaterEquipmentVector myEquipment = hotWaterEquipment();
+      if (!myEquipment.empty()) {
+        templateEquipment = myEquipment[0];
+      }
+      return setHotWaterEquipmentPowerPerPerson(hotWaterEquipmentPowerPerPerson, templateEquipment);
+    }
+
+    bool SpaceType_Impl::setHotWaterEquipmentPowerPerPerson(double hotWaterEquipmentPowerPerPerson,
+                                                            const boost::optional<HotWaterEquipment>& templateHotWaterEquipment) {
+      if (hotWaterEquipmentPowerPerPerson < 0.0) {
+        LOG(Error, "SpaceType cannot set hotWaterEquipmentPowerPerPerson " << hotWaterEquipmentPowerPerPerson << ", the value must be >= 0.0.");
+        return false;
+      }
+
+      // create or modify HotWaterEquipment and HotWaterEquipmentDefinition object
+      OptionalHotWaterEquipment myEquipment = getMySpaceLoadInstance<HotWaterEquipment, HotWaterEquipmentDefinition>(templateHotWaterEquipment);
+      if (!myEquipment) {
+        LOG(Error, "The templateHotWaterEquipment object must be in the same Model as this SpaceType.");
+        return false;
+      }
+
+      // set space type and equipment WattsperSpaceFloorArea
+      bool ok(true);
+      OS_ASSERT(myEquipment);
+      myEquipment->makeUnique();
+      ok = myEquipment->setSpaceType(getObject<SpaceType>());
+      OS_ASSERT(ok);
+      ok = myEquipment->hotWaterEquipmentDefinition().setWattsperPerson(hotWaterEquipmentPowerPerPerson);
+      OS_ASSERT(ok);
+      ok = myEquipment->setMultiplier(1);
+      OS_ASSERT(ok);
+
+      // remove all other equipment
+      HotWaterEquipmentVector allMyEquipment = hotWaterEquipment();
+      removeAllButOneSpaceLoadInstance<HotWaterEquipment>(allMyEquipment, *myEquipment);
+
+      return true;
+    }
+
+    double SpaceType_Impl::getHotWaterEquipmentDesignLevel(double floorArea, double numPeople) const {
+      double result(0.0);
+      for (const HotWaterEquipment& equipment : hotWaterEquipment()) {
+        result += equipment.getDesignLevel(floorArea, numPeople);
+      }
+      return result;
+    }
+
+    double SpaceType_Impl::getHotWaterEquipmentPowerPerFloorArea(double floorArea, double numPeople) const {
+      double result(0.0);
+      for (const HotWaterEquipment& equipment : hotWaterEquipment()) {
+        result += equipment.getPowerPerFloorArea(floorArea, numPeople);
+      }
+      return result;
+    }
+
+    double SpaceType_Impl::getHotWaterEquipmentPowerPerPerson(double floorArea, double numPeople) const {
+      double result(0.0);
+      for (const HotWaterEquipment& equipment : hotWaterEquipment()) {
+        result += equipment.getPowerPerPerson(floorArea, numPeople);
+      }
+      return result;
+    }
+
     double SpaceType_Impl::floorArea() const {
       double result = 0;
       for (const Space& space : this->model().getConcreteModelObjects<Space>()) {
@@ -1681,6 +1815,43 @@ namespace model {
 
   double SpaceType::getGasEquipmentPowerPerPerson(double floorArea, double numPeople) const {
     return getImpl<detail::SpaceType_Impl>()->getGasEquipmentPowerPerPerson(floorArea, numPeople);
+  }
+
+  boost::optional<double> SpaceType::hotWaterEquipmentPowerPerFloorArea() const {
+    return getImpl<detail::SpaceType_Impl>()->hotWaterEquipmentPowerPerFloorArea();
+  }
+
+  bool SpaceType::setHotWaterEquipmentPowerPerFloorArea(double hotWaterEquipmentPowerPerFloorArea) {
+    return getImpl<detail::SpaceType_Impl>()->setHotWaterEquipmentPowerPerFloorArea(hotWaterEquipmentPowerPerFloorArea);
+  }
+
+  bool SpaceType::setHotWaterEquipmentPowerPerFloorArea(double hotWaterEquipmentPowerPerFloorArea,
+                                                        const HotWaterEquipment& templateHotWaterEquipment) {
+    return getImpl<detail::SpaceType_Impl>()->setHotWaterEquipmentPowerPerFloorArea(hotWaterEquipmentPowerPerFloorArea, templateHotWaterEquipment);
+  }
+
+  boost::optional<double> SpaceType::hotWaterEquipmentPowerPerPerson() const {
+    return getImpl<detail::SpaceType_Impl>()->hotWaterEquipmentPowerPerPerson();
+  }
+
+  bool SpaceType::setHotWaterEquipmentPowerPerPerson(double hotWaterEquipmentPowerPerPerson) {
+    return getImpl<detail::SpaceType_Impl>()->setHotWaterEquipmentPowerPerPerson(hotWaterEquipmentPowerPerPerson);
+  }
+
+  bool SpaceType::setHotWaterEquipmentPowerPerPerson(double hotWaterEquipmentPowerPerPerson, const HotWaterEquipment& templateHotWaterEquipment) {
+    return getImpl<detail::SpaceType_Impl>()->setHotWaterEquipmentPowerPerPerson(hotWaterEquipmentPowerPerPerson, templateHotWaterEquipment);
+  }
+
+  double SpaceType::getHotWaterEquipmentDesignLevel(double floorArea, double numPeople) const {
+    return getImpl<detail::SpaceType_Impl>()->getHotWaterEquipmentDesignLevel(floorArea, numPeople);
+  }
+
+  double SpaceType::getHotWaterEquipmentPowerPerFloorArea(double floorArea, double numPeople) const {
+    return getImpl<detail::SpaceType_Impl>()->getHotWaterEquipmentPowerPerFloorArea(floorArea, numPeople);
+  }
+
+  double SpaceType::getHotWaterEquipmentPowerPerPerson(double floorArea, double numPeople) const {
+    return getImpl<detail::SpaceType_Impl>()->getHotWaterEquipmentPowerPerPerson(floorArea, numPeople);
   }
 
   double SpaceType::floorArea() const {

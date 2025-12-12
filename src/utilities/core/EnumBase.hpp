@@ -6,8 +6,6 @@
 #ifndef UTILITIES_CORE_ENUMBASE_HPP
 #define UTILITIES_CORE_ENUMBASE_HPP
 
-#include "StaticInitializer.hpp"
-
 #include <boost/preprocessor.hpp>
 #include <boost/optional.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -20,7 +18,7 @@
 
 /** Base class for OPENSTUDIO_ENUMs. Comparison operators use the underlying (integer) value. */
 template <typename Enum>
-class EnumBase : public ::StaticInitializer<Enum>
+class EnumBase
 {
  public:
   /** Default constructor. EnumBase default constructor never actually called; OPENSTUDIO_ENUM-

@@ -15,6 +15,7 @@ namespace model {
 
   class Schedule;
   class ThermalZone;
+  class WaterHeaterSizing;
 
   namespace detail {
 
@@ -51,6 +52,10 @@ namespace model {
 
       virtual unsigned demandOutletPort() const override;
 
+      virtual std::vector<ModelObject> children() const override;
+
+      virtual ModelObject clone(Model model) const override;
+
       virtual void autosize() override;
 
       virtual void applySizingValues() override;
@@ -81,6 +86,8 @@ namespace model {
       boost::optional<double> minimumTemperatureLimit() const;
 
       boost::optional<double> nominalCoolingCapacity() const;
+
+      bool isNominalCoolingCapacityAutosized() const;
 
       std::string ambientTemperatureIndicator() const;
 
@@ -148,6 +155,8 @@ namespace model {
 
       double node10AdditionalLossCoefficient() const;
 
+      boost::optional<double> autosizedNominalCoolingCapacity() const;
+
       boost::optional<double> autosizedUseSideDesignFlowRate() const;
 
       boost::optional<double> autosizedSourceSideDesignFlowRate() const;
@@ -182,7 +191,7 @@ namespace model {
 
       bool setNominalCoolingCapacity(boost::optional<double> nominalCoolingCapacity);
 
-      void resetNominalCoolingCapacity();
+      void autosizeNominalCoolingCapacity();
 
       bool setAmbientTemperatureIndicator(const std::string& ambientTemperatureIndicator);
 
@@ -266,6 +275,8 @@ namespace model {
       //@}
       /** @name Other */
       //@{
+
+      WaterHeaterSizing waterHeaterSizing() const;
 
       //@}
      protected:

@@ -1,6 +1,8 @@
 .idea
 .ruby-version
-.bundle
+.bundle/
+vendor/bundle/
+!.bundle/config
 test_gems
 test_fails.txt
 # Ignore build folders (at root level only)
@@ -34,3 +36,4 @@ junit.xml
 .cppcheck*/
 
 CMakeUserPresets.json
+.env

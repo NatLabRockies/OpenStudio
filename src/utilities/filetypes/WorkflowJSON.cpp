@@ -601,8 +601,8 @@ namespace detail {
     return result;
   }
 
-  bool WorkflowJSON_Impl::setSeedModelicaFile(const openstudio::path& seedFile) {
-    m_value["seed_modelica_file"] = toString(seedFile);
+  bool WorkflowJSON_Impl::setSeedModelicaFile(const openstudio::path& modelicaSeedFile) {
+    m_value["seed_modelica_file"] = toString(modelicaSeedFile);
     onUpdate();
     return true;
   }
@@ -1080,7 +1080,7 @@ std::string WorkflowJSON::computeHash() const {
   return getImpl<detail::WorkflowJSON_Impl>()->computeHash();
 }
 
-bool WorkflowJSON::checkForUpdates() {
+bool WorkflowJSON::checkForUpdates() const {
   return getImpl<detail::WorkflowJSON_Impl>()->checkForUpdates();
 }
 
@@ -1088,15 +1088,15 @@ bool WorkflowJSON::save() const {
   return getImpl<detail::WorkflowJSON_Impl>()->save();
 }
 
-bool WorkflowJSON::saveAs(const openstudio::path& p) {
+bool WorkflowJSON::saveAs(const openstudio::path& p) const {
   return getImpl<detail::WorkflowJSON_Impl>()->saveAs(p);
 }
 
-void WorkflowJSON::reset() {
+void WorkflowJSON::reset() const {
   getImpl<detail::WorkflowJSON_Impl>()->reset();
 }
 
-void WorkflowJSON::start() {
+void WorkflowJSON::start() const {
   getImpl<detail::WorkflowJSON_Impl>()->start();
 }
 
@@ -1108,7 +1108,7 @@ boost::optional<WorkflowStep> WorkflowJSON::currentStep() const {
   return getImpl<detail::WorkflowJSON_Impl>()->currentStep();
 }
 
-bool WorkflowJSON::incrementStep() {
+bool WorkflowJSON::incrementStep() const {
   return getImpl<detail::WorkflowJSON_Impl>()->incrementStep();
 }
 
@@ -1116,7 +1116,7 @@ boost::optional<std::string> WorkflowJSON::completedStatus() const {
   return getImpl<detail::WorkflowJSON_Impl>()->completedStatus();
 }
 
-void WorkflowJSON::setCompletedStatus(const std::string& status) {
+void WorkflowJSON::setCompletedStatus(const std::string& status) const {
   return getImpl<detail::WorkflowJSON_Impl>()->setCompletedStatus(status);
 }
 
@@ -1140,7 +1140,7 @@ boost::optional<std::string> WorkflowJSON::eplusoutErr() const {
   return getImpl<detail::WorkflowJSON_Impl>()->eplusoutErr();
 }
 
-void WorkflowJSON::setEplusoutErr(const std::string& eplusoutErr) {
+void WorkflowJSON::setEplusoutErr(const std::string& eplusoutErr) const {
   getImpl<detail::WorkflowJSON_Impl>()->setEplusoutErr(eplusoutErr);
 }
 
@@ -1148,7 +1148,7 @@ boost::optional<openstudio::path> WorkflowJSON::oswPath() const {
   return getImpl<detail::WorkflowJSON_Impl>()->oswPath();
 }
 
-bool WorkflowJSON::setOswPath(const openstudio::path& path) {
+bool WorkflowJSON::setOswPath(const openstudio::path& path) const {
   return getImpl<detail::WorkflowJSON_Impl>()->setOswPath(path, true);
 }
 
@@ -1156,7 +1156,7 @@ openstudio::path WorkflowJSON::oswDir() const {
   return getImpl<detail::WorkflowJSON_Impl>()->oswDir();
 }
 
-bool WorkflowJSON::setOswDir(const openstudio::path& path) {
+bool WorkflowJSON::setOswDir(const openstudio::path& path) const {
   return getImpl<detail::WorkflowJSON_Impl>()->setOswDir(path);
 }
 
@@ -1168,7 +1168,7 @@ openstudio::path WorkflowJSON::absoluteRootDir() const {
   return getImpl<detail::WorkflowJSON_Impl>()->absoluteRootDir();
 }
 
-bool WorkflowJSON::setRootDir(const openstudio::path& path) {
+bool WorkflowJSON::setRootDir(const openstudio::path& path) const {
   return getImpl<detail::WorkflowJSON_Impl>()->setRootDir(path);
 }
 
@@ -1180,7 +1180,7 @@ openstudio::path WorkflowJSON::absoluteRunDir() const {
   return getImpl<detail::WorkflowJSON_Impl>()->absoluteRunDir();
 }
 
-bool WorkflowJSON::setRunDir(const openstudio::path& path) {
+bool WorkflowJSON::setRunDir(const openstudio::path& path) const {
   return getImpl<detail::WorkflowJSON_Impl>()->setRunDir(path);
 }
 
@@ -1200,11 +1200,11 @@ std::vector<openstudio::path> WorkflowJSON::absoluteFilePaths() const {
   return getImpl<detail::WorkflowJSON_Impl>()->absoluteFilePaths();
 }
 
-bool WorkflowJSON::addFilePath(const openstudio::path& path) {
+bool WorkflowJSON::addFilePath(const openstudio::path& path) const {
   return getImpl<detail::WorkflowJSON_Impl>()->addFilePath(path);
 }
 
-void WorkflowJSON::resetFilePaths() {
+void WorkflowJSON::resetFilePaths() const {
   getImpl<detail::WorkflowJSON_Impl>()->resetFilePaths();
 }
 
@@ -1224,11 +1224,11 @@ std::vector<openstudio::path> WorkflowJSON::absoluteMeasurePaths() const {
   return getImpl<detail::WorkflowJSON_Impl>()->absoluteMeasurePaths();
 }
 
-bool WorkflowJSON::addMeasurePath(const openstudio::path& path) {
+bool WorkflowJSON::addMeasurePath(const openstudio::path& path) const {
   return getImpl<detail::WorkflowJSON_Impl>()->addMeasurePath(path);
 }
 
-void WorkflowJSON::resetMeasurePaths() {
+void WorkflowJSON::resetMeasurePaths() const {
   return getImpl<detail::WorkflowJSON_Impl>()->resetMeasurePaths();
 }
 
@@ -1244,11 +1244,11 @@ boost::optional<openstudio::path> WorkflowJSON::seedFile() const {
   return getImpl<detail::WorkflowJSON_Impl>()->seedFile();
 }
 
-bool WorkflowJSON::setSeedFile(const openstudio::path& seedFile) {
+bool WorkflowJSON::setSeedFile(const openstudio::path& seedFile) const {
   return getImpl<detail::WorkflowJSON_Impl>()->setSeedFile(seedFile);
 }
 
-void WorkflowJSON::resetSeedFile() {
+void WorkflowJSON::resetSeedFile() const {
   getImpl<detail::WorkflowJSON_Impl>()->resetSeedFile();
 }
 
@@ -1260,11 +1260,11 @@ boost::optional<std::string> WorkflowJSON::seedModelicaModel() const {
   return getImpl<detail::WorkflowJSON_Impl>()->seedModelicaModel();
 }
 
-bool WorkflowJSON::setSeedModelicaFile(const openstudio::path& modelicaSeedFile) {
+bool WorkflowJSON::setSeedModelicaFile(const openstudio::path& modelicaSeedFile) const {
   return getImpl<detail::WorkflowJSON_Impl>()->setSeedModelicaFile(modelicaSeedFile);
 }
 
-void WorkflowJSON::resetSeedModelicaFile() {
+void WorkflowJSON::resetSeedModelicaFile() const {
   getImpl<detail::WorkflowJSON_Impl>()->resetSeedModelicaFile();
 }
 
@@ -1272,11 +1272,11 @@ std::vector<openstudio::path> WorkflowJSON::modelicaPackages() const {
   return getImpl<detail::WorkflowJSON_Impl>()->modelicaPackages();
 }
 
-bool WorkflowJSON::setModelicaPackages(const std::vector<openstudio::path>& packages) {
+bool WorkflowJSON::setModelicaPackages(const std::vector<openstudio::path>& packages) const {
   return getImpl<detail::WorkflowJSON_Impl>()->setModelicaPackages(packages);
 }
 
-void WorkflowJSON::resetModelicaPackages() {
+void WorkflowJSON::resetModelicaPackages() const {
   getImpl<detail::WorkflowJSON_Impl>()->resetModelicaPackages();
 }
 
@@ -1284,11 +1284,11 @@ boost::optional<openstudio::path> WorkflowJSON::weatherFile() const {
   return getImpl<detail::WorkflowJSON_Impl>()->weatherFile();
 }
 
-bool WorkflowJSON::setWeatherFile(const openstudio::path& weatherFile) {
+bool WorkflowJSON::setWeatherFile(const openstudio::path& weatherFile) const {
   return getImpl<detail::WorkflowJSON_Impl>()->setWeatherFile(weatherFile);
 }
 
-void WorkflowJSON::resetWeatherFile() {
+void WorkflowJSON::resetWeatherFile() const {
   return getImpl<detail::WorkflowJSON_Impl>()->resetWeatherFile();
 }
 
@@ -1296,11 +1296,11 @@ std::vector<WorkflowStep> WorkflowJSON::workflowSteps() const {
   return getImpl<detail::WorkflowJSON_Impl>()->workflowSteps();
 }
 
-bool WorkflowJSON::setWorkflowSteps(const std::vector<WorkflowStep>& steps) {
+bool WorkflowJSON::setWorkflowSteps(const std::vector<WorkflowStep>& steps) const {
   return getImpl<detail::WorkflowJSON_Impl>()->setWorkflowSteps(steps);
 }
 
-void WorkflowJSON::resetWorkflowSteps() {
+void WorkflowJSON::resetWorkflowSteps() const {
   getImpl<detail::WorkflowJSON_Impl>()->resetWorkflowSteps();
 }
 
@@ -1312,7 +1312,7 @@ std::vector<std::pair<unsigned, MeasureStep>> WorkflowJSON::getMeasureStepsWithI
   return getImpl<detail::WorkflowJSON_Impl>()->getMeasureStepsWithIndex(measureType);
 }
 
-bool WorkflowJSON::setMeasureSteps(const MeasureType& measureType, const std::vector<MeasureStep>& steps) {
+bool WorkflowJSON::setMeasureSteps(const MeasureType& measureType, const std::vector<MeasureStep>& steps) const {
   return getImpl<detail::WorkflowJSON_Impl>()->setMeasureSteps(measureType, steps);
 }
 
@@ -1324,7 +1324,7 @@ boost::optional<BCLMeasure> WorkflowJSON::getBCLMeasureByUUID(const UUID& id) co
   return getImpl<detail::WorkflowJSON_Impl>()->getBCLMeasureByUUID(id);
 }
 
-boost::optional<BCLMeasure> WorkflowJSON::addMeasure(const BCLMeasure& bclMeasure) {
+boost::optional<BCLMeasure> WorkflowJSON::addMeasure(const BCLMeasure& bclMeasure) const {
   return getImpl<detail::WorkflowJSON_Impl>()->addMeasure(bclMeasure);
 }
 
@@ -1332,11 +1332,11 @@ boost::optional<RunOptions> WorkflowJSON::runOptions() const {
   return getImpl<detail::WorkflowJSON_Impl>()->runOptions();
 }
 
-bool WorkflowJSON::setRunOptions(const RunOptions& options) {
+bool WorkflowJSON::setRunOptions(const RunOptions& options) const {
   return getImpl<detail::WorkflowJSON_Impl>()->setRunOptions(options);
 }
 
-void WorkflowJSON::resetRunOptions() {
+void WorkflowJSON::resetRunOptions() const {
   getImpl<detail::WorkflowJSON_Impl>()->resetRunOptions();
 }
 

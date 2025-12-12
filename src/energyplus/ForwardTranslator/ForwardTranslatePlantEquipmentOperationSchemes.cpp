@@ -79,6 +79,10 @@
 #include "../../model/PlantComponentTemperatureSource_Impl.hpp"
 #include "../../model/PlantComponentUserDefined.hpp"
 #include "../../model/PlantComponentUserDefined_Impl.hpp"
+#include "../../model/HeatPumpAirToWaterCooling.hpp"
+#include "../../model/HeatPumpAirToWaterCooling_Impl.hpp"
+#include "../../model/HeatPumpAirToWaterHeating.hpp"
+#include "../../model/HeatPumpAirToWaterHeating_Impl.hpp"
 #include "../../model/HeatPumpAirToWaterFuelFiredHeating.hpp"
 #include "../../model/HeatPumpAirToWaterFuelFiredHeating_Impl.hpp"
 #include "../../model/HeatPumpAirToWaterFuelFiredCooling.hpp"
@@ -356,6 +360,16 @@ namespace energyplus {
         result = mo.loadSideReferenceFlowRate();
         break;
       }
+      case openstudio::IddObjectType::OS_HeatPump_AirToWater_Cooling: {
+        auto mo = component.cast<HeatPumpAirToWaterCooling>();
+        result = mo.ratedWaterFlowRate();
+        break;
+      }
+      case openstudio::IddObjectType::OS_HeatPump_AirToWater_Heating: {
+        auto mo = component.cast<HeatPumpAirToWaterHeating>();
+        result = mo.ratedWaterFlowRate();
+        break;
+      }
       case openstudio::IddObjectType::OS_HeatPump_AirToWater_FuelFired_Heating: {
         auto mo = component.cast<HeatPumpAirToWaterFuelFiredHeating>();
         result = mo.designFlowRate();
@@ -393,6 +407,16 @@ namespace energyplus {
         if (auto hpwh = waterHeater.containingZoneHVACComponent()) {
           result = hpwh;
         }
+        break;
+      }
+      case openstudio::IddObjectType::OS_HeatPump_AirToWater_Cooling: {
+        auto awhp = component.cast<HeatPumpAirToWaterCooling>();
+        result = awhp.containingHVACComponent();
+        break;
+      }
+      case openstudio::IddObjectType::OS_HeatPump_AirToWater_Heating: {
+        auto awhp = component.cast<HeatPumpAirToWaterHeating>();
+        result = awhp.containingHVACComponent();
         break;
       }
       default: {

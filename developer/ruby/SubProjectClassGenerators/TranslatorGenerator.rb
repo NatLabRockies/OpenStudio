@@ -2,6 +2,7 @@
 # 2018-10-17
 
 require 'openstudio'
+require 'pathname'
 
 require_relative 'ModelClassGenerator.rb'
 require_relative 'FileHeader.rb'
@@ -17,10 +18,26 @@ class TranslatorGenerator
   # @param EPIddName [String] The E+ IDD class, eg 'WaterHeater:Mixed'
   # @return [] returns true if successful, false if not
   def initialize(epIddName)
-    @iddObjectType = epIddName.to_IddObjectType
-    @idfObject = OpenStudio::IdfObject.new(@iddObjectType)
-    @iddObject = @idfObject.iddObject
+
+    if epIddName == 'HeatPump:AirToWater:Heating:SpeedData'
+      epIddName = 'HeatPump:AirToWater'
+    end
+    begin
+      @iddObjectType = epIddName.to_IddObjectType
+      idfObject = OpenStudio::IdfObject.new(iddObjectType)
+      @iddObject = idfObject.iddObject
+    rescue
+      idd_path = (Pathname.new(Dir.pwd) / "../../resources/energyplus/ProposedEnergy+.idd").realpath
+      raise "Could not find IDD on disk at #{idd_path}" if not idd_path.file?
+      iddFile = OpenStudio::IddFile.load(idd_path.to_s).get()
+      iddObject_ = iddFile.getObject(epIddName)
+      raise "Could not find #{epIddName} in the OpenStudio.idd at #{idd_path}" if iddObject_.empty?
+      @iddObject = iddObject_.get
+      @iddObjectType = FakeIddObjectType.new(epIddName)
+    end
+
     @className = @iddObjectType.valueName.gsub(/^OS/,'').gsub(':', '').gsub('_','')
+
 
     # Find required non-extensible fields, split out by object-list and data
     # And Determine if the object has any autosizable fields

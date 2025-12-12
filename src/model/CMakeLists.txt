@@ -920,6 +920,21 @@ set(${target_name}_src
   HeatPumpAirToWaterFuelFiredCooling.hpp
   HeatPumpAirToWaterFuelFiredCooling_Impl.hpp
   HeatPumpAirToWaterFuelFiredCooling.cpp
+  HeatPumpAirToWater.hpp
+  HeatPumpAirToWater_Impl.hpp
+  HeatPumpAirToWater.cpp
+  HeatPumpAirToWaterCooling.hpp
+  HeatPumpAirToWaterCooling_Impl.hpp
+  HeatPumpAirToWaterCooling.cpp
+  HeatPumpAirToWaterCoolingSpeedData.hpp
+  HeatPumpAirToWaterCoolingSpeedData_Impl.hpp
+  HeatPumpAirToWaterCoolingSpeedData.cpp
+  HeatPumpAirToWaterHeating.hpp
+  HeatPumpAirToWaterHeating_Impl.hpp
+  HeatPumpAirToWaterHeating.cpp
+  HeatPumpAirToWaterHeatingSpeedData.hpp
+  HeatPumpAirToWaterHeatingSpeedData_Impl.hpp
+  HeatPumpAirToWaterHeatingSpeedData.cpp
   HeatPumpWaterToWaterEquationFitCooling.hpp
   HeatPumpWaterToWaterEquationFitCooling_Impl.hpp
   HeatPumpWaterToWaterEquationFitCooling.cpp
@@ -2163,6 +2178,11 @@ set(${target_name}_test_src
   test/HeatExchangerFluidToFluid_GTest.cpp
   test/HeatPumpAirToWaterFuelFiredHeating_GTest.cpp
   test/HeatPumpAirToWaterFuelFiredCooling_GTest.cpp
+  test/HeatPumpAirToWater_GTest.cpp
+  test/HeatPumpAirToWaterCooling_GTest.cpp
+  test/HeatPumpAirToWaterCoolingSpeedData_GTest.cpp
+  test/HeatPumpAirToWaterHeating_GTest.cpp
+  test/HeatPumpAirToWaterHeatingSpeedData_GTest.cpp
   test/HeatPumpWaterToWaterEquationFitHeating_GTest.cpp
   test/HeatPumpWaterToWaterEquationFitCooling_GTest.cpp
   test/HeatPumpPlantLoopEIRHeating_GTest.cpp
@@ -2293,7 +2313,7 @@ set(${target_name}_test_src
   test/SetpointManagerWarmest_GTest.cpp
   test/SetpointManagerWarmestTemperatureFlow_GTest.cpp
   test/SetpointManagerSystemNodeResetHumidity_GTest.cpp
-  test/SetpointManagerSystemNodeResetTemperature_GTest.cpp
+  test/SpaceLoadConvenience_GTest.cpp
   test/ScheduleDay_GTest.cpp
   test/ScheduleInterval_GTest.cpp
   test/ScheduleRuleset_GTest.cpp
@@ -2415,6 +2435,16 @@ CREATE_SRC_GROUPS("${${target_name}_test_src}")
 if(BUILD_TESTING)
 
   CREATE_TEST_TARGETS(${target_name} "${${target_name}_test_src}" "${${target_name}_test_depends}")
+
+  # Add label for flaky geometry test
+  # Note: This requires the test to be discovered first by gtest_discover_tests
+  if(TEST ModelFixture.Space_Convexity)
+    set_tests_properties(ModelFixture.Space_Convexity PROPERTIES LABELS "flaky;geometry")
+  endif()
+
+  # Copy schedulefile.csv to build directory for tests
+  file(COPY "${PROJECT_SOURCE_DIR}/resources/model/schedulefile.csv"
+       DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/files/")
 
   add_dependencies("${target_name}_tests"
     openstudio_model_resources

@@ -5,7 +5,6 @@
 
 #include "UUID.hpp"
 #include "String.hpp"
-#include "StaticInitializer.hpp"
 
 #include <sstream>
 
@@ -15,45 +14,18 @@
 
 namespace openstudio {
 
-namespace detail {
-  struct BoostGeneratorsInitializer : StaticInitializer<BoostGeneratorsInitializer>
-  {
-    static void initialize() {
-      createUUID();
-      toUUID(std::string("00000000-0000-0000-0000-000000000000"));
-    }
-  };
-  struct MakeSureBoostGeneratorsInitializerIsInitialized
-  {
-    MakeSureBoostGeneratorsInitializerIsInitialized() = default;
-
-    BoostGeneratorsInitializer m_i;
-  };
-
-}  // namespace detail
-
 UUID::UUID() : boost::uuids::uuid(boost::uuids::nil_uuid()) {}
 
 UUID::UUID(const boost::uuids::uuid& t_other) : boost::uuids::uuid(t_other) {}
 
 UUID UUID::random_generate() {
-  static boost::thread_specific_ptr<boost::uuids::random_generator> gen;
-
-  if (gen.get() == nullptr) {
-    gen.reset(new boost::uuids::random_generator);
-  }
-
-  return UUID((*gen)());
+  static thread_local boost::uuids::random_generator gen;
+  return UUID(gen());
 }
 
 UUID UUID::string_generate(const std::string& t_str) {
-  static boost::thread_specific_ptr<boost::uuids::string_generator> gen;
-
-  if (gen.get() == nullptr) {
-    gen.reset(new boost::uuids::string_generator);
-  }
-
-  return UUID((*gen)(t_str));
+  static thread_local boost::uuids::string_generator gen;
+  return UUID(gen(t_str));
 }
 
 UUID createUUID() {

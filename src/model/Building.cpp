@@ -845,6 +845,44 @@ namespace model {
       return ep / np;
     }
 
+    double Building_Impl::hotWaterEquipmentPower() const {
+      double result(0.0);
+      for (const Space& space : spaces()) {
+        result += space.multiplier() * space.hotWaterEquipmentPower();
+      }
+      return result;
+    }
+
+    double Building_Impl::hotWaterEquipmentPowerPerFloorArea() const {
+      double area = floorArea();
+      double ep = hotWaterEquipmentPower();
+      if (equal(area, 0.0)) {
+        if (equal(ep, 0.0)) {
+          return 0.0;
+        }
+        if (spaces().size() == 1u) {
+          return spaces()[0].hotWaterEquipmentPowerPerFloorArea();
+        }
+        LOG_AND_THROW("Calculation would require division by 0.");
+      }
+      return ep / area;
+    }
+
+    double Building_Impl::hotWaterEquipmentPowerPerPerson() const {
+      double np = numberOfPeople();
+      double ep = hotWaterEquipmentPower();
+      if (equal(np, 0.0)) {
+        if (equal(ep, 0.0)) {
+          return 0.0;
+        }
+        if (spaces().size() == 1u) {
+          return spaces()[0].hotWaterEquipmentPowerPerPerson();
+        }
+        LOG_AND_THROW("Calculation would require division by 0.");
+      }
+      return ep / np;
+    }
+
     double Building_Impl::infiltrationDesignFlowRate() const {
       double result(0.0);
       for (const Space& space : spaces()) {
@@ -1334,6 +1372,18 @@ namespace model {
 
   double Building::gasEquipmentPowerPerPerson() const {
     return getImpl<detail::Building_Impl>()->gasEquipmentPowerPerPerson();
+  }
+
+  double Building::hotWaterEquipmentPower() const {
+    return getImpl<detail::Building_Impl>()->hotWaterEquipmentPower();
+  }
+
+  double Building::hotWaterEquipmentPowerPerFloorArea() const {
+    return getImpl<detail::Building_Impl>()->hotWaterEquipmentPowerPerFloorArea();
+  }
+
+  double Building::hotWaterEquipmentPowerPerPerson() const {
+    return getImpl<detail::Building_Impl>()->hotWaterEquipmentPowerPerPerson();
   }
 
   double Building::infiltrationDesignFlowRate() const {

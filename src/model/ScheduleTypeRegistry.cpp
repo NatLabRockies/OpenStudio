@@ -17,7 +17,7 @@
 namespace openstudio {
 namespace model {
 
-  std::vector<std::string> ScheduleTypeRegistrySingleton::classNames() const {
+  std::vector<std::string> ScheduleTypeRegistry::classNames() const {
     StringVector result;
     for (const ClassNameToScheduleTypesMap::value_type& p : m_classNameToScheduleTypesMap) {
       result.push_back(p.first);
@@ -25,7 +25,7 @@ namespace model {
     return result;
   }
 
-  std::vector<ScheduleType> ScheduleTypeRegistrySingleton::getScheduleTypesByClassName(const std::string& className) const {
+  std::vector<ScheduleType> ScheduleTypeRegistry::getScheduleTypesByClassName(const std::string& className) const {
     ScheduleTypeVector result;
     auto it = m_classNameToScheduleTypesMap.find(className);
     if (it != m_classNameToScheduleTypesMap.end()) {
@@ -34,7 +34,7 @@ namespace model {
     return result;
   }
 
-  ScheduleType ScheduleTypeRegistrySingleton::getScheduleType(const std::string& className, const std::string& scheduleDisplayName) const {
+  ScheduleType ScheduleTypeRegistry::getScheduleType(const std::string& className, const std::string& scheduleDisplayName) const {
     ScheduleTypeVector scheduleTypes = getScheduleTypesByClassName(className);
     for (const ScheduleType& scheduleType : scheduleTypes) {
       if (scheduleType.scheduleDisplayName == scheduleDisplayName) {
@@ -45,7 +45,7 @@ namespace model {
     return {};
   }
 
-  ScheduleTypeLimits ScheduleTypeRegistrySingleton::getOrCreateScheduleTypeLimits(const ScheduleType& scheduleType, Model& model) const {
+  ScheduleTypeLimits ScheduleTypeRegistry::getOrCreateScheduleTypeLimits(const ScheduleType& scheduleType, Model& model) const {
     std::string defaultName = getDefaultName(scheduleType);
 
     // DLM: I do not understand why both upper and lower limit have to be set to reuse this?
@@ -83,7 +83,12 @@ namespace model {
     return scheduleTypeLimits;
   }
 
-  ScheduleTypeRegistrySingleton::ScheduleTypeRegistrySingleton() {
+  ScheduleTypeRegistry& ScheduleTypeRegistry::instance() {
+    static ScheduleTypeRegistry instance;
+    return instance;
+  }
+
+  ScheduleTypeRegistry::ScheduleTypeRegistry() {
     // className, scheduleDisplayName, scheduleRelationshipName, isContinuous, unitType, lowerLimitValue, upperLimitValue;
 
     const ScheduleType scheduleTypes[] = {
@@ -189,6 +194,7 @@ namespace model {
       {"CoilCoolingDXVariableRefrigerantFlow", "Availability Schedule", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl", "Availability Schedule", "availabilitySchedule", false, "Availability", 0.0,
        1.0},
+      {"CoilCoolingDXVariableSpeed", "Availability Schedule", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"CoilCoolingDXVariableSpeed", "Basin Heater Operating", "basinHeaterOperatingSchedule", false, "Availability", 0.0, 1.0},
       {"CoilCoolingLowTempRadiantConstFlow", "Cooling High Water Temperature", "coolingHighWaterTemperatureSchedule", true, "Temperature",
        OptionalDouble(), OptionalDouble()},
@@ -202,12 +208,15 @@ namespace model {
        OptionalDouble(), OptionalDouble()},
       {"CoilCoolingWater", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"CoilCoolingWaterPanelRadiant", "Cooling Control Temperature", "coolingControlTemperatureSchedule", true, "", 0.0, OptionalDouble()},
+      {"CoilCoolingWaterToAirHeatPumpEquationFit", "Availability Schedule", "availabilitySchedule", false, "Availability", 0.0, 1.0},
+      {"CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit", "Availability Schedule", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"CoilHeatingDesuperheater", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"CoilHeatingDXMultiSpeed", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"CoilHeatingDXSingleSpeed", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"CoilHeatingDXVariableRefrigerantFlow", "Availability Schedule", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl", "Availability Schedule", "availabilitySchedule", false, "Availability", 0.0,
        1.0},
+      {"CoilHeatingDXVariableSpeed", "Availability Schedule", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"CoilHeatingElectric", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"CoilHeatingElectricMultiStage", "Availability Schedule", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"CoilHeatingGas", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
@@ -224,7 +233,12 @@ namespace model {
        OptionalDouble()},
       {"CoilHeatingWater", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"CoilHeatingWaterBaseboard", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
+      {"CoilHeatingWaterToAirHeatPumpEquationFit", "Availability Schedule", "availabilitySchedule", false, "Availability", 0.0, 1.0},
+      {"CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit", "Availability Schedule", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"CoilSystemCoolingWater", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
+      {"CoilWaterHeatingAirToWaterHeatPump", "Availability Schedule", "availabilitySchedule", false, "Availability", 0.0, 1.0},
+      {"CoilWaterHeatingAirToWaterHeatPumpVariableSpeed", "Availability Schedule", "availabilitySchedule", false, "Availability", 0.0, 1.0},
+      {"CoilWaterHeatingAirToWaterHeatPumpWrapped", "Availability Schedule", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"CoilWaterHeatingDesuperheater", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"CoilWaterHeatingDesuperheater", "Setpoint Temperature", "setpointTemperatureSchedule", true, "Temperature", OptionalDouble(),
        OptionalDouble()},
@@ -319,6 +333,9 @@ namespace model {
       {"HeatExchangerAirToAirSensibleAndLatent", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"HeatExchangerDesiccantBalancedFlow", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"HeatExchangerFluidToFluid", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
+      {"HeatPumpAirToWater", "Operating Mode Control", "operatingModeControlSchedule", false, "", 0.0, 2.0},
+      {"HeatPumpAirToWaterCooling", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
+      {"HeatPumpAirToWaterHeating", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"HumidifierSteamElectric", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"HumidifierSteamGas", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"HotWaterEquipment", "Hot Water Equipment", "schedule", true, "", 0.0, 1.0},
@@ -332,6 +349,7 @@ namespace model {
       {"People", "Number of People", "numberofPeopleSchedule", true, "", 0.0, 1.0},
       {"People", "Activity Level", "activityLevelSchedule", true, "ActivityLevel", 0.0, OptionalDouble()},
       {"People", "Work Efficiency", "workEfficiencySchedule", true, "", 0.0, 1.0},
+      {"People", "Clothing Insulation Calculation Method", "clothingInsulationCalculationMethodSchedule", false, "", 1.0, 2.0},
       {"People", "Clothing Insulation", "clothingInsulationSchedule", true, "ClothingInsulation", 0.0, OptionalDouble()},
       {"People", "Air Velocity", "airVelocitySchedule", true, "Velocity", 0.0, OptionalDouble()},
       {"People", "Ankle Level Air Velocity", "ankleLevelAirVelocitySchedule", true, "Velocity", 0.0, OptionalDouble()},
@@ -504,6 +522,8 @@ namespace model {
       {"ZoneHVACIdealLoadsAirSystem", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"ZoneHVACIdealLoadsAirSystem", "Heating Availability", "heatingAvailabilitySchedule", false, "Availability", 0.0, 1.0},
       {"ZoneHVACIdealLoadsAirSystem", "Cooling Availability", "coolingAvailabilitySchedule", false, "Availability", 0.0, 1.0},
+      {"ZoneHVACIdealLoadsAirSystem", "Heating Fuel Efficiency", "heatingFuelEfficiencySchedule", true, "", OptionalDouble(), OptionalDouble()},
+      {"ZoneHVACIdealLoadsAirSystem", "Cooling Fuel Efficiency", "coolingFuelEfficiencySchedule", true, "", OptionalDouble(), OptionalDouble()},
       {"ZoneHVACFourPipeFanCoil", "Availability", "availabilitySchedule", false, "Availability", 0.0, 1.0},
       {"ZoneHVACFourPipeFanCoil", "Outdoor Air", "outdoorAirSchedule", true, "", 0.0, 1.0},
       {"ZoneHVACFourPipeFanCoil", "Supply Air Fan Operating Mode", "supplyAirFanOperatingModeSchedule", false, "ControlMode", 0.0, 1.0},
@@ -592,7 +612,7 @@ namespace model {
     }
   }
 
-  std::string ScheduleTypeRegistrySingleton::getDefaultName(const ScheduleType& scheduleType) const {
+  std::string ScheduleTypeRegistry::getDefaultName(const ScheduleType& scheduleType) const {
     std::string result = scheduleType.unitType;
     if (result.empty()) {
       if (scheduleType.isContinuous) {

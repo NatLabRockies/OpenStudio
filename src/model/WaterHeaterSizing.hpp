@@ -16,6 +16,7 @@ namespace model {
   class WaterToWaterComponent;
   class WaterHeaterMixed;
   class WaterHeaterStratified;
+  class ThermalStorageChilledWaterStratified;
 
   namespace detail {
 
@@ -152,6 +153,7 @@ namespace model {
 
     friend class WaterHeaterMixed;
     friend class WaterHeaterStratified;
+    friend class ThermalStorageChilledWaterStratified;
 
     explicit WaterHeaterSizing(const WaterToWaterComponent& waterHeater);
     bool setWaterHeater(const WaterToWaterComponent& waterHeater);

@@ -531,6 +531,64 @@ namespace model {
    *  attached directly to this Space, not to a SpaceType. */
     bool setGasEquipmentPowerPerPerson(double gasEquipmentPowerPerPerson, const GasEquipment& templateGasEquipment);
 
+    /** Returns the hot water equipment power (W) of this space. */
+    /// Does not include space multiplier in calculation.
+    /// Does include equipment multiplier in calculation.
+    double hotWaterEquipmentPower() const;
+
+    /** Sets the hot water equipment power in this space by using hotWaterEquipment()[0], if it
+   *  exists, as a template for the remaining HotWaterEquipment and HotWaterEquipment Definition
+   *  parameters. All other hotWaterEquipment() in this space will be removed, the SpaceType will
+   *  be made unique and modified, if necessary, and the final HotWaterEquipment object will be
+   *  attached directly to this Space, not to a SpaceType. */
+    bool setHotWaterEquipmentPower(double hotWaterEquipmentPower);
+
+    /** Sets the hot water equipment power in this space using templateHotWaterEquipment as a
+   *  template for the remaining HotWaterEquipment and HotWaterEquipment Definition parameters.
+   *  All other hotWaterEquipment() in this space will be removed, the SpaceType will be made
+   *  unique and modified, if necessary, and the final HotWaterEquipment object will be attached
+   *  directly to this Space, not to a SpaceType. */
+    bool setHotWaterEquipmentPower(double hotWaterEquipmentPower, const HotWaterEquipment& templateHotWaterEquipment);
+
+    /** Returns the hot water equipment power density (W/m^2) of this space. */
+    /// Does not include space multiplier in calculation.
+    /// Does include equipment multiplier in calculation.
+    double hotWaterEquipmentPowerPerFloorArea() const;
+
+    /** Sets the hot water equipment power per floor area in this space by using
+   *  hotWaterEquipment()[0], if it exists, as a template for the remaining HotWaterEquipment
+   *  and HotWaterEquipment Definition parameters. All other hotWaterEquipment() in this space
+   *  will be removed, the SpaceType will be made unique and modified, if necessary, and the
+   *  final HotWaterEquipment object will be attached directly to this Space, not to a
+   *  SpaceType. */
+    bool setHotWaterEquipmentPowerPerFloorArea(double hotWaterEquipmentPowerPerFloorArea);
+
+    /** Sets the hot water equipment power per floor area in this space using
+   *  templateHotWaterEquipment as a template for the remaining HotWaterEquipment and
+   *  HotWaterEquipment Definition parameters. All other hotWaterEquipment() in this space will
+   *  be removed, the SpaceType will be made unique and modified, if necessary, and the final
+   *  HotWaterEquipment object will be attached directly to this Space, not to a SpaceType. */
+    bool setHotWaterEquipmentPowerPerFloorArea(double hotWaterEquipmentPowerPerFloorArea, const HotWaterEquipment& templateHotWaterEquipment);
+
+    /** Returns the hot water equipment power per person (W/person) of this space. */
+    /// Does not include space multiplier in calculation.
+    /// Does include equipment multiplier in calculation.
+    double hotWaterEquipmentPowerPerPerson() const;
+
+    /** Sets the hot water equipment power per person in this space by using hotWaterEquipment()[0],
+   *  if it exists, as a template for the remaining HotWaterEquipment and HotWaterEquipment
+   *  Definition parameters. All other hotWaterEquipment() in this space will be removed, the
+   *  SpaceType will be made unique and modified, if necessary, and the final HotWaterEquipment
+   *  object will be attached directly to this Space, not to a SpaceType. */
+    bool setHotWaterEquipmentPowerPerPerson(double hotWaterEquipmentPowerPerPerson);
+
+    /** Sets the hot water equipment power per person in this space using templateHotWaterEquipment
+   *  as a template for the remaining HotWaterEquipment and HotWaterEquipment Definition
+   *  parameters. All other hotWaterEquipment() in this space will be removed, the SpaceType will
+   *  be made unique and modified, if necessary, and the final HotWaterEquipment object will be
+   *  attached directly to this Space, not to a SpaceType. */
+    bool setHotWaterEquipmentPowerPerPerson(double hotWaterEquipmentPowerPerPerson, const HotWaterEquipment& templateHotWaterEquipment);
+
     /** Returns the infiltration design flow rate (m^3/s) in the space.
      *  Ignores SpaceInfiltrationEffectiveLeakageArea and SpaceInfiltrationFlowCoefficient objects. */
     /// Does not include space multiplier in calculation.

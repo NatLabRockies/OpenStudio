@@ -38,6 +38,9 @@ TEST_F(ModelFixture, EvaporativeFluidCoolerTwoSpeed_DefaultConstructor) {
       EXPECT_TRUE(testObject.isLowFanSpeedUfactorTimesAreaValueAutosized());
       EXPECT_DOUBLE_EQ(0.6, testObject.lowFanSpeedUFactorTimesAreaSizingFactor());
       EXPECT_DOUBLE_EQ(0.5, testObject.lowSpeedUserSpecifiedDesignCapacitySizingFactor());
+      EXPECT_TRUE(testObject.isDesignEnteringWaterTemperatureAutosized());
+      EXPECT_EQ(35.0, testObject.designEnteringAirTemperature());
+      EXPECT_EQ(25.6, testObject.designEnteringAirWetbulbTemperature());
       EXPECT_DOUBLE_EQ(1.0, testObject.highSpeedSizingFactor());
       EXPECT_EQ("SaturatedExit", testObject.evaporationLossMode());
       EXPECT_DOUBLE_EQ(0.008, testObject.driftLossPercent());

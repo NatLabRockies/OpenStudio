@@ -21,8 +21,10 @@ enum class ModelicaCompilerType
 
 struct ModelicaCompilerInfo
 {
+  // cppcheck-suppress unusedStructMember
   ModelicaCompilerType type{ModelicaCompilerType::OpenModelica};
   openstudio::path executable;
+  // cppcheck-suppress unusedStructMember
   std::vector<std::string> defaultArgs;
 };
 

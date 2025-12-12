@@ -16,6 +16,8 @@
 #include "../time/DateTime.hpp"
 #include "../data/TimeSeries.hpp"
 
+#include <span>
+
 namespace openstudio {
 
 // forward declaration
@@ -126,6 +128,16 @@ OPENSTUDIO_ENUM(EpwComputedField,
   ((Density)(Density))
   ((SpecificVolume)(Specific Volume))
 );
+
+// cppcheck-suppress [unknownMacro, syntaxError]
+OPENSTUDIO_ENUM(ASHRAEHoFVintage,
+  ((ASHRAE_2009)(ASHRAE Handbook of Fundamentals 2009))
+  ((ASHRAE_2013)(ASHRAE Handbook of Fundamentals 2013))
+  ((ASHRAE_2017)(ASHRAE Handbook of Fundamentals 2017))
+  ((ASHRAE_2021)(ASHRAE Handbook of Fundamentals 2021))
+  ((ASHRAE_2025)(ASHRAE Handbook of Fundamentals 2025))
+);
+
 // cppcheck-suppress [unknownMacro, syntaxError]
 OPENSTUDIO_ENUM(EpwDesignField,
   ((TitleOfDesignCondition)(Title of Design Condition)(0))
@@ -146,6 +158,7 @@ OPENSTUDIO_ENUM(EpwDesignField,
   ((HeatingColdestMonthMeanCoincidentDryBulb1)(Heating Coldest Month Mean Coincident Dry Bulb 1%))
   ((HeatingMeanCoincidentWindSpeed99pt6)(Heating Mean Coincident Wind Speed))
   ((HeatingPrevailingCoincidentWindDirection99pt6)(Heating Prevailing Coincident Wind Direction 99.6%))
+  ((HeatingWindShelterFactor)(Heating Wind Shelter Factor)) // ASHRAE HOF, Ch 14, 2021 and 2025 editions
   ((Cooling)(Cooling))
   ((CoolingHottestMonth)(Cooling Hottest Month))
   ((CoolingDryBulbRange)(Cooling Dry Bulb Range))
@@ -178,12 +191,13 @@ OPENSTUDIO_ENUM(EpwDesignField,
   ((CoolingEnthalpyMeanCoincidentDryBulb1)(Cooling Enthalpy Mean Coincident Dry Bulb 1%))
   ((CoolingEnthalpy2)(Cooling Enthalpy 2%))
   ((CoolingEnthalpyMeanCoincidentDryBulb2)(Cooling Enthalpy Mean Coincident Dry Bulb 2%))
-  ((CoolingHours8To4AndDryBulb12pt8To20pt6)(Cooling Hours 8 to 4 and Dry Bulb 12.8% to 20.6%))
+  ((CoolingHours8To4AndDryBulb12pt8To20pt6)(Cooling Hours 8 to 4 and Dry Bulb 12.8% to 20.6%)) // ASHRAE HOF, Ch 14, up to 2013 (included) editions
+  ((CoolingExtremeMaxWetBulb)(Cooling Extreme Max Wet Bulb)) // ASHRAE HOF, Ch 14, 2017, 2021 and 2025 editions
   ((Extremes)(Extremes))
   ((ExtremeWindSpeed1)(Extreme Wind Speed 1%))
   ((ExtremeWindSpeed2pt5)(Extreme Wind Speed 2.5%))
   ((ExtremeWindSpeed5)(Extreme Wind Speed 5%))
-  ((ExtremeMaxWetBulb)(Extreme Max Wet Bulb))
+  ((ExtremeMaxWetBulb)(Extreme Max Wet Bulb))  // ASHRAE HOF, Ch 14, up to 2013 (included) editions
   ((ExtremeMeanMinDryBulb)(Extreme Mean Min Dry Bulb))
   ((ExtremeMeanMaxDryBulb)(Extreme Mean Max Dry Bulb))
   ((ExtremeStdDevMinDryBulb)(Extreme Std Dev Min Dry Bulb))
@@ -245,9 +259,9 @@ class UTILITIES_API EpwDataPoint
   static std::string getUnits(EpwComputedField field);
   // Data retrieval
   /** Returns the double value of the named field if possible */
-  boost::optional<double> getFieldByName(const std::string& name);
+  boost::optional<double> getFieldByName(const std::string& name) const;
   /** Returns the dobule value of the field specified by enumeration value */
-  boost::optional<double> getField(EpwDataField id);
+  boost::optional<double> getField(EpwDataField id) const;
   /** Returns the air state specified by the EPW data. If dry bulb, pressure, and relative humidity are available,
       then those values will be used to compute the air state. Otherwise, unless dry bulb, pressure, and dew point are
       available, then an empty optional will be returned. Note that the air state may not be consistend with the EPW
@@ -522,6 +536,7 @@ class UTILITIES_API EpwDesignCondition
     double extremeStdDevMaxDryBulb, double extremeN5YearsMinDryBulb, double extremeN5YearsMaxDryBulb, double extremeN10YearsMinDryBulb,
     double extremeN10YearsMaxDryBulb, double extremeN20YearsMinDryBulb, double extremeN20YearsMaxDryBulb, double extremeN50YearsMinDryBulb,
     double extremeN50YearsMaxDryBulb);
+
   // Static
   /** Returns the units of the named field */
   static boost::optional<std::string> getUnitsByName(const std::string& name);
@@ -529,14 +544,14 @@ class UTILITIES_API EpwDesignCondition
   static std::string getUnits(EpwDesignField field);
   // Data retrieval
   /** Returns the double value of the named field if possible */
-  boost::optional<double> getFieldByName(const std::string& name);
+  boost::optional<double> getFieldByName(const std::string& name) const;
   /** Returns the dobule value of the field specified by enumeration value */
-  boost::optional<double> getField(EpwDesignField id);
+  boost::optional<double> getField(EpwDesignField id) const;
   // Conversion
   /** Create an EpwDesignCondition from an EPW-formatted string */
   static boost::optional<EpwDesignCondition> fromDesignConditionsString(const std::string& line);
   /** Create an EpwDesignCondition from a list of EPW designs as strings */
-  static boost::optional<EpwDesignCondition> fromDesignConditionsStrings(const std::vector<std::string>& list);
+  static boost::optional<EpwDesignCondition> fromDesignConditionsStrings(const std::vector<std::string>& strings);
   // Getters
   /** Returns the title of design condition */
   std::string titleOfDesignCondition() const;
@@ -570,6 +585,11 @@ class UTILITIES_API EpwDesignCondition
   boost::optional<double> heatingMeanCoincidentWindSpeed99pt6() const;
   /** Returns the heating prevailing coincident wind direction 99.6% in degrees */
   boost::optional<int> heatingPrevailingCoincidentWindDirection99pt6() const;
+  /** Returns the heating wind shelter factor.
+   *  This is only available for Design Conditions taken from the ASHRAE Handbook of Fundamentals starting at the 2021 edition
+   **/
+  boost::optional<double> heatingWindShelterFactor() const;
+
   /** Returns the cooling hottest month */
   boost::optional<int> coolingHottestMonth() const;
   /** Returns the cooling dry bulb temperature range in degrees C */
@@ -632,15 +652,26 @@ class UTILITIES_API EpwDesignCondition
   boost::optional<double> coolingEnthalpy2() const;
   /** Returns the cooling enthalpy mean coincident dry bulb temperature 2% in degrees C */
   boost::optional<double> coolingEnthalpyMeanCoincidentDryBulb2() const;
-  /** Returns the number of cooling hours between 8am and 4pm with dry bulb temperature between 12.8 and 20.6 degrees C */
+  /** Returns the number of cooling hours between 8am and 4pm with dry bulb temperature between 12.8 and 20.6 degrees C.
+   *  This is only available for Design Conditions taken from the ASHRAE Handbook of Fundamentals up to 2013 (included) editions
+   **/
   boost::optional<int> coolingHours8To4AndDryBulb12pt8To20pt6() const;
+  /** Returns the cooling maximum wet bulb temperature in degrees C.
+   *  Prior to the 2017 edition of the ASHRAE Handbook of Fundamentals, this is stored in the Extreme section, and starting at 2017
+   *  it is stored in the Cooling Section. This is an alias for extremeMaxWetBulb() (pre-existing method) for clarity.
+   **/
+  boost::optional<double> coolingExtremeMaxWetBulb() const;
+
   /** Returns the extreme wind speed 1% in m/s */
   boost::optional<double> extremeWindSpeed1() const;
   /** Returns the extreme wind speed 2.5% in m/s */
   boost::optional<double> extremeWindSpeed2pt5() const;
   /** Returns the extreme wind speed 5% in m/s */
   boost::optional<double> extremeWindSpeed5() const;
-  /** Returns the extreme maximum wet bulb temperature in degrees C */
+  /** Returns the (cooling) extreme maximum wet bulb temperature in degrees C
+   *  Prior to the 2017 edition of the ASHRAE Handbook of Fundamentals, this is stored in the Extreme section, and starting at 2017
+   *  it is stored in the Cooling Section.
+   **/
   boost::optional<double> extremeMaxWetBulb() const;
   /** Returns the extreme mean minimum dry bulb temperature in degrees C */
   boost::optional<double> extremeMeanMinDryBulb() const;
@@ -667,7 +698,13 @@ class UTILITIES_API EpwDesignCondition
   /** Returns the extreme n=50 years maximum dry bulb temperature in degrees C */
   boost::optional<double> extremeN50YearsMaxDryBulb() const;
 
- private:
+  ASHRAEHoFVintage ashraeHoFVersion() const;
+
+ protected:
+  void assignHeatingData(std::span<const std::string> stringValues);
+  void assignCoolingData(std::span<const std::string> stringValues);
+  void assignExtremesData(std::span<const std::string> stringValues);
+
   // Setters
   void setTitleOfDesignCondition(const std::string& titleOfDesignCondition);
   bool setHeatingColdestMonth(const std::string& heatingColdestMonth);
@@ -700,6 +737,9 @@ class UTILITIES_API EpwDesignCondition
   void setHeatingMeanCoincidentWindSpeed99pt6(double heatingMeanCoincidentWindSpeed99pt6);
   bool setHeatingPrevailingCoincidentWindDirection99pt6(const std::string& heatingPrevailingCoincidentWindDirection99pt6);
   void setHeatingPrevailingCoincidentWindDirection99pt6(int heatingPrevailingCoincidentWindDirection99pt6);
+  bool setHeatingWindShelterFactor(const std::string& heatingWindShelterFactor);
+  void setHeatingWindShelterFactor(double heatingWindShelterFactor);
+
   bool setCoolingHottestMonth(const std::string& coolingHottestMonth);
   void setCoolingHottestMonth(int coolingHottestMonth);
   bool setCoolingDryBulbRange(const std::string& coolingDryBulbRange);
@@ -764,6 +804,7 @@ class UTILITIES_API EpwDesignCondition
   void setCoolingEnthalpyMeanCoincidentDryBulb2(double coolingEnthalpyMeanCoincidentDryBulb2);
   bool setCoolingHours8To4AndDryBulb12pt8To20pt6(const std::string& coolingHours8To4AndDryBulb12pt8To20pt6);
   void setCoolingHours8To4AndDryBulb12pt8To20pt6(int coolingHours8To4AndDryBulb12pt8To20pt6);
+
   bool setExtremeWindSpeed1(const std::string& extremeWindSpeed1);
   void setExtremeWindSpeed1(double extremeWindSpeed1);
   bool setExtremeWindSpeed2pt5(const std::string& extremeWindSpeed2pt5);
@@ -797,6 +838,9 @@ class UTILITIES_API EpwDesignCondition
   bool setExtremeN50YearsMaxDryBulb(const std::string& extremeN50YearsMaxDryBulb);
   void setExtremeN50YearsMaxDryBulb(double extremeN50YearsMaxDryBulb);
 
+ private:
+  ASHRAEHoFVintage m_ashraeHoFVersion = ASHRAEHoFVintage::ASHRAE_2009;
+
   std::string m_titleOfDesignCondition;
   boost::optional<int> m_heatingColdestMonth;
   boost::optional<double> m_heatingDryBulb99pt6;
@@ -813,6 +857,8 @@ class UTILITIES_API EpwDesignCondition
   boost::optional<double> m_heatingColdestMonthMeanCoincidentDryBulb1;
   boost::optional<double> m_heatingMeanCoincidentWindSpeed99pt6;
   boost::optional<int> m_heatingPrevailingCoincidentWindDirection99pt6;
+  boost::optional<double> m_heatingWindShelterFactor;
+
   boost::optional<int> m_coolingHottestMonth;
   boost::optional<double> m_coolingDryBulbRange;
   boost::optional<double> m_coolingDryBulb0pt4;
@@ -845,10 +891,11 @@ class UTILITIES_API EpwDesignCondition
   boost::optional<double> m_coolingEnthalpy2;
   boost::optional<double> m_coolingEnthalpyMeanCoincidentDryBulb2;
   boost::optional<int> m_coolingHours8To4AndDryBulb12pt8To20pt6;
+
   boost::optional<double> m_extremeWindSpeed1;
   boost::optional<double> m_extremeWindSpeed2pt5;
   boost::optional<double> m_extremeWindSpeed5;
-  boost::optional<double> m_extremeMaxWetBulb;
+  boost::optional<double> m_extremeMaxWetBulb;  // This also stores CoolingExtremeMaxWetBulb for versions starting at 2017
   boost::optional<double> m_extremeMeanMinDryBulb;
   boost::optional<double> m_extremeMeanMaxDryBulb;
   boost::optional<double> m_extremeStdDevMinDryBulb;
@@ -886,9 +933,9 @@ class UTILITIES_API EpwGroundTemperatureDepth
   static std::string getUnits(EpwDepthField field);
   // Data retrieval
   /** Returns the double value of the named field if possible */
-  boost::optional<double> getFieldByName(const std::string& name);
+  boost::optional<double> getFieldByName(const std::string& name) const;
   /** Returns the dobule value of the field specified by enumeration value */
-  boost::optional<double> getField(EpwDepthField id);
+  boost::optional<double> getField(EpwDepthField id) const;
   // Conversion
   /** Create an EpwGroundTemperatureDepth from an EPW-formatted string */
   static boost::optional<EpwGroundTemperatureDepth> fromGroundTemperatureDepthsString(const std::string& line);
@@ -1081,7 +1128,7 @@ class UTILITIES_API EpwFile
   boost::optional<Date> daylightSavingEndDate() const;
   std::vector<EpwHoliday> holidays() const;
 
- private:
+ protected:
   EpwFile();
   bool parse(std::istream& is, bool storeData = false);
   bool parseLocation(const std::string& line);
@@ -1090,6 +1137,7 @@ class UTILITIES_API EpwFile
   bool parseHolidaysDaylightSavings(const std::string& line);
   bool parseGroundTemperatures(const std::string& line);
 
+ private:
   // configure logging
   REGISTER_LOGGER("openstudio.EpwFile");
 

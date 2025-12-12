@@ -52,6 +52,15 @@ namespace energyplus {
 
     //{ Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::Name, "Name", "Name"},
     //{ Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::RatedHeatingCapacity, "RatedHeatingCapacity", "Rated Heating Capacity"},
+
+    // AvailabilityScheduleName
+    {
+      auto schedule = modelObject.availabilitySchedule();
+      if (boost::optional<IdfObject> _schedule = translateAndMapModelObject(schedule)) {
+        idfObject.setString(Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::AvailabilityScheduleName, _schedule->name().get());
+      }
+    }
+
     {
       auto value = modelObject.ratedHeatingCapacity();
       idfObject.setDouble(Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::RatedHeatingCapacity, value);

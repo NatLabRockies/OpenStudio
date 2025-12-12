@@ -258,6 +258,12 @@ namespace model {
       return value.get();
     }
 
+    double HeatPumpAirToWaterFuelFiredCooling_Impl::minimumUnloadingRatio() const {
+      boost::optional<double> value = getDouble(OS_HeatPump_AirToWater_FuelFired_CoolingFields::MinimumUnloadingRatio, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
     bool HeatPumpAirToWaterFuelFiredCooling_Impl::setCompanionHeatingHeatPump(
       const HeatPumpAirToWaterFuelFiredHeating& heatPumpAirToWaterFuelFiredHeating) {
       bool result =
@@ -434,6 +440,11 @@ namespace model {
       return result;
     }
 
+    bool HeatPumpAirToWaterFuelFiredCooling_Impl::setMinimumUnloadingRatio(double minimumUnloadingRatio) {
+      bool result = setDouble(OS_HeatPump_AirToWater_FuelFired_CoolingFields::MinimumUnloadingRatio, minimumUnloadingRatio);
+      return result;
+    }
+
     void HeatPumpAirToWaterFuelFiredCooling_Impl::autosize() {
       autosizeNominalCoolingCapacity();
       autosizeDesignFlowRate();
@@ -574,6 +585,8 @@ namespace model {
     OS_ASSERT(ok);
     ok = setStandbyElectricPower(0);
     OS_ASSERT(ok);
+    ok = setMinimumUnloadingRatio(0.25);
+    OS_ASSERT(ok);
   }
 
   HeatPumpAirToWaterFuelFiredCooling::HeatPumpAirToWaterFuelFiredCooling(const Model& model,
@@ -631,6 +644,8 @@ namespace model {
     ok = setNominalAuxiliaryElectricPower(0);
     OS_ASSERT(ok);
     ok = setStandbyElectricPower(0);
+    OS_ASSERT(ok);
+    ok = setMinimumUnloadingRatio(0.25);
     OS_ASSERT(ok);
   }
 
@@ -772,6 +787,10 @@ namespace model {
     return getImpl<detail::HeatPumpAirToWaterFuelFiredCooling_Impl>()->standbyElectricPower();
   }
 
+  double HeatPumpAirToWaterFuelFiredCooling::minimumUnloadingRatio() const {
+    return getImpl<detail::HeatPumpAirToWaterFuelFiredCooling_Impl>()->minimumUnloadingRatio();
+  }
+
   bool HeatPumpAirToWaterFuelFiredCooling::setCompanionHeatingHeatPump(const HeatPumpAirToWaterFuelFiredHeating& heatPumpAirToWaterFuelFiredHeating) {
     return getImpl<detail::HeatPumpAirToWaterFuelFiredCooling_Impl>()->setCompanionHeatingHeatPump(heatPumpAirToWaterFuelFiredHeating);
   }
@@ -908,6 +927,10 @@ namespace model {
 
   bool HeatPumpAirToWaterFuelFiredCooling::setStandbyElectricPower(double standbyElectricPower) {
     return getImpl<detail::HeatPumpAirToWaterFuelFiredCooling_Impl>()->setStandbyElectricPower(standbyElectricPower);
+  }
+
+  bool HeatPumpAirToWaterFuelFiredCooling::setMinimumUnloadingRatio(double minimumUnloadingRatio) {
+    return getImpl<detail::HeatPumpAirToWaterFuelFiredCooling_Impl>()->setMinimumUnloadingRatio(minimumUnloadingRatio);
   }
 
   /// @cond

@@ -71,6 +71,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_HeatPumpAirToWaterFuelFired) {
   CurveQuadratic curve7(m);
   EXPECT_TRUE(ffhp_htg.setAuxiliaryElectricEnergyInputRatioFunctionofPLRCurve(curve7));
   EXPECT_TRUE(ffhp_htg.setStandbyElectricPower(13.0));
+  EXPECT_TRUE(ffhp_htg.setMinimumUnloadingRatio(0.1));
 
   HeatPumpAirToWaterFuelFiredCooling ffhp_clg(m);
 
@@ -101,6 +102,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_HeatPumpAirToWaterFuelFired) {
   CurveQuadratic curve13(m);
   EXPECT_TRUE(ffhp_clg.setAuxiliaryElectricEnergyInputRatioFunctionofPLRCurve(curve13));
   EXPECT_TRUE(ffhp_clg.setStandbyElectricPower(13.0));
+  EXPECT_TRUE(ffhp_clg.setMinimumUnloadingRatio(0.15));
 
   EXPECT_TRUE(ffhp_htg.setCompanionCoolingHeatPump(ffhp_clg));
   EXPECT_TRUE(ffhp_clg.setCompanionHeatingHeatPump(ffhp_htg));
@@ -162,6 +164,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_HeatPumpAirToWaterFuelFired) {
     curve7.nameString(),
     idf_ffhp_htg.getString(HeatPump_AirToWater_FuelFired_HeatingFields::AuxiliaryElectricEnergyInputRatioFunctionofPLRCurveName, false).get());
   EXPECT_EQ(13.0, idf_ffhp_htg.getDouble(HeatPump_AirToWater_FuelFired_HeatingFields::StandbyElectricPower, false).get());
+  EXPECT_EQ(0.1, idf_ffhp_htg.getDouble(HeatPump_AirToWater_FuelFired_HeatingFields::MinimumUnloadingRatio, false).get());
 
   IdfObject idf_ffhp_clg = w.getObjectsByType(IddObjectType::HeatPump_AirToWater_FuelFired_Cooling)[0];
 
@@ -202,4 +205,5 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_HeatPumpAirToWaterFuelFired) {
     curve13.nameString(),
     idf_ffhp_clg.getString(HeatPump_AirToWater_FuelFired_CoolingFields::AuxiliaryElectricEnergyInputRatioFunctionofPLRCurveName, false).get());
   EXPECT_EQ(13.0, idf_ffhp_clg.getDouble(HeatPump_AirToWater_FuelFired_CoolingFields::StandbyElectricPower, false).get());
+  EXPECT_EQ(0.15, idf_ffhp_clg.getDouble(HeatPump_AirToWater_FuelFired_CoolingFields::MinimumUnloadingRatio, false).get());
 }

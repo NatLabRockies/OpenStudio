@@ -270,6 +270,18 @@ namespace energyplus {
       idfObject.setDouble(Sizing_SystemFields::OccupantDiversity, value.get());
     }
 
+    // HeatingCoilSizingMethod
+    s = modelObject.heatingCoilSizingMethod();
+    if (s) {
+      idfObject.setString(Sizing_SystemFields::HeatingCoilSizingMethod, s.get());
+    }
+
+    // MaximumHeatingCapacityToCoolingCapacitySizingRatio
+    value = modelObject.maximumHeatingCapacityToCoolingCapacitySizingRatio();
+    if (value) {
+      idfObject.setDouble(Sizing_SystemFields::MaximumHeatingCapacityToCoolingCapacitySizingRatio, value.get());
+    }
+
     return idfObject;
   }
 

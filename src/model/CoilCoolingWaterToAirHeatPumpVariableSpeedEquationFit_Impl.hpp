@@ -43,6 +43,8 @@ namespace model {
 
       virtual IddObjectType iddObjectType() const override;
 
+      virtual std::vector<ScheduleTypeKey> getScheduleTypeKeys(const Schedule& schedule) const override;
+
       virtual unsigned airInletPort() const override;
 
       virtual unsigned airOutletPort() const override;
@@ -69,6 +71,8 @@ namespace model {
       //@}
       /** @name Getters */
       //@{
+
+      Schedule availabilitySchedule() const;
 
       int nominalSpeedLevel() const;
 
@@ -109,6 +113,8 @@ namespace model {
       //@}
       /** @name Setters */
       //@{
+
+      bool setAvailabilitySchedule(Schedule& schedule);
 
       bool setNominalSpeedLevel(int nominalSpeedLevel);
 
@@ -156,6 +162,10 @@ namespace model {
 
       void removeAllSpeeds();
 
+      AirflowNetworkEquivalentDuct getAirflowNetworkEquivalentDuct(double length, double diameter);
+
+      boost::optional<AirflowNetworkEquivalentDuct> airflowNetworkEquivalentDuct() const;
+
       //@}
      protected:
      private:
@@ -164,6 +174,7 @@ namespace model {
       // Optional getters for use by methods like children() so can remove() if the constructor fails.
       // There are other ways for the public versions of these getters to fail--perhaps all required
       // objects should be returned as boost::optionals
+      boost::optional<Schedule> optionalAvailabilitySchedule() const;
       boost::optional<Curve> optionalEnergyPartLoadFractionCurve() const;
     };
 

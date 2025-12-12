@@ -230,6 +230,11 @@ namespace energyplus {
       idfObject.setString(AirLoopHVAC_UnitaryHeatPump_AirToAirFields::DehumidificationControlType, modelObject.dehumidificationControlType());
     }
 
+    // DX Heating Coil Sizing Ratio
+    if ((value = modelObject.dXHeatingCoilSizingRatio())) {
+      idfObject.setDouble(AirLoopHVAC_UnitaryHeatPump_AirToAirFields::DXHeatingCoilSizingRatio, value.get());
+    }
+
     // Fill in node names for inner components
 
     if (airInletNodeName && _fan) {

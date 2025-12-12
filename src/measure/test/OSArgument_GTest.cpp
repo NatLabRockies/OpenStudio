@@ -271,3 +271,12 @@ TEST_F(MeasureFixture, OSArgument_valueAsJSON) {
     EXPECT_EQ("handle1", val.asString());
   }
 }
+
+TEST_F(MeasureFixture, OSArgument_setRequired) {
+  OSArgument boolArgument = OSArgument::makeBoolArgument("bool");
+  boolArgument.setRequired(true);
+  EXPECT_EQ(true, boolArgument.required());
+
+  boolArgument.setRequired(false);
+  EXPECT_EQ(false, boolArgument.required());
+}

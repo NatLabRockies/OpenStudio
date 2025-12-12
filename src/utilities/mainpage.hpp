@@ -49,7 +49,7 @@ namespace openstudio {
  *      Logger.hpp, LogMessage.hpp, Optional.hpp, Path.hpp, PathHelpers.hpp, String.hpp, UUID.hpp
  *  \li Used more sparingly: Application.hpp, ApplicationPathHelpers.hpp, Checksum.hpp,
  *      CommandLine.hpp, EnumHelpers.hpp, Exception.hpp, FileReference.hpp, Finder.hpp,
- *      PathWatcher.hpp, Queue.hpp, Singleton.hpp, StaticInitializer.hpp,
+ *      PathWatcher.hpp, Queue.hpp,
  *      StringHelpers.hpp, StringStreamLogSink.hpp, System.hpp, UnzipFile.hpp
  *      URLHelpers.hpp, ZipFile.hpp
  *
@@ -110,11 +110,11 @@ namespace openstudio {
  *
  *  \li Unit
  *  \li Quantity
- *  \li \link UnitFactorySingleton UnitFactory \endlink - Singleton and related non-member
+ *  \li \link UnitFactory UnitFactory \endlink - Singleton and related non-member
  *          functions for creating \link Unit Units\endlink from strings.
- *  \li \link QuantityFactorySingleton QuantityFactory \endlink - Singleton and related
+ *  \li \link QuantityFactory QuantityFactory \endlink - Singleton and related
  *          non-member functions for creating \link Quantity Quantities\endlink from strings.
- *  \li \link QuantityConverterSingleton QuantityConverter \endlink - Singleton and related
+ *  \li \link QuantityConverter QuantityConverter \endlink - Singleton and related
  *          non-member functions for converting \link Quantity Quantities\endlink and
  *          \link OSQuantityVector OSQuantityVectors \endlink to different units.
  *  \li OSOptionalQuantity - Class for always returning a Unit and optionally

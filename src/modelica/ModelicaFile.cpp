@@ -6,8 +6,7 @@ namespace openstudio::modelica {
 
 // ModelicaFile implementation
 
-ModelicaFile::ModelicaFile(const openstudio::path& path)
-  : m_impl(std::make_shared<detail::ModelicaFileImpl>(path)) {}
+ModelicaFile::ModelicaFile(const openstudio::path& path) : m_impl(std::make_shared<detail::ModelicaFileImpl>(path)) {}
 
 ModelicaFile::ModelicaFile(const ModelicaFile& other) = default;
 
@@ -77,7 +76,7 @@ std::string ClassDefinition::getText() const {
   return implChecked("getText")->getText();
 }
 
-void ClassDefinition::addComponentClause(const std::string& text) {
+void ClassDefinition::addComponentClause(const std::string& text) const {
   implChecked("addComponentClause")->addComponentClause(text);
 }
 
@@ -92,12 +91,12 @@ std::vector<ConnectClause> ClassDefinition::getConnectClauses() const {
   return result;
 }
 
-ConnectClause ClassDefinition::addConnectClause(const std::string& source, const std::string& target) {
+ConnectClause ClassDefinition::addConnectClause(const std::string& source, const std::string& target) const {
   auto* implConnection = implChecked("addConnectClause")->addConnectClause(source, target);
   return ConnectClause(implConnection);
 }
 
-bool ClassDefinition::removeConnectClause(const std::string& source, const std::string& target) {
+bool ClassDefinition::removeConnectClause(const std::string& source, const std::string& target) const {
   return implChecked("removeConnectClause")->removeConnectClause(source, target);
 }
 

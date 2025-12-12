@@ -38,8 +38,8 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_OutputControlFiles) {
   // Check all cases where a single output request is True so we know we assigned the fields correctly
   auto boolToString = [](bool b) { return b ? "Yes" : "No"; };
 
-  for (size_t i = 0; i < 31; ++i) {
-    bool status[31] = {false};
+  for (size_t i = 0; i < 32; ++i) {
+    bool status[32] = {false};
     status[i] = true;
     EXPECT_TRUE(outputControlFiles.setOutputCSV(status[0]));
     EXPECT_TRUE(outputControlFiles.setOutputMTR(status[1]));
@@ -72,6 +72,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_OutputControlFiles) {
     EXPECT_TRUE(outputControlFiles.setOutputScreen(status[28]));
     EXPECT_TRUE(outputControlFiles.setOutputExtShd(status[29]));
     EXPECT_TRUE(outputControlFiles.setOutputTarcog(status[30]));
+    EXPECT_TRUE(outputControlFiles.setOutputPlantComponentSizing(status[31]));
 
     Workspace w = ft.translateModel(m);
     WorkspaceObjectVector idfObjs = w.getObjectsByType(IddObjectType::OutputControl_Files);
@@ -111,6 +112,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_OutputControlFiles) {
     EXPECT_EQ(boolToString(status[28]), idf_outputControlFiles.getString(OutputControl_FilesFields::OutputScreen).get());
     EXPECT_EQ(boolToString(status[29]), idf_outputControlFiles.getString(OutputControl_FilesFields::OutputExtShd).get());
     EXPECT_EQ(boolToString(status[30]), idf_outputControlFiles.getString(OutputControl_FilesFields::OutputTarcog).get());
+    EXPECT_EQ(boolToString(status[31]), idf_outputControlFiles.getString(OutputControl_FilesFields::OutputPlantComponentSizing).get());
   }
 }
 
@@ -129,8 +131,8 @@ TEST_F(EnergyPlusFixture, ReverseTranslator_OutputControlFiles) {
 
   auto boolToString = [](bool b) { return b ? "Yes" : "No"; };
 
-  for (size_t i = 0; i < 32; ++i) {
-    bool status[32] = {false};
+  for (size_t i = 0; i < 33; ++i) {
+    bool status[33] = {false};
     status[i] = true;
     EXPECT_TRUE(_i_outputControlFiles->setString(OutputControl_FilesFields::OutputCSV, boolToString(status[0])));
     EXPECT_TRUE(_i_outputControlFiles->setString(OutputControl_FilesFields::OutputMTR, boolToString(status[1])));
@@ -164,6 +166,7 @@ TEST_F(EnergyPlusFixture, ReverseTranslator_OutputControlFiles) {
     EXPECT_TRUE(_i_outputControlFiles->setString(OutputControl_FilesFields::OutputScreen, boolToString(status[29])));
     EXPECT_TRUE(_i_outputControlFiles->setString(OutputControl_FilesFields::OutputExtShd, boolToString(status[30])));
     EXPECT_TRUE(_i_outputControlFiles->setString(OutputControl_FilesFields::OutputTarcog, boolToString(status[31])));
+    EXPECT_TRUE(_i_outputControlFiles->setString(OutputControl_FilesFields::OutputPlantComponentSizing, boolToString(status[32])));
 
     Model m = rt.translateWorkspace(w);
 
@@ -202,5 +205,6 @@ TEST_F(EnergyPlusFixture, ReverseTranslator_OutputControlFiles) {
     EXPECT_EQ(status[29], outputControlFiles.outputScreen());
     EXPECT_EQ(status[30], outputControlFiles.outputExtShd());
     EXPECT_EQ(status[31], outputControlFiles.outputTarcog());
+    EXPECT_EQ(status[32], outputControlFiles.outputPlantComponentSizing());
   }
 }

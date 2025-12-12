@@ -99,6 +99,12 @@ namespace model {
       /** @name Other */
       //@{
 
+      boost::optional<double> designLevel() const;
+
+      boost::optional<double> powerPerFloorArea() const;
+
+      boost::optional<double> powerPerPerson() const;
+
       /** Returns the design level represented by this instance, assuming floorArea (m^2) and
      *  numPeople. */
       double getDesignLevel(double floorArea, double numPeople) const;

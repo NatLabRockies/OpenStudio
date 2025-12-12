@@ -40,6 +40,8 @@ namespace model {
 
       virtual IddObjectType iddObjectType() const override;
 
+      virtual std::vector<ScheduleTypeKey> getScheduleTypeKeys(const Schedule& schedule) const override;
+
       virtual unsigned airInletPort() const override;
 
       virtual unsigned airOutletPort() const override;
@@ -47,6 +49,8 @@ namespace model {
       virtual unsigned waterInletPort() const override;
 
       virtual unsigned waterOutletPort() const override;
+
+      virtual std::vector<ModelObject> children() const override;
 
       virtual boost::optional<ZoneHVACComponent> containingZoneHVACComponent() const override;
 
@@ -58,6 +62,8 @@ namespace model {
       //@}
       /** @name Getters */
       //@{
+
+      Schedule availabilitySchedule() const;
 
       boost::optional<double> ratedAirFlowRate() const;
 
@@ -107,6 +113,8 @@ namespace model {
       /** @name Setters */
       //@{
 
+      bool setAvailabilitySchedule(Schedule& schedule);
+
       bool setRatedAirFlowRate(boost::optional<double> ratedAirFlowRate);
 
       bool setRatedAirFlowRate(double ratedAirFlowRate);
@@ -151,11 +159,16 @@ namespace model {
       /** @name Other */
       //@{
 
+      AirflowNetworkEquivalentDuct getAirflowNetworkEquivalentDuct(double length, double diameter);
+
+      boost::optional<AirflowNetworkEquivalentDuct> airflowNetworkEquivalentDuct() const;
+
       //@}
      protected:
      private:
       REGISTER_LOGGER("openstudio.model.CoilHeatingWaterToAirHeatPumpEquationFit");
 
+      boost::optional<Schedule> optionalAvailabilitySchedule() const;
       boost::optional<Curve> optionalHeatingCapacityCurve() const;
       boost::optional<Curve> optionalHeatingPowerConsumptionCurve() const;
       boost::optional<Curve> optionalPartLoadFractionCorrelationCurve() const;

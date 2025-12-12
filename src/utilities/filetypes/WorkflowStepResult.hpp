@@ -306,6 +306,13 @@ class UTILITIES_API WorkflowStepResult
   void resetStdErr();
 
   //@}
+  /** @name Other */
+  //@{
+
+  // Print the result to stdout
+  void showOutput() const;
+
+  //@}
 
  protected:
   // get the impl

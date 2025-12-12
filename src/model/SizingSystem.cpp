@@ -365,6 +365,18 @@ namespace model {
       return result;
     }
 
+    std::string SizingSystem_Impl::heatingCoilSizingMethod() const {
+      boost::optional<std::string> value = getString(OS_Sizing_SystemFields::HeatingCoilSizingMethod, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    double SizingSystem_Impl::maximumHeatingCapacityToCoolingCapacitySizingRatio() const {
+      boost::optional<double> value = getDouble(OS_Sizing_SystemFields::MaximumHeatingCapacityToCoolingCapacitySizingRatio, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
     bool SizingSystem_Impl::setTypeofLoadtoSizeOn(const std::string& typeofLoadtoSizeOn) {
       bool result = setString(OS_Sizing_SystemFields::TypeofLoadtoSizeOn, typeofLoadtoSizeOn);
       return result;
@@ -677,6 +689,17 @@ namespace model {
     void SizingSystem_Impl::autosizeOccupantDiversity() {
       bool result = setString(OS_Sizing_SystemFields::OccupantDiversity, "autosize");
       OS_ASSERT(result);
+    }
+
+    bool SizingSystem_Impl::setHeatingCoilSizingMethod(const std::string& heatingCoilSizingMethod) {
+      bool result = setString(OS_Sizing_SystemFields::HeatingCoilSizingMethod, heatingCoilSizingMethod);
+      return result;
+    }
+
+    bool SizingSystem_Impl::setMaximumHeatingCapacityToCoolingCapacitySizingRatio(double maximumHeatingCapacityToCoolingCapacitySizingRatio) {
+      bool result =
+        setDouble(OS_Sizing_SystemFields::MaximumHeatingCapacityToCoolingCapacitySizingRatio, maximumHeatingCapacityToCoolingCapacitySizingRatio);
+      return result;
     }
 
     AirLoopHVAC SizingSystem_Impl::airLoopHVAC() const {
@@ -1098,6 +1121,8 @@ namespace model {
     setFractionofAutosizedHeatingDesignCapacity(1.0);
     setCentralCoolingCapacityControlMethod("OnOff");
     autosizeOccupantDiversity();
+    setHeatingCoilSizingMethod("None");
+    setMaximumHeatingCapacityToCoolingCapacitySizingRatio(1.0);
   }
 
   IddObjectType SizingSystem::iddObjectType() {
@@ -1123,6 +1148,10 @@ namespace model {
 
   std::vector<std::string> SizingSystem::validSystemOutdoorAirMethodValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), OS_Sizing_SystemFields::SystemOutdoorAirMethod);
+  }
+
+  std::vector<std::string> SizingSystem::heatingCoilSizingMethodValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), OS_Sizing_SystemFields::HeatingCoilSizingMethod);
   }
 
   std::string SizingSystem::typeofLoadtoSizeOn() const {
@@ -1343,6 +1372,14 @@ namespace model {
 
   bool SizingSystem::isOccupantDiversityAutosized() const {
     return getImpl<detail::SizingSystem_Impl>()->isOccupantDiversityAutosized();
+  }
+
+  std::string SizingSystem::heatingCoilSizingMethod() const {
+    return getImpl<detail::SizingSystem_Impl>()->heatingCoilSizingMethod();
+  }
+
+  double SizingSystem::maximumHeatingCapacityToCoolingCapacitySizingRatio() const {
+    return getImpl<detail::SizingSystem_Impl>()->maximumHeatingCapacityToCoolingCapacitySizingRatio();
   }
 
   bool SizingSystem::setTypeofLoadtoSizeOn(const std::string& typeofLoadtoSizeOn) {
@@ -1606,6 +1643,15 @@ namespace model {
 
   boost::optional<double> SizingSystem::autosizedOccupantDiversity() const {
     return getImpl<detail::SizingSystem_Impl>()->autosizedOccupantDiversity();
+  }
+
+  bool SizingSystem::setHeatingCoilSizingMethod(const std::string& heatingCoilSizingMethod) {
+    return getImpl<detail::SizingSystem_Impl>()->setHeatingCoilSizingMethod(heatingCoilSizingMethod);
+  }
+
+  bool SizingSystem::setMaximumHeatingCapacityToCoolingCapacitySizingRatio(double maximumHeatingCapacityToCoolingCapacitySizingRatio) {
+    return getImpl<detail::SizingSystem_Impl>()->setMaximumHeatingCapacityToCoolingCapacitySizingRatio(
+      maximumHeatingCapacityToCoolingCapacitySizingRatio);
   }
 
 }  // namespace model

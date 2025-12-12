@@ -45,6 +45,8 @@ namespace model {
     /** @name Getters */
     //@{
 
+    Schedule availabilitySchedule() const;
+
     int nominalSpeedLevel() const;
 
     double ratedWaterHeatingCapacity() const;
@@ -84,6 +86,8 @@ namespace model {
     //@}
     /** @name Setters */
     //@{
+
+    bool setAvailabilitySchedule(Schedule& schedule);
 
     bool setNominalSpeedLevel(int nominalSpeedLevel);
 

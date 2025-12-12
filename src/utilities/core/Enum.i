@@ -14,16 +14,22 @@
   rb_eval_string("String.class_eval { define_method(:to_" #_name ") { " SWIG_name "::" #_name ".new(self); } }");
 %}
 %enddef
+%define ALIAS_EQL(_name)
+%alias _name::operator== "eql?";
+%enddef
 
 #else
 #define ENUM_CONVERSION(_name)
+#define ALIAS_EQL(_name)
 #endif
 
 
 
 // todo: we need to be able to get rid of default constructor below, however
 // i can't instantiate optional class template without default constructor
+// I'm overriding __hash__ and renaming == to eql? for ruby, cf #5522
 #define OPENSTUDIO_ENUM(_name, ...) \
+  ALIAS_EQL(_name); \
   class _name { \
   public: \
     _name(); \
@@ -51,6 +57,10 @@
       std::ostringstream os; \
       os << *self; \
       return os.str(); \
+    } \
+    \
+    int __hash__() const { \
+      return self->value(); \
     } \
   };
 

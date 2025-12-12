@@ -51,12 +51,12 @@ TEST_F(ModelFixture, HeatExchangerDesiccantBalancedFlow_HeatExchangerDesiccantBa
   EXPECT_EQ(alwaysOn, hx.availabilitySchedule());
   EXPECT_NE(p, hx.heatExchangerPerformance());
   EXPECT_NE(p.handle(), hx.heatExchangerPerformance().handle());
-  EXPECT_FALSE(hx.economizerLockout());
+  EXPECT_TRUE(hx.economizerLockout());
 
   EXPECT_EQ(alwaysOn, hx2.availabilitySchedule());
   EXPECT_EQ(p, hx2.heatExchangerPerformance());
   EXPECT_EQ(p.handle(), hx2.heatExchangerPerformance().handle());
-  EXPECT_FALSE(hx2.economizerLockout());
+  EXPECT_TRUE(hx2.economizerLockout());
 }
 
 TEST_F(ModelFixture, HeatExchangerDesiccantBalancedFlow_GettersSetters) {

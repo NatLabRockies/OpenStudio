@@ -14,20 +14,20 @@
 namespace openstudio::modelica::detail {
 
 namespace {
-std::string buildLongClassName(modelicaParser::Long_class_specifierContext* longClass) {
-  if (!longClass) {
-    return {};
-  }
-  std::string name;
-  const auto& identifiers = longClass->IDENT();
-  for (size_t i = 0; i < identifiers.size(); ++i) {
-    if (i > 0) {
-      name += ".";
+  std::string buildLongClassName(modelicaParser::Long_class_specifierContext* longClass) {
+    if (!longClass) {
+      return {};
     }
-    name += identifiers[i]->getText();
+    std::string name;
+    const auto& identifiers = longClass->IDENT();
+    for (size_t i = 0; i < identifiers.size(); ++i) {
+      if (i > 0) {
+        name += ".";
+      }
+      name += identifiers[i]->getText();
+    }
+    return name;
   }
-  return name;
-}
 }  // namespace
 
 ModelicaFileImpl::ModelicaFileImpl([[maybe_unused]] const openstudio::path& path) {
@@ -241,7 +241,7 @@ void ClassDefinitionImpl::addComponentClause(const std::string& text) {
     modelicaLexer testLexer(&testStream);
     antlr4::CommonTokenStream testTokens(&testLexer);
     modelicaParser testParser(&testTokens);
-    auto* componentClauseCtx = testParser.component_clause();
+    const auto* componentClauseCtx = testParser.component_clause();
     if (!componentClauseCtx || testParser.getNumberOfSyntaxErrors() > 0) {
       LOG_AND_THROW("Invalid component clause syntax: " + text);
     }
@@ -294,11 +294,11 @@ void ClassDefinitionImpl::markComponentClausesDirty() {
   m_componentClausesDirty = true;
 }
 
-void ClassDefinitionImpl::setClassContext(modelicaParser::Class_definitionContext* newCtx) {
-  setCTX(newCtx);
+void ClassDefinitionImpl::setClassContext(modelicaParser::Class_definitionContext* ctx) {
+  setCTX(ctx);
   markComponentClausesDirty();
   markConnectionsDirty();
-  if (!newCtx) {
+  if (!ctx) {
     deactivateComponentClauses();
     deactivateConnections();
   }
@@ -500,7 +500,7 @@ void ClassDefinitionImpl::deactivateConnections() {
   m_cachedConnections.clear();
 }
 
-void ClassDefinitionImpl::removeConnectClause(ConnectClauseImpl* connection) {
+void ClassDefinitionImpl::removeConnectClause(const ConnectClauseImpl* connection) {
   if (!connection) {
     return;
   }
@@ -576,8 +576,8 @@ modelicaParser::Equation_sectionContext* ClassDefinitionImpl::selectEquationSect
 }
 
 std::pair<std::string, std::string> ClassDefinitionImpl::validateAndNormalizeConnectClause(const std::string& source, const std::string& target) {
-  std::string clause = "connect(" + source + "," + target + ")";
   try {
+    std::string clause = "connect(" + source + "," + target + ")";
     antlr4::ANTLRInputStream testStream(clause);
     modelicaLexer testLexer(&testStream);
     antlr4::CommonTokenStream testTokens(&testLexer);

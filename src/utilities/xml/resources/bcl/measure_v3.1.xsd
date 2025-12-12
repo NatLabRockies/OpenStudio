@@ -87,6 +87,7 @@
 										<xs:enumeration value="String"/>
 										<xs:enumeration value="Choice"/>
 										<xs:enumeration value="Path"/>
+										<xs:enumeration value="Separator"/>
 									</xs:restriction>
 								</xs:simpleType>
 							</xs:element>

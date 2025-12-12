@@ -43,6 +43,8 @@ TEST_F(ModelFixture, SiteWaterMainsTemperature_SiteWaterMainsTemperature) {
   EXPECT_FALSE(siteWater.temperatureSchedule());
   EXPECT_FALSE(siteWater.annualAverageOutdoorAirTemperature());
   EXPECT_FALSE(siteWater.maximumDifferenceInMonthlyAverageOutdoorAirTemperatures());
+  EXPECT_EQ(1.0, siteWater.temperatureMultiplier());
+  EXPECT_EQ(0.0, siteWater.temperatureOffset());
 }
 
 // test setting and getting
@@ -57,6 +59,8 @@ TEST_F(ModelFixture, SiteWaterMainsTemperature_SetGetFields) {
   siteWater.setCalculationMethod("Correlation");
   siteWater.setAnnualAverageOutdoorAirTemperature(50);
   siteWater.setMaximumDifferenceInMonthlyAverageOutdoorAirTemperatures(60);
+  siteWater.setTemperatureMultiplier(1.2);
+  siteWater.setTemperatureOffset(-0.5);
 
   // check the fields
   EXPECT_EQ("Correlation", siteWater.calculationMethod());
@@ -64,6 +68,8 @@ TEST_F(ModelFixture, SiteWaterMainsTemperature_SetGetFields) {
   EXPECT_EQ(50, siteWater.annualAverageOutdoorAirTemperature().get());
   ASSERT_TRUE(siteWater.maximumDifferenceInMonthlyAverageOutdoorAirTemperatures());
   EXPECT_EQ(60, siteWater.maximumDifferenceInMonthlyAverageOutdoorAirTemperatures().get());
+  EXPECT_EQ(1.2, siteWater.temperatureMultiplier());
+  EXPECT_EQ(-0.5, siteWater.temperatureOffset());
 
   // reset them one by one
   siteWater.resetAnnualAverageOutdoorAirTemperature();

@@ -194,6 +194,12 @@ namespace model {
 
       double gasEquipmentPowerPerPerson() const;
 
+      double hotWaterEquipmentPower() const;
+
+      double hotWaterEquipmentPowerPerFloorArea() const;
+
+      double hotWaterEquipmentPowerPerPerson() const;
+
       double infiltrationDesignFlowRate() const;
 
       double infiltrationDesignFlowPerSpaceFloorArea() const;

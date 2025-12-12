@@ -74,6 +74,11 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_People) {
     cloSch.setName("ClothingInsulationSchedule");
     cloSch.setValue(1.0);
     EXPECT_TRUE(p.setClothingInsulationSchedule(cloSch));
+
+    ScheduleConstant cloSch2(m);
+    cloSch2.setName("CalculationMethodSchedule");
+    cloSch2.setValue(1.0);
+    EXPECT_TRUE(p.setClothingInsulationCalculationMethodSchedule(cloSch2));
   }
 
   {
@@ -117,11 +122,10 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_People) {
   EXPECT_TRUE(peopleObject.isEmpty(PeopleFields::SurfaceName_AngleFactorListName));
   EXPECT_EQ("WorkEfficiencySchedule", peopleObject.getString(PeopleFields::WorkEfficiencyScheduleName).get());
 
-  EXPECT_TRUE(peopleObject.isEmpty(PeopleFields::ClothingInsulationCalculationMethod));
-  EXPECT_EQ("ClothingInsulationSchedule", peopleObject.getString(PeopleFields::ClothingInsulationCalculationMethod, true).get());
+  EXPECT_EQ("ClothingInsulationSchedule", peopleObject.getString(PeopleFields::ClothingInsulationCalculationMethod).get());
   EXPECT_TRUE(peopleObject.isEmpty(PeopleFields::ClothingInsulationCalculationMethodScheduleName));
-
   EXPECT_EQ("ClothingInsulationSchedule", peopleObject.getString(PeopleFields::ClothingInsulationScheduleName).get());
+
   EXPECT_EQ("AirVelocitySchedule", peopleObject.getString(PeopleFields::AirVelocityScheduleName).get());
   EXPECT_EQ("Fanger", peopleObject.getString(PeopleFields::ThermalComfortModel1Type).get());
   EXPECT_EQ("Pierce", peopleObject.getString(PeopleFields::ThermalComfortModel2Type).get());
@@ -168,7 +172,7 @@ TEST_F(EnergyPlusFixture, ReverseTranslator_People) {
   EXPECT_TRUE(_i_people->setString(PeopleFields::MeanRadiantTemperatureCalculationType, "SurfaceWeighted"));
   EXPECT_TRUE(_i_people->setString(PeopleFields::SurfaceName_AngleFactorListName, ""));
   assignSchedule(PeopleFields::WorkEfficiencyScheduleName, "WorkEfficiencySchedule");
-  EXPECT_TRUE(_i_people->setString(PeopleFields::ClothingInsulationCalculationMethod, ""));
+  EXPECT_TRUE(_i_people->setString(PeopleFields::ClothingInsulationCalculationMethod, "ClothingInsulationSchedule"));
   EXPECT_TRUE(_i_people->setString(PeopleFields::ClothingInsulationCalculationMethodScheduleName, ""));
   assignSchedule(PeopleFields::ClothingInsulationScheduleName, "ClothingInsulationSchedule");
   assignSchedule(PeopleFields::AirVelocityScheduleName, "AirVelocitySchedule");
@@ -198,6 +202,8 @@ TEST_F(EnergyPlusFixture, ReverseTranslator_People) {
   EXPECT_EQ("ActivitySchedule", p.activityLevelSchedule()->nameString());
   ASSERT_TRUE(p.workEfficiencySchedule());
   EXPECT_EQ("WorkEfficiencySchedule", p.workEfficiencySchedule()->nameString());
+  EXPECT_EQ("ClothingInsulationSchedule", p.clothingInsulationCalculationMethod());
+  EXPECT_FALSE(p.clothingInsulationCalculationMethodSchedule());
   ASSERT_TRUE(p.clothingInsulationSchedule());
   EXPECT_EQ("ClothingInsulationSchedule", p.clothingInsulationSchedule()->nameString());
   ASSERT_TRUE(p.airVelocitySchedule());

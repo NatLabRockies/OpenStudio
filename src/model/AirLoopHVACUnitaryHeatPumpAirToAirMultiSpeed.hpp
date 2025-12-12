@@ -8,6 +8,7 @@
 
 #include "ModelAPI.hpp"
 #include "StraightComponent.hpp"
+#include "../utilities/core/Deprecated.hpp"
 
 namespace openstudio {
 
@@ -60,7 +61,9 @@ namespace model {
 
     HVACComponent heatingCoil() const;
 
-    double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
+    OS_DEPRECATED(3, 11, 0) double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
+
+    double dXHeatingCoilSizingRatio() const;
 
     HVACComponent coolingCoil() const;
 
@@ -149,7 +152,10 @@ namespace model {
 
     bool setHeatingCoil(const HVACComponent& coil);
 
+    OS_DEPRECATED(3, 11, 0)
     bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);
+
+    bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);
 
     bool setCoolingCoil(const HVACComponent& coil);
 

@@ -86,6 +86,18 @@ namespace model {
     /** @name Other */
     //@{
 
+    /** Returns the designLevel if possible based on the underlying data of
+   *  hotWaterEquipmentDefinition(). */
+    boost::optional<double> designLevel() const;
+
+    /** Returns the powerPerFloorArea if possible based on the underlying data of
+   *  hotWaterEquipmentDefinition(). */
+    boost::optional<double> powerPerFloorArea() const;
+
+    /** Returns the powerPerPerson if possible based on the underlying data of
+   *  hotWaterEquipmentDefinition(). */
+    boost::optional<double> powerPerPerson() const;
+
     /** Returns the design level represented by this instance, assuming floorArea (m^2) and
    *  numPeople. */
     double getDesignLevel(double floorArea, double numPeople) const;
