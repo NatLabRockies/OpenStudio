@@ -25,7 +25,7 @@ add_executable(${target_name}
 set_target_properties(${target_name} PROPERTIES COMPILE_DEFINITIONS OPENSTUDIO_DIRECT_INCLUDE)
 
 target_link_libraries(${target_name}
-  boost::boost
+  Boost::boost
   fmt::fmt
   #Boost::filesystem
   #Boost::regex

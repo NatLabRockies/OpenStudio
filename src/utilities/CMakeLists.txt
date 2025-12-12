@@ -439,7 +439,7 @@ set(${target_name}_depends
   ZLIB::ZLIB
   fmt::fmt
   pugixml::pugixml
-  boost::boost
+  Boost::boost
   cpprestsdk::cpprestsdk
   openssl::openssl
   GeographicLib::GeographicLib
@@ -540,7 +540,7 @@ if(BUILD_BENCHMARK)
         PUBLIC
           benchmark::benchmark_main
           fmt::fmt
-          boost::boost
+          Boost::boost
       )
     else()
       target_link_libraries(${bench_name}
