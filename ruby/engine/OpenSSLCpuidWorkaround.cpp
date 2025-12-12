@@ -5,7 +5,11 @@
 
 #if defined(__APPLE__)
 
+#if defined(__has_attribute) && __has_attribute(weak_import)
+extern "C" void OPENSSL_cpuid_setup() __attribute__((weak_import));
+#else
 extern "C" void OPENSSL_cpuid_setup();
+#endif
 
 namespace {
 
@@ -15,7 +19,9 @@ namespace {
 // a direct call keeps the object file that defines the symbol from being dropped.
 struct ForceOpenSSLCpuidSetup {
   ForceOpenSSLCpuidSetup() {
-    OPENSSL_cpuid_setup();
+    if (OPENSSL_cpuid_setup) {  // optional when OpenSSL is built without the cpuid shim
+      OPENSSL_cpuid_setup();
+    }
   }
 };
 
