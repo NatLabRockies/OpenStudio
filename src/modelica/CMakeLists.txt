@@ -1,3 +1,9 @@
+set(openstudio_modelica_depends
+  antlr4_static
+  openstudio_utilities
+)
+set(openstudio_modelica_depends ${openstudio_modelica_depends} PARENT_SCOPE)
+
 add_library(openstudio_modelica
   OBJECT
   antlr/modelicaBaseListener.cpp
@@ -22,8 +28,7 @@ add_library(openstudio_modelica
 
 target_link_libraries(openstudio_modelica 
   PUBLIC 
-  antlr4_static
-  openstudio_utilities
+  ${openstudio_modelica_depends}
 )
 
 set(openstudio_modelica_swig_src
