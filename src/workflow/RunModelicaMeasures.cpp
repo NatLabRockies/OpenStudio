@@ -62,7 +62,7 @@ void OSWorkflow::runModelicaMeasures() {
     LOG(Warn, "No weather file available from the workflow; 'epwPath' and 'weaPath' Modelica parameters were not set");
   }
 
-  applyMeasures(MeasureType::ModelicaMeasure, false);
+  applyMeasures(MeasureType::ModelicaMeasure, ApplyMeasureType::Regular);
   try {
     saveModelicaFileSnapshot(workflowJSON.absoluteRunDir());
   } catch (const std::exception& e) {
