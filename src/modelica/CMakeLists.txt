@@ -1,6 +1,5 @@
 set(openstudio_modelica_depends
   antlr4_static
-  openstudio_utilities
 )
 set(openstudio_modelica_depends ${openstudio_modelica_depends} PARENT_SCOPE)
 
@@ -29,6 +28,7 @@ add_library(openstudio_modelica
 target_link_libraries(openstudio_modelica 
   PUBLIC 
   ${openstudio_modelica_depends}
+  openstudio_utilities
 )
 
 target_compile_definitions(openstudio_modelica
