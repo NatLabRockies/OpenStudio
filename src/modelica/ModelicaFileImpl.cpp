@@ -2,6 +2,7 @@
 #include "antlr/modelicaParser.h"
 #include "antlr/modelicaLexer.h"
 #include "../utilities/core/Logger.hpp"
+#include "../utilities/core/Filesystem.hpp"
 #include <antlr4-runtime.h>
 #include <antlr4-runtime/tree/xpath/XPath.h>
 #include <fmt/core.h>
@@ -30,8 +31,11 @@ namespace {
   }
 }  // namespace
 
-ModelicaFileImpl::ModelicaFileImpl([[maybe_unused]] const openstudio::path& path) {
-  std::ifstream moFile(path);
+ModelicaFileImpl::ModelicaFileImpl(const openstudio::path& path) {
+  openstudio::filesystem::ifstream moFile(path, std::ios::in | std::ios::binary);
+  if (!moFile.is_open()) {
+    LOG_AND_THROW(fmt::format("Unable to open Modelica file '{}'", path.generic_string()));
+  }
   std::stringstream buffer;
   buffer << moFile.rdbuf();
 
