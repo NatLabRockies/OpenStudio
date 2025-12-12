@@ -14,7 +14,7 @@ namespace detail {
   class ModelicaFileImpl;
   class ClassDefinitionImpl;
   class ConnectClauseImpl;
-}
+}  // namespace detail
 
 class ClassDefinition;
 class ConnectClause;
@@ -70,6 +70,7 @@ class MODELICA_API ModelicaFile
   ClassDefinition addClassDefinition(const std::string& text);
 
  private:
+  // cppcheck-suppress unusedStructMember
   std::shared_ptr<detail::ModelicaFileImpl> m_impl;
 };
 
@@ -112,16 +113,16 @@ class MODELICA_API ClassDefinition
   std::string getText() const;
 
   /** Append a new component clause, represented by @p text, to the class body. */
-  void addComponentClause(const std::string& text);
+  void addComponentClause(const std::string& text) const;
 
   /** Retrieve all connect_clauses contained in this class definition. */
   std::vector<ConnectClause> getConnectClauses() const;
 
   /** Append a `connect(@p source, @p target);` statement to the equation section. */
-  ConnectClause addConnectClause(const std::string& source, const std::string& target);
+  ConnectClause addConnectClause(const std::string& source, const std::string& target) const;
 
   /** Remove the first connect clause matching @p source and @p target, returning true on success. */
-  bool removeConnectClause(const std::string& source, const std::string& target);
+  bool removeConnectClause(const std::string& source, const std::string& target) const;
 
   /** Return true if this handle still refers to a live class definition. */
   bool isValid() const;
@@ -131,6 +132,7 @@ class MODELICA_API ClassDefinition
   explicit ClassDefinition(detail::ClassDefinitionImpl* impl);
   detail::ClassDefinitionImpl* implChecked(const char* methodName) const;
 
+  // cppcheck-suppress unusedStructMember
   detail::ClassDefinitionImpl* m_impl;
 };
 
@@ -168,6 +170,7 @@ class MODELICA_API ConnectClause
   explicit ConnectClause(detail::ConnectClauseImpl* impl);
   detail::ConnectClauseImpl* implChecked(const char* methodName) const;
 
+  // cppcheck-suppress unusedStructMember
   detail::ConnectClauseImpl* m_impl;
 };
 

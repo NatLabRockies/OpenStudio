@@ -64,7 +64,9 @@ class ModelicaFileImpl : public std::enable_shared_from_this<ModelicaFileImpl>
   std::unique_ptr<antlr4::CommonTokenStream> m_tokenStream{nullptr};
   std::unique_ptr<modelicaParser> m_modelicaParser{nullptr};
   std::vector<ModelicaSyntaxWrapper> m_syntaxStore;
+  // cppcheck-suppress unusedStructMember
   std::unordered_map<std::string, std::unique_ptr<ClassDefinitionImpl>> m_classDefinitions;
+  // cppcheck-suppress unusedStructMember
   std::vector<ClassDefinitionImpl*> m_cachedClassDefinitions;
   bool m_classDefinitionsDirty = true;
 
@@ -131,7 +133,6 @@ class ModelicaSyntax
       }
       const auto id = Derived::idFromCTX(typed_ctx);
       if (id == currentID) {
-        auto* typed_ctx = dynamic_cast<T*>(ctx);
         assert(typed_ctx != nullptr);
         setCTX(typed_ctx);
         break;
@@ -249,6 +250,7 @@ class ClassDefinitionImpl : public ModelicaSyntax<modelicaParser::Class_definiti
   friend class ConnectClauseImpl;
   ClassDefinitionImpl(std::shared_ptr<ModelicaFileImpl> modelicaFile, modelicaParser::Class_definitionContext* ctx)
     : ModelicaSyntax<modelicaParser::Class_definitionContext, ClassDefinitionImpl>(std::move(modelicaFile), ctx) {}
+  // cppcheck-suppress unusedStructMember
   static constexpr std::string_view xpath = "//class_definition";
   std::string longClassSpecifier() const;
 
@@ -261,9 +263,6 @@ class ClassDefinitionImpl : public ModelicaSyntax<modelicaParser::Class_definiti
   bool removeConnectClause(const std::string& source, const std::string& target);
 
   static std::string idFromCTX(modelicaParser::Class_definitionContext* ctx);
-  bool isActive() const {
-    return ModelicaSyntax<modelicaParser::Class_definitionContext, ClassDefinitionImpl>::isActive();
-  }
 
  private:
   void ensureComponentClauseCache();
@@ -273,14 +272,18 @@ class ClassDefinitionImpl : public ModelicaSyntax<modelicaParser::Class_definiti
   void rebuildConnectionCache();
   void deactivateConnections();
   void markConnectionsDirty();
-  void removeConnectClause(ConnectClauseImpl* connection);
+  void removeConnectClause(const ConnectClauseImpl* connection);
   modelicaParser::Equation_sectionContext* selectEquationSection() const;
   static std::pair<std::string, std::string> validateAndNormalizeConnectClause(const std::string& source, const std::string& target);
 
+  // cppcheck-suppress unusedStructMember
   std::unordered_map<std::string, std::unique_ptr<ComponentClauseImpl>> m_componentClauses;
+  // cppcheck-suppress unusedStructMember
   std::vector<ComponentClauseImpl*> m_cachedComponentClauses;
   bool m_componentClausesDirty = true;
+  // cppcheck-suppress unusedStructMember
   std::unordered_map<std::string, std::unique_ptr<ConnectClauseImpl>> m_connections;
+  // cppcheck-suppress unusedStructMember
   std::vector<ConnectClauseImpl*> m_cachedConnections;
   bool m_connectionsDirty = true;
 
@@ -292,6 +295,7 @@ class ComponentClauseImpl : public ModelicaSyntax<modelicaParser::Component_clau
  public:
   ComponentClauseImpl(std::shared_ptr<ModelicaFileImpl> modelicaFile, modelicaParser::Component_clauseContext* ctx)
     : ModelicaSyntax<modelicaParser::Component_clauseContext, ComponentClauseImpl>(std::move(modelicaFile), ctx) {}
+  // cppcheck-suppress unusedStructMember
   static constexpr std::string_view xpath = "//component_clause";
 
   //std::vector<ComponentDeclaration> componentDeclarations();
@@ -308,6 +312,7 @@ class ConnectClauseImpl : public ModelicaSyntax<modelicaParser::Connect_clauseCo
   friend class ClassDefinitionImpl;
   ConnectClauseImpl(std::shared_ptr<ModelicaFileImpl> modelicaFile, ClassDefinitionImpl* owner, modelicaParser::Connect_clauseContext* ctx)
     : ModelicaSyntax<modelicaParser::Connect_clauseContext, ConnectClauseImpl>(std::move(modelicaFile), ctx), m_owner(owner) {}
+  // cppcheck-suppress unusedStructMember
   static constexpr std::string_view xpath = "//connect_clause";
 
   std::string source() const;

@@ -15,7 +15,7 @@ int main() {
     std::cout << "Found class name: " << classDef.longClassSpecifier() << std::endl;  // NOLINT
   }
 
-  auto& class1 = classDefinitions.front();
+  const auto& class1 = classDefinitions.front();
   class1.addComponentClause("Buildings.ThermalZones.EnergyPlus_24_2_0.ThermalZone zon2(redeclare package Medium = Medium, zoneName = \"MyZone2\");");
 
   std::cout << moFile.getText() << std::endl;  // NOLINT

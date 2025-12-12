@@ -69,7 +69,9 @@ namespace energyplus {
     m_idfObjects.push_back(idfObject);
 
     std::string name = _thermalZone->nameString();
-    { idfObject.setString(Sizing_ZoneFields::ZoneorZoneListName, name); }
+    {
+      idfObject.setString(Sizing_ZoneFields::ZoneorZoneListName, name);
+    }
 
     // ZoneCoolingDesignSupplyAirTemperatureInputMethod
     {

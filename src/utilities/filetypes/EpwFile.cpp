@@ -4600,18 +4600,35 @@ bool EpwFile::translateToMos(const openstudio::path& path) {
     fp << description << '\n';
   }
 
-  static const std::array<EpwDataField, 29> kMosFields = {
-    EpwDataField::DryBulbTemperature,           EpwDataField::DewPointTemperature,          EpwDataField::RelativeHumidity,
-    EpwDataField::AtmosphericStationPressure,   EpwDataField::ExtraterrestrialHorizontalRadiation,
-    EpwDataField::ExtraterrestrialDirectNormalRadiation, EpwDataField::HorizontalInfraredRadiationIntensity,
-    EpwDataField::GlobalHorizontalRadiation,    EpwDataField::DirectNormalRadiation,        EpwDataField::DiffuseHorizontalRadiation,
-    EpwDataField::GlobalHorizontalIlluminance,  EpwDataField::DirectNormalIlluminance,      EpwDataField::DiffuseHorizontalIlluminance,
-    EpwDataField::ZenithLuminance,              EpwDataField::WindDirection,                EpwDataField::WindSpeed,
-    EpwDataField::TotalSkyCover,                EpwDataField::OpaqueSkyCover,               EpwDataField::Visibility,
-    EpwDataField::CeilingHeight,                EpwDataField::PresentWeatherObservation,    EpwDataField::PresentWeatherCodes,
-    EpwDataField::PrecipitableWater,            EpwDataField::AerosolOpticalDepth,          EpwDataField::SnowDepth,
-    EpwDataField::DaysSinceLastSnowfall,        EpwDataField::Albedo,                       EpwDataField::LiquidPrecipitationDepth,
-    EpwDataField::LiquidPrecipitationQuantity};
+  static const std::array<EpwDataField, 29> kMosFields = {EpwDataField::DryBulbTemperature,
+                                                          EpwDataField::DewPointTemperature,
+                                                          EpwDataField::RelativeHumidity,
+                                                          EpwDataField::AtmosphericStationPressure,
+                                                          EpwDataField::ExtraterrestrialHorizontalRadiation,
+                                                          EpwDataField::ExtraterrestrialDirectNormalRadiation,
+                                                          EpwDataField::HorizontalInfraredRadiationIntensity,
+                                                          EpwDataField::GlobalHorizontalRadiation,
+                                                          EpwDataField::DirectNormalRadiation,
+                                                          EpwDataField::DiffuseHorizontalRadiation,
+                                                          EpwDataField::GlobalHorizontalIlluminance,
+                                                          EpwDataField::DirectNormalIlluminance,
+                                                          EpwDataField::DiffuseHorizontalIlluminance,
+                                                          EpwDataField::ZenithLuminance,
+                                                          EpwDataField::WindDirection,
+                                                          EpwDataField::WindSpeed,
+                                                          EpwDataField::TotalSkyCover,
+                                                          EpwDataField::OpaqueSkyCover,
+                                                          EpwDataField::Visibility,
+                                                          EpwDataField::CeilingHeight,
+                                                          EpwDataField::PresentWeatherObservation,
+                                                          EpwDataField::PresentWeatherCodes,
+                                                          EpwDataField::PrecipitableWater,
+                                                          EpwDataField::AerosolOpticalDepth,
+                                                          EpwDataField::SnowDepth,
+                                                          EpwDataField::DaysSinceLastSnowfall,
+                                                          EpwDataField::Albedo,
+                                                          EpwDataField::LiquidPrecipitationDepth,
+                                                          EpwDataField::LiquidPrecipitationQuantity};
 
   const int baseYear = data().front().year();
   const DateTime baseDateTime(Date(MonthOfYear::Jan, 1, baseYear), Time(0, 0, 0));

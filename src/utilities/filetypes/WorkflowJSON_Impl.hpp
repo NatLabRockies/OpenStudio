@@ -195,7 +195,9 @@ namespace detail {
     openstudio::path m_oswDir;
     openstudio::path m_oswFilename;
     Json::Value m_value;
+    // cppcheck-suppress unusedStructMember
     std::vector<WorkflowStep> m_steps;
+    // cppcheck-suppress unusedStructMember
     std::vector<int> m_measureTypes;
     boost::optional<RunOptions> m_runOptions;
   };
