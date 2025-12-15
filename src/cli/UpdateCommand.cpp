@@ -94,11 +94,13 @@ end
       if (ret_code != 0) {
         exit(ret_code);
       }
+    } catch (const std::exception& e) {
+      // Don't call exit(1) for all errors - allow proper cleanup
+      fmt::print(stderr, "Failed to execute '{}': {}\n", rubyScriptPath.generic_string(), e.what());
+      throw;
     } catch (...) {
-      // Bail faster though ruby isn't slow like python
       fmt::print(stderr, "Failed to execute '{}'\n", rubyScriptPath.generic_string());
-      exit(1);
-      // throw std::runtime_error(fmt::format("Failed to execute '{}'\n", rubyScriptPath.generic_string()));
+      throw;
     }
   }
 
@@ -129,11 +131,14 @@ spec.loader.exec_module(module)
     // fmt::print("{}\n", cmd);
     try {
       pythonEngine->exec(cmd);
+    } catch (const std::exception& e) {
+      // Don't call exit(1) here as it bypasses proper cleanup of PythonEngine destructor
+      // which can lead to memory leaks and segfaults
+      fmt::print(stderr, "Failed to execute '{}': {}\n", pythonScriptPath.generic_string(), e.what());
+      throw;
     } catch (...) {
-      // Bail faster...
       fmt::print(stderr, "Failed to execute '{}'\n", pythonScriptPath.generic_string());
-      exit(1);
-      // throw std::runtime_error(fmt::format("Failed to execute '{}'\n", pythonScriptPath.generic_string()));
+      throw;
     }
   }
 

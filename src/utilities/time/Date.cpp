@@ -370,6 +370,30 @@ DayOfWeek Date::dayOfWeek() const {
 
 // initFromYearMonthDay
 void Date::initFromYearMonthDay(int year, MonthOfYear monthOfYear, unsigned dayOfMonth) {
+  // Validate inputs before attempting to construct boost::gregorian::date
+  // to prevent segfaults in bindings when invalid values are passed
+  if (dayOfMonth < 1) {
+    LOG_AND_THROW("Bad Date: year = " << year << ", month = " << monthOfYear << ", day = " << dayOfMonth << ". Day must be >= 1");
+  }
+  
+  if (monthOfYear == MonthOfYear::NotAMonth) {
+    LOG_AND_THROW("Bad Date: year = " << year << ", month = " << monthOfYear << ", day = " << dayOfMonth << ". Invalid month");
+  }
+  
+  // Check max days per month (simplified check before boost construction)
+  unsigned maxDaysInMonth = 31;
+  if (monthOfYear == MonthOfYear::Feb) {
+    maxDaysInMonth = isLeapYear(year) ? 29 : 28;
+  } else if (monthOfYear == MonthOfYear::Apr || monthOfYear == MonthOfYear::Jun 
+             || monthOfYear == MonthOfYear::Sep || monthOfYear == MonthOfYear::Nov) {
+    maxDaysInMonth = 30;
+  }
+  
+  if (dayOfMonth > maxDaysInMonth) {
+    LOG_AND_THROW("Bad Date: year = " << year << ", month = " << monthOfYear << ", day = " << dayOfMonth 
+                  << ". Day must be <= " << maxDaysInMonth << " for this month");
+  }
+
   bool initialized = false;
   try {
     // construct with year, month, day
