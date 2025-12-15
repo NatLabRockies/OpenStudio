@@ -507,6 +507,10 @@ if(BUILD_TESTING)
     PASS_REGULAR_EXPRESSION "Hello from -x, at .\\\\test_folder\\\\hello.xml"
   )
 
+  # Test that Python exceptions are handled properly without memory leaks or crashes.
+  # This test intentionally raises a ValueError to verify exception handling works correctly,
+  # especially on Windows where SEH (Structured Exception Handling) differs from Unix signals.
+  # PythonEngine.cpp has been enhanced with proper PyErr_Fetch/Normalize/Clear to prevent segfaults.
   add_test(NAME OpenStudioCLI.execute_python_script.no_memory_leak
     COMMAND $<TARGET_FILE:openstudio> execute_python_script memleak_source.py
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/test/"

@@ -12,6 +12,10 @@
 #include <string>
 #include <type_traits>
 
+#ifdef _WIN32
+#  include <eh.h>
+#endif
+
 #ifdef __GNUC__
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -82,7 +86,23 @@ void PythonEngine::setupPythonPath(const std::vector<openstudio::path>& includeD
   }
 }
 
+#ifdef _WIN32
+// Windows SEH (Structured Exception Handling) to C++ exception translator
+// This prevents Windows structured exceptions (like access violations) from causing
+// segfaults during Python exception handling, especially when exceptions cross
+// the C++/Python boundary through SWIG bindings
+static void se_translator(unsigned int u, EXCEPTION_POINTERS* /*pExp*/) {
+  throw std::runtime_error(fmt::format("Windows structured exception caught during Python execution: 0x{:08x}", u));
+}
+#endif
+
 PythonEngine::PythonEngine(int argc, char* argv[]) : ScriptEngine(argc, argv), program(Py_DecodeLocale(pythonProgramName, nullptr)) {
+#ifdef _WIN32
+  // Set up Windows structured exception handling translator to convert SEH to C++ exceptions
+  // This allows proper cleanup in C++ destructors when Windows exceptions occur
+  _set_se_translator(se_translator);
+#endif
+
   // TODO: modernize and use PyConfig (new in 3.8): https://docs.python.org/3/c-api/init_config.html
 
   // this frozen flag tells Python that the package and library have been frozen for embedding, so it shouldn't warn about missing prefixes
@@ -232,7 +252,25 @@ void PythonEngine::exec(std::string_view sv) {
   PyObject* v = PyRun_String(command.c_str(), Py_file_input, m_globalDict, m_globalDict);
   // PyObject* v = PyRun_SimpleString(command.c_str());
   if (v == nullptr) {
-    PyErr_Print();
+    // Improved exception handling for Windows compatibility:
+    // Fetch and store exception info before printing to prevent dangling references
+    PyObject *ptype = nullptr, *pvalue = nullptr, *ptraceback = nullptr;
+    PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+
+    // Normalize the exception - this is critical on Windows to ensure proper formatting
+    // and to avoid segfaults when exception state is inconsistent
+    if (ptype != nullptr) {
+      PyErr_NormalizeException(&ptype, &pvalue, &ptraceback);
+
+      // Restore and print the error
+      PyErr_Restore(ptype, pvalue, ptraceback);
+      PyErr_Print();
+    }
+
+    // Clear error state to prevent lingering references that could cause segfaults
+    // during cleanup, especially on Windows where exception handling differs
+    PyErr_Clear();
+
     throw std::runtime_error("Error executing Python code");
   }
 
@@ -245,7 +283,17 @@ ScriptObject PythonEngine::eval(std::string_view sv) {
   PyObject* v = PyRun_String(command.c_str(), Py_eval_input, m_globalDict, m_globalDict);
 
   if (v == nullptr) {
-    PyErr_Print();
+    // Use same improved exception handling as exec() for consistency
+    PyObject *ptype = nullptr, *pvalue = nullptr, *ptraceback = nullptr;
+    PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+
+    if (ptype != nullptr) {
+      PyErr_NormalizeException(&ptype, &pvalue, &ptraceback);
+      PyErr_Restore(ptype, pvalue, ptraceback);
+      PyErr_Print();
+    }
+
+    PyErr_Clear();
     throw std::runtime_error("Error executing Python code");
   }
 

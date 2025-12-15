@@ -133,11 +133,12 @@ spec.loader.exec_module(module)
       pythonEngine->exec(cmd);
     } catch (const std::exception& e) {
       // Don't call exit(1) here as it bypasses proper cleanup of PythonEngine destructor
-      // which can lead to memory leaks and segfaults
+      // which can lead to memory leaks and segfaults, especially on Windows.
+      // The calling code (main.cpp) will handle the exception and set the exit code.
       fmt::print(stderr, "Failed to execute '{}': {}\n", pythonScriptPath.generic_string(), e.what());
       throw;
     } catch (...) {
-      fmt::print(stderr, "Failed to execute '{}'\n", pythonScriptPath.generic_string());
+      fmt::print(stderr, "Failed to execute '{}': Unknown error\n", pythonScriptPath.generic_string());
       throw;
     }
   }
