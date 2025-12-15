@@ -181,12 +181,11 @@ endif()
 if(APPLE)
   # Newer versions of ld64 sometimes discard the libcrypto object that hosts OPENSSL_cpuid_setup,
   # so force-load the archive to keep the initializer fixups intact.
-  set(_rubyengine_openssl_crypto "${OPENSSL_CRYPTO_LIBRARY}")
-  if(TARGET OpenSSL::Crypto)
-    set(_rubyengine_openssl_crypto "$<TARGET_FILE:OpenSSL::Crypto>")
-  endif()
-  if(_rubyengine_openssl_crypto)
-    target_link_options(rubyengine PRIVATE "SHELL:-Wl,-force_load,${_rubyengine_openssl_crypto}")
+  if(OPENSSL_CRYPTO_LIBRARY)
+    # OPENSSL_CRYPTO_LIBRARY may be a list; force-load every entry.
+    foreach(_crypto_lib ${OPENSSL_CRYPTO_LIBRARY})
+      target_link_options(rubyengine PRIVATE "SHELL:-Wl,-force_load,${_crypto_lib}")
+    endforeach()
   else()
     message(WARNING "OPENSSL_CRYPTO_LIBRARY is not defined; unable to force-load libcrypto for rubyengine")
   endif()
