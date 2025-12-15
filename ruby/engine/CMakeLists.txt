@@ -132,7 +132,6 @@ add_library(rubyengine
   RubyEngine.hpp
   RubyEngine.cpp
   InitRubyEngine.cpp
-  OpenSSLCpuidWorkaround.cpp
   GC_Value.hpp
   ${OUTPUT}
   "${CMAKE_CURRENT_BINARY_DIR}/embedded_scripting_wrap.cxx"
@@ -177,6 +176,20 @@ if( WIN32 )
     wsock32 ws2_32 Dbghelp Shlwapi Iphlpapi
   )
   target_link_options(rubyengine PRIVATE $<$<CONFIG:Debug>:/NODEFAULTLIB:MSVCRT>)
+endif()
+
+if(APPLE)
+  # Newer versions of ld64 sometimes discard the libcrypto object that hosts OPENSSL_cpuid_setup,
+  # so force-load the archive to keep the initializer fixups intact.
+  set(_rubyengine_openssl_crypto "${OPENSSL_CRYPTO_LIBRARY}")
+  if(TARGET OpenSSL::Crypto)
+    set(_rubyengine_openssl_crypto "$<TARGET_FILE:OpenSSL::Crypto>")
+  endif()
+  if(_rubyengine_openssl_crypto)
+    target_link_options(rubyengine PRIVATE "SHELL:-Wl,-force_load,${_rubyengine_openssl_crypto}")
+  else()
+    message(WARNING "OPENSSL_CRYPTO_LIBRARY is not defined; unable to force-load libcrypto for rubyengine")
+  endif()
 endif()
 
 target_compile_definitions(rubyengine PRIVATE openstudio_scriptengine_EXPORTS SHARED_OS_LIBS)
