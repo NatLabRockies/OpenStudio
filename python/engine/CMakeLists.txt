@@ -38,8 +38,9 @@ target_link_libraries(
 )
 
 # tp_print is deprecated at of 3.8.
+# /EHa is required for _set_se_translator on Windows (Error C4535)
 target_compile_options(pythonengine PRIVATE
-  "$<${is_msvc_genex}:/wd4996>"
+  "$<${is_msvc_genex}:/wd4996;/EHa>"
   "$<${is_gnu_or_clang_genex}:-Wno-deprecated-declarations>"
 )
 
