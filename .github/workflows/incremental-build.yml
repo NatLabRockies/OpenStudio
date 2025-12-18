@@ -153,43 +153,57 @@ jobs:
       - name: Run CTests with enhanced error handling
         working-directory: ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}
         run: |
-          set +e  # Don't exit on first failure
+          set +e
           mkdir -p Testing/run{1,2,3}
           
-          echo "Starting first test run..."
-          ctest -j ${{ env.MAX_SAFE_THREADS }} --no-compress-output --output-on-failure --output-junit Testing/run1/results.xml
+          # First test run - quiet by default, show failures only
+          echo "Testing..."
+          ctest -j ${{ env.MAX_SAFE_THREADS }} --no-compress-output --output-junit Testing/run1/results.xml > /tmp/run1.log 2>&1
           RESULT1=$?
           
           if [ $RESULT1 -ne 0 ]; then
-            echo "First test run failed (exit code: $RESULT1), retrying failed tests..."
-            ctest -j ${{ env.MAX_SAFE_THREADS }} --rerun-failed --no-compress-output --output-on-failure --output-junit Testing/run2/results.xml
+            # Show failures from first run
+            echo "Failed tests from run 1:"
+            grep -A 5 "FAILED\|Error\|Fail:" /tmp/run1.log | head -30 || tail -20 /tmp/run1.log
+            
+            # Retry failed tests
+            echo "Retrying failed tests..."
+            ctest -j ${{ env.MAX_SAFE_THREADS }} --rerun-failed --no-compress-output --output-junit Testing/run2/results.xml > /tmp/run2.log 2>&1
             RESULT2=$?
             
             if [ $RESULT2 -ne 0 ]; then
-              echo "Second test run failed (exit code: $RESULT2), final attempt with verbose output..."
-              ctest -j ${{ env.MAX_SAFE_THREADS }} --rerun-failed --no-compress-output -VV --output-junit Testing/run3/results.xml
+              echo "Failed tests from run 2 (verbose):"
+              grep -A 10 "FAILED\|Error\|Fail:" /tmp/run2.log | head -50 || tail -30 /tmp/run2.log
+              
+              # Final attempt with verbose output for failing tests
+              echo "Final attempt with verbose output..."
+              ctest -j ${{ env.MAX_SAFE_THREADS }} --rerun-failed --no-compress-output --output-junit Testing/run3/results.xml 2>&1 | tee /tmp/run3.log
               RESULT3=$?
             else
               RESULT3=0
+              echo "Tests passed on retry"
             fi
           else
-            echo "First test run passed"
+            echo "All tests passed"
             RESULT2=0
             RESULT3=0
           fi
           
-          # Report results
-          echo "Test run results: Run1=$RESULT1, Run2=$RESULT2, Run3=$RESULT3"
+          # Verify no remaining failures
+          echo "Verifying no remaining failures..."
+          ctest --rerun-failed --no-tests=error > /dev/null 2>&1
+          FINAL_CHECK=$?
           
-          # Set job status based on results
-          if [ $RESULT1 -eq 0 ] || [ $RESULT2 -eq 0 ] || [ $RESULT3 -eq 0 ]; then
-            echo "Tests passed (some may have required retries)"
+          # Summary
+          echo ""
+          echo "Test Results: Run1=$RESULT1 Run2=$RESULT2 Run3=$RESULT3"
+          
+          # Exit with failure if any issues remain
+          if ([ $RESULT1 -eq 0 ] || [ $RESULT2 -eq 0 ] || [ $RESULT3 -eq 0 ]) && [ $FINAL_CHECK -eq 1 ]; then
             exit 0
           else
-            echo "All test attempts failed"
             exit 1
           fi
-        continue-on-error: true
 
       - name: Test Summary
         uses: test-summary/action@v2

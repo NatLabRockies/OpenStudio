@@ -36,7 +36,7 @@ jobs:
           python-version: 3.8
           allow_failure: true
         - name: macOS
-          os: macos-13
+          os: macos-15-intel
           python-version: 3.8
           allow_failure: false
           MACOSX_DEPLOYMENT_TARGET: 10.15
@@ -419,7 +419,7 @@ jobs:
           python-version: 3.12
           allow_failure: true
         - name: macOS
-          os: macos-13
+          os: macos-15-intel
           python-version: 3.11
           allow_failure: false
         - name: macOS_arm64
