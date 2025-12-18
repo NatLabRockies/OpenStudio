@@ -26,11 +26,12 @@
 
 // Forward declarations for Ruby 3.2+ parser extensions that may not be available
 // Use weak linkage to prevent linker errors on systems where these don't exist
-extern "C" {
-#if defined(__GNUC__) || defined(__clang__)
+extern "C"
+{
+#  if defined(__GNUC__) || defined(__clang__)
   extern void Init_cparse(void) __attribute__((weak));
   extern void Init_prism(void) __attribute__((weak));
-#endif
+#  endif
 }
 
 #endif
