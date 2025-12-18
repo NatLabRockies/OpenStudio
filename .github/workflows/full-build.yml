@@ -434,7 +434,7 @@ jobs:
         include:
           - platform: macos-x64
             display_name: macOS x64 (Intel)
-            runner: macos-13
+            runner: macos-15-intel
             test_suffix: macOS-x64
             dmg_glob: "*.dmg"
             tar_glob: "*OpenStudio*x86_64.tar.gz"
