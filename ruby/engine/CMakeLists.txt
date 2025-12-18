@@ -105,6 +105,24 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}
   ${OPENSTUDIO_GEMS_DIR}
 )
 
+set(SWIG_EXTRA_FLAGS)
+if(WIN32)
+  # Windows-specific preprocessor define for SWIG
+  list(APPEND SWIG_EXTRA_FLAGS "-D_WINDOWS")
+  
+  # Output format depends on the compiler
+  if(MSVC)
+    # Microsoft Visual C++ format
+    list(APPEND SWIG_EXTRA_FLAGS "-Fmicrosoft")
+  else()
+    # MinGW or other Windows compilers use GCC format
+    list(APPEND SWIG_EXTRA_FLAGS "-Fgcc")
+  endif()
+elseif(UNIX)
+  # On Unix/Linux/macOS, SWIG defaults to GCC-compatible format
+  # which works well with GCC and Clang. No special flags needed.
+endif()
+
 add_custom_command(
   OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/embedded_scripting_wrap.cxx"
   COMMAND ${CMAKE_COMMAND} -E env SWIG_DIR="${SWIG_DIR}"
@@ -116,8 +134,7 @@ add_custom_command(
           "-I${PROJECT_SOURCE_DIR}/src"
           "-I${PROJECT_BINARY_DIR}/src"
           "-I${OPENSTUDIO_GEMS_DIR}"
-          "-D_WINDOWS"
-          "-Fmicrosoft"
+          ${SWIG_EXTRA_FLAGS}
           "${CMAKE_CURRENT_SOURCE_DIR}/EmbeddedScripting.i"
   DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/EmbeddedScripting.i"
           "${CMAKE_CURRENT_BINARY_DIR}/embedded_files.hxx"
