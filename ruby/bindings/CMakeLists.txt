@@ -1,11 +1,16 @@
+find_package(antlr4-runtime REQUIRED CONFIG)
+
 add_library( rubybindings OBJECT
   InitRubyBindings.hpp
   InitRubyBindings.cpp
+  ModelicaAntlrCleanup.hpp
+  ModelicaAntlrCleanup.cpp
 )
 
 target_include_directories(rubybindings PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
+
 target_link_libraries(rubybindings PRIVATE ${ALL_RUBY_BINDING_TARGETS} rubyinterpreter-declarations)
 
 # wd4996=no deprecated warnings ; wd5033=register

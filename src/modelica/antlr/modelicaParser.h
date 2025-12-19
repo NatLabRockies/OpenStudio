@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "antlr4-runtime.h"
+#include <antlr4-runtime.h>
 
 class modelicaParser : public antlr4::Parser
 {

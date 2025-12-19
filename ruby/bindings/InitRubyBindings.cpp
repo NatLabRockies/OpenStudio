@@ -4,6 +4,7 @@
 ***********************************************************************************************************************/
 
 #include "InitRubyBindings.hpp"
+#include "ModelicaAntlrCleanup.hpp"
 #include "../interpreter/RubyEval.hpp"
 
 // #define HAVE_ISFINITE 1
@@ -130,6 +131,9 @@ namespace ruby {
     rb_provide("openstudiomodel");
     rb_provide("openstudiomodel.so");
     Init_openstudiomodelica();
+    // Ensure the ANTLR cleanup hook is armed as soon as the Modelica bindings are loaded so Ruby
+    // can unwind cleanly at interpreter shutdown without dlclose() crashes.
+    openstudio::ruby::registerModelicaAntlrCleanup();
     rb_provide("openstudiomodelica");
     rb_provide("openstudiomodelica.so");
     Init_openstudiomodelcore();

@@ -1,7 +1,7 @@
 #include <fmt/core.h>
 #include <iostream>
 #include <antlr4-runtime.h>
-#include "utilities/core/ApplicationPathHelpers.hpp"
+#include "../utilities/core/ApplicationPathHelpers.hpp"
 #include "ModelicaFile.hpp"
 
 int main() {

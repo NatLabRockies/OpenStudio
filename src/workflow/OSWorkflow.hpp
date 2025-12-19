@@ -14,7 +14,7 @@
 #include "../utilities/core/Filesystem.hpp"
 #include "../utilities/filetypes/WorkflowJSON.hpp"
 #include "../utilities/filetypes/RunOptions.hpp"
-#include "modelica/ModelicaFile.hpp"
+#include "../modelica/ModelicaFile.hpp"
 
 #include <functional>
 #include <map>

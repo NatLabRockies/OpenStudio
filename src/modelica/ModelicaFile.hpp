@@ -2,7 +2,7 @@
 #define MODELICA_MODELICAFILE_H
 
 #include "ModelicaAPI.hpp"
-#include "utilities/core/Filesystem.hpp"
+#include "../utilities/core/Filesystem.hpp"
 #include <memory>
 #include <string>
 #include <string_view>

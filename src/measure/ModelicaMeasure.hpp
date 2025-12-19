@@ -9,9 +9,9 @@
 #include "MeasureAPI.hpp"
 #include "OSMeasure.hpp"
 
-#include "modelica/ModelicaFile.hpp"
-#include "utilities/core/Logger.hpp"
-#include "utilities/idf/Workspace.hpp"
+#include "../modelica/ModelicaFile.hpp"
+#include "../utilities/core/Logger.hpp"
+#include "../utilities/idf/Workspace.hpp"
 
 namespace openstudio {
 

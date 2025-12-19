@@ -1,9 +1,9 @@
 #ifndef MODELICA_MODELICAFILE_IMPL_H
 #define MODELICA_MODELICAFILE_IMPL_H
 
-#include "modelica/antlr/modelicaLexer.h"
-#include "utilities/core/Filesystem.hpp"
-#include "utilities/core/Logger.hpp"
+#include "antlr/modelicaLexer.h"
+#include "../utilities/core/Filesystem.hpp"
+#include "../utilities/core/Logger.hpp"
 #include "antlr/modelicaParser.h"
 #include <algorithm>
 #include <cassert>
