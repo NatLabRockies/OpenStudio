@@ -909,7 +909,8 @@ jobs:
       - name: Conan install
         run: |
           .\.venv\Scripts\Activate.ps1
-          CMAKE_POLICY_VERSION_MINIMUM=3.5 conan install . `
+          $env:CMAKE_POLICY_VERSION_MINIMUM="3.5"
+          conan install . `
             --output-folder="${{ env.OPENSTUDIO_BUILD }}" `
             --build=missing `
             -c tools.cmake.cmaketoolchain:generator=Ninja `
