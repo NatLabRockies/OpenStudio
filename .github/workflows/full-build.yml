@@ -549,24 +549,28 @@ jobs:
             echo "Configured ccache:"; ccache -s | sed -n '1,10p'
           fi
 
-      - name: Ensure Python via pyenv
-        run: |
-          set -euo pipefail
-          if ! command -v pyenv &> /dev/null; then
-            brew install pyenv
-          fi
-          pyenv install -s ${{ env.PY_VERSION }}
-          pyenv global ${{ env.PY_VERSION }}
-
+      - name: Set up Python 3.12.2
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12.2'
+ 
       - name: Ensure Bundler
         run: |
           set -euo pipefail
           gem install bundler
           bundle config set --local path 'vendor/bundle'
 
+      - name: Create python venv
+        run: |
+          set -euo pipefail
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip setuptools wheel
+
       - name: Install Conan
         run: |
           set -euo pipefail
+          source .venv/bin/activate
           pip3 install conan
 
       - name: Configure Conan remotes
@@ -900,6 +904,7 @@ jobs:
         run: |
           git config --global --add safe.directory "$env:GITHUB_WORKSPACE"
           New-Item -ItemType Directory -Path "${{ env.OPENSTUDIO_BUILD }}" -Force
+
       - name: Restore ccache cache
         uses: actions/cache@v4
         with:
@@ -907,6 +912,7 @@ jobs:
           key: ccache-${{ runner.os }}-windows-${{ hashFiles('conan.lock') }}
           restore-keys: |
             ccache-${{ runner.os }}-windows-
+
       - name: Restore Conan cache
         uses: actions/cache@v4
         with:
@@ -915,8 +921,21 @@ jobs:
           restore-keys: |
             conan-${{ runner.os }}-windows-
 
+      - name: Set up Python 3.12.2
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12.2'
+
+      - name: Create python venv
+        run: |
+          set -euo pipefail
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip setuptools wheel
+
       - name: Install Conan
         run: |
+          source .venv/bin/activate
           pip install conan
 
       - name: Install ccache
@@ -966,6 +985,7 @@ jobs:
           & cmd /c "call conanbuild.bat && ninja -d stats" 2>$null | Out-Null
           if (Test-Path build.log) { Get-Content build.log -Tail 40 }
           exit $buildExit
+
       - name: Deferred pytest discovery (second configure)
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         shell: cmd
@@ -979,6 +999,7 @@ jobs:
         with:
           name: build-log-windows-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/build.log
+
       - name: Upload triage artifacts
         if: always()
         uses: actions/upload-artifact@v4
