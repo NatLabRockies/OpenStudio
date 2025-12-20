@@ -617,13 +617,21 @@ jobs:
           set -euo pipefail
           . ./conanbuild.sh
           export NINJA_STATUS="[%f/%t | %es elapsed | %o objs/sec]"
-          ( while true; do sleep 300; echo "[heartbeat] $(date -u +"%H:%M:%S")"; if command -v free >/dev/null 2>&1; then free -h | awk 'NR==2{print "[mem] used=" $3 "/" $2}'; fi; df -h . | tail -1 | awk '{print "[disk] used=" $3 "/" $2 " (" $5 ")"}'; ps -eo pid,pmem,rsz,comm --sort=-pmem | head -n 5 | awk '{print "[topmem] $($_.Id) $([Math]::Round($_.WorkingSet/1MB,1))MB $($_.ProcessName)" }' } }
-          & cmd /c "call conanbuild.bat && cmake --build . --parallel $env:MAX_BUILD_THREADS" 2>&1 | Tee-Object -FilePath build.log
-          $buildExit = $LASTEXITCODE
-          Stop-Job $heartbeat | Out-Null; Receive-Job $heartbeat | Out-Null
-          & cmd /c "call conanbuild.bat && ninja -d stats" 2>$null | Out-Null
-          if (Test-Path build.log) { Get-Content build.log -Tail 40 }
-          exit $buildExit
+          while true; do
+            sleep 300
+            echo "[heartbeat] $(date -u +"%H:%M:%S")"
+            if command -v free >/dev/null 2>&1; then free -h | awk 'NR==2{print "[mem] used=" $3 "/" $2}'; fi
+            df -h . | tail -1 | awk '{print "[disk] used=" $3 "/" $2 " (" $5 ")"}'
+            ps -eo pid,pmem,rsz,comm --sort=-pmem | head -n 5 | awk '{print "[topmem] PID="$1" MEM="$2" RES="$3" COMMAND="$4}'
+          done &
+          heartbeat_pid=$!
+          cmake --build . --parallel ${MAX_BUILD_THREADS} 2>&1 | tee build.log
+          build_exit=$?
+          kill $heartbeat_pid
+          wait $heartbeat_pid 2>/dev/null || true
+          ninja -d stats
+          if [ -f build.log ]; then tail -n 40 build.log; fi
+          exit $build_exit
 
       - name: Deferred pytest discovery (second configure)
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -968,6 +976,14 @@ jobs:
           call conanbuild.bat
           cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;ZIP" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} ../
 
+      - name: Debug cmd path and version
+        shell: pwsh
+        run: |
+          Write-Host "Debugging cmd path and version"
+          Get-Command cmd
+          cmd /c "ver"
+          Write-Host "PATH: $env:Path"
+  
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         shell: pwsh
@@ -981,14 +997,6 @@ jobs:
           & cmd /c "call conanbuild.bat && ninja -d stats" 2>$null | Out-Null
           if (Test-Path build.log) { Get-Content build.log -Tail 40 }
           exit $buildExit
-
-      - name: Debug cmd path and version
-        shell: pwsh
-        run: |
-          Write-Host "Debugging cmd path and version"
-          Get-Command cmd
-          cmd /c "ver"
-          Write-Host "PATH: $env:Path"
 
       - name: Deferred pytest discovery (second configure)
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
