@@ -505,7 +505,7 @@ jobs:
             exclude_regex: ${{ '""' }}
           - platform: macos-arm64
             display_name: macOS ARM64 (Apple Silicon)
-            runner: macos-14
+            runner: macos-15
             test_suffix: macOS-arm64
             dmg_glob: "*.dmg"
             tar_glob: "*OpenStudio*arm64.tar.gz"
@@ -850,41 +850,40 @@ jobs:
 
       - name: Publish installers to S3
         if: ${{ github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' }}
-        shell: pwsh
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         env:
           S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}/signed', github.ref_name) || format('{0}/signed', github.ref_name) }}
         run: |
-          Write-Host "Uploading artifacts to s3://$env:AWS_S3_BUCKET/$env:S3_PREFIX"
+          echo "Uploading artifacts to s3://$AWS_S3_BUCKET/$S3_PREFIX"
 
           # Upload signed installers if they exist
-          if (Test-Path "signed") {
-            Get-ChildItem -Path signed -Filter *.exe | ForEach-Object {
-              $key = "$env:S3_PREFIX/$($_.Name)"
-              aws s3 cp $_.FullName "s3://$env:AWS_S3_BUCKET/$key" --acl public-read
-              Get-FileHash -Path $_.FullName -Algorithm MD5
-            }
-          } else {
-            Write-Host "::warning::No signed directory found, uploading unsigned installers"
-            Get-ChildItem -Path . -Filter OpenStudio*.exe | ForEach-Object {
-              $key = "$env:S3_PREFIX/$($_.Name)"
-              aws s3 cp $_.FullName "s3://$env:AWS_S3_BUCKET/$key" --acl public-read
-              Get-FileHash -Path $_.FullName -Algorithm MD5
-            }
-          }
+          if [ -d "signed" ]; then
+            find signed -name "*.exe" -exec bash -c '
+              key="$S3_PREFIX/$(basename "$1")"
+              aws s3 cp "$1" "s3://$AWS_S3_BUCKET/$key" --acl public-read
+              md5sum "$1"
+            ' _ {} \;
+          else
+            echo "::warning::No signed directory found, uploading unsigned installers"
+            find . -name "OpenStudio*.exe" -exec bash -c '
+              key="$S3_PREFIX/$(basename "$1")"
+              aws s3 cp "$1" "s3://$AWS_S3_BUCKET/$key" --acl public-read
+              md5sum "$1"
+            ' _ {} \;
+          fi
 
           # Upload ZIP packages
-          Get-ChildItem -Path . -Filter *.zip -Exclude "*-${{ github.run_id }}.zip","*signed.zip","Testing*.zip" | ForEach-Object {
-            $key = "$env:S3_PREFIX/$($_.Name)"
-            aws s3 cp $_.FullName "s3://$env:AWS_S3_BUCKET/$key" --acl public-read
-            Get-FileHash -Path $_.FullName -Algorithm MD5
-          }
+          find . -name "*.zip" ! -name "*-${{ github.run_id }}.zip" ! -name "*signed.zip" ! -name "Testing*.zip" -exec bash -c '
+            key="$S3_PREFIX/$(basename "$1")"
+            aws s3 cp "$1" "s3://$AWS_S3_BUCKET/$key" --acl public-read
+            md5sum "$1"
+          ' _ {} \;
 
       - name: Fail job on test failures
         if: ${{ steps.win_ctest.outputs.exit_code != '0' }}
         shell: pwsh
         run: |
-          Write-Host "::error::CTest suite failed with exit code ${{ steps.win_ctest.outputs.exit_code }}"
+          Write-Error "CTest suite failed with exit code $(${{ steps.win_ctest.outputs.exit_code }})"
   windows:
     name: ${{ matrix.display_name }}
     runs-on: ${{ matrix.runner }}
@@ -989,7 +988,6 @@ jobs:
           cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;ZIP" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} ../
 
       - name: Debug cmd path and version
-        shell: pwsh
         run: |
           Write-Host "Debugging cmd path and version"
           Get-Command cmd
@@ -1005,9 +1003,8 @@ jobs:
           export PATH="C:\\Windows\\System32:$PATH"
           echo "Updated PATH: $PATH"
   
-        - name: Build with Ninja
+      - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        shell: pwsh
         run: |
           # Use cmd to initialize environment then build; capture log with Tee
           $env:NINJA_STATUS = "[%f/%t | %es elapsed | %o objs/sec]"
@@ -1068,7 +1065,6 @@ jobs:
 
       - name: Archive Testing directory
         if: always()
-        shell: pwsh
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           Compress-Archive -Path Testing -DestinationPath Testing-${{ matrix.test_suffix }}.zip -Force
@@ -1109,12 +1105,10 @@ jobs:
         run: |
           echo "ACCESS_KEY=${{ secrets.AWS_SIGNING_ACCESS_KEY }}" > .env
           echo "SECRET_KEY=${{ secrets.AWS_SIGNING_SECRET_KEY }}" >> .env
-        shell: pwsh
         working-directory: ./.github/signing-client
 
       - name: Code sign installer
         if: always()
-        shell: pwsh
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           # Check if signing client exists
@@ -1161,7 +1155,6 @@ jobs:
 
       - name: Publish signed artifacts to S3
         if: ${{ github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' }}
-        shell: pwsh
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         env:
           S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}/signed', github.ref_name) || format('{0}/signed', github.ref_name) }}
@@ -1193,6 +1186,5 @@ jobs:
 
       - name: Fail job on test failures
         if: ${{ steps.win_ctest.outputs.exit_code != '0' }}
-        shell: pwsh
         run: |
-          Write-Host "::error::CTest suite failed with exit code ${{ steps.win_ctest.outputs.exit_code }}"
+          Write-Error "CTest suite failed with exit code $(${{ steps.win_ctest.outputs.exit_code }})"
