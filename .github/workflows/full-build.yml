@@ -174,6 +174,7 @@ jobs:
           set -euo pipefail
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           mkdir -p "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}"
+          mkdir -p "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}"
           if command -v ccache >/dev/null 2>&1; then
             ccache -M 5G || true
             echo "Configured ccache:"; ccache -s | sed -n '1,10p'
@@ -545,6 +546,7 @@ jobs:
           set -euo pipefail
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           mkdir -p "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}"
+          mkdir -p "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}"
           if command -v ccache >/dev/null 2>&1; then
             ccache -M 5G || true
             echo "Configured ccache:"; ccache -s | sed -n '1,10p'
@@ -901,6 +903,7 @@ jobs:
         run: |
           git config --global --add safe.directory "$env:GITHUB_WORKSPACE"
           New-Item -ItemType Directory -Path "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}" -Force
+          New-Item -ItemType Directory -Path "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}" -Force
       - name: Restore ccache cache
         uses: actions/cache@v4
         with:
@@ -919,9 +922,11 @@ jobs:
       - name: Install Conan
         run: |
           pip install conan
+          
       - name: Install ccache
         run: |
           choco install ccache -y || echo "ccache install failed (non-fatal)"
+
       - name: Configure ccache size
         run: |
           if (Get-Command ccache -ErrorAction SilentlyContinue) { ccache -M 5G }
