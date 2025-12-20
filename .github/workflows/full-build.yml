@@ -565,6 +565,7 @@ jobs:
           python3 -m venv .venv
           source .venv/bin/activate
           pip install --upgrade pip setuptools wheel
+          pip install -r python/requirements.txt
 
       - name: Install Conan
         run: |
@@ -627,11 +628,21 @@ jobs:
           heartbeat_pid=$!
           cmake --build . --parallel ${MAX_BUILD_THREADS} 2>&1 | tee build.log
           build_exit=$?
-          kill $heartbeat_pid
-          wait $heartbeat_pid 2>/dev/null || true
-          ninja -d stats
-          if [ -f build.log ]; then tail -n 40 build.log; fi
+          Stop-Job $heartbeat_pid | Out-Null; Receive-Job $heartbeat_pid | Out-Null
+          & cmd /c "call conanbuild.bat && ninja -d stats" 2>$null | Out-Null
+          if (Test-Path build.log) { Get-Content build.log -Tail 40 }
           exit $build_exit
+
+      - name: Debug Ruby Version
+        run: |
+          echo "System Ruby Version: $(ruby -v)"
+          echo "Conan Ruby Package Path: /Users/runner/.conan2/p/rubyd533ec6bedb85/p"
+          if [ -d "/Users/runner/.conan2/p/rubyd533ec6bedb85/p" ]; then
+            echo "Conan Ruby Package Directory Exists"
+            ls -l /Users/runner/.conan2/p/rubyd533ec6bedb85/p
+          else
+            echo "Conan Ruby Package Directory Does Not Exist"
+          fi
 
       - name: Deferred pytest discovery (second configure)
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -934,6 +945,7 @@ jobs:
           python -m venv .venv
           .\.venv\Scripts\Activate.ps1
           D:\a\OpenStudio\OpenStudio\.venv\Scripts\python.exe -m pip install --upgrade pip setuptools wheel
+          D:\a\OpenStudio\OpenStudio\.venv\Scripts\python.exe -m pip install -r python/requirements.txt
 
       - name: Install Conan
         run: |
@@ -984,7 +996,16 @@ jobs:
           cmd /c "ver"
           Write-Host "PATH: $env:Path"
   
-      - name: Build with Ninja
+      - name: Fix PATH and prioritize Windows cmd.exe
+        run: |
+          set -euo pipefail
+          # Remove conflicting Ruby path from PATH
+          export PATH=$(echo "$PATH" | tr ':' '\n' | grep -v "C:\\hostedtoolcache\\windows\\Ruby\\3.2.2\\x64\\msys64\\usr\\bin" | tr '\n' ':')
+          # Ensure C:\Windows\System32 is prioritized
+          export PATH="C:\\Windows\\System32:$PATH"
+          echo "Updated PATH: $PATH"
+  
+        - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         shell: pwsh
         run: |
