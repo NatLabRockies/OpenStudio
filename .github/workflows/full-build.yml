@@ -576,6 +576,7 @@ jobs:
       - name: Configure Conan remotes
         run: |
           set -euo pipefail
+          source .venv/bin/activate
           conan remote add conancenter https://center.conan.io --force
           conan remote update conancenter --insecure
           conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2 --force
@@ -587,6 +588,7 @@ jobs:
       - name: Conan install
         run: |
           set -euo pipefail
+          source .venv/bin/activate
           conan install . \
             --output-folder="${{ env.OPENSTUDIO_BUILD }}" \
             --build=missing \
@@ -928,14 +930,13 @@ jobs:
 
       - name: Create python venv
         run: |
-          set -euo pipefail
-          python3 -m venv .venv
-          source .venv/bin/activate
+          python -m venv .venv
+          .\.venv\Scripts\Activate.ps1
           pip install --upgrade pip setuptools wheel
 
       - name: Install Conan
         run: |
-          source .venv/bin/activate
+          .\.venv\Scripts\Activate.ps1
           pip install conan
 
       - name: Install ccache
