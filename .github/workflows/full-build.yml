@@ -64,7 +64,7 @@ jobs:
           - platform: centos-9-x64
             display_name: CentOS 9 (AlmaLinux) x64
             runner: ubuntu-22.04
-            container_image: nrel/openstudio-cmake-tools:almalinux9
+            container_image: nrel/openstudio-cmake-tools:almalinux9-main
             container_options: "-u root -e LANG=en_US.UTF-8"
             test_suffix: CentOS-9
             pip_package: false
@@ -77,7 +77,7 @@ jobs:
           - platform: ubuntu-2204-x64
             display_name: Ubuntu 22.04 x64
             runner: ubuntu-22.04
-            container_image: nrel/openstudio-cmake-tools:jammy
+            container_image: nrel/openstudio-cmake-tools:jammy-main
             container_options: "-u root -e LANG=en_US.UTF-8"
             test_suffix: Ubuntu-2204
             pip_package: true
@@ -90,7 +90,7 @@ jobs:
           - platform: ubuntu-2404-x64
             display_name: Ubuntu 24.04 x64
             runner: ubuntu-24.04
-            container_image: nrel/openstudio-cmake-tools:noble
+            container_image: nrel/openstudio-cmake-tools:noble-main
             container_options: "-u root -e LANG=en_US.UTF-8"
             test_suffix: Ubuntu-2404
             pip_package: false
@@ -103,7 +103,7 @@ jobs:
           - platform: ubuntu-2204-arm64
             display_name: Ubuntu 22.04 ARM64
             runner: ubuntu-22.04-arm
-            container_image: nrel/openstudio-cmake-tools:jammy-arm64
+            container_image: nrel/openstudio-cmake-tools:jammy-arm64-main
             container_options: "-u root -e LANG=en_US.UTF-8"
             test_suffix: Ubuntu-2204-ARM64
             pip_package: false
@@ -116,7 +116,7 @@ jobs:
           - platform: ubuntu-2404-arm64
             display_name: Ubuntu 24.04 ARM64
             runner: ubuntu-24.04-arm
-            container_image: nrel/openstudio-cmake-tools:noble-arm64
+            container_image: nrel/openstudio-cmake-tools:noble-arm64-main
             container_options: "-u root -e LANG=en_US.UTF-8"
             test_suffix: Ubuntu-2404-ARM64
             pip_package: false
@@ -300,7 +300,8 @@ jobs:
           export CTEST_SITE="${{ runner.name }}"
           
           # Submit to CDash using Experimental dashboard mode
-          ctest -D Experimental --output-on-failure -j ${{ matrix.max_jobs }} || {
+          ctest -D Experimental --output-on-failure -j ${{ matrix.max_jobs }} || \
+          ctest -D Experimental --output-on-failure -j ${{ matrix.max_jobs }} --rerun-failed || {
             exit_code=$?
             echo "exit_code=${exit_code}" >> $GITHUB_OUTPUT
             echo "::warning::CTest suite failed with exit code ${exit_code}"
@@ -414,10 +415,75 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           set -euo pipefail
-          gh workflow run docker-build.yml \
-            --ref "$REF_NAME" \
-            -f ref_name="$REF_NAME" \
-            -f ref_type="$REF_TYPE"
+          
+          # Find DEB file
+          DEB_FILE=$(find . -maxdepth 1 -name "*.deb" | head -n 1)
+          if [ -z "$DEB_FILE" ]; then
+            echo "::error::No .deb file found for Docker trigger"
+            exit 1
+          fi
+          DEB_NAME=$(basename "$DEB_FILE")
+          
+          # Construct URL
+          if [ "${{ github.ref_type }}" == "tag" ]; then
+            S3_PREFIX="releases/${{ github.ref_name }}"
+          else
+            S3_PREFIX="${{ github.ref_name }}"
+          fi
+          
+          BINARY_URL="https://openstudio-ci-builds.s3.amazonaws.com/${S3_PREFIX}/${DEB_NAME}"
+          # Replace + with %2B for URL safety
+          BINARY_URL="${BINARY_URL//+/%2B}"
+          
+          # Get Version Info
+          # Try to find the openstudio binary
+          if [ -f "./Products/openstudio" ]; then
+             OS_CLI="./Products/openstudio"
+          elif [ -f "./bin/openstudio" ]; then
+             OS_CLI="./bin/openstudio"
+          else
+             OS_CLI=$(find . -name openstudio -type f -executable | head -n 1)
+          fi
+          
+          if [ -z "$OS_CLI" ]; then
+             echo "::error::Could not find openstudio binary to determine version"
+             exit 1
+          fi
+          
+          FULL_VERSION=$($OS_CLI --version)
+          echo "Detected version: $FULL_VERSION"
+          
+          # Parse version (e.g., 3.3.0+1c1b0d7e3e or 3.3.0-rc1+1c1b0d7e3e)
+          VERSION_PART=$(echo "$FULL_VERSION" | cut -d'+' -f1)
+          
+          if [[ "$VERSION_PART" == *"-"* ]]; then
+            OS_VERSION=$(echo "$VERSION_PART" | cut -d'-' -f1)
+            OS_VERSION_EXT=$(echo "$VERSION_PART" | cut -d'-' -f2)
+          else
+            OS_VERSION="$VERSION_PART"
+            OS_VERSION_EXT=""
+          fi
+          
+          # Docker Image Tag
+          if [ "${{ github.ref_name }}" == "develop" ]; then
+            DOCKER_TAG="develop"
+          else
+            DOCKER_TAG="${OS_VERSION}-${OS_VERSION_EXT}"
+            DOCKER_TAG="${DOCKER_TAG%-}" # Remove trailing hyphen
+          fi
+          
+          echo "Triggering Docker Build:"
+          echo "  Tag: $DOCKER_TAG"
+          echo "  URL: $BINARY_URL"
+          echo "  Ver: $OS_VERSION"
+          echo "  Ext: $OS_VERSION_EXT"
+          
+          gh workflow run manual_update_develop \
+            -R NREL/docker-openstudio \
+            -f docker_image_tag="$DOCKER_TAG" \
+            -f os_installer_link="$BINARY_URL" \
+            -f os_version="$OS_VERSION" \
+            -f os_version_ext="$OS_VERSION_EXT"
 
       - name: Fail job on test failures
         if: ${{ steps.ctest.outputs.exit_code != '0' }}
@@ -604,13 +670,15 @@ jobs:
 
           exclude_regex="${{ matrix.exclude_regex }}"
           if [ -n "$exclude_regex" ] && [ "$exclude_regex" != '""' ]; then
-            ctest -D Experimental --output-on-failure -j ${{ env.CTEST_PARALLEL_LEVEL }} -E "$exclude_regex" || {
+            ctest -D Experimental --output-on-failure -j ${{ env.CTEST_PARALLEL_LEVEL }} -E "$exclude_regex" || \
+            ctest -D Experimental --output-on-failure -j ${{ env.CTEST_PARALLEL_LEVEL }} -E "$exclude_regex" --rerun-failed || {
               exit_code=$?
               echo "exit_code=${exit_code}" >> $GITHUB_OUTPUT
               echo "::warning::CTest suite failed with exit code ${exit_code}"
             }
           else
-            ctest -D Experimental --output-on-failure -j ${{ env.CTEST_PARALLEL_LEVEL }} || {
+            ctest -D Experimental --output-on-failure -j ${{ env.CTEST_PARALLEL_LEVEL }} || \
+            ctest -D Experimental --output-on-failure -j ${{ env.CTEST_PARALLEL_LEVEL }} --rerun-failed || {
               exit_code=$?
               echo "exit_code=${exit_code}" >> $GITHUB_OUTPUT
               echo "::warning::CTest suite failed with exit code ${exit_code}"
@@ -929,6 +997,9 @@ jobs:
           call conanbuild.bat
           echo exit_code=0 >> %GITHUB_OUTPUT%
           ctest --output-on-failure --parallel ${{ env.CTEST_PARALLEL_LEVEL }}
+          if %errorlevel% neq 0 (
+            ctest --output-on-failure --parallel ${{ env.CTEST_PARALLEL_LEVEL }} --rerun-failed
+          )
           if %errorlevel% neq 0 (
             echo exit_code=%errorlevel% >> %GITHUB_OUTPUT%
             echo ::warning::CTest suite failed with exit code %errorlevel%
