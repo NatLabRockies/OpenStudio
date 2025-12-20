@@ -175,6 +175,7 @@ jobs:
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           mkdir -p "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}"
           mkdir -p "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}"
+          ls -la
           if command -v ccache >/dev/null 2>&1; then
             ccache -M 5G || true
             echo "Configured ccache:"; ccache -s | sed -n '1,10p'
@@ -202,9 +203,13 @@ jobs:
             -s build_type=${{ env.BUILD_TYPE }}
 
       - name: Configure with CMake
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        working-directory: $GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}
         run: |
           set -euo pipefail
+          echo "Current directory: $(pwd)"
+          ls -la
+          echo "Source directory: $GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}"
+          ls -la "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}"
           . ./conanbuild.sh
           cmake -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
@@ -922,7 +927,7 @@ jobs:
       - name: Install Conan
         run: |
           pip install conan
-          
+
       - name: Install ccache
         run: |
           choco install ccache -y || echo "ccache install failed (non-fatal)"
