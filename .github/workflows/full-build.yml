@@ -589,7 +589,7 @@ jobs:
         run: |
           set -euo pipefail
           source .venv/bin/activate
-          conan install . \
+          CMAKE_POLICY_VERSION_MINIMUM=3.5 conan install . \
             --output-folder="${{ env.OPENSTUDIO_BUILD }}" \
             --build=missing \
             -c tools.cmake.cmaketoolchain:generator=Ninja \
@@ -932,12 +932,12 @@ jobs:
         run: |
           python -m venv .venv
           .\.venv\Scripts\Activate.ps1
-          pip install --upgrade pip setuptools wheel
+          D:\a\OpenStudio\OpenStudio\.venv\Scripts\python.exe -m pip install --upgrade pip setuptools wheel
 
       - name: Install Conan
         run: |
           .\.venv\Scripts\Activate.ps1
-          pip install conan
+          D:\a\OpenStudio\OpenStudio\.venv\Scripts\python.exe -m pip install conan
 
       - name: Install ccache
         run: |
