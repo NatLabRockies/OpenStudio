@@ -1,4 +1,3 @@
-
 on:
   push:
     branches:
@@ -559,25 +558,7 @@ jobs:
         with:
           ruby-version: '3.2.2'
           bundler-cache: true
-
-      - name: Verify Ruby installation
-        run: |
-          set -euo pipefail
-          ruby --version
-          gem --version
-          bundler --version
-
-      - name: Set ruby in PATH
-        run: |
-          set -euo pipefail
-          echo "::add-path::$(ruby -e 'print Gem.user_dir')/bin"
  
-      - name: Ensure Bundler
-        run: |
-          set -euo pipefail
-          gem install bundler
-          bundle config set --local path 'vendor/bundle'
-
       - name: Create python venv
         run: |
           set -euo pipefail
@@ -636,13 +617,13 @@ jobs:
           set -euo pipefail
           . ./conanbuild.sh
           export NINJA_STATUS="[%f/%t | %es elapsed | %o objs/sec]"
-          ( while true; do sleep 300; echo "[heartbeat] $(date -u +"%H:%M:%S")"; if command -v free >/dev/null 2>&1; then free -h | awk 'NR==2{print "[mem] used=" $3 "/" $2}'; fi; df -h . | tail -1 | awk '{print "[disk] used=" $3 "/" $2 " (" $5 ")"}'; ps -eo pid,pmem,rsz,comm --sort=-pmem | head -n 5 | awk '{print "[topmem] PID=" $1 " MEM%=" $2 " RSS=" $3 " " $4}'; done ) &
-          HB_PID=$!
-          cmake --build . --parallel ${{ env.MAX_BUILD_THREADS }} 2>&1 | tee build.log
-          BUILD_EXIT=${PIPESTATUS[0]}
-          kill $HB_PID || true
-          command -v ninja >/dev/null 2>&1 && ninja -d stats || true
-          exit $BUILD_EXIT
+          ( while true; do sleep 300; echo "[heartbeat] $(date -u +"%H:%M:%S")"; if command -v free >/dev/null 2>&1; then free -h | awk 'NR==2{print "[mem] used=" $3 "/" $2}'; fi; df -h . | tail -1 | awk '{print "[disk] used=" $3 "/" $2 " (" $5 ")"}'; ps -eo pid,pmem,rsz,comm --sort=-pmem | head -n 5 | awk '{print "[topmem] $($_.Id) $([Math]::Round($_.WorkingSet/1MB,1))MB $($_.ProcessName)" }' } }
+          & cmd /c "call conanbuild.bat && cmake --build . --parallel $env:MAX_BUILD_THREADS" 2>&1 | Tee-Object -FilePath build.log
+          $buildExit = $LASTEXITCODE
+          Stop-Job $heartbeat | Out-Null; Receive-Job $heartbeat | Out-Null
+          & cmd /c "call conanbuild.bat && ninja -d stats" 2>$null | Out-Null
+          if (Test-Path build.log) { Get-Content build.log -Tail 40 }
+          exit $buildExit
 
       - name: Deferred pytest discovery (second configure)
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -850,49 +831,41 @@ jobs:
 
       - name: Publish installers to S3
         if: ${{ github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' }}
+        shell: pwsh
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         env:
-          S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}', github.ref_name) || format('{0}', github.ref_name) }}
+          S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}/signed', github.ref_name) || format('{0}/signed', github.ref_name) }}
         run: |
-          set -euo pipefail
-          echo "Uploading artifacts to s3://${AWS_S3_BUCKET}/${S3_PREFIX}" > /dev/stderr
+          Write-Host "Uploading artifacts to s3://$env:AWS_S3_BUCKET/$env:S3_PREFIX"
 
-          # Upload signed DMG files if they exist, otherwise upload unsigned
-          if [ -d "signed" ] && [ "$(ls -A signed/*.dmg 2>/dev/null)" ]; then
-            echo "Uploading signed DMG files..."
-            for file in signed/*.dmg; do
-              if [ -f "$file" ]; then
-                key="${S3_PREFIX}/$(basename "$file")"
-                aws s3 cp "$file" "s3://${AWS_S3_BUCKET}/${key}" --acl public-read
-                md5 "$file"
-              fi
-            done
-          else
-            echo "Uploading unsigned DMG files..."
-            for file in ${{ matrix.dmg_glob }}; do
-              if [ -f "$file" ]; then
-                key="${S3_PREFIX}/$(basename "$file")"
-                aws s3 cp "$file" "s3://${AWS_S3_BUCKET}/${key}" --acl public-read
-                md5 "$file"
-              fi
-            done
-          fi
+          # Upload signed installers if they exist
+          if (Test-Path "signed") {
+            Get-ChildItem -Path signed -Filter *.exe | ForEach-Object {
+              $key = "$env:S3_PREFIX/$($_.Name)"
+              aws s3 cp $_.FullName "s3://$env:AWS_S3_BUCKET/$key" --acl public-read
+              Get-FileHash -Path $_.FullName -Algorithm MD5
+            }
+          } else {
+            Write-Host "::warning::No signed directory found, uploading unsigned installers"
+            Get-ChildItem -Path . -Filter OpenStudio*.exe | ForEach-Object {
+              $key = "$env:S3_PREFIX/$($_.Name)"
+              aws s3 cp $_.FullName "s3://$env:AWS_S3_BUCKET/$key" --acl public-read
+              Get-FileHash -Path $_.FullName -Algorithm MD5
+            }
+          }
 
-          # Upload TAR.GZ files
-          for file in ${{ matrix.tar_glob }}; do
-            if [ -f "$file" ]; then
-              key="${S3_PREFIX}/$(basename "$file")"
-              aws s3 cp "$file" "s3://${AWS_S3_BUCKET}/${key}" --acl public-read
-              md5 "$file"
-            fi
-          done
+          # Upload ZIP packages
+          Get-ChildItem -Path . -Filter *.zip -Exclude "*-${{ github.run_id }}.zip","*signed.zip","Testing*.zip" | ForEach-Object {
+            $key = "$env:S3_PREFIX/$($_.Name)"
+            aws s3 cp $_.FullName "s3://$env:AWS_S3_BUCKET/$key" --acl public-read
+            Get-FileHash -Path $_.FullName -Algorithm MD5
+          }
 
       - name: Fail job on test failures
-        if: ${{ steps.mac_ctest.outputs.exit_code != '0' }}
+        if: ${{ steps.win_ctest.outputs.exit_code != '0' }}
+        shell: pwsh
         run: |
-          echo "::error::CTest suite failed with exit code ${{ steps.mac_ctest.outputs.exit_code }}"
-          exit 1
-
+          Write-Host "::error::CTest suite failed with exit code ${{ steps.win_ctest.outputs.exit_code }}"
   windows:
     name: ${{ matrix.display_name }}
     runs-on: ${{ matrix.runner }}
@@ -900,10 +873,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: windows-2019-x64
-            display_name: Windows 2019 x64
-            runner: windows-2019
-            test_suffix: Windows-2019
           - platform: windows-2022-x64
             display_name: Windows 2022 x64
             runner: windows-2022
@@ -1012,6 +981,14 @@ jobs:
           & cmd /c "call conanbuild.bat && ninja -d stats" 2>$null | Out-Null
           if (Test-Path build.log) { Get-Content build.log -Tail 40 }
           exit $buildExit
+
+      - name: Debug cmd path and version
+        shell: pwsh
+        run: |
+          Write-Host "Debugging cmd path and version"
+          Get-Command cmd
+          cmd /c "ver"
+          Write-Host "PATH: $env:Path"
 
       - name: Deferred pytest discovery (second configure)
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
