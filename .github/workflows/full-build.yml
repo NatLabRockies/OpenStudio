@@ -553,6 +553,12 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.12.2'
+
+      - name: Install Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.2'
+          bundler-cache: false
  
       - name: Ensure Bundler
         run: |
@@ -928,6 +934,12 @@ jobs:
         with:
           python-version: '3.12.2'
 
+      - name: Install Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.2'
+          bundler-cache: false
+
       - name: Create python venv
         run: |
           python -m venv .venv
@@ -949,17 +961,19 @@ jobs:
 
       - name: Configure Conan remotes
         run: |
-          conan remote add conancenter https://center.conan.io --force
-          conan remote update conancenter --insecure
-          conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2 --force
-          conan remote update nrel-v2 --insecure
+          .\.venv\Scripts\Activate.ps1
+          D:\a\OpenStudio\OpenStudio\.venv\Scripts\python.exe -m conan remote add conancenter https://center.conan.io --force
+          D:\a\OpenStudio\OpenStudio\.venv\Scripts\python.exe -m conan remote update conancenter --insecure
+          D:\a\OpenStudio\OpenStudio\.venv\Scripts\python.exe -m conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2 --force
+          D:\a\OpenStudio\OpenStudio\.venv\Scripts\python.exe -m conan remote update nrel-v2 --insecure
           if (-not (Test-Path "$env:USERPROFILE/.conan2/profiles/default")) {
-            conan profile detect
+            D:\a\OpenStudio\OpenStudio\.venv\Scripts\python.exe -m conan profile detect
           }
 
       - name: Conan install
         run: |
-          conan install . `
+          .\.venv\Scripts\Activate.ps1
+          D:\a\OpenStudio\OpenStudio\.venv\Scripts\python.exe -m conan install . `
             --output-folder="${{ env.OPENSTUDIO_BUILD }}" `
             --build=missing `
             -c tools.cmake.cmaketoolchain:generator=Ninja `
