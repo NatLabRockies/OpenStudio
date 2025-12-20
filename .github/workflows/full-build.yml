@@ -986,15 +986,9 @@ jobs:
           call conanbuild.bat
           cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;ZIP" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} ../
 
-      - name: Debug cmd path and version
-        run: |
-          Write-Host "Debugging cmd path and version"
-          Get-Command cmd
-          cmd /c "ver"
-          Write-Host "PATH: $env:Path"
-    
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        shell: cmd
         run: |
           call ".\\conanbuild.bat"
           ninja -j ${{ env.MAX_BUILD_THREADS }} package
