@@ -44,7 +44,6 @@ permissions:
 
 env:
   BUILD_TYPE: Release
-  OPENSTUDIO_SOURCE: OpenStudio
   OPENSTUDIO_BUILD: OS-build-release-v2
   PY_VERSION: "3.12.2"
   AWS_S3_BUCKET: openstudio-ci-builds
@@ -174,8 +173,6 @@ jobs:
           set -euo pipefail
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           mkdir -p "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}"
-          mkdir -p "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}"
-          ls -la
           if command -v ccache >/dev/null 2>&1; then
             ccache -M 5G || true
             echo "Configured ccache:"; ccache -s | sed -n '1,10p'
@@ -203,13 +200,9 @@ jobs:
             -s build_type=${{ env.BUILD_TYPE }}
 
       - name: Configure with CMake
-        working-directory: $GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           set -euo pipefail
-          echo "Current directory: $(pwd)"
-          ls -la
-          echo "Source directory: $GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}"
-          ls -la "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}"
           . ./conanbuild.sh
           cmake -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
@@ -220,7 +213,7 @@ jobs:
             -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON \
             -DBUILD_PYTHON_PIP_PACKAGE:BOOL=${{ matrix.pip_package }} \
             -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} \
-            ../${{ env.OPENSTUDIO_SOURCE }}
+            ../
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -273,7 +266,7 @@ jobs:
             -DAPPEND_TESTS_ONLY:BOOL=ON \
             -DBUILD_PYTHON_PIP_PACKAGE:BOOL=${{ matrix.pip_package }} \
             -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} \
-            ../${{ env.OPENSTUDIO_SOURCE }}
+            ../
 
       - name: Upload build log
         if: always()
@@ -551,7 +544,6 @@ jobs:
           set -euo pipefail
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           mkdir -p "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}"
-          mkdir -p "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}"
           if command -v ccache >/dev/null 2>&1; then
             ccache -M 5G || true
             echo "Configured ccache:"; ccache -s | sed -n '1,10p'
@@ -612,7 +604,7 @@ jobs:
             -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON \
             -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF \
             -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} \
-            ../${{ env.OPENSTUDIO_SOURCE }}
+            ../
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -643,7 +635,7 @@ jobs:
             -DAPPEND_TESTS_ONLY:BOOL=ON \
             -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF \
             -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} \
-            ../${{ env.OPENSTUDIO_SOURCE }}
+            ../
 
       - name: Upload build log
         if: always()
@@ -907,8 +899,7 @@ jobs:
       - name: Prepare workspace
         run: |
           git config --global --add safe.directory "$env:GITHUB_WORKSPACE"
-          New-Item -ItemType Directory -Path "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}" -Force
-          New-Item -ItemType Directory -Path "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}" -Force
+          New-Item -ItemType Directory -Path "${{ env.OPENSTUDIO_BUILD }}" -Force
       - name: Restore ccache cache
         uses: actions/cache@v4
         with:
@@ -947,24 +938,23 @@ jobs:
           }
 
       - name: Conan install
-        working-directory: ${{ github.workspace }}/${{ env.OPENSTUDIO_SOURCE }}
         run: |
           conan install . `
-            --output-folder="../${{ env.OPENSTUDIO_BUILD }}" `
+            --output-folder="${{ env.OPENSTUDIO_BUILD }}" `
             --build=missing `
             -c tools.cmake.cmaketoolchain:generator=Ninja `
             -s compiler.cppstd=20 `
             -s build_type=${{ env.BUILD_TYPE }}
 
       - name: Configure with CMake
-        working-directory: ${{ github.workspace }}/${{ env.OPENSTUDIO_BUILD }}
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
         shell: cmd
         run: |
           call conanbuild.bat
-          cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;ZIP" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} ../${{ env.OPENSTUDIO_SOURCE }}
+          cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;ZIP" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} ../
 
       - name: Build with Ninja
-        working-directory: ${{ github.workspace }}/${{ env.OPENSTUDIO_BUILD }}
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
         shell: pwsh
         run: |
           # Use cmd to initialize environment then build; capture log with Tee
@@ -977,30 +967,30 @@ jobs:
           if (Test-Path build.log) { Get-Content build.log -Tail 40 }
           exit $buildExit
       - name: Deferred pytest discovery (second configure)
-        working-directory: ${{ github.workspace }}/${{ env.OPENSTUDIO_BUILD }}
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
         shell: cmd
         run: |
           call conanbuild.bat
-          cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;ZIP" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DAPPEND_TESTS_ONLY:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} ../${{ env.OPENSTUDIO_SOURCE }}
+          cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;ZIP" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DAPPEND_TESTS_ONLY:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} ../
 
       - name: Upload build log
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: build-log-windows-${{ github.sha }}
-          path: ${{ github.workspace }}/${{ env.OPENSTUDIO_BUILD }}/build.log
+          path: ${{ env.OPENSTUDIO_BUILD }}/build.log
       - name: Upload triage artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: triage-windows-${{ github.sha }}
           path: |
-            ${{ github.workspace }}/${{ env.OPENSTUDIO_BUILD }}/.ninja_log
-            ${{ github.workspace }}/${{ env.OPENSTUDIO_BUILD }}/CTestTestfile.cmake
+            ${{ env.OPENSTUDIO_BUILD }}/.ninja_log
+            ${{ env.OPENSTUDIO_BUILD }}/CTestTestfile.cmake
 
       - name: Run CTest suite
         id: win_ctest
-        working-directory: ${{ github.workspace }}/${{ env.OPENSTUDIO_BUILD }}
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
         continue-on-error: true
         shell: cmd
         run: |
@@ -1016,7 +1006,7 @@ jobs:
           )
 
       - name: Create packages
-        working-directory: ${{ github.workspace }}/${{ env.OPENSTUDIO_BUILD }}
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
         shell: cmd
         run: |
           call conanbuild.bat
@@ -1025,7 +1015,7 @@ jobs:
       - name: Archive Testing directory
         if: always()
         shell: pwsh
-        working-directory: ${{ github.workspace }}/${{ env.OPENSTUDIO_BUILD }}
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           Compress-Archive -Path Testing -DestinationPath Testing-${{ matrix.test_suffix }}.zip -Force
 
@@ -1035,7 +1025,7 @@ jobs:
         with:
           name: Testing-${{ matrix.platform }}-${{ github.sha }}
           path: |
-            ${{ github.workspace }}/${{ env.OPENSTUDIO_BUILD }}/Testing-${{ matrix.test_suffix }}.zip
+            ${{ env.OPENSTUDIO_BUILD }}/Testing-${{ matrix.test_suffix }}.zip
 
       - name: Upload build outputs
         if: always()
@@ -1043,8 +1033,8 @@ jobs:
         with:
           name: packages-${{ matrix.platform }}-${{ github.sha }}
           path: |
-            ${{ github.workspace }}/${{ env.OPENSTUDIO_BUILD }}/*.exe
-            ${{ github.workspace }}/${{ env.OPENSTUDIO_BUILD }}/*.zip
+            ${{ env.OPENSTUDIO_BUILD }}/*.exe
+            ${{ env.OPENSTUDIO_BUILD }}/*.zip
 
       # CODE SIGNING - AWS Signing Service
       # Prerequisites:
@@ -1071,10 +1061,10 @@ jobs:
       - name: Code sign installer
         if: always()
         shell: pwsh
-        working-directory: ${{ github.workspace }}/${{ env.OPENSTUDIO_BUILD }}
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           # Check if signing client exists
-          if (-not (Test-Path "${{ github.workspace }}/.github/signing-client/code-signing.js")) {
+          if (-not (Test-Path ".github/signing-client/code-signing.js")) {
             Write-Host "::warning::Code signing client not found at .github/signing-client/code-signing.js"
             Write-Host "::warning::Skipping code signing. Add signing client files to repository."
             exit 0
@@ -1089,7 +1079,7 @@ jobs:
 
           # Sign build executables
           Compress-Archive -Path *.exe -DestinationPath build-${{ github.run_id }}.zip -Force
-          node "${{ github.workspace }}/.github/signing-client/code-signing.js" "${{ github.workspace }}/${{ env.OPENSTUDIO_BUILD }}/build-${{ github.run_id }}.zip" -t 4800000
+          node ".github/signing-client/code-signing.js" "${{ env.OPENSTUDIO_BUILD }}/build-${{ github.run_id }}.zip" -t 4800000
           Expand-Archive -Path build-${{ github.run_id }}.signed.zip -Force
 
           # Re-package with signed binaries
@@ -1097,7 +1087,7 @@ jobs:
 
           # Sign installer
           Compress-Archive -Path OpenStudio*.exe -DestinationPath OpenStudio-Installer-${{ github.run_id }}.zip -Force
-          node "${{ github.workspace }}/.github/signing-client/code-signing.js" "${{ github.workspace }}/${{ env.OPENSTUDIO_BUILD }}/OpenStudio-Installer-${{ github.run_id }}.zip" -t 4800000
+          node ".github/signing-client/code-signing.js" "${{ env.OPENSTUDIO_BUILD }}/OpenStudio-Installer-${{ github.run_id }}.zip" -t 4800000
 
           # Extract signed installer
           if (-not (Test-Path signed)) {
@@ -1118,7 +1108,7 @@ jobs:
       - name: Publish signed artifacts to S3
         if: ${{ github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' }}
         shell: pwsh
-        working-directory: ${{ github.workspace }}/${{ env.OPENSTUDIO_BUILD }}
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
         env:
           S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}/signed', github.ref_name) || format('{0}/signed', github.ref_name) }}
         run: |
