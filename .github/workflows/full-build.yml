@@ -76,6 +76,7 @@ jobs:
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "RPM;TGZ"
             max_jobs: 3
+            exclude_regex: ${{ '""' }}
           - platform: ubuntu-2204-x64
             display_name: Ubuntu 22.04 x64
             runner: ubuntu-22.04
@@ -89,6 +90,7 @@ jobs:
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 3
+            exclude_regex: ${{ '""' }}
           - platform: ubuntu-2404-x64
             display_name: Ubuntu 24.04 x64
             runner: ubuntu-24.04
@@ -102,6 +104,7 @@ jobs:
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 3
+            exclude_regex: ${{ '""' }}
           - platform: ubuntu-2204-arm64
             display_name: Ubuntu 22.04 ARM64
             runner: ubuntu-22.04-arm
@@ -115,6 +118,7 @@ jobs:
               *OpenStudio*aarch64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 3
+            exclude_regex: ${{ '""' }}
           - platform: ubuntu-2404-arm64
             display_name: Ubuntu 24.04 ARM64
             runner: ubuntu-24.04-arm
@@ -128,6 +132,7 @@ jobs:
               *OpenStudio*aarch64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 3
+            exclude_regex: ${{ '""' }}
     defaults:
       run:
         shell: bash
@@ -269,12 +274,23 @@ jobs:
           # Run tests
           export CTEST_OUTPUT_ON_FAILURE=1
           export CTEST_PARALLEL_LEVEL=${{ matrix.max_jobs }}
-          cmake --build . --target test || \
-          cmake --build . --target test || {
-            exit_code=$?
-            echo "exit_code=${exit_code}" >> $GITHUB_OUTPUT
-            echo "::warning::CTest suite failed with exit code ${exit_code}"
-          }
+
+          exclude_regex="${{ matrix.exclude_regex }}"
+          if [ -n "$exclude_regex" ] && [ "$exclude_regex" != '""' ]; then
+            ctest -C ${{ env.BUILD_TYPE }} -E "$exclude_regex" || \
+            ctest -C ${{ env.BUILD_TYPE }} -E "$exclude_regex" || {
+              exit_code=$?
+              echo "exit_code=${exit_code}" >> $GITHUB_OUTPUT
+              echo "::warning::CTest suite failed with exit code ${exit_code}"
+            }
+          else
+            ctest -C ${{ env.BUILD_TYPE }} || \
+            ctest -C ${{ env.BUILD_TYPE }} || {
+              exit_code=$?
+              echo "exit_code=${exit_code}" >> $GITHUB_OUTPUT
+              echo "::warning::CTest suite failed with exit code ${exit_code}"
+            }
+          fi
 
       - name: Create packages
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -663,15 +679,15 @@ jobs:
           
           exclude_regex="${{ matrix.exclude_regex }}"
           if [ -n "$exclude_regex" ] && [ "$exclude_regex" != '""' ]; then
-            cmake --build . --target test -- CTEST_ARGUMENTS "-E $exclude_regex" || \
-            cmake --build . --target test -- CTEST_ARGUMENTS "-E $exclude_regex" || {
+            ctest -C ${{ env.BUILD_TYPE }} -E "$exclude_regex" || \
+            ctest -C ${{ env.BUILD_TYPE }} -E "$exclude_regex" || {
               exit_code=$?
               echo "exit_code=${exit_code}" >> $GITHUB_OUTPUT
               echo "::warning::CTest suite failed with exit code ${exit_code}"
             }
           else
-            cmake --build . --target test || \
-            cmake --build . --target test || {
+            ctest -C ${{ env.BUILD_TYPE }} || \
+            ctest -C ${{ env.BUILD_TYPE }} || {
               exit_code=$?
               echo "exit_code=${exit_code}" >> $GITHUB_OUTPUT
               echo "::warning::CTest suite failed with exit code ${exit_code}"
@@ -866,6 +882,7 @@ jobs:
             runner: windows-2022
             test_suffix: Windows-2022
             max_jobs: 3
+            exclude_regex: ${{ '""' }}
     defaults:
       run:
         shell: pwsh
@@ -1011,10 +1028,16 @@ jobs:
           echo exit_code=0 >> %GITHUB_OUTPUT%
           set CTEST_OUTPUT_ON_FAILURE=1
           set CTEST_PARALLEL_LEVEL=${{ matrix.max_jobs }}
-          cmake --build . --target test
-          if %errorlevel% neq 0 (
-            cmake --build . --target test
+          
+          set "EXCLUDE_REGEX=${{ matrix.exclude_regex }}"
+          if "%EXCLUDE_REGEX%"=="""""" (
+            ctest -C ${{ env.BUILD_TYPE }}
+            if %errorlevel% neq 0 ctest -C ${{ env.BUILD_TYPE }}
+          ) else (
+            ctest -C ${{ env.BUILD_TYPE }} -E "%EXCLUDE_REGEX%"
+            if %errorlevel% neq 0 ctest -C ${{ env.BUILD_TYPE }} -E "%EXCLUDE_REGEX%"
           )
+          
           if %errorlevel% neq 0 (
             echo exit_code=%errorlevel% >> %GITHUB_OUTPUT%
             echo ::warning::CTest suite failed with exit code %errorlevel%
