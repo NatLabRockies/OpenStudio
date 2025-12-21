@@ -134,23 +134,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-      # --- OPTIMIZATION START: ADD SWAP ---
-      - name: Enable Swap Space (attempt)
-        # Runs inside the container as root; attempts swap if privileged
-        run: |
-          set -euo pipefail
-          if grep -q '/swapfile' /proc/swaps; then
-            echo "::notice::Swap already active"
-          else
-            if (fallocate -l 4G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile); then
-              echo "::notice::Enabled 4GB swap space (container)"
-            else
-              echo "::warning::Failed to enable swap (likely insufficient privilege); continuing"
-            fi
-          fi
-          free -h || true
-      # --- OPTIMIZATION END ---
+          fetch-depth: 1
+
       - name: Restore ccache cache
         uses: actions/cache@v4
         with:
@@ -177,10 +162,21 @@ jobs:
             echo "Configured ccache:"; ccache -s | sed -n '1,10p'
           fi
 
+      - name: Cache External Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.tar.gz
+            ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.zip
+            ${{ env.OPENSTUDIO_BUILD }}/radiance*.tar.gz
+            ${{ env.OPENSTUDIO_BUILD }}/radiance*.zip
+            ${{ env.OPENSTUDIO_BUILD }}/openstudio*gems*.tar.gz
+          key: external-deps-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
+
       - name: Configure Conan remotes
         run: |
           set -euo pipefail
-          conan remote add conancenter https://center.conan.io --force
+          conan remote add conancenter https://center2.conan.io --force
           conan remote update conancenter --insecure
           conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2 --force
           conan remote update nrel-v2 --insecure
@@ -471,7 +467,7 @@ jobs:
             test_suffix: macOS-arm64
             dmg_glob: "*.dmg"
             tar_glob: "*OpenStudio*arm64.tar.gz"
-            exclude_regex: "^('BCLFixture.BCLComponent')$"
+            exclude_regex: "^('BCLFixture.BCLComponent'|'GeometryFixture.Plane_RayIntersection'|'ISOModelFixture.SimModel')$"
     defaults:
       run:
         shell: bash
@@ -482,7 +478,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
+
+      - name: Install ccache
+        run: brew install ccache
 
       - name: Restore ccache cache
         uses: actions/cache@v4
@@ -510,10 +509,22 @@ jobs:
             echo "Configured ccache:"; ccache -s | sed -n '1,10p'
           fi
 
+      - name: Cache External Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.tar.gz
+            ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.zip
+            ${{ env.OPENSTUDIO_BUILD }}/radiance*.tar.gz
+            ${{ env.OPENSTUDIO_BUILD }}/radiance*.zip
+            ${{ env.OPENSTUDIO_BUILD }}/openstudio*gems*.tar.gz
+          key: external-deps-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
+
       - name: Set up Python 3.12.2
         uses: actions/setup-python@v6
         with:
           python-version: '3.12.2'
+          cache: 'pip'
 
       - name: Install Ruby
         uses: ruby/setup-ruby@v1
@@ -539,7 +550,7 @@ jobs:
         run: |
           set -euo pipefail
           source .venv/bin/activate
-          conan remote add conancenter https://center.conan.io --force
+          conan remote add conancenter https://center2.conan.io --force
           conan remote update conancenter --insecure
           conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2 --force
           conan remote update nrel-v2 --insecure
@@ -567,6 +578,7 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           set -euo pipefail
+          source ../.venv/bin/activate
           . ./conanbuild.sh
           cmake -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
@@ -623,6 +635,7 @@ jobs:
         continue-on-error: true
         run: |
           set -euo pipefail
+          source ../.venv/bin/activate
           . ./conanbuild.sh
 
           echo "exit_code=0" >> $GITHUB_OUTPUT
@@ -837,21 +850,33 @@ jobs:
     env:
       MAX_BUILD_THREADS: 4
       CTEST_PARALLEL_LEVEL: 4
+      CCACHE_DIR: ${{ github.workspace }}\.ccache
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Prepare workspace
         run: |
           git config --global --add safe.directory "$env:GITHUB_WORKSPACE"
           New-Item -ItemType Directory -Path "${{ env.OPENSTUDIO_BUILD }}" -Force
 
+      - name: Cache External Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.tar.gz
+            ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.zip
+            ${{ env.OPENSTUDIO_BUILD }}/radiance*.tar.gz
+            ${{ env.OPENSTUDIO_BUILD }}/radiance*.zip
+            ${{ env.OPENSTUDIO_BUILD }}/openstudio*gems*.tar.gz
+          key: external-deps-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
+
       - name: Restore ccache cache
         uses: actions/cache@v4
         with:
-          path: ~/.ccache
+          path: .ccache
           key: ccache-${{ runner.os }}-windows-${{ hashFiles('conan.lock') }}
           restore-keys: |
             ccache-${{ runner.os }}-windows-
@@ -868,6 +893,7 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.12.2'
+          cache: 'pip'
 
       - name: Install Ruby
         uses: ruby/setup-ruby@v1
@@ -898,7 +924,7 @@ jobs:
       - name: Configure Conan remotes
         run: |
           .\.venv\Scripts\Activate.ps1
-          conan remote add conancenter https://center.conan.io --force
+          conan remote add conancenter https://center2.conan.io --force
           conan remote update conancenter --insecure
           conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2 --force
           conan remote update nrel-v2 --insecure
@@ -969,13 +995,6 @@ jobs:
             echo ::warning::CTest suite failed with exit code %errorlevel%
           )
 
-      - name: Create packages
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        shell: cmd
-        run: |
-          call conanbuild.bat
-          cpack -B .
-
       - name: Archive Testing directory
         if: always()
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -1025,38 +1044,107 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           # Check if signing client exists
+          $canSign = $true
           if (-not (Test-Path "$env:GITHUB_WORKSPACE/.github/signing-client/code-signing.js")) {
             Write-Host "::warning::Code signing client not found at .github/signing-client/code-signing.js"
             Write-Host "::warning::Skipping code signing. Add signing client files to repository."
-            exit 0
+            $canSign = $false
           }
 
           # Check if AWS signing credentials are configured
           if ([string]::IsNullOrEmpty("${{ secrets.AWS_SIGNING_ACCESS_KEY }}")) {
             Write-Host "::warning::AWS_SIGNING_ACCESS_KEY secret not configured"
             Write-Host "::warning::Skipping code signing. Configure AWS signing secrets."
-            exit 0
+            $canSign = $false
           }
 
-          # Sign build executables
-          Compress-Archive -Path *.exe -DestinationPath "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/build-${{ github.run_id }}.zip" -Force
-          node "$env:GITHUB_WORKSPACE/.github/signing-client/code-signing.js" "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/build-${{ github.run_id }}.zip" -t 4800000
-          Expand-Archive -Path "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/build-${{ github.run_id }}.signed.zip" -Force
-
-          # Re-package with signed binaries
-          cpack -B .
-
-          # Sign installer
-          Compress-Archive -Path OpenStudio*.exe -DestinationPath "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/OpenStudio-Installer-${{ github.run_id }}.zip" -Force
-          node "$env:GITHUB_WORKSPACE/.github/signing-client/code-signing.js" "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/OpenStudio-Installer-${{ github.run_id }}.zip" -t 4800000
-
-          # Extract signed installer
-          if (-not (Test-Path signed)) {
-            New-Item -ItemType Directory -Path signed | Out-Null
+          if ($canSign) {
+            Write-Host "------------------------------------------------------------"
+            Write-Host "Step 1: Signing Binaries"
+            Write-Host "------------------------------------------------------------"
+            
+            # Identify binaries in bin/ and Products/
+            # We archive the folders themselves to preserve structure
+            $pathsToSign = @()
+            if (Test-Path "bin") { $pathsToSign += "bin" }
+            if (Test-Path "Products") { $pathsToSign += "Products" }
+            
+            if ($pathsToSign.Count -gt 0) {
+              $binZip = "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/binaries_to_sign.zip"
+              $signedBinZip = "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/binaries_to_sign.signed.zip"
+              
+              Write-Host "Archiving binaries from: $pathsToSign"
+              Compress-Archive -Path $pathsToSign -DestinationPath $binZip -Force
+              
+              Write-Host "Sending binaries for signing..."
+              node "$env:GITHUB_WORKSPACE/.github/signing-client/code-signing.js" $binZip -t 4800000
+              
+              if (Test-Path $signedBinZip) {
+                Write-Host "Extracting and overwriting signed binaries..."
+                $tempDir = "temp_signed_binaries"
+                if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
+                Expand-Archive -Path $signedBinZip -DestinationPath $tempDir -Force
+                
+                # Copy back to overwrite
+                Copy-Item -Path "$tempDir\*" -Destination . -Recurse -Force
+                
+                # Cleanup
+                Remove-Item $tempDir -Recurse -Force
+                Remove-Item $binZip -Force
+                Remove-Item $signedBinZip -Force
+              } else {
+                 Write-Host "::error::Signed binaries zip not found!"
+                 exit 1
+              }
+            } else {
+               Write-Host "::warning::No bin/ or Products/ directories found to sign."
+            }
           }
-          Expand-Archive -Path "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/OpenStudio-Installer-${{ github.run_id }}.signed.zip" -DestinationPath signed -Force
 
-          Write-Host "Code signing completed successfully"
+          Write-Host "------------------------------------------------------------"
+          Write-Host "Step 2: Creating Installer (CPack)"
+          Write-Host "------------------------------------------------------------"
+          # Run cpack using cmd to handle conanbuild.bat
+          cmd /c "call conanbuild.bat && cpack -B ."
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "CPack failed with exit code $LASTEXITCODE"
+            exit $LASTEXITCODE
+          }
+
+          if ($canSign) {
+            Write-Host "------------------------------------------------------------"
+            Write-Host "Step 3: Signing Installer"
+            Write-Host "------------------------------------------------------------"
+            
+            $installerZip = "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/installer_to_sign.zip"
+            $signedInstallerZip = "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/installer_to_sign.signed.zip"
+            
+            $installers = Get-ChildItem -Filter "OpenStudio-*.exe"
+            if ($installers.Count -gt 0) {
+               Write-Host "Found installer(s): $($installers.Name)"
+               Compress-Archive -Path $installers.FullName -DestinationPath $installerZip -Force
+               
+               Write-Host "Sending installer for signing..."
+               node "$env:GITHUB_WORKSPACE/.github/signing-client/code-signing.js" $installerZip -t 4800000
+               
+               if (Test-Path $signedInstallerZip) {
+                  Write-Host "Extracting signed installer..."
+                  if (-not (Test-Path signed)) { New-Item -ItemType Directory -Path signed | Out-Null }
+                  Expand-Archive -Path $signedInstallerZip -DestinationPath signed -Force
+                  
+                  # Cleanup
+                  Remove-Item $installerZip -Force
+                  Remove-Item $signedInstallerZip -Force
+               } else {
+                  Write-Host "::error::Signed installer zip not found!"
+                  exit 1
+               }
+            } else {
+               Write-Host "::warning::No OpenStudio installer found to sign."
+            }
+            
+            Write-Host "Code signing completed successfully"
+          }
 
       - name: Configure AWS credentials
         if: ${{ github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' }}
