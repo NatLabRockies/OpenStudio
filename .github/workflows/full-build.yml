@@ -47,6 +47,10 @@ env:
   PY_VERSION: "3.12.2"
   AWS_S3_BUCKET: openstudio-ci-builds
   TEST_DASHBOARD_RELATIVE: Testing/dashboard/test-dashboard.md
+  CCACHE_SLOPPINESS: pch_defines,time_macros,include_file_mtime,include_file_ctime
+  CCACHE_BASEDIR: ${{ github.workspace }}
+  CCACHE_COMPRESS: "true"
+  CCACHE_COMPRESSLEVEL: "6"
 
 jobs:
   linux-x64:
@@ -71,7 +75,7 @@ jobs:
               *.rpm
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "RPM;TGZ"
-            max_jobs: 4
+            max_jobs: 3
           - platform: ubuntu-2204-x64
             display_name: Ubuntu 22.04 x64
             runner: ubuntu-22.04
@@ -84,7 +88,7 @@ jobs:
               *.deb
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "DEB;TGZ"
-            max_jobs: 4
+            max_jobs: 3
           - platform: ubuntu-2404-x64
             display_name: Ubuntu 24.04 x64
             runner: ubuntu-24.04
@@ -97,7 +101,7 @@ jobs:
               *.deb
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "DEB;TGZ"
-            max_jobs: 4
+            max_jobs: 3
           - platform: ubuntu-2204-arm64
             display_name: Ubuntu 22.04 ARM64
             runner: ubuntu-22.04-arm
@@ -110,7 +114,7 @@ jobs:
               *.deb
               *OpenStudio*aarch64.tar.gz
             cpack_generators: "DEB;TGZ"
-            max_jobs: 4
+            max_jobs: 3
           - platform: ubuntu-2404-arm64
             display_name: Ubuntu 24.04 ARM64
             runner: ubuntu-24.04-arm
@@ -123,7 +127,7 @@ jobs:
               *.deb
               *OpenStudio*aarch64.tar.gz
             cpack_generators: "DEB;TGZ"
-            max_jobs: 4
+            max_jobs: 3
     defaults:
       run:
         shell: bash
@@ -171,7 +175,7 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/radiance*.tar.gz
             ${{ env.OPENSTUDIO_BUILD }}/radiance*.zip
             ${{ env.OPENSTUDIO_BUILD }}/openstudio*gems*.tar.gz
-          key: external-deps-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
+          key: external-deps-${{ runner.os }}-${{ hashFiles('conan.lock') }}
 
       - name: Configure Conan remotes
         run: |
@@ -263,8 +267,10 @@ jobs:
           echo "exit_code=0" >> $GITHUB_OUTPUT
           
           # Run tests
-          ctest --output-on-failure -j ${{ matrix.max_jobs }} || \
-          ctest --output-on-failure -j ${{ matrix.max_jobs }} --rerun-failed || {
+          export CTEST_OUTPUT_ON_FAILURE=1
+          export CTEST_PARALLEL_LEVEL=${{ matrix.max_jobs }}
+          cmake --build . --target test || \
+          cmake --build . --target test || {
             exit_code=$?
             echo "exit_code=${exit_code}" >> $GITHUB_OUTPUT
             echo "::warning::CTest suite failed with exit code ${exit_code}"
@@ -275,7 +281,7 @@ jobs:
         run: |
           set -euo pipefail
           . ./conanbuild.sh
-          cpack -B .
+          cmake --build . --target package
 
       - name: Copy Testing tree with suffix
         if: always()
@@ -372,6 +378,16 @@ jobs:
         run: |
           set -euo pipefail
           
+          # Install gh if not present (Ubuntu container expected)
+          if ! command -v gh >/dev/null 2>&1; then
+            echo "gh CLI not found, attempting to install..."
+            if command -v apt-get >/dev/null 2>&1; then
+              apt-get update && apt-get install -y gh
+            else
+              echo "::warning::Could not install gh CLI. Triggering Docker workflow may fail."
+            fi
+          fi
+
           # Find DEB file
           DEB_FILE=$(find . -maxdepth 1 -name "*.deb" | head -n 1)
           if [ -z "$DEB_FILE" ]; then
@@ -461,6 +477,7 @@ jobs:
             dmg_glob: "*.dmg"
             tar_glob: "*OpenStudio*x86_64.tar.gz"
             exclude_regex: ${{ '""' }}
+            max_jobs: 3
           - platform: macos-arm64
             display_name: macOS ARM64 (Apple Silicon)
             runner: macos-15
@@ -468,12 +485,13 @@ jobs:
             dmg_glob: "*.dmg"
             tar_glob: "*OpenStudio*arm64.tar.gz"
             exclude_regex: "^('BCLFixture.BCLComponent'|'GeometryFixture.Plane_RayIntersection'|'ISOModelFixture.SimModel')$"
+            max_jobs: 3
     defaults:
       run:
         shell: bash
     env:
-      MAX_BUILD_THREADS: 4
-      CTEST_PARALLEL_LEVEL: 4
+      MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
+      CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -518,7 +536,7 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/radiance*.tar.gz
             ${{ env.OPENSTUDIO_BUILD }}/radiance*.zip
             ${{ env.OPENSTUDIO_BUILD }}/openstudio*gems*.tar.gz
-          key: external-deps-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
+          key: external-deps-${{ runner.os }}-${{ hashFiles('conan.lock') }}
 
       - name: Set up Python 3.12.2
         uses: actions/setup-python@v6
@@ -601,7 +619,7 @@ jobs:
           while true; do
             sleep 300
             echo "[heartbeat] $(date -u +"%H:%M:%S")"
-            if command -v free >/dev/null 2>&1; then free -h | awk 'NR==2{print "[mem] used=" $3 "/" $2}'; fi
+            if command -v top >/dev/null 2>&1; then top -l 1 -s 0 | grep PhysMem || true; fi
             df -h . | tail -1 | awk '{print "[disk] used=" $3 "/" $2 " (" $5 ")"}'
             if command -v ps >/dev/null 2>&1; then ps -eo pid,pmem,rss,comm | sort -rn -k2 | head -n 5; fi
           done &
@@ -640,17 +658,20 @@ jobs:
 
           echo "exit_code=0" >> $GITHUB_OUTPUT
 
+          export CTEST_OUTPUT_ON_FAILURE=1
+          export CTEST_PARALLEL_LEVEL=${{ matrix.max_jobs }}
+          
           exclude_regex="${{ matrix.exclude_regex }}"
           if [ -n "$exclude_regex" ] && [ "$exclude_regex" != '""' ]; then
-            ctest --output-on-failure -j ${{ env.CTEST_PARALLEL_LEVEL }} -E "$exclude_regex" || \
-            ctest --output-on-failure -j ${{ env.CTEST_PARALLEL_LEVEL }} -E "$exclude_regex" --rerun-failed || {
+            cmake --build . --target test -- CTEST_ARGUMENTS "-E $exclude_regex" || \
+            cmake --build . --target test -- CTEST_ARGUMENTS "-E $exclude_regex" || {
               exit_code=$?
               echo "exit_code=${exit_code}" >> $GITHUB_OUTPUT
               echo "::warning::CTest suite failed with exit code ${exit_code}"
             }
           else
-            ctest --output-on-failure -j ${{ env.CTEST_PARALLEL_LEVEL }} || \
-            ctest --output-on-failure -j ${{ env.CTEST_PARALLEL_LEVEL }} --rerun-failed || {
+            cmake --build . --target test || \
+            cmake --build . --target test || {
               exit_code=$?
               echo "exit_code=${exit_code}" >> $GITHUB_OUTPUT
               echo "::warning::CTest suite failed with exit code ${exit_code}"
@@ -662,7 +683,7 @@ jobs:
         run: |
           set -euo pipefail
           . ./conanbuild.sh
-          cpack -B .
+          cmake --build . --target package
 
       - name: Code sign and notarize macOS packages
         if: ${{ github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' }}
@@ -844,12 +865,13 @@ jobs:
             display_name: Windows 2022 x64
             runner: windows-2022
             test_suffix: Windows-2022
+            max_jobs: 3
     defaults:
       run:
         shell: pwsh
     env:
-      MAX_BUILD_THREADS: 4
-      CTEST_PARALLEL_LEVEL: 4
+      MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
+      CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
       CCACHE_DIR: ${{ github.workspace }}\.ccache
     steps:
       - name: Checkout repository
@@ -871,7 +893,7 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/radiance*.tar.gz
             ${{ env.OPENSTUDIO_BUILD }}/radiance*.zip
             ${{ env.OPENSTUDIO_BUILD }}/openstudio*gems*.tar.gz
-          key: external-deps-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
+          key: external-deps-${{ runner.os }}-${{ hashFiles('conan.lock') }}
 
       - name: Restore ccache cache
         uses: actions/cache@v4
@@ -905,13 +927,13 @@ jobs:
         run: |
           python -m venv .venv
           .\.venv\Scripts\Activate.ps1
-          D:\a\OpenStudio\OpenStudio\.venv\Scripts\python.exe -m pip install --upgrade pip setuptools wheel
-          D:\a\OpenStudio\OpenStudio\.venv\Scripts\python.exe -m pip install -r python/requirements.txt
+          .\.venv\Scripts\python.exe -m pip install --upgrade pip setuptools wheel
+          .\.venv\Scripts\python.exe -m pip install -r python/requirements.txt
 
       - name: Install Conan
         run: |
           .\.venv\Scripts\Activate.ps1
-          D:\a\OpenStudio\OpenStudio\.venv\Scripts\python.exe -m pip install conan
+          .\.venv\Scripts\python.exe -m pip install conan
 
       - name: Install ccache
         run: |
@@ -960,7 +982,8 @@ jobs:
         shell: cmd
         run: |
           call ".\\conanbuild.bat"
-          ninja -j ${{ env.MAX_BUILD_THREADS }} package
+          cmake --build . --parallel ${{ matrix.max_jobs }} > build.log 2>&1
+          type build.log
 
       - name: Upload build log
         if: always()
@@ -986,9 +1009,11 @@ jobs:
         run: |
           call conanbuild.bat
           echo exit_code=0 >> %GITHUB_OUTPUT%
-          ctest --output-on-failure --parallel ${{ env.CTEST_PARALLEL_LEVEL }}
+          set CTEST_OUTPUT_ON_FAILURE=1
+          set CTEST_PARALLEL_LEVEL=${{ matrix.max_jobs }}
+          cmake --build . --target test
           if %errorlevel% neq 0 (
-            ctest --output-on-failure --parallel ${{ env.CTEST_PARALLEL_LEVEL }} --rerun-failed
+            cmake --build . --target test
           )
           if %errorlevel% neq 0 (
             echo exit_code=%errorlevel% >> %GITHUB_OUTPUT%
@@ -999,7 +1024,11 @@ jobs:
         if: always()
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          Compress-Archive -Path Testing -DestinationPath Testing-${{ matrix.test_suffix }}.zip -Force
+          if (Test-Path Testing) {
+            Compress-Archive -Path Testing -DestinationPath Testing-${{ matrix.test_suffix }}.zip -Force
+          } else {
+            Write-Host "::warning::Testing directory not found, skipping archive"
+          }
 
       - name: Upload Testing artifact
         if: always()
@@ -1104,8 +1133,8 @@ jobs:
           Write-Host "------------------------------------------------------------"
           Write-Host "Step 2: Creating Installer (CPack)"
           Write-Host "------------------------------------------------------------"
-          # Run cpack using cmd to handle conanbuild.bat
-          cmd /c "call conanbuild.bat && cpack -B ."
+          # Run cmake --build . --target package using cmd to handle conanbuild.bat
+          cmd /c "call conanbuild.bat && cmake --build . --target package"
           if ($LASTEXITCODE -ne 0) {
             Write-Error "CPack failed with exit code $LASTEXITCODE"
             exit $LASTEXITCODE
