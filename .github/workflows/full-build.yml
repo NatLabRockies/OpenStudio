@@ -54,6 +54,8 @@ env:
   CCACHE_MAXSIZE: "10G"
   CCACHE_DEPEND: "true"
   CCACHE_NOHASHDIR: "true"
+  SCCACHE_GHA_ENABLED: "true"
+  SCCACHE_CACHE_SIZE: "10G"
 
 jobs:
   linux-build:
@@ -899,8 +901,6 @@ jobs:
       CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
       RUBYOPT: "-Eutf-8:utf-8"
       PYTHONUTF8: "1"
-      SCCACHE_GHA_ENABLED: "true"
-      SCCACHE_CACHE_SIZE: ${{ env.CCACHE_MAXSIZE }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
