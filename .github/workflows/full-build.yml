@@ -279,13 +279,6 @@ jobs:
           command -v ninja >/dev/null 2>&1 && ninja -d stats || true
           exit $BUILD_EXIT
 
-      - name: Cleanup intermediate files
-        if: always()
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        run: |
-          find . -name "*.o" -type f -delete || true
-          df -h .
-
       - name: Upload build log
         if: always()
         uses: actions/upload-artifact@v4
@@ -348,6 +341,13 @@ jobs:
           set -euo pipefail
           . ./conanbuild.sh
           cmake --build . --target package
+
+      - name: Cleanup intermediate files
+        if: always()
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          find . -name "*.o" -type f -delete || true
+          df -h .
 
       - name: Copy Testing tree with suffix
         if: always()
@@ -697,13 +697,6 @@ jobs:
           if [ -f build.log ]; then tail -n 40 build.log; fi
           exit $build_exit
 
-      - name: Cleanup intermediate files
-        if: always()
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        run: |
-          find . -name "*.o" -type f -delete || true
-          df -h .
-
       - name: Upload build log
         if: always()
         uses: actions/upload-artifact@v4
@@ -766,6 +759,13 @@ jobs:
           set -euo pipefail
           . ./conanbuild.sh
           cmake --build . --target package
+
+      - name: Cleanup intermediate files
+        if: always()
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          find . -name "*.o" -type f -delete || true
+          df -h .
 
       - name: Code sign and notarize macOS packages
         if: ${{ github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' }}
@@ -1067,20 +1067,18 @@ jobs:
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        shell: cmd
+        # Switch to powershell (or remove shell: cmd since pwsh is the job default)
+        shell: pwsh
         run: |
-          call ".\\conanbuild.bat"
-          cmake --build . --parallel ${{ matrix.max_jobs }} > build.log 2>&1
-          set BUILD_EXIT_CODE=%ERRORLEVEL%
-          type build.log
-          if %BUILD_EXIT_CODE% neq 0 exit %BUILD_EXIT_CODE%
-
-      - name: Cleanup intermediate files
-        if: always()
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        run: |
-          Get-ChildItem -Include *.obj -Recurse | Remove-Item -ErrorAction SilentlyContinue
-          Get-PSDrive C
+          # Run the build inside cmd to load conan env vars, but pipe output to Tee-Object
+          # This prints to the console AND writes to build.log simultaneously
+          cmd /c "call conanbuild.bat && cmake --build . --parallel ${{ matrix.max_jobs }} 2>&1" | Tee-Object -FilePath "build.log"
+          
+          # Check the exit code of the cmd process, not Tee-Object
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Build failed with exit code $LASTEXITCODE"
+            exit $LASTEXITCODE
+          }
 
       - name: Upload build log
         if: always()
@@ -1292,6 +1290,13 @@ jobs:
             
             Write-Host "Code signing completed successfully"
           }
+
+      - name: Cleanup intermediate files
+        if: always()
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          Get-ChildItem -Include *.obj -Recurse | Remove-Item -ErrorAction SilentlyContinue
+          Get-PSDrive C
 
       - name: Configure AWS credentials
         if: ${{ github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' }}
