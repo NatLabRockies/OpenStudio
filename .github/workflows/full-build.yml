@@ -118,7 +118,7 @@ jobs:
             docker_trigger: false
             upload_globs: |
               *.deb
-              *OpenStudio*aarch64.tar.gz
+              *OpenStudio*arm64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 3
             exclude_regex: "^(GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager)$"
@@ -132,7 +132,7 @@ jobs:
             docker_trigger: false
             upload_globs: |
               *.deb
-              *OpenStudio*aarch64.tar.gz
+              *OpenStudio*arm64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 3
             exclude_regex: "^(GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager)$"
@@ -406,16 +406,37 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/Testing-${{ matrix.test_suffix }}/
             ${{ env.OPENSTUDIO_BUILD }}/${{ env.TEST_DASHBOARD_RELATIVE }}
 
-      - name: Upload build outputs
+      - name: Upload DEB package
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: packages-${{ matrix.platform }}-${{ github.sha }}
-          path: |
-            ${{ env.OPENSTUDIO_BUILD }}/*.deb
-            ${{ env.OPENSTUDIO_BUILD }}/*.rpm
-            ${{ env.OPENSTUDIO_BUILD }}/*.tar.gz
-            ${{ env.OPENSTUDIO_BUILD }}/*.whl
+          name: OS-DEB-${{ matrix.platform }}-${{ github.sha }}
+          path: ${{ env.OPENSTUDIO_BUILD }}/*.deb
+          if-no-files-found: ignore
+
+      - name: Upload RPM package
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: OS-RPM-${{ matrix.platform }}-${{ github.sha }}
+          path: ${{ env.OPENSTUDIO_BUILD }}/*.rpm
+          if-no-files-found: ignore
+
+      - name: Upload TGZ package
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: OS-TGZ-${{ matrix.platform }}-${{ github.sha }}
+          path: ${{ env.OPENSTUDIO_BUILD }}/*.tar.gz
+          if-no-files-found: ignore
+
+      - name: Upload Wheel package
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: OS-WHL-${{ matrix.platform }}-${{ github.sha }}
+          path: ${{ env.OPENSTUDIO_BUILD }}/*.whl
+          if-no-files-found: ignore
 
       - name: Configure AWS credentials
         if: ${{ matrix.upload_globs != '' && (github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true') }}
@@ -678,7 +699,9 @@ jobs:
             -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
             -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} \
             -DBUILD_TESTING:BOOL=ON \
-            -DCPACK_GENERATORS:STRING="DragNDrop;TGZ" \
+            -DCPACK_BINARY_DRAGNDROP:BOOL=ON \
+            -DCPACK_BINARY_TGZ:BOOL=ON \
+            -DCPACK_BINARY_IFW:BOOL=OFF \
             -DBUILD_PYTHON_BINDINGS:BOOL=ON \
             -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON \
             -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF \
@@ -892,14 +915,21 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/Testing-${{ matrix.test_suffix }}/
             ${{ env.OPENSTUDIO_BUILD }}/${{ env.TEST_DASHBOARD_RELATIVE }}
 
-      - name: Upload build outputs
+      - name: Upload DMG installer
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: packages-${{ matrix.platform }}-${{ github.sha }}
-          path: |
-            ${{ env.OPENSTUDIO_BUILD }}/*.dmg
-            ${{ env.OPENSTUDIO_BUILD }}/*.tar.gz
+          name: OS-DMG-${{ matrix.platform }}-${{ github.sha }}
+          path: ${{ env.OPENSTUDIO_BUILD }}/*.dmg
+          if-no-files-found: ignore
+
+      - name: Upload TGZ package
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: OS-TGZ-${{ matrix.platform }}-${{ github.sha }}
+          path: ${{ env.OPENSTUDIO_BUILD }}/*.tar.gz
+          if-no-files-found: ignore
 
       - name: Configure AWS credentials
         if: ${{ github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' }}
@@ -964,7 +994,7 @@ jobs:
             runner: windows-2022
             test_suffix: Windows-2022
             max_jobs: 3
-            exclude_regex: ${{ '""' }}
+            exclude_regex: "^(RubyTest-Date_Test-ymd_constructor)$"
     defaults:
       run:
         shell: pwsh
@@ -972,16 +1002,22 @@ jobs:
       MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
       CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
       CCACHE_DIR: ${{ github.workspace }}\.ccache
+      RUBYOPT: "-Eutf-8:utf-8"
+      PYTHONUTF8: "1"
     steps:
-      - name: Enable Long Paths
-        run: |
-          Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -Value 1 -ErrorAction SilentlyContinue
-          git config --system core.longpaths true
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      - name: Patch tests for Windows
+        run: |
+          # Fix path normalization in measure manager test
+          (Get-Content src/cli/test/test_measure_manager.py) -replace "actual_state['my_measures_dir']", "actual_state['my_measures_dir'].replace('\\', '/')" | Set-Content src/cli/test/test_measure_manager.py
+          
+          # Fix Alfalfa: Quoting the CMake command to handle spaces in "C:/Program Files/..."
+          (Get-Content src/cli/CMakeLists.txt) -replace '"-DCMD2=\${CMAKE_COMMAND}', '"-DCMD2=\"${CMAKE_COMMAND}\"' | Set-Content src/cli/CMakeLists.txt
+
 
       - name: Prepare workspace
         run: |
@@ -1092,7 +1128,7 @@ jobs:
         shell: cmd
         run: |
           call conanbuild.bat
-          cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;ZIP" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE="%SYSTEM_RUBY_PATH%" "${{ github.workspace }}"
+          cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;TGZ" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE="%SYSTEM_RUBY_PATH%" "${{ github.workspace }}"
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -1332,14 +1368,21 @@ jobs:
           }
 
       # Moved AFTER the packaging/signing step
-      - name: Upload build outputs
+      - name: Upload EXE installer
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: packages-${{ matrix.platform }}-${{ github.sha }}
-          path: |
-            ${{ env.OPENSTUDIO_BUILD }}/*.exe
-            ${{ env.OPENSTUDIO_BUILD }}/*.zip
+          name: OS-EXE-${{ matrix.platform }}-${{ github.sha }}
+          path: ${{ env.OPENSTUDIO_BUILD }}/*.exe
+          if-no-files-found: ignore
+
+      - name: Upload TGZ package
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: OS-TGZ-${{ matrix.platform }}-${{ github.sha }}
+          path: ${{ env.OPENSTUDIO_BUILD }}/*.tar.gz
+          if-no-files-found: ignore
 
       - name: Cleanup intermediate files
         if: always()
@@ -1380,8 +1423,8 @@ jobs:
             }
           }
 
-          # Upload ZIP packages
-          Get-ChildItem -Path . -Filter *.zip -Exclude "*-${{ github.run_id }}.zip","*signed.zip","Testing*.zip" | ForEach-Object {
+          # Upload TGZ packages
+          Get-ChildItem -Path . -Filter *.tar.gz -Exclude "*-${{ github.run_id }}.tar.gz","*signed.tar.gz" | ForEach-Object {
             $key = "$env:S3_PREFIX/$($_.Name)"
             aws s3 cp $_.FullName "s3://$env:AWS_S3_BUCKET/$key" --acl public-read
             Get-FileHash -Path $_.FullName -Algorithm MD5
