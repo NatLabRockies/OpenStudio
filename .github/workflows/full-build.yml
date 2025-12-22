@@ -140,6 +140,11 @@ jobs:
       MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
       CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
     steps:
+      - name: Install sudo
+        run: |
+          set -ex
+          apt-get update && apt-get install -y sudo
+
       - name: Maximize build space
         uses: easimon/maximize-build-space@v10
         with:
@@ -147,6 +152,17 @@ jobs:
           remove-android: 'true'
           remove-haskell: 'true'
           overprovision-lvm: 'true'
+
+      - name: Verify space
+        run: |
+          echo "Memory and swap:"
+          sudo free -h || free -h
+          echo
+          sudo swapon --show || true
+          echo
+          echo "Available storage:"
+          sudo df -h || df -h
+          echo
 
       - name: Checkout repository
         uses: actions/checkout@v4
