@@ -51,6 +51,9 @@ env:
   CCACHE_BASEDIR: ${{ github.workspace }}
   CCACHE_COMPRESS: "true"
   CCACHE_COMPRESSLEVEL: "6"
+  CCACHE_MAXSIZE: "4G"
+  CCACHE_DEPEND: "true"
+  CCACHE_NOHASHDIR: "true"
 
 jobs:
   linux-x64:
@@ -197,12 +200,17 @@ jobs:
 
           prepare_dir "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}" "/mnt/build"
           prepare_dir "$HOME/.ccache" "/mnt/.ccache"
-          prepare_dir "$HOME/.conan2" "/mnt/.conan2"
-
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           if command -v ccache >/dev/null 2>&1; then
             ccache -M 2G || true
             echo "Configured ccache:"; ccache -s | sed -n '1,10p'
+          fi
+
+      - name: Fix CMake Path (CentOS)
+        if: matrix.platform == 'centos-9-x64'
+        run: |
+          if [ -d /usr/local/cmake/bin ]; then
+            echo "Adding /usr/local/cmake/bin to PATH"
+            echo "/usr/local/cmake/bin" >> $GITHUB_PATH
           fi
 
       - name: Cache External Dependencies
@@ -253,7 +261,7 @@ jobs:
             -DBUILD_TESTING:BOOL=ON \
             -DCPACK_GENERATORS:STRING="${{ matrix.cpack_generators }}" \
             -DBUILD_PYTHON_BINDINGS:BOOL=ON \
-            -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON \
+            -DDISCOVER_TESTS_AFTER_BUILD:BOOL=OFF \
             -DBUILD_PYTHON_PIP_PACKAGE:BOOL=${{ matrix.pip_package }} \
             -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} \
             -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
@@ -670,7 +678,7 @@ jobs:
             -DBUILD_TESTING:BOOL=ON \
             -DCPACK_GENERATORS:STRING="DragNDrop;TGZ" \
             -DBUILD_PYTHON_BINDINGS:BOOL=ON \
-            -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON \
+            -DDISCOVER_TESTS_AFTER_BUILD:BOOL=OFF \
             -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF \
             -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} \
             -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
@@ -947,7 +955,7 @@ jobs:
             display_name: Windows 2022 x64
             runner: windows-2022
             test_suffix: Windows-2022
-            max_jobs: 2
+            max_jobs: 3
             exclude_regex: ${{ '""' }}
     defaults:
       run:
@@ -971,6 +979,14 @@ jobs:
         run: |
           git config --global --add safe.directory "$env:GITHUB_WORKSPACE"
           New-Item -ItemType Directory -Path "${{ env.OPENSTUDIO_BUILD }}" -Force
+          
+          # Speed up Windows builds by disabling real-time antivirus monitoring for the workspace
+          Write-Host "Disabling Windows Defender real-time monitoring for workspace: $env:GITHUB_WORKSPACE"
+          Set-MpPreference -DisableRealtimeMonitoring $true
+          Add-MpPreference -ExclusionPath $env:GITHUB_WORKSPACE -ErrorAction SilentlyContinue
+          
+          # Set Power Plan to High Performance for better process spawn speed
+          powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
 
       - name: Cache External Dependencies
         uses: actions/cache@v4
@@ -982,6 +998,16 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/radiance*.zip
             ${{ env.OPENSTUDIO_BUILD }}/openstudio*gems*.tar.gz
           key: external-deps-${{ runner.os }}-${{ hashFiles('conan.lock') }}
+
+      - name: Restore Generated Embedded Files
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.OPENSTUDIO_BUILD }}/src/*/embedded_files
+            ${{ env.OPENSTUDIO_BUILD }}/ruby/engine/embedded_files
+          key: embedded-files-${{ runner.os }}-${{ hashFiles('resources/**', 'ruby/engine/**', 'src/airflow/**', 'src/energyplus/**', 'src/gbxml/**', 'src/isomodel/**', 'src/model/**', 'src/radiance/**', 'src/sdd/**', 'src/utilities/**') }}
+          restore-keys: |
+            embedded-files-${{ runner.os }}-
 
       - name: Restore ccache cache
         uses: actions/cache@v4
@@ -1029,7 +1055,7 @@ jobs:
 
       - name: Configure ccache size
         run: |
-          if (Get-Command ccache -ErrorAction SilentlyContinue) { ccache -M 2G }
+          if (Get-Command ccache -ErrorAction SilentlyContinue) { ccache -M 4G }
 
       - name: Configure Conan remotes
         run: |
@@ -1063,20 +1089,22 @@ jobs:
         shell: cmd
         run: |
           call conanbuild.bat
-          cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;ZIP" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE="%SYSTEM_RUBY_PATH%" "${{ github.workspace }}"
+          cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;ZIP" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=OFF -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE="%SYSTEM_RUBY_PATH%" "${{ github.workspace }}"
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         shell: pwsh
         run: |
+          if (Get-Command ccache -ErrorAction SilentlyContinue) { ccache -s }
           # Use $env:ComSpec to ensure we call the Windows Command Prompt, not the MSYS2 cmd found in PATH
-          & $env:ComSpec /c "call conanbuild.bat && cmake --build . --parallel ${{ matrix.max_jobs }} 2>&1" | Tee-Object -FilePath "build.log"
+          & $env:ComSpec /c "call conanbuild.bat && cmake --build . --parallel ${{ matrix.max_jobs }} -- -d stats 2>&1" | Tee-Object -FilePath "build.log"
           
           # Check the exit code of the cmd process, not Tee-Object
           if ($LASTEXITCODE -ne 0) {
             Write-Error "Build failed with exit code $LASTEXITCODE"
             exit $LASTEXITCODE
           }
+          if (Get-Command ccache -ErrorAction SilentlyContinue) { ccache -s }
 
       - name: Upload build log
         if: always()
@@ -1131,19 +1159,24 @@ jobs:
           if ($EXCLUDE_REGEX -eq '""') {
             # Only exclude resource locked tests
             $FINAL_EXCLUDE = "^($RESOURCE_LOCKED_TESTS)$"
-            ctest -C ${{ env.BUILD_TYPE }} -E "$FINAL_EXCLUDE"
-            if ($LASTEXITCODE -ne 0) { ctest -C ${{ env.BUILD_TYPE }} -E "$FINAL_EXCLUDE" }
           } else {
             # Merge with resource locked tests
             $CLEAN_EXCLUDE = $EXCLUDE_REGEX -replace '^\^', '' -replace '\$$', ''
             $FINAL_EXCLUDE = "^($CLEAN_EXCLUDE|$RESOURCE_LOCKED_TESTS)$"
-            ctest -C ${{ env.BUILD_TYPE }} -E "$FINAL_EXCLUDE"
-            if ($LASTEXITCODE -ne 0) { ctest -C ${{ env.BUILD_TYPE }} -E "$FINAL_EXCLUDE" }
+          }
+
+          # Run remaining tests in parallel
+          ctest -C ${{ env.BUILD_TYPE }} -E "$FINAL_EXCLUDE"
+          
+          # If any tests failed, rerun only the failed ones once
+          if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Some tests failed, rerunning only failed tests..."
+            ctest -C ${{ env.BUILD_TYPE }} -E "$FINAL_EXCLUDE" --rerun-failed --output-on-failure
           }
           
           if ($LASTEXITCODE -ne 0) {
             echo "exit_code=$LASTEXITCODE" >> $env:GITHUB_OUTPUT
-            Write-Warning "CTest suite failed with exit code $LASTEXITCODE"
+            Write-Warning "CTest suite failed with exit code $LASTEXITCODE after rerun"
           }
 
       - name: Archive Testing directory
@@ -1166,22 +1199,25 @@ jobs:
 
       # CODE SIGNING - AWS Signing Service
       - name: Setup Node.js
-        uses: actions/setup-node @v4
+        if: github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+        uses: actions/setup-node@v4
         with:
           node-version: "18"
 
       - name: Install Signing Client Dependencies
+        if: github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
         run: npm install
         working-directory: ./.github/signing-client
 
       - name: Create .env file for Signing
+        if: github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
         run: |
           echo "ACCESS_KEY=${{ secrets.AWS_SIGNING_ACCESS_KEY }}" > .env
           echo "SECRET_KEY=${{ secrets.AWS_SIGNING_SECRET_KEY }}" >> .env
-        working-directory: ./.github/signing-client
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
 
       - name: Code sign installer
-        if: always()
+        if: success() && (github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true')
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           # Check if signing client exists
