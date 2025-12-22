@@ -202,7 +202,7 @@ jobs:
           prepare_dir "$HOME/.ccache" "/mnt/.ccache"
           prepare_dir "$HOME/.conan2" "/mnt/.conan2"
           if command -v ccache >/dev/null 2>&1; then
-            ccache -M 2G || true
+            ccache -M ${{ env.CCACHE_MAXSIZE }} || true
             echo "Configured ccache:"; ccache -s | sed -n '1,10p'
           fi
 
@@ -508,16 +508,11 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Install ccache
-        run: brew install ccache
-
-      - name: Restore ccache cache
-        uses: actions/cache@v4
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
         with:
-          path: ~/.ccache
           key: ccache-${{ runner.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
-          restore-keys: |
-            ccache-${{ runner.os }}-${{ matrix.platform }}-
+          max-size: ${{ env.CCACHE_MAXSIZE }}
 
       - name: Restore Conan cache
         uses: actions/cache@v4
@@ -532,10 +527,6 @@ jobs:
           set -euo pipefail
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           mkdir -p "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}"
-          if command -v ccache >/dev/null 2>&1; then
-            ccache -M 2G || true
-            echo "Configured ccache:"; ccache -s | sed -n '1,10p'
-          fi
 
       - name: Cache External Dependencies
         uses: actions/cache@v4
@@ -902,7 +893,6 @@ jobs:
     env:
       MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
       CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
-      CCACHE_DIR: ${{ github.workspace }}\.ccache
       RUBYOPT: "-Eutf-8:utf-8"
       PYTHONUTF8: "1"
     steps:
@@ -956,13 +946,11 @@ jobs:
           restore-keys: |
             embedded-files-${{ runner.os }}-
 
-      - name: Restore ccache cache
-        uses: actions/cache@v4
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
         with:
-          path: .ccache
           key: ccache-${{ runner.os }}-windows-${{ hashFiles('conan.lock') }}
-          restore-keys: |
-            ccache-${{ runner.os }}-windows-
+          max-size: ${{ env.CCACHE_MAXSIZE }}
 
       - name: Restore Conan cache
         uses: actions/cache@v4
@@ -992,14 +980,6 @@ jobs:
       - name: Install Conan
         run: |
           python -m pip install conan
-
-      - name: Install ccache
-        run: |
-          choco install ccache -y || echo "ccache install failed (non-fatal)"
-
-      - name: Configure ccache size
-        run: |
-          if (Get-Command ccache -ErrorAction SilentlyContinue) { ccache -M 4G }
 
       - name: Configure Conan remotes
         run: |
