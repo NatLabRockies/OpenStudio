@@ -4,4 +4,4 @@ pandas == 2.2.3
 pytest == 8.3.3
 coverage == 7.6.1
 pytest-cov == 5.0.0
-# pytest-xdist == 3.6.1
+pytest-xdist == 3.6.1

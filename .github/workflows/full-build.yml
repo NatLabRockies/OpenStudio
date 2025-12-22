@@ -262,7 +262,7 @@ jobs:
             -DBUILD_TESTING:BOOL=ON \
             -DCPACK_GENERATORS:STRING="${{ matrix.cpack_generators }}" \
             -DBUILD_PYTHON_BINDINGS:BOOL=ON \
-            -DDISCOVER_TESTS_AFTER_BUILD:BOOL=OFF \
+            -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON \
             -DBUILD_PYTHON_PIP_PACKAGE:BOOL=${{ matrix.pip_package }} \
             -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} \
             -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
@@ -287,6 +287,13 @@ jobs:
           kill $HB_PID || true
           command -v ninja >/dev/null 2>&1 && ninja -d stats || true
           exit $BUILD_EXIT
+
+      - name: Discover tests
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          set -euo pipefail
+          . ./conanbuild.sh
+          cmake -DAPPEND_TESTS_ONLY:BOOL=ON .
 
       - name: Upload build log
         if: always()
@@ -673,7 +680,7 @@ jobs:
             -DBUILD_TESTING:BOOL=ON \
             -DCPACK_GENERATORS:STRING="DragNDrop;TGZ" \
             -DBUILD_PYTHON_BINDINGS:BOOL=ON \
-            -DDISCOVER_TESTS_AFTER_BUILD:BOOL=OFF \
+            -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON \
             -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF \
             -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} \
             -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
@@ -699,6 +706,13 @@ jobs:
           command -v ninja >/dev/null 2>&1 && ninja -d stats || true
           if [ -f build.log ]; then tail -n 40 build.log; fi
           exit $build_exit
+
+      - name: Discover tests
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          set -euo pipefail
+          . ./conanbuild.sh
+          cmake -DAPPEND_TESTS_ONLY:BOOL=ON .
 
       - name: Upload build log
         if: always()
@@ -1078,7 +1092,7 @@ jobs:
         shell: cmd
         run: |
           call conanbuild.bat
-          cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;ZIP" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=OFF -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE="%SYSTEM_RUBY_PATH%" "${{ github.workspace }}"
+          cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;ZIP" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE="%SYSTEM_RUBY_PATH%" "${{ github.workspace }}"
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -1094,6 +1108,13 @@ jobs:
             exit $LASTEXITCODE
           }
           if (Get-Command ccache -ErrorAction SilentlyContinue) { ccache -s }
+
+      - name: Discover tests
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        shell: cmd
+        run: |
+          call conanbuild.bat
+          cmake -DAPPEND_TESTS_ONLY:BOOL=ON .
 
       - name: Upload build log
         if: always()
