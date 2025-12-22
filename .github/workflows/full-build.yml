@@ -200,6 +200,7 @@ jobs:
 
           prepare_dir "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}" "/mnt/build"
           prepare_dir "$HOME/.ccache" "/mnt/.ccache"
+          prepare_dir "$HOME/.conan2" "/mnt/.conan2"
           if command -v ccache >/dev/null 2>&1; then
             ccache -M 2G || true
             echo "Configured ccache:"; ccache -s | sed -n '1,10p'
@@ -624,24 +625,20 @@ jobs:
           ruby-version: '3.2.2'
           bundler-cache: true
  
-      - name: Create python venv
+      - name: Install Python dependencies
         run: |
           set -euo pipefail
-          python3 -m venv .venv
-          source .venv/bin/activate
           pip install --upgrade pip setuptools wheel
           pip install -r python/requirements.txt
 
       - name: Install Conan
         run: |
           set -euo pipefail
-          source .venv/bin/activate
           pip3 install conan
 
       - name: Configure Conan remotes
         run: |
           set -euo pipefail
-          source .venv/bin/activate
           conan remote add conancenter https://center2.conan.io --force
           conan remote update conancenter --insecure
           conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2 --force
@@ -653,7 +650,6 @@ jobs:
       - name: Conan install
         run: |
           set -euo pipefail
-          source .venv/bin/activate
           CMAKE_POLICY_VERSION_MINIMUM=3.5 conan install . \
             --output-folder="${{ env.OPENSTUDIO_BUILD }}" \
             --build=missing \
@@ -670,7 +666,6 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           set -euo pipefail
-          source ../.venv/bin/activate
           . ./conanbuild.sh
           cmake -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
@@ -727,7 +722,6 @@ jobs:
         continue-on-error: true
         run: |
           set -euo pipefail
-          source ../.venv/bin/activate
           . ./conanbuild.sh
           df -h .
 
@@ -1037,17 +1031,14 @@ jobs:
           ruby-version: '3.2.2'
           bundler-cache: true
 
-      - name: Create python venv
+      - name: Install Python dependencies
         run: |
-          python -m venv .venv
-          .\.venv\Scripts\Activate.ps1
-          .\.venv\Scripts\python.exe -m pip install --upgrade pip setuptools wheel
-          .\.venv\Scripts\python.exe -m pip install -r python/requirements.txt
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -r python/requirements.txt
 
       - name: Install Conan
         run: |
-          .\.venv\Scripts\Activate.ps1
-          .\.venv\Scripts\python.exe -m pip install conan
+          python -m pip install conan
 
       - name: Install ccache
         run: |
@@ -1059,7 +1050,6 @@ jobs:
 
       - name: Configure Conan remotes
         run: |
-          .\.venv\Scripts\Activate.ps1
           conan remote add conancenter https://center2.conan.io --force
           conan remote update conancenter --insecure
           conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2 --force
@@ -1070,7 +1060,6 @@ jobs:
 
       - name: Conan install
         run: |
-          .\.venv\Scripts\Activate.ps1
           $env:CMAKE_POLICY_VERSION_MINIMUM="3.5"
           conan install . `
             --output-folder="${{ env.OPENSTUDIO_BUILD }}" `
