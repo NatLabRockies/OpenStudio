@@ -240,9 +240,7 @@ jobs:
         run: |
           set -euo pipefail
           conan remote add conancenter https://center2.conan.io --force
-          conan remote update conancenter
           conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2 --force
-          conan remote update nrel-v2
           if [ ! -f "$HOME/.conan2/profiles/default" ]; then
             conan profile detect
           fi
@@ -504,9 +502,7 @@ jobs:
         run: |
           set -euo pipefail
           conan remote add conancenter https://center2.conan.io --force
-          conan remote update conancenter
           conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2 --force
-          conan remote update nrel-v2
           if [ ! -f "$HOME/.conan2/profiles/default" ]; then
             conan profile detect
           fi
@@ -928,9 +924,7 @@ jobs:
       - name: Configure Conan remotes
         run: |
           conan remote add conancenter https://center2.conan.io --force
-          conan remote update conancenter
           conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2 --force
-          conan remote update nrel-v2
           if (-not (Test-Path "$env:USERPROFILE/.conan2/profiles/default")) {
             conan profile detect
           }
