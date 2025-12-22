@@ -51,11 +51,12 @@ env:
   CCACHE_BASEDIR: ${{ github.workspace }}
   CCACHE_COMPRESS: "true"
   CCACHE_COMPRESSLEVEL: "3"
-  CCACHE_MAXSIZE: "10G"
+  CCACHE_MAXSIZE: "5G"
   CCACHE_DEPEND: "true"
   CCACHE_NOHASHDIR: "true"
-  SCCACHE_GHA_ENABLED: "true"
-  SCCACHE_CACHE_SIZE: "10G"
+  SCCACHE_GHA_ENABLED: "false"
+  SCCACHE_DIR: "${{ github.workspace }}\\.sccache"
+  SCCACHE_CACHE_SIZE: "5G"
 
 jobs:
   linux-build:
@@ -239,9 +240,9 @@ jobs:
         run: |
           set -euo pipefail
           conan remote add conancenter https://center2.conan.io --force
-          conan remote update conancenter --insecure
+          conan remote update conancenter
           conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2 --force
-          conan remote update nrel-v2 --insecure
+          conan remote update nrel-v2
           if [ ! -f "$HOME/.conan2/profiles/default" ]; then
             conan profile detect
           fi
@@ -309,6 +310,19 @@ jobs:
           command -v ninja >/dev/null 2>&1 && ninja -d stats || true
           exit $BUILD_EXIT
 
+      - name: Run CTest suite
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          set -euo pipefail
+          . ./conanbuild.sh
+          
+          exclude_regex="${{ matrix.exclude_regex }}"
+          if [ "$exclude_regex" == '""' ]; then
+            ctest -C ${{ env.BUILD_TYPE }} -j ${{ matrix.max_jobs }} --output-on-failure
+          else
+            ctest -C ${{ env.BUILD_TYPE }} -E "$exclude_regex" -j ${{ matrix.max_jobs }} --output-on-failure
+          fi
+
       - name: Upload build log
         if: always()
         uses: actions/upload-artifact@v4
@@ -326,25 +340,12 @@ jobs:
             ${{ steps.build_path.outputs.path }}/CTestTestfile.cmake
 
       - name: Create packages
+        if: always()
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           set -euo pipefail
           . ./conanbuild.sh
           cmake --build . --target package
-
-      - name: Upload build products
-        uses: actions/upload-artifact@v4
-        with:
-          name: products-${{ matrix.platform }}-${{ github.sha }}
-          path: |
-            ${{ steps.build_path.outputs.path }}/Products/
-            ${{ steps.build_path.outputs.path }}/bin/
-            ${{ steps.build_path.outputs.path }}/lib/
-            ${{ steps.build_path.outputs.path }}/python/
-            ${{ steps.build_path.outputs.path }}/**/CTestTestfile.cmake
-            ${{ steps.build_path.outputs.path }}/conanbuild.sh
-            ${{ steps.build_path.outputs.path }}/conan_toolchain.cmake
-            ${{ steps.build_path.outputs.path }}/CMakeCache.txt
 
       - name: Upload DEB installer
         uses: actions/upload-artifact@v4
@@ -374,85 +375,9 @@ jobs:
           path: ${{ steps.build_path.outputs.path }}/*.whl
           if-no-files-found: ignore
 
-  linux-test:
-    name: Test ${{ matrix.platform }} (${{ matrix.shard }})
-    needs: linux-build
-    runs-on: ${{ matrix.runner }}
-    container:
-      image: ${{ matrix.container_image }}
-      options: ${{ matrix.container_options }} --volume /mnt:/mnt
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [centos-9-x64, ubuntu-2204-x64, ubuntu-2404-x64, ubuntu-2204-arm64, ubuntu-2404-arm64]
-        shard: [Model, Core, Bindings]
-        include:
-          - platform: centos-9-x64
-            runner: ubuntu-22.04
-            container_image: nrel/openstudio-cmake-tools:almalinux9-main
-            container_options: "--privileged -u root -e LANG=en_US.UTF-8"
-            test_suffix: CentOS-9
-            exclude_regex: ""
-          - platform: ubuntu-2204-x64
-            runner: ubuntu-22.04
-            container_image: nrel/openstudio-cmake-tools:jammy-main
-            container_options: "--privileged -u root -e LANG=en_US.UTF-8"
-            test_suffix: Ubuntu-2204
-            exclude_regex: ""
-          - platform: ubuntu-2404-x64
-            runner: ubuntu-24.04
-            container_image: nrel/openstudio-cmake-tools:noble-main
-            container_options: "--privileged -u root -e LANG=en_US.UTF-8"
-            test_suffix: Ubuntu-2404
-            exclude_regex: ""
-          - platform: ubuntu-2204-arm64
-            runner: ubuntu-22.04-arm
-            container_image: nrel/openstudio-cmake-tools:jammy-main
-            container_options: "--privileged -u root -e LANG=en_US.UTF-8"
-            test_suffix: Ubuntu-2204-ARM64
-            exclude_regex: "^(GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager)$"
-          - platform: ubuntu-2404-arm64
-            runner: ubuntu-24.04-arm
-            container_image: nrel/openstudio-cmake-tools:noble-main
-            container_options: "--privileged -u root -e LANG=en_US.UTF-8"
-            test_suffix: Ubuntu-2404-ARM64
-            exclude_regex: "^(GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager)$"
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - name: Download build products
-        uses: actions/download-artifact@v4
-        with:
-          name: products-${{ matrix.platform }}-${{ github.sha }}
-          path: ${{ env.OPENSTUDIO_BUILD }}
-
-      - name: Run CTest shard
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        run: |
-          set -euo pipefail
-          . ./conanbuild.sh
-          
-          # Define shard filters
-          if [ "${{ matrix.shard }}" == "Model" ]; then
-            include_regex="^ModelFixture"
-          elif [ "${{ matrix.shard }}" == "Bindings" ]; then
-            include_regex="^(PyTest|RubyTest)"
-          else
-            include_regex="."
-            exclude_regex="^(ModelFixture|PyTest|RubyTest)"
-          fi
-
-          # Merge with platform exclusions
-          if [ -n "${{ matrix.exclude_regex }}" ]; then
-            exclude_regex="($exclude_regex|${{ matrix.exclude_regex }})"
-          fi
-
-          ctest -C ${{ env.BUILD_TYPE }} -L "${include_regex}" -E "${exclude_regex}" -j 2 --output-on-failure
-
   linux-publish:
     name: Publish Linux Artifacts
-    needs: [linux-build, linux-test]
+    needs: [linux-build]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
     steps:
@@ -579,9 +504,9 @@ jobs:
         run: |
           set -euo pipefail
           conan remote add conancenter https://center2.conan.io --force
-          conan remote update conancenter --insecure
+          conan remote update conancenter
           conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2 --force
-          conan remote update nrel-v2 --insecure
+          conan remote update nrel-v2
           if [ ! -f "$HOME/.conan2/profiles/default" ]; then
             conan profile detect
           fi
@@ -674,37 +599,31 @@ jobs:
           . ./conanbuild.sh
           df -h .
 
-          echo "exit_code=0" >> $GITHUB_OUTPUT
-
           # Conflicting tests that must run sequentially
           resource_locked_tests="ModelFixture.ScheduleFile|ModelFixture.ScheduleFileAltCtor|ModelFixture.PythonPluginInstance|ModelFixture.PythonPluginInstance_NotPYFile|ModelFixture.PythonPluginInstance_ClassNameValidation|ModelFixture.ChillerElectricASHRAE205_GettersSetters|ModelFixture.ChillerElectricASHRAE205_Loops|ModelFixture.ChillerElectricASHRAE205_NotCBORFile|ModelFixture.ChillerElectricASHRAE205_Clone"
 
-          # Run conflicting tests sequentially (parallel level 1)
-          ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -j 1 || echo "::warning::Sequential tests failed"
+          overall_exit_code=0
 
+          echo "Running sequential tests..."
+          ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -j 1 || overall_exit_code=1
+
+          echo "Running all other tests in parallel..."
           export CTEST_OUTPUT_ON_FAILURE=1
           export CTEST_PARALLEL_LEVEL=${{ matrix.max_jobs }}
           
           exclude_regex="${{ matrix.exclude_regex }}"
           if [ -n "$exclude_regex" ] && [ "$exclude_regex" != '""' ]; then
-            # Merge with resource locked tests
             exclude_regex="($exclude_regex|$resource_locked_tests)"
-            ctest -C ${{ env.BUILD_TYPE }} -E "$exclude_regex" || \
-            ctest -C ${{ env.BUILD_TYPE }} -E "$exclude_regex" || {
-              exit_code=$?
-              echo "exit_code=${exit_code}" >> $GITHUB_OUTPUT
-              echo "::warning::CTest suite failed with exit code ${exit_code}"
-            }
           else
-            ctest -C ${{ env.BUILD_TYPE }} -E "^($resource_locked_tests)$" || \
-            ctest -C ${{ env.BUILD_TYPE }} -E "^($resource_locked_tests)$" || {
-              exit_code=$?
-              echo "exit_code=${exit_code}" >> $GITHUB_OUTPUT
-              echo "::warning::CTest suite failed with exit code ${exit_code}"
-            }
+            exclude_regex="^($resource_locked_tests)$"
           fi
 
+          ctest -C ${{ env.BUILD_TYPE }} -E "$exclude_regex" || overall_exit_code=$?
+
+          echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
+
       - name: Create packages
+        if: always()
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           set -euo pipefail
@@ -921,6 +840,14 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Restore sccache cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}\.sccache
+          key: sccache-${{ runner.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
+          restore-keys: |
+            sccache-${{ runner.os }}-${{ matrix.platform }}-
+
       - name: Patch tests for Windows
         run: |
           # Fix path normalization in measure manager test
@@ -1001,9 +928,9 @@ jobs:
       - name: Configure Conan remotes
         run: |
           conan remote add conancenter https://center2.conan.io --force
-          conan remote update conancenter --insecure
+          conan remote update conancenter
           conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2 --force
-          conan remote update nrel-v2 --insecure
+          conan remote update nrel-v2
           if (-not (Test-Path "$env:USERPROFILE/.conan2/profiles/default")) {
             conan profile detect
           }
@@ -1044,19 +971,27 @@ jobs:
           }
           if (Get-Command sccache -ErrorAction SilentlyContinue) { sccache -s }
 
-      - name: Upload build products
-        uses: actions/upload-artifact@v4
-        with:
-          name: products-windows-${{ github.sha }}
-          path: |
-            ${{ env.OPENSTUDIO_BUILD }}/Products/
-            ${{ env.OPENSTUDIO_BUILD }}/bin/
-            ${{ env.OPENSTUDIO_BUILD }}/lib/
-            ${{ env.OPENSTUDIO_BUILD }}/python/
-            ${{ env.OPENSTUDIO_BUILD }}/**/CTestTestfile.cmake
-            ${{ env.OPENSTUDIO_BUILD }}/conanbuild.bat
-            ${{ env.OPENSTUDIO_BUILD }}/conan_toolchain.cmake
-            ${{ env.OPENSTUDIO_BUILD }}/CMakeCache.txt
+      - name: Run CTest suite
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        shell: pwsh
+        run: |
+          $env_vars = & $env:ComSpec /c "call conanbuild.bat && set"
+          foreach ($line in $env_vars) {
+            if ($line -match '^(.*?)=(.*)$') {
+              $name = $matches[1]
+              $value = $matches[2]
+              if ($name -ne "" -and $name -notmatch "^=") {
+                [Environment]::SetEnvironmentVariable($name, $value, "Process")
+              }
+            }
+          }
+          
+          $exclude_regex = "${{ matrix.exclude_regex }}"
+          if ([string]::IsNullOrEmpty($exclude_regex) -or $exclude_regex -eq '""') {
+             ctest -C ${{ env.BUILD_TYPE }} -j ${{ matrix.max_jobs }} --output-on-failure
+          } else {
+             ctest -C ${{ env.BUILD_TYPE }} -E "$exclude_regex" -j ${{ matrix.max_jobs }} --output-on-failure
+          }
 
       - name: Upload build log
         if: always()
@@ -1219,70 +1154,9 @@ jobs:
           path: ${{ env.OPENSTUDIO_BUILD }}/signed/
           if-no-files-found: ignore
 
-  windows-test:
-    name: Test Windows (${{ matrix.shard }})
-    needs: windows-build
-    runs-on: windows-2022
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [Model, Core, Bindings]
-    defaults:
-      run:
-        shell: pwsh
-    env:
-      RUBYOPT: "-Eutf-8:utf-8"
-      PYTHONUTF8: "1"
-      BUILD_TYPE: Release
-      OPENSTUDIO_BUILD: build
-    steps:
-      - name: Download build products
-        uses: actions/download-artifact@v4
-        with:
-          name: products-windows-${{ github.sha }}
-          path: ${{ env.OPENSTUDIO_BUILD }}
-
-      - name: Set up Python 3.12.2
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12.2'
-
-      - name: Install Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2.2'
-
-      - name: Run CTest shard
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        shell: pwsh
-        run: |
-          $env_vars = & $env:ComSpec /c "call conanbuild.bat && set"
-          foreach ($line in $env_vars) {
-            if ($line -match '^(.*?)=(.*)$') {
-              $name = $matches[1]
-              $value = $matches[2]
-              if ($name -ne "" -and $name -notmatch "^=") {
-                [Environment]::SetEnvironmentVariable($name, $value, "Process")
-              }
-            }
-          }
-
-          if ("${{ matrix.shard }}" -eq "Model") {
-            $include_regex = "^ModelFixture"
-            $exclude_regex = "None"
-          } elseif ("${{ matrix.shard }}" -eq "Bindings") {
-            $include_regex = "^(PyTest|RubyTest)"
-            $exclude_regex = "None"
-          } else {
-            $include_regex = "."
-            $exclude_regex = "^(ModelFixture|PyTest|RubyTest)"
-          }
-
-          ctest -C ${{ env.BUILD_TYPE }} -R "$include_regex" -E "$exclude_regex" -j 2 --output-on-failure
-
   windows-publish:
     name: Publish Windows Artifacts
-    needs: [windows-build, windows-test]
+    needs: [windows-build]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
     steps:
