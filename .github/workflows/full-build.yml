@@ -265,6 +265,8 @@ jobs:
           set -euo pipefail
           . ./conanbuild.sh
           cmake -G Ninja \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
             -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} \
             -DBUILD_TESTING:BOOL=ON \
@@ -594,6 +596,8 @@ jobs:
           set -euo pipefail
           . ./conanbuild.sh
           cmake -G Ninja \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
             -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} \
             -DBUILD_TESTING:BOOL=ON \
@@ -895,6 +899,8 @@ jobs:
       CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
       RUBYOPT: "-Eutf-8:utf-8"
       PYTHONUTF8: "1"
+      SCCACHE_GHA_ENABLED: "true"
+      SCCACHE_CACHE_SIZE: ${{ env.CCACHE_MAXSIZE }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -946,11 +952,8 @@ jobs:
           restore-keys: |
             embedded-files-${{ runner.os }}-
 
-      - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: ccache-${{ runner.os }}-windows-${{ hashFiles('conan.lock') }}
-          max-size: ${{ env.CCACHE_MAXSIZE }}
+      - name: Setup sccache
+        uses: Mozilla-Actions/sccache-action@v0.0.5
 
       - name: Restore Conan cache
         uses: actions/cache@v4
@@ -1011,13 +1014,13 @@ jobs:
         shell: cmd
         run: |
           call conanbuild.bat
-          cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;TGZ" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE="%SYSTEM_RUBY_PATH%" "${{ github.workspace }}"
+          cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;TGZ" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE="%SYSTEM_RUBY_PATH%" "${{ github.workspace }}"
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         shell: pwsh
         run: |
-          if (Get-Command ccache -ErrorAction SilentlyContinue) { ccache -s }
+          if (Get-Command sccache -ErrorAction SilentlyContinue) { sccache -s }
           # Use $env:ComSpec to ensure we call the Windows Command Prompt, not the MSYS2 cmd found in PATH
           & $env:ComSpec /c "call conanbuild.bat && cmake --build . --parallel ${{ matrix.max_jobs }} -- -d stats 2>&1" | Tee-Object -FilePath "build.log"
           
@@ -1026,7 +1029,7 @@ jobs:
             Write-Error "Build failed with exit code $LASTEXITCODE"
             exit $LASTEXITCODE
           }
-          if (Get-Command ccache -ErrorAction SilentlyContinue) { ccache -s }
+          if (Get-Command sccache -ErrorAction SilentlyContinue) { sccache -s }
 
       - name: Upload build products
         uses: actions/upload-artifact@v4
