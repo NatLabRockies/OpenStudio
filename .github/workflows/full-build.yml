@@ -1067,12 +1067,10 @@ jobs:
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        # Switch to powershell (or remove shell: cmd since pwsh is the job default)
         shell: pwsh
         run: |
-          # Run the build inside cmd to load conan env vars, but pipe output to Tee-Object
-          # This prints to the console AND writes to build.log simultaneously
-          cmd /c "call conanbuild.bat && cmake --build . --parallel ${{ matrix.max_jobs }} 2>&1" | Tee-Object -FilePath "build.log"
+          # Use $env:ComSpec to ensure we call the Windows Command Prompt, not the MSYS2 cmd found in PATH
+          & $env:ComSpec /c "call conanbuild.bat && cmake --build . --parallel ${{ matrix.max_jobs }} 2>&1" | Tee-Object -FilePath "build.log"
           
           # Check the exit code of the cmd process, not Tee-Object
           if ($LASTEXITCODE -ne 0) {
@@ -1102,9 +1100,22 @@ jobs:
         continue-on-error: true
         shell: pwsh
         run: |
-          .\conanbuild.bat
+          # Load the Conan environment variables safely
+          # We execute the batch file in cmd, dump vars with 'set', and parse them into the PS session
+          $env_vars = & $env:ComSpec /c "call conanbuild.bat && set"
+          foreach ($line in $env_vars) {
+            if ($line -match '^(.*?)=(.*)$') {
+              $name = $matches[1]
+              $value = $matches[2]
+              # Avoid setting empty names or special cmd vars like =ExitCode
+              if ($name -ne "" -and $name -notmatch "^=") {
+                [Environment]::SetEnvironmentVariable($name, $value, "Process")
+              }
+            }
+          }
+
           Get-PSDrive C
-          echo exit_code=0 >> $env:GITHUB_OUTPUT
+          echo "exit_code=0" >> $env:GITHUB_OUTPUT
 
           # Conflicting tests that must run sequentially
           $RESOURCE_LOCKED_TESTS="ModelFixture.ScheduleFile|ModelFixture.ScheduleFileAltCtor|ModelFixture.PythonPluginInstance|ModelFixture.PythonPluginInstance_NotPYFile|ModelFixture.PythonPluginInstance_ClassNameValidation|ModelFixture.ChillerElectricASHRAE205_GettersSetters|ModelFixture.ChillerElectricASHRAE205_Loops|ModelFixture.ChillerElectricASHRAE205_NotCBORFile|ModelFixture.ChillerElectricASHRAE205_Clone"
@@ -1124,7 +1135,6 @@ jobs:
             if ($LASTEXITCODE -ne 0) { ctest -C ${{ env.BUILD_TYPE }} -E "$FINAL_EXCLUDE" }
           } else {
             # Merge with resource locked tests
-            # Note: strip start/end regex anchors if present to merge safely
             $CLEAN_EXCLUDE = $EXCLUDE_REGEX -replace '^\^', '' -replace '\$$', ''
             $FINAL_EXCLUDE = "^($CLEAN_EXCLUDE|$RESOURCE_LOCKED_TESTS)$"
             ctest -C ${{ env.BUILD_TYPE }} -E "$FINAL_EXCLUDE"
@@ -1154,23 +1164,9 @@ jobs:
           path: |
             ${{ env.OPENSTUDIO_BUILD }}/Testing-${{ matrix.test_suffix }}.zip
 
-      - name: Upload build outputs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: packages-${{ matrix.platform }}-${{ github.sha }}
-          path: |
-            ${{ env.OPENSTUDIO_BUILD }}/*.exe
-            ${{ env.OPENSTUDIO_BUILD }}/*.zip
-
       # CODE SIGNING - AWS Signing Service
-      # Prerequisites:
-      # 1. Signing client files in .github/signing-client/ (code-signing.js, package.json)
-      # 2. AWS_SIGNING_ACCESS_KEY secret configured
-      # 3. AWS_SIGNING_SECRET_KEY secret configured
-
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node @v4
         with:
           node-version: "18"
 
@@ -1208,8 +1204,6 @@ jobs:
             Write-Host "Step 1: Signing Binaries"
             Write-Host "------------------------------------------------------------"
             
-            # Identify binaries in bin/ and Products/
-            # We archive the folders themselves to preserve structure
             $pathsToSign = @()
             if (Test-Path "bin") { $pathsToSign += "bin" }
             if (Test-Path "Products") { $pathsToSign += "Products" }
@@ -1249,8 +1243,8 @@ jobs:
           Write-Host "------------------------------------------------------------"
           Write-Host "Step 2: Creating Installer (CPack)"
           Write-Host "------------------------------------------------------------"
-          # Run cmake --build . --target package using cmd to handle conanbuild.bat
-          cmd /c "call conanbuild.bat && cmake --build . --target package"
+          # FIXED: Use $env:ComSpec to avoid MSYS2 cmd path conflict
+          & $env:ComSpec /c "call conanbuild.bat && cmake --build . --target package"
           if ($LASTEXITCODE -ne 0) {
             Write-Error "CPack failed with exit code $LASTEXITCODE"
             exit $LASTEXITCODE
@@ -1290,6 +1284,16 @@ jobs:
             
             Write-Host "Code signing completed successfully"
           }
+
+      # Moved AFTER the packaging/signing step
+      - name: Upload build outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages-${{ matrix.platform }}-${{ github.sha }}
+          path: |
+            ${{ env.OPENSTUDIO_BUILD }}/*.exe
+            ${{ env.OPENSTUDIO_BUILD }}/*.zip
 
       - name: Cleanup intermediate files
         if: always()
@@ -1341,3 +1345,4 @@ jobs:
         if: ${{ steps.win_ctest.outputs.exit_code != '0' }}
         run: |
           Write-Error "CTest suite failed with exit code $(${{ steps.win_ctest.outputs.exit_code }})"
+
