@@ -143,12 +143,17 @@ jobs:
       - name: Verify space
         run: |
           echo "Memory and swap:"
-          free -h
+          # Check if free exists before running it, or ignore failure
+          if command -v free >/dev/null 2>&1; then
+            free -h
+          else
+            echo "free command not available"
+          fi
           echo
           swapon --show || true
           echo
           echo "Available storage:"
-          df -h
+          df -h || true
           echo
 
       - name: Checkout repository
@@ -252,7 +257,7 @@ jobs:
             -DBUILD_PYTHON_PIP_PACKAGE:BOOL=${{ matrix.pip_package }} \
             -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} \
             -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
-            "${{ github.workspace }}"
+            "$GITHUB_WORKSPACE"
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
