@@ -246,6 +246,10 @@ jobs:
             conan profile detect
           fi
 
+      - name: Install CA Certificates
+        if: startsWith(matrix.platform, 'ubuntu')
+        run: apt-get update && apt-get install -y ca-certificates
+
       - name: Conan install
         run: |
           set -euo pipefail
@@ -266,9 +270,14 @@ jobs:
         run: |
           set -euo pipefail
           . ./conanbuild.sh
+          # Use absolute path for ccache to avoid resolution issues in containers with symlinked build dirs
+          CCACHE_ARGS=()
+          if command -v ccache >/dev/null 2>&1; then
+            CCACHE_EXE=$(command -v ccache)
+            CCACHE_ARGS=("-DCMAKE_C_COMPILER_LAUNCHER=$CCACHE_EXE" "-DCMAKE_CXX_COMPILER_LAUNCHER=$CCACHE_EXE")
+          fi
           cmake -G Ninja \
-            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            "${CCACHE_ARGS[@]}" \
             -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
             -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} \
             -DBUILD_TESTING:BOOL=ON \
@@ -597,9 +606,14 @@ jobs:
         run: |
           set -euo pipefail
           . ./conanbuild.sh
+          # Use absolute path for ccache to avoid resolution issues in containers with symlinked build dirs
+          CCACHE_ARGS=()
+          if command -v ccache >/dev/null 2>&1; then
+            CCACHE_EXE=$(command -v ccache)
+            CCACHE_ARGS=("-DCMAKE_C_COMPILER_LAUNCHER=$CCACHE_EXE" "-DCMAKE_CXX_COMPILER_LAUNCHER=$CCACHE_EXE")
+          fi
           cmake -G Ninja \
-            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            "${CCACHE_ARGS[@]}" \
             -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
             -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} \
             -DBUILD_TESTING:BOOL=ON \
@@ -1006,15 +1020,14 @@ jobs:
 
       - name: Locate Ruby
         run: |
-          $rubyPath = Get-Command ruby | Select-Object -ExpandProperty Source
-          echo "SYSTEM_RUBY_PATH=$rubyPath" >> $env:GITHUB_ENV
+          $rubyPath = (Get-Command ruby).Source
+          "SYSTEM_RUBY_PATH=$rubyPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Configure with CMake
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        shell: cmd
         run: |
-          call conanbuild.bat
-          cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;TGZ" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE="%SYSTEM_RUBY_PATH%" "${{ github.workspace }}"
+          $sccacheExe = (Get-Command sccache).Source
+          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING=`"NSIS;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" `"${{ github.workspace }}`""
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
