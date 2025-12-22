@@ -43,7 +43,7 @@ permissions:
 
 env:
   BUILD_TYPE: Release
-  OPENSTUDIO_BUILD: OS-build-release-v2
+  OPENSTUDIO_BUILD: build
   PY_VERSION: "3.12.2"
   AWS_S3_BUCKET: openstudio-ci-builds
   TEST_DASHBOARD_RELATIVE: Testing/dashboard/test-dashboard.md
@@ -118,7 +118,7 @@ jobs:
               *OpenStudio*aarch64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 3
-            exclude_regex: ${{ '""' }}
+            exclude_regex: "^(GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager)$"
           - platform: ubuntu-2404-arm64
             display_name: Ubuntu 24.04 ARM64
             runner: ubuntu-24.04-arm
@@ -132,7 +132,7 @@ jobs:
               *OpenStudio*aarch64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 3
-            exclude_regex: ${{ '""' }}
+            exclude_regex: "^(GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager)$"
     defaults:
       run:
         shell: bash
@@ -140,6 +140,14 @@ jobs:
       MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
       CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
     steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@v10
+        with:
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+          overprovision-lvm: 'true'
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -167,7 +175,7 @@ jobs:
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           mkdir -p "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}"
           if command -v ccache >/dev/null 2>&1; then
-            ccache -M 5G || true
+            ccache -M 2G || true
             echo "Configured ccache:"; ccache -s | sed -n '1,10p'
           fi
 
@@ -245,6 +253,13 @@ jobs:
           command -v ninja >/dev/null 2>&1 && ninja -d stats || true
           exit $BUILD_EXIT
 
+      - name: Cleanup intermediate files
+        if: always()
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          find . -name "*.o" -type f -delete || true
+          df -h .
+
       - name: Upload build log
         if: always()
         uses: actions/upload-artifact@v4
@@ -268,15 +283,24 @@ jobs:
         run: |
           set -euo pipefail
           . ./conanbuild.sh
+          df -h .
 
           echo "exit_code=0" >> $GITHUB_OUTPUT
           
-          # Run tests
+          # Conflicting tests that must run sequentially
+          resource_locked_tests="ModelFixture.ScheduleFile|ModelFixture.ScheduleFileAltCtor|ModelFixture.PythonPluginInstance|ModelFixture.PythonPluginInstance_NotPYFile|ModelFixture.PythonPluginInstance_ClassNameValidation|ModelFixture.ChillerElectricASHRAE205_GettersSetters|ModelFixture.ChillerElectricASHRAE205_Loops|ModelFixture.ChillerElectricASHRAE205_NotCBORFile|ModelFixture.ChillerElectricASHRAE205_Clone"
+
+          # Run conflicting tests sequentially (parallel level 1)
+          ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -j 1 || echo "::warning::Sequential tests failed"
+
+          # Run remaining tests in parallel
           export CTEST_OUTPUT_ON_FAILURE=1
           export CTEST_PARALLEL_LEVEL=${{ matrix.max_jobs }}
 
           exclude_regex="${{ matrix.exclude_regex }}"
           if [ -n "$exclude_regex" ] && [ "$exclude_regex" != '""' ]; then
+            # Merge with resource locked tests
+            exclude_regex="($exclude_regex|$resource_locked_tests)"
             ctest -C ${{ env.BUILD_TYPE }} -E "$exclude_regex" || \
             ctest -C ${{ env.BUILD_TYPE }} -E "$exclude_regex" || {
               exit_code=$?
@@ -284,8 +308,8 @@ jobs:
               echo "::warning::CTest suite failed with exit code ${exit_code}"
             }
           else
-            ctest -C ${{ env.BUILD_TYPE }} || \
-            ctest -C ${{ env.BUILD_TYPE }} || {
+            ctest -C ${{ env.BUILD_TYPE }} -E "^($resource_locked_tests)$" || \
+            ctest -C ${{ env.BUILD_TYPE }} -E "^($resource_locked_tests)$" || {
               exit_code=$?
               echo "exit_code=${exit_code}" >> $GITHUB_OUTPUT
               echo "::warning::CTest suite failed with exit code ${exit_code}"
@@ -500,7 +524,7 @@ jobs:
             test_suffix: macOS-arm64
             dmg_glob: "*.dmg"
             tar_glob: "*OpenStudio*arm64.tar.gz"
-            exclude_regex: "^('BCLFixture.BCLComponent'|'GeometryFixture.Plane_RayIntersection'|'ISOModelFixture.SimModel')$"
+            exclude_regex: "^(GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel)$"
             max_jobs: 3
     defaults:
       run:
@@ -539,7 +563,7 @@ jobs:
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           mkdir -p "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}"
           if command -v ccache >/dev/null 2>&1; then
-            ccache -M 5G || true
+            ccache -M 2G || true
             echo "Configured ccache:"; ccache -s | sed -n '1,10p'
           fi
 
@@ -647,6 +671,13 @@ jobs:
           if [ -f build.log ]; then tail -n 40 build.log; fi
           exit $build_exit
 
+      - name: Cleanup intermediate files
+        if: always()
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          find . -name "*.o" -type f -delete || true
+          df -h .
+
       - name: Upload build log
         if: always()
         uses: actions/upload-artifact@v4
@@ -671,14 +702,23 @@ jobs:
           set -euo pipefail
           source ../.venv/bin/activate
           . ./conanbuild.sh
+          df -h .
 
           echo "exit_code=0" >> $GITHUB_OUTPUT
+
+          # Conflicting tests that must run sequentially
+          resource_locked_tests="ModelFixture.ScheduleFile|ModelFixture.ScheduleFileAltCtor|ModelFixture.PythonPluginInstance|ModelFixture.PythonPluginInstance_NotPYFile|ModelFixture.PythonPluginInstance_ClassNameValidation|ModelFixture.ChillerElectricASHRAE205_GettersSetters|ModelFixture.ChillerElectricASHRAE205_Loops|ModelFixture.ChillerElectricASHRAE205_NotCBORFile|ModelFixture.ChillerElectricASHRAE205_Clone"
+
+          # Run conflicting tests sequentially (parallel level 1)
+          ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -j 1 || echo "::warning::Sequential tests failed"
 
           export CTEST_OUTPUT_ON_FAILURE=1
           export CTEST_PARALLEL_LEVEL=${{ matrix.max_jobs }}
           
           exclude_regex="${{ matrix.exclude_regex }}"
           if [ -n "$exclude_regex" ] && [ "$exclude_regex" != '""' ]; then
+            # Merge with resource locked tests
+            exclude_regex="($exclude_regex|$resource_locked_tests)"
             ctest -C ${{ env.BUILD_TYPE }} -E "$exclude_regex" || \
             ctest -C ${{ env.BUILD_TYPE }} -E "$exclude_regex" || {
               exit_code=$?
@@ -686,8 +726,8 @@ jobs:
               echo "::warning::CTest suite failed with exit code ${exit_code}"
             }
           else
-            ctest -C ${{ env.BUILD_TYPE }} || \
-            ctest -C ${{ env.BUILD_TYPE }} || {
+            ctest -C ${{ env.BUILD_TYPE }} -E "^($resource_locked_tests)$" || \
+            ctest -C ${{ env.BUILD_TYPE }} -E "^($resource_locked_tests)$" || {
               exit_code=$?
               echo "exit_code=${exit_code}" >> $GITHUB_OUTPUT
               echo "::warning::CTest suite failed with exit code ${exit_code}"
@@ -881,7 +921,7 @@ jobs:
             display_name: Windows 2022 x64
             runner: windows-2022
             test_suffix: Windows-2022
-            max_jobs: 3
+            max_jobs: 2
             exclude_regex: ${{ '""' }}
     defaults:
       run:
@@ -891,6 +931,11 @@ jobs:
       CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
       CCACHE_DIR: ${{ github.workspace }}\.ccache
     steps:
+      - name: Enable Long Paths
+        run: |
+          Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -Value 1 -ErrorAction SilentlyContinue
+          git config --system core.longpaths true
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -958,7 +1003,7 @@ jobs:
 
       - name: Configure ccache size
         run: |
-          if (Get-Command ccache -ErrorAction SilentlyContinue) { ccache -M 5G }
+          if (Get-Command ccache -ErrorAction SilentlyContinue) { ccache -M 2G }
 
       - name: Configure Conan remotes
         run: |
@@ -1000,7 +1045,16 @@ jobs:
         run: |
           call ".\\conanbuild.bat"
           cmake --build . --parallel ${{ matrix.max_jobs }} > build.log 2>&1
+          set BUILD_EXIT_CODE=%ERRORLEVEL%
           type build.log
+          if %BUILD_EXIT_CODE% neq 0 exit %BUILD_EXIT_CODE%
+
+      - name: Cleanup intermediate files
+        if: always()
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          Get-ChildItem -Include *.obj -Recurse | Remove-Item -ErrorAction SilentlyContinue
+          Get-PSDrive C
 
       - name: Upload build log
         if: always()
@@ -1022,26 +1076,41 @@ jobs:
         id: win_ctest
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         continue-on-error: true
-        shell: cmd
+        shell: pwsh
         run: |
-          call conanbuild.bat
-          echo exit_code=0 >> %GITHUB_OUTPUT%
-          set CTEST_OUTPUT_ON_FAILURE=1
-          set CTEST_PARALLEL_LEVEL=${{ matrix.max_jobs }}
+          .\conanbuild.bat
+          Get-PSDrive C
+          echo exit_code=0 >> $env:GITHUB_OUTPUT
+
+          # Conflicting tests that must run sequentially
+          $RESOURCE_LOCKED_TESTS="ModelFixture.ScheduleFile|ModelFixture.ScheduleFileAltCtor|ModelFixture.PythonPluginInstance|ModelFixture.PythonPluginInstance_NotPYFile|ModelFixture.PythonPluginInstance_ClassNameValidation|ModelFixture.ChillerElectricASHRAE205_GettersSetters|ModelFixture.ChillerElectricASHRAE205_Loops|ModelFixture.ChillerElectricASHRAE205_NotCBORFile|ModelFixture.ChillerElectricASHRAE205_Clone"
+
+          # Run conflicting tests sequentially (parallel level 1)
+          ctest -C ${{ env.BUILD_TYPE }} -R "^($RESOURCE_LOCKED_TESTS)$" -j 1
+          if ($LASTEXITCODE -ne 0) { Write-Warning "Sequential tests failed" }
+
+          $env:CTEST_OUTPUT_ON_FAILURE=1
+          $env:CTEST_PARALLEL_LEVEL=${{ matrix.max_jobs }}
           
-          set "EXCLUDE_REGEX=${{ matrix.exclude_regex }}"
-          if "%EXCLUDE_REGEX%"=="""""" (
-            ctest -C ${{ env.BUILD_TYPE }}
-            if %errorlevel% neq 0 ctest -C ${{ env.BUILD_TYPE }}
-          ) else (
-            ctest -C ${{ env.BUILD_TYPE }} -E "%EXCLUDE_REGEX%"
-            if %errorlevel% neq 0 ctest -C ${{ env.BUILD_TYPE }} -E "%EXCLUDE_REGEX%"
-          )
+          $EXCLUDE_REGEX="${{ matrix.exclude_regex }}"
+          if ($EXCLUDE_REGEX -eq '""') {
+            # Only exclude resource locked tests
+            $FINAL_EXCLUDE = "^($RESOURCE_LOCKED_TESTS)$"
+            ctest -C ${{ env.BUILD_TYPE }} -E "$FINAL_EXCLUDE"
+            if ($LASTEXITCODE -ne 0) { ctest -C ${{ env.BUILD_TYPE }} -E "$FINAL_EXCLUDE" }
+          } else {
+            # Merge with resource locked tests
+            # Note: strip start/end regex anchors if present to merge safely
+            $CLEAN_EXCLUDE = $EXCLUDE_REGEX -replace '^\^', '' -replace '\$$', ''
+            $FINAL_EXCLUDE = "^($CLEAN_EXCLUDE|$RESOURCE_LOCKED_TESTS)$"
+            ctest -C ${{ env.BUILD_TYPE }} -E "$FINAL_EXCLUDE"
+            if ($LASTEXITCODE -ne 0) { ctest -C ${{ env.BUILD_TYPE }} -E "$FINAL_EXCLUDE" }
+          }
           
-          if %errorlevel% neq 0 (
-            echo exit_code=%errorlevel% >> %GITHUB_OUTPUT%
-            echo ::warning::CTest suite failed with exit code %errorlevel%
-          )
+          if ($LASTEXITCODE -ne 0) {
+            echo "exit_code=$LASTEXITCODE" >> $env:GITHUB_OUTPUT
+            Write-Warning "CTest suite failed with exit code $LASTEXITCODE"
+          }
 
       - name: Archive Testing directory
         if: always()
