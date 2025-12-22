@@ -140,20 +140,15 @@ jobs:
       MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
       CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
     steps:
-      - name: Install sudo
-        run: |
-          set -ex
-          apt-get update && apt-get install -y sudo
-
       - name: Verify space
         run: |
           echo "Memory and swap:"
-          sudo free -h || free -h
+          free -h
           echo
-          sudo swapon --show || true
+          swapon --show || true
           echo
           echo "Available storage:"
-          sudo df -h || df -h
+          df -h
           echo
 
       - name: Checkout repository
@@ -257,7 +252,7 @@ jobs:
             -DBUILD_PYTHON_PIP_PACKAGE:BOOL=${{ matrix.pip_package }} \
             -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} \
             -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
-            ../
+            "${{ github.workspace }}"
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -674,7 +669,7 @@ jobs:
             -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF \
             -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} \
             -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
-            ../
+            "${{ github.workspace }}"
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -1063,7 +1058,7 @@ jobs:
         shell: cmd
         run: |
           call conanbuild.bat
-          cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;ZIP" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE="%SYSTEM_RUBY_PATH%" ../
+          cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING="NSIS;ZIP" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE="%SYSTEM_RUBY_PATH%" "${{ github.workspace }}"
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
