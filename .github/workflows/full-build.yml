@@ -58,7 +58,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     container:
       image: ${{ matrix.container_image }}
-      options: ${{ matrix.container_options }}
+      options: ${{ matrix.container_options }} --volume /mnt:/mnt
     strategy:
       fail-fast: false
       matrix:
@@ -145,14 +145,6 @@ jobs:
           set -ex
           apt-get update && apt-get install -y sudo
 
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@v10
-        with:
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
-          overprovision-lvm: 'true'
-
       - name: Verify space
         run: |
           echo "Memory and swap:"
@@ -188,8 +180,26 @@ jobs:
       - name: Prepare workspace
         run: |
           set -euo pipefail
+          
+          # Use /mnt for build and caches to avoid running out of space on root partition
+          prepare_dir() {
+            local target=$1
+            local dest=$2
+            mkdir -p "$dest"
+            if [ -d "$target" ] && [ ! -L "$target" ]; then
+              echo "Moving existing $target to $dest"
+              cp -a "$target/." "$dest/"
+              rm -rf "$target"
+            fi
+            mkdir -p "$(dirname "$target")"
+            ln -sfn "$dest" "$target"
+          }
+
+          prepare_dir "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}" "/mnt/build"
+          prepare_dir "$HOME/.ccache" "/mnt/.ccache"
+          prepare_dir "$HOME/.conan2" "/mnt/.conan2"
+
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          mkdir -p "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}"
           if command -v ccache >/dev/null 2>&1; then
             ccache -M 2G || true
             echo "Configured ccache:"; ccache -s | sed -n '1,10p'
