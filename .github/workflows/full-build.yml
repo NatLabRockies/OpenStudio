@@ -51,12 +51,12 @@ env:
   CCACHE_BASEDIR: ${{ github.workspace }}
   CCACHE_COMPRESS: "true"
   CCACHE_COMPRESSLEVEL: "3"
-  CCACHE_MAXSIZE: "5G"
+  CCACHE_MAXSIZE: "10G"
   CCACHE_DEPEND: "true"
   CCACHE_NOHASHDIR: "true"
   SCCACHE_GHA_ENABLED: "false"
   SCCACHE_DIR: "${{ github.workspace }}\\.sccache"
-  SCCACHE_CACHE_SIZE: "5G"
+  SCCACHE_CACHE_SIZE: "10G"
 
 jobs:
   linux-build:
@@ -174,6 +174,7 @@ jobs:
           key: ccache-${{ runner.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
           restore-keys: |
             ccache-${{ runner.os }}-${{ matrix.platform }}-
+          save-always: true
 
       - name: Restore Conan cache
         uses: actions/cache@v4
@@ -182,6 +183,7 @@ jobs:
           key: conan-${{ runner.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
           restore-keys: |
             conan-${{ runner.os }}-${{ matrix.platform }}-
+          save-always: true
 
       - name: Prepare workspace
         run: |
@@ -235,6 +237,20 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/radiance*.zip
             ${{ env.OPENSTUDIO_BUILD }}/openstudio*gems*.tar.gz
           key: external-deps-${{ runner.os }}-${{ hashFiles('conan.lock') }}
+          restore-keys: |
+            external-deps-${{ runner.os }}-
+          save-always: true
+
+      - name: Restore Generated Embedded Files
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.OPENSTUDIO_BUILD }}/src/*/embedded_files
+            ${{ env.OPENSTUDIO_BUILD }}/ruby/engine/embedded_files
+          key: embedded-files-${{ runner.os }}-${{ hashFiles('resources/**', 'ruby/engine/**', 'src/airflow/**', 'src/energyplus/**', 'src/gbxml/**', 'src/isomodel/**', 'src/model/**', 'src/radiance/**', 'src/sdd/**', 'src/utilities/**') }}
+          restore-keys: |
+            embedded-files-${{ runner.os }}-
+          save-always: true
 
       - name: Configure Conan remotes
         run: |
@@ -456,6 +472,7 @@ jobs:
           key: conan-${{ runner.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
           restore-keys: |
             conan-${{ runner.os }}-${{ matrix.platform }}-
+          save-always: true
 
       - name: Prepare workspace
         run: |
@@ -473,6 +490,20 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/radiance*.zip
             ${{ env.OPENSTUDIO_BUILD }}/openstudio*gems*.tar.gz
           key: external-deps-${{ runner.os }}-${{ hashFiles('conan.lock') }}
+          restore-keys: |
+            external-deps-${{ runner.os }}-
+          save-always: true
+
+      - name: Restore Generated Embedded Files
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.OPENSTUDIO_BUILD }}/src/*/embedded_files
+            ${{ env.OPENSTUDIO_BUILD }}/ruby/engine/embedded_files
+          key: embedded-files-${{ runner.os }}-${{ hashFiles('resources/**', 'ruby/engine/**', 'src/airflow/**', 'src/energyplus/**', 'src/gbxml/**', 'src/isomodel/**', 'src/model/**', 'src/radiance/**', 'src/sdd/**', 'src/utilities/**') }}
+          restore-keys: |
+            embedded-files-${{ runner.os }}-
+          save-always: true
 
       - name: Set up Python 3.12.2
         uses: actions/setup-python@v6
@@ -884,7 +915,7 @@ jobs:
           Set-MpPreference -DisableRealtimeMonitoring $true
           Add-MpPreference -ExclusionPath $env:GITHUB_WORKSPACE -ErrorAction SilentlyContinue
           Add-MpPreference -ExclusionPath "$env:USERPROFILE\.conan2" -ErrorAction SilentlyContinue
-          Add-MpPreference -ExclusionPath "$env:GITHUB_WORKSPACE\.ccache" -ErrorAction SilentlyContinue
+          Add-MpPreference -ExclusionPath "$env:GITHUB_WORKSPACE\.sccache" -ErrorAction SilentlyContinue
           
           # Set Power Plan to High Performance for better process spawn speed
           powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
@@ -899,6 +930,9 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/radiance*.zip
             ${{ env.OPENSTUDIO_BUILD }}/openstudio*gems*.tar.gz
           key: external-deps-${{ runner.os }}-${{ hashFiles('conan.lock') }}
+          restore-keys: |
+            external-deps-${{ runner.os }}-
+          save-always: true
 
       - name: Restore Generated Embedded Files
         uses: actions/cache@v4
@@ -909,6 +943,7 @@ jobs:
           key: embedded-files-${{ runner.os }}-${{ hashFiles('resources/**', 'ruby/engine/**', 'src/airflow/**', 'src/energyplus/**', 'src/gbxml/**', 'src/isomodel/**', 'src/model/**', 'src/radiance/**', 'src/sdd/**', 'src/utilities/**') }}
           restore-keys: |
             embedded-files-${{ runner.os }}-
+          save-always: true
 
       - name: Setup sccache
         uses: Mozilla-Actions/sccache-action@v0.0.5
