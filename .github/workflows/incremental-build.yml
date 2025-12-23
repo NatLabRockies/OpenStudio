@@ -59,6 +59,9 @@ jobs:
             rm -rf "$BUILD_DIR/_CPack_Packages"
           fi
 
+      - name: Install dirmngr
+        run: apt-get update && apt-get install -y dirmngr
+
       - name: Install ccache
         run: |
           # Fix Kitware GPG key issue
