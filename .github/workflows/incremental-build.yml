@@ -104,10 +104,16 @@ jobs:
           conan remote update conancenter --insecure
           conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2 --force
           conan remote update nrel-v2 --insecure
+          
+          # Force remove fmt and boost to ensure rebuild with correct ABI
+          conan remove "fmt/*" -c || true
+          conan remove "boost/*" -c || true
+          
           if [ ! -f "${{ env.DOCKER_ROOT }}/.conan2/profiles/default" ]; then
             conan profile detect
           fi
-          conan install . --output-folder=${{ env.OPENSTUDIO_BUILD_NAME }} --build=missing -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release
+          # Add compiler.libcxx=libstdc++11 to force new ABI
+          conan install . --output-folder=${{ env.OPENSTUDIO_BUILD_NAME }} --build=missing -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release -s compiler.libcxx=libstdc++11
 
         # wrap cmake with ccache using a flag or environment variable
       - name: Configure with CMake
