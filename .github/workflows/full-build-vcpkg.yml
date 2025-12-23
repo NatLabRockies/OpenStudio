@@ -259,7 +259,7 @@ jobs:
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+          vcpkgDirectory: '${{ runner.workspace }}/vcpkg'
           vcpkgGitCommitId: '5c8fde8018e61fb16e4530fc493863d085d564b1'
           vcpkgJsonGlob: 'vcpkg.json'
 
@@ -505,7 +505,7 @@ jobs:
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+          vcpkgDirectory: '${{ runner.workspace }}/vcpkg'
           vcpkgGitCommitId: '5c8fde8018e61fb16e4530fc493863d085d564b1'
           vcpkgJsonGlob: 'vcpkg.json'
 
@@ -949,7 +949,7 @@ jobs:
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+          vcpkgDirectory: '${{ runner.workspace }}/vcpkg'
           vcpkgGitCommitId: '5c8fde8018e61fb16e4530fc493863d085d564b1'
           vcpkgJsonGlob: 'vcpkg.json'
 
