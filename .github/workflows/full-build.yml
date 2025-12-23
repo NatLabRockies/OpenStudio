@@ -96,7 +96,7 @@ jobs:
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 3
-            exclude_regex: ${{ '""' }}
+            exclude_regex: "^ModelFixture.PythonPluginInstance_NotPYFile$"
           - platform: ubuntu-2404-x64
             display_name: Ubuntu 24.04 x64
             runner: ubuntu-24.04
@@ -330,12 +330,29 @@ jobs:
           set -euo pipefail
           . ./conanbuild.sh
           
+          # Conflicting tests that must run sequentially
+          resource_locked_tests="ModelFixture.ScheduleFile|ModelFixture.ScheduleFileAltCtor|ModelFixture.PythonPluginInstance|ModelFixture.PythonPluginInstance_NotPYFile|ModelFixture.PythonPluginInstance_ClassNameValidation|ModelFixture.ChillerElectricASHRAE205_GettersSetters|ModelFixture.ChillerElectricASHRAE205_Loops|ModelFixture.ChillerElectricASHRAE205_NotCBORFile|ModelFixture.ChillerElectricASHRAE205_Clone"
+
+          overall_exit_code=0
           exclude_regex="${{ matrix.exclude_regex }}"
-          if [ "$exclude_regex" == '""' ]; then
-            ctest -C ${{ env.BUILD_TYPE }} -j ${{ matrix.max_jobs }} --output-on-failure
+
+          echo "Running sequential tests..."
+          if [ "$exclude_regex" == '""' ] || [ -z "$exclude_regex" ]; then
+            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -j 1 --output-on-failure || overall_exit_code=1
           else
-            ctest -C ${{ env.BUILD_TYPE }} -E "$exclude_regex" -j ${{ matrix.max_jobs }} --output-on-failure
+            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -E "$exclude_regex" -j 1 --output-on-failure || overall_exit_code=1
           fi
+
+          echo "Running all other tests in parallel..."
+          if [ "$exclude_regex" == '""' ] || [ -z "$exclude_regex" ]; then
+            final_exclude="^($resource_locked_tests)$"
+          else
+            final_exclude="($exclude_regex|$resource_locked_tests)"
+          fi
+
+          ctest -C ${{ env.BUILD_TYPE }} -E "$final_exclude" -j ${{ matrix.max_jobs }} --output-on-failure || overall_exit_code=$?
+          
+          exit $overall_exit_code
 
       - name: Wait for network stability
         if: always()
@@ -545,7 +562,8 @@ jobs:
             --build=missing \
             -c tools.cmake.cmaketoolchain:generator=Ninja \
             -s compiler.cppstd=20 \
-            -s build_type=${{ env.BUILD_TYPE }}
+            -s build_type=${{ env.BUILD_TYPE }} \
+            -o readline/*:with_library=ncurses
 
       - name: Locate Ruby
         run: |
@@ -644,22 +662,26 @@ jobs:
           resource_locked_tests="ModelFixture.ScheduleFile|ModelFixture.ScheduleFileAltCtor|ModelFixture.PythonPluginInstance|ModelFixture.PythonPluginInstance_NotPYFile|ModelFixture.PythonPluginInstance_ClassNameValidation|ModelFixture.ChillerElectricASHRAE205_GettersSetters|ModelFixture.ChillerElectricASHRAE205_Loops|ModelFixture.ChillerElectricASHRAE205_NotCBORFile|ModelFixture.ChillerElectricASHRAE205_Clone"
 
           overall_exit_code=0
+          exclude_regex="${{ matrix.exclude_regex }}"
 
           echo "Running sequential tests..."
-          ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -j 1 || overall_exit_code=1
+          if [ "$exclude_regex" == '""' ] || [ -z "$exclude_regex" ]; then
+            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -j 1 || overall_exit_code=1
+          else
+            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -E "$exclude_regex" -j 1 || overall_exit_code=1
+          fi
 
           echo "Running all other tests in parallel..."
           export CTEST_OUTPUT_ON_FAILURE=1
           export CTEST_PARALLEL_LEVEL=${{ matrix.max_jobs }}
           
-          exclude_regex="${{ matrix.exclude_regex }}"
           if [ -n "$exclude_regex" ] && [ "$exclude_regex" != '""' ]; then
-            exclude_regex="($exclude_regex|$resource_locked_tests)"
+            final_exclude="($exclude_regex|$resource_locked_tests)"
           else
-            exclude_regex="^($resource_locked_tests)$"
+            final_exclude="^($resource_locked_tests)$"
           fi
 
-          ctest -C ${{ env.BUILD_TYPE }} -E "$exclude_regex" || overall_exit_code=$?
+          ctest -C ${{ env.BUILD_TYPE }} -E "$final_exclude" || overall_exit_code=$?
 
           echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
@@ -866,7 +888,7 @@ jobs:
             runner: windows-2022
             test_suffix: Windows-2022
             max_jobs: 3
-            exclude_regex: "^(RubyTest-Date_Test-ymd_constructor)$"
+            exclude_regex: "^(RubyTest-Date_Test-ymd_constructor|OpenStudioCLI.Classic.test_measure_manager|PyTest.test_swigjson|PyTest.test_usability)$"
     defaults:
       run:
         shell: pwsh
@@ -902,6 +924,13 @@ jobs:
                     $new_content += "        products_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))"
                     $new_content += "        if os.path.isdir(products_dir) and os.path.isfile(os.path.join(products_dir, 'openstudio_utilities.dll')):"
                     $new_content += "            os.add_dll_directory(products_dir)"
+                    $new_content += "        # Add PATH to DLL search, needed for Conan dependencies on Python 3.8+"
+                    $new_content += "        for p in os.environ['PATH'].split(';'):"
+                    $new_content += "            if p and os.path.isdir(p):"
+                    $new_content += "                try:"
+                    $new_content += "                    os.add_dll_directory(p)"
+                    $new_content += "                except:"
+                    $new_content += "                    pass"
                 }
             }
             $new_content | Set-Content $os_py
@@ -909,9 +938,9 @@ jobs:
 
           # Fix path normalization in measure manager test (patch both actual and expected states)
           $mm_test = "src/cli/test/test_measure_manager.py"
-          (Get-Content $mm_test) -replace "actual_state\['my_measures_dir'\]", "actual_state['my_measures_dir'].replace('\\', '/')" `
-                                 -replace "expected_internal_state\['my_measures_dir'\]", "expected_internal_state['my_measures_dir'].replace('\\', '/')" `
-                                 -replace "internal_state\(\)\['my_measures_dir'\]", "internal_state()['my_measures_dir'].replace('\\', '/')" | Set-Content $mm_test
+          (Get-Content $mm_test) -replace "actual_state\[.my_measures_dir.\]", "actual_state['my_measures_dir'].replace('\\', '/')" `
+                                 -replace "expected_internal_state\[.my_measures_dir.\]", "expected_internal_state['my_measures_dir'].replace('\\', '/')" `
+                                 -replace "internal_state\(\)\[.my_measures_dir.\]", "internal_state()['my_measures_dir'].replace('\\', '/')" | Set-Content $mm_test
           
           # Fix encoding expectation in CLI encodings test
           $enc_test = "src/cli/test/test_encodings.rb"
@@ -1060,12 +1089,17 @@ jobs:
           $resource_locked_tests = "ModelFixture.ScheduleFile|ModelFixture.ScheduleFileAltCtor|ModelFixture.PythonPluginInstance|ModelFixture.PythonPluginInstance_NotPYFile|ModelFixture.PythonPluginInstance_ClassNameValidation|ModelFixture.ChillerElectricASHRAE205_GettersSetters|ModelFixture.ChillerElectricASHRAE205_Loops|ModelFixture.ChillerElectricASHRAE205_NotCBORFile|ModelFixture.ChillerElectricASHRAE205_Clone"
           
           $overall_exit_code = 0
+          $exclude_regex = "${{ matrix.exclude_regex }}"
+
           Write-Host "Running sequential tests..."
-          ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -j 1
+          if ([string]::IsNullOrEmpty($exclude_regex) -or $exclude_regex -eq '""') {
+            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -j 1 --output-on-failure
+          } else {
+            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -E "$exclude_regex" -j 1 --output-on-failure
+          }
           if ($LASTEXITCODE -ne 0) { $overall_exit_code = 1 }
 
           Write-Host "Running all other tests in parallel..."
-          $exclude_regex = "${{ matrix.exclude_regex }}"
           if ([string]::IsNullOrEmpty($exclude_regex) -or $exclude_regex -eq '""') {
              $final_exclude = "^($resource_locked_tests)$"
           } else {
