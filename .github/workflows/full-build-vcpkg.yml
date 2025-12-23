@@ -1055,6 +1055,8 @@ jobs:
 
       - name: Configure with CMake
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        env:
+          VCPKG_ROOT: ${{ env._VCPKG_ }}
         run: |
           $sccacheExe = (Get-Command sccache).Source
           & $env:ComSpec /c "cmake --preset ninja-multi-vcpkg -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCPACK_GENERATOR:STRING=`"NSIS;TGZ`" -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" `"${{ github.workspace }}`""
