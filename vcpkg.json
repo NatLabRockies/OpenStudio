@@ -1,6 +1,6 @@
 {
     "name": "openstudio",
-    "builtin-baseline": "5c8fde8018e61fb16e4530fc493863d085d564b1",
+    "builtin-baseline": "6bc1613f18f850c60d906575296f982c6dfcc9e0",
     "version-string": "3.10.0",
     "dependencies": [
         "boost",
