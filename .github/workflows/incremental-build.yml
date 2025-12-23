@@ -62,9 +62,9 @@ jobs:
       - name: Install ccache
         run: |
           # Fix Kitware GPG key issue
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys DE19EB17684BA42D
+          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys DE19EB17684BA42D
           rm -f /etc/apt/sources.list.d/kitware.list
-          echo 'deb http://apt.kitware.com/ubuntu jammy main' | sudo tee /etc/apt/sources.list.d/kitware.list >/dev/null
+          echo 'deb http://apt.kitware.com/ubuntu jammy main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null
           apt-get update && apt-get install -y ccache
 
       - name: Set default compiler
