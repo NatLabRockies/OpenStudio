@@ -563,7 +563,7 @@ jobs:
             -c tools.cmake.cmaketoolchain:generator=Ninja \
             -s compiler.cppstd=20 \
             -s build_type=${{ env.BUILD_TYPE }} \
-            -o readline/*:with_library=ncurses
+            -o readline/*:with_library=curses
 
       - name: Locate Ruby
         run: |
