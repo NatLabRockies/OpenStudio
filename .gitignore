@@ -37,4 +37,3 @@ junit.xml
 
 CMakeUserPresets.json
 .env
-vcpkg/
