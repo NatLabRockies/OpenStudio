@@ -1,0 +1,47 @@
+{
+    "version": 6,
+    "configurePresets": [
+        {
+            "name": "ninja-multi-vcpkg",
+            "displayName": "Ninja Multi-Config with vcpkg",
+            "description": "Ninja Multi-Config generator with vcpkg toolchain",
+            "generator": "Ninja Multi-Config",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "BUILD_TESTING": "ON",
+                "BUILD_PYTHON_BINDINGS": "ON",
+                "DISCOVER_TESTS_AFTER_BUILD": "ON",
+                "CPACK_BINARY_DRAGNDROP": "ON",
+                "CPACK_BINARY_TGZ": "ON",
+                "CPACK_BINARY_IFW": "OFF"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "ninja-multi-vcpkg-release",
+            "displayName": "Build Release (Ninja Multi-Config)",
+            "description": "Build Release configuration with Ninja Multi-Config",
+            "configurePreset": "ninja-multi-vcpkg",
+            "configuration": "Release"
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "check-format",
+            "displayName": "Check Clang-Format",
+            "description": "Check code formatting using clang-format",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "ninja-multi-vcpkg"
+                },
+                {
+                    "type": "build",
+                    "name": "ninja-multi-vcpkg-release"
+                }
+            ]
+        }
+    ]
+}

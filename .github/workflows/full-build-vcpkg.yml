@@ -62,7 +62,15 @@ env:
   SCCACHE_GHA_ENABLED: "false"
   SCCACHE_DIR: "${{ github.workspace }}\\.sccache"
   SCCACHE_CACHE_SIZE: "10G"
-  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+  # Indicates the location of the vcpkg as a Git submodule of the project repository.
+  # Not using "VCPKG_ROOT" because a variable with the same name is defined in the VS's
+  # Developer Command Prompt environment in VS 2022 17.6, which would override this one
+  # if it had the same name.
+  _VCPKG_: ${{ github.workspace }}/vcpkg
+  # Tells vcpkg where binary packages are stored.
+  VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg/bincache
+  # Let's use GitHub Action cache as storage for the vcpkg Binary Caching feature.
+  VCPKG_BINARY_SOURCES: 'clear;x-gha,readwrite'
 
 jobs:
   linux-build:
@@ -169,10 +177,41 @@ jobs:
           df -h || true
           echo
 
+      # Set env vars needed for vcpkg to leverage the GitHub Action cache as a storage
+      # for Binary Caching.
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          submodules: true
+
+      - name: "Create directory '${{ env.VCPKG_DEFAULT_BINARY_CACHE }}'"
+        run: mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
+        shell: bash
+
+      # Restore vcpkg from the GitHub Action cache service. Note that packages are restored by vcpkg's binary caching
+      # when it is being run afterwards by CMake.
+      - name: Restore vcpkg
+        uses: actions/cache@v4
+        with:
+          # The first path is the location of vcpkg: it contains the vcpkg executable and data files, as long as the
+          # built package archives (aka binary cache) which are located by VCPKG_DEFAULT_BINARY_CACHE env var.
+          # The other paths starting with '!' are exclusions: they contain termporary files generated during the build of the installed packages.
+          path: |
+            ${{ env._VCPKG_ }}
+            !${{ env._VCPKG_ }}/buildtrees
+            !${{ env._VCPKG_ }}/packages
+            !${{ env._VCPKG_ }}/downloads
+            !${{ env._VCPKG_ }}/installed
+          # The key is composed in a way that it gets properly invalidated whenever a different version of vcpkg is being used.
+          key: |
+            ${{ hashFiles( '.git/modules/vcpkg/HEAD' )}}
 
       - name: Restore ccache cache
         uses: actions/cache@v4
@@ -181,8 +220,6 @@ jobs:
           restore-keys: |
             ccache-${{ runner.os }}-${{ matrix.platform }}-
           save-always: true
-
-
 
       - name: Prepare workspace
         run: |
@@ -277,18 +314,17 @@ jobs:
             CCACHE_EXE=$(command -v ccache)
             CCACHE_ARGS=("-DCMAKE_C_COMPILER_LAUNCHER=$CCACHE_EXE" "-DCMAKE_CXX_COMPILER_LAUNCHER=$CCACHE_EXE")
           fi
-          cmake -G Ninja \
+          cmake --preset ninja-multi-vcpkg \
             "${CCACHE_ARGS[@]}" \
-            -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake \
-            -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} \
-            -DBUILD_TESTING:BOOL=ON \
             -DCPACK_GENERATOR:STRING="${{ matrix.cpack_generators }}" \
-            -DBUILD_PYTHON_BINDINGS:BOOL=ON \
-            -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON \
             -DBUILD_PYTHON_PIP_PACKAGE:BOOL=${{ matrix.pip_package }} \
             -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} \
             -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
             "$GITHUB_WORKSPACE"
+
+      - name: check-format
+        run: |
+          cmake --workflow --preset check-format
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -303,7 +339,7 @@ jobs:
               if command -v ps >/dev/null 2>&1; then ps -eo pid,rsz,comm --sort=-rsz | head -n 5 | awk -v s="$stamp" '{print s" "$1" "$2" "$3}' >> mem_samples.log; fi; 
             done ) &
           HB_PID=$!
-          cmake --build . --parallel ${{ matrix.max_jobs }} 2>&1 | tee build.log
+          cmake --build --preset ninja-multi-vcpkg-release --parallel ${{ matrix.max_jobs }} 2>&1 | tee build.log
           BUILD_EXIT=${PIPESTATUS[0]}
           kill $HB_PID || true
           command -v ninja >/dev/null 2>&1 && ninja -d stats || true
@@ -537,18 +573,9 @@ jobs:
             CCACHE_EXE=$(command -v ccache)
             CCACHE_ARGS=("-DCMAKE_C_COMPILER_LAUNCHER=$CCACHE_EXE" "-DCMAKE_CXX_COMPILER_LAUNCHER=$CCACHE_EXE")
           fi
-          cmake -G Ninja \
+          cmake --preset ninja-multi-vcpkg \
             "${CCACHE_ARGS[@]}" \
-            -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake \
-            -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} \
-            -DBUILD_TESTING:BOOL=ON \
-            -DCPACK_BINARY_DRAGNDROP:BOOL=ON \
-            -DCPACK_BINARY_TGZ:BOOL=ON \
-            -DCPACK_BINARY_IFW:BOOL=OFF \
             -DCPACK_PACKAGING_INSTALL_PREFIX="/OpenStudio-${{ env.OPENSTUDIO_VERSION }}" \
-            -DBUILD_PYTHON_BINDINGS:BOOL=ON \
-            -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON \
-            -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF \
             -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} \
             -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
             "${{ github.workspace }}"
@@ -566,7 +593,7 @@ jobs:
             if command -v ps >/dev/null 2>&1; then ps -eo pid,pmem,rss,comm | sort -rn -k2 | head -n 5; fi
           done &
           heartbeat_pid=$!
-          cmake --build . --parallel ${MAX_BUILD_THREADS} 2>&1 | tee build.log
+          cmake --build --preset ninja-multi-vcpkg-release --parallel ${MAX_BUILD_THREADS} 2>&1 | tee build.log
           build_exit=${PIPESTATUS[0]}
           kill $heartbeat_pid || true
           command -v ninja >/dev/null 2>&1 && ninja -d stats || true
@@ -953,11 +980,15 @@ jobs:
           $rubyPath = (Get-Command ruby).Source
           "SYSTEM_RUBY_PATH=$rubyPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
+      # On Windows runners, let's ensure to have the Developer Command Prompt environment setup correctly.
+      # As used here the Developer Command Prompt created is targeting x64 and using the default the Windows SDK.
+      - uses: ilammy/msvc-dev-cmd@v1
+
       - name: Configure with CMake
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           $sccacheExe = (Get-Command sccache).Source
-          & $env:ComSpec /c "cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"NSIS;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" `"${{ github.workspace }}`""
+          & $env:ComSpec /c "cmake --preset ninja-multi-vcpkg -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCPACK_GENERATOR:STRING=`"NSIS;TGZ`" -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`""
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -965,7 +996,7 @@ jobs:
         run: |
           if (Get-Command sccache -ErrorAction SilentlyContinue) { sccache -s }
           # Use $env:ComSpec to ensure we call the Windows Command Prompt, not the MSYS2 cmd found in PATH
-          & $env:ComSpec /c "cmake --build . --parallel ${{ matrix.max_jobs }} -- -d stats 2>&1" | Tee-Object -FilePath "build.log"
+          & $env:ComSpec /c "cmake --build --preset ninja-multi-vcpkg-release --parallel ${{ matrix.max_jobs }} -- -d stats 2>&1" | Tee-Object -FilePath "build.log"
           
           # Check the exit code of the cmd process, not Tee-Object
           if ($LASTEXITCODE -ne 0) {
