@@ -195,6 +195,9 @@ jobs:
         run: mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
         shell: bash
 
+      - name: Initialize submodules
+        run: git submodule update --init --recursive
+
       # Restore vcpkg from the GitHub Action cache service. Note that packages are restored by vcpkg's binary caching
       # when it is being run afterwards by CMake.
       - name: Restore vcpkg
@@ -321,7 +324,7 @@ jobs:
             -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} \
             -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
             $([[ "${{ matrix.platform }}" == "centos-9-x64" ]] && echo "-DCPACK_RPM_SPEC_MORE_DEFINE='%define __python python3' -DCPACK_RPM_PACKAGE_REQUIRES='libicu libicu-devel tk tcsh perl'") \
-            "$GITHUB_WORKSPACE"
+            "${{ github.workspace }}"
 
       - name: check-format
         run: |
@@ -492,6 +495,9 @@ jobs:
       - name: "Create directory '${{ env.VCPKG_DEFAULT_BINARY_CACHE }}'"
         run: mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
         shell: bash
+
+      - name: Initialize submodules
+        run: git submodule update --init --recursive
 
       # Restore vcpkg from the GitHub Action cache service. Note that packages are restored by vcpkg's binary caching
       # when it is being run afterwards by CMake.
@@ -907,6 +913,9 @@ jobs:
         run: mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
         shell: bash
 
+      - name: Initialize submodules
+        run: git submodule update --init --recursive
+
       # Restore vcpkg from the GitHub Action cache service. Note that packages are restored by vcpkg's binary caching
       # when it is being run afterwards by CMake.
       - name: Restore vcpkg
@@ -1008,8 +1017,6 @@ jobs:
       - name: Setup sccache
         uses: Mozilla-Actions/sccache-action@v0.0.5
 
-
-
       - name: Set up Python 3.12.2
         uses: actions/setup-python@v6
         with:
@@ -1049,7 +1056,7 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           $sccacheExe = (Get-Command sccache).Source
-          & $env:ComSpec /c "cmake --preset ninja-multi-vcpkg -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCPACK_GENERATOR:STRING=`"NSIS;TGZ`" -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`""
+          & $env:ComSpec /c "cmake --preset ninja-multi-vcpkg -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCPACK_GENERATOR:STRING=`"NSIS;TGZ`" -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" `"${{ github.workspace }}`""
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
