@@ -937,6 +937,9 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -r python/requirements.txt
 
+      - name: Install Ninja
+        run: choco install ninja --no-progress
+
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
