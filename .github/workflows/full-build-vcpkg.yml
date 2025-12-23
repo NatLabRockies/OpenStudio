@@ -977,6 +977,7 @@ jobs:
       - name: Prepare workspace
         run: |
           git config --global --add safe.directory "$env:GITHUB_WORKSPACE"
+          git config --global core.longpaths true
           New-Item -ItemType Directory -Path "${{ env.OPENSTUDIO_BUILD }}" -Force
           
           # Speed up Windows builds by disabling real-time antivirus monitoring for the workspace
