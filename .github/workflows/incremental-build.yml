@@ -100,7 +100,7 @@ jobs:
             conan profile detect
           fi
 
-          conan install . --output-folder=${{ env.OPENSTUDIO_BUILD_NAME }} --build=missing -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release
+          conan install . --output-folder=${{ env.OPENSTUDIO_BUILD_NAME }} --build=missing --build=boost --build=fmt --build=cpprestsdk -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release
 
       - name: Locate Ruby
         run: |
