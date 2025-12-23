@@ -552,6 +552,22 @@ jobs:
           ruby_path=$(command -v ruby)
           echo "SYSTEM_RUBY_PATH=$ruby_path" >> $GITHUB_ENV
 
+      - name: Determine OpenStudio Version
+        id: version
+        run: |
+          # Extract version from CMakeLists.txt
+          VERSION_MAJOR_MINOR_PATCH=$(grep "project(OpenStudio VERSION" CMakeLists.txt | sed 's/.*VERSION \([0-9.]*\)).*/\1/')
+          PRERELEASE=$(grep "set(PROJECT_VERSION_PRERELEASE" CMakeLists.txt | sed 's/.*"\(.*\)").*/\1/')
+          
+          if [ -n "$PRERELEASE" ]; then
+            OPENSTUDIO_VERSION="${VERSION_MAJOR_MINOR_PATCH}-${PRERELEASE}"
+          else
+            OPENSTUDIO_VERSION="${VERSION_MAJOR_MINOR_PATCH}"
+          fi
+          
+          echo "Detected OpenStudio Version: $OPENSTUDIO_VERSION"
+          echo "OPENSTUDIO_VERSION=$OPENSTUDIO_VERSION" >> $GITHUB_ENV
+
       - name: Configure with CMake
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
@@ -571,7 +587,7 @@ jobs:
             -DCPACK_BINARY_DRAGNDROP:BOOL=ON \
             -DCPACK_BINARY_TGZ:BOOL=ON \
             -DCPACK_BINARY_IFW:BOOL=OFF \
-            -DCPACK_PACKAGING_INSTALL_PREFIX="/OpenStudio" \
+            -DCPACK_PACKAGING_INSTALL_PREFIX="/OpenStudio-${{ env.OPENSTUDIO_VERSION }}" \
             -DBUILD_PYTHON_BINDINGS:BOOL=ON \
             -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON \
             -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF \
