@@ -296,7 +296,7 @@ jobs:
             -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
             -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} \
             -DBUILD_TESTING:BOOL=ON \
-            -DCPACK_GENERATORS:STRING="${{ matrix.cpack_generators }}" \
+            -DCPACK_GENERATOR:STRING="${{ matrix.cpack_generators }}" \
             -DBUILD_PYTHON_BINDINGS:BOOL=ON \
             -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON \
             -DBUILD_PYTHON_PIP_PACKAGE:BOOL=${{ matrix.pip_package }} \
@@ -1020,7 +1020,7 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           $sccacheExe = (Get-Command sccache).Source
-          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATORS:STRING=`"NSIS;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" `"${{ github.workspace }}`""
+          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"NSIS;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" `"${{ github.workspace }}`""
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
