@@ -1,0 +1,25 @@
+{
+    "name": "openstudio",
+    "version-string": "3.8.0",
+    "dependencies": [
+        "boost",
+        "pugixml",
+        "libxml2",
+        "libxslt",
+        "jsoncpp",
+        "fmt",
+        "sqlite3",
+        "cpprestsdk",
+        "websocketpp",
+        "geographiclib",
+        "swig",
+        "tinygltf",
+        "cli11",
+        "antlr4",
+        "minizip",
+        "zlib",
+        "openssl",
+        "gtest",
+        "benchmark"
+    ]
+}
