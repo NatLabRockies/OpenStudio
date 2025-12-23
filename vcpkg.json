@@ -1,6 +1,7 @@
 {
     "name": "openstudio",
-    "version-string": "3.8.0",
+    "builtin-baseline": "84bab45",
+    "version-string": "3.10.0",
     "dependencies": [
         "boost",
         "pugixml",
