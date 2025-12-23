@@ -32,8 +32,8 @@ jobs:
       OPENSTUDIO_BUILD_NAME: OS-build
 
     container: # Define the Docker container for the job. All subsequent steps run inside it.
-      image: nrel/openstudio-cmake-tools:jammy
-      options: -u root -e "LANG=en_US.UTF-8" # These options are passed to the 'docker run' command internally
+      image: nrel/openstudio-cmake-tools:jammy-main
+      options: --privileged -u root -e "LANG=en_US.UTF-8" # These options are passed to the 'docker run' command internally
       volumes: # envs don't work in volume definition for containers
         - "/srv/data/jenkins/docker-volumes/conan-data/.conan2:/github/home/.conan2" # Conan cache
         - "/srv/data/jenkins/docker-volumes/ubuntu-2204:/github/home/Ubuntu"
@@ -42,7 +42,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetch all history for all branches and tags
+          fetch-depth: 1
 
       - name: Prepare workspace
         run: |
@@ -58,22 +58,6 @@ jobs:
             find "$BUILD_DIR" -maxdepth 1 -name "*.deb" -delete
             rm -rf "$BUILD_DIR/_CPack_Packages"
           fi
-
-      - name: Install dirmngr
-        run: apt-get update && apt-get install -y dirmngr
-
-      - name: Install ccache
-        run: |
-          # Fix Kitware GPG key issue
-          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys DE19EB17684BA42D
-          rm -f /etc/apt/sources.list.d/kitware.list
-          echo 'deb http://apt.kitware.com/ubuntu jammy main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null
-          apt-get update && apt-get install -y ccache
-
-      - name: Set default compiler
-        run: |
-          update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100 --slave /usr/bin/g++ g++ /usr/bin/g++-11
-          update-alternatives --set gcc /usr/bin/gcc-11
 
       - name: Cache ccache
         uses: actions/cache@v4
@@ -115,8 +99,13 @@ jobs:
           if [ ! -f "${{ env.DOCKER_ROOT }}/.conan2/profiles/default" ]; then
             conan profile detect
           fi
-          # Add compiler.libcxx=libstdc++11 to force new ABI
-          conan install . --output-folder=${{ env.OPENSTUDIO_BUILD_NAME }} --build=missing -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release -s compiler.libcxx=libstdc++11
+
+          conan install . --output-folder=${{ env.OPENSTUDIO_BUILD_NAME }} --build=missing -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release
+
+      - name: Locate Ruby
+        run: |
+          ruby_path=$(command -v ruby)
+          echo "SYSTEM_RUBY_PATH=$ruby_path" >> $GITHUB_ENV
 
         # wrap cmake with ccache using a flag or environment variable
       - name: Configure with CMake
@@ -124,7 +113,6 @@ jobs:
         run: |
           . ./conanbuild.sh
           cmake -G Ninja \
-                -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=1" \
                 -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
                 -DCMAKE_BUILD_TYPE:STRING=Release \
                 -DBUILD_TESTING:BOOL=ON \
@@ -142,6 +130,7 @@ jobs:
                 -DPYTHON_VERSION:STRING=3.12.2 \
                 -DBUILD_RUBY_BINDINGS:BOOL=ON \
                 -DBUILD_CLI:BOOL=ON \
+                -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
                 ..
 
       - name: Verify build state
