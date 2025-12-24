@@ -198,7 +198,7 @@ jobs:
           echo "Test Results: Run1=$RESULT1 Run2=$RESULT2 Run3=$RESULT3"
           
           # Exit with failure if any issues remain
-          if ([ $RESULT1 -eq 0 ] || [ $RESULT2 -eq 0 ] || [ $RESULT3 -eq 0 ]) && [ $FINAL_CHECK -eq 1 ]; then
+          if ([ $RESULT1 -eq 0 ] || [ $RESULT2 -eq 0 ] || [ $RESULT3 -eq 0 ]) && [ $FINAL_CHECK -eq 0 ]; then
             exit 0
           else
             exit 1
