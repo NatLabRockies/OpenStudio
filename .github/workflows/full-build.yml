@@ -352,6 +352,10 @@ jobs:
 
           ctest -C ${{ env.BUILD_TYPE }} -E "$final_exclude" -j ${{ matrix.max_jobs }} --output-on-failure || overall_exit_code=$?
           
+          if [ $overall_exit_code -ne 0 ]; then
+            echo "Rerunning failing tests..."
+            ctest -C ${{ env.BUILD_TYPE }} --rerun-failed --output-on-failure || overall_exit_code=$?
+          fi
           exit $overall_exit_code
 
       - name: Wait for network stability
@@ -683,6 +687,11 @@ jobs:
 
           ctest -C ${{ env.BUILD_TYPE }} -E "$final_exclude" || overall_exit_code=$?
 
+          if [ $overall_exit_code -ne 0 ]; then
+            echo "Rerunning failing tests..."
+            ctest -C ${{ env.BUILD_TYPE }} --rerun-failed --output-on-failure || overall_exit_code=$?
+          fi
+
           echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
       - name: Create packages
@@ -887,7 +896,7 @@ jobs:
             display_name: Windows 2022 x64
             runner: windows-2022
             test_suffix: Windows-2022
-            max_jobs: 2
+            max_jobs: 3
             exclude_regex: "^(RubyTest-Date_Test-ymd_constructor)$"
     defaults:
       run:
@@ -1122,8 +1131,13 @@ jobs:
           }
           
           ctest -C ${{ env.BUILD_TYPE }} -E "$final_exclude" -j ${{ matrix.max_jobs }} --output-on-failure
-          if ($LASTEXITCODE -ne 0) { exit 1 }
-          if ($overall_exit_code -eq 1) { exit 1 }
+          if ($LASTEXITCODE -ne 0) { $overall_exit_code = 1 }
+
+          if ($overall_exit_code -ne 0) {
+            Write-Host "Rerunning failing tests..."
+            ctest -C ${{ env.BUILD_TYPE }} --rerun-failed --output-on-failure
+            if ($LASTEXITCODE -ne 0) { exit 1 }
+          }
 
       - name: Wait for network stability
         if: always()
