@@ -938,24 +938,12 @@ jobs:
             $new_content | Set-Content $os_py
           }
 
-          # Fix path normalization in measure manager test (patch both actual and expected states)
-          # We use a safer replacement that doesn't create invalid syntax like `.replace(...) = ...`
+          # Fix path normalization in measure manager test (test_measure_manager.py)
+          # On Windows, path separators can be backslashes, but the test expects forward slashes or consistent formatting.
+          # We patch usages of `['my_measures_dir'].rstrip('/')` to include `.replace('\\', '/')` before the rstrip.
+          # This handles both assignment and assertion lines correctly without creating invalid syntax.
           $mm_test = "src/cli/test/test_measure_manager.py"
           $mm_content = Get-Content $mm_test -Raw
-          # Fix 1: expected_internal_state['my_measures_dir'] = ... -> don't touch assignment target!
-          # We target specific known problematic lines or use a more precise regex.
-          # The problematic lines are comparisons: assert actual == expected
-          # We can wrap the accessors in .replace('\\', '/').rstrip('/')
-          # But since we are restricted to simple replace... let's try just patching the specific assignment lines if possible, or just the assertions.
-          
-          # Actually, the easiest fix for the specific lines in `test_measure_manager.py` is to modify the 3 assertions or pre-processing.
-          # But doing that with regex is hard.
-          # Let's try to just replace `.rstrip('/')` with `.replace('\\', '/').rstrip('/')` everywhere it appears on `my_measures_dir`.
-          # The lines are:
-          # actual_measures_dir = actual_state['my_measures_dir'].rstrip('/')
-          # expected_measures_dir = expected_internal_state['my_measures_dir'].rstrip('/')
-          # assert measure_manager_client.internal_state()['my_measures_dir'].rstrip('/') == expected_measures_dir
-          # assert actual_state['my_measures_dir'].rstrip('/') == expected_internal_state['my_measures_dir'].rstrip('/')
           
           $mm_content = $mm_content -replace "\['my_measures_dir'\]\.rstrip\('/'\)", "['my_measures_dir'].replace('\\', '/').rstrip('/')"
           $mm_content | Set-Content $mm_test
