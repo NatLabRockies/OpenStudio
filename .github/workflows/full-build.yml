@@ -445,7 +445,7 @@ jobs:
             if command -v md5sum >/dev/null 2>&1; then md5sum "$file"; else md5 "$file"; fi
           done
 
-  macos:
+  macos-build:
     name: ${{ matrix.display_name }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -834,57 +834,50 @@ jobs:
           path: ${{ env.OPENSTUDIO_BUILD }}/*.tar.gz
           if-no-files-found: ignore
 
-      - name: Configure AWS credentials
-        if: ${{ github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' }}
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION || 'us-west-2' }}
 
-      - name: Publish installers to S3
-        if: ${{ github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' }}
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        env:
-          S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}/signed', github.ref_name) || format('{0}/signed', github.ref_name) }}
-        run: |
-          set -euo pipefail
-          echo "Uploading artifacts to s3://${AWS_S3_BUCKET}/${S3_PREFIX}"
-
-          # Upload signed installers if they exist
-          if [ -d "signed" ]; then
-            for file in signed/*.dmg; do
-              [ -e "$file" ] || continue
-              filename=$(basename "$file")
-              key="${S3_PREFIX}/${filename}"
-              aws s3 cp "$file" "s3://${AWS_S3_BUCKET}/${key}" --acl public-read
-              if command -v md5sum >/dev/null 2>&1; then md5sum "$file"; else md5 "$file"; fi
-            done
-          else
-            echo "::warning::No signed directory found, uploading unsigned installers"
-            for file in *.dmg; do
-              [ -e "$file" ] || continue
-              filename=$(basename "$file")
-              key="${S3_PREFIX}/${filename}"
-              aws s3 cp "$file" "s3://${AWS_S3_BUCKET}/${key}" --acl public-read
-              if command -v md5sum >/dev/null 2>&1; then md5sum "$file"; else md5 "$file"; fi
-            done
-          fi
-
-          # Upload tarballs
-          for file in *.tar.gz; do
-            [ -e "$file" ] || continue
-            filename=$(basename "$file")
-            key="${S3_PREFIX}/${filename}"
-            aws s3 cp "$file" "s3://${AWS_S3_BUCKET}/${key}" --acl public-read
-            if command -v md5sum >/dev/null 2>&1; then md5sum "$file"; else md5 "$file"; fi
-          done
 
       - name: Fail job on test failures
         if: ${{ steps.mac_ctest.outputs.exit_code != '0' }}
         run: |
           echo "::error::CTest suite failed with exit code ${{ steps.mac_ctest.outputs.exit_code }}"
           exit 1
+  macos-publish:
+    name: Publish MacOS Artifacts
+    needs: [macos-build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+    steps:
+      - name: Download all installers
+        uses: actions/download-artifact@v4
+        with:
+          pattern: OS-*-macos*
+          merge-multiple: true
+          path: installers
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-west-2' }}
+
+      - name: Publish to S3
+        working-directory: installers
+        env:
+          S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}/signed', github.ref_name) || format('{0}/signed', github.ref_name) }}
+          AWS_S3_BUCKET: openstudio-ci-builds
+        run: |
+          set -euo pipefail
+          echo "Uploading artifacts to s3://${AWS_S3_BUCKET}/${S3_PREFIX}"
+          for file in *; do
+            [ -e "$file" ] || continue
+            [ -f "$file" ] || continue
+            filename=$(basename "$file")
+            key="${S3_PREFIX}/${filename}"
+            aws s3 cp "$file" "s3://${AWS_S3_BUCKET}/${key}" --acl public-read
+            if command -v md5sum >/dev/null 2>&1; then md5sum "$file"; else md5 "$file"; fi
+          done
+
   windows-build:
     name: Build ${{ matrix.display_name }}
     runs-on: ${{ matrix.runner }}
