@@ -305,7 +305,6 @@ jobs:
             -DBUILD_PYTHON_BINDINGS:BOOL=ON \
             -DDISCOVER_TESTS_AFTER_BUILD:BOOL=ON \
             -DBUILD_PYTHON_PIP_PACKAGE:BOOL=${{ matrix.pip_package }} \
-
             -DPython_EXECUTABLE:FILEPATH="$SYSTEM_PYTHON_PATH" \
             -DPYTHON_VERSION:STRING=${{ env.PY_VERSION }} \
             -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
