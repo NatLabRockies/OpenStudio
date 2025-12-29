@@ -550,6 +550,11 @@ jobs:
           pip install --upgrade pip setuptools wheel
           pip install -r python/requirements.txt
 
+      - name: Install Qt Installer Framework
+        run: |
+          brew install qt-installer-framework
+          echo "$(brew --prefix qt-installer-framework)/bin" >> $GITHUB_PATH
+
       - name: Install Conan
         run: |
           set -euo pipefail
