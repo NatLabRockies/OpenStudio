@@ -723,133 +723,74 @@ jobs:
           find . -name "*.o" -type f -delete || true
           df -h .
 
-      - name: Configure for codesigning
-        if: ${{ github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' }}
+      - name: Code sign and notarize macOS packages
+        if: ${{ github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' }}
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
         env:
-          MACOS_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_BASE64 }}
-          MACOS_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD: ${{ secrets.MACOS_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD }}
-          NOTARIZATION_API_KEY: ${{ secrets.NOTARIZATION_API_KEY }}
-          NOTARIZATION_API_ISSUER_ID: ${{ secrets.NOTARIZATION_API_ISSUER_ID }}
-          NOTARIZATION_API_TEAM_ID: ${{ secrets.NOTARIZATION_API_TEAM_ID }}
+          APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
+          APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+          APPLE_DEV_ID: ${{ secrets.APPLE_DEV_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_ID_USERNAME: ${{ secrets.APPLE_ID_USERNAME }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
         run: |
           set -euo pipefail
-
+          
           # Check if signing credentials are configured
-          if [ -z "$MACOS_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_BASE64" ] || [ -z "$MACOS_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD" ]; then
+          if [ -z "$APPLE_CERT_DATA" ] || [ -z "$APPLE_CERT_PASSWORD" ]; then
             echo "::warning::Apple signing certificates not configured"
+            echo "::warning::Skipping code signing. Configure APPLE_CERT_DATA and APPLE_CERT_PASSWORD secrets."
             exit 0
           fi
-
-          cd "$RUNNER_TEMP"
-          mkdir -p codesigning && cd codesigning
-
-          # ----- Create certificate files from secrets base64 -----
-          echo "$MACOS_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_BASE64" | base64 --decode > certificate.p12
-
-          # ----- Configure Keychain -----
-          KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain
+          
+          # Create temporary keychain
+          KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain"
           KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
-          # Pass to next steps
-          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
-
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-
-          # ----- Import certificates on Keychain -----
-          security import certificate.p12 -P "$MACOS_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          
+          # Import certificate
+          CERT_PATH="$RUNNER_TEMP/certificate.p12"
+          echo "$APPLE_CERT_DATA" | base64 --decode > "$CERT_PATH"
+          security import "$CERT_PATH" -k "$KEYCHAIN_PATH" -P "$APPLE_CERT_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security list-keychain -d user -s "$KEYCHAIN_PATH" $(security list-keychain -d user | sed s/\"//g)
-          security find-identity -vvvv "$KEYCHAIN_PATH"
-
-          # Add needed intermediary certificates
-          curl -LO https://www.apple.com/certificateauthority/AppleWWDRCAG2.cer
-          curl -LO https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer
-          security import AppleWWDRCAG2.cer -k "$KEYCHAIN_PATH"
-          security import DeveloperIDG2CA.cer -k "$KEYCHAIN_PATH" || true
-          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
-
-          # Store Notarization credentials
-          if [ -n "$NOTARIZATION_API_KEY" ] && [ -n "$NOTARIZATION_API_ISSUER_ID" ] && [ -n "$NOTARIZATION_API_TEAM_ID" ]; then
-             echo "$NOTARIZATION_API_KEY" > AppConnect_Developer_API_Key.p8
-             xcrun notarytool store-credentials "OpenStudio" \
-              --key AppConnect_Developer_API_Key.p8 \
-              --key-id "$NOTARIZATION_API_TEAM_ID" \
-              --issuer "$NOTARIZATION_API_ISSUER_ID" \
-              --keychain "$KEYCHAIN_PATH"
-          fi
-
-          cd .. && rm -Rf codesigning
-
-      - name: Code sign and notarize macOS packages
-        if: ${{ github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' }}
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        env:
-          APPLE_DEV_ID: ${{ secrets.APPLE_DEV_ID }}
-          NOTARIZATION_API_KEY: ${{ secrets.NOTARIZATION_API_KEY }}
-          NOTARIZATION_API_ISSUER_ID: ${{ secrets.NOTARIZATION_API_ISSUER_ID }}
-          NOTARIZATION_API_TEAM_ID: ${{ secrets.NOTARIZATION_API_TEAM_ID }}
-        run: |
-          set -euo pipefail
-
-          if [ -z "${KEYCHAIN_PATH:-}" ]; then
-            echo "::warning::Keychain not configured, skipping signing"
-            exit 0
-          fi
-
-          # Sign, notarize, and package .app installers
+          
+          # Sign DMG files
           mkdir -p signed
-
-          for app in OpenStudio*.app; do
-            if [ -d "$app" ]; then
-              echo "Processing $app..."
-
-              # 1. Sign the .app bundle
-              echo "Signing $app..."
-              # Deep sign code inside the framework/bundle
-              codesign --force --deep --sign "$APPLE_DEV_ID" --timestamp --options runtime "$app" || {
-                echo "::error::Failed to sign $app"
-                exit 1
+          for dmg in ${{ matrix.dmg_glob }}; do
+            if [ -f "$dmg" ]; then
+              echo "Signing $dmg..."
+              codesign --force --sign "$APPLE_DEV_ID" --timestamp --options runtime "$dmg" || {
+                echo "::warning::Failed to sign $dmg"
+                cp "$dmg" "signed/$(basename "$dmg")"
+                continue
               }
-
-              # 2. Notarize if credentials available
-              if [ -n "$NOTARIZATION_API_KEY" ] && [ -n "$NOTARIZATION_API_ISSUER_ID" ]; then
-                echo "Notarizing $app..."
-
-                # Apple notary service requires a ZIP, DMG, or PKG
-                # Create a temporary zip for notarization
-                NOTARIZE_ZIP="notarize_me.zip"
-                /usr/bin/ditto -c -k --keepParent "$app" "$NOTARIZE_ZIP"
-
-                xcrun notarytool submit "$NOTARIZE_ZIP" \
-                  --keychain-profile "OpenStudio" \
-                  --keychain "$KEYCHAIN_PATH" \
-                  --wait || {
-                    echo "::warning::Notarization failed for $app"
-                  }
-
-                # Cleanup temp zip
-                rm "$NOTARIZE_ZIP"
-
-                # 3. Staple the notarization ticket to the .app
-                echo "Stapling ticket to $app..."
-                xcrun stapler staple "$app" || echo "::warning::Stapling failed for $app"
+              
+              # Notarize if credentials available
+              if [ -n "$APPLE_ID_USERNAME" ] && [ -n "$APPLE_ID_PASSWORD" ]; then
+                echo "Notarizing $dmg..."
+                xcrun notarytool submit "$dmg" \
+                  --apple-id "$APPLE_ID_USERNAME" \
+                  --password "$APPLE_ID_PASSWORD" \
+                  --team-id "$APPLE_TEAM_ID" \
+                  --wait || echo "::warning::Notarization failed for $dmg"
+                
+                # Staple the notarization ticket
+                xcrun stapler staple "$dmg" || echo "::warning::Stapling failed for $dmg"
               fi
-
-              # 4. Create final ZIP artifact for upload
-              APP_BASENAME=$(basename "$app" .app)
-              FINAL_ZIP="signed/${APP_BASENAME}.zip"
-              echo "Zipping signed app to $FINAL_ZIP..."
-              /usr/bin/ditto -c -k --keepParent "$app" "$FINAL_ZIP"
-
+              
+              cp "$dmg" "signed/$(basename "$dmg")"
             fi
           done
-
+          
           # Cleanup
           security delete-keychain "$KEYCHAIN_PATH" || true
+          rm -f "$CERT_PATH"
           
-          echo "Code signing and packaging completed"
-
+          echo "Code signing completed"
+  
       - name: Copy Testing tree with suffix
         if: always()
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
