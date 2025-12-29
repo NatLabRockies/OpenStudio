@@ -846,12 +846,22 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/Testing-${{ matrix.test_suffix }}/
             ${{ env.OPENSTUDIO_BUILD }}/${{ env.TEST_DASHBOARD_RELATIVE }}
 
+      - name: Determine installer path
+        id: installer_path
+        if: always()
+        run: |
+          if ls ${{ env.OPENSTUDIO_BUILD }}/signed/*.zip 1> /dev/null 2>&1; then
+            echo "path=${{ env.OPENSTUDIO_BUILD }}/signed/*.zip" >> $GITHUB_OUTPUT
+          else
+            echo "path=${{ env.OPENSTUDIO_BUILD }}/*.zip" >> $GITHUB_OUTPUT
+          fi
+
       - name: Upload IFW installer
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: OS-IFW-${{ matrix.platform }}-${{ github.sha }}
-          path: ${{ env.OPENSTUDIO_BUILD }}/signed/*.zip
+          path: ${{ steps.installer_path.outputs.path }}
           if-no-files-found: ignore
 
       - name: Upload TGZ package
