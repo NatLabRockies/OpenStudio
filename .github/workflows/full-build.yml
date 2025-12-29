@@ -550,10 +550,10 @@ jobs:
           pip install --upgrade pip setuptools wheel
           pip install -r python/requirements.txt
 
-      - name: Install Qt Installer Framework
-        run: |
-          brew install qt-installer-framework
-          echo "$(brew --prefix qt-installer-framework)/bin" >> $GITHUB_PATH
+      - name: Set up Qt IFW
+        uses: jmarrec/setup-qtifw@v1
+        with:
+          version: 'latest'
 
       - name: Install Conan
         run: |
