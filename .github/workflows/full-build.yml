@@ -380,7 +380,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Create packages
-        if: always()
+        if: !cancelled()
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           set -euo pipefail
@@ -723,7 +723,7 @@ jobs:
           echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
       - name: Create packages
-        if: always()
+        if: !cancelled()
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           set -euo pipefail
@@ -848,12 +848,14 @@ jobs:
 
       - name: Determine installer path
         id: installer_path
-        if: always()
+        if: !cancelled()
         run: |
-          if ls ${{ env.OPENSTUDIO_BUILD }}/signed/*.zip 1> /dev/null 2>&1; then
-            echo "path=${{ env.OPENSTUDIO_BUILD }}/signed/*.zip" >> $GITHUB_OUTPUT
+          if ls ${{ env.OPENSTUDIO_BUILD }}/signed/*.dmg 1> /dev/null 2>&1; then
+            echo "path=${{ env.OPENSTUDIO_BUILD }}/signed/*.dmg" >> $GITHUB_OUTPUT
+          elif ls ${{ env.OPENSTUDIO_BUILD }}/*.dmg 1> /dev/null 2>&1; then
+            echo "path=${{ env.OPENSTUDIO_BUILD }}/*.dmg" >> $GITHUB_OUTPUT
           else
-            echo "path=${{ env.OPENSTUDIO_BUILD }}/*.zip" >> $GITHUB_OUTPUT
+             echo "path=${{ env.OPENSTUDIO_BUILD }}/*.zip" >> $GITHUB_OUTPUT
           fi
 
       - name: Upload IFW installer
@@ -871,8 +873,6 @@ jobs:
           name: OS-TGZ-${{ matrix.platform }}-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/*.tar.gz
           if-no-files-found: ignore
-
-
 
       - name: Fail job on test failures
         if: ${{ steps.mac_ctest.outputs.exit_code != '0' }}
@@ -1178,6 +1178,16 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/CTestTestfile.cmake
           if-no-files-found: warn
 
+      - name: Create packages
+        if: !cancelled()
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          & $env:ComSpec /c "call conanbuild.bat && cmake --build . --target package"
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "CPack failed with exit code $LASTEXITCODE"
+            exit $LASTEXITCODE
+          }
+
       # CODE SIGNING - AWS Signing Service
       - name: Setup Node.js
         if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
@@ -1257,15 +1267,7 @@ jobs:
             }
           }
 
-          Write-Host "------------------------------------------------------------"
-          Write-Host "Step 2: Creating Installer (CPack)"
-          Write-Host "------------------------------------------------------------"
-          # FIXED: Use $env:ComSpec to avoid MSYS2 cmd path conflict
-          & $env:ComSpec /c "call conanbuild.bat && cmake --build . --target package"
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "CPack failed with exit code $LASTEXITCODE"
-            exit $LASTEXITCODE
-          }
+
 
           if ($canSign) {
             Write-Host "------------------------------------------------------------"
