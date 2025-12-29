@@ -380,7 +380,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Create packages
-        if: !cancelled()
+        if: ${{ success() && !cancelled() }}
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           set -euo pipefail
@@ -723,7 +723,7 @@ jobs:
           echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
       - name: Create packages
-        if: !cancelled()
+        if: ${{ success() && !cancelled() }}
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           set -euo pipefail
@@ -848,7 +848,7 @@ jobs:
 
       - name: Determine installer path
         id: installer_path
-        if: !cancelled()
+        if: ${{ !cancelled() }}
         run: |
           if ls ${{ env.OPENSTUDIO_BUILD }}/signed/*.dmg 1> /dev/null 2>&1; then
             echo "path=${{ env.OPENSTUDIO_BUILD }}/signed/*.dmg" >> $GITHUB_OUTPUT
@@ -1179,7 +1179,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Create packages
-        if: !cancelled()
+        if: ${{ success() && !cancelled() }}
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           & $env:ComSpec /c "call conanbuild.bat && cmake --build . --target package"
