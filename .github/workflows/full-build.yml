@@ -685,6 +685,8 @@ jobs:
 
     - name: Configure with CMake
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
+      env:
+        APPLE_DEV_ID: ${{ secrets.APPLE_DEV_ID }}
       run: |
         set -e
         chmod +x ./conanbuild.sh
@@ -695,8 +697,20 @@ jobs:
           CCACHE_EXE=$(command -v ccache)
           CCACHE_ARGS=("-DCMAKE_C_COMPILER_LAUNCHER=$CCACHE_EXE" "-DCMAKE_CXX_COMPILER_LAUNCHER=$CCACHE_EXE")
         fi
+
+        # Configure signing identity
+        SIGNING_ARGS=()
+        if [ -n "$APPLE_DEV_ID" ]; then
+          echo "Configuring for signed build"
+          SIGNING_ARGS=("-DCPACK_IFW_PACKAGE_SIGNING_IDENTITY=$APPLE_DEV_ID")
+        else
+          echo "Configuring for ad-hoc signed build"
+          SIGNING_ARGS=("-DCPACK_IFW_PACKAGE_SIGNING_IDENTITY=-")
+        fi
+
         cmake -G Ninja \
           "${CCACHE_ARGS[@]}" \
+          "${SIGNING_ARGS[@]}" \
           -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
           -DENABLE_COVERAGE:BOOL=OFF \
           -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=${{ matrix.macos_dev_target }} \
@@ -788,6 +802,30 @@ jobs:
 
         echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
+    - name: Setup Keychain
+      if: ${{ success() && !cancelled() && (github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' || matrix.os == 'macOS') }}
+      env:
+        APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
+        APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+      run: |
+        set -euo pipefail
+        if [ -n "$APPLE_CERT_DATA" ] && [ -n "$APPLE_CERT_PASSWORD" ]; then
+          # Create temporary keychain
+          KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain"
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          
+          # Import certificate
+          CERT_PATH="$RUNNER_TEMP/certificate.p12"
+          echo "$APPLE_CERT_DATA" | base64 --decode > "$CERT_PATH"
+          security import "$CERT_PATH" -k "$KEYCHAIN_PATH" -P "$APPLE_CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+        fi
+
     - name: Create packages
       if: ${{ success() && !cancelled() }}
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -803,12 +841,11 @@ jobs:
         find . -name "*.o" -type f -delete || true
         df -h .
 
-    - name: Code sign and notarize macOS packages
+    - name: Sign DMG and Notarize
       if: ${{ steps.create_packages.outcome == 'success' && (github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' || matrix.os == 'macOS') }}
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       env:
         APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
-        APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
         APPLE_DEV_ID: ${{ secrets.APPLE_DEV_ID }}
         APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         APPLE_ID_USERNAME: ${{ secrets.APPLE_ID_USERNAME }}
@@ -817,27 +854,11 @@ jobs:
         set -euo pipefail
         
         # Check if signing credentials are configured
-        if [ -z "$APPLE_CERT_DATA" ] || [ -z "$APPLE_CERT_PASSWORD" ]; then
+        if [ -z "$APPLE_CERT_DATA" ] || [ -z "$APPLE_DEV_ID" ]; then
           echo "::warning::Apple signing certificates not configured. Falling back to ad-hoc signing."
           export AD_HOC_SIGNING=true
         else
           export AD_HOC_SIGNING=false
-        fi
-        
-        if [ "$AD_HOC_SIGNING" = "false" ]; then
-          # Create temporary keychain
-          KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain"
-          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
-          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          
-          # Import certificate
-          CERT_PATH="$RUNNER_TEMP/certificate.p12"
-          echo "$APPLE_CERT_DATA" | base64 --decode > "$CERT_PATH"
-          security import "$CERT_PATH" -k "$KEYCHAIN_PATH" -P "$APPLE_CERT_PASSWORD" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          # security list-keychain -d user -s "$KEYCHAIN_PATH" $(security list-keychain -d user | sed s/\"//g)
         fi
         
         # Sign DMG files
@@ -846,34 +867,8 @@ jobs:
           if [ -f "$dmg" ]; then
             echo "Processing $dmg..."
             
-            # Unpack DMG to sign inner app
-            echo "Mounting $dmg..."
-            hdiutil attach "$dmg" -mountpoint /Volumes/OpenStudio -nobrowse
-            
-            echo "Copying app bundle..."
-            APP_PATH=$(find /Volumes/OpenStudio -maxdepth 1 -name "*.app")
-            APP_NAME=$(basename "$APP_PATH")
-            cp -R "$APP_PATH" "$APP_NAME"
-            
-            echo "Unmounting $dmg..."
-            hdiutil detach /Volumes/OpenStudio
-            
-            echo "Signing inner app $APP_NAME..."
-            xattr -r -d com.apple.quarantine "$APP_NAME" || true
-            if [ "$AD_HOC_SIGNING" = "false" ]; then
-              codesign --force --deep --options runtime --timestamp --sign "$APPLE_DEV_ID" "$APP_NAME"
-            else
-                # Ad-hoc signing (-s -)
-                # Note: Do NOT use --options runtime or --timestamp for ad-hoc signing as it can cause
-                # "Code Signature Invalid" crashes on launch (Namespace CODESIGNING, Code 2).
-                echo "Applying simple ad-hoc signature to $APP_NAME"
-                codesign --force --deep --sign - "$APP_NAME"
-            fi
-            
-            echo "Repacking $dmg..."
-            rm "$dmg"
-            hdiutil create -volname "OpenStudio" -srcfolder "$APP_NAME" -ov -format UDZO "$dmg"
-            rm -rf "$APP_NAME"
+            # The inner app should already be signed by CPack if configured correctly
+            # We now sign the DMG itself (or ad-hoc sign if needed)
             
             echo "Signing $dmg..."
             if [ "$AD_HOC_SIGNING" = "false" ]; then
@@ -911,9 +906,8 @@ jobs:
         done
         
         # Cleanup
-        if [ "$AD_HOC_SIGNING" = "false" ]; then
+        if [ -n "$KEYCHAIN_PATH" ]; then
           security delete-keychain "$KEYCHAIN_PATH" || true
-          rm -f "$CERT_PATH"
         fi
         
         echo "Code signing completed"
