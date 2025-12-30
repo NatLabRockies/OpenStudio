@@ -174,7 +174,6 @@ jobs:
           key: ccache-${{ runner.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
           restore-keys: |
             ccache-${{ runner.os }}-${{ matrix.platform }}-
-          save-always: true
 
       - name: Restore Conan cache
         uses: actions/cache@v4
@@ -183,7 +182,6 @@ jobs:
           key: conan-${{ runner.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
           restore-keys: |
             conan-${{ runner.os }}-${{ matrix.platform }}-
-          save-always: true
 
       - name: Prepare workspace
         run: |
@@ -239,7 +237,6 @@ jobs:
           key: external-deps-${{ runner.os }}-${{ hashFiles('conan.lock') }}
           restore-keys: |
             external-deps-${{ runner.os }}-
-          save-always: true
 
       - name: Restore Generated Embedded Files
         uses: actions/cache@v4
@@ -250,7 +247,6 @@ jobs:
           key: embedded-files-${{ runner.os }}-${{ hashFiles('resources/**', 'ruby/engine/**', 'src/airflow/**', 'src/energyplus/**', 'src/gbxml/**', 'src/isomodel/**', 'src/model/**', 'src/radiance/**', 'src/sdd/**', 'src/utilities/**') }}
           restore-keys: |
             embedded-files-${{ runner.os }}-
-          save-always: true
 
       - name: Configure Conan remotes
         run: |
@@ -501,7 +497,6 @@ jobs:
           key: conan-${{ runner.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
           restore-keys: |
             conan-${{ runner.os }}-${{ matrix.platform }}-
-          save-always: true
 
       - name: Prepare workspace
         run: |
@@ -521,7 +516,6 @@ jobs:
           key: external-deps-${{ runner.os }}-${{ hashFiles('conan.lock') }}
           restore-keys: |
             external-deps-${{ runner.os }}-
-          save-always: true
 
       - name: Restore Generated Embedded Files
         uses: actions/cache@v4
@@ -532,7 +526,6 @@ jobs:
           key: embedded-files-${{ runner.os }}-${{ hashFiles('resources/**', 'ruby/engine/**', 'src/airflow/**', 'src/energyplus/**', 'src/gbxml/**', 'src/isomodel/**', 'src/radiance/**', 'src/sdd/**', 'src/model/**', 'src/utilities/**') }}
           restore-keys: |
             embedded-files-${{ runner.os }}-
-          save-always: true
 
       - name: Set up Python 3.12.2
         uses: actions/setup-python@v6
@@ -1067,7 +1060,6 @@ jobs:
           key: external-deps-${{ runner.os }}-${{ hashFiles('conan.lock') }}
           restore-keys: |
             external-deps-${{ runner.os }}-
-          save-always: true
 
       - name: Restore Generated Embedded Files
         uses: actions/cache@v4
@@ -1078,7 +1070,6 @@ jobs:
           key: embedded-files-${{ runner.os }}-${{ hashFiles('resources/**', 'ruby/engine/**', 'src/airflow/**', 'src/energyplus/**', 'src/gbxml/**', 'src/isomodel/**', 'src/model/**', 'src/radiance/**', 'src/sdd/**', 'src/utilities/**') }}
           restore-keys: |
             embedded-files-${{ runner.os }}-
-          save-always: true
 
       - name: Setup sccache
         uses: Mozilla-Actions/sccache-action@v0.0.5
