@@ -19,10 +19,10 @@ If you encounter these issues, standard `xattr` commands on the DMG may not be s
 
     ```bash
     # 1. Remove quarantine attributes
-    xattr -cr path/to/local/OpenStudio-Installer.app
+    sudo xattr -cr path/to/local/OpenStudio-Installer.app
 
     # 2. Ad-hoc sign the application (fixes "Killed" or crashes on startup)
-    codesign --force --deep --sign - path/to/local/OpenStudio-Installer.app
+    sudo codesign --force --deep --sign - path/to/local/OpenStudio-Installer.app
     ```
 
 4.  Run the installer. If double-clicking fails, run the executable directly with `sudo`:
