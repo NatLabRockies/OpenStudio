@@ -330,6 +330,8 @@ jobs:
           exit $BUILD_EXIT
 
       - name: Run CTest suite
+        id: ctest
+        continue-on-error: true
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           set -euo pipefail
@@ -342,10 +344,12 @@ jobs:
           exclude_regex="${{ matrix.exclude_regex }}"
 
           echo "Running sequential tests..."
+          export CTEST_OUTPUT_ON_FAILURE=1
+          
           if [ "$exclude_regex" == '""' ] || [ -z "$exclude_regex" ]; then
-            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -j 1 --output-on-failure || overall_exit_code=1
+            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -j 1 -T test || overall_exit_code=1
           else
-            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -E "$exclude_regex" -j 1 --output-on-failure || overall_exit_code=1
+            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -E "$exclude_regex" -j 1 -T test || overall_exit_code=1
           fi
 
           echo "Running all other tests in parallel..."
@@ -355,13 +359,13 @@ jobs:
             final_exclude="($exclude_regex|$resource_locked_tests)"
           fi
 
-          ctest -C ${{ env.BUILD_TYPE }} -E "$final_exclude" -j ${{ matrix.max_jobs }} --output-on-failure || overall_exit_code=$?
+          ctest -C ${{ env.BUILD_TYPE }} -E "$final_exclude" -j ${{ matrix.max_jobs }} -T test || overall_exit_code=$?
           
           if [ $overall_exit_code -ne 0 ]; then
             echo "Rerunning failing tests..."
-            ctest -C ${{ env.BUILD_TYPE }} --rerun-failed --output-on-failure || overall_exit_code=$?
+            ctest -C ${{ env.BUILD_TYPE }} --rerun-failed -T test --no-compress-output || overall_exit_code=$?
           fi
-          exit $overall_exit_code
+          echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
       - name: Wait for network stability
         if: always()
@@ -428,6 +432,19 @@ jobs:
           set -euo pipefail
           . ./conanbuild.sh
           cmake --build . --target package
+
+      - name: Cleanup intermediate files
+        if: always()
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          find . -name "*.o" -type f -delete || true
+          df -h .
+
+      - name: Fail job on test failures
+        if: ${{ steps.ctest.outputs.exit_code != '0' }}
+        run: |
+          echo "::error::CTest suite failed with exit code ${{ steps.ctest.outputs.exit_code }}"
+          exit 1
 
       - name: Upload DEB installer
         uses: actions/upload-artifact@v4
@@ -661,6 +678,11 @@ jobs:
         python_path=$(command -v python3)
         echo "SYSTEM_PYTHON_PATH=$python_path" >> $GITHUB_ENV
 
+    - name: Install Documentation Dependencies (Mac)
+      run: |
+        brew install --cask basictex
+        echo "/Library/TeX/texbin" >> $GITHUB_PATH
+
     - name: Configure with CMake
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       run: |
@@ -732,7 +754,6 @@ jobs:
       continue-on-error: true
       run: |
         set -euo pipefail
-        source $SYSTEM_RUBY_PATH
         gem install bundler -v 2.4.10 --conservative --no-document
 
         # Conflicting tests that must run sequentially
@@ -1185,6 +1206,24 @@ jobs:
           $pythonPath = (Get-Command python).Source
           "SYSTEM_PYTHON_PATH=$pythonPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
+      - name: Install System dependencies (MiKTeX)
+        run: |
+          Write-Host "Downloading MiKTeX CLI installer"
+          Invoke-WebRequest -Uri "https://ctan.math.illinois.edu/systems/win32/miktex/setup/windows-x64/miktexsetup-5.5.0%2B1763023-x64.zip" -OutFile "miktexsetup.zip"
+          Expand-Archive -Path "miktexsetup.zip" -DestinationPath "." -Force
+
+          Write-Host "Setting up MiKTeX"
+          .\miktexsetup_standalone --verbose --local-package-repository=C:/ProgramData/MiKTeX-Repo --remote-package-repository="https://ctan.math.illinois.edu/systems/win32/miktex/tm/packages/" --package-set=essential download
+          .\miktexsetup_standalone --verbose --local-package-repository=C:/ProgramData/MiKTeX-Repo --package-set=essential --shared install
+
+          $miktexBin = "C:\Program Files\MiKTeX\miktex\bin\x64"
+          echo "$miktexBin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          
+          # Initialize
+          & "$miktexBin\initexmf" --admin --verbose --set-config-value='[MPM]AutoInstall=1'
+          & "$miktexBin\mpm" --admin --set-repository="https://ctan.math.illinois.edu/systems/win32/miktex/tm/packages/"
+          & "$miktexBin\mpm" --admin --find-updates
+
       - name: Configure with CMake
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
@@ -1207,6 +1246,8 @@ jobs:
           if (Get-Command sccache -ErrorAction SilentlyContinue) { sccache -s }
 
       - name: Run CTest suite
+        id: ctest
+        continue-on-error: true
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         shell: pwsh
         run: |
@@ -1230,12 +1271,14 @@ jobs:
           
           $overall_exit_code = 0
           $exclude_regex = "${{ matrix.exclude_regex }}"
+          
+          $env:CTEST_OUTPUT_ON_FAILURE = "1"
 
           Write-Host "Running sequential tests..."
           if ([string]::IsNullOrEmpty($exclude_regex) -or $exclude_regex -eq '""') {
-            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -j 1 --output-on-failure
+            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -j 1 -T test
           } else {
-            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -E "$exclude_regex" -j 1 --output-on-failure
+            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -E "$exclude_regex" -j 1 -T test
           }
           if ($LASTEXITCODE -ne 0) { $overall_exit_code = 1 }
 
@@ -1246,14 +1289,15 @@ jobs:
              $final_exclude = "($exclude_regex|$resource_locked_tests)"
           }
           
-          ctest -C ${{ env.BUILD_TYPE }} -E "$final_exclude" -j ${{ matrix.max_jobs }} --output-on-failure
+          ctest -C ${{ env.BUILD_TYPE }} -E "$final_exclude" -j ${{ matrix.max_jobs }} -T test
           if ($LASTEXITCODE -ne 0) { $overall_exit_code = 1 }
 
           if ($overall_exit_code -ne 0) {
             Write-Host "Rerunning failing tests..."
-            ctest -C ${{ env.BUILD_TYPE }} --rerun-failed --output-on-failure
-            if ($LASTEXITCODE -ne 0) { exit 1 }
+            ctest -C ${{ env.BUILD_TYPE }} --rerun-failed -T test
+            if ($LASTEXITCODE -ne 0) { $overall_exit_code = 1 }
           }
+          "exit_code=$overall_exit_code" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Wait for network stability
         if: always()
@@ -1320,6 +1364,19 @@ jobs:
             Write-Error "CPack failed with exit code $LASTEXITCODE"
             exit $LASTEXITCODE
           }
+
+      - name: Cleanup intermediate files
+        if: always()
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          Get-ChildItem -Path . -Include "*.obj" -Recurse -Force | Remove-Item -Force -ErrorAction SilentlyContinue
+          Get-PSDrive C | Select-Object Used,Free
+
+      - name: Fail job on test failures
+        if: ${{ steps.ctest.outputs.exit_code != '0' }}
+        run: |
+          echo "::error::CTest suite failed with exit code ${{ steps.ctest.outputs.exit_code }}"
+          exit 1
 
       # CODE SIGNING - AWS Signing Service
       - name: Setup Node.js
