@@ -378,6 +378,49 @@ jobs:
             ${{ steps.build_path.outputs.path }}/CTestTestfile.cmake
           if-no-files-found: warn
 
+      - name: Copy Testing tree with suffix
+        if: always()
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          set -euo pipefail
+          if [ -d "Testing" ]; then
+            cp -r Testing "Testing-${{ matrix.test_suffix }}"
+          fi
+
+      - name: Generate test summary
+        if: always()
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          set -euo pipefail
+          
+          # Generate a simple markdown summary from CTest results
+          mkdir -p "$(dirname '${{ env.TEST_DASHBOARD_RELATIVE }}')"
+          
+          echo "# OpenStudio Test Results - ${{ matrix.test_suffix }}" > "${{ env.TEST_DASHBOARD_RELATIVE }}"
+          echo "" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
+          echo "**Build:** \`${{ github.sha }}\`" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
+          echo "**Branch:** \`${{ github.ref_name }}\`" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
+          echo "**Platform:** ${{ matrix.pretty }}" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
+          echo "**Date:** $(date -u)" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
+          echo "" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
+          
+          if [ -f Testing/Temporary/LastTest.log ]; then
+            echo "## Test Log (Last 50 lines)" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
+            echo '```' >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
+            tail -50 Testing/Temporary/LastTest.log >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
+            echo '```' >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
+          fi
+        continue-on-error: true
+
+      - name: Upload Testing artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Testing-${{ matrix.platform }}-${{ github.sha }}
+          path: |
+            ${{ env.OPENSTUDIO_BUILD }}/Testing-${{ matrix.test_suffix }}/
+            ${{ env.OPENSTUDIO_BUILD }}/${{ env.TEST_DASHBOARD_RELATIVE }}
+
       - name: Create packages
         if: ${{ success() && !cancelled() }}
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -1226,6 +1269,47 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/.ninja_log
             ${{ env.OPENSTUDIO_BUILD }}/CTestTestfile.cmake
           if-no-files-found: warn
+
+      - name: Copy Testing tree with suffix
+        if: always()
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          if (Test-Path "Testing") {
+            Copy-Item -Path "Testing" -Destination "Testing-${{ matrix.test_suffix }}" -Recurse -Force
+          }
+
+      - name: Generate test summary
+        if: always()
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          $dashboardPath = "${{ env.TEST_DASHBOARD_RELATIVE }}"
+          $dashboardDir = Split-Path -Parent $dashboardPath
+          if (-not (Test-Path $dashboardDir)) { New-Item -ItemType Directory -Path $dashboardDir -Force }
+          
+          "# OpenStudio Test Results - ${{ matrix.test_suffix }}" | Out-File -FilePath $dashboardPath -Encoding utf8
+          "" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+          "**Build:** `${{ github.sha }}`" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+          "**Branch:** `${{ github.ref_name }}`" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+          "**Platform:** ${{ matrix.pretty }}" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+          "**Date:** $(Get-Date -Format u)" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+          "" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+          
+          if (Test-Path "Testing/Temporary/LastTest.log") {
+            "## Test Log (Last 50 lines)" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+            "```" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+            Get-Content "Testing/Temporary/LastTest.log" -Tail 50 | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+            "```" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+          }
+        continue-on-error: true
+
+      - name: Upload Testing artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Testing-${{ matrix.platform }}-${{ github.sha }}
+          path: |
+            ${{ env.OPENSTUDIO_BUILD }}/Testing-${{ matrix.test_suffix }}/
+            ${{ env.OPENSTUDIO_BUILD }}/${{ env.TEST_DASHBOARD_RELATIVE }}
 
       - name: Create packages
         if: ${{ success() && !cancelled() }}
