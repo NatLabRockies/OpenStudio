@@ -1203,7 +1203,7 @@ jobs:
       - name: Install System dependencies (MiKTeX)
         run: |
           Write-Host "Downloading MiKTeX CLI installer"
-          $url = "https://mirror.ctan.org/systems/win32/miktex/setup/windows-x64/miktexsetup-5.5.0%2B1763023-x64.zip"
+          $url = "https://ctan.math.utah.edu/ctan/tex-archive/systems/win32/miktex/setup/windows-x64/miktexsetup-5.5.0%2B1763023-x64.zip"
           $output = "miktexsetup.zip"
           $maxRetries = 5
           $retryCount = 0
