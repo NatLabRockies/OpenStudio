@@ -905,6 +905,8 @@ jobs:
     - name: Create packages
       if: ${{ success() && !cancelled() }}
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
+      env:
+        COPYFILE_DISABLE: 1
       run: |
         set -euo pipefail
         . ./conanbuild.sh
@@ -956,8 +958,21 @@ jobs:
           # We use the exact command suggested in your README
           echo "Applying ad-hoc signature to inner application..."
           find mount_point -maxdepth 1 -name "*.app" -print0 | while IFS= read -r -d '' app_path; do
-            echo "Signing: $app_path"
-            codesign --force --deep --sign - "$app_path"
+            echo "Signing top-level app: $app_path"
+            # Sign the top-level .app bundle without using the legacy --deep flag
+            codesign --sign - "$app_path"
+
+            # Explicitly sign common nested code within the app bundle (frameworks, plugins, helpers, etc.)
+            echo "Signing nested components inside: $app_path"
+            find "$app_path" -print0 \( \
+              -type d -name "*.framework" -o \
+              -type d -name "*.bundle" -o \
+              -type d -name "*.plugin" -o \
+              -type f -perm -111 \
+            \) | while IFS= read -r -d '' nested_path; do
+              echo "  Signing nested item: $nested_path"
+              codesign --sign - "$nested_path"
+            done
           done
           
           # 4. Detach and Convert back to Compressed (Read-Only)
