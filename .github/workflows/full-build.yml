@@ -68,6 +68,8 @@ jobs:
     container:
       image: ${{ matrix.container_image }}
       options: ${{ matrix.container_options }} --volume /mnt:/mnt
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -478,7 +480,7 @@ jobs:
     name: Publish Linux Artifacts
     needs: [linux-build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
     steps:
       - name: Download all installers
         uses: actions/download-artifact@v4
@@ -509,6 +511,80 @@ jobs:
             aws s3 cp "$file" "s3://${AWS_S3_BUCKET}/${key}" --acl public-read
             if command -v md5sum >/dev/null 2>&1; then md5sum "$file"; else md5 "$file"; fi
           done
+
+      - name: Trigger Docker Build
+        if: inputs.skip_docker_trigger != 'true' && github.event.inputs.skip_docker_trigger != 'true'
+        working-directory: installers
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}', github.ref_name) || format('{0}', github.ref_name) }}
+        run: |
+          set -euo pipefail
+          
+          # Find the 22.04 deb file locally
+          DEB_FILE=$(find . -name "*22.04*.deb" | head -n 1)
+          if [ -z "$DEB_FILE" ]; then
+            echo "::error::Could not find Ubuntu 22.04 deb file in installers directory"
+            ls -la
+            exit 1
+          fi
+          
+          FILENAME=$(basename "$DEB_FILE")
+          echo "Found file: $FILENAME"
+          
+          # Construct S3 URL
+          # Replace + with %2B
+          ENCODED_FILENAME=${FILENAME//+/%2B}
+          BINARY_URL="https://${AWS_S3_BUCKET}.s3.amazonaws.com/${S3_PREFIX}/${ENCODED_FILENAME}"
+          echo "Binary URL: $BINARY_URL"
+          
+          # Parse version from filename
+          # Expected format: OpenStudio-<Version>-<Platform>.deb
+          if [[ "$FILENAME" =~ OpenStudio-(.+)-Ubuntu-22\.04.*\.deb ]]; then
+             OS_VERSION_FULL=${BASH_REMATCH[1]}
+          elif [[ "$FILENAME" =~ OpenStudio-(.+)-Linux.*\.deb ]]; then
+             OS_VERSION_FULL=${BASH_REMATCH[1]}
+          else
+             echo "::error::Could not parse version from filename: $FILENAME"
+             exit 1
+          fi
+          
+          echo "Full Version: $OS_VERSION_FULL"
+          
+          # Logic from Jenkins:
+          # Split by +
+          IFS='+' read -r VER_PART SHA_PART <<< "$OS_VERSION_FULL"
+          
+          if [[ "$VER_PART" == *"-"* ]]; then
+             # 3.3.0-rc1 -> Ver: 3.3.0, Ext: rc1
+             IFS='-' read -r OS_VERSION OS_VERSION_EXT <<< "$VER_PART"
+          else
+             # 3.3.0+sha -> Ver: 3.3.0, Ext: sha
+             OS_VERSION="$VER_PART"
+             OS_VERSION_EXT="$SHA_PART"
+          fi
+          
+          echo "OS Version: $OS_VERSION"
+          echo "OS Version Ext: $OS_VERSION_EXT"
+          
+          # Docker Tag Logic
+          if [[ "$BRANCH_NAME" == "develop" ]]; then
+             DOCKER_IMAGE_TAG="develop"
+          else
+             DOCKER_IMAGE_TAG="${OS_VERSION}-${OS_VERSION_EXT}"
+          fi
+          echo "Docker Image Tag: $DOCKER_IMAGE_TAG"
+          
+          # Trigger Workflow
+          echo "Triggering manual_update_develop workflow in NREL/docker-openstudio..."
+          gh workflow run 'manual_update_develop' \
+            --repo NREL/docker-openstudio \
+            --ref develop \
+            -f docker_image_tag="$DOCKER_IMAGE_TAG" \
+            -f os_installer_link="$BINARY_URL" \
+            -f os_version="$OS_VERSION" \
+            -f os_version_ext="$OS_VERSION_EXT"
 
   macos-build:
     name: Build Packages for ${{ matrix.pretty }}
@@ -1047,7 +1123,7 @@ jobs:
     name: Publish MacOS Artifacts
     needs: [macos-build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
     steps:
       - name: Download all installers
         uses: actions/download-artifact@v4
@@ -1083,6 +1159,8 @@ jobs:
   windows-build:
     name: Build ${{ matrix.pretty }}
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -1447,25 +1525,25 @@ jobs:
 
       # CODE SIGNING - AWS Signing Service
       - name: Setup Node.js
-        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "18"
 
       - name: Install Signing Client Dependencies
-        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
         run: npm install
         working-directory: ./.github/signing-client
 
       - name: Create .env file for Signing
-        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
         run: |
           echo "ACCESS_KEY=${{ secrets.AWS_SIGNING_ACCESS_KEY }}" > .env
           echo "SECRET_KEY=${{ secrets.AWS_SIGNING_SECRET_KEY }}" >> .env
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
 
       - name: Code sign installer
-        if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true')
+        if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true')
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           # Check if signing client exists
@@ -1586,7 +1664,7 @@ jobs:
     name: Publish Windows Artifacts
     needs: [windows-build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
     steps:
       - name: Download all installers
         uses: actions/download-artifact@v4
