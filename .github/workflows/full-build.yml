@@ -464,7 +464,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: OS-Installers-${{ matrix.platform }}-TGZ-${{ github.sha }}
-          path: ${{ steps.build_path.outputs.path }}/*.tar.gz
+          path: ${{ steps.build_path.outputs.path }}/OpenStudio-*.tar.gz
           if-no-files-found: ignore
 
       - name: Upload WHEEL installer
@@ -841,6 +841,61 @@ jobs:
         find . -name "*.o" -type f -delete || true
         df -h .
 
+    - name: Ad-hoc Sign Inner Installer (Fix "Killed" Error)
+      if: ${{ success() && !cancelled() }}
+      working-directory: ${{ env.OPENSTUDIO_BUILD }}
+      env:
+        # Check if we have a real ID; if not, we must patch the installer
+        APPLE_DEV_ID: ${{ secrets.APPLE_DEV_ID }}
+      run: |
+        set -euo pipefail
+        
+        # Only run this fix if we DO NOT have a valid Developer ID.
+        # If we had a valid ID, CPack/config should handle it (or we'd sign with a real ID here).
+        if [ -n "$APPLE_DEV_ID" ]; then
+          echo "Valid Developer ID detected. Skipping ad-hoc patch."
+          exit 0
+        fi
+
+        echo "No Developer ID found. Patching DMGs with ad-hoc signature..."
+
+        # Loop through all generated DMGs
+        # strict globbing to handle potential spaces in filenames
+        find . -maxdepth 1 -name "*.dmg" -print0 | while IFS= read -r -d '' dmg_file; do
+          echo "----------------------------------------"
+          echo "Processing: $dmg_file"
+          
+          # 1. Convert CPack's Read-Only DMG to Read-Write
+          temp_rw="temp_rw.dmg"
+          rm -f "$temp_rw"
+          hdiutil convert "$dmg_file" -format UDRW -o "$temp_rw" -quiet
+          
+          # 2. Mount the Read-Write DMG
+          # -nobrowse hides it from Finder (irrelevant on CI but good practice)
+          # -mountpoint forces a known path we can script against
+          mkdir -p mount_point
+          hdiutil attach "$temp_rw" -mountpoint mount_point -nobrowse -quiet
+          
+          # 3. Apply Ad-Hoc Signature to the inner .app
+          # We use the exact command suggested in your README
+          echo "Applying ad-hoc signature to inner application..."
+          find mount_point -maxdepth 1 -name "*.app" -print0 | while IFS= read -r -d '' app_path; do
+            echo "Signing: $app_path"
+            codesign --force --deep --sign - "$app_path"
+          done
+          
+          # 4. Detach and Convert back to Compressed (Read-Only)
+          hdiutil detach mount_point -force
+          rmdir mount_point
+          
+          # Overwrite the original DMG with the new signed version
+          hdiutil convert "$temp_rw" -format UDZO -o "packed_signed.dmg" -quiet
+          mv "packed_signed.dmg" "$dmg_file"
+          rm "$temp_rw"
+          
+          echo "Success: $dmg_file repacked with signed installer."
+        done
+
     - name: Sign DMG and Notarize
       if: ${{ steps.create_packages.outcome == 'success' && (github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' || matrix.os == 'macOS') }}
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -980,7 +1035,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: OS-TGZ-${{ matrix.platform }}-${{ github.sha }}
-        path: ${{ env.OPENSTUDIO_BUILD }}/*.tar.gz
+        path: ${{ env.OPENSTUDIO_BUILD }}/OpenStudio-*.tar.gz
         if-no-files-found: ignore
 
     - name: Fail job on test failures
@@ -1517,7 +1572,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: OS-Installers-${{ matrix.platform }}-TGZ-${{ github.sha }}
-          path: ${{ env.OPENSTUDIO_BUILD }}/*.tar.gz
+          path: ${{ env.OPENSTUDIO_BUILD }}/OpenStudio-*.tar.gz
           if-no-files-found: ignore
 
       - name: Upload Signed installers
