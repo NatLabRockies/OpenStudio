@@ -721,6 +721,11 @@ jobs:
       
     - name: Create Build Directory
       run: cmake -E make_directory ${{ env.OPENSTUDIO_BUILD }}
+
+    - name: Verify location of adhoc script
+      working-directory: ${{ env.OPENSTUDIO_BUILD }}
+      run: |
+        ls ../${{ env.OPENSTUDIO_SOURCE }}/developer/scripts/
   
     - name: Configure Conan remotes
       run: |
@@ -938,7 +943,7 @@ jobs:
 
         # Loop through all generated DMGs
         find . -maxdepth 1 -name "*.dmg" -print0 | while IFS= read -r -d '' dmg_file; do
-          ../developer/scripts/patch_adhoc_dmg.sh "$dmg_file"
+          ../${{ env.OPENSTUDIO_SOURCE }}/developer/scripts/patch_adhoc_dmg.sh "$dmg_file"
         done
 
     - name: Sign DMG and Notarize
