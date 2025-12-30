@@ -1203,11 +1203,31 @@ jobs:
       - name: Install System dependencies (MiKTeX)
         run: |
           Write-Host "Downloading MiKTeX CLI installer"
-          Invoke-WebRequest -Uri "https://ctan.math.illinois.edu/systems/win32/miktex/setup/windows-x64/miktexsetup-5.5.0%2B1763023-x64.zip" -OutFile "miktexsetup.zip"
+          $url = "https://mirror.ctan.org/systems/win32/miktex/setup/windows-x64/miktexsetup-5.5.0%2B1763023-x64.zip"
+          $output = "miktexsetup.zip"
+          $maxRetries = 5
+          $retryCount = 0
+          while ($retryCount -lt $maxRetries) {
+            try {
+              Invoke-WebRequest -Uri $url -OutFile $output -TimeoutSec 300
+              if (Test-Path $output) { break }
+            } catch {
+              Write-Host "Download failed, retrying ($($retryCount+1)/$maxRetries)... $_"
+              $retryCount++
+              Start-Sleep -Seconds 5
+            }
+          }
+          
+          if (-not (Test-Path $output)) {
+            Write-Error "Failed to download MiKTeX installer after $maxRetries attempts"
+            exit 1
+          }
+
           Expand-Archive -Path "miktexsetup.zip" -DestinationPath "." -Force
 
           Write-Host "Setting up MiKTeX"
-          .\miktexsetup_standalone --verbose --local-package-repository=C:/ProgramData/MiKTeX-Repo --remote-package-repository="https://ctan.math.illinois.edu/systems/win32/miktex/tm/packages/" --package-set=essential download
+          $repoUrl = "https://mirror.ctan.org/systems/win32/miktex/tm/packages/"
+          .\miktexsetup_standalone --verbose --local-package-repository=C:/ProgramData/MiKTeX-Repo --remote-package-repository=$repoUrl --package-set=essential download
           .\miktexsetup_standalone --verbose --local-package-repository=C:/ProgramData/MiKTeX-Repo --package-set=essential --shared install
 
           $miktexBin = "C:\Program Files\MiKTeX\miktex\bin\x64"
@@ -1215,7 +1235,7 @@ jobs:
           
           # Initialize
           & "$miktexBin\initexmf" --admin --verbose --set-config-value='[MPM]AutoInstall=1'
-          & "$miktexBin\mpm" --admin --set-repository="https://ctan.math.illinois.edu/systems/win32/miktex/tm/packages/"
+          & "$miktexBin\mpm" --admin --set-repository=$repoUrl
           & "$miktexBin\mpm" --admin --find-updates
 
       - name: Configure with CMake
