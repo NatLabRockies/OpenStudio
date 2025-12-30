@@ -950,17 +950,22 @@ jobs:
           
           # 1.5 Resize DMG to give some breathing room for signatures
           # Ad-hoc signatures add metadata that can exceed the tight limits of a CPack-generated DMG
-          hdiutil resize -size +20m "$temp_rw"
+          # We use an absolute size (1GB) and try both standard and -imageonly (for flat images)
+          echo "Resizing DMG to ensure space for signatures..."
+          hdiutil resize -size 1g -imageonly "$temp_rw" 2>/dev/null || \
+          hdiutil resize -size 1g "$temp_rw" 2>/dev/null || \
+          echo "Warning: Resize failed (Error $?), proceeding with original size."
           
           # 2. Mount the Read-Write DMG
           # -nobrowse hides it from Finder (irrelevant on CI but good practice)
           # -mountpoint forces a known path we can script against
           mkdir -p mount_point
-          hdiutil attach "$temp_rw" -mountpoint mount_point -nobrowse -quiet
+          hdiutil attach "$temp_rw" -mountpoint mount_point -nobrowse -noverify -quiet
           
           # 3. Apply Ad-Hoc Signature to the inner .app
           # We use the exact command suggested in your README
           echo "Applying ad-hoc signature to inner application..."
+          export CODESIGN_ALLOCATE=$(xcrun -find codesign_allocate)
           find mount_point -maxdepth 1 -name "*.app" -print0 | while IFS= read -r -d '' app_path; do
             echo "Processing app bundle: $app_path"
             
@@ -981,14 +986,14 @@ jobs:
                 # Only sign if it's a directory (framework/bundle/plugin) or a Mach-O binary/library
                 if [ -d "$nested_path" ] || file "$nested_path" | grep -qE "Mach-O|current ar archive"; then
                   echo "  Signing nested item: $nested_path"
-                  codesign --force --sign - --timestamp=none "$nested_path"
+                  codesign --force --sign - --timestamp=none --generate-entitlement-der "$nested_path" || true
                 fi
               fi
             done
 
             # 3. Sign the top-level .app bundle
             echo "Signing top-level app: $app_path"
-            codesign --force --sign - --timestamp=none "$app_path"
+            codesign --force --sign - --timestamp=none --generate-entitlement-der "$app_path"
           done
           
           # 4. Detach and Convert back to Compressed (Read-Only)
