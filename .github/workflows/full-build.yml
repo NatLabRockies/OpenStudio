@@ -1210,14 +1210,14 @@ jobs:
           unzip miktexsetup-5.5.0%2B1763023-x64.zip
 
           echo "Setting up the local package directory via download"
-          ./miktexsetup_standalone --verbose \
+          ./miktexsetup_standalone.exe --verbose \
               --local-package-repository=C:/ProgramData/MiKTeX-Repo \
               --remote-package-repository="https://ctan.math.utah.edu/ctan/tex-archive/systems/win32/miktex/tm/packages/" \
               --package-set=essential \
               download
 
           echo "Installing from the local package directory previously set up"
-          ./miktexsetup_standalone --verbose \
+          ./miktexsetup_standalone.exe --verbose \
               --local-package-repository=C:/ProgramData/MiKTeX-Repo \
               --package-set=essential \
               --shared \
