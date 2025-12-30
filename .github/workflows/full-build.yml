@@ -948,6 +948,10 @@ jobs:
           rm -f "$temp_rw"
           hdiutil convert "$dmg_file" -format UDRW -o "$temp_rw" -quiet
           
+          # 1.5 Resize DMG to give some breathing room for signatures
+          # Ad-hoc signatures add metadata that can exceed the tight limits of a CPack-generated DMG
+          hdiutil resize -size +20m "$temp_rw"
+          
           # 2. Mount the Read-Write DMG
           # -nobrowse hides it from Finder (irrelevant on CI but good practice)
           # -mountpoint forces a known path we can script against
@@ -974,14 +978,17 @@ jobs:
               -type f -perm -111 \
             \) | while IFS= read -r -d '' nested_path; do
               if [ "$nested_path" != "$app_path" ]; then
-                echo "  Signing nested item: $nested_path"
-                codesign --force --sign - "$nested_path"
+                # Only sign if it's a directory (framework/bundle/plugin) or a Mach-O binary/library
+                if [ -d "$nested_path" ] || file "$nested_path" | grep -qE "Mach-O|current ar archive"; then
+                  echo "  Signing nested item: $nested_path"
+                  codesign --force --sign - --timestamp=none "$nested_path"
+                fi
               fi
             done
 
             # 3. Sign the top-level .app bundle
             echo "Signing top-level app: $app_path"
-            codesign --force --sign - "$app_path"
+            codesign --force --sign - --timestamp=none "$app_path"
           done
           
           # 4. Detach and Convert back to Compressed (Read-Only)
