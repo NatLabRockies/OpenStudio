@@ -1200,46 +1200,42 @@ jobs:
           $pythonPath = (Get-Command python).Source
           "SYSTEM_PYTHON_PATH=$pythonPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-      - name: Install System dependencies (MiKTeX)
+      - name: Install System dependencies and LaTeX
+        shell: bash
         run: |
-          Write-Host "Downloading MiKTeX CLI installer"
-          $url = "https://ctan.math.utah.edu/ctan/tex-archive/systems/win32/miktex/setup/windows-x64/miktexsetup-5.5.0%2B1763023-x64.zip"
-          $output = "miktexsetup.zip"
-          $maxRetries = 5
-          $retryCount = 0
-          while ($retryCount -lt $maxRetries) {
-            try {
-              Invoke-WebRequest -Uri $url -OutFile $output -TimeoutSec 300
-              if (Test-Path $output) { break }
-            } catch {
-              Write-Host "Download failed, retrying ($($retryCount+1)/$maxRetries)... $_"
-              $retryCount++
-              Start-Sleep -Seconds 5
-            }
-          }
-          
-          if (-not (Test-Path $output)) {
-            Write-Error "Failed to download MiKTeX installer after $maxRetries attempts"
-            exit 1
-          }
+          set -x
+          echo "Downloading MiKTeX CLI installer"
+          # We download from a specific mirror already # TODO: Should store this setup package somewhere ourselves
+          curl -L -O --retry 5 --retry-connrefused https://ctan.math.utah.edu/ctan/tex-archive/systems/win32/miktex/setup/windows-x64/miktexsetup-5.5.0%2B1763023-x64.zip
+          unzip miktexsetup-5.5.0%2B1763023-x64.zip
 
-          Expand-Archive -Path "miktexsetup.zip" -DestinationPath "." -Force
+          echo "Setting up the local package directory via download"
+          ./miktexsetup_standalone --verbose \
+              --local-package-repository=C:/ProgramData/MiKTeX-Repo \
+              --remote-package-repository="https://ctan.math.utah.edu/ctan/tex-archive/systems/win32/miktex/tm/packages/" \
+              --package-set=essential \
+              download
 
-          Write-Host "Setting up MiKTeX"
-          # miktexsetup does not handle mirror.ctan.org redirects, so we must use a specific mirror.
-          # Using Utah mirror as a reliable fallback.
-          $repoUrl = "https://ctan.math.utah.edu/ctan/tex-archive/systems/win32/miktex/tm/packages/"
-          .\miktexsetup_standalone --verbose --local-package-repository=C:/ProgramData/MiKTeX-Repo --remote-package-repository=$repoUrl --package-set=essential download
-          .\miktexsetup_standalone --verbose --local-package-repository=C:/ProgramData/MiKTeX-Repo --package-set=essential --shared install
+          echo "Installing from the local package directory previously set up"
+          ./miktexsetup_standalone --verbose \
+              --local-package-repository=C:/ProgramData/MiKTeX-Repo \
+              --package-set=essential \
+              --shared \
+              install
 
-          $miktexBin = "C:\Program Files\MiKTeX\miktex\bin\x64"
-          echo "$miktexBin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          
-          # Initialize
-          & "$miktexBin\initexmf" --admin --verbose --set-config-value='[MPM]AutoInstall=1'
-          & "$miktexBin\mpm" --admin --set-repository=$repoUrl
-          & "$miktexBin\mpm" --admin --find-updates
+          echo "Adding MiKTeX bin folder to PATH and to GITHUB_PATH"
+          echo "C:/Program Files/MiKTeX/miktex/bin/x64/" >> $GITHUB_PATH
+          export PATH="/c/Program Files/MiKTeX/miktex/bin/x64/:$PATH"
 
+          echo "Configuring MiKTeX to install missing packages on the fly"
+          initexmf --admin --verbose --set-config-value='[MPM]AutoInstall=1'
+
+          echo "Configure default mirror for packages"
+          mpm --admin --set-repository="https://ctan.math.utah.edu/ctan/tex-archive/systems/win32/miktex/tm/packages/"
+          # Avoid annoying warning: "xelatex: major issue: So far, you have not checked for updates as a MiKTeX user."
+          mpm --find-updates
+          mpm --admin --find-updates
+    
       - name: Configure with CMake
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
