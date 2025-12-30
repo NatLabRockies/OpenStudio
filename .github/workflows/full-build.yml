@@ -704,8 +704,8 @@ jobs:
           echo "Configuring for signed build"
           SIGNING_ARGS=("-DCPACK_IFW_PACKAGE_SIGNING_IDENTITY=$APPLE_DEV_ID")
         else
-          echo "Configuring for ad-hoc signed build"
-          SIGNING_ARGS=("-DCPACK_IFW_PACKAGE_SIGNING_IDENTITY=-")
+          echo "Configuring for ad-hoc signed build (skipping CPack signing identity)"
+          SIGNING_ARGS=()
         fi
 
         cmake -G Ninja \
