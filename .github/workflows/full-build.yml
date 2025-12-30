@@ -363,7 +363,7 @@ jobs:
           
           if [ $overall_exit_code -ne 0 ]; then
             echo "Rerunning failing tests..."
-            ctest -C ${{ env.BUILD_TYPE }} --rerun-failed -T test --no-compress-output || overall_exit_code=$?
+            ctest -C ${{ env.BUILD_TYPE }} --rerun-failed -T test --no-compress-output && overall_exit_code=0 || overall_exit_code=$?
           fi
           echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
@@ -797,7 +797,7 @@ jobs:
 
         if [ $overall_exit_code -ne 0 ]; then
           echo "Rerunning failing tests..."
-          ctest -C ${{ env.BUILD_TYPE }} --rerun-failed -T test --no-compress-output --output-on-failure || overall_exit_code=$?
+          ctest -C ${{ env.BUILD_TYPE }} --rerun-failed -T test --no-compress-output --output-on-failure && overall_exit_code=0 || overall_exit_code=$?
         fi
 
         echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
@@ -1307,7 +1307,7 @@ jobs:
           if ($overall_exit_code -ne 0) {
             Write-Host "Rerunning failing tests..."
             ctest -C ${{ env.BUILD_TYPE }} --rerun-failed -T test
-            if ($LASTEXITCODE -ne 0) { $overall_exit_code = 1 }
+            if ($LASTEXITCODE -eq 0) { $overall_exit_code = 0 } else { $overall_exit_code = 1 }
           }
           "exit_code=$overall_exit_code" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
