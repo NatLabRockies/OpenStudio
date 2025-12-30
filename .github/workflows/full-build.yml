@@ -623,8 +623,7 @@ jobs:
       run: |
         set -e
         chmod +x ./conanbuild.sh
-        ./conanbuild.sh
-        . ./conandbuild.sh
+        . ./conanbuild.sh
         # Use absolute path for ccache to avoid resolution issues in containers with symlinked build dirs
         CCACHE_ARGS=()
         if command -v ccache >/dev/null 2>&1; then
@@ -860,7 +859,9 @@ jobs:
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       run: |
         set -euo pipefail
-        cp -r Testing "Testing-${{ matrix.test_suffix }}"
+        if [ -d "Testing" ]; then
+          cp -r Testing "Testing-${{ matrix.test_suffix }}"
+        fi
 
     - name: Generate test summary
       if: always()
