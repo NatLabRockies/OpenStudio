@@ -1226,7 +1226,9 @@ jobs:
           Expand-Archive -Path "miktexsetup.zip" -DestinationPath "." -Force
 
           Write-Host "Setting up MiKTeX"
-          $repoUrl = "https://mirror.ctan.org/systems/win32/miktex/tm/packages/"
+          # miktexsetup does not handle mirror.ctan.org redirects, so we must use a specific mirror.
+          # Using Utah mirror as a reliable fallback.
+          $repoUrl = "https://ctan.math.utah.edu/ctan/tex-archive/systems/win32/miktex/tm/packages/"
           .\miktexsetup_standalone --verbose --local-package-repository=C:/ProgramData/MiKTeX-Repo --remote-package-repository=$repoUrl --package-set=essential download
           .\miktexsetup_standalone --verbose --local-package-repository=C:/ProgramData/MiKTeX-Repo --package-set=essential --shared install
 
