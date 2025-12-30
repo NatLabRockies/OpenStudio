@@ -958,21 +958,30 @@ jobs:
           # We use the exact command suggested in your README
           echo "Applying ad-hoc signature to inner application..."
           find mount_point -maxdepth 1 -name "*.app" -print0 | while IFS= read -r -d '' app_path; do
-            echo "Signing top-level app: $app_path"
-            # Sign the top-level .app bundle without using the legacy --deep flag
-            codesign --sign - "$app_path"
+            echo "Processing app bundle: $app_path"
+            
+            # 1. Clear extended attributes (quarantine, etc.)
+            xattr -cr "$app_path"
 
-            # Explicitly sign common nested code within the app bundle (frameworks, plugins, helpers, etc.)
+            # 2. Explicitly sign common nested code within the app bundle (frameworks, plugins, helpers, etc.)
+            # We use -depth to sign inner items before their containing bundles
             echo "Signing nested components inside: $app_path"
-            find "$app_path" -print0 \( \
+            find "$app_path" -depth -print0 \( \
               -type d -name "*.framework" -o \
               -type d -name "*.bundle" -o \
               -type d -name "*.plugin" -o \
+              -name "*.dylib" -o \
               -type f -perm -111 \
             \) | while IFS= read -r -d '' nested_path; do
-              echo "  Signing nested item: $nested_path"
-              codesign --sign - "$nested_path"
+              if [ "$nested_path" != "$app_path" ]; then
+                echo "  Signing nested item: $nested_path"
+                codesign --force --sign - "$nested_path"
+              fi
             done
+
+            # 3. Sign the top-level .app bundle
+            echo "Signing top-level app: $app_path"
+            codesign --force --sign - "$app_path"
           done
           
           # 4. Detach and Convert back to Compressed (Read-Only)
