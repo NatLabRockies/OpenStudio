@@ -722,11 +722,6 @@ jobs:
     - name: Create Build Directory
       run: cmake -E make_directory ${{ env.OPENSTUDIO_BUILD }}
 
-    - name: Verify location of adhoc script
-      working-directory: ${{ env.OPENSTUDIO_BUILD }}
-      run: |
-        ls ../${{ env.OPENSTUDIO_SOURCE }}/developer/scripts/
-  
     - name: Configure Conan remotes
       run: |
         set -euo pipefail
@@ -884,7 +879,7 @@ jobs:
         echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
     - name: Setup Keychain
-      if: ${{ success() && !cancelled() && (github.ref == 'refs/heads/develop' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' || matrix.os == 'macOS') }}
+      if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true' )
       env:
         APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
         APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}

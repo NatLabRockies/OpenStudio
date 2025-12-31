@@ -11,22 +11,12 @@ More information and documentation is available at the [OpenStudio website](http
 
 For development builds (artifacts downloaded from GitHub Actions), you may encounter a "Damaged" error or "Unidentified Developer" warning on macOS, especially on Apple Silicon (ARM) machines. This is because these builds are not notarized by Apple.
 
-If you encounter these issues, standard `xattr` commands on the DMG may not be sufficient. Please follow these steps:
+If you encounter these issues, please follow these steps to bypass the security check for this specific installer:
 
-1.  **Mount the DMG** image.
-2.  **Copy** the Installer application (e.g., `OpenStudio-3.11.0...app`) from the mounted volume to a local folder (e.g., your `Downloads` folder). *Do not run it directly from the DMG.*
-3.  Open a **Terminal** and run the following commands on the *local copy* of the installer:
-
-    ```bash
-    # 1. Remove quarantine attributes
-    sudo xattr -cr path/to/local/OpenStudio-Installer.app
-
-    # 2. Ad-hoc sign the application (fixes "Killed" or crashes on startup)
-    sudo codesign --force --deep --sign - path/to/local/OpenStudio-Installer.app
-    ```
-
-4.  Run the installer. If double-clicking fails, run the executable directly with `sudo`:
-
-    ```bash
-    sudo path/to/local/OpenStudio-Installer.app/Contents/MacOS/OpenStudio-3.11.0-<version>-Darwin-<arch>
-    ```
+1.  **Mount the DMG**: Locate the downloaded `.dmg` file in Finder. Right-click (or Control-click) the file and select **Open**.
+2.  **Launch Installer**: Inside the mounted disk image window, Right-click (or Control-click) the `OpenStudio-Installer.app` file and select **Open**.
+3.  **Acknowledge Warning**: A security warning dialog will appear. Click **Open** if available. If only **OK** is available, click it (the installer might close).
+4.  **Security Settings**: Open **System Settings** (or System Preferences) and navigate to **Privacy & Security**.
+5.  **Allow the App**: Scroll down to the "Security" section. Look for a note about the OpenStudio application being blocked. Click the **Open Anyway** button.
+6.  **Confirm Open**: A final confirmation dialog will appear. Click **Open**.
+7.  **Authenticate**: Enter your system password when prompted to authorize the installation.
