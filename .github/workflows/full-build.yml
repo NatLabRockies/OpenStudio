@@ -1376,7 +1376,7 @@ jobs:
           conan install . `
             --output-folder=../${{ env.OPENSTUDIO_BUILD }} `
             --build=missing `
-            -c tools.cmake.cmaketoolchain:generator=Ninja `
+            -c tools.cmake.cmaketoolchain:generator="Visual Studio 17 2022" `
             -s compiler.cppstd=20 `
             -s build_type=${{ env.BUILD_TYPE }}
 
