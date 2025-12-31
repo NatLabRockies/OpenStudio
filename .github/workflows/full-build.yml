@@ -1414,7 +1414,7 @@ jobs:
 
           cmake -G "Visual Studio 17 2022" -A ${{ matrix.vs-generator }} `
                 "-DCMAKE_C_COMPILER_LAUNCHER=$sccacheExe" "-DCMAKE_CXX_COMPILER_LAUNCHER=$sccacheExe" `
-                -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} `
+                -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} `
                 -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING="NSIS;TGZ" -DBUILD_PYTHON_BINDINGS:BOOL=ON `
                 -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF `
                 -DPYTHON_VERSION:STRING=${{ steps.setup-python.outputs.python-version }} "-DSYSTEM_RUBY_EXECUTABLE=$env:SYSTEM_RUBY_PATH" `
