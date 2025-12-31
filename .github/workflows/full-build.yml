@@ -72,7 +72,7 @@ env:
 jobs:
   linux-build:
     name: Build ${{ matrix.pretty }}
-    if: !inputs.jobs || contains(inputs.jobs, 'linux-build')
+    if: "!inputs.jobs || contains(inputs.jobs, 'linux-build')"
     runs-on: ${{ matrix.os }}
     container:
       image: ${{ matrix.container_image }}
@@ -609,7 +609,7 @@ jobs:
 
   macos-build:
     name: Build Packages for ${{ matrix.pretty }}
-    if: !inputs.jobs || contains(inputs.jobs, 'macos-build')
+    if: "!inputs.jobs || contains(inputs.jobs, 'macos-build')"
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.allow_failure }}
     strategy:
@@ -1154,7 +1154,7 @@ jobs:
 
   windows-build:
     name: Build ${{ matrix.pretty }}
-    if: !inputs.jobs || contains(inputs.jobs, 'windows-build')
+    if: "!inputs.jobs || contains(inputs.jobs, 'windows-build')"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
