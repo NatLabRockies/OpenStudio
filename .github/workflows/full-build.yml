@@ -1359,10 +1359,14 @@ jobs:
           conan remote remove nrel-v2
           if ($LASTEXITCODE -ne 0) { $LASTEXITCODE = 0 }
           conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2
-          
+          if ($LASTEXITCODE -ne 0) { throw "Failed to add nrel-v2 remote" }
+          conan remote enable nrel-v2
+
           conan remote remove conancenter
           if ($LASTEXITCODE -ne 0) { $LASTEXITCODE = 0 }
           conan remote add conancenter https://center2.conan.io
+          if ($LASTEXITCODE -ne 0) { throw "Failed to add conancenter remote" }
+          conan remote enable conancenter
           
           if (-not (Test-Path "$env:USERPROFILE/.conan2/profiles/default")) {
             conan profile detect
