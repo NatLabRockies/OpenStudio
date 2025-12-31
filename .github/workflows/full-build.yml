@@ -1451,7 +1451,7 @@ jobs:
             }
           }
 
-          cmake --build . --target package -j ${{ matrix.max_jobs }} --config ${{ env.BUILD_TYPE }} -- -d stats 2>&1 | Tee-Object -FilePath "build.log"
+          cmake --build . --target package -j ${{ matrix.max_jobs }} --config ${{ env.BUILD_TYPE }} 2>&1 | Tee-Object -FilePath "build.log"
           if ($LASTEXITCODE -ne 0) { throw "Build failed" }
 
           if (Get-Command sccache -ErrorAction SilentlyContinue) { sccache -s }
