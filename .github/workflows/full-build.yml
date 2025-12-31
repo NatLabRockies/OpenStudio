@@ -1380,7 +1380,7 @@ jobs:
           conan install . `
             --output-folder=../${{ env.OPENSTUDIO_BUILD }} `
             --build=missing `
-            -c tools.cmake.cmaketoolchain:generator="Visual Studio 17 2022" `
+            -c 'tools.cmake.cmaketoolchain:generator=Visual Studio 17 2022' `
             -s compiler.cppstd=20 `
             -s build_type=${{ env.BUILD_TYPE }}
 
@@ -1412,9 +1412,20 @@ jobs:
             }
           }
 
+          $toolchain = "conan_toolchain.cmake"
+          if (Test-Path "generators/conan_toolchain.cmake") {
+            $toolchain = "generators/conan_toolchain.cmake"
+            Write-Host "Found toolchain in generators directory: $toolchain"
+          } elseif (Test-Path "conan_toolchain.cmake") {
+             Write-Host "Found toolchain in current directory: $toolchain"
+          } else {
+             Write-Host "::error::conan_toolchain.cmake not found!"
+             Get-ChildItem -Recurse
+          }
+
           cmake -G "Visual Studio 17 2022" -A ${{ matrix.vs-generator }} `
                 "-DCMAKE_C_COMPILER_LAUNCHER=$sccacheExe" "-DCMAKE_CXX_COMPILER_LAUNCHER=$sccacheExe" `
-                -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake "-DCMAKE_PREFIX_PATH=$PWD" `
+                "-DCMAKE_TOOLCHAIN_FILE=$toolchain" "-DCMAKE_PREFIX_PATH=$PWD" `
                 -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} `
                 -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING="NSIS;TGZ" -DBUILD_PYTHON_BINDINGS:BOOL=ON `
                 -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF `
