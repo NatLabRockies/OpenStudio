@@ -18,6 +18,10 @@ on:
         description: "Skip downstream docker workflow trigger"
         required: false
         default: "false"
+      jobs:
+        description: "Comma-separated list of jobs to run (e.g. 'linux-build,windows-build'). Leave empty to run all."
+        required: false
+        default: ""
   workflow_call:
     inputs:
       publish_to_s3:
@@ -28,6 +32,10 @@ on:
         type: string
         required: false
         default: "false"
+      jobs:
+        type: string
+        required: false
+        default: ""
 
 concurrency:
   group: full-build-${{ github.ref }}
@@ -64,6 +72,7 @@ env:
 jobs:
   linux-build:
     name: Build ${{ matrix.pretty }}
+    if: !inputs.jobs || contains(inputs.jobs, 'linux-build')
     runs-on: ${{ matrix.os }}
     container:
       image: ${{ matrix.container_image }}
@@ -600,6 +609,7 @@ jobs:
 
   macos-build:
     name: Build Packages for ${{ matrix.pretty }}
+    if: !inputs.jobs || contains(inputs.jobs, 'macos-build')
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.allow_failure }}
     strategy:
@@ -1144,6 +1154,7 @@ jobs:
 
   windows-build:
     name: Build ${{ matrix.pretty }}
+    if: !inputs.jobs || contains(inputs.jobs, 'windows-build')
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
