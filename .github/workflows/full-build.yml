@@ -1392,31 +1392,53 @@ jobs:
 
       - name: Configure with CMake
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        shell: bash
+        shell: pwsh
         run: |
-          set -x
-          sccacheExe=$(which sccache)
-          source conanbuild.sh
-          cmake -G "Visual Studio 17 2022" -A ${{ matrix.vs-generator }} \
-                -DCMAKE_C_COMPILER_LAUNCHER="$sccacheExe" -DCMAKE_CXX_COMPILER_LAUNCHER="$sccacheExe" \
-                -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} \
-                -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING="NSIS;TGZ" -DBUILD_PYTHON_BINDINGS:BOOL=ON \
-                -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF \
-                -DPYTHON_VERSION:STRING=${{ steps.setup-python.outputs.python-version }} -DSYSTEM_RUBY_EXECUTABLE="$(dirname $(dirname $SYSTEM_RUBY_PATH))" \
-                -DPYTHONUTF8:BOOL=ON -DPython_ROOT_DIR:PATH="$(dirname $(dirname $SYSTEM_PYTHON_PATH))" \
+          $sccacheExe = (Get-Command sccache).Source
+          
+          # Load conanbuild.bat
+          $env_vars = & $env:ComSpec /c "call conanbuild.bat && set"
+          foreach ($line in $env_vars) {
+            if ($line -match '^(.*?)=(.*)$') {
+              $name = $matches[1]
+              $value = $matches[2]
+              if ($name -ne "" -and $name -notmatch "^=") {
+                [Environment]::SetEnvironmentVariable($name, $value, "Process")
+              }
+            }
+          }
+
+          cmake -G "Visual Studio 17 2022" -A ${{ matrix.vs-generator }} `
+                "-DCMAKE_C_COMPILER_LAUNCHER=$sccacheExe" "-DCMAKE_CXX_COMPILER_LAUNCHER=$sccacheExe" `
+                -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} `
+                -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING="NSIS;TGZ" -DBUILD_PYTHON_BINDINGS:BOOL=ON `
+                -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF `
+                -DPYTHON_VERSION:STRING=${{ steps.setup-python.outputs.python-version }} "-DSYSTEM_RUBY_EXECUTABLE=$env:SYSTEM_RUBY_PATH" `
+                -DPYTHONUTF8:BOOL=ON "-DPython_ROOT_DIR:PATH=$(Split-Path $env:SYSTEM_PYTHON_PATH -Parent)" `
                 ../${{ env.OPENSTUDIO_SOURCE }}
 
       - name: Build and package with cmake
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        shell: bash
+        shell: pwsh
         run: |
-          if command -v sccache &> /dev/null; then sccache -s; fi
-          source conanbuild.sh
+          if (Get-Command sccache -ErrorAction SilentlyContinue) { sccache -s }
 
-          set -o pipefail
-          cmake --build . --target package -j ${{ matrix.max_jobs }} --config ${{ env.BUILD_TYPE }} -- -d stats 2>&1 | tee "build.log"
+          # Load conanbuild.bat
+          $env_vars = & $env:ComSpec /c "call conanbuild.bat && set"
+          foreach ($line in $env_vars) {
+            if ($line -match '^(.*?)=(.*)$') {
+              $name = $matches[1]
+              $value = $matches[2]
+              if ($name -ne "" -and $name -notmatch "^=") {
+                [Environment]::SetEnvironmentVariable($name, $value, "Process")
+              }
+            }
+          }
 
-          if command -v sccache &> /dev/null; then sccache -s; fi
+          cmake --build . --target package -j ${{ matrix.max_jobs }} --config ${{ env.BUILD_TYPE }} -- -d stats 2>&1 | Tee-Object -FilePath "build.log"
+          if ($LASTEXITCODE -ne 0) { throw "Build failed" }
+
+          if (Get-Command sccache -ErrorAction SilentlyContinue) { sccache -s }
           
       - name: Wait for network stability
         if: always()
