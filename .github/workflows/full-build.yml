@@ -1482,10 +1482,6 @@ jobs:
         with:
           node-version: "18"
 
-      - name: Install Signing Client Dependencies
-        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
-        working-directory: ${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client
-        run: npm install
 
       - name: Create .env file for Signing
         if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
