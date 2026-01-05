@@ -14,7 +14,7 @@ LICENSE_PATH = File.join(ROOT_DIR, 'LICENSE.md')
 license_lines = File.readlines(LICENSE_PATH)
 # Now with short version
 license_lines = [
-  "OpenStudio(R), Copyright (c) Alliance for Sustainable Energy, LLC.\n",
+  "OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC.\n",
   "See also https://openstudio.net/license\n"
 ]
 

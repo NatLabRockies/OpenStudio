@@ -1,5 +1,5 @@
 /***********************************************************************************************************************
-*  OpenStudio(R), Copyright (c) Alliance for Sustainable Energy, LLC.
+*  OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC.
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
     // data common to the start of each file
     std::stringstream fileHeader;
     fileHeader << "/***********************************************************************************************************************" << '\n'
-               << "*  OpenStudio(R), Copyright (c) Alliance for Sustainable Energy, LLC." << '\n'
+               << "*  OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC." << '\n'
                << "*  See also https://openstudio.net/license" << '\n'
                << "***********************************************************************************************************************/" << '\n';
 

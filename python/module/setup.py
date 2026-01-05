@@ -1,5 +1,5 @@
 ########################################################################################################################
-#  OpenStudio(R), Copyright (c) Alliance for Sustainable Energy, LLC.
+#  OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC.
 #  See also https://openstudio.net/license
 ########################################################################################################################
 
@@ -93,7 +93,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/NREL/OpenStudio",
-    author="Alliance for Sustainable Energy, LLC, and other contributors",
+    author="Alliance for Energy Innovation, LLC, and other contributors",
     author_email="openstudio@nrel.gov",
     maintainer="Julien Marrec",
     maintainer_email="contact@effibem.com",

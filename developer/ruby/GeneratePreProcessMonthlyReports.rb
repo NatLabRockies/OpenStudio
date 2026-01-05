@@ -72,7 +72,7 @@ end
 
 n_tables = included_FTs.size * 2
 cpp_code = """/***********************************************************************************************************************
-*  OpenStudio(R), Copyright (c) Alliance for Sustainable Energy, LLC.
+*  OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC.
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 

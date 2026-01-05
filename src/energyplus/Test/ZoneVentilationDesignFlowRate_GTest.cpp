@@ -1,5 +1,5 @@
 /***********************************************************************************************************************
-*  OpenStudio(R), Copyright (c) 2008-2023, Alliance for Sustainable Energy, LLC, and other contributors. All rights reserved.
+*  OpenStudio(R), Copyright (c) 2008-2023, Alliance for Energy Innovation, LLC, and other contributors. All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 *  following conditions are met:
@@ -15,7 +15,7 @@
 *
 *  (4) Other than as required in clauses (1) and (2), distributions in any form of modifications or other derivative works
 *  may not use the "OpenStudio" trademark, "OS", "os", or any other confusingly similar designation without specific prior
-*  written permission from Alliance for Sustainable Energy, LLC.
+*  written permission from Alliance for Energy Innovation, LLC.
 *
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER(S) AND ANY CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
 *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
