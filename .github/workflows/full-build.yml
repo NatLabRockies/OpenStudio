@@ -1201,7 +1201,6 @@ jobs:
             sccache-${{ matrix.os }}-${{ matrix.platform }}-
       
       - name: Patch tests for Windows
-        working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
           # Patch openstudio.py for build tree DLL loading
           $os_py = "python/module/openstudio.py"
@@ -1226,34 +1225,10 @@ jobs:
             $new_content | Set-Content $os_py
           }
 
-          # Fix path normalization in measure manager test (test_measure_manager.py)
-          # On Windows, path separators can be backslashes, but the test expects forward slashes or consistent formatting.
-          # We patch usages of `['my_measures_dir'].rstrip('/')` to include `.replace('\\', '/')` before the rstrip.
-          # This handles both assignment and assertion lines correctly without creating invalid syntax.
-          $mm_test = "src/cli/test/test_measure_manager.py"
-          $mm_content = Get-Content $mm_test -Raw
-          
-          $mm_content = $mm_content -replace "\['my_measures_dir'\]\.rstrip\('/'\)", "['my_measures_dir'].replace('\\', '/').rstrip('/')"
-          $mm_content | Set-Content $mm_test
-
-          # Fix encoding expectation in CLI encodings test
-          $enc_test = "src/cli/test/test_encodings.rb"
-          (Get-Content $enc_test) -replace "assert_equal\(dir_str.encoding, Encoding::Windows_1252\)", "assert(dir_str.encoding == Encoding::Windows_1252 || dir_str.encoding == Encoding::UTF_8, `"Encoding was `#{dir_str.encoding}`")" | Set-Content $enc_test
-
-          # Fix Alfalfa: Quoting the CMake command to handle spaces in "C:/Program Files/..."
-          (Get-Content src/cli/CMakeLists.txt) -replace '"-DCMD2=\${CMAKE_COMMAND}', '"-DCMD2=\"${CMAKE_COMMAND}\"' | Set-Content src/cli/CMakeLists.txt
-
       - name: Prepare workspace
-        run: |        
-          # Speed up Windows builds by disabling real-time antivirus monitoring for the workspace
-          Write-Host "Disabling Windows Defender real-time monitoring for workspace: $env:GITHUB_WORKSPACE"
-          Set-MpPreference -DisableRealtimeMonitoring $true
-          Add-MpPreference -ExclusionPath $env:GITHUB_WORKSPACE -ErrorAction SilentlyContinue
-          Add-MpPreference -ExclusionPath "$env:USERPROFILE\.conan2" -ErrorAction SilentlyContinue
-          Add-MpPreference -ExclusionPath "$env:GITHUB_WORKSPACE\.sccache" -ErrorAction SilentlyContinue
-          
-          # Set Power Plan to High Performance for better process spawn speed
-          powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
+        run: |
+          git config --global --add safe.directory "*"
+          New-Item -ItemType Directory -Path "${{ env.OPENSTUDIO_BUILD }}" -Force
 
       - name: Setup sccache
         uses: Mozilla-Actions/sccache-action@v0.0.5
@@ -1266,25 +1241,20 @@ jobs:
           restore-keys: |
             conan-${{ matrix.os }}-windows-
 
-      - name: Set up Python ${{ env.PYTHON_REQUIRED_VERSION }}
+      - name: Set up Python 3.12.2
         uses: actions/setup-python@v6
-        id: setup-python
         with:
-          python-version: ${{ env.PYTHON_REQUIRED_VERSION }}
-          architecture: ${{ matrix.python-arch }}
+          python-version: '3.12.2'
+          cache: 'pip'
   
-      - name: Setup QtIFW 4.x
-        uses: jmarrec/setup-qtifw@v1
-        with:
-          qtifw-version: '4.8.1'
-        
       - name: Install Python dependencies
-        working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel
-          pip install -r python/requirements.txt
-          pip install conan aqtinstall
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -r python/requirements.txt
+
+      - name: Install Conan
+        run: |
+          python -m pip install conan
 
       - name: Install Ruby
         uses: ruby/setup-ruby@v1
@@ -1330,29 +1300,6 @@ jobs:
         
       - name: Create Build Directory
         run: cmake -E make_directory ${{ env.OPENSTUDIO_BUILD }}
-    
-      - name: Cache External Dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.tar.gz
-            ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.zip
-            ${{ env.OPENSTUDIO_BUILD }}/radiance*.tar.gz
-            ${{ env.OPENSTUDIO_BUILD }}/radiance*.zip
-            ${{ env.OPENSTUDIO_BUILD }}/openstudio*gems*.tar.gz
-          key: external-deps-${{ matrix.os }}-${{ hashFiles('conan.lock') }}
-          restore-keys: |
-            external-deps-${{ matrix.os }}-
-
-      - name: Restore Generated Embedded Files
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ env.OPENSTUDIO_BUILD }}/src/*/embedded_files
-            ${{ env.OPENSTUDIO_BUILD }}/ruby/engine/embedded_files
-          key: embedded-files-${{ matrix.os }}-${{ hashFiles('resources/**', 'ruby/engine/**', 'src/airflow/**', 'src/energyplus/**', 'src/gbxml/**', 'src/isomodel/**', 'src/model/**', 'src/radiance/**', 'src/sdd/**', 'src/utilities/**') }}
-          restore-keys: |
-            embedded-files-${{ matrix.os }}-
 
       - name: Configure Conan remotes
         run: |
@@ -1374,13 +1321,12 @@ jobs:
           conan config home
 
       - name: Conan install
-        working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
           $env:CMAKE_POLICY_VERSION_MINIMUM="3.5"
           conan install . `
-            --output-folder=../${{ env.OPENSTUDIO_BUILD }} `
+            --output-folder="${{ env.OPENSTUDIO_BUILD }}" `
             --build=missing `
-            -c 'tools.cmake.cmaketoolchain:generator=Visual Studio 17 2022' `
+            -c tools.cmake.cmaketoolchain:generator=Ninja `
             -s compiler.cppstd=20 `
             -s build_type=${{ env.BUILD_TYPE }}
 
@@ -1394,66 +1340,61 @@ jobs:
           $pythonPath = (Get-Command python).Source
           "SYSTEM_PYTHON_PATH=$pythonPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
+      - name: Install System dependencies and LaTeX
+        shell: bash
+        run: |
+          set -x
+          echo "Downloading MiKTeX CLI installer"
+          # We download from a specific mirror already # TODO: Should store this setup package somewhere ourselves
+          curl -L -O --retry 5 --retry-connrefused https://ctan.math.utah.edu/ctan/tex-archive/systems/win32/miktex/setup/windows-x64/miktexsetup-5.5.0%2B1763023-x64.zip
+          unzip miktexsetup-5.5.0%2B1763023-x64.zip
+
+          echo "Setting up the local package directory via download"
+          ./miktexsetup_standalone.exe --verbose \
+              --local-package-repository=C:/ProgramData/MiKTeX-Repo \
+              --remote-package-repository="https://ctan.math.utah.edu/ctan/tex-archive/systems/win32/miktex/tm/packages/" \
+              --package-set=essential \
+              download
+
+          echo "Installing from the local package directory previously set up"
+          ./miktexsetup_standalone.exe --verbose \
+              --local-package-repository=C:/ProgramData/MiKTeX-Repo \
+              --package-set=essential \
+              --shared \
+              install
+
+          echo "Adding MiKTeX bin folder to PATH and to GITHUB_PATH"
+          echo "C:/Program Files/MiKTeX/miktex/bin/x64/" >> $GITHUB_PATH
+          export PATH="/c/Program Files/MiKTeX/miktex/bin/x64/:$PATH"
+
+          echo "Configuring MiKTeX to install missing packages on the fly"
+          initexmf --admin --verbose --set-config-value='[MPM]AutoInstall=1'
+
+          echo "Configure default mirror for packages"
+          mpm --admin --set-repository="https://ctan.math.utah.edu/ctan/tex-archive/systems/win32/miktex/tm/packages/"
+          # Avoid annoying warning: "xelatex: major issue: So far, you have not checked for updates as a MiKTeX user."
+          mpm --find-updates
+          mpm --admin --find-updates
+    
       - name: Configure with CMake
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        shell: pwsh
         run: |
           $sccacheExe = (Get-Command sccache).Source
-          
-          # Load conanbuild.bat
-          $env_vars = & $env:ComSpec /c "call conanbuild.bat && set"
-          foreach ($line in $env_vars) {
-            if ($line -match '^(.*?)=(.*)$') {
-              $name = $matches[1]
-              $value = $matches[2]
-              if ($name -ne "" -and $name -notmatch "^=") {
-                [Environment]::SetEnvironmentVariable($name, $value, "Process")
-              }
-            }
-          }
+          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"NSIS;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" `"${{ github.workspace }}`""
 
-          $toolchain = "conan_toolchain.cmake"
-          if (Test-Path "generators/conan_toolchain.cmake") {
-            $toolchain = "generators/conan_toolchain.cmake"
-            Write-Host "Found toolchain in generators directory: $toolchain"
-          } elseif (Test-Path "conan_toolchain.cmake") {
-             Write-Host "Found toolchain in current directory: $toolchain"
-          } else {
-             Write-Host "::error::conan_toolchain.cmake not found!"
-             Get-ChildItem -Recurse
-          }
-
-          cmake -G "Visual Studio 17 2022" -A ${{ matrix.vs-generator }} `
-                "-DCMAKE_C_COMPILER_LAUNCHER=$sccacheExe" "-DCMAKE_CXX_COMPILER_LAUNCHER=$sccacheExe" `
-                "-DCMAKE_TOOLCHAIN_FILE=$toolchain" "-DCMAKE_PREFIX_PATH=$PWD" `
-                -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} `
-                -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING="NSIS;TGZ" -DBUILD_PYTHON_BINDINGS:BOOL=ON `
-                -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF `
-                -DPYTHON_VERSION:STRING=${{ steps.setup-python.outputs.python-version }} "-DSYSTEM_RUBY_EXECUTABLE=$env:SYSTEM_RUBY_PATH" `
-                -DPYTHONUTF8:BOOL=ON "-DPython_ROOT_DIR:PATH=$(Split-Path $env:SYSTEM_PYTHON_PATH -Parent)" `
-                ../${{ env.OPENSTUDIO_SOURCE }}
-
-      - name: Build and package with cmake
+      - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         shell: pwsh
         run: |
           if (Get-Command sccache -ErrorAction SilentlyContinue) { sccache -s }
-
-          # Load conanbuild.bat
-          $env_vars = & $env:ComSpec /c "call conanbuild.bat && set"
-          foreach ($line in $env_vars) {
-            if ($line -match '^(.*?)=(.*)$') {
-              $name = $matches[1]
-              $value = $matches[2]
-              if ($name -ne "" -and $name -notmatch "^=") {
-                [Environment]::SetEnvironmentVariable($name, $value, "Process")
-              }
-            }
+          # Use $env:ComSpec to ensure we call the Windows Command Prompt, not the MSYS2 cmd found in PATH
+          & $env:ComSpec /c "call conanbuild.bat && cmake --build . --parallel ${{ matrix.max_jobs }} -- -d stats 2>&1" | Tee-Object -FilePath "build.log"
+          
+          # Check the exit code of the cmd process, not Tee-Object
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Build failed with exit code $LASTEXITCODE"
+            exit $LASTEXITCODE
           }
-
-          cmake --build . --target package -j ${{ matrix.max_jobs }} --config ${{ env.BUILD_TYPE }} 2>&1 | Tee-Object -FilePath "build.log"
-          if ($LASTEXITCODE -ne 0) { throw "Build failed" }
-
           if (Get-Command sccache -ErrorAction SilentlyContinue) { sccache -s }
           
       - name: Wait for network stability
