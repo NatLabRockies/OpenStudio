@@ -1452,17 +1452,17 @@ jobs:
           
           "# OpenStudio Test Results - ${{ matrix.test_suffix }}" | Out-File -FilePath $dashboardPath -Encoding utf8
           "" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-          "**Build:** `${{ github.sha }}`" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-          "**Branch:** `${{ github.ref_name }}`" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+          "**Build:** ``${{ github.sha }}``" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+          "**Branch:** ``${{ github.ref_name }}``" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
           "**Platform:** ${{ matrix.pretty }}" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
           "**Date:** $(Get-Date -Format u)" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
           "" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
           
           if (Test-Path "Testing/Temporary/LastTest.log") {
             "## Test Log (Last 50 lines)" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-            "```" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+            '```' | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
             Get-Content "Testing/Temporary/LastTest.log" -Tail 50 | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-            "```" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+            '```' | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
           }
         continue-on-error: true
 
@@ -1484,15 +1484,15 @@ jobs:
 
       - name: Install Signing Client Dependencies
         if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
-        run: npm install
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client
+        run: npm install
 
       - name: Create .env file for Signing
         if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+        working-directory: ${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client
         run: |
-          echo "ACCESS_KEY=${{ secrets.AWS_SIGNING_ACCESS_KEY }}" > .env
+          echo "ACCESS_KEY=${{ secrets.AWS_SIGNING_ACCESS_KEY }}" >> .env
           echo "SECRET_KEY=${{ secrets.AWS_SIGNING_SECRET_KEY }}" >> .env
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
 
       - name: Code sign binaries
         if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true')
@@ -1500,7 +1500,7 @@ jobs:
         run: |
           # Check if signing client exists
           $canSign = $true
-          if (-not (Test-Path "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js")) {
+          if (-not (Test-Path "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js")) {
             Write-Host "::warning::Code signing client not found at .github/signing-client/code-signing.js"
             Write-Host "::warning::Skipping code signing. Add signing client files to repository."
             $canSign = $false
@@ -1530,7 +1530,7 @@ jobs:
               Compress-Archive -Path $pathsToSign -DestinationPath $binZip -Force
               
               Write-Host "Sending binaries for signing..."
-              node "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $binZip -t 4800000
+              node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $binZip -t 4800000
               
               if (Test-Path $signedBinZip) {
                 Write-Host "Extracting and overwriting signed binaries..."
@@ -1561,7 +1561,7 @@ jobs:
         run: |
           # Check if signing client exists
           $canSign = $true
-          if (-not (Test-Path "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js")) {
+          if (-not (Test-Path "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js")) {
             $canSign = $false
           }
 
@@ -1584,7 +1584,7 @@ jobs:
                Compress-Archive -Path $installers.FullName -DestinationPath $installerZip -Force
                
                Write-Host "Sending installer for signing..."
-               node "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $installerZip -t 4800000
+               node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $installerZip -t 4800000
                
                if (Test-Path $signedInstallerZip) {
                   Write-Host "Extracting signed installer..."
