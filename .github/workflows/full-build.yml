@@ -1212,14 +1212,8 @@ jobs:
                 $new_content += $line
                 if ($line -match "os.add_dll_directory\(bin_dir\)") {
                     $new_content += "        products_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))"
-                    $new_content += "        # Check for flat layout (Ninja)"
                     $new_content += "        if os.path.isdir(products_dir) and os.path.isfile(os.path.join(products_dir, 'openstudio_utilities.dll')):"
                     $new_content += "            os.add_dll_directory(products_dir)"
-                    $new_content += "        # Check for config layout (VS)"
-                    $new_content += "        for config in ['Release', 'Debug', 'RelWithDebInfo', 'MinSizeRel']:"
-                    $new_content += "            config_dir = os.path.join(products_dir, config)"
-                    $new_content += "            if os.path.isdir(config_dir) and os.path.isfile(os.path.join(config_dir, 'openstudio_utilities.dll')):"
-                    $new_content += "                os.add_dll_directory(config_dir)"
                     $new_content += "        # Add PATH to DLL search, needed for Conan dependencies on Python 3.8+"
                     $new_content += "        for p in os.environ['PATH'].split(';'):"
                     $new_content += "            if p and os.path.isdir(p):"
@@ -1496,12 +1490,7 @@ jobs:
           
           # Add build Products directory to Path so Python can find _openstudioairflow.pyd and its dependencies
           $products_dir = Join-Path (Get-Location) "Products"
-          $config_dir = Join-Path $products_dir "${{ env.BUILD_TYPE }}"
-          if (Test-Path $config_dir) {
-            $env:Path = "$config_dir;$products_dir;" + $env:Path
-          } else {
-            $env:Path = "$products_dir;" + $env:Path
-          }
+          $env:Path = "$products_dir;" + $env:Path
           
           # Conflicting tests that must run sequentially
           $resource_locked_tests = "ModelFixture.ScheduleFile|ModelFixture.ScheduleFileAltCtor|ModelFixture.PythonPluginInstance|ModelFixture.PythonPluginInstance_NotPYFile|ModelFixture.PythonPluginInstance_ClassNameValidation|ModelFixture.ChillerElectricASHRAE205_GettersSetters|ModelFixture.ChillerElectricASHRAE205_Loops|ModelFixture.ChillerElectricASHRAE205_NotCBORFile|ModelFixture.ChillerElectricASHRAE205_Clone"
