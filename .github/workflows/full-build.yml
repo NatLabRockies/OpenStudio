@@ -1532,7 +1532,7 @@ jobs:
         run: |
           # Check if signing client exists
           $canSign = $true
-          if (-not (Test-Path "$env:GITHUB_WORKSPACE/.github/signing-client/code-signing.js")) {
+          if (-not (Test-Path "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js")) {
             Write-Host "::warning::Code signing client not found at .github/signing-client/code-signing.js"
             Write-Host "::warning::Skipping code signing. Add signing client files to repository."
             $canSign = $false
@@ -1562,7 +1562,7 @@ jobs:
               Compress-Archive -Path $pathsToSign -DestinationPath $binZip -Force
               
               Write-Host "Sending binaries for signing..."
-              node "$env:GITHUB_WORKSPACE/.github/signing-client/code-signing.js" $binZip -t 4800000
+              node "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $binZip -t 4800000
               
               if (Test-Path $signedBinZip) {
                 Write-Host "Extracting and overwriting signed binaries..."
@@ -1593,7 +1593,7 @@ jobs:
         run: |
           # Check if signing client exists
           $canSign = $true
-          if (-not (Test-Path "$env:GITHUB_WORKSPACE/.github/signing-client/code-signing.js")) {
+          if (-not (Test-Path "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js")) {
             $canSign = $false
           }
 
@@ -1616,7 +1616,7 @@ jobs:
                Compress-Archive -Path $installers.FullName -DestinationPath $installerZip -Force
                
                Write-Host "Sending installer for signing..."
-               node "$env:GITHUB_WORKSPACE/.github/signing-client/code-signing.js" $installerZip -t 4800000
+               node "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $installerZip -t 4800000
                
                if (Test-Path $signedInstallerZip) {
                   Write-Host "Extracting signed installer..."
