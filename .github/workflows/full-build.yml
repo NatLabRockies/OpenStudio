@@ -1344,42 +1344,6 @@ jobs:
           $pythonPath = (Get-Command python).Source
           "SYSTEM_PYTHON_PATH=$pythonPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-      - name: Install System dependencies and LaTeX
-        shell: bash
-        run: |
-          set -x
-          echo "Downloading MiKTeX CLI installer"
-          # We download from a specific mirror already # TODO: Should store this setup package somewhere ourselves
-          curl -L -O --retry 5 --retry-connrefused https://ctan.math.utah.edu/ctan/tex-archive/systems/win32/miktex/setup/windows-x64/miktexsetup-5.5.0%2B1763023-x64.zip
-          unzip miktexsetup-5.5.0%2B1763023-x64.zip
-
-          echo "Setting up the local package directory via download"
-          ./miktexsetup_standalone.exe --verbose \
-              --local-package-repository=C:/ProgramData/MiKTeX-Repo \
-              --remote-package-repository="https://ctan.math.utah.edu/ctan/tex-archive/systems/win32/miktex/tm/packages/" \
-              --package-set=essential \
-              download
-
-          echo "Installing from the local package directory previously set up"
-          ./miktexsetup_standalone.exe --verbose \
-              --local-package-repository=C:/ProgramData/MiKTeX-Repo \
-              --package-set=essential \
-              --shared \
-              install
-
-          echo "Adding MiKTeX bin folder to PATH and to GITHUB_PATH"
-          echo "C:/Program Files/MiKTeX/miktex/bin/x64/" >> $GITHUB_PATH
-          export PATH="/c/Program Files/MiKTeX/miktex/bin/x64/:$PATH"
-
-          echo "Configuring MiKTeX to install missing packages on the fly"
-          initexmf --admin --verbose --set-config-value='[MPM]AutoInstall=1'
-
-          echo "Configure default mirror for packages"
-          mpm --admin --set-repository="https://ctan.math.utah.edu/ctan/tex-archive/systems/win32/miktex/tm/packages/"
-          # Avoid annoying warning: "xelatex: major issue: So far, you have not checked for updates as a MiKTeX user."
-          mpm --find-updates
-          mpm --admin --find-updates
-    
       - name: Configure with CMake
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
