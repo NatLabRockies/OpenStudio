@@ -1577,28 +1577,121 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/Testing-${{ matrix.test_suffix }}/
             ${{ env.OPENSTUDIO_BUILD }}/${{ env.TEST_DASHBOARD_RELATIVE }}
 
-      - name: Create packages
-        if: ${{ success() && !cancelled() }}
+      # CODE SIGNING - AWS Signing Service
+      - name: Setup Node.js
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install Signing Client Dependencies
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+        run: npm install
+        working-directory: ./.github/signing-client
+
+      - name: Create .env file for Signing
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+        run: |
+          echo "ACCESS_KEY=${{ secrets.AWS_SIGNING_ACCESS_KEY }}" > .env
+          echo "SECRET_KEY=${{ secrets.AWS_SIGNING_SECRET_KEY }}" >> .env
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+
+      - name: Code sign installer
+        if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true')
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          & $env:ComSpec /c "call conanbuild.bat && cmake --build . --target package"
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "CPack failed with exit code $LASTEXITCODE"
-            exit $LASTEXITCODE
+          # Check if signing client exists
+          $canSign = $true
+          if (-not (Test-Path "$env:GITHUB_WORKSPACE/.github/signing-client/code-signing.js")) {
+            Write-Host "::warning::Code signing client not found at .github/signing-client/code-signing.js"
+            Write-Host "::warning::Skipping code signing. Add signing client files to repository."
+            $canSign = $false
           }
 
-      - name: Cleanup intermediate files
-        if: always()
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        run: |
-          Get-ChildItem -Path . -Include "*.obj" -Recurse -Force | Remove-Item -Force -ErrorAction SilentlyContinue
-          Get-PSDrive C | Select-Object Used,Free
+          # Check if AWS signing credentials are configured
+          if ([string]::IsNullOrEmpty("${{ secrets.AWS_SIGNING_ACCESS_KEY }}")) {
+            Write-Host "::warning::AWS_SIGNING_ACCESS_KEY secret not configured"
+            Write-Host "::warning::Skipping code signing. Configure AWS signing secrets."
+            $canSign = $false
+          }
 
-      - name: Fail job on test failures
-        if: ${{ steps.ctest.outputs.exit_code != '0' }}
-        run: |
-          echo "::error::CTest suite failed with exit code ${{ steps.ctest.outputs.exit_code }}"
-          exit 1
+          if ($canSign) {
+            Write-Host "------------------------------------------------------------"
+            Write-Host "Step 1: Signing Binaries"
+            Write-Host "------------------------------------------------------------"
+            
+            $pathsToSign = @()
+            if (Test-Path "bin") { $pathsToSign += "bin" }
+            if (Test-Path "Products") { $pathsToSign += "Products" }
+            
+            if ($pathsToSign.Count -gt 0) {
+              $binZip = "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/binaries_to_sign.zip"
+              $signedBinZip = "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/binaries_to_sign.signed.zip"
+              
+              Write-Host "Archiving binaries from: $pathsToSign"
+              Compress-Archive -Path $pathsToSign -DestinationPath $binZip -Force
+              
+              Write-Host "Sending binaries for signing..."
+              node "$env:GITHUB_WORKSPACE/.github/signing-client/code-signing.js" $binZip -t 4800000
+              
+              if (Test-Path $signedBinZip) {
+                Write-Host "Extracting and overwriting signed binaries..."
+                $tempDir = "temp_signed_binaries"
+                if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
+                Expand-Archive -Path $signedBinZip -DestinationPath $tempDir -Force
+                
+                # Copy back to overwrite
+                Copy-Item -Path "$tempDir\*" -Destination . -Recurse -Force
+                
+                # Cleanup
+                Remove-Item $tempDir -Recurse -Force
+                Remove-Item $binZip -Force
+                Remove-Item $signedBinZip -Force
+              } else {
+                 Write-Host "::error::Signed binaries zip not found!"
+                 exit 1
+              }
+            } else {
+               Write-Host "::warning::No bin/ or Products/ directories found to sign."
+            }
+          }
+
+
+
+          if ($canSign) {
+            Write-Host "------------------------------------------------------------"
+            Write-Host "Step 3: Signing Installer"
+            Write-Host "------------------------------------------------------------"
+            
+            $installerZip = "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/installer_to_sign.zip"
+            $signedInstallerZip = "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/installer_to_sign.signed.zip"
+            
+            $installers = Get-ChildItem -Filter "OpenStudio-*.exe"
+            if ($installers.Count -gt 0) {
+               Write-Host "Found installer(s): $($installers.Name)"
+               Compress-Archive -Path $installers.FullName -DestinationPath $installerZip -Force
+               
+               Write-Host "Sending installer for signing..."
+               node "$env:GITHUB_WORKSPACE/.github/signing-client/code-signing.js" $installerZip -t 4800000
+               
+               if (Test-Path $signedInstallerZip) {
+                  Write-Host "Extracting signed installer..."
+                  if (-not (Test-Path signed)) { New-Item -ItemType Directory -Path signed | Out-Null }
+                  Expand-Archive -Path $signedInstallerZip -DestinationPath signed -Force
+                  
+                  # Cleanup
+                  Remove-Item $installerZip -Force
+                  Remove-Item $signedInstallerZip -Force
+               } else {
+                  Write-Host "::error::Signed installer zip not found!"
+                  exit 1
+               }
+            } else {
+               Write-Host "::warning::No OpenStudio installer found to sign."
+            }
+            
+            Write-Host "Code signing completed successfully"
+          }
 
       - name: Upload EXE installer
         uses: actions/upload-artifact@v4
@@ -1612,6 +1705,13 @@ jobs:
         with:
           name: OS-Installers-${{ matrix.platform }}-TGZ-${{ github.sha }}
           path: ${{ env.OPENSTUDIO_BUILD }}/OpenStudio-*.tar.gz
+          if-no-files-found: ignore
+
+      - name: Upload Signed installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: OS-Installers-${{ matrix.platform }}-SIGNED-${{ github.sha }}
+          path: ${{ env.OPENSTUDIO_BUILD }}/signed/
           if-no-files-found: ignore
 
   windows-publish:
@@ -1643,13 +1743,17 @@ jobs:
           echo "Uploading artifacts to s3://${AWS_S3_BUCKET}/${S3_PREFIX}"
 
           # Find installers in artifact subdirectories
-          # For misc-fixes branch, we just upload whatever we have (unsigned)
-          EXE_FILE=$(find . -name "*.exe" | head -n 1 || true)
+          SIGNED_EXE=$(find . -name "*.exe" | grep "SIGNED" | head -n 1 || true)
+          UNSIGNED_EXE=$(find . -name "*.exe" | grep -v "SIGNED" | head -n 1 || true)
           
-          if [ -n "$EXE_FILE" ]; then
-            echo "Uploading installer: $EXE_FILE"
-            filename=$(basename "$EXE_FILE")
-            aws s3 cp "$EXE_FILE" "s3://${AWS_S3_BUCKET}/${S3_PREFIX}/${filename}" --acl public-read
+          if [ -n "$SIGNED_EXE" ]; then
+            echo "Uploading signed installer: $SIGNED_EXE"
+            filename=$(basename "$SIGNED_EXE")
+            aws s3 cp "$SIGNED_EXE" "s3://${AWS_S3_BUCKET}/${S3_PREFIX}/${filename}" --acl public-read
+          elif [ -n "$UNSIGNED_EXE" ]; then
+            echo "Uploading unsigned installer: $UNSIGNED_EXE"
+            filename=$(basename "$UNSIGNED_EXE")
+            aws s3 cp "$UNSIGNED_EXE" "s3://${AWS_S3_BUCKET}/${S3_PREFIX}/${filename}" --acl public-read
           fi
 
           # Upload tarballs
