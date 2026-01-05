@@ -2,7 +2,7 @@
 
 _Release Notes_ -  _TBD_
 
-These release notes describe version 3.11.0 of the OpenStudio SDK developed by the National Renewable Energy Laboratory (NREL), Buildings and Thermal Sciences Center, Commercial Buildings Research Group, Tools Development Section, and associated collaborators. The notes are organized into the following sections:
+These release notes describe version 3.11.0 of the OpenStudio SDK developed by the National Laboratory of the Rockies (NLR), Buildings and Thermal Sciences Center, Commercial Buildings Research Group, Tools Development Section, and associated collaborators. The notes are organized into the following sections:
 
 -  Overview
 -  Where to Find OpenStudio Documentation
@@ -120,7 +120,7 @@ In addition to some refactoring, this release also included conversion of 90.1 d
 # To convert the markdown to pdf, do `pandoc release_notes.md -o release_notes.pdf`
 title:  'OpenStudio Release Notes - 3.11.0'
 author:
-- National Renewable Energy Laboratory
+- National Laboratory of the Rockies
 colorlinks: true
 linkcolor: blue
 urlcolor: Mahogany

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- edited with XMLSpy v2011 sp1 (x64) (http://www.altova.com) by Nicholas Long (National Renewable Energy Laboratory) -->
+<!-- edited with XMLSpy v2011 sp1 (x64) (http://www.altova.com) by Nicholas Long (National Laboratory of the Rockies) -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
 	<xs:annotation>
 		<xs:documentation>Component.xsd describes the components that are in the building component library or NREL analysis platform library.</xs:documentation>
