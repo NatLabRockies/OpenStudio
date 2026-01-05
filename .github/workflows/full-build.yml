@@ -1201,6 +1201,7 @@ jobs:
             sccache-${{ matrix.os }}-${{ matrix.platform }}-
       
       - name: Patch tests for Windows
+        working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
           # Patch openstudio.py for build tree DLL loading
           $os_py = "python/module/openstudio.py"
@@ -1248,11 +1249,13 @@ jobs:
           cache: 'pip'
   
       - name: Install Python dependencies
+        working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -r python/requirements.txt
 
       - name: Install Conan
+        working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
           python -m pip install conan
 
@@ -1321,10 +1324,11 @@ jobs:
           conan config home
 
       - name: Conan install
+        working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
           $env:CMAKE_POLICY_VERSION_MINIMUM="3.5"
           conan install . `
-            --output-folder="${{ env.OPENSTUDIO_BUILD }}" `
+            --output-folder="../${{ env.OPENSTUDIO_BUILD }}" `
             --build=missing `
             -c tools.cmake.cmaketoolchain:generator=Ninja `
             -s compiler.cppstd=20 `
@@ -1380,7 +1384,7 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           $sccacheExe = (Get-Command sccache).Source
-          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"NSIS;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" `"${{ github.workspace }}`""
+          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"NSIS;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" `"../${{ env.OPENSTUDIO_SOURCE }}"`"
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -1517,7 +1521,7 @@ jobs:
       - name: Install Signing Client Dependencies
         if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
         run: npm install
-        working-directory: ./.github/signing-client
+        working-directory: ${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client
 
       - name: Create .env file for Signing
         if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
