@@ -1551,6 +1551,12 @@ jobs:
             }
           }
 
+      - name: Create packages
+        if: ${{ success() && !cancelled() }}
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          & $env:ComSpec /c "call conanbuild.bat && cmake --build . --target package --parallel ${{ matrix.max_jobs }}"
+
       - name: Code sign installer
         if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true')
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
