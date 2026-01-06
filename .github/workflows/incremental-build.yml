@@ -96,11 +96,14 @@ jobs:
           # Force remove all to ensure rebuild with correct ABI
           conan remove "*" -c || true
           
+          # Fix SWIG_DIR env var being set to an invalid path by conan
+          export SWIG_DIR=""
+          
           if [ ! -f "${{ env.DOCKER_ROOT }}/.conan2/profiles/default" ]; then
             conan profile detect
           fi
 
-          conan install . --output-folder=${{ env.OPENSTUDIO_BUILD_NAME }} --build=missing --build=boost --build=fmt --build=cpprestsdk -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release -s compiler=gcc -s compiler.version=11 -s compiler.libcxx=libstdc++11
+          conan install . --output-folder=${{ env.OPENSTUDIO_BUILD_NAME }} --build=missing --build=boost --build=fmt --build=cpprestsdk --build=swig -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release -s compiler=gcc -s compiler.version=11 -s compiler.libcxx=libstdc++11
 
       - name: Locate Ruby
         run: |
@@ -112,9 +115,21 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_DOCKER_VOLUME }}/${{ env.OPENSTUDIO_SOURCE_NAME }}/${{ env.OPENSTUDIO_BUILD_NAME }}
         run: |
           . ./conanbuild.sh
+          # Create a symlink to the swig executable in a standard path if it exists in conan cache
+          # This helps when the long conan path is causing issues or not being picked up correctly
+          SWIG_BIN=$(find /github/home/.conan2 -name swig -type f -executable | head -n 1)
+          if [ ! -z "$SWIG_BIN" ]; then
+            echo "Found SWIG at $SWIG_BIN"
+            mkdir -p $HOME/bin
+            ln -sf $SWIG_BIN $HOME/bin/swig
+            export PATH=$HOME/bin:$PATH
+            SWIG_EXEC_ARG="-DSWIG_EXECUTABLE=$HOME/bin/swig"
+          fi
+          
           cmake -G Ninja \
                 -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
                 -DCMAKE_BUILD_TYPE:STRING=Release \
+                $SWIG_EXEC_ARG \
                 -DBUILD_TESTING:BOOL=ON \
                 -DCPACK_BINARY_DEB:BOOL=ON \
                 -DCPACK_BINARY_TGZ:BOOL=ON \

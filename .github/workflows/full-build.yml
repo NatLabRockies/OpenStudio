@@ -18,6 +18,10 @@ on:
         description: "Skip downstream docker workflow trigger"
         required: false
         default: "false"
+      jobs:
+        description: "Comma-separated list of jobs to run (e.g. 'linux-build,windows-build'). Leave empty to run all."
+        required: false
+        default: ""
   workflow_call:
     inputs:
       publish_to_s3:
@@ -28,6 +32,10 @@ on:
         type: string
         required: false
         default: "false"
+      jobs:
+        type: string
+        required: false
+        default: ""
 
 concurrency:
   group: full-build-${{ github.ref }}
@@ -64,6 +72,7 @@ env:
 jobs:
   linux-build:
     name: Build ${{ matrix.pretty }}
+    if: "!inputs.jobs || contains(inputs.jobs, 'linux-build')"
     runs-on: ${{ matrix.os }}
     container:
       image: ${{ matrix.container_image }}
@@ -600,6 +609,7 @@ jobs:
 
   macos-build:
     name: Build Packages for ${{ matrix.pretty }}
+    if: "!inputs.jobs || contains(inputs.jobs, 'macos-build')"
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.allow_failure }}
     strategy:
@@ -647,6 +657,7 @@ jobs:
         fetch-depth: 1
 
     - name: Git safe directory
+      working-directory: ${{ env.OPENSTUDIO_SOURCE }}
       run: git config --global --add safe.directory '*'
 
     - name: Setup ccache
@@ -662,29 +673,6 @@ jobs:
         key: conan-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
         restore-keys: |
           conan-${{ matrix.os }}-${{ matrix.platform }}-
-
-    - name: Cache External Dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.tar.gz
-          ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.zip
-          ${{ env.OPENSTUDIO_BUILD }}/radiance*.tar.gz
-          ${{ env.OPENSTUDIO_BUILD }}/radiance*.zip
-          ${{ env.OPENSTUDIO_BUILD }}/openstudio*gems*.tar.gz
-        key: external-deps-${{ matrix.os }}-${{ hashFiles('conan.lock') }}
-        restore-keys: |
-          external-deps-${{ matrix.os }}-
-
-    - name: Restore Generated Embedded Files
-      uses: actions/cache@v4
-      with:
-        path: |
-          ${{ env.OPENSTUDIO_BUILD }}/src/*/embedded_files
-          ${{ env.OPENSTUDIO_BUILD }}/ruby/engine/embedded_files
-        key: embedded-files-${{ matrix.os }}-${{ hashFiles('resources/**', 'ruby/engine/**', 'src/airflow/**', 'src/energyplus/**', 'src/gbxml/**', 'src/isomodel/**', 'src/radiance/**', 'src/sdd/**', 'src/model/**', 'src/utilities/**') }}
-        restore-keys: |
-          embedded-files-${{ matrix.os }}-
 
     - name: Remove python ${{ env.PYTHON_REQUIRED_VERSION }} from the toolcache
       run: |
@@ -737,6 +725,29 @@ jobs:
     - name: Create Build Directory
       run: cmake -E make_directory ${{ env.OPENSTUDIO_BUILD }}
 
+    - name: Cache External Dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.tar.gz
+          ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.zip
+          ${{ env.OPENSTUDIO_BUILD }}/radiance*.tar.gz
+          ${{ env.OPENSTUDIO_BUILD }}/radiance*.zip
+          ${{ env.OPENSTUDIO_BUILD }}/openstudio*gems*.tar.gz
+        key: external-deps-${{ matrix.os }}-${{ hashFiles('conan.lock') }}
+        restore-keys: |
+          external-deps-${{ matrix.os }}-
+
+    - name: Restore Generated Embedded Files
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ env.OPENSTUDIO_BUILD }}/src/*/embedded_files
+          ${{ env.OPENSTUDIO_BUILD }}/ruby/engine/embedded_files
+        key: embedded-files-${{ matrix.os }}-${{ hashFiles('resources/**', 'ruby/engine/**', 'src/airflow/**', 'src/energyplus/**', 'src/gbxml/**', 'src/isomodel/**', 'src/radiance/**', 'src/sdd/**', 'src/model/**', 'src/utilities/**') }}
+        restore-keys: |
+          embedded-files-${{ matrix.os }}-
+
     - name: Configure Conan remotes
       run: |
         set -euo pipefail
@@ -759,6 +770,7 @@ jobs:
           -c tools.cmake.cmaketoolchain:generator=Ninja \
           -s compiler.cppstd=20 \
           -s build_type=${{ env.BUILD_TYPE }} \
+          -s os.version=${{ matrix.macos_dev_target }} \
           -o readline/*:with_library=termcap
 
     - name: Locate Ruby
@@ -813,7 +825,7 @@ jobs:
           -DCPACK_BINARY_IFW:BOOL=ON \
           -DBUILD_PYTHON_BINDINGS:BOOL=ON \
           -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF \
-          -DCMAKE_INSTALL_RPATH="@loader_path;@executable_path" \
+          -DCMAKE_INSTALL_RPATH="@loader_path;@executable_path;@loader_path/../lib" \
           -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} \
           -DPython_ROOT_DIR:PATH="$(dirname $(dirname $SYSTEM_PYTHON_PATH))" \
           ../${{ env.OPENSTUDIO_SOURCE }}
@@ -1143,9 +1155,8 @@ jobs:
 
   windows-build:
     name: Build ${{ matrix.pretty }}
+    if: "!inputs.jobs || contains(inputs.jobs, 'windows-build')"
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -1154,6 +1165,10 @@ jobs:
             pretty: Windows 2022 x64
             os: windows-2022
             test_suffix: Windows-2022
+            vs-generator: x64
+            arch: x86_64
+            python-arch: x64
+            allow_failure: false
             max_jobs: 3
             exclude_regex: "^(RubyTest-Date_Test-ymd_constructor)$"
     defaults:
@@ -1164,12 +1179,20 @@ jobs:
       CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
       RUBYOPT: "-Eutf-8:utf-8"
       PYTHONUTF8: "1"
+    permissions:
+      contents: write
+  
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
+          path: ${{ env.OPENSTUDIO_SOURCE }}
           fetch-depth: 1
-
+          
+      - name: Git safe directory
+        working-directory: ${{ env.OPENSTUDIO_SOURCE }}
+        run: git config --global --add safe.directory '*'
+      
       - name: Restore sccache cache
         uses: actions/cache@v4
         with:
@@ -1179,6 +1202,7 @@ jobs:
             sccache-${{ matrix.os }}-${{ matrix.platform }}-
       
       - name: Patch tests for Windows
+        working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
           # Patch openstudio.py for build tree DLL loading
           $os_py = "python/module/openstudio.py"
@@ -1203,60 +1227,10 @@ jobs:
             $new_content | Set-Content $os_py
           }
 
-          # Fix path normalization in measure manager test (test_measure_manager.py)
-          # On Windows, path separators can be backslashes, but the test expects forward slashes or consistent formatting.
-          # We patch usages of `['my_measures_dir'].rstrip('/')` to include `.replace('\\', '/')` before the rstrip.
-          # This handles both assignment and assertion lines correctly without creating invalid syntax.
-          $mm_test = "src/cli/test/test_measure_manager.py"
-          $mm_content = Get-Content $mm_test -Raw
-          
-          $mm_content = $mm_content -replace "\['my_measures_dir'\]\.rstrip\('/'\)", "['my_measures_dir'].replace('\\', '/').rstrip('/')"
-          $mm_content | Set-Content $mm_test
-
-          # Fix encoding expectation in CLI encodings test
-          $enc_test = "src/cli/test/test_encodings.rb"
-          (Get-Content $enc_test) -replace "assert_equal\(dir_str.encoding, Encoding::Windows_1252\)", "assert(dir_str.encoding == Encoding::Windows_1252 || dir_str.encoding == Encoding::UTF_8, `"Encoding was `#{dir_str.encoding}`")" | Set-Content $enc_test
-
-          # Fix Alfalfa: Quoting the CMake command to handle spaces in "C:/Program Files/..."
-          (Get-Content src/cli/CMakeLists.txt) -replace '"-DCMD2=\${CMAKE_COMMAND}', '"-DCMD2=\"${CMAKE_COMMAND}\"' | Set-Content src/cli/CMakeLists.txt
-
       - name: Prepare workspace
         run: |
           git config --global --add safe.directory "*"
           New-Item -ItemType Directory -Path "${{ env.OPENSTUDIO_BUILD }}" -Force
-          
-          # Speed up Windows builds by disabling real-time antivirus monitoring for the workspace
-          Write-Host "Disabling Windows Defender real-time monitoring for workspace: $env:GITHUB_WORKSPACE"
-          Set-MpPreference -DisableRealtimeMonitoring $true
-          Add-MpPreference -ExclusionPath $env:GITHUB_WORKSPACE -ErrorAction SilentlyContinue
-          Add-MpPreference -ExclusionPath "$env:USERPROFILE\.conan2" -ErrorAction SilentlyContinue
-          Add-MpPreference -ExclusionPath "$env:GITHUB_WORKSPACE\.sccache" -ErrorAction SilentlyContinue
-          
-          # Set Power Plan to High Performance for better process spawn speed
-          powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
-
-      - name: Cache External Dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.tar.gz
-            ${{ env.OPENSTUDIO_BUILD }}/EnergyPlus*.zip
-            ${{ env.OPENSTUDIO_BUILD }}/radiance*.tar.gz
-            ${{ env.OPENSTUDIO_BUILD }}/radiance*.zip
-            ${{ env.OPENSTUDIO_BUILD }}/openstudio*gems*.tar.gz
-          key: external-deps-${{ matrix.os }}-${{ hashFiles('conan.lock') }}
-          restore-keys: |
-            external-deps-${{ matrix.os }}-
-
-      - name: Restore Generated Embedded Files
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ env.OPENSTUDIO_BUILD }}/src/*/embedded_files
-            ${{ env.OPENSTUDIO_BUILD }}/ruby/engine/embedded_files
-          key: embedded-files-${{ matrix.os }}-${{ hashFiles('resources/**', 'ruby/engine/**', 'src/airflow/**', 'src/energyplus/**', 'src/gbxml/**', 'src/isomodel/**', 'src/model/**', 'src/radiance/**', 'src/sdd/**', 'src/utilities/**') }}
-          restore-keys: |
-            embedded-files-${{ matrix.os }}-
 
       - name: Setup sccache
         uses: Mozilla-Actions/sccache-action@v0.0.5
@@ -1274,55 +1248,23 @@ jobs:
         with:
           python-version: '3.12.2'
           cache: 'pip'
+  
+      - name: Install Python dependencies
+        working-directory: ${{ env.OPENSTUDIO_SOURCE }}
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -r python/requirements.txt
+
+      - name: Install Conan
+        working-directory: ${{ env.OPENSTUDIO_SOURCE }}
+        run: |
+          python -m pip install conan
 
       - name: Install Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2.2'
           bundler-cache: true
-
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
-          python -m pip install -r python/requirements.txt
-
-      - name: Install Conan
-        run: |
-          python -m pip install conan
-
-      - name: Configure Conan remotes
-        run: |
-          conan remote remove conancenter
-          if ($LASTEXITCODE -ne 0) { $LASTEXITCODE = 0 }
-          conan remote add conancenter https://center2.conan.io
-          
-          conan remote remove nrel-v2
-          if ($LASTEXITCODE -ne 0) { $LASTEXITCODE = 0 }
-          conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2
-          
-          if (-not (Test-Path "$env:USERPROFILE/.conan2/profiles/default")) {
-            conan profile detect
-          }
-
-      - name: Conan install
-        run: |
-          $env:CMAKE_POLICY_VERSION_MINIMUM="3.5"
-          conan install . `
-            --output-folder="${{ env.OPENSTUDIO_BUILD }}" `
-            --build=missing `
-            -c tools.cmake.cmaketoolchain:generator=Ninja `
-            -s compiler.cppstd=20 `
-            -s build_type=${{ env.BUILD_TYPE }}
-
-      - name: Locate Ruby
-        run: |
-          $rubyPath = (Get-Command ruby).Source
-          "SYSTEM_RUBY_PATH=$rubyPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-      - name: Locate Python
-        run: |
-          $pythonPath = (Get-Command python).Source
-          "SYSTEM_PYTHON_PATH=$pythonPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Install System dependencies and LaTeX
         shell: bash
@@ -1359,12 +1301,55 @@ jobs:
           # Avoid annoying warning: "xelatex: major issue: So far, you have not checked for updates as a MiKTeX user."
           mpm --find-updates
           mpm --admin --find-updates
-    
+        
+      - name: Create Build Directory
+        run: cmake -E make_directory ${{ env.OPENSTUDIO_BUILD }}
+
+      - name: Configure Conan remotes
+        run: |
+          conan remote remove nrel-v2
+          if ($LASTEXITCODE -ne 0) { $LASTEXITCODE = 0 }
+          conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2
+          if ($LASTEXITCODE -ne 0) { throw "Failed to add nrel-v2 remote" }
+          conan remote enable nrel-v2
+
+          conan remote remove conancenter
+          if ($LASTEXITCODE -ne 0) { $LASTEXITCODE = 0 }
+          conan remote add conancenter https://center2.conan.io
+          if ($LASTEXITCODE -ne 0) { throw "Failed to add conancenter remote" }
+          conan remote enable conancenter
+          
+          if (-not (Test-Path "$env:USERPROFILE/.conan2/profiles/default")) {
+            conan profile detect
+          }
+          conan config home
+
+      - name: Conan install
+        working-directory: ${{ env.OPENSTUDIO_SOURCE }}
+        run: |
+          $env:CMAKE_POLICY_VERSION_MINIMUM="3.5"
+          conan install . `
+            --output-folder="../${{ env.OPENSTUDIO_BUILD }}" `
+            --build=missing `
+            -c tools.cmake.cmaketoolchain:generator=Ninja `
+            -s compiler.cppstd=20 `
+            -s build_type=${{ env.BUILD_TYPE }}
+
+      - name: Locate Ruby
+        run: |
+          $rubyPath = (Get-Command ruby).Source
+          "SYSTEM_RUBY_PATH=$rubyPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Locate Python
+        run: |
+          $pythonPath = (Get-Command python).Source
+          "SYSTEM_PYTHON_PATH=$pythonPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
       - name: Configure with CMake
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           $sccacheExe = (Get-Command sccache).Source
-          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"NSIS;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" `"${{ github.workspace }}`""
+          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"NSIS;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" `"../${{ env.OPENSTUDIO_SOURCE }}"`"
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -1380,7 +1365,22 @@ jobs:
             exit $LASTEXITCODE
           }
           if (Get-Command sccache -ErrorAction SilentlyContinue) { sccache -s }
+          
+      - name: Wait for network stability
+        if: always()
+        run: Start-Sleep -Seconds 5
 
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-diag-${{ matrix.platform }}-${{ github.sha }}
+          path: |
+            ${{ env.OPENSTUDIO_BUILD }}/build.log
+            ${{ env.OPENSTUDIO_BUILD }}/.ninja_log
+            ${{ env.OPENSTUDIO_BUILD }}/CTestTestfile.cmake
+          if-no-files-found: warn
+        
       - name: Run CTest suite
         id: ctest
         continue-on-error: true
@@ -1435,21 +1435,6 @@ jobs:
           }
           "exit_code=$overall_exit_code" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      - name: Wait for network stability
-        if: always()
-        run: Start-Sleep -Seconds 5
-
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-diag-${{ matrix.platform }}-${{ github.sha }}
-          path: |
-            ${{ env.OPENSTUDIO_BUILD }}/build.log
-            ${{ env.OPENSTUDIO_BUILD }}/.ninja_log
-            ${{ env.OPENSTUDIO_BUILD }}/CTestTestfile.cmake
-          if-no-files-found: warn
-
       - name: Copy Testing tree with suffix
         if: always()
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -1468,17 +1453,17 @@ jobs:
           
           "# OpenStudio Test Results - ${{ matrix.test_suffix }}" | Out-File -FilePath $dashboardPath -Encoding utf8
           "" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-          "**Build:** `${{ github.sha }}`" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-          "**Branch:** `${{ github.ref_name }}`" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+          "**Build:** ``${{ github.sha }}``" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+          "**Branch:** ``${{ github.ref_name }}``" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
           "**Platform:** ${{ matrix.pretty }}" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
           "**Date:** $(Get-Date -Format u)" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
           "" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
           
           if (Test-Path "Testing/Temporary/LastTest.log") {
             "## Test Log (Last 50 lines)" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-            "```" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+            '```' | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
             Get-Content "Testing/Temporary/LastTest.log" -Tail 50 | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-            "```" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
+            '```' | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
           }
         continue-on-error: true
 
@@ -1491,14 +1476,135 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/Testing-${{ matrix.test_suffix }}/
             ${{ env.OPENSTUDIO_BUILD }}/${{ env.TEST_DASHBOARD_RELATIVE }}
 
+      # CODE SIGNING SETUP
+      - name: Setup Node.js
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+
+      - name: Create .env file for Signing
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          echo "ACCESS_KEY=${{ secrets.AWS_SIGNING_ACCESS_KEY }}" >> .env
+          echo "SECRET_KEY=${{ secrets.AWS_SIGNING_SECRET_KEY }}" >> .env
+
+      - name: Code sign binaries
+        if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true')
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          # Check if signing client exists
+          $canSign = $true
+          if (-not (Test-Path "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js")) {
+            Write-Host "::warning::Code signing client not found at .github/signing-client/code-signing.js"
+            Write-Host "::warning::Skipping code signing. Add signing client files to repository."
+            $canSign = $false
+          }
+
+          # Check if AWS signing credentials are configured
+          if ([string]::IsNullOrEmpty("${{ secrets.AWS_SIGNING_ACCESS_KEY }}")) {
+            Write-Host "::warning::AWS_SIGNING_ACCESS_KEY secret not configured"
+            Write-Host "::warning::Skipping code signing. Configure AWS signing secrets."
+            $canSign = $false
+          }
+
+          if ($canSign) {
+            Write-Host "------------------------------------------------------------"
+            Write-Host "Signing Binaries (Pre-CPack)"
+            Write-Host "------------------------------------------------------------"
+            
+            $pathsToSign = @()
+            if (Test-Path "bin") { $pathsToSign += "bin" }
+            if (Test-Path "Products") { $pathsToSign += "Products" }
+            
+            if ($pathsToSign.Count -gt 0) {
+              $binZip = "binaries_to_sign.zip"
+              $signedBinZip = "binaries_to_sign.signed.zip"
+              
+              Write-Host "Archiving binaries from: $pathsToSign"
+              Compress-Archive -Path $pathsToSign -DestinationPath $binZip -Force
+              
+              Write-Host "Sending binaries for signing..."
+              node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $binZip -t 4800000
+              
+              if (Test-Path $signedBinZip) {
+                Write-Host "Extracting and overwriting signed binaries..."
+                $tempDir = "temp_signed_binaries"
+                if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
+                Expand-Archive -Path $signedBinZip -DestinationPath $tempDir -Force
+                
+                # Copy back to overwrite
+                Copy-Item -Path "$tempDir\*" -Destination . -Recurse -Force
+                
+                # Cleanup
+                Remove-Item $tempDir -Recurse -Force
+                Remove-Item $binZip -Force
+                Remove-Item $signedBinZip -Force
+                Write-Host "Binaries signed successfully."
+              } else {
+                 Write-Host "::error::Signed binaries zip not found!"
+                 exit 1
+              }
+            } else {
+               Write-Host "::warning::No bin/ or Products/ directories found to sign."
+            }
+          }
+
       - name: Create packages
         if: ${{ success() && !cancelled() }}
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          & $env:ComSpec /c "call conanbuild.bat && cmake --build . --target package"
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "CPack failed with exit code $LASTEXITCODE"
-            exit $LASTEXITCODE
+          & $env:ComSpec /c "call conanbuild.bat && cmake --build . --target package --parallel ${{ matrix.max_jobs }}"
+
+      - name: Code sign installer
+        if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true')
+        working-directory: ${{ env.OPENSTUDIO_BUILD }}
+        run: |
+          # Check if signing client exists
+          $canSign = $true
+          if (-not (Test-Path "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js")) {
+            $canSign = $false
+          }
+
+          # Check if AWS signing credentials are configured
+          if ([string]::IsNullOrEmpty("${{ secrets.AWS_SIGNING_ACCESS_KEY }}")) {
+            $canSign = $false
+          }
+
+          if ($canSign) {
+            Write-Host "------------------------------------------------------------"
+            Write-Host "Signing Final Installer"
+            Write-Host "------------------------------------------------------------"
+            
+            $installerZip = "installer_to_sign.zip"
+            $signedInstallerZip = "installer_to_sign.signed.zip"
+            
+            $installers = Get-ChildItem -Filter "OpenStudio-*.exe"
+            if ($installers.Count -gt 0) {
+               Write-Host "Found installer(s): $($installers.Name)"
+               Compress-Archive -Path $installers.FullName -DestinationPath $installerZip -Force
+               
+               Write-Host "Sending installer for signing..."
+               node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $installerZip -t 4800000
+               
+               if (Test-Path $signedInstallerZip) {
+                  Write-Host "Extracting signed installer..."
+                  if (-not (Test-Path signed)) { New-Item -ItemType Directory -Path signed | Out-Null }
+                  Expand-Archive -Path $signedInstallerZip -DestinationPath signed -Force
+                  
+                  # Cleanup
+                  Remove-Item $installerZip -Force
+                  Remove-Item $signedInstallerZip -Force
+                  Write-Host "Installer signed successfully."
+               } else {
+                  Write-Host "::error::Signed installer zip not found!"
+                  exit 1
+               }
+            } else {
+               Write-Host "::warning::No OpenStudio installer found to sign."
+            }
           }
 
       - name: Cleanup intermediate files
@@ -1514,141 +1620,18 @@ jobs:
           echo "::error::CTest suite failed with exit code ${{ steps.ctest.outputs.exit_code }}"
           exit 1
 
-      # CODE SIGNING - AWS Signing Service
-      - name: Setup Node.js
-        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-
-      - name: Install Signing Client Dependencies
-        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
-        run: npm install
-        working-directory: ./.github/signing-client
-
-      - name: Create .env file for Signing
-        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true'
-        run: |
-          echo "ACCESS_KEY=${{ secrets.AWS_SIGNING_ACCESS_KEY }}" > .env
-          echo "SECRET_KEY=${{ secrets.AWS_SIGNING_SECRET_KEY }}" >> .env
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-
-      - name: Code sign installer
-        if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true')
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
-        run: |
-          # Check if signing client exists
-          $canSign = $true
-          if (-not (Test-Path "$env:GITHUB_WORKSPACE/.github/signing-client/code-signing.js")) {
-            Write-Host "::warning::Code signing client not found at .github/signing-client/code-signing.js"
-            Write-Host "::warning::Skipping code signing. Add signing client files to repository."
-            $canSign = $false
-          }
-
-          # Check if AWS signing credentials are configured
-          if ([string]::IsNullOrEmpty("${{ secrets.AWS_SIGNING_ACCESS_KEY }}")) {
-            Write-Host "::warning::AWS_SIGNING_ACCESS_KEY secret not configured"
-            Write-Host "::warning::Skipping code signing. Configure AWS signing secrets."
-            $canSign = $false
-          }
-
-          if ($canSign) {
-            Write-Host "------------------------------------------------------------"
-            Write-Host "Step 1: Signing Binaries"
-            Write-Host "------------------------------------------------------------"
-            
-            $pathsToSign = @()
-            if (Test-Path "bin") { $pathsToSign += "bin" }
-            if (Test-Path "Products") { $pathsToSign += "Products" }
-            
-            if ($pathsToSign.Count -gt 0) {
-              $binZip = "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/binaries_to_sign.zip"
-              $signedBinZip = "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/binaries_to_sign.signed.zip"
-              
-              Write-Host "Archiving binaries from: $pathsToSign"
-              Compress-Archive -Path $pathsToSign -DestinationPath $binZip -Force
-              
-              Write-Host "Sending binaries for signing..."
-              node "$env:GITHUB_WORKSPACE/.github/signing-client/code-signing.js" $binZip -t 4800000
-              
-              if (Test-Path $signedBinZip) {
-                Write-Host "Extracting and overwriting signed binaries..."
-                $tempDir = "temp_signed_binaries"
-                if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
-                Expand-Archive -Path $signedBinZip -DestinationPath $tempDir -Force
-                
-                # Copy back to overwrite
-                Copy-Item -Path "$tempDir\*" -Destination . -Recurse -Force
-                
-                # Cleanup
-                Remove-Item $tempDir -Recurse -Force
-                Remove-Item $binZip -Force
-                Remove-Item $signedBinZip -Force
-              } else {
-                 Write-Host "::error::Signed binaries zip not found!"
-                 exit 1
-              }
-            } else {
-               Write-Host "::warning::No bin/ or Products/ directories found to sign."
-            }
-          }
-
-
-
-          if ($canSign) {
-            Write-Host "------------------------------------------------------------"
-            Write-Host "Step 3: Signing Installer"
-            Write-Host "------------------------------------------------------------"
-            
-            $installerZip = "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/installer_to_sign.zip"
-            $signedInstallerZip = "$env:GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}/installer_to_sign.signed.zip"
-            
-            $installers = Get-ChildItem -Filter "OpenStudio-*.exe"
-            if ($installers.Count -gt 0) {
-               Write-Host "Found installer(s): $($installers.Name)"
-               Compress-Archive -Path $installers.FullName -DestinationPath $installerZip -Force
-               
-               Write-Host "Sending installer for signing..."
-               node "$env:GITHUB_WORKSPACE/.github/signing-client/code-signing.js" $installerZip -t 4800000
-               
-               if (Test-Path $signedInstallerZip) {
-                  Write-Host "Extracting signed installer..."
-                  if (-not (Test-Path signed)) { New-Item -ItemType Directory -Path signed | Out-Null }
-                  Expand-Archive -Path $signedInstallerZip -DestinationPath signed -Force
-                  
-                  # Cleanup
-                  Remove-Item $installerZip -Force
-                  Remove-Item $signedInstallerZip -Force
-               } else {
-                  Write-Host "::error::Signed installer zip not found!"
-                  exit 1
-               }
-            } else {
-               Write-Host "::warning::No OpenStudio installer found to sign."
-            }
-            
-            Write-Host "Code signing completed successfully"
-          }
-
-      - name: Upload EXE installer
+      - name: Upload Signed EXE installer
         uses: actions/upload-artifact@v4
         with:
           name: OS-Installers-${{ matrix.platform }}-EXE-${{ github.sha }}
-          path: ${{ env.OPENSTUDIO_BUILD }}/*.exe
+          path: ${{ env.OPENSTUDIO_BUILD }}/signed/OpenStudio*.exe
           if-no-files-found: ignore
 
-      - name: Upload TGZ installer
+      - name: Upload Signed TGZ installer
         uses: actions/upload-artifact@v4
         with:
           name: OS-Installers-${{ matrix.platform }}-TGZ-${{ github.sha }}
-          path: ${{ env.OPENSTUDIO_BUILD }}/OpenStudio-*.tar.gz
-          if-no-files-found: ignore
-
-      - name: Upload Signed installers
-        uses: actions/upload-artifact@v4
-        with:
-          name: OS-Installers-${{ matrix.platform }}-SIGNED-${{ github.sha }}
-          path: ${{ env.OPENSTUDIO_BUILD }}/signed/
+          path: ${{ env.OPENSTUDIO_BUILD }}/_CPack_Packages/win64/TGZ/*.tar.gz
           if-no-files-found: ignore
 
   windows-publish:
