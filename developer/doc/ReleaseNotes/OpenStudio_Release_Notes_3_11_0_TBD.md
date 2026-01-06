@@ -2,7 +2,7 @@
 
 _Release Notes_ -  _TBD_
 
-These release notes describe version 3.11.0 of the OpenStudio SDK developed by the National Laboratory of the Rockies (NLR), Buildings and Thermal Sciences Center, Commercial Buildings Research Group, Tools Development Section, and associated collaborators. The notes are organized into the following sections:
+These release notes describe version 3.11.0 of the OpenStudio SDK developed by the National Laboratory of the Rockies (NLR), Building Technologies and Sciences Center, Building Performance Modeling Group, and associated collaborators. The notes are organized into the following sections:
 
 -  Overview
 -  Where to Find OpenStudio Documentation
@@ -11,7 +11,7 @@ These release notes describe version 3.11.0 of the OpenStudio SDK developed by t
 
 # Overview
 
-As of April 2020, development and distribution of the OpenStudioApplication and the SketchUp plugin have transitioned to the OpenStudio Coalition, who is independently managing and distributing the software through its own [openstudiocoalition/OpenStudioApplication](https://github.com/openstudiocoalition/OpenStudioApplication) repository. The OpenStudio SDK is continuing to be actively developed and distributed by NREL and is released two times per year, through a spring and a fall release.
+As of April 2020, development and distribution of the OpenStudioApplication and the SketchUp plugin have transitioned to the OpenStudio Coalition, who is independently managing and distributing the software through its own [openstudiocoalition/OpenStudioApplication](https://github.com/openstudiocoalition/OpenStudioApplication) repository. The OpenStudio SDK is continuing to be actively developed and distributed by NLR and is released two times per year, through a spring and a fall release.
 
 Below is the list of components that is included in this SDK installer:
 
@@ -73,7 +73,6 @@ Please see [openstudio on PyPi](https://pypi.org/project/openstudio/) for furthe
 You can also refer to the [OpenStudio SDK Python Binding Version Compatibility Matrix](https://github.com/NREL/OpenStudio/wiki/OpenStudio-SDK-Python-Binding-Version-Compatibility-Matrix) to see the list of supported platforms and python versions.
 
 ## New Features, Major Fixes and API-breaking changes
-
 * [#5481](https://github.com/NREL/OpenStudio/pull/5481) - ExternalInterface's optional Initial Value field
     * Field `Initial Value` is made optional for `ExternalInterface:FunctionalMockupUnitExport:To:Schedule` and `ExternalInterface:FunctionalMockupUnitExport:To:Actuator`
     * API-breaking change for `ExternalInterface:FunctionalMockupUnitExport:To:Schedule` and `ExternalInterface:FunctionalMockupUnitExport:To:Actuator`:
@@ -100,9 +99,17 @@ You can also refer to the [OpenStudio SDK Python Binding Version Compatibility M
         * `designEnteringAirTemperature` and `designEnteringAirWetbulbTemperature` (`boost::optional<double>` to `double`)
         * `resetDesignEnteringWaterTemperature`, `resetDesignEnteringAirTemperature`, and `resetDesignEnteringAirWetbulbTemperature` are removed
 
+* [#5557](https://github.com/NREL/OpenStudio/pull/5557)  - Introduce first-class Modelica workflow and Measure support
+    * add a full Modelica parsing stack (ModelicaFile ownership/AST management, ANTLR grammar artifacts, SWIG interface, and CLI driver) so measures can inspect and edit Modelica source safely
+    * expose ModelicaMeasure/ModelicaParameters, extend OSRunner + WorkflowJSON to pass parameters and surface the last simulation result, and wire everything through OSWorkflow with runModelica/runModelicaMeasures steps
+    * ship a compact Modelica example workflow, measure, Modelica libraries, and README to demonstrate running the CLI end-to-end, while tightening logging, bindings, and CMake integration to make the feature production-ready
+    * Examples
+        *  [The example workflow input file is available on GitHub here and is bundled with the end-user distribution](https://github.com/NREL/OpenStudio/blob/b6529778a4d29210d3933fb398d77ac255c5da49/resources/Examples/compact_osw/compact_modelica.osw)
+        *  [The example workflow includes the new Modelica Measure, located on GitHub here](https://github.com/NREL/OpenStudio/blob/b6529778a4d29210d3933fb398d77ac255c5da49/resources/Examples/compact_osw/measures/SetModelicaZones/measure.rb#L8)
+        *  [We are shipping a README to help users get up to speed and begin exploring this new capability](https://github.com/NREL/OpenStudio/blob/b6529778a4d29210d3933fb398d77ac255c5da49/resources/Examples/compact_osw/MODELICA_README.md) 
+   
+
 ## Minor changes and bug fixes
-
-
 
 Refer to the changelog on the release page at [v3.11.0](https://github.com/NREL/OpenStudio/releases/v3.11.0)
 
@@ -110,10 +117,15 @@ Refer to the changelog on the release page at [v3.11.0](https://github.com/NREL/
 
 **New Contributors**:
 
-### OpenStudio Standards v0.8.2
+### OpenStudio Standards v0.8.5
 
-Update the openstudio-standards gem to version [0.8.2](https://github.com/NREL/openstudio-standards/releases/tag/v0.8.2)
-In addition to some refactoring, this release also included conversion of 90.1 data to formal database.
+Update the openstudio-standards gem to version [0.8.5](https://github.com/NREL/openstudio-standards/releases/tag/v0.8.5)
+* This release refactors more methods into modules
+* Add support for adding typical interior lighting in an interior lighting module
+* HVAC component refactor that moves component level methods into the HVAC module
+* Prototype space type mapping to translate old prototype building/space types into new openstudio-standards space types and setting additional properties
+* Several minor bug fixes.
+* NECB code update.
 
 ---
 # This YAML header controls the pandoc (via TeX) to PDF settings
