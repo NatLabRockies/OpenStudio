@@ -283,7 +283,11 @@ jobs:
 
       - name: Install CA Certificates
         if: startsWith(matrix.platform, 'ubuntu')
-        run: apt-get update && apt-get install -y ca-certificates
+        run: |
+          apt-get update || true
+          apt-get install -y ca-certificates gnupg wget
+          wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
+          apt-get update
 
       - name: Conan install
         run: |
@@ -616,9 +620,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        macos_dev_target: [12.1, 13.0]
+        macos_dev_target: ["12.1", "13.0"]
         include:
-          - macos_dev_target: 12.1
+          - macos_dev_target: "12.1"
             platform: macos-x64
             pretty: "macOS x64"
             os: macos-15-intel
@@ -630,7 +634,7 @@ jobs:
             tar_glob: "*OpenStudio*x86_64.tar.gz"
             exclude_regex: ${{ '""' }}
             max_jobs: 2
-          - macos_dev_target: 13.0
+          - macos_dev_target: "13.0"
             platform: macos-arm64
             pretty: "macOS ARM64"
             os: macos-15
