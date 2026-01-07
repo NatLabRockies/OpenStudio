@@ -771,13 +771,11 @@ jobs:
       working-directory: ${{ env.OPENSTUDIO_SOURCE }}
       run: |
         set -euo pipefail
-        # Do not set tools.build:cxxflags here as it forces all dependencies to build from source
-        # instead of using pre-built binaries from Conan Center.
-        # The flags will be passed to OpenStudio build via CMake configuration.
         CMAKE_POLICY_VERSION_MINIMUM=3.5 conan install . \
           --output-folder=../${{ env.OPENSTUDIO_BUILD }} \
           --build=missing \
           -c tools.cmake.cmaketoolchain:generator=Ninja \
+          -c tools.build:cxxflags='["-Wno-enum-constexpr-conversion", "-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION"]' \
           -s compiler.cppstd=20 \
           -s build_type=${{ env.BUILD_TYPE }} \
           -s os.version=${{ matrix.macos_dev_target }} \
