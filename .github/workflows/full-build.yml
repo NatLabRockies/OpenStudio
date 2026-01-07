@@ -773,7 +773,7 @@ jobs:
           --output-folder=../${{ env.OPENSTUDIO_BUILD }} \
           --build=missing \
           -c tools.cmake.cmaketoolchain:generator=Ninja \
-          -c tools.build:cxxflags='["-Wno-enum-constexpr-conversion"]' \
+          -c tools.build:cxxflags='["-Wno-enum-constexpr-conversion", "-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION"]' \
           -s compiler.cppstd=20 \
           -s build_type=${{ env.BUILD_TYPE }} \
           -s os.version=${{ matrix.macos_dev_target }} \
@@ -823,6 +823,7 @@ jobs:
           "${CCACHE_ARGS[@]}" \
           "${SIGNING_ARGS[@]}" \
           -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
+          -DCMAKE_CXX_FLAGS="-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION" \
           -DENABLE_COVERAGE:BOOL=OFF \
           -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=${{ matrix.macos_dev_target }} \
           -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} \
