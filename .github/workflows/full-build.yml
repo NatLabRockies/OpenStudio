@@ -542,7 +542,7 @@ jobs:
         if: inputs.skip_docker_trigger != 'true' && github.event.inputs.skip_docker_trigger != 'true'
         working-directory: installers
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.DOCKER_OPENSTUDIO_PAT }}
           BRANCH_NAME: ${{ github.ref_name }}
           S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}', github.ref_name) || format('{0}', github.ref_name) }}
         run: |
