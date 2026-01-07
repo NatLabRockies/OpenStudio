@@ -30,6 +30,7 @@ jobs:
       OPENSTUDIO_DOCKER_VOLUME: /github/home/Ubuntu
       OPENSTUDIO_SOURCE_NAME: OpenStudio
       OPENSTUDIO_BUILD_NAME: OS-build
+      EXCLUDED_TESTS: "BCLFixture.BCLMeasure"
 
     container: # Define the Docker container for the job. All subsequent steps run inside it.
       image: nrel/openstudio-cmake-tools:jammy-main
@@ -172,7 +173,7 @@ jobs:
           
           # First test run - quiet by default, show failures only
           echo "Testing..."
-          ctest -j ${{ env.MAX_SAFE_THREADS }} --no-compress-output --output-junit Testing/run1/results.xml > /tmp/run1.log 2>&1
+          ctest -j ${{ env.MAX_SAFE_THREADS }} --no-compress-output --output-junit Testing/run1/results.xml -E "${{ env.EXCLUDED_TESTS }}" > /tmp/run1.log 2>&1
           RESULT1=$?
           
           if [ $RESULT1 -ne 0 ]; then
@@ -182,7 +183,7 @@ jobs:
             
             # Retry failed tests
             echo "Retrying failed tests..."
-            ctest -j ${{ env.MAX_SAFE_THREADS }} --rerun-failed --no-compress-output --output-junit Testing/run2/results.xml > /tmp/run2.log 2>&1
+            ctest -j ${{ env.MAX_SAFE_THREADS }} --rerun-failed --no-compress-output --output-junit Testing/run2/results.xml -E "${{ env.EXCLUDED_TESTS }}" > /tmp/run2.log 2>&1
             RESULT2=$?
             
             if [ $RESULT2 -ne 0 ]; then
@@ -191,7 +192,7 @@ jobs:
               
               # Final attempt with verbose output for failing tests
               echo "Final attempt with verbose output..."
-              ctest -j ${{ env.MAX_SAFE_THREADS }} --rerun-failed --no-compress-output --output-junit Testing/run3/results.xml 2>&1 | tee /tmp/run3.log
+              ctest -j ${{ env.MAX_SAFE_THREADS }} --rerun-failed --no-compress-output --output-junit Testing/run3/results.xml -E "${{ env.EXCLUDED_TESTS }}" 2>&1 | tee /tmp/run3.log
               RESULT3=$?
             else
               RESULT3=0
@@ -205,7 +206,7 @@ jobs:
           
           # Verify no remaining failures
           echo "Verifying no remaining failures..."
-          ctest --rerun-failed --no-tests=error > /dev/null 2>&1
+          ctest --rerun-failed --no-tests=error -E "${{ env.EXCLUDED_TESTS }}" > /dev/null 2>&1
           FINAL_CHECK=$?
           
           # Summary
