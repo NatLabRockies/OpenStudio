@@ -93,7 +93,7 @@ jobs:
               *.rpm
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "RPM;TGZ"
-            max_jobs: 2
+            max_jobs: 4
             exclude_regex: "^(BCLFixture.RemoteBCLMetaSearchTest|BCLFixture.BCLMeasure)$"
           - platform: ubuntu-2204-x64
             pretty: Ubuntu 22.04 x64
@@ -107,7 +107,7 @@ jobs:
               *.deb
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "DEB;TGZ"
-            max_jobs: 2
+            max_jobs: 4
             exclude_regex: "^(ModelFixture.PythonPluginInstance_NotPYFile|BCLFixture.BCLMeasure)$"
           - platform: ubuntu-2404-x64
             pretty: Ubuntu 24.04 x64
@@ -121,7 +121,7 @@ jobs:
               *.deb
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "DEB;TGZ"
-            max_jobs: 2
+            max_jobs: 4
             exclude_regex: "^BCLFixture.BCLMeasure$"
           - platform: ubuntu-2204-arm64
             pretty: Ubuntu 22.04 ARM64
@@ -135,7 +135,7 @@ jobs:
               *.deb
               *OpenStudio*arm64.tar.gz
             cpack_generators: "DEB;TGZ"
-            max_jobs: 2
+            max_jobs: 4
             exclude_regex: "^(GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager|BCLFixture.BCLMeasure)$"
           - platform: ubuntu-2404-arm64
             pretty: Ubuntu 24.04 ARM64
@@ -149,7 +149,7 @@ jobs:
               *.deb
               *OpenStudio*arm64.tar.gz
             cpack_generators: "DEB;TGZ"
-            max_jobs: 2
+            max_jobs: 4
             exclude_regex: "^(GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager|BCLFixture.BCLMeasure)$"
     defaults:
       run:
@@ -332,6 +332,7 @@ jobs:
             -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} \
             -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
             -DCMAKE_INSTALL_RPATH='$ORIGIN;$ORIGIN/../lib' \
+            -DCMAKE_JOB_POOL_LINK:STRING=console \
             "$GITHUB_WORKSPACE"
 
       - name: Build with Ninja
@@ -456,7 +457,7 @@ jobs:
         run: |
           set -euo pipefail
           . ./conanbuild.sh
-          cmake --build . --target package
+          cpack -C ${{ env.BUILD_TYPE }}
 
       - name: Cleanup intermediate files
         if: always()
@@ -634,7 +635,7 @@ jobs:
             dmg_glob: "*.dmg"
             tar_glob: "*OpenStudio*x86_64.tar.gz"
             exclude_regex: "^BCLFixture.BCLMeasure$"
-            max_jobs: 2
+            max_jobs: 3
           - macos_dev_target: "13.0"
             platform: macos-arm64
             pretty: "macOS ARM64"
@@ -646,7 +647,7 @@ jobs:
             dmg_glob: "*.dmg"
             tar_glob: "*OpenStudio*arm64.tar.gz"
             exclude_regex: "^(GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|BCLFixture.BCLMeasure)$"
-            max_jobs: 2
+            max_jobs: 3
     env:
       MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
       CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
@@ -770,11 +771,13 @@ jobs:
       working-directory: ${{ env.OPENSTUDIO_SOURCE }}
       run: |
         set -euo pipefail
+        # Do not set tools.build:cxxflags here as it forces all dependencies to build from source
+        # instead of using pre-built binaries from Conan Center.
+        # The flags will be passed to OpenStudio build via CMake configuration.
         CMAKE_POLICY_VERSION_MINIMUM=3.5 conan install . \
           --output-folder=../${{ env.OPENSTUDIO_BUILD }} \
           --build=missing \
           -c tools.cmake.cmaketoolchain:generator=Ninja \
-          -c tools.build:cxxflags='["-Wno-enum-constexpr-conversion", "-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION"]' \
           -s compiler.cppstd=20 \
           -s build_type=${{ env.BUILD_TYPE }} \
           -s os.version=${{ matrix.macos_dev_target }} \
@@ -824,7 +827,7 @@ jobs:
           "${CCACHE_ARGS[@]}" \
           "${SIGNING_ARGS[@]}" \
           -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
-          -DCMAKE_CXX_FLAGS="-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION" \
+          -DCMAKE_CXX_FLAGS="-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION -Wno-enum-constexpr-conversion" \
           -DENABLE_COVERAGE:BOOL=OFF \
           -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=${{ matrix.macos_dev_target }} \
           -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} \
@@ -836,6 +839,7 @@ jobs:
           -DCMAKE_INSTALL_RPATH="@loader_path;@executable_path;@loader_path/../lib" \
           -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} \
           -DPython_ROOT_DIR:PATH="$(dirname $(dirname $SYSTEM_PYTHON_PATH))" \
+          -DCMAKE_JOB_POOL_LINK:STRING=console \
           ../${{ env.OPENSTUDIO_SOURCE }}
 
     - name: Build with Ninja
@@ -946,7 +950,7 @@ jobs:
       run: |
         set -euo pipefail
         . ./conanbuild.sh
-        ninja -j ${{ matrix.max_jobs }} package
+        cpack -C ${{ env.BUILD_TYPE }}
 
     - name: Cleanup intermediate files
       if: always()
@@ -1178,7 +1182,7 @@ jobs:
             arch: x86_64
             python-arch: x64
             allow_failure: false
-            max_jobs: 3
+            max_jobs: 4
             exclude_regex: "^(RubyTest-Date_Test-ymd_constructor|BCLFixture.BCLMeasure)$"
     defaults:
       run:
@@ -1358,7 +1362,7 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
           $sccacheExe = (Get-Command sccache).Source
-          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"NSIS;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" `"../${{ env.OPENSTUDIO_SOURCE }}"`"
+          & $env:ComSpec /c "call conanbuild.bat && cmake -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_CXX_COMPILER_LAUNCHER=`"$sccacheExe`" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} -DBUILD_TESTING:BOOL=ON -DCPACK_GENERATOR:STRING=`"NSIS;TGZ`" -DBUILD_PYTHON_BINDINGS:BOOL=ON -DBUILD_PYTHON_PIP_PACKAGE:BOOL=OFF -DPython_EXECUTABLE:FILEPATH=`"$env:SYSTEM_PYTHON_PATH`" -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} -DSYSTEM_RUBY_EXECUTABLE=`"%SYSTEM_RUBY_PATH%`" -DCMAKE_JOB_POOL_LINK:STRING=console `"../${{ env.OPENSTUDIO_SOURCE }}"`"
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -1565,7 +1569,7 @@ jobs:
         if: ${{ success() && !cancelled() }}
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          & $env:ComSpec /c "call conanbuild.bat && cmake --build . --target package --parallel ${{ matrix.max_jobs }}"
+          & $env:ComSpec /c "call conanbuild.bat && cpack -C ${{ env.BUILD_TYPE }}"
 
       - name: Code sign installer
         if: success() && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v') || inputs.publish_to_s3 == 'true' || github.event.inputs.publish_to_s3 == 'true')
