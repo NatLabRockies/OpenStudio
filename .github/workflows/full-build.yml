@@ -659,6 +659,7 @@ jobs:
     env:
       MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
       CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
+      CMAKE_CXX_FLAGS: "-Wno-enum-constexpr-conversion"
 
     permissions:
       # Needed permission to upload the release asset
@@ -1541,7 +1542,7 @@ jobs:
           }
 
           # Check if AWS signing credentials are configured
-          if ([string]::IsNullOrEmpty("${{ secrets.AWS_SIGNING_ACCESS_KEY }}")) {
+                   if ([string]::IsNullOrEmpty("${{ secrets.AWS_SIGNING_ACCESS_KEY }}")) {
             Write-Host "::warning::AWS_SIGNING_ACCESS_KEY secret not configured"
             Write-Host "::warning::Skipping code signing. Configure AWS signing secrets."
             $canSign = $false
