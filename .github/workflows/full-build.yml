@@ -107,7 +107,7 @@ jobs:
               *.deb
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "DEB;TGZ"
-            max_jobs: 4
+            max_jobs: 3
             exclude_regex: "^(ModelFixture.PythonPluginInstance_NotPYFile|BCLFixture.BCLMeasure)$"
           - platform: ubuntu-2404-x64
             pretty: Ubuntu 24.04 x64
@@ -135,7 +135,7 @@ jobs:
               *.deb
               *OpenStudio*arm64.tar.gz
             cpack_generators: "DEB;TGZ"
-            max_jobs: 4
+            max_jobs: 3
             exclude_regex: "^(GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager|BCLFixture.BCLMeasure)$"
           - platform: ubuntu-2404-arm64
             pretty: Ubuntu 24.04 ARM64
@@ -163,8 +163,16 @@ jobs:
       contents: write
       
     steps:
-      - name: Verify space
+      - name: Enable Swap and Verify space
         run: |
+          echo "Enabling Swap..."
+          # Create and enable 8GB swap file to prevent OOM kills
+          dd if=/dev/zero of=/mnt/swapfile_extra bs=1M count=8192 status=progress
+          chmod 600 /mnt/swapfile_extra
+          mkswap /mnt/swapfile_extra
+          swapon /mnt/swapfile_extra
+          
+          echo
           echo "Memory and swap:"
           # Check if free exists before running it, or ignore failure
           if command -v free >/dev/null 2>&1; then
@@ -662,6 +670,20 @@ jobs:
       with:
         path: ${{ env.OPENSTUDIO_SOURCE }}
         fetch-depth: 1
+
+    - name: Verify space
+      shell: bash
+      run: |
+        echo "Memory and swap:"
+        if command -v vm_stat >/dev/null 2>&1; then
+          vm_stat
+        fi
+        echo
+        sysctl vm.swapusage || true
+        echo
+        echo "Available storage:"
+        df -h . || true
+        echo
 
     - name: Git safe directory
       working-directory: ${{ env.OPENSTUDIO_SOURCE }}
@@ -1199,6 +1221,11 @@ jobs:
         with:
           path: ${{ env.OPENSTUDIO_SOURCE }}
           fetch-depth: 1
+          
+      - name: Verify space
+        run: |
+          Get-PSDrive C | Select-Object Used,Free
+          Get-CimInstance Win32_OperatingSystem | Select-Object TotalVisibleMemorySize,FreePhysicalMemory,TotalVirtualMemorySize,FreeVirtualMemory
           
       - name: Git safe directory
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
