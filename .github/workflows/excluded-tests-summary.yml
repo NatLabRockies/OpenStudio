@@ -277,6 +277,9 @@ jobs:
           exit_code=${PIPESTATUS[0]}
           echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
 
+          
+          # Always exit with success to allow test results to be captured and aggregated
+          exit 0
       - name: Upload Test Summary
         if: always() && steps.ctest.outputs.has_tests == 'true'
         uses: actions/upload-artifact@v4
@@ -467,6 +470,9 @@ jobs:
           
           exit_code=${PIPESTATUS[0]}
           echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+          
+          # Always exit with success to allow test results to be captured and aggregated
+          exit 0
 
       - name: Upload Test Summary
         if: always() && steps.ctest.outputs.has_tests == 'true'
@@ -650,6 +656,9 @@ jobs:
           
           $exit_code = $LASTEXITCODE
           "exit_code=$exit_code" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          
+          # Always exit with success to allow test results to be captured and aggregated
+          exit 0
 
       - name: Upload Test Summary
         if: always() && steps.ctest.outputs.has_tests == 'true'
