@@ -662,3 +662,194 @@ jobs:
           path: |
             ${{ env.OPENSTUDIO_BUILD }}/excluded_tests.log
             ${{ env.OPENSTUDIO_BUILD }}/Testing/
+
+  aggregate-summary:
+    name: Aggregate Excluded Tests Summary
+    runs-on: ubuntu-latest
+    needs: [linux-excluded-tests, macos-excluded-tests, windows-excluded-tests]
+    if: always()
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Generate Aggregated Summary Report
+        shell: python
+        run: |
+          import os
+          import re
+          import json
+          from pathlib import Path
+          from datetime import datetime
+
+          artifacts_dir = Path("artifacts")
+          summary_by_platform = {}
+
+          # Parse all test logs
+          for artifact_dir in artifacts_dir.iterdir():
+              if not artifact_dir.is_dir():
+                  continue
+              
+              # Extract platform from artifact name (ExcludedTests-{platform}-{sha})
+              artifact_name = artifact_dir.name
+              if not artifact_name.startswith("ExcludedTests-"):
+                  continue
+              
+              parts = artifact_name.rsplit("-", 1)
+              if len(parts) != 2:
+                  continue
+              platform = parts[0].replace("ExcludedTests-", "")
+              
+              # Read test log
+              log_file = artifact_dir / "excluded_tests.log"
+              if not log_file.exists():
+                  continue
+              
+              try:
+                  with open(log_file, 'r', errors='ignore') as f:
+                      log_content = f.read()
+              except Exception as e:
+                  print(f"Error reading {log_file}: {e}")
+                  continue
+              
+              # Extract test results and errors
+              tests = {}
+              
+              # Parse ctest output format
+              # Look for both ctest format: "Test  #1: TestName ... ***Passed***" or "***Failed***"
+              # And also capture output-on-failure details
+              lines = log_content.split('\n')
+              
+              for i, line in enumerate(lines):
+                  # Match ctest result line format
+                  status_match = re.search(r'Test\s+#\d+:\s+(\S+)\s+(?:.*?)(\*+(?:Passed|Failed)\*+)', line)
+                  if status_match:
+                      test_name = status_match.group(1)
+                      status = status_match.group(2)
+                      is_failed = 'Failed' in status
+                      tests[test_name] = {
+                          'status': 'FAILED' if is_failed else 'PASSED',
+                          'errors': []
+                      }
+                      
+                      # Capture error context from following lines if failed
+                      if is_failed:
+                          error_context = []
+                          for j in range(i + 1, min(i + 30, len(lines))):
+                              next_line = lines[j]
+                              if re.search(r'Test\s+#\d+:', next_line):
+                                  break
+                              if next_line.strip():
+                                  error_context.append(next_line.strip())
+                          tests[test_name]['errors'] = error_context[:5]
+              
+              # If no tests found in ctest format, try parsing XML logs
+              if not tests:
+                  testing_dir = artifact_dir / "Testing"
+                  if testing_dir.exists():
+                      for xml_file in sorted(testing_dir.glob("*/Test.xml")):
+                          try:
+                              with open(xml_file, 'r', errors='ignore') as f:
+                                  xml_content = f.read()
+                              
+                              # Extract test names and their status from XML
+                              test_matches = re.findall(
+                                  r'<Test Status="(passed|failed)">.*?<Name>(.*?)</Name>',
+                                  xml_content, re.DOTALL
+                              )
+                              
+                              for status, test_name in test_matches:
+                                  tests[test_name] = {
+                                      'status': 'PASSED' if status == 'passed' else 'FAILED',
+                                      'errors': []
+                                  }
+                              
+                              # Extract failure messages
+                              failure_matches = re.findall(
+                                  r'<Test Status="failed">.*?<Name>(.*?)</Name>.*?<Description>(.*?)</Description>',
+                                  xml_content, re.DOTALL
+                              )
+                              
+                              for test_name, description in failure_matches:
+                                  if test_name in tests:
+                                      desc_lines = [l.strip() for l in description.split('\n') if l.strip()]
+                                      tests[test_name]['errors'] = desc_lines[:3]
+                          except Exception as e:
+                              print(f"Warning: Error parsing {xml_file}: {e}")
+              
+              if tests:
+                  summary_by_platform[platform] = tests
+
+          # Generate report
+          report = []
+          report.append("# Excluded Tests Summary Report")
+          report.append(f"\nGenerated: {datetime.now().isoformat()}\n")
+          report.append("## Overview\n")
+          report.append(f"Total platforms tested: {len(summary_by_platform)}")
+          
+          total_tests = sum(len(tests) for tests in summary_by_platform.values())
+          report.append(f"Total excluded tests run: {total_tests}\n")
+          
+          if total_tests > 0:
+              report.append("## Results by Platform\n")
+              
+              for platform in sorted(summary_by_platform.keys()):
+                  tests = summary_by_platform[platform]
+                  failed_count = sum(1 for t in tests.values() if t['status'] == 'FAILED')
+                  passed_count = sum(1 for t in tests.values() if t['status'] == 'PASSED')
+                  
+                  report.append(f"### {platform}")
+                  report.append(f"- Tests Run: {len(tests)}")
+                  report.append(f"- Passed: {passed_count}")
+                  report.append(f"- Failed: {failed_count}\n")
+                  
+                  # List all tests first
+                  report.append("#### All Tests:\n")
+                  for test_name in sorted(tests.keys()):
+                      test_info = tests[test_name]
+                      status_badge = "✓ PASSED" if test_info['status'] == 'PASSED' else "✗ FAILED"
+                      report.append(f"- {status_badge}: `{test_name}`")
+                  report.append("")
+                  
+                  # Then detail failures
+                  if failed_count > 0:
+                      report.append("#### Failure Details:\n")
+                      for test_name in sorted(tests.keys()):
+                          test_info = tests[test_name]
+                          if test_info['status'] == 'FAILED':
+                              report.append(f"**{test_name}**")
+                              if test_info['errors']:
+                                  report.append("```")
+                                  for error in test_info['errors'][:3]:
+                                      report.append(error[:200])  # Limit error line length
+                                  report.append("```")
+                              else:
+                                  report.append("_No error details captured_")
+                              report.append("")
+          else:
+              report.append("No test results found in artifacts.")
+          
+          # Write report
+          report_content = '\n'.join(report)
+          with open("EXCLUDED_TESTS_SUMMARY.md", 'w') as f:
+              f.write(report_content)
+          
+          print(report_content)
+
+      - name: Upload Summary Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ExcludedTestsSummary-${{ github.sha }}
+          path: EXCLUDED_TESTS_SUMMARY.md
+
+      - name: Comment on Workflow
+        if: always()
+        run: |
+          echo "## Excluded Tests Summary"
+          if [ -f EXCLUDED_TESTS_SUMMARY.md ]; then
+            cat EXCLUDED_TESTS_SUMMARY.md
+          fi
