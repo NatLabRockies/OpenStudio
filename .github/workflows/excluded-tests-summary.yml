@@ -694,6 +694,10 @@ jobs:
           artifacts_dir = Path("artifacts")
           summary_by_platform = {}
 
+          # Check if artifacts directory exists, if not create it
+          if not artifacts_dir.exists():
+              os.makedirs(artifacts_dir)
+
           # Parse all test logs
           for artifact_dir in artifacts_dir.iterdir():
               if not artifact_dir.is_dir():
