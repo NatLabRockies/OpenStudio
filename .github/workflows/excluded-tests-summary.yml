@@ -202,23 +202,19 @@ jobs:
           conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2
           if [ ! -f "$HOME/.conan2/profiles/default" ]; then conan profile detect; fi
 
-      - name: Install dirmngr for GPG key import
-        if: startsWith(matrix.platform, 'ubuntu')
-        run: apt-get update && apt-get install -y dirmngr gnupg
-
-      - name: Add Kitware APT key
+      - name: Import Kitware GPG key
         if: startsWith(matrix.platform, 'ubuntu')
         run: |
-          apt-get update
-          apt-get install -y wget gnupg
-          wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | \
-            gpg --dearmor | tee /usr/share/keyrings/kitware-archive-keyring.gpg > /dev/null
-          echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ noble main" | \
-            tee /etc/apt/sources.list.d/kitware.list
+           wget -O /usr/share/keyrings/kitware-archive-keyring.gpg https://apt.kitware.com/keys/kitware-archive-latest.asc
 
-      - name: Install CA Certificates
+      - name: Add Kitware APT repository
         if: startsWith(matrix.platform, 'ubuntu')
-        run: apt-get update && apt-get install -y ca-certificates
+        run: |
+          echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ noble main" |  tee /etc/apt/sources.list.d/kitware.list
+
+      - name: Update apt and install dependencies
+        if: startsWith(matrix.platform, 'ubuntu')
+        run:  apt-get update &&  apt-get install -y ca-certificates dirmngr gnupg wget
 
       - name: Conan install
         run: |
