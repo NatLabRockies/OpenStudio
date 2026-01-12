@@ -202,6 +202,10 @@ jobs:
           conan remote add nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2
           if [ ! -f "$HOME/.conan2/profiles/default" ]; then conan profile detect; fi
 
+      - name: Install Kitware GPG Key
+        if: startsWith(matrix.platform, 'ubuntu')
+        run: sudo apt-key adv --fetch-keys https://apt.kitware.com/keys/kitware-archive-latest.asc || true
+
       - name: Install CA Certificates
         if: startsWith(matrix.platform, 'ubuntu')
         run: apt-get update && apt-get install -y ca-certificates
