@@ -204,7 +204,7 @@ jobs:
 
       - name: Install Kitware GPG Key
         if: startsWith(matrix.platform, 'ubuntu')
-        run: sudo apt-key adv --fetch-keys https://apt.kitware.com/keys/kitware-archive-latest.asc || true
+        run: apt-key adv --fetch-keys https://apt.kitware.com/keys/kitware-archive-latest.asc || true
 
       - name: Install CA Certificates
         if: startsWith(matrix.platform, 'ubuntu')
