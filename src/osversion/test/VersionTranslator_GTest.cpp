@@ -5059,7 +5059,7 @@ TEST_F(OSVersionFixture, update_3_11_0_to_3_11_1_ZoneHVACRadiantConvective) {
   ASSERT_EQ(1u, brcws.size());
   const auto& brcw = brcws.front();
 
-  EXPECT_EQ(0.32, brcw.getDouble(5).get());   // Fraction of Radiant Energy Incident on People
+  EXPECT_EQ(0.32, brcw.getDouble(5).get());  // Fraction of Radiant Energy Incident on People
   EXPECT_EQ(0.05, brcw.getDouble(6).get());  // Fraction of Radiant Energy to Floor Surfaces
   EXPECT_EQ(0.55, brcw.getDouble(7).get());  // Fraction of Radiant Energy to Wall Surfaces
   EXPECT_EQ(0.40, brcw.getDouble(8).get());  // Fraction of Radiant Energy to Ceiling Surfaces
@@ -5068,7 +5068,7 @@ TEST_F(OSVersionFixture, update_3_11_0_to_3_11_1_ZoneHVACRadiantConvective) {
   ASSERT_EQ(1u, cprcws.size());
   const auto& cprcw = cprcws.front();
 
-  EXPECT_EQ(0.33, cprcw.getDouble(5).get());   // Fraction of Radiant Energy Incident on People
+  EXPECT_EQ(0.33, cprcw.getDouble(5).get());  // Fraction of Radiant Energy Incident on People
   EXPECT_EQ(0.05, cprcw.getDouble(6).get());  // Fraction of Radiant Energy to Floor Surfaces
   EXPECT_EQ(0.55, cprcw.getDouble(7).get());  // Fraction of Radiant Energy to Wall Surfaces
   EXPECT_EQ(0.40, cprcw.getDouble(8).get());  // Fraction of Radiant Energy to Ceiling Surfaces
