@@ -1,0 +1,80 @@
+
+OS:Version,
+  {57b1bc44-fb22-4d87-bc82-4c7b5ba17a09}, !- Handle
+  3.11.0;                                 !- Version Identifier
+
+OS:ZoneHVAC:Baseboard:RadiantConvective:Electric,
+  {1f35b6e4-2add-47e6-bf9b-fd8e8ec41e0e}, !- Handle
+  Zone HVAC Baseboard Radiant Convective Electric 1, !- Name
+  {92c6b40d-1806-4b3c-8ee4-9a2463871677}, !- Availability Schedule Name
+  HeatingDesignCapacity,                  !- Heating Design Capacity Method
+  autosize,                               !- Heating Design Capacity {W}
+  0,                                      !- Heating Design Capacity Per Floor Area {W/m2}
+  1,                                      !- Fraction of Autosized Heating Design Capacity
+  1,                                      !- Efficiency
+  0.2,                                    !- Fraction Radiant
+  0.31;                                   !- Fraction of Radiant Energy Incident on People
+
+OS:Schedule:Constant,
+  {92c6b40d-1806-4b3c-8ee4-9a2463871677}, !- Handle
+  Always On Discrete,                     !- Name
+  {a30df0df-4191-415b-ac55-df83b4b579b8}, !- Schedule Type Limits Name
+  1;                                      !- Value
+
+OS:ScheduleTypeLimits,
+  {a30df0df-4191-415b-ac55-df83b4b579b8}, !- Handle
+  OnOff,                                  !- Name
+  0,                                      !- Lower Limit Value
+  1,                                      !- Upper Limit Value
+  Discrete,                               !- Numeric Type
+  Availability;                           !- Unit Type
+
+OS:ZoneHVAC:Baseboard:RadiantConvective:Water,
+  {dcdaefcf-c65b-413e-b684-5523948c835d}, !- Handle
+  Zone HVAC Baseboard Radiant Convective Water 1, !- Name
+  {92c6b40d-1806-4b3c-8ee4-9a2463871677}, !- Availability Schedule Name
+  {6797e3d2-ad39-44f1-91f2-cb2d912a2dcd}, !- Heating Coil Name
+  0.3,                                    !- Fraction Radiant
+  0.32;                                   !- Fraction of Radiant Energy Incident on People
+
+OS:Coil:Heating:Water:Baseboard:Radiant,
+  {6797e3d2-ad39-44f1-91f2-cb2d912a2dcd}, !- Handle
+  Coil Heating Water Baseboard Radiant 1, !- Name
+  ,                                       !- Inlet Node Name
+  ,                                       !- Outlet Node Name
+  87.78,                                  !- Rated Average Water Temperature {C}
+  0.063,                                  !- Rated Water Mass Flow Rate {kg/s}
+  HeatingDesignCapacity,                  !- Heating Design Capacity Method
+  autosize,                               !- Heating Design Capacity {W}
+  0,                                      !- Heating Design Capacity Per Floor Area {W/m2}
+  1,                                      !- Fraction of Autosized Heating Design Capacity
+  autosize,                               !- Maximum Water Flow Rate {m3/s}
+  0.001;                                  !- Convergence Tolerance
+
+OS:ZoneHVAC:CoolingPanel:RadiantConvective:Water,
+  {a64e7a3b-477e-4dc9-a78f-ca5d3e794407}, !- Handle
+  Zone HVAC Cooling Panel Radiant Convective Water 1, !- Name
+  {92c6b40d-1806-4b3c-8ee4-9a2463871677}, !- Availability Schedule Name
+  {fe8e6c48-2b23-4f58-86fe-032946f7d399}, !- Cooling Coil Name
+  0.65,                                   !- Fraction Radiant
+  0.33;                                   !- Fraction of Radiant Energy Incident on People
+
+OS:Coil:Cooling:Water:Panel:Radiant,
+  {fe8e6c48-2b23-4f58-86fe-032946f7d399}, !- Handle
+  Coil Cooling Water Panel Radiant 1,     !- Name
+  ,                                       !- Water Inlet Node Name
+  ,                                       !- Water Outlet Node Name
+  5,                                      !- Rated Inlet Water Temperature {C}
+  24,                                     !- Rated Inlet Space Temperature {C}
+  0.063,                                  !- Rated Water Mass Flow Rate {kg/s}
+  CoolingDesignCapacity,                  !- Cooling Design Capacity Method
+  autosize,                               !- Cooling Design Capacity {W}
+  0,                                      !- Cooling Design Capacity Per Floor Area {W/m2}
+  1,                                      !- Fraction of Autosized Cooling Design Capacity
+  autosize,                               !- Maximum Chilled Water Flow Rate {m3/s}
+  MeanAirTemperature,                     !- Control Type
+  0.5,                                    !- Cooling Control Throttling Range {deltaC}
+  ,                                       !- Cooling Control Temperature Schedule Name
+  SimpleOff,                              !- Condensation Control Type
+  1;                                      !- Condensation Control Dewpoint Offset {C}
+

@@ -10262,6 +10262,30 @@ namespace osversion {
         ss << newObject;
         m_refactored.emplace_back(std::move(object), std::move(newObject));
 
+      } else if ((iddname == "OS:ZoneHVAC:Baseboard:RadiantConvective:Water") || (iddname == "OS:ZoneHVAC:CoolingPanel:RadiantConvective:Water")) {
+
+        // 1 required Field has been added from 3.11.0 to 3.11.1:
+        // ----------------------------------------------
+        // * Fraction of Radiant Energy to Floor Surfaces * 6
+        // * Fraction of Radiant Energy to Wall Surfaces * 7
+        // * Fraction of Radiant Energy to Ceiling Surfaces * 8
+
+        auto iddObject = idd_3_11_1.getObject(iddname);
+        IdfObject newObject(iddObject.get());
+
+        for (size_t i = 0; i < object.numFields(); ++i) {
+          if ((value = object.getString(i))) {
+            newObject.setString(i, value.get());
+          }
+        }
+
+        newObject.setDouble(6, 0.05);
+        newObject.setDouble(7, 0.55);
+        newObject.setDouble(8, 0.40);
+
+        ss << newObject;
+        m_refactored.emplace_back(std::move(object), std::move(newObject));
+
         // No-op
       } else {
         ss << object;

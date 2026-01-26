@@ -5037,13 +5037,13 @@ TEST_F(OSVersionFixture, update_3_10_0_to_3_11_0_OutputControlFiles) {
   EXPECT_EQ("Yes", ocf.getString(32).get());  // Output Plant Component Sizing
 }
 
-TEST_F(OSVersionFixture, update_3_11_0_to_3_11_1_ZoneHVACBaseboardRadiantConvectiveElectric) {
-  openstudio::path path = resourcesPath() / toPath("osversion/3_11_1/test_vt_ZoneHVACBaseboardRadiantConvectiveElectric.osm");
+TEST_F(OSVersionFixture, update_3_11_0_to_3_11_1_ZoneHVACRadiantConvective) {
+  openstudio::path path = resourcesPath() / toPath("osversion/3_11_1/test_vt_ZoneHVACRadiantConvective.osm");
   osversion::VersionTranslator vt;
   boost::optional<model::Model> model = vt.loadModel(path);
   ASSERT_TRUE(model) << "Failed to load " << path;
 
-  openstudio::path outPath = resourcesPath() / toPath("osversion/3_11_1/test_vt_ZoneHVACBaseboardRadiantConvectiveElectric_updated.osm");
+  openstudio::path outPath = resourcesPath() / toPath("osversion/3_11_1/test_vt_ZoneHVACRadiantConvective_updated.osm");
   model->save(outPath, true);
 
   std::vector<WorkspaceObject> brces = model->getObjectsByType("OS:ZoneHVAC:Baseboard:RadiantConvective:Electric");
@@ -5053,5 +5053,23 @@ TEST_F(OSVersionFixture, update_3_11_0_to_3_11_1_ZoneHVACBaseboardRadiantConvect
   EXPECT_EQ(0.31, brce.getDouble(9).get());   // Fraction of Radiant Energy Incident on People
   EXPECT_EQ(0.05, brce.getDouble(10).get());  // Fraction of Radiant Energy to Floor Surfaces
   EXPECT_EQ(0.55, brce.getDouble(11).get());  // Fraction of Radiant Energy to Wall Surfaces
-  EXPECT_EQ(0.40, brce.getDouble(23).get());  // Fraction of Radiant Energy to Ceiling Surfaces
+  EXPECT_EQ(0.40, brce.getDouble(12).get());  // Fraction of Radiant Energy to Ceiling Surfaces
+
+  std::vector<WorkspaceObject> brcws = model->getObjectsByType("OS:ZoneHVAC:Baseboard:RadiantConvective:Water");
+  ASSERT_EQ(1u, brcws.size());
+  const auto& brcw = brcws.front();
+
+  EXPECT_EQ(0.32, brcw.getDouble(5).get());   // Fraction of Radiant Energy Incident on People
+  EXPECT_EQ(0.05, brcw.getDouble(6).get());  // Fraction of Radiant Energy to Floor Surfaces
+  EXPECT_EQ(0.55, brcw.getDouble(7).get());  // Fraction of Radiant Energy to Wall Surfaces
+  EXPECT_EQ(0.40, brcw.getDouble(8).get());  // Fraction of Radiant Energy to Ceiling Surfaces
+
+  std::vector<WorkspaceObject> cprcws = model->getObjectsByType("OS:ZoneHVAC:CoolingPanel:RadiantConvective:Water");
+  ASSERT_EQ(1u, cprcws.size());
+  const auto& cprcw = cprcws.front();
+
+  EXPECT_EQ(0.33, cprcw.getDouble(5).get());   // Fraction of Radiant Energy Incident on People
+  EXPECT_EQ(0.05, cprcw.getDouble(6).get());  // Fraction of Radiant Energy to Floor Surfaces
+  EXPECT_EQ(0.55, cprcw.getDouble(7).get());  // Fraction of Radiant Energy to Wall Surfaces
+  EXPECT_EQ(0.40, cprcw.getDouble(8).get());  // Fraction of Radiant Energy to Ceiling Surfaces
 }
