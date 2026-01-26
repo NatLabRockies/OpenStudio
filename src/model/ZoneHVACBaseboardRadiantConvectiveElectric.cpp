@@ -189,15 +189,13 @@ namespace model {
     }
 
     double ZoneHVACBaseboardRadiantConvectiveElectric_Impl::fractionofRadiantEnergytoFloorSurfaces() const {
-      boost::optional<double> value =
-        getDouble(OS_ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::FractionofRadiantEnergytoFloorSurfaces, true);
+      boost::optional<double> value = getDouble(OS_ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::FractionofRadiantEnergytoFloorSurfaces, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     double ZoneHVACBaseboardRadiantConvectiveElectric_Impl::fractionofRadiantEnergytoWallSurfaces() const {
-      boost::optional<double> value =
-        getDouble(OS_ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::FractionofRadiantEnergytoWallSurfaces, true);
+      boost::optional<double> value = getDouble(OS_ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::FractionofRadiantEnergytoWallSurfaces, true);
       OS_ASSERT(value);
       return value.get();
     }
@@ -274,7 +272,8 @@ namespace model {
       return result;
     }
 
-    bool ZoneHVACBaseboardRadiantConvectiveElectric_Impl::setFractionofRadiantEnergytoCeilingSurfaces(double fractionofRadiantEnergytoCeilingSurfaces) {
+    bool
+      ZoneHVACBaseboardRadiantConvectiveElectric_Impl::setFractionofRadiantEnergytoCeilingSurfaces(double fractionofRadiantEnergytoCeilingSurfaces) {
       bool result = setDouble(OS_ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::FractionofRadiantEnergytoCeilingSurfaces,
                               fractionofRadiantEnergytoCeilingSurfaces);
       return result;

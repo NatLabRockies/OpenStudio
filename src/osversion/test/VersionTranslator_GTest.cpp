@@ -5050,8 +5050,8 @@ TEST_F(OSVersionFixture, update_3_11_0_to_3_11_1_ZoneHVACBaseboardRadiantConvect
   ASSERT_EQ(1u, brces.size());
   const auto& brce = brces.front();
 
-  EXPECT_EQ(0.31, brce.getDouble(9).get());    // Fraction of Radiant Energy Incident on People
-  EXPECT_EQ(0.05, brce.getDouble(10).get());    // Fraction of Radiant Energy to Floor Surfaces
+  EXPECT_EQ(0.31, brce.getDouble(9).get());   // Fraction of Radiant Energy Incident on People
+  EXPECT_EQ(0.05, brce.getDouble(10).get());  // Fraction of Radiant Energy to Floor Surfaces
   EXPECT_EQ(0.55, brce.getDouble(11).get());  // Fraction of Radiant Energy to Wall Surfaces
   EXPECT_EQ(0.40, brce.getDouble(23).get());  // Fraction of Radiant Energy to Ceiling Surfaces
 }

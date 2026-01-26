@@ -116,7 +116,7 @@ namespace energyplus {
     double fractionofRadiantEnergytoWallSurfaces = modelObject.fractionofRadiantEnergytoWallSurfaces();
     double fractionofRadiantEnergytoCeilingSurfaces = modelObject.fractionofRadiantEnergytoCeilingSurfaces();
 
-    double fractionOnFloor = (1.0 - fractionofRadiantEnergyIncidentonPeople) * fractionofRadiantEnergytoFloorSurfaces;    
+    double fractionOnFloor = (1.0 - fractionofRadiantEnergyIncidentonPeople) * fractionofRadiantEnergytoFloorSurfaces;
     double fractionOnWall = (1.0 - fractionofRadiantEnergyIncidentonPeople) * fractionofRadiantEnergytoWallSurfaces;
     double fractionOnCeiling = (1.0 - fractionofRadiantEnergyIncidentonPeople) * fractionofRadiantEnergytoCeilingSurfaces;
     //loop through all the surfaces, adding them and their flow fractions (weighted per-area)

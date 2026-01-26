@@ -10226,7 +10226,7 @@ namespace osversion {
     return ss.str();
 
   }  // end update_3_10_0_to_3_11_0
-  
+
   std::string VersionTranslator::update_3_11_0_to_3_11_1(const IdfFile& idf_3_11_0, const IddFileAndFactoryWrapper& idd_3_11_1) {
     std::stringstream ss;
     boost::optional<std::string> value;
