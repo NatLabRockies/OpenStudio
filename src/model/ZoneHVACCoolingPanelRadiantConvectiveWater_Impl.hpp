@@ -76,6 +76,12 @@ namespace model {
 
       double fractionofRadiantEnergyIncidentonPeople() const;
 
+      double fractionofRadiantEnergytoFloorSurfaces() const;
+
+      double fractionofRadiantEnergytoWallSurfaces() const;
+
+      double fractionofRadiantEnergytoCeilingSurfaces() const;
+
       HVACComponent coolingCoil() const;
 
       //@}
@@ -87,6 +93,12 @@ namespace model {
       bool setFractionRadiant(double fractionRadiant);
 
       bool setFractionofRadiantEnergyIncidentonPeople(double fractionofRadiantEnergyIncidentonPeople);
+
+      bool setFractionofRadiantEnergytoFloorSurfaces(double fractionofRadiantEnergytoFloorSurfaces);
+
+      bool setFractionofRadiantEnergytoWallSurfaces(double fractionofRadiantEnergytoWallSurfaces);
+
+      bool setFractionofRadiantEnergytoCeilingSurfaces(double fractionofRadiantEnergytoCeilingSurfaces);
 
       bool setCoolingCoil(const HVACComponent& coolingCoil);
 

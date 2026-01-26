@@ -188,6 +188,25 @@ namespace model {
       return value.get();
     }
 
+    double ZoneHVACBaseboardRadiantConvectiveWater_Impl::fractionofRadiantEnergytoFloorSurfaces() const {
+      boost::optional<double> value = getDouble(OS_ZoneHVAC_Baseboard_RadiantConvective_WaterFields::FractionofRadiantEnergytoFloorSurfaces, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    double ZoneHVACBaseboardRadiantConvectiveWater_Impl::fractionofRadiantEnergytoWallSurfaces() const {
+      boost::optional<double> value = getDouble(OS_ZoneHVAC_Baseboard_RadiantConvective_WaterFields::FractionofRadiantEnergytoWallSurfaces, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    double ZoneHVACBaseboardRadiantConvectiveWater_Impl::fractionofRadiantEnergytoCeilingSurfaces() const {
+      boost::optional<double> value =
+        getDouble(OS_ZoneHVAC_Baseboard_RadiantConvective_WaterFields::FractionofRadiantEnergytoCeilingSurfaces, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
     HVACComponent ZoneHVACBaseboardRadiantConvectiveWater_Impl::heatingCoil() const {
       boost::optional<HVACComponent> value = optionalHeatingCoil();
       if (!value) {
@@ -210,6 +229,25 @@ namespace model {
     bool ZoneHVACBaseboardRadiantConvectiveWater_Impl::setFractionofRadiantEnergyIncidentonPeople(double fractionofRadiantEnergyIncidentonPeople) {
       bool result = setDouble(OS_ZoneHVAC_Baseboard_RadiantConvective_WaterFields::FractionofRadiantEnergyIncidentonPeople,
                               fractionofRadiantEnergyIncidentonPeople);
+      return result;
+    }
+
+    bool ZoneHVACBaseboardRadiantConvectiveWater_Impl::setFractionofRadiantEnergytoFloorSurfaces(double fractionofRadiantEnergytoFloorSurfaces) {
+      bool result = setDouble(OS_ZoneHVAC_Baseboard_RadiantConvective_WaterFields::FractionofRadiantEnergytoFloorSurfaces,
+                              fractionofRadiantEnergytoFloorSurfaces);
+      return result;
+    }
+
+    bool ZoneHVACBaseboardRadiantConvectiveWater_Impl::setFractionofRadiantEnergytoWallSurfaces(double fractionofRadiantEnergytoWallSurfaces) {
+      bool result = setDouble(OS_ZoneHVAC_Baseboard_RadiantConvective_WaterFields::FractionofRadiantEnergytoWallSurfaces,
+                              fractionofRadiantEnergytoWallSurfaces);
+      return result;
+    }
+
+    bool
+      ZoneHVACBaseboardRadiantConvectiveWater_Impl::setFractionofRadiantEnergytoCeilingSurfaces(double fractionofRadiantEnergytoCeilingSurfaces) {
+      bool result = setDouble(OS_ZoneHVAC_Baseboard_RadiantConvective_WaterFields::FractionofRadiantEnergytoCeilingSurfaces,
+                              fractionofRadiantEnergytoCeilingSurfaces);
       return result;
     }
 
@@ -269,6 +307,12 @@ namespace model {
     CoilHeatingWaterBaseboardRadiant coil(model);
     ok = setHeatingCoil(coil);
     OS_ASSERT(ok);
+    ok = setFractionofRadiantEnergytoFloorSurfaces(0.05);  // Assume that 5% of what is not on people is on the floor
+    OS_ASSERT(ok);
+    ok = setFractionofRadiantEnergytoWallSurfaces(0.55);  // Assume that 55% of what is not on people is on the walls
+    OS_ASSERT(ok);
+    ok = setFractionofRadiantEnergytoCeilingSurfaces(0.40);  // Assume that 40% of what is not on people is on the ceiling
+    OS_ASSERT(ok);
   }
 
   IddObjectType ZoneHVACBaseboardRadiantConvectiveWater::iddObjectType() {
@@ -287,6 +331,18 @@ namespace model {
     return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveWater_Impl>()->fractionofRadiantEnergyIncidentonPeople();
   }
 
+  double ZoneHVACBaseboardRadiantConvectiveWater::fractionofRadiantEnergytoFloorSurfaces() const {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveWater_Impl>()->fractionofRadiantEnergytoFloorSurfaces();
+  }
+
+  double ZoneHVACBaseboardRadiantConvectiveWater::fractionofRadiantEnergytoWallSurfaces() const {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveWater_Impl>()->fractionofRadiantEnergytoWallSurfaces();
+  }
+
+  double ZoneHVACBaseboardRadiantConvectiveWater::fractionofRadiantEnergytoCeilingSurfaces() const {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveWater_Impl>()->fractionofRadiantEnergytoCeilingSurfaces();
+  }
+
   HVACComponent ZoneHVACBaseboardRadiantConvectiveWater::heatingCoil() const {
     return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveWater_Impl>()->heatingCoil();
   }
@@ -302,6 +358,21 @@ namespace model {
   bool ZoneHVACBaseboardRadiantConvectiveWater::setFractionofRadiantEnergyIncidentonPeople(double fractionofRadiantEnergyIncidentonPeople) {
     return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveWater_Impl>()->setFractionofRadiantEnergyIncidentonPeople(
       fractionofRadiantEnergyIncidentonPeople);
+  }
+
+  bool ZoneHVACBaseboardRadiantConvectiveWater::setFractionofRadiantEnergytoFloorSurfaces(double fractionofRadiantEnergytoFloorSurfaces) {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveWater_Impl>()->setFractionofRadiantEnergytoFloorSurfaces(
+      fractionofRadiantEnergytoFloorSurfaces);
+  }
+
+  bool ZoneHVACBaseboardRadiantConvectiveWater::setFractionofRadiantEnergytoWallSurfaces(double fractionofRadiantEnergytoWallSurfaces) {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveWater_Impl>()->setFractionofRadiantEnergytoWallSurfaces(
+      fractionofRadiantEnergytoWallSurfaces);
+  }
+
+  bool ZoneHVACBaseboardRadiantConvectiveWater::setFractionofRadiantEnergytoCeilingSurfaces(double fractionofRadiantEnergytoCeilingSurfaces) {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveWater_Impl>()->setFractionofRadiantEnergytoCeilingSurfaces(
+      fractionofRadiantEnergytoCeilingSurfaces);
   }
 
   bool ZoneHVACBaseboardRadiantConvectiveWater::setHeatingCoil(const HVACComponent& radBaseboardHeatingCoil) {
