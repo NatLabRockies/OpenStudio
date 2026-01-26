@@ -1,0 +1,31 @@
+
+OS:Version,
+  {6dc6f998-635c-4015-99d3-2da03603ded9}, !- Handle
+  3.11.0;                                 !- Version Identifier
+
+OS:ZoneHVAC:Baseboard:RadiantConvective:Electric,
+  {f7d36955-df78-49d9-b44e-45918349d687}, !- Handle
+  Zone HVAC Baseboard Radiant Convective Electric 1, !- Name
+  {86c1b692-594e-4975-bee1-7b880080687d}, !- Availability Schedule Name
+  HeatingDesignCapacity,                  !- Heating Design Capacity Method
+  autosize,                               !- Heating Design Capacity {W}
+  0,                                      !- Heating Design Capacity Per Floor Area {W/m2}
+  1,                                      !- Fraction of Autosized Heating Design Capacity
+  1,                                      !- Efficiency
+  0.2,                                    !- Fraction Radiant
+  0.31;                                   !- Fraction of Radiant Energy Incident on People
+
+OS:Schedule:Constant,
+  {86c1b692-594e-4975-bee1-7b880080687d}, !- Handle
+  Always On Discrete,                     !- Name
+  {3cbd97ca-7119-41e2-9e28-e23485e2f50d}, !- Schedule Type Limits Name
+  1;                                      !- Value
+
+OS:ScheduleTypeLimits,
+  {3cbd97ca-7119-41e2-9e28-e23485e2f50d}, !- Handle
+  OnOff,                                  !- Name
+  0,                                      !- Lower Limit Value
+  1,                                      !- Upper Limit Value
+  Discrete,                               !- Numeric Type
+  Availability;                           !- Unit Type
+
