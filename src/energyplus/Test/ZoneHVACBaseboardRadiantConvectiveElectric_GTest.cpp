@@ -95,7 +95,8 @@ TEST_F(EnergyPlusFixture, ZoneHVACBaseboardRadiantConvectiveElectric) {
   EXPECT_TRUE(
     openstudio::istringEqual("autosize", idfBaseboard.getString(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::HeatingDesignCapacity).get()));
   // Maximum Water Flow Rate
-  EXPECT_EQ(coil.maximumWaterFlowRate().get(), idfBaseboard.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::MaximumWaterFlowRate).get());
+  EXPECT_EQ(coil.maximumWaterFlowRate().get(),
+            idfBaseboard.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::MaximumWaterFlowRate).get());
 
   // Surface 1 Name
   // Fraction of Radiant Energy to Surface 1
