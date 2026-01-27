@@ -21,6 +21,7 @@
 #include "../../model/Space.hpp"
 #include "../../model/Surface.hpp"
 #include "../../model/Schedule.hpp"
+#include "../../model/ScheduleConstant.hpp"
 #include "../../utilities/geometry/Point3d.hpp"
 
 #include "../../utilities/idf/IdfFile.hpp"
@@ -70,7 +71,20 @@ TEST_F(EnergyPlusFixture, ZoneHVACCoolingPanelRadiantConvectiveWater) {
   EXPECT_TRUE(panel.setFractionofRadiantEnergytoFloorSurfaces(0.43));
   EXPECT_TRUE(panel.setFractionofRadiantEnergytoWallSurfaces(0.53));
   EXPECT_TRUE(panel.setFractionofRadiantEnergytoCeilingSurfaces(0.63));
-  EXPECT_TRUE(coil.setMaximumChilledWaterFlowRate(1.0));
+  EXPECT_TRUE(coil.setRatedInletWaterTemperature(1.0));
+  EXPECT_TRUE(coil.setRatedInletSpaceTemperature(2.0));
+  EXPECT_TRUE(coil.setRatedWaterMassFlowRate(3.0));
+  EXPECT_TRUE(coil.setCoolingDesignCapacityMethod("FractionOfAutosizedCoolingCapacity"));
+  EXPECT_TRUE(coil.setCoolingDesignCapacity(0));
+  EXPECT_TRUE(coil.setCoolingDesignCapacityPerFloorArea(0));
+  EXPECT_TRUE(coil.setFractionofAutosizedCoolingDesignCapacity(4.0));
+  EXPECT_TRUE(coil.setMaximumChilledWaterFlowRate(5.0));
+  EXPECT_TRUE(coil.setControlType("OutdoorDryBulbTemperature"));
+  EXPECT_TRUE(coil.setCoolingControlThrottlingRange(6.0));
+  ScheduleConstant coolingControlTemperatureSchedule(m);
+  EXPECT_TRUE(coil.setCoolingControlTemperatureSchedule(coolingControlTemperatureSchedule));
+  EXPECT_TRUE(coil.setCondensationControlType("SimpleOff"));
+  EXPECT_TRUE(coil.setCondensationControlDewpointOffset(7.0));
 
   // Translate
   ForwardTranslator ft;
@@ -85,22 +99,73 @@ TEST_F(EnergyPlusFixture, ZoneHVACCoolingPanelRadiantConvectiveWater) {
   // Availability Schedule Name
   EXPECT_EQ(panel.availabilitySchedule().nameString(),
             idfPanel.getString(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::AvailabilityScheduleName).get());
-  // Inlet Node Name
-  EXPECT_FALSE(idfPanel.getString(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::InletNodeName).get().empty());
-  // Outlet Node Name
-  EXPECT_FALSE(idfPanel.getString(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::OutletNodeName).get().empty());
-  // Rated Average Water Temperature
-  EXPECT_EQ(coil.ratedAverageWaterTemperature(),
-            idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::RatedAverageWaterTemperature).get());
+  // Water Inlet Node Name
+  EXPECT_FALSE(idfPanel.isEmpty(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::WaterInletNodeName));
+  // Water Outlet Node Name
+  EXPECT_FALSE(idfPanel.isEmpty(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::WaterOutletNodeName));
+  // Rated Inlet Water Temperature
+  EXPECT_EQ(1.0, idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::RatedInletWaterTemperature).get());
+  // Rated Inlet Space Temperature
+  EXPECT_EQ(2.0, idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::RatedInletSpaceTemperature).get());
   // Rated Water Mass Flow Rate
-  EXPECT_EQ(coil.ratedWaterMassFlowRate(), idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::RatedWaterMassFlowRate).get());
-  // Heating Design Capacity
-  EXPECT_TRUE(
-    openstudio::istringEqual("autosize", idfPanel.getString(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::HeatingDesignCapacity).get()));
-  // Maximum Water Flow Rate
-  EXPECT_EQ(coil.maximumWaterFlowRate().get(), idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::MaximumWaterFlowRate).get());
+  EXPECT_EQ(3.0, idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::RatedWaterMassFlowRate).get());
+  // Cooling Design Capacity Method
+  EXPECT_EQ("FractionOfAutosizedCoolingCapacity",
+            idfPanel.getString(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingDesignCapacityMethod).get());
+  // Cooling Design Capacity
+  EXPECT_EQ(0.0, idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingDesignCapacity).get());
+  // Cooling Design Capacity Per Floor Area
+  EXPECT_EQ(0.0, idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingDesignCapacityPerFloorArea).get());
+  // Fraction of Autosized Cooling Design Capacity
+  EXPECT_EQ(4.0, idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::FractionofAutosizedHeatingDesignCapacity).get());
+  // Maximum Chilled Water Flow Rate
+  EXPECT_EQ(5.0, idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::MaximumChilledWaterFlowRate).get());
+  // Control Type
+  EXPECT_EQ("OutdoorDryBulbTemperature", idfPanel.getString(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::ControlType).get());
+  // Cooling Control Throttling Range
+  EXPECT_EQ(6.0, idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingControlThrottlingRange).get());
+  // Cooling Control Temperature Schedule Name
+  EXPECT_EQ(coolingControlTemperatureSchedule.nameString(),
+            idfPanel.getString(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingControlTemperatureScheduleName).get());
+  // Condensation Control Type
+  EXPECT_EQ("SimpleOff", idfPanel.getString(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CondensationControlType).get());
+  // Condensation Control Dewpoint Offset
+  EXPECT_EQ(7.0, idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CondensationControlDewpointOffset).get());
+  // Fraction Radiant
+  EXPECT_EQ(0.4, idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::FractionRadiant).get());
+  // Fraction of Radiant Energy Incident on People
+  EXPECT_EQ(0.3, idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::FractionofRadiantEnergyIncidentonPeople).get());
+
+  double totalAreaOfWallSurfaces = 0;
+  double totalAreaOfCeilingSurfaces = 0;
+  double totalAreaOfFloorSurfaces = 0;
+
+  for (auto const& surface : surfaces) {
+    if (istringEqual(surface.surfaceType(), "Floor")) {
+      totalAreaOfFloorSurfaces += surface.grossArea();
+    } else if (istringEqual(surface.surfaceType(), "RoofCeiling")) {
+      totalAreaOfCeilingSurfaces += surface.grossArea();
+    } else {
+      totalAreaOfWallSurfaces += surface.grossArea();
+    }
+  }
 
   // Surface 1 Name
   // Fraction of Radiant Energy to Surface 1
   EXPECT_EQ(surfaces.size(), idfPanel.numExtensibleGroups());
+  for (const auto& idf_eg : idfPanel.extensibleGroups()) {
+    const auto& surface = surfaces[idf_eg.groupIndex()];
+
+    EXPECT_EQ(surface.nameString(), idf_eg.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterExtensibleFields::SurfaceName).get());
+    if (istringEqual(surface.surfaceType(), "Floor")) {
+      EXPECT_EQ(surface.grossArea() / totalAreaOfFloorSurfaces * 0.43,
+                idf_eg.getString(ZoneHVAC_CoolingPanel_RadiantConvective_WaterExtensibleFields::FractionofRadiantEnergytoSurface).get());
+    } else if (istringEqual(surface.surfaceType(), "RoofCeiling")) {
+      EXPECT_EQ(surface.grossArea() / totalAreaOfCeilingSurfaces * 0.63,
+                idf_eg.getString(ZoneHVAC_CoolingPanel_RadiantConvective_WaterExtensibleFields::FractionofRadiantEnergytoSurface).get());
+    } else {
+      EXPECT_EQ(surface.grossArea() / totalAreaOfWallSurfaces * 0.53,
+                idf_eg.getString(ZoneHVAC_CoolingPanel_RadiantConvective_WaterExtensibleFields::FractionofRadiantEnergytoSurface).get());
+    }
+  }
 }

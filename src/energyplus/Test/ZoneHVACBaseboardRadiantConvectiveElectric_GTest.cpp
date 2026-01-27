@@ -59,9 +59,9 @@ TEST_F(EnergyPlusFixture, ZoneHVACBaseboardRadiantConvectiveElectric) {
   // Some tweaks to disambiguate the ft tests later
   baseboard.setName("My Baseboard");
   EXPECT_TRUE(baseboard.setHeatingDesignCapacityMethod("CapacityPerFloorArea"));
-  EXPECT_TRUE(baseboard.setHeatingDesignCapacity(0.0));
+  EXPECT_TRUE(baseboard.setHeatingDesignCapacity(0));
   EXPECT_TRUE(baseboard.setHeatingDesignCapacityPerFloorArea(100.0));
-  EXPECT_TRUE(baseboard.setFractionofAutosizedHeatingDesignCapacity(0.0));
+  EXPECT_TRUE(baseboard.setFractionofAutosizedHeatingDesignCapacity(0));
   EXPECT_TRUE(baseboard.setEfficiency(0.9));
   EXPECT_TRUE(baseboard.setFractionRadiant(0.4));
   EXPECT_TRUE(baseboard.setFractionofRadiantEnergyIncidentonPeople(0.35));
@@ -82,23 +82,51 @@ TEST_F(EnergyPlusFixture, ZoneHVACBaseboardRadiantConvectiveElectric) {
   // Availability Schedule Name
   EXPECT_EQ(baseboard.availabilitySchedule().nameString(),
             idfBaseboard.getString(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::AvailabilityScheduleName).get());
-  // Inlet Node Name
-  EXPECT_FALSE(idfBaseboard.getString(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::InletNodeName).get().empty());
-  // Outlet Node Name
-  EXPECT_FALSE(idfBaseboard.getString(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::OutletNodeName).get().empty());
-  // Rated Average Water Temperature
-  EXPECT_EQ(coil.ratedAverageWaterTemperature(),
-            idfBaseboard.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::RatedAverageWaterTemperature).get());
-  // Rated Water Mass Flow Rate
-  EXPECT_EQ(coil.ratedWaterMassFlowRate(), idfBaseboard.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::RatedWaterMassFlowRate).get());
+  // Heating Design Capacity Method
+  EXPECT_EQ("CapacityPerFloorArea", idfBaseboard.getString(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::HeatingDesignCapacityMethod).get());
   // Heating Design Capacity
-  EXPECT_TRUE(
-    openstudio::istringEqual("autosize", idfBaseboard.getString(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::HeatingDesignCapacity).get()));
-  // Maximum Water Flow Rate
-  EXPECT_EQ(coil.maximumWaterFlowRate().get(),
-            idfBaseboard.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::MaximumWaterFlowRate).get());
+  EXPECT_TRUE(0.0, idfBaseboard.getString(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::HeatingDesignCapacity).get());
+  // Heating Design Capacity Per Floor Area
+  EXPECT_EQ(100.0, idfBaseboard.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::HeatingDesignCapacityPerFloorArea).get());
+  // Fraction of Autosized Heating Design Capacity
+  EXPECT_EQ(0.0, idfBaseboard.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::FractionofAutosizedHeatingDesignCapacity).get());
+  // Efficiency
+  EXPECT_EQ(0.9, idfBaseboard.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::Efficiency).get());
+  // Fraction Radiant
+  EXPECT_EQ(0.4, idfBaseboard.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::FractionRadiant).get());
+  // Fraction of Radiant Energy Incident on People
+  EXPECT_EQ(0.35, idfBaseboard.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::FractionofRadiantEnergyIncidentonPeople).get());
+
+  double totalAreaOfWallSurfaces = 0;
+  double totalAreaOfCeilingSurfaces = 0;
+  double totalAreaOfFloorSurfaces = 0;
+
+  for (auto const& surface : surfaces) {
+    if (istringEqual(surface.surfaceType(), "Floor")) {
+      totalAreaOfFloorSurfaces += surface.grossArea();
+    } else if (istringEqual(surface.surfaceType(), "RoofCeiling")) {
+      totalAreaOfCeilingSurfaces += surface.grossArea();
+    } else {
+      totalAreaOfWallSurfaces += surface.grossArea();
+    }
+  }
 
   // Surface 1 Name
   // Fraction of Radiant Energy to Surface 1
   EXPECT_EQ(surfaces.size(), idfBaseboard.numExtensibleGroups());
+  for (const auto& idf_eg : idfBaseboard.extensibleGroups()) {
+    const auto& surface = surfaces[idf_eg.groupIndex()];
+
+    EXPECT_EQ(surface.nameString(), idf_eg.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricExtensibleFields::SurfaceName).get());
+    if (istringEqual(surface.surfaceType(), "Floor")) {
+      EXPECT_EQ(surface.grossArea() / totalAreaOfFloorSurfaces * 0.41,
+                idf_eg.getString(ZoneHVAC_Baseboard_RadiantConvective_ElectricExtensibleFields::FractionofRadiantEnergytoSurface).get());
+    } else if (istringEqual(surface.surfaceType(), "RoofCeiling")) {
+      EXPECT_EQ(surface.grossArea() / totalAreaOfCeilingSurfaces * 0.61,
+                idf_eg.getString(ZoneHVAC_Baseboard_RadiantConvective_ElectricExtensibleFields::FractionofRadiantEnergytoSurface).get());
+    } else {
+      EXPECT_EQ(surface.grossArea() / totalAreaOfWallSurfaces * 0.51,
+                idf_eg.getString(ZoneHVAC_Baseboard_RadiantConvective_ElectricExtensibleFields::FractionofRadiantEnergytoSurface).get());
+    }
+  }
 }
