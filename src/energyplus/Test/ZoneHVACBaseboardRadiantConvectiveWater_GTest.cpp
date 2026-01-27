@@ -68,6 +68,9 @@ TEST_F(EnergyPlusFixture, ZoneHVACBaseboardRadiantConvectiveWater) {
   baseboard.setName("My Baseboard");
   EXPECT_TRUE(baseboard.setFractionRadiant(0.4));
   EXPECT_TRUE(baseboard.setFractionofRadiantEnergyIncidentonPeople(0.3));
+  EXPECT_TRUE(baseboard.setFractionofRadiantEnergytoFloorSurfaces(0.42));
+  EXPECT_TRUE(baseboard.setFractionofRadiantEnergytoWallSurfaces(0.52));
+  EXPECT_TRUE(baseboard.setFractionofRadiantEnergytoCeilingSurfaces(0.62));
   EXPECT_TRUE(coil.setMaximumWaterFlowRate(1.0));
 
   // Translate
