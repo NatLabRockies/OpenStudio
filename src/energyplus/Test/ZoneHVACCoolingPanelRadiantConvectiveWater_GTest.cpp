@@ -22,7 +22,6 @@
 #include "../../model/Surface.hpp"
 #include "../../model/Schedule.hpp"
 #include "../../model/ScheduleConstant.hpp"
-#include "../../utilities/geometry/Point3d.hpp"
 
 #include "../../utilities/idf/IdfFile.hpp"
 #include "../../utilities/idf/Workspace.hpp"
