@@ -26,6 +26,7 @@
 #include "../../utilities/idf/Workspace.hpp"
 #include "../../utilities/idf/IdfObject.hpp"
 #include "../../utilities/idf/WorkspaceObject.hpp"
+#include "../../utilities/idf/IdfExtensibleGroup.hpp"
 #include "../../utilities/geometry/Point3d.hpp"
 
 #include <utilities/idd/ZoneHVAC_Baseboard_RadiantConvective_Water_FieldEnums.hxx>
@@ -103,7 +104,7 @@ TEST_F(EnergyPlusFixture, ZoneHVACBaseboardRadiantConvectiveWater) {
   // Rated Water Mass Flow Rate
   EXPECT_EQ(1.0, idfBaseboard.getDouble(ZoneHVAC_Baseboard_RadiantConvective_WaterFields::RatedWaterMassFlowRate).get());
   // Heating Design Capacity
-  EXPECT_TRUE(0.0, idfBaseboard.getDouble(ZoneHVAC_Baseboard_RadiantConvective_WaterFields::HeatingDesignCapacity).get()));
+  EXPECT_TRUE(0.0, idfBaseboard.getDouble(ZoneHVAC_Baseboard_RadiantConvective_WaterFields::HeatingDesignCapacity).get());
   // Maximum Water Flow Rate
   EXPECT_EQ(3.0, idfBaseboard.getDouble(ZoneHVAC_Baseboard_RadiantConvective_WaterFields::MaximumWaterFlowRate).get());
 

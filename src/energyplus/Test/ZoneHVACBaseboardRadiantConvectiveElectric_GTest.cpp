@@ -23,6 +23,7 @@
 #include "../../utilities/idf/Workspace.hpp"
 #include "../../utilities/idf/IdfObject.hpp"
 #include "../../utilities/idf/WorkspaceObject.hpp"
+#include "../../utilities/idf/IdfExtensibleGroup.hpp"
 #include "../../utilities/geometry/Point3d.hpp"
 
 #include <utilities/idd/ZoneHVAC_Baseboard_RadiantConvective_Electric_FieldEnums.hxx>
@@ -84,7 +85,7 @@ TEST_F(EnergyPlusFixture, ZoneHVACBaseboardRadiantConvectiveElectric) {
   // Heating Design Capacity Method
   EXPECT_EQ("CapacityPerFloorArea", idfBaseboard.getString(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::HeatingDesignCapacityMethod).get());
   // Heating Design Capacity
-  EXPECT_TRUE(0.0, idfBaseboard.getString(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::HeatingDesignCapacity).get());
+  EXPECT_TRUE(0.0, idfBaseboard.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::HeatingDesignCapacity).get());
   // Heating Design Capacity Per Floor Area
   EXPECT_EQ(100.0, idfBaseboard.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::HeatingDesignCapacityPerFloorArea).get());
   // Fraction of Autosized Heating Design Capacity

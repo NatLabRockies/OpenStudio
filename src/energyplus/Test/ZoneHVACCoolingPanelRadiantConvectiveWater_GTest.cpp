@@ -27,6 +27,7 @@
 #include "../../utilities/idf/Workspace.hpp"
 #include "../../utilities/idf/IdfObject.hpp"
 #include "../../utilities/idf/WorkspaceObject.hpp"
+#include "../../utilities/idf/IdfExtensibleGroup.hpp"
 #include "../../utilities/geometry/Point3d.hpp"
 
 #include <utilities/idd/ZoneHVAC_CoolingPanel_RadiantConvective_Water_FieldEnums.hxx>
@@ -116,7 +117,7 @@ TEST_F(EnergyPlusFixture, ZoneHVACCoolingPanelRadiantConvectiveWater) {
   // Cooling Design Capacity Per Floor Area
   EXPECT_EQ(0.0, idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingDesignCapacityPerFloorArea).get());
   // Fraction of Autosized Cooling Design Capacity
-  EXPECT_EQ(4.0, idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::FractionofAutosizedHeatingDesignCapacity).get());
+  EXPECT_EQ(4.0, idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::FractionofAutosizedCoolingDesignCapacity).get());
   // Maximum Chilled Water Flow Rate
   EXPECT_EQ(5.0, idfPanel.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::MaximumChilledWaterFlowRate).get());
   // Control Type
