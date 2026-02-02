@@ -146,16 +146,16 @@ TEST_F(EnergyPlusFixture, ZoneHVACBaseboardRadiantConvectiveWater) {
   for (const auto& idf_eg : idfBaseboard.extensibleGroups()) {
     const auto& surface = surfaces[idf_eg.groupIndex()];
 
-    EXPECT_EQ(surface.nameString(), idf_eg.getString(ZoneHVAC_Baseboard_RadiantConvective_ElectricExtensibleFields::SurfaceName).get());
+    EXPECT_EQ(surface.nameString(), idf_eg.getString(ZoneHVAC_Baseboard_RadiantConvective_WaterExtensibleFields::SurfaceName).get());
     if (istringEqual(surface.surfaceType(), "Floor")) {
       EXPECT_EQ(surface.grossArea() / totalAreaOfFloorSurfaces * 0.42,
-                idf_eg.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricExtensibleFields::FractionofRadiantEnergytoSurface).get());
+                idf_eg.getDouble(ZoneHVAC_Baseboard_RadiantConvective_WaterExtensibleFields::FractionofRadiantEnergytoSurface).get());
     } else if (istringEqual(surface.surfaceType(), "RoofCeiling")) {
       EXPECT_EQ(surface.grossArea() / totalAreaOfCeilingSurfaces * 0.62,
-                idf_eg.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricExtensibleFields::FractionofRadiantEnergytoSurface).get());
+                idf_eg.getDouble(ZoneHVAC_Baseboard_RadiantConvective_WaterExtensibleFields::FractionofRadiantEnergytoSurface).get());
     } else {
       EXPECT_EQ(surface.grossArea() / totalAreaOfWallSurfaces * 0.52,
-                idf_eg.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricExtensibleFields::FractionofRadiantEnergytoSurface).get());
+                idf_eg.getDouble(ZoneHVAC_Baseboard_RadiantConvective_WaterExtensibleFields::FractionofRadiantEnergytoSurface).get());
     }
   }
 }
