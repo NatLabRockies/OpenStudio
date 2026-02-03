@@ -55,8 +55,8 @@ TEST_F(EnergyPlusFixture, ZoneHVACBaseboardRadiantConvectiveWater) {
   };
   boost::optional<Space> space1 = Space::fromFloorPrint(floorPrint, 3, m);
   ASSERT_TRUE(space1);
-  auto surfaces = space1->surfaces();
-  EXPECT_EQ(6u, surfaces.size());
+  auto surfs = space1->surfaces();
+  EXPECT_EQ(6u, surfs.size());
 
   // Space needs to be in a ThermalZone or it's not translated
   ThermalZone z(m);
@@ -126,6 +126,8 @@ TEST_F(EnergyPlusFixture, ZoneHVACBaseboardRadiantConvectiveWater) {
   // Fraction of Radiant Energy Incident on People
   EXPECT_EQ(0.3, idfDesign.getDouble(ZoneHVAC_Baseboard_RadiantConvective_Water_DesignFields::FractionofRadiantEnergyIncidentonPeople).get());
 
+  auto const& surfaces = baseboard.getImpl<model::detail::ZoneHVACBaseboardRadiantConvectiveWater_Impl>()->surfaces();
+
   double totalAreaOfWallSurfaces = 0;
   double totalAreaOfCeilingSurfaces = 0;
   double totalAreaOfFloorSurfaces = 0;
@@ -150,7 +152,7 @@ TEST_F(EnergyPlusFixture, ZoneHVACBaseboardRadiantConvectiveWater) {
   for (const auto& idf_eg : idfBaseboard.extensibleGroups()) {
     const auto& surface = surfaces[idf_eg.groupIndex()];
 
-    // EXPECT_EQ(surface.nameString(), idf_eg.getString(ZoneHVAC_Baseboard_RadiantConvective_WaterExtensibleFields::SurfaceName).get());  // order of surfaces not deterministic
+    EXPECT_EQ(surface.nameString(), idf_eg.getString(ZoneHVAC_Baseboard_RadiantConvective_WaterExtensibleFields::SurfaceName).get());
     if (istringEqual(surface.surfaceType(), "Floor")) {
       EXPECT_EQ(surface.grossArea() / totalAreaOfFloorSurfaces * fractionOnFloor,
                 idf_eg.getDouble(ZoneHVAC_Baseboard_RadiantConvective_WaterExtensibleFields::FractionofRadiantEnergytoSurface).get());
