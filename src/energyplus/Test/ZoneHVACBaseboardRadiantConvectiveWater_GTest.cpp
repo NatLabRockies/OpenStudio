@@ -31,6 +31,7 @@
 
 #include <utilities/idd/ZoneHVAC_Baseboard_RadiantConvective_Water_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_Baseboard_RadiantConvective_Water_Design_FieldEnums.hxx>
+#include <utilities/idd/BuildingSurface_Detailed_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 
 using namespace openstudio::energyplus;
@@ -55,8 +56,8 @@ TEST_F(EnergyPlusFixture, ZoneHVACBaseboardRadiantConvectiveWater) {
   };
   boost::optional<Space> space1 = Space::fromFloorPrint(floorPrint, 3, m);
   ASSERT_TRUE(space1);
-  auto surfs = space1->surfaces();
-  EXPECT_EQ(6u, surfs.size());
+  auto surfaces = space1->surfaces();
+  EXPECT_EQ(6u, surfaces.size());
 
   // Space needs to be in a ThermalZone or it's not translated
   ThermalZone z(m);
@@ -126,21 +127,9 @@ TEST_F(EnergyPlusFixture, ZoneHVACBaseboardRadiantConvectiveWater) {
   // Fraction of Radiant Energy Incident on People
   EXPECT_EQ(0.3, idfDesign.getDouble(ZoneHVAC_Baseboard_RadiantConvective_Water_DesignFields::FractionofRadiantEnergyIncidentonPeople).get());
 
-  auto const& surfaces = baseboard.getImpl<model::detail::ZoneHVACBaseboardRadiantConvectiveWater_Impl>()->surfaces();
-
-  double totalAreaOfWallSurfaces = 0;
-  double totalAreaOfCeilingSurfaces = 0;
-  double totalAreaOfFloorSurfaces = 0;
-
-  for (auto const& surface : surfaces) {
-    if (istringEqual(surface.surfaceType(), "Floor")) {
-      totalAreaOfFloorSurfaces += surface.grossArea();
-    } else if (istringEqual(surface.surfaceType(), "RoofCeiling")) {
-      totalAreaOfCeilingSurfaces += surface.grossArea();
-    } else {
-      totalAreaOfWallSurfaces += surface.grossArea();
-    }
-  }
+  double totalAreaOfWallSurfaces = 4 * 10.0 * 10.0;
+  double totalAreaOfCeilingSurfaces = 1 * 10.0 * 10.0;
+  double totalAreaOfFloorSurfaces = 1 * 10.0 * 10.0;
 
   double fractionOnFloor = (1.0 - 0.3) * 0.42;
   double fractionOnWall = (1.0 - 0.3) * 0.52;
@@ -150,18 +139,16 @@ TEST_F(EnergyPlusFixture, ZoneHVACBaseboardRadiantConvectiveWater) {
   // Fraction of Radiant Energy to Surface 1
   EXPECT_EQ(surfaces.size(), idfBaseboard.numExtensibleGroups());
   for (const auto& idf_eg : idfBaseboard.extensibleGroups()) {
-    const auto& surface = surfaces[idf_eg.groupIndex()];
-
-    EXPECT_EQ(surface.nameString(), idf_eg.getString(ZoneHVAC_Baseboard_RadiantConvective_WaterExtensibleFields::SurfaceName).get());
-    if (istringEqual(surface.surfaceType(), "Floor")) {
-      EXPECT_EQ(surface.grossArea() / totalAreaOfFloorSurfaces * fractionOnFloor,
-                idf_eg.getDouble(ZoneHVAC_Baseboard_RadiantConvective_WaterExtensibleFields::FractionofRadiantEnergytoSurface).get());
-    } else if (istringEqual(surface.surfaceType(), "RoofCeiling")) {
-      EXPECT_EQ(surface.grossArea() / totalAreaOfCeilingSurfaces * fractionOnCeiling,
-                idf_eg.getDouble(ZoneHVAC_Baseboard_RadiantConvective_WaterExtensibleFields::FractionofRadiantEnergytoSurface).get());
+    auto idfSurf = idf_eg.getTarget(ZoneHVAC_Baseboard_RadiantConvective_WaterExtensibleFields::SurfaceName).get();
+    std::string surfaceType = idfSurf.getString(BuildingSurface_DetailedFields::SurfaceType).get();
+    double fractionofRadiantEnergytoSurface =
+      idf_eg.getDouble(ZoneHVAC_Baseboard_RadiantConvective_WaterExtensibleFields::FractionofRadiantEnergytoSurface).get();
+    if (istringEqual(surfaceType, "Floor")) {
+      EXPECT_EQ(100.0 / totalAreaOfFloorSurfaces * fractionOnFloor, fractionofRadiantEnergytoSurface);
+    } else if (istringEqual(surfaceType, "Roof") || istringEqual(surfaceType, "Ceiling")) {
+      EXPECT_EQ(100.0 / totalAreaOfCeilingSurfaces * fractionOnCeiling, fractionofRadiantEnergytoSurface);
     } else {
-      EXPECT_EQ(surface.grossArea() / totalAreaOfWallSurfaces * fractionOnWall,
-                idf_eg.getDouble(ZoneHVAC_Baseboard_RadiantConvective_WaterExtensibleFields::FractionofRadiantEnergytoSurface).get());
+      EXPECT_EQ(100.0 / totalAreaOfWallSurfaces * fractionOnWall, fractionofRadiantEnergytoSurface);
     }
   }
 }
