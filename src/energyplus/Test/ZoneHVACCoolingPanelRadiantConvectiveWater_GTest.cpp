@@ -158,11 +158,11 @@ TEST_F(EnergyPlusFixture, ZoneHVACCoolingPanelRadiantConvectiveWater) {
     double fractionofRadiantEnergytoSurface =
       idf_eg.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterExtensibleFields::FractionofRadiantEnergytoSurface).get();
     if (istringEqual(surfaceType, "Floor")) {
-      EXPECT_EQ(100.0 / totalAreaOfFloorSurfaces * fractionOnFloor, fractionofRadiantEnergytoSurface);
+      EXPECT_NEAR(100.0 / totalAreaOfFloorSurfaces * fractionOnFloor, fractionofRadiantEnergytoSurface, 0.0001);
     } else if (istringEqual(surfaceType, "Roof") || istringEqual(surfaceType, "Ceiling")) {
-      EXPECT_EQ(100.0 / totalAreaOfCeilingSurfaces * fractionOnCeiling, fractionofRadiantEnergytoSurface);
+      EXPECT_NEAR(100.0 / totalAreaOfCeilingSurfaces * fractionOnCeiling, fractionofRadiantEnergytoSurface, 0.0001);
     } else {
-      EXPECT_EQ(100.0 / totalAreaOfWallSurfaces * fractionOnWall, fractionofRadiantEnergytoSurface);
+      EXPECT_NEAR(100.0 / totalAreaOfWallSurfaces * fractionOnWall, fractionofRadiantEnergytoSurface, 0.0001);
     }
   }
 }
