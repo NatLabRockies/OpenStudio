@@ -28,6 +28,7 @@
 #include "../../utilities/idf/IdfObject.hpp"
 #include "../../utilities/idf/WorkspaceObject.hpp"
 #include "../../utilities/idf/IdfExtensibleGroup.hpp"
+#include "../../utilities/idf/WorkspaceExtensibleGroup.hpp"
 #include "../../utilities/geometry/Point3d.hpp"
 
 #include <utilities/idd/ZoneHVAC_CoolingPanel_RadiantConvective_Water_FieldEnums.hxx>
@@ -149,8 +150,11 @@ TEST_F(EnergyPlusFixture, ZoneHVACCoolingPanelRadiantConvectiveWater) {
   // Fraction of Radiant Energy to Surface 1
   EXPECT_EQ(surfaces.size(), idfPanel.numExtensibleGroups());
   for (const auto& idf_eg : idfPanel.extensibleGroups()) {
-    auto idfSurf = idf_eg.getTarget(ZoneHVAC_CoolingPanel_RadiantConvective_WaterExtensibleFields::SurfaceName).get();
-    std::string surfaceType = idfSurf.getString(BuildingSurface_DetailedFields::SurfaceType).get();
+    auto eg = idf_eg.cast<WorkspaceExtensibleGroup>();  // Casting for getTarget
+    boost::optional<WorkspaceObject> idf_surf(eg.getTarget(ZoneHVAC_CoolingPanel_RadiantConvective_WaterExtensibleFields::SurfaceName));
+    ASSERT_TRUE(idf_surf);
+    EXPECT_EQ(idf_surf->iddObject().type(), IddObjectType::BuildingSurface_Detailed);
+    std::string surfaceType = idf_surf->getString(BuildingSurface_DetailedFields::SurfaceType).get();
     double fractionofRadiantEnergytoSurface =
       idf_eg.getDouble(ZoneHVAC_CoolingPanel_RadiantConvective_WaterExtensibleFields::FractionofRadiantEnergytoSurface).get();
     if (istringEqual(surfaceType, "Floor")) {

@@ -24,6 +24,7 @@
 #include "../../utilities/idf/IdfObject.hpp"
 #include "../../utilities/idf/WorkspaceObject.hpp"
 #include "../../utilities/idf/IdfExtensibleGroup.hpp"
+#include "../../utilities/idf/WorkspaceExtensibleGroup.hpp"
 #include "../../utilities/geometry/Point3d.hpp"
 
 #include <utilities/idd/ZoneHVAC_Baseboard_RadiantConvective_Electric_FieldEnums.hxx>
@@ -110,10 +111,13 @@ TEST_F(EnergyPlusFixture, ZoneHVACBaseboardRadiantConvectiveElectric) {
   // Fraction of Radiant Energy to Surface 1
   EXPECT_EQ(surfaces.size(), idfBaseboard.numExtensibleGroups());
   for (const auto& idf_eg : idfBaseboard.extensibleGroups()) {
-    auto idfSurf = idf_eg.getTarget(ZoneHVAC_Baseboard_RadiantConvective_ElectricExtensibleFields::SurfaceName).get();
-    std::string surfaceType = idfSurf.getString(BuildingSurface_DetailedFields::SurfaceType).get();
+    auto eg = idf_eg.cast<WorkspaceExtensibleGroup>();  // Casting for getTarget
+    boost::optional<WorkspaceObject> idf_surf(eg.getTarget(ZoneHVAC_Baseboard_RadiantConvective_ElectricExtensibleFields::SurfaceName));
+    ASSERT_TRUE(idf_surf);
+    EXPECT_EQ(idf_surf->iddObject().type(), IddObjectType::BuildingSurface_Detailed);
+    std::string surfaceType = idf_surf->getString(BuildingSurface_DetailedFields::SurfaceType).get();
     double fractionofRadiantEnergytoSurface =
-      idf_eg.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricExtensibleFields::FractionofRadiantEnergytoSurface).get();
+      eg.getDouble(ZoneHVAC_Baseboard_RadiantConvective_ElectricExtensibleFields::FractionofRadiantEnergytoSurface).get();
     if (istringEqual(surfaceType, "Floor")) {
       EXPECT_EQ(100.0 / totalAreaOfFloorSurfaces * fractionOnFloor, fractionofRadiantEnergytoSurface);
     } else if (istringEqual(surfaceType, "Roof") || istringEqual(surfaceType, "Ceiling")) {
