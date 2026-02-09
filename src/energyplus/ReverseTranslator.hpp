@@ -87,6 +87,8 @@ namespace energyplus {
 
     boost::optional<model::ModelObject> translateCoilCoolingDXSingleSpeed(const WorkspaceObject& workspaceObject);
 
+    boost::optional<model::ModelObject> translateCoilCoolingWater(const WorkspaceObject& workspaceObject);
+
     boost::optional<model::ModelObject> translateCoilSystemCoolingDX(const WorkspaceObject& workspaceObject);
 
     boost::optional<model::ModelObject> translateConstruction(const WorkspaceObject& workspaceObject);

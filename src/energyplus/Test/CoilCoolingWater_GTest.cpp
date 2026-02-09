@@ -7,6 +7,7 @@
 #include "EnergyPlusFixture.hpp"
 
 #include "../ForwardTranslator.hpp"
+#include "../ReverseTranslator.hpp"
 
 #include "../../model/Model.hpp"
 #include "../../model/CoilCoolingWater.hpp"
@@ -15,6 +16,9 @@
 #include "../../model/AirLoopHVAC.hpp"
 #include "../../model/AirLoopHVACUnitarySystem.hpp"
 #include "../../model/Node.hpp"
+#include "../../model/Schedule.hpp"
+#include "../../model/ScheduleConstant.hpp"
+#include "../../model/ScheduleConstant_Impl.hpp"
 
 #include "../../utilities/idf/IdfObject.hpp"
 #include "../../utilities/idf/IdfObject_Impl.hpp"
@@ -159,4 +163,103 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_CoilCoolingWater_AirLoopHVAC) {
 
   // Check Controller:WaterCoil created by coil.addToNode
   EXPECT_EQ(1, w.getObjectsByType(IddObjectType::Controller_WaterCoil).size());
+}
+
+TEST_F(EnergyPlusFixture, ReverseTranslator_CoilCoolingWater) {
+
+  ReverseTranslator rt;
+
+  Workspace w(StrictnessLevel::Minimal, IddFileType::EnergyPlus);
+
+  auto woCCW = w.addObject(IdfObject(IddObjectType::Coil_Cooling_Water)).get();
+
+  woCCW.setName("My CoilCoolingWater");
+  auto woavailabilitySchedule = w.addObject(IdfObject(IddObjectType::Schedule_Constant)).get();
+  woavailabilitySchedule.setName("My availabilitySchedule");
+  EXPECT_TRUE(woCCW.setPointer(Coil_Cooling_WaterFields::AvailabilityScheduleName, woavailabilitySchedule.handle()));
+  // Autosize
+  // EXPECT_TRUE(woCCW.setString(Coil_Cooling_WaterFields::DesignWaterFlowRate, "Autosized"));
+  EXPECT_TRUE(woCCW.setDouble(Coil_Cooling_WaterFields::DesignWaterFlowRate, 0.3));
+  // Autosize
+  // EXPECT_TRUE(woCCW.setString(Coil_Cooling_WaterFields::DesignAirFlowRate, "Autosized"));
+  EXPECT_TRUE(woCCW.setDouble(Coil_Cooling_WaterFields::DesignAirFlowRate, 0.4));
+  // Autosize
+  // EXPECT_TRUE(woCCW.setString(Coil_Cooling_WaterFields::DesignInletWaterTemperature, "Autosized"));
+  EXPECT_TRUE(woCCW.setDouble(Coil_Cooling_WaterFields::DesignInletWaterTemperature, 0.5));
+
+  // Leave empty = Autosize
+  // EXPECT_TRUE(woCCW.setString(Coil_Cooling_WaterFields::DesignInletAirTemperature, "Autosized"));
+  // EXPECT_TRUE(woCCW.setDouble(Coil_Cooling_WaterFields::DesignInletAirTemperature, 0.6));
+
+  // Explicit Autosize
+  EXPECT_TRUE(woCCW.setString(Coil_Cooling_WaterFields::DesignOutletAirTemperature, "AutosiZED"));
+  // EXPECT_TRUE(woCCW.setDouble(Coil_Cooling_WaterFields::DesignOutletAirTemperature, 0.7));
+
+  // Autosize
+  // EXPECT_TRUE(woCCW.setString(Coil_Cooling_WaterFields::DesignInletAirHumidityRatio, "Autosized"));
+  EXPECT_TRUE(woCCW.setDouble(Coil_Cooling_WaterFields::DesignInletAirHumidityRatio, 0.8));
+  // Autosize
+  // EXPECT_TRUE(woCCW.setString(Coil_Cooling_WaterFields::DesignOutletAirHumidityRatio, "Autosized"));
+  EXPECT_TRUE(woCCW.setDouble(Coil_Cooling_WaterFields::DesignOutletAirHumidityRatio, 0.9));
+
+  auto wowaterInletNodeName = "My waterInletNodeName";
+  EXPECT_TRUE(woCCW.setString(Coil_Cooling_WaterFields::WaterInletNodeName, wowaterInletNodeName));
+
+  auto wowaterOutletNodeName = "My waterOutletNodeName";
+  EXPECT_TRUE(woCCW.setString(Coil_Cooling_WaterFields::WaterOutletNodeName, wowaterOutletNodeName));
+
+  auto woairInletNodeName = "My airInletNodeName";
+  EXPECT_TRUE(woCCW.setString(Coil_Cooling_WaterFields::AirInletNodeName, woairInletNodeName));
+
+  auto woairOutletNodeName = "My airOutletNodeName";
+  EXPECT_TRUE(woCCW.setString(Coil_Cooling_WaterFields::AirOutletNodeName, woairOutletNodeName));
+
+  EXPECT_TRUE(woCCW.setString(Coil_Cooling_WaterFields::TypeofAnalysis, "DetailedAnalysis"));
+  EXPECT_TRUE(woCCW.setString(Coil_Cooling_WaterFields::HeatExchangerConfiguration, "CrossFlow"));
+
+  // Unused currently
+  auto wocondensateCollectionWaterStorageTank = w.addObject(IdfObject(IddObjectType::WaterUse_Storage)).get();
+  wocondensateCollectionWaterStorageTank.setName("My condensateCollectionWaterStorageTank");
+  EXPECT_TRUE(woCCW.setPointer(Coil_Cooling_WaterFields::CondensateCollectionWaterStorageTankName, wocondensateCollectionWaterStorageTank.handle()));
+
+  // Unused currently
+  EXPECT_TRUE(woCCW.setDouble(Coil_Cooling_WaterFields::DesignWaterTemperatureDifference, 1.7));
+
+  const Model m = rt.translateWorkspace(w);
+  const auto modelObjects = m.getConcreteModelObjects<CoilCoolingWater>();
+  ASSERT_EQ(1u, modelObjects.size());
+
+  auto modelObject = modelObjects.front();
+  ASSERT_TRUE(modelObject.availabilitySchedule().optionalCast<ScheduleConstant>());
+  EXPECT_EQ(woavailabilitySchedule.nameString(), modelObject.availabilitySchedule().nameString());
+
+  EXPECT_FALSE(modelObject.isDesignWaterFlowRateAutosized());
+  ASSERT_TRUE(modelObject.designWaterFlowRate());
+  EXPECT_EQ(0.3, modelObject.designWaterFlowRate().get());
+
+  EXPECT_FALSE(modelObject.isDesignAirFlowRateAutosized());
+  ASSERT_TRUE(modelObject.designAirFlowRate());
+  EXPECT_EQ(0.4, modelObject.designAirFlowRate().get());
+
+  EXPECT_TRUE(modelObject.isDesignInletWaterTemperatureAutosized());
+
+  EXPECT_TRUE(modelObject.isDesignInletAirTemperatureAutosized());
+
+  EXPECT_FALSE(modelObject.isDesignOutletAirTemperatureAutosized());
+  ASSERT_TRUE(modelObject.designOutletAirTemperature());
+  EXPECT_EQ(0.7, modelObject.designOutletAirTemperature().get());
+
+  EXPECT_FALSE(modelObject.isDesignInletAirHumidityRatioAutosized());
+  ASSERT_TRUE(modelObject.designInletAirHumidityRatio());
+  EXPECT_EQ(0.8, modelObject.designInletAirHumidityRatio().get());
+
+  EXPECT_FALSE(modelObject.isDesignOutletAirHumidityRatioAutosized());
+  ASSERT_TRUE(modelObject.designOutletAirHumidityRatio());
+  EXPECT_EQ(0.9, modelObject.designOutletAirHumidityRatio().get());
+
+  EXPECT_EQ("DetailedAnalysis", modelObject.typeOfAnalysis());
+  EXPECT_EQ("CrossFlow", modelObject.heatExchangerConfiguration());
+  // ASSERT_TRUE(modelObject.condensateCollectionWaterStorageTank().optionalCast<WaterStorageTank>());
+  // EXPECT_EQ(wocondensateCollectionWaterStorageTank.nameString(), modelObject.condensateCollectionWaterStorageTank().nameString());
+  // EXPECT_EQ(1.7, modelObject.designWaterTemperatureDifference());
 }

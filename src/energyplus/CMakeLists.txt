@@ -489,6 +489,7 @@ set(${target_name}_src
   ReverseTranslator/ReverseTranslateCoilCoolingDXCurveFitOperatingMode.cpp
   ReverseTranslator/ReverseTranslateCoilCoolingDXCurveFitSpeed.cpp
   ReverseTranslator/ReverseTranslateCoilCoolingDXSingleSpeed.cpp
+  ReverseTranslator/ReverseTranslateCoilCoolingWater.cpp
   ReverseTranslator/ReverseTranslateCoilHeatingGas.cpp
   ReverseTranslator/ReverseTranslateCoilSystemCoolingDX.cpp
   ReverseTranslator/ReverseTranslateConstruction.cpp

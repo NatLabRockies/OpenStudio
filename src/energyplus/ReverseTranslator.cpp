@@ -342,6 +342,10 @@ namespace energyplus {
         //modelObject = translateCoilCoolingDXSingleSpeed(workspaceObject );
         break;
       }
+      case openstudio::IddObjectType::Coil_Cooling_Water: {
+        modelObject = translateCoilCoolingWater(workspaceObject );
+        break;
+      }
       case openstudio::IddObjectType::CommentOnly: {
         break;  // no-op
       }

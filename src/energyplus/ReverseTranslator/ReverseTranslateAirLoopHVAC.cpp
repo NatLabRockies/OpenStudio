@@ -441,6 +441,8 @@ namespace energyplus {
       }
     }
 
+    // TODO: handle ControllerList for Coil:Cooling:Water etc
+
     return airLoopHVAC;
   }
 
