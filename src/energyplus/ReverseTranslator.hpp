@@ -187,6 +187,8 @@ namespace energyplus {
 
     boost::optional<model::ModelObject> translateFanSystemModel(const WorkspaceObject& workspaceObject);
 
+    boost::optional<model::ModelObject> translateFanVariableVolume(const WorkspaceObject& workspaceObject);
+
     boost::optional<model::ModelObject> translateFenestrationSurfaceDetailed(const WorkspaceObject& workspaceObject);
 
     boost::optional<model::ModelObject> translateFoundationKivaSettings(const WorkspaceObject& workspaceObject);
@@ -416,6 +418,8 @@ namespace energyplus {
     boost::optional<model::ModelObject> translateZoneVentilationDesignFlowRate(const WorkspaceObject& workspaceObject);
 
     boost::optional<model::ModelObject> translateZoneVentilationWindandStackOpenArea(const WorkspaceObject& workspaceObject);
+
+    void populateBranch(const WorkspaceObject& branchObject, model::Node& connectionNode, bool reverseOrder, bool isSupplyBranch);
 
     std::map<openstudio::Handle, model::ModelObject> m_workspaceToModelMap;
 

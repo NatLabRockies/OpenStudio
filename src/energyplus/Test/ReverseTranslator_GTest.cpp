@@ -1402,3 +1402,13 @@ TEST_F(EnergyPlusFixture, ReverseTranslator_CoilCoolingDX) {
   std::vector<Schedule> schedules = model.getModelObjects<Schedule>();
   ASSERT_EQ(1u, schedules.size());
 }
+
+TEST_F(EnergyPlusFixture, ReverseTranslator_5ZoneAirCooled) {
+  openstudio::path idfPath = resourcesPath() / openstudio::toPath("energyplus/5ZoneAirCooled/in.idf");
+  OptionalIdfFile idfFile = IdfFile::load(idfPath, IddFileType::EnergyPlus);
+  ASSERT_TRUE(idfFile);
+  Workspace inWorkspace(*idfFile);
+  ReverseTranslator reverseTranslator;
+  ASSERT_NO_THROW(reverseTranslator.translateWorkspace(inWorkspace));
+  Model model = reverseTranslator.translateWorkspace(inWorkspace);
+}

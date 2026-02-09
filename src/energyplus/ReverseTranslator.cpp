@@ -253,7 +253,7 @@ namespace energyplus {
 
     switch (workspaceObject.iddObject().type().value()) {
       case openstudio::IddObjectType::AirLoopHVAC: {
-        //modelObject = translateAirLoopHVAC(workspaceObject);
+        modelObject = translateAirLoopHVAC(workspaceObject);
         break;
       }
       case openstudio::IddObjectType::AirLoopHVAC_ControllerList: {
@@ -549,11 +549,15 @@ namespace energyplus {
         break;
       }
       case openstudio::IddObjectType::Fan_ConstantVolume: {
-        //modelObject = translateFanConstantVolume(workspaceObject );
+        modelObject = translateFanConstantVolume(workspaceObject );
         break;
       }
       case openstudio::IddObjectType::Fan_SystemModel: {
         modelObject = translateFanSystemModel(workspaceObject);
+        break;
+      }
+      case openstudio::IddObjectType::Fan_VariableVolume: {
+        modelObject = translateFanVariableVolume(workspaceObject);
         break;
       }
       case openstudio::IddObjectType::FenestrationSurface_Detailed: {

@@ -472,6 +472,7 @@ set(${target_name}_src
 
   ReverseTranslator.hpp
   ReverseTranslator.cpp
+  ReverseTranslator/ReverseTranslateLoop.cpp
   ReverseTranslator/ReverseTranslateAirLoopHVAC.cpp
   ReverseTranslator/ReverseTranslateAirLoopHVACOutdoorAirSystem.cpp
   ReverseTranslator/ReverseTranslateAirLoopHVACDedicatedOutdoorAirSystem.cpp
@@ -540,6 +541,7 @@ set(${target_name}_src
   ReverseTranslator/ReverseTranslateFanComponentModel.cpp
   ReverseTranslator/ReverseTranslateFanConstantVolume.cpp
   ReverseTranslator/ReverseTranslateFanSystemModel.cpp
+  ReverseTranslator/ReverseTranslateFanVariableVolume.cpp
   ReverseTranslator/ReverseTranslateFenestrationSurfaceDetailed.cpp
   ReverseTranslator/ReverseTranslateFoundationKiva.cpp
   ReverseTranslator/ReverseTranslateFoundationKivaSettings.cpp
