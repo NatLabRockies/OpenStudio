@@ -54,6 +54,17 @@ namespace model {
       return CoilCoolingWaterPanelRadiant::iddObjectType();
     }
 
+    std::vector<ScheduleTypeKey> CoilCoolingWaterPanelRadiant_Impl::getScheduleTypeKeys(const Schedule& schedule) const {
+      std::vector<ScheduleTypeKey> result;
+      UnsignedVector fieldIndices = getSourceIndices(schedule.handle());
+      UnsignedVector::const_iterator b(fieldIndices.begin());
+      UnsignedVector::const_iterator e(fieldIndices.end());
+      if (std::find(b, e, OS_Coil_Cooling_Water_Panel_RadiantFields::CoolingControlTemperatureScheduleName) != e) {
+        result.emplace_back("CoilCoolingWaterPanelRadiant", "Cooling Control Temperature Schedule");
+      }
+      return result;
+    }
+
     unsigned CoilCoolingWaterPanelRadiant_Impl::inletPort() const {
       return OS_Coil_Cooling_Water_Panel_RadiantFields::WaterInletNodeName;
     }
@@ -252,7 +263,7 @@ namespace model {
 
     bool CoilCoolingWaterPanelRadiant_Impl::setCoolingControlTemperatureSchedule(Schedule& coolingControlTemperatureSchedule) {
       bool result = setSchedule(OS_Coil_Cooling_Water_Panel_RadiantFields::CoolingControlTemperatureScheduleName, "CoilCoolingWaterPanelRadiant",
-                                "Cooling Control Temperature", coolingControlTemperatureSchedule);
+                                "Cooling Control Temperature Schedule", coolingControlTemperatureSchedule);
       return result;
     }
 
