@@ -392,6 +392,8 @@ namespace model {
       // Overriding this from WorkspaceObject_Impl is how all objects in the model end up
       // as model objects
       virtual std::shared_ptr<openstudio::detail::WorkspaceObject_Impl> createObject(const IdfObject& object, bool keepHandle) override;
+      virtual std::shared_ptr<openstudio::detail::WorkspaceObject_Impl> createObject(const IdfObject& object, bool keepHandle,
+                                                                                     bool isTransient) override;
 
       // Helper function to start the process of adding a cloned object to the workspace.
       virtual std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>

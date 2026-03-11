@@ -1,0 +1,168 @@
+set(target_name openstudio_epmodel)
+
+set(${target_name}_src
+  mainpage.hpp
+  EPModelAPI.hpp
+  Model.hpp
+  Model_Impl.hpp
+  Model.cpp
+  ModelObject.hpp
+  ModelObject_Impl.hpp
+  ModelObject.cpp
+  ParentObject.hpp
+  ParentObject_Impl.hpp
+  ParentObject.cpp
+  AirLoopHVACSupplyPath.hpp
+  AirLoopHVACSupplyPath_Impl.hpp
+  AirLoopHVACSupplyPath.cpp
+  AirLoopHVACControllerList.hpp
+  AirLoopHVACControllerList_Impl.hpp
+  AirLoopHVACControllerList.cpp
+  AirLoopHVACOutdoorAirSystem.hpp
+  AirLoopHVACOutdoorAirSystem_Impl.hpp
+  AirLoopHVACOutdoorAirSystem.cpp
+  AirLoopHVACOutdoorAirSystemEquipmentList.hpp
+  AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp
+  AirLoopHVACOutdoorAirSystemEquipmentList.cpp
+  ControllerOutdoorAir.hpp
+  ControllerOutdoorAir_Impl.hpp
+  ControllerOutdoorAir.cpp
+  ControllerMechanicalVentilation.hpp
+  ControllerMechanicalVentilation_Impl.hpp
+  ControllerMechanicalVentilation.cpp
+  DesignSpecificationOutdoorAir.hpp
+  DesignSpecificationOutdoorAir_Impl.hpp
+  DesignSpecificationOutdoorAir.cpp
+  DesignSpecificationOutdoorAirSpaceList.hpp
+  DesignSpecificationOutdoorAirSpaceList_Impl.hpp
+  DesignSpecificationOutdoorAirSpaceList.cpp
+  AirLoopHVACReturnPath.hpp
+  AirLoopHVACReturnPath_Impl.hpp
+  AirLoopHVACReturnPath.cpp
+  AirLoopHVACZoneSplitter.hpp
+  AirLoopHVACZoneSplitter_Impl.hpp
+  AirLoopHVACZoneSplitter.cpp
+  AirLoopHVACZoneMixer.hpp
+  AirLoopHVACZoneMixer_Impl.hpp
+  AirLoopHVACZoneMixer.cpp
+  Branch.hpp
+  Branch_Impl.hpp
+  Branch.cpp
+  BranchList.hpp
+  BranchList_Impl.hpp
+  BranchList.cpp
+  AirLoopHVAC.hpp
+  AirLoopHVAC_Impl.hpp
+  AirLoopHVAC.cpp
+  AirTerminalSingleDuctConstantVolumeNoReheat.hpp
+  AirTerminalSingleDuctConstantVolumeNoReheat_Impl.hpp
+  AirTerminalSingleDuctConstantVolumeNoReheat.cpp
+  FanConstantVolume.hpp
+  FanConstantVolume_Impl.hpp
+  FanConstantVolume.cpp
+  HVACComponent.hpp
+  HVACComponent_Impl.hpp
+  HVACComponent.cpp
+  StraightComponent.hpp
+  StraightComponent_Impl.hpp
+  StraightComponent.cpp
+  AirLoopHVAC.hpp
+  Node.hpp
+  NodeList.hpp
+  Node_Impl.hpp
+  NodeList_Impl.hpp
+  Node.cpp
+  NodeList.cpp
+  OutdoorAirMixer.hpp
+  OutdoorAirMixer_Impl.hpp
+  OutdoorAirMixer.cpp
+  ThermalZone.hpp
+  ThermalZone_Impl.hpp
+  ThermalZone.cpp
+  Space.hpp
+  Space_Impl.hpp
+  Space.cpp
+  SizingZone.hpp
+  SizingZone_Impl.hpp
+  SizingZone.cpp
+  ZoneHVACAirDistributionUnit.hpp
+  ZoneHVACAirDistributionUnit_Impl.hpp
+  ZoneHVACAirDistributionUnit.cpp
+  ZoneHVACEquipmentConnections.hpp
+  ZoneHVACEquipmentConnections_Impl.hpp
+  ZoneHVACEquipmentConnections.cpp
+  ZoneHVACEquipmentList.hpp
+  ZoneHVACEquipmentList_Impl.hpp
+  ZoneHVACEquipmentList.cpp
+  Splitter.hpp
+  Splitter.cpp
+  Mixer.hpp
+  Mixer.cpp
+  Loop.hpp
+  Loop_Impl.hpp
+  Loop_Impl.cpp
+  Loop.cpp
+  )
+
+add_library(${target_name}
+  OBJECT
+  ${${target_name}_src}
+  )
+
+set(${target_name}_depends
+  ${openstudio_utilities_depends}
+  )
+set(${target_name}_depends ${${target_name}_depends} PARENT_SCOPE)
+
+target_compile_definitions(${target_name} PRIVATE openstudio_epmodel_EXPORTS SHARED_OS_LIBS)
+target_link_libraries(${target_name} PUBLIC ${${target_name}_depends})
+
+add_dependencies(${target_name} GenerateIddFactoryRun)
+
+CREATE_SRC_GROUPS("${${target_name}_src}")
+
+
+set(${target_name}_test_src
+  test/EPModelFixture.cpp
+  test/EPModelFixture.hpp
+  test/AirLoopHVAC_GTest.cpp
+  test/AirLoopHVACSupplyPath_GTest.cpp
+  test/AirLoopHVACControllerList_GTest.cpp
+  test/AirLoopHVACReturnPath_GTest.cpp
+  test/AirLoopHVACOutdoorAirSystem_GTest.cpp
+  test/AirLoopHVACOutdoorAirSystemEquipmentList_GTest.cpp
+  test/AirLoopHVACZoneSplitter_GTest.cpp
+  test/AirLoopHVACZoneMixer_GTest.cpp
+  test/AirTerminalSingleDuctConstantVolumeNoReheat_GTest.cpp
+  test/Branch_GTest.cpp
+  test/BranchList_GTest.cpp
+  test/ThermalZone_GTest.cpp
+  test/Space_GTest.cpp
+  test/SizingZone_GTest.cpp
+  test/ZoneHVACAirDistributionUnit_GTest.cpp
+  test/ZoneHVACEquipmentConnections_GTest.cpp
+  test/ZoneHVACEquipmentList_GTest.cpp
+  test/Model_GTest.cpp
+  test/Node_GTest.cpp
+  test/OutdoorAirMixer_GTest.cpp
+  test/FanConstantVolume_GTest.cpp
+  test/ControllerOutdoorAir_GTest.cpp
+  test/DesignSpecificationOutdoorAir_GTest.cpp
+  test/IDF_SmallOffice_GTest.cpp
+)
+
+set(${target_name}_test_depends
+  openstudiolib
+  openstudio_epmodel
+)
+
+CREATE_SRC_GROUPS("${${target_name}_test_src}")
+
+if(BUILD_TESTING)
+  CREATE_TEST_TARGETS(${target_name} "${${target_name}_test_src}" "${${target_name}_test_depends}")
+
+  add_dependencies("${target_name}_tests"
+    openstudio_energyplus_resources
+    openstudio_utilities_resources
+  )
+endif()

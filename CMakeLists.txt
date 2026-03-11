@@ -1051,6 +1051,7 @@ set(project_directories
   generateiddfactory
   utilities
   model
+  epmodel
   modelica
   energyplus
   epjson
@@ -1588,4 +1589,3 @@ if (MSVC)
     endif()
   endif()
 endif()
-

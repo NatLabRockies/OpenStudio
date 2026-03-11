@@ -165,6 +165,13 @@ namespace model {
       return result;
     }
 
+    std::shared_ptr<openstudio::detail::WorkspaceObject_Impl> Model_Impl::createObject(const IdfObject& object, bool keepHandle,
+                                                                                        bool isTransient) {
+      auto result = createObject(object, keepHandle);
+      result->setTransient(isTransient);
+      return result;
+    }
+
     std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>
       Model_Impl::createObject(const std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>& originalObjectImplPtr, bool keepHandle) {
 

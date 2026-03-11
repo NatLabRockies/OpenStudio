@@ -26,6 +26,60 @@ namespace openstudio {
 
 namespace detail {
 
+  namespace {
+
+    bool isNodeObjectType(const openstudio::IddObjectType& type) {
+      return (type == openstudio::IddObjectType::Node) || (type == openstudio::IddObjectType::NodeList);
+    }
+
+    bool isNodeField(const openstudio::IddObject& iddObject, unsigned index) {
+      if (auto iddField = iddObject.getField(index)) {
+        return iddField->properties().type == openstudio::IddFieldType::NodeType;
+      }
+      return false;
+    }
+
+    bool isNodeTargetHandle(Workspace_Impl* workspace, const openstudio::Handle& targetHandle) {
+      if (targetHandle.isNull()) {
+        return true;
+      }
+      if (auto target = workspace->getObject(targetHandle)) {
+        return isNodeObjectType(target->iddObject().type());
+      }
+      return false;
+    }
+
+    OptionalWorkspaceObject resolveOrCreateTransientNode(Workspace_Impl* workspace, const std::string& targetName) {
+      if (targetName.empty()) {
+        return boost::none;
+      }
+
+      if (auto existingNode = workspace->getObjectByTypeAndName(openstudio::IddObjectType::Node, targetName, true)) {
+        return existingNode;
+      }
+
+      if (auto existingNodeList = workspace->getObjectByTypeAndName(openstudio::IddObjectType::NodeList, targetName, true)) {
+        return existingNodeList;
+      }
+
+      openstudio::IdfObject nodeObject(openstudio::IddObjectType::Node);
+      auto actualName = nodeObject.setName(targetName);
+      if (!actualName || !openstudio::istringEqual(*actualName, targetName)) {
+        return boost::none;
+      }
+
+      auto objectImpl = workspace->createObject(nodeObject, false, true);
+      std::vector<std::shared_ptr<WorkspaceObject_Impl>> objectImplPtrs{objectImpl};
+      auto added = workspace->addObjects(objectImplPtrs, false);
+      if (added.empty()) {
+        return boost::none;
+      }
+
+      return added.front();
+    }
+
+  }  // namespace
+
   // CONSTRUCTORS
 
   WorkspaceObject_Impl::WorkspaceObject_Impl(const IdfObject& idfObject, Workspace_Impl* workspace, bool keepHandle)
@@ -44,10 +98,19 @@ namespace detail {
 
   WorkspaceObject_Impl::WorkspaceObject_Impl(const WorkspaceObject_Impl& other, Workspace_Impl* workspace, bool keepHandle)
     : IdfObject_Impl(other, keepHandle),
+      m_isTransient(other.m_isTransient),
       m_initialized(false),
       m_workspace(workspace),
       m_sourceData(other.m_sourceData),
       m_targetData(other.m_targetData) {}
+
+  bool WorkspaceObject_Impl::isTransient() const {
+    return m_isTransient;
+  }
+
+  void WorkspaceObject_Impl::setTransient(bool value) {
+    m_isTransient = value;
+  }
 
   std::vector<IdfObject> WorkspaceObject_Impl::remove() {
     std::vector<IdfObject> result;
@@ -57,9 +120,9 @@ namespace detail {
     return result;
   }
 
-  void WorkspaceObject_Impl::initializeOnAdd(bool expectToLosePointers) {
-    OS_ASSERT(m_workspace);
-    bool ptrsAsHandles = iddObject().hasHandleField();
+	  void WorkspaceObject_Impl::initializeOnAdd(bool expectToLosePointers) {
+	    OS_ASSERT(m_workspace);
+	    bool ptrsAsHandles = iddObject().hasHandleField();
     // loop through object list fields
     UnsignedVector fields = objectListFields();
     for (unsigned index : fields) {
@@ -100,6 +163,51 @@ namespace detail {
           LOG(Warn, briefDescription() << ", points to an object named " << targetName << " from field " << index
                                        << ", but that object cannot be located.");
         }
+      }
+    }
+
+    // Also hydrate node-typed fields (Node or NodeList) so pointer tracking works
+    // immediately after IDF ingestion, not only after downstream canonicalization.
+    const auto nameFieldIndex = iddObject().nameFieldIndex();
+    for (unsigned index = 0; index < numFields(); ++index) {
+      if (!isNodeField(iddObject(), index)) {
+        continue;
+      }
+      if (nameFieldIndex && (index == *nameFieldIndex)) {
+        continue;
+      }
+
+      if (!m_sourceData) {
+        m_sourceData = SourceData();
+      }
+
+      std::string targetName = IdfObject_Impl::getString(index).get();
+      if (targetName.empty()) {
+        setPointerImpl(index, Handle());
+        continue;
+      }
+
+      Handle targetHandle;
+      if (ptrsAsHandles && boost::regex_match(targetName, uuidInString())) {
+        Handle candidateHandle = toUUID(targetName);
+        if (workspace().isMember(candidateHandle) && isNodeTargetHandle(m_workspace, candidateHandle)) {
+          targetHandle = candidateHandle;
+        } else if (!expectToLosePointers) {
+          LOG(Trace, "Field " << index << " of '" << iddObject().name()
+                              << "' references handle-like value, but no Node/NodeList target was found. Will try to interpret as name.");
+        }
+      }
+
+      if (targetHandle.isNull()) {
+        if (auto nodeTarget = resolveOrCreateTransientNode(m_workspace, targetName)) {
+          targetHandle = nodeTarget->handle();
+        }
+      }
+
+      setPointerImpl(index, targetHandle);
+      if (targetHandle.isNull() && !expectToLosePointers) {
+        LOG(Warn, briefDescription() << ", points to a node field value named " << targetName << " from field " << index
+                                     << ", but no Node/NodeList object can be located.");
       }
     }
   }
@@ -150,7 +258,13 @@ namespace detail {
   }
 
   boost::optional<std::string> WorkspaceObject_Impl::getString(unsigned index, bool returnDefault, bool returnUninitializedEmpty) const {
-    if (canBeSource(index) && (index < numFields())) {
+    bool isManagedNodePointer = false;
+    if (isNodeField(iddObject(), index) && (index < numFields()) && m_sourceData) {
+      auto fpIt = getConstIteratorAtFieldIndex<SourceData>(m_sourceData->pointers, index);
+      isManagedNodePointer = (fpIt != m_sourceData->pointers.end());
+    }
+
+    if ((canBeSource(index) || isManagedNodePointer) && (index < numFields())) {
       if (!initialized()) {
         return boost::none;
       }
@@ -194,7 +308,13 @@ namespace detail {
     // So we handle that case too
 
     // If it's a source field:
-    if (canBeSource(index) && (index < numFields())) {
+    bool isManagedNodePointer = false;
+    if (isNodeField(iddObject(), index) && (index < numFields()) && m_sourceData) {
+      auto fpIt = getConstIteratorAtFieldIndex<SourceData>(m_sourceData->pointers, index);
+      isManagedNodePointer = (fpIt != m_sourceData->pointers.end());
+    }
+
+    if ((canBeSource(index) || isManagedNodePointer) && (index < numFields())) {
       if (!initialized()) {
         return boost::none;
       }
@@ -229,6 +349,20 @@ namespace detail {
         Handle th = fpIt->targetHandle;
         if (!th.isNull()) {
           return this->workspace().getObject(th);
+        }
+      }
+    }
+
+    if (isNodeField(iddObject(), index) && (index < numFields())) {
+      const std::string targetName = IdfObject_Impl::getString(index).get();
+      if (!targetName.empty()) {
+        if (auto nodeTarget = resolveOrCreateTransientNode(m_workspace, targetName)) {
+          auto* nonConstThis = const_cast<WorkspaceObject_Impl*>(this);
+          if (!nonConstThis->m_sourceData) {
+            nonConstThis->m_sourceData = SourceData();
+          }
+          nonConstThis->setPointerImpl(index, nodeTarget->handle());
+          return nodeTarget;
         }
       }
     }
@@ -484,7 +618,11 @@ namespace detail {
     }
 
     // essential hurdles
-    if (canBeSource(index) && (targetHandle.isNull() || m_workspace->isMember(targetHandle))) {
+    if ((canBeSource(index) || isNodeField(iddObject(), index)) && (targetHandle.isNull() || m_workspace->isMember(targetHandle))) {
+
+      if (!m_sourceData) {
+        m_sourceData = SourceData();
+      }
 
       StrictnessLevel level = m_workspace->strictnessLevel();
 
@@ -494,9 +632,14 @@ namespace detail {
       }
 
       // field PointerType
-      if (checkValidity && (level > StrictnessLevel::Minimal) && (!targetHandle.isNull())
-          && (!m_workspace->canBeTarget(targetHandle, iddObject().objectLists(index)))) {
-        return false;
+      if (checkValidity && (level > StrictnessLevel::Minimal) && (!targetHandle.isNull())) {
+        if (isNodeField(iddObject(), index)) {
+          if (!isNodeTargetHandle(m_workspace, targetHandle)) {
+            return false;
+          }
+        } else if (!m_workspace->canBeTarget(targetHandle, iddObject().objectLists(index))) {
+          return false;
+        }
       }
 
       // record diffs at start
@@ -623,15 +766,20 @@ namespace detail {
 
     StrictnessLevel level = m_workspace->strictnessLevel();
     // essential hurdles
-    if (canBeSource(index) && (targetHandle.isNull() || m_workspace->name(targetHandle))) {
+    if ((canBeSource(index) || isNodeField(iddObject(), index)) && (targetHandle.isNull() || m_workspace->name(targetHandle))) {
       // field NullAndRequired (applicable if extensible group of size 1)
       if (checkValidity && (level > StrictnessLevel::Draft) && targetHandle.isNull() && iddObject().isRequiredField(index)) {
         return false;
       }
       // field PointerType
-      if (checkValidity && (level > StrictnessLevel::Minimal) && (!targetHandle.isNull())
-          && (!m_workspace->canBeTarget(targetHandle, iddObject().objectLists(index)))) {
-        return false;
+      if (checkValidity && (level > StrictnessLevel::Minimal) && (!targetHandle.isNull())) {
+        if (isNodeField(iddObject(), index)) {
+          if (!isNodeTargetHandle(m_workspace, targetHandle)) {
+            return false;
+          }
+        } else if (!m_workspace->canBeTarget(targetHandle, iddObject().objectLists(index))) {
+          return false;
+        }
       }
       bool result = IdfObject_Impl::pushString(checkValidity);
       if (result) {

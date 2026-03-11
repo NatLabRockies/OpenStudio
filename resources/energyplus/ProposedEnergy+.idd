@@ -65410,7 +65410,7 @@ PythonPlugin:OutputVariable,
        \key Baseboard
        \key HeatRecoveryForCooling
        \key HeatRecoveryForHeating
-   A9; \field End-Use Subcategory
+  A9; \field End-Use Subcategory
        \note This field is always optional. For regular output variables with "Type of Data in Variable" set to
        \note either Averaged or Summed, this field is completely ignored. For Metered variables, this field is
        \note optional, but allows custom categorization of the end-uses in the ABUPS End Uses by Subcategory table.
@@ -65418,3 +65418,25 @@ PythonPlugin:OutputVariable,
        \type alpha
        \retaincase
 
+Node,
+  \memo Temporary OpenStudio node object to support epmodel scaffolding. Expected to be removed or replaced
+  \memo with a virtual/view-based representation once EnergyPlus-aligned model objects are mature.
+  A1, \field Handle
+       \type handle
+       \required-field
+  A2, \field Name
+       \type alpha
+       \required-field
+       \reference ConnectionObject
+       \reference Node
+       \reference AirflowNetworkNodeComponentNames
+  N1, \field Inlet Port
+       \type object-list
+       \required-field
+       \object-list ConnectionNames
+  N2; \field Outlet Port
+       \type object-list
+       \required-field
+       \object-list ConnectionNames
+
+! End of temporary Node object

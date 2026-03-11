@@ -10,6 +10,8 @@
 #include <utilities/idd/Zone_FieldEnums.hxx>
 #include <utilities/idd/Lights_FieldEnums.hxx>
 #include <utilities/idd/Schedule_Compact_FieldEnums.hxx>
+#include <utilities/idd/Node_FieldEnums.hxx>
+#include <utilities/idd/AirLoopHVAC_ZoneSplitter_FieldEnums.hxx>
 
 #include <utilities/idd/OS_DaylightingDevice_Shelf_FieldEnums.hxx>
 #include <utilities/idd/OS_SetpointManager_MixedAir_FieldEnums.hxx>
@@ -405,6 +407,31 @@ TEST_F(IdfFixture, WorkspaceObject_OS_DaylightingDevice_Shelf) {
   EXPECT_FALSE(obj1->setString(OS_DaylightingDevice_ShelfFields::InsideShelfName, toString(createUUID())));
   ASSERT_TRUE(obj1->getString(OS_DaylightingDevice_ShelfFields::InsideShelfName));
   EXPECT_EQ(w2->nameString(), obj1->getString(OS_DaylightingDevice_ShelfFields::InsideShelfName).get());
+}
+
+TEST_F(IdfFixture, WorkspaceObject_EnergyPlus_NodeFieldSetPointerTracksRename) {
+  Workspace ws(StrictnessLevel::Draft, IddFileType::EnergyPlus);
+
+  OptionalWorkspaceObject zoneSplitter = ws.addObject(IdfObject(IddObjectType::AirLoopHVAC_ZoneSplitter));
+  ASSERT_TRUE(zoneSplitter);
+  ASSERT_TRUE(zoneSplitter->setName("Test Zone Splitter"));
+
+  OptionalWorkspaceObject node = ws.addObject(IdfObject(IddObjectType::Node));
+  ASSERT_TRUE(node);
+  ASSERT_TRUE(node->setName("Node A"));
+
+  EXPECT_TRUE(zoneSplitter->setPointer(AirLoopHVAC_ZoneSplitterFields::InletNodeName, node->handle()));
+
+  ASSERT_TRUE(zoneSplitter->getString(AirLoopHVAC_ZoneSplitterFields::InletNodeName));
+  EXPECT_EQ("Node A", zoneSplitter->getString(AirLoopHVAC_ZoneSplitterFields::InletNodeName).get());
+
+  OptionalWorkspaceObject target = zoneSplitter->getTarget(AirLoopHVAC_ZoneSplitterFields::InletNodeName);
+  ASSERT_TRUE(target);
+  EXPECT_EQ(node->handle(), target->handle());
+
+  ASSERT_TRUE(node->setName("Node B"));
+  ASSERT_TRUE(zoneSplitter->getString(AirLoopHVAC_ZoneSplitterFields::InletNodeName));
+  EXPECT_EQ("Node B", zoneSplitter->getString(AirLoopHVAC_ZoneSplitterFields::InletNodeName).get());
 }
 
 //TEST_F(IdfFixture, WorkspaceObject_OS_AirLoopHVAC_ZoneSplitter)

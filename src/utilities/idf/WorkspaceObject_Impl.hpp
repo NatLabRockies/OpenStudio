@@ -109,6 +109,9 @@ namespace detail {
 
     virtual ~WorkspaceObject_Impl() = default;
 
+    bool isTransient() const;
+    void setTransient(bool value);
+
     /// remove the object from the workspace
     /// return std::vector<IdfObject> containing any removed object(s)
     // TODO: replace with undo struct including connections
@@ -311,7 +314,8 @@ namespace detail {
 
     virtual bool fieldIsNonnullIfRequired(unsigned index) const override;
 
-   private:
+  private:
+    bool m_isTransient = false;
     bool m_initialized;
     Workspace_Impl* m_workspace;
     OptionalSourceData m_sourceData;

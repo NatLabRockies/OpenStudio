@@ -199,7 +199,7 @@ namespace detail {
     return boost::none;
   }
 
-  std::vector<WorkspaceObject> Workspace_Impl::objects(bool sorted) const {
+  std::vector<WorkspaceObject> Workspace_Impl::objects(bool sorted, bool includeTransient) const {
     OptionalIddObject versionIdd = m_iddFileAndFactoryWrapper.versionObject();
     if (!versionIdd) {
       return {};
@@ -214,20 +214,26 @@ namespace detail {
           OptionalWorkspaceObject owo = getObject(h);
           std::pair<HandleSet::iterator, bool> insertResult = setToCheckUniqueness.insert(h);
           if (owo && insertResult.second && (owo->iddObject() != versionIdd.get())) {
+            if (!includeTransient && owo->getImpl<WorkspaceObject_Impl>()->isTransient()) {
+              continue;
+            }
             result.push_back(*owo);
           } else {
-            return sort(objects(false));
+            return sort(objects(false, includeTransient));
           }
         }
         return result;
       }
-      return sort(objects(false));
+      return sort(objects(false, includeTransient));
     }
 
     WorkspaceObjectVector result;
     for (const WorkspaceObjectMap::value_type& p : m_workspaceObjectMap) {
       WorkspaceObject obj = WorkspaceObject(p.second);
       if (obj.iddObject() != versionIdd.get()) {
+        if (!includeTransient && obj.getImpl<WorkspaceObject_Impl>()->isTransient()) {
+          continue;
+        }
         result.push_back(obj);
       }
     }
@@ -311,13 +317,17 @@ namespace detail {
     return result;
   }
 
-  std::vector<WorkspaceObject> Workspace_Impl::getObjectsByName(const std::string& name, bool exactMatch) const {
+  std::vector<WorkspaceObject> Workspace_Impl::getObjectsByName(const std::string& name, bool exactMatch, bool includeTransient) const {
     WorkspaceObjectVector result;
     if (exactMatch) {
       for (const WorkspaceObjectMap::value_type& p : m_workspaceObjectMap) {
         if (OptionalString candidate = p.second->name()) {
           if (istringEqual(*candidate, name)) {
-            result.push_back(WorkspaceObject(p.second));
+            WorkspaceObject obj(p.second);
+            if (!includeTransient && obj.getImpl<WorkspaceObject_Impl>()->isTransient()) {
+              continue;
+            }
+            result.push_back(obj);
           }
         }
       }
@@ -326,7 +336,11 @@ namespace detail {
       for (const WorkspaceObjectMap::value_type& p : m_workspaceObjectMap) {
         if (OptionalString candidate = p.second->name()) {
           if (baseNamesMatch(baseName, *candidate)) {
-            result.push_back(WorkspaceObject(p.second));
+            WorkspaceObject obj(p.second);
+            if (!includeTransient && obj.getImpl<WorkspaceObject_Impl>()->isTransient()) {
+              continue;
+            }
+            result.push_back(obj);
           }
         }
       }
@@ -334,7 +348,7 @@ namespace detail {
     return result;
   }
 
-  std::vector<WorkspaceObject> Workspace_Impl::getObjectsByType(IddObjectType objectType) const {
+  std::vector<WorkspaceObject> Workspace_Impl::getObjectsByType(IddObjectType objectType, bool includeTransient) const {
     auto loc = m_iddObjectTypeMap.find(objectType);
     if (loc == m_iddObjectTypeMap.end()) {
       return {};
@@ -342,14 +356,17 @@ namespace detail {
     std::vector<WorkspaceObject> result;
     result.reserve(loc->second.size());
     for (auto it = loc->second.begin(); it != loc->second.end(); ++it) {
+      if (!includeTransient && it->second->isTransient()) {
+        continue;
+      }
       result.push_back(it->second);
     }
     return result;
   }
 
-  std::vector<WorkspaceObject> Workspace_Impl::getObjectsByType(const IddObject& objectType) const {
+  std::vector<WorkspaceObject> Workspace_Impl::getObjectsByType(const IddObject& objectType, bool includeTransient) const {
     WorkspaceObjectVector result;
-    for (const WorkspaceObject& object : objects()) {
+    for (const WorkspaceObject& object : objects(false, includeTransient)) {
       if (object.iddObject() == objectType) {
         result.push_back(object);
       }
@@ -357,8 +374,9 @@ namespace detail {
     return result;
   }
 
-  boost::optional<WorkspaceObject> Workspace_Impl::getObjectByTypeAndName(IddObjectType objectType, const std::string& name) const {
-    for (const WorkspaceObject& object : getObjectsByType(objectType)) {
+  boost::optional<WorkspaceObject> Workspace_Impl::getObjectByTypeAndName(IddObjectType objectType, const std::string& name,
+                                                                          bool includeTransient) const {
+    for (const WorkspaceObject& object : getObjectsByType(objectType, includeTransient)) {
       OptionalString candidate = object.name();
       if (candidate && istringEqual(*candidate, name)) {
         return object;
@@ -367,10 +385,11 @@ namespace detail {
     return boost::none;
   }
 
-  std::vector<WorkspaceObject> Workspace_Impl::getObjectsByTypeAndName(IddObjectType objectType, const std::string& name) const {
+  std::vector<WorkspaceObject> Workspace_Impl::getObjectsByTypeAndName(IddObjectType objectType, const std::string& name,
+                                                                       bool includeTransient) const {
     WorkspaceObjectVector result;
     std::string baseName = getBaseName(name);
-    for (const WorkspaceObject& object : getObjectsByType(objectType)) {
+    for (const WorkspaceObject& object : getObjectsByType(objectType, includeTransient)) {
       if (OptionalString candidate = object.name()) {
         if (baseNamesMatch(baseName, *candidate)) {
           result.push_back(object);
@@ -380,7 +399,7 @@ namespace detail {
     return result;
   }
 
-  std::vector<WorkspaceObject> Workspace_Impl::getObjectsByReference(const std::string& referenceName) const {
+  std::vector<WorkspaceObject> Workspace_Impl::getObjectsByReference(const std::string& referenceName, bool includeTransient) const {
     auto loc = m_idfReferencesMap.find(referenceName);
     if (loc == m_idfReferencesMap.end()) {
       return {};
@@ -388,12 +407,16 @@ namespace detail {
     std::vector<WorkspaceObject> result;
     result.reserve(loc->second.size());
     for (auto it = loc->second.begin(); it != loc->second.end(); ++it) {
+      if (!includeTransient && it->second->isTransient()) {
+        continue;
+      }
       result.push_back(it->second);
     }
     return result;
   }
 
-  std::vector<WorkspaceObject> Workspace_Impl::getObjectsByReference(const std::vector<std::string>& referenceNames) const {
+  std::vector<WorkspaceObject> Workspace_Impl::getObjectsByReference(const std::vector<std::string>& referenceNames,
+                                                                     bool includeTransient) const {
     WorkspaceObjectMap objectMap;
     for (const std::string& referenceName : referenceNames) {
       auto loc = m_idfReferencesMap.find(referenceName);
@@ -404,14 +427,18 @@ namespace detail {
     std::vector<WorkspaceObject> result;
     result.reserve(objectMap.size());
     for (auto it = objectMap.begin(); it != objectMap.end(); ++it) {
+      if (!includeTransient && it->second->isTransient()) {
+        continue;
+      }
       result.push_back(it->second);
     }
     return result;
   }
 
   boost::optional<WorkspaceObject> Workspace_Impl::getObjectByNameAndReference(const std::string& name,
-                                                                               const std::vector<std::string>& referenceNames) const {
-    for (const WorkspaceObject& object : getObjectsByReference(referenceNames)) {
+                                                                               const std::vector<std::string>& referenceNames,
+                                                                               bool includeTransient) const {
+    for (const WorkspaceObject& object : getObjectsByReference(referenceNames, includeTransient)) {
       OptionalString candidate = object.name();
       if (candidate && istringEqual(*candidate, name)) {
         return object;
@@ -437,6 +464,12 @@ namespace detail {
   // Helper function to start the process of adding an object to the workspace.
   std::shared_ptr<WorkspaceObject_Impl> Workspace_Impl::createObject(const IdfObject& object, bool keepHandle) {
     return WorkspaceObject_ImplPtr(new WorkspaceObject_Impl(object, this, keepHandle));
+  }
+
+  std::shared_ptr<WorkspaceObject_Impl> Workspace_Impl::createObject(const IdfObject& object, bool keepHandle, bool isTransient) {
+    auto result = WorkspaceObject_ImplPtr(new WorkspaceObject_Impl(object, this, keepHandle));
+    result->setTransient(isTransient);
+    return result;
   }
 
   // Helper function to start the process of adding a cloned object to the workspace.
@@ -1518,11 +1551,7 @@ namespace detail {
   }
 
   unsigned Workspace_Impl::numObjectsOfType(IddObjectType type) const {
-    auto iotmLoc = m_iddObjectTypeMap.find(type);
-    if (iotmLoc == m_iddObjectTypeMap.end()) {
-      return 0;
-    }
-    return iotmLoc->second.size();
+    return getObjectsByType(type).size();
   }
 
   unsigned Workspace_Impl::numObjectsOfType(const IddObject& objectType) const {
@@ -1756,7 +1785,7 @@ namespace detail {
     }
 
     // add objects and replace handle pointers with names
-    WorkspaceObjectVector objs = objects(true);  // sorted objects
+    WorkspaceObjectVector objs = objects(true, false);  // sorted objects, skip transient
     for (const WorkspaceObject& obj : objs) {
       result.addObject(obj.idfObject());
     }
@@ -2465,8 +2494,8 @@ boost::optional<WorkspaceObject> Workspace::getObject(Handle handle) const {
   return result;
 }
 
-std::vector<WorkspaceObject> Workspace::objects(bool sorted) const {
-  return m_impl->objects(sorted);
+std::vector<WorkspaceObject> Workspace::objects(bool sorted, bool includeTransient) const {
+  return m_impl->objects(sorted, includeTransient);
 }
 
 std::vector<Handle> Workspace::handles(bool sorted) const {
@@ -2485,36 +2514,40 @@ std::vector<WorkspaceObject> Workspace::getObjects(const std::vector<Handle>& ha
   return m_impl->getObjects(handles);
 }
 
-std::vector<WorkspaceObject> Workspace::getObjectsByName(const std::string& name, bool exactMatch) const {
-  return m_impl->getObjectsByName(name, exactMatch);
+std::vector<WorkspaceObject> Workspace::getObjectsByName(const std::string& name, bool exactMatch, bool includeTransient) const {
+  return m_impl->getObjectsByName(name, exactMatch, includeTransient);
 }
 
-std::vector<WorkspaceObject> Workspace::getObjectsByType(IddObjectType objectType) const {
-  return m_impl->getObjectsByType(objectType);
+std::vector<WorkspaceObject> Workspace::getObjectsByType(IddObjectType objectType, bool includeTransient) const {
+  return m_impl->getObjectsByType(objectType, includeTransient);
 }
 
-std::vector<WorkspaceObject> Workspace::getObjectsByType(const IddObject& objectType) const {
-  return m_impl->getObjectsByType(objectType);
+std::vector<WorkspaceObject> Workspace::getObjectsByType(const IddObject& objectType, bool includeTransient) const {
+  return m_impl->getObjectsByType(objectType, includeTransient);
 }
 
-boost::optional<WorkspaceObject> Workspace::getObjectByTypeAndName(IddObjectType objectType, const std::string& name) const {
-  return m_impl->getObjectByTypeAndName(objectType, name);
+boost::optional<WorkspaceObject> Workspace::getObjectByTypeAndName(IddObjectType objectType, const std::string& name,
+                                                                   bool includeTransient) const {
+  return m_impl->getObjectByTypeAndName(objectType, name, includeTransient);
 }
 
-std::vector<WorkspaceObject> Workspace::getObjectsByTypeAndName(IddObjectType objectType, const std::string& name) const {
-  return m_impl->getObjectsByTypeAndName(objectType, name);
+std::vector<WorkspaceObject> Workspace::getObjectsByTypeAndName(IddObjectType objectType, const std::string& name,
+                                                                bool includeTransient) const {
+  return m_impl->getObjectsByTypeAndName(objectType, name, includeTransient);
 }
 
-std::vector<WorkspaceObject> Workspace::getObjectsByReference(const std::string& referenceName) const {
-  return m_impl->getObjectsByReference(referenceName);
+std::vector<WorkspaceObject> Workspace::getObjectsByReference(const std::string& referenceName, bool includeTransient) const {
+  return m_impl->getObjectsByReference(referenceName, includeTransient);
 }
 
-std::vector<WorkspaceObject> Workspace::getObjectsByReference(const std::vector<std::string>& referenceNames) const {
-  return m_impl->getObjectsByReference(referenceNames);
+std::vector<WorkspaceObject> Workspace::getObjectsByReference(const std::vector<std::string>& referenceNames,
+                                                              bool includeTransient) const {
+  return m_impl->getObjectsByReference(referenceNames, includeTransient);
 }
 
-boost::optional<WorkspaceObject> Workspace::getObjectByNameAndReference(const std::string& name, const StringVector& referenceNames) const {
-  return m_impl->getObjectByNameAndReference(name, referenceNames);
+boost::optional<WorkspaceObject> Workspace::getObjectByNameAndReference(const std::string& name, const StringVector& referenceNames,
+                                                                        bool includeTransient) const {
+  return m_impl->getObjectByNameAndReference(name, referenceNames, includeTransient);
 }
 
 bool Workspace::fastNaming() const {

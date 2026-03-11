@@ -101,6 +101,10 @@ namespace energyplus {
     auto oa_controller = modelObject.controllerOutdoorAir();
     if (auto oa_sys_ = oa_controller.airLoopHVACOutdoorAirSystem()) {
       if (auto a_ = oa_sys_->airLoopHVAC()) {
+        // Intentional two-stage behavior:
+        // 1) CMV object translation is gated above on "any served zone has DSOA".
+        // 2) Extensible rows are added per-zone only when that specific zone resolves to a DSOA/DSOA:SpaceList.
+        // This supports mixed airloops where some zones have DSOA and others do not.
         for (const auto& z : a_->thermalZones()) {
           if (auto dsoaOrList_ = getOrCreateThermalZoneDSOA(z)) {
             IdfExtensibleGroup eg = idfObject.pushExtensibleGroup({z.nameString(), dsoaOrList_->nameString(), zoneDSZADName(z).value_or("")});
