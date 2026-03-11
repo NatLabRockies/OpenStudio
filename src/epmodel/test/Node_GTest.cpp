@@ -9,7 +9,7 @@
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../StraightComponent/Node.hpp"
-#include "../SetpointManagerScheduled.hpp"
+#include "../SetpointManager/SetpointManagerScheduled.hpp"
 
 using namespace openstudio::epmodel;
 

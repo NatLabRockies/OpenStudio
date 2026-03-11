@@ -16,8 +16,8 @@
 #include "Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
-#include "SetpointManager.hpp"
-#include "SetpointManager_Impl.hpp"
+#include "SetpointManager/SetpointManager.hpp"
+#include "SetpointManager/SetpointManager_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddEnums.hxx>

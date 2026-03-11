@@ -12,7 +12,7 @@
 #include "../ModelObject/DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
 #include "../ModelObject/SizingZone.hpp"
 #include "../ModelObject/SizingZone_Impl.hpp"
-#include "../Space.hpp"
+#include "../PlanarSurfaceGroup/Space.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 
 #include <utilities/idd/Sizing_Zone_FieldEnums.hxx>
@@ -23,6 +23,43 @@ TEST_F(EPModelFixture, API_Space_DefaultConstructor) {
   Model model;
   Space space(model);
   EXPECT_EQ(Space::iddObjectType(), space.iddObject().type());
+}
+
+TEST_F(EPModelFixture, API_Space_ScalarAccessors_RoundTrip) {
+  Model model;
+  Space space(model);
+
+  EXPECT_TRUE(space.isCeilingHeightDefaulted());
+  EXPECT_TRUE(space.isVolumeDefaulted());
+  EXPECT_TRUE(space.isFloorAreaDefaulted());
+
+  EXPECT_TRUE(space.setCeilingHeight(2.8));
+  EXPECT_TRUE(space.setVolume(125.0));
+  EXPECT_TRUE(space.setFloorArea(45.0));
+
+  EXPECT_DOUBLE_EQ(2.8, space.ceilingHeight());
+  EXPECT_DOUBLE_EQ(125.0, space.volume());
+  EXPECT_DOUBLE_EQ(45.0, space.floorArea());
+
+  EXPECT_FALSE(space.isCeilingHeightDefaulted());
+  EXPECT_FALSE(space.isVolumeDefaulted());
+  EXPECT_FALSE(space.isFloorAreaDefaulted());
+
+  space.autocalculateCeilingHeight();
+  space.autocalculateVolume();
+  space.autocalculateFloorArea();
+
+  EXPECT_TRUE(space.isCeilingHeightAutocalculated());
+  EXPECT_TRUE(space.isVolumeAutocalculated());
+  EXPECT_TRUE(space.isFloorAreaAutocalculated());
+
+  space.resetCeilingHeight();
+  space.resetVolume();
+  space.resetFloorArea();
+
+  EXPECT_TRUE(space.isCeilingHeightDefaulted());
+  EXPECT_TRUE(space.isVolumeDefaulted());
+  EXPECT_TRUE(space.isFloorAreaDefaulted());
 }
 
 TEST_F(EPModelFixture, API_Space_ThermalZoneSetReset) {

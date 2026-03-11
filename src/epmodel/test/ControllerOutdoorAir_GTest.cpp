@@ -17,7 +17,7 @@
 #include "../DesignSpecificationOutdoorAir.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../ModelObject/SizingZone.hpp"
-#include "../Space.hpp"
+#include "../PlanarSurfaceGroup/Space.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
 

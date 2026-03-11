@@ -39,6 +39,7 @@ class EPMODEL_API CoilSystemCoolingWaterHeatExchangerAssisted : public StraightC
 
   // Schema Alignment Notes:
   // - API: Preserve openstudio::model class naming for counterpart CoilSystemCoolingWaterHeatExchangerAssisted.
+  // - API: Keep counterpart-driven naming even when inventory rows are seeded under unrelated IDD types during serial queue runs.
   // - Field Mapping: heatExchangerObjectType/coolingCoilObjectType map to EnergyPlus CoilSystem:Cooling:Water:HeatExchangerAssisted choice fields.
   // - ForwardTranslator evidence: ForwardTranslateCoilSystemCoolingWaterHeatExchangerAssisted sets these object-type fields from translated child objects.
   // - Field Mapping: Heat Exchanger Name, Cooling Coil Name, and inlet/outlet node links are relationship-like and intentionally excluded from scalar APIs.

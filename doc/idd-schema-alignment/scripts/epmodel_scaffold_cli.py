@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import re
 import subprocess
 import sys
@@ -117,6 +118,19 @@ def first_pending_index(inventory: List[Dict[str, Any]]) -> Optional[int]:
         if item.get("status") == "pending":
             return i
     return None
+
+
+def recover_stale_in_progress(state: ScaffoldState) -> List[str]:
+    """Reset stale in_progress rows to pending after an interrupted run."""
+    inventory = state.load_inventory()
+    recovered: List[str] = []
+    for item in inventory:
+        if item.get("status") == "in_progress":
+            item["status"] = "pending"
+            recovered.append(str(item.get("idd_type", "")))
+    if recovered:
+        state.save_inventory(inventory)
+    return recovered
 
 
 def _clean_cell(value: str) -> str:
@@ -849,14 +863,39 @@ def _has_inline_methods_in_header(path: Path) -> bool:
     return False
 
 
-def run_codex(prompt: str, cwd: Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["codex", "exec", prompt],
-        cwd=str(cwd),
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+def run_codex(
+    prompt: str, cwd: Path, codex_model: str = "gpt-5.3-codex", agent: str = "opencode"
+) -> subprocess.CompletedProcess[str]:
+    selected_agent = (agent or "opencode").strip().lower()
+    if selected_agent not in {"codex", "opencode"}:
+        selected_agent = "opencode"
+
+    runner_bin = os.environ.get("EPMODEL_AGENT_BIN", selected_agent)
+    if selected_agent == "codex":
+        cmd = [runner_bin, "exec"]
+        if codex_model:
+            cmd += ["-m", codex_model]
+        cmd.append(prompt)
+    else:
+        cmd = [runner_bin, "run"]
+        if codex_model:
+            cmd += ["--model", codex_model]
+        cmd.append(prompt)
+    try:
+        return subprocess.run(
+            cmd,
+            cwd=str(cwd),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    except FileNotFoundError:
+        return subprocess.CompletedProcess(
+            args=cmd,
+            returncode=127,
+            stdout="",
+            stderr=f"runner binary not found: {runner_bin}",
+        )
 
 
 def process_one(
@@ -864,6 +903,8 @@ def process_one(
     record_idx: int,
     max_retries: int,
     max_minutes_per_type: int,
+    codex_model: str,
+    agent: str,
 ) -> Dict[str, Any]:
     inventory = state.load_inventory()
     record = inventory[record_idx]
@@ -885,7 +926,7 @@ def process_one(
     last_error = ""
     for attempt in range(1, max_retries + 1):
         prompt = build_prompt(state, contract_version, record, max_minutes_per_type)
-        proc = run_codex(prompt, state.root)
+        proc = run_codex(prompt, state.root, codex_model=codex_model, agent=agent)
 
         combined_output = ""
         if proc.stdout:
@@ -898,9 +939,9 @@ def process_one(
             tail = stderr_snippet[-3:] if stderr_snippet else []
             tail_text = " | ".join(tail)
             if tail_text:
-                last_error = f"codex exited with code {proc.returncode}: {tail_text}"
+                last_error = f"runner exited with code {proc.returncode}: {tail_text}"
             else:
-                last_error = f"codex exited with code {proc.returncode}"
+                last_error = f"runner exited with code {proc.returncode}"
             continue
 
         result_obj, parse_error = parse_result(combined_output)
@@ -1210,7 +1251,18 @@ def _handle_blocked_interactive(
             return "quit", ""
 
 
-def cmd_next(state: ScaffoldState, max_retries: int, max_minutes_per_type: int, auto_commit: bool) -> int:
+def cmd_next(
+    state: ScaffoldState,
+    max_retries: int,
+    max_minutes_per_type: int,
+    auto_commit: bool,
+    codex_model: str,
+    agent: str,
+) -> int:
+    recovered = recover_stale_in_progress(state)
+    if recovered:
+        print(f"Recovered stale in_progress -> pending: {', '.join(recovered)}")
+
     if auto_commit and not _is_clean_for_autocommit(state):
         print("Auto-commit aborted: working tree has pre-existing changes (excluding ignored paths).")
         return 1
@@ -1227,7 +1279,14 @@ def cmd_next(state: ScaffoldState, max_retries: int, max_minutes_per_type: int, 
         print("NO_PENDING_TYPES")
         return 0
 
-    result = process_one(state, idx, max_retries=max_retries, max_minutes_per_type=max_minutes_per_type)
+    result = process_one(
+        state,
+        idx,
+        max_retries=max_retries,
+        max_minutes_per_type=max_minutes_per_type,
+        codex_model=codex_model,
+        agent=agent,
+    )
     if auto_commit and result.get("status") == "done":
         result_obj = result.get("result", {}) if isinstance(result, dict) else {}
         summary = ""
@@ -1244,7 +1303,19 @@ def cmd_next(state: ScaffoldState, max_retries: int, max_minutes_per_type: int, 
     return 0 if result["status"] == "done" else 2
 
 
-def cmd_run(state: ScaffoldState, max_retries: int, max_minutes_per_type: int, max_items: int = 0, auto_commit: bool = True) -> int:
+def cmd_run(
+    state: ScaffoldState,
+    max_retries: int,
+    max_minutes_per_type: int,
+    max_items: int = 0,
+    auto_commit: bool = True,
+    codex_model: str = "gpt-5.3-codex",
+    agent: str = "opencode",
+) -> int:
+    recovered = recover_stale_in_progress(state)
+    if recovered:
+        print(f"Recovered stale in_progress -> pending: {', '.join(recovered)}")
+
     if auto_commit and not _is_clean_for_autocommit(state):
         print("Auto-commit aborted: working tree has pre-existing changes (excluding ignored paths).")
         return 1
@@ -1277,7 +1348,14 @@ def cmd_run(state: ScaffoldState, max_retries: int, max_minutes_per_type: int, m
                 print("NO_PENDING_TYPES")
                 break
 
-        result = process_one(state, idx, max_retries=max_retries, max_minutes_per_type=max_minutes_per_type)
+        result = process_one(
+            state,
+            idx,
+            max_retries=max_retries,
+            max_minutes_per_type=max_minutes_per_type,
+            codex_model=codex_model,
+            agent=agent,
+        )
         processed += 1
         status = result["status"]
         idd_type = result["idd_type"]
@@ -1378,12 +1456,27 @@ def build_parser() -> argparse.ArgumentParser:
     next_p.add_argument("--max-retries", type=int, default=DEFAULT_MAX_RETRIES)
     next_p.add_argument("--max-minutes-per-type", type=int, default=DEFAULT_MAX_MINUTES_PER_TYPE)
     next_p.add_argument("--auto-commit", action=argparse.BooleanOptionalAction, default=True)
+    next_p.add_argument(
+        "--agent",
+        choices=["codex", "opencode"],
+        default="opencode",
+        help="Agent runner to invoke (default: opencode)",
+    )
+    next_p.add_argument(
+        "--model",
+        "--codex-model",
+        dest="model",
+        default="gpt-5.3-codex",
+        help="Model identifier to pass to the selected agent (default: gpt-5.3-codex)",
+    )
     next_p.set_defaults(
         func=lambda args, state: cmd_next(
             state,
             max_retries=max(1, args.max_retries),
             max_minutes_per_type=max(1, args.max_minutes_per_type),
             auto_commit=bool(args.auto_commit),
+            codex_model=str(args.model or ""),
+            agent=str(args.agent or "opencode"),
         )
     )
 
@@ -1392,6 +1485,19 @@ def build_parser() -> argparse.ArgumentParser:
     run_p.add_argument("--max-minutes-per-type", type=int, default=DEFAULT_MAX_MINUTES_PER_TYPE)
     run_p.add_argument("--max-items", type=int, default=0, help="Process at most N types this run (0 = unlimited)")
     run_p.add_argument("--auto-commit", action=argparse.BooleanOptionalAction, default=True)
+    run_p.add_argument(
+        "--agent",
+        choices=["codex", "opencode"],
+        default="opencode",
+        help="Agent runner to invoke (default: opencode)",
+    )
+    run_p.add_argument(
+        "--model",
+        "--codex-model",
+        dest="model",
+        default="gpt-5.3-codex",
+        help="Model identifier to pass to the selected agent (default: gpt-5.3-codex)",
+    )
     run_p.set_defaults(
         func=lambda args, state: cmd_run(
             state,
@@ -1399,6 +1505,8 @@ def build_parser() -> argparse.ArgumentParser:
             max_minutes_per_type=max(1, args.max_minutes_per_type),
             max_items=max(0, args.max_items),
             auto_commit=bool(args.auto_commit),
+            codex_model=str(args.model or ""),
+            agent=str(args.agent or "opencode"),
         )
     )
 

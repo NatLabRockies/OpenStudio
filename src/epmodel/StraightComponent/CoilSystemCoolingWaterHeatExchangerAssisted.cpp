@@ -78,7 +78,9 @@ std::string CoilSystemCoolingWaterHeatExchangerAssisted_Impl::heatExchangerObjec
 }
 
 bool CoilSystemCoolingWaterHeatExchangerAssisted_Impl::setHeatExchangerObjectType(const std::string& heatExchangerObjectType) {
-  return setString(openstudio::CoilSystem_Cooling_Water_HeatExchangerAssistedFields::HeatExchangerObjectType, heatExchangerObjectType);
+  const bool result =
+    setString(openstudio::CoilSystem_Cooling_Water_HeatExchangerAssistedFields::HeatExchangerObjectType, heatExchangerObjectType);
+  return result;
 }
 
 std::string CoilSystemCoolingWaterHeatExchangerAssisted_Impl::coolingCoilObjectType() const {
@@ -88,7 +90,9 @@ std::string CoilSystemCoolingWaterHeatExchangerAssisted_Impl::coolingCoilObjectT
 }
 
 bool CoilSystemCoolingWaterHeatExchangerAssisted_Impl::setCoolingCoilObjectType(const std::string& coolingCoilObjectType) {
-  return setString(openstudio::CoilSystem_Cooling_Water_HeatExchangerAssistedFields::CoolingCoilObjectType, coolingCoilObjectType);
+  const bool result =
+    setString(openstudio::CoilSystem_Cooling_Water_HeatExchangerAssistedFields::CoolingCoilObjectType, coolingCoilObjectType);
+  return result;
 }
 
 std::vector<std::string> CoilSystemCoolingWaterHeatExchangerAssisted_Impl::heatExchangerObjectTypeValues() const {

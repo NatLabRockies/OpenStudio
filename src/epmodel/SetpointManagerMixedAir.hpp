@@ -7,7 +7,7 @@
 #define EPMODEL_SETPOINTMANAGERMIXEDAIR_HPP
 
 #include "EPModelAPI.hpp"
-#include "SetpointManager.hpp"
+#include "SetpointManager/SetpointManager.hpp"
 
 #include <memory>
 

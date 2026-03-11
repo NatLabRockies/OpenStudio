@@ -9,8 +9,8 @@
 #include "DesignSpecificationOutdoorAir.hpp"
 #include "DesignSpecificationOutdoorAir_Impl.hpp"
 #include "Model.hpp"
-#include "Space.hpp"
-#include "Space_Impl.hpp"
+#include "PlanarSurfaceGroup/Space.hpp"
+#include "PlanarSurfaceGroup/Space_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/DesignSpecification_OutdoorAir_SpaceList_FieldEnums.hxx>

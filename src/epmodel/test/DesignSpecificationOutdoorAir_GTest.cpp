@@ -13,7 +13,7 @@
 #include "../ModelObject/DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
 #include "../ModelObject/SizingZone.hpp"
 #include "../ModelObject/SizingZone_Impl.hpp"
-#include "../Space.hpp"
+#include "../PlanarSurfaceGroup/Space.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 
 #include <utilities/idd/Sizing_Zone_FieldEnums.hxx>

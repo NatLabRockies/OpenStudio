@@ -6,7 +6,7 @@
 #ifndef EPMODEL_SETPOINTMANAGERMIXEDAIR_IMPL_HPP
 #define EPMODEL_SETPOINTMANAGERMIXEDAIR_IMPL_HPP
 
-#include "SetpointManager_Impl.hpp"
+#include "SetpointManager/SetpointManager_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {

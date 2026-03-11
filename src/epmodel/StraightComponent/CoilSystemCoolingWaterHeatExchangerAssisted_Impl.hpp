@@ -23,6 +23,7 @@ class EPMODEL_API CoilSystemCoolingWaterHeatExchangerAssisted_Impl : public Stra
   unsigned inletPort() const override;
   unsigned outletPort() const override;
 
+  // Scalar-only parity surface: relationship fields remain excluded by contract.
   std::string heatExchangerObjectType() const;
   bool setHeatExchangerObjectType(const std::string& heatExchangerObjectType);
 
