@@ -77,7 +77,7 @@ namespace epmodel {
     : ModelObject(std::move(impl)) {}
 
   IddObjectType PlantEquipmentOperationOutdoorRelativeHumidity::iddObjectType() {
-    return IddObjectType::OS_PlantEquipmentOperation_OutdoorRelativeHumidity;
+    return IddObjectType::PlantEquipmentOperation_OutdoorRelativeHumidity;
   }
 
   double PlantEquipmentOperationOutdoorRelativeHumidity::maximumUpperLimit() const {

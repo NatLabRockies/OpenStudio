@@ -12,7 +12,7 @@
 #include <utilities/core/Compare.hpp>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
-#include <utilities/idd/OS_WindowMaterial_Glazing_FieldEnums.hxx>
+#include <utilities/idd/WindowMaterial_Glazing_FieldEnums.hxx>
 
 namespace openstudio {
 namespace epmodel {
@@ -20,231 +20,231 @@ namespace epmodel {
   namespace detail {
 
     std::string StandardGlazing_Impl::opticalDataType() const {
-      auto value = getString(OS_WindowMaterial_GlazingFields::OpticalDataType, true);
+      auto value = getString(WindowMaterial_GlazingFields::OpticalDataType, true);
       OS_ASSERT(value);
       return *value;
     }
 
     double StandardGlazing_Impl::thickness() const {
-      auto value = getDouble(OS_WindowMaterial_GlazingFields::Thickness, true);
+      auto value = getDouble(WindowMaterial_GlazingFields::Thickness, true);
       OS_ASSERT(value);
       return *value;
     }
 
     double StandardGlazing_Impl::solarTransmittance() const {
-      auto value = getDouble(OS_WindowMaterial_GlazingFields::SolarTransmittanceatNormalIncidence, true);
+      auto value = getDouble(WindowMaterial_GlazingFields::SolarTransmittanceatNormalIncidence, true);
       OS_ASSERT(value);
       return *value;
     }
 
     boost::optional<double> StandardGlazing_Impl::solarTransmittanceatNormalIncidence() const {
-      return getDouble(OS_WindowMaterial_GlazingFields::SolarTransmittanceatNormalIncidence, true);
+      return getDouble(WindowMaterial_GlazingFields::SolarTransmittanceatNormalIncidence, true);
     }
 
     boost::optional<double> StandardGlazing_Impl::frontSideSolarReflectanceatNormalIncidence() const {
-      return getDouble(OS_WindowMaterial_GlazingFields::FrontSideSolarReflectanceatNormalIncidence, true);
+      return getDouble(WindowMaterial_GlazingFields::FrontSideSolarReflectanceatNormalIncidence, true);
     }
 
     boost::optional<double> StandardGlazing_Impl::backSideSolarReflectanceatNormalIncidence() const {
-      return getDouble(OS_WindowMaterial_GlazingFields::BackSideSolarReflectanceatNormalIncidence, true);
+      return getDouble(WindowMaterial_GlazingFields::BackSideSolarReflectanceatNormalIncidence, true);
     }
 
     boost::optional<double> StandardGlazing_Impl::visibleTransmittanceatNormalIncidence() const {
-      return getDouble(OS_WindowMaterial_GlazingFields::VisibleTransmittanceatNormalIncidence, true);
+      return getDouble(WindowMaterial_GlazingFields::VisibleTransmittanceatNormalIncidence, true);
     }
 
     boost::optional<double> StandardGlazing_Impl::frontSideVisibleReflectanceatNormalIncidence() const {
-      return getDouble(OS_WindowMaterial_GlazingFields::FrontSideVisibleReflectanceatNormalIncidence, true);
+      return getDouble(WindowMaterial_GlazingFields::FrontSideVisibleReflectanceatNormalIncidence, true);
     }
 
     boost::optional<double> StandardGlazing_Impl::backSideVisibleReflectanceatNormalIncidence() const {
-      return getDouble(OS_WindowMaterial_GlazingFields::BackSideVisibleReflectanceatNormalIncidence, true);
+      return getDouble(WindowMaterial_GlazingFields::BackSideVisibleReflectanceatNormalIncidence, true);
     }
 
     double StandardGlazing_Impl::infraredTransmittance() const {
-      auto value = getDouble(OS_WindowMaterial_GlazingFields::InfraredTransmittanceatNormalIncidence, true);
+      auto value = getDouble(WindowMaterial_GlazingFields::InfraredTransmittanceatNormalIncidence, true);
       OS_ASSERT(value);
       return *value;
     }
 
     double StandardGlazing_Impl::infraredTransmittanceatNormalIncidence() const {
-      auto value = getDouble(OS_WindowMaterial_GlazingFields::InfraredTransmittanceatNormalIncidence, true);
+      auto value = getDouble(WindowMaterial_GlazingFields::InfraredTransmittanceatNormalIncidence, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool StandardGlazing_Impl::isInfraredTransmittanceatNormalIncidenceDefaulted() const {
-      return isEmpty(OS_WindowMaterial_GlazingFields::InfraredTransmittanceatNormalIncidence);
+      return isEmpty(WindowMaterial_GlazingFields::InfraredTransmittanceatNormalIncidence);
     }
 
     double StandardGlazing_Impl::frontSideInfraredHemisphericalEmissivity() const {
-      auto value = getDouble(OS_WindowMaterial_GlazingFields::FrontSideInfraredHemisphericalEmissivity, true);
+      auto value = getDouble(WindowMaterial_GlazingFields::FrontSideInfraredHemisphericalEmissivity, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool StandardGlazing_Impl::isFrontSideInfraredHemisphericalEmissivityDefaulted() const {
-      return isEmpty(OS_WindowMaterial_GlazingFields::FrontSideInfraredHemisphericalEmissivity);
+      return isEmpty(WindowMaterial_GlazingFields::FrontSideInfraredHemisphericalEmissivity);
     }
 
     double StandardGlazing_Impl::backSideInfraredHemisphericalEmissivity() const {
-      auto value = getDouble(OS_WindowMaterial_GlazingFields::BackSideInfraredHemisphericalEmissivity, true);
+      auto value = getDouble(WindowMaterial_GlazingFields::BackSideInfraredHemisphericalEmissivity, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool StandardGlazing_Impl::isBackSideInfraredHemisphericalEmissivityDefaulted() const {
-      return isEmpty(OS_WindowMaterial_GlazingFields::BackSideInfraredHemisphericalEmissivity);
+      return isEmpty(WindowMaterial_GlazingFields::BackSideInfraredHemisphericalEmissivity);
     }
 
     double StandardGlazing_Impl::conductivity() const {
-      auto value = getDouble(OS_WindowMaterial_GlazingFields::Conductivity, true);
+      auto value = getDouble(WindowMaterial_GlazingFields::Conductivity, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool StandardGlazing_Impl::isConductivityDefaulted() const {
-      return isEmpty(OS_WindowMaterial_GlazingFields::Conductivity);
+      return isEmpty(WindowMaterial_GlazingFields::Conductivity);
     }
 
     double StandardGlazing_Impl::dirtCorrectionFactorforSolarandVisibleTransmittance() const {
-      auto value = getDouble(OS_WindowMaterial_GlazingFields::DirtCorrectionFactorforSolarandVisibleTransmittance, true);
+      auto value = getDouble(WindowMaterial_GlazingFields::DirtCorrectionFactorforSolarandVisibleTransmittance, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool StandardGlazing_Impl::isDirtCorrectionFactorforSolarandVisibleTransmittanceDefaulted() const {
-      return isEmpty(OS_WindowMaterial_GlazingFields::DirtCorrectionFactorforSolarandVisibleTransmittance);
+      return isEmpty(WindowMaterial_GlazingFields::DirtCorrectionFactorforSolarandVisibleTransmittance);
     }
 
     bool StandardGlazing_Impl::solarDiffusing() const {
-      auto value = getString(OS_WindowMaterial_GlazingFields::SolarDiffusing, true);
+      auto value = getString(WindowMaterial_GlazingFields::SolarDiffusing, true);
       OS_ASSERT(value);
       return openstudio::istringEqual(*value, "Yes");
     }
 
     bool StandardGlazing_Impl::isSolarDiffusingDefaulted() const {
-      return isEmpty(OS_WindowMaterial_GlazingFields::SolarDiffusing);
+      return isEmpty(WindowMaterial_GlazingFields::SolarDiffusing);
     }
 
     bool StandardGlazing_Impl::setOpticalDataType(const std::string& opticalDataType) {
-      return setString(OS_WindowMaterial_GlazingFields::OpticalDataType, opticalDataType);
+      return setString(WindowMaterial_GlazingFields::OpticalDataType, opticalDataType);
     }
 
     bool StandardGlazing_Impl::setThickness(double thickness) {
-      return setDouble(OS_WindowMaterial_GlazingFields::Thickness, thickness);
+      return setDouble(WindowMaterial_GlazingFields::Thickness, thickness);
     }
 
     bool StandardGlazing_Impl::setSolarTransmittance(double value) {
-      return setDouble(OS_WindowMaterial_GlazingFields::SolarTransmittanceatNormalIncidence, value);
+      return setDouble(WindowMaterial_GlazingFields::SolarTransmittanceatNormalIncidence, value);
     }
 
     bool StandardGlazing_Impl::setSolarTransmittanceatNormalIncidence(double value) {
-      return setDouble(OS_WindowMaterial_GlazingFields::SolarTransmittanceatNormalIncidence, value);
+      return setDouble(WindowMaterial_GlazingFields::SolarTransmittanceatNormalIncidence, value);
     }
 
     void StandardGlazing_Impl::resetSolarTransmittanceatNormalIncidence() {
-      OS_ASSERT(setString(OS_WindowMaterial_GlazingFields::SolarTransmittanceatNormalIncidence, ""));
+      OS_ASSERT(setString(WindowMaterial_GlazingFields::SolarTransmittanceatNormalIncidence, ""));
     }
 
     bool StandardGlazing_Impl::setFrontSideSolarReflectanceatNormalIncidence(double value) {
-      return setDouble(OS_WindowMaterial_GlazingFields::FrontSideSolarReflectanceatNormalIncidence, value);
+      return setDouble(WindowMaterial_GlazingFields::FrontSideSolarReflectanceatNormalIncidence, value);
     }
 
     void StandardGlazing_Impl::resetFrontSideSolarReflectanceatNormalIncidence() {
-      OS_ASSERT(setString(OS_WindowMaterial_GlazingFields::FrontSideSolarReflectanceatNormalIncidence, ""));
+      OS_ASSERT(setString(WindowMaterial_GlazingFields::FrontSideSolarReflectanceatNormalIncidence, ""));
     }
 
     bool StandardGlazing_Impl::setBackSideSolarReflectanceatNormalIncidence(double value) {
-      return setDouble(OS_WindowMaterial_GlazingFields::BackSideSolarReflectanceatNormalIncidence, value);
+      return setDouble(WindowMaterial_GlazingFields::BackSideSolarReflectanceatNormalIncidence, value);
     }
 
     void StandardGlazing_Impl::resetBackSideSolarReflectanceatNormalIncidence() {
-      OS_ASSERT(setString(OS_WindowMaterial_GlazingFields::BackSideSolarReflectanceatNormalIncidence, ""));
+      OS_ASSERT(setString(WindowMaterial_GlazingFields::BackSideSolarReflectanceatNormalIncidence, ""));
     }
 
     bool StandardGlazing_Impl::setVisibleTransmittance(double value) {
-      return setDouble(OS_WindowMaterial_GlazingFields::VisibleTransmittanceatNormalIncidence, value);
+      return setDouble(WindowMaterial_GlazingFields::VisibleTransmittanceatNormalIncidence, value);
     }
 
     bool StandardGlazing_Impl::setVisibleTransmittanceatNormalIncidence(double value) {
-      return setDouble(OS_WindowMaterial_GlazingFields::VisibleTransmittanceatNormalIncidence, value);
+      return setDouble(WindowMaterial_GlazingFields::VisibleTransmittanceatNormalIncidence, value);
     }
 
     void StandardGlazing_Impl::resetVisibleTransmittanceatNormalIncidence() {
-      OS_ASSERT(setString(OS_WindowMaterial_GlazingFields::VisibleTransmittanceatNormalIncidence, ""));
+      OS_ASSERT(setString(WindowMaterial_GlazingFields::VisibleTransmittanceatNormalIncidence, ""));
     }
 
     bool StandardGlazing_Impl::setFrontSideVisibleReflectanceatNormalIncidence(double value) {
-      return setDouble(OS_WindowMaterial_GlazingFields::FrontSideVisibleReflectanceatNormalIncidence, value);
+      return setDouble(WindowMaterial_GlazingFields::FrontSideVisibleReflectanceatNormalIncidence, value);
     }
 
     void StandardGlazing_Impl::resetFrontSideVisibleReflectanceatNormalIncidence() {
-      OS_ASSERT(setString(OS_WindowMaterial_GlazingFields::FrontSideVisibleReflectanceatNormalIncidence, ""));
+      OS_ASSERT(setString(WindowMaterial_GlazingFields::FrontSideVisibleReflectanceatNormalIncidence, ""));
     }
 
     bool StandardGlazing_Impl::setBackSideVisibleReflectanceatNormalIncidence(double value) {
-      return setDouble(OS_WindowMaterial_GlazingFields::BackSideVisibleReflectanceatNormalIncidence, value);
+      return setDouble(WindowMaterial_GlazingFields::BackSideVisibleReflectanceatNormalIncidence, value);
     }
 
     void StandardGlazing_Impl::resetBackSideVisibleReflectanceatNormalIncidence() {
-      OS_ASSERT(setString(OS_WindowMaterial_GlazingFields::BackSideVisibleReflectanceatNormalIncidence, ""));
+      OS_ASSERT(setString(WindowMaterial_GlazingFields::BackSideVisibleReflectanceatNormalIncidence, ""));
     }
 
     bool StandardGlazing_Impl::setInfraredTransmittance(double value) {
-      return setDouble(OS_WindowMaterial_GlazingFields::InfraredTransmittanceatNormalIncidence, value);
+      return setDouble(WindowMaterial_GlazingFields::InfraredTransmittanceatNormalIncidence, value);
     }
 
     bool StandardGlazing_Impl::setInfraredTransmittanceatNormalIncidence(double value) {
-      return setDouble(OS_WindowMaterial_GlazingFields::InfraredTransmittanceatNormalIncidence, value);
+      return setDouble(WindowMaterial_GlazingFields::InfraredTransmittanceatNormalIncidence, value);
     }
 
     void StandardGlazing_Impl::resetInfraredTransmittanceatNormalIncidence() {
-      OS_ASSERT(setString(OS_WindowMaterial_GlazingFields::InfraredTransmittanceatNormalIncidence, ""));
+      OS_ASSERT(setString(WindowMaterial_GlazingFields::InfraredTransmittanceatNormalIncidence, ""));
     }
 
     bool StandardGlazing_Impl::setFrontSideInfraredHemisphericalEmissivity(double value) {
-      return setDouble(OS_WindowMaterial_GlazingFields::FrontSideInfraredHemisphericalEmissivity, value);
+      return setDouble(WindowMaterial_GlazingFields::FrontSideInfraredHemisphericalEmissivity, value);
     }
 
     void StandardGlazing_Impl::resetFrontSideInfraredHemisphericalEmissivity() {
-      OS_ASSERT(setString(OS_WindowMaterial_GlazingFields::FrontSideInfraredHemisphericalEmissivity, ""));
+      OS_ASSERT(setString(WindowMaterial_GlazingFields::FrontSideInfraredHemisphericalEmissivity, ""));
     }
 
     bool StandardGlazing_Impl::setBackSideInfraredHemisphericalEmissivity(double value) {
-      return setDouble(OS_WindowMaterial_GlazingFields::BackSideInfraredHemisphericalEmissivity, value);
+      return setDouble(WindowMaterial_GlazingFields::BackSideInfraredHemisphericalEmissivity, value);
     }
 
     void StandardGlazing_Impl::resetBackSideInfraredHemisphericalEmissivity() {
-      OS_ASSERT(setString(OS_WindowMaterial_GlazingFields::BackSideInfraredHemisphericalEmissivity, ""));
+      OS_ASSERT(setString(WindowMaterial_GlazingFields::BackSideInfraredHemisphericalEmissivity, ""));
     }
 
     bool StandardGlazing_Impl::setConductivity(double value) {
-      return setDouble(OS_WindowMaterial_GlazingFields::Conductivity, value);
+      return setDouble(WindowMaterial_GlazingFields::Conductivity, value);
     }
 
     void StandardGlazing_Impl::resetConductivity() {
-      OS_ASSERT(setString(OS_WindowMaterial_GlazingFields::Conductivity, ""));
+      OS_ASSERT(setString(WindowMaterial_GlazingFields::Conductivity, ""));
     }
 
     bool StandardGlazing_Impl::setDirtCorrectionFactorforSolarandVisibleTransmittance(double value) {
-      return setDouble(OS_WindowMaterial_GlazingFields::DirtCorrectionFactorforSolarandVisibleTransmittance, value);
+      return setDouble(WindowMaterial_GlazingFields::DirtCorrectionFactorforSolarandVisibleTransmittance, value);
     }
 
     void StandardGlazing_Impl::resetDirtCorrectionFactorforSolarandVisibleTransmittance() {
-      OS_ASSERT(setString(OS_WindowMaterial_GlazingFields::DirtCorrectionFactorforSolarandVisibleTransmittance, ""));
+      OS_ASSERT(setString(WindowMaterial_GlazingFields::DirtCorrectionFactorforSolarandVisibleTransmittance, ""));
     }
 
     bool StandardGlazing_Impl::setSolarDiffusing(bool solarDiffusing) {
-      return setString(OS_WindowMaterial_GlazingFields::SolarDiffusing, solarDiffusing ? "Yes" : "No");
+      return setString(WindowMaterial_GlazingFields::SolarDiffusing, solarDiffusing ? "Yes" : "No");
     }
 
     void StandardGlazing_Impl::resetSolarDiffusing() {
-      OS_ASSERT(setString(OS_WindowMaterial_GlazingFields::SolarDiffusing, ""));
+      OS_ASSERT(setString(WindowMaterial_GlazingFields::SolarDiffusing, ""));
     }
 
     double StandardGlazing_Impl::thermalConductivity() const {
-      auto value = getDouble(OS_WindowMaterial_GlazingFields::Conductivity, true);
+      auto value = getDouble(WindowMaterial_GlazingFields::Conductivity, true);
       OS_ASSERT(value);
       return *value;
     }
@@ -262,13 +262,13 @@ namespace epmodel {
     }
 
     double StandardGlazing_Impl::interiorVisibleReflectance() const {
-      auto value = getDouble(OS_WindowMaterial_GlazingFields::BackSideVisibleReflectanceatNormalIncidence, true);
+      auto value = getDouble(WindowMaterial_GlazingFields::BackSideVisibleReflectanceatNormalIncidence, true);
       OS_ASSERT(value);
       return *value;
     }
 
     double StandardGlazing_Impl::exteriorVisibleReflectance() const {
-      auto value = getDouble(OS_WindowMaterial_GlazingFields::FrontSideVisibleReflectanceatNormalIncidence, true);
+      auto value = getDouble(WindowMaterial_GlazingFields::FrontSideVisibleReflectanceatNormalIncidence, true);
       OS_ASSERT(value);
       return *value;
     }
@@ -290,7 +290,7 @@ namespace epmodel {
     }
 
     bool StandardGlazing_Impl::setThermalConductivity(double value) {
-      return setDouble(OS_WindowMaterial_GlazingFields::Conductivity, value);
+      return setDouble(WindowMaterial_GlazingFields::Conductivity, value);
     }
 
     bool StandardGlazing_Impl::setThermalConductance(double value) {
@@ -325,11 +325,11 @@ namespace epmodel {
   StandardGlazing::StandardGlazing(std::shared_ptr<detail::StandardGlazing_Impl> impl) : ModelObject(std::move(impl)) {}
 
   IddObjectType StandardGlazing::iddObjectType() {
-    return IddObjectType::OS_WindowMaterial_Glazing;
+    return IddObjectType::WindowMaterial_Glazing;
   }
 
   std::vector<std::string> StandardGlazing::opticalDataTypeValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), OS_WindowMaterial_GlazingFields::OpticalDataType);
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), WindowMaterial_GlazingFields::OpticalDataType);
   }
 
   std::string StandardGlazing::opticalDataType() const {

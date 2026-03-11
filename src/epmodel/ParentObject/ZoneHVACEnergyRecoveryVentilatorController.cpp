@@ -11,7 +11,7 @@
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/IddFactory.hxx>
-#include <utilities/idd/OS_ZoneHVAC_EnergyRecoveryVentilator_Controller_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_EnergyRecoveryVentilator_Controller_FieldEnums.hxx>
 
 #include <utility>
 #include <vector>
@@ -30,17 +30,17 @@ namespace epmodel {
     : ParentObject(std::move(impl)) {}
 
   IddObjectType ZoneHVACEnergyRecoveryVentilatorController::iddObjectType() {
-    return IddObjectType::OS_ZoneHVAC_EnergyRecoveryVentilator_Controller;
+    return IddObjectType::ZoneHVAC_EnergyRecoveryVentilator_Controller;
   }
 
   std::vector<std::string> ZoneHVACEnergyRecoveryVentilatorController::exhaustAirTemperatureLimitValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                          openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ExhaustAirTemperatureLimit);
+                          openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ExhaustAirTemperatureLimit);
   }
 
   std::vector<std::string> ZoneHVACEnergyRecoveryVentilatorController::exhaustAirEnthalpyLimitValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                          openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ExhaustAirEnthalpyLimit);
+                          openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ExhaustAirEnthalpyLimit);
   }
 
   boost::optional<double> ZoneHVACEnergyRecoveryVentilatorController::temperatureHighLimit() const {
@@ -148,114 +148,114 @@ namespace epmodel {
     }  // namespace
 
     boost::optional<double> ZoneHVACEnergyRecoveryVentilatorController_Impl::temperatureHighLimit() const {
-      return getDouble(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::TemperatureHighLimit, true);
+      return getDouble(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::TemperatureHighLimit, true);
     }
 
     bool ZoneHVACEnergyRecoveryVentilatorController_Impl::setTemperatureHighLimit(double temperatureHighLimit) {
-      const bool result = setDouble(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::TemperatureHighLimit, temperatureHighLimit);
+      const bool result = setDouble(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::TemperatureHighLimit, temperatureHighLimit);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACEnergyRecoveryVentilatorController_Impl::resetTemperatureHighLimit() {
-      OS_ASSERT(setString(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::TemperatureHighLimit, ""));
+      OS_ASSERT(setString(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::TemperatureHighLimit, ""));
     }
 
     boost::optional<double> ZoneHVACEnergyRecoveryVentilatorController_Impl::temperatureLowLimit() const {
-      return getDouble(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::TemperatureLowLimit, true);
+      return getDouble(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::TemperatureLowLimit, true);
     }
 
     bool ZoneHVACEnergyRecoveryVentilatorController_Impl::setTemperatureLowLimit(double temperatureLowLimit) {
-      const bool result = setDouble(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::TemperatureLowLimit, temperatureLowLimit);
+      const bool result = setDouble(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::TemperatureLowLimit, temperatureLowLimit);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACEnergyRecoveryVentilatorController_Impl::resetTemperatureLowLimit() {
-      OS_ASSERT(setString(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::TemperatureLowLimit, ""));
+      OS_ASSERT(setString(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::TemperatureLowLimit, ""));
     }
 
     boost::optional<double> ZoneHVACEnergyRecoveryVentilatorController_Impl::enthalpyHighLimit() const {
-      return getDouble(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::EnthalpyHighLimit, true);
+      return getDouble(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::EnthalpyHighLimit, true);
     }
 
     bool ZoneHVACEnergyRecoveryVentilatorController_Impl::setEnthalpyHighLimit(double enthalpyHighLimit) {
-      const bool result = setDouble(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::EnthalpyHighLimit, enthalpyHighLimit);
+      const bool result = setDouble(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::EnthalpyHighLimit, enthalpyHighLimit);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACEnergyRecoveryVentilatorController_Impl::resetEnthalpyHighLimit() {
-      OS_ASSERT(setString(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::EnthalpyHighLimit, ""));
+      OS_ASSERT(setString(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::EnthalpyHighLimit, ""));
     }
 
     boost::optional<double> ZoneHVACEnergyRecoveryVentilatorController_Impl::dewpointTemperatureLimit() const {
-      return getDouble(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::DewpointTemperatureLimit, true);
+      return getDouble(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::DewpointTemperatureLimit, true);
     }
 
     bool ZoneHVACEnergyRecoveryVentilatorController_Impl::setDewpointTemperatureLimit(double dewpointTemperatureLimit) {
       const bool result =
-        setDouble(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::DewpointTemperatureLimit, dewpointTemperatureLimit);
+        setDouble(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::DewpointTemperatureLimit, dewpointTemperatureLimit);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACEnergyRecoveryVentilatorController_Impl::resetDewpointTemperatureLimit() {
-      OS_ASSERT(setString(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::DewpointTemperatureLimit, ""));
+      OS_ASSERT(setString(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::DewpointTemperatureLimit, ""));
     }
 
     std::string ZoneHVACEnergyRecoveryVentilatorController_Impl::exhaustAirTemperatureLimit() const {
-      const auto value = getString(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ExhaustAirTemperatureLimit, true);
+      const auto value = getString(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ExhaustAirTemperatureLimit, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool ZoneHVACEnergyRecoveryVentilatorController_Impl::setExhaustAirTemperatureLimit(const std::string& value) {
-      return setString(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ExhaustAirTemperatureLimit, value);
+      return setString(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ExhaustAirTemperatureLimit, value);
     }
 
     std::string ZoneHVACEnergyRecoveryVentilatorController_Impl::exhaustAirEnthalpyLimit() const {
-      const auto value = getString(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ExhaustAirEnthalpyLimit, true);
+      const auto value = getString(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ExhaustAirEnthalpyLimit, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool ZoneHVACEnergyRecoveryVentilatorController_Impl::setExhaustAirEnthalpyLimit(const std::string& value) {
-      return setString(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ExhaustAirEnthalpyLimit, value);
+      return setString(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ExhaustAirEnthalpyLimit, value);
     }
 
     bool ZoneHVACEnergyRecoveryVentilatorController_Impl::highHumidityControlFlag() const {
-      return getBooleanFieldValue(*this, openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::HighHumidityControlFlag);
+      return getBooleanFieldValue(*this, openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::HighHumidityControlFlag);
     }
 
     bool ZoneHVACEnergyRecoveryVentilatorController_Impl::setHighHumidityControlFlag(bool highHumidityControlFlag) {
       const bool result =
-        setBooleanFieldValue(*this, openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::HighHumidityControlFlag, highHumidityControlFlag);
+        setBooleanFieldValue(*this, openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::HighHumidityControlFlag, highHumidityControlFlag);
       OS_ASSERT(result);
       return result;
     }
 
     double ZoneHVACEnergyRecoveryVentilatorController_Impl::highHumidityOutdoorAirFlowRatio() const {
-      const auto value = getDouble(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::HighHumidityOutdoorAirFlowRatio, true);
+      const auto value = getDouble(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::HighHumidityOutdoorAirFlowRatio, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool ZoneHVACEnergyRecoveryVentilatorController_Impl::setHighHumidityOutdoorAirFlowRatio(double highHumidityOutdoorAirFlowRatio) {
       const bool result =
-        setDouble(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::HighHumidityOutdoorAirFlowRatio, highHumidityOutdoorAirFlowRatio);
+        setDouble(openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::HighHumidityOutdoorAirFlowRatio, highHumidityOutdoorAirFlowRatio);
       OS_ASSERT(result);
       return result;
     }
 
     bool ZoneHVACEnergyRecoveryVentilatorController_Impl::controlHighIndoorHumidityBasedOnOutdoorHumidityRatio() const {
       return getBooleanFieldValue(
-        *this, openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ControlHighIndoorHumidityBasedonOutdoorHumidityRatio);
+        *this, openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ControlHighIndoorHumidityBasedonOutdoorHumidityRatio);
     }
 
     bool ZoneHVACEnergyRecoveryVentilatorController_Impl::setControlHighIndoorHumidityBasedOnOutdoorHumidityRatio(bool value) {
       const bool result = setBooleanFieldValue(
-        *this, openstudio::OS_ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ControlHighIndoorHumidityBasedonOutdoorHumidityRatio, value);
+        *this, openstudio::ZoneHVAC_EnergyRecoveryVentilator_ControllerFields::ControlHighIndoorHumidityBasedonOutdoorHumidityRatio, value);
       OS_ASSERT(result);
       return result;
     }

@@ -8,7 +8,7 @@
 
 #include "ModelObject_Impl.hpp"
 
-#include <utilities/idd/OS_ZoneHVAC_PackagedTerminalAirConditioner_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_PackagedTerminalAirConditioner_FieldEnums.hxx>
 
 #include <boost/optional.hpp>
 

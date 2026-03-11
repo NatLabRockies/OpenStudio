@@ -9,7 +9,7 @@
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>
-#include <utilities/idd/OS_Timestep_FieldEnums.hxx>
+#include <utilities/idd/Timestep_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 
 namespace openstudio {
@@ -22,7 +22,7 @@ namespace epmodel {
   Timestep::Timestep(std::shared_ptr<detail::Timestep_Impl> impl) : ModelObject(std::move(impl)) {}
 
   IddObjectType Timestep::iddObjectType() {
-    return IddObjectType::OS_Timestep;
+    return IddObjectType::Timestep;
   }
 
   int Timestep::numberOfTimestepsPerHour() const {
@@ -44,21 +44,21 @@ namespace epmodel {
   namespace detail {
 
     int Timestep_Impl::numberOfTimestepsPerHour() const {
-      const auto value = getInt(openstudio::OS_TimestepFields::NumberofTimestepsperHour, true);
+      const auto value = getInt(openstudio::TimestepFields::NumberofTimestepsperHour, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool Timestep_Impl::isNumberOfTimestepsPerHourDefaulted() const {
-      return isEmpty(openstudio::OS_TimestepFields::NumberofTimestepsperHour);
+      return isEmpty(openstudio::TimestepFields::NumberofTimestepsperHour);
     }
 
     bool Timestep_Impl::setNumberOfTimestepsPerHour(int numberOfTimestepsPerHour) {
-      return setInt(openstudio::OS_TimestepFields::NumberofTimestepsperHour, numberOfTimestepsPerHour);
+      return setInt(openstudio::TimestepFields::NumberofTimestepsperHour, numberOfTimestepsPerHour);
     }
 
     void Timestep_Impl::resetNumberOfTimestepsPerHour() {
-      const bool result = setString(openstudio::OS_TimestepFields::NumberofTimestepsperHour, "");
+      const bool result = setString(openstudio::TimestepFields::NumberofTimestepsperHour, "");
       OS_ASSERT(result);
     }
 

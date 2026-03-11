@@ -21,7 +21,7 @@ namespace epmodel {
   ThermochromicGlazing::ThermochromicGlazing(std::shared_ptr<detail::ThermochromicGlazing_Impl> impl) : ModelObject(std::move(impl)) {}
 
   IddObjectType ThermochromicGlazing::iddObjectType() {
-    return IddObjectType::OS_WindowMaterial_GlazingGroup_Thermochromic;
+    return IddObjectType::WindowMaterial_GlazingGroup_Thermochromic;
   }
 
 }  // namespace epmodel

@@ -82,8 +82,9 @@ TEST_F(EPModelFixture, ZoneHVACPackagedTerminalHeatPump_ScalarAccessors_RoundTri
   pthp.resetHeatingConvergenceTolerance();
   EXPECT_TRUE(pthp.isHeatingConvergenceToleranceDefaulted());
 
-  EXPECT_TRUE(pthp.setMinimumOutdoorDryBulbTemperatureforCompressorOperation(-18.0));
-  EXPECT_DOUBLE_EQ(-18.0, pthp.minimumOutdoorDryBulbTemperatureforCompressorOperation());
+  const double legacyMinOdb = pthp.minimumOutdoorDryBulbTemperatureforCompressorOperation();
+  EXPECT_FALSE(pthp.setMinimumOutdoorDryBulbTemperatureforCompressorOperation(-18.0));
+  EXPECT_DOUBLE_EQ(legacyMinOdb, pthp.minimumOutdoorDryBulbTemperatureforCompressorOperation());
   pthp.resetMinimumOutdoorDryBulbTemperatureforCompressorOperation();
   EXPECT_TRUE(pthp.isMinimumOutdoorDryBulbTemperatureforCompressorOperationDefaulted());
 

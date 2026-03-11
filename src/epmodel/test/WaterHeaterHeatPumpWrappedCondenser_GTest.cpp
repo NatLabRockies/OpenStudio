@@ -13,7 +13,7 @@ using namespace openstudio::epmodel;
 TEST_F(EPModelFixture, WaterHeaterHeatPumpWrappedCondenser_DefaultConstructor) {
   Model model;
   WaterHeaterHeatPumpWrappedCondenser heatPump(model);
-  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::OS_WaterHeater_HeatPump_WrappedCondenser), heatPump.iddObject().type());
+  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::WaterHeater_HeatPump_WrappedCondenser), heatPump.iddObject().type());
 }
 
 TEST_F(EPModelFixture, WaterHeaterHeatPumpWrappedCondenser_ScalarAccessors_RoundTrip) {

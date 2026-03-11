@@ -9,7 +9,7 @@
 #include "EPModelAPI.hpp"
 #include "ModelObject.hpp"
 
-#include <utilities/idd/OS_ZoneHVAC_PackagedTerminalAirConditioner_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_PackagedTerminalAirConditioner_FieldEnums.hxx>
 #include <boost/optional.hpp>
 #include <memory>
 #include <string>

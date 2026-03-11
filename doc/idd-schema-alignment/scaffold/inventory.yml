@@ -4400,13 +4400,13 @@
   },
   {
     "idd_type": "GeometryTransform",
-    "status": "deferred",
+    "status": "done",
     "target_class": "GeometryTransform",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
     "output_dir": "src/epmodel/ModelObject",
     "has_model_counterpart": false,
-    "notes": "GeometryTransform scalar field writes crash in epmodel runtime (core dump on setter invocation), so required scalar accessor roundtrip cannot be validated to contract done criteria in this cycle.",
+    "notes": "Resolved deferred runtime issue by wiring GeometryTransform into Model factory/clone dispatch and enabling scalar roundtrip coverage; targeted build/tests now pass.",
     "intended_base_class": "ModelObject"
   },
   {
@@ -4599,13 +4599,13 @@
   },
   {
     "idd_type": "GroundHeatTransfer:Basement:EquivAutoGrid",
-    "status": "deferred",
+    "status": "done",
     "target_class": "GroundHeatTransferBasementEquivAutoGrid",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
     "output_dir": "src/epmodel/ModelObject",
     "has_model_counterpart": false,
-    "notes": "Enabling scalar accessor roundtrip currently causes a segmentation fault in `openstudio_epmodel_tests` for GroundHeatTransferBasementEquivAutoGrid (reproduced during this run). This prevents satisfying the done criterion requiring passing scalar accessor roundtrip tests.",
+    "notes": "Resolved deferred runtime issue by wiring GroundHeatTransferBasementEquivAutoGrid into Model factory/clone dispatch and re-enabling scalar roundtrip tests; targeted build/tests now pass.",
     "intended_base_class": "ModelObject"
   },
   {
@@ -7533,13 +7533,13 @@
   },
   {
     "idd_type": "Site:HeightVariation",
-    "status": "deferred",
+    "status": "done",
     "target_class": "SiteHeightVariation",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
     "output_dir": "src/epmodel/ModelObject",
     "has_model_counterpart": false,
-    "notes": "The run requires both (a) exact 3-file type-only updates and (b) adding targeted compile+roundtrip tests. In this repo, targeted tests require additional registration edits (eg, CMake/test/model dispatch integration), which would violate the exact-3-file hard rule.",
+    "notes": "Resolved deferred integration gap by wiring SiteHeightVariation into Model dispatch and CMake, and adding targeted roundtrip test coverage; targeted build/tests now pass.",
     "intended_base_class": "ModelObject"
   },
   {

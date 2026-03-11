@@ -75,7 +75,7 @@ namespace epmodel {
     : ModelObject(std::move(impl)) {}
 
   IddObjectType PlantEquipmentOperationHeatingLoad::iddObjectType() {
-    return IddObjectType::OS_PlantEquipmentOperation_HeatingLoad;
+    return IddObjectType::PlantEquipmentOperation_HeatingLoad;
   }
 
   double PlantEquipmentOperationHeatingLoad::maximumUpperLimit() const {

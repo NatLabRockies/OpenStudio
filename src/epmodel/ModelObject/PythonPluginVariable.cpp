@@ -19,7 +19,7 @@ namespace epmodel {
   PythonPluginVariable::PythonPluginVariable(const Model& model) : ModelObject(PythonPluginVariable::iddObjectType(), model) {}
 
   IddObjectType PythonPluginVariable::iddObjectType() {
-    return IddObjectType::OS_PythonPlugin_Variable;
+    return IddObjectType::PythonPlugin_Variables;
   }
 
   std::vector<PythonPluginTrendVariable> PythonPluginVariable::pythonPluginTrendVariables() const {

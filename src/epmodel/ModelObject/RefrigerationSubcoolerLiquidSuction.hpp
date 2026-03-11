@@ -7,7 +7,7 @@
 #define EPMODEL_REFRIGERATIONSUBCOOLERLIQUIDSUCTION_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "RefrigerationSubcooler.hpp"
 
 #include <memory>
 
@@ -20,7 +20,7 @@ namespace epmodel {
     class RefrigerationSubcoolerLiquidSuction_Impl;
   }
 
-  class EPMODEL_API RefrigerationSubcoolerLiquidSuction : public ModelObject
+  class EPMODEL_API RefrigerationSubcoolerLiquidSuction : public RefrigerationSubcooler
   {
    public:
     explicit RefrigerationSubcoolerLiquidSuction(const Model& model);
@@ -35,8 +35,8 @@ namespace epmodel {
 
     // Schema Alignment Notes:
     // - API: Preserve openstudio::model scalar accessor names/signatures for the liquid suction subcooler.
-    // - Field Mapping: Liquid suction design subcooling, liquid inlet, and vapor inlet temperature fields map directly to Refrigeration:Subcooler liquid-suction inputs.
-    // - Field Mapping: Subcooler Type is locked to LiquidSuction so this epmodel type targets that branch of Refrigeration:Subcooler.
+    // - Field Mapping: Liquid suction design subcooling, liquid inlet, and vapor inlet temperature fields map directly to
+    //   Refrigeration:Subcooler fields while Subcooler Type stays fixed to LiquidSuction for this typed wrapper.
     boost::optional<double> liquidSuctionDesignSubcoolingTemperatureDifference() const;
     boost::optional<double> designLiquidInletTemperature() const;
     boost::optional<double> designVaporInletTemperature() const;

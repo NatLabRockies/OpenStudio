@@ -77,7 +77,7 @@ namespace epmodel {
     : ModelObject(std::move(impl)) {}
 
   IddObjectType PlantEquipmentOperationOutdoorDryBulb::iddObjectType() {
-    return IddObjectType::OS_PlantEquipmentOperation_OutdoorDryBulb;
+    return IddObjectType::PlantEquipmentOperation_OutdoorDryBulb;
   }
 
   double PlantEquipmentOperationOutdoorDryBulb::maximumUpperLimit() const {

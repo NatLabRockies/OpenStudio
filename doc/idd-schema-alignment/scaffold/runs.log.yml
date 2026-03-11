@@ -155167,5 +155167,105 @@
     },
     "tests": "Build: `CCACHE_DISABLE=1 cmake --build build --target openstudio_epmodel_tests -j32` (pass). Targeted tests: `./build/Products/openstudio_epmodel_tests --gtest_filter=EPModelFixture.RefrigerationCompressorRack_DefaultConstructor:EPModelFixture.RefrigerationCompressorRack_ScalarAccessors_RoundTrip` (2 passed).",
     "notes": "Existing RefrigerationCompressorRack scaffolding already satisfies the requested scalar mappings, so the run simply rebuilt the EPModel tests and reran the two targeted gtests."
+  },
+  {
+    "timestamp": "2026-03-11T15:39:38Z",
+    "idd_type": "GeometryTransform",
+    "status": "done",
+    "contract_version": "0.1.6",
+    "attempts": 1,
+    "files_changed": [
+      "src/epmodel/ModelObject/GeometryTransform.hpp",
+      "src/epmodel/ModelObject/GeometryTransform_Impl.hpp",
+      "src/epmodel/ModelObject/GeometryTransform.cpp",
+      "src/epmodel/test/GeometryTransform_GTest.cpp",
+      "src/epmodel/CMakeLists.txt",
+      "src/epmodel/Model.cpp"
+    ],
+    "mapping_decisions": [
+      "No model counterpart exists, so class and accessor naming use IDD-derived transforms: planeofTransform, currentAspectRatio, newAspectRatio.",
+      "Mapped scalar APIs directly to EnergyPlus GeometryTransform fields via GeometryTransformFields::PlaneofTransform, ::CurrentAspectRatio, and ::NewAspectRatio.",
+      "Generated non-boolean choice values helper planeofTransformValues() using IddFactory/getIddKeyNames pattern.",
+      "Applied required-getter strictness and bool-return setter signatures consistent with generator parity."
+    ],
+    "excluded_fields": [],
+    "ruby_parity_checks": {
+      "optionality_logic_applied": true,
+      "choice_handling_applied": true,
+      "setter_fail_semantics_applied": true,
+      "default_auto_api_applied": true,
+      "reset_rules_applied": true,
+      "required_getter_strictness_applied": true,
+      "naming_transform_applied": true
+    },
+    "tests": "Build: `CCACHE_DISABLE=1 cmake --build build --target openstudio_epmodel_tests -j32` (pass). Targeted tests: `timeout 180s ./build/Products/openstudio_epmodel_tests --gtest_filter=EPModelFixture.GeometryTransform_DefaultConstructor:EPModelFixture.GeometryTransform_ScalarAccessors_RoundTrip:EPModelFixture.GroundHeatTransferBasementEquivAutoGrid_DefaultConstructor:EPModelFixture.GroundHeatTransferBasementEquivAutoGrid_ScalarAccessors_RoundTrip:EPModelFixture.SiteHeightVariation_DefaultConstructor:EPModelFixture.SiteHeightVariation_ScalarAccessors_RoundTrip` (6 passed).",
+    "notes": "Resolved deferred runtime issue by wiring GeometryTransform into Model factory/clone dispatch and enabling scalar roundtrip coverage; targeted build/tests now pass."
+  },
+  {
+    "timestamp": "2026-03-11T15:39:38Z",
+    "idd_type": "GroundHeatTransfer:Basement:EquivAutoGrid",
+    "status": "done",
+    "contract_version": "0.1.6",
+    "attempts": 1,
+    "files_changed": [
+      "src/epmodel/ModelObject/GroundHeatTransferBasementEquivAutoGrid.hpp",
+      "src/epmodel/ModelObject/GroundHeatTransferBasementEquivAutoGrid.cpp",
+      "src/epmodel/ModelObject/GroundHeatTransferBasementEquivAutoGrid_Impl.hpp",
+      "src/epmodel/test/GroundHeatTransferBasementEquivAutoGrid_GTest.cpp",
+      "src/epmodel/CMakeLists.txt",
+      "src/epmodel/Model.cpp"
+    ],
+    "mapping_decisions": [
+      "No model counterpart exists, so class and accessor names are IDD-derived per contract.",
+      "Mapped scalar APIs directly to GroundHeatTransfer:Basement:EquivAutoGrid fields: CLEARANCE, SlabDepth, BaseDepth.",
+      "Generated default/reset APIs for all three numeric fields because fields are non-required and have defaults in IDD metadata.",
+      "Used required-getter strictness pattern (OS_ASSERT on getter presence/default-resolved values) and bool-return setter semantics."
+    ],
+    "excluded_fields": [],
+    "ruby_parity_checks": {
+      "optionality_logic_applied": true,
+      "choice_handling_applied": true,
+      "setter_fail_semantics_applied": true,
+      "default_auto_api_applied": true,
+      "reset_rules_applied": true,
+      "required_getter_strictness_applied": true,
+      "naming_transform_applied": true
+    },
+    "tests": "Build: `CCACHE_DISABLE=1 cmake --build build --target openstudio_epmodel_tests -j32` (pass). Targeted tests: `timeout 180s ./build/Products/openstudio_epmodel_tests --gtest_filter=EPModelFixture.GeometryTransform_DefaultConstructor:EPModelFixture.GeometryTransform_ScalarAccessors_RoundTrip:EPModelFixture.GroundHeatTransferBasementEquivAutoGrid_DefaultConstructor:EPModelFixture.GroundHeatTransferBasementEquivAutoGrid_ScalarAccessors_RoundTrip:EPModelFixture.SiteHeightVariation_DefaultConstructor:EPModelFixture.SiteHeightVariation_ScalarAccessors_RoundTrip` (6 passed).",
+    "notes": "Resolved deferred runtime issue by wiring GroundHeatTransferBasementEquivAutoGrid into Model factory/clone dispatch and re-enabling scalar roundtrip tests; targeted build/tests now pass."
+  },
+  {
+    "timestamp": "2026-03-11T15:39:38Z",
+    "idd_type": "Site:HeightVariation",
+    "status": "done",
+    "contract_version": "0.1.6",
+    "attempts": 1,
+    "files_changed": [
+      "src/epmodel/ModelObject/SiteHeightVariation.hpp",
+      "src/epmodel/ModelObject/SiteHeightVariation.cpp",
+      "src/epmodel/ModelObject/SiteHeightVariation_Impl.hpp",
+      "src/epmodel/Model.cpp",
+      "src/epmodel/CMakeLists.txt",
+      "src/epmodel/test/SiteHeightVariation_GTest.cpp"
+    ],
+    "mapping_decisions": [
+      "No model counterpart exists, so class and accessor names are IDD-derived: windSpeedProfileExponent, windSpeedProfileBoundaryLayerThickness, airTemperatureGradientCoefficient.",
+      "Mapped scalar accessors directly to EnergyPlus Site_HeightVariationFields enums for the three non-extensible numeric fields.",
+      "Applied optionality/default/reset parity from IDD metadata: all three numeric getters are non-optional due numeric defaults; generated is...Defaulted and reset... methods.",
+      "Applied setter fail semantics parity: numeric setters with lower bounds return raw setDouble result (can fail) rather than bool-return-with-assert non-failable pattern.",
+      "Applied required getter strictness pattern with asserted presence in Impl getters."
+    ],
+    "excluded_fields": [],
+    "ruby_parity_checks": {
+      "optionality_logic_applied": true,
+      "choice_handling_applied": true,
+      "setter_fail_semantics_applied": true,
+      "default_auto_api_applied": true,
+      "reset_rules_applied": true,
+      "required_getter_strictness_applied": true,
+      "naming_transform_applied": true
+    },
+    "tests": "Build: `CCACHE_DISABLE=1 cmake --build build --target openstudio_epmodel_tests -j32` (pass). Targeted tests: `timeout 180s ./build/Products/openstudio_epmodel_tests --gtest_filter=EPModelFixture.GeometryTransform_DefaultConstructor:EPModelFixture.GeometryTransform_ScalarAccessors_RoundTrip:EPModelFixture.GroundHeatTransferBasementEquivAutoGrid_DefaultConstructor:EPModelFixture.GroundHeatTransferBasementEquivAutoGrid_ScalarAccessors_RoundTrip:EPModelFixture.SiteHeightVariation_DefaultConstructor:EPModelFixture.SiteHeightVariation_ScalarAccessors_RoundTrip` (6 passed).",
+    "notes": "Resolved deferred integration gap by wiring SiteHeightVariation into Model dispatch and CMake, and adding targeted roundtrip test coverage; targeted build/tests now pass."
   }
 ]

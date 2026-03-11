@@ -11,7 +11,7 @@
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/IddEnums.hxx>
-#include <utilities/idd/OS_ZoneVentilation_WindandStackOpenArea_FieldEnums.hxx>
+#include <utilities/idd/ZoneVentilation_WindandStackOpenArea_FieldEnums.hxx>
 
 #include <utility>
 
@@ -39,7 +39,7 @@ namespace epmodel {
     : ModelObject(std::move(impl)) {}
 
   IddObjectType ZoneVentilationWindandStackOpenArea::iddObjectType() {
-    return IddObjectType::OS_ZoneVentilation_WindandStackOpenArea;
+    return IddObjectType::ZoneVentilation_WindandStackOpenArea;
   }
 
   double ZoneVentilationWindandStackOpenArea::openingArea() const {
@@ -154,131 +154,131 @@ namespace epmodel {
   namespace detail {
 
     double ZoneVentilationWindandStackOpenArea_Impl::openingArea() const {
-      auto value = getDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::OpeningArea, true);
+      auto value = getDouble(ZoneVentilation_WindandStackOpenAreaFields::OpeningArea, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     bool ZoneVentilationWindandStackOpenArea_Impl::setOpeningArea(double openingArea) {
-      return setDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::OpeningArea, openingArea);
+      return setDouble(ZoneVentilation_WindandStackOpenAreaFields::OpeningArea, openingArea);
     }
 
     boost::optional<double> ZoneVentilationWindandStackOpenArea_Impl::openingEffectiveness() const {
-      return getDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::OpeningEffectiveness, false);
+      return getDouble(ZoneVentilation_WindandStackOpenAreaFields::OpeningEffectiveness, false);
     }
 
     bool ZoneVentilationWindandStackOpenArea_Impl::isOpeningEffectivenessAutocalculated() const {
-      if (auto value = getString(OS_ZoneVentilation_WindandStackOpenAreaFields::OpeningEffectiveness, true)) {
+      if (auto value = getString(ZoneVentilation_WindandStackOpenAreaFields::OpeningEffectiveness, true)) {
         return openstudio::istringEqual(value.get(), "Autocalculate");
       }
       return false;
     }
 
     bool ZoneVentilationWindandStackOpenArea_Impl::setOpeningEffectiveness(double openingEffectiveness) {
-      return setDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::OpeningEffectiveness, openingEffectiveness);
+      return setDouble(ZoneVentilation_WindandStackOpenAreaFields::OpeningEffectiveness, openingEffectiveness);
     }
 
     void ZoneVentilationWindandStackOpenArea_Impl::autocalculateOpeningEffectiveness() {
-      OS_ASSERT(setString(OS_ZoneVentilation_WindandStackOpenAreaFields::OpeningEffectiveness, "autocalculate"));
+      OS_ASSERT(setString(ZoneVentilation_WindandStackOpenAreaFields::OpeningEffectiveness, "autocalculate"));
     }
 
     double ZoneVentilationWindandStackOpenArea_Impl::effectiveAngle() const {
-      auto value = getDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::EffectiveAngle, true);
+      auto value = getDouble(ZoneVentilation_WindandStackOpenAreaFields::EffectiveAngle, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     bool ZoneVentilationWindandStackOpenArea_Impl::setEffectiveAngle(double effectiveAngle) {
-      return setDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::EffectiveAngle, effectiveAngle);
+      return setDouble(ZoneVentilation_WindandStackOpenAreaFields::EffectiveAngle, effectiveAngle);
     }
 
     double ZoneVentilationWindandStackOpenArea_Impl::heightDifference() const {
-      auto value = getDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::HeightDifference, true);
+      auto value = getDouble(ZoneVentilation_WindandStackOpenAreaFields::HeightDifference, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     bool ZoneVentilationWindandStackOpenArea_Impl::setHeightDifference(double heightDifference) {
-      return setDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::HeightDifference, heightDifference);
+      return setDouble(ZoneVentilation_WindandStackOpenAreaFields::HeightDifference, heightDifference);
     }
 
     boost::optional<double> ZoneVentilationWindandStackOpenArea_Impl::dischargeCoefficientforOpening() const {
-      return getDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::DischargeCoefficientforOpening, false);
+      return getDouble(ZoneVentilation_WindandStackOpenAreaFields::DischargeCoefficientforOpening, false);
     }
 
     bool ZoneVentilationWindandStackOpenArea_Impl::isDischargeCoefficientforOpeningAutocalculated() const {
-      if (auto value = getString(OS_ZoneVentilation_WindandStackOpenAreaFields::DischargeCoefficientforOpening, true)) {
+      if (auto value = getString(ZoneVentilation_WindandStackOpenAreaFields::DischargeCoefficientforOpening, true)) {
         return openstudio::istringEqual(value.get(), "Autocalculate");
       }
       return false;
     }
 
     bool ZoneVentilationWindandStackOpenArea_Impl::setDischargeCoefficientforOpening(double dischargeCoefficientforOpening) {
-      return setDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::DischargeCoefficientforOpening, dischargeCoefficientforOpening);
+      return setDouble(ZoneVentilation_WindandStackOpenAreaFields::DischargeCoefficientforOpening, dischargeCoefficientforOpening);
     }
 
     void ZoneVentilationWindandStackOpenArea_Impl::autocalculateDischargeCoefficientforOpening() {
-      OS_ASSERT(setString(OS_ZoneVentilation_WindandStackOpenAreaFields::DischargeCoefficientforOpening, "autocalculate"));
+      OS_ASSERT(setString(ZoneVentilation_WindandStackOpenAreaFields::DischargeCoefficientforOpening, "autocalculate"));
     }
 
     double ZoneVentilationWindandStackOpenArea_Impl::minimumIndoorTemperature() const {
-      auto value = getDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::MinimumIndoorTemperature, true);
+      auto value = getDouble(ZoneVentilation_WindandStackOpenAreaFields::MinimumIndoorTemperature, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     bool ZoneVentilationWindandStackOpenArea_Impl::setMinimumIndoorTemperature(double minimumIndoorTemperature) {
-      return setDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::MinimumIndoorTemperature, minimumIndoorTemperature);
+      return setDouble(ZoneVentilation_WindandStackOpenAreaFields::MinimumIndoorTemperature, minimumIndoorTemperature);
     }
 
     double ZoneVentilationWindandStackOpenArea_Impl::maximumIndoorTemperature() const {
-      auto value = getDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::MaximumIndoorTemperature, true);
+      auto value = getDouble(ZoneVentilation_WindandStackOpenAreaFields::MaximumIndoorTemperature, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     bool ZoneVentilationWindandStackOpenArea_Impl::setMaximumIndoorTemperature(double maximumIndoorTemperature) {
-      return setDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::MaximumIndoorTemperature, maximumIndoorTemperature);
+      return setDouble(ZoneVentilation_WindandStackOpenAreaFields::MaximumIndoorTemperature, maximumIndoorTemperature);
     }
 
     double ZoneVentilationWindandStackOpenArea_Impl::deltaTemperature() const {
-      auto value = getDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::DeltaTemperature, true);
+      auto value = getDouble(ZoneVentilation_WindandStackOpenAreaFields::DeltaTemperature, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     bool ZoneVentilationWindandStackOpenArea_Impl::setDeltaTemperature(double deltaTemperature) {
-      return setDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::DeltaTemperature, deltaTemperature);
+      return setDouble(ZoneVentilation_WindandStackOpenAreaFields::DeltaTemperature, deltaTemperature);
     }
 
     double ZoneVentilationWindandStackOpenArea_Impl::minimumOutdoorTemperature() const {
-      auto value = getDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::MinimumOutdoorTemperature, true);
+      auto value = getDouble(ZoneVentilation_WindandStackOpenAreaFields::MinimumOutdoorTemperature, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     bool ZoneVentilationWindandStackOpenArea_Impl::setMinimumOutdoorTemperature(double minimumOutdoorTemperature) {
-      return setDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::MinimumOutdoorTemperature, minimumOutdoorTemperature);
+      return setDouble(ZoneVentilation_WindandStackOpenAreaFields::MinimumOutdoorTemperature, minimumOutdoorTemperature);
     }
 
     double ZoneVentilationWindandStackOpenArea_Impl::maximumOutdoorTemperature() const {
-      auto value = getDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::MaximumOutdoorTemperature, true);
+      auto value = getDouble(ZoneVentilation_WindandStackOpenAreaFields::MaximumOutdoorTemperature, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     bool ZoneVentilationWindandStackOpenArea_Impl::setMaximumOutdoorTemperature(double maximumOutdoorTemperature) {
-      return setDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::MaximumOutdoorTemperature, maximumOutdoorTemperature);
+      return setDouble(ZoneVentilation_WindandStackOpenAreaFields::MaximumOutdoorTemperature, maximumOutdoorTemperature);
     }
 
     double ZoneVentilationWindandStackOpenArea_Impl::maximumWindSpeed() const {
-      auto value = getDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::MaximumWindSpeed, true);
+      auto value = getDouble(ZoneVentilation_WindandStackOpenAreaFields::MaximumWindSpeed, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     bool ZoneVentilationWindandStackOpenArea_Impl::setMaximumWindSpeed(double maximumWindSpeed) {
-      return setDouble(OS_ZoneVentilation_WindandStackOpenAreaFields::MaximumWindSpeed, maximumWindSpeed);
+      return setDouble(ZoneVentilation_WindandStackOpenAreaFields::MaximumWindSpeed, maximumWindSpeed);
     }
 
   }  // namespace detail

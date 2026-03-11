@@ -13,7 +13,7 @@
 
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
-#include <utilities/idd/OS_ZoneHVAC_PackagedTerminalHeatPump_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_PackagedTerminalHeatPump_FieldEnums.hxx>
 
 #include <boost/optional.hpp>
 
@@ -29,11 +29,11 @@ namespace epmodel {
     : ModelObject(std::move(impl)) {}
 
   IddObjectType ZoneHVACPackagedTerminalHeatPump::iddObjectType() {
-    return IddObjectType::OS_ZoneHVAC_PackagedTerminalHeatPump;
+    return IddObjectType::ZoneHVAC_PackagedTerminalHeatPump;
   }
 
   std::vector<std::string> ZoneHVACPackagedTerminalHeatPump::fanPlacementValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), OS_ZoneHVAC_PackagedTerminalHeatPumpFields::FanPlacement);
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), ZoneHVAC_PackagedTerminalHeatPumpFields::FanPlacement);
   }
 
   std::vector<std::string> ZoneHVACPackagedTerminalHeatPump::validFanPlacementValues() {
@@ -273,12 +273,12 @@ namespace epmodel {
   namespace detail {
 
     boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::supplyAirFlowRateDuringCoolingOperation() const {
-      return getDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFlowRateDuringCoolingOperation, true);
+      return getDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingSupplyAirFlowRate, true);
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::isSupplyAirFlowRateDuringCoolingOperationAutosized() const {
       bool result = false;
-      boost::optional<std::string> value = getString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFlowRateDuringCoolingOperation, true);
+      boost::optional<std::string> value = getString(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingSupplyAirFlowRate, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -287,26 +287,26 @@ namespace epmodel {
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::setSupplyAirFlowRateDuringCoolingOperation(
       boost::optional<double> supplyAirFlowRateDuringCoolingOperation) {
-      const bool result = supplyAirFlowRateDuringCoolingOperation
-                            ? setDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFlowRateDuringCoolingOperation,
-                                        supplyAirFlowRateDuringCoolingOperation.get(), false)
-                            : setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFlowRateDuringCoolingOperation, "", false);
+      const bool result =
+        supplyAirFlowRateDuringCoolingOperation
+          ? setDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingSupplyAirFlowRate, supplyAirFlowRateDuringCoolingOperation.get(), false)
+          : setString(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingSupplyAirFlowRate, "", false);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::autosizeSupplyAirFlowRateDuringCoolingOperation() {
-      bool result = setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFlowRateDuringCoolingOperation, "Autosize", false);
+      bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingSupplyAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
     }
 
     boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::supplyAirFlowRateDuringHeatingOperation() const {
-      return getDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFlowRateDuringHeatingOperation, true);
+      return getDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingSupplyAirFlowRate, true);
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::isSupplyAirFlowRateDuringHeatingOperationAutosized() const {
       bool result = false;
-      boost::optional<std::string> value = getString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFlowRateDuringHeatingOperation, true);
+      boost::optional<std::string> value = getString(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingSupplyAirFlowRate, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -315,27 +315,26 @@ namespace epmodel {
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::setSupplyAirFlowRateDuringHeatingOperation(
       boost::optional<double> supplyAirFlowRateDuringHeatingOperation) {
-      const bool result = supplyAirFlowRateDuringHeatingOperation
-                            ? setDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFlowRateDuringHeatingOperation,
-                                        supplyAirFlowRateDuringHeatingOperation.get(), false)
-                            : setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFlowRateDuringHeatingOperation, "", false);
+      const bool result =
+        supplyAirFlowRateDuringHeatingOperation
+          ? setDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingSupplyAirFlowRate, supplyAirFlowRateDuringHeatingOperation.get(), false)
+          : setString(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingSupplyAirFlowRate, "", false);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::autosizeSupplyAirFlowRateDuringHeatingOperation() {
-      bool result = setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFlowRateDuringHeatingOperation, "Autosize", false);
+      bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingSupplyAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
     }
 
     boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::supplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
-      return getDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFlowRateWhenNoCoolingorHeatingisNeeded, true);
+      return getDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadSupplyAirFlowRate, true);
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::isSupplyAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const {
       bool result = false;
-      boost::optional<std::string> value =
-        getString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFlowRateWhenNoCoolingorHeatingisNeeded, true);
+      boost::optional<std::string> value = getString(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadSupplyAirFlowRate, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -344,26 +343,26 @@ namespace epmodel {
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::setSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded(
       boost::optional<double> supplyAirFlowRateWhenNoCoolingorHeatingisNeeded) {
-      const bool result = supplyAirFlowRateWhenNoCoolingorHeatingisNeeded
-                            ? setDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFlowRateWhenNoCoolingorHeatingisNeeded,
-                                        supplyAirFlowRateWhenNoCoolingorHeatingisNeeded.get(), false)
-                            : setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFlowRateWhenNoCoolingorHeatingisNeeded, "", false);
+      const bool result =
+        supplyAirFlowRateWhenNoCoolingorHeatingisNeeded
+          ? setDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadSupplyAirFlowRate, supplyAirFlowRateWhenNoCoolingorHeatingisNeeded.get(), false)
+          : setString(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadSupplyAirFlowRate, "", false);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::resetSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded() {
-      bool result = setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFlowRateWhenNoCoolingorHeatingisNeeded, "", false);
+      bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadSupplyAirFlowRate, "", false);
       OS_ASSERT(result);
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::autosizeSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded() {
-      bool result = setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFlowRateWhenNoCoolingorHeatingisNeeded, "Autosize", false);
+      bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadSupplyAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::noLoadSupplyAirFlowRateControlSetToLowSpeed() const {
-      auto value = getString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadSupplyAirFlowRateControlSetToLowSpeed);
+      auto value = getString(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadSupplyAirFlowRateControlSetToLowSpeed);
       if (!value || value->empty()) {
         return false;
       }
@@ -377,19 +376,19 @@ namespace epmodel {
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::setNoLoadSupplyAirFlowRateControlSetToLowSpeed(bool noLoadSupplyAirFlowRateControlSetToLowSpeed) {
-      const bool result = setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadSupplyAirFlowRateControlSetToLowSpeed,
+      const bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadSupplyAirFlowRateControlSetToLowSpeed,
                                     noLoadSupplyAirFlowRateControlSetToLowSpeed ? "Yes" : "No", false);
       OS_ASSERT(result);
       return result;
     }
 
     boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::outdoorAirFlowRateDuringCoolingOperation() const {
-      return getDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirFlowRateDuringCoolingOperation, true);
+      return getDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingOutdoorAirFlowRate, true);
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::isOutdoorAirFlowRateDuringCoolingOperationAutosized() const {
       bool result = false;
-      boost::optional<std::string> value = getString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirFlowRateDuringCoolingOperation, true);
+      boost::optional<std::string> value = getString(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingOutdoorAirFlowRate, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -398,26 +397,26 @@ namespace epmodel {
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::setOutdoorAirFlowRateDuringCoolingOperation(
       boost::optional<double> outdoorAirFlowRateDuringCoolingOperation) {
-      const bool result = outdoorAirFlowRateDuringCoolingOperation
-                            ? setDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirFlowRateDuringCoolingOperation,
-                                        outdoorAirFlowRateDuringCoolingOperation.get(), false)
-                            : setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirFlowRateDuringCoolingOperation, "", false);
+      const bool result =
+        outdoorAirFlowRateDuringCoolingOperation
+          ? setDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingOutdoorAirFlowRate, outdoorAirFlowRateDuringCoolingOperation.get(), false)
+          : setString(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingOutdoorAirFlowRate, "", false);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::autosizeOutdoorAirFlowRateDuringCoolingOperation() {
-      bool result = setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirFlowRateDuringCoolingOperation, "Autosize", false);
+      bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingOutdoorAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
     }
 
     boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::outdoorAirFlowRateDuringHeatingOperation() const {
-      return getDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirFlowRateDuringHeatingOperation, true);
+      return getDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingOutdoorAirFlowRate, true);
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::isOutdoorAirFlowRateDuringHeatingOperationAutosized() const {
       bool result = false;
-      boost::optional<std::string> value = getString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirFlowRateDuringHeatingOperation, true);
+      boost::optional<std::string> value = getString(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingOutdoorAirFlowRate, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -426,27 +425,26 @@ namespace epmodel {
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::setOutdoorAirFlowRateDuringHeatingOperation(
       boost::optional<double> outdoorAirFlowRateDuringHeatingOperation) {
-      const bool result = outdoorAirFlowRateDuringHeatingOperation
-                            ? setDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirFlowRateDuringHeatingOperation,
-                                        outdoorAirFlowRateDuringHeatingOperation.get(), false)
-                            : setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirFlowRateDuringHeatingOperation, "", false);
+      const bool result =
+        outdoorAirFlowRateDuringHeatingOperation
+          ? setDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingOutdoorAirFlowRate, outdoorAirFlowRateDuringHeatingOperation.get(), false)
+          : setString(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingOutdoorAirFlowRate, "", false);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::autosizeOutdoorAirFlowRateDuringHeatingOperation() {
-      bool result = setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirFlowRateDuringHeatingOperation, "Autosize", false);
+      bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingOutdoorAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
     }
 
     boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
-      return getDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded, true);
+      return getDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadOutdoorAirFlowRate, true);
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const {
       bool result = false;
-      boost::optional<std::string> value =
-        getString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded, true);
+      boost::optional<std::string> value = getString(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadOutdoorAirFlowRate, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -456,97 +454,92 @@ namespace epmodel {
     bool ZoneHVACPackagedTerminalHeatPump_Impl::setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(
       boost::optional<double> outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded) {
       const bool result = outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded
-                            ? setDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded,
+                            ? setDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadOutdoorAirFlowRate,
                                         outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded.get(), false)
-                            : setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded, "", false);
+                            : setString(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadOutdoorAirFlowRate, "", false);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::resetOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() {
-      bool result = setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded, "", false);
+      bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadOutdoorAirFlowRate, "", false);
       OS_ASSERT(result);
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() {
-      bool result = setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::OutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded, "Autosize", false);
+      bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadOutdoorAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
     }
 
     double ZoneHVACPackagedTerminalHeatPump_Impl::heatingConvergenceTolerance() const {
-      boost::optional<double> value = getDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingConvergenceTolerance, true);
+      boost::optional<double> value = getDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingConvergenceTolerance, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::isHeatingConvergenceToleranceDefaulted() const {
-      return isEmpty(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingConvergenceTolerance);
+      return isEmpty(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingConvergenceTolerance);
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::setHeatingConvergenceTolerance(double heatingConvergenceTolerance) {
-      bool result = setDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingConvergenceTolerance, heatingConvergenceTolerance, false);
+      bool result = setDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingConvergenceTolerance, heatingConvergenceTolerance, false);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::resetHeatingConvergenceTolerance() {
-      bool result = setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingConvergenceTolerance, "", false);
+      bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingConvergenceTolerance, "", false);
       OS_ASSERT(result);
     }
 
     double ZoneHVACPackagedTerminalHeatPump_Impl::minimumOutdoorDryBulbTemperatureforCompressorOperation() const {
-      boost::optional<double> value =
-        getDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::MinimumOutdoorDryBulbTemperatureforCompressorOperation, true);
-      OS_ASSERT(value);
-      return value.get();
+      // Strict EnergyPlus alignment: ZoneHVAC:PackagedTerminalHeatPump does not expose this legacy OS field.
+      // Keep API stable while reporting unsupported behavior through the setter/default APIs.
+      return 0.0;
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::isMinimumOutdoorDryBulbTemperatureforCompressorOperationDefaulted() const {
-      return isEmpty(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::MinimumOutdoorDryBulbTemperatureforCompressorOperation);
+      return true;
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::setMinimumOutdoorDryBulbTemperatureforCompressorOperation(
-      double minimumOutdoorDryBulbTemperatureforCompressorOperation) {
-      bool result = setDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::MinimumOutdoorDryBulbTemperatureforCompressorOperation,
-                              minimumOutdoorDryBulbTemperatureforCompressorOperation, false);
-      OS_ASSERT(result);
-      return result;
+      double /*minimumOutdoorDryBulbTemperatureforCompressorOperation*/) {
+      return false;
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::resetMinimumOutdoorDryBulbTemperatureforCompressorOperation() {
-      bool result = setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::MinimumOutdoorDryBulbTemperatureforCompressorOperation, "", false);
-      OS_ASSERT(result);
+      // No-op: field not present in the EnergyPlus schema for this object.
     }
 
     double ZoneHVACPackagedTerminalHeatPump_Impl::coolingConvergenceTolerance() const {
-      boost::optional<double> value = getDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingConvergenceTolerance, true);
+      boost::optional<double> value = getDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingConvergenceTolerance, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::isCoolingConvergenceToleranceDefaulted() const {
-      return isEmpty(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingConvergenceTolerance);
+      return isEmpty(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingConvergenceTolerance);
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::setCoolingConvergenceTolerance(double coolingConvergenceTolerance) {
-      bool result = setDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingConvergenceTolerance, coolingConvergenceTolerance, false);
+      bool result = setDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingConvergenceTolerance, coolingConvergenceTolerance, false);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::resetCoolingConvergenceTolerance() {
-      bool result = setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingConvergenceTolerance, "", false);
+      bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingConvergenceTolerance, "", false);
       OS_ASSERT(result);
     }
 
     boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::maximumSupplyAirTemperaturefromSupplementalHeater() const {
-      return getDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumSupplyAirTemperaturefromSupplementalHeater, true);
+      return getDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumSupplyAirTemperaturefromSupplementalHeater, true);
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::isMaximumSupplyAirTemperaturefromSupplementalHeaterAutosized() const {
       bool result = false;
       boost::optional<std::string> value =
-        getString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumSupplyAirTemperaturefromSupplementalHeater, true);
+        getString(ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumSupplyAirTemperaturefromSupplementalHeater, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -556,44 +549,44 @@ namespace epmodel {
     bool ZoneHVACPackagedTerminalHeatPump_Impl::setMaximumSupplyAirTemperaturefromSupplementalHeater(
       boost::optional<double> maximumSupplyAirTemperaturefromSupplementalHeater) {
       const bool result = maximumSupplyAirTemperaturefromSupplementalHeater
-                            ? setDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumSupplyAirTemperaturefromSupplementalHeater,
+                            ? setDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumSupplyAirTemperaturefromSupplementalHeater,
                                         maximumSupplyAirTemperaturefromSupplementalHeater.get(), false)
-                            : setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumSupplyAirTemperaturefromSupplementalHeater, "", false);
+                            : setString(ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumSupplyAirTemperaturefromSupplementalHeater, "", false);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::autosizeMaximumSupplyAirTemperaturefromSupplementalHeater() {
-      bool result = setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumSupplyAirTemperaturefromSupplementalHeater, "Autosize", false);
+      bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumSupplyAirTemperaturefromSupplementalHeater, "Autosize", false);
       OS_ASSERT(result);
     }
 
     double ZoneHVACPackagedTerminalHeatPump_Impl::maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation() const {
       boost::optional<double> value =
-        getDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation, true);
+        getDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::isMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperationDefaulted() const {
-      return isEmpty(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation);
+      return isEmpty(ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation);
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::setMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation(
       double maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation) {
-      bool result = setDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation,
+      bool result = setDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation,
                               maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation, false);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::resetMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation() {
-      bool result = setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation, "", false);
+      bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation, "", false);
       OS_ASSERT(result);
     }
 
     std::string ZoneHVACPackagedTerminalHeatPump_Impl::fanPlacement() const {
-      auto value = getString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::FanPlacement);
+      auto value = getString(ZoneHVAC_PackagedTerminalHeatPumpFields::FanPlacement);
       if (!value) {
         return std::string();
       }
@@ -601,28 +594,28 @@ namespace epmodel {
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::isFanPlacementDefaulted() const {
-      return isEmpty(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::FanPlacement);
+      return isEmpty(ZoneHVAC_PackagedTerminalHeatPumpFields::FanPlacement);
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::setFanPlacement(const std::string& fanPlacement) {
-      bool result = setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::FanPlacement, fanPlacement, false);
+      bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::FanPlacement, fanPlacement, false);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACPackagedTerminalHeatPump_Impl::resetFanPlacement() {
-      bool result = setString(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::FanPlacement, "", false);
+      bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::FanPlacement, "", false);
       OS_ASSERT(result);
     }
 
     double ZoneHVACPackagedTerminalHeatPump_Impl::dXHeatingCoilSizingRatio() const {
-      boost::optional<double> value = getDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::DXHeatingCoilSizingRatio, true);
+      boost::optional<double> value = getDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::DXHeatingCoilSizingRatio, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio) {
-      bool result = setDouble(OS_ZoneHVAC_PackagedTerminalHeatPumpFields::DXHeatingCoilSizingRatio, dXHeatingCoilSizingRatio, false);
+      bool result = setDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::DXHeatingCoilSizingRatio, dXHeatingCoilSizingRatio, false);
       OS_ASSERT(result);
       return result;
     }

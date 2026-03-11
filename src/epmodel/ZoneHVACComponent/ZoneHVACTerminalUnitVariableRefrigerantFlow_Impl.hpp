@@ -8,7 +8,7 @@
 
 #include "ModelObject_Impl.hpp"
 
-#include <utilities/idd/OS_ZoneHVAC_TerminalUnit_VariableRefrigerantFlow_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_TerminalUnit_VariableRefrigerantFlow_FieldEnums.hxx>
 
 #include <boost/optional.hpp>
 

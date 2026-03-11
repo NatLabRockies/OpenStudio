@@ -16,11 +16,10 @@ TEST_F(EPModelFixture, GroundHeatTransferBasementEquivAutoGrid_DefaultConstructo
   EXPECT_EQ(GroundHeatTransferBasementEquivAutoGrid::iddObjectType(), object.iddObject().type());
 }
 
-TEST_F(EPModelFixture, DISABLED_GroundHeatTransferBasementEquivAutoGrid_ScalarAccessors_RoundTrip) {
+TEST_F(EPModelFixture, GroundHeatTransferBasementEquivAutoGrid_ScalarAccessors_RoundTrip) {
   Model model;
   GroundHeatTransferBasementEquivAutoGrid object(model);
 
-  // Blocked: any scalar accessor call currently segfaults for this object type in the test binary.
   EXPECT_TRUE(object.isClearanceDistancefromoutsideofwalltoedgeof3DgrounddomainDefaulted());
   EXPECT_TRUE(object.isSlabDepthThicknessofthefloorslabDefaulted());
   EXPECT_TRUE(object.isBaseDepthDepthofthebasementwallbelowgradeDefaulted());

@@ -10,7 +10,7 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddEnums.hxx>
-#include <utilities/idd/OS_ZoneHVAC_Dehumidifier_DX_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_Dehumidifier_DX_FieldEnums.hxx>
 
 namespace openstudio {
 namespace epmodel {
@@ -27,7 +27,7 @@ namespace epmodel {
   ZoneHVACDehumidifierDX::ZoneHVACDehumidifierDX(std::shared_ptr<detail::ZoneHVACDehumidifierDX_Impl> impl) : ModelObject(std::move(impl)) {}
 
   IddObjectType ZoneHVACDehumidifierDX::iddObjectType() {
-    return {IddObjectType::OS_ZoneHVAC_Dehumidifier_DX};
+    return {IddObjectType::ZoneHVAC_Dehumidifier_DX};
   }
 
   double ZoneHVACDehumidifierDX::ratedWaterRemoval() const {
@@ -88,65 +88,65 @@ namespace epmodel {
   namespace detail {
 
     double ZoneHVACDehumidifierDX_Impl::ratedWaterRemoval() const {
-      const auto value = getDouble(openstudio::OS_ZoneHVAC_Dehumidifier_DXFields::RatedWaterRemoval, true);
+      const auto value = getDouble(openstudio::ZoneHVAC_Dehumidifier_DXFields::RatedWaterRemoval, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool ZoneHVACDehumidifierDX_Impl::setRatedWaterRemoval(double ratedWaterRemoval) {
-      return setDouble(openstudio::OS_ZoneHVAC_Dehumidifier_DXFields::RatedWaterRemoval, ratedWaterRemoval);
+      return setDouble(openstudio::ZoneHVAC_Dehumidifier_DXFields::RatedWaterRemoval, ratedWaterRemoval);
     }
 
     double ZoneHVACDehumidifierDX_Impl::ratedEnergyFactor() const {
-      const auto value = getDouble(openstudio::OS_ZoneHVAC_Dehumidifier_DXFields::RatedEnergyFactor, true);
+      const auto value = getDouble(openstudio::ZoneHVAC_Dehumidifier_DXFields::RatedEnergyFactor, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool ZoneHVACDehumidifierDX_Impl::setRatedEnergyFactor(double ratedEnergyFactor) {
-      return setDouble(openstudio::OS_ZoneHVAC_Dehumidifier_DXFields::RatedEnergyFactor, ratedEnergyFactor);
+      return setDouble(openstudio::ZoneHVAC_Dehumidifier_DXFields::RatedEnergyFactor, ratedEnergyFactor);
     }
 
     double ZoneHVACDehumidifierDX_Impl::ratedAirFlowRate() const {
-      const auto value = getDouble(openstudio::OS_ZoneHVAC_Dehumidifier_DXFields::RatedAirFlowRate, true);
+      const auto value = getDouble(openstudio::ZoneHVAC_Dehumidifier_DXFields::RatedAirFlowRate, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool ZoneHVACDehumidifierDX_Impl::setRatedAirFlowRate(double ratedAirFlowRate) {
-      return setDouble(openstudio::OS_ZoneHVAC_Dehumidifier_DXFields::RatedAirFlowRate, ratedAirFlowRate);
+      return setDouble(openstudio::ZoneHVAC_Dehumidifier_DXFields::RatedAirFlowRate, ratedAirFlowRate);
     }
 
     double ZoneHVACDehumidifierDX_Impl::minimumDryBulbTemperatureforDehumidifierOperation() const {
-      const auto value = getDouble(openstudio::OS_ZoneHVAC_Dehumidifier_DXFields::MinimumDryBulbTemperatureforDehumidifierOperation, true);
+      const auto value = getDouble(openstudio::ZoneHVAC_Dehumidifier_DXFields::MinimumDryBulbTemperatureforDehumidifierOperation, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool ZoneHVACDehumidifierDX_Impl::setMinimumDryBulbTemperatureforDehumidifierOperation(double minimumDryBulbTemperatureforDehumidifierOperation) {
-      return setDouble(openstudio::OS_ZoneHVAC_Dehumidifier_DXFields::MinimumDryBulbTemperatureforDehumidifierOperation,
+      return setDouble(openstudio::ZoneHVAC_Dehumidifier_DXFields::MinimumDryBulbTemperatureforDehumidifierOperation,
                        minimumDryBulbTemperatureforDehumidifierOperation);
     }
 
     double ZoneHVACDehumidifierDX_Impl::maximumDryBulbTemperatureforDehumidifierOperation() const {
-      const auto value = getDouble(openstudio::OS_ZoneHVAC_Dehumidifier_DXFields::MaximumDryBulbTemperatureforDehumidifierOperation, true);
+      const auto value = getDouble(openstudio::ZoneHVAC_Dehumidifier_DXFields::MaximumDryBulbTemperatureforDehumidifierOperation, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool ZoneHVACDehumidifierDX_Impl::setMaximumDryBulbTemperatureforDehumidifierOperation(double maximumDryBulbTemperatureforDehumidifierOperation) {
-      return setDouble(openstudio::OS_ZoneHVAC_Dehumidifier_DXFields::MaximumDryBulbTemperatureforDehumidifierOperation,
+      return setDouble(openstudio::ZoneHVAC_Dehumidifier_DXFields::MaximumDryBulbTemperatureforDehumidifierOperation,
                        maximumDryBulbTemperatureforDehumidifierOperation);
     }
 
     double ZoneHVACDehumidifierDX_Impl::offCycleParasiticElectricLoad() const {
-      const auto value = getDouble(openstudio::OS_ZoneHVAC_Dehumidifier_DXFields::OffCycleParasiticElectricLoad, true);
+      const auto value = getDouble(openstudio::ZoneHVAC_Dehumidifier_DXFields::OffCycleParasiticElectricLoad, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool ZoneHVACDehumidifierDX_Impl::setOffCycleParasiticElectricLoad(double offCycleParasiticElectricLoad) {
-      return setDouble(openstudio::OS_ZoneHVAC_Dehumidifier_DXFields::OffCycleParasiticElectricLoad, offCycleParasiticElectricLoad);
+      return setDouble(openstudio::ZoneHVAC_Dehumidifier_DXFields::OffCycleParasiticElectricLoad, offCycleParasiticElectricLoad);
     }
 
   }  // namespace detail

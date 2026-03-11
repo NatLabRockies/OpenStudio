@@ -10,7 +10,7 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddEnums.hxx>
-#include <utilities/idd/OS_PythonPlugin_TrendVariable_FieldEnums.hxx>
+#include <utilities/idd/PythonPlugin_TrendVariable_FieldEnums.hxx>
 
 namespace openstudio {
 namespace epmodel {
@@ -23,7 +23,7 @@ namespace epmodel {
   PythonPluginTrendVariable::PythonPluginTrendVariable(std::shared_ptr<detail::PythonPluginTrendVariable_Impl> impl) : ModelObject(std::move(impl)) {}
 
   IddObjectType PythonPluginTrendVariable::iddObjectType() {
-    return IddObjectType::OS_PythonPlugin_TrendVariable;
+    return IddObjectType::PythonPlugin_TrendVariable;
   }
 
   int PythonPluginTrendVariable::numberofTimestepstobeLogged() const {
@@ -42,13 +42,13 @@ namespace epmodel {
   namespace detail {
 
     int PythonPluginTrendVariable_Impl::numberofTimestepstobeLogged() const {
-      const auto value = getInt(openstudio::OS_PythonPlugin_TrendVariableFields::NumberofTimestepstobeLogged, true);
+      const auto value = getInt(openstudio::PythonPlugin_TrendVariableFields::NumberofTimestepstobeLogged, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool PythonPluginTrendVariable_Impl::setNumberofTimestepstobeLogged(int numberofTimestepstobeLogged) {
-      return setInt(openstudio::OS_PythonPlugin_TrendVariableFields::NumberofTimestepstobeLogged, numberofTimestepstobeLogged);
+      return setInt(openstudio::PythonPlugin_TrendVariableFields::NumberofTimestepstobeLogged, numberofTimestepstobeLogged);
     }
 
   }  // namespace detail

@@ -8,7 +8,7 @@
 
 #include "ModelObject_Impl.hpp"
 
-#include <utilities/idd/OS_ZoneHVAC_PackagedTerminalHeatPump_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_PackagedTerminalHeatPump_FieldEnums.hxx>
 
 #include <boost/optional.hpp>
 #include <string>

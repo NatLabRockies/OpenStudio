@@ -13,7 +13,7 @@ using namespace openstudio::epmodel;
 TEST_F(EPModelFixture, RefrigerationCondenserWaterCooled_DefaultConstructor) {
   Model model;
   RefrigerationCondenserWaterCooled condenser(model);
-  EXPECT_EQ(RefrigerationCondenserWaterCooled::iddObjectType(), openstudio::IddObjectType::OS_Refrigeration_Condenser_WaterCooled);
+  EXPECT_EQ(RefrigerationCondenserWaterCooled::iddObjectType(), openstudio::IddObjectType::Refrigeration_Condenser_WaterCooled);
 }
 
 TEST_F(EPModelFixture, RefrigerationCondenserWaterCooled_ScalarAccessors_RoundTrip) {

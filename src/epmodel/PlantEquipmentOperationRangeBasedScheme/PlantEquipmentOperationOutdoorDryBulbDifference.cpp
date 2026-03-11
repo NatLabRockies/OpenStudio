@@ -77,7 +77,7 @@ namespace epmodel {
     : ModelObject(std::move(impl)) {}
 
   IddObjectType PlantEquipmentOperationOutdoorDryBulbDifference::iddObjectType() {
-    return IddObjectType::OS_PlantEquipmentOperation_OutdoorDryBulbDifference;
+    return IddObjectType::PlantEquipmentOperation_OutdoorDryBulbDifference;
   }
 
   double PlantEquipmentOperationOutdoorDryBulbDifference::maximumUpperLimit() const {

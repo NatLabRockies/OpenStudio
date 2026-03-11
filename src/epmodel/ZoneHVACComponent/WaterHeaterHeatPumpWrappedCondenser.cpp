@@ -10,7 +10,7 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddFactory.hxx>
-#include <utilities/idd/OS_WaterHeater_HeatPump_WrappedCondenser_FieldEnums.hxx>
+#include <utilities/idd/WaterHeater_HeatPump_WrappedCondenser_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 
 namespace openstudio {
@@ -25,31 +25,31 @@ namespace epmodel {
     : ModelObject(std::move(impl)) {}
 
   IddObjectType WaterHeaterHeatPumpWrappedCondenser::iddObjectType() {
-    return IddObjectType::OS_WaterHeater_HeatPump_WrappedCondenser;
+    return IddObjectType::WaterHeater_HeatPump_WrappedCondenser;
   }
 
   std::vector<std::string> WaterHeaterHeatPumpWrappedCondenser::inletAirConfigurationValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                          OS_WaterHeater_HeatPump_WrappedCondenserFields::InletAirConfiguration);
+                          WaterHeater_HeatPump_WrappedCondenserFields::InletAirConfiguration);
   }
 
   std::vector<std::string> WaterHeaterHeatPumpWrappedCondenser::compressorLocationValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                          OS_WaterHeater_HeatPump_WrappedCondenserFields::CompressorLocation);
+                          WaterHeater_HeatPump_WrappedCondenserFields::CompressorLocation);
   }
 
   std::vector<std::string> WaterHeaterHeatPumpWrappedCondenser::fanPlacementValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), OS_WaterHeater_HeatPump_WrappedCondenserFields::FanPlacement);
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), WaterHeater_HeatPump_WrappedCondenserFields::FanPlacement);
   }
 
   std::vector<std::string> WaterHeaterHeatPumpWrappedCondenser::parasiticHeatRejectionLocationValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                          OS_WaterHeater_HeatPump_WrappedCondenserFields::ParasiticHeatRejectionLocation);
+                          WaterHeater_HeatPump_WrappedCondenserFields::ParasiticHeatRejectionLocation);
   }
 
   std::vector<std::string> WaterHeaterHeatPumpWrappedCondenser::tankElementControlLogicValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                          OS_WaterHeater_HeatPump_WrappedCondenserFields::TankElementControlLogic);
+                          WaterHeater_HeatPump_WrappedCondenserFields::TankElementControlLogic);
   }
 
   double WaterHeaterHeatPumpWrappedCondenser::deadBandTemperatureDifference() const {
@@ -287,298 +287,298 @@ namespace epmodel {
   namespace detail {
 
     double WaterHeaterHeatPumpWrappedCondenser_Impl::deadBandTemperatureDifference() const {
-      const auto value = getDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::DeadBandTemperatureDifference, true);
+      const auto value = getDouble(WaterHeater_HeatPump_WrappedCondenserFields::DeadBandTemperatureDifference, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::isDeadBandTemperatureDifferenceDefaulted() const {
-      return isEmpty(OS_WaterHeater_HeatPump_WrappedCondenserFields::DeadBandTemperatureDifference);
+      return isEmpty(WaterHeater_HeatPump_WrappedCondenserFields::DeadBandTemperatureDifference);
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setDeadBandTemperatureDifference(double deadBandTemperatureDifference) {
-      const bool result = setDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::DeadBandTemperatureDifference, deadBandTemperatureDifference);
+      const bool result = setDouble(WaterHeater_HeatPump_WrappedCondenserFields::DeadBandTemperatureDifference, deadBandTemperatureDifference);
       OS_ASSERT(result);
       return result;
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetDeadBandTemperatureDifference() {
-      OS_ASSERT(setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::DeadBandTemperatureDifference, ""));
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::DeadBandTemperatureDifference, ""));
     }
 
     double WaterHeaterHeatPumpWrappedCondenser_Impl::condenserBottomLocation() const {
-      const auto value = getDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::CondenserBottomLocation, true);
+      const auto value = getDouble(WaterHeater_HeatPump_WrappedCondenserFields::CondenserBottomLocation, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::isCondenserBottomLocationDefaulted() const {
-      return isEmpty(OS_WaterHeater_HeatPump_WrappedCondenserFields::CondenserBottomLocation);
+      return isEmpty(WaterHeater_HeatPump_WrappedCondenserFields::CondenserBottomLocation);
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setCondenserBottomLocation(double condenserBottomLocation) {
-      const bool result = setDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::CondenserBottomLocation, condenserBottomLocation);
+      const bool result = setDouble(WaterHeater_HeatPump_WrappedCondenserFields::CondenserBottomLocation, condenserBottomLocation);
       OS_ASSERT(result);
       return result;
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetCondenserBottomLocation() {
-      OS_ASSERT(setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::CondenserBottomLocation, ""));
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::CondenserBottomLocation, ""));
     }
 
     double WaterHeaterHeatPumpWrappedCondenser_Impl::condenserTopLocation() const {
-      const auto value = getDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::CondenserTopLocation, true);
+      const auto value = getDouble(WaterHeater_HeatPump_WrappedCondenserFields::CondenserTopLocation, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setCondenserTopLocation(double condenserTopLocation) {
-      const bool result = setDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::CondenserTopLocation, condenserTopLocation);
+      const bool result = setDouble(WaterHeater_HeatPump_WrappedCondenserFields::CondenserTopLocation, condenserTopLocation);
       OS_ASSERT(result);
       return result;
     }
 
     boost::optional<double> WaterHeaterHeatPumpWrappedCondenser_Impl::evaporatorAirFlowRate() const {
-      return getDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::EvaporatorAirFlowRate, true);
+      return getDouble(WaterHeater_HeatPump_WrappedCondenserFields::EvaporatorAirFlowRate, true);
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::isEvaporatorAirFlowRateAutocalculated() const {
-      if (auto value = getString(OS_WaterHeater_HeatPump_WrappedCondenserFields::EvaporatorAirFlowRate, true)) {
+      if (auto value = getString(WaterHeater_HeatPump_WrappedCondenserFields::EvaporatorAirFlowRate, true)) {
         return openstudio::istringEqual(*value, "autocalculate");
       }
       return false;
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setEvaporatorAirFlowRate(double evaporatorAirFlowRate) {
-      const bool result = setDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::EvaporatorAirFlowRate, evaporatorAirFlowRate);
+      const bool result = setDouble(WaterHeater_HeatPump_WrappedCondenserFields::EvaporatorAirFlowRate, evaporatorAirFlowRate);
       OS_ASSERT(result);
       return result;
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetEvaporatorAirFlowRate() {
-      OS_ASSERT(setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::EvaporatorAirFlowRate, ""));
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::EvaporatorAirFlowRate, ""));
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::autocalculateEvaporatorAirFlowRate() {
-      OS_ASSERT(setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::EvaporatorAirFlowRate, "autocalculate"));
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::EvaporatorAirFlowRate, "autocalculate"));
     }
 
     std::string WaterHeaterHeatPumpWrappedCondenser_Impl::inletAirConfiguration() const {
-      const auto value = getString(OS_WaterHeater_HeatPump_WrappedCondenserFields::InletAirConfiguration, true);
+      const auto value = getString(WaterHeater_HeatPump_WrappedCondenserFields::InletAirConfiguration, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setInletAirConfiguration(const std::string& inletAirConfiguration) {
-      const bool result = setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::InletAirConfiguration, inletAirConfiguration);
+      const bool result = setString(WaterHeater_HeatPump_WrappedCondenserFields::InletAirConfiguration, inletAirConfiguration);
       OS_ASSERT(result);
       return result;
     }
 
     double WaterHeaterHeatPumpWrappedCondenser_Impl::minimumInletAirTemperatureforCompressorOperation() const {
-      const auto value = getDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::MinimumInletAirTemperatureforCompressorOperation, true);
+      const auto value = getDouble(WaterHeater_HeatPump_WrappedCondenserFields::MinimumInletAirTemperatureforCompressorOperation, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::isMinimumInletAirTemperatureforCompressorOperationDefaulted() const {
-      return isEmpty(OS_WaterHeater_HeatPump_WrappedCondenserFields::MinimumInletAirTemperatureforCompressorOperation);
+      return isEmpty(WaterHeater_HeatPump_WrappedCondenserFields::MinimumInletAirTemperatureforCompressorOperation);
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setMinimumInletAirTemperatureforCompressorOperation(
       double minimumInletAirTemperatureforCompressorOperation) {
-      const bool result = setDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::MinimumInletAirTemperatureforCompressorOperation,
+      const bool result = setDouble(WaterHeater_HeatPump_WrappedCondenserFields::MinimumInletAirTemperatureforCompressorOperation,
                                     minimumInletAirTemperatureforCompressorOperation);
       OS_ASSERT(result);
       return result;
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetMinimumInletAirTemperatureforCompressorOperation() {
-      OS_ASSERT(setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::MinimumInletAirTemperatureforCompressorOperation, ""));
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::MinimumInletAirTemperatureforCompressorOperation, ""));
     }
 
     double WaterHeaterHeatPumpWrappedCondenser_Impl::maximumInletAirTemperatureforCompressorOperation() const {
-      const auto value = getDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::MaximumInletAirTemperatureforCompressorOperation, true);
+      const auto value = getDouble(WaterHeater_HeatPump_WrappedCondenserFields::MaximumInletAirTemperatureforCompressorOperation, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::isMaximumInletAirTemperatureforCompressorOperationDefaulted() const {
-      return isEmpty(OS_WaterHeater_HeatPump_WrappedCondenserFields::MaximumInletAirTemperatureforCompressorOperation);
+      return isEmpty(WaterHeater_HeatPump_WrappedCondenserFields::MaximumInletAirTemperatureforCompressorOperation);
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setMaximumInletAirTemperatureforCompressorOperation(
       double maximumInletAirTemperatureforCompressorOperation) {
-      const bool result = setDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::MaximumInletAirTemperatureforCompressorOperation,
+      const bool result = setDouble(WaterHeater_HeatPump_WrappedCondenserFields::MaximumInletAirTemperatureforCompressorOperation,
                                     maximumInletAirTemperatureforCompressorOperation);
       OS_ASSERT(result);
       return result;
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetMaximumInletAirTemperatureforCompressorOperation() {
-      OS_ASSERT(setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::MaximumInletAirTemperatureforCompressorOperation, ""));
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::MaximumInletAirTemperatureforCompressorOperation, ""));
     }
 
     std::string WaterHeaterHeatPumpWrappedCondenser_Impl::compressorLocation() const {
-      const auto value = getString(OS_WaterHeater_HeatPump_WrappedCondenserFields::CompressorLocation, true);
+      const auto value = getString(WaterHeater_HeatPump_WrappedCondenserFields::CompressorLocation, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setCompressorLocation(const std::string& compressorLocation) {
-      const bool result = setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::CompressorLocation, compressorLocation);
+      const bool result = setString(WaterHeater_HeatPump_WrappedCondenserFields::CompressorLocation, compressorLocation);
       OS_ASSERT(result);
       return result;
     }
 
     std::string WaterHeaterHeatPumpWrappedCondenser_Impl::fanPlacement() const {
-      const auto value = getString(OS_WaterHeater_HeatPump_WrappedCondenserFields::FanPlacement, true);
+      const auto value = getString(WaterHeater_HeatPump_WrappedCondenserFields::FanPlacement, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::isFanPlacementDefaulted() const {
-      return isEmpty(OS_WaterHeater_HeatPump_WrappedCondenserFields::FanPlacement);
+      return isEmpty(WaterHeater_HeatPump_WrappedCondenserFields::FanPlacement);
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setFanPlacement(const std::string& fanPlacement) {
-      const bool result = setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::FanPlacement, fanPlacement);
+      const bool result = setString(WaterHeater_HeatPump_WrappedCondenserFields::FanPlacement, fanPlacement);
       OS_ASSERT(result);
       return result;
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetFanPlacement() {
-      OS_ASSERT(setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::FanPlacement, ""));
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::FanPlacement, ""));
     }
 
     double WaterHeaterHeatPumpWrappedCondenser_Impl::onCycleParasiticElectricLoad() const {
-      const auto value = getDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::OnCycleParasiticElectricLoad, true);
+      const auto value = getDouble(WaterHeater_HeatPump_WrappedCondenserFields::OnCycleParasiticElectricLoad, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::isOnCycleParasiticElectricLoadDefaulted() const {
-      return isEmpty(OS_WaterHeater_HeatPump_WrappedCondenserFields::OnCycleParasiticElectricLoad);
+      return isEmpty(WaterHeater_HeatPump_WrappedCondenserFields::OnCycleParasiticElectricLoad);
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setOnCycleParasiticElectricLoad(double onCycleParasiticElectricLoad) {
-      const bool result = setDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::OnCycleParasiticElectricLoad, onCycleParasiticElectricLoad);
+      const bool result = setDouble(WaterHeater_HeatPump_WrappedCondenserFields::OnCycleParasiticElectricLoad, onCycleParasiticElectricLoad);
       OS_ASSERT(result);
       return result;
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetOnCycleParasiticElectricLoad() {
-      OS_ASSERT(setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::OnCycleParasiticElectricLoad, ""));
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::OnCycleParasiticElectricLoad, ""));
     }
 
     double WaterHeaterHeatPumpWrappedCondenser_Impl::offCycleParasiticElectricLoad() const {
-      const auto value = getDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::OffCycleParasiticElectricLoad, true);
+      const auto value = getDouble(WaterHeater_HeatPump_WrappedCondenserFields::OffCycleParasiticElectricLoad, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::isOffCycleParasiticElectricLoadDefaulted() const {
-      return isEmpty(OS_WaterHeater_HeatPump_WrappedCondenserFields::OffCycleParasiticElectricLoad);
+      return isEmpty(WaterHeater_HeatPump_WrappedCondenserFields::OffCycleParasiticElectricLoad);
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setOffCycleParasiticElectricLoad(double offCycleParasiticElectricLoad) {
-      const bool result = setDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::OffCycleParasiticElectricLoad, offCycleParasiticElectricLoad);
+      const bool result = setDouble(WaterHeater_HeatPump_WrappedCondenserFields::OffCycleParasiticElectricLoad, offCycleParasiticElectricLoad);
       OS_ASSERT(result);
       return result;
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetOffCycleParasiticElectricLoad() {
-      OS_ASSERT(setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::OffCycleParasiticElectricLoad, ""));
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::OffCycleParasiticElectricLoad, ""));
     }
 
     std::string WaterHeaterHeatPumpWrappedCondenser_Impl::parasiticHeatRejectionLocation() const {
-      const auto value = getString(OS_WaterHeater_HeatPump_WrappedCondenserFields::ParasiticHeatRejectionLocation, true);
+      const auto value = getString(WaterHeater_HeatPump_WrappedCondenserFields::ParasiticHeatRejectionLocation, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::isParasiticHeatRejectionLocationDefaulted() const {
-      return isEmpty(OS_WaterHeater_HeatPump_WrappedCondenserFields::ParasiticHeatRejectionLocation);
+      return isEmpty(WaterHeater_HeatPump_WrappedCondenserFields::ParasiticHeatRejectionLocation);
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setParasiticHeatRejectionLocation(const std::string& parasiticHeatRejectionLocation) {
-      const bool result = setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::ParasiticHeatRejectionLocation, parasiticHeatRejectionLocation);
+      const bool result = setString(WaterHeater_HeatPump_WrappedCondenserFields::ParasiticHeatRejectionLocation, parasiticHeatRejectionLocation);
       OS_ASSERT(result);
       return result;
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetParasiticHeatRejectionLocation() {
-      OS_ASSERT(setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::ParasiticHeatRejectionLocation, ""));
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::ParasiticHeatRejectionLocation, ""));
     }
 
     std::string WaterHeaterHeatPumpWrappedCondenser_Impl::tankElementControlLogic() const {
-      const auto value = getString(OS_WaterHeater_HeatPump_WrappedCondenserFields::TankElementControlLogic, true);
+      const auto value = getString(WaterHeater_HeatPump_WrappedCondenserFields::TankElementControlLogic, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::isTankElementControlLogicDefaulted() const {
-      return isEmpty(OS_WaterHeater_HeatPump_WrappedCondenserFields::TankElementControlLogic);
+      return isEmpty(WaterHeater_HeatPump_WrappedCondenserFields::TankElementControlLogic);
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setTankElementControlLogic(const std::string& tankElementControlLogic) {
-      const bool result = setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::TankElementControlLogic, tankElementControlLogic);
+      const bool result = setString(WaterHeater_HeatPump_WrappedCondenserFields::TankElementControlLogic, tankElementControlLogic);
       OS_ASSERT(result);
       return result;
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetTankElementControlLogic() {
-      OS_ASSERT(setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::TankElementControlLogic, ""));
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::TankElementControlLogic, ""));
     }
 
     boost::optional<double> WaterHeaterHeatPumpWrappedCondenser_Impl::controlSensor1HeightInStratifiedTank() const {
-      return getDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor1HeightInStratifiedTank, true);
+      return getDouble(WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor1HeightInStratifiedTank, true);
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setControlSensor1HeightInStratifiedTank(double controlSensor1HeightInStratifiedTank) {
       const bool result =
-        setDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor1HeightInStratifiedTank, controlSensor1HeightInStratifiedTank);
+        setDouble(WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor1HeightInStratifiedTank, controlSensor1HeightInStratifiedTank);
       OS_ASSERT(result);
       return result;
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetControlSensor1HeightInStratifiedTank() {
-      OS_ASSERT(setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor1HeightInStratifiedTank, ""));
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor1HeightInStratifiedTank, ""));
     }
 
     double WaterHeaterHeatPumpWrappedCondenser_Impl::controlSensor1Weight() const {
-      const auto value = getDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor1Weight, true);
+      const auto value = getDouble(WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor1Weight, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::isControlSensor1WeightDefaulted() const {
-      return isEmpty(OS_WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor1Weight);
+      return isEmpty(WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor1Weight);
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setControlSensor1Weight(double controlSensor1Weight) {
-      const bool result = setDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor1Weight, controlSensor1Weight);
+      const bool result = setDouble(WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor1Weight, controlSensor1Weight);
       OS_ASSERT(result);
       return result;
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetControlSensor1Weight() {
-      OS_ASSERT(setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor1Weight, ""));
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor1Weight, ""));
     }
 
     boost::optional<double> WaterHeaterHeatPumpWrappedCondenser_Impl::controlSensor2HeightInStratifiedTank() const {
-      return getDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor2HeightInStratifiedTank, true);
+      return getDouble(WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor2HeightInStratifiedTank, true);
     }
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setControlSensor2HeightInStratifiedTank(double controlSensor2HeightInStratifiedTank) {
       const bool result =
-        setDouble(OS_WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor2HeightInStratifiedTank, controlSensor2HeightInStratifiedTank);
+        setDouble(WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor2HeightInStratifiedTank, controlSensor2HeightInStratifiedTank);
       OS_ASSERT(result);
       return result;
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetControlSensor2HeightInStratifiedTank() {
-      OS_ASSERT(setString(OS_WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor2HeightInStratifiedTank, ""));
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::ControlSensor2HeightInStratifiedTank, ""));
     }
 
   }  // namespace detail

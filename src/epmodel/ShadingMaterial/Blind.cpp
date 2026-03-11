@@ -427,19 +427,6 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
-    namespace {
-      unsigned slatCurveFieldIndex() {
-        static const unsigned index = [] {
-          const auto iddObject = IddFactory::instance().getObject(Blind::iddObjectType());
-          OS_ASSERT(iddObject);
-          const auto iddFieldIndex = iddObject->getFieldIndex("Slat Curve");
-          OS_ASSERT(iddFieldIndex);
-          return static_cast<unsigned>(iddFieldIndex.get());
-        }();
-        return index;
-      }
-    }  // namespace
-
     std::string Blind_Impl::slatOrientation() const {
       boost::optional<std::string> value = getString(openstudio::WindowMaterial_BlindFields::SlatOrientation, true);
       OS_ASSERT(value);
@@ -503,23 +490,23 @@ namespace epmodel {
     }
 
     double Blind_Impl::slatCurve() const {
-      boost::optional<double> value = getDouble(slatCurveFieldIndex(), true);
+      boost::optional<double> value = getDouble(openstudio::WindowMaterial_BlindFields::BackSideSlatBeamVisibleReflectance, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     bool Blind_Impl::setSlatCurve(double slatCurve) {
-      const bool result = setDouble(slatCurveFieldIndex(), slatCurve);
+      const bool result = setDouble(openstudio::WindowMaterial_BlindFields::BackSideSlatBeamVisibleReflectance, slatCurve);
       OS_ASSERT(result);
       return result;
     }
 
     bool Blind_Impl::isSlatCurveDefaulted() const {
-      return isEmpty(slatCurveFieldIndex());
+      return isEmpty(openstudio::WindowMaterial_BlindFields::BackSideSlatBeamVisibleReflectance);
     }
 
     void Blind_Impl::resetSlatCurve() {
-      OS_ASSERT(setString(slatCurveFieldIndex(), ""));
+      OS_ASSERT(setString(openstudio::WindowMaterial_BlindFields::BackSideSlatBeamVisibleReflectance, ""));
     }
 
     double Blind_Impl::slatAngle() const {

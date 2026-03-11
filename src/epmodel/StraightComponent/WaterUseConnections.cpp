@@ -11,7 +11,7 @@
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
-#include <utilities/idd/OS_WaterUse_Connections_FieldEnums.hxx>
+#include <utilities/idd/WaterUse_Connections_FieldEnums.hxx>
 
 namespace openstudio {
 namespace epmodel {
@@ -26,17 +26,17 @@ namespace epmodel {
   WaterUseConnections::WaterUseConnections(std::shared_ptr<detail::WaterUseConnections_Impl> impl) : StraightComponent(std::move(impl)) {}
 
   IddObjectType WaterUseConnections::iddObjectType() {
-    return IddObjectType::OS_WaterUse_Connections;
+    return IddObjectType::WaterUse_Connections;
   }
 
   std::vector<std::string> WaterUseConnections::drainWaterHeatExchangerTypeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                          openstudio::OS_WaterUse_ConnectionsFields::DrainWaterHeatExchangerType);
+                          openstudio::WaterUse_ConnectionsFields::DrainWaterHeatExchangerType);
   }
 
   std::vector<std::string> WaterUseConnections::drainWaterHeatExchangerDestinationValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                          openstudio::OS_WaterUse_ConnectionsFields::DrainWaterHeatExchangerDestination);
+                          openstudio::WaterUse_ConnectionsFields::DrainWaterHeatExchangerDestination);
   }
 
   std::string WaterUseConnections::drainWaterHeatExchangerType() const {
@@ -70,35 +70,35 @@ namespace epmodel {
   namespace detail {
 
     std::string WaterUseConnections_Impl::drainWaterHeatExchangerType() const {
-      const auto value = getString(openstudio::OS_WaterUse_ConnectionsFields::DrainWaterHeatExchangerType, true);
+      const auto value = getString(openstudio::WaterUse_ConnectionsFields::DrainWaterHeatExchangerType, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool WaterUseConnections_Impl::setDrainWaterHeatExchangerType(const std::string& drainWaterHeatExchangerType) {
-      return setString(openstudio::OS_WaterUse_ConnectionsFields::DrainWaterHeatExchangerType, drainWaterHeatExchangerType);
+      return setString(openstudio::WaterUse_ConnectionsFields::DrainWaterHeatExchangerType, drainWaterHeatExchangerType);
     }
 
     std::string WaterUseConnections_Impl::drainWaterHeatExchangerDestination() const {
-      const auto value = getString(openstudio::OS_WaterUse_ConnectionsFields::DrainWaterHeatExchangerDestination, true);
+      const auto value = getString(openstudio::WaterUse_ConnectionsFields::DrainWaterHeatExchangerDestination, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool WaterUseConnections_Impl::setDrainWaterHeatExchangerDestination(const std::string& drainWaterHeatExchangerDestination) {
-      return setString(openstudio::OS_WaterUse_ConnectionsFields::DrainWaterHeatExchangerDestination, drainWaterHeatExchangerDestination);
+      return setString(openstudio::WaterUse_ConnectionsFields::DrainWaterHeatExchangerDestination, drainWaterHeatExchangerDestination);
     }
 
     boost::optional<double> WaterUseConnections_Impl::drainWaterHeatExchangerUFactorTimesArea() const {
-      return getDouble(openstudio::OS_WaterUse_ConnectionsFields::DrainWaterHeatExchangerUFactorTimesArea, true);
+      return getDouble(openstudio::WaterUse_ConnectionsFields::DrainWaterHeatExchangerUFactorTimesArea, true);
     }
 
     bool WaterUseConnections_Impl::setDrainWaterHeatExchangerUFactorTimesArea(double drainWaterHeatExchangerUFactorTimesArea) {
-      return setDouble(openstudio::OS_WaterUse_ConnectionsFields::DrainWaterHeatExchangerUFactorTimesArea, drainWaterHeatExchangerUFactorTimesArea);
+      return setDouble(openstudio::WaterUse_ConnectionsFields::DrainWaterHeatExchangerUFactorTimesArea, drainWaterHeatExchangerUFactorTimesArea);
     }
 
     void WaterUseConnections_Impl::resetDrainWaterHeatExchangerUFactorTimesArea() {
-      OS_ASSERT(setString(openstudio::OS_WaterUse_ConnectionsFields::DrainWaterHeatExchangerUFactorTimesArea, ""));
+      OS_ASSERT(setString(openstudio::WaterUse_ConnectionsFields::DrainWaterHeatExchangerUFactorTimesArea, ""));
     }
 
     std::vector<std::string> WaterUseConnections_Impl::drainWaterHeatExchangerTypeValues() const {
@@ -110,11 +110,11 @@ namespace epmodel {
     }
 
     unsigned WaterUseConnections_Impl::inletPort() const {
-      return openstudio::OS_WaterUse_ConnectionsFields::InletNodeName;
+      return openstudio::WaterUse_ConnectionsFields::InletNodeName;
     }
 
     unsigned WaterUseConnections_Impl::outletPort() const {
-      return openstudio::OS_WaterUse_ConnectionsFields::OutletNodeName;
+      return openstudio::WaterUse_ConnectionsFields::OutletNodeName;
     }
 
   }  // namespace detail

@@ -787,9 +787,15 @@ set(${target_name}_src
   ModelObject/RefrigerationCondenserCascade.hpp
   ModelObject/RefrigerationCondenserCascade_Impl.hpp
   ModelObject/RefrigerationCondenserCascade.cpp
+  ModelObject/RefrigerationSubcooler.hpp
+  ModelObject/RefrigerationSubcooler_Impl.hpp
+  ModelObject/RefrigerationSubcooler.cpp
   ModelObject/RefrigerationSubcoolerLiquidSuction.hpp
   ModelObject/RefrigerationSubcoolerLiquidSuction_Impl.hpp
   ModelObject/RefrigerationSubcoolerLiquidSuction.cpp
+  ModelObject/RefrigerationSubcoolerMechanical.hpp
+  ModelObject/RefrigerationSubcoolerMechanical_Impl.hpp
+  ModelObject/RefrigerationSubcoolerMechanical.cpp
   ModelObject/RefrigerationWalkIn.hpp
   ModelObject/RefrigerationWalkIn_Impl.hpp
   ModelObject/RefrigerationWalkIn.cpp
@@ -1105,6 +1111,9 @@ set(${target_name}_src
   ModelObject/GroundHeatTransferBasementComBldg.hpp
   ModelObject/GroundHeatTransferBasementComBldg_Impl.hpp
   ModelObject/GroundHeatTransferBasementComBldg.cpp
+  ModelObject/GroundHeatTransferBasementEquivAutoGrid.hpp
+  ModelObject/GroundHeatTransferBasementEquivAutoGrid_Impl.hpp
+  ModelObject/GroundHeatTransferBasementEquivAutoGrid.cpp
   ModelObject/GroundHeatTransferBasementMatlProps.hpp
   ModelObject/GroundHeatTransferBasementMatlProps_Impl.hpp
   ModelObject/GroundHeatTransferBasementMatlProps.cpp
@@ -1237,6 +1246,9 @@ set(${target_name}_src
    ModelObject/SiteGroundReflectanceSnowModifier.hpp
    ModelObject/SiteGroundReflectanceSnowModifier_Impl.hpp
    ModelObject/SiteGroundReflectanceSnowModifier.cpp
+   ModelObject/SiteHeightVariation.hpp
+   ModelObject/SiteHeightVariation_Impl.hpp
+   ModelObject/SiteHeightVariation.cpp
    ModelObject/SitePrecipitation.hpp
    ModelObject/SitePrecipitation_Impl.hpp
   ModelObject/SitePrecipitation.cpp
@@ -2696,6 +2708,7 @@ set(${target_name}_test_src
   test/GroundHeatTransferBasementAutoGrid_GTest.cpp
   test/GroundHeatTransferBasementBldgData_GTest.cpp
   test/GroundHeatTransferBasementComBldg_GTest.cpp
+  test/GroundHeatTransferBasementEquivAutoGrid_GTest.cpp
   test/GroundHeatTransferBasementInterior_GTest.cpp
   test/GroundHeatTransferBasementInsulation_GTest.cpp
   test/GroundHeatTransferBasementMatlProps_GTest.cpp
@@ -2720,6 +2733,7 @@ set(${target_name}_test_src
   test/SiteGroundDomainSlab_GTest.cpp
   test/SiteGroundReflectance_GTest.cpp
   test/SiteGroundReflectanceSnowModifier_GTest.cpp
+  test/SiteHeightVariation_GTest.cpp
   test/SiteGroundTemperatureDeep_GTest.cpp
   test/SiteGroundTemperatureFCfactorMethod_GTest.cpp
   test/SiteGroundTemperatureShallow_GTest.cpp
@@ -3310,7 +3324,9 @@ set(${target_name}_test_src
   test/RefrigerationWalkIn_GTest.cpp
   test/RefrigerationSecondarySystem_GTest.cpp
   test/RefrigerationTranscriticalSystem_GTest.cpp
+  test/RefrigerationSubcooler_GTest.cpp
   test/RefrigerationSubcoolerLiquidSuction_GTest.cpp
+  test/RefrigerationSubcoolerMechanical_GTest.cpp
   test/ZoneThermalChimney_GTest.cpp
   test/ZonePropertyLocalEnvironment_GTest.cpp
    test/ZonePropertyUserViewFactorsBySurfaceName_GTest.cpp

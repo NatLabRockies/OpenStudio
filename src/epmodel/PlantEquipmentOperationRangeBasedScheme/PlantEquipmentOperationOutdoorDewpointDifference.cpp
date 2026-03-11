@@ -77,7 +77,7 @@ namespace epmodel {
     : ModelObject(std::move(impl)) {}
 
   IddObjectType PlantEquipmentOperationOutdoorDewpointDifference::iddObjectType() {
-    return IddObjectType::OS_PlantEquipmentOperation_OutdoorDewpointDifference;
+    return IddObjectType::PlantEquipmentOperation_OutdoorDewpointDifference;
   }
 
   double PlantEquipmentOperationOutdoorDewpointDifference::maximumUpperLimit() const {

@@ -18,7 +18,7 @@ namespace epmodel {
   ZoneControlHumidistat::ZoneControlHumidistat(std::shared_ptr<detail::ZoneControlHumidistat_Impl> impl) : ModelObject(std::move(impl)) {}
 
   IddObjectType ZoneControlHumidistat::iddObjectType() {
-    return {IddObjectType::OS_ZoneControl_Humidistat};
+    return {IddObjectType::ZoneControl_Humidistat};
   }
 
 }  // namespace epmodel

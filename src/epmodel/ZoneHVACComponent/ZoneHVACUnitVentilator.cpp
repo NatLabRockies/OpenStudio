@@ -14,7 +14,7 @@
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
-#include <utilities/idd/OS_ZoneHVAC_UnitVentilator_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_UnitVentilator_FieldEnums.hxx>
 
 namespace openstudio {
 namespace epmodel {
@@ -33,11 +33,11 @@ namespace epmodel {
   ZoneHVACUnitVentilator::ZoneHVACUnitVentilator(std::shared_ptr<detail::ZoneHVACUnitVentilator_Impl> impl) : ModelObject(std::move(impl)) {}
 
   IddObjectType ZoneHVACUnitVentilator::iddObjectType() {
-    return IddObjectType::OS_ZoneHVAC_UnitVentilator;
+    return IddObjectType::ZoneHVAC_UnitVentilator;
   }
 
   std::vector<std::string> ZoneHVACUnitVentilator::outdoorAirControlTypeValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), OS_ZoneHVAC_UnitVentilatorFields::OutdoorAirControlType);
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), ZoneHVAC_UnitVentilatorFields::OutdoorAirControlType);
   }
 
   boost::optional<double> ZoneHVACUnitVentilator::maximumSupplyAirFlowRate() const {
@@ -132,100 +132,100 @@ namespace epmodel {
   namespace detail {
 
     boost::optional<double> ZoneHVACUnitVentilator_Impl::maximumSupplyAirFlowRate() const {
-      return getDouble(OS_ZoneHVAC_UnitVentilatorFields::MaximumSupplyAirFlowRate, true);
+      return getDouble(ZoneHVAC_UnitVentilatorFields::MaximumSupplyAirFlowRate, true);
     }
 
     bool ZoneHVACUnitVentilator_Impl::isMaximumSupplyAirFlowRateAutosized() const {
-      if (auto value = getString(OS_ZoneHVAC_UnitVentilatorFields::MaximumSupplyAirFlowRate, true)) {
+      if (auto value = getString(ZoneHVAC_UnitVentilatorFields::MaximumSupplyAirFlowRate, true)) {
         return openstudio::istringEqual(value.get(), "autosize");
       }
       return false;
     }
 
     bool ZoneHVACUnitVentilator_Impl::setMaximumSupplyAirFlowRate(double maximumSupplyAirFlowRate) {
-      const bool result = setDouble(OS_ZoneHVAC_UnitVentilatorFields::MaximumSupplyAirFlowRate, maximumSupplyAirFlowRate);
+      const bool result = setDouble(ZoneHVAC_UnitVentilatorFields::MaximumSupplyAirFlowRate, maximumSupplyAirFlowRate);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACUnitVentilator_Impl::autosizeMaximumSupplyAirFlowRate() {
-      OS_ASSERT(setString(OS_ZoneHVAC_UnitVentilatorFields::MaximumSupplyAirFlowRate, "autosize"));
+      OS_ASSERT(setString(ZoneHVAC_UnitVentilatorFields::MaximumSupplyAirFlowRate, "autosize"));
     }
 
     std::string ZoneHVACUnitVentilator_Impl::outdoorAirControlType() const {
-      auto value = getString(OS_ZoneHVAC_UnitVentilatorFields::OutdoorAirControlType, true);
+      auto value = getString(ZoneHVAC_UnitVentilatorFields::OutdoorAirControlType, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     bool ZoneHVACUnitVentilator_Impl::setOutdoorAirControlType(const std::string& outdoorAirControlType) {
-      const bool result = setString(OS_ZoneHVAC_UnitVentilatorFields::OutdoorAirControlType, outdoorAirControlType);
+      const bool result = setString(ZoneHVAC_UnitVentilatorFields::OutdoorAirControlType, outdoorAirControlType);
       OS_ASSERT(result);
       return result;
     }
 
     boost::optional<double> ZoneHVACUnitVentilator_Impl::minimumOutdoorAirFlowRate() const {
-      return getDouble(OS_ZoneHVAC_UnitVentilatorFields::MinimumOutdoorAirFlowRate, true);
+      return getDouble(ZoneHVAC_UnitVentilatorFields::MinimumOutdoorAirFlowRate, true);
     }
 
     bool ZoneHVACUnitVentilator_Impl::isMinimumOutdoorAirFlowRateAutosized() const {
-      if (auto value = getString(OS_ZoneHVAC_UnitVentilatorFields::MinimumOutdoorAirFlowRate, true)) {
+      if (auto value = getString(ZoneHVAC_UnitVentilatorFields::MinimumOutdoorAirFlowRate, true)) {
         return openstudio::istringEqual(value.get(), "autosize");
       }
       return false;
     }
 
     bool ZoneHVACUnitVentilator_Impl::setMinimumOutdoorAirFlowRate(double minimumOutdoorAirFlowRate) {
-      const bool result = setDouble(OS_ZoneHVAC_UnitVentilatorFields::MinimumOutdoorAirFlowRate, minimumOutdoorAirFlowRate);
+      const bool result = setDouble(ZoneHVAC_UnitVentilatorFields::MinimumOutdoorAirFlowRate, minimumOutdoorAirFlowRate);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACUnitVentilator_Impl::autosizeMinimumOutdoorAirFlowRate() {
-      OS_ASSERT(setString(OS_ZoneHVAC_UnitVentilatorFields::MinimumOutdoorAirFlowRate, "autosize"));
+      OS_ASSERT(setString(ZoneHVAC_UnitVentilatorFields::MinimumOutdoorAirFlowRate, "autosize"));
     }
 
     boost::optional<double> ZoneHVACUnitVentilator_Impl::maximumOutdoorAirFlowRate() const {
-      return getDouble(OS_ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFlowRate, true);
+      return getDouble(ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFlowRate, true);
     }
 
     bool ZoneHVACUnitVentilator_Impl::isMaximumOutdoorAirFlowRateAutosized() const {
-      if (auto value = getString(OS_ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFlowRate, true)) {
+      if (auto value = getString(ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFlowRate, true)) {
         return openstudio::istringEqual(value.get(), "autosize");
       }
       return false;
     }
 
     bool ZoneHVACUnitVentilator_Impl::setMaximumOutdoorAirFlowRate(double maximumOutdoorAirFlowRate) {
-      const bool result = setDouble(OS_ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFlowRate, maximumOutdoorAirFlowRate);
+      const bool result = setDouble(ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFlowRate, maximumOutdoorAirFlowRate);
       OS_ASSERT(result);
       return result;
     }
 
     void ZoneHVACUnitVentilator_Impl::autosizeMaximumOutdoorAirFlowRate() {
-      OS_ASSERT(setString(OS_ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFlowRate, "autosize"));
+      OS_ASSERT(setString(ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFlowRate, "autosize"));
     }
 
     double ZoneHVACUnitVentilator_Impl::heatingConvergenceTolerance() const {
-      auto value = getDouble(OS_ZoneHVAC_UnitVentilatorFields::HeatingConvergenceTolerance, true);
+      auto value = getDouble(ZoneHVAC_UnitVentilatorFields::HeatingConvergenceTolerance, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     bool ZoneHVACUnitVentilator_Impl::setHeatingConvergenceTolerance(double heatingConvergenceTolerance) {
-      const bool result = setDouble(OS_ZoneHVAC_UnitVentilatorFields::HeatingConvergenceTolerance, heatingConvergenceTolerance);
+      const bool result = setDouble(ZoneHVAC_UnitVentilatorFields::HeatingConvergenceTolerance, heatingConvergenceTolerance);
       OS_ASSERT(result);
       return result;
     }
 
     double ZoneHVACUnitVentilator_Impl::coolingConvergenceTolerance() const {
-      auto value = getDouble(OS_ZoneHVAC_UnitVentilatorFields::CoolingConvergenceTolerance, true);
+      auto value = getDouble(ZoneHVAC_UnitVentilatorFields::CoolingConvergenceTolerance, true);
       OS_ASSERT(value);
       return value.get();
     }
 
     bool ZoneHVACUnitVentilator_Impl::setCoolingConvergenceTolerance(double coolingConvergenceTolerance) {
-      const bool result = setDouble(OS_ZoneHVAC_UnitVentilatorFields::CoolingConvergenceTolerance, coolingConvergenceTolerance);
+      const bool result = setDouble(ZoneHVAC_UnitVentilatorFields::CoolingConvergenceTolerance, coolingConvergenceTolerance);
       OS_ASSERT(result);
       return result;
     }

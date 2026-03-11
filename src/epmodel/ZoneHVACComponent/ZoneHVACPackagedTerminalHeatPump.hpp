@@ -9,7 +9,7 @@
 #include "EPModelAPI.hpp"
 #include "ModelObject.hpp"
 
-#include <utilities/idd/OS_ZoneHVAC_PackagedTerminalHeatPump_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_PackagedTerminalHeatPump_FieldEnums.hxx>
 
 #include <boost/optional.hpp>
 #include <memory>
@@ -42,7 +42,7 @@ namespace epmodel {
 
     // Schema Alignment Notes:
     // - API: the scalar getters/setters in this class mirror openstudio::model's supply/air/outdoor flows, convergence tolerances, supplemental heater limits,
-    //   and fan placement fields that map to EnergyPlus ZoneHVAC:PackagedTerminalHeatPump fields enumerated by OS_ZoneHVAC_PackagedTerminalHeatPumpFields;
+    //   and fan placement fields that map to EnergyPlus ZoneHVAC:PackagedTerminalHeatPump fields enumerated by ZoneHVAC_PackagedTerminalHeatPumpFields;
     //   ForwardTranslateZoneHVACPackagedTerminalHeatPump.cpp documents these mappings.
     // - Field Mapping: relationship-like fields (availability schedule, outdoor air mixer links, fan/heating/cooling/supplemental coil object references, node names, capacity control) are intentionally excluded.
 
