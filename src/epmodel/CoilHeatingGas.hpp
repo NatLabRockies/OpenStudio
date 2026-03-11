@@ -7,7 +7,7 @@
 #define EPMODEL_COILHEATINGGAS_HPP
 
 #include "EPModelAPI.hpp"
-#include "StraightComponent.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <memory>
 

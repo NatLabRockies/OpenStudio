@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
+#include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
 #include "../Node.hpp"
 #include "../ZoneHVACAirDistributionUnit.hpp"
 #include "../ZoneHVACAirDistributionUnit_Impl.hpp"

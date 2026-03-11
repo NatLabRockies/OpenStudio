@@ -6,7 +6,7 @@
 #ifndef EPMODEL_FANCONSTANTVOLUME_IMPL_HPP
 #define EPMODEL_FANCONSTANTVOLUME_IMPL_HPP
 
-#include "StraightComponent_Impl.hpp"
+#include "StraightComponent/StraightComponent_Impl.hpp"
 #include "Node.hpp"
 
 namespace openstudio {

@@ -6,9 +6,9 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../AirLoopHVAC.hpp"
-#include "../AirLoopHVACZoneMixer.hpp"
-#include "../AirLoopHVACZoneSplitter.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Mixer/AirLoopHVACZoneMixer.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../Node.hpp"
 #include "../ThermalZone.hpp"
 #include "../ThermalZone_Impl.hpp"

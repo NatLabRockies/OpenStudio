@@ -6,8 +6,8 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../AirLoopHVAC.hpp"
-#include "../AirLoopHVACOutdoorAirSystem.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../Node.hpp"
 #include "../SetpointManagerScheduled.hpp"
 

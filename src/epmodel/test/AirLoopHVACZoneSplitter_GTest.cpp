@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../AirLoopHVACZoneSplitter.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -24,4 +24,13 @@ TEST_F(EPModelFixture, API_AirLoopHVACZoneSplitter_DefaultPortsAndOutlets) {
   EXPECT_EQ(0u, splitter.nextBranchIndex());
   EXPECT_FALSE(splitter.lastOutletModelObject());
   EXPECT_TRUE(splitter.outletModelObjects().empty());
+}
+
+TEST_F(EPModelFixture, API_AirLoopHVACZoneSplitter_ScalarAccessors_RoundTrip) {
+  Model model;
+  AirLoopHVACZoneSplitter splitter(model);
+
+  EXPECT_TRUE(splitter.setName("Zone Splitter Roundtrip"));
+  ASSERT_TRUE(splitter.name());
+  EXPECT_EQ("Zone Splitter Roundtrip", splitter.nameString());
 }

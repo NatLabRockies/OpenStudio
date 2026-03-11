@@ -6,13 +6,13 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../AirLoopHVAC.hpp"
-#include "../AirLoopHVAC_Impl.hpp"
-#include "../AirLoopHVACReturnPath.hpp"
-#include "../AirLoopHVACSupplyPath.hpp"
-#include "../AirLoopHVACZoneMixer.hpp"
-#include "../AirLoopHVACZoneSplitter.hpp"
-#include "../AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/AirLoopHVAC_Impl.hpp"
+#include "../ModelObject/AirLoopHVACReturnPath.hpp"
+#include "../ModelObject/AirLoopHVACSupplyPath.hpp"
+#include "../Mixer/AirLoopHVACZoneMixer.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
+#include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
 #include "../FanConstantVolume.hpp"
 #include "../Node.hpp"
 #include "../ThermalZone.hpp"
@@ -49,6 +49,27 @@ TEST_F(EPModelFixture, AirLoopHVAC_DefaultConstructor) {
   AirLoopHVAC airLoop(model);
   EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::AirLoopHVAC), airLoop.iddObject().type());
   EXPECT_FALSE(airLoop.nameString().empty());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_ScalarAccessors_RoundTrip) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+
+  EXPECT_TRUE(airLoop.setDesignSupplyAirFlowRate(1.25));
+  ASSERT_TRUE(airLoop.designSupplyAirFlowRate());
+  EXPECT_DOUBLE_EQ(1.25, airLoop.designSupplyAirFlowRate().get());
+  EXPECT_FALSE(airLoop.isDesignSupplyAirFlowRateAutosized());
+
+  airLoop.resetDesignSupplyAirFlowRate();
+  ASSERT_TRUE(airLoop.designSupplyAirFlowRate());
+  EXPECT_NE(1.25, airLoop.designSupplyAirFlowRate().get());
+  EXPECT_FALSE(airLoop.isDesignSupplyAirFlowRateAutosized());
+
+  airLoop.autosizeDesignSupplyAirFlowRate();
+  EXPECT_TRUE(airLoop.isDesignSupplyAirFlowRateAutosized());
+
+  EXPECT_TRUE(airLoop.setDesignReturnAirFlowFractionofSupplyAirFlow(0.5));
+  EXPECT_DOUBLE_EQ(0.5, airLoop.designReturnAirFlowFractionofSupplyAirFlow());
 }
 
 TEST_F(EPModelFixture, AirLoopHVACSupplyPath_DefaultConstructor) {

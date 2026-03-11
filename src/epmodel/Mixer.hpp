@@ -6,7 +6,7 @@
 #ifndef EPMODEL_MIXER_HPP
 #define EPMODEL_MIXER_HPP
 
-#include "HVACComponent.hpp"
+#include "HVACComponent/HVACComponent.hpp"
 
 namespace openstudio {
 namespace epmodel {

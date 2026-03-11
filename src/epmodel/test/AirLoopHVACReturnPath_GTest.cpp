@@ -6,8 +6,8 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../AirLoopHVAC.hpp"
-#include "../AirLoopHVACReturnPath.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../ModelObject/AirLoopHVACReturnPath.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -24,4 +24,12 @@ TEST_F(EPModelFixture, API_AirLoopHVACReturnPath_DefaultLocalState) {
 
   EXPECT_FALSE(path.airLoopHVAC());
   EXPECT_TRUE(path.components().empty());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACReturnPath_ScalarAccessors_RoundTrip) {
+  Model model;
+  AirLoopHVACReturnPath path(model);
+
+  EXPECT_TRUE(path.setName("Main Return Path"));
+  EXPECT_EQ("Main Return Path", path.nameString());
 }

@@ -6,8 +6,8 @@
 #include "FanConstantVolume.hpp"
 #include "FanConstantVolume_Impl.hpp"
 
-#include "AirLoopHVAC_Impl.hpp"
-#include "AirLoopHVACOutdoorAirSystem.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
 

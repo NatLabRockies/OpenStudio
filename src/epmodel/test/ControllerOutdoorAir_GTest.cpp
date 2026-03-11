@@ -7,10 +7,10 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../AirLoopHVAC.hpp"
-#include "../AirLoopHVAC_Impl.hpp"
-#include "../AirLoopHVACOutdoorAirSystem.hpp"
-#include "../AirLoopHVACZoneSplitter.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/AirLoopHVAC_Impl.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../ControllerMechanicalVentilation.hpp"
 #include "../ControllerMechanicalVentilation_Impl.hpp"
 #include "../ControllerOutdoorAir.hpp"

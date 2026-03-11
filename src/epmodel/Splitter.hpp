@@ -6,7 +6,7 @@
 #ifndef EPMODEL_SPLITTER_HPP
 #define EPMODEL_SPLITTER_HPP
 
-#include "HVACComponent.hpp"
+#include "HVACComponent/HVACComponent.hpp"
 
 namespace openstudio {
 namespace epmodel {

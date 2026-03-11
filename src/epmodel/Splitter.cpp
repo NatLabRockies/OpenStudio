@@ -4,7 +4,7 @@
 ***********************************************************************************************************************/
 
 #include "Splitter.hpp"
-#include "AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
 

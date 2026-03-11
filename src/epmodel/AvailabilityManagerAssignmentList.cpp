@@ -6,12 +6,12 @@
 #include "AvailabilityManagerAssignmentList.hpp"
 #include "AvailabilityManagerAssignmentList_Impl.hpp"
 
-#include "AirLoopHVAC.hpp"
-#include "AirLoopHVAC_Impl.hpp"
+#include "Loop/AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "AvailabilityManager.hpp"
 #include "AvailabilityManager_Impl.hpp"
-#include "Loop.hpp"
-#include "Loop_Impl.hpp"
+#include "Loop/Loop.hpp"
+#include "Loop/Loop_Impl.hpp"
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>

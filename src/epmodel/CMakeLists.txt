@@ -6,24 +6,261 @@ set(${target_name}_src
   Model.hpp
   Model_Impl.hpp
   Model.cpp
-  ModelObject.hpp
-  ModelObject_Impl.hpp
-  ModelObject.cpp
-  ParentObject.hpp
-  ParentObject_Impl.hpp
-  ParentObject.cpp
-  AirLoopHVACSupplyPath.hpp
-  AirLoopHVACSupplyPath_Impl.hpp
-  AirLoopHVACSupplyPath.cpp
-  AirLoopHVACControllerList.hpp
-  AirLoopHVACControllerList_Impl.hpp
-  AirLoopHVACControllerList.cpp
-  AirLoopHVACOutdoorAirSystem.hpp
-  AirLoopHVACOutdoorAirSystem_Impl.hpp
-  AirLoopHVACOutdoorAirSystem.cpp
-  AirLoopHVACOutdoorAirSystemEquipmentList.hpp
-  AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp
-  AirLoopHVACOutdoorAirSystemEquipmentList.cpp
+  ModelObject/ModelObject.hpp
+  ModelObject/ModelObject_Impl.hpp
+  ModelObject/ModelObject.cpp
+  StraightComponent/AirConditionerVariableRefrigerantFlow.hpp
+  StraightComponent/AirConditionerVariableRefrigerantFlow_Impl.hpp
+  StraightComponent/AirConditionerVariableRefrigerantFlow.cpp
+  HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControl.hpp
+  HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp
+  HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControl.cpp
+  HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR.hpp
+  HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_Impl.hpp
+  HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR.cpp
+  HVACComponent/CoilCoolingDXVariableRefrigerantFlow.hpp
+  HVACComponent/CoilCoolingDXVariableRefrigerantFlow_Impl.hpp
+  HVACComponent/CoilCoolingDXVariableRefrigerantFlow.cpp
+  HVACComponent/CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl.hpp
+  HVACComponent/CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp
+  HVACComponent/CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl.cpp
+  HVACComponent/CoilHeatingDXVariableRefrigerantFlow.hpp
+  HVACComponent/CoilHeatingDXVariableRefrigerantFlow_Impl.hpp
+  HVACComponent/CoilHeatingDXVariableRefrigerantFlow.cpp
+  HVACComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.hpp
+  HVACComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp
+  HVACComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.cpp
+  HVACComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.hpp
+  HVACComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl.hpp
+  HVACComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.cpp
+  WaterToAirComponent/CoilCoolingWater.hpp
+  WaterToAirComponent/CoilCoolingWater_Impl.hpp
+  WaterToAirComponent/CoilCoolingWater.cpp
+  WaterToAirComponent/CoilHeatingWater.hpp
+  WaterToAirComponent/CoilHeatingWater_Impl.hpp
+  WaterToAirComponent/CoilHeatingWater.cpp
+  WaterToAirComponent/CoilCoolingWaterToAirHeatPumpEquationFit.hpp
+  WaterToAirComponent/CoilCoolingWaterToAirHeatPumpEquationFit_Impl.hpp
+  WaterToAirComponent/CoilCoolingWaterToAirHeatPumpEquationFit.cpp
+  WaterToAirComponent/CoilHeatingWaterToAirHeatPumpEquationFit.hpp
+  WaterToAirComponent/CoilHeatingWaterToAirHeatPumpEquationFit_Impl.hpp
+  WaterToAirComponent/CoilHeatingWaterToAirHeatPumpEquationFit.cpp
+  WaterToAirComponent/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit.hpp
+  WaterToAirComponent/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl.hpp
+  WaterToAirComponent/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit.cpp
+  WaterToAirComponent/CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit.hpp
+  WaterToAirComponent/CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl.hpp
+  WaterToAirComponent/CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit.cpp
+  WaterToAirComponent/CoilUserDefined.hpp
+  WaterToAirComponent/CoilUserDefined_Impl.hpp
+  WaterToAirComponent/CoilUserDefined.cpp
+  ModelObject/CoilCoolingWaterToAirHeatPumpParameterEstimation.hpp
+  ModelObject/CoilCoolingWaterToAirHeatPumpParameterEstimation_Impl.hpp
+  ModelObject/CoilCoolingWaterToAirHeatPumpParameterEstimation.cpp
+  ModelObject/CoilHeatingWaterToAirHeatPumpParameterEstimation.hpp
+  ModelObject/CoilHeatingWaterToAirHeatPumpParameterEstimation_Impl.hpp
+  ModelObject/CoilHeatingWaterToAirHeatPumpParameterEstimation.cpp
+  ModelObject/CoilCoolingWaterDetailedGeometry.hpp
+  ModelObject/CoilCoolingWaterDetailedGeometry_Impl.hpp
+  ModelObject/CoilCoolingWaterDetailedGeometry.cpp
+  ModelObject/CoilDXASHRAE205Performance.hpp
+  ModelObject/CoilDXASHRAE205Performance_Impl.hpp
+  ModelObject/CoilDXASHRAE205Performance.cpp
+  ModelObject/CoilHeatingSteam.hpp
+  ModelObject/CoilHeatingSteam_Impl.hpp
+  ModelObject/CoilHeatingSteam.cpp
+  ModelObject/CoilWaterHeatingAirToWaterHeatPumpWrapped.hpp
+  ModelObject/CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl.hpp
+  ModelObject/CoilWaterHeatingAirToWaterHeatPumpWrapped.cpp
+  WaterToWaterComponent/CentralHeatPumpSystem.hpp
+  WaterToWaterComponent/CentralHeatPumpSystem_Impl.hpp
+  WaterToWaterComponent/CentralHeatPumpSystem.cpp
+  ModelObject/AirflowNetworkDistributionComponentCoil.hpp
+  ModelObject/AirflowNetworkDistributionComponentCoil_Impl.hpp
+  ModelObject/AirflowNetworkDistributionComponentCoil.cpp
+  ModelObject/AirflowNetworkDistributionComponentConstantPressureDrop.hpp
+  ModelObject/AirflowNetworkDistributionComponentConstantPressureDrop_Impl.hpp
+  ModelObject/AirflowNetworkDistributionComponentConstantPressureDrop.cpp
+  ModelObject/CeilingAdiabatic.hpp
+  ModelObject/CeilingAdiabatic_Impl.hpp
+  ModelObject/CeilingAdiabatic.cpp
+  ModelObject/CeilingInterzone.hpp
+  ModelObject/CeilingInterzone_Impl.hpp
+  ModelObject/CeilingInterzone.cpp
+  ModelObject/AirflowNetworkDistributionComponentDuct.hpp
+  ModelObject/AirflowNetworkDistributionComponentDuct_Impl.hpp
+  ModelObject/AirflowNetworkDistributionComponentDuct.cpp
+  ModelObject/AirflowNetworkDistributionDuctSizing.hpp
+  ModelObject/AirflowNetworkDistributionDuctSizing_Impl.hpp
+  ModelObject/AirflowNetworkDistributionDuctSizing.cpp
+  ModelObject/AirflowNetworkDistributionDuctViewFactors.hpp
+  ModelObject/AirflowNetworkDistributionDuctViewFactors_Impl.hpp
+  ModelObject/AirflowNetworkDistributionDuctViewFactors.cpp
+  AirflowNetworkLinkage/AirflowNetworkDistributionLinkage.hpp
+  AirflowNetworkLinkage/AirflowNetworkDistributionLinkage_Impl.hpp
+  AirflowNetworkLinkage/AirflowNetworkDistributionLinkage.cpp
+  AirflowNetworkNode/AirflowNetworkDistributionNode.hpp
+  AirflowNetworkNode/AirflowNetworkDistributionNode_Impl.hpp
+  AirflowNetworkNode/AirflowNetworkDistributionNode.cpp
+  ModelObject/AirflowNetworkIntraZoneNode.hpp
+  ModelObject/AirflowNetworkIntraZoneNode_Impl.hpp
+  ModelObject/AirflowNetworkIntraZoneNode.cpp
+  ModelObject/AirflowNetworkIntraZoneLinkage.hpp
+  ModelObject/AirflowNetworkIntraZoneLinkage_Impl.hpp
+  ModelObject/AirflowNetworkIntraZoneLinkage.cpp
+  ModelObject/AirflowNetworkMultiZoneExternalNode.hpp
+  ModelObject/AirflowNetworkMultiZoneExternalNode_Impl.hpp
+  ModelObject/AirflowNetworkMultiZoneExternalNode.cpp
+  ModelObject/AirflowNetworkMultiZoneZone.hpp
+  ModelObject/AirflowNetworkMultiZoneZone_Impl.hpp
+  ModelObject/AirflowNetworkMultiZoneZone.cpp
+  ModelObject/AirflowNetworkMultiZoneSpecifiedFlowRate.hpp
+  ModelObject/AirflowNetworkMultiZoneSpecifiedFlowRate_Impl.hpp
+  ModelObject/AirflowNetworkMultiZoneSpecifiedFlowRate.cpp
+  ModelObject/AirflowNetworkMultiZoneReferenceCrackConditions.hpp
+  ModelObject/AirflowNetworkMultiZoneReferenceCrackConditions_Impl.hpp
+  ModelObject/AirflowNetworkMultiZoneReferenceCrackConditions.cpp
+  ModelObject/AirflowNetworkMultiZoneWindPressureCoefficientArray.hpp
+  ModelObject/AirflowNetworkMultiZoneWindPressureCoefficientArray_Impl.hpp
+  ModelObject/AirflowNetworkMultiZoneWindPressureCoefficientArray.cpp
+  ModelObject/AirflowNetworkMultiZoneWindPressureCoefficientValues.hpp
+  ModelObject/AirflowNetworkMultiZoneWindPressureCoefficientValues_Impl.hpp
+  ModelObject/AirflowNetworkMultiZoneWindPressureCoefficientValues.cpp
+  ModelObject/AirflowNetworkMultiZoneSurface.hpp
+  ModelObject/AirflowNetworkMultiZoneSurface_Impl.hpp
+  ModelObject/AirflowNetworkMultiZoneSurface.cpp
+  ModelObject/AirflowNetworkMultiZoneSurfaceCrack.hpp
+  ModelObject/AirflowNetworkMultiZoneSurfaceCrack_Impl.hpp
+  ModelObject/AirflowNetworkMultiZoneSurfaceCrack.cpp
+  ModelObject/AirflowNetworkMultiZoneSurfaceEffectiveLeakageArea.hpp
+  ModelObject/AirflowNetworkMultiZoneSurfaceEffectiveLeakageArea_Impl.hpp
+  ModelObject/AirflowNetworkMultiZoneSurfaceEffectiveLeakageArea.cpp
+  ModelObject/AirflowNetworkMultiZoneComponentDetailedOpening.hpp
+  ModelObject/AirflowNetworkMultiZoneComponentDetailedOpening_Impl.hpp
+  ModelObject/AirflowNetworkMultiZoneComponentDetailedOpening.cpp
+  ModelObject/AirflowNetworkMultiZoneComponentHorizontalOpening.hpp
+  ModelObject/AirflowNetworkMultiZoneComponentHorizontalOpening_Impl.hpp
+  ModelObject/AirflowNetworkMultiZoneComponentHorizontalOpening.cpp
+  ModelObject/AirflowNetworkMultiZoneComponentSimpleOpening.hpp
+  ModelObject/AirflowNetworkMultiZoneComponentSimpleOpening_Impl.hpp
+  ModelObject/AirflowNetworkMultiZoneComponentSimpleOpening.cpp
+  ModelObject/AirflowNetworkMultiZoneComponentZoneExhaustFan.hpp
+  ModelObject/AirflowNetworkMultiZoneComponentZoneExhaustFan_Impl.hpp
+  ModelObject/AirflowNetworkMultiZoneComponentZoneExhaustFan.cpp
+  ModelObject/AirflowNetworkOccupantVentilationControl.hpp
+  ModelObject/AirflowNetworkOccupantVentilationControl_Impl.hpp
+  ModelObject/AirflowNetworkOccupantVentilationControl.cpp
+  ParentObject/AirflowNetworkSimulationControl.hpp
+  ParentObject/AirflowNetworkSimulationControl_Impl.hpp
+  ParentObject/AirflowNetworkSimulationControl.cpp
+  ModelObject/AirflowNetworkZoneControlPressureController.hpp
+  ModelObject/AirflowNetworkZoneControlPressureController_Impl.hpp
+  ModelObject/AirflowNetworkZoneControlPressureController.cpp
+  AvailabilityManager/AvailabilityManagerDifferentialThermostat.hpp
+  AvailabilityManager/AvailabilityManagerDifferentialThermostat_Impl.hpp
+  AvailabilityManager/AvailabilityManagerDifferentialThermostat.cpp
+  AvailabilityManager/AvailabilityManagerHighTemperatureTurnOff.hpp
+  AvailabilityManager/AvailabilityManagerHighTemperatureTurnOff_Impl.hpp
+  AvailabilityManager/AvailabilityManagerHighTemperatureTurnOff.cpp
+  AvailabilityManager/AvailabilityManagerHighTemperatureTurnOn.hpp
+  AvailabilityManager/AvailabilityManagerHighTemperatureTurnOn_Impl.hpp
+  AvailabilityManager/AvailabilityManagerHighTemperatureTurnOn.cpp
+  AvailabilityManager/AvailabilityManagerLowTemperatureTurnOff.hpp
+  AvailabilityManager/AvailabilityManagerLowTemperatureTurnOff_Impl.hpp
+  AvailabilityManager/AvailabilityManagerLowTemperatureTurnOff.cpp
+  AvailabilityManager/AvailabilityManagerLowTemperatureTurnOn.hpp
+  AvailabilityManager/AvailabilityManagerLowTemperatureTurnOn_Impl.hpp
+  AvailabilityManager/AvailabilityManagerLowTemperatureTurnOn.cpp
+  AvailabilityManager/AvailabilityManagerHybridVentilation.hpp
+  AvailabilityManager/AvailabilityManagerHybridVentilation_Impl.hpp
+  AvailabilityManager/AvailabilityManagerHybridVentilation.cpp
+  AvailabilityManager/AvailabilityManagerNightVentilation.hpp
+  AvailabilityManager/AvailabilityManagerNightVentilation_Impl.hpp
+  AvailabilityManager/AvailabilityManagerNightVentilation.cpp
+  AvailabilityManager/AvailabilityManagerOptimumStart.hpp
+  AvailabilityManager/AvailabilityManagerOptimumStart_Impl.hpp
+  AvailabilityManager/AvailabilityManagerOptimumStart.cpp
+  AvailabilityManager/AvailabilityManagerScheduledOff.hpp
+  AvailabilityManager/AvailabilityManagerScheduledOff_Impl.hpp
+  AvailabilityManager/AvailabilityManagerScheduledOff.cpp
+  AvailabilityManager/AvailabilityManagerScheduledOn.hpp
+  AvailabilityManager/AvailabilityManagerScheduledOn_Impl.hpp
+  AvailabilityManager/AvailabilityManagerScheduledOn.cpp
+  ModelObject/AirflowNetworkDistributionComponentFan.hpp
+  ModelObject/AirflowNetworkDistributionComponentFan_Impl.hpp
+  ModelObject/AirflowNetworkDistributionComponentFan.cpp
+  ModelObject/AirflowNetworkDistributionComponentHeatExchanger.hpp
+  ModelObject/AirflowNetworkDistributionComponentHeatExchanger_Impl.hpp
+  ModelObject/AirflowNetworkDistributionComponentHeatExchanger.cpp
+  ModelObject/AirflowNetworkDistributionComponentLeak.hpp
+  ModelObject/AirflowNetworkDistributionComponentLeak_Impl.hpp
+  ModelObject/AirflowNetworkDistributionComponentLeak.cpp
+  ModelObject/AirflowNetworkDistributionComponentLeakageRatio.hpp
+  ModelObject/AirflowNetworkDistributionComponentLeakageRatio_Impl.hpp
+  ModelObject/AirflowNetworkDistributionComponentLeakageRatio.cpp
+  ModelObject/AirflowNetworkDistributionComponentOutdoorAirFlow.hpp
+  ModelObject/AirflowNetworkDistributionComponentOutdoorAirFlow_Impl.hpp
+  ModelObject/AirflowNetworkDistributionComponentOutdoorAirFlow.cpp
+  ModelObject/AirflowNetworkDistributionComponentReliefAirFlow.hpp
+  ModelObject/AirflowNetworkDistributionComponentReliefAirFlow_Impl.hpp
+  ModelObject/AirflowNetworkDistributionComponentReliefAirFlow.cpp
+  ModelObject/AirflowNetworkDistributionComponentTerminalUnit.hpp
+  ModelObject/AirflowNetworkDistributionComponentTerminalUnit_Impl.hpp
+  ModelObject/AirflowNetworkDistributionComponentTerminalUnit.cpp
+  ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.hpp
+  ModelObject/AirLoopHVACDedicatedOutdoorAirSystem_Impl.hpp
+  ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.cpp
+  ModelObject/AirLoopHVACExhaustSystem.hpp
+  ModelObject/AirLoopHVACExhaustSystem_Impl.hpp
+  ModelObject/AirLoopHVACExhaustSystem.cpp
+  ModelObject/AirLoopHVACMixer.hpp
+  ModelObject/AirLoopHVACMixer_Impl.hpp
+  ModelObject/AirLoopHVACMixer.cpp
+  ModelObject/AirLoopHVACSplitter.hpp
+  ModelObject/AirLoopHVACSplitter_Impl.hpp
+  ModelObject/AirLoopHVACSplitter.cpp
+  ModelObject/AirLoopHVACUnitaryFurnaceHeatCool.hpp
+  ModelObject/AirLoopHVACUnitaryFurnaceHeatCool_Impl.hpp
+  ModelObject/AirLoopHVACUnitaryFurnaceHeatCool.cpp
+  ModelObject/AirLoopHVACUnitaryFurnaceHeatOnly.hpp
+  ModelObject/AirLoopHVACUnitaryFurnaceHeatOnly_Impl.hpp
+  ModelObject/AirLoopHVACUnitaryFurnaceHeatOnly.cpp
+  ModelObject/AirLoopHVACUnitaryHeatOnly.hpp
+  ModelObject/AirLoopHVACUnitaryHeatOnly_Impl.hpp
+  ModelObject/AirLoopHVACUnitaryHeatOnly.cpp
+  StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAir.hpp
+  StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAir_Impl.hpp
+  StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAir.cpp
+  ModelObject/AirLoopHVACUnitaryHeatPumpWaterToAir.hpp
+  ModelObject/AirLoopHVACUnitaryHeatPumpWaterToAir_Impl.hpp
+  ModelObject/AirLoopHVACUnitaryHeatPumpWaterToAir.cpp
+  StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.hpp
+  StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl.hpp
+  StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.cpp
+  ModelObject/AirLoopHVACUnitaryHeatCool.hpp
+  ModelObject/AirLoopHVACUnitaryHeatCool_Impl.hpp
+  ModelObject/AirLoopHVACUnitaryHeatCool.cpp
+  StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.hpp
+  StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl.hpp
+  StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.cpp
+  ZoneHVACComponent/AirLoopHVACUnitarySystem.hpp
+  ZoneHVACComponent/AirLoopHVACUnitarySystem_Impl.hpp
+  ZoneHVACComponent/AirLoopHVACUnitarySystem.cpp
+  ParentObject/ParentObject.hpp
+  ParentObject/ParentObject_Impl.hpp
+  ParentObject/ParentObject.cpp
+  ModelObject/AirLoopHVACSupplyPath.hpp
+  ModelObject/AirLoopHVACSupplyPath_Impl.hpp
+  ModelObject/AirLoopHVACSupplyPath.cpp
+  ModelObject/AirLoopHVACControllerList.hpp
+  ModelObject/AirLoopHVACControllerList_Impl.hpp
+  ModelObject/AirLoopHVACControllerList.cpp
+  HVACComponent/AirLoopHVACOutdoorAirSystem.hpp
+  HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp
+  HVACComponent/AirLoopHVACOutdoorAirSystem.cpp
+  ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.hpp
+  ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp
+  ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.cpp
   ControllerOutdoorAir.hpp
   ControllerOutdoorAir_Impl.hpp
   ControllerOutdoorAir.cpp
@@ -36,48 +273,198 @@ set(${target_name}_src
   DesignSpecificationOutdoorAirSpaceList.hpp
   DesignSpecificationOutdoorAirSpaceList_Impl.hpp
   DesignSpecificationOutdoorAirSpaceList.cpp
-  AirLoopHVACReturnPath.hpp
-  AirLoopHVACReturnPath_Impl.hpp
-  AirLoopHVACReturnPath.cpp
-  AirLoopHVACZoneSplitter.hpp
-  AirLoopHVACZoneSplitter_Impl.hpp
-  AirLoopHVACZoneSplitter.cpp
-  AirLoopHVACZoneMixer.hpp
-  AirLoopHVACZoneMixer_Impl.hpp
-  AirLoopHVACZoneMixer.cpp
-  Branch.hpp
-  Branch_Impl.hpp
-  Branch.cpp
-  BranchList.hpp
-  BranchList_Impl.hpp
-  BranchList.cpp
-  AirLoopHVAC.hpp
-  AirLoopHVAC_Impl.hpp
-  AirLoopHVAC.cpp
+  ModelObject/AirLoopHVACReturnPath.hpp
+  ModelObject/AirLoopHVACReturnPath_Impl.hpp
+  ModelObject/AirLoopHVACReturnPath.cpp
+  Mixer/AirLoopHVACReturnPlenum.hpp
+  Mixer/AirLoopHVACReturnPlenum_Impl.hpp
+  Mixer/AirLoopHVACReturnPlenum.cpp
+  Splitter/AirLoopHVACSupplyPlenum.hpp
+  Splitter/AirLoopHVACSupplyPlenum_Impl.hpp
+  Splitter/AirLoopHVACSupplyPlenum.cpp
+  Splitter/AirLoopHVACZoneSplitter.hpp
+  Splitter/AirLoopHVACZoneSplitter_Impl.hpp
+  Splitter/AirLoopHVACZoneSplitter.cpp
+  Mixer/AirLoopHVACZoneMixer.hpp
+  Mixer/AirLoopHVACZoneMixer_Impl.hpp
+  Mixer/AirLoopHVACZoneMixer.cpp
+  Mixer/AirTerminalDualDuctConstantVolume.hpp
+  Mixer/AirTerminalDualDuctConstantVolume_Impl.hpp
+  Mixer/AirTerminalDualDuctConstantVolume.cpp
+  Mixer/AirTerminalDualDuctVAV.hpp
+  Mixer/AirTerminalDualDuctVAV_Impl.hpp
+  Mixer/AirTerminalDualDuctVAV.cpp
+  Mixer/AirTerminalDualDuctVAVOutdoorAir.hpp
+  Mixer/AirTerminalDualDuctVAVOutdoorAir_Impl.hpp
+  Mixer/AirTerminalDualDuctVAVOutdoorAir.cpp
+  StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam.hpp
+  StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam_Impl.hpp
+  StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam.cpp
+  StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeBeam.hpp
+  StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl.hpp
+  StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeBeam.cpp
+  StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeInduction.hpp
+  StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl.hpp
+  StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeInduction.cpp
+  StraightComponent/AirTerminalSingleDuctVAVHeatAndCoolNoReheat.hpp
+  StraightComponent/AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl.hpp
+  StraightComponent/AirTerminalSingleDuctVAVHeatAndCoolNoReheat.cpp
+  StraightComponent/AirTerminalSingleDuctVAVNoReheat.hpp
+  StraightComponent/AirTerminalSingleDuctVAVNoReheat_Impl.hpp
+  StraightComponent/AirTerminalSingleDuctVAVNoReheat.cpp
+  StraightComponent/AirTerminalSingleDuctVAVReheat.hpp
+  StraightComponent/AirTerminalSingleDuctVAVReheat_Impl.hpp
+  StraightComponent/AirTerminalSingleDuctVAVReheat.cpp
+  ModelObject/AirTerminalSingleDuctVAVReheatVariableSpeedFan.hpp
+  ModelObject/AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl.hpp
+  ModelObject/AirTerminalSingleDuctVAVReheatVariableSpeedFan.cpp
+  StraightComponent/AirTerminalSingleDuctVAVHeatAndCoolReheat.hpp
+  StraightComponent/AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl.hpp
+  StraightComponent/AirTerminalSingleDuctVAVHeatAndCoolReheat.cpp
+  ModelObject/AirTerminalSingleDuctUserDefined.hpp
+  ModelObject/AirTerminalSingleDuctUserDefined_Impl.hpp
+  ModelObject/AirTerminalSingleDuctUserDefined.cpp
+  ModelObject/Branch.hpp
+  ModelObject/Branch_Impl.hpp
+  ModelObject/Branch.cpp
+  ModelObject/BranchList.hpp
+  ModelObject/BranchList_Impl.hpp
+  ModelObject/BranchList.cpp
+  ParentObject/Building.hpp
+  ParentObject/Building_Impl.hpp
+  ParentObject/Building.cpp
+  StraightComponent/BoilerHotWater.hpp
+  StraightComponent/BoilerHotWater_Impl.hpp
+  StraightComponent/BoilerHotWater.cpp
+  StraightComponent/BoilerSteam.hpp
+  StraightComponent/BoilerSteam_Impl.hpp
+  StraightComponent/BoilerSteam.cpp
+  WaterToWaterComponent/ChillerAbsorption.hpp
+  WaterToWaterComponent/ChillerAbsorption_Impl.hpp
+  WaterToWaterComponent/ChillerAbsorption.cpp
+  WaterToWaterComponent/ChillerAbsorptionIndirect.hpp
+  WaterToWaterComponent/ChillerAbsorptionIndirect_Impl.hpp
+  WaterToWaterComponent/ChillerAbsorptionIndirect.cpp
+  ModelObject/ChillerCombustionTurbine.hpp
+  ModelObject/ChillerCombustionTurbine_Impl.hpp
+  ModelObject/ChillerCombustionTurbine.cpp
+  ModelObject/ChillerHeaterAbsorptionDirectFired.hpp
+  ModelObject/ChillerHeaterAbsorptionDirectFired_Impl.hpp
+  ModelObject/ChillerHeaterAbsorptionDirectFired.cpp
+  ParentObject/ChillerHeaterPerformanceElectricEIR.hpp
+  ParentObject/ChillerHeaterPerformanceElectricEIR_Impl.hpp
+  ParentObject/ChillerHeaterPerformanceElectricEIR.cpp
+  ParentObject/CoilPerformanceDXCooling.hpp
+  ParentObject/CoilPerformanceDXCooling_Impl.hpp
+  ParentObject/CoilPerformanceDXCooling.cpp
+  ModelObject/ChillerConstantCOP.hpp
+  ModelObject/ChillerConstantCOP_Impl.hpp
+  ModelObject/ChillerConstantCOP.cpp
+  ModelObject/ChillerEngineDriven.hpp
+  ModelObject/ChillerEngineDriven_Impl.hpp
+  ModelObject/ChillerEngineDriven.cpp
+  ModelObject/ChillerElectric.hpp
+  ModelObject/ChillerElectric_Impl.hpp
+  ModelObject/ChillerElectric.cpp
+  WaterToWaterComponent/ChillerElectricEIR.hpp
+  WaterToWaterComponent/ChillerElectricEIR_Impl.hpp
+  WaterToWaterComponent/ChillerElectricEIR.cpp
+  WaterToWaterComponent/ChillerElectricReformulatedEIR.hpp
+  WaterToWaterComponent/ChillerElectricReformulatedEIR_Impl.hpp
+  WaterToWaterComponent/ChillerElectricReformulatedEIR.cpp
+  WaterToWaterComponent/ChillerElectricASHRAE205.hpp
+  WaterToWaterComponent/ChillerElectricASHRAE205_Impl.hpp
+  WaterToWaterComponent/ChillerElectricASHRAE205.cpp
+  Loop/AirLoopHVAC.hpp
+  Loop/AirLoopHVAC_Impl.hpp
+  Loop/AirLoopHVAC.cpp
   AvailabilityManager.hpp
   AvailabilityManager_Impl.hpp
   AvailabilityManager.cpp
   AvailabilityManagerAssignmentList.hpp
   AvailabilityManagerAssignmentList_Impl.hpp
   AvailabilityManagerAssignmentList.cpp
-  AvailabilityManagerNightCycle.hpp
-  AvailabilityManagerNightCycle_Impl.hpp
-  AvailabilityManagerNightCycle.cpp
-  AirTerminalSingleDuctConstantVolumeNoReheat.hpp
-  AirTerminalSingleDuctConstantVolumeNoReheat_Impl.hpp
-  AirTerminalSingleDuctConstantVolumeNoReheat.cpp
+  AvailabilityManager/AvailabilityManagerNightCycle.hpp
+  AvailabilityManager/AvailabilityManagerNightCycle_Impl.hpp
+  AvailabilityManager/AvailabilityManagerNightCycle.cpp
+  StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.hpp
+  StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat_Impl.hpp
+  StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.cpp
+  StraightComponent/AirTerminalSingleDuctConstantVolumeReheat.hpp
+  StraightComponent/AirTerminalSingleDuctConstantVolumeReheat_Impl.hpp
+  StraightComponent/AirTerminalSingleDuctConstantVolumeReheat.cpp
+  StraightComponent/AirTerminalSingleDuctParallelPIUReheat.hpp
+  StraightComponent/AirTerminalSingleDuctParallelPIUReheat_Impl.hpp
+  StraightComponent/AirTerminalSingleDuctParallelPIUReheat.cpp
+  StraightComponent/AirTerminalSingleDuctSeriesPIUReheat.hpp
+  StraightComponent/AirTerminalSingleDuctSeriesPIUReheat_Impl.hpp
+  StraightComponent/AirTerminalSingleDuctSeriesPIUReheat.cpp
   FanConstantVolume.hpp
   FanConstantVolume_Impl.hpp
   FanConstantVolume.cpp
-  CoilCoolingDXSingleSpeed.hpp
-  CoilCoolingDXSingleSpeed_Impl.hpp
-  CoilCoolingDXSingleSpeed.cpp
+  StraightComponent/CoilCoolingDX.hpp
+  StraightComponent/CoilCoolingDX_Impl.hpp
+  StraightComponent/CoilCoolingDX.cpp
+  StraightComponent/CoilCoolingDXMultiSpeed.hpp
+  StraightComponent/CoilCoolingDXMultiSpeed_Impl.hpp
+  StraightComponent/CoilCoolingDXMultiSpeed.cpp
+  StraightComponent/CoilCoolingDXSingleSpeed.hpp
+  StraightComponent/CoilCoolingDXSingleSpeed_Impl.hpp
+  StraightComponent/CoilCoolingDXSingleSpeed.cpp
+  StraightComponent/CoilCoolingDXSingleSpeedThermalStorage.hpp
+  StraightComponent/CoilCoolingDXSingleSpeedThermalStorage_Impl.hpp
+  StraightComponent/CoilCoolingDXSingleSpeedThermalStorage.cpp
+  StraightComponent/CoilCoolingDXVariableSpeed.hpp
+  StraightComponent/CoilCoolingDXVariableSpeed_Impl.hpp
+  StraightComponent/CoilCoolingDXVariableSpeed.cpp
+  StraightComponent/CoilCoolingDXTwoSpeed.hpp
+  StraightComponent/CoilCoolingDXTwoSpeed_Impl.hpp
+  StraightComponent/CoilCoolingDXTwoSpeed.cpp
+  StraightComponent/CoilCoolingDXTwoStageWithHumidityControlMode.hpp
+  StraightComponent/CoilCoolingDXTwoStageWithHumidityControlMode_Impl.hpp
+  StraightComponent/CoilCoolingDXTwoStageWithHumidityControlMode.cpp
+  StraightComponent/CoilHeatingDXMultiSpeed.hpp
+  StraightComponent/CoilHeatingDXMultiSpeed_Impl.hpp
+  StraightComponent/CoilHeatingDXMultiSpeed.cpp
+  StraightComponent/CoilHeatingDXSingleSpeed.hpp
+  StraightComponent/CoilHeatingDXSingleSpeed_Impl.hpp
+  StraightComponent/CoilHeatingDXSingleSpeed.cpp
+  StraightComponent/CoilHeatingDXVariableSpeed.hpp
+  StraightComponent/CoilHeatingDXVariableSpeed_Impl.hpp
+  StraightComponent/CoilHeatingDXVariableSpeed.cpp
+  StraightComponent/CoilHeatingDesuperheater.hpp
+  StraightComponent/CoilHeatingDesuperheater_Impl.hpp
+  StraightComponent/CoilHeatingDesuperheater.cpp
+  StraightComponent/CoilWaterHeatingDesuperheater.hpp
+  StraightComponent/CoilWaterHeatingDesuperheater_Impl.hpp
+  StraightComponent/CoilWaterHeatingDesuperheater.cpp
+  StraightComponent/CoilHeatingElectric.hpp
+  StraightComponent/CoilHeatingElectric_Impl.hpp
+  StraightComponent/CoilHeatingElectric.cpp
+  StraightComponent/CoilHeatingElectricMultiStage.hpp
+  StraightComponent/CoilHeatingElectricMultiStage_Impl.hpp
+  StraightComponent/CoilHeatingElectricMultiStage.cpp
+  StraightComponent/CoilHeatingGasMultiStage.hpp
+  StraightComponent/CoilHeatingGasMultiStage_Impl.hpp
+  StraightComponent/CoilHeatingGasMultiStage.cpp
+  ResourceObject/CoilCoolingDXCurveFitPerformance.hpp
+  ResourceObject/CoilCoolingDXCurveFitPerformance_Impl.hpp
+  ResourceObject/CoilCoolingDXCurveFitPerformance.cpp
+  ResourceObject/CoilCoolingDXCurveFitOperatingMode.hpp
+  ResourceObject/CoilCoolingDXCurveFitOperatingMode_Impl.hpp
+  ResourceObject/CoilCoolingDXCurveFitOperatingMode.cpp
+  ResourceObject/CoilCoolingDXCurveFitSpeed.hpp
+  ResourceObject/CoilCoolingDXCurveFitSpeed_Impl.hpp
+  ResourceObject/CoilCoolingDXCurveFitSpeed.cpp
   CoilHeatingGas.hpp
   CoilHeatingGas_Impl.hpp
   CoilHeatingGas.cpp
-  CoilSystemCoolingDX.hpp
-  CoilSystemCoolingDX_Impl.hpp
-  CoilSystemCoolingDX.cpp
+  ModelObject/CoilSystemCoolingDX.hpp
+  ModelObject/CoilSystemCoolingDX_Impl.hpp
+  ModelObject/CoilSystemCoolingDX.cpp
+  StraightComponent/CoilSystemCoolingDXHeatExchangerAssisted.hpp
+  StraightComponent/CoilSystemCoolingDXHeatExchangerAssisted_Impl.hpp
+  StraightComponent/CoilSystemCoolingDXHeatExchangerAssisted.cpp
   SetpointManager.hpp
   SetpointManager_Impl.hpp
   SetpointManager.cpp
@@ -90,13 +477,12 @@ set(${target_name}_src
   SetpointManagerSingleZoneReheat.hpp
   SetpointManagerSingleZoneReheat_Impl.hpp
   SetpointManagerSingleZoneReheat.cpp
-  HVACComponent.hpp
-  HVACComponent_Impl.hpp
-  HVACComponent.cpp
-  StraightComponent.hpp
-  StraightComponent_Impl.hpp
-  StraightComponent.cpp
-  AirLoopHVAC.hpp
+  HVACComponent/HVACComponent.hpp
+  HVACComponent/HVACComponent_Impl.hpp
+  HVACComponent/HVACComponent.cpp
+  StraightComponent/StraightComponent.hpp
+  StraightComponent/StraightComponent_Impl.hpp
+  StraightComponent/StraightComponent.cpp
   Node.hpp
   NodeList.hpp
   Node_Impl.hpp
@@ -128,10 +514,10 @@ set(${target_name}_src
   Splitter.cpp
   Mixer.hpp
   Mixer.cpp
-  Loop.hpp
-  Loop_Impl.hpp
+  Loop/Loop.hpp
+  Loop/Loop_Impl.hpp
   Loop_Impl.cpp
-  Loop.cpp
+  Loop/Loop.cpp
   )
 
 add_library(${target_name}
@@ -145,6 +531,8 @@ set(${target_name}_depends
 set(${target_name}_depends ${${target_name}_depends} PARENT_SCOPE)
 
 target_compile_definitions(${target_name} PRIVATE openstudio_epmodel_EXPORTS SHARED_OS_LIBS)
+target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/HVACComponent
+                                                 ${CMAKE_CURRENT_SOURCE_DIR}/ModelObject)
 target_link_libraries(${target_name} PUBLIC ${${target_name}_depends})
 
 add_dependencies(${target_name} GenerateIddFactoryRun)
@@ -158,14 +546,57 @@ set(${target_name}_test_src
   test/AirLoopHVAC_GTest.cpp
   test/AirLoopHVACSupplyPath_GTest.cpp
   test/AirLoopHVACControllerList_GTest.cpp
+  test/AirLoopHVACExhaustSystem_GTest.cpp
+  test/AirLoopHVACMixer_GTest.cpp
+  test/AirLoopHVACSplitter_GTest.cpp
+  test/AirLoopHVACUnitaryFurnaceHeatCool_GTest.cpp
+  test/AirLoopHVACUnitaryFurnaceHeatOnly_GTest.cpp
+  test/AirLoopHVACUnitaryHeatOnly_GTest.cpp
+  test/AirLoopHVACUnitaryHeatPumpAirToAir_GTest.cpp
+  test/AirLoopHVACUnitaryHeatPumpWaterToAir_GTest.cpp
+  test/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_GTest.cpp
+  test/AirLoopHVACUnitaryHeatCool_GTest.cpp
+  test/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_GTest.cpp
+  test/AirLoopHVACUnitarySystem_GTest.cpp
   test/AirLoopHVACReturnPath_GTest.cpp
+  test/AirLoopHVACReturnPlenum_GTest.cpp
+  test/AirLoopHVACSupplyPlenum_GTest.cpp
   test/AirLoopHVACOutdoorAirSystem_GTest.cpp
   test/AirLoopHVACOutdoorAirSystemEquipmentList_GTest.cpp
   test/AirLoopHVACZoneSplitter_GTest.cpp
   test/AirLoopHVACZoneMixer_GTest.cpp
+  test/AirTerminalDualDuctConstantVolume_GTest.cpp
+  test/AirTerminalDualDuctVAV_GTest.cpp
+  test/AirTerminalDualDuctVAVOutdoorAir_GTest.cpp
+  test/AirTerminalSingleDuctConstantVolumeCooledBeam_GTest.cpp
+  test/AirTerminalSingleDuctConstantVolumeFourPipeBeam_GTest.cpp
+  test/AirTerminalSingleDuctConstantVolumeFourPipeInduction_GTest.cpp
+  test/AirTerminalSingleDuctVAVHeatAndCoolNoReheat_GTest.cpp
+  test/AirTerminalSingleDuctVAVNoReheat_GTest.cpp
+  test/AirTerminalSingleDuctVAVReheat_GTest.cpp
+  test/AirTerminalSingleDuctVAVReheatVariableSpeedFan_GTest.cpp
+  test/AirTerminalSingleDuctVAVHeatAndCoolReheat_GTest.cpp
+  test/AirTerminalSingleDuctUserDefined_GTest.cpp
   test/AirTerminalSingleDuctConstantVolumeNoReheat_GTest.cpp
+  test/AirTerminalSingleDuctConstantVolumeReheat_GTest.cpp
+  test/AirTerminalSingleDuctParallelPIUReheat_GTest.cpp
+  test/AirTerminalSingleDuctSeriesPIUReheat_GTest.cpp
   test/Branch_GTest.cpp
   test/BranchList_GTest.cpp
+  test/Building_GTest.cpp
+  test/BoilerHotWater_GTest.cpp
+  test/BoilerSteam_GTest.cpp
+  test/ChillerAbsorption_GTest.cpp
+  test/ChillerAbsorptionIndirect_GTest.cpp
+  test/ChillerCombustionTurbine_GTest.cpp
+  test/ChillerHeaterAbsorptionDirectFired_GTest.cpp
+  test/ChillerHeaterPerformanceElectricEIR_GTest.cpp
+  test/ChillerConstantCOP_GTest.cpp
+  test/ChillerEngineDriven_GTest.cpp
+  test/ChillerElectric_GTest.cpp
+  test/ChillerElectricEIR_GTest.cpp
+  test/ChillerElectricReformulatedEIR_GTest.cpp
+  test/ChillerElectricASHRAE205_GTest.cpp
   test/ThermalZone_GTest.cpp
   test/Space_GTest.cpp
   test/SizingZone_GTest.cpp
@@ -177,12 +608,97 @@ set(${target_name}_test_src
   test/OutdoorAirMixer_GTest.cpp
   test/FanConstantVolume_GTest.cpp
   test/SetpointManager_GTest.cpp
+  test/CoilCoolingDX_GTest.cpp
+  test/CoilCoolingDXMultiSpeed_GTest.cpp
   test/CoilCoolingDXSingleSpeed_GTest.cpp
+  test/CoilCoolingDXSingleSpeedThermalStorage_GTest.cpp
+  test/CoilCoolingDXVariableSpeed_GTest.cpp
+  test/CoilCoolingDXTwoSpeed_GTest.cpp
+  test/CoilCoolingDXTwoStageWithHumidityControlMode_GTest.cpp
+  test/CoilPerformanceDXCooling_GTest.cpp
+  test/CoilCoolingDXCurveFitPerformance_GTest.cpp
+  test/CoilCoolingDXCurveFitOperatingMode_GTest.cpp
+  test/CoilCoolingDXCurveFitSpeed_GTest.cpp
+  test/CoilHeatingDXMultiSpeed_GTest.cpp
+  test/CoilHeatingDXSingleSpeed_GTest.cpp
+  test/CoilHeatingDXVariableSpeed_GTest.cpp
+  test/CoilHeatingDesuperheater_GTest.cpp
+  test/CoilWaterHeatingDesuperheater_GTest.cpp
+  test/CoilHeatingElectric_GTest.cpp
+  test/CoilHeatingElectricMultiStage_GTest.cpp
+  test/CoilHeatingGasMultiStage_GTest.cpp
+  test/CoilHeatingSteam_GTest.cpp
+  test/CoilWaterHeatingAirToWaterHeatPumpWrapped_GTest.cpp
+  test/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_GTest.cpp
   test/CoilHeatingGas_GTest.cpp
   test/CoilSystemCoolingDX_GTest.cpp
+  test/CoilSystemCoolingDXHeatExchangerAssisted_GTest.cpp
   test/ControllerOutdoorAir_GTest.cpp
   test/DesignSpecificationOutdoorAir_GTest.cpp
   test/AvailabilityManager_GTest.cpp
+  test/AvailabilityManagerDifferentialThermostat_GTest.cpp
+  test/AvailabilityManagerHighTemperatureTurnOff_GTest.cpp
+  test/AvailabilityManagerHighTemperatureTurnOn_GTest.cpp
+  test/AvailabilityManagerLowTemperatureTurnOff_GTest.cpp
+  test/AvailabilityManagerLowTemperatureTurnOn_GTest.cpp
+  test/AvailabilityManagerHybridVentilation_GTest.cpp
+  test/AvailabilityManagerOptimumStart_GTest.cpp
+  test/AvailabilityManagerScheduledOff_GTest.cpp
+  test/AvailabilityManagerScheduledOn_GTest.cpp
+  test/AirConditionerVariableRefrigerantFlow_GTest.cpp
+  test/AirConditionerVariableRefrigerantFlowFluidTemperatureControl_GTest.cpp
+  test/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_GTest.cpp
+  test/CoilCoolingDXVariableRefrigerantFlow_GTest.cpp
+  test/CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_GTest.cpp
+  test/CoilHeatingDXVariableRefrigerantFlow_GTest.cpp
+  test/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_GTest.cpp
+  test/CoilCoolingWater_GTest.cpp
+  test/CoilHeatingWater_GTest.cpp
+  test/CoilCoolingWaterToAirHeatPumpEquationFit_GTest.cpp
+  test/CoilHeatingWaterToAirHeatPumpEquationFit_GTest.cpp
+  test/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_GTest.cpp
+  test/CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_GTest.cpp
+  test/CoilUserDefined_GTest.cpp
+  test/CoilCoolingWaterToAirHeatPumpParameterEstimation_GTest.cpp
+  test/CoilHeatingWaterToAirHeatPumpParameterEstimation_GTest.cpp
+  test/CoilCoolingWaterDetailedGeometry_GTest.cpp
+  test/CoilDXASHRAE205Performance_GTest.cpp
+  test/CentralHeatPumpSystem_GTest.cpp
+  test/AirflowNetworkDistributionComponentCoil_GTest.cpp
+  test/AirflowNetworkDistributionComponentConstantPressureDrop_GTest.cpp
+  test/CeilingAdiabatic_GTest.cpp
+  test/CeilingInterzone_GTest.cpp
+  test/AirflowNetworkDistributionComponentDuct_GTest.cpp
+  test/AirflowNetworkDistributionDuctSizing_GTest.cpp
+  test/AirflowNetworkDistributionDuctViewFactors_GTest.cpp
+  test/AirflowNetworkDistributionLinkage_GTest.cpp
+  test/AirflowNetworkDistributionNode_GTest.cpp
+  test/AirflowNetworkIntraZoneNode_GTest.cpp
+  test/AirflowNetworkIntraZoneLinkage_GTest.cpp
+  test/AirflowNetworkMultiZoneExternalNode_GTest.cpp
+  test/AirflowNetworkMultiZoneZone_GTest.cpp
+  test/AirflowNetworkMultiZoneSpecifiedFlowRate_GTest.cpp
+  test/AirflowNetworkMultiZoneReferenceCrackConditions_GTest.cpp
+  test/AirflowNetworkMultiZoneWindPressureCoefficientArray_GTest.cpp
+  test/AirflowNetworkMultiZoneWindPressureCoefficientValues_GTest.cpp
+  test/AirflowNetworkMultiZoneSurface_GTest.cpp
+  test/AirflowNetworkMultiZoneSurfaceCrack_GTest.cpp
+  test/AirflowNetworkMultiZoneSurfaceEffectiveLeakageArea_GTest.cpp
+  test/AirflowNetworkMultiZoneComponentDetailedOpening_GTest.cpp
+  test/AirflowNetworkMultiZoneComponentHorizontalOpening_GTest.cpp
+  test/AirflowNetworkMultiZoneComponentSimpleOpening_GTest.cpp
+  test/AirflowNetworkMultiZoneComponentZoneExhaustFan_GTest.cpp
+  test/AirflowNetworkOccupantVentilationControl_GTest.cpp
+  test/AirflowNetworkSimulationControl_GTest.cpp
+  test/AirflowNetworkZoneControlPressureController_GTest.cpp
+  test/AirflowNetworkDistributionComponentFan_GTest.cpp
+  test/AirflowNetworkDistributionComponentHeatExchanger_GTest.cpp
+  test/AirflowNetworkDistributionComponentLeak_GTest.cpp
+  test/AirflowNetworkDistributionComponentLeakageRatio_GTest.cpp
+  test/AirflowNetworkDistributionComponentOutdoorAirFlow_GTest.cpp
+  test/AirflowNetworkDistributionComponentReliefAirFlow_GTest.cpp
+  test/AirflowNetworkDistributionComponentTerminalUnit_GTest.cpp
+  test/AirLoopHVACDedicatedOutdoorAirSystem_GTest.cpp
   test/IDF_SmallOffice_GTest.cpp
 )
 

@@ -6,8 +6,8 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../Branch.hpp"
-#include "../Branch_Impl.hpp"
+#include "../ModelObject/Branch.hpp"
+#include "../ModelObject/Branch_Impl.hpp"
 #include "../FanConstantVolume.hpp"
 
 using namespace openstudio::epmodel;
@@ -43,4 +43,12 @@ TEST_F(EPModelFixture, API_Branch_ComponentAndNodeNameApis) {
   ASSERT_TRUE(branch.componentOutletNode(0));
   EXPECT_EQ("Renamed Inlet", branch.componentInletNode(0)->nameString());
   EXPECT_EQ("Renamed Outlet", branch.componentOutletNode(0)->nameString());
+}
+
+TEST_F(EPModelFixture, Branch_ScalarAccessors_RoundTrip) {
+  Model model;
+  Branch branch(model);
+
+  ASSERT_TRUE(branch.setName("Main Supply Branch"));
+  EXPECT_EQ("Main Supply Branch", branch.nameString());
 }

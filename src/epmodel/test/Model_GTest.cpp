@@ -7,12 +7,12 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../AirLoopHVAC.hpp"
-#include "../AirLoopHVAC_Impl.hpp"
-#include "../Branch.hpp"
-#include "../Branch_Impl.hpp"
-#include "../BranchList.hpp"
-#include "../BranchList_Impl.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/AirLoopHVAC_Impl.hpp"
+#include "../ModelObject/Branch.hpp"
+#include "../ModelObject/BranchList.hpp"
+#include "../ModelObject/BranchList_Impl.hpp"
+#include "../ModelObject/Branch_Impl.hpp"
 #include "../Model.hpp"
 #include "../Node.hpp"
 

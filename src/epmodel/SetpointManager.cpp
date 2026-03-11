@@ -6,8 +6,8 @@
 #include "SetpointManager.hpp"
 #include "SetpointManager_Impl.hpp"
 
-#include "AirLoopHVAC.hpp"
-#include "AirLoopHVACOutdoorAirSystem.hpp"
+#include "Loop/AirLoopHVAC.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
 

@@ -108,9 +108,18 @@ Method placement must mirror Ruby generator conventions:
 ## Folder bucket placement
 
 1. Candidate bucket is immediate parent class.
-2. If bucket count is below threshold (`3`), climb ancestor chain.
-3. Select first ancestor bucket with count `>= 3`.
+2. If bucket count is below threshold (`1`), climb ancestor chain.
+3. Select first ancestor bucket with count `>= 1`.
 4. Final fallback bucket: `ModelObject`.
+
+## Canonical counterpart resolution preflight
+
+Before per-type scaffold execution (`next`/`run`), inventory metadata must be
+refreshed using translator-backed counterpart resolution:
+
+1. Resolve canonical `openstudio::model` class name for counterpart rows.
+2. Use resolved class for base/bucket/output_dir classification.
+3. If a counterpart row cannot be resolved, mark it `blocked` with explicit reason.
 
 ## Comment conventions
 

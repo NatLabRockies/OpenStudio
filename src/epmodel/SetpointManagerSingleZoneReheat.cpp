@@ -6,7 +6,7 @@
 #include "SetpointManagerSingleZoneReheat.hpp"
 #include "SetpointManagerSingleZoneReheat_Impl.hpp"
 
-#include "AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
 #include "ThermalZone.hpp"

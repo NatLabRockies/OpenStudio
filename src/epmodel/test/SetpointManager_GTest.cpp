@@ -7,9 +7,9 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../AirLoopHVAC.hpp"
-#include "../AirLoopHVACOutdoorAirSystem.hpp"
-#include "../AirLoopHVACZoneSplitter.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../FanConstantVolume.hpp"
 #include "../Node.hpp"
 #include "../SetpointManagerMixedAir.hpp"

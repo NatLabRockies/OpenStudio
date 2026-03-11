@@ -3,10 +3,10 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#include "Loop_Impl.hpp"
+#include "Loop/Loop_Impl.hpp"
 
-#include "HVACComponent.hpp"
-#include "Loop.hpp"
+#include "HVACComponent/HVACComponent.hpp"
+#include "Loop/Loop.hpp"
 #include "Mixer.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../AirLoopHVACZoneMixer.hpp"
+#include "../Mixer/AirLoopHVACZoneMixer.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -24,4 +24,13 @@ TEST_F(EPModelFixture, API_AirLoopHVACZoneMixer_DefaultPortsAndInlets) {
   EXPECT_EQ(0u, mixer.nextBranchIndex());
   EXPECT_FALSE(mixer.lastInletModelObject());
   EXPECT_TRUE(mixer.inletModelObjects().empty());
+}
+
+TEST_F(EPModelFixture, API_AirLoopHVACZoneMixer_ScalarAccessors_RoundTrip) {
+  Model model;
+  AirLoopHVACZoneMixer mixer(model);
+
+  EXPECT_TRUE(mixer.setName("Zone Mixer Roundtrip"));
+  ASSERT_TRUE(mixer.name());
+  EXPECT_EQ("Zone Mixer Roundtrip", mixer.nameString());
 }

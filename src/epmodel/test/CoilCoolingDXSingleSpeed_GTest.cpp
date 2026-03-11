@@ -6,9 +6,9 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../AirLoopHVAC.hpp"
-#include "../AirLoopHVACOutdoorAirSystem.hpp"
-#include "../CoilCoolingDXSingleSpeed.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../StraightComponent/CoilCoolingDXSingleSpeed.hpp"
 #include "../Node.hpp"
 
 using namespace openstudio::epmodel;
@@ -31,4 +31,40 @@ TEST_F(EPModelFixture, CoilCoolingDXSingleSpeed_AddToNodeRejectsOutboardOANode) 
 
   CoilCoolingDXSingleSpeed coil(model);
   EXPECT_FALSE(coil.addToNode(*outboardOANode));
+}
+
+TEST_F(EPModelFixture, CoilCoolingDXSingleSpeed_ScalarAccessors_RoundTrip) {
+  Model model;
+  CoilCoolingDXSingleSpeed coil(model);
+
+  EXPECT_TRUE(coil.setCondenserType("AirCooled"));
+  EXPECT_EQ("AirCooled", coil.condenserType());
+
+  EXPECT_TRUE(coil.setRatedCOP(3.2));
+  EXPECT_DOUBLE_EQ(3.2, coil.ratedCOP());
+
+  coil.autosizeRatedTotalCoolingCapacity();
+  EXPECT_TRUE(coil.isRatedTotalCoolingCapacityAutosized());
+  EXPECT_FALSE(coil.ratedTotalCoolingCapacity());
+  EXPECT_TRUE(coil.setRatedTotalCoolingCapacity(12000.0));
+  ASSERT_TRUE(coil.ratedTotalCoolingCapacity());
+  EXPECT_DOUBLE_EQ(12000.0, *coil.ratedTotalCoolingCapacity());
+  EXPECT_FALSE(coil.isRatedTotalCoolingCapacityAutosized());
+
+  coil.autosizeRatedSensibleHeatRatio();
+  EXPECT_TRUE(coil.isRatedSensibleHeatRatioAutosized());
+  EXPECT_FALSE(coil.ratedSensibleHeatRatio());
+  EXPECT_TRUE(coil.setRatedSensibleHeatRatio(0.73));
+  ASSERT_TRUE(coil.ratedSensibleHeatRatio());
+  EXPECT_DOUBLE_EQ(0.73, *coil.ratedSensibleHeatRatio());
+
+  coil.autosizeRatedAirFlowRate();
+  EXPECT_TRUE(coil.isRatedAirFlowRateAutosized());
+  EXPECT_FALSE(coil.ratedAirFlowRate());
+  EXPECT_TRUE(coil.setRatedAirFlowRate(1.25));
+  ASSERT_TRUE(coil.ratedAirFlowRate());
+  EXPECT_DOUBLE_EQ(1.25, *coil.ratedAirFlowRate());
+
+  EXPECT_TRUE(coil.setMinimumOutdoorDryBulbTemperatureforCompressorOperation(-20.0));
+  EXPECT_DOUBLE_EQ(-20.0, coil.minimumOutdoorDryBulbTemperatureforCompressorOperation());
 }

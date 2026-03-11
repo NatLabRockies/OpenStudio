@@ -17,6 +17,7 @@ Use:
 ```bash
 python3 doc/idd-schema-alignment/scripts/epmodel_scaffold_cli.py status
 python3 doc/idd-schema-alignment/scripts/epmodel_scaffold_cli.py seed
+python3 doc/idd-schema-alignment/scripts/epmodel_scaffold_cli.py resolve-model-classes
 python3 doc/idd-schema-alignment/scripts/epmodel_scaffold_cli.py next
 python3 doc/idd-schema-alignment/scripts/epmodel_scaffold_cli.py run --max-items 5
 ```
@@ -29,6 +30,10 @@ Defaults:
 
 The CLI invokes `codex exec` with a fixed prompt contract and validates
 `contract_version` before accepting results.
+
+Before `next`/`run`, the CLI now performs a strict resolver preflight that maps
+counterpart rows to canonical `openstudio::model` class names using translator
+evidence. If a counterpart row cannot be resolved, it is marked `blocked`.
 
 Scaffold runs instruct the coding agent to use `-j32` for build/test commands when supported.
 `run` auto-seeds from `idd_mapping_appendix.generated.md` if no pending items remain.

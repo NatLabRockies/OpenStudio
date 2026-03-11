@@ -7,9 +7,10 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../AirLoopHVAC.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
 #include "../AvailabilityManagerAssignmentList.hpp"
-#include "../AvailabilityManagerNightCycle.hpp"
+#include "../AvailabilityManager/AvailabilityManagerNightCycle.hpp"
+#include "../AvailabilityManager/AvailabilityManagerNightVentilation.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -18,6 +19,58 @@ TEST_F(EPModelFixture, AvailabilityManagerNightCycle_DefaultConstructor) {
   AvailabilityManagerNightCycle availabilityManager(model);
   EXPECT_EQ(AvailabilityManagerNightCycle::iddObjectType(), availabilityManager.iddObject().type());
   EXPECT_FALSE(availabilityManager.nameString().empty());
+}
+
+TEST_F(EPModelFixture, AvailabilityManagerNightCycle_ScalarAccessors_RoundTrip) {
+  Model model;
+  AvailabilityManagerNightCycle availabilityManager(model);
+
+  EXPECT_TRUE(availabilityManager.isControlTypeDefaulted());
+  EXPECT_FALSE(availabilityManager.isThermostatToleranceDefaulted());
+  EXPECT_FALSE(availabilityManager.isCyclingRunTimeDefaulted());
+  EXPECT_TRUE(availabilityManager.isCyclingRunTimeControlTypeDefaulted());
+
+  EXPECT_TRUE(availabilityManager.setControlType("CycleOnAnyHeatingZone"));
+  EXPECT_EQ("CycleOnAnyHeatingZone", availabilityManager.controlType());
+  EXPECT_TRUE(availabilityManager.setThermostatTolerance(1.25));
+  EXPECT_DOUBLE_EQ(1.25, availabilityManager.thermostatTolerance());
+  EXPECT_TRUE(availabilityManager.setCyclingRunTime(900.0));
+  EXPECT_DOUBLE_EQ(900.0, availabilityManager.cyclingRunTime());
+  EXPECT_TRUE(availabilityManager.setCyclingRunTimeControlType("Thermostat"));
+  EXPECT_EQ("Thermostat", availabilityManager.cyclingRunTimeControlType());
+
+  availabilityManager.resetControlType();
+  availabilityManager.resetThermostatTolerance();
+  availabilityManager.resetCyclingRunTime();
+  availabilityManager.resetCyclingRunTimeControlType();
+  EXPECT_TRUE(availabilityManager.isControlTypeDefaulted());
+  EXPECT_TRUE(availabilityManager.isThermostatToleranceDefaulted());
+  EXPECT_TRUE(availabilityManager.isCyclingRunTimeDefaulted());
+  EXPECT_TRUE(availabilityManager.isCyclingRunTimeControlTypeDefaulted());
+}
+
+TEST_F(EPModelFixture, AvailabilityManagerNightVentilation_DefaultConstructor) {
+  Model model;
+  AvailabilityManagerNightVentilation availabilityManager(model);
+
+  EXPECT_EQ(AvailabilityManagerNightVentilation::iddObjectType(), availabilityManager.iddObject().type());
+  EXPECT_FALSE(availabilityManager.nameString().empty());
+}
+
+TEST_F(EPModelFixture, AvailabilityManagerNightVentilation_ScalarAccessors_RoundTrip) {
+  Model model;
+  AvailabilityManagerNightVentilation availabilityManager(model);
+
+  EXPECT_DOUBLE_EQ(2.0, availabilityManager.ventilationTemperatureDifference());
+  EXPECT_DOUBLE_EQ(15.0, availabilityManager.ventilationTemperatureLowLimit());
+  EXPECT_DOUBLE_EQ(0.333, availabilityManager.nightVentingFlowFraction());
+
+  EXPECT_TRUE(availabilityManager.setVentilationTemperatureDifference(3.5));
+  EXPECT_DOUBLE_EQ(3.5, availabilityManager.ventilationTemperatureDifference());
+  EXPECT_TRUE(availabilityManager.setVentilationTemperatureLowLimit(10.0));
+  EXPECT_DOUBLE_EQ(10.0, availabilityManager.ventilationTemperatureLowLimit());
+  EXPECT_TRUE(availabilityManager.setNightVentingFlowFraction(0.5));
+  EXPECT_DOUBLE_EQ(0.5, availabilityManager.nightVentingFlowFraction());
 }
 
 TEST_F(EPModelFixture, AvailabilityManagerAssignmentList_DefaultConstructor) {

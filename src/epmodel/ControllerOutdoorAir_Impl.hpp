@@ -6,7 +6,7 @@
 #ifndef EPMODEL_CONTROLLEROUTDOORAIR_IMPL_HPP
 #define EPMODEL_CONTROLLEROUTDOORAIR_IMPL_HPP
 
-#include "ParentObject_Impl.hpp"
+#include "ParentObject/ParentObject_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {

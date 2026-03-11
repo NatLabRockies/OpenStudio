@@ -6,8 +6,8 @@
 #include "Space.hpp"
 #include "Space_Impl.hpp"
 
-#include "AirLoopHVAC.hpp"
-#include "AirLoopHVAC_Impl.hpp"
+#include "Loop/AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
 #include "DesignSpecificationOutdoorAir.hpp"
 #include "DesignSpecificationOutdoorAir_Impl.hpp"

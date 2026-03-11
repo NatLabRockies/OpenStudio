@@ -7,7 +7,7 @@
 #define EPMODEL_FANCONSTANTVOLUME_HPP
 
 #include "EPModelAPI.hpp"
-#include "StraightComponent.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include "../utilities/idd/IddEnums.hpp"
 

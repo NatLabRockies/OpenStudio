@@ -7,7 +7,7 @@
 #define EPMODEL_SETPOINTMANAGER_HPP
 
 #include "EPModelAPI.hpp"
-#include "HVACComponent.hpp"
+#include "HVACComponent/HVACComponent.hpp"
 
 namespace openstudio {
 namespace epmodel {

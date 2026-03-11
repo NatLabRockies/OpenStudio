@@ -6,8 +6,8 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../AirLoopHVAC.hpp"
-#include "../AirLoopHVACOutdoorAirSystem.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../ControllerOutdoorAir.hpp"
 #include "../FanConstantVolume.hpp"
 #include "../Node.hpp"
@@ -20,6 +20,15 @@ TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_DefaultConstructor) {
   AirLoopHVACOutdoorAirSystem outdoorAirSystem(model);
   EXPECT_EQ(AirLoopHVACOutdoorAirSystem::iddObjectType(), outdoorAirSystem.iddObject().type());
   EXPECT_FALSE(outdoorAirSystem.nameString().empty());
+}
+
+TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_ScalarAccessors_RoundTrip) {
+  Model model;
+  AirLoopHVACOutdoorAirSystem outdoorAirSystem(model);
+
+  const std::string newName = "OA System Scalar Roundtrip";
+  EXPECT_TRUE(outdoorAirSystem.setName(newName));
+  EXPECT_EQ(newName, outdoorAirSystem.nameString());
 }
 
 TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_DefaultApiScaffold) {

@@ -7,7 +7,7 @@
 #define EPMODEL_CONTROLLEROUTDOORAIR_HPP
 
 #include "EPModelAPI.hpp"
-#include "ParentObject.hpp"
+#include "ParentObject/ParentObject.hpp"
 
 #include "../utilities/idd/IddEnums.hpp"
 

@@ -6,8 +6,8 @@
 #include "SetpointManagerMixedAir.hpp"
 #include "SetpointManagerMixedAir_Impl.hpp"
 
-#include "AirLoopHVAC.hpp"
-#include "AirLoopHVAC_Impl.hpp"
+#include "Loop/AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
 

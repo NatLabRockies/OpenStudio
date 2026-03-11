@@ -9,8 +9,9 @@ import json
 import re
 import subprocess
 import sys
+from collections import Counter
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Counter as CounterType, Dict, List, Optional, Set, Tuple
 
 try:  # Optional dependency
     import yaml  # type: ignore
@@ -25,6 +26,8 @@ DEFAULT_MAX_MINUTES_PER_TYPE = 30
 VALID_STATUSES = {"pending", "in_progress", "done", "blocked", "deferred"}
 APPENDIX_PATH = Path("doc/idd-schema-alignment/idd_mapping_appendix.generated.md")
 COMMIT_IGNORE_PATHS = {"EPModelTestFixture.log"}
+# Minimum items needed to keep a bucket. Set to 1 to effectively disable size-based climbing.
+BUCKET_THRESHOLD = 1
 
 
 def utc_now() -> str:
@@ -139,6 +142,355 @@ def _class_from_os_type(os_type: str) -> str:
     return _camel_from_name(s)
 
 
+def _extract_model_classes_and_parent_map(state: ScaffoldState) -> Tuple[Set[str], Dict[str, Optional[str]]]:
+    model_root = state.root / "src" / "model"
+    model_classes: Set[str] = set()
+    parent_map: Dict[str, Optional[str]] = {}
+    class_decl = re.compile(
+        r"class\s+(?:[A-Za-z_]\w*\s+)*(?P<name>[A-Za-z_]\w*)\s*(?::\s*public\s+(?P<base>[A-Za-z_]\w*))?\s*\{"
+    )
+    for hpp in sorted(model_root.rglob("*.hpp")):
+        text = hpp.read_text(encoding="utf-8", errors="ignore")
+        for match in class_decl.finditer(text):
+            name = match.group("name")
+            base = match.group("base")
+            if name == "detail" or name.endswith("_Impl"):
+                continue
+            model_classes.add(name)
+            parent_map[name] = base
+    return model_classes, parent_map
+
+
+def _extract_epmodel_classes(state: ScaffoldState) -> Set[str]:
+    epmodel_root = state.root / "src" / "epmodel"
+    classes: Set[str] = set()
+    class_decl = re.compile(r"class\s+(?:[A-Za-z_]\w*\s+)*(?P<name>[A-Za-z_]\w*)\s*(?::\s*public\s+[A-Za-z_]\w*)?\s*\{")
+    for hpp in sorted(epmodel_root.rglob("*.hpp")):
+        text = hpp.read_text(encoding="utf-8", errors="ignore")
+        for match in class_decl.finditer(text):
+            name = match.group("name")
+            if name in {"detail"}:
+                continue
+            classes.add(name)
+    classes.add("ModelObject")
+    return classes
+
+
+def _extract_forward_signature_function_map(state: ScaffoldState) -> Dict[str, str]:
+    header = state.root / "src" / "energyplus" / "ForwardTranslator.hpp"
+    if not header.exists():
+        return {}
+    text = header.read_text(encoding="utf-8", errors="ignore")
+    out: Dict[str, str] = {}
+    for match in re.finditer(r"\b(translate[A-Za-z0-9_]+)\s*\(\s*model::([A-Za-z_]\w*)\s*&\s*modelObject", text):
+        out[match.group(1)] = match.group(2)
+    return out
+
+
+def _appendix_sections(state: ScaffoldState) -> Dict[str, List[str]]:
+    appendix = state.root / APPENDIX_PATH
+    text = appendix.read_text(encoding="utf-8", errors="ignore")
+    sections: Dict[str, List[str]] = {}
+    current = ""
+    for line in text.splitlines():
+        if line.startswith("## "):
+            current = line[3:].strip()
+            sections[current] = []
+            continue
+        if current:
+            sections[current].append(line)
+    return sections
+
+
+def _appendix_os_to_model_class_map(state: ScaffoldState) -> Tuple[Dict[str, str], Dict[str, str]]:
+    sections = _appendix_sections(state)
+    lines = sections.get("OS -> EP (Full)", [])
+    os_to_model: Dict[str, str] = {}
+    fn_to_model: Dict[str, str] = {}
+    for line in lines:
+        if not line.startswith("| `OS:"):
+            continue
+        parts = [p.strip() for p in line.split("|")]
+        if len(parts) < 6:
+            continue
+        os_vals = _extract_backticked_values(parts[1])
+        if not os_vals:
+            continue
+        os_type = os_vals[0]
+        model_class = _clean_cell(parts[2])
+        if not model_class:
+            continue
+        os_to_model[os_type] = model_class
+        fns = _extract_backticked_values(parts[5])
+        if fns:
+            fn_to_model[fns[0]] = model_class
+    return os_to_model, fn_to_model
+
+
+def _appendix_ep_rows(state: ScaffoldState) -> Dict[str, Dict[str, Any]]:
+    sections = _appendix_sections(state)
+    lines = sections.get("EP -> OS (Full)", [])
+    rows: Dict[str, Dict[str, Any]] = {}
+    for line in lines:
+        if not line.startswith("| `"):
+            continue
+        parts = [p.strip() for p in line.split("|")]
+        if len(parts) < 6:
+            continue
+        ep_vals = _extract_backticked_values(parts[1])
+        if not ep_vals:
+            continue
+        ep = ep_vals[0]
+        os_vals = _extract_backticked_values(parts[2])
+        status_text = _clean_cell(parts[3]).lower()
+        rt_vals = _extract_backticked_values(parts[4])
+        rows[ep] = {
+            "os_types": os_vals,
+            "status_text": status_text,
+            "rt_function": rt_vals[0] if rt_vals else "",
+        }
+    return rows
+
+
+def _resolve_counterpart_class(
+    record: Dict[str, Any],
+    ep_row: Dict[str, Any],
+    os_to_model_class: Dict[str, str],
+    fn_to_model_class: Dict[str, str],
+    fn_to_model_from_signature: Dict[str, str],
+    model_classes: Set[str],
+) -> Tuple[Optional[str], str, str]:
+    # Priority 1: direct OS counterpart(s) from appendix EP row.
+    os_types = [str(x) for x in ep_row.get("os_types", [])]
+    for os_type in os_types:
+        cls = os_to_model_class.get(os_type)
+        if cls and cls in model_classes:
+            return cls, "appendix_os_to_model", "high"
+
+    # Priority 2: RT function name mapped to model class from appendix OS rows.
+    rt_fn = str(ep_row.get("rt_function", "") or "")
+    if rt_fn:
+        cls = fn_to_model_class.get(rt_fn)
+        if cls and cls in model_classes:
+            return cls, "appendix_rt_function", "medium"
+        cls = fn_to_model_from_signature.get(rt_fn)
+        if cls and cls in model_classes:
+            return cls, "forward_signature", "medium"
+
+    # Priority 3: direct type class if already canonical.
+    existing_target = str(record.get("target_class", "") or "").strip()
+    if existing_target and existing_target in model_classes:
+        return existing_target, "inventory_target_class", "low"
+
+    # Priority 4: best-effort fallback from OS type naming transform.
+    for os_type in os_types:
+        fallback = _class_from_os_type(os_type)
+        if fallback in model_classes:
+            return fallback, "os_type_name_transform", "low"
+
+    return None, "", ""
+
+
+def _intended_base_for_target(target_class: str, parent_map: Dict[str, Optional[str]]) -> str:
+    base = parent_map.get(target_class)
+    if base:
+        return base
+    return "ModelObject"
+
+
+def _choose_bucket(
+    intended_base: str, parent_map: Dict[str, Optional[str]], bucket_counts: CounterType[str], threshold: int
+) -> str:
+    current = intended_base or "ModelObject"
+    seen: Set[str] = set()
+    while current and current not in seen:
+        seen.add(current)
+        if bucket_counts.get(current, 0) >= threshold:
+            return current
+        parent = parent_map.get(current)
+        if not parent:
+            break
+        current = parent
+    return "ModelObject"
+
+
+def resolve_model_classes_preflight(state: ScaffoldState, print_summary: bool = False) -> Dict[str, int]:
+    inventory = state.load_inventory()
+    model_classes, _parent_map = _extract_model_classes_and_parent_map(state)
+    os_to_model, fn_to_model_from_appendix = _appendix_os_to_model_class_map(state)
+    ep_rows = _appendix_ep_rows(state)
+    fn_to_model_from_signature = _extract_forward_signature_function_map(state)
+
+    resolved_count = 0
+    unresolved_count = 0
+    updated_count = 0
+    blocked_count = 0
+
+    for item in inventory:
+        has_counterpart = bool(item.get("has_model_counterpart", False))
+        idd_type = str(item.get("idd_type", "") or "")
+        prior = (
+            str(item.get("resolved_model_class", "") or ""),
+            str(item.get("resolver_source", "") or ""),
+            str(item.get("resolver_confidence", "") or ""),
+            str(item.get("resolver_error", "") or ""),
+            str(item.get("target_class", "") or ""),
+            str(item.get("status", "") or ""),
+            str(item.get("notes", "") or ""),
+        )
+
+        if not has_counterpart:
+            # Keep non-counterpart rows IDD-derived.
+            if not str(item.get("target_class", "") or "").strip():
+                item["target_class"] = _camel_from_name(idd_type)
+            item.pop("resolved_model_class", None)
+            item.pop("resolver_source", None)
+            item.pop("resolver_confidence", None)
+            item.pop("resolver_error", None)
+            after = (
+                str(item.get("resolved_model_class", "") or ""),
+                str(item.get("resolver_source", "") or ""),
+                str(item.get("resolver_confidence", "") or ""),
+                str(item.get("resolver_error", "") or ""),
+                str(item.get("target_class", "") or ""),
+                str(item.get("status", "") or ""),
+                str(item.get("notes", "") or ""),
+            )
+            if prior != after:
+                updated_count += 1
+            continue
+
+        ep_row = ep_rows.get(idd_type, {"os_types": [], "status_text": "", "rt_function": ""})
+        resolved, source, confidence = _resolve_counterpart_class(
+            item,
+            ep_row,
+            os_to_model,
+            fn_to_model_from_appendix,
+            fn_to_model_from_signature,
+            model_classes,
+        )
+        if resolved:
+            resolved_count += 1
+            item["resolved_model_class"] = resolved
+            item["resolver_source"] = source
+            item["resolver_confidence"] = confidence
+            item.pop("resolver_error", None)
+            item["target_class"] = resolved
+        else:
+            unresolved_count += 1
+            item.pop("resolved_model_class", None)
+            item["resolver_source"] = "unresolved"
+            item["resolver_confidence"] = "none"
+            rt_fn = str(ep_row.get("rt_function", "") or "")
+            os_types = ", ".join(str(x) for x in (ep_row.get("os_types", []) or []))
+            item["resolver_error"] = (
+                f"Unable to resolve canonical openstudio::model class for counterpart row {idd_type}. "
+                f"os_types=[{os_types}] rt_function={rt_fn or '<none>'}"
+            )
+            if item.get("status") != "done":
+                item["status"] = "blocked"
+                item["notes"] = item["resolver_error"]
+                blocked_count += 1
+
+        after = (
+            str(item.get("resolved_model_class", "") or ""),
+            str(item.get("resolver_source", "") or ""),
+            str(item.get("resolver_confidence", "") or ""),
+            str(item.get("resolver_error", "") or ""),
+            str(item.get("target_class", "") or ""),
+            str(item.get("status", "") or ""),
+            str(item.get("notes", "") or ""),
+        )
+        if prior != after:
+            updated_count += 1
+
+    if updated_count > 0:
+        state.save_inventory(inventory)
+
+    if print_summary:
+        print("Resolver preflight summary:")
+        print(f"- resolved_counterparts: {resolved_count}")
+        print(f"- unresolved_counterparts: {unresolved_count}")
+        print(f"- newly_blocked: {blocked_count}")
+        print(f"- inventory_records_updated: {updated_count}")
+
+    return {
+        "resolved_counterparts": resolved_count,
+        "unresolved_counterparts": unresolved_count,
+        "newly_blocked": blocked_count,
+        "updated": updated_count,
+        "total": len(inventory),
+    }
+
+
+def _reclassify_inventory_records(state: ScaffoldState, inventory: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], Dict[str, int]]:
+    model_classes, parent_map = _extract_model_classes_and_parent_map(state)
+    epmodel_classes = _extract_epmodel_classes(state)
+
+    intended_base_by_type: Dict[str, str] = {}
+    for item in inventory:
+        idd_type = str(item.get("idd_type", ""))
+        target_class = str(item.get("target_class", "") or "").strip()
+        has_counterpart = bool(item.get("has_model_counterpart", False))
+        if has_counterpart:
+            resolved = str(item.get("resolved_model_class", "") or "").strip()
+            if resolved:
+                target_class = resolved
+                item["target_class"] = resolved
+        if target_class and target_class not in model_classes and has_counterpart:
+            target_class = "ModelObject"
+        intended_base_by_type[idd_type] = _intended_base_for_target(target_class, parent_map)
+
+    bucket_counts: CounterType[str] = Counter(intended_base_by_type.values())
+
+    updates = 0
+    for item in inventory:
+        idd_type = str(item.get("idd_type", ""))
+        intended_base = intended_base_by_type.get(idd_type, "ModelObject")
+        bucket = _choose_bucket(intended_base, parent_map, bucket_counts, BUCKET_THRESHOLD)
+        effective_base = intended_base if intended_base in epmodel_classes else "ModelObject"
+        output_dir = f"src/epmodel/{bucket}"
+
+        before = (
+            str(item.get("intended_base_class", "")),
+            str(item.get("base_class", "")),
+            str(item.get("folder_bucket", "")),
+            str(item.get("output_dir", "")),
+        )
+        after = (intended_base, effective_base, bucket, output_dir)
+        if before != after:
+            updates += 1
+            item["intended_base_class"] = intended_base
+            item["base_class"] = effective_base
+            item["folder_bucket"] = bucket
+            item["output_dir"] = output_dir
+
+    return inventory, {"updated": updates, "total": len(inventory)}
+
+
+def refresh_inventory_classification(state: ScaffoldState, print_summary: bool = False) -> Dict[str, int]:
+    resolver_stats = resolve_model_classes_preflight(state, print_summary=print_summary)
+    inventory = state.load_inventory()
+    inventory, stats = _reclassify_inventory_records(state, inventory)
+    if stats["updated"] > 0:
+        state.save_inventory(inventory)
+    if print_summary:
+        print(
+            "Resolver preflight: "
+            f"{resolver_stats['resolved_counterparts']} resolved, "
+            f"{resolver_stats['unresolved_counterparts']} unresolved, "
+            f"{resolver_stats['newly_blocked']} newly blocked"
+        )
+        print(f"Reclassified inventory records: {stats['updated']} updated / {stats['total']} total")
+    return {
+        "updated": stats["updated"],
+        "total": stats["total"],
+        "resolved_counterparts": resolver_stats["resolved_counterparts"],
+        "unresolved_counterparts": resolver_stats["unresolved_counterparts"],
+        "newly_blocked": resolver_stats["newly_blocked"],
+    }
+
+
 def seed_inventory_from_appendix(state: ScaffoldState) -> int:
     appendix = state.root / APPENDIX_PATH
     if not appendix.exists():
@@ -178,7 +530,7 @@ def seed_inventory_from_appendix(state: ScaffoldState) -> int:
         if not ep_type:
             continue
 
-        has_model_counterpart = any(v.startswith("OS:") for v in os_vals) and ("no direct os idd peer" not in status_col)
+        has_model_counterpart = any(v.startswith("OS:") for v in os_vals)
         if has_model_counterpart:
             first_os = next((v for v in os_vals if v.startswith("OS:")), os_vals[0])
             target_class = _class_from_os_type(first_os)
@@ -189,9 +541,6 @@ def seed_inventory_from_appendix(state: ScaffoldState) -> int:
             item = by_idd[ep_type]
             # Preserve workflow state but refresh metadata for consistency.
             item["target_class"] = target_class
-            item["base_class"] = item.get("base_class", "ModelObject") or "ModelObject"
-            item["folder_bucket"] = item.get("folder_bucket", "ModelObject") or "ModelObject"
-            item["output_dir"] = item.get("output_dir", f"src/epmodel/{item['folder_bucket']}") or f"src/epmodel/{item['folder_bucket']}"
             item["has_model_counterpart"] = has_model_counterpart
             continue
 
@@ -199,6 +548,7 @@ def seed_inventory_from_appendix(state: ScaffoldState) -> int:
             "idd_type": ep_type,
             "status": "pending",
             "target_class": target_class,
+            "intended_base_class": "ModelObject",
             "base_class": "ModelObject",
             "folder_bucket": "ModelObject",
             "output_dir": "src/epmodel/ModelObject",
@@ -210,6 +560,7 @@ def seed_inventory_from_appendix(state: ScaffoldState) -> int:
         added += 1
 
     state.save_inventory(inventory)
+    refresh_inventory_classification(state, print_summary=False)
     return added
 
 
@@ -694,6 +1045,21 @@ def cmd_status(state: ScaffoldState) -> int:
     return 0
 
 
+def cmd_reclassify(state: ScaffoldState) -> int:
+    stats = refresh_inventory_classification(state, print_summary=True)
+    if stats["updated"] == 0 and stats["unresolved_counterparts"] == 0:
+        print("No classification changes were needed.")
+    return 0
+
+
+def cmd_resolve_model_classes(state: ScaffoldState) -> int:
+    stats = refresh_inventory_classification(state, print_summary=True)
+    if stats["unresolved_counterparts"] > 0:
+        print(f"Resolver preflight blocked {stats['unresolved_counterparts']} counterpart rows.")
+        return 2
+    return 0
+
+
 def cmd_show(state: ScaffoldState, idd_type: str) -> int:
     inventory = state.load_inventory()
     idx = find_record_index(inventory, idd_type)
@@ -848,6 +1214,12 @@ def cmd_next(state: ScaffoldState, max_retries: int, max_minutes_per_type: int, 
     if auto_commit and not _is_clean_for_autocommit(state):
         print("Auto-commit aborted: working tree has pre-existing changes (excluding ignored paths).")
         return 1
+    stats = refresh_inventory_classification(state)
+    if stats["unresolved_counterparts"] > 0:
+        print(
+            f"Resolver preflight blocked {stats['unresolved_counterparts']} unresolved counterpart rows; "
+            "they are marked blocked in inventory."
+        )
 
     inventory = state.load_inventory()
     idx = first_pending_index(inventory)
@@ -876,6 +1248,12 @@ def cmd_run(state: ScaffoldState, max_retries: int, max_minutes_per_type: int, m
     if auto_commit and not _is_clean_for_autocommit(state):
         print("Auto-commit aborted: working tree has pre-existing changes (excluding ignored paths).")
         return 1
+    stats = refresh_inventory_classification(state)
+    if stats["unresolved_counterparts"] > 0:
+        print(
+            f"Resolver preflight blocked {stats['unresolved_counterparts']} unresolved counterpart rows; "
+            "they are marked blocked in inventory."
+        )
 
     processed = 0
     done_count = 0
@@ -1031,6 +1409,12 @@ def build_parser() -> argparse.ArgumentParser:
             0,
         )[1]
     )
+
+    resolve_p = sub.add_parser("resolve-model-classes", help="Resolve canonical openstudio::model class names and reclassify inventory")
+    resolve_p.set_defaults(func=lambda args, state: cmd_resolve_model_classes(state))
+
+    reclassify_p = sub.add_parser("reclassify", help="Recompute base/bucket/output_dir metadata for all inventory types")
+    reclassify_p.set_defaults(func=lambda args, state: cmd_reclassify(state))
 
     return parser
 

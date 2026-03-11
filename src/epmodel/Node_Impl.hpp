@@ -6,7 +6,7 @@
 #ifndef EPMODEL_NODE_IMPL_HPP
 #define EPMODEL_NODE_IMPL_HPP
 
-#include "StraightComponent_Impl.hpp"
+#include "StraightComponent/StraightComponent_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {

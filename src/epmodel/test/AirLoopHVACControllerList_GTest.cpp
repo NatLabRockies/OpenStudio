@@ -7,8 +7,8 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../AirLoopHVACControllerList.hpp"
-#include "../AirLoopHVACControllerList_Impl.hpp"
+#include "../ModelObject/AirLoopHVACControllerList.hpp"
+#include "../ModelObject/AirLoopHVACControllerList_Impl.hpp"
 #include "../ControllerOutdoorAir.hpp"
 
 using namespace openstudio::epmodel;
@@ -36,4 +36,12 @@ TEST_F(EPModelFixture, API_AirLoopHVACControllerList_SetControllerOutdoorAir) {
   optionalController = controllerList.optionalControllerOutdoorAir();
   ASSERT_TRUE(optionalController);
   EXPECT_EQ(controller2, *optionalController);
+}
+
+TEST_F(EPModelFixture, AirLoopHVACControllerList_ScalarAccessors_RoundTrip) {
+  Model model;
+  AirLoopHVACControllerList controllerList(model);
+
+  EXPECT_TRUE(controllerList.setName("Main OA Controller List"));
+  EXPECT_EQ("Main OA Controller List", controllerList.nameString());
 }
