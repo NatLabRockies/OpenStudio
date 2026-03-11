@@ -24,6 +24,25 @@ set(${target_name}_src
   ModelObject/WaterUseWell.hpp
   ModelObject/WaterUseWell_Impl.hpp
   ModelObject/WaterUseWell.cpp
+   ModelObject/PlantEquipmentOperationChillerHeaterChangeover.hpp
+   ModelObject/PlantEquipmentOperationChillerHeaterChangeover_Impl.hpp
+   ModelObject/PlantEquipmentOperationChillerHeaterChangeover.cpp
+   ModelObject/PlantEquipmentOperationComponentSetpoint.hpp
+   ModelObject/PlantEquipmentOperationComponentSetpoint_Impl.hpp
+   ModelObject/PlantEquipmentOperationComponentSetpoint.cpp
+   ModelObject/PlantEquipmentOperationThermalEnergyStorage.hpp
+   ModelObject/PlantEquipmentOperationThermalEnergyStorage_Impl.hpp
+   ModelObject/PlantEquipmentOperationThermalEnergyStorage.cpp
+   ModelObject/PlantEquipmentOperationSchemes.hpp
+   ModelObject/PlantEquipmentOperationSchemes_Impl.hpp
+   ModelObject/PlantEquipmentOperationSchemes.cpp
+   ModelObject/PlantEquipmentOperationSchemes_Impl.cpp
+   ModelObject/PlantEquipmentOperationUncontrolled.hpp
+   ModelObject/PlantEquipmentOperationUncontrolled_Impl.hpp
+   ModelObject/PlantEquipmentOperationUncontrolled.cpp
+   ModelObject/PlantEquipmentOperationUserDefined.hpp
+   ModelObject/PlantEquipmentOperationUserDefined_Impl.hpp
+   ModelObject/PlantEquipmentOperationUserDefined.cpp
   StraightComponent/AirConditionerVariableRefrigerantFlow.hpp
   StraightComponent/AirConditionerVariableRefrigerantFlow_Impl.hpp
   StraightComponent/AirConditionerVariableRefrigerantFlow.cpp
@@ -81,9 +100,12 @@ set(${target_name}_src
   StraightComponent/LoadProfilePlant.hpp
   StraightComponent/LoadProfilePlant_Impl.hpp
   StraightComponent/LoadProfilePlant.cpp
-  StraightComponent/PlantComponentTemperatureSource.hpp
-  StraightComponent/PlantComponentTemperatureSource_Impl.hpp
-  StraightComponent/PlantComponentTemperatureSource.cpp
+   StraightComponent/PlantComponentTemperatureSource.hpp
+   StraightComponent/PlantComponentTemperatureSource_Impl.hpp
+   StraightComponent/PlantComponentTemperatureSource.cpp
+   StraightComponent/PlantComponentUserDefined.hpp
+   StraightComponent/PlantComponentUserDefined_Impl.hpp
+   StraightComponent/PlantComponentUserDefined.cpp
   StraightComponent/SwimmingPoolIndoor.hpp
   StraightComponent/SwimmingPoolIndoor_Impl.hpp
   StraightComponent/SwimmingPoolIndoor.cpp
@@ -207,6 +229,15 @@ set(${target_name}_src
   ModelObject/CeilingInterzone.hpp
   ModelObject/CeilingInterzone_Impl.hpp
   ModelObject/CeilingInterzone.cpp
+   ModelObject/Roof.hpp
+   ModelObject/Roof_Impl.hpp
+   ModelObject/Roof.cpp
+   ModelObject/RoofIrrigation.hpp
+   ModelObject/RoofIrrigation_Impl.hpp
+   ModelObject/RoofIrrigation.cpp
+   ModelObject/RoofCeilingDetailed.hpp
+  ModelObject/RoofCeilingDetailed_Impl.hpp
+  ModelObject/RoofCeilingDetailed.cpp
   ModelObject/Door.hpp
   ModelObject/Door_Impl.hpp
   ModelObject/Door.cpp
@@ -738,22 +769,118 @@ set(${target_name}_src
    ModelObject/ZoneAirHeatBalanceAlgorithm.hpp
    ModelObject/ZoneAirHeatBalanceAlgorithm.cpp
    ModelObject/ZoneAirHeatBalanceAlgorithm_Impl.hpp
-  ModelObject/ZoneAirMassFlowConservation.hpp
-  ModelObject/ZoneAirMassFlowConservation.cpp
-  ModelObject/ZoneAirMassFlowConservation_Impl.hpp
-  ModelObject/ZoneContaminantSourceAndSinkCarbonDioxide.hpp
-  ModelObject/ZoneContaminantSourceAndSinkCarbonDioxide.cpp
-  ModelObject/ZoneContaminantSourceAndSinkCarbonDioxide_Impl.hpp
-  ModelObject/ZoneContaminantSourceAndSinkGenericConstant.hpp
-  ModelObject/ZoneContaminantSourceAndSinkGenericConstant.cpp
-  ModelObject/ZoneContaminantSourceAndSinkGenericConstant_Impl.hpp
-  ModelObject/ZoneContaminantSourceAndSinkGenericCutoffModel.hpp
-  ModelObject/ZoneContaminantSourceAndSinkGenericCutoffModel.cpp
-  ModelObject/ZoneContaminantSourceAndSinkGenericCutoffModel_Impl.hpp
-   ModelObject/ZoneBaseboardOutdoorTemperatureControlled.hpp
-   ModelObject/ZoneBaseboardOutdoorTemperatureControlled_Impl.hpp
-   ModelObject/ZoneBaseboardOutdoorTemperatureControlled.cpp
-   ModelObject/UtilityCostChargeBlock.hpp
+   ModelObject/ZoneAirMassFlowConservation.hpp
+   ModelObject/ZoneAirMassFlowConservation.cpp
+   ModelObject/ZoneAirMassFlowConservation_Impl.hpp
+  ModelObject/ZoneCoolTowerShower.hpp
+  ModelObject/ZoneCoolTowerShower_Impl.hpp
+  ModelObject/ZoneCoolTowerShower.cpp
+  ModelObject/ZoneCrossMixing.hpp
+  ModelObject/ZoneCrossMixing_Impl.hpp
+  ModelObject/ZoneCrossMixing.cpp
+  ModelObject/ZoneRefrigerationDoorMixing.hpp
+  ModelObject/ZoneRefrigerationDoorMixing_Impl.hpp
+  ModelObject/ZoneRefrigerationDoorMixing.cpp
+  ModelObject/RefrigerationSystem.hpp
+  ModelObject/RefrigerationSystem_Impl.hpp
+  ModelObject/RefrigerationSystem.cpp
+  ModelObject/RefrigerationCondenserCascade.hpp
+  ModelObject/RefrigerationCondenserCascade_Impl.hpp
+  ModelObject/RefrigerationCondenserCascade.cpp
+  ModelObject/RefrigerationSubcoolerLiquidSuction.hpp
+  ModelObject/RefrigerationSubcoolerLiquidSuction_Impl.hpp
+  ModelObject/RefrigerationSubcoolerLiquidSuction.cpp
+  ModelObject/RefrigerationWalkIn.hpp
+  ModelObject/RefrigerationWalkIn_Impl.hpp
+  ModelObject/RefrigerationWalkIn.cpp
+  ModelObject/RefrigerationTranscriticalSystem.hpp
+  ModelObject/RefrigerationTranscriticalSystem_Impl.hpp
+  ModelObject/RefrigerationTranscriticalSystem.cpp
+  ModelObject/ZoneThermalChimney.hpp
+  ModelObject/ZoneThermalChimney_Impl.hpp
+  ModelObject/ZoneThermalChimney.cpp
+  ModelObject/ZoneMixing.hpp
+  ModelObject/ZoneMixing_Impl.hpp
+  ModelObject/ZoneMixing.cpp
+   ModelObject/ZonePropertyLocalEnvironment.hpp
+   ModelObject/ZonePropertyLocalEnvironment_Impl.hpp
+   ModelObject/ZonePropertyLocalEnvironment.cpp
+   ModelObject/ZonePropertyUserViewFactorsBySurfaceName.hpp
+   ModelObject/ZonePropertyUserViewFactorsBySurfaceName_Impl.hpp
+   ModelObject/ZonePropertyUserViewFactorsBySurfaceName.cpp
+   ModelObject/ZoneEarthtube.hpp
+  ModelObject/ZoneEarthtube_Impl.hpp
+  ModelObject/ZoneEarthtube.cpp
+  ModelObject/ZoneEarthtubeParameters.hpp
+  ModelObject/ZoneEarthtubeParameters_Impl.hpp
+  ModelObject/ZoneEarthtubeParameters.cpp
+  ModelObject/ZoneGroup.hpp
+  ModelObject/ZoneGroup_Impl.hpp
+  ModelObject/ZoneGroup.cpp
+  ModelObject/ZoneControlContaminantController.hpp
+  ModelObject/ZoneControlContaminantController_Impl.hpp
+   ModelObject/ZoneControlContaminantController.cpp
+   ModelObject/ZoneControlHumidistat.hpp
+   ModelObject/ZoneControlHumidistat_Impl.hpp
+   ModelObject/ZoneControlHumidistat.cpp
+   ModelObject/ZoneControlThermostatOperativeTemperature.hpp
+   ModelObject/ZoneControlThermostatOperativeTemperature_Impl.hpp
+   ModelObject/ZoneControlThermostatOperativeTemperature.cpp
+    ModelObject/ZoneControlThermostatTemperatureAndHumidity.hpp
+    ModelObject/ZoneControlThermostatTemperatureAndHumidity_Impl.hpp
+    ModelObject/ZoneControlThermostatTemperatureAndHumidity.cpp
+    ModelObject/ZoneControlThermostatThermalComfort.hpp
+    ModelObject/ZoneControlThermostatThermalComfort_Impl.hpp
+    ModelObject/ZoneControlThermostatThermalComfort.cpp
+   ModelObject/ZoneContaminantSourceAndSinkCarbonDioxide.hpp
+   ModelObject/ZoneContaminantSourceAndSinkCarbonDioxide.cpp
+   ModelObject/ZoneContaminantSourceAndSinkCarbonDioxide_Impl.hpp
+   ModelObject/ZoneContaminantSourceAndSinkGenericConstant.hpp
+   ModelObject/ZoneContaminantSourceAndSinkGenericConstant.cpp
+   ModelObject/ZoneContaminantSourceAndSinkGenericConstant_Impl.hpp
+   ModelObject/ZoneContaminantSourceAndSinkGenericCutoffModel.hpp
+   ModelObject/ZoneContaminantSourceAndSinkGenericCutoffModel.cpp
+   ModelObject/ZoneContaminantSourceAndSinkGenericCutoffModel_Impl.hpp
+    ModelObject/ZoneContaminantSourceAndSinkGenericDecaySource.hpp
+    ModelObject/ZoneContaminantSourceAndSinkGenericDecaySource.cpp
+    ModelObject/ZoneContaminantSourceAndSinkGenericDecaySource_Impl.hpp
+    ModelObject/ZoneContaminantSourceAndSinkGenericDepositionRateSink.hpp
+    ModelObject/ZoneContaminantSourceAndSinkGenericDepositionRateSink.cpp
+    ModelObject/ZoneContaminantSourceAndSinkGenericDepositionRateSink_Impl.hpp
+  ModelObject/ZoneBaseboardOutdoorTemperatureControlled.hpp
+  ModelObject/ZoneBaseboardOutdoorTemperatureControlled_Impl.hpp
+  ModelObject/ZoneBaseboardOutdoorTemperatureControlled.cpp
+  ModelObject/ZoneHVACBaseboardRadiantConvectiveSteam.hpp
+  ModelObject/ZoneHVACBaseboardRadiantConvectiveSteam_Impl.hpp
+  ModelObject/ZoneHVACBaseboardRadiantConvectiveSteam.cpp
+   ModelObject/ZoneHVACBaseboardRadiantConvectiveSteamDesign.hpp
+   ModelObject/ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl.hpp
+   ModelObject/ZoneHVACBaseboardRadiantConvectiveSteamDesign.cpp
+   ModelObject/ZoneHVACExhaustControl.hpp
+   ModelObject/ZoneHVACExhaustControl_Impl.hpp
+   ModelObject/ZoneHVACExhaustControl.cpp
+  ModelObject/ZoneHVACHybridUnitaryHVAC.hpp
+  ModelObject/ZoneHVACHybridUnitaryHVAC_Impl.hpp
+  ModelObject/ZoneHVACHybridUnitaryHVAC.cpp
+  ModelObject/ZoneHVACForcedAirUserDefined.hpp
+  ModelObject/ZoneHVACForcedAirUserDefined_Impl.hpp
+  ModelObject/ZoneHVACForcedAirUserDefined.cpp
+   ModelObject/ZoneHVACOutdoorAirUnit.hpp
+   ModelObject/ZoneHVACOutdoorAirUnit_Impl.hpp
+   ModelObject/ZoneHVACOutdoorAirUnit.cpp
+   ModelObject/ZoneHVACOutdoorAirUnitEquipmentList.hpp
+   ModelObject/ZoneHVACOutdoorAirUnitEquipmentList_Impl.hpp
+   ModelObject/ZoneHVACOutdoorAirUnitEquipmentList.cpp
+   ModelObject/ZoneHVACVentilatedSlab.hpp
+   ModelObject/ZoneHVACVentilatedSlab_Impl.hpp
+   ModelObject/ZoneHVACVentilatedSlab.cpp
+   ModelObject/ZoneHVACWindowAirConditioner.hpp
+   ModelObject/ZoneHVACWindowAirConditioner_Impl.hpp
+   ModelObject/ZoneHVACWindowAirConditioner.cpp
+   ModelObject/ZoneHVACVentilatedSlabSlabGroup.hpp
+   ModelObject/ZoneHVACVentilatedSlabSlabGroup_Impl.hpp
+   ModelObject/ZoneHVACVentilatedSlabSlabGroup.cpp
+  ModelObject/UtilityCostChargeBlock.hpp
    ModelObject/UtilityCostChargeBlock_Impl.hpp
    ModelObject/UtilityCostChargeBlock.cpp
     ModelObject/UtilityCostChargeSimple.hpp
@@ -864,10 +991,16 @@ set(${target_name}_src
   ResourceObject/SpaceType.hpp
   ResourceObject/SpaceType_Impl.hpp
   ResourceObject/SpaceType.cpp
-  ResourceObject/ShadingControl.hpp
-  ResourceObject/ShadingControl_Impl.hpp
-  ResourceObject/ShadingControl.cpp
-  ResourceObject/SurfacePropertyOtherSideCoefficients.hpp
+   ResourceObject/ShadingControl.hpp
+   ResourceObject/ShadingControl_Impl.hpp
+   ResourceObject/ShadingControl.cpp
+   ResourceObject/PythonPluginInstance.hpp
+   ResourceObject/PythonPluginInstance_Impl.hpp
+   ResourceObject/PythonPluginInstance.cpp
+    ResourceObject/PythonPluginSearchPaths.hpp
+    ResourceObject/PythonPluginSearchPaths_Impl.hpp
+    ResourceObject/PythonPluginSearchPaths.cpp
+   ResourceObject/SurfacePropertyOtherSideCoefficients.hpp
   ResourceObject/SurfacePropertyOtherSideCoefficients_Impl.hpp
   ResourceObject/SurfacePropertyOtherSideCoefficients.cpp
   ResourceObject/SurfacePropertyOtherSideConditionsModel.hpp
@@ -921,6 +1054,15 @@ set(${target_name}_src
   SpaceLoadInstance/WaterUseEquipment.hpp
   SpaceLoadInstance/WaterUseEquipment_Impl.hpp
   SpaceLoadInstance/WaterUseEquipment.cpp
+  SpaceLoad/SpaceInfiltrationDesignFlowRate.hpp
+  SpaceLoad/SpaceInfiltrationDesignFlowRate_Impl.hpp
+  SpaceLoad/SpaceInfiltrationDesignFlowRate.cpp
+  SpaceLoad/SpaceInfiltrationFlowCoefficient.hpp
+  SpaceLoad/SpaceInfiltrationFlowCoefficient_Impl.hpp
+  SpaceLoad/SpaceInfiltrationFlowCoefficient.cpp
+  SpaceLoad/SpaceInfiltrationEffectiveLeakageArea.hpp
+  SpaceLoad/SpaceInfiltrationEffectiveLeakageArea_Impl.hpp
+  SpaceLoad/SpaceInfiltrationEffectiveLeakageArea.cpp
   OpaqueMaterial/StandardOpaqueMaterial.hpp
   OpaqueMaterial/StandardOpaqueMaterial_Impl.hpp
   OpaqueMaterial/StandardOpaqueMaterial.cpp
@@ -942,6 +1084,9 @@ set(${target_name}_src
   ModelObject/AirLoopHVACMixer.hpp
   ModelObject/AirLoopHVACMixer_Impl.hpp
   ModelObject/AirLoopHVACMixer.cpp
+  ModelObject/PumpVariableSpeedCondensate.hpp
+  ModelObject/PumpVariableSpeedCondensate_Impl.hpp
+  ModelObject/PumpVariableSpeedCondensate.cpp
   ModelObject/AirLoopHVACSplitter.hpp
   ModelObject/AirLoopHVACSplitter_Impl.hpp
   ModelObject/AirLoopHVACSplitter.cpp
@@ -1023,6 +1168,9 @@ set(${target_name}_src
   Thermostat/ThermostatSetpointDualSetpoint.hpp
   Thermostat/ThermostatSetpointDualSetpoint_Impl.hpp
   Thermostat/ThermostatSetpointDualSetpoint.cpp
+  Thermostat/ZoneControlThermostatStagedDualSetpoint.hpp
+  Thermostat/ZoneControlThermostatStagedDualSetpoint_Impl.hpp
+  Thermostat/ZoneControlThermostatStagedDualSetpoint.cpp
   ModelObject/GroundHeatTransferSlabAutoGrid.hpp
   ModelObject/GroundHeatTransferSlabAutoGrid_Impl.hpp
   ModelObject/GroundHeatTransferSlabAutoGrid.cpp
@@ -1059,26 +1207,38 @@ set(${target_name}_src
   ModelObject/SiteGroundDomainBasement.hpp
   ModelObject/SiteGroundDomainBasement_Impl.hpp
   ModelObject/SiteGroundDomainBasement.cpp
-  ModelObject/SiteGroundTemperatureDeep.hpp
-  ModelObject/SiteGroundTemperatureDeep_Impl.hpp
-  ModelObject/SiteGroundTemperatureDeep.cpp
-  ModelObject/SiteGroundTemperatureFCfactorMethod.hpp
-  ModelObject/SiteGroundTemperatureFCfactorMethod_Impl.hpp
-  ModelObject/SiteGroundTemperatureFCfactorMethod.cpp
-  ModelObject/SiteGroundTemperatureShallow.hpp
-  ModelObject/SiteGroundTemperatureShallow_Impl.hpp
-  ModelObject/SiteGroundTemperatureShallow.cpp
-  ModelObject/SiteGroundTemperatureUndisturbedFiniteDifference.hpp
-  ModelObject/SiteGroundTemperatureUndisturbedFiniteDifference_Impl.hpp
-  ModelObject/SiteGroundTemperatureUndisturbedFiniteDifference.cpp
-  ModelObject/SiteGroundTemperatureUndisturbedKusudaAchenbach.hpp
-  ModelObject/SiteGroundTemperatureUndisturbedKusudaAchenbach_Impl.hpp
-  ModelObject/SiteGroundTemperatureUndisturbedKusudaAchenbach.cpp
-  ModelObject/SiteGroundTemperatureUndisturbedXing.hpp
-  ModelObject/SiteGroundTemperatureUndisturbedXing_Impl.hpp
-  ModelObject/SiteGroundTemperatureUndisturbedXing.cpp
-  ModelObject/SitePrecipitation.hpp
-  ModelObject/SitePrecipitation_Impl.hpp
+   ModelObject/SiteGroundDomainSlab.hpp
+   ModelObject/SiteGroundDomainSlab_Impl.hpp
+   ModelObject/SiteGroundDomainSlab.cpp
+   ModelObject/SiteGroundTemperatureDeep.hpp
+   ModelObject/SiteGroundTemperatureDeep_Impl.hpp
+   ModelObject/SiteGroundTemperatureDeep.cpp
+   ModelObject/SiteGroundTemperatureFCfactorMethod.hpp
+   ModelObject/SiteGroundTemperatureFCfactorMethod_Impl.hpp
+   ModelObject/SiteGroundTemperatureFCfactorMethod.cpp
+    ModelObject/SiteGroundTemperatureShallow.hpp
+    ModelObject/SiteGroundTemperatureShallow_Impl.hpp
+    ModelObject/SiteGroundTemperatureShallow.cpp
+    ModelObject/SiteGroundTemperatureBuildingSurface.hpp
+    ModelObject/SiteGroundTemperatureBuildingSurface_Impl.hpp
+    ModelObject/SiteGroundTemperatureBuildingSurface.cpp
+    ModelObject/SiteGroundTemperatureUndisturbedFiniteDifference.hpp
+   ModelObject/SiteGroundTemperatureUndisturbedFiniteDifference_Impl.hpp
+   ModelObject/SiteGroundTemperatureUndisturbedFiniteDifference.cpp
+   ModelObject/SiteGroundTemperatureUndisturbedKusudaAchenbach.hpp
+   ModelObject/SiteGroundTemperatureUndisturbedKusudaAchenbach_Impl.hpp
+   ModelObject/SiteGroundTemperatureUndisturbedKusudaAchenbach.cpp
+   ModelObject/SiteGroundTemperatureUndisturbedXing.hpp
+   ModelObject/SiteGroundTemperatureUndisturbedXing_Impl.hpp
+   ModelObject/SiteGroundTemperatureUndisturbedXing.cpp
+   ModelObject/SiteGroundReflectance.hpp
+   ModelObject/SiteGroundReflectance_Impl.hpp
+   ModelObject/SiteGroundReflectance.cpp
+   ModelObject/SiteGroundReflectanceSnowModifier.hpp
+   ModelObject/SiteGroundReflectanceSnowModifier_Impl.hpp
+   ModelObject/SiteGroundReflectanceSnowModifier.cpp
+   ModelObject/SitePrecipitation.hpp
+   ModelObject/SitePrecipitation_Impl.hpp
   ModelObject/SitePrecipitation.cpp
   ModelObject/SizingPlant.hpp
   ModelObject/SizingPlant_Impl.hpp
@@ -1185,12 +1345,81 @@ set(${target_name}_src
   ZoneHVACComponent/AirLoopHVACUnitarySystem.hpp
   ZoneHVACComponent/AirLoopHVACUnitarySystem_Impl.hpp
   ZoneHVACComponent/AirLoopHVACUnitarySystem.cpp
+    ZoneHVACComponent/ZoneHVACBaseboardConvectiveElectric.hpp
+    ZoneHVACComponent/ZoneHVACBaseboardConvectiveElectric_Impl.hpp
+    ZoneHVACComponent/ZoneHVACBaseboardConvectiveElectric.cpp
+    ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWater.hpp
+    ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWater_Impl.hpp
+    ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWater.cpp
+    ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWaterDesign.hpp
+    ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWaterDesign_Impl.hpp
+    ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWaterDesign.cpp
+    ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater.hpp
+    ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater_Impl.hpp
+    ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater.cpp
+   ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveElectric.hpp
+  ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveElectric_Impl.hpp
+  ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveElectric.cpp
+  ZoneHVACComponent/ZoneHVACBaseboardConvectiveWater.hpp
+  ZoneHVACComponent/ZoneHVACBaseboardConvectiveWater_Impl.hpp
+  ZoneHVACComponent/ZoneHVACBaseboardConvectiveWater.cpp
   ZoneHVACComponent/WaterHeaterHeatPump.hpp
   ZoneHVACComponent/WaterHeaterHeatPump_Impl.hpp
   ZoneHVACComponent/WaterHeaterHeatPump.cpp
-  ZoneHVACComponent/WaterHeaterHeatPumpWrappedCondenser.hpp
-  ZoneHVACComponent/WaterHeaterHeatPumpWrappedCondenser_Impl.hpp
-  ZoneHVACComponent/WaterHeaterHeatPumpWrappedCondenser.cpp
+   ZoneHVACComponent/WaterHeaterHeatPumpWrappedCondenser.hpp
+   ZoneHVACComponent/WaterHeaterHeatPumpWrappedCondenser_Impl.hpp
+   ZoneHVACComponent/WaterHeaterHeatPumpWrappedCondenser.cpp
+  ZoneHVACComponent/ZoneHVACWaterToAirHeatPump.hpp
+  ZoneHVACComponent/ZoneHVACWaterToAirHeatPump_Impl.hpp
+  ZoneHVACComponent/ZoneHVACWaterToAirHeatPump.cpp
+    ZoneHVACComponent/ZoneHVACDehumidifierDX.hpp
+    ZoneHVACComponent/ZoneHVACDehumidifierDX_Impl.hpp
+    ZoneHVACComponent/ZoneHVACDehumidifierDX.cpp
+  ZoneHVACComponent/ZoneHVACEnergyRecoveryVentilator.hpp
+  ZoneHVACComponent/ZoneHVACEnergyRecoveryVentilator_Impl.hpp
+  ZoneHVACComponent/ZoneHVACEnergyRecoveryVentilator.cpp
+  ZoneHVACComponent/ZoneHVACEvaporativeCoolerUnit.hpp
+  ZoneHVACComponent/ZoneHVACEvaporativeCoolerUnit_Impl.hpp
+  ZoneHVACComponent/ZoneHVACEvaporativeCoolerUnit.cpp
+  ZoneHVACComponent/ZoneHVACUnitHeater.hpp
+  ZoneHVACComponent/ZoneHVACUnitHeater_Impl.hpp
+  ZoneHVACComponent/ZoneHVACUnitHeater.cpp
+  ZoneHVACComponent/RefrigerationAirChiller.hpp
+  ZoneHVACComponent/RefrigerationAirChiller_Impl.hpp
+  ZoneHVACComponent/RefrigerationAirChiller.cpp
+  ZoneHVACComponent/ZoneVentilationWindandStackOpenArea.hpp
+  ZoneHVACComponent/ZoneVentilationWindandStackOpenArea_Impl.hpp
+  ZoneHVACComponent/ZoneVentilationWindandStackOpenArea.cpp
+  ZoneHVACComponent/ZoneHVACUnitVentilator.hpp
+  ZoneHVACComponent/ZoneHVACUnitVentilator_Impl.hpp
+  ZoneHVACComponent/ZoneHVACUnitVentilator.cpp
+  ZoneHVACComponent/ZoneHVACFourPipeFanCoil.hpp
+  ZoneHVACComponent/ZoneHVACFourPipeFanCoil_Impl.hpp
+  ZoneHVACComponent/ZoneHVACFourPipeFanCoil.cpp
+   ZoneHVACComponent/ZoneHVACHighTemperatureRadiant.hpp
+    ZoneHVACComponent/ZoneHVACHighTemperatureRadiant_Impl.hpp
+    ZoneHVACComponent/ZoneHVACHighTemperatureRadiant.cpp
+    ZoneHVACComponent/ZoneHVACPackagedTerminalAirConditioner.hpp
+     ZoneHVACComponent/ZoneHVACPackagedTerminalAirConditioner_Impl.hpp
+     ZoneHVACComponent/ZoneHVACPackagedTerminalAirConditioner.cpp
+    ZoneHVACComponent/ZoneHVACPackagedTerminalHeatPump.hpp
+     ZoneHVACComponent/ZoneHVACPackagedTerminalHeatPump_Impl.hpp
+     ZoneHVACComponent/ZoneHVACPackagedTerminalHeatPump.cpp
+    ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp
+     ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl.hpp
+     ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow.cpp
+   ZoneHVACComponent/ZoneHVACIdealLoadsAirSystem.hpp
+   ZoneHVACComponent/ZoneHVACIdealLoadsAirSystem_Impl.hpp
+   ZoneHVACComponent/ZoneHVACIdealLoadsAirSystem.cpp
+     ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow.hpp
+     ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow_Impl.hpp
+     ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow.cpp
+     ZoneHVACComponent/ZoneHVACLowTempRadiantVarFlow.hpp
+     ZoneHVACComponent/ZoneHVACLowTempRadiantVarFlow_Impl.hpp
+     ZoneHVACComponent/ZoneHVACLowTempRadiantVarFlow.cpp
+     ZoneHVACComponent/ZoneHVACLowTemperatureRadiantElectric.hpp
+    ZoneHVACComponent/ZoneHVACLowTemperatureRadiantElectric_Impl.hpp
+    ZoneHVACComponent/ZoneHVACLowTemperatureRadiantElectric.cpp
   ModelObject/FanPerformanceNightVentilation.hpp
   ModelObject/FanPerformanceNightVentilation_Impl.hpp
   ModelObject/FanPerformanceNightVentilation.cpp
@@ -1284,18 +1513,40 @@ set(${target_name}_src
   HVACComponent/AirLoopHVACOutdoorAirSystem.hpp
   HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp
   HVACComponent/AirLoopHVACOutdoorAirSystem.cpp
-  ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.hpp
-  ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp
-  ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.cpp
-  ParentObject/ControllerOutdoorAir.hpp
-  ParentObject/ControllerOutdoorAir_Impl.hpp
-  ParentObject/ControllerOutdoorAir.cpp
-  ParentObject/ElectricLoadCenterDistribution.hpp
-  ParentObject/ElectricLoadCenterDistribution_Impl.hpp
+   ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.hpp
+   ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp
+   ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.cpp
+   ParentObject/ControllerOutdoorAir.hpp
+   ParentObject/ControllerOutdoorAir_Impl.hpp
+   ParentObject/ControllerOutdoorAir.cpp
+   ParentObject/ZoneHVACEnergyRecoveryVentilatorController.hpp
+   ParentObject/ZoneHVACEnergyRecoveryVentilatorController_Impl.hpp
+   ParentObject/ZoneHVACEnergyRecoveryVentilatorController.cpp
+   ParentObject/ElectricLoadCenterDistribution.hpp
+   ParentObject/ElectricLoadCenterDistribution_Impl.hpp
   ParentObject/ElectricLoadCenterDistribution.cpp
   ParentObject/ElectricLoadCenterStorageConverter.hpp
   ParentObject/ElectricLoadCenterStorageConverter_Impl.hpp
   ParentObject/ElectricLoadCenterStorageConverter.cpp
+  ParentObject/RefrigerationCase.hpp
+  ParentObject/RefrigerationCase_Impl.hpp
+  ParentObject/RefrigerationCase_Impl.cpp
+  ParentObject/RefrigerationCase.cpp
+  ParentObject/RefrigerationCondenserAirCooled.hpp
+  ParentObject/RefrigerationCondenserAirCooled_Impl.hpp
+  ParentObject/RefrigerationCondenserAirCooled.cpp
+   ParentObject/RefrigerationCondenserEvaporativeCooled.hpp
+   ParentObject/RefrigerationCondenserEvaporativeCooled_Impl.hpp
+   ParentObject/RefrigerationCondenserEvaporativeCooled.cpp
+   ParentObject/RefrigerationGasCoolerAirCooled.hpp
+   ParentObject/RefrigerationGasCoolerAirCooled_Impl.hpp
+   ParentObject/RefrigerationGasCoolerAirCooled.cpp
+   ParentObject/RefrigerationCompressor.hpp
+   ParentObject/RefrigerationCompressor_Impl.hpp
+   ParentObject/RefrigerationCompressor.cpp
+   ParentObject/RefrigerationSecondarySystem.hpp
+   ParentObject/RefrigerationSecondarySystem_Impl.hpp
+   ParentObject/RefrigerationSecondarySystem.cpp
   Inverter/ElectricLoadCenterInverterLookUpTable.hpp
   Inverter/ElectricLoadCenterInverterLookUpTable_Impl.hpp
   Inverter/ElectricLoadCenterInverterLookUpTable.cpp
@@ -1437,6 +1688,15 @@ set(${target_name}_src
   ModelObject/OutputSurfacesDrawing.hpp
   ModelObject/OutputSurfacesDrawing_Impl.hpp
   ModelObject/OutputSurfacesDrawing.cpp
+  ModelObject/PythonPluginVariable.hpp
+  ModelObject/PythonPluginVariable_Impl.hpp
+  ModelObject/PythonPluginVariable.cpp
+  ModelObject/PythonPluginOutputVariable.hpp
+  ModelObject/PythonPluginOutputVariable_Impl.hpp
+  ModelObject/PythonPluginOutputVariable.cpp
+  ModelObject/PythonPluginTrendVariable.hpp
+  ModelObject/PythonPluginTrendVariable_Impl.hpp
+  ModelObject/PythonPluginTrendVariable.cpp
   ModelObject/EnergyManagementSystemSensor.hpp
   ModelObject/EnergyManagementSystemSensor_Impl.hpp
   ModelObject/EnergyManagementSystemSensor.cpp
@@ -1509,12 +1769,27 @@ set(${target_name}_src
   ModelObject/RoomAirSettingsThreeNodeDisplacementVentilation.hpp
   ModelObject/RoomAirSettingsThreeNodeDisplacementVentilation_Impl.hpp
   ModelObject/RoomAirSettingsThreeNodeDisplacementVentilation.cpp
-  ModelObject/RoomAirSettingsUnderFloorAirDistributionExterior.hpp
-  ModelObject/RoomAirSettingsUnderFloorAirDistributionExterior_Impl.hpp
-  ModelObject/RoomAirSettingsUnderFloorAirDistributionExterior.cpp
-  ModelObject/RoomAirSettingsUnderFloorAirDistributionInterior.hpp
-  ModelObject/RoomAirSettingsUnderFloorAirDistributionInterior_Impl.hpp
-  ModelObject/RoomAirSettingsUnderFloorAirDistributionInterior.cpp
+   ModelObject/RoomAirSettingsUnderFloorAirDistributionExterior.hpp
+   ModelObject/RoomAirSettingsUnderFloorAirDistributionExterior_Impl.hpp
+   ModelObject/RoomAirSettingsUnderFloorAirDistributionExterior.cpp
+   ModelObject/RoomAirSettingsUnderFloorAirDistributionInterior.hpp
+   ModelObject/RoomAirSettingsUnderFloorAirDistributionInterior_Impl.hpp
+   ModelObject/RoomAirSettingsUnderFloorAirDistributionInterior.cpp
+    ModelObject/RoomAirNode.hpp
+    ModelObject/RoomAirNode_Impl.hpp
+    ModelObject/RoomAirNode.cpp
+     ModelObject/RoomAirNodeAirflowNetwork.hpp
+     ModelObject/RoomAirNodeAirflowNetwork_Impl.hpp
+     ModelObject/RoomAirNodeAirflowNetwork.cpp
+      ModelObject/RoomAirNodeAirflowNetworkHVACEquipment.hpp
+     ModelObject/RoomAirNodeAirflowNetworkHVACEquipment_Impl.hpp
+      ModelObject/RoomAirNodeAirflowNetworkHVACEquipment.cpp
+    ModelObject/RoomAirNodeAirflowNetworkAdjacentSurfaceList.hpp
+    ModelObject/RoomAirNodeAirflowNetworkAdjacentSurfaceList_Impl.hpp
+    ModelObject/RoomAirNodeAirflowNetworkAdjacentSurfaceList.cpp
+    ModelObject/RoomAirNodeAirflowNetworkInternalGains.hpp
+    ModelObject/RoomAirNodeAirflowNetworkInternalGains_Impl.hpp
+    ModelObject/RoomAirNodeAirflowNetworkInternalGains.cpp
   ModelObject/RunPeriodControlDaylightSavingTime.hpp
   ModelObject/RunPeriodControlDaylightSavingTime_Impl.hpp
   ModelObject/RunPeriodControlDaylightSavingTime.cpp
@@ -1617,6 +1892,12 @@ set(${target_name}_src
   StraightComponent/BoilerSteam.hpp
   StraightComponent/BoilerSteam_Impl.hpp
   StraightComponent/BoilerSteam.cpp
+  StraightComponent/RefrigerationCompressorRack.hpp
+  StraightComponent/RefrigerationCompressorRack_Impl.hpp
+  StraightComponent/RefrigerationCompressorRack.cpp
+  StraightComponent/RefrigerationCondenserWaterCooled.hpp
+  StraightComponent/RefrigerationCondenserWaterCooled_Impl.hpp
+  StraightComponent/RefrigerationCondenserWaterCooled.cpp
   StraightComponent/DistrictCooling.hpp
   StraightComponent/DistrictCooling_Impl.hpp
   StraightComponent/DistrictCooling.cpp
@@ -1653,6 +1934,12 @@ set(${target_name}_src
   ModelObject/PipingSystemUndergroundPipeSegment.hpp
   ModelObject/PipingSystemUndergroundPipeSegment_Impl.hpp
   ModelObject/PipingSystemUndergroundPipeSegment.cpp
+  StraightComponent/PumpConstantSpeed.hpp
+  StraightComponent/PumpConstantSpeed_Impl.hpp
+  StraightComponent/PumpConstantSpeed.cpp
+  StraightComponent/PumpVariableSpeed.hpp
+  StraightComponent/PumpVariableSpeed_Impl.hpp
+  StraightComponent/PumpVariableSpeed.cpp
   StraightComponent/HeaderedPumpsConstantSpeed.hpp
   StraightComponent/HeaderedPumpsConstantSpeed_Impl.hpp
   StraightComponent/HeaderedPumpsConstantSpeed.cpp
@@ -1881,9 +2168,36 @@ set(${target_name}_src
   Loop/PlantLoop.hpp
   Loop/PlantLoop_Impl.hpp
   Loop/PlantLoop.cpp
-  AvailabilityManager.hpp
-  AvailabilityManager_Impl.hpp
-  AvailabilityManager.cpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationCoolingLoad.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationCoolingLoad_Impl.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationCoolingLoad.cpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationHeatingLoad.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationHeatingLoad_Impl.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationHeatingLoad.cpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDewpoint.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDewpoint_Impl.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDewpoint.cpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDewpointDifference.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDewpointDifference_Impl.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDewpointDifference.cpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDryBulbDifference.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDryBulbDifference_Impl.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDryBulbDifference.cpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorWetBulbDifference.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorWetBulbDifference_Impl.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorWetBulbDifference.cpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDryBulb.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDryBulb_Impl.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDryBulb.cpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorRelativeHumidity.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorRelativeHumidity_Impl.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorRelativeHumidity.cpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorWetBulb.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorWetBulb_Impl.hpp
+  PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorWetBulb.cpp
+  AvailabilityManager/AvailabilityManager.hpp
+  AvailabilityManager/AvailabilityManager_Impl.hpp
+  AvailabilityManager/AvailabilityManager.cpp
   AvailabilityManagerAssignmentList.hpp
   AvailabilityManagerAssignmentList_Impl.hpp
   AvailabilityManagerAssignmentList.cpp
@@ -2184,13 +2498,13 @@ set(${target_name}_src
   ZoneHVACEquipmentConnections.hpp
   ZoneHVACEquipmentConnections_Impl.hpp
   ZoneHVACEquipmentConnections.cpp
-  ZoneHVACEquipmentList.hpp
-  ZoneHVACEquipmentList_Impl.hpp
-  ZoneHVACEquipmentList.cpp
+  ModelObject/ZoneHVACEquipmentList.hpp
+  ModelObject/ZoneHVACEquipmentList_Impl.hpp
+  ModelObject/ZoneHVACEquipmentList.cpp
   Splitter.hpp
   Splitter.cpp
-  Mixer.hpp
-  Mixer.cpp
+  Mixer/Mixer.hpp
+  Mixer/Mixer.cpp
   Loop/Loop.hpp
   Loop/Loop_Impl.hpp
   Loop_Impl.cpp
@@ -2224,6 +2538,21 @@ set(${target_name}_test_src
   test/EPModelFixture.hpp
   test/AirLoopHVAC_GTest.cpp
   test/PlantLoop_GTest.cpp
+  test/PlantEquipmentOperationCoolingLoad_GTest.cpp
+  test/PlantEquipmentOperationHeatingLoad_GTest.cpp
+  test/PlantEquipmentOperationOutdoorDewpoint_GTest.cpp
+  test/PlantEquipmentOperationOutdoorDewpointDifference_GTest.cpp
+  test/PlantEquipmentOperationOutdoorDryBulbDifference_GTest.cpp
+  test/PlantEquipmentOperationOutdoorWetBulbDifference_GTest.cpp
+  test/PlantEquipmentOperationOutdoorDryBulb_GTest.cpp
+  test/PlantEquipmentOperationOutdoorRelativeHumidity_GTest.cpp
+  test/PlantEquipmentOperationOutdoorWetBulb_GTest.cpp
+  test/PlantEquipmentOperationChillerHeaterChangeover_GTest.cpp
+  test/PlantEquipmentOperationComponentSetpoint_GTest.cpp
+   test/PlantEquipmentOperationThermalEnergyStorage_GTest.cpp
+   test/PlantEquipmentOperationSchemes_GTest.cpp
+  test/PlantEquipmentOperationUncontrolled_GTest.cpp
+  test/PlantEquipmentOperationUserDefined_GTest.cpp
   test/AirLoopHVACSupplyPath_GTest.cpp
   test/AirLoopHVACControllerList_GTest.cpp
   test/DemandManagerElectricEquipment_GTest.cpp
@@ -2343,6 +2672,9 @@ set(${target_name}_test_src
   test/AirLoopHVACExhaustSystem_GTest.cpp
   test/AirLoopHVACMixer_GTest.cpp
   test/AirLoopHVACSplitter_GTest.cpp
+  test/Roof_GTest.cpp
+  test/RoofIrrigation_GTest.cpp
+  test/RoofCeilingDetailed_GTest.cpp
   test/ThermalStorageChilledWaterMixed_GTest.cpp
   test/ThermalStorageChilledWaterStratified_GTest.cpp
   test/ThermalStorageHotWaterStratified_GTest.cpp
@@ -2385,9 +2717,13 @@ set(${target_name}_test_src
   test/GroundHeatTransferSlabYFACE_GTest.cpp
   test/GroundHeatTransferSlabZFACE_GTest.cpp
   test/SiteGroundDomainBasement_GTest.cpp
+  test/SiteGroundDomainSlab_GTest.cpp
+  test/SiteGroundReflectance_GTest.cpp
+  test/SiteGroundReflectanceSnowModifier_GTest.cpp
   test/SiteGroundTemperatureDeep_GTest.cpp
   test/SiteGroundTemperatureFCfactorMethod_GTest.cpp
   test/SiteGroundTemperatureShallow_GTest.cpp
+  test/SiteGroundTemperatureBuildingSurface_GTest.cpp
   test/SiteGroundTemperatureUndisturbedFiniteDifference_GTest.cpp
   test/SiteGroundTemperatureUndisturbedKusudaAchenbach_GTest.cpp
   test/SiteGroundTemperatureUndisturbedXing_GTest.cpp
@@ -2474,7 +2810,12 @@ set(${target_name}_test_src
   test/RoomAirSettingsThreeNodeDisplacementVentilation_GTest.cpp
   test/RoomAirSettingsUnderFloorAirDistributionExterior_GTest.cpp
   test/RoomAirSettingsUnderFloorAirDistributionInterior_GTest.cpp
-  test/TemperingValve_GTest.cpp
+     test/RoomAirNode_GTest.cpp
+      test/RoomAirNodeAirflowNetwork_GTest.cpp
+      test/RoomAirNodeAirflowNetworkHVACEquipment_GTest.cpp
+      test/RoomAirNodeAirflowNetworkAdjacentSurfaceList_GTest.cpp
+      test/RoomAirNodeAirflowNetworkInternalGains_GTest.cpp
+   test/TemperingValve_GTest.cpp
   test/AirLoopHVACReturnPath_GTest.cpp
   test/AirLoopHVACReturnPlenum_GTest.cpp
   test/AirLoopHVACSupplyPlenum_GTest.cpp
@@ -2627,6 +2968,9 @@ set(${target_name}_test_src
   test/PipingSystemUndergroundDomain_GTest.cpp
   test/PipingSystemUndergroundPipeCircuit_GTest.cpp
   test/PipingSystemUndergroundPipeSegment_GTest.cpp
+  test/PumpConstantSpeed_GTest.cpp
+  test/PumpVariableSpeed_GTest.cpp
+  test/PumpVariableSpeedCondensate_GTest.cpp
   test/HeaderedPumpsConstantSpeed_GTest.cpp
   test/HeaderedPumpsVariableSpeed_GTest.cpp
   test/HumidifierSteamElectric_GTest.cpp
@@ -2708,6 +3052,37 @@ set(${target_name}_test_src
   test/ZoneHVACAirDistributionUnit_GTest.cpp
   test/ZoneHVACEquipmentConnections_GTest.cpp
   test/ZoneHVACEquipmentList_GTest.cpp
+  test/ZoneHVACExhaustControl_GTest.cpp
+  test/ZoneHVACHybridUnitaryHVAC_GTest.cpp
+  test/ZoneHVACForcedAirUserDefined_GTest.cpp
+  test/ZoneHVACOutdoorAirUnit_GTest.cpp
+  test/ZoneHVACOutdoorAirUnitEquipmentList_GTest.cpp
+   test/ZoneHVACVentilatedSlab_GTest.cpp
+   test/ZoneHVACVentilatedSlabSlabGroup_GTest.cpp
+   test/ZoneHVACBaseboardConvectiveElectric_GTest.cpp
+  test/ZoneHVACBaseboardConvectiveWater_GTest.cpp
+    test/ZoneHVACBaseboardRadiantConvectiveElectric_GTest.cpp
+    test/ZoneHVACBaseboardRadiantConvectiveWater_GTest.cpp
+    test/ZoneHVACCoolingPanelRadiantConvectiveWater_GTest.cpp
+    test/ZoneHVACBaseboardRadiantConvectiveWaterDesign_GTest.cpp
+    test/ZoneHVACBaseboardRadiantConvectiveSteam_GTest.cpp
+  test/ZoneHVACDehumidifierDX_GTest.cpp
+   test/ZoneHVACEnergyRecoveryVentilator_GTest.cpp
+   test/ZoneHVACEvaporativeCoolerUnit_GTest.cpp
+    test/ZoneHVACUnitHeater_GTest.cpp
+    test/ZoneVentilationWindandStackOpenArea_GTest.cpp
+    test/ZoneHVACUnitVentilator_GTest.cpp
+   test/ZoneHVACFourPipeFanCoil_GTest.cpp
+  test/ZoneHVACHighTemperatureRadiant_GTest.cpp
+  test/ZoneHVACPackagedTerminalAirConditioner_GTest.cpp
+  test/ZoneHVACPackagedTerminalHeatPump_GTest.cpp
+  test/ZoneHVACTerminalUnitVariableRefrigerantFlow_GTest.cpp
+  test/ZoneHVACLowTempRadiantConstFlow_GTest.cpp
+     test/ZoneHVACLowTempRadiantVarFlow_GTest.cpp
+  test/ZoneHVACLowTemperatureRadiantElectric_GTest.cpp
+  test/ZoneHVACIdealLoadsAirSystem_GTest.cpp
+  test/ZoneHVACWaterToAirHeatPump_GTest.cpp
+  test/ZoneHVACBaseboardRadiantConvectiveSteamDesign_GTest.cpp
   test/Model_GTest.cpp
   test/Node_GTest.cpp
   test/OutdoorAirMixer_GTest.cpp
@@ -2743,11 +3118,16 @@ set(${target_name}_test_src
   test/CoilCoolingDXTwoSpeed_GTest.cpp
   test/CoilCoolingDXTwoStageWithHumidityControlMode_GTest.cpp
   test/CoilPerformanceDXCooling_GTest.cpp
-  test/CoilCoolingDXCurveFitPerformance_GTest.cpp
-  test/CoilCoolingDXCurveFitOperatingMode_GTest.cpp
-  test/CoilCoolingDXCurveFitSpeed_GTest.cpp
-  test/HeatExchangerDesiccantBalancedFlowPerformanceDataType1_GTest.cpp
-  test/MaterialPropertyGlazingSpectralData_GTest.cpp
+   test/CoilCoolingDXCurveFitPerformance_GTest.cpp
+   test/CoilCoolingDXCurveFitOperatingMode_GTest.cpp
+   test/CoilCoolingDXCurveFitSpeed_GTest.cpp
+   test/HeatExchangerDesiccantBalancedFlowPerformanceDataType1_GTest.cpp
+   test/MaterialPropertyGlazingSpectralData_GTest.cpp
+   test/PythonPluginInstance_GTest.cpp
+   test/PythonPluginSearchPaths_GTest.cpp
+    test/PythonPluginOutputVariable_GTest.cpp
+    test/PythonPluginTrendVariable_GTest.cpp
+    test/PythonPluginVariable_GTest.cpp
   test/MaterialPropertyHeatAndMoistureTransferDiffusion_GTest.cpp
   test/MaterialPropertyHeatAndMoistureTransferRedistribution_GTest.cpp
   test/MaterialPropertyHeatAndMoistureTransferSettings_GTest.cpp
@@ -2778,9 +3158,10 @@ set(${target_name}_test_src
   test/CoilSystemIntegratedHeatPumpAirSource_GTest.cpp
   test/CoilSystemCoolingWater_GTest.cpp
   test/CoilSystemCoolingWaterHeatExchangerAssisted_GTest.cpp
-  test/ControllerWaterCoil_GTest.cpp
-  test/ControllerOutdoorAir_GTest.cpp
-  test/ControllerMechanicalVentilation_GTest.cpp
+   test/ControllerWaterCoil_GTest.cpp
+   test/ControllerOutdoorAir_GTest.cpp
+   test/ZoneHVACEnergyRecoveryVentilatorController_GTest.cpp
+   test/ControllerMechanicalVentilation_GTest.cpp
   test/DesignSpecificationOutdoorAir_GTest.cpp
   test/DesignSpecificationAirTerminalSizing_GTest.cpp
   test/DesignSpecificationZoneHVACSizing_GTest.cpp
@@ -2809,8 +3190,9 @@ set(${target_name}_test_src
   test/SurfaceContaminantSourceAndSinkGenericPressureDriven_GTest.cpp
   test/SurfaceControlMovableInsulation_GTest.cpp
   test/SurfacePropertiesVaporCoefficients_GTest.cpp
-  test/LoadProfilePlant_GTest.cpp
-  test/PlantComponentTemperatureSource_GTest.cpp
+   test/LoadProfilePlant_GTest.cpp
+   test/PlantComponentTemperatureSource_GTest.cpp
+   test/PlantComponentUserDefined_GTest.cpp
   test/HeatPumpAirToWater_GTest.cpp
   test/HeatPumpAirToWaterFuelFiredCooling_GTest.cpp
   test/HeatPumpAirToWaterFuelFiredHeating_GTest.cpp
@@ -2908,10 +3290,47 @@ set(${target_name}_test_src
   test/ZoneAirBalanceOutdoorAir_GTest.cpp
   test/ZoneAirContaminantBalance_GTest.cpp
   test/ZoneAirHeatBalanceAlgorithm_GTest.cpp
-  test/ZoneAirMassFlowConservation_GTest.cpp
+   test/ZoneAirMassFlowConservation_GTest.cpp
+   test/ZoneHVACWaterToAirHeatPump_GTest.cpp
+   test/ZoneHVACWindowAirConditioner_GTest.cpp
+   test/ZoneCoolTowerShower_GTest.cpp
+  test/ZoneCrossMixing_GTest.cpp
+  test/ZoneMixing_GTest.cpp
+  test/ZoneRefrigerationDoorMixing_GTest.cpp
+  test/RefrigerationAirChiller_GTest.cpp
+  test/RefrigerationCompressor_GTest.cpp
+   test/RefrigerationCompressorRack_GTest.cpp
+   test/RefrigerationCase_GTest.cpp
+    test/RefrigerationCondenserAirCooled_GTest.cpp
+    test/RefrigerationCondenserEvaporativeCooled_GTest.cpp
+     test/RefrigerationCondenserCascade_GTest.cpp
+    test/RefrigerationCondenserWaterCooled_GTest.cpp
+  test/RefrigerationGasCoolerAirCooled_GTest.cpp
+  test/RefrigerationSystem_GTest.cpp
+  test/RefrigerationWalkIn_GTest.cpp
+  test/RefrigerationSecondarySystem_GTest.cpp
+  test/RefrigerationTranscriticalSystem_GTest.cpp
+  test/RefrigerationSubcoolerLiquidSuction_GTest.cpp
+  test/ZoneThermalChimney_GTest.cpp
+  test/ZonePropertyLocalEnvironment_GTest.cpp
+   test/ZonePropertyUserViewFactorsBySurfaceName_GTest.cpp
+  test/SpaceInfiltrationDesignFlowRate_GTest.cpp
+  test/SpaceInfiltrationFlowCoefficient_GTest.cpp
+  test/SpaceInfiltrationEffectiveLeakageArea_GTest.cpp
+  test/ZoneEarthtube_GTest.cpp
+  test/ZoneEarthtubeParameters_GTest.cpp
+  test/ZoneGroup_GTest.cpp
   test/ZoneContaminantSourceAndSinkCarbonDioxide_GTest.cpp
   test/ZoneContaminantSourceAndSinkGenericConstant_GTest.cpp
   test/ZoneContaminantSourceAndSinkGenericCutoffModel_GTest.cpp
+  test/ZoneContaminantSourceAndSinkGenericDecaySource_GTest.cpp
+  test/ZoneContaminantSourceAndSinkGenericDepositionRateSink_GTest.cpp
+   test/ZoneControlContaminantController_GTest.cpp
+   test/ZoneControlHumidistat_GTest.cpp
+    test/ZoneControlThermostatOperativeTemperature_GTest.cpp
+    test/ZoneControlThermostatTemperatureAndHumidity_GTest.cpp
+    test/ZoneControlThermostatThermalComfort_GTest.cpp
+    test/ZoneControlThermostatStagedDualSetpoint_GTest.cpp
   test/ZoneBaseboardOutdoorTemperatureControlled_GTest.cpp
   test/UtilityCostChargeBlock_GTest.cpp
      test/UtilityCostChargeSimple_GTest.cpp

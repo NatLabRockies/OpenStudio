@@ -9293,7 +9293,7 @@
   },
   {
     "idd_type": "ZoneContaminantSourceAndSink:Generic:DecaySource",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneContaminantSourceAndSinkGenericDecaySource",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9304,7 +9304,7 @@
   },
   {
     "idd_type": "ZoneContaminantSourceAndSink:Generic:DepositionRateSink",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneContaminantSourceAndSinkGenericDepositionRateSink",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9315,7 +9315,7 @@
   },
   {
     "idd_type": "ZoneControl:ContaminantController",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneControlContaminantController",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9329,7 +9329,7 @@
   },
   {
     "idd_type": "ZoneControl:Humidistat",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneControlHumidistat",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9343,7 +9343,7 @@
   },
   {
     "idd_type": "ZoneControl:Thermostat",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermalZone",
     "base_class": "HVACComponent",
     "folder_bucket": "HVACComponent",
@@ -9357,7 +9357,7 @@
   },
   {
     "idd_type": "ZoneControl:Thermostat:OperativeTemperature",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneControlThermostatOperativeTemperature",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9368,7 +9368,7 @@
   },
   {
     "idd_type": "ZoneControl:Thermostat:StagedDualSetpoint",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneControlThermostatStagedDualSetpoint",
     "base_class": "ModelObject",
     "folder_bucket": "Thermostat",
@@ -9382,7 +9382,7 @@
   },
   {
     "idd_type": "ZoneControl:Thermostat:TemperatureAndHumidity",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneControlThermostatTemperatureAndHumidity",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9393,7 +9393,7 @@
   },
   {
     "idd_type": "ZoneControl:Thermostat:ThermalComfort",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneControlThermostatThermalComfort",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9404,7 +9404,7 @@
   },
   {
     "idd_type": "ZoneCoolTower:Shower",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneCoolTowerShower",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9415,7 +9415,7 @@
   },
   {
     "idd_type": "ZoneCrossMixing",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneCrossMixing",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9426,7 +9426,7 @@
   },
   {
     "idd_type": "ZoneEarthtube",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneEarthtube",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9437,7 +9437,7 @@
   },
   {
     "idd_type": "ZoneEarthtube:Parameters",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneEarthtubeParameters",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9448,7 +9448,7 @@
   },
   {
     "idd_type": "ZoneGroup",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneGroup",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9459,7 +9459,7 @@
   },
   {
     "idd_type": "ZoneHVAC:AirDistributionUnit",
-    "status": "pending",
+    "status": "done",
     "target_class": "AirTerminalDualDuctConstantVolume",
     "base_class": "Mixer",
     "folder_bucket": "Mixer",
@@ -9473,7 +9473,7 @@
   },
   {
     "idd_type": "ZoneHVAC:Baseboard:Convective:Electric",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACBaseboardConvectiveElectric",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9487,7 +9487,7 @@
   },
   {
     "idd_type": "ZoneHVAC:Baseboard:Convective:Water",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACBaseboardConvectiveWater",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9501,7 +9501,7 @@
   },
   {
     "idd_type": "ZoneHVAC:Baseboard:RadiantConvective:Electric",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACBaseboardRadiantConvectiveElectric",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9515,7 +9515,7 @@
   },
   {
     "idd_type": "ZoneHVAC:Baseboard:RadiantConvective:Steam",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACBaseboardRadiantConvectiveSteam",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9526,7 +9526,7 @@
   },
   {
     "idd_type": "ZoneHVAC:Baseboard:RadiantConvective:Steam:Design",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACBaseboardRadiantConvectiveSteamDesign",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9537,7 +9537,7 @@
   },
   {
     "idd_type": "ZoneHVAC:Baseboard:RadiantConvective:Water",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACBaseboardRadiantConvectiveWater",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9551,7 +9551,7 @@
   },
   {
     "idd_type": "ZoneHVAC:Baseboard:RadiantConvective:Water:Design",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACBaseboardRadiantConvectiveWater",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9565,7 +9565,7 @@
   },
   {
     "idd_type": "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACCoolingPanelRadiantConvectiveWater",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9579,7 +9579,7 @@
   },
   {
     "idd_type": "ZoneHVAC:Dehumidifier:DX",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACDehumidifierDX",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9593,7 +9593,7 @@
   },
   {
     "idd_type": "ZoneHVAC:EnergyRecoveryVentilator",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACEnergyRecoveryVentilator",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9607,7 +9607,7 @@
   },
   {
     "idd_type": "ZoneHVAC:EnergyRecoveryVentilator:Controller",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACEnergyRecoveryVentilatorController",
     "base_class": "ParentObject",
     "folder_bucket": "ParentObject",
@@ -9621,7 +9621,7 @@
   },
   {
     "idd_type": "ZoneHVAC:EquipmentConnections",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermalZone",
     "base_class": "HVACComponent",
     "folder_bucket": "HVACComponent",
@@ -9635,7 +9635,7 @@
   },
   {
     "idd_type": "ZoneHVAC:EquipmentList",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACEquipmentList",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9649,7 +9649,7 @@
   },
   {
     "idd_type": "ZoneHVAC:EvaporativeCoolerUnit",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACEvaporativeCoolerUnit",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9663,7 +9663,7 @@
   },
   {
     "idd_type": "ZoneHVAC:ExhaustControl",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACExhaustControl",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9674,7 +9674,7 @@
   },
   {
     "idd_type": "ZoneHVAC:ForcedAir:UserDefined",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACForcedAirUserDefined",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9685,7 +9685,7 @@
   },
   {
     "idd_type": "ZoneHVAC:FourPipeFanCoil",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACFourPipeFanCoil",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9699,7 +9699,7 @@
   },
   {
     "idd_type": "ZoneHVAC:HighTemperatureRadiant",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACHighTemperatureRadiant",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9713,7 +9713,7 @@
   },
   {
     "idd_type": "ZoneHVAC:HybridUnitaryHVAC",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACHybridUnitaryHVAC",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9724,7 +9724,7 @@
   },
   {
     "idd_type": "ZoneHVAC:IdealLoadsAirSystem",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACIdealLoadsAirSystem",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9738,7 +9738,7 @@
   },
   {
     "idd_type": "ZoneHVAC:LowTemperatureRadiant:ConstantFlow",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACLowTempRadiantConstFlow",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9752,7 +9752,7 @@
   },
   {
     "idd_type": "ZoneHVAC:LowTemperatureRadiant:ConstantFlow:Design",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACLowTempRadiantConstFlow",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9766,7 +9766,7 @@
   },
   {
     "idd_type": "ZoneHVAC:LowTemperatureRadiant:Electric",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACLowTemperatureRadiantElectric",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9780,7 +9780,7 @@
   },
   {
     "idd_type": "ZoneHVAC:LowTemperatureRadiant:SurfaceGroup",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACLowTempRadiantConstFlow",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9794,7 +9794,7 @@
   },
   {
     "idd_type": "ZoneHVAC:LowTemperatureRadiant:VariableFlow",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACLowTempRadiantVarFlow",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9808,7 +9808,7 @@
   },
   {
     "idd_type": "ZoneHVAC:LowTemperatureRadiant:VariableFlow:Design",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACLowTempRadiantVarFlow",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9822,7 +9822,7 @@
   },
   {
     "idd_type": "ZoneHVAC:OutdoorAirUnit",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACOutdoorAirUnit",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9833,7 +9833,7 @@
   },
   {
     "idd_type": "ZoneHVAC:OutdoorAirUnit:EquipmentList",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACOutdoorAirUnitEquipmentList",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9844,7 +9844,7 @@
   },
   {
     "idd_type": "ZoneHVAC:PackagedTerminalAirConditioner",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACPackagedTerminalAirConditioner",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9858,7 +9858,7 @@
   },
   {
     "idd_type": "ZoneHVAC:PackagedTerminalHeatPump",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACPackagedTerminalHeatPump",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9872,7 +9872,7 @@
   },
   {
     "idd_type": "ZoneHVAC:RefrigerationChillerSet",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACEquipmentList",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9886,7 +9886,7 @@
   },
   {
     "idd_type": "ZoneHVAC:TerminalUnit:VariableRefrigerantFlow",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACTerminalUnitVariableRefrigerantFlow",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9900,7 +9900,7 @@
   },
   {
     "idd_type": "ZoneHVAC:UnitHeater",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACUnitHeater",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9914,7 +9914,7 @@
   },
   {
     "idd_type": "ZoneHVAC:UnitVentilator",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACUnitVentilator",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9928,7 +9928,7 @@
   },
   {
     "idd_type": "ZoneHVAC:VentilatedSlab",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACVentilatedSlab",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9939,7 +9939,7 @@
   },
   {
     "idd_type": "ZoneHVAC:VentilatedSlab:SlabGroup",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACVentilatedSlabSlabGroup",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9950,7 +9950,7 @@
   },
   {
     "idd_type": "ZoneHVAC:WaterToAirHeatPump",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACWaterToAirHeatPump",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -9964,7 +9964,7 @@
   },
   {
     "idd_type": "ZoneHVAC:WindowAirConditioner",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneHVACWindowAirConditioner",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9975,7 +9975,7 @@
   },
   {
     "idd_type": "ZoneInfiltration:DesignFlowRate",
-    "status": "pending",
+    "status": "done",
     "target_class": "SpaceInfiltrationDesignFlowRate",
     "base_class": "ModelObject",
     "folder_bucket": "SpaceLoad",
@@ -9989,7 +9989,7 @@
   },
   {
     "idd_type": "ZoneInfiltration:EffectiveLeakageArea",
-    "status": "pending",
+    "status": "done",
     "target_class": "SpaceInfiltrationEffectiveLeakageArea",
     "base_class": "ModelObject",
     "folder_bucket": "SpaceLoad",
@@ -10003,7 +10003,7 @@
   },
   {
     "idd_type": "ZoneInfiltration:FlowCoefficient",
-    "status": "pending",
+    "status": "done",
     "target_class": "SpaceInfiltrationFlowCoefficient",
     "base_class": "ModelObject",
     "folder_bucket": "SpaceLoad",
@@ -10017,7 +10017,7 @@
   },
   {
     "idd_type": "ZoneList",
-    "status": "pending",
+    "status": "done",
     "target_class": "AvailabilityManagerNightCycle",
     "base_class": "AvailabilityManager",
     "folder_bucket": "AvailabilityManager",
@@ -10031,7 +10031,7 @@
   },
   {
     "idd_type": "ZoneMixing",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneMixing",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10045,7 +10045,7 @@
   },
   {
     "idd_type": "ZoneProperty:LocalEnvironment",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZonePropertyLocalEnvironment",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10056,7 +10056,7 @@
   },
   {
     "idd_type": "ZoneProperty:UserViewFactors:BySurfaceName",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZonePropertyUserViewFactorsBySurfaceName",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10070,7 +10070,7 @@
   },
   {
     "idd_type": "ZoneRefrigerationDoorMixing",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneRefrigerationDoorMixing",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10081,7 +10081,7 @@
   },
   {
     "idd_type": "ZoneTerminalUnitList",
-    "status": "pending",
+    "status": "done",
     "target_class": "AirConditionerVariableRefrigerantFlow",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -10095,7 +10095,7 @@
   },
   {
     "idd_type": "ZoneThermalChimney",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneThermalChimney",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10106,7 +10106,7 @@
   },
   {
     "idd_type": "ZoneVentilation:DesignFlowRate",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermalZone",
     "base_class": "HVACComponent",
     "folder_bucket": "HVACComponent",
@@ -10120,7 +10120,7 @@
   },
   {
     "idd_type": "ZoneVentilation:WindandStackOpenArea",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneVentilationWindandStackOpenArea",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -10134,7 +10134,7 @@
   },
   {
     "idd_type": "PlantComponent:UserDefined",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantComponentUserDefined",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -10148,7 +10148,7 @@
   },
   {
     "idd_type": "PlantEquipmentList",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantEquipmentOperationCoolingLoad",
     "base_class": "ModelObject",
     "folder_bucket": "PlantEquipmentOperationRangeBasedScheme",
@@ -10162,7 +10162,7 @@
   },
   {
     "idd_type": "PlantEquipmentOperation:ChillerHeaterChangeover",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantEquipmentOperationChillerHeaterChangeover",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10173,7 +10173,7 @@
   },
   {
     "idd_type": "PlantEquipmentOperation:ComponentSetpoint",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantEquipmentOperationComponentSetpoint",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10184,7 +10184,7 @@
   },
   {
     "idd_type": "PlantEquipmentOperation:CoolingLoad",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantEquipmentOperationCoolingLoad",
     "base_class": "ModelObject",
     "folder_bucket": "PlantEquipmentOperationRangeBasedScheme",
@@ -10198,7 +10198,7 @@
   },
   {
     "idd_type": "PlantEquipmentOperation:HeatingLoad",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantEquipmentOperationHeatingLoad",
     "base_class": "ModelObject",
     "folder_bucket": "PlantEquipmentOperationRangeBasedScheme",
@@ -10212,7 +10212,7 @@
   },
   {
     "idd_type": "PlantEquipmentOperation:OutdoorDewpoint",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantEquipmentOperationOutdoorDewpoint",
     "base_class": "ModelObject",
     "folder_bucket": "PlantEquipmentOperationRangeBasedScheme",
@@ -10226,7 +10226,7 @@
   },
   {
     "idd_type": "PlantEquipmentOperation:OutdoorDewpointDifference",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantEquipmentOperationOutdoorDewpointDifference",
     "base_class": "ModelObject",
     "folder_bucket": "PlantEquipmentOperationRangeBasedScheme",
@@ -10240,7 +10240,7 @@
   },
   {
     "idd_type": "PlantEquipmentOperation:OutdoorDryBulb",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantEquipmentOperationOutdoorDryBulb",
     "base_class": "ModelObject",
     "folder_bucket": "PlantEquipmentOperationRangeBasedScheme",
@@ -10254,7 +10254,7 @@
   },
   {
     "idd_type": "PlantEquipmentOperation:OutdoorDryBulbDifference",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantEquipmentOperationOutdoorDryBulbDifference",
     "base_class": "ModelObject",
     "folder_bucket": "PlantEquipmentOperationRangeBasedScheme",
@@ -10268,7 +10268,7 @@
   },
   {
     "idd_type": "PlantEquipmentOperation:OutdoorRelativeHumidity",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantEquipmentOperationOutdoorRelativeHumidity",
     "base_class": "ModelObject",
     "folder_bucket": "PlantEquipmentOperationRangeBasedScheme",
@@ -10282,7 +10282,7 @@
   },
   {
     "idd_type": "PlantEquipmentOperation:OutdoorWetBulb",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantEquipmentOperationOutdoorWetBulb",
     "base_class": "ModelObject",
     "folder_bucket": "PlantEquipmentOperationRangeBasedScheme",
@@ -10296,7 +10296,7 @@
   },
   {
     "idd_type": "PlantEquipmentOperation:OutdoorWetBulbDifference",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantEquipmentOperationOutdoorWetBulbDifference",
     "base_class": "ModelObject",
     "folder_bucket": "PlantEquipmentOperationRangeBasedScheme",
@@ -10310,7 +10310,7 @@
   },
   {
     "idd_type": "PlantEquipmentOperation:ThermalEnergyStorage",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantEquipmentOperationThermalEnergyStorage",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10321,7 +10321,7 @@
   },
   {
     "idd_type": "PlantEquipmentOperation:Uncontrolled",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantEquipmentOperationUncontrolled",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10332,7 +10332,7 @@
   },
   {
     "idd_type": "PlantEquipmentOperation:UserDefined",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantEquipmentOperationUserDefined",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10343,7 +10343,7 @@
   },
   {
     "idd_type": "PlantEquipmentOperationSchemes",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantEquipmentOperationSchemes",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10354,7 +10354,7 @@
   },
   {
     "idd_type": "PlantLoop",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantLoop",
     "base_class": "Loop",
     "folder_bucket": "Loop",
@@ -10368,7 +10368,7 @@
   },
   {
     "idd_type": "Pump:ConstantSpeed",
-    "status": "pending",
+    "status": "done",
     "target_class": "PumpConstantSpeed",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -10382,7 +10382,7 @@
   },
   {
     "idd_type": "Pump:VariableSpeed",
-    "status": "pending",
+    "status": "done",
     "target_class": "PumpVariableSpeed",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -10396,7 +10396,7 @@
   },
   {
     "idd_type": "Pump:VariableSpeed:Condensate",
-    "status": "pending",
+    "status": "done",
     "target_class": "PumpVariableSpeedCondensate",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10407,7 +10407,7 @@
   },
   {
     "idd_type": "PythonPlugin:Instance",
-    "status": "pending",
+    "status": "done",
     "target_class": "PythonPluginInstance",
     "base_class": "ModelObject",
     "folder_bucket": "ResourceObject",
@@ -10421,7 +10421,7 @@
   },
   {
     "idd_type": "PythonPlugin:OutputVariable",
-    "status": "pending",
+    "status": "done",
     "target_class": "PythonPluginOutputVariable",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10435,7 +10435,7 @@
   },
   {
     "idd_type": "PythonPlugin:SearchPaths",
-    "status": "pending",
+    "status": "done",
     "target_class": "PythonPluginInstance",
     "base_class": "ModelObject",
     "folder_bucket": "ResourceObject",
@@ -10449,7 +10449,7 @@
   },
   {
     "idd_type": "PythonPlugin:TrendVariable",
-    "status": "pending",
+    "status": "done",
     "target_class": "PythonPluginTrendVariable",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10463,7 +10463,7 @@
   },
   {
     "idd_type": "PythonPlugin:Variables",
-    "status": "pending",
+    "status": "done",
     "target_class": "PythonPluginVariable",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10477,7 +10477,7 @@
   },
   {
     "idd_type": "Refrigeration:AirChiller",
-    "status": "pending",
+    "status": "done",
     "target_class": "RefrigerationAirChiller",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -10491,7 +10491,7 @@
   },
   {
     "idd_type": "Refrigeration:Case",
-    "status": "pending",
+    "status": "done",
     "target_class": "RefrigerationCase",
     "base_class": "ParentObject",
     "folder_bucket": "ParentObject",
@@ -10504,22 +10504,8 @@
     "resolver_confidence": "high"
   },
   {
-    "idd_type": "Refrigeration:CaseAndWalkInList",
-    "status": "pending",
-    "target_class": "RefrigerationCompressorRack",
-    "base_class": "StraightComponent",
-    "folder_bucket": "StraightComponent",
-    "output_dir": "src/epmodel/StraightComponent",
-    "has_model_counterpart": true,
-    "notes": "auto-seeded from EP inventory appendix",
-    "intended_base_class": "StraightComponent",
-    "resolved_model_class": "RefrigerationCompressorRack",
-    "resolver_source": "appendix_os_to_model",
-    "resolver_confidence": "high"
-  },
-  {
     "idd_type": "Refrigeration:Compressor",
-    "status": "pending",
+    "status": "done",
     "target_class": "RefrigerationCompressor",
     "base_class": "ParentObject",
     "folder_bucket": "ParentObject",
@@ -10533,7 +10519,7 @@
   },
   {
     "idd_type": "Refrigeration:CompressorList",
-    "status": "pending",
+    "status": "done",
     "target_class": "RefrigerationSystem",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10547,7 +10533,7 @@
   },
   {
     "idd_type": "Refrigeration:CompressorRack",
-    "status": "pending",
+    "status": "done",
     "target_class": "RefrigerationCompressorRack",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -10561,7 +10547,7 @@
   },
   {
     "idd_type": "Refrigeration:Condenser:AirCooled",
-    "status": "pending",
+    "status": "done",
     "target_class": "RefrigerationCondenserAirCooled",
     "base_class": "ParentObject",
     "folder_bucket": "ParentObject",
@@ -10575,7 +10561,7 @@
   },
   {
     "idd_type": "Refrigeration:Condenser:Cascade",
-    "status": "pending",
+    "status": "done",
     "target_class": "RefrigerationCondenserCascade",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10589,7 +10575,7 @@
   },
   {
     "idd_type": "Refrigeration:Condenser:EvaporativeCooled",
-    "status": "pending",
+    "status": "done",
     "target_class": "RefrigerationCondenserEvaporativeCooled",
     "base_class": "ParentObject",
     "folder_bucket": "ParentObject",
@@ -10603,7 +10589,7 @@
   },
   {
     "idd_type": "Refrigeration:Condenser:WaterCooled",
-    "status": "pending",
+    "status": "done",
     "target_class": "RefrigerationCondenserWaterCooled",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -10617,7 +10603,7 @@
   },
   {
     "idd_type": "Refrigeration:GasCooler:AirCooled",
-    "status": "pending",
+    "status": "done",
     "target_class": "RefrigerationGasCoolerAirCooled",
     "base_class": "ParentObject",
     "folder_bucket": "ParentObject",
@@ -10631,7 +10617,7 @@
   },
   {
     "idd_type": "Refrigeration:SecondarySystem",
-    "status": "pending",
+    "status": "done",
     "target_class": "RefrigerationSecondarySystem",
     "base_class": "ParentObject",
     "folder_bucket": "ParentObject",
@@ -10645,7 +10631,7 @@
   },
   {
     "idd_type": "Refrigeration:Subcooler",
-    "status": "pending",
+    "status": "done",
     "target_class": "RefrigerationSubcoolerLiquidSuction",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10659,7 +10645,7 @@
   },
   {
     "idd_type": "Refrigeration:System",
-    "status": "pending",
+    "status": "done",
     "target_class": "RefrigerationSystem",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10673,7 +10659,7 @@
   },
   {
     "idd_type": "Refrigeration:TranscriticalSystem",
-    "status": "pending",
+    "status": "done",
     "target_class": "RefrigerationTranscriticalSystem",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10687,7 +10673,7 @@
   },
   {
     "idd_type": "Refrigeration:TransferLoadList",
-    "status": "pending",
+    "status": "done",
     "target_class": "RefrigerationSystem",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10701,7 +10687,7 @@
   },
   {
     "idd_type": "Refrigeration:WalkIn",
-    "status": "pending",
+    "status": "done",
     "target_class": "RefrigerationWalkIn",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10715,7 +10701,7 @@
   },
   {
     "idd_type": "Roof",
-    "status": "pending",
+    "status": "done",
     "target_class": "Roof",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10726,7 +10712,7 @@
   },
   {
     "idd_type": "RoofCeiling:Detailed",
-    "status": "pending",
+    "status": "done",
     "target_class": "RoofCeilingDetailed",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10737,7 +10723,7 @@
   },
   {
     "idd_type": "RoofIrrigation",
-    "status": "pending",
+    "status": "done",
     "target_class": "RoofIrrigation",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10748,7 +10734,7 @@
   },
   {
     "idd_type": "RoomAir:Node",
-    "status": "pending",
+    "status": "done",
     "target_class": "RoomAirNode",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10759,7 +10745,7 @@
   },
   {
     "idd_type": "RoomAir:Node:AirflowNetwork",
-    "status": "pending",
+    "status": "done",
     "target_class": "RoomAirNodeAirflowNetwork",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10770,7 +10756,7 @@
   },
   {
     "idd_type": "RoomAir:Node:AirflowNetwork:AdjacentSurfaceList",
-    "status": "pending",
+    "status": "done",
     "target_class": "RoomAirNodeAirflowNetworkAdjacentSurfaceList",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10781,7 +10767,7 @@
   },
   {
     "idd_type": "RoomAir:Node:AirflowNetwork:HVACEquipment",
-    "status": "pending",
+    "status": "done",
     "target_class": "RoomAirNodeAirflowNetworkHVACEquipment",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10792,7 +10778,7 @@
   },
   {
     "idd_type": "RoomAir:Node:AirflowNetwork:InternalGains",
-    "status": "pending",
+    "status": "done",
     "target_class": "RoomAirNodeAirflowNetworkInternalGains",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10803,7 +10789,7 @@
   },
   {
     "idd_type": "Site:GroundDomain:Slab",
-    "status": "pending",
+    "status": "done",
     "target_class": "SiteGroundDomainSlab",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10814,7 +10800,7 @@
   },
   {
     "idd_type": "Site:GroundReflectance",
-    "status": "pending",
+    "status": "done",
     "target_class": "SiteGroundReflectance",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10828,7 +10814,7 @@
   },
   {
     "idd_type": "Site:GroundReflectance:SnowModifier",
-    "status": "pending",
+    "status": "done",
     "target_class": "SiteGroundReflectanceSnowModifier",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10839,7 +10825,7 @@
   },
   {
     "idd_type": "Site:GroundTemperature:BuildingSurface",
-    "status": "pending",
+    "status": "done",
     "target_class": "SiteGroundTemperatureBuildingSurface",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -10848,6 +10834,20 @@
     "notes": "auto-seeded from EP inventory appendix",
     "intended_base_class": "ModelObject",
     "resolved_model_class": "SiteGroundTemperatureBuildingSurface",
+    "resolver_source": "appendix_os_to_model",
+    "resolver_confidence": "high"
+  },
+  {
+    "idd_type": "Refrigeration:CaseAndWalkInList",
+    "status": "done",
+    "target_class": "RefrigerationCompressorRack",
+    "base_class": "StraightComponent",
+    "folder_bucket": "StraightComponent",
+    "output_dir": "src/epmodel/StraightComponent",
+    "has_model_counterpart": true,
+    "notes": "auto-seeded from EP inventory appendix",
+    "intended_base_class": "StraightComponent",
+    "resolved_model_class": "RefrigerationCompressorRack",
     "resolver_source": "appendix_os_to_model",
     "resolver_confidence": "high"
   }

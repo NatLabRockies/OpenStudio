@@ -13,6 +13,7 @@
 
 #include <boost/optional.hpp>
 #include <string>
+#include <vector>
 
 namespace openstudio {
 namespace epmodel {
@@ -37,6 +38,12 @@ namespace epmodel {
     ThermalZone& operator=(ThermalZone&&) = default;
 
     static IddObjectType iddObjectType();
+    // Schema Alignment Notes:
+    // - API: `addToNode` keeps the EnergyPlus `ZoneHVAC:EquipmentConnections` object aligned with the current demand branch node when the
+    //   zone is connected to or moved between air loop branches.
+    // - Field Mapping: `ForwardTranslateThermalZone::translateThermalZone` writes the same `ZoneHVAC:EquipmentConnections` fields (Zone Air
+    //   Inlet/Exhaust/Node/Return references plus the Zone Conditioning Equipment List) so this method makes the backing nodes available for
+    //   the translator-friendly object.
     bool addToNode(Node& node);
     SizingZone sizingZone() const;
 
@@ -87,6 +94,34 @@ namespace epmodel {
     bool setUseIdealAirLoads(bool useIdealAirLoads);
 
     // Schema Alignment Notes:
+    // - API: Mirror the EnergyPlus ZoneControl:Thermostat scalar fields that describe thermostat control metadata on a ThermalZone.
+    // - Field Mapping: These getters/setters read/write the ZoneControl:Thermostat fields targeting this zone (Zone Name == ThermalZone nameString()), matching ForwardTranslateThermalZone behavior.
+    // - TODO(parity): Add explicit epmodel ZoneControlThermostat object once scalar coverage or relationships grow.
+    static std::vector<std::string> control1ObjectTypeValues();
+    std::string control1ObjectType() const;
+    bool setControl1ObjectType(const std::string& control1ObjectType);
+
+    static std::vector<std::string> control2ObjectTypeValues();
+    boost::optional<std::string> control2ObjectType() const;
+    bool setControl2ObjectType(const std::string& control2ObjectType);
+    void resetControl2ObjectType();
+
+    static std::vector<std::string> control3ObjectTypeValues();
+    boost::optional<std::string> control3ObjectType() const;
+    bool setControl3ObjectType(const std::string& control3ObjectType);
+    void resetControl3ObjectType();
+
+    static std::vector<std::string> control4ObjectTypeValues();
+    boost::optional<std::string> control4ObjectType() const;
+    bool setControl4ObjectType(const std::string& control4ObjectType);
+    void resetControl4ObjectType();
+
+    double temperatureDifferenceBetweenCutoutAndSetpoint() const;
+    bool isTemperatureDifferenceBetweenCutoutAndSetpointDefaulted() const;
+    bool setTemperatureDifferenceBetweenCutoutAndSetpoint(double temperatureDifferenceBetweenCutoutAndSetpoint);
+    void resetTemperatureDifferenceBetweenCutoutAndSetpoint();
+
+    // Schema Alignment Notes:
     // - API: Preserve openstudio::model DesignSpecificationOutdoorAir scalar accessor names on ThermalZone wrappers.
     // - Field Mapping: ThermalZone DSOA wrappers delegate to DesignSpecification:OutdoorAir scalar fields through
     //   ThermalZone -> Sizing:Zone -> DesignSpecification:OutdoorAir:SpaceList -> DesignSpecification:OutdoorAir.
@@ -107,6 +142,70 @@ namespace epmodel {
 
     double outdoorAirFlowAirChangesperHour() const;
     bool setOutdoorAirFlowAirChangesperHour(double outdoorAirFlowAirChangesperHour);
+
+    // Schema Alignment Notes:
+    // - API: Mirror OpenStudio's ZoneVentilationDesignFlowRate scalar accessors so a ThermalZone can work directly with the
+    //   EnergyPlus `ZoneVentilation:DesignFlowRate` object that targets this zone.
+    // - Field Mapping: ThermalZone methods map to the corresponding EnergyPlus `ZoneVentilation:DesignFlowRate` fields
+    //   (Design Flow Rate, Flow Rate per Zone Floor Area, Flow Rate per Person, Air Changes per Hour, Ventilation Type,
+    //   Fan performance coefficients, Temperature thresholds, Wind speed, Density basis).
+    // - ForwardTranslator Evidence: ForwardTranslateThermalZone will consume these scalars when wiring zone-level ventilation
+    //   data into `ZoneVentilation:DesignFlowRate` objects.
+    double designFlowRate() const;
+    bool setDesignFlowRate(double designFlowRate);
+
+    double flowRateperZoneFloorArea() const;
+    bool setFlowRateperZoneFloorArea(double flowRateperZoneFloorArea);
+
+    double flowRateperPerson() const;
+    bool setFlowRateperPerson(double flowRateperPerson);
+
+    double airChangesperHour() const;
+    bool setAirChangesperHour(double airChangesperHour);
+
+    static std::vector<std::string> ventilationTypeValues();
+    std::string ventilationType() const;
+    bool setVentilationType(const std::string& ventilationType);
+
+    double fanPressureRise() const;
+    bool setFanPressureRise(double fanPressureRise);
+
+    double fanTotalEfficiency() const;
+    bool setFanTotalEfficiency(double fanTotalEfficiency);
+
+    double constantTermCoefficient() const;
+    bool setConstantTermCoefficient(double constantTermCoefficient);
+
+    double temperatureTermCoefficient() const;
+    bool setTemperatureTermCoefficient(double temperatureTermCoefficient);
+
+    double velocityTermCoefficient() const;
+    bool setVelocityTermCoefficient(double velocityTermCoefficient);
+
+    double velocitySquaredTermCoefficient() const;
+    bool setVelocitySquaredTermCoefficient(double velocitySquaredTermCoefficient);
+
+    double minimumIndoorTemperature() const;
+    bool setMinimumIndoorTemperature(double minimumIndoorTemperature);
+
+    double maximumIndoorTemperature() const;
+    bool setMaximumIndoorTemperature(double maximumIndoorTemperature);
+
+    double deltaTemperature() const;
+    bool setDeltaTemperature(double deltaTemperature);
+
+    double minimumOutdoorTemperature() const;
+    bool setMinimumOutdoorTemperature(double minimumOutdoorTemperature);
+
+    double maximumOutdoorTemperature() const;
+    bool setMaximumOutdoorTemperature(double maximumOutdoorTemperature);
+
+    double maximumWindSpeed() const;
+    bool setMaximumWindSpeed(double maximumWindSpeed);
+
+    static std::vector<std::string> densityBasisValues();
+    std::string densityBasis() const;
+    bool setDensityBasis(const std::string& densityBasis);
 
     // Schema Alignment Notes:
     // - API: Preserve openstudio::model ThermalZone daylighting fraction accessor names/signatures.

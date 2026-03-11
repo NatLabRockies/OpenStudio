@@ -7,7 +7,7 @@
 #include "Loop/Loop_Impl.hpp"
 
 #include "HVACComponent/HVACComponent.hpp"
-#include "Mixer.hpp"
+#include "Mixer/Mixer.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "Node.hpp"

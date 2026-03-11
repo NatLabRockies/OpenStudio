@@ -6,6 +6,9 @@
 #include "Model.hpp"
 #include "Model_Impl.hpp"
 
+#include <utilities/core/Compare.hpp>
+#include <utilities/idd/Refrigeration_Subcooler_FieldEnums.hxx>
+
 #include "ModelObject/AirLoopHVACReturnPath_Impl.hpp"
 #include "Mixer/AirLoopHVACReturnPlenum_Impl.hpp"
 #include "Splitter/AirLoopHVACSupplyPlenum_Impl.hpp"
@@ -23,6 +26,11 @@
 #include "ModelObject/RoomAirSettingsThreeNodeDisplacementVentilation_Impl.hpp"
 #include "ModelObject/RoomAirSettingsUnderFloorAirDistributionExterior_Impl.hpp"
 #include "ModelObject/RoomAirSettingsUnderFloorAirDistributionInterior_Impl.hpp"
+#include "ModelObject/RoomAirNode_Impl.hpp"
+#include "ModelObject/RoomAirNodeAirflowNetwork_Impl.hpp"
+#include "ModelObject/RoomAirNodeAirflowNetworkHVACEquipment_Impl.hpp"
+#include "ModelObject/RoomAirNodeAirflowNetworkAdjacentSurfaceList_Impl.hpp"
+#include "ModelObject/RoomAirNodeAirflowNetworkInternalGains_Impl.hpp"
 #include "ModelObject/ThermalStorageChilledWaterMixed_Impl.hpp"
 #include "ModelObject/ThermalStorageHotWaterStratified_Impl.hpp"
 #include "ModelObject/ThermalStorageIceSimple_Impl.hpp"
@@ -80,6 +88,8 @@
 #include "ModelObject/PipingSystemUndergroundDomain_Impl.hpp"
 #include "ModelObject/PipingSystemUndergroundPipeCircuit_Impl.hpp"
 #include "ModelObject/PipingSystemUndergroundPipeSegment_Impl.hpp"
+#include "StraightComponent/PumpConstantSpeed_Impl.hpp"
+#include "StraightComponent/PumpVariableSpeed_Impl.hpp"
 #include "StraightComponent/HeaderedPumpsConstantSpeed_Impl.hpp"
 #include "StraightComponent/HeaderedPumpsVariableSpeed_Impl.hpp"
 #include "StraightComponent/HumidifierSteamElectric_Impl.hpp"
@@ -158,6 +168,17 @@
 #include "ParentObject/RunPeriod_Impl.hpp"
 #include "ParentObject/ElectricLoadCenterDistribution_Impl.hpp"
 #include "ParentObject/ElectricLoadCenterStorageConverter_Impl.hpp"
+#include "ParentObject/RefrigerationCase_Impl.hpp"
+#include "ParentObject/RefrigerationCondenserAirCooled_Impl.hpp"
+#include "ParentObject/RefrigerationCondenserEvaporativeCooled_Impl.hpp"
+#include "ParentObject/RefrigerationGasCoolerAirCooled_Impl.hpp"
+#include "ParentObject/RefrigerationCompressor_Impl.hpp"
+#include "ParentObject/RefrigerationSecondarySystem_Impl.hpp"
+#include "ModelObject/RefrigerationCondenserCascade_Impl.hpp"
+#include "ModelObject/RefrigerationSystem_Impl.hpp"
+#include "ModelObject/RefrigerationSubcoolerLiquidSuction_Impl.hpp"
+#include "ModelObject/RefrigerationTranscriticalSystem_Impl.hpp"
+#include "ModelObject/RefrigerationWalkIn_Impl.hpp"
 #include "Inverter/ElectricLoadCenterInverterLookUpTable_Impl.hpp"
 #include "Inverter/ElectricLoadCenterInverterPVWatts_Impl.hpp"
 #include "Inverter/ElectricLoadCenterInverterSimple_Impl.hpp"
@@ -200,6 +221,9 @@
 #include "ModelObject/OutputVariableDictionary_Impl.hpp"
 #include "ModelObject/OutputSurfacesList_Impl.hpp"
 #include "ModelObject/OutputSurfacesDrawing_Impl.hpp"
+#include "ModelObject/PythonPluginOutputVariable_Impl.hpp"
+#include "ModelObject/PythonPluginTrendVariable_Impl.hpp"
+#include "ModelObject/PythonPluginVariable_Impl.hpp"
 #include "ModelObject/EnergyManagementSystemSensor_Impl.hpp"
 #include "ModelObject/EnergyManagementSystemTrendVariable_Impl.hpp"
 #include "ModelObject/EnvironmentalImpactFactors_Impl.hpp"
@@ -234,6 +258,7 @@
 #include "ResourceObject/HeatExchangerDesiccantBalancedFlowPerformanceDataType1_Impl.hpp"
 #include "ResourceObject/MaterialPropertyGlazingSpectralData_Impl.hpp"
 #include "ResourceObject/ShadingControl_Impl.hpp"
+#include "ResourceObject/PythonPluginSearchPaths_Impl.hpp"
 #include "ResourceObject/WindowPropertyFrameAndDivider_Impl.hpp"
 #include "Glazing/RefractionExtinctionGlazing_Impl.hpp"
 #include "Glazing/ThermochromicGlazing_Impl.hpp"
@@ -271,6 +296,7 @@
 #include "StraightComponent/CoilSystemCoolingWaterHeatExchangerAssisted_Impl.hpp"
 #include "ModelObject/ControllerMechanicalVentilation_Impl.hpp"
 #include "ParentObject/ControllerOutdoorAir_Impl.hpp"
+#include "ParentObject/ZoneHVACEnergyRecoveryVentilatorController_Impl.hpp"
 #include "ParentObject/SimulationControl_Impl.hpp"
 #include "ModelObject/Timestep_Impl.hpp"
 #include "DesignSpecificationOutdoorAir_Impl.hpp"
@@ -285,6 +311,8 @@
 #include "ZoneHVACComponent/WaterHeaterHeatPumpWrappedCondenser_Impl.hpp"
 #include "ModelObject_Impl.hpp"
 #include "StraightComponent/AirConditionerVariableRefrigerantFlow_Impl.hpp"
+#include "StraightComponent/RefrigerationCompressorRack_Impl.hpp"
+#include "StraightComponent/RefrigerationCondenserWaterCooled_Impl.hpp"
 #include "StraightComponent/SolarCollectorFlatPlatePhotovoltaicThermal_Impl.hpp"
 #include "StraightComponent/SolarCollectorFlatPlateWater_Impl.hpp"
 #include "StraightComponent/SolarCollectorIntegralCollectorStorage_Impl.hpp"
@@ -301,6 +329,7 @@
 #include "ModelObject/SurfacePropertiesVaporCoefficients_Impl.hpp"
 #include "StraightComponent/LoadProfilePlant_Impl.hpp"
 #include "StraightComponent/PlantComponentTemperatureSource_Impl.hpp"
+#include "StraightComponent/PlantComponentUserDefined_Impl.hpp"
 #include "StraightComponent/HeatPumpAirToWater_Impl.hpp"
 #include "StraightComponent/HeatPumpAirToWaterFuelFiredCooling_Impl.hpp"
 #include "StraightComponent/HeatPumpAirToWaterFuelFiredHeating_Impl.hpp"
@@ -339,6 +368,9 @@
 #include "ModelObject/AirflowNetworkDistributionComponentConstantPressureDrop_Impl.hpp"
 #include "ModelObject/CeilingAdiabatic_Impl.hpp"
 #include "ModelObject/CeilingInterzone_Impl.hpp"
+#include "ModelObject/Roof_Impl.hpp"
+#include "ModelObject/RoofIrrigation_Impl.hpp"
+#include "ModelObject/RoofCeilingDetailed_Impl.hpp"
 #include "ModelObject/WallAdiabatic_Impl.hpp"
 #include "ModelObject/WallDetailed_Impl.hpp"
 #include "ModelObject/WallExterior_Impl.hpp"
@@ -518,14 +550,49 @@
 #include "ModelObject/AirflowNetworkDistributionComponentReliefAirFlow_Impl.hpp"
 #include "ModelObject/AirflowNetworkDistributionComponentTerminalUnit_Impl.hpp"
 #include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem_Impl.hpp"
+#include "ModelObject/PlantEquipmentOperationChillerHeaterChangeover_Impl.hpp"
+#include "ModelObject/PlantEquipmentOperationComponentSetpoint_Impl.hpp"
+#include "ModelObject/PlantEquipmentOperationThermalEnergyStorage_Impl.hpp"
+#include "ModelObject/PlantEquipmentOperationSchemes_Impl.hpp"
+#include "PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationCoolingLoad_Impl.hpp"
+#include "PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationHeatingLoad_Impl.hpp"
+#include "PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDewpoint_Impl.hpp"
+#include "PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDewpointDifference_Impl.hpp"
+#include "PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDryBulbDifference_Impl.hpp"
+#include "PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorWetBulbDifference_Impl.hpp"
+#include "PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDryBulb_Impl.hpp"
+#include "PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorRelativeHumidity_Impl.hpp"
+#include "PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorWetBulb_Impl.hpp"
+#include "SpaceLoad/SpaceInfiltrationDesignFlowRate_Impl.hpp"
+#include "SpaceLoad/SpaceInfiltrationFlowCoefficient_Impl.hpp"
+#include "SpaceLoad/SpaceInfiltrationEffectiveLeakageArea_Impl.hpp"
 #include "ModelObject/ZoneCapacitanceMultiplierResearchSpecial_Impl.hpp"
 #include "ModelObject/ZoneAirBalanceOutdoorAir_Impl.hpp"
 #include "ModelObject/ZoneAirContaminantBalance_Impl.hpp"
 #include "ModelObject/ZoneAirHeatBalanceAlgorithm_Impl.hpp"
 #include "ModelObject/ZoneAirMassFlowConservation_Impl.hpp"
+#include "ModelObject/ZoneCoolTowerShower_Impl.hpp"
+#include "ModelObject/ZoneCrossMixing_Impl.hpp"
+#include "ModelObject/ZoneMixing_Impl.hpp"
+#include "ModelObject/ZoneRefrigerationDoorMixing_Impl.hpp"
+#include "ModelObject/ZoneThermalChimney_Impl.hpp"
+#include "ModelObject/ZonePropertyLocalEnvironment_Impl.hpp"
+#include "ModelObject/ZonePropertyUserViewFactorsBySurfaceName_Impl.hpp"
+#include "ModelObject/ZoneEarthtube_Impl.hpp"
+#include "ModelObject/ZoneEarthtubeParameters_Impl.hpp"
+#include "ModelObject/ZoneGroup_Impl.hpp"
+#include "ModelObject/ZoneEarthtubeParameters.hpp"
+#include "ModelObject/ZoneControlContaminantController_Impl.hpp"
+#include "ModelObject/ZoneControlHumidistat_Impl.hpp"
+#include "ModelObject/ZoneControlThermostatOperativeTemperature_Impl.hpp"
+#include "ModelObject/ZoneControlThermostatTemperatureAndHumidity_Impl.hpp"
+#include "ModelObject/ZoneControlThermostatThermalComfort_Impl.hpp"
+#include "Thermostat/ZoneControlThermostatStagedDualSetpoint_Impl.hpp"
 #include "ModelObject/ZoneContaminantSourceAndSinkCarbonDioxide_Impl.hpp"
 #include "ModelObject/ZoneContaminantSourceAndSinkGenericConstant_Impl.hpp"
 #include "ModelObject/ZoneContaminantSourceAndSinkGenericCutoffModel_Impl.hpp"
+#include "ModelObject/ZoneContaminantSourceAndSinkGenericDecaySource_Impl.hpp"
+#include "ModelObject/ZoneContaminantSourceAndSinkGenericDepositionRateSink_Impl.hpp"
 #include "ModelObject/ZoneBaseboardOutdoorTemperatureControlled_Impl.hpp"
 #include "ModelObject/WaterHeaterSizing_Impl.hpp"
 #include "ModelObject/WaterUseRainCollector_Impl.hpp"
@@ -597,7 +664,10 @@
 #include "ModelObject/DesignSpecificationZoneHVACSizing_Impl.hpp"
 #include "ModelObject/AirLoopHVACExhaustSystem_Impl.hpp"
 #include "ModelObject/AirLoopHVACMixer_Impl.hpp"
+#include "ModelObject/PumpVariableSpeedCondensate_Impl.hpp"
 #include "ModelObject/AirLoopHVACSplitter_Impl.hpp"
+#include "ModelObject/PlantEquipmentOperationUncontrolled_Impl.hpp"
+#include "ModelObject/PlantEquipmentOperationUserDefined_Impl.hpp"
 #include "ModelObject/SpaceHVACZoneReturnMixer_Impl.hpp"
 #include "ModelObject/GroundHeatTransferControl_Impl.hpp"
 #include "ModelObject/GroundHeatTransferBasementAutoGrid_Impl.hpp"
@@ -623,12 +693,16 @@
 #include "ModelObject/GroundHeatTransferSlabYFACE_Impl.hpp"
 #include "ModelObject/GroundHeatTransferSlabZFACE_Impl.hpp"
 #include "ModelObject/SiteGroundDomainBasement_Impl.hpp"
+#include "ModelObject/SiteGroundDomainSlab_Impl.hpp"
 #include "ModelObject/SiteGroundTemperatureDeep_Impl.hpp"
 #include "ModelObject/SiteGroundTemperatureFCfactorMethod_Impl.hpp"
 #include "ModelObject/SiteGroundTemperatureShallow_Impl.hpp"
+#include "ModelObject/SiteGroundTemperatureBuildingSurface_Impl.hpp"
 #include "ModelObject/SiteGroundTemperatureUndisturbedFiniteDifference_Impl.hpp"
 #include "ModelObject/SiteGroundTemperatureUndisturbedKusudaAchenbach_Impl.hpp"
 #include "ModelObject/SiteGroundTemperatureUndisturbedXing_Impl.hpp"
+#include "ModelObject/SiteGroundReflectance_Impl.hpp"
+#include "ModelObject/SiteGroundReflectanceSnowModifier_Impl.hpp"
 #include "ModelObject/SitePrecipitation_Impl.hpp"
 #include "ModelObject/SizingParameters_Impl.hpp"
 #include "ModelObject/SiteWaterMainsTemperature_Impl.hpp"
@@ -652,6 +726,38 @@
 #include "StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl.hpp"
 #include "StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl.hpp"
 #include "ZoneHVACComponent/AirLoopHVACUnitarySystem_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACBaseboardConvectiveElectric_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveElectric_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWater_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWaterDesign_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACBaseboardConvectiveWater_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACDehumidifierDX_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACEnergyRecoveryVentilator_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACUnitHeater_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACUnitVentilator_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACEvaporativeCoolerUnit_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACFourPipeFanCoil_Impl.hpp"
+#include "ZoneHVACComponent/ZoneVentilationWindandStackOpenArea_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACHighTemperatureRadiant_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACPackagedTerminalAirConditioner_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACPackagedTerminalHeatPump_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACWaterToAirHeatPump_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACIdealLoadsAirSystem_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACLowTemperatureRadiantElectric_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACLowTempRadiantVarFlow_Impl.hpp"
+#include "ZoneHVACComponent/RefrigerationAirChiller_Impl.hpp"
+#include "ModelObject/ZoneHVACBaseboardRadiantConvectiveSteam_Impl.hpp"
+#include "ModelObject/ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl.hpp"
+#include "ModelObject/ZoneHVACExhaustControl_Impl.hpp"
+#include "ModelObject/ZoneHVACHybridUnitaryHVAC_Impl.hpp"
+#include "ModelObject/ZoneHVACForcedAirUserDefined_Impl.hpp"
+#include "ModelObject/ZoneHVACOutdoorAirUnit_Impl.hpp"
+#include "ModelObject/ZoneHVACOutdoorAirUnitEquipmentList_Impl.hpp"
+#include "ModelObject/ZoneHVACVentilatedSlab_Impl.hpp"
+#include "ModelObject/ZoneHVACWindowAirConditioner_Impl.hpp"
 #include "ModelObject/FanPerformanceNightVentilation_Impl.hpp"
 #include "ModelObject/FaultModelFoulingAirFilter_Impl.hpp"
 #include "ModelObject/FaultModelFoulingBoiler_Impl.hpp"
@@ -719,7 +825,7 @@
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "ZoneHVACEquipmentConnections_Impl.hpp"
-#include "ZoneHVACEquipmentList_Impl.hpp"
+#include "ModelObject/ZoneHVACEquipmentList_Impl.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -893,6 +999,20 @@ namespace epmodel {
 
     std::shared_ptr<openstudio::detail::WorkspaceObject_Impl> Model_Impl::createObject(const IdfObject& object, bool keepHandle) {
       const auto type = object.iddObject().type();
+      static const IddObjectType plantEquipmentOperationChillerHeaterChangeoverType("PlantEquipmentOperation_ChillerHeaterChangeover");
+      static const IddObjectType plantEquipmentOperationComponentSetpointType("PlantEquipmentOperation_ComponentSetpoint");
+      static const IddObjectType plantEquipmentOperationThermalEnergyStorageType("PlantEquipmentOperation_ThermalEnergyStorage");
+      static const IddObjectType plantEquipmentOperationUncontrolledType("PlantEquipmentOperation_Uncontrolled");
+      static const IddObjectType plantEquipmentOperationUserDefinedType("PlantEquipmentOperation_UserDefined");
+      static const IddObjectType plantEquipmentOperationCoolingLoadType("PlantEquipmentOperation_CoolingLoad");
+      static const IddObjectType plantEquipmentOperationHeatingLoadType("PlantEquipmentOperation_HeatingLoad");
+      static const IddObjectType plantEquipmentOperationOutdoorDewpointType("PlantEquipmentOperation_OutdoorDewpoint");
+      static const IddObjectType plantEquipmentOperationOutdoorDewpointDifferenceType("PlantEquipmentOperation_OutdoorDewpointDifference");
+      static const IddObjectType plantEquipmentOperationOutdoorDryBulbDifferenceType("PlantEquipmentOperation_OutdoorDryBulbDifference");
+      static const IddObjectType plantEquipmentOperationOutdoorDryBulbType("PlantEquipmentOperation_OutdoorDryBulb");
+      static const IddObjectType plantEquipmentOperationOutdoorRelativeHumidityType("PlantEquipmentOperation_OutdoorRelativeHumidity");
+      static const IddObjectType plantEquipmentOperationOutdoorWetBulbType("PlantEquipmentOperation_OutdoorWetBulb");
+      static const IddObjectType plantEquipmentOperationOutdoorWetBulbDifferenceType("PlantEquipmentOperation_OutdoorWetBulbDifference");
       if (type == IddObjectType::AirLoopHVAC) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AirLoopHVAC_Impl(object, this, keepHandle));
       }
@@ -1023,6 +1143,15 @@ namespace epmodel {
       }
       if (type == IddObjectType::PipingSystem_Underground_PipeSegment) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PipingSystemUndergroundPipeSegment_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Pump_ConstantSpeed) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PumpConstantSpeed_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Pump_VariableSpeed) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PumpVariableSpeed_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Pump_VariableSpeed_Condensate) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PumpVariableSpeedCondensate_Impl(object, this, keepHandle));
       }
       if (type == IddObjectType::HeaderedPumps_ConstantSpeed) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new HeaderedPumpsConstantSpeed_Impl(object, this, keepHandle));
@@ -1692,6 +1821,10 @@ namespace epmodel {
       if (type == IddObjectType::Controller_OutdoorAir) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ControllerOutdoorAir_Impl(object, this, keepHandle));
       }
+      if (type == IddObjectType::OS_ZoneHVAC_EnergyRecoveryVentilator_Controller) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACEnergyRecoveryVentilatorController_Impl(object, this, keepHandle));
+      }
       if (type == IddObjectType::Controller_MechanicalVentilation) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ControllerMechanicalVentilation_Impl(object, this, keepHandle));
       }
@@ -1748,6 +1881,154 @@ namespace epmodel {
       }
       if (type == IddObjectType::ZoneHVAC_AirDistributionUnit) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACAirDistributionUnit_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_Baseboard_Convective_Electric) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACBaseboardConvectiveElectric_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_Baseboard_Convective_Water) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACBaseboardConvectiveWater_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_Baseboard_RadiantConvective_Electric) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACBaseboardRadiantConvectiveElectric_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_Baseboard_RadiantConvective_Water) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACBaseboardRadiantConvectiveWater_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_CoolingPanel_RadiantConvective_Water) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACCoolingPanelRadiantConvectiveWater_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_HighTemperatureRadiant) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACHighTemperatureRadiant_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::OS_ZoneHVAC_PackagedTerminalAirConditioner) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACPackagedTerminalAirConditioner_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::OS_ZoneHVAC_PackagedTerminalHeatPump) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACPackagedTerminalHeatPump_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::OS_ZoneHVAC_TerminalUnit_VariableRefrigerantFlow) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_LowTemperatureRadiant_ConstantFlow) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACLowTempRadiantConstFlow_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_LowTemperatureRadiant_VariableFlow) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACLowTempRadiantVarFlow_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_LowTemperatureRadiant_VariableFlow_Design) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACLowTempRadiantVarFlow_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_LowTemperatureRadiant_Electric) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACLowTemperatureRadiantElectric_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_Baseboard_RadiantConvective_Water_Design) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACBaseboardRadiantConvectiveWaterDesign_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_Baseboard_RadiantConvective_Steam) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACBaseboardRadiantConvectiveSteam_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_Baseboard_RadiantConvective_Steam_Design) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::OS_ZoneHVAC_Dehumidifier_DX) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACDehumidifierDX_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_EnergyRecoveryVentilator) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACEnergyRecoveryVentilator_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Refrigeration_AirChiller) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RefrigerationAirChiller_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Refrigeration_Condenser_AirCooled) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RefrigerationCondenserAirCooled_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Refrigeration_GasCooler_AirCooled) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RefrigerationGasCoolerAirCooled_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Refrigeration_Condenser_EvaporativeCooled) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RefrigerationCondenserEvaporativeCooled_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Refrigeration_Condenser_Cascade) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RefrigerationCondenserCascade_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Refrigeration_Subcooler) {
+        if (auto subcoolerType = object.getString(Refrigeration_SubcoolerFields::SubcoolerType, true)) {
+          if (openstudio::istringEqual(*subcoolerType, "LiquidSuction")) {
+            return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RefrigerationSubcoolerLiquidSuction_Impl(object, this, keepHandle));
+          }
+        }
+      }
+      if (type == IddObjectType::Refrigeration_SecondarySystem) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RefrigerationSecondarySystem_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Refrigeration_TranscriticalSystem) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RefrigerationTranscriticalSystem_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Refrigeration_WalkIn) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RefrigerationWalkIn_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::OS_Refrigeration_Condenser_WaterCooled) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RefrigerationCondenserWaterCooled_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Refrigeration_Case) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RefrigerationCase_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Refrigeration_Compressor) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RefrigerationCompressor_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Refrigeration_System) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RefrigerationSystem_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::OS_Refrigeration_CompressorRack) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RefrigerationCompressorRack_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_EvaporativeCoolerUnit) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACEvaporativeCoolerUnit_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_UnitHeater) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACUnitHeater_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::OS_ZoneHVAC_UnitVentilator) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACUnitVentilator_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_FourPipeFanCoil) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACFourPipeFanCoil_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_IdealLoadsAirSystem) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACIdealLoadsAirSystem_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_ExhaustControl) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACExhaustControl_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_HybridUnitaryHVAC) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACHybridUnitaryHVAC_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_ForcedAir_UserDefined) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACForcedAirUserDefined_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_OutdoorAirUnit) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACOutdoorAirUnit_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_OutdoorAirUnit_EquipmentList) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACOutdoorAirUnitEquipmentList_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_VentilatedSlab) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACVentilatedSlab_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_WindowAirConditioner) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACWindowAirConditioner_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneHVAC_WaterToAirHeatPump) {
+        LOG_FREE(Info, "openstudio.epmodel.Model", "Creating a ZoneHVACWaterToAirHeatPump workspace object");
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACWaterToAirHeatPump_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::OS_ZoneVentilation_WindandStackOpenArea) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneVentilationWindandStackOpenArea_Impl(object, this, keepHandle));
       }
       if (type == IddObjectType::AirConditioner_VariableRefrigerantFlow) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AirConditionerVariableRefrigerantFlow_Impl(object, this, keepHandle));
@@ -1816,6 +2097,9 @@ namespace epmodel {
       }
       if (type == IddObjectType::PlantComponent_TemperatureSource) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PlantComponentTemperatureSource_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::PlantComponent_UserDefined) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PlantComponentUserDefined_Impl(object, this, keepHandle));
       }
       if (type == IddObjectType::TemperingValve) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new TemperingValve_Impl(object, this, keepHandle));
@@ -2097,6 +2381,18 @@ namespace epmodel {
       }
       if (type == IddObjectType::Output_Surfaces_Drawing) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new OutputSurfacesDrawing_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::PythonPlugin_OutputVariable) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PythonPluginOutputVariable_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::OS_PythonPlugin_TrendVariable) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PythonPluginTrendVariable_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::OS_PythonPlugin_Variable) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PythonPluginVariable_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::PythonPlugin_SearchPaths) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PythonPluginSearchPaths_Impl(object, this, keepHandle));
       }
       if (type == IddObjectType::EnergyManagementSystem_Sensor) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new EnergyManagementSystemSensor_Impl(object, this, keepHandle));
@@ -2457,6 +2753,15 @@ namespace epmodel {
       if (type == IddObjectType::Ceiling_Interzone) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CeilingInterzone_Impl(object, this, keepHandle));
       }
+      if (type == IddObjectType::Roof) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new Roof_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::RoofIrrigation) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RoofIrrigation_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::RoofCeiling_Detailed) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RoofCeilingDetailed_Impl(object, this, keepHandle));
+      }
       if (type == IddObjectType::Wall_Adiabatic) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new WallAdiabatic_Impl(object, this, keepHandle));
       }
@@ -2625,6 +2930,58 @@ namespace epmodel {
       if (type == IddObjectType::AirLoopHVAC_DedicatedOutdoorAirSystem) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AirLoopHVACDedicatedOutdoorAirSystem_Impl(object, this, keepHandle));
       }
+      if (type == plantEquipmentOperationChillerHeaterChangeoverType) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantEquipmentOperationChillerHeaterChangeover_Impl(object, this, keepHandle));
+      }
+      if (type == plantEquipmentOperationComponentSetpointType) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PlantEquipmentOperationComponentSetpoint_Impl(object, this, keepHandle));
+      }
+      if (type == plantEquipmentOperationThermalEnergyStorageType) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantEquipmentOperationThermalEnergyStorage_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::PlantEquipmentOperationSchemes) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PlantEquipmentOperationSchemes_Impl(object, this, keepHandle));
+      }
+      if (type == plantEquipmentOperationUncontrolledType) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PlantEquipmentOperationUncontrolled_Impl(object, this, keepHandle));
+      }
+      if (type == plantEquipmentOperationUserDefinedType) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PlantEquipmentOperationUserDefined_Impl(object, this, keepHandle));
+      }
+      if (type == plantEquipmentOperationCoolingLoadType || type == IddObjectType::OS_PlantEquipmentOperation_CoolingLoad) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PlantEquipmentOperationCoolingLoad_Impl(object, this, keepHandle));
+      }
+      if (type == plantEquipmentOperationHeatingLoadType || type == IddObjectType::OS_PlantEquipmentOperation_HeatingLoad) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PlantEquipmentOperationHeatingLoad_Impl(object, this, keepHandle));
+      }
+      if (type == plantEquipmentOperationOutdoorDewpointType || type == IddObjectType::OS_PlantEquipmentOperation_OutdoorDewpoint) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PlantEquipmentOperationOutdoorDewpoint_Impl(object, this, keepHandle));
+      }
+      if (type == plantEquipmentOperationOutdoorDewpointDifferenceType
+          || type == IddObjectType::OS_PlantEquipmentOperation_OutdoorDewpointDifference) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantEquipmentOperationOutdoorDewpointDifference_Impl(object, this, keepHandle));
+      }
+      if (type == plantEquipmentOperationOutdoorDryBulbDifferenceType || type == IddObjectType::OS_PlantEquipmentOperation_OutdoorDryBulbDifference) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantEquipmentOperationOutdoorDryBulbDifference_Impl(object, this, keepHandle));
+      }
+      if (type == plantEquipmentOperationOutdoorWetBulbDifferenceType || type == IddObjectType::OS_PlantEquipmentOperation_OutdoorWetBulbDifference) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantEquipmentOperationOutdoorWetBulbDifference_Impl(object, this, keepHandle));
+      }
+      if (type == plantEquipmentOperationOutdoorDryBulbType || type == IddObjectType::OS_PlantEquipmentOperation_OutdoorDryBulb) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PlantEquipmentOperationOutdoorDryBulb_Impl(object, this, keepHandle));
+      }
+      if (type == plantEquipmentOperationOutdoorRelativeHumidityType || type == IddObjectType::OS_PlantEquipmentOperation_OutdoorRelativeHumidity) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantEquipmentOperationOutdoorRelativeHumidity_Impl(object, this, keepHandle));
+      }
+      if (type == plantEquipmentOperationOutdoorWetBulbType || type == IddObjectType::OS_PlantEquipmentOperation_OutdoorWetBulb) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PlantEquipmentOperationOutdoorWetBulb_Impl(object, this, keepHandle));
+      }
       if (type == IddObjectType::ZoneAirBalance_OutdoorAir) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneAirBalanceOutdoorAir_Impl(object, this, keepHandle));
       }
@@ -2637,6 +2994,65 @@ namespace epmodel {
       if (type == IddObjectType::ZoneAirMassFlowConservation) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneAirMassFlowConservation_Impl(object, this, keepHandle));
       }
+      if (type == IddObjectType::ZoneCoolTower_Shower) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneCoolTowerShower_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneCrossMixing) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneCrossMixing_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneMixing) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneMixing_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneRefrigerationDoorMixing) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneRefrigerationDoorMixing_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneThermalChimney) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneThermalChimney_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneProperty_LocalEnvironment) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZonePropertyLocalEnvironment_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneProperty_UserViewFactors_BySurfaceName) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZonePropertyUserViewFactorsBySurfaceName_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneInfiltration_DesignFlowRate) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new SpaceInfiltrationDesignFlowRate_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneInfiltration_FlowCoefficient) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new SpaceInfiltrationFlowCoefficient_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneInfiltration_EffectiveLeakageArea) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new SpaceInfiltrationEffectiveLeakageArea_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneEarthtube) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneEarthtube_Impl(object, this, keepHandle));
+      }
+      if (type == ZoneEarthtubeParameters::iddObjectType()) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneEarthtubeParameters_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneGroup) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneGroup_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneControl_ContaminantController) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneControlContaminantController_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::OS_ZoneControl_Humidistat) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneControlHumidistat_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneControl_Thermostat_OperativeTemperature) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneControlThermostatOperativeTemperature_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneControl_Thermostat_TemperatureAndHumidity) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneControlThermostatTemperatureAndHumidity_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneControl_Thermostat_ThermalComfort) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneControlThermostatThermalComfort_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneControl_Thermostat_StagedDualSetpoint) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneControlThermostatStagedDualSetpoint_Impl(object, this, keepHandle));
+      }
       if (type == IddObjectType::ZoneContaminantSourceAndSink_CarbonDioxide) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new ZoneContaminantSourceAndSinkCarbonDioxide_Impl(object, this, keepHandle));
@@ -2648,6 +3064,14 @@ namespace epmodel {
       if (type == IddObjectType::ZoneContaminantSourceAndSink_Generic_CutoffModel) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new ZoneContaminantSourceAndSinkGenericCutoffModel_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneContaminantSourceAndSink_Generic_DecaySource) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneContaminantSourceAndSinkGenericDecaySource_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ZoneContaminantSourceAndSink_Generic_DepositionRateSink) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneContaminantSourceAndSinkGenericDepositionRateSink_Impl(object, this, keepHandle));
       }
       if (type == IddObjectType::ZoneBaseboard_OutdoorTemperatureControlled) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
@@ -2951,6 +3375,9 @@ namespace epmodel {
       if (type == IddObjectType::GroundHeatTransfer_Slab_ZFACE) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new GroundHeatTransferSlabZFACE_Impl(object, this, keepHandle));
       }
+      if (type == IddObjectType::Site_GroundDomain_Slab) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new SiteGroundDomainSlab_Impl(object, this, keepHandle));
+      }
       if (type == IddObjectType::Site_GroundDomain_Basement) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new SiteGroundDomainBasement_Impl(object, this, keepHandle));
       }
@@ -2963,6 +3390,9 @@ namespace epmodel {
       if (type == IddObjectType::Site_GroundTemperature_Shallow) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new SiteGroundTemperatureShallow_Impl(object, this, keepHandle));
       }
+      if (type == IddObjectType::Site_GroundTemperature_BuildingSurface) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new SiteGroundTemperatureBuildingSurface_Impl(object, this, keepHandle));
+      }
       if (type == IddObjectType::Site_GroundTemperature_Undisturbed_FiniteDifference) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new SiteGroundTemperatureUndisturbedFiniteDifference_Impl(object, this, keepHandle));
@@ -2973,6 +3403,12 @@ namespace epmodel {
       }
       if (type == IddObjectType::Site_GroundTemperature_Undisturbed_Xing) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new SiteGroundTemperatureUndisturbedXing_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Site_GroundReflectance) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new SiteGroundReflectance_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Site_GroundReflectance_SnowModifier) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new SiteGroundReflectanceSnowModifier_Impl(object, this, keepHandle));
       }
       if (type == IddObjectType::Site_Precipitation) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new SitePrecipitation_Impl(object, this, keepHandle));
@@ -3054,6 +3490,22 @@ namespace epmodel {
       if (type == IddObjectType::RoomAirSettings_UnderFloorAirDistributionInterior) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new RoomAirSettingsUnderFloorAirDistributionInterior_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::RoomAir_Node) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RoomAirNode_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::RoomAir_Node_AirflowNetwork) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RoomAirNodeAirflowNetwork_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::RoomAir_Node_AirflowNetwork_AdjacentSurfaceList) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new RoomAirNodeAirflowNetworkAdjacentSurfaceList_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::RoomAir_Node_AirflowNetwork_HVACEquipment) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RoomAirNodeAirflowNetworkHVACEquipment_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::RoomAir_Node_AirflowNetwork_InternalGains) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RoomAirNodeAirflowNetworkInternalGains_Impl(object, this, keepHandle));
       }
       if (type == IddObjectType::AirLoopHVAC_Unitary_Furnace_HeatCool) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AirLoopHVACUnitaryFurnaceHeatCool_Impl(object, this, keepHandle));
@@ -3333,6 +3785,16 @@ namespace epmodel {
       if (auto pipingSystemUndergroundPipeSegment = std::dynamic_pointer_cast<PipingSystemUndergroundPipeSegment_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new PipingSystemUndergroundPipeSegment_Impl(*pipingSystemUndergroundPipeSegment, this, keepHandle));
+      }
+      if (auto pumpConstantSpeed = std::dynamic_pointer_cast<PumpConstantSpeed_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PumpConstantSpeed_Impl(*pumpConstantSpeed, this, keepHandle));
+      }
+      if (auto pumpVariableSpeed = std::dynamic_pointer_cast<PumpVariableSpeed_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PumpVariableSpeed_Impl(*pumpVariableSpeed, this, keepHandle));
+      }
+      if (auto pumpVariableSpeedCondensate = std::dynamic_pointer_cast<PumpVariableSpeedCondensate_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PumpVariableSpeedCondensate_Impl(*pumpVariableSpeedCondensate, this, keepHandle));
       }
       if (auto headeredPumpsConstantSpeed = std::dynamic_pointer_cast<HeaderedPumpsConstantSpeed_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
@@ -4175,6 +4637,11 @@ namespace epmodel {
       if (auto outdoorAirController = std::dynamic_pointer_cast<ControllerOutdoorAir_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ControllerOutdoorAir_Impl(*outdoorAirController, this, keepHandle));
       }
+      if (auto energyRecoveryVentilatorController =
+            std::dynamic_pointer_cast<ZoneHVACEnergyRecoveryVentilatorController_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACEnergyRecoveryVentilatorController_Impl(*energyRecoveryVentilatorController, this, keepHandle));
+      }
       if (auto mechanicalVentilationController = std::dynamic_pointer_cast<ControllerMechanicalVentilation_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new ControllerMechanicalVentilation_Impl(*mechanicalVentilationController, this, keepHandle));
@@ -4312,6 +4779,10 @@ namespace epmodel {
       if (auto plantComponentTemperatureSource = std::dynamic_pointer_cast<PlantComponentTemperatureSource_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new PlantComponentTemperatureSource_Impl(*plantComponentTemperatureSource, this, keepHandle));
+      }
+      if (auto plantComponentUserDefined = std::dynamic_pointer_cast<PlantComponentUserDefined_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantComponentUserDefined_Impl(*plantComponentUserDefined, this, keepHandle));
       }
       if (auto temperingValve = std::dynamic_pointer_cast<TemperingValve_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new TemperingValve_Impl(*temperingValve, this, keepHandle));
@@ -4627,6 +5098,21 @@ namespace epmodel {
       }
       if (auto outputSurfacesDrawing = std::dynamic_pointer_cast<OutputSurfacesDrawing_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new OutputSurfacesDrawing_Impl(*outputSurfacesDrawing, this, keepHandle));
+      }
+      if (auto pythonPluginOutputVariable = std::dynamic_pointer_cast<PythonPluginOutputVariable_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PythonPluginOutputVariable_Impl(*pythonPluginOutputVariable, this, keepHandle));
+      }
+      if (auto pythonPluginTrendVariable = std::dynamic_pointer_cast<PythonPluginTrendVariable_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PythonPluginTrendVariable_Impl(*pythonPluginTrendVariable, this, keepHandle));
+      }
+      if (auto pythonPluginVariable = std::dynamic_pointer_cast<PythonPluginVariable_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PythonPluginVariable_Impl(*pythonPluginVariable, this, keepHandle));
+      }
+      if (auto pythonPluginSearchPaths = std::dynamic_pointer_cast<PythonPluginSearchPaths_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PythonPluginSearchPaths_Impl(*pythonPluginSearchPaths, this, keepHandle));
       }
       if (auto energyManagementSystemTrendVariable = std::dynamic_pointer_cast<EnergyManagementSystemTrendVariable_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
@@ -5107,6 +5593,28 @@ namespace epmodel {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new RoomAirSettingsUnderFloorAirDistributionInterior_Impl(*roomAirSettingsUnderFloorAirDistributionInterior, this, keepHandle));
       }
+      if (auto roomAirNode = std::dynamic_pointer_cast<RoomAirNode_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RoomAirNode_Impl(*roomAirNode, this, keepHandle));
+      }
+      if (auto roomAirNodeAirflowNetwork = std::dynamic_pointer_cast<RoomAirNodeAirflowNetwork_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new RoomAirNodeAirflowNetwork_Impl(*roomAirNodeAirflowNetwork, this, keepHandle));
+      }
+      if (auto roomAirNodeAirflowNetworkAdjacentSurfaceList =
+            std::dynamic_pointer_cast<RoomAirNodeAirflowNetworkAdjacentSurfaceList_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new RoomAirNodeAirflowNetworkAdjacentSurfaceList_Impl(*roomAirNodeAirflowNetworkAdjacentSurfaceList, this, keepHandle));
+      }
+      if (auto roomAirNodeAirflowNetworkHVACEquipment =
+            std::dynamic_pointer_cast<RoomAirNodeAirflowNetworkHVACEquipment_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new RoomAirNodeAirflowNetworkHVACEquipment_Impl(*roomAirNodeAirflowNetworkHVACEquipment, this, keepHandle));
+      }
+      if (auto roomAirNodeAirflowNetworkInternalGains =
+            std::dynamic_pointer_cast<RoomAirNodeAirflowNetworkInternalGains_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new RoomAirNodeAirflowNetworkInternalGains_Impl(*roomAirNodeAirflowNetworkInternalGains, this, keepHandle));
+      }
       if (auto airflowNetworkDistributionComponentCoil =
             std::dynamic_pointer_cast<AirflowNetworkDistributionComponentCoil_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
@@ -5122,6 +5630,15 @@ namespace epmodel {
       }
       if (auto ceilingInterzone = std::dynamic_pointer_cast<CeilingInterzone_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CeilingInterzone_Impl(*ceilingInterzone, this, keepHandle));
+      }
+      if (auto roof = std::dynamic_pointer_cast<Roof_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new Roof_Impl(*roof, this, keepHandle));
+      }
+      if (auto roofIrrigation = std::dynamic_pointer_cast<RoofIrrigation_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RoofIrrigation_Impl(*roofIrrigation, this, keepHandle));
+      }
+      if (auto roofCeilingDetailed = std::dynamic_pointer_cast<RoofCeilingDetailed_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RoofCeilingDetailed_Impl(*roofCeilingDetailed, this, keepHandle));
       }
       if (auto wallAdiabatic = std::dynamic_pointer_cast<WallAdiabatic_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new WallAdiabatic_Impl(*wallAdiabatic, this, keepHandle));
@@ -5329,6 +5846,62 @@ namespace epmodel {
       if (auto doas = std::dynamic_pointer_cast<AirLoopHVACDedicatedOutdoorAirSystem_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AirLoopHVACDedicatedOutdoorAirSystem_Impl(*doas, this, keepHandle));
       }
+      if (auto changeover = std::dynamic_pointer_cast<PlantEquipmentOperationChillerHeaterChangeover_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantEquipmentOperationChillerHeaterChangeover_Impl(*changeover, this, keepHandle));
+      }
+      if (auto componentSetpoint = std::dynamic_pointer_cast<PlantEquipmentOperationComponentSetpoint_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantEquipmentOperationComponentSetpoint_Impl(*componentSetpoint, this, keepHandle));
+      }
+      if (auto thermalEnergyStorage = std::dynamic_pointer_cast<PlantEquipmentOperationThermalEnergyStorage_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantEquipmentOperationThermalEnergyStorage_Impl(*thermalEnergyStorage, this, keepHandle));
+      }
+      if (auto schemes = std::dynamic_pointer_cast<PlantEquipmentOperationSchemes_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PlantEquipmentOperationSchemes_Impl(*schemes, this, keepHandle));
+      }
+      if (auto uncontrolled = std::dynamic_pointer_cast<PlantEquipmentOperationUncontrolled_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantEquipmentOperationUncontrolled_Impl(*uncontrolled, this, keepHandle));
+      }
+      if (auto userDefined = std::dynamic_pointer_cast<PlantEquipmentOperationUserDefined_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PlantEquipmentOperationUserDefined_Impl(*userDefined, this, keepHandle));
+      }
+      if (auto coolingLoad = std::dynamic_pointer_cast<PlantEquipmentOperationCoolingLoad_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PlantEquipmentOperationCoolingLoad_Impl(*coolingLoad, this, keepHandle));
+      }
+      if (auto heatingLoad = std::dynamic_pointer_cast<PlantEquipmentOperationHeatingLoad_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PlantEquipmentOperationHeatingLoad_Impl(*heatingLoad, this, keepHandle));
+      }
+      if (auto outdoorDewpoint = std::dynamic_pointer_cast<PlantEquipmentOperationOutdoorDewpoint_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantEquipmentOperationOutdoorDewpoint_Impl(*outdoorDewpoint, this, keepHandle));
+      }
+      if (auto outdoorDewpointDifference = std::dynamic_pointer_cast<PlantEquipmentOperationOutdoorDewpointDifference_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantEquipmentOperationOutdoorDewpointDifference_Impl(*outdoorDewpointDifference, this, keepHandle));
+      }
+      if (auto outdoorDryBulbDifference = std::dynamic_pointer_cast<PlantEquipmentOperationOutdoorDryBulbDifference_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantEquipmentOperationOutdoorDryBulbDifference_Impl(*outdoorDryBulbDifference, this, keepHandle));
+      }
+      if (auto outdoorDryBulb = std::dynamic_pointer_cast<PlantEquipmentOperationOutdoorDryBulb_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantEquipmentOperationOutdoorDryBulb_Impl(*outdoorDryBulb, this, keepHandle));
+      }
+      if (auto outdoorRelativeHumidity = std::dynamic_pointer_cast<PlantEquipmentOperationOutdoorRelativeHumidity_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantEquipmentOperationOutdoorRelativeHumidity_Impl(*outdoorRelativeHumidity, this, keepHandle));
+      }
+      if (auto outdoorWetBulb = std::dynamic_pointer_cast<PlantEquipmentOperationOutdoorWetBulb_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantEquipmentOperationOutdoorWetBulb_Impl(*outdoorWetBulb, this, keepHandle));
+      }
+      if (auto outdoorWetBulbDifference = std::dynamic_pointer_cast<PlantEquipmentOperationOutdoorWetBulbDifference_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new PlantEquipmentOperationOutdoorWetBulbDifference_Impl(*outdoorWetBulbDifference, this, keepHandle));
+      }
       if (auto zoneAirBalance = std::dynamic_pointer_cast<ZoneAirBalanceOutdoorAir_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneAirBalanceOutdoorAir_Impl(*zoneAirBalance, this, keepHandle));
       }
@@ -5344,6 +5917,79 @@ namespace epmodel {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new ZoneAirMassFlowConservation_Impl(*zoneAirMassFlowConservation, this, keepHandle));
       }
+      if (auto zoneCoolTowerShower = std::dynamic_pointer_cast<ZoneCoolTowerShower_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneCoolTowerShower_Impl(*zoneCoolTowerShower, this, keepHandle));
+      }
+      if (auto zoneCrossMixing = std::dynamic_pointer_cast<ZoneCrossMixing_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneCrossMixing_Impl(*zoneCrossMixing, this, keepHandle));
+      }
+      if (auto zoneMixing = std::dynamic_pointer_cast<ZoneMixing_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneMixing_Impl(*zoneMixing, this, keepHandle));
+      }
+      if (auto zoneRefrigerationDoorMixing = std::dynamic_pointer_cast<ZoneRefrigerationDoorMixing_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneRefrigerationDoorMixing_Impl(*zoneRefrigerationDoorMixing, this, keepHandle));
+      }
+      if (auto zoneThermalChimney = std::dynamic_pointer_cast<ZoneThermalChimney_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneThermalChimney_Impl(*zoneThermalChimney, this, keepHandle));
+      }
+      if (auto zonePropertyLocalEnvironment = std::dynamic_pointer_cast<ZonePropertyLocalEnvironment_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZonePropertyLocalEnvironment_Impl(*zonePropertyLocalEnvironment, this, keepHandle));
+      }
+      if (auto zonePropertyUserViewFactorsBySurfaceName =
+            std::dynamic_pointer_cast<ZonePropertyUserViewFactorsBySurfaceName_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZonePropertyUserViewFactorsBySurfaceName_Impl(*zonePropertyUserViewFactorsBySurfaceName, this, keepHandle));
+      }
+      if (auto spaceInfiltrationDesignFlowRate = std::dynamic_pointer_cast<SpaceInfiltrationDesignFlowRate_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new SpaceInfiltrationDesignFlowRate_Impl(*spaceInfiltrationDesignFlowRate, this, keepHandle));
+      }
+      if (auto spaceInfiltrationFlowCoefficient = std::dynamic_pointer_cast<SpaceInfiltrationFlowCoefficient_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new SpaceInfiltrationFlowCoefficient_Impl(*spaceInfiltrationFlowCoefficient, this, keepHandle));
+      }
+      if (auto spaceInfiltrationEffectiveLeakageArea = std::dynamic_pointer_cast<SpaceInfiltrationEffectiveLeakageArea_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new SpaceInfiltrationEffectiveLeakageArea_Impl(*spaceInfiltrationEffectiveLeakageArea, this, keepHandle));
+      }
+      if (auto zoneEarthtube = std::dynamic_pointer_cast<ZoneEarthtube_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneEarthtube_Impl(*zoneEarthtube, this, keepHandle));
+      }
+      if (auto zoneEarthtubeParameters = std::dynamic_pointer_cast<ZoneEarthtubeParameters_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneEarthtubeParameters_Impl(*zoneEarthtubeParameters, this, keepHandle));
+      }
+      if (auto zoneGroup = std::dynamic_pointer_cast<ZoneGroup_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneGroup_Impl(*zoneGroup, this, keepHandle));
+      }
+      if (auto zoneControlContaminantController = std::dynamic_pointer_cast<ZoneControlContaminantController_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneControlContaminantController_Impl(*zoneControlContaminantController, this, keepHandle));
+      }
+      if (auto zoneControlHumidistat = std::dynamic_pointer_cast<ZoneControlHumidistat_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneControlHumidistat_Impl(*zoneControlHumidistat, this, keepHandle));
+      }
+      if (auto zoneControlThermostatOperativeTemperature =
+            std::dynamic_pointer_cast<ZoneControlThermostatOperativeTemperature_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneControlThermostatOperativeTemperature_Impl(*zoneControlThermostatOperativeTemperature, this, keepHandle));
+      }
+      if (auto zoneControlThermostatTemperatureAndHumidity =
+            std::dynamic_pointer_cast<ZoneControlThermostatTemperatureAndHumidity_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneControlThermostatTemperatureAndHumidity_Impl(*zoneControlThermostatTemperatureAndHumidity, this, keepHandle));
+      }
+      if (auto zoneControlThermostatThermalComfort = std::dynamic_pointer_cast<ZoneControlThermostatThermalComfort_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneControlThermostatThermalComfort_Impl(*zoneControlThermostatThermalComfort, this, keepHandle));
+      }
+      if (auto zoneControlThermostatStagedDualSetpoint =
+            std::dynamic_pointer_cast<ZoneControlThermostatStagedDualSetpoint_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneControlThermostatStagedDualSetpoint_Impl(*zoneControlThermostatStagedDualSetpoint, this, keepHandle));
+      }
       if (auto zoneContaminantSourceAndSinkCarbonDioxide =
             std::dynamic_pointer_cast<ZoneContaminantSourceAndSinkCarbonDioxide_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
@@ -5358,6 +6004,16 @@ namespace epmodel {
             std::dynamic_pointer_cast<ZoneContaminantSourceAndSinkGenericCutoffModel_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new ZoneContaminantSourceAndSinkGenericCutoffModel_Impl(*zoneContaminantSourceAndSinkGenericCutoffModel, this, keepHandle));
+      }
+      if (auto zoneContaminantSourceAndSinkGenericDecaySource =
+            std::dynamic_pointer_cast<ZoneContaminantSourceAndSinkGenericDecaySource_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneContaminantSourceAndSinkGenericDecaySource_Impl(*zoneContaminantSourceAndSinkGenericDecaySource, this, keepHandle));
+      }
+      if (auto zoneContaminantSourceAndSinkGenericDepositionRateSink =
+            std::dynamic_pointer_cast<ZoneContaminantSourceAndSinkGenericDepositionRateSink_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneContaminantSourceAndSinkGenericDepositionRateSink_Impl(*zoneContaminantSourceAndSinkGenericDepositionRateSink, this, keepHandle));
       }
       if (auto zoneBaseboardOutdoorTemperatureControlled =
             std::dynamic_pointer_cast<ZoneBaseboardOutdoorTemperatureControlled_Impl>(originalObjectImplPtr)) {
@@ -5706,6 +6362,16 @@ namespace epmodel {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new GroundHeatTransferSlabZFACE_Impl(*groundHeatTransferSlabZFACE, this, keepHandle));
       }
+      if (auto siteGroundDomainSlab = std::dynamic_pointer_cast<SiteGroundDomainSlab_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new SiteGroundDomainSlab_Impl(*siteGroundDomainSlab, this, keepHandle));
+      }
+      if (auto siteGroundReflectance = std::dynamic_pointer_cast<SiteGroundReflectance_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new SiteGroundReflectance_Impl(*siteGroundReflectance, this, keepHandle));
+      }
+      if (auto siteGroundReflectanceSnowModifier = std::dynamic_pointer_cast<SiteGroundReflectanceSnowModifier_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new SiteGroundReflectanceSnowModifier_Impl(*siteGroundReflectanceSnowModifier, this, keepHandle));
+      }
       if (auto siteGroundDomainBasement = std::dynamic_pointer_cast<SiteGroundDomainBasement_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new SiteGroundDomainBasement_Impl(*siteGroundDomainBasement, this, keepHandle));
@@ -5721,6 +6387,10 @@ namespace epmodel {
       if (auto siteGroundTemperatureShallow = std::dynamic_pointer_cast<SiteGroundTemperatureShallow_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new SiteGroundTemperatureShallow_Impl(*siteGroundTemperatureShallow, this, keepHandle));
+      }
+      if (auto siteGroundTemperatureBuildingSurface = std::dynamic_pointer_cast<SiteGroundTemperatureBuildingSurface_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new SiteGroundTemperatureBuildingSurface_Impl(*siteGroundTemperatureBuildingSurface, this, keepHandle));
       }
       if (auto siteGroundTemperatureUndisturbedFiniteDifference =
             std::dynamic_pointer_cast<SiteGroundTemperatureUndisturbedFiniteDifference_Impl>(originalObjectImplPtr)) {
@@ -5793,6 +6463,186 @@ namespace epmodel {
       if (auto airLoopHVACUnitarySystem = std::dynamic_pointer_cast<AirLoopHVACUnitarySystem_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new AirLoopHVACUnitarySystem_Impl(*airLoopHVACUnitarySystem, this, keepHandle));
+      }
+      if (auto zoneHVACBaseboardConvectiveElectric = std::dynamic_pointer_cast<ZoneHVACBaseboardConvectiveElectric_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACBaseboardConvectiveElectric_Impl(*zoneHVACBaseboardConvectiveElectric, this, keepHandle));
+      }
+      if (auto zoneHVACBaseboardConvectiveWater = std::dynamic_pointer_cast<ZoneHVACBaseboardConvectiveWater_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACBaseboardConvectiveWater_Impl(*zoneHVACBaseboardConvectiveWater, this, keepHandle));
+      }
+      if (auto zoneHVACBaseboardRadiantConvectiveElectric =
+            std::dynamic_pointer_cast<ZoneHVACBaseboardRadiantConvectiveElectric_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACBaseboardRadiantConvectiveElectric_Impl(*zoneHVACBaseboardRadiantConvectiveElectric, this, keepHandle));
+      }
+      if (auto zoneHVACBaseboardRadiantConvectiveWater =
+            std::dynamic_pointer_cast<ZoneHVACBaseboardRadiantConvectiveWater_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACBaseboardRadiantConvectiveWater_Impl(*zoneHVACBaseboardRadiantConvectiveWater, this, keepHandle));
+      }
+      if (auto zoneHVACCoolingPanelRadiantConvectiveWater =
+            std::dynamic_pointer_cast<ZoneHVACCoolingPanelRadiantConvectiveWater_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACCoolingPanelRadiantConvectiveWater_Impl(*zoneHVACCoolingPanelRadiantConvectiveWater, this, keepHandle));
+      }
+      if (auto zoneHVACHighTemperatureRadiant = std::dynamic_pointer_cast<ZoneHVACHighTemperatureRadiant_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACHighTemperatureRadiant_Impl(*zoneHVACHighTemperatureRadiant, this, keepHandle));
+      }
+      if (auto zoneHVACPackagedTerminalAirConditioner =
+            std::dynamic_pointer_cast<ZoneHVACPackagedTerminalAirConditioner_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACPackagedTerminalAirConditioner_Impl(*zoneHVACPackagedTerminalAirConditioner, this, keepHandle));
+      }
+      if (auto zoneHVACPackagedTerminalHeatPump = std::dynamic_pointer_cast<ZoneHVACPackagedTerminalHeatPump_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACPackagedTerminalHeatPump_Impl(*zoneHVACPackagedTerminalHeatPump, this, keepHandle));
+      }
+      if (auto zoneHVACWaterToAirHeatPump = std::dynamic_pointer_cast<ZoneHVACWaterToAirHeatPump_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACWaterToAirHeatPump_Impl(*zoneHVACWaterToAirHeatPump, this, keepHandle));
+      }
+      if (auto zoneHVACTerminalUnitVariableRefrigerantFlow =
+            std::dynamic_pointer_cast<ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl(*zoneHVACTerminalUnitVariableRefrigerantFlow, this, keepHandle));
+      }
+      if (auto zoneHVACLowTempRadiantConstFlow = std::dynamic_pointer_cast<ZoneHVACLowTempRadiantConstFlow_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACLowTempRadiantConstFlow_Impl(*zoneHVACLowTempRadiantConstFlow, this, keepHandle));
+      }
+      if (auto zoneHVACLowTempRadiantVarFlow = std::dynamic_pointer_cast<ZoneHVACLowTempRadiantVarFlow_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACLowTempRadiantVarFlow_Impl(*zoneHVACLowTempRadiantVarFlow, this, keepHandle));
+      }
+      if (auto zoneHVACLowTemperatureRadiantElectric = std::dynamic_pointer_cast<ZoneHVACLowTemperatureRadiantElectric_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACLowTemperatureRadiantElectric_Impl(*zoneHVACLowTemperatureRadiantElectric, this, keepHandle));
+      }
+      if (auto zoneHVACIdealLoadsAirSystem = std::dynamic_pointer_cast<ZoneHVACIdealLoadsAirSystem_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACIdealLoadsAirSystem_Impl(*zoneHVACIdealLoadsAirSystem, this, keepHandle));
+      }
+      if (auto zoneHVACBaseboardRadiantConvectiveWaterDesign =
+            std::dynamic_pointer_cast<ZoneHVACBaseboardRadiantConvectiveWaterDesign_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACBaseboardRadiantConvectiveWaterDesign_Impl(*zoneHVACBaseboardRadiantConvectiveWaterDesign, this, keepHandle));
+      }
+      if (auto zoneHVACBaseboardRadiantConvectiveSteam =
+            std::dynamic_pointer_cast<ZoneHVACBaseboardRadiantConvectiveSteam_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACBaseboardRadiantConvectiveSteam_Impl(*zoneHVACBaseboardRadiantConvectiveSteam, this, keepHandle));
+      }
+      if (auto zoneHVACBaseboardRadiantConvectiveSteamDesign =
+            std::dynamic_pointer_cast<ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl(*zoneHVACBaseboardRadiantConvectiveSteamDesign, this, keepHandle));
+      }
+      if (auto zoneHVACDehumidifierDX = std::dynamic_pointer_cast<ZoneHVACDehumidifierDX_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACDehumidifierDX_Impl(*zoneHVACDehumidifierDX, this, keepHandle));
+      }
+      if (auto zoneHVACFourPipeFanCoil = std::dynamic_pointer_cast<ZoneHVACFourPipeFanCoil_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACFourPipeFanCoil_Impl(*zoneHVACFourPipeFanCoil, this, keepHandle));
+      }
+      if (auto zoneHVACEnergyRecoveryVentilator = std::dynamic_pointer_cast<ZoneHVACEnergyRecoveryVentilator_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACEnergyRecoveryVentilator_Impl(*zoneHVACEnergyRecoveryVentilator, this, keepHandle));
+      }
+      if (auto zoneHVACEvaporativeCoolerUnit = std::dynamic_pointer_cast<ZoneHVACEvaporativeCoolerUnit_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACEvaporativeCoolerUnit_Impl(*zoneHVACEvaporativeCoolerUnit, this, keepHandle));
+      }
+      if (auto zoneHVACUnitHeater = std::dynamic_pointer_cast<ZoneHVACUnitHeater_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACUnitHeater_Impl(*zoneHVACUnitHeater, this, keepHandle));
+      }
+      if (auto zoneVentilationWindandStackOpenArea = std::dynamic_pointer_cast<ZoneVentilationWindandStackOpenArea_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneVentilationWindandStackOpenArea_Impl(*zoneVentilationWindandStackOpenArea, this, keepHandle));
+      }
+      if (auto zoneHVACUnitVentilator = std::dynamic_pointer_cast<ZoneHVACUnitVentilator_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACUnitVentilator_Impl(*zoneHVACUnitVentilator, this, keepHandle));
+      }
+      if (auto zoneHVACHybridUnitaryHVAC = std::dynamic_pointer_cast<ZoneHVACHybridUnitaryHVAC_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACHybridUnitaryHVAC_Impl(*zoneHVACHybridUnitaryHVAC, this, keepHandle));
+      }
+      if (auto zoneHVACExhaustControl = std::dynamic_pointer_cast<ZoneHVACExhaustControl_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACExhaustControl_Impl(*zoneHVACExhaustControl, this, keepHandle));
+      }
+      if (auto zoneHVACForcedAirUserDefined = std::dynamic_pointer_cast<ZoneHVACForcedAirUserDefined_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACForcedAirUserDefined_Impl(*zoneHVACForcedAirUserDefined, this, keepHandle));
+      }
+      if (auto zoneHVACOutdoorAirUnit = std::dynamic_pointer_cast<ZoneHVACOutdoorAirUnit_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACOutdoorAirUnit_Impl(*zoneHVACOutdoorAirUnit, this, keepHandle));
+      }
+      if (auto zoneHVACOutdoorAirUnitEquipmentList = std::dynamic_pointer_cast<ZoneHVACOutdoorAirUnitEquipmentList_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACOutdoorAirUnitEquipmentList_Impl(*zoneHVACOutdoorAirUnitEquipmentList, this, keepHandle));
+      }
+      if (auto zoneHVACVentilatedSlab = std::dynamic_pointer_cast<ZoneHVACVentilatedSlab_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ZoneHVACVentilatedSlab_Impl(*zoneHVACVentilatedSlab, this, keepHandle));
+      }
+      if (auto zoneHVACWindowAirConditioner = std::dynamic_pointer_cast<ZoneHVACWindowAirConditioner_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ZoneHVACWindowAirConditioner_Impl(*zoneHVACWindowAirConditioner, this, keepHandle));
+      }
+      if (auto refrigerationAirChiller = std::dynamic_pointer_cast<RefrigerationAirChiller_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new RefrigerationAirChiller_Impl(*refrigerationAirChiller, this, keepHandle));
+      }
+      if (auto refrigerationCondenserAirCooled = std::dynamic_pointer_cast<RefrigerationCondenserAirCooled_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new RefrigerationCondenserAirCooled_Impl(*refrigerationCondenserAirCooled, this, keepHandle));
+      }
+      if (auto refrigerationGasCooler = std::dynamic_pointer_cast<RefrigerationGasCoolerAirCooled_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new RefrigerationGasCoolerAirCooled_Impl(*refrigerationGasCooler, this, keepHandle));
+      }
+      if (auto refrigerationCondenserEvaporativeCooled =
+            std::dynamic_pointer_cast<RefrigerationCondenserEvaporativeCooled_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new RefrigerationCondenserEvaporativeCooled_Impl(*refrigerationCondenserEvaporativeCooled, this, keepHandle));
+      }
+      if (auto refrigerationCondenserCascade = std::dynamic_pointer_cast<RefrigerationCondenserCascade_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new RefrigerationCondenserCascade_Impl(*refrigerationCondenserCascade, this, keepHandle));
+      }
+      if (auto refrigerationSubcoolerLiquidSuction = std::dynamic_pointer_cast<RefrigerationSubcoolerLiquidSuction_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new RefrigerationSubcoolerLiquidSuction_Impl(*refrigerationSubcoolerLiquidSuction, this, keepHandle));
+      }
+      if (auto refrigerationCondenserWaterCooled = std::dynamic_pointer_cast<RefrigerationCondenserWaterCooled_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new RefrigerationCondenserWaterCooled_Impl(*refrigerationCondenserWaterCooled, this, keepHandle));
+      }
+      if (auto refrigerationSecondarySystem = std::dynamic_pointer_cast<RefrigerationSecondarySystem_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new RefrigerationSecondarySystem_Impl(*refrigerationSecondarySystem, this, keepHandle));
+      }
+      if (auto refrigerationCase = std::dynamic_pointer_cast<RefrigerationCase_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RefrigerationCase_Impl(*refrigerationCase, this, keepHandle));
+      }
+      if (auto refrigerationCompressor = std::dynamic_pointer_cast<RefrigerationCompressor_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new RefrigerationCompressor_Impl(*refrigerationCompressor, this, keepHandle));
+      }
+      if (auto refrigerationCompressorRack = std::dynamic_pointer_cast<RefrigerationCompressorRack_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new RefrigerationCompressorRack_Impl(*refrigerationCompressorRack, this, keepHandle));
+      }
+      if (auto refrigerationSystem = std::dynamic_pointer_cast<RefrigerationSystem_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RefrigerationSystem_Impl(*refrigerationSystem, this, keepHandle));
+      }
+      if (auto refrigerationWalkIn = std::dynamic_pointer_cast<RefrigerationWalkIn_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new RefrigerationWalkIn_Impl(*refrigerationWalkIn, this, keepHandle));
+      }
+      if (auto refrigerationTranscriticalSystem = std::dynamic_pointer_cast<RefrigerationTranscriticalSystem_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new RefrigerationTranscriticalSystem_Impl(*refrigerationTranscriticalSystem, this, keepHandle));
       }
       if (auto thermostatSetpointDualSetpoint = std::dynamic_pointer_cast<ThermostatSetpointDualSetpoint_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(

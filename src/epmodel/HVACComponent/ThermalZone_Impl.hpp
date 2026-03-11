@@ -11,6 +11,7 @@
 #include <boost/optional.hpp>
 #include <string>
 #include <vector>
+#include <utilities/idf/WorkspaceObject.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -29,6 +30,10 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~ThermalZone_Impl() override = default;
 
+      // Schema Alignment Notes:
+      // - Field Mapping: Mirrors the EnergyPlus `ZoneHVAC:EquipmentConnections` object that tracks a zone's inlet/return nodes and linked equipment list.
+      // - ForwardTranslator Evidence: `ForwardTranslateThermalZone::translateThermalZone` emits the same connections object so this helper keeps the
+      //   epmodel representation aligned with the translator output.
       boost::optional<openstudio::epmodel::ZoneHVACEquipmentConnections> zoneHVACEquipmentConnections() const;
       openstudio::epmodel::ZoneHVACEquipmentConnections getZoneHVACEquipmentConnections();
 
@@ -70,6 +75,30 @@ namespace epmodel {
       bool useIdealAirLoads() const;
       bool setUseIdealAirLoads(bool useIdealAirLoads);
 
+      static std::vector<std::string> control1ObjectTypeValues();
+      std::string control1ObjectType() const;
+      bool setControl1ObjectType(const std::string& control1ObjectType);
+
+      static std::vector<std::string> control2ObjectTypeValues();
+      boost::optional<std::string> control2ObjectType() const;
+      bool setControl2ObjectType(const std::string& control2ObjectType);
+      void resetControl2ObjectType();
+
+      static std::vector<std::string> control3ObjectTypeValues();
+      boost::optional<std::string> control3ObjectType() const;
+      bool setControl3ObjectType(const std::string& control3ObjectType);
+      void resetControl3ObjectType();
+
+      static std::vector<std::string> control4ObjectTypeValues();
+      boost::optional<std::string> control4ObjectType() const;
+      bool setControl4ObjectType(const std::string& control4ObjectType);
+      void resetControl4ObjectType();
+
+      double temperatureDifferenceBetweenCutoutAndSetpoint() const;
+      bool isTemperatureDifferenceBetweenCutoutAndSetpointDefaulted() const;
+      bool setTemperatureDifferenceBetweenCutoutAndSetpoint(double temperatureDifferenceBetweenCutoutAndSetpoint);
+      void resetTemperatureDifferenceBetweenCutoutAndSetpoint();
+
       std::string outdoorAirMethod() const;
       bool setOutdoorAirMethod(const std::string& outdoorAirMethod);
 
@@ -84,6 +113,60 @@ namespace epmodel {
 
       double outdoorAirFlowAirChangesperHour() const;
       bool setOutdoorAirFlowAirChangesperHour(double outdoorAirFlowAirChangesperHour);
+
+      double designFlowRate() const;
+      bool setDesignFlowRate(double designFlowRate);
+
+      double flowRateperZoneFloorArea() const;
+      bool setFlowRateperZoneFloorArea(double flowRateperZoneFloorArea);
+
+      double flowRateperPerson() const;
+      bool setFlowRateperPerson(double flowRateperPerson);
+
+      double airChangesperHour() const;
+      bool setAirChangesperHour(double airChangesperHour);
+
+      std::string ventilationType() const;
+      bool setVentilationType(const std::string& ventilationType);
+
+      double fanPressureRise() const;
+      bool setFanPressureRise(double fanPressureRise);
+
+      double fanTotalEfficiency() const;
+      bool setFanTotalEfficiency(double fanTotalEfficiency);
+
+      double constantTermCoefficient() const;
+      bool setConstantTermCoefficient(double constantTermCoefficient);
+
+      double temperatureTermCoefficient() const;
+      bool setTemperatureTermCoefficient(double temperatureTermCoefficient);
+
+      double velocityTermCoefficient() const;
+      bool setVelocityTermCoefficient(double velocityTermCoefficient);
+
+      double velocitySquaredTermCoefficient() const;
+      bool setVelocitySquaredTermCoefficient(double velocitySquaredTermCoefficient);
+
+      double minimumIndoorTemperature() const;
+      bool setMinimumIndoorTemperature(double minimumIndoorTemperature);
+
+      double maximumIndoorTemperature() const;
+      bool setMaximumIndoorTemperature(double maximumIndoorTemperature);
+
+      double deltaTemperature() const;
+      bool setDeltaTemperature(double deltaTemperature);
+
+      double minimumOutdoorTemperature() const;
+      bool setMinimumOutdoorTemperature(double minimumOutdoorTemperature);
+
+      double maximumOutdoorTemperature() const;
+      bool setMaximumOutdoorTemperature(double maximumOutdoorTemperature);
+
+      double maximumWindSpeed() const;
+      bool setMaximumWindSpeed(double maximumWindSpeed);
+
+      std::string densityBasis() const;
+      bool setDensityBasis(const std::string& densityBasis);
 
       double fractionofZoneControlledbyPrimaryDaylightingControl() const;
       bool isFractionofZoneControlledbyPrimaryDaylightingControlDefaulted() const;
@@ -142,6 +225,11 @@ namespace epmodel {
       std::vector<openstudio::epmodel::Space> spaces() const;
       boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAir> zoneSharedDesignSpecificationOutdoorAir() const;
       boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAir> getOrCreateZoneSharedDesignSpecificationOutdoorAir();
+      boost::optional<openstudio::WorkspaceObject> zoneControlThermostatObject() const;
+      openstudio::WorkspaceObject getOrCreateZoneControlThermostatObject();
+      boost::optional<openstudio::WorkspaceObject> zoneVentilationObject() const;
+      openstudio::WorkspaceObject getOrCreateZoneVentilationObject();
+      void applyZoneVentilationDefaults(openstudio::WorkspaceObject& zoneVentilation);
     };
 
   }  // namespace detail

@@ -19,8 +19,8 @@
 #include "PlanarSurfaceGroup/Space_Impl.hpp"
 #include "ZoneHVACEquipmentConnections.hpp"
 #include "ZoneHVACEquipmentConnections_Impl.hpp"
-#include "ZoneHVACEquipmentList.hpp"
-#include "ZoneHVACEquipmentList_Impl.hpp"
+#include "ModelObject/ZoneHVACEquipmentList.hpp"
+#include "ModelObject/ZoneHVACEquipmentList_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Compare.hpp>
@@ -29,13 +29,19 @@
 #include <utilities/idd/Daylighting_Controls_FieldEnums.hxx>
 #include <utilities/idd/Daylighting_ReferencePoint_FieldEnums.hxx>
 #include <utilities/idd/HVACTemplate_Zone_IdealLoadsAirSystem_FieldEnums.hxx>
+#include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/Output_IlluminanceMap_FieldEnums.hxx>
 #include <utilities/idd/Zone_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
+#include <utilities/idd/ZoneControl_Thermostat_FieldEnums.hxx>
+#include <utilities/idd/ZoneList_FieldEnums.hxx>
+#include <utilities/idd/OS_ZoneVentilation_DesignFlowRate_FieldEnums.hxx>
+#include <utilities/idd/ZoneVentilation_DesignFlowRate_FieldEnums.hxx>
 #include <utilities/idf/IdfObject.hpp>
 #include <utilities/idf/IdfExtensibleGroup.hpp>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+#include <utilities/idf/WorkspaceObject.hpp>
 
 #include <algorithm>
 
@@ -46,6 +52,76 @@ namespace epmodel {
 
     constexpr unsigned kPrimaryDaylightingReferencePointIndex = 0u;
     constexpr unsigned kSecondaryDaylightingReferencePointIndex = 1u;
+    const std::vector<std::string>& zoneControlThermostatControlTypeKeys() {
+      static const std::vector<std::string> keys{"ThermostatSetpoint:SingleHeating", "ThermostatSetpoint:SingleCooling",
+                                                 "ThermostatSetpoint:SingleHeatingOrCooling", "ThermostatSetpoint:DualSetpoint"};
+      return keys;
+    }
+
+    bool zoneControlThermostatTargetsZone(const ThermalZone& zone, const openstudio::WorkspaceObject& zoneControl) {
+      const auto zoneName = zone.nameString();
+      if (zoneName.empty()) {
+        return false;
+      }
+
+      if (auto zoneOrListName = zoneControl.getString(openstudio::ZoneControl_ThermostatFields::ZoneorZoneListName, true)) {
+        if (openstudio::istringEqual(*zoneOrListName, zoneName)) {
+          return true;
+        }
+
+        if (auto zoneListObject = zone.model().getObjectByTypeAndName(openstudio::IddObjectType::ZoneList, *zoneOrListName, true)) {
+          auto zoneListGroups = zoneListObject->extensibleGroups();
+          for (const auto& group : zoneListGroups) {
+            if (auto zoneListEntry = group.getString(openstudio::ZoneListExtensibleFields::ZoneName, true)) {
+              if (openstudio::istringEqual(*zoneListEntry, zoneName)) {
+                return true;
+              }
+            }
+          }
+        }
+      }
+
+      return false;
+    }
+
+    bool zoneVentilationTargetsZone(const ThermalZone& zone, const openstudio::WorkspaceObject& zoneVentilation) {
+      const auto zoneName = zone.nameString();
+      if (zoneName.empty()) {
+        return false;
+      }
+
+      auto zoneOrSpaceName = zoneVentilation.getString(openstudio::ZoneVentilation_DesignFlowRateFields::ZoneorZoneListorSpaceorSpaceListName, true);
+      if (!zoneOrSpaceName || zoneOrSpaceName->empty()) {
+        return false;
+      }
+
+      if (openstudio::istringEqual(*zoneOrSpaceName, zoneName)) {
+        return true;
+      }
+
+      if (auto zoneListObject = zone.model().getObjectByTypeAndName(openstudio::IddObjectType::ZoneList, *zoneOrSpaceName, true)) {
+        auto zoneListGroups = zoneListObject->extensibleGroups();
+        for (const auto& group : zoneListGroups) {
+          if (auto zoneListEntry = group.getString(openstudio::ZoneListExtensibleFields::ZoneName, true)) {
+            if (openstudio::istringEqual(*zoneListEntry, zoneName)) {
+              return true;
+            }
+          }
+        }
+      }
+
+      if (auto spaceObject = zone.model().getObjectByTypeAndName(openstudio::IddObjectType::Space, *zoneOrSpaceName, true)) {
+        if (auto space = spaceObject->optionalCast<openstudio::epmodel::Space>()) {
+          if (auto associatedZone = space->thermalZone()) {
+            if (*associatedZone == zone) {
+              return true;
+            }
+          }
+        }
+      }
+
+      return false;
+    }
 
     boost::optional<openstudio::WorkspaceObject> daylightingControlsForZone(const ThermalZone& zone) {
       for (const auto& object : zone.model().getObjectsByType(openstudio::IddObjectType::Daylighting_Controls)) {
@@ -130,6 +206,12 @@ namespace epmodel {
     return IddObjectType::Zone;
   }
 
+  // Schema Alignment Notes:
+  // - API: `addToNode` keeps the EnergyPlus `ZoneHVAC:EquipmentConnections` object aligned with the current demand branch node by
+  //   driving the backing `ZoneHVACEquipmentConnections` (inlet/return nodes).
+  // - ForwardTranslator Evidence: `ForwardTranslateThermalZone::translateThermalZone` writes the same `ZoneHVAC:EquipmentConnections`
+  //   fields (Zone Air Inlet/Exhaust/Node/Return and the Equipment List) so this helper ensures epmodel has the node references the
+  //   translator expects to read.
   bool ThermalZone::addToNode(Node& node) {
     if (node.model() != model()) {
       return false;
@@ -191,6 +273,82 @@ namespace epmodel {
 
   SizingZone ThermalZone::sizingZone() const {
     return getImpl<detail::ThermalZone_Impl>()->sizingZone();
+  }
+
+  std::vector<std::string> ThermalZone::control1ObjectTypeValues() {
+    return detail::ThermalZone_Impl::control1ObjectTypeValues();
+  }
+
+  std::string ThermalZone::control1ObjectType() const {
+    return getImpl<detail::ThermalZone_Impl>()->control1ObjectType();
+  }
+
+  bool ThermalZone::setControl1ObjectType(const std::string& control1ObjectType) {
+    return getImpl<detail::ThermalZone_Impl>()->setControl1ObjectType(control1ObjectType);
+  }
+
+  std::vector<std::string> ThermalZone::control2ObjectTypeValues() {
+    return detail::ThermalZone_Impl::control2ObjectTypeValues();
+  }
+
+  boost::optional<std::string> ThermalZone::control2ObjectType() const {
+    return getImpl<detail::ThermalZone_Impl>()->control2ObjectType();
+  }
+
+  bool ThermalZone::setControl2ObjectType(const std::string& control2ObjectType) {
+    return getImpl<detail::ThermalZone_Impl>()->setControl2ObjectType(control2ObjectType);
+  }
+
+  void ThermalZone::resetControl2ObjectType() {
+    getImpl<detail::ThermalZone_Impl>()->resetControl2ObjectType();
+  }
+
+  std::vector<std::string> ThermalZone::control3ObjectTypeValues() {
+    return detail::ThermalZone_Impl::control3ObjectTypeValues();
+  }
+
+  boost::optional<std::string> ThermalZone::control3ObjectType() const {
+    return getImpl<detail::ThermalZone_Impl>()->control3ObjectType();
+  }
+
+  bool ThermalZone::setControl3ObjectType(const std::string& control3ObjectType) {
+    return getImpl<detail::ThermalZone_Impl>()->setControl3ObjectType(control3ObjectType);
+  }
+
+  void ThermalZone::resetControl3ObjectType() {
+    getImpl<detail::ThermalZone_Impl>()->resetControl3ObjectType();
+  }
+
+  std::vector<std::string> ThermalZone::control4ObjectTypeValues() {
+    return detail::ThermalZone_Impl::control4ObjectTypeValues();
+  }
+
+  boost::optional<std::string> ThermalZone::control4ObjectType() const {
+    return getImpl<detail::ThermalZone_Impl>()->control4ObjectType();
+  }
+
+  bool ThermalZone::setControl4ObjectType(const std::string& control4ObjectType) {
+    return getImpl<detail::ThermalZone_Impl>()->setControl4ObjectType(control4ObjectType);
+  }
+
+  void ThermalZone::resetControl4ObjectType() {
+    getImpl<detail::ThermalZone_Impl>()->resetControl4ObjectType();
+  }
+
+  double ThermalZone::temperatureDifferenceBetweenCutoutAndSetpoint() const {
+    return getImpl<detail::ThermalZone_Impl>()->temperatureDifferenceBetweenCutoutAndSetpoint();
+  }
+
+  bool ThermalZone::isTemperatureDifferenceBetweenCutoutAndSetpointDefaulted() const {
+    return getImpl<detail::ThermalZone_Impl>()->isTemperatureDifferenceBetweenCutoutAndSetpointDefaulted();
+  }
+
+  bool ThermalZone::setTemperatureDifferenceBetweenCutoutAndSetpoint(double temperatureDifferenceBetweenCutoutAndSetpoint) {
+    return getImpl<detail::ThermalZone_Impl>()->setTemperatureDifferenceBetweenCutoutAndSetpoint(temperatureDifferenceBetweenCutoutAndSetpoint);
+  }
+
+  void ThermalZone::resetTemperatureDifferenceBetweenCutoutAndSetpoint() {
+    getImpl<detail::ThermalZone_Impl>()->resetTemperatureDifferenceBetweenCutoutAndSetpoint();
   }
 
   int ThermalZone::multiplier() const {
@@ -345,6 +503,162 @@ namespace epmodel {
     return getImpl<detail::ThermalZone_Impl>()->setOutdoorAirFlowAirChangesperHour(outdoorAirFlowAirChangesperHour);
   }
 
+  double ThermalZone::designFlowRate() const {
+    return getImpl<detail::ThermalZone_Impl>()->designFlowRate();
+  }
+
+  bool ThermalZone::setDesignFlowRate(double designFlowRate) {
+    return getImpl<detail::ThermalZone_Impl>()->setDesignFlowRate(designFlowRate);
+  }
+
+  double ThermalZone::flowRateperZoneFloorArea() const {
+    return getImpl<detail::ThermalZone_Impl>()->flowRateperZoneFloorArea();
+  }
+
+  bool ThermalZone::setFlowRateperZoneFloorArea(double flowRateperZoneFloorArea) {
+    return getImpl<detail::ThermalZone_Impl>()->setFlowRateperZoneFloorArea(flowRateperZoneFloorArea);
+  }
+
+  double ThermalZone::flowRateperPerson() const {
+    return getImpl<detail::ThermalZone_Impl>()->flowRateperPerson();
+  }
+
+  bool ThermalZone::setFlowRateperPerson(double flowRateperPerson) {
+    return getImpl<detail::ThermalZone_Impl>()->setFlowRateperPerson(flowRateperPerson);
+  }
+
+  double ThermalZone::airChangesperHour() const {
+    return getImpl<detail::ThermalZone_Impl>()->airChangesperHour();
+  }
+
+  bool ThermalZone::setAirChangesperHour(double airChangesperHour) {
+    return getImpl<detail::ThermalZone_Impl>()->setAirChangesperHour(airChangesperHour);
+  }
+
+  std::vector<std::string> ThermalZone::ventilationTypeValues() {
+    auto iddObject = openstudio::IddFactory::instance().getObject(IddObjectType::OS_ZoneVentilation_DesignFlowRate);
+    OS_ASSERT(iddObject);
+    return getIddKeyNames(*iddObject, OS_ZoneVentilation_DesignFlowRateFields::VentilationType);
+  }
+
+  std::string ThermalZone::ventilationType() const {
+    return getImpl<detail::ThermalZone_Impl>()->ventilationType();
+  }
+
+  bool ThermalZone::setVentilationType(const std::string& ventilationType) {
+    return getImpl<detail::ThermalZone_Impl>()->setVentilationType(ventilationType);
+  }
+
+  double ThermalZone::fanPressureRise() const {
+    return getImpl<detail::ThermalZone_Impl>()->fanPressureRise();
+  }
+
+  bool ThermalZone::setFanPressureRise(double fanPressureRise) {
+    return getImpl<detail::ThermalZone_Impl>()->setFanPressureRise(fanPressureRise);
+  }
+
+  double ThermalZone::fanTotalEfficiency() const {
+    return getImpl<detail::ThermalZone_Impl>()->fanTotalEfficiency();
+  }
+
+  bool ThermalZone::setFanTotalEfficiency(double fanTotalEfficiency) {
+    return getImpl<detail::ThermalZone_Impl>()->setFanTotalEfficiency(fanTotalEfficiency);
+  }
+
+  double ThermalZone::constantTermCoefficient() const {
+    return getImpl<detail::ThermalZone_Impl>()->constantTermCoefficient();
+  }
+
+  bool ThermalZone::setConstantTermCoefficient(double constantTermCoefficient) {
+    return getImpl<detail::ThermalZone_Impl>()->setConstantTermCoefficient(constantTermCoefficient);
+  }
+
+  double ThermalZone::temperatureTermCoefficient() const {
+    return getImpl<detail::ThermalZone_Impl>()->temperatureTermCoefficient();
+  }
+
+  bool ThermalZone::setTemperatureTermCoefficient(double temperatureTermCoefficient) {
+    return getImpl<detail::ThermalZone_Impl>()->setTemperatureTermCoefficient(temperatureTermCoefficient);
+  }
+
+  double ThermalZone::velocityTermCoefficient() const {
+    return getImpl<detail::ThermalZone_Impl>()->velocityTermCoefficient();
+  }
+
+  bool ThermalZone::setVelocityTermCoefficient(double velocityTermCoefficient) {
+    return getImpl<detail::ThermalZone_Impl>()->setVelocityTermCoefficient(velocityTermCoefficient);
+  }
+
+  double ThermalZone::velocitySquaredTermCoefficient() const {
+    return getImpl<detail::ThermalZone_Impl>()->velocitySquaredTermCoefficient();
+  }
+
+  bool ThermalZone::setVelocitySquaredTermCoefficient(double velocitySquaredTermCoefficient) {
+    return getImpl<detail::ThermalZone_Impl>()->setVelocitySquaredTermCoefficient(velocitySquaredTermCoefficient);
+  }
+
+  double ThermalZone::minimumIndoorTemperature() const {
+    return getImpl<detail::ThermalZone_Impl>()->minimumIndoorTemperature();
+  }
+
+  bool ThermalZone::setMinimumIndoorTemperature(double minimumIndoorTemperature) {
+    return getImpl<detail::ThermalZone_Impl>()->setMinimumIndoorTemperature(minimumIndoorTemperature);
+  }
+
+  double ThermalZone::maximumIndoorTemperature() const {
+    return getImpl<detail::ThermalZone_Impl>()->maximumIndoorTemperature();
+  }
+
+  bool ThermalZone::setMaximumIndoorTemperature(double maximumIndoorTemperature) {
+    return getImpl<detail::ThermalZone_Impl>()->setMaximumIndoorTemperature(maximumIndoorTemperature);
+  }
+
+  double ThermalZone::deltaTemperature() const {
+    return getImpl<detail::ThermalZone_Impl>()->deltaTemperature();
+  }
+
+  bool ThermalZone::setDeltaTemperature(double deltaTemperature) {
+    return getImpl<detail::ThermalZone_Impl>()->setDeltaTemperature(deltaTemperature);
+  }
+
+  double ThermalZone::minimumOutdoorTemperature() const {
+    return getImpl<detail::ThermalZone_Impl>()->minimumOutdoorTemperature();
+  }
+
+  bool ThermalZone::setMinimumOutdoorTemperature(double minimumOutdoorTemperature) {
+    return getImpl<detail::ThermalZone_Impl>()->setMinimumOutdoorTemperature(minimumOutdoorTemperature);
+  }
+
+  double ThermalZone::maximumOutdoorTemperature() const {
+    return getImpl<detail::ThermalZone_Impl>()->maximumOutdoorTemperature();
+  }
+
+  bool ThermalZone::setMaximumOutdoorTemperature(double maximumOutdoorTemperature) {
+    return getImpl<detail::ThermalZone_Impl>()->setMaximumOutdoorTemperature(maximumOutdoorTemperature);
+  }
+
+  double ThermalZone::maximumWindSpeed() const {
+    return getImpl<detail::ThermalZone_Impl>()->maximumWindSpeed();
+  }
+
+  bool ThermalZone::setMaximumWindSpeed(double maximumWindSpeed) {
+    return getImpl<detail::ThermalZone_Impl>()->setMaximumWindSpeed(maximumWindSpeed);
+  }
+
+  std::vector<std::string> ThermalZone::densityBasisValues() {
+    auto iddObject = openstudio::IddFactory::instance().getObject(IddObjectType::OS_ZoneVentilation_DesignFlowRate);
+    OS_ASSERT(iddObject);
+    return getIddKeyNames(*iddObject, OS_ZoneVentilation_DesignFlowRateFields::DensityBasis);
+  }
+
+  std::string ThermalZone::densityBasis() const {
+    return getImpl<detail::ThermalZone_Impl>()->densityBasis();
+  }
+
+  bool ThermalZone::setDensityBasis(const std::string& densityBasis) {
+    return getImpl<detail::ThermalZone_Impl>()->setDensityBasis(densityBasis);
+  }
+
   double ThermalZone::fractionofZoneControlledbyPrimaryDaylightingControl() const {
     return getImpl<detail::ThermalZone_Impl>()->fractionofZoneControlledbyPrimaryDaylightingControl();
   }
@@ -490,6 +804,9 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    // Schema Alignment Notes:
+    // - Field Mapping: Returns the `ZoneHVACEquipmentConnections` object that represents the EnergyPlus `ZoneHVAC:EquipmentConnections`
+    //   object tied to this zone.
     boost::optional<openstudio::epmodel::ZoneHVACEquipmentConnections> ThermalZone_Impl::zoneHVACEquipmentConnections() const {
       const auto zone = getObject<openstudio::epmodel::ThermalZone>();
       for (const auto& conn : model().getConcreteModelObjects<openstudio::epmodel::ZoneHVACEquipmentConnections>()) {
@@ -805,6 +1122,228 @@ namespace epmodel {
       return target;
     }
 
+    std::vector<std::string> ThermalZone_Impl::control1ObjectTypeValues() {
+      return zoneControlThermostatControlTypeKeys();
+    }
+
+    std::vector<std::string> ThermalZone_Impl::control2ObjectTypeValues() {
+      return zoneControlThermostatControlTypeKeys();
+    }
+
+    std::vector<std::string> ThermalZone_Impl::control3ObjectTypeValues() {
+      return zoneControlThermostatControlTypeKeys();
+    }
+
+    std::vector<std::string> ThermalZone_Impl::control4ObjectTypeValues() {
+      return zoneControlThermostatControlTypeKeys();
+    }
+
+    std::string ThermalZone_Impl::control1ObjectType() const {
+      if (auto object = zoneControlThermostatObject()) {
+        if (auto value = object->getString(ZoneControl_ThermostatFields::Control1ObjectType, true)) {
+          return *value;
+        }
+      }
+      return std::string();
+    }
+
+    boost::optional<std::string> ThermalZone_Impl::control2ObjectType() const {
+      if (auto object = zoneControlThermostatObject()) {
+        if (auto value = object->getString(ZoneControl_ThermostatFields::Control2ObjectType, false, true)) {
+          if (!value->empty()) {
+            return value;
+          }
+        }
+      }
+      return boost::none;
+    }
+
+    boost::optional<std::string> ThermalZone_Impl::control3ObjectType() const {
+      if (auto object = zoneControlThermostatObject()) {
+        if (auto value = object->getString(ZoneControl_ThermostatFields::Control3ObjectType, false, true)) {
+          if (!value->empty()) {
+            return value;
+          }
+        }
+      }
+      return boost::none;
+    }
+
+    boost::optional<std::string> ThermalZone_Impl::control4ObjectType() const {
+      if (auto object = zoneControlThermostatObject()) {
+        if (auto value = object->getString(ZoneControl_ThermostatFields::Control4ObjectType, false, true)) {
+          if (!value->empty()) {
+            return value;
+          }
+        }
+      }
+      return boost::none;
+    }
+
+    bool ThermalZone_Impl::setControl1ObjectType(const std::string& control1ObjectType) {
+      auto object = getOrCreateZoneControlThermostatObject();
+      return object.setString(ZoneControl_ThermostatFields::Control1ObjectType, control1ObjectType);
+    }
+
+    bool ThermalZone_Impl::setControl2ObjectType(const std::string& control2ObjectType) {
+      auto object = getOrCreateZoneControlThermostatObject();
+      return object.setString(ZoneControl_ThermostatFields::Control2ObjectType, control2ObjectType);
+    }
+
+    bool ThermalZone_Impl::setControl3ObjectType(const std::string& control3ObjectType) {
+      auto object = getOrCreateZoneControlThermostatObject();
+      return object.setString(ZoneControl_ThermostatFields::Control3ObjectType, control3ObjectType);
+    }
+
+    bool ThermalZone_Impl::setControl4ObjectType(const std::string& control4ObjectType) {
+      auto object = getOrCreateZoneControlThermostatObject();
+      return object.setString(ZoneControl_ThermostatFields::Control4ObjectType, control4ObjectType);
+    }
+
+    void ThermalZone_Impl::resetControl2ObjectType() {
+      if (auto object = zoneControlThermostatObject()) {
+        const bool result = object->setString(ZoneControl_ThermostatFields::Control2ObjectType, "");
+        OS_ASSERT(result);
+      }
+    }
+
+    void ThermalZone_Impl::resetControl3ObjectType() {
+      if (auto object = zoneControlThermostatObject()) {
+        const bool result = object->setString(ZoneControl_ThermostatFields::Control3ObjectType, "");
+        OS_ASSERT(result);
+      }
+    }
+
+    void ThermalZone_Impl::resetControl4ObjectType() {
+      if (auto object = zoneControlThermostatObject()) {
+        const bool result = object->setString(ZoneControl_ThermostatFields::Control4ObjectType, "");
+        OS_ASSERT(result);
+      }
+    }
+
+    double ThermalZone_Impl::temperatureDifferenceBetweenCutoutAndSetpoint() const {
+      if (auto object = zoneControlThermostatObject()) {
+        if (auto raw = object->getString(ZoneControl_ThermostatFields::TemperatureDifferenceBetweenCutoutAndSetpoint, false, true)) {
+          if (!raw->empty()) {
+            if (auto value = object->getDouble(ZoneControl_ThermostatFields::TemperatureDifferenceBetweenCutoutAndSetpoint, true)) {
+              return *value;
+            }
+          }
+        }
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::isTemperatureDifferenceBetweenCutoutAndSetpointDefaulted() const {
+      if (auto object = zoneControlThermostatObject()) {
+        if (auto raw = object->getString(ZoneControl_ThermostatFields::TemperatureDifferenceBetweenCutoutAndSetpoint, false, true)) {
+          return raw->empty();
+        }
+        return true;
+      }
+      return true;
+    }
+
+    bool ThermalZone_Impl::setTemperatureDifferenceBetweenCutoutAndSetpoint(double temperatureDifferenceBetweenCutoutAndSetpoint) {
+      auto object = getOrCreateZoneControlThermostatObject();
+      return object.setDouble(ZoneControl_ThermostatFields::TemperatureDifferenceBetweenCutoutAndSetpoint,
+                              temperatureDifferenceBetweenCutoutAndSetpoint);
+    }
+
+    void ThermalZone_Impl::resetTemperatureDifferenceBetweenCutoutAndSetpoint() {
+      if (auto object = zoneControlThermostatObject()) {
+        const bool result = object->setString(ZoneControl_ThermostatFields::TemperatureDifferenceBetweenCutoutAndSetpoint, "");
+        OS_ASSERT(result);
+      }
+    }
+
+    boost::optional<openstudio::WorkspaceObject> ThermalZone_Impl::zoneControlThermostatObject() const {
+      openstudio::epmodel::ThermalZone zone = getObject<openstudio::epmodel::ThermalZone>();
+      const auto zoneObjects = model().getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat, true);
+      for (const auto& object : zoneObjects) {
+        if (zoneControlThermostatTargetsZone(zone, object)) {
+          return object;
+        }
+      }
+      return boost::none;
+    }
+
+    openstudio::WorkspaceObject ThermalZone_Impl::getOrCreateZoneControlThermostatObject() {
+      if (auto existing = zoneControlThermostatObject()) {
+        return *existing;
+      }
+
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      openstudio::IdfObject object(openstudio::IddObjectType::ZoneControl_Thermostat);
+      object.setString(ZoneControl_ThermostatFields::Name, zone.nameString() + " Thermostat");
+      object.setString(ZoneControl_ThermostatFields::ZoneorZoneListName, zone.nameString());
+      auto added = model().addObject(object);
+      OS_ASSERT(added);
+      return *added;
+    }
+
+    boost::optional<openstudio::WorkspaceObject> ThermalZone_Impl::zoneVentilationObject() const {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      const auto objects = model().getObjectsByType(openstudio::IddObjectType::ZoneVentilation_DesignFlowRate, true);
+      for (const auto& object : objects) {
+        if (zoneVentilationTargetsZone(zone, object)) {
+          return object;
+        }
+      }
+      return boost::none;
+    }
+
+    openstudio::WorkspaceObject ThermalZone_Impl::getOrCreateZoneVentilationObject() {
+      if (auto existing = zoneVentilationObject()) {
+        return *existing;
+      }
+
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      openstudio::IdfObject object(openstudio::IddObjectType::ZoneVentilation_DesignFlowRate);
+      object.setString(ZoneVentilation_DesignFlowRateFields::Name, zone.nameString() + " Ventilation");
+      object.setString(ZoneVentilation_DesignFlowRateFields::ZoneorZoneListorSpaceorSpaceListName, zone.nameString());
+      auto added = model().addObject(object);
+      OS_ASSERT(added);
+      auto workspaceObject = *added;
+      applyZoneVentilationDefaults(workspaceObject);
+      return workspaceObject;
+    }
+
+    void ThermalZone_Impl::applyZoneVentilationDefaults(openstudio::WorkspaceObject& zoneVentilation) {
+      bool result = zoneVentilation.setString(ZoneVentilation_DesignFlowRateFields::DesignFlowRateCalculationMethod, "AirChanges/Hour");
+      OS_ASSERT(result);
+      result = zoneVentilation.setDouble(ZoneVentilation_DesignFlowRateFields::AirChangesperHour, 5.0);
+      OS_ASSERT(result);
+      result = zoneVentilation.setString(ZoneVentilation_DesignFlowRateFields::VentilationType, "Natural");
+      OS_ASSERT(result);
+      result = zoneVentilation.setDouble(ZoneVentilation_DesignFlowRateFields::FanPressureRise, 0.0);
+      OS_ASSERT(result);
+      result = zoneVentilation.setDouble(ZoneVentilation_DesignFlowRateFields::FanTotalEfficiency, 1.0);
+      OS_ASSERT(result);
+      result = zoneVentilation.setDouble(ZoneVentilation_DesignFlowRateFields::ConstantTermCoefficient, 0.606);
+      OS_ASSERT(result);
+      result = zoneVentilation.setDouble(ZoneVentilation_DesignFlowRateFields::TemperatureTermCoefficient, 0.03636);
+      OS_ASSERT(result);
+      result = zoneVentilation.setDouble(ZoneVentilation_DesignFlowRateFields::VelocityTermCoefficient, 0.1177);
+      OS_ASSERT(result);
+      result = zoneVentilation.setDouble(ZoneVentilation_DesignFlowRateFields::VelocitySquaredTermCoefficient, 0.0);
+      OS_ASSERT(result);
+      result = zoneVentilation.setDouble(ZoneVentilation_DesignFlowRateFields::MinimumIndoorTemperature, 18.0);
+      OS_ASSERT(result);
+      result = zoneVentilation.setDouble(ZoneVentilation_DesignFlowRateFields::MaximumIndoorTemperature, 100.0);
+      OS_ASSERT(result);
+      result = zoneVentilation.setDouble(ZoneVentilation_DesignFlowRateFields::DeltaTemperature, 1.0);
+      OS_ASSERT(result);
+      result = zoneVentilation.setDouble(ZoneVentilation_DesignFlowRateFields::MinimumOutdoorTemperature, -100.0);
+      OS_ASSERT(result);
+      result = zoneVentilation.setDouble(ZoneVentilation_DesignFlowRateFields::MaximumOutdoorTemperature, 100.0);
+      OS_ASSERT(result);
+      result = zoneVentilation.setDouble(ZoneVentilation_DesignFlowRateFields::MaximumWindSpeed, 40.0);
+      OS_ASSERT(result);
+      result = zoneVentilation.setString(ZoneVentilation_DesignFlowRateFields::DensityBasis, "Outdoor");
+      OS_ASSERT(result);
+    }
+
     std::string ThermalZone_Impl::outdoorAirMethod() const {
       if (auto dsoa = zoneSharedDesignSpecificationOutdoorAir()) {
         return dsoa->outdoorAirMethod();
@@ -873,6 +1412,315 @@ namespace epmodel {
         return dsoa->setOutdoorAirFlowAirChangesperHour(outdoorAirFlowAirChangesperHour);
       }
       return false;
+    }
+
+    double ThermalZone_Impl::designFlowRate() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getDouble(OS_ZoneVentilation_DesignFlowRateFields::DesignFlowRate, true)) {
+          return *value;
+        }
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::setDesignFlowRate(double designFlowRate) {
+      if (designFlowRate < 0.0) {
+        return false;
+      }
+      auto object = getOrCreateZoneVentilationObject();
+      bool result = object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::DesignFlowRate, designFlowRate);
+      if (result) {
+        result = object.setString(OS_ZoneVentilation_DesignFlowRateFields::DesignFlowRateCalculationMethod, "Flow/Zone");
+        OS_ASSERT(result);
+        result = object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::FlowRateperZoneFloorArea, 0.0);
+        OS_ASSERT(result);
+        result = object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::FlowRateperPerson, 0.0);
+        OS_ASSERT(result);
+        result = object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::AirChangesperHour, 0.0);
+        OS_ASSERT(result);
+      }
+      return result;
+    }
+
+    double ThermalZone_Impl::flowRateperZoneFloorArea() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getDouble(OS_ZoneVentilation_DesignFlowRateFields::FlowRateperZoneFloorArea, true)) {
+          return *value;
+        }
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::setFlowRateperZoneFloorArea(double flowRateperZoneFloorArea) {
+      if (flowRateperZoneFloorArea < 0.0) {
+        return false;
+      }
+      auto object = getOrCreateZoneVentilationObject();
+      bool result = object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::FlowRateperZoneFloorArea, flowRateperZoneFloorArea);
+      if (result) {
+        result = object.setString(OS_ZoneVentilation_DesignFlowRateFields::DesignFlowRateCalculationMethod, "Flow/Area");
+        OS_ASSERT(result);
+        result = object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::DesignFlowRate, 0.0);
+        OS_ASSERT(result);
+        result = object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::FlowRateperPerson, 0.0);
+        OS_ASSERT(result);
+        result = object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::AirChangesperHour, 0.0);
+        OS_ASSERT(result);
+      }
+      return result;
+    }
+
+    double ThermalZone_Impl::flowRateperPerson() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getDouble(OS_ZoneVentilation_DesignFlowRateFields::FlowRateperPerson, true)) {
+          return *value;
+        }
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::setFlowRateperPerson(double flowRateperPerson) {
+      if (flowRateperPerson < 0.0) {
+        return false;
+      }
+      auto object = getOrCreateZoneVentilationObject();
+      bool result = object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::FlowRateperPerson, flowRateperPerson);
+      if (result) {
+        result = object.setString(OS_ZoneVentilation_DesignFlowRateFields::DesignFlowRateCalculationMethod, "Flow/Person");
+        OS_ASSERT(result);
+        result = object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::DesignFlowRate, 0.0);
+        OS_ASSERT(result);
+        result = object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::FlowRateperZoneFloorArea, 0.0);
+        OS_ASSERT(result);
+        result = object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::AirChangesperHour, 0.0);
+        OS_ASSERT(result);
+      }
+      return result;
+    }
+
+    double ThermalZone_Impl::airChangesperHour() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getDouble(OS_ZoneVentilation_DesignFlowRateFields::AirChangesperHour, true)) {
+          return *value;
+        }
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::setAirChangesperHour(double airChangesperHour) {
+      if (airChangesperHour < 0.0) {
+        return false;
+      }
+      auto object = getOrCreateZoneVentilationObject();
+      bool result = object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::AirChangesperHour, airChangesperHour);
+      if (result) {
+        result = object.setString(OS_ZoneVentilation_DesignFlowRateFields::DesignFlowRateCalculationMethod, "AirChanges/Hour");
+        OS_ASSERT(result);
+        result = object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::DesignFlowRate, 0.0);
+        OS_ASSERT(result);
+        result = object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::FlowRateperZoneFloorArea, 0.0);
+        OS_ASSERT(result);
+        result = object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::FlowRateperPerson, 0.0);
+        OS_ASSERT(result);
+      }
+      return result;
+    }
+
+    std::string ThermalZone_Impl::ventilationType() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getString(OS_ZoneVentilation_DesignFlowRateFields::VentilationType, true)) {
+          return *value;
+        }
+      }
+      return std::string();
+    }
+
+    bool ThermalZone_Impl::setVentilationType(const std::string& ventilationType) {
+      auto object = getOrCreateZoneVentilationObject();
+      return object.setString(OS_ZoneVentilation_DesignFlowRateFields::VentilationType, ventilationType);
+    }
+
+    double ThermalZone_Impl::fanPressureRise() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getDouble(OS_ZoneVentilation_DesignFlowRateFields::FanPressureRise, true)) {
+          return *value;
+        }
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::setFanPressureRise(double fanPressureRise) {
+      auto object = getOrCreateZoneVentilationObject();
+      return object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::FanPressureRise, fanPressureRise);
+    }
+
+    double ThermalZone_Impl::fanTotalEfficiency() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getDouble(OS_ZoneVentilation_DesignFlowRateFields::FanTotalEfficiency, true)) {
+          return *value;
+        }
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::setFanTotalEfficiency(double fanTotalEfficiency) {
+      auto object = getOrCreateZoneVentilationObject();
+      return object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::FanTotalEfficiency, fanTotalEfficiency);
+    }
+
+    double ThermalZone_Impl::constantTermCoefficient() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getDouble(OS_ZoneVentilation_DesignFlowRateFields::ConstantTermCoefficient, true)) {
+          return *value;
+        }
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::setConstantTermCoefficient(double constantTermCoefficient) {
+      auto object = getOrCreateZoneVentilationObject();
+      bool result = object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::ConstantTermCoefficient, constantTermCoefficient);
+      return result;
+    }
+
+    double ThermalZone_Impl::temperatureTermCoefficient() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getDouble(OS_ZoneVentilation_DesignFlowRateFields::TemperatureTermCoefficient, true)) {
+          return *value;
+        }
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::setTemperatureTermCoefficient(double temperatureTermCoefficient) {
+      auto object = getOrCreateZoneVentilationObject();
+      return object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::TemperatureTermCoefficient, temperatureTermCoefficient);
+    }
+
+    double ThermalZone_Impl::velocityTermCoefficient() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getDouble(OS_ZoneVentilation_DesignFlowRateFields::VelocityTermCoefficient, true)) {
+          return *value;
+        }
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::setVelocityTermCoefficient(double velocityTermCoefficient) {
+      auto object = getOrCreateZoneVentilationObject();
+      return object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::VelocityTermCoefficient, velocityTermCoefficient);
+    }
+
+    double ThermalZone_Impl::velocitySquaredTermCoefficient() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getDouble(OS_ZoneVentilation_DesignFlowRateFields::VelocitySquaredTermCoefficient, true)) {
+          return *value;
+        }
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::setVelocitySquaredTermCoefficient(double velocitySquaredTermCoefficient) {
+      auto object = getOrCreateZoneVentilationObject();
+      return object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::VelocitySquaredTermCoefficient, velocitySquaredTermCoefficient);
+    }
+
+    double ThermalZone_Impl::minimumIndoorTemperature() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getDouble(OS_ZoneVentilation_DesignFlowRateFields::MinimumIndoorTemperature, true)) {
+          return *value;
+        }
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::setMinimumIndoorTemperature(double minimumIndoorTemperature) {
+      auto object = getOrCreateZoneVentilationObject();
+      return object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::MinimumIndoorTemperature, minimumIndoorTemperature);
+    }
+
+    double ThermalZone_Impl::maximumIndoorTemperature() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getDouble(OS_ZoneVentilation_DesignFlowRateFields::MaximumIndoorTemperature, true)) {
+          return *value;
+        }
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::setMaximumIndoorTemperature(double maximumIndoorTemperature) {
+      auto object = getOrCreateZoneVentilationObject();
+      return object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::MaximumIndoorTemperature, maximumIndoorTemperature);
+    }
+
+    double ThermalZone_Impl::deltaTemperature() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getDouble(OS_ZoneVentilation_DesignFlowRateFields::DeltaTemperature, true)) {
+          return *value;
+        }
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::setDeltaTemperature(double deltaTemperature) {
+      auto object = getOrCreateZoneVentilationObject();
+      return object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::DeltaTemperature, deltaTemperature);
+    }
+
+    double ThermalZone_Impl::minimumOutdoorTemperature() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getDouble(OS_ZoneVentilation_DesignFlowRateFields::MinimumOutdoorTemperature, true)) {
+          return *value;
+        }
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::setMinimumOutdoorTemperature(double minimumOutdoorTemperature) {
+      auto object = getOrCreateZoneVentilationObject();
+      return object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::MinimumOutdoorTemperature, minimumOutdoorTemperature);
+    }
+
+    double ThermalZone_Impl::maximumOutdoorTemperature() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getDouble(OS_ZoneVentilation_DesignFlowRateFields::MaximumOutdoorTemperature, true)) {
+          return *value;
+        }
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::setMaximumOutdoorTemperature(double maximumOutdoorTemperature) {
+      auto object = getOrCreateZoneVentilationObject();
+      return object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::MaximumOutdoorTemperature, maximumOutdoorTemperature);
+    }
+
+    double ThermalZone_Impl::maximumWindSpeed() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getDouble(OS_ZoneVentilation_DesignFlowRateFields::MaximumWindSpeed, true)) {
+          return *value;
+        }
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::setMaximumWindSpeed(double maximumWindSpeed) {
+      auto object = getOrCreateZoneVentilationObject();
+      return object.setDouble(OS_ZoneVentilation_DesignFlowRateFields::MaximumWindSpeed, maximumWindSpeed);
+    }
+
+    std::string ThermalZone_Impl::densityBasis() const {
+      if (auto object = zoneVentilationObject()) {
+        if (auto value = object->getString(OS_ZoneVentilation_DesignFlowRateFields::DensityBasis, true)) {
+          return *value;
+        }
+      }
+      return std::string();
+    }
+
+    bool ThermalZone_Impl::setDensityBasis(const std::string& densityBasis) {
+      auto object = getOrCreateZoneVentilationObject();
+      return object.setString(OS_ZoneVentilation_DesignFlowRateFields::DensityBasis, densityBasis);
     }
 
     boost::optional<double> ThermalZone_Impl::daylightingFraction(unsigned referencePointIndex) const {

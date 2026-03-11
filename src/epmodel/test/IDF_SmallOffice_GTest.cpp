@@ -15,7 +15,7 @@
 #include "../ModelObject/AirLoopHVACReturnPath_Impl.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat_Impl.hpp"
-#include "../AvailabilityManager.hpp"
+#include "../AvailabilityManager/AvailabilityManager.hpp"
 #include "../AvailabilityManagerAssignmentList.hpp"
 #include "../AvailabilityManagerAssignmentList_Impl.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightCycle.hpp"
@@ -50,8 +50,8 @@
 #include "../ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "../ZoneHVACEquipmentConnections.hpp"
 #include "../ZoneHVACEquipmentConnections_Impl.hpp"
-#include "../ZoneHVACEquipmentList.hpp"
-#include "../ZoneHVACEquipmentList_Impl.hpp"
+#include "../ModelObject/ZoneHVACEquipmentList.hpp"
+#include "../ModelObject/ZoneHVACEquipmentList_Impl.hpp"
 #include <algorithm>
 #include <resources.hxx>
 #include <utilities/core/Compare.hpp>

@@ -8,8 +8,8 @@
 
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
-#include "AvailabilityManager.hpp"
-#include "AvailabilityManager_Impl.hpp"
+#include "AvailabilityManager/AvailabilityManager.hpp"
+#include "AvailabilityManager/AvailabilityManager_Impl.hpp"
 #include "Loop/Loop.hpp"
 #include "Loop/Loop_Impl.hpp"
 #include "Model.hpp"
@@ -25,289 +25,290 @@
 namespace openstudio {
 namespace epmodel {
 
-AvailabilityManagerAssignmentList::AvailabilityManagerAssignmentList(const Model& model)
-  : ModelObject(AvailabilityManagerAssignmentList::iddObjectType(), model) {
-  auto impl = getImpl<detail::AvailabilityManagerAssignmentList_Impl>();
-  OS_ASSERT(impl);
-  detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
-  impl->canonicalize(context);
-}
+  AvailabilityManagerAssignmentList::AvailabilityManagerAssignmentList(const Model& model)
+    : ModelObject(AvailabilityManagerAssignmentList::iddObjectType(), model) {
+    auto impl = getImpl<detail::AvailabilityManagerAssignmentList_Impl>();
+    OS_ASSERT(impl);
+    detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
+    impl->canonicalize(context);
+  }
 
-AvailabilityManagerAssignmentList::AvailabilityManagerAssignmentList(std::shared_ptr<detail::AvailabilityManagerAssignmentList_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  AvailabilityManagerAssignmentList::AvailabilityManagerAssignmentList(std::shared_ptr<detail::AvailabilityManagerAssignmentList_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType AvailabilityManagerAssignmentList::iddObjectType() {
-  return IddObjectType::AvailabilityManagerAssignmentList;
-}
+  IddObjectType AvailabilityManagerAssignmentList::iddObjectType() {
+    return IddObjectType::AvailabilityManagerAssignmentList;
+  }
 
-unsigned AvailabilityManagerAssignmentList::availabilityManagerPriority(const AvailabilityManager& availabilityManager) const {
-  return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->availabilityManagerPriority(availabilityManager);
-}
+  unsigned AvailabilityManagerAssignmentList::availabilityManagerPriority(const AvailabilityManager& availabilityManager) const {
+    return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->availabilityManagerPriority(availabilityManager);
+  }
 
-std::vector<AvailabilityManager> AvailabilityManagerAssignmentList::availabilityManagers() const {
-  return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->availabilityManagers();
-}
+  std::vector<AvailabilityManager> AvailabilityManagerAssignmentList::availabilityManagers() const {
+    return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->availabilityManagers();
+  }
 
-boost::optional<Loop> AvailabilityManagerAssignmentList::loop() const {
-  return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->loop();
-}
+  boost::optional<Loop> AvailabilityManagerAssignmentList::loop() const {
+    return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->loop();
+  }
 
-boost::optional<AirLoopHVAC> AvailabilityManagerAssignmentList::airLoopHVAC() const {
-  return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->airLoopHVAC();
-}
+  boost::optional<AirLoopHVAC> AvailabilityManagerAssignmentList::airLoopHVAC() const {
+    return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->airLoopHVAC();
+  }
 
-bool AvailabilityManagerAssignmentList::addAvailabilityManager(const AvailabilityManager& availabilityManager) {
-  return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->addAvailabilityManager(availabilityManager);
-}
+  bool AvailabilityManagerAssignmentList::addAvailabilityManager(const AvailabilityManager& availabilityManager) {
+    return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->addAvailabilityManager(availabilityManager);
+  }
 
-bool AvailabilityManagerAssignmentList::addAvailabilityManager(const AvailabilityManager& availabilityManager, unsigned priority) {
-  return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->addAvailabilityManager(availabilityManager, priority);
-}
+  bool AvailabilityManagerAssignmentList::addAvailabilityManager(const AvailabilityManager& availabilityManager, unsigned priority) {
+    return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->addAvailabilityManager(availabilityManager, priority);
+  }
 
-bool AvailabilityManagerAssignmentList::setAvailabilityManagers(const std::vector<AvailabilityManager>& availabilityManagers) {
-  return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->setAvailabilityManagers(availabilityManagers);
-}
+  bool AvailabilityManagerAssignmentList::setAvailabilityManagers(const std::vector<AvailabilityManager>& availabilityManagers) {
+    return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->setAvailabilityManagers(availabilityManagers);
+  }
 
-void AvailabilityManagerAssignmentList::resetAvailabilityManagers() {
-  getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->resetAvailabilityManagers();
-}
+  void AvailabilityManagerAssignmentList::resetAvailabilityManagers() {
+    getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->resetAvailabilityManagers();
+  }
 
-bool AvailabilityManagerAssignmentList::removeAvailabilityManager(const AvailabilityManager& availabilityManager) {
-  return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->removeAvailabilityManager(availabilityManager);
-}
+  bool AvailabilityManagerAssignmentList::removeAvailabilityManager(const AvailabilityManager& availabilityManager) {
+    return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->removeAvailabilityManager(availabilityManager);
+  }
 
-bool AvailabilityManagerAssignmentList::removeAvailabilityManager(unsigned priority) {
-  return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->removeAvailabilityManager(priority);
-}
+  bool AvailabilityManagerAssignmentList::removeAvailabilityManager(unsigned priority) {
+    return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->removeAvailabilityManager(priority);
+  }
 
-bool AvailabilityManagerAssignmentList::setAvailabilityManagerPriority(const AvailabilityManager& availabilityManager, unsigned priority) {
-  return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->setAvailabilityManagerPriority(availabilityManager, priority);
-}
+  bool AvailabilityManagerAssignmentList::setAvailabilityManagerPriority(const AvailabilityManager& availabilityManager, unsigned priority) {
+    return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->setAvailabilityManagerPriority(availabilityManager, priority);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-unsigned AvailabilityManagerAssignmentList_Impl::availabilityManagerPriority(
-  const openstudio::epmodel::AvailabilityManager& availabilityManager) const {
-  const auto currentManagers = availabilityManagers();
-  const auto it = std::find(currentManagers.begin(), currentManagers.end(), availabilityManager);
-  OS_ASSERT(it != currentManagers.end());
-  return static_cast<unsigned>(std::distance(currentManagers.begin(), it) + 1);
-}
-
-std::vector<openstudio::epmodel::AvailabilityManager> AvailabilityManagerAssignmentList_Impl::availabilityManagers() const {
-  auto assignmentList = getObject<openstudio::epmodel::AvailabilityManagerAssignmentList>();
-  std::vector<openstudio::epmodel::AvailabilityManager> result;
-
-  const auto groups = assignmentList.extensibleGroups();
-  result.reserve(groups.size());
-  for (const auto& group : groups) {
-    auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
-    OS_ASSERT(workspaceGroup);
-
-    auto target = workspaceGroup->getTarget(openstudio::AvailabilityManagerAssignmentListExtensibleFields::AvailabilityManagerName);
-    if (!target) {
-      continue;
+    unsigned
+      AvailabilityManagerAssignmentList_Impl::availabilityManagerPriority(const openstudio::epmodel::AvailabilityManager& availabilityManager) const {
+      const auto currentManagers = availabilityManagers();
+      const auto it = std::find(currentManagers.begin(), currentManagers.end(), availabilityManager);
+      OS_ASSERT(it != currentManagers.end());
+      return static_cast<unsigned>(std::distance(currentManagers.begin(), it) + 1);
     }
 
-    auto availabilityManager = target->optionalCast<openstudio::epmodel::AvailabilityManager>();
-    if (!availabilityManager) {
-      continue;
+    std::vector<openstudio::epmodel::AvailabilityManager> AvailabilityManagerAssignmentList_Impl::availabilityManagers() const {
+      auto assignmentList = getObject<openstudio::epmodel::AvailabilityManagerAssignmentList>();
+      std::vector<openstudio::epmodel::AvailabilityManager> result;
+
+      const auto groups = assignmentList.extensibleGroups();
+      result.reserve(groups.size());
+      for (const auto& group : groups) {
+        auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        OS_ASSERT(workspaceGroup);
+
+        auto target = workspaceGroup->getTarget(openstudio::AvailabilityManagerAssignmentListExtensibleFields::AvailabilityManagerName);
+        if (!target) {
+          continue;
+        }
+
+        auto availabilityManager = target->optionalCast<openstudio::epmodel::AvailabilityManager>();
+        if (!availabilityManager) {
+          continue;
+        }
+
+        result.push_back(*availabilityManager);
+      }
+      return result;
     }
 
-    result.push_back(*availabilityManager);
-  }
-  return result;
-}
+    boost::optional<openstudio::epmodel::AirLoopHVAC> AvailabilityManagerAssignmentList_Impl::airLoopHVAC() const {
+      auto assignmentList = getObject<openstudio::epmodel::AvailabilityManagerAssignmentList>();
+      boost::optional<openstudio::epmodel::AirLoopHVAC> result;
 
-boost::optional<openstudio::epmodel::AirLoopHVAC> AvailabilityManagerAssignmentList_Impl::airLoopHVAC() const {
-  auto assignmentList = getObject<openstudio::epmodel::AvailabilityManagerAssignmentList>();
-  boost::optional<openstudio::epmodel::AirLoopHVAC> result;
+      for (const auto& airLoop : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
+        auto target = airLoop.getModelObjectTarget<openstudio::epmodel::AvailabilityManagerAssignmentList>(
+          openstudio::AirLoopHVACFields::AvailabilityManagerListName);
+        if (!target) {
+          continue;
+        }
+        if (*target == assignmentList) {
+          OS_ASSERT(!result);
+          result = airLoop;
+        }
+      }
 
-  for (const auto& airLoop : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
-    auto target = airLoop.getModelObjectTarget<openstudio::epmodel::AvailabilityManagerAssignmentList>(
-      openstudio::AirLoopHVACFields::AvailabilityManagerListName);
-    if (!target) {
-      continue;
-    }
-    if (*target == assignmentList) {
-      OS_ASSERT(!result);
-      result = airLoop;
-    }
-  }
-
-  return result;
-}
-
-boost::optional<openstudio::epmodel::Loop> AvailabilityManagerAssignmentList_Impl::loop() const {
-  if (auto result = airLoopHVAC()) {
-    auto loop = result->optionalCast<openstudio::epmodel::Loop>();
-    OS_ASSERT(loop);
-    return *loop;
-  }
-  return boost::none;
-}
-
-bool AvailabilityManagerAssignmentList_Impl::addAvailabilityManager(const openstudio::epmodel::AvailabilityManager& availabilityManager) {
-  auto assignmentList = getObject<openstudio::epmodel::AvailabilityManagerAssignmentList>();
-
-  if (availabilityManager.model() != model()) {
-    return false;
-  }
-
-  const auto currentManagers = availabilityManagers();
-  if (std::ranges::find(currentManagers, availabilityManager) != currentManagers.end()) {
-    return true;
-  }
-
-  auto group = assignmentList.pushExtensibleGroup();
-  auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
-  OS_ASSERT(workspaceGroup);
-
-  if (!workspaceGroup->setString(openstudio::AvailabilityManagerAssignmentListExtensibleFields::AvailabilityManagerObjectType,
-                                 availabilityManager.iddObject().name())) {
-    return false;
-  }
-
-  return workspaceGroup->setPointer(openstudio::AvailabilityManagerAssignmentListExtensibleFields::AvailabilityManagerName,
-                                    availabilityManager.handle());
-}
-
-bool AvailabilityManagerAssignmentList_Impl::addAvailabilityManager(const openstudio::epmodel::AvailabilityManager& availabilityManager,
-                                                                    unsigned priority) {
-  if (!addAvailabilityManager(availabilityManager)) {
-    return false;
-  }
-  return setAvailabilityManagerPriority(availabilityManager, priority);
-}
-
-bool AvailabilityManagerAssignmentList_Impl::setAvailabilityManagers(
-  const std::vector<openstudio::epmodel::AvailabilityManager>& availabilityManagers) {
-  for (const auto& availabilityManager : availabilityManagers) {
-    if (availabilityManager.model() != model()) {
-      return false;
-    }
-  }
-
-  auto assignmentList = getObject<openstudio::epmodel::AvailabilityManagerAssignmentList>();
-  assignmentList.clearExtensibleGroups();
-  for (const auto& availabilityManager : availabilityManagers) {
-    OS_ASSERT(addAvailabilityManager(availabilityManager));
-  }
-  return true;
-}
-
-void AvailabilityManagerAssignmentList_Impl::resetAvailabilityManagers() {
-  auto assignmentList = getObject<openstudio::epmodel::AvailabilityManagerAssignmentList>();
-  assignmentList.clearExtensibleGroups();
-}
-
-bool AvailabilityManagerAssignmentList_Impl::removeAvailabilityManager(const openstudio::epmodel::AvailabilityManager& availabilityManager) {
-  auto currentManagers = availabilityManagers();
-  const auto it = std::find(currentManagers.begin(), currentManagers.end(), availabilityManager);
-  if (it == currentManagers.end()) {
-    return false;
-  }
-
-  currentManagers.erase(it);
-  return setAvailabilityManagers(currentManagers);
-}
-
-bool AvailabilityManagerAssignmentList_Impl::removeAvailabilityManager(unsigned priority) {
-  auto currentManagers = availabilityManagers();
-  if ((priority < 1u) || (priority > currentManagers.size())) {
-    return false;
-  }
-
-  currentManagers.erase(currentManagers.begin() + static_cast<long>(priority - 1u));
-  return setAvailabilityManagers(currentManagers);
-}
-
-bool AvailabilityManagerAssignmentList_Impl::setAvailabilityManagerPriority(
-  const openstudio::epmodel::AvailabilityManager& availabilityManager, unsigned priority) {
-  auto currentManagers = availabilityManagers();
-  const auto it = std::find(currentManagers.begin(), currentManagers.end(), availabilityManager);
-  if (it == currentManagers.end()) {
-    return false;
-  }
-
-  auto value = *it;
-  currentManagers.erase(it);
-
-  if (priority < 1u) {
-    priority = 1u;
-  }
-  if (priority > currentManagers.size() + 1u) {
-    priority = static_cast<unsigned>(currentManagers.size() + 1u);
-  }
-
-  currentManagers.insert(currentManagers.begin() + static_cast<long>(priority - 1u), value);
-  return setAvailabilityManagers(currentManagers);
-}
-
-void AvailabilityManagerAssignmentList_Impl::doCanonicalize(LoadContext& context) {
-  auto assignmentList = getObject<openstudio::epmodel::AvailabilityManagerAssignmentList>();
-
-  unsigned groupIndex = 0u;
-  while (groupIndex < assignmentList.numExtensibleGroups()) {
-    auto groups = assignmentList.extensibleGroups();
-    if (groupIndex >= groups.size()) {
-      break;
+      return result;
     }
 
-    auto group = groups[groupIndex];
-    auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
-    if (!workspaceGroup) {
-      assignmentList.eraseExtensibleGroup(groupIndex);
-      detail::addLoadWarning(context, "Removed invalid extensible group in AvailabilityManagerAssignmentList '" + assignmentList.nameString() + "'.");
-      continue;
+    boost::optional<openstudio::epmodel::Loop> AvailabilityManagerAssignmentList_Impl::loop() const {
+      if (auto result = airLoopHVAC()) {
+        auto loop = result->optionalCast<openstudio::epmodel::Loop>();
+        OS_ASSERT(loop);
+        return *loop;
+      }
+      return boost::none;
     }
 
-    auto objectType = group.getString(openstudio::AvailabilityManagerAssignmentListExtensibleFields::AvailabilityManagerObjectType, true);
-    auto objectName = group.getString(openstudio::AvailabilityManagerAssignmentListExtensibleFields::AvailabilityManagerName, true);
-    if (!objectType || objectType->empty() || !objectName || objectName->empty()) {
-      assignmentList.eraseExtensibleGroup(groupIndex);
-      detail::addLoadWarning(context, "Removed incomplete availability manager entry in AvailabilityManagerAssignmentList '" + assignmentList.nameString()
-                                       + "'.");
-      continue;
+    bool AvailabilityManagerAssignmentList_Impl::addAvailabilityManager(const openstudio::epmodel::AvailabilityManager& availabilityManager) {
+      auto assignmentList = getObject<openstudio::epmodel::AvailabilityManagerAssignmentList>();
+
+      if (availabilityManager.model() != model()) {
+        return false;
+      }
+
+      const auto currentManagers = availabilityManagers();
+      if (std::ranges::find(currentManagers, availabilityManager) != currentManagers.end()) {
+        return true;
+      }
+
+      auto group = assignmentList.pushExtensibleGroup();
+      auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      OS_ASSERT(workspaceGroup);
+
+      if (!workspaceGroup->setString(openstudio::AvailabilityManagerAssignmentListExtensibleFields::AvailabilityManagerObjectType,
+                                     availabilityManager.iddObject().name())) {
+        return false;
+      }
+
+      return workspaceGroup->setPointer(openstudio::AvailabilityManagerAssignmentListExtensibleFields::AvailabilityManagerName,
+                                        availabilityManager.handle());
     }
 
-    openstudio::IddObjectType iddType = openstudio::IddObjectType::Catchall;
-    try {
-      iddType = openstudio::IddObjectType(*objectType);
-    } catch (const std::runtime_error&) {  // NOLINT
-      assignmentList.eraseExtensibleGroup(groupIndex);
-      detail::addLoadWarning(context, "Removed invalid availability manager object type '" + *objectType + "' in AvailabilityManagerAssignmentList '"
-                                       + assignmentList.nameString() + "'.");
-      continue;
+    bool AvailabilityManagerAssignmentList_Impl::addAvailabilityManager(const openstudio::epmodel::AvailabilityManager& availabilityManager,
+                                                                        unsigned priority) {
+      if (!addAvailabilityManager(availabilityManager)) {
+        return false;
+      }
+      return setAvailabilityManagerPriority(availabilityManager, priority);
     }
 
-    auto candidateObject = model().getObjectByTypeAndName(iddType, *objectName, true);
-    auto availabilityManager = candidateObject ? candidateObject->optionalCast<openstudio::epmodel::AvailabilityManager>() : boost::none;
-    if (!availabilityManager) {
-      assignmentList.eraseExtensibleGroup(groupIndex);
-      detail::addLoadWarning(context, "Removed missing availability manager '" + *objectName + "' (" + *objectType
-                                       + ") from AvailabilityManagerAssignmentList '" + assignmentList.nameString() + "'.");
-      continue;
+    bool AvailabilityManagerAssignmentList_Impl::setAvailabilityManagers(
+      const std::vector<openstudio::epmodel::AvailabilityManager>& availabilityManagers) {
+      for (const auto& availabilityManager : availabilityManagers) {
+        if (availabilityManager.model() != model()) {
+          return false;
+        }
+      }
+
+      auto assignmentList = getObject<openstudio::epmodel::AvailabilityManagerAssignmentList>();
+      assignmentList.clearExtensibleGroups();
+      for (const auto& availabilityManager : availabilityManagers) {
+        OS_ASSERT(addAvailabilityManager(availabilityManager));
+      }
+      return true;
     }
 
-    // Canonical postcondition: pointer linkage on extensible rows is authoritative
-    // for rename propagation and typed target APIs.
-    OS_ASSERT(workspaceGroup->setPointer(openstudio::AvailabilityManagerAssignmentListExtensibleFields::AvailabilityManagerName,
-                                         availabilityManager->handle()));
+    void AvailabilityManagerAssignmentList_Impl::resetAvailabilityManagers() {
+      auto assignmentList = getObject<openstudio::epmodel::AvailabilityManagerAssignmentList>();
+      assignmentList.clearExtensibleGroups();
+    }
 
-    // Keep object-type field aligned with the resolved target object.
-    OS_ASSERT(workspaceGroup->setString(openstudio::AvailabilityManagerAssignmentListExtensibleFields::AvailabilityManagerObjectType,
-                                        availabilityManager->iddObject().name()));
+    bool AvailabilityManagerAssignmentList_Impl::removeAvailabilityManager(const openstudio::epmodel::AvailabilityManager& availabilityManager) {
+      auto currentManagers = availabilityManagers();
+      const auto it = std::find(currentManagers.begin(), currentManagers.end(), availabilityManager);
+      if (it == currentManagers.end()) {
+        return false;
+      }
 
-    ++groupIndex;
-  }
-}
+      currentManagers.erase(it);
+      return setAvailabilityManagers(currentManagers);
+    }
 
-}  // namespace detail
+    bool AvailabilityManagerAssignmentList_Impl::removeAvailabilityManager(unsigned priority) {
+      auto currentManagers = availabilityManagers();
+      if ((priority < 1u) || (priority > currentManagers.size())) {
+        return false;
+      }
+
+      currentManagers.erase(currentManagers.begin() + static_cast<long>(priority - 1u));
+      return setAvailabilityManagers(currentManagers);
+    }
+
+    bool AvailabilityManagerAssignmentList_Impl::setAvailabilityManagerPriority(const openstudio::epmodel::AvailabilityManager& availabilityManager,
+                                                                                unsigned priority) {
+      auto currentManagers = availabilityManagers();
+      const auto it = std::find(currentManagers.begin(), currentManagers.end(), availabilityManager);
+      if (it == currentManagers.end()) {
+        return false;
+      }
+
+      auto value = *it;
+      currentManagers.erase(it);
+
+      if (priority < 1u) {
+        priority = 1u;
+      }
+      if (priority > currentManagers.size() + 1u) {
+        priority = static_cast<unsigned>(currentManagers.size() + 1u);
+      }
+
+      currentManagers.insert(currentManagers.begin() + static_cast<long>(priority - 1u), value);
+      return setAvailabilityManagers(currentManagers);
+    }
+
+    void AvailabilityManagerAssignmentList_Impl::doCanonicalize(LoadContext& context) {
+      auto assignmentList = getObject<openstudio::epmodel::AvailabilityManagerAssignmentList>();
+
+      unsigned groupIndex = 0u;
+      while (groupIndex < assignmentList.numExtensibleGroups()) {
+        auto groups = assignmentList.extensibleGroups();
+        if (groupIndex >= groups.size()) {
+          break;
+        }
+
+        auto group = groups[groupIndex];
+        auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        if (!workspaceGroup) {
+          assignmentList.eraseExtensibleGroup(groupIndex);
+          detail::addLoadWarning(context,
+                                 "Removed invalid extensible group in AvailabilityManagerAssignmentList '" + assignmentList.nameString() + "'.");
+          continue;
+        }
+
+        auto objectType = group.getString(openstudio::AvailabilityManagerAssignmentListExtensibleFields::AvailabilityManagerObjectType, true);
+        auto objectName = group.getString(openstudio::AvailabilityManagerAssignmentListExtensibleFields::AvailabilityManagerName, true);
+        if (!objectType || objectType->empty() || !objectName || objectName->empty()) {
+          assignmentList.eraseExtensibleGroup(groupIndex);
+          detail::addLoadWarning(context, "Removed incomplete availability manager entry in AvailabilityManagerAssignmentList '"
+                                            + assignmentList.nameString() + "'.");
+          continue;
+        }
+
+        openstudio::IddObjectType iddType = openstudio::IddObjectType::Catchall;
+        try {
+          iddType = openstudio::IddObjectType(*objectType);
+        } catch (const std::runtime_error&) {  // NOLINT
+          assignmentList.eraseExtensibleGroup(groupIndex);
+          detail::addLoadWarning(context, "Removed invalid availability manager object type '" + *objectType
+                                            + "' in AvailabilityManagerAssignmentList '" + assignmentList.nameString() + "'.");
+          continue;
+        }
+
+        auto candidateObject = model().getObjectByTypeAndName(iddType, *objectName, true);
+        auto availabilityManager = candidateObject ? candidateObject->optionalCast<openstudio::epmodel::AvailabilityManager>() : boost::none;
+        if (!availabilityManager) {
+          assignmentList.eraseExtensibleGroup(groupIndex);
+          detail::addLoadWarning(context, "Removed missing availability manager '" + *objectName + "' (" + *objectType
+                                            + ") from AvailabilityManagerAssignmentList '" + assignmentList.nameString() + "'.");
+          continue;
+        }
+
+        // Canonical postcondition: pointer linkage on extensible rows is authoritative
+        // for rename propagation and typed target APIs.
+        OS_ASSERT(workspaceGroup->setPointer(openstudio::AvailabilityManagerAssignmentListExtensibleFields::AvailabilityManagerName,
+                                             availabilityManager->handle()));
+
+        // Keep object-type field aligned with the resolved target object.
+        OS_ASSERT(workspaceGroup->setString(openstudio::AvailabilityManagerAssignmentListExtensibleFields::AvailabilityManagerObjectType,
+                                            availabilityManager->iddObject().name()));
+
+        ++groupIndex;
+      }
+    }
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

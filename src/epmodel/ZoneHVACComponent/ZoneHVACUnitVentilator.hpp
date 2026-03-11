@@ -1,0 +1,103 @@
+/***********************************************************************************************************************
+*  OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC.
+*  See also https://openstudio.net/license
+***********************************************************************************************************************/
+
+#ifndef EPMODEL_ZONEHVACUNITVENTILATOR_HPP
+#define EPMODEL_ZONEHVACUNITVENTILATOR_HPP
+
+#include "EPModelAPI.hpp"
+#include "ModelObject.hpp"
+
+#include <boost/optional.hpp>
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace openstudio {
+namespace epmodel {
+
+  class Model;
+
+  namespace detail {
+    class ZoneHVACUnitVentilator_Impl;
+  }
+
+  class EPMODEL_API ZoneHVACUnitVentilator : public ModelObject
+  {
+   public:
+    explicit ZoneHVACUnitVentilator(const Model& model);
+
+    virtual ~ZoneHVACUnitVentilator() override = default;
+    ZoneHVACUnitVentilator(const ZoneHVACUnitVentilator& other) = default;
+    ZoneHVACUnitVentilator(ZoneHVACUnitVentilator&& other) = default;
+    ZoneHVACUnitVentilator& operator=(const ZoneHVACUnitVentilator&) = default;
+    ZoneHVACUnitVentilator& operator=(ZoneHVACUnitVentilator&&) = default;
+
+    static IddObjectType iddObjectType();
+
+    static std::vector<std::string> outdoorAirControlTypeValues();
+
+    // Schema Alignment Notes:
+    // - API: Scalar accessors keep the openstudio::model names (maximumSupplyAirFlowRate, outdoorAirControlType,
+    //   minimumOutdoorAirFlowRate, maximumOutdoorAirFlowRate, heatingConvergenceTolerance, coolingConvergenceTolerance)
+    //   while mapping directly to the EnergyPlus ZoneHVAC:UnitVentilator fields via OS_ZoneHVAC_UnitVentilatorFields.
+    //   ForwardTranslateZoneHVACUnitVentilator.cpp documents the field-name drift and autosize semantics that justify this mapping.
+    // - Field Mapping: availability/schedule targets (AvailabilityScheduleName, MinimumOutdoorAirScheduleName,
+    //   MaximumOutdoorAirFractionorTemperatureScheduleName), SupplyAirFan+/SupplyAirFanOperatingModeSchedule, heating/cooling coil
+    //   references, and inlet/outlet node targets remain relationship-only and are intentionally excluded from this scalar surface.
+    // - Default/autosize helpers mirror the IDD metadata so required scalars (heating/cooling convergence tolerances) stay strict while the
+    //   optional flow fields expose is...Autosized/autosize helpers consistent with the Ruby generator.
+
+    /** @name Getters */
+    //@{
+    boost::optional<double> maximumSupplyAirFlowRate() const;
+    bool isMaximumSupplyAirFlowRateAutosized() const;
+
+    std::string outdoorAirControlType() const;
+
+    boost::optional<double> minimumOutdoorAirFlowRate() const;
+    bool isMinimumOutdoorAirFlowRateAutosized() const;
+
+    boost::optional<double> maximumOutdoorAirFlowRate() const;
+    bool isMaximumOutdoorAirFlowRateAutosized() const;
+
+    double heatingConvergenceTolerance() const;
+    double coolingConvergenceTolerance() const;
+
+    boost::optional<double> autosizedMaximumSupplyAirFlowRate() const;
+    boost::optional<double> autosizedMinimumOutdoorAirFlowRate() const;
+    boost::optional<double> autosizedMaximumOutdoorAirFlowRate() const;
+    //@}
+
+    /** @name Setters */
+    //@{
+    bool setMaximumSupplyAirFlowRate(double maximumSupplyAirFlowRate);
+    void autosizeMaximumSupplyAirFlowRate();
+
+    bool setOutdoorAirControlType(const std::string& outdoorAirControlType);
+
+    bool setMinimumOutdoorAirFlowRate(double minimumOutdoorAirFlowRate);
+    void autosizeMinimumOutdoorAirFlowRate();
+
+    bool setMaximumOutdoorAirFlowRate(double maximumOutdoorAirFlowRate);
+    void autosizeMaximumOutdoorAirFlowRate();
+
+    bool setHeatingConvergenceTolerance(double heatingConvergenceTolerance);
+    bool setCoolingConvergenceTolerance(double coolingConvergenceTolerance);
+    //@}
+
+   protected:
+    using ImplType = detail::ZoneHVACUnitVentilator_Impl;
+
+    explicit ZoneHVACUnitVentilator(std::shared_ptr<detail::ZoneHVACUnitVentilator_Impl> impl);
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+  };
+
+}  // namespace epmodel
+}  // namespace openstudio
+
+#endif  // EPMODEL_ZONEHVACUNITVENTILATOR_HPP

@@ -8,7 +8,7 @@
 
 #include "BranchList.hpp"
 #include "BranchList_Impl.hpp"
-#include "AvailabilityManager.hpp"
+#include "AvailabilityManager/AvailabilityManager.hpp"
 #include "AvailabilityManagerAssignmentList.hpp"
 #include "AvailabilityManagerAssignmentList_Impl.hpp"
 #include "Branch.hpp"

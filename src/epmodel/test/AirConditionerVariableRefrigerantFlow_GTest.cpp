@@ -42,4 +42,30 @@ TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_ScalarAccessors_Rou
 
   EXPECT_TRUE(vrf.setRatedHeatingCapacitySizingRatio(1.15));
   EXPECT_DOUBLE_EQ(1.15, vrf.ratedHeatingCapacitySizingRatio());
+
+  const auto heatingValues = AirConditionerVariableRefrigerantFlow::heatingPerformanceCurveOutdoorTemperatureTypeValues();
+  ASSERT_FALSE(heatingValues.empty());
+  EXPECT_TRUE(vrf.setHeatingPerformanceCurveOutdoorTemperatureType(heatingValues.front()));
+  EXPECT_EQ(heatingValues.front(), vrf.heatingPerformanceCurveOutdoorTemperatureType());
+
+  EXPECT_TRUE(vrf.setHeatPumpWasteHeatRecovery(true));
+  EXPECT_TRUE(vrf.heatPumpWasteHeatRecovery());
+  EXPECT_TRUE(vrf.setHeatPumpWasteHeatRecovery(false));
+  EXPECT_FALSE(vrf.heatPumpWasteHeatRecovery());
+
+  EXPECT_TRUE(vrf.setNumberofCompressors(3));
+  EXPECT_EQ(3, vrf.numberofCompressors());
+
+  const auto defrostValues = AirConditionerVariableRefrigerantFlow::defrostStrategyValues();
+  ASSERT_FALSE(defrostValues.empty());
+  EXPECT_TRUE(vrf.setDefrostStrategy(defrostValues.front()));
+  EXPECT_EQ(defrostValues.front(), vrf.defrostStrategy());
+
+  const auto condenserValues = AirConditionerVariableRefrigerantFlow::condenserTypeValues();
+  ASSERT_FALSE(condenserValues.empty());
+  EXPECT_TRUE(vrf.setCondenserType(condenserValues.front()));
+  EXPECT_FALSE(vrf.isCondenserTypeDefaulted());
+  EXPECT_EQ(condenserValues.front(), vrf.condenserType());
+  vrf.resetCondenserType();
+  EXPECT_TRUE(vrf.condenserType().empty());
 }

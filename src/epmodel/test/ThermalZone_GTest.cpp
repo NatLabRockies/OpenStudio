@@ -22,6 +22,7 @@
 #include <utilities/idd/Daylighting_ReferencePoint_FieldEnums.hxx>
 #include <utilities/idd/HVACTemplate_Zone_IdealLoadsAirSystem_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/ZoneControl_Thermostat_FieldEnums.hxx>
 #include <utilities/idd/Output_IlluminanceMap_FieldEnums.hxx>
 #include <utilities/idd/Zone_FieldEnums.hxx>
 #include <boost/none.hpp>
@@ -375,4 +376,120 @@ TEST_F(EPModelFixture, API_ThermalZone_ZoneScalarAccessors_RoundTrip) {
   EXPECT_TRUE(zone.setZoneOutsideConvectionAlgorithm(outsideAlgorithms.front()));
   ASSERT_TRUE(zone.zoneOutsideConvectionAlgorithm());
   EXPECT_EQ(outsideAlgorithms.front(), zone.zoneOutsideConvectionAlgorithm().get());
+}
+
+TEST_F(EPModelFixture, API_ThermalZone_ThermostatControlObjectTypes_RoundTrip) {
+  Model model;
+  ThermalZone zone(model);
+
+  EXPECT_TRUE(zone.control1ObjectType().empty());
+  EXPECT_FALSE(zone.control2ObjectType());
+
+  EXPECT_TRUE(zone.setControl1ObjectType("ThermostatSetpoint:DualSetpoint"));
+  EXPECT_EQ("ThermostatSetpoint:DualSetpoint", zone.control1ObjectType());
+
+  EXPECT_TRUE(zone.setControl2ObjectType("ThermostatSetpoint:SingleHeating"));
+  ASSERT_TRUE(zone.control2ObjectType());
+  EXPECT_EQ("ThermostatSetpoint:SingleHeating", zone.control2ObjectType().get());
+
+  zone.resetControl2ObjectType();
+  EXPECT_FALSE(zone.control2ObjectType());
+
+  auto zoneControlObjects = model.getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat);
+  ASSERT_EQ(1u, zoneControlObjects.size());
+}
+
+TEST_F(EPModelFixture, API_ThermalZone_ThermostatTemperatureDifference_RoundTrip) {
+  Model model;
+  ThermalZone zone(model);
+
+  EXPECT_TRUE(zone.isTemperatureDifferenceBetweenCutoutAndSetpointDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, zone.temperatureDifferenceBetweenCutoutAndSetpoint());
+
+  EXPECT_TRUE(zone.setTemperatureDifferenceBetweenCutoutAndSetpoint(1.5));
+  EXPECT_FALSE(zone.isTemperatureDifferenceBetweenCutoutAndSetpointDefaulted());
+  EXPECT_DOUBLE_EQ(1.5, zone.temperatureDifferenceBetweenCutoutAndSetpoint());
+
+  zone.resetTemperatureDifferenceBetweenCutoutAndSetpoint();
+  EXPECT_TRUE(zone.isTemperatureDifferenceBetweenCutoutAndSetpointDefaulted());
+  EXPECT_DOUBLE_EQ(0.0, zone.temperatureDifferenceBetweenCutoutAndSetpoint());
+}
+
+TEST_F(EPModelFixture, API_ThermalZone_ZoneVentilationDesignFlowRateScalarAccessors_RoundTrip) {
+  Model model;
+  ThermalZone zone(model);
+
+  EXPECT_DOUBLE_EQ(0.0, zone.designFlowRate());
+  EXPECT_FALSE(zone.setDesignFlowRate(-0.1));
+  EXPECT_TRUE(zone.setDesignFlowRate(0.25));
+  EXPECT_DOUBLE_EQ(0.25, zone.designFlowRate());
+  EXPECT_DOUBLE_EQ(0.0, zone.flowRateperZoneFloorArea());
+  EXPECT_DOUBLE_EQ(0.0, zone.flowRateperPerson());
+  EXPECT_DOUBLE_EQ(0.0, zone.airChangesperHour());
+
+  EXPECT_FALSE(zone.setFlowRateperZoneFloorArea(-0.1));
+  EXPECT_TRUE(zone.setFlowRateperZoneFloorArea(0.0008));
+  EXPECT_DOUBLE_EQ(0.0008, zone.flowRateperZoneFloorArea());
+  EXPECT_DOUBLE_EQ(0.0, zone.designFlowRate());
+
+  EXPECT_FALSE(zone.setFlowRateperPerson(-0.2));
+  EXPECT_TRUE(zone.setFlowRateperPerson(0.0012));
+  EXPECT_DOUBLE_EQ(0.0012, zone.flowRateperPerson());
+  EXPECT_DOUBLE_EQ(0.0, zone.designFlowRate());
+
+  EXPECT_FALSE(zone.setAirChangesperHour(-0.5));
+  EXPECT_TRUE(zone.setAirChangesperHour(2.5));
+  EXPECT_DOUBLE_EQ(2.5, zone.airChangesperHour());
+
+  const auto ventilationValues = ThermalZone::ventilationTypeValues();
+  ASSERT_FALSE(ventilationValues.empty());
+  EXPECT_TRUE(zone.setVentilationType(ventilationValues.front()));
+  EXPECT_EQ(ventilationValues.front(), zone.ventilationType());
+
+  EXPECT_FALSE(zone.setVentilationType("InvalidChoice"));
+  EXPECT_EQ(ventilationValues.front(), zone.ventilationType());
+
+  EXPECT_TRUE(zone.setFanPressureRise(3.2));
+  EXPECT_DOUBLE_EQ(3.2, zone.fanPressureRise());
+
+  EXPECT_TRUE(zone.setFanTotalEfficiency(0.82));
+  EXPECT_DOUBLE_EQ(0.82, zone.fanTotalEfficiency());
+
+  EXPECT_TRUE(zone.setConstantTermCoefficient(1.23));
+  EXPECT_DOUBLE_EQ(1.23, zone.constantTermCoefficient());
+
+  EXPECT_TRUE(zone.setTemperatureTermCoefficient(0.045));
+  EXPECT_DOUBLE_EQ(0.045, zone.temperatureTermCoefficient());
+
+  EXPECT_TRUE(zone.setVelocityTermCoefficient(0.2));
+  EXPECT_DOUBLE_EQ(0.2, zone.velocityTermCoefficient());
+
+  EXPECT_TRUE(zone.setVelocitySquaredTermCoefficient(0.05));
+  EXPECT_DOUBLE_EQ(0.05, zone.velocitySquaredTermCoefficient());
+
+  EXPECT_TRUE(zone.setMinimumIndoorTemperature(16.0));
+  EXPECT_DOUBLE_EQ(16.0, zone.minimumIndoorTemperature());
+
+  EXPECT_TRUE(zone.setMaximumIndoorTemperature(26.0));
+  EXPECT_DOUBLE_EQ(26.0, zone.maximumIndoorTemperature());
+
+  EXPECT_TRUE(zone.setDeltaTemperature(4.0));
+  EXPECT_DOUBLE_EQ(4.0, zone.deltaTemperature());
+
+  EXPECT_TRUE(zone.setMinimumOutdoorTemperature(-12.0));
+  EXPECT_DOUBLE_EQ(-12.0, zone.minimumOutdoorTemperature());
+
+  EXPECT_TRUE(zone.setMaximumOutdoorTemperature(45.0));
+  EXPECT_DOUBLE_EQ(45.0, zone.maximumOutdoorTemperature());
+
+  EXPECT_FALSE(zone.setMaximumWindSpeed(-5.0));
+  EXPECT_TRUE(zone.setMaximumWindSpeed(38.0));
+  EXPECT_DOUBLE_EQ(38.0, zone.maximumWindSpeed());
+
+  const auto densityValues = ThermalZone::densityBasisValues();
+  ASSERT_FALSE(densityValues.empty());
+  EXPECT_TRUE(zone.setDensityBasis(densityValues.front()));
+  EXPECT_EQ(densityValues.front(), zone.densityBasis());
+  EXPECT_FALSE(zone.setDensityBasis("InvalidDensity"));
+  EXPECT_EQ(densityValues.front(), zone.densityBasis());
 }
