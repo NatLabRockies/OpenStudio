@@ -6,8 +6,8 @@
 #include "AirLoopHVACControllerList.hpp"
 #include "AirLoopHVACControllerList_Impl.hpp"
 
-#include "ControllerOutdoorAir.hpp"
-#include "ControllerOutdoorAir_Impl.hpp"
+#include "ParentObject/ControllerOutdoorAir.hpp"
+#include "ParentObject/ControllerOutdoorAir_Impl.hpp"
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>

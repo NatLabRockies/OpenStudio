@@ -16,7 +16,7 @@
 #include "../SetpointManagerScheduled.hpp"
 #include "../SetpointManagerScheduled_Impl.hpp"
 #include "../SetpointManagerSingleZoneReheat.hpp"
-#include "../ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
 
 using namespace openstudio::epmodel;
 

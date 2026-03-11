@@ -22,10 +22,10 @@
 #include "Splitter/AirLoopHVACZoneSplitter_Impl.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
-#include "ControllerOutdoorAir.hpp"
-#include "ControllerOutdoorAir_Impl.hpp"
-#include "ControllerMechanicalVentilation.hpp"
-#include "ControllerMechanicalVentilation_Impl.hpp"
+#include "ParentObject/ControllerOutdoorAir.hpp"
+#include "ParentObject/ControllerOutdoorAir_Impl.hpp"
+#include "ModelObject/ControllerMechanicalVentilation.hpp"
+#include "ModelObject/ControllerMechanicalVentilation_Impl.hpp"
 #include "Loop/Loop.hpp"
 #include "Loop/Loop_Impl.hpp"
 #include "Model.hpp"
@@ -35,12 +35,12 @@
 #include "HVACComponent/HVACComponent.hpp"
 #include "ModelObject.hpp"
 #include "StraightComponent/StraightComponent.hpp"
-#include "ThermalZone.hpp"
-#include "ThermalZone_Impl.hpp"
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 #include "SizingZone.hpp"
 #include "SizingZone_Impl.hpp"
-#include "DesignSpecificationOutdoorAirSpaceList.hpp"
-#include "DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
+#include "ModelObject/DesignSpecificationOutdoorAirSpaceList.hpp"
+#include "ModelObject/DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
 #include "SetpointManagerMixedAir.hpp"
 #include "SetpointManagerMixedAir_Impl.hpp"
 #include "ZoneHVACEquipmentConnections.hpp"
@@ -136,6 +136,10 @@ namespace epmodel {
   }
 
   AirLoopHVACZoneSplitter AirLoopHVAC::zoneSplitter() const {
+    // Schema Alignment Notes:
+    // - API: Preserve model-style zoneSplitter/zoneMixer relationship accessors.
+    // - Field Mapping: AirLoopHVAC::ConnectorListName and Connector:Splitter linkage are surfaced via topology
+    //   relationships (not scalar fields).
     return getImpl<detail::AirLoopHVAC_Impl>()->zoneSplitter();
   }
 

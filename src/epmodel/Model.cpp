@@ -26,11 +26,13 @@
 #include "StraightComponent/AirTerminalSingleDuctVAVReheat_Impl.hpp"
 #include "ModelObject/AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl.hpp"
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeReheat_Impl.hpp"
+#include "StraightComponent/AirTerminalSingleDuctInletSideMixer_Impl.hpp"
 #include "StraightComponent/AirTerminalSingleDuctParallelPIUReheat_Impl.hpp"
 #include "StraightComponent/AirTerminalSingleDuctSeriesPIUReheat_Impl.hpp"
 #include "Mixer/AirLoopHVACZoneMixer_Impl.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter_Impl.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
 #include "AvailabilityManagerAssignmentList_Impl.hpp"
 #include "AvailabilityManager/AvailabilityManagerNightCycle_Impl.hpp"
 #include "AvailabilityManager/AvailabilityManagerDifferentialThermostat_Impl.hpp"
@@ -46,12 +48,57 @@
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat_Impl.hpp"
 #include "StraightComponent/BoilerHotWater_Impl.hpp"
 #include "StraightComponent/BoilerSteam_Impl.hpp"
+#include "StraightComponent/DistrictCooling_Impl.hpp"
+#include "StraightComponent/DistrictHeatingSteam_Impl.hpp"
+#include "StraightComponent/DistrictHeatingWater_Impl.hpp"
+#include "StraightComponent/Duct_Impl.hpp"
+#include "ModelObject/DuctLossConduction_Impl.hpp"
+#include "ModelObject/DuctLossLeakage_Impl.hpp"
+#include "ModelObject/DuctLossMakeupAir_Impl.hpp"
+#include "StraightComponent/EvaporativeCoolerDirectResearchSpecial_Impl.hpp"
+#include "StraightComponent/EvaporativeCoolerIndirectResearchSpecial_Impl.hpp"
+#include "StraightComponent/EvaporativeFluidCoolerSingleSpeed_Impl.hpp"
+#include "StraightComponent/EvaporativeFluidCoolerTwoSpeed_Impl.hpp"
+#include "ModelObject/EvaporativeCoolerDirectCelDekPad_Impl.hpp"
+#include "ModelObject/EvaporativeCoolerIndirectCelDekPad_Impl.hpp"
+#include "ModelObject/EvaporativeCoolerIndirectWetCoil_Impl.hpp"
+#include "StraightComponent/CoolingTowerSingleSpeed_Impl.hpp"
+#include "StraightComponent/CoolingTowerTwoSpeed_Impl.hpp"
+#include "StraightComponent/CoolingTowerVariableSpeed_Impl.hpp"
+#include "ModelObject/CoolingTowerVariableSpeedMerkel_Impl.hpp"
+#include "ModelObject/CoolingTowerPerformanceCoolTools_Impl.hpp"
+#include "ModelObject/CoolingTowerPerformanceYorkCalc_Impl.hpp"
 #include "WaterToWaterComponent/ChillerAbsorption_Impl.hpp"
 #include "WaterToWaterComponent/ChillerAbsorptionIndirect_Impl.hpp"
 #include "ModelObject/ChillerCombustionTurbine_Impl.hpp"
 #include "ModelObject/ChillerHeaterAbsorptionDirectFired_Impl.hpp"
+#include "ModelObject/ChillerHeaterAbsorptionDoubleEffect_Impl.hpp"
 #include "ParentObject/ChillerHeaterPerformanceElectricEIR_Impl.hpp"
 #include "ParentObject/CoilPerformanceDXCooling_Impl.hpp"
+#include "ParentObject/ComponentCostAdjustments_Impl.hpp"
+#include "ParentObject/CurrencyType_Impl.hpp"
+#include "ParentObject/ElectricLoadCenterDistribution_Impl.hpp"
+#include "ParentObject/ElectricLoadCenterStorageConverter_Impl.hpp"
+#include "Inverter/ElectricLoadCenterInverterLookUpTable_Impl.hpp"
+#include "Inverter/ElectricLoadCenterInverterPVWatts_Impl.hpp"
+#include "Inverter/ElectricLoadCenterInverterSimple_Impl.hpp"
+#include "ModelObject/ElectricLoadCenterInverterFunctionOfPower_Impl.hpp"
+#include "ModelObject/ElectricLoadCenterTransformer_Impl.hpp"
+#include "ModelObject/EnergyManagementSystemActuator_Impl.hpp"
+#include "ModelObject/EnergyManagementSystemConstructionIndexVariable_Impl.hpp"
+#include "ModelObject/EnergyManagementSystemInternalVariable_Impl.hpp"
+#include "ModelObject/EnergyManagementSystemGlobalVariable_Impl.hpp"
+#include "ModelObject/EnergyManagementSystemMeteredOutputVariable_Impl.hpp"
+#include "ModelObject/EnergyManagementSystemOutputVariable_Impl.hpp"
+#include "ModelObject/EnergyManagementSystemSensor_Impl.hpp"
+#include "ModelObject/EnergyManagementSystemTrendVariable_Impl.hpp"
+#include "ModelObject/EnvironmentalImpactFactors_Impl.hpp"
+#include "ModelObject/EnergyManagementSystemProgram_Impl.hpp"
+#include "ModelObject/EnergyManagementSystemSubroutine_Impl.hpp"
+#include "ModelObject/EnergyManagementSystemProgramCallingManager_Impl.hpp"
+#include "ModelObject/ElectricLoadCenterStorageBattery_Impl.hpp"
+#include "ElectricalStorage/ElectricLoadCenterStorageSimple_Impl.hpp"
+#include "ElectricalStorage/ElectricLoadCenterStorageLiIonNMCBattery_Impl.hpp"
 #include "ModelObject/ChillerConstantCOP_Impl.hpp"
 #include "ModelObject/ChillerEngineDriven_Impl.hpp"
 #include "ModelObject/ChillerElectric_Impl.hpp"
@@ -60,6 +107,7 @@
 #include "WaterToWaterComponent/ChillerElectricASHRAE205_Impl.hpp"
 #include "ModelObject/Branch_Impl.hpp"
 #include "ParentObject/Building_Impl.hpp"
+#include "PlanarSurface/Surface_Impl.hpp"
 #include "BranchList_Impl.hpp"
 #include "StraightComponent/CoilCoolingDXMultiSpeed_Impl.hpp"
 #include "StraightComponent/CoilCoolingDXSingleSpeed_Impl.hpp"
@@ -81,13 +129,18 @@
 #include "StraightComponent/CoilHeatingGasMultiStage_Impl.hpp"
 #include "ModelObject/CoilHeatingSteam_Impl.hpp"
 #include "ModelObject/CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl.hpp"
-#include "CoilHeatingGas_Impl.hpp"
+#include "HVACComponent/CoilWaterHeatingAirToWaterHeatPump_Impl.hpp"
+#include "StraightComponent/CoilHeatingGas_Impl.hpp"
 #include "ModelObject/CoilSystemCoolingDX_Impl.hpp"
+#include "ModelObject/CoilSystemHeatingDX_Impl.hpp"
 #include "StraightComponent/CoilSystemCoolingDXHeatExchangerAssisted_Impl.hpp"
-#include "ControllerMechanicalVentilation_Impl.hpp"
-#include "ControllerOutdoorAir_Impl.hpp"
+#include "StraightComponent/CoilSystemIntegratedHeatPumpAirSource_Impl.hpp"
+#include "StraightComponent/CoilSystemCoolingWater_Impl.hpp"
+#include "StraightComponent/CoilSystemCoolingWaterHeatExchangerAssisted_Impl.hpp"
+#include "ModelObject/ControllerMechanicalVentilation_Impl.hpp"
+#include "ParentObject/ControllerOutdoorAir_Impl.hpp"
 #include "DesignSpecificationOutdoorAir_Impl.hpp"
-#include "DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
+#include "ModelObject/DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
 #include "FanConstantVolume_Impl.hpp"
 #include "ModelObject_Impl.hpp"
 #include "StraightComponent/AirConditionerVariableRefrigerantFlow_Impl.hpp"
@@ -98,6 +151,7 @@
 #include "HVACComponent/CoilHeatingDXVariableRefrigerantFlow_Impl.hpp"
 #include "HVACComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp"
 #include "HVACComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl.hpp"
+#include "HVACComponent/ControllerWaterCoil_Impl.hpp"
 #include "WaterToAirComponent/CoilCoolingWater_Impl.hpp"
 #include "WaterToAirComponent/CoilHeatingWater_Impl.hpp"
 #include "WaterToAirComponent/CoilCoolingWaterToAirHeatPumpEquationFit_Impl.hpp"
@@ -114,6 +168,45 @@
 #include "ModelObject/AirflowNetworkDistributionComponentConstantPressureDrop_Impl.hpp"
 #include "ModelObject/CeilingAdiabatic_Impl.hpp"
 #include "ModelObject/CeilingInterzone_Impl.hpp"
+#include "ModelObject/Door_Impl.hpp"
+#include "ModelObject/DoorInterzone_Impl.hpp"
+#include "ModelObject/ComfortViewFactorAngles_Impl.hpp"
+#include "ModelObject/ComplexFenestrationPropertySolarAbsorbedLayers_Impl.hpp"
+#include "ModelObject/ConstructionComplexFenestrationState_Impl.hpp"
+#include "ModelObject/ComplianceBuilding_Impl.hpp"
+#include "ModelObject/ComponentCostLineItem_Impl.hpp"
+#include "ModelObject/ComponentCostReference_Impl.hpp"
+#include "ModelObject/CondenserLoop_Impl.hpp"
+#include "ModelObject/CondenserEquipmentList_Impl.hpp"
+#include "ModelObject/CondenserEquipmentOperationSchemes_Impl.hpp"
+#include "ModelObject/ConvergenceLimits_Impl.hpp"
+#include "ModelObject/DaylightingDeviceLightWell_Impl.hpp"
+#include "ModelObject/DaylightingDeviceShelf_Impl.hpp"
+#include "ModelObject/DaylightingDeviceTubular_Impl.hpp"
+#include "ModelObject/DaylightingDELightComplexFenestration_Impl.hpp"
+#include "ModelObject/DehumidifierDesiccantNoFans_Impl.hpp"
+#include "ModelObject/DehumidifierDesiccantSystem_Impl.hpp"
+#include "Curve/CurveBicubic_Impl.hpp"
+#include "Curve/CurveCubic_Impl.hpp"
+#include "Curve/CurveBiquadratic_Impl.hpp"
+#include "Curve/CurveExponent_Impl.hpp"
+#include "Curve/CurveDoubleExponentialDecay_Impl.hpp"
+#include "Curve/CurveExponentialDecay_Impl.hpp"
+#include "Curve/CurveExponentialSkewNormal_Impl.hpp"
+#include "Curve/CurveFanPressureRise_Impl.hpp"
+#include "Curve/CurveFunctionalPressureDrop_Impl.hpp"
+#include "Curve/CurveLinear_Impl.hpp"
+#include "Curve/CurveQuadLinear_Impl.hpp"
+#include "Curve/CurveQuintLinear_Impl.hpp"
+#include "Curve/CurveRectangularHyperbola1_Impl.hpp"
+#include "Curve/CurveRectangularHyperbola2_Impl.hpp"
+#include "Curve/CurveSigmoid_Impl.hpp"
+#include "Curve/CurveTriquadratic_Impl.hpp"
+#include "Curve/CurveQuadratic_Impl.hpp"
+#include "Curve/CurveQuartic_Impl.hpp"
+#include "Curve/CurveQuadraticLinear_Impl.hpp"
+#include "ModelObject/CurveCubicLinear_Impl.hpp"
+#include "ModelObject/CurveChillerPartLoadWithLift_Impl.hpp"
 #include "ModelObject/AirflowNetworkDistributionComponentDuct_Impl.hpp"
 #include "ModelObject/AirflowNetworkDistributionDuctSizing_Impl.hpp"
 #include "ModelObject/AirflowNetworkDistributionDuctViewFactors_Impl.hpp"
@@ -145,9 +238,40 @@
 #include "ModelObject/AirflowNetworkDistributionComponentReliefAirFlow_Impl.hpp"
 #include "ModelObject/AirflowNetworkDistributionComponentTerminalUnit_Impl.hpp"
 #include "ModelObject/AirLoopHVACDedicatedOutdoorAirSystem_Impl.hpp"
+#include "ModelObject/DemandManagerElectricEquipment_Impl.hpp"
+#include "ModelObject/DemandManagerExteriorLights_Impl.hpp"
+#include "ExteriorLoadInstance/ExteriorLights_Impl.hpp"
+#include "ExteriorLoadInstance/ExteriorFuelEquipment_Impl.hpp"
+#include "ExteriorLoadInstance/ExteriorWaterEquipment_Impl.hpp"
+#include "ModelObject/ExternalInterface_Impl.hpp"
+#include "ModelObject/ExternalInterfaceActuator_Impl.hpp"
+#include "ModelObject/ExternalInterfaceFunctionalMockupUnitImport_Impl.hpp"
+#include "ModelObject/ExternalInterfaceFunctionalMockupUnitImportFromVariable_Impl.hpp"
+#include "ModelObject/ExternalInterfaceFunctionalMockupUnitImportToActuator_Impl.hpp"
+#include "ModelObject/ExternalInterfaceFunctionalMockupUnitImportToVariable_Impl.hpp"
+#include "ModelObject/ExternalInterfaceFunctionalMockupUnitExportFromVariable_Impl.hpp"
+#include "ModelObject/ExternalInterfaceFunctionalMockupUnitExportToActuator_Impl.hpp"
+#include "ModelObject/ExternalInterfaceFunctionalMockupUnitExportToVariable_Impl.hpp"
+#include "Schedule/ExternalInterfaceFunctionalMockupUnitImportToSchedule_Impl.hpp"
+#include "Schedule/ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl.hpp"
+#include "ModelObject/DemandManagerLights_Impl.hpp"
+#include "ModelObject/DemandManagerThermostats_Impl.hpp"
+#include "ModelObject/DemandManagerVentilation_Impl.hpp"
+#include "ModelObject/DemandManagerAssignmentList_Impl.hpp"
+#include "SpaceLoadInstance/ElectricEquipment_Impl.hpp"
+#include "SpaceLoadInstance/ElectricEquipmentITEAirCooled_Impl.hpp"
+#include "ModelObject/DesignSpecificationAirTerminalSizing_Impl.hpp"
+#include "ModelObject/DesignSpecificationZoneHVACSizing_Impl.hpp"
 #include "ModelObject/AirLoopHVACExhaustSystem_Impl.hpp"
 #include "ModelObject/AirLoopHVACMixer_Impl.hpp"
 #include "ModelObject/AirLoopHVACSplitter_Impl.hpp"
+#include "LayeredConstruction/Construction_Impl.hpp"
+#include "LayeredConstruction/ConstructionWithInternalSource_Impl.hpp"
+#include "ConstructionBase/ConstructionAirBoundary_Impl.hpp"
+#include "ConstructionBase/CFactorUndergroundWallConstruction_Impl.hpp"
+#include "ConstructionBase/FFactorGroundFloorConstruction_Impl.hpp"
+#include "ModelObject/ConstructionWindowDataFile_Impl.hpp"
+#include "ModelObject/ConstructionWindowEquivalentLayer_Impl.hpp"
 #include "ModelObject/AirLoopHVACUnitaryFurnaceHeatCool_Impl.hpp"
 #include "ModelObject/AirLoopHVACUnitaryFurnaceHeatOnly_Impl.hpp"
 #include "ModelObject/AirLoopHVACUnitaryHeatOnly_Impl.hpp"
@@ -165,7 +289,7 @@
 #include "SetpointManagerMixedAir_Impl.hpp"
 #include "SetpointManagerScheduled_Impl.hpp"
 #include "SetpointManagerSingleZoneReheat_Impl.hpp"
-#include "ThermalZone_Impl.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 #include "ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "ZoneHVACEquipmentConnections_Impl.hpp"
 #include "ZoneHVACEquipmentList_Impl.hpp"
@@ -345,6 +469,9 @@ namespace epmodel {
       if (type == IddObjectType::AirLoopHVAC) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AirLoopHVAC_Impl(object, this, keepHandle));
       }
+      if (type == IddObjectType::PlantLoop) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PlantLoop_Impl(object, this, keepHandle));
+      }
       if (type == IddObjectType::AirLoopHVAC_SupplyPath) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AirLoopHVACSupplyPath_Impl(object, this, keepHandle));
       }
@@ -424,11 +551,82 @@ namespace epmodel {
       if (type == IddObjectType::Building) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new Building_Impl(object, this, keepHandle));
       }
+      if (type == IddObjectType::BuildingSurface_Detailed) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new Surface_Impl(object, this, keepHandle));
+      }
       if (type == IddObjectType::Boiler_HotWater) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new BoilerHotWater_Impl(object, this, keepHandle));
       }
       if (type == IddObjectType::Boiler_Steam) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new BoilerSteam_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::DistrictCooling) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DistrictCooling_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::DistrictHeating_Steam) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DistrictHeatingSteam_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::DistrictHeating_Water) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DistrictHeatingWater_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Duct) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new Duct_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Duct_Loss_Conduction) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DuctLossConduction_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Duct_Loss_Leakage) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DuctLossLeakage_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Duct_Loss_MakeupAir) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DuctLossMakeupAir_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EvaporativeCooler_Direct_CelDekPad) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EvaporativeCoolerDirectCelDekPad_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EvaporativeCooler_Direct_ResearchSpecial) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EvaporativeCoolerDirectResearchSpecial_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EvaporativeCooler_Indirect_ResearchSpecial) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EvaporativeCoolerIndirectResearchSpecial_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EvaporativeCooler_Indirect_CelDekPad) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EvaporativeCoolerIndirectCelDekPad_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EvaporativeCooler_Indirect_WetCoil) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EvaporativeCoolerIndirectWetCoil_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EvaporativeFluidCooler_SingleSpeed) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EvaporativeFluidCoolerSingleSpeed_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EvaporativeFluidCooler_TwoSpeed) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new EvaporativeFluidCoolerTwoSpeed_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::CoolingTower_SingleSpeed) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoolingTowerSingleSpeed_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::CoolingTower_TwoSpeed) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoolingTowerTwoSpeed_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::CoolingTower_VariableSpeed) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoolingTowerVariableSpeed_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::CoolingTower_VariableSpeed_Merkel) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoolingTowerVariableSpeedMerkel_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::CoolingTowerPerformance_CoolTools) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CoolingTowerPerformanceCoolTools_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::CoolingTowerPerformance_YorkCalc) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CoolingTowerPerformanceYorkCalc_Impl(object, this, keepHandle));
       }
       if (type == IddObjectType::Chiller_Absorption) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ChillerAbsorption_Impl(object, this, keepHandle));
@@ -442,6 +640,10 @@ namespace epmodel {
       if (type == IddObjectType::ChillerHeater_Absorption_DirectFired) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new ChillerHeaterAbsorptionDirectFired_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ChillerHeater_Absorption_DoubleEffect) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ChillerHeaterAbsorptionDoubleEffect_Impl(object, this, keepHandle));
       }
       if (type == IddObjectType::ChillerHeaterPerformance_Electric_EIR) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
@@ -582,6 +784,9 @@ namespace epmodel {
       if (type == IddObjectType::Coil_Heating_Electric_MultiStage) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoilHeatingElectricMultiStage_Impl(object, this, keepHandle));
       }
+      if (type == IddObjectType::Coil_Heating_Fuel) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoilHeatingGas_Impl(object, this, keepHandle));
+      }
       if (type == IddObjectType::Coil_Heating_Gas_MultiStage) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoilHeatingGasMultiStage_Impl(object, this, keepHandle));
       }
@@ -592,16 +797,37 @@ namespace epmodel {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl(object, this, keepHandle));
       }
+      if (type == IddObjectType::Coil_WaterHeating_AirToWaterHeatPump_Pumped) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CoilWaterHeatingAirToWaterHeatPump_Impl(object, this, keepHandle));
+      }
       if (type == IddObjectType::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeed) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl(object, this, keepHandle));
       }
+      if (type == IddObjectType::Controller_WaterCoil) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ControllerWaterCoil_Impl(object, this, keepHandle));
+      }
       if (type == IddObjectType::CoilSystem_Cooling_DX) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoilSystemCoolingDX_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::CoilSystem_Heating_DX) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoilSystemHeatingDX_Impl(object, this, keepHandle));
       }
       if (type == IddObjectType::CoilSystem_Cooling_DX_HeatExchangerAssisted) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new CoilSystemCoolingDXHeatExchangerAssisted_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::CoilSystem_IntegratedHeatPump_AirSource) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CoilSystemIntegratedHeatPumpAirSource_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::CoilSystem_Cooling_Water) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoilSystemCoolingWater_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::CoilSystem_Cooling_Water_HeatExchangerAssisted) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CoilSystemCoolingWaterHeatExchangerAssisted_Impl(object, this, keepHandle));
       }
       if (type == IddObjectType::SetpointManager_MixedAir) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new SetpointManagerMixedAir_Impl(object, this, keepHandle));
@@ -619,6 +845,10 @@ namespace epmodel {
       if (type == IddObjectType::AirTerminal_SingleDuct_ConstantVolume_Reheat) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new AirTerminalSingleDuctConstantVolumeReheat_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::AirTerminal_SingleDuct_Mixer) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new AirTerminalSingleDuctInletSideMixer_Impl(object, this, keepHandle));
       }
       if (type == IddObjectType::AirTerminal_SingleDuct_ParallelPIU_Reheat) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
@@ -697,6 +927,14 @@ namespace epmodel {
       if (type == IddObjectType::DesignSpecification_OutdoorAir_SpaceList) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DesignSpecificationOutdoorAirSpaceList_Impl(object, this, keepHandle));
       }
+      if (type == IddObjectType::DesignSpecification_AirTerminal_Sizing) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new DesignSpecificationAirTerminalSizing_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::DesignSpecification_ZoneHVAC_Sizing) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new DesignSpecificationZoneHVACSizing_Impl(object, this, keepHandle));
+      }
       if (type == IddObjectType::Zone) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ThermalZone_Impl(object, this, keepHandle));
       }
@@ -730,6 +968,209 @@ namespace epmodel {
       if (type == IddObjectType::CentralHeatPumpSystem) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CentralHeatPumpSystem_Impl(object, this, keepHandle));
       }
+      if (type == IddObjectType::ComfortViewFactorAngles) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ComfortViewFactorAngles_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ComplexFenestrationProperty_SolarAbsorbedLayers) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ComplexFenestrationPropertySolarAbsorbedLayers_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Construction_ComplexFenestrationState) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ConstructionComplexFenestrationState_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Compliance_Building) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ComplianceBuilding_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ComponentCost_Adjustments) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ComponentCostAdjustments_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::CurrencyType) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurrencyType_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ElectricLoadCenter_Distribution) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ElectricLoadCenterDistribution_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ElectricLoadCenter_Storage_Converter) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterStorageConverter_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ElectricLoadCenter_Inverter_FunctionOfPower) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterInverterFunctionOfPower_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ElectricLoadCenter_Transformer) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ElectricLoadCenterTransformer_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EnergyManagementSystem_Actuator) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new EnergyManagementSystemActuator_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EnergyManagementSystem_ConstructionIndexVariable) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnergyManagementSystemConstructionIndexVariable_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EnergyManagementSystem_GlobalVariable) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnergyManagementSystemGlobalVariable_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EnergyManagementSystem_InternalVariable) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnergyManagementSystemInternalVariable_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EnergyManagementSystem_MeteredOutputVariable) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnergyManagementSystemMeteredOutputVariable_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EnergyManagementSystem_OutputVariable) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnergyManagementSystemOutputVariable_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EnergyManagementSystem_Sensor) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new EnergyManagementSystemSensor_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EnergyManagementSystem_TrendVariable) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnergyManagementSystemTrendVariable_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EnvironmentalImpactFactors) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new EnvironmentalImpactFactors_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EnergyManagementSystem_Program) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new EnergyManagementSystemProgram_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EnergyManagementSystem_Subroutine) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new EnergyManagementSystemSubroutine_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::EnergyManagementSystem_ProgramCallingManager) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnergyManagementSystemProgramCallingManager_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ElectricLoadCenter_Inverter_LookUpTable) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterInverterLookUpTable_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ElectricLoadCenter_Inverter_PVWatts) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterInverterPVWatts_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ElectricLoadCenter_Inverter_Simple) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterInverterSimple_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ElectricLoadCenter_Storage_Battery) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterStorageBattery_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ElectricLoadCenter_Storage_Simple) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterStorageSimple_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ElectricLoadCenter_Storage_LiIonNMCBattery) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterStorageLiIonNMCBattery_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ComponentCost_LineItem) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ComponentCostLineItem_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ComponentCost_Reference) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ComponentCostReference_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::CondenserLoop) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CondenserLoop_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::CondenserEquipmentList) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CondenserEquipmentList_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::CondenserEquipmentOperationSchemes) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CondenserEquipmentOperationSchemes_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ConvergenceLimits) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ConvergenceLimits_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::DaylightingDevice_LightWell) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DaylightingDeviceLightWell_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::DaylightingDevice_Shelf) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DaylightingDeviceShelf_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::DaylightingDevice_Tubular) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DaylightingDeviceTubular_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Daylighting_DELight_ComplexFenestration) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new DaylightingDELightComplexFenestration_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Dehumidifier_Desiccant_NoFans) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new DehumidifierDesiccantNoFans_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Dehumidifier_Desiccant_System) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new DehumidifierDesiccantSystem_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_Bicubic) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveBicubic_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_Cubic) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveCubic_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_Biquadratic) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveBiquadratic_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_Exponent) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveExponent_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_DoubleExponentialDecay) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveDoubleExponentialDecay_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_ExponentialDecay) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveExponentialDecay_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_ExponentialSkewNormal) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveExponentialSkewNormal_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_FanPressureRise) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveFanPressureRise_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_Functional_PressureDrop) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveFunctionalPressureDrop_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_Linear) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveLinear_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_Quadratic) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveQuadratic_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_Quartic) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveQuartic_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_QuadLinear) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveQuadLinear_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_QuintLinear) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveQuintLinear_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_RectangularHyperbola1) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveRectangularHyperbola1_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_RectangularHyperbola2) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveRectangularHyperbola2_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_Sigmoid) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveSigmoid_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_Triquadratic) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveTriquadratic_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_QuadraticLinear) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveQuadraticLinear_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_CubicLinear) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveCubicLinear_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Curve_ChillerPartLoadWithLift) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveChillerPartLoadWithLift_Impl(object, this, keepHandle));
+      }
       if (type == IddObjectType::AirflowNetwork_Distribution_Component_Coil) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new AirflowNetworkDistributionComponentCoil_Impl(object, this, keepHandle));
@@ -743,6 +1184,12 @@ namespace epmodel {
       }
       if (type == IddObjectType::Ceiling_Interzone) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CeilingInterzone_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Door) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new Door_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Door_Interzone) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DoorInterzone_Impl(object, this, keepHandle));
       }
       if (type == IddObjectType::AirflowNetwork_Distribution_Component_Duct) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
@@ -867,6 +1314,81 @@ namespace epmodel {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new AirLoopHVACDedicatedOutdoorAirSystem_Impl(object, this, keepHandle));
       }
+      if (type == IddObjectType::DemandManager_ElectricEquipment) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DemandManagerElectricEquipment_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::DemandManager_ExteriorLights) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DemandManagerExteriorLights_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Exterior_Lights) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ExteriorLights_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Exterior_FuelEquipment) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ExteriorFuelEquipment_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Exterior_WaterEquipment) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ExteriorWaterEquipment_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ExternalInterface) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ExternalInterface_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ExternalInterface_Actuator) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ExternalInterfaceActuator_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ExternalInterface_FunctionalMockupUnitImport) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ExternalInterfaceFunctionalMockupUnitImport_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ExternalInterface_FunctionalMockupUnitImport_From_Variable) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ExternalInterfaceFunctionalMockupUnitImportFromVariable_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ExternalInterface_FunctionalMockupUnitImport_To_Actuator) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ExternalInterfaceFunctionalMockupUnitImportToActuator_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ExternalInterface_FunctionalMockupUnitImport_To_Variable) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ExternalInterfaceFunctionalMockupUnitImportToVariable_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ExternalInterface_FunctionalMockupUnitExport_From_Variable) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ExternalInterfaceFunctionalMockupUnitExportFromVariable_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ExternalInterface_FunctionalMockupUnitExport_To_Actuator) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ExternalInterfaceFunctionalMockupUnitExportToActuator_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ExternalInterface_FunctionalMockupUnitExport_To_Variable) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ExternalInterfaceFunctionalMockupUnitExportToVariable_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ExternalInterface_FunctionalMockupUnitImport_To_Schedule) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ExternalInterfaceFunctionalMockupUnitImportToSchedule_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ExternalInterface_FunctionalMockupUnitExport_To_Schedule) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::DemandManager_Lights) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DemandManagerLights_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::DemandManager_Thermostats) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DemandManagerThermostats_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::DemandManager_Ventilation) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DemandManagerVentilation_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::DemandManagerAssignmentList) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DemandManagerAssignmentList_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ElectricEquipment) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ElectricEquipment_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ElectricEquipment_ITE_AirCooled) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ElectricEquipmentITEAirCooled_Impl(object, this, keepHandle));
+      }
       if (type == IddObjectType::AirLoopHVAC_ExhaustSystem) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AirLoopHVACExhaustSystem_Impl(object, this, keepHandle));
       }
@@ -875,6 +1397,31 @@ namespace epmodel {
       }
       if (type == IddObjectType::AirLoopHVAC_Splitter) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AirLoopHVACSplitter_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Construction) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new Construction_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::ConstructionProperty_InternalHeatSource) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ConstructionWithInternalSource_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Construction_AirBoundary) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ConstructionAirBoundary_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Construction_CfactorUndergroundWall) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CFactorUndergroundWallConstruction_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Construction_FfactorGroundFloor) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new FFactorGroundFloorConstruction_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Construction_WindowDataFile) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ConstructionWindowDataFile_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Construction_WindowEquivalentLayer) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ConstructionWindowEquivalentLayer_Impl(object, this, keepHandle));
       }
       if (type == IddObjectType::AirLoopHVAC_Unitary_Furnace_HeatCool) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AirLoopHVACUnitaryFurnaceHeatCool_Impl(object, this, keepHandle));
@@ -921,6 +1468,9 @@ namespace epmodel {
       if (auto airLoop = std::dynamic_pointer_cast<AirLoopHVAC_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AirLoopHVAC_Impl(*airLoop, this, keepHandle));
       }
+      if (auto plantLoop = std::dynamic_pointer_cast<PlantLoop_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new PlantLoop_Impl(*plantLoop, this, keepHandle));
+      }
       if (auto supplyPath = std::dynamic_pointer_cast<AirLoopHVACSupplyPath_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AirLoopHVACSupplyPath_Impl(*supplyPath, this, keepHandle));
       }
@@ -944,6 +1494,26 @@ namespace epmodel {
       }
       if (auto zoneMixer = std::dynamic_pointer_cast<AirLoopHVACZoneMixer_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AirLoopHVACZoneMixer_Impl(*zoneMixer, this, keepHandle));
+      }
+      if (auto construction = std::dynamic_pointer_cast<Construction_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new Construction_Impl(*construction, this, keepHandle));
+      }
+      if (auto constructionWithInternalSource = std::dynamic_pointer_cast<ConstructionWithInternalSource_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ConstructionWithInternalSource_Impl(*constructionWithInternalSource, this, keepHandle));
+      }
+      if (auto constructionAirBoundary = std::dynamic_pointer_cast<ConstructionAirBoundary_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ConstructionAirBoundary_Impl(*constructionAirBoundary, this, keepHandle));
+      }
+      if (auto cFactorUndergroundWallConstruction =
+            std::dynamic_pointer_cast<CFactorUndergroundWallConstruction_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CFactorUndergroundWallConstruction_Impl(*cFactorUndergroundWallConstruction, this, keepHandle));
+      }
+      if (auto fFactorGroundFloorConstruction = std::dynamic_pointer_cast<FFactorGroundFloorConstruction_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new FFactorGroundFloorConstruction_Impl(*fFactorGroundFloorConstruction, this, keepHandle));
       }
       if (auto availabilityManagerAssignmentList = std::dynamic_pointer_cast<AvailabilityManagerAssignmentList_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
@@ -1009,11 +1579,90 @@ namespace epmodel {
       if (auto building = std::dynamic_pointer_cast<Building_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new Building_Impl(*building, this, keepHandle));
       }
+      if (auto surface = std::dynamic_pointer_cast<Surface_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new Surface_Impl(*surface, this, keepHandle));
+      }
       if (auto boilerHotWater = std::dynamic_pointer_cast<BoilerHotWater_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new BoilerHotWater_Impl(*boilerHotWater, this, keepHandle));
       }
       if (auto boilerSteam = std::dynamic_pointer_cast<BoilerSteam_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new BoilerSteam_Impl(*boilerSteam, this, keepHandle));
+      }
+      if (auto districtCooling = std::dynamic_pointer_cast<DistrictCooling_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DistrictCooling_Impl(*districtCooling, this, keepHandle));
+      }
+      if (auto districtHeatingSteam = std::dynamic_pointer_cast<DistrictHeatingSteam_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DistrictHeatingSteam_Impl(*districtHeatingSteam, this, keepHandle));
+      }
+      if (auto districtHeatingWater = std::dynamic_pointer_cast<DistrictHeatingWater_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DistrictHeatingWater_Impl(*districtHeatingWater, this, keepHandle));
+      }
+      if (auto duct = std::dynamic_pointer_cast<Duct_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new Duct_Impl(*duct, this, keepHandle));
+      }
+      if (auto ductLossConduction = std::dynamic_pointer_cast<DuctLossConduction_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DuctLossConduction_Impl(*ductLossConduction, this, keepHandle));
+      }
+      if (auto ductLossLeakage = std::dynamic_pointer_cast<DuctLossLeakage_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DuctLossLeakage_Impl(*ductLossLeakage, this, keepHandle));
+      }
+      if (auto ductLossMakeupAir = std::dynamic_pointer_cast<DuctLossMakeupAir_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DuctLossMakeupAir_Impl(*ductLossMakeupAir, this, keepHandle));
+      }
+      if (auto evaporativeCoolerDirectCelDekPad = std::dynamic_pointer_cast<EvaporativeCoolerDirectCelDekPad_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EvaporativeCoolerDirectCelDekPad_Impl(*evaporativeCoolerDirectCelDekPad, this, keepHandle));
+      }
+      if (auto evaporativeCoolerDirectResearchSpecial =
+            std::dynamic_pointer_cast<EvaporativeCoolerDirectResearchSpecial_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EvaporativeCoolerDirectResearchSpecial_Impl(*evaporativeCoolerDirectResearchSpecial, this, keepHandle));
+      }
+      if (auto evaporativeCoolerIndirectResearchSpecial =
+            std::dynamic_pointer_cast<EvaporativeCoolerIndirectResearchSpecial_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EvaporativeCoolerIndirectResearchSpecial_Impl(*evaporativeCoolerIndirectResearchSpecial, this, keepHandle));
+      }
+      if (auto evaporativeCoolerIndirectCelDekPad =
+            std::dynamic_pointer_cast<EvaporativeCoolerIndirectCelDekPad_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EvaporativeCoolerIndirectCelDekPad_Impl(*evaporativeCoolerIndirectCelDekPad, this, keepHandle));
+      }
+      if (auto evaporativeCoolerIndirectWetCoil = std::dynamic_pointer_cast<EvaporativeCoolerIndirectWetCoil_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EvaporativeCoolerIndirectWetCoil_Impl(*evaporativeCoolerIndirectWetCoil, this, keepHandle));
+      }
+      if (auto evaporativeFluidCoolerSingleSpeed = std::dynamic_pointer_cast<EvaporativeFluidCoolerSingleSpeed_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EvaporativeFluidCoolerSingleSpeed_Impl(*evaporativeFluidCoolerSingleSpeed, this, keepHandle));
+      }
+      if (auto evaporativeFluidCoolerTwoSpeed = std::dynamic_pointer_cast<EvaporativeFluidCoolerTwoSpeed_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EvaporativeFluidCoolerTwoSpeed_Impl(*evaporativeFluidCoolerTwoSpeed, this, keepHandle));
+      }
+      if (auto coolingTowerSingleSpeed = std::dynamic_pointer_cast<CoolingTowerSingleSpeed_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CoolingTowerSingleSpeed_Impl(*coolingTowerSingleSpeed, this, keepHandle));
+      }
+      if (auto coolingTowerTwoSpeed = std::dynamic_pointer_cast<CoolingTowerTwoSpeed_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CoolingTowerTwoSpeed_Impl(*coolingTowerTwoSpeed, this, keepHandle));
+      }
+      if (auto coolingTowerVariableSpeed = std::dynamic_pointer_cast<CoolingTowerVariableSpeed_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CoolingTowerVariableSpeed_Impl(*coolingTowerVariableSpeed, this, keepHandle));
+      }
+      if (auto coolingTowerVariableSpeedMerkel = std::dynamic_pointer_cast<CoolingTowerVariableSpeedMerkel_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CoolingTowerVariableSpeedMerkel_Impl(*coolingTowerVariableSpeedMerkel, this, keepHandle));
+      }
+      if (auto coolingTowerPerformanceCoolTools = std::dynamic_pointer_cast<CoolingTowerPerformanceCoolTools_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CoolingTowerPerformanceCoolTools_Impl(*coolingTowerPerformanceCoolTools, this, keepHandle));
+      }
+      if (auto coolingTowerPerformanceYorkCalc = std::dynamic_pointer_cast<CoolingTowerPerformanceYorkCalc_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CoolingTowerPerformanceYorkCalc_Impl(*coolingTowerPerformanceYorkCalc, this, keepHandle));
       }
       if (auto chillerAbsorption = std::dynamic_pointer_cast<ChillerAbsorption_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ChillerAbsorption_Impl(*chillerAbsorption, this, keepHandle));
@@ -1029,6 +1678,10 @@ namespace epmodel {
       if (auto chillerHeaterAbsorptionDirectFired = std::dynamic_pointer_cast<ChillerHeaterAbsorptionDirectFired_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new ChillerHeaterAbsorptionDirectFired_Impl(*chillerHeaterAbsorptionDirectFired, this, keepHandle));
+      }
+      if (auto chillerHeaterAbsorptionDoubleEffect = std::dynamic_pointer_cast<ChillerHeaterAbsorptionDoubleEffect_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ChillerHeaterAbsorptionDoubleEffect_Impl(*chillerHeaterAbsorptionDoubleEffect, this, keepHandle));
       }
       if (auto chillerHeaterPerformanceElectricEIR =
             std::dynamic_pointer_cast<ChillerHeaterPerformanceElectricEIR_Impl>(originalObjectImplPtr)) {
@@ -1213,10 +1866,19 @@ namespace epmodel {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl(*coilWaterHeatingAirToWaterHeatPumpWrapped, this, keepHandle));
       }
+      if (auto coilWaterHeatingAirToWaterHeatPump =
+            std::dynamic_pointer_cast<CoilWaterHeatingAirToWaterHeatPump_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CoilWaterHeatingAirToWaterHeatPump_Impl(*coilWaterHeatingAirToWaterHeatPump, this, keepHandle));
+      }
       if (auto coilWaterHeatingAirToWaterHeatPumpVariableSpeed =
             std::dynamic_pointer_cast<CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl(*coilWaterHeatingAirToWaterHeatPumpVariableSpeed, this, keepHandle));
+      }
+      if (auto controllerWaterCoil = std::dynamic_pointer_cast<ControllerWaterCoil_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ControllerWaterCoil_Impl(*controllerWaterCoil, this, keepHandle));
       }
       if (auto coilHeatingFuel = std::dynamic_pointer_cast<CoilHeatingGas_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoilHeatingGas_Impl(*coilHeatingFuel, this, keepHandle));
@@ -1224,10 +1886,27 @@ namespace epmodel {
       if (auto coilSystemCoolingDX = std::dynamic_pointer_cast<CoilSystemCoolingDX_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoilSystemCoolingDX_Impl(*coilSystemCoolingDX, this, keepHandle));
       }
+      if (auto coilSystemHeatingDX = std::dynamic_pointer_cast<CoilSystemHeatingDX_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoilSystemHeatingDX_Impl(*coilSystemHeatingDX, this, keepHandle));
+      }
       if (auto coilSystemCoolingDXHeatExchangerAssisted =
             std::dynamic_pointer_cast<CoilSystemCoolingDXHeatExchangerAssisted_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new CoilSystemCoolingDXHeatExchangerAssisted_Impl(*coilSystemCoolingDXHeatExchangerAssisted, this, keepHandle));
+      }
+      if (auto coilSystemIntegratedHeatPumpAirSource =
+            std::dynamic_pointer_cast<CoilSystemIntegratedHeatPumpAirSource_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CoilSystemIntegratedHeatPumpAirSource_Impl(*coilSystemIntegratedHeatPumpAirSource, this, keepHandle));
+      }
+      if (auto coilSystemCoolingWater = std::dynamic_pointer_cast<CoilSystemCoolingWater_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CoilSystemCoolingWater_Impl(*coilSystemCoolingWater, this, keepHandle));
+      }
+      if (auto coilSystemCoolingWaterHeatExchangerAssisted =
+            std::dynamic_pointer_cast<CoilSystemCoolingWaterHeatExchangerAssisted_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CoilSystemCoolingWaterHeatExchangerAssisted_Impl(*coilSystemCoolingWaterHeatExchangerAssisted, this, keepHandle));
       }
       if (auto setpointManagerMixedAir = std::dynamic_pointer_cast<SetpointManagerMixedAir_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
@@ -1248,6 +1927,10 @@ namespace epmodel {
       if (auto airTerminalReheat = std::dynamic_pointer_cast<AirTerminalSingleDuctConstantVolumeReheat_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new AirTerminalSingleDuctConstantVolumeReheat_Impl(*airTerminalReheat, this, keepHandle));
+      }
+      if (auto airTerminalSingleDuctInletSideMixer = std::dynamic_pointer_cast<AirTerminalSingleDuctInletSideMixer_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new AirTerminalSingleDuctInletSideMixer_Impl(*airTerminalSingleDuctInletSideMixer, this, keepHandle));
       }
       if (auto airTerminalParallelPIUReheat = std::dynamic_pointer_cast<AirTerminalSingleDuctParallelPIUReheat_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
@@ -1338,6 +2021,12 @@ namespace epmodel {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new DesignSpecificationOutdoorAirSpaceList_Impl(*dsoaSpaceList, this, keepHandle));
       }
+      if (auto dsats = std::dynamic_pointer_cast<DesignSpecificationAirTerminalSizing_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DesignSpecificationAirTerminalSizing_Impl(*dsats, this, keepHandle));
+      }
+      if (auto dszhs = std::dynamic_pointer_cast<DesignSpecificationZoneHVACSizing_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DesignSpecificationZoneHVACSizing_Impl(*dszhs, this, keepHandle));
+      }
       if (auto zone = std::dynamic_pointer_cast<ThermalZone_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ThermalZone_Impl(*zone, this, keepHandle));
       }
@@ -1374,6 +2063,250 @@ namespace epmodel {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new CentralHeatPumpSystem_Impl(*centralHeatPumpSystem, this, keepHandle));
       }
+      if (auto comfortViewFactorAngles = std::dynamic_pointer_cast<ComfortViewFactorAngles_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ComfortViewFactorAngles_Impl(*comfortViewFactorAngles, this, keepHandle));
+      }
+      if (auto complexFenestrationPropertySolarAbsorbedLayers =
+            std::dynamic_pointer_cast<ComplexFenestrationPropertySolarAbsorbedLayers_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ComplexFenestrationPropertySolarAbsorbedLayers_Impl(*complexFenestrationPropertySolarAbsorbedLayers, this, keepHandle));
+      }
+      if (auto constructionComplexFenestrationState =
+            std::dynamic_pointer_cast<ConstructionComplexFenestrationState_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ConstructionComplexFenestrationState_Impl(*constructionComplexFenestrationState, this, keepHandle));
+      }
+      if (auto complianceBuilding = std::dynamic_pointer_cast<ComplianceBuilding_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ComplianceBuilding_Impl(*complianceBuilding, this, keepHandle));
+      }
+      if (auto componentCostAdjustments = std::dynamic_pointer_cast<ComponentCostAdjustments_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ComponentCostAdjustments_Impl(*componentCostAdjustments, this, keepHandle));
+      }
+      if (auto currencyType = std::dynamic_pointer_cast<CurrencyType_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurrencyType_Impl(*currencyType, this, keepHandle));
+      }
+      if (auto electricLoadCenterDistribution = std::dynamic_pointer_cast<ElectricLoadCenterDistribution_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterDistribution_Impl(*electricLoadCenterDistribution, this, keepHandle));
+      }
+      if (auto electricLoadCenterStorageConverter = std::dynamic_pointer_cast<ElectricLoadCenterStorageConverter_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterStorageConverter_Impl(*electricLoadCenterStorageConverter, this, keepHandle));
+      }
+      if (auto electricLoadCenterInverterFunctionOfPower =
+            std::dynamic_pointer_cast<ElectricLoadCenterInverterFunctionOfPower_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterInverterFunctionOfPower_Impl(*electricLoadCenterInverterFunctionOfPower, this, keepHandle));
+      }
+      if (auto electricLoadCenterTransformer = std::dynamic_pointer_cast<ElectricLoadCenterTransformer_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterTransformer_Impl(*electricLoadCenterTransformer, this, keepHandle));
+      }
+      if (auto energyManagementSystemActuator = std::dynamic_pointer_cast<EnergyManagementSystemActuator_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnergyManagementSystemActuator_Impl(*energyManagementSystemActuator, this, keepHandle));
+      }
+      if (auto energyManagementSystemConstructionIndexVariable =
+            std::dynamic_pointer_cast<EnergyManagementSystemConstructionIndexVariable_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnergyManagementSystemConstructionIndexVariable_Impl(*energyManagementSystemConstructionIndexVariable, this, keepHandle));
+      }
+      if (auto energyManagementSystemGlobalVariable = std::dynamic_pointer_cast<EnergyManagementSystemGlobalVariable_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnergyManagementSystemGlobalVariable_Impl(*energyManagementSystemGlobalVariable, this, keepHandle));
+      }
+      if (auto energyManagementSystemInternalVariable = std::dynamic_pointer_cast<EnergyManagementSystemInternalVariable_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnergyManagementSystemInternalVariable_Impl(*energyManagementSystemInternalVariable, this, keepHandle));
+      }
+      if (auto energyManagementSystemMeteredOutputVariable =
+            std::dynamic_pointer_cast<EnergyManagementSystemMeteredOutputVariable_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnergyManagementSystemMeteredOutputVariable_Impl(*energyManagementSystemMeteredOutputVariable, this, keepHandle));
+      }
+      if (auto energyManagementSystemOutputVariable = std::dynamic_pointer_cast<EnergyManagementSystemOutputVariable_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnergyManagementSystemOutputVariable_Impl(*energyManagementSystemOutputVariable, this, keepHandle));
+      }
+      if (auto energyManagementSystemTrendVariable = std::dynamic_pointer_cast<EnergyManagementSystemTrendVariable_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnergyManagementSystemTrendVariable_Impl(*energyManagementSystemTrendVariable, this, keepHandle));
+      }
+      if (auto environmentalImpactFactors = std::dynamic_pointer_cast<EnvironmentalImpactFactors_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnvironmentalImpactFactors_Impl(*environmentalImpactFactors, this, keepHandle));
+      }
+      if (auto energyManagementSystemProgram = std::dynamic_pointer_cast<EnergyManagementSystemProgram_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnergyManagementSystemProgram_Impl(*energyManagementSystemProgram, this, keepHandle));
+      }
+      if (auto energyManagementSystemSubroutine = std::dynamic_pointer_cast<EnergyManagementSystemSubroutine_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnergyManagementSystemSubroutine_Impl(*energyManagementSystemSubroutine, this, keepHandle));
+      }
+      if (auto energyManagementSystemProgramCallingManager =
+            std::dynamic_pointer_cast<EnergyManagementSystemProgramCallingManager_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new EnergyManagementSystemProgramCallingManager_Impl(*energyManagementSystemProgramCallingManager, this, keepHandle));
+      }
+      if (auto electricLoadCenterInverterLookUpTable =
+            std::dynamic_pointer_cast<ElectricLoadCenterInverterLookUpTable_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterInverterLookUpTable_Impl(*electricLoadCenterInverterLookUpTable, this, keepHandle));
+      }
+      if (auto electricLoadCenterInverterPVWatts =
+            std::dynamic_pointer_cast<ElectricLoadCenterInverterPVWatts_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterInverterPVWatts_Impl(*electricLoadCenterInverterPVWatts, this, keepHandle));
+      }
+      if (auto electricLoadCenterInverterSimple =
+            std::dynamic_pointer_cast<ElectricLoadCenterInverterSimple_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterInverterSimple_Impl(*electricLoadCenterInverterSimple, this, keepHandle));
+      }
+      if (auto electricLoadCenterStorageBattery = std::dynamic_pointer_cast<ElectricLoadCenterStorageBattery_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterStorageBattery_Impl(*electricLoadCenterStorageBattery, this, keepHandle));
+      }
+      if (auto electricLoadCenterStorageSimple = std::dynamic_pointer_cast<ElectricLoadCenterStorageSimple_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterStorageSimple_Impl(*electricLoadCenterStorageSimple, this, keepHandle));
+      }
+      if (auto electricLoadCenterStorageLiIonNMCBattery =
+            std::dynamic_pointer_cast<ElectricLoadCenterStorageLiIonNMCBattery_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricLoadCenterStorageLiIonNMCBattery_Impl(*electricLoadCenterStorageLiIonNMCBattery, this, keepHandle));
+      }
+      if (auto componentCostLineItem = std::dynamic_pointer_cast<ComponentCostLineItem_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ComponentCostLineItem_Impl(*componentCostLineItem, this, keepHandle));
+      }
+      if (auto componentCostReference = std::dynamic_pointer_cast<ComponentCostReference_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ComponentCostReference_Impl(*componentCostReference, this, keepHandle));
+      }
+      if (auto condenserLoop = std::dynamic_pointer_cast<CondenserLoop_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CondenserLoop_Impl(*condenserLoop, this, keepHandle));
+      }
+      if (auto condenserEquipmentList = std::dynamic_pointer_cast<CondenserEquipmentList_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CondenserEquipmentList_Impl(*condenserEquipmentList, this, keepHandle));
+      }
+      if (auto condenserEquipmentOperationSchemes =
+            std::dynamic_pointer_cast<CondenserEquipmentOperationSchemes_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CondenserEquipmentOperationSchemes_Impl(*condenserEquipmentOperationSchemes, this, keepHandle));
+      }
+      if (auto convergenceLimits = std::dynamic_pointer_cast<ConvergenceLimits_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ConvergenceLimits_Impl(*convergenceLimits, this, keepHandle));
+      }
+      if (auto daylightingDeviceLightWell = std::dynamic_pointer_cast<DaylightingDeviceLightWell_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new DaylightingDeviceLightWell_Impl(*daylightingDeviceLightWell, this, keepHandle));
+      }
+      if (auto daylightingDeviceShelf = std::dynamic_pointer_cast<DaylightingDeviceShelf_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new DaylightingDeviceShelf_Impl(*daylightingDeviceShelf, this, keepHandle));
+      }
+      if (auto daylightingDeviceTubular = std::dynamic_pointer_cast<DaylightingDeviceTubular_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new DaylightingDeviceTubular_Impl(*daylightingDeviceTubular, this, keepHandle));
+      }
+      if (auto daylightingDELightComplexFenestration =
+            std::dynamic_pointer_cast<DaylightingDELightComplexFenestration_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new DaylightingDELightComplexFenestration_Impl(*daylightingDELightComplexFenestration, this, keepHandle));
+      }
+      if (auto dehumidifierDesiccantNoFans = std::dynamic_pointer_cast<DehumidifierDesiccantNoFans_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new DehumidifierDesiccantNoFans_Impl(*dehumidifierDesiccantNoFans, this, keepHandle));
+      }
+      if (auto dehumidifierDesiccantSystem = std::dynamic_pointer_cast<DehumidifierDesiccantSystem_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new DehumidifierDesiccantSystem_Impl(*dehumidifierDesiccantSystem, this, keepHandle));
+      }
+      if (auto curveBicubic = std::dynamic_pointer_cast<CurveBicubic_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveBicubic_Impl(*curveBicubic, this, keepHandle));
+      }
+      if (auto curveCubic = std::dynamic_pointer_cast<CurveCubic_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveCubic_Impl(*curveCubic, this, keepHandle));
+      }
+      if (auto curveBiquadratic = std::dynamic_pointer_cast<CurveBiquadratic_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveBiquadratic_Impl(*curveBiquadratic, this, keepHandle));
+      }
+      if (auto curveExponent = std::dynamic_pointer_cast<CurveExponent_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveExponent_Impl(*curveExponent, this, keepHandle));
+      }
+      if (auto curveDoubleExponentialDecay = std::dynamic_pointer_cast<CurveDoubleExponentialDecay_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CurveDoubleExponentialDecay_Impl(*curveDoubleExponentialDecay, this, keepHandle));
+      }
+      if (auto curveExponentialDecay = std::dynamic_pointer_cast<CurveExponentialDecay_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CurveExponentialDecay_Impl(*curveExponentialDecay, this, keepHandle));
+      }
+      if (auto curveExponentialSkewNormal = std::dynamic_pointer_cast<CurveExponentialSkewNormal_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CurveExponentialSkewNormal_Impl(*curveExponentialSkewNormal, this, keepHandle));
+      }
+      if (auto curveFanPressureRise = std::dynamic_pointer_cast<CurveFanPressureRise_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CurveFanPressureRise_Impl(*curveFanPressureRise, this, keepHandle));
+      }
+      if (auto curveFunctionalPressureDrop = std::dynamic_pointer_cast<CurveFunctionalPressureDrop_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CurveFunctionalPressureDrop_Impl(*curveFunctionalPressureDrop, this, keepHandle));
+      }
+      if (auto curveLinear = std::dynamic_pointer_cast<CurveLinear_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveLinear_Impl(*curveLinear, this, keepHandle));
+      }
+      if (auto curveQuadratic = std::dynamic_pointer_cast<CurveQuadratic_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveQuadratic_Impl(*curveQuadratic, this, keepHandle));
+      }
+      if (auto curveQuartic = std::dynamic_pointer_cast<CurveQuartic_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveQuartic_Impl(*curveQuartic, this, keepHandle));
+      }
+      if (auto curveQuadLinear = std::dynamic_pointer_cast<CurveQuadLinear_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveQuadLinear_Impl(*curveQuadLinear, this, keepHandle));
+      }
+      if (auto curveQuintLinear = std::dynamic_pointer_cast<CurveQuintLinear_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveQuintLinear_Impl(*curveQuintLinear, this, keepHandle));
+      }
+      if (auto curveRectangularHyperbola1 = std::dynamic_pointer_cast<CurveRectangularHyperbola1_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CurveRectangularHyperbola1_Impl(*curveRectangularHyperbola1, this, keepHandle));
+      }
+      if (auto curveRectangularHyperbola2 = std::dynamic_pointer_cast<CurveRectangularHyperbola2_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CurveRectangularHyperbola2_Impl(*curveRectangularHyperbola2, this, keepHandle));
+      }
+      if (auto curveSigmoid = std::dynamic_pointer_cast<CurveSigmoid_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveSigmoid_Impl(*curveSigmoid, this, keepHandle));
+      }
+      if (auto curveTriquadratic = std::dynamic_pointer_cast<CurveTriquadratic_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveTriquadratic_Impl(*curveTriquadratic, this, keepHandle));
+      }
+      if (auto curveQuadraticLinear = std::dynamic_pointer_cast<CurveQuadraticLinear_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveQuadraticLinear_Impl(*curveQuadraticLinear, this, keepHandle));
+      }
+      if (auto curveCubicLinear = std::dynamic_pointer_cast<CurveCubicLinear_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CurveCubicLinear_Impl(*curveCubicLinear, this, keepHandle));
+      }
+      if (auto curveChillerPartLoadWithLift = std::dynamic_pointer_cast<CurveChillerPartLoadWithLift_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CurveChillerPartLoadWithLift_Impl(*curveChillerPartLoadWithLift, this, keepHandle));
+      }
+      if (auto constructionWindowDataFile = std::dynamic_pointer_cast<ConstructionWindowDataFile_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ConstructionWindowDataFile_Impl(*constructionWindowDataFile, this, keepHandle));
+      }
+      if (auto constructionWindowEquivalentLayer = std::dynamic_pointer_cast<ConstructionWindowEquivalentLayer_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ConstructionWindowEquivalentLayer_Impl(*constructionWindowEquivalentLayer, this, keepHandle));
+      }
       if (auto airflowNetworkDistributionComponentCoil =
             std::dynamic_pointer_cast<AirflowNetworkDistributionComponentCoil_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
@@ -1389,6 +2322,12 @@ namespace epmodel {
       }
       if (auto ceilingInterzone = std::dynamic_pointer_cast<CeilingInterzone_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CeilingInterzone_Impl(*ceilingInterzone, this, keepHandle));
+      }
+      if (auto door = std::dynamic_pointer_cast<Door_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new Door_Impl(*door, this, keepHandle));
+      }
+      if (auto doorInterzone = std::dynamic_pointer_cast<DoorInterzone_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DoorInterzone_Impl(*doorInterzone, this, keepHandle));
       }
       if (auto airflowNetworkDistributionComponentDuct =
             std::dynamic_pointer_cast<AirflowNetworkDistributionComponentDuct_Impl>(originalObjectImplPtr)) {
@@ -1538,6 +2477,94 @@ namespace epmodel {
       if (auto doas = std::dynamic_pointer_cast<AirLoopHVACDedicatedOutdoorAirSystem_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
           new AirLoopHVACDedicatedOutdoorAirSystem_Impl(*doas, this, keepHandle));
+      }
+      if (auto demandManagerElectricEquipment = std::dynamic_pointer_cast<DemandManagerElectricEquipment_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new DemandManagerElectricEquipment_Impl(*demandManagerElectricEquipment, this, keepHandle));
+      }
+      if (auto demandManagerExteriorLights = std::dynamic_pointer_cast<DemandManagerExteriorLights_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new DemandManagerExteriorLights_Impl(*demandManagerExteriorLights, this, keepHandle));
+      }
+      if (auto exteriorLights = std::dynamic_pointer_cast<ExteriorLights_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ExteriorLights_Impl(*exteriorLights, this, keepHandle));
+      }
+      if (auto exteriorFuelEquipment = std::dynamic_pointer_cast<ExteriorFuelEquipment_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ExteriorFuelEquipment_Impl(*exteriorFuelEquipment, this, keepHandle));
+      }
+      if (auto exteriorWaterEquipment = std::dynamic_pointer_cast<ExteriorWaterEquipment_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ExteriorWaterEquipment_Impl(*exteriorWaterEquipment, this, keepHandle));
+      }
+      if (auto externalInterface = std::dynamic_pointer_cast<ExternalInterface_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ExternalInterface_Impl(*externalInterface, this, keepHandle));
+      }
+      if (auto externalInterfaceActuator = std::dynamic_pointer_cast<ExternalInterfaceActuator_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ExternalInterfaceActuator_Impl(*externalInterfaceActuator, this, keepHandle));
+      }
+      if (auto externalInterfaceFunctionalMockupUnitImport =
+            std::dynamic_pointer_cast<ExternalInterfaceFunctionalMockupUnitImport_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ExternalInterfaceFunctionalMockupUnitImport_Impl(
+          *externalInterfaceFunctionalMockupUnitImport, this, keepHandle));
+      }
+      if (auto externalInterfaceFunctionalMockupUnitImportFromVariable =
+            std::dynamic_pointer_cast<ExternalInterfaceFunctionalMockupUnitImportFromVariable_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ExternalInterfaceFunctionalMockupUnitImportFromVariable_Impl(*externalInterfaceFunctionalMockupUnitImportFromVariable, this, keepHandle));
+      }
+      if (auto externalInterfaceFunctionalMockupUnitImportToActuator =
+            std::dynamic_pointer_cast<ExternalInterfaceFunctionalMockupUnitImportToActuator_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ExternalInterfaceFunctionalMockupUnitImportToActuator_Impl(
+          *externalInterfaceFunctionalMockupUnitImportToActuator, this, keepHandle));
+      }
+      if (auto externalInterfaceFunctionalMockupUnitImportToVariable =
+            std::dynamic_pointer_cast<ExternalInterfaceFunctionalMockupUnitImportToVariable_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ExternalInterfaceFunctionalMockupUnitImportToVariable_Impl(
+          *externalInterfaceFunctionalMockupUnitImportToVariable, this, keepHandle));
+      }
+      if (auto externalInterfaceFunctionalMockupUnitExportFromVariable =
+            std::dynamic_pointer_cast<ExternalInterfaceFunctionalMockupUnitExportFromVariable_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ExternalInterfaceFunctionalMockupUnitExportFromVariable_Impl(
+          *externalInterfaceFunctionalMockupUnitExportFromVariable, this, keepHandle));
+      }
+      if (auto externalInterfaceFunctionalMockupUnitExportToActuator =
+            std::dynamic_pointer_cast<ExternalInterfaceFunctionalMockupUnitExportToActuator_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ExternalInterfaceFunctionalMockupUnitExportToActuator_Impl(
+          *externalInterfaceFunctionalMockupUnitExportToActuator, this, keepHandle));
+      }
+      if (auto externalInterfaceFunctionalMockupUnitExportToVariable =
+            std::dynamic_pointer_cast<ExternalInterfaceFunctionalMockupUnitExportToVariable_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ExternalInterfaceFunctionalMockupUnitExportToVariable_Impl(
+          *externalInterfaceFunctionalMockupUnitExportToVariable, this, keepHandle));
+      }
+      if (auto externalInterfaceFunctionalMockupUnitImportToSchedule =
+            std::dynamic_pointer_cast<ExternalInterfaceFunctionalMockupUnitImportToSchedule_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ExternalInterfaceFunctionalMockupUnitImportToSchedule_Impl(
+          *externalInterfaceFunctionalMockupUnitImportToSchedule, this, keepHandle));
+      }
+      if (auto externalInterfaceFunctionalMockupUnitExportToSchedule =
+            std::dynamic_pointer_cast<ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl(
+          *externalInterfaceFunctionalMockupUnitExportToSchedule, this, keepHandle));
+      }
+      if (auto demandManagerLights = std::dynamic_pointer_cast<DemandManagerLights_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DemandManagerLights_Impl(*demandManagerLights, this, keepHandle));
+      }
+      if (auto demandManagerThermostats = std::dynamic_pointer_cast<DemandManagerThermostats_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new DemandManagerThermostats_Impl(*demandManagerThermostats, this, keepHandle));
+      }
+      if (auto demandManagerAssignmentList = std::dynamic_pointer_cast<DemandManagerAssignmentList_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new DemandManagerAssignmentList_Impl(*demandManagerAssignmentList, this, keepHandle));
+      }
+      if (auto electricEquipment = std::dynamic_pointer_cast<ElectricEquipment_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ElectricEquipment_Impl(*electricEquipment, this, keepHandle));
+      }
+      if (auto electricEquipmentITEAirCooled = std::dynamic_pointer_cast<ElectricEquipmentITEAirCooled_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new ElectricEquipmentITEAirCooled_Impl(*electricEquipmentITEAirCooled, this, keepHandle));
       }
       if (auto exhaustSystem = std::dynamic_pointer_cast<AirLoopHVACExhaustSystem_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AirLoopHVACExhaustSystem_Impl(*exhaustSystem, this, keepHandle));

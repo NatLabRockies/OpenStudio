@@ -8,7 +8,7 @@
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
-#include "../ControllerOutdoorAir.hpp"
+#include "../ParentObject/ControllerOutdoorAir.hpp"
 #include "../FanConstantVolume.hpp"
 #include "../Node.hpp"
 #include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>

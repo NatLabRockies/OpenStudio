@@ -8,12 +8,12 @@
 #include "EPModelFixture.hpp"
 
 #include "../DesignSpecificationOutdoorAir.hpp"
-#include "../DesignSpecificationOutdoorAirSpaceList.hpp"
-#include "../DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
-#include "../SizingZone.hpp"
-#include "../SizingZone_Impl.hpp"
+#include "../ModelObject/DesignSpecificationOutdoorAirSpaceList.hpp"
+#include "../ModelObject/DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
+#include "../ModelObject/SizingZone.hpp"
+#include "../ModelObject/SizingZone_Impl.hpp"
 #include "../Space.hpp"
-#include "../ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
 
 #include <utilities/idd/Sizing_Zone_FieldEnums.hxx>
 

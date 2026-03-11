@@ -453,7 +453,7 @@
   },
   {
     "idd_type": "AirTerminal:SingleDuct:Mixer",
-    "status": "pending",
+    "status": "done",
     "target_class": "AirTerminalSingleDuctInletSideMixer",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -1177,7 +1177,7 @@
   },
   {
     "idd_type": "BuildingSurface:Detailed",
-    "status": "pending",
+    "status": "done",
     "target_class": "Surface",
     "base_class": "ModelObject",
     "folder_bucket": "PlanarSurface",
@@ -1352,7 +1352,7 @@
   },
   {
     "idd_type": "ChillerHeater:Absorption:DoubleEffect",
-    "status": "pending",
+    "status": "done",
     "target_class": "ChillerHeaterAbsorptionDoubleEffect",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -1732,7 +1732,7 @@
   },
   {
     "idd_type": "Coil:Heating:Fuel",
-    "status": "pending",
+    "status": "done",
     "target_class": "CoilHeatingGas",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -1838,7 +1838,7 @@
   },
   {
     "idd_type": "Coil:WaterHeating:AirToWaterHeatPump:Pumped",
-    "status": "pending",
+    "status": "done",
     "target_class": "CoilWaterHeatingAirToWaterHeatPump",
     "base_class": "HVACComponent",
     "folder_bucket": "HVACComponent",
@@ -1933,7 +1933,7 @@
   },
   {
     "idd_type": "CoilSystem:Cooling:Water",
-    "status": "pending",
+    "status": "done",
     "target_class": "CoilSystemCoolingWater",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -1947,7 +1947,7 @@
   },
   {
     "idd_type": "CoilSystem:Cooling:Water:HeatExchangerAssisted",
-    "status": "pending",
+    "status": "done",
     "target_class": "CoilSystemCoolingWaterHeatExchangerAssisted",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -1961,7 +1961,7 @@
   },
   {
     "idd_type": "CoilSystem:Heating:DX",
-    "status": "pending",
+    "status": "done",
     "target_class": "CoilSystemHeatingDX",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -1972,7 +1972,7 @@
   },
   {
     "idd_type": "CoilSystem:IntegratedHeatPump:AirSource",
-    "status": "pending",
+    "status": "done",
     "target_class": "CoilSystemIntegratedHeatPumpAirSource",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -1986,7 +1986,7 @@
   },
   {
     "idd_type": "ComfortViewFactorAngles",
-    "status": "pending",
+    "status": "done",
     "target_class": "ComfortViewFactorAngles",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -1997,7 +1997,7 @@
   },
   {
     "idd_type": "ComplexFenestrationProperty:SolarAbsorbedLayers",
-    "status": "pending",
+    "status": "done",
     "target_class": "ComplexFenestrationPropertySolarAbsorbedLayers",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2008,7 +2008,7 @@
   },
   {
     "idd_type": "Compliance:Building",
-    "status": "pending",
+    "status": "done",
     "target_class": "ComplianceBuilding",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2019,7 +2019,7 @@
   },
   {
     "idd_type": "ComponentCost:Adjustments",
-    "status": "pending",
+    "status": "done",
     "target_class": "ComponentCostAdjustments",
     "base_class": "ParentObject",
     "folder_bucket": "ParentObject",
@@ -2030,7 +2030,7 @@
   },
   {
     "idd_type": "ComponentCost:LineItem",
-    "status": "pending",
+    "status": "done",
     "target_class": "ComponentCostLineItem",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2041,7 +2041,7 @@
   },
   {
     "idd_type": "ComponentCost:Reference",
-    "status": "pending",
+    "status": "done",
     "target_class": "ComponentCostReference",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2052,7 +2052,7 @@
   },
   {
     "idd_type": "CondenserEquipmentList",
-    "status": "pending",
+    "status": "done",
     "target_class": "CondenserEquipmentList",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2063,7 +2063,7 @@
   },
   {
     "idd_type": "CondenserEquipmentOperationSchemes",
-    "status": "pending",
+    "status": "done",
     "target_class": "CondenserEquipmentOperationSchemes",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2074,7 +2074,7 @@
   },
   {
     "idd_type": "CondenserLoop",
-    "status": "pending",
+    "status": "done",
     "target_class": "CondenserLoop",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2085,7 +2085,7 @@
   },
   {
     "idd_type": "Connector:Mixer",
-    "status": "pending",
+    "status": "done",
     "target_class": "PlantLoop",
     "base_class": "Loop",
     "folder_bucket": "Loop",
@@ -2099,7 +2099,7 @@
   },
   {
     "idd_type": "Connector:Splitter",
-    "status": "pending",
+    "status": "done",
     "target_class": "AirLoopHVAC",
     "base_class": "Loop",
     "folder_bucket": "Loop",
@@ -2113,7 +2113,7 @@
   },
   {
     "idd_type": "ConnectorList",
-    "status": "pending",
+    "status": "done",
     "target_class": "AirLoopHVAC",
     "base_class": "Loop",
     "folder_bucket": "Loop",
@@ -2127,7 +2127,7 @@
   },
   {
     "idd_type": "Construction",
-    "status": "pending",
+    "status": "done",
     "target_class": "Construction",
     "base_class": "ModelObject",
     "folder_bucket": "LayeredConstruction",
@@ -2141,7 +2141,7 @@
   },
   {
     "idd_type": "Construction:AirBoundary",
-    "status": "pending",
+    "status": "done",
     "target_class": "ConstructionAirBoundary",
     "base_class": "ModelObject",
     "folder_bucket": "ConstructionBase",
@@ -2155,7 +2155,7 @@
   },
   {
     "idd_type": "Construction:CfactorUndergroundWall",
-    "status": "pending",
+    "status": "done",
     "target_class": "CFactorUndergroundWallConstruction",
     "base_class": "ModelObject",
     "folder_bucket": "ConstructionBase",
@@ -2169,7 +2169,7 @@
   },
   {
     "idd_type": "Construction:ComplexFenestrationState",
-    "status": "pending",
+    "status": "done",
     "target_class": "ConstructionComplexFenestrationState",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2180,7 +2180,7 @@
   },
   {
     "idd_type": "Construction:FfactorGroundFloor",
-    "status": "pending",
+    "status": "done",
     "target_class": "FFactorGroundFloorConstruction",
     "base_class": "ModelObject",
     "folder_bucket": "ConstructionBase",
@@ -2194,7 +2194,7 @@
   },
   {
     "idd_type": "Construction:WindowDataFile",
-    "status": "pending",
+    "status": "done",
     "target_class": "ConstructionWindowDataFile",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2205,7 +2205,7 @@
   },
   {
     "idd_type": "Construction:WindowEquivalentLayer",
-    "status": "pending",
+    "status": "done",
     "target_class": "ConstructionWindowEquivalentLayer",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2216,7 +2216,7 @@
   },
   {
     "idd_type": "ConstructionProperty:InternalHeatSource",
-    "status": "pending",
+    "status": "done",
     "target_class": "ConstructionWithInternalSource",
     "base_class": "ModelObject",
     "folder_bucket": "LayeredConstruction",
@@ -2230,7 +2230,7 @@
   },
   {
     "idd_type": "Controller:MechanicalVentilation",
-    "status": "pending",
+    "status": "done",
     "target_class": "ControllerMechanicalVentilation",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2244,7 +2244,7 @@
   },
   {
     "idd_type": "Controller:OutdoorAir",
-    "status": "pending",
+    "status": "done",
     "target_class": "ControllerOutdoorAir",
     "base_class": "ParentObject",
     "folder_bucket": "ParentObject",
@@ -2258,7 +2258,7 @@
   },
   {
     "idd_type": "Controller:WaterCoil",
-    "status": "pending",
+    "status": "done",
     "target_class": "ControllerWaterCoil",
     "base_class": "HVACComponent",
     "folder_bucket": "HVACComponent",
@@ -2272,7 +2272,7 @@
   },
   {
     "idd_type": "ConvergenceLimits",
-    "status": "pending",
+    "status": "done",
     "target_class": "ConvergenceLimits",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2286,7 +2286,7 @@
   },
   {
     "idd_type": "CoolingTower:SingleSpeed",
-    "status": "pending",
+    "status": "done",
     "target_class": "CoolingTowerSingleSpeed",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -2300,7 +2300,7 @@
   },
   {
     "idd_type": "CoolingTower:TwoSpeed",
-    "status": "pending",
+    "status": "done",
     "target_class": "CoolingTowerTwoSpeed",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -2314,7 +2314,7 @@
   },
   {
     "idd_type": "CoolingTower:VariableSpeed",
-    "status": "pending",
+    "status": "done",
     "target_class": "CoolingTowerVariableSpeed",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -2328,7 +2328,7 @@
   },
   {
     "idd_type": "CoolingTower:VariableSpeed:Merkel",
-    "status": "pending",
+    "status": "done",
     "target_class": "CoolingTowerVariableSpeedMerkel",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2339,7 +2339,7 @@
   },
   {
     "idd_type": "CoolingTowerPerformance:CoolTools",
-    "status": "pending",
+    "status": "done",
     "target_class": "CoolingTowerPerformanceCoolTools",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2353,7 +2353,7 @@
   },
   {
     "idd_type": "CoolingTowerPerformance:YorkCalc",
-    "status": "pending",
+    "status": "done",
     "target_class": "CoolingTowerPerformanceYorkCalc",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2367,7 +2367,7 @@
   },
   {
     "idd_type": "CurrencyType",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurrencyType",
     "base_class": "ParentObject",
     "folder_bucket": "ParentObject",
@@ -2381,7 +2381,7 @@
   },
   {
     "idd_type": "Curve:Bicubic",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveBicubic",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2395,7 +2395,7 @@
   },
   {
     "idd_type": "Curve:Biquadratic",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveBiquadratic",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2409,7 +2409,7 @@
   },
   {
     "idd_type": "Curve:ChillerPartLoadWithLift",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveChillerPartLoadWithLift",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2420,7 +2420,7 @@
   },
   {
     "idd_type": "Curve:Cubic",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveCubic",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2434,7 +2434,7 @@
   },
   {
     "idd_type": "Curve:CubicLinear",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveCubicLinear",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2445,7 +2445,7 @@
   },
   {
     "idd_type": "Curve:DoubleExponentialDecay",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveDoubleExponentialDecay",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2459,7 +2459,7 @@
   },
   {
     "idd_type": "Curve:Exponent",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveExponent",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2473,7 +2473,7 @@
   },
   {
     "idd_type": "Curve:ExponentialDecay",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveExponentialDecay",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2487,7 +2487,7 @@
   },
   {
     "idd_type": "Curve:ExponentialSkewNormal",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveExponentialSkewNormal",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2501,7 +2501,7 @@
   },
   {
     "idd_type": "Curve:FanPressureRise",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveFanPressureRise",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2515,7 +2515,7 @@
   },
   {
     "idd_type": "Curve:Functional:PressureDrop",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveFunctionalPressureDrop",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2529,7 +2529,7 @@
   },
   {
     "idd_type": "Curve:Linear",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveLinear",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2543,7 +2543,7 @@
   },
   {
     "idd_type": "Curve:QuadLinear",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveQuadLinear",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2557,7 +2557,7 @@
   },
   {
     "idd_type": "Curve:Quadratic",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveQuadratic",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2571,7 +2571,7 @@
   },
   {
     "idd_type": "Curve:QuadraticLinear",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveQuadraticLinear",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2585,7 +2585,7 @@
   },
   {
     "idd_type": "Curve:Quartic",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveQuartic",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2599,7 +2599,7 @@
   },
   {
     "idd_type": "Curve:QuintLinear",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveQuintLinear",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2613,7 +2613,7 @@
   },
   {
     "idd_type": "Curve:RectangularHyperbola1",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveRectangularHyperbola1",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2627,7 +2627,7 @@
   },
   {
     "idd_type": "Curve:RectangularHyperbola2",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveRectangularHyperbola2",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2641,7 +2641,7 @@
   },
   {
     "idd_type": "Curve:Sigmoid",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveSigmoid",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2655,7 +2655,7 @@
   },
   {
     "idd_type": "Curve:Triquadratic",
-    "status": "pending",
+    "status": "done",
     "target_class": "CurveTriquadratic",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -2669,7 +2669,7 @@
   },
   {
     "idd_type": "Daylighting:Controls",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermalZone",
     "base_class": "HVACComponent",
     "folder_bucket": "HVACComponent",
@@ -2683,7 +2683,7 @@
   },
   {
     "idd_type": "Daylighting:DELight:ComplexFenestration",
-    "status": "pending",
+    "status": "done",
     "target_class": "DaylightingDELightComplexFenestration",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2694,7 +2694,7 @@
   },
   {
     "idd_type": "Daylighting:ReferencePoint",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermalZone",
     "base_class": "HVACComponent",
     "folder_bucket": "HVACComponent",
@@ -2708,7 +2708,7 @@
   },
   {
     "idd_type": "DaylightingDevice:LightWell",
-    "status": "pending",
+    "status": "done",
     "target_class": "DaylightingDeviceLightWell",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2722,7 +2722,7 @@
   },
   {
     "idd_type": "DaylightingDevice:Shelf",
-    "status": "pending",
+    "status": "done",
     "target_class": "DaylightingDeviceShelf",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2736,7 +2736,7 @@
   },
   {
     "idd_type": "DaylightingDevice:Tubular",
-    "status": "pending",
+    "status": "done",
     "target_class": "DaylightingDeviceTubular",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2750,7 +2750,7 @@
   },
   {
     "idd_type": "Dehumidifier:Desiccant:NoFans",
-    "status": "pending",
+    "status": "done",
     "target_class": "DehumidifierDesiccantNoFans",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2761,7 +2761,7 @@
   },
   {
     "idd_type": "Dehumidifier:Desiccant:System",
-    "status": "pending",
+    "status": "done",
     "target_class": "DehumidifierDesiccantSystem",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2772,7 +2772,7 @@
   },
   {
     "idd_type": "DemandManager:ElectricEquipment",
-    "status": "pending",
+    "status": "done",
     "target_class": "DemandManagerElectricEquipment",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2783,7 +2783,7 @@
   },
   {
     "idd_type": "DemandManager:ExteriorLights",
-    "status": "pending",
+    "status": "done",
     "target_class": "DemandManagerExteriorLights",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2794,7 +2794,7 @@
   },
   {
     "idd_type": "DemandManager:Lights",
-    "status": "pending",
+    "status": "done",
     "target_class": "DemandManagerLights",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2805,7 +2805,7 @@
   },
   {
     "idd_type": "DemandManager:Thermostats",
-    "status": "pending",
+    "status": "done",
     "target_class": "DemandManagerThermostats",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2816,7 +2816,7 @@
   },
   {
     "idd_type": "DemandManager:Ventilation",
-    "status": "pending",
+    "status": "done",
     "target_class": "DemandManagerVentilation",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2827,7 +2827,7 @@
   },
   {
     "idd_type": "DemandManagerAssignmentList",
-    "status": "pending",
+    "status": "done",
     "target_class": "DemandManagerAssignmentList",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2838,7 +2838,7 @@
   },
   {
     "idd_type": "DesignSpecification:AirTerminal:Sizing",
-    "status": "pending",
+    "status": "done",
     "target_class": "DesignSpecificationAirTerminalSizing",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2849,7 +2849,7 @@
   },
   {
     "idd_type": "DesignSpecification:OutdoorAir",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermalZone",
     "base_class": "HVACComponent",
     "folder_bucket": "HVACComponent",
@@ -2863,7 +2863,7 @@
   },
   {
     "idd_type": "DesignSpecification:OutdoorAir:SpaceList",
-    "status": "pending",
+    "status": "done",
     "target_class": "DesignSpecificationOutdoorAirSpaceList",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2874,7 +2874,7 @@
   },
   {
     "idd_type": "DesignSpecification:ZoneAirDistribution",
-    "status": "pending",
+    "status": "done",
     "target_class": "SizingZone",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2888,7 +2888,7 @@
   },
   {
     "idd_type": "DesignSpecification:ZoneHVAC:Sizing",
-    "status": "pending",
+    "status": "done",
     "target_class": "DesignSpecificationZoneHVACSizing",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2899,7 +2899,7 @@
   },
   {
     "idd_type": "DistrictCooling",
-    "status": "pending",
+    "status": "done",
     "target_class": "DistrictCooling",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -2913,7 +2913,7 @@
   },
   {
     "idd_type": "DistrictHeating:Steam",
-    "status": "pending",
+    "status": "done",
     "target_class": "DistrictHeatingSteam",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -2927,7 +2927,7 @@
   },
   {
     "idd_type": "DistrictHeating:Water",
-    "status": "pending",
+    "status": "done",
     "target_class": "DistrictHeatingWater",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -2941,7 +2941,7 @@
   },
   {
     "idd_type": "Door",
-    "status": "pending",
+    "status": "done",
     "target_class": "Door",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2952,7 +2952,7 @@
   },
   {
     "idd_type": "Door:Interzone",
-    "status": "pending",
+    "status": "done",
     "target_class": "DoorInterzone",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2963,7 +2963,7 @@
   },
   {
     "idd_type": "Duct",
-    "status": "pending",
+    "status": "done",
     "target_class": "Duct",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -2977,7 +2977,7 @@
   },
   {
     "idd_type": "Duct:Loss:Conduction",
-    "status": "pending",
+    "status": "done",
     "target_class": "DuctLossConduction",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2988,7 +2988,7 @@
   },
   {
     "idd_type": "Duct:Loss:Leakage",
-    "status": "pending",
+    "status": "done",
     "target_class": "DuctLossLeakage",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -2999,7 +2999,7 @@
   },
   {
     "idd_type": "Duct:Loss:MakeupAir",
-    "status": "pending",
+    "status": "done",
     "target_class": "DuctLossMakeupAir",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3010,7 +3010,7 @@
   },
   {
     "idd_type": "ElectricEquipment",
-    "status": "pending",
+    "status": "done",
     "target_class": "ElectricEquipment",
     "base_class": "ModelObject",
     "folder_bucket": "SpaceLoadInstance",
@@ -3024,7 +3024,7 @@
   },
   {
     "idd_type": "ElectricEquipment:ITE:AirCooled",
-    "status": "pending",
+    "status": "done",
     "target_class": "ElectricEquipmentITEAirCooled",
     "base_class": "ModelObject",
     "folder_bucket": "SpaceLoadInstance",
@@ -3038,7 +3038,7 @@
   },
   {
     "idd_type": "ElectricLoadCenter:Distribution",
-    "status": "pending",
+    "status": "done",
     "target_class": "ElectricLoadCenterDistribution",
     "base_class": "ParentObject",
     "folder_bucket": "ParentObject",
@@ -3052,7 +3052,7 @@
   },
   {
     "idd_type": "ElectricLoadCenter:Generators",
-    "status": "pending",
+    "status": "done",
     "target_class": "ElectricLoadCenterDistribution",
     "base_class": "ParentObject",
     "folder_bucket": "ParentObject",
@@ -3066,7 +3066,7 @@
   },
   {
     "idd_type": "ElectricLoadCenter:Inverter:FunctionOfPower",
-    "status": "pending",
+    "status": "done",
     "target_class": "ElectricLoadCenterInverterFunctionOfPower",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3077,7 +3077,7 @@
   },
   {
     "idd_type": "ElectricLoadCenter:Inverter:LookUpTable",
-    "status": "pending",
+    "status": "done",
     "target_class": "ElectricLoadCenterInverterLookUpTable",
     "base_class": "ModelObject",
     "folder_bucket": "Inverter",
@@ -3091,7 +3091,7 @@
   },
   {
     "idd_type": "ElectricLoadCenter:Inverter:PVWatts",
-    "status": "pending",
+    "status": "done",
     "target_class": "ElectricLoadCenterInverterPVWatts",
     "base_class": "ModelObject",
     "folder_bucket": "Inverter",
@@ -3105,7 +3105,7 @@
   },
   {
     "idd_type": "ElectricLoadCenter:Inverter:Simple",
-    "status": "pending",
+    "status": "done",
     "target_class": "ElectricLoadCenterInverterSimple",
     "base_class": "ModelObject",
     "folder_bucket": "Inverter",
@@ -3119,7 +3119,7 @@
   },
   {
     "idd_type": "ElectricLoadCenter:Storage:Battery",
-    "status": "pending",
+    "status": "done",
     "target_class": "ElectricLoadCenterStorageBattery",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3130,7 +3130,7 @@
   },
   {
     "idd_type": "ElectricLoadCenter:Storage:Converter",
-    "status": "pending",
+    "status": "done",
     "target_class": "ElectricLoadCenterStorageConverter",
     "base_class": "ParentObject",
     "folder_bucket": "ParentObject",
@@ -3144,7 +3144,7 @@
   },
   {
     "idd_type": "ElectricLoadCenter:Storage:LiIonNMCBattery",
-    "status": "pending",
+    "status": "done",
     "target_class": "ElectricLoadCenterStorageLiIonNMCBattery",
     "base_class": "ModelObject",
     "folder_bucket": "ElectricalStorage",
@@ -3158,7 +3158,7 @@
   },
   {
     "idd_type": "ElectricLoadCenter:Storage:Simple",
-    "status": "pending",
+    "status": "done",
     "target_class": "ElectricLoadCenterStorageSimple",
     "base_class": "ModelObject",
     "folder_bucket": "ElectricalStorage",
@@ -3172,7 +3172,7 @@
   },
   {
     "idd_type": "ElectricLoadCenter:Transformer",
-    "status": "pending",
+    "status": "done",
     "target_class": "ElectricLoadCenterTransformer",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3186,7 +3186,7 @@
   },
   {
     "idd_type": "EnergyManagementSystem:Actuator",
-    "status": "pending",
+    "status": "done",
     "target_class": "EnergyManagementSystemActuator",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3200,7 +3200,7 @@
   },
   {
     "idd_type": "EnergyManagementSystem:ConstructionIndexVariable",
-    "status": "pending",
+    "status": "done",
     "target_class": "EnergyManagementSystemConstructionIndexVariable",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3214,7 +3214,7 @@
   },
   {
     "idd_type": "EnergyManagementSystem:CurveOrTableIndexVariable",
-    "status": "pending",
+    "status": "done",
     "target_class": "EnergyManagementSystemCurveOrTableIndexVariable",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3228,7 +3228,7 @@
   },
   {
     "idd_type": "EnergyManagementSystem:GlobalVariable",
-    "status": "pending",
+    "status": "done",
     "target_class": "EnergyManagementSystemGlobalVariable",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3242,7 +3242,7 @@
   },
   {
     "idd_type": "EnergyManagementSystem:InternalVariable",
-    "status": "pending",
+    "status": "done",
     "target_class": "EnergyManagementSystemInternalVariable",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3256,7 +3256,7 @@
   },
   {
     "idd_type": "EnergyManagementSystem:MeteredOutputVariable",
-    "status": "pending",
+    "status": "done",
     "target_class": "EnergyManagementSystemMeteredOutputVariable",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3270,7 +3270,7 @@
   },
   {
     "idd_type": "EnergyManagementSystem:OutputVariable",
-    "status": "pending",
+    "status": "done",
     "target_class": "EnergyManagementSystemOutputVariable",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3284,7 +3284,7 @@
   },
   {
     "idd_type": "EnergyManagementSystem:Program",
-    "status": "pending",
+    "status": "done",
     "target_class": "EnergyManagementSystemProgram",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3298,7 +3298,7 @@
   },
   {
     "idd_type": "EnergyManagementSystem:ProgramCallingManager",
-    "status": "pending",
+    "status": "done",
     "target_class": "EnergyManagementSystemProgramCallingManager",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3312,7 +3312,7 @@
   },
   {
     "idd_type": "EnergyManagementSystem:Sensor",
-    "status": "pending",
+    "status": "done",
     "target_class": "EnergyManagementSystemSensor",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3326,7 +3326,7 @@
   },
   {
     "idd_type": "EnergyManagementSystem:Subroutine",
-    "status": "pending",
+    "status": "done",
     "target_class": "EnergyManagementSystemSubroutine",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3340,7 +3340,7 @@
   },
   {
     "idd_type": "EnergyManagementSystem:TrendVariable",
-    "status": "pending",
+    "status": "done",
     "target_class": "EnergyManagementSystemTrendVariable",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3354,7 +3354,7 @@
   },
   {
     "idd_type": "EnvironmentalImpactFactors",
-    "status": "pending",
+    "status": "done",
     "target_class": "EnvironmentalImpactFactors",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3368,7 +3368,7 @@
   },
   {
     "idd_type": "EvaporativeCooler:Direct:CelDekPad",
-    "status": "pending",
+    "status": "done",
     "target_class": "EvaporativeCoolerDirectCelDekPad",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3379,7 +3379,7 @@
   },
   {
     "idd_type": "EvaporativeCooler:Direct:ResearchSpecial",
-    "status": "pending",
+    "status": "done",
     "target_class": "EvaporativeCoolerDirectResearchSpecial",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -3393,7 +3393,7 @@
   },
   {
     "idd_type": "EvaporativeCooler:Indirect:CelDekPad",
-    "status": "pending",
+    "status": "done",
     "target_class": "EvaporativeCoolerIndirectCelDekPad",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3404,7 +3404,7 @@
   },
   {
     "idd_type": "EvaporativeCooler:Indirect:ResearchSpecial",
-    "status": "pending",
+    "status": "done",
     "target_class": "EvaporativeCoolerIndirectResearchSpecial",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -3418,7 +3418,7 @@
   },
   {
     "idd_type": "EvaporativeCooler:Indirect:WetCoil",
-    "status": "pending",
+    "status": "done",
     "target_class": "EvaporativeCoolerIndirectWetCoil",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3429,7 +3429,7 @@
   },
   {
     "idd_type": "EvaporativeFluidCooler:SingleSpeed",
-    "status": "pending",
+    "status": "done",
     "target_class": "EvaporativeFluidCoolerSingleSpeed",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -3443,7 +3443,7 @@
   },
   {
     "idd_type": "EvaporativeFluidCooler:TwoSpeed",
-    "status": "pending",
+    "status": "done",
     "target_class": "EvaporativeFluidCoolerTwoSpeed",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -3457,7 +3457,7 @@
   },
   {
     "idd_type": "Exterior:FuelEquipment",
-    "status": "pending",
+    "status": "done",
     "target_class": "ExteriorFuelEquipment",
     "base_class": "ModelObject",
     "folder_bucket": "ExteriorLoadInstance",
@@ -3471,7 +3471,7 @@
   },
   {
     "idd_type": "Exterior:Lights",
-    "status": "pending",
+    "status": "done",
     "target_class": "ExteriorLights",
     "base_class": "ModelObject",
     "folder_bucket": "ExteriorLoadInstance",
@@ -3485,7 +3485,7 @@
   },
   {
     "idd_type": "Exterior:WaterEquipment",
-    "status": "pending",
+    "status": "done",
     "target_class": "ExteriorWaterEquipment",
     "base_class": "ModelObject",
     "folder_bucket": "ExteriorLoadInstance",
@@ -3499,7 +3499,7 @@
   },
   {
     "idd_type": "ExternalInterface",
-    "status": "pending",
+    "status": "done",
     "target_class": "ExternalInterface",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3513,7 +3513,7 @@
   },
   {
     "idd_type": "ExternalInterface:Actuator",
-    "status": "pending",
+    "status": "done",
     "target_class": "ExternalInterfaceActuator",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3527,7 +3527,7 @@
   },
   {
     "idd_type": "ExternalInterface:FunctionalMockupUnitExport:From:Variable",
-    "status": "pending",
+    "status": "done",
     "target_class": "ExternalInterfaceFunctionalMockupUnitExportFromVariable",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3541,7 +3541,7 @@
   },
   {
     "idd_type": "ExternalInterface:FunctionalMockupUnitExport:To:Actuator",
-    "status": "pending",
+    "status": "done",
     "target_class": "ExternalInterfaceFunctionalMockupUnitExportToActuator",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3555,7 +3555,7 @@
   },
   {
     "idd_type": "ExternalInterface:FunctionalMockupUnitExport:To:Schedule",
-    "status": "pending",
+    "status": "done",
     "target_class": "ExternalInterfaceFunctionalMockupUnitExportToSchedule",
     "base_class": "ModelObject",
     "folder_bucket": "Schedule",
@@ -3569,7 +3569,7 @@
   },
   {
     "idd_type": "ExternalInterface:FunctionalMockupUnitExport:To:Variable",
-    "status": "pending",
+    "status": "done",
     "target_class": "ExternalInterfaceFunctionalMockupUnitExportToVariable",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3583,7 +3583,7 @@
   },
   {
     "idd_type": "ExternalInterface:FunctionalMockupUnitImport",
-    "status": "pending",
+    "status": "done",
     "target_class": "ExternalInterfaceFunctionalMockupUnitImport",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3597,7 +3597,7 @@
   },
   {
     "idd_type": "ExternalInterface:FunctionalMockupUnitImport:From:Variable",
-    "status": "pending",
+    "status": "done",
     "target_class": "ExternalInterfaceFunctionalMockupUnitImportFromVariable",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3611,7 +3611,7 @@
   },
   {
     "idd_type": "ExternalInterface:FunctionalMockupUnitImport:To:Actuator",
-    "status": "pending",
+    "status": "done",
     "target_class": "ExternalInterfaceFunctionalMockupUnitImportToActuator",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -3625,7 +3625,7 @@
   },
   {
     "idd_type": "ExternalInterface:FunctionalMockupUnitImport:To:Schedule",
-    "status": "pending",
+    "status": "done",
     "target_class": "ExternalInterfaceFunctionalMockupUnitImportToSchedule",
     "base_class": "ModelObject",
     "folder_bucket": "Schedule",
@@ -3639,7 +3639,7 @@
   },
   {
     "idd_type": "ExternalInterface:FunctionalMockupUnitImport:To:Variable",
-    "status": "pending",
+    "status": "done",
     "target_class": "ExternalInterfaceFunctionalMockupUnitImportToVariable",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",

@@ -48,6 +48,10 @@ namespace epmodel {
     // - API: Preserve openstudio::model accessor names for AirLoopHVAC scalar fields.
     // - Field Mapping: designSupplyAirFlowRate and designReturnAirFlowFractionofSupplyAirFlow map directly to
     //   AirLoopHVAC fields in E+ schema.
+    // - Field Mapping: AirLoopHVAC::ConnectorListName is relationship-only and maps through branch topology helpers
+    //   (zoneSplitter/zoneMixer + demand branch traversal), not scalar string accessors.
+    // - Field Mapping: Connector:Splitter mapping is relationship-only. AirLoopHVAC::zoneSplitter / zoneMixer and
+    //   demand branch topology APIs carry this linkage instead of scalar string accessors.
     // - Field Mapping: AvailabilityManagerListName maps to AvailabilityManagerAssignmentList relationship APIs
     //   (availabilityManagers/add/remove/priority) and is intentionally not exposed as a scalar string accessor.
     // - TODO(parity): Extend this class with additional scalar API parity where model counterparts exist.

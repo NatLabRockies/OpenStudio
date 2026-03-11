@@ -15,7 +15,7 @@
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
 #include "../FanConstantVolume.hpp"
 #include "../Node.hpp"
-#include "../ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
 #include "../ZoneHVACAirDistributionUnit.hpp"
 #include "../ZoneHVACAirDistributionUnit_Impl.hpp"
 #include <utilities/idd/IddEnums.hxx>

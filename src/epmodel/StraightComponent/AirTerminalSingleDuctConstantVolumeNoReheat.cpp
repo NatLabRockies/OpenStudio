@@ -13,7 +13,7 @@
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "Node.hpp"
-#include "ThermalZone.hpp"
+#include "HVACComponent/ThermalZone.hpp"
 #include "ZoneHVACAirDistributionUnit.hpp"
 #include "ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "ZoneHVACEquipmentConnections.hpp"

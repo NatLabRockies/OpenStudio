@@ -9,7 +9,7 @@
 
 #include "../ModelObject/AirLoopHVACControllerList.hpp"
 #include "../ModelObject/AirLoopHVACControllerList_Impl.hpp"
-#include "../ControllerOutdoorAir.hpp"
+#include "../ParentObject/ControllerOutdoorAir.hpp"
 
 using namespace openstudio::epmodel;
 

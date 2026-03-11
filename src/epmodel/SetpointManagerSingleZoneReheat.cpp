@@ -9,8 +9,8 @@
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
-#include "ThermalZone.hpp"
-#include "ThermalZone_Impl.hpp"
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddEnums.hxx>

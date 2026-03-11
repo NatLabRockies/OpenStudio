@@ -100,6 +100,11 @@ namespace epmodel {
                                                 const openstudio::epmodel::Node& branchNode);
       static bool resolveZoneMixerBranchNode(openstudio::epmodel::AirLoopHVACZoneMixer& mixer, unsigned branchIndex,
                                              const openstudio::epmodel::Node& branchNode);
+      // Schema Alignment Notes:
+      // - Field Mapping: AirLoopHVAC::ConnectorListName stores branch connector relationships, not scalar data.
+      // - API: AirLoopHVAC exposes Connector:Splitter behavior through zoneSplitter()/zoneMixer() and demand topology traversal.
+      // - Field Mapping: Connector:Splitter Inlet/Outlet Branch rows are represented by branch node wiring and
+      //   AirLoopHVAC:ZoneSplitter/AirLoopHVAC:ZoneMixer relationships, not scalar accessors.
       static boost::optional<std::vector<openstudio::epmodel::StraightComponent>> resolveDemandBranchChain(
         const openstudio::epmodel::Node& branchStartNode, const openstudio::epmodel::Node& branchEndNode);
     };

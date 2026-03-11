@@ -11,12 +11,12 @@
 #include "Model.hpp"
 #include "DesignSpecificationOutdoorAir.hpp"
 #include "DesignSpecificationOutdoorAir_Impl.hpp"
-#include "DesignSpecificationOutdoorAirSpaceList.hpp"
-#include "DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
+#include "ModelObject/DesignSpecificationOutdoorAirSpaceList.hpp"
+#include "ModelObject/DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
 #include "SizingZone.hpp"
 #include "SizingZone_Impl.hpp"
-#include "ThermalZone.hpp"
-#include "ThermalZone_Impl.hpp"
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddEnums.hxx>

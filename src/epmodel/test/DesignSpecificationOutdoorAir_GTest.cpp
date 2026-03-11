@@ -9,12 +9,12 @@
 
 #include "../DesignSpecificationOutdoorAir.hpp"
 #include "../DesignSpecificationOutdoorAir_Impl.hpp"
-#include "../DesignSpecificationOutdoorAirSpaceList.hpp"
-#include "../DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
-#include "../SizingZone.hpp"
-#include "../SizingZone_Impl.hpp"
+#include "../ModelObject/DesignSpecificationOutdoorAirSpaceList.hpp"
+#include "../ModelObject/DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
+#include "../ModelObject/SizingZone.hpp"
+#include "../ModelObject/SizingZone_Impl.hpp"
 #include "../Space.hpp"
-#include "../ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
 
 #include <utilities/idd/Sizing_Zone_FieldEnums.hxx>
 #include <utilities/idd/DesignSpecification_OutdoorAir_SpaceList_FieldEnums.hxx>
@@ -35,6 +35,13 @@ TEST_F(EPModelFixture, API_DesignSpecificationOutdoorAirSpaceList_DefaultConstru
   DesignSpecificationOutdoorAirSpaceList list(model);
   EXPECT_EQ(DesignSpecificationOutdoorAirSpaceList::iddObjectType(), list.iddObject().type());
   EXPECT_TRUE(list.spaces().empty());
+}
+
+TEST_F(EPModelFixture, API_DesignSpecificationOutdoorAirSpaceList_NameScalarAccessor_RoundTrip) {
+  Model model;
+  DesignSpecificationOutdoorAirSpaceList list(model);
+  ASSERT_TRUE(list.setName("DSOA Space List A"));
+  EXPECT_EQ("DSOA Space List A", list.nameString());
 }
 
 TEST_F(EPModelFixture, API_Space_SetDesignSpecificationOutdoorAir_CreatesZoneSpaceListEntry) {
