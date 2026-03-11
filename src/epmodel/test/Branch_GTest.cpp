@@ -8,7 +8,7 @@
 #include "EPModelFixture.hpp"
 #include "../ModelObject/Branch.hpp"
 #include "../ModelObject/Branch_Impl.hpp"
-#include "../FanConstantVolume.hpp"
+#include "../StraightComponent/FanConstantVolume.hpp"
 
 using namespace openstudio::epmodel;
 

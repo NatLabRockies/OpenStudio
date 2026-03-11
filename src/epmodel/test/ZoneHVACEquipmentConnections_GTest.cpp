@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../Node.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../ZoneHVACEquipmentConnections.hpp"
 #include "../ZoneHVACEquipmentConnections_Impl.hpp"

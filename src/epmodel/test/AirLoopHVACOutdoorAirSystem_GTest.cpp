@@ -9,8 +9,8 @@
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../ParentObject/ControllerOutdoorAir.hpp"
-#include "../FanConstantVolume.hpp"
-#include "../Node.hpp"
+#include "../StraightComponent/FanConstantVolume.hpp"
+#include "../StraightComponent/Node.hpp"
 #include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;

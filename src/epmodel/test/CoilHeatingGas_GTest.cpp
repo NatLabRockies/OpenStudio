@@ -10,7 +10,7 @@
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/CoilHeatingGas.hpp"
-#include "../Node.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 
 using namespace openstudio::epmodel;

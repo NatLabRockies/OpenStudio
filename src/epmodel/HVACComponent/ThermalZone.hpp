@@ -40,6 +40,15 @@ class EPMODEL_API ThermalZone : public ModelObject
   SizingZone sizingZone() const;
 
   // Schema Alignment Notes:
+  // - API: Preserve openstudio::model ThermalZone useIdealAirLoads/setUseIdealAirLoads names/signatures.
+  // - Field Mapping: API delegates to presence of HVACTemplate:Zone:IdealLoadsAirSystem mapped by Zone Name.
+  // - ForwardTranslator Evidence: ForwardTranslateThermalZone writes HVACTemplate:Zone:IdealLoadsAirSystem when
+  //   ThermalZone::useIdealAirLoads() is true and sets Zone Name to ThermalZone nameString().
+  // - TODO(parity): Revisit when epmodel adds explicit ZoneHVACIdealLoadsAirSystem parity path.
+  bool useIdealAirLoads() const;
+  bool setUseIdealAirLoads(bool useIdealAirLoads);
+
+  // Schema Alignment Notes:
   // - API: Preserve openstudio::model DesignSpecificationOutdoorAir scalar accessor names on ThermalZone wrappers.
   // - Field Mapping: ThermalZone DSOA wrappers delegate to DesignSpecification:OutdoorAir scalar fields through
   //   ThermalZone -> Sizing:Zone -> DesignSpecification:OutdoorAir:SpaceList -> DesignSpecification:OutdoorAir.
@@ -91,6 +100,36 @@ class EPMODEL_API ThermalZone : public ModelObject
   bool setSecondaryDaylightingControlXCoordinate(double secondaryDaylightingControlXCoordinate);
   bool setSecondaryDaylightingControlYCoordinate(double secondaryDaylightingControlYCoordinate);
   bool setSecondaryDaylightingControlZCoordinate(double secondaryDaylightingControlZCoordinate);
+
+  // Schema Alignment Notes:
+  // - API: Illuminance map scalar wrappers preserve existing OpenStudio IlluminanceMap scalar naming
+  //   while exposing them on ThermalZone for epmodel schema-alignment workflow.
+  // - Field Mapping: API delegates to Output:IlluminanceMap by ZoneorSpaceName, with forward mapping:
+  //   originX -> X Minimum Coordinate, xLength -> X Maximum - X Minimum, originY -> Y Minimum Coordinate,
+  //   yLength -> Y Maximum - Y Minimum, originZ -> Z height, and grid points map directly.
+  // - ForwardTranslator Evidence: ForwardTranslateThermalZone.cpp writes Output:IlluminanceMap fields from
+  //   model::IlluminanceMap using this exact transform.
+  // - TODO(parity): Replace wrapper mapping when epmodel adds explicit IlluminanceMap object parity.
+  double illuminanceMapOriginXCoordinate() const;
+  bool setIlluminanceMapOriginXCoordinate(double illuminanceMapOriginXCoordinate);
+
+  double illuminanceMapOriginYCoordinate() const;
+  bool setIlluminanceMapOriginYCoordinate(double illuminanceMapOriginYCoordinate);
+
+  double illuminanceMapOriginZCoordinate() const;
+  bool setIlluminanceMapOriginZCoordinate(double illuminanceMapOriginZCoordinate);
+
+  double illuminanceMapXLength() const;
+  bool setIlluminanceMapXLength(double illuminanceMapXLength);
+
+  int illuminanceMapNumberofXGridPoints() const;
+  bool setIlluminanceMapNumberofXGridPoints(int illuminanceMapNumberofXGridPoints);
+
+  double illuminanceMapYLength() const;
+  bool setIlluminanceMapYLength(double illuminanceMapYLength);
+
+  int illuminanceMapNumberofYGridPoints() const;
+  bool setIlluminanceMapNumberofYGridPoints(int illuminanceMapNumberofYGridPoints);
 
  protected:
   using ImplType = detail::ThermalZone_Impl;

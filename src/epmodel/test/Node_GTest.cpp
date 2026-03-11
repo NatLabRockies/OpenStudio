@@ -8,7 +8,7 @@
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
-#include "../Node.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../SetpointManagerScheduled.hpp"
 
 using namespace openstudio::epmodel;
@@ -18,6 +18,14 @@ TEST_F(EPModelFixture, Node_DefaultConstructor) {
   Node node = model.getOrCreateTransientByName<Node>("Node 1");
   EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Node), node.iddObject().type());
   EXPECT_EQ("Node 1", node.nameString());
+}
+
+TEST_F(EPModelFixture, Node_ScalarAccessors_RoundTrip) {
+  Model model;
+  Node node = model.getOrCreateTransientByName<Node>("Node Scalar");
+
+  EXPECT_TRUE(node.setName("Node Scalar Renamed"));
+  EXPECT_EQ("Node Scalar Renamed", node.nameString());
 }
 
 TEST_F(EPModelFixture, Node_SetpointManagers) {

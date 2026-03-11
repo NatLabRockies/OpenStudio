@@ -15,7 +15,7 @@
 #include "../ModelObject/ControllerMechanicalVentilation_Impl.hpp"
 #include "../ParentObject/ControllerOutdoorAir.hpp"
 #include "../DesignSpecificationOutdoorAir.hpp"
-#include "../Node.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../ModelObject/SizingZone.hpp"
 #include "../Space.hpp"
 #include "../HVACComponent/ThermalZone.hpp"

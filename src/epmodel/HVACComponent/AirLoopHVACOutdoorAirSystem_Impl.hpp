@@ -26,6 +26,11 @@ class EPMODEL_API AirLoopHVACOutdoorAirSystem_Impl : public HVACComponent_Impl
   using HVACComponent_Impl::HVACComponent_Impl;
   virtual ~AirLoopHVACOutdoorAirSystem_Impl() override = default;
 
+  // Schema Alignment Notes:
+  // - API: Keep openstudio::model AirLoopHVACOutdoorAirSystem method names and signatures stable.
+  // - Field Mapping: Outdoor/relief/return/mixed node-port lookups delegate to the owned OutdoorAir:Mixer object.
+  // - Field Mapping: `outboardOANode()` is the canonical source for ForwardTranslator `OutdoorAir:NodeList` emission.
+
   unsigned returnAirPort() const;
   unsigned outdoorAirPort() const;
   unsigned reliefAirPort() const;

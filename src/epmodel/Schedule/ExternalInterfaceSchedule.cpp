@@ -1,0 +1,63 @@
+/***********************************************************************************************************************
+*  OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC.
+*  See also https://openstudio.net/license
+***********************************************************************************************************************/
+
+#include "ExternalInterfaceSchedule.hpp"
+#include "ExternalInterfaceSchedule_Impl.hpp"
+
+#include "Model.hpp"
+
+#include <utilities/core/Assert.hpp>
+#include <utilities/idd/ExternalInterface_Schedule_FieldEnums.hxx>
+#include <utilities/idd/IddEnums.hxx>
+
+namespace openstudio {
+namespace epmodel {
+
+ExternalInterfaceSchedule::ExternalInterfaceSchedule(const Model& model, double initialValue)
+  : ModelObject(ExternalInterfaceSchedule::iddObjectType(), model) {
+  OS_ASSERT(setInitialValue(initialValue));
+}
+
+ExternalInterfaceSchedule::ExternalInterfaceSchedule(const Model& model) : ModelObject(ExternalInterfaceSchedule::iddObjectType(), model) {
+  OS_ASSERT(setInitialValue(0.0));
+}
+
+ExternalInterfaceSchedule::ExternalInterfaceSchedule(std::shared_ptr<detail::ExternalInterfaceSchedule_Impl> impl)
+  : ModelObject(std::move(impl)) {}
+
+IddObjectType ExternalInterfaceSchedule::iddObjectType() {
+  return IddObjectType::ExternalInterface_Schedule;
+}
+
+double ExternalInterfaceSchedule::initialValue() const {
+  return getImpl<detail::ExternalInterfaceSchedule_Impl>()->initialValue();
+}
+
+bool ExternalInterfaceSchedule::setInitialValue(double initialValue) {
+  return getImpl<detail::ExternalInterfaceSchedule_Impl>()->setInitialValue(initialValue);
+}
+
+}  // namespace epmodel
+}  // namespace openstudio
+
+namespace openstudio {
+namespace epmodel {
+namespace detail {
+
+double ExternalInterfaceSchedule_Impl::initialValue() const {
+  const auto value = getDouble(openstudio::ExternalInterface_ScheduleFields::InitialValue, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool ExternalInterfaceSchedule_Impl::setInitialValue(double initialValue) {
+  const bool result = setDouble(openstudio::ExternalInterface_ScheduleFields::InitialValue, initialValue);
+  OS_ASSERT(result);
+  return result;
+}
+
+}  // namespace detail
+}  // namespace epmodel
+}  // namespace openstudio

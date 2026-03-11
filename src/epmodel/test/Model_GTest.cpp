@@ -14,7 +14,7 @@
 #include "../ModelObject/BranchList_Impl.hpp"
 #include "../ModelObject/Branch_Impl.hpp"
 #include "../Model.hpp"
-#include "../Node.hpp"
+#include "../StraightComponent/Node.hpp"
 
 #include "../../utilities/idf/IdfFile.hpp"
 #include "../../utilities/idf/IdfExtensibleGroup.hpp"

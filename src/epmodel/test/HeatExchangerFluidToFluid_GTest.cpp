@@ -1,0 +1,104 @@
+/***********************************************************************************************************************
+*  OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC.
+*  See also https://openstudio.net/license
+***********************************************************************************************************************/
+
+#include <gtest/gtest.h>
+
+#include "EPModelFixture.hpp"
+#include "../WaterToWaterComponent/HeatExchangerFluidToFluid.hpp"
+
+using namespace openstudio::epmodel;
+
+TEST_F(EPModelFixture, HeatExchangerFluidToFluid_DefaultConstructor) {
+  Model model;
+  HeatExchangerFluidToFluid hx(model);
+  EXPECT_EQ(HeatExchangerFluidToFluid::iddObjectType(), hx.iddObject().type());
+
+  EXPECT_TRUE(hx.isLoopDemandSideDesignFlowRateAutosized());
+  EXPECT_TRUE(hx.isLoopSupplySideDesignFlowRateAutosized());
+  EXPECT_EQ("Ideal", hx.heatExchangeModelType());
+  EXPECT_TRUE(hx.isHeatExchangerUFactorTimesAreaValueAutosized());
+  EXPECT_EQ("UncontrolledOn", hx.controlType());
+  EXPECT_DOUBLE_EQ(0.01, hx.minimumTemperatureDifferencetoActivateHeatExchanger());
+  EXPECT_EQ("LoopToLoop", hx.heatTransferMeteringEndUseType());
+  EXPECT_EQ("Loop", hx.componentOverrideCoolingControlTemperatureMode());
+  EXPECT_DOUBLE_EQ(1.0, hx.sizingFactor());
+  ASSERT_TRUE(hx.operationMinimumTemperatureLimit());
+  EXPECT_DOUBLE_EQ(0.0, *hx.operationMinimumTemperatureLimit());
+  ASSERT_TRUE(hx.operationMaximumTemperatureLimit());
+  EXPECT_DOUBLE_EQ(100.0, *hx.operationMaximumTemperatureLimit());
+}
+
+TEST_F(EPModelFixture, HeatExchangerFluidToFluid_ScalarAccessors_RoundTrip) {
+  Model model;
+  HeatExchangerFluidToFluid hx(model);
+
+  EXPECT_TRUE(hx.setLoopDemandSideDesignFlowRate(0.11));
+  ASSERT_TRUE(hx.loopDemandSideDesignFlowRate());
+  EXPECT_DOUBLE_EQ(0.11, *hx.loopDemandSideDesignFlowRate());
+  hx.autosizeLoopDemandSideDesignFlowRate();
+  EXPECT_TRUE(hx.isLoopDemandSideDesignFlowRateAutosized());
+
+  EXPECT_TRUE(hx.setLoopSupplySideDesignFlowRate(0.22));
+  ASSERT_TRUE(hx.loopSupplySideDesignFlowRate());
+  EXPECT_DOUBLE_EQ(0.22, *hx.loopSupplySideDesignFlowRate());
+  hx.autosizeLoopSupplySideDesignFlowRate();
+  EXPECT_TRUE(hx.isLoopSupplySideDesignFlowRateAutosized());
+
+  const auto modelTypeValues = HeatExchangerFluidToFluid::heatExchangeModelTypeValues();
+  ASSERT_FALSE(modelTypeValues.empty());
+  EXPECT_TRUE(hx.setHeatExchangeModelType(modelTypeValues.front()));
+  EXPECT_EQ(modelTypeValues.front(), hx.heatExchangeModelType());
+  hx.resetHeatExchangeModelType();
+  EXPECT_TRUE(hx.isHeatExchangeModelTypeDefaulted());
+
+  EXPECT_TRUE(hx.setHeatExchangerUFactorTimesAreaValue(460.0));
+  ASSERT_TRUE(hx.heatExchangerUFactorTimesAreaValue());
+  EXPECT_DOUBLE_EQ(460.0, *hx.heatExchangerUFactorTimesAreaValue());
+  hx.autosizeHeatExchangerUFactorTimesAreaValue();
+  EXPECT_TRUE(hx.isHeatExchangerUFactorTimesAreaValueAutosized());
+
+  const auto controlTypeValues = HeatExchangerFluidToFluid::controlTypeValues();
+  ASSERT_FALSE(controlTypeValues.empty());
+  EXPECT_TRUE(hx.setControlType(controlTypeValues.front()));
+  EXPECT_EQ(controlTypeValues.front(), hx.controlType());
+  hx.resetControlType();
+  EXPECT_TRUE(hx.isControlTypeDefaulted());
+
+  EXPECT_TRUE(hx.setMinimumTemperatureDifferencetoActivateHeatExchanger(0.25));
+  EXPECT_DOUBLE_EQ(0.25, hx.minimumTemperatureDifferencetoActivateHeatExchanger());
+  hx.resetMinimumTemperatureDifferencetoActivateHeatExchanger();
+  EXPECT_TRUE(hx.isMinimumTemperatureDifferencetoActivateHeatExchangerDefaulted());
+
+  const auto endUseValues = HeatExchangerFluidToFluid::heatTransferMeteringEndUseTypeValues();
+  ASSERT_FALSE(endUseValues.empty());
+  EXPECT_TRUE(hx.setHeatTransferMeteringEndUseType(endUseValues.front()));
+  EXPECT_EQ(endUseValues.front(), hx.heatTransferMeteringEndUseType());
+  hx.resetHeatTransferMeteringEndUseType();
+  EXPECT_TRUE(hx.isHeatTransferMeteringEndUseTypeDefaulted());
+
+  const auto overrideModeValues = HeatExchangerFluidToFluid::componentOverrideCoolingControlTemperatureModeValues();
+  ASSERT_FALSE(overrideModeValues.empty());
+  EXPECT_TRUE(hx.setComponentOverrideCoolingControlTemperatureMode(overrideModeValues.front()));
+  EXPECT_EQ(overrideModeValues.front(), hx.componentOverrideCoolingControlTemperatureMode());
+  hx.resetComponentOverrideCoolingControlTemperatureMode();
+  EXPECT_TRUE(hx.isComponentOverrideCoolingControlTemperatureModeDefaulted());
+
+  EXPECT_TRUE(hx.setSizingFactor(1.15));
+  EXPECT_DOUBLE_EQ(1.15, hx.sizingFactor());
+  hx.resetSizingFactor();
+  EXPECT_TRUE(hx.isSizingFactorDefaulted());
+
+  EXPECT_TRUE(hx.setOperationMinimumTemperatureLimit(1.5));
+  ASSERT_TRUE(hx.operationMinimumTemperatureLimit());
+  EXPECT_DOUBLE_EQ(1.5, *hx.operationMinimumTemperatureLimit());
+  hx.resetOperationMinimumTemperatureLimit();
+  EXPECT_FALSE(hx.operationMinimumTemperatureLimit());
+
+  EXPECT_TRUE(hx.setOperationMaximumTemperatureLimit(95.0));
+  ASSERT_TRUE(hx.operationMaximumTemperatureLimit());
+  EXPECT_DOUBLE_EQ(95.0, *hx.operationMaximumTemperatureLimit());
+  hx.resetOperationMaximumTemperatureLimit();
+  EXPECT_FALSE(hx.operationMaximumTemperatureLimit());
+}

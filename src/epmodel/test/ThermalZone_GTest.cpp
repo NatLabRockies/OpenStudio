@@ -10,7 +10,7 @@
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../DesignSpecificationOutdoorAir.hpp"
-#include "../Node.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../Space.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
@@ -20,7 +20,9 @@
 #include "../../utilities/idf/IdfObject.hpp"
 #include <utilities/idd/Daylighting_Controls_FieldEnums.hxx>
 #include <utilities/idd/Daylighting_ReferencePoint_FieldEnums.hxx>
+#include <utilities/idd/HVACTemplate_Zone_IdealLoadsAirSystem_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/Output_IlluminanceMap_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -223,4 +225,93 @@ TEST_F(EPModelFixture, API_ThermalZone_DaylightingReferencePointCoordinates_Roun
   EXPECT_NEAR(14.0, zone.secondaryDaylightingControlXCoordinate(), 1e-9);
   EXPECT_NEAR(15.0, zone.secondaryDaylightingControlYCoordinate(), 1e-9);
   EXPECT_NEAR(16.0, zone.secondaryDaylightingControlZCoordinate(), 1e-9);
+}
+
+TEST_F(EPModelFixture, API_ThermalZone_UseIdealAirLoads_RoundTrip) {
+  Model model;
+  ThermalZone zone(model);
+
+  EXPECT_FALSE(zone.useIdealAirLoads());
+  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem).empty());
+
+  EXPECT_TRUE(zone.setUseIdealAirLoads(true));
+  EXPECT_TRUE(zone.useIdealAirLoads());
+
+  const auto idealLoads = model.getObjectsByType(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem);
+  ASSERT_EQ(1u, idealLoads.size());
+  auto mappedZoneName = idealLoads.front().getString(openstudio::HVACTemplate_Zone_IdealLoadsAirSystemFields::ZoneName, true);
+  ASSERT_TRUE(mappedZoneName);
+  EXPECT_EQ(zone.nameString(), *mappedZoneName);
+
+  EXPECT_TRUE(zone.setUseIdealAirLoads(false));
+  EXPECT_FALSE(zone.useIdealAirLoads());
+  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem).empty());
+}
+
+TEST_F(EPModelFixture, API_ThermalZone_OutputIlluminanceMapScalars_RoundTrip) {
+  Model model;
+  ThermalZone zone(model);
+
+  openstudio::IdfObject illuminanceMapObject(openstudio::IddObjectType::Output_IlluminanceMap);
+  ASSERT_TRUE(illuminanceMapObject.setName(zone.nameString() + " IlluminanceMap"));
+  ASSERT_TRUE(illuminanceMapObject.setString(openstudio::Output_IlluminanceMapFields::ZoneorSpaceName, zone.nameString()));
+  ASSERT_TRUE(illuminanceMapObject.setDouble(openstudio::Output_IlluminanceMapFields::Zheight, 0.75));
+  ASSERT_TRUE(illuminanceMapObject.setDouble(openstudio::Output_IlluminanceMapFields::XMinimumCoordinate, 1.0));
+  ASSERT_TRUE(illuminanceMapObject.setDouble(openstudio::Output_IlluminanceMapFields::XMaximumCoordinate, 11.0));
+  ASSERT_TRUE(illuminanceMapObject.setInt(openstudio::Output_IlluminanceMapFields::NumberofXGridPoints, 10));
+  ASSERT_TRUE(illuminanceMapObject.setDouble(openstudio::Output_IlluminanceMapFields::YMinimumCoordinate, 2.0));
+  ASSERT_TRUE(illuminanceMapObject.setDouble(openstudio::Output_IlluminanceMapFields::YMaximumCoordinate, 14.0));
+  ASSERT_TRUE(illuminanceMapObject.setInt(openstudio::Output_IlluminanceMapFields::NumberofYGridPoints, 12));
+  ASSERT_TRUE(model.addObject(illuminanceMapObject));
+
+  EXPECT_NEAR(1.0, zone.illuminanceMapOriginXCoordinate(), 1e-9);
+  EXPECT_NEAR(2.0, zone.illuminanceMapOriginYCoordinate(), 1e-9);
+  EXPECT_NEAR(0.75, zone.illuminanceMapOriginZCoordinate(), 1e-9);
+  EXPECT_NEAR(10.0, zone.illuminanceMapXLength(), 1e-9);
+  EXPECT_EQ(10, zone.illuminanceMapNumberofXGridPoints());
+  EXPECT_NEAR(12.0, zone.illuminanceMapYLength(), 1e-9);
+  EXPECT_EQ(12, zone.illuminanceMapNumberofYGridPoints());
+
+  EXPECT_TRUE(zone.setIlluminanceMapOriginXCoordinate(3.0));
+  EXPECT_TRUE(zone.setIlluminanceMapOriginYCoordinate(5.0));
+  EXPECT_TRUE(zone.setIlluminanceMapOriginZCoordinate(1.25));
+  EXPECT_TRUE(zone.setIlluminanceMapXLength(8.0));
+  EXPECT_TRUE(zone.setIlluminanceMapNumberofXGridPoints(8));
+  EXPECT_TRUE(zone.setIlluminanceMapYLength(9.0));
+  EXPECT_TRUE(zone.setIlluminanceMapNumberofYGridPoints(9));
+
+  EXPECT_NEAR(3.0, zone.illuminanceMapOriginXCoordinate(), 1e-9);
+  EXPECT_NEAR(5.0, zone.illuminanceMapOriginYCoordinate(), 1e-9);
+  EXPECT_NEAR(1.25, zone.illuminanceMapOriginZCoordinate(), 1e-9);
+  EXPECT_NEAR(8.0, zone.illuminanceMapXLength(), 1e-9);
+  EXPECT_EQ(8, zone.illuminanceMapNumberofXGridPoints());
+  EXPECT_NEAR(9.0, zone.illuminanceMapYLength(), 1e-9);
+  EXPECT_EQ(9, zone.illuminanceMapNumberofYGridPoints());
+
+  const auto outputIlluminanceMaps = model.getObjectsByType(openstudio::IddObjectType::Output_IlluminanceMap);
+  ASSERT_EQ(1u, outputIlluminanceMaps.size());
+  auto zoneOrSpaceName = outputIlluminanceMaps.front().getString(openstudio::Output_IlluminanceMapFields::ZoneorSpaceName, true);
+  ASSERT_TRUE(zoneOrSpaceName);
+  EXPECT_EQ(zone.nameString(), *zoneOrSpaceName);
+  auto xMin = outputIlluminanceMaps.front().getDouble(openstudio::Output_IlluminanceMapFields::XMinimumCoordinate, true);
+  auto xMax = outputIlluminanceMaps.front().getDouble(openstudio::Output_IlluminanceMapFields::XMaximumCoordinate, true);
+  auto xPoints = outputIlluminanceMaps.front().getInt(openstudio::Output_IlluminanceMapFields::NumberofXGridPoints, true);
+  auto yMin = outputIlluminanceMaps.front().getDouble(openstudio::Output_IlluminanceMapFields::YMinimumCoordinate, true);
+  auto yMax = outputIlluminanceMaps.front().getDouble(openstudio::Output_IlluminanceMapFields::YMaximumCoordinate, true);
+  auto yPoints = outputIlluminanceMaps.front().getInt(openstudio::Output_IlluminanceMapFields::NumberofYGridPoints, true);
+  auto zHeight = outputIlluminanceMaps.front().getDouble(openstudio::Output_IlluminanceMapFields::Zheight, true);
+  ASSERT_TRUE(xMin);
+  ASSERT_TRUE(xMax);
+  ASSERT_TRUE(xPoints);
+  ASSERT_TRUE(yMin);
+  ASSERT_TRUE(yMax);
+  ASSERT_TRUE(yPoints);
+  ASSERT_TRUE(zHeight);
+  EXPECT_NEAR(3.0, *xMin, 1e-9);
+  EXPECT_NEAR(11.0, *xMax, 1e-9);
+  EXPECT_EQ(8, *xPoints);
+  EXPECT_NEAR(5.0, *yMin, 1e-9);
+  EXPECT_NEAR(14.0, *yMax, 1e-9);
+  EXPECT_EQ(9, *yPoints);
+  EXPECT_NEAR(1.25, *zHeight, 1e-9);
 }

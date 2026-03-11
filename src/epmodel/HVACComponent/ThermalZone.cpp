@@ -28,8 +28,11 @@
 #include <utilities/idd/AirLoopHVAC_ZoneSplitter_FieldEnums.hxx>
 #include <utilities/idd/Daylighting_Controls_FieldEnums.hxx>
 #include <utilities/idd/Daylighting_ReferencePoint_FieldEnums.hxx>
+#include <utilities/idd/HVACTemplate_Zone_IdealLoadsAirSystem_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/Output_IlluminanceMap_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
+#include <utilities/idf/IdfObject.hpp>
 #include <utilities/idf/IdfExtensibleGroup.hpp>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
@@ -75,6 +78,16 @@ boost::optional<openstudio::WorkspaceObject> daylightingReferencePointForZone(co
   }
 
   return zone.model().getObjectByTypeAndName(openstudio::IddObjectType::Daylighting_ReferencePoint, *referencePointName, true);
+}
+
+boost::optional<openstudio::WorkspaceObject> outputIlluminanceMapForZone(const ThermalZone& zone) {
+  for (const auto& object : zone.model().getObjectsByType(openstudio::IddObjectType::Output_IlluminanceMap)) {
+    auto zoneOrSpaceName = object.getString(openstudio::Output_IlluminanceMapFields::ZoneorSpaceName, true);
+    if (zoneOrSpaceName && openstudio::istringEqual(*zoneOrSpaceName, zone.nameString())) {
+      return object;
+    }
+  }
+  return boost::none;
 }
 
 bool setZoneSplitterBranchNode(AirLoopHVACZoneSplitter& splitter, unsigned branchIndex, const Node& branchNode) {
@@ -177,6 +190,14 @@ bool ThermalZone::addToNode(Node& node) {
 
 SizingZone ThermalZone::sizingZone() const {
   return getImpl<detail::ThermalZone_Impl>()->sizingZone();
+}
+
+bool ThermalZone::useIdealAirLoads() const {
+  return getImpl<detail::ThermalZone_Impl>()->useIdealAirLoads();
+}
+
+bool ThermalZone::setUseIdealAirLoads(bool useIdealAirLoads) {
+  return getImpl<detail::ThermalZone_Impl>()->setUseIdealAirLoads(useIdealAirLoads);
 }
 
 std::string ThermalZone::outdoorAirMethod() const {
@@ -301,6 +322,62 @@ bool ThermalZone::setSecondaryDaylightingControlZCoordinate(double secondaryDayl
   return getImpl<detail::ThermalZone_Impl>()->setSecondaryDaylightingControlZCoordinate(secondaryDaylightingControlZCoordinate);
 }
 
+double ThermalZone::illuminanceMapOriginXCoordinate() const {
+  return getImpl<detail::ThermalZone_Impl>()->illuminanceMapOriginXCoordinate();
+}
+
+bool ThermalZone::setIlluminanceMapOriginXCoordinate(double illuminanceMapOriginXCoordinate) {
+  return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapOriginXCoordinate(illuminanceMapOriginXCoordinate);
+}
+
+double ThermalZone::illuminanceMapOriginYCoordinate() const {
+  return getImpl<detail::ThermalZone_Impl>()->illuminanceMapOriginYCoordinate();
+}
+
+bool ThermalZone::setIlluminanceMapOriginYCoordinate(double illuminanceMapOriginYCoordinate) {
+  return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapOriginYCoordinate(illuminanceMapOriginYCoordinate);
+}
+
+double ThermalZone::illuminanceMapOriginZCoordinate() const {
+  return getImpl<detail::ThermalZone_Impl>()->illuminanceMapOriginZCoordinate();
+}
+
+bool ThermalZone::setIlluminanceMapOriginZCoordinate(double illuminanceMapOriginZCoordinate) {
+  return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapOriginZCoordinate(illuminanceMapOriginZCoordinate);
+}
+
+double ThermalZone::illuminanceMapXLength() const {
+  return getImpl<detail::ThermalZone_Impl>()->illuminanceMapXLength();
+}
+
+bool ThermalZone::setIlluminanceMapXLength(double illuminanceMapXLength) {
+  return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapXLength(illuminanceMapXLength);
+}
+
+int ThermalZone::illuminanceMapNumberofXGridPoints() const {
+  return getImpl<detail::ThermalZone_Impl>()->illuminanceMapNumberofXGridPoints();
+}
+
+bool ThermalZone::setIlluminanceMapNumberofXGridPoints(int illuminanceMapNumberofXGridPoints) {
+  return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapNumberofXGridPoints(illuminanceMapNumberofXGridPoints);
+}
+
+double ThermalZone::illuminanceMapYLength() const {
+  return getImpl<detail::ThermalZone_Impl>()->illuminanceMapYLength();
+}
+
+bool ThermalZone::setIlluminanceMapYLength(double illuminanceMapYLength) {
+  return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapYLength(illuminanceMapYLength);
+}
+
+int ThermalZone::illuminanceMapNumberofYGridPoints() const {
+  return getImpl<detail::ThermalZone_Impl>()->illuminanceMapNumberofYGridPoints();
+}
+
+bool ThermalZone::setIlluminanceMapNumberofYGridPoints(int illuminanceMapNumberofYGridPoints) {
+  return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapNumberofYGridPoints(illuminanceMapNumberofYGridPoints);
+}
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -376,6 +453,44 @@ openstudio::epmodel::SizingZone ThermalZone_Impl::sizingZone() {
   }
 
   return openstudio::epmodel::SizingZone(model(), getObject<openstudio::epmodel::ThermalZone>());
+}
+
+std::vector<openstudio::WorkspaceObject> ThermalZone_Impl::hvacTemplateZoneIdealLoadsAirSystemsForZone() const {
+  std::vector<openstudio::WorkspaceObject> result;
+  const auto zoneName = getObject<openstudio::epmodel::ThermalZone>().nameString();
+  for (const auto& object : model().getObjectsByType(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem)) {
+    auto mappedZoneName = object.getString(openstudio::HVACTemplate_Zone_IdealLoadsAirSystemFields::ZoneName, true);
+    if (mappedZoneName && openstudio::istringEqual(*mappedZoneName, zoneName)) {
+      result.emplace_back(object);
+    }
+  }
+  return result;
+}
+
+bool ThermalZone_Impl::useIdealAirLoads() const {
+  return !hvacTemplateZoneIdealLoadsAirSystemsForZone().empty();
+}
+
+bool ThermalZone_Impl::setUseIdealAirLoads(bool useIdealAirLoads) {
+  auto idealLoadsObjects = hvacTemplateZoneIdealLoadsAirSystemsForZone();
+
+  if (useIdealAirLoads) {
+    if (!idealLoadsObjects.empty()) {
+      return true;
+    }
+    openstudio::IdfObject object(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem);
+    if (!object.setString(openstudio::HVACTemplate_Zone_IdealLoadsAirSystemFields::ZoneName,
+                          getObject<openstudio::epmodel::ThermalZone>().nameString())) {
+      return false;
+    }
+    return model().addObject(object).is_initialized();
+  }
+
+  bool result = true;
+  for (auto& object : idealLoadsObjects) {
+    result = !object.remove().empty() && result;
+  }
+  return result;
 }
 
 std::vector<openstudio::epmodel::Space> ThermalZone_Impl::spaces() const {
@@ -697,6 +812,166 @@ bool ThermalZone_Impl::setSecondaryDaylightingControlZCoordinate(double secondar
   return setDaylightingReferencePointCoordinate(kSecondaryDaylightingReferencePointIndex,
                                                 openstudio::Daylighting_ReferencePointFields::ZCoordinateofReferencePoint,
                                                 secondaryDaylightingControlZCoordinate);
+}
+
+double ThermalZone_Impl::illuminanceMapOriginXCoordinate() const {
+  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+  auto object = outputIlluminanceMapForZone(zone);
+  OS_ASSERT(object);
+  auto value = object->getDouble(openstudio::Output_IlluminanceMapFields::XMinimumCoordinate, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool ThermalZone_Impl::setIlluminanceMapOriginXCoordinate(double illuminanceMapOriginXCoordinate) {
+  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+  auto object = outputIlluminanceMapForZone(zone);
+  if (!object) {
+    return false;
+  }
+
+  auto xMin = object->getDouble(openstudio::Output_IlluminanceMapFields::XMinimumCoordinate, true);
+  auto xMax = object->getDouble(openstudio::Output_IlluminanceMapFields::XMaximumCoordinate, true);
+  if (!xMin || !xMax) {
+    return false;
+  }
+
+  const double xLength = *xMax - *xMin;
+  if (!object->setDouble(openstudio::Output_IlluminanceMapFields::XMinimumCoordinate, illuminanceMapOriginXCoordinate)) {
+    return false;
+  }
+  return object->setDouble(openstudio::Output_IlluminanceMapFields::XMaximumCoordinate, illuminanceMapOriginXCoordinate + xLength);
+}
+
+double ThermalZone_Impl::illuminanceMapOriginYCoordinate() const {
+  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+  auto object = outputIlluminanceMapForZone(zone);
+  OS_ASSERT(object);
+  auto value = object->getDouble(openstudio::Output_IlluminanceMapFields::YMinimumCoordinate, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool ThermalZone_Impl::setIlluminanceMapOriginYCoordinate(double illuminanceMapOriginYCoordinate) {
+  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+  auto object = outputIlluminanceMapForZone(zone);
+  if (!object) {
+    return false;
+  }
+
+  auto yMin = object->getDouble(openstudio::Output_IlluminanceMapFields::YMinimumCoordinate, true);
+  auto yMax = object->getDouble(openstudio::Output_IlluminanceMapFields::YMaximumCoordinate, true);
+  if (!yMin || !yMax) {
+    return false;
+  }
+
+  const double yLength = *yMax - *yMin;
+  if (!object->setDouble(openstudio::Output_IlluminanceMapFields::YMinimumCoordinate, illuminanceMapOriginYCoordinate)) {
+    return false;
+  }
+  return object->setDouble(openstudio::Output_IlluminanceMapFields::YMaximumCoordinate, illuminanceMapOriginYCoordinate + yLength);
+}
+
+double ThermalZone_Impl::illuminanceMapOriginZCoordinate() const {
+  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+  auto object = outputIlluminanceMapForZone(zone);
+  OS_ASSERT(object);
+  auto value = object->getDouble(openstudio::Output_IlluminanceMapFields::Zheight, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool ThermalZone_Impl::setIlluminanceMapOriginZCoordinate(double illuminanceMapOriginZCoordinate) {
+  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+  auto object = outputIlluminanceMapForZone(zone);
+  if (!object) {
+    return false;
+  }
+  return object->setDouble(openstudio::Output_IlluminanceMapFields::Zheight, illuminanceMapOriginZCoordinate);
+}
+
+double ThermalZone_Impl::illuminanceMapXLength() const {
+  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+  auto object = outputIlluminanceMapForZone(zone);
+  OS_ASSERT(object);
+  auto xMin = object->getDouble(openstudio::Output_IlluminanceMapFields::XMinimumCoordinate, true);
+  auto xMax = object->getDouble(openstudio::Output_IlluminanceMapFields::XMaximumCoordinate, true);
+  OS_ASSERT(xMin);
+  OS_ASSERT(xMax);
+  return *xMax - *xMin;
+}
+
+bool ThermalZone_Impl::setIlluminanceMapXLength(double illuminanceMapXLength) {
+  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+  auto object = outputIlluminanceMapForZone(zone);
+  if (!object) {
+    return false;
+  }
+  auto xMin = object->getDouble(openstudio::Output_IlluminanceMapFields::XMinimumCoordinate, true);
+  if (!xMin) {
+    return false;
+  }
+  return object->setDouble(openstudio::Output_IlluminanceMapFields::XMaximumCoordinate, *xMin + illuminanceMapXLength);
+}
+
+int ThermalZone_Impl::illuminanceMapNumberofXGridPoints() const {
+  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+  auto object = outputIlluminanceMapForZone(zone);
+  OS_ASSERT(object);
+  auto value = object->getInt(openstudio::Output_IlluminanceMapFields::NumberofXGridPoints, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool ThermalZone_Impl::setIlluminanceMapNumberofXGridPoints(int illuminanceMapNumberofXGridPoints) {
+  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+  auto object = outputIlluminanceMapForZone(zone);
+  if (!object) {
+    return false;
+  }
+  return object->setInt(openstudio::Output_IlluminanceMapFields::NumberofXGridPoints, illuminanceMapNumberofXGridPoints);
+}
+
+double ThermalZone_Impl::illuminanceMapYLength() const {
+  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+  auto object = outputIlluminanceMapForZone(zone);
+  OS_ASSERT(object);
+  auto yMin = object->getDouble(openstudio::Output_IlluminanceMapFields::YMinimumCoordinate, true);
+  auto yMax = object->getDouble(openstudio::Output_IlluminanceMapFields::YMaximumCoordinate, true);
+  OS_ASSERT(yMin);
+  OS_ASSERT(yMax);
+  return *yMax - *yMin;
+}
+
+bool ThermalZone_Impl::setIlluminanceMapYLength(double illuminanceMapYLength) {
+  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+  auto object = outputIlluminanceMapForZone(zone);
+  if (!object) {
+    return false;
+  }
+  auto yMin = object->getDouble(openstudio::Output_IlluminanceMapFields::YMinimumCoordinate, true);
+  if (!yMin) {
+    return false;
+  }
+  return object->setDouble(openstudio::Output_IlluminanceMapFields::YMaximumCoordinate, *yMin + illuminanceMapYLength);
+}
+
+int ThermalZone_Impl::illuminanceMapNumberofYGridPoints() const {
+  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+  auto object = outputIlluminanceMapForZone(zone);
+  OS_ASSERT(object);
+  auto value = object->getInt(openstudio::Output_IlluminanceMapFields::NumberofYGridPoints, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool ThermalZone_Impl::setIlluminanceMapNumberofYGridPoints(int illuminanceMapNumberofYGridPoints) {
+  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+  auto object = outputIlluminanceMapForZone(zone);
+  if (!object) {
+    return false;
+  }
+  return object->setInt(openstudio::Output_IlluminanceMapFields::NumberofYGridPoints, illuminanceMapNumberofYGridPoints);
 }
 
 void ThermalZone_Impl::doCanonicalize(LoadContext& context) {

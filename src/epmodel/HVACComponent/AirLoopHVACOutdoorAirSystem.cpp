@@ -132,6 +132,9 @@ namespace epmodel {
   namespace detail {
 
     unsigned AirLoopHVACOutdoorAirSystem_Impl::returnAirPort() const {
+      // Schema Alignment Notes:
+      // - Field Mapping: AirLoopHVACOutdoorAirSystem node-port APIs map to OutdoorAir:Mixer field enums.
+      // - ForwardTranslator evidence: ForwardTranslateAirLoopHVACOutdoorAirSystem.cpp writes these same OutdoorAir:Mixer fields.
       return openstudio::OutdoorAir_MixerFields::ReturnAirStreamNodeName;
     }
 
@@ -291,6 +294,8 @@ namespace epmodel {
     }
 
     boost::optional<openstudio::epmodel::Node> AirLoopHVACOutdoorAirSystem_Impl::outboardOANode() const {
+      // Schema Alignment Notes:
+      // - Field Mapping: ForwardTranslateAirLoopHVACOutdoorAirSystem.cpp emits OutdoorAir:NodeList from outboardOANode()->name().
       if (auto mo = outdoorAirModelObject()) {
         return mo->optionalCast<openstudio::epmodel::Node>();
       }

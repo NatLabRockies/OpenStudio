@@ -37,6 +37,9 @@ namespace epmodel {
       boost::optional<openstudio::epmodel::SizingZone> optionalSizingZone() const;
       openstudio::epmodel::SizingZone sizingZone();
 
+      bool useIdealAirLoads() const;
+      bool setUseIdealAirLoads(bool useIdealAirLoads);
+
       std::string outdoorAirMethod() const;
       bool setOutdoorAirMethod(const std::string& outdoorAirMethod);
 
@@ -76,9 +79,31 @@ namespace epmodel {
       bool setSecondaryDaylightingControlYCoordinate(double secondaryDaylightingControlYCoordinate);
       bool setSecondaryDaylightingControlZCoordinate(double secondaryDaylightingControlZCoordinate);
 
+      double illuminanceMapOriginXCoordinate() const;
+      bool setIlluminanceMapOriginXCoordinate(double illuminanceMapOriginXCoordinate);
+
+      double illuminanceMapOriginYCoordinate() const;
+      bool setIlluminanceMapOriginYCoordinate(double illuminanceMapOriginYCoordinate);
+
+      double illuminanceMapOriginZCoordinate() const;
+      bool setIlluminanceMapOriginZCoordinate(double illuminanceMapOriginZCoordinate);
+
+      double illuminanceMapXLength() const;
+      bool setIlluminanceMapXLength(double illuminanceMapXLength);
+
+      int illuminanceMapNumberofXGridPoints() const;
+      bool setIlluminanceMapNumberofXGridPoints(int illuminanceMapNumberofXGridPoints);
+
+      double illuminanceMapYLength() const;
+      bool setIlluminanceMapYLength(double illuminanceMapYLength);
+
+      int illuminanceMapNumberofYGridPoints() const;
+      bool setIlluminanceMapNumberofYGridPoints(int illuminanceMapNumberofYGridPoints);
+
       void doCanonicalize(LoadContext& context) override;
 
      private:
+      std::vector<openstudio::WorkspaceObject> hvacTemplateZoneIdealLoadsAirSystemsForZone() const;
       boost::optional<double> daylightingFraction(unsigned referencePointIndex) const;
       bool setDaylightingFraction(unsigned referencePointIndex, double value);
       void resetDaylightingFraction(unsigned referencePointIndex);

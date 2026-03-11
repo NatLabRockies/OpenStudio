@@ -8,7 +8,7 @@
 
 #include "EPModelAPI.hpp"
 #include "Model_Impl.hpp"
-#include "Node_Impl.hpp"
+#include "StraightComponent/Node_Impl.hpp"
 
 #include "../utilities/idf/Workspace.hpp"
 #include "../utilities/idf/IdfObject.hpp"

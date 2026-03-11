@@ -38,8 +38,11 @@ class EPMODEL_API AirLoopHVACOutdoorAirSystem : public HVACComponent
 
   // Schema Alignment Notes:
   // - API: Preserve openstudio::model API names/signatures and existing non-scalar behavior for this model-counterpart class.
+  // - API: This class intentionally fronts `AirLoopHVAC:OutdoorAirSystem` while delegating node-port semantics to its contained `OutdoorAir:Mixer`.
   // - Field Mapping: Controller List Name and Outdoor Air Equipment List Name map to companion objects and are intentionally exposed via relationship APIs.
+  // - Field Mapping: `outboardOANode()` provides the OA node used by ForwardTranslator when emitting `OutdoorAir:NodeList`.
   // - Field Mapping: This E+ object has no class-specific simple scalar fields beyond Name; scalar saturation therefore relies on generic name accessors.
+  // - ForwardTranslator evidence: ForwardTranslateAirLoopHVACOutdoorAirSystem.cpp writes OutdoorAir:Mixer node fields from this API shape.
   // - TODO(parity): Keep adding non-scalar parity behaviors incrementally without breaking existing API signatures.
   // Mirroring openstudio::model API shape.
   unsigned returnAirPort() const;

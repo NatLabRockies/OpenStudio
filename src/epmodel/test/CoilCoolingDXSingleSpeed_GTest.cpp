@@ -9,7 +9,7 @@
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../StraightComponent/CoilCoolingDXSingleSpeed.hpp"
-#include "../Node.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
