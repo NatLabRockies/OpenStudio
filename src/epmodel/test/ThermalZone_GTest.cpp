@@ -23,6 +23,10 @@
 #include <utilities/idd/HVACTemplate_Zone_IdealLoadsAirSystem_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/Output_IlluminanceMap_FieldEnums.hxx>
+#include <utilities/idd/Zone_FieldEnums.hxx>
+#include <boost/none.hpp>
+#include <utilities/idd/IddFactory.hxx>
+#include <utilities/idd/IddObject.hpp>
 
 using namespace openstudio::epmodel;
 
@@ -190,14 +194,14 @@ TEST_F(EPModelFixture, API_ThermalZone_DaylightingReferencePointCoordinates_Roun
   ASSERT_TRUE(daylightingControls.setName(zone.nameString() + " DaylightingControls"));
   ASSERT_TRUE(daylightingControls.setString(openstudio::Daylighting_ControlsFields::ZoneorSpaceName, zone.nameString()));
   auto primaryGroup = daylightingControls.pushExtensibleGroup();
-  ASSERT_TRUE(primaryGroup.setString(openstudio::Daylighting_ControlsExtensibleFields::DaylightingReferencePointName,
-                                     primaryReferencePoint.nameString()));
+  ASSERT_TRUE(
+    primaryGroup.setString(openstudio::Daylighting_ControlsExtensibleFields::DaylightingReferencePointName, primaryReferencePoint.nameString()));
   ASSERT_TRUE(primaryGroup.setDouble(openstudio::Daylighting_ControlsExtensibleFields::FractionofLightsControlledbyReferencePoint, 0.6));
   ASSERT_TRUE(primaryGroup.setDouble(openstudio::Daylighting_ControlsExtensibleFields::IlluminanceSetpointatReferencePoint, 500.0));
 
   auto secondaryGroup = daylightingControls.pushExtensibleGroup();
-  ASSERT_TRUE(secondaryGroup.setString(openstudio::Daylighting_ControlsExtensibleFields::DaylightingReferencePointName,
-                                       secondaryReferencePoint.nameString()));
+  ASSERT_TRUE(
+    secondaryGroup.setString(openstudio::Daylighting_ControlsExtensibleFields::DaylightingReferencePointName, secondaryReferencePoint.nameString()));
   ASSERT_TRUE(secondaryGroup.setDouble(openstudio::Daylighting_ControlsExtensibleFields::FractionofLightsControlledbyReferencePoint, 0.3));
   ASSERT_TRUE(secondaryGroup.setDouble(openstudio::Daylighting_ControlsExtensibleFields::IlluminanceSetpointatReferencePoint, 400.0));
   ASSERT_TRUE(model.addObject(daylightingControls));
@@ -314,4 +318,61 @@ TEST_F(EPModelFixture, API_ThermalZone_OutputIlluminanceMapScalars_RoundTrip) {
   EXPECT_NEAR(14.0, *yMax, 1e-9);
   EXPECT_EQ(9, *yPoints);
   EXPECT_NEAR(1.25, *zHeight, 1e-9);
+}
+
+TEST_F(EPModelFixture, API_ThermalZone_ZoneScalarAccessors_RoundTrip) {
+  Model model;
+  ThermalZone zone(model);
+
+  auto zoneIdd = openstudio::IddFactory::instance().getObject(openstudio::IddObjectType::Zone);
+  ASSERT_TRUE(zoneIdd);
+  auto insideAlgorithms = openstudio::getIddKeyNames(*zoneIdd, openstudio::ZoneFields::ZoneInsideConvectionAlgorithm);
+  ASSERT_FALSE(insideAlgorithms.empty());
+  auto outsideAlgorithms = openstudio::getIddKeyNames(*zoneIdd, openstudio::ZoneFields::ZoneOutsideConvectionAlgorithm);
+  ASSERT_FALSE(outsideAlgorithms.empty());
+
+  EXPECT_EQ(1, zone.multiplier());
+  EXPECT_TRUE(zone.setMultiplier(2));
+  EXPECT_EQ(2, zone.multiplier());
+  EXPECT_FALSE(zone.isMultiplierDefaulted());
+
+  EXPECT_FALSE(zone.ceilingHeight());
+  EXPECT_TRUE(zone.isCeilingHeightDefaulted());
+
+  EXPECT_TRUE(zone.setCeilingHeight(3.5));
+  ASSERT_TRUE(zone.ceilingHeight());
+  EXPECT_DOUBLE_EQ(3.5, zone.ceilingHeight().get());
+  EXPECT_FALSE(zone.isCeilingHeightDefaulted());
+
+  zone.autocalculateCeilingHeight();
+  EXPECT_FALSE(zone.ceilingHeight());
+
+  zone.resetCeilingHeight();
+  EXPECT_TRUE(zone.isCeilingHeightDefaulted());
+  EXPECT_FALSE(zone.ceilingHeight());
+
+  EXPECT_FALSE(zone.volume());
+  EXPECT_TRUE(zone.isVolumeDefaulted());
+
+  EXPECT_TRUE(zone.setVolume(12.25));
+  ASSERT_TRUE(zone.volume());
+  EXPECT_DOUBLE_EQ(12.25, zone.volume().get());
+  EXPECT_FALSE(zone.isVolumeDefaulted());
+
+  zone.autocalculateVolume();
+  EXPECT_FALSE(zone.volume());
+
+  zone.resetVolume();
+  EXPECT_TRUE(zone.isVolumeDefaulted());
+  EXPECT_FALSE(zone.volume());
+
+  EXPECT_FALSE(zone.zoneInsideConvectionAlgorithm());
+  EXPECT_TRUE(zone.setZoneInsideConvectionAlgorithm(insideAlgorithms.front()));
+  ASSERT_TRUE(zone.zoneInsideConvectionAlgorithm());
+  EXPECT_EQ(insideAlgorithms.front(), zone.zoneInsideConvectionAlgorithm().get());
+
+  EXPECT_FALSE(zone.zoneOutsideConvectionAlgorithm());
+  EXPECT_TRUE(zone.setZoneOutsideConvectionAlgorithm(outsideAlgorithms.front()));
+  ASSERT_TRUE(zone.zoneOutsideConvectionAlgorithm());
+  EXPECT_EQ(outsideAlgorithms.front(), zone.zoneOutsideConvectionAlgorithm().get());
 }

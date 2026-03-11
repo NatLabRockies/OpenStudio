@@ -37,6 +37,36 @@ namespace epmodel {
       boost::optional<openstudio::epmodel::SizingZone> optionalSizingZone() const;
       openstudio::epmodel::SizingZone sizingZone();
 
+      int multiplier() const;
+      bool isMultiplierDefaulted() const;
+      bool setMultiplier(int multiplier);
+      void resetMultiplier();
+
+      boost::optional<double> ceilingHeight() const;
+      bool isCeilingHeightDefaulted() const;
+      bool isCeilingHeightAutocalculated() const;
+      bool setCeilingHeight(boost::optional<double> ceilingHeight);
+      bool setCeilingHeight(double ceilingHeight);
+      void resetCeilingHeight();
+      void autocalculateCeilingHeight();
+
+      boost::optional<double> volume() const;
+      bool isVolumeDefaulted() const;
+      bool isVolumeAutocalculated() const;
+      bool setVolume(boost::optional<double> volume);
+      bool setVolume(double volume);
+      void resetVolume();
+      void autocalculateVolume();
+
+      boost::optional<std::string> zoneInsideConvectionAlgorithm() const;
+      boost::optional<std::string> zoneOutsideConvectionAlgorithm() const;
+      bool setZoneInsideConvectionAlgorithm(boost::optional<std::string> zoneInsideConvectionAlgorithm);
+      bool setZoneInsideConvectionAlgorithm(const std::string& zoneInsideConvectionAlgorithm);
+      void resetZoneInsideConvectionAlgorithm();
+      bool setZoneOutsideConvectionAlgorithm(boost::optional<std::string> zoneOutsideConvectionAlgorithm);
+      bool setZoneOutsideConvectionAlgorithm(const std::string& zoneOutsideConvectionAlgorithm);
+      void resetZoneOutsideConvectionAlgorithm();
+
       bool useIdealAirLoads() const;
       bool setUseIdealAirLoads(bool useIdealAirLoads);
 

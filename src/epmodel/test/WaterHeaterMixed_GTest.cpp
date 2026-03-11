@@ -1,0 +1,149 @@
+/***********************************************************************************************************************
+*  OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC.
+*  See also https://openstudio.net/license
+***********************************************************************************************************************/
+
+#include <gtest/gtest.h>
+
+#include "EPModelFixture.hpp"
+#include "../WaterToWaterComponent/WaterHeaterMixed.hpp"
+
+using namespace openstudio::epmodel;
+
+TEST_F(EPModelFixture, WaterHeaterMixed_DefaultConstructor) {
+  Model model;
+  WaterHeaterMixed heater(model);
+  EXPECT_EQ(WaterHeaterMixed::iddObjectType(), heater.iddObject().type());
+  EXPECT_FALSE(heater.nameString().empty());
+}
+
+TEST_F(EPModelFixture, WaterHeaterMixed_ScalarAccessors_RoundTrip) {
+  Model model;
+  WaterHeaterMixed heater(model);
+
+  EXPECT_TRUE(heater.setTankVolume(0.65));
+  ASSERT_TRUE(heater.tankVolume());
+  EXPECT_DOUBLE_EQ(0.65, heater.tankVolume().get());
+  EXPECT_FALSE(heater.isTankVolumeAutosized());
+  heater.autosizeTankVolume();
+  EXPECT_TRUE(heater.isTankVolumeAutosized());
+  heater.resetTankVolume();
+  EXPECT_FALSE(heater.tankVolume());
+  EXPECT_FALSE(heater.autosizedTankVolume());
+
+  EXPECT_TRUE(heater.setDeadbandTemperatureDifference(0.4));
+  EXPECT_DOUBLE_EQ(0.4, heater.deadbandTemperatureDifference());
+  heater.resetDeadbandTemperatureDifference();
+
+  EXPECT_TRUE(heater.setMaximumTemperatureLimit(95.0));
+  ASSERT_TRUE(heater.maximumTemperatureLimit());
+  heater.resetMaximumTemperatureLimit();
+
+  EXPECT_TRUE(heater.setHeaterControlType("Modulate"));
+  EXPECT_EQ("Modulate", heater.heaterControlType());
+
+  EXPECT_TRUE(heater.setHeaterMaximumCapacity(180000.0));
+  EXPECT_TRUE(heater.isHeaterMaximumCapacityAutosized() == false);
+  heater.autosizeHeaterMaximumCapacity();
+  EXPECT_TRUE(heater.isHeaterMaximumCapacityAutosized());
+  heater.resetHeaterMaximumCapacity();
+  EXPECT_FALSE(heater.heaterMaximumCapacity());
+  EXPECT_FALSE(heater.autosizedHeaterMaximumCapacity());
+
+  EXPECT_TRUE(heater.setHeaterMinimumCapacity(80000.0));
+  ASSERT_TRUE(heater.heaterMinimumCapacity());
+  heater.resetHeaterMinimumCapacity();
+
+  EXPECT_TRUE(heater.setHeaterIgnitionMinimumFlowRate(0.002));
+  EXPECT_DOUBLE_EQ(0.002, heater.heaterIgnitionMinimumFlowRate());
+  heater.resetHeaterIgnitionMinimumFlowRate();
+
+  EXPECT_TRUE(heater.setHeaterIgnitionDelay(3.0));
+  EXPECT_DOUBLE_EQ(3.0, heater.heaterIgnitionDelay());
+  heater.resetHeaterIgnitionDelay();
+
+  EXPECT_TRUE(heater.setHeaterFuelType("Propane"));
+  EXPECT_EQ("Propane", heater.heaterFuelType());
+
+  EXPECT_TRUE(heater.setHeaterThermalEfficiency(0.92));
+  ASSERT_TRUE(heater.heaterThermalEfficiency());
+  heater.resetHeaterThermalEfficiency();
+
+  EXPECT_TRUE(heater.setOffCycleParasiticFuelConsumptionRate(25.0));
+  EXPECT_DOUBLE_EQ(25.0, heater.offCycleParasiticFuelConsumptionRate());
+  heater.resetOffCycleParasiticFuelConsumptionRate();
+
+  EXPECT_TRUE(heater.setOffCycleParasiticFuelType("Electricity"));
+  heater.resetOffCycleParasiticFuelType();
+
+  EXPECT_TRUE(heater.setOffCycleParasiticHeatFractiontoTank(0.6));
+  EXPECT_DOUBLE_EQ(0.6, heater.offCycleParasiticHeatFractiontoTank());
+  heater.resetOffCycleParasiticHeatFractiontoTank();
+
+  EXPECT_TRUE(heater.setOnCycleParasiticFuelConsumptionRate(45.0));
+  EXPECT_DOUBLE_EQ(45.0, heater.onCycleParasiticFuelConsumptionRate());
+  heater.resetOnCycleParasiticFuelConsumptionRate();
+
+  EXPECT_TRUE(heater.setOnCycleParasiticFuelType("NaturalGas"));
+  heater.resetOnCycleParasiticFuelType();
+
+  EXPECT_TRUE(heater.setOnCycleParasiticHeatFractiontoTank(0.45));
+  EXPECT_DOUBLE_EQ(0.45, heater.onCycleParasiticHeatFractiontoTank());
+  heater.resetOnCycleParasiticHeatFractiontoTank();
+
+  EXPECT_TRUE(heater.setAmbientTemperatureIndicator("ThermalZone"));
+  EXPECT_EQ("ThermalZone", heater.ambientTemperatureIndicator());
+
+  EXPECT_TRUE(heater.setOffCycleLossCoefficienttoAmbientTemperature(6.5));
+  heater.resetOffCycleLossCoefficienttoAmbientTemperature();
+
+  EXPECT_TRUE(heater.setOffCycleLossFractiontoThermalZone(0.75));
+  heater.resetOffCycleLossFractiontoThermalZone();
+
+  EXPECT_TRUE(heater.setOnCycleLossCoefficienttoAmbientTemperature(4.2));
+  heater.resetOnCycleLossCoefficienttoAmbientTemperature();
+
+  EXPECT_TRUE(heater.setOnCycleLossFractiontoThermalZone(0.82));
+  heater.resetOnCycleLossFractiontoThermalZone();
+
+  EXPECT_TRUE(heater.setPeakUseFlowRate(0.0015));
+  ASSERT_TRUE(heater.peakUseFlowRate());
+  heater.resetPeakUseFlowRate();
+
+  EXPECT_TRUE(heater.setUseSideEffectiveness(0.96));
+  EXPECT_DOUBLE_EQ(0.96, heater.useSideEffectiveness());
+  heater.resetUseSideEffectiveness();
+
+  EXPECT_TRUE(heater.setSourceSideEffectiveness(0.87));
+  EXPECT_DOUBLE_EQ(0.87, heater.sourceSideEffectiveness());
+  heater.resetSourceSideEffectiveness();
+
+  EXPECT_TRUE(heater.setUseSideDesignFlowRate(0.003));
+  ASSERT_TRUE(heater.useSideDesignFlowRate());
+  heater.autosizeUseSideDesignFlowRate();
+  EXPECT_TRUE(heater.isUseSideDesignFlowRateAutosized());
+  heater.resetUseSideDesignFlowRate();
+  EXPECT_FALSE(heater.useSideDesignFlowRate());
+
+  EXPECT_TRUE(heater.setSourceSideDesignFlowRate(0.0025));
+  ASSERT_TRUE(heater.sourceSideDesignFlowRate());
+  heater.autosizeSourceSideDesignFlowRate();
+  EXPECT_TRUE(heater.isSourceSideDesignFlowRateAutosized());
+  heater.resetSourceSideDesignFlowRate();
+  EXPECT_FALSE(heater.sourceSideDesignFlowRate());
+
+  EXPECT_TRUE(heater.setIndirectWaterHeatingRecoveryTime(1.8));
+  EXPECT_DOUBLE_EQ(1.8, heater.indirectWaterHeatingRecoveryTime());
+  heater.resetIndirectWaterHeatingRecoveryTime();
+
+  EXPECT_TRUE(heater.setSourceSideFlowControlMode("IndirectHeatPrimarySetpoint"));
+  EXPECT_EQ("IndirectHeatPrimarySetpoint", heater.sourceSideFlowControlMode());
+
+  EXPECT_TRUE(heater.setEndUseSubcategory("DomesticHotWater"));
+  EXPECT_EQ("DomesticHotWater", heater.endUseSubcategory());
+
+  EXPECT_FALSE(heater.autosizedTankVolume());
+  EXPECT_FALSE(heater.autosizedHeaterMaximumCapacity());
+  EXPECT_FALSE(heater.autosizedUseSideDesignFlowRate());
+  EXPECT_FALSE(heater.autosizedSourceSideDesignFlowRate());
+}

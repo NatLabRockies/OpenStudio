@@ -9,6 +9,21 @@ set(${target_name}_src
   ModelObject/ModelObject.hpp
   ModelObject/ModelObject_Impl.hpp
   ModelObject/ModelObject.cpp
+  ModelObject/Timestep.hpp
+  ModelObject/Timestep_Impl.hpp
+  ModelObject/Timestep.cpp
+  ModelObject/WaterHeaterSizing.hpp
+  ModelObject/WaterHeaterSizing_Impl.hpp
+  ModelObject/WaterHeaterSizing.cpp
+  ModelObject/WaterUseRainCollector.hpp
+  ModelObject/WaterUseRainCollector_Impl.hpp
+  ModelObject/WaterUseRainCollector.cpp
+  ModelObject/WaterUseStorage.hpp
+  ModelObject/WaterUseStorage_Impl.hpp
+  ModelObject/WaterUseStorage.cpp
+  ModelObject/WaterUseWell.hpp
+  ModelObject/WaterUseWell_Impl.hpp
+  ModelObject/WaterUseWell.cpp
   StraightComponent/AirConditionerVariableRefrigerantFlow.hpp
   StraightComponent/AirConditionerVariableRefrigerantFlow_Impl.hpp
   StraightComponent/AirConditionerVariableRefrigerantFlow.cpp
@@ -39,6 +54,21 @@ set(${target_name}_src
   ModelObject/SolarCollectorUnglazedTranspiredMultisystem.hpp
   ModelObject/SolarCollectorUnglazedTranspiredMultisystem_Impl.hpp
   ModelObject/SolarCollectorUnglazedTranspiredMultisystem.cpp
+  ModelObject/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion.hpp
+  ModelObject/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl.hpp
+  ModelObject/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion.cpp
+  ModelObject/SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink.hpp
+  ModelObject/SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink_Impl.hpp
+  ModelObject/SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink.cpp
+  ModelObject/SurfaceContaminantSourceAndSinkGenericPressureDriven.hpp
+  ModelObject/SurfaceContaminantSourceAndSinkGenericPressureDriven_Impl.hpp
+  ModelObject/SurfaceContaminantSourceAndSinkGenericPressureDriven.cpp
+  ModelObject/SurfaceControlMovableInsulation.hpp
+  ModelObject/SurfaceControlMovableInsulation_Impl.hpp
+  ModelObject/SurfaceControlMovableInsulation.cpp
+  ModelObject/SurfacePropertiesVaporCoefficients.hpp
+  ModelObject/SurfacePropertiesVaporCoefficients_Impl.hpp
+  ModelObject/SurfacePropertiesVaporCoefficients.cpp
   StraightComponent/HeatPumpAirToWater.hpp
   StraightComponent/HeatPumpAirToWater_Impl.hpp
   StraightComponent/HeatPumpAirToWater.cpp
@@ -54,6 +84,18 @@ set(${target_name}_src
   StraightComponent/PlantComponentTemperatureSource.hpp
   StraightComponent/PlantComponentTemperatureSource_Impl.hpp
   StraightComponent/PlantComponentTemperatureSource.cpp
+  StraightComponent/SwimmingPoolIndoor.hpp
+  StraightComponent/SwimmingPoolIndoor_Impl.hpp
+  StraightComponent/SwimmingPoolIndoor.cpp
+  StraightComponent/TemperingValve.hpp
+  StraightComponent/TemperingValve_Impl.hpp
+  StraightComponent/TemperingValve.cpp
+  StraightComponent/WaterUseConnections.hpp
+  StraightComponent/WaterUseConnections_Impl.hpp
+  StraightComponent/WaterUseConnections.cpp
+  StraightComponent/ThermalStorageIceDetailed.hpp
+  StraightComponent/ThermalStorageIceDetailed_Impl.hpp
+  StraightComponent/ThermalStorageIceDetailed.cpp
   HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControl.hpp
   HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp
   HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControl.cpp
@@ -144,6 +186,15 @@ set(${target_name}_src
   WaterToWaterComponent/HeatExchangerFluidToFluid.hpp
   WaterToWaterComponent/HeatExchangerFluidToFluid_Impl.hpp
   WaterToWaterComponent/HeatExchangerFluidToFluid.cpp
+  WaterToWaterComponent/WaterHeaterMixed.hpp
+  WaterToWaterComponent/WaterHeaterMixed_Impl.hpp
+  WaterToWaterComponent/WaterHeaterMixed.cpp
+  WaterToWaterComponent/WaterHeaterStratified.hpp
+  WaterToWaterComponent/WaterHeaterStratified_Impl.hpp
+  WaterToWaterComponent/WaterHeaterStratified.cpp
+  WaterToWaterComponent/ThermalStorageChilledWaterStratified.hpp
+  WaterToWaterComponent/ThermalStorageChilledWaterStratified_Impl.hpp
+  WaterToWaterComponent/ThermalStorageChilledWaterStratified.cpp
   ModelObject/AirflowNetworkDistributionComponentCoil.hpp
   ModelObject/AirflowNetworkDistributionComponentCoil_Impl.hpp
   ModelObject/AirflowNetworkDistributionComponentCoil.cpp
@@ -210,9 +261,51 @@ set(${target_name}_src
   ModelObject/ShadingPropertyReflectance.hpp
   ModelObject/ShadingPropertyReflectance_Impl.hpp
   ModelObject/ShadingPropertyReflectance.cpp
+  ModelObject/WindowMaterialBlindEquivalentLayer.hpp
+  ModelObject/WindowMaterialBlindEquivalentLayer_Impl.hpp
+  ModelObject/WindowMaterialBlindEquivalentLayer.cpp
+  ModelObject/WindowMaterialComplexShade.hpp
+  ModelObject/WindowMaterialComplexShade_Impl.hpp
+  ModelObject/WindowMaterialComplexShade.cpp
+  ModelObject/WindowMaterialDrapeEquivalentLayer.hpp
+  ModelObject/WindowMaterialDrapeEquivalentLayer_Impl.hpp
+  ModelObject/WindowMaterialDrapeEquivalentLayer.cpp
+  ModelObject/WindowMaterialGap.hpp
+  ModelObject/WindowMaterialGap_Impl.hpp
+  ModelObject/WindowMaterialGap.cpp
+  ModelObject/WindowMaterialGapEquivalentLayer.hpp
+  ModelObject/WindowMaterialGapEquivalentLayer_Impl.hpp
+  ModelObject/WindowMaterialGapEquivalentLayer.cpp
+   ModelObject/WindowMaterialGlazingEquivalentLayer.hpp
+   ModelObject/WindowMaterialGlazingEquivalentLayer_Impl.hpp
+   ModelObject/WindowMaterialGlazingEquivalentLayer.cpp
+   ModelObject/WindowMaterialShadeEquivalentLayer.hpp
+   ModelObject/WindowMaterialShadeEquivalentLayer_Impl.hpp
+   ModelObject/WindowMaterialShadeEquivalentLayer.cpp
+   ModelObject/WindowMaterialScreenEquivalentLayer.hpp
+   ModelObject/WindowMaterialScreenEquivalentLayer_Impl.hpp
+   ModelObject/WindowMaterialScreenEquivalentLayer.cpp
+  GasLayer/Gas.hpp
+  GasLayer/Gas_Impl.hpp
+  GasLayer/Gas.cpp
+  GasLayer/GasMixture.hpp
+  GasLayer/GasMixture_Impl.hpp
+  GasLayer/GasMixture.cpp
+  ShadingMaterial/Blind.hpp
+  ShadingMaterial/Blind_Impl.hpp
+  ShadingMaterial/Blind.cpp
+  ShadingMaterial/Shade.hpp
+  ShadingMaterial/Shade_Impl.hpp
+  ShadingMaterial/Shade.cpp
+  ShadingMaterial/Screen.hpp
+  ShadingMaterial/Screen_Impl.hpp
+  ShadingMaterial/Screen.cpp
   ModelObject/ShadowCalculation.hpp
   ModelObject/ShadowCalculation_Impl.hpp
   ModelObject/ShadowCalculation.cpp
+  ModelObject/SkyTemperature.hpp
+  ModelObject/SkyTemperature_Impl.hpp
+  ModelObject/SkyTemperature.cpp
   ModelObject/ComponentCostLineItem.hpp
   ModelObject/ComponentCostLineItem_Impl.hpp
   ModelObject/ComponentCostLineItem.cpp
@@ -357,6 +450,69 @@ set(${target_name}_src
   ModelObject/HVACSystemRootFindingAlgorithm.hpp
   ModelObject/HVACSystemRootFindingAlgorithm_Impl.hpp
   ModelObject/HVACSystemRootFindingAlgorithm.cpp
+  ModelObject/InsideSurfaceConvectionAlgorithm.hpp
+  ModelObject/InsideSurfaceConvectionAlgorithm_Impl.hpp
+  ModelObject/InsideSurfaceConvectionAlgorithm.cpp
+  ModelObject/OutsideSurfaceConvectionAlgorithm.hpp
+  ModelObject/OutsideSurfaceConvectionAlgorithm_Impl.hpp
+  ModelObject/OutsideSurfaceConvectionAlgorithm.cpp
+  ModelObject/SurfaceConvectionAlgorithmInsideAdaptiveModelSelections.hpp
+  ModelObject/SurfaceConvectionAlgorithmInsideAdaptiveModelSelections_Impl.hpp
+  ModelObject/SurfaceConvectionAlgorithmInsideAdaptiveModelSelections.cpp
+  ModelObject/SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections.hpp
+  ModelObject/SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections_Impl.hpp
+  ModelObject/SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections.cpp
+  ModelObject/SurfaceConvectionAlgorithmInsideUserCurve.hpp
+  ModelObject/SurfaceConvectionAlgorithmInsideUserCurve_Impl.hpp
+  ModelObject/SurfaceConvectionAlgorithmInsideUserCurve.cpp
+  ModelObject/SurfaceConvectionAlgorithmOutsideUserCurve.hpp
+  ModelObject/SurfaceConvectionAlgorithmOutsideUserCurve_Impl.hpp
+  ModelObject/SurfaceConvectionAlgorithmOutsideUserCurve.cpp
+  ModelObject/SurfacePropertyConvectionCoefficients.hpp
+  ModelObject/SurfacePropertyConvectionCoefficients_Impl.hpp
+  ModelObject/SurfacePropertyConvectionCoefficients.cpp
+  ModelObject/SurfacePropertyConvectionCoefficientsMultipleSurface.hpp
+  ModelObject/SurfacePropertyConvectionCoefficientsMultipleSurface_Impl.hpp
+  ModelObject/SurfacePropertyConvectionCoefficientsMultipleSurface.cpp
+  ModelObject/SurfacePropertyExposedFoundationPerimeter.hpp
+  ModelObject/SurfacePropertyExposedFoundationPerimeter_Impl.hpp
+  ModelObject/SurfacePropertyExposedFoundationPerimeter.cpp
+  ModelObject/SurfacePropertyExteriorNaturalVentedCavity.hpp
+  ModelObject/SurfacePropertyExteriorNaturalVentedCavity_Impl.hpp
+  ModelObject/SurfacePropertyExteriorNaturalVentedCavity.cpp
+  ModelObject/SurfacePropertyGroundSurfaces.hpp
+  ModelObject/SurfacePropertyGroundSurfaces_Impl.hpp
+  ModelObject/SurfacePropertyGroundSurfaces.cpp
+  ModelObject/SurfacePropertyHeatBalanceSourceTerm.hpp
+  ModelObject/SurfacePropertyHeatBalanceSourceTerm_Impl.hpp
+  ModelObject/SurfacePropertyHeatBalanceSourceTerm.cpp
+  ModelObject/SurfacePropertyIncidentSolarMultiplier.hpp
+  ModelObject/SurfacePropertyIncidentSolarMultiplier_Impl.hpp
+  ModelObject/SurfacePropertyIncidentSolarMultiplier.cpp
+  ModelObject/SurfacePropertyHeatTransferAlgorithm.hpp
+  ModelObject/SurfacePropertyHeatTransferAlgorithm_Impl.hpp
+  ModelObject/SurfacePropertyHeatTransferAlgorithm.cpp
+  ModelObject/SurfacePropertyHeatTransferAlgorithmConstruction.hpp
+  ModelObject/SurfacePropertyHeatTransferAlgorithmConstruction_Impl.hpp
+  ModelObject/SurfacePropertyHeatTransferAlgorithmConstruction.cpp
+  ModelObject/SurfacePropertyHeatTransferAlgorithmMultipleSurface.hpp
+  ModelObject/SurfacePropertyHeatTransferAlgorithmMultipleSurface_Impl.hpp
+  ModelObject/SurfacePropertyHeatTransferAlgorithmMultipleSurface.cpp
+  ModelObject/SurfacePropertyHeatTransferAlgorithmSurfaceList.hpp
+  ModelObject/SurfacePropertyHeatTransferAlgorithmSurfaceList_Impl.hpp
+  ModelObject/SurfacePropertyHeatTransferAlgorithmSurfaceList.cpp
+  ModelObject/SurfacePropertyLocalEnvironment.hpp
+  ModelObject/SurfacePropertyLocalEnvironment_Impl.hpp
+  ModelObject/SurfacePropertyLocalEnvironment.cpp
+  ModelObject/SurfacePropertySolarIncidentInside.hpp
+  ModelObject/SurfacePropertySolarIncidentInside_Impl.hpp
+  ModelObject/SurfacePropertySolarIncidentInside.cpp
+  ModelObject/SurfacePropertySurroundingSurfaces.hpp
+  ModelObject/SurfacePropertySurroundingSurfaces_Impl.hpp
+  ModelObject/SurfacePropertySurroundingSurfaces.cpp
+  ModelObject/SurfacePropertyUnderwater.hpp
+  ModelObject/SurfacePropertyUnderwater_Impl.hpp
+  ModelObject/SurfacePropertyUnderwater.cpp
   ModelObject/GlobalGeometryRules.hpp
   ModelObject/GlobalGeometryRules_Impl.hpp
   ModelObject/GlobalGeometryRules.cpp
@@ -438,6 +594,9 @@ set(${target_name}_src
   Curve/CurveQuadraticLinear.hpp
   Curve/CurveQuadraticLinear_Impl.hpp
   Curve/CurveQuadraticLinear.cpp
+  Curve/TableLookup.hpp
+  Curve/TableLookup_Impl.hpp
+  Curve/TableLookup.cpp
   ModelObject/CurveCubicLinear.hpp
   ModelObject/CurveCubicLinear_Impl.hpp
   ModelObject/CurveCubicLinear.cpp
@@ -565,8 +724,56 @@ set(${target_name}_src
   ModelObject/AirflowNetworkDistributionComponentTerminalUnit_Impl.hpp
   ModelObject/AirflowNetworkDistributionComponentTerminalUnit.cpp
   ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.hpp
-  ModelObject/AirLoopHVACDedicatedOutdoorAirSystem_Impl.hpp
-  ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.cpp
+   ModelObject/AirLoopHVACDedicatedOutdoorAirSystem_Impl.hpp
+   ModelObject/AirLoopHVACDedicatedOutdoorAirSystem.cpp
+   ModelObject/ZoneCapacitanceMultiplierResearchSpecial.hpp
+   ModelObject/ZoneCapacitanceMultiplierResearchSpecial.cpp
+   ModelObject/ZoneCapacitanceMultiplierResearchSpecial_Impl.hpp
+   ModelObject/ZoneAirBalanceOutdoorAir.hpp
+  ModelObject/ZoneAirBalanceOutdoorAir.cpp
+  ModelObject/ZoneAirBalanceOutdoorAir_Impl.hpp
+  ModelObject/ZoneAirContaminantBalance.hpp
+  ModelObject/ZoneAirContaminantBalance.cpp
+  ModelObject/ZoneAirContaminantBalance_Impl.hpp
+   ModelObject/ZoneAirHeatBalanceAlgorithm.hpp
+   ModelObject/ZoneAirHeatBalanceAlgorithm.cpp
+   ModelObject/ZoneAirHeatBalanceAlgorithm_Impl.hpp
+  ModelObject/ZoneAirMassFlowConservation.hpp
+  ModelObject/ZoneAirMassFlowConservation.cpp
+  ModelObject/ZoneAirMassFlowConservation_Impl.hpp
+  ModelObject/ZoneContaminantSourceAndSinkCarbonDioxide.hpp
+  ModelObject/ZoneContaminantSourceAndSinkCarbonDioxide.cpp
+  ModelObject/ZoneContaminantSourceAndSinkCarbonDioxide_Impl.hpp
+  ModelObject/ZoneContaminantSourceAndSinkGenericConstant.hpp
+  ModelObject/ZoneContaminantSourceAndSinkGenericConstant.cpp
+  ModelObject/ZoneContaminantSourceAndSinkGenericConstant_Impl.hpp
+  ModelObject/ZoneContaminantSourceAndSinkGenericCutoffModel.hpp
+  ModelObject/ZoneContaminantSourceAndSinkGenericCutoffModel.cpp
+  ModelObject/ZoneContaminantSourceAndSinkGenericCutoffModel_Impl.hpp
+   ModelObject/ZoneBaseboardOutdoorTemperatureControlled.hpp
+   ModelObject/ZoneBaseboardOutdoorTemperatureControlled_Impl.hpp
+   ModelObject/ZoneBaseboardOutdoorTemperatureControlled.cpp
+   ModelObject/UtilityCostChargeBlock.hpp
+   ModelObject/UtilityCostChargeBlock_Impl.hpp
+   ModelObject/UtilityCostChargeBlock.cpp
+    ModelObject/UtilityCostChargeSimple.hpp
+    ModelObject/UtilityCostChargeSimple_Impl.hpp
+    ModelObject/UtilityCostChargeSimple.cpp
+    ModelObject/UtilityCostComputation.hpp
+    ModelObject/UtilityCostComputation_Impl.hpp
+     ModelObject/UtilityCostComputation.cpp
+     ModelObject/UtilityCostQualify.hpp
+     ModelObject/UtilityCostQualify_Impl.hpp
+     ModelObject/UtilityCostQualify.cpp
+      ModelObject/UtilityCostRatchet.hpp
+       ModelObject/UtilityCostRatchet_Impl.hpp
+       ModelObject/UtilityCostRatchet.cpp
+       ModelObject/UtilityCostTariff.hpp
+       ModelObject/UtilityCostTariff_Impl.hpp
+       ModelObject/UtilityCostTariff.cpp
+        ModelObject/UtilityCostVariable.hpp
+        ModelObject/UtilityCostVariable_Impl.hpp
+        ModelObject/UtilityCostVariable.cpp
   ModelObject/DemandManagerElectricEquipment.hpp
   ModelObject/DemandManagerElectricEquipment_Impl.hpp
   ModelObject/DemandManagerElectricEquipment.cpp
@@ -654,6 +861,24 @@ set(${target_name}_src
   ResourceObject/ScheduleWeek.hpp
   ResourceObject/ScheduleWeek_Impl.hpp
   ResourceObject/ScheduleWeek.cpp
+  ResourceObject/SpaceType.hpp
+  ResourceObject/SpaceType_Impl.hpp
+  ResourceObject/SpaceType.cpp
+  ResourceObject/ShadingControl.hpp
+  ResourceObject/ShadingControl_Impl.hpp
+  ResourceObject/ShadingControl.cpp
+  ResourceObject/SurfacePropertyOtherSideCoefficients.hpp
+  ResourceObject/SurfacePropertyOtherSideCoefficients_Impl.hpp
+  ResourceObject/SurfacePropertyOtherSideCoefficients.cpp
+  ResourceObject/SurfacePropertyOtherSideConditionsModel.hpp
+  ResourceObject/SurfacePropertyOtherSideConditionsModel_Impl.hpp
+  ResourceObject/SurfacePropertyOtherSideConditionsModel.cpp
+  ResourceObject/TableIndependentVariable.hpp
+  ResourceObject/TableIndependentVariable_Impl.hpp
+  ResourceObject/TableIndependentVariable.cpp
+  ResourceObject/WindowPropertyFrameAndDivider.hpp
+  ResourceObject/WindowPropertyFrameAndDivider_Impl.hpp
+  ResourceObject/WindowPropertyFrameAndDivider.cpp
   ModelObject/DemandManagerLights.hpp
   ModelObject/DemandManagerLights_Impl.hpp
   ModelObject/DemandManagerLights.cpp
@@ -681,6 +906,9 @@ set(${target_name}_src
   SpaceLoadInstance/HotWaterEquipment.hpp
   SpaceLoadInstance/HotWaterEquipment_Impl.hpp
   SpaceLoadInstance/HotWaterEquipment.cpp
+  SpaceLoadInstance/SteamEquipment.hpp
+  SpaceLoadInstance/SteamEquipment_Impl.hpp
+  SpaceLoadInstance/SteamEquipment.cpp
   SpaceLoadInstance/OtherEquipment.hpp
   SpaceLoadInstance/OtherEquipment_Impl.hpp
   SpaceLoadInstance/OtherEquipment.cpp
@@ -690,6 +918,9 @@ set(${target_name}_src
   SpaceLoadInstance/People.hpp
   SpaceLoadInstance/People_Impl.hpp
   SpaceLoadInstance/People.cpp
+  SpaceLoadInstance/WaterUseEquipment.hpp
+  SpaceLoadInstance/WaterUseEquipment_Impl.hpp
+  SpaceLoadInstance/WaterUseEquipment.cpp
   OpaqueMaterial/StandardOpaqueMaterial.hpp
   OpaqueMaterial/StandardOpaqueMaterial_Impl.hpp
   OpaqueMaterial/StandardOpaqueMaterial.cpp
@@ -756,6 +987,42 @@ set(${target_name}_src
   ModelObject/GroundHeatTransferBasementZFACE.hpp
   ModelObject/GroundHeatTransferBasementZFACE_Impl.hpp
   ModelObject/GroundHeatTransferBasementZFACE.cpp
+  ModelObject/ThermalStorageChilledWaterMixed.hpp
+  ModelObject/ThermalStorageChilledWaterMixed_Impl.hpp
+  ModelObject/ThermalStorageChilledWaterMixed.cpp
+  ModelObject/ThermalStorageHotWaterStratified.hpp
+  ModelObject/ThermalStorageHotWaterStratified_Impl.hpp
+  ModelObject/ThermalStorageHotWaterStratified.cpp
+  ModelObject/ThermalStorageIceSimple.hpp
+  ModelObject/ThermalStorageIceSimple_Impl.hpp
+  ModelObject/ThermalStorageIceSimple.cpp
+  ModelObject/Version.hpp
+  ModelObject/Version_Impl.hpp
+  ModelObject/Version.cpp
+  ModelObject/ThermalStoragePCM.hpp
+  ModelObject/ThermalStoragePCM_Impl.hpp
+  ModelObject/ThermalStoragePCM.cpp
+  ModelObject/ThermalStorageSizing.hpp
+  ModelObject/ThermalStorageSizing_Impl.hpp
+  ModelObject/ThermalStorageSizing.cpp
+  ModelObject/ThermostatSetpointSingleHeatingOrCooling.hpp
+  ModelObject/ThermostatSetpointSingleHeatingOrCooling_Impl.hpp
+  ModelObject/ThermostatSetpointSingleHeatingOrCooling.cpp
+  ModelObject/ThermostatSetpointThermalComfortFangerDualSetpoint.hpp
+  ModelObject/ThermostatSetpointThermalComfortFangerDualSetpoint_Impl.hpp
+  ModelObject/ThermostatSetpointThermalComfortFangerDualSetpoint.cpp
+  ModelObject/ThermostatSetpointThermalComfortFangerSingleCooling.hpp
+  ModelObject/ThermostatSetpointThermalComfortFangerSingleCooling_Impl.hpp
+  ModelObject/ThermostatSetpointThermalComfortFangerSingleCooling.cpp
+  ModelObject/ThermostatSetpointThermalComfortFangerSingleHeating.hpp
+  ModelObject/ThermostatSetpointThermalComfortFangerSingleHeating_Impl.hpp
+  ModelObject/ThermostatSetpointThermalComfortFangerSingleHeating.cpp
+  ModelObject/ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling.hpp
+  ModelObject/ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling_Impl.hpp
+  ModelObject/ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling.cpp
+  Thermostat/ThermostatSetpointDualSetpoint.hpp
+  Thermostat/ThermostatSetpointDualSetpoint_Impl.hpp
+  Thermostat/ThermostatSetpointDualSetpoint.cpp
   ModelObject/GroundHeatTransferSlabAutoGrid.hpp
   ModelObject/GroundHeatTransferSlabAutoGrid_Impl.hpp
   ModelObject/GroundHeatTransferSlabAutoGrid.cpp
@@ -867,6 +1134,30 @@ set(${target_name}_src
   ModelObject/ConstructionWindowEquivalentLayer.hpp
   ModelObject/ConstructionWindowEquivalentLayer_Impl.hpp
   ModelObject/ConstructionWindowEquivalentLayer.cpp
+  ModelObject/Window.hpp
+  ModelObject/Window_Impl.hpp
+  ModelObject/Window.cpp
+  ModelObject/WindowInterzone.hpp
+  ModelObject/WindowInterzone_Impl.hpp
+  ModelObject/WindowInterzone.cpp
+  ModelObject/WindowGapDeflectionState.hpp
+  ModelObject/WindowGapDeflectionState_Impl.hpp
+  ModelObject/WindowGapDeflectionState.cpp
+   ModelObject/WindowGapSupportPillar.hpp
+   ModelObject/WindowGapSupportPillar_Impl.hpp
+   ModelObject/WindowGapSupportPillar.cpp
+   ModelObject/WindowPropertyAirflowControl.hpp
+    ModelObject/WindowPropertyAirflowControl_Impl.hpp
+    ModelObject/WindowPropertyAirflowControl.cpp
+   ModelObject/WindowPropertyStormWindow.hpp
+   ModelObject/WindowPropertyStormWindow_Impl.hpp
+   ModelObject/WindowPropertyStormWindow.cpp
+   ModelObject/WindowThermalModelParams.hpp
+   ModelObject/WindowThermalModelParams_Impl.hpp
+   ModelObject/WindowThermalModelParams.cpp
+   ModelObject/WindowsCalculationEngine.hpp
+   ModelObject/WindowsCalculationEngine_Impl.hpp
+   ModelObject/WindowsCalculationEngine.cpp
   ModelObject/AirLoopHVACUnitaryFurnaceHeatCool.hpp
   ModelObject/AirLoopHVACUnitaryFurnaceHeatCool_Impl.hpp
   ModelObject/AirLoopHVACUnitaryFurnaceHeatCool.cpp
@@ -894,6 +1185,12 @@ set(${target_name}_src
   ZoneHVACComponent/AirLoopHVACUnitarySystem.hpp
   ZoneHVACComponent/AirLoopHVACUnitarySystem_Impl.hpp
   ZoneHVACComponent/AirLoopHVACUnitarySystem.cpp
+  ZoneHVACComponent/WaterHeaterHeatPump.hpp
+  ZoneHVACComponent/WaterHeaterHeatPump_Impl.hpp
+  ZoneHVACComponent/WaterHeaterHeatPump.cpp
+  ZoneHVACComponent/WaterHeaterHeatPumpWrappedCondenser.hpp
+  ZoneHVACComponent/WaterHeaterHeatPumpWrappedCondenser_Impl.hpp
+  ZoneHVACComponent/WaterHeaterHeatPumpWrappedCondenser.cpp
   ModelObject/FanPerformanceNightVentilation.hpp
   ModelObject/FanPerformanceNightVentilation_Impl.hpp
   ModelObject/FanPerformanceNightVentilation.cpp
@@ -957,7 +1254,22 @@ set(${target_name}_src
   ModelObject/FloorInterzone.hpp
   ModelObject/FloorInterzone_Impl.hpp
   ModelObject/FloorInterzone.cpp
-  ZoneHVACComponent/FanZoneExhaust.hpp
+  ModelObject/WallAdiabatic.hpp
+  ModelObject/WallAdiabatic_Impl.hpp
+  ModelObject/WallAdiabatic.cpp
+   ModelObject/WallDetailed.hpp
+   ModelObject/WallDetailed_Impl.hpp
+   ModelObject/WallDetailed.cpp
+   ModelObject/WallExterior.hpp
+   ModelObject/WallExterior_Impl.hpp
+   ModelObject/WallExterior.cpp
+   ModelObject/WallInterzone.hpp
+   ModelObject/WallInterzone_Impl.hpp
+   ModelObject/WallInterzone.cpp
+   ModelObject/WallUnderground.hpp
+   ModelObject/WallUnderground_Impl.hpp
+   ModelObject/WallUnderground.cpp
+   ZoneHVACComponent/FanZoneExhaust.hpp
   ZoneHVACComponent/FanZoneExhaust_Impl.hpp
   ZoneHVACComponent/FanZoneExhaust.cpp
   ParentObject/ParentObject.hpp
@@ -1668,6 +1980,21 @@ set(${target_name}_src
   ResourceObject/MaterialPropertyGlazingSpectralData.hpp
   ResourceObject/MaterialPropertyGlazingSpectralData_Impl.hpp
   ResourceObject/MaterialPropertyGlazingSpectralData.cpp
+  ResourceObject/ShadingControl.hpp
+  ResourceObject/ShadingControl_Impl.hpp
+  ResourceObject/ShadingControl.cpp
+  Glazing/RefractionExtinctionGlazing.hpp
+  Glazing/RefractionExtinctionGlazing_Impl.hpp
+  Glazing/RefractionExtinctionGlazing.cpp
+  Glazing/ThermochromicGlazing.hpp
+  Glazing/ThermochromicGlazing_Impl.hpp
+  Glazing/ThermochromicGlazing.cpp
+  Glazing/SimpleGlazing.hpp
+  Glazing/SimpleGlazing_Impl.hpp
+  Glazing/SimpleGlazing.cpp
+  Glazing/StandardGlazing.hpp
+  Glazing/StandardGlazing_Impl.hpp
+  Glazing/StandardGlazing.cpp
   ModelObject/MaterialPropertyHeatAndMoistureTransferDiffusion.hpp
   ModelObject/MaterialPropertyHeatAndMoistureTransferDiffusion_Impl.hpp
   ModelObject/MaterialPropertyHeatAndMoistureTransferDiffusion.cpp
@@ -1883,7 +2210,8 @@ set(${target_name}_depends ${${target_name}_depends} PARENT_SCOPE)
 target_compile_definitions(${target_name} PRIVATE openstudio_epmodel_EXPORTS SHARED_OS_LIBS)
 target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/HVACComponent
                                                  ${CMAKE_CURRENT_SOURCE_DIR}/ModelObject
-                                                 ${CMAKE_CURRENT_SOURCE_DIR}/StraightComponent)
+                                                 ${CMAKE_CURRENT_SOURCE_DIR}/StraightComponent
+                                                 ${CMAKE_CURRENT_SOURCE_DIR}/ShadingMaterial)
 target_link_libraries(${target_name} PUBLIC ${${target_name}_depends})
 
 add_dependencies(${target_name} GenerateIddFactoryRun)
@@ -1924,6 +2252,9 @@ set(${target_name}_test_src
   test/ScheduleFileShading_GTest.cpp
   test/ScheduleTypeLimits_GTest.cpp
   test/ScheduleWeek_GTest.cpp
+  test/SpaceType_GTest.cpp
+  test/TableIndependentVariable_GTest.cpp
+  test/TableLookup_GTest.cpp
   test/ScheduleWeekCompact_GTest.cpp
   test/DemandManagerLights_GTest.cpp
   test/DemandManagerThermostats_GTest.cpp
@@ -1934,10 +2265,19 @@ set(${target_name}_test_src
   test/ElectricEquipmentITEAirCooled_GTest.cpp
   test/GasEquipment_GTest.cpp
   test/HotWaterEquipment_GTest.cpp
+  test/WaterUseEquipment_GTest.cpp
+  test/WaterUseRainCollector_GTest.cpp
+  test/WaterUseStorage_GTest.cpp
+  test/WaterUseWell_GTest.cpp
+  test/SteamEquipment_GTest.cpp
   test/OtherEquipment_GTest.cpp
   test/Lights_GTest.cpp
   test/People_GTest.cpp
   test/StandardOpaqueMaterial_GTest.cpp
+  test/RefractionExtinctionGlazing_GTest.cpp
+  test/ThermochromicGlazing_GTest.cpp
+  test/SimpleGlazing_GTest.cpp
+  test/StandardGlazing_GTest.cpp
   test/AirGap_GTest.cpp
   test/MasslessOpaqueMaterial_GTest.cpp
   test/RoofVegetation_GTest.cpp
@@ -2003,6 +2343,22 @@ set(${target_name}_test_src
   test/AirLoopHVACExhaustSystem_GTest.cpp
   test/AirLoopHVACMixer_GTest.cpp
   test/AirLoopHVACSplitter_GTest.cpp
+  test/ThermalStorageChilledWaterMixed_GTest.cpp
+  test/ThermalStorageChilledWaterStratified_GTest.cpp
+  test/ThermalStorageHotWaterStratified_GTest.cpp
+  test/ThermalStorageIceDetailed_GTest.cpp
+  test/ThermalStorageIceSimple_GTest.cpp
+  test/ThermalStoragePCM_GTest.cpp
+  test/ThermalStorageSizing_GTest.cpp
+  test/ThermostatSetpointDualSetpoint_GTest.cpp
+  test/ThermostatSetpointSingleHeatingOrCooling_GTest.cpp
+  test/ThermostatSetpointThermalComfortFangerDualSetpoint_GTest.cpp
+  test/ThermostatSetpointThermalComfortFangerSingleCooling_GTest.cpp
+  test/ThermostatSetpointThermalComfortFangerSingleHeating_GTest.cpp
+  test/ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling_GTest.cpp
+  test/WaterHeaterHeatPump_GTest.cpp
+  test/WaterHeaterHeatPumpWrappedCondenser_GTest.cpp
+  test/Timestep_GTest.cpp
   test/SpaceHVACZoneReturnMixer_GTest.cpp
   test/GroundHeatTransferControl_GTest.cpp
   test/GroundHeatTransferBasementAutoGrid_GTest.cpp
@@ -2054,6 +2410,28 @@ set(${target_name}_test_src
   test/FFactorGroundFloorConstruction_GTest.cpp
   test/ConstructionWindowDataFile_GTest.cpp
   test/ConstructionWindowEquivalentLayer_GTest.cpp
+  test/WindowMaterialBlindEquivalentLayer_GTest.cpp
+   test/WindowMaterialComplexShade_GTest.cpp
+   test/WindowMaterialDrapeEquivalentLayer_GTest.cpp
+   test/WindowMaterialGap_GTest.cpp
+   test/WindowMaterialGapEquivalentLayer_GTest.cpp
+   test/WindowMaterialGlazingEquivalentLayer_GTest.cpp
+   test/WindowMaterialShadeEquivalentLayer_GTest.cpp
+   test/WindowMaterialScreenEquivalentLayer_GTest.cpp
+  test/Shade_GTest.cpp
+  test/Screen_GTest.cpp
+  test/Gas_GTest.cpp
+  test/GasMixture_GTest.cpp
+  test/Window_GTest.cpp
+  test/WindowInterzone_GTest.cpp
+  test/WindowGapDeflectionState_GTest.cpp
+  test/WindowGapSupportPillar_GTest.cpp
+   test/WindowPropertyAirflowControl_GTest.cpp
+    test/WindowPropertyFrameAndDivider_GTest.cpp
+    test/WindowPropertyStormWindow_GTest.cpp
+   test/WindowThermalModelParams_GTest.cpp
+   test/WindowsCalculationEngine_GTest.cpp
+    test/ShadingControl_GTest.cpp
   test/AirLoopHVACUnitaryFurnaceHeatCool_GTest.cpp
   test/AirLoopHVACUnitaryFurnaceHeatOnly_GTest.cpp
   test/AirLoopHVACUnitaryHeatOnly_GTest.cpp
@@ -2096,6 +2474,7 @@ set(${target_name}_test_src
   test/RoomAirSettingsThreeNodeDisplacementVentilation_GTest.cpp
   test/RoomAirSettingsUnderFloorAirDistributionExterior_GTest.cpp
   test/RoomAirSettingsUnderFloorAirDistributionInterior_GTest.cpp
+  test/TemperingValve_GTest.cpp
   test/AirLoopHVACReturnPath_GTest.cpp
   test/AirLoopHVACReturnPlenum_GTest.cpp
   test/AirLoopHVACSupplyPlenum_GTest.cpp
@@ -2178,7 +2557,31 @@ set(${target_name}_test_src
   test/HVACTemplateSystemUnitarySystem_GTest.cpp
   test/HVACTemplateSystemUnitary_GTest.cpp
   test/HVACSystemRootFindingAlgorithm_GTest.cpp
-  test/GlobalGeometryRules_GTest.cpp
+  test/InsideSurfaceConvectionAlgorithm_GTest.cpp
+  test/OutsideSurfaceConvectionAlgorithm_GTest.cpp
+  test/SurfaceConvectionAlgorithmInsideAdaptiveModelSelections_GTest.cpp
+  test/SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections_GTest.cpp
+  test/SurfaceConvectionAlgorithmInsideUserCurve_GTest.cpp
+  test/SurfaceConvectionAlgorithmOutsideUserCurve_GTest.cpp
+  test/SurfacePropertyConvectionCoefficients_GTest.cpp
+  test/SurfacePropertyConvectionCoefficientsMultipleSurface_GTest.cpp
+  test/SurfacePropertyExposedFoundationPerimeter_GTest.cpp
+  test/SurfacePropertyExteriorNaturalVentedCavity_GTest.cpp
+  test/SurfacePropertyGroundSurfaces_GTest.cpp
+  test/SurfacePropertyHeatBalanceSourceTerm_GTest.cpp
+  test/SurfacePropertyIncidentSolarMultiplier_GTest.cpp
+   test/SurfacePropertyHeatTransferAlgorithm_GTest.cpp
+   test/SurfacePropertyHeatTransferAlgorithmConstruction_GTest.cpp
+  test/SurfacePropertyHeatTransferAlgorithmMultipleSurface_GTest.cpp
+  test/SurfacePropertyHeatTransferAlgorithmSurfaceList_GTest.cpp
+  test/SurfacePropertyLocalEnvironment_GTest.cpp
+  test/SurfacePropertySolarIncidentInside_GTest.cpp
+  test/SurfacePropertySurroundingSurfaces_GTest.cpp
+  test/SurfacePropertyUnderwater_GTest.cpp
+  test/SwimmingPoolIndoor_GTest.cpp
+  test/SurfacePropertyOtherSideCoefficients_GTest.cpp
+  test/SurfacePropertyOtherSideConditionsModel_GTest.cpp
+   test/GlobalGeometryRules_GTest.cpp
   test/GeometryTransform_GTest.cpp
   test/DaylightingDeviceLightWell_GTest.cpp
   test/DaylightingDeviceShelf_GTest.cpp
@@ -2401,6 +2804,11 @@ set(${target_name}_test_src
   test/SolarCollectorPerformancePhotovoltaicThermalSimple_GTest.cpp
   test/SolarCollectorUnglazedTranspired_GTest.cpp
   test/SolarCollectorUnglazedTranspiredMultisystem_GTest.cpp
+  test/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_GTest.cpp
+  test/SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink_GTest.cpp
+  test/SurfaceContaminantSourceAndSinkGenericPressureDriven_GTest.cpp
+  test/SurfaceControlMovableInsulation_GTest.cpp
+  test/SurfacePropertiesVaporCoefficients_GTest.cpp
   test/LoadProfilePlant_GTest.cpp
   test/PlantComponentTemperatureSource_GTest.cpp
   test/HeatPumpAirToWater_GTest.cpp
@@ -2431,6 +2839,10 @@ set(${target_name}_test_src
   test/HeatPumpWaterToWaterEquationFitCooling_GTest.cpp
   test/HeatPumpWaterToWaterEquationFitHeating_GTest.cpp
   test/HeatExchangerFluidToFluid_GTest.cpp
+  test/WaterHeaterMixed_GTest.cpp
+  test/WaterHeaterStratified_GTest.cpp
+  test/WaterHeaterSizing_GTest.cpp
+  test/WaterUseConnections_GTest.cpp
   test/ComfortViewFactorAngles_GTest.cpp
   test/ComplexFenestrationPropertySolarAbsorbedLayers_GTest.cpp
   test/ConstructionComplexFenestrationState_GTest.cpp
@@ -2445,12 +2857,19 @@ set(${target_name}_test_src
   test/ShadingSiteDetailed_GTest.cpp
   test/ShadingZoneDetailed_GTest.cpp
   test/ShadingPropertyReflectance_GTest.cpp
+  test/Blind_GTest.cpp
   test/ShadowCalculation_GTest.cpp
+  test/SkyTemperature_GTest.cpp
   test/AirflowNetworkDistributionComponentCoil_GTest.cpp
   test/AirflowNetworkDistributionComponentConstantPressureDrop_GTest.cpp
   test/CeilingAdiabatic_GTest.cpp
   test/CeilingInterzone_GTest.cpp
-  test/Door_GTest.cpp
+    test/WallAdiabatic_GTest.cpp
+    test/WallDetailed_GTest.cpp
+    test/WallExterior_GTest.cpp
+    test/WallInterzone_GTest.cpp
+    test/WallUnderground_GTest.cpp
+   test/Door_GTest.cpp
   test/DoorInterzone_GTest.cpp
   test/GlazedDoor_GTest.cpp
   test/GlazedDoorInterzone_GTest.cpp
@@ -2482,10 +2901,27 @@ set(${target_name}_test_src
   test/AirflowNetworkDistributionComponentLeak_GTest.cpp
   test/AirflowNetworkDistributionComponentLeakageRatio_GTest.cpp
   test/AirflowNetworkDistributionComponentOutdoorAirFlow_GTest.cpp
-  test/AirflowNetworkDistributionComponentReliefAirFlow_GTest.cpp
-  test/AirflowNetworkDistributionComponentTerminalUnit_GTest.cpp
+   test/AirflowNetworkDistributionComponentReliefAirFlow_GTest.cpp
+    test/AirflowNetworkDistributionComponentTerminalUnit_GTest.cpp
   test/AirLoopHVACDedicatedOutdoorAirSystem_GTest.cpp
+  test/ZoneCapacitanceMultiplierResearchSpecial_GTest.cpp
+  test/ZoneAirBalanceOutdoorAir_GTest.cpp
+  test/ZoneAirContaminantBalance_GTest.cpp
+  test/ZoneAirHeatBalanceAlgorithm_GTest.cpp
+  test/ZoneAirMassFlowConservation_GTest.cpp
+  test/ZoneContaminantSourceAndSinkCarbonDioxide_GTest.cpp
+  test/ZoneContaminantSourceAndSinkGenericConstant_GTest.cpp
+  test/ZoneContaminantSourceAndSinkGenericCutoffModel_GTest.cpp
+  test/ZoneBaseboardOutdoorTemperatureControlled_GTest.cpp
+  test/UtilityCostChargeBlock_GTest.cpp
+     test/UtilityCostChargeSimple_GTest.cpp
+     test/UtilityCostQualify_GTest.cpp
+      test/UtilityCostComputation_GTest.cpp
+      test/UtilityCostRatchet_GTest.cpp
+  test/UtilityCostTariff_GTest.cpp
+  test/UtilityCostVariable_GTest.cpp
   test/IDF_SmallOffice_GTest.cpp
+  test/Version_GTest.cpp
 )
 
 set(${target_name}_test_depends

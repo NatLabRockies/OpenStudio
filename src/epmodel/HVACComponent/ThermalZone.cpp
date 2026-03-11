@@ -31,6 +31,7 @@
 #include <utilities/idd/HVACTemplate_Zone_IdealLoadsAirSystem_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/Output_IlluminanceMap_FieldEnums.hxx>
+#include <utilities/idd/Zone_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include <utilities/idf/IdfObject.hpp>
 #include <utilities/idf/IdfExtensibleGroup.hpp>
@@ -41,944 +42,1197 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace {
+  namespace {
 
-constexpr unsigned kPrimaryDaylightingReferencePointIndex = 0u;
-constexpr unsigned kSecondaryDaylightingReferencePointIndex = 1u;
+    constexpr unsigned kPrimaryDaylightingReferencePointIndex = 0u;
+    constexpr unsigned kSecondaryDaylightingReferencePointIndex = 1u;
 
-boost::optional<openstudio::WorkspaceObject> daylightingControlsForZone(const ThermalZone& zone) {
-  for (const auto& object : zone.model().getObjectsByType(openstudio::IddObjectType::Daylighting_Controls)) {
-    auto zoneOrSpaceName = object.getString(openstudio::Daylighting_ControlsFields::ZoneorSpaceName, true);
-    if (zoneOrSpaceName && openstudio::istringEqual(*zoneOrSpaceName, zone.nameString())) {
-      return object;
+    boost::optional<openstudio::WorkspaceObject> daylightingControlsForZone(const ThermalZone& zone) {
+      for (const auto& object : zone.model().getObjectsByType(openstudio::IddObjectType::Daylighting_Controls)) {
+        auto zoneOrSpaceName = object.getString(openstudio::Daylighting_ControlsFields::ZoneorSpaceName, true);
+        if (zoneOrSpaceName && openstudio::istringEqual(*zoneOrSpaceName, zone.nameString())) {
+          return object;
+        }
+      }
+      return boost::none;
     }
-  }
-  return boost::none;
-}
 
-boost::optional<openstudio::WorkspaceObject> daylightingReferencePointForZone(const ThermalZone& zone, unsigned referencePointIndex) {
-  auto daylightingControls = daylightingControlsForZone(zone);
-  if (!daylightingControls) {
-    return boost::none;
-  }
+    boost::optional<openstudio::WorkspaceObject> daylightingReferencePointForZone(const ThermalZone& zone, unsigned referencePointIndex) {
+      auto daylightingControls = daylightingControlsForZone(zone);
+      if (!daylightingControls) {
+        return boost::none;
+      }
 
-  const auto groups = daylightingControls->extensibleGroups();
-  if (referencePointIndex >= groups.size()) {
-    return boost::none;
-  }
+      const auto groups = daylightingControls->extensibleGroups();
+      if (referencePointIndex >= groups.size()) {
+        return boost::none;
+      }
 
-  auto group = groups[referencePointIndex].optionalCast<openstudio::WorkspaceExtensibleGroup>();
-  if (!group) {
-    return boost::none;
-  }
+      auto group = groups[referencePointIndex].optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!group) {
+        return boost::none;
+      }
 
-  auto referencePointName = group->getString(openstudio::Daylighting_ControlsExtensibleFields::DaylightingReferencePointName, true);
-  if (!referencePointName || referencePointName->empty()) {
-    return boost::none;
-  }
+      auto referencePointName = group->getString(openstudio::Daylighting_ControlsExtensibleFields::DaylightingReferencePointName, true);
+      if (!referencePointName || referencePointName->empty()) {
+        return boost::none;
+      }
 
-  return zone.model().getObjectByTypeAndName(openstudio::IddObjectType::Daylighting_ReferencePoint, *referencePointName, true);
-}
-
-boost::optional<openstudio::WorkspaceObject> outputIlluminanceMapForZone(const ThermalZone& zone) {
-  for (const auto& object : zone.model().getObjectsByType(openstudio::IddObjectType::Output_IlluminanceMap)) {
-    auto zoneOrSpaceName = object.getString(openstudio::Output_IlluminanceMapFields::ZoneorSpaceName, true);
-    if (zoneOrSpaceName && openstudio::istringEqual(*zoneOrSpaceName, zone.nameString())) {
-      return object;
+      return zone.model().getObjectByTypeAndName(openstudio::IddObjectType::Daylighting_ReferencePoint, *referencePointName, true);
     }
-  }
-  return boost::none;
-}
 
-bool setZoneSplitterBranchNode(AirLoopHVACZoneSplitter& splitter, unsigned branchIndex, const Node& branchNode) {
-  auto groups = splitter.extensibleGroups();
-  IdfExtensibleGroup group = (branchIndex < groups.size()) ? groups[branchIndex] : splitter.pushExtensibleGroup();
-
-  auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
-  if (!workspaceGroup) {
-    return false;
-  }
-
-  return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ZoneSplitterExtensibleFields::OutletNodeName, branchNode.handle());
-}
-
-bool setZoneMixerBranchNode(AirLoopHVACZoneMixer& mixer, unsigned branchIndex, const Node& branchNode) {
-  auto groups = mixer.extensibleGroups();
-  IdfExtensibleGroup group = (branchIndex < groups.size()) ? groups[branchIndex] : mixer.pushExtensibleGroup();
-
-  auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
-  if (!workspaceGroup) {
-    return false;
-  }
-
-  return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ZoneMixerExtensibleFields::InletNodeName, branchNode.handle());
-}
-
-}  // namespace
-
-ThermalZone::ThermalZone(const Model& model) : ModelObject(ThermalZone::iddObjectType(), model) {
-  auto impl = getImpl<detail::ThermalZone_Impl>();
-  OS_ASSERT(impl);
-  detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
-  impl->canonicalize(context);
-}
-
-ThermalZone::ThermalZone(std::shared_ptr<detail::ThermalZone_Impl> impl) : ModelObject(std::move(impl)) {}
-
-IddObjectType ThermalZone::iddObjectType() {
-  return IddObjectType::Zone;
-}
-
-bool ThermalZone::addToNode(Node& node) {
-  if (node.model() != model()) {
-    return false;
-  }
-
-  auto loop = node.airLoopHVAC();
-  if (!loop) {
-    return false;
-  }
-
-  auto zoneSplitter = loop->zoneSplitter();
-  auto zoneMixer = loop->zoneMixer();
-  const auto splitterOutlets = zoneSplitter.outletModelObjects();
-  const auto mixerInlets = zoneMixer.inletModelObjects();
-  const auto thisNode = node.cast<ModelObject>();
-
-  boost::optional<unsigned> targetBranchIndex;
-  const auto sharedCount = std::min(splitterOutlets.size(), mixerInlets.size());
-  for (unsigned i = 0; i < sharedCount; ++i) {
-    if ((splitterOutlets[i] == thisNode) && (mixerInlets[i] == thisNode)) {
-      targetBranchIndex = i;
-      break;
+    boost::optional<openstudio::WorkspaceObject> outputIlluminanceMapForZone(const ThermalZone& zone) {
+      for (const auto& object : zone.model().getObjectsByType(openstudio::IddObjectType::Output_IlluminanceMap)) {
+        auto zoneOrSpaceName = object.getString(openstudio::Output_IlluminanceMapFields::ZoneorSpaceName, true);
+        if (zoneOrSpaceName && openstudio::istringEqual(*zoneOrSpaceName, zone.nameString())) {
+          return object;
+        }
+      }
+      return boost::none;
     }
+
+    bool setZoneSplitterBranchNode(AirLoopHVACZoneSplitter& splitter, unsigned branchIndex, const Node& branchNode) {
+      auto groups = splitter.extensibleGroups();
+      IdfExtensibleGroup group = (branchIndex < groups.size()) ? groups[branchIndex] : splitter.pushExtensibleGroup();
+
+      auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!workspaceGroup) {
+        return false;
+      }
+
+      return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ZoneSplitterExtensibleFields::OutletNodeName, branchNode.handle());
+    }
+
+    bool setZoneMixerBranchNode(AirLoopHVACZoneMixer& mixer, unsigned branchIndex, const Node& branchNode) {
+      auto groups = mixer.extensibleGroups();
+      IdfExtensibleGroup group = (branchIndex < groups.size()) ? groups[branchIndex] : mixer.pushExtensibleGroup();
+
+      auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!workspaceGroup) {
+        return false;
+      }
+
+      return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ZoneMixerExtensibleFields::InletNodeName, branchNode.handle());
+    }
+
+  }  // namespace
+
+  ThermalZone::ThermalZone(const Model& model) : ModelObject(ThermalZone::iddObjectType(), model) {
+    auto impl = getImpl<detail::ThermalZone_Impl>();
+    OS_ASSERT(impl);
+    detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
+    impl->canonicalize(context);
   }
-  if (!targetBranchIndex) {
-    return false;
+
+  ThermalZone::ThermalZone(std::shared_ptr<detail::ThermalZone_Impl> impl) : ModelObject(std::move(impl)) {}
+
+  IddObjectType ThermalZone::iddObjectType() {
+    return IddObjectType::Zone;
   }
 
-  const std::string zoneBranchNodeName = nameString() + " Demand Branch Node";
-  auto zoneBranchNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(zoneBranchNodeName);
+  bool ThermalZone::addToNode(Node& node) {
+    if (node.model() != model()) {
+      return false;
+    }
 
-  if ((splitterOutlets[*targetBranchIndex] == zoneBranchNode.cast<ModelObject>())
-      && (mixerInlets[*targetBranchIndex] == zoneBranchNode.cast<ModelObject>())) {
-    return false;
+    auto loop = node.airLoopHVAC();
+    if (!loop) {
+      return false;
+    }
+
+    auto zoneSplitter = loop->zoneSplitter();
+    auto zoneMixer = loop->zoneMixer();
+    const auto splitterOutlets = zoneSplitter.outletModelObjects();
+    const auto mixerInlets = zoneMixer.inletModelObjects();
+    const auto thisNode = node.cast<ModelObject>();
+
+    boost::optional<unsigned> targetBranchIndex;
+    const auto sharedCount = std::min(splitterOutlets.size(), mixerInlets.size());
+    for (unsigned i = 0; i < sharedCount; ++i) {
+      if ((splitterOutlets[i] == thisNode) && (mixerInlets[i] == thisNode)) {
+        targetBranchIndex = i;
+        break;
+      }
+    }
+    if (!targetBranchIndex) {
+      return false;
+    }
+
+    const std::string zoneBranchNodeName = nameString() + " Demand Branch Node";
+    auto zoneBranchNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(zoneBranchNodeName);
+
+    if ((splitterOutlets[*targetBranchIndex] == zoneBranchNode.cast<ModelObject>())
+        && (mixerInlets[*targetBranchIndex] == zoneBranchNode.cast<ModelObject>())) {
+      return false;
+    }
+
+    if (!setZoneSplitterBranchNode(zoneSplitter, *targetBranchIndex, zoneBranchNode)) {
+      return false;
+    }
+
+    if (!setZoneMixerBranchNode(zoneMixer, *targetBranchIndex, zoneBranchNode)) {
+      return false;
+    }
+
+    auto zoneConnections = getImpl<detail::ThermalZone_Impl>()->getZoneHVACEquipmentConnections();
+    if (!zoneConnections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->setZoneAirInletNode(zoneBranchNode)) {
+      return false;
+    }
+    if (!zoneConnections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->setZoneReturnAirNode(zoneBranchNode)) {
+      return false;
+    }
+
+    for (const auto& airLoop : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
+      airLoop.getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>()->syncControllerMechanicalVentilationZoneOutdoorAirEntries();
+    }
+
+    return true;
   }
 
-  if (!setZoneSplitterBranchNode(zoneSplitter, *targetBranchIndex, zoneBranchNode)) {
-    return false;
+  SizingZone ThermalZone::sizingZone() const {
+    return getImpl<detail::ThermalZone_Impl>()->sizingZone();
   }
 
-  if (!setZoneMixerBranchNode(zoneMixer, *targetBranchIndex, zoneBranchNode)) {
-    return false;
+  int ThermalZone::multiplier() const {
+    return getImpl<detail::ThermalZone_Impl>()->multiplier();
   }
 
-  auto zoneConnections = getImpl<detail::ThermalZone_Impl>()->getZoneHVACEquipmentConnections();
-  if (!zoneConnections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->setZoneAirInletNode(zoneBranchNode)) {
-    return false;
-  }
-  if (!zoneConnections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->setZoneReturnAirNode(zoneBranchNode)) {
-    return false;
+  bool ThermalZone::isMultiplierDefaulted() const {
+    return getImpl<detail::ThermalZone_Impl>()->isMultiplierDefaulted();
   }
 
-  for (const auto& airLoop : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
-    airLoop.getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>()->syncControllerMechanicalVentilationZoneOutdoorAirEntries();
+  bool ThermalZone::setMultiplier(int multiplier) {
+    return getImpl<detail::ThermalZone_Impl>()->setMultiplier(multiplier);
   }
 
-  return true;
-}
+  void ThermalZone::resetMultiplier() {
+    getImpl<detail::ThermalZone_Impl>()->resetMultiplier();
+  }
 
-SizingZone ThermalZone::sizingZone() const {
-  return getImpl<detail::ThermalZone_Impl>()->sizingZone();
-}
+  boost::optional<double> ThermalZone::ceilingHeight() const {
+    return getImpl<detail::ThermalZone_Impl>()->ceilingHeight();
+  }
 
-bool ThermalZone::useIdealAirLoads() const {
-  return getImpl<detail::ThermalZone_Impl>()->useIdealAirLoads();
-}
+  bool ThermalZone::isCeilingHeightDefaulted() const {
+    return getImpl<detail::ThermalZone_Impl>()->isCeilingHeightDefaulted();
+  }
 
-bool ThermalZone::setUseIdealAirLoads(bool useIdealAirLoads) {
-  return getImpl<detail::ThermalZone_Impl>()->setUseIdealAirLoads(useIdealAirLoads);
-}
+  bool ThermalZone::isCeilingHeightAutocalculated() const {
+    return getImpl<detail::ThermalZone_Impl>()->isCeilingHeightAutocalculated();
+  }
 
-std::string ThermalZone::outdoorAirMethod() const {
-  return getImpl<detail::ThermalZone_Impl>()->outdoorAirMethod();
-}
+  bool ThermalZone::setCeilingHeight(boost::optional<double> ceilingHeight) {
+    return getImpl<detail::ThermalZone_Impl>()->setCeilingHeight(ceilingHeight);
+  }
 
-bool ThermalZone::setOutdoorAirMethod(const std::string& outdoorAirMethod) {
-  return getImpl<detail::ThermalZone_Impl>()->setOutdoorAirMethod(outdoorAirMethod);
-}
+  bool ThermalZone::setCeilingHeight(double ceilingHeight) {
+    return getImpl<detail::ThermalZone_Impl>()->setCeilingHeight(ceilingHeight);
+  }
 
-double ThermalZone::outdoorAirFlowperPerson() const {
-  return getImpl<detail::ThermalZone_Impl>()->outdoorAirFlowperPerson();
-}
+  void ThermalZone::resetCeilingHeight() {
+    getImpl<detail::ThermalZone_Impl>()->resetCeilingHeight();
+  }
 
-bool ThermalZone::setOutdoorAirFlowperPerson(double outdoorAirFlowperPerson) {
-  return getImpl<detail::ThermalZone_Impl>()->setOutdoorAirFlowperPerson(outdoorAirFlowperPerson);
-}
+  void ThermalZone::autocalculateCeilingHeight() {
+    getImpl<detail::ThermalZone_Impl>()->autocalculateCeilingHeight();
+  }
 
-double ThermalZone::outdoorAirFlowperFloorArea() const {
-  return getImpl<detail::ThermalZone_Impl>()->outdoorAirFlowperFloorArea();
-}
+  boost::optional<double> ThermalZone::volume() const {
+    return getImpl<detail::ThermalZone_Impl>()->volume();
+  }
 
-bool ThermalZone::setOutdoorAirFlowperFloorArea(double outdoorAirFlowperFloorArea) {
-  return getImpl<detail::ThermalZone_Impl>()->setOutdoorAirFlowperFloorArea(outdoorAirFlowperFloorArea);
-}
+  bool ThermalZone::isVolumeDefaulted() const {
+    return getImpl<detail::ThermalZone_Impl>()->isVolumeDefaulted();
+  }
 
-double ThermalZone::outdoorAirFlowRate() const {
-  return getImpl<detail::ThermalZone_Impl>()->outdoorAirFlowRate();
-}
+  bool ThermalZone::isVolumeAutocalculated() const {
+    return getImpl<detail::ThermalZone_Impl>()->isVolumeAutocalculated();
+  }
 
-bool ThermalZone::setOutdoorAirFlowRate(double outdoorAirFlowRate) {
-  return getImpl<detail::ThermalZone_Impl>()->setOutdoorAirFlowRate(outdoorAirFlowRate);
-}
+  bool ThermalZone::setVolume(boost::optional<double> volume) {
+    return getImpl<detail::ThermalZone_Impl>()->setVolume(volume);
+  }
 
-double ThermalZone::outdoorAirFlowAirChangesperHour() const {
-  return getImpl<detail::ThermalZone_Impl>()->outdoorAirFlowAirChangesperHour();
-}
+  bool ThermalZone::setVolume(double volume) {
+    return getImpl<detail::ThermalZone_Impl>()->setVolume(volume);
+  }
 
-bool ThermalZone::setOutdoorAirFlowAirChangesperHour(double outdoorAirFlowAirChangesperHour) {
-  return getImpl<detail::ThermalZone_Impl>()->setOutdoorAirFlowAirChangesperHour(outdoorAirFlowAirChangesperHour);
-}
+  void ThermalZone::resetVolume() {
+    getImpl<detail::ThermalZone_Impl>()->resetVolume();
+  }
 
-double ThermalZone::fractionofZoneControlledbyPrimaryDaylightingControl() const {
-  return getImpl<detail::ThermalZone_Impl>()->fractionofZoneControlledbyPrimaryDaylightingControl();
-}
+  void ThermalZone::autocalculateVolume() {
+    getImpl<detail::ThermalZone_Impl>()->autocalculateVolume();
+  }
 
-bool ThermalZone::isFractionofZoneControlledbyPrimaryDaylightingControlDefaulted() const {
-  return getImpl<detail::ThermalZone_Impl>()->isFractionofZoneControlledbyPrimaryDaylightingControlDefaulted();
-}
+  boost::optional<std::string> ThermalZone::zoneInsideConvectionAlgorithm() const {
+    return getImpl<detail::ThermalZone_Impl>()->zoneInsideConvectionAlgorithm();
+  }
 
-bool ThermalZone::setFractionofZoneControlledbyPrimaryDaylightingControl(double fractionofZoneControlledbyPrimaryDaylightingControl) {
-  return getImpl<detail::ThermalZone_Impl>()->setFractionofZoneControlledbyPrimaryDaylightingControl(
-    fractionofZoneControlledbyPrimaryDaylightingControl);
-}
+  boost::optional<std::string> ThermalZone::zoneOutsideConvectionAlgorithm() const {
+    return getImpl<detail::ThermalZone_Impl>()->zoneOutsideConvectionAlgorithm();
+  }
 
-void ThermalZone::resetFractionofZoneControlledbyPrimaryDaylightingControl() {
-  getImpl<detail::ThermalZone_Impl>()->resetFractionofZoneControlledbyPrimaryDaylightingControl();
-}
+  bool ThermalZone::setZoneInsideConvectionAlgorithm(boost::optional<std::string> zoneInsideConvectionAlgorithm) {
+    return getImpl<detail::ThermalZone_Impl>()->setZoneInsideConvectionAlgorithm(zoneInsideConvectionAlgorithm);
+  }
 
-double ThermalZone::fractionofZoneControlledbySecondaryDaylightingControl() const {
-  return getImpl<detail::ThermalZone_Impl>()->fractionofZoneControlledbySecondaryDaylightingControl();
-}
+  bool ThermalZone::setZoneInsideConvectionAlgorithm(const std::string& zoneInsideConvectionAlgorithm) {
+    return getImpl<detail::ThermalZone_Impl>()->setZoneInsideConvectionAlgorithm(zoneInsideConvectionAlgorithm);
+  }
 
-bool ThermalZone::isFractionofZoneControlledbySecondaryDaylightingControlDefaulted() const {
-  return getImpl<detail::ThermalZone_Impl>()->isFractionofZoneControlledbySecondaryDaylightingControlDefaulted();
-}
+  void ThermalZone::resetZoneInsideConvectionAlgorithm() {
+    getImpl<detail::ThermalZone_Impl>()->resetZoneInsideConvectionAlgorithm();
+  }
 
-bool ThermalZone::setFractionofZoneControlledbySecondaryDaylightingControl(double fractionofZoneControlledbySecondaryDaylightingControl) {
-  return getImpl<detail::ThermalZone_Impl>()->setFractionofZoneControlledbySecondaryDaylightingControl(
-    fractionofZoneControlledbySecondaryDaylightingControl);
-}
+  bool ThermalZone::setZoneOutsideConvectionAlgorithm(boost::optional<std::string> zoneOutsideConvectionAlgorithm) {
+    return getImpl<detail::ThermalZone_Impl>()->setZoneOutsideConvectionAlgorithm(zoneOutsideConvectionAlgorithm);
+  }
 
-void ThermalZone::resetFractionofZoneControlledbySecondaryDaylightingControl() {
-  getImpl<detail::ThermalZone_Impl>()->resetFractionofZoneControlledbySecondaryDaylightingControl();
-}
+  bool ThermalZone::setZoneOutsideConvectionAlgorithm(const std::string& zoneOutsideConvectionAlgorithm) {
+    return getImpl<detail::ThermalZone_Impl>()->setZoneOutsideConvectionAlgorithm(zoneOutsideConvectionAlgorithm);
+  }
 
-double ThermalZone::primaryDaylightingControlXCoordinate() const {
-  return getImpl<detail::ThermalZone_Impl>()->primaryDaylightingControlXCoordinate();
-}
+  void ThermalZone::resetZoneOutsideConvectionAlgorithm() {
+    getImpl<detail::ThermalZone_Impl>()->resetZoneOutsideConvectionAlgorithm();
+  }
 
-double ThermalZone::primaryDaylightingControlYCoordinate() const {
-  return getImpl<detail::ThermalZone_Impl>()->primaryDaylightingControlYCoordinate();
-}
+  bool ThermalZone::useIdealAirLoads() const {
+    return getImpl<detail::ThermalZone_Impl>()->useIdealAirLoads();
+  }
 
-double ThermalZone::primaryDaylightingControlZCoordinate() const {
-  return getImpl<detail::ThermalZone_Impl>()->primaryDaylightingControlZCoordinate();
-}
+  bool ThermalZone::setUseIdealAirLoads(bool useIdealAirLoads) {
+    return getImpl<detail::ThermalZone_Impl>()->setUseIdealAirLoads(useIdealAirLoads);
+  }
 
-bool ThermalZone::setPrimaryDaylightingControlXCoordinate(double primaryDaylightingControlXCoordinate) {
-  return getImpl<detail::ThermalZone_Impl>()->setPrimaryDaylightingControlXCoordinate(primaryDaylightingControlXCoordinate);
-}
+  std::string ThermalZone::outdoorAirMethod() const {
+    return getImpl<detail::ThermalZone_Impl>()->outdoorAirMethod();
+  }
 
-bool ThermalZone::setPrimaryDaylightingControlYCoordinate(double primaryDaylightingControlYCoordinate) {
-  return getImpl<detail::ThermalZone_Impl>()->setPrimaryDaylightingControlYCoordinate(primaryDaylightingControlYCoordinate);
-}
+  bool ThermalZone::setOutdoorAirMethod(const std::string& outdoorAirMethod) {
+    return getImpl<detail::ThermalZone_Impl>()->setOutdoorAirMethod(outdoorAirMethod);
+  }
 
-bool ThermalZone::setPrimaryDaylightingControlZCoordinate(double primaryDaylightingControlZCoordinate) {
-  return getImpl<detail::ThermalZone_Impl>()->setPrimaryDaylightingControlZCoordinate(primaryDaylightingControlZCoordinate);
-}
+  double ThermalZone::outdoorAirFlowperPerson() const {
+    return getImpl<detail::ThermalZone_Impl>()->outdoorAirFlowperPerson();
+  }
 
-double ThermalZone::secondaryDaylightingControlXCoordinate() const {
-  return getImpl<detail::ThermalZone_Impl>()->secondaryDaylightingControlXCoordinate();
-}
+  bool ThermalZone::setOutdoorAirFlowperPerson(double outdoorAirFlowperPerson) {
+    return getImpl<detail::ThermalZone_Impl>()->setOutdoorAirFlowperPerson(outdoorAirFlowperPerson);
+  }
 
-double ThermalZone::secondaryDaylightingControlYCoordinate() const {
-  return getImpl<detail::ThermalZone_Impl>()->secondaryDaylightingControlYCoordinate();
-}
+  double ThermalZone::outdoorAirFlowperFloorArea() const {
+    return getImpl<detail::ThermalZone_Impl>()->outdoorAirFlowperFloorArea();
+  }
 
-double ThermalZone::secondaryDaylightingControlZCoordinate() const {
-  return getImpl<detail::ThermalZone_Impl>()->secondaryDaylightingControlZCoordinate();
-}
+  bool ThermalZone::setOutdoorAirFlowperFloorArea(double outdoorAirFlowperFloorArea) {
+    return getImpl<detail::ThermalZone_Impl>()->setOutdoorAirFlowperFloorArea(outdoorAirFlowperFloorArea);
+  }
 
-bool ThermalZone::setSecondaryDaylightingControlXCoordinate(double secondaryDaylightingControlXCoordinate) {
-  return getImpl<detail::ThermalZone_Impl>()->setSecondaryDaylightingControlXCoordinate(secondaryDaylightingControlXCoordinate);
-}
+  double ThermalZone::outdoorAirFlowRate() const {
+    return getImpl<detail::ThermalZone_Impl>()->outdoorAirFlowRate();
+  }
 
-bool ThermalZone::setSecondaryDaylightingControlYCoordinate(double secondaryDaylightingControlYCoordinate) {
-  return getImpl<detail::ThermalZone_Impl>()->setSecondaryDaylightingControlYCoordinate(secondaryDaylightingControlYCoordinate);
-}
+  bool ThermalZone::setOutdoorAirFlowRate(double outdoorAirFlowRate) {
+    return getImpl<detail::ThermalZone_Impl>()->setOutdoorAirFlowRate(outdoorAirFlowRate);
+  }
 
-bool ThermalZone::setSecondaryDaylightingControlZCoordinate(double secondaryDaylightingControlZCoordinate) {
-  return getImpl<detail::ThermalZone_Impl>()->setSecondaryDaylightingControlZCoordinate(secondaryDaylightingControlZCoordinate);
-}
+  double ThermalZone::outdoorAirFlowAirChangesperHour() const {
+    return getImpl<detail::ThermalZone_Impl>()->outdoorAirFlowAirChangesperHour();
+  }
 
-double ThermalZone::illuminanceMapOriginXCoordinate() const {
-  return getImpl<detail::ThermalZone_Impl>()->illuminanceMapOriginXCoordinate();
-}
+  bool ThermalZone::setOutdoorAirFlowAirChangesperHour(double outdoorAirFlowAirChangesperHour) {
+    return getImpl<detail::ThermalZone_Impl>()->setOutdoorAirFlowAirChangesperHour(outdoorAirFlowAirChangesperHour);
+  }
 
-bool ThermalZone::setIlluminanceMapOriginXCoordinate(double illuminanceMapOriginXCoordinate) {
-  return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapOriginXCoordinate(illuminanceMapOriginXCoordinate);
-}
+  double ThermalZone::fractionofZoneControlledbyPrimaryDaylightingControl() const {
+    return getImpl<detail::ThermalZone_Impl>()->fractionofZoneControlledbyPrimaryDaylightingControl();
+  }
 
-double ThermalZone::illuminanceMapOriginYCoordinate() const {
-  return getImpl<detail::ThermalZone_Impl>()->illuminanceMapOriginYCoordinate();
-}
+  bool ThermalZone::isFractionofZoneControlledbyPrimaryDaylightingControlDefaulted() const {
+    return getImpl<detail::ThermalZone_Impl>()->isFractionofZoneControlledbyPrimaryDaylightingControlDefaulted();
+  }
 
-bool ThermalZone::setIlluminanceMapOriginYCoordinate(double illuminanceMapOriginYCoordinate) {
-  return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapOriginYCoordinate(illuminanceMapOriginYCoordinate);
-}
+  bool ThermalZone::setFractionofZoneControlledbyPrimaryDaylightingControl(double fractionofZoneControlledbyPrimaryDaylightingControl) {
+    return getImpl<detail::ThermalZone_Impl>()->setFractionofZoneControlledbyPrimaryDaylightingControl(
+      fractionofZoneControlledbyPrimaryDaylightingControl);
+  }
 
-double ThermalZone::illuminanceMapOriginZCoordinate() const {
-  return getImpl<detail::ThermalZone_Impl>()->illuminanceMapOriginZCoordinate();
-}
+  void ThermalZone::resetFractionofZoneControlledbyPrimaryDaylightingControl() {
+    getImpl<detail::ThermalZone_Impl>()->resetFractionofZoneControlledbyPrimaryDaylightingControl();
+  }
 
-bool ThermalZone::setIlluminanceMapOriginZCoordinate(double illuminanceMapOriginZCoordinate) {
-  return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapOriginZCoordinate(illuminanceMapOriginZCoordinate);
-}
+  double ThermalZone::fractionofZoneControlledbySecondaryDaylightingControl() const {
+    return getImpl<detail::ThermalZone_Impl>()->fractionofZoneControlledbySecondaryDaylightingControl();
+  }
 
-double ThermalZone::illuminanceMapXLength() const {
-  return getImpl<detail::ThermalZone_Impl>()->illuminanceMapXLength();
-}
+  bool ThermalZone::isFractionofZoneControlledbySecondaryDaylightingControlDefaulted() const {
+    return getImpl<detail::ThermalZone_Impl>()->isFractionofZoneControlledbySecondaryDaylightingControlDefaulted();
+  }
 
-bool ThermalZone::setIlluminanceMapXLength(double illuminanceMapXLength) {
-  return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapXLength(illuminanceMapXLength);
-}
+  bool ThermalZone::setFractionofZoneControlledbySecondaryDaylightingControl(double fractionofZoneControlledbySecondaryDaylightingControl) {
+    return getImpl<detail::ThermalZone_Impl>()->setFractionofZoneControlledbySecondaryDaylightingControl(
+      fractionofZoneControlledbySecondaryDaylightingControl);
+  }
 
-int ThermalZone::illuminanceMapNumberofXGridPoints() const {
-  return getImpl<detail::ThermalZone_Impl>()->illuminanceMapNumberofXGridPoints();
-}
+  void ThermalZone::resetFractionofZoneControlledbySecondaryDaylightingControl() {
+    getImpl<detail::ThermalZone_Impl>()->resetFractionofZoneControlledbySecondaryDaylightingControl();
+  }
 
-bool ThermalZone::setIlluminanceMapNumberofXGridPoints(int illuminanceMapNumberofXGridPoints) {
-  return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapNumberofXGridPoints(illuminanceMapNumberofXGridPoints);
-}
+  double ThermalZone::primaryDaylightingControlXCoordinate() const {
+    return getImpl<detail::ThermalZone_Impl>()->primaryDaylightingControlXCoordinate();
+  }
 
-double ThermalZone::illuminanceMapYLength() const {
-  return getImpl<detail::ThermalZone_Impl>()->illuminanceMapYLength();
-}
+  double ThermalZone::primaryDaylightingControlYCoordinate() const {
+    return getImpl<detail::ThermalZone_Impl>()->primaryDaylightingControlYCoordinate();
+  }
 
-bool ThermalZone::setIlluminanceMapYLength(double illuminanceMapYLength) {
-  return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapYLength(illuminanceMapYLength);
-}
+  double ThermalZone::primaryDaylightingControlZCoordinate() const {
+    return getImpl<detail::ThermalZone_Impl>()->primaryDaylightingControlZCoordinate();
+  }
 
-int ThermalZone::illuminanceMapNumberofYGridPoints() const {
-  return getImpl<detail::ThermalZone_Impl>()->illuminanceMapNumberofYGridPoints();
-}
+  bool ThermalZone::setPrimaryDaylightingControlXCoordinate(double primaryDaylightingControlXCoordinate) {
+    return getImpl<detail::ThermalZone_Impl>()->setPrimaryDaylightingControlXCoordinate(primaryDaylightingControlXCoordinate);
+  }
 
-bool ThermalZone::setIlluminanceMapNumberofYGridPoints(int illuminanceMapNumberofYGridPoints) {
-  return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapNumberofYGridPoints(illuminanceMapNumberofYGridPoints);
-}
+  bool ThermalZone::setPrimaryDaylightingControlYCoordinate(double primaryDaylightingControlYCoordinate) {
+    return getImpl<detail::ThermalZone_Impl>()->setPrimaryDaylightingControlYCoordinate(primaryDaylightingControlYCoordinate);
+  }
+
+  bool ThermalZone::setPrimaryDaylightingControlZCoordinate(double primaryDaylightingControlZCoordinate) {
+    return getImpl<detail::ThermalZone_Impl>()->setPrimaryDaylightingControlZCoordinate(primaryDaylightingControlZCoordinate);
+  }
+
+  double ThermalZone::secondaryDaylightingControlXCoordinate() const {
+    return getImpl<detail::ThermalZone_Impl>()->secondaryDaylightingControlXCoordinate();
+  }
+
+  double ThermalZone::secondaryDaylightingControlYCoordinate() const {
+    return getImpl<detail::ThermalZone_Impl>()->secondaryDaylightingControlYCoordinate();
+  }
+
+  double ThermalZone::secondaryDaylightingControlZCoordinate() const {
+    return getImpl<detail::ThermalZone_Impl>()->secondaryDaylightingControlZCoordinate();
+  }
+
+  bool ThermalZone::setSecondaryDaylightingControlXCoordinate(double secondaryDaylightingControlXCoordinate) {
+    return getImpl<detail::ThermalZone_Impl>()->setSecondaryDaylightingControlXCoordinate(secondaryDaylightingControlXCoordinate);
+  }
+
+  bool ThermalZone::setSecondaryDaylightingControlYCoordinate(double secondaryDaylightingControlYCoordinate) {
+    return getImpl<detail::ThermalZone_Impl>()->setSecondaryDaylightingControlYCoordinate(secondaryDaylightingControlYCoordinate);
+  }
+
+  bool ThermalZone::setSecondaryDaylightingControlZCoordinate(double secondaryDaylightingControlZCoordinate) {
+    return getImpl<detail::ThermalZone_Impl>()->setSecondaryDaylightingControlZCoordinate(secondaryDaylightingControlZCoordinate);
+  }
+
+  double ThermalZone::illuminanceMapOriginXCoordinate() const {
+    return getImpl<detail::ThermalZone_Impl>()->illuminanceMapOriginXCoordinate();
+  }
+
+  bool ThermalZone::setIlluminanceMapOriginXCoordinate(double illuminanceMapOriginXCoordinate) {
+    return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapOriginXCoordinate(illuminanceMapOriginXCoordinate);
+  }
+
+  double ThermalZone::illuminanceMapOriginYCoordinate() const {
+    return getImpl<detail::ThermalZone_Impl>()->illuminanceMapOriginYCoordinate();
+  }
+
+  bool ThermalZone::setIlluminanceMapOriginYCoordinate(double illuminanceMapOriginYCoordinate) {
+    return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapOriginYCoordinate(illuminanceMapOriginYCoordinate);
+  }
+
+  double ThermalZone::illuminanceMapOriginZCoordinate() const {
+    return getImpl<detail::ThermalZone_Impl>()->illuminanceMapOriginZCoordinate();
+  }
+
+  bool ThermalZone::setIlluminanceMapOriginZCoordinate(double illuminanceMapOriginZCoordinate) {
+    return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapOriginZCoordinate(illuminanceMapOriginZCoordinate);
+  }
+
+  double ThermalZone::illuminanceMapXLength() const {
+    return getImpl<detail::ThermalZone_Impl>()->illuminanceMapXLength();
+  }
+
+  bool ThermalZone::setIlluminanceMapXLength(double illuminanceMapXLength) {
+    return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapXLength(illuminanceMapXLength);
+  }
+
+  int ThermalZone::illuminanceMapNumberofXGridPoints() const {
+    return getImpl<detail::ThermalZone_Impl>()->illuminanceMapNumberofXGridPoints();
+  }
+
+  bool ThermalZone::setIlluminanceMapNumberofXGridPoints(int illuminanceMapNumberofXGridPoints) {
+    return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapNumberofXGridPoints(illuminanceMapNumberofXGridPoints);
+  }
+
+  double ThermalZone::illuminanceMapYLength() const {
+    return getImpl<detail::ThermalZone_Impl>()->illuminanceMapYLength();
+  }
+
+  bool ThermalZone::setIlluminanceMapYLength(double illuminanceMapYLength) {
+    return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapYLength(illuminanceMapYLength);
+  }
+
+  int ThermalZone::illuminanceMapNumberofYGridPoints() const {
+    return getImpl<detail::ThermalZone_Impl>()->illuminanceMapNumberofYGridPoints();
+  }
+
+  bool ThermalZone::setIlluminanceMapNumberofYGridPoints(int illuminanceMapNumberofYGridPoints) {
+    return getImpl<detail::ThermalZone_Impl>()->setIlluminanceMapNumberofYGridPoints(illuminanceMapNumberofYGridPoints);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-boost::optional<openstudio::epmodel::ZoneHVACEquipmentConnections> ThermalZone_Impl::zoneHVACEquipmentConnections() const {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  for (const auto& conn : model().getConcreteModelObjects<openstudio::epmodel::ZoneHVACEquipmentConnections>()) {
-    if (auto linkedZone = conn.thermalZone()) {
-      if (*linkedZone == zone) {
-        return conn;
+    boost::optional<openstudio::epmodel::ZoneHVACEquipmentConnections> ThermalZone_Impl::zoneHVACEquipmentConnections() const {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      for (const auto& conn : model().getConcreteModelObjects<openstudio::epmodel::ZoneHVACEquipmentConnections>()) {
+        if (auto linkedZone = conn.thermalZone()) {
+          if (*linkedZone == zone) {
+            return conn;
+          }
+        }
       }
+      return boost::none;
     }
-  }
-  return boost::none;
-}
 
-openstudio::epmodel::ZoneHVACEquipmentConnections ThermalZone_Impl::getZoneHVACEquipmentConnections() {
-  if (auto conn = zoneHVACEquipmentConnections()) {
-    return *conn;
-  }
+    openstudio::epmodel::ZoneHVACEquipmentConnections ThermalZone_Impl::getZoneHVACEquipmentConnections() {
+      if (auto conn = zoneHVACEquipmentConnections()) {
+        return *conn;
+      }
 
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  openstudio::epmodel::ZoneHVACEquipmentConnections conn(model());
-  conn.createName();
-  if (!conn.name() || conn.name()->empty()) {
-    conn.setName(model().nextName(openstudio::IddObjectType::ZoneHVAC_EquipmentConnections, true));
-  }
-  if (!conn.getImpl<openstudio::epmodel::detail::ZoneHVACEquipmentConnections_Impl>()->setThermalZone(zone)) {
-    OS_ASSERT(false);
-  }
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      openstudio::epmodel::ZoneHVACEquipmentConnections conn(model());
+      conn.createName();
+      if (!conn.name() || conn.name()->empty()) {
+        conn.setName(model().nextName(openstudio::IddObjectType::ZoneHVAC_EquipmentConnections, true));
+      }
+      if (!conn.getImpl<openstudio::epmodel::detail::ZoneHVACEquipmentConnections_Impl>()->setThermalZone(zone)) {
+        OS_ASSERT(false);
+      }
 
-  return conn;
-}
-
-boost::optional<openstudio::epmodel::ZoneHVACEquipmentList> ThermalZone_Impl::zoneHVACEquipmentList() const {
-  auto conn = zoneHVACEquipmentConnections();
-  if (!conn) {
-    return boost::none;
-  }
-
-  const auto equipmentListName =
-    conn->getString(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName);
-  if (!equipmentListName || equipmentListName->empty()) {
-    return boost::none;
-  }
-
-  if (auto object = model().getObjectByTypeAndName(openstudio::IddObjectType::ZoneHVAC_EquipmentList, *equipmentListName, true)) {
-    return object->optionalCast<openstudio::epmodel::ZoneHVACEquipmentList>();
-  }
-
-  return boost::none;
-}
-
-boost::optional<openstudio::epmodel::SizingZone> ThermalZone_Impl::optionalSizingZone() const {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  for (const auto& sizingZone : model().getConcreteModelObjects<openstudio::epmodel::SizingZone>()) {
-    auto sizingZoneImpl = sizingZone.getImpl<openstudio::epmodel::detail::SizingZone_Impl>();
-    OS_ASSERT(sizingZoneImpl);
-    auto sizingZoneThermalZone = sizingZoneImpl->optionalThermalZone();
-    if (sizingZoneThermalZone && (*sizingZoneThermalZone == zone)) {
-      return sizingZone;
+      return conn;
     }
-  }
-  return boost::none;
-}
 
-openstudio::epmodel::SizingZone ThermalZone_Impl::sizingZone() {
-  if (auto result = optionalSizingZone()) {
-    return *result;
-  }
+    boost::optional<openstudio::epmodel::ZoneHVACEquipmentList> ThermalZone_Impl::zoneHVACEquipmentList() const {
+      auto conn = zoneHVACEquipmentConnections();
+      if (!conn) {
+        return boost::none;
+      }
 
-  return openstudio::epmodel::SizingZone(model(), getObject<openstudio::epmodel::ThermalZone>());
-}
+      const auto equipmentListName = conn->getString(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName);
+      if (!equipmentListName || equipmentListName->empty()) {
+        return boost::none;
+      }
 
-std::vector<openstudio::WorkspaceObject> ThermalZone_Impl::hvacTemplateZoneIdealLoadsAirSystemsForZone() const {
-  std::vector<openstudio::WorkspaceObject> result;
-  const auto zoneName = getObject<openstudio::epmodel::ThermalZone>().nameString();
-  for (const auto& object : model().getObjectsByType(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem)) {
-    auto mappedZoneName = object.getString(openstudio::HVACTemplate_Zone_IdealLoadsAirSystemFields::ZoneName, true);
-    if (mappedZoneName && openstudio::istringEqual(*mappedZoneName, zoneName)) {
-      result.emplace_back(object);
+      if (auto object = model().getObjectByTypeAndName(openstudio::IddObjectType::ZoneHVAC_EquipmentList, *equipmentListName, true)) {
+        return object->optionalCast<openstudio::epmodel::ZoneHVACEquipmentList>();
+      }
+
+      return boost::none;
     }
-  }
-  return result;
-}
 
-bool ThermalZone_Impl::useIdealAirLoads() const {
-  return !hvacTemplateZoneIdealLoadsAirSystemsForZone().empty();
-}
-
-bool ThermalZone_Impl::setUseIdealAirLoads(bool useIdealAirLoads) {
-  auto idealLoadsObjects = hvacTemplateZoneIdealLoadsAirSystemsForZone();
-
-  if (useIdealAirLoads) {
-    if (!idealLoadsObjects.empty()) {
-      return true;
+    boost::optional<openstudio::epmodel::SizingZone> ThermalZone_Impl::optionalSizingZone() const {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      for (const auto& sizingZone : model().getConcreteModelObjects<openstudio::epmodel::SizingZone>()) {
+        auto sizingZoneImpl = sizingZone.getImpl<openstudio::epmodel::detail::SizingZone_Impl>();
+        OS_ASSERT(sizingZoneImpl);
+        auto sizingZoneThermalZone = sizingZoneImpl->optionalThermalZone();
+        if (sizingZoneThermalZone && (*sizingZoneThermalZone == zone)) {
+          return sizingZone;
+        }
+      }
+      return boost::none;
     }
-    openstudio::IdfObject object(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem);
-    if (!object.setString(openstudio::HVACTemplate_Zone_IdealLoadsAirSystemFields::ZoneName,
-                          getObject<openstudio::epmodel::ThermalZone>().nameString())) {
+
+    openstudio::epmodel::SizingZone ThermalZone_Impl::sizingZone() {
+      if (auto result = optionalSizingZone()) {
+        return *result;
+      }
+
+      return openstudio::epmodel::SizingZone(model(), getObject<openstudio::epmodel::ThermalZone>());
+    }
+
+    int ThermalZone_Impl::multiplier() const {
+      auto value = getInt(openstudio::ZoneFields::Multiplier, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool ThermalZone_Impl::isMultiplierDefaulted() const {
+      return isEmpty(openstudio::ZoneFields::Multiplier);
+    }
+
+    bool ThermalZone_Impl::setMultiplier(int multiplier) {
+      return setInt(openstudio::ZoneFields::Multiplier, multiplier);
+    }
+
+    void ThermalZone_Impl::resetMultiplier() {
+      bool result = setString(openstudio::ZoneFields::Multiplier, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> ThermalZone_Impl::ceilingHeight() const {
+      return getDouble(openstudio::ZoneFields::CeilingHeight, true);
+    }
+
+    bool ThermalZone_Impl::isCeilingHeightDefaulted() const {
+      return isEmpty(openstudio::ZoneFields::CeilingHeight);
+    }
+
+    bool ThermalZone_Impl::isCeilingHeightAutocalculated() const {
+      bool result = false;
+      if (auto value = getString(openstudio::ZoneFields::CeilingHeight, true)) {
+        result = openstudio::istringEqual(*value, "autocalculate");
+      }
+      return result;
+    }
+
+    bool ThermalZone_Impl::setCeilingHeight(boost::optional<double> ceilingHeight) {
+      bool result = false;
+      if (ceilingHeight) {
+        result = setDouble(openstudio::ZoneFields::CeilingHeight, ceilingHeight.get());
+      } else {
+        result = setString(openstudio::ZoneFields::CeilingHeight, "");
+      }
+      OS_ASSERT(result);
+      return result;
+    }
+
+    bool ThermalZone_Impl::setCeilingHeight(double ceilingHeight) {
+      bool result = setDouble(openstudio::ZoneFields::CeilingHeight, ceilingHeight);
+      OS_ASSERT(result);
+      return result;
+    }
+
+    void ThermalZone_Impl::resetCeilingHeight() {
+      bool result = setString(openstudio::ZoneFields::CeilingHeight, "");
+      OS_ASSERT(result);
+    }
+
+    void ThermalZone_Impl::autocalculateCeilingHeight() {
+      bool result = setString(openstudio::ZoneFields::CeilingHeight, "autocalculate");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> ThermalZone_Impl::volume() const {
+      return getDouble(openstudio::ZoneFields::Volume, true);
+    }
+
+    bool ThermalZone_Impl::isVolumeDefaulted() const {
+      return isEmpty(openstudio::ZoneFields::Volume);
+    }
+
+    bool ThermalZone_Impl::isVolumeAutocalculated() const {
+      bool result = false;
+      if (auto value = getString(openstudio::ZoneFields::Volume, true)) {
+        result = openstudio::istringEqual(*value, "autocalculate");
+      }
+      return result;
+    }
+
+    bool ThermalZone_Impl::setVolume(boost::optional<double> volume) {
+      bool result = false;
+      if (volume) {
+        result = setDouble(openstudio::ZoneFields::Volume, volume.get());
+      } else {
+        result = setString(openstudio::ZoneFields::Volume, "");
+      }
+      OS_ASSERT(result);
+      return result;
+    }
+
+    bool ThermalZone_Impl::setVolume(double volume) {
+      bool result = setDouble(openstudio::ZoneFields::Volume, volume);
+      OS_ASSERT(result);
+      return result;
+    }
+
+    void ThermalZone_Impl::resetVolume() {
+      bool result = setString(openstudio::ZoneFields::Volume, "");
+      OS_ASSERT(result);
+    }
+
+    void ThermalZone_Impl::autocalculateVolume() {
+      bool result = setString(openstudio::ZoneFields::Volume, "autocalculate");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<std::string> ThermalZone_Impl::zoneInsideConvectionAlgorithm() const {
+      return getString(openstudio::ZoneFields::ZoneInsideConvectionAlgorithm, true);
+    }
+
+    boost::optional<std::string> ThermalZone_Impl::zoneOutsideConvectionAlgorithm() const {
+      return getString(openstudio::ZoneFields::ZoneOutsideConvectionAlgorithm, true);
+    }
+
+    bool ThermalZone_Impl::setZoneInsideConvectionAlgorithm(boost::optional<std::string> zoneInsideConvectionAlgorithm) {
+      bool result = false;
+      if (zoneInsideConvectionAlgorithm) {
+        result = setString(openstudio::ZoneFields::ZoneInsideConvectionAlgorithm, zoneInsideConvectionAlgorithm.get());
+      } else {
+        result = setString(openstudio::ZoneFields::ZoneInsideConvectionAlgorithm, "");
+      }
+      return result;
+    }
+
+    bool ThermalZone_Impl::setZoneInsideConvectionAlgorithm(const std::string& zoneInsideConvectionAlgorithm) {
+      return setString(openstudio::ZoneFields::ZoneInsideConvectionAlgorithm, zoneInsideConvectionAlgorithm);
+    }
+
+    void ThermalZone_Impl::resetZoneInsideConvectionAlgorithm() {
+      bool result = setString(openstudio::ZoneFields::ZoneInsideConvectionAlgorithm, "");
+      OS_ASSERT(result);
+    }
+
+    bool ThermalZone_Impl::setZoneOutsideConvectionAlgorithm(boost::optional<std::string> zoneOutsideConvectionAlgorithm) {
+      bool result = false;
+      if (zoneOutsideConvectionAlgorithm) {
+        result = setString(openstudio::ZoneFields::ZoneOutsideConvectionAlgorithm, zoneOutsideConvectionAlgorithm.get());
+      } else {
+        result = setString(openstudio::ZoneFields::ZoneOutsideConvectionAlgorithm, "");
+      }
+      return result;
+    }
+
+    bool ThermalZone_Impl::setZoneOutsideConvectionAlgorithm(const std::string& zoneOutsideConvectionAlgorithm) {
+      return setString(openstudio::ZoneFields::ZoneOutsideConvectionAlgorithm, zoneOutsideConvectionAlgorithm);
+    }
+
+    void ThermalZone_Impl::resetZoneOutsideConvectionAlgorithm() {
+      bool result = setString(openstudio::ZoneFields::ZoneOutsideConvectionAlgorithm, "");
+      OS_ASSERT(result);
+    }
+
+    std::vector<openstudio::WorkspaceObject> ThermalZone_Impl::hvacTemplateZoneIdealLoadsAirSystemsForZone() const {
+      std::vector<openstudio::WorkspaceObject> result;
+      const auto zoneName = getObject<openstudio::epmodel::ThermalZone>().nameString();
+      for (const auto& object : model().getObjectsByType(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem)) {
+        auto mappedZoneName = object.getString(openstudio::HVACTemplate_Zone_IdealLoadsAirSystemFields::ZoneName, true);
+        if (mappedZoneName && openstudio::istringEqual(*mappedZoneName, zoneName)) {
+          result.emplace_back(object);
+        }
+      }
+      return result;
+    }
+
+    bool ThermalZone_Impl::useIdealAirLoads() const {
+      return !hvacTemplateZoneIdealLoadsAirSystemsForZone().empty();
+    }
+
+    bool ThermalZone_Impl::setUseIdealAirLoads(bool useIdealAirLoads) {
+      auto idealLoadsObjects = hvacTemplateZoneIdealLoadsAirSystemsForZone();
+
+      if (useIdealAirLoads) {
+        if (!idealLoadsObjects.empty()) {
+          return true;
+        }
+        openstudio::IdfObject object(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem);
+        if (!object.setString(openstudio::HVACTemplate_Zone_IdealLoadsAirSystemFields::ZoneName,
+                              getObject<openstudio::epmodel::ThermalZone>().nameString())) {
+          return false;
+        }
+        return model().addObject(object).is_initialized();
+      }
+
+      bool result = true;
+      for (auto& object : idealLoadsObjects) {
+        result = !object.remove().empty() && result;
+      }
+      return result;
+    }
+
+    std::vector<openstudio::epmodel::Space> ThermalZone_Impl::spaces() const {
+      std::vector<openstudio::epmodel::Space> result;
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      for (const auto& space : model().getConcreteModelObjects<openstudio::epmodel::Space>()) {
+        if (auto zoneForSpace = space.thermalZone()) {
+          if (*zoneForSpace == zone) {
+            result.emplace_back(space);
+          }
+        }
+      }
+      return result;
+    }
+
+    boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAir> ThermalZone_Impl::zoneSharedDesignSpecificationOutdoorAir() const {
+      boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAir> result;
+      bool foundAnyZoneSpace = false;
+      for (const auto& space : spaces()) {
+        foundAnyZoneSpace = true;
+        auto dsoa = space.designSpecificationOutdoorAir();
+        if (!dsoa) {
+          return boost::none;
+        }
+        if (!result) {
+          result = dsoa;
+          continue;
+        }
+        if (result->handle() != dsoa->handle()) {
+          return boost::none;
+        }
+      }
+      if (!foundAnyZoneSpace) {
+        return boost::none;
+      }
+      return result;
+    }
+
+    boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAir> ThermalZone_Impl::getOrCreateZoneSharedDesignSpecificationOutdoorAir() {
+      auto zoneSpaces = spaces();
+      if (zoneSpaces.empty()) {
+        return boost::none;
+      }
+
+      auto shared = zoneSharedDesignSpecificationOutdoorAir();
+      openstudio::epmodel::DesignSpecificationOutdoorAir target = shared ? *shared : openstudio::epmodel::DesignSpecificationOutdoorAir(model());
+      if (!shared && !target.name()) {
+        target.setName(getObject<openstudio::epmodel::ThermalZone>().nameString() + " DSOA");
+      }
+
+      for (auto& space : zoneSpaces) {
+        if (!space.setDesignSpecificationOutdoorAir(target)) {
+          return boost::none;
+        }
+      }
+
+      return target;
+    }
+
+    std::string ThermalZone_Impl::outdoorAirMethod() const {
+      if (auto dsoa = zoneSharedDesignSpecificationOutdoorAir()) {
+        return dsoa->outdoorAirMethod();
+      }
+      return "Sum";
+    }
+
+    bool ThermalZone_Impl::setOutdoorAirMethod(const std::string& outdoorAirMethod) {
+      if (auto dsoa = getOrCreateZoneSharedDesignSpecificationOutdoorAir()) {
+        return dsoa->setOutdoorAirMethod(outdoorAirMethod);
+      }
       return false;
     }
-    return model().addObject(object).is_initialized();
-  }
 
-  bool result = true;
-  for (auto& object : idealLoadsObjects) {
-    result = !object.remove().empty() && result;
-  }
-  return result;
-}
-
-std::vector<openstudio::epmodel::Space> ThermalZone_Impl::spaces() const {
-  std::vector<openstudio::epmodel::Space> result;
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  for (const auto& space : model().getConcreteModelObjects<openstudio::epmodel::Space>()) {
-    if (auto zoneForSpace = space.thermalZone()) {
-      if (*zoneForSpace == zone) {
-        result.emplace_back(space);
+    double ThermalZone_Impl::outdoorAirFlowperPerson() const {
+      if (auto dsoa = zoneSharedDesignSpecificationOutdoorAir()) {
+        return dsoa->outdoorAirFlowperPerson();
       }
+      return 0.0;
     }
-  }
-  return result;
-}
 
-boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAir> ThermalZone_Impl::zoneSharedDesignSpecificationOutdoorAir() const {
-  boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAir> result;
-  bool foundAnyZoneSpace = false;
-  for (const auto& space : spaces()) {
-    foundAnyZoneSpace = true;
-    auto dsoa = space.designSpecificationOutdoorAir();
-    if (!dsoa) {
-      return boost::none;
+    bool ThermalZone_Impl::setOutdoorAirFlowperPerson(double outdoorAirFlowperPerson) {
+      if (auto dsoa = getOrCreateZoneSharedDesignSpecificationOutdoorAir()) {
+        return dsoa->setOutdoorAirFlowperPerson(outdoorAirFlowperPerson);
+      }
+      return false;
     }
-    if (!result) {
-      result = dsoa;
-      continue;
+
+    double ThermalZone_Impl::outdoorAirFlowperFloorArea() const {
+      if (auto dsoa = zoneSharedDesignSpecificationOutdoorAir()) {
+        return dsoa->outdoorAirFlowperFloorArea();
+      }
+      return 0.0;
     }
-    if (result->handle() != dsoa->handle()) {
-      return boost::none;
+
+    bool ThermalZone_Impl::setOutdoorAirFlowperFloorArea(double outdoorAirFlowperFloorArea) {
+      if (auto dsoa = getOrCreateZoneSharedDesignSpecificationOutdoorAir()) {
+        return dsoa->setOutdoorAirFlowperFloorArea(outdoorAirFlowperFloorArea);
+      }
+      return false;
     }
-  }
-  if (!foundAnyZoneSpace) {
-    return boost::none;
-  }
-  return result;
-}
 
-boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAir> ThermalZone_Impl::getOrCreateZoneSharedDesignSpecificationOutdoorAir() {
-  auto zoneSpaces = spaces();
-  if (zoneSpaces.empty()) {
-    return boost::none;
-  }
-
-  auto shared = zoneSharedDesignSpecificationOutdoorAir();
-  openstudio::epmodel::DesignSpecificationOutdoorAir target = shared ? *shared : openstudio::epmodel::DesignSpecificationOutdoorAir(model());
-  if (!shared && !target.name()) {
-    target.setName(getObject<openstudio::epmodel::ThermalZone>().nameString() + " DSOA");
-  }
-
-  for (auto& space : zoneSpaces) {
-    if (!space.setDesignSpecificationOutdoorAir(target)) {
-      return boost::none;
+    double ThermalZone_Impl::outdoorAirFlowRate() const {
+      if (auto dsoa = zoneSharedDesignSpecificationOutdoorAir()) {
+        return dsoa->outdoorAirFlowRate();
+      }
+      return 0.0;
     }
-  }
-
-  return target;
-}
-
-std::string ThermalZone_Impl::outdoorAirMethod() const {
-  if (auto dsoa = zoneSharedDesignSpecificationOutdoorAir()) {
-    return dsoa->outdoorAirMethod();
-  }
-  return "Sum";
-}
-
-bool ThermalZone_Impl::setOutdoorAirMethod(const std::string& outdoorAirMethod) {
-  if (auto dsoa = getOrCreateZoneSharedDesignSpecificationOutdoorAir()) {
-    return dsoa->setOutdoorAirMethod(outdoorAirMethod);
-  }
-  return false;
-}
-
-double ThermalZone_Impl::outdoorAirFlowperPerson() const {
-  if (auto dsoa = zoneSharedDesignSpecificationOutdoorAir()) {
-    return dsoa->outdoorAirFlowperPerson();
-  }
-  return 0.0;
-}
-
-bool ThermalZone_Impl::setOutdoorAirFlowperPerson(double outdoorAirFlowperPerson) {
-  if (auto dsoa = getOrCreateZoneSharedDesignSpecificationOutdoorAir()) {
-    return dsoa->setOutdoorAirFlowperPerson(outdoorAirFlowperPerson);
-  }
-  return false;
-}
-
-double ThermalZone_Impl::outdoorAirFlowperFloorArea() const {
-  if (auto dsoa = zoneSharedDesignSpecificationOutdoorAir()) {
-    return dsoa->outdoorAirFlowperFloorArea();
-  }
-  return 0.0;
-}
-
-bool ThermalZone_Impl::setOutdoorAirFlowperFloorArea(double outdoorAirFlowperFloorArea) {
-  if (auto dsoa = getOrCreateZoneSharedDesignSpecificationOutdoorAir()) {
-    return dsoa->setOutdoorAirFlowperFloorArea(outdoorAirFlowperFloorArea);
-  }
-  return false;
-}
-
-double ThermalZone_Impl::outdoorAirFlowRate() const {
-  if (auto dsoa = zoneSharedDesignSpecificationOutdoorAir()) {
-    return dsoa->outdoorAirFlowRate();
-  }
-  return 0.0;
-}
-
-bool ThermalZone_Impl::setOutdoorAirFlowRate(double outdoorAirFlowRate) {
-  if (auto dsoa = getOrCreateZoneSharedDesignSpecificationOutdoorAir()) {
-    return dsoa->setOutdoorAirFlowRate(outdoorAirFlowRate);
-  }
-  return false;
-}
-
-double ThermalZone_Impl::outdoorAirFlowAirChangesperHour() const {
-  if (auto dsoa = zoneSharedDesignSpecificationOutdoorAir()) {
-    return dsoa->outdoorAirFlowAirChangesperHour();
-  }
-  return 0.0;
-}
-
-bool ThermalZone_Impl::setOutdoorAirFlowAirChangesperHour(double outdoorAirFlowAirChangesperHour) {
-  if (auto dsoa = getOrCreateZoneSharedDesignSpecificationOutdoorAir()) {
-    return dsoa->setOutdoorAirFlowAirChangesperHour(outdoorAirFlowAirChangesperHour);
-  }
-  return false;
-}
-
-boost::optional<double> ThermalZone_Impl::daylightingFraction(unsigned referencePointIndex) const {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto daylightingControls = daylightingControlsForZone(zone);
-  if (!daylightingControls) {
-    return boost::none;
-  }
-
-  const auto groups = daylightingControls->extensibleGroups();
-  if (referencePointIndex >= groups.size()) {
-    return boost::none;
-  }
-
-  auto group = groups[referencePointIndex].optionalCast<openstudio::WorkspaceExtensibleGroup>();
-  if (!group) {
-    return boost::none;
-  }
-
-  return group->getDouble(openstudio::Daylighting_ControlsExtensibleFields::FractionofLightsControlledbyReferencePoint, false);
-}
-
-double ThermalZone_Impl::fractionofZoneControlledbyPrimaryDaylightingControl() const {
-  if (auto value = daylightingFraction(kPrimaryDaylightingReferencePointIndex)) {
-    return *value;
-  }
-  return 1.0;
-}
-
-bool ThermalZone_Impl::isFractionofZoneControlledbyPrimaryDaylightingControlDefaulted() const {
-  return !daylightingFraction(kPrimaryDaylightingReferencePointIndex);
-}
-
-bool ThermalZone_Impl::setFractionofZoneControlledbyPrimaryDaylightingControl(double fractionofZoneControlledbyPrimaryDaylightingControl) {
-  if ((fractionofZoneControlledbyPrimaryDaylightingControl + fractionofZoneControlledbySecondaryDaylightingControl()) > 1.0) {
-    return false;
-  }
-  return setDaylightingFraction(kPrimaryDaylightingReferencePointIndex, fractionofZoneControlledbyPrimaryDaylightingControl);
-}
-
-void ThermalZone_Impl::resetFractionofZoneControlledbyPrimaryDaylightingControl() {
-  resetDaylightingFraction(kPrimaryDaylightingReferencePointIndex);
-}
-
-double ThermalZone_Impl::fractionofZoneControlledbySecondaryDaylightingControl() const {
-  if (auto value = daylightingFraction(kSecondaryDaylightingReferencePointIndex)) {
-    return *value;
-  }
-  return 0.0;
-}
-
-bool ThermalZone_Impl::isFractionofZoneControlledbySecondaryDaylightingControlDefaulted() const {
-  return !daylightingFraction(kSecondaryDaylightingReferencePointIndex);
-}
-
-bool ThermalZone_Impl::setFractionofZoneControlledbySecondaryDaylightingControl(double fractionofZoneControlledbySecondaryDaylightingControl) {
-  if ((fractionofZoneControlledbySecondaryDaylightingControl + fractionofZoneControlledbyPrimaryDaylightingControl()) > 1.0) {
-    return false;
-  }
-  return setDaylightingFraction(kSecondaryDaylightingReferencePointIndex, fractionofZoneControlledbySecondaryDaylightingControl);
-}
-
-void ThermalZone_Impl::resetFractionofZoneControlledbySecondaryDaylightingControl() {
-  resetDaylightingFraction(kSecondaryDaylightingReferencePointIndex);
-}
-
-bool ThermalZone_Impl::setDaylightingFraction(unsigned referencePointIndex, double value) {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto daylightingControls = daylightingControlsForZone(zone);
-  if (!daylightingControls) {
-    return false;
-  }
-
-  while (daylightingControls->numExtensibleGroups() <= referencePointIndex) {
-    daylightingControls->pushExtensibleGroup();
-  }
-
-  auto groups = daylightingControls->extensibleGroups();
-  if (referencePointIndex >= groups.size()) {
-    return false;
-  }
-
-  auto group = groups[referencePointIndex].optionalCast<openstudio::WorkspaceExtensibleGroup>();
-  if (!group) {
-    return false;
-  }
-
-  return group->setDouble(openstudio::Daylighting_ControlsExtensibleFields::FractionofLightsControlledbyReferencePoint, value);
-}
-
-void ThermalZone_Impl::resetDaylightingFraction(unsigned referencePointIndex) {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto daylightingControls = daylightingControlsForZone(zone);
-  if (!daylightingControls) {
-    return;
-  }
-
-  const auto groups = daylightingControls->extensibleGroups();
-  if (referencePointIndex >= groups.size()) {
-    return;
-  }
-
-  auto group = groups[referencePointIndex].optionalCast<openstudio::WorkspaceExtensibleGroup>();
-  if (!group) {
-    return;
-  }
-
-  const bool result =
-    group->setString(openstudio::Daylighting_ControlsExtensibleFields::FractionofLightsControlledbyReferencePoint, "");
-  OS_ASSERT(result);
-}
-
-double ThermalZone_Impl::daylightingReferencePointCoordinate(unsigned referencePointIndex, unsigned fieldIndex) const {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto referencePoint = daylightingReferencePointForZone(zone, referencePointIndex);
-  OS_ASSERT(referencePoint);
-  auto value = referencePoint->getDouble(fieldIndex, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-bool ThermalZone_Impl::setDaylightingReferencePointCoordinate(unsigned referencePointIndex, unsigned fieldIndex, double value) {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto referencePoint = daylightingReferencePointForZone(zone, referencePointIndex);
-  if (!referencePoint) {
-    return false;
-  }
-  return referencePoint->setDouble(fieldIndex, value);
-}
-
-double ThermalZone_Impl::primaryDaylightingControlXCoordinate() const {
-  return daylightingReferencePointCoordinate(kPrimaryDaylightingReferencePointIndex,
-                                             openstudio::Daylighting_ReferencePointFields::XCoordinateofReferencePoint);
-}
-
-double ThermalZone_Impl::primaryDaylightingControlYCoordinate() const {
-  return daylightingReferencePointCoordinate(kPrimaryDaylightingReferencePointIndex,
-                                             openstudio::Daylighting_ReferencePointFields::YCoordinateofReferencePoint);
-}
-
-double ThermalZone_Impl::primaryDaylightingControlZCoordinate() const {
-  return daylightingReferencePointCoordinate(kPrimaryDaylightingReferencePointIndex,
-                                             openstudio::Daylighting_ReferencePointFields::ZCoordinateofReferencePoint);
-}
-
-bool ThermalZone_Impl::setPrimaryDaylightingControlXCoordinate(double primaryDaylightingControlXCoordinate) {
-  return setDaylightingReferencePointCoordinate(kPrimaryDaylightingReferencePointIndex,
-                                                openstudio::Daylighting_ReferencePointFields::XCoordinateofReferencePoint,
-                                                primaryDaylightingControlXCoordinate);
-}
-
-bool ThermalZone_Impl::setPrimaryDaylightingControlYCoordinate(double primaryDaylightingControlYCoordinate) {
-  return setDaylightingReferencePointCoordinate(kPrimaryDaylightingReferencePointIndex,
-                                                openstudio::Daylighting_ReferencePointFields::YCoordinateofReferencePoint,
-                                                primaryDaylightingControlYCoordinate);
-}
-
-bool ThermalZone_Impl::setPrimaryDaylightingControlZCoordinate(double primaryDaylightingControlZCoordinate) {
-  return setDaylightingReferencePointCoordinate(kPrimaryDaylightingReferencePointIndex,
-                                                openstudio::Daylighting_ReferencePointFields::ZCoordinateofReferencePoint,
-                                                primaryDaylightingControlZCoordinate);
-}
-
-double ThermalZone_Impl::secondaryDaylightingControlXCoordinate() const {
-  return daylightingReferencePointCoordinate(kSecondaryDaylightingReferencePointIndex,
-                                             openstudio::Daylighting_ReferencePointFields::XCoordinateofReferencePoint);
-}
-
-double ThermalZone_Impl::secondaryDaylightingControlYCoordinate() const {
-  return daylightingReferencePointCoordinate(kSecondaryDaylightingReferencePointIndex,
-                                             openstudio::Daylighting_ReferencePointFields::YCoordinateofReferencePoint);
-}
-
-double ThermalZone_Impl::secondaryDaylightingControlZCoordinate() const {
-  return daylightingReferencePointCoordinate(kSecondaryDaylightingReferencePointIndex,
-                                             openstudio::Daylighting_ReferencePointFields::ZCoordinateofReferencePoint);
-}
-
-bool ThermalZone_Impl::setSecondaryDaylightingControlXCoordinate(double secondaryDaylightingControlXCoordinate) {
-  return setDaylightingReferencePointCoordinate(kSecondaryDaylightingReferencePointIndex,
-                                                openstudio::Daylighting_ReferencePointFields::XCoordinateofReferencePoint,
-                                                secondaryDaylightingControlXCoordinate);
-}
-
-bool ThermalZone_Impl::setSecondaryDaylightingControlYCoordinate(double secondaryDaylightingControlYCoordinate) {
-  return setDaylightingReferencePointCoordinate(kSecondaryDaylightingReferencePointIndex,
-                                                openstudio::Daylighting_ReferencePointFields::YCoordinateofReferencePoint,
-                                                secondaryDaylightingControlYCoordinate);
-}
-
-bool ThermalZone_Impl::setSecondaryDaylightingControlZCoordinate(double secondaryDaylightingControlZCoordinate) {
-  return setDaylightingReferencePointCoordinate(kSecondaryDaylightingReferencePointIndex,
-                                                openstudio::Daylighting_ReferencePointFields::ZCoordinateofReferencePoint,
-                                                secondaryDaylightingControlZCoordinate);
-}
-
-double ThermalZone_Impl::illuminanceMapOriginXCoordinate() const {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto object = outputIlluminanceMapForZone(zone);
-  OS_ASSERT(object);
-  auto value = object->getDouble(openstudio::Output_IlluminanceMapFields::XMinimumCoordinate, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-bool ThermalZone_Impl::setIlluminanceMapOriginXCoordinate(double illuminanceMapOriginXCoordinate) {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto object = outputIlluminanceMapForZone(zone);
-  if (!object) {
-    return false;
-  }
-
-  auto xMin = object->getDouble(openstudio::Output_IlluminanceMapFields::XMinimumCoordinate, true);
-  auto xMax = object->getDouble(openstudio::Output_IlluminanceMapFields::XMaximumCoordinate, true);
-  if (!xMin || !xMax) {
-    return false;
-  }
-
-  const double xLength = *xMax - *xMin;
-  if (!object->setDouble(openstudio::Output_IlluminanceMapFields::XMinimumCoordinate, illuminanceMapOriginXCoordinate)) {
-    return false;
-  }
-  return object->setDouble(openstudio::Output_IlluminanceMapFields::XMaximumCoordinate, illuminanceMapOriginXCoordinate + xLength);
-}
-
-double ThermalZone_Impl::illuminanceMapOriginYCoordinate() const {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto object = outputIlluminanceMapForZone(zone);
-  OS_ASSERT(object);
-  auto value = object->getDouble(openstudio::Output_IlluminanceMapFields::YMinimumCoordinate, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-bool ThermalZone_Impl::setIlluminanceMapOriginYCoordinate(double illuminanceMapOriginYCoordinate) {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto object = outputIlluminanceMapForZone(zone);
-  if (!object) {
-    return false;
-  }
-
-  auto yMin = object->getDouble(openstudio::Output_IlluminanceMapFields::YMinimumCoordinate, true);
-  auto yMax = object->getDouble(openstudio::Output_IlluminanceMapFields::YMaximumCoordinate, true);
-  if (!yMin || !yMax) {
-    return false;
-  }
-
-  const double yLength = *yMax - *yMin;
-  if (!object->setDouble(openstudio::Output_IlluminanceMapFields::YMinimumCoordinate, illuminanceMapOriginYCoordinate)) {
-    return false;
-  }
-  return object->setDouble(openstudio::Output_IlluminanceMapFields::YMaximumCoordinate, illuminanceMapOriginYCoordinate + yLength);
-}
-
-double ThermalZone_Impl::illuminanceMapOriginZCoordinate() const {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto object = outputIlluminanceMapForZone(zone);
-  OS_ASSERT(object);
-  auto value = object->getDouble(openstudio::Output_IlluminanceMapFields::Zheight, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-bool ThermalZone_Impl::setIlluminanceMapOriginZCoordinate(double illuminanceMapOriginZCoordinate) {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto object = outputIlluminanceMapForZone(zone);
-  if (!object) {
-    return false;
-  }
-  return object->setDouble(openstudio::Output_IlluminanceMapFields::Zheight, illuminanceMapOriginZCoordinate);
-}
-
-double ThermalZone_Impl::illuminanceMapXLength() const {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto object = outputIlluminanceMapForZone(zone);
-  OS_ASSERT(object);
-  auto xMin = object->getDouble(openstudio::Output_IlluminanceMapFields::XMinimumCoordinate, true);
-  auto xMax = object->getDouble(openstudio::Output_IlluminanceMapFields::XMaximumCoordinate, true);
-  OS_ASSERT(xMin);
-  OS_ASSERT(xMax);
-  return *xMax - *xMin;
-}
-
-bool ThermalZone_Impl::setIlluminanceMapXLength(double illuminanceMapXLength) {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto object = outputIlluminanceMapForZone(zone);
-  if (!object) {
-    return false;
-  }
-  auto xMin = object->getDouble(openstudio::Output_IlluminanceMapFields::XMinimumCoordinate, true);
-  if (!xMin) {
-    return false;
-  }
-  return object->setDouble(openstudio::Output_IlluminanceMapFields::XMaximumCoordinate, *xMin + illuminanceMapXLength);
-}
-
-int ThermalZone_Impl::illuminanceMapNumberofXGridPoints() const {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto object = outputIlluminanceMapForZone(zone);
-  OS_ASSERT(object);
-  auto value = object->getInt(openstudio::Output_IlluminanceMapFields::NumberofXGridPoints, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-bool ThermalZone_Impl::setIlluminanceMapNumberofXGridPoints(int illuminanceMapNumberofXGridPoints) {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto object = outputIlluminanceMapForZone(zone);
-  if (!object) {
-    return false;
-  }
-  return object->setInt(openstudio::Output_IlluminanceMapFields::NumberofXGridPoints, illuminanceMapNumberofXGridPoints);
-}
-
-double ThermalZone_Impl::illuminanceMapYLength() const {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto object = outputIlluminanceMapForZone(zone);
-  OS_ASSERT(object);
-  auto yMin = object->getDouble(openstudio::Output_IlluminanceMapFields::YMinimumCoordinate, true);
-  auto yMax = object->getDouble(openstudio::Output_IlluminanceMapFields::YMaximumCoordinate, true);
-  OS_ASSERT(yMin);
-  OS_ASSERT(yMax);
-  return *yMax - *yMin;
-}
-
-bool ThermalZone_Impl::setIlluminanceMapYLength(double illuminanceMapYLength) {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto object = outputIlluminanceMapForZone(zone);
-  if (!object) {
-    return false;
-  }
-  auto yMin = object->getDouble(openstudio::Output_IlluminanceMapFields::YMinimumCoordinate, true);
-  if (!yMin) {
-    return false;
-  }
-  return object->setDouble(openstudio::Output_IlluminanceMapFields::YMaximumCoordinate, *yMin + illuminanceMapYLength);
-}
-
-int ThermalZone_Impl::illuminanceMapNumberofYGridPoints() const {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto object = outputIlluminanceMapForZone(zone);
-  OS_ASSERT(object);
-  auto value = object->getInt(openstudio::Output_IlluminanceMapFields::NumberofYGridPoints, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-bool ThermalZone_Impl::setIlluminanceMapNumberofYGridPoints(int illuminanceMapNumberofYGridPoints) {
-  const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-  auto object = outputIlluminanceMapForZone(zone);
-  if (!object) {
-    return false;
-  }
-  return object->setInt(openstudio::Output_IlluminanceMapFields::NumberofYGridPoints, illuminanceMapNumberofYGridPoints);
-}
-
-void ThermalZone_Impl::doCanonicalize(LoadContext& context) {
-  auto sz = sizingZone();
-  sz.getImpl<openstudio::epmodel::detail::SizingZone_Impl>()->canonicalize(context);
-}
-
-}  // namespace detail
+
+    bool ThermalZone_Impl::setOutdoorAirFlowRate(double outdoorAirFlowRate) {
+      if (auto dsoa = getOrCreateZoneSharedDesignSpecificationOutdoorAir()) {
+        return dsoa->setOutdoorAirFlowRate(outdoorAirFlowRate);
+      }
+      return false;
+    }
+
+    double ThermalZone_Impl::outdoorAirFlowAirChangesperHour() const {
+      if (auto dsoa = zoneSharedDesignSpecificationOutdoorAir()) {
+        return dsoa->outdoorAirFlowAirChangesperHour();
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::setOutdoorAirFlowAirChangesperHour(double outdoorAirFlowAirChangesperHour) {
+      if (auto dsoa = getOrCreateZoneSharedDesignSpecificationOutdoorAir()) {
+        return dsoa->setOutdoorAirFlowAirChangesperHour(outdoorAirFlowAirChangesperHour);
+      }
+      return false;
+    }
+
+    boost::optional<double> ThermalZone_Impl::daylightingFraction(unsigned referencePointIndex) const {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto daylightingControls = daylightingControlsForZone(zone);
+      if (!daylightingControls) {
+        return boost::none;
+      }
+
+      const auto groups = daylightingControls->extensibleGroups();
+      if (referencePointIndex >= groups.size()) {
+        return boost::none;
+      }
+
+      auto group = groups[referencePointIndex].optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!group) {
+        return boost::none;
+      }
+
+      return group->getDouble(openstudio::Daylighting_ControlsExtensibleFields::FractionofLightsControlledbyReferencePoint, false);
+    }
+
+    double ThermalZone_Impl::fractionofZoneControlledbyPrimaryDaylightingControl() const {
+      if (auto value = daylightingFraction(kPrimaryDaylightingReferencePointIndex)) {
+        return *value;
+      }
+      return 1.0;
+    }
+
+    bool ThermalZone_Impl::isFractionofZoneControlledbyPrimaryDaylightingControlDefaulted() const {
+      return !daylightingFraction(kPrimaryDaylightingReferencePointIndex);
+    }
+
+    bool ThermalZone_Impl::setFractionofZoneControlledbyPrimaryDaylightingControl(double fractionofZoneControlledbyPrimaryDaylightingControl) {
+      if ((fractionofZoneControlledbyPrimaryDaylightingControl + fractionofZoneControlledbySecondaryDaylightingControl()) > 1.0) {
+        return false;
+      }
+      return setDaylightingFraction(kPrimaryDaylightingReferencePointIndex, fractionofZoneControlledbyPrimaryDaylightingControl);
+    }
+
+    void ThermalZone_Impl::resetFractionofZoneControlledbyPrimaryDaylightingControl() {
+      resetDaylightingFraction(kPrimaryDaylightingReferencePointIndex);
+    }
+
+    double ThermalZone_Impl::fractionofZoneControlledbySecondaryDaylightingControl() const {
+      if (auto value = daylightingFraction(kSecondaryDaylightingReferencePointIndex)) {
+        return *value;
+      }
+      return 0.0;
+    }
+
+    bool ThermalZone_Impl::isFractionofZoneControlledbySecondaryDaylightingControlDefaulted() const {
+      return !daylightingFraction(kSecondaryDaylightingReferencePointIndex);
+    }
+
+    bool ThermalZone_Impl::setFractionofZoneControlledbySecondaryDaylightingControl(double fractionofZoneControlledbySecondaryDaylightingControl) {
+      if ((fractionofZoneControlledbySecondaryDaylightingControl + fractionofZoneControlledbyPrimaryDaylightingControl()) > 1.0) {
+        return false;
+      }
+      return setDaylightingFraction(kSecondaryDaylightingReferencePointIndex, fractionofZoneControlledbySecondaryDaylightingControl);
+    }
+
+    void ThermalZone_Impl::resetFractionofZoneControlledbySecondaryDaylightingControl() {
+      resetDaylightingFraction(kSecondaryDaylightingReferencePointIndex);
+    }
+
+    bool ThermalZone_Impl::setDaylightingFraction(unsigned referencePointIndex, double value) {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto daylightingControls = daylightingControlsForZone(zone);
+      if (!daylightingControls) {
+        return false;
+      }
+
+      while (daylightingControls->numExtensibleGroups() <= referencePointIndex) {
+        daylightingControls->pushExtensibleGroup();
+      }
+
+      auto groups = daylightingControls->extensibleGroups();
+      if (referencePointIndex >= groups.size()) {
+        return false;
+      }
+
+      auto group = groups[referencePointIndex].optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!group) {
+        return false;
+      }
+
+      return group->setDouble(openstudio::Daylighting_ControlsExtensibleFields::FractionofLightsControlledbyReferencePoint, value);
+    }
+
+    void ThermalZone_Impl::resetDaylightingFraction(unsigned referencePointIndex) {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto daylightingControls = daylightingControlsForZone(zone);
+      if (!daylightingControls) {
+        return;
+      }
+
+      const auto groups = daylightingControls->extensibleGroups();
+      if (referencePointIndex >= groups.size()) {
+        return;
+      }
+
+      auto group = groups[referencePointIndex].optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!group) {
+        return;
+      }
+
+      const bool result = group->setString(openstudio::Daylighting_ControlsExtensibleFields::FractionofLightsControlledbyReferencePoint, "");
+      OS_ASSERT(result);
+    }
+
+    double ThermalZone_Impl::daylightingReferencePointCoordinate(unsigned referencePointIndex, unsigned fieldIndex) const {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto referencePoint = daylightingReferencePointForZone(zone, referencePointIndex);
+      OS_ASSERT(referencePoint);
+      auto value = referencePoint->getDouble(fieldIndex, true);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool ThermalZone_Impl::setDaylightingReferencePointCoordinate(unsigned referencePointIndex, unsigned fieldIndex, double value) {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto referencePoint = daylightingReferencePointForZone(zone, referencePointIndex);
+      if (!referencePoint) {
+        return false;
+      }
+      return referencePoint->setDouble(fieldIndex, value);
+    }
+
+    double ThermalZone_Impl::primaryDaylightingControlXCoordinate() const {
+      return daylightingReferencePointCoordinate(kPrimaryDaylightingReferencePointIndex,
+                                                 openstudio::Daylighting_ReferencePointFields::XCoordinateofReferencePoint);
+    }
+
+    double ThermalZone_Impl::primaryDaylightingControlYCoordinate() const {
+      return daylightingReferencePointCoordinate(kPrimaryDaylightingReferencePointIndex,
+                                                 openstudio::Daylighting_ReferencePointFields::YCoordinateofReferencePoint);
+    }
+
+    double ThermalZone_Impl::primaryDaylightingControlZCoordinate() const {
+      return daylightingReferencePointCoordinate(kPrimaryDaylightingReferencePointIndex,
+                                                 openstudio::Daylighting_ReferencePointFields::ZCoordinateofReferencePoint);
+    }
+
+    bool ThermalZone_Impl::setPrimaryDaylightingControlXCoordinate(double primaryDaylightingControlXCoordinate) {
+      return setDaylightingReferencePointCoordinate(kPrimaryDaylightingReferencePointIndex,
+                                                    openstudio::Daylighting_ReferencePointFields::XCoordinateofReferencePoint,
+                                                    primaryDaylightingControlXCoordinate);
+    }
+
+    bool ThermalZone_Impl::setPrimaryDaylightingControlYCoordinate(double primaryDaylightingControlYCoordinate) {
+      return setDaylightingReferencePointCoordinate(kPrimaryDaylightingReferencePointIndex,
+                                                    openstudio::Daylighting_ReferencePointFields::YCoordinateofReferencePoint,
+                                                    primaryDaylightingControlYCoordinate);
+    }
+
+    bool ThermalZone_Impl::setPrimaryDaylightingControlZCoordinate(double primaryDaylightingControlZCoordinate) {
+      return setDaylightingReferencePointCoordinate(kPrimaryDaylightingReferencePointIndex,
+                                                    openstudio::Daylighting_ReferencePointFields::ZCoordinateofReferencePoint,
+                                                    primaryDaylightingControlZCoordinate);
+    }
+
+    double ThermalZone_Impl::secondaryDaylightingControlXCoordinate() const {
+      return daylightingReferencePointCoordinate(kSecondaryDaylightingReferencePointIndex,
+                                                 openstudio::Daylighting_ReferencePointFields::XCoordinateofReferencePoint);
+    }
+
+    double ThermalZone_Impl::secondaryDaylightingControlYCoordinate() const {
+      return daylightingReferencePointCoordinate(kSecondaryDaylightingReferencePointIndex,
+                                                 openstudio::Daylighting_ReferencePointFields::YCoordinateofReferencePoint);
+    }
+
+    double ThermalZone_Impl::secondaryDaylightingControlZCoordinate() const {
+      return daylightingReferencePointCoordinate(kSecondaryDaylightingReferencePointIndex,
+                                                 openstudio::Daylighting_ReferencePointFields::ZCoordinateofReferencePoint);
+    }
+
+    bool ThermalZone_Impl::setSecondaryDaylightingControlXCoordinate(double secondaryDaylightingControlXCoordinate) {
+      return setDaylightingReferencePointCoordinate(kSecondaryDaylightingReferencePointIndex,
+                                                    openstudio::Daylighting_ReferencePointFields::XCoordinateofReferencePoint,
+                                                    secondaryDaylightingControlXCoordinate);
+    }
+
+    bool ThermalZone_Impl::setSecondaryDaylightingControlYCoordinate(double secondaryDaylightingControlYCoordinate) {
+      return setDaylightingReferencePointCoordinate(kSecondaryDaylightingReferencePointIndex,
+                                                    openstudio::Daylighting_ReferencePointFields::YCoordinateofReferencePoint,
+                                                    secondaryDaylightingControlYCoordinate);
+    }
+
+    bool ThermalZone_Impl::setSecondaryDaylightingControlZCoordinate(double secondaryDaylightingControlZCoordinate) {
+      return setDaylightingReferencePointCoordinate(kSecondaryDaylightingReferencePointIndex,
+                                                    openstudio::Daylighting_ReferencePointFields::ZCoordinateofReferencePoint,
+                                                    secondaryDaylightingControlZCoordinate);
+    }
+
+    double ThermalZone_Impl::illuminanceMapOriginXCoordinate() const {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto object = outputIlluminanceMapForZone(zone);
+      OS_ASSERT(object);
+      auto value = object->getDouble(openstudio::Output_IlluminanceMapFields::XMinimumCoordinate, true);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool ThermalZone_Impl::setIlluminanceMapOriginXCoordinate(double illuminanceMapOriginXCoordinate) {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto object = outputIlluminanceMapForZone(zone);
+      if (!object) {
+        return false;
+      }
+
+      auto xMin = object->getDouble(openstudio::Output_IlluminanceMapFields::XMinimumCoordinate, true);
+      auto xMax = object->getDouble(openstudio::Output_IlluminanceMapFields::XMaximumCoordinate, true);
+      if (!xMin || !xMax) {
+        return false;
+      }
+
+      const double xLength = *xMax - *xMin;
+      if (!object->setDouble(openstudio::Output_IlluminanceMapFields::XMinimumCoordinate, illuminanceMapOriginXCoordinate)) {
+        return false;
+      }
+      return object->setDouble(openstudio::Output_IlluminanceMapFields::XMaximumCoordinate, illuminanceMapOriginXCoordinate + xLength);
+    }
+
+    double ThermalZone_Impl::illuminanceMapOriginYCoordinate() const {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto object = outputIlluminanceMapForZone(zone);
+      OS_ASSERT(object);
+      auto value = object->getDouble(openstudio::Output_IlluminanceMapFields::YMinimumCoordinate, true);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool ThermalZone_Impl::setIlluminanceMapOriginYCoordinate(double illuminanceMapOriginYCoordinate) {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto object = outputIlluminanceMapForZone(zone);
+      if (!object) {
+        return false;
+      }
+
+      auto yMin = object->getDouble(openstudio::Output_IlluminanceMapFields::YMinimumCoordinate, true);
+      auto yMax = object->getDouble(openstudio::Output_IlluminanceMapFields::YMaximumCoordinate, true);
+      if (!yMin || !yMax) {
+        return false;
+      }
+
+      const double yLength = *yMax - *yMin;
+      if (!object->setDouble(openstudio::Output_IlluminanceMapFields::YMinimumCoordinate, illuminanceMapOriginYCoordinate)) {
+        return false;
+      }
+      return object->setDouble(openstudio::Output_IlluminanceMapFields::YMaximumCoordinate, illuminanceMapOriginYCoordinate + yLength);
+    }
+
+    double ThermalZone_Impl::illuminanceMapOriginZCoordinate() const {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto object = outputIlluminanceMapForZone(zone);
+      OS_ASSERT(object);
+      auto value = object->getDouble(openstudio::Output_IlluminanceMapFields::Zheight, true);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool ThermalZone_Impl::setIlluminanceMapOriginZCoordinate(double illuminanceMapOriginZCoordinate) {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto object = outputIlluminanceMapForZone(zone);
+      if (!object) {
+        return false;
+      }
+      return object->setDouble(openstudio::Output_IlluminanceMapFields::Zheight, illuminanceMapOriginZCoordinate);
+    }
+
+    double ThermalZone_Impl::illuminanceMapXLength() const {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto object = outputIlluminanceMapForZone(zone);
+      OS_ASSERT(object);
+      auto xMin = object->getDouble(openstudio::Output_IlluminanceMapFields::XMinimumCoordinate, true);
+      auto xMax = object->getDouble(openstudio::Output_IlluminanceMapFields::XMaximumCoordinate, true);
+      OS_ASSERT(xMin);
+      OS_ASSERT(xMax);
+      return *xMax - *xMin;
+    }
+
+    bool ThermalZone_Impl::setIlluminanceMapXLength(double illuminanceMapXLength) {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto object = outputIlluminanceMapForZone(zone);
+      if (!object) {
+        return false;
+      }
+      auto xMin = object->getDouble(openstudio::Output_IlluminanceMapFields::XMinimumCoordinate, true);
+      if (!xMin) {
+        return false;
+      }
+      return object->setDouble(openstudio::Output_IlluminanceMapFields::XMaximumCoordinate, *xMin + illuminanceMapXLength);
+    }
+
+    int ThermalZone_Impl::illuminanceMapNumberofXGridPoints() const {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto object = outputIlluminanceMapForZone(zone);
+      OS_ASSERT(object);
+      auto value = object->getInt(openstudio::Output_IlluminanceMapFields::NumberofXGridPoints, true);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool ThermalZone_Impl::setIlluminanceMapNumberofXGridPoints(int illuminanceMapNumberofXGridPoints) {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto object = outputIlluminanceMapForZone(zone);
+      if (!object) {
+        return false;
+      }
+      return object->setInt(openstudio::Output_IlluminanceMapFields::NumberofXGridPoints, illuminanceMapNumberofXGridPoints);
+    }
+
+    double ThermalZone_Impl::illuminanceMapYLength() const {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto object = outputIlluminanceMapForZone(zone);
+      OS_ASSERT(object);
+      auto yMin = object->getDouble(openstudio::Output_IlluminanceMapFields::YMinimumCoordinate, true);
+      auto yMax = object->getDouble(openstudio::Output_IlluminanceMapFields::YMaximumCoordinate, true);
+      OS_ASSERT(yMin);
+      OS_ASSERT(yMax);
+      return *yMax - *yMin;
+    }
+
+    bool ThermalZone_Impl::setIlluminanceMapYLength(double illuminanceMapYLength) {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto object = outputIlluminanceMapForZone(zone);
+      if (!object) {
+        return false;
+      }
+      auto yMin = object->getDouble(openstudio::Output_IlluminanceMapFields::YMinimumCoordinate, true);
+      if (!yMin) {
+        return false;
+      }
+      return object->setDouble(openstudio::Output_IlluminanceMapFields::YMaximumCoordinate, *yMin + illuminanceMapYLength);
+    }
+
+    int ThermalZone_Impl::illuminanceMapNumberofYGridPoints() const {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto object = outputIlluminanceMapForZone(zone);
+      OS_ASSERT(object);
+      auto value = object->getInt(openstudio::Output_IlluminanceMapFields::NumberofYGridPoints, true);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool ThermalZone_Impl::setIlluminanceMapNumberofYGridPoints(int illuminanceMapNumberofYGridPoints) {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto object = outputIlluminanceMapForZone(zone);
+      if (!object) {
+        return false;
+      }
+      return object->setInt(openstudio::Output_IlluminanceMapFields::NumberofYGridPoints, illuminanceMapNumberofYGridPoints);
+    }
+
+    void ThermalZone_Impl::doCanonicalize(LoadContext& context) {
+      auto sz = sizingZone();
+      sz.getImpl<openstudio::epmodel::detail::SizingZone_Impl>()->canonicalize(context);
+    }
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

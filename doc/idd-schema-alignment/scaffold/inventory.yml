@@ -7897,7 +7897,7 @@
   },
   {
     "idd_type": "SpaceList",
-    "status": "pending",
+    "status": "done",
     "target_class": "SpaceType",
     "base_class": "ModelObject",
     "folder_bucket": "ResourceObject",
@@ -7911,7 +7911,7 @@
   },
   {
     "idd_type": "SteamEquipment",
-    "status": "pending",
+    "status": "done",
     "target_class": "SteamEquipment",
     "base_class": "ModelObject",
     "folder_bucket": "SpaceLoadInstance",
@@ -7925,7 +7925,7 @@
   },
   {
     "idd_type": "SurfaceContaminantSourceAndSink:Generic:BoundaryLayerDiffusion",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -7936,7 +7936,7 @@
   },
   {
     "idd_type": "SurfaceContaminantSourceAndSink:Generic:DepositionVelocitySink",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -7947,7 +7947,7 @@
   },
   {
     "idd_type": "SurfaceContaminantSourceAndSink:Generic:PressureDriven",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfaceContaminantSourceAndSinkGenericPressureDriven",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -7958,7 +7958,7 @@
   },
   {
     "idd_type": "SurfaceControl:MovableInsulation",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfaceControlMovableInsulation",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -7972,7 +7972,7 @@
   },
   {
     "idd_type": "SurfaceConvectionAlgorithm:Inside",
-    "status": "pending",
+    "status": "done",
     "target_class": "InsideSurfaceConvectionAlgorithm",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -7986,7 +7986,7 @@
   },
   {
     "idd_type": "SurfaceConvectionAlgorithm:Inside:AdaptiveModelSelections",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfaceConvectionAlgorithmInsideAdaptiveModelSelections",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -7997,7 +7997,7 @@
   },
   {
     "idd_type": "SurfaceConvectionAlgorithm:Inside:UserCurve",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfaceConvectionAlgorithmInsideUserCurve",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8008,7 +8008,7 @@
   },
   {
     "idd_type": "SurfaceConvectionAlgorithm:Outside",
-    "status": "pending",
+    "status": "done",
     "target_class": "OutsideSurfaceConvectionAlgorithm",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8022,7 +8022,7 @@
   },
   {
     "idd_type": "SurfaceConvectionAlgorithm:Outside:AdaptiveModelSelections",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8033,7 +8033,7 @@
   },
   {
     "idd_type": "SurfaceConvectionAlgorithm:Outside:UserCurve",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfaceConvectionAlgorithmOutsideUserCurve",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8044,7 +8044,7 @@
   },
   {
     "idd_type": "SurfaceProperties:VaporCoefficients",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertiesVaporCoefficients",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8055,7 +8055,7 @@
   },
   {
     "idd_type": "SurfaceProperty:ConvectionCoefficients",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertyConvectionCoefficients",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8069,7 +8069,7 @@
   },
   {
     "idd_type": "SurfaceProperty:ConvectionCoefficients:MultipleSurface",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertyConvectionCoefficientsMultipleSurface",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8083,7 +8083,7 @@
   },
   {
     "idd_type": "SurfaceProperty:ExposedFoundationPerimeter",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertyExposedFoundationPerimeter",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8097,7 +8097,7 @@
   },
   {
     "idd_type": "SurfaceProperty:ExteriorNaturalVentedCavity",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertyExteriorNaturalVentedCavity",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8108,7 +8108,7 @@
   },
   {
     "idd_type": "SurfaceProperty:GroundSurfaces",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertyGroundSurfaces",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8122,7 +8122,7 @@
   },
   {
     "idd_type": "SurfaceProperty:HeatBalanceSourceTerm",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertyHeatBalanceSourceTerm",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8133,7 +8133,7 @@
   },
   {
     "idd_type": "SurfaceProperty:HeatTransferAlgorithm",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertyHeatTransferAlgorithm",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8144,7 +8144,7 @@
   },
   {
     "idd_type": "SurfaceProperty:HeatTransferAlgorithm:Construction",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertyHeatTransferAlgorithmConstruction",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8155,7 +8155,7 @@
   },
   {
     "idd_type": "SurfaceProperty:HeatTransferAlgorithm:MultipleSurface",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertyHeatTransferAlgorithmMultipleSurface",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8166,7 +8166,7 @@
   },
   {
     "idd_type": "SurfaceProperty:HeatTransferAlgorithm:SurfaceList",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertyHeatTransferAlgorithmSurfaceList",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8177,7 +8177,7 @@
   },
   {
     "idd_type": "SurfaceProperty:IncidentSolarMultiplier",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertyIncidentSolarMultiplier",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8191,7 +8191,7 @@
   },
   {
     "idd_type": "SurfaceProperty:LocalEnvironment",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertyLocalEnvironment",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8205,7 +8205,7 @@
   },
   {
     "idd_type": "SurfaceProperty:OtherSideCoefficients",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertyOtherSideCoefficients",
     "base_class": "ModelObject",
     "folder_bucket": "ResourceObject",
@@ -8219,7 +8219,7 @@
   },
   {
     "idd_type": "SurfaceProperty:OtherSideConditionsModel",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertyOtherSideConditionsModel",
     "base_class": "ModelObject",
     "folder_bucket": "ResourceObject",
@@ -8233,7 +8233,7 @@
   },
   {
     "idd_type": "SurfaceProperty:SolarIncidentInside",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertySolarIncidentInside",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8244,7 +8244,7 @@
   },
   {
     "idd_type": "SurfaceProperty:SurroundingSurfaces",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertySurroundingSurfaces",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8258,7 +8258,7 @@
   },
   {
     "idd_type": "SurfaceProperty:Underwater",
-    "status": "pending",
+    "status": "done",
     "target_class": "SurfacePropertyUnderwater",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8269,7 +8269,7 @@
   },
   {
     "idd_type": "SwimmingPool:Indoor",
-    "status": "pending",
+    "status": "done",
     "target_class": "SwimmingPoolIndoor",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -8283,7 +8283,7 @@
   },
   {
     "idd_type": "Table:IndependentVariable",
-    "status": "pending",
+    "status": "done",
     "target_class": "TableIndependentVariable",
     "base_class": "ModelObject",
     "folder_bucket": "ResourceObject",
@@ -8297,7 +8297,7 @@
   },
   {
     "idd_type": "Table:IndependentVariableList",
-    "status": "pending",
+    "status": "done",
     "target_class": "TableLookup",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -8311,7 +8311,7 @@
   },
   {
     "idd_type": "Table:Lookup",
-    "status": "pending",
+    "status": "done",
     "target_class": "TableLookup",
     "base_class": "ModelObject",
     "folder_bucket": "Curve",
@@ -8325,7 +8325,7 @@
   },
   {
     "idd_type": "TemperingValve",
-    "status": "pending",
+    "status": "done",
     "target_class": "TemperingValve",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -8339,7 +8339,7 @@
   },
   {
     "idd_type": "ThermalStorage:ChilledWater:Mixed",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermalStorageChilledWaterMixed",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8350,7 +8350,7 @@
   },
   {
     "idd_type": "ThermalStorage:ChilledWater:Stratified",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermalStorageChilledWaterStratified",
     "base_class": "ModelObject",
     "folder_bucket": "WaterToWaterComponent",
@@ -8364,7 +8364,7 @@
   },
   {
     "idd_type": "ThermalStorage:HotWater:Stratified",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermalStorageHotWaterStratified",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8375,7 +8375,7 @@
   },
   {
     "idd_type": "ThermalStorage:Ice:Detailed",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermalStorageIceDetailed",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -8389,7 +8389,7 @@
   },
   {
     "idd_type": "ThermalStorage:Ice:Simple",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermalStorageIceSimple",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8400,7 +8400,7 @@
   },
   {
     "idd_type": "ThermalStorage:PCM",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermalStoragePCM",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8411,7 +8411,7 @@
   },
   {
     "idd_type": "ThermalStorage:Sizing",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermalStorageSizing",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8422,7 +8422,7 @@
   },
   {
     "idd_type": "ThermostatSetpoint:DualSetpoint",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermostatSetpointDualSetpoint",
     "base_class": "ModelObject",
     "folder_bucket": "Thermostat",
@@ -8436,7 +8436,7 @@
   },
   {
     "idd_type": "ThermostatSetpoint:SingleCooling",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermostatSetpointDualSetpoint",
     "base_class": "ModelObject",
     "folder_bucket": "Thermostat",
@@ -8450,7 +8450,7 @@
   },
   {
     "idd_type": "ThermostatSetpoint:SingleHeating",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermostatSetpointDualSetpoint",
     "base_class": "ModelObject",
     "folder_bucket": "Thermostat",
@@ -8464,7 +8464,7 @@
   },
   {
     "idd_type": "ThermostatSetpoint:SingleHeatingOrCooling",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermostatSetpointSingleHeatingOrCooling",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8475,7 +8475,7 @@
   },
   {
     "idd_type": "ThermostatSetpoint:ThermalComfort:Fanger:DualSetpoint",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermostatSetpointThermalComfortFangerDualSetpoint",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8486,7 +8486,7 @@
   },
   {
     "idd_type": "ThermostatSetpoint:ThermalComfort:Fanger:SingleCooling",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermostatSetpointThermalComfortFangerSingleCooling",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8497,7 +8497,7 @@
   },
   {
     "idd_type": "ThermostatSetpoint:ThermalComfort:Fanger:SingleHeating",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermostatSetpointThermalComfortFangerSingleHeating",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8508,7 +8508,7 @@
   },
   {
     "idd_type": "ThermostatSetpoint:ThermalComfort:Fanger:SingleHeatingOrCooling",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8519,7 +8519,7 @@
   },
   {
     "idd_type": "Timestep",
-    "status": "pending",
+    "status": "done",
     "target_class": "Timestep",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8533,7 +8533,7 @@
   },
   {
     "idd_type": "UnitarySystemPerformance:Multispeed",
-    "status": "pending",
+    "status": "done",
     "target_class": "AirLoopHVACUnitarySystem",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -8547,7 +8547,7 @@
   },
   {
     "idd_type": "UtilityCost:Charge:Block",
-    "status": "pending",
+    "status": "done",
     "target_class": "UtilityCostChargeBlock",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8558,7 +8558,7 @@
   },
   {
     "idd_type": "UtilityCost:Charge:Simple",
-    "status": "pending",
+    "status": "done",
     "target_class": "UtilityCostChargeSimple",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8569,7 +8569,7 @@
   },
   {
     "idd_type": "UtilityCost:Computation",
-    "status": "pending",
+    "status": "done",
     "target_class": "UtilityCostComputation",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8580,7 +8580,7 @@
   },
   {
     "idd_type": "UtilityCost:Qualify",
-    "status": "pending",
+    "status": "done",
     "target_class": "UtilityCostQualify",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8591,7 +8591,7 @@
   },
   {
     "idd_type": "UtilityCost:Ratchet",
-    "status": "pending",
+    "status": "done",
     "target_class": "UtilityCostRatchet",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8602,7 +8602,7 @@
   },
   {
     "idd_type": "UtilityCost:Tariff",
-    "status": "pending",
+    "status": "done",
     "target_class": "UtilityCostTariff",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8613,7 +8613,7 @@
   },
   {
     "idd_type": "UtilityCost:Variable",
-    "status": "pending",
+    "status": "done",
     "target_class": "UtilityCostVariable",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8624,7 +8624,7 @@
   },
   {
     "idd_type": "Version",
-    "status": "pending",
+    "status": "done",
     "target_class": "Version",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8638,7 +8638,7 @@
   },
   {
     "idd_type": "Wall:Adiabatic",
-    "status": "pending",
+    "status": "done",
     "target_class": "WallAdiabatic",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8649,7 +8649,7 @@
   },
   {
     "idd_type": "Wall:Detailed",
-    "status": "pending",
+    "status": "done",
     "target_class": "WallDetailed",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8660,7 +8660,7 @@
   },
   {
     "idd_type": "Wall:Exterior",
-    "status": "pending",
+    "status": "done",
     "target_class": "WallExterior",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8671,7 +8671,7 @@
   },
   {
     "idd_type": "Wall:Interzone",
-    "status": "pending",
+    "status": "done",
     "target_class": "WallInterzone",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8682,7 +8682,7 @@
   },
   {
     "idd_type": "Wall:Underground",
-    "status": "pending",
+    "status": "done",
     "target_class": "WallUnderground",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8693,7 +8693,7 @@
   },
   {
     "idd_type": "WaterHeater:HeatPump:PumpedCondenser",
-    "status": "pending",
+    "status": "done",
     "target_class": "WaterHeaterHeatPump",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -8707,7 +8707,7 @@
   },
   {
     "idd_type": "WaterHeater:HeatPump:WrappedCondenser",
-    "status": "pending",
+    "status": "done",
     "target_class": "WaterHeaterHeatPumpWrappedCondenser",
     "base_class": "ModelObject",
     "folder_bucket": "ZoneHVACComponent",
@@ -8721,7 +8721,7 @@
   },
   {
     "idd_type": "WaterHeater:Mixed",
-    "status": "pending",
+    "status": "done",
     "target_class": "WaterHeaterMixed",
     "base_class": "ModelObject",
     "folder_bucket": "WaterToWaterComponent",
@@ -8735,7 +8735,7 @@
   },
   {
     "idd_type": "WaterHeater:Sizing",
-    "status": "pending",
+    "status": "done",
     "target_class": "WaterHeaterSizing",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8749,7 +8749,7 @@
   },
   {
     "idd_type": "WaterHeater:Stratified",
-    "status": "pending",
+    "status": "done",
     "target_class": "WaterHeaterStratified",
     "base_class": "ModelObject",
     "folder_bucket": "WaterToWaterComponent",
@@ -8763,7 +8763,7 @@
   },
   {
     "idd_type": "WaterUse:Connections",
-    "status": "pending",
+    "status": "done",
     "target_class": "WaterUseConnections",
     "base_class": "StraightComponent",
     "folder_bucket": "StraightComponent",
@@ -8777,7 +8777,7 @@
   },
   {
     "idd_type": "WaterUse:Equipment",
-    "status": "pending",
+    "status": "done",
     "target_class": "WaterUseEquipment",
     "base_class": "ModelObject",
     "folder_bucket": "SpaceLoadInstance",
@@ -8791,7 +8791,7 @@
   },
   {
     "idd_type": "WaterUse:RainCollector",
-    "status": "pending",
+    "status": "done",
     "target_class": "WaterUseRainCollector",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8802,7 +8802,7 @@
   },
   {
     "idd_type": "WaterUse:Storage",
-    "status": "pending",
+    "status": "done",
     "target_class": "WaterUseStorage",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8813,7 +8813,7 @@
   },
   {
     "idd_type": "WaterUse:Well",
-    "status": "pending",
+    "status": "done",
     "target_class": "WaterUseWell",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8824,7 +8824,7 @@
   },
   {
     "idd_type": "WeatherProperty:SkyTemperature",
-    "status": "pending",
+    "status": "done",
     "target_class": "SkyTemperature",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8838,7 +8838,7 @@
   },
   {
     "idd_type": "Window",
-    "status": "pending",
+    "status": "done",
     "target_class": "Window",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8849,7 +8849,7 @@
   },
   {
     "idd_type": "Window:Interzone",
-    "status": "pending",
+    "status": "done",
     "target_class": "WindowInterzone",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8860,7 +8860,7 @@
   },
   {
     "idd_type": "WindowGap:DeflectionState",
-    "status": "pending",
+    "status": "done",
     "target_class": "WindowGapDeflectionState",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8871,7 +8871,7 @@
   },
   {
     "idd_type": "WindowGap:SupportPillar",
-    "status": "pending",
+    "status": "done",
     "target_class": "WindowGapSupportPillar",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8882,7 +8882,7 @@
   },
   {
     "idd_type": "WindowMaterial:Blind",
-    "status": "pending",
+    "status": "done",
     "target_class": "Blind",
     "base_class": "ModelObject",
     "folder_bucket": "ShadingMaterial",
@@ -8896,7 +8896,7 @@
   },
   {
     "idd_type": "WindowMaterial:Blind:EquivalentLayer",
-    "status": "pending",
+    "status": "done",
     "target_class": "WindowMaterialBlindEquivalentLayer",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8907,7 +8907,7 @@
   },
   {
     "idd_type": "WindowMaterial:ComplexShade",
-    "status": "pending",
+    "status": "done",
     "target_class": "WindowMaterialComplexShade",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8918,7 +8918,7 @@
   },
   {
     "idd_type": "WindowMaterial:Drape:EquivalentLayer",
-    "status": "pending",
+    "status": "done",
     "target_class": "WindowMaterialDrapeEquivalentLayer",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8929,7 +8929,7 @@
   },
   {
     "idd_type": "WindowMaterial:Gap",
-    "status": "pending",
+    "status": "done",
     "target_class": "WindowMaterialGap",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8940,7 +8940,7 @@
   },
   {
     "idd_type": "WindowMaterial:Gap:EquivalentLayer",
-    "status": "pending",
+    "status": "done",
     "target_class": "WindowMaterialGapEquivalentLayer",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -8951,7 +8951,7 @@
   },
   {
     "idd_type": "WindowMaterial:Gas",
-    "status": "pending",
+    "status": "done",
     "target_class": "Gas",
     "base_class": "ModelObject",
     "folder_bucket": "GasLayer",
@@ -8965,7 +8965,7 @@
   },
   {
     "idd_type": "WindowMaterial:GasMixture",
-    "status": "pending",
+    "status": "done",
     "target_class": "GasMixture",
     "base_class": "ModelObject",
     "folder_bucket": "GasLayer",
@@ -8979,7 +8979,7 @@
   },
   {
     "idd_type": "WindowMaterial:Glazing",
-    "status": "pending",
+    "status": "done",
     "target_class": "StandardGlazing",
     "base_class": "ModelObject",
     "folder_bucket": "Glazing",
@@ -8993,7 +8993,7 @@
   },
   {
     "idd_type": "WindowMaterial:Glazing:EquivalentLayer",
-    "status": "pending",
+    "status": "done",
     "target_class": "WindowMaterialGlazingEquivalentLayer",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9004,7 +9004,7 @@
   },
   {
     "idd_type": "WindowMaterial:Glazing:RefractionExtinctionMethod",
-    "status": "pending",
+    "status": "done",
     "target_class": "RefractionExtinctionGlazing",
     "base_class": "ModelObject",
     "folder_bucket": "Glazing",
@@ -9018,7 +9018,7 @@
   },
   {
     "idd_type": "WindowMaterial:GlazingGroup:Thermochromic",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermochromicGlazing",
     "base_class": "ModelObject",
     "folder_bucket": "Glazing",
@@ -9032,7 +9032,7 @@
   },
   {
     "idd_type": "WindowMaterial:Screen",
-    "status": "pending",
+    "status": "done",
     "target_class": "Screen",
     "base_class": "ModelObject",
     "folder_bucket": "ShadingMaterial",
@@ -9046,7 +9046,7 @@
   },
   {
     "idd_type": "WindowMaterial:Screen:EquivalentLayer",
-    "status": "pending",
+    "status": "done",
     "target_class": "WindowMaterialScreenEquivalentLayer",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9057,7 +9057,7 @@
   },
   {
     "idd_type": "WindowMaterial:Shade",
-    "status": "pending",
+    "status": "done",
     "target_class": "Shade",
     "base_class": "ModelObject",
     "folder_bucket": "ShadingMaterial",
@@ -9071,7 +9071,7 @@
   },
   {
     "idd_type": "WindowMaterial:Shade:EquivalentLayer",
-    "status": "pending",
+    "status": "done",
     "target_class": "WindowMaterialShadeEquivalentLayer",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9082,7 +9082,7 @@
   },
   {
     "idd_type": "WindowMaterial:SimpleGlazingSystem",
-    "status": "pending",
+    "status": "done",
     "target_class": "SimpleGlazing",
     "base_class": "ModelObject",
     "folder_bucket": "Glazing",
@@ -9096,7 +9096,7 @@
   },
   {
     "idd_type": "WindowProperty:AirflowControl",
-    "status": "pending",
+    "status": "done",
     "target_class": "WindowPropertyAirflowControl",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9107,7 +9107,7 @@
   },
   {
     "idd_type": "WindowProperty:FrameAndDivider",
-    "status": "pending",
+    "status": "done",
     "target_class": "WindowPropertyFrameAndDivider",
     "base_class": "ModelObject",
     "folder_bucket": "ResourceObject",
@@ -9121,7 +9121,7 @@
   },
   {
     "idd_type": "WindowProperty:StormWindow",
-    "status": "pending",
+    "status": "done",
     "target_class": "WindowPropertyStormWindow",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9132,7 +9132,7 @@
   },
   {
     "idd_type": "WindowShadingControl",
-    "status": "pending",
+    "status": "done",
     "target_class": "ShadingControl",
     "base_class": "ModelObject",
     "folder_bucket": "ResourceObject",
@@ -9146,7 +9146,7 @@
   },
   {
     "idd_type": "WindowThermalModel:Params",
-    "status": "pending",
+    "status": "done",
     "target_class": "WindowThermalModelParams",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9157,7 +9157,7 @@
   },
   {
     "idd_type": "WindowsCalculationEngine",
-    "status": "pending",
+    "status": "done",
     "target_class": "WindowsCalculationEngine",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9168,7 +9168,7 @@
   },
   {
     "idd_type": "Zone",
-    "status": "pending",
+    "status": "done",
     "target_class": "ThermalZone",
     "base_class": "HVACComponent",
     "folder_bucket": "HVACComponent",
@@ -9182,7 +9182,7 @@
   },
   {
     "idd_type": "ZoneAirBalance:OutdoorAir",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneAirBalanceOutdoorAir",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9193,7 +9193,7 @@
   },
   {
     "idd_type": "ZoneAirContaminantBalance",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneAirContaminantBalance",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9207,7 +9207,7 @@
   },
   {
     "idd_type": "ZoneAirHeatBalanceAlgorithm",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneAirHeatBalanceAlgorithm",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9221,7 +9221,7 @@
   },
   {
     "idd_type": "ZoneAirMassFlowConservation",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneAirMassFlowConservation",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9235,7 +9235,7 @@
   },
   {
     "idd_type": "ZoneBaseboard:OutdoorTemperatureControlled",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneBaseboardOutdoorTemperatureControlled",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9246,7 +9246,7 @@
   },
   {
     "idd_type": "ZoneCapacitanceMultiplier:ResearchSpecial",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneCapacitanceMultiplierResearchSpecial",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9260,7 +9260,7 @@
   },
   {
     "idd_type": "ZoneContaminantSourceAndSink:CarbonDioxide",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneContaminantSourceAndSinkCarbonDioxide",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9271,7 +9271,7 @@
   },
   {
     "idd_type": "ZoneContaminantSourceAndSink:Generic:Constant",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneContaminantSourceAndSinkGenericConstant",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",
@@ -9282,7 +9282,7 @@
   },
   {
     "idd_type": "ZoneContaminantSourceAndSink:Generic:CutoffModel",
-    "status": "pending",
+    "status": "done",
     "target_class": "ZoneContaminantSourceAndSinkGenericCutoffModel",
     "base_class": "ModelObject",
     "folder_bucket": "ModelObject",

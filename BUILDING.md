@@ -35,6 +35,12 @@ If you notice the messages printed to the console when you run the `conan instal
 you'll see that the `conanfile` actually defines common build variables for you already,
 such as defining which `CPack` Generators to use depending on your target platform, trying to infer the `Python_ROOT_DIR` etc
 
+The snippet below is sample output from `conan install`.
+Use it as a reference to confirm that:
+- Conan detected your active Python version and `Python_ROOT_DIR`
+- The `conan-release` preset was written to `CMakePresets.json`
+- `CMakeUserPresets.json` was generated in the source tree
+
 <pre><font color="#75507B"><b>conanfile.py:</b></font> <font color="#75507B"><b>Calling generate()</b></font>
 conanfile.py: Generators folder: /path/to/OS-build-release
 conanfile.py: Setting PYTHON_VERSION and Python_ROOT_DIR from your current python: 3.8.13, &apos;/home/julien/.pyenv/versions/3.8.13&apos;
