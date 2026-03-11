@@ -518,7 +518,10 @@ namespace epmodel {
         return false;
       }
 
-      airLoop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>()->syncControllerMechanicalVentilationZoneOutdoorAirEntries();
+      auto airLoopImpl = airLoop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
+      OS_ASSERT(airLoopImpl);
+      airLoopImpl->syncControllerMechanicalVentilationZoneOutdoorAirEntries();
+      airLoopImpl->syncSetpointManagerMixedAirFanNodes();
       return true;
     }
 

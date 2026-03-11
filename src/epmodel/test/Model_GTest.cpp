@@ -32,7 +32,7 @@ TEST_F(EPModelFixture, Model_TransientNodeFactory) {
   Node nodeA = model.getOrCreateTransientByName<Node>("Node A");
   Node nodeA2 = model.getOrCreateTransientByName<Node>("node a");
 
-  EXPECT_EQ(nodeA.handle(), nodeA2.handle());
+  EXPECT_EQ(nodeA, nodeA2);
   EXPECT_EQ("Node A", nodeA.nameString());
 
   EXPECT_THROW(model.getOrCreateTransientByName<Node>(""), openstudio::Exception);

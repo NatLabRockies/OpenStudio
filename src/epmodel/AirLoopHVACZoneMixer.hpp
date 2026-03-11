@@ -41,6 +41,8 @@ class EPMODEL_API AirLoopHVACZoneMixer : public Mixer
   unsigned nextInletPort() const override;
   std::vector<ModelObject> inletModelObjects() const override;
   unsigned nextBranchIndex() const override;
+  void removePortForBranch(unsigned branchIndex) override;
+  bool setInletModelObject(unsigned branchIndex, const ModelObject& modelObject) override;
 
  protected:
   using ImplType = detail::AirLoopHVACZoneMixer_Impl;

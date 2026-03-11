@@ -1,0 +1,34 @@
+/***********************************************************************************************************************
+*  OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC.
+*  See also https://openstudio.net/license
+***********************************************************************************************************************/
+
+#ifndef EPMODEL_COILCOOLINGDXSINGLESPEED_IMPL_HPP
+#define EPMODEL_COILCOOLINGDXSINGLESPEED_IMPL_HPP
+
+#include "StraightComponent_Impl.hpp"
+
+namespace openstudio {
+namespace epmodel {
+class Node;
+class CoilSystemCoolingDX;
+namespace detail {
+
+class EPMODEL_API CoilCoolingDXSingleSpeed_Impl : public StraightComponent_Impl
+{
+ public:
+  using StraightComponent_Impl::StraightComponent_Impl;
+  virtual ~CoilCoolingDXSingleSpeed_Impl() override = default;
+
+  unsigned inletPort() const override;
+  unsigned outletPort() const override;
+
+  bool addToNode(Node& node);
+  boost::optional<CoilSystemCoolingDX> coilSystemCoolingDX() const;
+};
+
+}  // namespace detail
+}  // namespace epmodel
+}  // namespace openstudio
+
+#endif

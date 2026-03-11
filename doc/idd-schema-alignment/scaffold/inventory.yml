@@ -1,0 +1,12 @@
+[
+  {
+    "idd_type": "AirLoopHVAC",
+    "status": "pending",
+    "target_class": "AirLoopHVAC",
+    "base_class": "Loop",
+    "folder_bucket": "HVACComponent",
+    "output_dir": "src/epmodel/HVACComponent",
+    "has_model_counterpart": true,
+    "notes": "Seed record"
+  }
+]

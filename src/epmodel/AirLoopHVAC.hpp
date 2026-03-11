@@ -20,6 +20,7 @@ namespace epmodel {
 
   class Node;
   class AirLoopHVACOutdoorAirSystem;
+  class AvailabilityManager;
   class AirLoopHVACZoneMixer;
   class AirLoopHVACZoneSplitter;
   class ThermalZone;
@@ -62,6 +63,21 @@ namespace epmodel {
     std::vector<ModelObject> demandComponents(openstudio::IddObjectType type = openstudio::IddObjectType::Catchall) const override;
     boost::optional<AirLoopHVACOutdoorAirSystem> airLoopHVACOutdoorAirSystem() const;
     std::vector<ThermalZone> thermalZones() const;
+    std::vector<AvailabilityManager> availabilityManagers() const;
+
+    bool addAvailabilityManager(const AvailabilityManager& availabilityManager);
+    bool addAvailabilityManager(const AvailabilityManager& availabilityManager, unsigned priority);
+    bool setAvailabilityManagers(const std::vector<AvailabilityManager>& availabilityManagers);
+    void resetAvailabilityManagers();
+    bool removeAvailabilityManager(const AvailabilityManager& availabilityManager);
+    bool removeAvailabilityManager(unsigned priority);
+    bool setAvailabilityManagerPriority(const AvailabilityManager& availabilityManager, unsigned priority);
+    unsigned availabilityManagerPriority(const AvailabilityManager& availabilityManager) const;
+
+    bool addBranchForZone(ThermalZone& thermalZone);
+    bool addBranchForZone(ThermalZone& thermalZone, HVACComponent& airTerminal);
+    bool addBranchForHVACComponent(HVACComponent& hvacComponent);
+    bool removeBranchForZone(ThermalZone& thermalZone);
 
    protected:
     using ImplType = detail::AirLoopHVAC_Impl;

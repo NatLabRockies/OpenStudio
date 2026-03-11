@@ -18,6 +18,7 @@
 #include <utilities/idd/AirLoopHVAC_ZoneSplitter_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idf/IdfExtensibleGroup.hpp>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -68,6 +69,31 @@ std::vector<ModelObject> AirLoopHVACZoneSplitter::outletModelObjects() const {
 
   unsigned AirLoopHVACZoneSplitter::nextBranchIndex() const {
     return static_cast<unsigned>(outletModelObjects().size());
+  }
+
+  void AirLoopHVACZoneSplitter::removePortForBranch(unsigned branchIndex) {
+    if (branchIndex < extensibleGroups().size()) {
+      eraseExtensibleGroup(branchIndex);
+    }
+  }
+
+  bool AirLoopHVACZoneSplitter::setOutletModelObject(unsigned branchIndex, const ModelObject& modelObject) {
+    if (modelObject.model() != model()) {
+      return false;
+    }
+
+    auto groups = extensibleGroups();
+    IdfExtensibleGroup group = (branchIndex < groups.size()) ? groups[branchIndex] : pushExtensibleGroup();
+    auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+    if (!workspaceGroup) {
+      return false;
+    }
+    if (auto node = modelObject.optionalCast<openstudio::epmodel::Node>()) {
+      if (!workspaceGroup->setString(openstudio::AirLoopHVAC_ZoneSplitterExtensibleFields::OutletNodeName, node->nameString())) {
+        return false;
+      }
+    }
+    return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ZoneSplitterExtensibleFields::OutletNodeName, modelObject.handle(), false);
   }
 
 }  // namespace epmodel

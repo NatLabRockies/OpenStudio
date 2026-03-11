@@ -108,7 +108,7 @@ namespace detail {
   }
 
   std::vector<openstudio::IdfObject> Loop_Impl::remove() {
-    return {};
+    return ParentObject_Impl::remove();
   }
 
   openstudio::epmodel::Splitter Loop_Impl::demandSplitter() const {

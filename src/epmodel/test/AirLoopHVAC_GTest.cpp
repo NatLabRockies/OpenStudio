@@ -20,8 +20,29 @@
 #include "../ZoneHVACAirDistributionUnit_Impl.hpp"
 #include <utilities/idd/IddEnums.hxx>
 #include <algorithm>
+#include <set>
 
 using namespace openstudio::epmodel;
+
+namespace {
+
+unsigned demandCount(const AirLoopHVAC& airLoop, openstudio::IddObjectType type) {
+  return static_cast<unsigned>(airLoop.demandComponents(type).size());
+}
+
+void expectDemandBranchParity(const AirLoopHVAC& airLoop) {
+  EXPECT_EQ(airLoop.zoneSplitter().outletModelObjects().size(), airLoop.zoneMixer().inletModelObjects().size());
+}
+
+std::set<openstudio::Handle> zoneHandles(const AirLoopHVAC& airLoop) {
+  std::set<openstudio::Handle> handles;
+  for (const auto& zone : airLoop.thermalZones()) {
+    handles.insert(zone.handle());
+  }
+  return handles;
+}
+
+}  // namespace
 
 TEST_F(EPModelFixture, AirLoopHVAC_DefaultConstructor) {
   Model model;
@@ -401,7 +422,7 @@ TEST_F(EPModelFixture, AirLoopHVAC_AddToNodeUpdatesSupplyComponents) {
   auto components = airLoop.supplyComponents(openstudio::IddObjectType::Catchall);
   ASSERT_EQ(3u, components.size());
   EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Node), components[0].iddObject().type());
-  EXPECT_EQ(fan.handle(), components[1].handle());
+  EXPECT_EQ(fan, components[1]);
   EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Node), components[2].iddObject().type());
 }
 
@@ -416,7 +437,7 @@ TEST_F(EPModelFixture, AirLoopHVAC_SupplyComponentsTypeFilter) {
 
   auto fans = airLoop.supplyComponents(openstudio::IddObjectType::Fan_ConstantVolume);
   ASSERT_EQ(1u, fans.size());
-  EXPECT_EQ(fan.handle(), fans[0].handle());
+  EXPECT_EQ(fan, fans[0]);
 }
 
 TEST_F(EPModelFixture, Node_AdjacentComponentResolution) {
@@ -432,12 +453,12 @@ TEST_F(EPModelFixture, Node_AdjacentComponentResolution) {
 
   auto inletDownstream = inletNode.outletModelObject();
   ASSERT_TRUE(inletDownstream);
-  EXPECT_EQ(fan.handle(), inletDownstream->handle());
+  EXPECT_EQ(fan, *inletDownstream);
   EXPECT_FALSE(inletNode.inletModelObject());
 
   auto outletUpstream = outletNode.inletModelObject();
   ASSERT_TRUE(outletUpstream);
-  EXPECT_EQ(fan.handle(), outletUpstream->handle());
+  EXPECT_EQ(fan, *outletUpstream);
   EXPECT_FALSE(outletNode.outletModelObject());
 }
 TEST_F(EPModelFixture, API_AirLoopHVAC_DefaultConstructor) {
@@ -454,4 +475,236 @@ TEST_F(EPModelFixture, API_AirLoopHVAC_ModelLookupByTypeAndName) {
   auto object = model.getObjectByTypeAndName(AirLoopHVAC::iddObjectType(), airLoop.nameString());
   ASSERT_TRUE(object);
   EXPECT_EQ(airLoop.cast<ModelObject>(), object->cast<ModelObject>());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_AddBranchForHVACComponent_MutatesDemandTopology) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal(model);
+
+  const auto before = airLoop.demandComponents();
+  ASSERT_EQ(5u, before.size());
+
+  EXPECT_TRUE(airLoop.addBranchForHVACComponent(terminal));
+
+  const auto after = airLoop.demandComponents();
+  EXPECT_GT(after.size(), before.size());
+  auto terminals = airLoop.demandComponents(openstudio::IddObjectType::AirTerminal_SingleDuct_ConstantVolume_NoReheat);
+  ASSERT_EQ(1u, terminals.size());
+  EXPECT_EQ(terminal, terminals.front());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_AddAndRemoveBranchForZone_MutatesDemandTopology) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal(model);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  const auto added = airLoop.demandComponents();
+  EXPECT_GE(added.size(), 7u);
+
+  auto zones = airLoop.thermalZones();
+  ASSERT_EQ(1u, zones.size());
+  EXPECT_EQ(zone, zones.front());
+
+  EXPECT_TRUE(airLoop.removeBranchForZone(zone));
+  const auto removed = airLoop.demandComponents();
+  EXPECT_EQ(5u, removed.size());
+  EXPECT_TRUE(airLoop.thermalZones().empty());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_AddBranchForZone_MultiZoneExplicitTerminal) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone1(model);
+  ThermalZone zone2(model);
+  ThermalZone zone3(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal1(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal2(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal3(model);
+
+  EXPECT_TRUE(airLoop.addBranchForZone(zone1, terminal1));
+  EXPECT_FALSE(terminal2.airLoopHVAC());
+  EXPECT_FALSE(terminal3.airLoopHVAC());
+  EXPECT_TRUE(airLoop.addBranchForZone(zone2, terminal2));
+  EXPECT_TRUE(airLoop.addBranchForZone(zone3, terminal3));
+
+  EXPECT_EQ(3u, airLoop.thermalZones().size());
+  expectDemandBranchParity(airLoop);
+  EXPECT_EQ(3u, airLoop.zoneSplitter().outletModelObjects().size());
+  EXPECT_EQ(3u, demandCount(airLoop, openstudio::IddObjectType::Zone));
+  EXPECT_EQ(3u, demandCount(airLoop, openstudio::IddObjectType::AirTerminal_SingleDuct_ConstantVolume_NoReheat));
+
+  const auto handles = zoneHandles(airLoop);
+  EXPECT_TRUE(handles.find(zone1.handle()) != handles.end());
+  EXPECT_TRUE(handles.find(zone2.handle()) != handles.end());
+  EXPECT_TRUE(handles.find(zone3.handle()) != handles.end());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_RemoveBranchForZone_MultiZoneRemovalOrderMaintainsTopology) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone1(model);
+  ThermalZone zone2(model);
+  ThermalZone zone3(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal1(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal2(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal3(model);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone1, terminal1));
+  EXPECT_FALSE(terminal2.airLoopHVAC());
+  EXPECT_FALSE(terminal3.airLoopHVAC());
+  ASSERT_TRUE(airLoop.addBranchForZone(zone2, terminal2));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone3, terminal3));
+  ASSERT_EQ(3u, airLoop.thermalZones().size());
+  expectDemandBranchParity(airLoop);
+
+  EXPECT_TRUE(airLoop.removeBranchForZone(zone3));
+  expectDemandBranchParity(airLoop);
+  EXPECT_EQ(2u, airLoop.thermalZones().size());
+
+  EXPECT_TRUE(airLoop.removeBranchForZone(zone2));
+  expectDemandBranchParity(airLoop);
+  EXPECT_EQ(1u, airLoop.thermalZones().size());
+
+  EXPECT_TRUE(airLoop.removeBranchForZone(zone1));
+  expectDemandBranchParity(airLoop);
+  EXPECT_TRUE(airLoop.thermalZones().empty());
+  EXPECT_EQ(5u, airLoop.demandComponents().size());
+
+  const auto outlets = airLoop.zoneSplitter().outletModelObjects();
+  const auto inlets = airLoop.zoneMixer().inletModelObjects();
+  ASSERT_EQ(1u, outlets.size());
+  ASSERT_EQ(1u, inlets.size());
+  EXPECT_EQ(outlets.front(), inlets.front());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_AddBranchForZone_FailurePaths_NoTopologyMutation) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone1(model);
+  ThermalZone zone2(model);
+  ThermalZone zone3(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal1(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal2(model);
+  EXPECT_TRUE(airLoop.addBranchForZone(zone1, terminal1));
+
+  const auto baselineDemandSize = airLoop.demandComponents().size();
+  const auto baselineBranchCount = airLoop.zoneSplitter().outletModelObjects().size();
+  const auto baselineZones = zoneHandles(airLoop);
+
+  auto expectUnchanged = [&]() {
+    EXPECT_EQ(baselineDemandSize, airLoop.demandComponents().size());
+    EXPECT_EQ(baselineBranchCount, airLoop.zoneSplitter().outletModelObjects().size());
+    EXPECT_EQ(baselineBranchCount, airLoop.zoneMixer().inletModelObjects().size());
+    EXPECT_EQ(baselineZones, zoneHandles(airLoop));
+  };
+
+  EXPECT_FALSE(airLoop.addBranchForZone(zone1, terminal2));
+  expectUnchanged();
+
+  EXPECT_FALSE(airLoop.addBranchForZone(zone2, terminal1));
+  expectUnchanged();
+
+  Model otherModel;
+  ThermalZone foreignZone(otherModel);
+  AirTerminalSingleDuctConstantVolumeNoReheat foreignTerminal(otherModel);
+  EXPECT_FALSE(airLoop.addBranchForZone(foreignZone, terminal2));
+  expectUnchanged();
+
+  EXPECT_FALSE(airLoop.addBranchForZone(zone3, foreignTerminal));
+  expectUnchanged();
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_RemoveBranchForZone_FailurePaths_NoTopologyMutation) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone1(model);
+  ThermalZone zone2(model);
+  ThermalZone zone3(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal1(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal2(model);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone1, terminal1));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone2, terminal2));
+
+  const auto baseDemandSize = airLoop.demandComponents().size();
+  const auto baseBranchCount = airLoop.zoneSplitter().outletModelObjects().size();
+  const auto baseZones = zoneHandles(airLoop);
+
+  EXPECT_FALSE(airLoop.removeBranchForZone(zone3));
+  EXPECT_EQ(baseDemandSize, airLoop.demandComponents().size());
+  EXPECT_EQ(baseBranchCount, airLoop.zoneSplitter().outletModelObjects().size());
+  EXPECT_EQ(baseZones, zoneHandles(airLoop));
+
+  Model otherModel;
+  ThermalZone foreignZone(otherModel);
+  EXPECT_FALSE(airLoop.removeBranchForZone(foreignZone));
+  EXPECT_EQ(baseDemandSize, airLoop.demandComponents().size());
+  EXPECT_EQ(baseBranchCount, airLoop.zoneSplitter().outletModelObjects().size());
+  EXPECT_EQ(baseZones, zoneHandles(airLoop));
+
+  ASSERT_TRUE(airLoop.removeBranchForZone(zone2));
+  const auto afterFirstRemoveDemandSize = airLoop.demandComponents().size();
+  const auto afterFirstRemoveBranchCount = airLoop.zoneSplitter().outletModelObjects().size();
+  const auto afterFirstRemoveZones = zoneHandles(airLoop);
+
+  EXPECT_FALSE(airLoop.removeBranchForZone(zone2));
+  EXPECT_EQ(afterFirstRemoveDemandSize, airLoop.demandComponents().size());
+  EXPECT_EQ(afterFirstRemoveBranchCount, airLoop.zoneSplitter().outletModelObjects().size());
+  EXPECT_EQ(afterFirstRemoveZones, zoneHandles(airLoop));
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_AddBranchForHVACComponent_MultiBranchAndFailurePaths) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal1(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal2(model);
+
+  ASSERT_TRUE(airLoop.addBranchForHVACComponent(terminal1));
+  EXPECT_FALSE(terminal2.airLoopHVAC());
+  ASSERT_TRUE(airLoop.addBranchForHVACComponent(terminal2));
+  expectDemandBranchParity(airLoop);
+  EXPECT_EQ(2u, airLoop.zoneSplitter().outletModelObjects().size());
+  EXPECT_EQ(2u, demandCount(airLoop, openstudio::IddObjectType::AirTerminal_SingleDuct_ConstantVolume_NoReheat));
+
+  const auto baselineDemandSize = airLoop.demandComponents().size();
+
+  Model otherModel;
+  AirTerminalSingleDuctConstantVolumeNoReheat foreignTerminal(otherModel);
+  EXPECT_FALSE(airLoop.addBranchForHVACComponent(foreignTerminal));
+  EXPECT_EQ(baselineDemandSize, airLoop.demandComponents().size());
+  expectDemandBranchParity(airLoop);
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_DemandSide_HVACComponentRemove_UpdatesTopology) {
+  {
+    Model model;
+    AirLoopHVAC airLoop(model);
+    AirTerminalSingleDuctConstantVolumeNoReheat terminal(model);
+
+    ASSERT_TRUE(airLoop.addBranchForHVACComponent(terminal));
+    ASSERT_EQ(1u, demandCount(airLoop, openstudio::IddObjectType::AirTerminal_SingleDuct_ConstantVolume_NoReheat));
+    terminal.remove();
+    EXPECT_EQ(0u, demandCount(airLoop, openstudio::IddObjectType::AirTerminal_SingleDuct_ConstantVolume_NoReheat));
+    expectDemandBranchParity(airLoop);
+  }
+
+  {
+    Model model;
+    AirLoopHVAC airLoop(model);
+    ThermalZone zone(model);
+    AirTerminalSingleDuctConstantVolumeNoReheat terminal(model);
+
+    ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+    ASSERT_EQ(1u, airLoop.thermalZones().size());
+    terminal.remove();
+    EXPECT_EQ(0u, demandCount(airLoop, openstudio::IddObjectType::AirTerminal_SingleDuct_ConstantVolume_NoReheat));
+    expectDemandBranchParity(airLoop);
+
+    EXPECT_TRUE(airLoop.removeBranchForZone(zone));
+    EXPECT_TRUE(airLoop.thermalZones().empty());
+    EXPECT_EQ(5u, airLoop.demandComponents().size());
+  }
 }

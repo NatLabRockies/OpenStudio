@@ -8,6 +8,8 @@
 
 #include "AirLoopHVAC.hpp"
 #include "AirLoopHVAC_Impl.hpp"
+#include "AirLoopHVACZoneSplitter.hpp"
+#include "AirLoopHVACZoneMixer.hpp"
 #include "Branch.hpp"
 #include "Branch_Impl.hpp"
 #include "BranchList.hpp"
@@ -66,6 +68,9 @@ namespace epmodel {
           setString(outletPort(), supplyOutlet.nameString());
           setPointer(inletPort(), supplyInlet.handle(), false);
           setPointer(outletPort(), supplyOutlet.handle(), false);
+          auto airLoopImpl = airLoop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
+          OS_ASSERT(airLoopImpl);
+          airLoopImpl->syncSetpointManagerMixedAirFanNodes();
         } else {
           LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
                    "Empty branch encountered, but drop node '" << nodeName.get() << "' is not a loop inlet or outlet for AirLoopHVAC '"
@@ -153,6 +158,9 @@ namespace epmodel {
             }
           }
 
+          auto airLoopImpl = airLoop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
+          OS_ASSERT(airLoopImpl);
+          airLoopImpl->syncSetpointManagerMixedAirFanNodes();
           return true;
         }
       }
@@ -225,6 +233,83 @@ namespace epmodel {
       return boost::none;
     }
 
+    bool StraightComponent_Impl::removeFromLoop() {
+      auto thisObject = getObject<openstudio::epmodel::ModelObject>();
+
+      auto thisComponent = thisObject.optionalCast<openstudio::epmodel::StraightComponent>();
+      if (!thisComponent) {
+        return false;
+      }
+
+      const auto inletObject = inletModelObject();
+      const auto outletObject = outletModelObject();
+      if (!inletObject || !outletObject) {
+        return false;
+      }
+
+      auto inletNode = inletObject->optionalCast<openstudio::epmodel::Node>();
+      auto outletNode = outletObject->optionalCast<openstudio::epmodel::Node>();
+      if (!inletNode || !outletNode) {
+        return false;
+      }
+
+      auto loop = thisComponent->airLoopHVAC();
+      if (!loop) {
+        return false;
+      }
+
+      auto splitter = loop->zoneSplitter();
+      auto mixer = loop->zoneMixer();
+
+      const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(inletNode->cast<ModelObject>());
+      const auto mixerBranchIndex = mixer.branchIndexForInletModelObject(outletNode->cast<ModelObject>());
+      const bool isZoneBranch = (splitterBranchIndex == mixerBranchIndex)
+                                && (splitter.outletModelObject(splitterBranchIndex) == inletNode->cast<ModelObject>())
+                                && (mixer.inletModelObject(mixerBranchIndex) == outletNode->cast<ModelObject>());
+
+      if (isZoneBranch) {
+        splitter.setOutletModelObject(splitterBranchIndex, outletNode->cast<ModelObject>());
+      } else {
+        auto branchList = loop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>()->branchList();
+        const auto branches = branchList.branches();
+        if (branches.empty()) {
+          return false;
+        }
+        auto branch = branches.front();
+        auto components = branch.components();
+        for (unsigned i = 0; i < components.size(); ++i) {
+          if (components[i] != thisObject) {
+            continue;
+          }
+          if (i + 1u < components.size()) {
+            if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentInletNode(i + 1u, *inletNode)) {
+              return false;
+            }
+          }
+          branch.eraseExtensibleGroup(i);
+          break;
+        }
+      }
+
+      auto loopImpl = loop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
+      OS_ASSERT(loopImpl);
+      loopImpl->syncControllerMechanicalVentilationZoneOutdoorAirEntries();
+      loopImpl->syncSetpointManagerMixedAirFanNodes();
+      return true;
+    }
+
+    std::vector<openstudio::IdfObject> StraightComponent_Impl::remove() {
+      removeFromLoop();
+      return HVACComponent_Impl::remove();
+    }
+
+    void StraightComponent_Impl::disconnect() {
+      setString(inletPort(), "");
+      setString(outletPort(), "");
+      setPointer(inletPort(), Handle(), false);
+      setPointer(outletPort(), Handle(), false);
+    }
+
   }  // namespace detail
 
   StraightComponent::StraightComponent(IddObjectType type, const Model& model, bool fastName, bool isTransient)
@@ -233,7 +318,7 @@ namespace epmodel {
   StraightComponent::StraightComponent(std::shared_ptr<detail::StraightComponent_Impl> impl) : HVACComponent(std::move(impl)) {}
 
   bool StraightComponent::removeFromLoop() {
-    return false;
+    return getImpl<detail::StraightComponent_Impl>()->removeFromLoop();
   }
 
   unsigned StraightComponent::inletPort() const {

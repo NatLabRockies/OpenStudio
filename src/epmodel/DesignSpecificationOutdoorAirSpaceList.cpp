@@ -18,6 +18,8 @@
 #include <utilities/idf/IdfExtensibleGroup.hpp>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
+#include <algorithm>
+
 namespace openstudio {
 namespace epmodel {
 
@@ -187,6 +189,7 @@ void DesignSpecificationOutdoorAirSpaceList_Impl::doCanonicalize(LoadContext& co
   // Invalid groups are removed here so downstream API code can rely on assertions.
   unsigned groupIndex = 0u;
   unsigned removedCount = 0u;
+  std::vector<std::pair<openstudio::Handle, openstudio::Handle>> firstSeenAssignments;
   for (auto& group : list.extensibleGroups()) {
     auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
     OS_ASSERT(workspaceGroup);
@@ -209,6 +212,22 @@ void DesignSpecificationOutdoorAirSpaceList_Impl::doCanonicalize(LoadContext& co
       removeGroup = true;
       detail::addLoadWarning(context, "DesignSpecification:OutdoorAir:SpaceList '" + list.nameString()
                                        + "' has an unresolved DSOA reference at extensible index " + std::to_string(groupIndex) + ".");
+    }
+
+    if (!removeGroup) {
+      auto existing = std::find_if(firstSeenAssignments.begin(), firstSeenAssignments.end(),
+                                   [&space](const auto& pair) { return pair.first == space->handle(); });
+      if (existing != firstSeenAssignments.end()) {
+        removeGroup = true;
+        if (existing->second != dsoa->handle()) {
+          detail::addLoadWarning(context,
+                                 "DesignSpecification:OutdoorAir:SpaceList '" + list.nameString()
+                                   + "' has conflicting duplicate DSOA assignment for Space '" + space->nameString()
+                                   + "' at extensible index " + std::to_string(groupIndex) + "; keeping first assignment.");
+        }
+      } else {
+        firstSeenAssignments.emplace_back(space->handle(), dsoa->handle());
+      }
     }
 
     if (!removeGroup) {

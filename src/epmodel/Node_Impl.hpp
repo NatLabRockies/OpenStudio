@@ -11,6 +11,7 @@
 namespace openstudio {
 namespace epmodel {
   class Model;
+  class AirLoopHVACOutdoorAirSystem;
 namespace detail {
   class Model_Impl;
 }  // namespace detail
@@ -30,6 +31,7 @@ class EPMODEL_API Node_Impl : public StraightComponent_Impl
   virtual ~Node_Impl() override = default;
 
   boost::optional<AirLoopHVAC> airLoopHVAC() const override;
+  boost::optional<AirLoopHVACOutdoorAirSystem> airLoopHVACOutdoorAirSystem() const;
   boost::optional<ModelObject> inletModelObject() const override;
   boost::optional<ModelObject> outletModelObject() const override;
 

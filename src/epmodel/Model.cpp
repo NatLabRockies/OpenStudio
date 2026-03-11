@@ -14,9 +14,14 @@
 #include "AirLoopHVACZoneMixer_Impl.hpp"
 #include "AirLoopHVACZoneSplitter_Impl.hpp"
 #include "AirLoopHVAC_Impl.hpp"
+#include "AvailabilityManagerAssignmentList_Impl.hpp"
+#include "AvailabilityManagerNightCycle_Impl.hpp"
 #include "AirTerminalSingleDuctConstantVolumeNoReheat_Impl.hpp"
 #include "Branch_Impl.hpp"
 #include "BranchList_Impl.hpp"
+#include "CoilCoolingDXSingleSpeed_Impl.hpp"
+#include "CoilHeatingGas_Impl.hpp"
+#include "CoilSystemCoolingDX_Impl.hpp"
 #include "ControllerMechanicalVentilation_Impl.hpp"
 #include "ControllerOutdoorAir_Impl.hpp"
 #include "DesignSpecificationOutdoorAir_Impl.hpp"
@@ -28,6 +33,9 @@
 #include "OutdoorAirMixer_Impl.hpp"
 #include "SizingZone_Impl.hpp"
 #include "Space_Impl.hpp"
+#include "SetpointManagerMixedAir_Impl.hpp"
+#include "SetpointManagerScheduled_Impl.hpp"
+#include "SetpointManagerSingleZoneReheat_Impl.hpp"
 #include "ThermalZone_Impl.hpp"
 #include "ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "ZoneHVACEquipmentConnections_Impl.hpp"
@@ -226,6 +234,12 @@ namespace epmodel {
       if (type == IddObjectType::AirLoopHVAC_ZoneMixer) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AirLoopHVACZoneMixer_Impl(object, this, keepHandle));
       }
+      if (type == IddObjectType::AvailabilityManagerAssignmentList) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AvailabilityManagerAssignmentList_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::AvailabilityManager_NightCycle) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AvailabilityManagerNightCycle_Impl(object, this, keepHandle));
+      }
       if (type == IddObjectType::Branch) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new Branch_Impl(object, this, keepHandle));
       }
@@ -234,6 +248,24 @@ namespace epmodel {
       }
       if (type == IddObjectType::Fan_ConstantVolume) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new FanConstantVolume_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Coil_Cooling_DX_SingleSpeed) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoilCoolingDXSingleSpeed_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::Coil_Heating_Fuel) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoilHeatingGas_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::CoilSystem_Cooling_DX) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoilSystemCoolingDX_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::SetpointManager_MixedAir) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new SetpointManagerMixedAir_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::SetpointManager_Scheduled) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new SetpointManagerScheduled_Impl(object, this, keepHandle));
+      }
+      if (type == IddObjectType::SetpointManager_SingleZone_Reheat) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new SetpointManagerSingleZoneReheat_Impl(object, this, keepHandle));
       }
       if (type == IddObjectType::AirTerminal_SingleDuct_ConstantVolume_NoReheat) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
@@ -315,6 +347,14 @@ namespace epmodel {
       if (auto zoneMixer = std::dynamic_pointer_cast<AirLoopHVACZoneMixer_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new AirLoopHVACZoneMixer_Impl(*zoneMixer, this, keepHandle));
       }
+      if (auto availabilityManagerAssignmentList = std::dynamic_pointer_cast<AvailabilityManagerAssignmentList_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new AvailabilityManagerAssignmentList_Impl(*availabilityManagerAssignmentList, this, keepHandle));
+      }
+      if (auto availabilityManagerNightCycle = std::dynamic_pointer_cast<AvailabilityManagerNightCycle_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new AvailabilityManagerNightCycle_Impl(*availabilityManagerNightCycle, this, keepHandle));
+      }
       if (auto branch = std::dynamic_pointer_cast<Branch_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new Branch_Impl(*branch, this, keepHandle));
       }
@@ -323,6 +363,28 @@ namespace epmodel {
       }
       if (auto fan = std::dynamic_pointer_cast<FanConstantVolume_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new FanConstantVolume_Impl(*fan, this, keepHandle));
+      }
+      if (auto coilCoolingDXSingleSpeed = std::dynamic_pointer_cast<CoilCoolingDXSingleSpeed_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new CoilCoolingDXSingleSpeed_Impl(*coilCoolingDXSingleSpeed, this, keepHandle));
+      }
+      if (auto coilHeatingFuel = std::dynamic_pointer_cast<CoilHeatingGas_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoilHeatingGas_Impl(*coilHeatingFuel, this, keepHandle));
+      }
+      if (auto coilSystemCoolingDX = std::dynamic_pointer_cast<CoilSystemCoolingDX_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new CoilSystemCoolingDX_Impl(*coilSystemCoolingDX, this, keepHandle));
+      }
+      if (auto setpointManagerMixedAir = std::dynamic_pointer_cast<SetpointManagerMixedAir_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new SetpointManagerMixedAir_Impl(*setpointManagerMixedAir, this, keepHandle));
+      }
+      if (auto setpointManagerScheduled = std::dynamic_pointer_cast<SetpointManagerScheduled_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new SetpointManagerScheduled_Impl(*setpointManagerScheduled, this, keepHandle));
+      }
+      if (auto setpointManagerSingleZoneReheat = std::dynamic_pointer_cast<SetpointManagerSingleZoneReheat_Impl>(originalObjectImplPtr)) {
+        return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
+          new SetpointManagerSingleZoneReheat_Impl(*setpointManagerSingleZoneReheat, this, keepHandle));
       }
       if (auto airTerminal = std::dynamic_pointer_cast<AirTerminalSingleDuctConstantVolumeNoReheat_Impl>(originalObjectImplPtr)) {
         return std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(

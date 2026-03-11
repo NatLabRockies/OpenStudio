@@ -131,24 +131,12 @@ namespace epmodel {
       const auto groups = extensibleGroups();
       result.reserve(groups.size());
       for (const auto& group : groups) {
-        const auto componentType = group.getString(BranchExtensibleFields::ComponentObjectType);
-        const auto componentName = group.getString(BranchExtensibleFields::ComponentName);
-        OS_ASSERT(componentType && componentName);
-
-        openstudio::IddObjectType iddType;
-        try {
-          iddType = openstudio::IddObjectType(componentType->c_str());
-        } catch (const std::runtime_error&) {
-          OS_ASSERT(false);
-          continue;
-        }
-
-        auto componentObject = workspace().getObjectByTypeAndName(iddType, *componentName);
-        OS_ASSERT(componentObject);
-
-        auto component = componentObject->optionalCast<openstudio::epmodel::ModelObject>();
+        auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        OS_ASSERT(workspaceGroup);
+        auto target = workspaceGroup->getTarget(BranchExtensibleFields::ComponentName);
+        OS_ASSERT(target);
+        auto component = target->optionalCast<openstudio::epmodel::ModelObject>();
         OS_ASSERT(component);
-
         result.push_back(*component);
       }
       return result;

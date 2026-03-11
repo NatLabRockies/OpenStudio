@@ -13,6 +13,7 @@
 #include <boost/optional.hpp>
 
 #include <memory>
+#include <vector>
 
 namespace openstudio {
 namespace epmodel {
@@ -51,11 +52,10 @@ namespace epmodel {
     // boost::optional<StraightComponent> containingStraightComponent() const;
 
     bool addToNode(Node& node);
-    // TODO: Provide implementations for these HVACComponent APIs.
-    // bool addToSplitter(Splitter& splitter);
-    // void disconnect();
-    // bool isRemovable() const;
-    // std::vector<IdfObject> remove();
+    bool addToSplitter(Splitter& splitter);
+    void disconnect();
+    bool isRemovable() const;
+    std::vector<IdfObject> remove();
     // void autosize();
     // void applySizingValues();
     // ComponentType componentType() const;

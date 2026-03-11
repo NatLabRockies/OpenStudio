@@ -74,8 +74,16 @@ bool SizingZone_Impl::setDesignSpecificationOutdoorAirSpaceList(
 }
 
 void SizingZone_Impl::doCanonicalize(LoadContext& context) {
+  auto thisSizingZone = getObject<openstudio::epmodel::SizingZone>();
+  auto zoneOrZoneListTarget = thisSizingZone.getModelObjectTarget<openstudio::epmodel::ModelObject>(
+    openstudio::Sizing_ZoneFields::ZoneorZoneListName);
   auto zone = optionalThermalZone();
   if (!zone) {
+    if (zoneOrZoneListTarget) {
+      detail::addLoadWarning(
+        context, "Sizing:Zone '" + thisSizingZone.nameString()
+                   + "' references a non-ThermalZone target for Zone or ZoneList Name. ZoneList normalization is not yet implemented.");
+    }
     return;
   }
   // Canonical prerequisite: zone-level OA normalization depends on Space -> ThermalZone links.
@@ -129,7 +137,7 @@ void SizingZone_Impl::doCanonicalize(LoadContext& context) {
     canonicalSpaceList = openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList(model());
     canonicalSpaceList->setName(canonicalSpaceListName);
     detail::addLoadInfo(context, "Created DesignSpecification:OutdoorAir:SpaceList '" + canonicalSpaceList->nameString()
-                                   + "' for Sizing:Zone '" + getObject<openstudio::epmodel::SizingZone>().nameString() + "'.");
+                                   + "' for Sizing:Zone '" + thisSizingZone.nameString() + "'.");
   }
   OS_ASSERT(canonicalSpaceList);
 
@@ -158,7 +166,7 @@ void SizingZone_Impl::doCanonicalize(LoadContext& context) {
   // Direct DSOA on Sizing:Zone remains non-canonical and is normalized away here.
   if (setDesignSpecificationOutdoorAirSpaceList(*canonicalSpaceList)) {
     if (directDSOA) {
-      detail::addLoadInfo(context, "Normalized Sizing:Zone '" + getObject<openstudio::epmodel::SizingZone>().nameString()
+      detail::addLoadInfo(context, "Normalized Sizing:Zone '" + thisSizingZone.nameString()
                                    + "' OA reference to DesignSpecification:OutdoorAir:SpaceList '" + canonicalSpaceList->nameString() + "'.");
     }
     canonicalSpaceList->getImpl<openstudio::epmodel::detail::DesignSpecificationOutdoorAirSpaceList_Impl>()->canonicalize(context);

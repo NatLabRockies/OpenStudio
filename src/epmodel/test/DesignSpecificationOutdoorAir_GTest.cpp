@@ -17,6 +17,8 @@
 #include "../ThermalZone.hpp"
 
 #include <utilities/idd/Sizing_Zone_FieldEnums.hxx>
+#include <utilities/idd/DesignSpecification_OutdoorAir_SpaceList_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 using namespace openstudio::epmodel;
 
@@ -154,4 +156,40 @@ TEST_F(EPModelFixture, API_Space_DesignSpecificationOutdoorAir_FromSpaceList) {
   ASSERT_TRUE(space2DSOA);
   EXPECT_EQ(dsoa1, *space1DSOA);
   EXPECT_EQ(dsoa2, *space2DSOA);
+}
+
+TEST_F(EPModelFixture, API_DesignSpecificationOutdoorAirSpaceList_Canonicalize_DeduplicatesConflictingSpaceRows) {
+  Model model;
+  Space space(model);
+  DesignSpecificationOutdoorAir dsoa1(model);
+  DesignSpecificationOutdoorAir dsoa2(model);
+  dsoa1.setName("DSOA 1");
+  dsoa2.setName("DSOA 2");
+
+  DesignSpecificationOutdoorAirSpaceList list(model);
+  list.setName("Orphan Spaces DSOA Space List");
+
+  auto group1 = list.pushExtensibleGroup();
+  auto workspaceGroup1 = group1.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+  ASSERT_TRUE(workspaceGroup1);
+  ASSERT_TRUE(
+    workspaceGroup1->setPointer(openstudio::DesignSpecification_OutdoorAir_SpaceListExtensibleFields::SpaceName, space.handle()));
+  ASSERT_TRUE(workspaceGroup1->setPointer(
+    openstudio::DesignSpecification_OutdoorAir_SpaceListExtensibleFields::SpaceDesignSpecificationOutdoorAirObjectName, dsoa1.handle()));
+
+  auto group2 = list.pushExtensibleGroup();
+  auto workspaceGroup2 = group2.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+  ASSERT_TRUE(workspaceGroup2);
+  ASSERT_TRUE(
+    workspaceGroup2->setPointer(openstudio::DesignSpecification_OutdoorAir_SpaceListExtensibleFields::SpaceName, space.handle()));
+  ASSERT_TRUE(workspaceGroup2->setPointer(
+    openstudio::DesignSpecification_OutdoorAir_SpaceListExtensibleFields::SpaceDesignSpecificationOutdoorAirObjectName, dsoa2.handle()));
+
+  EXPECT_EQ(2u, list.numExtensibleGroups());
+  model.canonicalize(SanitizationPolicy::Repair);
+
+  EXPECT_EQ(1u, list.numExtensibleGroups());
+  auto assigned = list.designSpecificationOutdoorAir(space);
+  ASSERT_TRUE(assigned);
+  EXPECT_EQ(dsoa1, *assigned);
 }

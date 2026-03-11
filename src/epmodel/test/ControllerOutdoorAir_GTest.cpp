@@ -126,7 +126,9 @@ TEST_F(EPModelFixture, API_ControllerOutdoorAir_Canonicalize_SynthesizesCMVAndZo
   auto expectedDsoaObject =
     sizingZone.getModelObjectTarget<ModelObject>(openstudio::Sizing_ZoneFields::DesignSpecificationOutdoorAirObjectName);
   ASSERT_TRUE(expectedDsoaObject);
-  EXPECT_EQ(expectedDsoaObject->handle(), dsoaTarget->handle());
+  auto dsoaAsModelObject = dsoaTarget->optionalCast<ModelObject>();
+  ASSERT_TRUE(dsoaAsModelObject);
+  EXPECT_EQ(*expectedDsoaObject, *dsoaAsModelObject);
 }
 
 TEST_F(EPModelFixture, API_ControllerMechanicalVentilation_ImplOnlyZoneOutdoorAirEntries_LoopScoped) {
@@ -152,7 +154,7 @@ TEST_F(EPModelFixture, API_ControllerMechanicalVentilation_ImplOnlyZoneOutdoorAi
   airLoop.getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>()->syncControllerMechanicalVentilationZoneOutdoorAirEntries();
   auto entries = cmv.getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->zoneOutdoorAirEntries();
   ASSERT_EQ(1u, entries.size());
-  EXPECT_EQ(zoneWithDSOA.handle(), entries.front().first.handle());
+  EXPECT_EQ(zoneWithDSOA, entries.front().first);
 }
 
 TEST_F(EPModelFixture, API_ControllerMechanicalVentilation_RebuildOnThermalZoneAddToNode) {
@@ -190,11 +192,11 @@ TEST_F(EPModelFixture, API_ControllerMechanicalVentilation_RebuildOnThermalZoneA
   auto entriesA = cmvA.getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->zoneOutdoorAirEntries();
   auto entriesB = cmvB.getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->zoneOutdoorAirEntries();
   ASSERT_EQ(1u, entriesA.size());
-  EXPECT_EQ(zone.handle(), entriesA.front().first.handle());
+  EXPECT_EQ(zone, entriesA.front().first);
 
   ASSERT_TRUE(zone.addToNode(*branchNodeB));
 
   entriesB = cmvB.getImpl<openstudio::epmodel::detail::ControllerMechanicalVentilation_Impl>()->zoneOutdoorAirEntries();
   ASSERT_EQ(1u, entriesB.size());
-  EXPECT_EQ(zone.handle(), entriesB.front().first.handle());
+  EXPECT_EQ(zone, entriesB.front().first);
 }

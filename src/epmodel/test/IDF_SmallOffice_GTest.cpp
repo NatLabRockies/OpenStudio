@@ -15,7 +15,18 @@
 #include "../AirLoopHVACReturnPath_Impl.hpp"
 #include "../AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
 #include "../AirTerminalSingleDuctConstantVolumeNoReheat_Impl.hpp"
+#include "../AvailabilityManager.hpp"
+#include "../AvailabilityManagerAssignmentList.hpp"
+#include "../AvailabilityManagerAssignmentList_Impl.hpp"
+#include "../AvailabilityManagerNightCycle.hpp"
+#include "../AvailabilityManagerNightCycle_Impl.hpp"
 #include "../ControllerOutdoorAir.hpp"
+#include "../CoilCoolingDXSingleSpeed.hpp"
+#include "../CoilCoolingDXSingleSpeed_Impl.hpp"
+#include "../CoilHeatingGas.hpp"
+#include "../CoilHeatingGas_Impl.hpp"
+#include "../CoilSystemCoolingDX.hpp"
+#include "../CoilSystemCoolingDX_Impl.hpp"
 #include "../FanConstantVolume.hpp"
 #include "../FanConstantVolume_Impl.hpp"
 #include "../AirLoopHVACSupplyPath.hpp"
@@ -27,6 +38,12 @@
 #include "../SizingZone_Impl.hpp"
 #include "../Space.hpp"
 #include "../Space_Impl.hpp"
+#include "../SetpointManagerMixedAir.hpp"
+#include "../SetpointManagerMixedAir_Impl.hpp"
+#include "../SetpointManagerScheduled.hpp"
+#include "../SetpointManagerScheduled_Impl.hpp"
+#include "../SetpointManagerSingleZoneReheat.hpp"
+#include "../SetpointManagerSingleZoneReheat_Impl.hpp"
 #include "../ThermalZone.hpp"
 #include "../ThermalZone_Impl.hpp"
 #include "../ZoneHVACAirDistributionUnit.hpp"
@@ -303,6 +320,145 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_OutdoorAirSystemNonMutationApis) {
     ASSERT_TRUE(controllerSystem);
     EXPECT_EQ(outdoorAirSystem, *controllerSystem);
   }
+}
+
+TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_LoadsSetpointManagersAndCoilsAsConcreteTypes) {
+  auto model = loadSmallOfficeModel();
+  ASSERT_TRUE(model);
+
+  const auto mixedAirManagers = model->getConcreteModelObjects<SetpointManagerMixedAir>();
+  const auto scheduledManagers = model->getConcreteModelObjects<SetpointManagerScheduled>();
+  const auto singleZoneReheatManagers = model->getConcreteModelObjects<SetpointManagerSingleZoneReheat>();
+  const auto dxCoils = model->getConcreteModelObjects<CoilCoolingDXSingleSpeed>();
+  const auto gasHeatingCoils = model->getConcreteModelObjects<CoilHeatingGas>();
+  const auto dxCoilSystems = model->getConcreteModelObjects<CoilSystemCoolingDX>();
+
+  EXPECT_FALSE(mixedAirManagers.empty());
+  EXPECT_FALSE(scheduledManagers.empty());
+  EXPECT_FALSE(singleZoneReheatManagers.empty());
+  EXPECT_FALSE(dxCoils.empty());
+  EXPECT_FALSE(gasHeatingCoils.empty());
+  EXPECT_FALSE(dxCoilSystems.empty());
+}
+
+TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_LoadsAvailabilityManagersAsConcreteTypes) {
+  auto model = loadSmallOfficeModel();
+  ASSERT_TRUE(model);
+
+  const auto availabilityManagerAssignmentLists = model->getConcreteModelObjects<AvailabilityManagerAssignmentList>();
+  const auto nightCycleManagers = model->getConcreteModelObjects<AvailabilityManagerNightCycle>();
+
+  EXPECT_FALSE(availabilityManagerAssignmentLists.empty());
+  EXPECT_FALSE(nightCycleManagers.empty());
+}
+
+TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_AvailabilityManagersRoundTrip) {
+  auto model = loadSmallOfficeModel();
+  ASSERT_TRUE(model);
+
+  const auto airLoops = model->getConcreteModelObjects<AirLoopHVAC>();
+  const auto assignmentLists = model->getConcreteModelObjects<AvailabilityManagerAssignmentList>();
+  ASSERT_FALSE(airLoops.empty());
+  ASSERT_FALSE(assignmentLists.empty());
+
+  for (const auto& airLoop : airLoops) {
+    const auto managers = airLoop.availabilityManagers();
+    ASSERT_FALSE(managers.empty());
+
+    bool sawNightCycle = false;
+    for (const auto& manager : managers) {
+      EXPECT_TRUE(manager.loop());
+
+      auto nightCycle = manager.optionalCast<AvailabilityManagerNightCycle>();
+      if (nightCycle) {
+        sawNightCycle = true;
+        auto owningLoop = nightCycle->airLoopHVAC();
+        ASSERT_TRUE(owningLoop);
+        EXPECT_EQ(airLoop, *owningLoop);
+      }
+    }
+
+    EXPECT_TRUE(sawNightCycle);
+  }
+}
+
+TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_CoilSystemCoolingDX_ImplOnlyNavigationRoundTrip) {
+  auto model = loadSmallOfficeModel();
+  ASSERT_TRUE(model);
+
+  const auto coilSystems = model->getConcreteModelObjects<CoilSystemCoolingDX>();
+  const auto dxCoils = model->getConcreteModelObjects<CoilCoolingDXSingleSpeed>();
+  ASSERT_FALSE(coilSystems.empty());
+  ASSERT_FALSE(dxCoils.empty());
+
+  unsigned validated = 0u;
+  for (const auto& coilSystem : coilSystems) {
+    auto systemImpl = coilSystem.getImpl<openstudio::epmodel::detail::CoilSystemCoolingDX_Impl>();
+    ASSERT_TRUE(systemImpl);
+
+    auto coolingCoilObject = systemImpl->coolingCoil();
+    ASSERT_TRUE(coolingCoilObject);
+
+    const auto coilIt = std::find_if(dxCoils.begin(), dxCoils.end(),
+                                     [&](const CoilCoolingDXSingleSpeed& coil) { return coil.cast<ModelObject>() == *coolingCoilObject; });
+    ASSERT_NE(coilIt, dxCoils.end());
+    const auto& coolingCoil = *coilIt;
+
+    auto coolingCoilImpl = coolingCoil.getImpl<openstudio::epmodel::detail::CoilCoolingDXSingleSpeed_Impl>();
+    ASSERT_TRUE(coolingCoilImpl);
+    auto coilSystemFromCoil = coolingCoilImpl->coilSystemCoolingDX();
+    ASSERT_TRUE(coilSystemFromCoil);
+    EXPECT_EQ(coilSystem, *coilSystemFromCoil);
+
+    ++validated;
+  }
+
+  EXPECT_GT(validated, 0u);
+}
+
+TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_NodeSetpointManagersRoundTrip) {
+  auto model = loadSmallOfficeModel();
+  ASSERT_TRUE(model);
+
+  const auto mixedAirManagers = model->getConcreteModelObjects<SetpointManagerMixedAir>();
+  const auto scheduledManagers = model->getConcreteModelObjects<SetpointManagerScheduled>();
+  const auto singleZoneReheatManagers = model->getConcreteModelObjects<SetpointManagerSingleZoneReheat>();
+
+  const auto nodeContains = [](const Node& node, const SetpointManager& targetSPM) {
+    const auto nodeSPMs = node.setpointManagers();
+    return std::ranges::any_of(nodeSPMs, [&](const SetpointManager& spm) { return spm == targetSPM; });
+  };
+
+  unsigned validated = 0u;
+
+  for (const auto& spm : mixedAirManagers) {
+    auto node = spm.setpointNode();
+    if (!node) {
+      continue;
+    }
+    EXPECT_TRUE(nodeContains(*node, spm));
+    ++validated;
+  }
+
+  for (const auto& spm : scheduledManagers) {
+    auto node = spm.setpointNode();
+    if (!node) {
+      continue;
+    }
+    EXPECT_TRUE(nodeContains(*node, spm));
+    ++validated;
+  }
+
+  for (const auto& spm : singleZoneReheatManagers) {
+    auto node = spm.setpointNode();
+    if (!node) {
+      continue;
+    }
+    EXPECT_TRUE(nodeContains(*node, spm));
+    ++validated;
+  }
+
+  EXPECT_GT(validated, 0u);
 }
 
 TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_TerminalAndNodeNonMutationApis) {

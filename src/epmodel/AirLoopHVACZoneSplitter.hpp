@@ -41,6 +41,8 @@ class EPMODEL_API AirLoopHVACZoneSplitter : public Splitter
   unsigned nextOutletPort() const override;
   std::vector<ModelObject> outletModelObjects() const override;
   unsigned nextBranchIndex() const override;
+  void removePortForBranch(unsigned branchIndex) override;
+  bool setOutletModelObject(unsigned branchIndex, const ModelObject& modelObject) override;
 
  protected:
   using ImplType = detail::AirLoopHVACZoneSplitter_Impl;

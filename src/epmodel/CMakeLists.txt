@@ -54,12 +54,42 @@ set(${target_name}_src
   AirLoopHVAC.hpp
   AirLoopHVAC_Impl.hpp
   AirLoopHVAC.cpp
+  AvailabilityManager.hpp
+  AvailabilityManager_Impl.hpp
+  AvailabilityManager.cpp
+  AvailabilityManagerAssignmentList.hpp
+  AvailabilityManagerAssignmentList_Impl.hpp
+  AvailabilityManagerAssignmentList.cpp
+  AvailabilityManagerNightCycle.hpp
+  AvailabilityManagerNightCycle_Impl.hpp
+  AvailabilityManagerNightCycle.cpp
   AirTerminalSingleDuctConstantVolumeNoReheat.hpp
   AirTerminalSingleDuctConstantVolumeNoReheat_Impl.hpp
   AirTerminalSingleDuctConstantVolumeNoReheat.cpp
   FanConstantVolume.hpp
   FanConstantVolume_Impl.hpp
   FanConstantVolume.cpp
+  CoilCoolingDXSingleSpeed.hpp
+  CoilCoolingDXSingleSpeed_Impl.hpp
+  CoilCoolingDXSingleSpeed.cpp
+  CoilHeatingGas.hpp
+  CoilHeatingGas_Impl.hpp
+  CoilHeatingGas.cpp
+  CoilSystemCoolingDX.hpp
+  CoilSystemCoolingDX_Impl.hpp
+  CoilSystemCoolingDX.cpp
+  SetpointManager.hpp
+  SetpointManager_Impl.hpp
+  SetpointManager.cpp
+  SetpointManagerMixedAir.hpp
+  SetpointManagerMixedAir_Impl.hpp
+  SetpointManagerMixedAir.cpp
+  SetpointManagerScheduled.hpp
+  SetpointManagerScheduled_Impl.hpp
+  SetpointManagerScheduled.cpp
+  SetpointManagerSingleZoneReheat.hpp
+  SetpointManagerSingleZoneReheat_Impl.hpp
+  SetpointManagerSingleZoneReheat.cpp
   HVACComponent.hpp
   HVACComponent_Impl.hpp
   HVACComponent.cpp
@@ -146,8 +176,13 @@ set(${target_name}_test_src
   test/Node_GTest.cpp
   test/OutdoorAirMixer_GTest.cpp
   test/FanConstantVolume_GTest.cpp
+  test/SetpointManager_GTest.cpp
+  test/CoilCoolingDXSingleSpeed_GTest.cpp
+  test/CoilHeatingGas_GTest.cpp
+  test/CoilSystemCoolingDX_GTest.cpp
   test/ControllerOutdoorAir_GTest.cpp
   test/DesignSpecificationOutdoorAir_GTest.cpp
+  test/AvailabilityManager_GTest.cpp
   test/IDF_SmallOffice_GTest.cpp
 )
 

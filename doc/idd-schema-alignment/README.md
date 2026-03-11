@@ -189,28 +189,6 @@ These notes capture working design guidance that emerged while building `openstu
   loop-scoped Zone + DSOA/DSOA:SpaceList extensible groups only; `DesignSpecification:ZoneAirDistribution`
   linkage is not scaffolded yet.
 - No OA math/aggregation behavior yet (current work is structural scaffolding).
-- No reverse-style import normalization beyond current canonicalization repairs.
-
-### OA/DSOA Checkpoint (Current)
-
-- Implemented new epmodel types and APIs for:
-  - `DesignSpecificationOutdoorAir`
-  - `DesignSpecificationOutdoorAirSpaceList`
-  - `SizingZone`
-  - `Space`
-  - `ControllerOutdoorAir`
-  - `ControllerMechanicalVentilation`
-- Canonical OA representation for zone assignments with spaces is
-  `DesignSpecification:OutdoorAir:SpaceList`; `Sizing:Zone` direct DSOA is
-  normalized to SpaceList.
-- `AirLoopHVACOutdoorAirSystem::getControllerOutdoorAir()` is non-optional;
-  canonicalization enforces missing controller-list/controller scaffolding.
-- `ControllerOutdoorAir` public API stays aligned with `openstudio::model`
-  wrapper shape (for example no public `optionalControllerMechanicalVentilation()` accessor).
-- `ControllerMechanicalVentilation` canonical synthesis currently rebuilds
-  loop-scoped extensible Zone + DSOA/DSOA:SpaceList groups from current zone OA assignments.
-- No new runtime `Model::canonicalize(...)` call sites were introduced; model
-  canonicalization remains load/clone + explicit caller invocation.
 
 ### API/Field Divergence Tracking (for 500+ types)
 
@@ -300,8 +278,11 @@ Seed IDF -> EnergyPlus Measures (using `openstudio::epmodel` APIs) -> Simulation
 
 ## Challenges to Address
 
-- Without a translation layer, there is no clearly defined point to sanitize user input files. As a result, Model
-  API implementation becomes more defensive and validation becomes more implicit and diffuse.
+- Canonicalization now provides a deliberate sanitization/repair phase at load/create boundaries. Conceptually, this
+  is similar to a lightweight reverse translator: it normalizes representational variants into a canonical in-memory
+  graph and logs fixups.
+- We still do not have an explicit forward-translation-equivalent phase. Some runtime projections/derived structures
+  must currently be maintained at mutation points, which spreads pseudo-FT responsibilities across API code.
 - Without translation, it is also unclear how OpenStudio should manage IDF object ordering. Historically,
   OpenStudio has preferred to write IDFs in logical order rather than grouping objects strictly by type. This
   convention predates OpenStudio at NLR. The underlying OpenStudio Workspace does support explicit object ordering,
@@ -309,12 +290,13 @@ Seed IDF -> EnergyPlus Measures (using `openstudio::epmodel` APIs) -> Simulation
 
 ### Possible Solutions
 
-- Rebuild the model API implementation on top of the EnergyPlus schema (as prototyped in epmodel), while
-  maintaining a lighter import routine similar to the current EnergyPlus reverse translator. This would address the
-  sanitization challenge.
-- Combine the previous option with an updated EnergyPlus forward translator. It would be lighter than the current
-  implementation, while preserving a control surface for object ordering and a place to inject required simulation
-  objects (as we do today).
+- Continue with EnergyPlus-backed model API implementation (as prototyped in epmodel), with canonicalization as the
+  explicit pseudo-RT normalization surface.
+- Introduce a finalize phase (for example `Model::finalize()` and/or `ModelObject::finalize()`) that runs before
+  save/close and acts as pseudo-FT: compute/refresh required derived runtime-facing projections in one deliberate
+  place.
+- As an alternative, use an updated EnergyPlus forward translator instead of finalize for pseudo-FT responsibilities
+  (object ordering control and required simulation-object injection).
 - Keep the OS schema and model API implementation largely the same, but
   methodically extend it for full coverage of the EnergyPlus IDD schema, and
   extend the EnergyPlus translation layer to support full round-trip to and
@@ -329,3 +311,6 @@ This sandbox is tracked alongside the IDD schema-alignment effort:
 - `doc/idd-schema-alignment/idd_mapping_appendix.generated.md`: generated full inventory tables.
 - `doc/idd-schema-alignment/os_idd_object_relationships.md`: HVAC-only OpenStudio IDD object-list relationships.
 - `doc/idd-schema-alignment/os_hvac_concepts.md`: How HVAC topology is expressed in `src/model`.
+- `doc/idd-schema-alignment/epmodel-scaffold-contract.md`: Normative scaffold-generation contract for epmodel saturation.
+- `doc/idd-schema-alignment/scaffold/`: queue state (`inventory.yml`, `overrides.yml`, `runs.log.yml`) and usage notes.
+- `doc/idd-schema-alignment/scripts/epmodel_scaffold_cli.py`: temporary queue driver (`status`, `next`, `run`, etc.).

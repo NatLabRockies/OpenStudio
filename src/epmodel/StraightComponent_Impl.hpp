@@ -26,6 +26,9 @@ class EPMODEL_API StraightComponent_Impl : public HVACComponent_Impl
 
   virtual boost::optional<ModelObject> inletModelObject() const;
   virtual boost::optional<ModelObject> outletModelObject() const;
+  virtual bool removeFromLoop();
+  virtual std::vector<openstudio::IdfObject> remove() override;
+  virtual void disconnect() override;
   void doCanonicalize(LoadContext& context) override;
 
   virtual bool addToNode(Node& node) override;

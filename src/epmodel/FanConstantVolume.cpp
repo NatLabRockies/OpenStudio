@@ -6,6 +6,8 @@
 #include "FanConstantVolume.hpp"
 #include "FanConstantVolume_Impl.hpp"
 
+#include "AirLoopHVAC_Impl.hpp"
+#include "AirLoopHVACOutdoorAirSystem.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
 
@@ -49,8 +51,30 @@ unsigned FanConstantVolume_Impl::outletPort() const {
 }
 
 bool FanConstantVolume_Impl::addToNode(Node& node) {
-  // Delegate to StraightComponent implementation which edits the Branch extensible groups.
-  return StraightComponent_Impl::addToNode(node);
+  auto airLoop = node.airLoopHVAC();
+  auto oaSystem = node.airLoopHVACOutdoorAirSystem();
+
+  // Parity with openstudio::model: allow insertion on AirLoop supply path and
+  // OA-system-connected nodes (for contexts currently represented in epmodel).
+  if ((airLoop && airLoop->supplyComponent(node.handle())) || oaSystem) {
+    if (!StraightComponent_Impl::addToNode(node)) {
+      return false;
+    }
+
+    // MixedAir SPM fan-node fields are derived from supply topology and must be
+    // refreshed whenever a fan insertion mutates that topology.
+    if (!airLoop && oaSystem) {
+      airLoop = oaSystem->airLoopHVAC();
+    }
+    if (airLoop) {
+      auto airLoopImpl = airLoop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
+      OS_ASSERT(airLoopImpl);
+      airLoopImpl->syncSetpointManagerMixedAirFanNodes();
+    }
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace detail

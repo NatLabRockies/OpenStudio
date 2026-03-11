@@ -12,11 +12,14 @@
 #include "../utilities/idd/IddEnums.hpp"
 
 #include <memory>
+#include <vector>
 
 namespace openstudio {
 namespace epmodel {
 
 class Model;
+class SetpointManager;
+class AirLoopHVACOutdoorAirSystem;
 
 namespace detail {
   class Node_Impl;
@@ -31,6 +34,9 @@ class EPMODEL_API Node : public StraightComponent
   Node& operator=(const Node&) = default;
   Node& operator=(Node&&) = default;
   explicit Node(const Model& model);
+
+  std::vector<SetpointManager> setpointManagers() const;
+  boost::optional<AirLoopHVACOutdoorAirSystem> airLoopHVACOutdoorAirSystem() const;
 
   static IddObjectType iddObjectType();
 

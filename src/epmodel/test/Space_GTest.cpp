@@ -11,6 +11,7 @@
 #include "../DesignSpecificationOutdoorAirSpaceList.hpp"
 #include "../DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
 #include "../SizingZone.hpp"
+#include "../SizingZone_Impl.hpp"
 #include "../Space.hpp"
 #include "../ThermalZone.hpp"
 
@@ -120,4 +121,56 @@ TEST_F(EPModelFixture, API_Space_Canonicalize_RemovesEmptyOrphanDSOASpaceList) {
   model.canonicalize(SanitizationPolicy::Repair);
   orphanList = model.getConcreteModelObjectByName<DesignSpecificationOutdoorAirSpaceList>("Orphan Spaces DSOA Space List");
   EXPECT_FALSE(orphanList);
+}
+
+TEST_F(EPModelFixture, API_Space_Canonicalize_MigratesZonedSpaceAssignmentFromOrphanToZoneList) {
+  Model model;
+  ThermalZone zone(model);
+  Space space(model);
+  ASSERT_TRUE(space.setThermalZone(zone));
+  DesignSpecificationOutdoorAir dsoa(model);
+
+  auto orphanList = model.getConcreteModelObjectByName<DesignSpecificationOutdoorAirSpaceList>("Orphan Spaces DSOA Space List");
+  if (!orphanList) {
+    orphanList = DesignSpecificationOutdoorAirSpaceList(model);
+    orphanList->setName("Orphan Spaces DSOA Space List");
+  }
+  ASSERT_TRUE(orphanList->getImpl<detail::DesignSpecificationOutdoorAirSpaceList_Impl>()->setDesignSpecificationOutdoorAir(space, dsoa));
+
+  model.canonicalize(SanitizationPolicy::Repair);
+
+  auto zoneList = zone.sizingZone().getModelObjectTarget<DesignSpecificationOutdoorAirSpaceList>(
+    openstudio::Sizing_ZoneFields::DesignSpecificationOutdoorAirObjectName);
+  ASSERT_TRUE(zoneList);
+  auto zoneAssignment = zoneList->designSpecificationOutdoorAir(space);
+  ASSERT_TRUE(zoneAssignment);
+  EXPECT_EQ(dsoa, *zoneAssignment);
+
+  auto orphanAssignment = orphanList->designSpecificationOutdoorAir(space);
+  EXPECT_FALSE(orphanAssignment);
+}
+
+TEST_F(EPModelFixture, API_Space_Canonicalize_MigratesUnzonedSpaceAssignmentFromZoneListToOrphan) {
+  Model model;
+  ThermalZone zone(model);
+  Space unzonedSpace(model);
+  DesignSpecificationOutdoorAir dsoa(model);
+
+  DesignSpecificationOutdoorAirSpaceList zoneList(model);
+  zoneList.setName("Temporary Zone DSOA Space List");
+  auto sizingZoneImpl = zone.sizingZone().getImpl<detail::SizingZone_Impl>();
+  ASSERT_TRUE(sizingZoneImpl);
+  ASSERT_TRUE(sizingZoneImpl->setDesignSpecificationOutdoorAirSpaceList(zoneList));
+  ASSERT_TRUE(zoneList.getImpl<detail::DesignSpecificationOutdoorAirSpaceList_Impl>()->setDesignSpecificationOutdoorAir(unzonedSpace, dsoa));
+
+  model.canonicalize(SanitizationPolicy::Repair);
+
+  auto zoneAssignment = zoneList.designSpecificationOutdoorAir(unzonedSpace);
+  EXPECT_FALSE(zoneAssignment);
+
+  auto orphanList = model.getConcreteModelObjectByName<DesignSpecificationOutdoorAirSpaceList>("Orphan Spaces DSOA Space List");
+  ASSERT_TRUE(orphanList);
+  auto orphanAssignment = orphanList->designSpecificationOutdoorAir(unzonedSpace);
+  ASSERT_TRUE(orphanAssignment);
+  EXPECT_EQ(dsoa, *orphanAssignment);
 }

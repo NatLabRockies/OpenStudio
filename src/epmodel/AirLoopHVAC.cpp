@@ -8,6 +8,9 @@
 
 #include "BranchList.hpp"
 #include "BranchList_Impl.hpp"
+#include "AvailabilityManager.hpp"
+#include "AvailabilityManagerAssignmentList.hpp"
+#include "AvailabilityManagerAssignmentList_Impl.hpp"
 #include "Branch.hpp"
 #include "AirLoopHVACReturnPath.hpp"
 #include "AirLoopHVACReturnPath_Impl.hpp"
@@ -38,9 +41,12 @@
 #include "SizingZone_Impl.hpp"
 #include "DesignSpecificationOutdoorAirSpaceList.hpp"
 #include "DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
+#include "SetpointManagerMixedAir.hpp"
+#include "SetpointManagerMixedAir_Impl.hpp"
 #include "ZoneHVACEquipmentConnections.hpp"
 #include "ZoneHVACEquipmentConnections_Impl.hpp"
 
+#include <algorithm>
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_ReturnPath_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_SupplyPath_FieldEnums.hxx>
@@ -135,6 +141,58 @@ namespace epmodel {
     return getImpl<detail::AirLoopHVAC_Impl>()->thermalZones();
   }
 
+  std::vector<AvailabilityManager> AirLoopHVAC::availabilityManagers() const {
+    return getImpl<detail::AirLoopHVAC_Impl>()->availabilityManagers();
+  }
+
+  bool AirLoopHVAC::addAvailabilityManager(const AvailabilityManager& availabilityManager) {
+    return getImpl<detail::AirLoopHVAC_Impl>()->addAvailabilityManager(availabilityManager);
+  }
+
+  bool AirLoopHVAC::addAvailabilityManager(const AvailabilityManager& availabilityManager, unsigned priority) {
+    return getImpl<detail::AirLoopHVAC_Impl>()->addAvailabilityManager(availabilityManager, priority);
+  }
+
+  bool AirLoopHVAC::setAvailabilityManagers(const std::vector<AvailabilityManager>& availabilityManagers) {
+    return getImpl<detail::AirLoopHVAC_Impl>()->setAvailabilityManagers(availabilityManagers);
+  }
+
+  void AirLoopHVAC::resetAvailabilityManagers() {
+    getImpl<detail::AirLoopHVAC_Impl>()->resetAvailabilityManagers();
+  }
+
+  bool AirLoopHVAC::removeAvailabilityManager(const AvailabilityManager& availabilityManager) {
+    return getImpl<detail::AirLoopHVAC_Impl>()->removeAvailabilityManager(availabilityManager);
+  }
+
+  bool AirLoopHVAC::removeAvailabilityManager(unsigned priority) {
+    return getImpl<detail::AirLoopHVAC_Impl>()->removeAvailabilityManager(priority);
+  }
+
+  bool AirLoopHVAC::setAvailabilityManagerPriority(const AvailabilityManager& availabilityManager, unsigned priority) {
+    return getImpl<detail::AirLoopHVAC_Impl>()->setAvailabilityManagerPriority(availabilityManager, priority);
+  }
+
+  unsigned AirLoopHVAC::availabilityManagerPriority(const AvailabilityManager& availabilityManager) const {
+    return getImpl<detail::AirLoopHVAC_Impl>()->availabilityManagerPriority(availabilityManager);
+  }
+
+  bool AirLoopHVAC::addBranchForZone(ThermalZone& thermalZone) {
+    return getImpl<detail::AirLoopHVAC_Impl>()->addBranchForZone(thermalZone);
+  }
+
+  bool AirLoopHVAC::addBranchForZone(ThermalZone& thermalZone, HVACComponent& airTerminal) {
+    return getImpl<detail::AirLoopHVAC_Impl>()->addBranchForZone(thermalZone, airTerminal);
+  }
+
+  bool AirLoopHVAC::addBranchForHVACComponent(HVACComponent& hvacComponent) {
+    return getImpl<detail::AirLoopHVAC_Impl>()->addBranchForHVACComponent(hvacComponent);
+  }
+
+  bool AirLoopHVAC::removeBranchForZone(ThermalZone& thermalZone) {
+    return getImpl<detail::AirLoopHVAC_Impl>()->removeBranchForZone(thermalZone);
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -142,163 +200,235 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
-    namespace {
+    boost::optional<ZoneHVACEquipmentConnections> AirLoopHVAC_Impl::resolveZoneConnections(const ThermalZone& zone) {
+      for (const auto& conn : zone.model().getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
+        if (auto linkedZone = conn.thermalZone()) {
+          if (*linkedZone == zone) {
+            return conn;
+          }
+        }
+      }
+      return boost::none;
+    }
 
-      // Resolve a terminal on the demand branch by matching a straight component inlet
-      // to the splitter outlet branch node.
-      boost::optional<ModelObject> terminalForInletNode(const ModelObject& splitterOutletNode) {
-        for (const auto& object : splitterOutletNode.model().objects()) {
-          auto component = object.optionalCast<StraightComponent>();
-          if (!component) {
+    bool AirLoopHVAC_Impl::resolveZoneSplitterBranchNode(AirLoopHVACZoneSplitter& splitter, unsigned branchIndex, const Node& branchNode) {
+      auto groups = splitter.extensibleGroups();
+      IdfExtensibleGroup group = (branchIndex < groups.size()) ? groups[branchIndex] : splitter.pushExtensibleGroup();
+      auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!workspaceGroup) {
+        return false;
+      }
+      if (!workspaceGroup->setString(openstudio::AirLoopHVAC_ZoneSplitterExtensibleFields::OutletNodeName, branchNode.nameString())) {
+        return false;
+      }
+      return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ZoneSplitterExtensibleFields::OutletNodeName, branchNode.handle(), false);
+    }
+
+    bool AirLoopHVAC_Impl::resolveZoneMixerBranchNode(AirLoopHVACZoneMixer& mixer, unsigned branchIndex, const Node& branchNode) {
+      auto groups = mixer.extensibleGroups();
+      IdfExtensibleGroup group = (branchIndex < groups.size()) ? groups[branchIndex] : mixer.pushExtensibleGroup();
+      auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!workspaceGroup) {
+        return false;
+      }
+      if (!workspaceGroup->setString(openstudio::AirLoopHVAC_ZoneMixerExtensibleFields::InletNodeName, branchNode.nameString())) {
+        return false;
+      }
+      return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ZoneMixerExtensibleFields::InletNodeName, branchNode.handle(), false);
+    }
+
+    boost::optional<ThermalZone> AirLoopHVAC_Impl::resolveZoneServedByInletNode(const Node& zoneInletNode) {
+      const auto& m = zoneInletNode.model();
+      std::vector<ThermalZone> zones;
+
+      const auto inletNameMatches = [&](const ZoneHVACEquipmentConnections& conn) -> bool {
+        if (auto directInlet = conn.zoneAirInletNode()) {
+          return (*directInlet == zoneInletNode);
+        }
+
+        const auto inletNodeOrListName = conn.getString(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName);
+        if (!inletNodeOrListName || inletNodeOrListName->empty()) {
+          return false;
+        }
+
+        if (openstudio::istringEqual(*inletNodeOrListName, zoneInletNode.nameString())) {
+          return true;
+        }
+
+        if (auto nodeList = m.getObjectByTypeAndName(openstudio::IddObjectType::NodeList, *inletNodeOrListName)) {
+          for (const auto& group : nodeList->extensibleGroups()) {
+            const auto listedNodeName = group.getString(openstudio::NodeListExtensibleFields::NodeName);
+            if (listedNodeName && openstudio::istringEqual(*listedNodeName, zoneInletNode.nameString())) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      };
+
+      for (const auto& conn : m.getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
+        if (!inletNameMatches(conn)) {
+          continue;
+        }
+        if (auto zone = conn.thermalZone()) {
+          zones.push_back(*zone);
+        }
+      }
+
+      if (zones.empty()) {
+        return boost::none;
+      }
+
+      std::ranges::sort(zones, [](const ThermalZone& lhs, const ThermalZone& rhs) { return lhs.nameString() < rhs.nameString(); });
+      if (zones.size() > 1u) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
+                 "Multiple ThermalZones reference zone inlet node '" << zoneInletNode.nameString() << "'. Using first zone by name ordering.");
+      }
+      return zones.front();
+    }
+
+    boost::optional<ThermalZone> AirLoopHVAC_Impl::resolveZoneServedByReturnNode(const Node& zoneReturnNode) {
+      const auto& m = zoneReturnNode.model();
+      std::vector<ThermalZone> zones;
+
+      const auto outletNameMatches = [&](const ZoneHVACEquipmentConnections& conn) -> bool {
+        if (auto directOutlet = conn.zoneReturnAirNode()) {
+          return (*directOutlet == zoneReturnNode);
+        }
+
+        const auto outletNodeOrListName = conn.getString(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName);
+        if (!outletNodeOrListName || outletNodeOrListName->empty()) {
+          return false;
+        }
+
+        if (openstudio::istringEqual(*outletNodeOrListName, zoneReturnNode.nameString())) {
+          return true;
+        }
+
+        if (auto nodeList = m.getObjectByTypeAndName(openstudio::IddObjectType::NodeList, *outletNodeOrListName)) {
+          for (const auto& group : nodeList->extensibleGroups()) {
+            const auto listedNodeName = group.getString(openstudio::NodeListExtensibleFields::NodeName);
+            if (listedNodeName && openstudio::istringEqual(*listedNodeName, zoneReturnNode.nameString())) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      };
+
+      for (const auto& conn : m.getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
+        if (!outletNameMatches(conn)) {
+          continue;
+        }
+        if (auto zone = conn.thermalZone()) {
+          zones.push_back(*zone);
+        }
+      }
+
+      if (zones.empty()) {
+        return boost::none;
+      }
+
+      std::sort(zones.begin(), zones.end(), [](const ThermalZone& lhs, const ThermalZone& rhs) { return lhs.nameString() < rhs.nameString(); });
+      if (zones.size() > 1u) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
+                 "Multiple ThermalZones reference zone return node '" << zoneReturnNode.nameString() << "'. Using first zone by name ordering.");
+      }
+      return zones.front();
+    }
+
+    boost::optional<ModelObject> AirLoopHVAC_Impl::resolveTerminalOutletObject(const ModelObject& terminalObject) {
+      auto component = terminalObject.optionalCast<StraightComponent>();
+      if (!component) {
+        return boost::none;
+      }
+      return component->outletModelObject();
+    }
+
+    boost::optional<std::vector<StraightComponent>> AirLoopHVAC_Impl::resolveDemandBranchChain(const Node& branchStartNode,
+                                                                                               const Node& branchEndNode) {
+      std::vector<StraightComponent> components;
+      auto currentNode = branchEndNode;
+      std::set<openstudio::Handle> visitedNodeHandles{currentNode.handle()};
+
+      for (unsigned depth = 0; depth < 64u && !(currentNode == branchStartNode); ++depth) {
+        std::vector<std::pair<StraightComponent, Node>> candidates;
+        for (const auto& sourceObject : currentNode.sources()) {
+          auto candidate = sourceObject.optionalCast<StraightComponent>();
+          if (!candidate || candidate->iddObject().type() == openstudio::IddObjectType::Node) {
             continue;
           }
 
-          const auto inletObject = component->inletModelObject();
-          if (!inletObject) {
+          auto outletObject = candidate->outletModelObject();
+          auto outletNode = outletObject ? outletObject->optionalCast<Node>() : boost::none;
+          if (!outletNode || !(*outletNode == currentNode)) {
             continue;
           }
 
-          auto inletNode = inletObject->optionalCast<Node>();
+          auto inletObject = candidate->inletModelObject();
+          auto inletNode = inletObject ? inletObject->optionalCast<Node>() : boost::none;
           if (!inletNode) {
             continue;
           }
 
-          if (*inletNode == splitterOutletNode) {
-            return component.get().cast<ModelObject>();
+          candidates.emplace_back(*candidate, *inletNode);
+        }
+
+        if (candidates.empty()) {
+          return boost::none;
+        }
+
+        std::vector<std::pair<StraightComponent, Node>> nonVisitedCandidates;
+        for (const auto& candidate : candidates) {
+          if (visitedNodeHandles.find(candidate.second.handle()) == visitedNodeHandles.end()) {
+            nonVisitedCandidates.push_back(candidate);
           }
         }
+
+        const auto& selectedCandidates = nonVisitedCandidates.empty() ? candidates : nonVisitedCandidates;
+        if (selectedCandidates.size() != 1u) {
+          return boost::none;
+        }
+
+        const auto& [upstreamComponent, upstreamNode] = selectedCandidates.front();
+        components.push_back(upstreamComponent);
+        currentNode = upstreamNode;
+        if (!visitedNodeHandles.insert(currentNode.handle()).second) {
+          return boost::none;
+        }
+      }
+
+      if (!(currentNode == branchStartNode)) {
         return boost::none;
       }
+      return components;
+    }
 
-      // Resolve a ThermalZone from a zone inlet node using ZoneHVAC:EquipmentConnections.
-      boost::optional<ThermalZone> zoneForInletNode(const Node& inletNode) {
-        const auto& model = inletNode.model();
-        std::vector<ThermalZone> zones;
-
-        const auto inletNameMatches = [&](const ZoneHVACEquipmentConnections& conn) -> bool {
-          if (auto directInlet = conn.zoneAirInletNode()) {
-            return (*directInlet == inletNode);
-          }
-
-          const auto inletNodeOrListName = conn.getString(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName);
-          if (!inletNodeOrListName || inletNodeOrListName->empty()) {
-            return false;
-          }
-
-          if (openstudio::istringEqual(*inletNodeOrListName, inletNode.nameString())) {
-            return true;
-          }
-
-          if (auto nodeList = model.getObjectByTypeAndName(openstudio::IddObjectType::NodeList, *inletNodeOrListName)) {
-            for (const auto& group : nodeList->extensibleGroups()) {
-              const auto listedNodeName = group.getString(openstudio::NodeListExtensibleFields::NodeName);
-              if (listedNodeName && openstudio::istringEqual(*listedNodeName, inletNode.nameString())) {
-                return true;
-              }
-            }
-          }
-
-          return false;
-        };
-
-        for (const auto& conn : model.getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
-          if (!inletNameMatches(conn)) {
-            continue;
-          }
-          if (auto zone = conn.thermalZone()) {
-            zones.push_back(*zone);
-          }
+    boost::optional<ModelObject> AirLoopHVAC_Impl::resolveTerminalOnDemandBranchNodes(const Node& splitterOutletNode, const Node& mixerInletNode) {
+      if (auto branchComponents = resolveDemandBranchChain(splitterOutletNode, mixerInletNode)) {
+        if (!branchComponents->empty()) {
+          return branchComponents->back().cast<ModelObject>();
         }
-
-        if (zones.empty()) {
-          return boost::none;
-        }
-
-        std::sort(zones.begin(), zones.end(), [](const ThermalZone& lhs, const ThermalZone& rhs) { return lhs.nameString() < rhs.nameString(); });
-
-        if (zones.size() > 1u) {
-          LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
-                   "Multiple ThermalZones reference zone inlet node '" << inletNode.nameString() << "'. Using first zone by name ordering.");
-        }
-
-        return zones.front();
       }
 
-      // Resolve a ThermalZone from a zone outlet/return node using ZoneHVAC:EquipmentConnections.
-      boost::optional<ModelObject> zoneForOutletNode(const ModelObject& outletObject) {
-        auto outletNode = outletObject.optionalCast<Node>();
-        if (!outletNode) {
-          return boost::none;
+      for (const auto& sourceObject : splitterOutletNode.sources()) {
+        if (sourceObject.optionalCast<StraightComponent>()) {
+          continue;
         }
-
-        const auto& model = outletNode->model();
-        std::vector<ThermalZone> zones;
-
-        const auto outletNameMatches = [&](const ZoneHVACEquipmentConnections& conn) -> bool {
-          if (auto directOutlet = conn.zoneReturnAirNode()) {
-            return (*directOutlet == *outletNode);
-          }
-
-          const auto outletNodeOrListName = conn.getString(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName);
-          if (!outletNodeOrListName || outletNodeOrListName->empty()) {
-            return false;
-          }
-
-          if (openstudio::istringEqual(*outletNodeOrListName, outletNode->nameString())) {
-            return true;
-          }
-
-          if (auto nodeList = model.getObjectByTypeAndName(openstudio::IddObjectType::NodeList, *outletNodeOrListName)) {
-            for (const auto& group : nodeList->extensibleGroups()) {
-              const auto listedNodeName = group.getString(openstudio::NodeListExtensibleFields::NodeName);
-              if (listedNodeName && openstudio::istringEqual(*listedNodeName, outletNode->nameString())) {
-                return true;
-              }
-            }
-          }
-
-          return false;
-        };
-
-        for (const auto& conn : model.getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
-          if (!outletNameMatches(conn)) {
-            continue;
-          }
-          if (auto zone = conn.thermalZone()) {
-            zones.push_back(*zone);
-          }
+        const auto objectType = sourceObject.iddObject().type();
+        if (objectType == openstudio::IddObjectType::AirLoopHVAC_ZoneSplitter || objectType == openstudio::IddObjectType::AirLoopHVAC_ZoneMixer
+            || objectType == openstudio::IddObjectType::Node) {
+          continue;
         }
-
-        if (zones.empty()) {
-          return boost::none;
-        }
-
-        std::sort(zones.begin(), zones.end(), [](const ThermalZone& lhs, const ThermalZone& rhs) { return lhs.nameString() < rhs.nameString(); });
-
-        if (zones.size() > 1u) {
-          LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
-                   "Multiple ThermalZones reference zone outlet node '" << outletNode->nameString() << "'. Using first zone by name ordering.");
-        }
-
-        return zones.front().cast<ModelObject>();
+        LOG_FREE(Debug, "openstudio.epmodel.AirLoopHVAC",
+                 "Non-StraightComponent object '" << sourceObject.nameString() << "' is not yet supported by resolveTerminalOnDemandBranchNodes.");
+        break;
       }
 
-      // Resolve the outlet node for a terminal object when available.
-      boost::optional<ModelObject> outletForTerminal(const ModelObject& terminal) {
-        auto component = terminal.optionalCast<StraightComponent>();
-        if (!component) {
-          return boost::none;
-        }
-
-        auto outletObject = component->outletModelObject();
-        if (!outletObject) {
-          return boost::none;
-        }
-
-        return outletObject;
-      }
-
-    }  // namespace
+      return boost::none;
+    }
 
     void AirLoopHVAC_Impl::doCanonicalize(LoadContext& context) {
       auto airLoop = getObject<AirLoopHVAC>();
@@ -315,6 +445,7 @@ namespace epmodel {
         detail::NodeList_Impl::ensureAttachedNodeList(context, airLoop, AirLoopHVACFields::DemandSideInletNodeNames, " Demand Inlet Nodes",
                                                       " Demand Inlet Node");
         getOrCreateTarget<Node>(AirLoopHVACFields::DemandSideOutletNodeName, loopName + " Demand Outlet Node");
+        getOrCreateTarget<AvailabilityManagerAssignmentList>(AirLoopHVACFields::AvailabilityManagerListName, loopName + " Availability Manager List");
 
         {  // Supply branch storage contract.
            // BranchList is the E+ source-of-truth for supply component order.
@@ -450,7 +581,269 @@ namespace epmodel {
         }
 
         syncControllerMechanicalVentilationZoneOutdoorAirEntries();
+        syncSetpointManagerMixedAirFanNodes();
       }
+
+      availabilityManagerAssignmentList().getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->canonicalize(context);
+    }
+
+    AvailabilityManagerAssignmentList AirLoopHVAC_Impl::availabilityManagerAssignmentList() const {
+      auto assignmentList =
+        getObject<AirLoopHVAC>().getModelObjectTarget<AvailabilityManagerAssignmentList>(AirLoopHVACFields::AvailabilityManagerListName);
+      OS_ASSERT(assignmentList);
+      return *assignmentList;
+    }
+
+    std::vector<AvailabilityManager> AirLoopHVAC_Impl::availabilityManagers() const {
+      return availabilityManagerAssignmentList().availabilityManagers();
+    }
+
+    bool AirLoopHVAC_Impl::addAvailabilityManager(const AvailabilityManager& availabilityManager) {
+      return availabilityManagerAssignmentList().addAvailabilityManager(availabilityManager);
+    }
+
+    bool AirLoopHVAC_Impl::addAvailabilityManager(const AvailabilityManager& availabilityManager, unsigned priority) {
+      return availabilityManagerAssignmentList().addAvailabilityManager(availabilityManager, priority);
+    }
+
+    bool AirLoopHVAC_Impl::setAvailabilityManagers(const std::vector<AvailabilityManager>& availabilityManagers) {
+      return availabilityManagerAssignmentList().setAvailabilityManagers(availabilityManagers);
+    }
+
+    void AirLoopHVAC_Impl::resetAvailabilityManagers() {
+      availabilityManagerAssignmentList().resetAvailabilityManagers();
+    }
+
+    bool AirLoopHVAC_Impl::removeAvailabilityManager(const AvailabilityManager& availabilityManager) {
+      return availabilityManagerAssignmentList().removeAvailabilityManager(availabilityManager);
+    }
+
+    bool AirLoopHVAC_Impl::removeAvailabilityManager(unsigned priority) {
+      return availabilityManagerAssignmentList().removeAvailabilityManager(priority);
+    }
+
+    bool AirLoopHVAC_Impl::setAvailabilityManagerPriority(const AvailabilityManager& availabilityManager, unsigned priority) {
+      return availabilityManagerAssignmentList().setAvailabilityManagerPriority(availabilityManager, priority);
+    }
+
+    unsigned AirLoopHVAC_Impl::availabilityManagerPriority(const AvailabilityManager& availabilityManager) const {
+      return availabilityManagerAssignmentList().availabilityManagerPriority(availabilityManager);
+    }
+
+    bool AirLoopHVAC_Impl::addBranchForHVACComponent(openstudio::epmodel::HVACComponent& hvacComponent) {
+      if (hvacComponent.model() != model()) {
+        return false;
+      }
+
+      if (hvacComponent.airLoopHVAC()) {
+        return false;
+      }
+
+      auto splitter = zoneSplitter();
+      auto mixer = zoneMixer();
+      auto splitterOutlets = splitter.outletModelObjects();
+      auto mixerInlets = mixer.inletModelObjects();
+      boost::optional<unsigned> targetBranchIndex;
+      boost::optional<Node> branchNode;
+      if (splitterOutlets.size() == 1u && mixerInlets.size() == 1u && splitterOutlets.front() == mixerInlets.front()) {
+        targetBranchIndex = 0u;
+        branchNode = splitterOutlets.front().optionalCast<Node>();
+      } else {
+        targetBranchIndex = splitter.nextBranchIndex();
+        const auto branchNodeName = getObject<AirLoopHVAC>().nameString() + " Demand Branch Node " + std::to_string(*targetBranchIndex + 1u);
+        branchNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(branchNodeName);
+        if (!resolveZoneSplitterBranchNode(splitter, *targetBranchIndex, *branchNode)) {
+          return false;
+        }
+        if (!resolveZoneMixerBranchNode(mixer, *targetBranchIndex, *branchNode)) {
+          splitter.removePortForBranch(*targetBranchIndex);
+          return false;
+        }
+      }
+
+      if (!hvacComponent.addToNode(*branchNode)) {
+        if (*targetBranchIndex >= splitterOutlets.size()) {
+          splitter.removePortForBranch(*targetBranchIndex);
+          mixer.removePortForBranch(*targetBranchIndex);
+        }
+        return false;
+      }
+
+      syncSetpointManagerMixedAirFanNodes();
+      return true;
+    }
+
+    bool AirLoopHVAC_Impl::addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone) {
+      if (thermalZone.model() != model()) {
+        return false;
+      }
+
+      const auto zones = thermalZones();
+      if (std::find(zones.begin(), zones.end(), thermalZone) != zones.end()) {
+        return false;
+      }
+
+      auto splitter = zoneSplitter();
+      auto mixer = zoneMixer();
+      auto splitterOutlets = splitter.outletModelObjects();
+      auto mixerInlets = mixer.inletModelObjects();
+      boost::optional<unsigned> targetBranchIndex;
+      boost::optional<Node> branchNode;
+      if (splitterOutlets.size() == 1u && mixerInlets.size() == 1u && splitterOutlets.front() == mixerInlets.front()) {
+        targetBranchIndex = 0u;
+        branchNode = splitterOutlets.front().optionalCast<Node>();
+      } else {
+        targetBranchIndex = splitter.nextBranchIndex();
+        const auto branchNodeName = getObject<AirLoopHVAC>().nameString() + " Demand Branch Node " + std::to_string(*targetBranchIndex + 1u);
+        branchNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(branchNodeName);
+        if (!resolveZoneSplitterBranchNode(splitter, *targetBranchIndex, *branchNode)) {
+          return false;
+        }
+        if (!resolveZoneMixerBranchNode(mixer, *targetBranchIndex, *branchNode)) {
+          splitter.removePortForBranch(*targetBranchIndex);
+          return false;
+        }
+      }
+      if (!thermalZone.addToNode(*branchNode)) {
+        if (*targetBranchIndex >= splitterOutlets.size()) {
+          splitter.removePortForBranch(*targetBranchIndex);
+          mixer.removePortForBranch(*targetBranchIndex);
+        }
+        return false;
+      }
+      syncControllerMechanicalVentilationZoneOutdoorAirEntries();
+      return true;
+    }
+
+    bool AirLoopHVAC_Impl::addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone, openstudio::epmodel::HVACComponent& airTerminal) {
+      if (thermalZone.model() != model() || airTerminal.model() != model()) {
+        return false;
+      }
+
+      const auto zones = thermalZones();
+      if (std::find(zones.begin(), zones.end(), thermalZone) != zones.end()) {
+        return false;
+      }
+
+      if (airTerminal.airLoopHVAC()) {
+        return false;
+      }
+
+      auto splitter = zoneSplitter();
+      auto mixer = zoneMixer();
+      auto splitterOutlets = splitter.outletModelObjects();
+      auto mixerInlets = mixer.inletModelObjects();
+      boost::optional<unsigned> targetBranchIndex;
+      boost::optional<Node> branchNode;
+      if (splitterOutlets.size() == 1u && mixerInlets.size() == 1u && splitterOutlets.front() == mixerInlets.front()) {
+        targetBranchIndex = 0u;
+        branchNode = splitterOutlets.front().optionalCast<Node>();
+      } else {
+        targetBranchIndex = splitter.nextBranchIndex();
+        const auto branchNodeName = getObject<AirLoopHVAC>().nameString() + " Demand Branch Node " + std::to_string(*targetBranchIndex + 1u);
+        branchNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(branchNodeName);
+        if (!resolveZoneSplitterBranchNode(splitter, *targetBranchIndex, *branchNode)) {
+          return false;
+        }
+        if (!resolveZoneMixerBranchNode(mixer, *targetBranchIndex, *branchNode)) {
+          splitter.removePortForBranch(*targetBranchIndex);
+          return false;
+        }
+      }
+      if (!thermalZone.addToNode(*branchNode)) {
+        if (*targetBranchIndex >= splitterOutlets.size()) {
+          splitter.removePortForBranch(*targetBranchIndex);
+          mixer.removePortForBranch(*targetBranchIndex);
+        }
+        return false;
+      }
+
+      auto conn = resolveZoneConnections(thermalZone);
+      if (!conn) {
+        if (*targetBranchIndex >= splitterOutlets.size()) {
+          splitter.removePortForBranch(*targetBranchIndex);
+          mixer.removePortForBranch(*targetBranchIndex);
+        }
+        return false;
+      }
+
+      auto zoneNode = conn->zoneAirInletNode();
+      if (!zoneNode || !airTerminal.addToNode(*zoneNode)) {
+        if (*targetBranchIndex >= splitterOutlets.size()) {
+          splitter.removePortForBranch(*targetBranchIndex);
+          mixer.removePortForBranch(*targetBranchIndex);
+        }
+        return false;
+      }
+
+      syncControllerMechanicalVentilationZoneOutdoorAirEntries();
+      syncSetpointManagerMixedAirFanNodes();
+      return true;
+    }
+
+    bool AirLoopHVAC_Impl::removeBranchForZone(openstudio::epmodel::ThermalZone& thermalZone) {
+      if (thermalZone.model() != model()) {
+        return false;
+      }
+
+      auto conn = resolveZoneConnections(thermalZone);
+      if (!conn) {
+        return false;
+      }
+
+      auto zoneNode = conn->zoneAirInletNode();
+      if (!zoneNode) {
+        return false;
+      }
+
+      auto splitter = zoneSplitter();
+      auto mixer = zoneMixer();
+      const auto mixerInlets = mixer.inletModelObjects();
+      const auto splitterOutlets = splitter.outletModelObjects();
+      const auto count = std::min(mixerInlets.size(), splitterOutlets.size());
+      boost::optional<unsigned> branchIndex;
+      for (unsigned i = 0; i < count; ++i) {
+        if (mixerInlets[i] == zoneNode->cast<ModelObject>()) {
+          branchIndex = i;
+          break;
+        }
+      }
+      if (!branchIndex) {
+        return false;
+      }
+
+      auto splitterOutletNode = splitterOutlets[*branchIndex].optionalCast<openstudio::epmodel::Node>();
+      if (!splitterOutletNode) {
+        return false;
+      }
+
+      auto branchStraightComponents = resolveDemandBranchChain(*splitterOutletNode, *zoneNode);
+      if (!branchStraightComponents) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
+                 "Unable to resolve branch-local straight components for zone '" << thermalZone.nameString() << "' during removeBranchForZone.");
+        return false;
+      }
+
+      for (auto& straightComp : *branchStraightComponents) {
+        straightComp.remove();
+      }
+
+      splitter.removePortForBranch(*branchIndex);
+      mixer.removePortForBranch(*branchIndex);
+
+      if (splitter.outletModelObjects().empty()) {
+        auto defaultNode =
+          model().getOrCreateTransientByName<openstudio::epmodel::Node>(getObject<AirLoopHVAC>().nameString() + " Demand Branch Node");
+        resolveZoneSplitterBranchNode(splitter, 0u, defaultNode);
+        resolveZoneMixerBranchNode(mixer, 0u, defaultNode);
+      }
+
+      OS_ASSERT(conn->setString(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName, ""));
+      OS_ASSERT(conn->setString(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName, ""));
+
+      syncControllerMechanicalVentilationZoneOutdoorAirEntries();
+      syncSetpointManagerMixedAirFanNodes();
+      return true;
     }
 
     void AirLoopHVAC_Impl::syncControllerMechanicalVentilationZoneOutdoorAirEntries() {
@@ -484,6 +877,58 @@ namespace epmodel {
       cmvImpl->clearZoneOutdoorAirEntries();
       for (const auto& [zone, dsoaSpaceList] : entries) {
         OS_ASSERT(cmvImpl->addZoneOutdoorAirEntry(zone, dsoaSpaceList));
+      }
+    }
+
+    void AirLoopHVAC_Impl::syncSetpointManagerMixedAirFanNodes() {
+      auto airLoop = getObject<AirLoopHVAC>();
+      auto supplyPath = supplyComponents(openstudio::IddObjectType::Catchall);
+
+      // Mirror model intent: choose the last supply fan encountered on the
+      // supply path (the one closest to supply outlet in path order).
+      boost::optional<StraightComponent> selectedFan;
+      for (const auto& object : supplyPath) {
+        if (object.iddObject().type() == openstudio::IddObjectType::Fan_ConstantVolume) {
+          auto fan = object.optionalCast<StraightComponent>();
+          OS_ASSERT(fan);
+          selectedFan = *fan;
+        }
+      }
+
+      if (!selectedFan) {
+        return;
+      }
+
+      auto fanInlet = selectedFan->inletModelObject();
+      auto fanOutlet = selectedFan->outletModelObject();
+      OS_ASSERT(fanInlet);
+      OS_ASSERT(fanOutlet);
+
+      auto fanInletNode = fanInlet->optionalCast<Node>();
+      auto fanOutletNode = fanOutlet->optionalCast<Node>();
+      OS_ASSERT(fanInletNode);
+      OS_ASSERT(fanOutletNode);
+
+      std::set<openstudio::Handle> supplyNodeHandles;
+      for (const auto& object : supplyPath) {
+        if (auto node = object.optionalCast<Node>()) {
+          supplyNodeHandles.insert(node->handle());
+        }
+      }
+
+      for (auto& mixedAirSPM : model().getConcreteModelObjects<openstudio::epmodel::SetpointManagerMixedAir>()) {
+        auto setpointNode = mixedAirSPM.setpointNode();
+        if (!setpointNode) {
+          continue;
+        }
+        if (!supplyNodeHandles.contains(setpointNode->handle())) {
+          continue;
+        }
+
+        auto impl = mixedAirSPM.getImpl<openstudio::epmodel::detail::SetpointManagerMixedAir_Impl>();
+        OS_ASSERT(impl);
+        OS_ASSERT(impl->setFanInletNode(*fanInletNode));
+        OS_ASSERT(impl->setFanOutletNode(*fanOutletNode));
       }
     }
 
@@ -644,67 +1089,22 @@ namespace epmodel {
       AdjacencyBuilder builder;
       ModelObject previousObject = supplyInletNode();
 
-      const auto branchListName = getString(AirLoopHVACFields::BranchListName);
-      if (!(branchListName && !branchListName->empty())) {
-        OS_ASSERT(false);
-        return {};
-      }
-      auto branchListObject = workspace().getObjectByTypeAndName(openstudio::IddObjectType::BranchList, *branchListName);
-      if (!branchListObject) {
-        OS_ASSERT(false);
-        return {};
-      }
-      auto branchList = branchListObject->optionalCast<BranchList>();
-      if (!branchList) {
-        OS_ASSERT(false);
-        return {};
-      }
-      const auto branches = branchList->branches();
+      const auto branches = branchList().branches();
       if (branches.empty()) {
         OS_ASSERT(false);
         return {};
       }
       const auto& supplyBranch = branches.front();
-      const auto groups = supplyBranch.extensibleGroups();
-      for (const auto& group : groups) {
-        const auto componentType = group.getString(BranchExtensibleFields::ComponentObjectType);
-        const auto componentName = group.getString(BranchExtensibleFields::ComponentName);
-        if (!componentType || componentType->empty() || !componentName || componentName->empty()) {
-          OS_ASSERT(false);
-          continue;
-        }
-
-        openstudio::IddObjectType componentIddType = openstudio::IddObjectType::Catchall;
-        try {
-          componentIddType = openstudio::IddObjectType(*componentType);
-        } catch (...) {  // NOLINT
-          OS_ASSERT(false);
-          continue;
-        }
-
-        auto componentObject = model().getObjectByTypeAndName(componentIddType, *componentName);
-        if (!componentObject) {
-          OS_ASSERT(false);
-          continue;
-        }
-        auto supplyComponent = componentObject->optionalCast<ModelObject>();
-        if (!supplyComponent) {
-          OS_ASSERT(false);
-          continue;
-        }
+      const auto supplyBranchComponents = supplyBranch.components();
+      for (unsigned index = 0; index < supplyBranchComponents.size(); ++index) {
+        const auto& supplyComponent = supplyBranchComponents[index];
 
         // Preserve branch ordering exactly as listed in Branch extensibles;
         // this is the canonical sequencing contract for supply traversal.
-        builder.addLink(previousObject, *supplyComponent);
-        previousObject = *supplyComponent;
+        builder.addLink(previousObject, supplyComponent);
+        previousObject = supplyComponent;
 
-        auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
-        OS_ASSERT(workspaceGroup);
-        auto target = workspaceGroup->getTarget(BranchExtensibleFields::ComponentOutletNodeName);
-        boost::optional<Node> outletNode;
-        if (target) {
-          outletNode = target->optionalCast<Node>();
-        }
+        auto outletNode = supplyBranch.componentOutletNode(index);
         if (!outletNode) {
           OS_ASSERT(false);
           continue;
@@ -745,7 +1145,6 @@ namespace epmodel {
 
     std::vector<ModelObject> AirLoopHVAC_Impl::demandComponents(const HVACComponent& inletComp, const HVACComponent& outletComp,
                                                                 openstudio::IddObjectType type) const {
-      AdjacencyBuilder builder;
       const auto demandInlet = demandInletNode();
       const auto demandOutlet = demandOutletNode();
       const auto zoneSplitter = this->zoneSplitter();
@@ -770,14 +1169,20 @@ namespace epmodel {
         // Resolve terminal-driven leg internals once to avoid ambiguous
         // backtracking across zone-level relationships.
         bool zoneAdded = false;
-        if (auto terminal = terminalForInletNode(splitterOutletObject)) {
+        boost::optional<ModelObject> terminal;
+        auto splitterOutletNode = splitterOutletObject.optionalCast<Node>();
+        auto mixerInletNode = mixerInletObject.optionalCast<Node>();
+        if (splitterOutletNode && mixerInletNode) {
+          terminal = resolveTerminalOnDemandBranchNodes(*splitterOutletNode, *mixerInletNode);
+        }
+        if (terminal) {
           appendDistinct(*terminal);
 
-          if (auto terminalOutlet = outletForTerminal(*terminal)) {
+          if (auto terminalOutlet = resolveTerminalOutletObject(*terminal)) {
             appendDistinct(*terminalOutlet);
 
             if (auto terminalOutletNode = terminalOutlet->optionalCast<Node>()) {
-              if (auto zone = zoneForInletNode(*terminalOutletNode)) {
+              if (auto zone = resolveZoneServedByInletNode(*terminalOutletNode)) {
                 appendDistinct(zone.get().cast<ModelObject>());
                 zoneAdded = true;
               }
@@ -788,8 +1193,10 @@ namespace epmodel {
         // Fallback for incomplete terminal linkage: still anchor zone via
         // mixer-side node so demand graph remains connected.
         if (!zoneAdded) {
-          if (auto zone = zoneForOutletNode(mixerInletObject)) {
-            appendDistinct(*zone);
+          if (auto mixerInletNode = mixerInletObject.optionalCast<Node>()) {
+            if (auto zone = resolveZoneServedByReturnNode(*mixerInletNode)) {
+              appendDistinct(zone.get().cast<ModelObject>());
+            }
           }
         }
 
@@ -797,29 +1204,27 @@ namespace epmodel {
         // intra-zone graph details in this loop-level traversal API.
         appendDistinct(mixerInletObject);
 
-        builder.addLink(zoneSplitter, chain.front());
-        for (size_t i = 0; i + 1 < chain.size(); ++i) {
-          builder.addLink(chain[i], chain[i + 1]);
-        }
-        builder.addLink(chain.back(), zoneMixer);
+        return chain;
       };
 
-      builder.addLink(demandInlet, zoneSplitter);
+      std::vector<ModelObject> pathObjects;
+      pathObjects.reserve(64);
+      pathObjects.emplace_back(demandInlet);
+      pathObjects.emplace_back(zoneSplitter);
 
       const auto splitterOutlets = zoneSplitter.outletModelObjects();
       const auto mixerInlets = zoneMixer.inletModelObjects();
       // Canonical demand topology keeps splitter outlets and mixer inlets in
-      // lockstep. Keep an assert for invariant drift and still guard indexing
-      // with min() in non-assert builds.
-      OS_ASSERT(splitterOutlets.size() == mixerInlets.size());
+      // lockstep. Keep traversal resilient and bounded by min().
       const auto branchCount = std::min(splitterOutlets.size(), mixerInlets.size());
 
       for (unsigned i = 0; i < branchCount; ++i) {
-        buildDemandBranchLeg(splitterOutlets[i], mixerInlets[i]);
+        auto chain = buildDemandBranchLeg(splitterOutlets[i], mixerInlets[i]);
+        pathObjects.insert(pathObjects.end(), chain.begin(), chain.end());
       }
 
-      builder.addLink(zoneMixer, demandOutlet);
-      const auto pathObjects = builder.walkPath(model(), demandInlet, demandOutlet);
+      pathObjects.emplace_back(zoneMixer);
+      pathObjects.emplace_back(demandOutlet);
 
       auto inletIt = std::find(pathObjects.begin(), pathObjects.end(), inletComp);
       if (inletIt == pathObjects.end()) {

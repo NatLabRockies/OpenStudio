@@ -11,7 +11,6 @@
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>
-#include <utilities/core/Compare.hpp>
 #include <utilities/idd/BranchList_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idf/IdfExtensibleGroup.hpp>
@@ -158,13 +157,13 @@ std::vector<openstudio::epmodel::Branch> BranchList_Impl::branches() const {
   const auto groups = extensibleGroups();
   result.reserve(groups.size());
   for (const auto& group : groups) {
-    if (auto branchName = group.getString(BranchListExtensibleFields::BranchName)) {
-      if (auto branchObject = workspace().getObjectByTypeAndName(openstudio::IddObjectType::Branch, *branchName)) {
-        if (auto branch = branchObject->optionalCast<openstudio::epmodel::Branch>()) {
-          result.push_back(*branch);
-        }
-      }
-    }
+    auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+    OS_ASSERT(workspaceGroup);
+    auto target = workspaceGroup->getTarget(openstudio::BranchListExtensibleFields::BranchName);
+    OS_ASSERT(target);
+    auto branch = target->optionalCast<openstudio::epmodel::Branch>();
+    OS_ASSERT(branch);
+    result.push_back(*branch);
   }
   return result;
 }
@@ -198,14 +197,9 @@ bool BranchList_Impl::removeBranch(const openstudio::epmodel::Branch& branch) {
     auto workspaceGroup = groups[i].optionalCast<openstudio::WorkspaceExtensibleGroup>();
     if (workspaceGroup) {
       if (auto target = workspaceGroup->getTarget(openstudio::BranchListExtensibleFields::BranchName)) {
-        if (*target == branch) {
+        if (target->handle() == branch.handle()) {
           return !eraseExtensibleGroup(i).empty();
         }
-      }
-    }
-    if (auto branchName = groups[i].getString(openstudio::BranchListExtensibleFields::BranchName)) {
-      if (openstudio::istringEqual(*branchName, branch.nameString())) {
-        return !eraseExtensibleGroup(i).empty();
       }
     }
   }

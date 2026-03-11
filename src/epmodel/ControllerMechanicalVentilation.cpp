@@ -95,6 +95,12 @@ bool ControllerMechanicalVentilation_Impl::setSystemOutdoorAirMethod(const std::
 
 boost::optional<openstudio::epmodel::ControllerOutdoorAir> ControllerMechanicalVentilation_Impl::controllerOutdoorAir() const {
   const auto thisController = getObject<openstudio::epmodel::ControllerMechanicalVentilation>();
+  // There is no direct inverse pointer from CMV -> Controller:OutdoorAir in the
+  // EnergyPlus schema, so this relationship is resolved by scanning OA
+  // controllers for one that points at this CMV.
+  // Use the impl-only optional lookup to avoid side effects from the public
+  // ControllerOutdoorAir::controllerMechanicalVentilation() getter, which can
+  // synthesize a CMV on demand.
   for (const auto& oaController : model().getConcreteModelObjects<openstudio::epmodel::ControllerOutdoorAir>()) {
     if (auto target = oaController.getImpl<openstudio::epmodel::detail::ControllerOutdoorAir_Impl>()->optionalControllerMechanicalVentilation()) {
       if (*target == thisController) {

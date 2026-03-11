@@ -210,8 +210,10 @@ namespace epmodel {
       openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList canonicalList =
         zone ? getOrCreateZoneSpaceList(*zone) : getOrCreateOrphanSpaceList(model());
       auto canonicalDSOA = assignments.front().second;
+      bool canonicalListHadAssignment = false;
       for (const auto& [list, dsoa] : assignments) {
         if (list.handle() == canonicalList.handle()) {
+          canonicalListHadAssignment = true;
           canonicalDSOA = dsoa;
           break;
         }
@@ -224,6 +226,24 @@ namespace epmodel {
       if (assignments.size() > 1u) {
         detail::addLoadInfo(context, "Normalized duplicate DSOA assignments for Space '" + thisSpace.nameString()
                                        + "' into DesignSpecification:OutdoorAir:SpaceList '" + canonicalList.nameString() + "'.");
+        bool hasConflictingAssignments = false;
+        for (const auto& [_, dsoa] : assignments) {
+          if (dsoa.handle() != canonicalDSOA.handle()) {
+            hasConflictingAssignments = true;
+            break;
+          }
+        }
+        if (hasConflictingAssignments) {
+          detail::addLoadWarning(context, "Space '" + thisSpace.nameString()
+                                           + "' had conflicting DSOA assignments across lists; canonicalization kept assignment from '"
+                                           + canonicalList.nameString() + "'.");
+        }
+      }
+
+      if (!canonicalListHadAssignment) {
+        detail::addLoadInfo(context,
+                            "Moved Space '" + thisSpace.nameString() + "' DSOA assignment into canonical list '"
+                              + canonicalList.nameString() + "'.");
       }
 
       if (auto orphanList = model().getConcreteModelObjectByName<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>(orphanDSOASpaceListName)) {

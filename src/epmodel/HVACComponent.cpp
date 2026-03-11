@@ -56,41 +56,32 @@ bool HVACComponent::addToNode(Node& node) {
   return false;
 }
 
-// TODO: Provide implementations for these HVACComponent APIs.
-// bool HVACComponent::addToSplitter(Splitter& splitter) {
-//   (void)splitter;
-//   return false;
-// }
-//
-// void HVACComponent::disconnect() {}
-//
-// bool HVACComponent::isRemovable() const {
-//   return false;
-// }
-//
-// std::vector<IdfObject> HVACComponent::remove() {
-//   return {};
-// }
-//
-// void HVACComponent::autosize() {}
-//
-// void HVACComponent::applySizingValues() {}
-//
-// ComponentType HVACComponent::componentType() const {
-//   return ComponentType::None;
-// }
-//
-// std::vector<FuelType> HVACComponent::coolingFuelTypes() const {
-//   return {};
-// }
-//
-// std::vector<FuelType> HVACComponent::heatingFuelTypes() const {
-//   return {};
-// }
-//
-// std::vector<AppGFuelType> HVACComponent::appGHeatingFuelTypes() const {
-//   return {};
-// }
+bool HVACComponent::addToSplitter(Splitter& splitter) {
+  if (auto impl = getImpl<detail::HVACComponent_Impl>()) {
+    return impl->addToSplitter(splitter);
+  }
+  return false;
+}
+
+void HVACComponent::disconnect() {
+  if (auto impl = getImpl<detail::HVACComponent_Impl>()) {
+    impl->disconnect();
+  }
+}
+
+bool HVACComponent::isRemovable() const {
+  if (auto impl = getImpl<detail::HVACComponent_Impl>()) {
+    return impl->isRemovable();
+  }
+  return false;
+}
+
+std::vector<IdfObject> HVACComponent::remove() {
+  if (auto impl = getImpl<detail::HVACComponent_Impl>()) {
+    return impl->remove();
+  }
+  return {};
+}
 
 namespace detail {
 
@@ -119,6 +110,24 @@ boost::optional<AirLoopHVAC> HVACComponent_Impl::airLoopHVAC() const {
 
 bool HVACComponent_Impl::addToNode(Node& /*node*/) {
   return false;
+}
+
+bool HVACComponent_Impl::addToSplitter(Splitter& /*splitter*/) {
+  return false;
+}
+
+void HVACComponent_Impl::disconnect() {}
+
+bool HVACComponent_Impl::isRemovable() const {
+  return true;
+}
+
+std::vector<IdfObject> HVACComponent_Impl::remove() {
+  if (!isRemovable()) {
+    return {};
+  }
+  disconnect();
+  return ParentObject_Impl::remove();
 }
 
 }  // namespace detail

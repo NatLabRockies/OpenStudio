@@ -12,18 +12,16 @@
 #include "Model_Impl.hpp"
 #include "AirLoopHVAC.hpp"
 #include "AirLoopHVAC_Impl.hpp"
-#include "AirLoopHVACZoneSplitter.hpp"
 #include "AirLoopHVACZoneMixer.hpp"
-#include "BranchList.hpp"
-#include "BranchList_Impl.hpp"
+#include "AirLoopHVACZoneSplitter.hpp"
+#include "AirLoopHVACOutdoorAirSystem.hpp"
+#include "AirLoopHVACOutdoorAirSystem_Impl.hpp"
+#include "SetpointManager.hpp"
+#include "SetpointManager_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddEnums.hxx>
-#include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
-#include <utilities/idd/Branch_FieldEnums.hxx>
-#include <utilities/core/Compare.hpp>
 #include <utilities/core/Logger.hpp>
-#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -36,6 +34,27 @@ namespace epmodel {
   }
 
   Node::Node(std::shared_ptr<detail::Node_Impl> impl) : StraightComponent(std::move(impl)) {}
+
+  std::vector<SetpointManager> Node::setpointManagers() const {
+    std::vector<SetpointManager> result;
+    for (const auto& object : model().objects()) {
+      auto spm = object.optionalCast<SetpointManager>();
+      if (!spm) {
+        continue;
+      }
+      auto setpointNode = spm->setpointNode();
+      if (setpointNode && (*setpointNode == *this)) {
+        result.push_back(*spm);
+      }
+    }
+    return result;
+  }
+
+  boost::optional<AirLoopHVACOutdoorAirSystem> Node::airLoopHVACOutdoorAirSystem() const {
+    auto impl = getImpl<detail::Node_Impl>();
+    OS_ASSERT(impl);
+    return impl->airLoopHVACOutdoorAirSystem();
+  }
 
   IddObjectType Node::iddObjectType() {
     return IddObjectType::Node;
@@ -95,58 +114,58 @@ namespace epmodel {
 
     boost::optional<AirLoopHVAC> Node_Impl::airLoopHVAC() const {
       const auto thisNode = getObject<openstudio::epmodel::Node>();
+      const auto thisNodeObject = thisNode.cast<openstudio::epmodel::ModelObject>();
       for (const auto& airLoop : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
-        if (thisNode == airLoop.supplyInletNode()) {
+        // Use loop-owned traversal APIs as the single source of truth for
+        // topology membership instead of duplicating node-role checks here.
+        if (airLoop.component(thisNode.handle())) {
           return airLoop;
         }
-
-        const auto supplyOutlets = airLoop.supplyOutletNodes();
-        if (std::ranges::find(supplyOutlets, thisNode) != supplyOutlets.end()) {
-          return airLoop;
-        }
-
-        const auto demandInlets = airLoop.demandInletNodes();
-        if (std::ranges::find(demandInlets, thisNode) != demandInlets.end()) {
-          return airLoop;
-        }
-
-        if (thisNode == airLoop.demandOutletNode()) {
-          return airLoop;
-        }
-
+        // Demand-side branch mutators temporarily reference splitter/mixer
+        // branch nodes that are not always on the currently selected
+        // demandComponents traversal path; include direct branch node
+        // membership checks so addToNode-style operations can resolve loop
+        // ownership for any active branch.
         const auto splitterOutlets = airLoop.zoneSplitter().outletModelObjects();
-        if (std::ranges::find(splitterOutlets, thisNode.cast<ModelObject>()) != splitterOutlets.end()) {
+        if (std::ranges::find(splitterOutlets, thisNodeObject) != splitterOutlets.end()) {
           return airLoop;
         }
-
         const auto mixerInlets = airLoop.zoneMixer().inletModelObjects();
-        if (std::ranges::find(mixerInlets, thisNode.cast<ModelObject>()) != mixerInlets.end()) {
+        if (std::ranges::find(mixerInlets, thisNodeObject) != mixerInlets.end()) {
           return airLoop;
         }
-
-        auto branchList = airLoop.getModelObjectTarget<openstudio::epmodel::BranchList>(openstudio::AirLoopHVACFields::BranchListName);
-        if (!branchList) {
-          continue;
-        }
-
-        for (const auto& branch : branchList->branches()) {
-          for (const auto& group : branch.extensibleGroups()) {
-            auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
-            if (!workspaceGroup) {
-              continue;
-            }
-
-            if (auto inletTarget = workspaceGroup->getTarget(openstudio::BranchExtensibleFields::ComponentInletNodeName)) {
-              if (inletTarget->handle() == thisNode.handle()) {
-                return airLoop;
-              }
-            }
-            if (auto outletTarget = workspaceGroup->getTarget(openstudio::BranchExtensibleFields::ComponentOutletNodeName)) {
-              if (outletTarget->handle() == thisNode.handle()) {
-                return airLoop;
-              }
-            }
+        if (auto oaSystem = airLoop.airLoopHVACOutdoorAirSystem()) {
+          if (oaSystem->component(thisNode.handle())) {
+            return airLoop;
           }
+        }
+      }
+      return boost::none;
+    }
+
+    boost::optional<AirLoopHVACOutdoorAirSystem> Node_Impl::airLoopHVACOutdoorAirSystem() const {
+      const auto thisNode = getObject<openstudio::epmodel::Node>();
+      const auto thisNodeObject = thisNode.cast<ModelObject>();
+
+      // Temporary ownership heuristic until full OA incoming/relief stream
+      // topology is modeled in epmodel. For now, treat any node that is one of
+      // the OA mixer ports or part of OA/relief component chains as belonging
+      // to that OA system.
+      for (const auto& oaSystem : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
+        if (auto returnNode = oaSystem.returnAirModelObject(); returnNode && (*returnNode == thisNodeObject)) {
+          return oaSystem;
+        }
+        if (auto mixedNode = oaSystem.mixedAirModelObject(); mixedNode && (*mixedNode == thisNodeObject)) {
+          return oaSystem;
+        }
+        if (auto outdoorNode = oaSystem.outdoorAirModelObject(); outdoorNode && (*outdoorNode == thisNodeObject)) {
+          return oaSystem;
+        }
+        if (auto reliefNode = oaSystem.reliefAirModelObject(); reliefNode && (*reliefNode == thisNodeObject)) {
+          return oaSystem;
+        }
+        if (oaSystem.component(thisNode.handle())) {
+          return oaSystem;
         }
       }
 
