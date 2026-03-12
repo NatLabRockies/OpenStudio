@@ -90,4 +90,11 @@ Key files:
 - `subjects.json`
 - `work-items.json`
 
+These are meant to stay lean and non-overlapping:
+
+- `resolution.json` records the reviewed decision and counts
+- `subjects.json` holds the actual resolved subject list
+- `work-items.json` holds normalized execution ids and subject mapping
+- for identity normalization, `work-items.json` stays minimal and references `subjects.json`
+
 You do not need to specify state or report paths in the manifest.

@@ -225,7 +225,7 @@ class SelectorResult:
             "explanation": self.explanation,
             "matched_count": len(self.matched_subjects),
             "subject_kind_counts": subject_kind_counts(self.matched_subjects),
-            "sample_subjects": [subject.to_json() for subject in self.matched_subjects[:10]],
+            "sample_subject_ids": [subject.subject_id for subject in self.matched_subjects[:10]],
         }
 
 
@@ -242,14 +242,12 @@ class WorkItem:
     kind: str
     work_item_id: str
     subject_ids: List[str]
-    payload: Dict[str, Any]
 
     def to_json(self) -> Dict[str, Any]:
         return {
             "kind": self.kind,
             "work_item_id": self.work_item_id,
             "subject_ids": self.subject_ids,
-            "payload": self.payload,
         }
 
 
@@ -1108,7 +1106,6 @@ def normalize_work_items(manifest: Manifest, plan: Plan, resolution: Resolution)
                 kind="type",
                 work_item_id=record.type_id,
                 subject_ids=[subject.subject_id],
-                payload=record.to_json(manifest.repo_root),
             )
             included[record.type_id] = item
         elif subject.subject_id not in item.subject_ids:
@@ -1117,6 +1114,36 @@ def normalize_work_items(manifest: Manifest, plan: Plan, resolution: Resolution)
     excluded_ids = {normalize_subject(subject).type_id for subject in resolution.exclude_subjects}
     items = [included[key] for key in sorted(included) if key not in excluded_ids]
     return WorkPlan(kind="type", items=items)
+
+
+def classify_work_item_mapping(subjects: List[Subject], work_plan: WorkPlan) -> str:
+    if work_plan.kind != "type":
+        return "normalized"
+    if not subjects and not work_plan.items:
+        return "identity"
+    if len(subjects) != len(work_plan.items):
+        return "normalized"
+    for item in work_plan.items:
+        if len(item.subject_ids) != 1:
+            return "normalized"
+        subject_id = item.subject_ids[0]
+        if subject_id != item.work_item_id:
+            return "normalized"
+    if any(subject.kind != "type" for subject in subjects):
+        return "normalized"
+    return "identity"
+
+
+def payload_for_work_item(manifest: Manifest, work_item: Dict[str, Any]) -> Dict[str, Any]:
+    kind = str(work_item.get("kind", "") or "")
+    work_item_id = str(work_item.get("work_item_id", "") or "")
+    if kind != "type":
+        raise SystemExit(f"Unsupported run work-item kind: {kind or '<empty>'}")
+    base_types = discover_epmodel_types(manifest.repo_root)
+    record = base_types.get(work_item_id)
+    if record is None:
+        raise SystemExit(f"Could not load work item payload for {work_item_id}")
+    return record.to_json(manifest.repo_root)
 
 
 def plan_change(change: str) -> Plan:
@@ -1184,6 +1211,15 @@ def build_resolution_artifacts(
     resolution: Resolution,
     work_plan: Optional[WorkPlan],
 ) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
+    if work_plan is None:
+        work_item_kind = None
+        work_item_count = 0
+        work_item_mapping = "unplanned"
+    else:
+        work_item_kind = work_plan.kind
+        work_item_count = len(work_plan.items)
+        work_item_mapping = classify_work_item_mapping(resolution.include_subjects, work_plan)
+
     resolution_record = {
         "status": "current",
         "created_at": utc_now(),
@@ -1208,8 +1244,9 @@ def build_resolution_artifacts(
             "excluded_kind_counts": subject_kind_counts(resolution.exclude_subjects),
         },
         "work_item_summary": {
-            "kind": work_plan.kind if work_plan is not None else None,
-            "count": len(work_plan.items) if work_plan is not None else 0,
+            "kind": work_item_kind,
+            "count": work_item_count,
+            "mapping": work_item_mapping,
         },
         "state": {
             "resolution_json": to_display_path(manifest.repo_root, resolution_path(manifest)),
@@ -1224,8 +1261,15 @@ def build_resolution_artifacts(
     }
 
     work_items = {
-        "kind": work_plan.kind if work_plan is not None else None,
-        "items": [item.to_json() for item in work_plan.items] if work_plan is not None else [],
+        "kind": work_item_kind,
+        "mapping": work_item_mapping,
+        "item_count": work_item_count,
+        "source": "subjects.json" if work_item_mapping == "identity" else None,
+        "items": (
+            []
+            if work_plan is None or work_item_mapping == "identity"
+            else [item.to_json() for item in work_plan.items]
+        ),
     }
 
     return resolution_record, subjects, work_items
@@ -1269,9 +1313,23 @@ def load_current_resolution(manifest: Manifest) -> Tuple[Dict[str, Any], Dict[st
     return resolution_record, subjects, work_items
 
 
-def build_run_work_items(resolution_work_items: Dict[str, Any], execution_policy: ExecutionPolicy) -> Dict[str, Any]:
+def build_run_work_items(resolution_work_items: Dict[str, Any], subjects: Dict[str, Any], execution_policy: ExecutionPolicy) -> Dict[str, Any]:
+    mapping = str(resolution_work_items.get("mapping", "normalized") or "normalized")
+    if mapping == "identity":
+        items = [
+            {
+                "kind": str(subject.get("kind", "") or ""),
+                "work_item_id": str(subject.get("subject_id", "") or ""),
+                "subject_ids": [str(subject.get("subject_id", "") or "")],
+            }
+            for subject in subjects.get("include", [])
+            if isinstance(subject, dict)
+        ]
+    else:
+        items = list(resolution_work_items.get("items", []))
     return {
         "kind": resolution_work_items.get("kind"),
+        "mapping": mapping,
         "items": [
             {
                 **item,
@@ -1287,7 +1345,7 @@ def build_run_work_items(resolution_work_items: Dict[str, Any], execution_policy
                 },
                 "updated_at": None,
             }
-            for item in resolution_work_items.get("items", [])
+            for item in items
         ],
     }
 
@@ -1304,7 +1362,7 @@ def create_run(
     run_dir = state_root_for(manifest) / "runs" / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
 
-    work_items = build_run_work_items(resolution_work_items, execution_policy)
+    work_items = build_run_work_items(resolution_work_items, subjects, execution_policy)
 
     run = {
         "run_id": run_id,
@@ -1735,18 +1793,19 @@ def execute(
             save_run_state(run_dir, run, subjects, work_items)
             append_event(run_dir / "events.jsonl", {"time": utc_now(), "event": "work_item_started", "work_item_id": item["work_item_id"], "kind": item["kind"]})
 
+            payload = payload_for_work_item(manifest, item)
             record = TypeRecord(
-                type_id=item["payload"]["type_id"],
-                class_name=item["payload"]["class_name"],
-                family=item["payload"]["family"],
-                header_path=to_abs(manifest.repo_root, item["payload"]["header_path"]),
-                cpp_path=to_abs(manifest.repo_root, item["payload"]["cpp_path"]) if item["payload"].get("cpp_path") else None,
+                type_id=payload["type_id"],
+                class_name=payload["class_name"],
+                family=payload["family"],
+                header_path=to_abs(manifest.repo_root, payload["header_path"]),
+                cpp_path=to_abs(manifest.repo_root, payload["cpp_path"]) if payload.get("cpp_path") else None,
                 impl_header_path=(
-                    to_abs(manifest.repo_root, item["payload"]["impl_header_path"])
-                    if item["payload"].get("impl_header_path")
+                    to_abs(manifest.repo_root, payload["impl_header_path"])
+                    if payload.get("impl_header_path")
                     else None
                 ),
-                source=str(item["payload"].get("source", "state")),
+                source=str(payload.get("source", "state")),
             )
 
             try:

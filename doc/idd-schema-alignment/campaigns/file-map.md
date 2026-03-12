@@ -33,11 +33,11 @@
 - `.opencode/epmodel-campaigns/`
   - Implicit runtime state root.
 - `.opencode/epmodel-campaigns/<manifest-stem>/resolution.json`
-  - Canonical reviewed resolution from `describe`.
+  - Canonical reviewed resolution metadata from `describe`.
 - `.opencode/epmodel-campaigns/<manifest-stem>/subjects.json`
   - Persisted resolved subjects from `describe`.
 - `.opencode/epmodel-campaigns/<manifest-stem>/work-items.json`
-  - Persisted normalized work items from `describe`.
+  - Persisted normalized work-item ids and subject mapping from `describe`.
 - `.opencode/epmodel-campaigns/<manifest-stem>/runs/<run_id>/run.json`
   - Run summary, execution policy, and phase status.
 - `.opencode/epmodel-campaigns/<manifest-stem>/runs/<run_id>/subjects.json`

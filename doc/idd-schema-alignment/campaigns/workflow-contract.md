@@ -123,9 +123,16 @@ Local state root:
 
 Campaign-level artifacts:
 
-- `resolution.json`: canonical reviewed resolution for the current manifest hash
+- `resolution.json`: canonical reviewed resolution metadata for the current manifest hash
 - `subjects.json`: persisted resolved subjects from `describe`
-- `work-items.json`: persisted normalized work items from `describe`
+- `work-items.json`: normalized work-item ids and subject-to-work-item mapping from `describe`
+
+The three files are intentionally distinct:
+
+- `resolution.json` is the audit record and summary
+- `subjects.json` is the full resolved subject set
+- `work-items.json` stores normalization output only and avoids duplicating full subject payloads
+- when normalization is identity, `work-items.json` points back to `subjects.json` instead of repeating the whole set
 
 Run artifacts:
 
