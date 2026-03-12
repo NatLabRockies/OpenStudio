@@ -37,3 +37,4 @@ junit.xml
 
 CMakeUserPresets.json
 .env
+.opencode/

@@ -41,14 +41,17 @@ OpenStudio’s current model layer is based on `OpenStudio.idd`. The long-term a
 
 ### Current status
 
-epmodel includes a `Model` that derives from `Workspace` and enforces `IddFileType::EnergyPlus`, plus early HVAC
-infrastructure (e.g., `HVACComponent`, `StraightComponent`, `AirLoopHVAC`, `BranchList`, `Branch`, and `Node`).
+epmodel includes a `Model` that derives from `Workspace` and enforces `IddFileType::EnergyPlus`, plus generated
+class scaffolding across the full EnergyPlus IDD object inventory and core HVAC infrastructure (e.g.,
+`HVACComponent`, `StraightComponent`, `AirLoopHVAC`, `BranchList`, `Branch`, and `Node`).
 It is fully standalone and does **not** inherit from the existing `openstudio::model` classes (for example
 `ParentObject`), even though that might be reconsidered later.
 
-Current capability focuses on EnergyPlus-backed object loading and generic object/field access through
-`epmodel::ModelObject` and `WorkspaceObject` primitives. The major remaining work is rebuilding typed APIs so
-`openstudio::model` behavior is reproduced faithfully on top of EnergyPlus schema storage.
+Current capability includes EnergyPlus-backed object loading, generated scalar field accessors for all scaffolded
+types, and generic object/field access through `epmodel::ModelObject` and `WorkspaceObject` primitives. The major
+remaining work is parity behavior: implementing and validating non-scalar relationships, topology semantics,
+canonicalization guarantees, and API-compatible behavior so `openstudio::model` behavior is reproduced faithfully on
+top of EnergyPlus schema storage.
 
 ### Handle persistence (EnergyPlus IDD)
 
@@ -187,7 +190,7 @@ These notes capture working design guidance that emerged while building `openstu
 
 - `ControllerMechanicalVentilation` canonical synthesis currently populates
   loop-scoped Zone + DSOA/DSOA:SpaceList extensible groups only; `DesignSpecification:ZoneAirDistribution`
-  linkage is not scaffolded yet.
+  linkage is not implemented yet.
 - No OA math/aggregation behavior yet (current work is structural scaffolding).
 
 ### API/Field Divergence Tracking (for 500+ types)
@@ -298,9 +301,9 @@ Seed IDF -> EnergyPlus Measures (using `openstudio::epmodel` APIs) -> Simulation
 - As an alternative, use an updated EnergyPlus forward translator instead of finalize for pseudo-FT responsibilities
   (object ordering control and required simulation-object injection).
 - Keep the OS schema and model API implementation largely the same, but
-  methodically extend it for full coverage of the EnergyPlus IDD schema, and
-  extend the EnergyPlus translation layer to support full round-trip to and
-  from EnergyPlus IDF format.
+  methodically drive behavior/API parity across the now scaffolded full EnergyPlus
+  IDD coverage, and extend the EnergyPlus translation layer to support full
+  round-trip to and from EnergyPlus IDF format.
 
 ## Related schema-alignment docs
 
@@ -311,6 +314,7 @@ This sandbox is tracked alongside the IDD schema-alignment effort:
 - `doc/idd-schema-alignment/idd_mapping_appendix.generated.md`: generated full inventory tables.
 - `doc/idd-schema-alignment/os_idd_object_relationships.md`: HVAC-only OpenStudio IDD object-list relationships.
 - `doc/idd-schema-alignment/os_hvac_concepts.md`: How HVAC topology is expressed in `src/model`.
-- `doc/idd-schema-alignment/epmodel-scaffold-contract.md`: Normative scaffold-generation contract for epmodel saturation.
-- `doc/idd-schema-alignment/scaffold/`: queue state (`inventory.yml`, `overrides.yml`, `runs.log.yml`) and usage notes.
-- `doc/idd-schema-alignment/scripts/epmodel_scaffold_cli.py`: temporary queue driver (`status`, `next`, `run`, etc.).
+- `doc/idd-schema-alignment/campaigns/`: OpenCode-first manifest workflow for post-saturation parity campaigns,
+  including the minimal manifest contract, operator docs, file map, manifests, and examples.
+- `doc/idd-schema-alignment/scripts/epmodel_campaign_cli.py`: manifest-driven backend CLI for code-first target
+  resolution, local run state, and resumable campaign execution.

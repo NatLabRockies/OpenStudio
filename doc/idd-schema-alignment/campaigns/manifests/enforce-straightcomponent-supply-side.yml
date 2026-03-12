@@ -1,0 +1,28 @@
+workflow: epmodel_campaign
+
+change: |
+  Enforce that StraightComponent types which belong only on the supply side of AirLoopHVAC
+  explicitly preserve that supply-side-only context.
+
+targets:
+  include:
+    - all straight components that belong only on the supply side of AirLoopHVAC
+
+execution:
+  each_work_item: |
+    Inspect and edit the work item as needed. Do not run build or tests per work item.
+  after_all_work_items: |
+    Run the relevant build and tests once all work items are complete.
+    If campaign-caused failures appear, do a final repair pass until green.
+
+context:
+  read:
+    - doc/idd-schema-alignment/os_hvac_concepts.md
+    - doc/idd-schema-alignment/os_idd_object_relationships.md
+    - src/epmodel/StraightComponent/StraightComponent.cpp
+  references:
+    - src/epmodel/test/
+    - doc/idd-schema-alignment/idd_mapping.md
+  notes: |
+    Preserve legitimate non-supply exceptions only when the code and tests clearly justify them.
+    Use the reviewed resolution from describe as the auditable starting set before any edits.

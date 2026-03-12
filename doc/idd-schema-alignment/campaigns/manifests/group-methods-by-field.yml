@@ -1,0 +1,24 @@
+workflow: epmodel_campaign
+
+change: |
+  Ensure getter/setter/default/reset methods pertaining to a specific field are grouped together.
+
+targets:
+  include:
+    - all concrete epmodel types
+
+execution:
+  each_work_item: |
+    Edit the work item only. Do not run build or tests per work item.
+  after_all_work_items: |
+    Run the relevant build and tests once all work items are complete.
+    If campaign-caused failures appear, do a final repair pass until green.
+
+context:
+  read:
+    - developer/ruby/SubProjectClassGenerators/ModelClassGenerator.rb
+  references:
+    - doc/idd-schema-alignment/idd_mapping.md
+  notes: |
+    Treat all concrete epmodel types as the intended campaign set.
+    Exclude abstract and hierarchy-only base classes when refining the reviewed resolution.
