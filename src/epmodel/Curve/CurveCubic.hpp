@@ -7,7 +7,7 @@
 #define EPMODEL_CURVECUBIC_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Curve.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace epmodel {
     class CurveCubic_Impl;
   }
 
-  class EPMODEL_API CurveCubic : public ModelObject
+  class EPMODEL_API CurveCubic : public Curve
   {
    public:
     explicit CurveCubic(const Model& model);

@@ -7,7 +7,7 @@
 #define EPMODEL_CURVECHILLERPARTLOADWITHLIFT_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Curve.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace epmodel {
     class CurveChillerPartLoadWithLift_Impl;
   }
 
-  class EPMODEL_API CurveChillerPartLoadWithLift : public ModelObject
+  class EPMODEL_API CurveChillerPartLoadWithLift : public Curve
   {
    public:
     explicit CurveChillerPartLoadWithLift(const Model& model);

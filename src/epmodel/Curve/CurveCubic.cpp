@@ -35,7 +35,7 @@ boost::optional<std::string> curveCubicDefaultString(unsigned fieldIndex) {
 
 }  // namespace
 
-CurveCubic::CurveCubic(const Model& model) : ModelObject(CurveCubic::iddObjectType(), model) {
+CurveCubic::CurveCubic(const Model& model) : Curve(CurveCubic::iddObjectType(), model) {
   OS_ASSERT(getImpl<detail::CurveCubic_Impl>());
   OS_ASSERT(setCoefficient1Constant(0.0));
   OS_ASSERT(setCoefficient2x(0.0));
@@ -45,7 +45,7 @@ CurveCubic::CurveCubic(const Model& model) : ModelObject(CurveCubic::iddObjectTy
   OS_ASSERT(setMaximumValueofx(1.0));
 }
 
-CurveCubic::CurveCubic(std::shared_ptr<detail::CurveCubic_Impl> impl) : ModelObject(std::move(impl)) {}
+CurveCubic::CurveCubic(std::shared_ptr<detail::CurveCubic_Impl> impl) : Curve(std::move(impl)) {}
 
 IddObjectType CurveCubic::iddObjectType() {
   return IddObjectType::Curve_Cubic;

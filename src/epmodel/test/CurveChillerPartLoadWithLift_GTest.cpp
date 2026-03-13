@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/CurveChillerPartLoadWithLift.hpp"
+#include "../Curve/CurveChillerPartLoadWithLift.hpp"
 
 #include <utilities/core/StringHelpers.hpp>
 

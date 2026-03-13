@@ -7,7 +7,7 @@
 #define EPMODEL_CURVESIGMOID_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Curve.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace epmodel {
     class CurveSigmoid_Impl;
   }
 
-  class EPMODEL_API CurveSigmoid : public ModelObject
+  class EPMODEL_API CurveSigmoid : public Curve
   {
    public:
     explicit CurveSigmoid(const Model& model);

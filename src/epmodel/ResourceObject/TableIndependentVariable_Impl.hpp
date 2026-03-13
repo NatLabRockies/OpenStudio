@@ -6,20 +6,23 @@
 #ifndef EPMODEL_TABLEINDEPENDENTVARIABLE_IMPL_HPP
 #define EPMODEL_TABLEINDEPENDENTVARIABLE_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "ResourceObject/ResourceObject_Impl.hpp"
 
 #include <boost/optional.hpp>
 #include <string>
+#include <vector>
 
 namespace openstudio {
 namespace epmodel {
 
+  class TableLookup;
+
   namespace detail {
 
-    class EPMODEL_API TableIndependentVariable_Impl : public ModelObject_Impl
+    class EPMODEL_API TableIndependentVariable_Impl : public ResourceObject_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using ResourceObject_Impl::ResourceObject_Impl;
       virtual ~TableIndependentVariable_Impl() override = default;
 
       std::string interpolationMethod() const;
@@ -49,17 +52,14 @@ namespace epmodel {
       bool setUnitType(const std::string& unitType);
       void resetUnitType();
 
-      boost::optional<std::string> externalFileName() const;
-      bool setExternalFileName(const std::string& externalFileName);
-      void resetExternalFileName();
+      std::vector<TableLookup> tableLookups() const;
 
-      boost::optional<int> externalFileColumnNumber() const;
-      bool setExternalFileColumnNumber(int externalFileColumnNumber);
-      void resetExternalFileColumnNumber();
-
-      boost::optional<int> externalFileStartingRowNumber() const;
-      bool setExternalFileStartingRowNumber(int externalFileStartingRowNumber);
-      void resetExternalFileStartingRowNumber();
+      bool addValue(double value);
+      bool removeValue(unsigned groupIndex);
+      void removeAllValues();
+      std::vector<double> values() const;
+      bool setValues(const std::vector<double>& values);
+      unsigned numberofValues() const;
     };
 
   }  // namespace detail

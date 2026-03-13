@@ -16,7 +16,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  CurveQuartic::CurveQuartic(const Model& model) : ModelObject(CurveQuartic::iddObjectType(), model) {
+  CurveQuartic::CurveQuartic(const Model& model) : Curve(CurveQuartic::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CurveQuartic_Impl>());
     OS_ASSERT(setCoefficient1Constant(0.0));
     OS_ASSERT(setCoefficient2x(0.0));
@@ -27,7 +27,7 @@ namespace epmodel {
     OS_ASSERT(setMaximumValueofx(1.0));
   }
 
-  CurveQuartic::CurveQuartic(std::shared_ptr<detail::CurveQuartic_Impl> impl) : ModelObject(std::move(impl)) {}
+  CurveQuartic::CurveQuartic(std::shared_ptr<detail::CurveQuartic_Impl> impl) : Curve(std::move(impl)) {}
 
   IddObjectType CurveQuartic::iddObjectType() {
     return IddObjectType::Curve_Quartic;

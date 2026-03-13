@@ -3,8 +3,8 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#include "ModelObject/CurveChillerPartLoadWithLift.hpp"
-#include "ModelObject/CurveChillerPartLoadWithLift_Impl.hpp"
+#include "Curve/CurveChillerPartLoadWithLift.hpp"
+#include "Curve/CurveChillerPartLoadWithLift_Impl.hpp"
 
 #include "Model.hpp"
 
@@ -35,7 +35,7 @@ namespace epmodel {
 
   }  // namespace
 
-  CurveChillerPartLoadWithLift::CurveChillerPartLoadWithLift(const Model& model) : ModelObject(CurveChillerPartLoadWithLift::iddObjectType(), model) {
+  CurveChillerPartLoadWithLift::CurveChillerPartLoadWithLift(const Model& model) : Curve(CurveChillerPartLoadWithLift::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CurveChillerPartLoadWithLift_Impl>());
     OS_ASSERT(setCoefficient1C1(0.0));
     OS_ASSERT(setCoefficient2C2(0.0));
@@ -58,7 +58,7 @@ namespace epmodel {
   }
 
   CurveChillerPartLoadWithLift::CurveChillerPartLoadWithLift(std::shared_ptr<detail::CurveChillerPartLoadWithLift_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : Curve(std::move(impl)) {}
 
   IddObjectType CurveChillerPartLoadWithLift::iddObjectType() {
     return IddObjectType::Curve_ChillerPartLoadWithLift;

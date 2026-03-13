@@ -7,7 +7,7 @@
 #define EPMODEL_CURVEBIQUADRATIC_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Curve.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace epmodel {
     class CurveBiquadratic_Impl;
   }
 
-  class EPMODEL_API CurveBiquadratic : public ModelObject
+  class EPMODEL_API CurveBiquadratic : public Curve
   {
    public:
     explicit CurveBiquadratic(const Model& model);

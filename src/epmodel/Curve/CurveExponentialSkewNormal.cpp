@@ -16,7 +16,7 @@
 namespace openstudio {
 namespace epmodel {
 
-CurveExponentialSkewNormal::CurveExponentialSkewNormal(const Model& model) : ModelObject(CurveExponentialSkewNormal::iddObjectType(), model) {
+CurveExponentialSkewNormal::CurveExponentialSkewNormal(const Model& model) : Curve(CurveExponentialSkewNormal::iddObjectType(), model) {
   OS_ASSERT(getImpl<detail::CurveExponentialSkewNormal_Impl>());
   OS_ASSERT(setCoefficient1C1(1.0));
   OS_ASSERT(setCoefficient2C2(1.0));
@@ -31,7 +31,7 @@ CurveExponentialSkewNormal::CurveExponentialSkewNormal(const Model& model) : Mod
 }
 
 CurveExponentialSkewNormal::CurveExponentialSkewNormal(std::shared_ptr<detail::CurveExponentialSkewNormal_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : Curve(std::move(impl)) {}
 
 IddObjectType CurveExponentialSkewNormal::iddObjectType() {
   return IddObjectType::Curve_ExponentialSkewNormal;

@@ -16,7 +16,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  CurveQuadraticLinear::CurveQuadraticLinear(const Model& model) : ModelObject(CurveQuadraticLinear::iddObjectType(), model) {
+  CurveQuadraticLinear::CurveQuadraticLinear(const Model& model) : Curve(CurveQuadraticLinear::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CurveQuadraticLinear_Impl>());
     OS_ASSERT(setCoefficient1Constant(0.0));
     OS_ASSERT(setCoefficient2x(0.0));
@@ -35,7 +35,7 @@ namespace epmodel {
     resetOutputUnitType();
   }
 
-  CurveQuadraticLinear::CurveQuadraticLinear(std::shared_ptr<detail::CurveQuadraticLinear_Impl> impl) : ModelObject(std::move(impl)) {}
+  CurveQuadraticLinear::CurveQuadraticLinear(std::shared_ptr<detail::CurveQuadraticLinear_Impl> impl) : Curve(std::move(impl)) {}
 
   IddObjectType CurveQuadraticLinear::iddObjectType() {
     return IddObjectType::Curve_QuadraticLinear;

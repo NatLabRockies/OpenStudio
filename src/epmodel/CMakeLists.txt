@@ -9,6 +9,14 @@ set(${target_name}_src
   ModelObject/ModelObject.hpp
   ModelObject/ModelObject_Impl.hpp
   ModelObject/ModelObject.cpp
+  ResourceObject/ResourceObject.hpp
+  ResourceObject/ResourceObject.cpp
+  ResourceObject/ResourceObject_Impl.hpp
+  ResourceObject/ResourceObject_Impl.cpp
+  Curve/Curve.hpp
+  Curve/Curve.cpp
+  Curve/Curve_Impl.hpp
+  Curve/Curve_Impl.cpp
   ModelObject/Timestep.hpp
   ModelObject/Timestep_Impl.hpp
   ModelObject/Timestep.cpp
@@ -628,12 +636,12 @@ set(${target_name}_src
   Curve/TableLookup.hpp
   Curve/TableLookup_Impl.hpp
   Curve/TableLookup.cpp
-  ModelObject/CurveCubicLinear.hpp
-  ModelObject/CurveCubicLinear_Impl.hpp
-  ModelObject/CurveCubicLinear.cpp
-  ModelObject/CurveChillerPartLoadWithLift.hpp
-  ModelObject/CurveChillerPartLoadWithLift_Impl.hpp
-  ModelObject/CurveChillerPartLoadWithLift.cpp
+  Curve/CurveCubicLinear.hpp
+  Curve/CurveCubicLinear_Impl.hpp
+  Curve/CurveCubicLinear.cpp
+  Curve/CurveChillerPartLoadWithLift.hpp
+  Curve/CurveChillerPartLoadWithLift_Impl.hpp
+  Curve/CurveChillerPartLoadWithLift.cpp
   ModelObject/AirflowNetworkDistributionComponentDuct.hpp
   ModelObject/AirflowNetworkDistributionComponentDuct_Impl.hpp
   ModelObject/AirflowNetworkDistributionComponentDuct.cpp
@@ -2953,6 +2961,7 @@ set(${target_name}_test_src
   test/CurveExponentialSkewNormal_GTest.cpp
   test/CurveFanPressureRise_GTest.cpp
   test/CurveFunctionalPressureDrop_GTest.cpp
+  test/CurveBehavior_GTest.cpp
   test/CurveLinear_GTest.cpp
   test/CurveQuadratic_GTest.cpp
   test/CurveQuartic_GTest.cpp

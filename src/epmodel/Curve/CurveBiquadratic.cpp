@@ -35,7 +35,7 @@ namespace epmodel {
 
   }  // namespace
 
-  CurveBiquadratic::CurveBiquadratic(const Model& model) : ModelObject(CurveBiquadratic::iddObjectType(), model) {
+  CurveBiquadratic::CurveBiquadratic(const Model& model) : Curve(CurveBiquadratic::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CurveBiquadratic_Impl>());
     OS_ASSERT(setCoefficient1Constant(0.0));
     OS_ASSERT(setCoefficient2x(0.0));
@@ -49,7 +49,7 @@ namespace epmodel {
     OS_ASSERT(setMaximumValueofy(1.0));
   }
 
-  CurveBiquadratic::CurveBiquadratic(std::shared_ptr<detail::CurveBiquadratic_Impl> impl) : ModelObject(std::move(impl)) {}
+  CurveBiquadratic::CurveBiquadratic(std::shared_ptr<detail::CurveBiquadratic_Impl> impl) : Curve(std::move(impl)) {}
 
   IddObjectType CurveBiquadratic::iddObjectType() {
     return IddObjectType::Curve_Biquadratic;

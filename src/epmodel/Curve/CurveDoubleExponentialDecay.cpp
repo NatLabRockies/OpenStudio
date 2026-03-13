@@ -35,7 +35,7 @@ namespace epmodel {
 
   }  // namespace
 
-  CurveDoubleExponentialDecay::CurveDoubleExponentialDecay(const Model& model) : ModelObject(CurveDoubleExponentialDecay::iddObjectType(), model) {
+  CurveDoubleExponentialDecay::CurveDoubleExponentialDecay(const Model& model) : Curve(CurveDoubleExponentialDecay::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CurveDoubleExponentialDecay_Impl>());
     OS_ASSERT(setCoefficient1C1(0.0));
     OS_ASSERT(setCoefficient2C2(0.0));
@@ -47,7 +47,7 @@ namespace epmodel {
   }
 
   CurveDoubleExponentialDecay::CurveDoubleExponentialDecay(std::shared_ptr<detail::CurveDoubleExponentialDecay_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : Curve(std::move(impl)) {}
 
   IddObjectType CurveDoubleExponentialDecay::iddObjectType() {
     return IddObjectType::Curve_DoubleExponentialDecay;

@@ -16,7 +16,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  CurveRectangularHyperbola2::CurveRectangularHyperbola2(const Model& model) : ModelObject(CurveRectangularHyperbola2::iddObjectType(), model) {
+  CurveRectangularHyperbola2::CurveRectangularHyperbola2(const Model& model) : Curve(CurveRectangularHyperbola2::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CurveRectangularHyperbola2_Impl>());
     OS_ASSERT(setCoefficient1C1(1.0));
     OS_ASSERT(setCoefficient2C2(1.0));
@@ -26,7 +26,7 @@ namespace epmodel {
   }
 
   CurveRectangularHyperbola2::CurveRectangularHyperbola2(std::shared_ptr<detail::CurveRectangularHyperbola2_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : Curve(std::move(impl)) {}
 
   IddObjectType CurveRectangularHyperbola2::iddObjectType() {
     return IddObjectType::Curve_RectangularHyperbola2;

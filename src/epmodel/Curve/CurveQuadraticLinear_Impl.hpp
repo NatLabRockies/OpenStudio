@@ -6,7 +6,7 @@
 #ifndef EPMODEL_CURVEQUADRATICLINEAR_IMPL_HPP
 #define EPMODEL_CURVEQUADRATICLINEAR_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "Curve/Curve_Impl.hpp"
 
 #include <vector>
 
@@ -15,10 +15,10 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API CurveQuadraticLinear_Impl : public ModelObject_Impl
+    class EPMODEL_API CurveQuadraticLinear_Impl : public Curve_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using Curve_Impl::Curve_Impl;
       virtual ~CurveQuadraticLinear_Impl() override = default;
 
       std::vector<std::string> validInputUnitTypeforXValues() const;

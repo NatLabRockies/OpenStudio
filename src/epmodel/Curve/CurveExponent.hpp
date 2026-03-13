@@ -7,7 +7,7 @@
 #define EPMODEL_CURVEEXPONENT_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Curve.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace epmodel {
     class CurveExponent_Impl;
   }
 
-  class EPMODEL_API CurveExponent : public ModelObject
+  class EPMODEL_API CurveExponent : public Curve
   {
    public:
     explicit CurveExponent(const Model& model);

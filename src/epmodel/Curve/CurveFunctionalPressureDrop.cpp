@@ -15,13 +15,13 @@
 namespace openstudio {
 namespace epmodel {
 
-  CurveFunctionalPressureDrop::CurveFunctionalPressureDrop(const Model& model) : ModelObject(CurveFunctionalPressureDrop::iddObjectType(), model) {
+  CurveFunctionalPressureDrop::CurveFunctionalPressureDrop(const Model& model) : Curve(CurveFunctionalPressureDrop::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CurveFunctionalPressureDrop_Impl>());
     OS_ASSERT(setDiameter(0.05));
   }
 
   CurveFunctionalPressureDrop::CurveFunctionalPressureDrop(std::shared_ptr<detail::CurveFunctionalPressureDrop_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : Curve(std::move(impl)) {}
 
   IddObjectType CurveFunctionalPressureDrop::iddObjectType() {
     return IddObjectType::Curve_Functional_PressureDrop;

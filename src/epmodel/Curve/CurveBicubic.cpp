@@ -16,7 +16,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  CurveBicubic::CurveBicubic(const Model& model) : ModelObject(CurveBicubic::iddObjectType(), model) {
+  CurveBicubic::CurveBicubic(const Model& model) : Curve(CurveBicubic::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CurveBicubic_Impl>());
     OS_ASSERT(setCoefficient1Constant(0.0));
     OS_ASSERT(setCoefficient2x(0.0));
@@ -34,7 +34,7 @@ namespace epmodel {
     OS_ASSERT(setMaximumValueofy(1.0));
   }
 
-  CurveBicubic::CurveBicubic(std::shared_ptr<detail::CurveBicubic_Impl> impl) : ModelObject(std::move(impl)) {}
+  CurveBicubic::CurveBicubic(std::shared_ptr<detail::CurveBicubic_Impl> impl) : Curve(std::move(impl)) {}
 
   IddObjectType CurveBicubic::iddObjectType() {
     return IddObjectType::Curve_Bicubic;

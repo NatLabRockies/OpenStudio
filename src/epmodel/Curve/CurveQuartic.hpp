@@ -7,7 +7,7 @@
 #define EPMODEL_CURVEQUARTIC_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Curve.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace epmodel {
     class CurveQuartic_Impl;
   }
 
-  class EPMODEL_API CurveQuartic : public ModelObject
+  class EPMODEL_API CurveQuartic : public Curve
   {
    public:
     explicit CurveQuartic(const Model& model);

@@ -3,8 +3,8 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#include "ModelObject/CurveCubicLinear.hpp"
-#include "ModelObject/CurveCubicLinear_Impl.hpp"
+#include "Curve/CurveCubicLinear.hpp"
+#include "Curve/CurveCubicLinear_Impl.hpp"
 
 #include "Model.hpp"
 
@@ -35,7 +35,7 @@ namespace epmodel {
 
   }  // namespace
 
-  CurveCubicLinear::CurveCubicLinear(const Model& model) : ModelObject(CurveCubicLinear::iddObjectType(), model) {
+  CurveCubicLinear::CurveCubicLinear(const Model& model) : Curve(CurveCubicLinear::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CurveCubicLinear_Impl>());
     OS_ASSERT(setCoefficient1Constant(0.0));
     OS_ASSERT(setCoefficient2x(0.0));
@@ -49,7 +49,7 @@ namespace epmodel {
     OS_ASSERT(setMaximumValueofy(1.0));
   }
 
-  CurveCubicLinear::CurveCubicLinear(std::shared_ptr<detail::CurveCubicLinear_Impl> impl) : ModelObject(std::move(impl)) {}
+  CurveCubicLinear::CurveCubicLinear(std::shared_ptr<detail::CurveCubicLinear_Impl> impl) : Curve(std::move(impl)) {}
 
   IddObjectType CurveCubicLinear::iddObjectType() {
     return IddObjectType::Curve_CubicLinear;

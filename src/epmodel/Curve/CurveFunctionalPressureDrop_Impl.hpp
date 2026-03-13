@@ -6,17 +6,17 @@
 #ifndef EPMODEL_CURVEFUNCTIONALPRESSUREDROP_IMPL_HPP
 #define EPMODEL_CURVEFUNCTIONALPRESSUREDROP_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "Curve/Curve_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API CurveFunctionalPressureDrop_Impl : public ModelObject_Impl
+    class EPMODEL_API CurveFunctionalPressureDrop_Impl : public Curve_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using Curve_Impl::Curve_Impl;
       virtual ~CurveFunctionalPressureDrop_Impl() override = default;
 
       double diameter() const;

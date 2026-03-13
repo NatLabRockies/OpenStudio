@@ -7,7 +7,7 @@
 #define EPMODEL_CURVETRIQUADRATIC_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Curve.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace detail {
 class CurveTriquadratic_Impl;
 }
 
-class EPMODEL_API CurveTriquadratic : public ModelObject
+class EPMODEL_API CurveTriquadratic : public Curve
 {
  public:
   explicit CurveTriquadratic(const Model& model);

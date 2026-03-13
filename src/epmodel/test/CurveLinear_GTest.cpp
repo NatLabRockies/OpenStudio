@@ -42,6 +42,7 @@ TEST_F(EPModelFixture, CurveLinear_DefaultConstructor) {
   Model model;
   CurveLinear curve(model);
   EXPECT_EQ(CurveLinear::iddObjectType(), curve.iddObject().type());
+  EXPECT_EQ(1, curve.numVariables());
 
   EXPECT_DOUBLE_EQ(0.0, curve.coefficient1Constant());
   EXPECT_DOUBLE_EQ(1.0, curve.coefficient2x());
@@ -110,4 +111,21 @@ TEST_F(EPModelFixture, CurveLinear_ScalarAccessors_RoundTrip) {
   }
   curve.resetOutputUnitType();
   EXPECT_TRUE(curve.isOutputUnitTypeDefaulted());
+}
+
+TEST_F(EPModelFixture, CurveLinear_Evaluate_UsesCurveBaseAPI) {
+  Model model;
+  CurveLinear curve(model);
+
+  EXPECT_TRUE(curve.setCoefficient1Constant(1.0));
+  EXPECT_TRUE(curve.setCoefficient2x(2.0));
+  EXPECT_TRUE(curve.setMinimumValueofx(0.0));
+  EXPECT_TRUE(curve.setMaximumValueofx(1.0));
+
+  Curve baseCurve = curve;
+  EXPECT_DOUBLE_EQ(2.0, baseCurve.evaluate(0.5));
+  EXPECT_DOUBLE_EQ(1.0, baseCurve.evaluate(-1.0));
+
+  EXPECT_TRUE(curve.setMaximumCurveOutput(2.2));
+  EXPECT_DOUBLE_EQ(2.2, baseCurve.evaluate(1.0));
 }

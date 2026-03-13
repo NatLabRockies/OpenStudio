@@ -122,6 +122,12 @@ These notes capture working design guidance that emerged while building `openstu
     branches, chatty logging, and defensive throw paths for guaranteed states.
 
 - Implementation style:
+  - Keep public wrapper classes thin. For existing `openstudio::model`-parity
+    types, put substantive behavior, relationship mutation, and helper logic in `*_Impl`; public wrapper methods
+    should primarily forward to the impl.
+  - If adding a new aligned parent type (for example `Curve` or
+    `ResourceObject` in epmodel), add the corresponding `*_Impl` layer too. Do not concentrate new behavior in the
+    public base class because that breaks the existing wrapper/impl contract.
   - Prefer high-level object APIs (`getModelObjectTarget`, typed helpers, etc.)
     over low-level workspace field access when both express the same behavior.
   - Prefer composition of existing typed APIs over direct field-level methods.

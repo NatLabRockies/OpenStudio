@@ -7,7 +7,7 @@
 #define EPMODEL_CURVEFANPRESSURERISE_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Curve.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,7 @@ namespace epmodel {
     class CurveFanPressureRise_Impl;
   }
 
-  class EPMODEL_API CurveFanPressureRise : public ModelObject
+  class EPMODEL_API CurveFanPressureRise : public Curve
   {
    public:
     explicit CurveFanPressureRise(const Model& model);

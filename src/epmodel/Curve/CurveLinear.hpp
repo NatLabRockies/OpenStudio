@@ -7,7 +7,7 @@
 #define EPMODEL_CURVELINEAR_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Curve.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace epmodel {
     class CurveLinear_Impl;
   }
 
-  class EPMODEL_API CurveLinear : public ModelObject
+  class EPMODEL_API CurveLinear : public Curve
   {
    public:
     explicit CurveLinear(const Model& model);

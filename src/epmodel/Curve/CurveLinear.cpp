@@ -16,7 +16,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  CurveLinear::CurveLinear(const Model& model) : ModelObject(CurveLinear::iddObjectType(), model) {
+  CurveLinear::CurveLinear(const Model& model) : Curve(CurveLinear::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CurveLinear_Impl>());
     OS_ASSERT(setCoefficient1Constant(0.0));
     OS_ASSERT(setCoefficient2x(1.0));
@@ -28,7 +28,7 @@ namespace epmodel {
     resetOutputUnitType();
   }
 
-  CurveLinear::CurveLinear(std::shared_ptr<detail::CurveLinear_Impl> impl) : ModelObject(std::move(impl)) {}
+  CurveLinear::CurveLinear(std::shared_ptr<detail::CurveLinear_Impl> impl) : Curve(std::move(impl)) {}
 
   IddObjectType CurveLinear::iddObjectType() {
     return IddObjectType::Curve_Linear;

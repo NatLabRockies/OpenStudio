@@ -16,7 +16,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  CurveSigmoid::CurveSigmoid(const Model& model) : ModelObject(CurveSigmoid::iddObjectType(), model) {
+  CurveSigmoid::CurveSigmoid(const Model& model) : Curve(CurveSigmoid::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CurveSigmoid_Impl>());
     OS_ASSERT(setCoefficient1C1(0.0));
     OS_ASSERT(setCoefficient2C2(1.0));
@@ -27,7 +27,7 @@ namespace epmodel {
     OS_ASSERT(setMaximumValueofx(1.0));
   }
 
-  CurveSigmoid::CurveSigmoid(std::shared_ptr<detail::CurveSigmoid_Impl> impl) : ModelObject(std::move(impl)) {}
+  CurveSigmoid::CurveSigmoid(std::shared_ptr<detail::CurveSigmoid_Impl> impl) : Curve(std::move(impl)) {}
 
   IddObjectType CurveSigmoid::iddObjectType() {
     return IddObjectType::Curve_Sigmoid;

@@ -7,7 +7,7 @@
 #define EPMODEL_CURVEQUINTLINEAR_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Curve.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace epmodel {
     class CurveQuintLinear_Impl;
   }
 
-  class EPMODEL_API CurveQuintLinear : public ModelObject
+  class EPMODEL_API CurveQuintLinear : public Curve
   {
    public:
     explicit CurveQuintLinear(const Model& model);

@@ -6,20 +6,23 @@
 #ifndef EPMODEL_TABLELOOKUP_IMPL_HPP
 #define EPMODEL_TABLELOOKUP_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "Curve/Curve_Impl.hpp"
 
 #include <boost/optional.hpp>
 #include <string>
+#include <vector>
 
 namespace openstudio {
 namespace epmodel {
 
+  class TableIndependentVariable;
+
   namespace detail {
 
-    class EPMODEL_API TableLookup_Impl : public ModelObject_Impl
+    class EPMODEL_API TableLookup_Impl : public Curve_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using Curve_Impl::Curve_Impl;
       virtual ~TableLookup_Impl() override = default;
 
       std::string normalizationMethod() const;
@@ -39,13 +42,17 @@ namespace epmodel {
       std::string outputUnitType() const;
       bool setOutputUnitType(const std::string& outputUnitType);
 
-      boost::optional<int> externalFileColumnNumber() const;
-      bool setExternalFileColumnNumber(int externalFileColumnNumber);
-      void resetExternalFileColumnNumber();
+      bool addOutputValue(double outputValue);
+      bool removeOutputValue(unsigned groupIndex);
+      void removeAllOutputValues();
+      std::vector<double> outputValues() const;
+      unsigned numberofOutputValues() const;
+      bool setOutputValues(const std::vector<double>& outputValues);
 
-      boost::optional<int> externalFileStartingRowNumber() const;
-      bool setExternalFileStartingRowNumber(int externalFileStartingRowNumber);
-      void resetExternalFileStartingRowNumber();
+      bool addIndependentVariable(const TableIndependentVariable& tableIndependentVariable);
+      bool removeIndependentVariable(const TableIndependentVariable& tableIndependentVariable);
+      void removeAllIndependentVariables();
+      std::vector<TableIndependentVariable> independentVariables() const;
     };
 
   }  // namespace detail

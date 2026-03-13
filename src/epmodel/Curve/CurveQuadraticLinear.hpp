@@ -7,7 +7,7 @@
 #define EPMODEL_CURVEQUADRATICLINEAR_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Curve.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace epmodel {
     class CurveQuadraticLinear_Impl;
   }
 
-  class EPMODEL_API CurveQuadraticLinear : public ModelObject
+  class EPMODEL_API CurveQuadraticLinear : public Curve
   {
    public:
     explicit CurveQuadraticLinear(const Model& model);

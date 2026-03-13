@@ -6,17 +6,17 @@
 #ifndef EPMODEL_CURVEFANPRESSURERISE_IMPL_HPP
 #define EPMODEL_CURVEFANPRESSURERISE_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "Curve/Curve_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API CurveFanPressureRise_Impl : public ModelObject_Impl
+    class EPMODEL_API CurveFanPressureRise_Impl : public Curve_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using Curve_Impl::Curve_Impl;
       virtual ~CurveFanPressureRise_Impl() override = default;
 
       double coefficient1C1() const;

@@ -7,7 +7,7 @@
 #define EPMODEL_TABLELOOKUP_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Curve.hpp"
 
 #include <boost/optional.hpp>
 #include <string>
@@ -18,12 +18,13 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class TableIndependentVariable;
 
   namespace detail {
     class TableLookup_Impl;
   }
 
-  class EPMODEL_API TableLookup : public ModelObject
+  class EPMODEL_API TableLookup : public Curve
   {
    public:
     explicit TableLookup(const Model& model);
@@ -45,7 +46,7 @@ namespace epmodel {
     // Schema Alignment Notes:
     // - API: Preserve openstudio::model TableLookup scalar accessor names/signatures.
     // - Field Mapping: Scalars map directly to Table:Lookup fields via Table_LookupFields and ForwardTranslateTableLookup.cpp writes the same fields.
-    // - Field Mapping: IndependentVariableListName and Output Value extensibles remain relationship-like and are intentionally excluded from this scalar-only run.
+    // - Field Mapping: IndependentVariableListName and Output Value extensibles are represented with typed object/extensible APIs.
 
     std::string normalizationMethod() const;
     bool setNormalizationMethod(const std::string& normalizationMethod);
@@ -64,13 +65,17 @@ namespace epmodel {
     std::string outputUnitType() const;
     bool setOutputUnitType(const std::string& outputUnitType);
 
-    boost::optional<int> externalFileColumnNumber() const;
-    bool setExternalFileColumnNumber(int externalFileColumnNumber);
-    void resetExternalFileColumnNumber();
+    bool addOutputValue(double outputValue);
+    bool removeOutputValue(unsigned groupIndex);
+    void removeAllOutputValues();
+    std::vector<double> outputValues() const;
+    unsigned numberofOutputValues() const;
+    bool setOutputValues(const std::vector<double>& outputValues);
 
-    boost::optional<int> externalFileStartingRowNumber() const;
-    bool setExternalFileStartingRowNumber(int externalFileStartingRowNumber);
-    void resetExternalFileStartingRowNumber();
+    bool addIndependentVariable(const TableIndependentVariable& tableIndependentVariable);
+    bool removeIndependentVariable(const TableIndependentVariable& tableIndependentVariable);
+    void removeAllIndependentVariables();
+    std::vector<TableIndependentVariable> independentVariables() const;
 
    protected:
     using ImplType = detail::TableLookup_Impl;

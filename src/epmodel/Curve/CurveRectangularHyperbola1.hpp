@@ -7,7 +7,7 @@
 #define EPMODEL_CURVERECTANGULARHYPERBOLA1_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Curve.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace epmodel {
     class CurveRectangularHyperbola1_Impl;
   }
 
-  class EPMODEL_API CurveRectangularHyperbola1 : public ModelObject
+  class EPMODEL_API CurveRectangularHyperbola1 : public Curve
   {
    public:
     explicit CurveRectangularHyperbola1(const Model& model);

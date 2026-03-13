@@ -6,7 +6,7 @@
 #ifndef EPMODEL_CURVECUBICLINEAR_IMPL_HPP
 #define EPMODEL_CURVECUBICLINEAR_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "Curve_Impl.hpp"
 
 #include <vector>
 
@@ -15,10 +15,10 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API CurveCubicLinear_Impl : public ModelObject_Impl
+    class EPMODEL_API CurveCubicLinear_Impl : public Curve_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using Curve_Impl::Curve_Impl;
       virtual ~CurveCubicLinear_Impl() override = default;
 
       double coefficient1Constant() const;

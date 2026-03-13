@@ -16,7 +16,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  CurveExponentialDecay::CurveExponentialDecay(const Model& model) : ModelObject(CurveExponentialDecay::iddObjectType(), model) {
+  CurveExponentialDecay::CurveExponentialDecay(const Model& model) : Curve(CurveExponentialDecay::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CurveExponentialDecay_Impl>());
     OS_ASSERT(setCoefficient1C1(0.0));
     OS_ASSERT(setCoefficient2C2(1.0));
@@ -29,7 +29,7 @@ namespace epmodel {
     resetOutputUnitType();
   }
 
-  CurveExponentialDecay::CurveExponentialDecay(std::shared_ptr<detail::CurveExponentialDecay_Impl> impl) : ModelObject(std::move(impl)) {}
+  CurveExponentialDecay::CurveExponentialDecay(std::shared_ptr<detail::CurveExponentialDecay_Impl> impl) : Curve(std::move(impl)) {}
 
   IddObjectType CurveExponentialDecay::iddObjectType() {
     return IddObjectType::Curve_ExponentialDecay;

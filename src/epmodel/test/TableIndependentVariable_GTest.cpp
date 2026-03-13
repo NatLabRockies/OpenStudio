@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Curve/TableLookup.hpp"
 #include "../ResourceObject/TableIndependentVariable.hpp"
 
 using namespace openstudio::epmodel;
@@ -13,10 +14,15 @@ using namespace openstudio::epmodel;
 TEST_F(EPModelFixture, TableIndependentVariable_DefaultConstructor) {
   Model model;
   TableIndependentVariable tableIndependentVariable(model);
+
   EXPECT_EQ(TableIndependentVariable::iddObjectType(), tableIndependentVariable.iddObject().type());
+  EXPECT_EQ("Linear", tableIndependentVariable.interpolationMethod());
+  EXPECT_EQ("Constant", tableIndependentVariable.extrapolationMethod());
+  EXPECT_EQ("Dimensionless", tableIndependentVariable.unitType());
+  EXPECT_TRUE(tableIndependentVariable.values().empty());
 }
 
-TEST_F(EPModelFixture, TableIndependentVariable_ScalarAccessors_RoundTrip) {
+TEST_F(EPModelFixture, TableIndependentVariable_ScalarAndValueParity) {
   Model model;
   TableIndependentVariable tableIndependentVariable(model);
 
@@ -44,17 +50,14 @@ TEST_F(EPModelFixture, TableIndependentVariable_ScalarAccessors_RoundTrip) {
   EXPECT_EQ("Temperature", tableIndependentVariable.unitType());
   EXPECT_FALSE(tableIndependentVariable.isUnitTypeDefaulted());
 
-  EXPECT_TRUE(tableIndependentVariable.setExternalFileName("table.csv"));
-  ASSERT_TRUE(tableIndependentVariable.externalFileName());
-  EXPECT_EQ("table.csv", tableIndependentVariable.externalFileName().get());
-
-  EXPECT_TRUE(tableIndependentVariable.setExternalFileColumnNumber(2));
-  ASSERT_TRUE(tableIndependentVariable.externalFileColumnNumber());
-  EXPECT_EQ(2, tableIndependentVariable.externalFileColumnNumber().get());
-
-  EXPECT_TRUE(tableIndependentVariable.setExternalFileStartingRowNumber(5));
-  ASSERT_TRUE(tableIndependentVariable.externalFileStartingRowNumber());
-  EXPECT_EQ(5, tableIndependentVariable.externalFileStartingRowNumber().get());
+  EXPECT_TRUE(tableIndependentVariable.addValue(1.0));
+  EXPECT_TRUE(tableIndependentVariable.addValue(2.0));
+  EXPECT_EQ(2u, tableIndependentVariable.numberofValues());
+  EXPECT_EQ(std::vector<double>({1.0, 2.0}), tableIndependentVariable.values());
+  EXPECT_TRUE(tableIndependentVariable.removeValue(0));
+  EXPECT_EQ(std::vector<double>({2.0}), tableIndependentVariable.values());
+  EXPECT_TRUE(tableIndependentVariable.setValues({3.0, 4.0, 5.0}));
+  EXPECT_EQ(std::vector<double>({3.0, 4.0, 5.0}), tableIndependentVariable.values());
 
   tableIndependentVariable.resetInterpolationMethod();
   EXPECT_TRUE(tableIndependentVariable.isInterpolationMethodDefaulted());
@@ -73,13 +76,15 @@ TEST_F(EPModelFixture, TableIndependentVariable_ScalarAccessors_RoundTrip) {
 
   tableIndependentVariable.resetUnitType();
   EXPECT_TRUE(tableIndependentVariable.isUnitTypeDefaulted());
+}
 
-  tableIndependentVariable.resetExternalFileName();
-  EXPECT_FALSE(tableIndependentVariable.externalFileName());
+TEST_F(EPModelFixture, TableIndependentVariable_ReverseLookupParity) {
+  Model model;
+  TableIndependentVariable independentVariable(model);
+  TableLookup tableLookup(model);
 
-  tableIndependentVariable.resetExternalFileColumnNumber();
-  EXPECT_FALSE(tableIndependentVariable.externalFileColumnNumber());
-
-  tableIndependentVariable.resetExternalFileStartingRowNumber();
-  EXPECT_FALSE(tableIndependentVariable.externalFileStartingRowNumber());
+  EXPECT_TRUE(independentVariable.tableLookups().empty());
+  EXPECT_TRUE(tableLookup.addIndependentVariable(independentVariable));
+  ASSERT_EQ(1u, independentVariable.tableLookups().size());
+  EXPECT_EQ(tableLookup.handle(), independentVariable.tableLookups()[0].handle());
 }

@@ -7,7 +7,7 @@
 #define EPMODEL_CURVEEXPONENTIALSKEWNORMAL_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Curve.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace epmodel {
     class CurveExponentialSkewNormal_Impl;
   }
 
-  class EPMODEL_API CurveExponentialSkewNormal : public ModelObject
+  class EPMODEL_API CurveExponentialSkewNormal : public Curve
   {
    public:
     explicit CurveExponentialSkewNormal(const Model& model);

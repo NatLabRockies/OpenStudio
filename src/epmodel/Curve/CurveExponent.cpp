@@ -16,7 +16,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  CurveExponent::CurveExponent(const Model& model) : ModelObject(CurveExponent::iddObjectType(), model) {
+  CurveExponent::CurveExponent(const Model& model) : Curve(CurveExponent::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CurveExponent_Impl>());
     OS_ASSERT(setCoefficient1Constant(0.0));
     OS_ASSERT(setCoefficient2Constant(1.0));
@@ -29,7 +29,7 @@ namespace epmodel {
     resetOutputUnitType();
   }
 
-  CurveExponent::CurveExponent(std::shared_ptr<detail::CurveExponent_Impl> impl) : ModelObject(std::move(impl)) {}
+  CurveExponent::CurveExponent(std::shared_ptr<detail::CurveExponent_Impl> impl) : Curve(std::move(impl)) {}
 
   IddObjectType CurveExponent::iddObjectType() {
     return IddObjectType::Curve_Exponent;

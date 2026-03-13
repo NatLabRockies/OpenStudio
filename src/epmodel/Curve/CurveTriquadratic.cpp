@@ -16,11 +16,11 @@
 namespace openstudio {
 namespace epmodel {
 
-CurveTriquadratic::CurveTriquadratic(const Model& model) : ModelObject(CurveTriquadratic::iddObjectType(), model) {
+CurveTriquadratic::CurveTriquadratic(const Model& model) : Curve(CurveTriquadratic::iddObjectType(), model) {
   OS_ASSERT(getImpl<detail::CurveTriquadratic_Impl>());
 }
 
-CurveTriquadratic::CurveTriquadratic(std::shared_ptr<detail::CurveTriquadratic_Impl> impl) : ModelObject(std::move(impl)) {}
+CurveTriquadratic::CurveTriquadratic(std::shared_ptr<detail::CurveTriquadratic_Impl> impl) : Curve(std::move(impl)) {}
 
 IddObjectType CurveTriquadratic::iddObjectType() {
   return IddObjectType::Curve_Triquadratic;

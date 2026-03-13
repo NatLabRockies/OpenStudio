@@ -7,7 +7,7 @@
 #define EPMODEL_TABLEINDEPENDENTVARIABLE_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ResourceObject.hpp"
 
 #include <boost/optional.hpp>
 #include <memory>
@@ -19,12 +19,13 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class TableLookup;
 
   namespace detail {
     class TableIndependentVariable_Impl;
   }
 
-  class EPMODEL_API TableIndependentVariable : public ModelObject
+  class EPMODEL_API TableIndependentVariable : public ResourceObject
   {
    public:
     explicit TableIndependentVariable(const Model& model);
@@ -38,14 +39,17 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> interpolationMethodValues();
+    static std::vector<std::string> validInterpolationMethodValues();
     static std::vector<std::string> extrapolationMethodValues();
+    static std::vector<std::string> validExtrapolationMethodValues();
     static std::vector<std::string> unitTypeValues();
+    static std::vector<std::string> validUnitTypeValues();
 
     // Schema Alignment Notes:
     // - API: Preserve openstudio::model scalar accessor names/signatures for TableIndependentVariable.
     // - Field Mapping: Each scalar maps directly to the corresponding Table:IndependentVariable field via Table_IndependentVariableFields enums.
     // - ForwardTranslator evidence: ForwardTranslateTableIndependentVariable.cpp writes the same Table:IndependentVariable fields while feeding Table:Lookup via extensible Value lines.
-    // - TODO(parity): Extensible Value groups are relationship-like in EnergyPlus and are intentionally excluded from this scalar-only run.
+    // - Field Mapping: Value extensibles are represented with typed extensible-group APIs.
 
     std::string interpolationMethod() const;
     bool isInterpolationMethodDefaulted() const;
@@ -74,17 +78,14 @@ namespace epmodel {
     bool setUnitType(const std::string& unitType);
     void resetUnitType();
 
-    boost::optional<std::string> externalFileName() const;
-    bool setExternalFileName(const std::string& externalFileName);
-    void resetExternalFileName();
+    std::vector<TableLookup> tableLookups() const;
 
-    boost::optional<int> externalFileColumnNumber() const;
-    bool setExternalFileColumnNumber(int externalFileColumnNumber);
-    void resetExternalFileColumnNumber();
-
-    boost::optional<int> externalFileStartingRowNumber() const;
-    bool setExternalFileStartingRowNumber(int externalFileStartingRowNumber);
-    void resetExternalFileStartingRowNumber();
+    bool addValue(double value);
+    bool removeValue(unsigned groupIndex);
+    void removeAllValues();
+    std::vector<double> values() const;
+    bool setValues(const std::vector<double>& values);
+    unsigned numberofValues() const;
 
    protected:
     using ImplType = detail::TableIndependentVariable_Impl;

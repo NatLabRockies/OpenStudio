@@ -15,7 +15,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  CurveFanPressureRise::CurveFanPressureRise(const Model& model) : ModelObject(CurveFanPressureRise::iddObjectType(), model) {
+  CurveFanPressureRise::CurveFanPressureRise(const Model& model) : Curve(CurveFanPressureRise::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::CurveFanPressureRise_Impl>());
     OS_ASSERT(setCoefficient1C1(1.0));
     OS_ASSERT(setCoefficient2C2(1.0));
@@ -29,7 +29,7 @@ namespace epmodel {
     resetMaximumCurveOutput();
   }
 
-  CurveFanPressureRise::CurveFanPressureRise(std::shared_ptr<detail::CurveFanPressureRise_Impl> impl) : ModelObject(std::move(impl)) {}
+  CurveFanPressureRise::CurveFanPressureRise(std::shared_ptr<detail::CurveFanPressureRise_Impl> impl) : Curve(std::move(impl)) {}
 
   IddObjectType CurveFanPressureRise::iddObjectType() {
     return IddObjectType::Curve_FanPressureRise;

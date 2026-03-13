@@ -7,7 +7,7 @@
 #define EPMODEL_CURVEFUNCTIONALPRESSUREDROP_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Curve.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,7 @@ namespace epmodel {
     class CurveFunctionalPressureDrop_Impl;
   }
 
-  class EPMODEL_API CurveFunctionalPressureDrop : public ModelObject
+  class EPMODEL_API CurveFunctionalPressureDrop : public Curve
   {
    public:
     explicit CurveFunctionalPressureDrop(const Model& model);

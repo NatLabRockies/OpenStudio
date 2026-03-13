@@ -7,7 +7,7 @@
 #define EPMODEL_CURVEDOUBLEEXPONENTIALDECAY_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Curve.hpp"
 
 #include <utilities/core/Deprecated.hpp>
 #include <utilities/idd/IddEnums.hxx>
@@ -24,7 +24,7 @@ namespace epmodel {
     class CurveDoubleExponentialDecay_Impl;
   }
 
-  class EPMODEL_API CurveDoubleExponentialDecay : public ModelObject
+  class EPMODEL_API CurveDoubleExponentialDecay : public Curve
   {
    public:
     explicit CurveDoubleExponentialDecay(const Model& model);
