@@ -6,7 +6,11 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/CoilHeatingDXMultiSpeed.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -81,4 +85,21 @@ TEST_F(EPModelFixture, CoilHeatingDXMultiSpeed_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(coil.setRegionnumberforCalculatingHSPF(5));
   EXPECT_EQ(5, coil.regionnumberforCalculatingHSPF());
+}
+
+TEST_F(EPModelFixture, CoilHeatingDXMultiSpeed_AddToNodeSupplyOnly) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  CoilHeatingDXMultiSpeed supplyCoil(model);
+  CoilHeatingDXMultiSpeed demandCoil(model);
+
+  auto supplyInletNode = airLoop.supplyInletNode();
+  EXPECT_TRUE(supplyCoil.addToNode(supplyInletNode));
+  ASSERT_TRUE(supplyCoil.inletModelObject());
+  EXPECT_EQ(supplyInletNode, supplyCoil.inletModelObject()->cast<Node>());
+  EXPECT_TRUE(supplyCoil.outletModelObject());
+
+  auto demandInletNode = airLoop.demandInletNode();
+  EXPECT_FALSE(demandCoil.addToNode(demandInletNode));
+  EXPECT_FALSE(demandCoil.airLoopHVAC());
 }

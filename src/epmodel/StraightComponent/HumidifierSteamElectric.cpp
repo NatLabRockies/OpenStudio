@@ -6,7 +6,9 @@
 #include "StraightComponent/HumidifierSteamElectric.hpp"
 #include "StraightComponent/HumidifierSteamElectric_Impl.hpp"
 
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -25,6 +27,10 @@ namespace epmodel {
 
   IddObjectType HumidifierSteamElectric::iddObjectType() {
     return IddObjectType::Humidifier_Steam_Electric;
+  }
+
+  bool HumidifierSteamElectric::addToNode(Node& node) {
+    return getImpl<detail::HumidifierSteamElectric_Impl>()->addToNode(node);
   }
 
   boost::optional<double> HumidifierSteamElectric::ratedCapacity() const {
@@ -108,6 +114,16 @@ namespace epmodel {
 
     unsigned HumidifierSteamElectric_Impl::outletPort() const {
       return openstudio::Humidifier_Steam_ElectricFields::AirOutletNodeName;
+    }
+
+    bool HumidifierSteamElectric_Impl::addToNode(Node& node) {
+      auto airLoop = node.airLoopHVAC();
+
+      if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+        return false;
+      }
+
+      return StraightComponent_Impl::addToNode(node);
     }
 
     boost::optional<double> HumidifierSteamElectric_Impl::ratedCapacity() const {

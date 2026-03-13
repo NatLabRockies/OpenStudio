@@ -6,7 +6,9 @@
 #include "StraightComponent/CoilHeatingDXVariableSpeed.hpp"
 #include "StraightComponent/CoilHeatingDXVariableSpeed_Impl.hpp"
 
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -49,6 +51,10 @@ std::vector<std::string> CoilHeatingDXVariableSpeed::defrostStrategyValues() {
 std::vector<std::string> CoilHeatingDXVariableSpeed::defrostControlValues() {
   return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                         openstudio::Coil_Heating_DX_VariableSpeedFields::DefrostControl);
+}
+
+bool CoilHeatingDXVariableSpeed::addToNode(Node& node) {
+  return getImpl<detail::CoilHeatingDXVariableSpeed_Impl>()->addToNode(node);
 }
 
 int CoilHeatingDXVariableSpeed::nominalSpeedLevel() const {
@@ -207,6 +213,16 @@ unsigned CoilHeatingDXVariableSpeed_Impl::inletPort() const {
 
 unsigned CoilHeatingDXVariableSpeed_Impl::outletPort() const {
   return openstudio::Coil_Heating_DX_VariableSpeedFields::IndoorAirOutletNodeName;
+}
+
+bool CoilHeatingDXVariableSpeed_Impl::addToNode(Node& node) {
+  auto airLoop = node.airLoopHVAC();
+
+  if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+    return false;
+  }
+
+  return StraightComponent_Impl::addToNode(node);
 }
 
 int CoilHeatingDXVariableSpeed_Impl::nominalSpeedLevel() const {

@@ -10,6 +10,7 @@
 
 namespace openstudio {
 namespace epmodel {
+class Node;
 namespace detail {
 
 class EPMODEL_API CoilHeatingElectricMultiStage_Impl : public StraightComponent_Impl
@@ -20,6 +21,8 @@ class EPMODEL_API CoilHeatingElectricMultiStage_Impl : public StraightComponent_
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+
+  bool addToNode(Node& node) override;
 
   unsigned numberOfStages() const;
   bool setNumberOfStages(unsigned numberOfStages);

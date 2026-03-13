@@ -6,7 +6,9 @@
 #include "StraightComponent/CoilSystemCoolingWater.hpp"
 #include "StraightComponent/CoilSystemCoolingWater_Impl.hpp"
 
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -37,6 +39,10 @@ namespace epmodel {
   std::vector<std::string> CoilSystemCoolingWater::dehumidificationControlTypeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                           openstudio::CoilSystem_Cooling_WaterFields::DehumidificationControlType);
+  }
+
+  bool CoilSystemCoolingWater::addToNode(Node& node) {
+    return getImpl<detail::CoilSystemCoolingWater_Impl>()->addToNode(node);
   }
 
   std::string CoilSystemCoolingWater::dehumidificationControlType() const {
@@ -114,6 +120,16 @@ namespace epmodel {
 
     unsigned CoilSystemCoolingWater_Impl::outletPort() const {
       return openstudio::CoilSystem_Cooling_WaterFields::AirOutletNodeName;
+    }
+
+    bool CoilSystemCoolingWater_Impl::addToNode(Node& node) {
+      auto airLoop = node.airLoopHVAC();
+
+      if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+        return false;
+      }
+
+      return StraightComponent_Impl::addToNode(node);
     }
 
     std::string CoilSystemCoolingWater_Impl::dehumidificationControlType() const {

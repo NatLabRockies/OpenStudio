@@ -6,7 +6,9 @@
 #include "StraightComponent/CoilHeatingGasMultiStage.hpp"
 #include "StraightComponent/CoilHeatingGasMultiStage_Impl.hpp"
 
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/Coil_Heating_Gas_MultiStage_FieldEnums.hxx>
@@ -25,6 +27,10 @@ namespace epmodel {
 
   IddObjectType CoilHeatingGasMultiStage::iddObjectType() {
     return IddObjectType::Coil_Heating_Gas_MultiStage;
+  }
+
+  bool CoilHeatingGasMultiStage::addToNode(Node& node) {
+    return getImpl<detail::CoilHeatingGasMultiStage_Impl>()->addToNode(node);
   }
 
   boost::optional<double> CoilHeatingGasMultiStage::parasiticGasLoad() const {
@@ -68,6 +74,16 @@ namespace epmodel {
 
     unsigned CoilHeatingGasMultiStage_Impl::outletPort() const {
       return openstudio::Coil_Heating_Gas_MultiStageFields::AirOutletNodeName;
+    }
+
+    bool CoilHeatingGasMultiStage_Impl::addToNode(Node& node) {
+      auto airLoop = node.airLoopHVAC();
+
+      if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+        return false;
+      }
+
+      return StraightComponent_Impl::addToNode(node);
     }
 
     boost::optional<double> CoilHeatingGasMultiStage_Impl::offCycleParasiticGasLoad() const {

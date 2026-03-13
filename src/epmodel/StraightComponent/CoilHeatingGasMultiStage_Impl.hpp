@@ -10,6 +10,7 @@
 
 namespace openstudio {
 namespace epmodel {
+class Node;
 namespace detail {
 
 class EPMODEL_API CoilHeatingGasMultiStage_Impl : public StraightComponent_Impl
@@ -20,6 +21,8 @@ class EPMODEL_API CoilHeatingGasMultiStage_Impl : public StraightComponent_Impl
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+
+  bool addToNode(Node& node) override;
 
   boost::optional<double> offCycleParasiticGasLoad() const;
 

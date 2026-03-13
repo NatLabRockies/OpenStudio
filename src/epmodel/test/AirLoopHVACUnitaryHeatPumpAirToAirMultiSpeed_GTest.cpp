@@ -8,6 +8,7 @@
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.hpp"
+#include "../StraightComponent/Node.hpp"
 #include <utilities/idd/IddEnums.hxx>
 
 using namespace openstudio::epmodel;

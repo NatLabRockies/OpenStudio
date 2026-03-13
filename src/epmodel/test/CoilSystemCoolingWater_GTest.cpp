@@ -8,7 +8,11 @@
 #include <algorithm>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/CoilSystemCoolingWater.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -55,3 +59,19 @@ TEST_F(EPModelFixture, CoilSystemCoolingWater_ScalarAccessors_RoundTrip) {
   EXPECT_DOUBLE_EQ(1.2, coilSystem.minimumWaterLoopTemperatureForHeatRecovery());
 }
 
+TEST_F(EPModelFixture, CoilSystemCoolingWater_AddToNodeSupplyOnly) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  CoilSystemCoolingWater supplyCoilSystem(model);
+  CoilSystemCoolingWater demandCoilSystem(model);
+
+  auto supplyInletNode = airLoop.supplyInletNode();
+  EXPECT_TRUE(supplyCoilSystem.addToNode(supplyInletNode));
+  ASSERT_TRUE(supplyCoilSystem.inletModelObject());
+  EXPECT_EQ(supplyInletNode, supplyCoilSystem.inletModelObject()->cast<Node>());
+  EXPECT_TRUE(supplyCoilSystem.outletModelObject());
+
+  auto demandInletNode = airLoop.demandInletNode();
+  EXPECT_FALSE(demandCoilSystem.addToNode(demandInletNode));
+  EXPECT_FALSE(demandCoilSystem.airLoopHVAC());
+}

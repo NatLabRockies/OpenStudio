@@ -6,7 +6,11 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -79,4 +83,21 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_ScalarAcces
 
   EXPECT_TRUE(unitary.setMinimumRuntimeBeforeOperatingModeChange(0.25));
   EXPECT_DOUBLE_EQ(0.25, unitary.minimumRuntimeBeforeOperatingModeChange());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_AddToNodeSupplyOnly) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass supplyUnitary(model);
+  AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass demandUnitary(model);
+
+  auto supplyInletNode = airLoop.supplyInletNode();
+  EXPECT_TRUE(supplyUnitary.addToNode(supplyInletNode));
+  ASSERT_TRUE(supplyUnitary.inletModelObject());
+  EXPECT_EQ(supplyInletNode, supplyUnitary.inletModelObject()->cast<Node>());
+  EXPECT_TRUE(supplyUnitary.outletModelObject());
+
+  auto demandInletNode = airLoop.demandInletNode();
+  EXPECT_FALSE(demandUnitary.addToNode(demandInletNode));
+  EXPECT_FALSE(demandUnitary.airLoopHVAC());
 }

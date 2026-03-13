@@ -6,7 +6,9 @@
 #include "StraightComponent/CoilHeatingDXMultiSpeed.hpp"
 #include "StraightComponent/CoilHeatingDXMultiSpeed_Impl.hpp"
 
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -54,6 +56,10 @@ std::vector<std::string> CoilHeatingDXMultiSpeed::defrostControlValues() {
 std::vector<std::string> CoilHeatingDXMultiSpeed::fuelTypeValues() {
   return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                         openstudio::Coil_Heating_DX_MultiSpeedFields::FuelType);
+}
+
+bool CoilHeatingDXMultiSpeed::addToNode(Node& node) {
+  return getImpl<detail::CoilHeatingDXMultiSpeed_Impl>()->addToNode(node);
 }
 
 double CoilHeatingDXMultiSpeed::minimumOutdoorDryBulbTemperatureforCompressorOperation() const {
@@ -183,6 +189,16 @@ unsigned CoilHeatingDXMultiSpeed_Impl::inletPort() const {
 
 unsigned CoilHeatingDXMultiSpeed_Impl::outletPort() const {
   return openstudio::Coil_Heating_DX_MultiSpeedFields::AirOutletNodeName;
+}
+
+bool CoilHeatingDXMultiSpeed_Impl::addToNode(Node& node) {
+  auto airLoop = node.airLoopHVAC();
+
+  if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+    return false;
+  }
+
+  return StraightComponent_Impl::addToNode(node);
 }
 
 double CoilHeatingDXMultiSpeed_Impl::minimumOutdoorDryBulbTemperatureforCompressorOperation() const {

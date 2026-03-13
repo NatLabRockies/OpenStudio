@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl;
@@ -37,6 +38,8 @@ namespace epmodel {
     static std::vector<std::string> supplyAirFanPlacementValues();
     static std::vector<std::string> priorityControlModeValues();
     static std::vector<std::string> dehumidificationControlTypeValues();
+
+    bool addToNode(Node& node);
 
     // Schema Alignment Notes:
     // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.

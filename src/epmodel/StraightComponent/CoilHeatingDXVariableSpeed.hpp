@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Node;
 
 namespace detail {
 class CoilHeatingDXVariableSpeed_Impl;
@@ -36,6 +37,8 @@ class EPMODEL_API CoilHeatingDXVariableSpeed : public StraightComponent
 
   static std::vector<std::string> defrostStrategyValues();
   static std::vector<std::string> defrostControlValues();
+
+  bool addToNode(Node& node);
 
   // Schema Alignment Notes:
   // - API: Preserve openstudio::model::CoilHeatingDXVariableSpeed scalar accessor names/signatures.

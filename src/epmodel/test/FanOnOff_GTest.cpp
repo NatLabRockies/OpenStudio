@@ -6,7 +6,11 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/FanOnOff.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -75,4 +79,21 @@ TEST_F(EPModelFixture, FanOnOff_ScalarAccessors_RoundTrip) {
 
   fan.resetEndUseSubcategory();
   EXPECT_TRUE(fan.isEndUseSubcategoryDefaulted());
+}
+
+TEST_F(EPModelFixture, FanOnOff_AddToNodeSupplyOnly) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  FanOnOff supplyFan(model);
+  FanOnOff demandFan(model);
+
+  auto supplyInletNode = airLoop.supplyInletNode();
+  EXPECT_TRUE(supplyFan.addToNode(supplyInletNode));
+  ASSERT_TRUE(supplyFan.inletModelObject());
+  EXPECT_EQ(supplyInletNode, supplyFan.inletModelObject()->cast<Node>());
+  EXPECT_TRUE(supplyFan.outletModelObject());
+
+  auto demandInletNode = airLoop.demandInletNode();
+  EXPECT_FALSE(demandFan.addToNode(demandInletNode));
+  EXPECT_FALSE(demandFan.airLoopHVAC());
 }

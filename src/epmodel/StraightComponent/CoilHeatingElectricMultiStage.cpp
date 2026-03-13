@@ -6,7 +6,9 @@
 #include "StraightComponent/CoilHeatingElectricMultiStage.hpp"
 #include "StraightComponent/CoilHeatingElectricMultiStage_Impl.hpp"
 
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/Coil_Heating_Electric_MultiStage_FieldEnums.hxx>
@@ -28,6 +30,10 @@ IddObjectType CoilHeatingElectricMultiStage::iddObjectType() {
   return IddObjectType::Coil_Heating_Electric_MultiStage;
 }
 
+bool CoilHeatingElectricMultiStage::addToNode(Node& node) {
+  return getImpl<detail::CoilHeatingElectricMultiStage_Impl>()->addToNode(node);
+}
+
 unsigned CoilHeatingElectricMultiStage::numberOfStages() const {
   return getImpl<detail::CoilHeatingElectricMultiStage_Impl>()->numberOfStages();
 }
@@ -45,6 +51,16 @@ unsigned CoilHeatingElectricMultiStage_Impl::inletPort() const {
 
 unsigned CoilHeatingElectricMultiStage_Impl::outletPort() const {
   return openstudio::Coil_Heating_Electric_MultiStageFields::AirOutletNodeName;
+}
+
+bool CoilHeatingElectricMultiStage_Impl::addToNode(Node& node) {
+  auto airLoop = node.airLoopHVAC();
+
+  if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+    return false;
+  }
+
+  return StraightComponent_Impl::addToNode(node);
 }
 
 unsigned CoilHeatingElectricMultiStage_Impl::numberOfStages() const {

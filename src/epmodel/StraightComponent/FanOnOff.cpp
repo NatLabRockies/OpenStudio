@@ -6,7 +6,9 @@
 #include "StraightComponent/FanOnOff.hpp"
 #include "StraightComponent/FanOnOff_Impl.hpp"
 
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -27,6 +29,10 @@ FanOnOff::FanOnOff(std::shared_ptr<detail::FanOnOff_Impl> impl) : StraightCompon
 
 IddObjectType FanOnOff::iddObjectType() {
   return IddObjectType::Fan_OnOff;
+}
+
+bool FanOnOff::addToNode(Node& node) {
+  return getImpl<detail::FanOnOff_Impl>()->addToNode(node);
 }
 
 double FanOnOff::fanTotalEfficiency() const {
@@ -146,6 +152,16 @@ unsigned FanOnOff_Impl::inletPort() const {
 
 unsigned FanOnOff_Impl::outletPort() const {
   return openstudio::Fan_OnOffFields::AirOutletNodeName;
+}
+
+bool FanOnOff_Impl::addToNode(Node& node) {
+  auto airLoop = node.airLoopHVAC();
+
+  if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+    return false;
+  }
+
+  return StraightComponent_Impl::addToNode(node);
 }
 
 double FanOnOff_Impl::fanTotalEfficiency() const {

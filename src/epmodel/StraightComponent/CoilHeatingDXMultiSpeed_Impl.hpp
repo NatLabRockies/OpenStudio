@@ -11,6 +11,8 @@
 namespace openstudio {
 namespace epmodel {
 
+class Node;
+
 namespace detail {
 
 class EPMODEL_API CoilHeatingDXMultiSpeed_Impl : public StraightComponent_Impl
@@ -21,6 +23,8 @@ class EPMODEL_API CoilHeatingDXMultiSpeed_Impl : public StraightComponent_Impl
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+
+  bool addToNode(Node& node) override;
 
   double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
   bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);

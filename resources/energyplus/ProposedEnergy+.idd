@@ -29769,6 +29769,8 @@ Fan:OnOff,
   \min-fields 9
   A1 , \field Name
        \required-field
+       \reference-class-name validBranchEquipmentTypes
+       \reference validBranchEquipmentNames
        \reference Fans
        \reference FansCVandOnOff
        \reference FansOnOff
@@ -31487,6 +31489,8 @@ Coil:Cooling:DX:MultiSpeed,
   A1 , \field Name
        \required-field
        \type alpha
+       \reference-class-name validBranchEquipmentTypes
+       \reference validBranchEquipmentNames
        \reference CoolingCoilsDXMultiSpeed
        \reference DesuperHeatingWaterOnlySources
        \reference AFNCoilNames
@@ -31768,6 +31772,8 @@ Coil:Cooling:DX:VariableSpeed,
    A1,  \field Name
         \required-field
         \type alpha
+        \reference-class-name validBranchEquipmentTypes
+        \reference validBranchEquipmentNames
         \reference CoolingCoilsDXVariableSpeed
         \reference DesuperHeatingCoilSources
         \reference AFNCoilNames
@@ -32672,6 +32678,8 @@ Coil:Heating:Electric:MultiStage,
   A1 , \field Name
        \type alpha
        \required-field
+       \reference-class-name validBranchEquipmentTypes
+       \reference validBranchEquipmentNames
        \reference HeatingCoilsElectricMultiStage
   A2 , \field Availability Schedule Name
        \note Availability schedule name for this system. Schedule value > 0 means the system is available.
@@ -32790,6 +32798,8 @@ Coil:Heating:Gas:MultiStage,
        \extensible:3
   A1 , \field Name
        \required-field
+       \reference-class-name validBranchEquipmentTypes
+       \reference validBranchEquipmentNames
        \reference HeatingCoilsGasMultiStage
        \type alpha
   A2 , \field Availability Schedule Name
@@ -33165,6 +33175,8 @@ Coil:Heating:DX:MultiSpeed,
        \max-fields 67
   A1 , \field Name
        \required-field
+       \reference-class-name validBranchEquipmentTypes
+       \reference validBranchEquipmentNames
        \reference HeatingCoilsDXMultiSpeed
        \reference AFNCoilNames
        \type alpha
@@ -33397,6 +33409,8 @@ Coil:Heating:DX:VariableSpeed,
    A1,  \field Name
         \required-field
         \type alpha
+        \reference-class-name validBranchEquipmentTypes
+        \reference validBranchEquipmentNames
         \reference HeatingCoilsDXVariableSpeed
         \reference AFNCoilNames
    A2,  \field Availability Schedule Name

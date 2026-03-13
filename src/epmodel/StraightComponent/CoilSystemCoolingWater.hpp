@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class CoilSystemCoolingWater_Impl;
@@ -35,6 +36,8 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     static std::vector<std::string> dehumidificationControlTypeValues();
+
+    bool addToNode(Node& node);
 
     // Schema Alignment Notes:
     // - API: Preserve openstudio::model::CoilSystemCoolingWater scalar accessor names/signatures.

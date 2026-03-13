@@ -12,6 +12,7 @@
 
 namespace openstudio {
 namespace epmodel {
+class Node;
 namespace detail {
 
 class EPMODEL_API CoilHeatingDXVariableSpeed_Impl : public StraightComponent_Impl
@@ -22,6 +23,8 @@ class EPMODEL_API CoilHeatingDXVariableSpeed_Impl : public StraightComponent_Imp
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+
+  bool addToNode(Node& node) override;
 
   int nominalSpeedLevel() const;
   bool setNominalSpeedLevel(int nominalSpeedLevel);

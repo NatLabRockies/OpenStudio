@@ -6,7 +6,11 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/CoilCoolingDXVariableSpeed.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -88,4 +92,21 @@ TEST_F(EPModelFixture, CoilCoolingDXVariableSpeed_ScalarAccessors_RoundTrip) {
   EXPECT_DOUBLE_EQ(3.0, coil.basinHeaterSetpointTemperature());
   EXPECT_TRUE(coil.setMinimumOutdoorDryBulbTemperatureforCompressorOperation(-12.0));
   EXPECT_DOUBLE_EQ(-12.0, coil.minimumOutdoorDryBulbTemperatureforCompressorOperation());
+}
+
+TEST_F(EPModelFixture, CoilCoolingDXVariableSpeed_AddToNodeSupplyOnly) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  CoilCoolingDXVariableSpeed supplyCoil(model);
+  CoilCoolingDXVariableSpeed demandCoil(model);
+
+  auto supplyInletNode = airLoop.supplyInletNode();
+  EXPECT_TRUE(supplyCoil.addToNode(supplyInletNode));
+  ASSERT_TRUE(supplyCoil.inletModelObject());
+  EXPECT_EQ(supplyInletNode, supplyCoil.inletModelObject()->cast<Node>());
+  EXPECT_TRUE(supplyCoil.outletModelObject());
+
+  auto demandInletNode = airLoop.demandInletNode();
+  EXPECT_FALSE(demandCoil.addToNode(demandInletNode));
+  EXPECT_FALSE(demandCoil.airLoopHVAC());
 }

@@ -6,7 +6,9 @@
 #include "StraightComponent/HumidifierSteamGas.hpp"
 #include "StraightComponent/HumidifierSteamGas_Impl.hpp"
 
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -27,6 +29,10 @@ HumidifierSteamGas::HumidifierSteamGas(std::shared_ptr<detail::HumidifierSteamGa
 
 IddObjectType HumidifierSteamGas::iddObjectType() {
   return IddObjectType::Humidifier_Steam_Gas;
+}
+
+bool HumidifierSteamGas::addToNode(Node& node) {
+  return getImpl<detail::HumidifierSteamGas_Impl>()->addToNode(node);
 }
 
 std::vector<std::string> HumidifierSteamGas::inletWaterTemperatureOptionValues() {
@@ -149,6 +155,16 @@ unsigned HumidifierSteamGas_Impl::inletPort() const {
 
 unsigned HumidifierSteamGas_Impl::outletPort() const {
   return openstudio::Humidifier_Steam_GasFields::AirOutletNodeName;
+}
+
+bool HumidifierSteamGas_Impl::addToNode(Node& node) {
+  auto airLoop = node.airLoopHVAC();
+
+  if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+    return false;
+  }
+
+  return StraightComponent_Impl::addToNode(node);
 }
 
 boost::optional<double> HumidifierSteamGas_Impl::ratedCapacity() const {

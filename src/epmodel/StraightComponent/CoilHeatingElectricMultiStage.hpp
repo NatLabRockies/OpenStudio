@@ -15,6 +15,7 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Node;
 
 namespace detail {
 class CoilHeatingElectricMultiStage_Impl;
@@ -32,6 +33,8 @@ class EPMODEL_API CoilHeatingElectricMultiStage : public StraightComponent
   CoilHeatingElectricMultiStage& operator=(CoilHeatingElectricMultiStage&&) = default;
 
   static IddObjectType iddObjectType();
+
+  bool addToNode(Node& node);
 
   // Schema Alignment Notes:
   // - API: Preserve openstudio::model::CoilHeatingElectricMultiStage scalar-accessor naming where present.

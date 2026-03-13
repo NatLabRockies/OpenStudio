@@ -17,6 +17,7 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Node;
 
 namespace detail {
 class FanOnOff_Impl;
@@ -34,6 +35,8 @@ class EPMODEL_API FanOnOff : public StraightComponent
   FanOnOff& operator=(FanOnOff&&) = default;
 
   static IddObjectType iddObjectType();
+
+  bool addToNode(Node& node);
 
   // Schema Alignment Notes:
   // - API: Preserves openstudio::model::FanOnOff scalar accessor names/signatures.

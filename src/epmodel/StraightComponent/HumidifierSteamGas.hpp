@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class HumidifierSteamGas_Impl;
@@ -33,6 +34,8 @@ namespace epmodel {
     HumidifierSteamGas& operator=(HumidifierSteamGas&&) = default;
 
     static IddObjectType iddObjectType();
+
+    bool addToNode(Node& node);
 
     static std::vector<std::string> inletWaterTemperatureOptionValues();
 

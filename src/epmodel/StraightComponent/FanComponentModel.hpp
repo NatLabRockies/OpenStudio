@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Node;
 
 namespace detail {
 class FanComponentModel_Impl;
@@ -35,6 +36,8 @@ class EPMODEL_API FanComponentModel : public StraightComponent
   static IddObjectType iddObjectType();
 
   static std::vector<std::string> vFDEfficiencyTypeValues();
+
+  bool addToNode(Node& node);
 
   // Schema Alignment Notes:
   // - API: Preserve openstudio::model::FanComponentModel scalar accessor names/signatures.

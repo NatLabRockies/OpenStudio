@@ -6,7 +6,9 @@
 #include "StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.hpp"
 #include "StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl.hpp"
 
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -58,6 +60,10 @@ std::vector<std::string> AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::priority
 std::vector<std::string> AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::dehumidificationControlTypeValues() {
   return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                         openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::DehumidificationControlType);
+}
+
+bool AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::addToNode(Node& node) {
+  return getImpl<detail::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl>()->addToNode(node);
 }
 
 boost::optional<double> AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::systemAirFlowRateDuringCoolingOperation() const {
@@ -231,6 +237,16 @@ unsigned AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::inletPort() const {
 
 unsigned AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::outletPort() const {
   return openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::AirOutletNodeName;
+}
+
+bool AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::addToNode(Node& node) {
+  auto airLoop = node.airLoopHVAC();
+
+  if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+    return false;
+  }
+
+  return StraightComponent_Impl::addToNode(node);
 }
 
 boost::optional<double> AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::systemAirFlowRateDuringCoolingOperation() const {

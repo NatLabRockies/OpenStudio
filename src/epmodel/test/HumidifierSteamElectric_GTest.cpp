@@ -6,7 +6,11 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/HumidifierSteamElectric.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -60,4 +64,21 @@ TEST_F(EPModelFixture, HumidifierSteamElectric_ScalarAccessors_RoundTrip) {
 
   EXPECT_FALSE(humidifier.autosizedRatedCapacity());
   EXPECT_FALSE(humidifier.autosizedRatedPower());
+}
+
+TEST_F(EPModelFixture, HumidifierSteamElectric_AddToNodeSupplyOnly) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  HumidifierSteamElectric supplyHumidifier(model);
+  HumidifierSteamElectric demandHumidifier(model);
+
+  auto supplyInletNode = airLoop.supplyInletNode();
+  EXPECT_TRUE(supplyHumidifier.addToNode(supplyInletNode));
+  ASSERT_TRUE(supplyHumidifier.inletModelObject());
+  EXPECT_EQ(supplyInletNode, supplyHumidifier.inletModelObject()->cast<Node>());
+  EXPECT_TRUE(supplyHumidifier.outletModelObject());
+
+  auto demandInletNode = airLoop.demandInletNode();
+  EXPECT_FALSE(demandHumidifier.addToNode(demandInletNode));
+  EXPECT_FALSE(demandHumidifier.airLoopHVAC());
 }

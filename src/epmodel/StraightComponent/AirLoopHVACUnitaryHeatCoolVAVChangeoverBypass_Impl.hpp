@@ -13,6 +13,8 @@
 namespace openstudio {
 namespace epmodel {
 
+class Node;
+
 namespace detail {
 
 class EPMODEL_API AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl : public StraightComponent_Impl
@@ -22,6 +24,8 @@ class EPMODEL_API AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl : public St
   unsigned inletPort() const override;
   unsigned outletPort() const override;
   virtual ~AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl() override = default;
+
+  bool addToNode(Node& node) override;
 
   boost::optional<double> systemAirFlowRateDuringCoolingOperation() const;
   bool isSystemAirFlowRateDuringCoolingOperationAutosized() const;

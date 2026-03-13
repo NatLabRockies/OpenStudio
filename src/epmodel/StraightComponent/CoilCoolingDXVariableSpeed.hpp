@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Node;
 
 namespace detail {
 class CoilCoolingDXVariableSpeed_Impl;
@@ -35,6 +36,8 @@ class EPMODEL_API CoilCoolingDXVariableSpeed : public StraightComponent
   static IddObjectType iddObjectType();
 
   static std::vector<std::string> condenserTypeValues();
+
+  bool addToNode(Node& node);
 
   // Schema Alignment Notes:
   // - API: Preserve openstudio::model::CoilCoolingDXVariableSpeed scalar accessor names/signatures.

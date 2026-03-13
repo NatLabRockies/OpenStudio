@@ -6,7 +6,9 @@
 #include "StraightComponent/CoilCoolingDXVariableSpeed.hpp"
 #include "StraightComponent/CoilCoolingDXVariableSpeed_Impl.hpp"
 
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -58,10 +60,14 @@ IddObjectType CoilCoolingDXVariableSpeed::iddObjectType() {
   return IddObjectType::Coil_Cooling_DX_VariableSpeed;
 }
 
-std::vector<std::string> CoilCoolingDXVariableSpeed::condenserTypeValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::Coil_Cooling_DX_VariableSpeedFields::CondenserType);
-}
+  std::vector<std::string> CoilCoolingDXVariableSpeed::condenserTypeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::Coil_Cooling_DX_VariableSpeedFields::CondenserType);
+  }
+
+  bool CoilCoolingDXVariableSpeed::addToNode(Node& node) {
+    return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->addToNode(node);
+  }
 
 int CoilCoolingDXVariableSpeed::nominalSpeedLevel() const {
   return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->nominalSpeedLevel();
@@ -242,6 +248,16 @@ unsigned CoilCoolingDXVariableSpeed_Impl::inletPort() const {
 
 unsigned CoilCoolingDXVariableSpeed_Impl::outletPort() const {
   return openstudio::Coil_Cooling_DX_VariableSpeedFields::IndoorAirOutletNodeName;
+}
+
+bool CoilCoolingDXVariableSpeed_Impl::addToNode(Node& node) {
+  auto airLoop = node.airLoopHVAC();
+
+  if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+    return false;
+  }
+
+  return StraightComponent_Impl::addToNode(node);
 }
 
 int CoilCoolingDXVariableSpeed_Impl::nominalSpeedLevel() const {
