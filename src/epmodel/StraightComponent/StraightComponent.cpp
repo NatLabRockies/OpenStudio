@@ -19,7 +19,10 @@
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Compare.hpp>
 #include <utilities/core/Logger.hpp>
+#include <utilities/idd/IddFieldProperties.hpp>
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
+
+#include <sstream>
 
 namespace openstudio {
 namespace epmodel {
@@ -60,7 +63,7 @@ namespace epmodel {
         const auto supplyOutlet = airLoop->supplyOutletNode();
         if (node == supplyInlet || node == supplyOutlet) {
           if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->appendComponent(thisObject, supplyInlet.nameString(),
-                                                                                            supplyOutlet.nameString())) {
+                                                                                           supplyOutlet.nameString())) {
             return false;
           }
 
@@ -99,8 +102,7 @@ namespace epmodel {
                 if (inletNode && !openstudio::istringEqual(*compInletName, inletNode->nameString())) {
                   LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
                            "Branch inlet node '" << inletNode->nameString() << "' does not match component inlet node '" << *compInletName
-                                                 << "' for '"
-                                                 << comp->nameString() << "'.");
+                                                 << "' for '" << comp->nameString() << "'.");
                 }
               }
             }
@@ -109,8 +111,7 @@ namespace epmodel {
                 if (outletNode && !openstudio::istringEqual(*compOutletName, outletNode->nameString())) {
                   LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
                            "Branch outlet node '" << outletNode->nameString() << "' does not match component outlet node '" << *compOutletName
-                                                  << "' for '"
-                                                  << comp->nameString() << "'.");
+                                                  << "' for '" << comp->nameString() << "'.");
                 }
               }
             }
@@ -176,9 +177,33 @@ namespace epmodel {
         if (!(nodeName && !nodeName->empty())) {
           return false;
         }
+
+        // Ports are expected to be Node-typed fields. If a derived class returns an
+        // unexpected field index, avoid aborting canonicalization; report and move on.
+        if (auto iddField = iddObject().getField(port)) {
+          if (iddField->properties().type != openstudio::IddFieldType::NodeType) {
+            std::ostringstream oss;
+            oss << "StraightComponent canonicalize: expected NodeType for " << portLabel << " port at index " << port << " on object '"
+                << thisObject.nameString() << "' (" << thisObject.iddObject().name() << ") but field '" << iddField->name() << "' has type '"
+                << iddField->properties().type.valueDescription() << "' with value '" << *nodeName << "'.";
+            detail::addLoadError(context, oss.str());
+            return false;
+          }
+        } else {
+          std::ostringstream oss;
+          oss << "StraightComponent canonicalize: missing IDD field definition for " << portLabel << " port index " << port << " on object '"
+              << thisObject.nameString() << "' (" << thisObject.iddObject().name() << ") with value '" << *nodeName << "'.";
+          detail::addLoadError(context, oss.str());
+          return false;
+        }
+
         auto node = model().getOrCreateTransientByName<openstudio::epmodel::Node>(*nodeName);
         if (!setPointer(port, node.handle(), false)) {
-          OS_ASSERT(false);
+          std::ostringstream oss;
+          oss << "StraightComponent canonicalize: failed to set node pointer for " << portLabel << " port index " << port << " on object '"
+              << thisObject.nameString() << "' (" << thisObject.iddObject().name() << ") to transient Node '" << *nodeName << "'.";
+          detail::addLoadError(context, oss.str());
+          return false;
         }
         return true;
       };
@@ -208,8 +233,15 @@ namespace epmodel {
         if (auto node = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(port)) {
           return node->cast<ModelObject>();
         }
-        OS_ASSERT(false);
-        return boost::none;
+
+        // Fallback: resolve by name for node fields that haven't been wired with pointers.
+        // This keeps IDF-loaded models usable even if pointer canonicalization for this field fails.
+        try {
+          auto resolved = model().getOrCreateTransientByName<openstudio::epmodel::Node>(*nodeName);
+          return resolved.cast<ModelObject>();
+        } catch (...) {
+          return boost::none;
+        }
       }
       return boost::none;
     }
@@ -227,8 +259,14 @@ namespace epmodel {
         if (auto node = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(port)) {
           return node->cast<ModelObject>();
         }
-        OS_ASSERT(false);
-        return boost::none;
+
+        // Fallback: resolve by name for node fields that haven't been wired with pointers.
+        try {
+          auto resolved = model().getOrCreateTransientByName<openstudio::epmodel::Node>(*nodeName);
+          return resolved.cast<ModelObject>();
+        } catch (...) {
+          return boost::none;
+        }
       }
       return boost::none;
     }

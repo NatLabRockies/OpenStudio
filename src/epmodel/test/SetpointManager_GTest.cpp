@@ -12,7 +12,7 @@
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/Node.hpp"
-#include "../SetpointManagerMixedAir.hpp"
+#include "../SetpointManager/SetpointManagerMixedAir.hpp"
 #include "../SetpointManager/SetpointManagerColdest.hpp"
 #include "../SetpointManager/SetpointManagerFollowGroundTemperature.hpp"
 #include "../SetpointManager/SetpointManagerFollowOutdoorAirTemperature.hpp"

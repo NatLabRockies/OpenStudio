@@ -11,7 +11,7 @@
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "Node.hpp"
-#include "Splitter.hpp"
+#include "HVACComponent/Splitter.hpp"
 
 #include <utilities/data/DataEnums.hpp>
 #include <utilities/idd/IddEnums.hxx>
@@ -44,8 +44,8 @@ std::vector<openstudio::epmodel::Node> openstudio::epmodel::Loop::demandInletNod
 }
 
 std::vector<openstudio::epmodel::ModelObject> openstudio::epmodel::Loop::supplyComponents(const openstudio::epmodel::HVACComponent& inletComp,
-                                                                                           const openstudio::epmodel::HVACComponent& outletComp,
-                                                                                           openstudio::IddObjectType type) const {
+                                                                                          const openstudio::epmodel::HVACComponent& outletComp,
+                                                                                          openstudio::IddObjectType type) const {
   return getImpl<detail::Loop_Impl>()->supplyComponents(inletComp, outletComp, type);
 }
 
@@ -54,8 +54,8 @@ std::vector<openstudio::epmodel::ModelObject> openstudio::epmodel::Loop::supplyC
 }
 
 std::vector<openstudio::epmodel::ModelObject> openstudio::epmodel::Loop::demandComponents(const openstudio::epmodel::HVACComponent& inletComp,
-                                                                                           const openstudio::epmodel::HVACComponent& outletComp,
-                                                                                           openstudio::IddObjectType type) const {
+                                                                                          const openstudio::epmodel::HVACComponent& outletComp,
+                                                                                          openstudio::IddObjectType type) const {
   return getImpl<detail::Loop_Impl>()->demandComponents(inletComp, outletComp, type);
 }
 
@@ -68,8 +68,8 @@ std::vector<openstudio::epmodel::ModelObject> openstudio::epmodel::Loop::compone
 }
 
 std::vector<openstudio::epmodel::ModelObject> openstudio::epmodel::Loop::components(const openstudio::epmodel::HVACComponent& inletComp,
-                                                                                     const openstudio::epmodel::HVACComponent& outletComp,
-                                                                                     openstudio::IddObjectType type) {
+                                                                                    const openstudio::epmodel::HVACComponent& outletComp,
+                                                                                    openstudio::IddObjectType type) {
   return getImpl<detail::Loop_Impl>()->components(inletComp, outletComp, type);
 }
 

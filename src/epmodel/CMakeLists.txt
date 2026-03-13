@@ -988,6 +988,9 @@ set(${target_name}_src
   ModelObject/ScheduleWeekCompact.hpp
   ModelObject/ScheduleWeekCompact_Impl.hpp
   ModelObject/ScheduleWeekCompact.cpp
+  ResourceObject/DesignSpecificationOutdoorAir.hpp
+  ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp
+  ResourceObject/DesignSpecificationOutdoorAir.cpp
   ResourceObject/ScheduleTypeLimits.hpp
   ResourceObject/ScheduleTypeLimits_Impl.hpp
   ResourceObject/ScheduleTypeLimits.cpp
@@ -1739,9 +1742,6 @@ set(${target_name}_src
   ModelObject/ControllerMechanicalVentilation.hpp
   ModelObject/ControllerMechanicalVentilation_Impl.hpp
   ModelObject/ControllerMechanicalVentilation.cpp
-  DesignSpecificationOutdoorAir.hpp
-  DesignSpecificationOutdoorAir_Impl.hpp
-  DesignSpecificationOutdoorAir.cpp
   ModelObject/DesignSpecificationOutdoorAirSpaceList.hpp
   ModelObject/DesignSpecificationOutdoorAirSpaceList_Impl.hpp
   ModelObject/DesignSpecificationOutdoorAirSpaceList.cpp
@@ -2210,9 +2210,9 @@ set(${target_name}_src
   AvailabilityManager/AvailabilityManager.hpp
   AvailabilityManager/AvailabilityManager_Impl.hpp
   AvailabilityManager/AvailabilityManager.cpp
-  AvailabilityManagerAssignmentList.hpp
-  AvailabilityManagerAssignmentList_Impl.hpp
-  AvailabilityManagerAssignmentList.cpp
+  ModelObject/AvailabilityManagerAssignmentList.hpp
+  ModelObject/AvailabilityManagerAssignmentList_Impl.hpp
+  ModelObject/AvailabilityManagerAssignmentList.cpp
   AvailabilityManager/AvailabilityManagerNightCycle.hpp
   AvailabilityManager/AvailabilityManagerNightCycle_Impl.hpp
   AvailabilityManager/AvailabilityManagerNightCycle.cpp
@@ -2441,9 +2441,9 @@ set(${target_name}_src
   ModelObject/SetpointManagerReturnTemperatureHotWater.hpp
   ModelObject/SetpointManagerReturnTemperatureHotWater_Impl.hpp
   ModelObject/SetpointManagerReturnTemperatureHotWater.cpp
-  SetpointManagerMixedAir.hpp
-  SetpointManagerMixedAir_Impl.hpp
-  SetpointManagerMixedAir.cpp
+  SetpointManager/SetpointManagerMixedAir.hpp
+  SetpointManager/SetpointManagerMixedAir_Impl.hpp
+  SetpointManager/SetpointManagerMixedAir.cpp
   SetpointManager/SetpointManagerScheduled.hpp
   SetpointManager/SetpointManagerScheduled_Impl.hpp
   SetpointManager/SetpointManagerScheduled.cpp
@@ -2478,14 +2478,11 @@ set(${target_name}_src
   StraightComponent/StraightComponent_Impl.hpp
   StraightComponent/StraightComponent.cpp
   StraightComponent/Node.hpp
-  NodeList.hpp
   StraightComponent/Node_Impl.hpp
-  NodeList_Impl.hpp
   StraightComponent/Node.cpp
-  NodeList.cpp
-  OutdoorAirMixer.hpp
-  OutdoorAirMixer_Impl.hpp
-  OutdoorAirMixer.cpp
+   ModelObject/OutdoorAirMixer.hpp
+   ModelObject/OutdoorAirMixer_Impl.hpp
+   ModelObject/OutdoorAirMixer.cpp
   HVACComponent/ThermalZone.hpp
   HVACComponent/ThermalZone_Impl.hpp
   HVACComponent/ThermalZone.cpp
@@ -2501,20 +2498,23 @@ set(${target_name}_src
   ModelObject/SpaceHVACZoneEquipmentSplitter.hpp
   ModelObject/SpaceHVACZoneEquipmentSplitter_Impl.hpp
   ModelObject/SpaceHVACZoneEquipmentSplitter.cpp
-  ModelObject/SizingZone.hpp
-  ModelObject/SizingZone_Impl.hpp
-  ModelObject/SizingZone.cpp
-  ZoneHVACAirDistributionUnit.hpp
-  ZoneHVACAirDistributionUnit_Impl.hpp
-  ZoneHVACAirDistributionUnit.cpp
-  ZoneHVACEquipmentConnections.hpp
-  ZoneHVACEquipmentConnections_Impl.hpp
-  ZoneHVACEquipmentConnections.cpp
+  ModelObject/NodeList.hpp
+  ModelObject/NodeList_Impl.hpp
+  ModelObject/NodeList.cpp
+   ModelObject/SizingZone.hpp
+   ModelObject/SizingZone_Impl.hpp
+   ModelObject/SizingZone.cpp
+   ModelObject/ZoneHVACAirDistributionUnit.hpp
+   ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp
+   ModelObject/ZoneHVACAirDistributionUnit.cpp
+  ModelObject/ZoneHVACEquipmentConnections.hpp
+  ModelObject/ZoneHVACEquipmentConnections_Impl.hpp
+  ModelObject/ZoneHVACEquipmentConnections.cpp
   ModelObject/ZoneHVACEquipmentList.hpp
   ModelObject/ZoneHVACEquipmentList_Impl.hpp
   ModelObject/ZoneHVACEquipmentList.cpp
-  Splitter.hpp
-  Splitter.cpp
+  HVACComponent/Splitter.hpp
+  HVACComponent/Splitter.cpp
   Mixer/Mixer.hpp
   Mixer/Mixer.cpp
   Loop/Loop.hpp

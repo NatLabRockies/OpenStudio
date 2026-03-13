@@ -8,8 +8,8 @@
 #include "EPModelFixture.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
 #include "../StraightComponent/Node.hpp"
-#include "../ZoneHVACAirDistributionUnit.hpp"
-#include "../ZoneHVACAirDistributionUnit_Impl.hpp"
+#include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
+#include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 
 using namespace openstudio::epmodel;
 

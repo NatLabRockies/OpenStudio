@@ -6,8 +6,8 @@
 #include "AvailabilityManager/AvailabilityManager.hpp"
 #include "AvailabilityManager/AvailabilityManager_Impl.hpp"
 
-#include "AvailabilityManagerAssignmentList.hpp"
-#include "AvailabilityManagerAssignmentList_Impl.hpp"
+#include "ModelObject/AvailabilityManagerAssignmentList.hpp"
+#include "ModelObject/AvailabilityManagerAssignmentList_Impl.hpp"
 #include "Loop/Loop.hpp"
 #include "Loop/Loop_Impl.hpp"
 #include "Model.hpp"

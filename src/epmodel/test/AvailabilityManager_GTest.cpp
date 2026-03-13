@@ -8,7 +8,7 @@
 #include "EPModelFixture.hpp"
 
 #include "../Loop/AirLoopHVAC.hpp"
-#include "../AvailabilityManagerAssignmentList.hpp"
+#include "../ModelObject/AvailabilityManagerAssignmentList.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightCycle.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightVentilation.hpp"
 

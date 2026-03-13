@@ -8,8 +8,8 @@
 #include "EPModelFixture.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
-#include "../ZoneHVACEquipmentConnections.hpp"
-#include "../ZoneHVACEquipmentConnections_Impl.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -14,7 +14,7 @@
 #include "../ModelObject/ControllerMechanicalVentilation.hpp"
 #include "../ModelObject/ControllerMechanicalVentilation_Impl.hpp"
 #include "../ParentObject/ControllerOutdoorAir.hpp"
-#include "../DesignSpecificationOutdoorAir.hpp"
+#include "../ResourceObject/DesignSpecificationOutdoorAir.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../ModelObject/SizingZone.hpp"
 #include "../PlanarSurfaceGroup/Space.hpp"
@@ -118,9 +118,7 @@ TEST_F(EPModelFixture, API_ControllerOutdoorAir_ScalarAccessors_RoundTrip) {
 TEST_F(EPModelFixture, API_ControllerOutdoorAir_ControllerMechanicalVentilationOnDemandCreation) {
   Model model;
   ControllerOutdoorAir controller(model);
-  const auto numCMV = [&model]() {
-    return model.getObjectsByType(openstudio::IddObjectType::Controller_MechanicalVentilation).size();
-  };
+  const auto numCMV = [&model]() { return model.getObjectsByType(openstudio::IddObjectType::Controller_MechanicalVentilation).size(); };
 
   EXPECT_EQ(0, numCMV());
 
@@ -134,9 +132,7 @@ TEST_F(EPModelFixture, API_ControllerOutdoorAir_ControllerMechanicalVentilationO
 
 TEST_F(EPModelFixture, API_ControllerOutdoorAir_Canonicalize_DoesNotSynthesizeCMVWithoutServedZoneDSOA) {
   Model model;
-  const auto numCMV = [&model]() {
-    return model.getObjectsByType(openstudio::IddObjectType::Controller_MechanicalVentilation).size();
-  };
+  const auto numCMV = [&model]() { return model.getObjectsByType(openstudio::IddObjectType::Controller_MechanicalVentilation).size(); };
   AirLoopHVAC airLoop(model);
   AirLoopHVACOutdoorAirSystem outdoorAirSystem(model);
   auto supplyInletNode = airLoop.supplyInletNode();
@@ -160,9 +156,7 @@ TEST_F(EPModelFixture, API_ControllerOutdoorAir_Canonicalize_DoesNotSynthesizeCM
 
 TEST_F(EPModelFixture, API_ControllerOutdoorAir_Canonicalize_SynthesizesCMVAndZoneEntriesForServedZoneDSOA) {
   Model model;
-  const auto numCMV = [&model]() {
-    return model.getObjectsByType(openstudio::IddObjectType::Controller_MechanicalVentilation).size();
-  };
+  const auto numCMV = [&model]() { return model.getObjectsByType(openstudio::IddObjectType::Controller_MechanicalVentilation).size(); };
   AirLoopHVAC airLoop(model);
   AirLoopHVACOutdoorAirSystem outdoorAirSystem(model);
   auto supplyInletNode = airLoop.supplyInletNode();
@@ -203,8 +197,7 @@ TEST_F(EPModelFixture, API_ControllerOutdoorAir_Canonicalize_SynthesizesCMVAndZo
   auto dsoaTarget = workspaceGroup->getTarget(openstudio::Controller_MechanicalVentilationExtensibleFields::DesignSpecificationOutdoorAirObjectName);
   ASSERT_TRUE(dsoaTarget);
   auto sizingZone = zone.sizingZone();
-  auto expectedDsoaObject =
-    sizingZone.getModelObjectTarget<ModelObject>(openstudio::Sizing_ZoneFields::DesignSpecificationOutdoorAirObjectName);
+  auto expectedDsoaObject = sizingZone.getModelObjectTarget<ModelObject>(openstudio::Sizing_ZoneFields::DesignSpecificationOutdoorAirObjectName);
   ASSERT_TRUE(expectedDsoaObject);
   auto dsoaAsModelObject = dsoaTarget->optionalCast<ModelObject>();
   ASSERT_TRUE(dsoaAsModelObject);

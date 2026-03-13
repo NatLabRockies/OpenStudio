@@ -7,7 +7,7 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../DesignSpecificationOutdoorAir.hpp"
+#include "../ResourceObject/DesignSpecificationOutdoorAir.hpp"
 #include "../ModelObject/DesignSpecificationOutdoorAirSpaceList.hpp"
 #include "../ModelObject/DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
 #include "../ModelObject/SizingZone.hpp"

@@ -8,7 +8,7 @@
 
 #include "StraightComponent/StraightComponent_Impl.hpp"
 #include "Node.hpp"
-#include "ZoneHVACAirDistributionUnit.hpp"
+#include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
 
 namespace openstudio {
 namespace epmodel {

@@ -7,8 +7,8 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../DesignSpecificationOutdoorAir.hpp"
-#include "../DesignSpecificationOutdoorAir_Impl.hpp"
+#include "../ResourceObject/DesignSpecificationOutdoorAir.hpp"
+#include "../ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp"
 #include "../ModelObject/DesignSpecificationOutdoorAirSpaceList.hpp"
 #include "../ModelObject/DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
 #include "../ModelObject/SizingZone.hpp"
@@ -56,8 +56,7 @@ TEST_F(EPModelFixture, API_Space_SetDesignSpecificationOutdoorAir_CreatesZoneSpa
   auto sizingZone = zone.sizingZone();
   auto sizingZoneImpl = sizingZone.getImpl<detail::SizingZone_Impl>();
   ASSERT_TRUE(sizingZoneImpl);
-  auto dsoaObject =
-    sizingZone.getModelObjectTarget<ModelObject>(openstudio::Sizing_ZoneFields::DesignSpecificationOutdoorAirObjectName);
+  auto dsoaObject = sizingZone.getModelObjectTarget<ModelObject>(openstudio::Sizing_ZoneFields::DesignSpecificationOutdoorAirObjectName);
   auto directDSOA = dsoaObject ? dsoaObject->optionalCast<DesignSpecificationOutdoorAir>() : boost::none;
   EXPECT_FALSE(directDSOA);
   auto dsoaSpaceList = sizingZoneImpl->designSpecificationOutdoorAirSpaceList();
@@ -95,8 +94,7 @@ TEST_F(EPModelFixture, API_SizingZone_Canonicalize_NormalizesDirectToSpaceList_S
   auto sizingZone = zone.sizingZone();
   auto sizingZoneImpl = sizingZone.getImpl<detail::SizingZone_Impl>();
   ASSERT_TRUE(sizingZoneImpl);
-  auto dsoaObject =
-    sizingZone.getModelObjectTarget<ModelObject>(openstudio::Sizing_ZoneFields::DesignSpecificationOutdoorAirObjectName);
+  auto dsoaObject = sizingZone.getModelObjectTarget<ModelObject>(openstudio::Sizing_ZoneFields::DesignSpecificationOutdoorAirObjectName);
   auto directDSOA = dsoaObject ? dsoaObject->optionalCast<DesignSpecificationOutdoorAir>() : boost::none;
   EXPECT_FALSE(directDSOA);
   auto spaceList = sizingZoneImpl->designSpecificationOutdoorAirSpaceList();
@@ -126,8 +124,7 @@ TEST_F(EPModelFixture, API_SizingZone_Canonicalize_NormalizesDirectToSpaceList_M
   auto sizingZone = zone.sizingZone();
   auto sizingZoneImpl = sizingZone.getImpl<detail::SizingZone_Impl>();
   ASSERT_TRUE(sizingZoneImpl);
-  auto dsoaObject =
-    sizingZone.getModelObjectTarget<ModelObject>(openstudio::Sizing_ZoneFields::DesignSpecificationOutdoorAirObjectName);
+  auto dsoaObject = sizingZone.getModelObjectTarget<ModelObject>(openstudio::Sizing_ZoneFields::DesignSpecificationOutdoorAirObjectName);
   auto directDSOA = dsoaObject ? dsoaObject->optionalCast<DesignSpecificationOutdoorAir>() : boost::none;
   EXPECT_FALSE(directDSOA);
   auto spaceList = sizingZoneImpl->designSpecificationOutdoorAirSpaceList();
@@ -179,16 +176,14 @@ TEST_F(EPModelFixture, API_DesignSpecificationOutdoorAirSpaceList_Canonicalize_D
   auto group1 = list.pushExtensibleGroup();
   auto workspaceGroup1 = group1.optionalCast<openstudio::WorkspaceExtensibleGroup>();
   ASSERT_TRUE(workspaceGroup1);
-  ASSERT_TRUE(
-    workspaceGroup1->setPointer(openstudio::DesignSpecification_OutdoorAir_SpaceListExtensibleFields::SpaceName, space.handle()));
+  ASSERT_TRUE(workspaceGroup1->setPointer(openstudio::DesignSpecification_OutdoorAir_SpaceListExtensibleFields::SpaceName, space.handle()));
   ASSERT_TRUE(workspaceGroup1->setPointer(
     openstudio::DesignSpecification_OutdoorAir_SpaceListExtensibleFields::SpaceDesignSpecificationOutdoorAirObjectName, dsoa1.handle()));
 
   auto group2 = list.pushExtensibleGroup();
   auto workspaceGroup2 = group2.optionalCast<openstudio::WorkspaceExtensibleGroup>();
   ASSERT_TRUE(workspaceGroup2);
-  ASSERT_TRUE(
-    workspaceGroup2->setPointer(openstudio::DesignSpecification_OutdoorAir_SpaceListExtensibleFields::SpaceName, space.handle()));
+  ASSERT_TRUE(workspaceGroup2->setPointer(openstudio::DesignSpecification_OutdoorAir_SpaceListExtensibleFields::SpaceName, space.handle()));
   ASSERT_TRUE(workspaceGroup2->setPointer(
     openstudio::DesignSpecification_OutdoorAir_SpaceListExtensibleFields::SpaceDesignSpecificationOutdoorAirObjectName, dsoa2.handle()));
 

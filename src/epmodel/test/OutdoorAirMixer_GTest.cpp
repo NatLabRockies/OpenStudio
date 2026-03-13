@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../OutdoorAirMixer.hpp"
+#include "../ModelObject/OutdoorAirMixer.hpp"
 
 using namespace openstudio::epmodel;
 

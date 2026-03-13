@@ -16,8 +16,8 @@
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
-#include "../ZoneHVACAirDistributionUnit.hpp"
-#include "../ZoneHVACAirDistributionUnit_Impl.hpp"
+#include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
+#include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 #include <utilities/idd/IddEnums.hxx>
 #include <algorithm>
 #include <set>

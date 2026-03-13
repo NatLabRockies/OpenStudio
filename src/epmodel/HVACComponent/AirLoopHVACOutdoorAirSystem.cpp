@@ -21,8 +21,8 @@
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "Node.hpp"
-#include "OutdoorAirMixer.hpp"
-#include "OutdoorAirMixer_Impl.hpp"
+#include "ModelObject/OutdoorAirMixer.hpp"
+#include "ModelObject/OutdoorAirMixer_Impl.hpp"
 
 #include <algorithm>
 #include <utilities/core/Assert.hpp>
@@ -415,7 +415,6 @@ namespace epmodel {
         auto node = model().getOrCreateTransientByName<openstudio::epmodel::Node>(nodeName);
         OS_ASSERT(mixer->setPointer(reliefAirPort(), node.handle()));
       }
-
     }
 
     bool AirLoopHVACOutdoorAirSystem_Impl::addToNode(Node& node) {
