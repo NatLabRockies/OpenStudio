@@ -7,7 +7,7 @@
 #define EPMODEL_AIRLOOPHVACUNITARYHEATPUMPAIRTOAIR_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -18,12 +18,13 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Node;
 
 namespace detail {
 class AirLoopHVACUnitaryHeatPumpAirToAir_Impl;
 }
 
-class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAir : public ModelObject
+class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAir : public StraightComponent
 {
  public:
   explicit AirLoopHVACUnitaryHeatPumpAirToAir(const Model& model);
@@ -84,6 +85,8 @@ class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAir : public ModelObject
 
   double dXHeatingCoilSizingRatio() const;
   bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);
+
+  bool addToNode(Node& node);
 
  protected:
   using ImplType = detail::AirLoopHVACUnitaryHeatPumpAirToAir_Impl;

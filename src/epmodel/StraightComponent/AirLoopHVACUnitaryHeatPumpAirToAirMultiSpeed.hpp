@@ -7,7 +7,7 @@
 #define EPMODEL_AIRLOOPHVACUNITARYHEATPUMPAIRTOAIRMULTISPEED_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <memory>
 #include <vector>
@@ -16,12 +16,13 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Node;
 
 namespace detail {
 class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl;
 }
 
-class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed : public ModelObject
+class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed : public StraightComponent
 {
  public:
   explicit AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(const Model& model);
@@ -118,6 +119,8 @@ class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed : public ModelObj
   bool isSpeed4SupplyAirFlowRateDuringCoolingOperationAutosized() const;
   bool setSpeed4SupplyAirFlowRateDuringCoolingOperation(double speed4SupplyAirFlowRateDuringCoolingOperation);
   void autosizeSpeed4SupplyAirFlowRateDuringCoolingOperation();
+
+  bool addToNode(Node& node);
 
  protected:
   using ImplType = detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl;

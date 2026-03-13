@@ -6,7 +6,9 @@
 #include "StraightComponent/CoilHeatingDXSingleSpeed.hpp"
 #include "StraightComponent/CoilHeatingDXSingleSpeed_Impl.hpp"
 
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -257,6 +259,10 @@ namespace epmodel {
     getImpl<detail::CoilHeatingDXSingleSpeed_Impl>()->resetResistiveDefrostHeaterCapacity();
   }
 
+  bool CoilHeatingDXSingleSpeed::addToNode(Node& node) {
+    return getImpl<detail::CoilHeatingDXSingleSpeed_Impl>()->addToNode(node);
+  }
+
   void CoilHeatingDXSingleSpeed::autosizeResistiveDefrostHeaterCapacity() {
     getImpl<detail::CoilHeatingDXSingleSpeed_Impl>()->autosizeResistiveDefrostHeaterCapacity();
   }
@@ -278,6 +284,16 @@ namespace epmodel {
       }
 
     }  // namespace
+
+    bool CoilHeatingDXSingleSpeed_Impl::addToNode(Node& node) {
+      auto airLoop = node.airLoopHVAC();
+
+      if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+        return false;
+      }
+
+      return StraightComponent_Impl::addToNode(node);
+    }
 
     unsigned CoilHeatingDXSingleSpeed_Impl::inletPort() const {
       return openstudio::Coil_Heating_DX_SingleSpeedFields::AirInletNodeName;

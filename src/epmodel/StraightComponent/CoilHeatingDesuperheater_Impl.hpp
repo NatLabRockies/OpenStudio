@@ -15,6 +15,7 @@ namespace epmodel {
     class EPMODEL_API CoilHeatingDesuperheater_Impl : public StraightComponent_Impl
     {
      public:
+      bool addToNode(Node& node) override;
       using StraightComponent_Impl::StraightComponent_Impl;
       virtual ~CoilHeatingDesuperheater_Impl() override = default;
 

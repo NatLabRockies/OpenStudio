@@ -19,7 +19,7 @@ namespace openstudio {
 namespace epmodel {
 
 AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(const Model& model)
-  : ModelObject(AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::iddObjectType(), model) {
+  : StraightComponent(AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::iddObjectType(), model) {
   // Keep required scalar fields populated for strict non-optional getters.
   OS_ASSERT(setSupplyAirFanPlacement("DrawThrough"));
   OS_ASSERT(setPriorityControlMode("ZonePriority"));
@@ -39,7 +39,7 @@ AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::AirLoopHVACUnitaryHeatCoolVAVChan
 
 AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(
   std::shared_ptr<detail::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : StraightComponent(std::move(impl)) {}
 
 IddObjectType AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::iddObjectType() {
   return IddObjectType::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypass;
@@ -224,6 +224,14 @@ bool AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::setMinimumRuntimeBeforeOpera
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+unsigned AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::inletPort() const {
+  return openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::AirInletNodeName;
+}
+
+unsigned AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::outletPort() const {
+  return openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::AirOutletNodeName;
+}
 
 boost::optional<double> AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::systemAirFlowRateDuringCoolingOperation() const {
   return getDouble(openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::CoolingSupplyAirFlowRate, true);

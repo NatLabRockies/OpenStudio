@@ -121,20 +121,12 @@ namespace epmodel {
 
     bool FanConstantVolume_Impl::addToNode(Node& node) {
       auto airLoop = node.airLoopHVAC();
-      auto oaSystem = node.airLoopHVACOutdoorAirSystem();
 
-      // Parity with openstudio::model: allow insertion on AirLoop supply path and
-      // OA-system-connected nodes (for contexts currently represented in epmodel).
-      if ((airLoop && airLoop->supplyComponent(node.handle())) || oaSystem) {
+      if (airLoop && airLoop->supplyComponent(node.handle())) {
         if (!StraightComponent_Impl::addToNode(node)) {
           return false;
         }
 
-        // MixedAir SPM fan-node fields are derived from supply topology and must be
-        // refreshed whenever a fan insertion mutates that topology.
-        if (!airLoop && oaSystem) {
-          airLoop = oaSystem->airLoopHVAC();
-        }
         if (airLoop) {
           auto airLoopImpl = airLoop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
           OS_ASSERT(airLoopImpl);

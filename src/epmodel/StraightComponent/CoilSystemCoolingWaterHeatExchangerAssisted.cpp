@@ -7,6 +7,12 @@
 #include "StraightComponent/CoilSystemCoolingWaterHeatExchangerAssisted_Impl.hpp"
 
 #include "Model.hpp"
+#include "Loop/AirLoopHVAC.hpp"
+#include "ModelObject.hpp"
+#include "Node.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+
+#include <algorithm>
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/CoilSystem_Cooling_Water_HeatExchangerAssisted_FieldEnums.hxx>
@@ -60,6 +66,16 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    bool CoilSystemCoolingWaterHeatExchangerAssisted_Impl::addToNode(Node& node) {
+      auto airLoop = node.airLoopHVAC();
+
+      if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+        return false;
+      }
+
+      return StraightComponent_Impl::addToNode(node);
+    }
 
     unsigned CoilSystemCoolingWaterHeatExchangerAssisted_Impl::inletPort() const {
       // EnergyPlus CoilSystem:Cooling:Water:HeatExchangerAssisted has no direct inlet/outlet node fields.

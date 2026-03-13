@@ -536,21 +536,13 @@ bool CoilCoolingDXTwoSpeed_Impl::setUnitInternalStaticAirPressure(double unitInt
 }
 
 bool CoilCoolingDXTwoSpeed_Impl::addToNode(Node& node) {
-  if (auto airLoop = node.airLoopHVAC()) {
-    if (!airLoop->demandComponent(node.handle())) {
-      return StraightComponent_Impl::addToNode(node);
-    }
+  auto airLoop = node.airLoopHVAC();
+
+  if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
     return false;
   }
 
-  if (node.airLoopHVACOutdoorAirSystem()) {
-    // openstudio::model allows some OA-system contexts only when the OA system
-    // is attached to an AirLoopHVACDedicatedOutdoorAirSystem. epmodel does not
-    // yet model that object, so keep this unsupported and explicit.
-    return false;
-  }
-
-  return false;
+  return StraightComponent_Impl::addToNode(node);
 }
 
 }  // namespace detail

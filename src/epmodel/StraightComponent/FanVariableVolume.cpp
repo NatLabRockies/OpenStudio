@@ -6,7 +6,9 @@
 #include "StraightComponent/FanVariableVolume.hpp"
 #include "StraightComponent/FanVariableVolume_Impl.hpp"
 
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
+#include "Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -29,6 +31,10 @@ FanVariableVolume::FanVariableVolume(std::shared_ptr<detail::FanVariableVolume_I
 
 IddObjectType FanVariableVolume::iddObjectType() {
   return IddObjectType::Fan_VariableVolume;
+}
+
+bool FanVariableVolume::addToNode(Node& node) {
+  return getImpl<detail::FanVariableVolume_Impl>()->addToNode(node);
 }
 
 std::vector<std::string> FanVariableVolume::fanPowerMinimumFlowRateInputMethodValues() {
@@ -264,6 +270,24 @@ unsigned FanVariableVolume_Impl::inletPort() const {
 
 unsigned FanVariableVolume_Impl::outletPort() const {
   return openstudio::Fan_VariableVolumeFields::AirOutletNodeName;
+}
+
+bool FanVariableVolume_Impl::addToNode(Node& node) {
+  auto airLoop = node.airLoopHVAC();
+
+  if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+    return false;
+  }
+
+  if (!StraightComponent_Impl::addToNode(node)) {
+    return false;
+  }
+
+  auto airLoopImpl = airLoop->getImpl<detail::AirLoopHVAC_Impl>();
+  OS_ASSERT(airLoopImpl);
+  airLoopImpl->syncSetpointManagerMixedAirFanNodes();
+
+  return true;
 }
 
 std::vector<std::string> FanVariableVolume_Impl::fanPowerMinimumFlowRateInputMethodValues() const {

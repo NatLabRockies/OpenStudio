@@ -10,6 +10,7 @@
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../StraightComponent/CoilCoolingDXSingleSpeed.hpp"
 #include "../StraightComponent/Node.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -31,6 +32,19 @@ TEST_F(EPModelFixture, CoilCoolingDXSingleSpeed_AddToNodeRejectsOutboardOANode) 
 
   CoilCoolingDXSingleSpeed coil(model);
   EXPECT_FALSE(coil.addToNode(*outboardOANode));
+}
+
+TEST_F(EPModelFixture, CoilCoolingDXSingleSpeed_AddToNodeRejectsDemandBranchNode) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+
+  auto branchObject = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(branchObject);
+  auto branchNode = branchObject->optionalCast<Node>();
+  ASSERT_TRUE(branchNode);
+
+  CoilCoolingDXSingleSpeed coil(model);
+  EXPECT_FALSE(coil.addToNode(*branchNode));
 }
 
 TEST_F(EPModelFixture, CoilCoolingDXSingleSpeed_ScalarAccessors_RoundTrip) {

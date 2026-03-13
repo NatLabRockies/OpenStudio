@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class CoilHeatingDXSingleSpeed_Impl;
@@ -36,6 +37,8 @@ namespace epmodel {
 
     static std::vector<std::string> validDefrostStrategyValues();
     static std::vector<std::string> validDefrostControlValues();
+
+    bool addToNode(Node& node);
 
     // Schema Alignment Notes:
     // - API: Preserve openstudio::model::CoilHeatingDXSingleSpeed scalar accessor names/signatures.

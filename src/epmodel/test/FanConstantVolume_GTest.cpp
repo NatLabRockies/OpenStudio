@@ -8,6 +8,7 @@
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/Node.hpp"
 
@@ -40,6 +41,29 @@ TEST_F(EPModelFixture, FanConstantVolume_AddToNodeRejectsOutboardOANode) {
   ASSERT_TRUE(outboardOANode);
   FanConstantVolume fan(model);
   EXPECT_FALSE(fan.addToNode(*outboardOANode));
+}
+
+TEST_F(EPModelFixture, FanConstantVolume_AddToNodeRejectsDemandBranchNode) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  FanConstantVolume fan(model);
+
+  auto splitterBranchNode = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(splitterBranchNode);
+  auto branchNode = splitterBranchNode->optionalCast<Node>();
+  ASSERT_TRUE(branchNode);
+  EXPECT_FALSE(fan.addToNode(*branchNode));
+}
+
+TEST_F(EPModelFixture, FanConstantVolume_AddToNodeRejectsDemandInletAndOutletNodes) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  FanConstantVolume fan(model);
+
+  auto demandInletNode = airLoop.demandInletNode();
+  auto demandOutletNode = airLoop.demandOutletNode();
+  EXPECT_FALSE(fan.addToNode(demandInletNode));
+  EXPECT_FALSE(fan.addToNode(demandOutletNode));
 }
 
 TEST_F(EPModelFixture, FanConstantVolume_ScalarAccessors_RoundTrip) {

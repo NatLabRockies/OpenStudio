@@ -6,6 +6,9 @@
 #include "StraightComponent/EvaporativeCoolerIndirectResearchSpecial.hpp"
 #include "StraightComponent/EvaporativeCoolerIndirectResearchSpecial_Impl.hpp"
 
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "Loop/AirLoopHVAC.hpp"
+#include "StraightComponent/Node.hpp"
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -216,6 +219,16 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::addToNode(Node& node) {
+      auto airLoop = node.airLoopHVAC();
+
+      if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+        return false;
+      }
+
+      return StraightComponent_Impl::addToNode(node);
+    }
 
     unsigned EvaporativeCoolerIndirectResearchSpecial_Impl::inletPort() const {
       return openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::PrimaryAirInletNodeName;

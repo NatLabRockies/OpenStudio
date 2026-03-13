@@ -10,6 +10,7 @@
 
 namespace openstudio {
 namespace epmodel {
+  class Node;
   namespace detail {
 
     class EPMODEL_API EvaporativeCoolerDirectResearchSpecial_Impl : public StraightComponent_Impl
@@ -17,6 +18,8 @@ namespace epmodel {
      public:
       using StraightComponent_Impl::StraightComponent_Impl;
       virtual ~EvaporativeCoolerDirectResearchSpecial_Impl() override = default;
+
+      bool addToNode(Node& node) override;
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;

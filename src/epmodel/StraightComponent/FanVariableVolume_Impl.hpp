@@ -7,6 +7,7 @@
 #define EPMODEL_FANVARIABLEVOLUME_IMPL_HPP
 
 #include "StraightComponent/StraightComponent_Impl.hpp"
+#include "Node.hpp"
 
 #include <boost/optional.hpp>
 #include <string>
@@ -24,6 +25,7 @@ class EPMODEL_API FanVariableVolume_Impl : public StraightComponent_Impl
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+  bool addToNode(Node& node) override;
 
   std::vector<std::string> fanPowerMinimumFlowRateInputMethodValues() const;
 

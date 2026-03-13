@@ -7,7 +7,7 @@
 #define EPMODEL_AIRLOOPHVACUNITARYHEATCOOLVAVCHANGEOVERBYPASS_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <memory>
 #include <vector>
@@ -21,7 +21,7 @@ namespace epmodel {
     class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl;
   }
 
-  class EPMODEL_API AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass : public ModelObject
+  class EPMODEL_API AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass : public StraightComponent
   {
    public:
     explicit AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(const Model& model);

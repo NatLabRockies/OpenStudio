@@ -6,7 +6,12 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -50,4 +55,32 @@ TEST_F(EPModelFixture, CoilHeatingElectric_ScalarAccessors_RoundTrip) {
   EXPECT_FALSE(coil.nominalCapacity());
 
   EXPECT_FALSE(coil.autosizedNominalCapacity());
+}
+
+TEST_F(EPModelFixture, CoilHeatingElectric_AddToNodeRejectsAirLoopDemandNode) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  CoilHeatingElectric coil(model);
+
+  auto branchObject = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(branchObject);
+  auto demandBranchNode = branchObject->optionalCast<Node>();
+  ASSERT_TRUE(demandBranchNode);
+
+  ThermalZone zone(model);
+  ASSERT_TRUE(zone.addToNode(*demandBranchNode));
+  EXPECT_FALSE(coil.addToNode(*demandBranchNode));
+}
+
+TEST_F(EPModelFixture, CoilHeatingElectric_AddToNodeRejectsOutboardOANode) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+
+  CoilHeatingElectric coil(model);
+  EXPECT_FALSE(coil.addToNode(*outboardOANode));
 }

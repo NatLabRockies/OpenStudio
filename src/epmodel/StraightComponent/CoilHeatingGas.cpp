@@ -9,8 +9,10 @@
 #include "Loop/AirLoopHVAC.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Model.hpp"
+#include "ModelObject.hpp"
 #include "Node.hpp"
 
+#include <algorithm>
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/Coil_Heating_Fuel_FieldEnums.hxx>
@@ -145,20 +147,13 @@ namespace epmodel {
     }
 
     bool CoilHeatingGas_Impl::addToNode(Node& node) {
-      if (auto airLoop = node.airLoopHVAC()) {
-        if (!airLoop->demandComponent(node.handle())) {
-          return StraightComponent_Impl::addToNode(node);
-        }
+      auto airLoop = node.airLoopHVAC();
+
+      if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
         return false;
       }
 
-      // For current epmodel scope, OA-system insertion is allowed only when the
-      // target node participates in modeled OA-system topology.
-      if (node.airLoopHVACOutdoorAirSystem()) {
-        return StraightComponent_Impl::addToNode(node);
-      }
-
-      return false;
+      return StraightComponent_Impl::addToNode(node);
     }
 
     std::string CoilHeatingGas_Impl::fuelType() const {

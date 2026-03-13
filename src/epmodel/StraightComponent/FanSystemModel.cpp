@@ -6,7 +6,9 @@
 #include "StraightComponent/FanSystemModel.hpp"
 #include "StraightComponent/FanSystemModel_Impl.hpp"
 
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
+#include "Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -183,6 +185,10 @@ bool FanSystemModel::setEndUseSubcategory(const std::string& endUseSubcategory) 
   return getImpl<detail::FanSystemModel_Impl>()->setEndUseSubcategory(endUseSubcategory);
 }
 
+bool FanSystemModel::addToNode(Node& node) {
+  return getImpl<detail::FanSystemModel_Impl>()->addToNode(node);
+}
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -196,6 +202,24 @@ unsigned FanSystemModel_Impl::inletPort() const {
 
 unsigned FanSystemModel_Impl::outletPort() const {
   return openstudio::Fan_SystemModelFields::AirOutletNodeName;
+}
+
+bool FanSystemModel_Impl::addToNode(Node& node) {
+  auto airLoop = node.airLoopHVAC();
+
+  if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+    return false;
+  }
+
+  if (!StraightComponent_Impl::addToNode(node)) {
+    return false;
+  }
+
+  auto airLoopImpl = airLoop->getImpl<detail::AirLoopHVAC_Impl>();
+  OS_ASSERT(airLoopImpl);
+  airLoopImpl->syncSetpointManagerMixedAirFanNodes();
+
+  return true;
 }
 
 std::vector<std::string> FanSystemModel_Impl::speedControlMethodValues() const {

@@ -7,6 +7,8 @@
 #include "StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAir_Impl.hpp"
 
 #include "Model.hpp"
+#include "Node.hpp"
+#include "Loop/AirLoopHVAC.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -19,17 +21,21 @@ namespace openstudio {
 namespace epmodel {
 
 AirLoopHVACUnitaryHeatPumpAirToAir::AirLoopHVACUnitaryHeatPumpAirToAir(const Model& model)
-  : ModelObject(AirLoopHVACUnitaryHeatPumpAirToAir::iddObjectType(), model) {
+  : StraightComponent(AirLoopHVACUnitaryHeatPumpAirToAir::iddObjectType(), model) {
   // Mirror model constructor behavior for required scalar initialization.
   OS_ASSERT(setDXHeatingCoilSizingRatio(1.0));
 }
 
 AirLoopHVACUnitaryHeatPumpAirToAir::AirLoopHVACUnitaryHeatPumpAirToAir(
   std::shared_ptr<detail::AirLoopHVACUnitaryHeatPumpAirToAir_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : StraightComponent(std::move(impl)) {}
 
 IddObjectType AirLoopHVACUnitaryHeatPumpAirToAir::iddObjectType() {
   return IddObjectType::AirLoopHVAC_UnitaryHeatPump_AirToAir;
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAir::addToNode(Node& node) {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAir_Impl>()->addToNode(node);
 }
 
 std::vector<std::string> AirLoopHVACUnitaryHeatPumpAirToAir::validFanPlacementValues() {
@@ -179,6 +185,24 @@ bool AirLoopHVACUnitaryHeatPumpAirToAir::setDXHeatingCoilSizingRatio(double dXHe
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+unsigned AirLoopHVACUnitaryHeatPumpAirToAir_Impl::inletPort() const {
+  return openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::AirInletNodeName;
+}
+
+unsigned AirLoopHVACUnitaryHeatPumpAirToAir_Impl::outletPort() const {
+  return openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::AirOutletNodeName;
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAir_Impl::addToNode(Node& node) {
+  auto airLoop = node.airLoopHVAC();
+
+  if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+    return false;
+  }
+
+  return StraightComponent_Impl::addToNode(node);
+}
 
 boost::optional<double> AirLoopHVACUnitaryHeatPumpAirToAir_Impl::supplyAirFlowRateDuringCoolingOperation() const {
   return getDouble(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::CoolingSupplyAirFlowRate, true);

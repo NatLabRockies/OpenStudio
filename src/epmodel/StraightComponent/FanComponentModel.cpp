@@ -6,7 +6,9 @@
 #include "StraightComponent/FanComponentModel.hpp"
 #include "StraightComponent/FanComponentModel_Impl.hpp"
 
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -29,6 +31,10 @@ FanComponentModel::FanComponentModel(std::shared_ptr<detail::FanComponentModel_I
 
 IddObjectType FanComponentModel::iddObjectType() {
   return IddObjectType::Fan_ComponentModel;
+}
+
+bool FanComponentModel::addToNode(Node& node) {
+  return getImpl<detail::FanComponentModel_Impl>()->addToNode(node);
 }
 
 std::vector<std::string> FanComponentModel::vFDEfficiencyTypeValues() {
@@ -256,6 +262,24 @@ unsigned FanComponentModel_Impl::inletPort() const {
 
 unsigned FanComponentModel_Impl::outletPort() const {
   return openstudio::Fan_ComponentModelFields::AirOutletNodeName;
+}
+
+bool FanComponentModel_Impl::addToNode(Node& node) {
+  auto airLoop = node.airLoopHVAC();
+
+  if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+    return false;
+  }
+
+  if (!StraightComponent_Impl::addToNode(node)) {
+    return false;
+  }
+
+  auto airLoopImpl = airLoop->getImpl<detail::AirLoopHVAC_Impl>();
+  OS_ASSERT(airLoopImpl);
+  airLoopImpl->syncSetpointManagerMixedAirFanNodes();
+
+  return true;
 }
 
 std::vector<std::string> FanComponentModel_Impl::vFDEfficiencyTypeValues() const {

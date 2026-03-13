@@ -6,6 +6,7 @@
 #ifndef EPMODEL_FANSYSTEMMODEL_IMPL_HPP
 #define EPMODEL_FANSYSTEMMODEL_IMPL_HPP
 
+#include "Node.hpp"
 #include "StraightComponent/StraightComponent_Impl.hpp"
 
 #include <boost/optional.hpp>
@@ -21,6 +22,8 @@ class EPMODEL_API FanSystemModel_Impl : public StraightComponent_Impl
  public:
   using StraightComponent_Impl::StraightComponent_Impl;
   virtual ~FanSystemModel_Impl() override = default;
+
+  bool addToNode(Node& node) override;
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;

@@ -20,6 +20,7 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Node;
 
 namespace detail {
 class FanVariableVolume_Impl;
@@ -37,6 +38,8 @@ class EPMODEL_API FanVariableVolume : public StraightComponent
   FanVariableVolume& operator=(FanVariableVolume&&) = default;
 
   static IddObjectType iddObjectType();
+
+  bool addToNode(Node& node);
 
   static std::vector<std::string> fanPowerMinimumFlowRateInputMethodValues();
 

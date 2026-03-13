@@ -6,8 +6,12 @@
 #include "StraightComponent/EvaporativeCoolerDirectResearchSpecial.hpp"
 #include "StraightComponent/EvaporativeCoolerDirectResearchSpecial_Impl.hpp"
 
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
+#include <algorithm>
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/EvaporativeCooler_Direct_ResearchSpecial_FieldEnums.hxx>
@@ -146,6 +150,16 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    bool EvaporativeCoolerDirectResearchSpecial_Impl::addToNode(Node& node) {
+      auto airLoop = node.airLoopHVAC();
+
+      if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+        return false;
+      }
+
+      return StraightComponent_Impl::addToNode(node);
+    }
 
     unsigned EvaporativeCoolerDirectResearchSpecial_Impl::inletPort() const {
       return openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::AirInletNodeName;

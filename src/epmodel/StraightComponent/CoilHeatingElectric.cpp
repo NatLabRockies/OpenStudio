@@ -6,7 +6,10 @@
 #include "StraightComponent/CoilHeatingElectric.hpp"
 #include "StraightComponent/CoilHeatingElectric_Impl.hpp"
 
+#include "Loop/AirLoopHVAC.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Model.hpp"
+#include "Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -22,6 +25,10 @@ namespace epmodel {
 
   IddObjectType CoilHeatingElectric::iddObjectType() {
     return IddObjectType::Coil_Heating_Electric;
+  }
+
+  bool CoilHeatingElectric::addToNode(Node& node) {
+    return getImpl<detail::CoilHeatingElectric_Impl>()->addToNode(node);
   }
 
   double CoilHeatingElectric::efficiency() const {
@@ -142,6 +149,16 @@ namespace epmodel {
     boost::optional<double> CoilHeatingElectric_Impl::autosizedNominalCapacity() const {
       // epmodel does not currently resolve autosized values from SQL results.
       return boost::none;
+    }
+
+    bool CoilHeatingElectric_Impl::addToNode(Node& node) {
+      auto airLoop = node.airLoopHVAC();
+
+      if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+        return false;
+      }
+
+      return StraightComponent_Impl::addToNode(node);
     }
 
   }  // namespace detail

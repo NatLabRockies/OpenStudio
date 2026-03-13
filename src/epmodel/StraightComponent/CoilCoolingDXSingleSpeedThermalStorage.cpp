@@ -948,12 +948,13 @@ bool CoilCoolingDXSingleSpeedThermalStorage_Impl::setBasinHeaterSetpointTemperat
 }
 
 bool CoilCoolingDXSingleSpeedThermalStorage_Impl::addToNode(Node& node) {
-  if (auto airLoop = node.airLoopHVAC()) {
-    if (!airLoop->demandComponent(node.handle())) {
-      return StraightComponent_Impl::addToNode(node);
-    }
+  auto airLoop = node.airLoopHVAC();
+
+  if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+    return false;
   }
-  return false;
+
+  return StraightComponent_Impl::addToNode(node);
 }
 
 }  // namespace detail

@@ -6,7 +6,7 @@
 #ifndef EPMODEL_AIRLOOPHVACUNITARYHEATCOOLVAVCHANGEOVERBYPASS_IMPL_HPP
 #define EPMODEL_AIRLOOPHVACUNITARYHEATCOOLVAVCHANGEOVERBYPASS_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "StraightComponent/StraightComponent_Impl.hpp"
 
 #include <vector>
 
@@ -15,10 +15,12 @@ namespace epmodel {
 
 namespace detail {
 
-class EPMODEL_API AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl : public ModelObject_Impl
+class EPMODEL_API AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl : public StraightComponent_Impl
 {
  public:
-  using ModelObject_Impl::ModelObject_Impl;
+  using StraightComponent_Impl::StraightComponent_Impl;
+  unsigned inletPort() const override;
+  unsigned outletPort() const override;
   virtual ~AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl() override = default;
 
   boost::optional<double> systemAirFlowRateDuringCoolingOperation() const;

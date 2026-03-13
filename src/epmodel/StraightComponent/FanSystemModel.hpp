@@ -18,6 +18,7 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Node;
 
 namespace detail {
 class FanSystemModel_Impl;
@@ -94,6 +95,8 @@ class EPMODEL_API FanSystemModel : public StraightComponent
 
   std::string endUseSubcategory() const;
   bool setEndUseSubcategory(const std::string& endUseSubcategory);
+
+  bool addToNode(Node& node);
 
  protected:
   using ImplType = detail::FanSystemModel_Impl;

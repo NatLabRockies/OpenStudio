@@ -6,7 +6,9 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
 #include "../StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.hpp"
+#include <utilities/idd/IddEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -116,4 +118,31 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_ScalarAccess
   EXPECT_FALSE(unitary.isSpeed4SupplyAirFlowRateDuringCoolingOperationAutosized());
   unitary.autosizeSpeed4SupplyAirFlowRateDuringCoolingOperation();
   EXPECT_TRUE(unitary.isSpeed4SupplyAirFlowRateDuringCoolingOperationAutosized());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_AddToNodeSupplyOnly) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed unitary(model);
+
+  auto supplyInlet = airLoop.supplyInletNode();
+  EXPECT_TRUE(unitary.addToNode(supplyInlet));
+
+  const auto supplyComponents = airLoop.supplyComponents(openstudio::IddObjectType::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeed);
+  ASSERT_EQ(1u, supplyComponents.size());
+  EXPECT_EQ(unitary, supplyComponents.front());
+
+  auto loop = unitary.airLoopHVAC();
+  ASSERT_TRUE(loop);
+  EXPECT_EQ(airLoop, *loop);
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_AddToNodeRejectsDemand) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed unitary(model);
+
+  auto demandInlet = airLoop.demandInletNode();
+  EXPECT_FALSE(unitary.addToNode(demandInlet));
+  EXPECT_FALSE(unitary.airLoopHVAC());
 }

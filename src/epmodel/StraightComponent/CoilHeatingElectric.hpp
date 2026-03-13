@@ -15,6 +15,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class CoilHeatingElectric_Impl;
@@ -32,6 +33,8 @@ namespace epmodel {
     CoilHeatingElectric& operator=(CoilHeatingElectric&&) = default;
 
     static IddObjectType iddObjectType();
+
+    bool addToNode(Node& node);
 
     // Schema Alignment Notes:
     // - API: Preserve openstudio::model::CoilHeatingElectric scalar accessor names/signatures.

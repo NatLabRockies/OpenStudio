@@ -12,6 +12,7 @@
 
 namespace openstudio {
 namespace epmodel {
+  class Node;
   namespace detail {
 
     class EPMODEL_API CoilHeatingDXSingleSpeed_Impl : public StraightComponent_Impl
@@ -19,6 +20,7 @@ namespace epmodel {
      public:
       using StraightComponent_Impl::StraightComponent_Impl;
       virtual ~CoilHeatingDXSingleSpeed_Impl() override = default;
+      bool addToNode(Node& node) override;
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;

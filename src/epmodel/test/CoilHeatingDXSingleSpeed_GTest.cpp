@@ -6,6 +6,9 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "Loop/AirLoopHVAC.hpp"
+#include "StraightComponent/Node.hpp"
 #include "../StraightComponent/CoilHeatingDXSingleSpeed.hpp"
 
 using namespace openstudio::epmodel;
@@ -126,4 +129,43 @@ TEST_F(EPModelFixture, CoilHeatingDXSingleSpeed_ScalarAccessors_RoundTrip) {
   EXPECT_TRUE(coil.isResistiveDefrostHeaterCapacityDefaulted());
   ASSERT_TRUE(coil.resistiveDefrostHeaterCapacity());
   EXPECT_DOUBLE_EQ(0.0, *coil.resistiveDefrostHeaterCapacity());
+}
+
+TEST_F(EPModelFixture, CoilHeatingDXSingleSpeed_AddToSupplyNode) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  CoilHeatingDXSingleSpeed coil(model);
+
+  auto supplyNode = airLoop.supplyInletNode();
+  EXPECT_TRUE(coil.addToNode(supplyNode));
+
+  auto supplyComponent = airLoop.supplyComponent(coil.handle());
+  ASSERT_TRUE(supplyComponent);
+  EXPECT_EQ(coil, *supplyComponent);
+}
+
+TEST_F(EPModelFixture, CoilHeatingDXSingleSpeed_AddToDemandNodeFails) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  CoilHeatingDXSingleSpeed coil(model);
+
+  auto demandNode = airLoop.demandInletNode();
+  EXPECT_FALSE(coil.addToNode(demandNode));
+}
+
+TEST_F(EPModelFixture, CoilHeatingDXSingleSpeed_AddToOutdoorAirNodeFails) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyNode));
+
+  CoilHeatingDXSingleSpeed coil(model);
+
+  auto outdoorAirObject = oaSystem.outdoorAirModelObject();
+  ASSERT_TRUE(outdoorAirObject);
+  auto outdoorNode = outdoorAirObject->optionalCast<Node>();
+  ASSERT_TRUE(outdoorNode);
+
+  EXPECT_FALSE(coil.addToNode(*outdoorNode));
 }

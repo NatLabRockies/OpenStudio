@@ -6,7 +6,11 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/CoilHeatingDesuperheater.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -57,4 +61,25 @@ TEST_F(EPModelFixture, CoilHeatingDesuperheater_ScalarAccessors_RoundTrip) {
   EXPECT_FALSE(coil.isOnCycleParasiticElectricLoadDefaulted());
   EXPECT_FALSE(coil.isParasiticElectricLoadDefaulted());
   EXPECT_DOUBLE_EQ(44.0, coil.parasiticElectricLoad());
+}
+
+TEST_F(EPModelFixture, CoilHeatingDesuperheater_AddToNode_SupplyOnly) {
+  Model model;
+  CoilHeatingDesuperheater coil(model);
+
+  AirLoopHVAC airLoop(model);
+  Node supplyOutletNode = airLoop.supplyOutletNode();
+  EXPECT_TRUE(coil.addToNode(supplyOutletNode));
+
+  auto splitterBranch = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(splitterBranch);
+  auto splitterBranchNode = splitterBranch->optionalCast<Node>();
+  ASSERT_TRUE(splitterBranchNode);
+  EXPECT_FALSE(coil.addToNode(*splitterBranchNode));
+
+  PlantLoop plantLoop(model);
+  Node plantSupplyNode = plantLoop.supplyOutletNode();
+  EXPECT_FALSE(coil.addToNode(plantSupplyNode));
+  Node plantDemandNode = plantLoop.demandOutletNode();
+  EXPECT_FALSE(coil.addToNode(plantDemandNode));
 }

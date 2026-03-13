@@ -6,6 +6,7 @@
 #include "StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.hpp"
 #include "StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl.hpp"
 
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -19,7 +20,7 @@ namespace openstudio {
 namespace epmodel {
 
 AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(const Model& model)
-  : ModelObject(AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::iddObjectType(), model) {
+  : StraightComponent(AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::iddObjectType(), model) {
   // Mirror model scalar constructor defaults while excluding relationship fields.
   OS_ASSERT(setSupplyAirFanPlacement("DrawThrough"));
   OS_ASSERT(setDXHeatingCoilSizingRatio(1.0));
@@ -44,10 +45,14 @@ AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::AirLoopHVACUnitaryHeatPumpAirToAir
 
 AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(
   std::shared_ptr<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : StraightComponent(std::move(impl)) {}
 
 IddObjectType AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::iddObjectType() {
   return IddObjectType::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeed;
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::addToNode(Node& node) {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->addToNode(node);
 }
 
 std::vector<std::string> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::supplyAirFanPlacementValues() {
@@ -315,6 +320,24 @@ void AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::autosizeSpeed4SupplyAirFlowRa
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+unsigned AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::inletPort() const {
+  return openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::AirInletNodeName;
+}
+
+unsigned AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::outletPort() const {
+  return openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::AirOutletNodeName;
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::addToNode(Node& node) {
+  auto airLoop = node.airLoopHVAC();
+
+  if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+    return false;
+  }
+
+  return StraightComponent_Impl::addToNode(node);
+}
 
 std::string AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::supplyAirFanPlacement() const {
   const auto value = getString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanPlacement, true);

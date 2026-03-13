@@ -6,7 +6,9 @@
 #include "StraightComponent/CoilHeatingDesuperheater.hpp"
 #include "StraightComponent/CoilHeatingDesuperheater_Impl.hpp"
 
+#include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/Coil_Heating_Desuperheater_FieldEnums.hxx>
@@ -84,6 +86,16 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    bool CoilHeatingDesuperheater_Impl::addToNode(Node& node) {
+      auto airLoop = node.airLoopHVAC();
+
+      if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
+        return false;
+      }
+
+      return StraightComponent_Impl::addToNode(node);
+    }
 
     unsigned CoilHeatingDesuperheater_Impl::inletPort() const {
       return openstudio::Coil_Heating_DesuperheaterFields::AirInletNodeName;

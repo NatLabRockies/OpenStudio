@@ -6,7 +6,10 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
 #include "../StraightComponent/EvaporativeCoolerDirectResearchSpecial.hpp"
+#include "../StraightComponent/Node.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -71,4 +74,28 @@ TEST_F(EPModelFixture, EvaporativeCoolerDirectResearchSpecial_ScalarAccessors_Ro
 
   EXPECT_FALSE(evaporativeCooler.autosizedRecirculatingWaterPumpPowerConsumption());
   EXPECT_FALSE(evaporativeCooler.autosizedPrimaryAirDesignFlowRate());
+}
+
+TEST_F(EPModelFixture, EvaporativeCoolerDirectResearchSpecial_AddToSupplyNode) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  EvaporativeCoolerDirectResearchSpecial evaporativeCooler(model);
+
+  auto supplyInlet = airLoop.supplyInletNode();
+  EXPECT_TRUE(evaporativeCooler.addToNode(supplyInlet));
+  EXPECT_TRUE(evaporativeCooler.airLoopHVAC());
+}
+
+TEST_F(EPModelFixture, EvaporativeCoolerDirectResearchSpecial_AddToDemandBranchRejected) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  EvaporativeCoolerDirectResearchSpecial evaporativeCooler(model);
+
+  auto branchObject = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(branchObject);
+  auto branchNode = branchObject->optionalCast<Node>();
+  ASSERT_TRUE(branchNode);
+
+  EXPECT_FALSE(evaporativeCooler.addToNode(*branchNode));
+  EXPECT_FALSE(evaporativeCooler.airLoopHVAC());
 }

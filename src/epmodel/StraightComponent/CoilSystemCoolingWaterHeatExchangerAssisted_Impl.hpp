@@ -20,6 +20,8 @@ namespace epmodel {
       using StraightComponent_Impl::StraightComponent_Impl;
       virtual ~CoilSystemCoolingWaterHeatExchangerAssisted_Impl() override = default;
 
+      bool addToNode(Node& node) override;
+
       unsigned inletPort() const override;
       unsigned outletPort() const override;
 
