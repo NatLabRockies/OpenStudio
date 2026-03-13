@@ -13,120 +13,104 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SolarCollectorPerformanceIntegralCollectorStorage_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~SolarCollectorPerformanceIntegralCollectorStorage_Impl() override = default;
+    class EPMODEL_API SolarCollectorPerformanceIntegralCollectorStorage_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~SolarCollectorPerformanceIntegralCollectorStorage_Impl() override = default;
 
-  std::string iCSCollectorType() const;
-  bool isICSCollectorTypeDefaulted() const;
+      std::string iCSCollectorType() const;
+      bool isICSCollectorTypeDefaulted() const;
+      bool setICSCollectorType(const std::string& iCSCollectorType);
+      void resetICSCollectorType();
 
-  double grossArea() const;
-  double collectorWaterVolume() const;
+      double grossArea() const;
+      bool setGrossArea(double grossArea);
 
-  double bottomHeatLossConductance() const;
-  bool isBottomHeatLossConductanceDefaulted() const;
+      double collectorWaterVolume() const;
+      bool setCollectorWaterVolume(double collectorWaterVolume);
 
-  double sideHeatLossConductance() const;
-  bool isSideHeatLossConductanceDefaulted() const;
+      double bottomHeatLossConductance() const;
+      bool isBottomHeatLossConductanceDefaulted() const;
+      bool setBottomHeatLossConductance(double bottomHeatLossConductance);
+      void resetBottomHeatLossConductance();
 
-  double aspectRatio() const;
-  bool isAspectRatioDefaulted() const;
+      double sideHeatLossConductance() const;
+      bool isSideHeatLossConductanceDefaulted() const;
+      bool setSideHeatLossConductance(double sideHeatLossConductance);
+      void resetSideHeatLossConductance();
 
-  double collectorSideHeight() const;
-  bool isCollectorSideHeightDefaulted() const;
+      double aspectRatio() const;
+      bool isAspectRatioDefaulted() const;
+      bool setAspectRatio(double aspectRatio);
+      void resetAspectRatio();
 
-  double thermalMassOfAbsorberPlate() const;
-  bool isThermalMassOfAbsorberPlateDefaulted() const;
+      double collectorSideHeight() const;
+      bool isCollectorSideHeightDefaulted() const;
+      bool setCollectorSideHeight(double collectorSideHeight);
+      void resetCollectorSideHeight();
 
-  int numberOfCovers() const;
-  bool isNumberOfCoversDefaulted() const;
+      double thermalMassOfAbsorberPlate() const;
+      bool isThermalMassOfAbsorberPlateDefaulted() const;
+      bool setThermalMassOfAbsorberPlate(double thermalMassOfAbsorberPlate);
+      void resetThermalMassOfAbsorberPlate();
 
-  double coverSpacing() const;
-  bool isCoverSpacingDefaulted() const;
+      int numberOfCovers() const;
+      bool isNumberOfCoversDefaulted() const;
+      bool setNumberOfCovers(int numberOfCovers);
+      void resetNumberOfCovers();
 
-  double refractiveIndexOfOuterCover() const;
-  bool isRefractiveIndexOfOuterCoverDefaulted() const;
+      double coverSpacing() const;
+      bool isCoverSpacingDefaulted() const;
+      bool setCoverSpacing(double coverSpacing);
+      void resetCoverSpacing();
 
-  double extinctionCoefficientTimesThicknessOfOuterCover() const;
-  bool isExtinctionCoefficientTimesThicknessOfOuterCoverDefaulted() const;
+      double refractiveIndexOfOuterCover() const;
+      bool isRefractiveIndexOfOuterCoverDefaulted() const;
+      bool setRefractiveIndexOfOuterCover(double refractiveIndexOfOuterCover);
+      void resetRefractiveIndexOfOuterCover();
 
-  double emissivityOfOuterCover() const;
-  bool isEmissivityOfOuterCoverDefaulted() const;
+      double extinctionCoefficientTimesThicknessOfOuterCover() const;
+      bool isExtinctionCoefficientTimesThicknessOfOuterCoverDefaulted() const;
+      bool setExtinctionCoefficientTimesThicknessOfOuterCover(double extinctionCoefficientTimesThicknessOfOuterCover);
+      void resetExtinctionCoefficientTimesThicknessOfOuterCover();
 
-  double refractiveIndexOfInnerCover() const;
-  bool isRefractiveIndexOfInnerCoverDefaulted() const;
+      double emissivityOfOuterCover() const;
+      bool isEmissivityOfOuterCoverDefaulted() const;
+      bool setEmissivityOfOuterCover(double emissivityOfOuterCover);
+      void resetEmissivityOfOuterCover();
 
-  double extinctionCoefficientTimesThicknessOfTheInnerCover() const;
-  bool isExtinctionCoefficientTimesThicknessOfTheInnerCoverDefaulted() const;
+      double refractiveIndexOfInnerCover() const;
+      bool isRefractiveIndexOfInnerCoverDefaulted() const;
+      bool setRefractiveIndexOfInnerCover(double refractiveIndexOfInnerCover);
+      void resetRefractiveIndexOfInnerCover();
 
-  double emissivityOfInnerCover() const;
-  bool isEmissivityOfInnerCoverDefaulted() const;
+      double extinctionCoefficientTimesThicknessOfTheInnerCover() const;
+      bool isExtinctionCoefficientTimesThicknessOfTheInnerCoverDefaulted() const;
+      bool setExtinctionCoefficientTimesThicknessOfTheInnerCover(double extinctionCoefficientTimesThicknessOfTheInnerCover);
+      void resetExtinctionCoefficientTimesThicknessOfTheInnerCover();
 
-  double absorptanceOfAbsorberPlate() const;
-  bool isAbsorptanceOfAbsorberPlateDefaulted() const;
+      double emissivityOfInnerCover() const;
+      bool isEmissivityOfInnerCoverDefaulted() const;
+      bool setEmissivityOfInnerCover(double emissivityOfInnerCover);
+      void resetEmissivityOfInnerCover();
 
-  double emissivityOfAbsorberPlate() const;
-  bool isEmissivityOfAbsorberPlateDefaulted() const;
+      double absorptanceOfAbsorberPlate() const;
+      bool isAbsorptanceOfAbsorberPlateDefaulted() const;
+      bool setAbsorptanceOfAbsorberPlate(double absorptanceOfAbsorberPlate);
+      void resetAbsorptanceOfAbsorberPlate();
 
-  bool setICSCollectorType(const std::string& iCSCollectorType);
-  void resetICSCollectorType();
+      double emissivityOfAbsorberPlate() const;
+      bool isEmissivityOfAbsorberPlateDefaulted() const;
+      bool setEmissivityOfAbsorberPlate(double emissivityOfAbsorberPlate);
+      void resetEmissivityOfAbsorberPlate();
 
-  bool setGrossArea(double grossArea);
-  bool setCollectorWaterVolume(double collectorWaterVolume);
+      std::vector<std::string> iCSCollectorTypeValues() const;
+    };
 
-  bool setBottomHeatLossConductance(double bottomHeatLossConductance);
-  void resetBottomHeatLossConductance();
-
-  bool setSideHeatLossConductance(double sideHeatLossConductance);
-  void resetSideHeatLossConductance();
-
-  bool setAspectRatio(double aspectRatio);
-  void resetAspectRatio();
-
-  bool setCollectorSideHeight(double collectorSideHeight);
-  void resetCollectorSideHeight();
-
-  bool setThermalMassOfAbsorberPlate(double thermalMassOfAbsorberPlate);
-  void resetThermalMassOfAbsorberPlate();
-
-  bool setNumberOfCovers(int numberOfCovers);
-  void resetNumberOfCovers();
-
-  bool setCoverSpacing(double coverSpacing);
-  void resetCoverSpacing();
-
-  bool setRefractiveIndexOfOuterCover(double refractiveIndexOfOuterCover);
-  void resetRefractiveIndexOfOuterCover();
-
-  bool setExtinctionCoefficientTimesThicknessOfOuterCover(double extinctionCoefficientTimesThicknessOfOuterCover);
-  void resetExtinctionCoefficientTimesThicknessOfOuterCover();
-
-  bool setEmissivityOfOuterCover(double emissivityOfOuterCover);
-  void resetEmissivityOfOuterCover();
-
-  bool setRefractiveIndexOfInnerCover(double refractiveIndexOfInnerCover);
-  void resetRefractiveIndexOfInnerCover();
-
-  bool setExtinctionCoefficientTimesThicknessOfTheInnerCover(double extinctionCoefficientTimesThicknessOfTheInnerCover);
-  void resetExtinctionCoefficientTimesThicknessOfTheInnerCover();
-
-  bool setEmissivityOfInnerCover(double emissivityOfInnerCover);
-  void resetEmissivityOfInnerCover();
-
-  bool setAbsorptanceOfAbsorberPlate(double absorptanceOfAbsorberPlate);
-  void resetAbsorptanceOfAbsorberPlate();
-
-  bool setEmissivityOfAbsorberPlate(double emissivityOfAbsorberPlate);
-  void resetEmissivityOfAbsorberPlate();
-
-  std::vector<std::string> iCSCollectorTypeValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

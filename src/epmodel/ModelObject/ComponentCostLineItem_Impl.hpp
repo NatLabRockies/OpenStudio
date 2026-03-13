@@ -13,64 +13,64 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ComponentCostLineItem_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ComponentCostLineItem_Impl() override = default;
+    class EPMODEL_API ComponentCostLineItem_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ComponentCostLineItem_Impl() override = default;
 
-  boost::optional<std::string> type() const;
-  bool setType(const std::string& type);
-  void resetType();
+      std::vector<std::string> lineItemTypeValues() const;
 
-  std::string lineItemType() const;
-  bool setLineItemType(const std::string& lineItemType);
+      boost::optional<std::string> type() const;
+      bool setType(const std::string& type);
+      void resetType();
 
-  std::string itemName() const;
-  bool setItemName(const std::string& itemName);
+      std::string lineItemType() const;
+      bool setLineItemType(const std::string& lineItemType);
 
-  boost::optional<std::string> objectEndUseKey() const;
-  bool setObjectEndUseKey(const std::string& objectEndUseKey);
-  void resetObjectEndUseKey();
+      std::string itemName() const;
+      bool setItemName(const std::string& itemName);
 
-  boost::optional<double> costperEach() const;
-  bool setCostperEach(double costperEach);
-  void resetCostperEach();
+      boost::optional<std::string> objectEndUseKey() const;
+      bool setObjectEndUseKey(const std::string& objectEndUseKey);
+      void resetObjectEndUseKey();
 
-  boost::optional<double> costperArea() const;
-  bool setCostperArea(double costperArea);
-  void resetCostperArea();
+      boost::optional<double> costperEach() const;
+      bool setCostperEach(double costperEach);
+      void resetCostperEach();
 
-  boost::optional<double> costperUnitofOutputCapacity() const;
-  bool setCostperUnitofOutputCapacity(double costperUnitofOutputCapacity);
-  void resetCostperUnitofOutputCapacity();
+      boost::optional<double> costperArea() const;
+      bool setCostperArea(double costperArea);
+      void resetCostperArea();
 
-  boost::optional<double> costperUnitofOutputCapacityperCOP() const;
-  bool setCostperUnitofOutputCapacityperCOP(double costperUnitofOutputCapacityperCOP);
-  void resetCostperUnitofOutputCapacityperCOP();
+      boost::optional<double> costperUnitofOutputCapacity() const;
+      bool setCostperUnitofOutputCapacity(double costperUnitofOutputCapacity);
+      void resetCostperUnitofOutputCapacity();
 
-  boost::optional<double> costperVolume() const;
-  bool setCostperVolume(double costperVolume);
-  void resetCostperVolume();
+      boost::optional<double> costperUnitofOutputCapacityperCOP() const;
+      bool setCostperUnitofOutputCapacityperCOP(double costperUnitofOutputCapacityperCOP);
+      void resetCostperUnitofOutputCapacityperCOP();
 
-  boost::optional<double> costperVolumeRate() const;
-  bool setCostperVolumeRate(double costperVolumeRate);
-  void resetCostperVolumeRate();
+      boost::optional<double> costperVolume() const;
+      bool setCostperVolume(double costperVolume);
+      void resetCostperVolume();
 
-  boost::optional<double> costperEnergyperTemperatureDifference() const;
-  bool setCostperEnergyperTemperatureDifference(double costperEnergyperTemperatureDifference);
-  void resetCostperEnergyperTemperatureDifference();
+      boost::optional<double> costperVolumeRate() const;
+      bool setCostperVolumeRate(double costperVolumeRate);
+      void resetCostperVolumeRate();
 
-  boost::optional<double> quantity() const;
-  bool setQuantity(double quantity);
-  void resetQuantity();
+      boost::optional<double> costperEnergyperTemperatureDifference() const;
+      bool setCostperEnergyperTemperatureDifference(double costperEnergyperTemperatureDifference);
+      void resetCostperEnergyperTemperatureDifference();
 
-  std::vector<std::string> lineItemTypeValues() const;
-};
+      boost::optional<double> quantity() const;
+      bool setQuantity(double quantity);
+      void resetQuantity();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

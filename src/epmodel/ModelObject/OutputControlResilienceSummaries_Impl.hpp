@@ -13,22 +13,22 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API OutputControlResilienceSummaries_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~OutputControlResilienceSummaries_Impl() override = default;
+    class EPMODEL_API OutputControlResilienceSummaries_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~OutputControlResilienceSummaries_Impl() override = default;
 
-  std::string heatIndexAlgorithm() const;
-  bool setHeatIndexAlgorithm(const std::string& heatIndexAlgorithm);
+      std::vector<std::string> heatIndexAlgorithmValues() const;
+      std::vector<std::string> validHeatIndexAlgorithmValues() const;
 
-  std::vector<std::string> heatIndexAlgorithmValues() const;
-  std::vector<std::string> validHeatIndexAlgorithmValues() const;
-};
+      std::string heatIndexAlgorithm() const;
+      bool setHeatIndexAlgorithm(const std::string& heatIndexAlgorithm);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

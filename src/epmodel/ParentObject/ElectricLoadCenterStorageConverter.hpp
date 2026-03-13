@@ -17,64 +17,68 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class ElectricLoadCenterStorageConverter_Impl;
-}
+  namespace detail {
+    class ElectricLoadCenterStorageConverter_Impl;
+  }
 
-class EPMODEL_API ElectricLoadCenterStorageConverter : public ParentObject
-{
- public:
-  explicit ElectricLoadCenterStorageConverter(const Model& model);
+  class EPMODEL_API ElectricLoadCenterStorageConverter : public ParentObject
+  {
+   public:
+    explicit ElectricLoadCenterStorageConverter(const Model& model);
 
-  virtual ~ElectricLoadCenterStorageConverter() override = default;
-  ElectricLoadCenterStorageConverter(const ElectricLoadCenterStorageConverter& other) = default;
-  ElectricLoadCenterStorageConverter(ElectricLoadCenterStorageConverter&& other) = default;
-  ElectricLoadCenterStorageConverter& operator=(const ElectricLoadCenterStorageConverter&) = default;
-  ElectricLoadCenterStorageConverter& operator=(ElectricLoadCenterStorageConverter&&) = default;
+    virtual ~ElectricLoadCenterStorageConverter() override = default;
+    ElectricLoadCenterStorageConverter(const ElectricLoadCenterStorageConverter& other) = default;
+    ElectricLoadCenterStorageConverter(ElectricLoadCenterStorageConverter&& other) = default;
+    ElectricLoadCenterStorageConverter& operator=(const ElectricLoadCenterStorageConverter&) = default;
+    ElectricLoadCenterStorageConverter& operator=(ElectricLoadCenterStorageConverter&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> powerConversionEfficiencyMethodValues();
+    static std::vector<std::string> powerConversionEfficiencyMethodValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::ElectricLoadCenterStorageConverter scalar accessor names/signatures.
-  // - Field Mapping: powerConversionEfficiencyMethod, simpleFixedEfficiency, designMaximumContinuousInputPower,
-  //   ancillaryPowerConsumedInStandby, and radiativeFraction map directly to EnergyPlus
-  //   ElectricLoadCenter:Storage:Converter scalar fields.
-  // - Field Mapping: Availability Schedule Name, Efficiency Function of Power Curve Name, Zone Name,
-  //   and parent linkage are relationship-like fields and intentionally excluded from scalar accessor scope.
-  // - ForwardTranslator evidence: ForwardTranslateElectricLoadCenterStorageConverter.cpp writes these scalar
-  //   fields directly to ElectricLoadCenter:Storage:Converter.
-  // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
-  std::string powerConversionEfficiencyMethod() const;
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model::ElectricLoadCenterStorageConverter scalar accessor names/signatures.
+    // - Field Mapping: powerConversionEfficiencyMethod, simpleFixedEfficiency, designMaximumContinuousInputPower,
+    //   ancillaryPowerConsumedInStandby, and radiativeFraction map directly to EnergyPlus
+    //   ElectricLoadCenter:Storage:Converter scalar fields.
+    // - Field Mapping: Availability Schedule Name, Efficiency Function of Power Curve Name, Zone Name,
+    //   and parent linkage are relationship-like fields and intentionally excluded from scalar accessor scope.
+    // - ForwardTranslator evidence: ForwardTranslateElectricLoadCenterStorageConverter.cpp writes these scalar
+    //   fields directly to ElectricLoadCenter:Storage:Converter.
+    // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
+    std::string powerConversionEfficiencyMethod() const;
 
-  boost::optional<double> simpleFixedEfficiency() const;
-  bool setSimpleFixedEfficiency(double simpleFixedEfficiency);
+    // simpleFixedEfficiency field
+    boost::optional<double> simpleFixedEfficiency() const;
+    bool setSimpleFixedEfficiency(double simpleFixedEfficiency);
 
-  boost::optional<double> designMaximumContinuousInputPower() const;
-  bool setDesignMaximumContinuousInputPower(double designMaximumContinuousInputPower);
+    // designMaximumContinuousInputPower field
+    boost::optional<double> designMaximumContinuousInputPower() const;
+    bool setDesignMaximumContinuousInputPower(double designMaximumContinuousInputPower);
 
-  double ancillaryPowerConsumedInStandby() const;
-  bool isAncillaryPowerConsumedInStandbyDefaulted() const;
-  bool setAncillaryPowerConsumedInStandby(double ancillaryPowerConsumedInStandby);
-  void resetAncillaryPowerConsumedInStandby();
+    // ancillaryPowerConsumedInStandby field
+    double ancillaryPowerConsumedInStandby() const;
+    bool isAncillaryPowerConsumedInStandbyDefaulted() const;
+    bool setAncillaryPowerConsumedInStandby(double ancillaryPowerConsumedInStandby);
+    void resetAncillaryPowerConsumedInStandby();
 
-  double radiativeFraction() const;
-  bool isRadiativeFractionDefaulted() const;
-  bool setRadiativeFraction(double radiativeFraction);
-  void resetRadiativeFraction();
+    // radiativeFraction field
+    double radiativeFraction() const;
+    bool isRadiativeFractionDefaulted() const;
+    bool setRadiativeFraction(double radiativeFraction);
+    void resetRadiativeFraction();
 
- protected:
-  using ImplType = detail::ElectricLoadCenterStorageConverter_Impl;
+   protected:
+    using ImplType = detail::ElectricLoadCenterStorageConverter_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit ElectricLoadCenterStorageConverter(std::shared_ptr<detail::ElectricLoadCenterStorageConverter_Impl> impl);
-};
+    explicit ElectricLoadCenterStorageConverter(std::shared_ptr<detail::ElectricLoadCenterStorageConverter_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

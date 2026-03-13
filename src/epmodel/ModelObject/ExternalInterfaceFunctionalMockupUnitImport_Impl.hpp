@@ -10,32 +10,29 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ExternalInterfaceFunctionalMockupUnitImport_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ExternalInterfaceFunctionalMockupUnitImport_Impl() override = default;
+    class EPMODEL_API ExternalInterfaceFunctionalMockupUnitImport_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ExternalInterfaceFunctionalMockupUnitImport_Impl() override = default;
 
-  double fMUTimeout() const;
-  bool isFMUTimeoutDefaulted() const;
+      double fMUTimeout() const;
+      bool isFMUTimeoutDefaulted() const;
+      bool setFMUTimeout(double fMUTimeout);
+      void resetFMUTimeout();
 
-  int fMULoggingOn() const;
-  bool isFMULoggingOnDefaulted() const;
+      int fMULoggingOn() const;
+      bool isFMULoggingOnDefaulted() const;
+      bool setFMULoggingOn(int fMULoggingOn);
+      void resetFMULoggingOn();
 
-  std::string fMUFileName() const;
+      std::string fMUFileName() const;
+      bool setFMUFileName(const std::string& fMUName);
+    };
 
-  bool setFMUTimeout(double fMUTimeout);
-  void resetFMUTimeout();
-
-  bool setFMULoggingOn(int fMULoggingOn);
-  void resetFMULoggingOn();
-
-  bool setFMUFileName(const std::string& fMUName);
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

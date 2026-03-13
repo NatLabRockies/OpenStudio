@@ -47,122 +47,100 @@ namespace epmodel {
     //   Refrigeration_Condenser_EvaporativeCooledFields enums while omitting the relationship-like air inlet node,
     //   schedule, and tank references that remain outside the scalar-only scaffold.
 
-    /** @name Getters */
+    /** @name Field accessors */
     //@{
     double ratedEffectiveTotalHeatRejectionRate() const;
+    bool setRatedEffectiveTotalHeatRejectionRate(double ratedEffectiveTotalHeatRejectionRate);
 
     double ratedSubcoolingTemperatureDifference() const;
     bool isRatedSubcoolingTemperatureDifferenceDefaulted() const;
+    bool setRatedSubcoolingTemperatureDifference(double ratedSubcoolingTemperatureDifference);
+    void resetRatedSubcoolingTemperatureDifference();
 
     std::string fanSpeedControlType() const;
     bool isFanSpeedControlTypeDefaulted() const;
+    bool setFanSpeedControlType(const std::string& fanSpeedControlType);
+    void resetFanSpeedControlType();
 
     double ratedFanPower() const;
+    bool setRatedFanPower(double ratedFanPower);
 
     double minimumFanAirFlowRatio() const;
     bool isMinimumFanAirFlowRatioDefaulted() const;
+    bool setMinimumFanAirFlowRatio(double minimumFanAirFlowRatio);
+    void resetMinimumFanAirFlowRatio();
 
     double approachTemperatureConstantTerm() const;
     bool isApproachTemperatureConstantTermDefaulted() const;
+    bool setApproachTemperatureConstantTerm(double approachTemperatureConstantTerm);
+    void resetApproachTemperatureConstantTerm();
 
     double approachTemperatureCoefficient2() const;
     bool isApproachTemperatureCoefficient2Defaulted() const;
+    bool setApproachTemperatureCoefficient2(double approachTemperatureCoefficient2);
+    void resetApproachTemperatureCoefficient2();
 
     double approachTemperatureCoefficient3() const;
     bool isApproachTemperatureCoefficient3Defaulted() const;
+    bool setApproachTemperatureCoefficient3(double approachTemperatureCoefficient3);
+    void resetApproachTemperatureCoefficient3();
 
     double approachTemperatureCoefficient4() const;
     bool isApproachTemperatureCoefficient4Defaulted() const;
+    bool setApproachTemperatureCoefficient4(double approachTemperatureCoefficient4);
+    void resetApproachTemperatureCoefficient4();
 
     double minimumCapacityFactor() const;
     bool isMinimumCapacityFactorDefaulted() const;
+    bool setMinimumCapacityFactor(double minimumCapacityFactor);
+    void resetMinimumCapacityFactor();
 
     double maximumCapacityFactor() const;
     bool isMaximumCapacityFactorDefaulted() const;
+    bool setMaximumCapacityFactor(double maximumCapacityFactor);
+    void resetMaximumCapacityFactor();
 
     boost::optional<double> ratedAirFlowRate() const;
     bool isRatedAirFlowRateDefaulted() const;
     bool isRatedAirFlowRateAutocalculated() const;
-
-    double basinHeaterCapacity() const;
-    bool isBasinHeaterCapacityDefaulted() const;
-
-    double basinHeaterSetpointTemperature() const;
-    bool isBasinHeaterSetpointTemperatureDefaulted() const;
-
-    boost::optional<double> ratedWaterPumpPower() const;
-    bool isRatedWaterPumpPowerDefaulted() const;
-    bool isRatedWaterPumpPowerAutocalculated() const;
-
-    std::string endUseSubcategory() const;
-    bool isEndUseSubcategoryDefaulted() const;
-
-    double condenserRefrigerantOperatingChargeInventory() const;
-    bool isCondenserRefrigerantOperatingChargeInventoryDefaulted() const;
-
-    double condensateReceiverRefrigerantInventory() const;
-    bool isCondensateReceiverRefrigerantInventoryDefaulted() const;
-
-    double condensatePipingRefrigerantInventory() const;
-    bool isCondensatePipingRefrigerantInventoryDefaulted() const;
-    //@}
-
-    /** @name Setters */
-    //@{
-    bool setRatedEffectiveTotalHeatRejectionRate(double ratedEffectiveTotalHeatRejectionRate);
-
-    bool setRatedSubcoolingTemperatureDifference(double ratedSubcoolingTemperatureDifference);
-    void resetRatedSubcoolingTemperatureDifference();
-
-    bool setFanSpeedControlType(const std::string& fanSpeedControlType);
-    void resetFanSpeedControlType();
-
-    bool setRatedFanPower(double ratedFanPower);
-
-    bool setMinimumFanAirFlowRatio(double minimumFanAirFlowRatio);
-    void resetMinimumFanAirFlowRatio();
-
-    bool setApproachTemperatureConstantTerm(double approachTemperatureConstantTerm);
-    void resetApproachTemperatureConstantTerm();
-
-    bool setApproachTemperatureCoefficient2(double approachTemperatureCoefficient2);
-    void resetApproachTemperatureCoefficient2();
-
-    bool setApproachTemperatureCoefficient3(double approachTemperatureCoefficient3);
-    void resetApproachTemperatureCoefficient3();
-
-    bool setApproachTemperatureCoefficient4(double approachTemperatureCoefficient4);
-    void resetApproachTemperatureCoefficient4();
-
-    bool setMinimumCapacityFactor(double minimumCapacityFactor);
-    void resetMinimumCapacityFactor();
-
-    bool setMaximumCapacityFactor(double maximumCapacityFactor);
-    void resetMaximumCapacityFactor();
-
     bool setRatedAirFlowRate(double ratedAirFlowRate);
     void resetRatedAirFlowRate();
     void autocalculateRatedAirFlowRate();
 
+    double basinHeaterCapacity() const;
+    bool isBasinHeaterCapacityDefaulted() const;
     bool setBasinHeaterCapacity(double basinHeaterCapacity);
     void resetBasinHeaterCapacity();
 
+    double basinHeaterSetpointTemperature() const;
+    bool isBasinHeaterSetpointTemperatureDefaulted() const;
     bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
     void resetBasinHeaterSetpointTemperature();
 
+    boost::optional<double> ratedWaterPumpPower() const;
+    bool isRatedWaterPumpPowerDefaulted() const;
+    bool isRatedWaterPumpPowerAutocalculated() const;
     bool setRatedWaterPumpPower(double ratedWaterPumpPower);
     void resetRatedWaterPumpPower();
     void autocalculateRatedWaterPumpPower();
 
+    std::string endUseSubcategory() const;
+    bool isEndUseSubcategoryDefaulted() const;
     bool setEndUseSubcategory(const std::string& endUseSubcategory);
     void resetEndUseSubcategory();
 
+    double condenserRefrigerantOperatingChargeInventory() const;
+    bool isCondenserRefrigerantOperatingChargeInventoryDefaulted() const;
     bool setCondenserRefrigerantOperatingChargeInventory(double condenserRefrigerantOperatingChargeInventory);
     void resetCondenserRefrigerantOperatingChargeInventory();
 
+    double condensateReceiverRefrigerantInventory() const;
+    bool isCondensateReceiverRefrigerantInventoryDefaulted() const;
     bool setCondensateReceiverRefrigerantInventory(double condensateReceiverRefrigerantInventory);
     void resetCondensateReceiverRefrigerantInventory();
 
+    double condensatePipingRefrigerantInventory() const;
+    bool isCondensatePipingRefrigerantInventoryDefaulted() const;
     bool setCondensatePipingRefrigerantInventory(double condensatePipingRefrigerantInventory);
     void resetCondensatePipingRefrigerantInventory();
     //@}

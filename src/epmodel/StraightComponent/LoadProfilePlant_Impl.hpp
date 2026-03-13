@@ -32,6 +32,8 @@ class EPMODEL_API LoadProfilePlant_Impl : public StraightComponent_Impl
   bool isPlantLoopFluidTypeDefaulted() const;
   void resetPlantLoopFluidType();
 
+  std::vector<std::string> plantLoopFluidTypeValues() const;
+
   double degreeofSubCooling() const;
   bool setDegreeofSubCooling(double degreeofSubCooling);
   bool isDegreeofSubCoolingDefaulted() const;
@@ -42,7 +44,6 @@ class EPMODEL_API LoadProfilePlant_Impl : public StraightComponent_Impl
   bool isDegreeofLoopSubCoolingDefaulted() const;
   void resetDegreeofLoopSubCooling();
 
-  std::vector<std::string> plantLoopFluidTypeValues() const;
 };
 
 }  // namespace detail

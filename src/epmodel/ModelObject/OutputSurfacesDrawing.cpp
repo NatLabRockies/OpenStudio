@@ -38,16 +38,16 @@ std::string OutputSurfacesDrawing::reportType() const {
   return getImpl<detail::OutputSurfacesDrawing_Impl>()->reportType();
 }
 
+bool OutputSurfacesDrawing::setReportType(const std::string& reportType) {
+  return getImpl<detail::OutputSurfacesDrawing_Impl>()->setReportType(reportType);
+}
+
 std::string OutputSurfacesDrawing::reportSpecifications1() const {
   return getImpl<detail::OutputSurfacesDrawing_Impl>()->reportSpecifications1();
 }
 
 bool OutputSurfacesDrawing::isReportSpecifications1Defaulted() const {
   return getImpl<detail::OutputSurfacesDrawing_Impl>()->isReportSpecifications1Defaulted();
-}
-
-bool OutputSurfacesDrawing::setReportType(const std::string& reportType) {
-  return getImpl<detail::OutputSurfacesDrawing_Impl>()->setReportType(reportType);
 }
 
 bool OutputSurfacesDrawing::setReportSpecifications1(const std::string& reportSpecifications1) {
@@ -71,6 +71,10 @@ std::string OutputSurfacesDrawing_Impl::reportType() const {
   return *value;
 }
 
+bool OutputSurfacesDrawing_Impl::setReportType(const std::string& reportType) {
+  return setString(openstudio::Output_Surfaces_DrawingFields::ReportType, reportType);
+}
+
 std::string OutputSurfacesDrawing_Impl::reportSpecifications1() const {
   const auto value = getString(openstudio::Output_Surfaces_DrawingFields::ReportSpecifications1, true);
   OS_ASSERT(value);
@@ -79,10 +83,6 @@ std::string OutputSurfacesDrawing_Impl::reportSpecifications1() const {
 
 bool OutputSurfacesDrawing_Impl::isReportSpecifications1Defaulted() const {
   return isEmpty(openstudio::Output_Surfaces_DrawingFields::ReportSpecifications1);
-}
-
-bool OutputSurfacesDrawing_Impl::setReportType(const std::string& reportType) {
-  return setString(openstudio::Output_Surfaces_DrawingFields::ReportType, reportType);
 }
 
 bool OutputSurfacesDrawing_Impl::setReportSpecifications1(const std::string& reportSpecifications1) {

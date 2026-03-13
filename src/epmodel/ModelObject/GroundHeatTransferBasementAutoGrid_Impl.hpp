@@ -11,40 +11,42 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatTransferBasementAutoGrid_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatTransferBasementAutoGrid_Impl() override = default;
+    class EPMODEL_API GroundHeatTransferBasementAutoGrid_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatTransferBasementAutoGrid_Impl() override = default;
 
-  double clearanceDistancefromoutsideofwalltoedge() const;
-  double slabxXdimensionofthebuildingslab() const;
-  double slabyYdimensionofthebuildingslab() const;
-  double concAGHeightHeightofthefoundationwallabovegrade() const;
-  double slabDepthThicknessofthefloorslab() const;
-  double baseDepthDepthofthebasementwallbelowgrade() const;
+      double clearanceDistancefromoutsideofwalltoedge() const;
+      bool isClearanceDistancefromoutsideofwalltoedgeDefaulted() const;
+      bool setClearanceDistancefromoutsideofwalltoedge(double clearanceDistancefromoutsideofwalltoedge);
+      void resetClearanceDistancefromoutsideofwalltoedge();
 
-  bool isClearanceDistancefromoutsideofwalltoedgeDefaulted() const;
-  bool isConcAGHeightHeightofthefoundationwallabovegradeDefaulted() const;
-  bool isSlabDepthThicknessofthefloorslabDefaulted() const;
-  bool isBaseDepthDepthofthebasementwallbelowgradeDefaulted() const;
+      double slabxXdimensionofthebuildingslab() const;
+      bool setSlabxXdimensionofthebuildingslab(double slabxXdimensionofthebuildingslab);
 
-  bool setClearanceDistancefromoutsideofwalltoedge(double clearanceDistancefromoutsideofwalltoedge);
-  bool setSlabxXdimensionofthebuildingslab(double slabxXdimensionofthebuildingslab);
-  bool setSlabyYdimensionofthebuildingslab(double slabyYdimensionofthebuildingslab);
-  bool setConcAGHeightHeightofthefoundationwallabovegrade(double concAGHeightHeightofthefoundationwallabovegrade);
-  bool setSlabDepthThicknessofthefloorslab(double slabDepthThicknessofthefloorslab);
-  bool setBaseDepthDepthofthebasementwallbelowgrade(double baseDepthDepthofthebasementwallbelowgrade);
+      double slabyYdimensionofthebuildingslab() const;
+      bool setSlabyYdimensionofthebuildingslab(double slabyYdimensionofthebuildingslab);
 
-  void resetClearanceDistancefromoutsideofwalltoedge();
-  void resetConcAGHeightHeightofthefoundationwallabovegrade();
-  void resetSlabDepthThicknessofthefloorslab();
-  void resetBaseDepthDepthofthebasementwallbelowgrade();
-};
+      double concAGHeightHeightofthefoundationwallabovegrade() const;
+      bool isConcAGHeightHeightofthefoundationwallabovegradeDefaulted() const;
+      bool setConcAGHeightHeightofthefoundationwallabovegrade(double concAGHeightHeightofthefoundationwallabovegrade);
+      void resetConcAGHeightHeightofthefoundationwallabovegrade();
 
-}  // namespace detail
+      double slabDepthThicknessofthefloorslab() const;
+      bool isSlabDepthThicknessofthefloorslabDefaulted() const;
+      bool setSlabDepthThicknessofthefloorslab(double slabDepthThicknessofthefloorslab);
+      void resetSlabDepthThicknessofthefloorslab();
+
+      double baseDepthDepthofthebasementwallbelowgrade() const;
+      bool isBaseDepthDepthofthebasementwallbelowgradeDefaulted() const;
+      bool setBaseDepthDepthofthebasementwallbelowgrade(double baseDepthDepthofthebasementwallbelowgrade);
+      void resetBaseDepthDepthofthebasementwallbelowgrade();
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

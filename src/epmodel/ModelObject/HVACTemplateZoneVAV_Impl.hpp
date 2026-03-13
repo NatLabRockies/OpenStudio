@@ -13,126 +13,145 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HVACTemplateZoneVAV_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~HVACTemplateZoneVAV_Impl() override = default;
+    class EPMODEL_API HVACTemplateZoneVAV_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~HVACTemplateZoneVAV_Impl() override = default;
 
-  boost::optional<double> supplyAirMaximumFlowRate() const;
-  boost::optional<double> zoneHeatingSizingFactor() const;
-  boost::optional<double> zoneCoolingSizingFactor() const;
-  std::string zoneMinimumAirFlowInputMethod() const;
-  double constantMinimumAirFlowFraction() const;
-  boost::optional<double> fixedMinimumAirFlowRate() const;
-  std::string outdoorAirMethod() const;
-  double outdoorAirFlowRateperPerson() const;
-  double outdoorAirFlowRateperZoneFloorArea() const;
-  double outdoorAirFlowRateperZone() const;
-  std::string reheatCoilType() const;
-  std::string damperHeatingAction() const;
-  boost::optional<double> maximumFlowperZoneFloorAreaDuringReheat() const;
-  boost::optional<double> maximumFlowFractionDuringReheat() const;
-  boost::optional<double> maximumReheatAirTemperature() const;
-  std::string baseboardHeatingType() const;
-  boost::optional<double> baseboardHeatingCapacity() const;
-  std::string zoneCoolingDesignSupplyAirTemperatureInputMethod() const;
-  double zoneCoolingDesignSupplyAirTemperature() const;
-  double zoneCoolingDesignSupplyAirTemperatureDifference() const;
-  std::string zoneHeatingDesignSupplyAirTemperatureInputMethod() const;
-  double zoneHeatingDesignSupplyAirTemperature() const;
-  double zoneHeatingDesignSupplyAirTemperatureDifference() const;
+      boost::optional<double> supplyAirMaximumFlowRate() const;
+      bool isSupplyAirMaximumFlowRateDefaulted() const;
+      bool isSupplyAirMaximumFlowRateAutosized() const;
+      bool setSupplyAirMaximumFlowRate(double supplyAirMaximumFlowRate);
+      void resetSupplyAirMaximumFlowRate();
+      void autosizeSupplyAirMaximumFlowRate();
 
-  bool isSupplyAirMaximumFlowRateDefaulted() const;
-  bool isSupplyAirMaximumFlowRateAutosized() const;
-  bool isZoneMinimumAirFlowInputMethodDefaulted() const;
-  bool isConstantMinimumAirFlowFractionDefaulted() const;
-  bool isFixedMinimumAirFlowRateDefaulted() const;
-  bool isOutdoorAirMethodDefaulted() const;
-  bool isOutdoorAirFlowRateperPersonDefaulted() const;
-  bool isOutdoorAirFlowRateperZoneFloorAreaDefaulted() const;
-  bool isOutdoorAirFlowRateperZoneDefaulted() const;
-  bool isReheatCoilTypeDefaulted() const;
-  bool isDamperHeatingActionDefaulted() const;
-  bool isMaximumFlowperZoneFloorAreaDuringReheatDefaulted() const;
-  bool isMaximumFlowperZoneFloorAreaDuringReheatAutocalculated() const;
-  bool isMaximumFlowFractionDuringReheatDefaulted() const;
-  bool isMaximumFlowFractionDuringReheatAutocalculated() const;
-  bool isMaximumReheatAirTemperatureDefaulted() const;
-  bool isBaseboardHeatingTypeDefaulted() const;
-  bool isBaseboardHeatingCapacityDefaulted() const;
-  bool isBaseboardHeatingCapacityAutosized() const;
-  bool isZoneCoolingDesignSupplyAirTemperatureInputMethodDefaulted() const;
-  bool isZoneCoolingDesignSupplyAirTemperatureDefaulted() const;
-  bool isZoneCoolingDesignSupplyAirTemperatureDifferenceDefaulted() const;
-  bool isZoneHeatingDesignSupplyAirTemperatureInputMethodDefaulted() const;
-  bool isZoneHeatingDesignSupplyAirTemperatureDefaulted() const;
-  bool isZoneHeatingDesignSupplyAirTemperatureDifferenceDefaulted() const;
+      boost::optional<double> zoneHeatingSizingFactor() const;
+      bool setZoneHeatingSizingFactor(double zoneHeatingSizingFactor);
+      void resetZoneHeatingSizingFactor();
 
-  bool setSupplyAirMaximumFlowRate(double supplyAirMaximumFlowRate);
-  bool setZoneHeatingSizingFactor(double zoneHeatingSizingFactor);
-  bool setZoneCoolingSizingFactor(double zoneCoolingSizingFactor);
-  bool setZoneMinimumAirFlowInputMethod(const std::string& zoneMinimumAirFlowInputMethod);
-  bool setConstantMinimumAirFlowFraction(double constantMinimumAirFlowFraction);
-  bool setFixedMinimumAirFlowRate(double fixedMinimumAirFlowRate);
-  bool setOutdoorAirMethod(const std::string& outdoorAirMethod);
-  bool setOutdoorAirFlowRateperPerson(double outdoorAirFlowRateperPerson);
-  bool setOutdoorAirFlowRateperZoneFloorArea(double outdoorAirFlowRateperZoneFloorArea);
-  bool setOutdoorAirFlowRateperZone(double outdoorAirFlowRateperZone);
-  bool setReheatCoilType(const std::string& reheatCoilType);
-  bool setDamperHeatingAction(const std::string& damperHeatingAction);
-  bool setMaximumFlowperZoneFloorAreaDuringReheat(double maximumFlowperZoneFloorAreaDuringReheat);
-  bool setMaximumFlowFractionDuringReheat(double maximumFlowFractionDuringReheat);
-  bool setMaximumReheatAirTemperature(double maximumReheatAirTemperature);
-  bool setBaseboardHeatingType(const std::string& baseboardHeatingType);
-  bool setBaseboardHeatingCapacity(double baseboardHeatingCapacity);
-  bool setZoneCoolingDesignSupplyAirTemperatureInputMethod(const std::string& zoneCoolingDesignSupplyAirTemperatureInputMethod);
-  bool setZoneCoolingDesignSupplyAirTemperature(double zoneCoolingDesignSupplyAirTemperature);
-  bool setZoneCoolingDesignSupplyAirTemperatureDifference(double zoneCoolingDesignSupplyAirTemperatureDifference);
-  bool setZoneHeatingDesignSupplyAirTemperatureInputMethod(const std::string& zoneHeatingDesignSupplyAirTemperatureInputMethod);
-  bool setZoneHeatingDesignSupplyAirTemperature(double zoneHeatingDesignSupplyAirTemperature);
-  bool setZoneHeatingDesignSupplyAirTemperatureDifference(double zoneHeatingDesignSupplyAirTemperatureDifference);
+      boost::optional<double> zoneCoolingSizingFactor() const;
+      bool setZoneCoolingSizingFactor(double zoneCoolingSizingFactor);
+      void resetZoneCoolingSizingFactor();
 
-  void resetSupplyAirMaximumFlowRate();
-  void autosizeSupplyAirMaximumFlowRate();
-  void resetZoneHeatingSizingFactor();
-  void resetZoneCoolingSizingFactor();
-  void resetZoneMinimumAirFlowInputMethod();
-  void resetConstantMinimumAirFlowFraction();
-  void resetFixedMinimumAirFlowRate();
-  void resetOutdoorAirMethod();
-  void resetOutdoorAirFlowRateperPerson();
-  void resetOutdoorAirFlowRateperZoneFloorArea();
-  void resetOutdoorAirFlowRateperZone();
-  void resetReheatCoilType();
-  void resetDamperHeatingAction();
-  void resetMaximumFlowperZoneFloorAreaDuringReheat();
-  void autocalculateMaximumFlowperZoneFloorAreaDuringReheat();
-  void resetMaximumFlowFractionDuringReheat();
-  void autocalculateMaximumFlowFractionDuringReheat();
-  void resetMaximumReheatAirTemperature();
-  void resetBaseboardHeatingType();
-  void resetBaseboardHeatingCapacity();
-  void autosizeBaseboardHeatingCapacity();
-  void resetZoneCoolingDesignSupplyAirTemperatureInputMethod();
-  void resetZoneCoolingDesignSupplyAirTemperature();
-  void resetZoneCoolingDesignSupplyAirTemperatureDifference();
-  void resetZoneHeatingDesignSupplyAirTemperatureInputMethod();
-  void resetZoneHeatingDesignSupplyAirTemperature();
-  void resetZoneHeatingDesignSupplyAirTemperatureDifference();
+      std::string zoneMinimumAirFlowInputMethod() const;
+      bool isZoneMinimumAirFlowInputMethodDefaulted() const;
+      bool setZoneMinimumAirFlowInputMethod(const std::string& zoneMinimumAirFlowInputMethod);
+      void resetZoneMinimumAirFlowInputMethod();
 
-  std::vector<std::string> zoneMinimumAirFlowInputMethodValues() const;
-  std::vector<std::string> outdoorAirMethodValues() const;
-  std::vector<std::string> reheatCoilTypeValues() const;
-  std::vector<std::string> damperHeatingActionValues() const;
-  std::vector<std::string> baseboardHeatingTypeValues() const;
-  std::vector<std::string> zoneCoolingDesignSupplyAirTemperatureInputMethodValues() const;
-  std::vector<std::string> zoneHeatingDesignSupplyAirTemperatureInputMethodValues() const;
-};
+      double constantMinimumAirFlowFraction() const;
+      bool isConstantMinimumAirFlowFractionDefaulted() const;
+      bool setConstantMinimumAirFlowFraction(double constantMinimumAirFlowFraction);
+      void resetConstantMinimumAirFlowFraction();
 
-}  // namespace detail
+      boost::optional<double> fixedMinimumAirFlowRate() const;
+      bool isFixedMinimumAirFlowRateDefaulted() const;
+      bool setFixedMinimumAirFlowRate(double fixedMinimumAirFlowRate);
+      void resetFixedMinimumAirFlowRate();
+
+      std::string outdoorAirMethod() const;
+      bool isOutdoorAirMethodDefaulted() const;
+      bool setOutdoorAirMethod(const std::string& outdoorAirMethod);
+      void resetOutdoorAirMethod();
+
+      double outdoorAirFlowRateperPerson() const;
+      bool isOutdoorAirFlowRateperPersonDefaulted() const;
+      bool setOutdoorAirFlowRateperPerson(double outdoorAirFlowRateperPerson);
+      void resetOutdoorAirFlowRateperPerson();
+
+      double outdoorAirFlowRateperZoneFloorArea() const;
+      bool isOutdoorAirFlowRateperZoneFloorAreaDefaulted() const;
+      bool setOutdoorAirFlowRateperZoneFloorArea(double outdoorAirFlowRateperZoneFloorArea);
+      void resetOutdoorAirFlowRateperZoneFloorArea();
+
+      double outdoorAirFlowRateperZone() const;
+      bool isOutdoorAirFlowRateperZoneDefaulted() const;
+      bool setOutdoorAirFlowRateperZone(double outdoorAirFlowRateperZone);
+      void resetOutdoorAirFlowRateperZone();
+
+      std::string reheatCoilType() const;
+      bool isReheatCoilTypeDefaulted() const;
+      bool setReheatCoilType(const std::string& reheatCoilType);
+      void resetReheatCoilType();
+
+      std::string damperHeatingAction() const;
+      bool isDamperHeatingActionDefaulted() const;
+      bool setDamperHeatingAction(const std::string& damperHeatingAction);
+      void resetDamperHeatingAction();
+
+      boost::optional<double> maximumFlowperZoneFloorAreaDuringReheat() const;
+      bool isMaximumFlowperZoneFloorAreaDuringReheatDefaulted() const;
+      bool isMaximumFlowperZoneFloorAreaDuringReheatAutocalculated() const;
+      bool setMaximumFlowperZoneFloorAreaDuringReheat(double maximumFlowperZoneFloorAreaDuringReheat);
+      void resetMaximumFlowperZoneFloorAreaDuringReheat();
+      void autocalculateMaximumFlowperZoneFloorAreaDuringReheat();
+
+      boost::optional<double> maximumFlowFractionDuringReheat() const;
+      bool isMaximumFlowFractionDuringReheatDefaulted() const;
+      bool isMaximumFlowFractionDuringReheatAutocalculated() const;
+      bool setMaximumFlowFractionDuringReheat(double maximumFlowFractionDuringReheat);
+      void resetMaximumFlowFractionDuringReheat();
+      void autocalculateMaximumFlowFractionDuringReheat();
+
+      boost::optional<double> maximumReheatAirTemperature() const;
+      bool isMaximumReheatAirTemperatureDefaulted() const;
+      bool setMaximumReheatAirTemperature(double maximumReheatAirTemperature);
+      void resetMaximumReheatAirTemperature();
+
+      std::string baseboardHeatingType() const;
+      bool isBaseboardHeatingTypeDefaulted() const;
+      bool setBaseboardHeatingType(const std::string& baseboardHeatingType);
+      void resetBaseboardHeatingType();
+
+      boost::optional<double> baseboardHeatingCapacity() const;
+      bool isBaseboardHeatingCapacityDefaulted() const;
+      bool isBaseboardHeatingCapacityAutosized() const;
+      bool setBaseboardHeatingCapacity(double baseboardHeatingCapacity);
+      void resetBaseboardHeatingCapacity();
+      void autosizeBaseboardHeatingCapacity();
+
+      std::string zoneCoolingDesignSupplyAirTemperatureInputMethod() const;
+      bool isZoneCoolingDesignSupplyAirTemperatureInputMethodDefaulted() const;
+      bool setZoneCoolingDesignSupplyAirTemperatureInputMethod(const std::string& zoneCoolingDesignSupplyAirTemperatureInputMethod);
+      void resetZoneCoolingDesignSupplyAirTemperatureInputMethod();
+
+      double zoneCoolingDesignSupplyAirTemperature() const;
+      bool isZoneCoolingDesignSupplyAirTemperatureDefaulted() const;
+      bool setZoneCoolingDesignSupplyAirTemperature(double zoneCoolingDesignSupplyAirTemperature);
+      void resetZoneCoolingDesignSupplyAirTemperature();
+
+      double zoneCoolingDesignSupplyAirTemperatureDifference() const;
+      bool isZoneCoolingDesignSupplyAirTemperatureDifferenceDefaulted() const;
+      bool setZoneCoolingDesignSupplyAirTemperatureDifference(double zoneCoolingDesignSupplyAirTemperatureDifference);
+      void resetZoneCoolingDesignSupplyAirTemperatureDifference();
+
+      std::string zoneHeatingDesignSupplyAirTemperatureInputMethod() const;
+      bool isZoneHeatingDesignSupplyAirTemperatureInputMethodDefaulted() const;
+      bool setZoneHeatingDesignSupplyAirTemperatureInputMethod(const std::string& zoneHeatingDesignSupplyAirTemperatureInputMethod);
+      void resetZoneHeatingDesignSupplyAirTemperatureInputMethod();
+
+      double zoneHeatingDesignSupplyAirTemperature() const;
+      bool isZoneHeatingDesignSupplyAirTemperatureDefaulted() const;
+      bool setZoneHeatingDesignSupplyAirTemperature(double zoneHeatingDesignSupplyAirTemperature);
+      void resetZoneHeatingDesignSupplyAirTemperature();
+
+      double zoneHeatingDesignSupplyAirTemperatureDifference() const;
+      bool isZoneHeatingDesignSupplyAirTemperatureDifferenceDefaulted() const;
+      bool setZoneHeatingDesignSupplyAirTemperatureDifference(double zoneHeatingDesignSupplyAirTemperatureDifference);
+      void resetZoneHeatingDesignSupplyAirTemperatureDifference();
+
+      std::vector<std::string> zoneMinimumAirFlowInputMethodValues() const;
+      std::vector<std::string> outdoorAirMethodValues() const;
+      std::vector<std::string> reheatCoilTypeValues() const;
+      std::vector<std::string> damperHeatingActionValues() const;
+      std::vector<std::string> baseboardHeatingTypeValues() const;
+      std::vector<std::string> zoneCoolingDesignSupplyAirTemperatureInputMethodValues() const;
+      std::vector<std::string> zoneHeatingDesignSupplyAirTemperatureInputMethodValues() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

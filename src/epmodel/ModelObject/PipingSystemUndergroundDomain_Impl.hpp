@@ -13,104 +13,126 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API PipingSystemUndergroundDomain_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~PipingSystemUndergroundDomain_Impl() override = default;
+    class EPMODEL_API PipingSystemUndergroundDomain_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~PipingSystemUndergroundDomain_Impl() override = default;
 
-  double xmax() const;
-  double ymax() const;
-  double zmax() const;
-  int xDirectionMeshDensityParameter() const;
-  std::string xDirectionMeshType() const;
-  double xDirectionGeometricCoefficient() const;
-  int yDirectionMeshDensityParameter() const;
-  std::string yDirectionMeshType() const;
-  double yDirectionGeometricCoefficient() const;
-  int zDirectionMeshDensityParameter() const;
-  std::string zDirectionMeshType() const;
-  double zDirectionGeometricCoefficient() const;
-  double soilThermalConductivity() const;
-  double soilDensity() const;
-  double soilSpecificHeat() const;
-  double soilMoistureContentVolumeFraction() const;
-  double soilMoistureContentVolumeFractionatSaturation() const;
-  std::string undisturbedGroundTemperatureModelType() const;
-  bool thisDomainIncludesBasementSurfaceInteraction() const;
-  boost::optional<double> widthofBasementFloorinGroundDomain() const;
-  boost::optional<double> depthofBasementWallInGroundDomain() const;
-  boost::optional<bool> shiftPipeXCoordinatesByBasementWidth() const;
-  double convergenceCriterionfortheOuterCartesianDomainIterationLoop() const;
-  int maximumIterationsintheOuterCartesianDomainIterationLoop() const;
-  double evapotranspirationGroundCoverParameter() const;
-  int numberofPipeCircuitsEnteredforthisDomain() const;
+      double xmax() const;
+      bool setXmax(double xmax);
 
-  bool isXDirectionMeshDensityParameterDefaulted() const;
-  bool isXDirectionGeometricCoefficientDefaulted() const;
-  bool isYDirectionMeshDensityParameterDefaulted() const;
-  bool isYDirectionGeometricCoefficientDefaulted() const;
-  bool isZDirectionMeshDensityParameterDefaulted() const;
-  bool isZDirectionGeometricCoefficientDefaulted() const;
-  bool isSoilMoistureContentVolumeFractionDefaulted() const;
-  bool isSoilMoistureContentVolumeFractionatSaturationDefaulted() const;
-  bool isThisDomainIncludesBasementSurfaceInteractionDefaulted() const;
-  bool isConvergenceCriterionfortheOuterCartesianDomainIterationLoopDefaulted() const;
-  bool isMaximumIterationsintheOuterCartesianDomainIterationLoopDefaulted() const;
-  bool isEvapotranspirationGroundCoverParameterDefaulted() const;
+      double ymax() const;
+      bool setYmax(double ymax);
 
-  bool setXmax(double xmax);
-  bool setYmax(double ymax);
-  bool setZmax(double zmax);
-  bool setXDirectionMeshDensityParameter(int xDirectionMeshDensityParameter);
-  bool setXDirectionMeshType(const std::string& xDirectionMeshType);
-  bool setXDirectionGeometricCoefficient(double xDirectionGeometricCoefficient);
-  bool setYDirectionMeshDensityParameter(int yDirectionMeshDensityParameter);
-  bool setYDirectionMeshType(const std::string& yDirectionMeshType);
-  bool setYDirectionGeometricCoefficient(double yDirectionGeometricCoefficient);
-  bool setZDirectionMeshDensityParameter(int zDirectionMeshDensityParameter);
-  bool setZDirectionMeshType(const std::string& zDirectionMeshType);
-  bool setZDirectionGeometricCoefficient(double zDirectionGeometricCoefficient);
-  bool setSoilThermalConductivity(double soilThermalConductivity);
-  bool setSoilDensity(double soilDensity);
-  bool setSoilSpecificHeat(double soilSpecificHeat);
-  bool setSoilMoistureContentVolumeFraction(double soilMoistureContentVolumeFraction);
-  bool setSoilMoistureContentVolumeFractionatSaturation(double soilMoistureContentVolumeFractionatSaturation);
-  bool setUndisturbedGroundTemperatureModelType(const std::string& undisturbedGroundTemperatureModelType);
-  bool setThisDomainIncludesBasementSurfaceInteraction(bool thisDomainIncludesBasementSurfaceInteraction);
-  bool setWidthofBasementFloorinGroundDomain(double widthofBasementFloorinGroundDomain);
-  bool setDepthofBasementWallInGroundDomain(double depthofBasementWallInGroundDomain);
-  bool setShiftPipeXCoordinatesByBasementWidth(boost::optional<bool> shiftPipeXCoordinatesByBasementWidth);
-  bool setConvergenceCriterionfortheOuterCartesianDomainIterationLoop(double convergenceCriterionfortheOuterCartesianDomainIterationLoop);
-  bool setMaximumIterationsintheOuterCartesianDomainIterationLoop(int maximumIterationsintheOuterCartesianDomainIterationLoop);
-  bool setEvapotranspirationGroundCoverParameter(double evapotranspirationGroundCoverParameter);
-  bool setNumberofPipeCircuitsEnteredforthisDomain(int numberofPipeCircuitsEnteredforthisDomain);
+      double zmax() const;
+      bool setZmax(double zmax);
 
-  void resetXDirectionMeshDensityParameter();
-  void resetXDirectionGeometricCoefficient();
-  void resetYDirectionMeshDensityParameter();
-  void resetYDirectionGeometricCoefficient();
-  void resetZDirectionMeshDensityParameter();
-  void resetZDirectionGeometricCoefficient();
-  void resetSoilMoistureContentVolumeFraction();
-  void resetSoilMoistureContentVolumeFractionatSaturation();
-  void resetThisDomainIncludesBasementSurfaceInteraction();
-  void resetWidthofBasementFloorinGroundDomain();
-  void resetDepthofBasementWallInGroundDomain();
-  void resetShiftPipeXCoordinatesByBasementWidth();
-  void resetConvergenceCriterionfortheOuterCartesianDomainIterationLoop();
-  void resetMaximumIterationsintheOuterCartesianDomainIterationLoop();
-  void resetEvapotranspirationGroundCoverParameter();
+      int xDirectionMeshDensityParameter() const;
+      bool isXDirectionMeshDensityParameterDefaulted() const;
+      bool setXDirectionMeshDensityParameter(int xDirectionMeshDensityParameter);
+      void resetXDirectionMeshDensityParameter();
 
-  std::vector<std::string> xDirectionMeshTypeValues() const;
-  std::vector<std::string> yDirectionMeshTypeValues() const;
-  std::vector<std::string> zDirectionMeshTypeValues() const;
-  std::vector<std::string> undisturbedGroundTemperatureModelTypeValues() const;
-};
+      std::string xDirectionMeshType() const;
+      bool setXDirectionMeshType(const std::string& xDirectionMeshType);
 
-}  // namespace detail
+      double xDirectionGeometricCoefficient() const;
+      bool isXDirectionGeometricCoefficientDefaulted() const;
+      bool setXDirectionGeometricCoefficient(double xDirectionGeometricCoefficient);
+      void resetXDirectionGeometricCoefficient();
+
+      int yDirectionMeshDensityParameter() const;
+      bool isYDirectionMeshDensityParameterDefaulted() const;
+      bool setYDirectionMeshDensityParameter(int yDirectionMeshDensityParameter);
+      void resetYDirectionMeshDensityParameter();
+
+      std::string yDirectionMeshType() const;
+      bool setYDirectionMeshType(const std::string& yDirectionMeshType);
+
+      double yDirectionGeometricCoefficient() const;
+      bool isYDirectionGeometricCoefficientDefaulted() const;
+      bool setYDirectionGeometricCoefficient(double yDirectionGeometricCoefficient);
+      void resetYDirectionGeometricCoefficient();
+
+      int zDirectionMeshDensityParameter() const;
+      bool isZDirectionMeshDensityParameterDefaulted() const;
+      bool setZDirectionMeshDensityParameter(int zDirectionMeshDensityParameter);
+      void resetZDirectionMeshDensityParameter();
+
+      std::string zDirectionMeshType() const;
+      bool setZDirectionMeshType(const std::string& zDirectionMeshType);
+
+      double zDirectionGeometricCoefficient() const;
+      bool isZDirectionGeometricCoefficientDefaulted() const;
+      bool setZDirectionGeometricCoefficient(double zDirectionGeometricCoefficient);
+      void resetZDirectionGeometricCoefficient();
+
+      double soilThermalConductivity() const;
+      bool setSoilThermalConductivity(double soilThermalConductivity);
+
+      double soilDensity() const;
+      bool setSoilDensity(double soilDensity);
+
+      double soilSpecificHeat() const;
+      bool setSoilSpecificHeat(double soilSpecificHeat);
+
+      double soilMoistureContentVolumeFraction() const;
+      bool isSoilMoistureContentVolumeFractionDefaulted() const;
+      bool setSoilMoistureContentVolumeFraction(double soilMoistureContentVolumeFraction);
+      void resetSoilMoistureContentVolumeFraction();
+
+      double soilMoistureContentVolumeFractionatSaturation() const;
+      bool isSoilMoistureContentVolumeFractionatSaturationDefaulted() const;
+      bool setSoilMoistureContentVolumeFractionatSaturation(double soilMoistureContentVolumeFractionatSaturation);
+      void resetSoilMoistureContentVolumeFractionatSaturation();
+
+      std::string undisturbedGroundTemperatureModelType() const;
+      bool setUndisturbedGroundTemperatureModelType(const std::string& undisturbedGroundTemperatureModelType);
+
+      bool thisDomainIncludesBasementSurfaceInteraction() const;
+      bool isThisDomainIncludesBasementSurfaceInteractionDefaulted() const;
+      bool setThisDomainIncludesBasementSurfaceInteraction(bool thisDomainIncludesBasementSurfaceInteraction);
+      void resetThisDomainIncludesBasementSurfaceInteraction();
+
+      boost::optional<double> widthofBasementFloorinGroundDomain() const;
+      bool setWidthofBasementFloorinGroundDomain(double widthofBasementFloorinGroundDomain);
+      void resetWidthofBasementFloorinGroundDomain();
+
+      boost::optional<double> depthofBasementWallInGroundDomain() const;
+      bool setDepthofBasementWallInGroundDomain(double depthofBasementWallInGroundDomain);
+      void resetDepthofBasementWallInGroundDomain();
+
+      boost::optional<bool> shiftPipeXCoordinatesByBasementWidth() const;
+      bool setShiftPipeXCoordinatesByBasementWidth(boost::optional<bool> shiftPipeXCoordinatesByBasementWidth);
+      void resetShiftPipeXCoordinatesByBasementWidth();
+
+      double convergenceCriterionfortheOuterCartesianDomainIterationLoop() const;
+      bool isConvergenceCriterionfortheOuterCartesianDomainIterationLoopDefaulted() const;
+      bool setConvergenceCriterionfortheOuterCartesianDomainIterationLoop(double convergenceCriterionfortheOuterCartesianDomainIterationLoop);
+      void resetConvergenceCriterionfortheOuterCartesianDomainIterationLoop();
+
+      int maximumIterationsintheOuterCartesianDomainIterationLoop() const;
+      bool isMaximumIterationsintheOuterCartesianDomainIterationLoopDefaulted() const;
+      bool setMaximumIterationsintheOuterCartesianDomainIterationLoop(int maximumIterationsintheOuterCartesianDomainIterationLoop);
+      void resetMaximumIterationsintheOuterCartesianDomainIterationLoop();
+
+      double evapotranspirationGroundCoverParameter() const;
+      bool isEvapotranspirationGroundCoverParameterDefaulted() const;
+      bool setEvapotranspirationGroundCoverParameter(double evapotranspirationGroundCoverParameter);
+      void resetEvapotranspirationGroundCoverParameter();
+
+      int numberofPipeCircuitsEnteredforthisDomain() const;
+      bool setNumberofPipeCircuitsEnteredforthisDomain(int numberofPipeCircuitsEnteredforthisDomain);
+
+      std::vector<std::string> xDirectionMeshTypeValues() const;
+      std::vector<std::string> yDirectionMeshTypeValues() const;
+      std::vector<std::string> zDirectionMeshTypeValues() const;
+      std::vector<std::string> undisturbedGroundTemperatureModelTypeValues() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

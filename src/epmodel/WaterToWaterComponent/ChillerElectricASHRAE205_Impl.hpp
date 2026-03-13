@@ -13,66 +13,66 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ChillerElectricASHRAE205_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ChillerElectricASHRAE205_Impl() override = default;
+    class EPMODEL_API ChillerElectricASHRAE205_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ChillerElectricASHRAE205_Impl() override = default;
 
-  std::string performanceInterpolationMethod() const;
-  bool setPerformanceInterpolationMethod(const std::string& performanceInterpolationMethod);
+      std::vector<std::string> performanceInterpolationMethodValues() const;
+      std::vector<std::string> ambientTemperatureIndicatorValues() const;
+      std::vector<std::string> chillerFlowModeValues() const;
 
-  boost::optional<double> ratedCapacity() const;
-  bool isRatedCapacityAutosized() const;
-  bool setRatedCapacity(double ratedCapacity);
-  void autosizeRatedCapacity();
+      std::string performanceInterpolationMethod() const;
+      bool setPerformanceInterpolationMethod(const std::string& performanceInterpolationMethod);
 
-  double sizingFactor() const;
-  bool setSizingFactor(double sizingFactor);
+      boost::optional<double> ratedCapacity() const;
+      bool isRatedCapacityAutosized() const;
+      bool setRatedCapacity(double ratedCapacity);
+      void autosizeRatedCapacity();
 
-  std::string ambientTemperatureIndicator() const;
+      double sizingFactor() const;
+      bool setSizingFactor(double sizingFactor);
 
-  boost::optional<std::string> ambientTemperatureOutdoorAirNodeName() const;
-  bool setAmbientTemperatureOutdoorAirNodeName(const std::string& ambientTemperatureOutdoorAirNodeName);
-  void resetAmbientTemperatureOutdoorAirNodeName();
+      std::string ambientTemperatureIndicator() const;
 
-  boost::optional<double> chilledWaterMaximumRequestedFlowRate() const;
-  bool isChilledWaterMaximumRequestedFlowRateAutosized() const;
-  bool setChilledWaterMaximumRequestedFlowRate(double chilledWaterMaximumRequestedFlowRate);
-  void autosizeChilledWaterMaximumRequestedFlowRate();
+      boost::optional<std::string> ambientTemperatureOutdoorAirNodeName() const;
+      bool setAmbientTemperatureOutdoorAirNodeName(const std::string& ambientTemperatureOutdoorAirNodeName);
+      void resetAmbientTemperatureOutdoorAirNodeName();
 
-  boost::optional<double> condenserMaximumRequestedFlowRate() const;
-  bool isCondenserMaximumRequestedFlowRateAutosized() const;
-  bool setCondenserMaximumRequestedFlowRate(double condenserMaximumRequestedFlowRate);
-  void autosizeCondenserMaximumRequestedFlowRate();
+      boost::optional<double> chilledWaterMaximumRequestedFlowRate() const;
+      bool isChilledWaterMaximumRequestedFlowRateAutosized() const;
+      bool setChilledWaterMaximumRequestedFlowRate(double chilledWaterMaximumRequestedFlowRate);
+      void autosizeChilledWaterMaximumRequestedFlowRate();
 
-  std::string chillerFlowMode() const;
-  bool setChillerFlowMode(const std::string& chillerFlowMode);
+      boost::optional<double> condenserMaximumRequestedFlowRate() const;
+      bool isCondenserMaximumRequestedFlowRateAutosized() const;
+      bool setCondenserMaximumRequestedFlowRate(double condenserMaximumRequestedFlowRate);
+      void autosizeCondenserMaximumRequestedFlowRate();
 
-  boost::optional<double> oilCoolerDesignFlowRate() const;
-  bool setOilCoolerDesignFlowRate(double oilCoolerDesignFlowRate);
-  void resetOilCoolerDesignFlowRate();
+      std::string chillerFlowMode() const;
+      bool setChillerFlowMode(const std::string& chillerFlowMode);
 
-  boost::optional<double> auxiliaryCoolingDesignFlowRate() const;
-  bool setAuxiliaryCoolingDesignFlowRate(double auxiliaryCoolingDesignFlowRate);
-  void resetAuxiliaryCoolingDesignFlowRate();
+      boost::optional<double> oilCoolerDesignFlowRate() const;
+      bool setOilCoolerDesignFlowRate(double oilCoolerDesignFlowRate);
+      void resetOilCoolerDesignFlowRate();
 
-  std::string endUseSubcategory() const;
-  bool isEndUseSubcategoryDefaulted() const;
-  bool setEndUseSubcategory(const std::string& endUseSubcategory);
-  void resetEndUseSubcategory();
+      boost::optional<double> auxiliaryCoolingDesignFlowRate() const;
+      bool setAuxiliaryCoolingDesignFlowRate(double auxiliaryCoolingDesignFlowRate);
+      void resetAuxiliaryCoolingDesignFlowRate();
 
-  std::vector<std::string> performanceInterpolationMethodValues() const;
-  std::vector<std::string> ambientTemperatureIndicatorValues() const;
-  std::vector<std::string> chillerFlowModeValues() const;
+      std::string endUseSubcategory() const;
+      bool isEndUseSubcategoryDefaulted() const;
+      bool setEndUseSubcategory(const std::string& endUseSubcategory);
+      void resetEndUseSubcategory();
 
- private:
-  bool setAmbientTemperatureIndicator(const std::string& ambientTemperatureIndicator);
-};
+     private:
+      bool setAmbientTemperatureIndicator(const std::string& ambientTemperatureIndicator);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

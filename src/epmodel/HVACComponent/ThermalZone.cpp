@@ -275,82 +275,6 @@ namespace epmodel {
     return getImpl<detail::ThermalZone_Impl>()->sizingZone();
   }
 
-  std::vector<std::string> ThermalZone::control1ObjectTypeValues() {
-    return detail::ThermalZone_Impl::control1ObjectTypeValues();
-  }
-
-  std::string ThermalZone::control1ObjectType() const {
-    return getImpl<detail::ThermalZone_Impl>()->control1ObjectType();
-  }
-
-  bool ThermalZone::setControl1ObjectType(const std::string& control1ObjectType) {
-    return getImpl<detail::ThermalZone_Impl>()->setControl1ObjectType(control1ObjectType);
-  }
-
-  std::vector<std::string> ThermalZone::control2ObjectTypeValues() {
-    return detail::ThermalZone_Impl::control2ObjectTypeValues();
-  }
-
-  boost::optional<std::string> ThermalZone::control2ObjectType() const {
-    return getImpl<detail::ThermalZone_Impl>()->control2ObjectType();
-  }
-
-  bool ThermalZone::setControl2ObjectType(const std::string& control2ObjectType) {
-    return getImpl<detail::ThermalZone_Impl>()->setControl2ObjectType(control2ObjectType);
-  }
-
-  void ThermalZone::resetControl2ObjectType() {
-    getImpl<detail::ThermalZone_Impl>()->resetControl2ObjectType();
-  }
-
-  std::vector<std::string> ThermalZone::control3ObjectTypeValues() {
-    return detail::ThermalZone_Impl::control3ObjectTypeValues();
-  }
-
-  boost::optional<std::string> ThermalZone::control3ObjectType() const {
-    return getImpl<detail::ThermalZone_Impl>()->control3ObjectType();
-  }
-
-  bool ThermalZone::setControl3ObjectType(const std::string& control3ObjectType) {
-    return getImpl<detail::ThermalZone_Impl>()->setControl3ObjectType(control3ObjectType);
-  }
-
-  void ThermalZone::resetControl3ObjectType() {
-    getImpl<detail::ThermalZone_Impl>()->resetControl3ObjectType();
-  }
-
-  std::vector<std::string> ThermalZone::control4ObjectTypeValues() {
-    return detail::ThermalZone_Impl::control4ObjectTypeValues();
-  }
-
-  boost::optional<std::string> ThermalZone::control4ObjectType() const {
-    return getImpl<detail::ThermalZone_Impl>()->control4ObjectType();
-  }
-
-  bool ThermalZone::setControl4ObjectType(const std::string& control4ObjectType) {
-    return getImpl<detail::ThermalZone_Impl>()->setControl4ObjectType(control4ObjectType);
-  }
-
-  void ThermalZone::resetControl4ObjectType() {
-    getImpl<detail::ThermalZone_Impl>()->resetControl4ObjectType();
-  }
-
-  double ThermalZone::temperatureDifferenceBetweenCutoutAndSetpoint() const {
-    return getImpl<detail::ThermalZone_Impl>()->temperatureDifferenceBetweenCutoutAndSetpoint();
-  }
-
-  bool ThermalZone::isTemperatureDifferenceBetweenCutoutAndSetpointDefaulted() const {
-    return getImpl<detail::ThermalZone_Impl>()->isTemperatureDifferenceBetweenCutoutAndSetpointDefaulted();
-  }
-
-  bool ThermalZone::setTemperatureDifferenceBetweenCutoutAndSetpoint(double temperatureDifferenceBetweenCutoutAndSetpoint) {
-    return getImpl<detail::ThermalZone_Impl>()->setTemperatureDifferenceBetweenCutoutAndSetpoint(temperatureDifferenceBetweenCutoutAndSetpoint);
-  }
-
-  void ThermalZone::resetTemperatureDifferenceBetweenCutoutAndSetpoint() {
-    getImpl<detail::ThermalZone_Impl>()->resetTemperatureDifferenceBetweenCutoutAndSetpoint();
-  }
-
   int ThermalZone::multiplier() const {
     return getImpl<detail::ThermalZone_Impl>()->multiplier();
   }
@@ -461,6 +385,82 @@ namespace epmodel {
 
   bool ThermalZone::setUseIdealAirLoads(bool useIdealAirLoads) {
     return getImpl<detail::ThermalZone_Impl>()->setUseIdealAirLoads(useIdealAirLoads);
+  }
+
+  std::vector<std::string> ThermalZone::control1ObjectTypeValues() {
+    return detail::ThermalZone_Impl::control1ObjectTypeValues();
+  }
+
+  std::string ThermalZone::control1ObjectType() const {
+    return getImpl<detail::ThermalZone_Impl>()->control1ObjectType();
+  }
+
+  bool ThermalZone::setControl1ObjectType(const std::string& control1ObjectType) {
+    return getImpl<detail::ThermalZone_Impl>()->setControl1ObjectType(control1ObjectType);
+  }
+
+  std::vector<std::string> ThermalZone::control2ObjectTypeValues() {
+    return detail::ThermalZone_Impl::control2ObjectTypeValues();
+  }
+
+  boost::optional<std::string> ThermalZone::control2ObjectType() const {
+    return getImpl<detail::ThermalZone_Impl>()->control2ObjectType();
+  }
+
+  bool ThermalZone::setControl2ObjectType(const std::string& control2ObjectType) {
+    return getImpl<detail::ThermalZone_Impl>()->setControl2ObjectType(control2ObjectType);
+  }
+
+  void ThermalZone::resetControl2ObjectType() {
+    getImpl<detail::ThermalZone_Impl>()->resetControl2ObjectType();
+  }
+
+  std::vector<std::string> ThermalZone::control3ObjectTypeValues() {
+    return detail::ThermalZone_Impl::control3ObjectTypeValues();
+  }
+
+  boost::optional<std::string> ThermalZone::control3ObjectType() const {
+    return getImpl<detail::ThermalZone_Impl>()->control3ObjectType();
+  }
+
+  bool ThermalZone::setControl3ObjectType(const std::string& control3ObjectType) {
+    return getImpl<detail::ThermalZone_Impl>()->setControl3ObjectType(control3ObjectType);
+  }
+
+  void ThermalZone::resetControl3ObjectType() {
+    getImpl<detail::ThermalZone_Impl>()->resetControl3ObjectType();
+  }
+
+  std::vector<std::string> ThermalZone::control4ObjectTypeValues() {
+    return detail::ThermalZone_Impl::control4ObjectTypeValues();
+  }
+
+  boost::optional<std::string> ThermalZone::control4ObjectType() const {
+    return getImpl<detail::ThermalZone_Impl>()->control4ObjectType();
+  }
+
+  bool ThermalZone::setControl4ObjectType(const std::string& control4ObjectType) {
+    return getImpl<detail::ThermalZone_Impl>()->setControl4ObjectType(control4ObjectType);
+  }
+
+  void ThermalZone::resetControl4ObjectType() {
+    getImpl<detail::ThermalZone_Impl>()->resetControl4ObjectType();
+  }
+
+  double ThermalZone::temperatureDifferenceBetweenCutoutAndSetpoint() const {
+    return getImpl<detail::ThermalZone_Impl>()->temperatureDifferenceBetweenCutoutAndSetpoint();
+  }
+
+  bool ThermalZone::isTemperatureDifferenceBetweenCutoutAndSetpointDefaulted() const {
+    return getImpl<detail::ThermalZone_Impl>()->isTemperatureDifferenceBetweenCutoutAndSetpointDefaulted();
+  }
+
+  bool ThermalZone::setTemperatureDifferenceBetweenCutoutAndSetpoint(double temperatureDifferenceBetweenCutoutAndSetpoint) {
+    return getImpl<detail::ThermalZone_Impl>()->setTemperatureDifferenceBetweenCutoutAndSetpoint(temperatureDifferenceBetweenCutoutAndSetpoint);
+  }
+
+  void ThermalZone::resetTemperatureDifferenceBetweenCutoutAndSetpoint() {
+    getImpl<detail::ThermalZone_Impl>()->resetTemperatureDifferenceBetweenCutoutAndSetpoint();
   }
 
   std::string ThermalZone::outdoorAirMethod() const {

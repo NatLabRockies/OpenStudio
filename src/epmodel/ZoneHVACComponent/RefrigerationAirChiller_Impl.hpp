@@ -23,6 +23,7 @@ namespace epmodel {
       virtual ~RefrigerationAirChiller_Impl() override = default;
 
       std::string capacityRatingType() const;
+      bool setCapacityRatingType(const std::string& capacityRatingType);
 
       boost::optional<double> ratedUnitLoadFactor() const;
       bool setRatedUnitLoadFactor(double ratedUnitLoadFactor);
@@ -116,8 +117,6 @@ namespace epmodel {
       bool isAverageRefrigerantChargeInventoryDefaulted() const;
       bool setAverageRefrigerantChargeInventory(double averageRefrigerantChargeInventory);
       void resetAverageRefrigerantChargeInventory();
-
-      bool setCapacityRatingType(const std::string& capacityRatingType);
     };
 
   }  // namespace detail

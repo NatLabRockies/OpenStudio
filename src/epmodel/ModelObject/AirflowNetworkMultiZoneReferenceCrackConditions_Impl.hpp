@@ -11,29 +11,29 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirflowNetworkMultiZoneReferenceCrackConditions_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirflowNetworkMultiZoneReferenceCrackConditions_Impl() override = default;
+    class EPMODEL_API AirflowNetworkMultiZoneReferenceCrackConditions_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirflowNetworkMultiZoneReferenceCrackConditions_Impl() override = default;
 
-  double referenceTemperature() const;
-  bool setReferenceTemperature(double referenceTemperature);
+      double referenceTemperature() const;
+      bool setReferenceTemperature(double referenceTemperature);
 
-  double referenceBarometricPressure() const;
-  bool isReferenceBarometricPressureDefaulted() const;
-  bool setReferenceBarometricPressure(double referenceBarometricPressure);
-  void resetReferenceBarometricPressure();
+      double referenceBarometricPressure() const;
+      bool setReferenceBarometricPressure(double referenceBarometricPressure);
+      bool isReferenceBarometricPressureDefaulted() const;
+      void resetReferenceBarometricPressure();
 
-  double referenceHumidityRatio() const;
-  bool isReferenceHumidityRatioDefaulted() const;
-  bool setReferenceHumidityRatio(double referenceHumidityRatio);
-  void resetReferenceHumidityRatio();
-};
+      double referenceHumidityRatio() const;
+      bool setReferenceHumidityRatio(double referenceHumidityRatio);
+      bool isReferenceHumidityRatioDefaulted() const;
+      void resetReferenceHumidityRatio();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

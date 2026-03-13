@@ -16,41 +16,45 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class ScheduleFileShading_Impl;
-}
+  namespace detail {
+    class ScheduleFileShading_Impl;
+  }
 
-class EPMODEL_API ScheduleFileShading : public ModelObject
-{
- public:
-  explicit ScheduleFileShading(const Model& model);
+  class EPMODEL_API ScheduleFileShading : public ModelObject
+  {
+   public:
+    explicit ScheduleFileShading(const Model& model);
 
-  virtual ~ScheduleFileShading() override = default;
-  ScheduleFileShading(const ScheduleFileShading& other) = default;
-  ScheduleFileShading(ScheduleFileShading&& other) = default;
-  ScheduleFileShading& operator=(const ScheduleFileShading&) = default;
-  ScheduleFileShading& operator=(ScheduleFileShading&&) = default;
+    virtual ~ScheduleFileShading() override = default;
+    ScheduleFileShading(const ScheduleFileShading& other) = default;
+    ScheduleFileShading(ScheduleFileShading&& other) = default;
+    ScheduleFileShading& operator=(const ScheduleFileShading&) = default;
+    ScheduleFileShading& operator=(ScheduleFileShading&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-  // - Field Mapping: fileName maps directly to EnergyPlus Schedule:File:Shading field File Name.
-  // - TODO(parity): Revisit API layering only if future model-counterpart parity is introduced.
-  std::string fileName() const;
-  bool setFileName(const std::string& fileName);
+    /** @name File Name field accessors
+   *  Schema Alignment Notes:
+   *  - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
+   *  - Field Mapping: fileName maps directly to EnergyPlus Schedule:File:Shading field File Name.
+   *  - TODO(parity): Revisit API layering only if future model-counterpart parity is introduced.
+   */
+    //@{
+    std::string fileName() const;
+    bool setFileName(const std::string& fileName);
+    //@}
 
- protected:
-  using ImplType = detail::ScheduleFileShading_Impl;
+   protected:
+    using ImplType = detail::ScheduleFileShading_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit ScheduleFileShading(std::shared_ptr<detail::ScheduleFileShading_Impl> impl);
-};
+    explicit ScheduleFileShading(std::shared_ptr<detail::ScheduleFileShading_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

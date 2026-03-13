@@ -55,10 +55,10 @@ class EPMODEL_API FanOnOff : public StraightComponent
   bool setPressureRise(double pressureRise);
 
   boost::optional<double> maximumFlowRate() const;
-  bool isMaximumFlowRateAutosized() const;
   bool setMaximumFlowRate(double maximumFlowRate);
   void resetMaximumFlowRate();
   void autosizeMaximumFlowRate();
+  bool isMaximumFlowRateAutosized() const;
 
   double motorEfficiency() const;
   bool isMotorEfficiencyDefaulted() const;

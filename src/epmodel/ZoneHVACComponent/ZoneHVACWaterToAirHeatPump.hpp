@@ -49,105 +49,87 @@ namespace epmodel {
     // - Field Mapping: Supplemental heater temperature limits and DX heating coil sizing stay on this object to preserve the IDD scalar surface.
     // - Field Mapping: Fan/coil targets, schedules, node names, and availability manager links remain relationship-only and are intentionally excluded here.
 
-    /** @name Getters */
+    /** @name Scalar field accessors */
     //@{
+
     boost::optional<double> supplyAirFlowRateDuringCoolingOperation() const;
     bool isSupplyAirFlowRateDuringCoolingOperationAutosized() const;
-
-    boost::optional<double> supplyAirFlowRateDuringHeatingOperation() const;
-    bool isSupplyAirFlowRateDuringHeatingOperationAutosized() const;
-
-    boost::optional<double> supplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
-    bool isSupplyAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const;
-
-    bool noLoadSupplyAirFlowRateControlSetToLowSpeed() const;
-
-    boost::optional<double> outdoorAirFlowRateDuringCoolingOperation() const;
-    bool isOutdoorAirFlowRateDuringCoolingOperationAutosized() const;
-
-    boost::optional<double> outdoorAirFlowRateDuringHeatingOperation() const;
-    bool isOutdoorAirFlowRateDuringHeatingOperationAutosized() const;
-
-    boost::optional<double> outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
-    bool isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const;
-
-    boost::optional<double> maximumSupplyAirTemperaturefromSupplementalHeater() const;
-    bool isMaximumSupplyAirTemperaturefromSupplementalHeaterAutosized() const;
-
-    double maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation() const;
-    bool isMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperationDefaulted() const;
-
-    std::string fanPlacement() const;
-    bool isFanPlacementDefaulted() const;
-
-    std::string heatPumpCoilWaterFlowMode() const;
-    bool isHeatPumpCoilWaterFlowModeDefaulted() const;
-
-    double dXHeatingCoilSizingRatio() const;
-    //@}
-
-    /** @name Setters */
-    //@{
+    boost::optional<double> autosizedSupplyAirFlowRateDuringCoolingOperation() const;
     bool setSupplyAirFlowRateDuringCoolingOperation(boost::optional<double> supplyAirFlowRateDuringCoolingOperation);
     bool setSupplyAirFlowRateDuringCoolingOperation(double supplyAirFlowRateDuringCoolingOperation);
     void resetSupplyAirFlowRateDuringCoolingOperation();
     void autosizeSupplyAirFlowRateDuringCoolingOperation();
 
+    boost::optional<double> supplyAirFlowRateDuringHeatingOperation() const;
+    bool isSupplyAirFlowRateDuringHeatingOperationAutosized() const;
+    boost::optional<double> autosizedSupplyAirFlowRateDuringHeatingOperation() const;
     bool setSupplyAirFlowRateDuringHeatingOperation(boost::optional<double> supplyAirFlowRateDuringHeatingOperation);
     bool setSupplyAirFlowRateDuringHeatingOperation(double supplyAirFlowRateDuringHeatingOperation);
     void resetSupplyAirFlowRateDuringHeatingOperation();
     void autosizeSupplyAirFlowRateDuringHeatingOperation();
 
+    boost::optional<double> supplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
+    bool isSupplyAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const;
+    boost::optional<double> autosizedSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
     bool setSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded(boost::optional<double> supplyAirFlowRateWhenNoCoolingorHeatingisNeeded);
     bool setSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded(double supplyAirFlowRateWhenNoCoolingorHeatingisNeeded);
     void resetSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded();
     void autosizeSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded();
 
+    bool noLoadSupplyAirFlowRateControlSetToLowSpeed() const;
     bool setNoLoadSupplyAirFlowRateControlSetToLowSpeed(bool noLoadSupplyAirFlowRateControlSetToLowSpeed);
 
+    boost::optional<double> outdoorAirFlowRateDuringCoolingOperation() const;
+    bool isOutdoorAirFlowRateDuringCoolingOperationAutosized() const;
+    boost::optional<double> autosizedOutdoorAirFlowRateDuringCoolingOperation() const;
     bool setOutdoorAirFlowRateDuringCoolingOperation(boost::optional<double> outdoorAirFlowRateDuringCoolingOperation);
     bool setOutdoorAirFlowRateDuringCoolingOperation(double outdoorAirFlowRateDuringCoolingOperation);
     void resetOutdoorAirFlowRateDuringCoolingOperation();
     void autosizeOutdoorAirFlowRateDuringCoolingOperation();
 
+    boost::optional<double> outdoorAirFlowRateDuringHeatingOperation() const;
+    bool isOutdoorAirFlowRateDuringHeatingOperationAutosized() const;
+    boost::optional<double> autosizedOutdoorAirFlowRateDuringHeatingOperation() const;
     bool setOutdoorAirFlowRateDuringHeatingOperation(boost::optional<double> outdoorAirFlowRateDuringHeatingOperation);
     bool setOutdoorAirFlowRateDuringHeatingOperation(double outdoorAirFlowRateDuringHeatingOperation);
     void resetOutdoorAirFlowRateDuringHeatingOperation();
     void autosizeOutdoorAirFlowRateDuringHeatingOperation();
 
+    boost::optional<double> outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
+    bool isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const;
+    boost::optional<double> autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
     bool setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(boost::optional<double> outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded);
     bool setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(double outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded);
     void resetOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
     void autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
 
+    boost::optional<double> maximumSupplyAirTemperaturefromSupplementalHeater() const;
+    bool isMaximumSupplyAirTemperaturefromSupplementalHeaterAutosized() const;
+    boost::optional<double> autosizedMaximumSupplyAirTemperaturefromSupplementalHeater() const;
     bool setMaximumSupplyAirTemperaturefromSupplementalHeater(boost::optional<double> maximumSupplyAirTemperaturefromSupplementalHeater);
     bool setMaximumSupplyAirTemperaturefromSupplementalHeater(double maximumSupplyAirTemperaturefromSupplementalHeater);
     void resetMaximumSupplyAirTemperaturefromSupplementalHeater();
     void autosizeMaximumSupplyAirTemperaturefromSupplementalHeater();
 
+    double maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation() const;
+    bool isMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperationDefaulted() const;
     bool setMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation(
       boost::optional<double> maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation);
     bool setMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation(double maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation);
     void resetMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation();
 
+    std::string fanPlacement() const;
+    bool isFanPlacementDefaulted() const;
     bool setFanPlacement(const std::string& fanPlacement);
     void resetFanPlacement();
 
+    std::string heatPumpCoilWaterFlowMode() const;
+    bool isHeatPumpCoilWaterFlowModeDefaulted() const;
     bool setHeatPumpCoilWaterFlowMode(const std::string& heatPumpCoilWaterFlowMode);
     void resetHeatPumpCoilWaterFlowMode();
 
+    double dXHeatingCoilSizingRatio() const;
     bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);
-    //@}
-
-    /** @name Other */
-    //@{
-    boost::optional<double> autosizedSupplyAirFlowRateDuringCoolingOperation() const;
-    boost::optional<double> autosizedSupplyAirFlowRateDuringHeatingOperation() const;
-    boost::optional<double> autosizedSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
-    boost::optional<double> autosizedOutdoorAirFlowRateDuringCoolingOperation() const;
-    boost::optional<double> autosizedOutdoorAirFlowRateDuringHeatingOperation() const;
-    boost::optional<double> autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
-    boost::optional<double> autosizedMaximumSupplyAirTemperaturefromSupplementalHeater() const;
     //@}
 
    protected:

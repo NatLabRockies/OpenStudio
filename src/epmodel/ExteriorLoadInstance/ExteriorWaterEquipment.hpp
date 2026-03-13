@@ -16,55 +16,53 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class ExteriorWaterEquipment_Impl;
-}
+  namespace detail {
+    class ExteriorWaterEquipment_Impl;
+  }
 
-class EPMODEL_API ExteriorWaterEquipment : public ModelObject
-{
- public:
-  explicit ExteriorWaterEquipment(const Model& model);
+  class EPMODEL_API ExteriorWaterEquipment : public ModelObject
+  {
+   public:
+    explicit ExteriorWaterEquipment(const Model& model);
 
-  virtual ~ExteriorWaterEquipment() override = default;
-  ExteriorWaterEquipment(const ExteriorWaterEquipment& other) = default;
-  ExteriorWaterEquipment(ExteriorWaterEquipment&& other) = default;
-  ExteriorWaterEquipment& operator=(const ExteriorWaterEquipment&) = default;
-  ExteriorWaterEquipment& operator=(ExteriorWaterEquipment&&) = default;
+    virtual ~ExteriorWaterEquipment() override = default;
+    ExteriorWaterEquipment(const ExteriorWaterEquipment& other) = default;
+    ExteriorWaterEquipment(ExteriorWaterEquipment&& other) = default;
+    ExteriorWaterEquipment& operator=(const ExteriorWaterEquipment&) = default;
+    ExteriorWaterEquipment& operator=(ExteriorWaterEquipment&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::ExteriorWaterEquipment scalar accessor names/signatures.
-  // - Field Mapping: multiplier API maps to E+ Exterior:WaterEquipment Design Level.
-  // - Field Mapping: endUseSubcategory maps directly to E+ End-Use Subcategory.
-  // - Field Mapping: Fuel Use Type is translator-fixed to "Water"; no corresponding scalar model API.
-  // - Field Mapping: relationship fields (Schedule Name and related definition/facility graph) are excluded.
-  // - ForwardTranslator evidence: ForwardTranslateExteriorWaterEquipment.cpp writes DesignLevel from
-  //   definition.designLevel() * modelObject.multiplier(), writes FuelUseType="Water", and writes EndUseSubcategory directly.
-  // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
-  double multiplier() const;
-  bool isMultiplierDefaulted() const;
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model::ExteriorWaterEquipment scalar accessor names/signatures.
+    // - Field Mapping: multiplier API maps to E+ Exterior:WaterEquipment Design Level.
+    // - Field Mapping: endUseSubcategory maps directly to E+ End-Use Subcategory.
+    // - Field Mapping: Fuel Use Type is translator-fixed to "Water"; no corresponding scalar model API.
+    // - Field Mapping: relationship fields (Schedule Name and related definition/facility graph) are excluded.
+    // - ForwardTranslator evidence: ForwardTranslateExteriorWaterEquipment.cpp writes DesignLevel from
+    //   definition.designLevel() * modelObject.multiplier(), writes FuelUseType="Water", and writes EndUseSubcategory directly.
+    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+    double multiplier() const;
+    bool isMultiplierDefaulted() const;
+    bool setMultiplier(double multiplier);
+    void resetMultiplier();
 
-  std::string endUseSubcategory() const;
-  bool isEndUseSubcategoryDefaulted() const;
+    std::string endUseSubcategory() const;
+    bool isEndUseSubcategoryDefaulted() const;
+    bool setEndUseSubcategory(const std::string& endUseSubcategory);
+    void resetEndUseSubcategory();
 
-  bool setMultiplier(double multiplier);
-  void resetMultiplier();
+   protected:
+    using ImplType = detail::ExteriorWaterEquipment_Impl;
 
-  bool setEndUseSubcategory(const std::string& endUseSubcategory);
-  void resetEndUseSubcategory();
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
- protected:
-  using ImplType = detail::ExteriorWaterEquipment_Impl;
-
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit ExteriorWaterEquipment(std::shared_ptr<detail::ExteriorWaterEquipment_Impl> impl);
-};
+    explicit ExteriorWaterEquipment(std::shared_ptr<detail::ExteriorWaterEquipment_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

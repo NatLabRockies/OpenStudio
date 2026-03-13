@@ -42,31 +42,39 @@ namespace epmodel {
     // - TODO(parity): Add explicit schedule helpers after relationship coverage reaches parity with the Ruby generator.
 
     int numberofHeatingStages() const;
-    double heatingThrottlingTemperatureRange() const;
-    double stage1HeatingTemperatureOffset() const;
-    double stage2HeatingTemperatureOffset() const;
-    double stage3HeatingTemperatureOffset() const;
-    double stage4HeatingTemperatureOffset() const;
-
-    int numberofCoolingStages() const;
-    double coolingThrottlingTemperatureRange() const;
-    double stage1CoolingTemperatureOffset() const;
-    double stage2CoolingTemperatureOffset() const;
-    double stage3CoolingTemperatureOffset() const;
-    double stage4CoolingTemperatureOffset() const;
-
     bool setNumberofHeatingStages(int numberofHeatingStages);
+
+    double heatingThrottlingTemperatureRange() const;
     bool setHeatingThrottlingTemperatureRange(double heatingThrottlingTemperatureRange);
+
+    double stage1HeatingTemperatureOffset() const;
     bool setStage1HeatingTemperatureOffset(double stage1HeatingTemperatureOffset);
+
+    double stage2HeatingTemperatureOffset() const;
     bool setStage2HeatingTemperatureOffset(double stage2HeatingTemperatureOffset);
+
+    double stage3HeatingTemperatureOffset() const;
     bool setStage3HeatingTemperatureOffset(double stage3HeatingTemperatureOffset);
+
+    double stage4HeatingTemperatureOffset() const;
     bool setStage4HeatingTemperatureOffset(double stage4HeatingTemperatureOffset);
 
+    int numberofCoolingStages() const;
     bool setNumberofCoolingStages(int numberofCoolingStages);
+
+    double coolingThrottlingTemperatureRange() const;
     bool setCoolingThrottlingTemperatureRange(double coolingThrottlingTemperatureRange);
+
+    double stage1CoolingTemperatureOffset() const;
     bool setStage1CoolingTemperatureOffset(double stage1CoolingTemperatureOffset);
+
+    double stage2CoolingTemperatureOffset() const;
     bool setStage2CoolingTemperatureOffset(double stage2CoolingTemperatureOffset);
+
+    double stage3CoolingTemperatureOffset() const;
     bool setStage3CoolingTemperatureOffset(double stage3CoolingTemperatureOffset);
+
+    double stage4CoolingTemperatureOffset() const;
     bool setStage4CoolingTemperatureOffset(double stage4CoolingTemperatureOffset);
 
    protected:

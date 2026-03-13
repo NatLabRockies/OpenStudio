@@ -14,50 +14,56 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl;
-}
+  namespace detail {
+    class CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl;
+  }
 
-class EPMODEL_API CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl : public HVACComponent
-{
- public:
-  explicit CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl(const Model& model);
+  class EPMODEL_API CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl : public HVACComponent
+  {
+   public:
+    explicit CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl(const Model& model);
 
-  virtual ~CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl() override = default;
-  CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl(const CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl& other) = default;
-  CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl(CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl&& other) = default;
-  CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl&
-    operator=(const CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl&) = default;
-  CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl& operator=(CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl&&) = default;
+    virtual ~CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl() override = default;
+    CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl(const CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl& other) = default;
+    CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl(CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl&& other) = default;
+    CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl&
+      operator=(const CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl&) = default;
+    CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl& operator=(CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-  // - Field Mapping: ratedTotalHeatingCapacity maps directly to E+ RatedTotalHeatingCapacity.
-  // - Field Mapping: indoorUnitReferenceSubcooling maps directly to E+ IndoorUnitReferenceSubcooling.
-  // - ForwardTranslator evidence: ForwardTranslateCoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.cpp writes these exact E+ fields.
-  // - TODO(parity): Add relationship parity (availability schedule, condensing curve, node links) after scalar saturation.
-  boost::optional<double> ratedTotalHeatingCapacity() const;
-  bool isRatedTotalHeatingCapacityAutosized() const;
-  bool setRatedTotalHeatingCapacity(double ratedTotalHeatingCapacity);
-  void autosizeRatedTotalHeatingCapacity();
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
+    // - Field Mapping: ratedTotalHeatingCapacity maps directly to E+ RatedTotalHeatingCapacity.
+    // - Field Mapping: indoorUnitReferenceSubcooling maps directly to E+ IndoorUnitReferenceSubcooling.
+    // - ForwardTranslator evidence: ForwardTranslateCoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.cpp writes these exact E+ fields.
+    // - TODO(parity): Add relationship parity (availability schedule, condensing curve, node links) after scalar saturation.
+    /** @name Rated total heating capacity */
+    //@{
+    boost::optional<double> ratedTotalHeatingCapacity() const;
+    bool isRatedTotalHeatingCapacityAutosized() const;
+    bool setRatedTotalHeatingCapacity(double ratedTotalHeatingCapacity);
+    void autosizeRatedTotalHeatingCapacity();
+    //@}
 
-  double indoorUnitReferenceSubcooling() const;
-  bool setIndoorUnitReferenceSubcooling(double indoorUnitReferenceSubcooling);
+    /** @name Indoor unit reference subcooling */
+    //@{
+    double indoorUnitReferenceSubcooling() const;
+    bool setIndoorUnitReferenceSubcooling(double indoorUnitReferenceSubcooling);
+    //@}
 
- protected:
-  using ImplType = detail::CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl;
+   protected:
+    using ImplType = detail::CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl(
-    std::shared_ptr<detail::CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl> impl);
-};
+    explicit CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl(
+      std::shared_ptr<detail::CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

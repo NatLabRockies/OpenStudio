@@ -22,13 +22,13 @@ namespace epmodel {
       virtual ~ZoneHVACOutdoorAirUnit_Impl() override = default;
 
       boost::optional<double> outdoorAirFlowRate() const;
-      bool isOutdoorAirFlowRateAutosized() const;
       bool setOutdoorAirFlowRate(double outdoorAirFlowRate);
+      bool isOutdoorAirFlowRateAutosized() const;
       void autosizeOutdoorAirFlowRate();
 
       boost::optional<double> exhaustAirFlowRate() const;
-      bool isExhaustAirFlowRateAutosized() const;
       bool setExhaustAirFlowRate(double exhaustAirFlowRate);
+      bool isExhaustAirFlowRateAutosized() const;
       void autosizeExhaustAirFlowRate();
       void resetExhaustAirFlowRate();
 

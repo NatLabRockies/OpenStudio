@@ -13,24 +13,24 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API FluidPropertiesName_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~FluidPropertiesName_Impl() override = default;
+    class EPMODEL_API FluidPropertiesName_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~FluidPropertiesName_Impl() override = default;
 
-  std::string fluidName() const;
-  bool setFluidName(const std::string& fluidName);
+      std::vector<std::string> fluidTypeValues() const;
 
-  std::string fluidType() const;
-  bool setFluidType(const std::string& fluidType);
+      std::string fluidName() const;
+      bool setFluidName(const std::string& fluidName);
 
-  std::vector<std::string> fluidTypeValues() const;
-};
+      std::string fluidType() const;
+      bool setFluidType(const std::string& fluidType);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -50,18 +50,18 @@ namespace epmodel {
       std::vector<std::string> fanHeatGainLocationValues() const;
 
       double fanHeatInAirStreamFraction() const;
-      bool setFanHeatInAirStreamFraction(double fanHeatInAirStreamFraction);
       bool isFanHeatInAirStreamFractionDefaulted() const;
+      bool setFanHeatInAirStreamFraction(double fanHeatInAirStreamFraction);
       void resetFanHeatInAirStreamFraction();
 
       double scalingFactor() const;
-      bool setScalingFactor(double scalingFactor);
       bool isScalingFactorDefaulted() const;
+      bool setScalingFactor(double scalingFactor);
       void resetScalingFactor();
 
       double minimumTimeBetweenModeChange() const;
-      bool setMinimumTimeBetweenModeChange(double minimumTimeBetweenModeChange);
       bool isMinimumTimeBetweenModeChangeDefaulted() const;
+      bool setMinimumTimeBetweenModeChange(double minimumTimeBetweenModeChange);
       void resetMinimumTimeBetweenModeChange();
 
       std::string firstFuelType() const;
@@ -89,13 +89,13 @@ namespace epmodel {
       std::vector<std::string> objectiveFunctionToMinimizeValues() const;
 
       double mode0OutdoorAirFraction() const;
-      bool setMode0OutdoorAirFraction(double mode0OutdoorAirFraction);
       bool isMode0OutdoorAirFractionDefaulted() const;
+      bool setMode0OutdoorAirFraction(double mode0OutdoorAirFraction);
       void resetMode0OutdoorAirFraction();
 
       double mode0SupplyAirMassFlowRateRatio() const;
-      bool setMode0SupplyAirMassFlowRateRatio(double mode0SupplyAirMassFlowRateRatio);
       bool isMode0SupplyAirMassFlowRateRatioDefaulted() const;
+      bool setMode0SupplyAirMassFlowRateRatio(double mode0SupplyAirMassFlowRateRatio);
       void resetMode0SupplyAirMassFlowRateRatio();
     };
 

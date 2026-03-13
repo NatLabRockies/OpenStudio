@@ -17,83 +17,82 @@
 namespace openstudio {
 namespace epmodel {
 
-GeneratorFuelCellInverter::GeneratorFuelCellInverter(const Model& model) : ModelObject(GeneratorFuelCellInverter::iddObjectType(), model) {}
+  GeneratorFuelCellInverter::GeneratorFuelCellInverter(const Model& model) : ModelObject(GeneratorFuelCellInverter::iddObjectType(), model) {}
 
-GeneratorFuelCellInverter::GeneratorFuelCellInverter(std::shared_ptr<detail::GeneratorFuelCellInverter_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  GeneratorFuelCellInverter::GeneratorFuelCellInverter(std::shared_ptr<detail::GeneratorFuelCellInverter_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType GeneratorFuelCellInverter::iddObjectType() {
-  return IddObjectType::Generator_FuelCell_Inverter;
-}
+  IddObjectType GeneratorFuelCellInverter::iddObjectType() {
+    return IddObjectType::Generator_FuelCell_Inverter;
+  }
 
-std::vector<std::string> GeneratorFuelCellInverter::inverterEfficiencyCalculationModeValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::Generator_FuelCell_InverterFields::InverterEfficiencyCalculationMode);
-}
+  std::vector<std::string> GeneratorFuelCellInverter::inverterEfficiencyCalculationModeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::Generator_FuelCell_InverterFields::InverterEfficiencyCalculationMode);
+  }
 
-std::string GeneratorFuelCellInverter::inverterEfficiencyCalculationMode() const {
-  return getImpl<detail::GeneratorFuelCellInverter_Impl>()->inverterEfficiencyCalculationMode();
-}
+  std::string GeneratorFuelCellInverter::inverterEfficiencyCalculationMode() const {
+    return getImpl<detail::GeneratorFuelCellInverter_Impl>()->inverterEfficiencyCalculationMode();
+  }
 
-bool GeneratorFuelCellInverter::setInverterEfficiencyCalculationMode(const std::string& inverterEfficiencyCalculationMode) {
-  return getImpl<detail::GeneratorFuelCellInverter_Impl>()->setInverterEfficiencyCalculationMode(inverterEfficiencyCalculationMode);
-}
+  bool GeneratorFuelCellInverter::setInverterEfficiencyCalculationMode(const std::string& inverterEfficiencyCalculationMode) {
+    return getImpl<detail::GeneratorFuelCellInverter_Impl>()->setInverterEfficiencyCalculationMode(inverterEfficiencyCalculationMode);
+  }
 
-void GeneratorFuelCellInverter::resetInverterEfficiencyCalculationMode() {
-  getImpl<detail::GeneratorFuelCellInverter_Impl>()->resetInverterEfficiencyCalculationMode();
-}
+  void GeneratorFuelCellInverter::resetInverterEfficiencyCalculationMode() {
+    getImpl<detail::GeneratorFuelCellInverter_Impl>()->resetInverterEfficiencyCalculationMode();
+  }
 
-double GeneratorFuelCellInverter::inverterEfficiency() const {
-  return getImpl<detail::GeneratorFuelCellInverter_Impl>()->inverterEfficiency();
-}
+  double GeneratorFuelCellInverter::inverterEfficiency() const {
+    return getImpl<detail::GeneratorFuelCellInverter_Impl>()->inverterEfficiency();
+  }
 
-bool GeneratorFuelCellInverter::setInverterEfficiency(double inverterEfficiency) {
-  return getImpl<detail::GeneratorFuelCellInverter_Impl>()->setInverterEfficiency(inverterEfficiency);
-}
+  bool GeneratorFuelCellInverter::setInverterEfficiency(double inverterEfficiency) {
+    return getImpl<detail::GeneratorFuelCellInverter_Impl>()->setInverterEfficiency(inverterEfficiency);
+  }
 
-void GeneratorFuelCellInverter::resetInverterEfficiency() {
-  getImpl<detail::GeneratorFuelCellInverter_Impl>()->resetInverterEfficiency();
-}
+  void GeneratorFuelCellInverter::resetInverterEfficiency() {
+    getImpl<detail::GeneratorFuelCellInverter_Impl>()->resetInverterEfficiency();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string GeneratorFuelCellInverter_Impl::inverterEfficiencyCalculationMode() const {
-  const auto value = getString(openstudio::Generator_FuelCell_InverterFields::InverterEfficiencyCalculationMode, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string GeneratorFuelCellInverter_Impl::inverterEfficiencyCalculationMode() const {
+      const auto value = getString(openstudio::Generator_FuelCell_InverterFields::InverterEfficiencyCalculationMode, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool GeneratorFuelCellInverter_Impl::setInverterEfficiencyCalculationMode(const std::string& inverterEfficiencyCalculationMode) {
-  return setString(openstudio::Generator_FuelCell_InverterFields::InverterEfficiencyCalculationMode, inverterEfficiencyCalculationMode);
-}
+    bool GeneratorFuelCellInverter_Impl::setInverterEfficiencyCalculationMode(const std::string& inverterEfficiencyCalculationMode) {
+      return setString(openstudio::Generator_FuelCell_InverterFields::InverterEfficiencyCalculationMode, inverterEfficiencyCalculationMode);
+    }
 
-void GeneratorFuelCellInverter_Impl::resetInverterEfficiencyCalculationMode() {
-  OS_ASSERT(setString(openstudio::Generator_FuelCell_InverterFields::InverterEfficiencyCalculationMode, "Constant"));
-}
+    void GeneratorFuelCellInverter_Impl::resetInverterEfficiencyCalculationMode() {
+      OS_ASSERT(setString(openstudio::Generator_FuelCell_InverterFields::InverterEfficiencyCalculationMode, "Constant"));
+    }
 
-double GeneratorFuelCellInverter_Impl::inverterEfficiency() const {
-  const auto value = getDouble(openstudio::Generator_FuelCell_InverterFields::InverterEfficiency, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::vector<std::string> GeneratorFuelCellInverter_Impl::inverterEfficiencyCalculationModeValues() const {
+      return openstudio::epmodel::GeneratorFuelCellInverter::inverterEfficiencyCalculationModeValues();
+    }
 
-bool GeneratorFuelCellInverter_Impl::setInverterEfficiency(double inverterEfficiency) {
-  return setDouble(openstudio::Generator_FuelCell_InverterFields::InverterEfficiency, inverterEfficiency);
-}
+    double GeneratorFuelCellInverter_Impl::inverterEfficiency() const {
+      const auto value = getDouble(openstudio::Generator_FuelCell_InverterFields::InverterEfficiency, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-void GeneratorFuelCellInverter_Impl::resetInverterEfficiency() {
-  OS_ASSERT(setDouble(openstudio::Generator_FuelCell_InverterFields::InverterEfficiency, 1.0));
-}
+    bool GeneratorFuelCellInverter_Impl::setInverterEfficiency(double inverterEfficiency) {
+      return setDouble(openstudio::Generator_FuelCell_InverterFields::InverterEfficiency, inverterEfficiency);
+    }
 
-std::vector<std::string> GeneratorFuelCellInverter_Impl::inverterEfficiencyCalculationModeValues() const {
-  return openstudio::epmodel::GeneratorFuelCellInverter::inverterEfficiencyCalculationModeValues();
-}
+    void GeneratorFuelCellInverter_Impl::resetInverterEfficiency() {
+      OS_ASSERT(setDouble(openstudio::Generator_FuelCell_InverterFields::InverterEfficiency, 1.0));
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

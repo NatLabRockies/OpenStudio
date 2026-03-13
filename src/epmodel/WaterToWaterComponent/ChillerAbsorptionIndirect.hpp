@@ -15,103 +15,104 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class ChillerAbsorptionIndirect_Impl;
-}
+  namespace detail {
+    class ChillerAbsorptionIndirect_Impl;
+  }
 
-class EPMODEL_API ChillerAbsorptionIndirect : public ModelObject
-{
- public:
-  explicit ChillerAbsorptionIndirect(const Model& model);
+  class EPMODEL_API ChillerAbsorptionIndirect : public ModelObject
+  {
+   public:
+    explicit ChillerAbsorptionIndirect(const Model& model);
 
-  virtual ~ChillerAbsorptionIndirect() override = default;
-  ChillerAbsorptionIndirect(const ChillerAbsorptionIndirect& other) = default;
-  ChillerAbsorptionIndirect(ChillerAbsorptionIndirect&& other) = default;
-  ChillerAbsorptionIndirect& operator=(const ChillerAbsorptionIndirect&) = default;
-  ChillerAbsorptionIndirect& operator=(ChillerAbsorptionIndirect&&) = default;
+    virtual ~ChillerAbsorptionIndirect() override = default;
+    ChillerAbsorptionIndirect(const ChillerAbsorptionIndirect& other) = default;
+    ChillerAbsorptionIndirect(ChillerAbsorptionIndirect&& other) = default;
+    ChillerAbsorptionIndirect& operator=(const ChillerAbsorptionIndirect&) = default;
+    ChillerAbsorptionIndirect& operator=(ChillerAbsorptionIndirect&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> chillerFlowModeValues();
-  static std::vector<std::string> generatorHeatSourceTypeValues();
+    static std::vector<std::string> chillerFlowModeValues();
+    static std::vector<std::string> generatorHeatSourceTypeValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::ChillerAbsorptionIndirect scalar accessor names/signatures for counterpart parity.
-  // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus Chiller:Absorption:Indirect scalar fields.
-  // - Field Mapping: Node and curve relationship APIs are intentionally excluded in this scalar-only scaffold pass.
-  // - ForwardTranslator evidence: model::ForwardTranslateChillerAbsorptionIndirect maps these scalar methods to matching E+ fields.
-  // - TODO(parity): Add excluded relationship APIs in a dedicated relationship pass.
-  boost::optional<double> nominalCapacity() const;
-  bool isNominalCapacityAutosized() const;
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model::ChillerAbsorptionIndirect scalar accessor names/signatures for counterpart parity.
+    // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus Chiller:Absorption:Indirect scalar fields.
+    // - Field Mapping: Node and curve relationship APIs are intentionally excluded in this scalar-only scaffold pass.
+    // - ForwardTranslator evidence: model::ForwardTranslateChillerAbsorptionIndirect maps these scalar methods to matching E+ fields.
+    // - TODO(parity): Add excluded relationship APIs in a dedicated relationship pass.
+    boost::optional<double> nominalCapacity() const;
+    bool isNominalCapacityAutosized() const;
+    bool setNominalCapacity(double nominalCapacity);
+    void autosizeNominalCapacity();
 
-  boost::optional<double> nominalPumpingPower() const;
-  bool isNominalPumpingPowerAutosized() const;
+    boost::optional<double> nominalPumpingPower() const;
+    bool isNominalPumpingPowerAutosized() const;
+    bool setNominalPumpingPower(double nominalPumpingPower);
+    void autosizeNominalPumpingPower();
 
-  double minimumPartLoadRatio() const;
-  double maximumPartLoadRatio() const;
-  double optimumPartLoadRatio() const;
-  double designCondenserInletTemperature() const;
-  double condenserInletTemperatureLowerLimit() const;
-  double chilledWaterOutletTemperatureLowerLimit() const;
+    double minimumPartLoadRatio() const;
+    bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
 
-  boost::optional<double> designChilledWaterFlowRate() const;
-  bool isDesignChilledWaterFlowRateAutosized() const;
+    double maximumPartLoadRatio() const;
+    bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
 
-  boost::optional<double> designCondenserWaterFlowRate() const;
-  bool isDesignCondenserWaterFlowRateAutosized() const;
+    double optimumPartLoadRatio() const;
+    bool setOptimumPartLoadRatio(double optimumPartLoadRatio);
 
-  std::string chillerFlowMode() const;
-  std::string generatorHeatSourceType() const;
+    double designCondenserInletTemperature() const;
+    bool setDesignCondenserInletTemperature(double designCondenserInletTemperature);
 
-  boost::optional<double> designGeneratorFluidFlowRate() const;
-  bool isDesignGeneratorFluidFlowRateAutosized() const;
+    double condenserInletTemperatureLowerLimit() const;
+    bool setCondenserInletTemperatureLowerLimit(double condenserInletTemperatureLowerLimit);
 
-  double temperatureLowerLimitGeneratorInlet() const;
-  double degreeofSubcoolinginSteamGenerator() const;
-  double degreeofSubcoolinginSteamCondensateLoop() const;
-  double sizingFactor() const;
+    double chilledWaterOutletTemperatureLowerLimit() const;
+    bool setChilledWaterOutletTemperatureLowerLimit(double chilledWaterOutletTemperatureLowerLimit);
 
-  bool setNominalCapacity(double nominalCapacity);
-  void autosizeNominalCapacity();
+    boost::optional<double> designChilledWaterFlowRate() const;
+    bool isDesignChilledWaterFlowRateAutosized() const;
+    bool setDesignChilledWaterFlowRate(double designChilledWaterFlowRate);
+    void autosizeDesignChilledWaterFlowRate();
 
-  bool setNominalPumpingPower(double nominalPumpingPower);
-  void autosizeNominalPumpingPower();
+    boost::optional<double> designCondenserWaterFlowRate() const;
+    bool isDesignCondenserWaterFlowRateAutosized() const;
+    bool setDesignCondenserWaterFlowRate(double designCondenserWaterFlowRate);
+    void autosizeDesignCondenserWaterFlowRate();
 
-  bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
-  bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
-  bool setOptimumPartLoadRatio(double optimumPartLoadRatio);
-  bool setDesignCondenserInletTemperature(double designCondenserInletTemperature);
-  bool setCondenserInletTemperatureLowerLimit(double condenserInletTemperatureLowerLimit);
-  bool setChilledWaterOutletTemperatureLowerLimit(double chilledWaterOutletTemperatureLowerLimit);
+    std::string chillerFlowMode() const;
+    bool setChillerFlowMode(const std::string& chillerFlowMode);
 
-  bool setDesignChilledWaterFlowRate(double designChilledWaterFlowRate);
-  void autosizeDesignChilledWaterFlowRate();
+    std::string generatorHeatSourceType() const;
+    bool setGeneratorHeatSourceType(const std::string& generatorHeatSourceType);
 
-  bool setDesignCondenserWaterFlowRate(double designCondenserWaterFlowRate);
-  void autosizeDesignCondenserWaterFlowRate();
+    boost::optional<double> designGeneratorFluidFlowRate() const;
+    bool isDesignGeneratorFluidFlowRateAutosized() const;
+    bool setDesignGeneratorFluidFlowRate(double designGeneratorFluidFlowRate);
+    void autosizeDesignGeneratorFluidFlowRate();
 
-  bool setChillerFlowMode(const std::string& chillerFlowMode);
-  bool setGeneratorHeatSourceType(const std::string& generatorHeatSourceType);
+    double temperatureLowerLimitGeneratorInlet() const;
+    bool setTemperatureLowerLimitGeneratorInlet(double temperatureLowerLimitGeneratorInlet);
 
-  bool setDesignGeneratorFluidFlowRate(double designGeneratorFluidFlowRate);
-  void autosizeDesignGeneratorFluidFlowRate();
+    double degreeofSubcoolinginSteamGenerator() const;
+    bool setDegreeofSubcoolinginSteamGenerator(double degreeofSubcoolinginSteamGenerator);
 
-  bool setTemperatureLowerLimitGeneratorInlet(double temperatureLowerLimitGeneratorInlet);
-  bool setDegreeofSubcoolinginSteamGenerator(double degreeofSubcoolinginSteamGenerator);
-  bool setDegreeofSubcoolinginSteamCondensateLoop(double degreeofSubcoolinginSteamCondensateLoop);
-  bool setSizingFactor(double sizingFactor);
+    double degreeofSubcoolinginSteamCondensateLoop() const;
+    bool setDegreeofSubcoolinginSteamCondensateLoop(double degreeofSubcoolinginSteamCondensateLoop);
 
- protected:
-  using ImplType = detail::ChillerAbsorptionIndirect_Impl;
+    double sizingFactor() const;
+    bool setSizingFactor(double sizingFactor);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::ChillerAbsorptionIndirect_Impl;
 
-  explicit ChillerAbsorptionIndirect(std::shared_ptr<detail::ChillerAbsorptionIndirect_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit ChillerAbsorptionIndirect(std::shared_ptr<detail::ChillerAbsorptionIndirect_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

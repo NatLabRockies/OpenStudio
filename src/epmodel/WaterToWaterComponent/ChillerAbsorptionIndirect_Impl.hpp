@@ -13,79 +13,80 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ChillerAbsorptionIndirect_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ChillerAbsorptionIndirect_Impl() override = default;
+    class EPMODEL_API ChillerAbsorptionIndirect_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ChillerAbsorptionIndirect_Impl() override = default;
 
-  boost::optional<double> nominalCapacity() const;
-  bool isNominalCapacityAutosized() const;
+      std::vector<std::string> chillerFlowModeValues() const;
+      std::vector<std::string> generatorHeatSourceTypeValues() const;
 
-  boost::optional<double> nominalPumpingPower() const;
-  bool isNominalPumpingPowerAutosized() const;
+      boost::optional<double> nominalCapacity() const;
+      bool isNominalCapacityAutosized() const;
+      bool setNominalCapacity(double nominalCapacity);
+      void autosizeNominalCapacity();
 
-  double minimumPartLoadRatio() const;
-  double maximumPartLoadRatio() const;
-  double optimumPartLoadRatio() const;
-  double designCondenserInletTemperature() const;
-  double condenserInletTemperatureLowerLimit() const;
-  double chilledWaterOutletTemperatureLowerLimit() const;
+      boost::optional<double> nominalPumpingPower() const;
+      bool isNominalPumpingPowerAutosized() const;
+      bool setNominalPumpingPower(double nominalPumpingPower);
+      void autosizeNominalPumpingPower();
 
-  boost::optional<double> designChilledWaterFlowRate() const;
-  bool isDesignChilledWaterFlowRateAutosized() const;
+      double minimumPartLoadRatio() const;
+      bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
 
-  boost::optional<double> designCondenserWaterFlowRate() const;
-  bool isDesignCondenserWaterFlowRateAutosized() const;
+      double maximumPartLoadRatio() const;
+      bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
 
-  std::string chillerFlowMode() const;
-  std::string generatorHeatSourceType() const;
+      double optimumPartLoadRatio() const;
+      bool setOptimumPartLoadRatio(double optimumPartLoadRatio);
 
-  boost::optional<double> designGeneratorFluidFlowRate() const;
-  bool isDesignGeneratorFluidFlowRateAutosized() const;
+      double designCondenserInletTemperature() const;
+      bool setDesignCondenserInletTemperature(double designCondenserInletTemperature);
 
-  double temperatureLowerLimitGeneratorInlet() const;
-  double degreeofSubcoolinginSteamGenerator() const;
-  double degreeofSubcoolinginSteamCondensateLoop() const;
-  double sizingFactor() const;
+      double condenserInletTemperatureLowerLimit() const;
+      bool setCondenserInletTemperatureLowerLimit(double condenserInletTemperatureLowerLimit);
 
-  bool setNominalCapacity(double nominalCapacity);
-  void autosizeNominalCapacity();
+      double chilledWaterOutletTemperatureLowerLimit() const;
+      bool setChilledWaterOutletTemperatureLowerLimit(double chilledWaterOutletTemperatureLowerLimit);
 
-  bool setNominalPumpingPower(double nominalPumpingPower);
-  void autosizeNominalPumpingPower();
+      boost::optional<double> designChilledWaterFlowRate() const;
+      bool isDesignChilledWaterFlowRateAutosized() const;
+      bool setDesignChilledWaterFlowRate(double designChilledWaterFlowRate);
+      void autosizeDesignChilledWaterFlowRate();
 
-  bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
-  bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
-  bool setOptimumPartLoadRatio(double optimumPartLoadRatio);
-  bool setDesignCondenserInletTemperature(double designCondenserInletTemperature);
-  bool setCondenserInletTemperatureLowerLimit(double condenserInletTemperatureLowerLimit);
-  bool setChilledWaterOutletTemperatureLowerLimit(double chilledWaterOutletTemperatureLowerLimit);
+      boost::optional<double> designCondenserWaterFlowRate() const;
+      bool isDesignCondenserWaterFlowRateAutosized() const;
+      bool setDesignCondenserWaterFlowRate(double designCondenserWaterFlowRate);
+      void autosizeDesignCondenserWaterFlowRate();
 
-  bool setDesignChilledWaterFlowRate(double designChilledWaterFlowRate);
-  void autosizeDesignChilledWaterFlowRate();
+      std::string chillerFlowMode() const;
+      bool setChillerFlowMode(const std::string& chillerFlowMode);
 
-  bool setDesignCondenserWaterFlowRate(double designCondenserWaterFlowRate);
-  void autosizeDesignCondenserWaterFlowRate();
+      std::string generatorHeatSourceType() const;
+      bool setGeneratorHeatSourceType(const std::string& generatorHeatSourceType);
 
-  bool setChillerFlowMode(const std::string& chillerFlowMode);
-  bool setGeneratorHeatSourceType(const std::string& generatorHeatSourceType);
+      boost::optional<double> designGeneratorFluidFlowRate() const;
+      bool isDesignGeneratorFluidFlowRateAutosized() const;
+      bool setDesignGeneratorFluidFlowRate(double designGeneratorFluidFlowRate);
+      void autosizeDesignGeneratorFluidFlowRate();
 
-  bool setDesignGeneratorFluidFlowRate(double designGeneratorFluidFlowRate);
-  void autosizeDesignGeneratorFluidFlowRate();
+      double temperatureLowerLimitGeneratorInlet() const;
+      bool setTemperatureLowerLimitGeneratorInlet(double temperatureLowerLimitGeneratorInlet);
 
-  bool setTemperatureLowerLimitGeneratorInlet(double temperatureLowerLimitGeneratorInlet);
-  bool setDegreeofSubcoolinginSteamGenerator(double degreeofSubcoolinginSteamGenerator);
-  bool setDegreeofSubcoolinginSteamCondensateLoop(double degreeofSubcoolinginSteamCondensateLoop);
-  bool setSizingFactor(double sizingFactor);
+      double degreeofSubcoolinginSteamGenerator() const;
+      bool setDegreeofSubcoolinginSteamGenerator(double degreeofSubcoolinginSteamGenerator);
 
-  std::vector<std::string> chillerFlowModeValues() const;
-  std::vector<std::string> generatorHeatSourceTypeValues() const;
-};
+      double degreeofSubcoolinginSteamCondensateLoop() const;
+      bool setDegreeofSubcoolinginSteamCondensateLoop(double degreeofSubcoolinginSteamCondensateLoop);
 
-}  // namespace detail
+      double sizingFactor() const;
+      bool setSizingFactor(double sizingFactor);
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

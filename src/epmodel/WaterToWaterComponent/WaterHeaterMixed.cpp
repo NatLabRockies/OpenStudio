@@ -63,206 +63,6 @@ namespace epmodel {
     return getImpl<detail::WaterHeaterMixed_Impl>()->isTankVolumeAutosized();
   }
 
-  double WaterHeaterMixed::deadbandTemperatureDifference() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->deadbandTemperatureDifference();
-  }
-
-  bool WaterHeaterMixed::isDeadbandTemperatureDifferenceDefaulted() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isDeadbandTemperatureDifferenceDefaulted();
-  }
-
-  boost::optional<double> WaterHeaterMixed::maximumTemperatureLimit() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->maximumTemperatureLimit();
-  }
-
-  std::string WaterHeaterMixed::heaterControlType() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->heaterControlType();
-  }
-
-  bool WaterHeaterMixed::isHeaterControlTypeDefaulted() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isHeaterControlTypeDefaulted();
-  }
-
-  boost::optional<double> WaterHeaterMixed::heaterMaximumCapacity() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->heaterMaximumCapacity();
-  }
-
-  bool WaterHeaterMixed::isHeaterMaximumCapacityAutosized() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isHeaterMaximumCapacityAutosized();
-  }
-
-  boost::optional<double> WaterHeaterMixed::heaterMinimumCapacity() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->heaterMinimumCapacity();
-  }
-
-  double WaterHeaterMixed::heaterIgnitionMinimumFlowRate() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->heaterIgnitionMinimumFlowRate();
-  }
-
-  bool WaterHeaterMixed::isHeaterIgnitionMinimumFlowRateDefaulted() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isHeaterIgnitionMinimumFlowRateDefaulted();
-  }
-
-  double WaterHeaterMixed::heaterIgnitionDelay() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->heaterIgnitionDelay();
-  }
-
-  bool WaterHeaterMixed::isHeaterIgnitionDelayDefaulted() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isHeaterIgnitionDelayDefaulted();
-  }
-
-  std::string WaterHeaterMixed::heaterFuelType() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->heaterFuelType();
-  }
-
-  boost::optional<double> WaterHeaterMixed::heaterThermalEfficiency() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->heaterThermalEfficiency();
-  }
-
-  double WaterHeaterMixed::offCycleParasiticFuelConsumptionRate() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->offCycleParasiticFuelConsumptionRate();
-  }
-
-  bool WaterHeaterMixed::isOffCycleParasiticFuelConsumptionRateDefaulted() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isOffCycleParasiticFuelConsumptionRateDefaulted();
-  }
-
-  boost::optional<std::string> WaterHeaterMixed::offCycleParasiticFuelType() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->offCycleParasiticFuelType();
-  }
-
-  double WaterHeaterMixed::offCycleParasiticHeatFractiontoTank() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->offCycleParasiticHeatFractiontoTank();
-  }
-
-  bool WaterHeaterMixed::isOffCycleParasiticHeatFractiontoTankDefaulted() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isOffCycleParasiticHeatFractiontoTankDefaulted();
-  }
-
-  double WaterHeaterMixed::onCycleParasiticFuelConsumptionRate() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->onCycleParasiticFuelConsumptionRate();
-  }
-
-  bool WaterHeaterMixed::isOnCycleParasiticFuelConsumptionRateDefaulted() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isOnCycleParasiticFuelConsumptionRateDefaulted();
-  }
-
-  boost::optional<std::string> WaterHeaterMixed::onCycleParasiticFuelType() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->onCycleParasiticFuelType();
-  }
-
-  double WaterHeaterMixed::onCycleParasiticHeatFractiontoTank() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->onCycleParasiticHeatFractiontoTank();
-  }
-
-  bool WaterHeaterMixed::isOnCycleParasiticHeatFractiontoTankDefaulted() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isOnCycleParasiticHeatFractiontoTankDefaulted();
-  }
-
-  std::string WaterHeaterMixed::ambientTemperatureIndicator() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->ambientTemperatureIndicator();
-  }
-
-  boost::optional<double> WaterHeaterMixed::offCycleLossCoefficienttoAmbientTemperature() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->offCycleLossCoefficienttoAmbientTemperature();
-  }
-
-  double WaterHeaterMixed::offCycleLossFractiontoThermalZone() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->offCycleLossFractiontoThermalZone();
-  }
-
-  bool WaterHeaterMixed::isOffCycleLossFractiontoThermalZoneDefaulted() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isOffCycleLossFractiontoThermalZoneDefaulted();
-  }
-
-  boost::optional<double> WaterHeaterMixed::onCycleLossCoefficienttoAmbientTemperature() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->onCycleLossCoefficienttoAmbientTemperature();
-  }
-
-  double WaterHeaterMixed::onCycleLossFractiontoThermalZone() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->onCycleLossFractiontoThermalZone();
-  }
-
-  bool WaterHeaterMixed::isOnCycleLossFractiontoThermalZoneDefaulted() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isOnCycleLossFractiontoThermalZoneDefaulted();
-  }
-
-  boost::optional<double> WaterHeaterMixed::peakUseFlowRate() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->peakUseFlowRate();
-  }
-
-  double WaterHeaterMixed::useSideEffectiveness() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->useSideEffectiveness();
-  }
-
-  bool WaterHeaterMixed::isUseSideEffectivenessDefaulted() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isUseSideEffectivenessDefaulted();
-  }
-
-  double WaterHeaterMixed::sourceSideEffectiveness() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->sourceSideEffectiveness();
-  }
-
-  bool WaterHeaterMixed::isSourceSideEffectivenessDefaulted() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isSourceSideEffectivenessDefaulted();
-  }
-
-  boost::optional<double> WaterHeaterMixed::useSideDesignFlowRate() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->useSideDesignFlowRate();
-  }
-
-  bool WaterHeaterMixed::isUseSideDesignFlowRateDefaulted() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isUseSideDesignFlowRateDefaulted();
-  }
-
-  bool WaterHeaterMixed::isUseSideDesignFlowRateAutosized() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isUseSideDesignFlowRateAutosized();
-  }
-
-  boost::optional<double> WaterHeaterMixed::sourceSideDesignFlowRate() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->sourceSideDesignFlowRate();
-  }
-
-  bool WaterHeaterMixed::isSourceSideDesignFlowRateDefaulted() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isSourceSideDesignFlowRateDefaulted();
-  }
-
-  bool WaterHeaterMixed::isSourceSideDesignFlowRateAutosized() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isSourceSideDesignFlowRateAutosized();
-  }
-
-  double WaterHeaterMixed::indirectWaterHeatingRecoveryTime() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->indirectWaterHeatingRecoveryTime();
-  }
-
-  bool WaterHeaterMixed::isIndirectWaterHeatingRecoveryTimeDefaulted() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->isIndirectWaterHeatingRecoveryTimeDefaulted();
-  }
-
-  std::string WaterHeaterMixed::sourceSideFlowControlMode() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->sourceSideFlowControlMode();
-  }
-
-  std::string WaterHeaterMixed::endUseSubcategory() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->endUseSubcategory();
-  }
-
-  boost::optional<double> WaterHeaterMixed::autosizedTankVolume() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->autosizedTankVolume();
-  }
-
-  boost::optional<double> WaterHeaterMixed::autosizedHeaterMaximumCapacity() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->autosizedHeaterMaximumCapacity();
-  }
-
-  boost::optional<double> WaterHeaterMixed::autosizedUseSideDesignFlowRate() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->autosizedUseSideDesignFlowRate();
-  }
-
-  boost::optional<double> WaterHeaterMixed::autosizedSourceSideDesignFlowRate() const {
-    return getImpl<detail::WaterHeaterMixed_Impl>()->autosizedSourceSideDesignFlowRate();
-  }
-
   bool WaterHeaterMixed::setTankVolume(double tankVolume) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setTankVolume(tankVolume);
   }
@@ -275,12 +75,28 @@ namespace epmodel {
     getImpl<detail::WaterHeaterMixed_Impl>()->autosizeTankVolume();
   }
 
+  boost::optional<double> WaterHeaterMixed::autosizedTankVolume() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->autosizedTankVolume();
+  }
+
+  double WaterHeaterMixed::deadbandTemperatureDifference() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->deadbandTemperatureDifference();
+  }
+
+  bool WaterHeaterMixed::isDeadbandTemperatureDifferenceDefaulted() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isDeadbandTemperatureDifferenceDefaulted();
+  }
+
   bool WaterHeaterMixed::setDeadbandTemperatureDifference(double deadbandTemperatureDifference) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setDeadbandTemperatureDifference(deadbandTemperatureDifference);
   }
 
   void WaterHeaterMixed::resetDeadbandTemperatureDifference() {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetDeadbandTemperatureDifference();
+  }
+
+  boost::optional<double> WaterHeaterMixed::maximumTemperatureLimit() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->maximumTemperatureLimit();
   }
 
   bool WaterHeaterMixed::setMaximumTemperatureLimit(double maximumTemperatureLimit) {
@@ -291,12 +107,28 @@ namespace epmodel {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetMaximumTemperatureLimit();
   }
 
+  std::string WaterHeaterMixed::heaterControlType() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->heaterControlType();
+  }
+
+  bool WaterHeaterMixed::isHeaterControlTypeDefaulted() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isHeaterControlTypeDefaulted();
+  }
+
   bool WaterHeaterMixed::setHeaterControlType(const std::string& heaterControlType) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setHeaterControlType(heaterControlType);
   }
 
   void WaterHeaterMixed::resetHeaterControlType() {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetHeaterControlType();
+  }
+
+  boost::optional<double> WaterHeaterMixed::heaterMaximumCapacity() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->heaterMaximumCapacity();
+  }
+
+  bool WaterHeaterMixed::isHeaterMaximumCapacityAutosized() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isHeaterMaximumCapacityAutosized();
   }
 
   bool WaterHeaterMixed::setHeaterMaximumCapacity(double heaterMaximumCapacity) {
@@ -311,12 +143,28 @@ namespace epmodel {
     getImpl<detail::WaterHeaterMixed_Impl>()->autosizeHeaterMaximumCapacity();
   }
 
+  boost::optional<double> WaterHeaterMixed::autosizedHeaterMaximumCapacity() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->autosizedHeaterMaximumCapacity();
+  }
+
+  boost::optional<double> WaterHeaterMixed::heaterMinimumCapacity() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->heaterMinimumCapacity();
+  }
+
   bool WaterHeaterMixed::setHeaterMinimumCapacity(double heaterMinimumCapacity) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setHeaterMinimumCapacity(heaterMinimumCapacity);
   }
 
   void WaterHeaterMixed::resetHeaterMinimumCapacity() {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetHeaterMinimumCapacity();
+  }
+
+  double WaterHeaterMixed::heaterIgnitionMinimumFlowRate() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->heaterIgnitionMinimumFlowRate();
+  }
+
+  bool WaterHeaterMixed::isHeaterIgnitionMinimumFlowRateDefaulted() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isHeaterIgnitionMinimumFlowRateDefaulted();
   }
 
   bool WaterHeaterMixed::setHeaterIgnitionMinimumFlowRate(double heaterIgnitionMinimumFlowRate) {
@@ -327,12 +175,24 @@ namespace epmodel {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetHeaterIgnitionMinimumFlowRate();
   }
 
+  double WaterHeaterMixed::heaterIgnitionDelay() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->heaterIgnitionDelay();
+  }
+
+  bool WaterHeaterMixed::isHeaterIgnitionDelayDefaulted() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isHeaterIgnitionDelayDefaulted();
+  }
+
   bool WaterHeaterMixed::setHeaterIgnitionDelay(double heaterIgnitionDelay) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setHeaterIgnitionDelay(heaterIgnitionDelay);
   }
 
   void WaterHeaterMixed::resetHeaterIgnitionDelay() {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetHeaterIgnitionDelay();
+  }
+
+  std::string WaterHeaterMixed::heaterFuelType() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->heaterFuelType();
   }
 
   bool WaterHeaterMixed::setHeaterFuelType(const FuelType& heaterFuelType) {
@@ -347,6 +207,10 @@ namespace epmodel {
     }
   }
 
+  boost::optional<double> WaterHeaterMixed::heaterThermalEfficiency() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->heaterThermalEfficiency();
+  }
+
   bool WaterHeaterMixed::setHeaterThermalEfficiency(double heaterThermalEfficiency) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setHeaterThermalEfficiency(heaterThermalEfficiency);
   }
@@ -355,12 +219,24 @@ namespace epmodel {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetHeaterThermalEfficiency();
   }
 
+  double WaterHeaterMixed::offCycleParasiticFuelConsumptionRate() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->offCycleParasiticFuelConsumptionRate();
+  }
+
+  bool WaterHeaterMixed::isOffCycleParasiticFuelConsumptionRateDefaulted() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isOffCycleParasiticFuelConsumptionRateDefaulted();
+  }
+
   bool WaterHeaterMixed::setOffCycleParasiticFuelConsumptionRate(double offCycleParasiticFuelConsumptionRate) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setOffCycleParasiticFuelConsumptionRate(offCycleParasiticFuelConsumptionRate);
   }
 
   void WaterHeaterMixed::resetOffCycleParasiticFuelConsumptionRate() {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetOffCycleParasiticFuelConsumptionRate();
+  }
+
+  boost::optional<std::string> WaterHeaterMixed::offCycleParasiticFuelType() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->offCycleParasiticFuelType();
   }
 
   bool WaterHeaterMixed::setOffCycleParasiticFuelType(const FuelType& offCycleParasiticFuelType) {
@@ -379,6 +255,14 @@ namespace epmodel {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetOffCycleParasiticFuelType();
   }
 
+  double WaterHeaterMixed::offCycleParasiticHeatFractiontoTank() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->offCycleParasiticHeatFractiontoTank();
+  }
+
+  bool WaterHeaterMixed::isOffCycleParasiticHeatFractiontoTankDefaulted() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isOffCycleParasiticHeatFractiontoTankDefaulted();
+  }
+
   bool WaterHeaterMixed::setOffCycleParasiticHeatFractiontoTank(double offCycleParasiticHeatFractiontoTank) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setOffCycleParasiticHeatFractiontoTank(offCycleParasiticHeatFractiontoTank);
   }
@@ -387,12 +271,24 @@ namespace epmodel {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetOffCycleParasiticHeatFractiontoTank();
   }
 
+  double WaterHeaterMixed::onCycleParasiticFuelConsumptionRate() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->onCycleParasiticFuelConsumptionRate();
+  }
+
+  bool WaterHeaterMixed::isOnCycleParasiticFuelConsumptionRateDefaulted() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isOnCycleParasiticFuelConsumptionRateDefaulted();
+  }
+
   bool WaterHeaterMixed::setOnCycleParasiticFuelConsumptionRate(double onCycleParasiticFuelConsumptionRate) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setOnCycleParasiticFuelConsumptionRate(onCycleParasiticFuelConsumptionRate);
   }
 
   void WaterHeaterMixed::resetOnCycleParasiticFuelConsumptionRate() {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetOnCycleParasiticFuelConsumptionRate();
+  }
+
+  boost::optional<std::string> WaterHeaterMixed::onCycleParasiticFuelType() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->onCycleParasiticFuelType();
   }
 
   bool WaterHeaterMixed::setOnCycleParasiticFuelType(const FuelType& onCycleParasiticFuelType) {
@@ -411,6 +307,14 @@ namespace epmodel {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetOnCycleParasiticFuelType();
   }
 
+  double WaterHeaterMixed::onCycleParasiticHeatFractiontoTank() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->onCycleParasiticHeatFractiontoTank();
+  }
+
+  bool WaterHeaterMixed::isOnCycleParasiticHeatFractiontoTankDefaulted() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isOnCycleParasiticHeatFractiontoTankDefaulted();
+  }
+
   bool WaterHeaterMixed::setOnCycleParasiticHeatFractiontoTank(double onCycleParasiticHeatFractiontoTank) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setOnCycleParasiticHeatFractiontoTank(onCycleParasiticHeatFractiontoTank);
   }
@@ -419,8 +323,16 @@ namespace epmodel {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetOnCycleParasiticHeatFractiontoTank();
   }
 
+  std::string WaterHeaterMixed::ambientTemperatureIndicator() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->ambientTemperatureIndicator();
+  }
+
   bool WaterHeaterMixed::setAmbientTemperatureIndicator(const std::string& ambientTemperatureIndicator) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setAmbientTemperatureIndicator(ambientTemperatureIndicator);
+  }
+
+  boost::optional<double> WaterHeaterMixed::offCycleLossCoefficienttoAmbientTemperature() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->offCycleLossCoefficienttoAmbientTemperature();
   }
 
   bool WaterHeaterMixed::setOffCycleLossCoefficienttoAmbientTemperature(double offCycleLossCoefficienttoAmbientTemperature) {
@@ -431,12 +343,24 @@ namespace epmodel {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetOffCycleLossCoefficienttoAmbientTemperature();
   }
 
+  double WaterHeaterMixed::offCycleLossFractiontoThermalZone() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->offCycleLossFractiontoThermalZone();
+  }
+
+  bool WaterHeaterMixed::isOffCycleLossFractiontoThermalZoneDefaulted() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isOffCycleLossFractiontoThermalZoneDefaulted();
+  }
+
   bool WaterHeaterMixed::setOffCycleLossFractiontoThermalZone(double offCycleLossFractiontoThermalZone) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setOffCycleLossFractiontoThermalZone(offCycleLossFractiontoThermalZone);
   }
 
   void WaterHeaterMixed::resetOffCycleLossFractiontoThermalZone() {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetOffCycleLossFractiontoThermalZone();
+  }
+
+  boost::optional<double> WaterHeaterMixed::onCycleLossCoefficienttoAmbientTemperature() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->onCycleLossCoefficienttoAmbientTemperature();
   }
 
   bool WaterHeaterMixed::setOnCycleLossCoefficienttoAmbientTemperature(double onCycleLossCoefficienttoAmbientTemperature) {
@@ -447,12 +371,24 @@ namespace epmodel {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetOnCycleLossCoefficienttoAmbientTemperature();
   }
 
+  double WaterHeaterMixed::onCycleLossFractiontoThermalZone() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->onCycleLossFractiontoThermalZone();
+  }
+
+  bool WaterHeaterMixed::isOnCycleLossFractiontoThermalZoneDefaulted() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isOnCycleLossFractiontoThermalZoneDefaulted();
+  }
+
   bool WaterHeaterMixed::setOnCycleLossFractiontoThermalZone(double onCycleLossFractiontoThermalZone) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setOnCycleLossFractiontoThermalZone(onCycleLossFractiontoThermalZone);
   }
 
   void WaterHeaterMixed::resetOnCycleLossFractiontoThermalZone() {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetOnCycleLossFractiontoThermalZone();
+  }
+
+  boost::optional<double> WaterHeaterMixed::peakUseFlowRate() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->peakUseFlowRate();
   }
 
   bool WaterHeaterMixed::setPeakUseFlowRate(double peakUseFlowRate) {
@@ -463,6 +399,14 @@ namespace epmodel {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetPeakUseFlowRate();
   }
 
+  double WaterHeaterMixed::useSideEffectiveness() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->useSideEffectiveness();
+  }
+
+  bool WaterHeaterMixed::isUseSideEffectivenessDefaulted() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isUseSideEffectivenessDefaulted();
+  }
+
   bool WaterHeaterMixed::setUseSideEffectiveness(double useSideEffectiveness) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setUseSideEffectiveness(useSideEffectiveness);
   }
@@ -471,12 +415,32 @@ namespace epmodel {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetUseSideEffectiveness();
   }
 
+  double WaterHeaterMixed::sourceSideEffectiveness() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->sourceSideEffectiveness();
+  }
+
+  bool WaterHeaterMixed::isSourceSideEffectivenessDefaulted() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isSourceSideEffectivenessDefaulted();
+  }
+
   bool WaterHeaterMixed::setSourceSideEffectiveness(double sourceSideEffectiveness) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setSourceSideEffectiveness(sourceSideEffectiveness);
   }
 
   void WaterHeaterMixed::resetSourceSideEffectiveness() {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetSourceSideEffectiveness();
+  }
+
+  boost::optional<double> WaterHeaterMixed::useSideDesignFlowRate() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->useSideDesignFlowRate();
+  }
+
+  bool WaterHeaterMixed::isUseSideDesignFlowRateDefaulted() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isUseSideDesignFlowRateDefaulted();
+  }
+
+  bool WaterHeaterMixed::isUseSideDesignFlowRateAutosized() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isUseSideDesignFlowRateAutosized();
   }
 
   bool WaterHeaterMixed::setUseSideDesignFlowRate(double useSideDesignFlowRate) {
@@ -491,6 +455,22 @@ namespace epmodel {
     getImpl<detail::WaterHeaterMixed_Impl>()->autosizeUseSideDesignFlowRate();
   }
 
+  boost::optional<double> WaterHeaterMixed::autosizedUseSideDesignFlowRate() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->autosizedUseSideDesignFlowRate();
+  }
+
+  boost::optional<double> WaterHeaterMixed::sourceSideDesignFlowRate() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->sourceSideDesignFlowRate();
+  }
+
+  bool WaterHeaterMixed::isSourceSideDesignFlowRateDefaulted() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isSourceSideDesignFlowRateDefaulted();
+  }
+
+  bool WaterHeaterMixed::isSourceSideDesignFlowRateAutosized() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isSourceSideDesignFlowRateAutosized();
+  }
+
   bool WaterHeaterMixed::setSourceSideDesignFlowRate(double sourceSideDesignFlowRate) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setSourceSideDesignFlowRate(sourceSideDesignFlowRate);
   }
@@ -503,6 +483,18 @@ namespace epmodel {
     getImpl<detail::WaterHeaterMixed_Impl>()->autosizeSourceSideDesignFlowRate();
   }
 
+  boost::optional<double> WaterHeaterMixed::autosizedSourceSideDesignFlowRate() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->autosizedSourceSideDesignFlowRate();
+  }
+
+  double WaterHeaterMixed::indirectWaterHeatingRecoveryTime() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->indirectWaterHeatingRecoveryTime();
+  }
+
+  bool WaterHeaterMixed::isIndirectWaterHeatingRecoveryTimeDefaulted() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->isIndirectWaterHeatingRecoveryTimeDefaulted();
+  }
+
   bool WaterHeaterMixed::setIndirectWaterHeatingRecoveryTime(double indirectWaterHeatingRecoveryTime) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setIndirectWaterHeatingRecoveryTime(indirectWaterHeatingRecoveryTime);
   }
@@ -511,8 +503,16 @@ namespace epmodel {
     getImpl<detail::WaterHeaterMixed_Impl>()->resetIndirectWaterHeatingRecoveryTime();
   }
 
+  std::string WaterHeaterMixed::sourceSideFlowControlMode() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->sourceSideFlowControlMode();
+  }
+
   bool WaterHeaterMixed::setSourceSideFlowControlMode(const std::string& sourceSideFlowControlMode) {
     return getImpl<detail::WaterHeaterMixed_Impl>()->setSourceSideFlowControlMode(sourceSideFlowControlMode);
+  }
+
+  std::string WaterHeaterMixed::endUseSubcategory() const {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->endUseSubcategory();
   }
 
   bool WaterHeaterMixed::setEndUseSubcategory(const std::string& endUseSubcategory) {

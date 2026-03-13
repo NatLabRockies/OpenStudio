@@ -44,19 +44,16 @@ namespace epmodel {
 
     std::string algorithm() const;
     bool isAlgorithmDefaulted() const;
-
-    bool doSpaceHeatBalanceforSizing() const;
-    bool isDoSpaceHeatBalanceforSizingDefaulted() const;
-
-    bool doSpaceHeatBalanceforSimulation() const;
-    bool isDoSpaceHeatBalanceforSimulationDefaulted() const;
-
     bool setAlgorithm(const std::string& algorithm);
     void resetAlgorithm();
 
+    bool doSpaceHeatBalanceforSizing() const;
+    bool isDoSpaceHeatBalanceforSizingDefaulted() const;
     bool setDoSpaceHeatBalanceforSizing(bool doSpaceHeatBalanceforSizing);
     void resetDoSpaceHeatBalanceforSizing();
 
+    bool doSpaceHeatBalanceforSimulation() const;
+    bool isDoSpaceHeatBalanceforSimulationDefaulted() const;
     bool setDoSpaceHeatBalanceforSimulation(bool doSpaceHeatBalanceforSimulation);
     void resetDoSpaceHeatBalanceforSimulation();
 

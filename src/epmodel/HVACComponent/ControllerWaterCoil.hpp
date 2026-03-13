@@ -17,87 +17,81 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class ControllerWaterCoil_Impl;
-}
+  namespace detail {
+    class ControllerWaterCoil_Impl;
+  }
 
-class EPMODEL_API ControllerWaterCoil : public HVACComponent
-{
- public:
-  explicit ControllerWaterCoil(const Model& model);
+  class EPMODEL_API ControllerWaterCoil : public HVACComponent
+  {
+   public:
+    explicit ControllerWaterCoil(const Model& model);
 
-  virtual ~ControllerWaterCoil() override = default;
-  ControllerWaterCoil(const ControllerWaterCoil& other) = default;
-  ControllerWaterCoil(ControllerWaterCoil&& other) = default;
-  ControllerWaterCoil& operator=(const ControllerWaterCoil&) = default;
-  ControllerWaterCoil& operator=(ControllerWaterCoil&&) = default;
+    virtual ~ControllerWaterCoil() override = default;
+    ControllerWaterCoil(const ControllerWaterCoil& other) = default;
+    ControllerWaterCoil(ControllerWaterCoil&& other) = default;
+    ControllerWaterCoil& operator=(const ControllerWaterCoil&) = default;
+    ControllerWaterCoil& operator=(ControllerWaterCoil&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> validControlVariableValues();
-  static std::vector<std::string> validActionValues();
-  static std::vector<std::string> validActuatorVariableValues();
+    static std::vector<std::string> validControlVariableValues();
+    static std::vector<std::string> validActionValues();
+    static std::vector<std::string> validActuatorVariableValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::ControllerWaterCoil scalar accessor names/signatures.
-  // - Field Mapping: controlVariable/action/actuatorVariable and actuated-flow tolerances map directly to
-  //   EnergyPlus Controller:WaterCoil scalar fields.
-  // - ForwardTranslator evidence: ForwardTranslateControllerWaterCoil.cpp writes these scalar fields directly.
-  // - Field Mapping: Relationship fields (Water Coil Name, Sensor Node Name, Actuator Node Name) are intentionally
-  //   excluded from this scalar scaffold pass.
-  // - TODO(parity): Add non-scalar relationship APIs incrementally without changing scalar signatures.
-  boost::optional<std::string> controlVariable() const;
-  bool isControlVariableDefaulted() const;
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model::ControllerWaterCoil scalar accessor names/signatures.
+    // - Field Mapping: controlVariable/action/actuatorVariable and actuated-flow tolerances map directly to
+    //   EnergyPlus Controller:WaterCoil scalar fields.
+    // - ForwardTranslator evidence: ForwardTranslateControllerWaterCoil.cpp writes these scalar fields directly.
+    // - Field Mapping: Relationship fields (Water Coil Name, Sensor Node Name, Actuator Node Name) are intentionally
+    //   excluded from this scalar scaffold pass.
+    // - TODO(parity): Add non-scalar relationship APIs incrementally without changing scalar signatures.
 
-  boost::optional<std::string> action() const;
+    boost::optional<std::string> controlVariable() const;
+    bool isControlVariableDefaulted() const;
+    bool setControlVariable(const std::string& controlVariable);
+    void resetControlVariable();
 
-  boost::optional<std::string> actuatorVariable() const;
-  bool isActuatorVariableDefaulted() const;
+    boost::optional<std::string> action() const;
+    bool setAction(const std::string& action);
+    void resetAction();
 
-  boost::optional<double> controllerConvergenceTolerance() const;
-  bool isControllerConvergenceToleranceDefaulted() const;
-  bool isControllerConvergenceToleranceAutosized() const;
+    boost::optional<std::string> actuatorVariable() const;
+    bool isActuatorVariableDefaulted() const;
+    bool setActuatorVariable(const std::string& actuatorVariable);
+    void resetActuatorVariable();
 
-  boost::optional<double> maximumActuatedFlow() const;
-  bool isMaximumActuatedFlowAutosized() const;
+    boost::optional<double> controllerConvergenceTolerance() const;
+    bool isControllerConvergenceToleranceDefaulted() const;
+    bool isControllerConvergenceToleranceAutosized() const;
+    boost::optional<double> autosizedControllerConvergenceTolerance() const;
+    bool setControllerConvergenceTolerance(double controllerConvergenceTolerance);
+    void resetControllerConvergenceTolerance();
+    void autosizeControllerConvergenceTolerance();
 
-  double minimumActuatedFlow() const;
-  bool isMinimumActuatedFlowDefaulted() const;
+    boost::optional<double> maximumActuatedFlow() const;
+    bool isMaximumActuatedFlowAutosized() const;
+    boost::optional<double> autosizedMaximumActuatedFlow() const;
+    bool setMaximumActuatedFlow(double maximumActuatedFlow);
+    void resetMaximumActuatedFlow();
+    void autosizeMaximumActuatedFlow();
 
-  bool setControlVariable(const std::string& controlVariable);
-  void resetControlVariable();
+    double minimumActuatedFlow() const;
+    bool isMinimumActuatedFlowDefaulted() const;
+    bool setMinimumActuatedFlow(double minimumActuatedFlow);
+    void resetMinimumActuatedFlow();
 
-  bool setAction(const std::string& action);
-  void resetAction();
+   protected:
+    using ImplType = detail::ControllerWaterCoil_Impl;
 
-  bool setActuatorVariable(const std::string& actuatorVariable);
-  void resetActuatorVariable();
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  bool setControllerConvergenceTolerance(double controllerConvergenceTolerance);
-  void resetControllerConvergenceTolerance();
-  void autosizeControllerConvergenceTolerance();
-
-  bool setMaximumActuatedFlow(double maximumActuatedFlow);
-  void resetMaximumActuatedFlow();
-  void autosizeMaximumActuatedFlow();
-
-  bool setMinimumActuatedFlow(double minimumActuatedFlow);
-  void resetMinimumActuatedFlow();
-
-  boost::optional<double> autosizedControllerConvergenceTolerance() const;
-  boost::optional<double> autosizedMaximumActuatedFlow() const;
-
- protected:
-  using ImplType = detail::ControllerWaterCoil_Impl;
-
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit ControllerWaterCoil(std::shared_ptr<detail::ControllerWaterCoil_Impl> impl);
-};
+    explicit ControllerWaterCoil(std::shared_ptr<detail::ControllerWaterCoil_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

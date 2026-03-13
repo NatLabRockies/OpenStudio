@@ -38,8 +38,11 @@ namespace epmodel {
     // - Field Mapping: numberofPlantLoopConnections maps directly to EnergyPlus ZoneHVAC:ForcedAir:UserDefined "Number of Plant Loop Connections" field.
     // - Field Mapping: All node links, object-list references, and water storage tank names remain relationship-like and are intentionally excluded from the scalar API.
     // - TODO(parity): Add relationship helpers (node linking, water storage targets) after simple scalar saturation.
+    /** @name Number of Plant Loop Connections */
+    //@{
     int numberofPlantLoopConnections() const;
     bool setNumberofPlantLoopConnections(int numberofPlantLoopConnections);
+    //@}
 
    protected:
     using ImplType = detail::ZoneHVACForcedAirUserDefined_Impl;

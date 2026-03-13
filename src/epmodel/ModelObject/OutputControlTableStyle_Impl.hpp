@@ -13,25 +13,24 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API OutputControlTableStyle_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~OutputControlTableStyle_Impl() override = default;
+    class EPMODEL_API OutputControlTableStyle_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~OutputControlTableStyle_Impl() override = default;
 
-  std::string columnSeparator() const;
-  std::string unitConversion() const;
+      std::string columnSeparator() const;
+      bool setColumnSeparator(const std::string& columnSeparator);
+      std::vector<std::string> columnSeparatorValues() const;
 
-  bool setColumnSeparator(const std::string& columnSeparator);
-  bool setUnitConversion(const std::string& unitConversion);
+      std::string unitConversion() const;
+      bool setUnitConversion(const std::string& unitConversion);
+      std::vector<std::string> unitConversionValues() const;
+    };
 
-  std::vector<std::string> columnSeparatorValues() const;
-  std::vector<std::string> unitConversionValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

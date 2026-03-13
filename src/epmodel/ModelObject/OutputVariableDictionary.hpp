@@ -17,53 +17,51 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class OutputVariableDictionary_Impl;
-}
+  namespace detail {
+    class OutputVariableDictionary_Impl;
+  }
 
-class EPMODEL_API OutputVariableDictionary : public ModelObject
-{
- public:
-  explicit OutputVariableDictionary(const Model& model);
+  class EPMODEL_API OutputVariableDictionary : public ModelObject
+  {
+   public:
+    explicit OutputVariableDictionary(const Model& model);
 
-  virtual ~OutputVariableDictionary() override = default;
-  OutputVariableDictionary(const OutputVariableDictionary& other) = default;
-  OutputVariableDictionary(OutputVariableDictionary&& other) = default;
-  OutputVariableDictionary& operator=(const OutputVariableDictionary&) = default;
-  OutputVariableDictionary& operator=(OutputVariableDictionary&&) = default;
+    virtual ~OutputVariableDictionary() override = default;
+    OutputVariableDictionary(const OutputVariableDictionary& other) = default;
+    OutputVariableDictionary(OutputVariableDictionary&& other) = default;
+    OutputVariableDictionary& operator=(const OutputVariableDictionary&) = default;
+    OutputVariableDictionary& operator=(OutputVariableDictionary&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> keyFieldValues();
-  static std::vector<std::string> sortOptionValues();
+    static std::vector<std::string> keyFieldValues();
+    static std::vector<std::string> sortOptionValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-  // - Field Mapping: keyField/sortOption map directly to E+ Output:VariableDictionary Key Field/Sort Option.
-  // - ForwardTranslator evidence: ForwardTranslator::createStandardOutputRequests writes Key Field=IDF and Sort Option=Unsorted.
-  // - TODO(parity): Keep this scalar API stable while adding any future non-scalar parity behavior.
-  std::string keyField() const;
-  bool isKeyFieldDefaulted() const;
+    // Schema Alignment Notes:
+    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
+    // - Field Mapping: keyField/sortOption map directly to E+ Output:VariableDictionary Key Field/Sort Option.
+    // - ForwardTranslator evidence: ForwardTranslator::createStandardOutputRequests writes Key Field=IDF and Sort Option=Unsorted.
+    // - TODO(parity): Keep this scalar API stable while adding any future non-scalar parity behavior.
+    std::string keyField() const;
+    bool isKeyFieldDefaulted() const;
+    bool setKeyField(const std::string& keyField);
+    void resetKeyField();
 
-  boost::optional<std::string> sortOption() const;
+    boost::optional<std::string> sortOption() const;
+    bool setSortOption(const std::string& sortOption);
+    void resetSortOption();
 
-  bool setKeyField(const std::string& keyField);
-  void resetKeyField();
+   protected:
+    using ImplType = detail::OutputVariableDictionary_Impl;
 
-  bool setSortOption(const std::string& sortOption);
-  void resetSortOption();
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
- protected:
-  using ImplType = detail::OutputVariableDictionary_Impl;
-
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit OutputVariableDictionary(std::shared_ptr<detail::OutputVariableDictionary_Impl> impl);
-};
+    explicit OutputVariableDictionary(std::shared_ptr<detail::OutputVariableDictionary_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

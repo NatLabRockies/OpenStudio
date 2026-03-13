@@ -15,84 +15,84 @@
 namespace openstudio {
 namespace epmodel {
 
-RoomAirSettingsOneNodeDisplacementVentilation::RoomAirSettingsOneNodeDisplacementVentilation(const Model& model)
-  : ModelObject(RoomAirSettingsOneNodeDisplacementVentilation::iddObjectType(), model) {}
+  RoomAirSettingsOneNodeDisplacementVentilation::RoomAirSettingsOneNodeDisplacementVentilation(const Model& model)
+    : ModelObject(RoomAirSettingsOneNodeDisplacementVentilation::iddObjectType(), model) {}
 
-RoomAirSettingsOneNodeDisplacementVentilation::RoomAirSettingsOneNodeDisplacementVentilation(
-  std::shared_ptr<detail::RoomAirSettingsOneNodeDisplacementVentilation_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  RoomAirSettingsOneNodeDisplacementVentilation::RoomAirSettingsOneNodeDisplacementVentilation(
+    std::shared_ptr<detail::RoomAirSettingsOneNodeDisplacementVentilation_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType RoomAirSettingsOneNodeDisplacementVentilation::iddObjectType() {
-  return IddObjectType::RoomAirSettings_OneNodeDisplacementVentilation;
-}
+  IddObjectType RoomAirSettingsOneNodeDisplacementVentilation::iddObjectType() {
+    return IddObjectType::RoomAirSettings_OneNodeDisplacementVentilation;
+  }
 
-boost::optional<double> RoomAirSettingsOneNodeDisplacementVentilation::fractionofConvectiveInternalLoadsAddedtoFloorAir() const {
-  return getImpl<detail::RoomAirSettingsOneNodeDisplacementVentilation_Impl>()->fractionofConvectiveInternalLoadsAddedtoFloorAir();
-}
+  boost::optional<double> RoomAirSettingsOneNodeDisplacementVentilation::fractionofConvectiveInternalLoadsAddedtoFloorAir() const {
+    return getImpl<detail::RoomAirSettingsOneNodeDisplacementVentilation_Impl>()->fractionofConvectiveInternalLoadsAddedtoFloorAir();
+  }
 
-boost::optional<double> RoomAirSettingsOneNodeDisplacementVentilation::fractionofInfiltrationInternalLoadsAddedtoFloorAir() const {
-  return getImpl<detail::RoomAirSettingsOneNodeDisplacementVentilation_Impl>()->fractionofInfiltrationInternalLoadsAddedtoFloorAir();
-}
+  bool RoomAirSettingsOneNodeDisplacementVentilation::setFractionofConvectiveInternalLoadsAddedtoFloorAir(
+    double fractionofConvectiveInternalLoadsAddedtoFloorAir) {
+    return getImpl<detail::RoomAirSettingsOneNodeDisplacementVentilation_Impl>()->setFractionofConvectiveInternalLoadsAddedtoFloorAir(
+      fractionofConvectiveInternalLoadsAddedtoFloorAir);
+  }
 
-bool RoomAirSettingsOneNodeDisplacementVentilation::setFractionofConvectiveInternalLoadsAddedtoFloorAir(
-  double fractionofConvectiveInternalLoadsAddedtoFloorAir) {
-  return getImpl<detail::RoomAirSettingsOneNodeDisplacementVentilation_Impl>()->setFractionofConvectiveInternalLoadsAddedtoFloorAir(
-    fractionofConvectiveInternalLoadsAddedtoFloorAir);
-}
+  void RoomAirSettingsOneNodeDisplacementVentilation::resetFractionofConvectiveInternalLoadsAddedtoFloorAir() {
+    getImpl<detail::RoomAirSettingsOneNodeDisplacementVentilation_Impl>()->resetFractionofConvectiveInternalLoadsAddedtoFloorAir();
+  }
 
-bool RoomAirSettingsOneNodeDisplacementVentilation::setFractionofInfiltrationInternalLoadsAddedtoFloorAir(
-  double fractionofInfiltrationInternalLoadsAddedtoFloorAir) {
-  return getImpl<detail::RoomAirSettingsOneNodeDisplacementVentilation_Impl>()->setFractionofInfiltrationInternalLoadsAddedtoFloorAir(
-    fractionofInfiltrationInternalLoadsAddedtoFloorAir);
-}
+  boost::optional<double> RoomAirSettingsOneNodeDisplacementVentilation::fractionofInfiltrationInternalLoadsAddedtoFloorAir() const {
+    return getImpl<detail::RoomAirSettingsOneNodeDisplacementVentilation_Impl>()->fractionofInfiltrationInternalLoadsAddedtoFloorAir();
+  }
 
-void RoomAirSettingsOneNodeDisplacementVentilation::resetFractionofConvectiveInternalLoadsAddedtoFloorAir() {
-  getImpl<detail::RoomAirSettingsOneNodeDisplacementVentilation_Impl>()->resetFractionofConvectiveInternalLoadsAddedtoFloorAir();
-}
+  bool RoomAirSettingsOneNodeDisplacementVentilation::setFractionofInfiltrationInternalLoadsAddedtoFloorAir(
+    double fractionofInfiltrationInternalLoadsAddedtoFloorAir) {
+    return getImpl<detail::RoomAirSettingsOneNodeDisplacementVentilation_Impl>()->setFractionofInfiltrationInternalLoadsAddedtoFloorAir(
+      fractionofInfiltrationInternalLoadsAddedtoFloorAir);
+  }
 
-void RoomAirSettingsOneNodeDisplacementVentilation::resetFractionofInfiltrationInternalLoadsAddedtoFloorAir() {
-  getImpl<detail::RoomAirSettingsOneNodeDisplacementVentilation_Impl>()->resetFractionofInfiltrationInternalLoadsAddedtoFloorAir();
-}
+  void RoomAirSettingsOneNodeDisplacementVentilation::resetFractionofInfiltrationInternalLoadsAddedtoFloorAir() {
+    getImpl<detail::RoomAirSettingsOneNodeDisplacementVentilation_Impl>()->resetFractionofInfiltrationInternalLoadsAddedtoFloorAir();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-boost::optional<double> RoomAirSettingsOneNodeDisplacementVentilation_Impl::fractionofConvectiveInternalLoadsAddedtoFloorAir() const {
-  return getDouble(openstudio::RoomAirSettings_OneNodeDisplacementVentilationFields::FractionofConvectiveInternalLoadsAddedtoFloorAir, true);
-}
+    boost::optional<double> RoomAirSettingsOneNodeDisplacementVentilation_Impl::fractionofConvectiveInternalLoadsAddedtoFloorAir() const {
+      return getDouble(openstudio::RoomAirSettings_OneNodeDisplacementVentilationFields::FractionofConvectiveInternalLoadsAddedtoFloorAir, true);
+    }
 
-boost::optional<double> RoomAirSettingsOneNodeDisplacementVentilation_Impl::fractionofInfiltrationInternalLoadsAddedtoFloorAir() const {
-  return getDouble(openstudio::RoomAirSettings_OneNodeDisplacementVentilationFields::FractionofInfiltrationInternalLoadsAddedtoFloorAir, true);
-}
+    bool RoomAirSettingsOneNodeDisplacementVentilation_Impl::setFractionofConvectiveInternalLoadsAddedtoFloorAir(
+      double fractionofConvectiveInternalLoadsAddedtoFloorAir) {
+      return setDouble(openstudio::RoomAirSettings_OneNodeDisplacementVentilationFields::FractionofConvectiveInternalLoadsAddedtoFloorAir,
+                       fractionofConvectiveInternalLoadsAddedtoFloorAir);
+    }
 
-bool RoomAirSettingsOneNodeDisplacementVentilation_Impl::setFractionofConvectiveInternalLoadsAddedtoFloorAir(
-  double fractionofConvectiveInternalLoadsAddedtoFloorAir) {
-  return setDouble(openstudio::RoomAirSettings_OneNodeDisplacementVentilationFields::FractionofConvectiveInternalLoadsAddedtoFloorAir,
-                   fractionofConvectiveInternalLoadsAddedtoFloorAir);
-}
+    void RoomAirSettingsOneNodeDisplacementVentilation_Impl::resetFractionofConvectiveInternalLoadsAddedtoFloorAir() {
+      const bool result =
+        setString(openstudio::RoomAirSettings_OneNodeDisplacementVentilationFields::FractionofConvectiveInternalLoadsAddedtoFloorAir, "");
+      OS_ASSERT(result);
+    }
 
-bool RoomAirSettingsOneNodeDisplacementVentilation_Impl::setFractionofInfiltrationInternalLoadsAddedtoFloorAir(
-  double fractionofInfiltrationInternalLoadsAddedtoFloorAir) {
-  return setDouble(openstudio::RoomAirSettings_OneNodeDisplacementVentilationFields::FractionofInfiltrationInternalLoadsAddedtoFloorAir,
-                   fractionofInfiltrationInternalLoadsAddedtoFloorAir);
-}
+    boost::optional<double> RoomAirSettingsOneNodeDisplacementVentilation_Impl::fractionofInfiltrationInternalLoadsAddedtoFloorAir() const {
+      return getDouble(openstudio::RoomAirSettings_OneNodeDisplacementVentilationFields::FractionofInfiltrationInternalLoadsAddedtoFloorAir, true);
+    }
 
-void RoomAirSettingsOneNodeDisplacementVentilation_Impl::resetFractionofConvectiveInternalLoadsAddedtoFloorAir() {
-  const bool result =
-    setString(openstudio::RoomAirSettings_OneNodeDisplacementVentilationFields::FractionofConvectiveInternalLoadsAddedtoFloorAir, "");
-  OS_ASSERT(result);
-}
+    bool RoomAirSettingsOneNodeDisplacementVentilation_Impl::setFractionofInfiltrationInternalLoadsAddedtoFloorAir(
+      double fractionofInfiltrationInternalLoadsAddedtoFloorAir) {
+      return setDouble(openstudio::RoomAirSettings_OneNodeDisplacementVentilationFields::FractionofInfiltrationInternalLoadsAddedtoFloorAir,
+                       fractionofInfiltrationInternalLoadsAddedtoFloorAir);
+    }
 
-void RoomAirSettingsOneNodeDisplacementVentilation_Impl::resetFractionofInfiltrationInternalLoadsAddedtoFloorAir() {
-  const bool result =
-    setString(openstudio::RoomAirSettings_OneNodeDisplacementVentilationFields::FractionofInfiltrationInternalLoadsAddedtoFloorAir, "");
-  OS_ASSERT(result);
-}
+    void RoomAirSettingsOneNodeDisplacementVentilation_Impl::resetFractionofInfiltrationInternalLoadsAddedtoFloorAir() {
+      const bool result =
+        setString(openstudio::RoomAirSettings_OneNodeDisplacementVentilationFields::FractionofInfiltrationInternalLoadsAddedtoFloorAir, "");
+      OS_ASSERT(result);
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

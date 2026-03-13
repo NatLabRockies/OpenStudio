@@ -22,12 +22,12 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~SurfacePropertyHeatTransferAlgorithmConstruction_Impl() override = default;
 
+      std::vector<std::string> algorithmValues() const;
+
       std::string algorithm() const;
       bool setAlgorithm(const std::string& algorithm);
       bool isAlgorithmDefaulted() const;
       void resetAlgorithm();
-
-      std::vector<std::string> algorithmValues() const;
     };
 
   }  // namespace detail

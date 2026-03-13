@@ -23,22 +23,22 @@ namespace epmodel {
       return *value;
     }
 
+    bool SimpleGlazing_Impl::setUFactor(double uFactor) {
+      return setDouble(WindowMaterial_SimpleGlazingSystemFields::UFactor, uFactor);
+    }
+
     double SimpleGlazing_Impl::solarHeatGainCoefficient() const {
       auto value = getDouble(WindowMaterial_SimpleGlazingSystemFields::SolarHeatGainCoefficient, true);
       OS_ASSERT(value);
       return *value;
     }
 
-    boost::optional<double> SimpleGlazing_Impl::visibleTransmittance() const {
-      return getDouble(WindowMaterial_SimpleGlazingSystemFields::VisibleTransmittance, true);
-    }
-
-    bool SimpleGlazing_Impl::setUFactor(double uFactor) {
-      return setDouble(WindowMaterial_SimpleGlazingSystemFields::UFactor, uFactor);
-    }
-
     bool SimpleGlazing_Impl::setSolarHeatGainCoefficient(double solarHeatGainCoefficient) {
       return setDouble(WindowMaterial_SimpleGlazingSystemFields::SolarHeatGainCoefficient, solarHeatGainCoefficient);
+    }
+
+    boost::optional<double> SimpleGlazing_Impl::visibleTransmittance() const {
+      return getDouble(WindowMaterial_SimpleGlazingSystemFields::VisibleTransmittance, true);
     }
 
     bool SimpleGlazing_Impl::setVisibleTransmittance(boost::optional<double> visibleTransmittance) {
@@ -80,20 +80,20 @@ namespace epmodel {
     return getImpl<detail::SimpleGlazing_Impl>()->uFactor();
   }
 
-  double SimpleGlazing::solarHeatGainCoefficient() const {
-    return getImpl<detail::SimpleGlazing_Impl>()->solarHeatGainCoefficient();
-  }
-
-  boost::optional<double> SimpleGlazing::visibleTransmittance() const {
-    return getImpl<detail::SimpleGlazing_Impl>()->visibleTransmittance();
-  }
-
   bool SimpleGlazing::setUFactor(double uFactor) {
     return getImpl<detail::SimpleGlazing_Impl>()->setUFactor(uFactor);
   }
 
+  double SimpleGlazing::solarHeatGainCoefficient() const {
+    return getImpl<detail::SimpleGlazing_Impl>()->solarHeatGainCoefficient();
+  }
+
   bool SimpleGlazing::setSolarHeatGainCoefficient(double solarHeatGainCoefficient) {
     return getImpl<detail::SimpleGlazing_Impl>()->setSolarHeatGainCoefficient(solarHeatGainCoefficient);
+  }
+
+  boost::optional<double> SimpleGlazing::visibleTransmittance() const {
+    return getImpl<detail::SimpleGlazing_Impl>()->visibleTransmittance();
   }
 
   bool SimpleGlazing::setVisibleTransmittance(double visibleTransmittance) {

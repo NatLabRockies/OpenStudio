@@ -22,35 +22,37 @@ namespace epmodel {
       virtual ~ZoneHVACBaseboardConvectiveWater_Impl() override = default;
 
       std::string heatingDesignCapacityMethod() const;
+      bool setHeatingDesignCapacityMethod(const std::string& heatingDesignCapacityMethod);
+
       boost::optional<double> heatingDesignCapacity() const;
+      bool setHeatingDesignCapacity(double heatingDesignCapacity);
+      void autosizeHeatingDesignCapacity();
       bool isHeatingDesignCapacityAutosized() const;
+
       double heatingDesignCapacityPerFloorArea() const;
+      bool setHeatingDesignCapacityPerFloorArea(double heatingDesignCapacityPerFloorArea);
+
       double fractionofAutosizedHeatingDesignCapacity() const;
+      bool setFractionofAutosizedHeatingDesignCapacity(double fractionofAutosizedHeatingDesignCapacity);
 
       boost::optional<double> uFactorTimesAreaValue() const;
+      bool setUFactorTimesAreaValue(double uFactorTimesAreaValue);
+      void resetUFactorTimesAreaValue();
+      void autosizeUFactorTimesAreaValue();
       bool isUFactorTimesAreaValueDefaulted() const;
       bool isUFactorTimesAreaValueAutosized() const;
 
       boost::optional<double> maximumWaterFlowRate() const;
+      bool setMaximumWaterFlowRate(double maximumWaterFlowRate);
+      void resetMaximumWaterFlowRate();
+      void autosizeMaximumWaterFlowRate();
       bool isMaximumWaterFlowRateDefaulted() const;
       bool isMaximumWaterFlowRateAutosized() const;
 
       double convergenceTolerance() const;
-      bool isConvergenceToleranceDefaulted() const;
-
-      bool setHeatingDesignCapacityMethod(const std::string& heatingDesignCapacityMethod);
-      bool setHeatingDesignCapacity(double heatingDesignCapacity);
-      void autosizeHeatingDesignCapacity();
-      bool setHeatingDesignCapacityPerFloorArea(double heatingDesignCapacityPerFloorArea);
-      bool setFractionofAutosizedHeatingDesignCapacity(double fractionofAutosizedHeatingDesignCapacity);
-      bool setUFactorTimesAreaValue(double uFactorTimesAreaValue);
-      void resetUFactorTimesAreaValue();
-      void autosizeUFactorTimesAreaValue();
-      bool setMaximumWaterFlowRate(double maximumWaterFlowRate);
-      void resetMaximumWaterFlowRate();
-      void autosizeMaximumWaterFlowRate();
       bool setConvergenceTolerance(double convergenceTolerance);
       void resetConvergenceTolerance();
+      bool isConvergenceToleranceDefaulted() const;
     };
 
   }  // namespace detail

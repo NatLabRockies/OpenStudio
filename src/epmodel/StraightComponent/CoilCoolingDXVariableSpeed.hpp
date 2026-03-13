@@ -46,13 +46,13 @@ class EPMODEL_API CoilCoolingDXVariableSpeed : public StraightComponent
   bool setNominalSpeedLevel(int nominalSpeedLevel);
 
   boost::optional<double> grossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevel() const;
-  bool isGrossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevelAutosized() const;
   bool setGrossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevel(double grossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevel);
+  bool isGrossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevelAutosized() const;
   void autosizeGrossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevel();
 
   boost::optional<double> ratedAirFlowRateAtSelectedNominalSpeedLevel() const;
-  bool isRatedAirFlowRateAtSelectedNominalSpeedLevelAutosized() const;
   bool setRatedAirFlowRateAtSelectedNominalSpeedLevel(double ratedAirFlowRateAtSelectedNominalSpeedLevel);
+  bool isRatedAirFlowRateAtSelectedNominalSpeedLevelAutosized() const;
   void autosizeRatedAirFlowRateAtSelectedNominalSpeedLevel();
 
   double nominalTimeforCondensatetoBeginLeavingtheCoil() const;
@@ -75,8 +75,8 @@ class EPMODEL_API CoilCoolingDXVariableSpeed : public StraightComponent
   bool setCondenserType(const std::string& condenserType);
 
   boost::optional<double> evaporativeCondenserPumpRatedPowerConsumption() const;
-  bool isEvaporativeCondenserPumpRatedPowerConsumptionAutosized() const;
   bool setEvaporativeCondenserPumpRatedPowerConsumption(double evaporativeCondenserPumpRatedPowerConsumption);
+  bool isEvaporativeCondenserPumpRatedPowerConsumptionAutosized() const;
   void autosizeEvaporativeCondenserPumpRatedPowerConsumption();
 
   double crankcaseHeaterCapacity() const;

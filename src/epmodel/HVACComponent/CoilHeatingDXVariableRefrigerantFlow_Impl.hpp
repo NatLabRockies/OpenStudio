@@ -11,26 +11,26 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CoilHeatingDXVariableRefrigerantFlow_Impl : public HVACComponent_Impl
-{
- public:
-  using HVACComponent_Impl::HVACComponent_Impl;
-  virtual ~CoilHeatingDXVariableRefrigerantFlow_Impl() override = default;
+    class EPMODEL_API CoilHeatingDXVariableRefrigerantFlow_Impl : public HVACComponent_Impl
+    {
+     public:
+      using HVACComponent_Impl::HVACComponent_Impl;
+      virtual ~CoilHeatingDXVariableRefrigerantFlow_Impl() override = default;
 
-  boost::optional<double> ratedTotalHeatingCapacity() const;
-  bool isRatedTotalHeatingCapacityAutosized() const;
-  bool setRatedTotalHeatingCapacity(double ratedTotalHeatingCapacity);
-  void autosizeRatedTotalHeatingCapacity();
+      boost::optional<double> ratedTotalHeatingCapacity() const;
+      bool setRatedTotalHeatingCapacity(double ratedTotalHeatingCapacity);
+      bool isRatedTotalHeatingCapacityAutosized() const;
+      void autosizeRatedTotalHeatingCapacity();
 
-  boost::optional<double> ratedAirFlowRate() const;
-  bool isRatedAirFlowRateAutosized() const;
-  bool setRatedAirFlowRate(double ratedAirFlowRate);
-  void autosizeRatedAirFlowRate();
-};
+      boost::optional<double> ratedAirFlowRate() const;
+      bool setRatedAirFlowRate(double ratedAirFlowRate);
+      bool isRatedAirFlowRateAutosized() const;
+      void autosizeRatedAirFlowRate();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

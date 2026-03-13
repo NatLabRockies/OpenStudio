@@ -11,92 +11,73 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ElectricLoadCenterStorageLiIonNMCBattery_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ElectricLoadCenterStorageLiIonNMCBattery_Impl() override = default;
+    class EPMODEL_API ElectricLoadCenterStorageLiIonNMCBattery_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ElectricLoadCenterStorageLiIonNMCBattery_Impl() override = default;
 
-  double radiativeFraction() const;
+      double radiativeFraction() const;
+      bool setRadiativeFraction(double radiativeFraction);
 
-  std::string lifetimeModel() const;
+      std::string lifetimeModel() const;
+      bool setLifetimeModel(const std::string& lifetimeModel);
 
-  int numberofCellsinSeries() const;
+      int numberofCellsinSeries() const;
+      bool setNumberofCellsinSeries(int numberofCellsinSeries);
 
-  int numberofStringsinParallel() const;
+      int numberofStringsinParallel() const;
+      bool setNumberofStringsinParallel(int numberofStringsinParallel);
 
-  double initialFractionalStateofCharge() const;
+      double initialFractionalStateofCharge() const;
+      bool setInitialFractionalStateofCharge(double initialFractionalStateofCharge);
 
-  double dctoDCChargingEfficiency() const;
+      double dctoDCChargingEfficiency() const;
+      bool setDCtoDCChargingEfficiency(double dctoDCChargingEfficiency);
 
-  double batteryMass() const;
+      double batteryMass() const;
+      bool setBatteryMass(double batteryMass);
 
-  double batterySurfaceArea() const;
+      double batterySurfaceArea() const;
+      bool setBatterySurfaceArea(double batterySurfaceArea);
 
-  double batterySpecificHeatCapacity() const;
+      double batterySpecificHeatCapacity() const;
+      bool setBatterySpecificHeatCapacity(double batterySpecificHeatCapacity);
 
-  double heatTransferCoefficientBetweenBatteryandAmbient() const;
+      double heatTransferCoefficientBetweenBatteryandAmbient() const;
+      bool setHeatTransferCoefficientBetweenBatteryandAmbient(double heatTransferCoefficientBetweenBatteryandAmbient);
 
-  double fullyChargedCellVoltage() const;
+      double fullyChargedCellVoltage() const;
+      bool setFullyChargedCellVoltage(double fullyChargedCellCapacity);
 
-  double cellVoltageatEndofExponentialZone() const;
+      double cellVoltageatEndofExponentialZone() const;
+      bool setCellVoltageatEndofExponentialZone(double cellVoltageatEndofExponentialZone);
 
-  double cellVoltageatEndofNominalZone() const;
+      double cellVoltageatEndofNominalZone() const;
+      bool setCellVoltageatEndofNominalZone(double cellVoltageatEndofNominalZone);
 
-  double defaultNominalCellVoltage() const;
+      double defaultNominalCellVoltage() const;
+      bool setDefaultNominalCellVoltage(double defaultNominalCellVoltage);
 
-  double fullyChargedCellCapacity() const;
+      double fullyChargedCellCapacity() const;
+      bool setFullyChargedCellCapacity(double fullyChargedCellCapacity);
 
-  double fractionofCellCapacityRemovedattheEndofExponentialZone() const;
+      double fractionofCellCapacityRemovedattheEndofExponentialZone() const;
+      bool setFractionofCellCapacityRemovedattheEndofExponentialZone(double fractionofCellCapacityRemovedattheEndofExponentialZone);
 
-  double fractionofCellCapacityRemovedattheEndofNominalZone() const;
+      double fractionofCellCapacityRemovedattheEndofNominalZone() const;
+      bool setFractionofCellCapacityRemovedattheEndofNominalZone(double fractionofCellCapacityRemovedattheEndofNominalZone);
 
-  double chargeRateatWhichVoltagevsCapacityCurveWasGenerated() const;
+      double chargeRateatWhichVoltagevsCapacityCurveWasGenerated() const;
+      bool setChargeRateatWhichVoltagevsCapacityCurveWasGenerated(double chargeRateatWhichVoltagevsCapacityCurveWasGenerated);
 
-  double batteryCellInternalElectricalResistance() const;
+      double batteryCellInternalElectricalResistance() const;
+      bool setBatteryCellInternalElectricalResistance(double batteryCellInternalElectricalResistance);
+    };
 
-  bool setRadiativeFraction(double radiativeFraction);
-
-  bool setLifetimeModel(const std::string& lifetimeModel);
-
-  bool setNumberofCellsinSeries(int numberofCellsinSeries);
-
-  bool setNumberofStringsinParallel(int numberofStringsinParallel);
-
-  bool setInitialFractionalStateofCharge(double initialFractionalStateofCharge);
-
-  bool setDCtoDCChargingEfficiency(double dctoDCChargingEfficiency);
-
-  bool setBatteryMass(double batteryMass);
-
-  bool setBatterySurfaceArea(double batterySurfaceArea);
-
-  bool setBatterySpecificHeatCapacity(double batterySpecificHeatCapacity);
-
-  bool setHeatTransferCoefficientBetweenBatteryandAmbient(double heatTransferCoefficientBetweenBatteryandAmbient);
-
-  bool setFullyChargedCellVoltage(double fullyChargedCellCapacity);
-
-  bool setCellVoltageatEndofExponentialZone(double cellVoltageatEndofExponentialZone);
-
-  bool setCellVoltageatEndofNominalZone(double cellVoltageatEndofNominalZone);
-
-  bool setDefaultNominalCellVoltage(double defaultNominalCellVoltage);
-
-  bool setFullyChargedCellCapacity(double fullyChargedCellCapacity);
-
-  bool setFractionofCellCapacityRemovedattheEndofExponentialZone(double fractionofCellCapacityRemovedattheEndofExponentialZone);
-
-  bool setFractionofCellCapacityRemovedattheEndofNominalZone(double fractionofCellCapacityRemovedattheEndofNominalZone);
-
-  bool setChargeRateatWhichVoltagevsCapacityCurveWasGenerated(double chargeRateatWhichVoltagevsCapacityCurveWasGenerated);
-
-  bool setBatteryCellInternalElectricalResistance(double batteryCellInternalElectricalResistance);
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

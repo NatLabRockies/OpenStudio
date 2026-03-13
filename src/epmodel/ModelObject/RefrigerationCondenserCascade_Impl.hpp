@@ -22,25 +22,30 @@ namespace epmodel {
       virtual ~RefrigerationCondenserCascade_Impl() override = default;
 
       double ratedCondensingTemperature() const;
+      bool setRatedCondensingTemperature(double ratedCondensingTemperature);
+
       double ratedApproachTemperatureDifference() const;
       bool isRatedApproachTemperatureDifferenceDefaulted() const;
-      double ratedEffectiveTotalHeatRejectionRate() const;
-      std::string condensingTemperatureControlType() const;
-      bool isCondensingTemperatureControlTypeDefaulted() const;
-      boost::optional<double> condenserRefrigerantOperatingChargeInventory() const;
-      boost::optional<double> condensateReceiverRefrigerantInventory() const;
-      boost::optional<double> condensatePipingRefrigerantInventory() const;
-
-      bool setRatedCondensingTemperature(double ratedCondensingTemperature);
       bool setRatedApproachTemperatureDifference(double ratedApproachTemperatureDifference);
       void resetRatedApproachTemperatureDifference();
+
+      double ratedEffectiveTotalHeatRejectionRate() const;
       bool setRatedEffectiveTotalHeatRejectionRate(double ratedEffectiveTotalHeatRejectionRate);
+
+      std::string condensingTemperatureControlType() const;
+      bool isCondensingTemperatureControlTypeDefaulted() const;
       bool setCondensingTemperatureControlType(const std::string& condensingTemperatureControlType);
       void resetCondensingTemperatureControlType();
+
+      boost::optional<double> condenserRefrigerantOperatingChargeInventory() const;
       bool setCondenserRefrigerantOperatingChargeInventory(double condenserRefrigerantOperatingChargeInventory);
       void resetCondenserRefrigerantOperatingChargeInventory();
+
+      boost::optional<double> condensateReceiverRefrigerantInventory() const;
       bool setCondensateReceiverRefrigerantInventory(double condensateReceiverRefrigerantInventory);
       void resetCondensateReceiverRefrigerantInventory();
+
+      boost::optional<double> condensatePipingRefrigerantInventory() const;
       bool setCondensatePipingRefrigerantInventory(double condensatePipingRefrigerantInventory);
       void resetCondensatePipingRefrigerantInventory();
     };

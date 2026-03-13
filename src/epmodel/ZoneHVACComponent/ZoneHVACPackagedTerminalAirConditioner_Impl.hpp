@@ -24,51 +24,50 @@ namespace epmodel {
       virtual ~ZoneHVACPackagedTerminalAirConditioner_Impl() override = default;
 
       boost::optional<double> supplyAirFlowRateDuringCoolingOperation() const;
-      bool isSupplyAirFlowRateDuringCoolingOperationAutosized() const;
       bool setSupplyAirFlowRateDuringCoolingOperation(boost::optional<double> supplyAirFlowRateDuringCoolingOperation);
+      bool isSupplyAirFlowRateDuringCoolingOperationAutosized() const;
       void autosizeSupplyAirFlowRateDuringCoolingOperation();
+      boost::optional<double> autosizedSupplyAirFlowRateDuringCoolingOperation() const;
 
       boost::optional<double> supplyAirFlowRateDuringHeatingOperation() const;
-      bool isSupplyAirFlowRateDuringHeatingOperationAutosized() const;
       bool setSupplyAirFlowRateDuringHeatingOperation(boost::optional<double> supplyAirFlowRateDuringHeatingOperation);
+      bool isSupplyAirFlowRateDuringHeatingOperationAutosized() const;
       void autosizeSupplyAirFlowRateDuringHeatingOperation();
+      boost::optional<double> autosizedSupplyAirFlowRateDuringHeatingOperation() const;
 
       boost::optional<double> supplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
-      bool isSupplyAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const;
       bool setSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded(boost::optional<double> supplyAirFlowRateWhenNoCoolingorHeatingisNeeded);
       void resetSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded();
+      bool isSupplyAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const;
       void autosizeSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded();
+      boost::optional<double> autosizedSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
 
       bool noLoadSupplyAirFlowRateControlSetToLowSpeed() const;
       bool setNoLoadSupplyAirFlowRateControlSetToLowSpeed(bool noLoadSupplyAirFlowRateControlSetToLowSpeed);
 
       boost::optional<double> outdoorAirFlowRateDuringCoolingOperation() const;
-      bool isOutdoorAirFlowRateDuringCoolingOperationAutosized() const;
       bool setOutdoorAirFlowRateDuringCoolingOperation(boost::optional<double> outdoorAirFlowRateDuringCoolingOperation);
+      bool isOutdoorAirFlowRateDuringCoolingOperationAutosized() const;
       void autosizeOutdoorAirFlowRateDuringCoolingOperation();
+      boost::optional<double> autosizedOutdoorAirFlowRateDuringCoolingOperation() const;
 
       boost::optional<double> outdoorAirFlowRateDuringHeatingOperation() const;
-      bool isOutdoorAirFlowRateDuringHeatingOperationAutosized() const;
       bool setOutdoorAirFlowRateDuringHeatingOperation(boost::optional<double> outdoorAirFlowRateDuringHeatingOperation);
+      bool isOutdoorAirFlowRateDuringHeatingOperationAutosized() const;
       void autosizeOutdoorAirFlowRateDuringHeatingOperation();
+      boost::optional<double> autosizedOutdoorAirFlowRateDuringHeatingOperation() const;
 
       boost::optional<double> outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
-      bool isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const;
       bool setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(boost::optional<double> outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded);
       void resetOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
+      bool isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const;
       void autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
+      boost::optional<double> autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
 
       std::string fanPlacement() const;
       bool isFanPlacementDefaulted() const;
       bool setFanPlacement(const std::string& fanPlacement);
       void resetFanPlacement();
-
-      boost::optional<double> autosizedSupplyAirFlowRateDuringCoolingOperation() const;
-      boost::optional<double> autosizedSupplyAirFlowRateDuringHeatingOperation() const;
-      boost::optional<double> autosizedSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
-      boost::optional<double> autosizedOutdoorAirFlowRateDuringCoolingOperation() const;
-      boost::optional<double> autosizedOutdoorAirFlowRateDuringHeatingOperation() const;
-      boost::optional<double> autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
     };
 
   }  // namespace detail

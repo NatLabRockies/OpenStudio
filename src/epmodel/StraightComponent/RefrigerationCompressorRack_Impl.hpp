@@ -25,54 +25,55 @@ namespace epmodel {
       unsigned outletPort() const override;
 
       std::string heatRejectionLocation() const;
+      bool setHeatRejectionLocation(const std::string& heatRejectionLocation);
+
       double designCompressorRackCOP() const;
+      bool setDesignCompressorRackCOP(double designCompressorRackCOP);
+
       double designCondenserFanPower() const;
+      bool setDesignCondenserFanPower(double designCondenserFanPower);
 
       std::string condenserType() const;
-      std::string waterCooledLoopFlowType() const;
-
-      boost::optional<double> waterCooledCondenserDesignFlowRate() const;
-      boost::optional<double> waterCooledCondenserMaximumFlowRate() const;
-      double waterCooledCondenserMaximumWaterOutletTemperature() const;
-      double waterCooledCondenserMinimumWaterInletTemperature() const;
-
-      double evaporativeCondenserEffectiveness() const;
-      boost::optional<double> evaporativeCondenserAirFlowRate() const;
-      bool isEvaporativeCondenserAirFlowRateAutocalculated() const;
-
-      double basinHeaterCapacity() const;
-      double basinHeaterSetpointTemperature() const;
-
-      boost::optional<double> designEvaporativeCondenserWaterPumpPower() const;
-      bool isDesignEvaporativeCondenserWaterPumpPowerAutocalculated() const;
-
-      std::string endUseSubcategory() const;
-      bool isEndUseSubcategoryDefaulted() const;
-
-      bool setHeatRejectionLocation(const std::string& heatRejectionLocation);
-      bool setDesignCompressorRackCOP(double designCompressorRackCOP);
-      bool setDesignCondenserFanPower(double designCondenserFanPower);
       bool setCondenserType(const std::string& condenserType);
+
+      std::string waterCooledLoopFlowType() const;
       bool setWaterCooledLoopFlowType(const std::string& waterCooledLoopFlowType);
 
+      boost::optional<double> waterCooledCondenserDesignFlowRate() const;
       bool setWaterCooledCondenserDesignFlowRate(double waterCooledCondenserDesignFlowRate);
       void resetWaterCooledCondenserDesignFlowRate();
 
+      boost::optional<double> waterCooledCondenserMaximumFlowRate() const;
       bool setWaterCooledCondenserMaximumFlowRate(double waterCooledCondenserMaximumFlowRate);
       void resetWaterCooledCondenserMaximumFlowRate();
 
+      double waterCooledCondenserMaximumWaterOutletTemperature() const;
       bool setWaterCooledCondenserMaximumWaterOutletTemperature(double waterCooledCondenserMaximumWaterOutletTemperature);
+
+      double waterCooledCondenserMinimumWaterInletTemperature() const;
       bool setWaterCooledCondenserMinimumWaterInletTemperature(double waterCooledCondenserMinimumWaterInletTemperature);
+
+      double evaporativeCondenserEffectiveness() const;
       bool setEvaporativeCondenserEffectiveness(double evaporativeCondenserEffectiveness);
+
+      boost::optional<double> evaporativeCondenserAirFlowRate() const;
+      bool isEvaporativeCondenserAirFlowRateAutocalculated() const;
       bool setEvaporativeCondenserAirFlowRate(double evaporativeCondenserAirFlowRate);
       bool autocalculateEvaporativeCondenserAirFlowRate();
 
+      double basinHeaterCapacity() const;
       bool setBasinHeaterCapacity(double basinHeaterCapacity);
+
+      double basinHeaterSetpointTemperature() const;
       bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
 
+      boost::optional<double> designEvaporativeCondenserWaterPumpPower() const;
+      bool isDesignEvaporativeCondenserWaterPumpPowerAutocalculated() const;
       bool setDesignEvaporativeCondenserWaterPumpPower(double designEvaporativeCondenserWaterPumpPower);
       bool autocalculateDesignEvaporativeCondenserWaterPumpPower();
 
+      std::string endUseSubcategory() const;
+      bool isEndUseSubcategoryDefaulted() const;
       bool setEndUseSubcategory(const std::string& endUseSubcategory);
       void resetEndUseSubcategory();
     };

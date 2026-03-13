@@ -16,54 +16,53 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class GroundHeatTransferBasementEquivAutoGrid_Impl;
-}
+  namespace detail {
+    class GroundHeatTransferBasementEquivAutoGrid_Impl;
+  }
 
-class EPMODEL_API GroundHeatTransferBasementEquivAutoGrid : public ModelObject
-{
- public:
-  explicit GroundHeatTransferBasementEquivAutoGrid(const Model& model);
+  class EPMODEL_API GroundHeatTransferBasementEquivAutoGrid : public ModelObject
+  {
+   public:
+    explicit GroundHeatTransferBasementEquivAutoGrid(const Model& model);
 
-  virtual ~GroundHeatTransferBasementEquivAutoGrid() override = default;
-  GroundHeatTransferBasementEquivAutoGrid(const GroundHeatTransferBasementEquivAutoGrid& other) = default;
-  GroundHeatTransferBasementEquivAutoGrid(GroundHeatTransferBasementEquivAutoGrid&& other) = default;
-  GroundHeatTransferBasementEquivAutoGrid& operator=(const GroundHeatTransferBasementEquivAutoGrid&) = default;
-  GroundHeatTransferBasementEquivAutoGrid& operator=(GroundHeatTransferBasementEquivAutoGrid&&) = default;
+    virtual ~GroundHeatTransferBasementEquivAutoGrid() override = default;
+    GroundHeatTransferBasementEquivAutoGrid(const GroundHeatTransferBasementEquivAutoGrid& other) = default;
+    GroundHeatTransferBasementEquivAutoGrid(GroundHeatTransferBasementEquivAutoGrid&& other) = default;
+    GroundHeatTransferBasementEquivAutoGrid& operator=(const GroundHeatTransferBasementEquivAutoGrid&) = default;
+    GroundHeatTransferBasementEquivAutoGrid& operator=(GroundHeatTransferBasementEquivAutoGrid&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to GroundHeatTransfer:Basement:EquivAutoGrid numeric fields.
-  // - TODO(parity): Add relationship APIs incrementally if future schema revisions introduce link fields.
-  double clearanceDistancefromoutsideofwalltoedgeof3Dgrounddomain() const;
-  double slabDepthThicknessofthefloorslab() const;
-  double baseDepthDepthofthebasementwallbelowgrade() const;
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to GroundHeatTransfer:Basement:EquivAutoGrid numeric fields.
+    // - TODO(parity): Add relationship APIs incrementally if future schema revisions introduce link fields.
+    double clearanceDistancefromoutsideofwalltoedgeof3Dgrounddomain() const;
+    bool isClearanceDistancefromoutsideofwalltoedgeof3DgrounddomainDefaulted() const;
+    bool setClearanceDistancefromoutsideofwalltoedgeof3Dgrounddomain(double clearanceDistancefromoutsideofwalltoedgeof3Dgrounddomain);
+    void resetClearanceDistancefromoutsideofwalltoedgeof3Dgrounddomain();
 
-  bool isClearanceDistancefromoutsideofwalltoedgeof3DgrounddomainDefaulted() const;
-  bool isSlabDepthThicknessofthefloorslabDefaulted() const;
-  bool isBaseDepthDepthofthebasementwallbelowgradeDefaulted() const;
+    double slabDepthThicknessofthefloorslab() const;
+    bool isSlabDepthThicknessofthefloorslabDefaulted() const;
+    bool setSlabDepthThicknessofthefloorslab(double slabDepthThicknessofthefloorslab);
+    void resetSlabDepthThicknessofthefloorslab();
 
-  bool setClearanceDistancefromoutsideofwalltoedgeof3Dgrounddomain(double clearanceDistancefromoutsideofwalltoedgeof3Dgrounddomain);
-  bool setSlabDepthThicknessofthefloorslab(double slabDepthThicknessofthefloorslab);
-  bool setBaseDepthDepthofthebasementwallbelowgrade(double baseDepthDepthofthebasementwallbelowgrade);
+    double baseDepthDepthofthebasementwallbelowgrade() const;
+    bool isBaseDepthDepthofthebasementwallbelowgradeDefaulted() const;
+    bool setBaseDepthDepthofthebasementwallbelowgrade(double baseDepthDepthofthebasementwallbelowgrade);
+    void resetBaseDepthDepthofthebasementwallbelowgrade();
 
-  void resetClearanceDistancefromoutsideofwalltoedgeof3Dgrounddomain();
-  void resetSlabDepthThicknessofthefloorslab();
-  void resetBaseDepthDepthofthebasementwallbelowgrade();
+   protected:
+    using ImplType = detail::GroundHeatTransferBasementEquivAutoGrid_Impl;
 
- protected:
-  using ImplType = detail::GroundHeatTransferBasementEquivAutoGrid_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit GroundHeatTransferBasementEquivAutoGrid(std::shared_ptr<detail::GroundHeatTransferBasementEquivAutoGrid_Impl> impl);
-};
+    explicit GroundHeatTransferBasementEquivAutoGrid(std::shared_ptr<detail::GroundHeatTransferBasementEquivAutoGrid_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -14,42 +14,42 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API FanConstantVolume_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~FanConstantVolume_Impl() override = default;
+    class EPMODEL_API FanConstantVolume_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~FanConstantVolume_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
-  bool addToNode(Node& node);
+      bool addToNode(Node& node);
 
-  double fanTotalEfficiency() const;
-  bool setFanTotalEfficiency(double fanTotalEfficiency);
+      double fanTotalEfficiency() const;
+      bool setFanTotalEfficiency(double fanTotalEfficiency);
 
-  double pressureRise() const;
-  bool setPressureRise(double pressureRise);
+      double pressureRise() const;
+      bool setPressureRise(double pressureRise);
 
-  boost::optional<double> maximumFlowRate() const;
-  bool isMaximumFlowRateAutosized() const;
-  bool setMaximumFlowRate(double maximumFlowRate);
-  void resetMaximumFlowRate();
-  void autosizeMaximumFlowRate();
+      boost::optional<double> maximumFlowRate() const;
+      bool setMaximumFlowRate(double maximumFlowRate);
+      void resetMaximumFlowRate();
+      void autosizeMaximumFlowRate();
+      bool isMaximumFlowRateAutosized() const;
 
-  double motorEfficiency() const;
-  bool setMotorEfficiency(double motorEfficiency);
+      double motorEfficiency() const;
+      bool setMotorEfficiency(double motorEfficiency);
 
-  double motorInAirstreamFraction() const;
-  bool setMotorInAirstreamFraction(double motorInAirstreamFraction);
+      double motorInAirstreamFraction() const;
+      bool setMotorInAirstreamFraction(double motorInAirstreamFraction);
 
-  std::string endUseSubcategory() const;
-  bool setEndUseSubcategory(const std::string& endUseSubcategory);
-};
+      std::string endUseSubcategory() const;
+      bool setEndUseSubcategory(const std::string& endUseSubcategory);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

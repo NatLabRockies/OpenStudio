@@ -13,30 +13,28 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API OutputVariableDictionary_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~OutputVariableDictionary_Impl() override = default;
+    class EPMODEL_API OutputVariableDictionary_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~OutputVariableDictionary_Impl() override = default;
 
-  std::string keyField() const;
-  bool isKeyFieldDefaulted() const;
+      std::string keyField() const;
+      bool isKeyFieldDefaulted() const;
+      bool setKeyField(const std::string& keyField);
+      void resetKeyField();
 
-  boost::optional<std::string> sortOption() const;
+      boost::optional<std::string> sortOption() const;
+      bool setSortOption(const std::string& sortOption);
+      void resetSortOption();
 
-  bool setKeyField(const std::string& keyField);
-  void resetKeyField();
+      std::vector<std::string> keyFieldValues() const;
+      std::vector<std::string> sortOptionValues() const;
+    };
 
-  bool setSortOption(const std::string& sortOption);
-  void resetSortOption();
-
-  std::vector<std::string> keyFieldValues() const;
-  std::vector<std::string> sortOptionValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -21,13 +21,13 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~WindowsCalculationEngine_Impl() override = default;
 
+      std::vector<std::string> windowsEngineValues() const;
+
       std::string windowsEngine() const;
       bool isWindowsEngineDefaulted() const;
 
       bool setWindowsEngine(const std::string& windowsEngine);
       void resetWindowsEngine();
-
-      std::vector<std::string> windowsEngineValues() const;
     };
 
   }  // namespace detail

@@ -11,28 +11,28 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HVACSystemRootFindingAlgorithm_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~HVACSystemRootFindingAlgorithm_Impl() override = default;
+    class EPMODEL_API HVACSystemRootFindingAlgorithm_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~HVACSystemRootFindingAlgorithm_Impl() override = default;
 
-  std::string algorithm() const;
-  bool isAlgorithmDefaulted() const;
-  bool setAlgorithm(const std::string& algorithm);
-  void resetAlgorithm();
+      std::vector<std::string> algorithmValues() const;
 
-  int numberofIterationsBeforeAlgorithmSwitch() const;
-  bool isNumberofIterationsBeforeAlgorithmSwitchDefaulted() const;
-  bool setNumberofIterationsBeforeAlgorithmSwitch(int numberofIterationsBeforeAlgorithmSwitch);
-  void resetNumberofIterationsBeforeAlgorithmSwitch();
+      std::string algorithm() const;
+      bool setAlgorithm(const std::string& algorithm);
+      bool isAlgorithmDefaulted() const;
+      void resetAlgorithm();
 
-  std::vector<std::string> algorithmValues() const;
-};
+      int numberofIterationsBeforeAlgorithmSwitch() const;
+      bool setNumberofIterationsBeforeAlgorithmSwitch(int numberofIterationsBeforeAlgorithmSwitch);
+      bool isNumberofIterationsBeforeAlgorithmSwitchDefaulted() const;
+      void resetNumberofIterationsBeforeAlgorithmSwitch();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

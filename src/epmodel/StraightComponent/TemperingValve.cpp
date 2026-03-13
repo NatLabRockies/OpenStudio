@@ -31,14 +31,6 @@ namespace epmodel {
       return getObject<ModelObject>().getModelObjectTarget<Node>(openstudio::TemperingValveFields::Stream2SourceNodeName);
     }
 
-    boost::optional<Node> TemperingValve_Impl::temperatureSetpointNode() const {
-      return getObject<ModelObject>().getModelObjectTarget<Node>(openstudio::TemperingValveFields::TemperatureSetpointNodeName);
-    }
-
-    boost::optional<Node> TemperingValve_Impl::pumpOutletNode() const {
-      return getObject<ModelObject>().getModelObjectTarget<Node>(openstudio::TemperingValveFields::PumpOutletNodeName);
-    }
-
     bool TemperingValve_Impl::setStream2SourceNode(const Node& stream2SourceNode) {
       return setPointer(openstudio::TemperingValveFields::Stream2SourceNodeName, stream2SourceNode.handle());
     }
@@ -48,6 +40,10 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<Node> TemperingValve_Impl::temperatureSetpointNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<Node>(openstudio::TemperingValveFields::TemperatureSetpointNodeName);
+    }
+
     bool TemperingValve_Impl::setTemperatureSetpointNode(const Node& temperatureSetpointNode) {
       return setPointer(openstudio::TemperingValveFields::TemperatureSetpointNodeName, temperatureSetpointNode.handle());
     }
@@ -55,6 +51,10 @@ namespace epmodel {
     void TemperingValve_Impl::resetTemperatureSetpointNode() {
       const bool result = setString(openstudio::TemperingValveFields::TemperatureSetpointNodeName, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<Node> TemperingValve_Impl::pumpOutletNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<Node>(openstudio::TemperingValveFields::PumpOutletNodeName);
     }
 
     bool TemperingValve_Impl::setPumpOutletNode(const Node& pumpOutletNode) {
@@ -80,14 +80,6 @@ namespace epmodel {
     return getImpl<detail::TemperingValve_Impl>()->stream2SourceNode();
   }
 
-  boost::optional<Node> TemperingValve::temperatureSetpointNode() const {
-    return getImpl<detail::TemperingValve_Impl>()->temperatureSetpointNode();
-  }
-
-  boost::optional<Node> TemperingValve::pumpOutletNode() const {
-    return getImpl<detail::TemperingValve_Impl>()->pumpOutletNode();
-  }
-
   bool TemperingValve::setStream2SourceNode(const Node& stream2SourceNode) {
     return getImpl<detail::TemperingValve_Impl>()->setStream2SourceNode(stream2SourceNode);
   }
@@ -96,12 +88,20 @@ namespace epmodel {
     getImpl<detail::TemperingValve_Impl>()->resetStream2SourceNode();
   }
 
+  boost::optional<Node> TemperingValve::temperatureSetpointNode() const {
+    return getImpl<detail::TemperingValve_Impl>()->temperatureSetpointNode();
+  }
+
   bool TemperingValve::setTemperatureSetpointNode(const Node& temperatureSetpointNode) {
     return getImpl<detail::TemperingValve_Impl>()->setTemperatureSetpointNode(temperatureSetpointNode);
   }
 
   void TemperingValve::resetTemperatureSetpointNode() {
     getImpl<detail::TemperingValve_Impl>()->resetTemperatureSetpointNode();
+  }
+
+  boost::optional<Node> TemperingValve::pumpOutletNode() const {
+    return getImpl<detail::TemperingValve_Impl>()->pumpOutletNode();
   }
 
   bool TemperingValve::setPumpOutletNode(const Node& pumpOutletNode) {

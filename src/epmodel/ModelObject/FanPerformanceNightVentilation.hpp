@@ -16,59 +16,59 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class FanPerformanceNightVentilation_Impl;
-}
+  namespace detail {
+    class FanPerformanceNightVentilation_Impl;
+  }
 
-class EPMODEL_API FanPerformanceNightVentilation : public ModelObject
-{
- public:
-  explicit FanPerformanceNightVentilation(const Model& model);
+  class EPMODEL_API FanPerformanceNightVentilation : public ModelObject
+  {
+   public:
+    explicit FanPerformanceNightVentilation(const Model& model);
 
-  virtual ~FanPerformanceNightVentilation() override = default;
-  FanPerformanceNightVentilation(const FanPerformanceNightVentilation& other) = default;
-  FanPerformanceNightVentilation(FanPerformanceNightVentilation&& other) = default;
-  FanPerformanceNightVentilation& operator=(const FanPerformanceNightVentilation&) = default;
-  FanPerformanceNightVentilation& operator=(FanPerformanceNightVentilation&&) = default;
+    virtual ~FanPerformanceNightVentilation() override = default;
+    FanPerformanceNightVentilation(const FanPerformanceNightVentilation& other) = default;
+    FanPerformanceNightVentilation(FanPerformanceNightVentilation&& other) = default;
+    FanPerformanceNightVentilation& operator=(const FanPerformanceNightVentilation&) = default;
+    FanPerformanceNightVentilation& operator=(FanPerformanceNightVentilation&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to FanPerformance:NightVentilation scalar fields.
-  // - Field Mapping: Fan Name remains excluded as an object-list relationship field.
-  // - TODO(parity): Add relationship APIs after scalar saturation without changing scalar signatures.
-  double fanTotalEfficiency() const;
-  bool setFanTotalEfficiency(double fanTotalEfficiency);
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to FanPerformance:NightVentilation scalar fields.
+    // - Field Mapping: Fan Name remains excluded as an object-list relationship field.
+    // - TODO(parity): Add relationship APIs after scalar saturation without changing scalar signatures.
+    double fanTotalEfficiency() const;
+    bool setFanTotalEfficiency(double fanTotalEfficiency);
 
-  double pressureRise() const;
-  bool setPressureRise(double pressureRise);
+    double pressureRise() const;
+    bool setPressureRise(double pressureRise);
 
-  boost::optional<double> maximumFlowRate() const;
-  bool isMaximumFlowRateAutosized() const;
-  bool setMaximumFlowRate(double maximumFlowRate);
-  void resetMaximumFlowRate();
-  void autosizeMaximumFlowRate();
+    boost::optional<double> maximumFlowRate() const;
+    bool setMaximumFlowRate(double maximumFlowRate);
+    void resetMaximumFlowRate();
+    bool isMaximumFlowRateAutosized() const;
+    void autosizeMaximumFlowRate();
 
-  double motorEfficiency() const;
-  bool setMotorEfficiency(double motorEfficiency);
+    double motorEfficiency() const;
+    bool setMotorEfficiency(double motorEfficiency);
 
-  double motorinAirstreamFraction() const;
-  bool isMotorinAirstreamFractionDefaulted() const;
-  bool setMotorinAirstreamFraction(double motorinAirstreamFraction);
-  void resetMotorinAirstreamFraction();
+    double motorinAirstreamFraction() const;
+    bool setMotorinAirstreamFraction(double motorinAirstreamFraction);
+    void resetMotorinAirstreamFraction();
+    bool isMotorinAirstreamFractionDefaulted() const;
 
- protected:
-  using ImplType = detail::FanPerformanceNightVentilation_Impl;
+   protected:
+    using ImplType = detail::FanPerformanceNightVentilation_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit FanPerformanceNightVentilation(std::shared_ptr<detail::FanPerformanceNightVentilation_Impl> impl);
-};
+    explicit FanPerformanceNightVentilation(std::shared_ptr<detail::FanPerformanceNightVentilation_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

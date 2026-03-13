@@ -46,10 +46,21 @@ class EPMODEL_API RoomAirSettingsCrossVentilation : public ModelObject
   //   fields and intentionally excluded from scalar accessors in this scaffold pass.
   // - Field Mapping: Name remains available via ModelObject base name APIs.
   // - TODO(parity): Add typed relationship APIs for excluded fields after scalar saturation.
+
+  /** @name Getters */
+  //@{
+
   boost::optional<std::string> airflowRegionUsedforThermalComfortEvaluation() const;
+
+  //@}
+
+  /** @name Setters */
+  //@{
 
   bool setAirflowRegionUsedforThermalComfortEvaluation(const std::string& airflowRegionUsedforThermalComfortEvaluation);
   void resetAirflowRegionUsedforThermalComfortEvaluation();
+
+  //@}
 
  protected:
   using ImplType = detail::RoomAirSettingsCrossVentilation_Impl;

@@ -18,99 +18,100 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class StandardOpaqueMaterial_Impl;
-}
+  namespace detail {
+    class StandardOpaqueMaterial_Impl;
+  }
 
-class EPMODEL_API StandardOpaqueMaterial : public ModelObject
-{
- public:
-  explicit StandardOpaqueMaterial(const Model& model, const std::string& roughness = "Smooth", double thickness = 0.1,
-                                  double conductivity = 0.1, double density = 0.1, double specificHeat = 1400.0);
+  class EPMODEL_API StandardOpaqueMaterial : public ModelObject
+  {
+   public:
+    explicit StandardOpaqueMaterial(const Model& model, const std::string& roughness = "Smooth", double thickness = 0.1, double conductivity = 0.1,
+                                    double density = 0.1, double specificHeat = 1400.0);
 
-  virtual ~StandardOpaqueMaterial() override = default;
-  StandardOpaqueMaterial(const StandardOpaqueMaterial& other) = default;
-  StandardOpaqueMaterial(StandardOpaqueMaterial&& other) = default;
-  StandardOpaqueMaterial& operator=(const StandardOpaqueMaterial&) = default;
-  StandardOpaqueMaterial& operator=(StandardOpaqueMaterial&&) = default;
+    virtual ~StandardOpaqueMaterial() override = default;
+    StandardOpaqueMaterial(const StandardOpaqueMaterial& other) = default;
+    StandardOpaqueMaterial(StandardOpaqueMaterial&& other) = default;
+    StandardOpaqueMaterial& operator=(const StandardOpaqueMaterial&) = default;
+    StandardOpaqueMaterial& operator=(StandardOpaqueMaterial&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> roughnessValues();
+    static std::vector<std::string> roughnessValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::StandardOpaqueMaterial scalar accessor names/signatures.
-  // - Field Mapping: roughness/thickness/conductivity/density/specificHeat and thermal/solar/visible absorptance APIs map directly to E+ Material fields.
-  // - Field Mapping: thermalConductivity aliases Conductivity and thermalConductance/resistivity/resistance are derived scalar transforms over mapped fields.
-  // - ForwardTranslator evidence: ForwardTranslateStandardOpaqueMaterial.cpp translates these scalar APIs directly to EnergyPlus Material fields.
-  // - Field Mapping: material-property child object relationships (phase change/EMPD) are intentionally excluded from this scalar-only scaffold pass.
-  // - TODO(parity): Add non-scalar material-property relationship APIs in a dedicated parity pass.
-  double thermalConductivity() const;
-  double thermalConductance() const;
-  double thermalResistivity() const;
-  double thermalResistance() const;
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model::StandardOpaqueMaterial scalar accessor names/signatures.
+    // - Field Mapping: roughness/thickness/conductivity/density/specificHeat and thermal/solar/visible absorptance APIs map directly to E+ Material fields.
+    // - Field Mapping: thermalConductivity aliases Conductivity and thermalConductance/resistivity/resistance are derived scalar transforms over mapped fields.
+    // - ForwardTranslator evidence: ForwardTranslateStandardOpaqueMaterial.cpp translates these scalar APIs directly to EnergyPlus Material fields.
+    // - Field Mapping: material-property child object relationships (phase change/EMPD) are intentionally excluded from this scalar-only scaffold pass.
+    // - TODO(parity): Add non-scalar material-property relationship APIs in a dedicated parity pass.
+    double thermalConductivity() const;
+    bool setThermalConductivity(double value);
 
-  boost::optional<double> thermalReflectance() const;
-  boost::optional<double> solarReflectance() const;
-  boost::optional<double> visibleReflectance() const;
+    double thermalConductance() const;
+    bool setThermalConductance(double value);
 
-  std::string roughness() const;
-  double thickness() const;
-  double conductivity() const;
-  double density() const;
-  double specificHeat() const;
+    double thermalResistivity() const;
+    bool setThermalResistivity(double value);
 
-  double thermalAbsorptance() const;
-  bool isThermalAbsorptanceDefaulted() const;
+    double thermalResistance() const;
+    bool setThermalResistance(double value);
 
-  double solarAbsorptance() const;
-  bool isSolarAbsorptanceDefaulted() const;
+    boost::optional<double> thermalReflectance() const;
+    bool setThermalReflectance(boost::optional<double> value);
 
-  double visibleAbsorptance() const;
-  bool isVisibleAbsorptanceDefaulted() const;
+    boost::optional<double> solarReflectance() const;
+    bool setSolarReflectance(boost::optional<double> value);
 
-  bool setThermalConductivity(double value);
-  bool setThermalConductance(double value);
-  bool setThermalResistivity(double value);
-  bool setThermalResistance(double value);
+    boost::optional<double> visibleReflectance() const;
+    bool setVisibleReflectance(boost::optional<double> value);
 
-  bool setThermalAbsorptance(boost::optional<double> value);
-  bool setThermalReflectance(boost::optional<double> value);
+    std::string roughness() const;
+    bool setRoughness(const std::string& roughness);
 
-  bool setSolarAbsorptance(boost::optional<double> value);
-  bool setSolarReflectance(boost::optional<double> value);
+    double thickness() const;
+    bool setThickness(double thickness);
 
-  bool setVisibleAbsorptance(boost::optional<double> value);
-  bool setVisibleReflectance(boost::optional<double> value);
+    double conductivity() const;
+    bool setConductivity(double conductivity);
 
-  bool setRoughness(const std::string& roughness);
-  bool setThickness(double thickness);
-  bool setConductivity(double conductivity);
-  bool setDensity(double density);
-  bool setSpecificHeat(double specificHeat);
+    double density() const;
+    bool setDensity(double density);
 
-  bool setThermalAbsorptance(double thermalAbsorptance);
-  void resetThermalAbsorptance();
+    double specificHeat() const;
+    bool setSpecificHeat(double specificHeat);
 
-  bool setSolarAbsorptance(double solarAbsorptance);
-  void resetSolarAbsorptance();
+    double thermalAbsorptance() const;
+    bool isThermalAbsorptanceDefaulted() const;
+    bool setThermalAbsorptance(boost::optional<double> value);
+    bool setThermalAbsorptance(double thermalAbsorptance);
+    void resetThermalAbsorptance();
 
-  bool setVisibleAbsorptance(double visibleAbsorptance);
-  void resetVisibleAbsorptance();
+    double solarAbsorptance() const;
+    bool isSolarAbsorptanceDefaulted() const;
+    bool setSolarAbsorptance(boost::optional<double> value);
+    bool setSolarAbsorptance(double solarAbsorptance);
+    void resetSolarAbsorptance();
 
-  boost::optional<double> heatCapacity() const;
+    double visibleAbsorptance() const;
+    bool isVisibleAbsorptanceDefaulted() const;
+    bool setVisibleAbsorptance(boost::optional<double> value);
+    bool setVisibleAbsorptance(double visibleAbsorptance);
+    void resetVisibleAbsorptance();
 
- protected:
-  using ImplType = detail::StandardOpaqueMaterial_Impl;
+    boost::optional<double> heatCapacity() const;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::StandardOpaqueMaterial_Impl;
 
-  explicit StandardOpaqueMaterial(std::shared_ptr<detail::StandardOpaqueMaterial_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit StandardOpaqueMaterial(std::shared_ptr<detail::StandardOpaqueMaterial_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

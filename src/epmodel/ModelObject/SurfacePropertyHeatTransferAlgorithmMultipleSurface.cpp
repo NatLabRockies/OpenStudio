@@ -79,6 +79,10 @@ namespace epmodel {
       return setString(openstudio::SurfaceProperty_HeatTransferAlgorithm_MultipleSurfaceFields::SurfaceType, surfaceType);
     }
 
+    std::vector<std::string> SurfacePropertyHeatTransferAlgorithmMultipleSurface_Impl::surfaceTypeValues() const {
+      return openstudio::epmodel::SurfacePropertyHeatTransferAlgorithmMultipleSurface::surfaceTypeValues();
+    }
+
     std::string SurfacePropertyHeatTransferAlgorithmMultipleSurface_Impl::algorithm() const {
       const auto value = getString(openstudio::SurfaceProperty_HeatTransferAlgorithm_MultipleSurfaceFields::Algorithm, true);
       OS_ASSERT(value);
@@ -95,10 +99,6 @@ namespace epmodel {
 
     void SurfacePropertyHeatTransferAlgorithmMultipleSurface_Impl::resetAlgorithm() {
       OS_ASSERT(setString(openstudio::SurfaceProperty_HeatTransferAlgorithm_MultipleSurfaceFields::Algorithm, ""));
-    }
-
-    std::vector<std::string> SurfacePropertyHeatTransferAlgorithmMultipleSurface_Impl::surfaceTypeValues() const {
-      return openstudio::epmodel::SurfacePropertyHeatTransferAlgorithmMultipleSurface::surfaceTypeValues();
     }
 
     std::vector<std::string> SurfacePropertyHeatTransferAlgorithmMultipleSurface_Impl::algorithmValues() const {

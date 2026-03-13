@@ -19,9 +19,12 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink_Impl() override = default;
 
+      /** @name DepositionVelocity field */
+      //@{
       boost::optional<double> depositionVelocity() const;
       bool setDepositionVelocity(double depositionVelocity);
       void resetDepositionVelocity();
+      //@}
     };
 
   }  // namespace detail

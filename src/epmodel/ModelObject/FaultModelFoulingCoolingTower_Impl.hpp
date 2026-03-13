@@ -12,25 +12,25 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API FaultModelFoulingCoolingTower_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~FaultModelFoulingCoolingTower_Impl() override = default;
+    class EPMODEL_API FaultModelFoulingCoolingTower_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~FaultModelFoulingCoolingTower_Impl() override = default;
 
-  std::string coolingTowerObjectType() const;
-  bool setCoolingTowerObjectType(const std::string& coolingTowerObjectType);
+      std::vector<std::string> coolingTowerObjectTypeValues() const;
 
-  boost::optional<double> referenceUAReductionFactor() const;
-  bool setReferenceUAReductionFactor(double referenceUAReductionFactor);
-  void resetReferenceUAReductionFactor();
+      std::string coolingTowerObjectType() const;
+      bool setCoolingTowerObjectType(const std::string& coolingTowerObjectType);
 
-  std::vector<std::string> coolingTowerObjectTypeValues() const;
-};
+      boost::optional<double> referenceUAReductionFactor() const;
+      bool setReferenceUAReductionFactor(double referenceUAReductionFactor);
+      void resetReferenceUAReductionFactor();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

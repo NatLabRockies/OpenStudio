@@ -17,46 +17,54 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SiteSolarAndVisibleSpectrum_Impl;
-}
+  namespace detail {
+    class SiteSolarAndVisibleSpectrum_Impl;
+  }
 
-class EPMODEL_API SiteSolarAndVisibleSpectrum : public ModelObject
-{
- public:
-  explicit SiteSolarAndVisibleSpectrum(const Model& model);
+  class EPMODEL_API SiteSolarAndVisibleSpectrum : public ModelObject
+  {
+   public:
+    explicit SiteSolarAndVisibleSpectrum(const Model& model);
 
-  virtual ~SiteSolarAndVisibleSpectrum() override = default;
-  SiteSolarAndVisibleSpectrum(const SiteSolarAndVisibleSpectrum& other) = default;
-  SiteSolarAndVisibleSpectrum(SiteSolarAndVisibleSpectrum&& other) = default;
-  SiteSolarAndVisibleSpectrum& operator=(const SiteSolarAndVisibleSpectrum&) = default;
-  SiteSolarAndVisibleSpectrum& operator=(SiteSolarAndVisibleSpectrum&&) = default;
+    virtual ~SiteSolarAndVisibleSpectrum() override = default;
+    SiteSolarAndVisibleSpectrum(const SiteSolarAndVisibleSpectrum& other) = default;
+    SiteSolarAndVisibleSpectrum(SiteSolarAndVisibleSpectrum&& other) = default;
+    SiteSolarAndVisibleSpectrum& operator=(const SiteSolarAndVisibleSpectrum&) = default;
+    SiteSolarAndVisibleSpectrum& operator=(SiteSolarAndVisibleSpectrum&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> spectrumDataMethodValues();
+    static std::vector<std::string> spectrumDataMethodValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar API maps directly to EnergyPlus Site:SolarAndVisibleSpectrum Spectrum Data Method.
-  // - Field Mapping: SolarSpectrumDataObjectName and VisibleSpectrumDataObjectName are excluded in this scalar-only scaffold because they are object-list relationship fields.
-  // - TODO(parity): Add relationship helpers for spectrum data object linkage in a dedicated non-scalar parity pass.
-  std::string spectrumDataMethod() const;
-  bool isSpectrumDataMethodDefaulted() const;
-  bool setSpectrumDataMethod(const std::string& spectrumDataMethod);
-  void resetSpectrumDataMethod();
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar API maps directly to EnergyPlus Site:SolarAndVisibleSpectrum Spectrum Data Method.
+    // - Field Mapping: SolarSpectrumDataObjectName and VisibleSpectrumDataObjectName are excluded in this scalar-only scaffold because they are object-list relationship fields.
+    // - TODO(parity): Add relationship helpers for spectrum data object linkage in a dedicated non-scalar parity pass.
 
- protected:
-  using ImplType = detail::SiteSolarAndVisibleSpectrum_Impl;
+    /** @name Getters */
+    //@{
+    std::string spectrumDataMethod() const;
+    bool isSpectrumDataMethodDefaulted() const;
+    //@}
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    /** @name Setters */
+    //@{
+    bool setSpectrumDataMethod(const std::string& spectrumDataMethod);
+    void resetSpectrumDataMethod();
+    //@}
 
-  explicit SiteSolarAndVisibleSpectrum(std::shared_ptr<detail::SiteSolarAndVisibleSpectrum_Impl> impl);
-};
+   protected:
+    using ImplType = detail::SiteSolarAndVisibleSpectrum_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit SiteSolarAndVisibleSpectrum(std::shared_ptr<detail::SiteSolarAndVisibleSpectrum_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

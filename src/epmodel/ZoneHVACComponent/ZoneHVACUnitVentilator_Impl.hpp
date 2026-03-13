@@ -26,6 +26,7 @@ namespace epmodel {
       bool isMaximumSupplyAirFlowRateAutosized() const;
       bool setMaximumSupplyAirFlowRate(double maximumSupplyAirFlowRate);
       void autosizeMaximumSupplyAirFlowRate();
+      boost::optional<double> autosizedMaximumSupplyAirFlowRate() const;
 
       std::string outdoorAirControlType() const;
       bool setOutdoorAirControlType(const std::string& outdoorAirControlType);
@@ -34,21 +35,18 @@ namespace epmodel {
       bool isMinimumOutdoorAirFlowRateAutosized() const;
       bool setMinimumOutdoorAirFlowRate(double minimumOutdoorAirFlowRate);
       void autosizeMinimumOutdoorAirFlowRate();
+      boost::optional<double> autosizedMinimumOutdoorAirFlowRate() const;
 
       boost::optional<double> maximumOutdoorAirFlowRate() const;
       bool isMaximumOutdoorAirFlowRateAutosized() const;
       bool setMaximumOutdoorAirFlowRate(double maximumOutdoorAirFlowRate);
       void autosizeMaximumOutdoorAirFlowRate();
-
+      boost::optional<double> autosizedMaximumOutdoorAirFlowRate() const;
       double heatingConvergenceTolerance() const;
       bool setHeatingConvergenceTolerance(double heatingConvergenceTolerance);
 
       double coolingConvergenceTolerance() const;
       bool setCoolingConvergenceTolerance(double coolingConvergenceTolerance);
-
-      boost::optional<double> autosizedMaximumSupplyAirFlowRate() const;
-      boost::optional<double> autosizedMinimumOutdoorAirFlowRate() const;
-      boost::optional<double> autosizedMaximumOutdoorAirFlowRate() const;
     };
 
   }  // namespace detail

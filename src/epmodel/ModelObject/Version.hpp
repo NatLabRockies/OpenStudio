@@ -39,11 +39,13 @@ namespace epmodel {
     // - API: Preserve openstudio::model Version scalar accessor names/signatures.
     // - Field Mapping: versionIdentifier maps to the EnergyPlus Version Identifier field.
     // - ForwardTranslator::translateVersion writes ENERGYPLUS_VERSION into the Version Identifier field by default.
+    /** @name Version identifier field */
+    //@{
     std::string versionIdentifier() const;
     bool isVersionIdentifierDefaulted() const;
-
     bool setVersionIdentifier(const std::string& versionIdentifier);
     void resetVersionIdentifier();
+    //@}
 
    protected:
     using ImplType = detail::Version_Impl;

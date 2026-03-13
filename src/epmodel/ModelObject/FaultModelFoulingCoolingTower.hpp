@@ -17,53 +17,54 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class FaultModelFoulingCoolingTower_Impl;
-}
+  namespace detail {
+    class FaultModelFoulingCoolingTower_Impl;
+  }
 
-class EPMODEL_API FaultModelFoulingCoolingTower : public ModelObject
-{
- public:
-  explicit FaultModelFoulingCoolingTower(const Model& model);
+  class EPMODEL_API FaultModelFoulingCoolingTower : public ModelObject
+  {
+   public:
+    explicit FaultModelFoulingCoolingTower(const Model& model);
 
-  virtual ~FaultModelFoulingCoolingTower() override = default;
-  FaultModelFoulingCoolingTower(const FaultModelFoulingCoolingTower& other) = default;
-  FaultModelFoulingCoolingTower(FaultModelFoulingCoolingTower&& other) = default;
-  FaultModelFoulingCoolingTower& operator=(const FaultModelFoulingCoolingTower&) = default;
-  FaultModelFoulingCoolingTower& operator=(FaultModelFoulingCoolingTower&&) = default;
+    virtual ~FaultModelFoulingCoolingTower() override = default;
+    FaultModelFoulingCoolingTower(const FaultModelFoulingCoolingTower& other) = default;
+    FaultModelFoulingCoolingTower(FaultModelFoulingCoolingTower&& other) = default;
+    FaultModelFoulingCoolingTower& operator=(const FaultModelFoulingCoolingTower&) = default;
+    FaultModelFoulingCoolingTower& operator=(FaultModelFoulingCoolingTower&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> coolingTowerObjectTypeValues();
+    static std::vector<std::string> coolingTowerObjectTypeValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: coolingTowerObjectType maps directly to EnergyPlus FaultModel:Fouling:CoolingTower /
-  //   Cooling Tower Object Type.
-  // - Field Mapping: referenceUAReductionFactor maps directly to EnergyPlus FaultModel:Fouling:CoolingTower /
-  //   Reference UA Reduction Factor.
-  // - Field Mapping: Name is provided by base ModelObject naming API and is intentionally not duplicated here.
-  // - Field Mapping: Availability Schedule Name, Severity Schedule Name, and Cooling Tower Object Name are
-  //   relationship-like object-list target-link fields and intentionally excluded from scalar accessors.
-  // - TODO(parity): Add relationship APIs after scalar scaffold saturation.
-  std::string coolingTowerObjectType() const;
-  bool setCoolingTowerObjectType(const std::string& coolingTowerObjectType);
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Name is provided by base ModelObject naming API and is intentionally not duplicated here.
+    // - Field Mapping: Availability Schedule Name, Severity Schedule Name, and Cooling Tower Object Name are
+    //   relationship-like object-list target-link fields and intentionally excluded from scalar accessors.
+    // - TODO(parity): Add relationship APIs after scalar scaffold saturation.
 
-  boost::optional<double> referenceUAReductionFactor() const;
-  bool setReferenceUAReductionFactor(double referenceUAReductionFactor);
-  void resetReferenceUAReductionFactor();
+    // Field Mapping: coolingTowerObjectType maps directly to EnergyPlus FaultModel:Fouling:CoolingTower /
+    //   Cooling Tower Object Type.
+    std::string coolingTowerObjectType() const;
+    bool setCoolingTowerObjectType(const std::string& coolingTowerObjectType);
 
- protected:
-  using ImplType = detail::FaultModelFoulingCoolingTower_Impl;
+    // Field Mapping: referenceUAReductionFactor maps directly to EnergyPlus FaultModel:Fouling:CoolingTower /
+    //   Reference UA Reduction Factor.
+    boost::optional<double> referenceUAReductionFactor() const;
+    bool setReferenceUAReductionFactor(double referenceUAReductionFactor);
+    void resetReferenceUAReductionFactor();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::FaultModelFoulingCoolingTower_Impl;
 
-  explicit FaultModelFoulingCoolingTower(std::shared_ptr<detail::FaultModelFoulingCoolingTower_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit FaultModelFoulingCoolingTower(std::shared_ptr<detail::FaultModelFoulingCoolingTower_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

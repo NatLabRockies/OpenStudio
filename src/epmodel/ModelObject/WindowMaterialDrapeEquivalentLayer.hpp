@@ -38,60 +38,60 @@ namespace epmodel {
     // - Field Mapping: WindowMaterial:Drape:EquivalentLayer beam/diffuse/visible/infrared fields map to these getters/setters while the Name field remains on ModelObject.
     // - TODO(parity): Extend relationship helpers once ForwardTranslator coverage for equivalent-layer drapes is available in epmodel.
 
-    /** @name Getters */
+    /** @name Field Accessors */
     //@{
     double drapeBeamBeamSolarTransmittanceAtNormalIncidence() const;
     bool isDrapeBeamBeamSolarTransmittanceAtNormalIncidenceDefaulted() const;
+    bool setDrapeBeamBeamSolarTransmittanceAtNormalIncidence(double drapeBeamBeamSolarTransmittanceAtNormalIncidence);
+    void resetDrapeBeamBeamSolarTransmittanceAtNormalIncidence();
 
     double frontSideDrapeBeamDiffuseSolarTransmittance() const;
+    bool setFrontSideDrapeBeamDiffuseSolarTransmittance(double frontSideDrapeBeamDiffuseSolarTransmittance);
+
     double backSideDrapeBeamDiffuseSolarTransmittance() const;
+    bool setBackSideDrapeBeamDiffuseSolarTransmittance(double backSideDrapeBeamDiffuseSolarTransmittance);
+
     double frontSideDrapeBeamDiffuseSolarReflectance() const;
+    bool setFrontSideDrapeBeamDiffuseSolarReflectance(double frontSideDrapeBeamDiffuseSolarReflectance);
+
     double backSideDrapeBeamDiffuseSolarReflectance() const;
+    bool setBackSideDrapeBeamDiffuseSolarReflectance(double backSideDrapeBeamDiffuseSolarReflectance);
 
     boost::optional<double> drapeBeamBeamVisibleTransmittance() const;
+    bool setDrapeBeamBeamVisibleTransmittance(double drapeBeamBeamVisibleTransmittance);
+    void resetDrapeBeamBeamVisibleTransmittance();
+
     boost::optional<double> drapeBeamDiffuseVisibleTransmittance() const;
+    bool setDrapeBeamDiffuseVisibleTransmittance(double drapeBeamDiffuseVisibleTransmittance);
+    void resetDrapeBeamDiffuseVisibleTransmittance();
+
     boost::optional<double> drapeBeamDiffuseVisibleReflectance() const;
+    bool setDrapeBeamDiffuseVisibleReflectance(double drapeBeamDiffuseVisibleReflectance);
+    void resetDrapeBeamDiffuseVisibleReflectance();
 
     double drapeMaterialInfraredTransmittance() const;
     bool isDrapeMaterialInfraredTransmittanceDefaulted() const;
+    bool setDrapeMaterialInfraredTransmittance(double drapeMaterialInfraredTransmittance);
+    void resetDrapeMaterialInfraredTransmittance();
 
     double frontSideDrapeMaterialInfraredEmissivity() const;
     bool isFrontSideDrapeMaterialInfraredEmissivityDefaulted() const;
+    bool setFrontSideDrapeMaterialInfraredEmissivity(double frontSideDrapeMaterialInfraredEmissivity);
+    void resetFrontSideDrapeMaterialInfraredEmissivity();
 
     double backSideDrapeMaterialInfraredEmissivity() const;
     bool isBackSideDrapeMaterialInfraredEmissivityDefaulted() const;
+    bool setBackSideDrapeMaterialInfraredEmissivity(double backSideDrapeMaterialInfraredEmissivity);
+    void resetBackSideDrapeMaterialInfraredEmissivity();
 
     double widthOfPleatedFabric() const;
     bool isWidthOfPleatedFabricDefaulted() const;
+    bool setWidthOfPleatedFabric(double widthOfPleatedFabric);
+    void resetWidthOfPleatedFabric();
 
     double lengthOfPleatedFabric() const;
     bool isLengthOfPleatedFabricDefaulted() const;
-    //@}
-
-    /** @name Setters */
-    //@{
-    bool setDrapeBeamBeamSolarTransmittanceAtNormalIncidence(double drapeBeamBeamSolarTransmittanceAtNormalIncidence);
-    bool setFrontSideDrapeBeamDiffuseSolarTransmittance(double frontSideDrapeBeamDiffuseSolarTransmittance);
-    bool setBackSideDrapeBeamDiffuseSolarTransmittance(double backSideDrapeBeamDiffuseSolarTransmittance);
-    bool setFrontSideDrapeBeamDiffuseSolarReflectance(double frontSideDrapeBeamDiffuseSolarReflectance);
-    bool setBackSideDrapeBeamDiffuseSolarReflectance(double backSideDrapeBeamDiffuseSolarReflectance);
-    bool setDrapeBeamBeamVisibleTransmittance(double drapeBeamBeamVisibleTransmittance);
-    bool setDrapeBeamDiffuseVisibleTransmittance(double drapeBeamDiffuseVisibleTransmittance);
-    bool setDrapeBeamDiffuseVisibleReflectance(double drapeBeamDiffuseVisibleReflectance);
-    bool setDrapeMaterialInfraredTransmittance(double drapeMaterialInfraredTransmittance);
-    bool setFrontSideDrapeMaterialInfraredEmissivity(double frontSideDrapeMaterialInfraredEmissivity);
-    bool setBackSideDrapeMaterialInfraredEmissivity(double backSideDrapeMaterialInfraredEmissivity);
-    bool setWidthOfPleatedFabric(double widthOfPleatedFabric);
     bool setLengthOfPleatedFabric(double lengthOfPleatedFabric);
-
-    void resetDrapeBeamBeamSolarTransmittanceAtNormalIncidence();
-    void resetDrapeBeamBeamVisibleTransmittance();
-    void resetDrapeBeamDiffuseVisibleTransmittance();
-    void resetDrapeBeamDiffuseVisibleReflectance();
-    void resetDrapeMaterialInfraredTransmittance();
-    void resetFrontSideDrapeMaterialInfraredEmissivity();
-    void resetBackSideDrapeMaterialInfraredEmissivity();
-    void resetWidthOfPleatedFabric();
     void resetLengthOfPleatedFabric();
     //@}
 

@@ -16,45 +16,49 @@
 namespace openstudio {
 namespace epmodel {
 
-HeatExchangerDesiccantBalancedFlow::HeatExchangerDesiccantBalancedFlow(const Model& model)
-  : ModelObject(HeatExchangerDesiccantBalancedFlow::iddObjectType(), model) {}
+  HeatExchangerDesiccantBalancedFlow::HeatExchangerDesiccantBalancedFlow(const Model& model)
+    : ModelObject(HeatExchangerDesiccantBalancedFlow::iddObjectType(), model) {}
 
-HeatExchangerDesiccantBalancedFlow::HeatExchangerDesiccantBalancedFlow(
-  std::shared_ptr<detail::HeatExchangerDesiccantBalancedFlow_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  HeatExchangerDesiccantBalancedFlow::HeatExchangerDesiccantBalancedFlow(std::shared_ptr<detail::HeatExchangerDesiccantBalancedFlow_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType HeatExchangerDesiccantBalancedFlow::iddObjectType() {
-  return IddObjectType::HeatExchanger_Desiccant_BalancedFlow;
-}
+  IddObjectType HeatExchangerDesiccantBalancedFlow::iddObjectType() {
+    return IddObjectType::HeatExchanger_Desiccant_BalancedFlow;
+  }
 
-bool HeatExchangerDesiccantBalancedFlow::economizerLockout() const {
-  return getImpl<detail::HeatExchangerDesiccantBalancedFlow_Impl>()->economizerLockout();
-}
+  // Scalar accessors for Economizer Lockout
+  //@{
+  bool HeatExchangerDesiccantBalancedFlow::economizerLockout() const {
+    return getImpl<detail::HeatExchangerDesiccantBalancedFlow_Impl>()->economizerLockout();
+  }
 
-bool HeatExchangerDesiccantBalancedFlow::setEconomizerLockout(bool economizerLockout) {
-  return getImpl<detail::HeatExchangerDesiccantBalancedFlow_Impl>()->setEconomizerLockout(economizerLockout);
-}
+  bool HeatExchangerDesiccantBalancedFlow::setEconomizerLockout(bool economizerLockout) {
+    return getImpl<detail::HeatExchangerDesiccantBalancedFlow_Impl>()->setEconomizerLockout(economizerLockout);
+  }
+  //@}
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-bool HeatExchangerDesiccantBalancedFlow_Impl::economizerLockout() const {
-  const auto value = getString(openstudio::HeatExchanger_Desiccant_BalancedFlowFields::EconomizerLockout, true);
-  OS_ASSERT(value);
-  return openstudio::istringEqual(*value, "Yes");
-}
+    // Scalar accessors for Economizer Lockout
+    //@{
+    bool HeatExchangerDesiccantBalancedFlow_Impl::economizerLockout() const {
+      const auto value = getString(openstudio::HeatExchanger_Desiccant_BalancedFlowFields::EconomizerLockout, true);
+      OS_ASSERT(value);
+      return openstudio::istringEqual(*value, "Yes");
+    }
 
-bool HeatExchangerDesiccantBalancedFlow_Impl::setEconomizerLockout(bool economizerLockout) {
-  const bool result = setString(openstudio::HeatExchanger_Desiccant_BalancedFlowFields::EconomizerLockout,
-                                economizerLockout ? "Yes" : "No");
-  OS_ASSERT(result);
-  return result;
-}
+    bool HeatExchangerDesiccantBalancedFlow_Impl::setEconomizerLockout(bool economizerLockout) {
+      const bool result = setString(openstudio::HeatExchanger_Desiccant_BalancedFlowFields::EconomizerLockout, economizerLockout ? "Yes" : "No");
+      OS_ASSERT(result);
+      return result;
+    }
+    //@}
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

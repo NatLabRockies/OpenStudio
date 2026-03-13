@@ -38,21 +38,26 @@ namespace epmodel {
     static std::vector<std::string> seasonValues();
     static std::vector<std::string> categoryVariableNameValues();
 
-    // Schema Alignment Notes:
+    // Schema alignment notes:
     // - API: No openstudio::model counterpart exists, so scalar APIs mirror the EnergyPlus name-only accessors.
-    // - Field Mapping: Source Variable, Season, Category Variable Name, and Cost per Unit Value or Variable Name map to their UtilityCost:Charge:Simple fields.
-    // - Field Mapping: Tariff Name is an object-list reference (relationship) and is deferred until a later parity pass.
+    // - Field mapping: Source Variable, Season, Category Variable Name, and Cost per Unit Value or Variable Name map to their UtilityCost:Charge:Simple fields.
+    // - Tariff Name is an object-list reference (relationship) and is deferred until a later parity pass.
     // - TODO(parity): Provide Tariff helpers once relationship scaffolding is in place.
+
+    // Source Variable
     std::string sourceVariable() const;
     bool setSourceVariable(const std::string& sourceVariable);
 
+    // Season
     boost::optional<std::string> season() const;
     bool setSeason(const std::string& season);
     void resetSeason();
 
+    // Category Variable Name
     std::string categoryVariableName() const;
     bool setCategoryVariableName(const std::string& categoryVariableName);
 
+    // Cost per Unit Value or Variable Name
     std::string costPerUnitValueorVariableName() const;
     bool setCostPerUnitValueorVariableName(const std::string& costPerUnitValueorVariableName);
 

@@ -17,8 +17,7 @@
 namespace openstudio {
 namespace epmodel {
 
-HeatPumpPlantLoopEIRCooling::HeatPumpPlantLoopEIRCooling(const Model& model)
-  : ModelObject(HeatPumpPlantLoopEIRCooling::iddObjectType(), model) {
+HeatPumpPlantLoopEIRCooling::HeatPumpPlantLoopEIRCooling(const Model& model) : ModelObject(HeatPumpPlantLoopEIRCooling::iddObjectType(), model) {
   // Keep required scalar fields populated for strict non-optional getters.
   OS_ASSERT(setCondenserType("AirSource"));
   autosizeLoadSideReferenceFlowRate();
@@ -48,12 +47,15 @@ std::vector<std::string> HeatPumpPlantLoopEIRCooling::validCondenserTypeValues()
 }
 
 std::vector<std::string> HeatPumpPlantLoopEIRCooling::condenserTypeValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::HeatPump_PlantLoop_EIR_CoolingFields::CondenserType);
+  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::HeatPump_PlantLoop_EIR_CoolingFields::CondenserType);
 }
 
 std::string HeatPumpPlantLoopEIRCooling::condenserType() const {
   return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->condenserType();
+}
+
+bool HeatPumpPlantLoopEIRCooling::setCondenserType(const std::string& condenserType) {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->setCondenserType(condenserType);
 }
 
 boost::optional<double> HeatPumpPlantLoopEIRCooling::loadSideReferenceFlowRate() const {
@@ -64,76 +66,24 @@ bool HeatPumpPlantLoopEIRCooling::isLoadSideReferenceFlowRateAutosized() const {
   return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->isLoadSideReferenceFlowRateAutosized();
 }
 
-boost::optional<double> HeatPumpPlantLoopEIRCooling::sourceSideReferenceFlowRate() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->sourceSideReferenceFlowRate();
-}
-
-bool HeatPumpPlantLoopEIRCooling::isSourceSideReferenceFlowRateAutosized() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->isSourceSideReferenceFlowRateAutosized();
-}
-
-boost::optional<double> HeatPumpPlantLoopEIRCooling::heatRecoveryReferenceFlowRate() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->heatRecoveryReferenceFlowRate();
-}
-
-bool HeatPumpPlantLoopEIRCooling::isHeatRecoveryReferenceFlowRateAutosized() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->isHeatRecoveryReferenceFlowRateAutosized();
-}
-
-boost::optional<double> HeatPumpPlantLoopEIRCooling::referenceCapacity() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->referenceCapacity();
-}
-
-bool HeatPumpPlantLoopEIRCooling::isReferenceCapacityAutosized() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->isReferenceCapacityAutosized();
-}
-
-double HeatPumpPlantLoopEIRCooling::referenceCoefficientofPerformance() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->referenceCoefficientofPerformance();
-}
-
-double HeatPumpPlantLoopEIRCooling::sizingFactor() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->sizingFactor();
-}
-
-std::string HeatPumpPlantLoopEIRCooling::controlType() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->controlType();
-}
-
-std::string HeatPumpPlantLoopEIRCooling::flowMode() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->flowMode();
-}
-
-double HeatPumpPlantLoopEIRCooling::minimumPartLoadRatio() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->minimumPartLoadRatio();
-}
-
-double HeatPumpPlantLoopEIRCooling::minimumSourceInletTemperature() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->minimumSourceInletTemperature();
-}
-
-double HeatPumpPlantLoopEIRCooling::maximumSourceInletTemperature() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->maximumSourceInletTemperature();
-}
-
-double HeatPumpPlantLoopEIRCooling::maximumHeatRecoveryOutletTemperature() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->maximumHeatRecoveryOutletTemperature();
-}
-
-double HeatPumpPlantLoopEIRCooling::thermosiphonMinimumTemperatureDifference() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->thermosiphonMinimumTemperatureDifference();
-}
-
-bool HeatPumpPlantLoopEIRCooling::setCondenserType(const std::string& condenserType) {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->setCondenserType(condenserType);
-}
-
 bool HeatPumpPlantLoopEIRCooling::setLoadSideReferenceFlowRate(double loadSideReferenceFlowRate) {
   return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->setLoadSideReferenceFlowRate(loadSideReferenceFlowRate);
 }
 
 void HeatPumpPlantLoopEIRCooling::autosizeLoadSideReferenceFlowRate() {
   getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->autosizeLoadSideReferenceFlowRate();
+}
+
+boost::optional<double> HeatPumpPlantLoopEIRCooling::autosizedLoadSideReferenceFlowRate() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->autosizedLoadSideReferenceFlowRate();
+}
+
+boost::optional<double> HeatPumpPlantLoopEIRCooling::sourceSideReferenceFlowRate() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->sourceSideReferenceFlowRate();
+}
+
+bool HeatPumpPlantLoopEIRCooling::isSourceSideReferenceFlowRateAutosized() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->isSourceSideReferenceFlowRateAutosized();
 }
 
 bool HeatPumpPlantLoopEIRCooling::setSourceSideReferenceFlowRate(double sourceSideReferenceFlowRate) {
@@ -144,12 +94,36 @@ void HeatPumpPlantLoopEIRCooling::autosizeSourceSideReferenceFlowRate() {
   getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->autosizeSourceSideReferenceFlowRate();
 }
 
+boost::optional<double> HeatPumpPlantLoopEIRCooling::autosizedSourceSideReferenceFlowRate() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->autosizedSourceSideReferenceFlowRate();
+}
+
+boost::optional<double> HeatPumpPlantLoopEIRCooling::heatRecoveryReferenceFlowRate() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->heatRecoveryReferenceFlowRate();
+}
+
+bool HeatPumpPlantLoopEIRCooling::isHeatRecoveryReferenceFlowRateAutosized() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->isHeatRecoveryReferenceFlowRateAutosized();
+}
+
 bool HeatPumpPlantLoopEIRCooling::setHeatRecoveryReferenceFlowRate(double heatRecoveryReferenceFlowRate) {
   return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->setHeatRecoveryReferenceFlowRate(heatRecoveryReferenceFlowRate);
 }
 
 void HeatPumpPlantLoopEIRCooling::autosizeHeatRecoveryReferenceFlowRate() {
   getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->autosizeHeatRecoveryReferenceFlowRate();
+}
+
+boost::optional<double> HeatPumpPlantLoopEIRCooling::autosizedHeatRecoveryReferenceFlowRate() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->autosizedHeatRecoveryReferenceFlowRate();
+}
+
+boost::optional<double> HeatPumpPlantLoopEIRCooling::referenceCapacity() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->referenceCapacity();
+}
+
+bool HeatPumpPlantLoopEIRCooling::isReferenceCapacityAutosized() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->isReferenceCapacityAutosized();
 }
 
 bool HeatPumpPlantLoopEIRCooling::setReferenceCapacity(double referenceCapacity) {
@@ -160,56 +134,80 @@ void HeatPumpPlantLoopEIRCooling::autosizeReferenceCapacity() {
   getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->autosizeReferenceCapacity();
 }
 
+boost::optional<double> HeatPumpPlantLoopEIRCooling::autosizedReferenceCapacity() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->autosizedReferenceCapacity();
+}
+
+double HeatPumpPlantLoopEIRCooling::referenceCoefficientofPerformance() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->referenceCoefficientofPerformance();
+}
+
 bool HeatPumpPlantLoopEIRCooling::setReferenceCoefficientofPerformance(double referenceCoefficientofPerformance) {
   return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->setReferenceCoefficientofPerformance(referenceCoefficientofPerformance);
+}
+
+double HeatPumpPlantLoopEIRCooling::sizingFactor() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->sizingFactor();
 }
 
 bool HeatPumpPlantLoopEIRCooling::setSizingFactor(double sizingFactor) {
   return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->setSizingFactor(sizingFactor);
 }
 
+std::string HeatPumpPlantLoopEIRCooling::controlType() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->controlType();
+}
+
 bool HeatPumpPlantLoopEIRCooling::setControlType(const std::string& controlType) {
   return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->setControlType(controlType);
+}
+
+std::string HeatPumpPlantLoopEIRCooling::flowMode() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->flowMode();
 }
 
 bool HeatPumpPlantLoopEIRCooling::setFlowMode(const std::string& flowMode) {
   return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->setFlowMode(flowMode);
 }
 
+double HeatPumpPlantLoopEIRCooling::minimumPartLoadRatio() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->minimumPartLoadRatio();
+}
+
 bool HeatPumpPlantLoopEIRCooling::setMinimumPartLoadRatio(double minimumPartLoadRatio) {
   return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->setMinimumPartLoadRatio(minimumPartLoadRatio);
+}
+
+double HeatPumpPlantLoopEIRCooling::minimumSourceInletTemperature() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->minimumSourceInletTemperature();
 }
 
 bool HeatPumpPlantLoopEIRCooling::setMinimumSourceInletTemperature(double minimumSourceInletTemperature) {
   return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->setMinimumSourceInletTemperature(minimumSourceInletTemperature);
 }
 
+double HeatPumpPlantLoopEIRCooling::maximumSourceInletTemperature() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->maximumSourceInletTemperature();
+}
+
 bool HeatPumpPlantLoopEIRCooling::setMaximumSourceInletTemperature(double maximumSourceInletTemperature) {
   return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->setMaximumSourceInletTemperature(maximumSourceInletTemperature);
+}
+
+double HeatPumpPlantLoopEIRCooling::maximumHeatRecoveryOutletTemperature() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->maximumHeatRecoveryOutletTemperature();
 }
 
 bool HeatPumpPlantLoopEIRCooling::setMaximumHeatRecoveryOutletTemperature(double maximumHeatRecoveryOutletTemperature) {
   return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->setMaximumHeatRecoveryOutletTemperature(maximumHeatRecoveryOutletTemperature);
 }
 
+double HeatPumpPlantLoopEIRCooling::thermosiphonMinimumTemperatureDifference() const {
+  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->thermosiphonMinimumTemperatureDifference();
+}
+
 bool HeatPumpPlantLoopEIRCooling::setThermosiphonMinimumTemperatureDifference(double thermosiphonMinimumTemperatureDifference) {
   return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->setThermosiphonMinimumTemperatureDifference(thermosiphonMinimumTemperatureDifference);
-}
-
-boost::optional<double> HeatPumpPlantLoopEIRCooling::autosizedLoadSideReferenceFlowRate() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->autosizedLoadSideReferenceFlowRate();
-}
-
-boost::optional<double> HeatPumpPlantLoopEIRCooling::autosizedSourceSideReferenceFlowRate() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->autosizedSourceSideReferenceFlowRate();
-}
-
-boost::optional<double> HeatPumpPlantLoopEIRCooling::autosizedHeatRecoveryReferenceFlowRate() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->autosizedHeatRecoveryReferenceFlowRate();
-}
-
-boost::optional<double> HeatPumpPlantLoopEIRCooling::autosizedReferenceCapacity() const {
-  return getImpl<detail::HeatPumpPlantLoopEIRCooling_Impl>()->autosizedReferenceCapacity();
 }
 
 }  // namespace epmodel
@@ -219,210 +217,210 @@ namespace openstudio {
 namespace epmodel {
 namespace detail {
 
-std::string HeatPumpPlantLoopEIRCooling_Impl::condenserType() const {
-  const auto value = getString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::CondenserType, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-boost::optional<double> HeatPumpPlantLoopEIRCooling_Impl::loadSideReferenceFlowRate() const {
-  return getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::LoadSideReferenceFlowRate, true);
-}
-
-bool HeatPumpPlantLoopEIRCooling_Impl::isLoadSideReferenceFlowRateAutosized() const {
-  if (auto value = getString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::LoadSideReferenceFlowRate, true)) {
-    return openstudio::istringEqual(*value, "Autosize");
+  std::string HeatPumpPlantLoopEIRCooling_Impl::condenserType() const {
+    const auto value = getString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::CondenserType, true);
+    OS_ASSERT(value);
+    return *value;
   }
-  return false;
-}
 
-boost::optional<double> HeatPumpPlantLoopEIRCooling_Impl::sourceSideReferenceFlowRate() const {
-  return getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SourceSideReferenceFlowRate, true);
-}
-
-bool HeatPumpPlantLoopEIRCooling_Impl::isSourceSideReferenceFlowRateAutosized() const {
-  if (auto value = getString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SourceSideReferenceFlowRate, true)) {
-    return openstudio::istringEqual(*value, "Autosize");
+  boost::optional<double> HeatPumpPlantLoopEIRCooling_Impl::loadSideReferenceFlowRate() const {
+    return getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::LoadSideReferenceFlowRate, true);
   }
-  return false;
-}
 
-boost::optional<double> HeatPumpPlantLoopEIRCooling_Impl::heatRecoveryReferenceFlowRate() const {
-  return getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryReferenceFlowRate, true);
-}
-
-bool HeatPumpPlantLoopEIRCooling_Impl::isHeatRecoveryReferenceFlowRateAutosized() const {
-  if (auto value = getString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryReferenceFlowRate, true)) {
-    return openstudio::istringEqual(*value, "Autosize");
+  bool HeatPumpPlantLoopEIRCooling_Impl::isLoadSideReferenceFlowRateAutosized() const {
+    if (auto value = getString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::LoadSideReferenceFlowRate, true)) {
+      return openstudio::istringEqual(*value, "Autosize");
+    }
+    return false;
   }
-  return false;
-}
 
-boost::optional<double> HeatPumpPlantLoopEIRCooling_Impl::referenceCapacity() const {
-  return getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ReferenceCapacity, true);
-}
-
-bool HeatPumpPlantLoopEIRCooling_Impl::isReferenceCapacityAutosized() const {
-  if (auto value = getString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ReferenceCapacity, true)) {
-    return openstudio::istringEqual(*value, "Autosize");
+  boost::optional<double> HeatPumpPlantLoopEIRCooling_Impl::sourceSideReferenceFlowRate() const {
+    return getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SourceSideReferenceFlowRate, true);
   }
-  return false;
-}
 
-double HeatPumpPlantLoopEIRCooling_Impl::referenceCoefficientofPerformance() const {
-  const auto value = getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ReferenceCoefficientofPerformance, true);
-  OS_ASSERT(value);
-  return *value;
-}
+  bool HeatPumpPlantLoopEIRCooling_Impl::isSourceSideReferenceFlowRateAutosized() const {
+    if (auto value = getString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SourceSideReferenceFlowRate, true)) {
+      return openstudio::istringEqual(*value, "Autosize");
+    }
+    return false;
+  }
 
-double HeatPumpPlantLoopEIRCooling_Impl::sizingFactor() const {
-  const auto value = getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SizingFactor, true);
-  OS_ASSERT(value);
-  return *value;
-}
+  boost::optional<double> HeatPumpPlantLoopEIRCooling_Impl::heatRecoveryReferenceFlowRate() const {
+    return getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryReferenceFlowRate, true);
+  }
 
-std::string HeatPumpPlantLoopEIRCooling_Impl::controlType() const {
-  const auto value = getString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ControlType, true);
-  OS_ASSERT(value);
-  return *value;
-}
+  bool HeatPumpPlantLoopEIRCooling_Impl::isHeatRecoveryReferenceFlowRateAutosized() const {
+    if (auto value = getString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryReferenceFlowRate, true)) {
+      return openstudio::istringEqual(*value, "Autosize");
+    }
+    return false;
+  }
 
-std::string HeatPumpPlantLoopEIRCooling_Impl::flowMode() const {
-  const auto value = getString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::FlowMode, true);
-  OS_ASSERT(value);
-  return *value;
-}
+  boost::optional<double> HeatPumpPlantLoopEIRCooling_Impl::referenceCapacity() const {
+    return getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ReferenceCapacity, true);
+  }
 
-double HeatPumpPlantLoopEIRCooling_Impl::minimumPartLoadRatio() const {
-  const auto value = getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::MinimumPartLoadRatio, true);
-  OS_ASSERT(value);
-  return *value;
-}
+  bool HeatPumpPlantLoopEIRCooling_Impl::isReferenceCapacityAutosized() const {
+    if (auto value = getString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ReferenceCapacity, true)) {
+      return openstudio::istringEqual(*value, "Autosize");
+    }
+    return false;
+  }
 
-double HeatPumpPlantLoopEIRCooling_Impl::minimumSourceInletTemperature() const {
-  const auto value = getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::MinimumSourceInletTemperature, true);
-  OS_ASSERT(value);
-  return *value;
-}
+  double HeatPumpPlantLoopEIRCooling_Impl::referenceCoefficientofPerformance() const {
+    const auto value = getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ReferenceCoefficientofPerformance, true);
+    OS_ASSERT(value);
+    return *value;
+  }
 
-double HeatPumpPlantLoopEIRCooling_Impl::maximumSourceInletTemperature() const {
-  const auto value = getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::MaximumSourceInletTemperature, true);
-  OS_ASSERT(value);
-  return *value;
-}
+  double HeatPumpPlantLoopEIRCooling_Impl::sizingFactor() const {
+    const auto value = getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SizingFactor, true);
+    OS_ASSERT(value);
+    return *value;
+  }
 
-double HeatPumpPlantLoopEIRCooling_Impl::maximumHeatRecoveryOutletTemperature() const {
-  const auto value = getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::MaximumHeatRecoveryOutletTemperature, true);
-  OS_ASSERT(value);
-  return *value;
-}
+  std::string HeatPumpPlantLoopEIRCooling_Impl::controlType() const {
+    const auto value = getString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ControlType, true);
+    OS_ASSERT(value);
+    return *value;
+  }
 
-double HeatPumpPlantLoopEIRCooling_Impl::thermosiphonMinimumTemperatureDifference() const {
-  const auto value = getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ThermosiphonMinimumTemperatureDifference, true);
-  OS_ASSERT(value);
-  return *value;
-}
+  std::string HeatPumpPlantLoopEIRCooling_Impl::flowMode() const {
+    const auto value = getString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::FlowMode, true);
+    OS_ASSERT(value);
+    return *value;
+  }
 
-bool HeatPumpPlantLoopEIRCooling_Impl::setCondenserType(const std::string& condenserType) {
-  return setString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::CondenserType, condenserType);
-}
+  double HeatPumpPlantLoopEIRCooling_Impl::minimumPartLoadRatio() const {
+    const auto value = getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::MinimumPartLoadRatio, true);
+    OS_ASSERT(value);
+    return *value;
+  }
 
-bool HeatPumpPlantLoopEIRCooling_Impl::setLoadSideReferenceFlowRate(double loadSideReferenceFlowRate) {
-  return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::LoadSideReferenceFlowRate, loadSideReferenceFlowRate);
-}
+  double HeatPumpPlantLoopEIRCooling_Impl::minimumSourceInletTemperature() const {
+    const auto value = getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::MinimumSourceInletTemperature, true);
+    OS_ASSERT(value);
+    return *value;
+  }
 
-void HeatPumpPlantLoopEIRCooling_Impl::autosizeLoadSideReferenceFlowRate() {
-  const bool result = setString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::LoadSideReferenceFlowRate, "Autosize");
-  OS_ASSERT(result);
-}
+  double HeatPumpPlantLoopEIRCooling_Impl::maximumSourceInletTemperature() const {
+    const auto value = getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::MaximumSourceInletTemperature, true);
+    OS_ASSERT(value);
+    return *value;
+  }
 
-bool HeatPumpPlantLoopEIRCooling_Impl::setSourceSideReferenceFlowRate(double sourceSideReferenceFlowRate) {
-  return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SourceSideReferenceFlowRate, sourceSideReferenceFlowRate);
-}
+  double HeatPumpPlantLoopEIRCooling_Impl::maximumHeatRecoveryOutletTemperature() const {
+    const auto value = getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::MaximumHeatRecoveryOutletTemperature, true);
+    OS_ASSERT(value);
+    return *value;
+  }
 
-void HeatPumpPlantLoopEIRCooling_Impl::autosizeSourceSideReferenceFlowRate() {
-  const bool result = setString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SourceSideReferenceFlowRate, "Autosize");
-  OS_ASSERT(result);
-}
+  double HeatPumpPlantLoopEIRCooling_Impl::thermosiphonMinimumTemperatureDifference() const {
+    const auto value = getDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ThermosiphonMinimumTemperatureDifference, true);
+    OS_ASSERT(value);
+    return *value;
+  }
 
-bool HeatPumpPlantLoopEIRCooling_Impl::setHeatRecoveryReferenceFlowRate(double heatRecoveryReferenceFlowRate) {
-  return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryReferenceFlowRate, heatRecoveryReferenceFlowRate);
-}
+  bool HeatPumpPlantLoopEIRCooling_Impl::setCondenserType(const std::string& condenserType) {
+    return setString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::CondenserType, condenserType);
+  }
 
-void HeatPumpPlantLoopEIRCooling_Impl::autosizeHeatRecoveryReferenceFlowRate() {
-  const bool result = setString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryReferenceFlowRate, "Autosize");
-  OS_ASSERT(result);
-}
+  bool HeatPumpPlantLoopEIRCooling_Impl::setLoadSideReferenceFlowRate(double loadSideReferenceFlowRate) {
+    return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::LoadSideReferenceFlowRate, loadSideReferenceFlowRate);
+  }
 
-bool HeatPumpPlantLoopEIRCooling_Impl::setReferenceCapacity(double referenceCapacity) {
-  return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ReferenceCapacity, referenceCapacity);
-}
+  void HeatPumpPlantLoopEIRCooling_Impl::autosizeLoadSideReferenceFlowRate() {
+    const bool result = setString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::LoadSideReferenceFlowRate, "Autosize");
+    OS_ASSERT(result);
+  }
 
-void HeatPumpPlantLoopEIRCooling_Impl::autosizeReferenceCapacity() {
-  const bool result = setString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ReferenceCapacity, "Autosize");
-  OS_ASSERT(result);
-}
+  bool HeatPumpPlantLoopEIRCooling_Impl::setSourceSideReferenceFlowRate(double sourceSideReferenceFlowRate) {
+    return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SourceSideReferenceFlowRate, sourceSideReferenceFlowRate);
+  }
 
-bool HeatPumpPlantLoopEIRCooling_Impl::setReferenceCoefficientofPerformance(double referenceCoefficientofPerformance) {
-  return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ReferenceCoefficientofPerformance, referenceCoefficientofPerformance);
-}
+  void HeatPumpPlantLoopEIRCooling_Impl::autosizeSourceSideReferenceFlowRate() {
+    const bool result = setString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SourceSideReferenceFlowRate, "Autosize");
+    OS_ASSERT(result);
+  }
 
-bool HeatPumpPlantLoopEIRCooling_Impl::setSizingFactor(double sizingFactor) {
-  return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SizingFactor, sizingFactor);
-}
+  bool HeatPumpPlantLoopEIRCooling_Impl::setHeatRecoveryReferenceFlowRate(double heatRecoveryReferenceFlowRate) {
+    return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryReferenceFlowRate, heatRecoveryReferenceFlowRate);
+  }
 
-bool HeatPumpPlantLoopEIRCooling_Impl::setControlType(const std::string& controlType) {
-  return setString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ControlType, controlType);
-}
+  void HeatPumpPlantLoopEIRCooling_Impl::autosizeHeatRecoveryReferenceFlowRate() {
+    const bool result = setString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryReferenceFlowRate, "Autosize");
+    OS_ASSERT(result);
+  }
 
-bool HeatPumpPlantLoopEIRCooling_Impl::setFlowMode(const std::string& flowMode) {
-  return setString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::FlowMode, flowMode);
-}
+  bool HeatPumpPlantLoopEIRCooling_Impl::setReferenceCapacity(double referenceCapacity) {
+    return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ReferenceCapacity, referenceCapacity);
+  }
 
-bool HeatPumpPlantLoopEIRCooling_Impl::setMinimumPartLoadRatio(double minimumPartLoadRatio) {
-  return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::MinimumPartLoadRatio, minimumPartLoadRatio);
-}
+  void HeatPumpPlantLoopEIRCooling_Impl::autosizeReferenceCapacity() {
+    const bool result = setString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ReferenceCapacity, "Autosize");
+    OS_ASSERT(result);
+  }
 
-bool HeatPumpPlantLoopEIRCooling_Impl::setMinimumSourceInletTemperature(double minimumSourceInletTemperature) {
-  return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::MinimumSourceInletTemperature, minimumSourceInletTemperature);
-}
+  bool HeatPumpPlantLoopEIRCooling_Impl::setReferenceCoefficientofPerformance(double referenceCoefficientofPerformance) {
+    return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ReferenceCoefficientofPerformance, referenceCoefficientofPerformance);
+  }
 
-bool HeatPumpPlantLoopEIRCooling_Impl::setMaximumSourceInletTemperature(double maximumSourceInletTemperature) {
-  return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::MaximumSourceInletTemperature, maximumSourceInletTemperature);
-}
+  bool HeatPumpPlantLoopEIRCooling_Impl::setSizingFactor(double sizingFactor) {
+    return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SizingFactor, sizingFactor);
+  }
 
-bool HeatPumpPlantLoopEIRCooling_Impl::setMaximumHeatRecoveryOutletTemperature(double maximumHeatRecoveryOutletTemperature) {
-  return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::MaximumHeatRecoveryOutletTemperature, maximumHeatRecoveryOutletTemperature);
-}
+  bool HeatPumpPlantLoopEIRCooling_Impl::setControlType(const std::string& controlType) {
+    return setString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ControlType, controlType);
+  }
 
-bool HeatPumpPlantLoopEIRCooling_Impl::setThermosiphonMinimumTemperatureDifference(double thermosiphonMinimumTemperatureDifference) {
-  return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ThermosiphonMinimumTemperatureDifference,
-                   thermosiphonMinimumTemperatureDifference);
-}
+  bool HeatPumpPlantLoopEIRCooling_Impl::setFlowMode(const std::string& flowMode) {
+    return setString(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::FlowMode, flowMode);
+  }
 
-boost::optional<double> HeatPumpPlantLoopEIRCooling_Impl::autosizedLoadSideReferenceFlowRate() const {
-  // epmodel does not currently resolve autosized values from SQL results.
-  return boost::none;
-}
+  bool HeatPumpPlantLoopEIRCooling_Impl::setMinimumPartLoadRatio(double minimumPartLoadRatio) {
+    return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::MinimumPartLoadRatio, minimumPartLoadRatio);
+  }
 
-boost::optional<double> HeatPumpPlantLoopEIRCooling_Impl::autosizedSourceSideReferenceFlowRate() const {
-  // epmodel does not currently resolve autosized values from SQL results.
-  return boost::none;
-}
+  bool HeatPumpPlantLoopEIRCooling_Impl::setMinimumSourceInletTemperature(double minimumSourceInletTemperature) {
+    return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::MinimumSourceInletTemperature, minimumSourceInletTemperature);
+  }
 
-boost::optional<double> HeatPumpPlantLoopEIRCooling_Impl::autosizedHeatRecoveryReferenceFlowRate() const {
-  // epmodel does not currently resolve autosized values from SQL results.
-  return boost::none;
-}
+  bool HeatPumpPlantLoopEIRCooling_Impl::setMaximumSourceInletTemperature(double maximumSourceInletTemperature) {
+    return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::MaximumSourceInletTemperature, maximumSourceInletTemperature);
+  }
 
-boost::optional<double> HeatPumpPlantLoopEIRCooling_Impl::autosizedReferenceCapacity() const {
-  // epmodel does not currently resolve autosized values from SQL results.
-  return boost::none;
-}
+  bool HeatPumpPlantLoopEIRCooling_Impl::setMaximumHeatRecoveryOutletTemperature(double maximumHeatRecoveryOutletTemperature) {
+    return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::MaximumHeatRecoveryOutletTemperature, maximumHeatRecoveryOutletTemperature);
+  }
 
-std::vector<std::string> HeatPumpPlantLoopEIRCooling_Impl::condenserTypeValues() const {
-  return openstudio::epmodel::HeatPumpPlantLoopEIRCooling::condenserTypeValues();
-}
+  bool HeatPumpPlantLoopEIRCooling_Impl::setThermosiphonMinimumTemperatureDifference(double thermosiphonMinimumTemperatureDifference) {
+    return setDouble(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::ThermosiphonMinimumTemperatureDifference,
+                     thermosiphonMinimumTemperatureDifference);
+  }
+
+  boost::optional<double> HeatPumpPlantLoopEIRCooling_Impl::autosizedLoadSideReferenceFlowRate() const {
+    // epmodel does not currently resolve autosized values from SQL results.
+    return boost::none;
+  }
+
+  boost::optional<double> HeatPumpPlantLoopEIRCooling_Impl::autosizedSourceSideReferenceFlowRate() const {
+    // epmodel does not currently resolve autosized values from SQL results.
+    return boost::none;
+  }
+
+  boost::optional<double> HeatPumpPlantLoopEIRCooling_Impl::autosizedHeatRecoveryReferenceFlowRate() const {
+    // epmodel does not currently resolve autosized values from SQL results.
+    return boost::none;
+  }
+
+  boost::optional<double> HeatPumpPlantLoopEIRCooling_Impl::autosizedReferenceCapacity() const {
+    // epmodel does not currently resolve autosized values from SQL results.
+    return boost::none;
+  }
+
+  std::vector<std::string> HeatPumpPlantLoopEIRCooling_Impl::condenserTypeValues() const {
+    return openstudio::epmodel::HeatPumpPlantLoopEIRCooling::condenserTypeValues();
+  }
 
 }  // namespace detail
 }  // namespace epmodel

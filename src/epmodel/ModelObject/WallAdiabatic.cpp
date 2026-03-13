@@ -124,6 +124,16 @@ namespace epmodel {
       return getDouble(openstudio::Wall_AdiabaticFields::AzimuthAngle, true);
     }
 
+    bool WallAdiabatic_Impl::setAzimuthAngle(double azimuthAngle) {
+      const bool result = setDouble(openstudio::Wall_AdiabaticFields::AzimuthAngle, azimuthAngle);
+      return result;
+    }
+
+    void WallAdiabatic_Impl::resetAzimuthAngle() {
+      const bool result = setString(openstudio::Wall_AdiabaticFields::AzimuthAngle, "");
+      OS_ASSERT(result);
+    }
+
     double WallAdiabatic_Impl::tiltAngle() const {
       const auto value = getDouble(openstudio::Wall_AdiabaticFields::TiltAngle, true);
       OS_ASSERT(value);
@@ -134,34 +144,18 @@ namespace epmodel {
       return isEmpty(openstudio::Wall_AdiabaticFields::TiltAngle);
     }
 
-    boost::optional<double> WallAdiabatic_Impl::startingXCoordinate() const {
-      return getDouble(openstudio::Wall_AdiabaticFields::StartingXCoordinate, true);
-    }
-
-    boost::optional<double> WallAdiabatic_Impl::startingYCoordinate() const {
-      return getDouble(openstudio::Wall_AdiabaticFields::StartingYCoordinate, true);
-    }
-
-    boost::optional<double> WallAdiabatic_Impl::startingZCoordinate() const {
-      return getDouble(openstudio::Wall_AdiabaticFields::StartingZCoordinate, true);
-    }
-
-    boost::optional<double> WallAdiabatic_Impl::length() const {
-      return getDouble(openstudio::Wall_AdiabaticFields::Length, true);
-    }
-
-    boost::optional<double> WallAdiabatic_Impl::height() const {
-      return getDouble(openstudio::Wall_AdiabaticFields::Height, true);
-    }
-
-    bool WallAdiabatic_Impl::setAzimuthAngle(double azimuthAngle) {
-      const bool result = setDouble(openstudio::Wall_AdiabaticFields::AzimuthAngle, azimuthAngle);
-      return result;
-    }
-
     bool WallAdiabatic_Impl::setTiltAngle(double tiltAngle) {
       const bool result = setDouble(openstudio::Wall_AdiabaticFields::TiltAngle, tiltAngle);
       return result;
+    }
+
+    void WallAdiabatic_Impl::resetTiltAngle() {
+      const bool result = setString(openstudio::Wall_AdiabaticFields::TiltAngle, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallAdiabatic_Impl::startingXCoordinate() const {
+      return getDouble(openstudio::Wall_AdiabaticFields::StartingXCoordinate, true);
     }
 
     bool WallAdiabatic_Impl::setStartingXCoordinate(double startingXCoordinate) {
@@ -170,10 +164,28 @@ namespace epmodel {
       return result;
     }
 
+    void WallAdiabatic_Impl::resetStartingXCoordinate() {
+      const bool result = setString(openstudio::Wall_AdiabaticFields::StartingXCoordinate, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallAdiabatic_Impl::startingYCoordinate() const {
+      return getDouble(openstudio::Wall_AdiabaticFields::StartingYCoordinate, true);
+    }
+
     bool WallAdiabatic_Impl::setStartingYCoordinate(double startingYCoordinate) {
       const bool result = setDouble(openstudio::Wall_AdiabaticFields::StartingYCoordinate, startingYCoordinate);
       OS_ASSERT(result);
       return result;
+    }
+
+    void WallAdiabatic_Impl::resetStartingYCoordinate() {
+      const bool result = setString(openstudio::Wall_AdiabaticFields::StartingYCoordinate, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallAdiabatic_Impl::startingZCoordinate() const {
+      return getDouble(openstudio::Wall_AdiabaticFields::StartingZCoordinate, true);
     }
 
     bool WallAdiabatic_Impl::setStartingZCoordinate(double startingZCoordinate) {
@@ -182,46 +194,34 @@ namespace epmodel {
       return result;
     }
 
+    void WallAdiabatic_Impl::resetStartingZCoordinate() {
+      const bool result = setString(openstudio::Wall_AdiabaticFields::StartingZCoordinate, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallAdiabatic_Impl::length() const {
+      return getDouble(openstudio::Wall_AdiabaticFields::Length, true);
+    }
+
     bool WallAdiabatic_Impl::setLength(double length) {
       const bool result = setDouble(openstudio::Wall_AdiabaticFields::Length, length);
       OS_ASSERT(result);
       return result;
     }
 
+    void WallAdiabatic_Impl::resetLength() {
+      const bool result = setString(openstudio::Wall_AdiabaticFields::Length, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallAdiabatic_Impl::height() const {
+      return getDouble(openstudio::Wall_AdiabaticFields::Height, true);
+    }
+
     bool WallAdiabatic_Impl::setHeight(double height) {
       const bool result = setDouble(openstudio::Wall_AdiabaticFields::Height, height);
       OS_ASSERT(result);
       return result;
-    }
-
-    void WallAdiabatic_Impl::resetAzimuthAngle() {
-      const bool result = setString(openstudio::Wall_AdiabaticFields::AzimuthAngle, "");
-      OS_ASSERT(result);
-    }
-
-    void WallAdiabatic_Impl::resetTiltAngle() {
-      const bool result = setString(openstudio::Wall_AdiabaticFields::TiltAngle, "");
-      OS_ASSERT(result);
-    }
-
-    void WallAdiabatic_Impl::resetStartingXCoordinate() {
-      const bool result = setString(openstudio::Wall_AdiabaticFields::StartingXCoordinate, "");
-      OS_ASSERT(result);
-    }
-
-    void WallAdiabatic_Impl::resetStartingYCoordinate() {
-      const bool result = setString(openstudio::Wall_AdiabaticFields::StartingYCoordinate, "");
-      OS_ASSERT(result);
-    }
-
-    void WallAdiabatic_Impl::resetStartingZCoordinate() {
-      const bool result = setString(openstudio::Wall_AdiabaticFields::StartingZCoordinate, "");
-      OS_ASSERT(result);
-    }
-
-    void WallAdiabatic_Impl::resetLength() {
-      const bool result = setString(openstudio::Wall_AdiabaticFields::Length, "");
-      OS_ASSERT(result);
     }
 
     void WallAdiabatic_Impl::resetHeight() {

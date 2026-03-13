@@ -21,6 +21,8 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~ZoneCrossMixing_Impl() override = default;
 
+      std::vector<std::string> designFlowRateCalculationMethodValues() const;
+
       std::string designFlowRateCalculationMethod() const;
       bool isDesignFlowRateCalculationMethodDefaulted() const;
       bool setDesignFlowRateCalculationMethod(const std::string& designFlowRateCalculationMethod);
@@ -46,8 +48,6 @@ namespace epmodel {
       bool isDeltaTemperatureDefaulted() const;
       bool setDeltaTemperature(double deltaTemperature);
       void resetDeltaTemperature();
-
-      std::vector<std::string> designFlowRateCalculationMethodValues() const;
     };
 
   }  // namespace detail

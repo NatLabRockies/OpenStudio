@@ -42,195 +42,85 @@ std::vector<std::string> CurveTriquadratic::validOutputUnitTypeValues() {
   return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Curve_TriquadraticFields::OutputUnitType);
 }
 
-#define CURVE_TRIQUADRATIC_OPTIONAL_DOUBLE_FIELDS(X)                                                                                             \
-  X(coefficient1Constant)                                                                                                                        \
-  X(coefficient2xPOW2)                                                                                                                           \
-  X(coefficient3x)                                                                                                                               \
-  X(coefficient4yPOW2)                                                                                                                           \
-  X(coefficient5y)                                                                                                                               \
-  X(coefficient6zPOW2)                                                                                                                           \
-  X(coefficient7z)                                                                                                                               \
-  X(coefficient8xPOW2TIMESYPOW2)                                                                                                                 \
-  X(coefficient9xTIMESY)                                                                                                                         \
-  X(coefficient10xTIMESYPOW2)                                                                                                                    \
-  X(coefficient11xPOW2TIMESY)                                                                                                                    \
-  X(coefficient12xPOW2TIMESZPOW2)                                                                                                                \
-  X(coefficient13xTIMESZ)                                                                                                                        \
-  X(coefficient14xTIMESZPOW2)                                                                                                                    \
-  X(coefficient15xPOW2TIMESZ)                                                                                                                    \
-  X(coefficient16yPOW2TIMESZPOW2)                                                                                                                \
-  X(coefficient17yTIMESZ)                                                                                                                        \
-  X(coefficient18yTIMESZPOW2)                                                                                                                    \
-  X(coefficient19yPOW2TIMESZ)                                                                                                                    \
-  X(coefficient20xPOW2TIMESYPOW2TIMESZPOW2)                                                                                                      \
-  X(coefficient21xPOW2TIMESYPOW2TIMESZ)                                                                                                          \
-  X(coefficient22xPOW2TIMESYTIMESZPOW2)                                                                                                          \
-  X(coefficient23xTIMESYPOW2TIMESZPOW2)                                                                                                          \
-  X(coefficient24xPOW2TIMESYTIMESZ)                                                                                                              \
-  X(coefficient25xTIMESYPOW2TIMESZ)                                                                                                              \
-  X(coefficient26xTIMESYTIMESZPOW2)                                                                                                              \
-  X(coefficient27xTIMESYTIMESZ)                                                                                                                  \
-  X(minimumValueofx)                                                                                                                             \
-  X(maximumValueofx)                                                                                                                             \
-  X(minimumValueofy)                                                                                                                             \
-  X(maximumValueofy)                                                                                                                             \
-  X(minimumValueofz)                                                                                                                             \
-  X(maximumValueofz)                                                                                                                             \
-  X(minimumCurveOutput)                                                                                                                          \
-  X(maximumCurveOutput)
+#define CURVE_TRIQUADRATIC_OPTIONAL_DOUBLE_FIELD_ACCESSORS(X) \
+  X(coefficient1Constant, Coefficient1Constant) \
+  X(coefficient2xPOW2, Coefficient2xPOW2) \
+  X(coefficient3x, Coefficient3x) \
+  X(coefficient4yPOW2, Coefficient4yPOW2) \
+  X(coefficient5y, Coefficient5y) \
+  X(coefficient6zPOW2, Coefficient6zPOW2) \
+  X(coefficient7z, Coefficient7z) \
+  X(coefficient8xPOW2TIMESYPOW2, Coefficient8xPOW2TIMESYPOW2) \
+  X(coefficient9xTIMESY, Coefficient9xTIMESY) \
+  X(coefficient10xTIMESYPOW2, Coefficient10xTIMESYPOW2) \
+  X(coefficient11xPOW2TIMESY, Coefficient11xPOW2TIMESY) \
+  X(coefficient12xPOW2TIMESZPOW2, Coefficient12xPOW2TIMESZPOW2) \
+  X(coefficient13xTIMESZ, Coefficient13xTIMESZ) \
+  X(coefficient14xTIMESZPOW2, Coefficient14xTIMESZPOW2) \
+  X(coefficient15xPOW2TIMESZ, Coefficient15xPOW2TIMESZ) \
+  X(coefficient16yPOW2TIMESZPOW2, Coefficient16yPOW2TIMESZPOW2) \
+  X(coefficient17yTIMESZ, Coefficient17yTIMESZ) \
+  X(coefficient18yTIMESZPOW2, Coefficient18yTIMESZPOW2) \
+  X(coefficient19yPOW2TIMESZ, Coefficient19yPOW2TIMESZ) \
+  X(coefficient20xPOW2TIMESYPOW2TIMESZPOW2, Coefficient20xPOW2TIMESYPOW2TIMESZPOW2) \
+  X(coefficient21xPOW2TIMESYPOW2TIMESZ, Coefficient21xPOW2TIMESYPOW2TIMESZ) \
+  X(coefficient22xPOW2TIMESYTIMESZPOW2, Coefficient22xPOW2TIMESYTIMESZPOW2) \
+  X(coefficient23xTIMESYPOW2TIMESZPOW2, Coefficient23xTIMESYPOW2TIMESZPOW2) \
+  X(coefficient24xPOW2TIMESYTIMESZ, Coefficient24xPOW2TIMESYTIMESZ) \
+  X(coefficient25xTIMESYPOW2TIMESZ, Coefficient25xTIMESYPOW2TIMESZ) \
+  X(coefficient26xTIMESYTIMESZPOW2, Coefficient26xTIMESYTIMESZPOW2) \
+  X(coefficient27xTIMESYTIMESZ, Coefficient27xTIMESYTIMESZ) \
+  X(minimumValueofx, MinimumValueofx) \
+  X(maximumValueofx, MaximumValueofx) \
+  X(minimumValueofy, MinimumValueofy) \
+  X(maximumValueofy, MaximumValueofy) \
+  X(minimumValueofz, MinimumValueofz) \
+  X(maximumValueofz, MaximumValueofz) \
+  X(minimumCurveOutput, MinimumCurveOutput) \
+  X(maximumCurveOutput, MaximumCurveOutput)
 
-#define CURVE_TRIQUADRATIC_STRING_FIELDS(X)                                                                                                      \
-  X(inputUnitTypeforX)                                                                                                                           \
-  X(inputUnitTypeforY)                                                                                                                           \
-  X(inputUnitTypeforZ)                                                                                                                           \
-  X(outputUnitType)
-
-#define EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_GETTER(name)                                                                                       \
-  boost::optional<double> CurveTriquadratic::name() const {                                                                                      \
-    return getImpl<detail::CurveTriquadratic_Impl>()->name();                                                                                    \
-  }
-CURVE_TRIQUADRATIC_OPTIONAL_DOUBLE_FIELDS(EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_GETTER)
-#undef EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_GETTER
-
-#define EPMODEL_DEFINE_PUBLIC_STRING_GETTER(name)                                                                                                \
-  std::string CurveTriquadratic::name() const {                                                                                                  \
-    return getImpl<detail::CurveTriquadratic_Impl>()->name();                                                                                    \
-  }
-CURVE_TRIQUADRATIC_STRING_FIELDS(EPMODEL_DEFINE_PUBLIC_STRING_GETTER)
-#undef EPMODEL_DEFINE_PUBLIC_STRING_GETTER
-
-bool CurveTriquadratic::isInputUnitTypeforXDefaulted() const {
-  return getImpl<detail::CurveTriquadratic_Impl>()->isInputUnitTypeforXDefaulted();
+#define EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_ACCESSORS(name, ArgName) \
+boost::optional<double> CurveTriquadratic::name() const { \
+  return getImpl<detail::CurveTriquadratic_Impl>()->name(); \
+} \
+ \
+bool CurveTriquadratic::set##ArgName(double ArgName) { \
+  return getImpl<detail::CurveTriquadratic_Impl>()->set##ArgName(ArgName); \
+} \
+ \
+void CurveTriquadratic::reset##ArgName() { \
+  getImpl<detail::CurveTriquadratic_Impl>()->reset##ArgName(); \
 }
+CURVE_TRIQUADRATIC_OPTIONAL_DOUBLE_FIELD_ACCESSORS(EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_ACCESSORS)
+#undef EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_ACCESSORS
+#undef CURVE_TRIQUADRATIC_OPTIONAL_DOUBLE_FIELD_ACCESSORS
 
-bool CurveTriquadratic::isInputUnitTypeforYDefaulted() const {
-  return getImpl<detail::CurveTriquadratic_Impl>()->isInputUnitTypeforYDefaulted();
+#define CURVE_TRIQUADRATIC_STRING_FIELD_ACCESSORS(X) \
+  X(inputUnitTypeforX, InputUnitTypeforX) \
+  X(inputUnitTypeforY, InputUnitTypeforY) \
+  X(inputUnitTypeforZ, InputUnitTypeforZ) \
+  X(outputUnitType, OutputUnitType)
+
+#define EPMODEL_DEFINE_PUBLIC_STRING_ACCESSORS(getterName, SetterSuffix) \
+std::string CurveTriquadratic::getterName() const { \
+  return getImpl<detail::CurveTriquadratic_Impl>()->getterName(); \
+} \
+ \
+bool CurveTriquadratic::is##SetterSuffix##Defaulted() const { \
+  return getImpl<detail::CurveTriquadratic_Impl>()->is##SetterSuffix##Defaulted(); \
+} \
+ \
+bool CurveTriquadratic::set##SetterSuffix(const std::string& getterName) { \
+  return getImpl<detail::CurveTriquadratic_Impl>()->set##SetterSuffix(getterName); \
+} \
+ \
+void CurveTriquadratic::reset##SetterSuffix() { \
+  getImpl<detail::CurveTriquadratic_Impl>()->reset##SetterSuffix(); \
 }
-
-bool CurveTriquadratic::isInputUnitTypeforZDefaulted() const {
-  return getImpl<detail::CurveTriquadratic_Impl>()->isInputUnitTypeforZDefaulted();
-}
-
-bool CurveTriquadratic::isOutputUnitTypeDefaulted() const {
-  return getImpl<detail::CurveTriquadratic_Impl>()->isOutputUnitTypeDefaulted();
-}
-
-#define EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(name, ArgName)                                                                             \
-  bool CurveTriquadratic::set##ArgName(double ArgName) {                                                                                         \
-    return getImpl<detail::CurveTriquadratic_Impl>()->set##ArgName(ArgName);                                                                    \
-  }
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient1Constant, Coefficient1Constant)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient2xPOW2, Coefficient2xPOW2)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient3x, Coefficient3x)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient4yPOW2, Coefficient4yPOW2)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient5y, Coefficient5y)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient6zPOW2, Coefficient6zPOW2)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient7z, Coefficient7z)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient8xPOW2TIMESYPOW2, Coefficient8xPOW2TIMESYPOW2)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient9xTIMESY, Coefficient9xTIMESY)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient10xTIMESYPOW2, Coefficient10xTIMESYPOW2)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient11xPOW2TIMESY, Coefficient11xPOW2TIMESY)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient12xPOW2TIMESZPOW2, Coefficient12xPOW2TIMESZPOW2)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient13xTIMESZ, Coefficient13xTIMESZ)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient14xTIMESZPOW2, Coefficient14xTIMESZPOW2)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient15xPOW2TIMESZ, Coefficient15xPOW2TIMESZ)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient16yPOW2TIMESZPOW2, Coefficient16yPOW2TIMESZPOW2)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient17yTIMESZ, Coefficient17yTIMESZ)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient18yTIMESZPOW2, Coefficient18yTIMESZPOW2)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient19yPOW2TIMESZ, Coefficient19yPOW2TIMESZ)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient20xPOW2TIMESYPOW2TIMESZPOW2, Coefficient20xPOW2TIMESYPOW2TIMESZPOW2)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient21xPOW2TIMESYPOW2TIMESZ, Coefficient21xPOW2TIMESYPOW2TIMESZ)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient22xPOW2TIMESYTIMESZPOW2, Coefficient22xPOW2TIMESYTIMESZPOW2)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient23xTIMESYPOW2TIMESZPOW2, Coefficient23xTIMESYPOW2TIMESZPOW2)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient24xPOW2TIMESYTIMESZ, Coefficient24xPOW2TIMESYTIMESZ)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient25xTIMESYPOW2TIMESZ, Coefficient25xTIMESYPOW2TIMESZ)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient26xTIMESYTIMESZPOW2, Coefficient26xTIMESYTIMESZPOW2)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(coefficient27xTIMESYTIMESZ, Coefficient27xTIMESYTIMESZ)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(minimumValueofx, MinimumValueofx)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(maximumValueofx, MaximumValueofx)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(minimumValueofy, MinimumValueofy)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(maximumValueofy, MaximumValueofy)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(minimumValueofz, MinimumValueofz)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(maximumValueofz, MaximumValueofz)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(minimumCurveOutput, MinimumCurveOutput)
-EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER(maximumCurveOutput, MaximumCurveOutput)
-#undef EPMODEL_DEFINE_PUBLIC_OPTIONAL_DOUBLE_SETTER
-
-#define EPMODEL_DEFINE_PUBLIC_RESETTER(name, ArgName)                                                                                            \
-  void CurveTriquadratic::reset##ArgName() {                                                                                                     \
-    getImpl<detail::CurveTriquadratic_Impl>()->reset##ArgName();                                                                                 \
-  }
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient1Constant, Coefficient1Constant)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient2xPOW2, Coefficient2xPOW2)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient3x, Coefficient3x)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient4yPOW2, Coefficient4yPOW2)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient5y, Coefficient5y)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient6zPOW2, Coefficient6zPOW2)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient7z, Coefficient7z)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient8xPOW2TIMESYPOW2, Coefficient8xPOW2TIMESYPOW2)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient9xTIMESY, Coefficient9xTIMESY)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient10xTIMESYPOW2, Coefficient10xTIMESYPOW2)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient11xPOW2TIMESY, Coefficient11xPOW2TIMESY)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient12xPOW2TIMESZPOW2, Coefficient12xPOW2TIMESZPOW2)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient13xTIMESZ, Coefficient13xTIMESZ)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient14xTIMESZPOW2, Coefficient14xTIMESZPOW2)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient15xPOW2TIMESZ, Coefficient15xPOW2TIMESZ)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient16yPOW2TIMESZPOW2, Coefficient16yPOW2TIMESZPOW2)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient17yTIMESZ, Coefficient17yTIMESZ)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient18yTIMESZPOW2, Coefficient18yTIMESZPOW2)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient19yPOW2TIMESZ, Coefficient19yPOW2TIMESZ)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient20xPOW2TIMESYPOW2TIMESZPOW2, Coefficient20xPOW2TIMESYPOW2TIMESZPOW2)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient21xPOW2TIMESYPOW2TIMESZ, Coefficient21xPOW2TIMESYPOW2TIMESZ)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient22xPOW2TIMESYTIMESZPOW2, Coefficient22xPOW2TIMESYTIMESZPOW2)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient23xTIMESYPOW2TIMESZPOW2, Coefficient23xTIMESYPOW2TIMESZPOW2)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient24xPOW2TIMESYTIMESZ, Coefficient24xPOW2TIMESYTIMESZ)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient25xTIMESYPOW2TIMESZ, Coefficient25xTIMESYPOW2TIMESZ)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient26xTIMESYTIMESZPOW2, Coefficient26xTIMESYTIMESZPOW2)
-EPMODEL_DEFINE_PUBLIC_RESETTER(coefficient27xTIMESYTIMESZ, Coefficient27xTIMESYTIMESZ)
-EPMODEL_DEFINE_PUBLIC_RESETTER(minimumValueofx, MinimumValueofx)
-EPMODEL_DEFINE_PUBLIC_RESETTER(maximumValueofx, MaximumValueofx)
-EPMODEL_DEFINE_PUBLIC_RESETTER(minimumValueofy, MinimumValueofy)
-EPMODEL_DEFINE_PUBLIC_RESETTER(maximumValueofy, MaximumValueofy)
-EPMODEL_DEFINE_PUBLIC_RESETTER(minimumValueofz, MinimumValueofz)
-EPMODEL_DEFINE_PUBLIC_RESETTER(maximumValueofz, MaximumValueofz)
-EPMODEL_DEFINE_PUBLIC_RESETTER(minimumCurveOutput, MinimumCurveOutput)
-EPMODEL_DEFINE_PUBLIC_RESETTER(maximumCurveOutput, MaximumCurveOutput)
-#undef EPMODEL_DEFINE_PUBLIC_RESETTER
-
-bool CurveTriquadratic::setInputUnitTypeforX(const std::string& inputUnitTypeforX) {
-  return getImpl<detail::CurveTriquadratic_Impl>()->setInputUnitTypeforX(inputUnitTypeforX);
-}
-
-void CurveTriquadratic::resetInputUnitTypeforX() {
-  getImpl<detail::CurveTriquadratic_Impl>()->resetInputUnitTypeforX();
-}
-
-bool CurveTriquadratic::setInputUnitTypeforY(const std::string& inputUnitTypeforY) {
-  return getImpl<detail::CurveTriquadratic_Impl>()->setInputUnitTypeforY(inputUnitTypeforY);
-}
-
-void CurveTriquadratic::resetInputUnitTypeforY() {
-  getImpl<detail::CurveTriquadratic_Impl>()->resetInputUnitTypeforY();
-}
-
-bool CurveTriquadratic::setInputUnitTypeforZ(const std::string& inputUnitTypeforZ) {
-  return getImpl<detail::CurveTriquadratic_Impl>()->setInputUnitTypeforZ(inputUnitTypeforZ);
-}
-
-void CurveTriquadratic::resetInputUnitTypeforZ() {
-  getImpl<detail::CurveTriquadratic_Impl>()->resetInputUnitTypeforZ();
-}
-
-bool CurveTriquadratic::setOutputUnitType(const std::string& outputUnitType) {
-  return getImpl<detail::CurveTriquadratic_Impl>()->setOutputUnitType(outputUnitType);
-}
-
-void CurveTriquadratic::resetOutputUnitType() {
-  getImpl<detail::CurveTriquadratic_Impl>()->resetOutputUnitType();
-}
-
-#undef CURVE_TRIQUADRATIC_OPTIONAL_DOUBLE_FIELDS
-#undef CURVE_TRIQUADRATIC_STRING_FIELDS
+CURVE_TRIQUADRATIC_STRING_FIELD_ACCESSORS(EPMODEL_DEFINE_PUBLIC_STRING_ACCESSORS)
+#undef EPMODEL_DEFINE_PUBLIC_STRING_ACCESSORS
+#undef CURVE_TRIQUADRATIC_STRING_FIELD_ACCESSORS
+// clang-format on
 
 }  // namespace epmodel
 }  // namespace openstudio

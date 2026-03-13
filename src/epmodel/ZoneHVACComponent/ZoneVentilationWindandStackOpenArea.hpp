@@ -46,58 +46,46 @@ namespace epmodel {
     //   Temperature Schedules, and the Delta Temperature Schedule are relationship-only and intentionally excluded from
     //   this scalar-only surface until specialized helpers exist.
 
-    /** @name Getters */
+    /** @name Field Accessors */
     //@{
+
     double openingArea() const;
+    bool setOpeningArea(double openingArea);
 
     boost::optional<double> openingEffectiveness() const;
     bool isOpeningEffectivenessAutocalculated() const;
-
-    double effectiveAngle() const;
-
-    double heightDifference() const;
-
-    boost::optional<double> dischargeCoefficientforOpening() const;
-    bool isDischargeCoefficientforOpeningAutocalculated() const;
-
-    double minimumIndoorTemperature() const;
-
-    double maximumIndoorTemperature() const;
-
-    double deltaTemperature() const;
-
-    double minimumOutdoorTemperature() const;
-
-    double maximumOutdoorTemperature() const;
-
-    double maximumWindSpeed() const;
-    //@}
-
-    /** @name Setters */
-    //@{
-    bool setOpeningArea(double openingArea);
-
     bool setOpeningEffectiveness(double openingEffectiveness);
     void autocalculateOpeningEffectiveness();
 
+    double effectiveAngle() const;
     bool setEffectiveAngle(double effectiveAngle);
 
+    double heightDifference() const;
     bool setHeightDifference(double heightDifference);
 
+    boost::optional<double> dischargeCoefficientforOpening() const;
+    bool isDischargeCoefficientforOpeningAutocalculated() const;
     bool setDischargeCoefficientforOpening(double dischargeCoefficientforOpening);
     void autocalculateDischargeCoefficientforOpening();
 
+    double minimumIndoorTemperature() const;
     bool setMinimumIndoorTemperature(double minimumIndoorTemperature);
 
+    double maximumIndoorTemperature() const;
     bool setMaximumIndoorTemperature(double maximumIndoorTemperature);
 
+    double deltaTemperature() const;
     bool setDeltaTemperature(double deltaTemperature);
 
+    double minimumOutdoorTemperature() const;
     bool setMinimumOutdoorTemperature(double minimumOutdoorTemperature);
 
+    double maximumOutdoorTemperature() const;
     bool setMaximumOutdoorTemperature(double maximumOutdoorTemperature);
 
+    double maximumWindSpeed() const;
     bool setMaximumWindSpeed(double maximumWindSpeed);
+
     //@}
 
    protected:

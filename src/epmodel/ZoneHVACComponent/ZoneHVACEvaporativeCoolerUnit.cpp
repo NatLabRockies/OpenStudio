@@ -49,12 +49,12 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACEvaporativeCoolerUnit_Impl>()->designSupplyAirFlowRate();
   }
 
-  bool ZoneHVACEvaporativeCoolerUnit::isDesignSupplyAirFlowRateAutosized() const {
-    return getImpl<detail::ZoneHVACEvaporativeCoolerUnit_Impl>()->isDesignSupplyAirFlowRateAutosized();
-  }
-
   bool ZoneHVACEvaporativeCoolerUnit::setDesignSupplyAirFlowRate(double designSupplyAirFlowRate) {
     return getImpl<detail::ZoneHVACEvaporativeCoolerUnit_Impl>()->setDesignSupplyAirFlowRate(designSupplyAirFlowRate);
+  }
+
+  bool ZoneHVACEvaporativeCoolerUnit::isDesignSupplyAirFlowRateAutosized() const {
+    return getImpl<detail::ZoneHVACEvaporativeCoolerUnit_Impl>()->isDesignSupplyAirFlowRateAutosized();
   }
 
   void ZoneHVACEvaporativeCoolerUnit::autosizeDesignSupplyAirFlowRate() {
@@ -113,17 +113,17 @@ namespace epmodel {
       return getDouble(openstudio::ZoneHVAC_EvaporativeCoolerUnitFields::DesignSupplyAirFlowRate, true);
     }
 
+    bool ZoneHVACEvaporativeCoolerUnit_Impl::setDesignSupplyAirFlowRate(double designSupplyAirFlowRate) {
+      const bool result = setDouble(openstudio::ZoneHVAC_EvaporativeCoolerUnitFields::DesignSupplyAirFlowRate, designSupplyAirFlowRate);
+      OS_ASSERT(result);
+      return result;
+    }
+
     bool ZoneHVACEvaporativeCoolerUnit_Impl::isDesignSupplyAirFlowRateAutosized() const {
       if (auto value = getString(openstudio::ZoneHVAC_EvaporativeCoolerUnitFields::DesignSupplyAirFlowRate, true)) {
         return openstudio::istringEqual(*value, "autosize");
       }
       return false;
-    }
-
-    bool ZoneHVACEvaporativeCoolerUnit_Impl::setDesignSupplyAirFlowRate(double designSupplyAirFlowRate) {
-      const bool result = setDouble(openstudio::ZoneHVAC_EvaporativeCoolerUnitFields::DesignSupplyAirFlowRate, designSupplyAirFlowRate);
-      OS_ASSERT(result);
-      return result;
     }
 
     void ZoneHVACEvaporativeCoolerUnit_Impl::autosizeDesignSupplyAirFlowRate() {

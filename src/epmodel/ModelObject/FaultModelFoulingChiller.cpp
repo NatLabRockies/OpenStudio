@@ -17,81 +17,81 @@
 namespace openstudio {
 namespace epmodel {
 
-FaultModelFoulingChiller::FaultModelFoulingChiller(const Model& model) : ModelObject(FaultModelFoulingChiller::iddObjectType(), model) {}
+  FaultModelFoulingChiller::FaultModelFoulingChiller(const Model& model) : ModelObject(FaultModelFoulingChiller::iddObjectType(), model) {}
 
-FaultModelFoulingChiller::FaultModelFoulingChiller(std::shared_ptr<detail::FaultModelFoulingChiller_Impl> impl) : ModelObject(std::move(impl)) {}
+  FaultModelFoulingChiller::FaultModelFoulingChiller(std::shared_ptr<detail::FaultModelFoulingChiller_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType FaultModelFoulingChiller::iddObjectType() {
-  return IddObjectType::FaultModel_Fouling_Chiller;
-}
+  IddObjectType FaultModelFoulingChiller::iddObjectType() {
+    return IddObjectType::FaultModel_Fouling_Chiller;
+  }
 
-std::vector<std::string> FaultModelFoulingChiller::chillerObjectTypeValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::FaultModel_Fouling_ChillerFields::ChillerObjectType);
-}
+  std::vector<std::string> FaultModelFoulingChiller::chillerObjectTypeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::FaultModel_Fouling_ChillerFields::ChillerObjectType);
+  }
 
-std::string FaultModelFoulingChiller::chillerObjectType() const {
-  return getImpl<detail::FaultModelFoulingChiller_Impl>()->chillerObjectType();
-}
+  std::string FaultModelFoulingChiller::chillerObjectType() const {
+    return getImpl<detail::FaultModelFoulingChiller_Impl>()->chillerObjectType();
+  }
 
-bool FaultModelFoulingChiller::setChillerObjectType(const std::string& chillerObjectType) {
-  return getImpl<detail::FaultModelFoulingChiller_Impl>()->setChillerObjectType(chillerObjectType);
-}
+  bool FaultModelFoulingChiller::setChillerObjectType(const std::string& chillerObjectType) {
+    return getImpl<detail::FaultModelFoulingChiller_Impl>()->setChillerObjectType(chillerObjectType);
+  }
 
-double FaultModelFoulingChiller::foulingFactor() const {
-  return getImpl<detail::FaultModelFoulingChiller_Impl>()->foulingFactor();
-}
+  double FaultModelFoulingChiller::foulingFactor() const {
+    return getImpl<detail::FaultModelFoulingChiller_Impl>()->foulingFactor();
+  }
 
-bool FaultModelFoulingChiller::isFoulingFactorDefaulted() const {
-  return getImpl<detail::FaultModelFoulingChiller_Impl>()->isFoulingFactorDefaulted();
-}
+  bool FaultModelFoulingChiller::isFoulingFactorDefaulted() const {
+    return getImpl<detail::FaultModelFoulingChiller_Impl>()->isFoulingFactorDefaulted();
+  }
 
-bool FaultModelFoulingChiller::setFoulingFactor(double foulingFactor) {
-  return getImpl<detail::FaultModelFoulingChiller_Impl>()->setFoulingFactor(foulingFactor);
-}
+  bool FaultModelFoulingChiller::setFoulingFactor(double foulingFactor) {
+    return getImpl<detail::FaultModelFoulingChiller_Impl>()->setFoulingFactor(foulingFactor);
+  }
 
-void FaultModelFoulingChiller::resetFoulingFactor() {
-  getImpl<detail::FaultModelFoulingChiller_Impl>()->resetFoulingFactor();
-}
+  void FaultModelFoulingChiller::resetFoulingFactor() {
+    getImpl<detail::FaultModelFoulingChiller_Impl>()->resetFoulingFactor();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string FaultModelFoulingChiller_Impl::chillerObjectType() const {
-  const auto value = getString(openstudio::FaultModel_Fouling_ChillerFields::ChillerObjectType, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::vector<std::string> FaultModelFoulingChiller_Impl::chillerObjectTypeValues() const {
+      return openstudio::epmodel::FaultModelFoulingChiller::chillerObjectTypeValues();
+    }
 
-bool FaultModelFoulingChiller_Impl::setChillerObjectType(const std::string& chillerObjectType) {
-  return setString(openstudio::FaultModel_Fouling_ChillerFields::ChillerObjectType, chillerObjectType);
-}
+    std::string FaultModelFoulingChiller_Impl::chillerObjectType() const {
+      const auto value = getString(openstudio::FaultModel_Fouling_ChillerFields::ChillerObjectType, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-double FaultModelFoulingChiller_Impl::foulingFactor() const {
-  const auto value = getDouble(openstudio::FaultModel_Fouling_ChillerFields::FoulingFactor, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool FaultModelFoulingChiller_Impl::setChillerObjectType(const std::string& chillerObjectType) {
+      return setString(openstudio::FaultModel_Fouling_ChillerFields::ChillerObjectType, chillerObjectType);
+    }
 
-bool FaultModelFoulingChiller_Impl::isFoulingFactorDefaulted() const {
-  return isEmpty(openstudio::FaultModel_Fouling_ChillerFields::FoulingFactor);
-}
+    double FaultModelFoulingChiller_Impl::foulingFactor() const {
+      const auto value = getDouble(openstudio::FaultModel_Fouling_ChillerFields::FoulingFactor, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool FaultModelFoulingChiller_Impl::setFoulingFactor(double foulingFactor) {
-  return setDouble(openstudio::FaultModel_Fouling_ChillerFields::FoulingFactor, foulingFactor);
-}
+    bool FaultModelFoulingChiller_Impl::isFoulingFactorDefaulted() const {
+      return isEmpty(openstudio::FaultModel_Fouling_ChillerFields::FoulingFactor);
+    }
 
-void FaultModelFoulingChiller_Impl::resetFoulingFactor() {
-  OS_ASSERT(setString(openstudio::FaultModel_Fouling_ChillerFields::FoulingFactor, ""));
-}
+    bool FaultModelFoulingChiller_Impl::setFoulingFactor(double foulingFactor) {
+      return setDouble(openstudio::FaultModel_Fouling_ChillerFields::FoulingFactor, foulingFactor);
+    }
 
-std::vector<std::string> FaultModelFoulingChiller_Impl::chillerObjectTypeValues() const {
-  return openstudio::epmodel::FaultModelFoulingChiller::chillerObjectTypeValues();
-}
+    void FaultModelFoulingChiller_Impl::resetFoulingFactor() {
+      OS_ASSERT(setString(openstudio::FaultModel_Fouling_ChillerFields::FoulingFactor, ""));
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

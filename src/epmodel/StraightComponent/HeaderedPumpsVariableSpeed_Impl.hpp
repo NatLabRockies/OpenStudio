@@ -14,99 +14,79 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HeaderedPumpsVariableSpeed_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~HeaderedPumpsVariableSpeed_Impl() override = default;
+    class EPMODEL_API HeaderedPumpsVariableSpeed_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~HeaderedPumpsVariableSpeed_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
-  boost::optional<double> totalRatedFlowRate() const;
-  bool isTotalRatedFlowRateAutosized() const;
+      boost::optional<double> totalRatedFlowRate() const;
+      bool isTotalRatedFlowRateAutosized() const;
+      bool setTotalRatedFlowRate(double totalRatedFlowRate);
+      void autosizeTotalRatedFlowRate();
+      boost::optional<double> autosizedTotalRatedFlowRate() const;
 
-  int numberofPumpsinBank() const;
+      int numberofPumpsinBank() const;
+      bool setNumberofPumpsinBank(int numberofPumpsinBank);
 
-  std::string flowSequencingControlScheme() const;
+      std::string flowSequencingControlScheme() const;
+      bool setFlowSequencingControlScheme(const std::string& flowSequencingControlScheme);
 
-  double ratedPumpHead() const;
+      double ratedPumpHead() const;
+      bool setRatedPumpHead(double ratedPumpHead);
 
-  boost::optional<double> ratedPowerConsumption() const;
-  bool isRatedPowerConsumptionAutosized() const;
+      boost::optional<double> ratedPowerConsumption() const;
+      bool isRatedPowerConsumptionAutosized() const;
+      bool setRatedPowerConsumption(double ratedPowerConsumption);
+      void autosizeRatedPowerConsumption();
+      boost::optional<double> autosizedRatedPowerConsumption() const;
 
-  double motorEfficiency() const;
+      double motorEfficiency() const;
+      bool setMotorEfficiency(double motorEfficiency);
 
-  double fractionofMotorInefficienciestoFluidStream() const;
+      double fractionofMotorInefficienciestoFluidStream() const;
+      bool setFractionofMotorInefficienciestoFluidStream(double fractionofMotorInefficienciestoFluidStream);
 
-  double coefficient1ofthePartLoadPerformanceCurve() const;
+      double coefficient1ofthePartLoadPerformanceCurve() const;
+      bool setCoefficient1ofthePartLoadPerformanceCurve(double coefficient1ofthePartLoadPerformanceCurve);
 
-  double coefficient2ofthePartLoadPerformanceCurve() const;
+      double coefficient2ofthePartLoadPerformanceCurve() const;
+      bool setCoefficient2ofthePartLoadPerformanceCurve(double coefficient2ofthePartLoadPerformanceCurve);
 
-  double coefficient3ofthePartLoadPerformanceCurve() const;
+      double coefficient3ofthePartLoadPerformanceCurve() const;
+      bool setCoefficient3ofthePartLoadPerformanceCurve(double coefficient3ofthePartLoadPerformanceCurve);
 
-  double coefficient4ofthePartLoadPerformanceCurve() const;
+      double coefficient4ofthePartLoadPerformanceCurve() const;
+      bool setCoefficient4ofthePartLoadPerformanceCurve(double coefficient4ofthePartLoadPerformanceCurve);
 
-  double minimumFlowRateFraction() const;
+      double minimumFlowRateFraction() const;
+      bool setMinimumFlowRateFraction(double minimumFlowRateFraction);
 
-  std::string pumpControlType() const;
+      std::string pumpControlType() const;
+      bool setPumpControlType(const std::string& pumpControlType);
 
-  double skinLossRadiativeFraction() const;
+      double skinLossRadiativeFraction() const;
+      bool setSkinLossRadiativeFraction(double skinLossRadiativeFraction);
 
-  std::string designPowerSizingMethod() const;
+      std::string designPowerSizingMethod() const;
+      bool setDesignPowerSizingMethod(const std::string& designPowerSizingMethod);
 
-  double designElectricPowerPerUnitFlowRate() const;
+      double designElectricPowerPerUnitFlowRate() const;
+      bool setDesignElectricPowerPerUnitFlowRate(double designElectricPowerPerUnitFlowRate);
 
-  double designShaftPowerPerUnitFlowRatePerUnitHead() const;
+      double designShaftPowerPerUnitFlowRatePerUnitHead() const;
+      bool setDesignShaftPowerPerUnitFlowRatePerUnitHead(double designShaftPowerPerUnitFlowRatePerUnitHead);
 
-  std::string endUseSubcategory() const;
+      std::string endUseSubcategory() const;
+      bool setEndUseSubcategory(const std::string& endUseSubcategory);
+    };
 
-  bool setTotalRatedFlowRate(double totalRatedFlowRate);
-  void autosizeTotalRatedFlowRate();
-
-  bool setNumberofPumpsinBank(int numberofPumpsinBank);
-
-  bool setFlowSequencingControlScheme(const std::string& flowSequencingControlScheme);
-
-  bool setRatedPumpHead(double ratedPumpHead);
-
-  bool setRatedPowerConsumption(double ratedPowerConsumption);
-  void autosizeRatedPowerConsumption();
-
-  bool setMotorEfficiency(double motorEfficiency);
-
-  bool setFractionofMotorInefficienciestoFluidStream(double fractionofMotorInefficienciestoFluidStream);
-
-  bool setCoefficient1ofthePartLoadPerformanceCurve(double coefficient1ofthePartLoadPerformanceCurve);
-
-  bool setCoefficient2ofthePartLoadPerformanceCurve(double coefficient2ofthePartLoadPerformanceCurve);
-
-  bool setCoefficient3ofthePartLoadPerformanceCurve(double coefficient3ofthePartLoadPerformanceCurve);
-
-  bool setCoefficient4ofthePartLoadPerformanceCurve(double coefficient4ofthePartLoadPerformanceCurve);
-
-  bool setMinimumFlowRateFraction(double minimumFlowRateFraction);
-
-  bool setPumpControlType(const std::string& pumpControlType);
-
-  bool setSkinLossRadiativeFraction(double skinLossRadiativeFraction);
-
-  bool setDesignPowerSizingMethod(const std::string& designPowerSizingMethod);
-
-  bool setDesignElectricPowerPerUnitFlowRate(double designElectricPowerPerUnitFlowRate);
-
-  bool setDesignShaftPowerPerUnitFlowRatePerUnitHead(double designShaftPowerPerUnitFlowRatePerUnitHead);
-
-  bool setEndUseSubcategory(const std::string& endUseSubcategory);
-
-  boost::optional<double> autosizedTotalRatedFlowRate() const;
-
-  boost::optional<double> autosizedRatedPowerConsumption() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

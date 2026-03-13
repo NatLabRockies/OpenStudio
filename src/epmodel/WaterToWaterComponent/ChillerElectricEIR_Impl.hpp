@@ -78,6 +78,7 @@ class EPMODEL_API ChillerElectricEIR_Impl : public ModelObject_Impl
   bool isCondenserTypeDefaulted() const;
   bool setCondenserType(const std::string& condenserType);
   void resetCondenserType();
+  std::vector<std::string> condenserTypeValues() const;
 
   double condenserFanPowerRatio() const;
   bool isCondenserFanPowerRatioDefaulted() const;
@@ -98,6 +99,7 @@ class EPMODEL_API ChillerElectricEIR_Impl : public ModelObject_Impl
   bool isChillerFlowModeDefaulted() const;
   bool setChillerFlowMode(const std::string& chillerFlowMode);
   void resetChillerFlowMode();
+  std::vector<std::string> chillerFlowModeValues() const;
 
   boost::optional<double> designHeatRecoveryWaterFlowRate() const;
   bool isDesignHeatRecoveryWaterFlowRateAutosized() const;
@@ -127,6 +129,7 @@ class EPMODEL_API ChillerElectricEIR_Impl : public ModelObject_Impl
 
   std::string condenserFlowControl() const;
   bool setCondenserFlowControl(const std::string& condenserFlowControl);
+  std::vector<std::string> condenserFlowControlValues() const;
 
   double condenserMinimumFlowFraction() const;
   bool setCondenserMinimumFlowFraction(double condenserMinimumFlowFraction);
@@ -134,9 +137,6 @@ class EPMODEL_API ChillerElectricEIR_Impl : public ModelObject_Impl
   double thermosiphonMinimumTemperatureDifference() const;
   bool setThermosiphonMinimumTemperatureDifference(double thermosiphonMinimumTemperatureDifference);
 
-  std::vector<std::string> condenserTypeValues() const;
-  std::vector<std::string> chillerFlowModeValues() const;
-  std::vector<std::string> condenserFlowControlValues() const;
 };
 
 }  // namespace detail

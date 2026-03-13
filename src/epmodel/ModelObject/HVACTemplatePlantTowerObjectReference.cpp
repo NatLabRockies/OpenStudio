@@ -17,126 +17,126 @@
 namespace openstudio {
 namespace epmodel {
 
-HVACTemplatePlantTowerObjectReference::HVACTemplatePlantTowerObjectReference(const Model& model)
-  : ModelObject(HVACTemplatePlantTowerObjectReference::iddObjectType(), model) {}
+  HVACTemplatePlantTowerObjectReference::HVACTemplatePlantTowerObjectReference(const Model& model)
+    : ModelObject(HVACTemplatePlantTowerObjectReference::iddObjectType(), model) {}
 
-HVACTemplatePlantTowerObjectReference::HVACTemplatePlantTowerObjectReference(
-  std::shared_ptr<detail::HVACTemplatePlantTowerObjectReference_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  HVACTemplatePlantTowerObjectReference::HVACTemplatePlantTowerObjectReference(
+    std::shared_ptr<detail::HVACTemplatePlantTowerObjectReference_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType HVACTemplatePlantTowerObjectReference::iddObjectType() {
-  return IddObjectType::HVACTemplate_Plant_Tower_ObjectReference;
-}
+  IddObjectType HVACTemplatePlantTowerObjectReference::iddObjectType() {
+    return IddObjectType::HVACTemplate_Plant_Tower_ObjectReference;
+  }
 
-std::vector<std::string> HVACTemplatePlantTowerObjectReference::coolingTowerObjectTypeValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::CoolingTowerObjectType);
-}
+  std::vector<std::string> HVACTemplatePlantTowerObjectReference::coolingTowerObjectTypeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::CoolingTowerObjectType);
+  }
 
-std::vector<std::string> HVACTemplatePlantTowerObjectReference::templatePlantLoopTypeValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::TemplatePlantLoopType);
-}
+  std::vector<std::string> HVACTemplatePlantTowerObjectReference::templatePlantLoopTypeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::TemplatePlantLoopType);
+  }
 
-std::string HVACTemplatePlantTowerObjectReference::coolingTowerObjectType() const {
-  return getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->coolingTowerObjectType();
-}
+  std::string HVACTemplatePlantTowerObjectReference::coolingTowerObjectType() const {
+    return getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->coolingTowerObjectType();
+  }
 
-boost::optional<double> HVACTemplatePlantTowerObjectReference::priority() const {
-  return getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->priority();
-}
+  bool HVACTemplatePlantTowerObjectReference::isCoolingTowerObjectTypeDefaulted() const {
+    return getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->isCoolingTowerObjectTypeDefaulted();
+  }
 
-boost::optional<std::string> HVACTemplatePlantTowerObjectReference::templatePlantLoopType() const {
-  return getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->templatePlantLoopType();
-}
+  bool HVACTemplatePlantTowerObjectReference::setCoolingTowerObjectType(const std::string& coolingTowerObjectType) {
+    return getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->setCoolingTowerObjectType(coolingTowerObjectType);
+  }
 
-bool HVACTemplatePlantTowerObjectReference::isCoolingTowerObjectTypeDefaulted() const {
-  return getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->isCoolingTowerObjectTypeDefaulted();
-}
+  void HVACTemplatePlantTowerObjectReference::resetCoolingTowerObjectType() {
+    getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->resetCoolingTowerObjectType();
+  }
 
-bool HVACTemplatePlantTowerObjectReference::setCoolingTowerObjectType(const std::string& coolingTowerObjectType) {
-  return getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->setCoolingTowerObjectType(coolingTowerObjectType);
-}
+  boost::optional<double> HVACTemplatePlantTowerObjectReference::priority() const {
+    return getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->priority();
+  }
 
-bool HVACTemplatePlantTowerObjectReference::setPriority(double priority) {
-  return getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->setPriority(priority);
-}
+  bool HVACTemplatePlantTowerObjectReference::setPriority(double priority) {
+    return getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->setPriority(priority);
+  }
 
-bool HVACTemplatePlantTowerObjectReference::setTemplatePlantLoopType(const std::string& templatePlantLoopType) {
-  return getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->setTemplatePlantLoopType(templatePlantLoopType);
-}
+  void HVACTemplatePlantTowerObjectReference::resetPriority() {
+    getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->resetPriority();
+  }
 
-void HVACTemplatePlantTowerObjectReference::resetCoolingTowerObjectType() {
-  getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->resetCoolingTowerObjectType();
-}
+  boost::optional<std::string> HVACTemplatePlantTowerObjectReference::templatePlantLoopType() const {
+    return getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->templatePlantLoopType();
+  }
 
-void HVACTemplatePlantTowerObjectReference::resetPriority() {
-  getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->resetPriority();
-}
+  bool HVACTemplatePlantTowerObjectReference::setTemplatePlantLoopType(const std::string& templatePlantLoopType) {
+    return getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->setTemplatePlantLoopType(templatePlantLoopType);
+  }
 
-void HVACTemplatePlantTowerObjectReference::resetTemplatePlantLoopType() {
-  getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->resetTemplatePlantLoopType();
-}
+  void HVACTemplatePlantTowerObjectReference::resetTemplatePlantLoopType() {
+    getImpl<detail::HVACTemplatePlantTowerObjectReference_Impl>()->resetTemplatePlantLoopType();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string HVACTemplatePlantTowerObjectReference_Impl::coolingTowerObjectType() const {
-  auto value = getString(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::CoolingTowerObjectType, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string HVACTemplatePlantTowerObjectReference_Impl::coolingTowerObjectType() const {
+      auto value = getString(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::CoolingTowerObjectType, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-boost::optional<double> HVACTemplatePlantTowerObjectReference_Impl::priority() const {
-  return getDouble(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::Priority, true);
-}
+    bool HVACTemplatePlantTowerObjectReference_Impl::isCoolingTowerObjectTypeDefaulted() const {
+      return isEmpty(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::CoolingTowerObjectType);
+    }
 
-boost::optional<std::string> HVACTemplatePlantTowerObjectReference_Impl::templatePlantLoopType() const {
-  return getString(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::TemplatePlantLoopType, true);
-}
+    bool HVACTemplatePlantTowerObjectReference_Impl::setCoolingTowerObjectType(const std::string& coolingTowerObjectType) {
+      return setString(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::CoolingTowerObjectType, coolingTowerObjectType);
+    }
 
-bool HVACTemplatePlantTowerObjectReference_Impl::isCoolingTowerObjectTypeDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::CoolingTowerObjectType);
-}
+    void HVACTemplatePlantTowerObjectReference_Impl::resetCoolingTowerObjectType() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::CoolingTowerObjectType, ""));
+    }
 
-bool HVACTemplatePlantTowerObjectReference_Impl::setCoolingTowerObjectType(const std::string& coolingTowerObjectType) {
-  return setString(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::CoolingTowerObjectType, coolingTowerObjectType);
-}
+    boost::optional<double> HVACTemplatePlantTowerObjectReference_Impl::priority() const {
+      return getDouble(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::Priority, true);
+    }
 
-bool HVACTemplatePlantTowerObjectReference_Impl::setPriority(double priority) {
-  const bool result = setDouble(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::Priority, priority);
-  OS_ASSERT(result);
-  return result;
-}
+    bool HVACTemplatePlantTowerObjectReference_Impl::setPriority(double priority) {
+      const bool result = setDouble(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::Priority, priority);
+      OS_ASSERT(result);
+      return result;
+    }
 
-bool HVACTemplatePlantTowerObjectReference_Impl::setTemplatePlantLoopType(const std::string& templatePlantLoopType) {
-  return setString(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::TemplatePlantLoopType, templatePlantLoopType);
-}
+    void HVACTemplatePlantTowerObjectReference_Impl::resetPriority() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::Priority, ""));
+    }
 
-void HVACTemplatePlantTowerObjectReference_Impl::resetCoolingTowerObjectType() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::CoolingTowerObjectType, ""));
-}
+    boost::optional<std::string> HVACTemplatePlantTowerObjectReference_Impl::templatePlantLoopType() const {
+      return getString(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::TemplatePlantLoopType, true);
+    }
 
-void HVACTemplatePlantTowerObjectReference_Impl::resetPriority() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::Priority, ""));
-}
+    bool HVACTemplatePlantTowerObjectReference_Impl::setTemplatePlantLoopType(const std::string& templatePlantLoopType) {
+      return setString(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::TemplatePlantLoopType, templatePlantLoopType);
+    }
 
-void HVACTemplatePlantTowerObjectReference_Impl::resetTemplatePlantLoopType() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::TemplatePlantLoopType, ""));
-}
+    void HVACTemplatePlantTowerObjectReference_Impl::resetTemplatePlantLoopType() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_Tower_ObjectReferenceFields::TemplatePlantLoopType, ""));
+    }
 
-std::vector<std::string> HVACTemplatePlantTowerObjectReference_Impl::coolingTowerObjectTypeValues() const {
-  return openstudio::epmodel::HVACTemplatePlantTowerObjectReference::coolingTowerObjectTypeValues();
-}
+    std::vector<std::string> HVACTemplatePlantTowerObjectReference_Impl::coolingTowerObjectTypeValues() const {
+      return openstudio::epmodel::HVACTemplatePlantTowerObjectReference::coolingTowerObjectTypeValues();
+    }
 
-std::vector<std::string> HVACTemplatePlantTowerObjectReference_Impl::templatePlantLoopTypeValues() const {
-  return openstudio::epmodel::HVACTemplatePlantTowerObjectReference::templatePlantLoopTypeValues();
-}
+    std::vector<std::string> HVACTemplatePlantTowerObjectReference_Impl::templatePlantLoopTypeValues() const {
+      return openstudio::epmodel::HVACTemplatePlantTowerObjectReference::templatePlantLoopTypeValues();
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

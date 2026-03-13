@@ -300,6 +300,10 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::autosizedSupplyAirFlowRateDuringCoolingOperation() const {
+      return {};
+    }
+
     boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::supplyAirFlowRateDuringHeatingOperation() const {
       return getDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingSupplyAirFlowRate, true);
     }
@@ -326,6 +330,10 @@ namespace epmodel {
     void ZoneHVACPackagedTerminalHeatPump_Impl::autosizeSupplyAirFlowRateDuringHeatingOperation() {
       bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingSupplyAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::autosizedSupplyAirFlowRateDuringHeatingOperation() const {
+      return {};
     }
 
     boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::supplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
@@ -359,6 +367,10 @@ namespace epmodel {
     void ZoneHVACPackagedTerminalHeatPump_Impl::autosizeSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded() {
       bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadSupplyAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::autosizedSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
+      return {};
     }
 
     bool ZoneHVACPackagedTerminalHeatPump_Impl::noLoadSupplyAirFlowRateControlSetToLowSpeed() const {
@@ -410,6 +422,10 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::autosizedOutdoorAirFlowRateDuringCoolingOperation() const {
+      return {};
+    }
+
     boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::outdoorAirFlowRateDuringHeatingOperation() const {
       return getDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingOutdoorAirFlowRate, true);
     }
@@ -436,6 +452,10 @@ namespace epmodel {
     void ZoneHVACPackagedTerminalHeatPump_Impl::autosizeOutdoorAirFlowRateDuringHeatingOperation() {
       bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingOutdoorAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::autosizedOutdoorAirFlowRateDuringHeatingOperation() const {
+      return {};
     }
 
     boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
@@ -469,6 +489,10 @@ namespace epmodel {
     void ZoneHVACPackagedTerminalHeatPump_Impl::autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() {
       bool result = setString(ZoneHVAC_PackagedTerminalHeatPumpFields::NoLoadOutdoorAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
+      return {};
     }
 
     double ZoneHVACPackagedTerminalHeatPump_Impl::heatingConvergenceTolerance() const {
@@ -561,6 +585,10 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::autosizedMaximumSupplyAirTemperaturefromSupplementalHeater() const {
+      return {};
+    }
+
     double ZoneHVACPackagedTerminalHeatPump_Impl::maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation() const {
       boost::optional<double> value =
         getDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::MaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation, true);
@@ -618,34 +646,6 @@ namespace epmodel {
       bool result = setDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::DXHeatingCoilSizingRatio, dXHeatingCoilSizingRatio, false);
       OS_ASSERT(result);
       return result;
-    }
-
-    boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::autosizedSupplyAirFlowRateDuringCoolingOperation() const {
-      return {};
-    }
-
-    boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::autosizedSupplyAirFlowRateDuringHeatingOperation() const {
-      return {};
-    }
-
-    boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::autosizedSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
-      return {};
-    }
-
-    boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::autosizedOutdoorAirFlowRateDuringCoolingOperation() const {
-      return {};
-    }
-
-    boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::autosizedOutdoorAirFlowRateDuringHeatingOperation() const {
-      return {};
-    }
-
-    boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
-      return {};
-    }
-
-    boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::autosizedMaximumSupplyAirTemperaturefromSupplementalHeater() const {
-      return {};
     }
 
   }  // namespace detail

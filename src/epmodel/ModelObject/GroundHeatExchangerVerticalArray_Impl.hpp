@@ -11,24 +11,25 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatExchangerVerticalArray_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatExchangerVerticalArray_Impl() override = default;
+    class EPMODEL_API GroundHeatExchangerVerticalArray_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatExchangerVerticalArray_Impl() override = default;
 
-  int numberofBoreholesinXDirection() const;
-  int numberofBoreholesinYDirection() const;
-  double boreholeSpacing() const;
+      int numberofBoreholesinXDirection() const;
+      bool setNumberofBoreholesinXDirection(int numberofBoreholesinXDirection);
 
-  bool setNumberofBoreholesinXDirection(int numberofBoreholesinXDirection);
-  bool setNumberofBoreholesinYDirection(int numberofBoreholesinYDirection);
-  bool setBoreholeSpacing(double boreholeSpacing);
-};
+      int numberofBoreholesinYDirection() const;
+      bool setNumberofBoreholesinYDirection(int numberofBoreholesinYDirection);
 
-}  // namespace detail
+      double boreholeSpacing() const;
+      bool setBoreholeSpacing(double boreholeSpacing);
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

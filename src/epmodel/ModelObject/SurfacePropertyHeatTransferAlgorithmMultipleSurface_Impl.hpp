@@ -22,16 +22,18 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~SurfacePropertyHeatTransferAlgorithmMultipleSurface_Impl() override = default;
 
+      std::vector<std::string> surfaceTypeValues() const;
+      std::vector<std::string> algorithmValues() const;
+
+      // Surface Type field
       std::string surfaceType() const;
       bool setSurfaceType(const std::string& surfaceType);
 
+      // Algorithm field
       std::string algorithm() const;
       bool setAlgorithm(const std::string& algorithm);
       bool isAlgorithmDefaulted() const;
       void resetAlgorithm();
-
-      std::vector<std::string> surfaceTypeValues() const;
-      std::vector<std::string> algorithmValues() const;
     };
 
   }  // namespace detail

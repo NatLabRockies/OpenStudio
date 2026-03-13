@@ -16,53 +16,55 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class GroundHeatTransferSlabBoundConds_Impl;
-}
+  namespace detail {
+    class GroundHeatTransferSlabBoundConds_Impl;
+  }
 
-class EPMODEL_API GroundHeatTransferSlabBoundConds : public ModelObject
-{
- public:
-  explicit GroundHeatTransferSlabBoundConds(const Model& model);
+  class EPMODEL_API GroundHeatTransferSlabBoundConds : public ModelObject
+  {
+   public:
+    explicit GroundHeatTransferSlabBoundConds(const Model& model);
 
-  virtual ~GroundHeatTransferSlabBoundConds() override = default;
-  GroundHeatTransferSlabBoundConds(const GroundHeatTransferSlabBoundConds& other) = default;
-  GroundHeatTransferSlabBoundConds(GroundHeatTransferSlabBoundConds&& other) = default;
-  GroundHeatTransferSlabBoundConds& operator=(const GroundHeatTransferSlabBoundConds&) = default;
-  GroundHeatTransferSlabBoundConds& operator=(GroundHeatTransferSlabBoundConds&&) = default;
+    virtual ~GroundHeatTransferSlabBoundConds() override = default;
+    GroundHeatTransferSlabBoundConds(const GroundHeatTransferSlabBoundConds& other) = default;
+    GroundHeatTransferSlabBoundConds(GroundHeatTransferSlabBoundConds&& other) = default;
+    GroundHeatTransferSlabBoundConds& operator=(const GroundHeatTransferSlabBoundConds&) = default;
+    GroundHeatTransferSlabBoundConds& operator=(GroundHeatTransferSlabBoundConds&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to GroundHeatTransfer:Slab:BoundConds fields.
-  // - TODO(parity): Add relationship APIs incrementally if future schema revisions introduce link fields.
-  bool eVTRIssurfaceevapotranspirationmodeled() const;
-  bool fIXBCIsthelowerboundaryatafixedtemperature() const;
-  boost::optional<double> tDEEPin() const;
-  bool uSRHflagIsthegroundsurfacehspecifiedbytheuser() const;
-  boost::optional<double> uSERHUserspecifiedgroundsurfaceheattransfercoefficient() const;
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to GroundHeatTransfer:Slab:BoundConds fields.
+    // - TODO(parity): Add relationship APIs incrementally if future schema revisions introduce link fields.
+    bool eVTRIssurfaceevapotranspirationmodeled() const;
+    bool setEVTRIssurfaceevapotranspirationmodeled(bool eVTRIssurfaceevapotranspirationmodeled);
 
-  bool setEVTRIssurfaceevapotranspirationmodeled(bool eVTRIssurfaceevapotranspirationmodeled);
-  bool setFIXBCIsthelowerboundaryatafixedtemperature(bool fIXBCIsthelowerboundaryatafixedtemperature);
-  bool setTDEEPin(double tDEEPin);
-  bool setUSRHflagIsthegroundsurfacehspecifiedbytheuser(bool uSRHflagIsthegroundsurfacehspecifiedbytheuser);
-  bool setUSERHUserspecifiedgroundsurfaceheattransfercoefficient(double uSERHUserspecifiedgroundsurfaceheattransfercoefficient);
+    bool fIXBCIsthelowerboundaryatafixedtemperature() const;
+    bool setFIXBCIsthelowerboundaryatafixedtemperature(bool fIXBCIsthelowerboundaryatafixedtemperature);
 
-  void resetTDEEPin();
-  void resetUSERHUserspecifiedgroundsurfaceheattransfercoefficient();
+    boost::optional<double> tDEEPin() const;
+    bool setTDEEPin(double tDEEPin);
+    void resetTDEEPin();
 
- protected:
-  using ImplType = detail::GroundHeatTransferSlabBoundConds_Impl;
+    bool uSRHflagIsthegroundsurfacehspecifiedbytheuser() const;
+    bool setUSRHflagIsthegroundsurfacehspecifiedbytheuser(bool uSRHflagIsthegroundsurfacehspecifiedbytheuser);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    boost::optional<double> uSERHUserspecifiedgroundsurfaceheattransfercoefficient() const;
+    bool setUSERHUserspecifiedgroundsurfaceheattransfercoefficient(double uSERHUserspecifiedgroundsurfaceheattransfercoefficient);
+    void resetUSERHUserspecifiedgroundsurfaceheattransfercoefficient();
 
-  explicit GroundHeatTransferSlabBoundConds(std::shared_ptr<detail::GroundHeatTransferSlabBoundConds_Impl> impl);
-};
+   protected:
+    using ImplType = detail::GroundHeatTransferSlabBoundConds_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit GroundHeatTransferSlabBoundConds(std::shared_ptr<detail::GroundHeatTransferSlabBoundConds_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

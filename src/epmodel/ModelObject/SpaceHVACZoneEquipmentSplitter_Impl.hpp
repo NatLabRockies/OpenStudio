@@ -21,6 +21,10 @@ class EPMODEL_API SpaceHVACZoneEquipmentSplitter_Impl : public ModelObject_Impl
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~SpaceHVACZoneEquipmentSplitter_Impl() override = default;
 
+  std::vector<std::string> zoneEquipmentObjectTypeValues() const;
+  std::vector<std::string> thermostatControlMethodValues() const;
+  std::vector<std::string> spaceFractionMethodValues() const;
+
   std::string zoneEquipmentObjectType() const;
   bool setZoneEquipmentObjectType(const std::string& zoneEquipmentObjectType);
 
@@ -33,10 +37,6 @@ class EPMODEL_API SpaceHVACZoneEquipmentSplitter_Impl : public ModelObject_Impl
   bool isSpaceFractionMethodDefaulted() const;
   bool setSpaceFractionMethod(const std::string& spaceFractionMethod);
   void resetSpaceFractionMethod();
-
-  std::vector<std::string> zoneEquipmentObjectTypeValues() const;
-  std::vector<std::string> thermostatControlMethodValues() const;
-  std::vector<std::string> spaceFractionMethodValues() const;
 };
 
 }  // namespace detail

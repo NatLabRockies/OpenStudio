@@ -11,27 +11,27 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API DaylightingDeviceTubular_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~DaylightingDeviceTubular_Impl() override = default;
+    class EPMODEL_API DaylightingDeviceTubular_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~DaylightingDeviceTubular_Impl() override = default;
 
-  double diameter() const;
-  bool setDiameter(double diameter);
+      double diameter() const;
+      bool setDiameter(double diameter);
 
-  double totalLength() const;
-  bool setTotalLength(double totalLength);
+      double totalLength() const;
+      bool setTotalLength(double totalLength);
 
-  double effectiveThermalResistance() const;
-  bool isEffectiveThermalResistanceDefaulted() const;
-  bool setEffectiveThermalResistance(double effectiveThermalResistance);
-  void resetEffectiveThermalResistance();
-};
+      double effectiveThermalResistance() const;
+      bool setEffectiveThermalResistance(double effectiveThermalResistance);
+      bool isEffectiveThermalResistanceDefaulted() const;
+      void resetEffectiveThermalResistance();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

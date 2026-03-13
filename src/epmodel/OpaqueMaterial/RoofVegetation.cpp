@@ -49,12 +49,28 @@ bool RoofVegetation::isHeightofPlantsDefaulted() const {
   return getImpl<detail::RoofVegetation_Impl>()->isHeightofPlantsDefaulted();
 }
 
+bool RoofVegetation::setHeightofPlants(double heightofPlants) {
+  return getImpl<detail::RoofVegetation_Impl>()->setHeightofPlants(heightofPlants);
+}
+
+void RoofVegetation::resetHeightofPlants() {
+  getImpl<detail::RoofVegetation_Impl>()->resetHeightofPlants();
+}
+
 double RoofVegetation::leafAreaIndex() const {
   return getImpl<detail::RoofVegetation_Impl>()->leafAreaIndex();
 }
 
 bool RoofVegetation::isLeafAreaIndexDefaulted() const {
   return getImpl<detail::RoofVegetation_Impl>()->isLeafAreaIndexDefaulted();
+}
+
+bool RoofVegetation::setLeafAreaIndex(double leafAreaIndex) {
+  return getImpl<detail::RoofVegetation_Impl>()->setLeafAreaIndex(leafAreaIndex);
+}
+
+void RoofVegetation::resetLeafAreaIndex() {
+  getImpl<detail::RoofVegetation_Impl>()->resetLeafAreaIndex();
 }
 
 double RoofVegetation::leafReflectivity() const {
@@ -65,12 +81,28 @@ bool RoofVegetation::isLeafReflectivityDefaulted() const {
   return getImpl<detail::RoofVegetation_Impl>()->isLeafReflectivityDefaulted();
 }
 
+bool RoofVegetation::setLeafReflectivity(double leafReflectivity) {
+  return getImpl<detail::RoofVegetation_Impl>()->setLeafReflectivity(leafReflectivity);
+}
+
+void RoofVegetation::resetLeafReflectivity() {
+  getImpl<detail::RoofVegetation_Impl>()->resetLeafReflectivity();
+}
+
 double RoofVegetation::leafEmissivity() const {
   return getImpl<detail::RoofVegetation_Impl>()->leafEmissivity();
 }
 
 bool RoofVegetation::isLeafEmissivityDefaulted() const {
   return getImpl<detail::RoofVegetation_Impl>()->isLeafEmissivityDefaulted();
+}
+
+bool RoofVegetation::setLeafEmissivity(double leafEmissivity) {
+  return getImpl<detail::RoofVegetation_Impl>()->setLeafEmissivity(leafEmissivity);
+}
+
+void RoofVegetation::resetLeafEmissivity() {
+  getImpl<detail::RoofVegetation_Impl>()->resetLeafEmissivity();
 }
 
 double RoofVegetation::minimumStomatalResistance() const {
@@ -81,6 +113,14 @@ bool RoofVegetation::isMinimumStomatalResistanceDefaulted() const {
   return getImpl<detail::RoofVegetation_Impl>()->isMinimumStomatalResistanceDefaulted();
 }
 
+bool RoofVegetation::setMinimumStomatalResistance(double value) {
+  return getImpl<detail::RoofVegetation_Impl>()->setMinimumStomatalResistance(value);
+}
+
+void RoofVegetation::resetMinimumStomatalResistance() {
+  getImpl<detail::RoofVegetation_Impl>()->resetMinimumStomatalResistance();
+}
+
 std::string RoofVegetation::roughness() const {
   return getImpl<detail::RoofVegetation_Impl>()->roughness();
 }
@@ -89,12 +129,28 @@ bool RoofVegetation::isRoughnessDefaulted() const {
   return getImpl<detail::RoofVegetation_Impl>()->isRoughnessDefaulted();
 }
 
+bool RoofVegetation::setRoughness(const std::string& value) {
+  return getImpl<detail::RoofVegetation_Impl>()->setRoughness(value);
+}
+
+void RoofVegetation::resetRoughness() {
+  getImpl<detail::RoofVegetation_Impl>()->resetRoughness();
+}
+
 double RoofVegetation::thickness() const {
   return getImpl<detail::RoofVegetation_Impl>()->thickness();
 }
 
 bool RoofVegetation::isThicknessDefaulted() const {
   return getImpl<detail::RoofVegetation_Impl>()->isThicknessDefaulted();
+}
+
+bool RoofVegetation::setThickness(double thickness) {
+  return getImpl<detail::RoofVegetation_Impl>()->setThickness(thickness);
+}
+
+void RoofVegetation::resetThickness() {
+  getImpl<detail::RoofVegetation_Impl>()->resetThickness();
 }
 
 double RoofVegetation::thermalConductivity() const {
@@ -113,174 +169,6 @@ double RoofVegetation::thermalResistance() const {
   return getImpl<detail::RoofVegetation_Impl>()->thermalResistance();
 }
 
-double RoofVegetation::conductivityofDrySoil() const {
-  return getImpl<detail::RoofVegetation_Impl>()->conductivityofDrySoil();
-}
-
-bool RoofVegetation::isConductivityofDrySoilDefaulted() const {
-  return getImpl<detail::RoofVegetation_Impl>()->isConductivityofDrySoilDefaulted();
-}
-
-double RoofVegetation::density() const {
-  return getImpl<detail::RoofVegetation_Impl>()->density();
-}
-
-double RoofVegetation::densityofDrySoil() const {
-  return getImpl<detail::RoofVegetation_Impl>()->densityofDrySoil();
-}
-
-bool RoofVegetation::isDensityofDrySoilDefaulted() const {
-  return getImpl<detail::RoofVegetation_Impl>()->isDensityofDrySoilDefaulted();
-}
-
-double RoofVegetation::specificHeat() const {
-  return getImpl<detail::RoofVegetation_Impl>()->specificHeat();
-}
-
-double RoofVegetation::specificHeatofDrySoil() const {
-  return getImpl<detail::RoofVegetation_Impl>()->specificHeatofDrySoil();
-}
-
-bool RoofVegetation::isSpecificHeatofDrySoilDefaulted() const {
-  return getImpl<detail::RoofVegetation_Impl>()->isSpecificHeatofDrySoilDefaulted();
-}
-
-boost::optional<double> RoofVegetation::thermalAbsorptance() const {
-  return getImpl<detail::RoofVegetation_Impl>()->thermalAbsorptance();
-}
-
-bool RoofVegetation::isThermalAbsorptanceDefaulted() const {
-  return getImpl<detail::RoofVegetation_Impl>()->isThermalAbsorptanceDefaulted();
-}
-
-boost::optional<double> RoofVegetation::thermalReflectance() const {
-  return getImpl<detail::RoofVegetation_Impl>()->thermalReflectance();
-}
-
-boost::optional<double> RoofVegetation::solarAbsorptance() const {
-  return getImpl<detail::RoofVegetation_Impl>()->solarAbsorptance();
-}
-
-bool RoofVegetation::isSolarAbsorptanceDefaulted() const {
-  return getImpl<detail::RoofVegetation_Impl>()->isSolarAbsorptanceDefaulted();
-}
-
-boost::optional<double> RoofVegetation::solarReflectance() const {
-  return getImpl<detail::RoofVegetation_Impl>()->solarReflectance();
-}
-
-boost::optional<double> RoofVegetation::visibleAbsorptance() const {
-  return getImpl<detail::RoofVegetation_Impl>()->visibleAbsorptance();
-}
-
-bool RoofVegetation::isVisibleAbsorptanceDefaulted() const {
-  return getImpl<detail::RoofVegetation_Impl>()->isVisibleAbsorptanceDefaulted();
-}
-
-boost::optional<double> RoofVegetation::visibleReflectance() const {
-  return getImpl<detail::RoofVegetation_Impl>()->visibleReflectance();
-}
-
-double RoofVegetation::saturationVolumetricMoistureContent() const {
-  return getImpl<detail::RoofVegetation_Impl>()->saturationVolumetricMoistureContent();
-}
-
-double RoofVegetation::residualVolumetricMoistureContent() const {
-  return getImpl<detail::RoofVegetation_Impl>()->residualVolumetricMoistureContent();
-}
-
-double RoofVegetation::initialVolumetricMoistureContent() const {
-  return getImpl<detail::RoofVegetation_Impl>()->initialVolumetricMoistureContent();
-}
-
-double RoofVegetation::saturationVolumetricMoistureContentoftheSoilLayer() const {
-  return getImpl<detail::RoofVegetation_Impl>()->saturationVolumetricMoistureContentoftheSoilLayer();
-}
-
-bool RoofVegetation::isSaturationVolumetricMoistureContentoftheSoilLayerDefaulted() const {
-  return getImpl<detail::RoofVegetation_Impl>()->isSaturationVolumetricMoistureContentoftheSoilLayerDefaulted();
-}
-
-double RoofVegetation::residualVolumetricMoistureContentoftheSoilLayer() const {
-  return getImpl<detail::RoofVegetation_Impl>()->residualVolumetricMoistureContentoftheSoilLayer();
-}
-
-bool RoofVegetation::isResidualVolumetricMoistureContentoftheSoilLayerDefaulted() const {
-  return getImpl<detail::RoofVegetation_Impl>()->isResidualVolumetricMoistureContentoftheSoilLayerDefaulted();
-}
-
-double RoofVegetation::initialVolumetricMoistureContentoftheSoilLayer() const {
-  return getImpl<detail::RoofVegetation_Impl>()->initialVolumetricMoistureContentoftheSoilLayer();
-}
-
-bool RoofVegetation::isInitialVolumetricMoistureContentoftheSoilLayerDefaulted() const {
-  return getImpl<detail::RoofVegetation_Impl>()->isInitialVolumetricMoistureContentoftheSoilLayerDefaulted();
-}
-
-std::string RoofVegetation::moistureDiffusionCalculationMethod() const {
-  return getImpl<detail::RoofVegetation_Impl>()->moistureDiffusionCalculationMethod();
-}
-
-bool RoofVegetation::isMoistureDiffusionCalculationMethodDefaulted() const {
-  return getImpl<detail::RoofVegetation_Impl>()->isMoistureDiffusionCalculationMethodDefaulted();
-}
-
-bool RoofVegetation::setHeightofPlants(double heightofPlants) {
-  return getImpl<detail::RoofVegetation_Impl>()->setHeightofPlants(heightofPlants);
-}
-
-void RoofVegetation::resetHeightofPlants() {
-  getImpl<detail::RoofVegetation_Impl>()->resetHeightofPlants();
-}
-
-bool RoofVegetation::setLeafAreaIndex(double leafAreaIndex) {
-  return getImpl<detail::RoofVegetation_Impl>()->setLeafAreaIndex(leafAreaIndex);
-}
-
-void RoofVegetation::resetLeafAreaIndex() {
-  getImpl<detail::RoofVegetation_Impl>()->resetLeafAreaIndex();
-}
-
-bool RoofVegetation::setLeafReflectivity(double leafReflectivity) {
-  return getImpl<detail::RoofVegetation_Impl>()->setLeafReflectivity(leafReflectivity);
-}
-
-void RoofVegetation::resetLeafReflectivity() {
-  getImpl<detail::RoofVegetation_Impl>()->resetLeafReflectivity();
-}
-
-bool RoofVegetation::setLeafEmissivity(double leafEmissivity) {
-  return getImpl<detail::RoofVegetation_Impl>()->setLeafEmissivity(leafEmissivity);
-}
-
-void RoofVegetation::resetLeafEmissivity() {
-  getImpl<detail::RoofVegetation_Impl>()->resetLeafEmissivity();
-}
-
-bool RoofVegetation::setMinimumStomatalResistance(double value) {
-  return getImpl<detail::RoofVegetation_Impl>()->setMinimumStomatalResistance(value);
-}
-
-void RoofVegetation::resetMinimumStomatalResistance() {
-  getImpl<detail::RoofVegetation_Impl>()->resetMinimumStomatalResistance();
-}
-
-bool RoofVegetation::setRoughness(const std::string& value) {
-  return getImpl<detail::RoofVegetation_Impl>()->setRoughness(value);
-}
-
-void RoofVegetation::resetRoughness() {
-  getImpl<detail::RoofVegetation_Impl>()->resetRoughness();
-}
-
-bool RoofVegetation::setThickness(double thickness) {
-  return getImpl<detail::RoofVegetation_Impl>()->setThickness(thickness);
-}
-
-void RoofVegetation::resetThickness() {
-  getImpl<detail::RoofVegetation_Impl>()->resetThickness();
-}
-
 bool RoofVegetation::setThermalConductivity(double value) {
   return getImpl<detail::RoofVegetation_Impl>()->setThermalConductivity(value);
 }
@@ -297,12 +185,32 @@ bool RoofVegetation::setThermalResistance(double value) {
   return getImpl<detail::RoofVegetation_Impl>()->setThermalResistance(value);
 }
 
+double RoofVegetation::conductivityofDrySoil() const {
+  return getImpl<detail::RoofVegetation_Impl>()->conductivityofDrySoil();
+}
+
+bool RoofVegetation::isConductivityofDrySoilDefaulted() const {
+  return getImpl<detail::RoofVegetation_Impl>()->isConductivityofDrySoilDefaulted();
+}
+
 bool RoofVegetation::setConductivityofDrySoil(double conductivityofDrySoil) {
   return getImpl<detail::RoofVegetation_Impl>()->setConductivityofDrySoil(conductivityofDrySoil);
 }
 
 void RoofVegetation::resetConductivityofDrySoil() {
   getImpl<detail::RoofVegetation_Impl>()->resetConductivityofDrySoil();
+}
+
+double RoofVegetation::density() const {
+  return getImpl<detail::RoofVegetation_Impl>()->density();
+}
+
+double RoofVegetation::densityofDrySoil() const {
+  return getImpl<detail::RoofVegetation_Impl>()->densityofDrySoil();
+}
+
+bool RoofVegetation::isDensityofDrySoilDefaulted() const {
+  return getImpl<detail::RoofVegetation_Impl>()->isDensityofDrySoilDefaulted();
 }
 
 bool RoofVegetation::setDensity(double value) {
@@ -317,6 +225,18 @@ void RoofVegetation::resetDensityofDrySoil() {
   getImpl<detail::RoofVegetation_Impl>()->resetDensityofDrySoil();
 }
 
+double RoofVegetation::specificHeat() const {
+  return getImpl<detail::RoofVegetation_Impl>()->specificHeat();
+}
+
+double RoofVegetation::specificHeatofDrySoil() const {
+  return getImpl<detail::RoofVegetation_Impl>()->specificHeatofDrySoil();
+}
+
+bool RoofVegetation::isSpecificHeatofDrySoilDefaulted() const {
+  return getImpl<detail::RoofVegetation_Impl>()->isSpecificHeatofDrySoilDefaulted();
+}
+
 bool RoofVegetation::setSpecificHeat(double value) {
   return getImpl<detail::RoofVegetation_Impl>()->setSpecificHeat(value);
 }
@@ -327,6 +247,18 @@ bool RoofVegetation::setSpecificHeatofDrySoil(double specificHeatofDrySoil) {
 
 void RoofVegetation::resetSpecificHeatofDrySoil() {
   getImpl<detail::RoofVegetation_Impl>()->resetSpecificHeatofDrySoil();
+}
+
+boost::optional<double> RoofVegetation::heatCapacity() const {
+  return getImpl<detail::RoofVegetation_Impl>()->heatCapacity();
+}
+
+boost::optional<double> RoofVegetation::thermalAbsorptance() const {
+  return getImpl<detail::RoofVegetation_Impl>()->thermalAbsorptance();
+}
+
+bool RoofVegetation::isThermalAbsorptanceDefaulted() const {
+  return getImpl<detail::RoofVegetation_Impl>()->isThermalAbsorptanceDefaulted();
 }
 
 bool RoofVegetation::setThermalAbsorptance(double thermalAbsorptance) {
@@ -341,8 +273,20 @@ void RoofVegetation::resetThermalAbsorptance() {
   getImpl<detail::RoofVegetation_Impl>()->resetThermalAbsorptance();
 }
 
+boost::optional<double> RoofVegetation::thermalReflectance() const {
+  return getImpl<detail::RoofVegetation_Impl>()->thermalReflectance();
+}
+
 bool RoofVegetation::setThermalReflectance(boost::optional<double> value) {
   return getImpl<detail::RoofVegetation_Impl>()->setThermalReflectance(value);
+}
+
+boost::optional<double> RoofVegetation::solarAbsorptance() const {
+  return getImpl<detail::RoofVegetation_Impl>()->solarAbsorptance();
+}
+
+bool RoofVegetation::isSolarAbsorptanceDefaulted() const {
+  return getImpl<detail::RoofVegetation_Impl>()->isSolarAbsorptanceDefaulted();
 }
 
 bool RoofVegetation::setSolarAbsorptance(double solarAbsorptance) {
@@ -357,8 +301,20 @@ void RoofVegetation::resetSolarAbsorptance() {
   getImpl<detail::RoofVegetation_Impl>()->resetSolarAbsorptance();
 }
 
+boost::optional<double> RoofVegetation::solarReflectance() const {
+  return getImpl<detail::RoofVegetation_Impl>()->solarReflectance();
+}
+
 bool RoofVegetation::setSolarReflectance(boost::optional<double> value) {
   return getImpl<detail::RoofVegetation_Impl>()->setSolarReflectance(value);
+}
+
+boost::optional<double> RoofVegetation::visibleAbsorptance() const {
+  return getImpl<detail::RoofVegetation_Impl>()->visibleAbsorptance();
+}
+
+bool RoofVegetation::isVisibleAbsorptanceDefaulted() const {
+  return getImpl<detail::RoofVegetation_Impl>()->isVisibleAbsorptanceDefaulted();
 }
 
 bool RoofVegetation::setVisibleAbsorptance(double visibleAbsorptance) {
@@ -373,8 +329,24 @@ void RoofVegetation::resetVisibleAbsorptance() {
   getImpl<detail::RoofVegetation_Impl>()->resetVisibleAbsorptance();
 }
 
+boost::optional<double> RoofVegetation::visibleReflectance() const {
+  return getImpl<detail::RoofVegetation_Impl>()->visibleReflectance();
+}
+
 bool RoofVegetation::setVisibleReflectance(boost::optional<double> value) {
   return getImpl<detail::RoofVegetation_Impl>()->setVisibleReflectance(value);
+}
+
+double RoofVegetation::saturationVolumetricMoistureContent() const {
+  return getImpl<detail::RoofVegetation_Impl>()->saturationVolumetricMoistureContent();
+}
+
+double RoofVegetation::residualVolumetricMoistureContent() const {
+  return getImpl<detail::RoofVegetation_Impl>()->residualVolumetricMoistureContent();
+}
+
+double RoofVegetation::initialVolumetricMoistureContent() const {
+  return getImpl<detail::RoofVegetation_Impl>()->initialVolumetricMoistureContent();
 }
 
 bool RoofVegetation::setSaturationVolumetricMoistureContent(double value) {
@@ -389,6 +361,18 @@ bool RoofVegetation::setInitialVolumetricMoistureContent(double value) {
   return getImpl<detail::RoofVegetation_Impl>()->setInitialVolumetricMoistureContent(value);
 }
 
+bool RoofVegetation::setInitialVolumetricMoistureConent(double value) {
+  return getImpl<detail::RoofVegetation_Impl>()->setInitialVolumetricMoistureContent(value);
+}
+
+double RoofVegetation::saturationVolumetricMoistureContentoftheSoilLayer() const {
+  return getImpl<detail::RoofVegetation_Impl>()->saturationVolumetricMoistureContentoftheSoilLayer();
+}
+
+bool RoofVegetation::isSaturationVolumetricMoistureContentoftheSoilLayerDefaulted() const {
+  return getImpl<detail::RoofVegetation_Impl>()->isSaturationVolumetricMoistureContentoftheSoilLayerDefaulted();
+}
+
 bool RoofVegetation::setSaturationVolumetricMoistureContentoftheSoilLayer(double saturationVolumetricMoistureContentoftheSoilLayer) {
   return getImpl<detail::RoofVegetation_Impl>()->setSaturationVolumetricMoistureContentoftheSoilLayer(
     saturationVolumetricMoistureContentoftheSoilLayer);
@@ -396,6 +380,14 @@ bool RoofVegetation::setSaturationVolumetricMoistureContentoftheSoilLayer(double
 
 void RoofVegetation::resetSaturationVolumetricMoistureContentoftheSoilLayer() {
   getImpl<detail::RoofVegetation_Impl>()->resetSaturationVolumetricMoistureContentoftheSoilLayer();
+}
+
+double RoofVegetation::residualVolumetricMoistureContentoftheSoilLayer() const {
+  return getImpl<detail::RoofVegetation_Impl>()->residualVolumetricMoistureContentoftheSoilLayer();
+}
+
+bool RoofVegetation::isResidualVolumetricMoistureContentoftheSoilLayerDefaulted() const {
+  return getImpl<detail::RoofVegetation_Impl>()->isResidualVolumetricMoistureContentoftheSoilLayerDefaulted();
 }
 
 bool RoofVegetation::setResidualVolumetricMoistureContentoftheSoilLayer(double residualVolumetricMoistureContentoftheSoilLayer) {
@@ -406,12 +398,28 @@ void RoofVegetation::resetResidualVolumetricMoistureContentoftheSoilLayer() {
   getImpl<detail::RoofVegetation_Impl>()->resetResidualVolumetricMoistureContentoftheSoilLayer();
 }
 
+double RoofVegetation::initialVolumetricMoistureContentoftheSoilLayer() const {
+  return getImpl<detail::RoofVegetation_Impl>()->initialVolumetricMoistureContentoftheSoilLayer();
+}
+
+bool RoofVegetation::isInitialVolumetricMoistureContentoftheSoilLayerDefaulted() const {
+  return getImpl<detail::RoofVegetation_Impl>()->isInitialVolumetricMoistureContentoftheSoilLayerDefaulted();
+}
+
 bool RoofVegetation::setInitialVolumetricMoistureContentoftheSoilLayer(double initialVolumetricMoistureContentoftheSoilLayer) {
   return getImpl<detail::RoofVegetation_Impl>()->setInitialVolumetricMoistureContentoftheSoilLayer(initialVolumetricMoistureContentoftheSoilLayer);
 }
 
 void RoofVegetation::resetInitialVolumetricMoistureContentoftheSoilLayer() {
   getImpl<detail::RoofVegetation_Impl>()->resetInitialVolumetricMoistureContentoftheSoilLayer();
+}
+
+std::string RoofVegetation::moistureDiffusionCalculationMethod() const {
+  return getImpl<detail::RoofVegetation_Impl>()->moistureDiffusionCalculationMethod();
+}
+
+bool RoofVegetation::isMoistureDiffusionCalculationMethodDefaulted() const {
+  return getImpl<detail::RoofVegetation_Impl>()->isMoistureDiffusionCalculationMethodDefaulted();
 }
 
 bool RoofVegetation::setMoistureDiffusionCalculationMethod(const std::string& value) {
@@ -422,13 +430,6 @@ void RoofVegetation::resetMoistureDiffusionCalculationMethod() {
   getImpl<detail::RoofVegetation_Impl>()->resetMoistureDiffusionCalculationMethod();
 }
 
-bool RoofVegetation::setInitialVolumetricMoistureConent(double value) {
-  return getImpl<detail::RoofVegetation_Impl>()->setInitialVolumetricMoistureContent(value);
-}
-
-boost::optional<double> RoofVegetation::heatCapacity() const {
-  return getImpl<detail::RoofVegetation_Impl>()->heatCapacity();
-}
 
 }  // namespace epmodel
 }  // namespace openstudio

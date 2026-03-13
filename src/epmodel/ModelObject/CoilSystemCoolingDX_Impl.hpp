@@ -12,50 +12,50 @@
 
 namespace openstudio {
 namespace epmodel {
-class ModelObject;
-namespace detail {
+  class ModelObject;
+  namespace detail {
 
-class EPMODEL_API CoilSystemCoolingDX_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~CoilSystemCoolingDX_Impl() override = default;
+    class EPMODEL_API CoilSystemCoolingDX_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~CoilSystemCoolingDX_Impl() override = default;
 
-  std::string coolingCoilObjectType() const;
-  bool setCoolingCoilObjectType(const std::string& coolingCoilObjectType);
+      std::vector<std::string> coolingCoilObjectTypeValues() const;
+      std::vector<std::string> dehumidificationControlTypeValues() const;
 
-  std::string dehumidificationControlType() const;
-  bool isDehumidificationControlTypeDefaulted() const;
-  bool setDehumidificationControlType(const std::string& dehumidificationControlType);
-  void resetDehumidificationControlType();
+      std::string coolingCoilObjectType() const;
+      bool setCoolingCoilObjectType(const std::string& coolingCoilObjectType);
 
-  bool runonSensibleLoad() const;
-  bool isRunonSensibleLoadDefaulted() const;
-  bool setRunonSensibleLoad(bool runonSensibleLoad);
-  void resetRunonSensibleLoad();
+      std::string dehumidificationControlType() const;
+      bool isDehumidificationControlTypeDefaulted() const;
+      bool setDehumidificationControlType(const std::string& dehumidificationControlType);
+      void resetDehumidificationControlType();
 
-  bool runonLatentLoad() const;
-  bool isRunonLatentLoadDefaulted() const;
-  bool setRunonLatentLoad(bool runonLatentLoad);
-  void resetRunonLatentLoad();
+      bool runonSensibleLoad() const;
+      bool isRunonSensibleLoadDefaulted() const;
+      bool setRunonSensibleLoad(bool runonSensibleLoad);
+      void resetRunonSensibleLoad();
 
-  bool useOutdoorAirDXCoolingCoil() const;
-  bool isUseOutdoorAirDXCoolingCoilDefaulted() const;
-  bool setUseOutdoorAirDXCoolingCoil(bool useOutdoorAirDXCoolingCoil);
-  void resetUseOutdoorAirDXCoolingCoil();
+      bool runonLatentLoad() const;
+      bool isRunonLatentLoadDefaulted() const;
+      bool setRunonLatentLoad(bool runonLatentLoad);
+      void resetRunonLatentLoad();
 
-  double outdoorAirDXCoolingCoilLeavingMinimumAirTemperature() const;
-  bool isOutdoorAirDXCoolingCoilLeavingMinimumAirTemperatureDefaulted() const;
-  bool setOutdoorAirDXCoolingCoilLeavingMinimumAirTemperature(double outdoorAirDXCoolingCoilLeavingMinimumAirTemperature);
-  void resetOutdoorAirDXCoolingCoilLeavingMinimumAirTemperature();
+      bool useOutdoorAirDXCoolingCoil() const;
+      bool isUseOutdoorAirDXCoolingCoilDefaulted() const;
+      bool setUseOutdoorAirDXCoolingCoil(bool useOutdoorAirDXCoolingCoil);
+      void resetUseOutdoorAirDXCoolingCoil();
 
-  std::vector<std::string> coolingCoilObjectTypeValues() const;
-  std::vector<std::string> dehumidificationControlTypeValues() const;
+      double outdoorAirDXCoolingCoilLeavingMinimumAirTemperature() const;
+      bool isOutdoorAirDXCoolingCoilLeavingMinimumAirTemperatureDefaulted() const;
+      bool setOutdoorAirDXCoolingCoilLeavingMinimumAirTemperature(double outdoorAirDXCoolingCoilLeavingMinimumAirTemperature);
+      void resetOutdoorAirDXCoolingCoilLeavingMinimumAirTemperature();
 
-  boost::optional<ModelObject> coolingCoil() const;
-};
+      boost::optional<ModelObject> coolingCoil() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

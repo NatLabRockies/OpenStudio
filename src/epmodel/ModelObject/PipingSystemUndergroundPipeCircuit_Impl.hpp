@@ -11,48 +11,55 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API PipingSystemUndergroundPipeCircuit_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~PipingSystemUndergroundPipeCircuit_Impl() override = default;
+    class EPMODEL_API PipingSystemUndergroundPipeCircuit_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~PipingSystemUndergroundPipeCircuit_Impl() override = default;
 
-  double pipeThermalConductivity() const;
-  double pipeDensity() const;
-  double pipeSpecificHeat() const;
-  double pipeInnerDiameter() const;
-  double pipeOuterDiameter() const;
-  double designFlowRate() const;
-  double convergenceCriterionfortheInnerRadialIterationLoop() const;
-  int maximumIterationsintheInnerRadialIterationLoop() const;
-  int numberofSoilNodesintheInnerRadialNearPipeMeshRegion() const;
-  double radialThicknessofInnerRadialNearPipeMeshRegion() const;
-  int numberofPipeSegmentsEnteredforthisPipeCircuit() const;
+      double pipeThermalConductivity() const;
+      bool setPipeThermalConductivity(double pipeThermalConductivity);
 
-  bool isConvergenceCriterionfortheInnerRadialIterationLoopDefaulted() const;
-  bool isMaximumIterationsintheInnerRadialIterationLoopDefaulted() const;
-  bool isNumberofSoilNodesintheInnerRadialNearPipeMeshRegionDefaulted() const;
+      double pipeDensity() const;
+      bool setPipeDensity(double pipeDensity);
 
-  bool setPipeThermalConductivity(double pipeThermalConductivity);
-  bool setPipeDensity(double pipeDensity);
-  bool setPipeSpecificHeat(double pipeSpecificHeat);
-  bool setPipeInnerDiameter(double pipeInnerDiameter);
-  bool setPipeOuterDiameter(double pipeOuterDiameter);
-  bool setDesignFlowRate(double designFlowRate);
-  bool setConvergenceCriterionfortheInnerRadialIterationLoop(double convergenceCriterionfortheInnerRadialIterationLoop);
-  bool setMaximumIterationsintheInnerRadialIterationLoop(int maximumIterationsintheInnerRadialIterationLoop);
-  bool setNumberofSoilNodesintheInnerRadialNearPipeMeshRegion(int numberofSoilNodesintheInnerRadialNearPipeMeshRegion);
-  bool setRadialThicknessofInnerRadialNearPipeMeshRegion(double radialThicknessofInnerRadialNearPipeMeshRegion);
-  bool setNumberofPipeSegmentsEnteredforthisPipeCircuit(int numberofPipeSegmentsEnteredforthisPipeCircuit);
+      double pipeSpecificHeat() const;
+      bool setPipeSpecificHeat(double pipeSpecificHeat);
 
-  void resetConvergenceCriterionfortheInnerRadialIterationLoop();
-  void resetMaximumIterationsintheInnerRadialIterationLoop();
-  void resetNumberofSoilNodesintheInnerRadialNearPipeMeshRegion();
-};
+      double pipeInnerDiameter() const;
+      bool setPipeInnerDiameter(double pipeInnerDiameter);
 
-}  // namespace detail
+      double pipeOuterDiameter() const;
+      bool setPipeOuterDiameter(double pipeOuterDiameter);
+
+      double designFlowRate() const;
+      bool setDesignFlowRate(double designFlowRate);
+
+      double convergenceCriterionfortheInnerRadialIterationLoop() const;
+      bool isConvergenceCriterionfortheInnerRadialIterationLoopDefaulted() const;
+      bool setConvergenceCriterionfortheInnerRadialIterationLoop(double convergenceCriterionfortheInnerRadialIterationLoop);
+      void resetConvergenceCriterionfortheInnerRadialIterationLoop();
+
+      int maximumIterationsintheInnerRadialIterationLoop() const;
+      bool isMaximumIterationsintheInnerRadialIterationLoopDefaulted() const;
+      bool setMaximumIterationsintheInnerRadialIterationLoop(int maximumIterationsintheInnerRadialIterationLoop);
+      void resetMaximumIterationsintheInnerRadialIterationLoop();
+
+      int numberofSoilNodesintheInnerRadialNearPipeMeshRegion() const;
+      bool isNumberofSoilNodesintheInnerRadialNearPipeMeshRegionDefaulted() const;
+      bool setNumberofSoilNodesintheInnerRadialNearPipeMeshRegion(int numberofSoilNodesintheInnerRadialNearPipeMeshRegion);
+      void resetNumberofSoilNodesintheInnerRadialNearPipeMeshRegion();
+
+      double radialThicknessofInnerRadialNearPipeMeshRegion() const;
+      bool setRadialThicknessofInnerRadialNearPipeMeshRegion(double radialThicknessofInnerRadialNearPipeMeshRegion);
+
+      int numberofPipeSegmentsEnteredforthisPipeCircuit() const;
+      bool setNumberofPipeSegmentsEnteredforthisPipeCircuit(int numberofPipeSegmentsEnteredforthisPipeCircuit);
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

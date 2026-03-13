@@ -13,34 +13,33 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API People_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~People_Impl() override = default;
+    class EPMODEL_API People_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~People_Impl() override = default;
 
-  std::string clothingInsulationCalculationMethod() const;
-  bool setClothingInsulationCalculationMethod(const std::string& clothingInsulationCalculationMethod);
+      std::string clothingInsulationCalculationMethod() const;
+      bool setClothingInsulationCalculationMethod(const std::string& clothingInsulationCalculationMethod);
+      std::vector<std::string> clothingInsulationCalculationMethodValues() const;
 
-  double coldStressTemperatureThreshold() const;
-  bool isColdStressTemperatureThresholdDefaulted() const;
-  bool setColdStressTemperatureThreshold(double coldStressTemperatureThreshold);
-  void resetColdStressTemperatureThreshold();
+      double coldStressTemperatureThreshold() const;
+      bool isColdStressTemperatureThresholdDefaulted() const;
+      bool setColdStressTemperatureThreshold(double coldStressTemperatureThreshold);
+      void resetColdStressTemperatureThreshold();
 
-  double heatStressTemperatureThreshold() const;
-  bool isHeatStressTemperatureThresholdDefaulted() const;
-  bool setHeatStressTemperatureThreshold(double heatStressTemperatureThreshold);
-  void resetHeatStressTemperatureThreshold();
+      double heatStressTemperatureThreshold() const;
+      bool isHeatStressTemperatureThresholdDefaulted() const;
+      bool setHeatStressTemperatureThreshold(double heatStressTemperatureThreshold);
+      void resetHeatStressTemperatureThreshold();
 
-  bool setMultiplier(double multiplier);
-  void resetMultiplier();
+      bool setMultiplier(double multiplier);
+      void resetMultiplier();
+    };
 
-  std::vector<std::string> clothingInsulationCalculationMethodValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

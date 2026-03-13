@@ -22,9 +22,10 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~WaterUseRainCollector_Impl() override = default;
 
+      std::vector<std::string> lossFactorModeValues() const;
+
       boost::optional<std::string> lossFactorMode() const;
       bool setLossFactorMode(const std::string& lossFactorMode);
-      std::vector<std::string> lossFactorModeValues() const;
 
       boost::optional<double> collectionLossFactor() const;
       bool setCollectionLossFactor(double collectionLossFactor);

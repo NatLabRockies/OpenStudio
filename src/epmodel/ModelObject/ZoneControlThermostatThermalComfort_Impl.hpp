@@ -25,6 +25,7 @@ namespace epmodel {
       bool setAveragingMethod(const std::string& averagingMethod);
       bool isAveragingMethodDefaulted() const;
       void resetAveragingMethod();
+      std::vector<std::string> averagingMethodValues() const;
 
       boost::optional<double> minimumDryBulbTemperatureSetpoint() const;
       bool setMinimumDryBulbTemperatureSetpoint(double minimumDryBulbTemperatureSetpoint);
@@ -35,8 +36,6 @@ namespace epmodel {
       bool setMaximumDryBulbTemperatureSetpoint(double maximumDryBulbTemperatureSetpoint);
       bool isMaximumDryBulbTemperatureSetpointDefaulted() const;
       void resetMaximumDryBulbTemperatureSetpoint();
-
-      std::vector<std::string> averagingMethodValues() const;
     };
 
   }  // namespace detail

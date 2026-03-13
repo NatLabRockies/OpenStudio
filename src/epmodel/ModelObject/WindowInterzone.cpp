@@ -104,48 +104,8 @@ namespace epmodel {
       return isEmpty(openstudio::Window_InterzoneFields::Multiplier);
     }
 
-    boost::optional<double> WindowInterzone_Impl::startingXCoordinate() const {
-      return getDouble(openstudio::Window_InterzoneFields::StartingXCoordinate, true);
-    }
-
-    boost::optional<double> WindowInterzone_Impl::startingZCoordinate() const {
-      return getDouble(openstudio::Window_InterzoneFields::StartingZCoordinate, true);
-    }
-
-    boost::optional<double> WindowInterzone_Impl::length() const {
-      return getDouble(openstudio::Window_InterzoneFields::Length, true);
-    }
-
-    boost::optional<double> WindowInterzone_Impl::height() const {
-      return getDouble(openstudio::Window_InterzoneFields::Height, true);
-    }
-
     bool WindowInterzone_Impl::setMultiplier(double multiplier) {
       const bool result = setDouble(openstudio::Window_InterzoneFields::Multiplier, multiplier);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool WindowInterzone_Impl::setStartingXCoordinate(double startingXCoordinate) {
-      const bool result = setDouble(openstudio::Window_InterzoneFields::StartingXCoordinate, startingXCoordinate);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool WindowInterzone_Impl::setStartingZCoordinate(double startingZCoordinate) {
-      const bool result = setDouble(openstudio::Window_InterzoneFields::StartingZCoordinate, startingZCoordinate);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool WindowInterzone_Impl::setLength(double length) {
-      const bool result = setDouble(openstudio::Window_InterzoneFields::Length, length);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool WindowInterzone_Impl::setHeight(double height) {
-      const bool result = setDouble(openstudio::Window_InterzoneFields::Height, height);
       OS_ASSERT(result);
       return result;
     }
@@ -154,16 +114,56 @@ namespace epmodel {
       OS_ASSERT(setString(openstudio::Window_InterzoneFields::Multiplier, ""));
     }
 
+    boost::optional<double> WindowInterzone_Impl::startingXCoordinate() const {
+      return getDouble(openstudio::Window_InterzoneFields::StartingXCoordinate, true);
+    }
+
+    bool WindowInterzone_Impl::setStartingXCoordinate(double startingXCoordinate) {
+      const bool result = setDouble(openstudio::Window_InterzoneFields::StartingXCoordinate, startingXCoordinate);
+      OS_ASSERT(result);
+      return result;
+    }
+
     void WindowInterzone_Impl::resetStartingXCoordinate() {
       OS_ASSERT(setString(openstudio::Window_InterzoneFields::StartingXCoordinate, ""));
+    }
+
+    boost::optional<double> WindowInterzone_Impl::startingZCoordinate() const {
+      return getDouble(openstudio::Window_InterzoneFields::StartingZCoordinate, true);
+    }
+
+    bool WindowInterzone_Impl::setStartingZCoordinate(double startingZCoordinate) {
+      const bool result = setDouble(openstudio::Window_InterzoneFields::StartingZCoordinate, startingZCoordinate);
+      OS_ASSERT(result);
+      return result;
     }
 
     void WindowInterzone_Impl::resetStartingZCoordinate() {
       OS_ASSERT(setString(openstudio::Window_InterzoneFields::StartingZCoordinate, ""));
     }
 
+    boost::optional<double> WindowInterzone_Impl::length() const {
+      return getDouble(openstudio::Window_InterzoneFields::Length, true);
+    }
+
+    bool WindowInterzone_Impl::setLength(double length) {
+      const bool result = setDouble(openstudio::Window_InterzoneFields::Length, length);
+      OS_ASSERT(result);
+      return result;
+    }
+
     void WindowInterzone_Impl::resetLength() {
       OS_ASSERT(setString(openstudio::Window_InterzoneFields::Length, ""));
+    }
+
+    boost::optional<double> WindowInterzone_Impl::height() const {
+      return getDouble(openstudio::Window_InterzoneFields::Height, true);
+    }
+
+    bool WindowInterzone_Impl::setHeight(double height) {
+      const bool result = setDouble(openstudio::Window_InterzoneFields::Height, height);
+      OS_ASSERT(result);
+      return result;
     }
 
     void WindowInterzone_Impl::resetHeight() {

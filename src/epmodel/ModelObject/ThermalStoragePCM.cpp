@@ -26,16 +26,16 @@ namespace epmodel {
     return getImpl<detail::ThermalStoragePCM_Impl>()->tankCapacity();
   }
 
-  bool ThermalStoragePCM::isTankCapacityAutosized() const {
-    return getImpl<detail::ThermalStoragePCM_Impl>()->isTankCapacityAutosized();
-  }
-
   bool ThermalStoragePCM::setTankCapacity(double tankCapacity) {
     return getImpl<detail::ThermalStoragePCM_Impl>()->setTankCapacity(tankCapacity);
   }
 
   void ThermalStoragePCM::autosizeTankCapacity() {
     getImpl<detail::ThermalStoragePCM_Impl>()->autosizeTankCapacity();
+  }
+
+  bool ThermalStoragePCM::isTankCapacityAutosized() const {
+    return getImpl<detail::ThermalStoragePCM_Impl>()->isTankCapacityAutosized();
   }
 
   boost::optional<double> ThermalStoragePCM::heatLossRate() const {
@@ -58,10 +58,6 @@ namespace epmodel {
     return getImpl<detail::ThermalStoragePCM_Impl>()->useSideDesignFlowRate();
   }
 
-  bool ThermalStoragePCM::isUseSideDesignFlowRateAutosized() const {
-    return getImpl<detail::ThermalStoragePCM_Impl>()->isUseSideDesignFlowRateAutosized();
-  }
-
   bool ThermalStoragePCM::setUseSideDesignFlowRate(double useSideDesignFlowRate) {
     return getImpl<detail::ThermalStoragePCM_Impl>()->setUseSideDesignFlowRate(useSideDesignFlowRate);
   }
@@ -70,12 +66,12 @@ namespace epmodel {
     getImpl<detail::ThermalStoragePCM_Impl>()->autosizeUseSideDesignFlowRate();
   }
 
-  boost::optional<double> ThermalStoragePCM::plantSideDesignFlowRate() const {
-    return getImpl<detail::ThermalStoragePCM_Impl>()->plantSideDesignFlowRate();
+  bool ThermalStoragePCM::isUseSideDesignFlowRateAutosized() const {
+    return getImpl<detail::ThermalStoragePCM_Impl>()->isUseSideDesignFlowRateAutosized();
   }
 
-  bool ThermalStoragePCM::isPlantSideDesignFlowRateAutosized() const {
-    return getImpl<detail::ThermalStoragePCM_Impl>()->isPlantSideDesignFlowRateAutosized();
+  boost::optional<double> ThermalStoragePCM::plantSideDesignFlowRate() const {
+    return getImpl<detail::ThermalStoragePCM_Impl>()->plantSideDesignFlowRate();
   }
 
   bool ThermalStoragePCM::setPlantSideDesignFlowRate(double plantSideDesignFlowRate) {
@@ -84,6 +80,10 @@ namespace epmodel {
 
   void ThermalStoragePCM::autosizePlantSideDesignFlowRate() {
     getImpl<detail::ThermalStoragePCM_Impl>()->autosizePlantSideDesignFlowRate();
+  }
+
+  bool ThermalStoragePCM::isPlantSideDesignFlowRateAutosized() const {
+    return getImpl<detail::ThermalStoragePCM_Impl>()->isPlantSideDesignFlowRateAutosized();
   }
 
 }  // namespace epmodel
@@ -97,19 +97,19 @@ namespace epmodel {
       return getDouble(openstudio::ThermalStorage_PCMFields::TankCapacity, true);
     }
 
-    bool ThermalStoragePCM_Impl::isTankCapacityAutosized() const {
-      if (auto value = getString(openstudio::ThermalStorage_PCMFields::TankCapacity, true)) {
-        return openstudio::istringEqual(*value, "autosize");
-      }
-      return false;
-    }
-
     bool ThermalStoragePCM_Impl::setTankCapacity(double tankCapacity) {
       return setDouble(openstudio::ThermalStorage_PCMFields::TankCapacity, tankCapacity);
     }
 
     void ThermalStoragePCM_Impl::autosizeTankCapacity() {
       OS_ASSERT(setString(openstudio::ThermalStorage_PCMFields::TankCapacity, "autosize"));
+    }
+
+    bool ThermalStoragePCM_Impl::isTankCapacityAutosized() const {
+      if (auto value = getString(openstudio::ThermalStorage_PCMFields::TankCapacity, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
     }
 
     boost::optional<double> ThermalStoragePCM_Impl::heatLossRate() const {
@@ -134,13 +134,6 @@ namespace epmodel {
       return getDouble(openstudio::ThermalStorage_PCMFields::UseSideDesignFlowRate, true);
     }
 
-    bool ThermalStoragePCM_Impl::isUseSideDesignFlowRateAutosized() const {
-      if (auto value = getString(openstudio::ThermalStorage_PCMFields::UseSideDesignFlowRate, true)) {
-        return openstudio::istringEqual(*value, "autosize");
-      }
-      return false;
-    }
-
     bool ThermalStoragePCM_Impl::setUseSideDesignFlowRate(double useSideDesignFlowRate) {
       return setDouble(openstudio::ThermalStorage_PCMFields::UseSideDesignFlowRate, useSideDesignFlowRate);
     }
@@ -149,15 +142,15 @@ namespace epmodel {
       OS_ASSERT(setString(openstudio::ThermalStorage_PCMFields::UseSideDesignFlowRate, "autosize"));
     }
 
-    boost::optional<double> ThermalStoragePCM_Impl::plantSideDesignFlowRate() const {
-      return getDouble(openstudio::ThermalStorage_PCMFields::PlantSideDesignFlowRate, true);
-    }
-
-    bool ThermalStoragePCM_Impl::isPlantSideDesignFlowRateAutosized() const {
-      if (auto value = getString(openstudio::ThermalStorage_PCMFields::PlantSideDesignFlowRate, true)) {
+    bool ThermalStoragePCM_Impl::isUseSideDesignFlowRateAutosized() const {
+      if (auto value = getString(openstudio::ThermalStorage_PCMFields::UseSideDesignFlowRate, true)) {
         return openstudio::istringEqual(*value, "autosize");
       }
       return false;
+    }
+
+    boost::optional<double> ThermalStoragePCM_Impl::plantSideDesignFlowRate() const {
+      return getDouble(openstudio::ThermalStorage_PCMFields::PlantSideDesignFlowRate, true);
     }
 
     bool ThermalStoragePCM_Impl::setPlantSideDesignFlowRate(double plantSideDesignFlowRate) {
@@ -166,6 +159,13 @@ namespace epmodel {
 
     void ThermalStoragePCM_Impl::autosizePlantSideDesignFlowRate() {
       OS_ASSERT(setString(openstudio::ThermalStorage_PCMFields::PlantSideDesignFlowRate, "autosize"));
+    }
+
+    bool ThermalStoragePCM_Impl::isPlantSideDesignFlowRateAutosized() const {
+      if (auto value = getString(openstudio::ThermalStorage_PCMFields::PlantSideDesignFlowRate, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
     }
 
   }  // namespace detail

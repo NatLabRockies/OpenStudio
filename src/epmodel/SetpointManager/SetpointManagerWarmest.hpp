@@ -15,50 +15,51 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SetpointManagerWarmest_Impl;
-}
+  namespace detail {
+    class SetpointManagerWarmest_Impl;
+  }
 
-class EPMODEL_API SetpointManagerWarmest : public SetpointManager
-{
- public:
-  explicit SetpointManagerWarmest(const Model& model);
+  class EPMODEL_API SetpointManagerWarmest : public SetpointManager
+  {
+   public:
+    explicit SetpointManagerWarmest(const Model& model);
 
-  virtual ~SetpointManagerWarmest() override = default;
-  SetpointManagerWarmest(const SetpointManagerWarmest& other) = default;
-  SetpointManagerWarmest(SetpointManagerWarmest&& other) = default;
-  SetpointManagerWarmest& operator=(const SetpointManagerWarmest&) = default;
-  SetpointManagerWarmest& operator=(SetpointManagerWarmest&&) = default;
+    virtual ~SetpointManagerWarmest() override = default;
+    SetpointManagerWarmest(const SetpointManagerWarmest& other) = default;
+    SetpointManagerWarmest(SetpointManagerWarmest&& other) = default;
+    SetpointManagerWarmest& operator=(const SetpointManagerWarmest&) = default;
+    SetpointManagerWarmest& operator=(SetpointManagerWarmest&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> controlVariableValues();
-  static std::vector<std::string> strategyValues();
+    static std::vector<std::string> controlVariableValues();
+    static std::vector<std::string> strategyValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-  // - Field Mapping: minimumSetpointTemperature, maximumSetpointTemperature, and strategy map directly to E+ SetpointManager:Warmest fields.
-  // - Field Mapping: Relationship fields Setpoint Node or NodeList Name and HVAC Air Loop Name are intentionally excluded from scalar-only scaffolding.
-  // - TODO(parity): Add non-scalar relationship parity for loop/name linkage in a follow-up pass.
-  double minimumSetpointTemperature() const;
-  double maximumSetpointTemperature() const;
-  std::string strategy() const;
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
+    // - Field Mapping: minimumSetpointTemperature, maximumSetpointTemperature, and strategy map directly to E+ SetpointManager:Warmest fields.
+    // - Field Mapping: Relationship fields Setpoint Node or NodeList Name and HVAC Air Loop Name are intentionally excluded from scalar-only scaffolding.
+    // - TODO(parity): Add non-scalar relationship parity for loop/name linkage in a follow-up pass.
+    double minimumSetpointTemperature() const;
+    bool setMinimumSetpointTemperature(double minimumSetpointTemperature);
 
-  bool setMinimumSetpointTemperature(double minimumSetpointTemperature);
-  bool setMaximumSetpointTemperature(double maximumSetpointTemperature);
-  bool setStrategy(const std::string& strategy);
+    double maximumSetpointTemperature() const;
+    bool setMaximumSetpointTemperature(double maximumSetpointTemperature);
 
- protected:
-  using ImplType = detail::SetpointManagerWarmest_Impl;
+    std::string strategy() const;
+    bool setStrategy(const std::string& strategy);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::SetpointManagerWarmest_Impl;
 
-  explicit SetpointManagerWarmest(std::shared_ptr<detail::SetpointManagerWarmest_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit SetpointManagerWarmest(std::shared_ptr<detail::SetpointManagerWarmest_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

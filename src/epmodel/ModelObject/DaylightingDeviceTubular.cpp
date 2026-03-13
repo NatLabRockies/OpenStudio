@@ -15,95 +15,95 @@
 namespace openstudio {
 namespace epmodel {
 
-DaylightingDeviceTubular::DaylightingDeviceTubular(const Model& model) : ModelObject(DaylightingDeviceTubular::iddObjectType(), model) {
-  // Keep required scalar fields populated for strict non-optional getters.
-  OS_ASSERT(setDiameter(0.3556));
-  OS_ASSERT(setTotalLength(1.4));
-}
+  DaylightingDeviceTubular::DaylightingDeviceTubular(const Model& model) : ModelObject(DaylightingDeviceTubular::iddObjectType(), model) {
+    // Keep required scalar fields populated for strict non-optional getters.
+    OS_ASSERT(setDiameter(0.3556));
+    OS_ASSERT(setTotalLength(1.4));
+  }
 
-DaylightingDeviceTubular::DaylightingDeviceTubular(std::shared_ptr<detail::DaylightingDeviceTubular_Impl> impl) : ModelObject(std::move(impl)) {}
+  DaylightingDeviceTubular::DaylightingDeviceTubular(std::shared_ptr<detail::DaylightingDeviceTubular_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType DaylightingDeviceTubular::iddObjectType() {
-  return IddObjectType::DaylightingDevice_Tubular;
-}
+  IddObjectType DaylightingDeviceTubular::iddObjectType() {
+    return IddObjectType::DaylightingDevice_Tubular;
+  }
 
-double DaylightingDeviceTubular::diameter() const {
-  return getImpl<detail::DaylightingDeviceTubular_Impl>()->diameter();
-}
+  double DaylightingDeviceTubular::diameter() const {
+    return getImpl<detail::DaylightingDeviceTubular_Impl>()->diameter();
+  }
 
-bool DaylightingDeviceTubular::setDiameter(double diameter) {
-  return getImpl<detail::DaylightingDeviceTubular_Impl>()->setDiameter(diameter);
-}
+  bool DaylightingDeviceTubular::setDiameter(double diameter) {
+    return getImpl<detail::DaylightingDeviceTubular_Impl>()->setDiameter(diameter);
+  }
 
-double DaylightingDeviceTubular::totalLength() const {
-  return getImpl<detail::DaylightingDeviceTubular_Impl>()->totalLength();
-}
+  double DaylightingDeviceTubular::totalLength() const {
+    return getImpl<detail::DaylightingDeviceTubular_Impl>()->totalLength();
+  }
 
-bool DaylightingDeviceTubular::setTotalLength(double totalLength) {
-  return getImpl<detail::DaylightingDeviceTubular_Impl>()->setTotalLength(totalLength);
-}
+  bool DaylightingDeviceTubular::setTotalLength(double totalLength) {
+    return getImpl<detail::DaylightingDeviceTubular_Impl>()->setTotalLength(totalLength);
+  }
 
-double DaylightingDeviceTubular::effectiveThermalResistance() const {
-  return getImpl<detail::DaylightingDeviceTubular_Impl>()->effectiveThermalResistance();
-}
+  double DaylightingDeviceTubular::effectiveThermalResistance() const {
+    return getImpl<detail::DaylightingDeviceTubular_Impl>()->effectiveThermalResistance();
+  }
 
-bool DaylightingDeviceTubular::isEffectiveThermalResistanceDefaulted() const {
-  return getImpl<detail::DaylightingDeviceTubular_Impl>()->isEffectiveThermalResistanceDefaulted();
-}
+  bool DaylightingDeviceTubular::setEffectiveThermalResistance(double effectiveThermalResistance) {
+    return getImpl<detail::DaylightingDeviceTubular_Impl>()->setEffectiveThermalResistance(effectiveThermalResistance);
+  }
 
-bool DaylightingDeviceTubular::setEffectiveThermalResistance(double effectiveThermalResistance) {
-  return getImpl<detail::DaylightingDeviceTubular_Impl>()->setEffectiveThermalResistance(effectiveThermalResistance);
-}
+  bool DaylightingDeviceTubular::isEffectiveThermalResistanceDefaulted() const {
+    return getImpl<detail::DaylightingDeviceTubular_Impl>()->isEffectiveThermalResistanceDefaulted();
+  }
 
-void DaylightingDeviceTubular::resetEffectiveThermalResistance() {
-  getImpl<detail::DaylightingDeviceTubular_Impl>()->resetEffectiveThermalResistance();
-}
+  void DaylightingDeviceTubular::resetEffectiveThermalResistance() {
+    getImpl<detail::DaylightingDeviceTubular_Impl>()->resetEffectiveThermalResistance();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-double DaylightingDeviceTubular_Impl::diameter() const {
-  const auto value = getDouble(openstudio::DaylightingDevice_TubularFields::Diameter, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double DaylightingDeviceTubular_Impl::diameter() const {
+      const auto value = getDouble(openstudio::DaylightingDevice_TubularFields::Diameter, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool DaylightingDeviceTubular_Impl::setDiameter(double diameter) {
-  return setDouble(openstudio::DaylightingDevice_TubularFields::Diameter, diameter);
-}
+    bool DaylightingDeviceTubular_Impl::setDiameter(double diameter) {
+      return setDouble(openstudio::DaylightingDevice_TubularFields::Diameter, diameter);
+    }
 
-double DaylightingDeviceTubular_Impl::totalLength() const {
-  const auto value = getDouble(openstudio::DaylightingDevice_TubularFields::TotalLength, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double DaylightingDeviceTubular_Impl::totalLength() const {
+      const auto value = getDouble(openstudio::DaylightingDevice_TubularFields::TotalLength, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool DaylightingDeviceTubular_Impl::setTotalLength(double totalLength) {
-  return setDouble(openstudio::DaylightingDevice_TubularFields::TotalLength, totalLength);
-}
+    bool DaylightingDeviceTubular_Impl::setTotalLength(double totalLength) {
+      return setDouble(openstudio::DaylightingDevice_TubularFields::TotalLength, totalLength);
+    }
 
-double DaylightingDeviceTubular_Impl::effectiveThermalResistance() const {
-  const auto value = getDouble(openstudio::DaylightingDevice_TubularFields::EffectiveThermalResistance, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double DaylightingDeviceTubular_Impl::effectiveThermalResistance() const {
+      const auto value = getDouble(openstudio::DaylightingDevice_TubularFields::EffectiveThermalResistance, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool DaylightingDeviceTubular_Impl::isEffectiveThermalResistanceDefaulted() const {
-  return isEmpty(openstudio::DaylightingDevice_TubularFields::EffectiveThermalResistance);
-}
+    bool DaylightingDeviceTubular_Impl::setEffectiveThermalResistance(double effectiveThermalResistance) {
+      return setDouble(openstudio::DaylightingDevice_TubularFields::EffectiveThermalResistance, effectiveThermalResistance);
+    }
 
-bool DaylightingDeviceTubular_Impl::setEffectiveThermalResistance(double effectiveThermalResistance) {
-  return setDouble(openstudio::DaylightingDevice_TubularFields::EffectiveThermalResistance, effectiveThermalResistance);
-}
+    bool DaylightingDeviceTubular_Impl::isEffectiveThermalResistanceDefaulted() const {
+      return isEmpty(openstudio::DaylightingDevice_TubularFields::EffectiveThermalResistance);
+    }
 
-void DaylightingDeviceTubular_Impl::resetEffectiveThermalResistance() {
-  OS_ASSERT(setString(openstudio::DaylightingDevice_TubularFields::EffectiveThermalResistance, ""));
-}
+    void DaylightingDeviceTubular_Impl::resetEffectiveThermalResistance() {
+      OS_ASSERT(setString(openstudio::DaylightingDevice_TubularFields::EffectiveThermalResistance, ""));
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

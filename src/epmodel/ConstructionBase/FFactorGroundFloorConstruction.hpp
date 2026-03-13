@@ -16,51 +16,52 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class FFactorGroundFloorConstruction_Impl;
-}
+  namespace detail {
+    class FFactorGroundFloorConstruction_Impl;
+  }
 
-class EPMODEL_API FFactorGroundFloorConstruction : public ModelObject
-{
- public:
-  explicit FFactorGroundFloorConstruction(const Model& model, double fFactor = 0.1, double area = 0.1, double perimeterExposed = 0.1);
+  class EPMODEL_API FFactorGroundFloorConstruction : public ModelObject
+  {
+   public:
+    explicit FFactorGroundFloorConstruction(const Model& model, double fFactor = 0.1, double area = 0.1, double perimeterExposed = 0.1);
 
-  virtual ~FFactorGroundFloorConstruction() override = default;
-  FFactorGroundFloorConstruction(const FFactorGroundFloorConstruction& other) = default;
-  FFactorGroundFloorConstruction(FFactorGroundFloorConstruction&& other) = default;
-  FFactorGroundFloorConstruction& operator=(const FFactorGroundFloorConstruction&) = default;
-  FFactorGroundFloorConstruction& operator=(FFactorGroundFloorConstruction&&) = default;
+    virtual ~FFactorGroundFloorConstruction() override = default;
+    FFactorGroundFloorConstruction(const FFactorGroundFloorConstruction& other) = default;
+    FFactorGroundFloorConstruction(FFactorGroundFloorConstruction&& other) = default;
+    FFactorGroundFloorConstruction& operator=(const FFactorGroundFloorConstruction&) = default;
+    FFactorGroundFloorConstruction& operator=(FFactorGroundFloorConstruction&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::FFactorGroundFloorConstruction scalar accessor names/signatures.
-  // - Field Mapping: fFactor -> Construction:FfactorGroundFloor, field F-Factor.
-  // - Field Mapping: area -> Construction:FfactorGroundFloor, field Area.
-  // - Field Mapping: perimeterExposed -> Construction:FfactorGroundFloor, field PerimeterExposed.
-  // - ForwardTranslator evidence: ForwardTranslateFFactorGroundFloorConstruction.cpp maps OS fFactor/area/
-  //   perimeterExposed directly to EnergyPlus Construction:FfactorGroundFloor fields.
-  // - TODO(parity): Add non-scalar/relationship APIs if needed in later parity passes.
-  double fFactor() const;
-  bool setFFactor(double fFactor);
+    // Schema Alignment Notes: Preserve OpenStudio API names/signatures and map to
+    // Construction:FfactorGroundFloor scalar fields.
+    //   - fFactor -> field F-Factor
+    //   - area -> field Area
+    //   - perimeterExposed -> field PerimeterExposed
+    // ForwardTranslator: ForwardTranslateFFactorGroundFloorConstruction.cpp maps the three OS
+    // scalars directly to the EnergyPlus fields.
+    // TODO(parity): Add non-scalar/relationship APIs if needed in later parity passes.
 
-  double area() const;
-  bool setArea(double area);
+    double fFactor() const;
+    bool setFFactor(double fFactor);
 
-  double perimeterExposed() const;
-  bool setPerimeterExposed(double perimeterExposed);
+    double area() const;
+    bool setArea(double area);
 
- protected:
-  using ImplType = detail::FFactorGroundFloorConstruction_Impl;
+    double perimeterExposed() const;
+    bool setPerimeterExposed(double perimeterExposed);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::FFactorGroundFloorConstruction_Impl;
 
-  explicit FFactorGroundFloorConstruction(std::shared_ptr<detail::FFactorGroundFloorConstruction_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit FFactorGroundFloorConstruction(std::shared_ptr<detail::FFactorGroundFloorConstruction_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

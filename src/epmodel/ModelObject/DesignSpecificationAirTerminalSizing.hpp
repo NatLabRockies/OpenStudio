@@ -16,64 +16,67 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class DesignSpecificationAirTerminalSizing_Impl;
-}
+  namespace detail {
+    class DesignSpecificationAirTerminalSizing_Impl;
+  }
 
-class EPMODEL_API DesignSpecificationAirTerminalSizing : public ModelObject
-{
- public:
-  explicit DesignSpecificationAirTerminalSizing(const Model& model);
+  class EPMODEL_API DesignSpecificationAirTerminalSizing : public ModelObject
+  {
+   public:
+    explicit DesignSpecificationAirTerminalSizing(const Model& model);
 
-  virtual ~DesignSpecificationAirTerminalSizing() override = default;
-  DesignSpecificationAirTerminalSizing(const DesignSpecificationAirTerminalSizing& other) = default;
-  DesignSpecificationAirTerminalSizing(DesignSpecificationAirTerminalSizing&& other) = default;
-  DesignSpecificationAirTerminalSizing& operator=(const DesignSpecificationAirTerminalSizing&) = default;
-  DesignSpecificationAirTerminalSizing& operator=(DesignSpecificationAirTerminalSizing&&) = default;
+    virtual ~DesignSpecificationAirTerminalSizing() override = default;
+    DesignSpecificationAirTerminalSizing(const DesignSpecificationAirTerminalSizing& other) = default;
+    DesignSpecificationAirTerminalSizing(DesignSpecificationAirTerminalSizing&& other) = default;
+    DesignSpecificationAirTerminalSizing& operator=(const DesignSpecificationAirTerminalSizing&) = default;
+    DesignSpecificationAirTerminalSizing& operator=(DesignSpecificationAirTerminalSizing&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart epmodel type keeps IDD-derived class and accessor naming.
-  // - Field Mapping: Scalar APIs map directly to EnergyPlus DesignSpecification:AirTerminal:Sizing fields.
-  // - Field Mapping: This object has no relationship-like scalar fields; all non-name non-extensible fields are included.
-  // - TODO(parity): Revisit naming if a model-counterpart parity layer is introduced.
-  double fractionofDesignCoolingLoad() const;
-  bool isFractionofDesignCoolingLoadDefaulted() const;
-  bool setFractionofDesignCoolingLoad(double fractionofDesignCoolingLoad);
-  void resetFractionofDesignCoolingLoad();
+    // Schema Alignment Notes:
+    // - API: This no-counterpart epmodel type keeps IDD-derived class and accessor naming.
+    // - Field Mapping: Scalar APIs map directly to EnergyPlus DesignSpecification:AirTerminal:Sizing fields.
+    // - Field Mapping: This object has no relationship-like scalar fields; all non-name non-extensible fields are included.
+    // - TODO(parity): Revisit naming if a model-counterpart parity layer is introduced.
+    /** @name Field Accessors */
+    //@{
+    double fractionofDesignCoolingLoad() const;
+    bool isFractionofDesignCoolingLoadDefaulted() const;
+    bool setFractionofDesignCoolingLoad(double fractionofDesignCoolingLoad);
+    void resetFractionofDesignCoolingLoad();
 
-  double coolingDesignSupplyAirTemperatureDifferenceRatio() const;
-  bool isCoolingDesignSupplyAirTemperatureDifferenceRatioDefaulted() const;
-  bool setCoolingDesignSupplyAirTemperatureDifferenceRatio(double coolingDesignSupplyAirTemperatureDifferenceRatio);
-  void resetCoolingDesignSupplyAirTemperatureDifferenceRatio();
+    double coolingDesignSupplyAirTemperatureDifferenceRatio() const;
+    bool isCoolingDesignSupplyAirTemperatureDifferenceRatioDefaulted() const;
+    bool setCoolingDesignSupplyAirTemperatureDifferenceRatio(double coolingDesignSupplyAirTemperatureDifferenceRatio);
+    void resetCoolingDesignSupplyAirTemperatureDifferenceRatio();
 
-  double fractionofDesignHeatingLoad() const;
-  bool isFractionofDesignHeatingLoadDefaulted() const;
-  bool setFractionofDesignHeatingLoad(double fractionofDesignHeatingLoad);
-  void resetFractionofDesignHeatingLoad();
+    double fractionofDesignHeatingLoad() const;
+    bool isFractionofDesignHeatingLoadDefaulted() const;
+    bool setFractionofDesignHeatingLoad(double fractionofDesignHeatingLoad);
+    void resetFractionofDesignHeatingLoad();
 
-  double heatingDesignSupplyAirTemperatureDifferenceRatio() const;
-  bool isHeatingDesignSupplyAirTemperatureDifferenceRatioDefaulted() const;
-  bool setHeatingDesignSupplyAirTemperatureDifferenceRatio(double heatingDesignSupplyAirTemperatureDifferenceRatio);
-  void resetHeatingDesignSupplyAirTemperatureDifferenceRatio();
+    double heatingDesignSupplyAirTemperatureDifferenceRatio() const;
+    bool isHeatingDesignSupplyAirTemperatureDifferenceRatioDefaulted() const;
+    bool setHeatingDesignSupplyAirTemperatureDifferenceRatio(double heatingDesignSupplyAirTemperatureDifferenceRatio);
+    void resetHeatingDesignSupplyAirTemperatureDifferenceRatio();
 
-  double fractionofMinimumOutdoorAirFlow() const;
-  bool isFractionofMinimumOutdoorAirFlowDefaulted() const;
-  bool setFractionofMinimumOutdoorAirFlow(double fractionofMinimumOutdoorAirFlow);
-  void resetFractionofMinimumOutdoorAirFlow();
+    double fractionofMinimumOutdoorAirFlow() const;
+    bool isFractionofMinimumOutdoorAirFlowDefaulted() const;
+    bool setFractionofMinimumOutdoorAirFlow(double fractionofMinimumOutdoorAirFlow);
+    void resetFractionofMinimumOutdoorAirFlow();
+    //@}
 
- protected:
-  using ImplType = detail::DesignSpecificationAirTerminalSizing_Impl;
+   protected:
+    using ImplType = detail::DesignSpecificationAirTerminalSizing_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit DesignSpecificationAirTerminalSizing(std::shared_ptr<detail::DesignSpecificationAirTerminalSizing_Impl> impl);
-};
+    explicit DesignSpecificationAirTerminalSizing(std::shared_ptr<detail::DesignSpecificationAirTerminalSizing_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

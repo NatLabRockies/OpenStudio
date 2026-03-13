@@ -45,13 +45,22 @@ namespace epmodel {
     // - Field Mapping: Inlet Node Name, Outlet Node Name, and Thermal Storage Sizing Object Name are relationship-like node/object links that are intentionally left out of this scalar-only scaffold.
     // - TODO(parity): Add node/link helpers once scalar field saturation for this type is complete.
 
+    /** @name Capacity field */
+    //@{
+
     boost::optional<double> capacity() const;
     bool setCapacity(double capacity);
     bool isCapacityAutosized() const;
     void autosizeCapacity();
 
+    //@}
+    /** @name Ice storage type field */
+    //@{
+
     std::string iceStorageType() const;
     bool setIceStorageType(const std::string& iceStorageType);
+
+    //@}
 
    protected:
     using ImplType = detail::ThermalStorageIceSimple_Impl;

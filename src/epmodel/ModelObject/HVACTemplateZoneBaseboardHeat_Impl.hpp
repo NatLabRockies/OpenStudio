@@ -13,52 +13,55 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HVACTemplateZoneBaseboardHeat_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~HVACTemplateZoneBaseboardHeat_Impl() override = default;
+    class EPMODEL_API HVACTemplateZoneBaseboardHeat_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~HVACTemplateZoneBaseboardHeat_Impl() override = default;
 
-  boost::optional<double> zoneHeatingSizingFactor() const;
-  std::string baseboardHeatingType() const;
-  boost::optional<double> baseboardHeatingCapacity() const;
-  std::string outdoorAirMethod() const;
-  double outdoorAirFlowRateperPerson() const;
-  double outdoorAirFlowRateperZoneFloorArea() const;
-  double outdoorAirFlowRateperZone() const;
+      boost::optional<double> zoneHeatingSizingFactor() const;
+      bool setZoneHeatingSizingFactor(double zoneHeatingSizingFactor);
+      void resetZoneHeatingSizingFactor();
 
-  bool isBaseboardHeatingTypeDefaulted() const;
-  bool isBaseboardHeatingCapacityDefaulted() const;
-  bool isBaseboardHeatingCapacityAutosized() const;
-  bool isOutdoorAirMethodDefaulted() const;
-  bool isOutdoorAirFlowRateperPersonDefaulted() const;
-  bool isOutdoorAirFlowRateperZoneFloorAreaDefaulted() const;
-  bool isOutdoorAirFlowRateperZoneDefaulted() const;
+      std::string baseboardHeatingType() const;
+      bool isBaseboardHeatingTypeDefaulted() const;
+      bool setBaseboardHeatingType(const std::string& baseboardHeatingType);
+      void resetBaseboardHeatingType();
 
-  bool setZoneHeatingSizingFactor(double zoneHeatingSizingFactor);
-  bool setBaseboardHeatingType(const std::string& baseboardHeatingType);
-  bool setBaseboardHeatingCapacity(double baseboardHeatingCapacity);
-  bool setOutdoorAirMethod(const std::string& outdoorAirMethod);
-  bool setOutdoorAirFlowRateperPerson(double outdoorAirFlowRateperPerson);
-  bool setOutdoorAirFlowRateperZoneFloorArea(double outdoorAirFlowRateperZoneFloorArea);
-  bool setOutdoorAirFlowRateperZone(double outdoorAirFlowRateperZone);
+      boost::optional<double> baseboardHeatingCapacity() const;
+      bool isBaseboardHeatingCapacityDefaulted() const;
+      bool isBaseboardHeatingCapacityAutosized() const;
+      bool setBaseboardHeatingCapacity(double baseboardHeatingCapacity);
+      void resetBaseboardHeatingCapacity();
+      void autosizeBaseboardHeatingCapacity();
 
-  void resetZoneHeatingSizingFactor();
-  void resetBaseboardHeatingType();
-  void resetBaseboardHeatingCapacity();
-  void autosizeBaseboardHeatingCapacity();
-  void resetOutdoorAirMethod();
-  void resetOutdoorAirFlowRateperPerson();
-  void resetOutdoorAirFlowRateperZoneFloorArea();
-  void resetOutdoorAirFlowRateperZone();
+      std::string outdoorAirMethod() const;
+      bool isOutdoorAirMethodDefaulted() const;
+      bool setOutdoorAirMethod(const std::string& outdoorAirMethod);
+      void resetOutdoorAirMethod();
 
-  std::vector<std::string> baseboardHeatingTypeValues() const;
-  std::vector<std::string> outdoorAirMethodValues() const;
-};
+      double outdoorAirFlowRateperPerson() const;
+      bool isOutdoorAirFlowRateperPersonDefaulted() const;
+      bool setOutdoorAirFlowRateperPerson(double outdoorAirFlowRateperPerson);
+      void resetOutdoorAirFlowRateperPerson();
 
-}  // namespace detail
+      double outdoorAirFlowRateperZoneFloorArea() const;
+      bool isOutdoorAirFlowRateperZoneFloorAreaDefaulted() const;
+      bool setOutdoorAirFlowRateperZoneFloorArea(double outdoorAirFlowRateperZoneFloorArea);
+      void resetOutdoorAirFlowRateperZoneFloorArea();
+
+      double outdoorAirFlowRateperZone() const;
+      bool isOutdoorAirFlowRateperZoneDefaulted() const;
+      bool setOutdoorAirFlowRateperZone(double outdoorAirFlowRateperZone);
+      void resetOutdoorAirFlowRateperZone();
+
+      std::vector<std::string> baseboardHeatingTypeValues() const;
+      std::vector<std::string> outdoorAirMethodValues() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

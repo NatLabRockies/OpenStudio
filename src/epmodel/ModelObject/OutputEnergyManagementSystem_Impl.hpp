@@ -13,38 +13,35 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API OutputEnergyManagementSystem_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~OutputEnergyManagementSystem_Impl() override = default;
+    class EPMODEL_API OutputEnergyManagementSystem_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~OutputEnergyManagementSystem_Impl() override = default;
 
-  std::string actuatorAvailabilityDictionaryReporting() const;
-  bool isActuatorAvailabilityDictionaryReportingDefaulted() const;
+      std::string actuatorAvailabilityDictionaryReporting() const;
+      bool isActuatorAvailabilityDictionaryReportingDefaulted() const;
+      bool setActuatorAvailabilityDictionaryReporting(const std::string& actuatorAvailabilityDictionaryReporting);
+      void resetActuatorAvailabilityDictionaryReporting();
 
-  std::string internalVariableAvailabilityDictionaryReporting() const;
-  bool isInternalVariableAvailabilityDictionaryReportingDefaulted() const;
+      std::string internalVariableAvailabilityDictionaryReporting() const;
+      bool isInternalVariableAvailabilityDictionaryReportingDefaulted() const;
+      bool setInternalVariableAvailabilityDictionaryReporting(const std::string& internalVariableAvailabilityDictionaryReporting);
+      void resetInternalVariableAvailabilityDictionaryReporting();
 
-  std::string eMSRuntimeLanguageDebugOutputLevel() const;
-  bool isEMSRuntimeLanguageDebugOutputLevelDefaulted() const;
+      std::string eMSRuntimeLanguageDebugOutputLevel() const;
+      bool isEMSRuntimeLanguageDebugOutputLevelDefaulted() const;
+      bool setEMSRuntimeLanguageDebugOutputLevel(const std::string& eMSRuntimeLanguageDebugOutputLevel);
+      void resetEMSRuntimeLanguageDebugOutputLevel();
 
-  bool setActuatorAvailabilityDictionaryReporting(const std::string& actuatorAvailabilityDictionaryReporting);
-  void resetActuatorAvailabilityDictionaryReporting();
+      std::vector<std::string> actuatorAvailabilityDictionaryReportingValues() const;
+      std::vector<std::string> internalVariableAvailabilityDictionaryReportingValues() const;
+      std::vector<std::string> eMSRuntimeLanguageDebugOutputLevelValues() const;
+    };
 
-  bool setInternalVariableAvailabilityDictionaryReporting(const std::string& internalVariableAvailabilityDictionaryReporting);
-  void resetInternalVariableAvailabilityDictionaryReporting();
-
-  bool setEMSRuntimeLanguageDebugOutputLevel(const std::string& eMSRuntimeLanguageDebugOutputLevel);
-  void resetEMSRuntimeLanguageDebugOutputLevel();
-
-  std::vector<std::string> actuatorAvailabilityDictionaryReportingValues() const;
-  std::vector<std::string> internalVariableAvailabilityDictionaryReportingValues() const;
-  std::vector<std::string> eMSRuntimeLanguageDebugOutputLevelValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

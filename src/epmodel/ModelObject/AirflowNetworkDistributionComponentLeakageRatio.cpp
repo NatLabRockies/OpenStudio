@@ -26,6 +26,7 @@ IddObjectType AirflowNetworkDistributionComponentLeakageRatio::iddObjectType() {
   return IddObjectType::AirflowNetwork_Distribution_Component_LeakageRatio;
 }
 
+// Effective leakage ratio accessors
 boost::optional<double> AirflowNetworkDistributionComponentLeakageRatio::effectiveLeakageRatio() const {
   return getImpl<detail::AirflowNetworkDistributionComponentLeakageRatio_Impl>()->effectiveLeakageRatio();
 }
@@ -38,6 +39,7 @@ void AirflowNetworkDistributionComponentLeakageRatio::resetEffectiveLeakageRatio
   getImpl<detail::AirflowNetworkDistributionComponentLeakageRatio_Impl>()->resetEffectiveLeakageRatio();
 }
 
+// Maximum flow rate accessors
 double AirflowNetworkDistributionComponentLeakageRatio::maximumFlowRate() const {
   return getImpl<detail::AirflowNetworkDistributionComponentLeakageRatio_Impl>()->maximumFlowRate();
 }
@@ -46,6 +48,7 @@ bool AirflowNetworkDistributionComponentLeakageRatio::setMaximumFlowRate(double 
   return getImpl<detail::AirflowNetworkDistributionComponentLeakageRatio_Impl>()->setMaximumFlowRate(maximumFlowRate);
 }
 
+// Reference pressure difference accessors
 double AirflowNetworkDistributionComponentLeakageRatio::referencePressureDifference() const {
   return getImpl<detail::AirflowNetworkDistributionComponentLeakageRatio_Impl>()->referencePressureDifference();
 }
@@ -54,16 +57,17 @@ bool AirflowNetworkDistributionComponentLeakageRatio::setReferencePressureDiffer
   return getImpl<detail::AirflowNetworkDistributionComponentLeakageRatio_Impl>()->setReferencePressureDifference(referencePressureDifference);
 }
 
+// Air mass flow exponent accessors
 double AirflowNetworkDistributionComponentLeakageRatio::airMassFlowExponent() const {
   return getImpl<detail::AirflowNetworkDistributionComponentLeakageRatio_Impl>()->airMassFlowExponent();
 }
 
-bool AirflowNetworkDistributionComponentLeakageRatio::isAirMassFlowExponentDefaulted() const {
-  return getImpl<detail::AirflowNetworkDistributionComponentLeakageRatio_Impl>()->isAirMassFlowExponentDefaulted();
-}
-
 bool AirflowNetworkDistributionComponentLeakageRatio::setAirMassFlowExponent(double airMassFlowExponent) {
   return getImpl<detail::AirflowNetworkDistributionComponentLeakageRatio_Impl>()->setAirMassFlowExponent(airMassFlowExponent);
+}
+
+bool AirflowNetworkDistributionComponentLeakageRatio::isAirMassFlowExponentDefaulted() const {
+  return getImpl<detail::AirflowNetworkDistributionComponentLeakageRatio_Impl>()->isAirMassFlowExponentDefaulted();
 }
 
 void AirflowNetworkDistributionComponentLeakageRatio::resetAirMassFlowExponent() {
@@ -75,58 +79,63 @@ void AirflowNetworkDistributionComponentLeakageRatio::resetAirMassFlowExponent()
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-boost::optional<double> AirflowNetworkDistributionComponentLeakageRatio_Impl::effectiveLeakageRatio() const {
-  return getDouble(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::EffectiveLeakageRatio, true);
-}
+    // Effective leakage ratio accessors
+    boost::optional<double> AirflowNetworkDistributionComponentLeakageRatio_Impl::effectiveLeakageRatio() const {
+      return getDouble(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::EffectiveLeakageRatio, true);
+    }
 
-bool AirflowNetworkDistributionComponentLeakageRatio_Impl::setEffectiveLeakageRatio(double effectiveLeakageRatio) {
-  return setDouble(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::EffectiveLeakageRatio, effectiveLeakageRatio);
-}
+    bool AirflowNetworkDistributionComponentLeakageRatio_Impl::setEffectiveLeakageRatio(double effectiveLeakageRatio) {
+      return setDouble(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::EffectiveLeakageRatio, effectiveLeakageRatio);
+    }
 
-void AirflowNetworkDistributionComponentLeakageRatio_Impl::resetEffectiveLeakageRatio() {
-  OS_ASSERT(setString(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::EffectiveLeakageRatio, ""));
-}
+    void AirflowNetworkDistributionComponentLeakageRatio_Impl::resetEffectiveLeakageRatio() {
+      OS_ASSERT(setString(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::EffectiveLeakageRatio, ""));
+    }
 
-double AirflowNetworkDistributionComponentLeakageRatio_Impl::maximumFlowRate() const {
-  const auto value = getDouble(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::MaximumFlowRate, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    // Maximum flow rate accessors
+    double AirflowNetworkDistributionComponentLeakageRatio_Impl::maximumFlowRate() const {
+      const auto value = getDouble(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::MaximumFlowRate, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool AirflowNetworkDistributionComponentLeakageRatio_Impl::setMaximumFlowRate(double maximumFlowRate) {
-  return setDouble(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::MaximumFlowRate, maximumFlowRate);
-}
+    bool AirflowNetworkDistributionComponentLeakageRatio_Impl::setMaximumFlowRate(double maximumFlowRate) {
+      return setDouble(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::MaximumFlowRate, maximumFlowRate);
+    }
 
-double AirflowNetworkDistributionComponentLeakageRatio_Impl::referencePressureDifference() const {
-  const auto value = getDouble(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::ReferencePressureDifference, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    // Reference pressure difference accessors
+    double AirflowNetworkDistributionComponentLeakageRatio_Impl::referencePressureDifference() const {
+      const auto value = getDouble(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::ReferencePressureDifference, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool AirflowNetworkDistributionComponentLeakageRatio_Impl::setReferencePressureDifference(double referencePressureDifference) {
-  return setDouble(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::ReferencePressureDifference, referencePressureDifference);
-}
+    bool AirflowNetworkDistributionComponentLeakageRatio_Impl::setReferencePressureDifference(double referencePressureDifference) {
+      return setDouble(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::ReferencePressureDifference,
+                       referencePressureDifference);
+    }
 
-double AirflowNetworkDistributionComponentLeakageRatio_Impl::airMassFlowExponent() const {
-  const auto value = getDouble(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::AirMassFlowExponent, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    // Air mass flow exponent accessors
+    double AirflowNetworkDistributionComponentLeakageRatio_Impl::airMassFlowExponent() const {
+      const auto value = getDouble(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::AirMassFlowExponent, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool AirflowNetworkDistributionComponentLeakageRatio_Impl::isAirMassFlowExponentDefaulted() const {
-  return isEmpty(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::AirMassFlowExponent);
-}
+    bool AirflowNetworkDistributionComponentLeakageRatio_Impl::setAirMassFlowExponent(double airMassFlowExponent) {
+      return setDouble(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::AirMassFlowExponent, airMassFlowExponent);
+    }
 
-bool AirflowNetworkDistributionComponentLeakageRatio_Impl::setAirMassFlowExponent(double airMassFlowExponent) {
-  return setDouble(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::AirMassFlowExponent, airMassFlowExponent);
-}
+    bool AirflowNetworkDistributionComponentLeakageRatio_Impl::isAirMassFlowExponentDefaulted() const {
+      return isEmpty(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::AirMassFlowExponent);
+    }
 
-void AirflowNetworkDistributionComponentLeakageRatio_Impl::resetAirMassFlowExponent() {
-  OS_ASSERT(setString(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::AirMassFlowExponent, ""));
-}
+    void AirflowNetworkDistributionComponentLeakageRatio_Impl::resetAirMassFlowExponent() {
+      OS_ASSERT(setString(openstudio::AirflowNetwork_Distribution_Component_LeakageRatioFields::AirMassFlowExponent, ""));
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

@@ -17,64 +17,65 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class GroundHeatTransferSlabInsulation_Impl;
-}
+  namespace detail {
+    class GroundHeatTransferSlabInsulation_Impl;
+  }
 
-class EPMODEL_API GroundHeatTransferSlabInsulation : public ModelObject
-{
- public:
-  explicit GroundHeatTransferSlabInsulation(const Model& model);
+  class EPMODEL_API GroundHeatTransferSlabInsulation : public ModelObject
+  {
+   public:
+    explicit GroundHeatTransferSlabInsulation(const Model& model);
 
-  virtual ~GroundHeatTransferSlabInsulation() override = default;
-  GroundHeatTransferSlabInsulation(const GroundHeatTransferSlabInsulation& other) = default;
-  GroundHeatTransferSlabInsulation(GroundHeatTransferSlabInsulation&& other) = default;
-  GroundHeatTransferSlabInsulation& operator=(const GroundHeatTransferSlabInsulation&) = default;
-  GroundHeatTransferSlabInsulation& operator=(GroundHeatTransferSlabInsulation&&) = default;
+    virtual ~GroundHeatTransferSlabInsulation() override = default;
+    GroundHeatTransferSlabInsulation(const GroundHeatTransferSlabInsulation& other) = default;
+    GroundHeatTransferSlabInsulation(GroundHeatTransferSlabInsulation&& other) = default;
+    GroundHeatTransferSlabInsulation& operator=(const GroundHeatTransferSlabInsulation&) = default;
+    GroundHeatTransferSlabInsulation& operator=(GroundHeatTransferSlabInsulation&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> iVINSFlagIsthereverticalinsulationValues();
+    static std::vector<std::string> iVINSFlagIsthereverticalinsulationValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to GroundHeatTransfer:Slab:Insulation fields.
-  // - TODO(parity): Add relationship APIs incrementally if future schema revisions introduce link fields.
-  double rINSRvalueofunderslabinsulation() const;
-  double dINSWidthofstripofunderslabinsulation() const;
-  double rVINSRvalueofverticalinsulation() const;
-  double zVINSDepthofverticalinsulation() const;
-  std::string iVINSFlagIsthereverticalinsulation() const;
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to GroundHeatTransfer:Slab:Insulation fields.
+    // - TODO(parity): Add relationship APIs incrementally if future schema revisions introduce link fields.
+    double rINSRvalueofunderslabinsulation() const;
+    bool isRINSRvalueofunderslabinsulationDefaulted() const;
+    bool setRINSRvalueofunderslabinsulation(double rINSRvalueofunderslabinsulation);
+    void resetRINSRvalueofunderslabinsulation();
 
-  bool isRINSRvalueofunderslabinsulationDefaulted() const;
-  bool isDINSWidthofstripofunderslabinsulationDefaulted() const;
-  bool isRVINSRvalueofverticalinsulationDefaulted() const;
-  bool isZVINSDepthofverticalinsulationDefaulted() const;
-  bool isIVINSFlagIsthereverticalinsulationDefaulted() const;
+    double dINSWidthofstripofunderslabinsulation() const;
+    bool isDINSWidthofstripofunderslabinsulationDefaulted() const;
+    bool setDINSWidthofstripofunderslabinsulation(double dINSWidthofstripofunderslabinsulation);
+    void resetDINSWidthofstripofunderslabinsulation();
 
-  bool setRINSRvalueofunderslabinsulation(double rINSRvalueofunderslabinsulation);
-  bool setDINSWidthofstripofunderslabinsulation(double dINSWidthofstripofunderslabinsulation);
-  bool setRVINSRvalueofverticalinsulation(double rVINSRvalueofverticalinsulation);
-  bool setZVINSDepthofverticalinsulation(double zVINSDepthofverticalinsulation);
-  bool setIVINSFlagIsthereverticalinsulation(const std::string& iVINSFlagIsthereverticalinsulation);
+    double rVINSRvalueofverticalinsulation() const;
+    bool isRVINSRvalueofverticalinsulationDefaulted() const;
+    bool setRVINSRvalueofverticalinsulation(double rVINSRvalueofverticalinsulation);
+    void resetRVINSRvalueofverticalinsulation();
 
-  void resetRINSRvalueofunderslabinsulation();
-  void resetDINSWidthofstripofunderslabinsulation();
-  void resetRVINSRvalueofverticalinsulation();
-  void resetZVINSDepthofverticalinsulation();
-  void resetIVINSFlagIsthereverticalinsulation();
+    double zVINSDepthofverticalinsulation() const;
+    bool isZVINSDepthofverticalinsulationDefaulted() const;
+    bool setZVINSDepthofverticalinsulation(double zVINSDepthofverticalinsulation);
+    void resetZVINSDepthofverticalinsulation();
 
- protected:
-  using ImplType = detail::GroundHeatTransferSlabInsulation_Impl;
+    std::string iVINSFlagIsthereverticalinsulation() const;
+    bool isIVINSFlagIsthereverticalinsulationDefaulted() const;
+    bool setIVINSFlagIsthereverticalinsulation(const std::string& iVINSFlagIsthereverticalinsulation);
+    void resetIVINSFlagIsthereverticalinsulation();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::GroundHeatTransferSlabInsulation_Impl;
 
-  explicit GroundHeatTransferSlabInsulation(std::shared_ptr<detail::GroundHeatTransferSlabInsulation_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit GroundHeatTransferSlabInsulation(std::shared_ptr<detail::GroundHeatTransferSlabInsulation_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

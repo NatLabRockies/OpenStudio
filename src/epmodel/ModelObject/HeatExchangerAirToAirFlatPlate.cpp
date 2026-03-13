@@ -17,287 +17,287 @@
 namespace openstudio {
 namespace epmodel {
 
-HeatExchangerAirToAirFlatPlate::HeatExchangerAirToAirFlatPlate(const Model& model)
-  : ModelObject(HeatExchangerAirToAirFlatPlate::iddObjectType(), model) {}
+  HeatExchangerAirToAirFlatPlate::HeatExchangerAirToAirFlatPlate(const Model& model)
+    : ModelObject(HeatExchangerAirToAirFlatPlate::iddObjectType(), model) {}
 
-HeatExchangerAirToAirFlatPlate::HeatExchangerAirToAirFlatPlate(std::shared_ptr<detail::HeatExchangerAirToAirFlatPlate_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  HeatExchangerAirToAirFlatPlate::HeatExchangerAirToAirFlatPlate(std::shared_ptr<detail::HeatExchangerAirToAirFlatPlate_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType HeatExchangerAirToAirFlatPlate::iddObjectType() {
-  return IddObjectType::HeatExchanger_AirToAir_FlatPlate;
-}
+  IddObjectType HeatExchangerAirToAirFlatPlate::iddObjectType() {
+    return IddObjectType::HeatExchanger_AirToAir_FlatPlate;
+  }
 
-std::vector<std::string> HeatExchangerAirToAirFlatPlate::flowArrangementTypeValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::HeatExchanger_AirToAir_FlatPlateFields::FlowArrangementType);
-}
+  std::vector<std::string> HeatExchangerAirToAirFlatPlate::flowArrangementTypeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::HeatExchanger_AirToAir_FlatPlateFields::FlowArrangementType);
+  }
 
-boost::optional<std::string> HeatExchangerAirToAirFlatPlate::flowArrangementType() const {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->flowArrangementType();
-}
+  boost::optional<std::string> HeatExchangerAirToAirFlatPlate::flowArrangementType() const {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->flowArrangementType();
+  }
 
-bool HeatExchangerAirToAirFlatPlate::economizerLockout() const {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->economizerLockout();
-}
+  bool HeatExchangerAirToAirFlatPlate::setFlowArrangementType(const std::string& flowArrangementType) {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setFlowArrangementType(flowArrangementType);
+  }
 
-bool HeatExchangerAirToAirFlatPlate::isEconomizerLockoutDefaulted() const {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->isEconomizerLockoutDefaulted();
-}
+  void HeatExchangerAirToAirFlatPlate::resetFlowArrangementType() {
+    getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->resetFlowArrangementType();
+  }
 
-boost::optional<double> HeatExchangerAirToAirFlatPlate::ratioofSupplytoSecondaryhAValues() const {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->ratioofSupplytoSecondaryhAValues();
-}
+  bool HeatExchangerAirToAirFlatPlate::economizerLockout() const {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->economizerLockout();
+  }
 
-boost::optional<double> HeatExchangerAirToAirFlatPlate::nominalSupplyAirFlowRate() const {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->nominalSupplyAirFlowRate();
-}
+  bool HeatExchangerAirToAirFlatPlate::isEconomizerLockoutDefaulted() const {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->isEconomizerLockoutDefaulted();
+  }
 
-bool HeatExchangerAirToAirFlatPlate::isNominalSupplyAirFlowRateAutosized() const {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->isNominalSupplyAirFlowRateAutosized();
-}
+  bool HeatExchangerAirToAirFlatPlate::setEconomizerLockout(bool economizerLockout) {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setEconomizerLockout(economizerLockout);
+  }
 
-double HeatExchangerAirToAirFlatPlate::nominalSupplyAirInletTemperature() const {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->nominalSupplyAirInletTemperature();
-}
+  void HeatExchangerAirToAirFlatPlate::resetEconomizerLockout() {
+    getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->resetEconomizerLockout();
+  }
 
-double HeatExchangerAirToAirFlatPlate::nominalSupplyAirOutletTemperature() const {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->nominalSupplyAirOutletTemperature();
-}
+  boost::optional<double> HeatExchangerAirToAirFlatPlate::ratioofSupplytoSecondaryhAValues() const {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->ratioofSupplytoSecondaryhAValues();
+  }
 
-boost::optional<double> HeatExchangerAirToAirFlatPlate::nominalSecondaryAirFlowRate() const {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->nominalSecondaryAirFlowRate();
-}
+  bool HeatExchangerAirToAirFlatPlate::setRatioofSupplytoSecondaryhAValues(double ratioofSupplytoSecondaryhAValues) {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setRatioofSupplytoSecondaryhAValues(ratioofSupplytoSecondaryhAValues);
+  }
 
-bool HeatExchangerAirToAirFlatPlate::isNominalSecondaryAirFlowRateAutosized() const {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->isNominalSecondaryAirFlowRateAutosized();
-}
+  void HeatExchangerAirToAirFlatPlate::resetRatioofSupplytoSecondaryhAValues() {
+    getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->resetRatioofSupplytoSecondaryhAValues();
+  }
 
-double HeatExchangerAirToAirFlatPlate::nominalSecondaryAirInletTemperature() const {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->nominalSecondaryAirInletTemperature();
-}
+  boost::optional<double> HeatExchangerAirToAirFlatPlate::nominalSupplyAirFlowRate() const {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->nominalSupplyAirFlowRate();
+  }
 
-boost::optional<double> HeatExchangerAirToAirFlatPlate::nominalElectricPower() const {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->nominalElectricPower();
-}
+  bool HeatExchangerAirToAirFlatPlate::isNominalSupplyAirFlowRateAutosized() const {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->isNominalSupplyAirFlowRateAutosized();
+  }
 
-bool HeatExchangerAirToAirFlatPlate::setFlowArrangementType(const std::string& flowArrangementType) {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setFlowArrangementType(flowArrangementType);
-}
+  bool HeatExchangerAirToAirFlatPlate::setNominalSupplyAirFlowRate(double nominalSupplyAirFlowRate) {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setNominalSupplyAirFlowRate(nominalSupplyAirFlowRate);
+  }
 
-void HeatExchangerAirToAirFlatPlate::resetFlowArrangementType() {
-  getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->resetFlowArrangementType();
-}
+  void HeatExchangerAirToAirFlatPlate::resetNominalSupplyAirFlowRate() {
+    getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->resetNominalSupplyAirFlowRate();
+  }
 
-bool HeatExchangerAirToAirFlatPlate::setEconomizerLockout(bool economizerLockout) {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setEconomizerLockout(economizerLockout);
-}
+  void HeatExchangerAirToAirFlatPlate::autosizeNominalSupplyAirFlowRate() {
+    getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->autosizeNominalSupplyAirFlowRate();
+  }
 
-void HeatExchangerAirToAirFlatPlate::resetEconomizerLockout() {
-  getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->resetEconomizerLockout();
-}
+  double HeatExchangerAirToAirFlatPlate::nominalSupplyAirInletTemperature() const {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->nominalSupplyAirInletTemperature();
+  }
 
-bool HeatExchangerAirToAirFlatPlate::setRatioofSupplytoSecondaryhAValues(double ratioofSupplytoSecondaryhAValues) {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setRatioofSupplytoSecondaryhAValues(ratioofSupplytoSecondaryhAValues);
-}
+  bool HeatExchangerAirToAirFlatPlate::setNominalSupplyAirInletTemperature(double nominalSupplyAirInletTemperature) {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setNominalSupplyAirInletTemperature(nominalSupplyAirInletTemperature);
+  }
 
-void HeatExchangerAirToAirFlatPlate::resetRatioofSupplytoSecondaryhAValues() {
-  getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->resetRatioofSupplytoSecondaryhAValues();
-}
+  double HeatExchangerAirToAirFlatPlate::nominalSupplyAirOutletTemperature() const {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->nominalSupplyAirOutletTemperature();
+  }
 
-bool HeatExchangerAirToAirFlatPlate::setNominalSupplyAirFlowRate(double nominalSupplyAirFlowRate) {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setNominalSupplyAirFlowRate(nominalSupplyAirFlowRate);
-}
+  bool HeatExchangerAirToAirFlatPlate::setNominalSupplyAirOutletTemperature(double nominalSupplyAirOutletTemperature) {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setNominalSupplyAirOutletTemperature(nominalSupplyAirOutletTemperature);
+  }
 
-void HeatExchangerAirToAirFlatPlate::resetNominalSupplyAirFlowRate() {
-  getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->resetNominalSupplyAirFlowRate();
-}
+  boost::optional<double> HeatExchangerAirToAirFlatPlate::nominalSecondaryAirFlowRate() const {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->nominalSecondaryAirFlowRate();
+  }
 
-void HeatExchangerAirToAirFlatPlate::autosizeNominalSupplyAirFlowRate() {
-  getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->autosizeNominalSupplyAirFlowRate();
-}
+  bool HeatExchangerAirToAirFlatPlate::isNominalSecondaryAirFlowRateAutosized() const {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->isNominalSecondaryAirFlowRateAutosized();
+  }
 
-bool HeatExchangerAirToAirFlatPlate::setNominalSupplyAirInletTemperature(double nominalSupplyAirInletTemperature) {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setNominalSupplyAirInletTemperature(nominalSupplyAirInletTemperature);
-}
+  bool HeatExchangerAirToAirFlatPlate::setNominalSecondaryAirFlowRate(double nominalSecondaryAirFlowRate) {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setNominalSecondaryAirFlowRate(nominalSecondaryAirFlowRate);
+  }
 
-bool HeatExchangerAirToAirFlatPlate::setNominalSupplyAirOutletTemperature(double nominalSupplyAirOutletTemperature) {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setNominalSupplyAirOutletTemperature(nominalSupplyAirOutletTemperature);
-}
+  void HeatExchangerAirToAirFlatPlate::autosizeNominalSecondaryAirFlowRate() {
+    getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->autosizeNominalSecondaryAirFlowRate();
+  }
 
-bool HeatExchangerAirToAirFlatPlate::setNominalSecondaryAirFlowRate(double nominalSecondaryAirFlowRate) {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setNominalSecondaryAirFlowRate(nominalSecondaryAirFlowRate);
-}
+  double HeatExchangerAirToAirFlatPlate::nominalSecondaryAirInletTemperature() const {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->nominalSecondaryAirInletTemperature();
+  }
 
-void HeatExchangerAirToAirFlatPlate::autosizeNominalSecondaryAirFlowRate() {
-  getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->autosizeNominalSecondaryAirFlowRate();
-}
+  bool HeatExchangerAirToAirFlatPlate::setNominalSecondaryAirInletTemperature(double nominalSecondaryAirInletTemperature) {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setNominalSecondaryAirInletTemperature(nominalSecondaryAirInletTemperature);
+  }
 
-bool HeatExchangerAirToAirFlatPlate::setNominalSecondaryAirInletTemperature(double nominalSecondaryAirInletTemperature) {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setNominalSecondaryAirInletTemperature(nominalSecondaryAirInletTemperature);
-}
+  boost::optional<double> HeatExchangerAirToAirFlatPlate::nominalElectricPower() const {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->nominalElectricPower();
+  }
 
-bool HeatExchangerAirToAirFlatPlate::setNominalElectricPower(double nominalElectricPower) {
-  return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setNominalElectricPower(nominalElectricPower);
-}
+  bool HeatExchangerAirToAirFlatPlate::setNominalElectricPower(double nominalElectricPower) {
+    return getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->setNominalElectricPower(nominalElectricPower);
+  }
 
-void HeatExchangerAirToAirFlatPlate::resetNominalElectricPower() {
-  getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->resetNominalElectricPower();
-}
+  void HeatExchangerAirToAirFlatPlate::resetNominalElectricPower() {
+    getImpl<detail::HeatExchangerAirToAirFlatPlate_Impl>()->resetNominalElectricPower();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-boost::optional<std::string> HeatExchangerAirToAirFlatPlate_Impl::flowArrangementType() const {
-  return getString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::FlowArrangementType, true);
-}
+    boost::optional<std::string> HeatExchangerAirToAirFlatPlate_Impl::flowArrangementType() const {
+      return getString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::FlowArrangementType, true);
+    }
 
-bool HeatExchangerAirToAirFlatPlate_Impl::economizerLockout() const {
-  const auto value = getString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::EconomizerLockout, true);
-  OS_ASSERT(value);
-  return openstudio::istringEqual(*value, "Yes");
-}
+    bool HeatExchangerAirToAirFlatPlate_Impl::setFlowArrangementType(const std::string& flowArrangementType) {
+      return setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::FlowArrangementType, flowArrangementType);
+    }
 
-bool HeatExchangerAirToAirFlatPlate_Impl::isEconomizerLockoutDefaulted() const {
-  return isEmpty(openstudio::HeatExchanger_AirToAir_FlatPlateFields::EconomizerLockout);
-}
+    void HeatExchangerAirToAirFlatPlate_Impl::resetFlowArrangementType() {
+      OS_ASSERT(setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::FlowArrangementType, ""));
+    }
 
-boost::optional<double> HeatExchangerAirToAirFlatPlate_Impl::ratioofSupplytoSecondaryhAValues() const {
-  return getDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::RatioofSupplytoSecondaryhAValues, true);
-}
+    std::vector<std::string> HeatExchangerAirToAirFlatPlate_Impl::flowArrangementTypeValues() const {
+      return openstudio::epmodel::HeatExchangerAirToAirFlatPlate::flowArrangementTypeValues();
+    }
 
-boost::optional<double> HeatExchangerAirToAirFlatPlate_Impl::nominalSupplyAirFlowRate() const {
-  return getDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirFlowRate, true);
-}
+    bool HeatExchangerAirToAirFlatPlate_Impl::economizerLockout() const {
+      const auto value = getString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::EconomizerLockout, true);
+      OS_ASSERT(value);
+      return openstudio::istringEqual(*value, "Yes");
+    }
 
-bool HeatExchangerAirToAirFlatPlate_Impl::isNominalSupplyAirFlowRateAutosized() const {
-  bool result = false;
-  const auto value = getString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirFlowRate, true);
-  if (value) {
-    result = openstudio::istringEqual(*value, "autosize");
-  }
-  return result;
-}
+    bool HeatExchangerAirToAirFlatPlate_Impl::isEconomizerLockoutDefaulted() const {
+      return isEmpty(openstudio::HeatExchanger_AirToAir_FlatPlateFields::EconomizerLockout);
+    }
 
-double HeatExchangerAirToAirFlatPlate_Impl::nominalSupplyAirInletTemperature() const {
-  const auto value = getDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirInletTemperature, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool HeatExchangerAirToAirFlatPlate_Impl::setEconomizerLockout(bool economizerLockout) {
+      const bool result = setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::EconomizerLockout, economizerLockout ? "Yes" : "No");
+      OS_ASSERT(result);
+      return result;
+    }
 
-double HeatExchangerAirToAirFlatPlate_Impl::nominalSupplyAirOutletTemperature() const {
-  const auto value = getDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirOutletTemperature, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    void HeatExchangerAirToAirFlatPlate_Impl::resetEconomizerLockout() {
+      OS_ASSERT(setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::EconomizerLockout, ""));
+    }
 
-boost::optional<double> HeatExchangerAirToAirFlatPlate_Impl::nominalSecondaryAirFlowRate() const {
-  return getDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSecondaryAirFlowRate, true);
-}
+    boost::optional<double> HeatExchangerAirToAirFlatPlate_Impl::ratioofSupplytoSecondaryhAValues() const {
+      return getDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::RatioofSupplytoSecondaryhAValues, true);
+    }
 
-bool HeatExchangerAirToAirFlatPlate_Impl::isNominalSecondaryAirFlowRateAutosized() const {
-  bool result = false;
-  const auto value = getString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSecondaryAirFlowRate, true);
-  if (value) {
-    result = openstudio::istringEqual(*value, "autosize");
-  }
-  return result;
-}
+    bool HeatExchangerAirToAirFlatPlate_Impl::setRatioofSupplytoSecondaryhAValues(double ratioofSupplytoSecondaryhAValues) {
+      return setDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::RatioofSupplytoSecondaryhAValues, ratioofSupplytoSecondaryhAValues);
+    }
 
-double HeatExchangerAirToAirFlatPlate_Impl::nominalSecondaryAirInletTemperature() const {
-  const auto value = getDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSecondaryAirInletTemperature, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    void HeatExchangerAirToAirFlatPlate_Impl::resetRatioofSupplytoSecondaryhAValues() {
+      OS_ASSERT(setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::RatioofSupplytoSecondaryhAValues, ""));
+    }
 
-boost::optional<double> HeatExchangerAirToAirFlatPlate_Impl::nominalElectricPower() const {
-  return getDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalElectricPower, true);
-}
+    boost::optional<double> HeatExchangerAirToAirFlatPlate_Impl::nominalSupplyAirFlowRate() const {
+      return getDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirFlowRate, true);
+    }
 
-bool HeatExchangerAirToAirFlatPlate_Impl::setFlowArrangementType(const std::string& flowArrangementType) {
-  return setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::FlowArrangementType, flowArrangementType);
-}
+    bool HeatExchangerAirToAirFlatPlate_Impl::isNominalSupplyAirFlowRateAutosized() const {
+      bool result = false;
+      const auto value = getString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirFlowRate, true);
+      if (value) {
+        result = openstudio::istringEqual(*value, "autosize");
+      }
+      return result;
+    }
 
-void HeatExchangerAirToAirFlatPlate_Impl::resetFlowArrangementType() {
-  OS_ASSERT(setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::FlowArrangementType, ""));
-}
+    bool HeatExchangerAirToAirFlatPlate_Impl::setNominalSupplyAirFlowRate(double nominalSupplyAirFlowRate) {
+      return setDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirFlowRate, nominalSupplyAirFlowRate);
+    }
 
-bool HeatExchangerAirToAirFlatPlate_Impl::setEconomizerLockout(bool economizerLockout) {
-  const bool result = setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::EconomizerLockout, economizerLockout ? "Yes" : "No");
-  OS_ASSERT(result);
-  return result;
-}
+    void HeatExchangerAirToAirFlatPlate_Impl::resetNominalSupplyAirFlowRate() {
+      OS_ASSERT(setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirFlowRate, ""));
+    }
 
-void HeatExchangerAirToAirFlatPlate_Impl::resetEconomizerLockout() {
-  OS_ASSERT(setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::EconomizerLockout, ""));
-}
+    void HeatExchangerAirToAirFlatPlate_Impl::autosizeNominalSupplyAirFlowRate() {
+      OS_ASSERT(setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirFlowRate, "autosize"));
+    }
 
-bool HeatExchangerAirToAirFlatPlate_Impl::setRatioofSupplytoSecondaryhAValues(double ratioofSupplytoSecondaryhAValues) {
-  return setDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::RatioofSupplytoSecondaryhAValues, ratioofSupplytoSecondaryhAValues);
-}
+    double HeatExchangerAirToAirFlatPlate_Impl::nominalSupplyAirInletTemperature() const {
+      const auto value = getDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirInletTemperature, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-void HeatExchangerAirToAirFlatPlate_Impl::resetRatioofSupplytoSecondaryhAValues() {
-  OS_ASSERT(setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::RatioofSupplytoSecondaryhAValues, ""));
-}
+    bool HeatExchangerAirToAirFlatPlate_Impl::setNominalSupplyAirInletTemperature(double nominalSupplyAirInletTemperature) {
+      const bool result =
+        setDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirInletTemperature, nominalSupplyAirInletTemperature);
+      OS_ASSERT(result);
+      return result;
+    }
 
-bool HeatExchangerAirToAirFlatPlate_Impl::setNominalSupplyAirFlowRate(double nominalSupplyAirFlowRate) {
-  return setDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirFlowRate, nominalSupplyAirFlowRate);
-}
+    double HeatExchangerAirToAirFlatPlate_Impl::nominalSupplyAirOutletTemperature() const {
+      const auto value = getDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirOutletTemperature, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-void HeatExchangerAirToAirFlatPlate_Impl::resetNominalSupplyAirFlowRate() {
-  OS_ASSERT(setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirFlowRate, ""));
-}
+    bool HeatExchangerAirToAirFlatPlate_Impl::setNominalSupplyAirOutletTemperature(double nominalSupplyAirOutletTemperature) {
+      const bool result =
+        setDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirOutletTemperature, nominalSupplyAirOutletTemperature);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void HeatExchangerAirToAirFlatPlate_Impl::autosizeNominalSupplyAirFlowRate() {
-  OS_ASSERT(setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirFlowRate, "autosize"));
-}
+    boost::optional<double> HeatExchangerAirToAirFlatPlate_Impl::nominalSecondaryAirFlowRate() const {
+      return getDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSecondaryAirFlowRate, true);
+    }
 
-bool HeatExchangerAirToAirFlatPlate_Impl::setNominalSupplyAirInletTemperature(double nominalSupplyAirInletTemperature) {
-  const bool result = setDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirInletTemperature,
-                                nominalSupplyAirInletTemperature);
-  OS_ASSERT(result);
-  return result;
-}
+    bool HeatExchangerAirToAirFlatPlate_Impl::isNominalSecondaryAirFlowRateAutosized() const {
+      bool result = false;
+      const auto value = getString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSecondaryAirFlowRate, true);
+      if (value) {
+        result = openstudio::istringEqual(*value, "autosize");
+      }
+      return result;
+    }
 
-bool HeatExchangerAirToAirFlatPlate_Impl::setNominalSupplyAirOutletTemperature(double nominalSupplyAirOutletTemperature) {
-  const bool result = setDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSupplyAirOutletTemperature,
-                                nominalSupplyAirOutletTemperature);
-  OS_ASSERT(result);
-  return result;
-}
+    bool HeatExchangerAirToAirFlatPlate_Impl::setNominalSecondaryAirFlowRate(double nominalSecondaryAirFlowRate) {
+      return setDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSecondaryAirFlowRate, nominalSecondaryAirFlowRate);
+    }
 
-bool HeatExchangerAirToAirFlatPlate_Impl::setNominalSecondaryAirFlowRate(double nominalSecondaryAirFlowRate) {
-  return setDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSecondaryAirFlowRate, nominalSecondaryAirFlowRate);
-}
+    void HeatExchangerAirToAirFlatPlate_Impl::autosizeNominalSecondaryAirFlowRate() {
+      OS_ASSERT(setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSecondaryAirFlowRate, "autosize"));
+    }
 
-void HeatExchangerAirToAirFlatPlate_Impl::autosizeNominalSecondaryAirFlowRate() {
-  OS_ASSERT(setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSecondaryAirFlowRate, "autosize"));
-}
+    double HeatExchangerAirToAirFlatPlate_Impl::nominalSecondaryAirInletTemperature() const {
+      const auto value = getDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSecondaryAirInletTemperature, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool HeatExchangerAirToAirFlatPlate_Impl::setNominalSecondaryAirInletTemperature(double nominalSecondaryAirInletTemperature) {
-  const bool result = setDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSecondaryAirInletTemperature,
-                                nominalSecondaryAirInletTemperature);
-  OS_ASSERT(result);
-  return result;
-}
+    bool HeatExchangerAirToAirFlatPlate_Impl::setNominalSecondaryAirInletTemperature(double nominalSecondaryAirInletTemperature) {
+      const bool result =
+        setDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalSecondaryAirInletTemperature, nominalSecondaryAirInletTemperature);
+      OS_ASSERT(result);
+      return result;
+    }
 
-bool HeatExchangerAirToAirFlatPlate_Impl::setNominalElectricPower(double nominalElectricPower) {
-  const bool result = setDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalElectricPower, nominalElectricPower);
-  OS_ASSERT(result);
-  return result;
-}
+    boost::optional<double> HeatExchangerAirToAirFlatPlate_Impl::nominalElectricPower() const {
+      return getDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalElectricPower, true);
+    }
 
-void HeatExchangerAirToAirFlatPlate_Impl::resetNominalElectricPower() {
-  OS_ASSERT(setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalElectricPower, ""));
-}
+    bool HeatExchangerAirToAirFlatPlate_Impl::setNominalElectricPower(double nominalElectricPower) {
+      const bool result = setDouble(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalElectricPower, nominalElectricPower);
+      OS_ASSERT(result);
+      return result;
+    }
 
-std::vector<std::string> HeatExchangerAirToAirFlatPlate_Impl::flowArrangementTypeValues() const {
-  return openstudio::epmodel::HeatExchangerAirToAirFlatPlate::flowArrangementTypeValues();
-}
+    void HeatExchangerAirToAirFlatPlate_Impl::resetNominalElectricPower() {
+      OS_ASSERT(setString(openstudio::HeatExchanger_AirToAir_FlatPlateFields::NominalElectricPower, ""));
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

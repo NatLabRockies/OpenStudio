@@ -61,94 +61,6 @@ boost::optional<double> HVACTemplateZoneVAVFanPowered::primarySupplyAirMaximumFl
   return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->primarySupplyAirMaximumFlowRate();
 }
 
-boost::optional<double> HVACTemplateZoneVAVFanPowered::zoneHeatingSizingFactor() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->zoneHeatingSizingFactor();
-}
-
-boost::optional<double> HVACTemplateZoneVAVFanPowered::zoneCoolingSizingFactor() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->zoneCoolingSizingFactor();
-}
-
-boost::optional<double> HVACTemplateZoneVAVFanPowered::primarySupplyAirMinimumFlowFraction() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->primarySupplyAirMinimumFlowFraction();
-}
-
-boost::optional<double> HVACTemplateZoneVAVFanPowered::secondarySupplyAirMaximumFlowRate() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->secondarySupplyAirMaximumFlowRate();
-}
-
-std::string HVACTemplateZoneVAVFanPowered::flowType() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->flowType();
-}
-
-boost::optional<double> HVACTemplateZoneVAVFanPowered::parallelFanOnFlowFraction() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->parallelFanOnFlowFraction();
-}
-
-std::string HVACTemplateZoneVAVFanPowered::outdoorAirMethod() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->outdoorAirMethod();
-}
-
-double HVACTemplateZoneVAVFanPowered::outdoorAirFlowRateperPerson() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->outdoorAirFlowRateperPerson();
-}
-
-double HVACTemplateZoneVAVFanPowered::outdoorAirFlowRateperZoneFloorArea() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->outdoorAirFlowRateperZoneFloorArea();
-}
-
-double HVACTemplateZoneVAVFanPowered::outdoorAirFlowRateperZone() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->outdoorAirFlowRateperZone();
-}
-
-std::string HVACTemplateZoneVAVFanPowered::reheatCoilType() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->reheatCoilType();
-}
-
-double HVACTemplateZoneVAVFanPowered::fanTotalEfficiency() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->fanTotalEfficiency();
-}
-
-double HVACTemplateZoneVAVFanPowered::fanDeltaPressure() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->fanDeltaPressure();
-}
-
-double HVACTemplateZoneVAVFanPowered::fanMotorEfficiency() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->fanMotorEfficiency();
-}
-
-std::string HVACTemplateZoneVAVFanPowered::baseboardHeatingType() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->baseboardHeatingType();
-}
-
-boost::optional<double> HVACTemplateZoneVAVFanPowered::baseboardHeatingCapacity() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->baseboardHeatingCapacity();
-}
-
-std::string HVACTemplateZoneVAVFanPowered::zoneCoolingDesignSupplyAirTemperatureInputMethod() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->zoneCoolingDesignSupplyAirTemperatureInputMethod();
-}
-
-double HVACTemplateZoneVAVFanPowered::zoneCoolingDesignSupplyAirTemperature() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->zoneCoolingDesignSupplyAirTemperature();
-}
-
-double HVACTemplateZoneVAVFanPowered::zoneCoolingDesignSupplyAirTemperatureDifference() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->zoneCoolingDesignSupplyAirTemperatureDifference();
-}
-
-std::string HVACTemplateZoneVAVFanPowered::zoneHeatingDesignSupplyAirTemperatureInputMethod() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->zoneHeatingDesignSupplyAirTemperatureInputMethod();
-}
-
-double HVACTemplateZoneVAVFanPowered::zoneHeatingDesignSupplyAirTemperature() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->zoneHeatingDesignSupplyAirTemperature();
-}
-
-double HVACTemplateZoneVAVFanPowered::zoneHeatingDesignSupplyAirTemperatureDifference() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->zoneHeatingDesignSupplyAirTemperatureDifference();
-}
-
 bool HVACTemplateZoneVAVFanPowered::isPrimarySupplyAirMaximumFlowRateDefaulted() const {
   return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isPrimarySupplyAirMaximumFlowRateDefaulted();
 }
@@ -157,206 +69,8 @@ bool HVACTemplateZoneVAVFanPowered::isPrimarySupplyAirMaximumFlowRateAutosized()
   return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isPrimarySupplyAirMaximumFlowRateAutosized();
 }
 
-bool HVACTemplateZoneVAVFanPowered::isZoneHeatingSizingFactorDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isZoneHeatingSizingFactorDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isZoneCoolingSizingFactorDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isZoneCoolingSizingFactorDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isPrimarySupplyAirMinimumFlowFractionDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isPrimarySupplyAirMinimumFlowFractionDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isPrimarySupplyAirMinimumFlowFractionAutosized() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isPrimarySupplyAirMinimumFlowFractionAutosized();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isSecondarySupplyAirMaximumFlowRateDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isSecondarySupplyAirMaximumFlowRateDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isSecondarySupplyAirMaximumFlowRateAutosized() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isSecondarySupplyAirMaximumFlowRateAutosized();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isFlowTypeDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isFlowTypeDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isParallelFanOnFlowFractionDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isParallelFanOnFlowFractionDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isParallelFanOnFlowFractionAutosized() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isParallelFanOnFlowFractionAutosized();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isOutdoorAirMethodDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isOutdoorAirMethodDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isOutdoorAirFlowRateperPersonDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isOutdoorAirFlowRateperPersonDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isOutdoorAirFlowRateperZoneFloorAreaDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isOutdoorAirFlowRateperZoneFloorAreaDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isOutdoorAirFlowRateperZoneDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isOutdoorAirFlowRateperZoneDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isReheatCoilTypeDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isReheatCoilTypeDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isFanTotalEfficiencyDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isFanTotalEfficiencyDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isFanDeltaPressureDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isFanDeltaPressureDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isFanMotorEfficiencyDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isFanMotorEfficiencyDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isBaseboardHeatingTypeDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isBaseboardHeatingTypeDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isBaseboardHeatingCapacityDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isBaseboardHeatingCapacityDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isBaseboardHeatingCapacityAutosized() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isBaseboardHeatingCapacityAutosized();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isZoneCoolingDesignSupplyAirTemperatureInputMethodDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isZoneCoolingDesignSupplyAirTemperatureInputMethodDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isZoneCoolingDesignSupplyAirTemperatureDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isZoneCoolingDesignSupplyAirTemperatureDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isZoneCoolingDesignSupplyAirTemperatureDifferenceDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isZoneCoolingDesignSupplyAirTemperatureDifferenceDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isZoneHeatingDesignSupplyAirTemperatureInputMethodDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isZoneHeatingDesignSupplyAirTemperatureInputMethodDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isZoneHeatingDesignSupplyAirTemperatureDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isZoneHeatingDesignSupplyAirTemperatureDefaulted();
-}
-
-bool HVACTemplateZoneVAVFanPowered::isZoneHeatingDesignSupplyAirTemperatureDifferenceDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isZoneHeatingDesignSupplyAirTemperatureDifferenceDefaulted();
-}
-
 bool HVACTemplateZoneVAVFanPowered::setPrimarySupplyAirMaximumFlowRate(double primarySupplyAirMaximumFlowRate) {
   return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setPrimarySupplyAirMaximumFlowRate(primarySupplyAirMaximumFlowRate);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setZoneHeatingSizingFactor(double zoneHeatingSizingFactor) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setZoneHeatingSizingFactor(zoneHeatingSizingFactor);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setZoneCoolingSizingFactor(double zoneCoolingSizingFactor) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setZoneCoolingSizingFactor(zoneCoolingSizingFactor);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setPrimarySupplyAirMinimumFlowFraction(double primarySupplyAirMinimumFlowFraction) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setPrimarySupplyAirMinimumFlowFraction(primarySupplyAirMinimumFlowFraction);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setSecondarySupplyAirMaximumFlowRate(double secondarySupplyAirMaximumFlowRate) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setSecondarySupplyAirMaximumFlowRate(secondarySupplyAirMaximumFlowRate);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setFlowType(const std::string& flowType) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setFlowType(flowType);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setParallelFanOnFlowFraction(double parallelFanOnFlowFraction) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setParallelFanOnFlowFraction(parallelFanOnFlowFraction);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setOutdoorAirMethod(const std::string& outdoorAirMethod) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setOutdoorAirMethod(outdoorAirMethod);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setOutdoorAirFlowRateperPerson(double outdoorAirFlowRateperPerson) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setOutdoorAirFlowRateperPerson(outdoorAirFlowRateperPerson);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setOutdoorAirFlowRateperZoneFloorArea(double outdoorAirFlowRateperZoneFloorArea) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setOutdoorAirFlowRateperZoneFloorArea(outdoorAirFlowRateperZoneFloorArea);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setOutdoorAirFlowRateperZone(double outdoorAirFlowRateperZone) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setOutdoorAirFlowRateperZone(outdoorAirFlowRateperZone);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setReheatCoilType(const std::string& reheatCoilType) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setReheatCoilType(reheatCoilType);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setFanTotalEfficiency(double fanTotalEfficiency) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setFanTotalEfficiency(fanTotalEfficiency);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setFanDeltaPressure(double fanDeltaPressure) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setFanDeltaPressure(fanDeltaPressure);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setFanMotorEfficiency(double fanMotorEfficiency) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setFanMotorEfficiency(fanMotorEfficiency);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setBaseboardHeatingType(const std::string& baseboardHeatingType) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setBaseboardHeatingType(baseboardHeatingType);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setBaseboardHeatingCapacity(double baseboardHeatingCapacity) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setBaseboardHeatingCapacity(baseboardHeatingCapacity);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setZoneCoolingDesignSupplyAirTemperatureInputMethod(
-  const std::string& zoneCoolingDesignSupplyAirTemperatureInputMethod) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setZoneCoolingDesignSupplyAirTemperatureInputMethod(
-    zoneCoolingDesignSupplyAirTemperatureInputMethod);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setZoneCoolingDesignSupplyAirTemperature(double zoneCoolingDesignSupplyAirTemperature) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setZoneCoolingDesignSupplyAirTemperature(zoneCoolingDesignSupplyAirTemperature);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setZoneCoolingDesignSupplyAirTemperatureDifference(double zoneCoolingDesignSupplyAirTemperatureDifference) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setZoneCoolingDesignSupplyAirTemperatureDifference(
-    zoneCoolingDesignSupplyAirTemperatureDifference);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setZoneHeatingDesignSupplyAirTemperatureInputMethod(
-  const std::string& zoneHeatingDesignSupplyAirTemperatureInputMethod) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setZoneHeatingDesignSupplyAirTemperatureInputMethod(
-    zoneHeatingDesignSupplyAirTemperatureInputMethod);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setZoneHeatingDesignSupplyAirTemperature(double zoneHeatingDesignSupplyAirTemperature) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setZoneHeatingDesignSupplyAirTemperature(zoneHeatingDesignSupplyAirTemperature);
-}
-
-bool HVACTemplateZoneVAVFanPowered::setZoneHeatingDesignSupplyAirTemperatureDifference(double zoneHeatingDesignSupplyAirTemperatureDifference) {
-  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setZoneHeatingDesignSupplyAirTemperatureDifference(
-    zoneHeatingDesignSupplyAirTemperatureDifference);
 }
 
 void HVACTemplateZoneVAVFanPowered::resetPrimarySupplyAirMaximumFlowRate() {
@@ -367,12 +81,52 @@ void HVACTemplateZoneVAVFanPowered::autosizePrimarySupplyAirMaximumFlowRate() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->autosizePrimarySupplyAirMaximumFlowRate();
 }
 
+boost::optional<double> HVACTemplateZoneVAVFanPowered::zoneHeatingSizingFactor() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->zoneHeatingSizingFactor();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isZoneHeatingSizingFactorDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isZoneHeatingSizingFactorDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setZoneHeatingSizingFactor(double zoneHeatingSizingFactor) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setZoneHeatingSizingFactor(zoneHeatingSizingFactor);
+}
+
 void HVACTemplateZoneVAVFanPowered::resetZoneHeatingSizingFactor() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetZoneHeatingSizingFactor();
 }
 
+boost::optional<double> HVACTemplateZoneVAVFanPowered::zoneCoolingSizingFactor() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->zoneCoolingSizingFactor();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isZoneCoolingSizingFactorDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isZoneCoolingSizingFactorDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setZoneCoolingSizingFactor(double zoneCoolingSizingFactor) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setZoneCoolingSizingFactor(zoneCoolingSizingFactor);
+}
+
 void HVACTemplateZoneVAVFanPowered::resetZoneCoolingSizingFactor() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetZoneCoolingSizingFactor();
+}
+
+boost::optional<double> HVACTemplateZoneVAVFanPowered::primarySupplyAirMinimumFlowFraction() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->primarySupplyAirMinimumFlowFraction();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isPrimarySupplyAirMinimumFlowFractionDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isPrimarySupplyAirMinimumFlowFractionDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isPrimarySupplyAirMinimumFlowFractionAutosized() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isPrimarySupplyAirMinimumFlowFractionAutosized();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setPrimarySupplyAirMinimumFlowFraction(double primarySupplyAirMinimumFlowFraction) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setPrimarySupplyAirMinimumFlowFraction(primarySupplyAirMinimumFlowFraction);
 }
 
 void HVACTemplateZoneVAVFanPowered::resetPrimarySupplyAirMinimumFlowFraction() {
@@ -383,6 +137,22 @@ void HVACTemplateZoneVAVFanPowered::autosizePrimarySupplyAirMinimumFlowFraction(
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->autosizePrimarySupplyAirMinimumFlowFraction();
 }
 
+boost::optional<double> HVACTemplateZoneVAVFanPowered::secondarySupplyAirMaximumFlowRate() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->secondarySupplyAirMaximumFlowRate();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isSecondarySupplyAirMaximumFlowRateDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isSecondarySupplyAirMaximumFlowRateDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isSecondarySupplyAirMaximumFlowRateAutosized() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isSecondarySupplyAirMaximumFlowRateAutosized();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setSecondarySupplyAirMaximumFlowRate(double secondarySupplyAirMaximumFlowRate) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setSecondarySupplyAirMaximumFlowRate(secondarySupplyAirMaximumFlowRate);
+}
+
 void HVACTemplateZoneVAVFanPowered::resetSecondarySupplyAirMaximumFlowRate() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetSecondarySupplyAirMaximumFlowRate();
 }
@@ -391,8 +161,36 @@ void HVACTemplateZoneVAVFanPowered::autosizeSecondarySupplyAirMaximumFlowRate() 
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->autosizeSecondarySupplyAirMaximumFlowRate();
 }
 
+std::string HVACTemplateZoneVAVFanPowered::flowType() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->flowType();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isFlowTypeDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isFlowTypeDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setFlowType(const std::string& flowType) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setFlowType(flowType);
+}
+
 void HVACTemplateZoneVAVFanPowered::resetFlowType() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetFlowType();
+}
+
+boost::optional<double> HVACTemplateZoneVAVFanPowered::parallelFanOnFlowFraction() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->parallelFanOnFlowFraction();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isParallelFanOnFlowFractionDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isParallelFanOnFlowFractionDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isParallelFanOnFlowFractionAutosized() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isParallelFanOnFlowFractionAutosized();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setParallelFanOnFlowFraction(double parallelFanOnFlowFraction) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setParallelFanOnFlowFraction(parallelFanOnFlowFraction);
 }
 
 void HVACTemplateZoneVAVFanPowered::resetParallelFanOnFlowFraction() {
@@ -403,40 +201,164 @@ void HVACTemplateZoneVAVFanPowered::autosizeParallelFanOnFlowFraction() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->autosizeParallelFanOnFlowFraction();
 }
 
+std::string HVACTemplateZoneVAVFanPowered::outdoorAirMethod() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->outdoorAirMethod();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isOutdoorAirMethodDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isOutdoorAirMethodDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setOutdoorAirMethod(const std::string& outdoorAirMethod) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setOutdoorAirMethod(outdoorAirMethod);
+}
+
 void HVACTemplateZoneVAVFanPowered::resetOutdoorAirMethod() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetOutdoorAirMethod();
+}
+
+double HVACTemplateZoneVAVFanPowered::outdoorAirFlowRateperPerson() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->outdoorAirFlowRateperPerson();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isOutdoorAirFlowRateperPersonDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isOutdoorAirFlowRateperPersonDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setOutdoorAirFlowRateperPerson(double outdoorAirFlowRateperPerson) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setOutdoorAirFlowRateperPerson(outdoorAirFlowRateperPerson);
 }
 
 void HVACTemplateZoneVAVFanPowered::resetOutdoorAirFlowRateperPerson() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetOutdoorAirFlowRateperPerson();
 }
 
+double HVACTemplateZoneVAVFanPowered::outdoorAirFlowRateperZoneFloorArea() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->outdoorAirFlowRateperZoneFloorArea();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isOutdoorAirFlowRateperZoneFloorAreaDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isOutdoorAirFlowRateperZoneFloorAreaDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setOutdoorAirFlowRateperZoneFloorArea(double outdoorAirFlowRateperZoneFloorArea) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setOutdoorAirFlowRateperZoneFloorArea(outdoorAirFlowRateperZoneFloorArea);
+}
+
 void HVACTemplateZoneVAVFanPowered::resetOutdoorAirFlowRateperZoneFloorArea() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetOutdoorAirFlowRateperZoneFloorArea();
+}
+
+double HVACTemplateZoneVAVFanPowered::outdoorAirFlowRateperZone() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->outdoorAirFlowRateperZone();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isOutdoorAirFlowRateperZoneDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isOutdoorAirFlowRateperZoneDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setOutdoorAirFlowRateperZone(double outdoorAirFlowRateperZone) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setOutdoorAirFlowRateperZone(outdoorAirFlowRateperZone);
 }
 
 void HVACTemplateZoneVAVFanPowered::resetOutdoorAirFlowRateperZone() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetOutdoorAirFlowRateperZone();
 }
 
+std::string HVACTemplateZoneVAVFanPowered::reheatCoilType() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->reheatCoilType();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isReheatCoilTypeDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isReheatCoilTypeDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setReheatCoilType(const std::string& reheatCoilType) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setReheatCoilType(reheatCoilType);
+}
+
 void HVACTemplateZoneVAVFanPowered::resetReheatCoilType() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetReheatCoilType();
+}
+
+double HVACTemplateZoneVAVFanPowered::fanTotalEfficiency() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->fanTotalEfficiency();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isFanTotalEfficiencyDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isFanTotalEfficiencyDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setFanTotalEfficiency(double fanTotalEfficiency) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setFanTotalEfficiency(fanTotalEfficiency);
 }
 
 void HVACTemplateZoneVAVFanPowered::resetFanTotalEfficiency() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetFanTotalEfficiency();
 }
 
+double HVACTemplateZoneVAVFanPowered::fanDeltaPressure() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->fanDeltaPressure();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isFanDeltaPressureDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isFanDeltaPressureDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setFanDeltaPressure(double fanDeltaPressure) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setFanDeltaPressure(fanDeltaPressure);
+}
+
 void HVACTemplateZoneVAVFanPowered::resetFanDeltaPressure() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetFanDeltaPressure();
+}
+
+double HVACTemplateZoneVAVFanPowered::fanMotorEfficiency() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->fanMotorEfficiency();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isFanMotorEfficiencyDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isFanMotorEfficiencyDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setFanMotorEfficiency(double fanMotorEfficiency) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setFanMotorEfficiency(fanMotorEfficiency);
 }
 
 void HVACTemplateZoneVAVFanPowered::resetFanMotorEfficiency() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetFanMotorEfficiency();
 }
 
+std::string HVACTemplateZoneVAVFanPowered::baseboardHeatingType() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->baseboardHeatingType();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isBaseboardHeatingTypeDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isBaseboardHeatingTypeDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setBaseboardHeatingType(const std::string& baseboardHeatingType) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setBaseboardHeatingType(baseboardHeatingType);
+}
+
 void HVACTemplateZoneVAVFanPowered::resetBaseboardHeatingType() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetBaseboardHeatingType();
+}
+
+boost::optional<double> HVACTemplateZoneVAVFanPowered::baseboardHeatingCapacity() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->baseboardHeatingCapacity();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isBaseboardHeatingCapacityDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isBaseboardHeatingCapacityDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isBaseboardHeatingCapacityAutosized() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isBaseboardHeatingCapacityAutosized();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setBaseboardHeatingCapacity(double baseboardHeatingCapacity) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setBaseboardHeatingCapacity(baseboardHeatingCapacity);
 }
 
 void HVACTemplateZoneVAVFanPowered::resetBaseboardHeatingCapacity() {
@@ -447,24 +369,102 @@ void HVACTemplateZoneVAVFanPowered::autosizeBaseboardHeatingCapacity() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->autosizeBaseboardHeatingCapacity();
 }
 
+std::string HVACTemplateZoneVAVFanPowered::zoneCoolingDesignSupplyAirTemperatureInputMethod() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->zoneCoolingDesignSupplyAirTemperatureInputMethod();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isZoneCoolingDesignSupplyAirTemperatureInputMethodDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isZoneCoolingDesignSupplyAirTemperatureInputMethodDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setZoneCoolingDesignSupplyAirTemperatureInputMethod(
+  const std::string& zoneCoolingDesignSupplyAirTemperatureInputMethod) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setZoneCoolingDesignSupplyAirTemperatureInputMethod(
+    zoneCoolingDesignSupplyAirTemperatureInputMethod);
+}
+
 void HVACTemplateZoneVAVFanPowered::resetZoneCoolingDesignSupplyAirTemperatureInputMethod() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetZoneCoolingDesignSupplyAirTemperatureInputMethod();
+}
+
+double HVACTemplateZoneVAVFanPowered::zoneCoolingDesignSupplyAirTemperature() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->zoneCoolingDesignSupplyAirTemperature();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isZoneCoolingDesignSupplyAirTemperatureDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isZoneCoolingDesignSupplyAirTemperatureDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setZoneCoolingDesignSupplyAirTemperature(double zoneCoolingDesignSupplyAirTemperature) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setZoneCoolingDesignSupplyAirTemperature(zoneCoolingDesignSupplyAirTemperature);
 }
 
 void HVACTemplateZoneVAVFanPowered::resetZoneCoolingDesignSupplyAirTemperature() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetZoneCoolingDesignSupplyAirTemperature();
 }
 
+double HVACTemplateZoneVAVFanPowered::zoneCoolingDesignSupplyAirTemperatureDifference() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->zoneCoolingDesignSupplyAirTemperatureDifference();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isZoneCoolingDesignSupplyAirTemperatureDifferenceDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isZoneCoolingDesignSupplyAirTemperatureDifferenceDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setZoneCoolingDesignSupplyAirTemperatureDifference(double zoneCoolingDesignSupplyAirTemperatureDifference) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setZoneCoolingDesignSupplyAirTemperatureDifference(
+    zoneCoolingDesignSupplyAirTemperatureDifference);
+}
+
 void HVACTemplateZoneVAVFanPowered::resetZoneCoolingDesignSupplyAirTemperatureDifference() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetZoneCoolingDesignSupplyAirTemperatureDifference();
+}
+
+std::string HVACTemplateZoneVAVFanPowered::zoneHeatingDesignSupplyAirTemperatureInputMethod() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->zoneHeatingDesignSupplyAirTemperatureInputMethod();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isZoneHeatingDesignSupplyAirTemperatureInputMethodDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isZoneHeatingDesignSupplyAirTemperatureInputMethodDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setZoneHeatingDesignSupplyAirTemperatureInputMethod(
+  const std::string& zoneHeatingDesignSupplyAirTemperatureInputMethod) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setZoneHeatingDesignSupplyAirTemperatureInputMethod(
+    zoneHeatingDesignSupplyAirTemperatureInputMethod);
 }
 
 void HVACTemplateZoneVAVFanPowered::resetZoneHeatingDesignSupplyAirTemperatureInputMethod() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetZoneHeatingDesignSupplyAirTemperatureInputMethod();
 }
 
+double HVACTemplateZoneVAVFanPowered::zoneHeatingDesignSupplyAirTemperature() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->zoneHeatingDesignSupplyAirTemperature();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isZoneHeatingDesignSupplyAirTemperatureDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isZoneHeatingDesignSupplyAirTemperatureDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setZoneHeatingDesignSupplyAirTemperature(double zoneHeatingDesignSupplyAirTemperature) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setZoneHeatingDesignSupplyAirTemperature(zoneHeatingDesignSupplyAirTemperature);
+}
+
 void HVACTemplateZoneVAVFanPowered::resetZoneHeatingDesignSupplyAirTemperature() {
   getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->resetZoneHeatingDesignSupplyAirTemperature();
+}
+
+double HVACTemplateZoneVAVFanPowered::zoneHeatingDesignSupplyAirTemperatureDifference() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->zoneHeatingDesignSupplyAirTemperatureDifference();
+}
+
+bool HVACTemplateZoneVAVFanPowered::isZoneHeatingDesignSupplyAirTemperatureDifferenceDefaulted() const {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->isZoneHeatingDesignSupplyAirTemperatureDifferenceDefaulted();
+}
+
+bool HVACTemplateZoneVAVFanPowered::setZoneHeatingDesignSupplyAirTemperatureDifference(double zoneHeatingDesignSupplyAirTemperatureDifference) {
+  return getImpl<detail::HVACTemplateZoneVAVFanPowered_Impl>()->setZoneHeatingDesignSupplyAirTemperatureDifference(
+    zoneHeatingDesignSupplyAirTemperatureDifference);
 }
 
 void HVACTemplateZoneVAVFanPowered::resetZoneHeatingDesignSupplyAirTemperatureDifference() {

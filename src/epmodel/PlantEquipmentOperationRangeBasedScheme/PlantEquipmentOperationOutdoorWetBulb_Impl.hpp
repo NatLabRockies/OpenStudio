@@ -29,8 +29,16 @@ namespace epmodel {
       PlantEquipmentOperationOutdoorWetBulb_Impl(const PlantEquipmentOperationOutdoorWetBulb_Impl& other, Model_Impl* model, bool keepHandle);
       virtual ~PlantEquipmentOperationOutdoorWetBulb_Impl() override = default;
 
+      /**
+       * @name Outdoor wet-bulb range scalars
+       *
+       * Field Mapping: Mirrors the OpenStudio Model counterpart by reading the upper and lower limits
+       * from the last/first extensible groups on the PlantEquipmentOperation:OutdoorWetBulb object.
+       */
+      //@{
       double maximumUpperLimit() const;
       double minimumLowerLimit() const;
+      //@}
     };
 
   }  // namespace detail

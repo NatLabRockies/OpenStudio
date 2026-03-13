@@ -43,9 +43,10 @@ class EPMODEL_API SetpointManagerScheduled : public SetpointManager
   //   excluded from scalar-only accessors.
   // - TODO(parity): Add explicit schedule object parity accessors in a follow-up pass.
   bool isControlVariableDefaulted() const;
+  void resetControlVariable();
+
   bool hasSchedule() const;
   boost::optional<ModelObject> scheduleAsModelObject() const;
-  void resetControlVariable();
 
  protected:
   using ImplType = detail::SetpointManagerScheduled_Impl;

@@ -34,6 +34,7 @@ namespace epmodel {
     ZoneAirBalanceOutdoorAir& operator=(ZoneAirBalanceOutdoorAir&&) = default;
 
     static IddObjectType iddObjectType();
+    static std::vector<std::string> airBalanceMethodValues();
 
     // Schema Alignment Notes:
     // - API: No openstudio::model counterpart exists so IDD-derived scalar naming is preserved for this type.
@@ -51,8 +52,6 @@ namespace epmodel {
     bool isInducedOutdoorAirDueToUnbalancedDuctLeakageDefaulted() const;
     bool setInducedOutdoorAirDueToUnbalancedDuctLeakage(double inducedOutdoorAirDueToUnbalancedDuctLeakage);
     void resetInducedOutdoorAirDueToUnbalancedDuctLeakage();
-
-    static std::vector<std::string> airBalanceMethodValues();
 
    protected:
     using ImplType = detail::ZoneAirBalanceOutdoorAir_Impl;

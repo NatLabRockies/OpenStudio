@@ -13,91 +13,88 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ChillerAbsorption_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ChillerAbsorption_Impl() override = default;
+    class EPMODEL_API ChillerAbsorption_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ChillerAbsorption_Impl() override = default;
 
-  boost::optional<double> nominalCapacity() const;
-  bool isNominalCapacityAutosized() const;
+      boost::optional<double> nominalCapacity() const;
+      bool isNominalCapacityAutosized() const;
+      bool setNominalCapacity(double nominalCapacity);
+      void autosizeNominalCapacity();
 
-  boost::optional<double> nominalPumpingPower() const;
-  bool isNominalPumpingPowerAutosized() const;
+      boost::optional<double> nominalPumpingPower() const;
+      bool isNominalPumpingPowerAutosized() const;
+      bool setNominalPumpingPower(double nominalPumpingPower);
+      void autosizeNominalPumpingPower();
 
-  double minimumPartLoadRatio() const;
-  double maximumPartLoadRatio() const;
-  double optimumPartLoadRatio() const;
-  double designCondenserInletTemperature() const;
+      double minimumPartLoadRatio() const;
+      bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
 
-  boost::optional<double> designChilledWaterFlowRate() const;
-  bool isDesignChilledWaterFlowRateAutosized() const;
+      double maximumPartLoadRatio() const;
+      bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
 
-  boost::optional<double> designCondenserWaterFlowRate() const;
-  bool isDesignCondenserWaterFlowRateAutosized() const;
+      double optimumPartLoadRatio() const;
+      bool setOptimumPartLoadRatio(double optimumPartLoadRatio);
 
-  double coefficient1oftheHotWaterorSteamUsePartLoadRatioCurve() const;
-  double coefficient2oftheHotWaterorSteamUsePartLoadRatioCurve() const;
-  double coefficient3oftheHotWaterorSteamUsePartLoadRatioCurve() const;
+      double designCondenserInletTemperature() const;
+      bool setDesignCondenserInletTemperature(double designCondenserInletTemperature);
 
-  double coefficient1ofthePumpElectricUsePartLoadRatioCurve() const;
-  double coefficient2ofthePumpElectricUsePartLoadRatioCurve() const;
-  double coefficient3ofthePumpElectricUsePartLoadRatioCurve() const;
+      boost::optional<double> designChilledWaterFlowRate() const;
+      bool isDesignChilledWaterFlowRateAutosized() const;
+      bool setDesignChilledWaterFlowRate(double designChilledWaterFlowRate);
+      void autosizeDesignChilledWaterFlowRate();
 
-  double chilledWaterOutletTemperatureLowerLimit() const;
+      boost::optional<double> designCondenserWaterFlowRate() const;
+      bool isDesignCondenserWaterFlowRateAutosized() const;
+      bool setDesignCondenserWaterFlowRate(double designCondenserWaterFlowRate);
+      void autosizeDesignCondenserWaterFlowRate();
 
-  std::string chillerFlowMode() const;
-  std::string generatorHeatSourceType() const;
+      double coefficient1oftheHotWaterorSteamUsePartLoadRatioCurve() const;
+      bool setCoefficient1oftheHotWaterorSteamUsePartLoadRatioCurve(double coefficient1oftheHotWaterorSteamUsePartLoadRatioCurve);
 
-  boost::optional<double> designGeneratorFluidFlowRate() const;
-  bool isDesignGeneratorFluidFlowRateAutosized() const;
+      double coefficient2oftheHotWaterorSteamUsePartLoadRatioCurve() const;
+      bool setCoefficient2oftheHotWaterorSteamUsePartLoadRatioCurve(double coefficient2oftheHotWaterorSteamUsePartLoadRatioCurve);
 
-  double degreeofSubcoolinginSteamGenerator() const;
-  double sizingFactor() const;
+      double coefficient3oftheHotWaterorSteamUsePartLoadRatioCurve() const;
+      bool setCoefficient3oftheHotWaterorSteamUsePartLoadRatioCurve(double coefficient3oftheHotWaterorSteamUsePartLoadRatioCurve);
 
-  bool setNominalCapacity(double nominalCapacity);
-  void autosizeNominalCapacity();
+      double coefficient1ofthePumpElectricUsePartLoadRatioCurve() const;
+      bool setCoefficient1ofthePumpElectricUsePartLoadRatioCurve(double coefficient1ofthePumpElectricUsePartLoadRatioCurve);
 
-  bool setNominalPumpingPower(double nominalPumpingPower);
-  void autosizeNominalPumpingPower();
+      double coefficient2ofthePumpElectricUsePartLoadRatioCurve() const;
+      bool setCoefficient2ofthePumpElectricUsePartLoadRatioCurve(double coefficient2ofthePumpElectricUsePartLoadRatioCurve);
 
-  bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
-  bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
-  bool setOptimumPartLoadRatio(double optimumPartLoadRatio);
-  bool setDesignCondenserInletTemperature(double designCondenserInletTemperature);
+      double coefficient3ofthePumpElectricUsePartLoadRatioCurve() const;
+      bool setCoefficient3ofthePumpElectricUsePartLoadRatioCurve(double coefficient3ofthePumpElectricUsePartLoadRatioCurve);
 
-  bool setDesignChilledWaterFlowRate(double designChilledWaterFlowRate);
-  void autosizeDesignChilledWaterFlowRate();
+      double chilledWaterOutletTemperatureLowerLimit() const;
+      bool setChilledWaterOutletTemperatureLowerLimit(double chilledWaterOutletTemperatureLowerLimit);
 
-  bool setDesignCondenserWaterFlowRate(double designCondenserWaterFlowRate);
-  void autosizeDesignCondenserWaterFlowRate();
+      std::string chillerFlowMode() const;
+      bool setChillerFlowMode(const std::string& chillerFlowMode);
+      std::vector<std::string> chillerFlowModeValues() const;
 
-  bool setCoefficient1oftheHotWaterorSteamUsePartLoadRatioCurve(double coefficient1oftheHotWaterorSteamUsePartLoadRatioCurve);
-  bool setCoefficient2oftheHotWaterorSteamUsePartLoadRatioCurve(double coefficient2oftheHotWaterorSteamUsePartLoadRatioCurve);
-  bool setCoefficient3oftheHotWaterorSteamUsePartLoadRatioCurve(double coefficient3oftheHotWaterorSteamUsePartLoadRatioCurve);
+      std::string generatorHeatSourceType() const;
+      bool setGeneratorHeatSourceType(const std::string& generatorHeatSourceType);
+      std::vector<std::string> generatorHeatSourceTypeValues() const;
 
-  bool setCoefficient1ofthePumpElectricUsePartLoadRatioCurve(double coefficient1ofthePumpElectricUsePartLoadRatioCurve);
-  bool setCoefficient2ofthePumpElectricUsePartLoadRatioCurve(double coefficient2ofthePumpElectricUsePartLoadRatioCurve);
-  bool setCoefficient3ofthePumpElectricUsePartLoadRatioCurve(double coefficient3ofthePumpElectricUsePartLoadRatioCurve);
+      boost::optional<double> designGeneratorFluidFlowRate() const;
+      bool isDesignGeneratorFluidFlowRateAutosized() const;
+      bool setDesignGeneratorFluidFlowRate(double designGeneratorFluidFlowRate);
+      void autosizeDesignGeneratorFluidFlowRate();
 
-  bool setChilledWaterOutletTemperatureLowerLimit(double chilledWaterOutletTemperatureLowerLimit);
+      double degreeofSubcoolinginSteamGenerator() const;
+      bool setDegreeofSubcoolinginSteamGenerator(double degreeofSubcoolinginSteamGenerator);
 
-  bool setChillerFlowMode(const std::string& chillerFlowMode);
-  bool setGeneratorHeatSourceType(const std::string& generatorHeatSourceType);
+      double sizingFactor() const;
+      bool setSizingFactor(double sizingFactor);
+    };
 
-  bool setDesignGeneratorFluidFlowRate(double designGeneratorFluidFlowRate);
-  void autosizeDesignGeneratorFluidFlowRate();
-
-  bool setDegreeofSubcoolinginSteamGenerator(double degreeofSubcoolinginSteamGenerator);
-  bool setSizingFactor(double sizingFactor);
-
-  std::vector<std::string> chillerFlowModeValues() const;
-  std::vector<std::string> generatorHeatSourceTypeValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

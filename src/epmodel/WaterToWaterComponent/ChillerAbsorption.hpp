@@ -15,115 +15,114 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class ChillerAbsorption_Impl;
-}
+  namespace detail {
+    class ChillerAbsorption_Impl;
+  }
 
-class EPMODEL_API ChillerAbsorption : public ModelObject
-{
- public:
-  explicit ChillerAbsorption(const Model& model);
+  class EPMODEL_API ChillerAbsorption : public ModelObject
+  {
+   public:
+    explicit ChillerAbsorption(const Model& model);
 
-  virtual ~ChillerAbsorption() override = default;
-  ChillerAbsorption(const ChillerAbsorption& other) = default;
-  ChillerAbsorption(ChillerAbsorption&& other) = default;
-  ChillerAbsorption& operator=(const ChillerAbsorption&) = default;
-  ChillerAbsorption& operator=(ChillerAbsorption&&) = default;
+    virtual ~ChillerAbsorption() override = default;
+    ChillerAbsorption(const ChillerAbsorption& other) = default;
+    ChillerAbsorption(ChillerAbsorption&& other) = default;
+    ChillerAbsorption& operator=(const ChillerAbsorption&) = default;
+    ChillerAbsorption& operator=(ChillerAbsorption&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> chillerFlowModeValues();
-  static std::vector<std::string> generatorHeatSourceTypeValues();
+    static std::vector<std::string> chillerFlowModeValues();
+    static std::vector<std::string> generatorHeatSourceTypeValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::ChillerAbsorption scalar accessor names/signatures for counterpart parity.
-  // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus Chiller:Absorption scalar fields.
-  // - Field Mapping: Generator/plant-loop relationship behavior is excluded in epmodel scalar-only scaffold.
-  // - ForwardTranslator evidence: model::ForwardTranslateChillerAbsorption maps these scalar methods to matching E+ fields.
-  // - TODO(parity): Add excluded node/reference relationship APIs in a dedicated relationship pass.
-  boost::optional<double> nominalCapacity() const;
-  bool isNominalCapacityAutosized() const;
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model::ChillerAbsorption scalar accessor names/signatures for counterpart parity.
+    // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus Chiller:Absorption scalar fields.
+    // - Field Mapping: Generator/plant-loop relationship behavior is excluded in epmodel scalar-only scaffold.
+    // - ForwardTranslator evidence: model::ForwardTranslateChillerAbsorption maps these scalar methods to matching E+ fields.
+    // - TODO(parity): Add excluded node/reference relationship APIs in a dedicated relationship pass.
 
-  boost::optional<double> nominalPumpingPower() const;
-  bool isNominalPumpingPowerAutosized() const;
+    boost::optional<double> nominalCapacity() const;
+    bool isNominalCapacityAutosized() const;
+    bool setNominalCapacity(double nominalCapacity);
+    void autosizeNominalCapacity();
 
-  double minimumPartLoadRatio() const;
-  double maximumPartLoadRatio() const;
-  double optimumPartLoadRatio() const;
-  double designCondenserInletTemperature() const;
+    boost::optional<double> nominalPumpingPower() const;
+    bool isNominalPumpingPowerAutosized() const;
+    bool setNominalPumpingPower(double nominalPumpingPower);
+    void autosizeNominalPumpingPower();
 
-  boost::optional<double> designChilledWaterFlowRate() const;
-  bool isDesignChilledWaterFlowRateAutosized() const;
+    double minimumPartLoadRatio() const;
+    bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
 
-  boost::optional<double> designCondenserWaterFlowRate() const;
-  bool isDesignCondenserWaterFlowRateAutosized() const;
+    double maximumPartLoadRatio() const;
+    bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
 
-  double coefficient1oftheHotWaterorSteamUsePartLoadRatioCurve() const;
-  double coefficient2oftheHotWaterorSteamUsePartLoadRatioCurve() const;
-  double coefficient3oftheHotWaterorSteamUsePartLoadRatioCurve() const;
+    double optimumPartLoadRatio() const;
+    bool setOptimumPartLoadRatio(double optimumPartLoadRatio);
 
-  double coefficient1ofthePumpElectricUsePartLoadRatioCurve() const;
-  double coefficient2ofthePumpElectricUsePartLoadRatioCurve() const;
-  double coefficient3ofthePumpElectricUsePartLoadRatioCurve() const;
+    double designCondenserInletTemperature() const;
+    bool setDesignCondenserInletTemperature(double designCondenserInletTemperature);
 
-  double chilledWaterOutletTemperatureLowerLimit() const;
+    boost::optional<double> designChilledWaterFlowRate() const;
+    bool isDesignChilledWaterFlowRateAutosized() const;
+    bool setDesignChilledWaterFlowRate(double designChilledWaterFlowRate);
+    void autosizeDesignChilledWaterFlowRate();
 
-  std::string chillerFlowMode() const;
-  std::string generatorHeatSourceType() const;
+    boost::optional<double> designCondenserWaterFlowRate() const;
+    bool isDesignCondenserWaterFlowRateAutosized() const;
+    bool setDesignCondenserWaterFlowRate(double designCondenserWaterFlowRate);
+    void autosizeDesignCondenserWaterFlowRate();
 
-  boost::optional<double> designGeneratorFluidFlowRate() const;
-  bool isDesignGeneratorFluidFlowRateAutosized() const;
+    double coefficient1oftheHotWaterorSteamUsePartLoadRatioCurve() const;
+    bool setCoefficient1oftheHotWaterorSteamUsePartLoadRatioCurve(double coefficient1oftheHotWaterorSteamUsePartLoadRatioCurve);
 
-  double degreeofSubcoolinginSteamGenerator() const;
-  double sizingFactor() const;
+    double coefficient2oftheHotWaterorSteamUsePartLoadRatioCurve() const;
+    bool setCoefficient2oftheHotWaterorSteamUsePartLoadRatioCurve(double coefficient2oftheHotWaterorSteamUsePartLoadRatioCurve);
 
-  bool setNominalCapacity(double nominalCapacity);
-  void autosizeNominalCapacity();
+    double coefficient3oftheHotWaterorSteamUsePartLoadRatioCurve() const;
+    bool setCoefficient3oftheHotWaterorSteamUsePartLoadRatioCurve(double coefficient3oftheHotWaterorSteamUsePartLoadRatioCurve);
 
-  bool setNominalPumpingPower(double nominalPumpingPower);
-  void autosizeNominalPumpingPower();
+    double coefficient1ofthePumpElectricUsePartLoadRatioCurve() const;
+    bool setCoefficient1ofthePumpElectricUsePartLoadRatioCurve(double coefficient1ofthePumpElectricUsePartLoadRatioCurve);
 
-  bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
-  bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
-  bool setOptimumPartLoadRatio(double optimumPartLoadRatio);
-  bool setDesignCondenserInletTemperature(double designCondenserInletTemperature);
+    double coefficient2ofthePumpElectricUsePartLoadRatioCurve() const;
+    bool setCoefficient2ofthePumpElectricUsePartLoadRatioCurve(double coefficient2ofthePumpElectricUsePartLoadRatioCurve);
 
-  bool setDesignChilledWaterFlowRate(double designChilledWaterFlowRate);
-  void autosizeDesignChilledWaterFlowRate();
+    double coefficient3ofthePumpElectricUsePartLoadRatioCurve() const;
+    bool setCoefficient3ofthePumpElectricUsePartLoadRatioCurve(double coefficient3ofthePumpElectricUsePartLoadRatioCurve);
 
-  bool setDesignCondenserWaterFlowRate(double designCondenserWaterFlowRate);
-  void autosizeDesignCondenserWaterFlowRate();
+    double chilledWaterOutletTemperatureLowerLimit() const;
+    bool setChilledWaterOutletTemperatureLowerLimit(double chilledWaterOutletTemperatureLowerLimit);
 
-  bool setCoefficient1oftheHotWaterorSteamUsePartLoadRatioCurve(double coefficient1oftheHotWaterorSteamUsePartLoadRatioCurve);
-  bool setCoefficient2oftheHotWaterorSteamUsePartLoadRatioCurve(double coefficient2oftheHotWaterorSteamUsePartLoadRatioCurve);
-  bool setCoefficient3oftheHotWaterorSteamUsePartLoadRatioCurve(double coefficient3oftheHotWaterorSteamUsePartLoadRatioCurve);
+    std::string chillerFlowMode() const;
+    bool setChillerFlowMode(const std::string& chillerFlowMode);
 
-  bool setCoefficient1ofthePumpElectricUsePartLoadRatioCurve(double coefficient1ofthePumpElectricUsePartLoadRatioCurve);
-  bool setCoefficient2ofthePumpElectricUsePartLoadRatioCurve(double coefficient2ofthePumpElectricUsePartLoadRatioCurve);
-  bool setCoefficient3ofthePumpElectricUsePartLoadRatioCurve(double coefficient3ofthePumpElectricUsePartLoadRatioCurve);
+    std::string generatorHeatSourceType() const;
+    bool setGeneratorHeatSourceType(const std::string& generatorHeatSourceType);
 
-  bool setChilledWaterOutletTemperatureLowerLimit(double chilledWaterOutletTemperatureLowerLimit);
+    boost::optional<double> designGeneratorFluidFlowRate() const;
+    bool isDesignGeneratorFluidFlowRateAutosized() const;
+    bool setDesignGeneratorFluidFlowRate(double designGeneratorFluidFlowRate);
+    void autosizeDesignGeneratorFluidFlowRate();
 
-  bool setChillerFlowMode(const std::string& chillerFlowMode);
-  bool setGeneratorHeatSourceType(const std::string& generatorHeatSourceType);
+    double degreeofSubcoolinginSteamGenerator() const;
+    bool setDegreeofSubcoolinginSteamGenerator(double degreeofSubcoolinginSteamGenerator);
 
-  bool setDesignGeneratorFluidFlowRate(double designGeneratorFluidFlowRate);
-  void autosizeDesignGeneratorFluidFlowRate();
+    double sizingFactor() const;
+    bool setSizingFactor(double sizingFactor);
 
-  bool setDegreeofSubcoolinginSteamGenerator(double degreeofSubcoolinginSteamGenerator);
-  bool setSizingFactor(double sizingFactor);
+   protected:
+    using ImplType = detail::ChillerAbsorption_Impl;
 
- protected:
-  using ImplType = detail::ChillerAbsorption_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit ChillerAbsorption(std::shared_ptr<detail::ChillerAbsorption_Impl> impl);
-};
+    explicit ChillerAbsorption(std::shared_ptr<detail::ChillerAbsorption_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

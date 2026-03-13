@@ -45,18 +45,18 @@ namespace epmodel {
     // - Excluded Fields: The Search Path extensible group remains omitted from this scalar-only pass.
 
     bool addCurrentWorkingDirectoryToSearchPath() const;
-    bool isAddCurrentWorkingDirectoryToSearchPathDefaulted() const;
     bool setAddCurrentWorkingDirectoryToSearchPath(bool addCurrentWorkingDirectoryToSearchPath);
+    bool isAddCurrentWorkingDirectoryToSearchPathDefaulted() const;
     void resetAddCurrentWorkingDirectoryToSearchPath();
 
     bool addInputFileDirectoryToSearchPath() const;
-    bool isAddInputFileDirectoryToSearchPathDefaulted() const;
     bool setAddInputFileDirectoryToSearchPath(bool addInputFileDirectoryToSearchPath);
+    bool isAddInputFileDirectoryToSearchPathDefaulted() const;
     void resetAddInputFileDirectoryToSearchPath();
 
     bool addEpinEnvironmentVariableToSearchPath() const;
-    bool isAddEpinEnvironmentVariableToSearchPathDefaulted() const;
     bool setAddEpinEnvironmentVariableToSearchPath(bool addEpinEnvironmentVariableToSearchPath);
+    bool isAddEpinEnvironmentVariableToSearchPathDefaulted() const;
     void resetAddEpinEnvironmentVariableToSearchPath();
 
    protected:

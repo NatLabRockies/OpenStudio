@@ -38,11 +38,13 @@ namespace epmodel {
     // - Field Mapping: Multiplier, Starting X Coordinate, Starting Z Coordinate, Length, and Height map directly to openstudio::WindowFields scalars.
     // - Field Mapping: Name, Construction Name, Building Surface Name, and Frame and Divider Name are relationship/object-list fields handled downstream and excluded from the scalar API.
     // - TODO(parity): Add helpers for the associated surface and construction targets once the Window translators/factory routing are ported to epmodel.
+    // Multiplier
     double multiplier() const;
-    bool isMultiplierDefaulted() const;
     bool setMultiplier(double multiplier);
     void resetMultiplier();
+    bool isMultiplierDefaulted() const;
 
+    // Starting coordinates
     boost::optional<double> startingXCoordinate() const;
     bool setStartingXCoordinate(double startingXCoordinate);
     void resetStartingXCoordinate();
@@ -51,6 +53,7 @@ namespace epmodel {
     bool setStartingZCoordinate(double startingZCoordinate);
     void resetStartingZCoordinate();
 
+    // Extents
     boost::optional<double> length() const;
     bool setLength(double length);
     void resetLength();

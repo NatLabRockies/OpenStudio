@@ -34,32 +34,78 @@ namespace epmodel {
     return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->isShadeBeamBeamSolarTransmittanceDefaulted();
   }
 
+  bool WindowMaterialShadeEquivalentLayer::setShadeBeamBeamSolarTransmittance(double shadeBeamBeamSolarTransmittance) {
+    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setShadeBeamBeamSolarTransmittance(shadeBeamBeamSolarTransmittance);
+  }
+
+  void WindowMaterialShadeEquivalentLayer::resetShadeBeamBeamSolarTransmittance() {
+    getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->resetShadeBeamBeamSolarTransmittance();
+  }
+
   double WindowMaterialShadeEquivalentLayer::frontSideShadeBeamDiffuseSolarTransmittance() const {
     return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->frontSideShadeBeamDiffuseSolarTransmittance();
+  }
+
+  bool WindowMaterialShadeEquivalentLayer::setFrontSideShadeBeamDiffuseSolarTransmittance(double frontSideShadeBeamDiffuseSolarTransmittance) {
+    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setFrontSideShadeBeamDiffuseSolarTransmittance(
+      frontSideShadeBeamDiffuseSolarTransmittance);
   }
 
   double WindowMaterialShadeEquivalentLayer::backSideShadeBeamDiffuseSolarTransmittance() const {
     return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->backSideShadeBeamDiffuseSolarTransmittance();
   }
 
+  bool WindowMaterialShadeEquivalentLayer::setBackSideShadeBeamDiffuseSolarTransmittance(double backSideShadeBeamDiffuseSolarTransmittance) {
+    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setBackSideShadeBeamDiffuseSolarTransmittance(
+      backSideShadeBeamDiffuseSolarTransmittance);
+  }
+
   double WindowMaterialShadeEquivalentLayer::frontSideShadeBeamDiffuseSolarReflectance() const {
     return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->frontSideShadeBeamDiffuseSolarReflectance();
+  }
+
+  bool WindowMaterialShadeEquivalentLayer::setFrontSideShadeBeamDiffuseSolarReflectance(double frontSideShadeBeamDiffuseSolarReflectance) {
+    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setFrontSideShadeBeamDiffuseSolarReflectance(
+      frontSideShadeBeamDiffuseSolarReflectance);
   }
 
   double WindowMaterialShadeEquivalentLayer::backSideShadeBeamDiffuseSolarReflectance() const {
     return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->backSideShadeBeamDiffuseSolarReflectance();
   }
 
+  bool WindowMaterialShadeEquivalentLayer::setBackSideShadeBeamDiffuseSolarReflectance(double backSideShadeBeamDiffuseSolarReflectance) {
+    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setBackSideShadeBeamDiffuseSolarReflectance(
+      backSideShadeBeamDiffuseSolarReflectance);
+  }
+
   boost::optional<double> WindowMaterialShadeEquivalentLayer::shadeBeamBeamVisibleTransmittanceAtNormalIncidence() const {
     return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->shadeBeamBeamVisibleTransmittanceAtNormalIncidence();
+  }
+
+  bool WindowMaterialShadeEquivalentLayer::setShadeBeamBeamVisibleTransmittanceAtNormalIncidence(
+    double shadeBeamBeamVisibleTransmittanceAtNormalIncidence) {
+    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setShadeBeamBeamVisibleTransmittanceAtNormalIncidence(
+      shadeBeamBeamVisibleTransmittanceAtNormalIncidence);
   }
 
   boost::optional<double> WindowMaterialShadeEquivalentLayer::shadeBeamDiffuseVisibleTransmittanceAtNormalIncidence() const {
     return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->shadeBeamDiffuseVisibleTransmittanceAtNormalIncidence();
   }
 
+  bool WindowMaterialShadeEquivalentLayer::setShadeBeamDiffuseVisibleTransmittanceAtNormalIncidence(
+    double shadeBeamDiffuseVisibleTransmittanceAtNormalIncidence) {
+    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setShadeBeamDiffuseVisibleTransmittanceAtNormalIncidence(
+      shadeBeamDiffuseVisibleTransmittanceAtNormalIncidence);
+  }
+
   boost::optional<double> WindowMaterialShadeEquivalentLayer::shadeBeamDiffuseVisibleReflectanceAtNormalIncidence() const {
     return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->shadeBeamDiffuseVisibleReflectanceAtNormalIncidence();
+  }
+
+  bool WindowMaterialShadeEquivalentLayer::setShadeBeamDiffuseVisibleReflectanceAtNormalIncidence(
+    double shadeBeamDiffuseVisibleReflectanceAtNormalIncidence) {
+    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setShadeBeamDiffuseVisibleReflectanceAtNormalIncidence(
+      shadeBeamDiffuseVisibleReflectanceAtNormalIncidence);
   }
 
   double WindowMaterialShadeEquivalentLayer::shadeMaterialInfraredTransmittance() const {
@@ -70,12 +116,29 @@ namespace epmodel {
     return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->isShadeMaterialInfraredTransmittanceDefaulted();
   }
 
+  bool WindowMaterialShadeEquivalentLayer::setShadeMaterialInfraredTransmittance(double shadeMaterialInfraredTransmittance) {
+    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setShadeMaterialInfraredTransmittance(shadeMaterialInfraredTransmittance);
+  }
+
+  void WindowMaterialShadeEquivalentLayer::resetShadeMaterialInfraredTransmittance() {
+    getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->resetShadeMaterialInfraredTransmittance();
+  }
+
   double WindowMaterialShadeEquivalentLayer::frontSideShadeMaterialInfraredEmissivity() const {
     return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->frontSideShadeMaterialInfraredEmissivity();
   }
 
   bool WindowMaterialShadeEquivalentLayer::isFrontSideShadeMaterialInfraredEmissivityDefaulted() const {
     return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->isFrontSideShadeMaterialInfraredEmissivityDefaulted();
+  }
+
+  bool WindowMaterialShadeEquivalentLayer::setFrontSideShadeMaterialInfraredEmissivity(double frontSideShadeMaterialInfraredEmissivity) {
+    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setFrontSideShadeMaterialInfraredEmissivity(
+      frontSideShadeMaterialInfraredEmissivity);
+  }
+
+  void WindowMaterialShadeEquivalentLayer::resetFrontSideShadeMaterialInfraredEmissivity() {
+    getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->resetFrontSideShadeMaterialInfraredEmissivity();
   }
 
   double WindowMaterialShadeEquivalentLayer::backSideShadeMaterialInfraredEmissivity() const {
@@ -86,72 +149,9 @@ namespace epmodel {
     return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->isBackSideShadeMaterialInfraredEmissivityDefaulted();
   }
 
-  bool WindowMaterialShadeEquivalentLayer::setShadeBeamBeamSolarTransmittance(double shadeBeamBeamSolarTransmittance) {
-    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setShadeBeamBeamSolarTransmittance(shadeBeamBeamSolarTransmittance);
-  }
-
-  bool WindowMaterialShadeEquivalentLayer::setFrontSideShadeBeamDiffuseSolarTransmittance(double frontSideShadeBeamDiffuseSolarTransmittance) {
-    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setFrontSideShadeBeamDiffuseSolarTransmittance(
-      frontSideShadeBeamDiffuseSolarTransmittance);
-  }
-
-  bool WindowMaterialShadeEquivalentLayer::setBackSideShadeBeamDiffuseSolarTransmittance(double backSideShadeBeamDiffuseSolarTransmittance) {
-    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setBackSideShadeBeamDiffuseSolarTransmittance(
-      backSideShadeBeamDiffuseSolarTransmittance);
-  }
-
-  bool WindowMaterialShadeEquivalentLayer::setFrontSideShadeBeamDiffuseSolarReflectance(double frontSideShadeBeamDiffuseSolarReflectance) {
-    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setFrontSideShadeBeamDiffuseSolarReflectance(
-      frontSideShadeBeamDiffuseSolarReflectance);
-  }
-
-  bool WindowMaterialShadeEquivalentLayer::setBackSideShadeBeamDiffuseSolarReflectance(double backSideShadeBeamDiffuseSolarReflectance) {
-    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setBackSideShadeBeamDiffuseSolarReflectance(
-      backSideShadeBeamDiffuseSolarReflectance);
-  }
-
-  bool WindowMaterialShadeEquivalentLayer::setShadeBeamBeamVisibleTransmittanceAtNormalIncidence(
-    double shadeBeamBeamVisibleTransmittanceAtNormalIncidence) {
-    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setShadeBeamBeamVisibleTransmittanceAtNormalIncidence(
-      shadeBeamBeamVisibleTransmittanceAtNormalIncidence);
-  }
-
-  bool WindowMaterialShadeEquivalentLayer::setShadeBeamDiffuseVisibleTransmittanceAtNormalIncidence(
-    double shadeBeamDiffuseVisibleTransmittanceAtNormalIncidence) {
-    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setShadeBeamDiffuseVisibleTransmittanceAtNormalIncidence(
-      shadeBeamDiffuseVisibleTransmittanceAtNormalIncidence);
-  }
-
-  bool WindowMaterialShadeEquivalentLayer::setShadeBeamDiffuseVisibleReflectanceAtNormalIncidence(
-    double shadeBeamDiffuseVisibleReflectanceAtNormalIncidence) {
-    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setShadeBeamDiffuseVisibleReflectanceAtNormalIncidence(
-      shadeBeamDiffuseVisibleReflectanceAtNormalIncidence);
-  }
-
-  bool WindowMaterialShadeEquivalentLayer::setShadeMaterialInfraredTransmittance(double shadeMaterialInfraredTransmittance) {
-    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setShadeMaterialInfraredTransmittance(shadeMaterialInfraredTransmittance);
-  }
-
-  bool WindowMaterialShadeEquivalentLayer::setFrontSideShadeMaterialInfraredEmissivity(double frontSideShadeMaterialInfraredEmissivity) {
-    return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setFrontSideShadeMaterialInfraredEmissivity(
-      frontSideShadeMaterialInfraredEmissivity);
-  }
-
   bool WindowMaterialShadeEquivalentLayer::setBackSideShadeMaterialInfraredEmissivity(double backSideShadeMaterialInfraredEmissivity) {
     return getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->setBackSideShadeMaterialInfraredEmissivity(
       backSideShadeMaterialInfraredEmissivity);
-  }
-
-  void WindowMaterialShadeEquivalentLayer::resetShadeBeamBeamSolarTransmittance() {
-    getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->resetShadeBeamBeamSolarTransmittance();
-  }
-
-  void WindowMaterialShadeEquivalentLayer::resetShadeMaterialInfraredTransmittance() {
-    getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->resetShadeMaterialInfraredTransmittance();
-  }
-
-  void WindowMaterialShadeEquivalentLayer::resetFrontSideShadeMaterialInfraredEmissivity() {
-    getImpl<detail::WindowMaterialShadeEquivalentLayer_Impl>()->resetFrontSideShadeMaterialInfraredEmissivity();
   }
 
   void WindowMaterialShadeEquivalentLayer::resetBackSideShadeMaterialInfraredEmissivity() {

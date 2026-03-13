@@ -81,143 +81,196 @@ namespace epmodel {
   }
 
   EPM_FORWARD_GET(std::string, endUseSubcategory)
-  EPM_FORWARD_GET(boost::optional<double>, tankVolume)
-  EPM_FORWARD_GET(bool, isTankVolumeAutosized)
-  EPM_FORWARD_GET(boost::optional<double>, tankHeight)
-  EPM_FORWARD_GET(bool, isTankHeightAutosized)
-  EPM_FORWARD_GET(std::string, tankShape)
-  EPM_FORWARD_GET(boost::optional<double>, tankPerimeter)
-  EPM_FORWARD_GET(double, maximumTemperatureLimit)
-  EPM_FORWARD_GET(std::string, heaterPriorityControl)
-  EPM_FORWARD_GET(double, heater1DeadbandTemperatureDifference)
-  EPM_FORWARD_GET(boost::optional<double>, heater1Capacity)
-  EPM_FORWARD_GET(bool, isHeater1CapacityAutosized)
-  EPM_FORWARD_GET(double, heater1Height)
-  EPM_FORWARD_GET(double, heater2DeadbandTemperatureDifference)
-  EPM_FORWARD_GET(double, heater2Capacity)
-  EPM_FORWARD_GET(double, heater2Height)
-  EPM_FORWARD_GET(std::string, heaterFuelType)
-  EPM_FORWARD_GET(double, heaterThermalEfficiency)
-  EPM_FORWARD_GET(double, offCycleParasiticFuelConsumptionRate)
-  EPM_FORWARD_GET(std::string, offCycleParasiticFuelType)
-  EPM_FORWARD_GET(double, offCycleParasiticHeatFractiontoTank)
-  EPM_FORWARD_GET(double, offCycleParasiticHeight)
-  EPM_FORWARD_GET(double, onCycleParasiticFuelConsumptionRate)
-  EPM_FORWARD_GET(std::string, onCycleParasiticFuelType)
-  EPM_FORWARD_GET(double, onCycleParasiticHeatFractiontoTank)
-  EPM_FORWARD_GET(double, onCycleParasiticHeight)
-  EPM_FORWARD_GET(std::string, ambientTemperatureIndicator)
-  EPM_FORWARD_GET(boost::optional<std::string>, ambientTemperatureOutdoorAirNodeName)
-  EPM_FORWARD_GET(boost::optional<double>, uniformSkinLossCoefficientperUnitAreatoAmbientTemperature)
-  EPM_FORWARD_GET(double, skinLossFractiontoZone)
-  EPM_FORWARD_GET(boost::optional<double>, offCycleFlueLossCoefficienttoAmbientTemperature)
-  EPM_FORWARD_GET(double, offCycleFlueLossFractiontoZone)
-  EPM_FORWARD_GET(boost::optional<double>, peakUseFlowRate)
-  EPM_FORWARD_GET(double, useSideEffectiveness)
-  EPM_FORWARD_GET(double, useSideInletHeight)
-  EPM_FORWARD_GET(boost::optional<double>, useSideOutletHeight)
-  EPM_FORWARD_GET(bool, isUseSideOutletHeightAutocalculated)
-  EPM_FORWARD_GET(double, sourceSideEffectiveness)
-  EPM_FORWARD_GET(boost::optional<double>, sourceSideInletHeight)
-  EPM_FORWARD_GET(bool, isSourceSideInletHeightAutocalculated)
-  EPM_FORWARD_GET(double, sourceSideOutletHeight)
-  EPM_FORWARD_GET(std::string, inletMode)
-  EPM_FORWARD_GET(boost::optional<double>, useSideDesignFlowRate)
-  EPM_FORWARD_GET(bool, isUseSideDesignFlowRateAutosized)
-  EPM_FORWARD_GET(boost::optional<double>, sourceSideDesignFlowRate)
-  EPM_FORWARD_GET(bool, isSourceSideDesignFlowRateAutosized)
-  EPM_FORWARD_GET(double, indirectWaterHeatingRecoveryTime)
-  EPM_FORWARD_GET(int, numberofNodes)
-  EPM_FORWARD_GET(double, additionalDestratificationConductivity)
-  EPM_FORWARD_GET(double, node1AdditionalLossCoefficient)
-  EPM_FORWARD_GET(double, node2AdditionalLossCoefficient)
-  EPM_FORWARD_GET(double, node3AdditionalLossCoefficient)
-  EPM_FORWARD_GET(double, node4AdditionalLossCoefficient)
-  EPM_FORWARD_GET(double, node5AdditionalLossCoefficient)
-  EPM_FORWARD_GET(double, node6AdditionalLossCoefficient)
-  EPM_FORWARD_GET(double, node7AdditionalLossCoefficient)
-  EPM_FORWARD_GET(double, node8AdditionalLossCoefficient)
-  EPM_FORWARD_GET(double, node9AdditionalLossCoefficient)
-  EPM_FORWARD_GET(double, node10AdditionalLossCoefficient)
-  EPM_FORWARD_GET(double, node11AdditionalLossCoefficient)
-  EPM_FORWARD_GET(double, node12AdditionalLossCoefficient)
-  EPM_FORWARD_GET(std::string, sourceSideFlowControlMode)
-  EPM_FORWARD_GET(boost::optional<double>, autosizedTankVolume)
-  EPM_FORWARD_GET(boost::optional<double>, autosizedTankHeight)
-  EPM_FORWARD_GET(boost::optional<double>, autosizedHeater1Capacity)
-  EPM_FORWARD_GET(boost::optional<double>, autosizedUseSideDesignFlowRate)
-  EPM_FORWARD_GET(boost::optional<double>, autosizedSourceSideDesignFlowRate)
-
   EPM_FORWARD_SET(bool, setEndUseSubcategory, (const std::string& endUseSubcategory), (endUseSubcategory))
+
+  EPM_FORWARD_GET(boost::optional<double>, tankVolume)
   EPM_FORWARD_SET(bool, setTankVolume, (double tankVolume), (tankVolume))
   EPM_FORWARD_VOID(autosizeTankVolume, (), ())
+  EPM_FORWARD_GET(bool, isTankVolumeAutosized)
+  EPM_FORWARD_GET(boost::optional<double>, autosizedTankVolume)
+
+  EPM_FORWARD_GET(boost::optional<double>, tankHeight)
   EPM_FORWARD_SET(bool, setTankHeight, (double tankHeight), (tankHeight))
   EPM_FORWARD_VOID(autosizeTankHeight, (), ())
+  EPM_FORWARD_GET(bool, isTankHeightAutosized)
+  EPM_FORWARD_GET(boost::optional<double>, autosizedTankHeight)
+
+  EPM_FORWARD_GET(std::string, tankShape)
   EPM_FORWARD_SET(bool, setTankShape, (const std::string& tankShape), (tankShape))
+
+  EPM_FORWARD_GET(boost::optional<double>, tankPerimeter)
   EPM_FORWARD_SET(bool, setTankPerimeter, (double tankPerimeter), (tankPerimeter))
   EPM_FORWARD_VOID(resetTankPerimeter, (), ())
+
+  EPM_FORWARD_GET(double, maximumTemperatureLimit)
   EPM_FORWARD_SET(bool, setMaximumTemperatureLimit, (double maximumTemperatureLimit), (maximumTemperatureLimit))
+
+  EPM_FORWARD_GET(std::string, heaterPriorityControl)
   EPM_FORWARD_SET(bool, setHeaterPriorityControl, (const std::string& heaterPriorityControl), (heaterPriorityControl))
+
+  EPM_FORWARD_GET(double, heater1DeadbandTemperatureDifference)
   EPM_FORWARD_SET(bool, setHeater1DeadbandTemperatureDifference, (double heater1DeadbandTemperatureDifference),
                   (heater1DeadbandTemperatureDifference))
+
+  EPM_FORWARD_GET(boost::optional<double>, heater1Capacity)
   EPM_FORWARD_SET(bool, setHeater1Capacity, (double heater1Capacity), (heater1Capacity))
   EPM_FORWARD_VOID(autosizeHeater1Capacity, (), ())
+  EPM_FORWARD_GET(bool, isHeater1CapacityAutosized)
+  EPM_FORWARD_GET(boost::optional<double>, autosizedHeater1Capacity)
+
+  EPM_FORWARD_GET(double, heater1Height)
   EPM_FORWARD_SET(bool, setHeater1Height, (double heater1Height), (heater1Height))
+
+  EPM_FORWARD_GET(double, heater2DeadbandTemperatureDifference)
   EPM_FORWARD_SET(bool, setHeater2DeadbandTemperatureDifference, (double heater2DeadbandTemperatureDifference),
                   (heater2DeadbandTemperatureDifference))
+
+  EPM_FORWARD_GET(double, heater2Capacity)
   EPM_FORWARD_SET(bool, setHeater2Capacity, (double heater2Capacity), (heater2Capacity))
+
+  EPM_FORWARD_GET(double, heater2Height)
   EPM_FORWARD_SET(bool, setHeater2Height, (double heater2Height), (heater2Height))
+
+  EPM_FORWARD_GET(std::string, heaterFuelType)
+
+  EPM_FORWARD_GET(double, heaterThermalEfficiency)
   EPM_FORWARD_SET(bool, setHeaterThermalEfficiency, (double heaterThermalEfficiency), (heaterThermalEfficiency))
+
+  EPM_FORWARD_GET(double, offCycleParasiticFuelConsumptionRate)
   EPM_FORWARD_SET(bool, setOffCycleParasiticFuelConsumptionRate, (double offCycleParasiticFuelConsumptionRate),
                   (offCycleParasiticFuelConsumptionRate))
+
+  EPM_FORWARD_GET(std::string, offCycleParasiticFuelType)
+
+  EPM_FORWARD_GET(double, offCycleParasiticHeatFractiontoTank)
   EPM_FORWARD_SET(bool, setOffCycleParasiticHeatFractiontoTank, (double offCycleParasiticHeatFractiontoTank), (offCycleParasiticHeatFractiontoTank))
+
+  EPM_FORWARD_GET(double, offCycleParasiticHeight)
   EPM_FORWARD_SET(bool, setOffCycleParasiticHeight, (double offCycleParasiticHeight), (offCycleParasiticHeight))
+
+  EPM_FORWARD_GET(double, onCycleParasiticFuelConsumptionRate)
   EPM_FORWARD_SET(bool, setOnCycleParasiticFuelConsumptionRate, (double onCycleParasiticFuelConsumptionRate), (onCycleParasiticFuelConsumptionRate))
+
+  EPM_FORWARD_GET(std::string, onCycleParasiticFuelType)
+
+  EPM_FORWARD_GET(double, onCycleParasiticHeatFractiontoTank)
   EPM_FORWARD_SET(bool, setOnCycleParasiticHeatFractiontoTank, (double onCycleParasiticHeatFractiontoTank), (onCycleParasiticHeatFractiontoTank))
+
+  EPM_FORWARD_GET(double, onCycleParasiticHeight)
   EPM_FORWARD_SET(bool, setOnCycleParasiticHeight, (double onCycleParasiticHeight), (onCycleParasiticHeight))
+
+  EPM_FORWARD_GET(std::string, ambientTemperatureIndicator)
   EPM_FORWARD_SET(bool, setAmbientTemperatureIndicator, (const std::string& ambientTemperatureIndicator), (ambientTemperatureIndicator))
+
+  EPM_FORWARD_GET(boost::optional<std::string>, ambientTemperatureOutdoorAirNodeName)
   EPM_FORWARD_SET(bool, setAmbientTemperatureOutdoorAirNodeName, (const std::string& ambientTemperatureOutdoorAirNodeName),
                   (ambientTemperatureOutdoorAirNodeName))
   EPM_FORWARD_VOID(resetAmbientTemperatureOutdoorAirNodeName, (), ())
+
+  EPM_FORWARD_GET(boost::optional<double>, uniformSkinLossCoefficientperUnitAreatoAmbientTemperature)
   EPM_FORWARD_SET(bool, setUniformSkinLossCoefficientperUnitAreatoAmbientTemperature,
                   (double uniformSkinLossCoefficientperUnitAreatoAmbientTemperature), (uniformSkinLossCoefficientperUnitAreatoAmbientTemperature))
   EPM_FORWARD_VOID(resetUniformSkinLossCoefficientperUnitAreatoAmbientTemperature, (), ())
+
+  EPM_FORWARD_GET(double, skinLossFractiontoZone)
   EPM_FORWARD_SET(bool, setSkinLossFractiontoZone, (double skinLossFractiontoZone), (skinLossFractiontoZone))
+
+  EPM_FORWARD_GET(boost::optional<double>, offCycleFlueLossCoefficienttoAmbientTemperature)
   EPM_FORWARD_SET(bool, setOffCycleFlueLossCoefficienttoAmbientTemperature, (double offCycleFlueLossCoefficienttoAmbientTemperature),
                   (offCycleFlueLossCoefficienttoAmbientTemperature))
   EPM_FORWARD_VOID(resetOffCycleFlueLossCoefficienttoAmbientTemperature, (), ())
+
+  EPM_FORWARD_GET(double, offCycleFlueLossFractiontoZone)
   EPM_FORWARD_SET(bool, setOffCycleFlueLossFractiontoZone, (double offCycleFlueLossFractiontoZone), (offCycleFlueLossFractiontoZone))
+
+  EPM_FORWARD_GET(boost::optional<double>, peakUseFlowRate)
   EPM_FORWARD_SET(bool, setPeakUseFlowRate, (double peakUseFlowRate), (peakUseFlowRate))
   EPM_FORWARD_VOID(resetPeakUseFlowRate, (), ())
+
+  EPM_FORWARD_GET(double, useSideEffectiveness)
   EPM_FORWARD_SET(bool, setUseSideEffectiveness, (double useSideEffectiveness), (useSideEffectiveness))
+
+  EPM_FORWARD_GET(double, useSideInletHeight)
   EPM_FORWARD_SET(bool, setUseSideInletHeight, (double useSideInletHeight), (useSideInletHeight))
+
+  EPM_FORWARD_GET(boost::optional<double>, useSideOutletHeight)
   EPM_FORWARD_SET(bool, setUseSideOutletHeight, (double useSideOutletHeight), (useSideOutletHeight))
   EPM_FORWARD_VOID(autocalculateUseSideOutletHeight, (), ())
+  EPM_FORWARD_GET(bool, isUseSideOutletHeightAutocalculated)
+
+  EPM_FORWARD_GET(double, sourceSideEffectiveness)
   EPM_FORWARD_SET(bool, setSourceSideEffectiveness, (double sourceSideEffectiveness), (sourceSideEffectiveness))
+
+  EPM_FORWARD_GET(boost::optional<double>, sourceSideInletHeight)
   EPM_FORWARD_SET(bool, setSourceSideInletHeight, (double sourceSideInletHeight), (sourceSideInletHeight))
   EPM_FORWARD_VOID(autocalculateSourceSideInletHeight, (), ())
+  EPM_FORWARD_GET(bool, isSourceSideInletHeightAutocalculated)
+
+  EPM_FORWARD_GET(double, sourceSideOutletHeight)
   EPM_FORWARD_SET(bool, setSourceSideOutletHeight, (double sourceSideOutletHeight), (sourceSideOutletHeight))
+
+  EPM_FORWARD_GET(std::string, inletMode)
   EPM_FORWARD_SET(bool, setInletMode, (const std::string& inletMode), (inletMode))
+
+  EPM_FORWARD_GET(boost::optional<double>, useSideDesignFlowRate)
   EPM_FORWARD_SET(bool, setUseSideDesignFlowRate, (double useSideDesignFlowRate), (useSideDesignFlowRate))
   EPM_FORWARD_VOID(autosizeUseSideDesignFlowRate, (), ())
+  EPM_FORWARD_GET(bool, isUseSideDesignFlowRateAutosized)
+  EPM_FORWARD_GET(boost::optional<double>, autosizedUseSideDesignFlowRate)
+
+  EPM_FORWARD_GET(boost::optional<double>, sourceSideDesignFlowRate)
   EPM_FORWARD_SET(bool, setSourceSideDesignFlowRate, (double sourceSideDesignFlowRate), (sourceSideDesignFlowRate))
   EPM_FORWARD_VOID(autosizeSourceSideDesignFlowRate, (), ())
+  EPM_FORWARD_GET(bool, isSourceSideDesignFlowRateAutosized)
+  EPM_FORWARD_GET(boost::optional<double>, autosizedSourceSideDesignFlowRate)
+
+  EPM_FORWARD_GET(double, indirectWaterHeatingRecoveryTime)
   EPM_FORWARD_SET(bool, setIndirectWaterHeatingRecoveryTime, (double indirectWaterHeatingRecoveryTime), (indirectWaterHeatingRecoveryTime))
+
+  EPM_FORWARD_GET(int, numberofNodes)
   EPM_FORWARD_SET(bool, setNumberofNodes, (int numberofNodes), (numberofNodes))
+
+  EPM_FORWARD_GET(double, additionalDestratificationConductivity)
   EPM_FORWARD_SET(bool, setAdditionalDestratificationConductivity, (double additionalDestratificationConductivity),
                   (additionalDestratificationConductivity))
+
+  EPM_FORWARD_GET(double, node1AdditionalLossCoefficient)
   EPM_FORWARD_SET(bool, setNode1AdditionalLossCoefficient, (double node1AdditionalLossCoefficient), (node1AdditionalLossCoefficient))
+
+  EPM_FORWARD_GET(double, node2AdditionalLossCoefficient)
   EPM_FORWARD_SET(bool, setNode2AdditionalLossCoefficient, (double node2AdditionalLossCoefficient), (node2AdditionalLossCoefficient))
+
+  EPM_FORWARD_GET(double, node3AdditionalLossCoefficient)
   EPM_FORWARD_SET(bool, setNode3AdditionalLossCoefficient, (double node3AdditionalLossCoefficient), (node3AdditionalLossCoefficient))
+
+  EPM_FORWARD_GET(double, node4AdditionalLossCoefficient)
   EPM_FORWARD_SET(bool, setNode4AdditionalLossCoefficient, (double node4AdditionalLossCoefficient), (node4AdditionalLossCoefficient))
+
+  EPM_FORWARD_GET(double, node5AdditionalLossCoefficient)
   EPM_FORWARD_SET(bool, setNode5AdditionalLossCoefficient, (double node5AdditionalLossCoefficient), (node5AdditionalLossCoefficient))
+
+  EPM_FORWARD_GET(double, node6AdditionalLossCoefficient)
   EPM_FORWARD_SET(bool, setNode6AdditionalLossCoefficient, (double node6AdditionalLossCoefficient), (node6AdditionalLossCoefficient))
+
+  EPM_FORWARD_GET(double, node7AdditionalLossCoefficient)
   EPM_FORWARD_SET(bool, setNode7AdditionalLossCoefficient, (double node7AdditionalLossCoefficient), (node7AdditionalLossCoefficient))
+
+  EPM_FORWARD_GET(double, node8AdditionalLossCoefficient)
   EPM_FORWARD_SET(bool, setNode8AdditionalLossCoefficient, (double node8AdditionalLossCoefficient), (node8AdditionalLossCoefficient))
+
+  EPM_FORWARD_GET(double, node9AdditionalLossCoefficient)
   EPM_FORWARD_SET(bool, setNode9AdditionalLossCoefficient, (double node9AdditionalLossCoefficient), (node9AdditionalLossCoefficient))
+
+  EPM_FORWARD_GET(double, node10AdditionalLossCoefficient)
   EPM_FORWARD_SET(bool, setNode10AdditionalLossCoefficient, (double node10AdditionalLossCoefficient), (node10AdditionalLossCoefficient))
+
+  EPM_FORWARD_GET(double, node11AdditionalLossCoefficient)
   EPM_FORWARD_SET(bool, setNode11AdditionalLossCoefficient, (double node11AdditionalLossCoefficient), (node11AdditionalLossCoefficient))
+
+  EPM_FORWARD_GET(double, node12AdditionalLossCoefficient)
   EPM_FORWARD_SET(bool, setNode12AdditionalLossCoefficient, (double node12AdditionalLossCoefficient), (node12AdditionalLossCoefficient))
+
+  EPM_FORWARD_GET(std::string, sourceSideFlowControlMode)
   EPM_FORWARD_SET(bool, setSourceSideFlowControlMode, (const std::string& sourceSideFlowControlMode), (sourceSideFlowControlMode))
 
   bool WaterHeaterStratified::setHeaterFuelType(const FuelType& heaterFuelType) {

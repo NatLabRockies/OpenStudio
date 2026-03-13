@@ -17,70 +17,79 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class CurveExponentialSkewNormal_Impl;
-}
+  namespace detail {
+    class CurveExponentialSkewNormal_Impl;
+  }
 
-class EPMODEL_API CurveExponentialSkewNormal : public ModelObject
-{
- public:
-  explicit CurveExponentialSkewNormal(const Model& model);
+  class EPMODEL_API CurveExponentialSkewNormal : public ModelObject
+  {
+   public:
+    explicit CurveExponentialSkewNormal(const Model& model);
 
-  virtual ~CurveExponentialSkewNormal() override = default;
-  CurveExponentialSkewNormal(const CurveExponentialSkewNormal& other) = default;
-  CurveExponentialSkewNormal(CurveExponentialSkewNormal&& other) = default;
-  CurveExponentialSkewNormal& operator=(const CurveExponentialSkewNormal&) = default;
-  CurveExponentialSkewNormal& operator=(CurveExponentialSkewNormal&&) = default;
+    virtual ~CurveExponentialSkewNormal() override = default;
+    CurveExponentialSkewNormal(const CurveExponentialSkewNormal& other) = default;
+    CurveExponentialSkewNormal(CurveExponentialSkewNormal&& other) = default;
+    CurveExponentialSkewNormal& operator=(const CurveExponentialSkewNormal&) = default;
+    CurveExponentialSkewNormal& operator=(CurveExponentialSkewNormal&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> validInputUnitTypeforxValues();
-  static std::vector<std::string> validOutputUnitTypeValues();
+    static std::vector<std::string> validInputUnitTypeforxValues();
+    static std::vector<std::string> validOutputUnitTypeValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model CurveExponentialSkewNormal scalar accessor names/signatures.
-  // - Field Mapping: coefficient/min/max and unit-type APIs map directly to E+ Curve:ExponentialSkewNormal fields.
-  // - ForwardTranslator evidence: ForwardTranslateCurveExponentialSkewNormal.cpp writes these scalar fields directly.
-  // - TODO(parity): Keep this pass scalar-only; relationship APIs remain out of scope.
-  double coefficient1C1() const;
-  double coefficient2C2() const;
-  double coefficient3C3() const;
-  double coefficient4C4() const;
-  double minimumValueofx() const;
-  double maximumValueofx() const;
-  boost::optional<double> minimumCurveOutput() const;
-  boost::optional<double> maximumCurveOutput() const;
-  std::string inputUnitTypeforx() const;
-  bool isInputUnitTypeforxDefaulted() const;
-  std::string outputUnitType() const;
-  bool isOutputUnitTypeDefaulted() const;
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model CurveExponentialSkewNormal scalar accessor names/signatures.
+    // - Field Mapping: coefficient/min/max and unit-type APIs map directly to E+ Curve:ExponentialSkewNormal fields.
+    // - ForwardTranslator evidence: ForwardTranslateCurveExponentialSkewNormal.cpp writes these scalar fields directly.
+    // - TODO(parity): Keep this pass scalar-only; relationship APIs remain out of scope.
 
-  bool setCoefficient1C1(double coefficient1C1);
-  bool setCoefficient2C2(double coefficient2C2);
-  bool setCoefficient3C3(double coefficient3C3);
-  bool setCoefficient4C4(double coefficient4C4);
-  bool setMinimumValueofx(double minimumValueofx);
-  bool setMaximumValueofx(double maximumValueofx);
-  bool setMinimumCurveOutput(double minimumCurveOutput);
-  void resetMinimumCurveOutput();
-  bool setMaximumCurveOutput(double maximumCurveOutput);
-  void resetMaximumCurveOutput();
-  bool setInputUnitTypeforx(const std::string& inputUnitTypeforx);
-  void resetInputUnitTypeforx();
-  bool setOutputUnitType(const std::string& outputUnitType);
-  void resetOutputUnitType();
+    double coefficient1C1() const;
+    bool setCoefficient1C1(double coefficient1C1);
 
- protected:
-  using ImplType = detail::CurveExponentialSkewNormal_Impl;
+    double coefficient2C2() const;
+    bool setCoefficient2C2(double coefficient2C2);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    double coefficient3C3() const;
+    bool setCoefficient3C3(double coefficient3C3);
 
-  explicit CurveExponentialSkewNormal(std::shared_ptr<detail::CurveExponentialSkewNormal_Impl> impl);
-};
+    double coefficient4C4() const;
+    bool setCoefficient4C4(double coefficient4C4);
+
+    double minimumValueofx() const;
+    bool setMinimumValueofx(double minimumValueofx);
+
+    boost::optional<double> minimumCurveOutput() const;
+    bool setMinimumCurveOutput(double minimumCurveOutput);
+    void resetMinimumCurveOutput();
+
+    double maximumValueofx() const;
+    bool setMaximumValueofx(double maximumValueofx);
+
+    boost::optional<double> maximumCurveOutput() const;
+    bool setMaximumCurveOutput(double maximumCurveOutput);
+    void resetMaximumCurveOutput();
+
+    std::string inputUnitTypeforx() const;
+    bool setInputUnitTypeforx(const std::string& inputUnitTypeforx);
+    bool isInputUnitTypeforxDefaulted() const;
+    void resetInputUnitTypeforx();
+
+    std::string outputUnitType() const;
+    bool setOutputUnitType(const std::string& outputUnitType);
+    bool isOutputUnitTypeDefaulted() const;
+    void resetOutputUnitType();
+
+   protected:
+    using ImplType = detail::CurveExponentialSkewNormal_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit CurveExponentialSkewNormal(std::shared_ptr<detail::CurveExponentialSkewNormal_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

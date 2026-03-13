@@ -10,32 +10,34 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SetpointManagerFollowGroundTemperature_Impl : public SetpointManager_Impl
-{
- public:
-  using SetpointManager_Impl::SetpointManager_Impl;
-  virtual ~SetpointManagerFollowGroundTemperature_Impl() override = default;
+    class EPMODEL_API SetpointManagerFollowGroundTemperature_Impl : public SetpointManager_Impl
+    {
+     public:
+      using SetpointManager_Impl::SetpointManager_Impl;
+      virtual ~SetpointManagerFollowGroundTemperature_Impl() override = default;
 
-  std::string referenceGroundTemperatureObjectType() const;
-  double offsetTemperatureDifference() const;
-  double maximumSetpointTemperature() const;
-  double minimumSetpointTemperature() const;
+      std::string referenceGroundTemperatureObjectType() const;
+      bool setReferenceGroundTemperatureObjectType(const std::string& groundTemperatureObjType);
 
-  bool setReferenceGroundTemperatureObjectType(const std::string& groundTemperatureObjType);
-  bool setOffsetTemperatureDifference(double offsetTemperatureDifference);
-  bool setMaximumSetpointTemperature(double maximumSetpointTemperature);
-  bool setMinimumSetpointTemperature(double minimumSetpointTemperature);
+      double offsetTemperatureDifference() const;
+      bool setOffsetTemperatureDifference(double offsetTemperatureDifference);
 
- protected:
-  unsigned setpointNodeFieldIndex() const override;
-  unsigned controlVariableFieldIndex() const override;
+      double maximumSetpointTemperature() const;
+      bool setMaximumSetpointTemperature(double maximumSetpointTemperature);
 
-  void doCanonicalize(LoadContext& context) override;
-};
+      double minimumSetpointTemperature() const;
+      bool setMinimumSetpointTemperature(double minimumSetpointTemperature);
 
-}  // namespace detail
+     protected:
+      unsigned setpointNodeFieldIndex() const override;
+      unsigned controlVariableFieldIndex() const override;
+
+      void doCanonicalize(LoadContext& context) override;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -10,50 +10,53 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SetpointManagerOutdoorAirReset_Impl : public SetpointManager_Impl
-{
- public:
-  using SetpointManager_Impl::SetpointManager_Impl;
-  virtual ~SetpointManagerOutdoorAirReset_Impl() override = default;
+    class EPMODEL_API SetpointManagerOutdoorAirReset_Impl : public SetpointManager_Impl
+    {
+     public:
+      using SetpointManager_Impl::SetpointManager_Impl;
+      virtual ~SetpointManagerOutdoorAirReset_Impl() override = default;
 
-  bool isControlVariableDefaulted() const;
+      bool isControlVariableDefaulted() const;
+      void resetControlVariable();
 
-  double setpointatOutdoorLowTemperature() const;
-  double outdoorLowTemperature() const;
-  double setpointatOutdoorHighTemperature() const;
-  double outdoorHighTemperature() const;
+      double setpointatOutdoorLowTemperature() const;
+      bool setSetpointatOutdoorLowTemperature(double setpointatOutdoorLowTemperature);
 
-  boost::optional<double> setpointatOutdoorLowTemperature2() const;
-  boost::optional<double> outdoorLowTemperature2() const;
-  boost::optional<double> setpointatOutdoorHighTemperature2() const;
-  boost::optional<double> outdoorHighTemperature2() const;
+      double outdoorLowTemperature() const;
+      bool setOutdoorLowTemperature(double outdoorLowTemperature);
 
-  void resetControlVariable();
+      double setpointatOutdoorHighTemperature() const;
+      bool setSetpointatOutdoorHighTemperature(double setpointatOutdoorHighTemperature);
 
-  bool setSetpointatOutdoorLowTemperature(double setpointatOutdoorLowTemperature);
-  bool setOutdoorLowTemperature(double outdoorLowTemperature);
-  bool setSetpointatOutdoorHighTemperature(double setpointatOutdoorHighTemperature);
-  bool setOutdoorHighTemperature(double outdoorHighTemperature);
+      double outdoorHighTemperature() const;
+      bool setOutdoorHighTemperature(double outdoorHighTemperature);
 
-  bool setSetpointatOutdoorLowTemperature2(boost::optional<double> setpointatOutdoorLowTemperature2);
-  void resetSetpointatOutdoorLowTemperature2();
-  bool setOutdoorLowTemperature2(boost::optional<double> outdoorLowTemperature2);
-  void resetOutdoorLowTemperature2();
-  bool setSetpointatOutdoorHighTemperature2(boost::optional<double> setpointatOutdoorHighTemperature2);
-  void resetSetpointatOutdoorHighTemperature2();
-  bool setOutdoorHighTemperature2(boost::optional<double> outdoorHighTemperature2);
-  void resetOutdoorHighTemperature2();
+      boost::optional<double> setpointatOutdoorLowTemperature2() const;
+      bool setSetpointatOutdoorLowTemperature2(boost::optional<double> setpointatOutdoorLowTemperature2);
+      void resetSetpointatOutdoorLowTemperature2();
 
- protected:
-  unsigned setpointNodeFieldIndex() const override;
-  unsigned controlVariableFieldIndex() const override;
+      boost::optional<double> outdoorLowTemperature2() const;
+      bool setOutdoorLowTemperature2(boost::optional<double> outdoorLowTemperature2);
+      void resetOutdoorLowTemperature2();
 
-  void doCanonicalize(LoadContext& context) override;
-};
+      boost::optional<double> setpointatOutdoorHighTemperature2() const;
+      bool setSetpointatOutdoorHighTemperature2(boost::optional<double> setpointatOutdoorHighTemperature2);
+      void resetSetpointatOutdoorHighTemperature2();
 
-}  // namespace detail
+      boost::optional<double> outdoorHighTemperature2() const;
+      bool setOutdoorHighTemperature2(boost::optional<double> outdoorHighTemperature2);
+      void resetOutdoorHighTemperature2();
+
+     protected:
+      unsigned setpointNodeFieldIndex() const override;
+      unsigned controlVariableFieldIndex() const override;
+
+      void doCanonicalize(LoadContext& context) override;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

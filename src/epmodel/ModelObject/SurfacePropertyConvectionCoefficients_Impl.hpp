@@ -21,6 +21,11 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~SurfacePropertyConvectionCoefficients_Impl() override = default;
 
+      std::vector<std::string> convectionCoefficient1LocationValues() const;
+      std::vector<std::string> convectionCoefficient1TypeValues() const;
+      std::vector<std::string> convectionCoefficient2LocationValues() const;
+      std::vector<std::string> convectionCoefficient2TypeValues() const;
+
       boost::optional<std::string> convectionCoefficient1Location() const;
       bool setConvectionCoefficient1Location(const std::string& convectionCoefficient1Location);
       void resetConvectionCoefficient1Location();
@@ -44,11 +49,6 @@ namespace epmodel {
       boost::optional<double> convectionCoefficient2() const;
       bool setConvectionCoefficient2(double convectionCoefficient2);
       void resetConvectionCoefficient2();
-
-      std::vector<std::string> convectionCoefficient1LocationValues() const;
-      std::vector<std::string> convectionCoefficient1TypeValues() const;
-      std::vector<std::string> convectionCoefficient2LocationValues() const;
-      std::vector<std::string> convectionCoefficient2TypeValues() const;
     };
 
   }  // namespace detail

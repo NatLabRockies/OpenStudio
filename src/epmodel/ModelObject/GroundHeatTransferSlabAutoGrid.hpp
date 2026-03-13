@@ -16,58 +16,60 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class GroundHeatTransferSlabAutoGrid_Impl;
-}
+  namespace detail {
+    class GroundHeatTransferSlabAutoGrid_Impl;
+  }
 
-class EPMODEL_API GroundHeatTransferSlabAutoGrid : public ModelObject
-{
- public:
-  explicit GroundHeatTransferSlabAutoGrid(const Model& model);
+  class EPMODEL_API GroundHeatTransferSlabAutoGrid : public ModelObject
+  {
+   public:
+    explicit GroundHeatTransferSlabAutoGrid(const Model& model);
 
-  virtual ~GroundHeatTransferSlabAutoGrid() override = default;
-  GroundHeatTransferSlabAutoGrid(const GroundHeatTransferSlabAutoGrid& other) = default;
-  GroundHeatTransferSlabAutoGrid(GroundHeatTransferSlabAutoGrid&& other) = default;
-  GroundHeatTransferSlabAutoGrid& operator=(const GroundHeatTransferSlabAutoGrid&) = default;
-  GroundHeatTransferSlabAutoGrid& operator=(GroundHeatTransferSlabAutoGrid&&) = default;
+    virtual ~GroundHeatTransferSlabAutoGrid() override = default;
+    GroundHeatTransferSlabAutoGrid(const GroundHeatTransferSlabAutoGrid& other) = default;
+    GroundHeatTransferSlabAutoGrid(GroundHeatTransferSlabAutoGrid&& other) = default;
+    GroundHeatTransferSlabAutoGrid& operator=(const GroundHeatTransferSlabAutoGrid&) = default;
+    GroundHeatTransferSlabAutoGrid& operator=(GroundHeatTransferSlabAutoGrid&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to GroundHeatTransfer:Slab:AutoGrid numeric fields.
-  // - TODO(parity): Add relationship APIs incrementally if future schema revisions introduce link fields.
-  double slabxXdimensionofthebuildingslab() const;
-  double slabyYdimensionofthebuildingslab() const;
-  double slabdepthThicknessofslabongrade() const;
-  double clearanceDistancefromedgeofslabtodomainedge() const;
-  double zclearanceDistancefrombottomofslabtodomainbottom() const;
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to GroundHeatTransfer:Slab:AutoGrid numeric fields.
+    // - TODO(parity): Add relationship APIs incrementally if future schema revisions introduce link fields.
 
-  bool isSlabdepthThicknessofslabongradeDefaulted() const;
-  bool isClearanceDistancefromedgeofslabtodomainedgeDefaulted() const;
-  bool isZclearanceDistancefrombottomofslabtodomainbottomDefaulted() const;
+    double slabxXdimensionofthebuildingslab() const;
+    bool setSlabxXdimensionofthebuildingslab(double slabxXdimensionofthebuildingslab);
 
-  bool setSlabxXdimensionofthebuildingslab(double slabxXdimensionofthebuildingslab);
-  bool setSlabyYdimensionofthebuildingslab(double slabyYdimensionofthebuildingslab);
-  bool setSlabdepthThicknessofslabongrade(double slabdepthThicknessofslabongrade);
-  bool setClearanceDistancefromedgeofslabtodomainedge(double clearanceDistancefromedgeofslabtodomainedge);
-  bool setZclearanceDistancefrombottomofslabtodomainbottom(double zclearanceDistancefrombottomofslabtodomainbottom);
+    double slabyYdimensionofthebuildingslab() const;
+    bool setSlabyYdimensionofthebuildingslab(double slabyYdimensionofthebuildingslab);
 
-  void resetSlabdepthThicknessofslabongrade();
-  void resetClearanceDistancefromedgeofslabtodomainedge();
-  void resetZclearanceDistancefrombottomofslabtodomainbottom();
+    double slabdepthThicknessofslabongrade() const;
+    bool isSlabdepthThicknessofslabongradeDefaulted() const;
+    bool setSlabdepthThicknessofslabongrade(double slabdepthThicknessofslabongrade);
+    void resetSlabdepthThicknessofslabongrade();
 
- protected:
-  using ImplType = detail::GroundHeatTransferSlabAutoGrid_Impl;
+    double clearanceDistancefromedgeofslabtodomainedge() const;
+    bool isClearanceDistancefromedgeofslabtodomainedgeDefaulted() const;
+    bool setClearanceDistancefromedgeofslabtodomainedge(double clearanceDistancefromedgeofslabtodomainedge);
+    void resetClearanceDistancefromedgeofslabtodomainedge();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    double zclearanceDistancefrombottomofslabtodomainbottom() const;
+    bool isZclearanceDistancefrombottomofslabtodomainbottomDefaulted() const;
+    bool setZclearanceDistancefrombottomofslabtodomainbottom(double zclearanceDistancefrombottomofslabtodomainbottom);
+    void resetZclearanceDistancefrombottomofslabtodomainbottom();
 
-  explicit GroundHeatTransferSlabAutoGrid(std::shared_ptr<detail::GroundHeatTransferSlabAutoGrid_Impl> impl);
-};
+   protected:
+    using ImplType = detail::GroundHeatTransferSlabAutoGrid_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit GroundHeatTransferSlabAutoGrid(std::shared_ptr<detail::GroundHeatTransferSlabAutoGrid_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

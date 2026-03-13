@@ -26,9 +26,9 @@ namespace epmodel {
       void resetIrrigationModelType();
 
       double irrigationMaximumSaturationThreshold() const;
-      bool isIrrigationMaximumSaturationThresholdDefaulted() const;
       bool setIrrigationMaximumSaturationThreshold(double irrigationMaximumSaturationThreshold);
       void resetIrrigationMaximumSaturationThreshold();
+      bool isIrrigationMaximumSaturationThresholdDefaulted() const;
 
       std::vector<std::string> irrigationModelTypeValues() const;
     };

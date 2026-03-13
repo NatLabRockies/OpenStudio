@@ -13,56 +13,72 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API FuelFactors_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~FuelFactors_Impl() override = default;
+    class EPMODEL_API FuelFactors_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~FuelFactors_Impl() override = default;
 
-  std::string existingFuelResourceName() const;
-  double sourceEnergyFactor() const;
-  double cO2EmissionFactor() const;
-  double cOEmissionFactor() const;
-  double cH4EmissionFactor() const;
-  double nOxEmissionFactor() const;
-  double n2OEmissionFactor() const;
-  double sO2EmissionFactor() const;
-  double pMEmissionFactor() const;
-  double pM10EmissionFactor() const;
-  double pM25EmissionFactor() const;
-  double nH3EmissionFactor() const;
-  double nMVOCEmissionFactor() const;
-  double hgEmissionFactor() const;
-  double pbEmissionFactor() const;
-  double waterEmissionFactor() const;
-  double nuclearHighLevelEmissionFactor() const;
-  double nuclearLowLevelEmissionFactor() const;
+      std::string existingFuelResourceName() const;
+      bool setExistingFuelResourceName(const std::string& existingFuelResourceName);
 
-  bool setExistingFuelResourceName(const std::string& existingFuelResourceName);
-  bool setSourceEnergyFactor(double sourceEnergyFactor);
-  bool setCO2EmissionFactor(double cO2EmissionFactor);
-  bool setCOEmissionFactor(double cOEmissionFactor);
-  bool setCH4EmissionFactor(double cH4EmissionFactor);
-  bool setNOxEmissionFactor(double nOxEmissionFactor);
-  bool setN2OEmissionFactor(double n2OEmissionFactor);
-  bool setSO2EmissionFactor(double sO2EmissionFactor);
-  bool setPMEmissionFactor(double pMEmissionFactor);
-  bool setPM10EmissionFactor(double pM10EmissionFactor);
-  bool setPM25EmissionFactor(double pM25EmissionFactor);
-  bool setNH3EmissionFactor(double nH3EmissionFactor);
-  bool setNMVOCEmissionFactor(double nMVOCEmissionFactor);
-  bool setHgEmissionFactor(double hgEmissionFactor);
-  bool setPbEmissionFactor(double pbEmissionFactor);
-  bool setWaterEmissionFactor(double waterEmissionFactor);
-  bool setNuclearHighLevelEmissionFactor(double nuclearHighLevelEmissionFactor);
-  bool setNuclearLowLevelEmissionFactor(double nuclearLowLevelEmissionFactor);
+      double sourceEnergyFactor() const;
+      bool setSourceEnergyFactor(double sourceEnergyFactor);
 
-  std::vector<std::string> existingFuelResourceNameValues() const;
-};
+      double cO2EmissionFactor() const;
+      bool setCO2EmissionFactor(double cO2EmissionFactor);
 
-}  // namespace detail
+      double cOEmissionFactor() const;
+      bool setCOEmissionFactor(double cOEmissionFactor);
+
+      double cH4EmissionFactor() const;
+      bool setCH4EmissionFactor(double cH4EmissionFactor);
+
+      double nOxEmissionFactor() const;
+      bool setNOxEmissionFactor(double nOxEmissionFactor);
+
+      double n2OEmissionFactor() const;
+      bool setN2OEmissionFactor(double n2OEmissionFactor);
+
+      double sO2EmissionFactor() const;
+      bool setSO2EmissionFactor(double sO2EmissionFactor);
+
+      double pMEmissionFactor() const;
+      bool setPMEmissionFactor(double pMEmissionFactor);
+
+      double pM10EmissionFactor() const;
+      bool setPM10EmissionFactor(double pM10EmissionFactor);
+
+      double pM25EmissionFactor() const;
+      bool setPM25EmissionFactor(double pM25EmissionFactor);
+
+      double nH3EmissionFactor() const;
+      bool setNH3EmissionFactor(double nH3EmissionFactor);
+
+      double nMVOCEmissionFactor() const;
+      bool setNMVOCEmissionFactor(double nMVOCEmissionFactor);
+
+      double hgEmissionFactor() const;
+      bool setHgEmissionFactor(double hgEmissionFactor);
+
+      double pbEmissionFactor() const;
+      bool setPbEmissionFactor(double pbEmissionFactor);
+
+      double waterEmissionFactor() const;
+      bool setWaterEmissionFactor(double waterEmissionFactor);
+
+      double nuclearHighLevelEmissionFactor() const;
+      bool setNuclearHighLevelEmissionFactor(double nuclearHighLevelEmissionFactor);
+
+      double nuclearLowLevelEmissionFactor() const;
+      bool setNuclearLowLevelEmissionFactor(double nuclearLowLevelEmissionFactor);
+
+      std::vector<std::string> existingFuelResourceNameValues() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

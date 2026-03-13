@@ -29,45 +29,15 @@ namespace epmodel {
     return IddObjectType::SurfaceConvectionAlgorithm_Outside_AdaptiveModelSelections;
   }
 
-  // ===== Static Values helpers =====
+  // ===== Public API delegating to Impl =====
 
+  // Wind Convection
   std::vector<std::string> SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::windConvectionWindwardVerticalWallEquationSourceValues() {
     return getIddKeyNames(
       IddFactory::instance().getObject(iddObjectType()).get(),
       openstudio::SurfaceConvectionAlgorithm_Outside_AdaptiveModelSelectionsFields::WindConvectionWindwardVerticalWallEquationSource);
   }
 
-  std::vector<std::string> SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::windConvectionLeewardVerticalWallEquationSourceValues() {
-    return getIddKeyNames(
-      IddFactory::instance().getObject(iddObjectType()).get(),
-      openstudio::SurfaceConvectionAlgorithm_Outside_AdaptiveModelSelectionsFields::WindConvectionLeewardVerticalWallEquationSource);
-  }
-
-  std::vector<std::string> SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::windConvectionHorizontalRoofEquationSourceValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                          openstudio::SurfaceConvectionAlgorithm_Outside_AdaptiveModelSelectionsFields::WindConvectionHorizontalRoofEquationSource);
-  }
-
-  std::vector<std::string> SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::naturalConvectionVerticalWallEquationSourceValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                          openstudio::SurfaceConvectionAlgorithm_Outside_AdaptiveModelSelectionsFields::NaturalConvectionVerticalWallEquationSource);
-  }
-
-  std::vector<std::string> SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::naturalConvectionStableHorizontalEquationSourceValues() {
-    return getIddKeyNames(
-      IddFactory::instance().getObject(iddObjectType()).get(),
-      openstudio::SurfaceConvectionAlgorithm_Outside_AdaptiveModelSelectionsFields::NaturalConvectionStableHorizontalEquationSource);
-  }
-
-  std::vector<std::string> SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::naturalConvectionUnstableHorizontalEquationSourceValues() {
-    return getIddKeyNames(
-      IddFactory::instance().getObject(iddObjectType()).get(),
-      openstudio::SurfaceConvectionAlgorithm_Outside_AdaptiveModelSelectionsFields::NaturalConvectionUnstableHorizontalEquationSource);
-  }
-
-  // ===== Public API delegating to Impl =====
-
-  // Wind Convection
   std::string SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::windConvectionWindwardVerticalWallEquationSource() const {
     return getImpl<detail::SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections_Impl>()->windConvectionWindwardVerticalWallEquationSource();
   }
@@ -82,6 +52,12 @@ namespace epmodel {
   }
   void SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::resetWindConvectionWindwardVerticalWallEquationSource() {
     getImpl<detail::SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections_Impl>()->resetWindConvectionWindwardVerticalWallEquationSource();
+  }
+
+  std::vector<std::string> SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::windConvectionLeewardVerticalWallEquationSourceValues() {
+    return getIddKeyNames(
+      IddFactory::instance().getObject(iddObjectType()).get(),
+      openstudio::SurfaceConvectionAlgorithm_Outside_AdaptiveModelSelectionsFields::WindConvectionLeewardVerticalWallEquationSource);
   }
 
   std::string SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::windConvectionLeewardVerticalWallEquationSource() const {
@@ -100,6 +76,11 @@ namespace epmodel {
     getImpl<detail::SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections_Impl>()->resetWindConvectionLeewardVerticalWallEquationSource();
   }
 
+  std::vector<std::string> SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::windConvectionHorizontalRoofEquationSourceValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::SurfaceConvectionAlgorithm_Outside_AdaptiveModelSelectionsFields::WindConvectionHorizontalRoofEquationSource);
+  }
+
   std::string SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::windConvectionHorizontalRoofEquationSource() const {
     return getImpl<detail::SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections_Impl>()->windConvectionHorizontalRoofEquationSource();
   }
@@ -116,6 +97,11 @@ namespace epmodel {
   }
 
   // Natural Convection
+  std::vector<std::string> SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::naturalConvectionVerticalWallEquationSourceValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::SurfaceConvectionAlgorithm_Outside_AdaptiveModelSelectionsFields::NaturalConvectionVerticalWallEquationSource);
+  }
+
   std::string SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::naturalConvectionVerticalWallEquationSource() const {
     return getImpl<detail::SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections_Impl>()->naturalConvectionVerticalWallEquationSource();
   }
@@ -129,6 +115,12 @@ namespace epmodel {
   }
   void SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::resetNaturalConvectionVerticalWallEquationSource() {
     getImpl<detail::SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections_Impl>()->resetNaturalConvectionVerticalWallEquationSource();
+  }
+
+  std::vector<std::string> SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::naturalConvectionStableHorizontalEquationSourceValues() {
+    return getIddKeyNames(
+      IddFactory::instance().getObject(iddObjectType()).get(),
+      openstudio::SurfaceConvectionAlgorithm_Outside_AdaptiveModelSelectionsFields::NaturalConvectionStableHorizontalEquationSource);
   }
 
   std::string SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::naturalConvectionStableHorizontalEquationSource() const {
@@ -145,6 +137,12 @@ namespace epmodel {
   }
   void SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::resetNaturalConvectionStableHorizontalEquationSource() {
     getImpl<detail::SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections_Impl>()->resetNaturalConvectionStableHorizontalEquationSource();
+  }
+
+  std::vector<std::string> SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::naturalConvectionUnstableHorizontalEquationSourceValues() {
+    return getIddKeyNames(
+      IddFactory::instance().getObject(iddObjectType()).get(),
+      openstudio::SurfaceConvectionAlgorithm_Outside_AdaptiveModelSelectionsFields::NaturalConvectionUnstableHorizontalEquationSource);
   }
 
   std::string SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections::naturalConvectionUnstableHorizontalEquationSource() const {

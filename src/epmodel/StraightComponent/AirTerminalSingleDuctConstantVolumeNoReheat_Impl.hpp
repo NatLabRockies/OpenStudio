@@ -12,28 +12,31 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirTerminalSingleDuctConstantVolumeNoReheat_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~AirTerminalSingleDuctConstantVolumeNoReheat_Impl() override = default;
+    class EPMODEL_API AirTerminalSingleDuctConstantVolumeNoReheat_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~AirTerminalSingleDuctConstantVolumeNoReheat_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
-  boost::optional<openstudio::epmodel::AirLoopHVAC> airLoopHVAC() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+      boost::optional<openstudio::epmodel::AirLoopHVAC> airLoopHVAC() const override;
 
-  boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
-  bool addToNode(Node& node);
+      boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
+      bool addToNode(Node& node);
 
-  boost::optional<double> maximumAirFlowRate() const;
-  bool isMaximumAirFlowRateAutosized() const;
-  bool setMaximumAirFlowRate(double maximumAirFlowRate);
-  void autosizeMaximumAirFlowRate();
-};
+      /** @name Maximum air flow rate */
+      //@{
+      boost::optional<double> maximumAirFlowRate() const;
+      bool isMaximumAirFlowRateAutosized() const;
+      bool setMaximumAirFlowRate(double maximumAirFlowRate);
+      void autosizeMaximumAirFlowRate();
+      //@}
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

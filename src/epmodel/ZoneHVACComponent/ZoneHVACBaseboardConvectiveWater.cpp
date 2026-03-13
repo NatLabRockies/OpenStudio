@@ -153,6 +153,11 @@ namespace epmodel {
       return value.get();
     }
 
+    bool ZoneHVACBaseboardConvectiveWater_Impl::setHeatingDesignCapacityMethod(const std::string& heatingDesignCapacityMethod) {
+      const bool result = setString(ZoneHVAC_Baseboard_Convective_WaterFields::HeatingDesignCapacityMethod, heatingDesignCapacityMethod);
+      return result;
+    }
+
     boost::optional<double> ZoneHVACBaseboardConvectiveWater_Impl::heatingDesignCapacity() const {
       return getDouble(ZoneHVAC_Baseboard_Convective_WaterFields::HeatingDesignCapacity, true);
     }
@@ -165,16 +170,39 @@ namespace epmodel {
       return result;
     }
 
+    bool ZoneHVACBaseboardConvectiveWater_Impl::setHeatingDesignCapacity(double heatingDesignCapacity) {
+      const bool result = setDouble(ZoneHVAC_Baseboard_Convective_WaterFields::HeatingDesignCapacity, heatingDesignCapacity);
+      OS_ASSERT(result);
+      return result;
+    }
+
+    void ZoneHVACBaseboardConvectiveWater_Impl::autosizeHeatingDesignCapacity() {
+      OS_ASSERT(setString(ZoneHVAC_Baseboard_Convective_WaterFields::HeatingDesignCapacity, "autosize"));
+    }
+
     double ZoneHVACBaseboardConvectiveWater_Impl::heatingDesignCapacityPerFloorArea() const {
       auto value = getDouble(ZoneHVAC_Baseboard_Convective_WaterFields::HeatingDesignCapacityPerFloorArea, true);
       OS_ASSERT(value);
       return value.get();
     }
 
+    bool ZoneHVACBaseboardConvectiveWater_Impl::setHeatingDesignCapacityPerFloorArea(double heatingDesignCapacityPerFloorArea) {
+      const bool result = setDouble(ZoneHVAC_Baseboard_Convective_WaterFields::HeatingDesignCapacityPerFloorArea, heatingDesignCapacityPerFloorArea);
+      OS_ASSERT(result);
+      return result;
+    }
+
     double ZoneHVACBaseboardConvectiveWater_Impl::fractionofAutosizedHeatingDesignCapacity() const {
       auto value = getDouble(ZoneHVAC_Baseboard_Convective_WaterFields::FractionofAutosizedHeatingDesignCapacity, true);
       OS_ASSERT(value);
       return value.get();
+    }
+
+    bool ZoneHVACBaseboardConvectiveWater_Impl::setFractionofAutosizedHeatingDesignCapacity(double fractionofAutosizedHeatingDesignCapacity) {
+      const bool result =
+        setDouble(ZoneHVAC_Baseboard_Convective_WaterFields::FractionofAutosizedHeatingDesignCapacity, fractionofAutosizedHeatingDesignCapacity);
+      OS_ASSERT(result);
+      return result;
     }
 
     boost::optional<double> ZoneHVACBaseboardConvectiveWater_Impl::uFactorTimesAreaValue() const {
@@ -193,6 +221,20 @@ namespace epmodel {
       return result;
     }
 
+    bool ZoneHVACBaseboardConvectiveWater_Impl::setUFactorTimesAreaValue(double uFactorTimesAreaValue) {
+      const bool result = setDouble(ZoneHVAC_Baseboard_Convective_WaterFields::UFactorTimesAreaValue, uFactorTimesAreaValue);
+      OS_ASSERT(result);
+      return result;
+    }
+
+    void ZoneHVACBaseboardConvectiveWater_Impl::resetUFactorTimesAreaValue() {
+      OS_ASSERT(setString(ZoneHVAC_Baseboard_Convective_WaterFields::UFactorTimesAreaValue, ""));
+    }
+
+    void ZoneHVACBaseboardConvectiveWater_Impl::autosizeUFactorTimesAreaValue() {
+      OS_ASSERT(setString(ZoneHVAC_Baseboard_Convective_WaterFields::UFactorTimesAreaValue, "autosize"));
+    }
+
     boost::optional<double> ZoneHVACBaseboardConvectiveWater_Impl::maximumWaterFlowRate() const {
       return getDouble(ZoneHVAC_Baseboard_Convective_WaterFields::MaximumWaterFlowRate, true);
     }
@@ -209,58 +251,6 @@ namespace epmodel {
       return result;
     }
 
-    double ZoneHVACBaseboardConvectiveWater_Impl::convergenceTolerance() const {
-      auto value = getDouble(ZoneHVAC_Baseboard_Convective_WaterFields::ConvergenceTolerance, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool ZoneHVACBaseboardConvectiveWater_Impl::isConvergenceToleranceDefaulted() const {
-      return isEmpty(ZoneHVAC_Baseboard_Convective_WaterFields::ConvergenceTolerance);
-    }
-
-    bool ZoneHVACBaseboardConvectiveWater_Impl::setHeatingDesignCapacityMethod(const std::string& heatingDesignCapacityMethod) {
-      const bool result = setString(ZoneHVAC_Baseboard_Convective_WaterFields::HeatingDesignCapacityMethod, heatingDesignCapacityMethod);
-      return result;
-    }
-
-    bool ZoneHVACBaseboardConvectiveWater_Impl::setHeatingDesignCapacity(double heatingDesignCapacity) {
-      const bool result = setDouble(ZoneHVAC_Baseboard_Convective_WaterFields::HeatingDesignCapacity, heatingDesignCapacity);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    void ZoneHVACBaseboardConvectiveWater_Impl::autosizeHeatingDesignCapacity() {
-      OS_ASSERT(setString(ZoneHVAC_Baseboard_Convective_WaterFields::HeatingDesignCapacity, "autosize"));
-    }
-
-    bool ZoneHVACBaseboardConvectiveWater_Impl::setHeatingDesignCapacityPerFloorArea(double heatingDesignCapacityPerFloorArea) {
-      const bool result = setDouble(ZoneHVAC_Baseboard_Convective_WaterFields::HeatingDesignCapacityPerFloorArea, heatingDesignCapacityPerFloorArea);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool ZoneHVACBaseboardConvectiveWater_Impl::setFractionofAutosizedHeatingDesignCapacity(double fractionofAutosizedHeatingDesignCapacity) {
-      const bool result =
-        setDouble(ZoneHVAC_Baseboard_Convective_WaterFields::FractionofAutosizedHeatingDesignCapacity, fractionofAutosizedHeatingDesignCapacity);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool ZoneHVACBaseboardConvectiveWater_Impl::setUFactorTimesAreaValue(double uFactorTimesAreaValue) {
-      const bool result = setDouble(ZoneHVAC_Baseboard_Convective_WaterFields::UFactorTimesAreaValue, uFactorTimesAreaValue);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    void ZoneHVACBaseboardConvectiveWater_Impl::resetUFactorTimesAreaValue() {
-      OS_ASSERT(setString(ZoneHVAC_Baseboard_Convective_WaterFields::UFactorTimesAreaValue, ""));
-    }
-
-    void ZoneHVACBaseboardConvectiveWater_Impl::autosizeUFactorTimesAreaValue() {
-      OS_ASSERT(setString(ZoneHVAC_Baseboard_Convective_WaterFields::UFactorTimesAreaValue, "autosize"));
-    }
-
     bool ZoneHVACBaseboardConvectiveWater_Impl::setMaximumWaterFlowRate(double maximumWaterFlowRate) {
       const bool result = setDouble(ZoneHVAC_Baseboard_Convective_WaterFields::MaximumWaterFlowRate, maximumWaterFlowRate);
       OS_ASSERT(result);
@@ -273,6 +263,16 @@ namespace epmodel {
 
     void ZoneHVACBaseboardConvectiveWater_Impl::autosizeMaximumWaterFlowRate() {
       OS_ASSERT(setString(ZoneHVAC_Baseboard_Convective_WaterFields::MaximumWaterFlowRate, "autosize"));
+    }
+
+    double ZoneHVACBaseboardConvectiveWater_Impl::convergenceTolerance() const {
+      auto value = getDouble(ZoneHVAC_Baseboard_Convective_WaterFields::ConvergenceTolerance, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool ZoneHVACBaseboardConvectiveWater_Impl::isConvergenceToleranceDefaulted() const {
+      return isEmpty(ZoneHVAC_Baseboard_Convective_WaterFields::ConvergenceTolerance);
     }
 
     bool ZoneHVACBaseboardConvectiveWater_Impl::setConvergenceTolerance(double convergenceTolerance) {

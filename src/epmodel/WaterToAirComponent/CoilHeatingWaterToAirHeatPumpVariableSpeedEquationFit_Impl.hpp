@@ -24,18 +24,18 @@ class EPMODEL_API CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl : p
   bool setNominalSpeedLevel(int nominalSpeedLevel);
 
   boost::optional<double> ratedHeatingCapacityAtSelectedNominalSpeedLevel() const;
-  bool isRatedHeatingCapacityAtSelectedNominalSpeedLevelAutosized() const;
   bool setRatedHeatingCapacityAtSelectedNominalSpeedLevel(double ratedHeatingCapacityAtSelectedNominalSpeedLevel);
+  bool isRatedHeatingCapacityAtSelectedNominalSpeedLevelAutosized() const;
   void autosizeRatedHeatingCapacityAtSelectedNominalSpeedLevel();
 
   boost::optional<double> ratedAirFlowRateAtSelectedNominalSpeedLevel() const;
-  bool isRatedAirFlowRateAtSelectedNominalSpeedLevelAutosized() const;
   bool setRatedAirFlowRateAtSelectedNominalSpeedLevel(double ratedAirFlowRateAtSelectedNominalSpeedLevel);
+  bool isRatedAirFlowRateAtSelectedNominalSpeedLevelAutosized() const;
   void autosizeRatedAirFlowRateAtSelectedNominalSpeedLevel();
 
   boost::optional<double> ratedWaterFlowRateAtSelectedNominalSpeedLevel() const;
-  bool isRatedWaterFlowRateAtSelectedNominalSpeedLevelAutosized() const;
   bool setRatedWaterFlowRateAtSelectedNominalSpeedLevel(double ratedWaterFlowRateAtSelectedNominalSpeedLevel);
+  bool isRatedWaterFlowRateAtSelectedNominalSpeedLevelAutosized() const;
   void autosizeRatedWaterFlowRateAtSelectedNominalSpeedLevel();
 };
 

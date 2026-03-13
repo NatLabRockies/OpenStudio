@@ -40,22 +40,6 @@ namespace epmodel {
     return getImpl<detail::ZoneAirHeatBalanceAlgorithm_Impl>()->isAlgorithmDefaulted();
   }
 
-  bool ZoneAirHeatBalanceAlgorithm::doSpaceHeatBalanceforSizing() const {
-    return getImpl<detail::ZoneAirHeatBalanceAlgorithm_Impl>()->doSpaceHeatBalanceforSizing();
-  }
-
-  bool ZoneAirHeatBalanceAlgorithm::isDoSpaceHeatBalanceforSizingDefaulted() const {
-    return getImpl<detail::ZoneAirHeatBalanceAlgorithm_Impl>()->isDoSpaceHeatBalanceforSizingDefaulted();
-  }
-
-  bool ZoneAirHeatBalanceAlgorithm::doSpaceHeatBalanceforSimulation() const {
-    return getImpl<detail::ZoneAirHeatBalanceAlgorithm_Impl>()->doSpaceHeatBalanceforSimulation();
-  }
-
-  bool ZoneAirHeatBalanceAlgorithm::isDoSpaceHeatBalanceforSimulationDefaulted() const {
-    return getImpl<detail::ZoneAirHeatBalanceAlgorithm_Impl>()->isDoSpaceHeatBalanceforSimulationDefaulted();
-  }
-
   bool ZoneAirHeatBalanceAlgorithm::setAlgorithm(const std::string& algorithm) {
     return getImpl<detail::ZoneAirHeatBalanceAlgorithm_Impl>()->setAlgorithm(algorithm);
   }
@@ -64,12 +48,28 @@ namespace epmodel {
     getImpl<detail::ZoneAirHeatBalanceAlgorithm_Impl>()->resetAlgorithm();
   }
 
+  bool ZoneAirHeatBalanceAlgorithm::doSpaceHeatBalanceforSizing() const {
+    return getImpl<detail::ZoneAirHeatBalanceAlgorithm_Impl>()->doSpaceHeatBalanceforSizing();
+  }
+
+  bool ZoneAirHeatBalanceAlgorithm::isDoSpaceHeatBalanceforSizingDefaulted() const {
+    return getImpl<detail::ZoneAirHeatBalanceAlgorithm_Impl>()->isDoSpaceHeatBalanceforSizingDefaulted();
+  }
+
   bool ZoneAirHeatBalanceAlgorithm::setDoSpaceHeatBalanceforSizing(bool doSpaceHeatBalanceforSizing) {
     return getImpl<detail::ZoneAirHeatBalanceAlgorithm_Impl>()->setDoSpaceHeatBalanceforSizing(doSpaceHeatBalanceforSizing);
   }
 
   void ZoneAirHeatBalanceAlgorithm::resetDoSpaceHeatBalanceforSizing() {
     getImpl<detail::ZoneAirHeatBalanceAlgorithm_Impl>()->resetDoSpaceHeatBalanceforSizing();
+  }
+
+  bool ZoneAirHeatBalanceAlgorithm::doSpaceHeatBalanceforSimulation() const {
+    return getImpl<detail::ZoneAirHeatBalanceAlgorithm_Impl>()->doSpaceHeatBalanceforSimulation();
+  }
+
+  bool ZoneAirHeatBalanceAlgorithm::isDoSpaceHeatBalanceforSimulationDefaulted() const {
+    return getImpl<detail::ZoneAirHeatBalanceAlgorithm_Impl>()->isDoSpaceHeatBalanceforSimulationDefaulted();
   }
 
   bool ZoneAirHeatBalanceAlgorithm::setDoSpaceHeatBalanceforSimulation(bool doSpaceHeatBalanceforSimulation) {

@@ -48,8 +48,24 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->isMaximumSupplyAirFlowRateAutosized();
   }
 
+  bool ZoneHVACUnitVentilator::setMaximumSupplyAirFlowRate(double maximumSupplyAirFlowRate) {
+    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->setMaximumSupplyAirFlowRate(maximumSupplyAirFlowRate);
+  }
+
+  void ZoneHVACUnitVentilator::autosizeMaximumSupplyAirFlowRate() {
+    getImpl<detail::ZoneHVACUnitVentilator_Impl>()->autosizeMaximumSupplyAirFlowRate();
+  }
+
+  boost::optional<double> ZoneHVACUnitVentilator::autosizedMaximumSupplyAirFlowRate() const {
+    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->autosizedMaximumSupplyAirFlowRate();
+  }
+
   std::string ZoneHVACUnitVentilator::outdoorAirControlType() const {
     return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->outdoorAirControlType();
+  }
+
+  bool ZoneHVACUnitVentilator::setOutdoorAirControlType(const std::string& outdoorAirControlType) {
+    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->setOutdoorAirControlType(outdoorAirControlType);
   }
 
   boost::optional<double> ZoneHVACUnitVentilator::minimumOutdoorAirFlowRate() const {
@@ -60,52 +76,24 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->isMinimumOutdoorAirFlowRateAutosized();
   }
 
-  boost::optional<double> ZoneHVACUnitVentilator::maximumOutdoorAirFlowRate() const {
-    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->maximumOutdoorAirFlowRate();
-  }
-
-  bool ZoneHVACUnitVentilator::isMaximumOutdoorAirFlowRateAutosized() const {
-    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->isMaximumOutdoorAirFlowRateAutosized();
-  }
-
-  double ZoneHVACUnitVentilator::heatingConvergenceTolerance() const {
-    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->heatingConvergenceTolerance();
-  }
-
-  double ZoneHVACUnitVentilator::coolingConvergenceTolerance() const {
-    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->coolingConvergenceTolerance();
-  }
-
-  boost::optional<double> ZoneHVACUnitVentilator::autosizedMaximumSupplyAirFlowRate() const {
-    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->autosizedMaximumSupplyAirFlowRate();
-  }
-
-  boost::optional<double> ZoneHVACUnitVentilator::autosizedMinimumOutdoorAirFlowRate() const {
-    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->autosizedMinimumOutdoorAirFlowRate();
-  }
-
-  boost::optional<double> ZoneHVACUnitVentilator::autosizedMaximumOutdoorAirFlowRate() const {
-    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->autosizedMaximumOutdoorAirFlowRate();
-  }
-
-  bool ZoneHVACUnitVentilator::setMaximumSupplyAirFlowRate(double maximumSupplyAirFlowRate) {
-    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->setMaximumSupplyAirFlowRate(maximumSupplyAirFlowRate);
-  }
-
-  void ZoneHVACUnitVentilator::autosizeMaximumSupplyAirFlowRate() {
-    getImpl<detail::ZoneHVACUnitVentilator_Impl>()->autosizeMaximumSupplyAirFlowRate();
-  }
-
-  bool ZoneHVACUnitVentilator::setOutdoorAirControlType(const std::string& outdoorAirControlType) {
-    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->setOutdoorAirControlType(outdoorAirControlType);
-  }
-
   bool ZoneHVACUnitVentilator::setMinimumOutdoorAirFlowRate(double minimumOutdoorAirFlowRate) {
     return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->setMinimumOutdoorAirFlowRate(minimumOutdoorAirFlowRate);
   }
 
   void ZoneHVACUnitVentilator::autosizeMinimumOutdoorAirFlowRate() {
     getImpl<detail::ZoneHVACUnitVentilator_Impl>()->autosizeMinimumOutdoorAirFlowRate();
+  }
+
+  boost::optional<double> ZoneHVACUnitVentilator::autosizedMinimumOutdoorAirFlowRate() const {
+    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->autosizedMinimumOutdoorAirFlowRate();
+  }
+
+  boost::optional<double> ZoneHVACUnitVentilator::maximumOutdoorAirFlowRate() const {
+    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->maximumOutdoorAirFlowRate();
+  }
+
+  bool ZoneHVACUnitVentilator::isMaximumOutdoorAirFlowRateAutosized() const {
+    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->isMaximumOutdoorAirFlowRateAutosized();
   }
 
   bool ZoneHVACUnitVentilator::setMaximumOutdoorAirFlowRate(double maximumOutdoorAirFlowRate) {
@@ -116,8 +104,20 @@ namespace epmodel {
     getImpl<detail::ZoneHVACUnitVentilator_Impl>()->autosizeMaximumOutdoorAirFlowRate();
   }
 
+  boost::optional<double> ZoneHVACUnitVentilator::autosizedMaximumOutdoorAirFlowRate() const {
+    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->autosizedMaximumOutdoorAirFlowRate();
+  }
+
+  double ZoneHVACUnitVentilator::heatingConvergenceTolerance() const {
+    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->heatingConvergenceTolerance();
+  }
+
   bool ZoneHVACUnitVentilator::setHeatingConvergenceTolerance(double heatingConvergenceTolerance) {
     return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->setHeatingConvergenceTolerance(heatingConvergenceTolerance);
+  }
+
+  double ZoneHVACUnitVentilator::coolingConvergenceTolerance() const {
+    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->coolingConvergenceTolerance();
   }
 
   bool ZoneHVACUnitVentilator::setCoolingConvergenceTolerance(double coolingConvergenceTolerance) {

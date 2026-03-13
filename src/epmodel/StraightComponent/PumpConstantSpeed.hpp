@@ -48,64 +48,77 @@ namespace epmodel {
     // - Field Mapping: pumpFlowRateSchedule, pumpCurve, zone linkage, and inlet/outlet node relationships are intentionally excluded from this scalar-only pass.
     // - ForwardTranslator evidence: ForwardTranslatePumpConstantSpeed.cpp confirms these field mappings and autosize semantics.
     // - TODO(parity): Add the relationship APIs once the scalar saturation milestone is complete without changing existing scalar signatures.
+
+    // ratedFlowRate
     boost::optional<double> ratedFlowRate() const;
     bool isRatedFlowRateAutosized() const;
     bool setRatedFlowRate(double ratedFlowRate);
     void resetRatedFlowRate();
     void autosizeRatedFlowRate();
+    boost::optional<double> autosizedRatedFlowRate() const;
 
+    // ratedPumpHead
     double ratedPumpHead() const;
     bool isRatedPumpHeadDefaulted() const;
     bool setRatedPumpHead(double ratedPumpHead);
     void resetRatedPumpHead();
 
+    // ratedPowerConsumption
     boost::optional<double> ratedPowerConsumption() const;
     bool isRatedPowerConsumptionAutosized() const;
     bool setRatedPowerConsumption(double ratedPowerConsumption);
     void resetRatedPowerConsumption();
     void autosizeRatedPowerConsumption();
+    boost::optional<double> autosizedRatedPowerConsumption() const;
 
+    // motorEfficiency
     double motorEfficiency() const;
     bool isMotorEfficiencyDefaulted() const;
     bool setMotorEfficiency(double motorEfficiency);
     void resetMotorEfficiency();
 
+    // fractionofMotorInefficienciestoFluidStream
     double fractionofMotorInefficienciestoFluidStream() const;
     bool isFractionofMotorInefficienciestoFluidStreamDefaulted() const;
     bool setFractionofMotorInefficienciestoFluidStream(double fractionofMotorInefficienciestoFluidStream);
     void resetFractionofMotorInefficienciestoFluidStream();
 
+    // pumpControlType
     std::string pumpControlType() const;
     bool isPumpControlTypeDefaulted() const;
     bool setPumpControlType(const std::string& pumpControlType);
     void resetPumpControlType();
 
+    // impellerDiameter
     boost::optional<double> impellerDiameter() const;
     bool setImpellerDiameter(double impellerDiameter);
     void resetImpellerDiameter();
 
+    // rotationalSpeed
     boost::optional<double> rotationalSpeed() const;
     bool setRotationalSpeed(double rotationalSpeed);
     void resetRotationalSpeed();
 
+    // skinLossRadiativeFraction
     boost::optional<double> skinLossRadiativeFraction() const;
     bool setSkinLossRadiativeFraction(double skinLossRadiativeFraction);
     void resetSkinLossRadiativeFraction();
 
+    // designPowerSizingMethod
     std::string designPowerSizingMethod() const;
     bool setDesignPowerSizingMethod(const std::string& designPowerSizingMethod);
 
+    // designElectricPowerPerUnitFlowRate
     double designElectricPowerPerUnitFlowRate() const;
     bool setDesignElectricPowerPerUnitFlowRate(double designElectricPowerPerUnitFlowRate);
 
+    // designShaftPowerPerUnitFlowRatePerUnitHead
     double designShaftPowerPerUnitFlowRatePerUnitHead() const;
     bool setDesignShaftPowerPerUnitFlowRatePerUnitHead(double designShaftPowerPerUnitFlowRatePerUnitHead);
 
+    // endUseSubcategory
     std::string endUseSubcategory() const;
     bool setEndUseSubcategory(const std::string& endUseSubcategory);
-
-    boost::optional<double> autosizedRatedFlowRate() const;
-    boost::optional<double> autosizedRatedPowerConsumption() const;
 
    protected:
     using ImplType = detail::PumpConstantSpeed_Impl;

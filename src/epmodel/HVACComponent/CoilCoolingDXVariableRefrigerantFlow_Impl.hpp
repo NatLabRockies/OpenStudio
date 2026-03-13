@@ -11,31 +11,31 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CoilCoolingDXVariableRefrigerantFlow_Impl : public HVACComponent_Impl
-{
- public:
-  using HVACComponent_Impl::HVACComponent_Impl;
-  virtual ~CoilCoolingDXVariableRefrigerantFlow_Impl() override = default;
+    class EPMODEL_API CoilCoolingDXVariableRefrigerantFlow_Impl : public HVACComponent_Impl
+    {
+     public:
+      using HVACComponent_Impl::HVACComponent_Impl;
+      virtual ~CoilCoolingDXVariableRefrigerantFlow_Impl() override = default;
 
-  boost::optional<double> ratedTotalCoolingCapacity() const;
-  bool isRatedTotalCoolingCapacityAutosized() const;
-  bool setRatedTotalCoolingCapacity(double ratedTotalCoolingCapacity);
-  void autosizeRatedTotalCoolingCapacity();
+      boost::optional<double> ratedTotalCoolingCapacity() const;
+      bool setRatedTotalCoolingCapacity(double ratedTotalCoolingCapacity);
+      bool isRatedTotalCoolingCapacityAutosized() const;
+      void autosizeRatedTotalCoolingCapacity();
 
-  boost::optional<double> ratedSensibleHeatRatio() const;
-  bool isRatedSensibleHeatRatioAutosized() const;
-  bool setRatedSensibleHeatRatio(double ratedSensibleHeatRatio);
-  void autosizeRatedSensibleHeatRatio();
+      boost::optional<double> ratedSensibleHeatRatio() const;
+      bool setRatedSensibleHeatRatio(double ratedSensibleHeatRatio);
+      bool isRatedSensibleHeatRatioAutosized() const;
+      void autosizeRatedSensibleHeatRatio();
 
-  boost::optional<double> ratedAirFlowRate() const;
-  bool isRatedAirFlowRateAutosized() const;
-  bool setRatedAirFlowRate(double ratedAirFlowRate);
-  void autosizeRatedAirFlowRate();
-};
+      boost::optional<double> ratedAirFlowRate() const;
+      bool setRatedAirFlowRate(double ratedAirFlowRate);
+      bool isRatedAirFlowRateAutosized() const;
+      void autosizeRatedAirFlowRate();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

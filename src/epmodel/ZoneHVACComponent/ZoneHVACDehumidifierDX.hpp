@@ -43,17 +43,21 @@ namespace epmodel {
     // - TODO(parity): Expand the schema-alignment coverage with the remaining relationship/curve APIs once scalar
     //   saturation has stabilized.
     double ratedWaterRemoval() const;
-    double ratedEnergyFactor() const;
-    double ratedAirFlowRate() const;
-    double minimumDryBulbTemperatureforDehumidifierOperation() const;
-    double maximumDryBulbTemperatureforDehumidifierOperation() const;
-    double offCycleParasiticElectricLoad() const;
-
     bool setRatedWaterRemoval(double ratedWaterRemoval);
+
+    double ratedEnergyFactor() const;
     bool setRatedEnergyFactor(double ratedEnergyFactor);
+
+    double ratedAirFlowRate() const;
     bool setRatedAirFlowRate(double ratedAirFlowRate);
+
+    double minimumDryBulbTemperatureforDehumidifierOperation() const;
     bool setMinimumDryBulbTemperatureforDehumidifierOperation(double minimumDryBulbTemperatureforDehumidifierOperation);
+
+    double maximumDryBulbTemperatureforDehumidifierOperation() const;
     bool setMaximumDryBulbTemperatureforDehumidifierOperation(double maximumDryBulbTemperatureforDehumidifierOperation);
+
+    double offCycleParasiticElectricLoad() const;
     bool setOffCycleParasiticElectricLoad(double offCycleParasiticElectricLoad);
 
    protected:

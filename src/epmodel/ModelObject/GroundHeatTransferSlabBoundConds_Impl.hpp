@@ -11,31 +11,33 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatTransferSlabBoundConds_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatTransferSlabBoundConds_Impl() override = default;
+    class EPMODEL_API GroundHeatTransferSlabBoundConds_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatTransferSlabBoundConds_Impl() override = default;
 
-  bool eVTRIssurfaceevapotranspirationmodeled() const;
-  bool fIXBCIsthelowerboundaryatafixedtemperature() const;
-  boost::optional<double> tDEEPin() const;
-  bool uSRHflagIsthegroundsurfacehspecifiedbytheuser() const;
-  boost::optional<double> uSERHUserspecifiedgroundsurfaceheattransfercoefficient() const;
+      bool eVTRIssurfaceevapotranspirationmodeled() const;
+      bool setEVTRIssurfaceevapotranspirationmodeled(bool eVTRIssurfaceevapotranspirationmodeled);
 
-  bool setEVTRIssurfaceevapotranspirationmodeled(bool eVTRIssurfaceevapotranspirationmodeled);
-  bool setFIXBCIsthelowerboundaryatafixedtemperature(bool fIXBCIsthelowerboundaryatafixedtemperature);
-  bool setTDEEPin(double tDEEPin);
-  bool setUSRHflagIsthegroundsurfacehspecifiedbytheuser(bool uSRHflagIsthegroundsurfacehspecifiedbytheuser);
-  bool setUSERHUserspecifiedgroundsurfaceheattransfercoefficient(double uSERHUserspecifiedgroundsurfaceheattransfercoefficient);
+      bool fIXBCIsthelowerboundaryatafixedtemperature() const;
+      bool setFIXBCIsthelowerboundaryatafixedtemperature(bool fIXBCIsthelowerboundaryatafixedtemperature);
 
-  void resetTDEEPin();
-  void resetUSERHUserspecifiedgroundsurfaceheattransfercoefficient();
-};
+      boost::optional<double> tDEEPin() const;
+      bool setTDEEPin(double tDEEPin);
+      void resetTDEEPin();
 
-}  // namespace detail
+      bool uSRHflagIsthegroundsurfacehspecifiedbytheuser() const;
+      bool setUSRHflagIsthegroundsurfacehspecifiedbytheuser(bool uSRHflagIsthegroundsurfacehspecifiedbytheuser);
+
+      boost::optional<double> uSERHUserspecifiedgroundsurfaceheattransfercoefficient() const;
+      bool setUSERHUserspecifiedgroundsurfaceheattransfercoefficient(double uSERHUserspecifiedgroundsurfaceheattransfercoefficient);
+      void resetUSERHUserspecifiedgroundsurfaceheattransfercoefficient();
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

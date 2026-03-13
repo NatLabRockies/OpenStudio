@@ -50,36 +50,20 @@ namespace epmodel {
     return getImpl<detail::PythonPluginOutputVariable_Impl>()->typeofDatainVariable();
   }
 
-  std::string PythonPluginOutputVariable::updateFrequency() const {
-    return getImpl<detail::PythonPluginOutputVariable_Impl>()->updateFrequency();
-  }
-
-  boost::optional<std::string> PythonPluginOutputVariable::units() const {
-    return getImpl<detail::PythonPluginOutputVariable_Impl>()->units();
-  }
-
-  boost::optional<std::string> PythonPluginOutputVariable::resourceType() const {
-    return getImpl<detail::PythonPluginOutputVariable_Impl>()->resourceType();
-  }
-
-  boost::optional<std::string> PythonPluginOutputVariable::groupType() const {
-    return getImpl<detail::PythonPluginOutputVariable_Impl>()->groupType();
-  }
-
-  boost::optional<std::string> PythonPluginOutputVariable::endUseCategory() const {
-    return getImpl<detail::PythonPluginOutputVariable_Impl>()->endUseCategory();
-  }
-
-  boost::optional<std::string> PythonPluginOutputVariable::endUseSubcategory() const {
-    return getImpl<detail::PythonPluginOutputVariable_Impl>()->endUseSubcategory();
-  }
-
   bool PythonPluginOutputVariable::setTypeofDatainVariable(const std::string& typeofDatainVariable) {
     return getImpl<detail::PythonPluginOutputVariable_Impl>()->setTypeofDatainVariable(typeofDatainVariable);
   }
 
+  std::string PythonPluginOutputVariable::updateFrequency() const {
+    return getImpl<detail::PythonPluginOutputVariable_Impl>()->updateFrequency();
+  }
+
   bool PythonPluginOutputVariable::setUpdateFrequency(const std::string& updateFrequency) {
     return getImpl<detail::PythonPluginOutputVariable_Impl>()->setUpdateFrequency(updateFrequency);
+  }
+
+  boost::optional<std::string> PythonPluginOutputVariable::units() const {
+    return getImpl<detail::PythonPluginOutputVariable_Impl>()->units();
   }
 
   bool PythonPluginOutputVariable::setUnits(const std::string& units) {
@@ -90,12 +74,20 @@ namespace epmodel {
     getImpl<detail::PythonPluginOutputVariable_Impl>()->resetUnits();
   }
 
+  boost::optional<std::string> PythonPluginOutputVariable::resourceType() const {
+    return getImpl<detail::PythonPluginOutputVariable_Impl>()->resourceType();
+  }
+
   bool PythonPluginOutputVariable::setResourceType(const std::string& resourceType) {
     return getImpl<detail::PythonPluginOutputVariable_Impl>()->setResourceType(resourceType);
   }
 
   void PythonPluginOutputVariable::resetResourceType() {
     getImpl<detail::PythonPluginOutputVariable_Impl>()->resetResourceType();
+  }
+
+  boost::optional<std::string> PythonPluginOutputVariable::groupType() const {
+    return getImpl<detail::PythonPluginOutputVariable_Impl>()->groupType();
   }
 
   bool PythonPluginOutputVariable::setGroupType(const std::string& groupType) {
@@ -106,12 +98,20 @@ namespace epmodel {
     getImpl<detail::PythonPluginOutputVariable_Impl>()->resetGroupType();
   }
 
+  boost::optional<std::string> PythonPluginOutputVariable::endUseCategory() const {
+    return getImpl<detail::PythonPluginOutputVariable_Impl>()->endUseCategory();
+  }
+
   bool PythonPluginOutputVariable::setEndUseCategory(const std::string& endUseCategory) {
     return getImpl<detail::PythonPluginOutputVariable_Impl>()->setEndUseCategory(endUseCategory);
   }
 
   void PythonPluginOutputVariable::resetEndUseCategory() {
     getImpl<detail::PythonPluginOutputVariable_Impl>()->resetEndUseCategory();
+  }
+
+  boost::optional<std::string> PythonPluginOutputVariable::endUseSubcategory() const {
+    return getImpl<detail::PythonPluginOutputVariable_Impl>()->endUseSubcategory();
   }
 
   bool PythonPluginOutputVariable::setEndUseSubcategory(const std::string& endUseSubcategory) {
@@ -130,38 +130,22 @@ namespace epmodel {
       return *value;
     }
 
+    bool PythonPluginOutputVariable_Impl::setTypeofDatainVariable(const std::string& typeofDatainVariable) {
+      return setString(openstudio::PythonPlugin_OutputVariableFields::TypeofDatainVariable, typeofDatainVariable);
+    }
+
     std::string PythonPluginOutputVariable_Impl::updateFrequency() const {
       const auto value = getString(openstudio::PythonPlugin_OutputVariableFields::UpdateFrequency, true);
       OS_ASSERT(value);
       return *value;
     }
 
-    boost::optional<std::string> PythonPluginOutputVariable_Impl::units() const {
-      return getString(openstudio::PythonPlugin_OutputVariableFields::Units, true);
-    }
-
-    boost::optional<std::string> PythonPluginOutputVariable_Impl::resourceType() const {
-      return getString(openstudio::PythonPlugin_OutputVariableFields::ResourceType, true);
-    }
-
-    boost::optional<std::string> PythonPluginOutputVariable_Impl::groupType() const {
-      return getString(openstudio::PythonPlugin_OutputVariableFields::GroupType, true);
-    }
-
-    boost::optional<std::string> PythonPluginOutputVariable_Impl::endUseCategory() const {
-      return getString(openstudio::PythonPlugin_OutputVariableFields::EndUseCategory, true);
-    }
-
-    boost::optional<std::string> PythonPluginOutputVariable_Impl::endUseSubcategory() const {
-      return getString(openstudio::PythonPlugin_OutputVariableFields::EndUseSubcategory, true);
-    }
-
-    bool PythonPluginOutputVariable_Impl::setTypeofDatainVariable(const std::string& typeofDatainVariable) {
-      return setString(openstudio::PythonPlugin_OutputVariableFields::TypeofDatainVariable, typeofDatainVariable);
-    }
-
     bool PythonPluginOutputVariable_Impl::setUpdateFrequency(const std::string& updateFrequency) {
       return setString(openstudio::PythonPlugin_OutputVariableFields::UpdateFrequency, updateFrequency);
+    }
+
+    boost::optional<std::string> PythonPluginOutputVariable_Impl::units() const {
+      return getString(openstudio::PythonPlugin_OutputVariableFields::Units, true);
     }
 
     bool PythonPluginOutputVariable_Impl::setUnits(const std::string& units) {
@@ -175,6 +159,10 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<std::string> PythonPluginOutputVariable_Impl::resourceType() const {
+      return getString(openstudio::PythonPlugin_OutputVariableFields::ResourceType, true);
+    }
+
     bool PythonPluginOutputVariable_Impl::setResourceType(const std::string& resourceType) {
       return setString(openstudio::PythonPlugin_OutputVariableFields::ResourceType, resourceType);
     }
@@ -182,6 +170,10 @@ namespace epmodel {
     void PythonPluginOutputVariable_Impl::resetResourceType() {
       const bool result = setString(openstudio::PythonPlugin_OutputVariableFields::ResourceType, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<std::string> PythonPluginOutputVariable_Impl::groupType() const {
+      return getString(openstudio::PythonPlugin_OutputVariableFields::GroupType, true);
     }
 
     bool PythonPluginOutputVariable_Impl::setGroupType(const std::string& groupType) {
@@ -193,6 +185,10 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<std::string> PythonPluginOutputVariable_Impl::endUseCategory() const {
+      return getString(openstudio::PythonPlugin_OutputVariableFields::EndUseCategory, true);
+    }
+
     bool PythonPluginOutputVariable_Impl::setEndUseCategory(const std::string& endUseCategory) {
       return setString(openstudio::PythonPlugin_OutputVariableFields::EndUseCategory, endUseCategory);
     }
@@ -200,6 +196,10 @@ namespace epmodel {
     void PythonPluginOutputVariable_Impl::resetEndUseCategory() {
       const bool result = setString(openstudio::PythonPlugin_OutputVariableFields::EndUseCategory, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<std::string> PythonPluginOutputVariable_Impl::endUseSubcategory() const {
+      return getString(openstudio::PythonPlugin_OutputVariableFields::EndUseSubcategory, true);
     }
 
     bool PythonPluginOutputVariable_Impl::setEndUseSubcategory(const std::string& endUseSubcategory) {

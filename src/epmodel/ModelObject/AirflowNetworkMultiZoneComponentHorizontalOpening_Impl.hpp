@@ -11,32 +11,32 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirflowNetworkMultiZoneComponentHorizontalOpening_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirflowNetworkMultiZoneComponentHorizontalOpening_Impl() override = default;
+    class EPMODEL_API AirflowNetworkMultiZoneComponentHorizontalOpening_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirflowNetworkMultiZoneComponentHorizontalOpening_Impl() override = default;
 
-  double airMassFlowCoefficientWhenOpeningisClosed() const;
-  bool setAirMassFlowCoefficientWhenOpeningisClosed(double airMassFlowCoefficientWhenOpeningisClosed);
+      double airMassFlowCoefficientWhenOpeningisClosed() const;
+      bool setAirMassFlowCoefficientWhenOpeningisClosed(double airMassFlowCoefficientWhenOpeningisClosed);
 
-  double airMassFlowExponentWhenOpeningisClosed() const;
-  bool isAirMassFlowExponentWhenOpeningisClosedDefaulted() const;
-  bool setAirMassFlowExponentWhenOpeningisClosed(double airMassFlowExponentWhenOpeningisClosed);
-  void resetAirMassFlowExponentWhenOpeningisClosed();
+      double airMassFlowExponentWhenOpeningisClosed() const;
+      bool setAirMassFlowExponentWhenOpeningisClosed(double airMassFlowExponentWhenOpeningisClosed);
+      bool isAirMassFlowExponentWhenOpeningisClosedDefaulted() const;
+      void resetAirMassFlowExponentWhenOpeningisClosed();
 
-  double slopingPlaneAngle() const;
-  bool isSlopingPlaneAngleDefaulted() const;
-  bool setSlopingPlaneAngle(double slopingPlaneAngle);
-  void resetSlopingPlaneAngle();
+      double slopingPlaneAngle() const;
+      bool setSlopingPlaneAngle(double slopingPlaneAngle);
+      bool isSlopingPlaneAngleDefaulted() const;
+      void resetSlopingPlaneAngle();
 
-  double dischargeCoefficient() const;
-  bool setDischargeCoefficient(double dischargeCoefficient);
-};
+      double dischargeCoefficient() const;
+      bool setDischargeCoefficient(double dischargeCoefficient);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

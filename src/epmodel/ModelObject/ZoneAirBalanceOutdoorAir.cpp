@@ -86,6 +86,10 @@ namespace epmodel {
       OS_ASSERT(setString(openstudio::ZoneAirBalance_OutdoorAirFields::AirBalanceMethod, ""));
     }
 
+    std::vector<std::string> ZoneAirBalanceOutdoorAir_Impl::airBalanceMethodValues() const {
+      return openstudio::epmodel::ZoneAirBalanceOutdoorAir::airBalanceMethodValues();
+    }
+
     double ZoneAirBalanceOutdoorAir_Impl::inducedOutdoorAirDueToUnbalancedDuctLeakage() const {
       const auto value = getDouble(openstudio::ZoneAirBalance_OutdoorAirFields::InducedOutdoorAirDuetoUnbalancedDuctLeakage, true);
       OS_ASSERT(value);
@@ -105,10 +109,6 @@ namespace epmodel {
 
     void ZoneAirBalanceOutdoorAir_Impl::resetInducedOutdoorAirDueToUnbalancedDuctLeakage() {
       OS_ASSERT(setString(openstudio::ZoneAirBalance_OutdoorAirFields::InducedOutdoorAirDuetoUnbalancedDuctLeakage, ""));
-    }
-
-    std::vector<std::string> ZoneAirBalanceOutdoorAir_Impl::airBalanceMethodValues() const {
-      return openstudio::epmodel::ZoneAirBalanceOutdoorAir::airBalanceMethodValues();
     }
 
   }  // namespace detail

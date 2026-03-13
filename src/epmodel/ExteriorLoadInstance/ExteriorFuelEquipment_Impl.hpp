@@ -13,34 +13,31 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ExteriorFuelEquipment_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ExteriorFuelEquipment_Impl() override = default;
+    class EPMODEL_API ExteriorFuelEquipment_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ExteriorFuelEquipment_Impl() override = default;
 
-  std::string fuelType() const;
+      std::string fuelType() const;
+      bool setFuelType(const std::string& fuelType);
 
-  double multiplier() const;
-  bool isMultiplierDefaulted() const;
+      double multiplier() const;
+      bool isMultiplierDefaulted() const;
+      bool setMultiplier(double multiplier);
+      void resetMultiplier();
 
-  std::string endUseSubcategory() const;
-  bool isEndUseSubcategoryDefaulted() const;
+      std::string endUseSubcategory() const;
+      bool isEndUseSubcategoryDefaulted() const;
+      bool setEndUseSubcategory(const std::string& endUseSubcategory);
+      void resetEndUseSubcategory();
 
-  bool setFuelType(const std::string& fuelType);
+      std::vector<std::string> fuelTypeValues() const;
+    };
 
-  bool setMultiplier(double multiplier);
-  void resetMultiplier();
-
-  bool setEndUseSubcategory(const std::string& endUseSubcategory);
-  void resetEndUseSubcategory();
-
-  std::vector<std::string> fuelTypeValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

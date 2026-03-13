@@ -48,40 +48,41 @@ namespace epmodel {
     std::string designFlowRateCalculationMethod() const;
 
     boost::optional<double> designFlowRate() const;
+    bool setDesignFlowRate(double designFlowRate);
+
     boost::optional<double> flowperSpaceFloorArea() const;
+    bool setFlowperSpaceFloorArea(double flowperSpaceFloorArea);
+
     boost::optional<double> flowperExteriorSurfaceArea() const;
+    bool setFlowperExteriorSurfaceArea(double flowperExteriorSurfaceArea);
+
     boost::optional<double> flowperExteriorWallArea() const;
+    bool setFlowperExteriorWallArea(double flowperExteriorWallArea);
+
     boost::optional<double> airChangesperHour() const;
+    bool setAirChangesperHour(double airChangesperHour);
 
     double constantTermCoefficient() const;
     bool isConstantTermCoefficientDefaulted() const;
-    double temperatureTermCoefficient() const;
-    bool isTemperatureTermCoefficientDefaulted() const;
-    double velocityTermCoefficient() const;
-    bool isVelocityTermCoefficientDefaulted() const;
-    double velocitySquaredTermCoefficient() const;
-    bool isVelocitySquaredTermCoefficientDefaulted() const;
-
-    std::string densityBasis() const;
-
-    bool setDesignFlowRate(double designFlowRate);
-    bool setFlowperSpaceFloorArea(double flowperSpaceFloorArea);
-    bool setFlowperExteriorSurfaceArea(double flowperExteriorSurfaceArea);
-    bool setFlowperExteriorWallArea(double flowperExteriorWallArea);
-    bool setAirChangesperHour(double airChangesperHour);
-
     bool setConstantTermCoefficient(double constantTermCoefficient);
     void resetConstantTermCoefficient();
 
+    double temperatureTermCoefficient() const;
+    bool isTemperatureTermCoefficientDefaulted() const;
     bool setTemperatureTermCoefficient(double temperatureTermCoefficient);
     void resetTemperatureTermCoefficient();
 
+    double velocityTermCoefficient() const;
+    bool isVelocityTermCoefficientDefaulted() const;
     bool setVelocityTermCoefficient(double velocityTermCoefficient);
     void resetVelocityTermCoefficient();
 
+    double velocitySquaredTermCoefficient() const;
+    bool isVelocitySquaredTermCoefficientDefaulted() const;
     bool setVelocitySquaredTermCoefficient(double velocitySquaredTermCoefficient);
     void resetVelocitySquaredTermCoefficient();
 
+    std::string densityBasis() const;
     bool setDensityBasis(const std::string& densityBasis);
 
    protected:

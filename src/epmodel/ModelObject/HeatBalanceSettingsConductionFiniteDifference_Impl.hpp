@@ -13,37 +13,39 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HeatBalanceSettingsConductionFiniteDifference_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~HeatBalanceSettingsConductionFiniteDifference_Impl() override = default;
+    class EPMODEL_API HeatBalanceSettingsConductionFiniteDifference_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~HeatBalanceSettingsConductionFiniteDifference_Impl() override = default;
 
-  std::string differenceScheme() const;
-  bool isDifferenceSchemeDefaulted() const;
-  double spaceDiscretizationConstant() const;
-  bool isSpaceDiscretizationConstantDefaulted() const;
-  double relaxationFactor() const;
-  bool isRelaxationFactorDefaulted() const;
-  double insideFaceSurfaceTemperatureConvergenceCriteria() const;
-  bool isInsideFaceSurfaceTemperatureConvergenceCriteriaDefaulted() const;
+      std::string differenceScheme() const;
+      bool isDifferenceSchemeDefaulted() const;
+      bool setDifferenceScheme(const std::string& differenceScheme);
+      void resetDifferenceScheme();
 
-  bool setDifferenceScheme(const std::string& differenceScheme);
-  void resetDifferenceScheme();
-  bool setSpaceDiscretizationConstant(double spaceDiscretizationConstant);
-  void resetSpaceDiscretizationConstant();
-  bool setRelaxationFactor(double relaxationFactor);
-  void resetRelaxationFactor();
-  bool setInsideFaceSurfaceTemperatureConvergenceCriteria(double insideFaceSurfaceTemperatureConvergenceCriteria);
-  void resetInsideFaceSurfaceTemperatureConvergenceCriteria();
+      double spaceDiscretizationConstant() const;
+      bool isSpaceDiscretizationConstantDefaulted() const;
+      bool setSpaceDiscretizationConstant(double spaceDiscretizationConstant);
+      void resetSpaceDiscretizationConstant();
 
- private:
-  std::vector<std::string> differenceSchemeValues() const;
-};
+      double relaxationFactor() const;
+      bool isRelaxationFactorDefaulted() const;
+      bool setRelaxationFactor(double relaxationFactor);
+      void resetRelaxationFactor();
 
-}  // namespace detail
+      double insideFaceSurfaceTemperatureConvergenceCriteria() const;
+      bool isInsideFaceSurfaceTemperatureConvergenceCriteriaDefaulted() const;
+      bool setInsideFaceSurfaceTemperatureConvergenceCriteria(double insideFaceSurfaceTemperatureConvergenceCriteria);
+      void resetInsideFaceSurfaceTemperatureConvergenceCriteria();
+
+     private:
+      std::vector<std::string> differenceSchemeValues() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

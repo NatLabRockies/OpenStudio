@@ -21,6 +21,10 @@ class EPMODEL_API SiteGroundDomainBasement_Impl : public ModelObject_Impl
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~SiteGroundDomainBasement_Impl() override = default;
 
+  std::vector<std::string> undisturbedGroundTemperatureModelTypeValues() const;
+  std::vector<std::string> horizontalInsulationExtentsValues() const;
+  std::vector<std::string> simulationTimestepValues() const;
+
   double groundDomainDepth() const;
   bool isGroundDomainDepthDefaulted() const;
   bool setGroundDomainDepth(double groundDomainDepth);
@@ -105,10 +109,6 @@ class EPMODEL_API SiteGroundDomainBasement_Impl : public ModelObject_Impl
   bool isMeshDensityParameterDefaulted() const;
   bool setMeshDensityParameter(int meshDensityParameter);
   void resetMeshDensityParameter();
-
-  std::vector<std::string> undisturbedGroundTemperatureModelTypeValues() const;
-  std::vector<std::string> horizontalInsulationExtentsValues() const;
-  std::vector<std::string> simulationTimestepValues() const;
 };
 
 }  // namespace detail

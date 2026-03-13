@@ -13,43 +13,42 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CoilCoolingDXCurveFitPerformance_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~CoilCoolingDXCurveFitPerformance_Impl() override = default;
+    class EPMODEL_API CoilCoolingDXCurveFitPerformance_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~CoilCoolingDXCurveFitPerformance_Impl() override = default;
 
-  double crankcaseHeaterCapacity() const;
-  bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
+      double crankcaseHeaterCapacity() const;
+      bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
 
-  double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
-  bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);
+      double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
+      bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);
 
-  double maximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation() const;
-  bool setMaximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation(double maximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation);
+      double maximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation() const;
+      bool setMaximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation(double maximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation);
 
-  double unitInternalStaticAirPressure() const;
-  bool setUnitInternalStaticAirPressure(double unitInternalStaticAirPressure);
+      double unitInternalStaticAirPressure() const;
+      bool setUnitInternalStaticAirPressure(double unitInternalStaticAirPressure);
 
-  std::string capacityControlMethod() const;
-  bool setCapacityControlMethod(const std::string& capacityControlMethod);
+      std::string capacityControlMethod() const;
+      bool setCapacityControlMethod(const std::string& capacityControlMethod);
+      std::vector<std::string> capacityControlMethodValues() const;
 
-  double evaporativeCondenserBasinHeaterCapacity() const;
-  bool setEvaporativeCondenserBasinHeaterCapacity(double evaporativeCondenserBasinHeaterCapacity);
+      double evaporativeCondenserBasinHeaterCapacity() const;
+      bool setEvaporativeCondenserBasinHeaterCapacity(double evaporativeCondenserBasinHeaterCapacity);
 
-  double evaporativeCondenserBasinHeaterSetpointTemperature() const;
-  bool setEvaporativeCondenserBasinHeaterSetpointTemperature(double evaporativeCondenserBasinHeaterSetpointTemperature);
+      double evaporativeCondenserBasinHeaterSetpointTemperature() const;
+      bool setEvaporativeCondenserBasinHeaterSetpointTemperature(double evaporativeCondenserBasinHeaterSetpointTemperature);
 
-  std::string compressorFuelType() const;
-  bool setCompressorFuelType(const std::string& compressorFuelType);
+      std::string compressorFuelType() const;
+      bool setCompressorFuelType(const std::string& compressorFuelType);
+      std::vector<std::string> compressorFuelTypeValues() const;
+    };
 
-  std::vector<std::string> capacityControlMethodValues() const;
-  std::vector<std::string> compressorFuelTypeValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

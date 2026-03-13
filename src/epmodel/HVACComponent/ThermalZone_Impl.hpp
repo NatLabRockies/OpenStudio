@@ -64,10 +64,10 @@ namespace epmodel {
       void autocalculateVolume();
 
       boost::optional<std::string> zoneInsideConvectionAlgorithm() const;
-      boost::optional<std::string> zoneOutsideConvectionAlgorithm() const;
       bool setZoneInsideConvectionAlgorithm(boost::optional<std::string> zoneInsideConvectionAlgorithm);
       bool setZoneInsideConvectionAlgorithm(const std::string& zoneInsideConvectionAlgorithm);
       void resetZoneInsideConvectionAlgorithm();
+      boost::optional<std::string> zoneOutsideConvectionAlgorithm() const;
       bool setZoneOutsideConvectionAlgorithm(boost::optional<std::string> zoneOutsideConvectionAlgorithm);
       bool setZoneOutsideConvectionAlgorithm(const std::string& zoneOutsideConvectionAlgorithm);
       void resetZoneOutsideConvectionAlgorithm();
@@ -179,17 +179,17 @@ namespace epmodel {
       void resetFractionofZoneControlledbySecondaryDaylightingControl();
 
       double primaryDaylightingControlXCoordinate() const;
-      double primaryDaylightingControlYCoordinate() const;
-      double primaryDaylightingControlZCoordinate() const;
       bool setPrimaryDaylightingControlXCoordinate(double primaryDaylightingControlXCoordinate);
+      double primaryDaylightingControlYCoordinate() const;
       bool setPrimaryDaylightingControlYCoordinate(double primaryDaylightingControlYCoordinate);
+      double primaryDaylightingControlZCoordinate() const;
       bool setPrimaryDaylightingControlZCoordinate(double primaryDaylightingControlZCoordinate);
 
       double secondaryDaylightingControlXCoordinate() const;
-      double secondaryDaylightingControlYCoordinate() const;
-      double secondaryDaylightingControlZCoordinate() const;
       bool setSecondaryDaylightingControlXCoordinate(double secondaryDaylightingControlXCoordinate);
+      double secondaryDaylightingControlYCoordinate() const;
       bool setSecondaryDaylightingControlYCoordinate(double secondaryDaylightingControlYCoordinate);
+      double secondaryDaylightingControlZCoordinate() const;
       bool setSecondaryDaylightingControlZCoordinate(double secondaryDaylightingControlZCoordinate);
 
       double illuminanceMapOriginXCoordinate() const;

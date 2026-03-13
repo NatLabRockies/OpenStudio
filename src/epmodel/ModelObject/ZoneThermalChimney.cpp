@@ -45,12 +45,12 @@ namespace epmodel {
     return getImpl<detail::ZoneThermalChimney_Impl>()->dischargeCoefficient();
   }
 
-  bool ZoneThermalChimney::isDischargeCoefficientDefaulted() const {
-    return getImpl<detail::ZoneThermalChimney_Impl>()->isDischargeCoefficientDefaulted();
-  }
-
   bool ZoneThermalChimney::setDischargeCoefficient(double dischargeCoefficient) {
     return getImpl<detail::ZoneThermalChimney_Impl>()->setDischargeCoefficient(dischargeCoefficient);
+  }
+
+  bool ZoneThermalChimney::isDischargeCoefficientDefaulted() const {
+    return getImpl<detail::ZoneThermalChimney_Impl>()->isDischargeCoefficientDefaulted();
   }
 
   void ZoneThermalChimney::resetDischargeCoefficient() {
@@ -93,12 +93,12 @@ namespace epmodel {
       return 0.8;
     }
 
-    bool ZoneThermalChimney_Impl::isDischargeCoefficientDefaulted() const {
-      return isEmpty(openstudio::ZoneThermalChimneyFields::DischargeCoefficient);
-    }
-
     bool ZoneThermalChimney_Impl::setDischargeCoefficient(double dischargeCoefficient) {
       return setDouble(openstudio::ZoneThermalChimneyFields::DischargeCoefficient, dischargeCoefficient);
+    }
+
+    bool ZoneThermalChimney_Impl::isDischargeCoefficientDefaulted() const {
+      return isEmpty(openstudio::ZoneThermalChimneyFields::DischargeCoefficient);
     }
 
     void ZoneThermalChimney_Impl::resetDischargeCoefficient() {

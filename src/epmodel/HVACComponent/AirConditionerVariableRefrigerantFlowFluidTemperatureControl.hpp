@@ -15,156 +15,154 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl;
-}
+  namespace detail {
+    class AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl;
+  }
 
-class EPMODEL_API AirConditionerVariableRefrigerantFlowFluidTemperatureControl : public ModelObject
-{
- public:
-  explicit AirConditionerVariableRefrigerantFlowFluidTemperatureControl(const Model& model);
+  class EPMODEL_API AirConditionerVariableRefrigerantFlowFluidTemperatureControl : public ModelObject
+  {
+   public:
+    explicit AirConditionerVariableRefrigerantFlowFluidTemperatureControl(const Model& model);
 
-  virtual ~AirConditionerVariableRefrigerantFlowFluidTemperatureControl() override = default;
-  AirConditionerVariableRefrigerantFlowFluidTemperatureControl(
-    const AirConditionerVariableRefrigerantFlowFluidTemperatureControl& other) = default;
-  AirConditionerVariableRefrigerantFlowFluidTemperatureControl(
-    AirConditionerVariableRefrigerantFlowFluidTemperatureControl&& other) = default;
-  AirConditionerVariableRefrigerantFlowFluidTemperatureControl&
-    operator=(const AirConditionerVariableRefrigerantFlowFluidTemperatureControl&) = default;
-  AirConditionerVariableRefrigerantFlowFluidTemperatureControl&
-    operator=(AirConditionerVariableRefrigerantFlowFluidTemperatureControl&&) = default;
+    virtual ~AirConditionerVariableRefrigerantFlowFluidTemperatureControl() override = default;
+    AirConditionerVariableRefrigerantFlowFluidTemperatureControl(const AirConditionerVariableRefrigerantFlowFluidTemperatureControl& other) = default;
+    AirConditionerVariableRefrigerantFlowFluidTemperatureControl(AirConditionerVariableRefrigerantFlowFluidTemperatureControl&& other) = default;
+    AirConditionerVariableRefrigerantFlowFluidTemperatureControl&
+      operator=(const AirConditionerVariableRefrigerantFlowFluidTemperatureControl&) = default;
+    AirConditionerVariableRefrigerantFlowFluidTemperatureControl& operator=(AirConditionerVariableRefrigerantFlowFluidTemperatureControl&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> refrigerantTypeValues();
-  static std::vector<std::string> refrigerantTemperatureControlAlgorithmforIndoorUnitValues();
-  static std::vector<std::string> defrostStrategyValues();
-  static std::vector<std::string> defrostControlValues();
+    static std::vector<std::string> refrigerantTypeValues();
+    static std::vector<std::string> refrigerantTemperatureControlAlgorithmforIndoorUnitValues();
+    static std::vector<std::string> defrostStrategyValues();
+    static std::vector<std::string> defrostControlValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-  // - Field Mapping: Preserved scalar APIs map directly to matching E+ AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl fields.
-  // - Field Mapping: Relationship-like fields (schedule/curves/lists/nodes) are intentionally excluded in this scalar scaffold phase.
-  // - TODO(parity): Add non-scalar relationship API parity incrementally after scalar saturation.
-  std::string refrigerantType() const;
-  bool setRefrigerantType(const std::string& refrigerantType);
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
+    // - Field Mapping: Preserved scalar APIs map directly to matching E+ AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl fields.
+    // - Field Mapping: Relationship-like fields (schedule/curves/lists/nodes) are intentionally excluded in this scalar scaffold phase.
+    // - TODO(parity): Add non-scalar relationship API parity incrementally after scalar saturation.
 
-  boost::optional<double> ratedEvaporativeCapacity() const;
-  bool isRatedEvaporativeCapacityAutosized() const;
-  bool setRatedEvaporativeCapacity(double ratedEvaporativeCapacity);
-  void autosizeRatedEvaporativeCapacity();
+    std::string refrigerantType() const;
+    bool setRefrigerantType(const std::string& refrigerantType);
 
-  double ratedCompressorPowerPerUnitofRatedEvaporativeCapacity() const;
-  bool setRatedCompressorPowerPerUnitofRatedEvaporativeCapacity(double ratedCompressorPowerPerUnitofRatedEvaporativeCapacity);
+    boost::optional<double> ratedEvaporativeCapacity() const;
+    bool isRatedEvaporativeCapacityAutosized() const;
+    bool setRatedEvaporativeCapacity(double ratedEvaporativeCapacity);
+    void autosizeRatedEvaporativeCapacity();
 
-  double minimumOutdoorAirTemperatureinCoolingMode() const;
-  bool setMinimumOutdoorAirTemperatureinCoolingMode(double minimumOutdoorAirTemperatureinCoolingMode);
+    double ratedCompressorPowerPerUnitofRatedEvaporativeCapacity() const;
+    bool setRatedCompressorPowerPerUnitofRatedEvaporativeCapacity(double ratedCompressorPowerPerUnitofRatedEvaporativeCapacity);
 
-  double maximumOutdoorAirTemperatureinCoolingMode() const;
-  bool setMaximumOutdoorAirTemperatureinCoolingMode(double maximumOutdoorAirTemperatureinCoolingMode);
+    double minimumOutdoorAirTemperatureinCoolingMode() const;
+    bool setMinimumOutdoorAirTemperatureinCoolingMode(double minimumOutdoorAirTemperatureinCoolingMode);
 
-  double minimumOutdoorAirTemperatureinHeatingMode() const;
-  bool setMinimumOutdoorAirTemperatureinHeatingMode(double minimumOutdoorAirTemperatureinHeatingMode);
+    double maximumOutdoorAirTemperatureinCoolingMode() const;
+    bool setMaximumOutdoorAirTemperatureinCoolingMode(double maximumOutdoorAirTemperatureinCoolingMode);
 
-  double maximumOutdoorAirTemperatureinHeatingMode() const;
-  bool setMaximumOutdoorAirTemperatureinHeatingMode(double maximumOutdoorAirTemperatureinHeatingMode);
+    double minimumOutdoorAirTemperatureinHeatingMode() const;
+    bool setMinimumOutdoorAirTemperatureinHeatingMode(double minimumOutdoorAirTemperatureinHeatingMode);
 
-  double referenceOutdoorUnitSuperheating() const;
-  bool setReferenceOutdoorUnitSuperheating(double referenceOutdoorUnitSuperheating);
+    double maximumOutdoorAirTemperatureinHeatingMode() const;
+    bool setMaximumOutdoorAirTemperatureinHeatingMode(double maximumOutdoorAirTemperatureinHeatingMode);
 
-  double referenceOutdoorUnitSubcooling() const;
-  bool setReferenceOutdoorUnitSubcooling(double referenceOutdoorUnitSubcooling);
+    double referenceOutdoorUnitSuperheating() const;
+    bool setReferenceOutdoorUnitSuperheating(double referenceOutdoorUnitSuperheating);
 
-  std::string refrigerantTemperatureControlAlgorithmforIndoorUnit() const;
-  bool setRefrigerantTemperatureControlAlgorithmforIndoorUnit(const std::string& refrigerantTemperatureControlAlgorithmforIndoorUnit);
+    double referenceOutdoorUnitSubcooling() const;
+    bool setReferenceOutdoorUnitSubcooling(double referenceOutdoorUnitSubcooling);
 
-  double referenceEvaporatingTemperatureforIndoorUnit() const;
-  bool setReferenceEvaporatingTemperatureforIndoorUnit(double referenceEvaporatingTemperatureforIndoorUnit);
+    std::string refrigerantTemperatureControlAlgorithmforIndoorUnit() const;
+    bool setRefrigerantTemperatureControlAlgorithmforIndoorUnit(const std::string& refrigerantTemperatureControlAlgorithmforIndoorUnit);
 
-  double referenceCondensingTemperatureforIndoorUnit() const;
-  bool setReferenceCondensingTemperatureforIndoorUnit(double referenceCondensingTemperatureforIndoorUnit);
+    double referenceEvaporatingTemperatureforIndoorUnit() const;
+    bool setReferenceEvaporatingTemperatureforIndoorUnit(double referenceEvaporatingTemperatureforIndoorUnit);
 
-  double variableEvaporatingTemperatureMinimumforIndoorUnit() const;
-  bool setVariableEvaporatingTemperatureMinimumforIndoorUnit(double variableEvaporatingTemperatureMinimumforIndoorUnit);
+    double referenceCondensingTemperatureforIndoorUnit() const;
+    bool setReferenceCondensingTemperatureforIndoorUnit(double referenceCondensingTemperatureforIndoorUnit);
 
-  double variableEvaporatingTemperatureMaximumforIndoorUnit() const;
-  bool setVariableEvaporatingTemperatureMaximumforIndoorUnit(double variableEvaporatingTemperatureMaximumforIndoorUnit);
+    double variableEvaporatingTemperatureMinimumforIndoorUnit() const;
+    bool setVariableEvaporatingTemperatureMinimumforIndoorUnit(double variableEvaporatingTemperatureMinimumforIndoorUnit);
 
-  double variableCondensingTemperatureMinimumforIndoorUnit() const;
-  bool setVariableCondensingTemperatureMinimumforIndoorUnit(double variableCondensingTemperatureMinimumforIndoorUnit);
+    double variableEvaporatingTemperatureMaximumforIndoorUnit() const;
+    bool setVariableEvaporatingTemperatureMaximumforIndoorUnit(double variableEvaporatingTemperatureMaximumforIndoorUnit);
 
-  double variableCondensingTemperatureMaximumforIndoorUnit() const;
-  bool setVariableCondensingTemperatureMaximumforIndoorUnit(double variableCondensingTemperatureMaximumforIndoorUnit);
+    double variableCondensingTemperatureMinimumforIndoorUnit() const;
+    bool setVariableCondensingTemperatureMinimumforIndoorUnit(double variableCondensingTemperatureMinimumforIndoorUnit);
 
-  double outdoorUnitFanPowerPerUnitofRatedEvaporativeCapacity() const;
-  bool setOutdoorUnitFanPowerPerUnitofRatedEvaporativeCapacity(double outdoorUnitFanPowerPerUnitofRatedEvaporativeCapacity);
+    double variableCondensingTemperatureMaximumforIndoorUnit() const;
+    bool setVariableCondensingTemperatureMaximumforIndoorUnit(double variableCondensingTemperatureMaximumforIndoorUnit);
 
-  double outdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity() const;
-  bool setOutdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity(double outdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity);
+    double outdoorUnitFanPowerPerUnitofRatedEvaporativeCapacity() const;
+    bool setOutdoorUnitFanPowerPerUnitofRatedEvaporativeCapacity(double outdoorUnitFanPowerPerUnitofRatedEvaporativeCapacity);
 
-  double diameterofMainPipeConnectingOutdoorUnittotheFirstBranchJoint() const;
-  bool setDiameterofMainPipeConnectingOutdoorUnittotheFirstBranchJoint(double diameterofMainPipeConnectingOutdoorUnittotheFirstBranchJoint);
+    double outdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity() const;
+    bool setOutdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity(double outdoorUnitFanFlowRatePerUnitofRatedEvaporativeCapacity);
 
-  double lengthofMainPipeConnectingOutdoorUnittotheFirstBranchJoint() const;
-  bool setLengthofMainPipeConnectingOutdoorUnittotheFirstBranchJoint(double lengthofMainPipeConnectingOutdoorUnittotheFirstBranchJoint);
+    double diameterofMainPipeConnectingOutdoorUnittotheFirstBranchJoint() const;
+    bool setDiameterofMainPipeConnectingOutdoorUnittotheFirstBranchJoint(double diameterofMainPipeConnectingOutdoorUnittotheFirstBranchJoint);
 
-  double equivalentLengthofMainPipeConnectingOutdoorUnittotheFirstBranchJoint() const;
-  bool setEquivalentLengthofMainPipeConnectingOutdoorUnittotheFirstBranchJoint(
-    double equivalentLengthofMainPipeConnectingOutdoorUnittotheFirstBranchJoint);
+    double lengthofMainPipeConnectingOutdoorUnittotheFirstBranchJoint() const;
+    bool setLengthofMainPipeConnectingOutdoorUnittotheFirstBranchJoint(double lengthofMainPipeConnectingOutdoorUnittotheFirstBranchJoint);
 
-  double heightDifferenceBetweenOutdoorUnitandIndoorUnits() const;
-  bool setHeightDifferenceBetweenOutdoorUnitandIndoorUnits(double heightDifferenceBetweenOutdoorUnitandIndoorUnits);
+    double equivalentLengthofMainPipeConnectingOutdoorUnittotheFirstBranchJoint() const;
+    bool setEquivalentLengthofMainPipeConnectingOutdoorUnittotheFirstBranchJoint(
+      double equivalentLengthofMainPipeConnectingOutdoorUnittotheFirstBranchJoint);
 
-  double mainPipeInsulationThickness() const;
-  bool setMainPipeInsulationThickness(double mainPipeInsulationThickness);
+    double heightDifferenceBetweenOutdoorUnitandIndoorUnits() const;
+    bool setHeightDifferenceBetweenOutdoorUnitandIndoorUnits(double heightDifferenceBetweenOutdoorUnitandIndoorUnits);
 
-  double mainPipeInsulationThermalConductivity() const;
-  bool setMainPipeInsulationThermalConductivity(double mainPipeInsulationThermalConductivity);
+    double mainPipeInsulationThickness() const;
+    bool setMainPipeInsulationThickness(double mainPipeInsulationThickness);
 
-  double crankcaseHeaterPowerperCompressor() const;
-  bool setCrankcaseHeaterPowerperCompressor(double crankcaseHeaterPowerperCompressor);
+    double mainPipeInsulationThermalConductivity() const;
+    bool setMainPipeInsulationThermalConductivity(double mainPipeInsulationThermalConductivity);
 
-  int numberofCompressors() const;
-  bool setNumberofCompressors(int numberofCompressors);
+    double crankcaseHeaterPowerperCompressor() const;
+    bool setCrankcaseHeaterPowerperCompressor(double crankcaseHeaterPowerperCompressor);
 
-  double ratioofCompressorSizetoTotalCompressorCapacity() const;
-  bool setRatioofCompressorSizetoTotalCompressorCapacity(double ratioofCompressorSizetoTotalCompressorCapacity);
+    int numberofCompressors() const;
+    bool setNumberofCompressors(int numberofCompressors);
 
-  double maximumOutdoorDryBulbTemperatureforCrankcaseHeater() const;
-  bool setMaximumOutdoorDryBulbTemperatureforCrankcaseHeater(double maximumOutdoorDryBulbTemperatureforCrankcaseHeater);
+    double ratioofCompressorSizetoTotalCompressorCapacity() const;
+    bool setRatioofCompressorSizetoTotalCompressorCapacity(double ratioofCompressorSizetoTotalCompressorCapacity);
 
-  std::string defrostStrategy() const;
-  bool setDefrostStrategy(const std::string& defrostStrategy);
+    double maximumOutdoorDryBulbTemperatureforCrankcaseHeater() const;
+    bool setMaximumOutdoorDryBulbTemperatureforCrankcaseHeater(double maximumOutdoorDryBulbTemperatureforCrankcaseHeater);
 
-  std::string defrostControl() const;
-  bool setDefrostControl(const std::string& defrostControl);
+    std::string defrostStrategy() const;
+    bool setDefrostStrategy(const std::string& defrostStrategy);
 
-  double defrostTimePeriodFraction() const;
-  bool setDefrostTimePeriodFraction(double defrostTimePeriodFraction);
+    std::string defrostControl() const;
+    bool setDefrostControl(const std::string& defrostControl);
 
-  boost::optional<double> resistiveDefrostHeaterCapacity() const;
-  bool isResistiveDefrostHeaterCapacityAutosized() const;
-  bool setResistiveDefrostHeaterCapacity(double resistiveDefrostHeaterCapacity);
-  void autosizeResistiveDefrostHeaterCapacity();
+    double defrostTimePeriodFraction() const;
+    bool setDefrostTimePeriodFraction(double defrostTimePeriodFraction);
 
-  double maximumOutdoorDrybulbTemperatureforDefrostOperation() const;
-  bool setMaximumOutdoorDrybulbTemperatureforDefrostOperation(double maximumOutdoorDrybulbTemperatureforDefrostOperation);
+    boost::optional<double> resistiveDefrostHeaterCapacity() const;
+    bool isResistiveDefrostHeaterCapacityAutosized() const;
+    bool setResistiveDefrostHeaterCapacity(double resistiveDefrostHeaterCapacity);
+    void autosizeResistiveDefrostHeaterCapacity();
 
-  double compressorMaximumDeltaPressure() const;
-  bool setCompressorMaximumDeltaPressure(double compressorMaximumDeltaPressure);
+    double maximumOutdoorDrybulbTemperatureforDefrostOperation() const;
+    bool setMaximumOutdoorDrybulbTemperatureforDefrostOperation(double maximumOutdoorDrybulbTemperatureforDefrostOperation);
 
- protected:
-  using ImplType = detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl;
+    double compressorMaximumDeltaPressure() const;
+    bool setCompressorMaximumDeltaPressure(double compressorMaximumDeltaPressure);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl;
 
-  explicit AirConditionerVariableRefrigerantFlowFluidTemperatureControl(
-    std::shared_ptr<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit AirConditionerVariableRefrigerantFlowFluidTemperatureControl(
+      std::shared_ptr<detail::AirConditionerVariableRefrigerantFlowFluidTemperatureControl_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

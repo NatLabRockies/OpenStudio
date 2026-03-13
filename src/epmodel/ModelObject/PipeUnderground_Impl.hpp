@@ -13,37 +13,38 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API PipeUnderground_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~PipeUnderground_Impl() override = default;
+    class EPMODEL_API PipeUnderground_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~PipeUnderground_Impl() override = default;
 
-  std::string sunExposure() const;
-  boost::optional<double> pipeInsideDiameter() const;
-  boost::optional<double> pipeLength() const;
-  std::string soilMaterialName() const;
-  std::string undisturbedGroundTemperatureModelType() const;
+      std::string sunExposure() const;
+      bool setSunExposure(const std::string& sunExposure);
 
-  bool isPipeInsideDiameterDefaulted() const;
-  bool isPipeLengthDefaulted() const;
+      boost::optional<double> pipeInsideDiameter() const;
+      bool isPipeInsideDiameterDefaulted() const;
+      bool setPipeInsideDiameter(double pipeInsideDiameter);
+      void resetPipeInsideDiameter();
 
-  bool setSunExposure(const std::string& sunExposure);
-  bool setPipeInsideDiameter(double pipeInsideDiameter);
-  bool setPipeLength(double pipeLength);
-  bool setSoilMaterialName(const std::string& soilMaterialName);
-  bool setUndisturbedGroundTemperatureModelType(const std::string& undisturbedGroundTemperatureModelType);
+      boost::optional<double> pipeLength() const;
+      bool isPipeLengthDefaulted() const;
+      bool setPipeLength(double pipeLength);
+      void resetPipeLength();
 
-  void resetPipeInsideDiameter();
-  void resetPipeLength();
+      std::string soilMaterialName() const;
+      bool setSoilMaterialName(const std::string& soilMaterialName);
 
-  std::vector<std::string> sunExposureValues() const;
-  std::vector<std::string> undisturbedGroundTemperatureModelTypeValues() const;
-};
+      std::string undisturbedGroundTemperatureModelType() const;
+      bool setUndisturbedGroundTemperatureModelType(const std::string& undisturbedGroundTemperatureModelType);
 
-}  // namespace detail
+      std::vector<std::string> sunExposureValues() const;
+      std::vector<std::string> undisturbedGroundTemperatureModelTypeValues() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

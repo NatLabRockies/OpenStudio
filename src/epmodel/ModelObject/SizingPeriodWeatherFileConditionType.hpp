@@ -17,60 +17,65 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SizingPeriodWeatherFileConditionType_Impl;
-}
+  namespace detail {
+    class SizingPeriodWeatherFileConditionType_Impl;
+  }
 
-class EPMODEL_API SizingPeriodWeatherFileConditionType : public ModelObject
-{
- public:
-  explicit SizingPeriodWeatherFileConditionType(const Model& model);
+  class EPMODEL_API SizingPeriodWeatherFileConditionType : public ModelObject
+  {
+   public:
+    explicit SizingPeriodWeatherFileConditionType(const Model& model);
 
-  virtual ~SizingPeriodWeatherFileConditionType() override = default;
-  SizingPeriodWeatherFileConditionType(const SizingPeriodWeatherFileConditionType& other) = default;
-  SizingPeriodWeatherFileConditionType(SizingPeriodWeatherFileConditionType&& other) = default;
-  SizingPeriodWeatherFileConditionType& operator=(const SizingPeriodWeatherFileConditionType&) = default;
-  SizingPeriodWeatherFileConditionType& operator=(SizingPeriodWeatherFileConditionType&&) = default;
+    virtual ~SizingPeriodWeatherFileConditionType() override = default;
+    SizingPeriodWeatherFileConditionType(const SizingPeriodWeatherFileConditionType& other) = default;
+    SizingPeriodWeatherFileConditionType(SizingPeriodWeatherFileConditionType&& other) = default;
+    SizingPeriodWeatherFileConditionType& operator=(const SizingPeriodWeatherFileConditionType&) = default;
+    SizingPeriodWeatherFileConditionType& operator=(SizingPeriodWeatherFileConditionType&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> periodSelectionValues();
-  static std::vector<std::string> dayofWeekforStartDayValues();
+    static std::vector<std::string> periodSelectionValues();
+    static std::vector<std::string> dayofWeekforStartDayValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to E+ SizingPeriod:WeatherFileConditionType scalar fields.
-  // - Field Mapping: Name remains available through base ModelObject scalar API.
-  // - TODO(parity): Add any non-scalar/relationship API in a dedicated follow-up pass.
-  std::string periodSelection() const;
-  bool setPeriodSelection(const std::string& periodSelection);
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to E+ SizingPeriod:WeatherFileConditionType scalar fields.
+    // - Field Mapping: Name remains available through base ModelObject scalar API.
+    // - TODO(parity): Add any non-scalar/relationship API in a dedicated follow-up pass.
 
-  std::string dayofWeekforStartDay() const;
-  bool setDayofWeekforStartDay(const std::string& dayofWeekforStartDay);
-  bool isDayofWeekforStartDayDefaulted() const;
-  void resetDayofWeekforStartDay();
+    // PeriodSelection
+    std::string periodSelection() const;
+    bool setPeriodSelection(const std::string& periodSelection);
 
-  bool useWeatherFileDaylightSavingPeriod() const;
-  bool setUseWeatherFileDaylightSavingPeriod(bool useWeatherFileDaylightSavingPeriod);
-  bool isUseWeatherFileDaylightSavingPeriodDefaulted() const;
-  void resetUseWeatherFileDaylightSavingPeriod();
+    // DayofWeekforStartDay
+    std::string dayofWeekforStartDay() const;
+    bool setDayofWeekforStartDay(const std::string& dayofWeekforStartDay);
+    bool isDayofWeekforStartDayDefaulted() const;
+    void resetDayofWeekforStartDay();
 
-  bool useWeatherFileRainandSnowIndicators() const;
-  bool setUseWeatherFileRainandSnowIndicators(bool useWeatherFileRainandSnowIndicators);
-  bool isUseWeatherFileRainandSnowIndicatorsDefaulted() const;
-  void resetUseWeatherFileRainandSnowIndicators();
+    // UseWeatherFileDaylightSavingPeriod
+    bool useWeatherFileDaylightSavingPeriod() const;
+    bool setUseWeatherFileDaylightSavingPeriod(bool useWeatherFileDaylightSavingPeriod);
+    bool isUseWeatherFileDaylightSavingPeriodDefaulted() const;
+    void resetUseWeatherFileDaylightSavingPeriod();
 
- protected:
-  using ImplType = detail::SizingPeriodWeatherFileConditionType_Impl;
+    // UseWeatherFileRainandSnowIndicators
+    bool useWeatherFileRainandSnowIndicators() const;
+    bool setUseWeatherFileRainandSnowIndicators(bool useWeatherFileRainandSnowIndicators);
+    bool isUseWeatherFileRainandSnowIndicatorsDefaulted() const;
+    void resetUseWeatherFileRainandSnowIndicators();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::SizingPeriodWeatherFileConditionType_Impl;
 
-  explicit SizingPeriodWeatherFileConditionType(std::shared_ptr<detail::SizingPeriodWeatherFileConditionType_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit SizingPeriodWeatherFileConditionType(std::shared_ptr<detail::SizingPeriodWeatherFileConditionType_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

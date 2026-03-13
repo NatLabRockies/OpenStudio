@@ -41,11 +41,12 @@ namespace epmodel {
     // - ForwardTranslator evidence: translateSpaceInfiltrationEffectiveLeakageArea writes these scalar values directly onto
     //   ZoneInfiltration:EffectiveLeakageArea.
     double effectiveAirLeakageArea() const;
-    double stackCoefficient() const;
-    double windCoefficient() const;
-
     bool setEffectiveAirLeakageArea(double effectiveAirLeakageArea);
+
+    double stackCoefficient() const;
     bool setStackCoefficient(double stackCoefficient);
+
+    double windCoefficient() const;
     bool setWindCoefficient(double windCoefficient);
 
    protected:

@@ -31,22 +31,22 @@ namespace epmodel {
       void resetShadingControlSequenceNumber();
 
       std::string shadingControlType() const;
-      bool isShadingControlTypeDefaulted() const;
       bool setShadingControlType(const std::string& shadingControlType);
+      bool isShadingControlTypeDefaulted() const;
       void resetShadingControlType();
 
       boost::optional<double> setpoint() const;
       bool setSetpoint(double setpoint);
-      void resetSetpoint();
       bool isSetpointDefaulted() const;
+      void resetSetpoint();
 
       bool glareControlIsActive() const;
       bool setGlareControlIsActive(bool glareControlIsActive);
       void resetGlareControlIsActive();
 
       std::string typeofSlatAngleControlforBlinds() const;
-      bool isTypeofSlatAngleControlforBlindsDefaulted() const;
       bool setTypeofSlatAngleControlforBlinds(const std::string& typeofSlatAngleControlforBlinds);
+      bool isTypeofSlatAngleControlforBlindsDefaulted() const;
       void resetTypeofSlatAngleControlforBlinds();
 
       boost::optional<double> setpoint2() const;

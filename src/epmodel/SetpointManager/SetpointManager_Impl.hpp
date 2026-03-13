@@ -11,33 +11,34 @@
 namespace openstudio {
 namespace epmodel {
 
-class Node;
+  class Node;
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SetpointManager_Impl : public HVACComponent_Impl
-{
- public:
-  using HVACComponent_Impl::HVACComponent_Impl;
-  virtual ~SetpointManager_Impl() override = default;
+    class EPMODEL_API SetpointManager_Impl : public HVACComponent_Impl
+    {
+     public:
+      using HVACComponent_Impl::HVACComponent_Impl;
+      virtual ~SetpointManager_Impl() override = default;
 
-  boost::optional<openstudio::epmodel::Node> setpointNode() const;
-  std::string controlVariable() const;
-  bool setControlVariable(const std::string& value);
+      boost::optional<openstudio::epmodel::Node> setpointNode() const;
 
-  virtual bool isAllowedOnPlantLoop() const;
-  bool addToNode(openstudio::epmodel::Node& node) override;
+      std::string controlVariable() const;
+      bool setControlVariable(const std::string& value);
 
-  void doCanonicalize(LoadContext& context) override;
+      virtual bool isAllowedOnPlantLoop() const;
+      bool addToNode(openstudio::epmodel::Node& node) override;
 
- protected:
-  virtual unsigned setpointNodeFieldIndex() const = 0;
-  virtual unsigned controlVariableFieldIndex() const = 0;
+      void doCanonicalize(LoadContext& context) override;
 
-  bool setSetpointNode(openstudio::epmodel::Node& node);
-};
+     protected:
+      virtual unsigned setpointNodeFieldIndex() const = 0;
+      bool setSetpointNode(openstudio::epmodel::Node& node);
 
-}  // namespace detail
+      virtual unsigned controlVariableFieldIndex() const = 0;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

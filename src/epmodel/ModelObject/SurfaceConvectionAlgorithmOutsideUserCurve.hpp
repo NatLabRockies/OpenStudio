@@ -44,9 +44,9 @@ namespace epmodel {
     // - Field Mapping: Hf/Hn Function curve name fields (A3-A5) are excluded as object-list relationship fields.
     // - TODO(parity): Add relationship APIs for curve linkage fields after scalar saturation.
     std::string windSpeedTypeforCurve() const;
-    bool isWindSpeedTypeforCurveDefaulted() const;
     bool setWindSpeedTypeforCurve(const std::string& windSpeedTypeforCurve);
     void resetWindSpeedTypeforCurve();
+    bool isWindSpeedTypeforCurveDefaulted() const;
 
    protected:
     using ImplType = detail::SurfaceConvectionAlgorithmOutsideUserCurve_Impl;

@@ -13,40 +13,43 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatExchangerSurface_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatExchangerSurface_Impl() override = default;
+    class EPMODEL_API GroundHeatExchangerSurface_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatExchangerSurface_Impl() override = default;
 
-  boost::optional<double> hydronicTubingInsideDiameter() const;
-  boost::optional<int> numberofTubingCircuits() const;
-  boost::optional<double> hydronicTubeSpacing() const;
-  boost::optional<double> surfaceLength() const;
-  boost::optional<double> surfaceWidth() const;
-  std::string lowerSurfaceEnvironment() const;
-  bool isLowerSurfaceEnvironmentDefaulted() const;
+      boost::optional<double> hydronicTubingInsideDiameter() const;
+      bool setHydronicTubingInsideDiameter(double hydronicTubingInsideDiameter);
+      void resetHydronicTubingInsideDiameter();
 
-  bool setHydronicTubingInsideDiameter(double hydronicTubingInsideDiameter);
-  bool setNumberofTubingCircuits(int numberofTubingCircuits);
-  bool setHydronicTubeSpacing(double hydronicTubeSpacing);
-  bool setSurfaceLength(double surfaceLength);
-  bool setSurfaceWidth(double surfaceWidth);
-  bool setLowerSurfaceEnvironment(const std::string& lowerSurfaceEnvironment);
+      boost::optional<int> numberofTubingCircuits() const;
+      bool setNumberofTubingCircuits(int numberofTubingCircuits);
+      void resetNumberofTubingCircuits();
 
-  void resetHydronicTubingInsideDiameter();
-  void resetNumberofTubingCircuits();
-  void resetHydronicTubeSpacing();
-  void resetSurfaceLength();
-  void resetSurfaceWidth();
-  void resetLowerSurfaceEnvironment();
+      boost::optional<double> hydronicTubeSpacing() const;
+      bool setHydronicTubeSpacing(double hydronicTubeSpacing);
+      void resetHydronicTubeSpacing();
 
-  std::vector<std::string> lowerSurfaceEnvironmentValues() const;
-};
+      boost::optional<double> surfaceLength() const;
+      bool setSurfaceLength(double surfaceLength);
+      void resetSurfaceLength();
 
-}  // namespace detail
+      boost::optional<double> surfaceWidth() const;
+      bool setSurfaceWidth(double surfaceWidth);
+      void resetSurfaceWidth();
+
+      std::string lowerSurfaceEnvironment() const;
+      bool isLowerSurfaceEnvironmentDefaulted() const;
+      bool setLowerSurfaceEnvironment(const std::string& lowerSurfaceEnvironment);
+      void resetLowerSurfaceEnvironment();
+
+      std::vector<std::string> lowerSurfaceEnvironmentValues() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

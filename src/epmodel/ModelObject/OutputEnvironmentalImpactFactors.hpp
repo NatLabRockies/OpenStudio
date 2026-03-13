@@ -17,45 +17,48 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class OutputEnvironmentalImpactFactors_Impl;
-}
+  namespace detail {
+    class OutputEnvironmentalImpactFactors_Impl;
+  }
 
-class EPMODEL_API OutputEnvironmentalImpactFactors : public ModelObject
-{
- public:
-  explicit OutputEnvironmentalImpactFactors(const Model& model);
+  class EPMODEL_API OutputEnvironmentalImpactFactors : public ModelObject
+  {
+   public:
+    explicit OutputEnvironmentalImpactFactors(const Model& model);
 
-  virtual ~OutputEnvironmentalImpactFactors() override = default;
-  OutputEnvironmentalImpactFactors(const OutputEnvironmentalImpactFactors& other) = default;
-  OutputEnvironmentalImpactFactors(OutputEnvironmentalImpactFactors&& other) = default;
-  OutputEnvironmentalImpactFactors& operator=(const OutputEnvironmentalImpactFactors&) = default;
-  OutputEnvironmentalImpactFactors& operator=(OutputEnvironmentalImpactFactors&&) = default;
+    virtual ~OutputEnvironmentalImpactFactors() override = default;
+    OutputEnvironmentalImpactFactors(const OutputEnvironmentalImpactFactors& other) = default;
+    OutputEnvironmentalImpactFactors(OutputEnvironmentalImpactFactors&& other) = default;
+    OutputEnvironmentalImpactFactors& operator=(const OutputEnvironmentalImpactFactors&) = default;
+    OutputEnvironmentalImpactFactors& operator=(OutputEnvironmentalImpactFactors&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> reportingFrequencyValues();
+    static std::vector<std::string> reportingFrequencyValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::OutputEnvironmentalImpactFactors scalar accessor names/signatures.
-  // - Field Mapping: reportingFrequency maps directly to E+ Output:EnvironmentalImpactFactors Reporting Frequency.
-  // - ForwardTranslator evidence: ForwardTranslateOutputEnvironmentalImpactFactors.cpp writes reportingFrequency directly to Reporting Frequency.
-  // - TODO(parity): Keep scalar API stable while extending broader translator-coupled behavior in later parity passes.
-  std::string reportingFrequency() const;
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model::OutputEnvironmentalImpactFactors scalar accessor names/signatures.
+    // - Field Mapping: reportingFrequency maps directly to E+ Output:EnvironmentalImpactFactors Reporting Frequency.
+    // - ForwardTranslator evidence: ForwardTranslateOutputEnvironmentalImpactFactors.cpp writes reportingFrequency directly to Reporting Frequency.
+    // - TODO(parity): Keep scalar API stable while extending broader translator-coupled behavior in later parity passes.
+    /** @name Reporting frequency scalar */
+    //@{
+    std::string reportingFrequency() const;
 
-  bool setReportingFrequency(const std::string& reportingFrequency);
+    bool setReportingFrequency(const std::string& reportingFrequency);
+    //@}
 
- protected:
-  using ImplType = detail::OutputEnvironmentalImpactFactors_Impl;
+   protected:
+    using ImplType = detail::OutputEnvironmentalImpactFactors_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit OutputEnvironmentalImpactFactors(std::shared_ptr<detail::OutputEnvironmentalImpactFactors_Impl> impl);
-};
+    explicit OutputEnvironmentalImpactFactors(std::shared_ptr<detail::OutputEnvironmentalImpactFactors_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -60,124 +60,10 @@ std::vector<std::string> HVACTemplateZonePTAC::capacityControlMethodValues() {
   return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::HVACTemplate_Zone_PTACFields::CapacityControlMethod);
 }
 
+
+
 boost::optional<double> HVACTemplateZonePTAC::coolingSupplyAirFlowRate() const {
   return getImpl<detail::HVACTemplateZonePTAC_Impl>()->coolingSupplyAirFlowRate();
-}
-
-boost::optional<double> HVACTemplateZonePTAC::heatingSupplyAirFlowRate() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->heatingSupplyAirFlowRate();
-}
-
-boost::optional<double> HVACTemplateZonePTAC::noLoadSupplyAirFlowRate() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->noLoadSupplyAirFlowRate();
-}
-
-boost::optional<double> HVACTemplateZonePTAC::zoneHeatingSizingFactor() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->zoneHeatingSizingFactor();
-}
-
-boost::optional<double> HVACTemplateZonePTAC::zoneCoolingSizingFactor() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->zoneCoolingSizingFactor();
-}
-
-std::string HVACTemplateZonePTAC::outdoorAirMethod() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->outdoorAirMethod();
-}
-
-double HVACTemplateZonePTAC::outdoorAirFlowRateperPerson() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->outdoorAirFlowRateperPerson();
-}
-
-double HVACTemplateZonePTAC::outdoorAirFlowRateperZoneFloorArea() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->outdoorAirFlowRateperZoneFloorArea();
-}
-
-double HVACTemplateZonePTAC::outdoorAirFlowRateperZone() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->outdoorAirFlowRateperZone();
-}
-
-std::string HVACTemplateZonePTAC::supplyFanPlacement() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->supplyFanPlacement();
-}
-
-double HVACTemplateZonePTAC::supplyFanTotalEfficiency() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->supplyFanTotalEfficiency();
-}
-
-double HVACTemplateZonePTAC::supplyFanDeltaPressure() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->supplyFanDeltaPressure();
-}
-
-double HVACTemplateZonePTAC::supplyFanMotorEfficiency() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->supplyFanMotorEfficiency();
-}
-
-std::string HVACTemplateZonePTAC::coolingCoilType() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->coolingCoilType();
-}
-
-boost::optional<double> HVACTemplateZonePTAC::coolingCoilGrossRatedTotalCapacity() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->coolingCoilGrossRatedTotalCapacity();
-}
-
-boost::optional<double> HVACTemplateZonePTAC::coolingCoilGrossRatedSensibleHeatRatio() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->coolingCoilGrossRatedSensibleHeatRatio();
-}
-
-double HVACTemplateZonePTAC::coolingCoilGrossRatedCoolingCOP() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->coolingCoilGrossRatedCoolingCOP();
-}
-
-std::string HVACTemplateZonePTAC::heatingCoilType() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->heatingCoilType();
-}
-
-boost::optional<double> HVACTemplateZonePTAC::heatingCoilCapacity() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->heatingCoilCapacity();
-}
-
-double HVACTemplateZonePTAC::gasHeatingCoilEfficiency() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->gasHeatingCoilEfficiency();
-}
-
-double HVACTemplateZonePTAC::gasHeatingCoilParasiticElectricLoad() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->gasHeatingCoilParasiticElectricLoad();
-}
-
-std::string HVACTemplateZonePTAC::zoneCoolingDesignSupplyAirTemperatureInputMethod() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->zoneCoolingDesignSupplyAirTemperatureInputMethod();
-}
-
-double HVACTemplateZonePTAC::zoneCoolingDesignSupplyAirTemperature() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->zoneCoolingDesignSupplyAirTemperature();
-}
-
-double HVACTemplateZonePTAC::zoneCoolingDesignSupplyAirTemperatureDifference() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->zoneCoolingDesignSupplyAirTemperatureDifference();
-}
-
-std::string HVACTemplateZonePTAC::zoneHeatingDesignSupplyAirTemperatureInputMethod() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->zoneHeatingDesignSupplyAirTemperatureInputMethod();
-}
-
-double HVACTemplateZonePTAC::zoneHeatingDesignSupplyAirTemperature() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->zoneHeatingDesignSupplyAirTemperature();
-}
-
-double HVACTemplateZonePTAC::zoneHeatingDesignSupplyAirTemperatureDifference() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->zoneHeatingDesignSupplyAirTemperatureDifference();
-}
-
-std::string HVACTemplateZonePTAC::baseboardHeatingType() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->baseboardHeatingType();
-}
-
-boost::optional<double> HVACTemplateZonePTAC::baseboardHeatingCapacity() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->baseboardHeatingCapacity();
-}
-
-std::string HVACTemplateZonePTAC::capacityControlMethod() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->capacityControlMethod();
 }
 
 bool HVACTemplateZonePTAC::isCoolingSupplyAirFlowRateDefaulted() const {
@@ -188,270 +74,8 @@ bool HVACTemplateZonePTAC::isCoolingSupplyAirFlowRateAutosized() const {
   return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isCoolingSupplyAirFlowRateAutosized();
 }
 
-bool HVACTemplateZonePTAC::isHeatingSupplyAirFlowRateDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isHeatingSupplyAirFlowRateDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isHeatingSupplyAirFlowRateAutosized() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isHeatingSupplyAirFlowRateAutosized();
-}
-
-bool HVACTemplateZonePTAC::isNoLoadSupplyAirFlowRateDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isNoLoadSupplyAirFlowRateDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isNoLoadSupplyAirFlowRateAutosized() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isNoLoadSupplyAirFlowRateAutosized();
-}
-
-bool HVACTemplateZonePTAC::isZoneHeatingSizingFactorDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isZoneHeatingSizingFactorDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isZoneCoolingSizingFactorDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isZoneCoolingSizingFactorDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isOutdoorAirMethodDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isOutdoorAirMethodDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isOutdoorAirFlowRateperPersonDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isOutdoorAirFlowRateperPersonDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isOutdoorAirFlowRateperZoneFloorAreaDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isOutdoorAirFlowRateperZoneFloorAreaDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isOutdoorAirFlowRateperZoneDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isOutdoorAirFlowRateperZoneDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isSupplyFanPlacementDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isSupplyFanPlacementDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isSupplyFanTotalEfficiencyDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isSupplyFanTotalEfficiencyDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isSupplyFanDeltaPressureDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isSupplyFanDeltaPressureDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isSupplyFanMotorEfficiencyDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isSupplyFanMotorEfficiencyDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isCoolingCoilTypeDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isCoolingCoilTypeDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isCoolingCoilGrossRatedTotalCapacityDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isCoolingCoilGrossRatedTotalCapacityDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isCoolingCoilGrossRatedTotalCapacityAutosized() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isCoolingCoilGrossRatedTotalCapacityAutosized();
-}
-
-bool HVACTemplateZonePTAC::isCoolingCoilGrossRatedSensibleHeatRatioDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isCoolingCoilGrossRatedSensibleHeatRatioDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isCoolingCoilGrossRatedSensibleHeatRatioAutosized() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isCoolingCoilGrossRatedSensibleHeatRatioAutosized();
-}
-
-bool HVACTemplateZonePTAC::isCoolingCoilGrossRatedCoolingCOPDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isCoolingCoilGrossRatedCoolingCOPDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isHeatingCoilTypeDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isHeatingCoilTypeDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isHeatingCoilCapacityDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isHeatingCoilCapacityDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isHeatingCoilCapacityAutosized() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isHeatingCoilCapacityAutosized();
-}
-
-bool HVACTemplateZonePTAC::isGasHeatingCoilEfficiencyDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isGasHeatingCoilEfficiencyDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isGasHeatingCoilParasiticElectricLoadDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isGasHeatingCoilParasiticElectricLoadDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isZoneCoolingDesignSupplyAirTemperatureInputMethodDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isZoneCoolingDesignSupplyAirTemperatureInputMethodDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isZoneCoolingDesignSupplyAirTemperatureDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isZoneCoolingDesignSupplyAirTemperatureDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isZoneCoolingDesignSupplyAirTemperatureDifferenceDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isZoneCoolingDesignSupplyAirTemperatureDifferenceDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isZoneHeatingDesignSupplyAirTemperatureInputMethodDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isZoneHeatingDesignSupplyAirTemperatureInputMethodDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isZoneHeatingDesignSupplyAirTemperatureDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isZoneHeatingDesignSupplyAirTemperatureDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isZoneHeatingDesignSupplyAirTemperatureDifferenceDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isZoneHeatingDesignSupplyAirTemperatureDifferenceDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isBaseboardHeatingTypeDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isBaseboardHeatingTypeDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isBaseboardHeatingCapacityDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isBaseboardHeatingCapacityDefaulted();
-}
-
-bool HVACTemplateZonePTAC::isBaseboardHeatingCapacityAutosized() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isBaseboardHeatingCapacityAutosized();
-}
-
-bool HVACTemplateZonePTAC::isCapacityControlMethodDefaulted() const {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isCapacityControlMethodDefaulted();
-}
-
 bool HVACTemplateZonePTAC::setCoolingSupplyAirFlowRate(double coolingSupplyAirFlowRate) {
   return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setCoolingSupplyAirFlowRate(coolingSupplyAirFlowRate);
-}
-
-bool HVACTemplateZonePTAC::setHeatingSupplyAirFlowRate(double heatingSupplyAirFlowRate) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setHeatingSupplyAirFlowRate(heatingSupplyAirFlowRate);
-}
-
-bool HVACTemplateZonePTAC::setNoLoadSupplyAirFlowRate(double noLoadSupplyAirFlowRate) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setNoLoadSupplyAirFlowRate(noLoadSupplyAirFlowRate);
-}
-
-bool HVACTemplateZonePTAC::setZoneHeatingSizingFactor(double zoneHeatingSizingFactor) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setZoneHeatingSizingFactor(zoneHeatingSizingFactor);
-}
-
-bool HVACTemplateZonePTAC::setZoneCoolingSizingFactor(double zoneCoolingSizingFactor) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setZoneCoolingSizingFactor(zoneCoolingSizingFactor);
-}
-
-bool HVACTemplateZonePTAC::setOutdoorAirMethod(const std::string& outdoorAirMethod) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setOutdoorAirMethod(outdoorAirMethod);
-}
-
-bool HVACTemplateZonePTAC::setOutdoorAirFlowRateperPerson(double outdoorAirFlowRateperPerson) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setOutdoorAirFlowRateperPerson(outdoorAirFlowRateperPerson);
-}
-
-bool HVACTemplateZonePTAC::setOutdoorAirFlowRateperZoneFloorArea(double outdoorAirFlowRateperZoneFloorArea) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setOutdoorAirFlowRateperZoneFloorArea(outdoorAirFlowRateperZoneFloorArea);
-}
-
-bool HVACTemplateZonePTAC::setOutdoorAirFlowRateperZone(double outdoorAirFlowRateperZone) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setOutdoorAirFlowRateperZone(outdoorAirFlowRateperZone);
-}
-
-bool HVACTemplateZonePTAC::setSupplyFanPlacement(const std::string& supplyFanPlacement) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setSupplyFanPlacement(supplyFanPlacement);
-}
-
-bool HVACTemplateZonePTAC::setSupplyFanTotalEfficiency(double supplyFanTotalEfficiency) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setSupplyFanTotalEfficiency(supplyFanTotalEfficiency);
-}
-
-bool HVACTemplateZonePTAC::setSupplyFanDeltaPressure(double supplyFanDeltaPressure) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setSupplyFanDeltaPressure(supplyFanDeltaPressure);
-}
-
-bool HVACTemplateZonePTAC::setSupplyFanMotorEfficiency(double supplyFanMotorEfficiency) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setSupplyFanMotorEfficiency(supplyFanMotorEfficiency);
-}
-
-bool HVACTemplateZonePTAC::setCoolingCoilType(const std::string& coolingCoilType) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setCoolingCoilType(coolingCoilType);
-}
-
-bool HVACTemplateZonePTAC::setCoolingCoilGrossRatedTotalCapacity(double coolingCoilGrossRatedTotalCapacity) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setCoolingCoilGrossRatedTotalCapacity(coolingCoilGrossRatedTotalCapacity);
-}
-
-bool HVACTemplateZonePTAC::setCoolingCoilGrossRatedSensibleHeatRatio(double coolingCoilGrossRatedSensibleHeatRatio) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setCoolingCoilGrossRatedSensibleHeatRatio(coolingCoilGrossRatedSensibleHeatRatio);
-}
-
-bool HVACTemplateZonePTAC::setCoolingCoilGrossRatedCoolingCOP(double coolingCoilGrossRatedCoolingCOP) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setCoolingCoilGrossRatedCoolingCOP(coolingCoilGrossRatedCoolingCOP);
-}
-
-bool HVACTemplateZonePTAC::setHeatingCoilType(const std::string& heatingCoilType) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setHeatingCoilType(heatingCoilType);
-}
-
-bool HVACTemplateZonePTAC::setHeatingCoilCapacity(double heatingCoilCapacity) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setHeatingCoilCapacity(heatingCoilCapacity);
-}
-
-bool HVACTemplateZonePTAC::setGasHeatingCoilEfficiency(double gasHeatingCoilEfficiency) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setGasHeatingCoilEfficiency(gasHeatingCoilEfficiency);
-}
-
-bool HVACTemplateZonePTAC::setGasHeatingCoilParasiticElectricLoad(double gasHeatingCoilParasiticElectricLoad) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setGasHeatingCoilParasiticElectricLoad(gasHeatingCoilParasiticElectricLoad);
-}
-
-bool HVACTemplateZonePTAC::setZoneCoolingDesignSupplyAirTemperatureInputMethod(
-  const std::string& zoneCoolingDesignSupplyAirTemperatureInputMethod) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setZoneCoolingDesignSupplyAirTemperatureInputMethod(
-    zoneCoolingDesignSupplyAirTemperatureInputMethod);
-}
-
-bool HVACTemplateZonePTAC::setZoneCoolingDesignSupplyAirTemperature(double zoneCoolingDesignSupplyAirTemperature) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setZoneCoolingDesignSupplyAirTemperature(zoneCoolingDesignSupplyAirTemperature);
-}
-
-bool HVACTemplateZonePTAC::setZoneCoolingDesignSupplyAirTemperatureDifference(double zoneCoolingDesignSupplyAirTemperatureDifference) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setZoneCoolingDesignSupplyAirTemperatureDifference(
-    zoneCoolingDesignSupplyAirTemperatureDifference);
-}
-
-bool HVACTemplateZonePTAC::setZoneHeatingDesignSupplyAirTemperatureInputMethod(
-  const std::string& zoneHeatingDesignSupplyAirTemperatureInputMethod) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setZoneHeatingDesignSupplyAirTemperatureInputMethod(
-    zoneHeatingDesignSupplyAirTemperatureInputMethod);
-}
-
-bool HVACTemplateZonePTAC::setZoneHeatingDesignSupplyAirTemperature(double zoneHeatingDesignSupplyAirTemperature) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setZoneHeatingDesignSupplyAirTemperature(zoneHeatingDesignSupplyAirTemperature);
-}
-
-bool HVACTemplateZonePTAC::setZoneHeatingDesignSupplyAirTemperatureDifference(double zoneHeatingDesignSupplyAirTemperatureDifference) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setZoneHeatingDesignSupplyAirTemperatureDifference(
-    zoneHeatingDesignSupplyAirTemperatureDifference);
-}
-
-bool HVACTemplateZonePTAC::setBaseboardHeatingType(const std::string& baseboardHeatingType) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setBaseboardHeatingType(baseboardHeatingType);
-}
-
-bool HVACTemplateZonePTAC::setBaseboardHeatingCapacity(double baseboardHeatingCapacity) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setBaseboardHeatingCapacity(baseboardHeatingCapacity);
-}
-
-bool HVACTemplateZonePTAC::setCapacityControlMethod(const std::string& capacityControlMethod) {
-  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setCapacityControlMethod(capacityControlMethod);
 }
 
 void HVACTemplateZonePTAC::resetCoolingSupplyAirFlowRate() {
@@ -462,12 +86,44 @@ void HVACTemplateZonePTAC::autosizeCoolingSupplyAirFlowRate() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->autosizeCoolingSupplyAirFlowRate();
 }
 
+boost::optional<double> HVACTemplateZonePTAC::heatingSupplyAirFlowRate() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->heatingSupplyAirFlowRate();
+}
+
+bool HVACTemplateZonePTAC::isHeatingSupplyAirFlowRateDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isHeatingSupplyAirFlowRateDefaulted();
+}
+
+bool HVACTemplateZonePTAC::isHeatingSupplyAirFlowRateAutosized() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isHeatingSupplyAirFlowRateAutosized();
+}
+
+bool HVACTemplateZonePTAC::setHeatingSupplyAirFlowRate(double heatingSupplyAirFlowRate) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setHeatingSupplyAirFlowRate(heatingSupplyAirFlowRate);
+}
+
 void HVACTemplateZonePTAC::resetHeatingSupplyAirFlowRate() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetHeatingSupplyAirFlowRate();
 }
 
 void HVACTemplateZonePTAC::autosizeHeatingSupplyAirFlowRate() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->autosizeHeatingSupplyAirFlowRate();
+}
+
+boost::optional<double> HVACTemplateZonePTAC::noLoadSupplyAirFlowRate() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->noLoadSupplyAirFlowRate();
+}
+
+bool HVACTemplateZonePTAC::isNoLoadSupplyAirFlowRateDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isNoLoadSupplyAirFlowRateDefaulted();
+}
+
+bool HVACTemplateZonePTAC::isNoLoadSupplyAirFlowRateAutosized() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isNoLoadSupplyAirFlowRateAutosized();
+}
+
+bool HVACTemplateZonePTAC::setNoLoadSupplyAirFlowRate(double noLoadSupplyAirFlowRate) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setNoLoadSupplyAirFlowRate(noLoadSupplyAirFlowRate);
 }
 
 void HVACTemplateZonePTAC::resetNoLoadSupplyAirFlowRate() {
@@ -478,48 +134,196 @@ void HVACTemplateZonePTAC::autosizeNoLoadSupplyAirFlowRate() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->autosizeNoLoadSupplyAirFlowRate();
 }
 
+boost::optional<double> HVACTemplateZonePTAC::zoneHeatingSizingFactor() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->zoneHeatingSizingFactor();
+}
+
+bool HVACTemplateZonePTAC::isZoneHeatingSizingFactorDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isZoneHeatingSizingFactorDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setZoneHeatingSizingFactor(double zoneHeatingSizingFactor) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setZoneHeatingSizingFactor(zoneHeatingSizingFactor);
+}
+
 void HVACTemplateZonePTAC::resetZoneHeatingSizingFactor() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetZoneHeatingSizingFactor();
+}
+
+boost::optional<double> HVACTemplateZonePTAC::zoneCoolingSizingFactor() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->zoneCoolingSizingFactor();
+}
+
+bool HVACTemplateZonePTAC::isZoneCoolingSizingFactorDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isZoneCoolingSizingFactorDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setZoneCoolingSizingFactor(double zoneCoolingSizingFactor) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setZoneCoolingSizingFactor(zoneCoolingSizingFactor);
 }
 
 void HVACTemplateZonePTAC::resetZoneCoolingSizingFactor() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetZoneCoolingSizingFactor();
 }
 
+std::string HVACTemplateZonePTAC::outdoorAirMethod() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->outdoorAirMethod();
+}
+
+bool HVACTemplateZonePTAC::isOutdoorAirMethodDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isOutdoorAirMethodDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setOutdoorAirMethod(const std::string& outdoorAirMethod) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setOutdoorAirMethod(outdoorAirMethod);
+}
+
 void HVACTemplateZonePTAC::resetOutdoorAirMethod() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetOutdoorAirMethod();
+}
+
+double HVACTemplateZonePTAC::outdoorAirFlowRateperPerson() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->outdoorAirFlowRateperPerson();
+}
+
+bool HVACTemplateZonePTAC::isOutdoorAirFlowRateperPersonDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isOutdoorAirFlowRateperPersonDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setOutdoorAirFlowRateperPerson(double outdoorAirFlowRateperPerson) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setOutdoorAirFlowRateperPerson(outdoorAirFlowRateperPerson);
 }
 
 void HVACTemplateZonePTAC::resetOutdoorAirFlowRateperPerson() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetOutdoorAirFlowRateperPerson();
 }
 
+double HVACTemplateZonePTAC::outdoorAirFlowRateperZoneFloorArea() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->outdoorAirFlowRateperZoneFloorArea();
+}
+
+bool HVACTemplateZonePTAC::isOutdoorAirFlowRateperZoneFloorAreaDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isOutdoorAirFlowRateperZoneFloorAreaDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setOutdoorAirFlowRateperZoneFloorArea(double outdoorAirFlowRateperZoneFloorArea) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setOutdoorAirFlowRateperZoneFloorArea(outdoorAirFlowRateperZoneFloorArea);
+}
+
 void HVACTemplateZonePTAC::resetOutdoorAirFlowRateperZoneFloorArea() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetOutdoorAirFlowRateperZoneFloorArea();
+}
+
+double HVACTemplateZonePTAC::outdoorAirFlowRateperZone() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->outdoorAirFlowRateperZone();
+}
+
+bool HVACTemplateZonePTAC::isOutdoorAirFlowRateperZoneDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isOutdoorAirFlowRateperZoneDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setOutdoorAirFlowRateperZone(double outdoorAirFlowRateperZone) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setOutdoorAirFlowRateperZone(outdoorAirFlowRateperZone);
 }
 
 void HVACTemplateZonePTAC::resetOutdoorAirFlowRateperZone() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetOutdoorAirFlowRateperZone();
 }
 
+std::string HVACTemplateZonePTAC::supplyFanPlacement() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->supplyFanPlacement();
+}
+
+bool HVACTemplateZonePTAC::isSupplyFanPlacementDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isSupplyFanPlacementDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setSupplyFanPlacement(const std::string& supplyFanPlacement) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setSupplyFanPlacement(supplyFanPlacement);
+}
+
 void HVACTemplateZonePTAC::resetSupplyFanPlacement() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetSupplyFanPlacement();
+}
+
+double HVACTemplateZonePTAC::supplyFanTotalEfficiency() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->supplyFanTotalEfficiency();
+}
+
+bool HVACTemplateZonePTAC::isSupplyFanTotalEfficiencyDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isSupplyFanTotalEfficiencyDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setSupplyFanTotalEfficiency(double supplyFanTotalEfficiency) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setSupplyFanTotalEfficiency(supplyFanTotalEfficiency);
 }
 
 void HVACTemplateZonePTAC::resetSupplyFanTotalEfficiency() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetSupplyFanTotalEfficiency();
 }
 
+double HVACTemplateZonePTAC::supplyFanDeltaPressure() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->supplyFanDeltaPressure();
+}
+
+bool HVACTemplateZonePTAC::isSupplyFanDeltaPressureDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isSupplyFanDeltaPressureDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setSupplyFanDeltaPressure(double supplyFanDeltaPressure) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setSupplyFanDeltaPressure(supplyFanDeltaPressure);
+}
+
 void HVACTemplateZonePTAC::resetSupplyFanDeltaPressure() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetSupplyFanDeltaPressure();
+}
+
+double HVACTemplateZonePTAC::supplyFanMotorEfficiency() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->supplyFanMotorEfficiency();
+}
+
+bool HVACTemplateZonePTAC::isSupplyFanMotorEfficiencyDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isSupplyFanMotorEfficiencyDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setSupplyFanMotorEfficiency(double supplyFanMotorEfficiency) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setSupplyFanMotorEfficiency(supplyFanMotorEfficiency);
 }
 
 void HVACTemplateZonePTAC::resetSupplyFanMotorEfficiency() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetSupplyFanMotorEfficiency();
 }
 
+std::string HVACTemplateZonePTAC::coolingCoilType() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->coolingCoilType();
+}
+
+bool HVACTemplateZonePTAC::isCoolingCoilTypeDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isCoolingCoilTypeDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setCoolingCoilType(const std::string& coolingCoilType) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setCoolingCoilType(coolingCoilType);
+}
+
 void HVACTemplateZonePTAC::resetCoolingCoilType() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetCoolingCoilType();
+}
+
+boost::optional<double> HVACTemplateZonePTAC::coolingCoilGrossRatedTotalCapacity() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->coolingCoilGrossRatedTotalCapacity();
+}
+
+bool HVACTemplateZonePTAC::isCoolingCoilGrossRatedTotalCapacityDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isCoolingCoilGrossRatedTotalCapacityDefaulted();
+}
+
+bool HVACTemplateZonePTAC::isCoolingCoilGrossRatedTotalCapacityAutosized() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isCoolingCoilGrossRatedTotalCapacityAutosized();
+}
+
+bool HVACTemplateZonePTAC::setCoolingCoilGrossRatedTotalCapacity(double coolingCoilGrossRatedTotalCapacity) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setCoolingCoilGrossRatedTotalCapacity(coolingCoilGrossRatedTotalCapacity);
 }
 
 void HVACTemplateZonePTAC::resetCoolingCoilGrossRatedTotalCapacity() {
@@ -530,6 +334,22 @@ void HVACTemplateZonePTAC::autosizeCoolingCoilGrossRatedTotalCapacity() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->autosizeCoolingCoilGrossRatedTotalCapacity();
 }
 
+boost::optional<double> HVACTemplateZonePTAC::coolingCoilGrossRatedSensibleHeatRatio() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->coolingCoilGrossRatedSensibleHeatRatio();
+}
+
+bool HVACTemplateZonePTAC::isCoolingCoilGrossRatedSensibleHeatRatioDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isCoolingCoilGrossRatedSensibleHeatRatioDefaulted();
+}
+
+bool HVACTemplateZonePTAC::isCoolingCoilGrossRatedSensibleHeatRatioAutosized() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isCoolingCoilGrossRatedSensibleHeatRatioAutosized();
+}
+
+bool HVACTemplateZonePTAC::setCoolingCoilGrossRatedSensibleHeatRatio(double coolingCoilGrossRatedSensibleHeatRatio) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setCoolingCoilGrossRatedSensibleHeatRatio(coolingCoilGrossRatedSensibleHeatRatio);
+}
+
 void HVACTemplateZonePTAC::resetCoolingCoilGrossRatedSensibleHeatRatio() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetCoolingCoilGrossRatedSensibleHeatRatio();
 }
@@ -538,12 +358,52 @@ void HVACTemplateZonePTAC::autosizeCoolingCoilGrossRatedSensibleHeatRatio() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->autosizeCoolingCoilGrossRatedSensibleHeatRatio();
 }
 
+double HVACTemplateZonePTAC::coolingCoilGrossRatedCoolingCOP() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->coolingCoilGrossRatedCoolingCOP();
+}
+
+bool HVACTemplateZonePTAC::isCoolingCoilGrossRatedCoolingCOPDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isCoolingCoilGrossRatedCoolingCOPDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setCoolingCoilGrossRatedCoolingCOP(double coolingCoilGrossRatedCoolingCOP) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setCoolingCoilGrossRatedCoolingCOP(coolingCoilGrossRatedCoolingCOP);
+}
+
 void HVACTemplateZonePTAC::resetCoolingCoilGrossRatedCoolingCOP() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetCoolingCoilGrossRatedCoolingCOP();
 }
 
+std::string HVACTemplateZonePTAC::heatingCoilType() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->heatingCoilType();
+}
+
+bool HVACTemplateZonePTAC::isHeatingCoilTypeDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isHeatingCoilTypeDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setHeatingCoilType(const std::string& heatingCoilType) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setHeatingCoilType(heatingCoilType);
+}
+
 void HVACTemplateZonePTAC::resetHeatingCoilType() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetHeatingCoilType();
+}
+
+boost::optional<double> HVACTemplateZonePTAC::heatingCoilCapacity() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->heatingCoilCapacity();
+}
+
+bool HVACTemplateZonePTAC::isHeatingCoilCapacityDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isHeatingCoilCapacityDefaulted();
+}
+
+bool HVACTemplateZonePTAC::isHeatingCoilCapacityAutosized() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isHeatingCoilCapacityAutosized();
+}
+
+bool HVACTemplateZonePTAC::setHeatingCoilCapacity(double heatingCoilCapacity) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setHeatingCoilCapacity(heatingCoilCapacity);
 }
 
 void HVACTemplateZonePTAC::resetHeatingCoilCapacity() {
@@ -554,40 +414,170 @@ void HVACTemplateZonePTAC::autosizeHeatingCoilCapacity() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->autosizeHeatingCoilCapacity();
 }
 
+double HVACTemplateZonePTAC::gasHeatingCoilEfficiency() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->gasHeatingCoilEfficiency();
+}
+
+bool HVACTemplateZonePTAC::isGasHeatingCoilEfficiencyDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isGasHeatingCoilEfficiencyDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setGasHeatingCoilEfficiency(double gasHeatingCoilEfficiency) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setGasHeatingCoilEfficiency(gasHeatingCoilEfficiency);
+}
+
 void HVACTemplateZonePTAC::resetGasHeatingCoilEfficiency() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetGasHeatingCoilEfficiency();
+}
+
+double HVACTemplateZonePTAC::gasHeatingCoilParasiticElectricLoad() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->gasHeatingCoilParasiticElectricLoad();
+}
+
+bool HVACTemplateZonePTAC::isGasHeatingCoilParasiticElectricLoadDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isGasHeatingCoilParasiticElectricLoadDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setGasHeatingCoilParasiticElectricLoad(double gasHeatingCoilParasiticElectricLoad) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setGasHeatingCoilParasiticElectricLoad(gasHeatingCoilParasiticElectricLoad);
 }
 
 void HVACTemplateZonePTAC::resetGasHeatingCoilParasiticElectricLoad() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetGasHeatingCoilParasiticElectricLoad();
 }
 
+std::string HVACTemplateZonePTAC::zoneCoolingDesignSupplyAirTemperatureInputMethod() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->zoneCoolingDesignSupplyAirTemperatureInputMethod();
+}
+
+bool HVACTemplateZonePTAC::isZoneCoolingDesignSupplyAirTemperatureInputMethodDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isZoneCoolingDesignSupplyAirTemperatureInputMethodDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setZoneCoolingDesignSupplyAirTemperatureInputMethod(
+  const std::string& zoneCoolingDesignSupplyAirTemperatureInputMethod) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setZoneCoolingDesignSupplyAirTemperatureInputMethod(
+    zoneCoolingDesignSupplyAirTemperatureInputMethod);
+}
+
 void HVACTemplateZonePTAC::resetZoneCoolingDesignSupplyAirTemperatureInputMethod() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetZoneCoolingDesignSupplyAirTemperatureInputMethod();
+}
+
+double HVACTemplateZonePTAC::zoneCoolingDesignSupplyAirTemperature() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->zoneCoolingDesignSupplyAirTemperature();
+}
+
+bool HVACTemplateZonePTAC::isZoneCoolingDesignSupplyAirTemperatureDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isZoneCoolingDesignSupplyAirTemperatureDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setZoneCoolingDesignSupplyAirTemperature(double zoneCoolingDesignSupplyAirTemperature) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setZoneCoolingDesignSupplyAirTemperature(zoneCoolingDesignSupplyAirTemperature);
 }
 
 void HVACTemplateZonePTAC::resetZoneCoolingDesignSupplyAirTemperature() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetZoneCoolingDesignSupplyAirTemperature();
 }
 
+double HVACTemplateZonePTAC::zoneCoolingDesignSupplyAirTemperatureDifference() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->zoneCoolingDesignSupplyAirTemperatureDifference();
+}
+
+bool HVACTemplateZonePTAC::isZoneCoolingDesignSupplyAirTemperatureDifferenceDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isZoneCoolingDesignSupplyAirTemperatureDifferenceDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setZoneCoolingDesignSupplyAirTemperatureDifference(double zoneCoolingDesignSupplyAirTemperatureDifference) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setZoneCoolingDesignSupplyAirTemperatureDifference(
+    zoneCoolingDesignSupplyAirTemperatureDifference);
+}
+
 void HVACTemplateZonePTAC::resetZoneCoolingDesignSupplyAirTemperatureDifference() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetZoneCoolingDesignSupplyAirTemperatureDifference();
+}
+
+std::string HVACTemplateZonePTAC::zoneHeatingDesignSupplyAirTemperatureInputMethod() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->zoneHeatingDesignSupplyAirTemperatureInputMethod();
+}
+
+bool HVACTemplateZonePTAC::isZoneHeatingDesignSupplyAirTemperatureInputMethodDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isZoneHeatingDesignSupplyAirTemperatureInputMethodDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setZoneHeatingDesignSupplyAirTemperatureInputMethod(
+  const std::string& zoneHeatingDesignSupplyAirTemperatureInputMethod) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setZoneHeatingDesignSupplyAirTemperatureInputMethod(
+    zoneHeatingDesignSupplyAirTemperatureInputMethod);
 }
 
 void HVACTemplateZonePTAC::resetZoneHeatingDesignSupplyAirTemperatureInputMethod() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetZoneHeatingDesignSupplyAirTemperatureInputMethod();
 }
 
+double HVACTemplateZonePTAC::zoneHeatingDesignSupplyAirTemperature() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->zoneHeatingDesignSupplyAirTemperature();
+}
+
+bool HVACTemplateZonePTAC::isZoneHeatingDesignSupplyAirTemperatureDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isZoneHeatingDesignSupplyAirTemperatureDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setZoneHeatingDesignSupplyAirTemperature(double zoneHeatingDesignSupplyAirTemperature) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setZoneHeatingDesignSupplyAirTemperature(zoneHeatingDesignSupplyAirTemperature);
+}
+
 void HVACTemplateZonePTAC::resetZoneHeatingDesignSupplyAirTemperature() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetZoneHeatingDesignSupplyAirTemperature();
+}
+
+double HVACTemplateZonePTAC::zoneHeatingDesignSupplyAirTemperatureDifference() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->zoneHeatingDesignSupplyAirTemperatureDifference();
+}
+
+bool HVACTemplateZonePTAC::isZoneHeatingDesignSupplyAirTemperatureDifferenceDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isZoneHeatingDesignSupplyAirTemperatureDifferenceDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setZoneHeatingDesignSupplyAirTemperatureDifference(double zoneHeatingDesignSupplyAirTemperatureDifference) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setZoneHeatingDesignSupplyAirTemperatureDifference(
+    zoneHeatingDesignSupplyAirTemperatureDifference);
 }
 
 void HVACTemplateZonePTAC::resetZoneHeatingDesignSupplyAirTemperatureDifference() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetZoneHeatingDesignSupplyAirTemperatureDifference();
 }
 
+std::string HVACTemplateZonePTAC::baseboardHeatingType() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->baseboardHeatingType();
+}
+
+bool HVACTemplateZonePTAC::isBaseboardHeatingTypeDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isBaseboardHeatingTypeDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setBaseboardHeatingType(const std::string& baseboardHeatingType) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setBaseboardHeatingType(baseboardHeatingType);
+}
+
 void HVACTemplateZonePTAC::resetBaseboardHeatingType() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetBaseboardHeatingType();
+}
+
+boost::optional<double> HVACTemplateZonePTAC::baseboardHeatingCapacity() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->baseboardHeatingCapacity();
+}
+
+bool HVACTemplateZonePTAC::isBaseboardHeatingCapacityDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isBaseboardHeatingCapacityDefaulted();
+}
+
+bool HVACTemplateZonePTAC::isBaseboardHeatingCapacityAutosized() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isBaseboardHeatingCapacityAutosized();
+}
+
+bool HVACTemplateZonePTAC::setBaseboardHeatingCapacity(double baseboardHeatingCapacity) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setBaseboardHeatingCapacity(baseboardHeatingCapacity);
 }
 
 void HVACTemplateZonePTAC::resetBaseboardHeatingCapacity() {
@@ -598,15 +588,22 @@ void HVACTemplateZonePTAC::autosizeBaseboardHeatingCapacity() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->autosizeBaseboardHeatingCapacity();
 }
 
+std::string HVACTemplateZonePTAC::capacityControlMethod() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->capacityControlMethod();
+}
+
+bool HVACTemplateZonePTAC::isCapacityControlMethodDefaulted() const {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->isCapacityControlMethodDefaulted();
+}
+
+bool HVACTemplateZonePTAC::setCapacityControlMethod(const std::string& capacityControlMethod) {
+  return getImpl<detail::HVACTemplateZonePTAC_Impl>()->setCapacityControlMethod(capacityControlMethod);
+}
+
 void HVACTemplateZonePTAC::resetCapacityControlMethod() {
   getImpl<detail::HVACTemplateZonePTAC_Impl>()->resetCapacityControlMethod();
 }
 
-}  // namespace epmodel
-}  // namespace openstudio
-
-namespace openstudio {
-namespace epmodel {
 namespace detail {
 
 boost::optional<double> HVACTemplateZonePTAC_Impl::coolingSupplyAirFlowRate() const {

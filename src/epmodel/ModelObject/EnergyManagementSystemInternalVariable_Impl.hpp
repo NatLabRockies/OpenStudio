@@ -11,23 +11,25 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API EnergyManagementSystemInternalVariable_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~EnergyManagementSystemInternalVariable_Impl() override = default;
+    class EPMODEL_API EnergyManagementSystemInternalVariable_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~EnergyManagementSystemInternalVariable_Impl() override = default;
 
-  std::string internalDataIndexKeyName() const;
-  bool setInternalDataIndexKeyName(const std::string& internalDataIndexKeyName);
-  void resetInternalDataIndexKeyName();
+      // Internal Data Index Key Name
+      std::string internalDataIndexKeyName() const;
+      bool setInternalDataIndexKeyName(const std::string& internalDataIndexKeyName);
+      void resetInternalDataIndexKeyName();
 
-  std::string internalDataType() const;
-  bool setInternalDataType(const std::string& internalDataType);
-};
+      // Internal Data Type
+      std::string internalDataType() const;
+      bool setInternalDataType(const std::string& internalDataType);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

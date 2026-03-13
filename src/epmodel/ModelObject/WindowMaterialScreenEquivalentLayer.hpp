@@ -39,46 +39,56 @@ namespace epmodel {
     // - Field Mapping: The Screen Beam-Beam Solar Transmittance field is autocalculatable while the remaining optics and
     //   geometry scalars mirror the IDD naming; Name implicitly aligns with WindowEquivalentLayerMaterialNames.
 
+    // Screen Beam-Beam Solar Transmittance
     boost::optional<double> screenBeamBeamSolarTransmittance() const;
     bool isScreenBeamBeamSolarTransmittanceDefaulted() const;
     bool isScreenBeamBeamSolarTransmittanceAutocalculated() const;
-
-    double screenBeamDiffuseSolarTransmittance() const;
-    double screenBeamDiffuseSolarReflectance() const;
-    double screenBeamBeamVisibleSolarTransmittance() const;
-    double screenBeamDiffuseVisibleSolarTransmittance() const;
-    double screenBeamDiffuseVisibleSolarReflectance() const;
-
-    double screenInfraredTransmittance() const;
-    bool isScreenInfraredTransmittanceDefaulted() const;
-
-    double screenInfraredEmissivity() const;
-    bool isScreenInfraredEmissivityDefaulted() const;
-
-    double screenWireSpacing() const;
-    bool isScreenWireSpacingDefaulted() const;
-
-    double screenWireDiameter() const;
-    bool isScreenWireDiameterDefaulted() const;
-
     bool setScreenBeamBeamSolarTransmittance(double screenBeamBeamSolarTransmittance);
-    bool setScreenBeamDiffuseSolarTransmittance(double screenBeamDiffuseSolarTransmittance);
-    bool setScreenBeamDiffuseSolarReflectance(double screenBeamDiffuseSolarReflectance);
-    bool setScreenBeamBeamVisibleSolarTransmittance(double screenBeamBeamVisibleSolarTransmittance);
-    bool setScreenBeamDiffuseVisibleSolarTransmittance(double screenBeamDiffuseVisibleSolarTransmittance);
-    bool setScreenBeamDiffuseVisibleSolarReflectance(double screenBeamDiffuseVisibleSolarReflectance);
-
-    bool setScreenInfraredTransmittance(double screenInfraredTransmittance);
-    bool setScreenInfraredEmissivity(double screenInfraredEmissivity);
-    bool setScreenWireSpacing(double screenWireSpacing);
-    bool setScreenWireDiameter(double screenWireDiameter);
-
     void resetScreenBeamBeamSolarTransmittance();
     void autocalculateScreenBeamBeamSolarTransmittance();
 
+    // Screen Beam-Diffuse Solar Transmittance
+    double screenBeamDiffuseSolarTransmittance() const;
+    bool setScreenBeamDiffuseSolarTransmittance(double screenBeamDiffuseSolarTransmittance);
+
+    // Screen Beam-Diffuse Solar Reflectance
+    double screenBeamDiffuseSolarReflectance() const;
+    bool setScreenBeamDiffuseSolarReflectance(double screenBeamDiffuseSolarReflectance);
+
+    // Screen Beam-Beam Visible Solar Transmittance
+    double screenBeamBeamVisibleSolarTransmittance() const;
+    bool setScreenBeamBeamVisibleSolarTransmittance(double screenBeamBeamVisibleSolarTransmittance);
+
+    // Screen Beam-Diffuse Visible Solar Transmittance
+    double screenBeamDiffuseVisibleSolarTransmittance() const;
+    bool setScreenBeamDiffuseVisibleSolarTransmittance(double screenBeamDiffuseVisibleSolarTransmittance);
+
+    // Screen Beam-Diffuse Visible Solar Reflectance
+    double screenBeamDiffuseVisibleSolarReflectance() const;
+    bool setScreenBeamDiffuseVisibleSolarReflectance(double screenBeamDiffuseVisibleSolarReflectance);
+
+    // Screen Infrared Transmittance
+    double screenInfraredTransmittance() const;
+    bool isScreenInfraredTransmittanceDefaulted() const;
+    bool setScreenInfraredTransmittance(double screenInfraredTransmittance);
     void resetScreenInfraredTransmittance();
+
+    // Screen Infrared Emissivity
+    double screenInfraredEmissivity() const;
+    bool isScreenInfraredEmissivityDefaulted() const;
+    bool setScreenInfraredEmissivity(double screenInfraredEmissivity);
     void resetScreenInfraredEmissivity();
+
+    // Screen Wire Spacing
+    double screenWireSpacing() const;
+    bool isScreenWireSpacingDefaulted() const;
+    bool setScreenWireSpacing(double screenWireSpacing);
     void resetScreenWireSpacing();
+
+    // Screen Wire Diameter
+    double screenWireDiameter() const;
+    bool isScreenWireDiameterDefaulted() const;
+    bool setScreenWireDiameter(double screenWireDiameter);
     void resetScreenWireDiameter();
 
    protected:

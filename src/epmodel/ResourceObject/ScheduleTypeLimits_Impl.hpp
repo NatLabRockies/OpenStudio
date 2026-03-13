@@ -16,37 +16,35 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ScheduleTypeLimits_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ScheduleTypeLimits_Impl() override = default;
+    class EPMODEL_API ScheduleTypeLimits_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ScheduleTypeLimits_Impl() override = default;
 
-  boost::optional<double> lowerLimitValue() const;
-  boost::optional<double> upperLimitValue() const;
-  boost::optional<std::string> numericType() const;
-  std::string unitType() const;
-  bool isUnitTypeDefaulted() const;
+      boost::optional<double> lowerLimitValue() const;
+      bool setLowerLimitValue(double lowerLimitValue);
+      void resetLowerLimitValue();
 
-  bool setLowerLimitValue(double lowerLimitValue);
-  void resetLowerLimitValue();
+      boost::optional<double> upperLimitValue() const;
+      bool setUpperLimitValue(double upperLimitValue);
+      void resetUpperLimitValue();
 
-  bool setUpperLimitValue(double upperLimitValue);
-  void resetUpperLimitValue();
+      std::vector<std::string> numericTypeValues() const;
+      boost::optional<std::string> numericType() const;
+      bool setNumericType(const std::string& numericType);
+      void resetNumericType();
 
-  bool setNumericType(const std::string& numericType);
-  void resetNumericType();
+      std::vector<std::string> unitTypeValues() const;
+      std::string unitType() const;
+      bool isUnitTypeDefaulted() const;
+      bool setUnitType(const std::string& unitType);
+      void resetUnitType();
+    };
 
-  bool setUnitType(const std::string& unitType);
-  void resetUnitType();
-
-  std::vector<std::string> numericTypeValues() const;
-  std::vector<std::string> unitTypeValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

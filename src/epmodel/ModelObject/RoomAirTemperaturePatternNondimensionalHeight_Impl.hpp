@@ -10,29 +10,31 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API RoomAirTemperaturePatternNondimensionalHeight_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~RoomAirTemperaturePatternNondimensionalHeight_Impl() override = default;
+    class EPMODEL_API RoomAirTemperaturePatternNondimensionalHeight_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~RoomAirTemperaturePatternNondimensionalHeight_Impl() override = default;
 
-  int controlIntegerforPatternControlScheduleName() const;
-  boost::optional<double> thermostatOffset() const;
-  boost::optional<double> returnAirOffset() const;
-  boost::optional<double> exhaustAirOffset() const;
+      int controlIntegerforPatternControlScheduleName() const;
+      bool setControlIntegerforPatternControlScheduleName(int controlIntegerforPatternControlScheduleName);
 
-  bool setControlIntegerforPatternControlScheduleName(int controlIntegerforPatternControlScheduleName);
-  bool setThermostatOffset(double thermostatOffset);
-  void resetThermostatOffset();
-  bool setReturnAirOffset(double returnAirOffset);
-  void resetReturnAirOffset();
-  bool setExhaustAirOffset(double exhaustAirOffset);
-  void resetExhaustAirOffset();
-};
+      boost::optional<double> thermostatOffset() const;
+      bool setThermostatOffset(double thermostatOffset);
+      void resetThermostatOffset();
 
-}  // namespace detail
+      boost::optional<double> returnAirOffset() const;
+      bool setReturnAirOffset(double returnAirOffset);
+      void resetReturnAirOffset();
+
+      boost::optional<double> exhaustAirOffset() const;
+      bool setExhaustAirOffset(double exhaustAirOffset);
+      void resetExhaustAirOffset();
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

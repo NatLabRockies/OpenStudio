@@ -14,97 +14,89 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class CoilCoolingDXCurveFitSpeed_Impl;
-}
+  namespace detail {
+    class CoilCoolingDXCurveFitSpeed_Impl;
+  }
 
-class EPMODEL_API CoilCoolingDXCurveFitSpeed : public ModelObject
-{
- public:
-  explicit CoilCoolingDXCurveFitSpeed(const Model& model);
+  class EPMODEL_API CoilCoolingDXCurveFitSpeed : public ModelObject
+  {
+   public:
+    explicit CoilCoolingDXCurveFitSpeed(const Model& model);
 
-  virtual ~CoilCoolingDXCurveFitSpeed() override = default;
-  CoilCoolingDXCurveFitSpeed(const CoilCoolingDXCurveFitSpeed& other) = default;
-  CoilCoolingDXCurveFitSpeed(CoilCoolingDXCurveFitSpeed&& other) = default;
-  CoilCoolingDXCurveFitSpeed& operator=(const CoilCoolingDXCurveFitSpeed&) = default;
-  CoilCoolingDXCurveFitSpeed& operator=(CoilCoolingDXCurveFitSpeed&&) = default;
+    virtual ~CoilCoolingDXCurveFitSpeed() override = default;
+    CoilCoolingDXCurveFitSpeed(const CoilCoolingDXCurveFitSpeed& other) = default;
+    CoilCoolingDXCurveFitSpeed(CoilCoolingDXCurveFitSpeed&& other) = default;
+    CoilCoolingDXCurveFitSpeed& operator=(const CoilCoolingDXCurveFitSpeed&) = default;
+    CoilCoolingDXCurveFitSpeed& operator=(CoilCoolingDXCurveFitSpeed&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model scalar accessor names/signatures for this model-counterpart class.
-  // - Field Mapping: Preserved scalar APIs map directly to matching E+ Coil:Cooling:DX:CurveFit:Speed fields.
-  // - Field Mapping: Relationship object-link fields (all curve references and operating-mode back-links) are intentionally excluded.
-  // - ForwardTranslator evidence: ForwardTranslateCoilCoolingDXCurveFitSpeed writes these scalar fields one-to-one.
-  // - TODO(parity): Add relationship/object-link APIs in a dedicated non-scalar parity pass.
-  double grossTotalCoolingCapacityFraction() const;
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model scalar accessor names/signatures for this model-counterpart class.
+    // - Field Mapping: Preserved scalar APIs map directly to matching E+ Coil:Cooling:DX:CurveFit:Speed fields.
+    // - Field Mapping: Relationship object-link fields (all curve references and operating-mode back-links) are intentionally excluded.
+    // - ForwardTranslator evidence: ForwardTranslateCoilCoolingDXCurveFitSpeed writes these scalar fields one-to-one.
+    // - TODO(parity): Add relationship/object-link APIs in a dedicated non-scalar parity pass.
 
-  double evaporatorAirFlowRateFraction() const;
+    /** @name Field Accessors */
+    //@{
 
-  double condenserAirFlowRateFraction() const;
+    double grossTotalCoolingCapacityFraction() const;
+    bool setGrossTotalCoolingCapacityFraction(double grossTotalCoolingCapacityFraction);
 
-  boost::optional<double> grossSensibleHeatRatio() const;
+    double evaporatorAirFlowRateFraction() const;
+    bool setEvaporatorAirFlowRateFraction(double evaporatorAirFlowRateFraction);
 
-  bool isGrossSensibleHeatRatioAutosized() const;
+    double condenserAirFlowRateFraction() const;
+    bool setCondenserAirFlowRateFraction(double condenserAirFlowRateFraction);
 
-  double grossCoolingCOP() const;
+    boost::optional<double> grossSensibleHeatRatio() const;
+    bool isGrossSensibleHeatRatioAutosized() const;
+    bool setGrossSensibleHeatRatio(double grossSensibleHeatRatio);
+    void autosizeGrossSensibleHeatRatio();
+    boost::optional<double> autosizedGrossSensibleHeatRatio() const;
 
-  double activeFractionofCoilFaceArea() const;
+    double grossCoolingCOP() const;
+    bool setGrossCoolingCOP(double grossCoolingCOP);
 
-  double ratedEvaporatorFanPowerPerVolumeFlowRate() const;
+    double activeFractionofCoilFaceArea() const;
+    bool setActiveFractionofCoilFaceArea(double activeFractionofCoilFaceArea);
 
-  double ratedEvaporatorFanPowerPerVolumeFlowRate2017() const;
+    double ratedEvaporatorFanPowerPerVolumeFlowRate() const;
+    bool setRatedEvaporatorFanPowerPerVolumeFlowRate(double ratedEvaporatorFanPowerPerVolumeFlowRate);
 
-  double ratedEvaporatorFanPowerPerVolumeFlowRate2023() const;
+    double ratedEvaporatorFanPowerPerVolumeFlowRate2017() const;
+    bool setRatedEvaporatorFanPowerPerVolumeFlowRate2017(double ratedEvaporatorFanPowerPerVolumeFlowRate2017);
 
-  double evaporativeCondenserPumpPowerFraction() const;
+    double ratedEvaporatorFanPowerPerVolumeFlowRate2023() const;
+    bool setRatedEvaporatorFanPowerPerVolumeFlowRate2023(double ratedEvaporatorFanPowerPerVolumeFlowRate2023);
 
-  double evaporativeCondenserEffectiveness() const;
+    double evaporativeCondenserPumpPowerFraction() const;
+    bool setEvaporativeCondenserPumpPowerFraction(double evaporativeCondenserPumpPowerFraction);
 
-  double ratedWasteHeatFractionofPowerInput() const;
+    double evaporativeCondenserEffectiveness() const;
+    bool setEvaporativeCondenserEffectiveness(double evaporativeCondenserEffectiveness);
 
-  bool setGrossTotalCoolingCapacityFraction(double grossTotalCoolingCapacityFraction);
+    double ratedWasteHeatFractionofPowerInput() const;
+    bool setRatedWasteHeatFractionofPowerInput(double ratedWasteHeatFractionofPowerInput);
 
-  bool setEvaporatorAirFlowRateFraction(double evaporatorAirFlowRateFraction);
+    //@}
 
-  bool setCondenserAirFlowRateFraction(double condenserAirFlowRateFraction);
+    void autosize();
 
-  bool setGrossSensibleHeatRatio(double grossSensibleHeatRatio);
-  void autosizeGrossSensibleHeatRatio();
+    void applySizingValues();
 
-  bool setGrossCoolingCOP(double grossCoolingCOP);
+   protected:
+    using ImplType = detail::CoilCoolingDXCurveFitSpeed_Impl;
 
-  bool setActiveFractionofCoilFaceArea(double activeFractionofCoilFaceArea);
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  bool setRatedEvaporatorFanPowerPerVolumeFlowRate(double ratedEvaporatorFanPowerPerVolumeFlowRate);
-
-  bool setRatedEvaporatorFanPowerPerVolumeFlowRate2017(double ratedEvaporatorFanPowerPerVolumeFlowRate2017);
-
-  bool setRatedEvaporatorFanPowerPerVolumeFlowRate2023(double ratedEvaporatorFanPowerPerVolumeFlowRate2023);
-
-  bool setEvaporativeCondenserPumpPowerFraction(double evaporativeCondenserPumpPowerFraction);
-
-  bool setEvaporativeCondenserEffectiveness(double evaporativeCondenserEffectiveness);
-
-  bool setRatedWasteHeatFractionofPowerInput(double ratedWasteHeatFractionofPowerInput);
-
-  boost::optional<double> autosizedGrossSensibleHeatRatio() const;
-
-  void autosize();
-
-  void applySizingValues();
-
- protected:
-  using ImplType = detail::CoilCoolingDXCurveFitSpeed_Impl;
-
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit CoilCoolingDXCurveFitSpeed(std::shared_ptr<detail::CoilCoolingDXCurveFitSpeed_Impl> impl);
-};
+    explicit CoilCoolingDXCurveFitSpeed(std::shared_ptr<detail::CoilCoolingDXCurveFitSpeed_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

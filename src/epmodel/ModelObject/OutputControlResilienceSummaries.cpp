@@ -17,62 +17,61 @@
 namespace openstudio {
 namespace epmodel {
 
-OutputControlResilienceSummaries::OutputControlResilienceSummaries(const Model& model)
-  : ModelObject(OutputControlResilienceSummaries::iddObjectType(), model) {
-  const bool ok = setHeatIndexAlgorithm("Simplified");
-  OS_ASSERT(ok);
-}
+  OutputControlResilienceSummaries::OutputControlResilienceSummaries(const Model& model)
+    : ModelObject(OutputControlResilienceSummaries::iddObjectType(), model) {
+    const bool ok = setHeatIndexAlgorithm("Simplified");
+    OS_ASSERT(ok);
+  }
 
-OutputControlResilienceSummaries::OutputControlResilienceSummaries(
-  std::shared_ptr<detail::OutputControlResilienceSummaries_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  OutputControlResilienceSummaries::OutputControlResilienceSummaries(std::shared_ptr<detail::OutputControlResilienceSummaries_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType OutputControlResilienceSummaries::iddObjectType() {
-  return IddObjectType::OutputControl_ResilienceSummaries;
-}
+  IddObjectType OutputControlResilienceSummaries::iddObjectType() {
+    return IddObjectType::OutputControl_ResilienceSummaries;
+  }
 
-std::vector<std::string> OutputControlResilienceSummaries::heatIndexAlgorithmValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::OutputControl_ResilienceSummariesFields::HeatIndexAlgorithm);
-}
+  std::vector<std::string> OutputControlResilienceSummaries::heatIndexAlgorithmValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::OutputControl_ResilienceSummariesFields::HeatIndexAlgorithm);
+  }
 
-std::vector<std::string> OutputControlResilienceSummaries::validHeatIndexAlgorithmValues() {
-  return heatIndexAlgorithmValues();
-}
+  std::vector<std::string> OutputControlResilienceSummaries::validHeatIndexAlgorithmValues() {
+    return heatIndexAlgorithmValues();
+  }
 
-std::string OutputControlResilienceSummaries::heatIndexAlgorithm() const {
-  return getImpl<detail::OutputControlResilienceSummaries_Impl>()->heatIndexAlgorithm();
-}
+  std::string OutputControlResilienceSummaries::heatIndexAlgorithm() const {
+    return getImpl<detail::OutputControlResilienceSummaries_Impl>()->heatIndexAlgorithm();
+  }
 
-bool OutputControlResilienceSummaries::setHeatIndexAlgorithm(const std::string& heatIndexAlgorithm) {
-  return getImpl<detail::OutputControlResilienceSummaries_Impl>()->setHeatIndexAlgorithm(heatIndexAlgorithm);
-}
+  bool OutputControlResilienceSummaries::setHeatIndexAlgorithm(const std::string& heatIndexAlgorithm) {
+    return getImpl<detail::OutputControlResilienceSummaries_Impl>()->setHeatIndexAlgorithm(heatIndexAlgorithm);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string OutputControlResilienceSummaries_Impl::heatIndexAlgorithm() const {
-  const auto value = getString(openstudio::OutputControl_ResilienceSummariesFields::HeatIndexAlgorithm, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::vector<std::string> OutputControlResilienceSummaries_Impl::heatIndexAlgorithmValues() const {
+      return openstudio::epmodel::OutputControlResilienceSummaries::heatIndexAlgorithmValues();
+    }
 
-bool OutputControlResilienceSummaries_Impl::setHeatIndexAlgorithm(const std::string& heatIndexAlgorithm) {
-  return setString(openstudio::OutputControl_ResilienceSummariesFields::HeatIndexAlgorithm, heatIndexAlgorithm);
-}
+    std::vector<std::string> OutputControlResilienceSummaries_Impl::validHeatIndexAlgorithmValues() const {
+      return openstudio::epmodel::OutputControlResilienceSummaries::validHeatIndexAlgorithmValues();
+    }
 
-std::vector<std::string> OutputControlResilienceSummaries_Impl::heatIndexAlgorithmValues() const {
-  return openstudio::epmodel::OutputControlResilienceSummaries::heatIndexAlgorithmValues();
-}
+    std::string OutputControlResilienceSummaries_Impl::heatIndexAlgorithm() const {
+      const auto value = getString(openstudio::OutputControl_ResilienceSummariesFields::HeatIndexAlgorithm, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-std::vector<std::string> OutputControlResilienceSummaries_Impl::validHeatIndexAlgorithmValues() const {
-  return openstudio::epmodel::OutputControlResilienceSummaries::validHeatIndexAlgorithmValues();
-}
+    bool OutputControlResilienceSummaries_Impl::setHeatIndexAlgorithm(const std::string& heatIndexAlgorithm) {
+      return setString(openstudio::OutputControl_ResilienceSummariesFields::HeatIndexAlgorithm, heatIndexAlgorithm);
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

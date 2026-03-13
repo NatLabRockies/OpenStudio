@@ -15,151 +15,151 @@
 namespace openstudio {
 namespace epmodel {
 
-GlazedDoorInterzone::GlazedDoorInterzone(const Model& model) : ModelObject(GlazedDoorInterzone::iddObjectType(), model) {}
+  GlazedDoorInterzone::GlazedDoorInterzone(const Model& model) : ModelObject(GlazedDoorInterzone::iddObjectType(), model) {}
 
-GlazedDoorInterzone::GlazedDoorInterzone(std::shared_ptr<detail::GlazedDoorInterzone_Impl> impl) : ModelObject(std::move(impl)) {}
+  GlazedDoorInterzone::GlazedDoorInterzone(std::shared_ptr<detail::GlazedDoorInterzone_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType GlazedDoorInterzone::iddObjectType() {
-  return IddObjectType::GlazedDoor_Interzone;
-}
+  IddObjectType GlazedDoorInterzone::iddObjectType() {
+    return IddObjectType::GlazedDoor_Interzone;
+  }
 
-double GlazedDoorInterzone::multiplier() const {
-  return getImpl<detail::GlazedDoorInterzone_Impl>()->multiplier();
-}
+  double GlazedDoorInterzone::multiplier() const {
+    return getImpl<detail::GlazedDoorInterzone_Impl>()->multiplier();
+  }
 
-bool GlazedDoorInterzone::isMultiplierDefaulted() const {
-  return getImpl<detail::GlazedDoorInterzone_Impl>()->isMultiplierDefaulted();
-}
+  bool GlazedDoorInterzone::setMultiplier(double multiplier) {
+    return getImpl<detail::GlazedDoorInterzone_Impl>()->setMultiplier(multiplier);
+  }
 
-bool GlazedDoorInterzone::setMultiplier(double multiplier) {
-  return getImpl<detail::GlazedDoorInterzone_Impl>()->setMultiplier(multiplier);
-}
+  bool GlazedDoorInterzone::isMultiplierDefaulted() const {
+    return getImpl<detail::GlazedDoorInterzone_Impl>()->isMultiplierDefaulted();
+  }
 
-void GlazedDoorInterzone::resetMultiplier() {
-  getImpl<detail::GlazedDoorInterzone_Impl>()->resetMultiplier();
-}
+  void GlazedDoorInterzone::resetMultiplier() {
+    getImpl<detail::GlazedDoorInterzone_Impl>()->resetMultiplier();
+  }
 
-boost::optional<double> GlazedDoorInterzone::startingXCoordinate() const {
-  return getImpl<detail::GlazedDoorInterzone_Impl>()->startingXCoordinate();
-}
+  boost::optional<double> GlazedDoorInterzone::startingXCoordinate() const {
+    return getImpl<detail::GlazedDoorInterzone_Impl>()->startingXCoordinate();
+  }
 
-bool GlazedDoorInterzone::setStartingXCoordinate(double startingXCoordinate) {
-  return getImpl<detail::GlazedDoorInterzone_Impl>()->setStartingXCoordinate(startingXCoordinate);
-}
+  bool GlazedDoorInterzone::setStartingXCoordinate(double startingXCoordinate) {
+    return getImpl<detail::GlazedDoorInterzone_Impl>()->setStartingXCoordinate(startingXCoordinate);
+  }
 
-void GlazedDoorInterzone::resetStartingXCoordinate() {
-  getImpl<detail::GlazedDoorInterzone_Impl>()->resetStartingXCoordinate();
-}
+  void GlazedDoorInterzone::resetStartingXCoordinate() {
+    getImpl<detail::GlazedDoorInterzone_Impl>()->resetStartingXCoordinate();
+  }
 
-boost::optional<double> GlazedDoorInterzone::startingZCoordinate() const {
-  return getImpl<detail::GlazedDoorInterzone_Impl>()->startingZCoordinate();
-}
+  boost::optional<double> GlazedDoorInterzone::startingZCoordinate() const {
+    return getImpl<detail::GlazedDoorInterzone_Impl>()->startingZCoordinate();
+  }
 
-bool GlazedDoorInterzone::setStartingZCoordinate(double startingZCoordinate) {
-  return getImpl<detail::GlazedDoorInterzone_Impl>()->setStartingZCoordinate(startingZCoordinate);
-}
+  bool GlazedDoorInterzone::setStartingZCoordinate(double startingZCoordinate) {
+    return getImpl<detail::GlazedDoorInterzone_Impl>()->setStartingZCoordinate(startingZCoordinate);
+  }
 
-void GlazedDoorInterzone::resetStartingZCoordinate() {
-  getImpl<detail::GlazedDoorInterzone_Impl>()->resetStartingZCoordinate();
-}
+  void GlazedDoorInterzone::resetStartingZCoordinate() {
+    getImpl<detail::GlazedDoorInterzone_Impl>()->resetStartingZCoordinate();
+  }
 
-boost::optional<double> GlazedDoorInterzone::length() const {
-  return getImpl<detail::GlazedDoorInterzone_Impl>()->length();
-}
+  boost::optional<double> GlazedDoorInterzone::length() const {
+    return getImpl<detail::GlazedDoorInterzone_Impl>()->length();
+  }
 
-bool GlazedDoorInterzone::setLength(double length) {
-  return getImpl<detail::GlazedDoorInterzone_Impl>()->setLength(length);
-}
+  bool GlazedDoorInterzone::setLength(double length) {
+    return getImpl<detail::GlazedDoorInterzone_Impl>()->setLength(length);
+  }
 
-void GlazedDoorInterzone::resetLength() {
-  getImpl<detail::GlazedDoorInterzone_Impl>()->resetLength();
-}
+  void GlazedDoorInterzone::resetLength() {
+    getImpl<detail::GlazedDoorInterzone_Impl>()->resetLength();
+  }
 
-boost::optional<double> GlazedDoorInterzone::height() const {
-  return getImpl<detail::GlazedDoorInterzone_Impl>()->height();
-}
+  boost::optional<double> GlazedDoorInterzone::height() const {
+    return getImpl<detail::GlazedDoorInterzone_Impl>()->height();
+  }
 
-bool GlazedDoorInterzone::setHeight(double height) {
-  return getImpl<detail::GlazedDoorInterzone_Impl>()->setHeight(height);
-}
+  bool GlazedDoorInterzone::setHeight(double height) {
+    return getImpl<detail::GlazedDoorInterzone_Impl>()->setHeight(height);
+  }
 
-void GlazedDoorInterzone::resetHeight() {
-  getImpl<detail::GlazedDoorInterzone_Impl>()->resetHeight();
-}
+  void GlazedDoorInterzone::resetHeight() {
+    getImpl<detail::GlazedDoorInterzone_Impl>()->resetHeight();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-double GlazedDoorInterzone_Impl::multiplier() const {
-  const auto value = getDouble(openstudio::GlazedDoor_InterzoneFields::Multiplier, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double GlazedDoorInterzone_Impl::multiplier() const {
+      const auto value = getDouble(openstudio::GlazedDoor_InterzoneFields::Multiplier, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool GlazedDoorInterzone_Impl::isMultiplierDefaulted() const {
-  return isEmpty(openstudio::GlazedDoor_InterzoneFields::Multiplier);
-}
+    bool GlazedDoorInterzone_Impl::setMultiplier(double multiplier) {
+      return setDouble(openstudio::GlazedDoor_InterzoneFields::Multiplier, multiplier);
+    }
 
-bool GlazedDoorInterzone_Impl::setMultiplier(double multiplier) {
-  return setDouble(openstudio::GlazedDoor_InterzoneFields::Multiplier, multiplier);
-}
+    bool GlazedDoorInterzone_Impl::isMultiplierDefaulted() const {
+      return isEmpty(openstudio::GlazedDoor_InterzoneFields::Multiplier);
+    }
 
-void GlazedDoorInterzone_Impl::resetMultiplier() {
-  OS_ASSERT(setString(openstudio::GlazedDoor_InterzoneFields::Multiplier, ""));
-}
+    void GlazedDoorInterzone_Impl::resetMultiplier() {
+      OS_ASSERT(setString(openstudio::GlazedDoor_InterzoneFields::Multiplier, ""));
+    }
 
-boost::optional<double> GlazedDoorInterzone_Impl::startingXCoordinate() const {
-  return getDouble(openstudio::GlazedDoor_InterzoneFields::StartingXCoordinate, true);
-}
+    boost::optional<double> GlazedDoorInterzone_Impl::startingXCoordinate() const {
+      return getDouble(openstudio::GlazedDoor_InterzoneFields::StartingXCoordinate, true);
+    }
 
-bool GlazedDoorInterzone_Impl::setStartingXCoordinate(double startingXCoordinate) {
-  return setDouble(openstudio::GlazedDoor_InterzoneFields::StartingXCoordinate, startingXCoordinate);
-}
+    bool GlazedDoorInterzone_Impl::setStartingXCoordinate(double startingXCoordinate) {
+      return setDouble(openstudio::GlazedDoor_InterzoneFields::StartingXCoordinate, startingXCoordinate);
+    }
 
-void GlazedDoorInterzone_Impl::resetStartingXCoordinate() {
-  OS_ASSERT(setString(openstudio::GlazedDoor_InterzoneFields::StartingXCoordinate, ""));
-}
+    void GlazedDoorInterzone_Impl::resetStartingXCoordinate() {
+      OS_ASSERT(setString(openstudio::GlazedDoor_InterzoneFields::StartingXCoordinate, ""));
+    }
 
-boost::optional<double> GlazedDoorInterzone_Impl::startingZCoordinate() const {
-  return getDouble(openstudio::GlazedDoor_InterzoneFields::StartingZCoordinate, true);
-}
+    boost::optional<double> GlazedDoorInterzone_Impl::startingZCoordinate() const {
+      return getDouble(openstudio::GlazedDoor_InterzoneFields::StartingZCoordinate, true);
+    }
 
-bool GlazedDoorInterzone_Impl::setStartingZCoordinate(double startingZCoordinate) {
-  return setDouble(openstudio::GlazedDoor_InterzoneFields::StartingZCoordinate, startingZCoordinate);
-}
+    bool GlazedDoorInterzone_Impl::setStartingZCoordinate(double startingZCoordinate) {
+      return setDouble(openstudio::GlazedDoor_InterzoneFields::StartingZCoordinate, startingZCoordinate);
+    }
 
-void GlazedDoorInterzone_Impl::resetStartingZCoordinate() {
-  OS_ASSERT(setString(openstudio::GlazedDoor_InterzoneFields::StartingZCoordinate, ""));
-}
+    void GlazedDoorInterzone_Impl::resetStartingZCoordinate() {
+      OS_ASSERT(setString(openstudio::GlazedDoor_InterzoneFields::StartingZCoordinate, ""));
+    }
 
-boost::optional<double> GlazedDoorInterzone_Impl::length() const {
-  return getDouble(openstudio::GlazedDoor_InterzoneFields::Length, true);
-}
+    boost::optional<double> GlazedDoorInterzone_Impl::length() const {
+      return getDouble(openstudio::GlazedDoor_InterzoneFields::Length, true);
+    }
 
-bool GlazedDoorInterzone_Impl::setLength(double length) {
-  return setDouble(openstudio::GlazedDoor_InterzoneFields::Length, length);
-}
+    bool GlazedDoorInterzone_Impl::setLength(double length) {
+      return setDouble(openstudio::GlazedDoor_InterzoneFields::Length, length);
+    }
 
-void GlazedDoorInterzone_Impl::resetLength() {
-  OS_ASSERT(setString(openstudio::GlazedDoor_InterzoneFields::Length, ""));
-}
+    void GlazedDoorInterzone_Impl::resetLength() {
+      OS_ASSERT(setString(openstudio::GlazedDoor_InterzoneFields::Length, ""));
+    }
 
-boost::optional<double> GlazedDoorInterzone_Impl::height() const {
-  return getDouble(openstudio::GlazedDoor_InterzoneFields::Height, true);
-}
+    boost::optional<double> GlazedDoorInterzone_Impl::height() const {
+      return getDouble(openstudio::GlazedDoor_InterzoneFields::Height, true);
+    }
 
-bool GlazedDoorInterzone_Impl::setHeight(double height) {
-  return setDouble(openstudio::GlazedDoor_InterzoneFields::Height, height);
-}
+    bool GlazedDoorInterzone_Impl::setHeight(double height) {
+      return setDouble(openstudio::GlazedDoor_InterzoneFields::Height, height);
+    }
 
-void GlazedDoorInterzone_Impl::resetHeight() {
-  OS_ASSERT(setString(openstudio::GlazedDoor_InterzoneFields::Height, ""));
-}
+    void GlazedDoorInterzone_Impl::resetHeight() {
+      OS_ASSERT(setString(openstudio::GlazedDoor_InterzoneFields::Height, ""));
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

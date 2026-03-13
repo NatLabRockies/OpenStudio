@@ -19,8 +19,11 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~ZoneHVACForcedAirUserDefined_Impl() override = default;
 
+      /** @name Number of Plant Loop Connections */
+      //@{
       int numberofPlantLoopConnections() const;
       bool setNumberofPlantLoopConnections(int numberofPlantLoopConnections);
+      //@}
     };
 
   }  // namespace detail

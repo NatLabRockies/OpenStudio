@@ -19,12 +19,15 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~WindowGapDeflectionState_Impl() override = default;
 
+      // Deflected thickness
       double deflectedThickness() const;
       bool setDeflectedThickness(double deflectedThickness);
 
+      // Initial temperature
       double initialTemperature() const;
       bool setInitialTemperature(double initialTemperature);
 
+      // Initial pressure
       double initialPressure() const;
       bool setInitialPressure(double initialPressure);
     };

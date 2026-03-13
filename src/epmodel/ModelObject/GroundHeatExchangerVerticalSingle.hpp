@@ -16,45 +16,45 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class GroundHeatExchangerVerticalSingle_Impl;
-}
+  namespace detail {
+    class GroundHeatExchangerVerticalSingle_Impl;
+  }
 
-class EPMODEL_API GroundHeatExchangerVerticalSingle : public ModelObject
-{
- public:
-  explicit GroundHeatExchangerVerticalSingle(const Model& model);
+  class EPMODEL_API GroundHeatExchangerVerticalSingle : public ModelObject
+  {
+   public:
+    explicit GroundHeatExchangerVerticalSingle(const Model& model);
 
-  virtual ~GroundHeatExchangerVerticalSingle() override = default;
-  GroundHeatExchangerVerticalSingle(const GroundHeatExchangerVerticalSingle& other) = default;
-  GroundHeatExchangerVerticalSingle(GroundHeatExchangerVerticalSingle&& other) = default;
-  GroundHeatExchangerVerticalSingle& operator=(const GroundHeatExchangerVerticalSingle&) = default;
-  GroundHeatExchangerVerticalSingle& operator=(GroundHeatExchangerVerticalSingle&&) = default;
+    virtual ~GroundHeatExchangerVerticalSingle() override = default;
+    GroundHeatExchangerVerticalSingle(const GroundHeatExchangerVerticalSingle& other) = default;
+    GroundHeatExchangerVerticalSingle(GroundHeatExchangerVerticalSingle&& other) = default;
+    GroundHeatExchangerVerticalSingle& operator=(const GroundHeatExchangerVerticalSingle&) = default;
+    GroundHeatExchangerVerticalSingle& operator=(GroundHeatExchangerVerticalSingle&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to GroundHeatExchanger:Vertical:Single fields X-Location and Y-Location.
-  // - Field Mapping: GHE:Vertical:Properties Object Name is an object-list relationship field and is excluded.
-  // - TODO(parity): Add relationship APIs incrementally after scalar saturation.
-  double xLocation() const;
-  double yLocation() const;
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to GroundHeatExchanger:Vertical:Single fields X-Location and Y-Location.
+    // - Field Mapping: GHE:Vertical:Properties Object Name is an object-list relationship field and is excluded.
+    // - TODO(parity): Add relationship APIs incrementally after scalar saturation.
+    double xLocation() const;
+    bool setXLocation(double xLocation);
 
-  bool setXLocation(double xLocation);
-  bool setYLocation(double yLocation);
+    double yLocation() const;
+    bool setYLocation(double yLocation);
 
- protected:
-  using ImplType = detail::GroundHeatExchangerVerticalSingle_Impl;
+   protected:
+    using ImplType = detail::GroundHeatExchangerVerticalSingle_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit GroundHeatExchangerVerticalSingle(std::shared_ptr<detail::GroundHeatExchangerVerticalSingle_Impl> impl);
-};
+    explicit GroundHeatExchangerVerticalSingle(std::shared_ptr<detail::GroundHeatExchangerVerticalSingle_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

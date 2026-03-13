@@ -43,25 +43,25 @@ namespace epmodel {
     // - Field Mapping: Relationship fields (node/object-list references) are excluded from this scalar-only scaffold.
     // - TODO(parity): Add excluded relationship APIs in a dedicated relationship pass.
     bool constantExternalVaporTransferCoefficient() const;
-    bool isConstantExternalVaporTransferCoefficientDefaulted() const;
     bool setConstantExternalVaporTransferCoefficient(bool constantExternalVaporTransferCoefficient);
     void setConstantExternalVaporTransferCoefficientNoFail(bool constantExternalVaporTransferCoefficient);
+    bool isConstantExternalVaporTransferCoefficientDefaulted() const;
     void resetConstantExternalVaporTransferCoefficient();
 
     double externalVaporCoefficientValue() const;
-    bool isExternalVaporCoefficientValueDefaulted() const;
     bool setExternalVaporCoefficientValue(double externalVaporCoefficientValue);
+    bool isExternalVaporCoefficientValueDefaulted() const;
     void resetExternalVaporCoefficientValue();
 
     bool constantInternalvaporTransferCoefficient() const;
-    bool isConstantInternalvaporTransferCoefficientDefaulted() const;
     bool setConstantInternalvaporTransferCoefficient(bool constantInternalvaporTransferCoefficient);
     void setConstantInternalvaporTransferCoefficientNoFail(bool constantInternalvaporTransferCoefficient);
+    bool isConstantInternalvaporTransferCoefficientDefaulted() const;
     void resetConstantInternalvaporTransferCoefficient();
 
     double internalVaporCoefficientValue() const;
-    bool isInternalVaporCoefficientValueDefaulted() const;
     bool setInternalVaporCoefficientValue(double internalVaporCoefficientValue);
+    bool isInternalVaporCoefficientValueDefaulted() const;
     void resetInternalVaporCoefficientValue();
 
    protected:

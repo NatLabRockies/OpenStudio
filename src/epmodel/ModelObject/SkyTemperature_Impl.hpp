@@ -22,11 +22,12 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~SkyTemperature_Impl() override = default;
 
+      std::vector<std::string> calculationTypeValues() const;
+
       std::string calculationType() const;
       bool setCalculationType(const std::string& calculationType);
       bool isCalculationTypeDefaulted() const;
       void resetCalculationType();
-      std::vector<std::string> calculationTypeValues() const;
 
       bool useWeatherFileHorizontalIR() const;
       bool setUseWeatherFileHorizontalIR(bool useWeatherFileHorizontalIR);

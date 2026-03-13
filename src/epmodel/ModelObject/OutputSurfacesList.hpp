@@ -17,50 +17,48 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class OutputSurfacesList_Impl;
-}
+  namespace detail {
+    class OutputSurfacesList_Impl;
+  }
 
-class EPMODEL_API OutputSurfacesList : public ModelObject
-{
- public:
-  explicit OutputSurfacesList(const Model& model);
+  class EPMODEL_API OutputSurfacesList : public ModelObject
+  {
+   public:
+    explicit OutputSurfacesList(const Model& model);
 
-  virtual ~OutputSurfacesList() override = default;
-  OutputSurfacesList(const OutputSurfacesList& other) = default;
-  OutputSurfacesList(OutputSurfacesList&& other) = default;
-  OutputSurfacesList& operator=(const OutputSurfacesList&) = default;
-  OutputSurfacesList& operator=(OutputSurfacesList&&) = default;
+    virtual ~OutputSurfacesList() override = default;
+    OutputSurfacesList(const OutputSurfacesList& other) = default;
+    OutputSurfacesList(OutputSurfacesList&& other) = default;
+    OutputSurfacesList& operator=(const OutputSurfacesList&) = default;
+    OutputSurfacesList& operator=(OutputSurfacesList&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> reportTypeValues();
-  static std::vector<std::string> reportSpecificationsValues();
+    static std::vector<std::string> reportTypeValues();
+    static std::vector<std::string> reportSpecificationsValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-  // - Field Mapping: reportType/reportSpecifications map directly to E+ Output:Surfaces:List Report Type/Report Specifications.
-  // - TODO(parity): Keep scalar-only API stable while extending any non-scalar reporting behaviors in later passes.
-  std::string reportType() const;
+    // Schema Alignment Notes:
+    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
+    // - Field Mapping: reportType/reportSpecifications map directly to E+ Output:Surfaces:List Report Type/Report Specifications.
+    // - TODO(parity): Keep scalar-only API stable while extending any non-scalar reporting behaviors in later passes.
+    std::string reportType() const;
+    bool setReportType(const std::string& reportType);
 
-  boost::optional<std::string> reportSpecifications() const;
+    boost::optional<std::string> reportSpecifications() const;
+    bool setReportSpecifications(const std::string& reportSpecifications);
+    void resetReportSpecifications();
 
-  bool setReportType(const std::string& reportType);
+   protected:
+    using ImplType = detail::OutputSurfacesList_Impl;
 
-  bool setReportSpecifications(const std::string& reportSpecifications);
-  void resetReportSpecifications();
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
- protected:
-  using ImplType = detail::OutputSurfacesList_Impl;
-
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit OutputSurfacesList(std::shared_ptr<detail::OutputSurfacesList_Impl> impl);
-};
+    explicit OutputSurfacesList(std::shared_ptr<detail::OutputSurfacesList_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

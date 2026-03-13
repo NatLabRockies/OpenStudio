@@ -52,56 +52,16 @@ std::string FluidCoolerSingleSpeed::performanceInputMethod() const {
   return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->performanceInputMethod();
 }
 
+bool FluidCoolerSingleSpeed::setPerformanceInputMethod(const std::string& performanceInputMethod) {
+  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->setPerformanceInputMethod(performanceInputMethod);
+}
+
 boost::optional<double> FluidCoolerSingleSpeed::designAirFlowRateUfactorTimesAreaValue() const {
   return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->designAirFlowRateUfactorTimesAreaValue();
 }
 
 bool FluidCoolerSingleSpeed::isDesignAirFlowRateUfactorTimesAreaValueAutosized() const {
   return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->isDesignAirFlowRateUfactorTimesAreaValueAutosized();
-}
-
-double FluidCoolerSingleSpeed::nominalCapacity() const {
-  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->nominalCapacity();
-}
-
-double FluidCoolerSingleSpeed::designEnteringWaterTemperature() const {
-  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->designEnteringWaterTemperature();
-}
-
-double FluidCoolerSingleSpeed::designEnteringAirTemperature() const {
-  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->designEnteringAirTemperature();
-}
-
-double FluidCoolerSingleSpeed::designEnteringAirWetbulbTemperature() const {
-  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->designEnteringAirWetbulbTemperature();
-}
-
-boost::optional<double> FluidCoolerSingleSpeed::designWaterFlowRate() const {
-  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->designWaterFlowRate();
-}
-
-bool FluidCoolerSingleSpeed::isDesignWaterFlowRateAutosized() const {
-  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->isDesignWaterFlowRateAutosized();
-}
-
-boost::optional<double> FluidCoolerSingleSpeed::designAirFlowRate() const {
-  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->designAirFlowRate();
-}
-
-bool FluidCoolerSingleSpeed::isDesignAirFlowRateAutosized() const {
-  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->isDesignAirFlowRateAutosized();
-}
-
-boost::optional<double> FluidCoolerSingleSpeed::designAirFlowRateFanPower() const {
-  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->designAirFlowRateFanPower();
-}
-
-bool FluidCoolerSingleSpeed::isDesignAirFlowRateFanPowerAutosized() const {
-  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->isDesignAirFlowRateFanPowerAutosized();
-}
-
-bool FluidCoolerSingleSpeed::setPerformanceInputMethod(const std::string& performanceInputMethod) {
-  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->setPerformanceInputMethod(performanceInputMethod);
 }
 
 bool FluidCoolerSingleSpeed::setDesignAirFlowRateUfactorTimesAreaValue(double designAirFlowRateUfactorTimesAreaValue) {
@@ -112,20 +72,48 @@ void FluidCoolerSingleSpeed::autosizeDesignAirFlowRateUfactorTimesAreaValue() {
   getImpl<detail::FluidCoolerSingleSpeed_Impl>()->autosizeDesignAirFlowRateUfactorTimesAreaValue();
 }
 
+boost::optional<double> FluidCoolerSingleSpeed::autosizedDesignAirFlowRateUfactorTimesAreaValue() const {
+  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->autosizedDesignAirFlowRateUfactorTimesAreaValue();
+}
+
+double FluidCoolerSingleSpeed::nominalCapacity() const {
+  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->nominalCapacity();
+}
+
 bool FluidCoolerSingleSpeed::setNominalCapacity(double nominalCapacity) {
   return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->setNominalCapacity(nominalCapacity);
+}
+
+double FluidCoolerSingleSpeed::designEnteringWaterTemperature() const {
+  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->designEnteringWaterTemperature();
 }
 
 bool FluidCoolerSingleSpeed::setDesignEnteringWaterTemperature(double designEnteringWaterTemperature) {
   return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->setDesignEnteringWaterTemperature(designEnteringWaterTemperature);
 }
 
+double FluidCoolerSingleSpeed::designEnteringAirTemperature() const {
+  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->designEnteringAirTemperature();
+}
+
 bool FluidCoolerSingleSpeed::setDesignEnteringAirTemperature(double designEnteringAirTemperature) {
   return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->setDesignEnteringAirTemperature(designEnteringAirTemperature);
 }
 
+double FluidCoolerSingleSpeed::designEnteringAirWetbulbTemperature() const {
+  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->designEnteringAirWetbulbTemperature();
+}
+
 bool FluidCoolerSingleSpeed::setDesignEnteringAirWetbulbTemperature(double designEnteringAirWetbulbTemperature) {
   return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->setDesignEnteringAirWetbulbTemperature(designEnteringAirWetbulbTemperature);
+}
+
+boost::optional<double> FluidCoolerSingleSpeed::designWaterFlowRate() const {
+  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->designWaterFlowRate();
+}
+
+bool FluidCoolerSingleSpeed::isDesignWaterFlowRateAutosized() const {
+  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->isDesignWaterFlowRateAutosized();
 }
 
 bool FluidCoolerSingleSpeed::setDesignWaterFlowRate(double designWaterFlowRate) {
@@ -136,12 +124,36 @@ void FluidCoolerSingleSpeed::autosizeDesignWaterFlowRate() {
   getImpl<detail::FluidCoolerSingleSpeed_Impl>()->autosizeDesignWaterFlowRate();
 }
 
+boost::optional<double> FluidCoolerSingleSpeed::autosizedDesignWaterFlowRate() const {
+  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->autosizedDesignWaterFlowRate();
+}
+
+boost::optional<double> FluidCoolerSingleSpeed::designAirFlowRate() const {
+  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->designAirFlowRate();
+}
+
+bool FluidCoolerSingleSpeed::isDesignAirFlowRateAutosized() const {
+  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->isDesignAirFlowRateAutosized();
+}
+
 bool FluidCoolerSingleSpeed::setDesignAirFlowRate(double designAirFlowRate) {
   return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->setDesignAirFlowRate(designAirFlowRate);
 }
 
 void FluidCoolerSingleSpeed::autosizeDesignAirFlowRate() {
   getImpl<detail::FluidCoolerSingleSpeed_Impl>()->autosizeDesignAirFlowRate();
+}
+
+boost::optional<double> FluidCoolerSingleSpeed::autosizedDesignAirFlowRate() const {
+  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->autosizedDesignAirFlowRate();
+}
+
+boost::optional<double> FluidCoolerSingleSpeed::designAirFlowRateFanPower() const {
+  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->designAirFlowRateFanPower();
+}
+
+bool FluidCoolerSingleSpeed::isDesignAirFlowRateFanPowerAutosized() const {
+  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->isDesignAirFlowRateFanPowerAutosized();
 }
 
 bool FluidCoolerSingleSpeed::setDesignAirFlowRateFanPower(double designAirFlowRateFanPower) {
@@ -152,21 +164,10 @@ void FluidCoolerSingleSpeed::autosizeDesignAirFlowRateFanPower() {
   getImpl<detail::FluidCoolerSingleSpeed_Impl>()->autosizeDesignAirFlowRateFanPower();
 }
 
-boost::optional<double> FluidCoolerSingleSpeed::autosizedDesignAirFlowRateUfactorTimesAreaValue() const {
-  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->autosizedDesignAirFlowRateUfactorTimesAreaValue();
-}
-
-boost::optional<double> FluidCoolerSingleSpeed::autosizedDesignWaterFlowRate() const {
-  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->autosizedDesignWaterFlowRate();
-}
-
-boost::optional<double> FluidCoolerSingleSpeed::autosizedDesignAirFlowRate() const {
-  return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->autosizedDesignAirFlowRate();
-}
-
 boost::optional<double> FluidCoolerSingleSpeed::autosizedDesignAirFlowRateFanPower() const {
   return getImpl<detail::FluidCoolerSingleSpeed_Impl>()->autosizedDesignAirFlowRateFanPower();
 }
+
 
 }  // namespace epmodel
 }  // namespace openstudio
@@ -183,179 +184,181 @@ unsigned FluidCoolerSingleSpeed_Impl::outletPort() const {
   return openstudio::FluidCooler_SingleSpeedFields::WaterOutletNodeName;
 }
 
-std::vector<std::string> FluidCoolerSingleSpeed_Impl::performanceInputMethodValues() const {
-  return FluidCoolerSingleSpeed::performanceInputMethodValues();
-}
+    std::vector<std::string> FluidCoolerSingleSpeed_Impl::performanceInputMethodValues() const {
+      return FluidCoolerSingleSpeed::performanceInputMethodValues();
+    }
 
-std::string FluidCoolerSingleSpeed_Impl::performanceInputMethod() const {
-  const auto value = getString(openstudio::FluidCooler_SingleSpeedFields::PerformanceInputMethod, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string FluidCoolerSingleSpeed_Impl::performanceInputMethod() const {
+      const auto value = getString(openstudio::FluidCooler_SingleSpeedFields::PerformanceInputMethod, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-boost::optional<double> FluidCoolerSingleSpeed_Impl::designAirFlowRateUfactorTimesAreaValue() const {
-  return getDouble(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRateUfactorTimesAreaValue, true);
-}
+    bool FluidCoolerSingleSpeed_Impl::setPerformanceInputMethod(const std::string& performanceInputMethod) {
+      return setString(openstudio::FluidCooler_SingleSpeedFields::PerformanceInputMethod, performanceInputMethod);
+    }
 
-bool FluidCoolerSingleSpeed_Impl::isDesignAirFlowRateUfactorTimesAreaValueAutosized() const {
-  if (const auto value = getString(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRateUfactorTimesAreaValue, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    boost::optional<double> FluidCoolerSingleSpeed_Impl::designAirFlowRateUfactorTimesAreaValue() const {
+      return getDouble(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRateUfactorTimesAreaValue, true);
+    }
 
-double FluidCoolerSingleSpeed_Impl::nominalCapacity() const {
-  const auto value = getDouble(openstudio::FluidCooler_SingleSpeedFields::NominalCapacity, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool FluidCoolerSingleSpeed_Impl::isDesignAirFlowRateUfactorTimesAreaValueAutosized() const {
+      if (const auto value = getString(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRateUfactorTimesAreaValue, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
+    }
 
-double FluidCoolerSingleSpeed_Impl::designEnteringWaterTemperature() const {
-  const auto value = getDouble(openstudio::FluidCooler_SingleSpeedFields::DesignEnteringWaterTemperature, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool FluidCoolerSingleSpeed_Impl::setDesignAirFlowRateUfactorTimesAreaValue(boost::optional<double> designAirFlowRateUfactorTimesAreaValue) {
+      bool result = false;
+      if (designAirFlowRateUfactorTimesAreaValue) {
+        result =
+          setDouble(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRateUfactorTimesAreaValue, *designAirFlowRateUfactorTimesAreaValue);
+      }
+      return result;
+    }
 
-double FluidCoolerSingleSpeed_Impl::designEnteringAirTemperature() const {
-  const auto value = getDouble(openstudio::FluidCooler_SingleSpeedFields::DesignEnteringAirTemperature, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    void FluidCoolerSingleSpeed_Impl::autosizeDesignAirFlowRateUfactorTimesAreaValue() {
+      OS_ASSERT(setString(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRateUfactorTimesAreaValue, "Autosize"));
+    }
 
-double FluidCoolerSingleSpeed_Impl::designEnteringAirWetbulbTemperature() const {
-  const auto value = getDouble(openstudio::FluidCooler_SingleSpeedFields::DesignEnteringAirWetbulbTemperature, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    boost::optional<double> FluidCoolerSingleSpeed_Impl::autosizedDesignAirFlowRateUfactorTimesAreaValue() const {
+      return boost::none;
+    }
 
-boost::optional<double> FluidCoolerSingleSpeed_Impl::designWaterFlowRate() const {
-  return getDouble(openstudio::FluidCooler_SingleSpeedFields::DesignWaterFlowRate, true);
-}
+    double FluidCoolerSingleSpeed_Impl::nominalCapacity() const {
+      const auto value = getDouble(openstudio::FluidCooler_SingleSpeedFields::NominalCapacity, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool FluidCoolerSingleSpeed_Impl::isDesignWaterFlowRateAutosized() const {
-  if (const auto value = getString(openstudio::FluidCooler_SingleSpeedFields::DesignWaterFlowRate, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    bool FluidCoolerSingleSpeed_Impl::setNominalCapacity(double nominalCapacity) {
+      return setDouble(openstudio::FluidCooler_SingleSpeedFields::NominalCapacity, nominalCapacity);
+    }
 
-boost::optional<double> FluidCoolerSingleSpeed_Impl::designAirFlowRate() const {
-  return getDouble(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRate, true);
-}
+    double FluidCoolerSingleSpeed_Impl::designEnteringWaterTemperature() const {
+      const auto value = getDouble(openstudio::FluidCooler_SingleSpeedFields::DesignEnteringWaterTemperature, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool FluidCoolerSingleSpeed_Impl::isDesignAirFlowRateAutosized() const {
-  if (const auto value = getString(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRate, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    bool FluidCoolerSingleSpeed_Impl::setDesignEnteringWaterTemperature(boost::optional<double> designEnteringWaterTemperature) {
+      bool result = false;
+      if (designEnteringWaterTemperature) {
+        result = setDouble(openstudio::FluidCooler_SingleSpeedFields::DesignEnteringWaterTemperature, *designEnteringWaterTemperature);
+      }
+      return result;
+    }
 
-boost::optional<double> FluidCoolerSingleSpeed_Impl::designAirFlowRateFanPower() const {
-  return getDouble(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRateFanPower, true);
-}
+    double FluidCoolerSingleSpeed_Impl::designEnteringAirTemperature() const {
+      const auto value = getDouble(openstudio::FluidCooler_SingleSpeedFields::DesignEnteringAirTemperature, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool FluidCoolerSingleSpeed_Impl::isDesignAirFlowRateFanPowerAutosized() const {
-  if (const auto value = getString(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRateFanPower, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    bool FluidCoolerSingleSpeed_Impl::setDesignEnteringAirTemperature(boost::optional<double> designEnteringAirTemperature) {
+      bool result = false;
+      if (designEnteringAirTemperature) {
+        result = setDouble(openstudio::FluidCooler_SingleSpeedFields::DesignEnteringAirTemperature, *designEnteringAirTemperature);
+      }
+      return result;
+    }
 
-bool FluidCoolerSingleSpeed_Impl::setPerformanceInputMethod(const std::string& performanceInputMethod) {
-  return setString(openstudio::FluidCooler_SingleSpeedFields::PerformanceInputMethod, performanceInputMethod);
-}
+    double FluidCoolerSingleSpeed_Impl::designEnteringAirWetbulbTemperature() const {
+      const auto value = getDouble(openstudio::FluidCooler_SingleSpeedFields::DesignEnteringAirWetbulbTemperature, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool FluidCoolerSingleSpeed_Impl::setDesignAirFlowRateUfactorTimesAreaValue(boost::optional<double> designAirFlowRateUfactorTimesAreaValue) {
-  bool result = false;
-  if (designAirFlowRateUfactorTimesAreaValue) {
-    result = setDouble(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRateUfactorTimesAreaValue, *designAirFlowRateUfactorTimesAreaValue);
-  }
-  return result;
-}
+    bool FluidCoolerSingleSpeed_Impl::setDesignEnteringAirWetbulbTemperature(boost::optional<double> designEnteringAirWetbulbTemperature) {
+      bool result = false;
+      if (designEnteringAirWetbulbTemperature) {
+        result = setDouble(openstudio::FluidCooler_SingleSpeedFields::DesignEnteringAirWetbulbTemperature, *designEnteringAirWetbulbTemperature);
+      }
+      return result;
+    }
 
-void FluidCoolerSingleSpeed_Impl::autosizeDesignAirFlowRateUfactorTimesAreaValue() {
-  OS_ASSERT(setString(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRateUfactorTimesAreaValue, "Autosize"));
-}
+    boost::optional<double> FluidCoolerSingleSpeed_Impl::designWaterFlowRate() const {
+      return getDouble(openstudio::FluidCooler_SingleSpeedFields::DesignWaterFlowRate, true);
+    }
 
-bool FluidCoolerSingleSpeed_Impl::setNominalCapacity(double nominalCapacity) {
-  return setDouble(openstudio::FluidCooler_SingleSpeedFields::NominalCapacity, nominalCapacity);
-}
+    bool FluidCoolerSingleSpeed_Impl::isDesignWaterFlowRateAutosized() const {
+      if (const auto value = getString(openstudio::FluidCooler_SingleSpeedFields::DesignWaterFlowRate, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
+    }
 
-bool FluidCoolerSingleSpeed_Impl::setDesignEnteringWaterTemperature(boost::optional<double> designEnteringWaterTemperature) {
-  bool result = false;
-  if (designEnteringWaterTemperature) {
-    result = setDouble(openstudio::FluidCooler_SingleSpeedFields::DesignEnteringWaterTemperature, *designEnteringWaterTemperature);
-  }
-  return result;
-}
+    bool FluidCoolerSingleSpeed_Impl::setDesignWaterFlowRate(boost::optional<double> designWaterFlowRate) {
+      bool result = false;
+      if (designWaterFlowRate) {
+        result = setDouble(openstudio::FluidCooler_SingleSpeedFields::DesignWaterFlowRate, *designWaterFlowRate);
+      }
+      return result;
+    }
 
-bool FluidCoolerSingleSpeed_Impl::setDesignEnteringAirTemperature(boost::optional<double> designEnteringAirTemperature) {
-  bool result = false;
-  if (designEnteringAirTemperature) {
-    result = setDouble(openstudio::FluidCooler_SingleSpeedFields::DesignEnteringAirTemperature, *designEnteringAirTemperature);
-  }
-  return result;
-}
+    void FluidCoolerSingleSpeed_Impl::autosizeDesignWaterFlowRate() {
+      OS_ASSERT(setString(openstudio::FluidCooler_SingleSpeedFields::DesignWaterFlowRate, "Autosize"));
+    }
 
-bool FluidCoolerSingleSpeed_Impl::setDesignEnteringAirWetbulbTemperature(boost::optional<double> designEnteringAirWetbulbTemperature) {
-  bool result = false;
-  if (designEnteringAirWetbulbTemperature) {
-    result = setDouble(openstudio::FluidCooler_SingleSpeedFields::DesignEnteringAirWetbulbTemperature, *designEnteringAirWetbulbTemperature);
-  }
-  return result;
-}
+    boost::optional<double> FluidCoolerSingleSpeed_Impl::autosizedDesignWaterFlowRate() const {
+      return boost::none;
+    }
 
-bool FluidCoolerSingleSpeed_Impl::setDesignWaterFlowRate(boost::optional<double> designWaterFlowRate) {
-  bool result = false;
-  if (designWaterFlowRate) {
-    result = setDouble(openstudio::FluidCooler_SingleSpeedFields::DesignWaterFlowRate, *designWaterFlowRate);
-  }
-  return result;
-}
+    boost::optional<double> FluidCoolerSingleSpeed_Impl::designAirFlowRate() const {
+      return getDouble(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRate, true);
+    }
 
-void FluidCoolerSingleSpeed_Impl::autosizeDesignWaterFlowRate() {
-  OS_ASSERT(setString(openstudio::FluidCooler_SingleSpeedFields::DesignWaterFlowRate, "Autosize"));
-}
+    bool FluidCoolerSingleSpeed_Impl::isDesignAirFlowRateAutosized() const {
+      if (const auto value = getString(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRate, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
+    }
 
-bool FluidCoolerSingleSpeed_Impl::setDesignAirFlowRate(boost::optional<double> designAirFlowRate) {
-  bool result = false;
-  if (designAirFlowRate) {
-    result = setDouble(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRate, *designAirFlowRate);
-  }
-  return result;
-}
+    bool FluidCoolerSingleSpeed_Impl::setDesignAirFlowRate(boost::optional<double> designAirFlowRate) {
+      bool result = false;
+      if (designAirFlowRate) {
+        result = setDouble(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRate, *designAirFlowRate);
+      }
+      return result;
+    }
 
-void FluidCoolerSingleSpeed_Impl::autosizeDesignAirFlowRate() {
-  OS_ASSERT(setString(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRate, "Autosize"));
-}
+    void FluidCoolerSingleSpeed_Impl::autosizeDesignAirFlowRate() {
+      OS_ASSERT(setString(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRate, "Autosize"));
+    }
 
-bool FluidCoolerSingleSpeed_Impl::setDesignAirFlowRateFanPower(boost::optional<double> designAirFlowRateFanPower) {
-  bool result = false;
-  if (designAirFlowRateFanPower) {
-    result = setDouble(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRateFanPower, *designAirFlowRateFanPower);
-  }
-  return result;
-}
+    boost::optional<double> FluidCoolerSingleSpeed_Impl::autosizedDesignAirFlowRate() const {
+      return boost::none;
+    }
 
-void FluidCoolerSingleSpeed_Impl::autosizeDesignAirFlowRateFanPower() {
-  OS_ASSERT(setString(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRateFanPower, "Autosize"));
-}
+    boost::optional<double> FluidCoolerSingleSpeed_Impl::designAirFlowRateFanPower() const {
+      return getDouble(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRateFanPower, true);
+    }
 
-boost::optional<double> FluidCoolerSingleSpeed_Impl::autosizedDesignAirFlowRateUfactorTimesAreaValue() const {
-  return boost::none;
-}
+    bool FluidCoolerSingleSpeed_Impl::isDesignAirFlowRateFanPowerAutosized() const {
+      if (const auto value = getString(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRateFanPower, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
+    }
 
-boost::optional<double> FluidCoolerSingleSpeed_Impl::autosizedDesignWaterFlowRate() const {
-  return boost::none;
-}
+    bool FluidCoolerSingleSpeed_Impl::setDesignAirFlowRateFanPower(boost::optional<double> designAirFlowRateFanPower) {
+      bool result = false;
+      if (designAirFlowRateFanPower) {
+        result = setDouble(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRateFanPower, *designAirFlowRateFanPower);
+      }
+      return result;
+    }
 
-boost::optional<double> FluidCoolerSingleSpeed_Impl::autosizedDesignAirFlowRate() const {
-  return boost::none;
-}
+    void FluidCoolerSingleSpeed_Impl::autosizeDesignAirFlowRateFanPower() {
+      OS_ASSERT(setString(openstudio::FluidCooler_SingleSpeedFields::DesignAirFlowRateFanPower, "Autosize"));
+    }
 
-boost::optional<double> FluidCoolerSingleSpeed_Impl::autosizedDesignAirFlowRateFanPower() const {
-  return boost::none;
-}
+    boost::optional<double> FluidCoolerSingleSpeed_Impl::autosizedDesignAirFlowRateFanPower() const {
+      return boost::none;
+    }
+
 
 }  // namespace detail
 }  // namespace epmodel

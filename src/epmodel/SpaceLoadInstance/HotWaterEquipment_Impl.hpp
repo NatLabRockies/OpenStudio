@@ -25,6 +25,7 @@ class EPMODEL_API HotWaterEquipment_Impl : public ModelObject_Impl
   bool isDesignLevelCalculationMethodDefaulted() const;
   bool setDesignLevelCalculationMethod(const std::string& designLevelCalculationMethod);
   void resetDesignLevelCalculationMethod();
+  std::vector<std::string> designLevelCalculationMethodValues() const;
 
   boost::optional<double> designLevel() const;
   bool setDesignLevel(double designLevel);
@@ -61,7 +62,6 @@ class EPMODEL_API HotWaterEquipment_Impl : public ModelObject_Impl
   bool setMultiplier(double multiplier);
   void resetMultiplier();
 
-  std::vector<std::string> designLevelCalculationMethodValues() const;
 };
 
 }  // namespace detail

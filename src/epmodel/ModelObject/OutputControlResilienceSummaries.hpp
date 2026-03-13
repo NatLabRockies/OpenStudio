@@ -17,46 +17,53 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class OutputControlResilienceSummaries_Impl;
-}
+  namespace detail {
+    class OutputControlResilienceSummaries_Impl;
+  }
 
-class EPMODEL_API OutputControlResilienceSummaries : public ModelObject
-{
- public:
-  explicit OutputControlResilienceSummaries(const Model& model);
+  class EPMODEL_API OutputControlResilienceSummaries : public ModelObject
+  {
+   public:
+    explicit OutputControlResilienceSummaries(const Model& model);
 
-  virtual ~OutputControlResilienceSummaries() override = default;
-  OutputControlResilienceSummaries(const OutputControlResilienceSummaries& other) = default;
-  OutputControlResilienceSummaries(OutputControlResilienceSummaries&& other) = default;
-  OutputControlResilienceSummaries& operator=(const OutputControlResilienceSummaries&) = default;
-  OutputControlResilienceSummaries& operator=(OutputControlResilienceSummaries&&) = default;
+    virtual ~OutputControlResilienceSummaries() override = default;
+    OutputControlResilienceSummaries(const OutputControlResilienceSummaries& other) = default;
+    OutputControlResilienceSummaries(OutputControlResilienceSummaries&& other) = default;
+    OutputControlResilienceSummaries& operator=(const OutputControlResilienceSummaries&) = default;
+    OutputControlResilienceSummaries& operator=(OutputControlResilienceSummaries&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> heatIndexAlgorithmValues();
-  static std::vector<std::string> validHeatIndexAlgorithmValues();
+    static std::vector<std::string> heatIndexAlgorithmValues();
+    static std::vector<std::string> validHeatIndexAlgorithmValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::OutputControlResilienceSummaries accessor names/signatures.
-  // - Field Mapping: heatIndexAlgorithm maps directly to E+ OutputControl:ResilienceSummaries Heat Index Algorithm.
-  // - ForwardTranslator evidence: model ForwardTranslateOutputControlResilienceSummaries.cpp maps this same scalar API
-  //   directly to OutputControl:ResilienceSummaries Heat Index Algorithm.
-  // - TODO(parity): Keep scalar API stable while broader epmodel parity is developed.
-  std::string heatIndexAlgorithm() const;
-  bool setHeatIndexAlgorithm(const std::string& heatIndexAlgorithm);
+    /** @name Getters */
+    //@{
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model::OutputControlResilienceSummaries accessor names/signatures.
+    // - Field Mapping: heatIndexAlgorithm maps directly to E+ OutputControl:ResilienceSummaries Heat Index Algorithm.
+    // - ForwardTranslator evidence: model ForwardTranslateOutputControlResilienceSummaries.cpp maps this same scalar API
+    //   directly to OutputControl:ResilienceSummaries Heat Index Algorithm.
+    // - TODO(parity): Keep scalar API stable while broader epmodel parity is developed.
+    std::string heatIndexAlgorithm() const;
+    //@}
 
- protected:
-  using ImplType = detail::OutputControlResilienceSummaries_Impl;
+    /** @name Setters */
+    //@{
+    bool setHeatIndexAlgorithm(const std::string& heatIndexAlgorithm);
+    //@}
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::OutputControlResilienceSummaries_Impl;
 
-  explicit OutputControlResilienceSummaries(std::shared_ptr<detail::OutputControlResilienceSummaries_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit OutputControlResilienceSummaries(std::shared_ptr<detail::OutputControlResilienceSummaries_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

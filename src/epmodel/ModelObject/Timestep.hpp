@@ -38,9 +38,9 @@ namespace epmodel {
     // - Field Mapping: this object represents the EnergyPlus Timestep object; the scalar ties to the "Number of Timesteps per Hour" field created via ForwardTranslator Timestep steps.
     int numberOfTimestepsPerHour() const;
 
-    bool isNumberOfTimestepsPerHourDefaulted() const;
-
     bool setNumberOfTimestepsPerHour(int numberOfTimestepsPerHour);
+
+    bool isNumberOfTimestepsPerHourDefaulted() const;
 
     void resetNumberOfTimestepsPerHour();
 

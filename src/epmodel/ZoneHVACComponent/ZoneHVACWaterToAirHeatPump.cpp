@@ -61,86 +61,6 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isSupplyAirFlowRateDuringCoolingOperationAutosized();
   }
 
-  boost::optional<double> ZoneHVACWaterToAirHeatPump::supplyAirFlowRateDuringHeatingOperation() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->supplyAirFlowRateDuringHeatingOperation();
-  }
-
-  bool ZoneHVACWaterToAirHeatPump::isSupplyAirFlowRateDuringHeatingOperationAutosized() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isSupplyAirFlowRateDuringHeatingOperationAutosized();
-  }
-
-  boost::optional<double> ZoneHVACWaterToAirHeatPump::supplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->supplyAirFlowRateWhenNoCoolingorHeatingisNeeded();
-  }
-
-  bool ZoneHVACWaterToAirHeatPump::isSupplyAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isSupplyAirFlowRateWhenNoCoolingorHeatingisNeededAutosized();
-  }
-
-  bool ZoneHVACWaterToAirHeatPump::noLoadSupplyAirFlowRateControlSetToLowSpeed() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->noLoadSupplyAirFlowRateControlSetToLowSpeed();
-  }
-
-  boost::optional<double> ZoneHVACWaterToAirHeatPump::outdoorAirFlowRateDuringCoolingOperation() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->outdoorAirFlowRateDuringCoolingOperation();
-  }
-
-  bool ZoneHVACWaterToAirHeatPump::isOutdoorAirFlowRateDuringCoolingOperationAutosized() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isOutdoorAirFlowRateDuringCoolingOperationAutosized();
-  }
-
-  boost::optional<double> ZoneHVACWaterToAirHeatPump::outdoorAirFlowRateDuringHeatingOperation() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->outdoorAirFlowRateDuringHeatingOperation();
-  }
-
-  bool ZoneHVACWaterToAirHeatPump::isOutdoorAirFlowRateDuringHeatingOperationAutosized() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isOutdoorAirFlowRateDuringHeatingOperationAutosized();
-  }
-
-  boost::optional<double> ZoneHVACWaterToAirHeatPump::outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
-  }
-
-  bool ZoneHVACWaterToAirHeatPump::isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized();
-  }
-
-  boost::optional<double> ZoneHVACWaterToAirHeatPump::maximumSupplyAirTemperaturefromSupplementalHeater() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->maximumSupplyAirTemperaturefromSupplementalHeater();
-  }
-
-  bool ZoneHVACWaterToAirHeatPump::isMaximumSupplyAirTemperaturefromSupplementalHeaterAutosized() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isMaximumSupplyAirTemperaturefromSupplementalHeaterAutosized();
-  }
-
-  double ZoneHVACWaterToAirHeatPump::maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation();
-  }
-
-  bool ZoneHVACWaterToAirHeatPump::isMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperationDefaulted() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperationDefaulted();
-  }
-
-  std::string ZoneHVACWaterToAirHeatPump::fanPlacement() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->fanPlacement();
-  }
-
-  bool ZoneHVACWaterToAirHeatPump::isFanPlacementDefaulted() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isFanPlacementDefaulted();
-  }
-
-  std::string ZoneHVACWaterToAirHeatPump::heatPumpCoilWaterFlowMode() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->heatPumpCoilWaterFlowMode();
-  }
-
-  bool ZoneHVACWaterToAirHeatPump::isHeatPumpCoilWaterFlowModeDefaulted() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isHeatPumpCoilWaterFlowModeDefaulted();
-  }
-
-  double ZoneHVACWaterToAirHeatPump::dXHeatingCoilSizingRatio() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->dXHeatingCoilSizingRatio();
-  }
-
   bool ZoneHVACWaterToAirHeatPump::setSupplyAirFlowRateDuringCoolingOperation(boost::optional<double> value) {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setSupplyAirFlowRateDuringCoolingOperation(value);
   }
@@ -155,6 +75,18 @@ namespace epmodel {
 
   void ZoneHVACWaterToAirHeatPump::autosizeSupplyAirFlowRateDuringCoolingOperation() {
     getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizeSupplyAirFlowRateDuringCoolingOperation();
+  }
+
+  boost::optional<double> ZoneHVACWaterToAirHeatPump::autosizedSupplyAirFlowRateDuringCoolingOperation() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizedSupplyAirFlowRateDuringCoolingOperation();
+  }
+
+  boost::optional<double> ZoneHVACWaterToAirHeatPump::supplyAirFlowRateDuringHeatingOperation() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->supplyAirFlowRateDuringHeatingOperation();
+  }
+
+  bool ZoneHVACWaterToAirHeatPump::isSupplyAirFlowRateDuringHeatingOperationAutosized() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isSupplyAirFlowRateDuringHeatingOperationAutosized();
   }
 
   bool ZoneHVACWaterToAirHeatPump::setSupplyAirFlowRateDuringHeatingOperation(boost::optional<double> value) {
@@ -173,6 +105,18 @@ namespace epmodel {
     getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizeSupplyAirFlowRateDuringHeatingOperation();
   }
 
+  boost::optional<double> ZoneHVACWaterToAirHeatPump::autosizedSupplyAirFlowRateDuringHeatingOperation() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizedSupplyAirFlowRateDuringHeatingOperation();
+  }
+
+  boost::optional<double> ZoneHVACWaterToAirHeatPump::supplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->supplyAirFlowRateWhenNoCoolingorHeatingisNeeded();
+  }
+
+  bool ZoneHVACWaterToAirHeatPump::isSupplyAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isSupplyAirFlowRateWhenNoCoolingorHeatingisNeededAutosized();
+  }
+
   bool ZoneHVACWaterToAirHeatPump::setSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded(boost::optional<double> value) {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded(value);
   }
@@ -189,8 +133,24 @@ namespace epmodel {
     getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizeSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded();
   }
 
+  boost::optional<double> ZoneHVACWaterToAirHeatPump::autosizedSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizedSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded();
+  }
+
+  bool ZoneHVACWaterToAirHeatPump::noLoadSupplyAirFlowRateControlSetToLowSpeed() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->noLoadSupplyAirFlowRateControlSetToLowSpeed();
+  }
+
   bool ZoneHVACWaterToAirHeatPump::setNoLoadSupplyAirFlowRateControlSetToLowSpeed(bool value) {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setNoLoadSupplyAirFlowRateControlSetToLowSpeed(value);
+  }
+
+  boost::optional<double> ZoneHVACWaterToAirHeatPump::outdoorAirFlowRateDuringCoolingOperation() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->outdoorAirFlowRateDuringCoolingOperation();
+  }
+
+  bool ZoneHVACWaterToAirHeatPump::isOutdoorAirFlowRateDuringCoolingOperationAutosized() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isOutdoorAirFlowRateDuringCoolingOperationAutosized();
   }
 
   bool ZoneHVACWaterToAirHeatPump::setOutdoorAirFlowRateDuringCoolingOperation(boost::optional<double> value) {
@@ -209,6 +169,18 @@ namespace epmodel {
     getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizeOutdoorAirFlowRateDuringCoolingOperation();
   }
 
+  boost::optional<double> ZoneHVACWaterToAirHeatPump::autosizedOutdoorAirFlowRateDuringCoolingOperation() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizedOutdoorAirFlowRateDuringCoolingOperation();
+  }
+
+  boost::optional<double> ZoneHVACWaterToAirHeatPump::outdoorAirFlowRateDuringHeatingOperation() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->outdoorAirFlowRateDuringHeatingOperation();
+  }
+
+  bool ZoneHVACWaterToAirHeatPump::isOutdoorAirFlowRateDuringHeatingOperationAutosized() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isOutdoorAirFlowRateDuringHeatingOperationAutosized();
+  }
+
   bool ZoneHVACWaterToAirHeatPump::setOutdoorAirFlowRateDuringHeatingOperation(boost::optional<double> value) {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setOutdoorAirFlowRateDuringHeatingOperation(value);
   }
@@ -223,6 +195,18 @@ namespace epmodel {
 
   void ZoneHVACWaterToAirHeatPump::autosizeOutdoorAirFlowRateDuringHeatingOperation() {
     getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizeOutdoorAirFlowRateDuringHeatingOperation();
+  }
+
+  boost::optional<double> ZoneHVACWaterToAirHeatPump::autosizedOutdoorAirFlowRateDuringHeatingOperation() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizedOutdoorAirFlowRateDuringHeatingOperation();
+  }
+
+  boost::optional<double> ZoneHVACWaterToAirHeatPump::outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
+  }
+
+  bool ZoneHVACWaterToAirHeatPump::isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized();
   }
 
   bool ZoneHVACWaterToAirHeatPump::setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(boost::optional<double> value) {
@@ -241,6 +225,18 @@ namespace epmodel {
     getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
   }
 
+  boost::optional<double> ZoneHVACWaterToAirHeatPump::autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
+  }
+
+  boost::optional<double> ZoneHVACWaterToAirHeatPump::maximumSupplyAirTemperaturefromSupplementalHeater() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->maximumSupplyAirTemperaturefromSupplementalHeater();
+  }
+
+  bool ZoneHVACWaterToAirHeatPump::isMaximumSupplyAirTemperaturefromSupplementalHeaterAutosized() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isMaximumSupplyAirTemperaturefromSupplementalHeaterAutosized();
+  }
+
   bool ZoneHVACWaterToAirHeatPump::setMaximumSupplyAirTemperaturefromSupplementalHeater(boost::optional<double> value) {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setMaximumSupplyAirTemperaturefromSupplementalHeater(value);
   }
@@ -257,6 +253,18 @@ namespace epmodel {
     getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizeMaximumSupplyAirTemperaturefromSupplementalHeater();
   }
 
+  boost::optional<double> ZoneHVACWaterToAirHeatPump::autosizedMaximumSupplyAirTemperaturefromSupplementalHeater() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizedMaximumSupplyAirTemperaturefromSupplementalHeater();
+  }
+
+  double ZoneHVACWaterToAirHeatPump::maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation();
+  }
+
+  bool ZoneHVACWaterToAirHeatPump::isMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperationDefaulted() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperationDefaulted();
+  }
+
   bool ZoneHVACWaterToAirHeatPump::setMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation(boost::optional<double> value) {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation(value);
   }
@@ -269,12 +277,28 @@ namespace epmodel {
     getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->resetMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation();
   }
 
+  std::string ZoneHVACWaterToAirHeatPump::fanPlacement() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->fanPlacement();
+  }
+
+  bool ZoneHVACWaterToAirHeatPump::isFanPlacementDefaulted() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isFanPlacementDefaulted();
+  }
+
   bool ZoneHVACWaterToAirHeatPump::setFanPlacement(const std::string& fanPlacement) {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setFanPlacement(fanPlacement);
   }
 
   void ZoneHVACWaterToAirHeatPump::resetFanPlacement() {
     getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->resetFanPlacement();
+  }
+
+  std::string ZoneHVACWaterToAirHeatPump::heatPumpCoilWaterFlowMode() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->heatPumpCoilWaterFlowMode();
+  }
+
+  bool ZoneHVACWaterToAirHeatPump::isHeatPumpCoilWaterFlowModeDefaulted() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->isHeatPumpCoilWaterFlowModeDefaulted();
   }
 
   bool ZoneHVACWaterToAirHeatPump::setHeatPumpCoilWaterFlowMode(const std::string& heatPumpCoilWaterFlowMode) {
@@ -285,36 +309,12 @@ namespace epmodel {
     getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->resetHeatPumpCoilWaterFlowMode();
   }
 
+  double ZoneHVACWaterToAirHeatPump::dXHeatingCoilSizingRatio() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->dXHeatingCoilSizingRatio();
+  }
+
   bool ZoneHVACWaterToAirHeatPump::setDXHeatingCoilSizingRatio(double value) {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setDXHeatingCoilSizingRatio(value);
-  }
-
-  boost::optional<double> ZoneHVACWaterToAirHeatPump::autosizedSupplyAirFlowRateDuringCoolingOperation() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizedSupplyAirFlowRateDuringCoolingOperation();
-  }
-
-  boost::optional<double> ZoneHVACWaterToAirHeatPump::autosizedSupplyAirFlowRateDuringHeatingOperation() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizedSupplyAirFlowRateDuringHeatingOperation();
-  }
-
-  boost::optional<double> ZoneHVACWaterToAirHeatPump::autosizedSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizedSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded();
-  }
-
-  boost::optional<double> ZoneHVACWaterToAirHeatPump::autosizedOutdoorAirFlowRateDuringCoolingOperation() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizedOutdoorAirFlowRateDuringCoolingOperation();
-  }
-
-  boost::optional<double> ZoneHVACWaterToAirHeatPump::autosizedOutdoorAirFlowRateDuringHeatingOperation() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizedOutdoorAirFlowRateDuringHeatingOperation();
-  }
-
-  boost::optional<double> ZoneHVACWaterToAirHeatPump::autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
-  }
-
-  boost::optional<double> ZoneHVACWaterToAirHeatPump::autosizedMaximumSupplyAirTemperaturefromSupplementalHeater() const {
-    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->autosizedMaximumSupplyAirTemperaturefromSupplementalHeater();
   }
 
 }  // namespace epmodel

@@ -32,38 +32,12 @@ namespace epmodel {
                           openstudio::ZoneAirMassFlowConservationFields::AdjustZoneMixingandReturnForAirMassFlowBalance);
   }
 
-  std::vector<std::string> ZoneAirMassFlowConservation::infiltrationBalancingMethodValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                          openstudio::ZoneAirMassFlowConservationFields::InfiltrationBalancingMethod);
-  }
-
-  std::vector<std::string> ZoneAirMassFlowConservation::infiltrationBalancingZonesValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                          openstudio::ZoneAirMassFlowConservationFields::InfiltrationBalancingZones);
-  }
-
   std::string ZoneAirMassFlowConservation::adjustZoneMixingandReturnForAirMassFlowBalance() const {
     return getImpl<detail::ZoneAirMassFlowConservation_Impl>()->adjustZoneMixingandReturnForAirMassFlowBalance();
   }
 
   bool ZoneAirMassFlowConservation::isAdjustZoneMixingandReturnForAirMassFlowBalanceDefaulted() const {
     return getImpl<detail::ZoneAirMassFlowConservation_Impl>()->isAdjustZoneMixingandReturnForAirMassFlowBalanceDefaulted();
-  }
-
-  std::string ZoneAirMassFlowConservation::infiltrationBalancingMethod() const {
-    return getImpl<detail::ZoneAirMassFlowConservation_Impl>()->infiltrationBalancingMethod();
-  }
-
-  bool ZoneAirMassFlowConservation::isInfiltrationBalancingMethodDefaulted() const {
-    return getImpl<detail::ZoneAirMassFlowConservation_Impl>()->isInfiltrationBalancingMethodDefaulted();
-  }
-
-  std::string ZoneAirMassFlowConservation::infiltrationBalancingZones() const {
-    return getImpl<detail::ZoneAirMassFlowConservation_Impl>()->infiltrationBalancingZones();
-  }
-
-  bool ZoneAirMassFlowConservation::isInfiltrationBalancingZonesDefaulted() const {
-    return getImpl<detail::ZoneAirMassFlowConservation_Impl>()->isInfiltrationBalancingZonesDefaulted();
   }
 
   bool ZoneAirMassFlowConservation::setAdjustZoneMixingandReturnForAirMassFlowBalance(
@@ -76,12 +50,38 @@ namespace epmodel {
     getImpl<detail::ZoneAirMassFlowConservation_Impl>()->resetAdjustZoneMixingandReturnForAirMassFlowBalance();
   }
 
+  std::vector<std::string> ZoneAirMassFlowConservation::infiltrationBalancingMethodValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::ZoneAirMassFlowConservationFields::InfiltrationBalancingMethod);
+  }
+
+  std::string ZoneAirMassFlowConservation::infiltrationBalancingMethod() const {
+    return getImpl<detail::ZoneAirMassFlowConservation_Impl>()->infiltrationBalancingMethod();
+  }
+
+  bool ZoneAirMassFlowConservation::isInfiltrationBalancingMethodDefaulted() const {
+    return getImpl<detail::ZoneAirMassFlowConservation_Impl>()->isInfiltrationBalancingMethodDefaulted();
+  }
+
   bool ZoneAirMassFlowConservation::setInfiltrationBalancingMethod(const std::string& infiltrationBalancingMethod) {
     return getImpl<detail::ZoneAirMassFlowConservation_Impl>()->setInfiltrationBalancingMethod(infiltrationBalancingMethod);
   }
 
   void ZoneAirMassFlowConservation::resetInfiltrationBalancingMethod() {
     getImpl<detail::ZoneAirMassFlowConservation_Impl>()->resetInfiltrationBalancingMethod();
+  }
+
+  std::vector<std::string> ZoneAirMassFlowConservation::infiltrationBalancingZonesValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::ZoneAirMassFlowConservationFields::InfiltrationBalancingZones);
+  }
+
+  std::string ZoneAirMassFlowConservation::infiltrationBalancingZones() const {
+    return getImpl<detail::ZoneAirMassFlowConservation_Impl>()->infiltrationBalancingZones();
+  }
+
+  bool ZoneAirMassFlowConservation::isInfiltrationBalancingZonesDefaulted() const {
+    return getImpl<detail::ZoneAirMassFlowConservation_Impl>()->isInfiltrationBalancingZonesDefaulted();
   }
 
   bool ZoneAirMassFlowConservation::setInfiltrationBalancingZones(const std::string& infiltrationBalancingZones) {
@@ -109,26 +109,6 @@ namespace epmodel {
       return isEmpty(openstudio::ZoneAirMassFlowConservationFields::AdjustZoneMixingandReturnForAirMassFlowBalance);
     }
 
-    std::string ZoneAirMassFlowConservation_Impl::infiltrationBalancingMethod() const {
-      const auto value = getString(openstudio::ZoneAirMassFlowConservationFields::InfiltrationBalancingMethod, true);
-      OS_ASSERT(value);
-      return *value;
-    }
-
-    bool ZoneAirMassFlowConservation_Impl::isInfiltrationBalancingMethodDefaulted() const {
-      return isEmpty(openstudio::ZoneAirMassFlowConservationFields::InfiltrationBalancingMethod);
-    }
-
-    std::string ZoneAirMassFlowConservation_Impl::infiltrationBalancingZones() const {
-      const auto value = getString(openstudio::ZoneAirMassFlowConservationFields::InfiltrationBalancingZones, true);
-      OS_ASSERT(value);
-      return *value;
-    }
-
-    bool ZoneAirMassFlowConservation_Impl::isInfiltrationBalancingZonesDefaulted() const {
-      return isEmpty(openstudio::ZoneAirMassFlowConservationFields::InfiltrationBalancingZones);
-    }
-
     bool ZoneAirMassFlowConservation_Impl::setAdjustZoneMixingandReturnForAirMassFlowBalance(
       const std::string& adjustZoneMixingandReturnForAirMassFlowBalance) {
       const bool result = setString(openstudio::ZoneAirMassFlowConservationFields::AdjustZoneMixingandReturnForAirMassFlowBalance,
@@ -142,6 +122,16 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    std::string ZoneAirMassFlowConservation_Impl::infiltrationBalancingMethod() const {
+      const auto value = getString(openstudio::ZoneAirMassFlowConservationFields::InfiltrationBalancingMethod, true);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool ZoneAirMassFlowConservation_Impl::isInfiltrationBalancingMethodDefaulted() const {
+      return isEmpty(openstudio::ZoneAirMassFlowConservationFields::InfiltrationBalancingMethod);
+    }
+
     bool ZoneAirMassFlowConservation_Impl::setInfiltrationBalancingMethod(const std::string& infiltrationBalancingMethod) {
       const bool result = setString(openstudio::ZoneAirMassFlowConservationFields::InfiltrationBalancingMethod, infiltrationBalancingMethod, false);
       OS_ASSERT(result);
@@ -151,6 +141,16 @@ namespace epmodel {
     void ZoneAirMassFlowConservation_Impl::resetInfiltrationBalancingMethod() {
       const bool result = setString(openstudio::ZoneAirMassFlowConservationFields::InfiltrationBalancingMethod, "", false);
       OS_ASSERT(result);
+    }
+
+    std::string ZoneAirMassFlowConservation_Impl::infiltrationBalancingZones() const {
+      const auto value = getString(openstudio::ZoneAirMassFlowConservationFields::InfiltrationBalancingZones, true);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool ZoneAirMassFlowConservation_Impl::isInfiltrationBalancingZonesDefaulted() const {
+      return isEmpty(openstudio::ZoneAirMassFlowConservationFields::InfiltrationBalancingZones);
     }
 
     bool ZoneAirMassFlowConservation_Impl::setInfiltrationBalancingZones(const std::string& infiltrationBalancingZones) {

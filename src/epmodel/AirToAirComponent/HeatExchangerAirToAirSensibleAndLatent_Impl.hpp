@@ -13,69 +13,65 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HeatExchangerAirToAirSensibleAndLatent_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~HeatExchangerAirToAirSensibleAndLatent_Impl() override = default;
+    class EPMODEL_API HeatExchangerAirToAirSensibleAndLatent_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~HeatExchangerAirToAirSensibleAndLatent_Impl() override = default;
 
-  boost::optional<double> nominalSupplyAirFlowRate() const;
-  bool isNominalSupplyAirFlowRateAutosized() const;
+      boost::optional<double> nominalSupplyAirFlowRate() const;
+      bool setNominalSupplyAirFlowRate(double nominalSupplyAirFlowRate);
+      bool isNominalSupplyAirFlowRateAutosized() const;
+      void autosizeNominalSupplyAirFlowRate();
 
-  double sensibleEffectivenessat100HeatingAirFlow() const;
-  double latentEffectivenessat100HeatingAirFlow() const;
-  double sensibleEffectivenessat100CoolingAirFlow() const;
-  double latentEffectivenessat100CoolingAirFlow() const;
+      double sensibleEffectivenessat100HeatingAirFlow() const;
+      bool setSensibleEffectivenessat100HeatingAirFlow(double sensibleEffectivenessat100HeatingAirFlow);
 
-  double nominalElectricPower() const;
+      double latentEffectivenessat100HeatingAirFlow() const;
+      bool setLatentEffectivenessat100HeatingAirFlow(double latentEffectivenessat100HeatingAirFlow);
 
-  bool supplyAirOutletTemperatureControl() const;
+      double sensibleEffectivenessat100CoolingAirFlow() const;
+      bool setSensibleEffectivenessat100CoolingAirFlow(double sensibleEffectivenessat100CoolingAirFlow);
 
-  std::string heatExchangerType() const;
-  std::string frostControlType() const;
+      double latentEffectivenessat100CoolingAirFlow() const;
+      bool setLatentEffectivenessat100CoolingAirFlow(double latentEffectivenessat100CoolingAirFlow);
 
-  double thresholdTemperature() const;
-  bool isThresholdTemperatureDefaulted() const;
+      double nominalElectricPower() const;
+      bool setNominalElectricPower(double nominalElectricPower);
 
-  boost::optional<double> initialDefrostTimeFraction() const;
-  boost::optional<double> rateofDefrostTimeFractionIncrease() const;
+      bool supplyAirOutletTemperatureControl() const;
+      bool setSupplyAirOutletTemperatureControl(bool supplyAirOutletTemperatureControl);
 
-  bool economizerLockout() const;
+      std::string heatExchangerType() const;
+      bool setHeatExchangerType(const std::string& heatExchangerType);
 
-  bool setNominalSupplyAirFlowRate(double nominalSupplyAirFlowRate);
-  void autosizeNominalSupplyAirFlowRate();
+      std::string frostControlType() const;
+      bool setFrostControlType(const std::string& frostControlType);
 
-  bool setSensibleEffectivenessat100HeatingAirFlow(double sensibleEffectivenessat100HeatingAirFlow);
-  bool setLatentEffectivenessat100HeatingAirFlow(double latentEffectivenessat100HeatingAirFlow);
-  bool setSensibleEffectivenessat100CoolingAirFlow(double sensibleEffectivenessat100CoolingAirFlow);
-  bool setLatentEffectivenessat100CoolingAirFlow(double latentEffectivenessat100CoolingAirFlow);
+      double thresholdTemperature() const;
+      bool setThresholdTemperature(double thresholdTemperature);
+      bool isThresholdTemperatureDefaulted() const;
+      void resetThresholdTemperature();
 
-  bool setNominalElectricPower(double nominalElectricPower);
+      boost::optional<double> initialDefrostTimeFraction() const;
+      bool setInitialDefrostTimeFraction(double initialDefrostTimeFraction);
+      void resetInitialDefrostTimeFraction();
 
-  bool setSupplyAirOutletTemperatureControl(bool supplyAirOutletTemperatureControl);
+      boost::optional<double> rateofDefrostTimeFractionIncrease() const;
+      bool setRateofDefrostTimeFractionIncrease(double rateofDefrostTimeFractionIncrease);
+      void resetRateofDefrostTimeFractionIncrease();
 
-  bool setHeatExchangerType(const std::string& heatExchangerType);
-  bool setFrostControlType(const std::string& frostControlType);
+      bool economizerLockout() const;
+      bool setEconomizerLockout(bool economizerLockout);
 
-  bool setThresholdTemperature(double thresholdTemperature);
-  void resetThresholdTemperature();
+     private:
+      std::vector<std::string> heatExchangerTypeValues() const;
+      std::vector<std::string> frostControlTypeValues() const;
+    };
 
-  bool setInitialDefrostTimeFraction(double initialDefrostTimeFraction);
-  void resetInitialDefrostTimeFraction();
-
-  bool setRateofDefrostTimeFractionIncrease(double rateofDefrostTimeFractionIncrease);
-  void resetRateofDefrostTimeFractionIncrease();
-
-  bool setEconomizerLockout(bool economizerLockout);
-
- private:
-  std::vector<std::string> heatExchangerTypeValues() const;
-  std::vector<std::string> frostControlTypeValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

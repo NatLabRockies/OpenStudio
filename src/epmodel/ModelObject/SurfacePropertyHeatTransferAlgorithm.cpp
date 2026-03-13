@@ -55,6 +55,10 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    std::vector<std::string> SurfacePropertyHeatTransferAlgorithm_Impl::algorithmValues() const {
+      return openstudio::epmodel::SurfacePropertyHeatTransferAlgorithm::algorithmValues();
+    }
+
     std::string SurfacePropertyHeatTransferAlgorithm_Impl::algorithm() const {
       const auto value = getString(openstudio::SurfaceProperty_HeatTransferAlgorithmFields::Algorithm, true);
       OS_ASSERT(value);
@@ -71,10 +75,6 @@ namespace epmodel {
 
     void SurfacePropertyHeatTransferAlgorithm_Impl::resetAlgorithm() {
       OS_ASSERT(setString(openstudio::SurfaceProperty_HeatTransferAlgorithmFields::Algorithm, ""));
-    }
-
-    std::vector<std::string> SurfacePropertyHeatTransferAlgorithm_Impl::algorithmValues() const {
-      return openstudio::epmodel::SurfacePropertyHeatTransferAlgorithm::algorithmValues();
     }
 
   }  // namespace detail

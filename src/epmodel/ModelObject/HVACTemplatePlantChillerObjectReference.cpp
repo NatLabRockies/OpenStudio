@@ -17,93 +17,93 @@
 namespace openstudio {
 namespace epmodel {
 
-HVACTemplatePlantChillerObjectReference::HVACTemplatePlantChillerObjectReference(const Model& model)
-  : ModelObject(HVACTemplatePlantChillerObjectReference::iddObjectType(), model) {}
+  HVACTemplatePlantChillerObjectReference::HVACTemplatePlantChillerObjectReference(const Model& model)
+    : ModelObject(HVACTemplatePlantChillerObjectReference::iddObjectType(), model) {}
 
-HVACTemplatePlantChillerObjectReference::HVACTemplatePlantChillerObjectReference(
-  std::shared_ptr<detail::HVACTemplatePlantChillerObjectReference_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  HVACTemplatePlantChillerObjectReference::HVACTemplatePlantChillerObjectReference(
+    std::shared_ptr<detail::HVACTemplatePlantChillerObjectReference_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType HVACTemplatePlantChillerObjectReference::iddObjectType() {
-  return IddObjectType::HVACTemplate_Plant_Chiller_ObjectReference;
-}
+  IddObjectType HVACTemplatePlantChillerObjectReference::iddObjectType() {
+    return IddObjectType::HVACTemplate_Plant_Chiller_ObjectReference;
+  }
 
-std::vector<std::string> HVACTemplatePlantChillerObjectReference::chillerObjectTypeValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::HVACTemplate_Plant_Chiller_ObjectReferenceFields::ChillerObjectType);
-}
+  std::vector<std::string> HVACTemplatePlantChillerObjectReference::chillerObjectTypeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::HVACTemplate_Plant_Chiller_ObjectReferenceFields::ChillerObjectType);
+  }
 
-std::string HVACTemplatePlantChillerObjectReference::chillerObjectType() const {
-  return getImpl<detail::HVACTemplatePlantChillerObjectReference_Impl>()->chillerObjectType();
-}
+  std::string HVACTemplatePlantChillerObjectReference::chillerObjectType() const {
+    return getImpl<detail::HVACTemplatePlantChillerObjectReference_Impl>()->chillerObjectType();
+  }
 
-boost::optional<double> HVACTemplatePlantChillerObjectReference::priority() const {
-  return getImpl<detail::HVACTemplatePlantChillerObjectReference_Impl>()->priority();
-}
+  bool HVACTemplatePlantChillerObjectReference::isChillerObjectTypeDefaulted() const {
+    return getImpl<detail::HVACTemplatePlantChillerObjectReference_Impl>()->isChillerObjectTypeDefaulted();
+  }
 
-bool HVACTemplatePlantChillerObjectReference::isChillerObjectTypeDefaulted() const {
-  return getImpl<detail::HVACTemplatePlantChillerObjectReference_Impl>()->isChillerObjectTypeDefaulted();
-}
+  bool HVACTemplatePlantChillerObjectReference::setChillerObjectType(const std::string& chillerObjectType) {
+    return getImpl<detail::HVACTemplatePlantChillerObjectReference_Impl>()->setChillerObjectType(chillerObjectType);
+  }
 
-bool HVACTemplatePlantChillerObjectReference::setChillerObjectType(const std::string& chillerObjectType) {
-  return getImpl<detail::HVACTemplatePlantChillerObjectReference_Impl>()->setChillerObjectType(chillerObjectType);
-}
+  void HVACTemplatePlantChillerObjectReference::resetChillerObjectType() {
+    getImpl<detail::HVACTemplatePlantChillerObjectReference_Impl>()->resetChillerObjectType();
+  }
 
-bool HVACTemplatePlantChillerObjectReference::setPriority(double priority) {
-  return getImpl<detail::HVACTemplatePlantChillerObjectReference_Impl>()->setPriority(priority);
-}
+  boost::optional<double> HVACTemplatePlantChillerObjectReference::priority() const {
+    return getImpl<detail::HVACTemplatePlantChillerObjectReference_Impl>()->priority();
+  }
 
-void HVACTemplatePlantChillerObjectReference::resetChillerObjectType() {
-  getImpl<detail::HVACTemplatePlantChillerObjectReference_Impl>()->resetChillerObjectType();
-}
+  bool HVACTemplatePlantChillerObjectReference::setPriority(double priority) {
+    return getImpl<detail::HVACTemplatePlantChillerObjectReference_Impl>()->setPriority(priority);
+  }
 
-void HVACTemplatePlantChillerObjectReference::resetPriority() {
-  getImpl<detail::HVACTemplatePlantChillerObjectReference_Impl>()->resetPriority();
-}
+  void HVACTemplatePlantChillerObjectReference::resetPriority() {
+    getImpl<detail::HVACTemplatePlantChillerObjectReference_Impl>()->resetPriority();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string HVACTemplatePlantChillerObjectReference_Impl::chillerObjectType() const {
-  auto value = getString(openstudio::HVACTemplate_Plant_Chiller_ObjectReferenceFields::ChillerObjectType, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string HVACTemplatePlantChillerObjectReference_Impl::chillerObjectType() const {
+      auto value = getString(openstudio::HVACTemplate_Plant_Chiller_ObjectReferenceFields::ChillerObjectType, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-boost::optional<double> HVACTemplatePlantChillerObjectReference_Impl::priority() const {
-  return getDouble(openstudio::HVACTemplate_Plant_Chiller_ObjectReferenceFields::Priority, true);
-}
+    bool HVACTemplatePlantChillerObjectReference_Impl::isChillerObjectTypeDefaulted() const {
+      return isEmpty(openstudio::HVACTemplate_Plant_Chiller_ObjectReferenceFields::ChillerObjectType);
+    }
 
-bool HVACTemplatePlantChillerObjectReference_Impl::isChillerObjectTypeDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_Plant_Chiller_ObjectReferenceFields::ChillerObjectType);
-}
+    bool HVACTemplatePlantChillerObjectReference_Impl::setChillerObjectType(const std::string& chillerObjectType) {
+      return setString(openstudio::HVACTemplate_Plant_Chiller_ObjectReferenceFields::ChillerObjectType, chillerObjectType);
+    }
 
-bool HVACTemplatePlantChillerObjectReference_Impl::setChillerObjectType(const std::string& chillerObjectType) {
-  return setString(openstudio::HVACTemplate_Plant_Chiller_ObjectReferenceFields::ChillerObjectType, chillerObjectType);
-}
+    void HVACTemplatePlantChillerObjectReference_Impl::resetChillerObjectType() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_Chiller_ObjectReferenceFields::ChillerObjectType, ""));
+    }
 
-bool HVACTemplatePlantChillerObjectReference_Impl::setPriority(double priority) {
-  const bool result = setDouble(openstudio::HVACTemplate_Plant_Chiller_ObjectReferenceFields::Priority, priority);
-  OS_ASSERT(result);
-  return result;
-}
+    boost::optional<double> HVACTemplatePlantChillerObjectReference_Impl::priority() const {
+      return getDouble(openstudio::HVACTemplate_Plant_Chiller_ObjectReferenceFields::Priority, true);
+    }
 
-void HVACTemplatePlantChillerObjectReference_Impl::resetChillerObjectType() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_Chiller_ObjectReferenceFields::ChillerObjectType, ""));
-}
+    bool HVACTemplatePlantChillerObjectReference_Impl::setPriority(double priority) {
+      const bool result = setDouble(openstudio::HVACTemplate_Plant_Chiller_ObjectReferenceFields::Priority, priority);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void HVACTemplatePlantChillerObjectReference_Impl::resetPriority() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_Chiller_ObjectReferenceFields::Priority, ""));
-}
+    void HVACTemplatePlantChillerObjectReference_Impl::resetPriority() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_Chiller_ObjectReferenceFields::Priority, ""));
+    }
 
-std::vector<std::string> HVACTemplatePlantChillerObjectReference_Impl::chillerObjectTypeValues() const {
-  return openstudio::epmodel::HVACTemplatePlantChillerObjectReference::chillerObjectTypeValues();
-}
+    std::vector<std::string> HVACTemplatePlantChillerObjectReference_Impl::chillerObjectTypeValues() const {
+      return openstudio::epmodel::HVACTemplatePlantChillerObjectReference::chillerObjectTypeValues();
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

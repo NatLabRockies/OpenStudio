@@ -11,22 +11,24 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API MatrixTwoDimension_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~MatrixTwoDimension_Impl() override = default;
+    class EPMODEL_API MatrixTwoDimension_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~MatrixTwoDimension_Impl() override = default;
 
-  int numberofRows() const;
-  bool setNumberofRows(int numberofRows);
+      // numberofRows
+      int numberofRows() const;
+      bool setNumberofRows(int numberofRows);
 
-  int numberofColumns() const;
-  bool setNumberofColumns(int numberofColumns);
-};
+      // numberofColumns
+      int numberofColumns() const;
+      bool setNumberofColumns(int numberofColumns);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

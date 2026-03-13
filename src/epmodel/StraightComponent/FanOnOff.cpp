@@ -73,10 +73,6 @@ boost::optional<double> FanOnOff::maximumFlowRate() const {
   return getImpl<detail::FanOnOff_Impl>()->maximumFlowRate();
 }
 
-bool FanOnOff::isMaximumFlowRateAutosized() const {
-  return getImpl<detail::FanOnOff_Impl>()->isMaximumFlowRateAutosized();
-}
-
 bool FanOnOff::setMaximumFlowRate(double maximumFlowRate) {
   return getImpl<detail::FanOnOff_Impl>()->setMaximumFlowRate(maximumFlowRate);
 }
@@ -87,6 +83,10 @@ void FanOnOff::resetMaximumFlowRate() {
 
 void FanOnOff::autosizeMaximumFlowRate() {
   getImpl<detail::FanOnOff_Impl>()->autosizeMaximumFlowRate();
+}
+
+bool FanOnOff::isMaximumFlowRateAutosized() const {
+  return getImpl<detail::FanOnOff_Impl>()->isMaximumFlowRateAutosized();
 }
 
 double FanOnOff::motorEfficiency() const {
@@ -181,13 +181,6 @@ boost::optional<double> FanOnOff_Impl::maximumFlowRate() const {
   return getDouble(openstudio::Fan_OnOffFields::MaximumFlowRate, true);
 }
 
-bool FanOnOff_Impl::isMaximumFlowRateAutosized() const {
-  if (const auto value = getString(openstudio::Fan_OnOffFields::MaximumFlowRate, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
-
 bool FanOnOff_Impl::setMaximumFlowRate(double maximumFlowRate) {
   return setDouble(openstudio::Fan_OnOffFields::MaximumFlowRate, maximumFlowRate);
 }
@@ -200,6 +193,13 @@ void FanOnOff_Impl::resetMaximumFlowRate() {
 void FanOnOff_Impl::autosizeMaximumFlowRate() {
   const bool result = setString(openstudio::Fan_OnOffFields::MaximumFlowRate, "autosize");
   OS_ASSERT(result);
+}
+
+bool FanOnOff_Impl::isMaximumFlowRateAutosized() const {
+  if (const auto value = getString(openstudio::Fan_OnOffFields::MaximumFlowRate, true)) {
+    return openstudio::istringEqual(*value, "autosize");
+  }
+  return false;
 }
 
 double FanOnOff_Impl::motorEfficiency() const {

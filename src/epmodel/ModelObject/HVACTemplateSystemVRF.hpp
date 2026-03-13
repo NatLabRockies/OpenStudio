@@ -17,197 +17,228 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class HVACTemplateSystemVRF_Impl;
-}
+  namespace detail {
+    class HVACTemplateSystemVRF_Impl;
+  }
 
-class EPMODEL_API HVACTemplateSystemVRF : public ModelObject
-{
- public:
-  explicit HVACTemplateSystemVRF(const Model& model);
+  class EPMODEL_API HVACTemplateSystemVRF : public ModelObject
+  {
+   public:
+    explicit HVACTemplateSystemVRF(const Model& model);
 
-  virtual ~HVACTemplateSystemVRF() override = default;
-  HVACTemplateSystemVRF(const HVACTemplateSystemVRF& other) = default;
-  HVACTemplateSystemVRF(HVACTemplateSystemVRF&& other) = default;
-  HVACTemplateSystemVRF& operator=(const HVACTemplateSystemVRF&) = default;
-  HVACTemplateSystemVRF& operator=(HVACTemplateSystemVRF&&) = default;
+    virtual ~HVACTemplateSystemVRF() override = default;
+    HVACTemplateSystemVRF(const HVACTemplateSystemVRF& other) = default;
+    HVACTemplateSystemVRF(HVACTemplateSystemVRF&& other) = default;
+    HVACTemplateSystemVRF& operator=(const HVACTemplateSystemVRF&) = default;
+    HVACTemplateSystemVRF& operator=(HVACTemplateSystemVRF&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> masterThermostatPriorityControlTypeValues();
-  static std::vector<std::string> defrostStrategyValues();
-  static std::vector<std::string> defrostControlValues();
-  static std::vector<std::string> condenserTypeValues();
-  static std::vector<std::string> fuelTypeValues();
+    static std::vector<std::string> masterThermostatPriorityControlTypeValues();
+    static std::vector<std::string> defrostStrategyValues();
+    static std::vector<std::string> defrostControlValues();
+    static std::vector<std::string> condenserTypeValues();
+    static std::vector<std::string> fuelTypeValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to HVACTemplate:System:VRF non-name, non-link scalar fields.
-  // - Field Mapping: Schedule/zone object-list fields are relationship-like and excluded from scalar accessors.
-  // - TODO(parity): Add relationship/object-link APIs in a later parity pass.
-  boost::optional<double> grossRatedTotalCoolingCapacity() const;
-  double grossRatedCoolingCOP() const;
-  double minimumOutdoorTemperatureinCoolingMode() const;
-  double maximumOutdoorTemperatureinCoolingMode() const;
-  boost::optional<double> grossRatedHeatingCapacity() const;
-  double ratedHeatingCapacitySizingRatio() const;
-  double grossRatedHeatingCOP() const;
-  double minimumOutdoorTemperatureinHeatingMode() const;
-  double maximumOutdoorTemperatureinHeatingMode() const;
-  double minimumHeatPumpPartLoadRatio() const;
-  std::string masterThermostatPriorityControlType() const;
-  bool heatPumpWasteHeatRecovery() const;
-  double equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode() const;
-  double verticalHeightusedforPipingCorrectionFactor() const;
-  double equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode() const;
-  double crankcaseHeaterPowerperCompressor() const;
-  int numberofCompressors() const;
-  double ratioofCompressorSizetoTotalCompressorCapacity() const;
-  double maximumOutdoorDrybulbTemperatureforCrankcaseHeater() const;
-  std::string defrostStrategy() const;
-  std::string defrostControl() const;
-  double defrostTimePeriodFraction() const;
-  boost::optional<double> resistiveDefrostHeaterCapacity() const;
-  double maximumOutdoorDrybulbTemperatureforDefrostOperation() const;
-  std::string condenserType() const;
-  boost::optional<double> waterCondenserVolumeFlowRate() const;
-  double evaporativeCondenserEffectiveness() const;
-  boost::optional<double> evaporativeCondenserAirFlowRate() const;
-  boost::optional<double> evaporativeCondenserPumpRatedPowerConsumption() const;
-  double basinHeaterCapacity() const;
-  double basinHeaterSetpointTemperature() const;
-  std::string fuelType() const;
-  double minimumOutdoorTemperatureinHeatRecoveryMode() const;
-  double maximumOutdoorTemperatureinHeatRecoveryMode() const;
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to HVACTemplate:System:VRF non-name, non-link scalar fields.
+    // - Field Mapping: Schedule/zone object-list fields are relationship-like and excluded from scalar accessors.
+    // - TODO(parity): Add relationship/object-link APIs in a later parity pass.
 
-  bool isGrossRatedTotalCoolingCapacityDefaulted() const;
-  bool isGrossRatedCoolingCOPDefaulted() const;
-  bool isMinimumOutdoorTemperatureinCoolingModeDefaulted() const;
-  bool isMaximumOutdoorTemperatureinCoolingModeDefaulted() const;
-  bool isGrossRatedHeatingCapacityDefaulted() const;
-  bool isRatedHeatingCapacitySizingRatioDefaulted() const;
-  bool isGrossRatedHeatingCOPDefaulted() const;
-  bool isMinimumOutdoorTemperatureinHeatingModeDefaulted() const;
-  bool isMaximumOutdoorTemperatureinHeatingModeDefaulted() const;
-  bool isMinimumHeatPumpPartLoadRatioDefaulted() const;
-  bool isMasterThermostatPriorityControlTypeDefaulted() const;
-  bool isHeatPumpWasteHeatRecoveryDefaulted() const;
-  bool isEquivalentPipingLengthusedforPipingCorrectionFactorinCoolingModeDefaulted() const;
-  bool isVerticalHeightusedforPipingCorrectionFactorDefaulted() const;
-  bool isEquivalentPipingLengthusedforPipingCorrectionFactorinHeatingModeDefaulted() const;
-  bool isCrankcaseHeaterPowerperCompressorDefaulted() const;
-  bool isNumberofCompressorsDefaulted() const;
-  bool isRatioofCompressorSizetoTotalCompressorCapacityDefaulted() const;
-  bool isMaximumOutdoorDrybulbTemperatureforCrankcaseHeaterDefaulted() const;
-  bool isDefrostStrategyDefaulted() const;
-  bool isDefrostControlDefaulted() const;
-  bool isDefrostTimePeriodFractionDefaulted() const;
-  bool isResistiveDefrostHeaterCapacityDefaulted() const;
-  bool isMaximumOutdoorDrybulbTemperatureforDefrostOperationDefaulted() const;
-  bool isCondenserTypeDefaulted() const;
-  bool isWaterCondenserVolumeFlowRateDefaulted() const;
-  bool isEvaporativeCondenserEffectivenessDefaulted() const;
-  bool isEvaporativeCondenserAirFlowRateDefaulted() const;
-  bool isEvaporativeCondenserPumpRatedPowerConsumptionDefaulted() const;
-  bool isBasinHeaterCapacityDefaulted() const;
-  bool isBasinHeaterSetpointTemperatureDefaulted() const;
-  bool isFuelTypeDefaulted() const;
-  bool isMinimumOutdoorTemperatureinHeatRecoveryModeDefaulted() const;
-  bool isMaximumOutdoorTemperatureinHeatRecoveryModeDefaulted() const;
-  bool isGrossRatedTotalCoolingCapacityAutosized() const;
-  bool isGrossRatedHeatingCapacityAutosized() const;
-  bool isResistiveDefrostHeaterCapacityAutosized() const;
-  bool isWaterCondenserVolumeFlowRateAutosized() const;
-  bool isEvaporativeCondenserAirFlowRateAutosized() const;
-  bool isEvaporativeCondenserPumpRatedPowerConsumptionAutosized() const;
+    boost::optional<double> grossRatedTotalCoolingCapacity() const;
+    bool isGrossRatedTotalCoolingCapacityDefaulted() const;
+    bool isGrossRatedTotalCoolingCapacityAutosized() const;
+    bool setGrossRatedTotalCoolingCapacity(double grossRatedTotalCoolingCapacity);
+    void resetGrossRatedTotalCoolingCapacity();
+    void autosizeGrossRatedTotalCoolingCapacity();
 
-  bool setGrossRatedTotalCoolingCapacity(double grossRatedTotalCoolingCapacity);
-  bool setGrossRatedCoolingCOP(double grossRatedCoolingCOP);
-  bool setMinimumOutdoorTemperatureinCoolingMode(double minimumOutdoorTemperatureinCoolingMode);
-  bool setMaximumOutdoorTemperatureinCoolingMode(double maximumOutdoorTemperatureinCoolingMode);
-  bool setGrossRatedHeatingCapacity(double grossRatedHeatingCapacity);
-  bool setRatedHeatingCapacitySizingRatio(double ratedHeatingCapacitySizingRatio);
-  bool setGrossRatedHeatingCOP(double grossRatedHeatingCOP);
-  bool setMinimumOutdoorTemperatureinHeatingMode(double minimumOutdoorTemperatureinHeatingMode);
-  bool setMaximumOutdoorTemperatureinHeatingMode(double maximumOutdoorTemperatureinHeatingMode);
-  bool setMinimumHeatPumpPartLoadRatio(double minimumHeatPumpPartLoadRatio);
-  bool setMasterThermostatPriorityControlType(const std::string& masterThermostatPriorityControlType);
-  bool setHeatPumpWasteHeatRecovery(bool heatPumpWasteHeatRecovery);
-  bool setEquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode(double equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode);
-  bool setVerticalHeightusedforPipingCorrectionFactor(double verticalHeightusedforPipingCorrectionFactor);
-  bool setEquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode(double equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode);
-  bool setCrankcaseHeaterPowerperCompressor(double crankcaseHeaterPowerperCompressor);
-  bool setNumberofCompressors(int numberofCompressors);
-  bool setRatioofCompressorSizetoTotalCompressorCapacity(double ratioofCompressorSizetoTotalCompressorCapacity);
-  bool setMaximumOutdoorDrybulbTemperatureforCrankcaseHeater(double maximumOutdoorDrybulbTemperatureforCrankcaseHeater);
-  bool setDefrostStrategy(const std::string& defrostStrategy);
-  bool setDefrostControl(const std::string& defrostControl);
-  bool setDefrostTimePeriodFraction(double defrostTimePeriodFraction);
-  bool setResistiveDefrostHeaterCapacity(double resistiveDefrostHeaterCapacity);
-  bool setMaximumOutdoorDrybulbTemperatureforDefrostOperation(double maximumOutdoorDrybulbTemperatureforDefrostOperation);
-  bool setCondenserType(const std::string& condenserType);
-  bool setWaterCondenserVolumeFlowRate(double waterCondenserVolumeFlowRate);
-  bool setEvaporativeCondenserEffectiveness(double evaporativeCondenserEffectiveness);
-  bool setEvaporativeCondenserAirFlowRate(double evaporativeCondenserAirFlowRate);
-  bool setEvaporativeCondenserPumpRatedPowerConsumption(double evaporativeCondenserPumpRatedPowerConsumption);
-  bool setBasinHeaterCapacity(double basinHeaterCapacity);
-  bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
-  bool setFuelType(const std::string& fuelType);
-  bool setMinimumOutdoorTemperatureinHeatRecoveryMode(double minimumOutdoorTemperatureinHeatRecoveryMode);
-  bool setMaximumOutdoorTemperatureinHeatRecoveryMode(double maximumOutdoorTemperatureinHeatRecoveryMode);
+    double grossRatedCoolingCOP() const;
+    bool isGrossRatedCoolingCOPDefaulted() const;
+    bool setGrossRatedCoolingCOP(double grossRatedCoolingCOP);
+    void resetGrossRatedCoolingCOP();
 
-  void resetGrossRatedTotalCoolingCapacity();
-  void resetGrossRatedCoolingCOP();
-  void resetMinimumOutdoorTemperatureinCoolingMode();
-  void resetMaximumOutdoorTemperatureinCoolingMode();
-  void resetGrossRatedHeatingCapacity();
-  void resetRatedHeatingCapacitySizingRatio();
-  void resetGrossRatedHeatingCOP();
-  void resetMinimumOutdoorTemperatureinHeatingMode();
-  void resetMaximumOutdoorTemperatureinHeatingMode();
-  void resetMinimumHeatPumpPartLoadRatio();
-  void resetMasterThermostatPriorityControlType();
-  void resetHeatPumpWasteHeatRecovery();
-  void resetEquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode();
-  void resetVerticalHeightusedforPipingCorrectionFactor();
-  void resetEquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode();
-  void resetCrankcaseHeaterPowerperCompressor();
-  void resetNumberofCompressors();
-  void resetRatioofCompressorSizetoTotalCompressorCapacity();
-  void resetMaximumOutdoorDrybulbTemperatureforCrankcaseHeater();
-  void resetDefrostStrategy();
-  void resetDefrostControl();
-  void resetDefrostTimePeriodFraction();
-  void resetResistiveDefrostHeaterCapacity();
-  void resetMaximumOutdoorDrybulbTemperatureforDefrostOperation();
-  void resetCondenserType();
-  void resetWaterCondenserVolumeFlowRate();
-  void resetEvaporativeCondenserEffectiveness();
-  void resetEvaporativeCondenserAirFlowRate();
-  void resetEvaporativeCondenserPumpRatedPowerConsumption();
-  void resetBasinHeaterCapacity();
-  void resetBasinHeaterSetpointTemperature();
-  void resetFuelType();
-  void resetMinimumOutdoorTemperatureinHeatRecoveryMode();
-  void resetMaximumOutdoorTemperatureinHeatRecoveryMode();
-  void autosizeGrossRatedTotalCoolingCapacity();
-  void autosizeGrossRatedHeatingCapacity();
-  void autosizeResistiveDefrostHeaterCapacity();
-  void autosizeWaterCondenserVolumeFlowRate();
-  void autosizeEvaporativeCondenserAirFlowRate();
-  void autosizeEvaporativeCondenserPumpRatedPowerConsumption();
+    double minimumOutdoorTemperatureinCoolingMode() const;
+    bool isMinimumOutdoorTemperatureinCoolingModeDefaulted() const;
+    bool setMinimumOutdoorTemperatureinCoolingMode(double minimumOutdoorTemperatureinCoolingMode);
+    void resetMinimumOutdoorTemperatureinCoolingMode();
 
- protected:
-  using ImplType = detail::HVACTemplateSystemVRF_Impl;
+    double maximumOutdoorTemperatureinCoolingMode() const;
+    bool isMaximumOutdoorTemperatureinCoolingModeDefaulted() const;
+    bool setMaximumOutdoorTemperatureinCoolingMode(double maximumOutdoorTemperatureinCoolingMode);
+    void resetMaximumOutdoorTemperatureinCoolingMode();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    boost::optional<double> grossRatedHeatingCapacity() const;
+    bool isGrossRatedHeatingCapacityDefaulted() const;
+    bool isGrossRatedHeatingCapacityAutosized() const;
+    bool setGrossRatedHeatingCapacity(double grossRatedHeatingCapacity);
+    void resetGrossRatedHeatingCapacity();
+    void autosizeGrossRatedHeatingCapacity();
 
-  explicit HVACTemplateSystemVRF(std::shared_ptr<detail::HVACTemplateSystemVRF_Impl> impl);
-};
+    double ratedHeatingCapacitySizingRatio() const;
+    bool isRatedHeatingCapacitySizingRatioDefaulted() const;
+    bool setRatedHeatingCapacitySizingRatio(double ratedHeatingCapacitySizingRatio);
+    void resetRatedHeatingCapacitySizingRatio();
+
+    double grossRatedHeatingCOP() const;
+    bool isGrossRatedHeatingCOPDefaulted() const;
+    bool setGrossRatedHeatingCOP(double grossRatedHeatingCOP);
+    void resetGrossRatedHeatingCOP();
+
+    double minimumOutdoorTemperatureinHeatingMode() const;
+    bool isMinimumOutdoorTemperatureinHeatingModeDefaulted() const;
+    bool setMinimumOutdoorTemperatureinHeatingMode(double minimumOutdoorTemperatureinHeatingMode);
+    void resetMinimumOutdoorTemperatureinHeatingMode();
+
+    double maximumOutdoorTemperatureinHeatingMode() const;
+    bool isMaximumOutdoorTemperatureinHeatingModeDefaulted() const;
+    bool setMaximumOutdoorTemperatureinHeatingMode(double maximumOutdoorTemperatureinHeatingMode);
+    void resetMaximumOutdoorTemperatureinHeatingMode();
+
+    double minimumHeatPumpPartLoadRatio() const;
+    bool isMinimumHeatPumpPartLoadRatioDefaulted() const;
+    bool setMinimumHeatPumpPartLoadRatio(double minimumHeatPumpPartLoadRatio);
+    void resetMinimumHeatPumpPartLoadRatio();
+
+    std::string masterThermostatPriorityControlType() const;
+    bool isMasterThermostatPriorityControlTypeDefaulted() const;
+    bool setMasterThermostatPriorityControlType(const std::string& masterThermostatPriorityControlType);
+    void resetMasterThermostatPriorityControlType();
+
+    bool heatPumpWasteHeatRecovery() const;
+    bool isHeatPumpWasteHeatRecoveryDefaulted() const;
+    bool setHeatPumpWasteHeatRecovery(bool heatPumpWasteHeatRecovery);
+    void resetHeatPumpWasteHeatRecovery();
+
+    double equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode() const;
+    bool isEquivalentPipingLengthusedforPipingCorrectionFactorinCoolingModeDefaulted() const;
+    bool setEquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode(double equivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode);
+    void resetEquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode();
+
+    double verticalHeightusedforPipingCorrectionFactor() const;
+    bool isVerticalHeightusedforPipingCorrectionFactorDefaulted() const;
+    bool setVerticalHeightusedforPipingCorrectionFactor(double verticalHeightusedforPipingCorrectionFactor);
+    void resetVerticalHeightusedforPipingCorrectionFactor();
+
+    double equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode() const;
+    bool isEquivalentPipingLengthusedforPipingCorrectionFactorinHeatingModeDefaulted() const;
+    bool setEquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode(double equivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode);
+    void resetEquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode();
+
+    double crankcaseHeaterPowerperCompressor() const;
+    bool isCrankcaseHeaterPowerperCompressorDefaulted() const;
+    bool setCrankcaseHeaterPowerperCompressor(double crankcaseHeaterPowerperCompressor);
+    void resetCrankcaseHeaterPowerperCompressor();
+
+    int numberofCompressors() const;
+    bool isNumberofCompressorsDefaulted() const;
+    bool setNumberofCompressors(int numberofCompressors);
+    void resetNumberofCompressors();
+
+    double ratioofCompressorSizetoTotalCompressorCapacity() const;
+    bool isRatioofCompressorSizetoTotalCompressorCapacityDefaulted() const;
+    bool setRatioofCompressorSizetoTotalCompressorCapacity(double ratioofCompressorSizetoTotalCompressorCapacity);
+    void resetRatioofCompressorSizetoTotalCompressorCapacity();
+
+    double maximumOutdoorDrybulbTemperatureforCrankcaseHeater() const;
+    bool isMaximumOutdoorDrybulbTemperatureforCrankcaseHeaterDefaulted() const;
+    bool setMaximumOutdoorDrybulbTemperatureforCrankcaseHeater(double maximumOutdoorDrybulbTemperatureforCrankcaseHeater);
+    void resetMaximumOutdoorDrybulbTemperatureforCrankcaseHeater();
+
+    std::string defrostStrategy() const;
+    bool isDefrostStrategyDefaulted() const;
+    bool setDefrostStrategy(const std::string& defrostStrategy);
+    void resetDefrostStrategy();
+
+    std::string defrostControl() const;
+    bool isDefrostControlDefaulted() const;
+    bool setDefrostControl(const std::string& defrostControl);
+    void resetDefrostControl();
+
+    double defrostTimePeriodFraction() const;
+    bool isDefrostTimePeriodFractionDefaulted() const;
+    bool setDefrostTimePeriodFraction(double defrostTimePeriodFraction);
+    void resetDefrostTimePeriodFraction();
+
+    boost::optional<double> resistiveDefrostHeaterCapacity() const;
+    bool isResistiveDefrostHeaterCapacityDefaulted() const;
+    bool isResistiveDefrostHeaterCapacityAutosized() const;
+    bool setResistiveDefrostHeaterCapacity(double resistiveDefrostHeaterCapacity);
+    void resetResistiveDefrostHeaterCapacity();
+    void autosizeResistiveDefrostHeaterCapacity();
+
+    double maximumOutdoorDrybulbTemperatureforDefrostOperation() const;
+    bool isMaximumOutdoorDrybulbTemperatureforDefrostOperationDefaulted() const;
+    bool setMaximumOutdoorDrybulbTemperatureforDefrostOperation(double maximumOutdoorDrybulbTemperatureforDefrostOperation);
+    void resetMaximumOutdoorDrybulbTemperatureforDefrostOperation();
+
+    std::string condenserType() const;
+    bool isCondenserTypeDefaulted() const;
+    bool setCondenserType(const std::string& condenserType);
+    void resetCondenserType();
+
+    boost::optional<double> waterCondenserVolumeFlowRate() const;
+    bool isWaterCondenserVolumeFlowRateDefaulted() const;
+    bool isWaterCondenserVolumeFlowRateAutosized() const;
+    bool setWaterCondenserVolumeFlowRate(double waterCondenserVolumeFlowRate);
+    void resetWaterCondenserVolumeFlowRate();
+    void autosizeWaterCondenserVolumeFlowRate();
+
+    double evaporativeCondenserEffectiveness() const;
+    bool isEvaporativeCondenserEffectivenessDefaulted() const;
+    bool setEvaporativeCondenserEffectiveness(double evaporativeCondenserEffectiveness);
+    void resetEvaporativeCondenserEffectiveness();
+
+    boost::optional<double> evaporativeCondenserAirFlowRate() const;
+    bool isEvaporativeCondenserAirFlowRateDefaulted() const;
+    bool isEvaporativeCondenserAirFlowRateAutosized() const;
+    bool setEvaporativeCondenserAirFlowRate(double evaporativeCondenserAirFlowRate);
+    void resetEvaporativeCondenserAirFlowRate();
+    void autosizeEvaporativeCondenserAirFlowRate();
+
+    boost::optional<double> evaporativeCondenserPumpRatedPowerConsumption() const;
+    bool isEvaporativeCondenserPumpRatedPowerConsumptionDefaulted() const;
+    bool isEvaporativeCondenserPumpRatedPowerConsumptionAutosized() const;
+    bool setEvaporativeCondenserPumpRatedPowerConsumption(double evaporativeCondenserPumpRatedPowerConsumption);
+    void resetEvaporativeCondenserPumpRatedPowerConsumption();
+    void autosizeEvaporativeCondenserPumpRatedPowerConsumption();
+
+    double basinHeaterCapacity() const;
+    bool isBasinHeaterCapacityDefaulted() const;
+    bool setBasinHeaterCapacity(double basinHeaterCapacity);
+    void resetBasinHeaterCapacity();
+
+    double basinHeaterSetpointTemperature() const;
+    bool isBasinHeaterSetpointTemperatureDefaulted() const;
+    bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
+    void resetBasinHeaterSetpointTemperature();
+
+    std::string fuelType() const;
+    bool isFuelTypeDefaulted() const;
+    bool setFuelType(const std::string& fuelType);
+    void resetFuelType();
+
+    double minimumOutdoorTemperatureinHeatRecoveryMode() const;
+    bool isMinimumOutdoorTemperatureinHeatRecoveryModeDefaulted() const;
+    bool setMinimumOutdoorTemperatureinHeatRecoveryMode(double minimumOutdoorTemperatureinHeatRecoveryMode);
+    void resetMinimumOutdoorTemperatureinHeatRecoveryMode();
+
+    double maximumOutdoorTemperatureinHeatRecoveryMode() const;
+    bool isMaximumOutdoorTemperatureinHeatRecoveryModeDefaulted() const;
+    bool setMaximumOutdoorTemperatureinHeatRecoveryMode(double maximumOutdoorTemperatureinHeatRecoveryMode);
+    void resetMaximumOutdoorTemperatureinHeatRecoveryMode();
+
+   protected:
+    using ImplType = detail::HVACTemplateSystemVRF_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit HVACTemplateSystemVRF(std::shared_ptr<detail::HVACTemplateSystemVRF_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

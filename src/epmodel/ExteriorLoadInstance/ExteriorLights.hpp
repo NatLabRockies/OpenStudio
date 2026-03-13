@@ -17,63 +17,60 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class ExteriorLights_Impl;
-}
+  namespace detail {
+    class ExteriorLights_Impl;
+  }
 
-class EPMODEL_API ExteriorLights : public ModelObject
-{
- public:
-  explicit ExteriorLights(const Model& model);
+  class EPMODEL_API ExteriorLights : public ModelObject
+  {
+   public:
+    explicit ExteriorLights(const Model& model);
 
-  virtual ~ExteriorLights() override = default;
-  ExteriorLights(const ExteriorLights& other) = default;
-  ExteriorLights(ExteriorLights&& other) = default;
-  ExteriorLights& operator=(const ExteriorLights&) = default;
-  ExteriorLights& operator=(ExteriorLights&&) = default;
+    virtual ~ExteriorLights() override = default;
+    ExteriorLights(const ExteriorLights& other) = default;
+    ExteriorLights(ExteriorLights&& other) = default;
+    ExteriorLights& operator=(const ExteriorLights&) = default;
+    ExteriorLights& operator=(ExteriorLights&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> controlOptionValues();
-  static std::vector<std::string> validControlOptionValues();
+    static std::vector<std::string> controlOptionValues();
+    static std::vector<std::string> validControlOptionValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::ExteriorLights scalar accessor names/signatures.
-  // - Field Mapping: controlOption/endUseSubcategory map directly to E+ Exterior:Lights Control Option/End-Use Subcategory.
-  // - Field Mapping: multiplier API currently delegates to E+ Exterior:Lights Design Level (no direct E+ multiplier field).
-  // - Field Mapping: Schedule Name is excluded as a relationship field in this scalar-only scaffold pass.
-  // - ForwardTranslator evidence: ForwardTranslateExteriorLights.cpp writes Design Level from
-  //   definition.designLevel() * modelObject.multiplier(), and maps controlOption/endUseSubcategory directly.
-  // - TODO(parity): Add relationship/definition graph parity without changing preserved scalar signatures.
-  std::string controlOption() const;
-  bool isControlOptionDefaulted() const;
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model::ExteriorLights scalar accessor names/signatures.
+    // - Field Mapping: controlOption/endUseSubcategory map directly to E+ Exterior:Lights Control Option/End-Use Subcategory.
+    // - Field Mapping: multiplier API currently delegates to E+ Exterior:Lights Design Level (no direct E+ multiplier field).
+    // - Field Mapping: Schedule Name is excluded as a relationship field in this scalar-only scaffold pass.
+    // - ForwardTranslator evidence: ForwardTranslateExteriorLights.cpp writes Design Level from
+    //   definition.designLevel() * modelObject.multiplier(), and maps controlOption/endUseSubcategory directly.
+    // - TODO(parity): Add relationship/definition graph parity without changing preserved scalar signatures.
+    std::string controlOption() const;
+    bool isControlOptionDefaulted() const;
+    bool setControlOption(const std::string& controlOption);
+    void resetControlOption();
 
-  double multiplier() const;
-  bool isMultiplierDefaulted() const;
+    double multiplier() const;
+    bool isMultiplierDefaulted() const;
+    bool setMultiplier(double multiplier);
+    void resetMultiplier();
 
-  std::string endUseSubcategory() const;
-  bool isEndUseSubcategoryDefaulted() const;
+    std::string endUseSubcategory() const;
+    bool isEndUseSubcategoryDefaulted() const;
+    bool setEndUseSubcategory(const std::string& endUseSubcategory);
+    void resetEndUseSubcategory();
 
-  bool setControlOption(const std::string& controlOption);
-  void resetControlOption();
+   protected:
+    using ImplType = detail::ExteriorLights_Impl;
 
-  bool setMultiplier(double multiplier);
-  void resetMultiplier();
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  bool setEndUseSubcategory(const std::string& endUseSubcategory);
-  void resetEndUseSubcategory();
-
- protected:
-  using ImplType = detail::ExteriorLights_Impl;
-
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit ExteriorLights(std::shared_ptr<detail::ExteriorLights_Impl> impl);
-};
+    explicit ExteriorLights(std::shared_ptr<detail::ExteriorLights_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

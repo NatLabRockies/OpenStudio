@@ -34,36 +34,28 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACDehumidifierDX_Impl>()->ratedWaterRemoval();
   }
 
-  double ZoneHVACDehumidifierDX::ratedEnergyFactor() const {
-    return getImpl<detail::ZoneHVACDehumidifierDX_Impl>()->ratedEnergyFactor();
-  }
-
-  double ZoneHVACDehumidifierDX::ratedAirFlowRate() const {
-    return getImpl<detail::ZoneHVACDehumidifierDX_Impl>()->ratedAirFlowRate();
-  }
-
-  double ZoneHVACDehumidifierDX::minimumDryBulbTemperatureforDehumidifierOperation() const {
-    return getImpl<detail::ZoneHVACDehumidifierDX_Impl>()->minimumDryBulbTemperatureforDehumidifierOperation();
-  }
-
-  double ZoneHVACDehumidifierDX::maximumDryBulbTemperatureforDehumidifierOperation() const {
-    return getImpl<detail::ZoneHVACDehumidifierDX_Impl>()->maximumDryBulbTemperatureforDehumidifierOperation();
-  }
-
-  double ZoneHVACDehumidifierDX::offCycleParasiticElectricLoad() const {
-    return getImpl<detail::ZoneHVACDehumidifierDX_Impl>()->offCycleParasiticElectricLoad();
-  }
-
   bool ZoneHVACDehumidifierDX::setRatedWaterRemoval(double ratedWaterRemoval) {
     return getImpl<detail::ZoneHVACDehumidifierDX_Impl>()->setRatedWaterRemoval(ratedWaterRemoval);
+  }
+
+  double ZoneHVACDehumidifierDX::ratedEnergyFactor() const {
+    return getImpl<detail::ZoneHVACDehumidifierDX_Impl>()->ratedEnergyFactor();
   }
 
   bool ZoneHVACDehumidifierDX::setRatedEnergyFactor(double ratedEnergyFactor) {
     return getImpl<detail::ZoneHVACDehumidifierDX_Impl>()->setRatedEnergyFactor(ratedEnergyFactor);
   }
 
+  double ZoneHVACDehumidifierDX::ratedAirFlowRate() const {
+    return getImpl<detail::ZoneHVACDehumidifierDX_Impl>()->ratedAirFlowRate();
+  }
+
   bool ZoneHVACDehumidifierDX::setRatedAirFlowRate(double ratedAirFlowRate) {
     return getImpl<detail::ZoneHVACDehumidifierDX_Impl>()->setRatedAirFlowRate(ratedAirFlowRate);
+  }
+
+  double ZoneHVACDehumidifierDX::minimumDryBulbTemperatureforDehumidifierOperation() const {
+    return getImpl<detail::ZoneHVACDehumidifierDX_Impl>()->minimumDryBulbTemperatureforDehumidifierOperation();
   }
 
   bool ZoneHVACDehumidifierDX::setMinimumDryBulbTemperatureforDehumidifierOperation(double minimumDryBulbTemperatureforDehumidifierOperation) {
@@ -71,9 +63,17 @@ namespace epmodel {
       minimumDryBulbTemperatureforDehumidifierOperation);
   }
 
+  double ZoneHVACDehumidifierDX::maximumDryBulbTemperatureforDehumidifierOperation() const {
+    return getImpl<detail::ZoneHVACDehumidifierDX_Impl>()->maximumDryBulbTemperatureforDehumidifierOperation();
+  }
+
   bool ZoneHVACDehumidifierDX::setMaximumDryBulbTemperatureforDehumidifierOperation(double maximumDryBulbTemperatureforDehumidifierOperation) {
     return getImpl<detail::ZoneHVACDehumidifierDX_Impl>()->setMaximumDryBulbTemperatureforDehumidifierOperation(
       maximumDryBulbTemperatureforDehumidifierOperation);
+  }
+
+  double ZoneHVACDehumidifierDX::offCycleParasiticElectricLoad() const {
+    return getImpl<detail::ZoneHVACDehumidifierDX_Impl>()->offCycleParasiticElectricLoad();
   }
 
   bool ZoneHVACDehumidifierDX::setOffCycleParasiticElectricLoad(double offCycleParasiticElectricLoad) {

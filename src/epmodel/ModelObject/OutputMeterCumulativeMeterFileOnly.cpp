@@ -17,85 +17,84 @@
 namespace openstudio {
 namespace epmodel {
 
-OutputMeterCumulativeMeterFileOnly::OutputMeterCumulativeMeterFileOnly(const Model& model)
-  : ModelObject(OutputMeterCumulativeMeterFileOnly::iddObjectType(), model) {}
+  OutputMeterCumulativeMeterFileOnly::OutputMeterCumulativeMeterFileOnly(const Model& model)
+    : ModelObject(OutputMeterCumulativeMeterFileOnly::iddObjectType(), model) {}
 
-OutputMeterCumulativeMeterFileOnly::OutputMeterCumulativeMeterFileOnly(
-  std::shared_ptr<detail::OutputMeterCumulativeMeterFileOnly_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  OutputMeterCumulativeMeterFileOnly::OutputMeterCumulativeMeterFileOnly(std::shared_ptr<detail::OutputMeterCumulativeMeterFileOnly_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType OutputMeterCumulativeMeterFileOnly::iddObjectType() {
-  return IddObjectType::Output_Meter_Cumulative_MeterFileOnly;
-}
+  IddObjectType OutputMeterCumulativeMeterFileOnly::iddObjectType() {
+    return IddObjectType::Output_Meter_Cumulative_MeterFileOnly;
+  }
 
-std::vector<std::string> OutputMeterCumulativeMeterFileOnly::reportingFrequencyValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::Output_Meter_Cumulative_MeterFileOnlyFields::ReportingFrequency);
-}
+  std::vector<std::string> OutputMeterCumulativeMeterFileOnly::reportingFrequencyValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::Output_Meter_Cumulative_MeterFileOnlyFields::ReportingFrequency);
+  }
 
-std::string OutputMeterCumulativeMeterFileOnly::keyName() const {
-  return getImpl<detail::OutputMeterCumulativeMeterFileOnly_Impl>()->keyName();
-}
+  std::string OutputMeterCumulativeMeterFileOnly::keyName() const {
+    return getImpl<detail::OutputMeterCumulativeMeterFileOnly_Impl>()->keyName();
+  }
 
-std::string OutputMeterCumulativeMeterFileOnly::reportingFrequency() const {
-  return getImpl<detail::OutputMeterCumulativeMeterFileOnly_Impl>()->reportingFrequency();
-}
+  bool OutputMeterCumulativeMeterFileOnly::setKeyName(const std::string& keyName) {
+    return getImpl<detail::OutputMeterCumulativeMeterFileOnly_Impl>()->setKeyName(keyName);
+  }
 
-bool OutputMeterCumulativeMeterFileOnly::isReportingFrequencyDefaulted() const {
-  return getImpl<detail::OutputMeterCumulativeMeterFileOnly_Impl>()->isReportingFrequencyDefaulted();
-}
+  std::string OutputMeterCumulativeMeterFileOnly::reportingFrequency() const {
+    return getImpl<detail::OutputMeterCumulativeMeterFileOnly_Impl>()->reportingFrequency();
+  }
 
-bool OutputMeterCumulativeMeterFileOnly::setKeyName(const std::string& keyName) {
-  return getImpl<detail::OutputMeterCumulativeMeterFileOnly_Impl>()->setKeyName(keyName);
-}
+  bool OutputMeterCumulativeMeterFileOnly::setReportingFrequency(const std::string& reportingFrequency) {
+    return getImpl<detail::OutputMeterCumulativeMeterFileOnly_Impl>()->setReportingFrequency(reportingFrequency);
+  }
 
-bool OutputMeterCumulativeMeterFileOnly::setReportingFrequency(const std::string& reportingFrequency) {
-  return getImpl<detail::OutputMeterCumulativeMeterFileOnly_Impl>()->setReportingFrequency(reportingFrequency);
-}
+  bool OutputMeterCumulativeMeterFileOnly::isReportingFrequencyDefaulted() const {
+    return getImpl<detail::OutputMeterCumulativeMeterFileOnly_Impl>()->isReportingFrequencyDefaulted();
+  }
 
-void OutputMeterCumulativeMeterFileOnly::resetReportingFrequency() {
-  getImpl<detail::OutputMeterCumulativeMeterFileOnly_Impl>()->resetReportingFrequency();
-}
+  void OutputMeterCumulativeMeterFileOnly::resetReportingFrequency() {
+    getImpl<detail::OutputMeterCumulativeMeterFileOnly_Impl>()->resetReportingFrequency();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string OutputMeterCumulativeMeterFileOnly_Impl::keyName() const {
-  const auto value = getString(openstudio::Output_Meter_Cumulative_MeterFileOnlyFields::KeyName, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string OutputMeterCumulativeMeterFileOnly_Impl::keyName() const {
+      const auto value = getString(openstudio::Output_Meter_Cumulative_MeterFileOnlyFields::KeyName, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-std::string OutputMeterCumulativeMeterFileOnly_Impl::reportingFrequency() const {
-  const auto value = getString(openstudio::Output_Meter_Cumulative_MeterFileOnlyFields::ReportingFrequency, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool OutputMeterCumulativeMeterFileOnly_Impl::setKeyName(const std::string& keyName) {
+      return setString(openstudio::Output_Meter_Cumulative_MeterFileOnlyFields::KeyName, keyName);
+    }
 
-bool OutputMeterCumulativeMeterFileOnly_Impl::isReportingFrequencyDefaulted() const {
-  return isEmpty(openstudio::Output_Meter_Cumulative_MeterFileOnlyFields::ReportingFrequency);
-}
+    std::string OutputMeterCumulativeMeterFileOnly_Impl::reportingFrequency() const {
+      const auto value = getString(openstudio::Output_Meter_Cumulative_MeterFileOnlyFields::ReportingFrequency, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool OutputMeterCumulativeMeterFileOnly_Impl::setKeyName(const std::string& keyName) {
-  return setString(openstudio::Output_Meter_Cumulative_MeterFileOnlyFields::KeyName, keyName);
-}
+    bool OutputMeterCumulativeMeterFileOnly_Impl::setReportingFrequency(const std::string& reportingFrequency) {
+      return setString(openstudio::Output_Meter_Cumulative_MeterFileOnlyFields::ReportingFrequency, reportingFrequency);
+    }
 
-bool OutputMeterCumulativeMeterFileOnly_Impl::setReportingFrequency(const std::string& reportingFrequency) {
-  return setString(openstudio::Output_Meter_Cumulative_MeterFileOnlyFields::ReportingFrequency, reportingFrequency);
-}
+    bool OutputMeterCumulativeMeterFileOnly_Impl::isReportingFrequencyDefaulted() const {
+      return isEmpty(openstudio::Output_Meter_Cumulative_MeterFileOnlyFields::ReportingFrequency);
+    }
 
-void OutputMeterCumulativeMeterFileOnly_Impl::resetReportingFrequency() {
-  OS_ASSERT(setString(openstudio::Output_Meter_Cumulative_MeterFileOnlyFields::ReportingFrequency, ""));
-}
+    void OutputMeterCumulativeMeterFileOnly_Impl::resetReportingFrequency() {
+      OS_ASSERT(setString(openstudio::Output_Meter_Cumulative_MeterFileOnlyFields::ReportingFrequency, ""));
+    }
 
-std::vector<std::string> OutputMeterCumulativeMeterFileOnly_Impl::reportingFrequencyValues() const {
-  return openstudio::epmodel::OutputMeterCumulativeMeterFileOnly::reportingFrequencyValues();
-}
+    std::vector<std::string> OutputMeterCumulativeMeterFileOnly_Impl::reportingFrequencyValues() const {
+      return openstudio::epmodel::OutputMeterCumulativeMeterFileOnly::reportingFrequencyValues();
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

@@ -19,13 +19,13 @@ namespace epmodel {
       virtual ~SurfacePropertySurroundingSurfaces_Impl() override = default;
 
       boost::optional<double> skyViewFactor() const;
-      bool isSkyViewFactorAutocalculated() const;
       bool setSkyViewFactor(double skyViewFactor);
+      bool isSkyViewFactorAutocalculated() const;
       void autocalculateSkyViewFactor();
 
       boost::optional<double> groundViewFactor() const;
-      bool isGroundViewFactorAutocalculated() const;
       bool setGroundViewFactor(double groundViewFactor);
+      bool isGroundViewFactorAutocalculated() const;
       void autocalculateGroundViewFactor();
     };
 

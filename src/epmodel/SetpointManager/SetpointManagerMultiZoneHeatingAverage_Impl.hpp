@@ -10,28 +10,28 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SetpointManagerMultiZoneHeatingAverage_Impl : public SetpointManager_Impl
-{
- public:
-  using SetpointManager_Impl::SetpointManager_Impl;
-  virtual ~SetpointManagerMultiZoneHeatingAverage_Impl() override = default;
+    class EPMODEL_API SetpointManagerMultiZoneHeatingAverage_Impl : public SetpointManager_Impl
+    {
+     public:
+      using SetpointManager_Impl::SetpointManager_Impl;
+      virtual ~SetpointManagerMultiZoneHeatingAverage_Impl() override = default;
 
-  double minimumSetpointTemperature() const;
-  double maximumSetpointTemperature() const;
+      double minimumSetpointTemperature() const;
+      bool setMinimumSetpointTemperature(double minimumSetpointTemperature);
 
-  bool setMinimumSetpointTemperature(double minimumSetpointTemperature);
-  bool setMaximumSetpointTemperature(double maximumSetpointTemperature);
+      double maximumSetpointTemperature() const;
+      bool setMaximumSetpointTemperature(double maximumSetpointTemperature);
 
- protected:
-  unsigned setpointNodeFieldIndex() const override;
-  unsigned controlVariableFieldIndex() const override;
+     protected:
+      unsigned setpointNodeFieldIndex() const override;
+      unsigned controlVariableFieldIndex() const override;
 
-  void doCanonicalize(LoadContext& context) override;
-};
+      void doCanonicalize(LoadContext& context) override;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

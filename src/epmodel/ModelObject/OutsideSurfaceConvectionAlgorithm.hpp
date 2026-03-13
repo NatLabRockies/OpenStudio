@@ -38,10 +38,13 @@ namespace epmodel {
     // - Field Mapping: Algorithm maps directly to E+ SurfaceConvectionAlgorithm:Outside field A1.
     static std::vector<std::string> validAlgorithmValues();
 
+    /** @name Algorithm field */
+    //@{
     std::string algorithm() const;
     bool isAlgorithmDefaulted() const;
     bool setAlgorithm(const std::string& algorithm);
     void resetAlgorithm();
+    //@}
 
    protected:
     using ImplType = detail::OutsideSurfaceConvectionAlgorithm_Impl;

@@ -46,35 +46,29 @@ namespace epmodel {
     // - TODO(parity): Add non-scalar relationship APIs later without changing scalar signatures.
     double receiverPressure() const;
     bool isReceiverPressureDefaulted() const;
-
-    double subcoolerEffectiveness() const;
-    bool isSubcoolerEffectivenessDefaulted() const;
-
-    std::string refrigerationSystemWorkingFluidType() const;
-
-    double sumUASuctionPipingforMediumTemperatureLoads() const;
-    bool isSumUASuctionPipingforMediumTemperatureLoadsDefaulted() const;
-
-    double sumUASuctionPipingforLowTemperatureLoads() const;
-    bool isSumUASuctionPipingforLowTemperatureLoadsDefaulted() const;
-
-    std::string endUseSubcategory() const;
-    bool isEndUseSubcategoryDefaulted() const;
-
     bool setReceiverPressure(double receiverPressure);
     void resetReceiverPressure();
 
+    double subcoolerEffectiveness() const;
+    bool isSubcoolerEffectivenessDefaulted() const;
     bool setSubcoolerEffectiveness(double subcoolerEffectiveness);
     void resetSubcoolerEffectiveness();
 
+    std::string refrigerationSystemWorkingFluidType() const;
     bool setRefrigerationSystemWorkingFluidType(const std::string& refrigerationSystemWorkingFluidType);
 
+    double sumUASuctionPipingforMediumTemperatureLoads() const;
+    bool isSumUASuctionPipingforMediumTemperatureLoadsDefaulted() const;
     bool setSumUASuctionPipingforMediumTemperatureLoads(double sumUASuctionPipingforMediumTemperatureLoads);
     void resetSumUASuctionPipingforMediumTemperatureLoads();
 
+    double sumUASuctionPipingforLowTemperatureLoads() const;
+    bool isSumUASuctionPipingforLowTemperatureLoadsDefaulted() const;
     bool setSumUASuctionPipingforLowTemperatureLoads(double sumUASuctionPipingforLowTemperatureLoads);
     void resetSumUASuctionPipingforLowTemperatureLoads();
 
+    std::string endUseSubcategory() const;
+    bool isEndUseSubcategoryDefaulted() const;
     bool setEndUseSubcategory(const std::string& endUseSubcategory);
     void resetEndUseSubcategory();
 

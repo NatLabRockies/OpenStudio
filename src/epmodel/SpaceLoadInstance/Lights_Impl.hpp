@@ -21,6 +21,8 @@ class EPMODEL_API Lights_Impl : public ModelObject_Impl
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~Lights_Impl() override = default;
 
+  std::vector<std::string> designLevelCalculationMethodValues() const;
+
   std::string designLevelCalculationMethod() const;
   bool isDesignLevelCalculationMethodDefaulted() const;
   bool setDesignLevelCalculationMethod(const std::string& designLevelCalculationMethod);
@@ -81,7 +83,6 @@ class EPMODEL_API Lights_Impl : public ModelObject_Impl
   bool setMultiplier(double multiplier);
   void resetMultiplier();
 
-  std::vector<std::string> designLevelCalculationMethodValues() const;
 };
 
 }  // namespace detail

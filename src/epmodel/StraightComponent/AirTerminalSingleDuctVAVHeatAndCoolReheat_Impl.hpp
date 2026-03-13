@@ -11,38 +11,38 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl() override = default;
+    class EPMODEL_API AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl() override = default;
 
-  boost::optional<double> maximumAirFlowRate() const;
-  bool isMaximumAirFlowRateAutosized() const;
-  bool setMaximumAirFlowRate(double maximumAirFlowRate);
-  void autosizeMaximumAirFlowRate();
+      boost::optional<double> maximumAirFlowRate() const;
+      bool setMaximumAirFlowRate(double maximumAirFlowRate);
+      bool isMaximumAirFlowRateAutosized() const;
+      void autosizeMaximumAirFlowRate();
 
-  double zoneMinimumAirFlowFraction() const;
-  bool setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction);
+      double zoneMinimumAirFlowFraction() const;
+      bool setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction);
 
-  boost::optional<double> maximumHotWaterorSteamFlowRate() const;
-  bool isMaximumHotWaterorSteamFlowRateAutosized() const;
-  bool setMaximumHotWaterorSteamFlowRate(double maximumHotWaterorSteamFlowRate);
-  void autosizeMaximumHotWaterorSteamFlowRate();
+      boost::optional<double> maximumHotWaterorSteamFlowRate() const;
+      bool setMaximumHotWaterorSteamFlowRate(double maximumHotWaterorSteamFlowRate);
+      bool isMaximumHotWaterorSteamFlowRateAutosized() const;
+      void autosizeMaximumHotWaterorSteamFlowRate();
 
-  double minimumHotWaterorSteamFlowRate() const;
-  bool setMinimumHotWaterorSteamFlowRate(double minimumHotWaterorSteamFlowRate);
+      double minimumHotWaterorSteamFlowRate() const;
+      bool setMinimumHotWaterorSteamFlowRate(double minimumHotWaterorSteamFlowRate);
 
-  double convergenceTolerance() const;
-  bool setConvergenceTolerance(double convergenceTolerance);
+      double convergenceTolerance() const;
+      bool setConvergenceTolerance(double convergenceTolerance);
 
-  double maximumReheatAirTemperature() const;
-  bool setMaximumReheatAirTemperature(double maximumReheatAirTemperature);
-};
+      double maximumReheatAirTemperature() const;
+      bool setMaximumReheatAirTemperature(double maximumReheatAirTemperature);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

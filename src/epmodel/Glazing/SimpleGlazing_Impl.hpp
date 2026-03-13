@@ -23,17 +23,13 @@ namespace epmodel {
       virtual ~SimpleGlazing_Impl() override = default;
 
       double uFactor() const;
-
-      double solarHeatGainCoefficient() const;
-
-      boost::optional<double> visibleTransmittance() const;
-
       bool setUFactor(double uFactor);
 
+      double solarHeatGainCoefficient() const;
       bool setSolarHeatGainCoefficient(double solarHeatGainCoefficient);
 
+      boost::optional<double> visibleTransmittance() const;
       bool setVisibleTransmittance(boost::optional<double> visibleTransmittance);
-
       void resetVisibleTransmittance();
     };
 

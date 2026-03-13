@@ -14,78 +14,83 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class HeatPumpWaterToWaterEquationFitCooling_Impl;
-}
+  namespace detail {
+    class HeatPumpWaterToWaterEquationFitCooling_Impl;
+  }
 
-class EPMODEL_API HeatPumpWaterToWaterEquationFitCooling : public ModelObject
-{
- public:
-  explicit HeatPumpWaterToWaterEquationFitCooling(const Model& model);
+  class EPMODEL_API HeatPumpWaterToWaterEquationFitCooling : public ModelObject
+  {
+   public:
+    explicit HeatPumpWaterToWaterEquationFitCooling(const Model& model);
 
-  virtual ~HeatPumpWaterToWaterEquationFitCooling() override = default;
-  HeatPumpWaterToWaterEquationFitCooling(const HeatPumpWaterToWaterEquationFitCooling& other) = default;
-  HeatPumpWaterToWaterEquationFitCooling(HeatPumpWaterToWaterEquationFitCooling&& other) = default;
-  HeatPumpWaterToWaterEquationFitCooling& operator=(const HeatPumpWaterToWaterEquationFitCooling&) = default;
-  HeatPumpWaterToWaterEquationFitCooling& operator=(HeatPumpWaterToWaterEquationFitCooling&&) = default;
+    virtual ~HeatPumpWaterToWaterEquationFitCooling() override = default;
+    HeatPumpWaterToWaterEquationFitCooling(const HeatPumpWaterToWaterEquationFitCooling& other) = default;
+    HeatPumpWaterToWaterEquationFitCooling(HeatPumpWaterToWaterEquationFitCooling&& other) = default;
+    HeatPumpWaterToWaterEquationFitCooling& operator=(const HeatPumpWaterToWaterEquationFitCooling&) = default;
+    HeatPumpWaterToWaterEquationFitCooling& operator=(HeatPumpWaterToWaterEquationFitCooling&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserves existing openstudio::model scalar accessor names/signatures, including legacy rated/reference aliases.
-  // - Field Mapping: ratedCoolingCapacity/ratedCoolingPowerConsumption map to E+ Reference Cooling fields per ForwardTranslator behavior.
-  // - Field Mapping: Relationship-like fields (nodes, curves, companion heat pump) are intentionally excluded in this scalar-only scaffold.
-  // - TODO(parity): Add non-scalar curve/companion APIs and WaterToWater component behavior in a dedicated parity pass.
-  boost::optional<double> referenceLoadSideFlowRate() const;
-  double ratedLoadSideFlowRate() const;
-  bool isReferenceLoadSideFlowRateAutosized() const;
+    // Schema Alignment Notes:
+    // - API: Preserves existing openstudio::model scalar accessor names/signatures, including legacy rated/reference aliases.
+    // - Field Mapping: ratedCoolingCapacity/ratedCoolingPowerConsumption map to E+ Reference Cooling fields per ForwardTranslator behavior.
+    // - Field Mapping: Relationship-like fields (nodes, curves, companion heat pump) are intentionally excluded in this scalar-only scaffold.
+    // - TODO(parity): Add non-scalar curve/companion APIs and WaterToWater component behavior in a dedicated parity pass.
 
-  boost::optional<double> referenceSourceSideFlowRate() const;
-  double ratedSourceSideFlowRate() const;
-  bool isReferenceSourceSideFlowRateAutosized() const;
+    // Reference load-side flow rate
+    boost::optional<double> referenceLoadSideFlowRate() const;
+    bool isReferenceLoadSideFlowRateAutosized() const;
+    bool setReferenceLoadSideFlowRate(double referenceLoadSideFlowRate);
+    void autosizeReferenceLoadSideFlowRate();
+    boost::optional<double> autosizedReferenceLoadSideFlowRate() const;
 
-  boost::optional<double> ratedCoolingCapacity() const;
-  bool isRatedCoolingCapacityAutosized() const;
+    // Rated load-side flow rate
+    double ratedLoadSideFlowRate() const;
+    bool setRatedLoadSideFlowRate(double ratedLoadSideFlowRate);
 
-  boost::optional<double> ratedCoolingPowerConsumption() const;
-  bool isRatedCoolingPowerConsumptionAutosized() const;
+    // Reference source-side flow rate
+    boost::optional<double> referenceSourceSideFlowRate() const;
+    bool isReferenceSourceSideFlowRateAutosized() const;
+    bool setReferenceSourceSideFlowRate(double referenceSourceSideFlowRate);
+    void autosizeReferenceSourceSideFlowRate();
+    boost::optional<double> autosizedReferenceSourceSideFlowRate() const;
 
-  double referenceCoefficientofPerformance() const;
-  double sizingFactor() const;
+    // Rated source-side flow rate
+    double ratedSourceSideFlowRate() const;
+    bool setRatedSourceSideFlowRate(double ratedSourceSideFlowRate);
 
-  bool setReferenceLoadSideFlowRate(double referenceLoadSideFlowRate);
-  bool setRatedLoadSideFlowRate(double ratedLoadSideFlowRate);
-  void autosizeReferenceLoadSideFlowRate();
+    // Rated cooling capacity
+    boost::optional<double> ratedCoolingCapacity() const;
+    bool isRatedCoolingCapacityAutosized() const;
+    bool setRatedCoolingCapacity(double ratedCoolingCapacity);
+    void autosizeRatedCoolingCapacity();
+    boost::optional<double> autosizedRatedCoolingCapacity() const;
 
-  bool setReferenceSourceSideFlowRate(double referenceSourceSideFlowRate);
-  bool setRatedSourceSideFlowRate(double ratedSourceSideFlowRate);
-  void autosizeReferenceSourceSideFlowRate();
+    // Rated cooling power consumption
+    boost::optional<double> ratedCoolingPowerConsumption() const;
+    bool isRatedCoolingPowerConsumptionAutosized() const;
+    bool setRatedCoolingPowerConsumption(double ratedCoolingPowerConsumption);
+    void autosizeRatedCoolingPowerConsumption();
+    boost::optional<double> autosizedRatedCoolingPowerConsumption() const;
 
-  bool setRatedCoolingCapacity(double ratedCoolingCapacity);
-  void autosizeRatedCoolingCapacity();
+    // Performance tuning
+    double referenceCoefficientofPerformance() const;
+    bool setReferenceCoefficientofPerformance(double referenceCoefficientofPerformance);
 
-  bool setRatedCoolingPowerConsumption(double ratedCoolingPowerConsumption);
-  void autosizeRatedCoolingPowerConsumption();
+    double sizingFactor() const;
+    bool setSizingFactor(double sizingFactor);
 
-  bool setReferenceCoefficientofPerformance(double referenceCoefficientofPerformance);
-  bool setSizingFactor(double sizingFactor);
+   protected:
+    using ImplType = detail::HeatPumpWaterToWaterEquationFitCooling_Impl;
 
-  boost::optional<double> autosizedReferenceLoadSideFlowRate() const;
-  boost::optional<double> autosizedReferenceSourceSideFlowRate() const;
-  boost::optional<double> autosizedRatedCoolingCapacity() const;
-  boost::optional<double> autosizedRatedCoolingPowerConsumption() const;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
- protected:
-  using ImplType = detail::HeatPumpWaterToWaterEquationFitCooling_Impl;
-
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit HeatPumpWaterToWaterEquationFitCooling(std::shared_ptr<detail::HeatPumpWaterToWaterEquationFitCooling_Impl> impl);
-};
+    explicit HeatPumpWaterToWaterEquationFitCooling(std::shared_ptr<detail::HeatPumpWaterToWaterEquationFitCooling_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

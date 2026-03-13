@@ -13,29 +13,29 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GeometryTransform_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GeometryTransform_Impl() override = default;
+    class EPMODEL_API GeometryTransform_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GeometryTransform_Impl() override = default;
 
-  std::string planeofTransform() const;
-  bool isPlaneofTransformDefaulted() const;
-  bool setPlaneofTransform(const std::string& planeofTransform);
-  void resetPlaneofTransform();
+      std::string planeofTransform() const;
+      bool setPlaneofTransform(const std::string& planeofTransform);
+      bool isPlaneofTransformDefaulted() const;
+      void resetPlaneofTransform();
 
-  double currentAspectRatio() const;
-  bool setCurrentAspectRatio(double currentAspectRatio);
+      double currentAspectRatio() const;
+      bool setCurrentAspectRatio(double currentAspectRatio);
 
-  double newAspectRatio() const;
-  bool setNewAspectRatio(double newAspectRatio);
+      double newAspectRatio() const;
+      bool setNewAspectRatio(double newAspectRatio);
 
-  std::vector<std::string> planeofTransformValues() const;
-};
+      std::vector<std::string> planeofTransformValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

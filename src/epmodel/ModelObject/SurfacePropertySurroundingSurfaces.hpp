@@ -42,13 +42,13 @@ namespace epmodel {
     // - Field Mapping: SkyTemperatureScheduleName, GroundTemperatureScheduleName, and the SurroundingSurface extensible groups are relationship fields
     //   (schedule pointers and extensible links) and are intentionally excluded from the scalar API surface here.
     boost::optional<double> skyViewFactor() const;
-    bool isSkyViewFactorAutocalculated() const;
     bool setSkyViewFactor(double skyViewFactor);
+    bool isSkyViewFactorAutocalculated() const;
     void autocalculateSkyViewFactor();
 
     boost::optional<double> groundViewFactor() const;
-    bool isGroundViewFactorAutocalculated() const;
     bool setGroundViewFactor(double groundViewFactor);
+    bool isGroundViewFactorAutocalculated() const;
     void autocalculateGroundViewFactor();
 
    protected:

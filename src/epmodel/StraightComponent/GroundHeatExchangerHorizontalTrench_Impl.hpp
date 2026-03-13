@@ -10,53 +10,67 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatExchangerHorizontalTrench_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~GroundHeatExchangerHorizontalTrench_Impl() override = default;
+    class EPMODEL_API GroundHeatExchangerHorizontalTrench_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~GroundHeatExchangerHorizontalTrench_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
-  double designFlowRate() const;
-  double trenchLengthinPipeAxialDirection() const;
-  int numberofTrenches() const;
-  double horizontalSpacingBetweenPipes() const;
-  double pipeInnerDiameter() const;
-  double pipeOuterDiameter() const;
-  double burialDepth() const;
-  double soilThermalConductivity() const;
-  double soilDensity() const;
-  double soilSpecificHeat() const;
-  double pipeThermalConductivity() const;
-  double pipeDensity() const;
-  double pipeSpecificHeat() const;
-  double soilMoistureContentPercent() const;
-  double soilMoistureContentPercentatSaturation() const;
-  double evapotranspirationGroundCoverParameter() const;
+      double designFlowRate() const;
+      bool setDesignFlowRate(double designFlowRate);
 
-  bool setDesignFlowRate(double designFlowRate);
-  bool setTrenchLengthinPipeAxialDirection(double trenchLengthinPipeAxialDirection);
-  bool setNumberofTrenches(int numberofTrenches);
-  bool setHorizontalSpacingBetweenPipes(double horizontalSpacingBetweenPipes);
-  bool setPipeInnerDiameter(double pipeInnerDiameter);
-  bool setPipeOuterDiameter(double pipeOuterDiameter);
-  bool setBurialDepth(double burialDepth);
-  bool setSoilThermalConductivity(double soilThermalConductivity);
-  bool setSoilDensity(double soilDensity);
-  bool setSoilSpecificHeat(double soilSpecificHeat);
-  bool setPipeThermalConductivity(double pipeThermalConductivity);
-  bool setPipeDensity(double pipeDensity);
-  bool setPipeSpecificHeat(double pipeSpecificHeat);
-  bool setSoilMoistureContentPercent(double soilMoistureContentPercent);
-  bool setSoilMoistureContentPercentatSaturation(double soilMoistureContentPercentatSaturation);
-  bool setEvapotranspirationGroundCoverParameter(double evapotranspirationGroundCoverParameter);
-};
+      double trenchLengthinPipeAxialDirection() const;
+      bool setTrenchLengthinPipeAxialDirection(double trenchLengthinPipeAxialDirection);
 
-}  // namespace detail
+      int numberofTrenches() const;
+      bool setNumberofTrenches(int numberofTrenches);
+
+      double horizontalSpacingBetweenPipes() const;
+      bool setHorizontalSpacingBetweenPipes(double horizontalSpacingBetweenPipes);
+
+      double pipeInnerDiameter() const;
+      bool setPipeInnerDiameter(double pipeInnerDiameter);
+
+      double pipeOuterDiameter() const;
+      bool setPipeOuterDiameter(double pipeOuterDiameter);
+
+      double burialDepth() const;
+      bool setBurialDepth(double burialDepth);
+
+      double soilThermalConductivity() const;
+      bool setSoilThermalConductivity(double soilThermalConductivity);
+
+      double soilDensity() const;
+      bool setSoilDensity(double soilDensity);
+
+      double soilSpecificHeat() const;
+      bool setSoilSpecificHeat(double soilSpecificHeat);
+
+      double pipeThermalConductivity() const;
+      bool setPipeThermalConductivity(double pipeThermalConductivity);
+
+      double pipeDensity() const;
+      bool setPipeDensity(double pipeDensity);
+
+      double pipeSpecificHeat() const;
+      bool setPipeSpecificHeat(double pipeSpecificHeat);
+
+      double soilMoistureContentPercent() const;
+      bool setSoilMoistureContentPercent(double soilMoistureContentPercent);
+
+      double soilMoistureContentPercentatSaturation() const;
+      bool setSoilMoistureContentPercentatSaturation(double soilMoistureContentPercentatSaturation);
+
+      double evapotranspirationGroundCoverParameter() const;
+      bool setEvapotranspirationGroundCoverParameter(double evapotranspirationGroundCoverParameter);
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

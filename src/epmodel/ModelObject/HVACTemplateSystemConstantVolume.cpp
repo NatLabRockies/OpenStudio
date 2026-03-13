@@ -956,474 +956,8 @@ boost::optional<double> HVACTemplateSystemConstantVolume_Impl::supplyFanMaximumF
   return getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMaximumFlowRate, true);
 }
 
-double HVACTemplateSystemConstantVolume_Impl::supplyFanTotalEfficiency() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanTotalEfficiency, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::supplyFanDeltaPressure() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanDeltaPressure, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::supplyFanMotorEfficiency() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMotorEfficiency, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::supplyFanMotorinAirStreamFraction() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMotorinAirStreamFraction, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-std::string HVACTemplateSystemConstantVolume_Impl::supplyFanPlacement() const {
-  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanPlacement, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-std::string HVACTemplateSystemConstantVolume_Impl::coolingCoilType() const {
-  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilType, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-std::string HVACTemplateSystemConstantVolume_Impl::coolingCoilSetpointControlType() const {
-  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointControlType, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::coolingCoilDesignSetpointTemperature() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilDesignSetpointTemperature, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::coolingCoilSetpointatOutdoorDryBulbLow() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointatOutdoorDryBulbLow, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::coolingCoilResetOutdoorDryBulbLow() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilResetOutdoorDryBulbLow, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::coolingCoilSetpointatOutdoorDryBulbHigh() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointatOutdoorDryBulbHigh, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::coolingCoilResetOutdoorDryBulbHigh() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilResetOutdoorDryBulbHigh, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-std::string HVACTemplateSystemConstantVolume_Impl::heatingCoilType() const {
-  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilType, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-std::string HVACTemplateSystemConstantVolume_Impl::heatingCoilSetpointControlType() const {
-  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointControlType, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::heatingCoilDesignSetpoint() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilDesignSetpoint, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::heatingCoilSetpointatOutdoorDryBulbLow() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointatOutdoorDryBulbLow, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::heatingCoilResetOutdoorDryBulbLow() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilResetOutdoorDryBulbLow, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::heatingCoilSetpointatOutdoorDryBulbHigh() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointatOutdoorDryBulbHigh, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::heatingCoilResetOutdoorDryBulbHigh() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilResetOutdoorDryBulbHigh, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-boost::optional<double> HVACTemplateSystemConstantVolume_Impl::heatingCoilCapacity() const {
-  return getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilCapacity, true);
-}
-
-double HVACTemplateSystemConstantVolume_Impl::gasHeatingCoilEfficiency() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::GasHeatingCoilEfficiency, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::gasHeatingCoilParasiticElectricLoad() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::GasHeatingCoilParasiticElectricLoad, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-std::string HVACTemplateSystemConstantVolume_Impl::preheatCoilType() const {
-  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::PreheatCoilType, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::preheatCoilDesignSetpoint() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::PreheatCoilDesignSetpoint, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::gasPreheatCoilEfficiency() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::GasPreheatCoilEfficiency, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::gasPreheatCoilParasiticElectricLoad() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::GasPreheatCoilParasiticElectricLoad, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-boost::optional<double> HVACTemplateSystemConstantVolume_Impl::maximumOutdoorAirFlowRate() const {
-  return getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::MaximumOutdoorAirFlowRate, true);
-}
-
-boost::optional<double> HVACTemplateSystemConstantVolume_Impl::minimumOutdoorAirFlowRate() const {
-  return getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::MinimumOutdoorAirFlowRate, true);
-}
-
-std::string HVACTemplateSystemConstantVolume_Impl::economizerType() const {
-  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerType, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-boost::optional<double> HVACTemplateSystemConstantVolume_Impl::economizerUpperTemperatureLimit() const {
-  return getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerUpperTemperatureLimit, true);
-}
-
-boost::optional<double> HVACTemplateSystemConstantVolume_Impl::economizerLowerTemperatureLimit() const {
-  return getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerLowerTemperatureLimit, true);
-}
-
-boost::optional<double> HVACTemplateSystemConstantVolume_Impl::economizerUpperEnthalpyLimit() const {
-  return getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerUpperEnthalpyLimit, true);
-}
-
-boost::optional<double> HVACTemplateSystemConstantVolume_Impl::economizerMaximumLimitDewpointTemperature() const {
-  return getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerMaximumLimitDewpointTemperature, true);
-}
-
-std::string HVACTemplateSystemConstantVolume_Impl::nightCycleControl() const {
-  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::NightCycleControl, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-std::string HVACTemplateSystemConstantVolume_Impl::heatRecoveryType() const {
-  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryType, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::sensibleHeatRecoveryEffectiveness() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SensibleHeatRecoveryEffectiveness, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::latentHeatRecoveryEffectiveness() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::LatentHeatRecoveryEffectiveness, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-std::string HVACTemplateSystemConstantVolume_Impl::heatRecoveryHeatExchangerType() const {
-  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryHeatExchangerType, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-std::string HVACTemplateSystemConstantVolume_Impl::heatRecoveryFrostControlType() const {
-  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryFrostControlType, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-std::string HVACTemplateSystemConstantVolume_Impl::dehumidificationControlType() const {
-  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::DehumidificationControlType, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::dehumidificationRelativeHumiditySetpoint() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::DehumidificationRelativeHumiditySetpoint, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-std::string HVACTemplateSystemConstantVolume_Impl::humidifierType() const {
-  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierType, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::humidifierRatedCapacity() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRatedCapacity, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-boost::optional<double> HVACTemplateSystemConstantVolume_Impl::humidifierRatedElectricPower() const {
-  return getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRatedElectricPower, true);
-}
-
-double HVACTemplateSystemConstantVolume_Impl::humidifierRelativeHumiditySetpoint() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRelativeHumiditySetpoint, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::returnFan() const {
-  return getBooleanFieldValue(*this, openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFan);
-}
-
-double HVACTemplateSystemConstantVolume_Impl::returnFanTotalEfficiency() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanTotalEfficiency, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::returnFanDeltaPressure() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanDeltaPressure, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::returnFanMotorEfficiency() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanMotorEfficiency, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-double HVACTemplateSystemConstantVolume_Impl::returnFanMotorinAirStreamFraction() const {
-  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanMotorinAirStreamFraction, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
 bool HVACTemplateSystemConstantVolume_Impl::isSupplyFanMaximumFlowRateDefaulted() const {
   return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMaximumFlowRate);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isSupplyFanTotalEfficiencyDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanTotalEfficiency);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isSupplyFanDeltaPressureDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanDeltaPressure);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isSupplyFanMotorEfficiencyDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMotorEfficiency);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isSupplyFanMotorinAirStreamFractionDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMotorinAirStreamFraction);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isSupplyFanPlacementDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanPlacement);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isCoolingCoilTypeDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isCoolingCoilSetpointControlTypeDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointControlType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isCoolingCoilDesignSetpointTemperatureDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilDesignSetpointTemperature);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isCoolingCoilSetpointatOutdoorDryBulbLowDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointatOutdoorDryBulbLow);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isCoolingCoilResetOutdoorDryBulbLowDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilResetOutdoorDryBulbLow);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isCoolingCoilSetpointatOutdoorDryBulbHighDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointatOutdoorDryBulbHigh);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isCoolingCoilResetOutdoorDryBulbHighDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilResetOutdoorDryBulbHigh);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isHeatingCoilTypeDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isHeatingCoilSetpointControlTypeDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointControlType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isHeatingCoilDesignSetpointDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilDesignSetpoint);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isHeatingCoilSetpointatOutdoorDryBulbLowDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointatOutdoorDryBulbLow);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isHeatingCoilResetOutdoorDryBulbLowDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilResetOutdoorDryBulbLow);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isHeatingCoilSetpointatOutdoorDryBulbHighDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointatOutdoorDryBulbHigh);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isHeatingCoilResetOutdoorDryBulbHighDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilResetOutdoorDryBulbHigh);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isHeatingCoilCapacityDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilCapacity);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isGasHeatingCoilEfficiencyDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::GasHeatingCoilEfficiency);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isGasHeatingCoilParasiticElectricLoadDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::GasHeatingCoilParasiticElectricLoad);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isPreheatCoilTypeDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::PreheatCoilType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isPreheatCoilDesignSetpointDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::PreheatCoilDesignSetpoint);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isGasPreheatCoilEfficiencyDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::GasPreheatCoilEfficiency);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isGasPreheatCoilParasiticElectricLoadDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::GasPreheatCoilParasiticElectricLoad);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isMaximumOutdoorAirFlowRateDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::MaximumOutdoorAirFlowRate);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isMinimumOutdoorAirFlowRateDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::MinimumOutdoorAirFlowRate);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isEconomizerTypeDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isNightCycleControlDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::NightCycleControl);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isHeatRecoveryTypeDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isSensibleHeatRecoveryEffectivenessDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::SensibleHeatRecoveryEffectiveness);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isLatentHeatRecoveryEffectivenessDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::LatentHeatRecoveryEffectiveness);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isHeatRecoveryHeatExchangerTypeDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryHeatExchangerType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isHeatRecoveryFrostControlTypeDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryFrostControlType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isDehumidificationControlTypeDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::DehumidificationControlType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isDehumidificationRelativeHumiditySetpointDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::DehumidificationRelativeHumiditySetpoint);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isHumidifierTypeDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isHumidifierRatedCapacityDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRatedCapacity);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isHumidifierRatedElectricPowerDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRatedElectricPower);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isHumidifierRelativeHumiditySetpointDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRelativeHumiditySetpoint);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isReturnFanDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFan);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isReturnFanTotalEfficiencyDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanTotalEfficiency);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isReturnFanDeltaPressureDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanDeltaPressure);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isReturnFanMotorEfficiencyDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanMotorEfficiency);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::isReturnFanMotorinAirStreamFractionDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanMotorinAirStreamFraction);
 }
 
 bool HVACTemplateSystemConstantVolume_Impl::isSupplyFanMaximumFlowRateAutosized() const {
@@ -1433,11 +967,525 @@ bool HVACTemplateSystemConstantVolume_Impl::isSupplyFanMaximumFlowRateAutosized(
   return false;
 }
 
+bool HVACTemplateSystemConstantVolume_Impl::setSupplyFanMaximumFlowRate(double supplyFanMaximumFlowRate) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMaximumFlowRate, supplyFanMaximumFlowRate);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetSupplyFanMaximumFlowRate() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMaximumFlowRate, ""));
+}
+
+void HVACTemplateSystemConstantVolume_Impl::autosizeSupplyFanMaximumFlowRate() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMaximumFlowRate, "autosize"));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::supplyFanTotalEfficiency() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanTotalEfficiency, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isSupplyFanTotalEfficiencyDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanTotalEfficiency);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setSupplyFanTotalEfficiency(double supplyFanTotalEfficiency) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanTotalEfficiency, supplyFanTotalEfficiency);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetSupplyFanTotalEfficiency() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanTotalEfficiency, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::supplyFanDeltaPressure() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanDeltaPressure, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isSupplyFanDeltaPressureDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanDeltaPressure);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setSupplyFanDeltaPressure(double supplyFanDeltaPressure) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanDeltaPressure, supplyFanDeltaPressure);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetSupplyFanDeltaPressure() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanDeltaPressure, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::supplyFanMotorEfficiency() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMotorEfficiency, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isSupplyFanMotorEfficiencyDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMotorEfficiency);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setSupplyFanMotorEfficiency(double supplyFanMotorEfficiency) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMotorEfficiency, supplyFanMotorEfficiency);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetSupplyFanMotorEfficiency() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMotorEfficiency, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::supplyFanMotorinAirStreamFraction() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMotorinAirStreamFraction, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isSupplyFanMotorinAirStreamFractionDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMotorinAirStreamFraction);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setSupplyFanMotorinAirStreamFraction(double supplyFanMotorinAirStreamFraction) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMotorinAirStreamFraction, supplyFanMotorinAirStreamFraction);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetSupplyFanMotorinAirStreamFraction() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMotorinAirStreamFraction, ""));
+}
+
+std::string HVACTemplateSystemConstantVolume_Impl::supplyFanPlacement() const {
+  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanPlacement, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isSupplyFanPlacementDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanPlacement);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setSupplyFanPlacement(const std::string& supplyFanPlacement) {
+  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanPlacement, supplyFanPlacement);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetSupplyFanPlacement() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanPlacement, ""));
+}
+
+std::string HVACTemplateSystemConstantVolume_Impl::coolingCoilType() const {
+  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilType, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isCoolingCoilTypeDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilType);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setCoolingCoilType(const std::string& coolingCoilType) {
+  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilType, coolingCoilType);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetCoolingCoilType() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilType, ""));
+}
+
+std::string HVACTemplateSystemConstantVolume_Impl::coolingCoilSetpointControlType() const {
+  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointControlType, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isCoolingCoilSetpointControlTypeDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointControlType);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setCoolingCoilSetpointControlType(const std::string& coolingCoilSetpointControlType) {
+  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointControlType, coolingCoilSetpointControlType);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetCoolingCoilSetpointControlType() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointControlType, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::coolingCoilDesignSetpointTemperature() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilDesignSetpointTemperature, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isCoolingCoilDesignSetpointTemperatureDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilDesignSetpointTemperature);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setCoolingCoilDesignSetpointTemperature(double coolingCoilDesignSetpointTemperature) {
+  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilDesignSetpointTemperature, coolingCoilDesignSetpointTemperature);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetCoolingCoilDesignSetpointTemperature() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilDesignSetpointTemperature, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::coolingCoilSetpointatOutdoorDryBulbLow() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointatOutdoorDryBulbLow, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isCoolingCoilSetpointatOutdoorDryBulbLowDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointatOutdoorDryBulbLow);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setCoolingCoilSetpointatOutdoorDryBulbLow(double coolingCoilSetpointatOutdoorDryBulbLow) {
+  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointatOutdoorDryBulbLow, coolingCoilSetpointatOutdoorDryBulbLow);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetCoolingCoilSetpointatOutdoorDryBulbLow() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointatOutdoorDryBulbLow, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::coolingCoilResetOutdoorDryBulbLow() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilResetOutdoorDryBulbLow, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isCoolingCoilResetOutdoorDryBulbLowDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilResetOutdoorDryBulbLow);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setCoolingCoilResetOutdoorDryBulbLow(double coolingCoilResetOutdoorDryBulbLow) {
+  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilResetOutdoorDryBulbLow, coolingCoilResetOutdoorDryBulbLow);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetCoolingCoilResetOutdoorDryBulbLow() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilResetOutdoorDryBulbLow, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::coolingCoilSetpointatOutdoorDryBulbHigh() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointatOutdoorDryBulbHigh, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isCoolingCoilSetpointatOutdoorDryBulbHighDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointatOutdoorDryBulbHigh);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setCoolingCoilSetpointatOutdoorDryBulbHigh(double coolingCoilSetpointatOutdoorDryBulbHigh) {
+  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointatOutdoorDryBulbHigh, coolingCoilSetpointatOutdoorDryBulbHigh);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetCoolingCoilSetpointatOutdoorDryBulbHigh() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointatOutdoorDryBulbHigh, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::coolingCoilResetOutdoorDryBulbHigh() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilResetOutdoorDryBulbHigh, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isCoolingCoilResetOutdoorDryBulbHighDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilResetOutdoorDryBulbHigh);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setCoolingCoilResetOutdoorDryBulbHigh(double coolingCoilResetOutdoorDryBulbHigh) {
+  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilResetOutdoorDryBulbHigh, coolingCoilResetOutdoorDryBulbHigh);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetCoolingCoilResetOutdoorDryBulbHigh() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilResetOutdoorDryBulbHigh, ""));
+}
+
+std::string HVACTemplateSystemConstantVolume_Impl::heatingCoilType() const {
+  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilType, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isHeatingCoilTypeDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilType);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setHeatingCoilType(const std::string& heatingCoilType) {
+  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilType, heatingCoilType);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetHeatingCoilType() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilType, ""));
+}
+
+std::string HVACTemplateSystemConstantVolume_Impl::heatingCoilSetpointControlType() const {
+  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointControlType, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isHeatingCoilSetpointControlTypeDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointControlType);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setHeatingCoilSetpointControlType(const std::string& heatingCoilSetpointControlType) {
+  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointControlType, heatingCoilSetpointControlType);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetHeatingCoilSetpointControlType() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointControlType, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::heatingCoilDesignSetpoint() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilDesignSetpoint, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isHeatingCoilDesignSetpointDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilDesignSetpoint);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setHeatingCoilDesignSetpoint(double heatingCoilDesignSetpoint) {
+  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilDesignSetpoint, heatingCoilDesignSetpoint);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetHeatingCoilDesignSetpoint() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilDesignSetpoint, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::heatingCoilSetpointatOutdoorDryBulbLow() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointatOutdoorDryBulbLow, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isHeatingCoilSetpointatOutdoorDryBulbLowDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointatOutdoorDryBulbLow);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setHeatingCoilSetpointatOutdoorDryBulbLow(double heatingCoilSetpointatOutdoorDryBulbLow) {
+  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointatOutdoorDryBulbLow, heatingCoilSetpointatOutdoorDryBulbLow);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetHeatingCoilSetpointatOutdoorDryBulbLow() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointatOutdoorDryBulbLow, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::heatingCoilResetOutdoorDryBulbLow() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilResetOutdoorDryBulbLow, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isHeatingCoilResetOutdoorDryBulbLowDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilResetOutdoorDryBulbLow);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setHeatingCoilResetOutdoorDryBulbLow(double heatingCoilResetOutdoorDryBulbLow) {
+  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilResetOutdoorDryBulbLow, heatingCoilResetOutdoorDryBulbLow);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetHeatingCoilResetOutdoorDryBulbLow() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilResetOutdoorDryBulbLow, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::heatingCoilSetpointatOutdoorDryBulbHigh() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointatOutdoorDryBulbHigh, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isHeatingCoilSetpointatOutdoorDryBulbHighDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointatOutdoorDryBulbHigh);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setHeatingCoilSetpointatOutdoorDryBulbHigh(double heatingCoilSetpointatOutdoorDryBulbHigh) {
+  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointatOutdoorDryBulbHigh, heatingCoilSetpointatOutdoorDryBulbHigh);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetHeatingCoilSetpointatOutdoorDryBulbHigh() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointatOutdoorDryBulbHigh, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::heatingCoilResetOutdoorDryBulbHigh() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilResetOutdoorDryBulbHigh, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isHeatingCoilResetOutdoorDryBulbHighDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilResetOutdoorDryBulbHigh);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setHeatingCoilResetOutdoorDryBulbHigh(double heatingCoilResetOutdoorDryBulbHigh) {
+  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilResetOutdoorDryBulbHigh, heatingCoilResetOutdoorDryBulbHigh);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetHeatingCoilResetOutdoorDryBulbHigh() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilResetOutdoorDryBulbHigh, ""));
+}
+
+boost::optional<double> HVACTemplateSystemConstantVolume_Impl::heatingCoilCapacity() const {
+  return getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilCapacity, true);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isHeatingCoilCapacityDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilCapacity);
+}
+
 bool HVACTemplateSystemConstantVolume_Impl::isHeatingCoilCapacityAutosized() const {
   if (auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilCapacity, true)) {
     return openstudio::istringEqual(*value, "autosize");
   }
   return false;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setHeatingCoilCapacity(double heatingCoilCapacity) {
+  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilCapacity, heatingCoilCapacity);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetHeatingCoilCapacity() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilCapacity, ""));
+}
+
+void HVACTemplateSystemConstantVolume_Impl::autosizeHeatingCoilCapacity() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilCapacity, "autosize"));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::gasHeatingCoilEfficiency() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::GasHeatingCoilEfficiency, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isGasHeatingCoilEfficiencyDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::GasHeatingCoilEfficiency);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setGasHeatingCoilEfficiency(double gasHeatingCoilEfficiency) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::GasHeatingCoilEfficiency, gasHeatingCoilEfficiency);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetGasHeatingCoilEfficiency() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::GasHeatingCoilEfficiency, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::gasHeatingCoilParasiticElectricLoad() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::GasHeatingCoilParasiticElectricLoad, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isGasHeatingCoilParasiticElectricLoadDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::GasHeatingCoilParasiticElectricLoad);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setGasHeatingCoilParasiticElectricLoad(double gasHeatingCoilParasiticElectricLoad) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::GasHeatingCoilParasiticElectricLoad, gasHeatingCoilParasiticElectricLoad);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetGasHeatingCoilParasiticElectricLoad() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::GasHeatingCoilParasiticElectricLoad, ""));
+}
+
+std::string HVACTemplateSystemConstantVolume_Impl::preheatCoilType() const {
+  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::PreheatCoilType, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isPreheatCoilTypeDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::PreheatCoilType);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setPreheatCoilType(const std::string& preheatCoilType) {
+  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::PreheatCoilType, preheatCoilType);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetPreheatCoilType() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::PreheatCoilType, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::preheatCoilDesignSetpoint() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::PreheatCoilDesignSetpoint, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isPreheatCoilDesignSetpointDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::PreheatCoilDesignSetpoint);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setPreheatCoilDesignSetpoint(double preheatCoilDesignSetpoint) {
+  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::PreheatCoilDesignSetpoint, preheatCoilDesignSetpoint);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetPreheatCoilDesignSetpoint() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::PreheatCoilDesignSetpoint, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::gasPreheatCoilEfficiency() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::GasPreheatCoilEfficiency, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isGasPreheatCoilEfficiencyDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::GasPreheatCoilEfficiency);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setGasPreheatCoilEfficiency(double gasPreheatCoilEfficiency) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::GasPreheatCoilEfficiency, gasPreheatCoilEfficiency);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetGasPreheatCoilEfficiency() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::GasPreheatCoilEfficiency, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::gasPreheatCoilParasiticElectricLoad() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::GasPreheatCoilParasiticElectricLoad, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isGasPreheatCoilParasiticElectricLoadDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::GasPreheatCoilParasiticElectricLoad);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setGasPreheatCoilParasiticElectricLoad(double gasPreheatCoilParasiticElectricLoad) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::GasPreheatCoilParasiticElectricLoad, gasPreheatCoilParasiticElectricLoad);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetGasPreheatCoilParasiticElectricLoad() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::GasPreheatCoilParasiticElectricLoad, ""));
+}
+
+boost::optional<double> HVACTemplateSystemConstantVolume_Impl::maximumOutdoorAirFlowRate() const {
+  return getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::MaximumOutdoorAirFlowRate, true);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isMaximumOutdoorAirFlowRateDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::MaximumOutdoorAirFlowRate);
 }
 
 bool HVACTemplateSystemConstantVolume_Impl::isMaximumOutdoorAirFlowRateAutosized() const {
@@ -1447,11 +1495,305 @@ bool HVACTemplateSystemConstantVolume_Impl::isMaximumOutdoorAirFlowRateAutosized
   return false;
 }
 
+bool HVACTemplateSystemConstantVolume_Impl::setMaximumOutdoorAirFlowRate(double maximumOutdoorAirFlowRate) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::MaximumOutdoorAirFlowRate, maximumOutdoorAirFlowRate);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetMaximumOutdoorAirFlowRate() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::MaximumOutdoorAirFlowRate, ""));
+}
+
+void HVACTemplateSystemConstantVolume_Impl::autosizeMaximumOutdoorAirFlowRate() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::MaximumOutdoorAirFlowRate, "autosize"));
+}
+
+boost::optional<double> HVACTemplateSystemConstantVolume_Impl::minimumOutdoorAirFlowRate() const {
+  return getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::MinimumOutdoorAirFlowRate, true);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isMinimumOutdoorAirFlowRateDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::MinimumOutdoorAirFlowRate);
+}
+
 bool HVACTemplateSystemConstantVolume_Impl::isMinimumOutdoorAirFlowRateAutosized() const {
   if (auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::MinimumOutdoorAirFlowRate, true)) {
     return openstudio::istringEqual(*value, "autosize");
   }
   return false;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setMinimumOutdoorAirFlowRate(double minimumOutdoorAirFlowRate) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::MinimumOutdoorAirFlowRate, minimumOutdoorAirFlowRate);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetMinimumOutdoorAirFlowRate() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::MinimumOutdoorAirFlowRate, ""));
+}
+
+void HVACTemplateSystemConstantVolume_Impl::autosizeMinimumOutdoorAirFlowRate() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::MinimumOutdoorAirFlowRate, "autosize"));
+}
+
+std::string HVACTemplateSystemConstantVolume_Impl::economizerType() const {
+  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerType, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isEconomizerTypeDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerType);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setEconomizerType(const std::string& economizerType) {
+  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerType, economizerType);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetEconomizerType() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerType, ""));
+}
+
+boost::optional<double> HVACTemplateSystemConstantVolume_Impl::economizerUpperTemperatureLimit() const {
+  return getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerUpperTemperatureLimit, true);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setEconomizerUpperTemperatureLimit(double economizerUpperTemperatureLimit) {
+  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerUpperTemperatureLimit, economizerUpperTemperatureLimit);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetEconomizerUpperTemperatureLimit() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerUpperTemperatureLimit, ""));
+}
+
+boost::optional<double> HVACTemplateSystemConstantVolume_Impl::economizerLowerTemperatureLimit() const {
+  return getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerLowerTemperatureLimit, true);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setEconomizerLowerTemperatureLimit(double economizerLowerTemperatureLimit) {
+  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerLowerTemperatureLimit, economizerLowerTemperatureLimit);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetEconomizerLowerTemperatureLimit() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerLowerTemperatureLimit, ""));
+}
+
+boost::optional<double> HVACTemplateSystemConstantVolume_Impl::economizerUpperEnthalpyLimit() const {
+  return getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerUpperEnthalpyLimit, true);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setEconomizerUpperEnthalpyLimit(double economizerUpperEnthalpyLimit) {
+  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerUpperEnthalpyLimit, economizerUpperEnthalpyLimit);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetEconomizerUpperEnthalpyLimit() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerUpperEnthalpyLimit, ""));
+}
+
+boost::optional<double> HVACTemplateSystemConstantVolume_Impl::economizerMaximumLimitDewpointTemperature() const {
+  return getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerMaximumLimitDewpointTemperature, true);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setEconomizerMaximumLimitDewpointTemperature(double economizerMaximumLimitDewpointTemperature) {
+  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerMaximumLimitDewpointTemperature, economizerMaximumLimitDewpointTemperature);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetEconomizerMaximumLimitDewpointTemperature() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerMaximumLimitDewpointTemperature, ""));
+}
+
+std::string HVACTemplateSystemConstantVolume_Impl::nightCycleControl() const {
+  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::NightCycleControl, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isNightCycleControlDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::NightCycleControl);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setNightCycleControl(const std::string& nightCycleControl) {
+  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::NightCycleControl, nightCycleControl);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetNightCycleControl() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::NightCycleControl, ""));
+}
+
+std::string HVACTemplateSystemConstantVolume_Impl::heatRecoveryType() const {
+  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryType, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isHeatRecoveryTypeDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryType);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setHeatRecoveryType(const std::string& heatRecoveryType) {
+  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryType, heatRecoveryType);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetHeatRecoveryType() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryType, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::sensibleHeatRecoveryEffectiveness() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SensibleHeatRecoveryEffectiveness, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isSensibleHeatRecoveryEffectivenessDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::SensibleHeatRecoveryEffectiveness);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setSensibleHeatRecoveryEffectiveness(double sensibleHeatRecoveryEffectiveness) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SensibleHeatRecoveryEffectiveness, sensibleHeatRecoveryEffectiveness);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetSensibleHeatRecoveryEffectiveness() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SensibleHeatRecoveryEffectiveness, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::latentHeatRecoveryEffectiveness() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::LatentHeatRecoveryEffectiveness, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isLatentHeatRecoveryEffectivenessDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::LatentHeatRecoveryEffectiveness);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setLatentHeatRecoveryEffectiveness(double latentHeatRecoveryEffectiveness) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::LatentHeatRecoveryEffectiveness, latentHeatRecoveryEffectiveness);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetLatentHeatRecoveryEffectiveness() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::LatentHeatRecoveryEffectiveness, ""));
+}
+
+std::string HVACTemplateSystemConstantVolume_Impl::heatRecoveryHeatExchangerType() const {
+  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryHeatExchangerType, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isHeatRecoveryHeatExchangerTypeDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryHeatExchangerType);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setHeatRecoveryHeatExchangerType(const std::string& heatRecoveryHeatExchangerType) {
+  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryHeatExchangerType, heatRecoveryHeatExchangerType);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetHeatRecoveryHeatExchangerType() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryHeatExchangerType, ""));
+}
+
+std::string HVACTemplateSystemConstantVolume_Impl::heatRecoveryFrostControlType() const {
+  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryFrostControlType, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isHeatRecoveryFrostControlTypeDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryFrostControlType);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setHeatRecoveryFrostControlType(const std::string& heatRecoveryFrostControlType) {
+  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryFrostControlType, heatRecoveryFrostControlType);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetHeatRecoveryFrostControlType() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryFrostControlType, ""));
+}
+
+std::string HVACTemplateSystemConstantVolume_Impl::dehumidificationControlType() const {
+  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::DehumidificationControlType, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isDehumidificationControlTypeDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::DehumidificationControlType);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setDehumidificationControlType(const std::string& dehumidificationControlType) {
+  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::DehumidificationControlType, dehumidificationControlType);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetDehumidificationControlType() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::DehumidificationControlType, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::dehumidificationRelativeHumiditySetpoint() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::DehumidificationRelativeHumiditySetpoint, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isDehumidificationRelativeHumiditySetpointDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::DehumidificationRelativeHumiditySetpoint);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setDehumidificationRelativeHumiditySetpoint(double dehumidificationRelativeHumiditySetpoint) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::DehumidificationRelativeHumiditySetpoint, dehumidificationRelativeHumiditySetpoint);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetDehumidificationRelativeHumiditySetpoint() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::DehumidificationRelativeHumiditySetpoint, ""));
+}
+
+std::string HVACTemplateSystemConstantVolume_Impl::humidifierType() const {
+  auto value = getString(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierType, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isHumidifierTypeDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierType);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setHumidifierType(const std::string& humidifierType) {
+  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierType, humidifierType);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetHumidifierType() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierType, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::humidifierRatedCapacity() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRatedCapacity, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isHumidifierRatedCapacityDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRatedCapacity);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setHumidifierRatedCapacity(double humidifierRatedCapacity) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRatedCapacity, humidifierRatedCapacity);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetHumidifierRatedCapacity() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRatedCapacity, ""));
+}
+
+boost::optional<double> HVACTemplateSystemConstantVolume_Impl::humidifierRatedElectricPower() const {
+  return getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRatedElectricPower, true);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isHumidifierRatedElectricPowerDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRatedElectricPower);
 }
 
 bool HVACTemplateSystemConstantVolume_Impl::isHumidifierRatedElectricPowerAutosized() const {
@@ -1461,220 +1803,42 @@ bool HVACTemplateSystemConstantVolume_Impl::isHumidifierRatedElectricPowerAutosi
   return false;
 }
 
-bool HVACTemplateSystemConstantVolume_Impl::setSupplyFanMaximumFlowRate(double supplyFanMaximumFlowRate) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMaximumFlowRate, supplyFanMaximumFlowRate);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setSupplyFanTotalEfficiency(double supplyFanTotalEfficiency) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanTotalEfficiency, supplyFanTotalEfficiency);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setSupplyFanDeltaPressure(double supplyFanDeltaPressure) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanDeltaPressure, supplyFanDeltaPressure);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setSupplyFanMotorEfficiency(double supplyFanMotorEfficiency) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMotorEfficiency, supplyFanMotorEfficiency);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setSupplyFanMotorinAirStreamFraction(double supplyFanMotorinAirStreamFraction) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMotorinAirStreamFraction, supplyFanMotorinAirStreamFraction);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setSupplyFanPlacement(const std::string& supplyFanPlacement) {
-  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanPlacement, supplyFanPlacement);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setCoolingCoilType(const std::string& coolingCoilType) {
-  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilType, coolingCoilType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setCoolingCoilSetpointControlType(const std::string& coolingCoilSetpointControlType) {
-  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointControlType, coolingCoilSetpointControlType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setCoolingCoilDesignSetpointTemperature(double coolingCoilDesignSetpointTemperature) {
-  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilDesignSetpointTemperature, coolingCoilDesignSetpointTemperature);
-  OS_ASSERT(result);
-  return result;
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setCoolingCoilSetpointatOutdoorDryBulbLow(double coolingCoilSetpointatOutdoorDryBulbLow) {
-  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointatOutdoorDryBulbLow, coolingCoilSetpointatOutdoorDryBulbLow);
-  OS_ASSERT(result);
-  return result;
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setCoolingCoilResetOutdoorDryBulbLow(double coolingCoilResetOutdoorDryBulbLow) {
-  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilResetOutdoorDryBulbLow, coolingCoilResetOutdoorDryBulbLow);
-  OS_ASSERT(result);
-  return result;
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setCoolingCoilSetpointatOutdoorDryBulbHigh(double coolingCoilSetpointatOutdoorDryBulbHigh) {
-  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointatOutdoorDryBulbHigh, coolingCoilSetpointatOutdoorDryBulbHigh);
-  OS_ASSERT(result);
-  return result;
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setCoolingCoilResetOutdoorDryBulbHigh(double coolingCoilResetOutdoorDryBulbHigh) {
-  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilResetOutdoorDryBulbHigh, coolingCoilResetOutdoorDryBulbHigh);
-  OS_ASSERT(result);
-  return result;
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setHeatingCoilType(const std::string& heatingCoilType) {
-  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilType, heatingCoilType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setHeatingCoilSetpointControlType(const std::string& heatingCoilSetpointControlType) {
-  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointControlType, heatingCoilSetpointControlType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setHeatingCoilDesignSetpoint(double heatingCoilDesignSetpoint) {
-  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilDesignSetpoint, heatingCoilDesignSetpoint);
-  OS_ASSERT(result);
-  return result;
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setHeatingCoilSetpointatOutdoorDryBulbLow(double heatingCoilSetpointatOutdoorDryBulbLow) {
-  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointatOutdoorDryBulbLow, heatingCoilSetpointatOutdoorDryBulbLow);
-  OS_ASSERT(result);
-  return result;
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setHeatingCoilResetOutdoorDryBulbLow(double heatingCoilResetOutdoorDryBulbLow) {
-  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilResetOutdoorDryBulbLow, heatingCoilResetOutdoorDryBulbLow);
-  OS_ASSERT(result);
-  return result;
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setHeatingCoilSetpointatOutdoorDryBulbHigh(double heatingCoilSetpointatOutdoorDryBulbHigh) {
-  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointatOutdoorDryBulbHigh, heatingCoilSetpointatOutdoorDryBulbHigh);
-  OS_ASSERT(result);
-  return result;
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setHeatingCoilResetOutdoorDryBulbHigh(double heatingCoilResetOutdoorDryBulbHigh) {
-  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilResetOutdoorDryBulbHigh, heatingCoilResetOutdoorDryBulbHigh);
-  OS_ASSERT(result);
-  return result;
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setHeatingCoilCapacity(double heatingCoilCapacity) {
-  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilCapacity, heatingCoilCapacity);
-  OS_ASSERT(result);
-  return result;
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setGasHeatingCoilEfficiency(double gasHeatingCoilEfficiency) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::GasHeatingCoilEfficiency, gasHeatingCoilEfficiency);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setGasHeatingCoilParasiticElectricLoad(double gasHeatingCoilParasiticElectricLoad) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::GasHeatingCoilParasiticElectricLoad, gasHeatingCoilParasiticElectricLoad);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setPreheatCoilType(const std::string& preheatCoilType) {
-  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::PreheatCoilType, preheatCoilType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setPreheatCoilDesignSetpoint(double preheatCoilDesignSetpoint) {
-  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::PreheatCoilDesignSetpoint, preheatCoilDesignSetpoint);
-  OS_ASSERT(result);
-  return result;
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setGasPreheatCoilEfficiency(double gasPreheatCoilEfficiency) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::GasPreheatCoilEfficiency, gasPreheatCoilEfficiency);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setGasPreheatCoilParasiticElectricLoad(double gasPreheatCoilParasiticElectricLoad) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::GasPreheatCoilParasiticElectricLoad, gasPreheatCoilParasiticElectricLoad);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setMaximumOutdoorAirFlowRate(double maximumOutdoorAirFlowRate) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::MaximumOutdoorAirFlowRate, maximumOutdoorAirFlowRate);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setMinimumOutdoorAirFlowRate(double minimumOutdoorAirFlowRate) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::MinimumOutdoorAirFlowRate, minimumOutdoorAirFlowRate);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setEconomizerType(const std::string& economizerType) {
-  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerType, economizerType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setEconomizerUpperTemperatureLimit(double economizerUpperTemperatureLimit) {
-  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerUpperTemperatureLimit, economizerUpperTemperatureLimit);
-  OS_ASSERT(result);
-  return result;
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setEconomizerLowerTemperatureLimit(double economizerLowerTemperatureLimit) {
-  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerLowerTemperatureLimit, economizerLowerTemperatureLimit);
-  OS_ASSERT(result);
-  return result;
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setEconomizerUpperEnthalpyLimit(double economizerUpperEnthalpyLimit) {
-  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerUpperEnthalpyLimit, economizerUpperEnthalpyLimit);
-  OS_ASSERT(result);
-  return result;
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setEconomizerMaximumLimitDewpointTemperature(double economizerMaximumLimitDewpointTemperature) {
-  const bool result = setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerMaximumLimitDewpointTemperature, economizerMaximumLimitDewpointTemperature);
-  OS_ASSERT(result);
-  return result;
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setNightCycleControl(const std::string& nightCycleControl) {
-  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::NightCycleControl, nightCycleControl);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setHeatRecoveryType(const std::string& heatRecoveryType) {
-  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryType, heatRecoveryType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setSensibleHeatRecoveryEffectiveness(double sensibleHeatRecoveryEffectiveness) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::SensibleHeatRecoveryEffectiveness, sensibleHeatRecoveryEffectiveness);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setLatentHeatRecoveryEffectiveness(double latentHeatRecoveryEffectiveness) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::LatentHeatRecoveryEffectiveness, latentHeatRecoveryEffectiveness);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setHeatRecoveryHeatExchangerType(const std::string& heatRecoveryHeatExchangerType) {
-  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryHeatExchangerType, heatRecoveryHeatExchangerType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setHeatRecoveryFrostControlType(const std::string& heatRecoveryFrostControlType) {
-  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryFrostControlType, heatRecoveryFrostControlType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setDehumidificationControlType(const std::string& dehumidificationControlType) {
-  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::DehumidificationControlType, dehumidificationControlType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setDehumidificationRelativeHumiditySetpoint(double dehumidificationRelativeHumiditySetpoint) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::DehumidificationRelativeHumiditySetpoint, dehumidificationRelativeHumiditySetpoint);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setHumidifierType(const std::string& humidifierType) {
-  return setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierType, humidifierType);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setHumidifierRatedCapacity(double humidifierRatedCapacity) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRatedCapacity, humidifierRatedCapacity);
-}
-
 bool HVACTemplateSystemConstantVolume_Impl::setHumidifierRatedElectricPower(double humidifierRatedElectricPower) {
   return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRatedElectricPower, humidifierRatedElectricPower);
 }
 
+void HVACTemplateSystemConstantVolume_Impl::resetHumidifierRatedElectricPower() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRatedElectricPower, ""));
+}
+
+void HVACTemplateSystemConstantVolume_Impl::autosizeHumidifierRatedElectricPower() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRatedElectricPower, "autosize"));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::humidifierRelativeHumiditySetpoint() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRelativeHumiditySetpoint, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isHumidifierRelativeHumiditySetpointDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRelativeHumiditySetpoint);
+}
+
 bool HVACTemplateSystemConstantVolume_Impl::setHumidifierRelativeHumiditySetpoint(double humidifierRelativeHumiditySetpoint) {
   return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRelativeHumiditySetpoint, humidifierRelativeHumiditySetpoint);
+}
+
+void HVACTemplateSystemConstantVolume_Impl::resetHumidifierRelativeHumiditySetpoint() {
+  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRelativeHumiditySetpoint, ""));
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::returnFan() const {
+  return getBooleanFieldValue(*this, openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFan);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isReturnFanDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFan);
 }
 
 bool HVACTemplateSystemConstantVolume_Impl::setReturnFan(bool returnFan) {
@@ -1683,244 +1847,80 @@ bool HVACTemplateSystemConstantVolume_Impl::setReturnFan(bool returnFan) {
   return result;
 }
 
-bool HVACTemplateSystemConstantVolume_Impl::setReturnFanTotalEfficiency(double returnFanTotalEfficiency) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanTotalEfficiency, returnFanTotalEfficiency);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setReturnFanDeltaPressure(double returnFanDeltaPressure) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanDeltaPressure, returnFanDeltaPressure);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setReturnFanMotorEfficiency(double returnFanMotorEfficiency) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanMotorEfficiency, returnFanMotorEfficiency);
-}
-
-bool HVACTemplateSystemConstantVolume_Impl::setReturnFanMotorinAirStreamFraction(double returnFanMotorinAirStreamFraction) {
-  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanMotorinAirStreamFraction, returnFanMotorinAirStreamFraction);
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetSupplyFanMaximumFlowRate() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMaximumFlowRate, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetSupplyFanTotalEfficiency() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanTotalEfficiency, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetSupplyFanDeltaPressure() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanDeltaPressure, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetSupplyFanMotorEfficiency() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMotorEfficiency, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetSupplyFanMotorinAirStreamFraction() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMotorinAirStreamFraction, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetSupplyFanPlacement() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanPlacement, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetCoolingCoilType() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilType, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetCoolingCoilSetpointControlType() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointControlType, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetCoolingCoilDesignSetpointTemperature() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilDesignSetpointTemperature, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetCoolingCoilSetpointatOutdoorDryBulbLow() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointatOutdoorDryBulbLow, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetCoolingCoilResetOutdoorDryBulbLow() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilResetOutdoorDryBulbLow, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetCoolingCoilSetpointatOutdoorDryBulbHigh() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilSetpointatOutdoorDryBulbHigh, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetCoolingCoilResetOutdoorDryBulbHigh() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::CoolingCoilResetOutdoorDryBulbHigh, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetHeatingCoilType() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilType, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetHeatingCoilSetpointControlType() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointControlType, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetHeatingCoilDesignSetpoint() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilDesignSetpoint, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetHeatingCoilSetpointatOutdoorDryBulbLow() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointatOutdoorDryBulbLow, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetHeatingCoilResetOutdoorDryBulbLow() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilResetOutdoorDryBulbLow, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetHeatingCoilSetpointatOutdoorDryBulbHigh() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilSetpointatOutdoorDryBulbHigh, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetHeatingCoilResetOutdoorDryBulbHigh() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilResetOutdoorDryBulbHigh, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetHeatingCoilCapacity() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilCapacity, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetGasHeatingCoilEfficiency() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::GasHeatingCoilEfficiency, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetGasHeatingCoilParasiticElectricLoad() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::GasHeatingCoilParasiticElectricLoad, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetPreheatCoilType() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::PreheatCoilType, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetPreheatCoilDesignSetpoint() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::PreheatCoilDesignSetpoint, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetGasPreheatCoilEfficiency() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::GasPreheatCoilEfficiency, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetGasPreheatCoilParasiticElectricLoad() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::GasPreheatCoilParasiticElectricLoad, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetMaximumOutdoorAirFlowRate() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::MaximumOutdoorAirFlowRate, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetMinimumOutdoorAirFlowRate() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::MinimumOutdoorAirFlowRate, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetEconomizerType() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerType, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetEconomizerUpperTemperatureLimit() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerUpperTemperatureLimit, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetEconomizerLowerTemperatureLimit() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerLowerTemperatureLimit, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetEconomizerUpperEnthalpyLimit() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerUpperEnthalpyLimit, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetEconomizerMaximumLimitDewpointTemperature() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::EconomizerMaximumLimitDewpointTemperature, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetNightCycleControl() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::NightCycleControl, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetHeatRecoveryType() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryType, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetSensibleHeatRecoveryEffectiveness() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SensibleHeatRecoveryEffectiveness, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetLatentHeatRecoveryEffectiveness() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::LatentHeatRecoveryEffectiveness, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetHeatRecoveryHeatExchangerType() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryHeatExchangerType, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetHeatRecoveryFrostControlType() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatRecoveryFrostControlType, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetDehumidificationControlType() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::DehumidificationControlType, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetDehumidificationRelativeHumiditySetpoint() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::DehumidificationRelativeHumiditySetpoint, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetHumidifierType() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierType, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetHumidifierRatedCapacity() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRatedCapacity, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetHumidifierRatedElectricPower() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRatedElectricPower, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::resetHumidifierRelativeHumiditySetpoint() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRelativeHumiditySetpoint, ""));
-}
-
 void HVACTemplateSystemConstantVolume_Impl::resetReturnFan() {
   OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFan, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::returnFanTotalEfficiency() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanTotalEfficiency, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isReturnFanTotalEfficiencyDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanTotalEfficiency);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setReturnFanTotalEfficiency(double returnFanTotalEfficiency) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanTotalEfficiency, returnFanTotalEfficiency);
 }
 
 void HVACTemplateSystemConstantVolume_Impl::resetReturnFanTotalEfficiency() {
   OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanTotalEfficiency, ""));
 }
 
+double HVACTemplateSystemConstantVolume_Impl::returnFanDeltaPressure() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanDeltaPressure, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isReturnFanDeltaPressureDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanDeltaPressure);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setReturnFanDeltaPressure(double returnFanDeltaPressure) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanDeltaPressure, returnFanDeltaPressure);
+}
+
 void HVACTemplateSystemConstantVolume_Impl::resetReturnFanDeltaPressure() {
   OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanDeltaPressure, ""));
+}
+
+double HVACTemplateSystemConstantVolume_Impl::returnFanMotorEfficiency() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanMotorEfficiency, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isReturnFanMotorEfficiencyDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanMotorEfficiency);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setReturnFanMotorEfficiency(double returnFanMotorEfficiency) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanMotorEfficiency, returnFanMotorEfficiency);
 }
 
 void HVACTemplateSystemConstantVolume_Impl::resetReturnFanMotorEfficiency() {
   OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanMotorEfficiency, ""));
 }
 
+double HVACTemplateSystemConstantVolume_Impl::returnFanMotorinAirStreamFraction() const {
+  auto value = getDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanMotorinAirStreamFraction, true);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::isReturnFanMotorinAirStreamFractionDefaulted() const {
+  return isEmpty(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanMotorinAirStreamFraction);
+}
+
+bool HVACTemplateSystemConstantVolume_Impl::setReturnFanMotorinAirStreamFraction(double returnFanMotorinAirStreamFraction) {
+  return setDouble(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanMotorinAirStreamFraction, returnFanMotorinAirStreamFraction);
+}
+
 void HVACTemplateSystemConstantVolume_Impl::resetReturnFanMotorinAirStreamFraction() {
   OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::ReturnFanMotorinAirStreamFraction, ""));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::autosizeSupplyFanMaximumFlowRate() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::SupplyFanMaximumFlowRate, "autosize"));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::autosizeHeatingCoilCapacity() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HeatingCoilCapacity, "autosize"));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::autosizeMaximumOutdoorAirFlowRate() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::MaximumOutdoorAirFlowRate, "autosize"));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::autosizeMinimumOutdoorAirFlowRate() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::MinimumOutdoorAirFlowRate, "autosize"));
-}
-
-void HVACTemplateSystemConstantVolume_Impl::autosizeHumidifierRatedElectricPower() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierRatedElectricPower, "autosize"));
 }
 
 std::vector<std::string> HVACTemplateSystemConstantVolume_Impl::supplyFanPlacementValues() const {
@@ -1974,7 +1974,6 @@ std::vector<std::string> HVACTemplateSystemConstantVolume_Impl::dehumidification
 std::vector<std::string> HVACTemplateSystemConstantVolume_Impl::humidifierTypeValues() const {
   return getIddKeyNames(iddObject(), openstudio::HVACTemplate_System_ConstantVolumeFields::HumidifierType);
 }
-
 }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

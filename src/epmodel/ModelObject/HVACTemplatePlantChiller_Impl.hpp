@@ -13,64 +13,71 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HVACTemplatePlantChiller_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~HVACTemplatePlantChiller_Impl() override = default;
+    class EPMODEL_API HVACTemplatePlantChiller_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~HVACTemplatePlantChiller_Impl() override = default;
 
-  std::string chillerType() const;
-  boost::optional<double> capacity() const;
-  double nominalCOP() const;
-  std::string condenserType() const;
-  boost::optional<std::string> priority() const;
-  double sizingFactor() const;
-  double minimumPartLoadRatio() const;
-  double maximumPartLoadRatio() const;
-  double optimumPartLoadRatio() const;
-  double minimumUnloadingRatio() const;
-  double leavingChilledWaterLowerTemperatureLimit() const;
+      std::vector<std::string> chillerTypeValues() const;
+      std::vector<std::string> condenserTypeValues() const;
 
-  bool isCapacityDefaulted() const;
-  bool isCapacityAutosized() const;
-  bool isCondenserTypeDefaulted() const;
-  bool isSizingFactorDefaulted() const;
-  bool isMinimumPartLoadRatioDefaulted() const;
-  bool isMaximumPartLoadRatioDefaulted() const;
-  bool isOptimumPartLoadRatioDefaulted() const;
-  bool isMinimumUnloadingRatioDefaulted() const;
-  bool isLeavingChilledWaterLowerTemperatureLimitDefaulted() const;
+      std::string chillerType() const;
+      bool setChillerType(const std::string& chillerType);
 
-  bool setChillerType(const std::string& chillerType);
-  bool setCapacity(double capacity);
-  bool setNominalCOP(double nominalCOP);
-  bool setCondenserType(const std::string& condenserType);
-  bool setPriority(const std::string& priority);
-  bool setSizingFactor(double sizingFactor);
-  bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
-  bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
-  bool setOptimumPartLoadRatio(double optimumPartLoadRatio);
-  bool setMinimumUnloadingRatio(double minimumUnloadingRatio);
-  bool setLeavingChilledWaterLowerTemperatureLimit(double leavingChilledWaterLowerTemperatureLimit);
+      boost::optional<double> capacity() const;
+      bool isCapacityDefaulted() const;
+      bool isCapacityAutosized() const;
+      bool setCapacity(double capacity);
+      void resetCapacity();
+      void autosizeCapacity();
 
-  void resetCapacity();
-  void autosizeCapacity();
-  void resetCondenserType();
-  void resetPriority();
-  void resetSizingFactor();
-  void resetMinimumPartLoadRatio();
-  void resetMaximumPartLoadRatio();
-  void resetOptimumPartLoadRatio();
-  void resetMinimumUnloadingRatio();
-  void resetLeavingChilledWaterLowerTemperatureLimit();
+      double nominalCOP() const;
+      bool setNominalCOP(double nominalCOP);
 
-  std::vector<std::string> chillerTypeValues() const;
-  std::vector<std::string> condenserTypeValues() const;
-};
+      std::string condenserType() const;
+      bool isCondenserTypeDefaulted() const;
+      bool setCondenserType(const std::string& condenserType);
+      void resetCondenserType();
 
-}  // namespace detail
+      boost::optional<std::string> priority() const;
+      bool setPriority(const std::string& priority);
+      void resetPriority();
+
+      double sizingFactor() const;
+      bool isSizingFactorDefaulted() const;
+      bool setSizingFactor(double sizingFactor);
+      void resetSizingFactor();
+
+      double minimumPartLoadRatio() const;
+      bool isMinimumPartLoadRatioDefaulted() const;
+      bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
+      void resetMinimumPartLoadRatio();
+
+      double maximumPartLoadRatio() const;
+      bool isMaximumPartLoadRatioDefaulted() const;
+      bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
+      void resetMaximumPartLoadRatio();
+
+      double optimumPartLoadRatio() const;
+      bool isOptimumPartLoadRatioDefaulted() const;
+      bool setOptimumPartLoadRatio(double optimumPartLoadRatio);
+      void resetOptimumPartLoadRatio();
+
+      double minimumUnloadingRatio() const;
+      bool isMinimumUnloadingRatioDefaulted() const;
+      bool setMinimumUnloadingRatio(double minimumUnloadingRatio);
+      void resetMinimumUnloadingRatio();
+
+      double leavingChilledWaterLowerTemperatureLimit() const;
+      bool isLeavingChilledWaterLowerTemperatureLimitDefaulted() const;
+      bool setLeavingChilledWaterLowerTemperatureLimit(double leavingChilledWaterLowerTemperatureLimit);
+      void resetLeavingChilledWaterLowerTemperatureLimit();
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

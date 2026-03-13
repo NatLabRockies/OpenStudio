@@ -13,42 +13,43 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatTransferSlabInsulation_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatTransferSlabInsulation_Impl() override = default;
+    class EPMODEL_API GroundHeatTransferSlabInsulation_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatTransferSlabInsulation_Impl() override = default;
 
-  double rINSRvalueofunderslabinsulation() const;
-  double dINSWidthofstripofunderslabinsulation() const;
-  double rVINSRvalueofverticalinsulation() const;
-  double zVINSDepthofverticalinsulation() const;
-  std::string iVINSFlagIsthereverticalinsulation() const;
+      double rINSRvalueofunderslabinsulation() const;
+      bool isRINSRvalueofunderslabinsulationDefaulted() const;
+      bool setRINSRvalueofunderslabinsulation(double rINSRvalueofunderslabinsulation);
+      void resetRINSRvalueofunderslabinsulation();
 
-  bool isRINSRvalueofunderslabinsulationDefaulted() const;
-  bool isDINSWidthofstripofunderslabinsulationDefaulted() const;
-  bool isRVINSRvalueofverticalinsulationDefaulted() const;
-  bool isZVINSDepthofverticalinsulationDefaulted() const;
-  bool isIVINSFlagIsthereverticalinsulationDefaulted() const;
+      double dINSWidthofstripofunderslabinsulation() const;
+      bool isDINSWidthofstripofunderslabinsulationDefaulted() const;
+      bool setDINSWidthofstripofunderslabinsulation(double dINSWidthofstripofunderslabinsulation);
+      void resetDINSWidthofstripofunderslabinsulation();
 
-  bool setRINSRvalueofunderslabinsulation(double rINSRvalueofunderslabinsulation);
-  bool setDINSWidthofstripofunderslabinsulation(double dINSWidthofstripofunderslabinsulation);
-  bool setRVINSRvalueofverticalinsulation(double rVINSRvalueofverticalinsulation);
-  bool setZVINSDepthofverticalinsulation(double zVINSDepthofverticalinsulation);
-  bool setIVINSFlagIsthereverticalinsulation(const std::string& iVINSFlagIsthereverticalinsulation);
+      double rVINSRvalueofverticalinsulation() const;
+      bool isRVINSRvalueofverticalinsulationDefaulted() const;
+      bool setRVINSRvalueofverticalinsulation(double rVINSRvalueofverticalinsulation);
+      void resetRVINSRvalueofverticalinsulation();
 
-  void resetRINSRvalueofunderslabinsulation();
-  void resetDINSWidthofstripofunderslabinsulation();
-  void resetRVINSRvalueofverticalinsulation();
-  void resetZVINSDepthofverticalinsulation();
-  void resetIVINSFlagIsthereverticalinsulation();
+      double zVINSDepthofverticalinsulation() const;
+      bool isZVINSDepthofverticalinsulationDefaulted() const;
+      bool setZVINSDepthofverticalinsulation(double zVINSDepthofverticalinsulation);
+      void resetZVINSDepthofverticalinsulation();
 
-  std::vector<std::string> iVINSFlagIsthereverticalinsulationValues() const;
-};
+      std::string iVINSFlagIsthereverticalinsulation() const;
+      bool isIVINSFlagIsthereverticalinsulationDefaulted() const;
+      bool setIVINSFlagIsthereverticalinsulation(const std::string& iVINSFlagIsthereverticalinsulation);
+      void resetIVINSFlagIsthereverticalinsulation();
 
-}  // namespace detail
+      std::vector<std::string> iVINSFlagIsthereverticalinsulationValues() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

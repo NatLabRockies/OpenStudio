@@ -64,317 +64,385 @@ class EPMODEL_API HVACTemplateSystemDualDuct : public ModelObject
   // - Field Mapping: Scalar APIs map directly to HVACTemplate:System:DualDuct non-name, non-link scalar fields.
   // - Field Mapping: Schedule/plenum/control-zone object-list fields are relationship-like and excluded from scalar accessors.
   // - TODO(parity): Add relationship/object-link APIs in a later parity pass.
+
   std::string systemConfigurationType() const;
-  boost::optional<double> mainSupplyFanMaximumFlowRate() const;
-  double mainSupplyFanMinimumFlowFraction() const;
-  double mainSupplyFanTotalEfficiency() const;
-  double mainSupplyFanDeltaPressure() const;
-  double mainSupplyFanMotorEfficiency() const;
-  double mainSupplyFanMotorinAirStreamFraction() const;
-  std::string mainSupplyFanPartLoadPowerCoefficients() const;
-  boost::optional<double> coldDuctSupplyFanMaximumFlowRate() const;
-  double coldDuctSupplyFanMinimumFlowFraction() const;
-  double coldDuctSupplyFanTotalEfficiency() const;
-  double coldDuctSupplyFanDeltaPressure() const;
-  double coldDuctSupplyFanMotorEfficiency() const;
-  double coldDuctSupplyFanMotorinAirStreamFraction() const;
-  std::string coldDuctSupplyFanPartLoadPowerCoefficients() const;
-  std::string coldDuctSupplyFanPlacement() const;
-  boost::optional<double> hotDuctSupplyFanMaximumFlowRate() const;
-  double hotDuctSupplyFanMinimumFlowFraction() const;
-  double hotDuctSupplyFanTotalEfficiency() const;
-  double hotDuctSupplyFanDeltaPressure() const;
-  double hotDuctSupplyFanMotorEfficiency() const;
-  double hotDuctSupplyFanMotorinAirStreamFraction() const;
-  std::string hotDuctSupplyFanPartLoadPowerCoefficients() const;
-  std::string hotDuctSupplyFanPlacement() const;
-  std::string coolingCoilType() const;
-  std::string coolingCoilSetpointControlType() const;
-  double coolingCoilDesignSetpointTemperature() const;
-  double coolingCoilSetpointatOutdoorDryBulbLow() const;
-  double coolingCoilResetOutdoorDryBulbLow() const;
-  double coolingCoilSetpointatOutdoorDryBulbHigh() const;
-  double coolingCoilResetOutdoorDryBulbHigh() const;
-  std::string heatingCoilType() const;
-  std::string heatingCoilSetpointControlType() const;
-  double heatingCoilDesignSetpoint() const;
-  double heatingCoilSetpointatOutdoorDryBulbLow() const;
-  double heatingCoilResetOutdoorDryBulbLow() const;
-  double heatingCoilSetpointatOutdoorDryBulbHigh() const;
-  double heatingCoilResetOutdoorDryBulbHigh() const;
-  boost::optional<double> heatingCoilCapacity() const;
-  double gasHeatingCoilEfficiency() const;
-  double gasHeatingCoilParasiticElectricLoad() const;
-  std::string preheatCoilType() const;
-  double preheatCoilDesignSetpoint() const;
-  double gasPreheatCoilEfficiency() const;
-  double gasPreheatCoilParasiticElectricLoad() const;
-  boost::optional<double> maximumOutdoorAirFlowRate() const;
-  boost::optional<double> minimumOutdoorAirFlowRate() const;
-  std::string minimumOutdoorAirControlType() const;
-  std::string economizerType() const;
-  std::string economizerLockout() const;
-  boost::optional<double> economizerUpperTemperatureLimit() const;
-  boost::optional<double> economizerLowerTemperatureLimit() const;
-  boost::optional<double> economizerUpperEnthalpyLimit() const;
-  boost::optional<double> economizerMaximumLimitDewpointTemperature() const;
-  std::string nightCycleControl() const;
-  std::string heatRecoveryType() const;
-  double sensibleHeatRecoveryEffectiveness() const;
-  double latentHeatRecoveryEffectiveness() const;
-  std::string heatRecoveryHeatExchangerType() const;
-  std::string heatRecoveryFrostControlType() const;
-  std::string dehumidificationControlType() const;
-  double dehumidificationRelativeHumiditySetpoint() const;
-  std::string humidifierType() const;
-  double humidifierRatedCapacity() const;
-  boost::optional<double> humidifierRatedElectricPower() const;
-  double humidifierRelativeHumiditySetpoint() const;
-  std::string sizingOption() const;
-  bool returnFan() const;
-  double returnFanTotalEfficiency() const;
-  double returnFanDeltaPressure() const;
-  double returnFanMotorEfficiency() const;
-  double returnFanMotorinAirStreamFraction() const;
-  std::string returnFanPartLoadPowerCoefficients() const;
-
   bool isSystemConfigurationTypeDefaulted() const;
-  bool isMainSupplyFanMaximumFlowRateDefaulted() const;
-  bool isMainSupplyFanMinimumFlowFractionDefaulted() const;
-  bool isMainSupplyFanTotalEfficiencyDefaulted() const;
-  bool isMainSupplyFanDeltaPressureDefaulted() const;
-  bool isMainSupplyFanMotorEfficiencyDefaulted() const;
-  bool isMainSupplyFanMotorinAirStreamFractionDefaulted() const;
-  bool isMainSupplyFanPartLoadPowerCoefficientsDefaulted() const;
-  bool isColdDuctSupplyFanMaximumFlowRateDefaulted() const;
-  bool isColdDuctSupplyFanMinimumFlowFractionDefaulted() const;
-  bool isColdDuctSupplyFanTotalEfficiencyDefaulted() const;
-  bool isColdDuctSupplyFanDeltaPressureDefaulted() const;
-  bool isColdDuctSupplyFanMotorEfficiencyDefaulted() const;
-  bool isColdDuctSupplyFanMotorinAirStreamFractionDefaulted() const;
-  bool isColdDuctSupplyFanPartLoadPowerCoefficientsDefaulted() const;
-  bool isColdDuctSupplyFanPlacementDefaulted() const;
-  bool isHotDuctSupplyFanMaximumFlowRateDefaulted() const;
-  bool isHotDuctSupplyFanMinimumFlowFractionDefaulted() const;
-  bool isHotDuctSupplyFanTotalEfficiencyDefaulted() const;
-  bool isHotDuctSupplyFanDeltaPressureDefaulted() const;
-  bool isHotDuctSupplyFanMotorEfficiencyDefaulted() const;
-  bool isHotDuctSupplyFanMotorinAirStreamFractionDefaulted() const;
-  bool isHotDuctSupplyFanPartLoadPowerCoefficientsDefaulted() const;
-  bool isHotDuctSupplyFanPlacementDefaulted() const;
-  bool isCoolingCoilTypeDefaulted() const;
-  bool isCoolingCoilSetpointControlTypeDefaulted() const;
-  bool isCoolingCoilDesignSetpointTemperatureDefaulted() const;
-  bool isCoolingCoilSetpointatOutdoorDryBulbLowDefaulted() const;
-  bool isCoolingCoilResetOutdoorDryBulbLowDefaulted() const;
-  bool isCoolingCoilSetpointatOutdoorDryBulbHighDefaulted() const;
-  bool isCoolingCoilResetOutdoorDryBulbHighDefaulted() const;
-  bool isHeatingCoilTypeDefaulted() const;
-  bool isHeatingCoilSetpointControlTypeDefaulted() const;
-  bool isHeatingCoilDesignSetpointDefaulted() const;
-  bool isHeatingCoilSetpointatOutdoorDryBulbLowDefaulted() const;
-  bool isHeatingCoilResetOutdoorDryBulbLowDefaulted() const;
-  bool isHeatingCoilSetpointatOutdoorDryBulbHighDefaulted() const;
-  bool isHeatingCoilResetOutdoorDryBulbHighDefaulted() const;
-  bool isHeatingCoilCapacityDefaulted() const;
-  bool isGasHeatingCoilEfficiencyDefaulted() const;
-  bool isGasHeatingCoilParasiticElectricLoadDefaulted() const;
-  bool isPreheatCoilTypeDefaulted() const;
-  bool isPreheatCoilDesignSetpointDefaulted() const;
-  bool isGasPreheatCoilEfficiencyDefaulted() const;
-  bool isGasPreheatCoilParasiticElectricLoadDefaulted() const;
-  bool isMaximumOutdoorAirFlowRateDefaulted() const;
-  bool isMinimumOutdoorAirFlowRateDefaulted() const;
-  bool isMinimumOutdoorAirControlTypeDefaulted() const;
-  bool isEconomizerTypeDefaulted() const;
-  bool isEconomizerLockoutDefaulted() const;
-  bool isEconomizerUpperTemperatureLimitDefaulted() const;
-  bool isEconomizerLowerTemperatureLimitDefaulted() const;
-  bool isEconomizerUpperEnthalpyLimitDefaulted() const;
-  bool isEconomizerMaximumLimitDewpointTemperatureDefaulted() const;
-  bool isNightCycleControlDefaulted() const;
-  bool isHeatRecoveryTypeDefaulted() const;
-  bool isSensibleHeatRecoveryEffectivenessDefaulted() const;
-  bool isLatentHeatRecoveryEffectivenessDefaulted() const;
-  bool isHeatRecoveryHeatExchangerTypeDefaulted() const;
-  bool isHeatRecoveryFrostControlTypeDefaulted() const;
-  bool isDehumidificationControlTypeDefaulted() const;
-  bool isDehumidificationRelativeHumiditySetpointDefaulted() const;
-  bool isHumidifierTypeDefaulted() const;
-  bool isHumidifierRatedCapacityDefaulted() const;
-  bool isHumidifierRatedElectricPowerDefaulted() const;
-  bool isHumidifierRelativeHumiditySetpointDefaulted() const;
-  bool isSizingOptionDefaulted() const;
-  bool isReturnFanDefaulted() const;
-  bool isReturnFanTotalEfficiencyDefaulted() const;
-  bool isReturnFanDeltaPressureDefaulted() const;
-  bool isReturnFanMotorEfficiencyDefaulted() const;
-  bool isReturnFanMotorinAirStreamFractionDefaulted() const;
-  bool isReturnFanPartLoadPowerCoefficientsDefaulted() const;
-
-  bool isMainSupplyFanMaximumFlowRateAutosized() const;
-  bool isColdDuctSupplyFanMaximumFlowRateAutosized() const;
-  bool isHotDuctSupplyFanMaximumFlowRateAutosized() const;
-  bool isHeatingCoilCapacityAutosized() const;
-  bool isMaximumOutdoorAirFlowRateAutosized() const;
-  bool isMinimumOutdoorAirFlowRateAutosized() const;
-  bool isHumidifierRatedElectricPowerAutosized() const;
-
   bool setSystemConfigurationType(const std::string& systemConfigurationType);
-  bool setMainSupplyFanMaximumFlowRate(double mainSupplyFanMaximumFlowRate);
-  bool setMainSupplyFanMinimumFlowFraction(double mainSupplyFanMinimumFlowFraction);
-  bool setMainSupplyFanTotalEfficiency(double mainSupplyFanTotalEfficiency);
-  bool setMainSupplyFanDeltaPressure(double mainSupplyFanDeltaPressure);
-  bool setMainSupplyFanMotorEfficiency(double mainSupplyFanMotorEfficiency);
-  bool setMainSupplyFanMotorinAirStreamFraction(double mainSupplyFanMotorinAirStreamFraction);
-  bool setMainSupplyFanPartLoadPowerCoefficients(const std::string& mainSupplyFanPartLoadPowerCoefficients);
-  bool setColdDuctSupplyFanMaximumFlowRate(double coldDuctSupplyFanMaximumFlowRate);
-  bool setColdDuctSupplyFanMinimumFlowFraction(double coldDuctSupplyFanMinimumFlowFraction);
-  bool setColdDuctSupplyFanTotalEfficiency(double coldDuctSupplyFanTotalEfficiency);
-  bool setColdDuctSupplyFanDeltaPressure(double coldDuctSupplyFanDeltaPressure);
-  bool setColdDuctSupplyFanMotorEfficiency(double coldDuctSupplyFanMotorEfficiency);
-  bool setColdDuctSupplyFanMotorinAirStreamFraction(double coldDuctSupplyFanMotorinAirStreamFraction);
-  bool setColdDuctSupplyFanPartLoadPowerCoefficients(const std::string& coldDuctSupplyFanPartLoadPowerCoefficients);
-  bool setColdDuctSupplyFanPlacement(const std::string& coldDuctSupplyFanPlacement);
-  bool setHotDuctSupplyFanMaximumFlowRate(double hotDuctSupplyFanMaximumFlowRate);
-  bool setHotDuctSupplyFanMinimumFlowFraction(double hotDuctSupplyFanMinimumFlowFraction);
-  bool setHotDuctSupplyFanTotalEfficiency(double hotDuctSupplyFanTotalEfficiency);
-  bool setHotDuctSupplyFanDeltaPressure(double hotDuctSupplyFanDeltaPressure);
-  bool setHotDuctSupplyFanMotorEfficiency(double hotDuctSupplyFanMotorEfficiency);
-  bool setHotDuctSupplyFanMotorinAirStreamFraction(double hotDuctSupplyFanMotorinAirStreamFraction);
-  bool setHotDuctSupplyFanPartLoadPowerCoefficients(const std::string& hotDuctSupplyFanPartLoadPowerCoefficients);
-  bool setHotDuctSupplyFanPlacement(const std::string& hotDuctSupplyFanPlacement);
-  bool setCoolingCoilType(const std::string& coolingCoilType);
-  bool setCoolingCoilSetpointControlType(const std::string& coolingCoilSetpointControlType);
-  bool setCoolingCoilDesignSetpointTemperature(double coolingCoilDesignSetpointTemperature);
-  bool setCoolingCoilSetpointatOutdoorDryBulbLow(double coolingCoilSetpointatOutdoorDryBulbLow);
-  bool setCoolingCoilResetOutdoorDryBulbLow(double coolingCoilResetOutdoorDryBulbLow);
-  bool setCoolingCoilSetpointatOutdoorDryBulbHigh(double coolingCoilSetpointatOutdoorDryBulbHigh);
-  bool setCoolingCoilResetOutdoorDryBulbHigh(double coolingCoilResetOutdoorDryBulbHigh);
-  bool setHeatingCoilType(const std::string& heatingCoilType);
-  bool setHeatingCoilSetpointControlType(const std::string& heatingCoilSetpointControlType);
-  bool setHeatingCoilDesignSetpoint(double heatingCoilDesignSetpoint);
-  bool setHeatingCoilSetpointatOutdoorDryBulbLow(double heatingCoilSetpointatOutdoorDryBulbLow);
-  bool setHeatingCoilResetOutdoorDryBulbLow(double heatingCoilResetOutdoorDryBulbLow);
-  bool setHeatingCoilSetpointatOutdoorDryBulbHigh(double heatingCoilSetpointatOutdoorDryBulbHigh);
-  bool setHeatingCoilResetOutdoorDryBulbHigh(double heatingCoilResetOutdoorDryBulbHigh);
-  bool setHeatingCoilCapacity(double heatingCoilCapacity);
-  bool setGasHeatingCoilEfficiency(double gasHeatingCoilEfficiency);
-  bool setGasHeatingCoilParasiticElectricLoad(double gasHeatingCoilParasiticElectricLoad);
-  bool setPreheatCoilType(const std::string& preheatCoilType);
-  bool setPreheatCoilDesignSetpoint(double preheatCoilDesignSetpoint);
-  bool setGasPreheatCoilEfficiency(double gasPreheatCoilEfficiency);
-  bool setGasPreheatCoilParasiticElectricLoad(double gasPreheatCoilParasiticElectricLoad);
-  bool setMaximumOutdoorAirFlowRate(double maximumOutdoorAirFlowRate);
-  bool setMinimumOutdoorAirFlowRate(double minimumOutdoorAirFlowRate);
-  bool setMinimumOutdoorAirControlType(const std::string& minimumOutdoorAirControlType);
-  bool setEconomizerType(const std::string& economizerType);
-  bool setEconomizerLockout(const std::string& economizerLockout);
-  bool setEconomizerUpperTemperatureLimit(double economizerUpperTemperatureLimit);
-  bool setEconomizerLowerTemperatureLimit(double economizerLowerTemperatureLimit);
-  bool setEconomizerUpperEnthalpyLimit(double economizerUpperEnthalpyLimit);
-  bool setEconomizerMaximumLimitDewpointTemperature(double economizerMaximumLimitDewpointTemperature);
-  bool setNightCycleControl(const std::string& nightCycleControl);
-  bool setHeatRecoveryType(const std::string& heatRecoveryType);
-  bool setSensibleHeatRecoveryEffectiveness(double sensibleHeatRecoveryEffectiveness);
-  bool setLatentHeatRecoveryEffectiveness(double latentHeatRecoveryEffectiveness);
-  bool setHeatRecoveryHeatExchangerType(const std::string& heatRecoveryHeatExchangerType);
-  bool setHeatRecoveryFrostControlType(const std::string& heatRecoveryFrostControlType);
-  bool setDehumidificationControlType(const std::string& dehumidificationControlType);
-  bool setDehumidificationRelativeHumiditySetpoint(double dehumidificationRelativeHumiditySetpoint);
-  bool setHumidifierType(const std::string& humidifierType);
-  bool setHumidifierRatedCapacity(double humidifierRatedCapacity);
-  bool setHumidifierRatedElectricPower(double humidifierRatedElectricPower);
-  bool setHumidifierRelativeHumiditySetpoint(double humidifierRelativeHumiditySetpoint);
-  bool setSizingOption(const std::string& sizingOption);
-  bool setReturnFan(bool returnFan);
-  bool setReturnFanTotalEfficiency(double returnFanTotalEfficiency);
-  bool setReturnFanDeltaPressure(double returnFanDeltaPressure);
-  bool setReturnFanMotorEfficiency(double returnFanMotorEfficiency);
-  bool setReturnFanMotorinAirStreamFraction(double returnFanMotorinAirStreamFraction);
-  bool setReturnFanPartLoadPowerCoefficients(const std::string& returnFanPartLoadPowerCoefficients);
-
   void resetSystemConfigurationType();
-  void resetMainSupplyFanMaximumFlowRate();
-  void resetMainSupplyFanMinimumFlowFraction();
-  void resetMainSupplyFanTotalEfficiency();
-  void resetMainSupplyFanDeltaPressure();
-  void resetMainSupplyFanMotorEfficiency();
-  void resetMainSupplyFanMotorinAirStreamFraction();
-  void resetMainSupplyFanPartLoadPowerCoefficients();
-  void resetColdDuctSupplyFanMaximumFlowRate();
-  void resetColdDuctSupplyFanMinimumFlowFraction();
-  void resetColdDuctSupplyFanTotalEfficiency();
-  void resetColdDuctSupplyFanDeltaPressure();
-  void resetColdDuctSupplyFanMotorEfficiency();
-  void resetColdDuctSupplyFanMotorinAirStreamFraction();
-  void resetColdDuctSupplyFanPartLoadPowerCoefficients();
-  void resetColdDuctSupplyFanPlacement();
-  void resetHotDuctSupplyFanMaximumFlowRate();
-  void resetHotDuctSupplyFanMinimumFlowFraction();
-  void resetHotDuctSupplyFanTotalEfficiency();
-  void resetHotDuctSupplyFanDeltaPressure();
-  void resetHotDuctSupplyFanMotorEfficiency();
-  void resetHotDuctSupplyFanMotorinAirStreamFraction();
-  void resetHotDuctSupplyFanPartLoadPowerCoefficients();
-  void resetHotDuctSupplyFanPlacement();
-  void resetCoolingCoilType();
-  void resetCoolingCoilSetpointControlType();
-  void resetCoolingCoilDesignSetpointTemperature();
-  void resetCoolingCoilSetpointatOutdoorDryBulbLow();
-  void resetCoolingCoilResetOutdoorDryBulbLow();
-  void resetCoolingCoilSetpointatOutdoorDryBulbHigh();
-  void resetCoolingCoilResetOutdoorDryBulbHigh();
-  void resetHeatingCoilType();
-  void resetHeatingCoilSetpointControlType();
-  void resetHeatingCoilDesignSetpoint();
-  void resetHeatingCoilSetpointatOutdoorDryBulbLow();
-  void resetHeatingCoilResetOutdoorDryBulbLow();
-  void resetHeatingCoilSetpointatOutdoorDryBulbHigh();
-  void resetHeatingCoilResetOutdoorDryBulbHigh();
-  void resetHeatingCoilCapacity();
-  void resetGasHeatingCoilEfficiency();
-  void resetGasHeatingCoilParasiticElectricLoad();
-  void resetPreheatCoilType();
-  void resetPreheatCoilDesignSetpoint();
-  void resetGasPreheatCoilEfficiency();
-  void resetGasPreheatCoilParasiticElectricLoad();
-  void resetMaximumOutdoorAirFlowRate();
-  void resetMinimumOutdoorAirFlowRate();
-  void resetMinimumOutdoorAirControlType();
-  void resetEconomizerType();
-  void resetEconomizerLockout();
-  void resetEconomizerUpperTemperatureLimit();
-  void resetEconomizerLowerTemperatureLimit();
-  void resetEconomizerUpperEnthalpyLimit();
-  void resetEconomizerMaximumLimitDewpointTemperature();
-  void resetNightCycleControl();
-  void resetHeatRecoveryType();
-  void resetSensibleHeatRecoveryEffectiveness();
-  void resetLatentHeatRecoveryEffectiveness();
-  void resetHeatRecoveryHeatExchangerType();
-  void resetHeatRecoveryFrostControlType();
-  void resetDehumidificationControlType();
-  void resetDehumidificationRelativeHumiditySetpoint();
-  void resetHumidifierType();
-  void resetHumidifierRatedCapacity();
-  void resetHumidifierRatedElectricPower();
-  void resetHumidifierRelativeHumiditySetpoint();
-  void resetSizingOption();
-  void resetReturnFan();
-  void resetReturnFanTotalEfficiency();
-  void resetReturnFanDeltaPressure();
-  void resetReturnFanMotorEfficiency();
-  void resetReturnFanMotorinAirStreamFraction();
-  void resetReturnFanPartLoadPowerCoefficients();
 
+  boost::optional<double> mainSupplyFanMaximumFlowRate() const;
+  bool isMainSupplyFanMaximumFlowRateDefaulted() const;
+  bool isMainSupplyFanMaximumFlowRateAutosized() const;
+  bool setMainSupplyFanMaximumFlowRate(double mainSupplyFanMaximumFlowRate);
+  void resetMainSupplyFanMaximumFlowRate();
   void autosizeMainSupplyFanMaximumFlowRate();
+
+  double mainSupplyFanMinimumFlowFraction() const;
+  bool isMainSupplyFanMinimumFlowFractionDefaulted() const;
+  bool setMainSupplyFanMinimumFlowFraction(double mainSupplyFanMinimumFlowFraction);
+  void resetMainSupplyFanMinimumFlowFraction();
+
+  double mainSupplyFanTotalEfficiency() const;
+  bool isMainSupplyFanTotalEfficiencyDefaulted() const;
+  bool setMainSupplyFanTotalEfficiency(double mainSupplyFanTotalEfficiency);
+  void resetMainSupplyFanTotalEfficiency();
+
+  double mainSupplyFanDeltaPressure() const;
+  bool isMainSupplyFanDeltaPressureDefaulted() const;
+  bool setMainSupplyFanDeltaPressure(double mainSupplyFanDeltaPressure);
+  void resetMainSupplyFanDeltaPressure();
+
+  double mainSupplyFanMotorEfficiency() const;
+  bool isMainSupplyFanMotorEfficiencyDefaulted() const;
+  bool setMainSupplyFanMotorEfficiency(double mainSupplyFanMotorEfficiency);
+  void resetMainSupplyFanMotorEfficiency();
+
+  double mainSupplyFanMotorinAirStreamFraction() const;
+  bool isMainSupplyFanMotorinAirStreamFractionDefaulted() const;
+  bool setMainSupplyFanMotorinAirStreamFraction(double mainSupplyFanMotorinAirStreamFraction);
+  void resetMainSupplyFanMotorinAirStreamFraction();
+
+  std::string mainSupplyFanPartLoadPowerCoefficients() const;
+  bool isMainSupplyFanPartLoadPowerCoefficientsDefaulted() const;
+  bool setMainSupplyFanPartLoadPowerCoefficients(const std::string& mainSupplyFanPartLoadPowerCoefficients);
+  void resetMainSupplyFanPartLoadPowerCoefficients();
+
+  boost::optional<double> coldDuctSupplyFanMaximumFlowRate() const;
+  bool isColdDuctSupplyFanMaximumFlowRateDefaulted() const;
+  bool isColdDuctSupplyFanMaximumFlowRateAutosized() const;
+  bool setColdDuctSupplyFanMaximumFlowRate(double coldDuctSupplyFanMaximumFlowRate);
+  void resetColdDuctSupplyFanMaximumFlowRate();
   void autosizeColdDuctSupplyFanMaximumFlowRate();
+
+  double coldDuctSupplyFanMinimumFlowFraction() const;
+  bool isColdDuctSupplyFanMinimumFlowFractionDefaulted() const;
+  bool setColdDuctSupplyFanMinimumFlowFraction(double coldDuctSupplyFanMinimumFlowFraction);
+  void resetColdDuctSupplyFanMinimumFlowFraction();
+
+  double coldDuctSupplyFanTotalEfficiency() const;
+  bool isColdDuctSupplyFanTotalEfficiencyDefaulted() const;
+  bool setColdDuctSupplyFanTotalEfficiency(double coldDuctSupplyFanTotalEfficiency);
+  void resetColdDuctSupplyFanTotalEfficiency();
+
+  double coldDuctSupplyFanDeltaPressure() const;
+  bool isColdDuctSupplyFanDeltaPressureDefaulted() const;
+  bool setColdDuctSupplyFanDeltaPressure(double coldDuctSupplyFanDeltaPressure);
+  void resetColdDuctSupplyFanDeltaPressure();
+
+  double coldDuctSupplyFanMotorEfficiency() const;
+  bool isColdDuctSupplyFanMotorEfficiencyDefaulted() const;
+  bool setColdDuctSupplyFanMotorEfficiency(double coldDuctSupplyFanMotorEfficiency);
+  void resetColdDuctSupplyFanMotorEfficiency();
+
+  double coldDuctSupplyFanMotorinAirStreamFraction() const;
+  bool isColdDuctSupplyFanMotorinAirStreamFractionDefaulted() const;
+  bool setColdDuctSupplyFanMotorinAirStreamFraction(double coldDuctSupplyFanMotorinAirStreamFraction);
+  void resetColdDuctSupplyFanMotorinAirStreamFraction();
+
+  std::string coldDuctSupplyFanPartLoadPowerCoefficients() const;
+  bool isColdDuctSupplyFanPartLoadPowerCoefficientsDefaulted() const;
+  bool setColdDuctSupplyFanPartLoadPowerCoefficients(const std::string& coldDuctSupplyFanPartLoadPowerCoefficients);
+  void resetColdDuctSupplyFanPartLoadPowerCoefficients();
+
+  std::string coldDuctSupplyFanPlacement() const;
+  bool isColdDuctSupplyFanPlacementDefaulted() const;
+  bool setColdDuctSupplyFanPlacement(const std::string& coldDuctSupplyFanPlacement);
+  void resetColdDuctSupplyFanPlacement();
+
+  boost::optional<double> hotDuctSupplyFanMaximumFlowRate() const;
+  bool isHotDuctSupplyFanMaximumFlowRateDefaulted() const;
+  bool isHotDuctSupplyFanMaximumFlowRateAutosized() const;
+  bool setHotDuctSupplyFanMaximumFlowRate(double hotDuctSupplyFanMaximumFlowRate);
+  void resetHotDuctSupplyFanMaximumFlowRate();
   void autosizeHotDuctSupplyFanMaximumFlowRate();
+
+  double hotDuctSupplyFanMinimumFlowFraction() const;
+  bool isHotDuctSupplyFanMinimumFlowFractionDefaulted() const;
+  bool setHotDuctSupplyFanMinimumFlowFraction(double hotDuctSupplyFanMinimumFlowFraction);
+  void resetHotDuctSupplyFanMinimumFlowFraction();
+
+  double hotDuctSupplyFanTotalEfficiency() const;
+  bool isHotDuctSupplyFanTotalEfficiencyDefaulted() const;
+  bool setHotDuctSupplyFanTotalEfficiency(double hotDuctSupplyFanTotalEfficiency);
+  void resetHotDuctSupplyFanTotalEfficiency();
+
+  double hotDuctSupplyFanDeltaPressure() const;
+  bool isHotDuctSupplyFanDeltaPressureDefaulted() const;
+  bool setHotDuctSupplyFanDeltaPressure(double hotDuctSupplyFanDeltaPressure);
+  void resetHotDuctSupplyFanDeltaPressure();
+
+  double hotDuctSupplyFanMotorEfficiency() const;
+  bool isHotDuctSupplyFanMotorEfficiencyDefaulted() const;
+  bool setHotDuctSupplyFanMotorEfficiency(double hotDuctSupplyFanMotorEfficiency);
+  void resetHotDuctSupplyFanMotorEfficiency();
+
+  double hotDuctSupplyFanMotorinAirStreamFraction() const;
+  bool isHotDuctSupplyFanMotorinAirStreamFractionDefaulted() const;
+  bool setHotDuctSupplyFanMotorinAirStreamFraction(double hotDuctSupplyFanMotorinAirStreamFraction);
+  void resetHotDuctSupplyFanMotorinAirStreamFraction();
+
+  std::string hotDuctSupplyFanPartLoadPowerCoefficients() const;
+  bool isHotDuctSupplyFanPartLoadPowerCoefficientsDefaulted() const;
+  bool setHotDuctSupplyFanPartLoadPowerCoefficients(const std::string& hotDuctSupplyFanPartLoadPowerCoefficients);
+  void resetHotDuctSupplyFanPartLoadPowerCoefficients();
+
+  std::string hotDuctSupplyFanPlacement() const;
+  bool isHotDuctSupplyFanPlacementDefaulted() const;
+  bool setHotDuctSupplyFanPlacement(const std::string& hotDuctSupplyFanPlacement);
+  void resetHotDuctSupplyFanPlacement();
+
+  std::string coolingCoilType() const;
+  bool isCoolingCoilTypeDefaulted() const;
+  bool setCoolingCoilType(const std::string& coolingCoilType);
+  void resetCoolingCoilType();
+
+  std::string coolingCoilSetpointControlType() const;
+  bool isCoolingCoilSetpointControlTypeDefaulted() const;
+  bool setCoolingCoilSetpointControlType(const std::string& coolingCoilSetpointControlType);
+  void resetCoolingCoilSetpointControlType();
+
+  double coolingCoilDesignSetpointTemperature() const;
+  bool isCoolingCoilDesignSetpointTemperatureDefaulted() const;
+  bool setCoolingCoilDesignSetpointTemperature(double coolingCoilDesignSetpointTemperature);
+  void resetCoolingCoilDesignSetpointTemperature();
+
+  double coolingCoilSetpointatOutdoorDryBulbLow() const;
+  bool isCoolingCoilSetpointatOutdoorDryBulbLowDefaulted() const;
+  bool setCoolingCoilSetpointatOutdoorDryBulbLow(double coolingCoilSetpointatOutdoorDryBulbLow);
+  void resetCoolingCoilSetpointatOutdoorDryBulbLow();
+
+  double coolingCoilResetOutdoorDryBulbLow() const;
+  bool isCoolingCoilResetOutdoorDryBulbLowDefaulted() const;
+  bool setCoolingCoilResetOutdoorDryBulbLow(double coolingCoilResetOutdoorDryBulbLow);
+  void resetCoolingCoilResetOutdoorDryBulbLow();
+
+  double coolingCoilSetpointatOutdoorDryBulbHigh() const;
+  bool isCoolingCoilSetpointatOutdoorDryBulbHighDefaulted() const;
+  bool setCoolingCoilSetpointatOutdoorDryBulbHigh(double coolingCoilSetpointatOutdoorDryBulbHigh);
+  void resetCoolingCoilSetpointatOutdoorDryBulbHigh();
+
+  double coolingCoilResetOutdoorDryBulbHigh() const;
+  bool isCoolingCoilResetOutdoorDryBulbHighDefaulted() const;
+  bool setCoolingCoilResetOutdoorDryBulbHigh(double coolingCoilResetOutdoorDryBulbHigh);
+  void resetCoolingCoilResetOutdoorDryBulbHigh();
+
+  std::string heatingCoilType() const;
+  bool isHeatingCoilTypeDefaulted() const;
+  bool setHeatingCoilType(const std::string& heatingCoilType);
+  void resetHeatingCoilType();
+
+  std::string heatingCoilSetpointControlType() const;
+  bool isHeatingCoilSetpointControlTypeDefaulted() const;
+  bool setHeatingCoilSetpointControlType(const std::string& heatingCoilSetpointControlType);
+  void resetHeatingCoilSetpointControlType();
+
+  double heatingCoilDesignSetpoint() const;
+  bool isHeatingCoilDesignSetpointDefaulted() const;
+  bool setHeatingCoilDesignSetpoint(double heatingCoilDesignSetpoint);
+  void resetHeatingCoilDesignSetpoint();
+
+  double heatingCoilSetpointatOutdoorDryBulbLow() const;
+  bool isHeatingCoilSetpointatOutdoorDryBulbLowDefaulted() const;
+  bool setHeatingCoilSetpointatOutdoorDryBulbLow(double heatingCoilSetpointatOutdoorDryBulbLow);
+  void resetHeatingCoilSetpointatOutdoorDryBulbLow();
+
+  double heatingCoilResetOutdoorDryBulbLow() const;
+  bool isHeatingCoilResetOutdoorDryBulbLowDefaulted() const;
+  bool setHeatingCoilResetOutdoorDryBulbLow(double heatingCoilResetOutdoorDryBulbLow);
+  void resetHeatingCoilResetOutdoorDryBulbLow();
+
+  double heatingCoilSetpointatOutdoorDryBulbHigh() const;
+  bool isHeatingCoilSetpointatOutdoorDryBulbHighDefaulted() const;
+  bool setHeatingCoilSetpointatOutdoorDryBulbHigh(double heatingCoilSetpointatOutdoorDryBulbHigh);
+  void resetHeatingCoilSetpointatOutdoorDryBulbHigh();
+
+  double heatingCoilResetOutdoorDryBulbHigh() const;
+  bool isHeatingCoilResetOutdoorDryBulbHighDefaulted() const;
+  bool setHeatingCoilResetOutdoorDryBulbHigh(double heatingCoilResetOutdoorDryBulbHigh);
+  void resetHeatingCoilResetOutdoorDryBulbHigh();
+
+  boost::optional<double> heatingCoilCapacity() const;
+  bool isHeatingCoilCapacityDefaulted() const;
+  bool isHeatingCoilCapacityAutosized() const;
+  bool setHeatingCoilCapacity(double heatingCoilCapacity);
+  void resetHeatingCoilCapacity();
   void autosizeHeatingCoilCapacity();
+
+  double gasHeatingCoilEfficiency() const;
+  bool isGasHeatingCoilEfficiencyDefaulted() const;
+  bool setGasHeatingCoilEfficiency(double gasHeatingCoilEfficiency);
+  void resetGasHeatingCoilEfficiency();
+
+  double gasHeatingCoilParasiticElectricLoad() const;
+  bool isGasHeatingCoilParasiticElectricLoadDefaulted() const;
+  bool setGasHeatingCoilParasiticElectricLoad(double gasHeatingCoilParasiticElectricLoad);
+  void resetGasHeatingCoilParasiticElectricLoad();
+
+  std::string preheatCoilType() const;
+  bool isPreheatCoilTypeDefaulted() const;
+  bool setPreheatCoilType(const std::string& preheatCoilType);
+  void resetPreheatCoilType();
+
+  double preheatCoilDesignSetpoint() const;
+  bool isPreheatCoilDesignSetpointDefaulted() const;
+  bool setPreheatCoilDesignSetpoint(double preheatCoilDesignSetpoint);
+  void resetPreheatCoilDesignSetpoint();
+
+  double gasPreheatCoilEfficiency() const;
+  bool isGasPreheatCoilEfficiencyDefaulted() const;
+  bool setGasPreheatCoilEfficiency(double gasPreheatCoilEfficiency);
+  void resetGasPreheatCoilEfficiency();
+
+  double gasPreheatCoilParasiticElectricLoad() const;
+  bool isGasPreheatCoilParasiticElectricLoadDefaulted() const;
+  bool setGasPreheatCoilParasiticElectricLoad(double gasPreheatCoilParasiticElectricLoad);
+  void resetGasPreheatCoilParasiticElectricLoad();
+
+  boost::optional<double> maximumOutdoorAirFlowRate() const;
+  bool isMaximumOutdoorAirFlowRateDefaulted() const;
+  bool isMaximumOutdoorAirFlowRateAutosized() const;
+  bool setMaximumOutdoorAirFlowRate(double maximumOutdoorAirFlowRate);
+  void resetMaximumOutdoorAirFlowRate();
   void autosizeMaximumOutdoorAirFlowRate();
+
+  boost::optional<double> minimumOutdoorAirFlowRate() const;
+  bool isMinimumOutdoorAirFlowRateDefaulted() const;
+  bool isMinimumOutdoorAirFlowRateAutosized() const;
+  bool setMinimumOutdoorAirFlowRate(double minimumOutdoorAirFlowRate);
+  void resetMinimumOutdoorAirFlowRate();
   void autosizeMinimumOutdoorAirFlowRate();
+
+  std::string minimumOutdoorAirControlType() const;
+  bool isMinimumOutdoorAirControlTypeDefaulted() const;
+  bool setMinimumOutdoorAirControlType(const std::string& minimumOutdoorAirControlType);
+  void resetMinimumOutdoorAirControlType();
+
+  std::string economizerType() const;
+  bool isEconomizerTypeDefaulted() const;
+  bool setEconomizerType(const std::string& economizerType);
+  void resetEconomizerType();
+
+  std::string economizerLockout() const;
+  bool isEconomizerLockoutDefaulted() const;
+  bool setEconomizerLockout(const std::string& economizerLockout);
+  void resetEconomizerLockout();
+
+  boost::optional<double> economizerUpperTemperatureLimit() const;
+  bool isEconomizerUpperTemperatureLimitDefaulted() const;
+  bool setEconomizerUpperTemperatureLimit(double economizerUpperTemperatureLimit);
+  void resetEconomizerUpperTemperatureLimit();
+
+  boost::optional<double> economizerLowerTemperatureLimit() const;
+  bool isEconomizerLowerTemperatureLimitDefaulted() const;
+  bool setEconomizerLowerTemperatureLimit(double economizerLowerTemperatureLimit);
+  void resetEconomizerLowerTemperatureLimit();
+
+  boost::optional<double> economizerUpperEnthalpyLimit() const;
+  bool isEconomizerUpperEnthalpyLimitDefaulted() const;
+  bool setEconomizerUpperEnthalpyLimit(double economizerUpperEnthalpyLimit);
+  void resetEconomizerUpperEnthalpyLimit();
+
+  boost::optional<double> economizerMaximumLimitDewpointTemperature() const;
+  bool isEconomizerMaximumLimitDewpointTemperatureDefaulted() const;
+  bool setEconomizerMaximumLimitDewpointTemperature(double economizerMaximumLimitDewpointTemperature);
+  void resetEconomizerMaximumLimitDewpointTemperature();
+
+  std::string nightCycleControl() const;
+  bool isNightCycleControlDefaulted() const;
+  bool setNightCycleControl(const std::string& nightCycleControl);
+  void resetNightCycleControl();
+
+  std::string heatRecoveryType() const;
+  bool isHeatRecoveryTypeDefaulted() const;
+  bool setHeatRecoveryType(const std::string& heatRecoveryType);
+  void resetHeatRecoveryType();
+
+  double sensibleHeatRecoveryEffectiveness() const;
+  bool isSensibleHeatRecoveryEffectivenessDefaulted() const;
+  bool setSensibleHeatRecoveryEffectiveness(double sensibleHeatRecoveryEffectiveness);
+  void resetSensibleHeatRecoveryEffectiveness();
+
+  double latentHeatRecoveryEffectiveness() const;
+  bool isLatentHeatRecoveryEffectivenessDefaulted() const;
+  bool setLatentHeatRecoveryEffectiveness(double latentHeatRecoveryEffectiveness);
+  void resetLatentHeatRecoveryEffectiveness();
+
+  std::string heatRecoveryHeatExchangerType() const;
+  bool isHeatRecoveryHeatExchangerTypeDefaulted() const;
+  bool setHeatRecoveryHeatExchangerType(const std::string& heatRecoveryHeatExchangerType);
+  void resetHeatRecoveryHeatExchangerType();
+
+  std::string heatRecoveryFrostControlType() const;
+  bool isHeatRecoveryFrostControlTypeDefaulted() const;
+  bool setHeatRecoveryFrostControlType(const std::string& heatRecoveryFrostControlType);
+  void resetHeatRecoveryFrostControlType();
+
+  std::string dehumidificationControlType() const;
+  bool isDehumidificationControlTypeDefaulted() const;
+  bool setDehumidificationControlType(const std::string& dehumidificationControlType);
+  void resetDehumidificationControlType();
+
+  double dehumidificationRelativeHumiditySetpoint() const;
+  bool isDehumidificationRelativeHumiditySetpointDefaulted() const;
+  bool setDehumidificationRelativeHumiditySetpoint(double dehumidificationRelativeHumiditySetpoint);
+  void resetDehumidificationRelativeHumiditySetpoint();
+
+  std::string humidifierType() const;
+  bool isHumidifierTypeDefaulted() const;
+  bool setHumidifierType(const std::string& humidifierType);
+  void resetHumidifierType();
+
+  double humidifierRatedCapacity() const;
+  bool isHumidifierRatedCapacityDefaulted() const;
+  bool setHumidifierRatedCapacity(double humidifierRatedCapacity);
+  void resetHumidifierRatedCapacity();
+
+  boost::optional<double> humidifierRatedElectricPower() const;
+  bool isHumidifierRatedElectricPowerDefaulted() const;
+  bool isHumidifierRatedElectricPowerAutosized() const;
+  bool setHumidifierRatedElectricPower(double humidifierRatedElectricPower);
+  void resetHumidifierRatedElectricPower();
   void autosizeHumidifierRatedElectricPower();
+
+  double humidifierRelativeHumiditySetpoint() const;
+  bool isHumidifierRelativeHumiditySetpointDefaulted() const;
+  bool setHumidifierRelativeHumiditySetpoint(double humidifierRelativeHumiditySetpoint);
+  void resetHumidifierRelativeHumiditySetpoint();
+
+  std::string sizingOption() const;
+  bool isSizingOptionDefaulted() const;
+  bool setSizingOption(const std::string& sizingOption);
+  void resetSizingOption();
+
+  bool returnFan() const;
+  bool isReturnFanDefaulted() const;
+  bool setReturnFan(bool returnFan);
+  void resetReturnFan();
+
+  double returnFanTotalEfficiency() const;
+  bool isReturnFanTotalEfficiencyDefaulted() const;
+  bool setReturnFanTotalEfficiency(double returnFanTotalEfficiency);
+  void resetReturnFanTotalEfficiency();
+
+  double returnFanDeltaPressure() const;
+  bool isReturnFanDeltaPressureDefaulted() const;
+  bool setReturnFanDeltaPressure(double returnFanDeltaPressure);
+  void resetReturnFanDeltaPressure();
+
+  double returnFanMotorEfficiency() const;
+  bool isReturnFanMotorEfficiencyDefaulted() const;
+  bool setReturnFanMotorEfficiency(double returnFanMotorEfficiency);
+  void resetReturnFanMotorEfficiency();
+
+  double returnFanMotorinAirStreamFraction() const;
+  bool isReturnFanMotorinAirStreamFractionDefaulted() const;
+  bool setReturnFanMotorinAirStreamFraction(double returnFanMotorinAirStreamFraction);
+  void resetReturnFanMotorinAirStreamFraction();
+
+  std::string returnFanPartLoadPowerCoefficients() const;
+  bool isReturnFanPartLoadPowerCoefficientsDefaulted() const;
+  bool setReturnFanPartLoadPowerCoefficients(const std::string& returnFanPartLoadPowerCoefficients);
+  void resetReturnFanPartLoadPowerCoefficients();
 
  protected:
   using ImplType = detail::HVACTemplateSystemDualDuct_Impl;

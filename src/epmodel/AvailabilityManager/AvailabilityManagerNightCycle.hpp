@@ -47,23 +47,23 @@ namespace epmodel {
 
     std::string controlType() const;
     bool setControlType(const std::string& controlType);
-    void resetControlType();
     bool isControlTypeDefaulted() const;
+    void resetControlType();
 
     double thermostatTolerance() const;
     bool setThermostatTolerance(double thermostatTolerance);
-    void resetThermostatTolerance();
     bool isThermostatToleranceDefaulted() const;
+    void resetThermostatTolerance();
 
     double cyclingRunTime() const;
     bool setCyclingRunTime(double cyclingRunTime);
-    void resetCyclingRunTime();
     bool isCyclingRunTimeDefaulted() const;
+    void resetCyclingRunTime();
 
     std::string cyclingRunTimeControlType() const;
     bool setCyclingRunTimeControlType(const std::string& cyclingRunTimeControlType);
-    void resetCyclingRunTimeControlType();
     bool isCyclingRunTimeControlTypeDefaulted() const;
+    void resetCyclingRunTimeControlType();
 
    protected:
     using ImplType = detail::AvailabilityManagerNightCycle_Impl;

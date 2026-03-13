@@ -49,14 +49,14 @@ namespace epmodel {
     // - Field Mapping: Choice fields delegate to the corresponding IDD choice tokens; object-list relationships (schedules, nodes, component names, availability lists, sizing objects) were intentionally excluded here.
     // - TODO(parity): Add relationship helpers once scalar saturation is complete without modifying these scalar signatures.
     boost::optional<double> maximumSupplyAirFlowRate() const;
-    bool isMaximumSupplyAirFlowRateAutosized() const;
     bool setMaximumSupplyAirFlowRate(double maximumSupplyAirFlowRate);
+    bool isMaximumSupplyAirFlowRateAutosized() const;
     void autosizeMaximumSupplyAirFlowRate();
     boost::optional<double> autosizedMaximumSupplyAirFlowRate() const;
 
     boost::optional<double> maximumOutdoorAirFlowRate() const;
-    bool isMaximumOutdoorAirFlowRateAutosized() const;
     bool setMaximumOutdoorAirFlowRate(double maximumOutdoorAirFlowRate);
+    bool isMaximumOutdoorAirFlowRateAutosized() const;
     void autosizeMaximumOutdoorAirFlowRate();
     boost::optional<double> autosizedMaximumOutdoorAirFlowRate() const;
 

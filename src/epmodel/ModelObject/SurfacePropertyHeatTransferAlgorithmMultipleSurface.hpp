@@ -45,9 +45,11 @@ namespace epmodel {
     // - Field Mapping: algorithm() / isAlgorithmDefaulted() / resetAlgorithm() map to Algorithm (default
     //   ConductionTransferFunction) and follow Ruby-style default/reset semantics.
     // - TODO(parity): Introduce relationship helpers for each surface group once scalar coverage is complete.
+    // Surface Type field
     std::string surfaceType() const;
     bool setSurfaceType(const std::string& surfaceType);
 
+    // Algorithm field
     std::string algorithm() const;
     bool setAlgorithm(const std::string& algorithm);
     bool isAlgorithmDefaulted() const;

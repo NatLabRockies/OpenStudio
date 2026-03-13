@@ -10,42 +10,44 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SetpointManagerOutdoorAirPretreat_Impl : public SetpointManager_Impl
-{
- public:
-  using SetpointManager_Impl::SetpointManager_Impl;
-  virtual ~SetpointManagerOutdoorAirPretreat_Impl() override = default;
+    class EPMODEL_API SetpointManagerOutdoorAirPretreat_Impl : public SetpointManager_Impl
+    {
+     public:
+      using SetpointManager_Impl::SetpointManager_Impl;
+      virtual ~SetpointManagerOutdoorAirPretreat_Impl() override = default;
 
-  double minimumSetpointTemperature() const;
-  bool isMinimumSetpointTemperatureDefaulted() const;
-  double maximumSetpointTemperature() const;
-  bool isMaximumSetpointTemperatureDefaulted() const;
-  double minimumSetpointHumidityRatio() const;
-  bool isMinimumSetpointHumidityRatioDefaulted() const;
-  double maximumSetpointHumidityRatio() const;
-  bool isMaximumSetpointHumidityRatioDefaulted() const;
+      double minimumSetpointTemperature() const;
+      bool isMinimumSetpointTemperatureDefaulted() const;
+      bool setMinimumSetpointTemperature(double minimumSetpointTemperature);
+      void resetMinimumSetpointTemperature();
 
-  void resetControlVariable();
+      double maximumSetpointTemperature() const;
+      bool isMaximumSetpointTemperatureDefaulted() const;
+      bool setMaximumSetpointTemperature(double maximumSetpointTemperature);
+      void resetMaximumSetpointTemperature();
 
-  bool setMinimumSetpointTemperature(double minimumSetpointTemperature);
-  void resetMinimumSetpointTemperature();
-  bool setMaximumSetpointTemperature(double maximumSetpointTemperature);
-  void resetMaximumSetpointTemperature();
-  bool setMinimumSetpointHumidityRatio(double minimumSetpointHumidityRatio);
-  void resetMinimumSetpointHumidityRatio();
-  bool setMaximumSetpointHumidityRatio(double maximumSetpointHumidityRatio);
-  void resetMaximumSetpointHumidityRatio();
+      double minimumSetpointHumidityRatio() const;
+      bool isMinimumSetpointHumidityRatioDefaulted() const;
+      bool setMinimumSetpointHumidityRatio(double minimumSetpointHumidityRatio);
+      void resetMinimumSetpointHumidityRatio();
 
- protected:
-  unsigned setpointNodeFieldIndex() const override;
-  unsigned controlVariableFieldIndex() const override;
+      double maximumSetpointHumidityRatio() const;
+      bool isMaximumSetpointHumidityRatioDefaulted() const;
+      bool setMaximumSetpointHumidityRatio(double maximumSetpointHumidityRatio);
+      void resetMaximumSetpointHumidityRatio();
 
-  void doCanonicalize(LoadContext& context) override;
-};
+      void resetControlVariable();
 
-}  // namespace detail
+     protected:
+      unsigned setpointNodeFieldIndex() const override;
+      unsigned controlVariableFieldIndex() const override;
+
+      void doCanonicalize(LoadContext& context) override;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

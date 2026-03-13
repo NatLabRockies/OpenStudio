@@ -44,12 +44,16 @@ namespace epmodel {
     // - Field Mapping: Scalar APIs map directly to WaterUse:RainCollector fields via WaterUse_RainCollectorFields (Loss Factor Mode, Collection Loss Factor, Maximum Collection Rate).
     // - Field Mapping: Storage Tank Name, Collection Loss Factor Schedule Name, and Collection Surface Name remain object-list relationships and are excluded from scalar accessors.
     // - TODO(parity): Add relationship helpers after scalar saturation without shifting scalar signatures.
+
+    // Loss Factor Mode
     boost::optional<std::string> lossFactorMode() const;
     bool setLossFactorMode(const std::string& lossFactorMode);
 
+    // Collection Loss Factor
     boost::optional<double> collectionLossFactor() const;
     bool setCollectionLossFactor(double collectionLossFactor);
 
+    // Maximum Collection Rate
     boost::optional<double> maximumCollectionRate() const;
     bool setMaximumCollectionRate(double maximumCollectionRate);
 

@@ -17,40 +17,39 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-  class StraightComponent_Impl;
-}
+  namespace detail {
+    class StraightComponent_Impl;
+  }
 
-class EPMODEL_API StraightComponent : public HVACComponent
-{
- public:
-  virtual ~StraightComponent() override = default;
-  StraightComponent() = default;
-  StraightComponent(const StraightComponent& other) = default;
-  StraightComponent(StraightComponent&& other) = default;
-  StraightComponent& operator=(const StraightComponent&) = default;
-  StraightComponent& operator=(StraightComponent&&) = default;
+  class EPMODEL_API StraightComponent : public HVACComponent
+  {
+   public:
+    virtual ~StraightComponent() override = default;
+    StraightComponent() = default;
+    StraightComponent(const StraightComponent& other) = default;
+    StraightComponent(StraightComponent&& other) = default;
+    StraightComponent& operator=(const StraightComponent&) = default;
+    StraightComponent& operator=(StraightComponent&&) = default;
 
-  bool removeFromLoop();
+    bool removeFromLoop();
 
-  unsigned inletPort() const;
-  unsigned outletPort() const;
+    unsigned inletPort() const;
+    boost::optional<ModelObject> inletModelObject() const;
 
-  boost::optional<ModelObject> inletModelObject() const;
-  boost::optional<ModelObject> outletModelObject() const;
+    unsigned outletPort() const;
+    boost::optional<ModelObject> outletModelObject() const;
 
+   protected:
+    friend class Model;
+    friend class openstudio::IdfObject;
 
- protected:
-  friend class Model;
-  friend class openstudio::IdfObject;
+    using ImplType = detail::StraightComponent_Impl;
 
-  using ImplType = detail::StraightComponent_Impl;
-
-  StraightComponent(IddObjectType type, const Model& model, bool fastName = false, bool isTransient = false);
-  explicit StraightComponent(std::shared_ptr<detail::StraightComponent_Impl> impl);
-};
+    StraightComponent(IddObjectType type, const Model& model, bool fastName = false, bool isTransient = false);
+    explicit StraightComponent(std::shared_ptr<detail::StraightComponent_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

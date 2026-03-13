@@ -16,72 +16,81 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class RunPeriod_Impl;
-}
+  namespace detail {
+    class RunPeriod_Impl;
+  }
 
-class EPMODEL_API RunPeriod : public ParentObject
-{
- public:
-  explicit RunPeriod(const Model& model);
+  class EPMODEL_API RunPeriod : public ParentObject
+  {
+   public:
+    explicit RunPeriod(const Model& model);
 
-  virtual ~RunPeriod() override = default;
-  RunPeriod(const RunPeriod& other) = default;
-  RunPeriod(RunPeriod&& other) = default;
-  RunPeriod& operator=(const RunPeriod&) = default;
-  RunPeriod& operator=(RunPeriod&&) = default;
+    virtual ~RunPeriod() override = default;
+    RunPeriod(const RunPeriod& other) = default;
+    RunPeriod(RunPeriod&& other) = default;
+    RunPeriod& operator=(const RunPeriod&) = default;
+    RunPeriod& operator=(RunPeriod&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::RunPeriod scalar API names/signatures, including legacy get* naming.
-  // - Field Mapping: begin/end date and weather-flag APIs map directly to EnergyPlus RunPeriod scalar fields.
-  // - Field Mapping: get/setNumTimePeriodRepeats maps to RunPeriod BeginYear/EndYear because EnergyPlus RunPeriod
-  //   has no Number of Times Runperiod to be Repeated field.
-  // - ForwardTranslator evidence: BeginYear/EndYear and DayofWeekforStartDay are derived from model::YearDescription
-  //   in ForwardTranslateRunPeriod.cpp and intentionally excluded from RunPeriod scalar accessors.
-  // - ForwardTranslator evidence: UseWeatherFileHolidays/DaylightSavings are currently hard-set to "No" during
-  //   translation; keep preserved RunPeriod APIs mapped to the underlying RunPeriod fields.
-  // - TODO(parity): Align translator behavior with preserved RunPeriod weather-flag semantics in parity follow-up.
-  int getBeginMonth() const;
-  int getBeginDayOfMonth() const;
-  int getEndMonth() const;
-  int getEndDayOfMonth() const;
-  bool getUseWeatherFileHolidays() const;
-  bool getUseWeatherFileDaylightSavings() const;
-  bool getApplyWeekendHolidayRule() const;
-  bool getUseWeatherFileRainInd() const;
-  bool getUseWeatherFileSnowInd() const;
-  int getNumTimePeriodRepeats() const;
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model::RunPeriod scalar API names/signatures, including legacy get* naming.
+    // - Field Mapping: begin/end date and weather-flag APIs map directly to EnergyPlus RunPeriod scalar fields.
+    // - Field Mapping: get/setNumTimePeriodRepeats maps to RunPeriod BeginYear/EndYear because EnergyPlus RunPeriod
+    //   has no Number of Times Runperiod to be Repeated field.
+    // - ForwardTranslator evidence: BeginYear/EndYear and DayofWeekforStartDay are derived from model::YearDescription
+    //   in ForwardTranslateRunPeriod.cpp and intentionally excluded from RunPeriod scalar accessors.
+    // - ForwardTranslator evidence: UseWeatherFileHolidays/DaylightSavings are currently hard-set to "No" during
+    //   translation; keep preserved RunPeriod APIs mapped to the underlying RunPeriod fields.
+    // - TODO(parity): Align translator behavior with preserved RunPeriod weather-flag semantics in parity follow-up.
 
-  bool setBeginMonth(int month);
-  bool setBeginDayOfMonth(int day);
-  bool setEndMonth(int month);
-  bool setEndDayOfMonth(int day);
-  bool setUseWeatherFileHolidays(bool use);
-  bool setUseWeatherFileDaylightSavings(bool use);
-  bool setApplyWeekendHolidayRule(bool apply);
-  bool setUseWeatherFileRainInd(bool rainInd);
-  bool setUseWeatherFileSnowInd(bool snowInd);
-  bool setNumTimePeriodRepeats(int numRepeats);
+    int getBeginMonth() const;
+    bool setBeginMonth(int month);
 
-  void ensureNoLeapDays();
+    int getBeginDayOfMonth() const;
+    bool setBeginDayOfMonth(int day);
 
-  bool isAnnual() const;
-  bool isPartialYear() const;
-  bool isRepeated() const;
+    int getEndMonth() const;
+    bool setEndMonth(int month);
 
- protected:
-  using ImplType = detail::RunPeriod_Impl;
+    int getEndDayOfMonth() const;
+    bool setEndDayOfMonth(int day);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    bool getUseWeatherFileHolidays() const;
+    bool setUseWeatherFileHolidays(bool use);
 
-  explicit RunPeriod(std::shared_ptr<detail::RunPeriod_Impl> impl);
-};
+    bool getUseWeatherFileDaylightSavings() const;
+    bool setUseWeatherFileDaylightSavings(bool use);
+
+    bool getApplyWeekendHolidayRule() const;
+    bool setApplyWeekendHolidayRule(bool apply);
+
+    bool getUseWeatherFileRainInd() const;
+    bool setUseWeatherFileRainInd(bool rainInd);
+
+    bool getUseWeatherFileSnowInd() const;
+    bool setUseWeatherFileSnowInd(bool snowInd);
+
+    int getNumTimePeriodRepeats() const;
+    bool setNumTimePeriodRepeats(int numRepeats);
+
+    void ensureNoLeapDays();
+
+    bool isAnnual() const;
+    bool isPartialYear() const;
+    bool isRepeated() const;
+
+   protected:
+    using ImplType = detail::RunPeriod_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit RunPeriod(std::shared_ptr<detail::RunPeriod_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

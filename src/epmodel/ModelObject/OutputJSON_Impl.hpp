@@ -13,29 +13,30 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API OutputJSON_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~OutputJSON_Impl() override = default;
+    class EPMODEL_API OutputJSON_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~OutputJSON_Impl() override = default;
 
-  std::string optionType() const;
+      std::vector<std::string> optionTypeValues() const;
 
-  bool outputJSON() const;
-  bool outputCBOR() const;
-  bool outputMessagePack() const;
+      std::string optionType() const;
+      bool setOptionType(const std::string& optionType);
 
-  bool setOptionType(const std::string& optionType);
-  bool setOutputJSON(bool outputJSON);
-  bool setOutputCBOR(bool outputCBOR);
-  bool setOutputMessagePack(bool outputMessagePack);
+      bool outputJSON() const;
+      bool setOutputJSON(bool outputJSON);
 
-  std::vector<std::string> optionTypeValues() const;
-};
+      bool outputCBOR() const;
+      bool setOutputCBOR(bool outputCBOR);
 
-}  // namespace detail
+      bool outputMessagePack() const;
+      bool setOutputMessagePack(bool outputMessagePack);
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

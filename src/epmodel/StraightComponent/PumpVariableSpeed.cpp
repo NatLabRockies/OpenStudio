@@ -352,155 +352,6 @@ namespace epmodel {
       return false;
     }
 
-    double PumpVariableSpeed_Impl::ratedPumpHead() const {
-      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::DesignPumpHead, true);
-      OS_ASSERT(result);
-      return result.get();
-    }
-
-    bool PumpVariableSpeed_Impl::isRatedPumpHeadDefaulted() const {
-      return isEmpty(openstudio::Pump_VariableSpeedFields::DesignPumpHead);
-    }
-
-    boost::optional<double> PumpVariableSpeed_Impl::ratedPowerConsumption() const {
-      return getDouble(openstudio::Pump_VariableSpeedFields::DesignPowerConsumption, true);
-    }
-
-    bool PumpVariableSpeed_Impl::isRatedPowerConsumptionDefaulted() const {
-      return isEmpty(openstudio::Pump_VariableSpeedFields::DesignPowerConsumption);
-    }
-
-    bool PumpVariableSpeed_Impl::isRatedPowerConsumptionAutosized() const {
-      if (const auto value = getString(openstudio::Pump_VariableSpeedFields::DesignPowerConsumption, true)) {
-        return openstudio::istringEqual(value.get(), "autosize");
-      }
-      return false;
-    }
-
-    double PumpVariableSpeed_Impl::motorEfficiency() const {
-      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::MotorEfficiency, true);
-      OS_ASSERT(result);
-      return result.get();
-    }
-
-    bool PumpVariableSpeed_Impl::isMotorEfficiencyDefaulted() const {
-      return isEmpty(openstudio::Pump_VariableSpeedFields::MotorEfficiency);
-    }
-
-    double PumpVariableSpeed_Impl::fractionofMotorInefficienciestoFluidStream() const {
-      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::FractionofMotorInefficienciestoFluidStream, true);
-      OS_ASSERT(result);
-      return result.get();
-    }
-
-    bool PumpVariableSpeed_Impl::isFractionofMotorInefficienciestoFluidStreamDefaulted() const {
-      return isEmpty(openstudio::Pump_VariableSpeedFields::FractionofMotorInefficienciestoFluidStream);
-    }
-
-    double PumpVariableSpeed_Impl::coefficient1ofthePartLoadPerformanceCurve() const {
-      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::Coefficient1ofthePartLoadPerformanceCurve, true);
-      OS_ASSERT(result);
-      return result.get();
-    }
-
-    bool PumpVariableSpeed_Impl::isCoefficient1ofthePartLoadPerformanceCurveDefaulted() const {
-      return isEmpty(openstudio::Pump_VariableSpeedFields::Coefficient1ofthePartLoadPerformanceCurve);
-    }
-
-    double PumpVariableSpeed_Impl::coefficient2ofthePartLoadPerformanceCurve() const {
-      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::Coefficient2ofthePartLoadPerformanceCurve, true);
-      OS_ASSERT(result);
-      return result.get();
-    }
-
-    bool PumpVariableSpeed_Impl::isCoefficient2ofthePartLoadPerformanceCurveDefaulted() const {
-      return isEmpty(openstudio::Pump_VariableSpeedFields::Coefficient2ofthePartLoadPerformanceCurve);
-    }
-
-    double PumpVariableSpeed_Impl::coefficient3ofthePartLoadPerformanceCurve() const {
-      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::Coefficient3ofthePartLoadPerformanceCurve, true);
-      OS_ASSERT(result);
-      return result.get();
-    }
-
-    bool PumpVariableSpeed_Impl::isCoefficient3ofthePartLoadPerformanceCurveDefaulted() const {
-      return isEmpty(openstudio::Pump_VariableSpeedFields::Coefficient3ofthePartLoadPerformanceCurve);
-    }
-
-    double PumpVariableSpeed_Impl::coefficient4ofthePartLoadPerformanceCurve() const {
-      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::Coefficient4ofthePartLoadPerformanceCurve, true);
-      OS_ASSERT(result);
-      return result.get();
-    }
-
-    bool PumpVariableSpeed_Impl::isCoefficient4ofthePartLoadPerformanceCurveDefaulted() const {
-      return isEmpty(openstudio::Pump_VariableSpeedFields::Coefficient4ofthePartLoadPerformanceCurve);
-    }
-
-    double PumpVariableSpeed_Impl::minimumFlowRate() const {
-      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::DesignMinimumFlowRate, true);
-      OS_ASSERT(result);
-      return result.get();
-    }
-
-    bool PumpVariableSpeed_Impl::isMinimumFlowRateDefaulted() const {
-      return isEmpty(openstudio::Pump_VariableSpeedFields::DesignMinimumFlowRate);
-    }
-
-    std::string PumpVariableSpeed_Impl::pumpControlType() const {
-      const auto result = getString(openstudio::Pump_VariableSpeedFields::PumpControlType, true);
-      OS_ASSERT(result);
-      return result.get();
-    }
-
-    bool PumpVariableSpeed_Impl::isPumpControlTypeDefaulted() const {
-      return isEmpty(openstudio::Pump_VariableSpeedFields::PumpControlType);
-    }
-
-    boost::optional<double> PumpVariableSpeed_Impl::impellerDiameter() const {
-      return getDouble(openstudio::Pump_VariableSpeedFields::ImpellerDiameter, true);
-    }
-
-    boost::optional<std::string> PumpVariableSpeed_Impl::vFDControlType() const {
-      return getString(openstudio::Pump_VariableSpeedFields::VFDControlType, true);
-    }
-
-    double PumpVariableSpeed_Impl::skinLossRadiativeFraction() const {
-      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::SkinLossRadiativeFraction, true);
-      OS_ASSERT(result);
-      return result.get();
-    }
-
-    std::string PumpVariableSpeed_Impl::designPowerSizingMethod() const {
-      const auto result = getString(openstudio::Pump_VariableSpeedFields::DesignPowerSizingMethod, true);
-      OS_ASSERT(result);
-      return result.get();
-    }
-
-    double PumpVariableSpeed_Impl::designElectricPowerPerUnitFlowRate() const {
-      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::DesignElectricPowerperUnitFlowRate, true);
-      OS_ASSERT(result);
-      return result.get();
-    }
-
-    double PumpVariableSpeed_Impl::designShaftPowerPerUnitFlowRatePerUnitHead() const {
-      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::DesignShaftPowerperUnitFlowRateperUnitHead, true);
-      OS_ASSERT(result);
-      return result.get();
-    }
-
-    double PumpVariableSpeed_Impl::designMinimumFlowRateFraction() const {
-      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::DesignMinimumFlowRateFraction, true);
-      OS_ASSERT(result);
-      return result.get();
-    }
-
-    std::string PumpVariableSpeed_Impl::endUseSubcategory() const {
-      const auto result = getString(openstudio::Pump_VariableSpeedFields::EndUseSubcategory, true);
-      OS_ASSERT(result);
-      return result.get();
-    }
-
     bool PumpVariableSpeed_Impl::setRatedFlowRate(double ratedFlowRate) {
       const bool result = setDouble(openstudio::Pump_VariableSpeedFields::DesignMaximumFlowRate, ratedFlowRate);
       OS_ASSERT(result);
@@ -517,6 +368,16 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    double PumpVariableSpeed_Impl::ratedPumpHead() const {
+      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::DesignPumpHead, true);
+      OS_ASSERT(result);
+      return result.get();
+    }
+
+    bool PumpVariableSpeed_Impl::isRatedPumpHeadDefaulted() const {
+      return isEmpty(openstudio::Pump_VariableSpeedFields::DesignPumpHead);
+    }
+
     bool PumpVariableSpeed_Impl::setRatedPumpHead(double ratedPumpHead) {
       const bool result = setDouble(openstudio::Pump_VariableSpeedFields::DesignPumpHead, ratedPumpHead);
       OS_ASSERT(result);
@@ -526,6 +387,21 @@ namespace epmodel {
     void PumpVariableSpeed_Impl::resetRatedPumpHead() {
       const bool result = setString(openstudio::Pump_VariableSpeedFields::DesignPumpHead, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> PumpVariableSpeed_Impl::ratedPowerConsumption() const {
+      return getDouble(openstudio::Pump_VariableSpeedFields::DesignPowerConsumption, true);
+    }
+
+    bool PumpVariableSpeed_Impl::isRatedPowerConsumptionDefaulted() const {
+      return isEmpty(openstudio::Pump_VariableSpeedFields::DesignPowerConsumption);
+    }
+
+    bool PumpVariableSpeed_Impl::isRatedPowerConsumptionAutosized() const {
+      if (const auto value = getString(openstudio::Pump_VariableSpeedFields::DesignPowerConsumption, true)) {
+        return openstudio::istringEqual(value.get(), "autosize");
+      }
+      return false;
     }
 
     bool PumpVariableSpeed_Impl::setRatedPowerConsumption(double ratedPowerConsumption) {
@@ -544,6 +420,16 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    double PumpVariableSpeed_Impl::motorEfficiency() const {
+      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::MotorEfficiency, true);
+      OS_ASSERT(result);
+      return result.get();
+    }
+
+    bool PumpVariableSpeed_Impl::isMotorEfficiencyDefaulted() const {
+      return isEmpty(openstudio::Pump_VariableSpeedFields::MotorEfficiency);
+    }
+
     bool PumpVariableSpeed_Impl::setMotorEfficiency(double motorEfficiency) {
       const bool result = setDouble(openstudio::Pump_VariableSpeedFields::MotorEfficiency, motorEfficiency);
       return result;
@@ -552,6 +438,16 @@ namespace epmodel {
     void PumpVariableSpeed_Impl::resetMotorEfficiency() {
       const bool result = setString(openstudio::Pump_VariableSpeedFields::MotorEfficiency, "");
       OS_ASSERT(result);
+    }
+
+    double PumpVariableSpeed_Impl::fractionofMotorInefficienciestoFluidStream() const {
+      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::FractionofMotorInefficienciestoFluidStream, true);
+      OS_ASSERT(result);
+      return result.get();
+    }
+
+    bool PumpVariableSpeed_Impl::isFractionofMotorInefficienciestoFluidStreamDefaulted() const {
+      return isEmpty(openstudio::Pump_VariableSpeedFields::FractionofMotorInefficienciestoFluidStream);
     }
 
     bool PumpVariableSpeed_Impl::setFractionofMotorInefficienciestoFluidStream(double fractionofMotorInefficienciestoFluidStream) {
@@ -563,6 +459,16 @@ namespace epmodel {
     void PumpVariableSpeed_Impl::resetFractionofMotorInefficienciestoFluidStream() {
       const bool result = setString(openstudio::Pump_VariableSpeedFields::FractionofMotorInefficienciestoFluidStream, "");
       OS_ASSERT(result);
+    }
+
+    double PumpVariableSpeed_Impl::coefficient1ofthePartLoadPerformanceCurve() const {
+      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::Coefficient1ofthePartLoadPerformanceCurve, true);
+      OS_ASSERT(result);
+      return result.get();
+    }
+
+    bool PumpVariableSpeed_Impl::isCoefficient1ofthePartLoadPerformanceCurveDefaulted() const {
+      return isEmpty(openstudio::Pump_VariableSpeedFields::Coefficient1ofthePartLoadPerformanceCurve);
     }
 
     bool PumpVariableSpeed_Impl::setCoefficient1ofthePartLoadPerformanceCurve(double coefficient1ofthePartLoadPerformanceCurve) {
@@ -577,6 +483,16 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    double PumpVariableSpeed_Impl::coefficient2ofthePartLoadPerformanceCurve() const {
+      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::Coefficient2ofthePartLoadPerformanceCurve, true);
+      OS_ASSERT(result);
+      return result.get();
+    }
+
+    bool PumpVariableSpeed_Impl::isCoefficient2ofthePartLoadPerformanceCurveDefaulted() const {
+      return isEmpty(openstudio::Pump_VariableSpeedFields::Coefficient2ofthePartLoadPerformanceCurve);
+    }
+
     bool PumpVariableSpeed_Impl::setCoefficient2ofthePartLoadPerformanceCurve(double coefficient2ofthePartLoadPerformanceCurve) {
       const bool result =
         setDouble(openstudio::Pump_VariableSpeedFields::Coefficient2ofthePartLoadPerformanceCurve, coefficient2ofthePartLoadPerformanceCurve);
@@ -587,6 +503,16 @@ namespace epmodel {
     void PumpVariableSpeed_Impl::resetCoefficient2ofthePartLoadPerformanceCurve() {
       const bool result = setString(openstudio::Pump_VariableSpeedFields::Coefficient2ofthePartLoadPerformanceCurve, "");
       OS_ASSERT(result);
+    }
+
+    double PumpVariableSpeed_Impl::coefficient3ofthePartLoadPerformanceCurve() const {
+      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::Coefficient3ofthePartLoadPerformanceCurve, true);
+      OS_ASSERT(result);
+      return result.get();
+    }
+
+    bool PumpVariableSpeed_Impl::isCoefficient3ofthePartLoadPerformanceCurveDefaulted() const {
+      return isEmpty(openstudio::Pump_VariableSpeedFields::Coefficient3ofthePartLoadPerformanceCurve);
     }
 
     bool PumpVariableSpeed_Impl::setCoefficient3ofthePartLoadPerformanceCurve(double coefficient3ofthePartLoadPerformanceCurve) {
@@ -601,6 +527,16 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    double PumpVariableSpeed_Impl::coefficient4ofthePartLoadPerformanceCurve() const {
+      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::Coefficient4ofthePartLoadPerformanceCurve, true);
+      OS_ASSERT(result);
+      return result.get();
+    }
+
+    bool PumpVariableSpeed_Impl::isCoefficient4ofthePartLoadPerformanceCurveDefaulted() const {
+      return isEmpty(openstudio::Pump_VariableSpeedFields::Coefficient4ofthePartLoadPerformanceCurve);
+    }
+
     bool PumpVariableSpeed_Impl::setCoefficient4ofthePartLoadPerformanceCurve(double coefficient4ofthePartLoadPerformanceCurve) {
       const bool result =
         setDouble(openstudio::Pump_VariableSpeedFields::Coefficient4ofthePartLoadPerformanceCurve, coefficient4ofthePartLoadPerformanceCurve);
@@ -611,6 +547,16 @@ namespace epmodel {
     void PumpVariableSpeed_Impl::resetCoefficient4ofthePartLoadPerformanceCurve() {
       const bool result = setString(openstudio::Pump_VariableSpeedFields::Coefficient4ofthePartLoadPerformanceCurve, "");
       OS_ASSERT(result);
+    }
+
+    double PumpVariableSpeed_Impl::minimumFlowRate() const {
+      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::DesignMinimumFlowRate, true);
+      OS_ASSERT(result);
+      return result.get();
+    }
+
+    bool PumpVariableSpeed_Impl::isMinimumFlowRateDefaulted() const {
+      return isEmpty(openstudio::Pump_VariableSpeedFields::DesignMinimumFlowRate);
     }
 
     bool PumpVariableSpeed_Impl::setMinimumFlowRate(double minimumFlowRate) {
@@ -624,6 +570,16 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    std::string PumpVariableSpeed_Impl::pumpControlType() const {
+      const auto result = getString(openstudio::Pump_VariableSpeedFields::PumpControlType, true);
+      OS_ASSERT(result);
+      return result.get();
+    }
+
+    bool PumpVariableSpeed_Impl::isPumpControlTypeDefaulted() const {
+      return isEmpty(openstudio::Pump_VariableSpeedFields::PumpControlType);
+    }
+
     bool PumpVariableSpeed_Impl::setPumpControlType(const std::string& pumpControlType) {
       return setString(openstudio::Pump_VariableSpeedFields::PumpControlType, pumpControlType);
     }
@@ -631,6 +587,10 @@ namespace epmodel {
     void PumpVariableSpeed_Impl::resetPumpControlType() {
       const bool result = setString(openstudio::Pump_VariableSpeedFields::PumpControlType, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> PumpVariableSpeed_Impl::impellerDiameter() const {
+      return getDouble(openstudio::Pump_VariableSpeedFields::ImpellerDiameter, true);
     }
 
     bool PumpVariableSpeed_Impl::setImpellerDiameter(double impellerDiameter) {
@@ -644,6 +604,10 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<std::string> PumpVariableSpeed_Impl::vFDControlType() const {
+      return getString(openstudio::Pump_VariableSpeedFields::VFDControlType, true);
+    }
+
     bool PumpVariableSpeed_Impl::setVFDControlType(const std::string& vFDControlType) {
       const bool result = setString(openstudio::Pump_VariableSpeedFields::VFDControlType, vFDControlType);
       OS_ASSERT(result);
@@ -655,10 +619,22 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    double PumpVariableSpeed_Impl::skinLossRadiativeFraction() const {
+      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::SkinLossRadiativeFraction, true);
+      OS_ASSERT(result);
+      return result.get();
+    }
+
     bool PumpVariableSpeed_Impl::setSkinLossRadiativeFraction(double skinLossRadiativeFraction) {
       const bool result = setDouble(openstudio::Pump_VariableSpeedFields::SkinLossRadiativeFraction, skinLossRadiativeFraction);
       OS_ASSERT(result);
       return result;
+    }
+
+    std::string PumpVariableSpeed_Impl::designPowerSizingMethod() const {
+      const auto result = getString(openstudio::Pump_VariableSpeedFields::DesignPowerSizingMethod, true);
+      OS_ASSERT(result);
+      return result.get();
     }
 
     bool PumpVariableSpeed_Impl::setDesignPowerSizingMethod(const std::string& designPowerSizingMethod) {
@@ -667,10 +643,22 @@ namespace epmodel {
       return result;
     }
 
+    double PumpVariableSpeed_Impl::designElectricPowerPerUnitFlowRate() const {
+      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::DesignElectricPowerperUnitFlowRate, true);
+      OS_ASSERT(result);
+      return result.get();
+    }
+
     bool PumpVariableSpeed_Impl::setDesignElectricPowerPerUnitFlowRate(double designElectricPowerPerUnitFlowRate) {
       const bool result = setDouble(openstudio::Pump_VariableSpeedFields::DesignElectricPowerperUnitFlowRate, designElectricPowerPerUnitFlowRate);
       OS_ASSERT(result);
       return result;
+    }
+
+    double PumpVariableSpeed_Impl::designShaftPowerPerUnitFlowRatePerUnitHead() const {
+      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::DesignShaftPowerperUnitFlowRateperUnitHead, true);
+      OS_ASSERT(result);
+      return result.get();
     }
 
     bool PumpVariableSpeed_Impl::setDesignShaftPowerPerUnitFlowRatePerUnitHead(double designShaftPowerPerUnitFlowRatePerUnitHead) {
@@ -680,10 +668,22 @@ namespace epmodel {
       return result;
     }
 
+    double PumpVariableSpeed_Impl::designMinimumFlowRateFraction() const {
+      const auto result = getDouble(openstudio::Pump_VariableSpeedFields::DesignMinimumFlowRateFraction, true);
+      OS_ASSERT(result);
+      return result.get();
+    }
+
     bool PumpVariableSpeed_Impl::setDesignMinimumFlowRateFraction(double designMinimumFlowRateFraction) {
       const bool result = setDouble(openstudio::Pump_VariableSpeedFields::DesignMinimumFlowRateFraction, designMinimumFlowRateFraction);
       OS_ASSERT(result);
       return result;
+    }
+
+    std::string PumpVariableSpeed_Impl::endUseSubcategory() const {
+      const auto result = getString(openstudio::Pump_VariableSpeedFields::EndUseSubcategory, true);
+      OS_ASSERT(result);
+      return result.get();
     }
 
     bool PumpVariableSpeed_Impl::setEndUseSubcategory(const std::string& endUseSubcategory) {

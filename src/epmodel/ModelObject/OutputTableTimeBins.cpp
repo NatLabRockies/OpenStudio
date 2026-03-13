@@ -17,188 +17,188 @@
 namespace openstudio {
 namespace epmodel {
 
-OutputTableTimeBins::OutputTableTimeBins(const Model& model) : ModelObject(OutputTableTimeBins::iddObjectType(), model) {}
+  OutputTableTimeBins::OutputTableTimeBins(const Model& model) : ModelObject(OutputTableTimeBins::iddObjectType(), model) {}
 
-OutputTableTimeBins::OutputTableTimeBins(std::shared_ptr<detail::OutputTableTimeBins_Impl> impl) : ModelObject(std::move(impl)) {}
+  OutputTableTimeBins::OutputTableTimeBins(std::shared_ptr<detail::OutputTableTimeBins_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType OutputTableTimeBins::iddObjectType() {
-  return IddObjectType::Output_Table_TimeBins;
-}
+  IddObjectType OutputTableTimeBins::iddObjectType() {
+    return IddObjectType::Output_Table_TimeBins;
+  }
 
-std::vector<std::string> OutputTableTimeBins::variableTypeValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Output_Table_TimeBinsFields::VariableType);
-}
+  std::vector<std::string> OutputTableTimeBins::variableTypeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Output_Table_TimeBinsFields::VariableType);
+  }
 
-std::string OutputTableTimeBins::keyValue() const {
-  return getImpl<detail::OutputTableTimeBins_Impl>()->keyValue();
-}
+  std::string OutputTableTimeBins::keyValue() const {
+    return getImpl<detail::OutputTableTimeBins_Impl>()->keyValue();
+  }
 
-bool OutputTableTimeBins::isKeyValueDefaulted() const {
-  return getImpl<detail::OutputTableTimeBins_Impl>()->isKeyValueDefaulted();
-}
+  bool OutputTableTimeBins::isKeyValueDefaulted() const {
+    return getImpl<detail::OutputTableTimeBins_Impl>()->isKeyValueDefaulted();
+  }
 
-std::string OutputTableTimeBins::variableName() const {
-  return getImpl<detail::OutputTableTimeBins_Impl>()->variableName();
-}
+  bool OutputTableTimeBins::setKeyValue(const std::string& keyValue) {
+    return getImpl<detail::OutputTableTimeBins_Impl>()->setKeyValue(keyValue);
+  }
 
-boost::optional<double> OutputTableTimeBins::intervalStart() const {
-  return getImpl<detail::OutputTableTimeBins_Impl>()->intervalStart();
-}
+  void OutputTableTimeBins::resetKeyValue() {
+    getImpl<detail::OutputTableTimeBins_Impl>()->resetKeyValue();
+  }
 
-boost::optional<double> OutputTableTimeBins::intervalSize() const {
-  return getImpl<detail::OutputTableTimeBins_Impl>()->intervalSize();
-}
+  std::string OutputTableTimeBins::variableName() const {
+    return getImpl<detail::OutputTableTimeBins_Impl>()->variableName();
+  }
 
-boost::optional<int> OutputTableTimeBins::intervalCount() const {
-  return getImpl<detail::OutputTableTimeBins_Impl>()->intervalCount();
-}
+  bool OutputTableTimeBins::setVariableName(const std::string& variableName) {
+    return getImpl<detail::OutputTableTimeBins_Impl>()->setVariableName(variableName);
+  }
 
-boost::optional<std::string> OutputTableTimeBins::variableType() const {
-  return getImpl<detail::OutputTableTimeBins_Impl>()->variableType();
-}
+  boost::optional<double> OutputTableTimeBins::intervalStart() const {
+    return getImpl<detail::OutputTableTimeBins_Impl>()->intervalStart();
+  }
 
-bool OutputTableTimeBins::setKeyValue(const std::string& keyValue) {
-  return getImpl<detail::OutputTableTimeBins_Impl>()->setKeyValue(keyValue);
-}
+  bool OutputTableTimeBins::setIntervalStart(double intervalStart) {
+    return getImpl<detail::OutputTableTimeBins_Impl>()->setIntervalStart(intervalStart);
+  }
 
-void OutputTableTimeBins::resetKeyValue() {
-  getImpl<detail::OutputTableTimeBins_Impl>()->resetKeyValue();
-}
+  void OutputTableTimeBins::resetIntervalStart() {
+    getImpl<detail::OutputTableTimeBins_Impl>()->resetIntervalStart();
+  }
 
-bool OutputTableTimeBins::setVariableName(const std::string& variableName) {
-  return getImpl<detail::OutputTableTimeBins_Impl>()->setVariableName(variableName);
-}
+  boost::optional<double> OutputTableTimeBins::intervalSize() const {
+    return getImpl<detail::OutputTableTimeBins_Impl>()->intervalSize();
+  }
 
-bool OutputTableTimeBins::setIntervalStart(double intervalStart) {
-  return getImpl<detail::OutputTableTimeBins_Impl>()->setIntervalStart(intervalStart);
-}
+  bool OutputTableTimeBins::setIntervalSize(double intervalSize) {
+    return getImpl<detail::OutputTableTimeBins_Impl>()->setIntervalSize(intervalSize);
+  }
 
-void OutputTableTimeBins::resetIntervalStart() {
-  getImpl<detail::OutputTableTimeBins_Impl>()->resetIntervalStart();
-}
+  void OutputTableTimeBins::resetIntervalSize() {
+    getImpl<detail::OutputTableTimeBins_Impl>()->resetIntervalSize();
+  }
 
-bool OutputTableTimeBins::setIntervalSize(double intervalSize) {
-  return getImpl<detail::OutputTableTimeBins_Impl>()->setIntervalSize(intervalSize);
-}
+  boost::optional<int> OutputTableTimeBins::intervalCount() const {
+    return getImpl<detail::OutputTableTimeBins_Impl>()->intervalCount();
+  }
 
-void OutputTableTimeBins::resetIntervalSize() {
-  getImpl<detail::OutputTableTimeBins_Impl>()->resetIntervalSize();
-}
+  bool OutputTableTimeBins::setIntervalCount(int intervalCount) {
+    return getImpl<detail::OutputTableTimeBins_Impl>()->setIntervalCount(intervalCount);
+  }
 
-bool OutputTableTimeBins::setIntervalCount(int intervalCount) {
-  return getImpl<detail::OutputTableTimeBins_Impl>()->setIntervalCount(intervalCount);
-}
+  void OutputTableTimeBins::resetIntervalCount() {
+    getImpl<detail::OutputTableTimeBins_Impl>()->resetIntervalCount();
+  }
 
-void OutputTableTimeBins::resetIntervalCount() {
-  getImpl<detail::OutputTableTimeBins_Impl>()->resetIntervalCount();
-}
+  boost::optional<std::string> OutputTableTimeBins::variableType() const {
+    return getImpl<detail::OutputTableTimeBins_Impl>()->variableType();
+  }
 
-bool OutputTableTimeBins::setVariableType(const std::string& variableType) {
-  return getImpl<detail::OutputTableTimeBins_Impl>()->setVariableType(variableType);
-}
+  bool OutputTableTimeBins::setVariableType(const std::string& variableType) {
+    return getImpl<detail::OutputTableTimeBins_Impl>()->setVariableType(variableType);
+  }
 
-void OutputTableTimeBins::resetVariableType() {
-  getImpl<detail::OutputTableTimeBins_Impl>()->resetVariableType();
-}
+  void OutputTableTimeBins::resetVariableType() {
+    getImpl<detail::OutputTableTimeBins_Impl>()->resetVariableType();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string OutputTableTimeBins_Impl::keyValue() const {
-  const auto value = getString(openstudio::Output_Table_TimeBinsFields::KeyValue, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string OutputTableTimeBins_Impl::keyValue() const {
+      const auto value = getString(openstudio::Output_Table_TimeBinsFields::KeyValue, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool OutputTableTimeBins_Impl::isKeyValueDefaulted() const {
-  return isEmpty(openstudio::Output_Table_TimeBinsFields::KeyValue);
-}
+    bool OutputTableTimeBins_Impl::isKeyValueDefaulted() const {
+      return isEmpty(openstudio::Output_Table_TimeBinsFields::KeyValue);
+    }
 
-std::string OutputTableTimeBins_Impl::variableName() const {
-  const auto value = getString(openstudio::Output_Table_TimeBinsFields::VariableName, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool OutputTableTimeBins_Impl::setKeyValue(const std::string& keyValue) {
+      const bool result = setString(openstudio::Output_Table_TimeBinsFields::KeyValue, keyValue);
+      OS_ASSERT(result);
+      return result;
+    }
 
-boost::optional<double> OutputTableTimeBins_Impl::intervalStart() const {
-  return getDouble(openstudio::Output_Table_TimeBinsFields::IntervalStart, true);
-}
+    void OutputTableTimeBins_Impl::resetKeyValue() {
+      const bool result = setString(openstudio::Output_Table_TimeBinsFields::KeyValue, "");
+      OS_ASSERT(result);
+    }
 
-boost::optional<double> OutputTableTimeBins_Impl::intervalSize() const {
-  return getDouble(openstudio::Output_Table_TimeBinsFields::IntervalSize, true);
-}
+    std::string OutputTableTimeBins_Impl::variableName() const {
+      const auto value = getString(openstudio::Output_Table_TimeBinsFields::VariableName, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-boost::optional<int> OutputTableTimeBins_Impl::intervalCount() const {
-  return getInt(openstudio::Output_Table_TimeBinsFields::IntervalCount, true);
-}
+    bool OutputTableTimeBins_Impl::setVariableName(const std::string& variableName) {
+      return setString(openstudio::Output_Table_TimeBinsFields::VariableName, variableName);
+    }
 
-boost::optional<std::string> OutputTableTimeBins_Impl::variableType() const {
-  return getString(openstudio::Output_Table_TimeBinsFields::VariableType, true);
-}
+    boost::optional<double> OutputTableTimeBins_Impl::intervalStart() const {
+      return getDouble(openstudio::Output_Table_TimeBinsFields::IntervalStart, true);
+    }
 
-bool OutputTableTimeBins_Impl::setKeyValue(const std::string& keyValue) {
-  const bool result = setString(openstudio::Output_Table_TimeBinsFields::KeyValue, keyValue);
-  OS_ASSERT(result);
-  return result;
-}
+    bool OutputTableTimeBins_Impl::setIntervalStart(double intervalStart) {
+      const bool result = setDouble(openstudio::Output_Table_TimeBinsFields::IntervalStart, intervalStart);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void OutputTableTimeBins_Impl::resetKeyValue() {
-  const bool result = setString(openstudio::Output_Table_TimeBinsFields::KeyValue, "");
-  OS_ASSERT(result);
-}
+    void OutputTableTimeBins_Impl::resetIntervalStart() {
+      const bool result = setString(openstudio::Output_Table_TimeBinsFields::IntervalStart, "");
+      OS_ASSERT(result);
+    }
 
-bool OutputTableTimeBins_Impl::setVariableName(const std::string& variableName) {
-  return setString(openstudio::Output_Table_TimeBinsFields::VariableName, variableName);
-}
+    boost::optional<double> OutputTableTimeBins_Impl::intervalSize() const {
+      return getDouble(openstudio::Output_Table_TimeBinsFields::IntervalSize, true);
+    }
 
-bool OutputTableTimeBins_Impl::setIntervalStart(double intervalStart) {
-  const bool result = setDouble(openstudio::Output_Table_TimeBinsFields::IntervalStart, intervalStart);
-  OS_ASSERT(result);
-  return result;
-}
+    bool OutputTableTimeBins_Impl::setIntervalSize(double intervalSize) {
+      const bool result = setDouble(openstudio::Output_Table_TimeBinsFields::IntervalSize, intervalSize);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void OutputTableTimeBins_Impl::resetIntervalStart() {
-  const bool result = setString(openstudio::Output_Table_TimeBinsFields::IntervalStart, "");
-  OS_ASSERT(result);
-}
+    void OutputTableTimeBins_Impl::resetIntervalSize() {
+      const bool result = setString(openstudio::Output_Table_TimeBinsFields::IntervalSize, "");
+      OS_ASSERT(result);
+    }
 
-bool OutputTableTimeBins_Impl::setIntervalSize(double intervalSize) {
-  const bool result = setDouble(openstudio::Output_Table_TimeBinsFields::IntervalSize, intervalSize);
-  OS_ASSERT(result);
-  return result;
-}
+    boost::optional<int> OutputTableTimeBins_Impl::intervalCount() const {
+      return getInt(openstudio::Output_Table_TimeBinsFields::IntervalCount, true);
+    }
 
-void OutputTableTimeBins_Impl::resetIntervalSize() {
-  const bool result = setString(openstudio::Output_Table_TimeBinsFields::IntervalSize, "");
-  OS_ASSERT(result);
-}
+    bool OutputTableTimeBins_Impl::setIntervalCount(int intervalCount) {
+      return setInt(openstudio::Output_Table_TimeBinsFields::IntervalCount, intervalCount);
+    }
 
-bool OutputTableTimeBins_Impl::setIntervalCount(int intervalCount) {
-  return setInt(openstudio::Output_Table_TimeBinsFields::IntervalCount, intervalCount);
-}
+    void OutputTableTimeBins_Impl::resetIntervalCount() {
+      const bool result = setString(openstudio::Output_Table_TimeBinsFields::IntervalCount, "");
+      OS_ASSERT(result);
+    }
 
-void OutputTableTimeBins_Impl::resetIntervalCount() {
-  const bool result = setString(openstudio::Output_Table_TimeBinsFields::IntervalCount, "");
-  OS_ASSERT(result);
-}
+    boost::optional<std::string> OutputTableTimeBins_Impl::variableType() const {
+      return getString(openstudio::Output_Table_TimeBinsFields::VariableType, true);
+    }
 
-bool OutputTableTimeBins_Impl::setVariableType(const std::string& variableType) {
-  return setString(openstudio::Output_Table_TimeBinsFields::VariableType, variableType);
-}
+    bool OutputTableTimeBins_Impl::setVariableType(const std::string& variableType) {
+      return setString(openstudio::Output_Table_TimeBinsFields::VariableType, variableType);
+    }
 
-void OutputTableTimeBins_Impl::resetVariableType() {
-  const bool result = setString(openstudio::Output_Table_TimeBinsFields::VariableType, "");
-  OS_ASSERT(result);
-}
+    void OutputTableTimeBins_Impl::resetVariableType() {
+      const bool result = setString(openstudio::Output_Table_TimeBinsFields::VariableType, "");
+      OS_ASSERT(result);
+    }
 
-std::vector<std::string> OutputTableTimeBins_Impl::variableTypeValues() const {
-  return openstudio::epmodel::OutputTableTimeBins::variableTypeValues();
-}
+    std::vector<std::string> OutputTableTimeBins_Impl::variableTypeValues() const {
+      return openstudio::epmodel::OutputTableTimeBins::variableTypeValues();
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

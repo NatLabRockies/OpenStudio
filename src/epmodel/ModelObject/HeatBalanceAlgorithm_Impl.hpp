@@ -13,37 +13,39 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HeatBalanceAlgorithm_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~HeatBalanceAlgorithm_Impl() override = default;
+    class EPMODEL_API HeatBalanceAlgorithm_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~HeatBalanceAlgorithm_Impl() override = default;
 
-  std::string algorithm() const;
-  bool isAlgorithmDefaulted() const;
-  double surfaceTemperatureUpperLimit() const;
-  bool isSurfaceTemperatureUpperLimitDefaulted() const;
-  double minimumSurfaceConvectionHeatTransferCoefficientValue() const;
-  bool isMinimumSurfaceConvectionHeatTransferCoefficientValueDefaulted() const;
-  double maximumSurfaceConvectionHeatTransferCoefficientValue() const;
-  bool isMaximumSurfaceConvectionHeatTransferCoefficientValueDefaulted() const;
+      std::string algorithm() const;
+      bool isAlgorithmDefaulted() const;
+      bool setAlgorithm(const std::string& algorithm);
+      void resetAlgorithm();
 
-  bool setAlgorithm(const std::string& algorithm);
-  void resetAlgorithm();
-  bool setSurfaceTemperatureUpperLimit(double surfaceTemperatureUpperLimit);
-  void resetSurfaceTemperatureUpperLimit();
-  bool setMinimumSurfaceConvectionHeatTransferCoefficientValue(double minimumSurfaceConvectionHeatTransferCoefficientValue);
-  void resetMinimumSurfaceConvectionHeatTransferCoefficientValue();
-  bool setMaximumSurfaceConvectionHeatTransferCoefficientValue(double maximumSurfaceConvectionHeatTransferCoefficientValue);
-  void resetMaximumSurfaceConvectionHeatTransferCoefficientValue();
+      double surfaceTemperatureUpperLimit() const;
+      bool isSurfaceTemperatureUpperLimitDefaulted() const;
+      bool setSurfaceTemperatureUpperLimit(double surfaceTemperatureUpperLimit);
+      void resetSurfaceTemperatureUpperLimit();
 
- private:
-  std::vector<std::string> algorithmValues() const;
-};
+      double minimumSurfaceConvectionHeatTransferCoefficientValue() const;
+      bool isMinimumSurfaceConvectionHeatTransferCoefficientValueDefaulted() const;
+      bool setMinimumSurfaceConvectionHeatTransferCoefficientValue(double minimumSurfaceConvectionHeatTransferCoefficientValue);
+      void resetMinimumSurfaceConvectionHeatTransferCoefficientValue();
 
-}  // namespace detail
+      double maximumSurfaceConvectionHeatTransferCoefficientValue() const;
+      bool isMaximumSurfaceConvectionHeatTransferCoefficientValueDefaulted() const;
+      bool setMaximumSurfaceConvectionHeatTransferCoefficientValue(double maximumSurfaceConvectionHeatTransferCoefficientValue);
+      void resetMaximumSurfaceConvectionHeatTransferCoefficientValue();
+
+     private:
+      std::vector<std::string> algorithmValues() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

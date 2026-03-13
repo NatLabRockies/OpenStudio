@@ -14,73 +14,73 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API StandardOpaqueMaterial_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~StandardOpaqueMaterial_Impl() override = default;
+    class EPMODEL_API StandardOpaqueMaterial_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~StandardOpaqueMaterial_Impl() override = default;
 
-  double thermalConductivity() const;
-  double thermalConductance() const;
-  double thermalResistivity() const;
-  double thermalResistance() const;
+      double thermalConductivity() const;
+      bool setThermalConductivity(double value);
 
-  boost::optional<double> thermalReflectance() const;
-  boost::optional<double> solarReflectance() const;
-  boost::optional<double> visibleReflectance() const;
+      double thermalConductance() const;
+      bool setThermalConductance(double value);
 
-  std::string roughness() const;
-  double thickness() const;
-  double conductivity() const;
-  double density() const;
-  double specificHeat() const;
+      double thermalResistivity() const;
+      bool setThermalResistivity(double value);
 
-  double thermalAbsorptance() const;
-  bool isThermalAbsorptanceDefaulted() const;
+      double thermalResistance() const;
+      bool setThermalResistance(double value);
 
-  double solarAbsorptance() const;
-  bool isSolarAbsorptanceDefaulted() const;
+      boost::optional<double> thermalReflectance() const;
+      bool setThermalReflectance(boost::optional<double> value);
 
-  double visibleAbsorptance() const;
-  bool isVisibleAbsorptanceDefaulted() const;
+      boost::optional<double> solarReflectance() const;
+      bool setSolarReflectance(boost::optional<double> value);
 
-  bool setThermalConductivity(double value);
-  bool setThermalConductance(double value);
-  bool setThermalResistivity(double value);
-  bool setThermalResistance(double value);
+      boost::optional<double> visibleReflectance() const;
+      bool setVisibleReflectance(boost::optional<double> value);
 
-  bool setThermalAbsorptance(boost::optional<double> value);
-  bool setThermalReflectance(boost::optional<double> value);
+      std::string roughness() const;
+      bool setRoughness(const std::string& roughness);
+      std::vector<std::string> roughnessValues() const;
 
-  bool setSolarAbsorptance(boost::optional<double> value);
-  bool setSolarReflectance(boost::optional<double> value);
+      double thickness() const;
+      bool setThickness(double thickness);
 
-  bool setVisibleAbsorptance(boost::optional<double> value);
-  bool setVisibleReflectance(boost::optional<double> value);
+      double conductivity() const;
+      bool setConductivity(double conductivity);
 
-  bool setRoughness(const std::string& roughness);
-  bool setThickness(double thickness);
-  bool setConductivity(double conductivity);
-  bool setDensity(double density);
-  bool setSpecificHeat(double specificHeat);
+      double density() const;
+      bool setDensity(double density);
 
-  bool setThermalAbsorptance(double thermalAbsorptance);
-  void resetThermalAbsorptance();
+      double specificHeat() const;
+      bool setSpecificHeat(double specificHeat);
 
-  bool setSolarAbsorptance(double solarAbsorptance);
-  void resetSolarAbsorptance();
+      double thermalAbsorptance() const;
+      bool isThermalAbsorptanceDefaulted() const;
+      bool setThermalAbsorptance(boost::optional<double> value);
+      bool setThermalAbsorptance(double thermalAbsorptance);
+      void resetThermalAbsorptance();
 
-  bool setVisibleAbsorptance(double visibleAbsorptance);
-  void resetVisibleAbsorptance();
+      double solarAbsorptance() const;
+      bool isSolarAbsorptanceDefaulted() const;
+      bool setSolarAbsorptance(boost::optional<double> value);
+      bool setSolarAbsorptance(double solarAbsorptance);
+      void resetSolarAbsorptance();
 
-  boost::optional<double> heatCapacity() const;
+      double visibleAbsorptance() const;
+      bool isVisibleAbsorptanceDefaulted() const;
+      bool setVisibleAbsorptance(boost::optional<double> value);
+      bool setVisibleAbsorptance(double visibleAbsorptance);
+      void resetVisibleAbsorptance();
 
-  std::vector<std::string> roughnessValues() const;
-};
+      boost::optional<double> heatCapacity() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

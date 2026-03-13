@@ -10,28 +10,28 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SetpointManagerMultiZoneMaximumHumidityAverage_Impl : public SetpointManager_Impl
-{
- public:
-  using SetpointManager_Impl::SetpointManager_Impl;
-  virtual ~SetpointManagerMultiZoneMaximumHumidityAverage_Impl() override = default;
+    class EPMODEL_API SetpointManagerMultiZoneMaximumHumidityAverage_Impl : public SetpointManager_Impl
+    {
+     public:
+      using SetpointManager_Impl::SetpointManager_Impl;
+      virtual ~SetpointManagerMultiZoneMaximumHumidityAverage_Impl() override = default;
 
-  double minimumSetpointHumidityRatio() const;
-  double maximumSetpointHumidityRatio() const;
+      double minimumSetpointHumidityRatio() const;
+      bool setMinimumSetpointHumidityRatio(double minimumSetpointHumidityRatio);
 
-  bool setMinimumSetpointHumidityRatio(double minimumSetpointHumidityRatio);
-  bool setMaximumSetpointHumidityRatio(double maximumSetpointHumidityRatio);
+      double maximumSetpointHumidityRatio() const;
+      bool setMaximumSetpointHumidityRatio(double maximumSetpointHumidityRatio);
 
- protected:
-  unsigned setpointNodeFieldIndex() const override;
-  unsigned controlVariableFieldIndex() const override;
+     protected:
+      unsigned setpointNodeFieldIndex() const override;
+      unsigned controlVariableFieldIndex() const override;
 
-  void doCanonicalize(LoadContext& context) override;
-};
+      void doCanonicalize(LoadContext& context) override;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

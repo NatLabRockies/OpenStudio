@@ -40,6 +40,33 @@ namespace epmodel {
     getImpl<detail::SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl>()->resetMassTransferCoefficient();
   }
 
+}  // namespace epmodel
+}  // namespace openstudio
+
+namespace openstudio {
+namespace epmodel {
+  namespace detail {
+
+    boost::optional<double> SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl::massTransferCoefficient() const {
+      return getDouble(openstudio::SurfaceContaminantSourceAndSink_Generic_BoundaryLayerDiffusionFields::MassTransferCoefficient, true);
+    }
+
+    bool SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl::setMassTransferCoefficient(double massTransferCoefficient) {
+      return setDouble(openstudio::SurfaceContaminantSourceAndSink_Generic_BoundaryLayerDiffusionFields::MassTransferCoefficient,
+                       massTransferCoefficient);
+    }
+
+    void SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl::resetMassTransferCoefficient() {
+      OS_ASSERT(setString(openstudio::SurfaceContaminantSourceAndSink_Generic_BoundaryLayerDiffusionFields::MassTransferCoefficient, ""));
+    }
+
+  }  // namespace detail
+}  // namespace epmodel
+}  // namespace openstudio
+
+namespace openstudio {
+namespace epmodel {
+
   boost::optional<double> SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion::henryAdsorptionConstantorPartitionCoefficient() const {
     return getImpl<detail::SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl>()->henryAdsorptionConstantorPartitionCoefficient();
   }
@@ -60,19 +87,6 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
-
-    boost::optional<double> SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl::massTransferCoefficient() const {
-      return getDouble(openstudio::SurfaceContaminantSourceAndSink_Generic_BoundaryLayerDiffusionFields::MassTransferCoefficient, true);
-    }
-
-    bool SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl::setMassTransferCoefficient(double massTransferCoefficient) {
-      return setDouble(openstudio::SurfaceContaminantSourceAndSink_Generic_BoundaryLayerDiffusionFields::MassTransferCoefficient,
-                       massTransferCoefficient);
-    }
-
-    void SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl::resetMassTransferCoefficient() {
-      OS_ASSERT(setString(openstudio::SurfaceContaminantSourceAndSink_Generic_BoundaryLayerDiffusionFields::MassTransferCoefficient, ""));
-    }
 
     boost::optional<double> SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl::henryAdsorptionConstantorPartitionCoefficient() const {
       return getDouble(

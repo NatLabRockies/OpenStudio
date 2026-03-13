@@ -15,52 +15,53 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class PhotovoltaicPerformanceSimple_Impl;
-}
+  namespace detail {
+    class PhotovoltaicPerformanceSimple_Impl;
+  }
 
-class EPMODEL_API PhotovoltaicPerformanceSimple : public ModelObject
-{
- public:
-  explicit PhotovoltaicPerformanceSimple(const Model& model);
+  class EPMODEL_API PhotovoltaicPerformanceSimple : public ModelObject
+  {
+   public:
+    explicit PhotovoltaicPerformanceSimple(const Model& model);
 
-  virtual ~PhotovoltaicPerformanceSimple() override = default;
-  PhotovoltaicPerformanceSimple(const PhotovoltaicPerformanceSimple& other) = default;
-  PhotovoltaicPerformanceSimple(PhotovoltaicPerformanceSimple&& other) = default;
-  PhotovoltaicPerformanceSimple& operator=(const PhotovoltaicPerformanceSimple&) = default;
-  PhotovoltaicPerformanceSimple& operator=(PhotovoltaicPerformanceSimple&&) = default;
+    virtual ~PhotovoltaicPerformanceSimple() override = default;
+    PhotovoltaicPerformanceSimple(const PhotovoltaicPerformanceSimple& other) = default;
+    PhotovoltaicPerformanceSimple(PhotovoltaicPerformanceSimple&& other) = default;
+    PhotovoltaicPerformanceSimple& operator=(const PhotovoltaicPerformanceSimple&) = default;
+    PhotovoltaicPerformanceSimple& operator=(PhotovoltaicPerformanceSimple&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> conversionEfficiencyInputModeValues();
+    static std::vector<std::string> conversionEfficiencyInputModeValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model PhotovoltaicPerformanceSimple scalar accessor naming/signatures.
-  // - Field Mapping: Preserved APIs map directly to EnergyPlus PhotovoltaicPerformance:Simple scalar fields.
-  // - Field Mapping: Relationship field EfficiencyScheduleName is intentionally excluded from scalar-only scaffold scope.
-  // - TODO(parity): Add non-scalar schedule relationship APIs only if/when parity scope expands.
-  double fractionOfSurfaceAreaWithActiveSolarCells() const;
-  bool isfractionOfSurfaceAreaWithActiveSolarCellsDefaulted() const;
-  std::string conversionEfficiencyInputMode() const;
-  boost::optional<double> fixedEfficiency() const;
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model PhotovoltaicPerformanceSimple scalar accessor naming/signatures.
+    // - Field Mapping: Preserved APIs map directly to EnergyPlus PhotovoltaicPerformance:Simple scalar fields.
+    // - Field Mapping: Relationship field EfficiencyScheduleName is intentionally excluded from scalar-only scaffold scope.
+    // - TODO(parity): Add non-scalar schedule relationship APIs only if/when parity scope expands.
+    double fractionOfSurfaceAreaWithActiveSolarCells() const;
+    bool isfractionOfSurfaceAreaWithActiveSolarCellsDefaulted() const;
+    bool setFractionOfSurfaceAreaWithActiveSolarCells(double fractionOfSurfaceAreaWithActiveSolarCells);
+    void resetFractionOfSurfaceAreaWithActiveSolarCells();
 
-  bool setFractionOfSurfaceAreaWithActiveSolarCells(double fractionOfSurfaceAreaWithActiveSolarCells);
-  void resetFractionOfSurfaceAreaWithActiveSolarCells();
-  bool setConversionEfficiencyInputMode(const std::string& conversionEfficiencyInputMode);
-  bool setFixedEfficiency(double fixedEfficiency);
-  void resetFixedEfficiency();
+    std::string conversionEfficiencyInputMode() const;
+    bool setConversionEfficiencyInputMode(const std::string& conversionEfficiencyInputMode);
 
- protected:
-  using ImplType = detail::PhotovoltaicPerformanceSimple_Impl;
+    boost::optional<double> fixedEfficiency() const;
+    bool setFixedEfficiency(double fixedEfficiency);
+    void resetFixedEfficiency();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::PhotovoltaicPerformanceSimple_Impl;
 
-  explicit PhotovoltaicPerformanceSimple(std::shared_ptr<detail::PhotovoltaicPerformanceSimple_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit PhotovoltaicPerformanceSimple(std::shared_ptr<detail::PhotovoltaicPerformanceSimple_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

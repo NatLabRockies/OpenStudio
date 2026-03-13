@@ -16,53 +16,57 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class ExternalInterfaceFunctionalMockupUnitImportToSchedule_Impl;
-}
+  namespace detail {
+    class ExternalInterfaceFunctionalMockupUnitImportToSchedule_Impl;
+  }
 
-class EPMODEL_API ExternalInterfaceFunctionalMockupUnitImportToSchedule : public ModelObject
-{
- public:
-  explicit ExternalInterfaceFunctionalMockupUnitImportToSchedule(const Model& model);
+  class EPMODEL_API ExternalInterfaceFunctionalMockupUnitImportToSchedule : public ModelObject
+  {
+   public:
+    explicit ExternalInterfaceFunctionalMockupUnitImportToSchedule(const Model& model);
 
-  virtual ~ExternalInterfaceFunctionalMockupUnitImportToSchedule() override = default;
-  ExternalInterfaceFunctionalMockupUnitImportToSchedule(const ExternalInterfaceFunctionalMockupUnitImportToSchedule& other) = default;
-  ExternalInterfaceFunctionalMockupUnitImportToSchedule(ExternalInterfaceFunctionalMockupUnitImportToSchedule&& other) = default;
-  ExternalInterfaceFunctionalMockupUnitImportToSchedule& operator=(const ExternalInterfaceFunctionalMockupUnitImportToSchedule&) = default;
-  ExternalInterfaceFunctionalMockupUnitImportToSchedule& operator=(ExternalInterfaceFunctionalMockupUnitImportToSchedule&&) = default;
+    virtual ~ExternalInterfaceFunctionalMockupUnitImportToSchedule() override = default;
+    ExternalInterfaceFunctionalMockupUnitImportToSchedule(const ExternalInterfaceFunctionalMockupUnitImportToSchedule& other) = default;
+    ExternalInterfaceFunctionalMockupUnitImportToSchedule(ExternalInterfaceFunctionalMockupUnitImportToSchedule&& other) = default;
+    ExternalInterfaceFunctionalMockupUnitImportToSchedule& operator=(const ExternalInterfaceFunctionalMockupUnitImportToSchedule&) = default;
+    ExternalInterfaceFunctionalMockupUnitImportToSchedule& operator=(ExternalInterfaceFunctionalMockupUnitImportToSchedule&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::ExternalInterfaceFunctionalMockupUnitImportToSchedule scalar accessor names/signatures.
-  // - Field Mapping: fMUInstanceName -> ExternalInterface:FunctionalMockupUnitImport:To:Schedule, FMU Instance Name.
-  // - Field Mapping: fMUVariableName -> ExternalInterface:FunctionalMockupUnitImport:To:Schedule, FMU Variable Name.
-  // - Field Mapping: initialValue -> ExternalInterface:FunctionalMockupUnitImport:To:Schedule, Initial Value.
-  // - Field Mapping: fMUFile / scheduleTypeLimits are relationship APIs and excluded from scalar scaffold.
-  // - ForwardTranslator evidence: ForwardTranslateExternalInterfaceFunctionalMockupUnitImportToSchedule.cpp writes
-  //   FMU File Name from modelObject.fMUFile().fMUFileName(), and writes scalar fields from these APIs.
-  // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
-  std::string fMUInstanceName() const;
-  bool setFMUInstanceName(const std::string& fMUInstanceName);
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model::ExternalInterfaceFunctionalMockupUnitImportToSchedule scalar accessor names/signatures.
+    // - Field Mapping: fMUInstanceName -> ExternalInterface:FunctionalMockupUnitImport:To:Schedule, FMU Instance Name.
+    // - Field Mapping: fMUVariableName -> ExternalInterface:FunctionalMockupUnitImport:To:Schedule, FMU Variable Name.
+    // - Field Mapping: initialValue -> ExternalInterface:FunctionalMockupUnitImport:To:Schedule, Initial Value.
+    // - Field Mapping: fMUFile / scheduleTypeLimits are relationship APIs and excluded from scalar scaffold.
+    // - ForwardTranslator evidence: ForwardTranslateExternalInterfaceFunctionalMockupUnitImportToSchedule.cpp writes
+    //   FMU File Name from modelObject.fMUFile().fMUFileName(), and writes scalar fields from these APIs.
+    // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
 
-  std::string fMUVariableName() const;
-  bool setFMUVariableName(const std::string& fMUVariableName);
+    // FMU Instance Name accessors
+    std::string fMUInstanceName() const;
+    bool setFMUInstanceName(const std::string& fMUInstanceName);
 
-  double initialValue() const;
-  bool setInitialValue(double initialValue);
+    // FMU Variable Name accessors
+    std::string fMUVariableName() const;
+    bool setFMUVariableName(const std::string& fMUVariableName);
 
- protected:
-  using ImplType = detail::ExternalInterfaceFunctionalMockupUnitImportToSchedule_Impl;
+    // Initial Value accessors
+    double initialValue() const;
+    bool setInitialValue(double initialValue);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::ExternalInterfaceFunctionalMockupUnitImportToSchedule_Impl;
 
-  explicit ExternalInterfaceFunctionalMockupUnitImportToSchedule(
-    std::shared_ptr<detail::ExternalInterfaceFunctionalMockupUnitImportToSchedule_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit ExternalInterfaceFunctionalMockupUnitImportToSchedule(
+      std::shared_ptr<detail::ExternalInterfaceFunctionalMockupUnitImportToSchedule_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

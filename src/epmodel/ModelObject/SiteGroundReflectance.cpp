@@ -31,100 +31,20 @@ namespace epmodel {
     return getImpl<detail::SiteGroundReflectance_Impl>()->isJanuaryGroundReflectanceDefaulted();
   }
 
-  double SiteGroundReflectance::februaryGroundReflectance() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->februaryGroundReflectance();
-  }
-
-  bool SiteGroundReflectance::isFebruaryGroundReflectanceDefaulted() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->isFebruaryGroundReflectanceDefaulted();
-  }
-
-  double SiteGroundReflectance::marchGroundReflectance() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->marchGroundReflectance();
-  }
-
-  bool SiteGroundReflectance::isMarchGroundReflectanceDefaulted() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->isMarchGroundReflectanceDefaulted();
-  }
-
-  double SiteGroundReflectance::aprilGroundReflectance() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->aprilGroundReflectance();
-  }
-
-  bool SiteGroundReflectance::isAprilGroundReflectanceDefaulted() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->isAprilGroundReflectanceDefaulted();
-  }
-
-  double SiteGroundReflectance::mayGroundReflectance() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->mayGroundReflectance();
-  }
-
-  bool SiteGroundReflectance::isMayGroundReflectanceDefaulted() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->isMayGroundReflectanceDefaulted();
-  }
-
-  double SiteGroundReflectance::juneGroundReflectance() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->juneGroundReflectance();
-  }
-
-  bool SiteGroundReflectance::isJuneGroundReflectanceDefaulted() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->isJuneGroundReflectanceDefaulted();
-  }
-
-  double SiteGroundReflectance::julyGroundReflectance() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->julyGroundReflectance();
-  }
-
-  bool SiteGroundReflectance::isJulyGroundReflectanceDefaulted() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->isJulyGroundReflectanceDefaulted();
-  }
-
-  double SiteGroundReflectance::augustGroundReflectance() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->augustGroundReflectance();
-  }
-
-  bool SiteGroundReflectance::isAugustGroundReflectanceDefaulted() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->isAugustGroundReflectanceDefaulted();
-  }
-
-  double SiteGroundReflectance::septemberGroundReflectance() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->septemberGroundReflectance();
-  }
-
-  bool SiteGroundReflectance::isSeptemberGroundReflectanceDefaulted() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->isSeptemberGroundReflectanceDefaulted();
-  }
-
-  double SiteGroundReflectance::octoberGroundReflectance() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->octoberGroundReflectance();
-  }
-
-  bool SiteGroundReflectance::isOctoberGroundReflectanceDefaulted() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->isOctoberGroundReflectanceDefaulted();
-  }
-
-  double SiteGroundReflectance::novemberGroundReflectance() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->novemberGroundReflectance();
-  }
-
-  bool SiteGroundReflectance::isNovemberGroundReflectanceDefaulted() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->isNovemberGroundReflectanceDefaulted();
-  }
-
-  double SiteGroundReflectance::decemberGroundReflectance() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->decemberGroundReflectance();
-  }
-
-  bool SiteGroundReflectance::isDecemberGroundReflectanceDefaulted() const {
-    return getImpl<detail::SiteGroundReflectance_Impl>()->isDecemberGroundReflectanceDefaulted();
-  }
-
   bool SiteGroundReflectance::setJanuaryGroundReflectance(double januaryGroundReflectance) {
     return getImpl<detail::SiteGroundReflectance_Impl>()->setJanuaryGroundReflectance(januaryGroundReflectance);
   }
 
   void SiteGroundReflectance::resetJanuaryGroundReflectance() {
     getImpl<detail::SiteGroundReflectance_Impl>()->resetJanuaryGroundReflectance();
+  }
+
+  double SiteGroundReflectance::februaryGroundReflectance() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->februaryGroundReflectance();
+  }
+
+  bool SiteGroundReflectance::isFebruaryGroundReflectanceDefaulted() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->isFebruaryGroundReflectanceDefaulted();
   }
 
   bool SiteGroundReflectance::setFebruaryGroundReflectance(double februaryGroundReflectance) {
@@ -135,12 +55,28 @@ namespace epmodel {
     getImpl<detail::SiteGroundReflectance_Impl>()->resetFebruaryGroundReflectance();
   }
 
+  double SiteGroundReflectance::marchGroundReflectance() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->marchGroundReflectance();
+  }
+
+  bool SiteGroundReflectance::isMarchGroundReflectanceDefaulted() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->isMarchGroundReflectanceDefaulted();
+  }
+
   bool SiteGroundReflectance::setMarchGroundReflectance(double marchGroundReflectance) {
     return getImpl<detail::SiteGroundReflectance_Impl>()->setMarchGroundReflectance(marchGroundReflectance);
   }
 
   void SiteGroundReflectance::resetMarchGroundReflectance() {
     getImpl<detail::SiteGroundReflectance_Impl>()->resetMarchGroundReflectance();
+  }
+
+  double SiteGroundReflectance::aprilGroundReflectance() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->aprilGroundReflectance();
+  }
+
+  bool SiteGroundReflectance::isAprilGroundReflectanceDefaulted() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->isAprilGroundReflectanceDefaulted();
   }
 
   bool SiteGroundReflectance::setAprilGroundReflectance(double aprilGroundReflectance) {
@@ -151,12 +87,28 @@ namespace epmodel {
     getImpl<detail::SiteGroundReflectance_Impl>()->resetAprilGroundReflectance();
   }
 
+  double SiteGroundReflectance::mayGroundReflectance() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->mayGroundReflectance();
+  }
+
+  bool SiteGroundReflectance::isMayGroundReflectanceDefaulted() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->isMayGroundReflectanceDefaulted();
+  }
+
   bool SiteGroundReflectance::setMayGroundReflectance(double mayGroundReflectance) {
     return getImpl<detail::SiteGroundReflectance_Impl>()->setMayGroundReflectance(mayGroundReflectance);
   }
 
   void SiteGroundReflectance::resetMayGroundReflectance() {
     getImpl<detail::SiteGroundReflectance_Impl>()->resetMayGroundReflectance();
+  }
+
+  double SiteGroundReflectance::juneGroundReflectance() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->juneGroundReflectance();
+  }
+
+  bool SiteGroundReflectance::isJuneGroundReflectanceDefaulted() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->isJuneGroundReflectanceDefaulted();
   }
 
   bool SiteGroundReflectance::setJuneGroundReflectance(double juneGroundReflectance) {
@@ -167,12 +119,28 @@ namespace epmodel {
     getImpl<detail::SiteGroundReflectance_Impl>()->resetJuneGroundReflectance();
   }
 
+  double SiteGroundReflectance::julyGroundReflectance() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->julyGroundReflectance();
+  }
+
+  bool SiteGroundReflectance::isJulyGroundReflectanceDefaulted() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->isJulyGroundReflectanceDefaulted();
+  }
+
   bool SiteGroundReflectance::setJulyGroundReflectance(double julyGroundReflectance) {
     return getImpl<detail::SiteGroundReflectance_Impl>()->setJulyGroundReflectance(julyGroundReflectance);
   }
 
   void SiteGroundReflectance::resetJulyGroundReflectance() {
     getImpl<detail::SiteGroundReflectance_Impl>()->resetJulyGroundReflectance();
+  }
+
+  double SiteGroundReflectance::augustGroundReflectance() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->augustGroundReflectance();
+  }
+
+  bool SiteGroundReflectance::isAugustGroundReflectanceDefaulted() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->isAugustGroundReflectanceDefaulted();
   }
 
   bool SiteGroundReflectance::setAugustGroundReflectance(double augustGroundReflectance) {
@@ -183,12 +151,28 @@ namespace epmodel {
     getImpl<detail::SiteGroundReflectance_Impl>()->resetAugustGroundReflectance();
   }
 
+  double SiteGroundReflectance::septemberGroundReflectance() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->septemberGroundReflectance();
+  }
+
+  bool SiteGroundReflectance::isSeptemberGroundReflectanceDefaulted() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->isSeptemberGroundReflectanceDefaulted();
+  }
+
   bool SiteGroundReflectance::setSeptemberGroundReflectance(double septemberGroundReflectance) {
     return getImpl<detail::SiteGroundReflectance_Impl>()->setSeptemberGroundReflectance(septemberGroundReflectance);
   }
 
   void SiteGroundReflectance::resetSeptemberGroundReflectance() {
     getImpl<detail::SiteGroundReflectance_Impl>()->resetSeptemberGroundReflectance();
+  }
+
+  double SiteGroundReflectance::octoberGroundReflectance() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->octoberGroundReflectance();
+  }
+
+  bool SiteGroundReflectance::isOctoberGroundReflectanceDefaulted() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->isOctoberGroundReflectanceDefaulted();
   }
 
   bool SiteGroundReflectance::setOctoberGroundReflectance(double octoberGroundReflectance) {
@@ -199,12 +183,28 @@ namespace epmodel {
     getImpl<detail::SiteGroundReflectance_Impl>()->resetOctoberGroundReflectance();
   }
 
+  double SiteGroundReflectance::novemberGroundReflectance() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->novemberGroundReflectance();
+  }
+
+  bool SiteGroundReflectance::isNovemberGroundReflectanceDefaulted() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->isNovemberGroundReflectanceDefaulted();
+  }
+
   bool SiteGroundReflectance::setNovemberGroundReflectance(double novemberGroundReflectance) {
     return getImpl<detail::SiteGroundReflectance_Impl>()->setNovemberGroundReflectance(novemberGroundReflectance);
   }
 
   void SiteGroundReflectance::resetNovemberGroundReflectance() {
     getImpl<detail::SiteGroundReflectance_Impl>()->resetNovemberGroundReflectance();
+  }
+
+  double SiteGroundReflectance::decemberGroundReflectance() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->decemberGroundReflectance();
+  }
+
+  bool SiteGroundReflectance::isDecemberGroundReflectanceDefaulted() const {
+    return getImpl<detail::SiteGroundReflectance_Impl>()->isDecemberGroundReflectanceDefaulted();
   }
 
   bool SiteGroundReflectance::setDecemberGroundReflectance(double decemberGroundReflectance) {

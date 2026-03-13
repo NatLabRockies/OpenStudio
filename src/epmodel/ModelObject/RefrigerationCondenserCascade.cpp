@@ -35,40 +35,16 @@ namespace epmodel {
     return getImpl<detail::RefrigerationCondenserCascade_Impl>()->ratedCondensingTemperature();
   }
 
+  bool RefrigerationCondenserCascade::setRatedCondensingTemperature(double ratedCondensingTemperature) {
+    return getImpl<detail::RefrigerationCondenserCascade_Impl>()->setRatedCondensingTemperature(ratedCondensingTemperature);
+  }
+
   double RefrigerationCondenserCascade::ratedApproachTemperatureDifference() const {
     return getImpl<detail::RefrigerationCondenserCascade_Impl>()->ratedApproachTemperatureDifference();
   }
 
   bool RefrigerationCondenserCascade::isRatedApproachTemperatureDifferenceDefaulted() const {
     return getImpl<detail::RefrigerationCondenserCascade_Impl>()->isRatedApproachTemperatureDifferenceDefaulted();
-  }
-
-  double RefrigerationCondenserCascade::ratedEffectiveTotalHeatRejectionRate() const {
-    return getImpl<detail::RefrigerationCondenserCascade_Impl>()->ratedEffectiveTotalHeatRejectionRate();
-  }
-
-  std::string RefrigerationCondenserCascade::condensingTemperatureControlType() const {
-    return getImpl<detail::RefrigerationCondenserCascade_Impl>()->condensingTemperatureControlType();
-  }
-
-  bool RefrigerationCondenserCascade::isCondensingTemperatureControlTypeDefaulted() const {
-    return getImpl<detail::RefrigerationCondenserCascade_Impl>()->isCondensingTemperatureControlTypeDefaulted();
-  }
-
-  boost::optional<double> RefrigerationCondenserCascade::condenserRefrigerantOperatingChargeInventory() const {
-    return getImpl<detail::RefrigerationCondenserCascade_Impl>()->condenserRefrigerantOperatingChargeInventory();
-  }
-
-  boost::optional<double> RefrigerationCondenserCascade::condensateReceiverRefrigerantInventory() const {
-    return getImpl<detail::RefrigerationCondenserCascade_Impl>()->condensateReceiverRefrigerantInventory();
-  }
-
-  boost::optional<double> RefrigerationCondenserCascade::condensatePipingRefrigerantInventory() const {
-    return getImpl<detail::RefrigerationCondenserCascade_Impl>()->condensatePipingRefrigerantInventory();
-  }
-
-  bool RefrigerationCondenserCascade::setRatedCondensingTemperature(double ratedCondensingTemperature) {
-    return getImpl<detail::RefrigerationCondenserCascade_Impl>()->setRatedCondensingTemperature(ratedCondensingTemperature);
   }
 
   bool RefrigerationCondenserCascade::setRatedApproachTemperatureDifference(double ratedApproachTemperatureDifference) {
@@ -79,8 +55,20 @@ namespace epmodel {
     getImpl<detail::RefrigerationCondenserCascade_Impl>()->resetRatedApproachTemperatureDifference();
   }
 
+  double RefrigerationCondenserCascade::ratedEffectiveTotalHeatRejectionRate() const {
+    return getImpl<detail::RefrigerationCondenserCascade_Impl>()->ratedEffectiveTotalHeatRejectionRate();
+  }
+
   bool RefrigerationCondenserCascade::setRatedEffectiveTotalHeatRejectionRate(double ratedEffectiveTotalHeatRejectionRate) {
     return getImpl<detail::RefrigerationCondenserCascade_Impl>()->setRatedEffectiveTotalHeatRejectionRate(ratedEffectiveTotalHeatRejectionRate);
+  }
+
+  std::string RefrigerationCondenserCascade::condensingTemperatureControlType() const {
+    return getImpl<detail::RefrigerationCondenserCascade_Impl>()->condensingTemperatureControlType();
+  }
+
+  bool RefrigerationCondenserCascade::isCondensingTemperatureControlTypeDefaulted() const {
+    return getImpl<detail::RefrigerationCondenserCascade_Impl>()->isCondensingTemperatureControlTypeDefaulted();
   }
 
   bool RefrigerationCondenserCascade::setCondensingTemperatureControlType(const std::string& condensingTemperatureControlType) {
@@ -89,6 +77,10 @@ namespace epmodel {
 
   void RefrigerationCondenserCascade::resetCondensingTemperatureControlType() {
     getImpl<detail::RefrigerationCondenserCascade_Impl>()->resetCondensingTemperatureControlType();
+  }
+
+  boost::optional<double> RefrigerationCondenserCascade::condenserRefrigerantOperatingChargeInventory() const {
+    return getImpl<detail::RefrigerationCondenserCascade_Impl>()->condenserRefrigerantOperatingChargeInventory();
   }
 
   bool RefrigerationCondenserCascade::setCondenserRefrigerantOperatingChargeInventory(double condenserRefrigerantOperatingChargeInventory) {
@@ -100,12 +92,20 @@ namespace epmodel {
     getImpl<detail::RefrigerationCondenserCascade_Impl>()->resetCondenserRefrigerantOperatingChargeInventory();
   }
 
+  boost::optional<double> RefrigerationCondenserCascade::condensateReceiverRefrigerantInventory() const {
+    return getImpl<detail::RefrigerationCondenserCascade_Impl>()->condensateReceiverRefrigerantInventory();
+  }
+
   bool RefrigerationCondenserCascade::setCondensateReceiverRefrigerantInventory(double condensateReceiverRefrigerantInventory) {
     return getImpl<detail::RefrigerationCondenserCascade_Impl>()->setCondensateReceiverRefrigerantInventory(condensateReceiverRefrigerantInventory);
   }
 
   void RefrigerationCondenserCascade::resetCondensateReceiverRefrigerantInventory() {
     getImpl<detail::RefrigerationCondenserCascade_Impl>()->resetCondensateReceiverRefrigerantInventory();
+  }
+
+  boost::optional<double> RefrigerationCondenserCascade::condensatePipingRefrigerantInventory() const {
+    return getImpl<detail::RefrigerationCondenserCascade_Impl>()->condensatePipingRefrigerantInventory();
   }
 
   bool RefrigerationCondenserCascade::setCondensatePipingRefrigerantInventory(double condensatePipingRefrigerantInventory) {
@@ -124,6 +124,10 @@ namespace epmodel {
       return *value;
     }
 
+    bool RefrigerationCondenserCascade_Impl::setRatedCondensingTemperature(double ratedCondensingTemperature) {
+      return setDouble(Refrigeration_Condenser_CascadeFields::RatedCondensingTemperature, ratedCondensingTemperature);
+    }
+
     double RefrigerationCondenserCascade_Impl::ratedApproachTemperatureDifference() const {
       const auto value = getDouble(Refrigeration_Condenser_CascadeFields::RatedApproachTemperatureDifference, true);
       OS_ASSERT(value);
@@ -134,10 +138,23 @@ namespace epmodel {
       return isEmpty(Refrigeration_Condenser_CascadeFields::RatedApproachTemperatureDifference);
     }
 
+    bool RefrigerationCondenserCascade_Impl::setRatedApproachTemperatureDifference(double ratedApproachTemperatureDifference) {
+      return setDouble(Refrigeration_Condenser_CascadeFields::RatedApproachTemperatureDifference, ratedApproachTemperatureDifference);
+    }
+
+    void RefrigerationCondenserCascade_Impl::resetRatedApproachTemperatureDifference() {
+      const bool result = setString(Refrigeration_Condenser_CascadeFields::RatedApproachTemperatureDifference, "");
+      OS_ASSERT(result);
+    }
+
     double RefrigerationCondenserCascade_Impl::ratedEffectiveTotalHeatRejectionRate() const {
       const auto value = getDouble(Refrigeration_Condenser_CascadeFields::RatedEffectiveTotalHeatRejectionRate, true);
       OS_ASSERT(value);
       return *value;
+    }
+
+    bool RefrigerationCondenserCascade_Impl::setRatedEffectiveTotalHeatRejectionRate(double ratedEffectiveTotalHeatRejectionRate) {
+      return setDouble(Refrigeration_Condenser_CascadeFields::RatedEffectiveTotalHeatRejectionRate, ratedEffectiveTotalHeatRejectionRate);
     }
 
     std::string RefrigerationCondenserCascade_Impl::condensingTemperatureControlType() const {
@@ -150,35 +167,6 @@ namespace epmodel {
       return isEmpty(Refrigeration_Condenser_CascadeFields::CondensingTemperatureControlType);
     }
 
-    boost::optional<double> RefrigerationCondenserCascade_Impl::condenserRefrigerantOperatingChargeInventory() const {
-      return getDouble(Refrigeration_Condenser_CascadeFields::CondenserRefrigerantOperatingChargeInventory, true);
-    }
-
-    boost::optional<double> RefrigerationCondenserCascade_Impl::condensateReceiverRefrigerantInventory() const {
-      return getDouble(Refrigeration_Condenser_CascadeFields::CondensateReceiverRefrigerantInventory, true);
-    }
-
-    boost::optional<double> RefrigerationCondenserCascade_Impl::condensatePipingRefrigerantInventory() const {
-      return getDouble(Refrigeration_Condenser_CascadeFields::CondensatePipingRefrigerantInventory, true);
-    }
-
-    bool RefrigerationCondenserCascade_Impl::setRatedCondensingTemperature(double ratedCondensingTemperature) {
-      return setDouble(Refrigeration_Condenser_CascadeFields::RatedCondensingTemperature, ratedCondensingTemperature);
-    }
-
-    bool RefrigerationCondenserCascade_Impl::setRatedApproachTemperatureDifference(double ratedApproachTemperatureDifference) {
-      return setDouble(Refrigeration_Condenser_CascadeFields::RatedApproachTemperatureDifference, ratedApproachTemperatureDifference);
-    }
-
-    void RefrigerationCondenserCascade_Impl::resetRatedApproachTemperatureDifference() {
-      const bool result = setString(Refrigeration_Condenser_CascadeFields::RatedApproachTemperatureDifference, "");
-      OS_ASSERT(result);
-    }
-
-    bool RefrigerationCondenserCascade_Impl::setRatedEffectiveTotalHeatRejectionRate(double ratedEffectiveTotalHeatRejectionRate) {
-      return setDouble(Refrigeration_Condenser_CascadeFields::RatedEffectiveTotalHeatRejectionRate, ratedEffectiveTotalHeatRejectionRate);
-    }
-
     bool RefrigerationCondenserCascade_Impl::setCondensingTemperatureControlType(const std::string& condensingTemperatureControlType) {
       return setString(Refrigeration_Condenser_CascadeFields::CondensingTemperatureControlType, condensingTemperatureControlType);
     }
@@ -186,6 +174,10 @@ namespace epmodel {
     void RefrigerationCondenserCascade_Impl::resetCondensingTemperatureControlType() {
       const bool result = setString(Refrigeration_Condenser_CascadeFields::CondensingTemperatureControlType, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> RefrigerationCondenserCascade_Impl::condenserRefrigerantOperatingChargeInventory() const {
+      return getDouble(Refrigeration_Condenser_CascadeFields::CondenserRefrigerantOperatingChargeInventory, true);
     }
 
     bool RefrigerationCondenserCascade_Impl::setCondenserRefrigerantOperatingChargeInventory(double condenserRefrigerantOperatingChargeInventory) {
@@ -198,6 +190,10 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> RefrigerationCondenserCascade_Impl::condensateReceiverRefrigerantInventory() const {
+      return getDouble(Refrigeration_Condenser_CascadeFields::CondensateReceiverRefrigerantInventory, true);
+    }
+
     bool RefrigerationCondenserCascade_Impl::setCondensateReceiverRefrigerantInventory(double condensateReceiverRefrigerantInventory) {
       return setDouble(Refrigeration_Condenser_CascadeFields::CondensateReceiverRefrigerantInventory, condensateReceiverRefrigerantInventory);
     }
@@ -205,6 +201,10 @@ namespace epmodel {
     void RefrigerationCondenserCascade_Impl::resetCondensateReceiverRefrigerantInventory() {
       const bool result = setString(Refrigeration_Condenser_CascadeFields::CondensateReceiverRefrigerantInventory, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> RefrigerationCondenserCascade_Impl::condensatePipingRefrigerantInventory() const {
+      return getDouble(Refrigeration_Condenser_CascadeFields::CondensatePipingRefrigerantInventory, true);
     }
 
     bool RefrigerationCondenserCascade_Impl::setCondensatePipingRefrigerantInventory(double condensatePipingRefrigerantInventory) {

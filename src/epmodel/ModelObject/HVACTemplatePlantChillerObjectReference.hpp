@@ -17,52 +17,50 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class HVACTemplatePlantChillerObjectReference_Impl;
-}
+  namespace detail {
+    class HVACTemplatePlantChillerObjectReference_Impl;
+  }
 
-class EPMODEL_API HVACTemplatePlantChillerObjectReference : public ModelObject
-{
- public:
-  explicit HVACTemplatePlantChillerObjectReference(const Model& model);
+  class EPMODEL_API HVACTemplatePlantChillerObjectReference : public ModelObject
+  {
+   public:
+    explicit HVACTemplatePlantChillerObjectReference(const Model& model);
 
-  virtual ~HVACTemplatePlantChillerObjectReference() override = default;
-  HVACTemplatePlantChillerObjectReference(const HVACTemplatePlantChillerObjectReference& other) = default;
-  HVACTemplatePlantChillerObjectReference(HVACTemplatePlantChillerObjectReference&& other) = default;
-  HVACTemplatePlantChillerObjectReference& operator=(const HVACTemplatePlantChillerObjectReference&) = default;
-  HVACTemplatePlantChillerObjectReference& operator=(HVACTemplatePlantChillerObjectReference&&) = default;
+    virtual ~HVACTemplatePlantChillerObjectReference() override = default;
+    HVACTemplatePlantChillerObjectReference(const HVACTemplatePlantChillerObjectReference& other) = default;
+    HVACTemplatePlantChillerObjectReference(HVACTemplatePlantChillerObjectReference&& other) = default;
+    HVACTemplatePlantChillerObjectReference& operator=(const HVACTemplatePlantChillerObjectReference&) = default;
+    HVACTemplatePlantChillerObjectReference& operator=(HVACTemplatePlantChillerObjectReference&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> chillerObjectTypeValues();
+    static std::vector<std::string> chillerObjectTypeValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map to HVACTemplate:Plant:Chiller:ObjectReference fields Chiller Object Type and Priority.
-  // - Field Mapping: Chiller Name is an object-list relationship field and is intentionally excluded in scalar-only scaffold.
-  // - TODO(parity): Revisit only if a future parity pass introduces relationship/object-link APIs.
-  std::string chillerObjectType() const;
-  boost::optional<double> priority() const;
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map to HVACTemplate:Plant:Chiller:ObjectReference fields Chiller Object Type and Priority.
+    // - Field Mapping: Chiller Name is an object-list relationship field and is intentionally excluded in scalar-only scaffold.
+    // - TODO(parity): Revisit only if a future parity pass introduces relationship/object-link APIs.
+    std::string chillerObjectType() const;
+    bool isChillerObjectTypeDefaulted() const;
+    bool setChillerObjectType(const std::string& chillerObjectType);
+    void resetChillerObjectType();
 
-  bool isChillerObjectTypeDefaulted() const;
+    boost::optional<double> priority() const;
+    bool setPriority(double priority);
+    void resetPriority();
 
-  bool setChillerObjectType(const std::string& chillerObjectType);
-  bool setPriority(double priority);
+   protected:
+    using ImplType = detail::HVACTemplatePlantChillerObjectReference_Impl;
 
-  void resetChillerObjectType();
-  void resetPriority();
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
- protected:
-  using ImplType = detail::HVACTemplatePlantChillerObjectReference_Impl;
-
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit HVACTemplatePlantChillerObjectReference(std::shared_ptr<detail::HVACTemplatePlantChillerObjectReference_Impl> impl);
-};
+    explicit HVACTemplatePlantChillerObjectReference(std::shared_ptr<detail::HVACTemplatePlantChillerObjectReference_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

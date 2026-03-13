@@ -13,60 +13,67 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CoilCoolingWater_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~CoilCoolingWater_Impl() override = default;
+    class EPMODEL_API CoilCoolingWater_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~CoilCoolingWater_Impl() override = default;
 
-  boost::optional<double> designWaterFlowRate() const;
-  bool setDesignWaterFlowRate(double value);
-  bool isDesignWaterFlowRateAutosized() const;
-  void autosizeDesignWaterFlowRate();
+      // Design water flow rate
+      boost::optional<double> designWaterFlowRate() const;
+      bool setDesignWaterFlowRate(double value);
+      bool isDesignWaterFlowRateAutosized() const;
+      void autosizeDesignWaterFlowRate();
 
-  boost::optional<double> designAirFlowRate() const;
-  bool setDesignAirFlowRate(double value);
-  bool isDesignAirFlowRateAutosized() const;
-  void autosizeDesignAirFlowRate();
+      // Design air flow rate
+      boost::optional<double> designAirFlowRate() const;
+      bool setDesignAirFlowRate(double value);
+      bool isDesignAirFlowRateAutosized() const;
+      void autosizeDesignAirFlowRate();
 
-  boost::optional<double> designInletWaterTemperature() const;
-  bool setDesignInletWaterTemperature(double value);
-  bool isDesignInletWaterTemperatureAutosized() const;
-  void autosizeDesignInletWaterTemperature();
+      // Design inlet water temperature
+      boost::optional<double> designInletWaterTemperature() const;
+      bool setDesignInletWaterTemperature(double value);
+      bool isDesignInletWaterTemperatureAutosized() const;
+      void autosizeDesignInletWaterTemperature();
 
-  boost::optional<double> designInletAirTemperature() const;
-  bool setDesignInletAirTemperature(double value);
-  bool isDesignInletAirTemperatureAutosized() const;
-  void autosizeDesignInletAirTemperature();
+      // Design inlet air temperature
+      boost::optional<double> designInletAirTemperature() const;
+      bool setDesignInletAirTemperature(double value);
+      bool isDesignInletAirTemperatureAutosized() const;
+      void autosizeDesignInletAirTemperature();
 
-  boost::optional<double> designOutletAirTemperature() const;
-  bool setDesignOutletAirTemperature(double value);
-  bool isDesignOutletAirTemperatureAutosized() const;
-  void autosizeDesignOutletAirTemperature();
+      // Design outlet air temperature
+      boost::optional<double> designOutletAirTemperature() const;
+      bool setDesignOutletAirTemperature(double value);
+      bool isDesignOutletAirTemperatureAutosized() const;
+      void autosizeDesignOutletAirTemperature();
 
-  boost::optional<double> designInletAirHumidityRatio() const;
-  bool setDesignInletAirHumidityRatio(double value);
-  bool isDesignInletAirHumidityRatioAutosized() const;
-  void autosizeDesignInletAirHumidityRatio();
+      // Design inlet air humidity ratio
+      boost::optional<double> designInletAirHumidityRatio() const;
+      bool setDesignInletAirHumidityRatio(double value);
+      bool isDesignInletAirHumidityRatioAutosized() const;
+      void autosizeDesignInletAirHumidityRatio();
 
-  boost::optional<double> designOutletAirHumidityRatio() const;
-  bool setDesignOutletAirHumidityRatio(double value);
-  bool isDesignOutletAirHumidityRatioAutosized() const;
-  void autosizeDesignOutletAirHumidityRatio();
+      // Design outlet air humidity ratio
+      boost::optional<double> designOutletAirHumidityRatio() const;
+      bool setDesignOutletAirHumidityRatio(double value);
+      bool isDesignOutletAirHumidityRatioAutosized() const;
+      void autosizeDesignOutletAirHumidityRatio();
 
-  std::string typeOfAnalysis() const;
-  bool setTypeOfAnalysis(const std::string& value);
+      std::string typeOfAnalysis() const;
+      bool setTypeOfAnalysis(const std::string& value);
 
-  std::string heatExchangerConfiguration() const;
-  bool setHeatExchangerConfiguration(const std::string& value);
+      std::string heatExchangerConfiguration() const;
+      bool setHeatExchangerConfiguration(const std::string& value);
 
-  std::vector<std::string> typeOfAnalysisValues() const;
-  std::vector<std::string> heatExchangerConfigurationValues() const;
-};
+      std::vector<std::string> typeOfAnalysisValues() const;
+      std::vector<std::string> heatExchangerConfigurationValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -45,6 +45,7 @@ namespace epmodel {
     //   Solar Absorbtivity of Exterior Baffle, Height Scale for Buoyancy-Driven Ventilation, Effective Thickness of Cavity Behind Exterior Baffle,
     //   Ratio of Actual Surface Area to Projected Surface Area, Effectiveness for Perforations with Respect to Wind, and Discharge Coefficient for Openings with Respect to Buoyancy Driven Flow.
     // - Field Mapping: Boundary Conditions Model Name and the extensible Surface 1 Name fields remain excluded because they serve as relationship/navigation targets.
+
     boost::optional<double> areaFractionOfOpenings() const;
     bool setAreaFractionOfOpenings(double areaFractionOfOpenings);
     void resetAreaFractionOfOpenings();

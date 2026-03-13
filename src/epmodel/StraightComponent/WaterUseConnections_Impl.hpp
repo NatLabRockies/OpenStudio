@@ -23,6 +23,9 @@ namespace epmodel {
       using StraightComponent_Impl::StraightComponent_Impl;
       virtual ~WaterUseConnections_Impl() override = default;
 
+      std::vector<std::string> drainWaterHeatExchangerTypeValues() const;
+      std::vector<std::string> drainWaterHeatExchangerDestinationValues() const;
+
       std::string drainWaterHeatExchangerType() const;
       bool setDrainWaterHeatExchangerType(const std::string& drainWaterHeatExchangerType);
 
@@ -35,9 +38,6 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
-
-      std::vector<std::string> drainWaterHeatExchangerTypeValues() const;
-      std::vector<std::string> drainWaterHeatExchangerDestinationValues() const;
     };
 
   }  // namespace detail

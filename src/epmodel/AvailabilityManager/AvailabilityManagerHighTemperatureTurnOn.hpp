@@ -14,41 +14,44 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class AvailabilityManagerHighTemperatureTurnOn_Impl;
-}
+  namespace detail {
+    class AvailabilityManagerHighTemperatureTurnOn_Impl;
+  }
 
-class EPMODEL_API AvailabilityManagerHighTemperatureTurnOn : public ModelObject
-{
- public:
-  explicit AvailabilityManagerHighTemperatureTurnOn(const Model& model);
+  class EPMODEL_API AvailabilityManagerHighTemperatureTurnOn : public ModelObject
+  {
+   public:
+    explicit AvailabilityManagerHighTemperatureTurnOn(const Model& model);
 
-  virtual ~AvailabilityManagerHighTemperatureTurnOn() override = default;
-  AvailabilityManagerHighTemperatureTurnOn(const AvailabilityManagerHighTemperatureTurnOn& other) = default;
-  AvailabilityManagerHighTemperatureTurnOn(AvailabilityManagerHighTemperatureTurnOn&& other) = default;
-  AvailabilityManagerHighTemperatureTurnOn& operator=(const AvailabilityManagerHighTemperatureTurnOn&) = default;
-  AvailabilityManagerHighTemperatureTurnOn& operator=(AvailabilityManagerHighTemperatureTurnOn&&) = default;
+    virtual ~AvailabilityManagerHighTemperatureTurnOn() override = default;
+    AvailabilityManagerHighTemperatureTurnOn(const AvailabilityManagerHighTemperatureTurnOn& other) = default;
+    AvailabilityManagerHighTemperatureTurnOn(AvailabilityManagerHighTemperatureTurnOn&& other) = default;
+    AvailabilityManagerHighTemperatureTurnOn& operator=(const AvailabilityManagerHighTemperatureTurnOn&) = default;
+    AvailabilityManagerHighTemperatureTurnOn& operator=(AvailabilityManagerHighTemperatureTurnOn&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model scalar accessor name/signature for this model-counterpart class.
-  // - Field Mapping: temperature maps to E+ AvailabilityManager:HighTemperatureTurnOn Temperature.
-  // - TODO(parity): Keep relationship field sensorNode out of this scalar-only scaffold pass.
-  double temperature() const;
-  bool setTemperature(double temperature);
+    /** @name Temperature Accessors */
+    //@{
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model scalar accessor name/signature for this model-counterpart class.
+    // - Field Mapping: temperature maps to E+ AvailabilityManager:HighTemperatureTurnOn Temperature.
+    // - TODO(parity): Keep relationship field sensorNode out of this scalar-only scaffold pass.
+    double temperature() const;
+    bool setTemperature(double temperature);
+    //@}
 
- protected:
-  using ImplType = detail::AvailabilityManagerHighTemperatureTurnOn_Impl;
+   protected:
+    using ImplType = detail::AvailabilityManagerHighTemperatureTurnOn_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit AvailabilityManagerHighTemperatureTurnOn(std::shared_ptr<detail::AvailabilityManagerHighTemperatureTurnOn_Impl> impl);
-};
+    explicit AvailabilityManagerHighTemperatureTurnOn(std::shared_ptr<detail::AvailabilityManagerHighTemperatureTurnOn_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

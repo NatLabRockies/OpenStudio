@@ -11,33 +11,37 @@
 namespace openstudio {
 namespace epmodel {
 
-class PlantLoop;
+  class PlantLoop;
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SizingPlant_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~SizingPlant_Impl() override = default;
+    class EPMODEL_API SizingPlant_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~SizingPlant_Impl() override = default;
 
-  std::string loopType() const;
-  double designLoopExitTemperature() const;
-  double loopDesignTemperatureDifference() const;
-  std::string sizingOption() const;
-  int zoneTimestepsinAveragingWindow() const;
-  std::string coincidentSizingFactorMode() const;
+      std::string loopType() const;
+      bool setLoopType(const std::string& loopType);
 
-  bool setLoopType(const std::string& loopType);
-  bool setDesignLoopExitTemperature(double designLoopExitTemperature);
-  bool setLoopDesignTemperatureDifference(double loopDesignTemperatureDifference);
-  bool setSizingOption(const std::string& sizingOption);
-  bool setZoneTimestepsinAveragingWindow(int zoneTimestepsinAveragingWindow);
-  bool setCoincidentSizingFactorMode(const std::string& coincidentSizingFactorMode);
-  bool setPlantLoop(const openstudio::epmodel::PlantLoop& plantLoop);
-};
+      double designLoopExitTemperature() const;
+      bool setDesignLoopExitTemperature(double designLoopExitTemperature);
 
-}  // namespace detail
+      double loopDesignTemperatureDifference() const;
+      bool setLoopDesignTemperatureDifference(double loopDesignTemperatureDifference);
+
+      std::string sizingOption() const;
+      bool setSizingOption(const std::string& sizingOption);
+
+      int zoneTimestepsinAveragingWindow() const;
+      bool setZoneTimestepsinAveragingWindow(int zoneTimestepsinAveragingWindow);
+
+      std::string coincidentSizingFactorMode() const;
+      bool setCoincidentSizingFactorMode(const std::string& coincidentSizingFactorMode);
+      bool setPlantLoop(const openstudio::epmodel::PlantLoop& plantLoop);
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

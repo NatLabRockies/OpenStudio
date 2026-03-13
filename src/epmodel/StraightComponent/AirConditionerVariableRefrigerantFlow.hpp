@@ -46,16 +46,16 @@ namespace epmodel {
     // - Field Mapping: condenserType preserves API semantics via explicit field value/default-reset behavior.
     // - TODO(parity): Extend scalar coverage beyond this initial scaffold while keeping relationship fields excluded.
     boost::optional<double> grossRatedTotalCoolingCapacity() const;
-    bool isGrossRatedTotalCoolingCapacityAutosized() const;
     bool setGrossRatedTotalCoolingCapacity(double grossRatedTotalCoolingCapacity);
+    bool isGrossRatedTotalCoolingCapacityAutosized() const;
     void autosizeGrossRatedTotalCoolingCapacity();
 
     double grossRatedCoolingCOP() const;
     bool setGrossRatedCoolingCOP(double grossRatedCoolingCOP);
 
     boost::optional<double> grossRatedHeatingCapacity() const;
-    bool isGrossRatedHeatingCapacityAutosized() const;
     bool setGrossRatedHeatingCapacity(double grossRatedHeatingCapacity);
+    bool isGrossRatedHeatingCapacityAutosized() const;
     void autosizeGrossRatedHeatingCapacity();
 
     double ratedHeatingCapacitySizingRatio() const;

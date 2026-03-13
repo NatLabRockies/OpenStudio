@@ -193,10 +193,10 @@ namespace epmodel {
 
     bool ZoneHVACPackagedTerminalAirConditioner_Impl::setSupplyAirFlowRateDuringCoolingOperation(
       boost::optional<double> supplyAirFlowRateDuringCoolingOperation) {
-      const bool result = supplyAirFlowRateDuringCoolingOperation
-                            ? setDouble(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingSupplyAirFlowRate,
-                                        supplyAirFlowRateDuringCoolingOperation.get(), false)
-                            : setString(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingSupplyAirFlowRate, "", false);
+      const bool result =
+        supplyAirFlowRateDuringCoolingOperation
+          ? setDouble(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingSupplyAirFlowRate, supplyAirFlowRateDuringCoolingOperation.get(), false)
+          : setString(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingSupplyAirFlowRate, "", false);
       OS_ASSERT(result);
       return result;
     }
@@ -204,6 +204,11 @@ namespace epmodel {
     void ZoneHVACPackagedTerminalAirConditioner_Impl::autosizeSupplyAirFlowRateDuringCoolingOperation() {
       bool result = setString(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingSupplyAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::autosizedSupplyAirFlowRateDuringCoolingOperation() const {
+      // epmodel does not currently resolve autosized values from SQL results.
+      return boost::none;
     }
 
     boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::supplyAirFlowRateDuringHeatingOperation() const {
@@ -221,10 +226,10 @@ namespace epmodel {
 
     bool ZoneHVACPackagedTerminalAirConditioner_Impl::setSupplyAirFlowRateDuringHeatingOperation(
       boost::optional<double> supplyAirFlowRateDuringHeatingOperation) {
-      const bool result = supplyAirFlowRateDuringHeatingOperation
-                            ? setDouble(ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingSupplyAirFlowRate,
-                                        supplyAirFlowRateDuringHeatingOperation.get(), false)
-                            : setString(ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingSupplyAirFlowRate, "", false);
+      const bool result =
+        supplyAirFlowRateDuringHeatingOperation
+          ? setDouble(ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingSupplyAirFlowRate, supplyAirFlowRateDuringHeatingOperation.get(), false)
+          : setString(ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingSupplyAirFlowRate, "", false);
       OS_ASSERT(result);
       return result;
     }
@@ -234,14 +239,18 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::autosizedSupplyAirFlowRateDuringHeatingOperation() const {
+      // epmodel does not currently resolve autosized values from SQL results.
+      return boost::none;
+    }
+
     boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::supplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
       return getDouble(ZoneHVAC_PackagedTerminalAirConditionerFields::NoLoadSupplyAirFlowRate, true);
     }
 
     bool ZoneHVACPackagedTerminalAirConditioner_Impl::isSupplyAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const {
       bool result = false;
-      boost::optional<std::string> value =
-        getString(ZoneHVAC_PackagedTerminalAirConditionerFields::NoLoadSupplyAirFlowRate, true);
+      boost::optional<std::string> value = getString(ZoneHVAC_PackagedTerminalAirConditionerFields::NoLoadSupplyAirFlowRate, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -266,6 +275,11 @@ namespace epmodel {
     void ZoneHVACPackagedTerminalAirConditioner_Impl::autosizeSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded() {
       bool result = setString(ZoneHVAC_PackagedTerminalAirConditionerFields::NoLoadSupplyAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::autosizedSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
+      // epmodel does not currently resolve autosized values from SQL results.
+      return boost::none;
     }
 
     bool ZoneHVACPackagedTerminalAirConditioner_Impl::noLoadSupplyAirFlowRateControlSetToLowSpeed() const {
@@ -296,8 +310,7 @@ namespace epmodel {
 
     bool ZoneHVACPackagedTerminalAirConditioner_Impl::isOutdoorAirFlowRateDuringCoolingOperationAutosized() const {
       bool result = false;
-      boost::optional<std::string> value =
-        getString(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingOutdoorAirFlowRate, true);
+      boost::optional<std::string> value = getString(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingOutdoorAirFlowRate, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -306,10 +319,10 @@ namespace epmodel {
 
     bool ZoneHVACPackagedTerminalAirConditioner_Impl::setOutdoorAirFlowRateDuringCoolingOperation(
       boost::optional<double> outdoorAirFlowRateDuringCoolingOperation) {
-      const bool result = outdoorAirFlowRateDuringCoolingOperation
-                            ? setDouble(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingOutdoorAirFlowRate,
-                                        outdoorAirFlowRateDuringCoolingOperation.get(), false)
-                            : setString(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingOutdoorAirFlowRate, "", false);
+      const bool result =
+        outdoorAirFlowRateDuringCoolingOperation
+          ? setDouble(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingOutdoorAirFlowRate, outdoorAirFlowRateDuringCoolingOperation.get(), false)
+          : setString(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingOutdoorAirFlowRate, "", false);
       OS_ASSERT(result);
       return result;
     }
@@ -319,14 +332,18 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::autosizedOutdoorAirFlowRateDuringCoolingOperation() const {
+      // epmodel does not currently resolve autosized values from SQL results.
+      return boost::none;
+    }
+
     boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::outdoorAirFlowRateDuringHeatingOperation() const {
       return getDouble(ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingOutdoorAirFlowRate, true);
     }
 
     bool ZoneHVACPackagedTerminalAirConditioner_Impl::isOutdoorAirFlowRateDuringHeatingOperationAutosized() const {
       bool result = false;
-      boost::optional<std::string> value =
-        getString(ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingOutdoorAirFlowRate, true);
+      boost::optional<std::string> value = getString(ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingOutdoorAirFlowRate, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -335,10 +352,10 @@ namespace epmodel {
 
     bool ZoneHVACPackagedTerminalAirConditioner_Impl::setOutdoorAirFlowRateDuringHeatingOperation(
       boost::optional<double> outdoorAirFlowRateDuringHeatingOperation) {
-      const bool result = outdoorAirFlowRateDuringHeatingOperation
-                            ? setDouble(ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingOutdoorAirFlowRate,
-                                        outdoorAirFlowRateDuringHeatingOperation.get(), false)
-                            : setString(ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingOutdoorAirFlowRate, "", false);
+      const bool result =
+        outdoorAirFlowRateDuringHeatingOperation
+          ? setDouble(ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingOutdoorAirFlowRate, outdoorAirFlowRateDuringHeatingOperation.get(), false)
+          : setString(ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingOutdoorAirFlowRate, "", false);
       OS_ASSERT(result);
       return result;
     }
@@ -348,14 +365,18 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::autosizedOutdoorAirFlowRateDuringHeatingOperation() const {
+      // epmodel does not currently resolve autosized values from SQL results.
+      return boost::none;
+    }
+
     boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
       return getDouble(ZoneHVAC_PackagedTerminalAirConditionerFields::NoLoadOutdoorAirFlowRate, true);
     }
 
     bool ZoneHVACPackagedTerminalAirConditioner_Impl::isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const {
       bool result = false;
-      boost::optional<std::string> value =
-        getString(ZoneHVAC_PackagedTerminalAirConditionerFields::NoLoadOutdoorAirFlowRate, true);
+      boost::optional<std::string> value = getString(ZoneHVAC_PackagedTerminalAirConditionerFields::NoLoadOutdoorAirFlowRate, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -364,11 +385,10 @@ namespace epmodel {
 
     bool ZoneHVACPackagedTerminalAirConditioner_Impl::setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(
       boost::optional<double> outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded) {
-      const bool result =
-        outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded
-          ? setDouble(ZoneHVAC_PackagedTerminalAirConditionerFields::NoLoadOutdoorAirFlowRate,
-                      outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded.get(), false)
-          : setString(ZoneHVAC_PackagedTerminalAirConditionerFields::NoLoadOutdoorAirFlowRate, "", false);
+      const bool result = outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded
+                            ? setDouble(ZoneHVAC_PackagedTerminalAirConditionerFields::NoLoadOutdoorAirFlowRate,
+                                        outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded.get(), false)
+                            : setString(ZoneHVAC_PackagedTerminalAirConditionerFields::NoLoadOutdoorAirFlowRate, "", false);
       OS_ASSERT(result);
       return result;
     }
@@ -381,6 +401,11 @@ namespace epmodel {
     void ZoneHVACPackagedTerminalAirConditioner_Impl::autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() {
       bool result = setString(ZoneHVAC_PackagedTerminalAirConditionerFields::NoLoadOutdoorAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
+      // epmodel does not currently resolve autosized values from SQL results.
+      return boost::none;
     }
 
     std::string ZoneHVACPackagedTerminalAirConditioner_Impl::fanPlacement() const {
@@ -402,36 +427,6 @@ namespace epmodel {
     void ZoneHVACPackagedTerminalAirConditioner_Impl::resetFanPlacement() {
       bool result = setString(ZoneHVAC_PackagedTerminalAirConditionerFields::FanPlacement, "");
       OS_ASSERT(result);
-    }
-
-    boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::autosizedSupplyAirFlowRateDuringCoolingOperation() const {
-      // epmodel does not currently resolve autosized values from SQL results.
-      return boost::none;
-    }
-
-    boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::autosizedSupplyAirFlowRateDuringHeatingOperation() const {
-      // epmodel does not currently resolve autosized values from SQL results.
-      return boost::none;
-    }
-
-    boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::autosizedSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
-      // epmodel does not currently resolve autosized values from SQL results.
-      return boost::none;
-    }
-
-    boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::autosizedOutdoorAirFlowRateDuringCoolingOperation() const {
-      // epmodel does not currently resolve autosized values from SQL results.
-      return boost::none;
-    }
-
-    boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::autosizedOutdoorAirFlowRateDuringHeatingOperation() const {
-      // epmodel does not currently resolve autosized values from SQL results.
-      return boost::none;
-    }
-
-    boost::optional<double> ZoneHVACPackagedTerminalAirConditioner_Impl::autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
-      // epmodel does not currently resolve autosized values from SQL results.
-      return boost::none;
     }
 
   }  // namespace detail

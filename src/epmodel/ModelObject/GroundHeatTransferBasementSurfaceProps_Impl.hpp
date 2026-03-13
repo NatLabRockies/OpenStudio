@@ -11,48 +11,51 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatTransferBasementSurfaceProps_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatTransferBasementSurfaceProps_Impl() override = default;
+    class EPMODEL_API GroundHeatTransferBasementSurfaceProps_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatTransferBasementSurfaceProps_Impl() override = default;
 
-  double aLBEDOSurfacealbedoforNosnowconditions() const;
-  double aLBEDOSurfacealbedoforsnowconditions() const;
-  double ePSLNSurfaceemissivityNoSnow() const;
-  double ePSLNSurfaceemissivitywithSnow() const;
-  double vEGHTSurfaceroughnessNosnowconditions() const;
-  double vEGHTSurfaceroughnessSnowconditions() const;
-  bool pETFlagPotentialevapotranspirationon() const;
+      double aLBEDOSurfacealbedoforNosnowconditions() const;
+      bool isALBEDOSurfacealbedoforNosnowconditionsDefaulted() const;
+      bool setALBEDOSurfacealbedoforNosnowconditions(double aLBEDOSurfacealbedoforNosnowconditions);
+      void resetALBEDOSurfacealbedoforNosnowconditions();
 
-  bool isALBEDOSurfacealbedoforNosnowconditionsDefaulted() const;
-  bool isALBEDOSurfacealbedoforsnowconditionsDefaulted() const;
-  bool isEPSLNSurfaceemissivityNoSnowDefaulted() const;
-  bool isEPSLNSurfaceemissivitywithSnowDefaulted() const;
-  bool isVEGHTSurfaceroughnessNosnowconditionsDefaulted() const;
-  bool isVEGHTSurfaceroughnessSnowconditionsDefaulted() const;
-  bool isPETFlagPotentialevapotranspirationonDefaulted() const;
+      double aLBEDOSurfacealbedoforsnowconditions() const;
+      bool isALBEDOSurfacealbedoforsnowconditionsDefaulted() const;
+      bool setALBEDOSurfacealbedoforsnowconditions(double aLBEDOSurfacealbedoforsnowconditions);
+      void resetALBEDOSurfacealbedoforsnowconditions();
 
-  bool setALBEDOSurfacealbedoforNosnowconditions(double aLBEDOSurfacealbedoforNosnowconditions);
-  bool setALBEDOSurfacealbedoforsnowconditions(double aLBEDOSurfacealbedoforsnowconditions);
-  bool setEPSLNSurfaceemissivityNoSnow(double ePSLNSurfaceemissivityNoSnow);
-  bool setEPSLNSurfaceemissivitywithSnow(double ePSLNSurfaceemissivitywithSnow);
-  bool setVEGHTSurfaceroughnessNosnowconditions(double vEGHTSurfaceroughnessNosnowconditions);
-  bool setVEGHTSurfaceroughnessSnowconditions(double vEGHTSurfaceroughnessSnowconditions);
-  bool setPETFlagPotentialevapotranspirationon(bool pETFlagPotentialevapotranspirationon);
+      double ePSLNSurfaceemissivityNoSnow() const;
+      bool isEPSLNSurfaceemissivityNoSnowDefaulted() const;
+      bool setEPSLNSurfaceemissivityNoSnow(double ePSLNSurfaceemissivityNoSnow);
+      void resetEPSLNSurfaceemissivityNoSnow();
 
-  void resetALBEDOSurfacealbedoforNosnowconditions();
-  void resetALBEDOSurfacealbedoforsnowconditions();
-  void resetEPSLNSurfaceemissivityNoSnow();
-  void resetEPSLNSurfaceemissivitywithSnow();
-  void resetVEGHTSurfaceroughnessNosnowconditions();
-  void resetVEGHTSurfaceroughnessSnowconditions();
-  void resetPETFlagPotentialevapotranspirationon();
-};
+      double ePSLNSurfaceemissivitywithSnow() const;
+      bool isEPSLNSurfaceemissivitywithSnowDefaulted() const;
+      bool setEPSLNSurfaceemissivitywithSnow(double ePSLNSurfaceemissivitywithSnow);
+      void resetEPSLNSurfaceemissivitywithSnow();
 
-}  // namespace detail
+      double vEGHTSurfaceroughnessNosnowconditions() const;
+      bool isVEGHTSurfaceroughnessNosnowconditionsDefaulted() const;
+      bool setVEGHTSurfaceroughnessNosnowconditions(double vEGHTSurfaceroughnessNosnowconditions);
+      void resetVEGHTSurfaceroughnessNosnowconditions();
+
+      double vEGHTSurfaceroughnessSnowconditions() const;
+      bool isVEGHTSurfaceroughnessSnowconditionsDefaulted() const;
+      bool setVEGHTSurfaceroughnessSnowconditions(double vEGHTSurfaceroughnessSnowconditions);
+      void resetVEGHTSurfaceroughnessSnowconditions();
+
+      bool pETFlagPotentialevapotranspirationon() const;
+      bool isPETFlagPotentialevapotranspirationonDefaulted() const;
+      bool setPETFlagPotentialevapotranspirationon(bool pETFlagPotentialevapotranspirationon);
+      void resetPETFlagPotentialevapotranspirationon();
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

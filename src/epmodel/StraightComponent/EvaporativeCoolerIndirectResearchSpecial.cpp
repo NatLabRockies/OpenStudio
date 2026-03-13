@@ -16,435 +16,431 @@
 namespace openstudio {
 namespace epmodel {
 
-EvaporativeCoolerIndirectResearchSpecial::EvaporativeCoolerIndirectResearchSpecial(const Model& model)
-  : StraightComponent(EvaporativeCoolerIndirectResearchSpecial::iddObjectType(), model) {
-  setCoolerMaximumEffectiveness(0.75);
-  setRecirculatingWaterPumpPowerConsumption(30.0);
-  setSecondaryFanTotalEfficiency(0.6);
-  setSecondaryFanDeltaPressure(124.6);
-  setDewpointEffectivenessFactor(0.9);
-  setDriftLossFraction(0.0);
-  setWaterPumpPowerSizingFactor(0.1);
-  setSecondaryAirFlowScalingFactor(1.0);
-  resetBlowdownConcentrationRatio();
-}
+  EvaporativeCoolerIndirectResearchSpecial::EvaporativeCoolerIndirectResearchSpecial(const Model& model)
+    : StraightComponent(EvaporativeCoolerIndirectResearchSpecial::iddObjectType(), model) {
+    setCoolerMaximumEffectiveness(0.75);
+    setRecirculatingWaterPumpPowerConsumption(30.0);
+    setSecondaryFanTotalEfficiency(0.6);
+    setSecondaryFanDeltaPressure(124.6);
+    setDewpointEffectivenessFactor(0.9);
+    setDriftLossFraction(0.0);
+    setWaterPumpPowerSizingFactor(0.1);
+    setSecondaryAirFlowScalingFactor(1.0);
+    resetBlowdownConcentrationRatio();
+  }
 
-EvaporativeCoolerIndirectResearchSpecial::EvaporativeCoolerIndirectResearchSpecial(
-  std::shared_ptr<detail::EvaporativeCoolerIndirectResearchSpecial_Impl> impl)
-  : StraightComponent(std::move(impl)) {}
+  EvaporativeCoolerIndirectResearchSpecial::EvaporativeCoolerIndirectResearchSpecial(
+    std::shared_ptr<detail::EvaporativeCoolerIndirectResearchSpecial_Impl> impl)
+    : StraightComponent(std::move(impl)) {}
 
-IddObjectType EvaporativeCoolerIndirectResearchSpecial::iddObjectType() {
-  return IddObjectType::EvaporativeCooler_Indirect_ResearchSpecial;
-}
+  IddObjectType EvaporativeCoolerIndirectResearchSpecial::iddObjectType() {
+    return IddObjectType::EvaporativeCooler_Indirect_ResearchSpecial;
+  }
 
-double EvaporativeCoolerIndirectResearchSpecial::coolerMaximumEffectiveness() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->coolerMaximumEffectiveness();
-}
+  double EvaporativeCoolerIndirectResearchSpecial::coolerMaximumEffectiveness() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->coolerMaximumEffectiveness();
+  }
 
-bool EvaporativeCoolerIndirectResearchSpecial::setCoolerMaximumEffectiveness(double coolerMaximumEffectiveness) {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setCoolerMaximumEffectiveness(coolerMaximumEffectiveness);
-}
+  bool EvaporativeCoolerIndirectResearchSpecial::setCoolerMaximumEffectiveness(double coolerMaximumEffectiveness) {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setCoolerMaximumEffectiveness(coolerMaximumEffectiveness);
+  }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::recirculatingWaterPumpPowerConsumption() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->recirculatingWaterPumpPowerConsumption();
-}
+  boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::recirculatingWaterPumpPowerConsumption() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->recirculatingWaterPumpPowerConsumption();
+  }
 
-bool EvaporativeCoolerIndirectResearchSpecial::isRecirculatingWaterPumpPowerConsumptionAutosized() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->isRecirculatingWaterPumpPowerConsumptionAutosized();
-}
+  bool EvaporativeCoolerIndirectResearchSpecial::isRecirculatingWaterPumpPowerConsumptionAutosized() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->isRecirculatingWaterPumpPowerConsumptionAutosized();
+  }
 
-bool EvaporativeCoolerIndirectResearchSpecial::setRecirculatingWaterPumpPowerConsumption(double recirculatingWaterPumpPowerConsumption) {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setRecirculatingWaterPumpPowerConsumption(
-    recirculatingWaterPumpPowerConsumption);
-}
+  bool EvaporativeCoolerIndirectResearchSpecial::setRecirculatingWaterPumpPowerConsumption(double recirculatingWaterPumpPowerConsumption) {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setRecirculatingWaterPumpPowerConsumption(
+      recirculatingWaterPumpPowerConsumption);
+  }
 
-void EvaporativeCoolerIndirectResearchSpecial::autosizeRecirculatingWaterPumpPowerConsumption() {
-  getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->autosizeRecirculatingWaterPumpPowerConsumption();
-}
+  void EvaporativeCoolerIndirectResearchSpecial::autosizeRecirculatingWaterPumpPowerConsumption() {
+    getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->autosizeRecirculatingWaterPumpPowerConsumption();
+  }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::secondaryFanFlowRate() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->secondaryFanFlowRate();
-}
+  boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::autosizedRecirculatingWaterPumpPowerConsumption() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->autosizedRecirculatingWaterPumpPowerConsumption();
+  }
 
-bool EvaporativeCoolerIndirectResearchSpecial::isSecondaryFanFlowRateAutosized() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->isSecondaryFanFlowRateAutosized();
-}
+  boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::secondaryFanFlowRate() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->secondaryFanFlowRate();
+  }
 
-bool EvaporativeCoolerIndirectResearchSpecial::setSecondaryFanFlowRate(double secondaryFanFlowRate) {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setSecondaryFanFlowRate(secondaryFanFlowRate);
-}
+  bool EvaporativeCoolerIndirectResearchSpecial::isSecondaryFanFlowRateAutosized() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->isSecondaryFanFlowRateAutosized();
+  }
 
-void EvaporativeCoolerIndirectResearchSpecial::resetSecondaryFanFlowRate() {
-  getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->resetSecondaryFanFlowRate();
-}
+  bool EvaporativeCoolerIndirectResearchSpecial::setSecondaryFanFlowRate(double secondaryFanFlowRate) {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setSecondaryFanFlowRate(secondaryFanFlowRate);
+  }
 
-void EvaporativeCoolerIndirectResearchSpecial::autosizeSecondaryFanFlowRate() {
-  getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->autosizeSecondaryFanFlowRate();
-}
+  void EvaporativeCoolerIndirectResearchSpecial::resetSecondaryFanFlowRate() {
+    getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->resetSecondaryFanFlowRate();
+  }
 
-double EvaporativeCoolerIndirectResearchSpecial::secondaryFanTotalEfficiency() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->secondaryFanTotalEfficiency();
-}
+  void EvaporativeCoolerIndirectResearchSpecial::autosizeSecondaryFanFlowRate() {
+    getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->autosizeSecondaryFanFlowRate();
+  }
 
-bool EvaporativeCoolerIndirectResearchSpecial::setSecondaryFanTotalEfficiency(double secondaryFanTotalEfficiency) {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setSecondaryFanTotalEfficiency(secondaryFanTotalEfficiency);
-}
+  boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::autosizedSecondaryFanFlowRate() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->autosizedSecondaryFanFlowRate();
+  }
 
-double EvaporativeCoolerIndirectResearchSpecial::secondaryFanDeltaPressure() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->secondaryFanDeltaPressure();
-}
+  double EvaporativeCoolerIndirectResearchSpecial::secondaryFanTotalEfficiency() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->secondaryFanTotalEfficiency();
+  }
 
-bool EvaporativeCoolerIndirectResearchSpecial::setSecondaryFanDeltaPressure(double secondaryFanDeltaPressure) {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setSecondaryFanDeltaPressure(secondaryFanDeltaPressure);
-}
+  bool EvaporativeCoolerIndirectResearchSpecial::setSecondaryFanTotalEfficiency(double secondaryFanTotalEfficiency) {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setSecondaryFanTotalEfficiency(secondaryFanTotalEfficiency);
+  }
 
-double EvaporativeCoolerIndirectResearchSpecial::dewpointEffectivenessFactor() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->dewpointEffectivenessFactor();
-}
+  double EvaporativeCoolerIndirectResearchSpecial::secondaryFanDeltaPressure() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->secondaryFanDeltaPressure();
+  }
 
-bool EvaporativeCoolerIndirectResearchSpecial::setDewpointEffectivenessFactor(double dewpointEffectivenessFactor) {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setDewpointEffectivenessFactor(dewpointEffectivenessFactor);
-}
+  bool EvaporativeCoolerIndirectResearchSpecial::setSecondaryFanDeltaPressure(double secondaryFanDeltaPressure) {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setSecondaryFanDeltaPressure(secondaryFanDeltaPressure);
+  }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::driftLossFraction() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->driftLossFraction();
-}
+  double EvaporativeCoolerIndirectResearchSpecial::dewpointEffectivenessFactor() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->dewpointEffectivenessFactor();
+  }
 
-bool EvaporativeCoolerIndirectResearchSpecial::setDriftLossFraction(double driftLossFraction) {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setDriftLossFraction(driftLossFraction);
-}
+  bool EvaporativeCoolerIndirectResearchSpecial::setDewpointEffectivenessFactor(double dewpointEffectivenessFactor) {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setDewpointEffectivenessFactor(dewpointEffectivenessFactor);
+  }
 
-void EvaporativeCoolerIndirectResearchSpecial::resetDriftLossFraction() {
-  getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->resetDriftLossFraction();
-}
+  boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::driftLossFraction() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->driftLossFraction();
+  }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::blowdownConcentrationRatio() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->blowdownConcentrationRatio();
-}
+  bool EvaporativeCoolerIndirectResearchSpecial::setDriftLossFraction(double driftLossFraction) {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setDriftLossFraction(driftLossFraction);
+  }
 
-bool EvaporativeCoolerIndirectResearchSpecial::setBlowdownConcentrationRatio(double blowdownConcentrationRatio) {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setBlowdownConcentrationRatio(blowdownConcentrationRatio);
-}
+  void EvaporativeCoolerIndirectResearchSpecial::resetDriftLossFraction() {
+    getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->resetDriftLossFraction();
+  }
 
-void EvaporativeCoolerIndirectResearchSpecial::resetBlowdownConcentrationRatio() {
-  getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->resetBlowdownConcentrationRatio();
-}
+  boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::blowdownConcentrationRatio() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->blowdownConcentrationRatio();
+  }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::coolerDrybulbDesignEffectiveness() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->coolerDrybulbDesignEffectiveness();
-}
+  bool EvaporativeCoolerIndirectResearchSpecial::setBlowdownConcentrationRatio(double blowdownConcentrationRatio) {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setBlowdownConcentrationRatio(blowdownConcentrationRatio);
+  }
 
-bool EvaporativeCoolerIndirectResearchSpecial::setCoolerDrybulbDesignEffectiveness(double coolerDrybulbDesignEffectiveness) {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setCoolerDrybulbDesignEffectiveness(
-    coolerDrybulbDesignEffectiveness);
-}
+  void EvaporativeCoolerIndirectResearchSpecial::resetBlowdownConcentrationRatio() {
+    getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->resetBlowdownConcentrationRatio();
+  }
 
-void EvaporativeCoolerIndirectResearchSpecial::resetCoolerDrybulbDesignEffectiveness() {
-  getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->resetCoolerDrybulbDesignEffectiveness();
-}
+  boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::coolerDrybulbDesignEffectiveness() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->coolerDrybulbDesignEffectiveness();
+  }
 
-double EvaporativeCoolerIndirectResearchSpecial::waterPumpPowerSizingFactor() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->waterPumpPowerSizingFactor();
-}
+  bool EvaporativeCoolerIndirectResearchSpecial::setCoolerDrybulbDesignEffectiveness(double coolerDrybulbDesignEffectiveness) {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setCoolerDrybulbDesignEffectiveness(coolerDrybulbDesignEffectiveness);
+  }
 
-bool EvaporativeCoolerIndirectResearchSpecial::setWaterPumpPowerSizingFactor(double waterPumpPowerSizingFactor) {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setWaterPumpPowerSizingFactor(waterPumpPowerSizingFactor);
-}
+  void EvaporativeCoolerIndirectResearchSpecial::resetCoolerDrybulbDesignEffectiveness() {
+    getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->resetCoolerDrybulbDesignEffectiveness();
+  }
 
-double EvaporativeCoolerIndirectResearchSpecial::secondaryAirFlowScalingFactor() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->secondaryAirFlowScalingFactor();
-}
+  double EvaporativeCoolerIndirectResearchSpecial::waterPumpPowerSizingFactor() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->waterPumpPowerSizingFactor();
+  }
 
-bool EvaporativeCoolerIndirectResearchSpecial::setSecondaryAirFlowScalingFactor(double secondaryAirFlowScalingFactor) {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setSecondaryAirFlowScalingFactor(secondaryAirFlowScalingFactor);
-}
+  bool EvaporativeCoolerIndirectResearchSpecial::setWaterPumpPowerSizingFactor(double waterPumpPowerSizingFactor) {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setWaterPumpPowerSizingFactor(waterPumpPowerSizingFactor);
+  }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::secondaryAirFanDesignPower() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->secondaryAirFanDesignPower();
-}
+  double EvaporativeCoolerIndirectResearchSpecial::secondaryAirFlowScalingFactor() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->secondaryAirFlowScalingFactor();
+  }
 
-bool EvaporativeCoolerIndirectResearchSpecial::isSecondaryAirFanDesignPowerAutosized() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->isSecondaryAirFanDesignPowerAutosized();
-}
+  bool EvaporativeCoolerIndirectResearchSpecial::setSecondaryAirFlowScalingFactor(double secondaryAirFlowScalingFactor) {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setSecondaryAirFlowScalingFactor(secondaryAirFlowScalingFactor);
+  }
 
-bool EvaporativeCoolerIndirectResearchSpecial::setSecondaryAirFanDesignPower(double secondaryAirFanDesignPower) {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setSecondaryAirFanDesignPower(secondaryAirFanDesignPower);
-}
+  boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::secondaryAirFanDesignPower() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->secondaryAirFanDesignPower();
+  }
 
-void EvaporativeCoolerIndirectResearchSpecial::autosizeSecondaryAirFanDesignPower() {
-  getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->autosizeSecondaryAirFanDesignPower();
-}
+  bool EvaporativeCoolerIndirectResearchSpecial::isSecondaryAirFanDesignPowerAutosized() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->isSecondaryAirFanDesignPowerAutosized();
+  }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::primaryDesignAirFlowRate() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->primaryDesignAirFlowRate();
-}
+  bool EvaporativeCoolerIndirectResearchSpecial::setSecondaryAirFanDesignPower(double secondaryAirFanDesignPower) {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setSecondaryAirFanDesignPower(secondaryAirFanDesignPower);
+  }
 
-bool EvaporativeCoolerIndirectResearchSpecial::isPrimaryDesignAirFlowRateAutosized() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->isPrimaryDesignAirFlowRateAutosized();
-}
+  void EvaporativeCoolerIndirectResearchSpecial::autosizeSecondaryAirFanDesignPower() {
+    getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->autosizeSecondaryAirFanDesignPower();
+  }
 
-bool EvaporativeCoolerIndirectResearchSpecial::setPrimaryDesignAirFlowRate(double primaryDesignAirFlowRate) {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setPrimaryDesignAirFlowRate(primaryDesignAirFlowRate);
-}
+  boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::autosizedSecondaryAirFanDesignPower() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->autosizedSecondaryAirFanDesignPower();
+  }
 
-void EvaporativeCoolerIndirectResearchSpecial::resetPrimaryDesignAirFlowRate() {
-  getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->resetPrimaryDesignAirFlowRate();
-}
+  boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::primaryDesignAirFlowRate() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->primaryDesignAirFlowRate();
+  }
 
-void EvaporativeCoolerIndirectResearchSpecial::autosizePrimaryDesignAirFlowRate() {
-  getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->autosizePrimaryDesignAirFlowRate();
-}
+  bool EvaporativeCoolerIndirectResearchSpecial::isPrimaryDesignAirFlowRateAutosized() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->isPrimaryDesignAirFlowRateAutosized();
+  }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::autosizedRecirculatingWaterPumpPowerConsumption() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->autosizedRecirculatingWaterPumpPowerConsumption();
-}
+  bool EvaporativeCoolerIndirectResearchSpecial::setPrimaryDesignAirFlowRate(double primaryDesignAirFlowRate) {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->setPrimaryDesignAirFlowRate(primaryDesignAirFlowRate);
+  }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::autosizedSecondaryFanFlowRate() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->autosizedSecondaryFanFlowRate();
-}
+  void EvaporativeCoolerIndirectResearchSpecial::resetPrimaryDesignAirFlowRate() {
+    getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->resetPrimaryDesignAirFlowRate();
+  }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::autosizedSecondaryAirFanDesignPower() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->autosizedSecondaryAirFanDesignPower();
-}
+  void EvaporativeCoolerIndirectResearchSpecial::autosizePrimaryDesignAirFlowRate() {
+    getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->autosizePrimaryDesignAirFlowRate();
+  }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::autosizedPrimaryDesignAirFlowRate() const {
-  return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->autosizedPrimaryDesignAirFlowRate();
-}
+  boost::optional<double> EvaporativeCoolerIndirectResearchSpecial::autosizedPrimaryDesignAirFlowRate() const {
+    return getImpl<detail::EvaporativeCoolerIndirectResearchSpecial_Impl>()->autosizedPrimaryDesignAirFlowRate();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-unsigned EvaporativeCoolerIndirectResearchSpecial_Impl::inletPort() const {
-  return openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::PrimaryAirInletNodeName;
-}
+    unsigned EvaporativeCoolerIndirectResearchSpecial_Impl::inletPort() const {
+      return openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::PrimaryAirInletNodeName;
+    }
 
-unsigned EvaporativeCoolerIndirectResearchSpecial_Impl::outletPort() const {
-  return openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::PrimaryAirOutletNodeName;
-}
+    unsigned EvaporativeCoolerIndirectResearchSpecial_Impl::outletPort() const {
+      return openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::PrimaryAirOutletNodeName;
+    }
 
-double EvaporativeCoolerIndirectResearchSpecial_Impl::coolerMaximumEffectiveness() const {
-  const auto value = getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::CoolerWetbulbDesignEffectiveness, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double EvaporativeCoolerIndirectResearchSpecial_Impl::coolerMaximumEffectiveness() const {
+      const auto value = getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::CoolerWetbulbDesignEffectiveness, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool EvaporativeCoolerIndirectResearchSpecial_Impl::setCoolerMaximumEffectiveness(double coolerMaximumEffectiveness) {
-  return setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::CoolerWetbulbDesignEffectiveness,
-                   coolerMaximumEffectiveness);
-}
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::setCoolerMaximumEffectiveness(double coolerMaximumEffectiveness) {
+      return setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::CoolerWetbulbDesignEffectiveness, coolerMaximumEffectiveness);
+    }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::recirculatingWaterPumpPowerConsumption() const {
-  return getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::RecirculatingWaterPumpDesignPower, true);
-}
+    boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::recirculatingWaterPumpPowerConsumption() const {
+      return getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::RecirculatingWaterPumpDesignPower, true);
+    }
 
-bool EvaporativeCoolerIndirectResearchSpecial_Impl::isRecirculatingWaterPumpPowerConsumptionAutosized() const {
-  if (const auto value = getString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::RecirculatingWaterPumpDesignPower, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::isRecirculatingWaterPumpPowerConsumptionAutosized() const {
+      if (const auto value = getString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::RecirculatingWaterPumpDesignPower, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
+    }
 
-bool EvaporativeCoolerIndirectResearchSpecial_Impl::setRecirculatingWaterPumpPowerConsumption(double recirculatingWaterPumpPowerConsumption) {
-  const bool result = setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::RecirculatingWaterPumpDesignPower,
-                                recirculatingWaterPumpPowerConsumption);
-  OS_ASSERT(result);
-  return result;
-}
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::setRecirculatingWaterPumpPowerConsumption(double recirculatingWaterPumpPowerConsumption) {
+      const bool result = setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::RecirculatingWaterPumpDesignPower,
+                                    recirculatingWaterPumpPowerConsumption);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void EvaporativeCoolerIndirectResearchSpecial_Impl::autosizeRecirculatingWaterPumpPowerConsumption() {
-  OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::RecirculatingWaterPumpDesignPower, "Autosize"));
-}
+    void EvaporativeCoolerIndirectResearchSpecial_Impl::autosizeRecirculatingWaterPumpPowerConsumption() {
+      OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::RecirculatingWaterPumpDesignPower, "Autosize"));
+    }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::secondaryFanFlowRate() const {
-  return getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirDesignFlowRate, true);
-}
+    boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::autosizedRecirculatingWaterPumpPowerConsumption() const {
+      // epmodel does not currently resolve autosized values from SQL results.
+      return boost::none;
+    }
 
-bool EvaporativeCoolerIndirectResearchSpecial_Impl::isSecondaryFanFlowRateAutosized() const {
-  if (const auto value = getString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirDesignFlowRate, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::secondaryFanFlowRate() const {
+      return getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirDesignFlowRate, true);
+    }
 
-bool EvaporativeCoolerIndirectResearchSpecial_Impl::setSecondaryFanFlowRate(double secondaryFanFlowRate) {
-  return setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirDesignFlowRate, secondaryFanFlowRate);
-}
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::isSecondaryFanFlowRateAutosized() const {
+      if (const auto value = getString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirDesignFlowRate, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
+    }
 
-void EvaporativeCoolerIndirectResearchSpecial_Impl::resetSecondaryFanFlowRate() {
-  OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirDesignFlowRate, ""));
-}
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::setSecondaryFanFlowRate(double secondaryFanFlowRate) {
+      return setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirDesignFlowRate, secondaryFanFlowRate);
+    }
 
-void EvaporativeCoolerIndirectResearchSpecial_Impl::autosizeSecondaryFanFlowRate() {
-  OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirDesignFlowRate, "Autosize"));
-}
+    void EvaporativeCoolerIndirectResearchSpecial_Impl::resetSecondaryFanFlowRate() {
+      OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirDesignFlowRate, ""));
+    }
 
-double EvaporativeCoolerIndirectResearchSpecial_Impl::secondaryFanTotalEfficiency() const {
-  const auto value = getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFanSizingSpecificPower, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    void EvaporativeCoolerIndirectResearchSpecial_Impl::autosizeSecondaryFanFlowRate() {
+      OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirDesignFlowRate, "Autosize"));
+    }
 
-bool EvaporativeCoolerIndirectResearchSpecial_Impl::setSecondaryFanTotalEfficiency(double secondaryFanTotalEfficiency) {
-  return setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFanSizingSpecificPower,
-                   secondaryFanTotalEfficiency);
-}
+    boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::autosizedSecondaryFanFlowRate() const {
+      // epmodel does not currently resolve autosized values from SQL results.
+      return boost::none;
+    }
 
-double EvaporativeCoolerIndirectResearchSpecial_Impl::secondaryFanDeltaPressure() const {
-  const auto value = getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFanSizingSpecificPower, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double EvaporativeCoolerIndirectResearchSpecial_Impl::secondaryFanTotalEfficiency() const {
+      const auto value = getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFanSizingSpecificPower, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool EvaporativeCoolerIndirectResearchSpecial_Impl::setSecondaryFanDeltaPressure(double secondaryFanDeltaPressure) {
-  return setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFanSizingSpecificPower,
-                   secondaryFanDeltaPressure);
-}
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::setSecondaryFanTotalEfficiency(double secondaryFanTotalEfficiency) {
+      return setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFanSizingSpecificPower, secondaryFanTotalEfficiency);
+    }
 
-double EvaporativeCoolerIndirectResearchSpecial_Impl::dewpointEffectivenessFactor() const {
-  const auto value = getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::DewpointEffectivenessFactor, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double EvaporativeCoolerIndirectResearchSpecial_Impl::secondaryFanDeltaPressure() const {
+      const auto value = getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFanSizingSpecificPower, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool EvaporativeCoolerIndirectResearchSpecial_Impl::setDewpointEffectivenessFactor(double dewpointEffectivenessFactor) {
-  const bool result =
-    setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::DewpointEffectivenessFactor, dewpointEffectivenessFactor);
-  OS_ASSERT(result);
-  return result;
-}
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::setSecondaryFanDeltaPressure(double secondaryFanDeltaPressure) {
+      return setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFanSizingSpecificPower, secondaryFanDeltaPressure);
+    }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::driftLossFraction() const {
-  return getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::DriftLossFraction, true);
-}
+    double EvaporativeCoolerIndirectResearchSpecial_Impl::dewpointEffectivenessFactor() const {
+      const auto value = getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::DewpointEffectivenessFactor, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool EvaporativeCoolerIndirectResearchSpecial_Impl::setDriftLossFraction(double driftLossFraction) {
-  return setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::DriftLossFraction, driftLossFraction);
-}
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::setDewpointEffectivenessFactor(double dewpointEffectivenessFactor) {
+      const bool result =
+        setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::DewpointEffectivenessFactor, dewpointEffectivenessFactor);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void EvaporativeCoolerIndirectResearchSpecial_Impl::resetDriftLossFraction() {
-  OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::DriftLossFraction, ""));
-}
+    boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::driftLossFraction() const {
+      return getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::DriftLossFraction, true);
+    }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::blowdownConcentrationRatio() const {
-  return getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::BlowdownConcentrationRatio, true);
-}
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::setDriftLossFraction(double driftLossFraction) {
+      return setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::DriftLossFraction, driftLossFraction);
+    }
 
-bool EvaporativeCoolerIndirectResearchSpecial_Impl::setBlowdownConcentrationRatio(double blowdownConcentrationRatio) {
-  return setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::BlowdownConcentrationRatio, blowdownConcentrationRatio);
-}
+    void EvaporativeCoolerIndirectResearchSpecial_Impl::resetDriftLossFraction() {
+      OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::DriftLossFraction, ""));
+    }
 
-void EvaporativeCoolerIndirectResearchSpecial_Impl::resetBlowdownConcentrationRatio() {
-  OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::BlowdownConcentrationRatio, ""));
-}
+    boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::blowdownConcentrationRatio() const {
+      return getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::BlowdownConcentrationRatio, true);
+    }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::coolerDrybulbDesignEffectiveness() const {
-  return getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::CoolerDrybulbDesignEffectiveness, true);
-}
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::setBlowdownConcentrationRatio(double blowdownConcentrationRatio) {
+      return setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::BlowdownConcentrationRatio, blowdownConcentrationRatio);
+    }
 
-bool EvaporativeCoolerIndirectResearchSpecial_Impl::setCoolerDrybulbDesignEffectiveness(double coolerDrybulbDesignEffectiveness) {
-  return setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::CoolerDrybulbDesignEffectiveness,
-                   coolerDrybulbDesignEffectiveness);
-}
+    void EvaporativeCoolerIndirectResearchSpecial_Impl::resetBlowdownConcentrationRatio() {
+      OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::BlowdownConcentrationRatio, ""));
+    }
 
-void EvaporativeCoolerIndirectResearchSpecial_Impl::resetCoolerDrybulbDesignEffectiveness() {
-  OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::CoolerDrybulbDesignEffectiveness, ""));
-}
+    boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::coolerDrybulbDesignEffectiveness() const {
+      return getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::CoolerDrybulbDesignEffectiveness, true);
+    }
 
-double EvaporativeCoolerIndirectResearchSpecial_Impl::waterPumpPowerSizingFactor() const {
-  const auto value = getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::WaterPumpPowerSizingFactor, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::setCoolerDrybulbDesignEffectiveness(double coolerDrybulbDesignEffectiveness) {
+      return setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::CoolerDrybulbDesignEffectiveness,
+                       coolerDrybulbDesignEffectiveness);
+    }
 
-bool EvaporativeCoolerIndirectResearchSpecial_Impl::setWaterPumpPowerSizingFactor(double waterPumpPowerSizingFactor) {
-  const bool result =
-    setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::WaterPumpPowerSizingFactor, waterPumpPowerSizingFactor);
-  OS_ASSERT(result);
-  return result;
-}
+    void EvaporativeCoolerIndirectResearchSpecial_Impl::resetCoolerDrybulbDesignEffectiveness() {
+      OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::CoolerDrybulbDesignEffectiveness, ""));
+    }
 
-double EvaporativeCoolerIndirectResearchSpecial_Impl::secondaryAirFlowScalingFactor() const {
-  const auto value = getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFlowScalingFactor, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double EvaporativeCoolerIndirectResearchSpecial_Impl::waterPumpPowerSizingFactor() const {
+      const auto value = getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::WaterPumpPowerSizingFactor, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool EvaporativeCoolerIndirectResearchSpecial_Impl::setSecondaryAirFlowScalingFactor(double secondaryAirFlowScalingFactor) {
-  const bool result =
-    setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFlowScalingFactor, secondaryAirFlowScalingFactor);
-  OS_ASSERT(result);
-  return result;
-}
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::setWaterPumpPowerSizingFactor(double waterPumpPowerSizingFactor) {
+      const bool result =
+        setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::WaterPumpPowerSizingFactor, waterPumpPowerSizingFactor);
+      OS_ASSERT(result);
+      return result;
+    }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::secondaryAirFanDesignPower() const {
-  return getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFanDesignPower, true);
-}
+    double EvaporativeCoolerIndirectResearchSpecial_Impl::secondaryAirFlowScalingFactor() const {
+      const auto value = getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFlowScalingFactor, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool EvaporativeCoolerIndirectResearchSpecial_Impl::isSecondaryAirFanDesignPowerAutosized() const {
-  if (const auto value = getString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFanDesignPower, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::setSecondaryAirFlowScalingFactor(double secondaryAirFlowScalingFactor) {
+      const bool result =
+        setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFlowScalingFactor, secondaryAirFlowScalingFactor);
+      OS_ASSERT(result);
+      return result;
+    }
 
-bool EvaporativeCoolerIndirectResearchSpecial_Impl::setSecondaryAirFanDesignPower(double secondaryAirFanDesignPower) {
-  const bool result =
-    setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFanDesignPower, secondaryAirFanDesignPower);
-  OS_ASSERT(result);
-  return result;
-}
+    boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::secondaryAirFanDesignPower() const {
+      return getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFanDesignPower, true);
+    }
 
-void EvaporativeCoolerIndirectResearchSpecial_Impl::autosizeSecondaryAirFanDesignPower() {
-  OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFanDesignPower, "Autosize"));
-}
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::isSecondaryAirFanDesignPowerAutosized() const {
+      if (const auto value = getString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFanDesignPower, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
+    }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::primaryDesignAirFlowRate() const {
-  return getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::PrimaryAirDesignFlowRate, true);
-}
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::setSecondaryAirFanDesignPower(double secondaryAirFanDesignPower) {
+      const bool result =
+        setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFanDesignPower, secondaryAirFanDesignPower);
+      OS_ASSERT(result);
+      return result;
+    }
 
-bool EvaporativeCoolerIndirectResearchSpecial_Impl::isPrimaryDesignAirFlowRateAutosized() const {
-  if (const auto value = getString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::PrimaryAirDesignFlowRate, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    void EvaporativeCoolerIndirectResearchSpecial_Impl::autosizeSecondaryAirFanDesignPower() {
+      OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::SecondaryAirFanDesignPower, "Autosize"));
+    }
 
-bool EvaporativeCoolerIndirectResearchSpecial_Impl::setPrimaryDesignAirFlowRate(double primaryDesignAirFlowRate) {
-  return setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::PrimaryAirDesignFlowRate, primaryDesignAirFlowRate);
-}
+    boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::autosizedSecondaryAirFanDesignPower() const {
+      // epmodel does not currently resolve autosized values from SQL results.
+      return boost::none;
+    }
 
-void EvaporativeCoolerIndirectResearchSpecial_Impl::resetPrimaryDesignAirFlowRate() {
-  OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::PrimaryAirDesignFlowRate, ""));
-}
+    boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::primaryDesignAirFlowRate() const {
+      return getDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::PrimaryAirDesignFlowRate, true);
+    }
 
-void EvaporativeCoolerIndirectResearchSpecial_Impl::autosizePrimaryDesignAirFlowRate() {
-  OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::PrimaryAirDesignFlowRate, "Autosize"));
-}
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::isPrimaryDesignAirFlowRateAutosized() const {
+      if (const auto value = getString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::PrimaryAirDesignFlowRate, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
+    }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::autosizedRecirculatingWaterPumpPowerConsumption() const {
-  // epmodel does not currently resolve autosized values from SQL results.
-  return boost::none;
-}
+    bool EvaporativeCoolerIndirectResearchSpecial_Impl::setPrimaryDesignAirFlowRate(double primaryDesignAirFlowRate) {
+      return setDouble(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::PrimaryAirDesignFlowRate, primaryDesignAirFlowRate);
+    }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::autosizedSecondaryFanFlowRate() const {
-  // epmodel does not currently resolve autosized values from SQL results.
-  return boost::none;
-}
+    void EvaporativeCoolerIndirectResearchSpecial_Impl::resetPrimaryDesignAirFlowRate() {
+      OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::PrimaryAirDesignFlowRate, ""));
+    }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::autosizedSecondaryAirFanDesignPower() const {
-  // epmodel does not currently resolve autosized values from SQL results.
-  return boost::none;
-}
+    void EvaporativeCoolerIndirectResearchSpecial_Impl::autosizePrimaryDesignAirFlowRate() {
+      OS_ASSERT(setString(openstudio::EvaporativeCooler_Indirect_ResearchSpecialFields::PrimaryAirDesignFlowRate, "Autosize"));
+    }
 
-boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::autosizedPrimaryDesignAirFlowRate() const {
-  // epmodel does not currently resolve autosized values from SQL results.
-  return boost::none;
-}
+    boost::optional<double> EvaporativeCoolerIndirectResearchSpecial_Impl::autosizedPrimaryDesignAirFlowRate() const {
+      // epmodel does not currently resolve autosized values from SQL results.
+      return boost::none;
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

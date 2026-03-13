@@ -47,8 +47,8 @@ namespace epmodel {
     // - TODO(parity): Reconcile pythonModuleName with the ExternalFile helper once Python plugin resources gain richer APIs.
 
     bool runDuringWarmupDays() const;
-    bool isRunDuringWarmupDaysDefaulted() const;
     bool setRunDuringWarmupDays(bool runDuringWarmupDays);
+    bool isRunDuringWarmupDaysDefaulted() const;
     void resetRunDuringWarmupDays();
 
     std::string pythonModuleName() const;

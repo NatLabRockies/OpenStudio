@@ -13,70 +13,92 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GeneratorWindTurbine_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GeneratorWindTurbine_Impl() override = default;
+    class EPMODEL_API GeneratorWindTurbine_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GeneratorWindTurbine_Impl() override = default;
 
-  std::string rotorType() const;
-  std::string powerControl() const;
-  double ratedRotorSpeed() const;
-  double rotorDiameter() const;
-  double overallHeight() const;
-  int numberofBlades() const;
-  double ratedPower() const;
-  double ratedWindSpeed() const;
-  double cutInWindSpeed() const;
-  double cutOutWindSpeed() const;
-  double fractionSystemEfficiency() const;
-  double maximumTipSpeedRatio() const;
-  double maximumPowerCoefficient() const;
-  boost::optional<double> annualLocalAverageWindSpeed() const;
-  double heightforLocalAverageWindSpeed() const;
-  double bladeChordArea() const;
-  double bladeDragCoefficient() const;
-  double bladeLiftCoefficient() const;
-  double powerCoefficientC1() const;
-  double powerCoefficientC2() const;
-  double powerCoefficientC3() const;
-  double powerCoefficientC4() const;
-  double powerCoefficientC5() const;
-  double powerCoefficientC6() const;
+      std::string rotorType() const;
+      bool setRotorType(const std::string& rotorType);
 
-  bool setRotorType(const std::string& rotorType);
-  bool setPowerControl(const std::string& powerControl);
-  bool setRatedRotorSpeed(double ratedRotorSpeed);
-  bool setRotorDiameter(double rotorDiameter);
-  bool setOverallHeight(double overallHeight);
-  bool setNumberofBlades(int numberofBlades);
-  bool setRatedPower(double ratedPower);
-  bool setRatedWindSpeed(double ratedWindSpeed);
-  bool setCutInWindSpeed(double cutInWindSpeed);
-  bool setCutOutWindSpeed(double cutOutWindSpeed);
-  bool setFractionSystemEfficiency(double fractionSystemEfficiency);
-  bool setMaximumTipSpeedRatio(double maximumTipSpeedRatio);
-  bool setMaximumPowerCoefficient(double maximumPowerCoefficient);
-  bool setAnnualLocalAverageWindSpeed(double annualLocalAverageWindSpeed);
-  void resetAnnualLocalAverageWindSpeed();
-  bool setHeightforLocalAverageWindSpeed(double heightforLocalAverageWindSpeed);
-  bool setBladeChordArea(double bladeChordArea);
-  bool setBladeDragCoefficient(double bladeDragCoefficient);
-  bool setBladeLiftCoefficient(double bladeLiftCoefficient);
-  bool setPowerCoefficientC1(double powerCoefficientC1);
-  bool setPowerCoefficientC2(double powerCoefficientC2);
-  bool setPowerCoefficientC3(double powerCoefficientC3);
-  bool setPowerCoefficientC4(double powerCoefficientC4);
-  bool setPowerCoefficientC5(double powerCoefficientC5);
-  bool setPowerCoefficientC6(double powerCoefficientC6);
+      std::string powerControl() const;
+      bool setPowerControl(const std::string& powerControl);
 
-  std::vector<std::string> rotorTypeValues() const;
-  std::vector<std::string> powerControlValues() const;
-};
+      double ratedRotorSpeed() const;
+      bool setRatedRotorSpeed(double ratedRotorSpeed);
 
-}  // namespace detail
+      double rotorDiameter() const;
+      bool setRotorDiameter(double rotorDiameter);
+
+      double overallHeight() const;
+      bool setOverallHeight(double overallHeight);
+
+      int numberofBlades() const;
+      bool setNumberofBlades(int numberofBlades);
+
+      double ratedPower() const;
+      bool setRatedPower(double ratedPower);
+
+      double ratedWindSpeed() const;
+      bool setRatedWindSpeed(double ratedWindSpeed);
+
+      double cutInWindSpeed() const;
+      bool setCutInWindSpeed(double cutInWindSpeed);
+
+      double cutOutWindSpeed() const;
+      bool setCutOutWindSpeed(double cutOutWindSpeed);
+
+      double fractionSystemEfficiency() const;
+      bool setFractionSystemEfficiency(double fractionSystemEfficiency);
+
+      double maximumTipSpeedRatio() const;
+      bool setMaximumTipSpeedRatio(double maximumTipSpeedRatio);
+
+      double maximumPowerCoefficient() const;
+      bool setMaximumPowerCoefficient(double maximumPowerCoefficient);
+
+      boost::optional<double> annualLocalAverageWindSpeed() const;
+      bool setAnnualLocalAverageWindSpeed(double annualLocalAverageWindSpeed);
+      void resetAnnualLocalAverageWindSpeed();
+
+      double heightforLocalAverageWindSpeed() const;
+      bool setHeightforLocalAverageWindSpeed(double heightforLocalAverageWindSpeed);
+
+      double bladeChordArea() const;
+      bool setBladeChordArea(double bladeChordArea);
+
+      double bladeDragCoefficient() const;
+      bool setBladeDragCoefficient(double bladeDragCoefficient);
+
+      double bladeLiftCoefficient() const;
+      bool setBladeLiftCoefficient(double bladeLiftCoefficient);
+
+      double powerCoefficientC1() const;
+      bool setPowerCoefficientC1(double powerCoefficientC1);
+
+      double powerCoefficientC2() const;
+      bool setPowerCoefficientC2(double powerCoefficientC2);
+
+      double powerCoefficientC3() const;
+      bool setPowerCoefficientC3(double powerCoefficientC3);
+
+      double powerCoefficientC4() const;
+      bool setPowerCoefficientC4(double powerCoefficientC4);
+
+      double powerCoefficientC5() const;
+      bool setPowerCoefficientC5(double powerCoefficientC5);
+
+      double powerCoefficientC6() const;
+      bool setPowerCoefficientC6(double powerCoefficientC6);
+
+      std::vector<std::string> rotorTypeValues() const;
+      std::vector<std::string> powerControlValues() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

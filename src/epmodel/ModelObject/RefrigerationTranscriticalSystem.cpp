@@ -53,48 +53,20 @@ namespace epmodel {
     return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->isReceiverPressureDefaulted();
   }
 
-  double RefrigerationTranscriticalSystem::subcoolerEffectiveness() const {
-    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->subcoolerEffectiveness();
-  }
-
-  bool RefrigerationTranscriticalSystem::isSubcoolerEffectivenessDefaulted() const {
-    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->isSubcoolerEffectivenessDefaulted();
-  }
-
-  std::string RefrigerationTranscriticalSystem::refrigerationSystemWorkingFluidType() const {
-    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->refrigerationSystemWorkingFluidType();
-  }
-
-  double RefrigerationTranscriticalSystem::sumUASuctionPipingforMediumTemperatureLoads() const {
-    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->sumUASuctionPipingforMediumTemperatureLoads();
-  }
-
-  bool RefrigerationTranscriticalSystem::isSumUASuctionPipingforMediumTemperatureLoadsDefaulted() const {
-    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->isSumUASuctionPipingforMediumTemperatureLoadsDefaulted();
-  }
-
-  double RefrigerationTranscriticalSystem::sumUASuctionPipingforLowTemperatureLoads() const {
-    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->sumUASuctionPipingforLowTemperatureLoads();
-  }
-
-  bool RefrigerationTranscriticalSystem::isSumUASuctionPipingforLowTemperatureLoadsDefaulted() const {
-    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->isSumUASuctionPipingforLowTemperatureLoadsDefaulted();
-  }
-
-  std::string RefrigerationTranscriticalSystem::endUseSubcategory() const {
-    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->endUseSubcategory();
-  }
-
-  bool RefrigerationTranscriticalSystem::isEndUseSubcategoryDefaulted() const {
-    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->isEndUseSubcategoryDefaulted();
-  }
-
   bool RefrigerationTranscriticalSystem::setReceiverPressure(double receiverPressure) {
     return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->setReceiverPressure(receiverPressure);
   }
 
   void RefrigerationTranscriticalSystem::resetReceiverPressure() {
     getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->resetReceiverPressure();
+  }
+
+  double RefrigerationTranscriticalSystem::subcoolerEffectiveness() const {
+    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->subcoolerEffectiveness();
+  }
+
+  bool RefrigerationTranscriticalSystem::isSubcoolerEffectivenessDefaulted() const {
+    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->isSubcoolerEffectivenessDefaulted();
   }
 
   bool RefrigerationTranscriticalSystem::setSubcoolerEffectiveness(double subcoolerEffectiveness) {
@@ -105,8 +77,20 @@ namespace epmodel {
     getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->resetSubcoolerEffectiveness();
   }
 
+  std::string RefrigerationTranscriticalSystem::refrigerationSystemWorkingFluidType() const {
+    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->refrigerationSystemWorkingFluidType();
+  }
+
   bool RefrigerationTranscriticalSystem::setRefrigerationSystemWorkingFluidType(const std::string& refrigerationSystemWorkingFluidType) {
     return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->setRefrigerationSystemWorkingFluidType(refrigerationSystemWorkingFluidType);
+  }
+
+  double RefrigerationTranscriticalSystem::sumUASuctionPipingforMediumTemperatureLoads() const {
+    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->sumUASuctionPipingforMediumTemperatureLoads();
+  }
+
+  bool RefrigerationTranscriticalSystem::isSumUASuctionPipingforMediumTemperatureLoadsDefaulted() const {
+    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->isSumUASuctionPipingforMediumTemperatureLoadsDefaulted();
   }
 
   bool RefrigerationTranscriticalSystem::setSumUASuctionPipingforMediumTemperatureLoads(double sumUASuctionPipingforMediumTemperatureLoads) {
@@ -118,6 +102,14 @@ namespace epmodel {
     getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->resetSumUASuctionPipingforMediumTemperatureLoads();
   }
 
+  double RefrigerationTranscriticalSystem::sumUASuctionPipingforLowTemperatureLoads() const {
+    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->sumUASuctionPipingforLowTemperatureLoads();
+  }
+
+  bool RefrigerationTranscriticalSystem::isSumUASuctionPipingforLowTemperatureLoadsDefaulted() const {
+    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->isSumUASuctionPipingforLowTemperatureLoadsDefaulted();
+  }
+
   bool RefrigerationTranscriticalSystem::setSumUASuctionPipingforLowTemperatureLoads(double sumUASuctionPipingforLowTemperatureLoads) {
     return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->setSumUASuctionPipingforLowTemperatureLoads(
       sumUASuctionPipingforLowTemperatureLoads);
@@ -125,6 +117,14 @@ namespace epmodel {
 
   void RefrigerationTranscriticalSystem::resetSumUASuctionPipingforLowTemperatureLoads() {
     getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->resetSumUASuctionPipingforLowTemperatureLoads();
+  }
+
+  std::string RefrigerationTranscriticalSystem::endUseSubcategory() const {
+    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->endUseSubcategory();
+  }
+
+  bool RefrigerationTranscriticalSystem::isEndUseSubcategoryDefaulted() const {
+    return getImpl<detail::RefrigerationTranscriticalSystem_Impl>()->isEndUseSubcategoryDefaulted();
   }
 
   bool RefrigerationTranscriticalSystem::setEndUseSubcategory(const std::string& endUseSubcategory) {
@@ -152,53 +152,6 @@ namespace epmodel {
       return isEmpty(openstudio::Refrigeration_TranscriticalSystemFields::ReceiverPressure);
     }
 
-    double RefrigerationTranscriticalSystem_Impl::subcoolerEffectiveness() const {
-      boost::optional<double> value = getDouble(openstudio::Refrigeration_TranscriticalSystemFields::SubcoolerEffectiveness, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool RefrigerationTranscriticalSystem_Impl::isSubcoolerEffectivenessDefaulted() const {
-      return isEmpty(openstudio::Refrigeration_TranscriticalSystemFields::SubcoolerEffectiveness);
-    }
-
-    std::string RefrigerationTranscriticalSystem_Impl::refrigerationSystemWorkingFluidType() const {
-      boost::optional<std::string> value = getString(openstudio::Refrigeration_TranscriticalSystemFields::RefrigerationSystemWorkingFluidType, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    double RefrigerationTranscriticalSystem_Impl::sumUASuctionPipingforMediumTemperatureLoads() const {
-      boost::optional<double> value =
-        getDouble(openstudio::Refrigeration_TranscriticalSystemFields::SumUASuctionPipingforMediumTemperatureLoads, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool RefrigerationTranscriticalSystem_Impl::isSumUASuctionPipingforMediumTemperatureLoadsDefaulted() const {
-      return isEmpty(openstudio::Refrigeration_TranscriticalSystemFields::SumUASuctionPipingforMediumTemperatureLoads);
-    }
-
-    double RefrigerationTranscriticalSystem_Impl::sumUASuctionPipingforLowTemperatureLoads() const {
-      boost::optional<double> value = getDouble(openstudio::Refrigeration_TranscriticalSystemFields::SumUASuctionPipingforLowTemperatureLoads, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool RefrigerationTranscriticalSystem_Impl::isSumUASuctionPipingforLowTemperatureLoadsDefaulted() const {
-      return isEmpty(openstudio::Refrigeration_TranscriticalSystemFields::SumUASuctionPipingforLowTemperatureLoads);
-    }
-
-    std::string RefrigerationTranscriticalSystem_Impl::endUseSubcategory() const {
-      boost::optional<std::string> value = getString(openstudio::Refrigeration_TranscriticalSystemFields::EndUseSubcategory, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool RefrigerationTranscriticalSystem_Impl::isEndUseSubcategoryDefaulted() const {
-      return isEmpty(openstudio::Refrigeration_TranscriticalSystemFields::EndUseSubcategory);
-    }
-
     bool RefrigerationTranscriticalSystem_Impl::setReceiverPressure(double receiverPressure) {
       bool result = setDouble(openstudio::Refrigeration_TranscriticalSystemFields::ReceiverPressure, receiverPressure);
       OS_ASSERT(result);
@@ -208,6 +161,16 @@ namespace epmodel {
     void RefrigerationTranscriticalSystem_Impl::resetReceiverPressure() {
       bool result = setString(openstudio::Refrigeration_TranscriticalSystemFields::ReceiverPressure, "");
       OS_ASSERT(result);
+    }
+
+    double RefrigerationTranscriticalSystem_Impl::subcoolerEffectiveness() const {
+      boost::optional<double> value = getDouble(openstudio::Refrigeration_TranscriticalSystemFields::SubcoolerEffectiveness, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool RefrigerationTranscriticalSystem_Impl::isSubcoolerEffectivenessDefaulted() const {
+      return isEmpty(openstudio::Refrigeration_TranscriticalSystemFields::SubcoolerEffectiveness);
     }
 
     bool RefrigerationTranscriticalSystem_Impl::setSubcoolerEffectiveness(double subcoolerEffectiveness) {
@@ -221,8 +184,25 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    std::string RefrigerationTranscriticalSystem_Impl::refrigerationSystemWorkingFluidType() const {
+      boost::optional<std::string> value = getString(openstudio::Refrigeration_TranscriticalSystemFields::RefrigerationSystemWorkingFluidType, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
     bool RefrigerationTranscriticalSystem_Impl::setRefrigerationSystemWorkingFluidType(const std::string& refrigerationSystemWorkingFluidType) {
       return setString(openstudio::Refrigeration_TranscriticalSystemFields::RefrigerationSystemWorkingFluidType, refrigerationSystemWorkingFluidType);
+    }
+
+    double RefrigerationTranscriticalSystem_Impl::sumUASuctionPipingforMediumTemperatureLoads() const {
+      boost::optional<double> value =
+        getDouble(openstudio::Refrigeration_TranscriticalSystemFields::SumUASuctionPipingforMediumTemperatureLoads, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool RefrigerationTranscriticalSystem_Impl::isSumUASuctionPipingforMediumTemperatureLoadsDefaulted() const {
+      return isEmpty(openstudio::Refrigeration_TranscriticalSystemFields::SumUASuctionPipingforMediumTemperatureLoads);
     }
 
     bool RefrigerationTranscriticalSystem_Impl::setSumUASuctionPipingforMediumTemperatureLoads(double sumUASuctionPipingforMediumTemperatureLoads) {
@@ -237,6 +217,16 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    double RefrigerationTranscriticalSystem_Impl::sumUASuctionPipingforLowTemperatureLoads() const {
+      boost::optional<double> value = getDouble(openstudio::Refrigeration_TranscriticalSystemFields::SumUASuctionPipingforLowTemperatureLoads, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool RefrigerationTranscriticalSystem_Impl::isSumUASuctionPipingforLowTemperatureLoadsDefaulted() const {
+      return isEmpty(openstudio::Refrigeration_TranscriticalSystemFields::SumUASuctionPipingforLowTemperatureLoads);
+    }
+
     bool RefrigerationTranscriticalSystem_Impl::setSumUASuctionPipingforLowTemperatureLoads(double sumUASuctionPipingforLowTemperatureLoads) {
       bool result = setDouble(openstudio::Refrigeration_TranscriticalSystemFields::SumUASuctionPipingforLowTemperatureLoads,
                               sumUASuctionPipingforLowTemperatureLoads);
@@ -247,6 +237,16 @@ namespace epmodel {
     void RefrigerationTranscriticalSystem_Impl::resetSumUASuctionPipingforLowTemperatureLoads() {
       bool result = setString(openstudio::Refrigeration_TranscriticalSystemFields::SumUASuctionPipingforLowTemperatureLoads, "");
       OS_ASSERT(result);
+    }
+
+    std::string RefrigerationTranscriticalSystem_Impl::endUseSubcategory() const {
+      boost::optional<std::string> value = getString(openstudio::Refrigeration_TranscriticalSystemFields::EndUseSubcategory, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool RefrigerationTranscriticalSystem_Impl::isEndUseSubcategoryDefaulted() const {
+      return isEmpty(openstudio::Refrigeration_TranscriticalSystemFields::EndUseSubcategory);
     }
 
     bool RefrigerationTranscriticalSystem_Impl::setEndUseSubcategory(const std::string& endUseSubcategory) {

@@ -43,7 +43,6 @@ namespace epmodel {
     // - Field Mapping: windowsEngine maps directly to WindowsCalculationEngine/Windows engine (choice field with BuiltInWindowsModel default).
     std::string windowsEngine() const;
     bool isWindowsEngineDefaulted() const;
-
     bool setWindowsEngine(const std::string& windowsEngine);
     void resetWindowsEngine();
 

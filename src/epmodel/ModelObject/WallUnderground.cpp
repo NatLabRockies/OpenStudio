@@ -122,6 +122,16 @@ namespace epmodel {
       return getDouble(openstudio::Wall_UndergroundFields::AzimuthAngle, true);
     }
 
+    bool WallUnderground_Impl::setAzimuthAngle(double azimuthAngle) {
+      const bool result = setDouble(openstudio::Wall_UndergroundFields::AzimuthAngle, azimuthAngle);
+      return result;
+    }
+
+    void WallUnderground_Impl::resetAzimuthAngle() {
+      const bool result = setString(openstudio::Wall_UndergroundFields::AzimuthAngle, "");
+      OS_ASSERT(result);
+    }
+
     double WallUnderground_Impl::tiltAngle() const {
       const auto value = getDouble(openstudio::Wall_UndergroundFields::TiltAngle, true);
       OS_ASSERT(value);
@@ -132,34 +142,18 @@ namespace epmodel {
       return isEmpty(openstudio::Wall_UndergroundFields::TiltAngle);
     }
 
-    boost::optional<double> WallUnderground_Impl::startingXCoordinate() const {
-      return getDouble(openstudio::Wall_UndergroundFields::StartingXCoordinate, true);
-    }
-
-    boost::optional<double> WallUnderground_Impl::startingYCoordinate() const {
-      return getDouble(openstudio::Wall_UndergroundFields::StartingYCoordinate, true);
-    }
-
-    boost::optional<double> WallUnderground_Impl::startingZCoordinate() const {
-      return getDouble(openstudio::Wall_UndergroundFields::StartingZCoordinate, true);
-    }
-
-    boost::optional<double> WallUnderground_Impl::length() const {
-      return getDouble(openstudio::Wall_UndergroundFields::Length, true);
-    }
-
-    boost::optional<double> WallUnderground_Impl::height() const {
-      return getDouble(openstudio::Wall_UndergroundFields::Height, true);
-    }
-
-    bool WallUnderground_Impl::setAzimuthAngle(double azimuthAngle) {
-      const bool result = setDouble(openstudio::Wall_UndergroundFields::AzimuthAngle, azimuthAngle);
-      return result;
-    }
-
     bool WallUnderground_Impl::setTiltAngle(double tiltAngle) {
       const bool result = setDouble(openstudio::Wall_UndergroundFields::TiltAngle, tiltAngle);
       return result;
+    }
+
+    void WallUnderground_Impl::resetTiltAngle() {
+      const bool result = setString(openstudio::Wall_UndergroundFields::TiltAngle, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallUnderground_Impl::startingXCoordinate() const {
+      return getDouble(openstudio::Wall_UndergroundFields::StartingXCoordinate, true);
     }
 
     bool WallUnderground_Impl::setStartingXCoordinate(double startingXCoordinate) {
@@ -168,10 +162,28 @@ namespace epmodel {
       return result;
     }
 
+    void WallUnderground_Impl::resetStartingXCoordinate() {
+      const bool result = setString(openstudio::Wall_UndergroundFields::StartingXCoordinate, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallUnderground_Impl::startingYCoordinate() const {
+      return getDouble(openstudio::Wall_UndergroundFields::StartingYCoordinate, true);
+    }
+
     bool WallUnderground_Impl::setStartingYCoordinate(double startingYCoordinate) {
       const bool result = setDouble(openstudio::Wall_UndergroundFields::StartingYCoordinate, startingYCoordinate);
       OS_ASSERT(result);
       return result;
+    }
+
+    void WallUnderground_Impl::resetStartingYCoordinate() {
+      const bool result = setString(openstudio::Wall_UndergroundFields::StartingYCoordinate, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallUnderground_Impl::startingZCoordinate() const {
+      return getDouble(openstudio::Wall_UndergroundFields::StartingZCoordinate, true);
     }
 
     bool WallUnderground_Impl::setStartingZCoordinate(double startingZCoordinate) {
@@ -180,46 +192,34 @@ namespace epmodel {
       return result;
     }
 
+    void WallUnderground_Impl::resetStartingZCoordinate() {
+      const bool result = setString(openstudio::Wall_UndergroundFields::StartingZCoordinate, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallUnderground_Impl::length() const {
+      return getDouble(openstudio::Wall_UndergroundFields::Length, true);
+    }
+
     bool WallUnderground_Impl::setLength(double length) {
       const bool result = setDouble(openstudio::Wall_UndergroundFields::Length, length);
       OS_ASSERT(result);
       return result;
     }
 
+    void WallUnderground_Impl::resetLength() {
+      const bool result = setString(openstudio::Wall_UndergroundFields::Length, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallUnderground_Impl::height() const {
+      return getDouble(openstudio::Wall_UndergroundFields::Height, true);
+    }
+
     bool WallUnderground_Impl::setHeight(double height) {
       const bool result = setDouble(openstudio::Wall_UndergroundFields::Height, height);
       OS_ASSERT(result);
       return result;
-    }
-
-    void WallUnderground_Impl::resetAzimuthAngle() {
-      const bool result = setString(openstudio::Wall_UndergroundFields::AzimuthAngle, "");
-      OS_ASSERT(result);
-    }
-
-    void WallUnderground_Impl::resetTiltAngle() {
-      const bool result = setString(openstudio::Wall_UndergroundFields::TiltAngle, "");
-      OS_ASSERT(result);
-    }
-
-    void WallUnderground_Impl::resetStartingXCoordinate() {
-      const bool result = setString(openstudio::Wall_UndergroundFields::StartingXCoordinate, "");
-      OS_ASSERT(result);
-    }
-
-    void WallUnderground_Impl::resetStartingYCoordinate() {
-      const bool result = setString(openstudio::Wall_UndergroundFields::StartingYCoordinate, "");
-      OS_ASSERT(result);
-    }
-
-    void WallUnderground_Impl::resetStartingZCoordinate() {
-      const bool result = setString(openstudio::Wall_UndergroundFields::StartingZCoordinate, "");
-      OS_ASSERT(result);
-    }
-
-    void WallUnderground_Impl::resetLength() {
-      const bool result = setString(openstudio::Wall_UndergroundFields::Length, "");
-      OS_ASSERT(result);
     }
 
     void WallUnderground_Impl::resetHeight() {

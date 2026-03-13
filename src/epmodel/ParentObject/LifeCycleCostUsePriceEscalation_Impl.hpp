@@ -13,31 +13,30 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API LifeCycleCostUsePriceEscalation_Impl : public ParentObject_Impl
-{
- public:
-  using ParentObject_Impl::ParentObject_Impl;
-  virtual ~LifeCycleCostUsePriceEscalation_Impl() override = default;
+    class EPMODEL_API LifeCycleCostUsePriceEscalation_Impl : public ParentObject_Impl
+    {
+     public:
+      using ParentObject_Impl::ParentObject_Impl;
+      virtual ~LifeCycleCostUsePriceEscalation_Impl() override = default;
 
-  std::string resource() const;
-  bool setResource(const std::string& resource);
+      std::string resource() const;
+      bool setResource(const std::string& resource);
+      std::vector<std::string> resourceValues() const;
 
-  boost::optional<int> escalationStartYear() const;
-  bool setEscalationStartYear(int escalationStartYear);
-  void resetEscalationStartYear();
+      boost::optional<int> escalationStartYear() const;
+      bool setEscalationStartYear(int escalationStartYear);
+      void resetEscalationStartYear();
 
-  std::string escalationStartMonth() const;
-  bool isEscalationStartMonthDefaulted() const;
-  bool setEscalationStartMonth(const std::string& escalationStartMonth);
-  void resetEscalationStartMonth();
+      std::string escalationStartMonth() const;
+      bool isEscalationStartMonthDefaulted() const;
+      bool setEscalationStartMonth(const std::string& escalationStartMonth);
+      void resetEscalationStartMonth();
+      std::vector<std::string> escalationStartMonthValues() const;
+    };
 
-  std::vector<std::string> resourceValues() const;
-  std::vector<std::string> escalationStartMonthValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

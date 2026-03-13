@@ -20,13 +20,13 @@ namespace epmodel {
       virtual ~WindowGapSupportPillar_Impl() override = default;
 
       double spacing() const;
-      bool isSpacingDefaulted() const;
       bool setSpacing(double spacing);
+      bool isSpacingDefaulted() const;
       void resetSpacing();
 
       double radius() const;
-      bool isRadiusDefaulted() const;
       bool setRadius(double radius);
+      bool isRadiusDefaulted() const;
       void resetRadius();
     };
 

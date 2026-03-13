@@ -10,32 +10,34 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SetpointManagerSystemNodeResetTemperature_Impl : public SetpointManager_Impl
-{
- public:
-  using SetpointManager_Impl::SetpointManager_Impl;
-  virtual ~SetpointManagerSystemNodeResetTemperature_Impl() override = default;
+    class EPMODEL_API SetpointManagerSystemNodeResetTemperature_Impl : public SetpointManager_Impl
+    {
+     public:
+      using SetpointManager_Impl::SetpointManager_Impl;
+      virtual ~SetpointManagerSystemNodeResetTemperature_Impl() override = default;
 
-  double setpointatLowReferenceTemperature() const;
-  double setpointatHighReferenceTemperature() const;
-  double lowReferenceTemperature() const;
-  double highReferenceTemperature() const;
+      double setpointatLowReferenceTemperature() const;
+      bool setSetpointatLowReferenceTemperature(double setpointatLowReferenceTemperature);
 
-  bool setSetpointatLowReferenceTemperature(double setpointatLowReferenceTemperature);
-  bool setSetpointatHighReferenceTemperature(double setpointatHighReferenceTemperature);
-  bool setLowReferenceTemperature(double lowReferenceTemperature);
-  bool setHighReferenceTemperature(double highReferenceTemperature);
+      double setpointatHighReferenceTemperature() const;
+      bool setSetpointatHighReferenceTemperature(double setpointatHighReferenceTemperature);
 
- protected:
-  unsigned setpointNodeFieldIndex() const override;
-  unsigned controlVariableFieldIndex() const override;
+      double lowReferenceTemperature() const;
+      bool setLowReferenceTemperature(double lowReferenceTemperature);
 
-  void doCanonicalize(LoadContext& context) override;
-};
+      double highReferenceTemperature() const;
+      bool setHighReferenceTemperature(double highReferenceTemperature);
 
-}  // namespace detail
+     protected:
+      unsigned setpointNodeFieldIndex() const override;
+      unsigned controlVariableFieldIndex() const override;
+
+      void doCanonicalize(LoadContext& context) override;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

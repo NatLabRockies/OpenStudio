@@ -90,16 +90,16 @@ namespace epmodel {
     return getImpl<detail::GasMixture_Impl>()->gas1Type();
   }
 
-  double GasMixture::gas1Fraction() const {
-    return getImpl<detail::GasMixture_Impl>()->gas1Fraction();
-  }
-
   bool GasMixture::setGas1Type(const std::string& gas1Type) {
     return getImpl<detail::GasMixture_Impl>()->setGas1Type(gas1Type);
   }
 
   void GasMixture::resetGas1Type() {
     getImpl<detail::GasMixture_Impl>()->resetGas1Type();
+  }
+
+  double GasMixture::gas1Fraction() const {
+    return getImpl<detail::GasMixture_Impl>()->gas1Fraction();
   }
 
   bool GasMixture::setGas1Fraction(double gas1Fraction) {
@@ -114,16 +114,16 @@ namespace epmodel {
     return getImpl<detail::GasMixture_Impl>()->gas2Type();
   }
 
-  double GasMixture::gas2Fraction() const {
-    return getImpl<detail::GasMixture_Impl>()->gas2Fraction();
-  }
-
   bool GasMixture::setGas2Type(const std::string& gas2Type) {
     return getImpl<detail::GasMixture_Impl>()->setGas2Type(gas2Type);
   }
 
   void GasMixture::resetGas2Type() {
     getImpl<detail::GasMixture_Impl>()->resetGas2Type();
+  }
+
+  double GasMixture::gas2Fraction() const {
+    return getImpl<detail::GasMixture_Impl>()->gas2Fraction();
   }
 
   bool GasMixture::setGas2Fraction(double gas2Fraction) {
@@ -138,16 +138,16 @@ namespace epmodel {
     return getImpl<detail::GasMixture_Impl>()->gas3Type();
   }
 
-  boost::optional<double> GasMixture::gas3Fraction() const {
-    return getImpl<detail::GasMixture_Impl>()->gas3Fraction();
-  }
-
   bool GasMixture::setGas3Type(const std::string& gas3Type) {
     return getImpl<detail::GasMixture_Impl>()->setGas3Type(gas3Type);
   }
 
   void GasMixture::resetGas3Type() {
     getImpl<detail::GasMixture_Impl>()->resetGas3Type();
+  }
+
+  boost::optional<double> GasMixture::gas3Fraction() const {
+    return getImpl<detail::GasMixture_Impl>()->gas3Fraction();
   }
 
   bool GasMixture::setGas3Fraction(double gas3Fraction) {
@@ -162,16 +162,16 @@ namespace epmodel {
     return getImpl<detail::GasMixture_Impl>()->gas4Type();
   }
 
-  boost::optional<double> GasMixture::gas4Fraction() const {
-    return getImpl<detail::GasMixture_Impl>()->gas4Fraction();
-  }
-
   bool GasMixture::setGas4Type(const std::string& gas4Type) {
     return getImpl<detail::GasMixture_Impl>()->setGas4Type(gas4Type);
   }
 
   void GasMixture::resetGas4Type() {
     getImpl<detail::GasMixture_Impl>()->resetGas4Type();
+  }
+
+  boost::optional<double> GasMixture::gas4Fraction() const {
+    return getImpl<detail::GasMixture_Impl>()->gas4Fraction();
   }
 
   bool GasMixture::setGas4Fraction(double gas4Fraction) {
@@ -223,12 +223,6 @@ namespace epmodel {
       return *value;
     }
 
-    double GasMixture_Impl::gas1Fraction() const {
-      auto value = getDouble(openstudio::WindowMaterial_GasMixtureFields::Gas1Fraction, true);
-      OS_ASSERT(value);
-      return *value;
-    }
-
     bool GasMixture_Impl::setGas1Type(const std::string& gas1Type) {
       return setString(openstudio::WindowMaterial_GasMixtureFields::Gas1Type, gas1Type);
     }
@@ -236,6 +230,12 @@ namespace epmodel {
     void GasMixture_Impl::resetGas1Type() {
       bool result = setString(openstudio::WindowMaterial_GasMixtureFields::Gas1Type, "");
       OS_ASSERT(result);
+    }
+
+    double GasMixture_Impl::gas1Fraction() const {
+      auto value = getDouble(openstudio::WindowMaterial_GasMixtureFields::Gas1Fraction, true);
+      OS_ASSERT(value);
+      return *value;
     }
 
     bool GasMixture_Impl::setGas1Fraction(double gas1Fraction) {
@@ -253,12 +253,6 @@ namespace epmodel {
       return *value;
     }
 
-    double GasMixture_Impl::gas2Fraction() const {
-      auto value = getDouble(openstudio::WindowMaterial_GasMixtureFields::Gas2Fraction, true);
-      OS_ASSERT(value);
-      return *value;
-    }
-
     bool GasMixture_Impl::setGas2Type(const std::string& gas2Type) {
       return setString(openstudio::WindowMaterial_GasMixtureFields::Gas2Type, gas2Type);
     }
@@ -266,6 +260,12 @@ namespace epmodel {
     void GasMixture_Impl::resetGas2Type() {
       bool result = setString(openstudio::WindowMaterial_GasMixtureFields::Gas2Type, "");
       OS_ASSERT(result);
+    }
+
+    double GasMixture_Impl::gas2Fraction() const {
+      auto value = getDouble(openstudio::WindowMaterial_GasMixtureFields::Gas2Fraction, true);
+      OS_ASSERT(value);
+      return *value;
     }
 
     bool GasMixture_Impl::setGas2Fraction(double gas2Fraction) {
@@ -285,10 +285,6 @@ namespace epmodel {
       return {};
     }
 
-    boost::optional<double> GasMixture_Impl::gas3Fraction() const {
-      return getDouble(openstudio::WindowMaterial_GasMixtureFields::Gas3Fraction, true);
-    }
-
     bool GasMixture_Impl::setGas3Type(const std::string& gas3Type) {
       return setString(openstudio::WindowMaterial_GasMixtureFields::Gas3Type, gas3Type);
     }
@@ -296,6 +292,10 @@ namespace epmodel {
     void GasMixture_Impl::resetGas3Type() {
       bool result = setString(openstudio::WindowMaterial_GasMixtureFields::Gas3Type, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> GasMixture_Impl::gas3Fraction() const {
+      return getDouble(openstudio::WindowMaterial_GasMixtureFields::Gas3Fraction, true);
     }
 
     bool GasMixture_Impl::setGas3Fraction(double gas3Fraction) {
@@ -315,10 +315,6 @@ namespace epmodel {
       return {};
     }
 
-    boost::optional<double> GasMixture_Impl::gas4Fraction() const {
-      return getDouble(openstudio::WindowMaterial_GasMixtureFields::Gas4Fraction, true);
-    }
-
     bool GasMixture_Impl::setGas4Type(const std::string& gas4Type) {
       return setString(openstudio::WindowMaterial_GasMixtureFields::Gas4Type, gas4Type);
     }
@@ -326,6 +322,10 @@ namespace epmodel {
     void GasMixture_Impl::resetGas4Type() {
       bool result = setString(openstudio::WindowMaterial_GasMixtureFields::Gas4Type, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> GasMixture_Impl::gas4Fraction() const {
+      return getDouble(openstudio::WindowMaterial_GasMixtureFields::Gas4Fraction, true);
     }
 
     bool GasMixture_Impl::setGas4Fraction(double gas4Fraction) {

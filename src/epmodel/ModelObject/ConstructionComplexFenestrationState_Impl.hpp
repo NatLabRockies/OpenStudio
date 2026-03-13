@@ -13,29 +13,29 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ConstructionComplexFenestrationState_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ConstructionComplexFenestrationState_Impl() override = default;
+    class EPMODEL_API ConstructionComplexFenestrationState_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ConstructionComplexFenestrationState_Impl() override = default;
 
-  std::string basisType() const;
-  bool isBasisTypeDefaulted() const;
-  bool setBasisType(const std::string& basisType);
-  void resetBasisType();
+      std::string basisType() const;
+      bool setBasisType(const std::string& basisType);
+      bool isBasisTypeDefaulted() const;
+      void resetBasisType();
 
-  std::string basisSymmetryType() const;
-  bool isBasisSymmetryTypeDefaulted() const;
-  bool setBasisSymmetryType(const std::string& basisSymmetryType);
-  void resetBasisSymmetryType();
+      std::string basisSymmetryType() const;
+      bool setBasisSymmetryType(const std::string& basisSymmetryType);
+      bool isBasisSymmetryTypeDefaulted() const;
+      void resetBasisSymmetryType();
 
-  std::vector<std::string> basisTypeValues() const;
-  std::vector<std::string> basisSymmetryTypeValues() const;
-};
+      std::vector<std::string> basisTypeValues() const;
+      std::vector<std::string> basisSymmetryTypeValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

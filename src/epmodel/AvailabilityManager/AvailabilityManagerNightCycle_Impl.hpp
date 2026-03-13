@@ -23,30 +23,30 @@ namespace epmodel {
       using AvailabilityManager_Impl::AvailabilityManager_Impl;
       virtual ~AvailabilityManagerNightCycle_Impl() override = default;
 
+      std::vector<std::string> controlTypeValues() const;
+      std::vector<std::string> cyclingRunTimeControlTypeValues() const;
+
       boost::optional<openstudio::epmodel::AirLoopHVAC> airLoopHVAC() const;
 
       std::string controlType() const;
       bool setControlType(const std::string& controlType);
-      void resetControlType();
       bool isControlTypeDefaulted() const;
+      void resetControlType();
 
       double thermostatTolerance() const;
       bool setThermostatTolerance(double thermostatTolerance);
-      void resetThermostatTolerance();
       bool isThermostatToleranceDefaulted() const;
+      void resetThermostatTolerance();
 
       double cyclingRunTime() const;
       bool setCyclingRunTime(double cyclingRunTime);
-      void resetCyclingRunTime();
       bool isCyclingRunTimeDefaulted() const;
+      void resetCyclingRunTime();
 
       std::string cyclingRunTimeControlType() const;
       bool setCyclingRunTimeControlType(const std::string& cyclingRunTimeControlType);
-      void resetCyclingRunTimeControlType();
       bool isCyclingRunTimeControlTypeDefaulted() const;
-
-      std::vector<std::string> controlTypeValues() const;
-      std::vector<std::string> cyclingRunTimeControlTypeValues() const;
+      void resetCyclingRunTimeControlType();
     };
 
   }  // namespace detail

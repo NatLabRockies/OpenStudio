@@ -14,154 +14,142 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API RoofVegetation_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~RoofVegetation_Impl() override = default;
+    class EPMODEL_API RoofVegetation_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~RoofVegetation_Impl() override = default;
 
-  double heightofPlants() const;
-  bool isHeightofPlantsDefaulted() const;
+      double heightofPlants() const;
+      bool isHeightofPlantsDefaulted() const;
+      bool setHeightofPlants(double heightofPlants);
+      void resetHeightofPlants();
 
-  double leafAreaIndex() const;
-  bool isLeafAreaIndexDefaulted() const;
+      double leafAreaIndex() const;
+      bool isLeafAreaIndexDefaulted() const;
+      bool setLeafAreaIndex(double leafAreaIndex);
+      void resetLeafAreaIndex();
 
-  double leafReflectivity() const;
-  bool isLeafReflectivityDefaulted() const;
+      double leafReflectivity() const;
+      bool isLeafReflectivityDefaulted() const;
+      bool setLeafReflectivity(double leafReflectivity);
+      void resetLeafReflectivity();
 
-  double leafEmissivity() const;
-  bool isLeafEmissivityDefaulted() const;
+      double leafEmissivity() const;
+      bool isLeafEmissivityDefaulted() const;
+      bool setLeafEmissivity(double leafEmissivity);
+      void resetLeafEmissivity();
 
-  double minimumStomatalResistance() const;
-  bool isMinimumStomatalResistanceDefaulted() const;
+      double minimumStomatalResistance() const;
+      bool isMinimumStomatalResistanceDefaulted() const;
+      bool setMinimumStomatalResistance(double value);
+      void resetMinimumStomatalResistance();
 
-  std::string roughness() const;
-  bool isRoughnessDefaulted() const;
+      std::string roughness() const;
+      bool isRoughnessDefaulted() const;
+      bool setRoughness(const std::string& value);
+      void resetRoughness();
 
-  double thickness() const;
-  bool isThicknessDefaulted() const;
+      double thickness() const;
+      bool isThicknessDefaulted() const;
+      bool setThickness(double thickness);
+      void resetThickness();
 
-  double thermalConductivity() const;
-  double thermalConductance() const;
-  double thermalResistivity() const;
-  double thermalResistance() const;
+      double thermalConductivity() const;
+      bool setThermalConductivity(double value);
 
-  double conductivityofDrySoil() const;
-  bool isConductivityofDrySoilDefaulted() const;
+      double thermalConductance() const;
+      bool setThermalConductance(double value);
 
-  double density() const;
-  double densityofDrySoil() const;
-  bool isDensityofDrySoilDefaulted() const;
+      double thermalResistivity() const;
+      bool setThermalResistivity(double value);
 
-  double specificHeat() const;
-  double specificHeatofDrySoil() const;
-  bool isSpecificHeatofDrySoilDefaulted() const;
+      double thermalResistance() const;
+      bool setThermalResistance(double value);
 
-  boost::optional<double> thermalAbsorptance() const;
-  bool isThermalAbsorptanceDefaulted() const;
-  boost::optional<double> thermalReflectance() const;
+      double conductivityofDrySoil() const;
+      bool isConductivityofDrySoilDefaulted() const;
+      bool setConductivityofDrySoil(double conductivityofDrySoil);
+      void resetConductivityofDrySoil();
 
-  boost::optional<double> solarAbsorptance() const;
-  bool isSolarAbsorptanceDefaulted() const;
-  boost::optional<double> solarReflectance() const;
+      double density() const;
+      bool setDensity(double value);
 
-  boost::optional<double> visibleAbsorptance() const;
-  bool isVisibleAbsorptanceDefaulted() const;
-  boost::optional<double> visibleReflectance() const;
+      double densityofDrySoil() const;
+      bool isDensityofDrySoilDefaulted() const;
+      bool setDensityofDrySoil(double densityofDrySoil);
+      void resetDensityofDrySoil();
 
-  double saturationVolumetricMoistureContent() const;
-  double residualVolumetricMoistureContent() const;
-  double initialVolumetricMoistureContent() const;
+      double specificHeat() const;
+      bool setSpecificHeat(double value);
 
-  double saturationVolumetricMoistureContentoftheSoilLayer() const;
-  bool isSaturationVolumetricMoistureContentoftheSoilLayerDefaulted() const;
+      double specificHeatofDrySoil() const;
+      bool isSpecificHeatofDrySoilDefaulted() const;
+      bool setSpecificHeatofDrySoil(double specificHeatofDrySoil);
+      void resetSpecificHeatofDrySoil();
 
-  double residualVolumetricMoistureContentoftheSoilLayer() const;
-  bool isResidualVolumetricMoistureContentoftheSoilLayerDefaulted() const;
+      boost::optional<double> thermalAbsorptance() const;
+      bool isThermalAbsorptanceDefaulted() const;
+      bool setThermalAbsorptance(double thermalAbsorptance);
+      bool setThermalAbsorptance(boost::optional<double> value);
+      void resetThermalAbsorptance();
+      boost::optional<double> thermalReflectance() const;
+      bool setThermalReflectance(boost::optional<double> value);
 
-  double initialVolumetricMoistureContentoftheSoilLayer() const;
-  bool isInitialVolumetricMoistureContentoftheSoilLayerDefaulted() const;
+      boost::optional<double> solarAbsorptance() const;
+      bool isSolarAbsorptanceDefaulted() const;
+      bool setSolarAbsorptance(double solarAbsorptance);
+      bool setSolarAbsorptance(boost::optional<double> value);
+      void resetSolarAbsorptance();
+      boost::optional<double> solarReflectance() const;
+      bool setSolarReflectance(boost::optional<double> value);
 
-  std::string moistureDiffusionCalculationMethod() const;
-  bool isMoistureDiffusionCalculationMethodDefaulted() const;
+      boost::optional<double> visibleAbsorptance() const;
+      bool isVisibleAbsorptanceDefaulted() const;
+      bool setVisibleAbsorptance(double visibleAbsorptance);
+      bool setVisibleAbsorptance(boost::optional<double> value);
+      void resetVisibleAbsorptance();
+      boost::optional<double> visibleReflectance() const;
+      bool setVisibleReflectance(boost::optional<double> value);
 
-  bool setHeightofPlants(double heightofPlants);
-  void resetHeightofPlants();
+      double saturationVolumetricMoistureContent() const;
+      bool setSaturationVolumetricMoistureContent(double value);
 
-  bool setLeafAreaIndex(double leafAreaIndex);
-  void resetLeafAreaIndex();
+      double residualVolumetricMoistureContent() const;
+      bool setResidualVolumetricMoistureContent(double value);
 
-  bool setLeafReflectivity(double leafReflectivity);
-  void resetLeafReflectivity();
+      double initialVolumetricMoistureContent() const;
+      bool setInitialVolumetricMoistureContent(double value);
 
-  bool setLeafEmissivity(double leafEmissivity);
-  void resetLeafEmissivity();
+      double saturationVolumetricMoistureContentoftheSoilLayer() const;
+      bool isSaturationVolumetricMoistureContentoftheSoilLayerDefaulted() const;
+      bool setSaturationVolumetricMoistureContentoftheSoilLayer(double saturationVolumetricMoistureContentoftheSoilLayer);
+      void resetSaturationVolumetricMoistureContentoftheSoilLayer();
 
-  bool setMinimumStomatalResistance(double value);
-  void resetMinimumStomatalResistance();
+      double residualVolumetricMoistureContentoftheSoilLayer() const;
+      bool isResidualVolumetricMoistureContentoftheSoilLayerDefaulted() const;
+      bool setResidualVolumetricMoistureContentoftheSoilLayer(double residualVolumetricMoistureContentoftheSoilLayer);
+      void resetResidualVolumetricMoistureContentoftheSoilLayer();
 
-  bool setRoughness(const std::string& value);
-  void resetRoughness();
+      double initialVolumetricMoistureContentoftheSoilLayer() const;
+      bool isInitialVolumetricMoistureContentoftheSoilLayerDefaulted() const;
+      bool setInitialVolumetricMoistureContentoftheSoilLayer(double initialVolumetricMoistureContentoftheSoilLayer);
+      void resetInitialVolumetricMoistureContentoftheSoilLayer();
 
-  bool setThickness(double thickness);
-  void resetThickness();
+      std::string moistureDiffusionCalculationMethod() const;
+      bool isMoistureDiffusionCalculationMethodDefaulted() const;
+      bool setMoistureDiffusionCalculationMethod(const std::string& value);
+      void resetMoistureDiffusionCalculationMethod();
 
-  bool setThermalConductivity(double value);
-  bool setThermalConductance(double value);
-  bool setThermalResistivity(double value);
-  bool setThermalResistance(double value);
+      boost::optional<double> heatCapacity() const;
 
-  bool setConductivityofDrySoil(double conductivityofDrySoil);
-  void resetConductivityofDrySoil();
+      std::vector<std::string> roughnessValues() const;
+      std::vector<std::string> moistureDiffusionCalculationMethodValues() const;
+    };
 
-  bool setDensity(double value);
-  bool setDensityofDrySoil(double densityofDrySoil);
-  void resetDensityofDrySoil();
-
-  bool setSpecificHeat(double value);
-  bool setSpecificHeatofDrySoil(double specificHeatofDrySoil);
-  void resetSpecificHeatofDrySoil();
-
-  bool setThermalAbsorptance(double thermalAbsorptance);
-  bool setThermalAbsorptance(boost::optional<double> value);
-  void resetThermalAbsorptance();
-  bool setThermalReflectance(boost::optional<double> value);
-
-  bool setSolarAbsorptance(double solarAbsorptance);
-  bool setSolarAbsorptance(boost::optional<double> value);
-  void resetSolarAbsorptance();
-  bool setSolarReflectance(boost::optional<double> value);
-
-  bool setVisibleAbsorptance(double visibleAbsorptance);
-  bool setVisibleAbsorptance(boost::optional<double> value);
-  void resetVisibleAbsorptance();
-  bool setVisibleReflectance(boost::optional<double> value);
-
-  bool setSaturationVolumetricMoistureContent(double value);
-  bool setResidualVolumetricMoistureContent(double value);
-  bool setInitialVolumetricMoistureContent(double value);
-
-  bool setSaturationVolumetricMoistureContentoftheSoilLayer(double saturationVolumetricMoistureContentoftheSoilLayer);
-  void resetSaturationVolumetricMoistureContentoftheSoilLayer();
-
-  bool setResidualVolumetricMoistureContentoftheSoilLayer(double residualVolumetricMoistureContentoftheSoilLayer);
-  void resetResidualVolumetricMoistureContentoftheSoilLayer();
-
-  bool setInitialVolumetricMoistureContentoftheSoilLayer(double initialVolumetricMoistureContentoftheSoilLayer);
-  void resetInitialVolumetricMoistureContentoftheSoilLayer();
-
-  bool setMoistureDiffusionCalculationMethod(const std::string& value);
-  void resetMoistureDiffusionCalculationMethod();
-
-  boost::optional<double> heatCapacity() const;
-
-  std::vector<std::string> roughnessValues() const;
-  std::vector<std::string> moistureDiffusionCalculationMethodValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

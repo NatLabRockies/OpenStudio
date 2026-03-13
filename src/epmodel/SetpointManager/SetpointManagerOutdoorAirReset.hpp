@@ -15,74 +15,78 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SetpointManagerOutdoorAirReset_Impl;
-}
+  namespace detail {
+    class SetpointManagerOutdoorAirReset_Impl;
+  }
 
-class EPMODEL_API SetpointManagerOutdoorAirReset : public SetpointManager
-{
- public:
-  explicit SetpointManagerOutdoorAirReset(const Model& model);
+  class EPMODEL_API SetpointManagerOutdoorAirReset : public SetpointManager
+  {
+   public:
+    explicit SetpointManagerOutdoorAirReset(const Model& model);
 
-  virtual ~SetpointManagerOutdoorAirReset() override = default;
-  SetpointManagerOutdoorAirReset(const SetpointManagerOutdoorAirReset& other) = default;
-  SetpointManagerOutdoorAirReset(SetpointManagerOutdoorAirReset&& other) = default;
-  SetpointManagerOutdoorAirReset& operator=(const SetpointManagerOutdoorAirReset&) = default;
-  SetpointManagerOutdoorAirReset& operator=(SetpointManagerOutdoorAirReset&&) = default;
+    virtual ~SetpointManagerOutdoorAirReset() override = default;
+    SetpointManagerOutdoorAirReset(const SetpointManagerOutdoorAirReset& other) = default;
+    SetpointManagerOutdoorAirReset(SetpointManagerOutdoorAirReset&& other) = default;
+    SetpointManagerOutdoorAirReset& operator=(const SetpointManagerOutdoorAirReset&) = default;
+    SetpointManagerOutdoorAirReset& operator=(SetpointManagerOutdoorAirReset&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> controlVariableValues();
+    static std::vector<std::string> controlVariableValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-  // - Field Mapping: setpointatOutdoorLowTemperature, outdoorLowTemperature,
-  //   setpointatOutdoorHighTemperature, outdoorHighTemperature,
-  //   setpointatOutdoorLowTemperature2, outdoorLowTemperature2,
-  //   setpointatOutdoorHighTemperature2, and outdoorHighTemperature2 map directly to
-  //   E+ SetpointManager:OutdoorAirReset scalar fields.
-  // - Field Mapping: Relationship fields Setpoint Node or NodeList Name and Schedule Name are intentionally excluded
-  //   from scalar-only scaffolding.
-  // - TODO(parity): Add non-scalar relationship parity for explicit schedule and setpoint-node linkage.
-  bool isControlVariableDefaulted() const;
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
+    // - Field Mapping: setpointatOutdoorLowTemperature, outdoorLowTemperature,
+    //   setpointatOutdoorHighTemperature, outdoorHighTemperature,
+    //   setpointatOutdoorLowTemperature2, outdoorLowTemperature2,
+    //   setpointatOutdoorHighTemperature2, and outdoorHighTemperature2 map directly to
+    //   E+ SetpointManager:OutdoorAirReset scalar fields.
+    // - Field Mapping: Relationship fields Setpoint Node or NodeList Name and Schedule Name are intentionally excluded
+    //   from scalar-only scaffolding.
+    // - TODO(parity): Add non-scalar relationship parity for explicit schedule and setpoint-node linkage.
 
-  double setpointatOutdoorLowTemperature() const;
-  double outdoorLowTemperature() const;
-  double setpointatOutdoorHighTemperature() const;
-  double outdoorHighTemperature() const;
+    bool isControlVariableDefaulted() const;
+    void resetControlVariable();
 
-  boost::optional<double> setpointatOutdoorLowTemperature2() const;
-  boost::optional<double> outdoorLowTemperature2() const;
-  boost::optional<double> setpointatOutdoorHighTemperature2() const;
-  boost::optional<double> outdoorHighTemperature2() const;
+    double setpointatOutdoorLowTemperature() const;
+    bool setSetpointatOutdoorLowTemperature(double setpointatOutdoorLowTemperature);
 
-  void resetControlVariable();
+    double outdoorLowTemperature() const;
+    bool setOutdoorLowTemperature(double outdoorLowTemperature);
 
-  bool setSetpointatOutdoorLowTemperature(double setpointatOutdoorLowTemperature);
-  bool setOutdoorLowTemperature(double outdoorLowTemperature);
-  bool setSetpointatOutdoorHighTemperature(double setpointatOutdoorHighTemperature);
-  bool setOutdoorHighTemperature(double outdoorHighTemperature);
+    double setpointatOutdoorHighTemperature() const;
+    bool setSetpointatOutdoorHighTemperature(double setpointatOutdoorHighTemperature);
 
-  bool setSetpointatOutdoorLowTemperature2(double setpointatOutdoorLowTemperature2);
-  void resetSetpointatOutdoorLowTemperature2();
-  bool setOutdoorLowTemperature2(double outdoorLowTemperature2);
-  void resetOutdoorLowTemperature2();
-  bool setSetpointatOutdoorHighTemperature2(double setpointatOutdoorHighTemperature2);
-  void resetSetpointatOutdoorHighTemperature2();
-  bool setOutdoorHighTemperature2(double outdoorHighTemperature2);
-  void resetOutdoorHighTemperature2();
+    double outdoorHighTemperature() const;
+    bool setOutdoorHighTemperature(double outdoorHighTemperature);
 
- protected:
-  using ImplType = detail::SetpointManagerOutdoorAirReset_Impl;
+    boost::optional<double> setpointatOutdoorLowTemperature2() const;
+    bool setSetpointatOutdoorLowTemperature2(double setpointatOutdoorLowTemperature2);
+    void resetSetpointatOutdoorLowTemperature2();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    boost::optional<double> outdoorLowTemperature2() const;
+    bool setOutdoorLowTemperature2(double outdoorLowTemperature2);
+    void resetOutdoorLowTemperature2();
 
-  explicit SetpointManagerOutdoorAirReset(std::shared_ptr<detail::SetpointManagerOutdoorAirReset_Impl> impl);
-};
+    boost::optional<double> setpointatOutdoorHighTemperature2() const;
+    bool setSetpointatOutdoorHighTemperature2(double setpointatOutdoorHighTemperature2);
+    void resetSetpointatOutdoorHighTemperature2();
+
+    boost::optional<double> outdoorHighTemperature2() const;
+    bool setOutdoorHighTemperature2(double outdoorHighTemperature2);
+    void resetOutdoorHighTemperature2();
+
+   protected:
+    using ImplType = detail::SetpointManagerOutdoorAirReset_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit SetpointManagerOutdoorAirReset(std::shared_ptr<detail::SetpointManagerOutdoorAirReset_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

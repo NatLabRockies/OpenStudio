@@ -17,57 +17,56 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class HVACTemplatePlantTowerObjectReference_Impl;
-}
+  namespace detail {
+    class HVACTemplatePlantTowerObjectReference_Impl;
+  }
 
-class EPMODEL_API HVACTemplatePlantTowerObjectReference : public ModelObject
-{
- public:
-  explicit HVACTemplatePlantTowerObjectReference(const Model& model);
+  class EPMODEL_API HVACTemplatePlantTowerObjectReference : public ModelObject
+  {
+   public:
+    explicit HVACTemplatePlantTowerObjectReference(const Model& model);
 
-  virtual ~HVACTemplatePlantTowerObjectReference() override = default;
-  HVACTemplatePlantTowerObjectReference(const HVACTemplatePlantTowerObjectReference& other) = default;
-  HVACTemplatePlantTowerObjectReference(HVACTemplatePlantTowerObjectReference&& other) = default;
-  HVACTemplatePlantTowerObjectReference& operator=(const HVACTemplatePlantTowerObjectReference&) = default;
-  HVACTemplatePlantTowerObjectReference& operator=(HVACTemplatePlantTowerObjectReference&&) = default;
+    virtual ~HVACTemplatePlantTowerObjectReference() override = default;
+    HVACTemplatePlantTowerObjectReference(const HVACTemplatePlantTowerObjectReference& other) = default;
+    HVACTemplatePlantTowerObjectReference(HVACTemplatePlantTowerObjectReference&& other) = default;
+    HVACTemplatePlantTowerObjectReference& operator=(const HVACTemplatePlantTowerObjectReference&) = default;
+    HVACTemplatePlantTowerObjectReference& operator=(HVACTemplatePlantTowerObjectReference&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> coolingTowerObjectTypeValues();
-  static std::vector<std::string> templatePlantLoopTypeValues();
+    static std::vector<std::string> coolingTowerObjectTypeValues();
+    static std::vector<std::string> templatePlantLoopTypeValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map to HVACTemplate:Plant:Tower:ObjectReference fields Cooling Tower Object Type,
-  //   Priority, and Template Plant Loop Type.
-  // - Field Mapping: Cooling Tower Name is an object-list relationship field and is intentionally excluded in scalar-only scaffold.
-  // - TODO(parity): Revisit only if a future parity pass introduces relationship/object-link APIs.
-  std::string coolingTowerObjectType() const;
-  boost::optional<double> priority() const;
-  boost::optional<std::string> templatePlantLoopType() const;
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map to HVACTemplate:Plant:Tower:ObjectReference fields Cooling Tower Object Type,
+    //   Priority, and Template Plant Loop Type.
+    // - Field Mapping: Cooling Tower Name is an object-list relationship field and is intentionally excluded in scalar-only scaffold.
+    // - TODO(parity): Revisit only if a future parity pass introduces relationship/object-link APIs.
+    std::string coolingTowerObjectType() const;
+    bool isCoolingTowerObjectTypeDefaulted() const;
+    bool setCoolingTowerObjectType(const std::string& coolingTowerObjectType);
+    void resetCoolingTowerObjectType();
 
-  bool isCoolingTowerObjectTypeDefaulted() const;
+    boost::optional<double> priority() const;
+    bool setPriority(double priority);
+    void resetPriority();
 
-  bool setCoolingTowerObjectType(const std::string& coolingTowerObjectType);
-  bool setPriority(double priority);
-  bool setTemplatePlantLoopType(const std::string& templatePlantLoopType);
+    boost::optional<std::string> templatePlantLoopType() const;
+    bool setTemplatePlantLoopType(const std::string& templatePlantLoopType);
+    void resetTemplatePlantLoopType();
 
-  void resetCoolingTowerObjectType();
-  void resetPriority();
-  void resetTemplatePlantLoopType();
+   protected:
+    using ImplType = detail::HVACTemplatePlantTowerObjectReference_Impl;
 
- protected:
-  using ImplType = detail::HVACTemplatePlantTowerObjectReference_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit HVACTemplatePlantTowerObjectReference(std::shared_ptr<detail::HVACTemplatePlantTowerObjectReference_Impl> impl);
-};
+    explicit HVACTemplatePlantTowerObjectReference(std::shared_ptr<detail::HVACTemplatePlantTowerObjectReference_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

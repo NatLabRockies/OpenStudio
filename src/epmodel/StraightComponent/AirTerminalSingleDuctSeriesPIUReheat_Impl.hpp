@@ -13,61 +13,61 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirTerminalSingleDuctSeriesPIUReheat_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirTerminalSingleDuctSeriesPIUReheat_Impl() override = default;
+    class EPMODEL_API AirTerminalSingleDuctSeriesPIUReheat_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirTerminalSingleDuctSeriesPIUReheat_Impl() override = default;
 
-  boost::optional<double> maximumAirFlowRate() const;
-  bool isMaximumAirFlowRateAutosized() const;
-  bool setMaximumAirFlowRate(double maximumAirFlowRate);
-  void autosizeMaximumAirFlowRate();
+      std::vector<std::string> fanControlTypeValues() const;
+      std::vector<std::string> heatingControlTypeValues() const;
 
-  boost::optional<double> maximumPrimaryAirFlowRate() const;
-  bool isMaximumPrimaryAirFlowRateAutosized() const;
-  bool setMaximumPrimaryAirFlowRate(double maximumPrimaryAirFlowRate);
-  void autosizeMaximumPrimaryAirFlowRate();
+      boost::optional<double> maximumAirFlowRate() const;
+      bool isMaximumAirFlowRateAutosized() const;
+      bool setMaximumAirFlowRate(double maximumAirFlowRate);
+      void autosizeMaximumAirFlowRate();
 
-  boost::optional<double> minimumPrimaryAirFlowFraction() const;
-  bool isMinimumPrimaryAirFlowFractionAutosized() const;
-  bool setMinimumPrimaryAirFlowFraction(double minimumPrimaryAirFlowFraction);
-  void autosizeMinimumPrimaryAirFlowFraction();
+      boost::optional<double> maximumPrimaryAirFlowRate() const;
+      bool isMaximumPrimaryAirFlowRateAutosized() const;
+      bool setMaximumPrimaryAirFlowRate(double maximumPrimaryAirFlowRate);
+      void autosizeMaximumPrimaryAirFlowRate();
 
-  boost::optional<double> maximumHotWaterorSteamFlowRate() const;
-  bool isMaximumHotWaterorSteamFlowRateAutosized() const;
-  bool setMaximumHotWaterorSteamFlowRate(double maximumHotWaterorSteamFlowRate);
-  void resetMaximumHotWaterorSteamFlowRate();
-  void autosizeMaximumHotWaterorSteamFlowRate();
+      boost::optional<double> minimumPrimaryAirFlowFraction() const;
+      bool isMinimumPrimaryAirFlowFractionAutosized() const;
+      bool setMinimumPrimaryAirFlowFraction(double minimumPrimaryAirFlowFraction);
+      void autosizeMinimumPrimaryAirFlowFraction();
 
-  double minimumHotWaterorSteamFlowRate() const;
-  bool setMinimumHotWaterorSteamFlowRate(double minimumHotWaterorSteamFlowRate);
+      boost::optional<double> maximumHotWaterorSteamFlowRate() const;
+      bool isMaximumHotWaterorSteamFlowRateAutosized() const;
+      bool setMaximumHotWaterorSteamFlowRate(double maximumHotWaterorSteamFlowRate);
+      void resetMaximumHotWaterorSteamFlowRate();
+      void autosizeMaximumHotWaterorSteamFlowRate();
 
-  double convergenceTolerance() const;
-  bool setConvergenceTolerance(double convergenceTolerance);
+      double minimumHotWaterorSteamFlowRate() const;
+      bool setMinimumHotWaterorSteamFlowRate(double minimumHotWaterorSteamFlowRate);
 
-  std::string fanControlType() const;
-  bool setFanControlType(const std::string& fanControlType);
+      double convergenceTolerance() const;
+      bool setConvergenceTolerance(double convergenceTolerance);
 
-  double minimumFanTurnDownRatio() const;
-  bool setMinimumFanTurnDownRatio(double minimumFanTurnDownRatio);
+      std::string fanControlType() const;
+      bool setFanControlType(const std::string& fanControlType);
 
-  std::string heatingControlType() const;
-  bool setHeatingControlType(const std::string& heatingControlType);
+      double minimumFanTurnDownRatio() const;
+      bool setMinimumFanTurnDownRatio(double minimumFanTurnDownRatio);
 
-  double designHeatingDischargeAirTemperature() const;
-  bool setDesignHeatingDischargeAirTemperature(double designHeatingDischargeAirTemperature);
+      std::string heatingControlType() const;
+      bool setHeatingControlType(const std::string& heatingControlType);
 
-  double highLimitHeatingDischargeAirTemperature() const;
-  bool setHighLimitHeatingDischargeAirTemperature(double highLimitHeatingDischargeAirTemperature);
+      double designHeatingDischargeAirTemperature() const;
+      bool setDesignHeatingDischargeAirTemperature(double designHeatingDischargeAirTemperature);
 
-  std::vector<std::string> fanControlTypeValues() const;
-  std::vector<std::string> heatingControlTypeValues() const;
-};
+      double highLimitHeatingDischargeAirTemperature() const;
+      bool setHighLimitHeatingDischargeAirTemperature(double highLimitHeatingDischargeAirTemperature);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

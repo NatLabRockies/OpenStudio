@@ -24,6 +24,7 @@ namespace epmodel {
 
       boost::optional<double> supplyAirFlowRateDuringCoolingOperation() const;
       bool isSupplyAirFlowRateDuringCoolingOperationAutosized() const;
+      boost::optional<double> autosizedSupplyAirFlowRateDuringCoolingOperation() const;
       bool setSupplyAirFlowRateDuringCoolingOperation(boost::optional<double> supplyAirFlowRateDuringCoolingOperation);
       bool setSupplyAirFlowRateDuringCoolingOperation(double supplyAirFlowRateDuringCoolingOperation);
       void resetSupplyAirFlowRateDuringCoolingOperation();
@@ -31,6 +32,7 @@ namespace epmodel {
 
       boost::optional<double> supplyAirFlowRateDuringHeatingOperation() const;
       bool isSupplyAirFlowRateDuringHeatingOperationAutosized() const;
+      boost::optional<double> autosizedSupplyAirFlowRateDuringHeatingOperation() const;
       bool setSupplyAirFlowRateDuringHeatingOperation(boost::optional<double> supplyAirFlowRateDuringHeatingOperation);
       bool setSupplyAirFlowRateDuringHeatingOperation(double supplyAirFlowRateDuringHeatingOperation);
       void resetSupplyAirFlowRateDuringHeatingOperation();
@@ -38,6 +40,7 @@ namespace epmodel {
 
       boost::optional<double> supplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
       bool isSupplyAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const;
+      boost::optional<double> autosizedSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
       bool setSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded(boost::optional<double> supplyAirFlowRateWhenNoCoolingorHeatingisNeeded);
       bool setSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded(double supplyAirFlowRateWhenNoCoolingorHeatingisNeeded);
       void resetSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded();
@@ -48,6 +51,7 @@ namespace epmodel {
 
       boost::optional<double> outdoorAirFlowRateDuringCoolingOperation() const;
       bool isOutdoorAirFlowRateDuringCoolingOperationAutosized() const;
+      boost::optional<double> autosizedOutdoorAirFlowRateDuringCoolingOperation() const;
       bool setOutdoorAirFlowRateDuringCoolingOperation(boost::optional<double> outdoorAirFlowRateDuringCoolingOperation);
       bool setOutdoorAirFlowRateDuringCoolingOperation(double outdoorAirFlowRateDuringCoolingOperation);
       void resetOutdoorAirFlowRateDuringCoolingOperation();
@@ -55,6 +59,7 @@ namespace epmodel {
 
       boost::optional<double> outdoorAirFlowRateDuringHeatingOperation() const;
       bool isOutdoorAirFlowRateDuringHeatingOperationAutosized() const;
+      boost::optional<double> autosizedOutdoorAirFlowRateDuringHeatingOperation() const;
       bool setOutdoorAirFlowRateDuringHeatingOperation(boost::optional<double> outdoorAirFlowRateDuringHeatingOperation);
       bool setOutdoorAirFlowRateDuringHeatingOperation(double outdoorAirFlowRateDuringHeatingOperation);
       void resetOutdoorAirFlowRateDuringHeatingOperation();
@@ -62,6 +67,7 @@ namespace epmodel {
 
       boost::optional<double> outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
       bool isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const;
+      boost::optional<double> autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
       bool setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(boost::optional<double> outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded);
       bool setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(double outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded);
       void resetOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
@@ -69,6 +75,7 @@ namespace epmodel {
 
       boost::optional<double> maximumSupplyAirTemperaturefromSupplementalHeater() const;
       bool isMaximumSupplyAirTemperaturefromSupplementalHeaterAutosized() const;
+      boost::optional<double> autosizedMaximumSupplyAirTemperaturefromSupplementalHeater() const;
       bool setMaximumSupplyAirTemperaturefromSupplementalHeater(boost::optional<double> maximumSupplyAirTemperaturefromSupplementalHeater);
       bool setMaximumSupplyAirTemperaturefromSupplementalHeater(double maximumSupplyAirTemperaturefromSupplementalHeater);
       void resetMaximumSupplyAirTemperaturefromSupplementalHeater();
@@ -93,14 +100,6 @@ namespace epmodel {
 
       double dXHeatingCoilSizingRatio() const;
       bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);
-
-      boost::optional<double> autosizedSupplyAirFlowRateDuringCoolingOperation() const;
-      boost::optional<double> autosizedSupplyAirFlowRateDuringHeatingOperation() const;
-      boost::optional<double> autosizedSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
-      boost::optional<double> autosizedOutdoorAirFlowRateDuringCoolingOperation() const;
-      boost::optional<double> autosizedOutdoorAirFlowRateDuringHeatingOperation() const;
-      boost::optional<double> autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
-      boost::optional<double> autosizedMaximumSupplyAirTemperaturefromSupplementalHeater() const;
     };
 
   }  // namespace detail

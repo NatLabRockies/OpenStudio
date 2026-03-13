@@ -16,52 +16,57 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class DaylightingDeviceLightWell_Impl;
-}
+  namespace detail {
+    class DaylightingDeviceLightWell_Impl;
+  }
 
-class EPMODEL_API DaylightingDeviceLightWell : public ModelObject
-{
- public:
-  explicit DaylightingDeviceLightWell(const Model& model);
+  class EPMODEL_API DaylightingDeviceLightWell : public ModelObject
+  {
+   public:
+    explicit DaylightingDeviceLightWell(const Model& model);
 
-  virtual ~DaylightingDeviceLightWell() override = default;
-  DaylightingDeviceLightWell(const DaylightingDeviceLightWell& other) = default;
-  DaylightingDeviceLightWell(DaylightingDeviceLightWell&& other) = default;
-  DaylightingDeviceLightWell& operator=(const DaylightingDeviceLightWell&) = default;
-  DaylightingDeviceLightWell& operator=(DaylightingDeviceLightWell&&) = default;
+    virtual ~DaylightingDeviceLightWell() override = default;
+    DaylightingDeviceLightWell(const DaylightingDeviceLightWell& other) = default;
+    DaylightingDeviceLightWell(DaylightingDeviceLightWell&& other) = default;
+    DaylightingDeviceLightWell& operator=(const DaylightingDeviceLightWell&) = default;
+    DaylightingDeviceLightWell& operator=(DaylightingDeviceLightWell&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model accessor names/signatures for counterpart parity.
-  // - Field Mapping: heightofWell, perimeterofBottomofWell, areaofBottomofWell, and visibleReflectanceofWellWalls
-  //   map directly to DaylightingDevice:LightWell scalar fields in EnergyPlus.
-  // - Field Mapping: Exterior Window Name is a relationship-like link field and is intentionally excluded from scalar accessors.
-  // - TODO(parity): Add typed relationship APIs for Exterior Window Name during non-scalar parity work.
-  double heightofWell() const;
-  bool setHeightofWell(double heightofWell);
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model accessor names/signatures for counterpart parity.
+    // - Field Mapping: heightofWell, perimeterofBottomofWell, areaofBottomofWell, and visibleReflectanceofWellWalls
+    //   map directly to DaylightingDevice:LightWell scalar fields in EnergyPlus.
+    // - Field Mapping: Exterior Window Name is a relationship-like link field and is intentionally excluded from scalar accessors.
+    // - TODO(parity): Add typed relationship APIs for Exterior Window Name during non-scalar parity work.
 
-  double perimeterofBottomofWell() const;
-  bool setPerimeterofBottomofWell(double perimeterofBottomofWell);
+    // Field: Height of Well
+    double heightofWell() const;
+    bool setHeightofWell(double heightofWell);
 
-  double areaofBottomofWell() const;
-  bool setAreaofBottomofWell(double areaofBottomofWell);
+    // Field: Perimeter of the Bottom of the Well
+    double perimeterofBottomofWell() const;
+    bool setPerimeterofBottomofWell(double perimeterofBottomofWell);
 
-  double visibleReflectanceofWellWalls() const;
-  bool setVisibleReflectanceofWellWalls(double visibleReflectanceofWellWalls);
+    // Field: Area of the Bottom of the Well
+    double areaofBottomofWell() const;
+    bool setAreaofBottomofWell(double areaofBottomofWell);
 
- protected:
-  using ImplType = detail::DaylightingDeviceLightWell_Impl;
+    // Field: Visible Reflectance of the Well Walls
+    double visibleReflectanceofWellWalls() const;
+    bool setVisibleReflectanceofWellWalls(double visibleReflectanceofWellWalls);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::DaylightingDeviceLightWell_Impl;
 
-  explicit DaylightingDeviceLightWell(std::shared_ptr<detail::DaylightingDeviceLightWell_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit DaylightingDeviceLightWell(std::shared_ptr<detail::DaylightingDeviceLightWell_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

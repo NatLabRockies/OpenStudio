@@ -61,11 +61,6 @@ namespace epmodel {
     bool isSuctionTemperatureControlTypeDefaulted() const;
     void resetSuctionTemperatureControlType();
 
-    double sumUASuctionPiping() const;
-    bool setSumUASuctionPiping(double sumUASuctionPiping);
-    bool isSumUASuctionPipingDefaulted() const;
-    void resetSumUASuctionPiping();
-
     std::string endUseSubcategory() const;
     bool setEndUseSubcategory(const std::string& endUseSubcategory);
     bool isEndUseSubcategoryDefaulted() const;
@@ -75,6 +70,11 @@ namespace epmodel {
     bool setIntercoolerType(const std::string& intercoolerType);
     bool isIntercoolerTypeDefaulted() const;
     void resetIntercoolerType();
+
+    double sumUASuctionPiping() const;
+    bool setSumUASuctionPiping(double sumUASuctionPiping);
+    bool isSumUASuctionPipingDefaulted() const;
+    void resetSumUASuctionPiping();
 
     double shellandCoilIntercoolerEffectiveness() const;
     bool setShellandCoilIntercoolerEffectiveness(double shellandCoilIntercoolerEffectiveness);

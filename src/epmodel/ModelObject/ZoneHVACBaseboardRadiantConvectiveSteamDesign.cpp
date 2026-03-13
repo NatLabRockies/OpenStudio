@@ -52,73 +52,6 @@ namespace epmodel {
     getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->resetHeatingDesignCapacityMethod();
   }
 
-  boost::optional<double> ZoneHVACBaseboardRadiantConvectiveSteamDesign::heatingDesignCapacityPerFloorArea() const {
-    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->heatingDesignCapacityPerFloorArea();
-  }
-
-  bool ZoneHVACBaseboardRadiantConvectiveSteamDesign::setHeatingDesignCapacityPerFloorArea(double heatingDesignCapacityPerFloorArea) {
-    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->setHeatingDesignCapacityPerFloorArea(
-      heatingDesignCapacityPerFloorArea);
-  }
-
-  void ZoneHVACBaseboardRadiantConvectiveSteamDesign::resetHeatingDesignCapacityPerFloorArea() {
-    getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->resetHeatingDesignCapacityPerFloorArea();
-  }
-
-  double ZoneHVACBaseboardRadiantConvectiveSteamDesign::fractionofAutosizedHeatingDesignCapacity() const {
-    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->fractionofAutosizedHeatingDesignCapacity();
-  }
-
-  bool ZoneHVACBaseboardRadiantConvectiveSteamDesign::isFractionofAutosizedHeatingDesignCapacityDefaulted() const {
-    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->isFractionofAutosizedHeatingDesignCapacityDefaulted();
-  }
-
-  bool ZoneHVACBaseboardRadiantConvectiveSteamDesign::setFractionofAutosizedHeatingDesignCapacity(double fractionofAutosizedHeatingDesignCapacity) {
-    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->setFractionofAutosizedHeatingDesignCapacity(
-      fractionofAutosizedHeatingDesignCapacity);
-  }
-
-  void ZoneHVACBaseboardRadiantConvectiveSteamDesign::resetFractionofAutosizedHeatingDesignCapacity() {
-    getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->resetFractionofAutosizedHeatingDesignCapacity();
-  }
-
-  double ZoneHVACBaseboardRadiantConvectiveSteamDesign::convergenceTolerance() const {
-    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->convergenceTolerance();
-  }
-
-  bool ZoneHVACBaseboardRadiantConvectiveSteamDesign::isConvergenceToleranceDefaulted() const {
-    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->isConvergenceToleranceDefaulted();
-  }
-
-  bool ZoneHVACBaseboardRadiantConvectiveSteamDesign::setConvergenceTolerance(double convergenceTolerance) {
-    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->setConvergenceTolerance(convergenceTolerance);
-  }
-
-  void ZoneHVACBaseboardRadiantConvectiveSteamDesign::resetConvergenceTolerance() {
-    getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->resetConvergenceTolerance();
-  }
-
-  double ZoneHVACBaseboardRadiantConvectiveSteamDesign::fractionRadiant() const {
-    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->fractionRadiant();
-  }
-
-  bool ZoneHVACBaseboardRadiantConvectiveSteamDesign::setFractionRadiant(double fractionRadiant) {
-    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->setFractionRadiant(fractionRadiant);
-  }
-
-  boost::optional<double> ZoneHVACBaseboardRadiantConvectiveSteamDesign::fractionofRadiantEnergyIncidentonPeople() const {
-    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->fractionofRadiantEnergyIncidentonPeople();
-  }
-
-  bool ZoneHVACBaseboardRadiantConvectiveSteamDesign::setFractionofRadiantEnergyIncidentonPeople(double fractionofRadiantEnergyIncidentonPeople) {
-    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->setFractionofRadiantEnergyIncidentonPeople(
-      fractionofRadiantEnergyIncidentonPeople);
-  }
-
-  void ZoneHVACBaseboardRadiantConvectiveSteamDesign::resetFractionofRadiantEnergyIncidentonPeople() {
-    getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->resetFractionofRadiantEnergyIncidentonPeople();
-  }
-
   namespace detail {
 
     std::string ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl::heatingDesignCapacityMethod() const {
@@ -137,6 +70,23 @@ namespace epmodel {
       OS_ASSERT(setString(ZoneHVAC_Baseboard_RadiantConvective_Steam_DesignFields::HeatingDesignCapacityMethod, ""));
     }
 
+  }  // namespace detail
+
+  boost::optional<double> ZoneHVACBaseboardRadiantConvectiveSteamDesign::heatingDesignCapacityPerFloorArea() const {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->heatingDesignCapacityPerFloorArea();
+  }
+
+  bool ZoneHVACBaseboardRadiantConvectiveSteamDesign::setHeatingDesignCapacityPerFloorArea(double heatingDesignCapacityPerFloorArea) {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->setHeatingDesignCapacityPerFloorArea(
+      heatingDesignCapacityPerFloorArea);
+  }
+
+  void ZoneHVACBaseboardRadiantConvectiveSteamDesign::resetHeatingDesignCapacityPerFloorArea() {
+    getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->resetHeatingDesignCapacityPerFloorArea();
+  }
+
+  namespace detail {
+
     boost::optional<double> ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl::heatingDesignCapacityPerFloorArea() const {
       return getDouble(ZoneHVAC_Baseboard_RadiantConvective_Steam_DesignFields::HeatingDesignCapacityPerFloorArea, true);
     }
@@ -151,6 +101,27 @@ namespace epmodel {
     void ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl::resetHeatingDesignCapacityPerFloorArea() {
       OS_ASSERT(setString(ZoneHVAC_Baseboard_RadiantConvective_Steam_DesignFields::HeatingDesignCapacityPerFloorArea, ""));
     }
+
+  }  // namespace detail
+
+  double ZoneHVACBaseboardRadiantConvectiveSteamDesign::fractionofAutosizedHeatingDesignCapacity() const {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->fractionofAutosizedHeatingDesignCapacity();
+  }
+
+  bool ZoneHVACBaseboardRadiantConvectiveSteamDesign::isFractionofAutosizedHeatingDesignCapacityDefaulted() const {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->isFractionofAutosizedHeatingDesignCapacityDefaulted();
+  }
+
+  bool ZoneHVACBaseboardRadiantConvectiveSteamDesign::setFractionofAutosizedHeatingDesignCapacity(double fractionofAutosizedHeatingDesignCapacity) {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->setFractionofAutosizedHeatingDesignCapacity(
+      fractionofAutosizedHeatingDesignCapacity);
+  }
+
+  void ZoneHVACBaseboardRadiantConvectiveSteamDesign::resetFractionofAutosizedHeatingDesignCapacity() {
+    getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->resetFractionofAutosizedHeatingDesignCapacity();
+  }
+
+  namespace detail {
 
     double ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl::fractionofAutosizedHeatingDesignCapacity() const {
       auto value = getDouble(ZoneHVAC_Baseboard_RadiantConvective_Steam_DesignFields::FractionofAutosizedHeatingDesignCapacity, true);
@@ -174,6 +145,26 @@ namespace epmodel {
       OS_ASSERT(setString(ZoneHVAC_Baseboard_RadiantConvective_Steam_DesignFields::FractionofAutosizedHeatingDesignCapacity, ""));
     }
 
+  }  // namespace detail
+
+  double ZoneHVACBaseboardRadiantConvectiveSteamDesign::convergenceTolerance() const {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->convergenceTolerance();
+  }
+
+  bool ZoneHVACBaseboardRadiantConvectiveSteamDesign::isConvergenceToleranceDefaulted() const {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->isConvergenceToleranceDefaulted();
+  }
+
+  bool ZoneHVACBaseboardRadiantConvectiveSteamDesign::setConvergenceTolerance(double convergenceTolerance) {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->setConvergenceTolerance(convergenceTolerance);
+  }
+
+  void ZoneHVACBaseboardRadiantConvectiveSteamDesign::resetConvergenceTolerance() {
+    getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->resetConvergenceTolerance();
+  }
+
+  namespace detail {
+
     double ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl::convergenceTolerance() const {
       auto value = getDouble(ZoneHVAC_Baseboard_RadiantConvective_Steam_DesignFields::ConvergenceTolerance, true);
       OS_ASSERT(value);
@@ -194,6 +185,18 @@ namespace epmodel {
       OS_ASSERT(setString(ZoneHVAC_Baseboard_RadiantConvective_Steam_DesignFields::ConvergenceTolerance, ""));
     }
 
+  }  // namespace detail
+
+  double ZoneHVACBaseboardRadiantConvectiveSteamDesign::fractionRadiant() const {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->fractionRadiant();
+  }
+
+  bool ZoneHVACBaseboardRadiantConvectiveSteamDesign::setFractionRadiant(double fractionRadiant) {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->setFractionRadiant(fractionRadiant);
+  }
+
+  namespace detail {
+
     double ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl::fractionRadiant() const {
       auto value = getDouble(ZoneHVAC_Baseboard_RadiantConvective_Steam_DesignFields::FractionRadiant, true);
       OS_ASSERT(value);
@@ -205,6 +208,23 @@ namespace epmodel {
       OS_ASSERT(result);
       return result;
     }
+
+  }  // namespace detail
+
+  boost::optional<double> ZoneHVACBaseboardRadiantConvectiveSteamDesign::fractionofRadiantEnergyIncidentonPeople() const {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->fractionofRadiantEnergyIncidentonPeople();
+  }
+
+  bool ZoneHVACBaseboardRadiantConvectiveSteamDesign::setFractionofRadiantEnergyIncidentonPeople(double fractionofRadiantEnergyIncidentonPeople) {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->setFractionofRadiantEnergyIncidentonPeople(
+      fractionofRadiantEnergyIncidentonPeople);
+  }
+
+  void ZoneHVACBaseboardRadiantConvectiveSteamDesign::resetFractionofRadiantEnergyIncidentonPeople() {
+    getImpl<detail::ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl>()->resetFractionofRadiantEnergyIncidentonPeople();
+  }
+
+  namespace detail {
 
     boost::optional<double> ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl::fractionofRadiantEnergyIncidentonPeople() const {
       return getDouble(ZoneHVAC_Baseboard_RadiantConvective_Steam_DesignFields::FractionofRadiantEnergyIncidentonPeople, true);
@@ -223,5 +243,6 @@ namespace epmodel {
     }
 
   }  // namespace detail
+
 }  // namespace epmodel
 }  // namespace openstudio

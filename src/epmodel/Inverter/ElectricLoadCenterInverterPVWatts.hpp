@@ -16,50 +16,56 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class ElectricLoadCenterInverterPVWatts_Impl;
-}
+  namespace detail {
+    class ElectricLoadCenterInverterPVWatts_Impl;
+  }
 
-class EPMODEL_API ElectricLoadCenterInverterPVWatts : public ModelObject
-{
- public:
-  explicit ElectricLoadCenterInverterPVWatts(const Model& model);
+  class EPMODEL_API ElectricLoadCenterInverterPVWatts : public ModelObject
+  {
+   public:
+    explicit ElectricLoadCenterInverterPVWatts(const Model& model);
 
-  virtual ~ElectricLoadCenterInverterPVWatts() override = default;
-  ElectricLoadCenterInverterPVWatts(const ElectricLoadCenterInverterPVWatts& other) = default;
-  ElectricLoadCenterInverterPVWatts(ElectricLoadCenterInverterPVWatts&& other) = default;
-  ElectricLoadCenterInverterPVWatts& operator=(const ElectricLoadCenterInverterPVWatts&) = default;
-  ElectricLoadCenterInverterPVWatts& operator=(ElectricLoadCenterInverterPVWatts&&) = default;
+    virtual ~ElectricLoadCenterInverterPVWatts() override = default;
+    ElectricLoadCenterInverterPVWatts(const ElectricLoadCenterInverterPVWatts& other) = default;
+    ElectricLoadCenterInverterPVWatts(ElectricLoadCenterInverterPVWatts&& other) = default;
+    ElectricLoadCenterInverterPVWatts& operator=(const ElectricLoadCenterInverterPVWatts&) = default;
+    ElectricLoadCenterInverterPVWatts& operator=(ElectricLoadCenterInverterPVWatts&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserves existing openstudio::model accessor names/signatures for counterpart parity.
-  // - Field Mapping: dcToACSizeRatio <-> ElectricLoadCenter:Inverter:PVWatts "DC to AC Size Ratio".
-  // - Field Mapping: inverterEfficiency <-> ElectricLoadCenter:Inverter:PVWatts "Inverter Efficiency".
-  // - ForwardTranslator evidence: ForwardTranslateElectricLoadCenterInverterPVWatts maps these exact model APIs to matching E+ fields.
-  // - TODO(parity): add non-scalar APIs incrementally without changing preserved scalar signatures.
-  double dcToACSizeRatio() const;
-  bool isDCToACSizeRatioDefaulted() const;
-  bool setDCToACSizeRatio(double dcToACSizeRatio);
-  void resetDCToACSizeRatio();
+    // Schema Alignment Notes:
+    // - API: Preserves existing openstudio::model accessor names/signatures for counterpart parity.
+    // - Field Mapping: dcToACSizeRatio <-> ElectricLoadCenter:Inverter:PVWatts "DC to AC Size Ratio".
+    // - Field Mapping: inverterEfficiency <-> ElectricLoadCenter:Inverter:PVWatts "Inverter Efficiency".
+    // - ForwardTranslator evidence: ForwardTranslateElectricLoadCenterInverterPVWatts maps these exact model APIs to matching E+ fields.
+    // - TODO(parity): add non-scalar APIs incrementally without changing preserved scalar signatures.
+    /** @name DC to AC Size Ratio */
+    //@{
+    double dcToACSizeRatio() const;
+    bool isDCToACSizeRatioDefaulted() const;
+    bool setDCToACSizeRatio(double dcToACSizeRatio);
+    void resetDCToACSizeRatio();
+    //@}
 
-  double inverterEfficiency() const;
-  bool isInverterEfficiencyDefaulted() const;
-  bool setInverterEfficiency(double inverterEfficiency);
-  void resetInverterEfficiency();
+    /** @name Inverter Efficiency */
+    //@{
+    double inverterEfficiency() const;
+    bool isInverterEfficiencyDefaulted() const;
+    bool setInverterEfficiency(double inverterEfficiency);
+    void resetInverterEfficiency();
+    //@}
 
- protected:
-  using ImplType = detail::ElectricLoadCenterInverterPVWatts_Impl;
+   protected:
+    using ImplType = detail::ElectricLoadCenterInverterPVWatts_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit ElectricLoadCenterInverterPVWatts(std::shared_ptr<detail::ElectricLoadCenterInverterPVWatts_Impl> impl);
-};
+    explicit ElectricLoadCenterInverterPVWatts(std::shared_ptr<detail::ElectricLoadCenterInverterPVWatts_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

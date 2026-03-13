@@ -43,8 +43,8 @@ namespace epmodel {
     bool setThickness(double thickness);
 
     double pressure() const;
-    bool isPressureDefaulted() const;
     bool setPressure(double pressure);
+    bool isPressureDefaulted() const;
     void resetPressure();
 
    protected:

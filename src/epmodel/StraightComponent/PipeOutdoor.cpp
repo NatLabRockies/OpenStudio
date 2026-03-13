@@ -15,75 +15,79 @@
 namespace openstudio {
 namespace epmodel {
 
-PipeOutdoor::PipeOutdoor(const Model& model) : StraightComponent(PipeOutdoor::iddObjectType(), model) {
-  OS_ASSERT(getImpl<detail::PipeOutdoor_Impl>());
+  PipeOutdoor::PipeOutdoor(const Model& model) : StraightComponent(PipeOutdoor::iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::PipeOutdoor_Impl>());
 
-  bool ok = true;
-  ok = setPipeInsideDiameter(0.05);
-  OS_ASSERT(ok);
-  ok = setPipeLength(100.0);
-  OS_ASSERT(ok);
-}
+    bool ok = true;
+    ok = setPipeInsideDiameter(0.05);
+    OS_ASSERT(ok);
+    ok = setPipeLength(100.0);
+    OS_ASSERT(ok);
+  }
 
-PipeOutdoor::PipeOutdoor(std::shared_ptr<detail::PipeOutdoor_Impl> impl) : StraightComponent(std::move(impl)) {}
+  PipeOutdoor::PipeOutdoor(std::shared_ptr<detail::PipeOutdoor_Impl> impl) : StraightComponent(std::move(impl)) {}
 
-IddObjectType PipeOutdoor::iddObjectType() {
-  return IddObjectType::Pipe_Outdoor;
-}
+  IddObjectType PipeOutdoor::iddObjectType() {
+    return IddObjectType::Pipe_Outdoor;
+  }
 
-double PipeOutdoor::pipeInsideDiameter() const {
-  return getImpl<detail::PipeOutdoor_Impl>()->pipeInsideDiameter();
-}
+  // Pipe:Outdoor PipeInsideDiameter
+  double PipeOutdoor::pipeInsideDiameter() const {
+    return getImpl<detail::PipeOutdoor_Impl>()->pipeInsideDiameter();
+  }
 
-bool PipeOutdoor::setPipeInsideDiameter(double pipeInsideDiameter) {
-  return getImpl<detail::PipeOutdoor_Impl>()->setPipeInsideDiameter(pipeInsideDiameter);
-}
+  bool PipeOutdoor::setPipeInsideDiameter(double pipeInsideDiameter) {
+    return getImpl<detail::PipeOutdoor_Impl>()->setPipeInsideDiameter(pipeInsideDiameter);
+  }
 
-double PipeOutdoor::pipeLength() const {
-  return getImpl<detail::PipeOutdoor_Impl>()->pipeLength();
-}
+  // Pipe:Outdoor PipeLength
+  double PipeOutdoor::pipeLength() const {
+    return getImpl<detail::PipeOutdoor_Impl>()->pipeLength();
+  }
 
-bool PipeOutdoor::setPipeLength(double pipeLength) {
-  return getImpl<detail::PipeOutdoor_Impl>()->setPipeLength(pipeLength);
-}
+  bool PipeOutdoor::setPipeLength(double pipeLength) {
+    return getImpl<detail::PipeOutdoor_Impl>()->setPipeLength(pipeLength);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-unsigned PipeOutdoor_Impl::inletPort() const {
-  // Relationship mapping only: Pipe:Outdoor Fluid Inlet Node Name
-  return openstudio::Pipe_OutdoorFields::FluidInletNodeName;
-}
+    // Pipe:Outdoor PipeInsideDiameter
+    double PipeOutdoor_Impl::pipeInsideDiameter() const {
+      const auto value = getDouble(openstudio::Pipe_OutdoorFields::PipeInsideDiameter, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-unsigned PipeOutdoor_Impl::outletPort() const {
-  // Relationship mapping only: Pipe:Outdoor Fluid Outlet Node Name
-  return openstudio::Pipe_OutdoorFields::FluidOutletNodeName;
-}
+    bool PipeOutdoor_Impl::setPipeInsideDiameter(double pipeInsideDiameter) {
+      return setDouble(openstudio::Pipe_OutdoorFields::PipeInsideDiameter, pipeInsideDiameter);
+    }
 
-double PipeOutdoor_Impl::pipeInsideDiameter() const {
-  const auto value = getDouble(openstudio::Pipe_OutdoorFields::PipeInsideDiameter, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    // Pipe:Outdoor PipeLength
+    double PipeOutdoor_Impl::pipeLength() const {
+      const auto value = getDouble(openstudio::Pipe_OutdoorFields::PipeLength, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool PipeOutdoor_Impl::setPipeInsideDiameter(double pipeInsideDiameter) {
-  return setDouble(openstudio::Pipe_OutdoorFields::PipeInsideDiameter, pipeInsideDiameter);
-}
+    bool PipeOutdoor_Impl::setPipeLength(double pipeLength) {
+      return setDouble(openstudio::Pipe_OutdoorFields::PipeLength, pipeLength);
+    }
 
-double PipeOutdoor_Impl::pipeLength() const {
-  const auto value = getDouble(openstudio::Pipe_OutdoorFields::PipeLength, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    unsigned PipeOutdoor_Impl::inletPort() const {
+      // Relationship mapping only: Pipe:Outdoor Fluid Inlet Node Name
+      return openstudio::Pipe_OutdoorFields::FluidInletNodeName;
+    }
 
-bool PipeOutdoor_Impl::setPipeLength(double pipeLength) {
-  return setDouble(openstudio::Pipe_OutdoorFields::PipeLength, pipeLength);
-}
+    unsigned PipeOutdoor_Impl::outletPort() const {
+      // Relationship mapping only: Pipe:Outdoor Fluid Outlet Node Name
+      return openstudio::Pipe_OutdoorFields::FluidOutletNodeName;
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

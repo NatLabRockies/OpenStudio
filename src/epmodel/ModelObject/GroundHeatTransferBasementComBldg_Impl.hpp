@@ -11,72 +11,81 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatTransferBasementComBldg_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatTransferBasementComBldg_Impl() override = default;
+    class EPMODEL_API GroundHeatTransferBasementComBldg_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatTransferBasementComBldg_Impl() override = default;
 
-  double januaryaveragetemperature() const;
-  double februaryaveragetemperature() const;
-  double marchaveragetemperature() const;
-  double aprilaveragetemperature() const;
-  double mayaveragetemperature() const;
-  double juneaveragetemperature() const;
-  double julyaveragetemperature() const;
-  double augustaveragetemperature() const;
-  double septemberaveragetemperature() const;
-  double octoberaveragetemperature() const;
-  double novemberaveragetemperature() const;
-  double decemberaveragetemperature() const;
-  double dailyvariationsinewaveamplitude() const;
+      double januaryaveragetemperature() const;
+      bool isJanuaryaveragetemperatureDefaulted() const;
+      bool setJanuaryaveragetemperature(double januaryaveragetemperature);
+      void resetJanuaryaveragetemperature();
 
-  bool isJanuaryaveragetemperatureDefaulted() const;
-  bool isFebruaryaveragetemperatureDefaulted() const;
-  bool isMarchaveragetemperatureDefaulted() const;
-  bool isAprilaveragetemperatureDefaulted() const;
-  bool isMayaveragetemperatureDefaulted() const;
-  bool isJuneaveragetemperatureDefaulted() const;
-  bool isJulyaveragetemperatureDefaulted() const;
-  bool isAugustaveragetemperatureDefaulted() const;
-  bool isSeptemberaveragetemperatureDefaulted() const;
-  bool isOctoberaveragetemperatureDefaulted() const;
-  bool isNovemberaveragetemperatureDefaulted() const;
-  bool isDecemberaveragetemperatureDefaulted() const;
-  bool isDailyvariationsinewaveamplitudeDefaulted() const;
+      double februaryaveragetemperature() const;
+      bool isFebruaryaveragetemperatureDefaulted() const;
+      bool setFebruaryaveragetemperature(double februaryaveragetemperature);
+      void resetFebruaryaveragetemperature();
 
-  bool setJanuaryaveragetemperature(double januaryaveragetemperature);
-  bool setFebruaryaveragetemperature(double februaryaveragetemperature);
-  bool setMarchaveragetemperature(double marchaveragetemperature);
-  bool setAprilaveragetemperature(double aprilaveragetemperature);
-  bool setMayaveragetemperature(double mayaveragetemperature);
-  bool setJuneaveragetemperature(double juneaveragetemperature);
-  bool setJulyaveragetemperature(double julyaveragetemperature);
-  bool setAugustaveragetemperature(double augustaveragetemperature);
-  bool setSeptemberaveragetemperature(double septemberaveragetemperature);
-  bool setOctoberaveragetemperature(double octoberaveragetemperature);
-  bool setNovemberaveragetemperature(double novemberaveragetemperature);
-  bool setDecemberaveragetemperature(double decemberaveragetemperature);
-  bool setDailyvariationsinewaveamplitude(double dailyvariationsinewaveamplitude);
+      double marchaveragetemperature() const;
+      bool isMarchaveragetemperatureDefaulted() const;
+      bool setMarchaveragetemperature(double marchaveragetemperature);
+      void resetMarchaveragetemperature();
 
-  void resetJanuaryaveragetemperature();
-  void resetFebruaryaveragetemperature();
-  void resetMarchaveragetemperature();
-  void resetAprilaveragetemperature();
-  void resetMayaveragetemperature();
-  void resetJuneaveragetemperature();
-  void resetJulyaveragetemperature();
-  void resetAugustaveragetemperature();
-  void resetSeptemberaveragetemperature();
-  void resetOctoberaveragetemperature();
-  void resetNovemberaveragetemperature();
-  void resetDecemberaveragetemperature();
-  void resetDailyvariationsinewaveamplitude();
-};
+      double aprilaveragetemperature() const;
+      bool isAprilaveragetemperatureDefaulted() const;
+      bool setAprilaveragetemperature(double aprilaveragetemperature);
+      void resetAprilaveragetemperature();
 
-}  // namespace detail
+      double mayaveragetemperature() const;
+      bool isMayaveragetemperatureDefaulted() const;
+      bool setMayaveragetemperature(double mayaveragetemperature);
+      void resetMayaveragetemperature();
+
+      double juneaveragetemperature() const;
+      bool isJuneaveragetemperatureDefaulted() const;
+      bool setJuneaveragetemperature(double juneaveragetemperature);
+      void resetJuneaveragetemperature();
+
+      double julyaveragetemperature() const;
+      bool isJulyaveragetemperatureDefaulted() const;
+      bool setJulyaveragetemperature(double julyaveragetemperature);
+      void resetJulyaveragetemperature();
+
+      double augustaveragetemperature() const;
+      bool isAugustaveragetemperatureDefaulted() const;
+      bool setAugustaveragetemperature(double augustaveragetemperature);
+      void resetAugustaveragetemperature();
+
+      double septemberaveragetemperature() const;
+      bool isSeptemberaveragetemperatureDefaulted() const;
+      bool setSeptemberaveragetemperature(double septemberaveragetemperature);
+      void resetSeptemberaveragetemperature();
+
+      double octoberaveragetemperature() const;
+      bool isOctoberaveragetemperatureDefaulted() const;
+      bool setOctoberaveragetemperature(double octoberaveragetemperature);
+      void resetOctoberaveragetemperature();
+
+      double novemberaveragetemperature() const;
+      bool isNovemberaveragetemperatureDefaulted() const;
+      bool setNovemberaveragetemperature(double novemberaveragetemperature);
+      void resetNovemberaveragetemperature();
+
+      double decemberaveragetemperature() const;
+      bool isDecemberaveragetemperatureDefaulted() const;
+      bool setDecemberaveragetemperature(double decemberaveragetemperature);
+      void resetDecemberaveragetemperature();
+
+      double dailyvariationsinewaveamplitude() const;
+      bool isDailyvariationsinewaveamplitudeDefaulted() const;
+      bool setDailyvariationsinewaveamplitude(double dailyvariationsinewaveamplitude);
+      void resetDailyvariationsinewaveamplitude();
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

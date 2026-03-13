@@ -17,61 +17,58 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class OutputEnergyManagementSystem_Impl;
-}
+  namespace detail {
+    class OutputEnergyManagementSystem_Impl;
+  }
 
-class EPMODEL_API OutputEnergyManagementSystem : public ModelObject
-{
- public:
-  explicit OutputEnergyManagementSystem(const Model& model);
+  class EPMODEL_API OutputEnergyManagementSystem : public ModelObject
+  {
+   public:
+    explicit OutputEnergyManagementSystem(const Model& model);
 
-  virtual ~OutputEnergyManagementSystem() override = default;
-  OutputEnergyManagementSystem(const OutputEnergyManagementSystem& other) = default;
-  OutputEnergyManagementSystem(OutputEnergyManagementSystem&& other) = default;
-  OutputEnergyManagementSystem& operator=(const OutputEnergyManagementSystem&) = default;
-  OutputEnergyManagementSystem& operator=(OutputEnergyManagementSystem&&) = default;
+    virtual ~OutputEnergyManagementSystem() override = default;
+    OutputEnergyManagementSystem(const OutputEnergyManagementSystem& other) = default;
+    OutputEnergyManagementSystem(OutputEnergyManagementSystem&& other) = default;
+    OutputEnergyManagementSystem& operator=(const OutputEnergyManagementSystem&) = default;
+    OutputEnergyManagementSystem& operator=(OutputEnergyManagementSystem&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> actuatorAvailabilityDictionaryReportingValues();
-  static std::vector<std::string> internalVariableAvailabilityDictionaryReportingValues();
-  static std::vector<std::string> eMSRuntimeLanguageDebugOutputLevelValues();
+    static std::vector<std::string> actuatorAvailabilityDictionaryReportingValues();
+    static std::vector<std::string> internalVariableAvailabilityDictionaryReportingValues();
+    static std::vector<std::string> eMSRuntimeLanguageDebugOutputLevelValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::OutputEnergyManagementSystem accessor names/signatures, including eMSRuntimeLanguageDebugOutputLevel casing.
-  // - Field Mapping: actuatorAvailabilityDictionaryReporting/internalVariableAvailabilityDictionaryReporting/eMSRuntimeLanguageDebugOutputLevel map directly to E+ Output:EnergyManagementSystem fields.
-  // - ForwardTranslator evidence: ForwardTranslateOutputEnergyManagementSystem.cpp writes these same three fields from the preserved model APIs.
-  // - TODO(parity): Keep scalar API stable while extending any non-scalar/translator-parity behavior in future passes.
-  std::string actuatorAvailabilityDictionaryReporting() const;
-  bool isActuatorAvailabilityDictionaryReportingDefaulted() const;
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model::OutputEnergyManagementSystem accessor names/signatures, including eMSRuntimeLanguageDebugOutputLevel casing.
+    // - Field Mapping: actuatorAvailabilityDictionaryReporting/internalVariableAvailabilityDictionaryReporting/eMSRuntimeLanguageDebugOutputLevel map directly to E+ Output:EnergyManagementSystem fields.
+    // - ForwardTranslator evidence: ForwardTranslateOutputEnergyManagementSystem.cpp writes these same three fields from the preserved model APIs.
+    // - TODO(parity): Keep scalar API stable while extending any non-scalar/translator-parity behavior in future passes.
+    std::string actuatorAvailabilityDictionaryReporting() const;
+    bool isActuatorAvailabilityDictionaryReportingDefaulted() const;
+    bool setActuatorAvailabilityDictionaryReporting(const std::string& actuatorAvailabilityDictionaryReporting);
+    void resetActuatorAvailabilityDictionaryReporting();
 
-  std::string internalVariableAvailabilityDictionaryReporting() const;
-  bool isInternalVariableAvailabilityDictionaryReportingDefaulted() const;
+    std::string internalVariableAvailabilityDictionaryReporting() const;
+    bool isInternalVariableAvailabilityDictionaryReportingDefaulted() const;
+    bool setInternalVariableAvailabilityDictionaryReporting(const std::string& internalVariableAvailabilityDictionaryReporting);
+    void resetInternalVariableAvailabilityDictionaryReporting();
 
-  std::string eMSRuntimeLanguageDebugOutputLevel() const;
-  bool isEMSRuntimeLanguageDebugOutputLevelDefaulted() const;
+    std::string eMSRuntimeLanguageDebugOutputLevel() const;
+    bool isEMSRuntimeLanguageDebugOutputLevelDefaulted() const;
+    bool setEMSRuntimeLanguageDebugOutputLevel(const std::string& eMSRuntimeLanguageDebugOutputLevel);
+    void resetEMSRuntimeLanguageDebugOutputLevel();
 
-  bool setActuatorAvailabilityDictionaryReporting(const std::string& actuatorAvailabilityDictionaryReporting);
-  void resetActuatorAvailabilityDictionaryReporting();
+   protected:
+    using ImplType = detail::OutputEnergyManagementSystem_Impl;
 
-  bool setInternalVariableAvailabilityDictionaryReporting(const std::string& internalVariableAvailabilityDictionaryReporting);
-  void resetInternalVariableAvailabilityDictionaryReporting();
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  bool setEMSRuntimeLanguageDebugOutputLevel(const std::string& eMSRuntimeLanguageDebugOutputLevel);
-  void resetEMSRuntimeLanguageDebugOutputLevel();
-
- protected:
-  using ImplType = detail::OutputEnergyManagementSystem_Impl;
-
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit OutputEnergyManagementSystem(std::shared_ptr<detail::OutputEnergyManagementSystem_Impl> impl);
-};
+    explicit OutputEnergyManagementSystem(std::shared_ptr<detail::OutputEnergyManagementSystem_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -41,17 +41,20 @@ namespace epmodel {
     // - ForwardTranslator evidence: translateSpaceInfiltrationFlowCoefficient writes these scalar values directly to
     //   the EnergyPlus object.
     double flowCoefficient() const;
+    bool setFlowCoefficient(double flowCoefficient);
+
     double stackCoefficient() const;
+    bool setStackCoefficient(double stackCoefficient);
+
     double pressureExponent() const;
     bool isPressureExponentDefaulted() const;
-    double windCoefficient() const;
-    double shelterFactor() const;
-
-    bool setFlowCoefficient(double flowCoefficient);
-    bool setStackCoefficient(double stackCoefficient);
     bool setPressureExponent(double pressureExponent);
     void resetPressureExponent();
+
+    double windCoefficient() const;
     bool setWindCoefficient(double windCoefficient);
+
+    double shelterFactor() const;
     bool setShelterFactor(double shelterFactor);
 
    protected:

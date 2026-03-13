@@ -17,46 +17,47 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class MeterCustom_Impl;
-}
+  namespace detail {
+    class MeterCustom_Impl;
+  }
 
-class EPMODEL_API MeterCustom : public ModelObject
-{
- public:
-  explicit MeterCustom(const Model& model);
+  class EPMODEL_API MeterCustom : public ModelObject
+  {
+   public:
+    explicit MeterCustom(const Model& model);
 
-  virtual ~MeterCustom() override = default;
-  MeterCustom(const MeterCustom& other) = default;
-  MeterCustom(MeterCustom&& other) = default;
-  MeterCustom& operator=(const MeterCustom&) = default;
-  MeterCustom& operator=(MeterCustom&&) = default;
+    virtual ~MeterCustom() override = default;
+    MeterCustom(const MeterCustom& other) = default;
+    MeterCustom(MeterCustom&& other) = default;
+    MeterCustom& operator=(const MeterCustom&) = default;
+    MeterCustom& operator=(MeterCustom&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> fuelTypeValues();
+    static std::vector<std::string> fuelTypeValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::MeterCustom scalar accessor naming/signatures for counterpart parity.
-  // - Field Mapping: API fuelType maps to EnergyPlus Meter:Custom field Resource Type.
-  // - Field Mapping: Extensible Key Name / Output Variable or Meter Name pairs are relationship-like and excluded from scalar scope.
-  // - ForwardTranslator evidence: ForwardTranslateMeterCustom.cpp writes modelObject.fuelType() to Meter_CustomFields::ResourceType.
-  // - TODO(parity): Add non-scalar extensible key/variable group APIs without changing these scalar signatures.
-  boost::optional<std::string> fuelType() const;
-  bool setFuelType(const std::string& fuelType);
-  void resetFuelType();
+    /** Schema alignment notes:
+   * - API: Preserve openstudio::model::MeterCustom scalar accessor naming/signatures for counterpart parity.
+   * - Field Mapping: API fuelType maps to EnergyPlus Meter:Custom field Resource Type.
+   * - Field Mapping: Extensible Key Name / Output Variable or Meter Name pairs are relationship-like and excluded from scalar scope.
+   * - ForwardTranslator evidence: ForwardTranslateMeterCustom.cpp writes modelObject.fuelType() to Meter_CustomFields::ResourceType.
+   * - TODO(parity): Add non-scalar extensible key/variable group APIs without changing these scalar signatures.
+   */
+    boost::optional<std::string> fuelType() const;
+    bool setFuelType(const std::string& fuelType);
+    void resetFuelType();
 
- protected:
-  using ImplType = detail::MeterCustom_Impl;
+   protected:
+    using ImplType = detail::MeterCustom_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit MeterCustom(std::shared_ptr<detail::MeterCustom_Impl> impl);
-};
+    explicit MeterCustom(std::shared_ptr<detail::MeterCustom_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

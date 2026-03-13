@@ -18,394 +18,394 @@
 namespace openstudio {
 namespace epmodel {
 
-HVACTemplatePlantTower::HVACTemplatePlantTower(const Model& model) : ModelObject(HVACTemplatePlantTower::iddObjectType(), model) {}
+  HVACTemplatePlantTower::HVACTemplatePlantTower(const Model& model) : ModelObject(HVACTemplatePlantTower::iddObjectType(), model) {}
 
-HVACTemplatePlantTower::HVACTemplatePlantTower(std::shared_ptr<detail::HVACTemplatePlantTower_Impl> impl) : ModelObject(std::move(impl)) {}
+  HVACTemplatePlantTower::HVACTemplatePlantTower(std::shared_ptr<detail::HVACTemplatePlantTower_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType HVACTemplatePlantTower::iddObjectType() {
-  return IddObjectType::HVACTemplate_Plant_Tower;
-}
+  IddObjectType HVACTemplatePlantTower::iddObjectType() {
+    return IddObjectType::HVACTemplate_Plant_Tower;
+  }
 
-std::vector<std::string> HVACTemplatePlantTower::towerTypeValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::HVACTemplate_Plant_TowerFields::TowerType);
-}
+  std::vector<std::string> HVACTemplatePlantTower::towerTypeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::HVACTemplate_Plant_TowerFields::TowerType);
+  }
 
-std::vector<std::string> HVACTemplatePlantTower::templatePlantLoopTypeValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::HVACTemplate_Plant_TowerFields::TemplatePlantLoopType);
-}
+  std::vector<std::string> HVACTemplatePlantTower::templatePlantLoopTypeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::HVACTemplate_Plant_TowerFields::TemplatePlantLoopType);
+  }
 
-std::string HVACTemplatePlantTower::towerType() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->towerType();
-}
+  std::string HVACTemplatePlantTower::towerType() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->towerType();
+  }
 
-boost::optional<double> HVACTemplatePlantTower::highSpeedNominalCapacity() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->highSpeedNominalCapacity();
-}
+  bool HVACTemplatePlantTower::setTowerType(const std::string& towerType) {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->setTowerType(towerType);
+  }
 
-boost::optional<double> HVACTemplatePlantTower::highSpeedFanPower() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->highSpeedFanPower();
-}
+  boost::optional<double> HVACTemplatePlantTower::highSpeedNominalCapacity() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->highSpeedNominalCapacity();
+  }
 
-boost::optional<double> HVACTemplatePlantTower::lowSpeedNominalCapacity() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->lowSpeedNominalCapacity();
-}
+  bool HVACTemplatePlantTower::isHighSpeedNominalCapacityDefaulted() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->isHighSpeedNominalCapacityDefaulted();
+  }
 
-boost::optional<double> HVACTemplatePlantTower::lowSpeedFanPower() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->lowSpeedFanPower();
-}
+  bool HVACTemplatePlantTower::isHighSpeedNominalCapacityAutosized() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->isHighSpeedNominalCapacityAutosized();
+  }
 
-boost::optional<double> HVACTemplatePlantTower::freeConvectionCapacity() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->freeConvectionCapacity();
-}
+  bool HVACTemplatePlantTower::setHighSpeedNominalCapacity(double highSpeedNominalCapacity) {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->setHighSpeedNominalCapacity(highSpeedNominalCapacity);
+  }
 
-boost::optional<std::string> HVACTemplatePlantTower::priority() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->priority();
-}
+  void HVACTemplatePlantTower::resetHighSpeedNominalCapacity() {
+    getImpl<detail::HVACTemplatePlantTower_Impl>()->resetHighSpeedNominalCapacity();
+  }
 
-double HVACTemplatePlantTower::sizingFactor() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->sizingFactor();
-}
+  void HVACTemplatePlantTower::autosizeHighSpeedNominalCapacity() {
+    getImpl<detail::HVACTemplatePlantTower_Impl>()->autosizeHighSpeedNominalCapacity();
+  }
 
-boost::optional<std::string> HVACTemplatePlantTower::templatePlantLoopType() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->templatePlantLoopType();
-}
+  boost::optional<double> HVACTemplatePlantTower::highSpeedFanPower() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->highSpeedFanPower();
+  }
 
-bool HVACTemplatePlantTower::isHighSpeedNominalCapacityDefaulted() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->isHighSpeedNominalCapacityDefaulted();
-}
+  bool HVACTemplatePlantTower::isHighSpeedFanPowerDefaulted() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->isHighSpeedFanPowerDefaulted();
+  }
 
-bool HVACTemplatePlantTower::isHighSpeedNominalCapacityAutosized() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->isHighSpeedNominalCapacityAutosized();
-}
+  bool HVACTemplatePlantTower::isHighSpeedFanPowerAutosized() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->isHighSpeedFanPowerAutosized();
+  }
 
-bool HVACTemplatePlantTower::isHighSpeedFanPowerDefaulted() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->isHighSpeedFanPowerDefaulted();
-}
+  bool HVACTemplatePlantTower::setHighSpeedFanPower(double highSpeedFanPower) {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->setHighSpeedFanPower(highSpeedFanPower);
+  }
 
-bool HVACTemplatePlantTower::isHighSpeedFanPowerAutosized() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->isHighSpeedFanPowerAutosized();
-}
+  void HVACTemplatePlantTower::resetHighSpeedFanPower() {
+    getImpl<detail::HVACTemplatePlantTower_Impl>()->resetHighSpeedFanPower();
+  }
 
-bool HVACTemplatePlantTower::isLowSpeedNominalCapacityDefaulted() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->isLowSpeedNominalCapacityDefaulted();
-}
+  void HVACTemplatePlantTower::autosizeHighSpeedFanPower() {
+    getImpl<detail::HVACTemplatePlantTower_Impl>()->autosizeHighSpeedFanPower();
+  }
 
-bool HVACTemplatePlantTower::isLowSpeedNominalCapacityAutosized() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->isLowSpeedNominalCapacityAutosized();
-}
+  boost::optional<double> HVACTemplatePlantTower::lowSpeedNominalCapacity() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->lowSpeedNominalCapacity();
+  }
 
-bool HVACTemplatePlantTower::isLowSpeedFanPowerDefaulted() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->isLowSpeedFanPowerDefaulted();
-}
+  bool HVACTemplatePlantTower::isLowSpeedNominalCapacityDefaulted() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->isLowSpeedNominalCapacityDefaulted();
+  }
 
-bool HVACTemplatePlantTower::isLowSpeedFanPowerAutosized() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->isLowSpeedFanPowerAutosized();
-}
+  bool HVACTemplatePlantTower::isLowSpeedNominalCapacityAutosized() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->isLowSpeedNominalCapacityAutosized();
+  }
 
-bool HVACTemplatePlantTower::isFreeConvectionCapacityDefaulted() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->isFreeConvectionCapacityDefaulted();
-}
+  bool HVACTemplatePlantTower::setLowSpeedNominalCapacity(double lowSpeedNominalCapacity) {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->setLowSpeedNominalCapacity(lowSpeedNominalCapacity);
+  }
 
-bool HVACTemplatePlantTower::isFreeConvectionCapacityAutosized() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->isFreeConvectionCapacityAutosized();
-}
+  void HVACTemplatePlantTower::resetLowSpeedNominalCapacity() {
+    getImpl<detail::HVACTemplatePlantTower_Impl>()->resetLowSpeedNominalCapacity();
+  }
 
-bool HVACTemplatePlantTower::isSizingFactorDefaulted() const {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->isSizingFactorDefaulted();
-}
+  void HVACTemplatePlantTower::autosizeLowSpeedNominalCapacity() {
+    getImpl<detail::HVACTemplatePlantTower_Impl>()->autosizeLowSpeedNominalCapacity();
+  }
 
-bool HVACTemplatePlantTower::setTowerType(const std::string& towerType) {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->setTowerType(towerType);
-}
+  boost::optional<double> HVACTemplatePlantTower::lowSpeedFanPower() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->lowSpeedFanPower();
+  }
 
-bool HVACTemplatePlantTower::setHighSpeedNominalCapacity(double highSpeedNominalCapacity) {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->setHighSpeedNominalCapacity(highSpeedNominalCapacity);
-}
+  bool HVACTemplatePlantTower::isLowSpeedFanPowerDefaulted() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->isLowSpeedFanPowerDefaulted();
+  }
 
-bool HVACTemplatePlantTower::setHighSpeedFanPower(double highSpeedFanPower) {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->setHighSpeedFanPower(highSpeedFanPower);
-}
+  bool HVACTemplatePlantTower::isLowSpeedFanPowerAutosized() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->isLowSpeedFanPowerAutosized();
+  }
 
-bool HVACTemplatePlantTower::setLowSpeedNominalCapacity(double lowSpeedNominalCapacity) {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->setLowSpeedNominalCapacity(lowSpeedNominalCapacity);
-}
+  bool HVACTemplatePlantTower::setLowSpeedFanPower(double lowSpeedFanPower) {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->setLowSpeedFanPower(lowSpeedFanPower);
+  }
 
-bool HVACTemplatePlantTower::setLowSpeedFanPower(double lowSpeedFanPower) {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->setLowSpeedFanPower(lowSpeedFanPower);
-}
+  void HVACTemplatePlantTower::resetLowSpeedFanPower() {
+    getImpl<detail::HVACTemplatePlantTower_Impl>()->resetLowSpeedFanPower();
+  }
 
-bool HVACTemplatePlantTower::setFreeConvectionCapacity(double freeConvectionCapacity) {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->setFreeConvectionCapacity(freeConvectionCapacity);
-}
+  void HVACTemplatePlantTower::autosizeLowSpeedFanPower() {
+    getImpl<detail::HVACTemplatePlantTower_Impl>()->autosizeLowSpeedFanPower();
+  }
 
-bool HVACTemplatePlantTower::setPriority(const std::string& priority) {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->setPriority(priority);
-}
+  boost::optional<double> HVACTemplatePlantTower::freeConvectionCapacity() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->freeConvectionCapacity();
+  }
 
-bool HVACTemplatePlantTower::setSizingFactor(double sizingFactor) {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->setSizingFactor(sizingFactor);
-}
+  bool HVACTemplatePlantTower::isFreeConvectionCapacityDefaulted() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->isFreeConvectionCapacityDefaulted();
+  }
 
-bool HVACTemplatePlantTower::setTemplatePlantLoopType(const std::string& templatePlantLoopType) {
-  return getImpl<detail::HVACTemplatePlantTower_Impl>()->setTemplatePlantLoopType(templatePlantLoopType);
-}
+  bool HVACTemplatePlantTower::isFreeConvectionCapacityAutosized() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->isFreeConvectionCapacityAutosized();
+  }
 
-void HVACTemplatePlantTower::resetHighSpeedNominalCapacity() {
-  getImpl<detail::HVACTemplatePlantTower_Impl>()->resetHighSpeedNominalCapacity();
-}
+  bool HVACTemplatePlantTower::setFreeConvectionCapacity(double freeConvectionCapacity) {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->setFreeConvectionCapacity(freeConvectionCapacity);
+  }
 
-void HVACTemplatePlantTower::autosizeHighSpeedNominalCapacity() {
-  getImpl<detail::HVACTemplatePlantTower_Impl>()->autosizeHighSpeedNominalCapacity();
-}
+  void HVACTemplatePlantTower::resetFreeConvectionCapacity() {
+    getImpl<detail::HVACTemplatePlantTower_Impl>()->resetFreeConvectionCapacity();
+  }
 
-void HVACTemplatePlantTower::resetHighSpeedFanPower() {
-  getImpl<detail::HVACTemplatePlantTower_Impl>()->resetHighSpeedFanPower();
-}
+  void HVACTemplatePlantTower::autosizeFreeConvectionCapacity() {
+    getImpl<detail::HVACTemplatePlantTower_Impl>()->autosizeFreeConvectionCapacity();
+  }
 
-void HVACTemplatePlantTower::autosizeHighSpeedFanPower() {
-  getImpl<detail::HVACTemplatePlantTower_Impl>()->autosizeHighSpeedFanPower();
-}
+  boost::optional<std::string> HVACTemplatePlantTower::priority() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->priority();
+  }
 
-void HVACTemplatePlantTower::resetLowSpeedNominalCapacity() {
-  getImpl<detail::HVACTemplatePlantTower_Impl>()->resetLowSpeedNominalCapacity();
-}
+  bool HVACTemplatePlantTower::setPriority(const std::string& priority) {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->setPriority(priority);
+  }
 
-void HVACTemplatePlantTower::autosizeLowSpeedNominalCapacity() {
-  getImpl<detail::HVACTemplatePlantTower_Impl>()->autosizeLowSpeedNominalCapacity();
-}
+  void HVACTemplatePlantTower::resetPriority() {
+    getImpl<detail::HVACTemplatePlantTower_Impl>()->resetPriority();
+  }
 
-void HVACTemplatePlantTower::resetLowSpeedFanPower() {
-  getImpl<detail::HVACTemplatePlantTower_Impl>()->resetLowSpeedFanPower();
-}
+  double HVACTemplatePlantTower::sizingFactor() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->sizingFactor();
+  }
 
-void HVACTemplatePlantTower::autosizeLowSpeedFanPower() {
-  getImpl<detail::HVACTemplatePlantTower_Impl>()->autosizeLowSpeedFanPower();
-}
+  bool HVACTemplatePlantTower::isSizingFactorDefaulted() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->isSizingFactorDefaulted();
+  }
 
-void HVACTemplatePlantTower::resetFreeConvectionCapacity() {
-  getImpl<detail::HVACTemplatePlantTower_Impl>()->resetFreeConvectionCapacity();
-}
+  bool HVACTemplatePlantTower::setSizingFactor(double sizingFactor) {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->setSizingFactor(sizingFactor);
+  }
 
-void HVACTemplatePlantTower::autosizeFreeConvectionCapacity() {
-  getImpl<detail::HVACTemplatePlantTower_Impl>()->autosizeFreeConvectionCapacity();
-}
+  void HVACTemplatePlantTower::resetSizingFactor() {
+    getImpl<detail::HVACTemplatePlantTower_Impl>()->resetSizingFactor();
+  }
 
-void HVACTemplatePlantTower::resetPriority() {
-  getImpl<detail::HVACTemplatePlantTower_Impl>()->resetPriority();
-}
+  boost::optional<std::string> HVACTemplatePlantTower::templatePlantLoopType() const {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->templatePlantLoopType();
+  }
 
-void HVACTemplatePlantTower::resetSizingFactor() {
-  getImpl<detail::HVACTemplatePlantTower_Impl>()->resetSizingFactor();
-}
+  bool HVACTemplatePlantTower::setTemplatePlantLoopType(const std::string& templatePlantLoopType) {
+    return getImpl<detail::HVACTemplatePlantTower_Impl>()->setTemplatePlantLoopType(templatePlantLoopType);
+  }
 
-void HVACTemplatePlantTower::resetTemplatePlantLoopType() {
-  getImpl<detail::HVACTemplatePlantTower_Impl>()->resetTemplatePlantLoopType();
-}
+  void HVACTemplatePlantTower::resetTemplatePlantLoopType() {
+    getImpl<detail::HVACTemplatePlantTower_Impl>()->resetTemplatePlantLoopType();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string HVACTemplatePlantTower_Impl::towerType() const {
-  auto value = getString(openstudio::HVACTemplate_Plant_TowerFields::TowerType, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string HVACTemplatePlantTower_Impl::towerType() const {
+      auto value = getString(openstudio::HVACTemplate_Plant_TowerFields::TowerType, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-boost::optional<double> HVACTemplatePlantTower_Impl::highSpeedNominalCapacity() const {
-  return getDouble(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedNominalCapacity, true);
-}
+    bool HVACTemplatePlantTower_Impl::setTowerType(const std::string& towerType) {
+      return setString(openstudio::HVACTemplate_Plant_TowerFields::TowerType, towerType);
+    }
 
-boost::optional<double> HVACTemplatePlantTower_Impl::highSpeedFanPower() const {
-  return getDouble(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedFanPower, true);
-}
+    boost::optional<double> HVACTemplatePlantTower_Impl::highSpeedNominalCapacity() const {
+      return getDouble(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedNominalCapacity, true);
+    }
 
-boost::optional<double> HVACTemplatePlantTower_Impl::lowSpeedNominalCapacity() const {
-  return getDouble(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedNominalCapacity, true);
-}
+    bool HVACTemplatePlantTower_Impl::isHighSpeedNominalCapacityDefaulted() const {
+      return isEmpty(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedNominalCapacity);
+    }
 
-boost::optional<double> HVACTemplatePlantTower_Impl::lowSpeedFanPower() const {
-  return getDouble(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedFanPower, true);
-}
+    bool HVACTemplatePlantTower_Impl::isHighSpeedNominalCapacityAutosized() const {
+      if (auto value = getString(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedNominalCapacity, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
+    }
 
-boost::optional<double> HVACTemplatePlantTower_Impl::freeConvectionCapacity() const {
-  return getDouble(openstudio::HVACTemplate_Plant_TowerFields::FreeConvectionCapacity, true);
-}
+    bool HVACTemplatePlantTower_Impl::setHighSpeedNominalCapacity(double highSpeedNominalCapacity) {
+      return setDouble(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedNominalCapacity, highSpeedNominalCapacity);
+    }
 
-boost::optional<std::string> HVACTemplatePlantTower_Impl::priority() const {
-  return getString(openstudio::HVACTemplate_Plant_TowerFields::Priority, true);
-}
+    void HVACTemplatePlantTower_Impl::resetHighSpeedNominalCapacity() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedNominalCapacity, ""));
+    }
 
-double HVACTemplatePlantTower_Impl::sizingFactor() const {
-  auto value = getDouble(openstudio::HVACTemplate_Plant_TowerFields::SizingFactor, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    void HVACTemplatePlantTower_Impl::autosizeHighSpeedNominalCapacity() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedNominalCapacity, "autosize"));
+    }
 
-boost::optional<std::string> HVACTemplatePlantTower_Impl::templatePlantLoopType() const {
-  return getString(openstudio::HVACTemplate_Plant_TowerFields::TemplatePlantLoopType, true);
-}
+    boost::optional<double> HVACTemplatePlantTower_Impl::highSpeedFanPower() const {
+      return getDouble(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedFanPower, true);
+    }
 
-bool HVACTemplatePlantTower_Impl::isHighSpeedNominalCapacityDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedNominalCapacity);
-}
+    bool HVACTemplatePlantTower_Impl::isHighSpeedFanPowerDefaulted() const {
+      return isEmpty(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedFanPower);
+    }
 
-bool HVACTemplatePlantTower_Impl::isHighSpeedNominalCapacityAutosized() const {
-  if (auto value = getString(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedNominalCapacity, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    bool HVACTemplatePlantTower_Impl::isHighSpeedFanPowerAutosized() const {
+      if (auto value = getString(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedFanPower, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
+    }
 
-bool HVACTemplatePlantTower_Impl::isHighSpeedFanPowerDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedFanPower);
-}
+    bool HVACTemplatePlantTower_Impl::setHighSpeedFanPower(double highSpeedFanPower) {
+      return setDouble(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedFanPower, highSpeedFanPower);
+    }
 
-bool HVACTemplatePlantTower_Impl::isHighSpeedFanPowerAutosized() const {
-  if (auto value = getString(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedFanPower, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    void HVACTemplatePlantTower_Impl::resetHighSpeedFanPower() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedFanPower, ""));
+    }
 
-bool HVACTemplatePlantTower_Impl::isLowSpeedNominalCapacityDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedNominalCapacity);
-}
+    void HVACTemplatePlantTower_Impl::autosizeHighSpeedFanPower() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedFanPower, "autosize"));
+    }
 
-bool HVACTemplatePlantTower_Impl::isLowSpeedNominalCapacityAutosized() const {
-  if (auto value = getString(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedNominalCapacity, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    boost::optional<double> HVACTemplatePlantTower_Impl::lowSpeedNominalCapacity() const {
+      return getDouble(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedNominalCapacity, true);
+    }
 
-bool HVACTemplatePlantTower_Impl::isLowSpeedFanPowerDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedFanPower);
-}
+    bool HVACTemplatePlantTower_Impl::isLowSpeedNominalCapacityDefaulted() const {
+      return isEmpty(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedNominalCapacity);
+    }
 
-bool HVACTemplatePlantTower_Impl::isLowSpeedFanPowerAutosized() const {
-  if (auto value = getString(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedFanPower, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    bool HVACTemplatePlantTower_Impl::isLowSpeedNominalCapacityAutosized() const {
+      if (auto value = getString(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedNominalCapacity, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
+    }
 
-bool HVACTemplatePlantTower_Impl::isFreeConvectionCapacityDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_Plant_TowerFields::FreeConvectionCapacity);
-}
+    bool HVACTemplatePlantTower_Impl::setLowSpeedNominalCapacity(double lowSpeedNominalCapacity) {
+      return setDouble(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedNominalCapacity, lowSpeedNominalCapacity);
+    }
 
-bool HVACTemplatePlantTower_Impl::isFreeConvectionCapacityAutosized() const {
-  if (auto value = getString(openstudio::HVACTemplate_Plant_TowerFields::FreeConvectionCapacity, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    void HVACTemplatePlantTower_Impl::resetLowSpeedNominalCapacity() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedNominalCapacity, ""));
+    }
 
-bool HVACTemplatePlantTower_Impl::isSizingFactorDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_Plant_TowerFields::SizingFactor);
-}
+    void HVACTemplatePlantTower_Impl::autosizeLowSpeedNominalCapacity() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedNominalCapacity, "autosize"));
+    }
 
-bool HVACTemplatePlantTower_Impl::setTowerType(const std::string& towerType) {
-  return setString(openstudio::HVACTemplate_Plant_TowerFields::TowerType, towerType);
-}
+    boost::optional<double> HVACTemplatePlantTower_Impl::lowSpeedFanPower() const {
+      return getDouble(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedFanPower, true);
+    }
 
-bool HVACTemplatePlantTower_Impl::setHighSpeedNominalCapacity(double highSpeedNominalCapacity) {
-  return setDouble(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedNominalCapacity, highSpeedNominalCapacity);
-}
+    bool HVACTemplatePlantTower_Impl::isLowSpeedFanPowerDefaulted() const {
+      return isEmpty(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedFanPower);
+    }
 
-bool HVACTemplatePlantTower_Impl::setHighSpeedFanPower(double highSpeedFanPower) {
-  return setDouble(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedFanPower, highSpeedFanPower);
-}
+    bool HVACTemplatePlantTower_Impl::isLowSpeedFanPowerAutosized() const {
+      if (auto value = getString(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedFanPower, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
+    }
 
-bool HVACTemplatePlantTower_Impl::setLowSpeedNominalCapacity(double lowSpeedNominalCapacity) {
-  return setDouble(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedNominalCapacity, lowSpeedNominalCapacity);
-}
+    bool HVACTemplatePlantTower_Impl::setLowSpeedFanPower(double lowSpeedFanPower) {
+      return setDouble(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedFanPower, lowSpeedFanPower);
+    }
 
-bool HVACTemplatePlantTower_Impl::setLowSpeedFanPower(double lowSpeedFanPower) {
-  return setDouble(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedFanPower, lowSpeedFanPower);
-}
+    void HVACTemplatePlantTower_Impl::resetLowSpeedFanPower() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedFanPower, ""));
+    }
 
-bool HVACTemplatePlantTower_Impl::setFreeConvectionCapacity(double freeConvectionCapacity) {
-  return setDouble(openstudio::HVACTemplate_Plant_TowerFields::FreeConvectionCapacity, freeConvectionCapacity);
-}
+    void HVACTemplatePlantTower_Impl::autosizeLowSpeedFanPower() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedFanPower, "autosize"));
+    }
 
-bool HVACTemplatePlantTower_Impl::setPriority(const std::string& priority) {
-  const bool result = setString(openstudio::HVACTemplate_Plant_TowerFields::Priority, priority);
-  OS_ASSERT(result);
-  return result;
-}
+    boost::optional<double> HVACTemplatePlantTower_Impl::freeConvectionCapacity() const {
+      return getDouble(openstudio::HVACTemplate_Plant_TowerFields::FreeConvectionCapacity, true);
+    }
 
-bool HVACTemplatePlantTower_Impl::setSizingFactor(double sizingFactor) {
-  return setDouble(openstudio::HVACTemplate_Plant_TowerFields::SizingFactor, sizingFactor);
-}
+    bool HVACTemplatePlantTower_Impl::isFreeConvectionCapacityDefaulted() const {
+      return isEmpty(openstudio::HVACTemplate_Plant_TowerFields::FreeConvectionCapacity);
+    }
 
-bool HVACTemplatePlantTower_Impl::setTemplatePlantLoopType(const std::string& templatePlantLoopType) {
-  return setString(openstudio::HVACTemplate_Plant_TowerFields::TemplatePlantLoopType, templatePlantLoopType);
-}
+    bool HVACTemplatePlantTower_Impl::isFreeConvectionCapacityAutosized() const {
+      if (auto value = getString(openstudio::HVACTemplate_Plant_TowerFields::FreeConvectionCapacity, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
+    }
 
-void HVACTemplatePlantTower_Impl::resetHighSpeedNominalCapacity() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedNominalCapacity, ""));
-}
+    bool HVACTemplatePlantTower_Impl::setFreeConvectionCapacity(double freeConvectionCapacity) {
+      return setDouble(openstudio::HVACTemplate_Plant_TowerFields::FreeConvectionCapacity, freeConvectionCapacity);
+    }
 
-void HVACTemplatePlantTower_Impl::autosizeHighSpeedNominalCapacity() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedNominalCapacity, "autosize"));
-}
+    void HVACTemplatePlantTower_Impl::resetFreeConvectionCapacity() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::FreeConvectionCapacity, ""));
+    }
 
-void HVACTemplatePlantTower_Impl::resetHighSpeedFanPower() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedFanPower, ""));
-}
+    void HVACTemplatePlantTower_Impl::autosizeFreeConvectionCapacity() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::FreeConvectionCapacity, "autosize"));
+    }
 
-void HVACTemplatePlantTower_Impl::autosizeHighSpeedFanPower() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::HighSpeedFanPower, "autosize"));
-}
+    boost::optional<std::string> HVACTemplatePlantTower_Impl::priority() const {
+      return getString(openstudio::HVACTemplate_Plant_TowerFields::Priority, true);
+    }
 
-void HVACTemplatePlantTower_Impl::resetLowSpeedNominalCapacity() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedNominalCapacity, ""));
-}
+    bool HVACTemplatePlantTower_Impl::setPriority(const std::string& priority) {
+      const bool result = setString(openstudio::HVACTemplate_Plant_TowerFields::Priority, priority);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void HVACTemplatePlantTower_Impl::autosizeLowSpeedNominalCapacity() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedNominalCapacity, "autosize"));
-}
+    void HVACTemplatePlantTower_Impl::resetPriority() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::Priority, ""));
+    }
 
-void HVACTemplatePlantTower_Impl::resetLowSpeedFanPower() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedFanPower, ""));
-}
+    double HVACTemplatePlantTower_Impl::sizingFactor() const {
+      auto value = getDouble(openstudio::HVACTemplate_Plant_TowerFields::SizingFactor, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-void HVACTemplatePlantTower_Impl::autosizeLowSpeedFanPower() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::LowSpeedFanPower, "autosize"));
-}
+    bool HVACTemplatePlantTower_Impl::isSizingFactorDefaulted() const {
+      return isEmpty(openstudio::HVACTemplate_Plant_TowerFields::SizingFactor);
+    }
 
-void HVACTemplatePlantTower_Impl::resetFreeConvectionCapacity() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::FreeConvectionCapacity, ""));
-}
+    bool HVACTemplatePlantTower_Impl::setSizingFactor(double sizingFactor) {
+      return setDouble(openstudio::HVACTemplate_Plant_TowerFields::SizingFactor, sizingFactor);
+    }
 
-void HVACTemplatePlantTower_Impl::autosizeFreeConvectionCapacity() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::FreeConvectionCapacity, "autosize"));
-}
+    void HVACTemplatePlantTower_Impl::resetSizingFactor() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::SizingFactor, ""));
+    }
 
-void HVACTemplatePlantTower_Impl::resetPriority() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::Priority, ""));
-}
+    boost::optional<std::string> HVACTemplatePlantTower_Impl::templatePlantLoopType() const {
+      return getString(openstudio::HVACTemplate_Plant_TowerFields::TemplatePlantLoopType, true);
+    }
 
-void HVACTemplatePlantTower_Impl::resetSizingFactor() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::SizingFactor, ""));
-}
+    bool HVACTemplatePlantTower_Impl::setTemplatePlantLoopType(const std::string& templatePlantLoopType) {
+      return setString(openstudio::HVACTemplate_Plant_TowerFields::TemplatePlantLoopType, templatePlantLoopType);
+    }
 
-void HVACTemplatePlantTower_Impl::resetTemplatePlantLoopType() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::TemplatePlantLoopType, ""));
-}
+    void HVACTemplatePlantTower_Impl::resetTemplatePlantLoopType() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Plant_TowerFields::TemplatePlantLoopType, ""));
+    }
 
-std::vector<std::string> HVACTemplatePlantTower_Impl::towerTypeValues() const {
-  return openstudio::epmodel::HVACTemplatePlantTower::towerTypeValues();
-}
+    std::vector<std::string> HVACTemplatePlantTower_Impl::towerTypeValues() const {
+      return openstudio::epmodel::HVACTemplatePlantTower::towerTypeValues();
+    }
 
-std::vector<std::string> HVACTemplatePlantTower_Impl::templatePlantLoopTypeValues() const {
-  return openstudio::epmodel::HVACTemplatePlantTower::templatePlantLoopTypeValues();
-}
+    std::vector<std::string> HVACTemplatePlantTower_Impl::templatePlantLoopTypeValues() const {
+      return openstudio::epmodel::HVACTemplatePlantTower::templatePlantLoopTypeValues();
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

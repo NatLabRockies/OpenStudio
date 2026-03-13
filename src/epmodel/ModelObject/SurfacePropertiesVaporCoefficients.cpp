@@ -41,10 +41,6 @@ namespace epmodel {
     return getImpl<detail::SurfacePropertiesVaporCoefficients_Impl>()->constantExternalVaporTransferCoefficient();
   }
 
-  bool SurfacePropertiesVaporCoefficients::isConstantExternalVaporTransferCoefficientDefaulted() const {
-    return getImpl<detail::SurfacePropertiesVaporCoefficients_Impl>()->isConstantExternalVaporTransferCoefficientDefaulted();
-  }
-
   bool SurfacePropertiesVaporCoefficients::setConstantExternalVaporTransferCoefficient(bool constantExternalVaporTransferCoefficient) {
     return getImpl<detail::SurfacePropertiesVaporCoefficients_Impl>()->setConstantExternalVaporTransferCoefficient(
       constantExternalVaporTransferCoefficient);
@@ -55,6 +51,10 @@ namespace epmodel {
     OS_ASSERT(result);
   }
 
+  bool SurfacePropertiesVaporCoefficients::isConstantExternalVaporTransferCoefficientDefaulted() const {
+    return getImpl<detail::SurfacePropertiesVaporCoefficients_Impl>()->isConstantExternalVaporTransferCoefficientDefaulted();
+  }
+
   void SurfacePropertiesVaporCoefficients::resetConstantExternalVaporTransferCoefficient() {
     getImpl<detail::SurfacePropertiesVaporCoefficients_Impl>()->resetConstantExternalVaporTransferCoefficient();
   }
@@ -63,12 +63,12 @@ namespace epmodel {
     return getImpl<detail::SurfacePropertiesVaporCoefficients_Impl>()->externalVaporCoefficientValue();
   }
 
-  bool SurfacePropertiesVaporCoefficients::isExternalVaporCoefficientValueDefaulted() const {
-    return getImpl<detail::SurfacePropertiesVaporCoefficients_Impl>()->isExternalVaporCoefficientValueDefaulted();
-  }
-
   bool SurfacePropertiesVaporCoefficients::setExternalVaporCoefficientValue(double externalVaporCoefficientValue) {
     return getImpl<detail::SurfacePropertiesVaporCoefficients_Impl>()->setExternalVaporCoefficientValue(externalVaporCoefficientValue);
+  }
+
+  bool SurfacePropertiesVaporCoefficients::isExternalVaporCoefficientValueDefaulted() const {
+    return getImpl<detail::SurfacePropertiesVaporCoefficients_Impl>()->isExternalVaporCoefficientValueDefaulted();
   }
 
   void SurfacePropertiesVaporCoefficients::resetExternalVaporCoefficientValue() {
@@ -77,10 +77,6 @@ namespace epmodel {
 
   bool SurfacePropertiesVaporCoefficients::constantInternalvaporTransferCoefficient() const {
     return getImpl<detail::SurfacePropertiesVaporCoefficients_Impl>()->constantInternalvaporTransferCoefficient();
-  }
-
-  bool SurfacePropertiesVaporCoefficients::isConstantInternalvaporTransferCoefficientDefaulted() const {
-    return getImpl<detail::SurfacePropertiesVaporCoefficients_Impl>()->isConstantInternalvaporTransferCoefficientDefaulted();
   }
 
   bool SurfacePropertiesVaporCoefficients::setConstantInternalvaporTransferCoefficient(bool constantInternalvaporTransferCoefficient) {
@@ -93,6 +89,10 @@ namespace epmodel {
     OS_ASSERT(result);
   }
 
+  bool SurfacePropertiesVaporCoefficients::isConstantInternalvaporTransferCoefficientDefaulted() const {
+    return getImpl<detail::SurfacePropertiesVaporCoefficients_Impl>()->isConstantInternalvaporTransferCoefficientDefaulted();
+  }
+
   void SurfacePropertiesVaporCoefficients::resetConstantInternalvaporTransferCoefficient() {
     getImpl<detail::SurfacePropertiesVaporCoefficients_Impl>()->resetConstantInternalvaporTransferCoefficient();
   }
@@ -101,12 +101,12 @@ namespace epmodel {
     return getImpl<detail::SurfacePropertiesVaporCoefficients_Impl>()->internalVaporCoefficientValue();
   }
 
-  bool SurfacePropertiesVaporCoefficients::isInternalVaporCoefficientValueDefaulted() const {
-    return getImpl<detail::SurfacePropertiesVaporCoefficients_Impl>()->isInternalVaporCoefficientValueDefaulted();
-  }
-
   bool SurfacePropertiesVaporCoefficients::setInternalVaporCoefficientValue(double internalVaporCoefficientValue) {
     return getImpl<detail::SurfacePropertiesVaporCoefficients_Impl>()->setInternalVaporCoefficientValue(internalVaporCoefficientValue);
+  }
+
+  bool SurfacePropertiesVaporCoefficients::isInternalVaporCoefficientValueDefaulted() const {
+    return getImpl<detail::SurfacePropertiesVaporCoefficients_Impl>()->isInternalVaporCoefficientValueDefaulted();
   }
 
   void SurfacePropertiesVaporCoefficients::resetInternalVaporCoefficientValue() {
@@ -126,15 +126,15 @@ namespace epmodel {
       return openstudio::istringEqual(*value, "Yes");
     }
 
-    bool SurfacePropertiesVaporCoefficients_Impl::isConstantExternalVaporTransferCoefficientDefaulted() const {
-      return isEmpty(openstudio::SurfaceProperties_VaporCoefficientsFields::ConstantExternalVaporTransferCoefficient);
-    }
-
     bool SurfacePropertiesVaporCoefficients_Impl::setConstantExternalVaporTransferCoefficient(bool constantExternalVaporTransferCoefficient) {
       const bool result = setString(openstudio::SurfaceProperties_VaporCoefficientsFields::ConstantExternalVaporTransferCoefficient,
                                     constantExternalVaporTransferCoefficient ? "Yes" : "No");
       OS_ASSERT(result);
       return result;
+    }
+
+    bool SurfacePropertiesVaporCoefficients_Impl::isConstantExternalVaporTransferCoefficientDefaulted() const {
+      return isEmpty(openstudio::SurfaceProperties_VaporCoefficientsFields::ConstantExternalVaporTransferCoefficient);
     }
 
     void SurfacePropertiesVaporCoefficients_Impl::resetConstantExternalVaporTransferCoefficient() {
@@ -148,14 +148,14 @@ namespace epmodel {
       return 0.0;
     }
 
-    bool SurfacePropertiesVaporCoefficients_Impl::isExternalVaporCoefficientValueDefaulted() const {
-      return isEmpty(openstudio::SurfaceProperties_VaporCoefficientsFields::ExternalVaporCoefficientValue);
-    }
-
     bool SurfacePropertiesVaporCoefficients_Impl::setExternalVaporCoefficientValue(double externalVaporCoefficientValue) {
       const bool result =
         setDouble(openstudio::SurfaceProperties_VaporCoefficientsFields::ExternalVaporCoefficientValue, externalVaporCoefficientValue);
       return result;
+    }
+
+    bool SurfacePropertiesVaporCoefficients_Impl::isExternalVaporCoefficientValueDefaulted() const {
+      return isEmpty(openstudio::SurfaceProperties_VaporCoefficientsFields::ExternalVaporCoefficientValue);
     }
 
     void SurfacePropertiesVaporCoefficients_Impl::resetExternalVaporCoefficientValue() {
@@ -168,15 +168,15 @@ namespace epmodel {
       return openstudio::istringEqual(*value, "Yes");
     }
 
-    bool SurfacePropertiesVaporCoefficients_Impl::isConstantInternalvaporTransferCoefficientDefaulted() const {
-      return isEmpty(openstudio::SurfaceProperties_VaporCoefficientsFields::ConstantInternalvaporTransferCoefficient);
-    }
-
     bool SurfacePropertiesVaporCoefficients_Impl::setConstantInternalvaporTransferCoefficient(bool constantInternalvaporTransferCoefficient) {
       const bool result = setString(openstudio::SurfaceProperties_VaporCoefficientsFields::ConstantInternalvaporTransferCoefficient,
                                     constantInternalvaporTransferCoefficient ? "Yes" : "No");
       OS_ASSERT(result);
       return result;
+    }
+
+    bool SurfacePropertiesVaporCoefficients_Impl::isConstantInternalvaporTransferCoefficientDefaulted() const {
+      return isEmpty(openstudio::SurfaceProperties_VaporCoefficientsFields::ConstantInternalvaporTransferCoefficient);
     }
 
     void SurfacePropertiesVaporCoefficients_Impl::resetConstantInternalvaporTransferCoefficient() {
@@ -190,14 +190,14 @@ namespace epmodel {
       return 0.0;
     }
 
-    bool SurfacePropertiesVaporCoefficients_Impl::isInternalVaporCoefficientValueDefaulted() const {
-      return isEmpty(openstudio::SurfaceProperties_VaporCoefficientsFields::InternalVaporCoefficientValue);
-    }
-
     bool SurfacePropertiesVaporCoefficients_Impl::setInternalVaporCoefficientValue(double internalVaporCoefficientValue) {
       const bool result =
         setDouble(openstudio::SurfaceProperties_VaporCoefficientsFields::InternalVaporCoefficientValue, internalVaporCoefficientValue);
       return result;
+    }
+
+    bool SurfacePropertiesVaporCoefficients_Impl::isInternalVaporCoefficientValueDefaulted() const {
+      return isEmpty(openstudio::SurfaceProperties_VaporCoefficientsFields::InternalVaporCoefficientValue);
     }
 
     void SurfacePropertiesVaporCoefficients_Impl::resetInternalVaporCoefficientValue() {

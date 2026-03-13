@@ -22,8 +22,8 @@ namespace epmodel {
       virtual ~PythonPluginInstance_Impl() override = default;
 
       bool runDuringWarmupDays() const;
-      bool isRunDuringWarmupDaysDefaulted() const;
       bool setRunDuringWarmupDays(bool runDuringWarmupDays);
+      bool isRunDuringWarmupDaysDefaulted() const;
       void resetRunDuringWarmupDays();
 
       std::string pythonModuleName() const;

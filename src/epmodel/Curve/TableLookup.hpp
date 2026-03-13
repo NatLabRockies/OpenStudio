@@ -48,19 +48,20 @@ namespace epmodel {
     // - Field Mapping: IndependentVariableListName and Output Value extensibles remain relationship-like and are intentionally excluded from this scalar-only run.
 
     std::string normalizationMethod() const;
+    bool setNormalizationMethod(const std::string& normalizationMethod);
+
     double normalizationDivisor() const;
+    bool setNormalizationDivisor(double normalizationDivisor);
 
     boost::optional<double> minimumOutput() const;
-    boost::optional<double> maximumOutput() const;
-
-    std::string outputUnitType() const;
-
-    bool setNormalizationMethod(const std::string& normalizationMethod);
-    bool setNormalizationDivisor(double normalizationDivisor);
     bool setMinimumOutput(double minimumOutput);
     void resetMinimumOutput();
+
+    boost::optional<double> maximumOutput() const;
     bool setMaximumOutput(double maximumOutput);
     void resetMaximumOutput();
+
+    std::string outputUnitType() const;
     bool setOutputUnitType(const std::string& outputUnitType);
 
     boost::optional<int> externalFileColumnNumber() const;

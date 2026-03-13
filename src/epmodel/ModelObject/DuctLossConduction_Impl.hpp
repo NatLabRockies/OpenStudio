@@ -13,23 +13,23 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API DuctLossConduction_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~DuctLossConduction_Impl() override = default;
+    class EPMODEL_API DuctLossConduction_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~DuctLossConduction_Impl() override = default;
 
-  std::string environmentType() const;
-  bool setEnvironmentType(const std::string& environmentType);
-  bool isEnvironmentTypeDefaulted() const;
-  void resetEnvironmentType();
+      std::vector<std::string> environmentTypeValues() const;
 
-  std::vector<std::string> environmentTypeValues() const;
-};
+      std::string environmentType() const;
+      bool setEnvironmentType(const std::string& environmentType);
+      bool isEnvironmentTypeDefaulted() const;
+      void resetEnvironmentType();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

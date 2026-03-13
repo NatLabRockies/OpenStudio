@@ -21,6 +21,8 @@ class EPMODEL_API AirflowNetworkDistributionDuctSizing_Impl : public ModelObject
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~AirflowNetworkDistributionDuctSizing_Impl() override = default;
 
+  std::vector<std::string> ductSizingMethodValues() const;
+
   std::string ductSizingMethod() const;
   bool isDuctSizingMethodDefaulted() const;
   bool setDuctSizingMethod(const std::string& ductSizingMethod);
@@ -52,7 +54,6 @@ class EPMODEL_API AirflowNetworkDistributionDuctSizing_Impl : public ModelObject
   bool setTotalPressureLossAcrossReturnBranch(double totalPressureLossAcrossReturnBranch);
   void resetTotalPressureLossAcrossReturnBranch();
 
-  std::vector<std::string> ductSizingMethodValues() const;
 };
 
 }  // namespace detail

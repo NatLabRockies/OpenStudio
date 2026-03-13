@@ -17,60 +17,62 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class HeatBalanceAlgorithm_Impl;
-}
+  namespace detail {
+    class HeatBalanceAlgorithm_Impl;
+  }
 
-class EPMODEL_API HeatBalanceAlgorithm : public ModelObject
-{
- public:
-  explicit HeatBalanceAlgorithm(const Model& model);
+  class EPMODEL_API HeatBalanceAlgorithm : public ModelObject
+  {
+   public:
+    explicit HeatBalanceAlgorithm(const Model& model);
 
-  virtual ~HeatBalanceAlgorithm() override = default;
-  HeatBalanceAlgorithm(const HeatBalanceAlgorithm& other) = default;
-  HeatBalanceAlgorithm(HeatBalanceAlgorithm&& other) = default;
-  HeatBalanceAlgorithm& operator=(const HeatBalanceAlgorithm&) = default;
-  HeatBalanceAlgorithm& operator=(HeatBalanceAlgorithm&&) = default;
+    virtual ~HeatBalanceAlgorithm() override = default;
+    HeatBalanceAlgorithm(const HeatBalanceAlgorithm& other) = default;
+    HeatBalanceAlgorithm(HeatBalanceAlgorithm&& other) = default;
+    HeatBalanceAlgorithm& operator=(const HeatBalanceAlgorithm&) = default;
+    HeatBalanceAlgorithm& operator=(HeatBalanceAlgorithm&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> algorithmValues();
+    static std::vector<std::string> algorithmValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model HeatBalanceAlgorithm scalar accessor names/signatures.
-  // - Field Mapping: algorithm and convection/temperature scalar APIs map directly to E+ HeatBalanceAlgorithm fields.
-  // - Field Mapping: ForwardTranslateHeatBalanceAlgorithm confirms direct pass-through for algorithm and numeric scalar fields.
-  // - Field Mapping: constructor defaults for algorithm and surfaceTemperatureUpperLimit mirror existing model behavior.
-  // - TODO(parity): Keep non-scalar relationship behavior out of scope for this scaffold pass.
-  std::string algorithm() const;
-  bool isAlgorithmDefaulted() const;
-  double surfaceTemperatureUpperLimit() const;
-  bool isSurfaceTemperatureUpperLimitDefaulted() const;
-  double minimumSurfaceConvectionHeatTransferCoefficientValue() const;
-  bool isMinimumSurfaceConvectionHeatTransferCoefficientValueDefaulted() const;
-  double maximumSurfaceConvectionHeatTransferCoefficientValue() const;
-  bool isMaximumSurfaceConvectionHeatTransferCoefficientValueDefaulted() const;
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model HeatBalanceAlgorithm scalar accessor names/signatures.
+    // - Field Mapping: algorithm and convection/temperature scalar APIs map directly to E+ HeatBalanceAlgorithm fields.
+    // - Field Mapping: ForwardTranslateHeatBalanceAlgorithm confirms direct pass-through for algorithm and numeric scalar fields.
+    // - Field Mapping: constructor defaults for algorithm and surfaceTemperatureUpperLimit mirror existing model behavior.
+    // - TODO(parity): Keep non-scalar relationship behavior out of scope for this scaffold pass.
+    std::string algorithm() const;
+    bool isAlgorithmDefaulted() const;
+    bool setAlgorithm(const std::string& algorithm);
+    void resetAlgorithm();
 
-  bool setAlgorithm(const std::string& algorithm);
-  void resetAlgorithm();
-  bool setSurfaceTemperatureUpperLimit(double surfaceTemperatureUpperLimit);
-  void resetSurfaceTemperatureUpperLimit();
-  bool setMinimumSurfaceConvectionHeatTransferCoefficientValue(double minimumSurfaceConvectionHeatTransferCoefficientValue);
-  void resetMinimumSurfaceConvectionHeatTransferCoefficientValue();
-  bool setMaximumSurfaceConvectionHeatTransferCoefficientValue(double maximumSurfaceConvectionHeatTransferCoefficientValue);
-  void resetMaximumSurfaceConvectionHeatTransferCoefficientValue();
+    double surfaceTemperatureUpperLimit() const;
+    bool isSurfaceTemperatureUpperLimitDefaulted() const;
+    bool setSurfaceTemperatureUpperLimit(double surfaceTemperatureUpperLimit);
+    void resetSurfaceTemperatureUpperLimit();
 
- protected:
-  using ImplType = detail::HeatBalanceAlgorithm_Impl;
+    double minimumSurfaceConvectionHeatTransferCoefficientValue() const;
+    bool isMinimumSurfaceConvectionHeatTransferCoefficientValueDefaulted() const;
+    bool setMinimumSurfaceConvectionHeatTransferCoefficientValue(double minimumSurfaceConvectionHeatTransferCoefficientValue);
+    void resetMinimumSurfaceConvectionHeatTransferCoefficientValue();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    double maximumSurfaceConvectionHeatTransferCoefficientValue() const;
+    bool isMaximumSurfaceConvectionHeatTransferCoefficientValueDefaulted() const;
+    bool setMaximumSurfaceConvectionHeatTransferCoefficientValue(double maximumSurfaceConvectionHeatTransferCoefficientValue);
+    void resetMaximumSurfaceConvectionHeatTransferCoefficientValue();
 
-  explicit HeatBalanceAlgorithm(std::shared_ptr<detail::HeatBalanceAlgorithm_Impl> impl);
-};
+   protected:
+    using ImplType = detail::HeatBalanceAlgorithm_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit HeatBalanceAlgorithm(std::shared_ptr<detail::HeatBalanceAlgorithm_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

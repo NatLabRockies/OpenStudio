@@ -17,88 +17,120 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class HVACTemplatePlantTower_Impl;
-}
+  namespace detail {
+    class HVACTemplatePlantTower_Impl;
+  }
 
-class EPMODEL_API HVACTemplatePlantTower : public ModelObject
-{
- public:
-  explicit HVACTemplatePlantTower(const Model& model);
+  class EPMODEL_API HVACTemplatePlantTower : public ModelObject
+  {
+   public:
+    explicit HVACTemplatePlantTower(const Model& model);
 
-  virtual ~HVACTemplatePlantTower() override = default;
-  HVACTemplatePlantTower(const HVACTemplatePlantTower& other) = default;
-  HVACTemplatePlantTower(HVACTemplatePlantTower&& other) = default;
-  HVACTemplatePlantTower& operator=(const HVACTemplatePlantTower&) = default;
-  HVACTemplatePlantTower& operator=(HVACTemplatePlantTower&&) = default;
+    virtual ~HVACTemplatePlantTower() override = default;
+    HVACTemplatePlantTower(const HVACTemplatePlantTower& other) = default;
+    HVACTemplatePlantTower(HVACTemplatePlantTower&& other) = default;
+    HVACTemplatePlantTower& operator=(const HVACTemplatePlantTower&) = default;
+    HVACTemplatePlantTower& operator=(HVACTemplatePlantTower&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> towerTypeValues();
-  static std::vector<std::string> templatePlantLoopTypeValues();
+    static std::vector<std::string> towerTypeValues();
+    static std::vector<std::string> templatePlantLoopTypeValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to HVACTemplate:Plant:Tower non-name scalar fields.
-  // - Field Mapping: No object-list/reference/node fields are exposed in this scalar scaffold.
-  // - TODO(parity): Add object-reference linkage behavior in a later parity pass.
-  std::string towerType() const;
-  boost::optional<double> highSpeedNominalCapacity() const;
-  boost::optional<double> highSpeedFanPower() const;
-  boost::optional<double> lowSpeedNominalCapacity() const;
-  boost::optional<double> lowSpeedFanPower() const;
-  boost::optional<double> freeConvectionCapacity() const;
-  boost::optional<std::string> priority() const;
-  double sizingFactor() const;
-  boost::optional<std::string> templatePlantLoopType() const;
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to HVACTemplate:Plant:Tower non-name scalar fields.
+    // - Field Mapping: No object-list/reference/node fields are exposed in this scalar scaffold.
+    // - TODO(parity): Add object-reference linkage behavior in a later parity pass.
+    /** @name Tower type */
+    //@{
+    std::string towerType() const;
+    bool setTowerType(const std::string& towerType);
+    //@}
 
-  bool isHighSpeedNominalCapacityDefaulted() const;
-  bool isHighSpeedNominalCapacityAutosized() const;
-  bool isHighSpeedFanPowerDefaulted() const;
-  bool isHighSpeedFanPowerAutosized() const;
-  bool isLowSpeedNominalCapacityDefaulted() const;
-  bool isLowSpeedNominalCapacityAutosized() const;
-  bool isLowSpeedFanPowerDefaulted() const;
-  bool isLowSpeedFanPowerAutosized() const;
-  bool isFreeConvectionCapacityDefaulted() const;
-  bool isFreeConvectionCapacityAutosized() const;
-  bool isSizingFactorDefaulted() const;
+    /** @name High speed nominal capacity */
+    //@{
+    boost::optional<double> highSpeedNominalCapacity() const;
+    bool isHighSpeedNominalCapacityDefaulted() const;
+    bool isHighSpeedNominalCapacityAutosized() const;
+    bool setHighSpeedNominalCapacity(double highSpeedNominalCapacity);
+    void resetHighSpeedNominalCapacity();
+    void autosizeHighSpeedNominalCapacity();
+    //@}
 
-  bool setTowerType(const std::string& towerType);
-  bool setHighSpeedNominalCapacity(double highSpeedNominalCapacity);
-  bool setHighSpeedFanPower(double highSpeedFanPower);
-  bool setLowSpeedNominalCapacity(double lowSpeedNominalCapacity);
-  bool setLowSpeedFanPower(double lowSpeedFanPower);
-  bool setFreeConvectionCapacity(double freeConvectionCapacity);
-  bool setPriority(const std::string& priority);
-  bool setSizingFactor(double sizingFactor);
-  bool setTemplatePlantLoopType(const std::string& templatePlantLoopType);
+    /** @name High speed fan power */
+    //@{
+    boost::optional<double> highSpeedFanPower() const;
+    bool isHighSpeedFanPowerDefaulted() const;
+    bool isHighSpeedFanPowerAutosized() const;
+    bool setHighSpeedFanPower(double highSpeedFanPower);
+    void resetHighSpeedFanPower();
+    void autosizeHighSpeedFanPower();
+    //@}
 
-  void resetHighSpeedNominalCapacity();
-  void autosizeHighSpeedNominalCapacity();
-  void resetHighSpeedFanPower();
-  void autosizeHighSpeedFanPower();
-  void resetLowSpeedNominalCapacity();
-  void autosizeLowSpeedNominalCapacity();
-  void resetLowSpeedFanPower();
-  void autosizeLowSpeedFanPower();
-  void resetFreeConvectionCapacity();
-  void autosizeFreeConvectionCapacity();
-  void resetPriority();
-  void resetSizingFactor();
-  void resetTemplatePlantLoopType();
+    /** @name Low speed nominal capacity */
+    //@{
+    boost::optional<double> lowSpeedNominalCapacity() const;
+    bool isLowSpeedNominalCapacityDefaulted() const;
+    bool isLowSpeedNominalCapacityAutosized() const;
+    bool setLowSpeedNominalCapacity(double lowSpeedNominalCapacity);
+    void resetLowSpeedNominalCapacity();
+    void autosizeLowSpeedNominalCapacity();
+    //@}
 
- protected:
-  using ImplType = detail::HVACTemplatePlantTower_Impl;
+    /** @name Low speed fan power */
+    //@{
+    boost::optional<double> lowSpeedFanPower() const;
+    bool isLowSpeedFanPowerDefaulted() const;
+    bool isLowSpeedFanPowerAutosized() const;
+    bool setLowSpeedFanPower(double lowSpeedFanPower);
+    void resetLowSpeedFanPower();
+    void autosizeLowSpeedFanPower();
+    //@}
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    /** @name Free convection capacity */
+    //@{
+    boost::optional<double> freeConvectionCapacity() const;
+    bool isFreeConvectionCapacityDefaulted() const;
+    bool isFreeConvectionCapacityAutosized() const;
+    bool setFreeConvectionCapacity(double freeConvectionCapacity);
+    void resetFreeConvectionCapacity();
+    void autosizeFreeConvectionCapacity();
+    //@}
 
-  explicit HVACTemplatePlantTower(std::shared_ptr<detail::HVACTemplatePlantTower_Impl> impl);
-};
+    /** @name Priority */
+    //@{
+    boost::optional<std::string> priority() const;
+    bool setPriority(const std::string& priority);
+    void resetPriority();
+    //@}
+
+    /** @name Sizing factor */
+    //@{
+    double sizingFactor() const;
+    bool isSizingFactorDefaulted() const;
+    bool setSizingFactor(double sizingFactor);
+    void resetSizingFactor();
+    //@}
+
+    /** @name Template plant loop type */
+    //@{
+    boost::optional<std::string> templatePlantLoopType() const;
+    bool setTemplatePlantLoopType(const std::string& templatePlantLoopType);
+    void resetTemplatePlantLoopType();
+    //@}
+
+   protected:
+    using ImplType = detail::HVACTemplatePlantTower_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit HVACTemplatePlantTower(std::shared_ptr<detail::HVACTemplatePlantTower_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

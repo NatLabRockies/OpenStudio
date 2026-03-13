@@ -46,9 +46,11 @@ namespace epmodel {
     // - Field Mapping: Zone Name and Surface Name object-list references are relationship-like and intentionally
     //   excluded from this scalar-only pass.
     // - TODO(parity): Add relationship helpers for zone/surface connections once scalar saturation is complete.
+    // Node Type
     std::string nodeType() const;
     bool setNodeType(const std::string& nodeType);
 
+    // Height of Nodal Control Volume Center
     double heightOfNodalControlVolumeCenter() const;
     bool setHeightOfNodalControlVolumeCenter(double heightOfNodalControlVolumeCenter);
 

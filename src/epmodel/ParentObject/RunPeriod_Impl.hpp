@@ -11,44 +11,52 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API RunPeriod_Impl : public ParentObject_Impl
-{
- public:
-  using ParentObject_Impl::ParentObject_Impl;
-  virtual ~RunPeriod_Impl() override = default;
+    class EPMODEL_API RunPeriod_Impl : public ParentObject_Impl
+    {
+     public:
+      using ParentObject_Impl::ParentObject_Impl;
+      virtual ~RunPeriod_Impl() override = default;
 
-  int getBeginMonth() const;
-  int getBeginDayOfMonth() const;
-  int getEndMonth() const;
-  int getEndDayOfMonth() const;
-  bool getUseWeatherFileHolidays() const;
-  bool getUseWeatherFileDaylightSavings() const;
-  bool getApplyWeekendHolidayRule() const;
-  bool getUseWeatherFileRainInd() const;
-  bool getUseWeatherFileSnowInd() const;
-  int getNumTimePeriodRepeats() const;
+      int getBeginMonth() const;
+      bool setBeginMonth(int month);
 
-  bool setBeginMonth(int month);
-  bool setBeginDayOfMonth(int day);
-  bool setEndMonth(int month);
-  bool setEndDayOfMonth(int day);
-  bool setUseWeatherFileHolidays(bool use);
-  bool setUseWeatherFileDaylightSavings(bool use);
-  bool setApplyWeekendHolidayRule(bool apply);
-  bool setUseWeatherFileRainInd(bool rainInd);
-  bool setUseWeatherFileSnowInd(bool snowInd);
-  bool setNumTimePeriodRepeats(int numRepeats);
+      int getBeginDayOfMonth() const;
+      bool setBeginDayOfMonth(int day);
 
-  void ensureNoLeapDays();
+      int getEndMonth() const;
+      bool setEndMonth(int month);
 
-  bool isAnnual() const;
-  bool isPartialYear() const;
-  bool isRepeated() const;
-};
+      int getEndDayOfMonth() const;
+      bool setEndDayOfMonth(int day);
 
-}  // namespace detail
+      bool getUseWeatherFileHolidays() const;
+      bool setUseWeatherFileHolidays(bool use);
+
+      bool getUseWeatherFileDaylightSavings() const;
+      bool setUseWeatherFileDaylightSavings(bool use);
+
+      bool getApplyWeekendHolidayRule() const;
+      bool setApplyWeekendHolidayRule(bool apply);
+
+      bool getUseWeatherFileRainInd() const;
+      bool setUseWeatherFileRainInd(bool rainInd);
+
+      bool getUseWeatherFileSnowInd() const;
+      bool setUseWeatherFileSnowInd(bool snowInd);
+
+      int getNumTimePeriodRepeats() const;
+      bool setNumTimePeriodRepeats(int numRepeats);
+
+      void ensureNoLeapDays();
+
+      bool isAnnual() const;
+      bool isPartialYear() const;
+      bool isRepeated() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

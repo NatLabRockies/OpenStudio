@@ -20,13 +20,13 @@ namespace epmodel {
       virtual ~ZoneHVACBaseboardConvectiveElectric_Impl() override = default;
 
       boost::optional<double> nominalCapacity() const;
-      bool isNominalCapacityAutosized() const;
       bool setNominalCapacity(double nominalCapacity);
+      bool isNominalCapacityAutosized() const;
       void autosizeNominalCapacity();
 
       boost::optional<double> efficiency() const;
-      bool isEfficiencyDefaulted() const;
       bool setEfficiency(double efficiency);
+      bool isEfficiencyDefaulted() const;
       void resetEfficiency();
     };
 

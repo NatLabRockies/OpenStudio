@@ -15,41 +15,43 @@
 namespace openstudio {
 namespace epmodel {
 
-ScheduleFileShading::ScheduleFileShading(const Model& model) : ModelObject(ScheduleFileShading::iddObjectType(), model) {}
+  ScheduleFileShading::ScheduleFileShading(const Model& model) : ModelObject(ScheduleFileShading::iddObjectType(), model) {}
 
-ScheduleFileShading::ScheduleFileShading(std::shared_ptr<detail::ScheduleFileShading_Impl> impl) : ModelObject(std::move(impl)) {}
+  ScheduleFileShading::ScheduleFileShading(std::shared_ptr<detail::ScheduleFileShading_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType ScheduleFileShading::iddObjectType() {
-  return IddObjectType::Schedule_File_Shading;
-}
+  IddObjectType ScheduleFileShading::iddObjectType() {
+    return IddObjectType::Schedule_File_Shading;
+  }
 
-std::string ScheduleFileShading::fileName() const {
-  return getImpl<detail::ScheduleFileShading_Impl>()->fileName();
-}
+  // File Name field accessors
+  std::string ScheduleFileShading::fileName() const {
+    return getImpl<detail::ScheduleFileShading_Impl>()->fileName();
+  }
 
-bool ScheduleFileShading::setFileName(const std::string& fileName) {
-  return getImpl<detail::ScheduleFileShading_Impl>()->setFileName(fileName);
-}
+  bool ScheduleFileShading::setFileName(const std::string& fileName) {
+    return getImpl<detail::ScheduleFileShading_Impl>()->setFileName(fileName);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string ScheduleFileShading_Impl::fileName() const {
-  const auto value = getString(openstudio::Schedule_File_ShadingFields::FileName, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    // File Name field accessors
+    std::string ScheduleFileShading_Impl::fileName() const {
+      const auto value = getString(openstudio::Schedule_File_ShadingFields::FileName, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool ScheduleFileShading_Impl::setFileName(const std::string& fileName) {
-  const bool result = setString(openstudio::Schedule_File_ShadingFields::FileName, fileName);
-  OS_ASSERT(result);
-  return result;
-}
+    bool ScheduleFileShading_Impl::setFileName(const std::string& fileName) {
+      const bool result = setString(openstudio::Schedule_File_ShadingFields::FileName, fileName);
+      OS_ASSERT(result);
+      return result;
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

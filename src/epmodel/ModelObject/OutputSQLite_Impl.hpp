@@ -13,25 +13,24 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API OutputSQLite_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~OutputSQLite_Impl() override = default;
+    class EPMODEL_API OutputSQLite_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~OutputSQLite_Impl() override = default;
 
-  std::string optionType() const;
-  std::string unitConversionforTabularData() const;
+      std::string optionType() const;
+      bool setOptionType(const std::string& optionType);
+      std::vector<std::string> optionTypeValues() const;
 
-  bool setOptionType(const std::string& optionType);
-  bool setUnitConversionforTabularData(const std::string& unitConversionforTabularData);
+      std::string unitConversionforTabularData() const;
+      bool setUnitConversionforTabularData(const std::string& unitConversionforTabularData);
+      std::vector<std::string> unitConversionforTabularDataValues() const;
+    };
 
-  std::vector<std::string> optionTypeValues() const;
-  std::vector<std::string> unitConversionforTabularDataValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

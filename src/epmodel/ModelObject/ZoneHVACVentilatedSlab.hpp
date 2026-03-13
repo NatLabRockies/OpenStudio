@@ -48,50 +48,61 @@ namespace epmodel {
     static std::vector<std::string> heatingCoilObjectTypeValues();
     static std::vector<std::string> coolingCoilObjectTypeValues();
 
+    // Maximum air flow rate
     boost::optional<double> maximumAirFlowRate() const;
     bool isMaximumAirFlowRateAutosized() const;
     bool setMaximumAirFlowRate(double maximumAirFlowRate);
     void autosizeMaximumAirFlowRate();
 
+    // Minimum outdoor air flow rate
     boost::optional<double> minimumOutdoorAirFlowRate() const;
     bool isMinimumOutdoorAirFlowRateAutosized() const;
     bool setMinimumOutdoorAirFlowRate(double minimumOutdoorAirFlowRate);
     void autosizeMinimumOutdoorAirFlowRate();
 
+    // Maximum outdoor air flow rate
     boost::optional<double> maximumOutdoorAirFlowRate() const;
     bool isMaximumOutdoorAirFlowRateAutosized() const;
     bool setMaximumOutdoorAirFlowRate(double maximumOutdoorAirFlowRate);
     void autosizeMaximumOutdoorAirFlowRate();
 
+    // Outdoor air control type
     std::string outdoorAirControlType() const;
     bool setOutdoorAirControlType(const std::string& outdoorAirControlType);
 
+    // System configuration type
     std::string systemConfigurationType() const;
     bool isSystemConfigurationTypeDefaulted() const;
     bool setSystemConfigurationType(const std::string& systemConfigurationType);
     void resetSystemConfigurationType();
 
+    // Hollow core inside diameter
     boost::optional<double> hollowCoreInsideDiameter() const;
     bool isHollowCoreInsideDiameterDefaulted() const;
     bool setHollowCoreInsideDiameter(double hollowCoreInsideDiameter);
     void resetHollowCoreInsideDiameter();
 
+    // Hollow core length
     boost::optional<double> hollowCoreLength() const;
     bool setHollowCoreLength(double hollowCoreLength);
     void resetHollowCoreLength();
 
+    // Temperature control type
     std::string temperatureControlType() const;
     bool isTemperatureControlTypeDefaulted() const;
     bool setTemperatureControlType(const std::string& temperatureControlType);
     void resetTemperatureControlType();
 
+    // Coil option type
     std::string coilOptionType() const;
     bool setCoilOptionType(const std::string& coilOptionType);
 
+    // Heating coil object type
     boost::optional<std::string> heatingCoilObjectType() const;
     bool setHeatingCoilObjectType(const std::string& heatingCoilObjectType);
     void resetHeatingCoilObjectType();
 
+    // Cooling coil object type
     boost::optional<std::string> coolingCoilObjectType() const;
     bool setCoolingCoilObjectType(const std::string& coolingCoilObjectType);
     void resetCoolingCoilObjectType();

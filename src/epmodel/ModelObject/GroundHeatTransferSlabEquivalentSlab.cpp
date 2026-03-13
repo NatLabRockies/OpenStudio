@@ -15,163 +15,162 @@
 namespace openstudio {
 namespace epmodel {
 
-GroundHeatTransferSlabEquivalentSlab::GroundHeatTransferSlabEquivalentSlab(const Model& model)
-  : ModelObject(GroundHeatTransferSlabEquivalentSlab::iddObjectType(), model) {}
+  GroundHeatTransferSlabEquivalentSlab::GroundHeatTransferSlabEquivalentSlab(const Model& model)
+    : ModelObject(GroundHeatTransferSlabEquivalentSlab::iddObjectType(), model) {}
 
-GroundHeatTransferSlabEquivalentSlab::GroundHeatTransferSlabEquivalentSlab(
-  std::shared_ptr<detail::GroundHeatTransferSlabEquivalentSlab_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  GroundHeatTransferSlabEquivalentSlab::GroundHeatTransferSlabEquivalentSlab(std::shared_ptr<detail::GroundHeatTransferSlabEquivalentSlab_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType GroundHeatTransferSlabEquivalentSlab::iddObjectType() {
-  return IddObjectType::GroundHeatTransfer_Slab_EquivalentSlab;
-}
+  IddObjectType GroundHeatTransferSlabEquivalentSlab::iddObjectType() {
+    return IddObjectType::GroundHeatTransfer_Slab_EquivalentSlab;
+  }
 
-double GroundHeatTransferSlabEquivalentSlab::apratioTheareatoperimeterratioforthisslab() const {
-  return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->apratioTheareatoperimeterratioforthisslab();
-}
+  double GroundHeatTransferSlabEquivalentSlab::apratioTheareatoperimeterratioforthisslab() const {
+    return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->apratioTheareatoperimeterratioforthisslab();
+  }
 
-double GroundHeatTransferSlabEquivalentSlab::slabdepthThicknessofslabongrade() const {
-  return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->slabdepthThicknessofslabongrade();
-}
+  bool GroundHeatTransferSlabEquivalentSlab::setApratioTheareatoperimeterratioforthisslab(double apratioTheareatoperimeterratioforthisslab) {
+    return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->setApratioTheareatoperimeterratioforthisslab(
+      apratioTheareatoperimeterratioforthisslab);
+  }
 
-double GroundHeatTransferSlabEquivalentSlab::clearanceDistancefromedgeofslabtodomainedge() const {
-  return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->clearanceDistancefromedgeofslabtodomainedge();
-}
+  double GroundHeatTransferSlabEquivalentSlab::slabdepthThicknessofslabongrade() const {
+    return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->slabdepthThicknessofslabongrade();
+  }
 
-double GroundHeatTransferSlabEquivalentSlab::zclearanceDistancefrombottomofslabtodomainbottom() const {
-  return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->zclearanceDistancefrombottomofslabtodomainbottom();
-}
+  bool GroundHeatTransferSlabEquivalentSlab::isSlabdepthThicknessofslabongradeDefaulted() const {
+    return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->isSlabdepthThicknessofslabongradeDefaulted();
+  }
 
-bool GroundHeatTransferSlabEquivalentSlab::isSlabdepthThicknessofslabongradeDefaulted() const {
-  return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->isSlabdepthThicknessofslabongradeDefaulted();
-}
+  bool GroundHeatTransferSlabEquivalentSlab::setSlabdepthThicknessofslabongrade(double slabdepthThicknessofslabongrade) {
+    return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->setSlabdepthThicknessofslabongrade(slabdepthThicknessofslabongrade);
+  }
 
-bool GroundHeatTransferSlabEquivalentSlab::isClearanceDistancefromedgeofslabtodomainedgeDefaulted() const {
-  return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->isClearanceDistancefromedgeofslabtodomainedgeDefaulted();
-}
+  void GroundHeatTransferSlabEquivalentSlab::resetSlabdepthThicknessofslabongrade() {
+    getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->resetSlabdepthThicknessofslabongrade();
+  }
 
-bool GroundHeatTransferSlabEquivalentSlab::isZclearanceDistancefrombottomofslabtodomainbottomDefaulted() const {
-  return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->isZclearanceDistancefrombottomofslabtodomainbottomDefaulted();
-}
+  double GroundHeatTransferSlabEquivalentSlab::clearanceDistancefromedgeofslabtodomainedge() const {
+    return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->clearanceDistancefromedgeofslabtodomainedge();
+  }
 
-bool GroundHeatTransferSlabEquivalentSlab::setApratioTheareatoperimeterratioforthisslab(double apratioTheareatoperimeterratioforthisslab) {
-  return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->setApratioTheareatoperimeterratioforthisslab(
-    apratioTheareatoperimeterratioforthisslab);
-}
+  bool GroundHeatTransferSlabEquivalentSlab::isClearanceDistancefromedgeofslabtodomainedgeDefaulted() const {
+    return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->isClearanceDistancefromedgeofslabtodomainedgeDefaulted();
+  }
 
-bool GroundHeatTransferSlabEquivalentSlab::setSlabdepthThicknessofslabongrade(double slabdepthThicknessofslabongrade) {
-  return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->setSlabdepthThicknessofslabongrade(slabdepthThicknessofslabongrade);
-}
+  bool GroundHeatTransferSlabEquivalentSlab::setClearanceDistancefromedgeofslabtodomainedge(double clearanceDistancefromedgeofslabtodomainedge) {
+    return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->setClearanceDistancefromedgeofslabtodomainedge(
+      clearanceDistancefromedgeofslabtodomainedge);
+  }
 
-bool GroundHeatTransferSlabEquivalentSlab::setClearanceDistancefromedgeofslabtodomainedge(double clearanceDistancefromedgeofslabtodomainedge) {
-  return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->setClearanceDistancefromedgeofslabtodomainedge(
-    clearanceDistancefromedgeofslabtodomainedge);
-}
+  void GroundHeatTransferSlabEquivalentSlab::resetClearanceDistancefromedgeofslabtodomainedge() {
+    getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->resetClearanceDistancefromedgeofslabtodomainedge();
+  }
 
-bool GroundHeatTransferSlabEquivalentSlab::setZclearanceDistancefrombottomofslabtodomainbottom(
-  double zclearanceDistancefrombottomofslabtodomainbottom) {
-  return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->setZclearanceDistancefrombottomofslabtodomainbottom(
-    zclearanceDistancefrombottomofslabtodomainbottom);
-}
+  double GroundHeatTransferSlabEquivalentSlab::zclearanceDistancefrombottomofslabtodomainbottom() const {
+    return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->zclearanceDistancefrombottomofslabtodomainbottom();
+  }
 
-void GroundHeatTransferSlabEquivalentSlab::resetSlabdepthThicknessofslabongrade() {
-  getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->resetSlabdepthThicknessofslabongrade();
-}
+  bool GroundHeatTransferSlabEquivalentSlab::isZclearanceDistancefrombottomofslabtodomainbottomDefaulted() const {
+    return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->isZclearanceDistancefrombottomofslabtodomainbottomDefaulted();
+  }
 
-void GroundHeatTransferSlabEquivalentSlab::resetClearanceDistancefromedgeofslabtodomainedge() {
-  getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->resetClearanceDistancefromedgeofslabtodomainedge();
-}
+  bool GroundHeatTransferSlabEquivalentSlab::setZclearanceDistancefrombottomofslabtodomainbottom(
+    double zclearanceDistancefrombottomofslabtodomainbottom) {
+    return getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->setZclearanceDistancefrombottomofslabtodomainbottom(
+      zclearanceDistancefrombottomofslabtodomainbottom);
+  }
 
-void GroundHeatTransferSlabEquivalentSlab::resetZclearanceDistancefrombottomofslabtodomainbottom() {
-  getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->resetZclearanceDistancefrombottomofslabtodomainbottom();
-}
+  void GroundHeatTransferSlabEquivalentSlab::resetZclearanceDistancefrombottomofslabtodomainbottom() {
+    getImpl<detail::GroundHeatTransferSlabEquivalentSlab_Impl>()->resetZclearanceDistancefrombottomofslabtodomainbottom();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-double GroundHeatTransferSlabEquivalentSlab_Impl::apratioTheareatoperimeterratioforthisslab() const {
-  const auto value = getDouble(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::APRatio_Theareatoperimeterratioforthisslab, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double GroundHeatTransferSlabEquivalentSlab_Impl::apratioTheareatoperimeterratioforthisslab() const {
+      const auto value = getDouble(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::APRatio_Theareatoperimeterratioforthisslab, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-double GroundHeatTransferSlabEquivalentSlab_Impl::slabdepthThicknessofslabongrade() const {
-  const auto value = getDouble(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::SLABDEPTH_Thicknessofslabongrade, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool GroundHeatTransferSlabEquivalentSlab_Impl::setApratioTheareatoperimeterratioforthisslab(double apratioTheareatoperimeterratioforthisslab) {
+      return setDouble(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::APRatio_Theareatoperimeterratioforthisslab,
+                       apratioTheareatoperimeterratioforthisslab);
+    }
 
-double GroundHeatTransferSlabEquivalentSlab_Impl::clearanceDistancefromedgeofslabtodomainedge() const {
-  const auto value = getDouble(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::CLEARANCE_Distancefromedgeofslabtodomainedge, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double GroundHeatTransferSlabEquivalentSlab_Impl::slabdepthThicknessofslabongrade() const {
+      const auto value = getDouble(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::SLABDEPTH_Thicknessofslabongrade, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-double GroundHeatTransferSlabEquivalentSlab_Impl::zclearanceDistancefrombottomofslabtodomainbottom() const {
-  const auto value = getDouble(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::ZCLEARANCE_Distancefrombottomofslabtodomainbottom, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool GroundHeatTransferSlabEquivalentSlab_Impl::isSlabdepthThicknessofslabongradeDefaulted() const {
+      return isEmpty(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::SLABDEPTH_Thicknessofslabongrade);
+    }
 
-bool GroundHeatTransferSlabEquivalentSlab_Impl::isSlabdepthThicknessofslabongradeDefaulted() const {
-  return isEmpty(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::SLABDEPTH_Thicknessofslabongrade);
-}
+    bool GroundHeatTransferSlabEquivalentSlab_Impl::setSlabdepthThicknessofslabongrade(double slabdepthThicknessofslabongrade) {
+      const bool result =
+        setDouble(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::SLABDEPTH_Thicknessofslabongrade, slabdepthThicknessofslabongrade);
+      OS_ASSERT(result);
+      return result;
+    }
 
-bool GroundHeatTransferSlabEquivalentSlab_Impl::isClearanceDistancefromedgeofslabtodomainedgeDefaulted() const {
-  return isEmpty(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::CLEARANCE_Distancefromedgeofslabtodomainedge);
-}
+    void GroundHeatTransferSlabEquivalentSlab_Impl::resetSlabdepthThicknessofslabongrade() {
+      const bool result = setString(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::SLABDEPTH_Thicknessofslabongrade, "");
+      OS_ASSERT(result);
+    }
 
-bool GroundHeatTransferSlabEquivalentSlab_Impl::isZclearanceDistancefrombottomofslabtodomainbottomDefaulted() const {
-  return isEmpty(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::ZCLEARANCE_Distancefrombottomofslabtodomainbottom);
-}
+    double GroundHeatTransferSlabEquivalentSlab_Impl::clearanceDistancefromedgeofslabtodomainedge() const {
+      const auto value = getDouble(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::CLEARANCE_Distancefromedgeofslabtodomainedge, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool GroundHeatTransferSlabEquivalentSlab_Impl::setApratioTheareatoperimeterratioforthisslab(double apratioTheareatoperimeterratioforthisslab) {
-  return setDouble(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::APRatio_Theareatoperimeterratioforthisslab,
-                   apratioTheareatoperimeterratioforthisslab);
-}
+    bool GroundHeatTransferSlabEquivalentSlab_Impl::isClearanceDistancefromedgeofslabtodomainedgeDefaulted() const {
+      return isEmpty(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::CLEARANCE_Distancefromedgeofslabtodomainedge);
+    }
 
-bool GroundHeatTransferSlabEquivalentSlab_Impl::setSlabdepthThicknessofslabongrade(double slabdepthThicknessofslabongrade) {
-  const bool result =
-    setDouble(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::SLABDEPTH_Thicknessofslabongrade, slabdepthThicknessofslabongrade);
-  OS_ASSERT(result);
-  return result;
-}
+    bool
+      GroundHeatTransferSlabEquivalentSlab_Impl::setClearanceDistancefromedgeofslabtodomainedge(double clearanceDistancefromedgeofslabtodomainedge) {
+      const bool result = setDouble(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::CLEARANCE_Distancefromedgeofslabtodomainedge,
+                                    clearanceDistancefromedgeofslabtodomainedge);
+      OS_ASSERT(result);
+      return result;
+    }
 
-bool GroundHeatTransferSlabEquivalentSlab_Impl::setClearanceDistancefromedgeofslabtodomainedge(
-  double clearanceDistancefromedgeofslabtodomainedge) {
-  const bool result = setDouble(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::CLEARANCE_Distancefromedgeofslabtodomainedge,
-                                clearanceDistancefromedgeofslabtodomainedge);
-  OS_ASSERT(result);
-  return result;
-}
+    void GroundHeatTransferSlabEquivalentSlab_Impl::resetClearanceDistancefromedgeofslabtodomainedge() {
+      const bool result = setString(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::CLEARANCE_Distancefromedgeofslabtodomainedge, "");
+      OS_ASSERT(result);
+    }
 
-bool GroundHeatTransferSlabEquivalentSlab_Impl::setZclearanceDistancefrombottomofslabtodomainbottom(
-  double zclearanceDistancefrombottomofslabtodomainbottom) {
-  const bool result = setDouble(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::ZCLEARANCE_Distancefrombottomofslabtodomainbottom,
-                                zclearanceDistancefrombottomofslabtodomainbottom);
-  OS_ASSERT(result);
-  return result;
-}
+    double GroundHeatTransferSlabEquivalentSlab_Impl::zclearanceDistancefrombottomofslabtodomainbottom() const {
+      const auto value = getDouble(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::ZCLEARANCE_Distancefrombottomofslabtodomainbottom, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-void GroundHeatTransferSlabEquivalentSlab_Impl::resetSlabdepthThicknessofslabongrade() {
-  const bool result = setString(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::SLABDEPTH_Thicknessofslabongrade, "");
-  OS_ASSERT(result);
-}
+    bool GroundHeatTransferSlabEquivalentSlab_Impl::isZclearanceDistancefrombottomofslabtodomainbottomDefaulted() const {
+      return isEmpty(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::ZCLEARANCE_Distancefrombottomofslabtodomainbottom);
+    }
 
-void GroundHeatTransferSlabEquivalentSlab_Impl::resetClearanceDistancefromedgeofslabtodomainedge() {
-  const bool result = setString(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::CLEARANCE_Distancefromedgeofslabtodomainedge, "");
-  OS_ASSERT(result);
-}
+    bool GroundHeatTransferSlabEquivalentSlab_Impl::setZclearanceDistancefrombottomofslabtodomainbottom(
+      double zclearanceDistancefrombottomofslabtodomainbottom) {
+      const bool result = setDouble(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::ZCLEARANCE_Distancefrombottomofslabtodomainbottom,
+                                    zclearanceDistancefrombottomofslabtodomainbottom);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void GroundHeatTransferSlabEquivalentSlab_Impl::resetZclearanceDistancefrombottomofslabtodomainbottom() {
-  const bool result = setString(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::ZCLEARANCE_Distancefrombottomofslabtodomainbottom, "");
-  OS_ASSERT(result);
-}
+    void GroundHeatTransferSlabEquivalentSlab_Impl::resetZclearanceDistancefrombottomofslabtodomainbottom() {
+      const bool result = setString(openstudio::GroundHeatTransfer_Slab_EquivalentSlabFields::ZCLEARANCE_Distancefrombottomofslabtodomainbottom, "");
+      OS_ASSERT(result);
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

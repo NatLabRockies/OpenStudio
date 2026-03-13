@@ -40,20 +40,8 @@ namespace epmodel {
     return IddObjectType::AvailabilityManagerAssignmentList;
   }
 
-  unsigned AvailabilityManagerAssignmentList::availabilityManagerPriority(const AvailabilityManager& availabilityManager) const {
-    return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->availabilityManagerPriority(availabilityManager);
-  }
-
   std::vector<AvailabilityManager> AvailabilityManagerAssignmentList::availabilityManagers() const {
     return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->availabilityManagers();
-  }
-
-  boost::optional<Loop> AvailabilityManagerAssignmentList::loop() const {
-    return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->loop();
-  }
-
-  boost::optional<AirLoopHVAC> AvailabilityManagerAssignmentList::airLoopHVAC() const {
-    return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->airLoopHVAC();
   }
 
   bool AvailabilityManagerAssignmentList::addAvailabilityManager(const AvailabilityManager& availabilityManager) {
@@ -84,20 +72,24 @@ namespace epmodel {
     return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->setAvailabilityManagerPriority(availabilityManager, priority);
   }
 
+  unsigned AvailabilityManagerAssignmentList::availabilityManagerPriority(const AvailabilityManager& availabilityManager) const {
+    return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->availabilityManagerPriority(availabilityManager);
+  }
+
+  boost::optional<Loop> AvailabilityManagerAssignmentList::loop() const {
+    return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->loop();
+  }
+
+  boost::optional<AirLoopHVAC> AvailabilityManagerAssignmentList::airLoopHVAC() const {
+    return getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->airLoopHVAC();
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
   namespace detail {
-
-    unsigned
-      AvailabilityManagerAssignmentList_Impl::availabilityManagerPriority(const openstudio::epmodel::AvailabilityManager& availabilityManager) const {
-      const auto currentManagers = availabilityManagers();
-      const auto it = std::find(currentManagers.begin(), currentManagers.end(), availabilityManager);
-      OS_ASSERT(it != currentManagers.end());
-      return static_cast<unsigned>(std::distance(currentManagers.begin(), it) + 1);
-    }
 
     std::vector<openstudio::epmodel::AvailabilityManager> AvailabilityManagerAssignmentList_Impl::availabilityManagers() const {
       auto assignmentList = getObject<openstudio::epmodel::AvailabilityManagerAssignmentList>();
@@ -122,34 +114,6 @@ namespace epmodel {
         result.push_back(*availabilityManager);
       }
       return result;
-    }
-
-    boost::optional<openstudio::epmodel::AirLoopHVAC> AvailabilityManagerAssignmentList_Impl::airLoopHVAC() const {
-      auto assignmentList = getObject<openstudio::epmodel::AvailabilityManagerAssignmentList>();
-      boost::optional<openstudio::epmodel::AirLoopHVAC> result;
-
-      for (const auto& airLoop : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
-        auto target = airLoop.getModelObjectTarget<openstudio::epmodel::AvailabilityManagerAssignmentList>(
-          openstudio::AirLoopHVACFields::AvailabilityManagerListName);
-        if (!target) {
-          continue;
-        }
-        if (*target == assignmentList) {
-          OS_ASSERT(!result);
-          result = airLoop;
-        }
-      }
-
-      return result;
-    }
-
-    boost::optional<openstudio::epmodel::Loop> AvailabilityManagerAssignmentList_Impl::loop() const {
-      if (auto result = airLoopHVAC()) {
-        auto loop = result->optionalCast<openstudio::epmodel::Loop>();
-        OS_ASSERT(loop);
-        return *loop;
-      }
-      return boost::none;
     }
 
     bool AvailabilityManagerAssignmentList_Impl::addAvailabilityManager(const openstudio::epmodel::AvailabilityManager& availabilityManager) {
@@ -247,6 +211,42 @@ namespace epmodel {
 
       currentManagers.insert(currentManagers.begin() + static_cast<long>(priority - 1u), value);
       return setAvailabilityManagers(currentManagers);
+    }
+
+    unsigned
+      AvailabilityManagerAssignmentList_Impl::availabilityManagerPriority(const openstudio::epmodel::AvailabilityManager& availabilityManager) const {
+      const auto currentManagers = availabilityManagers();
+      const auto it = std::find(currentManagers.begin(), currentManagers.end(), availabilityManager);
+      OS_ASSERT(it != currentManagers.end());
+      return static_cast<unsigned>(std::distance(currentManagers.begin(), it) + 1);
+    }
+
+    boost::optional<openstudio::epmodel::Loop> AvailabilityManagerAssignmentList_Impl::loop() const {
+      if (auto result = airLoopHVAC()) {
+        auto loop = result->optionalCast<openstudio::epmodel::Loop>();
+        OS_ASSERT(loop);
+        return *loop;
+      }
+      return boost::none;
+    }
+
+    boost::optional<openstudio::epmodel::AirLoopHVAC> AvailabilityManagerAssignmentList_Impl::airLoopHVAC() const {
+      auto assignmentList = getObject<openstudio::epmodel::AvailabilityManagerAssignmentList>();
+      boost::optional<openstudio::epmodel::AirLoopHVAC> result;
+
+      for (const auto& airLoop : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
+        auto target = airLoop.getModelObjectTarget<openstudio::epmodel::AvailabilityManagerAssignmentList>(
+          openstudio::AirLoopHVACFields::AvailabilityManagerListName);
+        if (!target) {
+          continue;
+        }
+        if (*target == assignmentList) {
+          OS_ASSERT(!result);
+          result = airLoop;
+        }
+      }
+
+      return result;
     }
 
     void AvailabilityManagerAssignmentList_Impl::doCanonicalize(LoadContext& context) {

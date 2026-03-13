@@ -16,45 +16,45 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class FaultModelEnthalpySensorOffsetReturnAir_Impl;
-}
+  namespace detail {
+    class FaultModelEnthalpySensorOffsetReturnAir_Impl;
+  }
 
-class EPMODEL_API FaultModelEnthalpySensorOffsetReturnAir : public ModelObject
-{
- public:
-  explicit FaultModelEnthalpySensorOffsetReturnAir(const Model& model);
+  class EPMODEL_API FaultModelEnthalpySensorOffsetReturnAir : public ModelObject
+  {
+   public:
+    explicit FaultModelEnthalpySensorOffsetReturnAir(const Model& model);
 
-  virtual ~FaultModelEnthalpySensorOffsetReturnAir() override = default;
-  FaultModelEnthalpySensorOffsetReturnAir(const FaultModelEnthalpySensorOffsetReturnAir& other) = default;
-  FaultModelEnthalpySensorOffsetReturnAir(FaultModelEnthalpySensorOffsetReturnAir&& other) = default;
-  FaultModelEnthalpySensorOffsetReturnAir& operator=(const FaultModelEnthalpySensorOffsetReturnAir&) = default;
-  FaultModelEnthalpySensorOffsetReturnAir& operator=(FaultModelEnthalpySensorOffsetReturnAir&&) = default;
+    virtual ~FaultModelEnthalpySensorOffsetReturnAir() override = default;
+    FaultModelEnthalpySensorOffsetReturnAir(const FaultModelEnthalpySensorOffsetReturnAir& other) = default;
+    FaultModelEnthalpySensorOffsetReturnAir(FaultModelEnthalpySensorOffsetReturnAir&& other) = default;
+    FaultModelEnthalpySensorOffsetReturnAir& operator=(const FaultModelEnthalpySensorOffsetReturnAir&) = default;
+    FaultModelEnthalpySensorOffsetReturnAir& operator=(FaultModelEnthalpySensorOffsetReturnAir&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: enthalpySensorOffset maps directly to the EnergyPlus scalar field Enthalpy Sensor Offset.
-  // - Field Mapping: Availability Schedule Name and Severity Schedule Name are object-list relationship fields,
-  //   and Controller Object Type/Name are target-link fields, so they are intentionally excluded from scalar accessors.
-  // - TODO(parity): Add relationship APIs after scalar scaffold saturation.
-  double enthalpySensorOffset() const;
-  bool isEnthalpySensorOffsetDefaulted() const;
-  bool setEnthalpySensorOffset(double enthalpySensorOffset);
-  void resetEnthalpySensorOffset();
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: enthalpySensorOffset maps directly to the EnergyPlus scalar field Enthalpy Sensor Offset.
+    // - Field Mapping: Availability Schedule Name and Severity Schedule Name are object-list relationship fields,
+    //   and Controller Object Type/Name are target-link fields, so they are intentionally excluded from scalar accessors.
+    // - TODO(parity): Add relationship APIs after scalar scaffold saturation.
+    double enthalpySensorOffset() const;
+    bool setEnthalpySensorOffset(double enthalpySensorOffset);
+    bool isEnthalpySensorOffsetDefaulted() const;
+    void resetEnthalpySensorOffset();
 
- protected:
-  using ImplType = detail::FaultModelEnthalpySensorOffsetReturnAir_Impl;
+   protected:
+    using ImplType = detail::FaultModelEnthalpySensorOffsetReturnAir_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit FaultModelEnthalpySensorOffsetReturnAir(std::shared_ptr<detail::FaultModelEnthalpySensorOffsetReturnAir_Impl> impl);
-};
+    explicit FaultModelEnthalpySensorOffsetReturnAir(std::shared_ptr<detail::FaultModelEnthalpySensorOffsetReturnAir_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

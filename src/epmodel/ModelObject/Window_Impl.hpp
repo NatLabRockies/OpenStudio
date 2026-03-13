@@ -21,21 +21,23 @@ namespace epmodel {
 
       double multiplier() const;
       bool isMultiplierDefaulted() const;
-      boost::optional<double> startingXCoordinate() const;
-      boost::optional<double> startingZCoordinate() const;
-      boost::optional<double> length() const;
-      boost::optional<double> height() const;
-
       bool setMultiplier(double multiplier);
-      bool setStartingXCoordinate(double startingXCoordinate);
-      bool setStartingZCoordinate(double startingZCoordinate);
-      bool setLength(double length);
-      bool setHeight(double height);
-
       void resetMultiplier();
+
+      boost::optional<double> startingXCoordinate() const;
+      bool setStartingXCoordinate(double startingXCoordinate);
       void resetStartingXCoordinate();
+
+      boost::optional<double> startingZCoordinate() const;
+      bool setStartingZCoordinate(double startingZCoordinate);
       void resetStartingZCoordinate();
+
+      boost::optional<double> length() const;
+      bool setLength(double length);
       void resetLength();
+
+      boost::optional<double> height() const;
+      bool setHeight(double height);
       void resetHeight();
     };
 

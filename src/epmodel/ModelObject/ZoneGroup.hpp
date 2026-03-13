@@ -40,7 +40,6 @@ namespace epmodel {
     // - TODO(parity): Add ZoneList relationship support once the Ruby generator completes non-scalar APIs.
     int zoneListMultiplier() const;
     bool setZoneListMultiplier(int zoneListMultiplier);
-
     bool isZoneListMultiplierDefaulted() const;
     void resetZoneListMultiplier();
 

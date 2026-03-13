@@ -12,60 +12,59 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HumidifierSteamGas_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~HumidifierSteamGas_Impl() override = default;
+    class EPMODEL_API HumidifierSteamGas_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~HumidifierSteamGas_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
-  boost::optional<double> ratedCapacity() const;
-  bool isRatedCapacityAutosized() const;
+      // Rated Capacity
+      boost::optional<double> ratedCapacity() const;
+      bool isRatedCapacityAutosized() const;
+      bool setRatedCapacity(double ratedCapacity);
+      void autosizeRatedCapacity();
+      boost::optional<double> autosizedRatedCapacity() const;
 
-  boost::optional<double> ratedGasUseRate() const;
-  bool isRatedGasUseRateAutosized() const;
+      // Rated Gas Use Rate
+      boost::optional<double> ratedGasUseRate() const;
+      bool isRatedGasUseRateAutosized() const;
+      bool setRatedGasUseRate(double ratedGasUseRate);
+      void resetRatedGasUseRate();
+      void autosizeRatedGasUseRate();
+      boost::optional<double> autosizedRatedGasUseRate() const;
 
-  double thermalEfficiency() const;
-  bool isThermalEfficiencyDefaulted() const;
+      // Thermal Efficiency
+      double thermalEfficiency() const;
+      bool isThermalEfficiencyDefaulted() const;
+      bool setThermalEfficiency(double thermalEfficiency);
+      void resetThermalEfficiency();
 
-  boost::optional<double> ratedFanPower() const;
+      // Rated Fan Power
+      boost::optional<double> ratedFanPower() const;
+      bool setRatedFanPower(double ratedFanPower);
+      void resetRatedFanPower();
 
-  double auxiliaryElectricPower() const;
-  bool isAuxiliaryElectricPowerDefaulted() const;
+      // Auxiliary Electric Power
+      double auxiliaryElectricPower() const;
+      bool isAuxiliaryElectricPowerDefaulted() const;
+      bool setAuxiliaryElectricPower(double auxiliaryElectricPower);
+      void resetAuxiliaryElectricPower();
 
-  std::string inletWaterTemperatureOption() const;
-  bool isInletWaterTemperatureOptionDefaulted() const;
+      // Inlet Water Temperature Option
+      std::string inletWaterTemperatureOption() const;
+      bool isInletWaterTemperatureOptionDefaulted() const;
+      bool setInletWaterTemperatureOption(const std::string& inletWaterTemperatureOption);
+      void resetInletWaterTemperatureOption();
 
-  bool setRatedCapacity(double ratedCapacity);
-  void autosizeRatedCapacity();
+      std::vector<std::string> inletWaterTemperatureOptionValues() const;
+    };
 
-  bool setRatedGasUseRate(double ratedGasUseRate);
-  void resetRatedGasUseRate();
-  void autosizeRatedGasUseRate();
-
-  bool setThermalEfficiency(double thermalEfficiency);
-  void resetThermalEfficiency();
-
-  bool setRatedFanPower(double ratedFanPower);
-  void resetRatedFanPower();
-
-  bool setAuxiliaryElectricPower(double auxiliaryElectricPower);
-  void resetAuxiliaryElectricPower();
-
-  bool setInletWaterTemperatureOption(const std::string& inletWaterTemperatureOption);
-  void resetInletWaterTemperatureOption();
-
-  boost::optional<double> autosizedRatedCapacity() const;
-  boost::optional<double> autosizedRatedGasUseRate() const;
-
-  std::vector<std::string> inletWaterTemperatureOptionValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -10,20 +10,23 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ScheduleCompact_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ScheduleCompact_Impl() override = default;
+    class EPMODEL_API ScheduleCompact_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ScheduleCompact_Impl() override = default;
 
-  bool setToConstantValue(double value);
-  bool isConstantValue() const;
-  boost::optional<double> constantValue() const;
-};
+      /** @name Constant value scalar accessors */
+      //@{
+      bool setToConstantValue(double value);
+      bool isConstantValue() const;
+      boost::optional<double> constantValue() const;
+      //@}
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

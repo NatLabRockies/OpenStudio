@@ -16,56 +16,59 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class AirflowNetworkDistributionComponentLeakageRatio_Impl;
-}
+  namespace detail {
+    class AirflowNetworkDistributionComponentLeakageRatio_Impl;
+  }
 
-class EPMODEL_API AirflowNetworkDistributionComponentLeakageRatio : public ModelObject
-{
- public:
-  explicit AirflowNetworkDistributionComponentLeakageRatio(const Model& model);
+  class EPMODEL_API AirflowNetworkDistributionComponentLeakageRatio : public ModelObject
+  {
+   public:
+    explicit AirflowNetworkDistributionComponentLeakageRatio(const Model& model);
 
-  virtual ~AirflowNetworkDistributionComponentLeakageRatio() override = default;
-  AirflowNetworkDistributionComponentLeakageRatio(const AirflowNetworkDistributionComponentLeakageRatio& other) = default;
-  AirflowNetworkDistributionComponentLeakageRatio(AirflowNetworkDistributionComponentLeakageRatio&& other) = default;
-  AirflowNetworkDistributionComponentLeakageRatio& operator=(const AirflowNetworkDistributionComponentLeakageRatio&) = default;
-  AirflowNetworkDistributionComponentLeakageRatio& operator=(AirflowNetworkDistributionComponentLeakageRatio&&) = default;
+    virtual ~AirflowNetworkDistributionComponentLeakageRatio() override = default;
+    AirflowNetworkDistributionComponentLeakageRatio(const AirflowNetworkDistributionComponentLeakageRatio& other) = default;
+    AirflowNetworkDistributionComponentLeakageRatio(AirflowNetworkDistributionComponentLeakageRatio&& other) = default;
+    AirflowNetworkDistributionComponentLeakageRatio& operator=(const AirflowNetworkDistributionComponentLeakageRatio&) = default;
+    AirflowNetworkDistributionComponentLeakageRatio& operator=(AirflowNetworkDistributionComponentLeakageRatio&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: effectiveLeakageRatio, maximumFlowRate, referencePressureDifference, and
-  //   airMassFlowExponent map directly to EnergyPlus
-  //   AirflowNetwork:Distribution:Component:LeakageRatio scalar fields.
-  // - TODO(parity): Re-evaluate naming if a future model-counterpart parity layer is introduced.
-  boost::optional<double> effectiveLeakageRatio() const;
-  bool setEffectiveLeakageRatio(double effectiveLeakageRatio);
-  void resetEffectiveLeakageRatio();
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: effectiveLeakageRatio, maximumFlowRate, referencePressureDifference, and
+    //   airMassFlowExponent map directly to EnergyPlus
+    //   AirflowNetwork:Distribution:Component:LeakageRatio scalar fields.
+    // - TODO(parity): Re-evaluate naming if a future model-counterpart parity layer is introduced.
+    // Effective leakage ratio accessors
+    boost::optional<double> effectiveLeakageRatio() const;
+    bool setEffectiveLeakageRatio(double effectiveLeakageRatio);
+    void resetEffectiveLeakageRatio();
 
-  double maximumFlowRate() const;
-  bool setMaximumFlowRate(double maximumFlowRate);
+    // Maximum flow rate accessors
+    double maximumFlowRate() const;
+    bool setMaximumFlowRate(double maximumFlowRate);
 
-  double referencePressureDifference() const;
-  bool setReferencePressureDifference(double referencePressureDifference);
+    // Reference pressure difference accessors
+    double referencePressureDifference() const;
+    bool setReferencePressureDifference(double referencePressureDifference);
 
-  double airMassFlowExponent() const;
-  bool isAirMassFlowExponentDefaulted() const;
-  bool setAirMassFlowExponent(double airMassFlowExponent);
-  void resetAirMassFlowExponent();
+    // Air mass flow exponent accessors
+    double airMassFlowExponent() const;
+    bool isAirMassFlowExponentDefaulted() const;
+    bool setAirMassFlowExponent(double airMassFlowExponent);
+    void resetAirMassFlowExponent();
 
- protected:
-  using ImplType = detail::AirflowNetworkDistributionComponentLeakageRatio_Impl;
+   protected:
+    using ImplType = detail::AirflowNetworkDistributionComponentLeakageRatio_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit AirflowNetworkDistributionComponentLeakageRatio(
-    std::shared_ptr<detail::AirflowNetworkDistributionComponentLeakageRatio_Impl> impl);
-};
+    explicit AirflowNetworkDistributionComponentLeakageRatio(std::shared_ptr<detail::AirflowNetworkDistributionComponentLeakageRatio_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

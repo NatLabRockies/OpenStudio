@@ -11,31 +11,34 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SiteHeightVariation_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~SiteHeightVariation_Impl() override = default;
+    class EPMODEL_API SiteHeightVariation_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~SiteHeightVariation_Impl() override = default;
 
-  double windSpeedProfileExponent() const;
-  bool isWindSpeedProfileExponentDefaulted() const;
-  bool setWindSpeedProfileExponent(double windSpeedProfileExponent);
-  void resetWindSpeedProfileExponent();
+      // WindSpeedProfileExponent accessors
+      double windSpeedProfileExponent() const;
+      bool isWindSpeedProfileExponentDefaulted() const;
+      bool setWindSpeedProfileExponent(double windSpeedProfileExponent);
+      void resetWindSpeedProfileExponent();
 
-  double windSpeedProfileBoundaryLayerThickness() const;
-  bool isWindSpeedProfileBoundaryLayerThicknessDefaulted() const;
-  bool setWindSpeedProfileBoundaryLayerThickness(double windSpeedProfileBoundaryLayerThickness);
-  void resetWindSpeedProfileBoundaryLayerThickness();
+      // WindSpeedProfileBoundaryLayerThickness accessors
+      double windSpeedProfileBoundaryLayerThickness() const;
+      bool isWindSpeedProfileBoundaryLayerThicknessDefaulted() const;
+      bool setWindSpeedProfileBoundaryLayerThickness(double windSpeedProfileBoundaryLayerThickness);
+      void resetWindSpeedProfileBoundaryLayerThickness();
 
-  double airTemperatureGradientCoefficient() const;
-  bool isAirTemperatureGradientCoefficientDefaulted() const;
-  bool setAirTemperatureGradientCoefficient(double airTemperatureGradientCoefficient);
-  void resetAirTemperatureGradientCoefficient();
-};
+      // AirTemperatureGradientCoefficient accessors
+      double airTemperatureGradientCoefficient() const;
+      bool isAirTemperatureGradientCoefficientDefaulted() const;
+      bool setAirTemperatureGradientCoefficient(double airTemperatureGradientCoefficient);
+      void resetAirTemperatureGradientCoefficient();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

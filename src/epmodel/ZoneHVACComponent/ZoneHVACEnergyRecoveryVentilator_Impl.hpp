@@ -20,13 +20,13 @@ namespace epmodel {
       virtual ~ZoneHVACEnergyRecoveryVentilator_Impl() override = default;
 
       boost::optional<double> supplyAirFlowRate() const;
-      bool isSupplyAirFlowRateAutosized() const;
       bool setSupplyAirFlowRate(double supplyAirFlowRate);
+      bool isSupplyAirFlowRateAutosized() const;
       void autosizeSupplyAirFlowRate();
 
       boost::optional<double> exhaustAirFlowRate() const;
-      bool isExhaustAirFlowRateAutosized() const;
       bool setExhaustAirFlowRate(double exhaustAirFlowRate);
+      bool isExhaustAirFlowRateAutosized() const;
       void autosizeExhaustAirFlowRate();
 
       double ventilationRateperUnitFloorArea() const;

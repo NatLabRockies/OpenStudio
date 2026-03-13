@@ -40,8 +40,8 @@ namespace epmodel {
     // - ForwardTranslator Evidence: GeometryTranslator's Window:Interzone pass (src/energyplus/GeometryTranslator.cpp) consumes these scalars to seed FenestrationSurface:Detailed vertices.
     // - TODO(parity): Add typed helpers for the related surface/construction targets once relationship parity work advances.
     double multiplier() const;
-    bool isMultiplierDefaulted() const;
     bool setMultiplier(double multiplier);
+    bool isMultiplierDefaulted() const;
     void resetMultiplier();
 
     boost::optional<double> startingXCoordinate() const;

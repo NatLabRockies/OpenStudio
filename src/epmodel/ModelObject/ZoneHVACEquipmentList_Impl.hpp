@@ -19,8 +19,8 @@ namespace epmodel {
       virtual ~ZoneHVACEquipmentList_Impl() override = default;
 
       std::string loadDistributionScheme() const;
-      bool isLoadDistributionSchemeDefaulted() const;
       bool setLoadDistributionScheme(const std::string& loadDistributionScheme);
+      bool isLoadDistributionSchemeDefaulted() const;
       void resetLoadDistributionScheme();
     };
 

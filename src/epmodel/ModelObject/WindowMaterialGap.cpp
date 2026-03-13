@@ -74,14 +74,14 @@ namespace epmodel {
       return *value;
     }
 
-    bool WindowMaterialGap_Impl::isPressureDefaulted() const {
-      return isEmpty(openstudio::WindowMaterial_GapFields::Pressure);
-    }
-
     bool WindowMaterialGap_Impl::setPressure(double pressure) {
       const bool result = setDouble(openstudio::WindowMaterial_GapFields::Pressure, pressure);
       OS_ASSERT(result);
       return result;
+    }
+
+    bool WindowMaterialGap_Impl::isPressureDefaulted() const {
+      return isEmpty(openstudio::WindowMaterial_GapFields::Pressure);
     }
 
     void WindowMaterialGap_Impl::resetPressure() {

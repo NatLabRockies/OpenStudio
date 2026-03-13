@@ -13,21 +13,21 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirflowNetworkZoneControlPressureController_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirflowNetworkZoneControlPressureController_Impl() override = default;
+    class EPMODEL_API AirflowNetworkZoneControlPressureController_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirflowNetworkZoneControlPressureController_Impl() override = default;
 
-  std::string controlObjectType() const;
-  bool setControlObjectType(const std::string& controlObjectType);
+      std::vector<std::string> controlObjectTypeValues() const;
 
-  std::vector<std::string> controlObjectTypeValues() const;
-};
+      std::string controlObjectType() const;
+      bool setControlObjectType(const std::string& controlObjectType);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

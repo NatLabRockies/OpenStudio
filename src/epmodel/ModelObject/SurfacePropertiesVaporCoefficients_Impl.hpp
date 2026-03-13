@@ -22,23 +22,23 @@ namespace epmodel {
       virtual ~SurfacePropertiesVaporCoefficients_Impl() override = default;
 
       bool constantExternalVaporTransferCoefficient() const;
-      bool isConstantExternalVaporTransferCoefficientDefaulted() const;
       bool setConstantExternalVaporTransferCoefficient(bool constantExternalVaporTransferCoefficient);
+      bool isConstantExternalVaporTransferCoefficientDefaulted() const;
       void resetConstantExternalVaporTransferCoefficient();
 
       double externalVaporCoefficientValue() const;
-      bool isExternalVaporCoefficientValueDefaulted() const;
       bool setExternalVaporCoefficientValue(double externalVaporCoefficientValue);
+      bool isExternalVaporCoefficientValueDefaulted() const;
       void resetExternalVaporCoefficientValue();
 
       bool constantInternalvaporTransferCoefficient() const;
-      bool isConstantInternalvaporTransferCoefficientDefaulted() const;
       bool setConstantInternalvaporTransferCoefficient(bool constantInternalvaporTransferCoefficient);
+      bool isConstantInternalvaporTransferCoefficientDefaulted() const;
       void resetConstantInternalvaporTransferCoefficient();
 
       double internalVaporCoefficientValue() const;
-      bool isInternalVaporCoefficientValueDefaulted() const;
       bool setInternalVaporCoefficientValue(double internalVaporCoefficientValue);
+      bool isInternalVaporCoefficientValueDefaulted() const;
       void resetInternalVaporCoefficientValue();
 
       std::vector<std::string> constantExternalVaporTransferCoefficientValues() const;

@@ -40,9 +40,13 @@ namespace epmodel {
     // - Field Mapping: designGenerationRate maps directly to the EnergyPlus Design Generation Rate field (positive = source, negative = sink).
     // - Field Mapping: Zone Name and Schedule Name remain object-list relationships and are intentionally excluded from scalar accessors.
     // - TODO(parity): Add relationship helpers once scalar saturation is complete without altering the scalar API surface.
+
+    /** @name Design Generation Rate */
+    //@{
     boost::optional<double> designGenerationRate() const;
     bool setDesignGenerationRate(double designGenerationRate);
     void resetDesignGenerationRate();
+    //@}
 
    protected:
     using ImplType = detail::ZoneContaminantSourceAndSinkCarbonDioxide_Impl;

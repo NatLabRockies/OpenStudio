@@ -24,8 +24,8 @@ namespace epmodel {
 
       std::string algorithm() const;
       bool setAlgorithm(const std::string& algorithm);
-      bool isAlgorithmDefaulted() const;
       void resetAlgorithm();
+      bool isAlgorithmDefaulted() const;
 
       std::vector<std::string> algorithmValues() const;
     };

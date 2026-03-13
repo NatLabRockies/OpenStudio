@@ -40,8 +40,11 @@ namespace epmodel {
     // - API: This wraps the EnergyPlus PlantEquipmentOperation:CoolingLoad object with the same scalar load-limit getters as the model counterpart.
     // - Field Mapping: maximumUpperLimit() and minimumLowerLimit() read the Load Range n Upper Limit and Lower Limit values from the last and first extensible groups, respectively.
     // - TODO(parity): Add load range/equipment list extensible APIs once the general extensible-handling scaffold arrives.
+    /** @name Load range limit accessors */
+    //@{
     double maximumUpperLimit() const;
     double minimumLowerLimit() const;
+    //@}
 
    protected:
     using ImplType = detail::PlantEquipmentOperationCoolingLoad_Impl;

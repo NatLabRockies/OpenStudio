@@ -15,53 +15,55 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SetpointManagerMultiZoneHeatingAverage_Impl;
-}
+  namespace detail {
+    class SetpointManagerMultiZoneHeatingAverage_Impl;
+  }
 
-class EPMODEL_API SetpointManagerMultiZoneHeatingAverage : public SetpointManager
-{
- public:
-  explicit SetpointManagerMultiZoneHeatingAverage(const Model& model);
+  class EPMODEL_API SetpointManagerMultiZoneHeatingAverage : public SetpointManager
+  {
+   public:
+    explicit SetpointManagerMultiZoneHeatingAverage(const Model& model);
 
-  virtual ~SetpointManagerMultiZoneHeatingAverage() override = default;
-  SetpointManagerMultiZoneHeatingAverage(const SetpointManagerMultiZoneHeatingAverage& other) = default;
-  SetpointManagerMultiZoneHeatingAverage(SetpointManagerMultiZoneHeatingAverage&& other) = default;
-  SetpointManagerMultiZoneHeatingAverage& operator=(const SetpointManagerMultiZoneHeatingAverage&) = default;
-  SetpointManagerMultiZoneHeatingAverage& operator=(SetpointManagerMultiZoneHeatingAverage&&) = default;
+    virtual ~SetpointManagerMultiZoneHeatingAverage() override = default;
+    SetpointManagerMultiZoneHeatingAverage(const SetpointManagerMultiZoneHeatingAverage& other) = default;
+    SetpointManagerMultiZoneHeatingAverage(SetpointManagerMultiZoneHeatingAverage&& other) = default;
+    SetpointManagerMultiZoneHeatingAverage& operator=(const SetpointManagerMultiZoneHeatingAverage&) = default;
+    SetpointManagerMultiZoneHeatingAverage& operator=(SetpointManagerMultiZoneHeatingAverage&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> controlVariableValues();
+    static std::vector<std::string> controlVariableValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-  // - Field Mapping: minimumSetpointTemperature and maximumSetpointTemperature map directly to
-  //   E+ SetpointManager:MultiZone:Heating:Average fields.
-  // - Field Mapping: controlVariable is preserved as a fixed-value API ("Temperature") even though
-  //   the E+ object has no explicit control-variable field.
-  // - Field Mapping: Relationship fields HVAC Air Loop Name and Setpoint Node or NodeList Name are
-  //   intentionally excluded from scalar-only scaffolding.
-  // - TODO(parity): Add non-scalar relationship parity for explicit loop/node linkage in a follow-up pass.
-  std::string controlVariable() const;
-  double minimumSetpointTemperature() const;
-  double maximumSetpointTemperature() const;
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
+    // - Field Mapping: minimumSetpointTemperature and maximumSetpointTemperature map directly to
+    //   E+ SetpointManager:MultiZone:Heating:Average fields.
+    // - Field Mapping: controlVariable is preserved as a fixed-value API ("Temperature") even though
+    //   the E+ object has no explicit control-variable field.
+    // - Field Mapping: Relationship fields HVAC Air Loop Name and Setpoint Node or NodeList Name are
+    //   intentionally excluded from scalar-only scaffolding.
+    // - TODO(parity): Add non-scalar relationship parity for explicit loop/node linkage in a follow-up pass.
 
-  bool setControlVariable(const std::string& controlVariable);
-  bool setMinimumSetpointTemperature(double minimumSetpointTemperature);
-  bool setMaximumSetpointTemperature(double maximumSetpointTemperature);
+    std::string controlVariable() const;
+    bool setControlVariable(const std::string& controlVariable);
 
- protected:
-  using ImplType = detail::SetpointManagerMultiZoneHeatingAverage_Impl;
+    double minimumSetpointTemperature() const;
+    bool setMinimumSetpointTemperature(double minimumSetpointTemperature);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    double maximumSetpointTemperature() const;
+    bool setMaximumSetpointTemperature(double maximumSetpointTemperature);
 
-  explicit SetpointManagerMultiZoneHeatingAverage(std::shared_ptr<detail::SetpointManagerMultiZoneHeatingAverage_Impl> impl);
-};
+   protected:
+    using ImplType = detail::SetpointManagerMultiZoneHeatingAverage_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit SetpointManagerMultiZoneHeatingAverage(std::shared_ptr<detail::SetpointManagerMultiZoneHeatingAverage_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

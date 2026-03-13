@@ -16,71 +16,79 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class FloorAdiabatic_Impl;
-}
+  namespace detail {
+    class FloorAdiabatic_Impl;
+  }
 
-class EPMODEL_API FloorAdiabatic : public ModelObject
-{
- public:
-  explicit FloorAdiabatic(const Model& model);
+  class EPMODEL_API FloorAdiabatic : public ModelObject
+  {
+   public:
+    explicit FloorAdiabatic(const Model& model);
 
-  virtual ~FloorAdiabatic() override = default;
-  FloorAdiabatic(const FloorAdiabatic& other) = default;
-  FloorAdiabatic(FloorAdiabatic&& other) = default;
-  FloorAdiabatic& operator=(const FloorAdiabatic&) = default;
-  FloorAdiabatic& operator=(FloorAdiabatic&&) = default;
+    virtual ~FloorAdiabatic() override = default;
+    FloorAdiabatic(const FloorAdiabatic& other) = default;
+    FloorAdiabatic(FloorAdiabatic&& other) = default;
+    FloorAdiabatic& operator=(const FloorAdiabatic&) = default;
+    FloorAdiabatic& operator=(FloorAdiabatic&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: azimuthAngle, tiltAngle, startingXCoordinate, startingYCoordinate, startingZCoordinate,
-  //   length, and width map directly to EnergyPlus Floor:Adiabatic scalar fields with matching names.
-  // - Field Mapping: Construction Name, Zone Name, and Space Name are object-list relationship fields and are
-  //   intentionally excluded from scalar accessors.
-  // - Field Mapping: Name remains available through base ModelObject naming API.
-  // - TODO(parity): Add typed relationship APIs after scalar scaffold saturation.
-  boost::optional<double> azimuthAngle() const;
-  bool setAzimuthAngle(double azimuthAngle);
-  void resetAzimuthAngle();
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: azimuthAngle, tiltAngle, startingXCoordinate, startingYCoordinate, startingZCoordinate,
+    //   length, and width map directly to EnergyPlus Floor:Adiabatic scalar fields with matching names.
+    // - Field Mapping: Construction Name, Zone Name, and Space Name are object-list relationship fields and are
+    //   intentionally excluded from scalar accessors.
+    // - Field Mapping: Name remains available through base ModelObject naming API.
+    // - TODO(parity): Add typed relationship APIs after scalar scaffold saturation.
 
-  double tiltAngle() const;
-  bool isTiltAngleDefaulted() const;
-  bool setTiltAngle(double tiltAngle);
-  void resetTiltAngle();
+    // AzimuthAngle
+    boost::optional<double> azimuthAngle() const;
+    bool setAzimuthAngle(double azimuthAngle);
+    void resetAzimuthAngle();
 
-  boost::optional<double> startingXCoordinate() const;
-  bool setStartingXCoordinate(double startingXCoordinate);
-  void resetStartingXCoordinate();
+    // TiltAngle
+    double tiltAngle() const;
+    bool isTiltAngleDefaulted() const;
+    bool setTiltAngle(double tiltAngle);
+    void resetTiltAngle();
 
-  boost::optional<double> startingYCoordinate() const;
-  bool setStartingYCoordinate(double startingYCoordinate);
-  void resetStartingYCoordinate();
+    // StartingXCoordinate
+    boost::optional<double> startingXCoordinate() const;
+    bool setStartingXCoordinate(double startingXCoordinate);
+    void resetStartingXCoordinate();
 
-  boost::optional<double> startingZCoordinate() const;
-  bool setStartingZCoordinate(double startingZCoordinate);
-  void resetStartingZCoordinate();
+    // StartingYCoordinate
+    boost::optional<double> startingYCoordinate() const;
+    bool setStartingYCoordinate(double startingYCoordinate);
+    void resetStartingYCoordinate();
 
-  boost::optional<double> length() const;
-  bool setLength(double length);
-  void resetLength();
+    // StartingZCoordinate
+    boost::optional<double> startingZCoordinate() const;
+    bool setStartingZCoordinate(double startingZCoordinate);
+    void resetStartingZCoordinate();
 
-  boost::optional<double> width() const;
-  bool setWidth(double width);
-  void resetWidth();
+    // Length
+    boost::optional<double> length() const;
+    bool setLength(double length);
+    void resetLength();
 
- protected:
-  using ImplType = detail::FloorAdiabatic_Impl;
+    // Width
+    boost::optional<double> width() const;
+    bool setWidth(double width);
+    void resetWidth();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::FloorAdiabatic_Impl;
 
-  explicit FloorAdiabatic(std::shared_ptr<detail::FloorAdiabatic_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit FloorAdiabatic(std::shared_ptr<detail::FloorAdiabatic_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

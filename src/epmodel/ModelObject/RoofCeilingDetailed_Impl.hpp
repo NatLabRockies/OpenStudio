@@ -20,6 +20,10 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~RoofCeilingDetailed_Impl() override = default;
 
+      std::vector<std::string> outsideBoundaryConditionValues() const;
+      std::vector<std::string> sunExposureValues() const;
+      std::vector<std::string> windExposureValues() const;
+
       std::string outsideBoundaryCondition() const;
       bool setOutsideBoundaryCondition(const std::string& outsideBoundaryCondition);
 
@@ -44,10 +48,6 @@ namespace epmodel {
       bool isNumberofVerticesAutocalculated() const;
       void autocalculateNumberofVertices();
       void resetNumberofVertices();
-
-      std::vector<std::string> outsideBoundaryConditionValues() const;
-      std::vector<std::string> sunExposureValues() const;
-      std::vector<std::string> windExposureValues() const;
     };
 
   }  // namespace detail

@@ -52,13 +52,13 @@ namespace epmodel {
     bool setOutsideBoundaryCondition(const std::string& outsideBoundaryCondition);
 
     std::string sunExposure() const;
-    bool isSunExposureDefaulted() const;
     bool setSunExposure(const std::string& sunExposure);
+    bool isSunExposureDefaulted() const;
     void resetSunExposure();
 
     std::string windExposure() const;
-    bool isWindExposureDefaulted() const;
     bool setWindExposure(const std::string& windExposure);
+    bool isWindExposureDefaulted() const;
     void resetWindExposure();
 
     boost::optional<double> viewFactortoGround() const;

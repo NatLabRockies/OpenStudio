@@ -10,37 +10,42 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ShadingOverhangProjection_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ShadingOverhangProjection_Impl() override = default;
+    class EPMODEL_API ShadingOverhangProjection_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ShadingOverhangProjection_Impl() override = default;
 
-  boost::optional<double> heightaboveWindoworDoor() const;
-  bool setHeightaboveWindoworDoor(double heightaboveWindoworDoor);
-  void resetHeightaboveWindoworDoor();
+      // Height above the associated window or door
+      boost::optional<double> heightaboveWindoworDoor() const;
+      bool setHeightaboveWindoworDoor(double heightaboveWindoworDoor);
+      void resetHeightaboveWindoworDoor();
 
-  double tiltAnglefromWindowDoor() const;
-  bool isTiltAnglefromWindowDoorDefaulted() const;
-  bool setTiltAnglefromWindowDoor(double tiltAnglefromWindowDoor);
-  void resetTiltAnglefromWindowDoor();
+      // Tilt angle measured from the window or door plane
+      double tiltAnglefromWindowDoor() const;
+      bool isTiltAnglefromWindowDoorDefaulted() const;
+      bool setTiltAnglefromWindowDoor(double tiltAnglefromWindowDoor);
+      void resetTiltAnglefromWindowDoor();
 
-  boost::optional<double> leftextensionfromWindowDoorWidth() const;
-  bool setLeftextensionfromWindowDoorWidth(double leftextensionfromWindowDoorWidth);
-  void resetLeftextensionfromWindowDoorWidth();
+      // Left extension expressed as a fraction of the window or door width
+      boost::optional<double> leftextensionfromWindowDoorWidth() const;
+      bool setLeftextensionfromWindowDoorWidth(double leftextensionfromWindowDoorWidth);
+      void resetLeftextensionfromWindowDoorWidth();
 
-  boost::optional<double> rightextensionfromWindowDoorWidth() const;
-  bool setRightextensionfromWindowDoorWidth(double rightextensionfromWindowDoorWidth);
-  void resetRightextensionfromWindowDoorWidth();
+      // Right extension expressed as a fraction of the window or door width
+      boost::optional<double> rightextensionfromWindowDoorWidth() const;
+      bool setRightextensionfromWindowDoorWidth(double rightextensionfromWindowDoorWidth);
+      void resetRightextensionfromWindowDoorWidth();
 
-  boost::optional<double> depthasFractionofWindowDoorHeight() const;
-  bool setDepthasFractionofWindowDoorHeight(double depthasFractionofWindowDoorHeight);
-  void resetDepthasFractionofWindowDoorHeight();
-};
+      // Depth expressed as a fraction of the window or door height
+      boost::optional<double> depthasFractionofWindowDoorHeight() const;
+      bool setDepthasFractionofWindowDoorHeight(double depthasFractionofWindowDoorHeight);
+      void resetDepthasFractionofWindowDoorHeight();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

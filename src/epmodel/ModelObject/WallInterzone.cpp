@@ -121,6 +121,16 @@ namespace epmodel {
       return getDouble(openstudio::Wall_InterzoneFields::AzimuthAngle, true);
     }
 
+    bool WallInterzone_Impl::setAzimuthAngle(double azimuthAngle) {
+      const bool result = setDouble(openstudio::Wall_InterzoneFields::AzimuthAngle, azimuthAngle);
+      return result;
+    }
+
+    void WallInterzone_Impl::resetAzimuthAngle() {
+      const bool result = setString(openstudio::Wall_InterzoneFields::AzimuthAngle, "");
+      OS_ASSERT(result);
+    }
+
     double WallInterzone_Impl::tiltAngle() const {
       const auto value = getDouble(openstudio::Wall_InterzoneFields::TiltAngle, true);
       OS_ASSERT(value);
@@ -131,34 +141,18 @@ namespace epmodel {
       return isEmpty(openstudio::Wall_InterzoneFields::TiltAngle);
     }
 
-    boost::optional<double> WallInterzone_Impl::startingXCoordinate() const {
-      return getDouble(openstudio::Wall_InterzoneFields::StartingXCoordinate, true);
-    }
-
-    boost::optional<double> WallInterzone_Impl::startingYCoordinate() const {
-      return getDouble(openstudio::Wall_InterzoneFields::StartingYCoordinate, true);
-    }
-
-    boost::optional<double> WallInterzone_Impl::startingZCoordinate() const {
-      return getDouble(openstudio::Wall_InterzoneFields::StartingZCoordinate, true);
-    }
-
-    boost::optional<double> WallInterzone_Impl::length() const {
-      return getDouble(openstudio::Wall_InterzoneFields::Length, true);
-    }
-
-    boost::optional<double> WallInterzone_Impl::height() const {
-      return getDouble(openstudio::Wall_InterzoneFields::Height, true);
-    }
-
-    bool WallInterzone_Impl::setAzimuthAngle(double azimuthAngle) {
-      const bool result = setDouble(openstudio::Wall_InterzoneFields::AzimuthAngle, azimuthAngle);
-      return result;
-    }
-
     bool WallInterzone_Impl::setTiltAngle(double tiltAngle) {
       const bool result = setDouble(openstudio::Wall_InterzoneFields::TiltAngle, tiltAngle);
       return result;
+    }
+
+    void WallInterzone_Impl::resetTiltAngle() {
+      const bool result = setString(openstudio::Wall_InterzoneFields::TiltAngle, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallInterzone_Impl::startingXCoordinate() const {
+      return getDouble(openstudio::Wall_InterzoneFields::StartingXCoordinate, true);
     }
 
     bool WallInterzone_Impl::setStartingXCoordinate(double startingXCoordinate) {
@@ -167,10 +161,28 @@ namespace epmodel {
       return result;
     }
 
+    void WallInterzone_Impl::resetStartingXCoordinate() {
+      const bool result = setString(openstudio::Wall_InterzoneFields::StartingXCoordinate, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallInterzone_Impl::startingYCoordinate() const {
+      return getDouble(openstudio::Wall_InterzoneFields::StartingYCoordinate, true);
+    }
+
     bool WallInterzone_Impl::setStartingYCoordinate(double startingYCoordinate) {
       const bool result = setDouble(openstudio::Wall_InterzoneFields::StartingYCoordinate, startingYCoordinate);
       OS_ASSERT(result);
       return result;
+    }
+
+    void WallInterzone_Impl::resetStartingYCoordinate() {
+      const bool result = setString(openstudio::Wall_InterzoneFields::StartingYCoordinate, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallInterzone_Impl::startingZCoordinate() const {
+      return getDouble(openstudio::Wall_InterzoneFields::StartingZCoordinate, true);
     }
 
     bool WallInterzone_Impl::setStartingZCoordinate(double startingZCoordinate) {
@@ -179,46 +191,34 @@ namespace epmodel {
       return result;
     }
 
+    void WallInterzone_Impl::resetStartingZCoordinate() {
+      const bool result = setString(openstudio::Wall_InterzoneFields::StartingZCoordinate, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallInterzone_Impl::length() const {
+      return getDouble(openstudio::Wall_InterzoneFields::Length, true);
+    }
+
     bool WallInterzone_Impl::setLength(double length) {
       const bool result = setDouble(openstudio::Wall_InterzoneFields::Length, length);
       OS_ASSERT(result);
       return result;
     }
 
+    void WallInterzone_Impl::resetLength() {
+      const bool result = setString(openstudio::Wall_InterzoneFields::Length, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallInterzone_Impl::height() const {
+      return getDouble(openstudio::Wall_InterzoneFields::Height, true);
+    }
+
     bool WallInterzone_Impl::setHeight(double height) {
       const bool result = setDouble(openstudio::Wall_InterzoneFields::Height, height);
       OS_ASSERT(result);
       return result;
-    }
-
-    void WallInterzone_Impl::resetAzimuthAngle() {
-      const bool result = setString(openstudio::Wall_InterzoneFields::AzimuthAngle, "");
-      OS_ASSERT(result);
-    }
-
-    void WallInterzone_Impl::resetTiltAngle() {
-      const bool result = setString(openstudio::Wall_InterzoneFields::TiltAngle, "");
-      OS_ASSERT(result);
-    }
-
-    void WallInterzone_Impl::resetStartingXCoordinate() {
-      const bool result = setString(openstudio::Wall_InterzoneFields::StartingXCoordinate, "");
-      OS_ASSERT(result);
-    }
-
-    void WallInterzone_Impl::resetStartingYCoordinate() {
-      const bool result = setString(openstudio::Wall_InterzoneFields::StartingYCoordinate, "");
-      OS_ASSERT(result);
-    }
-
-    void WallInterzone_Impl::resetStartingZCoordinate() {
-      const bool result = setString(openstudio::Wall_InterzoneFields::StartingZCoordinate, "");
-      OS_ASSERT(result);
-    }
-
-    void WallInterzone_Impl::resetLength() {
-      const bool result = setString(openstudio::Wall_InterzoneFields::Length, "");
-      OS_ASSERT(result);
     }
 
     void WallInterzone_Impl::resetHeight() {

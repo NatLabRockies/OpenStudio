@@ -20,28 +20,28 @@ namespace epmodel {
       virtual ~ZoneEarthtubeParameters_Impl() override = default;
 
       int nodesAboveEarthTube() const;
-      bool isNodesAboveEarthTubeDefaulted() const;
       bool setNodesAboveEarthTube(int nodesAboveEarthTube);
+      bool isNodesAboveEarthTubeDefaulted() const;
       void resetNodesAboveEarthTube();
 
       int nodesBelowEarthTube() const;
-      bool isNodesBelowEarthTubeDefaulted() const;
       bool setNodesBelowEarthTube(int nodesBelowEarthTube);
+      bool isNodesBelowEarthTubeDefaulted() const;
       void resetNodesBelowEarthTube();
 
       double earthTubeDimensionlessBoundaryAbove() const;
-      bool isEarthTubeDimensionlessBoundaryAboveDefaulted() const;
       bool setEarthTubeDimensionlessBoundaryAbove(double earthTubeDimensionlessBoundaryAbove);
+      bool isEarthTubeDimensionlessBoundaryAboveDefaulted() const;
       void resetEarthTubeDimensionlessBoundaryAbove();
 
       double earthTubeDimensionlessBoundaryBelow() const;
-      bool isEarthTubeDimensionlessBoundaryBelowDefaulted() const;
       bool setEarthTubeDimensionlessBoundaryBelow(double earthTubeDimensionlessBoundaryBelow);
+      bool isEarthTubeDimensionlessBoundaryBelowDefaulted() const;
       void resetEarthTubeDimensionlessBoundaryBelow();
 
       double earthTubeSolutionSpaceWidth() const;
-      bool isEarthTubeSolutionSpaceWidthDefaulted() const;
       bool setEarthTubeSolutionSpaceWidth(double earthTubeSolutionSpaceWidth);
+      bool isEarthTubeSolutionSpaceWidthDefaulted() const;
       void resetEarthTubeSolutionSpaceWidth();
     };
 

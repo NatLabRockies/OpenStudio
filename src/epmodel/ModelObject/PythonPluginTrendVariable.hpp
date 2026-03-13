@@ -34,6 +34,8 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
+    /** Field accessors for Number of Timesteps to be Logged. */
+    //@{
     // Schema Alignment Notes:
     // - API: Expose only the simple scalar Number of Timesteps to be Logged accessor while the PythonPluginVariable relationship field remains pending.
     // - Field Mapping: Number of Timesteps to be Logged maps directly to OS_PythonPlugin_TrendVariableFields::NumberofTimestepstobeLogged.
@@ -41,6 +43,7 @@ namespace epmodel {
     // - TODO(parity): Reintroduce pythonPluginVariable getter/setter once PythonPluginVariable has been scaffolded in epmodel.
     int numberofTimestepstobeLogged() const;
     bool setNumberofTimestepstobeLogged(int numberofTimestepstobeLogged);
+    //@}
 
    protected:
     using ImplType = detail::PythonPluginTrendVariable_Impl;

@@ -33,11 +33,6 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACForcedAirUserDefined_Impl>()->setNumberofPlantLoopConnections(numberofPlantLoopConnections);
   }
 
-}  // namespace epmodel
-}  // namespace openstudio
-
-namespace openstudio {
-namespace epmodel {
   namespace detail {
 
     int ZoneHVACForcedAirUserDefined_Impl::numberofPlantLoopConnections() const {
@@ -51,5 +46,6 @@ namespace epmodel {
     }
 
   }  // namespace detail
+
 }  // namespace epmodel
 }  // namespace openstudio

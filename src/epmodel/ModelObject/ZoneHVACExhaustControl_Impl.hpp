@@ -23,6 +23,8 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~ZoneHVACExhaustControl_Impl() override = default;
 
+      std::vector<std::string> flowControlTypeValues() const;
+
       std::string flowControlType() const;
       bool isFlowControlTypeDefaulted() const;
       bool setFlowControlType(const std::string& flowControlType);
@@ -33,8 +35,6 @@ namespace epmodel {
       bool setDesignExhaustFlowRate(double designExhaustFlowRate);
       void autosizeDesignExhaustFlowRate();
       void resetDesignExhaustFlowRate();
-
-      std::vector<std::string> flowControlTypeValues() const;
     };
 
   }  // namespace detail

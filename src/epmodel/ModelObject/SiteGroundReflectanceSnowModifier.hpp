@@ -38,13 +38,13 @@ namespace epmodel {
     // - Field Mapping: GroundReflectedSolarModifier and DaylightingGroundReflectedSolarModifier controls the snow-modified
     //   ground reflectance values when calculating ground reflected solar with snow present.
     double groundReflectedSolarModifier() const;
-    bool isGroundReflectedSolarModifierDefaulted() const;
     bool setGroundReflectedSolarModifier(double groundReflectedSolarModifier);
+    bool isGroundReflectedSolarModifierDefaulted() const;
     void resetGroundReflectedSolarModifier();
 
     double daylightingGroundReflectedSolarModifier() const;
-    bool isDaylightingGroundReflectedSolarModifierDefaulted() const;
     bool setDaylightingGroundReflectedSolarModifier(double daylightingGroundReflectedSolarModifier);
+    bool isDaylightingGroundReflectedSolarModifierDefaulted() const;
     void resetDaylightingGroundReflectedSolarModifier();
 
    protected:

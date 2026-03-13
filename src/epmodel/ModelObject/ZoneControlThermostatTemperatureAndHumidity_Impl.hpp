@@ -21,6 +21,9 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~ZoneControlThermostatTemperatureAndHumidity_Impl() override = default;
 
+      std::vector<std::string> dehumidificationControlTypeValues() const;
+      std::vector<std::string> overcoolRangeInputMethodValues() const;
+
       std::string dehumidificationControlType() const;
       bool setDehumidificationControlType(const std::string& dehumidificationControlType);
       bool isDehumidificationControlTypeDefaulted() const;
@@ -40,9 +43,6 @@ namespace epmodel {
       bool setOvercoolControlRatio(double overcoolControlRatio);
       bool isOvercoolControlRatioDefaulted() const;
       void resetOvercoolControlRatio();
-
-      std::vector<std::string> dehumidificationControlTypeValues() const;
-      std::vector<std::string> overcoolRangeInputMethodValues() const;
     };
 
   }  // namespace detail

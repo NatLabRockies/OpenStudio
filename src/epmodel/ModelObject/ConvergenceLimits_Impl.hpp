@@ -11,33 +11,35 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ConvergenceLimits_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ConvergenceLimits_Impl() override = default;
+    class EPMODEL_API ConvergenceLimits_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ConvergenceLimits_Impl() override = default;
 
-  boost::optional<int> minimumSystemTimestep() const;
-  int maximumHVACIterations() const;
-  bool isMaximumHVACIterationsDefaulted() const;
-  int minimumPlantIterations() const;
-  bool isMinimumPlantIterationsDefaulted() const;
-  int maximumPlantIterations() const;
-  bool isMaximumPlantIterationsDefaulted() const;
+      boost::optional<int> minimumSystemTimestep() const;
+      bool setMinimumSystemTimestep(int minimumSystemTimestep);
+      void resetMinimumSystemTimestep();
 
-  bool setMinimumSystemTimestep(int minimumSystemTimestep);
-  void resetMinimumSystemTimestep();
-  bool setMaximumHVACIterations(int maximumHVACIterations);
-  void resetMaximumHVACIterations();
-  bool setMinimumPlantIterations(int minimumPlantIterations);
-  void resetMinimumPlantIterations();
-  bool setMaximumPlantIterations(int maximumPlantIterations);
-  void resetMaximumPlantIterations();
-};
+      int maximumHVACIterations() const;
+      bool isMaximumHVACIterationsDefaulted() const;
+      bool setMaximumHVACIterations(int maximumHVACIterations);
+      void resetMaximumHVACIterations();
 
-}  // namespace detail
+      int minimumPlantIterations() const;
+      bool isMinimumPlantIterationsDefaulted() const;
+      bool setMinimumPlantIterations(int minimumPlantIterations);
+      void resetMinimumPlantIterations();
+
+      int maximumPlantIterations() const;
+      bool isMaximumPlantIterationsDefaulted() const;
+      bool setMaximumPlantIterations(int maximumPlantIterations);
+      void resetMaximumPlantIterations();
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

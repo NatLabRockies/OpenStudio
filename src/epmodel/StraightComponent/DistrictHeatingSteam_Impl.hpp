@@ -10,27 +10,25 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API DistrictHeatingSteam_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~DistrictHeatingSteam_Impl() override = default;
+    class EPMODEL_API DistrictHeatingSteam_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~DistrictHeatingSteam_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
-  boost::optional<double> nominalCapacity() const;
-  bool isNominalCapacityAutosized() const;
+      boost::optional<double> nominalCapacity() const;
+      bool setNominalCapacity(double nominalCapacity);
+      bool isNominalCapacityAutosized() const;
+      boost::optional<double> autosizedNominalCapacity() const;
+      void autosizeNominalCapacity();
+    };
 
-  bool setNominalCapacity(double nominalCapacity);
-  void autosizeNominalCapacity();
-
-  boost::optional<double> autosizedNominalCapacity() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

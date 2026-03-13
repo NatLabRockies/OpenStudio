@@ -47,16 +47,17 @@ namespace epmodel {
     //   ZoneHVAC_EvaporativeCoolerUnitFields (ForwardTranslateZoneHVACEvaporativeCoolerUnit.cpp describes this mapping).
     // - Field Mapping: Availability schedule, supply air fan, evaporative cooler objects, and connected node references
     //   are relationship-only and intentionally excluded from this scalar API until dedicated relationship helpers exist.
+    static std::vector<std::string> fanPlacementValues();
+    static std::vector<std::string> coolerUnitControlMethodValues();
+
     boost::optional<double> designSupplyAirFlowRate() const;
     bool isDesignSupplyAirFlowRateAutosized() const;
     bool setDesignSupplyAirFlowRate(double designSupplyAirFlowRate);
     void autosizeDesignSupplyAirFlowRate();
 
-    static std::vector<std::string> fanPlacementValues();
     std::string fanPlacement() const;
     bool setFanPlacement(const std::string& fanPlacement);
 
-    static std::vector<std::string> coolerUnitControlMethodValues();
     std::string coolerUnitControlMethod() const;
     bool setCoolerUnitControlMethod(const std::string& coolerUnitControlMethod);
 

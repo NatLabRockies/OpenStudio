@@ -23,8 +23,8 @@ namespace epmodel {
       virtual ~ZoneCoolTowerShower_Impl() override = default;
 
       std::string flowControlType() const;
-      bool isFlowControlTypeDefaulted() const;
       bool setFlowControlType(const std::string& flowControlType);
+      bool isFlowControlTypeDefaulted() const;
       void resetFlowControlType();
 
       double maximumWaterFlowRate() const;

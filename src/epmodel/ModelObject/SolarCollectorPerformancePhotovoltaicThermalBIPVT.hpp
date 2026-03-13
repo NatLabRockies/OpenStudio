@@ -16,69 +16,79 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SolarCollectorPerformancePhotovoltaicThermalBIPVT_Impl;
-}
+  namespace detail {
+    class SolarCollectorPerformancePhotovoltaicThermalBIPVT_Impl;
+  }
 
-class EPMODEL_API SolarCollectorPerformancePhotovoltaicThermalBIPVT : public ModelObject
-{
- public:
-  explicit SolarCollectorPerformancePhotovoltaicThermalBIPVT(const Model& model);
+  class EPMODEL_API SolarCollectorPerformancePhotovoltaicThermalBIPVT : public ModelObject
+  {
+   public:
+    explicit SolarCollectorPerformancePhotovoltaicThermalBIPVT(const Model& model);
 
-  virtual ~SolarCollectorPerformancePhotovoltaicThermalBIPVT() override = default;
-  SolarCollectorPerformancePhotovoltaicThermalBIPVT(const SolarCollectorPerformancePhotovoltaicThermalBIPVT& other) = default;
-  SolarCollectorPerformancePhotovoltaicThermalBIPVT(SolarCollectorPerformancePhotovoltaicThermalBIPVT&& other) = default;
-  SolarCollectorPerformancePhotovoltaicThermalBIPVT& operator=(const SolarCollectorPerformancePhotovoltaicThermalBIPVT&) = default;
-  SolarCollectorPerformancePhotovoltaicThermalBIPVT& operator=(SolarCollectorPerformancePhotovoltaicThermalBIPVT&&) = default;
+    virtual ~SolarCollectorPerformancePhotovoltaicThermalBIPVT() override = default;
+    SolarCollectorPerformancePhotovoltaicThermalBIPVT(const SolarCollectorPerformancePhotovoltaicThermalBIPVT& other) = default;
+    SolarCollectorPerformancePhotovoltaicThermalBIPVT(SolarCollectorPerformancePhotovoltaicThermalBIPVT&& other) = default;
+    SolarCollectorPerformancePhotovoltaicThermalBIPVT& operator=(const SolarCollectorPerformancePhotovoltaicThermalBIPVT&) = default;
+    SolarCollectorPerformancePhotovoltaicThermalBIPVT& operator=(SolarCollectorPerformancePhotovoltaicThermalBIPVT&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::SolarCollectorPerformancePhotovoltaicThermalBIPVT scalar accessor names/signatures.
-  // - Field Mapping: Scalar APIs map directly to E+ SolarCollectorPerformance:PhotovoltaicThermal:BIPVT fields.
-  // - ForwardTranslator evidence: ForwardTranslateSolarCollectorPerformancePhotovoltaicThermalBIPVT.cpp writes these exact getters to matching IDF fields.
-  // - Field Mapping: BoundaryConditionsModelName and AvailabilityScheduleName remain excluded in epmodel scalar scaffold as relationship fields.
-  // - TODO(parity): Add relationship APIs incrementally without changing these scalar signatures.
-  double effectivePlenumGapThicknessBehindPVModules() const;
-  double pVCellNormalTransmittanceAbsorptanceProduct() const;
-  double backingMaterialNormalTransmittanceAbsorptanceProduct() const;
-  double claddingNormalTransmittanceAbsorptanceProduct() const;
-  double fractionofCollectorGrossAreaCoveredbyPVModule() const;
-  double fractionofPVCellAreatoPVModuleArea() const;
-  double pVModuleTopThermalResistance() const;
-  double pVModuleBottomThermalResistance() const;
-  double pVModuleFrontLongwaveEmissivity() const;
-  double pVModuleBackLongwaveEmissivity() const;
-  double glassThickness() const;
-  double glassRefractionIndex() const;
-  double glassExtinctionCoefficient() const;
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model::SolarCollectorPerformancePhotovoltaicThermalBIPVT scalar accessor names/signatures.
+    // - Field Mapping: Scalar APIs map directly to E+ SolarCollectorPerformance:PhotovoltaicThermal:BIPVT fields.
+    // - ForwardTranslator evidence: ForwardTranslateSolarCollectorPerformancePhotovoltaicThermalBIPVT.cpp writes these exact getters to matching IDF fields.
+    // - Field Mapping: BoundaryConditionsModelName and AvailabilityScheduleName remain excluded in epmodel scalar scaffold as relationship fields.
+    // - TODO(parity): Add relationship APIs incrementally without changing these scalar signatures.
+    double effectivePlenumGapThicknessBehindPVModules() const;
+    bool setEffectivePlenumGapThicknessBehindPVModules(double effectivePlenumGapThicknessBehindPVModules);
 
-  bool setEffectivePlenumGapThicknessBehindPVModules(double effectivePlenumGapThicknessBehindPVModules);
-  bool setPVCellNormalTransmittanceAbsorptanceProduct(double pVCellNormalTransmittanceAbsorptanceProduct);
-  bool setBackingMaterialNormalTransmittanceAbsorptanceProduct(double backingMaterialNormalTransmittanceAbsorptanceProduct);
-  bool setCladdingNormalTransmittanceAbsorptanceProduct(double claddingNormalTransmittanceAbsorptanceProduct);
-  bool setFractionofCollectorGrossAreaCoveredbyPVModule(double fractionofCollectorGrossAreaCoveredbyPVModule);
-  bool setFractionofPVCellAreatoPVModuleArea(double fractionofPVCellAreatoPVModuleArea);
-  bool setPVModuleTopThermalResistance(double pVModuleTopThermalResistance);
-  bool setPVModuleBottomThermalResistance(double pVModuleBottomThermalResistance);
-  bool setPVModuleFrontLongwaveEmissivity(double pVModuleFrontLongwaveEmissivity);
-  bool setPVModuleBackLongwaveEmissivity(double pVModuleBackLongwaveEmissivity);
-  bool setGlassThickness(double glassThickness);
-  bool setGlassRefractionIndex(double glassRefractionIndex);
-  bool setGlassExtinctionCoefficient(double glassExtinctionCoefficient);
+    double pVCellNormalTransmittanceAbsorptanceProduct() const;
+    bool setPVCellNormalTransmittanceAbsorptanceProduct(double pVCellNormalTransmittanceAbsorptanceProduct);
 
- protected:
-  using ImplType = detail::SolarCollectorPerformancePhotovoltaicThermalBIPVT_Impl;
+    double backingMaterialNormalTransmittanceAbsorptanceProduct() const;
+    bool setBackingMaterialNormalTransmittanceAbsorptanceProduct(double backingMaterialNormalTransmittanceAbsorptanceProduct);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    double claddingNormalTransmittanceAbsorptanceProduct() const;
+    bool setCladdingNormalTransmittanceAbsorptanceProduct(double claddingNormalTransmittanceAbsorptanceProduct);
 
-  explicit SolarCollectorPerformancePhotovoltaicThermalBIPVT(
-    std::shared_ptr<detail::SolarCollectorPerformancePhotovoltaicThermalBIPVT_Impl> impl);
-};
+    double fractionofCollectorGrossAreaCoveredbyPVModule() const;
+    bool setFractionofCollectorGrossAreaCoveredbyPVModule(double fractionofCollectorGrossAreaCoveredbyPVModule);
+
+    double fractionofPVCellAreatoPVModuleArea() const;
+    bool setFractionofPVCellAreatoPVModuleArea(double fractionofPVCellAreatoPVModuleArea);
+
+    double pVModuleTopThermalResistance() const;
+    bool setPVModuleTopThermalResistance(double pVModuleTopThermalResistance);
+
+    double pVModuleBottomThermalResistance() const;
+    bool setPVModuleBottomThermalResistance(double pVModuleBottomThermalResistance);
+
+    double pVModuleFrontLongwaveEmissivity() const;
+    bool setPVModuleFrontLongwaveEmissivity(double pVModuleFrontLongwaveEmissivity);
+
+    double pVModuleBackLongwaveEmissivity() const;
+    bool setPVModuleBackLongwaveEmissivity(double pVModuleBackLongwaveEmissivity);
+
+    double glassThickness() const;
+    bool setGlassThickness(double glassThickness);
+
+    double glassRefractionIndex() const;
+    bool setGlassRefractionIndex(double glassRefractionIndex);
+
+    double glassExtinctionCoefficient() const;
+    bool setGlassExtinctionCoefficient(double glassExtinctionCoefficient);
+
+   protected:
+    using ImplType = detail::SolarCollectorPerformancePhotovoltaicThermalBIPVT_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit SolarCollectorPerformancePhotovoltaicThermalBIPVT(std::shared_ptr<detail::SolarCollectorPerformancePhotovoltaicThermalBIPVT_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -11,54 +11,60 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatExchangerVerticalSizingRectangle_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatExchangerVerticalSizingRectangle_Impl() override = default;
+    class EPMODEL_API GroundHeatExchangerVerticalSizingRectangle_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatExchangerVerticalSizingRectangle_Impl() override = default;
 
-  double designFlowRatePerBorehole() const;
-  double availableBoreholeFieldLength() const;
-  double availableBoreholeFieldWidth() const;
-  double maximumNumberofBoreholes() const;
-  double minimumBoreholeSpacing() const;
-  double maximumBoreholeSpacing() const;
-  double minimumBoreholeVerticalLength() const;
-  double maximumBoreholeVerticalLength() const;
-  double minimumExitingFluidTemperatureforSizing() const;
-  double maximumExitingFluidTemperatureforSizing() const;
+      double designFlowRatePerBorehole() const;
+      bool isDesignFlowRatePerBoreholeDefaulted() const;
+      bool setDesignFlowRatePerBorehole(double designFlowRatePerBorehole);
+      void resetDesignFlowRatePerBorehole();
 
-  bool isDesignFlowRatePerBoreholeDefaulted() const;
-  bool isMinimumBoreholeSpacingDefaulted() const;
-  bool isMaximumBoreholeSpacingDefaulted() const;
-  bool isMinimumBoreholeVerticalLengthDefaulted() const;
-  bool isMaximumBoreholeVerticalLengthDefaulted() const;
-  bool isMinimumExitingFluidTemperatureforSizingDefaulted() const;
-  bool isMaximumExitingFluidTemperatureforSizingDefaulted() const;
+      double availableBoreholeFieldLength() const;
+      bool setAvailableBoreholeFieldLength(double availableBoreholeFieldLength);
 
-  bool setDesignFlowRatePerBorehole(double designFlowRatePerBorehole);
-  bool setAvailableBoreholeFieldLength(double availableBoreholeFieldLength);
-  bool setAvailableBoreholeFieldWidth(double availableBoreholeFieldWidth);
-  bool setMaximumNumberofBoreholes(double maximumNumberofBoreholes);
-  bool setMinimumBoreholeSpacing(double minimumBoreholeSpacing);
-  bool setMaximumBoreholeSpacing(double maximumBoreholeSpacing);
-  bool setMinimumBoreholeVerticalLength(double minimumBoreholeVerticalLength);
-  bool setMaximumBoreholeVerticalLength(double maximumBoreholeVerticalLength);
-  bool setMinimumExitingFluidTemperatureforSizing(double minimumExitingFluidTemperatureforSizing);
-  bool setMaximumExitingFluidTemperatureforSizing(double maximumExitingFluidTemperatureforSizing);
+      double availableBoreholeFieldWidth() const;
+      bool setAvailableBoreholeFieldWidth(double availableBoreholeFieldWidth);
 
-  void resetDesignFlowRatePerBorehole();
-  void resetMinimumBoreholeSpacing();
-  void resetMaximumBoreholeSpacing();
-  void resetMinimumBoreholeVerticalLength();
-  void resetMaximumBoreholeVerticalLength();
-  void resetMinimumExitingFluidTemperatureforSizing();
-  void resetMaximumExitingFluidTemperatureforSizing();
-};
+      double maximumNumberofBoreholes() const;
+      bool setMaximumNumberofBoreholes(double maximumNumberofBoreholes);
 
-}  // namespace detail
+      double minimumBoreholeSpacing() const;
+      bool isMinimumBoreholeSpacingDefaulted() const;
+      bool setMinimumBoreholeSpacing(double minimumBoreholeSpacing);
+      void resetMinimumBoreholeSpacing();
+
+      double maximumBoreholeSpacing() const;
+      bool isMaximumBoreholeSpacingDefaulted() const;
+      bool setMaximumBoreholeSpacing(double maximumBoreholeSpacing);
+      void resetMaximumBoreholeSpacing();
+
+      double minimumBoreholeVerticalLength() const;
+      bool isMinimumBoreholeVerticalLengthDefaulted() const;
+      bool setMinimumBoreholeVerticalLength(double minimumBoreholeVerticalLength);
+      void resetMinimumBoreholeVerticalLength();
+
+      double maximumBoreholeVerticalLength() const;
+      bool isMaximumBoreholeVerticalLengthDefaulted() const;
+      bool setMaximumBoreholeVerticalLength(double maximumBoreholeVerticalLength);
+      void resetMaximumBoreholeVerticalLength();
+
+      double minimumExitingFluidTemperatureforSizing() const;
+      bool isMinimumExitingFluidTemperatureforSizingDefaulted() const;
+      bool setMinimumExitingFluidTemperatureforSizing(double minimumExitingFluidTemperatureforSizing);
+      void resetMinimumExitingFluidTemperatureforSizing();
+
+      double maximumExitingFluidTemperatureforSizing() const;
+      bool isMaximumExitingFluidTemperatureforSizingDefaulted() const;
+      bool setMaximumExitingFluidTemperatureforSizing(double maximumExitingFluidTemperatureforSizing);
+      void resetMaximumExitingFluidTemperatureforSizing();
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

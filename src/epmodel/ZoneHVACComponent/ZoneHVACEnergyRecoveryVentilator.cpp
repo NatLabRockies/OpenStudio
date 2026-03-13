@@ -36,12 +36,12 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACEnergyRecoveryVentilator_Impl>()->supplyAirFlowRate();
   }
 
-  bool ZoneHVACEnergyRecoveryVentilator::isSupplyAirFlowRateAutosized() const {
-    return getImpl<detail::ZoneHVACEnergyRecoveryVentilator_Impl>()->isSupplyAirFlowRateAutosized();
-  }
-
   bool ZoneHVACEnergyRecoveryVentilator::setSupplyAirFlowRate(double supplyAirFlowRate) {
     return getImpl<detail::ZoneHVACEnergyRecoveryVentilator_Impl>()->setSupplyAirFlowRate(supplyAirFlowRate);
+  }
+
+  bool ZoneHVACEnergyRecoveryVentilator::isSupplyAirFlowRateAutosized() const {
+    return getImpl<detail::ZoneHVACEnergyRecoveryVentilator_Impl>()->isSupplyAirFlowRateAutosized();
   }
 
   void ZoneHVACEnergyRecoveryVentilator::autosizeSupplyAirFlowRate() {
@@ -52,12 +52,12 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACEnergyRecoveryVentilator_Impl>()->exhaustAirFlowRate();
   }
 
-  bool ZoneHVACEnergyRecoveryVentilator::isExhaustAirFlowRateAutosized() const {
-    return getImpl<detail::ZoneHVACEnergyRecoveryVentilator_Impl>()->isExhaustAirFlowRateAutosized();
-  }
-
   bool ZoneHVACEnergyRecoveryVentilator::setExhaustAirFlowRate(double exhaustAirFlowRate) {
     return getImpl<detail::ZoneHVACEnergyRecoveryVentilator_Impl>()->setExhaustAirFlowRate(exhaustAirFlowRate);
+  }
+
+  bool ZoneHVACEnergyRecoveryVentilator::isExhaustAirFlowRateAutosized() const {
+    return getImpl<detail::ZoneHVACEnergyRecoveryVentilator_Impl>()->isExhaustAirFlowRateAutosized();
   }
 
   void ZoneHVACEnergyRecoveryVentilator::autosizeExhaustAirFlowRate() {
@@ -86,15 +86,15 @@ namespace epmodel {
       return getDouble(ZoneHVAC_EnergyRecoveryVentilatorFields::SupplyAirFlowRate, true);
     }
 
+    bool ZoneHVACEnergyRecoveryVentilator_Impl::setSupplyAirFlowRate(double supplyAirFlowRate) {
+      return setDouble(ZoneHVAC_EnergyRecoveryVentilatorFields::SupplyAirFlowRate, supplyAirFlowRate);
+    }
+
     bool ZoneHVACEnergyRecoveryVentilator_Impl::isSupplyAirFlowRateAutosized() const {
       if (auto value = getString(ZoneHVAC_EnergyRecoveryVentilatorFields::SupplyAirFlowRate, true)) {
         return openstudio::istringEqual(value.get(), "autosize");
       }
       return false;
-    }
-
-    bool ZoneHVACEnergyRecoveryVentilator_Impl::setSupplyAirFlowRate(double supplyAirFlowRate) {
-      return setDouble(ZoneHVAC_EnergyRecoveryVentilatorFields::SupplyAirFlowRate, supplyAirFlowRate);
     }
 
     void ZoneHVACEnergyRecoveryVentilator_Impl::autosizeSupplyAirFlowRate() {
@@ -105,15 +105,15 @@ namespace epmodel {
       return getDouble(ZoneHVAC_EnergyRecoveryVentilatorFields::ExhaustAirFlowRate, true);
     }
 
+    bool ZoneHVACEnergyRecoveryVentilator_Impl::setExhaustAirFlowRate(double exhaustAirFlowRate) {
+      return setDouble(ZoneHVAC_EnergyRecoveryVentilatorFields::ExhaustAirFlowRate, exhaustAirFlowRate);
+    }
+
     bool ZoneHVACEnergyRecoveryVentilator_Impl::isExhaustAirFlowRateAutosized() const {
       if (auto value = getString(ZoneHVAC_EnergyRecoveryVentilatorFields::ExhaustAirFlowRate, true)) {
         return openstudio::istringEqual(value.get(), "autosize");
       }
       return false;
-    }
-
-    bool ZoneHVACEnergyRecoveryVentilator_Impl::setExhaustAirFlowRate(double exhaustAirFlowRate) {
-      return setDouble(ZoneHVAC_EnergyRecoveryVentilatorFields::ExhaustAirFlowRate, exhaustAirFlowRate);
     }
 
     void ZoneHVACEnergyRecoveryVentilator_Impl::autosizeExhaustAirFlowRate() {

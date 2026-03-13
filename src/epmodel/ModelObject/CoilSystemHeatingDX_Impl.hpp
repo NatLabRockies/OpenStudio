@@ -12,21 +12,21 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CoilSystemHeatingDX_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~CoilSystemHeatingDX_Impl() override = default;
+    class EPMODEL_API CoilSystemHeatingDX_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~CoilSystemHeatingDX_Impl() override = default;
 
-  std::string heatingCoilObjectType() const;
-  bool setHeatingCoilObjectType(const std::string& heatingCoilObjectType);
+      std::vector<std::string> heatingCoilObjectTypeValues() const;
 
-  std::vector<std::string> heatingCoilObjectTypeValues() const;
-};
+      std::string heatingCoilObjectType() const;
+      bool setHeatingCoilObjectType(const std::string& heatingCoilObjectType);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

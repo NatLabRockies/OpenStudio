@@ -46,256 +46,298 @@ OS_UNITARY_VALUES_MAP(OS_DEFINE_PUBLIC_VALUES)
 
 #undef OS_DEFINE_PUBLIC_VALUES
 
-#define OS_UNITARY_REQUIRED_STRING_GETTERS(X)                                                                                               \
-  X(coolingCoilType)                                                                                                                        \
-  X(heatingCoilType)                                                                                                                        \
-  X(economizerType)                                                                                                                         \
-  X(economizerLockout)                                                                                                                      \
-  X(supplyFanPlacement)                                                                                                                     \
-  X(nightCycleControl)                                                                                                                      \
-  X(heatRecoveryType)                                                                                                                       \
-  X(dehumidificationControlType)                                                                                                            \
-  X(humidifierType)
-
-#define OS_UNITARY_REQUIRED_DOUBLE_GETTERS(X)                                                                                               \
-  X(supplyFanTotalEfficiency)                                                                                                               \
-  X(supplyFanDeltaPressure)                                                                                                                 \
-  X(supplyFanMotorEfficiency)                                                                                                               \
-  X(supplyFanMotorinAirStreamFraction)                                                                                                      \
-  X(coolingDesignSupplyAirTemperature)                                                                                                      \
-  X(coolingCoilGrossRatedCOP)                                                                                                               \
-  X(heatingDesignSupplyAirTemperature)                                                                                                      \
-  X(gasHeatingCoilEfficiency)                                                                                                               \
-  X(gasHeatingCoilParasiticElectricLoad)                                                                                                    \
-  X(sensibleHeatRecoveryEffectiveness)                                                                                                      \
-  X(latentHeatRecoveryEffectiveness)                                                                                                        \
-  X(dehumidificationSetpoint)                                                                                                               \
-  X(humidifierRatedCapacity)                                                                                                                \
-  X(humidifierSetpoint)                                                                                                                     \
-  X(returnFanTotalEfficiency)                                                                                                               \
-  X(returnFanDeltaPressure)                                                                                                                 \
-  X(returnFanMotorEfficiency)                                                                                                               \
-  X(returnFanMotorinAirStreamFraction)
-
-#define OS_UNITARY_OPTIONAL_DOUBLE_GETTERS(X)                                                                                               \
-  X(supplyFanMaximumFlowRate)                                                                                                               \
-  X(coolingCoilGrossRatedTotalCapacity)                                                                                                     \
-  X(coolingCoilGrossRatedSensibleHeatRatio)                                                                                                 \
-  X(heatingCoilCapacity)                                                                                                                    \
-  X(maximumOutdoorAirFlowRate)                                                                                                              \
-  X(minimumOutdoorAirFlowRate)                                                                                                              \
-  X(economizerUpperTemperatureLimit)                                                                                                        \
-  X(economizerLowerTemperatureLimit)                                                                                                        \
-  X(economizerUpperEnthalpyLimit)                                                                                                           \
-  X(economizerMaximumLimitDewpointTemperature)                                                                                              \
-  X(humidifierRatedElectricPower)
-
-#define OS_FORWARD_REQUIRED_STRING_GETTER(method)                                                                                           \
-  std::string HVACTemplateSystemUnitary::method() const {                                                                                  \
-    return getImpl<detail::HVACTemplateSystemUnitary_Impl>()->method();                                                                    \
+#define OS_FORWARD_REQUIRED_STRING_GETTER(method)                           \
+  std::string HVACTemplateSystemUnitary::method() const {                     \
+    return getImpl<detail::HVACTemplateSystemUnitary_Impl>()->method();       \
   }
 
-#define OS_FORWARD_REQUIRED_DOUBLE_GETTER(method)                                                                                           \
-  double HVACTemplateSystemUnitary::method() const {                                                                                       \
-    return getImpl<detail::HVACTemplateSystemUnitary_Impl>()->method();                                                                    \
+#define OS_FORWARD_REQUIRED_DOUBLE_GETTER(method)                           \
+  double HVACTemplateSystemUnitary::method() const {                        \
+    return getImpl<detail::HVACTemplateSystemUnitary_Impl>()->method();       \
   }
 
-#define OS_FORWARD_OPTIONAL_DOUBLE_GETTER(method)                                                                                           \
-  boost::optional<double> HVACTemplateSystemUnitary::method() const {                                                                      \
-    return getImpl<detail::HVACTemplateSystemUnitary_Impl>()->method();                                                                    \
+#define OS_FORWARD_OPTIONAL_DOUBLE_GETTER(method)                           \
+  boost::optional<double> HVACTemplateSystemUnitary::method() const {       \
+    return getImpl<detail::HVACTemplateSystemUnitary_Impl>()->method();       \
   }
 
-OS_UNITARY_REQUIRED_STRING_GETTERS(OS_FORWARD_REQUIRED_STRING_GETTER)
-OS_UNITARY_REQUIRED_DOUBLE_GETTERS(OS_FORWARD_REQUIRED_DOUBLE_GETTER)
-OS_UNITARY_OPTIONAL_DOUBLE_GETTERS(OS_FORWARD_OPTIONAL_DOUBLE_GETTER)
+#define OS_FORWARD_BOOL(method)                                              \
+  bool HVACTemplateSystemUnitary::method() const {                         \
+    return getImpl<detail::HVACTemplateSystemUnitary_Impl>()->method();       \
+  }
 
-#undef OS_FORWARD_OPTIONAL_DOUBLE_GETTER
-#undef OS_FORWARD_REQUIRED_DOUBLE_GETTER
-#undef OS_FORWARD_REQUIRED_STRING_GETTER
+#define OS_FORWARD_STRING_SETTER(method)                                    \
+  bool HVACTemplateSystemUnitary::method(const std::string& value) {        \
+    return getImpl<detail::HVACTemplateSystemUnitary_Impl>()->method(value); \
+  }
 
+#define OS_FORWARD_DOUBLE_SETTER(method)                                    \
+  bool HVACTemplateSystemUnitary::method(double value) {                  \
+    return getImpl<detail::HVACTemplateSystemUnitary_Impl>()->method(value); \
+  }
+
+#define OS_FORWARD_VOID(method)                                              \
+  void HVACTemplateSystemUnitary::method() {                                \
+    getImpl<detail::HVACTemplateSystemUnitary_Impl>()->method();            \
+  }
+
+// supplyFanMaximumFlowRate
+OS_FORWARD_OPTIONAL_DOUBLE_GETTER(supplyFanMaximumFlowRate)
+OS_FORWARD_BOOL(isSupplyFanMaximumFlowRateDefaulted)
+OS_FORWARD_BOOL(isSupplyFanMaximumFlowRateAutosized)
+OS_FORWARD_DOUBLE_SETTER(setSupplyFanMaximumFlowRate)
+OS_FORWARD_VOID(resetSupplyFanMaximumFlowRate)
+OS_FORWARD_VOID(autosizeSupplyFanMaximumFlowRate)
+
+// supplyFanTotalEfficiency
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(supplyFanTotalEfficiency)
+OS_FORWARD_BOOL(isSupplyFanTotalEfficiencyDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setSupplyFanTotalEfficiency)
+OS_FORWARD_VOID(resetSupplyFanTotalEfficiency)
+
+// supplyFanDeltaPressure
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(supplyFanDeltaPressure)
+OS_FORWARD_BOOL(isSupplyFanDeltaPressureDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setSupplyFanDeltaPressure)
+OS_FORWARD_VOID(resetSupplyFanDeltaPressure)
+
+// supplyFanMotorEfficiency
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(supplyFanMotorEfficiency)
+OS_FORWARD_BOOL(isSupplyFanMotorEfficiencyDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setSupplyFanMotorEfficiency)
+OS_FORWARD_VOID(resetSupplyFanMotorEfficiency)
+
+// supplyFanMotorinAirStreamFraction
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(supplyFanMotorinAirStreamFraction)
+OS_FORWARD_BOOL(isSupplyFanMotorinAirStreamFractionDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setSupplyFanMotorinAirStreamFraction)
+OS_FORWARD_VOID(resetSupplyFanMotorinAirStreamFraction)
+
+// coolingCoilType
+OS_FORWARD_REQUIRED_STRING_GETTER(coolingCoilType)
+OS_FORWARD_BOOL(isCoolingCoilTypeDefaulted)
+OS_FORWARD_STRING_SETTER(setCoolingCoilType)
+OS_FORWARD_VOID(resetCoolingCoilType)
+
+// coolingDesignSupplyAirTemperature
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(coolingDesignSupplyAirTemperature)
+OS_FORWARD_BOOL(isCoolingDesignSupplyAirTemperatureDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setCoolingDesignSupplyAirTemperature)
+OS_FORWARD_VOID(resetCoolingDesignSupplyAirTemperature)
+
+// coolingCoilGrossRatedTotalCapacity
+OS_FORWARD_OPTIONAL_DOUBLE_GETTER(coolingCoilGrossRatedTotalCapacity)
+OS_FORWARD_BOOL(isCoolingCoilGrossRatedTotalCapacityDefaulted)
+OS_FORWARD_BOOL(isCoolingCoilGrossRatedTotalCapacityAutosized)
+OS_FORWARD_DOUBLE_SETTER(setCoolingCoilGrossRatedTotalCapacity)
+OS_FORWARD_VOID(resetCoolingCoilGrossRatedTotalCapacity)
+OS_FORWARD_VOID(autosizeCoolingCoilGrossRatedTotalCapacity)
+
+// coolingCoilGrossRatedSensibleHeatRatio
+OS_FORWARD_OPTIONAL_DOUBLE_GETTER(coolingCoilGrossRatedSensibleHeatRatio)
+OS_FORWARD_BOOL(isCoolingCoilGrossRatedSensibleHeatRatioDefaulted)
+OS_FORWARD_BOOL(isCoolingCoilGrossRatedSensibleHeatRatioAutosized)
+OS_FORWARD_DOUBLE_SETTER(setCoolingCoilGrossRatedSensibleHeatRatio)
+OS_FORWARD_VOID(resetCoolingCoilGrossRatedSensibleHeatRatio)
+OS_FORWARD_VOID(autosizeCoolingCoilGrossRatedSensibleHeatRatio)
+
+// coolingCoilGrossRatedCOP
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(coolingCoilGrossRatedCOP)
+OS_FORWARD_BOOL(isCoolingCoilGrossRatedCOPDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setCoolingCoilGrossRatedCOP)
+OS_FORWARD_VOID(resetCoolingCoilGrossRatedCOP)
+
+// heatingCoilType
+OS_FORWARD_REQUIRED_STRING_GETTER(heatingCoilType)
+OS_FORWARD_STRING_SETTER(setHeatingCoilType)
+
+// heatingDesignSupplyAirTemperature
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(heatingDesignSupplyAirTemperature)
+OS_FORWARD_BOOL(isHeatingDesignSupplyAirTemperatureDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setHeatingDesignSupplyAirTemperature)
+OS_FORWARD_VOID(resetHeatingDesignSupplyAirTemperature)
+
+// heatingCoilCapacity
+OS_FORWARD_OPTIONAL_DOUBLE_GETTER(heatingCoilCapacity)
+OS_FORWARD_BOOL(isHeatingCoilCapacityDefaulted)
+OS_FORWARD_BOOL(isHeatingCoilCapacityAutosized)
+OS_FORWARD_DOUBLE_SETTER(setHeatingCoilCapacity)
+OS_FORWARD_VOID(resetHeatingCoilCapacity)
+OS_FORWARD_VOID(autosizeHeatingCoilCapacity)
+
+// gasHeatingCoilEfficiency
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(gasHeatingCoilEfficiency)
+OS_FORWARD_BOOL(isGasHeatingCoilEfficiencyDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setGasHeatingCoilEfficiency)
+OS_FORWARD_VOID(resetGasHeatingCoilEfficiency)
+
+// gasHeatingCoilParasiticElectricLoad
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(gasHeatingCoilParasiticElectricLoad)
+OS_FORWARD_BOOL(isGasHeatingCoilParasiticElectricLoadDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setGasHeatingCoilParasiticElectricLoad)
+OS_FORWARD_VOID(resetGasHeatingCoilParasiticElectricLoad)
+
+// maximumOutdoorAirFlowRate
+OS_FORWARD_OPTIONAL_DOUBLE_GETTER(maximumOutdoorAirFlowRate)
+OS_FORWARD_BOOL(isMaximumOutdoorAirFlowRateDefaulted)
+OS_FORWARD_BOOL(isMaximumOutdoorAirFlowRateAutosized)
+OS_FORWARD_DOUBLE_SETTER(setMaximumOutdoorAirFlowRate)
+OS_FORWARD_VOID(resetMaximumOutdoorAirFlowRate)
+OS_FORWARD_VOID(autosizeMaximumOutdoorAirFlowRate)
+
+// minimumOutdoorAirFlowRate
+OS_FORWARD_OPTIONAL_DOUBLE_GETTER(minimumOutdoorAirFlowRate)
+OS_FORWARD_BOOL(isMinimumOutdoorAirFlowRateDefaulted)
+OS_FORWARD_BOOL(isMinimumOutdoorAirFlowRateAutosized)
+OS_FORWARD_DOUBLE_SETTER(setMinimumOutdoorAirFlowRate)
+OS_FORWARD_VOID(resetMinimumOutdoorAirFlowRate)
+OS_FORWARD_VOID(autosizeMinimumOutdoorAirFlowRate)
+
+// economizerType
+OS_FORWARD_REQUIRED_STRING_GETTER(economizerType)
+OS_FORWARD_BOOL(isEconomizerTypeDefaulted)
+OS_FORWARD_STRING_SETTER(setEconomizerType)
+OS_FORWARD_VOID(resetEconomizerType)
+
+// economizerLockout
+OS_FORWARD_REQUIRED_STRING_GETTER(economizerLockout)
+OS_FORWARD_BOOL(isEconomizerLockoutDefaulted)
+OS_FORWARD_STRING_SETTER(setEconomizerLockout)
+OS_FORWARD_VOID(resetEconomizerLockout)
+
+// economizerUpperTemperatureLimit
+OS_FORWARD_OPTIONAL_DOUBLE_GETTER(economizerUpperTemperatureLimit)
+OS_FORWARD_BOOL(isEconomizerUpperTemperatureLimitDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setEconomizerUpperTemperatureLimit)
+OS_FORWARD_VOID(resetEconomizerUpperTemperatureLimit)
+
+// economizerLowerTemperatureLimit
+OS_FORWARD_OPTIONAL_DOUBLE_GETTER(economizerLowerTemperatureLimit)
+OS_FORWARD_BOOL(isEconomizerLowerTemperatureLimitDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setEconomizerLowerTemperatureLimit)
+OS_FORWARD_VOID(resetEconomizerLowerTemperatureLimit)
+
+// economizerUpperEnthalpyLimit
+OS_FORWARD_OPTIONAL_DOUBLE_GETTER(economizerUpperEnthalpyLimit)
+OS_FORWARD_BOOL(isEconomizerUpperEnthalpyLimitDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setEconomizerUpperEnthalpyLimit)
+OS_FORWARD_VOID(resetEconomizerUpperEnthalpyLimit)
+
+// economizerMaximumLimitDewpointTemperature
+OS_FORWARD_OPTIONAL_DOUBLE_GETTER(economizerMaximumLimitDewpointTemperature)
+OS_FORWARD_BOOL(isEconomizerMaximumLimitDewpointTemperatureDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setEconomizerMaximumLimitDewpointTemperature)
+OS_FORWARD_VOID(resetEconomizerMaximumLimitDewpointTemperature)
+
+// supplyFanPlacement
+OS_FORWARD_REQUIRED_STRING_GETTER(supplyFanPlacement)
+OS_FORWARD_BOOL(isSupplyFanPlacementDefaulted)
+OS_FORWARD_STRING_SETTER(setSupplyFanPlacement)
+OS_FORWARD_VOID(resetSupplyFanPlacement)
+
+// nightCycleControl
+OS_FORWARD_REQUIRED_STRING_GETTER(nightCycleControl)
+OS_FORWARD_BOOL(isNightCycleControlDefaulted)
+OS_FORWARD_STRING_SETTER(setNightCycleControl)
+OS_FORWARD_VOID(resetNightCycleControl)
+
+// heatRecoveryType
+OS_FORWARD_REQUIRED_STRING_GETTER(heatRecoveryType)
+OS_FORWARD_BOOL(isHeatRecoveryTypeDefaulted)
+OS_FORWARD_STRING_SETTER(setHeatRecoveryType)
+OS_FORWARD_VOID(resetHeatRecoveryType)
+
+// sensibleHeatRecoveryEffectiveness
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(sensibleHeatRecoveryEffectiveness)
+OS_FORWARD_BOOL(isSensibleHeatRecoveryEffectivenessDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setSensibleHeatRecoveryEffectiveness)
+OS_FORWARD_VOID(resetSensibleHeatRecoveryEffectiveness)
+
+// latentHeatRecoveryEffectiveness
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(latentHeatRecoveryEffectiveness)
+OS_FORWARD_BOOL(isLatentHeatRecoveryEffectivenessDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setLatentHeatRecoveryEffectiveness)
+OS_FORWARD_VOID(resetLatentHeatRecoveryEffectiveness)
+
+// dehumidificationControlType
+OS_FORWARD_REQUIRED_STRING_GETTER(dehumidificationControlType)
+OS_FORWARD_BOOL(isDehumidificationControlTypeDefaulted)
+OS_FORWARD_STRING_SETTER(setDehumidificationControlType)
+OS_FORWARD_VOID(resetDehumidificationControlType)
+
+// dehumidificationSetpoint
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(dehumidificationSetpoint)
+OS_FORWARD_BOOL(isDehumidificationSetpointDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setDehumidificationSetpoint)
+OS_FORWARD_VOID(resetDehumidificationSetpoint)
+
+// humidifierType
+OS_FORWARD_REQUIRED_STRING_GETTER(humidifierType)
+OS_FORWARD_BOOL(isHumidifierTypeDefaulted)
+OS_FORWARD_STRING_SETTER(setHumidifierType)
+OS_FORWARD_VOID(resetHumidifierType)
+
+// humidifierRatedCapacity
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(humidifierRatedCapacity)
+OS_FORWARD_BOOL(isHumidifierRatedCapacityDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setHumidifierRatedCapacity)
+OS_FORWARD_VOID(resetHumidifierRatedCapacity)
+
+// humidifierRatedElectricPower
+OS_FORWARD_OPTIONAL_DOUBLE_GETTER(humidifierRatedElectricPower)
+OS_FORWARD_BOOL(isHumidifierRatedElectricPowerDefaulted)
+OS_FORWARD_BOOL(isHumidifierRatedElectricPowerAutosized)
+OS_FORWARD_DOUBLE_SETTER(setHumidifierRatedElectricPower)
+OS_FORWARD_VOID(resetHumidifierRatedElectricPower)
+OS_FORWARD_VOID(autosizeHumidifierRatedElectricPower)
+
+// humidifierSetpoint
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(humidifierSetpoint)
+OS_FORWARD_BOOL(isHumidifierSetpointDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setHumidifierSetpoint)
+OS_FORWARD_VOID(resetHumidifierSetpoint)
+
+// returnFan accessors
 bool HVACTemplateSystemUnitary::returnFan() const {
   return getImpl<detail::HVACTemplateSystemUnitary_Impl>()->returnFan();
 }
-
-#define OS_UNITARY_DEFAULTED_METHODS_MAP(X)                                                                                                 \
-  X(isSupplyFanMaximumFlowRateDefaulted)                                                                                                    \
-  X(isSupplyFanTotalEfficiencyDefaulted)                                                                                                    \
-  X(isSupplyFanDeltaPressureDefaulted)                                                                                                      \
-  X(isSupplyFanMotorEfficiencyDefaulted)                                                                                                    \
-  X(isSupplyFanMotorinAirStreamFractionDefaulted)                                                                                           \
-  X(isCoolingCoilTypeDefaulted)                                                                                                             \
-  X(isCoolingDesignSupplyAirTemperatureDefaulted)                                                                                           \
-  X(isCoolingCoilGrossRatedTotalCapacityDefaulted)                                                                                          \
-  X(isCoolingCoilGrossRatedSensibleHeatRatioDefaulted)                                                                                      \
-  X(isCoolingCoilGrossRatedCOPDefaulted)                                                                                                    \
-  X(isHeatingDesignSupplyAirTemperatureDefaulted)                                                                                           \
-  X(isHeatingCoilCapacityDefaulted)                                                                                                         \
-  X(isGasHeatingCoilEfficiencyDefaulted)                                                                                                    \
-  X(isGasHeatingCoilParasiticElectricLoadDefaulted)                                                                                         \
-  X(isMaximumOutdoorAirFlowRateDefaulted)                                                                                                   \
-  X(isMinimumOutdoorAirFlowRateDefaulted)                                                                                                   \
-  X(isEconomizerTypeDefaulted)                                                                                                              \
-  X(isEconomizerLockoutDefaulted)                                                                                                           \
-  X(isEconomizerUpperTemperatureLimitDefaulted)                                                                                             \
-  X(isEconomizerLowerTemperatureLimitDefaulted)                                                                                             \
-  X(isEconomizerUpperEnthalpyLimitDefaulted)                                                                                                \
-  X(isEconomizerMaximumLimitDewpointTemperatureDefaulted)                                                                                   \
-  X(isSupplyFanPlacementDefaulted)                                                                                                          \
-  X(isNightCycleControlDefaulted)                                                                                                           \
-  X(isHeatRecoveryTypeDefaulted)                                                                                                            \
-  X(isSensibleHeatRecoveryEffectivenessDefaulted)                                                                                           \
-  X(isLatentHeatRecoveryEffectivenessDefaulted)                                                                                             \
-  X(isDehumidificationControlTypeDefaulted)                                                                                                 \
-  X(isDehumidificationSetpointDefaulted)                                                                                                    \
-  X(isHumidifierTypeDefaulted)                                                                                                              \
-  X(isHumidifierRatedCapacityDefaulted)                                                                                                     \
-  X(isHumidifierRatedElectricPowerDefaulted)                                                                                                \
-  X(isHumidifierSetpointDefaulted)                                                                                                          \
-  X(isReturnFanDefaulted)                                                                                                                   \
-  X(isReturnFanTotalEfficiencyDefaulted)                                                                                                    \
-  X(isReturnFanDeltaPressureDefaulted)                                                                                                      \
-  X(isReturnFanMotorEfficiencyDefaulted)                                                                                                    \
-  X(isReturnFanMotorinAirStreamFractionDefaulted)
-
-#define OS_UNITARY_AUTOSIZED_METHODS_MAP(X)                                                                                                 \
-  X(isSupplyFanMaximumFlowRateAutosized)                                                                                                    \
-  X(isCoolingCoilGrossRatedTotalCapacityAutosized)                                                                                          \
-  X(isCoolingCoilGrossRatedSensibleHeatRatioAutosized)                                                                                      \
-  X(isHeatingCoilCapacityAutosized)                                                                                                         \
-  X(isMaximumOutdoorAirFlowRateAutosized)                                                                                                   \
-  X(isMinimumOutdoorAirFlowRateAutosized)                                                                                                   \
-  X(isHumidifierRatedElectricPowerAutosized)
-
-#define OS_FORWARD_BOOL(method)                                                                                                              \
-  bool HVACTemplateSystemUnitary::method() const {                                                                                          \
-    return getImpl<detail::HVACTemplateSystemUnitary_Impl>()->method();                                                                    \
-  }
-
-OS_UNITARY_DEFAULTED_METHODS_MAP(OS_FORWARD_BOOL)
-OS_UNITARY_AUTOSIZED_METHODS_MAP(OS_FORWARD_BOOL)
-
-#undef OS_FORWARD_BOOL
-
-#define OS_UNITARY_STRING_SETTERS(X)                                                                                                        \
-  X(setCoolingCoilType)                                                                                                                     \
-  X(setHeatingCoilType)                                                                                                                     \
-  X(setEconomizerType)                                                                                                                      \
-  X(setEconomizerLockout)                                                                                                                   \
-  X(setSupplyFanPlacement)                                                                                                                  \
-  X(setNightCycleControl)                                                                                                                   \
-  X(setHeatRecoveryType)                                                                                                                    \
-  X(setDehumidificationControlType)                                                                                                         \
-  X(setHumidifierType)
-
-#define OS_UNITARY_DOUBLE_SETTERS(X)                                                                                                        \
-  X(setSupplyFanMaximumFlowRate)                                                                                                            \
-  X(setSupplyFanTotalEfficiency)                                                                                                            \
-  X(setSupplyFanDeltaPressure)                                                                                                              \
-  X(setSupplyFanMotorEfficiency)                                                                                                            \
-  X(setSupplyFanMotorinAirStreamFraction)                                                                                                   \
-  X(setCoolingDesignSupplyAirTemperature)                                                                                                   \
-  X(setCoolingCoilGrossRatedTotalCapacity)                                                                                                  \
-  X(setCoolingCoilGrossRatedSensibleHeatRatio)                                                                                              \
-  X(setCoolingCoilGrossRatedCOP)                                                                                                            \
-  X(setHeatingDesignSupplyAirTemperature)                                                                                                   \
-  X(setHeatingCoilCapacity)                                                                                                                 \
-  X(setGasHeatingCoilEfficiency)                                                                                                            \
-  X(setGasHeatingCoilParasiticElectricLoad)                                                                                                 \
-  X(setMaximumOutdoorAirFlowRate)                                                                                                           \
-  X(setMinimumOutdoorAirFlowRate)                                                                                                           \
-  X(setEconomizerUpperTemperatureLimit)                                                                                                     \
-  X(setEconomizerLowerTemperatureLimit)                                                                                                     \
-  X(setEconomizerUpperEnthalpyLimit)                                                                                                        \
-  X(setEconomizerMaximumLimitDewpointTemperature)                                                                                           \
-  X(setSensibleHeatRecoveryEffectiveness)                                                                                                   \
-  X(setLatentHeatRecoveryEffectiveness)                                                                                                     \
-  X(setDehumidificationSetpoint)                                                                                                            \
-  X(setHumidifierRatedCapacity)                                                                                                             \
-  X(setHumidifierRatedElectricPower)                                                                                                        \
-  X(setHumidifierSetpoint)                                                                                                                  \
-  X(setReturnFanTotalEfficiency)                                                                                                            \
-  X(setReturnFanDeltaPressure)                                                                                                              \
-  X(setReturnFanMotorEfficiency)                                                                                                            \
-  X(setReturnFanMotorinAirStreamFraction)
-
-#define OS_FORWARD_STRING_SETTER(method)                                                                                                    \
-  bool HVACTemplateSystemUnitary::method(const std::string& value) {                                                                       \
-    return getImpl<detail::HVACTemplateSystemUnitary_Impl>()->method(value);                                                               \
-  }
-
-#define OS_FORWARD_DOUBLE_SETTER(method)                                                                                                    \
-  bool HVACTemplateSystemUnitary::method(double value) {                                                                                   \
-    return getImpl<detail::HVACTemplateSystemUnitary_Impl>()->method(value);                                                               \
-  }
-
-OS_UNITARY_STRING_SETTERS(OS_FORWARD_STRING_SETTER)
-OS_UNITARY_DOUBLE_SETTERS(OS_FORWARD_DOUBLE_SETTER)
-
-#undef OS_FORWARD_DOUBLE_SETTER
-#undef OS_FORWARD_STRING_SETTER
-
+OS_FORWARD_BOOL(isReturnFanDefaulted)
 bool HVACTemplateSystemUnitary::setReturnFan(bool returnFan) {
   return getImpl<detail::HVACTemplateSystemUnitary_Impl>()->setReturnFan(returnFan);
 }
+OS_FORWARD_VOID(resetReturnFan)
 
-#define OS_UNITARY_RESETS(X)                                                                                                                \
-  X(resetSupplyFanMaximumFlowRate)                                                                                                          \
-  X(resetSupplyFanTotalEfficiency)                                                                                                          \
-  X(resetSupplyFanDeltaPressure)                                                                                                            \
-  X(resetSupplyFanMotorEfficiency)                                                                                                          \
-  X(resetSupplyFanMotorinAirStreamFraction)                                                                                                 \
-  X(resetCoolingCoilType)                                                                                                                   \
-  X(resetCoolingDesignSupplyAirTemperature)                                                                                                 \
-  X(resetCoolingCoilGrossRatedTotalCapacity)                                                                                                \
-  X(resetCoolingCoilGrossRatedSensibleHeatRatio)                                                                                            \
-  X(resetCoolingCoilGrossRatedCOP)                                                                                                          \
-  X(resetHeatingDesignSupplyAirTemperature)                                                                                                 \
-  X(resetHeatingCoilCapacity)                                                                                                               \
-  X(resetGasHeatingCoilEfficiency)                                                                                                          \
-  X(resetGasHeatingCoilParasiticElectricLoad)                                                                                               \
-  X(resetMaximumOutdoorAirFlowRate)                                                                                                         \
-  X(resetMinimumOutdoorAirFlowRate)                                                                                                         \
-  X(resetEconomizerType)                                                                                                                    \
-  X(resetEconomizerLockout)                                                                                                                 \
-  X(resetEconomizerUpperTemperatureLimit)                                                                                                   \
-  X(resetEconomizerLowerTemperatureLimit)                                                                                                   \
-  X(resetEconomizerUpperEnthalpyLimit)                                                                                                      \
-  X(resetEconomizerMaximumLimitDewpointTemperature)                                                                                         \
-  X(resetSupplyFanPlacement)                                                                                                                \
-  X(resetNightCycleControl)                                                                                                                 \
-  X(resetHeatRecoveryType)                                                                                                                  \
-  X(resetSensibleHeatRecoveryEffectiveness)                                                                                                 \
-  X(resetLatentHeatRecoveryEffectiveness)                                                                                                   \
-  X(resetDehumidificationControlType)                                                                                                       \
-  X(resetDehumidificationSetpoint)                                                                                                          \
-  X(resetHumidifierType)                                                                                                                    \
-  X(resetHumidifierRatedCapacity)                                                                                                           \
-  X(resetHumidifierRatedElectricPower)                                                                                                      \
-  X(resetHumidifierSetpoint)                                                                                                                \
-  X(resetReturnFan)                                                                                                                         \
-  X(resetReturnFanTotalEfficiency)                                                                                                          \
-  X(resetReturnFanDeltaPressure)                                                                                                            \
-  X(resetReturnFanMotorEfficiency)                                                                                                          \
-  X(resetReturnFanMotorinAirStreamFraction)
+// returnFanTotalEfficiency
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(returnFanTotalEfficiency)
+OS_FORWARD_BOOL(isReturnFanTotalEfficiencyDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setReturnFanTotalEfficiency)
+OS_FORWARD_VOID(resetReturnFanTotalEfficiency)
 
-#define OS_UNITARY_AUTOSIZES(X)                                                                                                             \
-  X(autosizeSupplyFanMaximumFlowRate)                                                                                                       \
-  X(autosizeCoolingCoilGrossRatedTotalCapacity)                                                                                             \
-  X(autosizeCoolingCoilGrossRatedSensibleHeatRatio)                                                                                         \
-  X(autosizeHeatingCoilCapacity)                                                                                                            \
-  X(autosizeMaximumOutdoorAirFlowRate)                                                                                                      \
-  X(autosizeMinimumOutdoorAirFlowRate)                                                                                                      \
-  X(autosizeHumidifierRatedElectricPower)
+// returnFanDeltaPressure
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(returnFanDeltaPressure)
+OS_FORWARD_BOOL(isReturnFanDeltaPressureDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setReturnFanDeltaPressure)
+OS_FORWARD_VOID(resetReturnFanDeltaPressure)
 
-#define OS_FORWARD_VOID(method)                                                                                                              \
-  void HVACTemplateSystemUnitary::method() {                                                                                                \
-    getImpl<detail::HVACTemplateSystemUnitary_Impl>()->method();                                                                           \
-  }
+// returnFanMotorEfficiency
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(returnFanMotorEfficiency)
+OS_FORWARD_BOOL(isReturnFanMotorEfficiencyDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setReturnFanMotorEfficiency)
+OS_FORWARD_VOID(resetReturnFanMotorEfficiency)
 
-OS_UNITARY_RESETS(OS_FORWARD_VOID)
-OS_UNITARY_AUTOSIZES(OS_FORWARD_VOID)
+// returnFanMotorinAirStreamFraction
+OS_FORWARD_REQUIRED_DOUBLE_GETTER(returnFanMotorinAirStreamFraction)
+OS_FORWARD_BOOL(isReturnFanMotorinAirStreamFractionDefaulted)
+OS_FORWARD_DOUBLE_SETTER(setReturnFanMotorinAirStreamFraction)
+OS_FORWARD_VOID(resetReturnFanMotorinAirStreamFraction)
 
 #undef OS_FORWARD_VOID
+#undef OS_FORWARD_DOUBLE_SETTER
+#undef OS_FORWARD_STRING_SETTER
+#undef OS_FORWARD_BOOL
+#undef OS_FORWARD_OPTIONAL_DOUBLE_GETTER
+#undef OS_FORWARD_REQUIRED_DOUBLE_GETTER
+#undef OS_FORWARD_REQUIRED_STRING_GETTER
 
 }  // namespace epmodel
 }  // namespace openstudio

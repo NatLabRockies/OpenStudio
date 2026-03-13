@@ -103,48 +103,8 @@ namespace epmodel {
       return isEmpty(openstudio::WindowFields::Multiplier);
     }
 
-    boost::optional<double> Window_Impl::startingXCoordinate() const {
-      return getDouble(openstudio::WindowFields::StartingXCoordinate, true);
-    }
-
-    boost::optional<double> Window_Impl::startingZCoordinate() const {
-      return getDouble(openstudio::WindowFields::StartingZCoordinate, true);
-    }
-
-    boost::optional<double> Window_Impl::length() const {
-      return getDouble(openstudio::WindowFields::Length, true);
-    }
-
-    boost::optional<double> Window_Impl::height() const {
-      return getDouble(openstudio::WindowFields::Height, true);
-    }
-
     bool Window_Impl::setMultiplier(double multiplier) {
       const bool result = setDouble(openstudio::WindowFields::Multiplier, multiplier);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool Window_Impl::setStartingXCoordinate(double startingXCoordinate) {
-      const bool result = setDouble(openstudio::WindowFields::StartingXCoordinate, startingXCoordinate);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool Window_Impl::setStartingZCoordinate(double startingZCoordinate) {
-      const bool result = setDouble(openstudio::WindowFields::StartingZCoordinate, startingZCoordinate);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool Window_Impl::setLength(double length) {
-      const bool result = setDouble(openstudio::WindowFields::Length, length);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool Window_Impl::setHeight(double height) {
-      const bool result = setDouble(openstudio::WindowFields::Height, height);
       OS_ASSERT(result);
       return result;
     }
@@ -154,9 +114,29 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> Window_Impl::startingXCoordinate() const {
+      return getDouble(openstudio::WindowFields::StartingXCoordinate, true);
+    }
+
+    bool Window_Impl::setStartingXCoordinate(double startingXCoordinate) {
+      const bool result = setDouble(openstudio::WindowFields::StartingXCoordinate, startingXCoordinate);
+      OS_ASSERT(result);
+      return result;
+    }
+
     void Window_Impl::resetStartingXCoordinate() {
       const bool result = setString(openstudio::WindowFields::StartingXCoordinate, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> Window_Impl::startingZCoordinate() const {
+      return getDouble(openstudio::WindowFields::StartingZCoordinate, true);
+    }
+
+    bool Window_Impl::setStartingZCoordinate(double startingZCoordinate) {
+      const bool result = setDouble(openstudio::WindowFields::StartingZCoordinate, startingZCoordinate);
+      OS_ASSERT(result);
+      return result;
     }
 
     void Window_Impl::resetStartingZCoordinate() {
@@ -164,9 +144,29 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> Window_Impl::length() const {
+      return getDouble(openstudio::WindowFields::Length, true);
+    }
+
+    bool Window_Impl::setLength(double length) {
+      const bool result = setDouble(openstudio::WindowFields::Length, length);
+      OS_ASSERT(result);
+      return result;
+    }
+
     void Window_Impl::resetLength() {
       const bool result = setString(openstudio::WindowFields::Length, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> Window_Impl::height() const {
+      return getDouble(openstudio::WindowFields::Height, true);
+    }
+
+    bool Window_Impl::setHeight(double height) {
+      const bool result = setDouble(openstudio::WindowFields::Height, height);
+      OS_ASSERT(result);
+      return result;
     }
 
     void Window_Impl::resetHeight() {

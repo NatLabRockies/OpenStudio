@@ -26,67 +26,61 @@ namespace epmodel {
 
       boost::optional<double> ratedFlowRate() const;
       bool isRatedFlowRateAutosized() const;
-
-      double ratedPumpHead() const;
-      bool isRatedPumpHeadDefaulted() const;
-
-      boost::optional<double> ratedPowerConsumption() const;
-      bool isRatedPowerConsumptionAutosized() const;
-
-      double motorEfficiency() const;
-      bool isMotorEfficiencyDefaulted() const;
-
-      double fractionofMotorInefficienciestoFluidStream() const;
-      bool isFractionofMotorInefficienciestoFluidStreamDefaulted() const;
-
-      std::string pumpControlType() const;
-      bool isPumpControlTypeDefaulted() const;
-
-      boost::optional<double> impellerDiameter() const;
-      boost::optional<double> rotationalSpeed() const;
-      boost::optional<double> skinLossRadiativeFraction() const;
-
-      std::string designPowerSizingMethod() const;
-      double designElectricPowerPerUnitFlowRate() const;
-      double designShaftPowerPerUnitFlowRatePerUnitHead() const;
-      std::string endUseSubcategory() const;
-
       bool setRatedFlowRate(double ratedFlowRate);
       void resetRatedFlowRate();
       void autosizeRatedFlowRate();
+      boost::optional<double> autosizedRatedFlowRate() const;
 
+      double ratedPumpHead() const;
+      bool isRatedPumpHeadDefaulted() const;
       bool setRatedPumpHead(double ratedPumpHead);
       void resetRatedPumpHead();
 
+      boost::optional<double> ratedPowerConsumption() const;
+      bool isRatedPowerConsumptionAutosized() const;
       bool setRatedPowerConsumption(double ratedPowerConsumption);
       void resetRatedPowerConsumption();
       void autosizeRatedPowerConsumption();
+      boost::optional<double> autosizedRatedPowerConsumption() const;
 
+      double motorEfficiency() const;
+      bool isMotorEfficiencyDefaulted() const;
       bool setMotorEfficiency(double motorEfficiency);
       void resetMotorEfficiency();
 
+      double fractionofMotorInefficienciestoFluidStream() const;
+      bool isFractionofMotorInefficienciestoFluidStreamDefaulted() const;
       bool setFractionofMotorInefficienciestoFluidStream(double fractionofMotorInefficienciestoFluidStream);
       void resetFractionofMotorInefficienciestoFluidStream();
 
+      std::string pumpControlType() const;
+      bool isPumpControlTypeDefaulted() const;
       bool setPumpControlType(const std::string& pumpControlType);
       void resetPumpControlType();
 
+      boost::optional<double> impellerDiameter() const;
       bool setImpellerDiameter(double impellerDiameter);
       void resetImpellerDiameter();
 
+      boost::optional<double> rotationalSpeed() const;
       bool setRotationalSpeed(double rotationalSpeed);
       void resetRotationalSpeed();
 
+      boost::optional<double> skinLossRadiativeFraction() const;
       bool setSkinLossRadiativeFraction(double skinLossRadiativeFraction);
       void resetSkinLossRadiativeFraction();
 
+      std::string designPowerSizingMethod() const;
       bool setDesignPowerSizingMethod(const std::string& designPowerSizingMethod);
-      bool setDesignElectricPowerPerUnitFlowRate(double designElectricPowerPerUnitFlowRate);
-      bool setDesignShaftPowerPerUnitFlowRatePerUnitHead(double designShaftPowerPerUnitFlowRatePerUnitHead);
-      bool setEndUseSubcategory(const std::string& endUseSubcategory);
 
-      boost::optional<double> autosizedRatedFlowRate() const;
-      boost::optional<double> autosizedRatedPowerConsumption() const;
+      double designElectricPowerPerUnitFlowRate() const;
+      bool setDesignElectricPowerPerUnitFlowRate(double designElectricPowerPerUnitFlowRate);
+
+      double designShaftPowerPerUnitFlowRatePerUnitHead() const;
+      bool setDesignShaftPowerPerUnitFlowRatePerUnitHead(double designShaftPowerPerUnitFlowRatePerUnitHead);
+
+      std::string endUseSubcategory() const;
+      bool setEndUseSubcategory(const std::string& endUseSubcategory);
 
      private:
       bool m_isRatedFlowRateAutosized = true;

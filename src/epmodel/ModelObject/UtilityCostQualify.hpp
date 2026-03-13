@@ -63,8 +63,8 @@ namespace epmodel {
     bool setThresholdTest(const std::string& thresholdTest);
 
     int numberOfMonths() const;
-    bool isNumberOfMonthsDefaulted() const;
     bool setNumberOfMonths(int numberOfMonths);
+    bool isNumberOfMonthsDefaulted() const;
     void resetNumberOfMonths();
 
    protected:

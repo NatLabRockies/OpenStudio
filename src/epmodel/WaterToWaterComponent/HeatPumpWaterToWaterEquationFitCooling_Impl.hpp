@@ -11,55 +11,59 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HeatPumpWaterToWaterEquationFitCooling_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~HeatPumpWaterToWaterEquationFitCooling_Impl() override = default;
+    class EPMODEL_API HeatPumpWaterToWaterEquationFitCooling_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~HeatPumpWaterToWaterEquationFitCooling_Impl() override = default;
 
-  boost::optional<double> referenceLoadSideFlowRate() const;
-  double ratedLoadSideFlowRate() const;
-  bool isReferenceLoadSideFlowRateAutosized() const;
+      // Reference load-side flow rate
+      boost::optional<double> referenceLoadSideFlowRate() const;
+      bool isReferenceLoadSideFlowRateAutosized() const;
+      bool setReferenceLoadSideFlowRate(double referenceLoadSideFlowRate);
+      void autosizeReferenceLoadSideFlowRate();
+      boost::optional<double> autosizedReferenceLoadSideFlowRate() const;
 
-  boost::optional<double> referenceSourceSideFlowRate() const;
-  double ratedSourceSideFlowRate() const;
-  bool isReferenceSourceSideFlowRateAutosized() const;
+      // Rated load-side flow rate
+      double ratedLoadSideFlowRate() const;
+      bool setRatedLoadSideFlowRate(double ratedLoadSideFlowRate);
 
-  boost::optional<double> ratedCoolingCapacity() const;
-  bool isRatedCoolingCapacityAutosized() const;
+      // Reference source-side flow rate
+      boost::optional<double> referenceSourceSideFlowRate() const;
+      bool isReferenceSourceSideFlowRateAutosized() const;
+      bool setReferenceSourceSideFlowRate(double referenceSourceSideFlowRate);
+      void autosizeReferenceSourceSideFlowRate();
+      boost::optional<double> autosizedReferenceSourceSideFlowRate() const;
 
-  boost::optional<double> ratedCoolingPowerConsumption() const;
-  bool isRatedCoolingPowerConsumptionAutosized() const;
+      // Rated source-side flow rate
+      double ratedSourceSideFlowRate() const;
+      bool setRatedSourceSideFlowRate(double ratedSourceSideFlowRate);
 
-  double referenceCoefficientofPerformance() const;
-  double sizingFactor() const;
+      // Rated cooling capacity
+      boost::optional<double> ratedCoolingCapacity() const;
+      bool isRatedCoolingCapacityAutosized() const;
+      bool setRatedCoolingCapacity(double ratedCoolingCapacity);
+      void autosizeRatedCoolingCapacity();
+      boost::optional<double> autosizedRatedCoolingCapacity() const;
 
-  bool setReferenceLoadSideFlowRate(double referenceLoadSideFlowRate);
-  bool setRatedLoadSideFlowRate(double ratedLoadSideFlowRate);
-  void autosizeReferenceLoadSideFlowRate();
+      // Rated cooling power consumption
+      boost::optional<double> ratedCoolingPowerConsumption() const;
+      bool isRatedCoolingPowerConsumptionAutosized() const;
+      bool setRatedCoolingPowerConsumption(double ratedCoolingPowerConsumption);
+      void autosizeRatedCoolingPowerConsumption();
+      boost::optional<double> autosizedRatedCoolingPowerConsumption() const;
 
-  bool setReferenceSourceSideFlowRate(double referenceSourceSideFlowRate);
-  bool setRatedSourceSideFlowRate(double ratedSourceSideFlowRate);
-  void autosizeReferenceSourceSideFlowRate();
+      // Performance knobs
+      double referenceCoefficientofPerformance() const;
+      bool setReferenceCoefficientofPerformance(double referenceCoefficientofPerformance);
 
-  bool setRatedCoolingCapacity(double ratedCoolingCapacity);
-  void autosizeRatedCoolingCapacity();
+      double sizingFactor() const;
+      bool setSizingFactor(double sizingFactor);
+    };
 
-  bool setRatedCoolingPowerConsumption(double ratedCoolingPowerConsumption);
-  void autosizeRatedCoolingPowerConsumption();
-
-  bool setReferenceCoefficientofPerformance(double referenceCoefficientofPerformance);
-  bool setSizingFactor(double sizingFactor);
-
-  boost::optional<double> autosizedReferenceLoadSideFlowRate() const;
-  boost::optional<double> autosizedReferenceSourceSideFlowRate() const;
-  boost::optional<double> autosizedRatedCoolingCapacity() const;
-  boost::optional<double> autosizedRatedCoolingPowerConsumption() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -38,6 +38,7 @@ namespace epmodel {
     // - Field Mapping: Azimuth Angle, Tilt Angle, Starting (X, Y, Z) Coordinates, Length, and Height map directly to the Wall_UndergroundFields enum.
     // - Field Mapping: Construction Name, Zone Name, and Space Name are relationship/geometry-driven and intentionally excluded from this scalar scaffold phase.
     // - TODO(parity): Add the relationship helpers once the ForwardTranslator adjacency logic is ported into epmodel.
+
     boost::optional<double> azimuthAngle() const;
     bool setAzimuthAngle(double azimuthAngle);
     void resetAzimuthAngle();

@@ -21,12 +21,12 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~SurfaceConvectionAlgorithmOutsideUserCurve_Impl() override = default;
 
+      std::vector<std::string> windSpeedTypeforCurveValues() const;
+
       std::string windSpeedTypeforCurve() const;
-      bool isWindSpeedTypeforCurveDefaulted() const;
       bool setWindSpeedTypeforCurve(const std::string& windSpeedTypeforCurve);
       void resetWindSpeedTypeforCurve();
-
-      std::vector<std::string> windSpeedTypeforCurveValues() const;
+      bool isWindSpeedTypeforCurveDefaulted() const;
     };
 
   }  // namespace detail

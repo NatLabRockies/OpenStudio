@@ -42,8 +42,8 @@ namespace epmodel {
     // - Field Mapping: Equipment Object Type/Name and node-setpoint references are relationship-like fields inside the extensible group and intentionally excluded in this scalar-only pass.
     // - TODO(parity): Add typed group helpers once relationship APIs or full extensible handling becomes required.
     boost::optional<double> component1FlowRate() const;
-    bool isComponent1FlowRateAutosized() const;
     bool setComponent1FlowRate(double component1FlowRate);
+    bool isComponent1FlowRateAutosized() const;
     void autosizeComponent1FlowRate();
     boost::optional<double> autosizedComponent1FlowRate() const;
 

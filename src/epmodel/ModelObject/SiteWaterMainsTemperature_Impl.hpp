@@ -13,32 +13,35 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SiteWaterMainsTemperature_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~SiteWaterMainsTemperature_Impl() override = default;
+    class EPMODEL_API SiteWaterMainsTemperature_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~SiteWaterMainsTemperature_Impl() override = default;
 
-  std::string calculationMethod() const;
-  boost::optional<double> annualAverageOutdoorAirTemperature() const;
-  boost::optional<double> maximumDifferenceInMonthlyAverageOutdoorAirTemperatures() const;
-  double temperatureMultiplier() const;
-  double temperatureOffset() const;
+      std::vector<std::string> calculationMethodValues() const;
 
-  bool setCalculationMethod(const std::string& calculationMethod);
-  bool setAnnualAverageOutdoorAirTemperature(double annualAverageOutdoorAirTemperature);
-  void resetAnnualAverageOutdoorAirTemperature();
-  bool setMaximumDifferenceInMonthlyAverageOutdoorAirTemperatures(double maximumDifferenceInMonthlyAverageOutdoorAirTemperatures);
-  void resetMaximumDifferenceInMonthlyAverageOutdoorAirTemperatures();
-  bool setTemperatureMultiplier(double temperatureMultiplier);
-  bool setTemperatureOffset(double temperatureOffset);
+      std::string calculationMethod() const;
+      bool setCalculationMethod(const std::string& calculationMethod);
 
-  std::vector<std::string> calculationMethodValues() const;
-};
+      boost::optional<double> annualAverageOutdoorAirTemperature() const;
+      bool setAnnualAverageOutdoorAirTemperature(double annualAverageOutdoorAirTemperature);
+      void resetAnnualAverageOutdoorAirTemperature();
 
-}  // namespace detail
+      boost::optional<double> maximumDifferenceInMonthlyAverageOutdoorAirTemperatures() const;
+      bool setMaximumDifferenceInMonthlyAverageOutdoorAirTemperatures(double maximumDifferenceInMonthlyAverageOutdoorAirTemperatures);
+      void resetMaximumDifferenceInMonthlyAverageOutdoorAirTemperatures();
+
+      double temperatureMultiplier() const;
+      bool setTemperatureMultiplier(double temperatureMultiplier);
+
+      double temperatureOffset() const;
+      bool setTemperatureOffset(double temperatureOffset);
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -10,33 +10,33 @@
 
 namespace openstudio {
 namespace epmodel {
-class Node;
-class ThermalZone;
-namespace detail {
+  class Node;
+  class ThermalZone;
+  namespace detail {
 
-class EPMODEL_API SetpointManagerSingleZoneReheat_Impl : public SetpointManager_Impl
-{
- public:
-  using SetpointManager_Impl::SetpointManager_Impl;
-  virtual ~SetpointManagerSingleZoneReheat_Impl() override = default;
+    class EPMODEL_API SetpointManagerSingleZoneReheat_Impl : public SetpointManager_Impl
+    {
+     public:
+      using SetpointManager_Impl::SetpointManager_Impl;
+      virtual ~SetpointManagerSingleZoneReheat_Impl() override = default;
 
-  double minimumSupplyAirTemperature() const;
-  double maximumSupplyAirTemperature() const;
+      double minimumSupplyAirTemperature() const;
+      bool setMinimumSupplyAirTemperature(double minimumSupplyAirTemperature);
 
-  bool setMinimumSupplyAirTemperature(double minimumSupplyAirTemperature);
-  bool setMaximumSupplyAirTemperature(double maximumSupplyAirTemperature);
+      double maximumSupplyAirTemperature() const;
+      bool setMaximumSupplyAirTemperature(double maximumSupplyAirTemperature);
 
-  bool addToNode(Node& node) override;
-  bool setControlZone(const ThermalZone& thermalZone);
+      bool addToNode(Node& node) override;
+      bool setControlZone(const ThermalZone& thermalZone);
 
- protected:
-  unsigned setpointNodeFieldIndex() const override;
-  unsigned controlVariableFieldIndex() const override;
+     protected:
+      unsigned setpointNodeFieldIndex() const override;
+      unsigned controlVariableFieldIndex() const override;
 
-  void doCanonicalize(LoadContext& context) override;
-};
+      void doCanonicalize(LoadContext& context) override;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

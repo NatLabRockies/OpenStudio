@@ -19,9 +19,11 @@ class EPMODEL_API AvailabilityManagerDifferentialThermostat_Impl : public ModelO
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~AvailabilityManagerDifferentialThermostat_Impl() override = default;
 
+  // Temperature Difference On Limit accessors
   double temperatureDifferenceOnLimit() const;
   bool setTemperatureDifferenceOnLimit(double temperatureDifferenceOnLimit);
 
+  // Temperature Difference Off Limit accessors
   double temperatureDifferenceOffLimit() const;
   bool setTemperatureDifferenceOffLimit(double temperatureDifferenceOffLimit);
 };

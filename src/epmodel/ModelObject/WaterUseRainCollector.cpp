@@ -61,16 +61,16 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    std::vector<std::string> WaterUseRainCollector_Impl::lossFactorModeValues() const {
+      return openstudio::epmodel::WaterUseRainCollector::lossFactorModeValues();
+    }
+
     boost::optional<std::string> WaterUseRainCollector_Impl::lossFactorMode() const {
       return getString(openstudio::WaterUse_RainCollectorFields::LossFactorMode, true);
     }
 
     bool WaterUseRainCollector_Impl::setLossFactorMode(const std::string& lossFactorMode) {
       return setString(openstudio::WaterUse_RainCollectorFields::LossFactorMode, lossFactorMode);
-    }
-
-    std::vector<std::string> WaterUseRainCollector_Impl::lossFactorModeValues() const {
-      return openstudio::epmodel::WaterUseRainCollector::lossFactorModeValues();
     }
 
     boost::optional<double> WaterUseRainCollector_Impl::collectionLossFactor() const {

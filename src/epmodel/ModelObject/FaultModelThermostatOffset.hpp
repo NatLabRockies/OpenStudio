@@ -16,47 +16,55 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class FaultModelThermostatOffset_Impl;
-}
+  namespace detail {
+    class FaultModelThermostatOffset_Impl;
+  }
 
-class EPMODEL_API FaultModelThermostatOffset : public ModelObject
-{
- public:
-  explicit FaultModelThermostatOffset(const Model& model);
+  class EPMODEL_API FaultModelThermostatOffset : public ModelObject
+  {
+   public:
+    explicit FaultModelThermostatOffset(const Model& model);
 
-  virtual ~FaultModelThermostatOffset() override = default;
-  FaultModelThermostatOffset(const FaultModelThermostatOffset& other) = default;
-  FaultModelThermostatOffset(FaultModelThermostatOffset&& other) = default;
-  FaultModelThermostatOffset& operator=(const FaultModelThermostatOffset&) = default;
-  FaultModelThermostatOffset& operator=(FaultModelThermostatOffset&&) = default;
+    virtual ~FaultModelThermostatOffset() override = default;
+    FaultModelThermostatOffset(const FaultModelThermostatOffset& other) = default;
+    FaultModelThermostatOffset(FaultModelThermostatOffset&& other) = default;
+    FaultModelThermostatOffset& operator=(const FaultModelThermostatOffset&) = default;
+    FaultModelThermostatOffset& operator=(FaultModelThermostatOffset&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: referenceThermostatOffset maps directly to EnergyPlus FaultModel:ThermostatOffset /
-  //   Reference Thermostat Offset.
-  // - Field Mapping: Name is provided by base ModelObject naming API and is intentionally not duplicated here.
-  // - Field Mapping: Thermostat Name, Availability Schedule Name, and Severity Schedule Name are object-list
-  //   relationship fields and intentionally excluded from scalar accessors.
-  // - TODO(parity): Add relationship APIs after scalar scaffold saturation.
-  double referenceThermostatOffset() const;
-  bool isReferenceThermostatOffsetDefaulted() const;
-  bool setReferenceThermostatOffset(double referenceThermostatOffset);
-  void resetReferenceThermostatOffset();
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: referenceThermostatOffset maps directly to EnergyPlus FaultModel:ThermostatOffset /
+    //   Reference Thermostat Offset.
+    // - Field Mapping: Name is provided by base ModelObject naming API and is intentionally not duplicated here.
+    // - Field Mapping: Thermostat Name, Availability Schedule Name, and Severity Schedule Name are object-list
+    //   relationship fields and intentionally excluded from scalar accessors.
+    // - TODO(parity): Add relationship APIs after scalar scaffold saturation.
 
- protected:
-  using ImplType = detail::FaultModelThermostatOffset_Impl;
+    /** @name Getters */
+    //@{
+    double referenceThermostatOffset() const;
+    bool isReferenceThermostatOffsetDefaulted() const;
+    //@}
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    /** @name Setters */
+    //@{
+    bool setReferenceThermostatOffset(double referenceThermostatOffset);
+    void resetReferenceThermostatOffset();
+    //@}
 
-  explicit FaultModelThermostatOffset(std::shared_ptr<detail::FaultModelThermostatOffset_Impl> impl);
-};
+   protected:
+    using ImplType = detail::FaultModelThermostatOffset_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit FaultModelThermostatOffset(std::shared_ptr<detail::FaultModelThermostatOffset_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

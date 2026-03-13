@@ -42,8 +42,8 @@ namespace epmodel {
     //   field 'Load Distribution Scheme'.
     // - Field Mapping: default semantics are preserved via isLoadDistributionSchemeDefaulted() and resetLoadDistributionScheme().
     std::string loadDistributionScheme() const;
-    bool isLoadDistributionSchemeDefaulted() const;
     bool setLoadDistributionScheme(const std::string& loadDistributionScheme);
+    bool isLoadDistributionSchemeDefaulted() const;
     void resetLoadDistributionScheme();
 
    protected:

@@ -35,12 +35,12 @@ namespace epmodel {
     return getImpl<detail::HVACSystemRootFindingAlgorithm_Impl>()->algorithm();
   }
 
-  bool HVACSystemRootFindingAlgorithm::isAlgorithmDefaulted() const {
-    return getImpl<detail::HVACSystemRootFindingAlgorithm_Impl>()->isAlgorithmDefaulted();
-  }
-
   bool HVACSystemRootFindingAlgorithm::setAlgorithm(const std::string& algorithm) {
     return getImpl<detail::HVACSystemRootFindingAlgorithm_Impl>()->setAlgorithm(algorithm);
+  }
+
+  bool HVACSystemRootFindingAlgorithm::isAlgorithmDefaulted() const {
+    return getImpl<detail::HVACSystemRootFindingAlgorithm_Impl>()->isAlgorithmDefaulted();
   }
 
   void HVACSystemRootFindingAlgorithm::resetAlgorithm() {
@@ -51,13 +51,13 @@ namespace epmodel {
     return getImpl<detail::HVACSystemRootFindingAlgorithm_Impl>()->numberofIterationsBeforeAlgorithmSwitch();
   }
 
-  bool HVACSystemRootFindingAlgorithm::isNumberofIterationsBeforeAlgorithmSwitchDefaulted() const {
-    return getImpl<detail::HVACSystemRootFindingAlgorithm_Impl>()->isNumberofIterationsBeforeAlgorithmSwitchDefaulted();
-  }
-
   bool HVACSystemRootFindingAlgorithm::setNumberofIterationsBeforeAlgorithmSwitch(int numberofIterationsBeforeAlgorithmSwitch) {
     return getImpl<detail::HVACSystemRootFindingAlgorithm_Impl>()->setNumberofIterationsBeforeAlgorithmSwitch(
       numberofIterationsBeforeAlgorithmSwitch);
+  }
+
+  bool HVACSystemRootFindingAlgorithm::isNumberofIterationsBeforeAlgorithmSwitchDefaulted() const {
+    return getImpl<detail::HVACSystemRootFindingAlgorithm_Impl>()->isNumberofIterationsBeforeAlgorithmSwitchDefaulted();
   }
 
   void HVACSystemRootFindingAlgorithm::resetNumberofIterationsBeforeAlgorithmSwitch() {
@@ -77,12 +77,12 @@ namespace epmodel {
       return *value;
     }
 
-    bool HVACSystemRootFindingAlgorithm_Impl::isAlgorithmDefaulted() const {
-      return isEmpty(openstudio::HVACSystemRootFindingAlgorithmFields::Algorithm);
-    }
-
     bool HVACSystemRootFindingAlgorithm_Impl::setAlgorithm(const std::string& algorithm) {
       return setString(openstudio::HVACSystemRootFindingAlgorithmFields::Algorithm, algorithm);
+    }
+
+    bool HVACSystemRootFindingAlgorithm_Impl::isAlgorithmDefaulted() const {
+      return isEmpty(openstudio::HVACSystemRootFindingAlgorithmFields::Algorithm);
     }
 
     void HVACSystemRootFindingAlgorithm_Impl::resetAlgorithm() {
@@ -95,13 +95,13 @@ namespace epmodel {
       return *value;
     }
 
-    bool HVACSystemRootFindingAlgorithm_Impl::isNumberofIterationsBeforeAlgorithmSwitchDefaulted() const {
-      return !getInt(openstudio::HVACSystemRootFindingAlgorithmFields::NumberofIterationsBeforeAlgorithmSwitch, false);
-    }
-
     bool HVACSystemRootFindingAlgorithm_Impl::setNumberofIterationsBeforeAlgorithmSwitch(int numberofIterationsBeforeAlgorithmSwitch) {
       return setInt(openstudio::HVACSystemRootFindingAlgorithmFields::NumberofIterationsBeforeAlgorithmSwitch,
                     numberofIterationsBeforeAlgorithmSwitch);
+    }
+
+    bool HVACSystemRootFindingAlgorithm_Impl::isNumberofIterationsBeforeAlgorithmSwitchDefaulted() const {
+      return !getInt(openstudio::HVACSystemRootFindingAlgorithmFields::NumberofIterationsBeforeAlgorithmSwitch, false);
     }
 
     void HVACSystemRootFindingAlgorithm_Impl::resetNumberofIterationsBeforeAlgorithmSwitch() {

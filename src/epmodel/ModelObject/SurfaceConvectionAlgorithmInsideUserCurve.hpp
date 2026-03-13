@@ -43,9 +43,12 @@ namespace epmodel {
     // - Field Mapping: Scalar APIs map directly to SurfaceConvectionAlgorithm:Inside:UserCurve choice fields.
     // - Field Mapping: Hc Function curve name fields (A3-A6) are excluded as object-list relationship fields.
     // - TODO(parity): Add relationship APIs for curve linkage fields after scalar saturation.
+    /** @name Reference temperature accessors */
+    //@{
     boost::optional<std::string> referenceTemperatureforConvectionHeatTransfer() const;
     bool setReferenceTemperatureforConvectionHeatTransfer(const std::string& referenceTemperatureforConvectionHeatTransfer);
     void resetReferenceTemperatureforConvectionHeatTransfer();
+    //@}
 
    protected:
     using ImplType = detail::SurfaceConvectionAlgorithmInsideUserCurve_Impl;

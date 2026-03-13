@@ -11,24 +11,24 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl : public HVACComponent_Impl
-{
- public:
-  using HVACComponent_Impl::HVACComponent_Impl;
-  virtual ~CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl() override = default;
+    class EPMODEL_API CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl : public HVACComponent_Impl
+    {
+     public:
+      using HVACComponent_Impl::HVACComponent_Impl;
+      virtual ~CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl() override = default;
 
-  boost::optional<double> ratedTotalHeatingCapacity() const;
-  bool isRatedTotalHeatingCapacityAutosized() const;
-  bool setRatedTotalHeatingCapacity(double ratedTotalHeatingCapacity);
-  void autosizeRatedTotalHeatingCapacity();
+      boost::optional<double> ratedTotalHeatingCapacity() const;
+      bool setRatedTotalHeatingCapacity(double ratedTotalHeatingCapacity);
+      bool isRatedTotalHeatingCapacityAutosized() const;
+      void autosizeRatedTotalHeatingCapacity();
 
-  double indoorUnitReferenceSubcooling() const;
-  bool setIndoorUnitReferenceSubcooling(double indoorUnitReferenceSubcooling);
-};
+      double indoorUnitReferenceSubcooling() const;
+      bool setIndoorUnitReferenceSubcooling(double indoorUnitReferenceSubcooling);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

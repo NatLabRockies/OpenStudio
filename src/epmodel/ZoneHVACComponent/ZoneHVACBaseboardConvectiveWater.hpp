@@ -44,9 +44,10 @@ namespace epmodel {
 
     std::string heatingDesignCapacityMethod() const;
     bool setHeatingDesignCapacityMethod(const std::string& heatingDesignCapacityMethod);
+
     boost::optional<double> heatingDesignCapacity() const;
-    bool isHeatingDesignCapacityAutosized() const;
     bool setHeatingDesignCapacity(double heatingDesignCapacity);
+    bool isHeatingDesignCapacityAutosized() const;
     void autosizeHeatingDesignCapacity();
 
     double heatingDesignCapacityPerFloorArea() const;
@@ -56,22 +57,22 @@ namespace epmodel {
     bool setFractionofAutosizedHeatingDesignCapacity(double fractionofAutosizedHeatingDesignCapacity);
 
     boost::optional<double> uFactorTimesAreaValue() const;
+    bool setUFactorTimesAreaValue(double uFactorTimesAreaValue);
     bool isUFactorTimesAreaValueDefaulted() const;
     bool isUFactorTimesAreaValueAutosized() const;
-    bool setUFactorTimesAreaValue(double uFactorTimesAreaValue);
     void resetUFactorTimesAreaValue();
     void autosizeUFactorTimesAreaValue();
 
     boost::optional<double> maximumWaterFlowRate() const;
+    bool setMaximumWaterFlowRate(double maximumWaterFlowRate);
     bool isMaximumWaterFlowRateDefaulted() const;
     bool isMaximumWaterFlowRateAutosized() const;
-    bool setMaximumWaterFlowRate(double maximumWaterFlowRate);
     void resetMaximumWaterFlowRate();
     void autosizeMaximumWaterFlowRate();
 
     double convergenceTolerance() const;
-    bool isConvergenceToleranceDefaulted() const;
     bool setConvergenceTolerance(double convergenceTolerance);
+    bool isConvergenceToleranceDefaulted() const;
     void resetConvergenceTolerance();
 
    protected:

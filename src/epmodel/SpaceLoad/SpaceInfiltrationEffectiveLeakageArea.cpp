@@ -40,18 +40,6 @@ namespace epmodel {
       return value.get();
     }
 
-    double SpaceInfiltrationEffectiveLeakageArea_Impl::stackCoefficient() const {
-      boost::optional<double> value = getDouble(ZoneInfiltration_EffectiveLeakageAreaFields::StackCoefficient, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    double SpaceInfiltrationEffectiveLeakageArea_Impl::windCoefficient() const {
-      boost::optional<double> value = getDouble(ZoneInfiltration_EffectiveLeakageAreaFields::WindCoefficient, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
     bool SpaceInfiltrationEffectiveLeakageArea_Impl::setEffectiveAirLeakageArea(double effectiveAirLeakageArea) {
       if (effectiveAirLeakageArea <= 0) {
         return false;
@@ -59,11 +47,23 @@ namespace epmodel {
       return setDouble(ZoneInfiltration_EffectiveLeakageAreaFields::EffectiveAirLeakageArea, effectiveAirLeakageArea);
     }
 
+    double SpaceInfiltrationEffectiveLeakageArea_Impl::stackCoefficient() const {
+      boost::optional<double> value = getDouble(ZoneInfiltration_EffectiveLeakageAreaFields::StackCoefficient, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
     bool SpaceInfiltrationEffectiveLeakageArea_Impl::setStackCoefficient(double stackCoefficient) {
       if (stackCoefficient <= 0) {
         return false;
       }
       return setDouble(ZoneInfiltration_EffectiveLeakageAreaFields::StackCoefficient, stackCoefficient);
+    }
+
+    double SpaceInfiltrationEffectiveLeakageArea_Impl::windCoefficient() const {
+      boost::optional<double> value = getDouble(ZoneInfiltration_EffectiveLeakageAreaFields::WindCoefficient, true);
+      OS_ASSERT(value);
+      return value.get();
     }
 
     bool SpaceInfiltrationEffectiveLeakageArea_Impl::setWindCoefficient(double windCoefficient) {
@@ -94,20 +94,20 @@ namespace epmodel {
     return getImpl<detail::SpaceInfiltrationEffectiveLeakageArea_Impl>()->effectiveAirLeakageArea();
   }
 
-  double SpaceInfiltrationEffectiveLeakageArea::stackCoefficient() const {
-    return getImpl<detail::SpaceInfiltrationEffectiveLeakageArea_Impl>()->stackCoefficient();
-  }
-
-  double SpaceInfiltrationEffectiveLeakageArea::windCoefficient() const {
-    return getImpl<detail::SpaceInfiltrationEffectiveLeakageArea_Impl>()->windCoefficient();
-  }
-
   bool SpaceInfiltrationEffectiveLeakageArea::setEffectiveAirLeakageArea(double effectiveAirLeakageArea) {
     return getImpl<detail::SpaceInfiltrationEffectiveLeakageArea_Impl>()->setEffectiveAirLeakageArea(effectiveAirLeakageArea);
   }
 
+  double SpaceInfiltrationEffectiveLeakageArea::stackCoefficient() const {
+    return getImpl<detail::SpaceInfiltrationEffectiveLeakageArea_Impl>()->stackCoefficient();
+  }
+
   bool SpaceInfiltrationEffectiveLeakageArea::setStackCoefficient(double stackCoefficient) {
     return getImpl<detail::SpaceInfiltrationEffectiveLeakageArea_Impl>()->setStackCoefficient(stackCoefficient);
+  }
+
+  double SpaceInfiltrationEffectiveLeakageArea::windCoefficient() const {
+    return getImpl<detail::SpaceInfiltrationEffectiveLeakageArea_Impl>()->windCoefficient();
   }
 
   bool SpaceInfiltrationEffectiveLeakageArea::setWindCoefficient(double windCoefficient) {

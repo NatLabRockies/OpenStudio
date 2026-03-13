@@ -13,85 +13,85 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API BoilerHotWater_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~BoilerHotWater_Impl() override = default;
+    class EPMODEL_API BoilerHotWater_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~BoilerHotWater_Impl() override = default;
 
-  std::string fuelType() const;
-  bool setFuelType(const std::string& fuelType);
+      std::vector<std::string> fuelTypeValues() const;
+      std::vector<std::string> efficiencyCurveTemperatureEvaluationVariableValues() const;
+      std::vector<std::string> boilerFlowModeValues() const;
 
-  boost::optional<double> nominalCapacity() const;
-  bool isNominalCapacityAutosized() const;
-  bool setNominalCapacity(double nominalCapacity);
-  void resetNominalCapacity();
-  void autosizeNominalCapacity();
+      std::string fuelType() const;
+      bool setFuelType(const std::string& fuelType);
 
-  double nominalThermalEfficiency() const;
-  bool setNominalThermalEfficiency(double nominalThermalEfficiency);
+      boost::optional<double> nominalCapacity() const;
+      bool isNominalCapacityAutosized() const;
+      bool setNominalCapacity(double nominalCapacity);
+      void resetNominalCapacity();
+      void autosizeNominalCapacity();
 
-  boost::optional<std::string> efficiencyCurveTemperatureEvaluationVariable() const;
-  bool setEfficiencyCurveTemperatureEvaluationVariable(const std::string& efficiencyCurveTemperatureEvaluationVariable);
-  void resetEfficiencyCurveTemperatureEvaluationVariable();
+      double nominalThermalEfficiency() const;
+      bool setNominalThermalEfficiency(double nominalThermalEfficiency);
 
-  boost::optional<double> designWaterFlowRate() const;
-  bool isDesignWaterFlowRateAutosized() const;
-  bool setDesignWaterFlowRate(double designWaterFlowRate);
-  void resetDesignWaterFlowRate();
-  void autosizeDesignWaterFlowRate();
+      boost::optional<std::string> efficiencyCurveTemperatureEvaluationVariable() const;
+      bool setEfficiencyCurveTemperatureEvaluationVariable(const std::string& efficiencyCurveTemperatureEvaluationVariable);
+      void resetEfficiencyCurveTemperatureEvaluationVariable();
 
-  double minimumPartLoadRatio() const;
-  bool isMinimumPartLoadRatioDefaulted() const;
-  bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
-  void resetMinimumPartLoadRatio();
+      boost::optional<double> designWaterFlowRate() const;
+      bool isDesignWaterFlowRateAutosized() const;
+      bool setDesignWaterFlowRate(double designWaterFlowRate);
+      void resetDesignWaterFlowRate();
+      void autosizeDesignWaterFlowRate();
 
-  double maximumPartLoadRatio() const;
-  bool isMaximumPartLoadRatioDefaulted() const;
-  bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
-  void resetMaximumPartLoadRatio();
+      double minimumPartLoadRatio() const;
+      bool isMinimumPartLoadRatioDefaulted() const;
+      bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
+      void resetMinimumPartLoadRatio();
 
-  double optimumPartLoadRatio() const;
-  bool isOptimumPartLoadRatioDefaulted() const;
-  bool setOptimumPartLoadRatio(double optimumPartLoadRatio);
-  void resetOptimumPartLoadRatio();
+      double maximumPartLoadRatio() const;
+      bool isMaximumPartLoadRatioDefaulted() const;
+      bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
+      void resetMaximumPartLoadRatio();
 
-  double waterOutletUpperTemperatureLimit() const;
-  bool isWaterOutletUpperTemperatureLimitDefaulted() const;
-  bool setWaterOutletUpperTemperatureLimit(double waterOutletUpperTemperatureLimit);
-  void resetWaterOutletUpperTemperatureLimit();
+      double optimumPartLoadRatio() const;
+      bool isOptimumPartLoadRatioDefaulted() const;
+      bool setOptimumPartLoadRatio(double optimumPartLoadRatio);
+      void resetOptimumPartLoadRatio();
 
-  std::string boilerFlowMode() const;
-  bool isBoilerFlowModeDefaulted() const;
-  bool setBoilerFlowMode(const std::string& boilerFlowMode);
-  void resetBoilerFlowMode();
+      double waterOutletUpperTemperatureLimit() const;
+      bool isWaterOutletUpperTemperatureLimitDefaulted() const;
+      bool setWaterOutletUpperTemperatureLimit(double waterOutletUpperTemperatureLimit);
+      void resetWaterOutletUpperTemperatureLimit();
 
-  boost::optional<double> parasiticElectricLoad() const;
-  bool setParasiticElectricLoad(double parasiticElectricLoad);
-  void resetParasiticElectricLoad();
+      std::string boilerFlowMode() const;
+      bool isBoilerFlowModeDefaulted() const;
+      bool setBoilerFlowMode(const std::string& boilerFlowMode);
+      void resetBoilerFlowMode();
 
-  double onCycleParasiticElectricLoad() const;
-  bool setOnCycleParasiticElectricLoad(double onCycleParasiticElectricLoad);
+      boost::optional<double> parasiticElectricLoad() const;
+      bool setParasiticElectricLoad(double parasiticElectricLoad);
+      void resetParasiticElectricLoad();
 
-  double sizingFactor() const;
-  bool isSizingFactorDefaulted() const;
-  bool setSizingFactor(double sizingFactor);
-  void resetSizingFactor();
+      double onCycleParasiticElectricLoad() const;
+      bool setOnCycleParasiticElectricLoad(double onCycleParasiticElectricLoad);
 
-  std::string endUseSubcategory() const;
-  bool setEndUseSubcategory(const std::string& endUseSubcategory);
+      double sizingFactor() const;
+      bool isSizingFactorDefaulted() const;
+      bool setSizingFactor(double sizingFactor);
+      void resetSizingFactor();
 
-  double offCycleParasiticFuelLoad() const;
-  bool setOffCycleParasiticFuelLoad(double offCycleParasiticFuelLoad);
+      std::string endUseSubcategory() const;
+      bool setEndUseSubcategory(const std::string& endUseSubcategory);
 
-  std::vector<std::string> fuelTypeValues() const;
-  std::vector<std::string> efficiencyCurveTemperatureEvaluationVariableValues() const;
-  std::vector<std::string> boilerFlowModeValues() const;
-};
+      double offCycleParasiticFuelLoad() const;
+      bool setOffCycleParasiticFuelLoad(double offCycleParasiticFuelLoad);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -41,42 +41,43 @@ namespace epmodel {
 
     double shadeBeamBeamSolarTransmittance() const;
     bool isShadeBeamBeamSolarTransmittanceDefaulted() const;
+    bool setShadeBeamBeamSolarTransmittance(double shadeBeamBeamSolarTransmittance);
+    void resetShadeBeamBeamSolarTransmittance();
 
     double frontSideShadeBeamDiffuseSolarTransmittance() const;
+    bool setFrontSideShadeBeamDiffuseSolarTransmittance(double frontSideShadeBeamDiffuseSolarTransmittance);
+
     double backSideShadeBeamDiffuseSolarTransmittance() const;
+    bool setBackSideShadeBeamDiffuseSolarTransmittance(double backSideShadeBeamDiffuseSolarTransmittance);
+
     double frontSideShadeBeamDiffuseSolarReflectance() const;
+    bool setFrontSideShadeBeamDiffuseSolarReflectance(double frontSideShadeBeamDiffuseSolarReflectance);
+
     double backSideShadeBeamDiffuseSolarReflectance() const;
+    bool setBackSideShadeBeamDiffuseSolarReflectance(double backSideShadeBeamDiffuseSolarReflectance);
 
     boost::optional<double> shadeBeamBeamVisibleTransmittanceAtNormalIncidence() const;
+    bool setShadeBeamBeamVisibleTransmittanceAtNormalIncidence(double shadeBeamBeamVisibleTransmittanceAtNormalIncidence);
+
     boost::optional<double> shadeBeamDiffuseVisibleTransmittanceAtNormalIncidence() const;
+    bool setShadeBeamDiffuseVisibleTransmittanceAtNormalIncidence(double shadeBeamDiffuseVisibleTransmittanceAtNormalIncidence);
+
     boost::optional<double> shadeBeamDiffuseVisibleReflectanceAtNormalIncidence() const;
+    bool setShadeBeamDiffuseVisibleReflectanceAtNormalIncidence(double shadeBeamDiffuseVisibleReflectanceAtNormalIncidence);
 
     double shadeMaterialInfraredTransmittance() const;
     bool isShadeMaterialInfraredTransmittanceDefaulted() const;
+    bool setShadeMaterialInfraredTransmittance(double shadeMaterialInfraredTransmittance);
+    void resetShadeMaterialInfraredTransmittance();
 
     double frontSideShadeMaterialInfraredEmissivity() const;
     bool isFrontSideShadeMaterialInfraredEmissivityDefaulted() const;
+    bool setFrontSideShadeMaterialInfraredEmissivity(double frontSideShadeMaterialInfraredEmissivity);
+    void resetFrontSideShadeMaterialInfraredEmissivity();
 
     double backSideShadeMaterialInfraredEmissivity() const;
     bool isBackSideShadeMaterialInfraredEmissivityDefaulted() const;
-
-    bool setShadeBeamBeamSolarTransmittance(double shadeBeamBeamSolarTransmittance);
-    bool setFrontSideShadeBeamDiffuseSolarTransmittance(double frontSideShadeBeamDiffuseSolarTransmittance);
-    bool setBackSideShadeBeamDiffuseSolarTransmittance(double backSideShadeBeamDiffuseSolarTransmittance);
-    bool setFrontSideShadeBeamDiffuseSolarReflectance(double frontSideShadeBeamDiffuseSolarReflectance);
-    bool setBackSideShadeBeamDiffuseSolarReflectance(double backSideShadeBeamDiffuseSolarReflectance);
-
-    bool setShadeBeamBeamVisibleTransmittanceAtNormalIncidence(double shadeBeamBeamVisibleTransmittanceAtNormalIncidence);
-    bool setShadeBeamDiffuseVisibleTransmittanceAtNormalIncidence(double shadeBeamDiffuseVisibleTransmittanceAtNormalIncidence);
-    bool setShadeBeamDiffuseVisibleReflectanceAtNormalIncidence(double shadeBeamDiffuseVisibleReflectanceAtNormalIncidence);
-
-    bool setShadeMaterialInfraredTransmittance(double shadeMaterialInfraredTransmittance);
-    bool setFrontSideShadeMaterialInfraredEmissivity(double frontSideShadeMaterialInfraredEmissivity);
     bool setBackSideShadeMaterialInfraredEmissivity(double backSideShadeMaterialInfraredEmissivity);
-
-    void resetShadeBeamBeamSolarTransmittance();
-    void resetShadeMaterialInfraredTransmittance();
-    void resetFrontSideShadeMaterialInfraredEmissivity();
     void resetBackSideShadeMaterialInfraredEmissivity();
 
    protected:

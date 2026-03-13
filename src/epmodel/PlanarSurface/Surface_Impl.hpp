@@ -11,52 +11,48 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API Surface_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~Surface_Impl() override = default;
+    class EPMODEL_API Surface_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~Surface_Impl() override = default;
 
-  std::string surfaceType() const;
-  std::string outsideBoundaryCondition() const;
+      std::string surfaceType() const;
+      bool setSurfaceType(const std::string& surfaceType);
 
-  std::string sunExposure() const;
-  bool isSunExposureDefaulted() const;
+      std::string outsideBoundaryCondition() const;
+      bool setOutsideBoundaryCondition(const std::string& outsideBoundaryCondition);
 
-  std::string windExposure() const;
-  bool isWindExposureDefaulted() const;
+      std::string sunExposure() const;
+      bool isSunExposureDefaulted() const;
+      bool setSunExposure(const std::string& sunExposure);
+      void resetSunExposure();
 
-  boost::optional<double> viewFactortoGround() const;
-  bool isViewFactortoGroundDefaulted() const;
-  bool isViewFactortoGroundAutocalculated() const;
+      std::string windExposure() const;
+      bool isWindExposureDefaulted() const;
+      bool setWindExposure(const std::string& windExposure);
+      void resetWindExposure();
 
-  boost::optional<double> numberofVertices() const;
-  bool isNumberofVerticesDefaulted() const;
-  bool isNumberofVerticesAutocalculated() const;
+      boost::optional<double> viewFactortoGround() const;
+      bool isViewFactortoGroundDefaulted() const;
+      bool isViewFactortoGroundAutocalculated() const;
+      bool setViewFactortoGround(boost::optional<double> viewFactortoGround);
+      bool setViewFactortoGround(double viewFactortoGround);
+      void resetViewFactortoGround();
+      void autocalculateViewFactortoGround();
 
-  bool setSurfaceType(const std::string& surfaceType);
-  bool setOutsideBoundaryCondition(const std::string& outsideBoundaryCondition);
+      boost::optional<double> numberofVertices() const;
+      bool isNumberofVerticesDefaulted() const;
+      bool isNumberofVerticesAutocalculated() const;
+      bool setNumberofVertices(boost::optional<double> numberofVertices);
+      bool setNumberofVertices(double numberofVertices);
+      void resetNumberofVertices();
+      void autocalculateNumberofVertices();
+    };
 
-  bool setSunExposure(const std::string& sunExposure);
-  void resetSunExposure();
-
-  bool setWindExposure(const std::string& windExposure);
-  void resetWindExposure();
-
-  bool setViewFactortoGround(boost::optional<double> viewFactortoGround);
-  bool setViewFactortoGround(double viewFactortoGround);
-  void resetViewFactortoGround();
-  void autocalculateViewFactortoGround();
-
-  bool setNumberofVertices(boost::optional<double> numberofVertices);
-  bool setNumberofVertices(double numberofVertices);
-  void resetNumberofVertices();
-  void autocalculateNumberofVertices();
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

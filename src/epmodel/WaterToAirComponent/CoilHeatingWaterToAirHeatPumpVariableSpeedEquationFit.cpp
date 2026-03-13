@@ -40,15 +40,15 @@ boost::optional<double> CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::r
     ->ratedHeatingCapacityAtSelectedNominalSpeedLevel();
 }
 
-bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::isRatedHeatingCapacityAtSelectedNominalSpeedLevelAutosized() const {
-  return getImpl<detail::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()
-    ->isRatedHeatingCapacityAtSelectedNominalSpeedLevelAutosized();
-}
-
 bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::setRatedHeatingCapacityAtSelectedNominalSpeedLevel(
   double ratedHeatingCapacityAtSelectedNominalSpeedLevel) {
   return getImpl<detail::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()
     ->setRatedHeatingCapacityAtSelectedNominalSpeedLevel(ratedHeatingCapacityAtSelectedNominalSpeedLevel);
+}
+
+bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::isRatedHeatingCapacityAtSelectedNominalSpeedLevelAutosized() const {
+  return getImpl<detail::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()
+    ->isRatedHeatingCapacityAtSelectedNominalSpeedLevelAutosized();
 }
 
 void CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::autosizeRatedHeatingCapacityAtSelectedNominalSpeedLevel() {
@@ -60,14 +60,14 @@ boost::optional<double> CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::r
   return getImpl<detail::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()->ratedAirFlowRateAtSelectedNominalSpeedLevel();
 }
 
-bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::isRatedAirFlowRateAtSelectedNominalSpeedLevelAutosized() const {
-  return getImpl<detail::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()->isRatedAirFlowRateAtSelectedNominalSpeedLevelAutosized();
-}
-
 bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::setRatedAirFlowRateAtSelectedNominalSpeedLevel(
   double ratedAirFlowRateAtSelectedNominalSpeedLevel) {
   return getImpl<detail::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()
     ->setRatedAirFlowRateAtSelectedNominalSpeedLevel(ratedAirFlowRateAtSelectedNominalSpeedLevel);
+}
+
+bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::isRatedAirFlowRateAtSelectedNominalSpeedLevelAutosized() const {
+  return getImpl<detail::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()->isRatedAirFlowRateAtSelectedNominalSpeedLevelAutosized();
 }
 
 void CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::autosizeRatedAirFlowRateAtSelectedNominalSpeedLevel() {
@@ -78,15 +78,15 @@ boost::optional<double> CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::r
   return getImpl<detail::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()->ratedWaterFlowRateAtSelectedNominalSpeedLevel();
 }
 
-bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::isRatedWaterFlowRateAtSelectedNominalSpeedLevelAutosized() const {
-  return getImpl<detail::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()
-    ->isRatedWaterFlowRateAtSelectedNominalSpeedLevelAutosized();
-}
-
 bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::setRatedWaterFlowRateAtSelectedNominalSpeedLevel(
   double ratedWaterFlowRateAtSelectedNominalSpeedLevel) {
   return getImpl<detail::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()
     ->setRatedWaterFlowRateAtSelectedNominalSpeedLevel(ratedWaterFlowRateAtSelectedNominalSpeedLevel);
+}
+
+bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::isRatedWaterFlowRateAtSelectedNominalSpeedLevelAutosized() const {
+  return getImpl<detail::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()
+    ->isRatedWaterFlowRateAtSelectedNominalSpeedLevelAutosized();
 }
 
 void CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::autosizeRatedWaterFlowRateAtSelectedNominalSpeedLevel() {
@@ -118,6 +118,13 @@ boost::optional<double> CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Im
                    true);
 }
 
+bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::setRatedHeatingCapacityAtSelectedNominalSpeedLevel(
+  double ratedHeatingCapacityAtSelectedNominalSpeedLevel) {
+  return setDouble(
+    openstudio::Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFitFields::RatedHeatingCapacityAtSelectedNominalSpeedLevel,
+    ratedHeatingCapacityAtSelectedNominalSpeedLevel);
+}
+
 bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::isRatedHeatingCapacityAtSelectedNominalSpeedLevelAutosized() const {
   if (const auto value =
         getString(openstudio::Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFitFields::RatedHeatingCapacityAtSelectedNominalSpeedLevel,
@@ -125,13 +132,6 @@ bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::isRatedHeatingC
     return openstudio::istringEqual(*value, "autosize");
   }
   return false;
-}
-
-bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::setRatedHeatingCapacityAtSelectedNominalSpeedLevel(
-  double ratedHeatingCapacityAtSelectedNominalSpeedLevel) {
-  return setDouble(
-    openstudio::Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFitFields::RatedHeatingCapacityAtSelectedNominalSpeedLevel,
-    ratedHeatingCapacityAtSelectedNominalSpeedLevel);
 }
 
 void CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::autosizeRatedHeatingCapacityAtSelectedNominalSpeedLevel() {
@@ -144,6 +144,12 @@ boost::optional<double> CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Im
                    true);
 }
 
+bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::setRatedAirFlowRateAtSelectedNominalSpeedLevel(
+  double ratedAirFlowRateAtSelectedNominalSpeedLevel) {
+  return setDouble(openstudio::Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFitFields::RatedAirFlowRateAtSelectedNominalSpeedLevel,
+                   ratedAirFlowRateAtSelectedNominalSpeedLevel);
+}
+
 bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::isRatedAirFlowRateAtSelectedNominalSpeedLevelAutosized() const {
   if (const auto value =
         getString(openstudio::Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFitFields::RatedAirFlowRateAtSelectedNominalSpeedLevel,
@@ -151,12 +157,6 @@ bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::isRatedAirFlowR
     return openstudio::istringEqual(*value, "autosize");
   }
   return false;
-}
-
-bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::setRatedAirFlowRateAtSelectedNominalSpeedLevel(
-  double ratedAirFlowRateAtSelectedNominalSpeedLevel) {
-  return setDouble(openstudio::Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFitFields::RatedAirFlowRateAtSelectedNominalSpeedLevel,
-                   ratedAirFlowRateAtSelectedNominalSpeedLevel);
 }
 
 void CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::autosizeRatedAirFlowRateAtSelectedNominalSpeedLevel() {
@@ -169,6 +169,12 @@ boost::optional<double> CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Im
                    true);
 }
 
+bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::setRatedWaterFlowRateAtSelectedNominalSpeedLevel(
+  double ratedWaterFlowRateAtSelectedNominalSpeedLevel) {
+  return setDouble(openstudio::Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFitFields::RatedWaterFlowRateAtSelectedNominalSpeedLevel,
+                   ratedWaterFlowRateAtSelectedNominalSpeedLevel);
+}
+
 bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::isRatedWaterFlowRateAtSelectedNominalSpeedLevelAutosized() const {
   if (const auto value =
         getString(openstudio::Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFitFields::RatedWaterFlowRateAtSelectedNominalSpeedLevel,
@@ -176,12 +182,6 @@ bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::isRatedWaterFlo
     return openstudio::istringEqual(*value, "autosize");
   }
   return false;
-}
-
-bool CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::setRatedWaterFlowRateAtSelectedNominalSpeedLevel(
-  double ratedWaterFlowRateAtSelectedNominalSpeedLevel) {
-  return setDouble(openstudio::Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFitFields::RatedWaterFlowRateAtSelectedNominalSpeedLevel,
-                   ratedWaterFlowRateAtSelectedNominalSpeedLevel);
 }
 
 void CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::autosizeRatedWaterFlowRateAtSelectedNominalSpeedLevel() {

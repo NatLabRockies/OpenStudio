@@ -47,8 +47,6 @@ namespace epmodel {
     // - ForwardTranslator evidence: translateThermalStorageChilledWaterStratified confirms these numeric and choice fields align with the current EnergyPlus schema.
     // - TODO(parity): Add excluded relationship APIs once scalar saturation for this type is complete.
 
-    /** @name Getters */
-    //@{
     double tankVolume() const;
     bool setTankVolume(double tankVolume);
 
@@ -166,7 +164,6 @@ namespace epmodel {
 
     double node10AdditionalLossCoefficient() const;
     bool setNode10AdditionalLossCoefficient(double node10AdditionalLossCoefficient);
-    //@}
 
    protected:
     using ImplType = detail::ThermalStorageChilledWaterStratified_Impl;

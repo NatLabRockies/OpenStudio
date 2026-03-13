@@ -16,47 +16,47 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class OutputControlTimestamp_Impl;
-}
+  namespace detail {
+    class OutputControlTimestamp_Impl;
+  }
 
-class EPMODEL_API OutputControlTimestamp : public ModelObject
-{
- public:
-  explicit OutputControlTimestamp(const Model& model);
+  class EPMODEL_API OutputControlTimestamp : public ModelObject
+  {
+   public:
+    explicit OutputControlTimestamp(const Model& model);
 
-  virtual ~OutputControlTimestamp() override = default;
-  OutputControlTimestamp(const OutputControlTimestamp& other) = default;
-  OutputControlTimestamp(OutputControlTimestamp&& other) = default;
-  OutputControlTimestamp& operator=(const OutputControlTimestamp&) = default;
-  OutputControlTimestamp& operator=(OutputControlTimestamp&&) = default;
+    virtual ~OutputControlTimestamp() override = default;
+    OutputControlTimestamp(const OutputControlTimestamp& other) = default;
+    OutputControlTimestamp(OutputControlTimestamp&& other) = default;
+    OutputControlTimestamp& operator=(const OutputControlTimestamp&) = default;
+    OutputControlTimestamp& operator=(OutputControlTimestamp&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::OutputControlTimestamp scalar accessor names/signatures.
-  // - Field Mapping: iso8601Format/timestampAtBeginningOfInterval map directly to E+ OutputControl:Timestamp
-  //   ISO8601 Format / Timestamp at Beginning of Interval.
-  // - ForwardTranslator evidence: model ForwardTranslateOutputControlTimestamp.cpp writes these preserved APIs
-  //   directly to matching E+ fields with Yes/No conversion.
-  // - TODO(parity): Keep scalar API stable while adding broader parity behavior in future passes.
-  bool iso8601Format() const;
-  bool timestampAtBeginningOfInterval() const;
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model::OutputControlTimestamp scalar accessor names/signatures.
+    // - Field Mapping: iso8601Format/timestampAtBeginningOfInterval map directly to E+ OutputControl:Timestamp
+    //   ISO8601 Format / Timestamp at Beginning of Interval.
+    // - ForwardTranslator evidence: model ForwardTranslateOutputControlTimestamp.cpp writes these preserved APIs
+    //   directly to matching E+ fields with Yes/No conversion.
+    // - TODO(parity): Keep scalar API stable while adding broader parity behavior in future passes.
+    bool iso8601Format() const;
+    bool setISO8601Format(bool iso8601Format);
 
-  bool setISO8601Format(bool iso8601Format);
-  bool setTimestampAtBeginningOfInterval(bool timestampAtBeginningOfInterval);
+    bool timestampAtBeginningOfInterval() const;
+    bool setTimestampAtBeginningOfInterval(bool timestampAtBeginningOfInterval);
 
- protected:
-  using ImplType = detail::OutputControlTimestamp_Impl;
+   protected:
+    using ImplType = detail::OutputControlTimestamp_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit OutputControlTimestamp(std::shared_ptr<detail::OutputControlTimestamp_Impl> impl);
-};
+    explicit OutputControlTimestamp(std::shared_ptr<detail::OutputControlTimestamp_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

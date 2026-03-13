@@ -13,23 +13,23 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SiteSolarAndVisibleSpectrum_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~SiteSolarAndVisibleSpectrum_Impl() override = default;
+    class EPMODEL_API SiteSolarAndVisibleSpectrum_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~SiteSolarAndVisibleSpectrum_Impl() override = default;
 
-  std::string spectrumDataMethod() const;
-  bool isSpectrumDataMethodDefaulted() const;
-  bool setSpectrumDataMethod(const std::string& spectrumDataMethod);
-  void resetSpectrumDataMethod();
+      std::vector<std::string> spectrumDataMethodValues() const;
 
-  std::vector<std::string> spectrumDataMethodValues() const;
-};
+      std::string spectrumDataMethod() const;
+      bool isSpectrumDataMethodDefaulted() const;
+      bool setSpectrumDataMethod(const std::string& spectrumDataMethod);
+      void resetSpectrumDataMethod();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

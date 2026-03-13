@@ -11,40 +11,41 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatTransferBasementBldgData_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatTransferBasementBldgData_Impl() override = default;
+    class EPMODEL_API GroundHeatTransferBasementBldgData_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatTransferBasementBldgData_Impl() override = default;
 
-  double dwallWallthickness() const;
-  double dslabFloorslabthickness() const;
-  double dgravxyWidthofgravelpitbesidebasementwall() const;
-  double dgravznGraveldepthextendingabovethefloorslab() const;
-  double dgravzpGraveldepthbelowthefloorslab() const;
+      double dwallWallthickness() const;
+      bool isDwallWallthicknessDefaulted() const;
+      bool setDwallWallthickness(double dwallWallthickness);
+      void resetDwallWallthickness();
 
-  bool isDwallWallthicknessDefaulted() const;
-  bool isDslabFloorslabthicknessDefaulted() const;
-  bool isDgravxyWidthofgravelpitbesidebasementwallDefaulted() const;
-  bool isDgravznGraveldepthextendingabovethefloorslabDefaulted() const;
-  bool isDgravzpGraveldepthbelowthefloorslabDefaulted() const;
+      double dslabFloorslabthickness() const;
+      bool isDslabFloorslabthicknessDefaulted() const;
+      bool setDslabFloorslabthickness(double dslabFloorslabthickness);
+      void resetDslabFloorslabthickness();
 
-  bool setDwallWallthickness(double dwallWallthickness);
-  bool setDslabFloorslabthickness(double dslabFloorslabthickness);
-  bool setDgravxyWidthofgravelpitbesidebasementwall(double dgravxyWidthofgravelpitbesidebasementwall);
-  bool setDgravznGraveldepthextendingabovethefloorslab(double dgravznGraveldepthextendingabovethefloorslab);
-  bool setDgravzpGraveldepthbelowthefloorslab(double dgravzpGraveldepthbelowthefloorslab);
+      double dgravxyWidthofgravelpitbesidebasementwall() const;
+      bool isDgravxyWidthofgravelpitbesidebasementwallDefaulted() const;
+      bool setDgravxyWidthofgravelpitbesidebasementwall(double dgravxyWidthofgravelpitbesidebasementwall);
+      void resetDgravxyWidthofgravelpitbesidebasementwall();
 
-  void resetDwallWallthickness();
-  void resetDslabFloorslabthickness();
-  void resetDgravxyWidthofgravelpitbesidebasementwall();
-  void resetDgravznGraveldepthextendingabovethefloorslab();
-  void resetDgravzpGraveldepthbelowthefloorslab();
-};
+      double dgravznGraveldepthextendingabovethefloorslab() const;
+      bool isDgravznGraveldepthextendingabovethefloorslabDefaulted() const;
+      bool setDgravznGraveldepthextendingabovethefloorslab(double dgravznGraveldepthextendingabovethefloorslab);
+      void resetDgravznGraveldepthextendingabovethefloorslab();
 
-}  // namespace detail
+      double dgravzpGraveldepthbelowthefloorslab() const;
+      bool isDgravzpGraveldepthbelowthefloorslabDefaulted() const;
+      bool setDgravzpGraveldepthbelowthefloorslab(double dgravzpGraveldepthbelowthefloorslab);
+      void resetDgravzpGraveldepthbelowthefloorslab();
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

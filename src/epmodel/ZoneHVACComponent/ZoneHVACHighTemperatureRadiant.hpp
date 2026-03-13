@@ -49,43 +49,43 @@ namespace epmodel {
     //   relationship-only and are intentionally excluded from this scalar-focused API.
 
     boost::optional<double> maximumPowerInput() const;
-    bool isMaximumPowerInputAutosized() const;
     bool setMaximumPowerInput(double maximumPowerInput);
+    bool isMaximumPowerInputAutosized() const;
     void autosizeMaximumPowerInput();
 
     std::string fuelType() const;
-    bool isFuelTypeDefaulted() const;
     bool setFuelType(const std::string& fuelType);
+    bool isFuelTypeDefaulted() const;
     void resetFuelType();
 
     double combustionEfficiency() const;
-    bool isCombustionEfficiencyDefaulted() const;
     bool setCombustionEfficiency(double combustionEfficiency);
+    bool isCombustionEfficiencyDefaulted() const;
     void resetCombustionEfficiency();
 
     double fractionofInputConvertedtoRadiantEnergy() const;
-    bool isFractionofInputConvertedtoRadiantEnergyDefaulted() const;
     bool setFractionofInputConvertedtoRadiantEnergy(double fractionofInputConvertedtoRadiantEnergy);
+    bool isFractionofInputConvertedtoRadiantEnergyDefaulted() const;
     void resetFractionofInputConvertedtoRadiantEnergy();
 
     double fractionofInputConvertedtoLatentEnergy() const;
-    bool isFractionofInputConvertedtoLatentEnergyDefaulted() const;
     bool setFractionofInputConvertedtoLatentEnergy(double fractionofInputConvertedtoLatentEnergy);
+    bool isFractionofInputConvertedtoLatentEnergyDefaulted() const;
     void resetFractionofInputConvertedtoLatentEnergy();
 
     double fractionofInputthatIsLost() const;
-    bool isFractionofInputthatIsLostDefaulted() const;
     bool setFractionofInputthatIsLost(double fractionofInputthatIsLost);
+    bool isFractionofInputthatIsLostDefaulted() const;
     void resetFractionofInputthatIsLost();
 
     std::string temperatureControlType() const;
-    bool isTemperatureControlTypeDefaulted() const;
     bool setTemperatureControlType(const std::string& temperatureControlType);
+    bool isTemperatureControlTypeDefaulted() const;
     void resetTemperatureControlType();
 
     double heatingThrottlingRange() const;
-    bool isHeatingThrottlingRangeDefaulted() const;
     bool setHeatingThrottlingRange(double heatingThrottlingRange);
+    bool isHeatingThrottlingRangeDefaulted() const;
     void resetHeatingThrottlingRange();
 
     double fractionofRadiantEnergyIncidentonPeople() const;

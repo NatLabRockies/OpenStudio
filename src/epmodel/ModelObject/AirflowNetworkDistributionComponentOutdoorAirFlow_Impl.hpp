@@ -11,24 +11,24 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirflowNetworkDistributionComponentOutdoorAirFlow_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirflowNetworkDistributionComponentOutdoorAirFlow_Impl() override = default;
+    class EPMODEL_API AirflowNetworkDistributionComponentOutdoorAirFlow_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirflowNetworkDistributionComponentOutdoorAirFlow_Impl() override = default;
 
-  double airMassFlowCoefficientWhenNoOutdoorAirFlowatReferenceConditions() const;
-  bool setAirMassFlowCoefficientWhenNoOutdoorAirFlowatReferenceConditions(double airMassFlowCoefficientWhenNoOutdoorAirFlowatReferenceConditions);
+      double airMassFlowCoefficientWhenNoOutdoorAirFlowatReferenceConditions() const;
+      bool setAirMassFlowCoefficientWhenNoOutdoorAirFlowatReferenceConditions(double airMassFlowCoefficientWhenNoOutdoorAirFlowatReferenceConditions);
 
-  double airMassFlowExponentWhenNoOutdoorAirFlow() const;
-  bool isAirMassFlowExponentWhenNoOutdoorAirFlowDefaulted() const;
-  bool setAirMassFlowExponentWhenNoOutdoorAirFlow(double airMassFlowExponentWhenNoOutdoorAirFlow);
-  void resetAirMassFlowExponentWhenNoOutdoorAirFlow();
-};
+      double airMassFlowExponentWhenNoOutdoorAirFlow() const;
+      bool setAirMassFlowExponentWhenNoOutdoorAirFlow(double airMassFlowExponentWhenNoOutdoorAirFlow);
+      bool isAirMassFlowExponentWhenNoOutdoorAirFlowDefaulted() const;
+      void resetAirMassFlowExponentWhenNoOutdoorAirFlow();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

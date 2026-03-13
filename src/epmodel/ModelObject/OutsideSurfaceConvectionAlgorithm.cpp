@@ -55,6 +55,10 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    std::vector<std::string> OutsideSurfaceConvectionAlgorithm_Impl::validAlgorithmValues() const {
+      return openstudio::epmodel::OutsideSurfaceConvectionAlgorithm::validAlgorithmValues();
+    }
+
     std::string OutsideSurfaceConvectionAlgorithm_Impl::algorithm() const {
       const auto value = getString(openstudio::SurfaceConvectionAlgorithm_OutsideFields::Algorithm, true);
       OS_ASSERT(value);
@@ -71,10 +75,6 @@ namespace epmodel {
 
     void OutsideSurfaceConvectionAlgorithm_Impl::resetAlgorithm() {
       OS_ASSERT(setString(openstudio::SurfaceConvectionAlgorithm_OutsideFields::Algorithm, ""));
-    }
-
-    std::vector<std::string> OutsideSurfaceConvectionAlgorithm_Impl::validAlgorithmValues() const {
-      return openstudio::epmodel::OutsideSurfaceConvectionAlgorithm::validAlgorithmValues();
     }
 
   }  // namespace detail

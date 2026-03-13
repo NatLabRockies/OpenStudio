@@ -17,115 +17,128 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class HVACTemplateZoneDualDuct_Impl;
-}
+  namespace detail {
+    class HVACTemplateZoneDualDuct_Impl;
+  }
 
-class EPMODEL_API HVACTemplateZoneDualDuct : public ModelObject
-{
- public:
-  explicit HVACTemplateZoneDualDuct(const Model& model);
+  class EPMODEL_API HVACTemplateZoneDualDuct : public ModelObject
+  {
+   public:
+    explicit HVACTemplateZoneDualDuct(const Model& model);
 
-  virtual ~HVACTemplateZoneDualDuct() override = default;
-  HVACTemplateZoneDualDuct(const HVACTemplateZoneDualDuct& other) = default;
-  HVACTemplateZoneDualDuct(HVACTemplateZoneDualDuct&& other) = default;
-  HVACTemplateZoneDualDuct& operator=(const HVACTemplateZoneDualDuct&) = default;
-  HVACTemplateZoneDualDuct& operator=(HVACTemplateZoneDualDuct&&) = default;
+    virtual ~HVACTemplateZoneDualDuct() override = default;
+    HVACTemplateZoneDualDuct(const HVACTemplateZoneDualDuct& other) = default;
+    HVACTemplateZoneDualDuct(HVACTemplateZoneDualDuct&& other) = default;
+    HVACTemplateZoneDualDuct& operator=(const HVACTemplateZoneDualDuct&) = default;
+    HVACTemplateZoneDualDuct& operator=(HVACTemplateZoneDualDuct&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> outdoorAirMethodValues();
-  static std::vector<std::string> baseboardHeatingTypeValues();
-  static std::vector<std::string> zoneCoolingDesignSupplyAirTemperatureInputMethodValues();
-  static std::vector<std::string> zoneHeatingDesignSupplyAirTemperatureInputMethodValues();
+    static std::vector<std::string> outdoorAirMethodValues();
+    static std::vector<std::string> baseboardHeatingTypeValues();
+    static std::vector<std::string> zoneCoolingDesignSupplyAirTemperatureInputMethodValues();
+    static std::vector<std::string> zoneHeatingDesignSupplyAirTemperatureInputMethodValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to HVACTemplate:Zone:DualDuct non-name, non-link scalar fields.
-  // - Field Mapping: Zone/System/Thermostat/DesignSpecification/Plenum/Schedule object-list fields are relationship
-  //   fields and are intentionally excluded from scalar-only scaffold.
-  // - TODO(parity): Revisit only if a future parity pass introduces relationship/object-link APIs.
-  boost::optional<double> supplyAirMaximumFlowRate() const;
-  boost::optional<double> zoneHeatingSizingFactor() const;
-  boost::optional<double> zoneCoolingSizingFactor() const;
-  double zoneMinimumAirFlowFraction() const;
-  std::string outdoorAirMethod() const;
-  double outdoorAirFlowRateperPerson() const;
-  double outdoorAirFlowRateperZoneFloorArea() const;
-  double outdoorAirFlowRateperZone() const;
-  std::string baseboardHeatingType() const;
-  boost::optional<double> baseboardHeatingCapacity() const;
-  std::string zoneCoolingDesignSupplyAirTemperatureInputMethod() const;
-  double zoneCoolingDesignSupplyAirTemperature() const;
-  double zoneCoolingDesignSupplyAirTemperatureDifference() const;
-  std::string zoneHeatingDesignSupplyAirTemperatureInputMethod() const;
-  double zoneHeatingDesignSupplyAirTemperature() const;
-  double zoneHeatingDesignSupplyAirTemperatureDifference() const;
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to HVACTemplate:Zone:DualDuct non-name, non-link scalar fields.
+    // - Field Mapping: Zone/System/Thermostat/DesignSpecification/Plenum/Schedule object-list fields are relationship
+    //   fields and are intentionally excluded from scalar-only scaffold.
+    // - TODO(parity): Revisit only if a future parity pass introduces relationship/object-link APIs.
 
-  bool isSupplyAirMaximumFlowRateDefaulted() const;
-  bool isSupplyAirMaximumFlowRateAutosized() const;
-  bool isZoneMinimumAirFlowFractionDefaulted() const;
-  bool isOutdoorAirMethodDefaulted() const;
-  bool isOutdoorAirFlowRateperPersonDefaulted() const;
-  bool isOutdoorAirFlowRateperZoneFloorAreaDefaulted() const;
-  bool isOutdoorAirFlowRateperZoneDefaulted() const;
-  bool isBaseboardHeatingTypeDefaulted() const;
-  bool isBaseboardHeatingCapacityDefaulted() const;
-  bool isBaseboardHeatingCapacityAutosized() const;
-  bool isZoneCoolingDesignSupplyAirTemperatureInputMethodDefaulted() const;
-  bool isZoneCoolingDesignSupplyAirTemperatureDefaulted() const;
-  bool isZoneCoolingDesignSupplyAirTemperatureDifferenceDefaulted() const;
-  bool isZoneHeatingDesignSupplyAirTemperatureInputMethodDefaulted() const;
-  bool isZoneHeatingDesignSupplyAirTemperatureDefaulted() const;
-  bool isZoneHeatingDesignSupplyAirTemperatureDifferenceDefaulted() const;
+    boost::optional<double> supplyAirMaximumFlowRate() const;
+    bool isSupplyAirMaximumFlowRateDefaulted() const;
+    bool isSupplyAirMaximumFlowRateAutosized() const;
+    bool setSupplyAirMaximumFlowRate(double supplyAirMaximumFlowRate);
+    void resetSupplyAirMaximumFlowRate();
+    void autosizeSupplyAirMaximumFlowRate();
 
-  bool setSupplyAirMaximumFlowRate(double supplyAirMaximumFlowRate);
-  bool setZoneHeatingSizingFactor(double zoneHeatingSizingFactor);
-  bool setZoneCoolingSizingFactor(double zoneCoolingSizingFactor);
-  bool setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction);
-  bool setOutdoorAirMethod(const std::string& outdoorAirMethod);
-  bool setOutdoorAirFlowRateperPerson(double outdoorAirFlowRateperPerson);
-  bool setOutdoorAirFlowRateperZoneFloorArea(double outdoorAirFlowRateperZoneFloorArea);
-  bool setOutdoorAirFlowRateperZone(double outdoorAirFlowRateperZone);
-  bool setBaseboardHeatingType(const std::string& baseboardHeatingType);
-  bool setBaseboardHeatingCapacity(double baseboardHeatingCapacity);
-  bool setZoneCoolingDesignSupplyAirTemperatureInputMethod(const std::string& zoneCoolingDesignSupplyAirTemperatureInputMethod);
-  bool setZoneCoolingDesignSupplyAirTemperature(double zoneCoolingDesignSupplyAirTemperature);
-  bool setZoneCoolingDesignSupplyAirTemperatureDifference(double zoneCoolingDesignSupplyAirTemperatureDifference);
-  bool setZoneHeatingDesignSupplyAirTemperatureInputMethod(const std::string& zoneHeatingDesignSupplyAirTemperatureInputMethod);
-  bool setZoneHeatingDesignSupplyAirTemperature(double zoneHeatingDesignSupplyAirTemperature);
-  bool setZoneHeatingDesignSupplyAirTemperatureDifference(double zoneHeatingDesignSupplyAirTemperatureDifference);
+    boost::optional<double> zoneHeatingSizingFactor() const;
+    bool setZoneHeatingSizingFactor(double zoneHeatingSizingFactor);
+    void resetZoneHeatingSizingFactor();
 
-  void resetSupplyAirMaximumFlowRate();
-  void autosizeSupplyAirMaximumFlowRate();
-  void resetZoneHeatingSizingFactor();
-  void resetZoneCoolingSizingFactor();
-  void resetZoneMinimumAirFlowFraction();
-  void resetOutdoorAirMethod();
-  void resetOutdoorAirFlowRateperPerson();
-  void resetOutdoorAirFlowRateperZoneFloorArea();
-  void resetOutdoorAirFlowRateperZone();
-  void resetBaseboardHeatingType();
-  void resetBaseboardHeatingCapacity();
-  void autosizeBaseboardHeatingCapacity();
-  void resetZoneCoolingDesignSupplyAirTemperatureInputMethod();
-  void resetZoneCoolingDesignSupplyAirTemperature();
-  void resetZoneCoolingDesignSupplyAirTemperatureDifference();
-  void resetZoneHeatingDesignSupplyAirTemperatureInputMethod();
-  void resetZoneHeatingDesignSupplyAirTemperature();
-  void resetZoneHeatingDesignSupplyAirTemperatureDifference();
+    boost::optional<double> zoneCoolingSizingFactor() const;
+    bool setZoneCoolingSizingFactor(double zoneCoolingSizingFactor);
+    void resetZoneCoolingSizingFactor();
 
- protected:
-  using ImplType = detail::HVACTemplateZoneDualDuct_Impl;
+    double zoneMinimumAirFlowFraction() const;
+    bool isZoneMinimumAirFlowFractionDefaulted() const;
+    bool setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction);
+    void resetZoneMinimumAirFlowFraction();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    std::string outdoorAirMethod() const;
+    bool isOutdoorAirMethodDefaulted() const;
+    bool setOutdoorAirMethod(const std::string& outdoorAirMethod);
+    void resetOutdoorAirMethod();
 
-  explicit HVACTemplateZoneDualDuct(std::shared_ptr<detail::HVACTemplateZoneDualDuct_Impl> impl);
-};
+    double outdoorAirFlowRateperPerson() const;
+    bool isOutdoorAirFlowRateperPersonDefaulted() const;
+    bool setOutdoorAirFlowRateperPerson(double outdoorAirFlowRateperPerson);
+    void resetOutdoorAirFlowRateperPerson();
+
+    double outdoorAirFlowRateperZoneFloorArea() const;
+    bool isOutdoorAirFlowRateperZoneFloorAreaDefaulted() const;
+    bool setOutdoorAirFlowRateperZoneFloorArea(double outdoorAirFlowRateperZoneFloorArea);
+    void resetOutdoorAirFlowRateperZoneFloorArea();
+
+    double outdoorAirFlowRateperZone() const;
+    bool isOutdoorAirFlowRateperZoneDefaulted() const;
+    bool setOutdoorAirFlowRateperZone(double outdoorAirFlowRateperZone);
+    void resetOutdoorAirFlowRateperZone();
+
+    std::string baseboardHeatingType() const;
+    bool isBaseboardHeatingTypeDefaulted() const;
+    bool setBaseboardHeatingType(const std::string& baseboardHeatingType);
+    void resetBaseboardHeatingType();
+
+    boost::optional<double> baseboardHeatingCapacity() const;
+    bool isBaseboardHeatingCapacityDefaulted() const;
+    bool isBaseboardHeatingCapacityAutosized() const;
+    bool setBaseboardHeatingCapacity(double baseboardHeatingCapacity);
+    void resetBaseboardHeatingCapacity();
+    void autosizeBaseboardHeatingCapacity();
+
+    std::string zoneCoolingDesignSupplyAirTemperatureInputMethod() const;
+    bool isZoneCoolingDesignSupplyAirTemperatureInputMethodDefaulted() const;
+    bool setZoneCoolingDesignSupplyAirTemperatureInputMethod(const std::string& zoneCoolingDesignSupplyAirTemperatureInputMethod);
+    void resetZoneCoolingDesignSupplyAirTemperatureInputMethod();
+
+    double zoneCoolingDesignSupplyAirTemperature() const;
+    bool isZoneCoolingDesignSupplyAirTemperatureDefaulted() const;
+    bool setZoneCoolingDesignSupplyAirTemperature(double zoneCoolingDesignSupplyAirTemperature);
+    void resetZoneCoolingDesignSupplyAirTemperature();
+
+    double zoneCoolingDesignSupplyAirTemperatureDifference() const;
+    bool isZoneCoolingDesignSupplyAirTemperatureDifferenceDefaulted() const;
+    bool setZoneCoolingDesignSupplyAirTemperatureDifference(double zoneCoolingDesignSupplyAirTemperatureDifference);
+    void resetZoneCoolingDesignSupplyAirTemperatureDifference();
+
+    std::string zoneHeatingDesignSupplyAirTemperatureInputMethod() const;
+    bool isZoneHeatingDesignSupplyAirTemperatureInputMethodDefaulted() const;
+    bool setZoneHeatingDesignSupplyAirTemperatureInputMethod(const std::string& zoneHeatingDesignSupplyAirTemperatureInputMethod);
+    void resetZoneHeatingDesignSupplyAirTemperatureInputMethod();
+
+    double zoneHeatingDesignSupplyAirTemperature() const;
+    bool isZoneHeatingDesignSupplyAirTemperatureDefaulted() const;
+    bool setZoneHeatingDesignSupplyAirTemperature(double zoneHeatingDesignSupplyAirTemperature);
+    void resetZoneHeatingDesignSupplyAirTemperature();
+
+    double zoneHeatingDesignSupplyAirTemperatureDifference() const;
+    bool isZoneHeatingDesignSupplyAirTemperatureDifferenceDefaulted() const;
+    bool setZoneHeatingDesignSupplyAirTemperatureDifference(double zoneHeatingDesignSupplyAirTemperatureDifference);
+    void resetZoneHeatingDesignSupplyAirTemperatureDifference();
+
+   protected:
+    using ImplType = detail::HVACTemplateZoneDualDuct_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit HVACTemplateZoneDualDuct(std::shared_ptr<detail::HVACTemplateZoneDualDuct_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

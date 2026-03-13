@@ -21,6 +21,11 @@ class EPMODEL_API EnergyManagementSystemMeteredOutputVariable_Impl : public Mode
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~EnergyManagementSystemMeteredOutputVariable_Impl() override = default;
 
+  std::vector<std::string> updateFrequencyValues() const;
+  std::vector<std::string> resourceTypeValues() const;
+  std::vector<std::string> groupTypeValues() const;
+  std::vector<std::string> endUseCategoryValues() const;
+
   std::string emsVariableName() const;
   bool setEMSVariableName(const std::string& eMSVariableName);
 
@@ -43,11 +48,6 @@ class EPMODEL_API EnergyManagementSystemMeteredOutputVariable_Impl : public Mode
   std::string units() const;
   bool setUnits(const std::string& units);
   void resetUnits();
-
-  std::vector<std::string> updateFrequencyValues() const;
-  std::vector<std::string> resourceTypeValues() const;
-  std::vector<std::string> groupTypeValues() const;
-  std::vector<std::string> endUseCategoryValues() const;
 };
 
 }  // namespace detail

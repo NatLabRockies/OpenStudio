@@ -13,33 +13,32 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HVACTemplatePlantBoilerObjectReference_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~HVACTemplatePlantBoilerObjectReference_Impl() override = default;
+    class EPMODEL_API HVACTemplatePlantBoilerObjectReference_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~HVACTemplatePlantBoilerObjectReference_Impl() override = default;
 
-  std::string boilerObjectType() const;
-  boost::optional<double> priority() const;
-  boost::optional<std::string> templatePlantLoopType() const;
+      std::string boilerObjectType() const;
+      bool isBoilerObjectTypeDefaulted() const;
+      bool setBoilerObjectType(const std::string& boilerObjectType);
+      void resetBoilerObjectType();
 
-  bool isBoilerObjectTypeDefaulted() const;
+      boost::optional<double> priority() const;
+      bool setPriority(double priority);
+      void resetPriority();
 
-  bool setBoilerObjectType(const std::string& boilerObjectType);
-  bool setPriority(double priority);
-  bool setTemplatePlantLoopType(const std::string& templatePlantLoopType);
+      boost::optional<std::string> templatePlantLoopType() const;
+      bool setTemplatePlantLoopType(const std::string& templatePlantLoopType);
+      void resetTemplatePlantLoopType();
 
-  void resetBoilerObjectType();
-  void resetPriority();
-  void resetTemplatePlantLoopType();
+      std::vector<std::string> boilerObjectTypeValues() const;
+      std::vector<std::string> templatePlantLoopTypeValues() const;
+    };
 
-  std::vector<std::string> boilerObjectTypeValues() const;
-  std::vector<std::string> templatePlantLoopTypeValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

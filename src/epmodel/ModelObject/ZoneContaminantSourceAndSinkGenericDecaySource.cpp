@@ -26,6 +26,7 @@ namespace epmodel {
     return IddObjectType::ZoneContaminantSourceAndSink_Generic_DecaySource;
   }
 
+  // Initial emission rate helpers
   boost::optional<double> ZoneContaminantSourceAndSinkGenericDecaySource::initialEmissionRate() const {
     return getImpl<detail::ZoneContaminantSourceAndSinkGenericDecaySource_Impl>()->initialEmissionRate();
   }
@@ -38,6 +39,7 @@ namespace epmodel {
     getImpl<detail::ZoneContaminantSourceAndSinkGenericDecaySource_Impl>()->resetInitialEmissionRate();
   }
 
+  // Delay time constant helpers
   boost::optional<double> ZoneContaminantSourceAndSinkGenericDecaySource::delayTimeConstant() const {
     return getImpl<detail::ZoneContaminantSourceAndSinkGenericDecaySource_Impl>()->delayTimeConstant();
   }
@@ -52,6 +54,7 @@ namespace epmodel {
 
   namespace detail {
 
+    // Initial emission rate helpers
     boost::optional<double> ZoneContaminantSourceAndSinkGenericDecaySource_Impl::initialEmissionRate() const {
       return getDouble(ZoneContaminantSourceAndSink_Generic_DecaySourceFields::InitialEmissionRate, true);
     }
@@ -65,6 +68,7 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    // Delay time constant helpers
     boost::optional<double> ZoneContaminantSourceAndSinkGenericDecaySource_Impl::delayTimeConstant() const {
       return getDouble(ZoneContaminantSourceAndSink_Generic_DecaySourceFields::DelayTimeConstant, true);
     }

@@ -10,35 +10,32 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CoilHeatingElectric_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~CoilHeatingElectric_Impl() override = default;
+    class EPMODEL_API CoilHeatingElectric_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~CoilHeatingElectric_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
-  double efficiency() const;
-  bool isEfficiencyDefaulted() const;
+      double efficiency() const;
+      bool isEfficiencyDefaulted() const;
+      bool setEfficiency(double efficiency);
+      void resetEfficiency();
 
-  boost::optional<double> nominalCapacity() const;
-  bool isNominalCapacityDefaulted() const;
-  bool isNominalCapacityAutosized() const;
+      boost::optional<double> nominalCapacity() const;
+      bool isNominalCapacityDefaulted() const;
+      bool isNominalCapacityAutosized() const;
+      bool setNominalCapacity(double nominalCapacity);
+      void resetNominalCapacity();
+      void autosizeNominalCapacity();
+      boost::optional<double> autosizedNominalCapacity() const;
+    };
 
-  bool setEfficiency(double efficiency);
-  void resetEfficiency();
-
-  bool setNominalCapacity(double nominalCapacity);
-  void resetNominalCapacity();
-  void autosizeNominalCapacity();
-
-  boost::optional<double> autosizedNominalCapacity() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

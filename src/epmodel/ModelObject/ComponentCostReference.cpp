@@ -15,236 +15,260 @@
 namespace openstudio {
 namespace epmodel {
 
-ComponentCostReference::ComponentCostReference(const Model& model) : ModelObject(ComponentCostReference::iddObjectType(), model) {}
+  ComponentCostReference::ComponentCostReference(const Model& model) : ModelObject(ComponentCostReference::iddObjectType(), model) {}
 
-ComponentCostReference::ComponentCostReference(std::shared_ptr<detail::ComponentCostReference_Impl> impl) : ModelObject(std::move(impl)) {}
+  ComponentCostReference::ComponentCostReference(std::shared_ptr<detail::ComponentCostReference_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType ComponentCostReference::iddObjectType() {
-  return IddObjectType::ComponentCost_Reference;
-}
+  IddObjectType ComponentCostReference::iddObjectType() {
+    return IddObjectType::ComponentCost_Reference;
+  }
 
-boost::optional<double> ComponentCostReference::referenceBuildingLineItemCosts() const {
-  return getImpl<detail::ComponentCostReference_Impl>()->referenceBuildingLineItemCosts();
-}
+  boost::optional<double> ComponentCostReference::referenceBuildingLineItemCosts() const {
+    return getImpl<detail::ComponentCostReference_Impl>()->referenceBuildingLineItemCosts();
+  }
 
-bool ComponentCostReference::setReferenceBuildingLineItemCosts(double referenceBuildingLineItemCosts) {
-  return getImpl<detail::ComponentCostReference_Impl>()->setReferenceBuildingLineItemCosts(referenceBuildingLineItemCosts);
-}
+  bool ComponentCostReference::setReferenceBuildingLineItemCosts(double referenceBuildingLineItemCosts) {
+    return getImpl<detail::ComponentCostReference_Impl>()->setReferenceBuildingLineItemCosts(referenceBuildingLineItemCosts);
+  }
 
-void ComponentCostReference::resetReferenceBuildingLineItemCosts() {
-  getImpl<detail::ComponentCostReference_Impl>()->resetReferenceBuildingLineItemCosts();
-}
+  void ComponentCostReference::resetReferenceBuildingLineItemCosts() {
+    getImpl<detail::ComponentCostReference_Impl>()->resetReferenceBuildingLineItemCosts();
+  }
 
-boost::optional<double> ComponentCostReference::referenceBuildingMiscellaneousCostperConditionedArea() const {
-  return getImpl<detail::ComponentCostReference_Impl>()->referenceBuildingMiscellaneousCostperConditionedArea();
-}
+  namespace detail {
 
-bool ComponentCostReference::setReferenceBuildingMiscellaneousCostperConditionedArea(double referenceBuildingMiscellaneousCostperConditionedArea) {
-  return getImpl<detail::ComponentCostReference_Impl>()->setReferenceBuildingMiscellaneousCostperConditionedArea(
-    referenceBuildingMiscellaneousCostperConditionedArea);
-}
+    boost::optional<double> ComponentCostReference_Impl::referenceBuildingLineItemCosts() const {
+      return getDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingLineItemCosts, true);
+    }
 
-void ComponentCostReference::resetReferenceBuildingMiscellaneousCostperConditionedArea() {
-  getImpl<detail::ComponentCostReference_Impl>()->resetReferenceBuildingMiscellaneousCostperConditionedArea();
-}
+    bool ComponentCostReference_Impl::setReferenceBuildingLineItemCosts(double referenceBuildingLineItemCosts) {
+      const bool result = setDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingLineItemCosts, referenceBuildingLineItemCosts);
+      OS_ASSERT(result);
+      return result;
+    }
 
-boost::optional<double> ComponentCostReference::referenceBuildingDesignandEngineeringFees() const {
-  return getImpl<detail::ComponentCostReference_Impl>()->referenceBuildingDesignandEngineeringFees();
-}
+    void ComponentCostReference_Impl::resetReferenceBuildingLineItemCosts() {
+      OS_ASSERT(setString(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingLineItemCosts, ""));
+    }
 
-bool ComponentCostReference::setReferenceBuildingDesignandEngineeringFees(double referenceBuildingDesignandEngineeringFees) {
-  return getImpl<detail::ComponentCostReference_Impl>()->setReferenceBuildingDesignandEngineeringFees(referenceBuildingDesignandEngineeringFees);
-}
+  }  // namespace detail
 
-void ComponentCostReference::resetReferenceBuildingDesignandEngineeringFees() {
-  getImpl<detail::ComponentCostReference_Impl>()->resetReferenceBuildingDesignandEngineeringFees();
-}
+  boost::optional<double> ComponentCostReference::referenceBuildingMiscellaneousCostperConditionedArea() const {
+    return getImpl<detail::ComponentCostReference_Impl>()->referenceBuildingMiscellaneousCostperConditionedArea();
+  }
 
-boost::optional<double> ComponentCostReference::referenceBuildingContractorFee() const {
-  return getImpl<detail::ComponentCostReference_Impl>()->referenceBuildingContractorFee();
-}
+  bool ComponentCostReference::setReferenceBuildingMiscellaneousCostperConditionedArea(double referenceBuildingMiscellaneousCostperConditionedArea) {
+    return getImpl<detail::ComponentCostReference_Impl>()->setReferenceBuildingMiscellaneousCostperConditionedArea(
+      referenceBuildingMiscellaneousCostperConditionedArea);
+  }
 
-bool ComponentCostReference::setReferenceBuildingContractorFee(double referenceBuildingContractorFee) {
-  return getImpl<detail::ComponentCostReference_Impl>()->setReferenceBuildingContractorFee(referenceBuildingContractorFee);
-}
+  void ComponentCostReference::resetReferenceBuildingMiscellaneousCostperConditionedArea() {
+    getImpl<detail::ComponentCostReference_Impl>()->resetReferenceBuildingMiscellaneousCostperConditionedArea();
+  }
 
-void ComponentCostReference::resetReferenceBuildingContractorFee() {
-  getImpl<detail::ComponentCostReference_Impl>()->resetReferenceBuildingContractorFee();
-}
+  namespace detail {
 
-boost::optional<double> ComponentCostReference::referenceBuildingContingency() const {
-  return getImpl<detail::ComponentCostReference_Impl>()->referenceBuildingContingency();
-}
+    boost::optional<double> ComponentCostReference_Impl::referenceBuildingMiscellaneousCostperConditionedArea() const {
+      return getDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingMiscellaneousCostperConditionedArea, true);
+    }
 
-bool ComponentCostReference::setReferenceBuildingContingency(double referenceBuildingContingency) {
-  return getImpl<detail::ComponentCostReference_Impl>()->setReferenceBuildingContingency(referenceBuildingContingency);
-}
+    bool ComponentCostReference_Impl::setReferenceBuildingMiscellaneousCostperConditionedArea(
+      double referenceBuildingMiscellaneousCostperConditionedArea) {
+      const bool result = setDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingMiscellaneousCostperConditionedArea,
+                                    referenceBuildingMiscellaneousCostperConditionedArea);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void ComponentCostReference::resetReferenceBuildingContingency() {
-  getImpl<detail::ComponentCostReference_Impl>()->resetReferenceBuildingContingency();
-}
+    void ComponentCostReference_Impl::resetReferenceBuildingMiscellaneousCostperConditionedArea() {
+      OS_ASSERT(setString(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingMiscellaneousCostperConditionedArea, ""));
+    }
 
-boost::optional<double> ComponentCostReference::referenceBuildingPermitsBondingandInsurance() const {
-  return getImpl<detail::ComponentCostReference_Impl>()->referenceBuildingPermitsBondingandInsurance();
-}
+  }  // namespace detail
 
-bool ComponentCostReference::setReferenceBuildingPermitsBondingandInsurance(double referenceBuildingPermitsBondingandInsurance) {
-  return getImpl<detail::ComponentCostReference_Impl>()->setReferenceBuildingPermitsBondingandInsurance(
-    referenceBuildingPermitsBondingandInsurance);
-}
+  boost::optional<double> ComponentCostReference::referenceBuildingDesignandEngineeringFees() const {
+    return getImpl<detail::ComponentCostReference_Impl>()->referenceBuildingDesignandEngineeringFees();
+  }
 
-void ComponentCostReference::resetReferenceBuildingPermitsBondingandInsurance() {
-  getImpl<detail::ComponentCostReference_Impl>()->resetReferenceBuildingPermitsBondingandInsurance();
-}
+  bool ComponentCostReference::setReferenceBuildingDesignandEngineeringFees(double referenceBuildingDesignandEngineeringFees) {
+    return getImpl<detail::ComponentCostReference_Impl>()->setReferenceBuildingDesignandEngineeringFees(referenceBuildingDesignandEngineeringFees);
+  }
 
-boost::optional<double> ComponentCostReference::referenceBuildingCommissioningFee() const {
-  return getImpl<detail::ComponentCostReference_Impl>()->referenceBuildingCommissioningFee();
-}
+  void ComponentCostReference::resetReferenceBuildingDesignandEngineeringFees() {
+    getImpl<detail::ComponentCostReference_Impl>()->resetReferenceBuildingDesignandEngineeringFees();
+  }
 
-bool ComponentCostReference::setReferenceBuildingCommissioningFee(double referenceBuildingCommissioningFee) {
-  return getImpl<detail::ComponentCostReference_Impl>()->setReferenceBuildingCommissioningFee(referenceBuildingCommissioningFee);
-}
+  namespace detail {
 
-void ComponentCostReference::resetReferenceBuildingCommissioningFee() {
-  getImpl<detail::ComponentCostReference_Impl>()->resetReferenceBuildingCommissioningFee();
-}
+    boost::optional<double> ComponentCostReference_Impl::referenceBuildingDesignandEngineeringFees() const {
+      return getDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingDesignandEngineeringFees, true);
+    }
 
-boost::optional<double> ComponentCostReference::referenceBuildingRegionalAdjustmentFactor() const {
-  return getImpl<detail::ComponentCostReference_Impl>()->referenceBuildingRegionalAdjustmentFactor();
-}
+    bool ComponentCostReference_Impl::setReferenceBuildingDesignandEngineeringFees(double referenceBuildingDesignandEngineeringFees) {
+      const bool result =
+        setDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingDesignandEngineeringFees, referenceBuildingDesignandEngineeringFees);
+      OS_ASSERT(result);
+      return result;
+    }
 
-bool ComponentCostReference::setReferenceBuildingRegionalAdjustmentFactor(double referenceBuildingRegionalAdjustmentFactor) {
-  return getImpl<detail::ComponentCostReference_Impl>()->setReferenceBuildingRegionalAdjustmentFactor(referenceBuildingRegionalAdjustmentFactor);
-}
+    void ComponentCostReference_Impl::resetReferenceBuildingDesignandEngineeringFees() {
+      OS_ASSERT(setString(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingDesignandEngineeringFees, ""));
+    }
 
-void ComponentCostReference::resetReferenceBuildingRegionalAdjustmentFactor() {
-  getImpl<detail::ComponentCostReference_Impl>()->resetReferenceBuildingRegionalAdjustmentFactor();
-}
+  }  // namespace detail
 
-}  // namespace epmodel
-}  // namespace openstudio
+  boost::optional<double> ComponentCostReference::referenceBuildingContractorFee() const {
+    return getImpl<detail::ComponentCostReference_Impl>()->referenceBuildingContractorFee();
+  }
 
-namespace openstudio {
-namespace epmodel {
-namespace detail {
+  bool ComponentCostReference::setReferenceBuildingContractorFee(double referenceBuildingContractorFee) {
+    return getImpl<detail::ComponentCostReference_Impl>()->setReferenceBuildingContractorFee(referenceBuildingContractorFee);
+  }
 
-boost::optional<double> ComponentCostReference_Impl::referenceBuildingLineItemCosts() const {
-  return getDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingLineItemCosts, true);
-}
+  void ComponentCostReference::resetReferenceBuildingContractorFee() {
+    getImpl<detail::ComponentCostReference_Impl>()->resetReferenceBuildingContractorFee();
+  }
 
-bool ComponentCostReference_Impl::setReferenceBuildingLineItemCosts(double referenceBuildingLineItemCosts) {
-  const bool result = setDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingLineItemCosts, referenceBuildingLineItemCosts);
-  OS_ASSERT(result);
-  return result;
-}
+  namespace detail {
 
-void ComponentCostReference_Impl::resetReferenceBuildingLineItemCosts() {
-  OS_ASSERT(setString(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingLineItemCosts, ""));
-}
+    boost::optional<double> ComponentCostReference_Impl::referenceBuildingContractorFee() const {
+      return getDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingContractorFee, true);
+    }
 
-boost::optional<double> ComponentCostReference_Impl::referenceBuildingMiscellaneousCostperConditionedArea() const {
-  return getDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingMiscellaneousCostperConditionedArea, true);
-}
+    bool ComponentCostReference_Impl::setReferenceBuildingContractorFee(double referenceBuildingContractorFee) {
+      const bool result = setDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingContractorFee, referenceBuildingContractorFee);
+      OS_ASSERT(result);
+      return result;
+    }
 
-bool ComponentCostReference_Impl::setReferenceBuildingMiscellaneousCostperConditionedArea(double referenceBuildingMiscellaneousCostperConditionedArea) {
-  const bool result = setDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingMiscellaneousCostperConditionedArea,
-                                referenceBuildingMiscellaneousCostperConditionedArea);
-  OS_ASSERT(result);
-  return result;
-}
+    void ComponentCostReference_Impl::resetReferenceBuildingContractorFee() {
+      OS_ASSERT(setString(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingContractorFee, ""));
+    }
 
-void ComponentCostReference_Impl::resetReferenceBuildingMiscellaneousCostperConditionedArea() {
-  OS_ASSERT(setString(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingMiscellaneousCostperConditionedArea, ""));
-}
+  }  // namespace detail
 
-boost::optional<double> ComponentCostReference_Impl::referenceBuildingDesignandEngineeringFees() const {
-  return getDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingDesignandEngineeringFees, true);
-}
+  boost::optional<double> ComponentCostReference::referenceBuildingContingency() const {
+    return getImpl<detail::ComponentCostReference_Impl>()->referenceBuildingContingency();
+  }
 
-bool ComponentCostReference_Impl::setReferenceBuildingDesignandEngineeringFees(double referenceBuildingDesignandEngineeringFees) {
-  const bool result =
-    setDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingDesignandEngineeringFees, referenceBuildingDesignandEngineeringFees);
-  OS_ASSERT(result);
-  return result;
-}
+  bool ComponentCostReference::setReferenceBuildingContingency(double referenceBuildingContingency) {
+    return getImpl<detail::ComponentCostReference_Impl>()->setReferenceBuildingContingency(referenceBuildingContingency);
+  }
 
-void ComponentCostReference_Impl::resetReferenceBuildingDesignandEngineeringFees() {
-  OS_ASSERT(setString(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingDesignandEngineeringFees, ""));
-}
+  void ComponentCostReference::resetReferenceBuildingContingency() {
+    getImpl<detail::ComponentCostReference_Impl>()->resetReferenceBuildingContingency();
+  }
 
-boost::optional<double> ComponentCostReference_Impl::referenceBuildingContractorFee() const {
-  return getDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingContractorFee, true);
-}
+  namespace detail {
 
-bool ComponentCostReference_Impl::setReferenceBuildingContractorFee(double referenceBuildingContractorFee) {
-  const bool result = setDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingContractorFee, referenceBuildingContractorFee);
-  OS_ASSERT(result);
-  return result;
-}
+    boost::optional<double> ComponentCostReference_Impl::referenceBuildingContingency() const {
+      return getDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingContingency, true);
+    }
 
-void ComponentCostReference_Impl::resetReferenceBuildingContractorFee() {
-  OS_ASSERT(setString(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingContractorFee, ""));
-}
+    bool ComponentCostReference_Impl::setReferenceBuildingContingency(double referenceBuildingContingency) {
+      const bool result = setDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingContingency, referenceBuildingContingency);
+      OS_ASSERT(result);
+      return result;
+    }
 
-boost::optional<double> ComponentCostReference_Impl::referenceBuildingContingency() const {
-  return getDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingContingency, true);
-}
+    void ComponentCostReference_Impl::resetReferenceBuildingContingency() {
+      OS_ASSERT(setString(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingContingency, ""));
+    }
 
-bool ComponentCostReference_Impl::setReferenceBuildingContingency(double referenceBuildingContingency) {
-  const bool result = setDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingContingency, referenceBuildingContingency);
-  OS_ASSERT(result);
-  return result;
-}
+  }  // namespace detail
 
-void ComponentCostReference_Impl::resetReferenceBuildingContingency() {
-  OS_ASSERT(setString(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingContingency, ""));
-}
+  boost::optional<double> ComponentCostReference::referenceBuildingPermitsBondingandInsurance() const {
+    return getImpl<detail::ComponentCostReference_Impl>()->referenceBuildingPermitsBondingandInsurance();
+  }
 
-boost::optional<double> ComponentCostReference_Impl::referenceBuildingPermitsBondingandInsurance() const {
-  return getDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingPermitsBondingandInsurance, true);
-}
+  bool ComponentCostReference::setReferenceBuildingPermitsBondingandInsurance(double referenceBuildingPermitsBondingandInsurance) {
+    return getImpl<detail::ComponentCostReference_Impl>()->setReferenceBuildingPermitsBondingandInsurance(
+      referenceBuildingPermitsBondingandInsurance);
+  }
 
-bool ComponentCostReference_Impl::setReferenceBuildingPermitsBondingandInsurance(double referenceBuildingPermitsBondingandInsurance) {
-  const bool result = setDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingPermitsBondingandInsurance,
-                                referenceBuildingPermitsBondingandInsurance);
-  OS_ASSERT(result);
-  return result;
-}
+  void ComponentCostReference::resetReferenceBuildingPermitsBondingandInsurance() {
+    getImpl<detail::ComponentCostReference_Impl>()->resetReferenceBuildingPermitsBondingandInsurance();
+  }
 
-void ComponentCostReference_Impl::resetReferenceBuildingPermitsBondingandInsurance() {
-  OS_ASSERT(setString(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingPermitsBondingandInsurance, ""));
-}
+  namespace detail {
 
-boost::optional<double> ComponentCostReference_Impl::referenceBuildingCommissioningFee() const {
-  return getDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingCommissioningFee, true);
-}
+    boost::optional<double> ComponentCostReference_Impl::referenceBuildingPermitsBondingandInsurance() const {
+      return getDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingPermitsBondingandInsurance, true);
+    }
 
-bool ComponentCostReference_Impl::setReferenceBuildingCommissioningFee(double referenceBuildingCommissioningFee) {
-  const bool result =
-    setDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingCommissioningFee, referenceBuildingCommissioningFee);
-  OS_ASSERT(result);
-  return result;
-}
+    bool ComponentCostReference_Impl::setReferenceBuildingPermitsBondingandInsurance(double referenceBuildingPermitsBondingandInsurance) {
+      const bool result = setDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingPermitsBondingandInsurance,
+                                    referenceBuildingPermitsBondingandInsurance);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void ComponentCostReference_Impl::resetReferenceBuildingCommissioningFee() {
-  OS_ASSERT(setString(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingCommissioningFee, ""));
-}
+    void ComponentCostReference_Impl::resetReferenceBuildingPermitsBondingandInsurance() {
+      OS_ASSERT(setString(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingPermitsBondingandInsurance, ""));
+    }
 
-boost::optional<double> ComponentCostReference_Impl::referenceBuildingRegionalAdjustmentFactor() const {
-  return getDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingRegionalAdjustmentFactor, true);
-}
+  }  // namespace detail
 
-bool ComponentCostReference_Impl::setReferenceBuildingRegionalAdjustmentFactor(double referenceBuildingRegionalAdjustmentFactor) {
-  const bool result = setDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingRegionalAdjustmentFactor,
-                                referenceBuildingRegionalAdjustmentFactor);
-  OS_ASSERT(result);
-  return result;
-}
+  boost::optional<double> ComponentCostReference::referenceBuildingCommissioningFee() const {
+    return getImpl<detail::ComponentCostReference_Impl>()->referenceBuildingCommissioningFee();
+  }
 
-void ComponentCostReference_Impl::resetReferenceBuildingRegionalAdjustmentFactor() {
-  OS_ASSERT(setString(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingRegionalAdjustmentFactor, ""));
-}
+  bool ComponentCostReference::setReferenceBuildingCommissioningFee(double referenceBuildingCommissioningFee) {
+    return getImpl<detail::ComponentCostReference_Impl>()->setReferenceBuildingCommissioningFee(referenceBuildingCommissioningFee);
+  }
 
-}  // namespace detail
+  void ComponentCostReference::resetReferenceBuildingCommissioningFee() {
+    getImpl<detail::ComponentCostReference_Impl>()->resetReferenceBuildingCommissioningFee();
+  }
+
+  namespace detail {
+
+    boost::optional<double> ComponentCostReference_Impl::referenceBuildingCommissioningFee() const {
+      return getDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingCommissioningFee, true);
+    }
+
+    bool ComponentCostReference_Impl::setReferenceBuildingCommissioningFee(double referenceBuildingCommissioningFee) {
+      const bool result = setDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingCommissioningFee, referenceBuildingCommissioningFee);
+      OS_ASSERT(result);
+      return result;
+    }
+
+    void ComponentCostReference_Impl::resetReferenceBuildingCommissioningFee() {
+      OS_ASSERT(setString(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingCommissioningFee, ""));
+    }
+
+  }  // namespace detail
+
+  boost::optional<double> ComponentCostReference::referenceBuildingRegionalAdjustmentFactor() const {
+    return getImpl<detail::ComponentCostReference_Impl>()->referenceBuildingRegionalAdjustmentFactor();
+  }
+
+  bool ComponentCostReference::setReferenceBuildingRegionalAdjustmentFactor(double referenceBuildingRegionalAdjustmentFactor) {
+    return getImpl<detail::ComponentCostReference_Impl>()->setReferenceBuildingRegionalAdjustmentFactor(referenceBuildingRegionalAdjustmentFactor);
+  }
+
+  void ComponentCostReference::resetReferenceBuildingRegionalAdjustmentFactor() {
+    getImpl<detail::ComponentCostReference_Impl>()->resetReferenceBuildingRegionalAdjustmentFactor();
+  }
+
+  namespace detail {
+
+    boost::optional<double> ComponentCostReference_Impl::referenceBuildingRegionalAdjustmentFactor() const {
+      return getDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingRegionalAdjustmentFactor, true);
+    }
+
+    bool ComponentCostReference_Impl::setReferenceBuildingRegionalAdjustmentFactor(double referenceBuildingRegionalAdjustmentFactor) {
+      const bool result =
+        setDouble(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingRegionalAdjustmentFactor, referenceBuildingRegionalAdjustmentFactor);
+      OS_ASSERT(result);
+      return result;
+    }
+
+    void ComponentCostReference_Impl::resetReferenceBuildingRegionalAdjustmentFactor() {
+      OS_ASSERT(setString(openstudio::ComponentCost_ReferenceFields::ReferenceBuildingRegionalAdjustmentFactor, ""));
+    }
+
+  }  // namespace detail
+
 }  // namespace epmodel
 }  // namespace openstudio

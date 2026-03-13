@@ -39,39 +39,17 @@ namespace epmodel {
       return value.get();
     }
 
-    double SpaceInfiltrationFlowCoefficient_Impl::stackCoefficient() const {
-      boost::optional<double> value = getDouble(ZoneInfiltration_FlowCoefficientFields::StackCoefficient, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    double SpaceInfiltrationFlowCoefficient_Impl::pressureExponent() const {
-      boost::optional<double> value = getDouble(ZoneInfiltration_FlowCoefficientFields::PressureExponent, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool SpaceInfiltrationFlowCoefficient_Impl::isPressureExponentDefaulted() const {
-      return isEmpty(ZoneInfiltration_FlowCoefficientFields::PressureExponent);
-    }
-
-    double SpaceInfiltrationFlowCoefficient_Impl::windCoefficient() const {
-      boost::optional<double> value = getDouble(ZoneInfiltration_FlowCoefficientFields::WindCoefficient, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    double SpaceInfiltrationFlowCoefficient_Impl::shelterFactor() const {
-      boost::optional<double> value = getDouble(ZoneInfiltration_FlowCoefficientFields::ShelterFactor, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
     bool SpaceInfiltrationFlowCoefficient_Impl::setFlowCoefficient(double flowCoefficient) {
       if (flowCoefficient <= 0) {
         return false;
       }
       return setDouble(ZoneInfiltration_FlowCoefficientFields::FlowCoefficient, flowCoefficient);
+    }
+
+    double SpaceInfiltrationFlowCoefficient_Impl::stackCoefficient() const {
+      boost::optional<double> value = getDouble(ZoneInfiltration_FlowCoefficientFields::StackCoefficient, true);
+      OS_ASSERT(value);
+      return value.get();
     }
 
     bool SpaceInfiltrationFlowCoefficient_Impl::setStackCoefficient(double stackCoefficient) {
@@ -81,6 +59,12 @@ namespace epmodel {
       return setDouble(ZoneInfiltration_FlowCoefficientFields::StackCoefficient, stackCoefficient);
     }
 
+    double SpaceInfiltrationFlowCoefficient_Impl::pressureExponent() const {
+      boost::optional<double> value = getDouble(ZoneInfiltration_FlowCoefficientFields::PressureExponent, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
     bool SpaceInfiltrationFlowCoefficient_Impl::setPressureExponent(double pressureExponent) {
       if (pressureExponent <= 0) {
         return false;
@@ -88,9 +72,19 @@ namespace epmodel {
       return setDouble(ZoneInfiltration_FlowCoefficientFields::PressureExponent, pressureExponent);
     }
 
+    bool SpaceInfiltrationFlowCoefficient_Impl::isPressureExponentDefaulted() const {
+      return isEmpty(ZoneInfiltration_FlowCoefficientFields::PressureExponent);
+    }
+
     void SpaceInfiltrationFlowCoefficient_Impl::resetPressureExponent() {
       const bool result = setString(ZoneInfiltration_FlowCoefficientFields::PressureExponent, "");
       OS_ASSERT(result);
+    }
+
+    double SpaceInfiltrationFlowCoefficient_Impl::windCoefficient() const {
+      boost::optional<double> value = getDouble(ZoneInfiltration_FlowCoefficientFields::WindCoefficient, true);
+      OS_ASSERT(value);
+      return value.get();
     }
 
     bool SpaceInfiltrationFlowCoefficient_Impl::setWindCoefficient(double windCoefficient) {
@@ -98,6 +92,12 @@ namespace epmodel {
         return false;
       }
       return setDouble(ZoneInfiltration_FlowCoefficientFields::WindCoefficient, windCoefficient);
+    }
+
+    double SpaceInfiltrationFlowCoefficient_Impl::shelterFactor() const {
+      boost::optional<double> value = getDouble(ZoneInfiltration_FlowCoefficientFields::ShelterFactor, true);
+      OS_ASSERT(value);
+      return value.get();
     }
 
     bool SpaceInfiltrationFlowCoefficient_Impl::setShelterFactor(double shelterFactor) {
@@ -129,44 +129,44 @@ namespace epmodel {
     return getImpl<detail::SpaceInfiltrationFlowCoefficient_Impl>()->flowCoefficient();
   }
 
-  double SpaceInfiltrationFlowCoefficient::stackCoefficient() const {
-    return getImpl<detail::SpaceInfiltrationFlowCoefficient_Impl>()->stackCoefficient();
-  }
-
-  double SpaceInfiltrationFlowCoefficient::pressureExponent() const {
-    return getImpl<detail::SpaceInfiltrationFlowCoefficient_Impl>()->pressureExponent();
-  }
-
-  bool SpaceInfiltrationFlowCoefficient::isPressureExponentDefaulted() const {
-    return getImpl<detail::SpaceInfiltrationFlowCoefficient_Impl>()->isPressureExponentDefaulted();
-  }
-
-  double SpaceInfiltrationFlowCoefficient::windCoefficient() const {
-    return getImpl<detail::SpaceInfiltrationFlowCoefficient_Impl>()->windCoefficient();
-  }
-
-  double SpaceInfiltrationFlowCoefficient::shelterFactor() const {
-    return getImpl<detail::SpaceInfiltrationFlowCoefficient_Impl>()->shelterFactor();
-  }
-
   bool SpaceInfiltrationFlowCoefficient::setFlowCoefficient(double flowCoefficient) {
     return getImpl<detail::SpaceInfiltrationFlowCoefficient_Impl>()->setFlowCoefficient(flowCoefficient);
+  }
+
+  double SpaceInfiltrationFlowCoefficient::stackCoefficient() const {
+    return getImpl<detail::SpaceInfiltrationFlowCoefficient_Impl>()->stackCoefficient();
   }
 
   bool SpaceInfiltrationFlowCoefficient::setStackCoefficient(double stackCoefficient) {
     return getImpl<detail::SpaceInfiltrationFlowCoefficient_Impl>()->setStackCoefficient(stackCoefficient);
   }
 
+  double SpaceInfiltrationFlowCoefficient::pressureExponent() const {
+    return getImpl<detail::SpaceInfiltrationFlowCoefficient_Impl>()->pressureExponent();
+  }
+
   bool SpaceInfiltrationFlowCoefficient::setPressureExponent(double pressureExponent) {
     return getImpl<detail::SpaceInfiltrationFlowCoefficient_Impl>()->setPressureExponent(pressureExponent);
+  }
+
+  bool SpaceInfiltrationFlowCoefficient::isPressureExponentDefaulted() const {
+    return getImpl<detail::SpaceInfiltrationFlowCoefficient_Impl>()->isPressureExponentDefaulted();
   }
 
   void SpaceInfiltrationFlowCoefficient::resetPressureExponent() {
     getImpl<detail::SpaceInfiltrationFlowCoefficient_Impl>()->resetPressureExponent();
   }
 
+  double SpaceInfiltrationFlowCoefficient::windCoefficient() const {
+    return getImpl<detail::SpaceInfiltrationFlowCoefficient_Impl>()->windCoefficient();
+  }
+
   bool SpaceInfiltrationFlowCoefficient::setWindCoefficient(double windCoefficient) {
     return getImpl<detail::SpaceInfiltrationFlowCoefficient_Impl>()->setWindCoefficient(windCoefficient);
+  }
+
+  double SpaceInfiltrationFlowCoefficient::shelterFactor() const {
+    return getImpl<detail::SpaceInfiltrationFlowCoefficient_Impl>()->shelterFactor();
   }
 
   bool SpaceInfiltrationFlowCoefficient::setShelterFactor(double shelterFactor) {

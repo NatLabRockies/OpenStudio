@@ -27,32 +27,22 @@ namespace epmodel {
       return value.get();
     }
 
+    bool TableLookup_Impl::setNormalizationMethod(const std::string& normalizationMethod) {
+      return setString(Table_LookupFields::NormalizationMethod, normalizationMethod);
+    }
+
     double TableLookup_Impl::normalizationDivisor() const {
       auto value = getDouble(Table_LookupFields::NormalizationDivisor, true);
       OS_ASSERT(value);
       return value.get();
     }
 
-    boost::optional<double> TableLookup_Impl::minimumOutput() const {
-      return getDouble(Table_LookupFields::MinimumOutput, true);
-    }
-
-    boost::optional<double> TableLookup_Impl::maximumOutput() const {
-      return getDouble(Table_LookupFields::MaximumOutput, true);
-    }
-
-    std::string TableLookup_Impl::outputUnitType() const {
-      auto value = getString(Table_LookupFields::OutputUnitType, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool TableLookup_Impl::setNormalizationMethod(const std::string& normalizationMethod) {
-      return setString(Table_LookupFields::NormalizationMethod, normalizationMethod);
-    }
-
     bool TableLookup_Impl::setNormalizationDivisor(double normalizationDivisor) {
       return setDouble(Table_LookupFields::NormalizationDivisor, normalizationDivisor);
+    }
+
+    boost::optional<double> TableLookup_Impl::minimumOutput() const {
+      return getDouble(Table_LookupFields::MinimumOutput, true);
     }
 
     bool TableLookup_Impl::setMinimumOutput(double minimumOutput) {
@@ -63,12 +53,22 @@ namespace epmodel {
       OS_ASSERT(setString(Table_LookupFields::MinimumOutput, ""));
     }
 
+    boost::optional<double> TableLookup_Impl::maximumOutput() const {
+      return getDouble(Table_LookupFields::MaximumOutput, true);
+    }
+
     bool TableLookup_Impl::setMaximumOutput(double maximumOutput) {
       return setDouble(Table_LookupFields::MaximumOutput, maximumOutput);
     }
 
     void TableLookup_Impl::resetMaximumOutput() {
       OS_ASSERT(setString(Table_LookupFields::MaximumOutput, ""));
+    }
+
+    std::string TableLookup_Impl::outputUnitType() const {
+      auto value = getString(Table_LookupFields::OutputUnitType, true);
+      OS_ASSERT(value);
+      return value.get();
     }
 
     bool TableLookup_Impl::setOutputUnitType(const std::string& outputUnitType) {
@@ -139,28 +139,20 @@ namespace epmodel {
     return getImpl<detail::TableLookup_Impl>()->normalizationMethod();
   }
 
-  double TableLookup::normalizationDivisor() const {
-    return getImpl<detail::TableLookup_Impl>()->normalizationDivisor();
-  }
-
-  boost::optional<double> TableLookup::minimumOutput() const {
-    return getImpl<detail::TableLookup_Impl>()->minimumOutput();
-  }
-
-  boost::optional<double> TableLookup::maximumOutput() const {
-    return getImpl<detail::TableLookup_Impl>()->maximumOutput();
-  }
-
-  std::string TableLookup::outputUnitType() const {
-    return getImpl<detail::TableLookup_Impl>()->outputUnitType();
-  }
-
   bool TableLookup::setNormalizationMethod(const std::string& normalizationMethod) {
     return getImpl<detail::TableLookup_Impl>()->setNormalizationMethod(normalizationMethod);
   }
 
+  double TableLookup::normalizationDivisor() const {
+    return getImpl<detail::TableLookup_Impl>()->normalizationDivisor();
+  }
+
   bool TableLookup::setNormalizationDivisor(double normalizationDivisor) {
     return getImpl<detail::TableLookup_Impl>()->setNormalizationDivisor(normalizationDivisor);
+  }
+
+  boost::optional<double> TableLookup::minimumOutput() const {
+    return getImpl<detail::TableLookup_Impl>()->minimumOutput();
   }
 
   bool TableLookup::setMinimumOutput(double minimumOutput) {
@@ -171,12 +163,20 @@ namespace epmodel {
     getImpl<detail::TableLookup_Impl>()->resetMinimumOutput();
   }
 
+  boost::optional<double> TableLookup::maximumOutput() const {
+    return getImpl<detail::TableLookup_Impl>()->maximumOutput();
+  }
+
   bool TableLookup::setMaximumOutput(double maximumOutput) {
     return getImpl<detail::TableLookup_Impl>()->setMaximumOutput(maximumOutput);
   }
 
   void TableLookup::resetMaximumOutput() {
     getImpl<detail::TableLookup_Impl>()->resetMaximumOutput();
+  }
+
+  std::string TableLookup::outputUnitType() const {
+    return getImpl<detail::TableLookup_Impl>()->outputUnitType();
   }
 
   bool TableLookup::setOutputUnitType(const std::string& outputUnitType) {

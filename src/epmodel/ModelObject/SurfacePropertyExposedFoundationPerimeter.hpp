@@ -47,27 +47,18 @@ namespace epmodel {
 
     static std::vector<std::string> exposedPerimeterCalculationMethodValues();
 
-    /** @name Getters */
+    /** @name Field accessors */
     //@{
 
     std::string exposedPerimeterCalculationMethod() const;
-
-    boost::optional<double> totalExposedPerimeter() const;
-
-    double exposedPerimeterFraction() const;
-
-    bool isExposedPerimeterFractionDefaulted() const;
-
-    //@}
-    /** @name Setters */
-    //@{
-
     bool setExposedPerimeterCalculationMethod(const std::string& exposedPerimeterCalculationMethod);
 
+    boost::optional<double> totalExposedPerimeter() const;
     bool setTotalExposedPerimeter(double totalExposedPerimeter);
 
+    double exposedPerimeterFraction() const;
+    bool isExposedPerimeterFractionDefaulted() const;
     bool setExposedPerimeterFraction(double exposedPerimeterFraction);
-
     void resetExposedPerimeterFraction();
 
     //@}

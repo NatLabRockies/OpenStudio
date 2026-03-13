@@ -33,6 +33,7 @@ namespace epmodel {
     ZoneRefrigerationDoorMixing& operator=(ZoneRefrigerationDoorMixing&&) = default;
 
     static IddObjectType iddObjectType();
+    static std::vector<std::string> doorProtectionTypeValues();
 
     // Schema Alignment Notes:
     // - API: doorHeight(), doorArea(), and doorProtectionType() wrap the EnergyPlus ZoneRefrigerationDoorMixing
@@ -53,8 +54,6 @@ namespace epmodel {
     bool isDoorProtectionTypeDefaulted() const;
     bool setDoorProtectionType(const std::string& doorProtectionType);
     void resetDoorProtectionType();
-
-    static std::vector<std::string> doorProtectionTypeValues();
 
    protected:
     using ImplType = detail::ZoneRefrigerationDoorMixing_Impl;

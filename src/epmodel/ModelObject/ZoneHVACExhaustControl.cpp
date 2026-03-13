@@ -76,6 +76,10 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    std::vector<std::string> ZoneHVACExhaustControl_Impl::flowControlTypeValues() const {
+      return openstudio::epmodel::ZoneHVACExhaustControl::flowControlTypeValues();
+    }
+
     std::string ZoneHVACExhaustControl_Impl::flowControlType() const {
       const auto value = getString(openstudio::ZoneHVAC_ExhaustControlFields::FlowControlType, true);
       OS_ASSERT(value);
@@ -114,10 +118,6 @@ namespace epmodel {
 
     void ZoneHVACExhaustControl_Impl::resetDesignExhaustFlowRate() {
       OS_ASSERT(setString(openstudio::ZoneHVAC_ExhaustControlFields::DesignExhaustFlowRate, ""));
-    }
-
-    std::vector<std::string> ZoneHVACExhaustControl_Impl::flowControlTypeValues() const {
-      return openstudio::epmodel::ZoneHVACExhaustControl::flowControlTypeValues();
     }
 
   }  // namespace detail

@@ -13,89 +13,84 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HeatPumpPlantLoopEIRHeating_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~HeatPumpPlantLoopEIRHeating_Impl() override = default;
+    class EPMODEL_API HeatPumpPlantLoopEIRHeating_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~HeatPumpPlantLoopEIRHeating_Impl() override = default;
 
-  std::string condenserType() const;
+      std::string condenserType() const;
+      bool setCondenserType(const std::string& condenserType);
 
-  boost::optional<double> loadSideReferenceFlowRate() const;
-  bool isLoadSideReferenceFlowRateAutosized() const;
+      boost::optional<double> loadSideReferenceFlowRate() const;
+      bool isLoadSideReferenceFlowRateAutosized() const;
+      bool setLoadSideReferenceFlowRate(double loadSideReferenceFlowRate);
+      void autosizeLoadSideReferenceFlowRate();
+      boost::optional<double> autosizedLoadSideReferenceFlowRate() const;
 
-  boost::optional<double> sourceSideReferenceFlowRate() const;
-  bool isSourceSideReferenceFlowRateAutosized() const;
+      boost::optional<double> sourceSideReferenceFlowRate() const;
+      bool isSourceSideReferenceFlowRateAutosized() const;
+      bool setSourceSideReferenceFlowRate(double sourceSideReferenceFlowRate);
+      void autosizeSourceSideReferenceFlowRate();
+      boost::optional<double> autosizedSourceSideReferenceFlowRate() const;
 
-  boost::optional<double> heatRecoveryReferenceFlowRate() const;
-  bool isHeatRecoveryReferenceFlowRateAutosized() const;
+      boost::optional<double> heatRecoveryReferenceFlowRate() const;
+      bool isHeatRecoveryReferenceFlowRateAutosized() const;
+      bool setHeatRecoveryReferenceFlowRate(double heatRecoveryReferenceFlowRate);
+      void autosizeHeatRecoveryReferenceFlowRate();
+      boost::optional<double> autosizedHeatRecoveryReferenceFlowRate() const;
 
-  boost::optional<double> referenceCapacity() const;
-  bool isReferenceCapacityAutosized() const;
+      boost::optional<double> referenceCapacity() const;
+      bool isReferenceCapacityAutosized() const;
+      bool setReferenceCapacity(double referenceCapacity);
+      void autosizeReferenceCapacity();
+      boost::optional<double> autosizedReferenceCapacity() const;
 
-  double referenceCoefficientofPerformance() const;
-  double sizingFactor() const;
+      double referenceCoefficientofPerformance() const;
+      bool setReferenceCoefficientofPerformance(double referenceCoefficientofPerformance);
 
-  double heatingToCoolingCapacitySizingRatio() const;
-  std::string heatPumpSizingMethod() const;
+      double sizingFactor() const;
+      bool setSizingFactor(double sizingFactor);
 
-  std::string controlType() const;
-  std::string flowMode() const;
+      double heatingToCoolingCapacitySizingRatio() const;
+      bool setHeatingToCoolingCapacitySizingRatio(double heatingToCoolingCapacitySizingRatio);
 
-  double minimumPartLoadRatio() const;
-  double minimumSourceInletTemperature() const;
-  double maximumSourceInletTemperature() const;
+      std::string heatPumpSizingMethod() const;
+      bool setHeatPumpSizingMethod(const std::string& heatPumpSizingMethod);
 
-  double maximumOutdoorDryBulbTemperatureForDefrostOperation() const;
-  std::string heatPumpDefrostControl() const;
-  double heatPumpDefrostTimePeriodFraction() const;
+      std::string controlType() const;
+      bool setControlType(const std::string& controlType);
 
-  double minimumHeatRecoveryOutletTemperature() const;
+      std::string flowMode() const;
+      bool setFlowMode(const std::string& flowMode);
 
-  bool setCondenserType(const std::string& condenserType);
+      double minimumPartLoadRatio() const;
+      bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
 
-  bool setLoadSideReferenceFlowRate(double loadSideReferenceFlowRate);
-  void autosizeLoadSideReferenceFlowRate();
+      double minimumSourceInletTemperature() const;
+      bool setMinimumSourceInletTemperature(double minimumSourceInletTemperature);
 
-  bool setSourceSideReferenceFlowRate(double sourceSideReferenceFlowRate);
-  void autosizeSourceSideReferenceFlowRate();
+      double maximumSourceInletTemperature() const;
+      bool setMaximumSourceInletTemperature(double maximumSourceInletTemperature);
 
-  bool setHeatRecoveryReferenceFlowRate(double heatRecoveryReferenceFlowRate);
-  void autosizeHeatRecoveryReferenceFlowRate();
+      double maximumOutdoorDryBulbTemperatureForDefrostOperation() const;
+      bool setMaximumOutdoorDryBulbTemperatureForDefrostOperation(double maximumOutdoorDryBulbTemperatureForDefrostOperation);
 
-  bool setReferenceCapacity(double referenceCapacity);
-  void autosizeReferenceCapacity();
+      std::string heatPumpDefrostControl() const;
+      bool setHeatPumpDefrostControl(const std::string& heatPumpDefrostControl);
 
-  bool setReferenceCoefficientofPerformance(double referenceCoefficientofPerformance);
-  bool setSizingFactor(double sizingFactor);
+      double heatPumpDefrostTimePeriodFraction() const;
+      bool setHeatPumpDefrostTimePeriodFraction(double heatPumpDefrostTimePeriodFraction);
 
-  bool setHeatingToCoolingCapacitySizingRatio(double heatingToCoolingCapacitySizingRatio);
-  bool setHeatPumpSizingMethod(const std::string& heatPumpSizingMethod);
+      double minimumHeatRecoveryOutletTemperature() const;
+      bool setMinimumHeatRecoveryOutletTemperature(double minimumHeatRecoveryOutletTemperature);
 
-  bool setControlType(const std::string& controlType);
-  bool setFlowMode(const std::string& flowMode);
+      std::vector<std::string> condenserTypeValues() const;
+    };
 
-  bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
-  bool setMinimumSourceInletTemperature(double minimumSourceInletTemperature);
-  bool setMaximumSourceInletTemperature(double maximumSourceInletTemperature);
-
-  bool setMaximumOutdoorDryBulbTemperatureForDefrostOperation(double maximumOutdoorDryBulbTemperatureForDefrostOperation);
-  bool setHeatPumpDefrostControl(const std::string& heatPumpDefrostControl);
-  bool setHeatPumpDefrostTimePeriodFraction(double heatPumpDefrostTimePeriodFraction);
-
-  bool setMinimumHeatRecoveryOutletTemperature(double minimumHeatRecoveryOutletTemperature);
-
-  boost::optional<double> autosizedLoadSideReferenceFlowRate() const;
-  boost::optional<double> autosizedSourceSideReferenceFlowRate() const;
-  boost::optional<double> autosizedHeatRecoveryReferenceFlowRate() const;
-  boost::optional<double> autosizedReferenceCapacity() const;
-
-  std::vector<std::string> condenserTypeValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

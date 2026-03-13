@@ -205,12 +205,12 @@ namespace epmodel {
       return *value;
     }
 
-    bool ShadingControl_Impl::isShadingControlTypeDefaulted() const {
-      return isEmpty(openstudio::WindowShadingControlFields::ShadingControlType);
-    }
-
     bool ShadingControl_Impl::setShadingControlType(const std::string& shadingControlType) {
       return setString(openstudio::WindowShadingControlFields::ShadingControlType, shadingControlType);
+    }
+
+    bool ShadingControl_Impl::isShadingControlTypeDefaulted() const {
+      return isEmpty(openstudio::WindowShadingControlFields::ShadingControlType);
     }
 
     void ShadingControl_Impl::resetShadingControlType() {
@@ -225,12 +225,12 @@ namespace epmodel {
       return setDouble(openstudio::WindowShadingControlFields::Setpoint, setpoint);
     }
 
-    void ShadingControl_Impl::resetSetpoint() {
-      OS_ASSERT(setString(openstudio::WindowShadingControlFields::Setpoint, ""));
-    }
-
     bool ShadingControl_Impl::isSetpointDefaulted() const {
       return isEmpty(openstudio::WindowShadingControlFields::Setpoint);
+    }
+
+    void ShadingControl_Impl::resetSetpoint() {
+      OS_ASSERT(setString(openstudio::WindowShadingControlFields::Setpoint, ""));
     }
 
     bool ShadingControl_Impl::glareControlIsActive() const {
@@ -253,12 +253,12 @@ namespace epmodel {
       return *value;
     }
 
-    bool ShadingControl_Impl::isTypeofSlatAngleControlforBlindsDefaulted() const {
-      return isEmpty(openstudio::WindowShadingControlFields::TypeofSlatAngleControlforBlinds);
-    }
-
     bool ShadingControl_Impl::setTypeofSlatAngleControlforBlinds(const std::string& typeofSlatAngleControlforBlinds) {
       return setString(openstudio::WindowShadingControlFields::TypeofSlatAngleControlforBlinds, typeofSlatAngleControlforBlinds);
+    }
+
+    bool ShadingControl_Impl::isTypeofSlatAngleControlforBlindsDefaulted() const {
+      return isEmpty(openstudio::WindowShadingControlFields::TypeofSlatAngleControlforBlinds);
     }
 
     void ShadingControl_Impl::resetTypeofSlatAngleControlforBlinds() {

@@ -45,31 +45,25 @@ class EPMODEL_API OutputTableTimeBins : public ModelObject
   // - Field Mapping: Schedule Name is a relationship/object-list field and is intentionally excluded in this scalar-only pass.
   std::string keyValue() const;
   bool isKeyValueDefaulted() const;
-
-  std::string variableName() const;
-
-  boost::optional<double> intervalStart() const;
-
-  boost::optional<double> intervalSize() const;
-
-  boost::optional<int> intervalCount() const;
-
-  boost::optional<std::string> variableType() const;
-
   bool setKeyValue(const std::string& keyValue);
   void resetKeyValue();
 
+  std::string variableName() const;
   bool setVariableName(const std::string& variableName);
 
+  boost::optional<double> intervalStart() const;
   bool setIntervalStart(double intervalStart);
   void resetIntervalStart();
 
+  boost::optional<double> intervalSize() const;
   bool setIntervalSize(double intervalSize);
   void resetIntervalSize();
 
+  boost::optional<int> intervalCount() const;
   bool setIntervalCount(int intervalCount);
   void resetIntervalCount();
 
+  boost::optional<std::string> variableType() const;
   bool setVariableType(const std::string& variableType);
   void resetVariableType();
 

@@ -13,36 +13,33 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API OutputVariable_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~OutputVariable_Impl() override = default;
+    class EPMODEL_API OutputVariable_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~OutputVariable_Impl() override = default;
 
-  // Scalar-only scaffold: relationship-like fields (ScheduleName) and OS-only fields
-  // (ExportToBCVTB) are intentionally excluded from this class.
-  std::string keyValue() const;
-  bool isKeyValueDefaulted() const;
+      // Scalar-only scaffold: relationship-like fields (ScheduleName) and OS-only fields
+      // (ExportToBCVTB) are intentionally excluded from this class.
+      std::string keyValue() const;
+      bool isKeyValueDefaulted() const;
+      bool setKeyValue(const std::string& keyValue);
+      void resetKeyValue();
 
-  std::string variableName() const;
+      std::string variableName() const;
+      bool setVariableName(const std::string& variableName);
 
-  std::string reportingFrequency() const;
-  bool isReportingFrequencyDefaulted() const;
+      std::string reportingFrequency() const;
+      bool isReportingFrequencyDefaulted() const;
+      bool setReportingFrequency(const std::string& reportingFrequency);
+      void resetReportingFrequency();
 
-  bool setKeyValue(const std::string& keyValue);
-  void resetKeyValue();
+      std::vector<std::string> reportingFrequencyValues() const;
+    };
 
-  bool setVariableName(const std::string& variableName);
-
-  bool setReportingFrequency(const std::string& reportingFrequency);
-  void resetReportingFrequency();
-
-  std::vector<std::string> reportingFrequencyValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

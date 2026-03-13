@@ -17,239 +17,239 @@
 namespace openstudio {
 namespace epmodel {
 
-LifeCycleCost::LifeCycleCost(const Model& model) : ModelObject(LifeCycleCost::iddObjectType(), model) {}
+  LifeCycleCost::LifeCycleCost(const Model& model) : ModelObject(LifeCycleCost::iddObjectType(), model) {}
 
-LifeCycleCost::LifeCycleCost(std::shared_ptr<detail::LifeCycleCost_Impl> impl) : ModelObject(std::move(impl)) {}
+  LifeCycleCost::LifeCycleCost(std::shared_ptr<detail::LifeCycleCost_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType LifeCycleCost::iddObjectType() {
-  return IddObjectType::LifeCycleCost_RecurringCosts;
-}
+  IddObjectType LifeCycleCost::iddObjectType() {
+    return IddObjectType::LifeCycleCost_RecurringCosts;
+  }
 
-std::vector<std::string> LifeCycleCost::validCategoryValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::LifeCycleCost_RecurringCostsFields::Category);
-}
+  std::vector<std::string> LifeCycleCost::validCategoryValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::LifeCycleCost_RecurringCostsFields::Category);
+  }
 
-std::vector<std::string> LifeCycleCost::validStartOfCostsValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::LifeCycleCost_RecurringCostsFields::StartofCosts);
-}
+  std::vector<std::string> LifeCycleCost::validStartOfCostsValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::LifeCycleCost_RecurringCostsFields::StartofCosts);
+  }
 
-std::string LifeCycleCost::category() const {
-  return getImpl<detail::LifeCycleCost_Impl>()->category();
-}
+  std::string LifeCycleCost::category() const {
+    return getImpl<detail::LifeCycleCost_Impl>()->category();
+  }
 
-double LifeCycleCost::cost() const {
-  return getImpl<detail::LifeCycleCost_Impl>()->cost();
-}
+  bool LifeCycleCost::setCategory(const std::string& category) {
+    return getImpl<detail::LifeCycleCost_Impl>()->setCategory(category);
+  }
 
-std::string LifeCycleCost::startOfCosts() const {
-  return getImpl<detail::LifeCycleCost_Impl>()->startOfCosts();
-}
+  double LifeCycleCost::cost() const {
+    return getImpl<detail::LifeCycleCost_Impl>()->cost();
+  }
 
-bool LifeCycleCost::isStartOfCostsDefaulted() const {
-  return getImpl<detail::LifeCycleCost_Impl>()->isStartOfCostsDefaulted();
-}
+  bool LifeCycleCost::setCost(double cost) {
+    return getImpl<detail::LifeCycleCost_Impl>()->setCost(cost);
+  }
 
-int LifeCycleCost::yearsFromStart() const {
-  return getImpl<detail::LifeCycleCost_Impl>()->yearsFromStart();
-}
+  std::string LifeCycleCost::startOfCosts() const {
+    return getImpl<detail::LifeCycleCost_Impl>()->startOfCosts();
+  }
 
-bool LifeCycleCost::isYearsFromStartDefaulted() const {
-  return getImpl<detail::LifeCycleCost_Impl>()->isYearsFromStartDefaulted();
-}
+  bool LifeCycleCost::isStartOfCostsDefaulted() const {
+    return getImpl<detail::LifeCycleCost_Impl>()->isStartOfCostsDefaulted();
+  }
 
-int LifeCycleCost::monthsFromStart() const {
-  return getImpl<detail::LifeCycleCost_Impl>()->monthsFromStart();
-}
+  bool LifeCycleCost::setStartOfCosts(const std::string& startOfCosts) {
+    return getImpl<detail::LifeCycleCost_Impl>()->setStartOfCosts(startOfCosts);
+  }
 
-bool LifeCycleCost::isMonthsFromStartDefaulted() const {
-  return getImpl<detail::LifeCycleCost_Impl>()->isMonthsFromStartDefaulted();
-}
+  void LifeCycleCost::resetStartOfCosts() {
+    getImpl<detail::LifeCycleCost_Impl>()->resetStartOfCosts();
+  }
 
-int LifeCycleCost::repeatPeriodYears() const {
-  return getImpl<detail::LifeCycleCost_Impl>()->repeatPeriodYears();
-}
+  int LifeCycleCost::yearsFromStart() const {
+    return getImpl<detail::LifeCycleCost_Impl>()->yearsFromStart();
+  }
 
-bool LifeCycleCost::isRepeatPeriodYearsDefaulted() const {
-  return getImpl<detail::LifeCycleCost_Impl>()->isRepeatPeriodYearsDefaulted();
-}
+  bool LifeCycleCost::isYearsFromStartDefaulted() const {
+    return getImpl<detail::LifeCycleCost_Impl>()->isYearsFromStartDefaulted();
+  }
 
-int LifeCycleCost::repeatPeriodMonths() const {
-  return getImpl<detail::LifeCycleCost_Impl>()->repeatPeriodMonths();
-}
+  bool LifeCycleCost::setYearsFromStart(int yearsFromStart) {
+    return getImpl<detail::LifeCycleCost_Impl>()->setYearsFromStart(yearsFromStart);
+  }
 
-bool LifeCycleCost::isRepeatPeriodMonthsDefaulted() const {
-  return getImpl<detail::LifeCycleCost_Impl>()->isRepeatPeriodMonthsDefaulted();
-}
+  void LifeCycleCost::resetYearsFromStart() {
+    getImpl<detail::LifeCycleCost_Impl>()->resetYearsFromStart();
+  }
 
-bool LifeCycleCost::setCategory(const std::string& category) {
-  return getImpl<detail::LifeCycleCost_Impl>()->setCategory(category);
-}
+  int LifeCycleCost::monthsFromStart() const {
+    return getImpl<detail::LifeCycleCost_Impl>()->monthsFromStart();
+  }
 
-bool LifeCycleCost::setCost(double cost) {
-  return getImpl<detail::LifeCycleCost_Impl>()->setCost(cost);
-}
+  bool LifeCycleCost::isMonthsFromStartDefaulted() const {
+    return getImpl<detail::LifeCycleCost_Impl>()->isMonthsFromStartDefaulted();
+  }
 
-bool LifeCycleCost::setStartOfCosts(const std::string& startOfCosts) {
-  return getImpl<detail::LifeCycleCost_Impl>()->setStartOfCosts(startOfCosts);
-}
+  bool LifeCycleCost::setMonthsFromStart(int monthsFromStart) {
+    return getImpl<detail::LifeCycleCost_Impl>()->setMonthsFromStart(monthsFromStart);
+  }
 
-void LifeCycleCost::resetStartOfCosts() {
-  getImpl<detail::LifeCycleCost_Impl>()->resetStartOfCosts();
-}
+  void LifeCycleCost::resetMonthsFromStart() {
+    getImpl<detail::LifeCycleCost_Impl>()->resetMonthsFromStart();
+  }
 
-bool LifeCycleCost::setYearsFromStart(int yearsFromStart) {
-  return getImpl<detail::LifeCycleCost_Impl>()->setYearsFromStart(yearsFromStart);
-}
+  int LifeCycleCost::repeatPeriodYears() const {
+    return getImpl<detail::LifeCycleCost_Impl>()->repeatPeriodYears();
+  }
 
-void LifeCycleCost::resetYearsFromStart() {
-  getImpl<detail::LifeCycleCost_Impl>()->resetYearsFromStart();
-}
+  bool LifeCycleCost::isRepeatPeriodYearsDefaulted() const {
+    return getImpl<detail::LifeCycleCost_Impl>()->isRepeatPeriodYearsDefaulted();
+  }
 
-bool LifeCycleCost::setMonthsFromStart(int monthsFromStart) {
-  return getImpl<detail::LifeCycleCost_Impl>()->setMonthsFromStart(monthsFromStart);
-}
+  bool LifeCycleCost::setRepeatPeriodYears(int repeatPeriodYears) {
+    return getImpl<detail::LifeCycleCost_Impl>()->setRepeatPeriodYears(repeatPeriodYears);
+  }
 
-void LifeCycleCost::resetMonthsFromStart() {
-  getImpl<detail::LifeCycleCost_Impl>()->resetMonthsFromStart();
-}
+  void LifeCycleCost::resetRepeatPeriodYears() {
+    getImpl<detail::LifeCycleCost_Impl>()->resetRepeatPeriodYears();
+  }
 
-bool LifeCycleCost::setRepeatPeriodYears(int repeatPeriodYears) {
-  return getImpl<detail::LifeCycleCost_Impl>()->setRepeatPeriodYears(repeatPeriodYears);
-}
+  int LifeCycleCost::repeatPeriodMonths() const {
+    return getImpl<detail::LifeCycleCost_Impl>()->repeatPeriodMonths();
+  }
 
-void LifeCycleCost::resetRepeatPeriodYears() {
-  getImpl<detail::LifeCycleCost_Impl>()->resetRepeatPeriodYears();
-}
+  bool LifeCycleCost::isRepeatPeriodMonthsDefaulted() const {
+    return getImpl<detail::LifeCycleCost_Impl>()->isRepeatPeriodMonthsDefaulted();
+  }
 
-bool LifeCycleCost::setRepeatPeriodMonths(int repeatPeriodMonths) {
-  return getImpl<detail::LifeCycleCost_Impl>()->setRepeatPeriodMonths(repeatPeriodMonths);
-}
+  bool LifeCycleCost::setRepeatPeriodMonths(int repeatPeriodMonths) {
+    return getImpl<detail::LifeCycleCost_Impl>()->setRepeatPeriodMonths(repeatPeriodMonths);
+  }
 
-void LifeCycleCost::resetRepeatPeriodMonths() {
-  getImpl<detail::LifeCycleCost_Impl>()->resetRepeatPeriodMonths();
-}
+  void LifeCycleCost::resetRepeatPeriodMonths() {
+    getImpl<detail::LifeCycleCost_Impl>()->resetRepeatPeriodMonths();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string LifeCycleCost_Impl::category() const {
-  const auto value = getString(openstudio::LifeCycleCost_RecurringCostsFields::Category, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string LifeCycleCost_Impl::category() const {
+      const auto value = getString(openstudio::LifeCycleCost_RecurringCostsFields::Category, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-double LifeCycleCost_Impl::cost() const {
-  const auto value = getDouble(openstudio::LifeCycleCost_RecurringCostsFields::Cost, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool LifeCycleCost_Impl::setCategory(const std::string& category) {
+      return setString(openstudio::LifeCycleCost_RecurringCostsFields::Category, category);
+    }
 
-std::string LifeCycleCost_Impl::startOfCosts() const {
-  const auto value = getString(openstudio::LifeCycleCost_RecurringCostsFields::StartofCosts, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double LifeCycleCost_Impl::cost() const {
+      const auto value = getDouble(openstudio::LifeCycleCost_RecurringCostsFields::Cost, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool LifeCycleCost_Impl::isStartOfCostsDefaulted() const {
-  return isEmpty(openstudio::LifeCycleCost_RecurringCostsFields::StartofCosts);
-}
+    bool LifeCycleCost_Impl::setCost(double cost) {
+      return setDouble(openstudio::LifeCycleCost_RecurringCostsFields::Cost, cost);
+    }
 
-int LifeCycleCost_Impl::yearsFromStart() const {
-  return getInt(openstudio::LifeCycleCost_RecurringCostsFields::YearsfromStart, false).value_or(0);
-}
+    std::string LifeCycleCost_Impl::startOfCosts() const {
+      const auto value = getString(openstudio::LifeCycleCost_RecurringCostsFields::StartofCosts, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool LifeCycleCost_Impl::isYearsFromStartDefaulted() const {
-  return isEmpty(openstudio::LifeCycleCost_RecurringCostsFields::YearsfromStart);
-}
+    bool LifeCycleCost_Impl::isStartOfCostsDefaulted() const {
+      return isEmpty(openstudio::LifeCycleCost_RecurringCostsFields::StartofCosts);
+    }
 
-int LifeCycleCost_Impl::monthsFromStart() const {
-  return getInt(openstudio::LifeCycleCost_RecurringCostsFields::MonthsfromStart, false).value_or(0);
-}
+    bool LifeCycleCost_Impl::setStartOfCosts(const std::string& startOfCosts) {
+      return setString(openstudio::LifeCycleCost_RecurringCostsFields::StartofCosts, startOfCosts);
+    }
 
-bool LifeCycleCost_Impl::isMonthsFromStartDefaulted() const {
-  return isEmpty(openstudio::LifeCycleCost_RecurringCostsFields::MonthsfromStart);
-}
+    void LifeCycleCost_Impl::resetStartOfCosts() {
+      OS_ASSERT(setString(openstudio::LifeCycleCost_RecurringCostsFields::StartofCosts, ""));
+    }
 
-int LifeCycleCost_Impl::repeatPeriodYears() const {
-  const auto value = getInt(openstudio::LifeCycleCost_RecurringCostsFields::RepeatPeriodYears, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    int LifeCycleCost_Impl::yearsFromStart() const {
+      return getInt(openstudio::LifeCycleCost_RecurringCostsFields::YearsfromStart, false).value_or(0);
+    }
 
-bool LifeCycleCost_Impl::isRepeatPeriodYearsDefaulted() const {
-  return isEmpty(openstudio::LifeCycleCost_RecurringCostsFields::RepeatPeriodYears);
-}
+    bool LifeCycleCost_Impl::isYearsFromStartDefaulted() const {
+      return isEmpty(openstudio::LifeCycleCost_RecurringCostsFields::YearsfromStart);
+    }
 
-int LifeCycleCost_Impl::repeatPeriodMonths() const {
-  const auto value = getInt(openstudio::LifeCycleCost_RecurringCostsFields::RepeatPeriodMonths, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool LifeCycleCost_Impl::setYearsFromStart(int yearsFromStart) {
+      return setInt(openstudio::LifeCycleCost_RecurringCostsFields::YearsfromStart, yearsFromStart);
+    }
 
-bool LifeCycleCost_Impl::isRepeatPeriodMonthsDefaulted() const {
-  return isEmpty(openstudio::LifeCycleCost_RecurringCostsFields::RepeatPeriodMonths);
-}
+    void LifeCycleCost_Impl::resetYearsFromStart() {
+      OS_ASSERT(setString(openstudio::LifeCycleCost_RecurringCostsFields::YearsfromStart, ""));
+    }
 
-bool LifeCycleCost_Impl::setCategory(const std::string& category) {
-  return setString(openstudio::LifeCycleCost_RecurringCostsFields::Category, category);
-}
+    int LifeCycleCost_Impl::monthsFromStart() const {
+      return getInt(openstudio::LifeCycleCost_RecurringCostsFields::MonthsfromStart, false).value_or(0);
+    }
 
-bool LifeCycleCost_Impl::setCost(double cost) {
-  return setDouble(openstudio::LifeCycleCost_RecurringCostsFields::Cost, cost);
-}
+    bool LifeCycleCost_Impl::isMonthsFromStartDefaulted() const {
+      return isEmpty(openstudio::LifeCycleCost_RecurringCostsFields::MonthsfromStart);
+    }
 
-bool LifeCycleCost_Impl::setStartOfCosts(const std::string& startOfCosts) {
-  return setString(openstudio::LifeCycleCost_RecurringCostsFields::StartofCosts, startOfCosts);
-}
+    bool LifeCycleCost_Impl::setMonthsFromStart(int monthsFromStart) {
+      return setInt(openstudio::LifeCycleCost_RecurringCostsFields::MonthsfromStart, monthsFromStart);
+    }
 
-void LifeCycleCost_Impl::resetStartOfCosts() {
-  OS_ASSERT(setString(openstudio::LifeCycleCost_RecurringCostsFields::StartofCosts, ""));
-}
+    void LifeCycleCost_Impl::resetMonthsFromStart() {
+      OS_ASSERT(setString(openstudio::LifeCycleCost_RecurringCostsFields::MonthsfromStart, ""));
+    }
 
-bool LifeCycleCost_Impl::setYearsFromStart(int yearsFromStart) {
-  return setInt(openstudio::LifeCycleCost_RecurringCostsFields::YearsfromStart, yearsFromStart);
-}
+    int LifeCycleCost_Impl::repeatPeriodYears() const {
+      const auto value = getInt(openstudio::LifeCycleCost_RecurringCostsFields::RepeatPeriodYears, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-void LifeCycleCost_Impl::resetYearsFromStart() {
-  OS_ASSERT(setString(openstudio::LifeCycleCost_RecurringCostsFields::YearsfromStart, ""));
-}
+    bool LifeCycleCost_Impl::isRepeatPeriodYearsDefaulted() const {
+      return isEmpty(openstudio::LifeCycleCost_RecurringCostsFields::RepeatPeriodYears);
+    }
 
-bool LifeCycleCost_Impl::setMonthsFromStart(int monthsFromStart) {
-  return setInt(openstudio::LifeCycleCost_RecurringCostsFields::MonthsfromStart, monthsFromStart);
-}
+    bool LifeCycleCost_Impl::setRepeatPeriodYears(int repeatPeriodYears) {
+      return setInt(openstudio::LifeCycleCost_RecurringCostsFields::RepeatPeriodYears, repeatPeriodYears);
+    }
 
-void LifeCycleCost_Impl::resetMonthsFromStart() {
-  OS_ASSERT(setString(openstudio::LifeCycleCost_RecurringCostsFields::MonthsfromStart, ""));
-}
+    void LifeCycleCost_Impl::resetRepeatPeriodYears() {
+      OS_ASSERT(setString(openstudio::LifeCycleCost_RecurringCostsFields::RepeatPeriodYears, ""));
+    }
 
-bool LifeCycleCost_Impl::setRepeatPeriodYears(int repeatPeriodYears) {
-  return setInt(openstudio::LifeCycleCost_RecurringCostsFields::RepeatPeriodYears, repeatPeriodYears);
-}
+    int LifeCycleCost_Impl::repeatPeriodMonths() const {
+      const auto value = getInt(openstudio::LifeCycleCost_RecurringCostsFields::RepeatPeriodMonths, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-void LifeCycleCost_Impl::resetRepeatPeriodYears() {
-  OS_ASSERT(setString(openstudio::LifeCycleCost_RecurringCostsFields::RepeatPeriodYears, ""));
-}
+    bool LifeCycleCost_Impl::isRepeatPeriodMonthsDefaulted() const {
+      return isEmpty(openstudio::LifeCycleCost_RecurringCostsFields::RepeatPeriodMonths);
+    }
 
-bool LifeCycleCost_Impl::setRepeatPeriodMonths(int repeatPeriodMonths) {
-  return setInt(openstudio::LifeCycleCost_RecurringCostsFields::RepeatPeriodMonths, repeatPeriodMonths);
-}
+    bool LifeCycleCost_Impl::setRepeatPeriodMonths(int repeatPeriodMonths) {
+      return setInt(openstudio::LifeCycleCost_RecurringCostsFields::RepeatPeriodMonths, repeatPeriodMonths);
+    }
 
-void LifeCycleCost_Impl::resetRepeatPeriodMonths() {
-  OS_ASSERT(setString(openstudio::LifeCycleCost_RecurringCostsFields::RepeatPeriodMonths, ""));
-}
+    void LifeCycleCost_Impl::resetRepeatPeriodMonths() {
+      OS_ASSERT(setString(openstudio::LifeCycleCost_RecurringCostsFields::RepeatPeriodMonths, ""));
+    }
 
-std::vector<std::string> LifeCycleCost_Impl::validCategoryValues() const {
-  return openstudio::epmodel::LifeCycleCost::validCategoryValues();
-}
+    std::vector<std::string> LifeCycleCost_Impl::validCategoryValues() const {
+      return openstudio::epmodel::LifeCycleCost::validCategoryValues();
+    }
 
-std::vector<std::string> LifeCycleCost_Impl::validStartOfCostsValues() const {
-  return openstudio::epmodel::LifeCycleCost::validStartOfCostsValues();
-}
+    std::vector<std::string> LifeCycleCost_Impl::validStartOfCostsValues() const {
+      return openstudio::epmodel::LifeCycleCost::validStartOfCostsValues();
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

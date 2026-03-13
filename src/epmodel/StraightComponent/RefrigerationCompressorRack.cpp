@@ -53,78 +53,14 @@ namespace epmodel {
     return getImpl<detail::RefrigerationCompressorRack_Impl>()->heatRejectionLocation();
   }
 
-  double RefrigerationCompressorRack::designCompressorRackCOP() const {
-    return getImpl<detail::RefrigerationCompressorRack_Impl>()->designCompressorRackCOP();
-  }
-
-  double RefrigerationCompressorRack::designCondenserFanPower() const {
-    return getImpl<detail::RefrigerationCompressorRack_Impl>()->designCondenserFanPower();
-  }
-
-  std::string RefrigerationCompressorRack::condenserType() const {
-    return getImpl<detail::RefrigerationCompressorRack_Impl>()->condenserType();
-  }
-
-  std::string RefrigerationCompressorRack::waterCooledLoopFlowType() const {
-    return getImpl<detail::RefrigerationCompressorRack_Impl>()->waterCooledLoopFlowType();
-  }
-
-  boost::optional<double> RefrigerationCompressorRack::waterCooledCondenserDesignFlowRate() const {
-    return getImpl<detail::RefrigerationCompressorRack_Impl>()->waterCooledCondenserDesignFlowRate();
-  }
-
-  boost::optional<double> RefrigerationCompressorRack::waterCooledCondenserMaximumFlowRate() const {
-    return getImpl<detail::RefrigerationCompressorRack_Impl>()->waterCooledCondenserMaximumFlowRate();
-  }
-
-  double RefrigerationCompressorRack::waterCooledCondenserMaximumWaterOutletTemperature() const {
-    return getImpl<detail::RefrigerationCompressorRack_Impl>()->waterCooledCondenserMaximumWaterOutletTemperature();
-  }
-
-  double RefrigerationCompressorRack::waterCooledCondenserMinimumWaterInletTemperature() const {
-    return getImpl<detail::RefrigerationCompressorRack_Impl>()->waterCooledCondenserMinimumWaterInletTemperature();
-  }
-
-  double RefrigerationCompressorRack::evaporativeCondenserEffectiveness() const {
-    return getImpl<detail::RefrigerationCompressorRack_Impl>()->evaporativeCondenserEffectiveness();
-  }
-
-  boost::optional<double> RefrigerationCompressorRack::evaporativeCondenserAirFlowRate() const {
-    return getImpl<detail::RefrigerationCompressorRack_Impl>()->evaporativeCondenserAirFlowRate();
-  }
-
-  bool RefrigerationCompressorRack::isEvaporativeCondenserAirFlowRateAutocalculated() const {
-    return getImpl<detail::RefrigerationCompressorRack_Impl>()->isEvaporativeCondenserAirFlowRateAutocalculated();
-  }
-
-  double RefrigerationCompressorRack::basinHeaterCapacity() const {
-    return getImpl<detail::RefrigerationCompressorRack_Impl>()->basinHeaterCapacity();
-  }
-
-  double RefrigerationCompressorRack::basinHeaterSetpointTemperature() const {
-    return getImpl<detail::RefrigerationCompressorRack_Impl>()->basinHeaterSetpointTemperature();
-  }
-
-  boost::optional<double> RefrigerationCompressorRack::designEvaporativeCondenserWaterPumpPower() const {
-    return getImpl<detail::RefrigerationCompressorRack_Impl>()->designEvaporativeCondenserWaterPumpPower();
-  }
-
-  bool RefrigerationCompressorRack::isDesignEvaporativeCondenserWaterPumpPowerAutocalculated() const {
-    return getImpl<detail::RefrigerationCompressorRack_Impl>()->isDesignEvaporativeCondenserWaterPumpPowerAutocalculated();
-  }
-
-  std::string RefrigerationCompressorRack::endUseSubcategory() const {
-    return getImpl<detail::RefrigerationCompressorRack_Impl>()->endUseSubcategory();
-  }
-
-  bool RefrigerationCompressorRack::isEndUseSubcategoryDefaulted() const {
-    return getImpl<detail::RefrigerationCompressorRack_Impl>()->isEndUseSubcategoryDefaulted();
-  }
-
   bool RefrigerationCompressorRack::setHeatRejectionLocation(const std::string& heatRejectionLocation) {
     bool result = getImpl<detail::RefrigerationCompressorRack_Impl>()->setHeatRejectionLocation(heatRejectionLocation);
     OS_ASSERT(result);
     return result;
+  }
+
+  double RefrigerationCompressorRack::designCompressorRackCOP() const {
+    return getImpl<detail::RefrigerationCompressorRack_Impl>()->designCompressorRackCOP();
   }
 
   bool RefrigerationCompressorRack::setDesignCompressorRackCOP(double designCompressorRackCOP) {
@@ -133,10 +69,18 @@ namespace epmodel {
     return result;
   }
 
+  double RefrigerationCompressorRack::designCondenserFanPower() const {
+    return getImpl<detail::RefrigerationCompressorRack_Impl>()->designCondenserFanPower();
+  }
+
   bool RefrigerationCompressorRack::setDesignCondenserFanPower(double designCondenserFanPower) {
     bool result = getImpl<detail::RefrigerationCompressorRack_Impl>()->setDesignCondenserFanPower(designCondenserFanPower);
     OS_ASSERT(result);
     return result;
+  }
+
+  std::string RefrigerationCompressorRack::condenserType() const {
+    return getImpl<detail::RefrigerationCompressorRack_Impl>()->condenserType();
   }
 
   bool RefrigerationCompressorRack::setCondenserType(const std::string& condenserType) {
@@ -145,10 +89,18 @@ namespace epmodel {
     return result;
   }
 
+  std::string RefrigerationCompressorRack::waterCooledLoopFlowType() const {
+    return getImpl<detail::RefrigerationCompressorRack_Impl>()->waterCooledLoopFlowType();
+  }
+
   bool RefrigerationCompressorRack::setWaterCooledLoopFlowType(const std::string& waterCooledLoopFlowType) {
     bool result = getImpl<detail::RefrigerationCompressorRack_Impl>()->setWaterCooledLoopFlowType(waterCooledLoopFlowType);
     OS_ASSERT(result);
     return result;
+  }
+
+  boost::optional<double> RefrigerationCompressorRack::waterCooledCondenserDesignFlowRate() const {
+    return getImpl<detail::RefrigerationCompressorRack_Impl>()->waterCooledCondenserDesignFlowRate();
   }
 
   bool RefrigerationCompressorRack::setWaterCooledCondenserDesignFlowRate(double waterCooledCondenserDesignFlowRate) {
@@ -161,6 +113,10 @@ namespace epmodel {
     getImpl<detail::RefrigerationCompressorRack_Impl>()->resetWaterCooledCondenserDesignFlowRate();
   }
 
+  boost::optional<double> RefrigerationCompressorRack::waterCooledCondenserMaximumFlowRate() const {
+    return getImpl<detail::RefrigerationCompressorRack_Impl>()->waterCooledCondenserMaximumFlowRate();
+  }
+
   bool RefrigerationCompressorRack::setWaterCooledCondenserMaximumFlowRate(double waterCooledCondenserMaximumFlowRate) {
     bool result = getImpl<detail::RefrigerationCompressorRack_Impl>()->setWaterCooledCondenserMaximumFlowRate(waterCooledCondenserMaximumFlowRate);
     OS_ASSERT(result);
@@ -171,11 +127,19 @@ namespace epmodel {
     getImpl<detail::RefrigerationCompressorRack_Impl>()->resetWaterCooledCondenserMaximumFlowRate();
   }
 
+  double RefrigerationCompressorRack::waterCooledCondenserMaximumWaterOutletTemperature() const {
+    return getImpl<detail::RefrigerationCompressorRack_Impl>()->waterCooledCondenserMaximumWaterOutletTemperature();
+  }
+
   bool RefrigerationCompressorRack::setWaterCooledCondenserMaximumWaterOutletTemperature(double waterCooledCondenserMaximumWaterOutletTemperature) {
     bool result = getImpl<detail::RefrigerationCompressorRack_Impl>()->setWaterCooledCondenserMaximumWaterOutletTemperature(
       waterCooledCondenserMaximumWaterOutletTemperature);
     OS_ASSERT(result);
     return result;
+  }
+
+  double RefrigerationCompressorRack::waterCooledCondenserMinimumWaterInletTemperature() const {
+    return getImpl<detail::RefrigerationCompressorRack_Impl>()->waterCooledCondenserMinimumWaterInletTemperature();
   }
 
   bool RefrigerationCompressorRack::setWaterCooledCondenserMinimumWaterInletTemperature(double waterCooledCondenserMinimumWaterInletTemperature) {
@@ -185,10 +149,18 @@ namespace epmodel {
     return result;
   }
 
+  double RefrigerationCompressorRack::evaporativeCondenserEffectiveness() const {
+    return getImpl<detail::RefrigerationCompressorRack_Impl>()->evaporativeCondenserEffectiveness();
+  }
+
   bool RefrigerationCompressorRack::setEvaporativeCondenserEffectiveness(double evaporativeCondenserEffectiveness) {
     bool result = getImpl<detail::RefrigerationCompressorRack_Impl>()->setEvaporativeCondenserEffectiveness(evaporativeCondenserEffectiveness);
     OS_ASSERT(result);
     return result;
+  }
+
+  boost::optional<double> RefrigerationCompressorRack::evaporativeCondenserAirFlowRate() const {
+    return getImpl<detail::RefrigerationCompressorRack_Impl>()->evaporativeCondenserAirFlowRate();
   }
 
   bool RefrigerationCompressorRack::setEvaporativeCondenserAirFlowRate(double evaporativeCondenserAirFlowRate) {
@@ -197,10 +169,18 @@ namespace epmodel {
     return result;
   }
 
+  bool RefrigerationCompressorRack::isEvaporativeCondenserAirFlowRateAutocalculated() const {
+    return getImpl<detail::RefrigerationCompressorRack_Impl>()->isEvaporativeCondenserAirFlowRateAutocalculated();
+  }
+
   bool RefrigerationCompressorRack::autocalculateEvaporativeCondenserAirFlowRate() {
     bool result = getImpl<detail::RefrigerationCompressorRack_Impl>()->autocalculateEvaporativeCondenserAirFlowRate();
     OS_ASSERT(result);
     return result;
+  }
+
+  double RefrigerationCompressorRack::basinHeaterCapacity() const {
+    return getImpl<detail::RefrigerationCompressorRack_Impl>()->basinHeaterCapacity();
   }
 
   bool RefrigerationCompressorRack::setBasinHeaterCapacity(double basinHeaterCapacity) {
@@ -209,10 +189,18 @@ namespace epmodel {
     return result;
   }
 
+  double RefrigerationCompressorRack::basinHeaterSetpointTemperature() const {
+    return getImpl<detail::RefrigerationCompressorRack_Impl>()->basinHeaterSetpointTemperature();
+  }
+
   bool RefrigerationCompressorRack::setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature) {
     bool result = getImpl<detail::RefrigerationCompressorRack_Impl>()->setBasinHeaterSetpointTemperature(basinHeaterSetpointTemperature);
     OS_ASSERT(result);
     return result;
+  }
+
+  boost::optional<double> RefrigerationCompressorRack::designEvaporativeCondenserWaterPumpPower() const {
+    return getImpl<detail::RefrigerationCompressorRack_Impl>()->designEvaporativeCondenserWaterPumpPower();
   }
 
   bool RefrigerationCompressorRack::setDesignEvaporativeCondenserWaterPumpPower(double designEvaporativeCondenserWaterPumpPower) {
@@ -222,10 +210,22 @@ namespace epmodel {
     return result;
   }
 
+  bool RefrigerationCompressorRack::isDesignEvaporativeCondenserWaterPumpPowerAutocalculated() const {
+    return getImpl<detail::RefrigerationCompressorRack_Impl>()->isDesignEvaporativeCondenserWaterPumpPowerAutocalculated();
+  }
+
   bool RefrigerationCompressorRack::autocalculateDesignEvaporativeCondenserWaterPumpPower() {
     bool result = getImpl<detail::RefrigerationCompressorRack_Impl>()->autocalculateDesignEvaporativeCondenserWaterPumpPower();
     OS_ASSERT(result);
     return result;
+  }
+
+  std::string RefrigerationCompressorRack::endUseSubcategory() const {
+    return getImpl<detail::RefrigerationCompressorRack_Impl>()->endUseSubcategory();
+  }
+
+  bool RefrigerationCompressorRack::isEndUseSubcategoryDefaulted() const {
+    return getImpl<detail::RefrigerationCompressorRack_Impl>()->isEndUseSubcategoryDefaulted();
   }
 
   bool RefrigerationCompressorRack::setEndUseSubcategory(const std::string& endUseSubcategory) {
@@ -259,10 +259,22 @@ namespace epmodel {
       return value.get();
     }
 
+    bool RefrigerationCompressorRack_Impl::setHeatRejectionLocation(const std::string& heatRejectionLocation) {
+      bool result = setString(openstudio::Refrigeration_CompressorRackFields::HeatRejectionLocation, heatRejectionLocation);
+      OS_ASSERT(result);
+      return result;
+    }
+
     double RefrigerationCompressorRack_Impl::designCompressorRackCOP() const {
       boost::optional<double> value = getDouble(openstudio::Refrigeration_CompressorRackFields::DesignCompressorRackCOP, true);
       OS_ASSERT(value);
       return value.get();
+    }
+
+    bool RefrigerationCompressorRack_Impl::setDesignCompressorRackCOP(double designCompressorRackCOP) {
+      bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::DesignCompressorRackCOP, designCompressorRackCOP);
+      OS_ASSERT(result);
+      return result;
     }
 
     double RefrigerationCompressorRack_Impl::designCondenserFanPower() const {
@@ -271,10 +283,22 @@ namespace epmodel {
       return value.get();
     }
 
+    bool RefrigerationCompressorRack_Impl::setDesignCondenserFanPower(double designCondenserFanPower) {
+      bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::DesignCondenserFanPower, designCondenserFanPower);
+      OS_ASSERT(result);
+      return result;
+    }
+
     std::string RefrigerationCompressorRack_Impl::condenserType() const {
       boost::optional<std::string> value = getString(openstudio::Refrigeration_CompressorRackFields::CondenserType, true);
       OS_ASSERT(value);
       return value.get();
+    }
+
+    bool RefrigerationCompressorRack_Impl::setCondenserType(const std::string& condenserType) {
+      bool result = setString(openstudio::Refrigeration_CompressorRackFields::CondenserType, condenserType);
+      OS_ASSERT(result);
+      return result;
     }
 
     std::string RefrigerationCompressorRack_Impl::waterCooledLoopFlowType() const {
@@ -283,12 +307,41 @@ namespace epmodel {
       return value.get();
     }
 
+    bool RefrigerationCompressorRack_Impl::setWaterCooledLoopFlowType(const std::string& waterCooledLoopFlowType) {
+      bool result = setString(openstudio::Refrigeration_CompressorRackFields::WaterCooledLoopFlowType, waterCooledLoopFlowType);
+      OS_ASSERT(result);
+      return result;
+    }
+
     boost::optional<double> RefrigerationCompressorRack_Impl::waterCooledCondenserDesignFlowRate() const {
       return getDouble(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserDesignFlowRate, true);
     }
 
+    bool RefrigerationCompressorRack_Impl::setWaterCooledCondenserDesignFlowRate(double waterCooledCondenserDesignFlowRate) {
+      bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserDesignFlowRate, waterCooledCondenserDesignFlowRate);
+      OS_ASSERT(result);
+      return result;
+    }
+
+    void RefrigerationCompressorRack_Impl::resetWaterCooledCondenserDesignFlowRate() {
+      bool result = setString(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserDesignFlowRate, "");
+      OS_ASSERT(result);
+    }
+
     boost::optional<double> RefrigerationCompressorRack_Impl::waterCooledCondenserMaximumFlowRate() const {
       return getDouble(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserMaximumFlowRate, true);
+    }
+
+    bool RefrigerationCompressorRack_Impl::setWaterCooledCondenserMaximumFlowRate(double waterCooledCondenserMaximumFlowRate) {
+      bool result =
+        setDouble(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserMaximumFlowRate, waterCooledCondenserMaximumFlowRate);
+      OS_ASSERT(result);
+      return result;
+    }
+
+    void RefrigerationCompressorRack_Impl::resetWaterCooledCondenserMaximumFlowRate() {
+      bool result = setString(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserMaximumFlowRate, "");
+      OS_ASSERT(result);
     }
 
     double RefrigerationCompressorRack_Impl::waterCooledCondenserMaximumWaterOutletTemperature() const {
@@ -298,11 +351,27 @@ namespace epmodel {
       return value.get();
     }
 
+    bool RefrigerationCompressorRack_Impl::setWaterCooledCondenserMaximumWaterOutletTemperature(
+      double waterCooledCondenserMaximumWaterOutletTemperature) {
+      bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserMaximumWaterOutletTemperature,
+                              waterCooledCondenserMaximumWaterOutletTemperature);
+      OS_ASSERT(result);
+      return result;
+    }
+
     double RefrigerationCompressorRack_Impl::waterCooledCondenserMinimumWaterInletTemperature() const {
       boost::optional<double> value =
         getDouble(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserMinimumWaterInletTemperature, true);
       OS_ASSERT(value);
       return value.get();
+    }
+
+    bool
+      RefrigerationCompressorRack_Impl::setWaterCooledCondenserMinimumWaterInletTemperature(double waterCooledCondenserMinimumWaterInletTemperature) {
+      bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserMinimumWaterInletTemperature,
+                              waterCooledCondenserMinimumWaterInletTemperature);
+      OS_ASSERT(result);
+      return result;
     }
 
     double RefrigerationCompressorRack_Impl::evaporativeCondenserEffectiveness() const {
@@ -311,8 +380,20 @@ namespace epmodel {
       return value.get();
     }
 
+    bool RefrigerationCompressorRack_Impl::setEvaporativeCondenserEffectiveness(double evaporativeCondenserEffectiveness) {
+      bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::EvaporativeCondenserEffectiveness, evaporativeCondenserEffectiveness);
+      OS_ASSERT(result);
+      return result;
+    }
+
     boost::optional<double> RefrigerationCompressorRack_Impl::evaporativeCondenserAirFlowRate() const {
       return getDouble(openstudio::Refrigeration_CompressorRackFields::EvaporativeCondenserAirFlowRate, true);
+    }
+
+    bool RefrigerationCompressorRack_Impl::setEvaporativeCondenserAirFlowRate(double evaporativeCondenserAirFlowRate) {
+      bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::EvaporativeCondenserAirFlowRate, evaporativeCondenserAirFlowRate);
+      OS_ASSERT(result);
+      return result;
     }
 
     bool RefrigerationCompressorRack_Impl::isEvaporativeCondenserAirFlowRateAutocalculated() const {
@@ -322,10 +403,22 @@ namespace epmodel {
       return false;
     }
 
+    bool RefrigerationCompressorRack_Impl::autocalculateEvaporativeCondenserAirFlowRate() {
+      const bool result = setString(openstudio::Refrigeration_CompressorRackFields::EvaporativeCondenserAirFlowRate, "Autocalculate");
+      OS_ASSERT(result);
+      return result;
+    }
+
     double RefrigerationCompressorRack_Impl::basinHeaterCapacity() const {
       boost::optional<double> value = getDouble(openstudio::Refrigeration_CompressorRackFields::BasinHeaterCapacity, true);
       OS_ASSERT(value);
       return value.get();
+    }
+
+    bool RefrigerationCompressorRack_Impl::setBasinHeaterCapacity(double basinHeaterCapacity) {
+      bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::BasinHeaterCapacity, basinHeaterCapacity);
+      OS_ASSERT(result);
+      return result;
     }
 
     double RefrigerationCompressorRack_Impl::basinHeaterSetpointTemperature() const {
@@ -334,8 +427,21 @@ namespace epmodel {
       return value.get();
     }
 
+    bool RefrigerationCompressorRack_Impl::setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature) {
+      bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::BasinHeaterSetpointTemperature, basinHeaterSetpointTemperature);
+      OS_ASSERT(result);
+      return result;
+    }
+
     boost::optional<double> RefrigerationCompressorRack_Impl::designEvaporativeCondenserWaterPumpPower() const {
       return getDouble(openstudio::Refrigeration_CompressorRackFields::DesignEvaporativeCondenserWaterPumpPower, true);
+    }
+
+    bool RefrigerationCompressorRack_Impl::setDesignEvaporativeCondenserWaterPumpPower(double designEvaporativeCondenserWaterPumpPower) {
+      bool result =
+        setDouble(openstudio::Refrigeration_CompressorRackFields::DesignEvaporativeCondenserWaterPumpPower, designEvaporativeCondenserWaterPumpPower);
+      OS_ASSERT(result);
+      return result;
     }
 
     bool RefrigerationCompressorRack_Impl::isDesignEvaporativeCondenserWaterPumpPowerAutocalculated() const {
@@ -344,6 +450,12 @@ namespace epmodel {
         return openstudio::istringEqual(value.get(), "Autocalculate");
       }
       return false;
+    }
+
+    bool RefrigerationCompressorRack_Impl::autocalculateDesignEvaporativeCondenserWaterPumpPower() {
+      const bool result = setString(openstudio::Refrigeration_CompressorRackFields::DesignEvaporativeCondenserWaterPumpPower, "Autocalculate");
+      OS_ASSERT(result);
+      return result;
     }
 
     std::string RefrigerationCompressorRack_Impl::endUseSubcategory() const {
@@ -363,120 +475,6 @@ namespace epmodel {
         return openstudio::istringEqual(*value, iddField->properties().stringDefault.get());
       }
       return value->empty();
-    }
-
-    bool RefrigerationCompressorRack_Impl::setHeatRejectionLocation(const std::string& heatRejectionLocation) {
-      bool result = setString(openstudio::Refrigeration_CompressorRackFields::HeatRejectionLocation, heatRejectionLocation);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool RefrigerationCompressorRack_Impl::setDesignCompressorRackCOP(double designCompressorRackCOP) {
-      bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::DesignCompressorRackCOP, designCompressorRackCOP);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool RefrigerationCompressorRack_Impl::setDesignCondenserFanPower(double designCondenserFanPower) {
-      bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::DesignCondenserFanPower, designCondenserFanPower);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool RefrigerationCompressorRack_Impl::setCondenserType(const std::string& condenserType) {
-      bool result = setString(openstudio::Refrigeration_CompressorRackFields::CondenserType, condenserType);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool RefrigerationCompressorRack_Impl::setWaterCooledLoopFlowType(const std::string& waterCooledLoopFlowType) {
-      bool result = setString(openstudio::Refrigeration_CompressorRackFields::WaterCooledLoopFlowType, waterCooledLoopFlowType);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool RefrigerationCompressorRack_Impl::setWaterCooledCondenserDesignFlowRate(double waterCooledCondenserDesignFlowRate) {
-      bool result =
-        setDouble(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserDesignFlowRate, waterCooledCondenserDesignFlowRate);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    void RefrigerationCompressorRack_Impl::resetWaterCooledCondenserDesignFlowRate() {
-      bool result = setString(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserDesignFlowRate, "");
-      OS_ASSERT(result);
-    }
-
-    bool RefrigerationCompressorRack_Impl::setWaterCooledCondenserMaximumFlowRate(double waterCooledCondenserMaximumFlowRate) {
-      bool result =
-        setDouble(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserMaximumFlowRate, waterCooledCondenserMaximumFlowRate);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    void RefrigerationCompressorRack_Impl::resetWaterCooledCondenserMaximumFlowRate() {
-      bool result = setString(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserMaximumFlowRate, "");
-      OS_ASSERT(result);
-    }
-
-    bool RefrigerationCompressorRack_Impl::setWaterCooledCondenserMaximumWaterOutletTemperature(
-      double waterCooledCondenserMaximumWaterOutletTemperature) {
-      bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserMaximumWaterOutletTemperature,
-                              waterCooledCondenserMaximumWaterOutletTemperature);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool
-      RefrigerationCompressorRack_Impl::setWaterCooledCondenserMinimumWaterInletTemperature(double waterCooledCondenserMinimumWaterInletTemperature) {
-      bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserMinimumWaterInletTemperature,
-                              waterCooledCondenserMinimumWaterInletTemperature);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool RefrigerationCompressorRack_Impl::setEvaporativeCondenserEffectiveness(double evaporativeCondenserEffectiveness) {
-      bool result =
-        setDouble(openstudio::Refrigeration_CompressorRackFields::EvaporativeCondenserEffectiveness, evaporativeCondenserEffectiveness);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool RefrigerationCompressorRack_Impl::setEvaporativeCondenserAirFlowRate(double evaporativeCondenserAirFlowRate) {
-      bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::EvaporativeCondenserAirFlowRate, evaporativeCondenserAirFlowRate);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool RefrigerationCompressorRack_Impl::autocalculateEvaporativeCondenserAirFlowRate() {
-      const bool result = setString(openstudio::Refrigeration_CompressorRackFields::EvaporativeCondenserAirFlowRate, "Autocalculate");
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool RefrigerationCompressorRack_Impl::setBasinHeaterCapacity(double basinHeaterCapacity) {
-      bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::BasinHeaterCapacity, basinHeaterCapacity);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool RefrigerationCompressorRack_Impl::setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature) {
-      bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::BasinHeaterSetpointTemperature, basinHeaterSetpointTemperature);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool RefrigerationCompressorRack_Impl::setDesignEvaporativeCondenserWaterPumpPower(double designEvaporativeCondenserWaterPumpPower) {
-      bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::DesignEvaporativeCondenserWaterPumpPower,
-                              designEvaporativeCondenserWaterPumpPower);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool RefrigerationCompressorRack_Impl::autocalculateDesignEvaporativeCondenserWaterPumpPower() {
-      const bool result = setString(openstudio::Refrigeration_CompressorRackFields::DesignEvaporativeCondenserWaterPumpPower, "Autocalculate");
-      OS_ASSERT(result);
-      return result;
     }
 
     bool RefrigerationCompressorRack_Impl::setEndUseSubcategory(const std::string& endUseSubcategory) {

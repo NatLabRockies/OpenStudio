@@ -12,21 +12,21 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API FaultModelFoulingAirFilter_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~FaultModelFoulingAirFilter_Impl() override = default;
+    class EPMODEL_API FaultModelFoulingAirFilter_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~FaultModelFoulingAirFilter_Impl() override = default;
 
-  std::string fanObjectType() const;
-  bool setFanObjectType(const std::string& fanObjectType);
+      std::vector<std::string> fanObjectTypeValues() const;
 
-  std::vector<std::string> fanObjectTypeValues() const;
-};
+      std::string fanObjectType() const;
+      bool setFanObjectType(const std::string& fanObjectType);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

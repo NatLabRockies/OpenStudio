@@ -10,28 +10,28 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SetpointManagerSingleZoneOneStageHeating_Impl : public SetpointManager_Impl
-{
- public:
-  using SetpointManager_Impl::SetpointManager_Impl;
-  virtual ~SetpointManagerSingleZoneOneStageHeating_Impl() override = default;
+    class EPMODEL_API SetpointManagerSingleZoneOneStageHeating_Impl : public SetpointManager_Impl
+    {
+     public:
+      using SetpointManager_Impl::SetpointManager_Impl;
+      virtual ~SetpointManagerSingleZoneOneStageHeating_Impl() override = default;
 
-  double heatingStageOnSupplyAirSetpointTemperature() const;
-  double heatingStageOffSupplyAirSetpointTemperature() const;
+      double heatingStageOnSupplyAirSetpointTemperature() const;
+      bool setHeatingStageOnSupplyAirSetpointTemperature(double heatingStageOnSupplyAirSetpointTemperature);
 
-  bool setHeatingStageOnSupplyAirSetpointTemperature(double heatingStageOnSupplyAirSetpointTemperature);
-  bool setHeatingStageOffSupplyAirSetpointTemperature(double heatingStageOffSupplyAirSetpointTemperature);
+      double heatingStageOffSupplyAirSetpointTemperature() const;
+      bool setHeatingStageOffSupplyAirSetpointTemperature(double heatingStageOffSupplyAirSetpointTemperature);
 
- protected:
-  unsigned setpointNodeFieldIndex() const override;
-  unsigned controlVariableFieldIndex() const override;
+     protected:
+      unsigned setpointNodeFieldIndex() const override;
+      unsigned controlVariableFieldIndex() const override;
 
-  void doCanonicalize(LoadContext& context) override;
-};
+      void doCanonicalize(LoadContext& context) override;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

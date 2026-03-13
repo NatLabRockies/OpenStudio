@@ -13,25 +13,24 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API FluidPropertiesGlycolConcentration_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~FluidPropertiesGlycolConcentration_Impl() override = default;
+    class EPMODEL_API FluidPropertiesGlycolConcentration_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~FluidPropertiesGlycolConcentration_Impl() override = default;
 
-  std::string glycolType() const;
-  bool setGlycolType(const std::string& glycolType);
+      std::string glycolType() const;
+      bool setGlycolType(const std::string& glycolType);
+      std::vector<std::string> glycolTypeValues() const;
 
-  boost::optional<double> glycolConcentration() const;
-  bool setGlycolConcentration(double glycolConcentration);
-  void resetGlycolConcentration();
+      boost::optional<double> glycolConcentration() const;
+      bool setGlycolConcentration(double glycolConcentration);
+      void resetGlycolConcentration();
+    };
 
-  std::vector<std::string> glycolTypeValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

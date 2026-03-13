@@ -54,30 +54,30 @@ namespace epmodel {
     unsigned numGases() const;
 
     std::string gas1Type() const;
-    double gas1Fraction() const;
     bool setGas1Type(const std::string& gas1Type);
     void resetGas1Type();
+    double gas1Fraction() const;
     bool setGas1Fraction(double gas1Fraction);
     void resetGas1Fraction();
 
     std::string gas2Type() const;
-    double gas2Fraction() const;
     bool setGas2Type(const std::string& gas2Type);
     void resetGas2Type();
+    double gas2Fraction() const;
     bool setGas2Fraction(double gas2Fraction);
     void resetGas2Fraction();
 
     std::string gas3Type() const;
-    boost::optional<double> gas3Fraction() const;
     bool setGas3Type(const std::string& gas3Type);
     void resetGas3Type();
+    boost::optional<double> gas3Fraction() const;
     bool setGas3Fraction(double gas3Fraction);
     void resetGas3Fraction();
 
     std::string gas4Type() const;
-    boost::optional<double> gas4Fraction() const;
     bool setGas4Type(const std::string& gas4Type);
     void resetGas4Type();
+    boost::optional<double> gas4Fraction() const;
     bool setGas4Fraction(double gas4Fraction);
     void resetGas4Fraction();
 

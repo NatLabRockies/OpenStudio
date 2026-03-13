@@ -15,174 +15,146 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API EvaporativeFluidCoolerTwoSpeed_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~EvaporativeFluidCoolerTwoSpeed_Impl() override = default;
+    class EPMODEL_API EvaporativeFluidCoolerTwoSpeed_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~EvaporativeFluidCoolerTwoSpeed_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
-  std::vector<std::string> performanceInputMethodValues() const;
-  std::vector<std::string> evaporationLossModeValues() const;
-  std::vector<std::string> blowdownCalculationModeValues() const;
+      std::vector<std::string> performanceInputMethodValues() const;
+      std::vector<std::string> evaporationLossModeValues() const;
+      std::vector<std::string> blowdownCalculationModeValues() const;
 
-  boost::optional<double> highFanSpeedAirFlowRate() const;
-  bool isHighFanSpeedAirFlowRateAutosized() const;
+      boost::optional<double> highFanSpeedAirFlowRate() const;
+      bool isHighFanSpeedAirFlowRateAutosized() const;
+      bool setHighFanSpeedAirFlowRate(boost::optional<double> highFanSpeedAirFlowRate);
+      void autosizeHighFanSpeedAirFlowRate();
 
-  boost::optional<double> highFanSpeedFanPower() const;
-  bool isHighFanSpeedFanPowerAutosized() const;
+      boost::optional<double> highFanSpeedFanPower() const;
+      bool isHighFanSpeedFanPowerAutosized() const;
+      bool setHighFanSpeedFanPower(boost::optional<double> highFanSpeedFanPower);
+      void autosizeHighFanSpeedFanPower();
 
-  boost::optional<double> lowFanSpeedAirFlowRate() const;
-  bool isLowFanSpeedAirFlowRateAutosized() const;
+      boost::optional<double> lowFanSpeedAirFlowRate() const;
+      bool isLowFanSpeedAirFlowRateAutosized() const;
+      bool setLowFanSpeedAirFlowRate(boost::optional<double> lowFanSpeedAirFlowRate);
+      void autosizeLowFanSpeedAirFlowRate();
 
-  double lowFanSpeedAirFlowRateSizingFactor() const;
+      double lowFanSpeedAirFlowRateSizingFactor() const;
+      bool setLowFanSpeedAirFlowRateSizingFactor(double lowFanSpeedAirFlowRateSizingFactor);
 
-  boost::optional<double> lowFanSpeedFanPower() const;
-  bool isLowFanSpeedFanPowerAutosized() const;
+      boost::optional<double> lowFanSpeedFanPower() const;
+      bool isLowFanSpeedFanPowerAutosized() const;
+      bool setLowFanSpeedFanPower(boost::optional<double> lowFanSpeedFanPower);
+      void autosizeLowFanSpeedFanPower();
 
-  double lowFanSpeedFanPowerSizingFactor() const;
+      double lowFanSpeedFanPowerSizingFactor() const;
+      bool setLowFanSpeedFanPowerSizingFactor(double lowFanSpeedFanPowerSizingFactor);
 
-  double designSprayWaterFlowRate() const;
+      double designSprayWaterFlowRate() const;
+      bool setDesignSprayWaterFlowRate(double designSprayWaterFlowRate);
 
-  std::string performanceInputMethod() const;
+      std::string performanceInputMethod() const;
+      bool setPerformanceInputMethod(const std::string& performanceInputMethod);
 
-  double heatRejectionCapacityandNominalCapacitySizingRatio() const;
+      double heatRejectionCapacityandNominalCapacitySizingRatio() const;
+      bool setHeatRejectionCapacityandNominalCapacitySizingRatio(double heatRejectionCapacityandNominalCapacitySizingRatio);
 
-  boost::optional<double> highSpeedStandardDesignCapacity() const;
+      boost::optional<double> highSpeedStandardDesignCapacity() const;
+      bool setHighSpeedStandardDesignCapacity(boost::optional<double> highSpeedStandardDesignCapacity);
+      void resetHighSpeedStandardDesignCapacity();
 
-  boost::optional<double> lowSpeedStandardDesignCapacity() const;
-  bool isLowSpeedStandardDesignCapacityAutosized() const;
+      boost::optional<double> lowSpeedStandardDesignCapacity() const;
+      bool isLowSpeedStandardDesignCapacityAutosized() const;
+      bool setLowSpeedStandardDesignCapacity(boost::optional<double> lowSpeedStandardDesignCapacity);
+      void resetLowSpeedStandardDesignCapacity();
+      void autosizeLowSpeedStandardDesignCapacity();
 
-  double lowSpeedStandardCapacitySizingFactor() const;
+      double lowSpeedStandardCapacitySizingFactor() const;
+      bool setLowSpeedStandardCapacitySizingFactor(double lowSpeedStandardCapacitySizingFactor);
 
-  boost::optional<double> highFanSpeedUfactorTimesAreaValue() const;
-  bool isHighFanSpeedUfactorTimesAreaValueAutosized() const;
+      boost::optional<double> highFanSpeedUfactorTimesAreaValue() const;
+      bool isHighFanSpeedUfactorTimesAreaValueAutosized() const;
+      bool setHighFanSpeedUfactorTimesAreaValue(boost::optional<double> highFanSpeedUfactorTimesAreaValue);
+      void resetHighFanSpeedUfactorTimesAreaValue();
+      void autosizeHighFanSpeedUfactorTimesAreaValue();
 
-  boost::optional<double> lowFanSpeedUfactorTimesAreaValue() const;
-  bool isLowFanSpeedUfactorTimesAreaValueAutosized() const;
+      boost::optional<double> lowFanSpeedUfactorTimesAreaValue() const;
+      bool isLowFanSpeedUfactorTimesAreaValueAutosized() const;
+      bool setLowFanSpeedUfactorTimesAreaValue(boost::optional<double> lowFanSpeedUfactorTimesAreaValue);
+      void resetLowFanSpeedUfactorTimesAreaValue();
+      void autosizeLowFanSpeedUfactorTimesAreaValue();
 
-  double lowFanSpeedUFactorTimesAreaSizingFactor() const;
+      double lowFanSpeedUFactorTimesAreaSizingFactor() const;
+      bool setLowFanSpeedUFactorTimesAreaSizingFactor(double lowFanSpeedUFactorTimesAreaSizingFactor);
 
-  boost::optional<double> designWaterFlowRate() const;
-  bool isDesignWaterFlowRateAutosized() const;
+      boost::optional<double> designWaterFlowRate() const;
+      bool isDesignWaterFlowRateAutosized() const;
+      bool setDesignWaterFlowRate(boost::optional<double> designWaterFlowRate);
+      void resetDesignWaterFlowRate();
+      void autosizeDesignWaterFlowRate();
 
-  boost::optional<double> highSpeedUserSpecifiedDesignCapacity() const;
+      boost::optional<double> highSpeedUserSpecifiedDesignCapacity() const;
+      bool setHighSpeedUserSpecifiedDesignCapacity(boost::optional<double> highSpeedUserSpecifiedDesignCapacity);
+      void resetHighSpeedUserSpecifiedDesignCapacity();
 
-  boost::optional<double> lowSpeedUserSpecifiedDesignCapacity() const;
-  bool isLowSpeedUserSpecifiedDesignCapacityAutosized() const;
+      boost::optional<double> lowSpeedUserSpecifiedDesignCapacity() const;
+      bool isLowSpeedUserSpecifiedDesignCapacityAutosized() const;
+      bool setLowSpeedUserSpecifiedDesignCapacity(boost::optional<double> lowSpeedUserSpecifiedDesignCapacity);
+      void resetLowSpeedUserSpecifiedDesignCapacity();
+      void autosizeLowSpeedUserSpecifiedDesignCapacity();
 
-  double lowSpeedUserSpecifiedDesignCapacitySizingFactor() const;
+      double lowSpeedUserSpecifiedDesignCapacitySizingFactor() const;
+      bool setLowSpeedUserSpecifiedDesignCapacitySizingFactor(double lowSpeedUserSpecifiedDesignCapacitySizingFactor);
 
-  boost::optional<double> designEnteringWaterTemperature() const;
-  bool isDesignEnteringWaterTemperatureAutosized() const;
+      boost::optional<double> designEnteringWaterTemperature() const;
+      bool isDesignEnteringWaterTemperatureAutosized() const;
+      bool setDesignEnteringWaterTemperature(boost::optional<double> designEnteringWaterTemperature);
+      void autosizeDesignEnteringWaterTemperature();
 
-  double designEnteringAirTemperature() const;
+      double designEnteringAirTemperature() const;
+      bool setDesignEnteringAirTemperature(boost::optional<double> designEnteringAirTemperature);
 
-  double designEnteringAirWetbulbTemperature() const;
+      double designEnteringAirWetbulbTemperature() const;
+      bool setDesignEnteringAirWetbulbTemperature(boost::optional<double> designEnteringAirWetbulbTemperature);
 
-  double highSpeedSizingFactor() const;
+      double highSpeedSizingFactor() const;
+      bool setHighSpeedSizingFactor(double highSpeedSizingFactor);
 
-  std::string evaporationLossMode() const;
+      std::string evaporationLossMode() const;
+      bool setEvaporationLossMode(const std::string& evaporationLossMode);
 
-  boost::optional<double> evaporationLossFactor() const;
+      boost::optional<double> evaporationLossFactor() const;
+      bool setEvaporationLossFactor(boost::optional<double> evaporationLossFactor);
+      void resetEvaporationLossFactor();
 
-  double driftLossPercent() const;
+      double driftLossPercent() const;
+      bool setDriftLossPercent(double driftLossPercent);
 
-  std::string blowdownCalculationMode() const;
+      std::string blowdownCalculationMode() const;
+      bool setBlowdownCalculationMode(const std::string& blowdownCalculationMode);
 
-  double blowdownConcentrationRatio() const;
+      double blowdownConcentrationRatio() const;
+      bool setBlowdownConcentrationRatio(double blowdownConcentrationRatio);
 
-  bool setHighFanSpeedAirFlowRate(boost::optional<double> highFanSpeedAirFlowRate);
-  void autosizeHighFanSpeedAirFlowRate();
+      boost::optional<double> autosizedHighFanSpeedAirFlowRate() const;
+      boost::optional<double> autosizedHighFanSpeedFanPower() const;
+      boost::optional<double> autosizedLowFanSpeedAirFlowRate() const;
+      boost::optional<double> autosizedLowFanSpeedFanPower() const;
+      boost::optional<double> autosizedLowSpeedStandardDesignCapacity() const;
+      boost::optional<double> autosizedHighFanSpeedUfactorTimesAreaValue() const;
+      boost::optional<double> autosizedLowFanSpeedUfactorTimesAreaValue() const;
+      boost::optional<double> autosizedDesignWaterFlowRate() const;
+      boost::optional<double> autosizedLowSpeedUserSpecifiedDesignCapacity() const;
+      boost::optional<double> autosizedDesignEnteringWaterTemperature() const;
+    };
 
-  bool setHighFanSpeedFanPower(boost::optional<double> highFanSpeedFanPower);
-  void autosizeHighFanSpeedFanPower();
-
-  bool setLowFanSpeedAirFlowRate(boost::optional<double> lowFanSpeedAirFlowRate);
-  void autosizeLowFanSpeedAirFlowRate();
-
-  bool setLowFanSpeedAirFlowRateSizingFactor(double lowFanSpeedAirFlowRateSizingFactor);
-
-  bool setLowFanSpeedFanPower(boost::optional<double> lowFanSpeedFanPower);
-  void autosizeLowFanSpeedFanPower();
-
-  bool setLowFanSpeedFanPowerSizingFactor(double lowFanSpeedFanPowerSizingFactor);
-
-  bool setDesignSprayWaterFlowRate(double designSprayWaterFlowRate);
-
-  bool setPerformanceInputMethod(const std::string& performanceInputMethod);
-
-  bool setHeatRejectionCapacityandNominalCapacitySizingRatio(double heatRejectionCapacityandNominalCapacitySizingRatio);
-
-  bool setHighSpeedStandardDesignCapacity(boost::optional<double> highSpeedStandardDesignCapacity);
-  void resetHighSpeedStandardDesignCapacity();
-
-  bool setLowSpeedStandardDesignCapacity(boost::optional<double> lowSpeedStandardDesignCapacity);
-  void resetLowSpeedStandardDesignCapacity();
-  void autosizeLowSpeedStandardDesignCapacity();
-
-  bool setLowSpeedStandardCapacitySizingFactor(double lowSpeedStandardCapacitySizingFactor);
-
-  bool setHighFanSpeedUfactorTimesAreaValue(boost::optional<double> highFanSpeedUfactorTimesAreaValue);
-  void resetHighFanSpeedUfactorTimesAreaValue();
-  void autosizeHighFanSpeedUfactorTimesAreaValue();
-
-  bool setLowFanSpeedUfactorTimesAreaValue(boost::optional<double> lowFanSpeedUfactorTimesAreaValue);
-  void resetLowFanSpeedUfactorTimesAreaValue();
-  void autosizeLowFanSpeedUfactorTimesAreaValue();
-
-  bool setLowFanSpeedUFactorTimesAreaSizingFactor(double lowFanSpeedUFactorTimesAreaSizingFactor);
-
-  bool setDesignWaterFlowRate(boost::optional<double> designWaterFlowRate);
-  void resetDesignWaterFlowRate();
-  void autosizeDesignWaterFlowRate();
-
-  bool setHighSpeedUserSpecifiedDesignCapacity(boost::optional<double> highSpeedUserSpecifiedDesignCapacity);
-  void resetHighSpeedUserSpecifiedDesignCapacity();
-
-  bool setLowSpeedUserSpecifiedDesignCapacity(boost::optional<double> lowSpeedUserSpecifiedDesignCapacity);
-  void resetLowSpeedUserSpecifiedDesignCapacity();
-  void autosizeLowSpeedUserSpecifiedDesignCapacity();
-
-  bool setLowSpeedUserSpecifiedDesignCapacitySizingFactor(double lowSpeedUserSpecifiedDesignCapacitySizingFactor);
-
-  bool setDesignEnteringWaterTemperature(boost::optional<double> designEnteringWaterTemperature);
-  void autosizeDesignEnteringWaterTemperature();
-
-  bool setDesignEnteringAirTemperature(boost::optional<double> designEnteringAirTemperature);
-
-  bool setDesignEnteringAirWetbulbTemperature(boost::optional<double> designEnteringAirWetbulbTemperature);
-
-  bool setHighSpeedSizingFactor(double highSpeedSizingFactor);
-
-  bool setEvaporationLossMode(const std::string& evaporationLossMode);
-
-  bool setEvaporationLossFactor(boost::optional<double> evaporationLossFactor);
-  void resetEvaporationLossFactor();
-
-  bool setDriftLossPercent(double driftLossPercent);
-
-  bool setBlowdownCalculationMode(const std::string& blowdownCalculationMode);
-
-  bool setBlowdownConcentrationRatio(double blowdownConcentrationRatio);
-
-  boost::optional<double> autosizedHighFanSpeedAirFlowRate() const;
-  boost::optional<double> autosizedHighFanSpeedFanPower() const;
-  boost::optional<double> autosizedLowFanSpeedAirFlowRate() const;
-  boost::optional<double> autosizedLowFanSpeedFanPower() const;
-  boost::optional<double> autosizedLowSpeedStandardDesignCapacity() const;
-  boost::optional<double> autosizedHighFanSpeedUfactorTimesAreaValue() const;
-  boost::optional<double> autosizedLowFanSpeedUfactorTimesAreaValue() const;
-  boost::optional<double> autosizedDesignWaterFlowRate() const;
-  boost::optional<double> autosizedLowSpeedUserSpecifiedDesignCapacity() const;
-  boost::optional<double> autosizedDesignEnteringWaterTemperature() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

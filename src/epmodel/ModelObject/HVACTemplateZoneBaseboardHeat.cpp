@@ -18,295 +18,295 @@
 namespace openstudio {
 namespace epmodel {
 
-HVACTemplateZoneBaseboardHeat::HVACTemplateZoneBaseboardHeat(const Model& model)
-  : ModelObject(HVACTemplateZoneBaseboardHeat::iddObjectType(), model) {}
+  HVACTemplateZoneBaseboardHeat::HVACTemplateZoneBaseboardHeat(const Model& model)
+    : ModelObject(HVACTemplateZoneBaseboardHeat::iddObjectType(), model) {}
 
-HVACTemplateZoneBaseboardHeat::HVACTemplateZoneBaseboardHeat(std::shared_ptr<detail::HVACTemplateZoneBaseboardHeat_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  HVACTemplateZoneBaseboardHeat::HVACTemplateZoneBaseboardHeat(std::shared_ptr<detail::HVACTemplateZoneBaseboardHeat_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType HVACTemplateZoneBaseboardHeat::iddObjectType() {
-  return IddObjectType::HVACTemplate_Zone_BaseboardHeat;
-}
+  IddObjectType HVACTemplateZoneBaseboardHeat::iddObjectType() {
+    return IddObjectType::HVACTemplate_Zone_BaseboardHeat;
+  }
 
-std::vector<std::string> HVACTemplateZoneBaseboardHeat::baseboardHeatingTypeValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingType);
-}
+  std::vector<std::string> HVACTemplateZoneBaseboardHeat::baseboardHeatingTypeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingType);
+  }
 
-std::vector<std::string> HVACTemplateZoneBaseboardHeat::outdoorAirMethodValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirMethod);
-}
+  std::vector<std::string> HVACTemplateZoneBaseboardHeat::outdoorAirMethodValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirMethod);
+  }
 
-boost::optional<double> HVACTemplateZoneBaseboardHeat::zoneHeatingSizingFactor() const {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->zoneHeatingSizingFactor();
-}
+  boost::optional<double> HVACTemplateZoneBaseboardHeat::zoneHeatingSizingFactor() const {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->zoneHeatingSizingFactor();
+  }
 
-std::string HVACTemplateZoneBaseboardHeat::baseboardHeatingType() const {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->baseboardHeatingType();
-}
+  bool HVACTemplateZoneBaseboardHeat::setZoneHeatingSizingFactor(double zoneHeatingSizingFactor) {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->setZoneHeatingSizingFactor(zoneHeatingSizingFactor);
+  }
 
-boost::optional<double> HVACTemplateZoneBaseboardHeat::baseboardHeatingCapacity() const {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->baseboardHeatingCapacity();
-}
+  void HVACTemplateZoneBaseboardHeat::resetZoneHeatingSizingFactor() {
+    getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->resetZoneHeatingSizingFactor();
+  }
 
-std::string HVACTemplateZoneBaseboardHeat::outdoorAirMethod() const {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->outdoorAirMethod();
-}
+  std::string HVACTemplateZoneBaseboardHeat::baseboardHeatingType() const {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->baseboardHeatingType();
+  }
 
-double HVACTemplateZoneBaseboardHeat::outdoorAirFlowRateperPerson() const {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->outdoorAirFlowRateperPerson();
-}
+  bool HVACTemplateZoneBaseboardHeat::isBaseboardHeatingTypeDefaulted() const {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->isBaseboardHeatingTypeDefaulted();
+  }
 
-double HVACTemplateZoneBaseboardHeat::outdoorAirFlowRateperZoneFloorArea() const {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->outdoorAirFlowRateperZoneFloorArea();
-}
+  bool HVACTemplateZoneBaseboardHeat::setBaseboardHeatingType(const std::string& baseboardHeatingType) {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->setBaseboardHeatingType(baseboardHeatingType);
+  }
 
-double HVACTemplateZoneBaseboardHeat::outdoorAirFlowRateperZone() const {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->outdoorAirFlowRateperZone();
-}
+  void HVACTemplateZoneBaseboardHeat::resetBaseboardHeatingType() {
+    getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->resetBaseboardHeatingType();
+  }
 
-bool HVACTemplateZoneBaseboardHeat::isBaseboardHeatingTypeDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->isBaseboardHeatingTypeDefaulted();
-}
+  boost::optional<double> HVACTemplateZoneBaseboardHeat::baseboardHeatingCapacity() const {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->baseboardHeatingCapacity();
+  }
 
-bool HVACTemplateZoneBaseboardHeat::isBaseboardHeatingCapacityDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->isBaseboardHeatingCapacityDefaulted();
-}
+  bool HVACTemplateZoneBaseboardHeat::isBaseboardHeatingCapacityDefaulted() const {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->isBaseboardHeatingCapacityDefaulted();
+  }
 
-bool HVACTemplateZoneBaseboardHeat::isBaseboardHeatingCapacityAutosized() const {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->isBaseboardHeatingCapacityAutosized();
-}
+  bool HVACTemplateZoneBaseboardHeat::isBaseboardHeatingCapacityAutosized() const {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->isBaseboardHeatingCapacityAutosized();
+  }
 
-bool HVACTemplateZoneBaseboardHeat::isOutdoorAirMethodDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->isOutdoorAirMethodDefaulted();
-}
+  bool HVACTemplateZoneBaseboardHeat::setBaseboardHeatingCapacity(double baseboardHeatingCapacity) {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->setBaseboardHeatingCapacity(baseboardHeatingCapacity);
+  }
 
-bool HVACTemplateZoneBaseboardHeat::isOutdoorAirFlowRateperPersonDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->isOutdoorAirFlowRateperPersonDefaulted();
-}
+  void HVACTemplateZoneBaseboardHeat::resetBaseboardHeatingCapacity() {
+    getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->resetBaseboardHeatingCapacity();
+  }
 
-bool HVACTemplateZoneBaseboardHeat::isOutdoorAirFlowRateperZoneFloorAreaDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->isOutdoorAirFlowRateperZoneFloorAreaDefaulted();
-}
+  void HVACTemplateZoneBaseboardHeat::autosizeBaseboardHeatingCapacity() {
+    getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->autosizeBaseboardHeatingCapacity();
+  }
 
-bool HVACTemplateZoneBaseboardHeat::isOutdoorAirFlowRateperZoneDefaulted() const {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->isOutdoorAirFlowRateperZoneDefaulted();
-}
+  std::string HVACTemplateZoneBaseboardHeat::outdoorAirMethod() const {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->outdoorAirMethod();
+  }
 
-bool HVACTemplateZoneBaseboardHeat::setZoneHeatingSizingFactor(double zoneHeatingSizingFactor) {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->setZoneHeatingSizingFactor(zoneHeatingSizingFactor);
-}
+  bool HVACTemplateZoneBaseboardHeat::isOutdoorAirMethodDefaulted() const {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->isOutdoorAirMethodDefaulted();
+  }
 
-bool HVACTemplateZoneBaseboardHeat::setBaseboardHeatingType(const std::string& baseboardHeatingType) {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->setBaseboardHeatingType(baseboardHeatingType);
-}
+  bool HVACTemplateZoneBaseboardHeat::setOutdoorAirMethod(const std::string& outdoorAirMethod) {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->setOutdoorAirMethod(outdoorAirMethod);
+  }
 
-bool HVACTemplateZoneBaseboardHeat::setBaseboardHeatingCapacity(double baseboardHeatingCapacity) {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->setBaseboardHeatingCapacity(baseboardHeatingCapacity);
-}
+  void HVACTemplateZoneBaseboardHeat::resetOutdoorAirMethod() {
+    getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->resetOutdoorAirMethod();
+  }
 
-bool HVACTemplateZoneBaseboardHeat::setOutdoorAirMethod(const std::string& outdoorAirMethod) {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->setOutdoorAirMethod(outdoorAirMethod);
-}
+  double HVACTemplateZoneBaseboardHeat::outdoorAirFlowRateperPerson() const {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->outdoorAirFlowRateperPerson();
+  }
 
-bool HVACTemplateZoneBaseboardHeat::setOutdoorAirFlowRateperPerson(double outdoorAirFlowRateperPerson) {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->setOutdoorAirFlowRateperPerson(outdoorAirFlowRateperPerson);
-}
+  bool HVACTemplateZoneBaseboardHeat::isOutdoorAirFlowRateperPersonDefaulted() const {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->isOutdoorAirFlowRateperPersonDefaulted();
+  }
 
-bool HVACTemplateZoneBaseboardHeat::setOutdoorAirFlowRateperZoneFloorArea(double outdoorAirFlowRateperZoneFloorArea) {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->setOutdoorAirFlowRateperZoneFloorArea(outdoorAirFlowRateperZoneFloorArea);
-}
+  bool HVACTemplateZoneBaseboardHeat::setOutdoorAirFlowRateperPerson(double outdoorAirFlowRateperPerson) {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->setOutdoorAirFlowRateperPerson(outdoorAirFlowRateperPerson);
+  }
 
-bool HVACTemplateZoneBaseboardHeat::setOutdoorAirFlowRateperZone(double outdoorAirFlowRateperZone) {
-  return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->setOutdoorAirFlowRateperZone(outdoorAirFlowRateperZone);
-}
+  void HVACTemplateZoneBaseboardHeat::resetOutdoorAirFlowRateperPerson() {
+    getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->resetOutdoorAirFlowRateperPerson();
+  }
 
-void HVACTemplateZoneBaseboardHeat::resetZoneHeatingSizingFactor() {
-  getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->resetZoneHeatingSizingFactor();
-}
+  double HVACTemplateZoneBaseboardHeat::outdoorAirFlowRateperZoneFloorArea() const {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->outdoorAirFlowRateperZoneFloorArea();
+  }
 
-void HVACTemplateZoneBaseboardHeat::resetBaseboardHeatingType() {
-  getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->resetBaseboardHeatingType();
-}
+  bool HVACTemplateZoneBaseboardHeat::isOutdoorAirFlowRateperZoneFloorAreaDefaulted() const {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->isOutdoorAirFlowRateperZoneFloorAreaDefaulted();
+  }
 
-void HVACTemplateZoneBaseboardHeat::resetBaseboardHeatingCapacity() {
-  getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->resetBaseboardHeatingCapacity();
-}
+  bool HVACTemplateZoneBaseboardHeat::setOutdoorAirFlowRateperZoneFloorArea(double outdoorAirFlowRateperZoneFloorArea) {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->setOutdoorAirFlowRateperZoneFloorArea(outdoorAirFlowRateperZoneFloorArea);
+  }
 
-void HVACTemplateZoneBaseboardHeat::autosizeBaseboardHeatingCapacity() {
-  getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->autosizeBaseboardHeatingCapacity();
-}
+  void HVACTemplateZoneBaseboardHeat::resetOutdoorAirFlowRateperZoneFloorArea() {
+    getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->resetOutdoorAirFlowRateperZoneFloorArea();
+  }
 
-void HVACTemplateZoneBaseboardHeat::resetOutdoorAirMethod() {
-  getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->resetOutdoorAirMethod();
-}
+  double HVACTemplateZoneBaseboardHeat::outdoorAirFlowRateperZone() const {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->outdoorAirFlowRateperZone();
+  }
 
-void HVACTemplateZoneBaseboardHeat::resetOutdoorAirFlowRateperPerson() {
-  getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->resetOutdoorAirFlowRateperPerson();
-}
+  bool HVACTemplateZoneBaseboardHeat::isOutdoorAirFlowRateperZoneDefaulted() const {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->isOutdoorAirFlowRateperZoneDefaulted();
+  }
 
-void HVACTemplateZoneBaseboardHeat::resetOutdoorAirFlowRateperZoneFloorArea() {
-  getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->resetOutdoorAirFlowRateperZoneFloorArea();
-}
+  bool HVACTemplateZoneBaseboardHeat::setOutdoorAirFlowRateperZone(double outdoorAirFlowRateperZone) {
+    return getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->setOutdoorAirFlowRateperZone(outdoorAirFlowRateperZone);
+  }
 
-void HVACTemplateZoneBaseboardHeat::resetOutdoorAirFlowRateperZone() {
-  getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->resetOutdoorAirFlowRateperZone();
-}
+  void HVACTemplateZoneBaseboardHeat::resetOutdoorAirFlowRateperZone() {
+    getImpl<detail::HVACTemplateZoneBaseboardHeat_Impl>()->resetOutdoorAirFlowRateperZone();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-boost::optional<double> HVACTemplateZoneBaseboardHeat_Impl::zoneHeatingSizingFactor() const {
-  return getDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::ZoneHeatingSizingFactor, true);
-}
+    boost::optional<double> HVACTemplateZoneBaseboardHeat_Impl::zoneHeatingSizingFactor() const {
+      return getDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::ZoneHeatingSizingFactor, true);
+    }
 
-std::string HVACTemplateZoneBaseboardHeat_Impl::baseboardHeatingType() const {
-  auto value = getString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingType, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool HVACTemplateZoneBaseboardHeat_Impl::setZoneHeatingSizingFactor(double zoneHeatingSizingFactor) {
+      return setDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::ZoneHeatingSizingFactor, zoneHeatingSizingFactor);
+    }
 
-boost::optional<double> HVACTemplateZoneBaseboardHeat_Impl::baseboardHeatingCapacity() const {
-  return getDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingCapacity, true);
-}
+    void HVACTemplateZoneBaseboardHeat_Impl::resetZoneHeatingSizingFactor() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::ZoneHeatingSizingFactor, ""));
+    }
 
-std::string HVACTemplateZoneBaseboardHeat_Impl::outdoorAirMethod() const {
-  auto value = getString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirMethod, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string HVACTemplateZoneBaseboardHeat_Impl::baseboardHeatingType() const {
+      auto value = getString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingType, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-double HVACTemplateZoneBaseboardHeat_Impl::outdoorAirFlowRateperPerson() const {
-  auto value = getDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperPerson, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool HVACTemplateZoneBaseboardHeat_Impl::isBaseboardHeatingTypeDefaulted() const {
+      return isEmpty(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingType);
+    }
 
-double HVACTemplateZoneBaseboardHeat_Impl::outdoorAirFlowRateperZoneFloorArea() const {
-  auto value = getDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperZoneFloorArea, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool HVACTemplateZoneBaseboardHeat_Impl::setBaseboardHeatingType(const std::string& baseboardHeatingType) {
+      return setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingType, baseboardHeatingType);
+    }
 
-double HVACTemplateZoneBaseboardHeat_Impl::outdoorAirFlowRateperZone() const {
-  auto value = getDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperZone, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    void HVACTemplateZoneBaseboardHeat_Impl::resetBaseboardHeatingType() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingType, ""));
+    }
 
-bool HVACTemplateZoneBaseboardHeat_Impl::isBaseboardHeatingTypeDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingType);
-}
+    boost::optional<double> HVACTemplateZoneBaseboardHeat_Impl::baseboardHeatingCapacity() const {
+      return getDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingCapacity, true);
+    }
 
-bool HVACTemplateZoneBaseboardHeat_Impl::isBaseboardHeatingCapacityDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingCapacity);
-}
+    bool HVACTemplateZoneBaseboardHeat_Impl::isBaseboardHeatingCapacityDefaulted() const {
+      return isEmpty(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingCapacity);
+    }
 
-bool HVACTemplateZoneBaseboardHeat_Impl::isBaseboardHeatingCapacityAutosized() const {
-  if (auto value = getString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingCapacity, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    bool HVACTemplateZoneBaseboardHeat_Impl::isBaseboardHeatingCapacityAutosized() const {
+      if (auto value = getString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingCapacity, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
+    }
 
-bool HVACTemplateZoneBaseboardHeat_Impl::isOutdoorAirMethodDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirMethod);
-}
+    bool HVACTemplateZoneBaseboardHeat_Impl::setBaseboardHeatingCapacity(double baseboardHeatingCapacity) {
+      const bool result = setDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingCapacity, baseboardHeatingCapacity);
+      OS_ASSERT(result);
+      return result;
+    }
 
-bool HVACTemplateZoneBaseboardHeat_Impl::isOutdoorAirFlowRateperPersonDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperPerson);
-}
+    void HVACTemplateZoneBaseboardHeat_Impl::resetBaseboardHeatingCapacity() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingCapacity, ""));
+    }
 
-bool HVACTemplateZoneBaseboardHeat_Impl::isOutdoorAirFlowRateperZoneFloorAreaDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperZoneFloorArea);
-}
+    void HVACTemplateZoneBaseboardHeat_Impl::autosizeBaseboardHeatingCapacity() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingCapacity, "autosize"));
+    }
 
-bool HVACTemplateZoneBaseboardHeat_Impl::isOutdoorAirFlowRateperZoneDefaulted() const {
-  return isEmpty(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperZone);
-}
+    std::string HVACTemplateZoneBaseboardHeat_Impl::outdoorAirMethod() const {
+      auto value = getString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirMethod, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool HVACTemplateZoneBaseboardHeat_Impl::setZoneHeatingSizingFactor(double zoneHeatingSizingFactor) {
-  return setDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::ZoneHeatingSizingFactor, zoneHeatingSizingFactor);
-}
+    bool HVACTemplateZoneBaseboardHeat_Impl::isOutdoorAirMethodDefaulted() const {
+      return isEmpty(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirMethod);
+    }
 
-bool HVACTemplateZoneBaseboardHeat_Impl::setBaseboardHeatingType(const std::string& baseboardHeatingType) {
-  return setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingType, baseboardHeatingType);
-}
+    bool HVACTemplateZoneBaseboardHeat_Impl::setOutdoorAirMethod(const std::string& outdoorAirMethod) {
+      return setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirMethod, outdoorAirMethod);
+    }
 
-bool HVACTemplateZoneBaseboardHeat_Impl::setBaseboardHeatingCapacity(double baseboardHeatingCapacity) {
-  const bool result = setDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingCapacity, baseboardHeatingCapacity);
-  OS_ASSERT(result);
-  return result;
-}
+    void HVACTemplateZoneBaseboardHeat_Impl::resetOutdoorAirMethod() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirMethod, ""));
+    }
 
-bool HVACTemplateZoneBaseboardHeat_Impl::setOutdoorAirMethod(const std::string& outdoorAirMethod) {
-  return setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirMethod, outdoorAirMethod);
-}
+    double HVACTemplateZoneBaseboardHeat_Impl::outdoorAirFlowRateperPerson() const {
+      auto value = getDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperPerson, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool HVACTemplateZoneBaseboardHeat_Impl::setOutdoorAirFlowRateperPerson(double outdoorAirFlowRateperPerson) {
-  const bool result = setDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperPerson, outdoorAirFlowRateperPerson);
-  OS_ASSERT(result);
-  return result;
-}
+    bool HVACTemplateZoneBaseboardHeat_Impl::isOutdoorAirFlowRateperPersonDefaulted() const {
+      return isEmpty(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperPerson);
+    }
 
-bool HVACTemplateZoneBaseboardHeat_Impl::setOutdoorAirFlowRateperZoneFloorArea(double outdoorAirFlowRateperZoneFloorArea) {
-  const bool result =
-    setDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperZoneFloorArea, outdoorAirFlowRateperZoneFloorArea);
-  OS_ASSERT(result);
-  return result;
-}
+    bool HVACTemplateZoneBaseboardHeat_Impl::setOutdoorAirFlowRateperPerson(double outdoorAirFlowRateperPerson) {
+      const bool result = setDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperPerson, outdoorAirFlowRateperPerson);
+      OS_ASSERT(result);
+      return result;
+    }
 
-bool HVACTemplateZoneBaseboardHeat_Impl::setOutdoorAirFlowRateperZone(double outdoorAirFlowRateperZone) {
-  const bool result = setDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperZone, outdoorAirFlowRateperZone);
-  OS_ASSERT(result);
-  return result;
-}
+    void HVACTemplateZoneBaseboardHeat_Impl::resetOutdoorAirFlowRateperPerson() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperPerson, ""));
+    }
 
-void HVACTemplateZoneBaseboardHeat_Impl::resetZoneHeatingSizingFactor() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::ZoneHeatingSizingFactor, ""));
-}
+    double HVACTemplateZoneBaseboardHeat_Impl::outdoorAirFlowRateperZoneFloorArea() const {
+      auto value = getDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperZoneFloorArea, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-void HVACTemplateZoneBaseboardHeat_Impl::resetBaseboardHeatingType() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingType, ""));
-}
+    bool HVACTemplateZoneBaseboardHeat_Impl::isOutdoorAirFlowRateperZoneFloorAreaDefaulted() const {
+      return isEmpty(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperZoneFloorArea);
+    }
 
-void HVACTemplateZoneBaseboardHeat_Impl::resetBaseboardHeatingCapacity() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingCapacity, ""));
-}
+    bool HVACTemplateZoneBaseboardHeat_Impl::setOutdoorAirFlowRateperZoneFloorArea(double outdoorAirFlowRateperZoneFloorArea) {
+      const bool result =
+        setDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperZoneFloorArea, outdoorAirFlowRateperZoneFloorArea);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void HVACTemplateZoneBaseboardHeat_Impl::autosizeBaseboardHeatingCapacity() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::BaseboardHeatingCapacity, "autosize"));
-}
+    void HVACTemplateZoneBaseboardHeat_Impl::resetOutdoorAirFlowRateperZoneFloorArea() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperZoneFloorArea, ""));
+    }
 
-void HVACTemplateZoneBaseboardHeat_Impl::resetOutdoorAirMethod() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirMethod, ""));
-}
+    double HVACTemplateZoneBaseboardHeat_Impl::outdoorAirFlowRateperZone() const {
+      auto value = getDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperZone, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-void HVACTemplateZoneBaseboardHeat_Impl::resetOutdoorAirFlowRateperPerson() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperPerson, ""));
-}
+    bool HVACTemplateZoneBaseboardHeat_Impl::isOutdoorAirFlowRateperZoneDefaulted() const {
+      return isEmpty(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperZone);
+    }
 
-void HVACTemplateZoneBaseboardHeat_Impl::resetOutdoorAirFlowRateperZoneFloorArea() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperZoneFloorArea, ""));
-}
+    bool HVACTemplateZoneBaseboardHeat_Impl::setOutdoorAirFlowRateperZone(double outdoorAirFlowRateperZone) {
+      const bool result = setDouble(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperZone, outdoorAirFlowRateperZone);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void HVACTemplateZoneBaseboardHeat_Impl::resetOutdoorAirFlowRateperZone() {
-  OS_ASSERT(setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperZone, ""));
-}
+    void HVACTemplateZoneBaseboardHeat_Impl::resetOutdoorAirFlowRateperZone() {
+      OS_ASSERT(setString(openstudio::HVACTemplate_Zone_BaseboardHeatFields::OutdoorAirFlowRateperZone, ""));
+    }
 
-std::vector<std::string> HVACTemplateZoneBaseboardHeat_Impl::baseboardHeatingTypeValues() const {
-  return openstudio::epmodel::HVACTemplateZoneBaseboardHeat::baseboardHeatingTypeValues();
-}
+    std::vector<std::string> HVACTemplateZoneBaseboardHeat_Impl::baseboardHeatingTypeValues() const {
+      return openstudio::epmodel::HVACTemplateZoneBaseboardHeat::baseboardHeatingTypeValues();
+    }
 
-std::vector<std::string> HVACTemplateZoneBaseboardHeat_Impl::outdoorAirMethodValues() const {
-  return openstudio::epmodel::HVACTemplateZoneBaseboardHeat::outdoorAirMethodValues();
-}
+    std::vector<std::string> HVACTemplateZoneBaseboardHeat_Impl::outdoorAirMethodValues() const {
+      return openstudio::epmodel::HVACTemplateZoneBaseboardHeat::outdoorAirMethodValues();
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

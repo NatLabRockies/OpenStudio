@@ -42,24 +42,16 @@ namespace epmodel {
     return getImpl<detail::RefrigerationSubcooler_Impl>()->liquidSuctionDesignSubcoolingTemperatureDifference();
   }
 
-  boost::optional<double> RefrigerationSubcooler::designLiquidInletTemperature() const {
-    return getImpl<detail::RefrigerationSubcooler_Impl>()->designLiquidInletTemperature();
-  }
-
-  boost::optional<double> RefrigerationSubcooler::designVaporInletTemperature() const {
-    return getImpl<detail::RefrigerationSubcooler_Impl>()->designVaporInletTemperature();
-  }
-
-  boost::optional<double> RefrigerationSubcooler::outletControlTemperature() const {
-    return getImpl<detail::RefrigerationSubcooler_Impl>()->outletControlTemperature();
-  }
-
   bool RefrigerationSubcooler::setLiquidSuctionDesignSubcoolingTemperatureDifference(double value) {
     return getImpl<detail::RefrigerationSubcooler_Impl>()->setLiquidSuctionDesignSubcoolingTemperatureDifference(value);
   }
 
   void RefrigerationSubcooler::resetLiquidSuctionDesignSubcoolingTemperatureDifference() {
     getImpl<detail::RefrigerationSubcooler_Impl>()->resetLiquidSuctionDesignSubcoolingTemperatureDifference();
+  }
+
+  boost::optional<double> RefrigerationSubcooler::designLiquidInletTemperature() const {
+    return getImpl<detail::RefrigerationSubcooler_Impl>()->designLiquidInletTemperature();
   }
 
   bool RefrigerationSubcooler::setDesignLiquidInletTemperature(double value) {
@@ -70,12 +62,20 @@ namespace epmodel {
     getImpl<detail::RefrigerationSubcooler_Impl>()->resetDesignLiquidInletTemperature();
   }
 
+  boost::optional<double> RefrigerationSubcooler::designVaporInletTemperature() const {
+    return getImpl<detail::RefrigerationSubcooler_Impl>()->designVaporInletTemperature();
+  }
+
   bool RefrigerationSubcooler::setDesignVaporInletTemperature(double value) {
     return getImpl<detail::RefrigerationSubcooler_Impl>()->setDesignVaporInletTemperature(value);
   }
 
   void RefrigerationSubcooler::resetDesignVaporInletTemperature() {
     getImpl<detail::RefrigerationSubcooler_Impl>()->resetDesignVaporInletTemperature();
+  }
+
+  boost::optional<double> RefrigerationSubcooler::outletControlTemperature() const {
+    return getImpl<detail::RefrigerationSubcooler_Impl>()->outletControlTemperature();
   }
 
   bool RefrigerationSubcooler::setOutletControlTemperature(double value) {
@@ -107,18 +107,6 @@ namespace epmodel {
       return getDouble(openstudio::Refrigeration_SubcoolerFields::LiquidSuctionDesignSubcoolingTemperatureDifference, true);
     }
 
-    boost::optional<double> RefrigerationSubcooler_Impl::designLiquidInletTemperature() const {
-      return getDouble(openstudio::Refrigeration_SubcoolerFields::DesignLiquidInletTemperature, true);
-    }
-
-    boost::optional<double> RefrigerationSubcooler_Impl::designVaporInletTemperature() const {
-      return getDouble(openstudio::Refrigeration_SubcoolerFields::DesignVaporInletTemperature, true);
-    }
-
-    boost::optional<double> RefrigerationSubcooler_Impl::outletControlTemperature() const {
-      return getDouble(openstudio::Refrigeration_SubcoolerFields::OutletControlTemperature, true);
-    }
-
     bool RefrigerationSubcooler_Impl::setLiquidSuctionDesignSubcoolingTemperatureDifference(boost::optional<double> value) {
       if (value) {
         return setDouble(openstudio::Refrigeration_SubcoolerFields::LiquidSuctionDesignSubcoolingTemperatureDifference, *value);
@@ -129,6 +117,10 @@ namespace epmodel {
 
     void RefrigerationSubcooler_Impl::resetLiquidSuctionDesignSubcoolingTemperatureDifference() {
       OS_ASSERT(setString(openstudio::Refrigeration_SubcoolerFields::LiquidSuctionDesignSubcoolingTemperatureDifference, ""));
+    }
+
+    boost::optional<double> RefrigerationSubcooler_Impl::designLiquidInletTemperature() const {
+      return getDouble(openstudio::Refrigeration_SubcoolerFields::DesignLiquidInletTemperature, true);
     }
 
     bool RefrigerationSubcooler_Impl::setDesignLiquidInletTemperature(boost::optional<double> value) {
@@ -143,6 +135,10 @@ namespace epmodel {
       OS_ASSERT(setString(openstudio::Refrigeration_SubcoolerFields::DesignLiquidInletTemperature, ""));
     }
 
+    boost::optional<double> RefrigerationSubcooler_Impl::designVaporInletTemperature() const {
+      return getDouble(openstudio::Refrigeration_SubcoolerFields::DesignVaporInletTemperature, true);
+    }
+
     bool RefrigerationSubcooler_Impl::setDesignVaporInletTemperature(boost::optional<double> value) {
       if (value) {
         return setDouble(openstudio::Refrigeration_SubcoolerFields::DesignVaporInletTemperature, *value);
@@ -153,6 +149,10 @@ namespace epmodel {
 
     void RefrigerationSubcooler_Impl::resetDesignVaporInletTemperature() {
       OS_ASSERT(setString(openstudio::Refrigeration_SubcoolerFields::DesignVaporInletTemperature, ""));
+    }
+
+    boost::optional<double> RefrigerationSubcooler_Impl::outletControlTemperature() const {
+      return getDouble(openstudio::Refrigeration_SubcoolerFields::OutletControlTemperature, true);
     }
 
     bool RefrigerationSubcooler_Impl::setOutletControlTemperature(boost::optional<double> value) {

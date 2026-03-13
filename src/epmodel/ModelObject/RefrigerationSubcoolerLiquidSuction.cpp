@@ -52,14 +52,6 @@ namespace epmodel {
     return RefrigerationSubcooler::liquidSuctionDesignSubcoolingTemperatureDifference();
   }
 
-  boost::optional<double> RefrigerationSubcoolerLiquidSuction::designLiquidInletTemperature() const {
-    return RefrigerationSubcooler::designLiquidInletTemperature();
-  }
-
-  boost::optional<double> RefrigerationSubcoolerLiquidSuction::designVaporInletTemperature() const {
-    return RefrigerationSubcooler::designVaporInletTemperature();
-  }
-
   bool RefrigerationSubcoolerLiquidSuction::setLiquidSuctionDesignSubcoolingTemperatureDifference(
     double liquidSuctionDesignSubcoolingTemperatureDifference) {
     return RefrigerationSubcooler::setLiquidSuctionDesignSubcoolingTemperatureDifference(liquidSuctionDesignSubcoolingTemperatureDifference);
@@ -69,12 +61,20 @@ namespace epmodel {
     RefrigerationSubcooler::resetLiquidSuctionDesignSubcoolingTemperatureDifference();
   }
 
+  boost::optional<double> RefrigerationSubcoolerLiquidSuction::designLiquidInletTemperature() const {
+    return RefrigerationSubcooler::designLiquidInletTemperature();
+  }
+
   bool RefrigerationSubcoolerLiquidSuction::setDesignLiquidInletTemperature(double designLiquidInletTemperature) {
     return RefrigerationSubcooler::setDesignLiquidInletTemperature(designLiquidInletTemperature);
   }
 
   void RefrigerationSubcoolerLiquidSuction::resetDesignLiquidInletTemperature() {
     RefrigerationSubcooler::resetDesignLiquidInletTemperature();
+  }
+
+  boost::optional<double> RefrigerationSubcoolerLiquidSuction::designVaporInletTemperature() const {
+    return RefrigerationSubcooler::designVaporInletTemperature();
   }
 
   bool RefrigerationSubcoolerLiquidSuction::setDesignVaporInletTemperature(double designVaporInletTemperature) {

@@ -11,25 +11,27 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatTransferBasementSimParameters_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatTransferBasementSimParameters_Impl() override = default;
+    class EPMODEL_API GroundHeatTransferBasementSimParameters_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatTransferBasementSimParameters_Impl() override = default;
 
-  boost::optional<double> fMultiplierfortheADIsolution() const;
-  bool setFMultiplierfortheADIsolution(double fMultiplierfortheADIsolution);
-  void resetFMultiplierfortheADIsolution();
+      // Field: F, Multiplier for the ADI solution
+      boost::optional<double> fMultiplierfortheADIsolution() const;
+      bool setFMultiplierfortheADIsolution(double fMultiplierfortheADIsolution);
+      void resetFMultiplierfortheADIsolution();
 
-  int iYRSMaximumnumberofyearlyiterations() const;
-  bool isIYRSMaximumnumberofyearlyiterationsDefaulted() const;
-  bool setIYRSMaximumnumberofyearlyiterations(int iYRSMaximumnumberofyearlyiterations);
-  void resetIYRSMaximumnumberofyearlyiterations();
-};
+      // Field: IYRS, Maximum number of yearly iterations
+      int iYRSMaximumnumberofyearlyiterations() const;
+      bool isIYRSMaximumnumberofyearlyiterationsDefaulted() const;
+      bool setIYRSMaximumnumberofyearlyiterations(int iYRSMaximumnumberofyearlyiterations);
+      void resetIYRSMaximumnumberofyearlyiterations();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

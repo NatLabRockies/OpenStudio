@@ -13,30 +13,30 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SolarCollectorPerformancePhotovoltaicThermalSimple_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~SolarCollectorPerformancePhotovoltaicThermalSimple_Impl() override = default;
+    class EPMODEL_API SolarCollectorPerformancePhotovoltaicThermalSimple_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~SolarCollectorPerformancePhotovoltaicThermalSimple_Impl() override = default;
 
-  double fractionOfSurfaceAreaWithActiveThermalCollector() const;
-  std::string thermalConversionEfficiencyInputModeType() const;
-  boost::optional<double> thermalConversionEfficiency() const;
-  double frontSurfaceEmittance() const;
-  bool isFrontSurfaceEmittanceDefaulted() const;
+      double fractionOfSurfaceAreaWithActiveThermalCollector() const;
+      bool setFractionOfSurfaceAreaWithActiveThermalCollector(double fractionofSurfaceAreawithActiveThermalCollector);
 
-  bool setFractionOfSurfaceAreaWithActiveThermalCollector(double fractionofSurfaceAreawithActiveThermalCollector);
-  bool setThermalConversionEfficiency(double valueforThermalConversionEfficiencyifFixed);
-  void resetThermalConversionEfficiency();
-  bool setFrontSurfaceEmittance(double frontSurfaceEmittance);
-  void resetFrontSurfaceEmittance();
+      std::string thermalConversionEfficiencyInputModeType() const;
+      std::vector<std::string> thermalConversionEfficiencyInputModeTypeValues() const;
+      boost::optional<double> thermalConversionEfficiency() const;
+      bool setThermalConversionEfficiency(double valueforThermalConversionEfficiencyifFixed);
+      void resetThermalConversionEfficiency();
 
-  std::vector<std::string> thermalConversionEfficiencyInputModeTypeValues() const;
-};
+      double frontSurfaceEmittance() const;
+      bool isFrontSurfaceEmittanceDefaulted() const;
+      bool setFrontSurfaceEmittance(double frontSurfaceEmittance);
+      void resetFrontSurfaceEmittance();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

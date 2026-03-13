@@ -11,24 +11,24 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl() override = default;
+    class EPMODEL_API AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl() override = default;
 
-  boost::optional<double> maximumAirFlowRate() const;
-  bool isMaximumAirFlowRateAutosized() const;
-  bool setMaximumAirFlowRate(double maximumAirFlowRate);
-  void autosizeMaximumAirFlowRate();
+      boost::optional<double> maximumAirFlowRate() const;
+      bool setMaximumAirFlowRate(double maximumAirFlowRate);
+      bool isMaximumAirFlowRateAutosized() const;
+      void autosizeMaximumAirFlowRate();
 
-  double zoneMinimumAirFlowFraction() const;
-  bool setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction);
-};
+      double zoneMinimumAirFlowFraction() const;
+      bool setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

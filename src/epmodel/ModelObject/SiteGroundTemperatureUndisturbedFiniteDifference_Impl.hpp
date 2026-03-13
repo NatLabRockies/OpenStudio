@@ -11,37 +11,40 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SiteGroundTemperatureUndisturbedFiniteDifference_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~SiteGroundTemperatureUndisturbedFiniteDifference_Impl() override = default;
+    class EPMODEL_API SiteGroundTemperatureUndisturbedFiniteDifference_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~SiteGroundTemperatureUndisturbedFiniteDifference_Impl() override = default;
 
-  double soilThermalConductivity() const;
-  double soilDensity() const;
-  double soilSpecificHeat() const;
-  double soilMoistureContentVolumeFraction() const;
-  bool isSoilMoistureContentVolumeFractionDefaulted() const;
-  double soilMoistureContentVolumeFractionatSaturation() const;
-  bool isSoilMoistureContentVolumeFractionatSaturationDefaulted() const;
-  double evapotranspirationGroundCoverParameter() const;
-  bool isEvapotranspirationGroundCoverParameterDefaulted() const;
+      double soilThermalConductivity() const;
+      bool setSoilThermalConductivity(double soilThermalConductivity);
 
-  bool setSoilThermalConductivity(double soilThermalConductivity);
-  bool setSoilDensity(double soilDensity);
-  bool setSoilSpecificHeat(double soilSpecificHeat);
-  bool setSoilMoistureContentVolumeFraction(double soilMoistureContentVolumeFraction);
-  bool setSoilMoistureContentVolumeFractionatSaturation(double soilMoistureContentVolumeFractionatSaturation);
-  bool setEvapotranspirationGroundCoverParameter(double evapotranspirationGroundCoverParameter);
+      double soilDensity() const;
+      bool setSoilDensity(double soilDensity);
 
-  void resetSoilMoistureContentVolumeFraction();
-  void resetSoilMoistureContentVolumeFractionatSaturation();
-  void resetEvapotranspirationGroundCoverParameter();
-};
+      double soilSpecificHeat() const;
+      bool setSoilSpecificHeat(double soilSpecificHeat);
 
-}  // namespace detail
+      double soilMoistureContentVolumeFraction() const;
+      bool isSoilMoistureContentVolumeFractionDefaulted() const;
+      bool setSoilMoistureContentVolumeFraction(double soilMoistureContentVolumeFraction);
+      void resetSoilMoistureContentVolumeFraction();
+
+      double soilMoistureContentVolumeFractionatSaturation() const;
+      bool isSoilMoistureContentVolumeFractionatSaturationDefaulted() const;
+      bool setSoilMoistureContentVolumeFractionatSaturation(double soilMoistureContentVolumeFractionatSaturation);
+      void resetSoilMoistureContentVolumeFractionatSaturation();
+
+      double evapotranspirationGroundCoverParameter() const;
+      bool isEvapotranspirationGroundCoverParameterDefaulted() const;
+      bool setEvapotranspirationGroundCoverParameter(double evapotranspirationGroundCoverParameter);
+      void resetEvapotranspirationGroundCoverParameter();
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

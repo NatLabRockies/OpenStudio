@@ -32,6 +32,7 @@ std::vector<std::string> FluidPropertiesGlycolConcentration::glycolTypeValues() 
                         openstudio::FluidProperties_GlycolConcentrationFields::GlycolType);
 }
 
+// Glycol type accessors
 std::string FluidPropertiesGlycolConcentration::glycolType() const {
   return getImpl<detail::FluidPropertiesGlycolConcentration_Impl>()->glycolType();
 }
@@ -40,6 +41,7 @@ bool FluidPropertiesGlycolConcentration::setGlycolType(const std::string& glycol
   return getImpl<detail::FluidPropertiesGlycolConcentration_Impl>()->setGlycolType(glycolType);
 }
 
+// Glycol concentration accessors
 boost::optional<double> FluidPropertiesGlycolConcentration::glycolConcentration() const {
   return getImpl<detail::FluidPropertiesGlycolConcentration_Impl>()->glycolConcentration();
 }
@@ -59,6 +61,7 @@ namespace openstudio {
 namespace epmodel {
 namespace detail {
 
+// Glycol type accessors
 std::string FluidPropertiesGlycolConcentration_Impl::glycolType() const {
   const auto value = getString(openstudio::FluidProperties_GlycolConcentrationFields::GlycolType, true);
   OS_ASSERT(value);
@@ -69,6 +72,7 @@ bool FluidPropertiesGlycolConcentration_Impl::setGlycolType(const std::string& g
   return setString(openstudio::FluidProperties_GlycolConcentrationFields::GlycolType, glycolType);
 }
 
+// Glycol concentration accessors
 boost::optional<double> FluidPropertiesGlycolConcentration_Impl::glycolConcentration() const {
   return getDouble(openstudio::FluidProperties_GlycolConcentrationFields::GlycolConcentration, true);
 }

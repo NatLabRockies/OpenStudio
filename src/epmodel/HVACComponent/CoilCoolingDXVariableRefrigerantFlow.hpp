@@ -14,55 +14,55 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class CoilCoolingDXVariableRefrigerantFlow_Impl;
-}
+  namespace detail {
+    class CoilCoolingDXVariableRefrigerantFlow_Impl;
+  }
 
-class EPMODEL_API CoilCoolingDXVariableRefrigerantFlow : public HVACComponent
-{
- public:
-  explicit CoilCoolingDXVariableRefrigerantFlow(const Model& model);
+  class EPMODEL_API CoilCoolingDXVariableRefrigerantFlow : public HVACComponent
+  {
+   public:
+    explicit CoilCoolingDXVariableRefrigerantFlow(const Model& model);
 
-  virtual ~CoilCoolingDXVariableRefrigerantFlow() override = default;
-  CoilCoolingDXVariableRefrigerantFlow(const CoilCoolingDXVariableRefrigerantFlow& other) = default;
-  CoilCoolingDXVariableRefrigerantFlow(CoilCoolingDXVariableRefrigerantFlow&& other) = default;
-  CoilCoolingDXVariableRefrigerantFlow& operator=(const CoilCoolingDXVariableRefrigerantFlow&) = default;
-  CoilCoolingDXVariableRefrigerantFlow& operator=(CoilCoolingDXVariableRefrigerantFlow&&) = default;
+    virtual ~CoilCoolingDXVariableRefrigerantFlow() override = default;
+    CoilCoolingDXVariableRefrigerantFlow(const CoilCoolingDXVariableRefrigerantFlow& other) = default;
+    CoilCoolingDXVariableRefrigerantFlow(CoilCoolingDXVariableRefrigerantFlow&& other) = default;
+    CoilCoolingDXVariableRefrigerantFlow& operator=(const CoilCoolingDXVariableRefrigerantFlow&) = default;
+    CoilCoolingDXVariableRefrigerantFlow& operator=(CoilCoolingDXVariableRefrigerantFlow&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-  // - Field Mapping: ratedTotalCoolingCapacity and ratedSensibleHeatRatio map to E+ GrossRated* fields.
-  // - Field Mapping: ratedAirFlowRate maps directly to E+ RatedAirFlowRate.
-  // - ForwardTranslator evidence: ForwardTranslateCoilCoolingDXVariableRefrigerantFlow.cpp writes these exact E+ fields.
-  // - Field Mapping: Relationship fields (availability schedule, curves, node links) are intentionally excluded in this scalar scaffold phase.
-  boost::optional<double> ratedTotalCoolingCapacity() const;
-  bool isRatedTotalCoolingCapacityAutosized() const;
-  bool setRatedTotalCoolingCapacity(double ratedTotalCoolingCapacity);
-  void autosizeRatedTotalCoolingCapacity();
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
+    // - Field Mapping: ratedTotalCoolingCapacity and ratedSensibleHeatRatio map to E+ GrossRated* fields.
+    // - Field Mapping: ratedAirFlowRate maps directly to E+ RatedAirFlowRate.
+    // - ForwardTranslator evidence: ForwardTranslateCoilCoolingDXVariableRefrigerantFlow.cpp writes these exact E+ fields.
+    // - Field Mapping: Relationship fields (availability schedule, curves, node links) are intentionally excluded in this scalar scaffold phase.
+    boost::optional<double> ratedTotalCoolingCapacity() const;
+    bool setRatedTotalCoolingCapacity(double ratedTotalCoolingCapacity);
+    bool isRatedTotalCoolingCapacityAutosized() const;
+    void autosizeRatedTotalCoolingCapacity();
 
-  boost::optional<double> ratedSensibleHeatRatio() const;
-  bool isRatedSensibleHeatRatioAutosized() const;
-  bool setRatedSensibleHeatRatio(double ratedSensibleHeatRatio);
-  void autosizeRatedSensibleHeatRatio();
+    boost::optional<double> ratedSensibleHeatRatio() const;
+    bool setRatedSensibleHeatRatio(double ratedSensibleHeatRatio);
+    bool isRatedSensibleHeatRatioAutosized() const;
+    void autosizeRatedSensibleHeatRatio();
 
-  boost::optional<double> ratedAirFlowRate() const;
-  bool isRatedAirFlowRateAutosized() const;
-  bool setRatedAirFlowRate(double ratedAirFlowRate);
-  void autosizeRatedAirFlowRate();
+    boost::optional<double> ratedAirFlowRate() const;
+    bool setRatedAirFlowRate(double ratedAirFlowRate);
+    bool isRatedAirFlowRateAutosized() const;
+    void autosizeRatedAirFlowRate();
 
- protected:
-  using ImplType = detail::CoilCoolingDXVariableRefrigerantFlow_Impl;
+   protected:
+    using ImplType = detail::CoilCoolingDXVariableRefrigerantFlow_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit CoilCoolingDXVariableRefrigerantFlow(std::shared_ptr<detail::CoilCoolingDXVariableRefrigerantFlow_Impl> impl);
-};
+    explicit CoilCoolingDXVariableRefrigerantFlow(std::shared_ptr<detail::CoilCoolingDXVariableRefrigerantFlow_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

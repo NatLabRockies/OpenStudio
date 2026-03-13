@@ -23,8 +23,8 @@ namespace epmodel {
 
       std::string slatOrientation() const;
       bool setSlatOrientation(const std::string& slatOrientation);
-      void resetSlatOrientation();
       bool isSlatOrientationDefaulted() const;
+      void resetSlatOrientation();
 
       double slatWidth() const;
       bool setSlatWidth(double slatWidth);

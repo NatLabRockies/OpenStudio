@@ -11,19 +11,22 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API MaterialPropertyHeatAndMoistureTransferSuction_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~MaterialPropertyHeatAndMoistureTransferSuction_Impl() override = default;
+    class EPMODEL_API MaterialPropertyHeatAndMoistureTransferSuction_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~MaterialPropertyHeatAndMoistureTransferSuction_Impl() override = default;
 
-  int numberofSuctionpoints() const;
-  bool setNumberofSuctionpoints(int numberofSuctionpoints);
-};
+      /** @name Number of Suction points field */
+      //@{
+      int numberofSuctionpoints() const;
+      bool setNumberofSuctionpoints(int numberofSuctionpoints);
+      //@}
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

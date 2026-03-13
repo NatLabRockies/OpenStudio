@@ -24,94 +24,89 @@ namespace epmodel {
       virtual ~StandardGlazing_Impl() override = default;
 
       std::string opticalDataType() const;
+      bool setOpticalDataType(const std::string& opticalDataType);
+      std::vector<std::string> opticalDataTypeValues() const;
+
       double thickness() const;
+      bool setThickness(double thickness);
 
       double solarTransmittance() const;
+      bool setSolarTransmittance(double value);
+
       boost::optional<double> solarTransmittanceatNormalIncidence() const;
+      bool setSolarTransmittanceatNormalIncidence(double value);
+      void resetSolarTransmittanceatNormalIncidence();
+
       boost::optional<double> frontSideSolarReflectanceatNormalIncidence() const;
+      bool setFrontSideSolarReflectanceatNormalIncidence(double value);
+      void resetFrontSideSolarReflectanceatNormalIncidence();
+
       boost::optional<double> backSideSolarReflectanceatNormalIncidence() const;
+      bool setBackSideSolarReflectanceatNormalIncidence(double value);
+      void resetBackSideSolarReflectanceatNormalIncidence();
 
       boost::optional<double> visibleTransmittanceatNormalIncidence() const;
+      bool setVisibleTransmittance(double value);
+      bool setVisibleTransmittanceatNormalIncidence(double value);
+      void resetVisibleTransmittanceatNormalIncidence();
+
       boost::optional<double> frontSideVisibleReflectanceatNormalIncidence() const;
+      bool setFrontSideVisibleReflectanceatNormalIncidence(double value);
+      void resetFrontSideVisibleReflectanceatNormalIncidence();
+
       boost::optional<double> backSideVisibleReflectanceatNormalIncidence() const;
+      bool setBackSideVisibleReflectanceatNormalIncidence(double value);
+      void resetBackSideVisibleReflectanceatNormalIncidence();
 
       double infraredTransmittance() const;
       double infraredTransmittanceatNormalIncidence() const;
       bool isInfraredTransmittanceatNormalIncidenceDefaulted() const;
+      bool setInfraredTransmittance(double value);
+      bool setInfraredTransmittanceatNormalIncidence(double value);
+      void resetInfraredTransmittanceatNormalIncidence();
 
       double frontSideInfraredHemisphericalEmissivity() const;
       bool isFrontSideInfraredHemisphericalEmissivityDefaulted() const;
+      bool setFrontSideInfraredHemisphericalEmissivity(double value);
+      void resetFrontSideInfraredHemisphericalEmissivity();
+
       double backSideInfraredHemisphericalEmissivity() const;
       bool isBackSideInfraredHemisphericalEmissivityDefaulted() const;
+      bool setBackSideInfraredHemisphericalEmissivity(double value);
+      void resetBackSideInfraredHemisphericalEmissivity();
 
       double conductivity() const;
       bool isConductivityDefaulted() const;
+      bool setConductivity(double value);
+      void resetConductivity();
 
       double dirtCorrectionFactorforSolarandVisibleTransmittance() const;
       bool isDirtCorrectionFactorforSolarandVisibleTransmittanceDefaulted() const;
+      bool setDirtCorrectionFactorforSolarandVisibleTransmittance(double value);
+      void resetDirtCorrectionFactorforSolarandVisibleTransmittance();
 
       bool solarDiffusing() const;
       bool isSolarDiffusingDefaulted() const;
+      bool setSolarDiffusing(bool solarDiffusing);
+      void resetSolarDiffusing();
 
       double thermalConductivity() const;
+      bool setThermalConductivity(double value);
+
       double thermalConductance() const;
+      bool setThermalConductance(double value);
+
       double thermalResistivity() const;
+      bool setThermalResistivity(double value);
+
       double thermalResistance() const;
+      bool setThermalResistance(double value);
 
       double interiorVisibleReflectance() const;
       double exteriorVisibleReflectance() const;
 
       boost::optional<double> interiorVisibleAbsorptance() const;
       boost::optional<double> exteriorVisibleAbsorptance() const;
-
-      bool setOpticalDataType(const std::string& opticalDataType);
-      bool setThickness(double thickness);
-
-      bool setSolarTransmittance(double value);
-      bool setSolarTransmittanceatNormalIncidence(double value);
-      void resetSolarTransmittanceatNormalIncidence();
-
-      bool setFrontSideSolarReflectanceatNormalIncidence(double value);
-      void resetFrontSideSolarReflectanceatNormalIncidence();
-
-      bool setBackSideSolarReflectanceatNormalIncidence(double value);
-      void resetBackSideSolarReflectanceatNormalIncidence();
-
-      bool setVisibleTransmittance(double value);
-      bool setVisibleTransmittanceatNormalIncidence(double value);
-      void resetVisibleTransmittanceatNormalIncidence();
-
-      bool setFrontSideVisibleReflectanceatNormalIncidence(double value);
-      void resetFrontSideVisibleReflectanceatNormalIncidence();
-
-      bool setBackSideVisibleReflectanceatNormalIncidence(double value);
-      void resetBackSideVisibleReflectanceatNormalIncidence();
-
-      bool setInfraredTransmittance(double value);
-      bool setInfraredTransmittanceatNormalIncidence(double value);
-      void resetInfraredTransmittanceatNormalIncidence();
-
-      bool setFrontSideInfraredHemisphericalEmissivity(double value);
-      void resetFrontSideInfraredHemisphericalEmissivity();
-
-      bool setBackSideInfraredHemisphericalEmissivity(double value);
-      void resetBackSideInfraredHemisphericalEmissivity();
-
-      bool setConductivity(double value);
-      void resetConductivity();
-
-      bool setDirtCorrectionFactorforSolarandVisibleTransmittance(double value);
-      void resetDirtCorrectionFactorforSolarandVisibleTransmittance();
-
-      bool setSolarDiffusing(bool solarDiffusing);
-      void resetSolarDiffusing();
-
-      bool setThermalConductivity(double value);
-      bool setThermalConductance(double value);
-      bool setThermalResistivity(double value);
-      bool setThermalResistance(double value);
-
-      std::vector<std::string> opticalDataTypeValues() const;
     };
 
   }  // namespace detail

@@ -13,65 +13,72 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HVACTemplatePlantBoiler_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~HVACTemplatePlantBoiler_Impl() override = default;
+    class EPMODEL_API HVACTemplatePlantBoiler_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~HVACTemplatePlantBoiler_Impl() override = default;
 
-  std::string boilerType() const;
-  boost::optional<double> capacity() const;
-  double efficiency() const;
-  boost::optional<std::string> fuelType() const;
-  boost::optional<std::string> priority() const;
-  double sizingFactor() const;
-  double minimumPartLoadRatio() const;
-  double maximumPartLoadRatio() const;
-  double optimumPartLoadRatio() const;
-  double waterOutletUpperTemperatureLimit() const;
-  boost::optional<std::string> templatePlantLoopType() const;
+      std::vector<std::string> boilerTypeValues() const;
+      std::vector<std::string> fuelTypeValues() const;
+      std::vector<std::string> templatePlantLoopTypeValues() const;
 
-  bool isCapacityDefaulted() const;
-  bool isCapacityAutosized() const;
-  bool isEfficiencyDefaulted() const;
-  bool isSizingFactorDefaulted() const;
-  bool isMinimumPartLoadRatioDefaulted() const;
-  bool isMaximumPartLoadRatioDefaulted() const;
-  bool isOptimumPartLoadRatioDefaulted() const;
-  bool isWaterOutletUpperTemperatureLimitDefaulted() const;
+      std::string boilerType() const;
+      bool setBoilerType(const std::string& boilerType);
 
-  bool setBoilerType(const std::string& boilerType);
-  bool setCapacity(double capacity);
-  bool setEfficiency(double efficiency);
-  bool setFuelType(const std::string& fuelType);
-  bool setPriority(const std::string& priority);
-  bool setSizingFactor(double sizingFactor);
-  bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
-  bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
-  bool setOptimumPartLoadRatio(double optimumPartLoadRatio);
-  bool setWaterOutletUpperTemperatureLimit(double waterOutletUpperTemperatureLimit);
-  bool setTemplatePlantLoopType(const std::string& templatePlantLoopType);
+      boost::optional<double> capacity() const;
+      bool isCapacityDefaulted() const;
+      bool isCapacityAutosized() const;
+      bool setCapacity(double capacity);
+      void resetCapacity();
+      void autosizeCapacity();
 
-  void resetCapacity();
-  void autosizeCapacity();
-  void resetEfficiency();
-  void resetFuelType();
-  void resetPriority();
-  void resetSizingFactor();
-  void resetMinimumPartLoadRatio();
-  void resetMaximumPartLoadRatio();
-  void resetOptimumPartLoadRatio();
-  void resetWaterOutletUpperTemperatureLimit();
-  void resetTemplatePlantLoopType();
+      double efficiency() const;
+      bool isEfficiencyDefaulted() const;
+      bool setEfficiency(double efficiency);
+      void resetEfficiency();
 
-  std::vector<std::string> boilerTypeValues() const;
-  std::vector<std::string> fuelTypeValues() const;
-  std::vector<std::string> templatePlantLoopTypeValues() const;
-};
+      boost::optional<std::string> fuelType() const;
+      bool setFuelType(const std::string& fuelType);
+      void resetFuelType();
 
-}  // namespace detail
+      boost::optional<std::string> priority() const;
+      bool setPriority(const std::string& priority);
+      void resetPriority();
+
+      double sizingFactor() const;
+      bool isSizingFactorDefaulted() const;
+      bool setSizingFactor(double sizingFactor);
+      void resetSizingFactor();
+
+      double minimumPartLoadRatio() const;
+      bool isMinimumPartLoadRatioDefaulted() const;
+      bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
+      void resetMinimumPartLoadRatio();
+
+      double maximumPartLoadRatio() const;
+      bool isMaximumPartLoadRatioDefaulted() const;
+      bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
+      void resetMaximumPartLoadRatio();
+
+      double optimumPartLoadRatio() const;
+      bool isOptimumPartLoadRatioDefaulted() const;
+      bool setOptimumPartLoadRatio(double optimumPartLoadRatio);
+      void resetOptimumPartLoadRatio();
+
+      double waterOutletUpperTemperatureLimit() const;
+      bool isWaterOutletUpperTemperatureLimitDefaulted() const;
+      bool setWaterOutletUpperTemperatureLimit(double waterOutletUpperTemperatureLimit);
+      void resetWaterOutletUpperTemperatureLimit();
+
+      boost::optional<std::string> templatePlantLoopType() const;
+      bool setTemplatePlantLoopType(const std::string& templatePlantLoopType);
+      void resetTemplatePlantLoopType();
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

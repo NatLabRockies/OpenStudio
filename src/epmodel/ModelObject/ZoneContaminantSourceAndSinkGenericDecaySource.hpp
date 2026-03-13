@@ -41,13 +41,20 @@ namespace epmodel {
     // - Field Mapping: delayTimeConstant tracks EnergyPlus's Delay Time Constant field.
     // - Field Mapping: Zone Name and Schedule Name remain object-list relationships and are intentionally excluded from scalar accessors.
     // - TODO(parity): Add relationship helpers once scalar saturation completes without complicating this scalar API.
+
+    /** @name Initial emission rate helpers */
+    //@{
     boost::optional<double> initialEmissionRate() const;
     bool setInitialEmissionRate(double initialEmissionRate);
     void resetInitialEmissionRate();
+    //@}
 
+    /** @name Delay time constant helpers */
+    //@{
     boost::optional<double> delayTimeConstant() const;
     bool setDelayTimeConstant(double delayTimeConstant);
     void resetDelayTimeConstant();
+    //@}
 
    protected:
     using ImplType = detail::ZoneContaminantSourceAndSinkGenericDecaySource_Impl;

@@ -10,33 +10,38 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API DesignSpecificationOutdoorAir_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~DesignSpecificationOutdoorAir_Impl() override = default;
+    class EPMODEL_API DesignSpecificationOutdoorAir_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~DesignSpecificationOutdoorAir_Impl() override = default;
 
-  std::string outdoorAirMethod() const;
-  bool setOutdoorAirMethod(const std::string& value);
+      // Outdoor air method
+      std::string outdoorAirMethod() const;
+      bool setOutdoorAirMethod(const std::string& value);
 
-  double outdoorAirFlowperPerson() const;
-  bool setOutdoorAirFlowperPerson(double value);
+      // Outdoor air flow per person
+      double outdoorAirFlowperPerson() const;
+      bool setOutdoorAirFlowperPerson(double value);
 
-  double outdoorAirFlowperFloorArea() const;
-  bool setOutdoorAirFlowperFloorArea(double value);
+      // Outdoor air flow per floor area
+      double outdoorAirFlowperFloorArea() const;
+      bool setOutdoorAirFlowperFloorArea(double value);
 
-  double outdoorAirFlowRate() const;
-  bool setOutdoorAirFlowRate(double value);
+      // Outdoor air flow rate
+      double outdoorAirFlowRate() const;
+      bool setOutdoorAirFlowRate(double value);
 
-  double outdoorAirFlowAirChangesperHour() const;
-  bool setOutdoorAirFlowAirChangesperHour(double value);
+      // Outdoor air flow air changes per hour
+      double outdoorAirFlowAirChangesperHour() const;
+      bool setOutdoorAirFlowAirChangesperHour(double value);
 
-  void doCanonicalize(LoadContext& context) override;
-};
+      void doCanonicalize(LoadContext& context) override;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

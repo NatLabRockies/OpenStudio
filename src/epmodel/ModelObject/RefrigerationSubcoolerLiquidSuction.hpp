@@ -38,15 +38,14 @@ namespace epmodel {
     // - Field Mapping: Liquid suction design subcooling, liquid inlet, and vapor inlet temperature fields map directly to
     //   Refrigeration:Subcooler fields while Subcooler Type stays fixed to LiquidSuction for this typed wrapper.
     boost::optional<double> liquidSuctionDesignSubcoolingTemperatureDifference() const;
-    boost::optional<double> designLiquidInletTemperature() const;
-    boost::optional<double> designVaporInletTemperature() const;
-
     bool setLiquidSuctionDesignSubcoolingTemperatureDifference(double liquidSuctionDesignSubcoolingTemperatureDifference);
     void resetLiquidSuctionDesignSubcoolingTemperatureDifference();
 
+    boost::optional<double> designLiquidInletTemperature() const;
     bool setDesignLiquidInletTemperature(double designLiquidInletTemperature);
     void resetDesignLiquidInletTemperature();
 
+    boost::optional<double> designVaporInletTemperature() const;
     bool setDesignVaporInletTemperature(double designVaporInletTemperature);
     void resetDesignVaporInletTemperature();
 

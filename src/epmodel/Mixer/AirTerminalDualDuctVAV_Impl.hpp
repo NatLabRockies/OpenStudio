@@ -20,8 +20,8 @@ class EPMODEL_API AirTerminalDualDuctVAV_Impl : public ModelObject_Impl
   virtual ~AirTerminalDualDuctVAV_Impl() override = default;
 
   boost::optional<double> maximumDamperAirFlowRate() const;
-  bool isMaximumDamperAirFlowRateAutosized() const;
   bool setMaximumDamperAirFlowRate(double maximumDamperAirFlowRate);
+  bool isMaximumDamperAirFlowRateAutosized() const;
   void autosizeMaximumDamperAirFlowRate();
 
   double zoneMinimumAirFlowFraction() const;

@@ -17,52 +17,58 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class OutputJSON_Impl;
-}
+  namespace detail {
+    class OutputJSON_Impl;
+  }
 
-class EPMODEL_API OutputJSON : public ModelObject
-{
- public:
-  explicit OutputJSON(const Model& model);
+  class EPMODEL_API OutputJSON : public ModelObject
+  {
+   public:
+    explicit OutputJSON(const Model& model);
 
-  virtual ~OutputJSON() override = default;
-  OutputJSON(const OutputJSON& other) = default;
-  OutputJSON(OutputJSON&& other) = default;
-  OutputJSON& operator=(const OutputJSON&) = default;
-  OutputJSON& operator=(OutputJSON&&) = default;
+    virtual ~OutputJSON() override = default;
+    OutputJSON(const OutputJSON& other) = default;
+    OutputJSON(OutputJSON&& other) = default;
+    OutputJSON& operator=(const OutputJSON&) = default;
+    OutputJSON& operator=(OutputJSON&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> optionTypeValues();
+    static std::vector<std::string> optionTypeValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::OutputJSON scalar accessor names/signatures.
-  // - Field Mapping: optionType/outputJSON/outputCBOR/outputMessagePack map directly to E+ Output:JSON Option Type/Output JSON/Output CBOR/Output MessagePack.
-  // - ForwardTranslator evidence: ForwardTranslateOutputJSON.cpp writes these preserved APIs directly to Output:JSON fields.
-  // - TODO(parity): Keep scalar API stable while extending any non-scalar parity behavior in future passes.
-  std::string optionType() const;
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model::OutputJSON scalar accessor names/signatures.
+    // - Field Mapping: optionType/outputJSON/outputCBOR/outputMessagePack map directly to E+ Output:JSON Option Type/Output JSON/Output CBOR/Output MessagePack.
+    // - ForwardTranslator evidence: ForwardTranslateOutputJSON.cpp writes these preserved APIs directly to Output:JSON fields.
+    // - TODO(parity): Keep scalar API stable while extending any non-scalar parity behavior in future passes.
 
-  bool outputJSON() const;
-  bool outputCBOR() const;
-  bool outputMessagePack() const;
+    // optionType
+    std::string optionType() const;
+    bool setOptionType(const std::string& optionType);
 
-  bool setOptionType(const std::string& optionType);
-  bool setOutputJSON(bool outputJSON);
-  bool setOutputCBOR(bool outputCBOR);
-  bool setOutputMessagePack(bool outputMessagePack);
+    // outputJSON
+    bool outputJSON() const;
+    bool setOutputJSON(bool outputJSON);
 
- protected:
-  using ImplType = detail::OutputJSON_Impl;
+    // outputCBOR
+    bool outputCBOR() const;
+    bool setOutputCBOR(bool outputCBOR);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    // outputMessagePack
+    bool outputMessagePack() const;
+    bool setOutputMessagePack(bool outputMessagePack);
 
-  explicit OutputJSON(std::shared_ptr<detail::OutputJSON_Impl> impl);
-};
+   protected:
+    using ImplType = detail::OutputJSON_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit OutputJSON(std::shared_ptr<detail::OutputJSON_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

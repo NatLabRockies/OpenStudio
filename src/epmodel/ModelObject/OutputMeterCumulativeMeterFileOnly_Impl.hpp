@@ -13,28 +13,26 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API OutputMeterCumulativeMeterFileOnly_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~OutputMeterCumulativeMeterFileOnly_Impl() override = default;
+    class EPMODEL_API OutputMeterCumulativeMeterFileOnly_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~OutputMeterCumulativeMeterFileOnly_Impl() override = default;
 
-  std::string keyName() const;
-  std::string reportingFrequency() const;
+      std::string keyName() const;
+      bool setKeyName(const std::string& keyName);
 
-  bool isReportingFrequencyDefaulted() const;
+      std::string reportingFrequency() const;
+      bool isReportingFrequencyDefaulted() const;
+      bool setReportingFrequency(const std::string& reportingFrequency);
+      void resetReportingFrequency();
 
-  bool setKeyName(const std::string& keyName);
-  bool setReportingFrequency(const std::string& reportingFrequency);
+      std::vector<std::string> reportingFrequencyValues() const;
+    };
 
-  void resetReportingFrequency();
-
-  std::vector<std::string> reportingFrequencyValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

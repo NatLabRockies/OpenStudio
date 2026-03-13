@@ -15,50 +15,53 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SetpointManagerFollowOutdoorAirTemperature_Impl;
-}
+  namespace detail {
+    class SetpointManagerFollowOutdoorAirTemperature_Impl;
+  }
 
-class EPMODEL_API SetpointManagerFollowOutdoorAirTemperature : public SetpointManager
-{
- public:
-  explicit SetpointManagerFollowOutdoorAirTemperature(const Model& model);
+  class EPMODEL_API SetpointManagerFollowOutdoorAirTemperature : public SetpointManager
+  {
+   public:
+    explicit SetpointManagerFollowOutdoorAirTemperature(const Model& model);
 
-  virtual ~SetpointManagerFollowOutdoorAirTemperature() override = default;
-  SetpointManagerFollowOutdoorAirTemperature(const SetpointManagerFollowOutdoorAirTemperature& other) = default;
-  SetpointManagerFollowOutdoorAirTemperature(SetpointManagerFollowOutdoorAirTemperature&& other) = default;
-  SetpointManagerFollowOutdoorAirTemperature& operator=(const SetpointManagerFollowOutdoorAirTemperature&) = default;
-  SetpointManagerFollowOutdoorAirTemperature& operator=(SetpointManagerFollowOutdoorAirTemperature&&) = default;
+    virtual ~SetpointManagerFollowOutdoorAirTemperature() override = default;
+    SetpointManagerFollowOutdoorAirTemperature(const SetpointManagerFollowOutdoorAirTemperature& other) = default;
+    SetpointManagerFollowOutdoorAirTemperature(SetpointManagerFollowOutdoorAirTemperature&& other) = default;
+    SetpointManagerFollowOutdoorAirTemperature& operator=(const SetpointManagerFollowOutdoorAirTemperature&) = default;
+    SetpointManagerFollowOutdoorAirTemperature& operator=(SetpointManagerFollowOutdoorAirTemperature&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-  // - Field Mapping: referenceTemperatureType, offsetTemperatureDifference, maximumSetpointTemperature, and
-  //   minimumSetpointTemperature map directly to E+ SetpointManager:FollowOutdoorAirTemperature fields.
-  // - Field Mapping: Relationship field Setpoint Node or NodeList Name is intentionally excluded from scalar-only scaffolding.
-  // - TODO(parity): Add non-scalar relationship parity for explicit setpoint node linkage in a follow-up pass.
-  std::string referenceTemperatureType() const;
-  double offsetTemperatureDifference() const;
-  double maximumSetpointTemperature() const;
-  double minimumSetpointTemperature() const;
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
+    // - Field Mapping: referenceTemperatureType, offsetTemperatureDifference, maximumSetpointTemperature, and
+    //   minimumSetpointTemperature map directly to E+ SetpointManager:FollowOutdoorAirTemperature fields.
+    // - Field Mapping: Relationship field Setpoint Node or NodeList Name is intentionally excluded from scalar-only scaffolding.
+    // - TODO(parity): Add non-scalar relationship parity for explicit setpoint node linkage in a follow-up pass.
 
-  bool setReferenceTemperatureType(const std::string& value);
-  bool setOffsetTemperatureDifference(double value);
-  bool setMaximumSetpointTemperature(double value);
-  bool setMinimumSetpointTemperature(double value);
+    std::string referenceTemperatureType() const;
+    bool setReferenceTemperatureType(const std::string& value);
 
- protected:
-  using ImplType = detail::SetpointManagerFollowOutdoorAirTemperature_Impl;
+    double offsetTemperatureDifference() const;
+    bool setOffsetTemperatureDifference(double value);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    double maximumSetpointTemperature() const;
+    bool setMaximumSetpointTemperature(double value);
 
-  explicit SetpointManagerFollowOutdoorAirTemperature(std::shared_ptr<detail::SetpointManagerFollowOutdoorAirTemperature_Impl> impl);
-};
+    double minimumSetpointTemperature() const;
+    bool setMinimumSetpointTemperature(double value);
+
+   protected:
+    using ImplType = detail::SetpointManagerFollowOutdoorAirTemperature_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit SetpointManagerFollowOutdoorAirTemperature(std::shared_ptr<detail::SetpointManagerFollowOutdoorAirTemperature_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

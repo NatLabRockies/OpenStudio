@@ -50,17 +50,17 @@ namespace epmodel {
     bool setRatedCondensingTemperature(double ratedCondensingTemperature);
 
     double ratedSubcoolingTemperatureDifference() const;
-    bool isRatedSubcoolingTemperatureDifferenceDefaulted() const;
     bool setRatedSubcoolingTemperatureDifference(double ratedSubcoolingTemperatureDifference);
     void resetRatedSubcoolingTemperatureDifference();
+    bool isRatedSubcoolingTemperatureDifferenceDefaulted() const;
 
     double ratedWaterInletTemperature() const;
     bool setRatedWaterInletTemperature(double ratedWaterInletTemperature);
 
     std::string waterCooledLoopFlowType() const;
-    bool isWaterCooledLoopFlowTypeDefaulted() const;
     bool setWaterCooledLoopFlowType(const std::string& waterCooledLoopFlowType);
     void resetWaterCooledLoopFlowType();
+    bool isWaterCooledLoopFlowTypeDefaulted() const;
 
     boost::optional<double> waterDesignFlowRate() const;
     bool setWaterDesignFlowRate(double waterDesignFlowRate);
@@ -71,19 +71,19 @@ namespace epmodel {
     void resetWaterMaximumFlowRate();
 
     double waterMaximumWaterOutletTemperature() const;
-    bool isWaterMaximumWaterOutletTemperatureDefaulted() const;
     bool setWaterMaximumWaterOutletTemperature(double waterMaximumWaterOutletTemperature);
     void resetWaterMaximumWaterOutletTemperature();
+    bool isWaterMaximumWaterOutletTemperatureDefaulted() const;
 
     double waterMinimumWaterInletTemperature() const;
-    bool isWaterMinimumWaterInletTemperatureDefaulted() const;
     bool setWaterMinimumWaterInletTemperature(double waterMinimumWaterInletTemperature);
     void resetWaterMinimumWaterInletTemperature();
+    bool isWaterMinimumWaterInletTemperatureDefaulted() const;
 
     std::string endUseSubcategory() const;
-    bool isEndUseSubcategoryDefaulted() const;
     bool setEndUseSubcategory(const std::string& endUseSubcategory);
     void resetEndUseSubcategory();
+    bool isEndUseSubcategoryDefaulted() const;
 
     boost::optional<double> condenserRefrigerantOperatingChargeInventory() const;
     bool setCondenserRefrigerantOperatingChargeInventory(double condenserRefrigerantOperatingChargeInventory);

@@ -11,30 +11,31 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SolarCollectorFlatPlatePhotovoltaicThermal_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~SolarCollectorFlatPlatePhotovoltaicThermal_Impl() override = default;
+    class EPMODEL_API SolarCollectorFlatPlatePhotovoltaicThermal_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~SolarCollectorFlatPlatePhotovoltaicThermal_Impl() override = default;
 
-  // Schema Alignment Notes:
-  // - API: The model counterpart abstracts inlet/outlet node naming, while E+ has air and water node field pairs.
-  // - Field Mapping: inletPort/outletPort select the air or water node pair based on ThermalWorkingFluidType value.
-  // - TODO(parity): revisit loop-specific behaviors when non-scalar APIs are added.
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
+      // Schema Alignment Notes:
+      // - API: The model counterpart abstracts inlet/outlet node naming, while E+ has air and water node field pairs.
+      // - Field Mapping: inletPort/outletPort select the air or water node pair based on ThermalWorkingFluidType value.
+      // - TODO(parity): revisit loop-specific behaviors when non-scalar APIs are added.
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
-  boost::optional<double> designFlowRate() const;
-  bool isDesignFlowRateAutosized() const;
-  boost::optional<double> autosizedDesignFlowRate() const;
-  bool setDesignFlowRate(double designFlowRate);
-  void resetDesignFlowRate();
-  void autosizeDesignFlowRate();
-};
+      boost::optional<double> designFlowRate() const;
+      bool setDesignFlowRate(double designFlowRate);
+      void resetDesignFlowRate();
 
-}  // namespace detail
+      bool isDesignFlowRateAutosized() const;
+      boost::optional<double> autosizedDesignFlowRate() const;
+      void autosizeDesignFlowRate();
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

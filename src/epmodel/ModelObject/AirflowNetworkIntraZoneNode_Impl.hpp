@@ -11,21 +11,24 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirflowNetworkIntraZoneNode_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirflowNetworkIntraZoneNode_Impl() override = default;
+    class EPMODEL_API AirflowNetworkIntraZoneNode_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirflowNetworkIntraZoneNode_Impl() override = default;
 
-  double nodeHeight() const;
-  bool isNodeHeightDefaulted() const;
-  bool setNodeHeight(double nodeHeight);
-  void resetNodeHeight();
-};
+      /** @name Node Height Accessors */
+      //@{
+      double nodeHeight() const;
+      bool isNodeHeightDefaulted() const;
+      bool setNodeHeight(double nodeHeight);
+      void resetNodeHeight();
+      //@}
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

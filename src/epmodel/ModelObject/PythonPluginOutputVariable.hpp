@@ -47,28 +47,28 @@ namespace epmodel {
     // - Relationship Field: Python Plugin Variable Name is a reference to PythonPluginVariable and is excluded from this scalar-only scaffold.
     // - TODO(parity): Revisit non-scalar pythonPluginVariable APIs once the epmodel counterpart to PythonPluginVariable is available.
     std::string typeofDatainVariable() const;
-    std::string updateFrequency() const;
-    boost::optional<std::string> units() const;
-    boost::optional<std::string> resourceType() const;
-    boost::optional<std::string> groupType() const;
-    boost::optional<std::string> endUseCategory() const;
-    boost::optional<std::string> endUseSubcategory() const;
-
     bool setTypeofDatainVariable(const std::string& typeofDatainVariable);
+
+    std::string updateFrequency() const;
     bool setUpdateFrequency(const std::string& updateFrequency);
 
+    boost::optional<std::string> units() const;
     bool setUnits(const std::string& units);
     void resetUnits();
 
+    boost::optional<std::string> resourceType() const;
     bool setResourceType(const std::string& resourceType);
     void resetResourceType();
 
+    boost::optional<std::string> groupType() const;
     bool setGroupType(const std::string& groupType);
     void resetGroupType();
 
+    boost::optional<std::string> endUseCategory() const;
     bool setEndUseCategory(const std::string& endUseCategory);
     void resetEndUseCategory();
 
+    boost::optional<std::string> endUseSubcategory() const;
     bool setEndUseSubcategory(const std::string& endUseSubcategory);
     void resetEndUseSubcategory();
 

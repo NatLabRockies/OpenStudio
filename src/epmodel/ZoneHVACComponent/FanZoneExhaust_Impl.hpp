@@ -14,34 +14,34 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API FanZoneExhaust_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~FanZoneExhaust_Impl() override = default;
+    class EPMODEL_API FanZoneExhaust_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~FanZoneExhaust_Impl() override = default;
 
-  double fanTotalEfficiency() const;
-  bool setFanTotalEfficiency(double fanTotalEfficiency);
+      std::vector<std::string> systemAvailabilityManagerCouplingModeValues() const;
 
-  double pressureRise() const;
-  bool setPressureRise(double pressureRise);
+      double fanTotalEfficiency() const;
+      bool setFanTotalEfficiency(double fanTotalEfficiency);
 
-  boost::optional<double> maximumFlowRate() const;
-  bool setMaximumFlowRate(double maximumFlowRate);
-  void resetMaximumFlowRate();
+      double pressureRise() const;
+      bool setPressureRise(double pressureRise);
 
-  std::string endUseSubcategory() const;
-  bool setEndUseSubcategory(const std::string& endUseSubcategory);
+      boost::optional<double> maximumFlowRate() const;
+      bool setMaximumFlowRate(double maximumFlowRate);
+      void resetMaximumFlowRate();
 
-  std::string systemAvailabilityManagerCouplingMode() const;
-  bool setSystemAvailabilityManagerCouplingMode(const std::string& systemAvailabilityManagerCouplingMode);
+      std::string endUseSubcategory() const;
+      bool setEndUseSubcategory(const std::string& endUseSubcategory);
 
-  std::vector<std::string> systemAvailabilityManagerCouplingModeValues() const;
-};
+      std::string systemAvailabilityManagerCouplingMode() const;
+      bool setSystemAvailabilityManagerCouplingMode(const std::string& systemAvailabilityManagerCouplingMode);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

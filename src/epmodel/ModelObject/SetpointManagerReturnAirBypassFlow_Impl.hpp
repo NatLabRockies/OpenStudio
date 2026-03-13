@@ -13,23 +13,23 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SetpointManagerReturnAirBypassFlow_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~SetpointManagerReturnAirBypassFlow_Impl() override = default;
+    class EPMODEL_API SetpointManagerReturnAirBypassFlow_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~SetpointManagerReturnAirBypassFlow_Impl() override = default;
 
-  std::string controlVariable() const;
-  bool isControlVariableDefaulted() const;
-  bool setControlVariable(const std::string& controlVariable);
-  void resetControlVariable();
+      std::vector<std::string> controlVariableValues() const;
 
-  std::vector<std::string> controlVariableValues() const;
-};
+      std::string controlVariable() const;
+      bool isControlVariableDefaulted() const;
+      bool setControlVariable(const std::string& controlVariable);
+      void resetControlVariable();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

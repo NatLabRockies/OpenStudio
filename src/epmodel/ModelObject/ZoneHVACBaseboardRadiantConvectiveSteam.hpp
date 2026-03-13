@@ -38,16 +38,20 @@ namespace epmodel {
     //   ZoneHVAC:Baseboard:RadiantConvective:Steam fields Heating Design Capacity, Degree of SubCooling, and Maximum Steam Flow Rate.
     // - The Design Object, Availability Schedule Name, node names, and surface extensible fields remain relationship-only targets and are
     //   intentionally excluded from this scalar-only API.
+
+    // heatingDesignCapacity
     boost::optional<double> heatingDesignCapacity() const;
     bool isHeatingDesignCapacityAutosized() const;
     bool setHeatingDesignCapacity(double heatingDesignCapacity);
     void autosizeHeatingDesignCapacity();
 
+    // degreeofSubCooling
     boost::optional<double> degreeofSubCooling() const;
     bool isDegreeofSubCoolingDefaulted() const;
     bool setDegreeofSubCooling(double degreeofSubCooling);
     void resetDegreeofSubCooling();
 
+    // maximumSteamFlowRate
     boost::optional<double> maximumSteamFlowRate() const;
     bool isMaximumSteamFlowRateAutosized() const;
     bool setMaximumSteamFlowRate(double maximumSteamFlowRate);

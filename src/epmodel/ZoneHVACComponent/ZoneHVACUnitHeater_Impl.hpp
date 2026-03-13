@@ -26,6 +26,7 @@ namespace epmodel {
       bool isMaximumSupplyAirFlowRateAutosized() const;
       bool setMaximumSupplyAirFlowRate(double maximumSupplyAirFlowRate);
       void autosizeMaximumSupplyAirFlowRate();
+      boost::optional<double> autosizedMaximumSupplyAirFlowRate() const;
 
       std::string fanControlType() const;
       bool setFanControlType(const std::string& fanControlType);
@@ -35,6 +36,7 @@ namespace epmodel {
       bool setMaximumHotWaterFlowRate(double maximumHotWaterFlowRate);
       void resetMaximumHotWaterFlowRate();
       void autosizeMaximumHotWaterFlowRate();
+      boost::optional<double> autosizedMaximumHotWaterFlowRate() const;
 
       double minimumHotWaterFlowRate() const;
       bool isMinimumHotWaterFlowRateDefaulted() const;
@@ -45,9 +47,6 @@ namespace epmodel {
       bool isHeatingConvergenceToleranceDefaulted() const;
       bool setHeatingConvergenceTolerance(double heatingConvergenceTolerance);
       void resetHeatingConvergenceTolerance();
-
-      boost::optional<double> autosizedMaximumSupplyAirFlowRate() const;
-      boost::optional<double> autosizedMaximumHotWaterFlowRate() const;
     };
 
   }  // namespace detail

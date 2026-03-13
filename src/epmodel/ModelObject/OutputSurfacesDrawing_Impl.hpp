@@ -13,29 +13,27 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API OutputSurfacesDrawing_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~OutputSurfacesDrawing_Impl() override = default;
+    class EPMODEL_API OutputSurfacesDrawing_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~OutputSurfacesDrawing_Impl() override = default;
 
-  std::string reportType() const;
+      std::string reportType() const;
+      bool setReportType(const std::string& reportType);
 
-  std::string reportSpecifications1() const;
-  bool isReportSpecifications1Defaulted() const;
+      std::string reportSpecifications1() const;
+      bool isReportSpecifications1Defaulted() const;
+      bool setReportSpecifications1(const std::string& reportSpecifications1);
+      void resetReportSpecifications1();
 
-  bool setReportType(const std::string& reportType);
+      std::vector<std::string> reportTypeValues() const;
+      std::vector<std::string> reportSpecifications1Values() const;
+    };
 
-  bool setReportSpecifications1(const std::string& reportSpecifications1);
-  void resetReportSpecifications1();
-
-  std::vector<std::string> reportTypeValues() const;
-  std::vector<std::string> reportSpecifications1Values() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

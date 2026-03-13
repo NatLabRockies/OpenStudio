@@ -21,6 +21,13 @@ class EPMODEL_API AirflowNetworkSimulationControl_Impl : public ModelObject_Impl
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~AirflowNetworkSimulationControl_Impl() override = default;
 
+  std::vector<std::string> airflowNetworkControlValues() const;
+  std::vector<std::string> windPressureCoefficientTypeValues() const;
+  std::vector<std::string> heightSelectionforLocalWindPressureCalculationValues() const;
+  std::vector<std::string> buildingTypeValues() const;
+  std::vector<std::string> initializationTypeValues() const;
+  std::vector<std::string> solverValues() const;
+
   std::string airflowNetworkControl() const;
   bool isAirflowNetworkControlDefaulted() const;
   bool setAirflowNetworkControl(const std::string& airflowNetworkControl);
@@ -90,13 +97,6 @@ class EPMODEL_API AirflowNetworkSimulationControl_Impl : public ModelObject_Impl
   bool isAllowUnsupportedZoneEquipmentDefaulted() const;
   void setAllowUnsupportedZoneEquipment(bool allowUnsupportedZoneEquipment);
   void resetAllowUnsupportedZoneEquipment();
-
-  std::vector<std::string> airflowNetworkControlValues() const;
-  std::vector<std::string> windPressureCoefficientTypeValues() const;
-  std::vector<std::string> heightSelectionforLocalWindPressureCalculationValues() const;
-  std::vector<std::string> buildingTypeValues() const;
-  std::vector<std::string> initializationTypeValues() const;
-  std::vector<std::string> solverValues() const;
 };
 
 }  // namespace detail

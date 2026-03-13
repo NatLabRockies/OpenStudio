@@ -45,8 +45,8 @@ namespace epmodel {
     // - Field Mapping: Availability Schedule Name, zone/node targets, and schedule/object-list references are
     //   relationship-only and intentionally excluded from this scalar API.
     std::string flowControlType() const;
-    bool setFlowControlType(const std::string& flowControlType);
     bool isFlowControlTypeDefaulted() const;
+    bool setFlowControlType(const std::string& flowControlType);
     void resetFlowControlType();
 
     boost::optional<double> designExhaustFlowRate() const;

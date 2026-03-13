@@ -23,89 +23,87 @@ namespace epmodel {
 
       std::string layerType() const;
       bool isLayerTypeDefaulted() const;
+      bool setLayerType(const std::string& layerType);
+      void resetLayerType();
 
       double thickness() const;
       bool isThicknessDefaulted() const;
+      bool setThickness(double thickness);
+      void resetThickness();
 
       double conductivity() const;
       bool isConductivityDefaulted() const;
+      bool setConductivity(double conductivity);
+      void resetConductivity();
 
       double irTransmittance() const;
       bool isIrTransmittanceDefaulted() const;
+      bool setIrTransmittance(double irTransmittance);
+      void resetIrTransmittance();
 
       double frontEmissivity() const;
       bool isFrontEmissivityDefaulted() const;
+      bool setFrontEmissivity(double frontEmissivity);
+      void resetFrontEmissivity();
 
       double backEmissivity() const;
       bool isBackEmissivityDefaulted() const;
+      bool setBackEmissivity(double backEmissivity);
+      void resetBackEmissivity();
 
       double topOpeningMultiplier() const;
       bool isTopOpeningMultiplierDefaulted() const;
+      bool setTopOpeningMultiplier(double topOpeningMultiplier);
+      void resetTopOpeningMultiplier();
 
       double bottomOpeningMultiplier() const;
       bool isBottomOpeningMultiplierDefaulted() const;
+      bool setBottomOpeningMultiplier(double bottomOpeningMultiplier);
+      void resetBottomOpeningMultiplier();
 
       double leftSideOpeningMultiplier() const;
       bool isLeftSideOpeningMultiplierDefaulted() const;
+      bool setLeftSideOpeningMultiplier(double leftSideOpeningMultiplier);
+      void resetLeftSideOpeningMultiplier();
 
       double rightSideOpeningMultiplier() const;
       bool isRightSideOpeningMultiplierDefaulted() const;
+      bool setRightSideOpeningMultiplier(double rightSideOpeningMultiplier);
+      void resetRightSideOpeningMultiplier();
 
       double frontOpeningMultiplier() const;
       bool isFrontOpeningMultiplierDefaulted() const;
+      bool setFrontOpeningMultiplier(double frontOpeningMultiplier);
+      void resetFrontOpeningMultiplier();
 
       double slatWidth() const;
       bool isSlatWidthDefaulted() const;
+      bool setSlatWidth(double slatWidth);
+      void resetSlatWidth();
 
       double slatSpacing() const;
       bool isSlatSpacingDefaulted() const;
+      bool setSlatSpacing(double slatSpacing);
+      void resetSlatSpacing();
 
       double slatThickness() const;
       bool isSlatThicknessDefaulted() const;
+      bool setSlatThickness(double slatThickness);
+      void resetSlatThickness();
 
       double slatAngle() const;
       bool isSlatAngleDefaulted() const;
+      bool setSlatAngle(double slatAngle);
+      void resetSlatAngle();
 
       double slatConductivity() const;
       bool isSlatConductivityDefaulted() const;
+      bool setSlatConductivity(double slatConductivity);
+      void resetSlatConductivity();
 
       double slatCurve() const;
       bool isSlatCurveDefaulted() const;
-
-      bool setLayerType(const std::string& layerType);
-      bool setThickness(double thickness);
-      bool setConductivity(double conductivity);
-      bool setIrTransmittance(double irTransmittance);
-      bool setFrontEmissivity(double frontEmissivity);
-      bool setBackEmissivity(double backEmissivity);
-      bool setTopOpeningMultiplier(double topOpeningMultiplier);
-      bool setBottomOpeningMultiplier(double bottomOpeningMultiplier);
-      bool setLeftSideOpeningMultiplier(double leftSideOpeningMultiplier);
-      bool setRightSideOpeningMultiplier(double rightSideOpeningMultiplier);
-      bool setFrontOpeningMultiplier(double frontOpeningMultiplier);
-      bool setSlatWidth(double slatWidth);
-      bool setSlatSpacing(double slatSpacing);
-      bool setSlatThickness(double slatThickness);
-      bool setSlatAngle(double slatAngle);
-      bool setSlatConductivity(double slatConductivity);
       bool setSlatCurve(double slatCurve);
-
-      void resetLayerType();
-      void resetThickness();
-      void resetConductivity();
-      void resetIrTransmittance();
-      void resetFrontEmissivity();
-      void resetBackEmissivity();
-      void resetTopOpeningMultiplier();
-      void resetBottomOpeningMultiplier();
-      void resetLeftSideOpeningMultiplier();
-      void resetRightSideOpeningMultiplier();
-      void resetFrontOpeningMultiplier();
-      void resetSlatWidth();
-      void resetSlatSpacing();
-      void resetSlatThickness();
-      void resetSlatAngle();
-      void resetSlatConductivity();
       void resetSlatCurve();
     };
 

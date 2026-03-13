@@ -13,37 +13,41 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SizingPeriodWeatherFileConditionType_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~SizingPeriodWeatherFileConditionType_Impl() override = default;
+    class EPMODEL_API SizingPeriodWeatherFileConditionType_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~SizingPeriodWeatherFileConditionType_Impl() override = default;
 
-  std::string periodSelection() const;
-  bool setPeriodSelection(const std::string& periodSelection);
+      std::vector<std::string> periodSelectionValues() const;
+      std::vector<std::string> dayofWeekforStartDayValues() const;
 
-  std::string dayofWeekforStartDay() const;
-  bool setDayofWeekforStartDay(const std::string& dayofWeekforStartDay);
-  bool isDayofWeekforStartDayDefaulted() const;
-  void resetDayofWeekforStartDay();
+      // PeriodSelection
+      std::string periodSelection() const;
+      bool setPeriodSelection(const std::string& periodSelection);
 
-  bool useWeatherFileDaylightSavingPeriod() const;
-  bool setUseWeatherFileDaylightSavingPeriod(bool useWeatherFileDaylightSavingPeriod);
-  bool isUseWeatherFileDaylightSavingPeriodDefaulted() const;
-  void resetUseWeatherFileDaylightSavingPeriod();
+      // DayofWeekforStartDay
+      std::string dayofWeekforStartDay() const;
+      bool setDayofWeekforStartDay(const std::string& dayofWeekforStartDay);
+      bool isDayofWeekforStartDayDefaulted() const;
+      void resetDayofWeekforStartDay();
 
-  bool useWeatherFileRainandSnowIndicators() const;
-  bool setUseWeatherFileRainandSnowIndicators(bool useWeatherFileRainandSnowIndicators);
-  bool isUseWeatherFileRainandSnowIndicatorsDefaulted() const;
-  void resetUseWeatherFileRainandSnowIndicators();
+      // UseWeatherFileDaylightSavingPeriod
+      bool useWeatherFileDaylightSavingPeriod() const;
+      bool setUseWeatherFileDaylightSavingPeriod(bool useWeatherFileDaylightSavingPeriod);
+      bool isUseWeatherFileDaylightSavingPeriodDefaulted() const;
+      void resetUseWeatherFileDaylightSavingPeriod();
 
-  std::vector<std::string> periodSelectionValues() const;
-  std::vector<std::string> dayofWeekforStartDayValues() const;
-};
+      // UseWeatherFileRainandSnowIndicators
+      bool useWeatherFileRainandSnowIndicators() const;
+      bool setUseWeatherFileRainandSnowIndicators(bool useWeatherFileRainandSnowIndicators);
+      bool isUseWeatherFileRainandSnowIndicatorsDefaulted() const;
+      void resetUseWeatherFileRainandSnowIndicators();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

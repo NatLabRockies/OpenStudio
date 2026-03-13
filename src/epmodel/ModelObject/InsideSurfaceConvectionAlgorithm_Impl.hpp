@@ -19,11 +19,11 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~InsideSurfaceConvectionAlgorithm_Impl() override = default;
 
+      std::vector<std::string> validAlgorithmValues() const;
       std::string algorithm() const;
       bool isAlgorithmDefaulted() const;
       bool setAlgorithm(const std::string& algorithm);
       void resetAlgorithm();
-      std::vector<std::string> validAlgorithmValues() const;
     };
 
   }  // namespace detail

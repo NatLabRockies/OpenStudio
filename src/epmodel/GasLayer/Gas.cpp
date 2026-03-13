@@ -114,20 +114,20 @@ namespace epmodel {
     return getImpl<detail::Gas_Impl>()->conductivityCoefficientA();
   }
 
-  boost::optional<double> Gas::conductivityCoefficientB() const {
-    return getImpl<detail::Gas_Impl>()->conductivityCoefficientB();
-  }
-
-  boost::optional<double> Gas::conductivityCoefficientC() const {
-    return getImpl<detail::Gas_Impl>()->conductivityCoefficientC();
-  }
-
   bool Gas::setConductivityCoefficientA(double conductivityCoefficientA) {
     return getImpl<detail::Gas_Impl>()->setConductivityCoefficientA(conductivityCoefficientA);
   }
 
+  boost::optional<double> Gas::conductivityCoefficientB() const {
+    return getImpl<detail::Gas_Impl>()->conductivityCoefficientB();
+  }
+
   bool Gas::setConductivityCoefficientB(double conductivityCoefficientB) {
     return getImpl<detail::Gas_Impl>()->setConductivityCoefficientB(conductivityCoefficientB);
+  }
+
+  boost::optional<double> Gas::conductivityCoefficientC() const {
+    return getImpl<detail::Gas_Impl>()->conductivityCoefficientC();
   }
 
   bool Gas::setConductivityCoefficientC(double conductivityCoefficientC) {
@@ -138,20 +138,20 @@ namespace epmodel {
     return getImpl<detail::Gas_Impl>()->viscosityCoefficientA();
   }
 
-  boost::optional<double> Gas::viscosityCoefficientB() const {
-    return getImpl<detail::Gas_Impl>()->viscosityCoefficientB();
-  }
-
-  boost::optional<double> Gas::viscosityCoefficientC() const {
-    return getImpl<detail::Gas_Impl>()->viscosityCoefficientC();
-  }
-
   bool Gas::setViscosityCoefficientA(double viscosityCoefficientA) {
     return getImpl<detail::Gas_Impl>()->setViscosityCoefficientA(viscosityCoefficientA);
   }
 
+  boost::optional<double> Gas::viscosityCoefficientB() const {
+    return getImpl<detail::Gas_Impl>()->viscosityCoefficientB();
+  }
+
   bool Gas::setViscosityCoefficientB(double viscosityCoefficientB) {
     return getImpl<detail::Gas_Impl>()->setViscosityCoefficientB(viscosityCoefficientB);
+  }
+
+  boost::optional<double> Gas::viscosityCoefficientC() const {
+    return getImpl<detail::Gas_Impl>()->viscosityCoefficientC();
   }
 
   bool Gas::setViscosityCoefficientC(double viscosityCoefficientC) {
@@ -162,20 +162,20 @@ namespace epmodel {
     return getImpl<detail::Gas_Impl>()->specificHeatCoefficientA();
   }
 
-  boost::optional<double> Gas::specificHeatCoefficientB() const {
-    return getImpl<detail::Gas_Impl>()->specificHeatCoefficientB();
-  }
-
-  boost::optional<double> Gas::specificHeatCoefficientC() const {
-    return getImpl<detail::Gas_Impl>()->specificHeatCoefficientC();
-  }
-
   bool Gas::setSpecificHeatCoefficientA(double specificHeatCoefficientA) {
     return getImpl<detail::Gas_Impl>()->setSpecificHeatCoefficientA(specificHeatCoefficientA);
   }
 
+  boost::optional<double> Gas::specificHeatCoefficientB() const {
+    return getImpl<detail::Gas_Impl>()->specificHeatCoefficientB();
+  }
+
   bool Gas::setSpecificHeatCoefficientB(double specificHeatCoefficientB) {
     return getImpl<detail::Gas_Impl>()->setSpecificHeatCoefficientB(specificHeatCoefficientB);
+  }
+
+  boost::optional<double> Gas::specificHeatCoefficientC() const {
+    return getImpl<detail::Gas_Impl>()->specificHeatCoefficientC();
   }
 
   bool Gas::setSpecificHeatCoefficientC(double specificHeatCoefficientC) {
@@ -337,20 +337,20 @@ namespace epmodel {
       return getDouble(openstudio::WindowMaterial_GasFields::ConductivityCoefficientA, true);
     }
 
-    boost::optional<double> Gas_Impl::conductivityCoefficientB() const {
-      return getDouble(openstudio::WindowMaterial_GasFields::ConductivityCoefficientB, true);
-    }
-
-    boost::optional<double> Gas_Impl::conductivityCoefficientC() const {
-      return getDouble(openstudio::WindowMaterial_GasFields::ConductivityCoefficientC, true);
-    }
-
     bool Gas_Impl::setConductivityCoefficientA(double conductivityCoefficientA) {
       return setDouble(openstudio::WindowMaterial_GasFields::ConductivityCoefficientA, conductivityCoefficientA);
     }
 
+    boost::optional<double> Gas_Impl::conductivityCoefficientB() const {
+      return getDouble(openstudio::WindowMaterial_GasFields::ConductivityCoefficientB, true);
+    }
+
     bool Gas_Impl::setConductivityCoefficientB(double conductivityCoefficientB) {
       return setDouble(openstudio::WindowMaterial_GasFields::ConductivityCoefficientB, conductivityCoefficientB);
+    }
+
+    boost::optional<double> Gas_Impl::conductivityCoefficientC() const {
+      return getDouble(openstudio::WindowMaterial_GasFields::ConductivityCoefficientC, true);
     }
 
     bool Gas_Impl::setConductivityCoefficientC(double conductivityCoefficientC) {
@@ -361,20 +361,20 @@ namespace epmodel {
       return getDouble(openstudio::WindowMaterial_GasFields::ViscosityCoefficientA, true);
     }
 
-    boost::optional<double> Gas_Impl::viscosityCoefficientB() const {
-      return getDouble(openstudio::WindowMaterial_GasFields::ViscosityCoefficientB, true);
-    }
-
-    boost::optional<double> Gas_Impl::viscosityCoefficientC() const {
-      return getDouble(openstudio::WindowMaterial_GasFields::ViscosityCoefficientC, true);
-    }
-
     bool Gas_Impl::setViscosityCoefficientA(double viscosityCoefficientA) {
       return setDouble(openstudio::WindowMaterial_GasFields::ViscosityCoefficientA, viscosityCoefficientA);
     }
 
+    boost::optional<double> Gas_Impl::viscosityCoefficientB() const {
+      return getDouble(openstudio::WindowMaterial_GasFields::ViscosityCoefficientB, true);
+    }
+
     bool Gas_Impl::setViscosityCoefficientB(double viscosityCoefficientB) {
       return setDouble(openstudio::WindowMaterial_GasFields::ViscosityCoefficientB, viscosityCoefficientB);
+    }
+
+    boost::optional<double> Gas_Impl::viscosityCoefficientC() const {
+      return getDouble(openstudio::WindowMaterial_GasFields::ViscosityCoefficientC, true);
     }
 
     bool Gas_Impl::setViscosityCoefficientC(double viscosityCoefficientC) {
@@ -385,20 +385,20 @@ namespace epmodel {
       return getDouble(openstudio::WindowMaterial_GasFields::SpecificHeatCoefficientA, true);
     }
 
-    boost::optional<double> Gas_Impl::specificHeatCoefficientB() const {
-      return getDouble(openstudio::WindowMaterial_GasFields::SpecificHeatCoefficientB, true);
-    }
-
-    boost::optional<double> Gas_Impl::specificHeatCoefficientC() const {
-      return getDouble(openstudio::WindowMaterial_GasFields::SpecificHeatCoefficientC, true);
-    }
-
     bool Gas_Impl::setSpecificHeatCoefficientA(double specificHeatCoefficientA) {
       return setDouble(openstudio::WindowMaterial_GasFields::SpecificHeatCoefficientA, specificHeatCoefficientA);
     }
 
+    boost::optional<double> Gas_Impl::specificHeatCoefficientB() const {
+      return getDouble(openstudio::WindowMaterial_GasFields::SpecificHeatCoefficientB, true);
+    }
+
     bool Gas_Impl::setSpecificHeatCoefficientB(double specificHeatCoefficientB) {
       return setDouble(openstudio::WindowMaterial_GasFields::SpecificHeatCoefficientB, specificHeatCoefficientB);
+    }
+
+    boost::optional<double> Gas_Impl::specificHeatCoefficientC() const {
+      return getDouble(openstudio::WindowMaterial_GasFields::SpecificHeatCoefficientC, true);
     }
 
     bool Gas_Impl::setSpecificHeatCoefficientC(double specificHeatCoefficientC) {

@@ -50,64 +50,64 @@ namespace epmodel {
     //   is...Autocalculated/autocalculate helpers mirroring the autocalculatable metadata in the IDD.
     // - Field Mapping: Curve, schedule, node, and object-list fields (e.g., compressor/cop curves, schedule names, node names, and case/walk-in
     //   lists) are intentionally excluded in this scalar-only pass.
+
+    // Heat rejection
     std::string heatRejectionLocation() const;
-
-    double designCompressorRackCOP() const;
-
-    double designCondenserFanPower() const;
-
-    std::string condenserType() const;
-
-    std::string waterCooledLoopFlowType() const;
-
-    boost::optional<double> waterCooledCondenserDesignFlowRate() const;
-    boost::optional<double> waterCooledCondenserMaximumFlowRate() const;
-    double waterCooledCondenserMaximumWaterOutletTemperature() const;
-    double waterCooledCondenserMinimumWaterInletTemperature() const;
-
-    double evaporativeCondenserEffectiveness() const;
-    boost::optional<double> evaporativeCondenserAirFlowRate() const;
-    bool isEvaporativeCondenserAirFlowRateAutocalculated() const;
-
-    double basinHeaterCapacity() const;
-    double basinHeaterSetpointTemperature() const;
-
-    boost::optional<double> designEvaporativeCondenserWaterPumpPower() const;
-    bool isDesignEvaporativeCondenserWaterPumpPowerAutocalculated() const;
-
-    std::string endUseSubcategory() const;
-    bool isEndUseSubcategoryDefaulted() const;
-
     bool setHeatRejectionLocation(const std::string& heatRejectionLocation);
 
+    // Compressor rack performance
+    double designCompressorRackCOP() const;
     bool setDesignCompressorRackCOP(double designCompressorRackCOP);
 
+    double designCondenserFanPower() const;
     bool setDesignCondenserFanPower(double designCondenserFanPower);
 
+    // Condenser configuration
+    std::string condenserType() const;
     bool setCondenserType(const std::string& condenserType);
 
+    std::string waterCooledLoopFlowType() const;
     bool setWaterCooledLoopFlowType(const std::string& waterCooledLoopFlowType);
 
+    boost::optional<double> waterCooledCondenserDesignFlowRate() const;
     bool setWaterCooledCondenserDesignFlowRate(double waterCooledCondenserDesignFlowRate);
     void resetWaterCooledCondenserDesignFlowRate();
 
+    boost::optional<double> waterCooledCondenserMaximumFlowRate() const;
     bool setWaterCooledCondenserMaximumFlowRate(double waterCooledCondenserMaximumFlowRate);
     void resetWaterCooledCondenserMaximumFlowRate();
 
+    double waterCooledCondenserMaximumWaterOutletTemperature() const;
     bool setWaterCooledCondenserMaximumWaterOutletTemperature(double waterCooledCondenserMaximumWaterOutletTemperature);
+
+    double waterCooledCondenserMinimumWaterInletTemperature() const;
     bool setWaterCooledCondenserMinimumWaterInletTemperature(double waterCooledCondenserMinimumWaterInletTemperature);
 
+    // Evaporative condenser
+    double evaporativeCondenserEffectiveness() const;
     bool setEvaporativeCondenserEffectiveness(double evaporativeCondenserEffectiveness);
 
+    boost::optional<double> evaporativeCondenserAirFlowRate() const;
     bool setEvaporativeCondenserAirFlowRate(double evaporativeCondenserAirFlowRate);
+    bool isEvaporativeCondenserAirFlowRateAutocalculated() const;
     bool autocalculateEvaporativeCondenserAirFlowRate();
 
+    // Basin heater
+    double basinHeaterCapacity() const;
     bool setBasinHeaterCapacity(double basinHeaterCapacity);
+
+    double basinHeaterSetpointTemperature() const;
     bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
 
+    // Evaporative condenser water pump
+    boost::optional<double> designEvaporativeCondenserWaterPumpPower() const;
     bool setDesignEvaporativeCondenserWaterPumpPower(double designEvaporativeCondenserWaterPumpPower);
+    bool isDesignEvaporativeCondenserWaterPumpPowerAutocalculated() const;
     bool autocalculateDesignEvaporativeCondenserWaterPumpPower();
 
+    // End use categorization
+    std::string endUseSubcategory() const;
+    bool isEndUseSubcategoryDefaulted() const;
     bool setEndUseSubcategory(const std::string& endUseSubcategory);
     void resetEndUseSubcategory();
 

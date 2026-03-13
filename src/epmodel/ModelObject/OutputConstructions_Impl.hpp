@@ -11,25 +11,25 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API OutputConstructions_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~OutputConstructions_Impl() override = default;
+    class EPMODEL_API OutputConstructions_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~OutputConstructions_Impl() override = default;
 
-  bool reportConstructions() const;
-  bool reportMaterials() const;
+      bool reportConstructions() const;
+      bool setReportConstructions(bool reportConstructions);
 
-  bool setReportConstructions(bool reportConstructions);
-  bool setReportMaterials(bool reportMaterials);
+      bool reportMaterials() const;
+      bool setReportMaterials(bool reportMaterials);
 
- private:
-  bool setReportFlags(bool reportConstructions, bool reportMaterials);
-};
+     private:
+      bool setReportFlags(bool reportConstructions, bool reportMaterials);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -20,13 +20,13 @@ class EPMODEL_API ElectricLoadCenterInverterPVWatts_Impl : public ModelObject_Im
   virtual ~ElectricLoadCenterInverterPVWatts_Impl() override = default;
 
   double dcToACSizeRatio() const;
-  bool isDCToACSizeRatioDefaulted() const;
   bool setDCToACSizeRatio(double dcToACSizeRatio);
+  bool isDCToACSizeRatioDefaulted() const;
   void resetDCToACSizeRatio();
 
   double inverterEfficiency() const;
-  bool isInverterEfficiencyDefaulted() const;
   bool setInverterEfficiency(double inverterEfficiency);
+  bool isInverterEfficiencyDefaulted() const;
   void resetInverterEfficiency();
 };
 

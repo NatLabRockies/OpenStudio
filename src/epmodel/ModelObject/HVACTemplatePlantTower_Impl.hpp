@@ -13,65 +13,70 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HVACTemplatePlantTower_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~HVACTemplatePlantTower_Impl() override = default;
+    class EPMODEL_API HVACTemplatePlantTower_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~HVACTemplatePlantTower_Impl() override = default;
 
-  std::string towerType() const;
-  boost::optional<double> highSpeedNominalCapacity() const;
-  boost::optional<double> highSpeedFanPower() const;
-  boost::optional<double> lowSpeedNominalCapacity() const;
-  boost::optional<double> lowSpeedFanPower() const;
-  boost::optional<double> freeConvectionCapacity() const;
-  boost::optional<std::string> priority() const;
-  double sizingFactor() const;
-  boost::optional<std::string> templatePlantLoopType() const;
+      std::string towerType() const;
+      bool setTowerType(const std::string& towerType);
 
-  bool isHighSpeedNominalCapacityDefaulted() const;
-  bool isHighSpeedNominalCapacityAutosized() const;
-  bool isHighSpeedFanPowerDefaulted() const;
-  bool isHighSpeedFanPowerAutosized() const;
-  bool isLowSpeedNominalCapacityDefaulted() const;
-  bool isLowSpeedNominalCapacityAutosized() const;
-  bool isLowSpeedFanPowerDefaulted() const;
-  bool isLowSpeedFanPowerAutosized() const;
-  bool isFreeConvectionCapacityDefaulted() const;
-  bool isFreeConvectionCapacityAutosized() const;
-  bool isSizingFactorDefaulted() const;
+      boost::optional<double> highSpeedNominalCapacity() const;
+      bool isHighSpeedNominalCapacityDefaulted() const;
+      bool isHighSpeedNominalCapacityAutosized() const;
+      bool setHighSpeedNominalCapacity(double highSpeedNominalCapacity);
+      void resetHighSpeedNominalCapacity();
+      void autosizeHighSpeedNominalCapacity();
 
-  bool setTowerType(const std::string& towerType);
-  bool setHighSpeedNominalCapacity(double highSpeedNominalCapacity);
-  bool setHighSpeedFanPower(double highSpeedFanPower);
-  bool setLowSpeedNominalCapacity(double lowSpeedNominalCapacity);
-  bool setLowSpeedFanPower(double lowSpeedFanPower);
-  bool setFreeConvectionCapacity(double freeConvectionCapacity);
-  bool setPriority(const std::string& priority);
-  bool setSizingFactor(double sizingFactor);
-  bool setTemplatePlantLoopType(const std::string& templatePlantLoopType);
+      boost::optional<double> highSpeedFanPower() const;
+      bool isHighSpeedFanPowerDefaulted() const;
+      bool isHighSpeedFanPowerAutosized() const;
+      bool setHighSpeedFanPower(double highSpeedFanPower);
+      void resetHighSpeedFanPower();
+      void autosizeHighSpeedFanPower();
 
-  void resetHighSpeedNominalCapacity();
-  void autosizeHighSpeedNominalCapacity();
-  void resetHighSpeedFanPower();
-  void autosizeHighSpeedFanPower();
-  void resetLowSpeedNominalCapacity();
-  void autosizeLowSpeedNominalCapacity();
-  void resetLowSpeedFanPower();
-  void autosizeLowSpeedFanPower();
-  void resetFreeConvectionCapacity();
-  void autosizeFreeConvectionCapacity();
-  void resetPriority();
-  void resetSizingFactor();
-  void resetTemplatePlantLoopType();
+      boost::optional<double> lowSpeedNominalCapacity() const;
+      bool isLowSpeedNominalCapacityDefaulted() const;
+      bool isLowSpeedNominalCapacityAutosized() const;
+      bool setLowSpeedNominalCapacity(double lowSpeedNominalCapacity);
+      void resetLowSpeedNominalCapacity();
+      void autosizeLowSpeedNominalCapacity();
 
-  std::vector<std::string> towerTypeValues() const;
-  std::vector<std::string> templatePlantLoopTypeValues() const;
-};
+      boost::optional<double> lowSpeedFanPower() const;
+      bool isLowSpeedFanPowerDefaulted() const;
+      bool isLowSpeedFanPowerAutosized() const;
+      bool setLowSpeedFanPower(double lowSpeedFanPower);
+      void resetLowSpeedFanPower();
+      void autosizeLowSpeedFanPower();
 
-}  // namespace detail
+      boost::optional<double> freeConvectionCapacity() const;
+      bool isFreeConvectionCapacityDefaulted() const;
+      bool isFreeConvectionCapacityAutosized() const;
+      bool setFreeConvectionCapacity(double freeConvectionCapacity);
+      void resetFreeConvectionCapacity();
+      void autosizeFreeConvectionCapacity();
+
+      boost::optional<std::string> priority() const;
+      bool setPriority(const std::string& priority);
+      void resetPriority();
+
+      double sizingFactor() const;
+      bool isSizingFactorDefaulted() const;
+      bool setSizingFactor(double sizingFactor);
+      void resetSizingFactor();
+
+      boost::optional<std::string> templatePlantLoopType() const;
+      bool setTemplatePlantLoopType(const std::string& templatePlantLoopType);
+      void resetTemplatePlantLoopType();
+
+      std::vector<std::string> towerTypeValues() const;
+      std::vector<std::string> templatePlantLoopTypeValues() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

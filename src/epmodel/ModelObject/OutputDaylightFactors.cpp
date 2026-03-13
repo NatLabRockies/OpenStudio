@@ -17,47 +17,47 @@
 namespace openstudio {
 namespace epmodel {
 
-OutputDaylightFactors::OutputDaylightFactors(const Model& model) : ModelObject(OutputDaylightFactors::iddObjectType(), model) {}
+  OutputDaylightFactors::OutputDaylightFactors(const Model& model) : ModelObject(OutputDaylightFactors::iddObjectType(), model) {}
 
-OutputDaylightFactors::OutputDaylightFactors(std::shared_ptr<detail::OutputDaylightFactors_Impl> impl) : ModelObject(std::move(impl)) {}
+  OutputDaylightFactors::OutputDaylightFactors(std::shared_ptr<detail::OutputDaylightFactors_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType OutputDaylightFactors::iddObjectType() {
-  return IddObjectType::Output_DaylightFactors;
-}
+  IddObjectType OutputDaylightFactors::iddObjectType() {
+    return IddObjectType::Output_DaylightFactors;
+  }
 
-std::vector<std::string> OutputDaylightFactors::reportingDaysValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Output_DaylightFactorsFields::ReportingDays);
-}
+  std::vector<std::string> OutputDaylightFactors::reportingDaysValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Output_DaylightFactorsFields::ReportingDays);
+  }
 
-std::string OutputDaylightFactors::reportingDays() const {
-  return getImpl<detail::OutputDaylightFactors_Impl>()->reportingDays();
-}
+  std::string OutputDaylightFactors::reportingDays() const {
+    return getImpl<detail::OutputDaylightFactors_Impl>()->reportingDays();
+  }
 
-bool OutputDaylightFactors::setReportingDays(const std::string& reportingDays) {
-  return getImpl<detail::OutputDaylightFactors_Impl>()->setReportingDays(reportingDays);
-}
+  bool OutputDaylightFactors::setReportingDays(const std::string& reportingDays) {
+    return getImpl<detail::OutputDaylightFactors_Impl>()->setReportingDays(reportingDays);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string OutputDaylightFactors_Impl::reportingDays() const {
-  const auto value = getString(openstudio::Output_DaylightFactorsFields::ReportingDays, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::vector<std::string> OutputDaylightFactors_Impl::reportingDaysValues() const {
+      return openstudio::epmodel::OutputDaylightFactors::reportingDaysValues();
+    }
 
-bool OutputDaylightFactors_Impl::setReportingDays(const std::string& reportingDays) {
-  return setString(openstudio::Output_DaylightFactorsFields::ReportingDays, reportingDays);
-}
+    std::string OutputDaylightFactors_Impl::reportingDays() const {
+      const auto value = getString(openstudio::Output_DaylightFactorsFields::ReportingDays, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-std::vector<std::string> OutputDaylightFactors_Impl::reportingDaysValues() const {
-  return openstudio::epmodel::OutputDaylightFactors::reportingDaysValues();
-}
+    bool OutputDaylightFactors_Impl::setReportingDays(const std::string& reportingDays) {
+      return setString(openstudio::Output_DaylightFactorsFields::ReportingDays, reportingDays);
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

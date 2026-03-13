@@ -10,66 +10,60 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CoilWaterHeatingDesuperheater_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~CoilWaterHeatingDesuperheater_Impl() override = default;
+    class EPMODEL_API CoilWaterHeatingDesuperheater_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~CoilWaterHeatingDesuperheater_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
-  double deadBandTemperatureDifference() const;
-  bool isDeadBandTemperatureDifferenceDefaulted() const;
+      double deadBandTemperatureDifference() const;
+      bool isDeadBandTemperatureDifferenceDefaulted() const;
+      bool setDeadBandTemperatureDifference(double deadBandTemperatureDifference);
+      void resetDeadBandTemperatureDifference();
 
-  boost::optional<double> ratedHeatReclaimRecoveryEfficiency() const;
+      boost::optional<double> ratedHeatReclaimRecoveryEfficiency() const;
+      bool setRatedHeatReclaimRecoveryEfficiency(double ratedHeatReclaimRecoveryEfficiency);
+      void resetRatedHeatReclaimRecoveryEfficiency();
 
-  double ratedInletWaterTemperature() const;
-  double ratedOutdoorAirTemperature() const;
-  double maximumInletWaterTemperatureforHeatReclaim() const;
+      double ratedInletWaterTemperature() const;
+      bool setRatedInletWaterTemperature(double ratedInletWaterTemperature);
 
-  double waterFlowRate() const;
+      double ratedOutdoorAirTemperature() const;
+      bool setRatedOutdoorAirTemperature(double ratedOutdoorAirTemperature);
 
-  double waterPumpPower() const;
-  bool isWaterPumpPowerDefaulted() const;
+      double maximumInletWaterTemperatureforHeatReclaim() const;
+      bool setMaximumInletWaterTemperatureforHeatReclaim(double maximumInletWaterTemperatureforHeatReclaim);
 
-  double fractionofPumpHeattoWater() const;
-  bool isFractionofPumpHeattoWaterDefaulted() const;
+      double waterFlowRate() const;
+      bool setWaterFlowRate(double waterFlowRate);
 
-  double onCycleParasiticElectricLoad() const;
-  bool isOnCycleParasiticElectricLoadDefaulted() const;
+      double waterPumpPower() const;
+      bool isWaterPumpPowerDefaulted() const;
+      bool setWaterPumpPower(double waterPumpPower);
+      void resetWaterPumpPower();
 
-  double offCycleParasiticElectricLoad() const;
-  bool isOffCycleParasiticElectricLoadDefaulted() const;
+      double fractionofPumpHeattoWater() const;
+      bool isFractionofPumpHeattoWaterDefaulted() const;
+      bool setFractionofPumpHeattoWater(double fractionofPumpHeattoWater);
+      void resetFractionofPumpHeattoWater();
 
-  bool setDeadBandTemperatureDifference(double deadBandTemperatureDifference);
-  void resetDeadBandTemperatureDifference();
+      double onCycleParasiticElectricLoad() const;
+      bool isOnCycleParasiticElectricLoadDefaulted() const;
+      bool setOnCycleParasiticElectricLoad(double onCycleParasiticElectricLoad);
+      void resetOnCycleParasiticElectricLoad();
 
-  bool setRatedHeatReclaimRecoveryEfficiency(double ratedHeatReclaimRecoveryEfficiency);
-  void resetRatedHeatReclaimRecoveryEfficiency();
+      double offCycleParasiticElectricLoad() const;
+      bool isOffCycleParasiticElectricLoadDefaulted() const;
+      bool setOffCycleParasiticElectricLoad(double offCycleParasiticElectricLoad);
+      void resetOffCycleParasiticElectricLoad();
+    };
 
-  bool setRatedInletWaterTemperature(double ratedInletWaterTemperature);
-  bool setRatedOutdoorAirTemperature(double ratedOutdoorAirTemperature);
-  bool setMaximumInletWaterTemperatureforHeatReclaim(double maximumInletWaterTemperatureforHeatReclaim);
-
-  bool setWaterFlowRate(double waterFlowRate);
-
-  bool setWaterPumpPower(double waterPumpPower);
-  void resetWaterPumpPower();
-
-  bool setFractionofPumpHeattoWater(double fractionofPumpHeattoWater);
-  void resetFractionofPumpHeattoWater();
-
-  bool setOnCycleParasiticElectricLoad(double onCycleParasiticElectricLoad);
-  void resetOnCycleParasiticElectricLoad();
-
-  bool setOffCycleParasiticElectricLoad(double offCycleParasiticElectricLoad);
-  void resetOffCycleParasiticElectricLoad();
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

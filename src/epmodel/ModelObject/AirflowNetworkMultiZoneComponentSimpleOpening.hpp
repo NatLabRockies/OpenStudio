@@ -16,54 +16,54 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class AirflowNetworkMultiZoneComponentSimpleOpening_Impl;
-}
+  namespace detail {
+    class AirflowNetworkMultiZoneComponentSimpleOpening_Impl;
+  }
 
-class EPMODEL_API AirflowNetworkMultiZoneComponentSimpleOpening : public ModelObject
-{
- public:
-  explicit AirflowNetworkMultiZoneComponentSimpleOpening(const Model& model);
+  class EPMODEL_API AirflowNetworkMultiZoneComponentSimpleOpening : public ModelObject
+  {
+   public:
+    explicit AirflowNetworkMultiZoneComponentSimpleOpening(const Model& model);
 
-  virtual ~AirflowNetworkMultiZoneComponentSimpleOpening() override = default;
-  AirflowNetworkMultiZoneComponentSimpleOpening(const AirflowNetworkMultiZoneComponentSimpleOpening& other) = default;
-  AirflowNetworkMultiZoneComponentSimpleOpening(AirflowNetworkMultiZoneComponentSimpleOpening&& other) = default;
-  AirflowNetworkMultiZoneComponentSimpleOpening& operator=(const AirflowNetworkMultiZoneComponentSimpleOpening&) = default;
-  AirflowNetworkMultiZoneComponentSimpleOpening& operator=(AirflowNetworkMultiZoneComponentSimpleOpening&&) = default;
+    virtual ~AirflowNetworkMultiZoneComponentSimpleOpening() override = default;
+    AirflowNetworkMultiZoneComponentSimpleOpening(const AirflowNetworkMultiZoneComponentSimpleOpening& other) = default;
+    AirflowNetworkMultiZoneComponentSimpleOpening(AirflowNetworkMultiZoneComponentSimpleOpening&& other) = default;
+    AirflowNetworkMultiZoneComponentSimpleOpening& operator=(const AirflowNetworkMultiZoneComponentSimpleOpening&) = default;
+    AirflowNetworkMultiZoneComponentSimpleOpening& operator=(AirflowNetworkMultiZoneComponentSimpleOpening&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to EnergyPlus
-  //   AirflowNetwork:MultiZone:Component:SimpleOpening fields N1/N2/N3/N4.
-  // - ForwardTranslator evidence: translateAirflowNetworkSimpleOpening writes these scalar fields directly.
-  // - TODO(parity): Align with model-level semantics once deeper airflow-network parity work is scheduled.
-  double airMassFlowCoefficientWhenOpeningisClosed() const;
-  bool setAirMassFlowCoefficientWhenOpeningisClosed(double airMassFlowCoefficientWhenOpeningisClosed);
+    // Schema Alignment Notes:
+    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to EnergyPlus
+    //   AirflowNetwork:MultiZone:Component:SimpleOpening fields N1/N2/N3/N4.
+    // - ForwardTranslator evidence: translateAirflowNetworkSimpleOpening writes these scalar fields directly.
+    // - TODO(parity): Align with model-level semantics once deeper airflow-network parity work is scheduled.
+    double airMassFlowCoefficientWhenOpeningisClosed() const;
+    bool setAirMassFlowCoefficientWhenOpeningisClosed(double airMassFlowCoefficientWhenOpeningisClosed);
 
-  double airMassFlowExponentWhenOpeningisClosed() const;
-  bool isAirMassFlowExponentWhenOpeningisClosedDefaulted() const;
-  bool setAirMassFlowExponentWhenOpeningisClosed(double airMassFlowExponentWhenOpeningisClosed);
-  void resetAirMassFlowExponentWhenOpeningisClosed();
+    double airMassFlowExponentWhenOpeningisClosed() const;
+    bool setAirMassFlowExponentWhenOpeningisClosed(double airMassFlowExponentWhenOpeningisClosed);
+    bool isAirMassFlowExponentWhenOpeningisClosedDefaulted() const;
+    void resetAirMassFlowExponentWhenOpeningisClosed();
 
-  double minimumDensityDifferenceforTwoWayFlow() const;
-  bool setMinimumDensityDifferenceforTwoWayFlow(double minimumDensityDifferenceforTwoWayFlow);
+    double minimumDensityDifferenceforTwoWayFlow() const;
+    bool setMinimumDensityDifferenceforTwoWayFlow(double minimumDensityDifferenceforTwoWayFlow);
 
-  double dischargeCoefficient() const;
-  bool setDischargeCoefficient(double dischargeCoefficient);
+    double dischargeCoefficient() const;
+    bool setDischargeCoefficient(double dischargeCoefficient);
 
- protected:
-  using ImplType = detail::AirflowNetworkMultiZoneComponentSimpleOpening_Impl;
+   protected:
+    using ImplType = detail::AirflowNetworkMultiZoneComponentSimpleOpening_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit AirflowNetworkMultiZoneComponentSimpleOpening(std::shared_ptr<detail::AirflowNetworkMultiZoneComponentSimpleOpening_Impl> impl);
-};
+    explicit AirflowNetworkMultiZoneComponentSimpleOpening(std::shared_ptr<detail::AirflowNetworkMultiZoneComponentSimpleOpening_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

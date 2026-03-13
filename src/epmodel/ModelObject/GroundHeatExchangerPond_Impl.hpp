@@ -11,34 +11,40 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatExchangerPond_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatExchangerPond_Impl() override = default;
+    class EPMODEL_API GroundHeatExchangerPond_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatExchangerPond_Impl() override = default;
 
-  double pondDepth() const;
-  double pondArea() const;
-  double hydronicTubingInsideDiameter() const;
-  double hydronicTubingOutsideDiameter() const;
-  double hydronicTubingThermalConductivity() const;
-  double groundThermalConductivity() const;
-  int numberofTubingCircuits() const;
-  double lengthofEachTubingCircuit() const;
+      double pondDepth() const;
+      bool setPondDepth(double pondDepth);
 
-  bool setPondDepth(double pondDepth);
-  bool setPondArea(double pondArea);
-  bool setHydronicTubingInsideDiameter(double hydronicTubingInsideDiameter);
-  bool setHydronicTubingOutsideDiameter(double hydronicTubingOutsideDiameter);
-  bool setHydronicTubingThermalConductivity(double hydronicTubingThermalConductivity);
-  bool setGroundThermalConductivity(double groundThermalConductivity);
-  bool setNumberofTubingCircuits(int numberofTubingCircuits);
-  bool setLengthofEachTubingCircuit(double lengthofEachTubingCircuit);
-};
+      double pondArea() const;
+      bool setPondArea(double pondArea);
 
-}  // namespace detail
+      double hydronicTubingInsideDiameter() const;
+      bool setHydronicTubingInsideDiameter(double hydronicTubingInsideDiameter);
+
+      double hydronicTubingOutsideDiameter() const;
+      bool setHydronicTubingOutsideDiameter(double hydronicTubingOutsideDiameter);
+
+      double hydronicTubingThermalConductivity() const;
+      bool setHydronicTubingThermalConductivity(double hydronicTubingThermalConductivity);
+
+      double groundThermalConductivity() const;
+      bool setGroundThermalConductivity(double groundThermalConductivity);
+
+      int numberofTubingCircuits() const;
+      bool setNumberofTubingCircuits(int numberofTubingCircuits);
+
+      double lengthofEachTubingCircuit() const;
+      bool setLengthofEachTubingCircuit(double lengthofEachTubingCircuit);
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

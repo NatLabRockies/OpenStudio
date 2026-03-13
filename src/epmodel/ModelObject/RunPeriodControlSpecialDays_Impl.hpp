@@ -13,27 +13,28 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API RunPeriodControlSpecialDays_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~RunPeriodControlSpecialDays_Impl() override = default;
+    class EPMODEL_API RunPeriodControlSpecialDays_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~RunPeriodControlSpecialDays_Impl() override = default;
 
-  std::string startDate() const;
-  unsigned duration() const;
-  std::string specialDayType() const;
+      std::vector<std::string> specialDayTypeValues() const;
+      std::vector<std::string> validSpecialDayTypeValues() const;
 
-  bool setStartDate(const std::string& startDate);
-  bool setDuration(unsigned duration);
-  bool setSpecialDayType(const std::string& specialDayType);
+      std::string startDate() const;
+      bool setStartDate(const std::string& startDate);
 
-  std::vector<std::string> specialDayTypeValues() const;
-  std::vector<std::string> validSpecialDayTypeValues() const;
-};
+      unsigned duration() const;
+      bool setDuration(unsigned duration);
 
-}  // namespace detail
+      std::string specialDayType() const;
+      bool setSpecialDayType(const std::string& specialDayType);
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

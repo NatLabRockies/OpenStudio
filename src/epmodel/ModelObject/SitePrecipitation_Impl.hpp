@@ -21,6 +21,8 @@ class EPMODEL_API SitePrecipitation_Impl : public ModelObject_Impl
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~SitePrecipitation_Impl() override = default;
 
+  std::vector<std::string> precipitationModelTypeValues() const;
+
   boost::optional<std::string> precipitationModelType() const;
   bool setPrecipitationModelType(const std::string& precipitationModelType);
   void resetPrecipitationModelType();
@@ -33,7 +35,6 @@ class EPMODEL_API SitePrecipitation_Impl : public ModelObject_Impl
   bool setAverageTotalAnnualPrecipitation(double averageTotalAnnualPrecipitation);
   void resetAverageTotalAnnualPrecipitation();
 
-  std::vector<std::string> precipitationModelTypeValues() const;
 };
 
 }  // namespace detail

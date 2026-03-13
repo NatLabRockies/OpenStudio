@@ -10,32 +10,34 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SetpointManagerWarmestTemperatureFlow_Impl : public SetpointManager_Impl
-{
- public:
-  using SetpointManager_Impl::SetpointManager_Impl;
-  virtual ~SetpointManagerWarmestTemperatureFlow_Impl() override = default;
+    class EPMODEL_API SetpointManagerWarmestTemperatureFlow_Impl : public SetpointManager_Impl
+    {
+     public:
+      using SetpointManager_Impl::SetpointManager_Impl;
+      virtual ~SetpointManagerWarmestTemperatureFlow_Impl() override = default;
 
-  double minimumSetpointTemperature() const;
-  double maximumSetpointTemperature() const;
-  std::string strategy() const;
-  double minimumTurndownRatio() const;
+      double minimumSetpointTemperature() const;
+      bool setMinimumSetpointTemperature(double minimumSetpointTemperature);
 
-  bool setMinimumSetpointTemperature(double minimumSetpointTemperature);
-  bool setMaximumSetpointTemperature(double maximumSetpointTemperature);
-  bool setStrategy(const std::string& strategy);
-  bool setMinimumTurndownRatio(double minimumTurndownRatio);
+      double maximumSetpointTemperature() const;
+      bool setMaximumSetpointTemperature(double maximumSetpointTemperature);
 
- protected:
-  unsigned setpointNodeFieldIndex() const override;
-  unsigned controlVariableFieldIndex() const override;
+      std::string strategy() const;
+      bool setStrategy(const std::string& strategy);
 
-  void doCanonicalize(LoadContext& context) override;
-};
+      double minimumTurndownRatio() const;
+      bool setMinimumTurndownRatio(double minimumTurndownRatio);
 
-}  // namespace detail
+     protected:
+      unsigned setpointNodeFieldIndex() const override;
+      unsigned controlVariableFieldIndex() const override;
+
+      void doCanonicalize(LoadContext& context) override;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

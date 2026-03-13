@@ -11,44 +11,55 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API MaterialPropertyPhaseChangeHysteresis_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~MaterialPropertyPhaseChangeHysteresis_Impl() override = default;
+    class EPMODEL_API MaterialPropertyPhaseChangeHysteresis_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~MaterialPropertyPhaseChangeHysteresis_Impl() override = default;
 
-  double latentHeatduringtheEntirePhaseChangeProcess() const;
-  double liquidStateThermalConductivity() const;
-  double liquidStateDensity() const;
-  double liquidStateSpecificHeat() const;
-  double highTemperatureDifferenceofMeltingCurve() const;
-  double peakMeltingTemperature() const;
-  double lowTemperatureDifferenceofMeltingCurve() const;
-  double solidStateThermalConductivity() const;
-  double solidStateDensity() const;
-  double solidStateSpecificHeat() const;
-  double highTemperatureDifferenceofFreezingCurve() const;
-  double peakFreezingTemperature() const;
-  double lowTemperatureDifferenceofFreezingCurve() const;
+      double latentHeatduringtheEntirePhaseChangeProcess() const;
+      bool setLatentHeatduringtheEntirePhaseChangeProcess(double latentHeatduringtheEntirePhaseChangeProcess);
 
-  bool setLatentHeatduringtheEntirePhaseChangeProcess(double latentHeatduringtheEntirePhaseChangeProcess);
-  bool setLiquidStateThermalConductivity(double liquidStateThermalConductivity);
-  bool setLiquidStateDensity(double liquidStateDensity);
-  bool setLiquidStateSpecificHeat(double liquidStateSpecificHeat);
-  bool setHighTemperatureDifferenceofMeltingCurve(double highTemperatureDifferenceofMeltingCurve);
-  bool setPeakMeltingTemperature(double peakMeltingTemperature);
-  bool setLowTemperatureDifferenceofMeltingCurve(double lowTemperatureDifferenceofMeltingCurve);
-  bool setSolidStateThermalConductivity(double solidStateThermalConductivity);
-  bool setSolidStateDensity(double solidStateDensity);
-  bool setSolidStateSpecificHeat(double solidStateSpecificHeat);
-  bool setHighTemperatureDifferenceofFreezingCurve(double highTemperatureDifferenceofFreezingCurve);
-  bool setPeakFreezingTemperature(double peakFreezingTemperature);
-  bool setLowTemperatureDifferenceofFreezingCurve(double lowTemperatureDifferenceofFreezingCurve);
-};
+      double liquidStateThermalConductivity() const;
+      bool setLiquidStateThermalConductivity(double liquidStateThermalConductivity);
 
-}  // namespace detail
+      double liquidStateDensity() const;
+      bool setLiquidStateDensity(double liquidStateDensity);
+
+      double liquidStateSpecificHeat() const;
+      bool setLiquidStateSpecificHeat(double liquidStateSpecificHeat);
+
+      double highTemperatureDifferenceofMeltingCurve() const;
+      bool setHighTemperatureDifferenceofMeltingCurve(double highTemperatureDifferenceofMeltingCurve);
+
+      double peakMeltingTemperature() const;
+      bool setPeakMeltingTemperature(double peakMeltingTemperature);
+
+      double lowTemperatureDifferenceofMeltingCurve() const;
+      bool setLowTemperatureDifferenceofMeltingCurve(double lowTemperatureDifferenceofMeltingCurve);
+
+      double solidStateThermalConductivity() const;
+      bool setSolidStateThermalConductivity(double solidStateThermalConductivity);
+
+      double solidStateDensity() const;
+      bool setSolidStateDensity(double solidStateDensity);
+
+      double solidStateSpecificHeat() const;
+      bool setSolidStateSpecificHeat(double solidStateSpecificHeat);
+
+      double highTemperatureDifferenceofFreezingCurve() const;
+      bool setHighTemperatureDifferenceofFreezingCurve(double highTemperatureDifferenceofFreezingCurve);
+
+      double peakFreezingTemperature() const;
+      bool setPeakFreezingTemperature(double peakFreezingTemperature);
+
+      double lowTemperatureDifferenceofFreezingCurve() const;
+      bool setLowTemperatureDifferenceofFreezingCurve(double lowTemperatureDifferenceofFreezingCurve);
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

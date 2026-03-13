@@ -324,104 +324,12 @@ namespace epmodel {
     return getImpl<detail::RefrigerationSecondarySystem_Impl>()->circulatingFluidName();
   }
 
-  boost::optional<double> RefrigerationSecondarySystem::evaporatorCapacity() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->evaporatorCapacity();
-  }
-
-  boost::optional<double> RefrigerationSecondarySystem::evaporatorFlowRateforSecondaryFluid() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->evaporatorFlowRateforSecondaryFluid();
-  }
-
-  double RefrigerationSecondarySystem::evaporatorEvaporatingTemperature() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->evaporatorEvaporatingTemperature();
-  }
-
-  double RefrigerationSecondarySystem::evaporatorApproachTemperatureDifference() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->evaporatorApproachTemperatureDifference();
-  }
-
-  boost::optional<double> RefrigerationSecondarySystem::evaporatorRangeTemperatureDifference() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->evaporatorRangeTemperatureDifference();
-  }
-
-  int RefrigerationSecondarySystem::numberofPumpsinLoop() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->numberofPumpsinLoop();
-  }
-
-  bool RefrigerationSecondarySystem::isNumberofPumpsinLoopDefaulted() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->isNumberofPumpsinLoopDefaulted();
-  }
-
-  boost::optional<double> RefrigerationSecondarySystem::totalPumpFlowRate() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->totalPumpFlowRate();
-  }
-
-  boost::optional<double> RefrigerationSecondarySystem::totalPumpPower() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->totalPumpPower();
-  }
-
-  boost::optional<double> RefrigerationSecondarySystem::totalPumpHead() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->totalPumpHead();
-  }
-
-  double RefrigerationSecondarySystem::phaseChangeCirculatingRate() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->phaseChangeCirculatingRate();
-  }
-
-  bool RefrigerationSecondarySystem::isPhaseChangeCirculatingRateDefaulted() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->isPhaseChangeCirculatingRateDefaulted();
-  }
-
-  std::string RefrigerationSecondarySystem::pumpDriveType() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->pumpDriveType();
-  }
-
-  bool RefrigerationSecondarySystem::isPumpDriveTypeDefaulted() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->isPumpDriveTypeDefaulted();
-  }
-
-  double RefrigerationSecondarySystem::pumpMotorHeattoFluid() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->pumpMotorHeattoFluid();
-  }
-
-  bool RefrigerationSecondarySystem::isPumpMotorHeattoFluidDefaulted() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->isPumpMotorHeattoFluidDefaulted();
-  }
-
-  double RefrigerationSecondarySystem::sumUADistributionPiping() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->sumUADistributionPiping();
-  }
-
-  bool RefrigerationSecondarySystem::isSumUADistributionPipingDefaulted() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->isSumUADistributionPipingDefaulted();
-  }
-
-  double RefrigerationSecondarySystem::sumUAReceiverSeparatorShell() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->sumUAReceiverSeparatorShell();
-  }
-
-  bool RefrigerationSecondarySystem::isSumUAReceiverSeparatorShellDefaulted() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->isSumUAReceiverSeparatorShellDefaulted();
-  }
-
-  double RefrigerationSecondarySystem::evaporatorRefrigerantInventory() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->evaporatorRefrigerantInventory();
-  }
-
-  bool RefrigerationSecondarySystem::isEvaporatorRefrigerantInventoryDefaulted() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->isEvaporatorRefrigerantInventoryDefaulted();
-  }
-
-  std::string RefrigerationSecondarySystem::endUseSubcategory() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->endUseSubcategory();
-  }
-
-  bool RefrigerationSecondarySystem::isEndUseSubcategoryDefaulted() const {
-    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->isEndUseSubcategoryDefaulted();
-  }
-
   bool RefrigerationSecondarySystem::setCirculatingFluidName(const std::string& circulatingFluidName) {
     return getImpl<detail::RefrigerationSecondarySystem_Impl>()->setCirculatingFluidName(circulatingFluidName);
+  }
+
+  boost::optional<double> RefrigerationSecondarySystem::evaporatorCapacity() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->evaporatorCapacity();
   }
 
   bool RefrigerationSecondarySystem::setEvaporatorCapacity(double evaporatorCapacity) {
@@ -432,6 +340,10 @@ namespace epmodel {
     getImpl<detail::RefrigerationSecondarySystem_Impl>()->resetEvaporatorCapacity();
   }
 
+  boost::optional<double> RefrigerationSecondarySystem::evaporatorFlowRateforSecondaryFluid() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->evaporatorFlowRateforSecondaryFluid();
+  }
+
   bool RefrigerationSecondarySystem::setEvaporatorFlowRateforSecondaryFluid(double evaporatorFlowRateforSecondaryFluid) {
     return getImpl<detail::RefrigerationSecondarySystem_Impl>()->setEvaporatorFlowRateforSecondaryFluid(evaporatorFlowRateforSecondaryFluid);
   }
@@ -440,12 +352,24 @@ namespace epmodel {
     getImpl<detail::RefrigerationSecondarySystem_Impl>()->resetEvaporatorFlowRateforSecondaryFluid();
   }
 
+  double RefrigerationSecondarySystem::evaporatorEvaporatingTemperature() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->evaporatorEvaporatingTemperature();
+  }
+
   bool RefrigerationSecondarySystem::setEvaporatorEvaporatingTemperature(double evaporatorEvaporatingTemperature) {
     return getImpl<detail::RefrigerationSecondarySystem_Impl>()->setEvaporatorEvaporatingTemperature(evaporatorEvaporatingTemperature);
   }
 
+  double RefrigerationSecondarySystem::evaporatorApproachTemperatureDifference() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->evaporatorApproachTemperatureDifference();
+  }
+
   bool RefrigerationSecondarySystem::setEvaporatorApproachTemperatureDifference(double evaporatorApproachTemperatureDifference) {
     return getImpl<detail::RefrigerationSecondarySystem_Impl>()->setEvaporatorApproachTemperatureDifference(evaporatorApproachTemperatureDifference);
+  }
+
+  boost::optional<double> RefrigerationSecondarySystem::evaporatorRangeTemperatureDifference() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->evaporatorRangeTemperatureDifference();
   }
 
   bool RefrigerationSecondarySystem::setEvaporatorRangeTemperatureDifference(double evaporatorRangeTemperatureDifference) {
@@ -456,12 +380,24 @@ namespace epmodel {
     getImpl<detail::RefrigerationSecondarySystem_Impl>()->resetEvaporatorRangeTemperatureDifference();
   }
 
+  int RefrigerationSecondarySystem::numberofPumpsinLoop() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->numberofPumpsinLoop();
+  }
+
+  bool RefrigerationSecondarySystem::isNumberofPumpsinLoopDefaulted() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->isNumberofPumpsinLoopDefaulted();
+  }
+
   bool RefrigerationSecondarySystem::setNumberofPumpsinLoop(int numberofPumpsinLoop) {
     return getImpl<detail::RefrigerationSecondarySystem_Impl>()->setNumberofPumpsinLoop(numberofPumpsinLoop);
   }
 
   void RefrigerationSecondarySystem::resetNumberofPumpsinLoop() {
     getImpl<detail::RefrigerationSecondarySystem_Impl>()->resetNumberofPumpsinLoop();
+  }
+
+  boost::optional<double> RefrigerationSecondarySystem::totalPumpFlowRate() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->totalPumpFlowRate();
   }
 
   bool RefrigerationSecondarySystem::setTotalPumpFlowRate(double totalPumpFlowRate) {
@@ -472,12 +408,20 @@ namespace epmodel {
     getImpl<detail::RefrigerationSecondarySystem_Impl>()->resetTotalPumpFlowRate();
   }
 
+  boost::optional<double> RefrigerationSecondarySystem::totalPumpPower() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->totalPumpPower();
+  }
+
   bool RefrigerationSecondarySystem::setTotalPumpPower(double totalPumpPower) {
     return getImpl<detail::RefrigerationSecondarySystem_Impl>()->setTotalPumpPower(totalPumpPower);
   }
 
   void RefrigerationSecondarySystem::resetTotalPumpPower() {
     getImpl<detail::RefrigerationSecondarySystem_Impl>()->resetTotalPumpPower();
+  }
+
+  boost::optional<double> RefrigerationSecondarySystem::totalPumpHead() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->totalPumpHead();
   }
 
   bool RefrigerationSecondarySystem::setTotalPumpHead(double totalPumpHead) {
@@ -488,12 +432,28 @@ namespace epmodel {
     getImpl<detail::RefrigerationSecondarySystem_Impl>()->resetTotalPumpHead();
   }
 
+  double RefrigerationSecondarySystem::phaseChangeCirculatingRate() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->phaseChangeCirculatingRate();
+  }
+
+  bool RefrigerationSecondarySystem::isPhaseChangeCirculatingRateDefaulted() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->isPhaseChangeCirculatingRateDefaulted();
+  }
+
   bool RefrigerationSecondarySystem::setPhaseChangeCirculatingRate(double phaseChangeCirculatingRate) {
     return getImpl<detail::RefrigerationSecondarySystem_Impl>()->setPhaseChangeCirculatingRate(phaseChangeCirculatingRate);
   }
 
   void RefrigerationSecondarySystem::resetPhaseChangeCirculatingRate() {
     getImpl<detail::RefrigerationSecondarySystem_Impl>()->resetPhaseChangeCirculatingRate();
+  }
+
+  std::string RefrigerationSecondarySystem::pumpDriveType() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->pumpDriveType();
+  }
+
+  bool RefrigerationSecondarySystem::isPumpDriveTypeDefaulted() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->isPumpDriveTypeDefaulted();
   }
 
   bool RefrigerationSecondarySystem::setPumpDriveType(const std::string& pumpDriveType) {
@@ -504,12 +464,28 @@ namespace epmodel {
     getImpl<detail::RefrigerationSecondarySystem_Impl>()->resetPumpDriveType();
   }
 
+  double RefrigerationSecondarySystem::pumpMotorHeattoFluid() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->pumpMotorHeattoFluid();
+  }
+
+  bool RefrigerationSecondarySystem::isPumpMotorHeattoFluidDefaulted() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->isPumpMotorHeattoFluidDefaulted();
+  }
+
   bool RefrigerationSecondarySystem::setPumpMotorHeattoFluid(double pumpMotorHeattoFluid) {
     return getImpl<detail::RefrigerationSecondarySystem_Impl>()->setPumpMotorHeattoFluid(pumpMotorHeattoFluid);
   }
 
   void RefrigerationSecondarySystem::resetPumpMotorHeattoFluid() {
     getImpl<detail::RefrigerationSecondarySystem_Impl>()->resetPumpMotorHeattoFluid();
+  }
+
+  double RefrigerationSecondarySystem::sumUADistributionPiping() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->sumUADistributionPiping();
+  }
+
+  bool RefrigerationSecondarySystem::isSumUADistributionPipingDefaulted() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->isSumUADistributionPipingDefaulted();
   }
 
   bool RefrigerationSecondarySystem::setSumUADistributionPiping(double sumUADistributionPiping) {
@@ -520,6 +496,14 @@ namespace epmodel {
     getImpl<detail::RefrigerationSecondarySystem_Impl>()->resetSumUADistributionPiping();
   }
 
+  double RefrigerationSecondarySystem::sumUAReceiverSeparatorShell() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->sumUAReceiverSeparatorShell();
+  }
+
+  bool RefrigerationSecondarySystem::isSumUAReceiverSeparatorShellDefaulted() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->isSumUAReceiverSeparatorShellDefaulted();
+  }
+
   bool RefrigerationSecondarySystem::setSumUAReceiverSeparatorShell(double sumUAReceiverSeparatorShell) {
     return getImpl<detail::RefrigerationSecondarySystem_Impl>()->setSumUAReceiverSeparatorShell(sumUAReceiverSeparatorShell);
   }
@@ -528,12 +512,28 @@ namespace epmodel {
     getImpl<detail::RefrigerationSecondarySystem_Impl>()->resetSumUAReceiverSeparatorShell();
   }
 
+  double RefrigerationSecondarySystem::evaporatorRefrigerantInventory() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->evaporatorRefrigerantInventory();
+  }
+
+  bool RefrigerationSecondarySystem::isEvaporatorRefrigerantInventoryDefaulted() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->isEvaporatorRefrigerantInventoryDefaulted();
+  }
+
   bool RefrigerationSecondarySystem::setEvaporatorRefrigerantInventory(double evaporatorRefrigerantInventory) {
     return getImpl<detail::RefrigerationSecondarySystem_Impl>()->setEvaporatorRefrigerantInventory(evaporatorRefrigerantInventory);
   }
 
   void RefrigerationSecondarySystem::resetEvaporatorRefrigerantInventory() {
     getImpl<detail::RefrigerationSecondarySystem_Impl>()->resetEvaporatorRefrigerantInventory();
+  }
+
+  std::string RefrigerationSecondarySystem::endUseSubcategory() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->endUseSubcategory();
+  }
+
+  bool RefrigerationSecondarySystem::isEndUseSubcategoryDefaulted() const {
+    return getImpl<detail::RefrigerationSecondarySystem_Impl>()->isEndUseSubcategoryDefaulted();
   }
 
   bool RefrigerationSecondarySystem::setEndUseSubcategory(const std::string& endUseSubcategory) {

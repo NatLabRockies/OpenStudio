@@ -10,34 +10,36 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SetpointManagerFollowOutdoorAirTemperature_Impl : public SetpointManager_Impl
-{
- public:
-  using SetpointManager_Impl::SetpointManager_Impl;
-  virtual ~SetpointManagerFollowOutdoorAirTemperature_Impl() override = default;
+    class EPMODEL_API SetpointManagerFollowOutdoorAirTemperature_Impl : public SetpointManager_Impl
+    {
+     public:
+      using SetpointManager_Impl::SetpointManager_Impl;
+      virtual ~SetpointManagerFollowOutdoorAirTemperature_Impl() override = default;
 
-  std::string referenceTemperatureType() const;
-  double offsetTemperatureDifference() const;
-  double maximumSetpointTemperature() const;
-  double minimumSetpointTemperature() const;
+      std::string referenceTemperatureType() const;
+      bool setReferenceTemperatureType(const std::string& value);
 
-  bool setReferenceTemperatureType(const std::string& value);
-  bool setOffsetTemperatureDifference(double value);
-  bool setMaximumSetpointTemperature(double value);
-  bool setMinimumSetpointTemperature(double value);
+      double offsetTemperatureDifference() const;
+      bool setOffsetTemperatureDifference(double value);
 
-  bool isAllowedOnPlantLoop() const override;
+      double maximumSetpointTemperature() const;
+      bool setMaximumSetpointTemperature(double value);
 
- protected:
-  unsigned setpointNodeFieldIndex() const override;
-  unsigned controlVariableFieldIndex() const override;
+      double minimumSetpointTemperature() const;
+      bool setMinimumSetpointTemperature(double value);
 
-  void doCanonicalize(LoadContext& context) override;
-};
+      bool isAllowedOnPlantLoop() const override;
 
-}  // namespace detail
+     protected:
+      unsigned setpointNodeFieldIndex() const override;
+      unsigned controlVariableFieldIndex() const override;
+
+      void doCanonicalize(LoadContext& context) override;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -10,37 +10,34 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CoilHeatingDesuperheater_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~CoilHeatingDesuperheater_Impl() override = default;
+    class EPMODEL_API CoilHeatingDesuperheater_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~CoilHeatingDesuperheater_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
-  double heatReclaimRecoveryEfficiency() const;
-  bool isHeatReclaimRecoveryEfficiencyDefaulted() const;
+      double heatReclaimRecoveryEfficiency() const;
+      bool isHeatReclaimRecoveryEfficiencyDefaulted() const;
+      bool setHeatReclaimRecoveryEfficiency(double heatReclaimRecoveryEfficiency);
+      void resetHeatReclaimRecoveryEfficiency();
 
-  double parasiticElectricLoad() const;
-  double onCycleParasiticElectricLoad() const;
+      double parasiticElectricLoad() const;
+      bool isParasiticElectricLoadDefaulted() const;
+      bool setParasiticElectricLoad(double parasiticElectricLoad);
+      void resetParasiticElectricLoad();
 
-  bool isParasiticElectricLoadDefaulted() const;
-  bool isOnCycleParasiticElectricLoadDefaulted() const;
+      double onCycleParasiticElectricLoad() const;
+      bool isOnCycleParasiticElectricLoadDefaulted() const;
+      bool setOnCycleParasiticElectricLoad(double onCycleParasiticElectricLoad);
+      void resetOnCycleParasiticElectricLoad();
+    };
 
-  bool setHeatReclaimRecoveryEfficiency(double heatReclaimRecoveryEfficiency);
-  void resetHeatReclaimRecoveryEfficiency();
-
-  bool setParasiticElectricLoad(double parasiticElectricLoad);
-  bool setOnCycleParasiticElectricLoad(double onCycleParasiticElectricLoad);
-
-  void resetParasiticElectricLoad();
-  void resetOnCycleParasiticElectricLoad();
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

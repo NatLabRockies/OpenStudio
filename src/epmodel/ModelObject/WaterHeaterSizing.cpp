@@ -38,68 +38,16 @@ namespace epmodel {
     return getImpl<detail::WaterHeaterSizing_Impl>()->designMode();
   }
 
-  boost::optional<double> WaterHeaterSizing::timeStorageCanMeetPeakDraw() const {
-    return getImpl<detail::WaterHeaterSizing_Impl>()->timeStorageCanMeetPeakDraw();
-  }
-
-  boost::optional<double> WaterHeaterSizing::timeforTankRecovery() const {
-    return getImpl<detail::WaterHeaterSizing_Impl>()->timeforTankRecovery();
-  }
-
-  boost::optional<double> WaterHeaterSizing::nominalTankVolumeforAutosizingPlantConnections() const {
-    return getImpl<detail::WaterHeaterSizing_Impl>()->nominalTankVolumeforAutosizingPlantConnections();
-  }
-
-  boost::optional<int> WaterHeaterSizing::numberofBedrooms() const {
-    return getImpl<detail::WaterHeaterSizing_Impl>()->numberofBedrooms();
-  }
-
-  boost::optional<int> WaterHeaterSizing::numberofBathrooms() const {
-    return getImpl<detail::WaterHeaterSizing_Impl>()->numberofBathrooms();
-  }
-
-  boost::optional<double> WaterHeaterSizing::storageCapacityperPerson() const {
-    return getImpl<detail::WaterHeaterSizing_Impl>()->storageCapacityperPerson();
-  }
-
-  boost::optional<double> WaterHeaterSizing::recoveryCapacityperPerson() const {
-    return getImpl<detail::WaterHeaterSizing_Impl>()->recoveryCapacityperPerson();
-  }
-
-  boost::optional<double> WaterHeaterSizing::storageCapacityperFloorArea() const {
-    return getImpl<detail::WaterHeaterSizing_Impl>()->storageCapacityperFloorArea();
-  }
-
-  boost::optional<double> WaterHeaterSizing::recoveryCapacityperFloorArea() const {
-    return getImpl<detail::WaterHeaterSizing_Impl>()->recoveryCapacityperFloorArea();
-  }
-
-  boost::optional<double> WaterHeaterSizing::numberofUnits() const {
-    return getImpl<detail::WaterHeaterSizing_Impl>()->numberofUnits();
-  }
-
-  boost::optional<double> WaterHeaterSizing::storageCapacityperUnit() const {
-    return getImpl<detail::WaterHeaterSizing_Impl>()->storageCapacityperUnit();
-  }
-
-  boost::optional<double> WaterHeaterSizing::recoveryCapacityPerUnit() const {
-    return getImpl<detail::WaterHeaterSizing_Impl>()->recoveryCapacityPerUnit();
-  }
-
-  boost::optional<double> WaterHeaterSizing::storageCapacityperCollectorArea() const {
-    return getImpl<detail::WaterHeaterSizing_Impl>()->storageCapacityperCollectorArea();
-  }
-
-  boost::optional<double> WaterHeaterSizing::heightAspectRatio() const {
-    return getImpl<detail::WaterHeaterSizing_Impl>()->heightAspectRatio();
-  }
-
   bool WaterHeaterSizing::setDesignMode(const std::string& designMode) {
     return getImpl<detail::WaterHeaterSizing_Impl>()->setDesignMode(designMode);
   }
 
   void WaterHeaterSizing::resetDesignMode() {
     getImpl<detail::WaterHeaterSizing_Impl>()->resetDesignMode();
+  }
+
+  boost::optional<double> WaterHeaterSizing::timeStorageCanMeetPeakDraw() const {
+    return getImpl<detail::WaterHeaterSizing_Impl>()->timeStorageCanMeetPeakDraw();
   }
 
   bool WaterHeaterSizing::setTimeStorageCanMeetPeakDraw(double timeStorageCanMeetPeakDraw) {
@@ -110,12 +58,20 @@ namespace epmodel {
     getImpl<detail::WaterHeaterSizing_Impl>()->resetTimeStorageCanMeetPeakDraw();
   }
 
+  boost::optional<double> WaterHeaterSizing::timeforTankRecovery() const {
+    return getImpl<detail::WaterHeaterSizing_Impl>()->timeforTankRecovery();
+  }
+
   bool WaterHeaterSizing::setTimeforTankRecovery(double timeforTankRecovery) {
     return getImpl<detail::WaterHeaterSizing_Impl>()->setTimeforTankRecovery(timeforTankRecovery);
   }
 
   void WaterHeaterSizing::resetTimeforTankRecovery() {
     getImpl<detail::WaterHeaterSizing_Impl>()->resetTimeforTankRecovery();
+  }
+
+  boost::optional<double> WaterHeaterSizing::nominalTankVolumeforAutosizingPlantConnections() const {
+    return getImpl<detail::WaterHeaterSizing_Impl>()->nominalTankVolumeforAutosizingPlantConnections();
   }
 
   bool WaterHeaterSizing::setNominalTankVolumeforAutosizingPlantConnections(double nominalTankVolumeforAutosizingPlantConnections) {
@@ -127,12 +83,20 @@ namespace epmodel {
     getImpl<detail::WaterHeaterSizing_Impl>()->resetNominalTankVolumeforAutosizingPlantConnections();
   }
 
+  boost::optional<int> WaterHeaterSizing::numberofBedrooms() const {
+    return getImpl<detail::WaterHeaterSizing_Impl>()->numberofBedrooms();
+  }
+
   bool WaterHeaterSizing::setNumberofBedrooms(int numberofBedrooms) {
     return getImpl<detail::WaterHeaterSizing_Impl>()->setNumberofBedrooms(numberofBedrooms);
   }
 
   void WaterHeaterSizing::resetNumberofBedrooms() {
     getImpl<detail::WaterHeaterSizing_Impl>()->resetNumberofBedrooms();
+  }
+
+  boost::optional<int> WaterHeaterSizing::numberofBathrooms() const {
+    return getImpl<detail::WaterHeaterSizing_Impl>()->numberofBathrooms();
   }
 
   bool WaterHeaterSizing::setNumberofBathrooms(int numberofBathrooms) {
@@ -143,12 +107,20 @@ namespace epmodel {
     getImpl<detail::WaterHeaterSizing_Impl>()->resetNumberofBathrooms();
   }
 
+  boost::optional<double> WaterHeaterSizing::storageCapacityperPerson() const {
+    return getImpl<detail::WaterHeaterSizing_Impl>()->storageCapacityperPerson();
+  }
+
   bool WaterHeaterSizing::setStorageCapacityperPerson(double storageCapacityperPerson) {
     return getImpl<detail::WaterHeaterSizing_Impl>()->setStorageCapacityperPerson(storageCapacityperPerson);
   }
 
   void WaterHeaterSizing::resetStorageCapacityperPerson() {
     getImpl<detail::WaterHeaterSizing_Impl>()->resetStorageCapacityperPerson();
+  }
+
+  boost::optional<double> WaterHeaterSizing::recoveryCapacityperPerson() const {
+    return getImpl<detail::WaterHeaterSizing_Impl>()->recoveryCapacityperPerson();
   }
 
   bool WaterHeaterSizing::setRecoveryCapacityperPerson(double recoveryCapacityperPerson) {
@@ -159,12 +131,20 @@ namespace epmodel {
     getImpl<detail::WaterHeaterSizing_Impl>()->resetRecoveryCapacityperPerson();
   }
 
+  boost::optional<double> WaterHeaterSizing::storageCapacityperFloorArea() const {
+    return getImpl<detail::WaterHeaterSizing_Impl>()->storageCapacityperFloorArea();
+  }
+
   bool WaterHeaterSizing::setStorageCapacityperFloorArea(double storageCapacityperFloorArea) {
     return getImpl<detail::WaterHeaterSizing_Impl>()->setStorageCapacityperFloorArea(storageCapacityperFloorArea);
   }
 
   void WaterHeaterSizing::resetStorageCapacityperFloorArea() {
     getImpl<detail::WaterHeaterSizing_Impl>()->resetStorageCapacityperFloorArea();
+  }
+
+  boost::optional<double> WaterHeaterSizing::recoveryCapacityperFloorArea() const {
+    return getImpl<detail::WaterHeaterSizing_Impl>()->recoveryCapacityperFloorArea();
   }
 
   bool WaterHeaterSizing::setRecoveryCapacityperFloorArea(double recoveryCapacityperFloorArea) {
@@ -175,12 +155,20 @@ namespace epmodel {
     getImpl<detail::WaterHeaterSizing_Impl>()->resetRecoveryCapacityperFloorArea();
   }
 
+  boost::optional<double> WaterHeaterSizing::numberofUnits() const {
+    return getImpl<detail::WaterHeaterSizing_Impl>()->numberofUnits();
+  }
+
   bool WaterHeaterSizing::setNumberofUnits(double numberofUnits) {
     return getImpl<detail::WaterHeaterSizing_Impl>()->setNumberofUnits(numberofUnits);
   }
 
   void WaterHeaterSizing::resetNumberofUnits() {
     getImpl<detail::WaterHeaterSizing_Impl>()->resetNumberofUnits();
+  }
+
+  boost::optional<double> WaterHeaterSizing::storageCapacityperUnit() const {
+    return getImpl<detail::WaterHeaterSizing_Impl>()->storageCapacityperUnit();
   }
 
   bool WaterHeaterSizing::setStorageCapacityperUnit(double storageCapacityperUnit) {
@@ -191,6 +179,10 @@ namespace epmodel {
     getImpl<detail::WaterHeaterSizing_Impl>()->resetStorageCapacityperUnit();
   }
 
+  boost::optional<double> WaterHeaterSizing::recoveryCapacityPerUnit() const {
+    return getImpl<detail::WaterHeaterSizing_Impl>()->recoveryCapacityPerUnit();
+  }
+
   bool WaterHeaterSizing::setRecoveryCapacityPerUnit(double recoveryCapacityPerUnit) {
     return getImpl<detail::WaterHeaterSizing_Impl>()->setRecoveryCapacityPerUnit(recoveryCapacityPerUnit);
   }
@@ -199,12 +191,20 @@ namespace epmodel {
     getImpl<detail::WaterHeaterSizing_Impl>()->resetRecoveryCapacityPerUnit();
   }
 
+  boost::optional<double> WaterHeaterSizing::storageCapacityperCollectorArea() const {
+    return getImpl<detail::WaterHeaterSizing_Impl>()->storageCapacityperCollectorArea();
+  }
+
   bool WaterHeaterSizing::setStorageCapacityperCollectorArea(double storageCapacityperCollectorArea) {
     return getImpl<detail::WaterHeaterSizing_Impl>()->setStorageCapacityperCollectorArea(storageCapacityperCollectorArea);
   }
 
   void WaterHeaterSizing::resetStorageCapacityperCollectorArea() {
     getImpl<detail::WaterHeaterSizing_Impl>()->resetStorageCapacityperCollectorArea();
+  }
+
+  boost::optional<double> WaterHeaterSizing::heightAspectRatio() const {
+    return getImpl<detail::WaterHeaterSizing_Impl>()->heightAspectRatio();
   }
 
   bool WaterHeaterSizing::setHeightAspectRatio(double heightAspectRatio) {
@@ -221,62 +221,6 @@ namespace epmodel {
       return getString(WaterHeater_SizingFields::DesignMode, true);
     }
 
-    boost::optional<double> WaterHeaterSizing_Impl::timeStorageCanMeetPeakDraw() const {
-      return getDouble(WaterHeater_SizingFields::TimeStorageCanMeetPeakDraw, true);
-    }
-
-    boost::optional<double> WaterHeaterSizing_Impl::timeforTankRecovery() const {
-      return getDouble(WaterHeater_SizingFields::TimeforTankRecovery, true);
-    }
-
-    boost::optional<double> WaterHeaterSizing_Impl::nominalTankVolumeforAutosizingPlantConnections() const {
-      return getDouble(WaterHeater_SizingFields::NominalTankVolumeforAutosizingPlantConnections, true);
-    }
-
-    boost::optional<int> WaterHeaterSizing_Impl::numberofBedrooms() const {
-      return getInt(WaterHeater_SizingFields::NumberofBedrooms, true);
-    }
-
-    boost::optional<int> WaterHeaterSizing_Impl::numberofBathrooms() const {
-      return getInt(WaterHeater_SizingFields::NumberofBathrooms, true);
-    }
-
-    boost::optional<double> WaterHeaterSizing_Impl::storageCapacityperPerson() const {
-      return getDouble(WaterHeater_SizingFields::StorageCapacityperPerson, true);
-    }
-
-    boost::optional<double> WaterHeaterSizing_Impl::recoveryCapacityperPerson() const {
-      return getDouble(WaterHeater_SizingFields::RecoveryCapacityperPerson, true);
-    }
-
-    boost::optional<double> WaterHeaterSizing_Impl::storageCapacityperFloorArea() const {
-      return getDouble(WaterHeater_SizingFields::StorageCapacityperFloorArea, true);
-    }
-
-    boost::optional<double> WaterHeaterSizing_Impl::recoveryCapacityperFloorArea() const {
-      return getDouble(WaterHeater_SizingFields::RecoveryCapacityperFloorArea, true);
-    }
-
-    boost::optional<double> WaterHeaterSizing_Impl::numberofUnits() const {
-      return getDouble(WaterHeater_SizingFields::NumberofUnits, true);
-    }
-
-    boost::optional<double> WaterHeaterSizing_Impl::storageCapacityperUnit() const {
-      return getDouble(WaterHeater_SizingFields::StorageCapacityperUnit, true);
-    }
-
-    boost::optional<double> WaterHeaterSizing_Impl::recoveryCapacityPerUnit() const {
-      return getDouble(WaterHeater_SizingFields::RecoveryCapacityPerUnit, true);
-    }
-
-    boost::optional<double> WaterHeaterSizing_Impl::storageCapacityperCollectorArea() const {
-      return getDouble(WaterHeater_SizingFields::StorageCapacityperCollectorArea, true);
-    }
-
-    boost::optional<double> WaterHeaterSizing_Impl::heightAspectRatio() const {
-      return getDouble(WaterHeater_SizingFields::HeightAspectRatio, true);
-    }
-
     bool WaterHeaterSizing_Impl::setDesignMode(const std::string& designMode) {
       bool result = setString(WaterHeater_SizingFields::DesignMode, designMode);
       return result;
@@ -285,6 +229,10 @@ namespace epmodel {
     void WaterHeaterSizing_Impl::resetDesignMode() {
       bool result = setString(WaterHeater_SizingFields::DesignMode, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> WaterHeaterSizing_Impl::timeStorageCanMeetPeakDraw() const {
+      return getDouble(WaterHeater_SizingFields::TimeStorageCanMeetPeakDraw, true);
     }
 
     bool WaterHeaterSizing_Impl::setTimeStorageCanMeetPeakDraw(double timeStorageCanMeetPeakDraw) {
@@ -297,6 +245,10 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> WaterHeaterSizing_Impl::timeforTankRecovery() const {
+      return getDouble(WaterHeater_SizingFields::TimeforTankRecovery, true);
+    }
+
     bool WaterHeaterSizing_Impl::setTimeforTankRecovery(double timeforTankRecovery) {
       bool result = setDouble(WaterHeater_SizingFields::TimeforTankRecovery, timeforTankRecovery);
       return result;
@@ -305,6 +257,10 @@ namespace epmodel {
     void WaterHeaterSizing_Impl::resetTimeforTankRecovery() {
       bool result = setString(WaterHeater_SizingFields::TimeforTankRecovery, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> WaterHeaterSizing_Impl::nominalTankVolumeforAutosizingPlantConnections() const {
+      return getDouble(WaterHeater_SizingFields::NominalTankVolumeforAutosizingPlantConnections, true);
     }
 
     bool WaterHeaterSizing_Impl::setNominalTankVolumeforAutosizingPlantConnections(double nominalTankVolumeforAutosizingPlantConnections) {
@@ -319,6 +275,10 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<int> WaterHeaterSizing_Impl::numberofBedrooms() const {
+      return getInt(WaterHeater_SizingFields::NumberofBedrooms, true);
+    }
+
     bool WaterHeaterSizing_Impl::setNumberofBedrooms(int numberofBedrooms) {
       bool result = setInt(WaterHeater_SizingFields::NumberofBedrooms, numberofBedrooms);
       return result;
@@ -327,6 +287,10 @@ namespace epmodel {
     void WaterHeaterSizing_Impl::resetNumberofBedrooms() {
       bool result = setString(WaterHeater_SizingFields::NumberofBedrooms, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<int> WaterHeaterSizing_Impl::numberofBathrooms() const {
+      return getInt(WaterHeater_SizingFields::NumberofBathrooms, true);
     }
 
     bool WaterHeaterSizing_Impl::setNumberofBathrooms(int numberofBathrooms) {
@@ -339,6 +303,10 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> WaterHeaterSizing_Impl::storageCapacityperPerson() const {
+      return getDouble(WaterHeater_SizingFields::StorageCapacityperPerson, true);
+    }
+
     bool WaterHeaterSizing_Impl::setStorageCapacityperPerson(double storageCapacityperPerson) {
       bool result = setDouble(WaterHeater_SizingFields::StorageCapacityperPerson, storageCapacityperPerson);
       return result;
@@ -347,6 +315,10 @@ namespace epmodel {
     void WaterHeaterSizing_Impl::resetStorageCapacityperPerson() {
       bool result = setString(WaterHeater_SizingFields::StorageCapacityperPerson, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> WaterHeaterSizing_Impl::recoveryCapacityperPerson() const {
+      return getDouble(WaterHeater_SizingFields::RecoveryCapacityperPerson, true);
     }
 
     bool WaterHeaterSizing_Impl::setRecoveryCapacityperPerson(double recoveryCapacityperPerson) {
@@ -359,6 +331,10 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> WaterHeaterSizing_Impl::storageCapacityperFloorArea() const {
+      return getDouble(WaterHeater_SizingFields::StorageCapacityperFloorArea, true);
+    }
+
     bool WaterHeaterSizing_Impl::setStorageCapacityperFloorArea(double storageCapacityperFloorArea) {
       bool result = setDouble(WaterHeater_SizingFields::StorageCapacityperFloorArea, storageCapacityperFloorArea);
       return result;
@@ -369,6 +345,10 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> WaterHeaterSizing_Impl::recoveryCapacityperFloorArea() const {
+      return getDouble(WaterHeater_SizingFields::RecoveryCapacityperFloorArea, true);
+    }
+
     bool WaterHeaterSizing_Impl::setRecoveryCapacityperFloorArea(double recoveryCapacityperFloorArea) {
       bool result = setDouble(WaterHeater_SizingFields::RecoveryCapacityperFloorArea, recoveryCapacityperFloorArea);
       return result;
@@ -377,6 +357,10 @@ namespace epmodel {
     void WaterHeaterSizing_Impl::resetRecoveryCapacityperFloorArea() {
       bool result = setString(WaterHeater_SizingFields::RecoveryCapacityperFloorArea, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> WaterHeaterSizing_Impl::numberofUnits() const {
+      return getDouble(WaterHeater_SizingFields::NumberofUnits, true);
     }
 
     bool WaterHeaterSizing_Impl::setNumberofUnits(double numberofUnits) {
@@ -390,6 +374,10 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> WaterHeaterSizing_Impl::storageCapacityperUnit() const {
+      return getDouble(WaterHeater_SizingFields::StorageCapacityperUnit, true);
+    }
+
     bool WaterHeaterSizing_Impl::setStorageCapacityperUnit(double storageCapacityperUnit) {
       bool result = setDouble(WaterHeater_SizingFields::StorageCapacityperUnit, storageCapacityperUnit);
       return result;
@@ -398,6 +386,10 @@ namespace epmodel {
     void WaterHeaterSizing_Impl::resetStorageCapacityperUnit() {
       bool result = setString(WaterHeater_SizingFields::StorageCapacityperUnit, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> WaterHeaterSizing_Impl::recoveryCapacityPerUnit() const {
+      return getDouble(WaterHeater_SizingFields::RecoveryCapacityPerUnit, true);
     }
 
     bool WaterHeaterSizing_Impl::setRecoveryCapacityPerUnit(double recoveryCapacityPerUnit) {
@@ -410,6 +402,10 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> WaterHeaterSizing_Impl::storageCapacityperCollectorArea() const {
+      return getDouble(WaterHeater_SizingFields::StorageCapacityperCollectorArea, true);
+    }
+
     bool WaterHeaterSizing_Impl::setStorageCapacityperCollectorArea(double storageCapacityperCollectorArea) {
       bool result = setDouble(WaterHeater_SizingFields::StorageCapacityperCollectorArea, storageCapacityperCollectorArea);
       return result;
@@ -418,6 +414,10 @@ namespace epmodel {
     void WaterHeaterSizing_Impl::resetStorageCapacityperCollectorArea() {
       bool result = setString(WaterHeater_SizingFields::StorageCapacityperCollectorArea, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> WaterHeaterSizing_Impl::heightAspectRatio() const {
+      return getDouble(WaterHeater_SizingFields::HeightAspectRatio, true);
     }
 
     bool WaterHeaterSizing_Impl::setHeightAspectRatio(double heightAspectRatio) {

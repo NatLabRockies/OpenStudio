@@ -20,17 +20,19 @@ class EPMODEL_API EvaporativeCoolerIndirectCelDekPad_Impl : public ModelObject_I
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~EvaporativeCoolerIndirectCelDekPad_Impl() override = default;
 
+  // Direct pad area values
   boost::optional<double> directPadArea() const;
-  bool isDirectPadAreaAutosized() const;
   bool setDirectPadArea(double directPadArea);
   void resetDirectPadArea();
   void autosizeDirectPadArea();
+  bool isDirectPadAreaAutosized() const;
 
+  // Direct pad depth values
   boost::optional<double> directPadDepth() const;
-  bool isDirectPadDepthAutosized() const;
   bool setDirectPadDepth(double directPadDepth);
   void resetDirectPadDepth();
   void autosizeDirectPadDepth();
+  bool isDirectPadDepthAutosized() const;
 
   double recirculatingWaterPumpPowerConsumption() const;
   bool setRecirculatingWaterPumpPowerConsumption(double recirculatingWaterPumpPowerConsumption);

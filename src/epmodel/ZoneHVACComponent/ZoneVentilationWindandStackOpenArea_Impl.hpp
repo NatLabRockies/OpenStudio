@@ -25,8 +25,8 @@ namespace epmodel {
       bool setOpeningArea(double openingArea);
 
       boost::optional<double> openingEffectiveness() const;
-      bool isOpeningEffectivenessAutocalculated() const;
       bool setOpeningEffectiveness(double openingEffectiveness);
+      bool isOpeningEffectivenessAutocalculated() const;
       void autocalculateOpeningEffectiveness();
 
       double effectiveAngle() const;
@@ -36,8 +36,8 @@ namespace epmodel {
       bool setHeightDifference(double heightDifference);
 
       boost::optional<double> dischargeCoefficientforOpening() const;
-      bool isDischargeCoefficientforOpeningAutocalculated() const;
       bool setDischargeCoefficientforOpening(double dischargeCoefficientforOpening);
+      bool isDischargeCoefficientforOpeningAutocalculated() const;
       void autocalculateDischargeCoefficientforOpening();
 
       double minimumIndoorTemperature() const;

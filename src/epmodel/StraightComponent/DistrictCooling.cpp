@@ -16,75 +16,75 @@
 namespace openstudio {
 namespace epmodel {
 
-DistrictCooling::DistrictCooling(const Model& model) : StraightComponent(DistrictCooling::iddObjectType(), model) {
-  autosizeNominalCapacity();
-}
+  DistrictCooling::DistrictCooling(const Model& model) : StraightComponent(DistrictCooling::iddObjectType(), model) {
+    autosizeNominalCapacity();
+  }
 
-DistrictCooling::DistrictCooling(std::shared_ptr<detail::DistrictCooling_Impl> impl) : StraightComponent(std::move(impl)) {}
+  DistrictCooling::DistrictCooling(std::shared_ptr<detail::DistrictCooling_Impl> impl) : StraightComponent(std::move(impl)) {}
 
-IddObjectType DistrictCooling::iddObjectType() {
-  return IddObjectType::DistrictCooling;
-}
+  IddObjectType DistrictCooling::iddObjectType() {
+    return IddObjectType::DistrictCooling;
+  }
 
-boost::optional<double> DistrictCooling::nominalCapacity() const {
-  return getImpl<detail::DistrictCooling_Impl>()->nominalCapacity();
-}
+  boost::optional<double> DistrictCooling::nominalCapacity() const {
+    return getImpl<detail::DistrictCooling_Impl>()->nominalCapacity();
+  }
 
-bool DistrictCooling::isNominalCapacityAutosized() const {
-  return getImpl<detail::DistrictCooling_Impl>()->isNominalCapacityAutosized();
-}
+  bool DistrictCooling::setNominalCapacity(double nominalCapacity) {
+    return getImpl<detail::DistrictCooling_Impl>()->setNominalCapacity(nominalCapacity);
+  }
 
-bool DistrictCooling::setNominalCapacity(double nominalCapacity) {
-  return getImpl<detail::DistrictCooling_Impl>()->setNominalCapacity(nominalCapacity);
-}
+  bool DistrictCooling::isNominalCapacityAutosized() const {
+    return getImpl<detail::DistrictCooling_Impl>()->isNominalCapacityAutosized();
+  }
 
-void DistrictCooling::autosizeNominalCapacity() {
-  getImpl<detail::DistrictCooling_Impl>()->autosizeNominalCapacity();
-}
+  void DistrictCooling::autosizeNominalCapacity() {
+    getImpl<detail::DistrictCooling_Impl>()->autosizeNominalCapacity();
+  }
 
-boost::optional<double> DistrictCooling::autosizedNominalCapacity() const {
-  return getImpl<detail::DistrictCooling_Impl>()->autosizedNominalCapacity();
-}
+  boost::optional<double> DistrictCooling::autosizedNominalCapacity() const {
+    return getImpl<detail::DistrictCooling_Impl>()->autosizedNominalCapacity();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-unsigned DistrictCooling_Impl::inletPort() const {
-  return openstudio::DistrictCoolingFields::ChilledWaterInletNodeName;
-}
+    unsigned DistrictCooling_Impl::inletPort() const {
+      return openstudio::DistrictCoolingFields::ChilledWaterInletNodeName;
+    }
 
-unsigned DistrictCooling_Impl::outletPort() const {
-  return openstudio::DistrictCoolingFields::ChilledWaterOutletNodeName;
-}
+    unsigned DistrictCooling_Impl::outletPort() const {
+      return openstudio::DistrictCoolingFields::ChilledWaterOutletNodeName;
+    }
 
-boost::optional<double> DistrictCooling_Impl::nominalCapacity() const {
-  return getDouble(openstudio::DistrictCoolingFields::NominalCapacity, true);
-}
+    boost::optional<double> DistrictCooling_Impl::nominalCapacity() const {
+      return getDouble(openstudio::DistrictCoolingFields::NominalCapacity, true);
+    }
 
-bool DistrictCooling_Impl::isNominalCapacityAutosized() const {
-  if (auto value = getString(openstudio::DistrictCoolingFields::NominalCapacity, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    bool DistrictCooling_Impl::setNominalCapacity(double nominalCapacity) {
+      return setDouble(openstudio::DistrictCoolingFields::NominalCapacity, nominalCapacity);
+    }
 
-bool DistrictCooling_Impl::setNominalCapacity(double nominalCapacity) {
-  return setDouble(openstudio::DistrictCoolingFields::NominalCapacity, nominalCapacity);
-}
+    bool DistrictCooling_Impl::isNominalCapacityAutosized() const {
+      if (auto value = getString(openstudio::DistrictCoolingFields::NominalCapacity, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
+    }
 
-void DistrictCooling_Impl::autosizeNominalCapacity() {
-  OS_ASSERT(setString(openstudio::DistrictCoolingFields::NominalCapacity, "Autosize"));
-}
+    void DistrictCooling_Impl::autosizeNominalCapacity() {
+      OS_ASSERT(setString(openstudio::DistrictCoolingFields::NominalCapacity, "Autosize"));
+    }
 
-boost::optional<double> DistrictCooling_Impl::autosizedNominalCapacity() const {
-  // epmodel does not currently resolve autosized values from SQL results.
-  return boost::none;
-}
+    boost::optional<double> DistrictCooling_Impl::autosizedNominalCapacity() const {
+      // epmodel does not currently resolve autosized values from SQL results.
+      return boost::none;
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

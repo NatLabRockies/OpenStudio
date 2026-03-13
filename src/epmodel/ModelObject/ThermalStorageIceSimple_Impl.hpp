@@ -22,11 +22,13 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~ThermalStorageIceSimple_Impl() override = default;
 
+      // Capacity accessors
       boost::optional<double> capacity() const;
       bool setCapacity(double capacity);
       bool isCapacityAutosized() const;
       void autosizeCapacity();
 
+      // Ice storage type accessors
       std::string iceStorageType() const;
       bool setIceStorageType(const std::string& iceStorageType);
     };

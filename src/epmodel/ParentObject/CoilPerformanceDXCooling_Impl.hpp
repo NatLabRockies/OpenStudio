@@ -13,68 +13,68 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CoilPerformanceDXCooling_Impl : public ParentObject_Impl
-{
- public:
-  using ParentObject_Impl::ParentObject_Impl;
-  virtual ~CoilPerformanceDXCooling_Impl() override = default;
+    class EPMODEL_API CoilPerformanceDXCooling_Impl : public ParentObject_Impl
+    {
+     public:
+      using ParentObject_Impl::ParentObject_Impl;
+      virtual ~CoilPerformanceDXCooling_Impl() override = default;
 
-  boost::optional<double> grossRatedTotalCoolingCapacity() const;
-  bool isGrossRatedTotalCoolingCapacityAutosized() const;
-  bool setGrossRatedTotalCoolingCapacity(double grossRatedTotalCoolingCapacity);
-  void autosizeGrossRatedTotalCoolingCapacity();
+      std::vector<std::string> condenserTypeValues() const;
 
-  boost::optional<double> grossRatedSensibleHeatRatio() const;
-  bool isGrossRatedSensibleHeatRatioAutosized() const;
-  bool setGrossRatedSensibleHeatRatio(double grossRatedSensibleHeatRatio);
-  void autosizeGrossRatedSensibleHeatRatio();
+      boost::optional<double> grossRatedTotalCoolingCapacity() const;
+      bool setGrossRatedTotalCoolingCapacity(double grossRatedTotalCoolingCapacity);
+      bool isGrossRatedTotalCoolingCapacityAutosized() const;
+      void autosizeGrossRatedTotalCoolingCapacity();
 
-  double grossRatedCoolingCOP() const;
-  bool setGrossRatedCoolingCOP(double grossRatedCoolingCOP);
+      boost::optional<double> grossRatedSensibleHeatRatio() const;
+      bool setGrossRatedSensibleHeatRatio(double grossRatedSensibleHeatRatio);
+      bool isGrossRatedSensibleHeatRatioAutosized() const;
+      void autosizeGrossRatedSensibleHeatRatio();
 
-  boost::optional<double> ratedAirFlowRate() const;
-  bool isRatedAirFlowRateAutosized() const;
-  bool setRatedAirFlowRate(double ratedAirFlowRate);
-  void autosizeRatedAirFlowRate();
+      double grossRatedCoolingCOP() const;
+      bool setGrossRatedCoolingCOP(double grossRatedCoolingCOP);
 
-  double fractionofAirFlowBypassedAroundCoil() const;
-  bool setFractionofAirFlowBypassedAroundCoil(double fractionofAirFlowBypassedAroundCoil);
+      boost::optional<double> ratedAirFlowRate() const;
+      bool setRatedAirFlowRate(double ratedAirFlowRate);
+      bool isRatedAirFlowRateAutosized() const;
+      void autosizeRatedAirFlowRate();
 
-  double nominalTimeforCondensateRemovaltoBegin() const;
-  bool setNominalTimeforCondensateRemovaltoBegin(double nominalTimeforCondensateRemovaltoBegin);
+      double fractionofAirFlowBypassedAroundCoil() const;
+      bool setFractionofAirFlowBypassedAroundCoil(double fractionofAirFlowBypassedAroundCoil);
 
-  double ratioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity() const;
-  bool setRatioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity(
-    double ratioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity);
+      double nominalTimeforCondensateRemovaltoBegin() const;
+      bool setNominalTimeforCondensateRemovaltoBegin(double nominalTimeforCondensateRemovaltoBegin);
 
-  double maximumCyclingRate() const;
-  bool setMaximumCyclingRate(double maximumCyclingRate);
+      double ratioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity() const;
+      bool setRatioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity(
+        double ratioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity);
 
-  double latentCapacityTimeConstant() const;
-  bool setLatentCapacityTimeConstant(double latentCapacityTimeConstant);
+      double maximumCyclingRate() const;
+      bool setMaximumCyclingRate(double maximumCyclingRate);
 
-  std::string condenserType() const;
-  bool setCondenserType(const std::string& condenserType);
+      double latentCapacityTimeConstant() const;
+      bool setLatentCapacityTimeConstant(double latentCapacityTimeConstant);
 
-  double evaporativeCondenserEffectiveness() const;
-  bool setEvaporativeCondenserEffectiveness(double evaporativeCondenserEffectiveness);
+      std::string condenserType() const;
+      bool setCondenserType(const std::string& condenserType);
 
-  boost::optional<double> evaporativeCondenserAirFlowRate() const;
-  bool isEvaporativeCondenserAirFlowRateAutosized() const;
-  bool setEvaporativeCondenserAirFlowRate(double evaporativeCondenserAirFlowRate);
-  void autosizeEvaporativeCondenserAirFlowRate();
+      double evaporativeCondenserEffectiveness() const;
+      bool setEvaporativeCondenserEffectiveness(double evaporativeCondenserEffectiveness);
 
-  boost::optional<double> evaporativeCondenserPumpRatedPowerConsumption() const;
-  bool isEvaporativeCondenserPumpRatedPowerConsumptionAutosized() const;
-  bool setEvaporativeCondenserPumpRatedPowerConsumption(double evaporativeCondenserPumpRatedPowerConsumption);
-  void autosizeEvaporativeCondenserPumpRatedPowerConsumption();
+      boost::optional<double> evaporativeCondenserAirFlowRate() const;
+      bool setEvaporativeCondenserAirFlowRate(double evaporativeCondenserAirFlowRate);
+      bool isEvaporativeCondenserAirFlowRateAutosized() const;
+      void autosizeEvaporativeCondenserAirFlowRate();
 
-  std::vector<std::string> condenserTypeValues() const;
-};
+      boost::optional<double> evaporativeCondenserPumpRatedPowerConsumption() const;
+      bool setEvaporativeCondenserPumpRatedPowerConsumption(double evaporativeCondenserPumpRatedPowerConsumption);
+      bool isEvaporativeCondenserPumpRatedPowerConsumptionAutosized() const;
+      void autosizeEvaporativeCondenserPumpRatedPowerConsumption();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

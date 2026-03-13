@@ -47,20 +47,44 @@ namespace epmodel {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isOpticalDataTypeDefaulted();
   }
 
+  bool WindowMaterialGlazingEquivalentLayer::setOpticalDataType(const std::string& opticalDataType) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setOpticalDataType(opticalDataType);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetOpticalDataType() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetOpticalDataType();
+  }
+
   double WindowMaterialGlazingEquivalentLayer::frontSideBeamBeamSolarTransmittance() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->frontSideBeamBeamSolarTransmittance();
+  }
+
+  bool WindowMaterialGlazingEquivalentLayer::setFrontSideBeamBeamSolarTransmittance(double frontSideBeamBeamSolarTransmittance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideBeamBeamSolarTransmittance(frontSideBeamBeamSolarTransmittance);
   }
 
   double WindowMaterialGlazingEquivalentLayer::backSideBeamBeamSolarTransmittance() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->backSideBeamBeamSolarTransmittance();
   }
 
+  bool WindowMaterialGlazingEquivalentLayer::setBackSideBeamBeamSolarTransmittance(double backSideBeamBeamSolarTransmittance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideBeamBeamSolarTransmittance(backSideBeamBeamSolarTransmittance);
+  }
+
   double WindowMaterialGlazingEquivalentLayer::frontSideBeamBeamSolarReflectance() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->frontSideBeamBeamSolarReflectance();
   }
 
+  bool WindowMaterialGlazingEquivalentLayer::setFrontSideBeamBeamSolarReflectance(double frontSideBeamBeamSolarReflectance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideBeamBeamSolarReflectance(frontSideBeamBeamSolarReflectance);
+  }
+
   double WindowMaterialGlazingEquivalentLayer::backSideBeamBeamSolarReflectance() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->backSideBeamBeamSolarReflectance();
+  }
+
+  bool WindowMaterialGlazingEquivalentLayer::setBackSideBeamBeamSolarReflectance(double backSideBeamBeamSolarReflectance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideBeamBeamSolarReflectance(backSideBeamBeamSolarReflectance);
   }
 
   double WindowMaterialGlazingEquivalentLayer::frontSideBeamBeamVisibleSolarTransmittance() const {
@@ -71,12 +95,30 @@ namespace epmodel {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isFrontSideBeamBeamVisibleSolarTransmittanceDefaulted();
   }
 
+  bool WindowMaterialGlazingEquivalentLayer::setFrontSideBeamBeamVisibleSolarTransmittance(double frontSideBeamBeamVisibleSolarTransmittance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideBeamBeamVisibleSolarTransmittance(
+      frontSideBeamBeamVisibleSolarTransmittance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetFrontSideBeamBeamVisibleSolarTransmittance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideBeamBeamVisibleSolarTransmittance();
+  }
+
   double WindowMaterialGlazingEquivalentLayer::backSideBeamBeamVisibleSolarTransmittance() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->backSideBeamBeamVisibleSolarTransmittance();
   }
 
   bool WindowMaterialGlazingEquivalentLayer::isBackSideBeamBeamVisibleSolarTransmittanceDefaulted() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isBackSideBeamBeamVisibleSolarTransmittanceDefaulted();
+  }
+
+  bool WindowMaterialGlazingEquivalentLayer::setBackSideBeamBeamVisibleSolarTransmittance(double backSideBeamBeamVisibleSolarTransmittance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideBeamBeamVisibleSolarTransmittance(
+      backSideBeamBeamVisibleSolarTransmittance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetBackSideBeamBeamVisibleSolarTransmittance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideBeamBeamVisibleSolarTransmittance();
   }
 
   double WindowMaterialGlazingEquivalentLayer::frontSideBeamBeamVisibleSolarReflectance() const {
@@ -87,12 +129,30 @@ namespace epmodel {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isFrontSideBeamBeamVisibleSolarReflectanceDefaulted();
   }
 
+  bool WindowMaterialGlazingEquivalentLayer::setFrontSideBeamBeamVisibleSolarReflectance(double frontSideBeamBeamVisibleSolarReflectance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideBeamBeamVisibleSolarReflectance(
+      frontSideBeamBeamVisibleSolarReflectance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetFrontSideBeamBeamVisibleSolarReflectance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideBeamBeamVisibleSolarReflectance();
+  }
+
   double WindowMaterialGlazingEquivalentLayer::backSideBeamBeamVisibleSolarReflectance() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->backSideBeamBeamVisibleSolarReflectance();
   }
 
   bool WindowMaterialGlazingEquivalentLayer::isBackSideBeamBeamVisibleSolarReflectanceDefaulted() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isBackSideBeamBeamVisibleSolarReflectanceDefaulted();
+  }
+
+  bool WindowMaterialGlazingEquivalentLayer::setBackSideBeamBeamVisibleSolarReflectance(double backSideBeamBeamVisibleSolarReflectance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideBeamBeamVisibleSolarReflectance(
+      backSideBeamBeamVisibleSolarReflectance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetBackSideBeamBeamVisibleSolarReflectance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideBeamBeamVisibleSolarReflectance();
   }
 
   double WindowMaterialGlazingEquivalentLayer::frontSideBeamDiffuseSolarTransmittance() const {
@@ -103,12 +163,30 @@ namespace epmodel {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isFrontSideBeamDiffuseSolarTransmittanceDefaulted();
   }
 
+  bool WindowMaterialGlazingEquivalentLayer::setFrontSideBeamDiffuseSolarTransmittance(double frontSideBeamDiffuseSolarTransmittance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideBeamDiffuseSolarTransmittance(
+      frontSideBeamDiffuseSolarTransmittance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetFrontSideBeamDiffuseSolarTransmittance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideBeamDiffuseSolarTransmittance();
+  }
+
   double WindowMaterialGlazingEquivalentLayer::backSideBeamDiffuseSolarTransmittance() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->backSideBeamDiffuseSolarTransmittance();
   }
 
   bool WindowMaterialGlazingEquivalentLayer::isBackSideBeamDiffuseSolarTransmittanceDefaulted() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isBackSideBeamDiffuseSolarTransmittanceDefaulted();
+  }
+
+  bool WindowMaterialGlazingEquivalentLayer::setBackSideBeamDiffuseSolarTransmittance(double backSideBeamDiffuseSolarTransmittance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideBeamDiffuseSolarTransmittance(
+      backSideBeamDiffuseSolarTransmittance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetBackSideBeamDiffuseSolarTransmittance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideBeamDiffuseSolarTransmittance();
   }
 
   double WindowMaterialGlazingEquivalentLayer::frontSideBeamDiffuseSolarReflectance() const {
@@ -119,12 +197,29 @@ namespace epmodel {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isFrontSideBeamDiffuseSolarReflectanceDefaulted();
   }
 
+  bool WindowMaterialGlazingEquivalentLayer::setFrontSideBeamDiffuseSolarReflectance(double frontSideBeamDiffuseSolarReflectance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideBeamDiffuseSolarReflectance(
+      frontSideBeamDiffuseSolarReflectance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetFrontSideBeamDiffuseSolarReflectance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideBeamDiffuseSolarReflectance();
+  }
+
   double WindowMaterialGlazingEquivalentLayer::backSideBeamDiffuseSolarReflectance() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->backSideBeamDiffuseSolarReflectance();
   }
 
   bool WindowMaterialGlazingEquivalentLayer::isBackSideBeamDiffuseSolarReflectanceDefaulted() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isBackSideBeamDiffuseSolarReflectanceDefaulted();
+  }
+
+  bool WindowMaterialGlazingEquivalentLayer::setBackSideBeamDiffuseSolarReflectance(double backSideBeamDiffuseSolarReflectance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideBeamDiffuseSolarReflectance(backSideBeamDiffuseSolarReflectance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetBackSideBeamDiffuseSolarReflectance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideBeamDiffuseSolarReflectance();
   }
 
   double WindowMaterialGlazingEquivalentLayer::frontSideBeamDiffuseVisibleSolarTransmittance() const {
@@ -135,12 +230,30 @@ namespace epmodel {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isFrontSideBeamDiffuseVisibleSolarTransmittanceDefaulted();
   }
 
+  bool WindowMaterialGlazingEquivalentLayer::setFrontSideBeamDiffuseVisibleSolarTransmittance(double frontSideBeamDiffuseVisibleSolarTransmittance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideBeamDiffuseVisibleSolarTransmittance(
+      frontSideBeamDiffuseVisibleSolarTransmittance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetFrontSideBeamDiffuseVisibleSolarTransmittance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideBeamDiffuseVisibleSolarTransmittance();
+  }
+
   double WindowMaterialGlazingEquivalentLayer::backSideBeamDiffuseVisibleSolarTransmittance() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->backSideBeamDiffuseVisibleSolarTransmittance();
   }
 
   bool WindowMaterialGlazingEquivalentLayer::isBackSideBeamDiffuseVisibleSolarTransmittanceDefaulted() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isBackSideBeamDiffuseVisibleSolarTransmittanceDefaulted();
+  }
+
+  bool WindowMaterialGlazingEquivalentLayer::setBackSideBeamDiffuseVisibleSolarTransmittance(double backSideBeamDiffuseVisibleSolarTransmittance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideBeamDiffuseVisibleSolarTransmittance(
+      backSideBeamDiffuseVisibleSolarTransmittance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetBackSideBeamDiffuseVisibleSolarTransmittance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideBeamDiffuseVisibleSolarTransmittance();
   }
 
   double WindowMaterialGlazingEquivalentLayer::frontSideBeamDiffuseVisibleSolarReflectance() const {
@@ -151,12 +264,30 @@ namespace epmodel {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isFrontSideBeamDiffuseVisibleSolarReflectanceDefaulted();
   }
 
+  bool WindowMaterialGlazingEquivalentLayer::setFrontSideBeamDiffuseVisibleSolarReflectance(double frontSideBeamDiffuseVisibleSolarReflectance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideBeamDiffuseVisibleSolarReflectance(
+      frontSideBeamDiffuseVisibleSolarReflectance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetFrontSideBeamDiffuseVisibleSolarReflectance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideBeamDiffuseVisibleSolarReflectance();
+  }
+
   double WindowMaterialGlazingEquivalentLayer::backSideBeamDiffuseVisibleSolarReflectance() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->backSideBeamDiffuseVisibleSolarReflectance();
   }
 
   bool WindowMaterialGlazingEquivalentLayer::isBackSideBeamDiffuseVisibleSolarReflectanceDefaulted() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isBackSideBeamDiffuseVisibleSolarReflectanceDefaulted();
+  }
+
+  bool WindowMaterialGlazingEquivalentLayer::setBackSideBeamDiffuseVisibleSolarReflectance(double backSideBeamDiffuseVisibleSolarReflectance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideBeamDiffuseVisibleSolarReflectance(
+      backSideBeamDiffuseVisibleSolarReflectance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetBackSideBeamDiffuseVisibleSolarReflectance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideBeamDiffuseVisibleSolarReflectance();
   }
 
   boost::optional<double> WindowMaterialGlazingEquivalentLayer::diffuseDiffuseSolarTransmittance() const {
@@ -171,6 +302,18 @@ namespace epmodel {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isDiffuseDiffuseSolarTransmittanceAutocalculated();
   }
 
+  bool WindowMaterialGlazingEquivalentLayer::setDiffuseDiffuseSolarTransmittance(double diffuseDiffuseSolarTransmittance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setDiffuseDiffuseSolarTransmittance(diffuseDiffuseSolarTransmittance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetDiffuseDiffuseSolarTransmittance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetDiffuseDiffuseSolarTransmittance();
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::autocalculateDiffuseDiffuseSolarTransmittance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->autocalculateDiffuseDiffuseSolarTransmittance();
+  }
+
   boost::optional<double> WindowMaterialGlazingEquivalentLayer::frontSideDiffuseDiffuseSolarReflectance() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->frontSideDiffuseDiffuseSolarReflectance();
   }
@@ -181,6 +324,19 @@ namespace epmodel {
 
   bool WindowMaterialGlazingEquivalentLayer::isFrontSideDiffuseDiffuseSolarReflectanceAutocalculated() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isFrontSideDiffuseDiffuseSolarReflectanceAutocalculated();
+  }
+
+  bool WindowMaterialGlazingEquivalentLayer::setFrontSideDiffuseDiffuseSolarReflectance(double frontSideDiffuseDiffuseSolarReflectance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideDiffuseDiffuseSolarReflectance(
+      frontSideDiffuseDiffuseSolarReflectance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetFrontSideDiffuseDiffuseSolarReflectance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideDiffuseDiffuseSolarReflectance();
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::autocalculateFrontSideDiffuseDiffuseSolarReflectance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->autocalculateFrontSideDiffuseDiffuseSolarReflectance();
   }
 
   boost::optional<double> WindowMaterialGlazingEquivalentLayer::backSideDiffuseDiffuseSolarReflectance() const {
@@ -195,6 +351,19 @@ namespace epmodel {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isBackSideDiffuseDiffuseSolarReflectanceAutocalculated();
   }
 
+  bool WindowMaterialGlazingEquivalentLayer::setBackSideDiffuseDiffuseSolarReflectance(double backSideDiffuseDiffuseSolarReflectance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideDiffuseDiffuseSolarReflectance(
+      backSideDiffuseDiffuseSolarReflectance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetBackSideDiffuseDiffuseSolarReflectance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideDiffuseDiffuseSolarReflectance();
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::autocalculateBackSideDiffuseDiffuseSolarReflectance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->autocalculateBackSideDiffuseDiffuseSolarReflectance();
+  }
+
   boost::optional<double> WindowMaterialGlazingEquivalentLayer::diffuseDiffuseVisibleSolarTransmittance() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->diffuseDiffuseVisibleSolarTransmittance();
   }
@@ -205,6 +374,19 @@ namespace epmodel {
 
   bool WindowMaterialGlazingEquivalentLayer::isDiffuseDiffuseVisibleSolarTransmittanceAutocalculated() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isDiffuseDiffuseVisibleSolarTransmittanceAutocalculated();
+  }
+
+  bool WindowMaterialGlazingEquivalentLayer::setDiffuseDiffuseVisibleSolarTransmittance(double diffuseDiffuseVisibleSolarTransmittance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setDiffuseDiffuseVisibleSolarTransmittance(
+      diffuseDiffuseVisibleSolarTransmittance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetDiffuseDiffuseVisibleSolarTransmittance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetDiffuseDiffuseVisibleSolarTransmittance();
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::autocalculateDiffuseDiffuseVisibleSolarTransmittance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->autocalculateDiffuseDiffuseVisibleSolarTransmittance();
   }
 
   boost::optional<double> WindowMaterialGlazingEquivalentLayer::frontSideDiffuseDiffuseVisibleSolarReflectance() const {
@@ -219,6 +401,20 @@ namespace epmodel {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isFrontSideDiffuseDiffuseVisibleSolarReflectanceAutocalculated();
   }
 
+  bool
+    WindowMaterialGlazingEquivalentLayer::setFrontSideDiffuseDiffuseVisibleSolarReflectance(double frontSideDiffuseDiffuseVisibleSolarReflectance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideDiffuseDiffuseVisibleSolarReflectance(
+      frontSideDiffuseDiffuseVisibleSolarReflectance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetFrontSideDiffuseDiffuseVisibleSolarReflectance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideDiffuseDiffuseVisibleSolarReflectance();
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::autocalculateFrontSideDiffuseDiffuseVisibleSolarReflectance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->autocalculateFrontSideDiffuseDiffuseVisibleSolarReflectance();
+  }
+
   boost::optional<double> WindowMaterialGlazingEquivalentLayer::backSideDiffuseDiffuseVisibleSolarReflectance() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->backSideDiffuseDiffuseVisibleSolarReflectance();
   }
@@ -231,12 +427,33 @@ namespace epmodel {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isBackSideDiffuseDiffuseVisibleSolarReflectanceAutocalculated();
   }
 
+  bool WindowMaterialGlazingEquivalentLayer::setBackSideDiffuseDiffuseVisibleSolarReflectance(double backSideDiffuseDiffuseVisibleSolarReflectance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideDiffuseDiffuseVisibleSolarReflectance(
+      backSideDiffuseDiffuseVisibleSolarReflectance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetBackSideDiffuseDiffuseVisibleSolarReflectance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideDiffuseDiffuseVisibleSolarReflectance();
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::autocalculateBackSideDiffuseDiffuseVisibleSolarReflectance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->autocalculateBackSideDiffuseDiffuseVisibleSolarReflectance();
+  }
+
   double WindowMaterialGlazingEquivalentLayer::infraredTransmittance() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->infraredTransmittance();
   }
 
   bool WindowMaterialGlazingEquivalentLayer::isInfraredTransmittanceDefaulted() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isInfraredTransmittanceDefaulted();
+  }
+
+  bool WindowMaterialGlazingEquivalentLayer::setInfraredTransmittance(double infraredTransmittance) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setInfraredTransmittance(infraredTransmittance);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetInfraredTransmittance() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetInfraredTransmittance();
   }
 
   double WindowMaterialGlazingEquivalentLayer::frontSideInfraredEmissivity() const {
@@ -247,12 +464,28 @@ namespace epmodel {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isFrontSideInfraredEmissivityDefaulted();
   }
 
+  bool WindowMaterialGlazingEquivalentLayer::setFrontSideInfraredEmissivity(double frontSideInfraredEmissivity) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideInfraredEmissivity(frontSideInfraredEmissivity);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetFrontSideInfraredEmissivity() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideInfraredEmissivity();
+  }
+
   double WindowMaterialGlazingEquivalentLayer::backSideInfraredEmissivity() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->backSideInfraredEmissivity();
   }
 
   bool WindowMaterialGlazingEquivalentLayer::isBackSideInfraredEmissivityDefaulted() const {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isBackSideInfraredEmissivityDefaulted();
+  }
+
+  bool WindowMaterialGlazingEquivalentLayer::setBackSideInfraredEmissivity(double backSideInfraredEmissivity) {
+    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideInfraredEmissivity(backSideInfraredEmissivity);
+  }
+
+  void WindowMaterialGlazingEquivalentLayer::resetBackSideInfraredEmissivity() {
+    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideInfraredEmissivity();
   }
 
   double WindowMaterialGlazingEquivalentLayer::thermalResistance() const {
@@ -263,245 +496,12 @@ namespace epmodel {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->isThermalResistanceDefaulted();
   }
 
-  bool WindowMaterialGlazingEquivalentLayer::setOpticalDataType(const std::string& opticalDataType) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setOpticalDataType(opticalDataType);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setFrontSideBeamBeamSolarTransmittance(double frontSideBeamBeamSolarTransmittance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideBeamBeamSolarTransmittance(frontSideBeamBeamSolarTransmittance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setBackSideBeamBeamSolarTransmittance(double backSideBeamBeamSolarTransmittance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideBeamBeamSolarTransmittance(backSideBeamBeamSolarTransmittance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setFrontSideBeamBeamSolarReflectance(double frontSideBeamBeamSolarReflectance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideBeamBeamSolarReflectance(frontSideBeamBeamSolarReflectance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setBackSideBeamBeamSolarReflectance(double backSideBeamBeamSolarReflectance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideBeamBeamSolarReflectance(backSideBeamBeamSolarReflectance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setFrontSideBeamBeamVisibleSolarTransmittance(double frontSideBeamBeamVisibleSolarTransmittance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideBeamBeamVisibleSolarTransmittance(
-      frontSideBeamBeamVisibleSolarTransmittance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setBackSideBeamBeamVisibleSolarTransmittance(double backSideBeamBeamVisibleSolarTransmittance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideBeamBeamVisibleSolarTransmittance(
-      backSideBeamBeamVisibleSolarTransmittance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setFrontSideBeamBeamVisibleSolarReflectance(double frontSideBeamBeamVisibleSolarReflectance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideBeamBeamVisibleSolarReflectance(
-      frontSideBeamBeamVisibleSolarReflectance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setBackSideBeamBeamVisibleSolarReflectance(double backSideBeamBeamVisibleSolarReflectance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideBeamBeamVisibleSolarReflectance(
-      backSideBeamBeamVisibleSolarReflectance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setFrontSideBeamDiffuseSolarTransmittance(double frontSideBeamDiffuseSolarTransmittance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideBeamDiffuseSolarTransmittance(
-      frontSideBeamDiffuseSolarTransmittance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setBackSideBeamDiffuseSolarTransmittance(double backSideBeamDiffuseSolarTransmittance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideBeamDiffuseSolarTransmittance(
-      backSideBeamDiffuseSolarTransmittance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setFrontSideBeamDiffuseSolarReflectance(double frontSideBeamDiffuseSolarReflectance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideBeamDiffuseSolarReflectance(
-      frontSideBeamDiffuseSolarReflectance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setBackSideBeamDiffuseSolarReflectance(double backSideBeamDiffuseSolarReflectance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideBeamDiffuseSolarReflectance(backSideBeamDiffuseSolarReflectance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setFrontSideBeamDiffuseVisibleSolarTransmittance(double frontSideBeamDiffuseVisibleSolarTransmittance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideBeamDiffuseVisibleSolarTransmittance(
-      frontSideBeamDiffuseVisibleSolarTransmittance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setBackSideBeamDiffuseVisibleSolarTransmittance(double backSideBeamDiffuseVisibleSolarTransmittance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideBeamDiffuseVisibleSolarTransmittance(
-      backSideBeamDiffuseVisibleSolarTransmittance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setFrontSideBeamDiffuseVisibleSolarReflectance(double frontSideBeamDiffuseVisibleSolarReflectance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideBeamDiffuseVisibleSolarReflectance(
-      frontSideBeamDiffuseVisibleSolarReflectance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setBackSideBeamDiffuseVisibleSolarReflectance(double backSideBeamDiffuseVisibleSolarReflectance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideBeamDiffuseVisibleSolarReflectance(
-      backSideBeamDiffuseVisibleSolarReflectance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setDiffuseDiffuseSolarTransmittance(double diffuseDiffuseSolarTransmittance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setDiffuseDiffuseSolarTransmittance(diffuseDiffuseSolarTransmittance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setFrontSideDiffuseDiffuseSolarReflectance(double frontSideDiffuseDiffuseSolarReflectance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideDiffuseDiffuseSolarReflectance(
-      frontSideDiffuseDiffuseSolarReflectance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setBackSideDiffuseDiffuseSolarReflectance(double backSideDiffuseDiffuseSolarReflectance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideDiffuseDiffuseSolarReflectance(
-      backSideDiffuseDiffuseSolarReflectance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setDiffuseDiffuseVisibleSolarTransmittance(double diffuseDiffuseVisibleSolarTransmittance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setDiffuseDiffuseVisibleSolarTransmittance(
-      diffuseDiffuseVisibleSolarTransmittance);
-  }
-
-  bool
-    WindowMaterialGlazingEquivalentLayer::setFrontSideDiffuseDiffuseVisibleSolarReflectance(double frontSideDiffuseDiffuseVisibleSolarReflectance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideDiffuseDiffuseVisibleSolarReflectance(
-      frontSideDiffuseDiffuseVisibleSolarReflectance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setBackSideDiffuseDiffuseVisibleSolarReflectance(double backSideDiffuseDiffuseVisibleSolarReflectance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideDiffuseDiffuseVisibleSolarReflectance(
-      backSideDiffuseDiffuseVisibleSolarReflectance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setInfraredTransmittance(double infraredTransmittance) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setInfraredTransmittance(infraredTransmittance);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setFrontSideInfraredEmissivity(double frontSideInfraredEmissivity) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setFrontSideInfraredEmissivity(frontSideInfraredEmissivity);
-  }
-
-  bool WindowMaterialGlazingEquivalentLayer::setBackSideInfraredEmissivity(double backSideInfraredEmissivity) {
-    return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setBackSideInfraredEmissivity(backSideInfraredEmissivity);
-  }
-
   bool WindowMaterialGlazingEquivalentLayer::setThermalResistance(double thermalResistance) {
     return getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->setThermalResistance(thermalResistance);
   }
 
-  void WindowMaterialGlazingEquivalentLayer::resetOpticalDataType() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetOpticalDataType();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetFrontSideBeamBeamVisibleSolarTransmittance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideBeamBeamVisibleSolarTransmittance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetBackSideBeamBeamVisibleSolarTransmittance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideBeamBeamVisibleSolarTransmittance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetFrontSideBeamBeamVisibleSolarReflectance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideBeamBeamVisibleSolarReflectance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetBackSideBeamBeamVisibleSolarReflectance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideBeamBeamVisibleSolarReflectance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetFrontSideBeamDiffuseSolarTransmittance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideBeamDiffuseSolarTransmittance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetBackSideBeamDiffuseSolarTransmittance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideBeamDiffuseSolarTransmittance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetFrontSideBeamDiffuseSolarReflectance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideBeamDiffuseSolarReflectance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetBackSideBeamDiffuseSolarReflectance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideBeamDiffuseSolarReflectance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetFrontSideBeamDiffuseVisibleSolarTransmittance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideBeamDiffuseVisibleSolarTransmittance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetBackSideBeamDiffuseVisibleSolarTransmittance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideBeamDiffuseVisibleSolarTransmittance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetFrontSideBeamDiffuseVisibleSolarReflectance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideBeamDiffuseVisibleSolarReflectance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetBackSideBeamDiffuseVisibleSolarReflectance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideBeamDiffuseVisibleSolarReflectance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetDiffuseDiffuseSolarTransmittance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetDiffuseDiffuseSolarTransmittance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetFrontSideDiffuseDiffuseSolarReflectance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideDiffuseDiffuseSolarReflectance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetBackSideDiffuseDiffuseSolarReflectance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideDiffuseDiffuseSolarReflectance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetDiffuseDiffuseVisibleSolarTransmittance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetDiffuseDiffuseVisibleSolarTransmittance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetFrontSideDiffuseDiffuseVisibleSolarReflectance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideDiffuseDiffuseVisibleSolarReflectance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetBackSideDiffuseDiffuseVisibleSolarReflectance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideDiffuseDiffuseVisibleSolarReflectance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetInfraredTransmittance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetInfraredTransmittance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetFrontSideInfraredEmissivity() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetFrontSideInfraredEmissivity();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::resetBackSideInfraredEmissivity() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetBackSideInfraredEmissivity();
-  }
-
   void WindowMaterialGlazingEquivalentLayer::resetThermalResistance() {
     getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->resetThermalResistance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::autocalculateDiffuseDiffuseSolarTransmittance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->autocalculateDiffuseDiffuseSolarTransmittance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::autocalculateFrontSideDiffuseDiffuseSolarReflectance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->autocalculateFrontSideDiffuseDiffuseSolarReflectance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::autocalculateBackSideDiffuseDiffuseSolarReflectance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->autocalculateBackSideDiffuseDiffuseSolarReflectance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::autocalculateDiffuseDiffuseVisibleSolarTransmittance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->autocalculateDiffuseDiffuseVisibleSolarTransmittance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::autocalculateFrontSideDiffuseDiffuseVisibleSolarReflectance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->autocalculateFrontSideDiffuseDiffuseVisibleSolarReflectance();
-  }
-
-  void WindowMaterialGlazingEquivalentLayer::autocalculateBackSideDiffuseDiffuseVisibleSolarReflectance() {
-    getImpl<detail::WindowMaterialGlazingEquivalentLayer_Impl>()->autocalculateBackSideDiffuseDiffuseVisibleSolarReflectance();
   }
 
 }  // namespace epmodel

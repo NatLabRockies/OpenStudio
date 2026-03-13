@@ -42,96 +42,139 @@ namespace epmodel {
     // - API/Field Mapping: Layer type and numeric thermophysical scalars follow the EnergyPlus defaults to mirror translator evidence once available.
     // - TODO(parity): Wire ForwardTranslator evidence to confirm these mappings once the translator has coverage.
 
-    /** @name Getters */
+    /** @name Layer type */
     //@{
     std::string layerType() const;
     bool isLayerTypeDefaulted() const;
-
-    double thickness() const;
-    bool isThicknessDefaulted() const;
-
-    double conductivity() const;
-    bool isConductivityDefaulted() const;
-
-    double irTransmittance() const;
-    bool isIrTransmittanceDefaulted() const;
-
-    double frontEmissivity() const;
-    bool isFrontEmissivityDefaulted() const;
-
-    double backEmissivity() const;
-    bool isBackEmissivityDefaulted() const;
-
-    double topOpeningMultiplier() const;
-    bool isTopOpeningMultiplierDefaulted() const;
-
-    double bottomOpeningMultiplier() const;
-    bool isBottomOpeningMultiplierDefaulted() const;
-
-    double leftSideOpeningMultiplier() const;
-    bool isLeftSideOpeningMultiplierDefaulted() const;
-
-    double rightSideOpeningMultiplier() const;
-    bool isRightSideOpeningMultiplierDefaulted() const;
-
-    double frontOpeningMultiplier() const;
-    bool isFrontOpeningMultiplierDefaulted() const;
-
-    double slatWidth() const;
-    bool isSlatWidthDefaulted() const;
-
-    double slatSpacing() const;
-    bool isSlatSpacingDefaulted() const;
-
-    double slatThickness() const;
-    bool isSlatThicknessDefaulted() const;
-
-    double slatAngle() const;
-    bool isSlatAngleDefaulted() const;
-
-    double slatConductivity() const;
-    bool isSlatConductivityDefaulted() const;
-
-    double slatCurve() const;
-    bool isSlatCurveDefaulted() const;
+    bool setLayerType(const std::string& layerType);
+    void resetLayerType();
     //@}
 
-    /** @name Setters */
+    /** @name Thickness */
     //@{
-    bool setLayerType(const std::string& layerType);
+    double thickness() const;
+    bool isThicknessDefaulted() const;
     bool setThickness(double thickness);
-    bool setConductivity(double conductivity);
-    bool setIrTransmittance(double irTransmittance);
-    bool setFrontEmissivity(double frontEmissivity);
-    bool setBackEmissivity(double backEmissivity);
-    bool setTopOpeningMultiplier(double topOpeningMultiplier);
-    bool setBottomOpeningMultiplier(double bottomOpeningMultiplier);
-    bool setLeftSideOpeningMultiplier(double leftSideOpeningMultiplier);
-    bool setRightSideOpeningMultiplier(double rightSideOpeningMultiplier);
-    bool setFrontOpeningMultiplier(double frontOpeningMultiplier);
-    bool setSlatWidth(double slatWidth);
-    bool setSlatSpacing(double slatSpacing);
-    bool setSlatThickness(double slatThickness);
-    bool setSlatAngle(double slatAngle);
-    bool setSlatConductivity(double slatConductivity);
-    bool setSlatCurve(double slatCurve);
-
-    void resetLayerType();
     void resetThickness();
+    //@}
+
+    /** @name Conductivity */
+    //@{
+    double conductivity() const;
+    bool isConductivityDefaulted() const;
+    bool setConductivity(double conductivity);
     void resetConductivity();
+    //@}
+
+    /** @name IR transmittance */
+    //@{
+    double irTransmittance() const;
+    bool isIrTransmittanceDefaulted() const;
+    bool setIrTransmittance(double irTransmittance);
     void resetIrTransmittance();
+    //@}
+
+    /** @name Front emissivity */
+    //@{
+    double frontEmissivity() const;
+    bool isFrontEmissivityDefaulted() const;
+    bool setFrontEmissivity(double frontEmissivity);
     void resetFrontEmissivity();
+    //@}
+
+    /** @name Back emissivity */
+    //@{
+    double backEmissivity() const;
+    bool isBackEmissivityDefaulted() const;
+    bool setBackEmissivity(double backEmissivity);
     void resetBackEmissivity();
+    //@}
+
+    /** @name Top opening multiplier */
+    //@{
+    double topOpeningMultiplier() const;
+    bool isTopOpeningMultiplierDefaulted() const;
+    bool setTopOpeningMultiplier(double topOpeningMultiplier);
     void resetTopOpeningMultiplier();
+    //@}
+
+    /** @name Bottom opening multiplier */
+    //@{
+    double bottomOpeningMultiplier() const;
+    bool isBottomOpeningMultiplierDefaulted() const;
+    bool setBottomOpeningMultiplier(double bottomOpeningMultiplier);
     void resetBottomOpeningMultiplier();
+    //@}
+
+    /** @name Left side opening multiplier */
+    //@{
+    double leftSideOpeningMultiplier() const;
+    bool isLeftSideOpeningMultiplierDefaulted() const;
+    bool setLeftSideOpeningMultiplier(double leftSideOpeningMultiplier);
     void resetLeftSideOpeningMultiplier();
+    //@}
+
+    /** @name Right side opening multiplier */
+    //@{
+    double rightSideOpeningMultiplier() const;
+    bool isRightSideOpeningMultiplierDefaulted() const;
+    bool setRightSideOpeningMultiplier(double rightSideOpeningMultiplier);
     void resetRightSideOpeningMultiplier();
+    //@}
+
+    /** @name Front opening multiplier */
+    //@{
+    double frontOpeningMultiplier() const;
+    bool isFrontOpeningMultiplierDefaulted() const;
+    bool setFrontOpeningMultiplier(double frontOpeningMultiplier);
     void resetFrontOpeningMultiplier();
+    //@}
+
+    /** @name Slat width */
+    //@{
+    double slatWidth() const;
+    bool isSlatWidthDefaulted() const;
+    bool setSlatWidth(double slatWidth);
     void resetSlatWidth();
+    //@}
+
+    /** @name Slat spacing */
+    //@{
+    double slatSpacing() const;
+    bool isSlatSpacingDefaulted() const;
+    bool setSlatSpacing(double slatSpacing);
     void resetSlatSpacing();
+    //@}
+
+    /** @name Slat thickness */
+    //@{
+    double slatThickness() const;
+    bool isSlatThicknessDefaulted() const;
+    bool setSlatThickness(double slatThickness);
     void resetSlatThickness();
+    //@}
+
+    /** @name Slat angle */
+    //@{
+    double slatAngle() const;
+    bool isSlatAngleDefaulted() const;
+    bool setSlatAngle(double slatAngle);
     void resetSlatAngle();
+    //@}
+
+    /** @name Slat conductivity */
+    //@{
+    double slatConductivity() const;
+    bool isSlatConductivityDefaulted() const;
+    bool setSlatConductivity(double slatConductivity);
     void resetSlatConductivity();
+    //@}
+
+    /** @name Slat curve */
+    //@{
+    double slatCurve() const;
+    bool isSlatCurveDefaulted() const;
+    bool setSlatCurve(double slatCurve);
     void resetSlatCurve();
     //@}
 

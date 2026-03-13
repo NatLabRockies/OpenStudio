@@ -19,9 +19,11 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~RoomAirNode_Impl() override = default;
 
+      // Node Type
       std::string nodeType() const;
       bool setNodeType(const std::string& nodeType);
 
+      // Height of Nodal Control Volume Center
       double heightOfNodalControlVolumeCenter() const;
       bool setHeightOfNodalControlVolumeCenter(double heightOfNodalControlVolumeCenter);
     };

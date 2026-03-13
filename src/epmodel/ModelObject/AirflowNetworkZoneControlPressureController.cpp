@@ -17,51 +17,51 @@
 namespace openstudio {
 namespace epmodel {
 
-AirflowNetworkZoneControlPressureController::AirflowNetworkZoneControlPressureController(const Model& model)
-  : ModelObject(AirflowNetworkZoneControlPressureController::iddObjectType(), model) {}
+  AirflowNetworkZoneControlPressureController::AirflowNetworkZoneControlPressureController(const Model& model)
+    : ModelObject(AirflowNetworkZoneControlPressureController::iddObjectType(), model) {}
 
-AirflowNetworkZoneControlPressureController::AirflowNetworkZoneControlPressureController(
-  std::shared_ptr<detail::AirflowNetworkZoneControlPressureController_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  AirflowNetworkZoneControlPressureController::AirflowNetworkZoneControlPressureController(
+    std::shared_ptr<detail::AirflowNetworkZoneControlPressureController_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType AirflowNetworkZoneControlPressureController::iddObjectType() {
-  return IddObjectType::AirflowNetwork_ZoneControl_PressureController;
-}
+  IddObjectType AirflowNetworkZoneControlPressureController::iddObjectType() {
+    return IddObjectType::AirflowNetwork_ZoneControl_PressureController;
+  }
 
-std::vector<std::string> AirflowNetworkZoneControlPressureController::controlObjectTypeValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::AirflowNetwork_ZoneControl_PressureControllerFields::ControlObjectType);
-}
+  std::vector<std::string> AirflowNetworkZoneControlPressureController::controlObjectTypeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::AirflowNetwork_ZoneControl_PressureControllerFields::ControlObjectType);
+  }
 
-std::string AirflowNetworkZoneControlPressureController::controlObjectType() const {
-  return getImpl<detail::AirflowNetworkZoneControlPressureController_Impl>()->controlObjectType();
-}
+  std::string AirflowNetworkZoneControlPressureController::controlObjectType() const {
+    return getImpl<detail::AirflowNetworkZoneControlPressureController_Impl>()->controlObjectType();
+  }
 
-bool AirflowNetworkZoneControlPressureController::setControlObjectType(const std::string& controlObjectType) {
-  return getImpl<detail::AirflowNetworkZoneControlPressureController_Impl>()->setControlObjectType(controlObjectType);
-}
+  bool AirflowNetworkZoneControlPressureController::setControlObjectType(const std::string& controlObjectType) {
+    return getImpl<detail::AirflowNetworkZoneControlPressureController_Impl>()->setControlObjectType(controlObjectType);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string AirflowNetworkZoneControlPressureController_Impl::controlObjectType() const {
-  const auto value = getString(openstudio::AirflowNetwork_ZoneControl_PressureControllerFields::ControlObjectType, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::vector<std::string> AirflowNetworkZoneControlPressureController_Impl::controlObjectTypeValues() const {
+      return openstudio::epmodel::AirflowNetworkZoneControlPressureController::controlObjectTypeValues();
+    }
 
-bool AirflowNetworkZoneControlPressureController_Impl::setControlObjectType(const std::string& controlObjectType) {
-  return setString(openstudio::AirflowNetwork_ZoneControl_PressureControllerFields::ControlObjectType, controlObjectType);
-}
+    std::string AirflowNetworkZoneControlPressureController_Impl::controlObjectType() const {
+      const auto value = getString(openstudio::AirflowNetwork_ZoneControl_PressureControllerFields::ControlObjectType, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-std::vector<std::string> AirflowNetworkZoneControlPressureController_Impl::controlObjectTypeValues() const {
-  return openstudio::epmodel::AirflowNetworkZoneControlPressureController::controlObjectTypeValues();
-}
+    bool AirflowNetworkZoneControlPressureController_Impl::setControlObjectType(const std::string& controlObjectType) {
+      return setString(openstudio::AirflowNetwork_ZoneControl_PressureControllerFields::ControlObjectType, controlObjectType);
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

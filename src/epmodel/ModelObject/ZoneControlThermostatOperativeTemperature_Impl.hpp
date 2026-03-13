@@ -13,30 +13,30 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ZoneControlThermostatOperativeTemperature_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ZoneControlThermostatOperativeTemperature_Impl() override = default;
+    class EPMODEL_API ZoneControlThermostatOperativeTemperature_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ZoneControlThermostatOperativeTemperature_Impl() override = default;
 
-  std::string radiativeFractionInputMode() const;
-  bool setRadiativeFractionInputMode(const std::string& radiativeFractionInputMode);
+      std::vector<std::string> radiativeFractionInputModeValues() const;
+      std::vector<std::string> adaptiveComfortModelTypeValues() const;
 
-  boost::optional<double> fixedRadiativeFraction() const;
-  bool setFixedRadiativeFraction(double fixedRadiativeFraction);
+      std::string radiativeFractionInputMode() const;
+      bool setRadiativeFractionInputMode(const std::string& radiativeFractionInputMode);
 
-  std::string adaptiveComfortModelType() const;
-  bool setAdaptiveComfortModelType(const std::string& adaptiveComfortModelType);
-  bool isAdaptiveComfortModelTypeDefaulted() const;
-  void resetAdaptiveComfortModelType();
+      boost::optional<double> fixedRadiativeFraction() const;
+      bool setFixedRadiativeFraction(double fixedRadiativeFraction);
 
-  std::vector<std::string> radiativeFractionInputModeValues() const;
-  std::vector<std::string> adaptiveComfortModelTypeValues() const;
-};
+      std::string adaptiveComfortModelType() const;
+      bool setAdaptiveComfortModelType(const std::string& adaptiveComfortModelType);
+      bool isAdaptiveComfortModelTypeDefaulted() const;
+      void resetAdaptiveComfortModelType();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

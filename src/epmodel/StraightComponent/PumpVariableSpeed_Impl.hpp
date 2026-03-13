@@ -33,101 +33,86 @@ namespace epmodel {
       boost::optional<double> ratedFlowRate() const;
       bool isRatedFlowRateDefaulted() const;
       bool isRatedFlowRateAutosized() const;
-
-      double ratedPumpHead() const;
-      bool isRatedPumpHeadDefaulted() const;
-
-      boost::optional<double> ratedPowerConsumption() const;
-      bool isRatedPowerConsumptionDefaulted() const;
-      bool isRatedPowerConsumptionAutosized() const;
-
-      double motorEfficiency() const;
-      bool isMotorEfficiencyDefaulted() const;
-
-      double fractionofMotorInefficienciestoFluidStream() const;
-      bool isFractionofMotorInefficienciestoFluidStreamDefaulted() const;
-
-      double coefficient1ofthePartLoadPerformanceCurve() const;
-      bool isCoefficient1ofthePartLoadPerformanceCurveDefaulted() const;
-
-      double coefficient2ofthePartLoadPerformanceCurve() const;
-      bool isCoefficient2ofthePartLoadPerformanceCurveDefaulted() const;
-
-      double coefficient3ofthePartLoadPerformanceCurve() const;
-      bool isCoefficient3ofthePartLoadPerformanceCurveDefaulted() const;
-
-      double coefficient4ofthePartLoadPerformanceCurve() const;
-      bool isCoefficient4ofthePartLoadPerformanceCurveDefaulted() const;
-
-      double minimumFlowRate() const;
-      bool isMinimumFlowRateDefaulted() const;
-
-      std::string pumpControlType() const;
-      bool isPumpControlTypeDefaulted() const;
-
-      boost::optional<double> impellerDiameter() const;
-
-      boost::optional<std::string> vFDControlType() const;
-
-      double skinLossRadiativeFraction() const;
-
-      std::string designPowerSizingMethod() const;
-
-      double designElectricPowerPerUnitFlowRate() const;
-
-      double designShaftPowerPerUnitFlowRatePerUnitHead() const;
-
-      double designMinimumFlowRateFraction() const;
-
-      std::string endUseSubcategory() const;
-
       bool setRatedFlowRate(double ratedFlowRate);
       void resetRatedFlowRate();
       void autosizeRatedFlowRate();
 
+      double ratedPumpHead() const;
+      bool isRatedPumpHeadDefaulted() const;
       bool setRatedPumpHead(double ratedPumpHead);
       void resetRatedPumpHead();
 
+      boost::optional<double> ratedPowerConsumption() const;
+      bool isRatedPowerConsumptionDefaulted() const;
+      bool isRatedPowerConsumptionAutosized() const;
       bool setRatedPowerConsumption(double ratedPowerConsumption);
       void resetRatedPowerConsumption();
       void autosizeRatedPowerConsumption();
 
+      double motorEfficiency() const;
+      bool isMotorEfficiencyDefaulted() const;
       bool setMotorEfficiency(double motorEfficiency);
       void resetMotorEfficiency();
 
+      double fractionofMotorInefficienciestoFluidStream() const;
+      bool isFractionofMotorInefficienciestoFluidStreamDefaulted() const;
       bool setFractionofMotorInefficienciestoFluidStream(double fractionofMotorInefficienciestoFluidStream);
       void resetFractionofMotorInefficienciestoFluidStream();
 
+      double coefficient1ofthePartLoadPerformanceCurve() const;
+      bool isCoefficient1ofthePartLoadPerformanceCurveDefaulted() const;
       bool setCoefficient1ofthePartLoadPerformanceCurve(double coefficient1ofthePartLoadPerformanceCurve);
       void resetCoefficient1ofthePartLoadPerformanceCurve();
 
+      double coefficient2ofthePartLoadPerformanceCurve() const;
+      bool isCoefficient2ofthePartLoadPerformanceCurveDefaulted() const;
       bool setCoefficient2ofthePartLoadPerformanceCurve(double coefficient2ofthePartLoadPerformanceCurve);
       void resetCoefficient2ofthePartLoadPerformanceCurve();
 
+      double coefficient3ofthePartLoadPerformanceCurve() const;
+      bool isCoefficient3ofthePartLoadPerformanceCurveDefaulted() const;
       bool setCoefficient3ofthePartLoadPerformanceCurve(double coefficient3ofthePartLoadPerformanceCurve);
       void resetCoefficient3ofthePartLoadPerformanceCurve();
 
+      double coefficient4ofthePartLoadPerformanceCurve() const;
+      bool isCoefficient4ofthePartLoadPerformanceCurveDefaulted() const;
       bool setCoefficient4ofthePartLoadPerformanceCurve(double coefficient4ofthePartLoadPerformanceCurve);
       void resetCoefficient4ofthePartLoadPerformanceCurve();
 
+      double minimumFlowRate() const;
+      bool isMinimumFlowRateDefaulted() const;
       bool setMinimumFlowRate(double minimumFlowRate);
       void resetMinimumFlowRate();
 
+      std::string pumpControlType() const;
+      bool isPumpControlTypeDefaulted() const;
       bool setPumpControlType(const std::string& pumpControlType);
       void resetPumpControlType();
 
+      boost::optional<double> impellerDiameter() const;
       bool setImpellerDiameter(double impellerDiameter);
       void resetImpellerDiameter();
 
+      boost::optional<std::string> vFDControlType() const;
       bool setVFDControlType(const std::string& vFDControlType);
       void resetVFDControlType();
 
+      double skinLossRadiativeFraction() const;
       bool setSkinLossRadiativeFraction(double skinLossRadiativeFraction);
 
+      std::string designPowerSizingMethod() const;
       bool setDesignPowerSizingMethod(const std::string& designPowerSizingMethod);
+
+      double designElectricPowerPerUnitFlowRate() const;
       bool setDesignElectricPowerPerUnitFlowRate(double designElectricPowerPerUnitFlowRate);
+
+      double designShaftPowerPerUnitFlowRatePerUnitHead() const;
       bool setDesignShaftPowerPerUnitFlowRatePerUnitHead(double designShaftPowerPerUnitFlowRatePerUnitHead);
+
+      double designMinimumFlowRateFraction() const;
       bool setDesignMinimumFlowRateFraction(double designMinimumFlowRateFraction);
+
+      std::string endUseSubcategory() const;
       bool setEndUseSubcategory(const std::string& endUseSubcategory);
     };
 

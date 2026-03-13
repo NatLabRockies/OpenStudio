@@ -31,6 +31,7 @@ IddObjectType ExternalInterfaceSchedule::iddObjectType() {
   return IddObjectType::ExternalInterface_Schedule;
 }
 
+// Initial Value accessors
 double ExternalInterfaceSchedule::initialValue() const {
   return getImpl<detail::ExternalInterfaceSchedule_Impl>()->initialValue();
 }

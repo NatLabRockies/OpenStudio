@@ -10,28 +10,31 @@
 
 namespace openstudio {
 namespace epmodel {
-class AirLoopHVAC;
-class Node;
-class ModelObject;
-namespace detail {
+  class AirLoopHVAC;
+  class Node;
+  class ModelObject;
+  namespace detail {
 
-class EPMODEL_API AirLoopHVACSupplyPath_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirLoopHVACSupplyPath_Impl() override = default;
+    class EPMODEL_API AirLoopHVACSupplyPath_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirLoopHVACSupplyPath_Impl() override = default;
 
-  boost::optional<openstudio::epmodel::Node> supplyAirPathInletNode() const;
-  bool setSupplyAirPathInletNode(const openstudio::epmodel::Node& node);
-  boost::optional<openstudio::epmodel::AirLoopHVAC> airLoopHVAC() const;
-  std::vector<openstudio::epmodel::ModelObject> components() const;
-  void doCanonicalize(LoadContext& context) override;
+      boost::optional<openstudio::epmodel::Node> supplyAirPathInletNode() const;
+      bool setSupplyAirPathInletNode(const openstudio::epmodel::Node& node);
 
- private:
-  bool addComponent(const openstudio::epmodel::ModelObject& component);
-};
+      boost::optional<openstudio::epmodel::AirLoopHVAC> airLoopHVAC() const;
 
-}  // namespace detail
+      std::vector<openstudio::epmodel::ModelObject> components() const;
+
+      void doCanonicalize(LoadContext& context) override;
+
+     private:
+      bool addComponent(const openstudio::epmodel::ModelObject& component);
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

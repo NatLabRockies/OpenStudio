@@ -35,48 +35,48 @@ namespace epmodel {
       bool setDeltaTemperature(double deltaTemperature);
 
       std::string earthtubeType() const;
-      bool isEarthtubeTypeDefaulted() const;
       bool setEarthtubeType(const std::string& earthtubeType);
+      bool isEarthtubeTypeDefaulted() const;
       void resetEarthtubeType();
 
       double fanPressureRise() const;
-      bool isFanPressureRiseDefaulted() const;
       bool setFanPressureRise(double fanPressureRise);
+      bool isFanPressureRiseDefaulted() const;
       void resetFanPressureRise();
 
       double fanTotalEfficiency() const;
-      bool isFanTotalEfficiencyDefaulted() const;
       bool setFanTotalEfficiency(double fanTotalEfficiency);
+      bool isFanTotalEfficiencyDefaulted() const;
       void resetFanTotalEfficiency();
 
       double pipeRadius() const;
-      bool isPipeRadiusDefaulted() const;
       bool setPipeRadius(double pipeRadius);
+      bool isPipeRadiusDefaulted() const;
       void resetPipeRadius();
 
       double pipeThickness() const;
-      bool isPipeThicknessDefaulted() const;
       bool setPipeThickness(double pipeThickness);
+      bool isPipeThicknessDefaulted() const;
       void resetPipeThickness();
 
       double pipeLength() const;
-      bool isPipeLengthDefaulted() const;
       bool setPipeLength(double pipeLength);
+      bool isPipeLengthDefaulted() const;
       void resetPipeLength();
 
       double pipeThermalConductivity() const;
-      bool isPipeThermalConductivityDefaulted() const;
       bool setPipeThermalConductivity(double pipeThermalConductivity);
+      bool isPipeThermalConductivityDefaulted() const;
       void resetPipeThermalConductivity();
 
       double pipeDepthUnderGroundSurface() const;
-      bool isPipeDepthUnderGroundSurfaceDefaulted() const;
       bool setPipeDepthUnderGroundSurface(double pipeDepthUnderGroundSurface);
+      bool isPipeDepthUnderGroundSurfaceDefaulted() const;
       void resetPipeDepthUnderGroundSurface();
 
       std::string soilCondition() const;
-      bool isSoilConditionDefaulted() const;
       bool setSoilCondition(const std::string& soilCondition);
+      bool isSoilConditionDefaulted() const;
       void resetSoilCondition();
 
       double averageSoilSurfaceTemperature() const;
@@ -89,28 +89,28 @@ namespace epmodel {
       bool setPhaseConstantofSoilSurfaceTemperature(double phaseConstantofSoilSurfaceTemperature);
 
       double constantTermFlowCoefficient() const;
-      bool isConstantTermFlowCoefficientDefaulted() const;
       bool setConstantTermFlowCoefficient(double constantTermFlowCoefficient);
+      bool isConstantTermFlowCoefficientDefaulted() const;
       void resetConstantTermFlowCoefficient();
 
       double temperatureTermFlowCoefficient() const;
-      bool isTemperatureTermFlowCoefficientDefaulted() const;
       bool setTemperatureTermFlowCoefficient(double temperatureTermFlowCoefficient);
+      bool isTemperatureTermFlowCoefficientDefaulted() const;
       void resetTemperatureTermFlowCoefficient();
 
       double velocityTermFlowCoefficient() const;
-      bool isVelocityTermFlowCoefficientDefaulted() const;
       bool setVelocityTermFlowCoefficient(double velocityTermFlowCoefficient);
+      bool isVelocityTermFlowCoefficientDefaulted() const;
       void resetVelocityTermFlowCoefficient();
 
       double velocitySquaredTermFlowCoefficient() const;
-      bool isVelocitySquaredTermFlowCoefficientDefaulted() const;
       bool setVelocitySquaredTermFlowCoefficient(double velocitySquaredTermFlowCoefficient);
+      bool isVelocitySquaredTermFlowCoefficientDefaulted() const;
       void resetVelocitySquaredTermFlowCoefficient();
 
       std::string earthTubeModelType() const;
-      bool isEarthTubeModelTypeDefaulted() const;
       bool setEarthTubeModelType(const std::string& earthTubeModelType);
+      bool isEarthTubeModelTypeDefaulted() const;
       void resetEarthTubeModelType();
 
       std::vector<std::string> earthtubeTypeValues() const;

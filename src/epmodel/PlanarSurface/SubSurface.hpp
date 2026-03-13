@@ -17,74 +17,71 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SubSurface_Impl;
-}
+  namespace detail {
+    class SubSurface_Impl;
+  }
 
-class EPMODEL_API SubSurface : public ModelObject
-{
- public:
-  explicit SubSurface(const Model& model);
+  class EPMODEL_API SubSurface : public ModelObject
+  {
+   public:
+    explicit SubSurface(const Model& model);
 
-  virtual ~SubSurface() override = default;
-  SubSurface(const SubSurface& other) = default;
-  SubSurface(SubSurface&& other) = default;
-  SubSurface& operator=(const SubSurface&) = default;
-  SubSurface& operator=(SubSurface&&) = default;
+    virtual ~SubSurface() override = default;
+    SubSurface(const SubSurface& other) = default;
+    SubSurface(SubSurface&& other) = default;
+    SubSurface& operator=(const SubSurface&) = default;
+    SubSurface& operator=(SubSurface&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> validSubSurfaceTypeValues();
+    static std::vector<std::string> validSubSurfaceTypeValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::SubSurface scalar accessor names/signatures.
-  // - Field Mapping: These APIs map to FenestrationSurface:Detailed fields in the EnergyPlus schema.
-  // - Field Mapping: Construction Name, Building Surface Name, Outside Boundary Condition Object,
-  //   Frame and Divider Name, and extensible vertex coordinates are relationship/non-scalar fields and are excluded.
-  // - ForwardTranslator evidence: ForwardTranslateSubSurface.cpp maps subSurfaceType, viewFactortoGround,
-  //   and multiplier directly to FenestrationSurface:Detailed.
-  // - TODO(parity): Add geometry and typed relationship APIs in later parity milestones.
-  std::string subSurfaceType() const;
-  bool isSubSurfaceTypeDefaulted() const;
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model::SubSurface scalar accessor names/signatures.
+    // - Field Mapping: These APIs map to FenestrationSurface:Detailed fields in the EnergyPlus schema.
+    // - Field Mapping: Construction Name, Building Surface Name, Outside Boundary Condition Object,
+    //   Frame and Divider Name, and extensible vertex coordinates are relationship/non-scalar fields and are excluded.
+    // - ForwardTranslator evidence: ForwardTranslateSubSurface.cpp maps subSurfaceType, viewFactortoGround,
+    //   and multiplier directly to FenestrationSurface:Detailed.
+    // - TODO(parity): Add geometry and typed relationship APIs in later parity milestones.
 
-  boost::optional<double> viewFactortoGround() const;
-  bool isViewFactortoGroundDefaulted() const;
-  bool isViewFactortoGroundAutocalculated() const;
+    std::string subSurfaceType() const;
+    bool isSubSurfaceTypeDefaulted() const;
+    bool setSubSurfaceType(const std::string& subSurfaceType);
+    void resetSubSurfaceType();
 
-  double multiplier() const;
-  bool isMultiplierDefaulted() const;
+    boost::optional<double> viewFactortoGround() const;
+    bool isViewFactortoGroundDefaulted() const;
+    bool isViewFactortoGroundAutocalculated() const;
+    bool setViewFactortoGround(boost::optional<double> viewFactortoGround);
+    bool setViewFactortoGround(double viewFactortoGround);
+    void resetViewFactortoGround();
+    void autocalculateViewFactortoGround();
 
-  boost::optional<double> numberofVertices() const;
-  bool isNumberofVerticesDefaulted() const;
-  bool isNumberofVerticesAutocalculated() const;
+    double multiplier() const;
+    bool isMultiplierDefaulted() const;
+    bool setMultiplier(double multiplier);
+    void resetMultiplier();
 
-  bool setSubSurfaceType(const std::string& subSurfaceType);
-  void resetSubSurfaceType();
+    boost::optional<double> numberofVertices() const;
+    bool isNumberofVerticesDefaulted() const;
+    bool isNumberofVerticesAutocalculated() const;
+    bool setNumberofVertices(boost::optional<double> numberofVertices);
+    bool setNumberofVertices(double numberofVertices);
+    void resetNumberofVertices();
+    void autocalculateNumberofVertices();
 
-  bool setViewFactortoGround(boost::optional<double> viewFactortoGround);
-  bool setViewFactortoGround(double viewFactortoGround);
-  void resetViewFactortoGround();
-  void autocalculateViewFactortoGround();
+   protected:
+    using ImplType = detail::SubSurface_Impl;
 
-  bool setMultiplier(double multiplier);
-  void resetMultiplier();
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  bool setNumberofVertices(boost::optional<double> numberofVertices);
-  bool setNumberofVertices(double numberofVertices);
-  void resetNumberofVertices();
-  void autocalculateNumberofVertices();
-
- protected:
-  using ImplType = detail::SubSurface_Impl;
-
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit SubSurface(std::shared_ptr<detail::SubSurface_Impl> impl);
-};
+    explicit SubSurface(std::shared_ptr<detail::SubSurface_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

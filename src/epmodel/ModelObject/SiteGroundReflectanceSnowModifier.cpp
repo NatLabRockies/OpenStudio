@@ -33,20 +33,20 @@ namespace epmodel {
     return getImpl<detail::SiteGroundReflectanceSnowModifier_Impl>()->isGroundReflectedSolarModifierDefaulted();
   }
 
-  double SiteGroundReflectanceSnowModifier::daylightingGroundReflectedSolarModifier() const {
-    return getImpl<detail::SiteGroundReflectanceSnowModifier_Impl>()->daylightingGroundReflectedSolarModifier();
-  }
-
-  bool SiteGroundReflectanceSnowModifier::isDaylightingGroundReflectedSolarModifierDefaulted() const {
-    return getImpl<detail::SiteGroundReflectanceSnowModifier_Impl>()->isDaylightingGroundReflectedSolarModifierDefaulted();
-  }
-
   bool SiteGroundReflectanceSnowModifier::setGroundReflectedSolarModifier(double groundReflectedSolarModifier) {
     return getImpl<detail::SiteGroundReflectanceSnowModifier_Impl>()->setGroundReflectedSolarModifier(groundReflectedSolarModifier);
   }
 
   void SiteGroundReflectanceSnowModifier::resetGroundReflectedSolarModifier() {
     getImpl<detail::SiteGroundReflectanceSnowModifier_Impl>()->resetGroundReflectedSolarModifier();
+  }
+
+  double SiteGroundReflectanceSnowModifier::daylightingGroundReflectedSolarModifier() const {
+    return getImpl<detail::SiteGroundReflectanceSnowModifier_Impl>()->daylightingGroundReflectedSolarModifier();
+  }
+
+  bool SiteGroundReflectanceSnowModifier::isDaylightingGroundReflectedSolarModifierDefaulted() const {
+    return getImpl<detail::SiteGroundReflectanceSnowModifier_Impl>()->isDaylightingGroundReflectedSolarModifierDefaulted();
   }
 
   bool SiteGroundReflectanceSnowModifier::setDaylightingGroundReflectedSolarModifier(double daylightingGroundReflectedSolarModifier) {

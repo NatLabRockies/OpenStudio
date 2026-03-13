@@ -21,10 +21,10 @@ class EPMODEL_API EnergyManagementSystemProgramCallingManager_Impl : public Mode
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~EnergyManagementSystemProgramCallingManager_Impl() override = default;
 
+  std::vector<std::string> validCallingPointValues() const;
+
   std::string callingPoint() const;
   bool setCallingPoint(const std::string& callingPoint);
-
-  std::vector<std::string> validCallingPointValues() const;
 };
 
 }  // namespace detail

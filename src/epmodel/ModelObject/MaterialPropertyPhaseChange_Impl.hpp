@@ -11,22 +11,22 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API MaterialPropertyPhaseChange_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~MaterialPropertyPhaseChange_Impl() override = default;
+    class EPMODEL_API MaterialPropertyPhaseChange_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~MaterialPropertyPhaseChange_Impl() override = default;
 
-  double temperatureCoefficientforThermalConductivity() const;
-  bool isTemperatureCoefficientforThermalConductivityDefaulted() const;
+      /** Temperature coefficient for thermal conductivity. */
+      double temperatureCoefficientforThermalConductivity() const;
+      bool isTemperatureCoefficientforThermalConductivityDefaulted() const;
+      bool setTemperatureCoefficientforThermalConductivity(double temperatureCoefficientforThermalConductivity);
+      void resetTemperatureCoefficientforThermalConductivity();
+    };
 
-  bool setTemperatureCoefficientforThermalConductivity(double temperatureCoefficientforThermalConductivity);
-  void resetTemperatureCoefficientforThermalConductivity();
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

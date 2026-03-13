@@ -13,26 +13,27 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API PipingSystemUndergroundPipeSegment_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~PipingSystemUndergroundPipeSegment_Impl() override = default;
+    class EPMODEL_API PipingSystemUndergroundPipeSegment_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~PipingSystemUndergroundPipeSegment_Impl() override = default;
 
-  double xPosition() const;
-  double yPosition() const;
-  std::string flowDirection() const;
+      std::vector<std::string> flowDirectionValues() const;
 
-  bool setXPosition(double xPosition);
-  bool setYPosition(double yPosition);
-  bool setFlowDirection(const std::string& flowDirection);
+      double xPosition() const;
+      bool setXPosition(double xPosition);
 
-  std::vector<std::string> flowDirectionValues() const;
-};
+      double yPosition() const;
+      bool setYPosition(double yPosition);
 
-}  // namespace detail
+      std::string flowDirection() const;
+      bool setFlowDirection(const std::string& flowDirection);
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

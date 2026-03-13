@@ -16,106 +16,136 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class OutputControlFiles_Impl;
-}
+  namespace detail {
+    class OutputControlFiles_Impl;
+  }
 
-class EPMODEL_API OutputControlFiles : public ModelObject
-{
- public:
-  explicit OutputControlFiles(const Model& model);
+  class EPMODEL_API OutputControlFiles : public ModelObject
+  {
+   public:
+    explicit OutputControlFiles(const Model& model);
 
-  virtual ~OutputControlFiles() override = default;
-  OutputControlFiles(const OutputControlFiles& other) = default;
-  OutputControlFiles(OutputControlFiles&& other) = default;
-  OutputControlFiles& operator=(const OutputControlFiles&) = default;
-  OutputControlFiles& operator=(OutputControlFiles&&) = default;
+    virtual ~OutputControlFiles() override = default;
+    OutputControlFiles(const OutputControlFiles& other) = default;
+    OutputControlFiles(OutputControlFiles&& other) = default;
+    OutputControlFiles& operator=(const OutputControlFiles&) = default;
+    OutputControlFiles& operator=(OutputControlFiles&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::OutputControlFiles scalar accessor names/signatures.
-  // - Field Mapping: output* scalar APIs map directly to E+ OutputControl:Files yes/no fields.
-  // - Field Mapping: E+ OutputControl:Files OutputEND has no openstudio::model scalar API; ForwardTranslator keeps it hardcoded to "Yes".
-  // - ForwardTranslator evidence: ForwardTranslateOutputControlFiles.cpp writes these preserved output* APIs directly.
-  // - TODO(parity): Keep scalar API stable while extending any non-scalar parity behavior in future passes.
-  bool outputCSV() const;
-  bool outputMTR() const;
-  bool outputESO() const;
-  bool outputEIO() const;
-  bool outputTabular() const;
-  bool outputSQLite() const;
-  bool outputJSON() const;
-  bool outputAUDIT() const;
-  bool outputSpaceSizing() const;
-  bool outputZoneSizing() const;
-  bool outputSystemSizing() const;
-  bool outputDXF() const;
-  bool outputBND() const;
-  bool outputRDD() const;
-  bool outputMDD() const;
-  bool outputMTD() const;
-  bool outputSHD() const;
-  bool outputDFS() const;
-  bool outputGLHE() const;
-  bool outputDelightIn() const;
-  bool outputDelightELdmp() const;
-  bool outputDelightDFdmp() const;
-  bool outputEDD() const;
-  bool outputDBG() const;
-  bool outputPerfLog() const;
-  bool outputSLN() const;
-  bool outputSCI() const;
-  bool outputWRL() const;
-  bool outputScreen() const;
-  bool outputExtShd() const;
-  bool outputTarcog() const;
-  bool outputPlantComponentSizing() const;
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model::OutputControlFiles scalar accessor names/signatures.
+    // - Field Mapping: output* scalar APIs map directly to E+ OutputControl:Files yes/no fields.
+    // - Field Mapping: E+ OutputControl:Files OutputEND has no openstudio::model scalar API; ForwardTranslator keeps it hardcoded to "Yes".
+    // - ForwardTranslator evidence: ForwardTranslateOutputControlFiles.cpp writes these preserved output* APIs directly.
+    // - TODO(parity): Keep scalar API stable while extending any non-scalar parity behavior in future passes.
+    bool outputCSV() const;
+    bool setOutputCSV(bool outputCSV);
 
-  bool setOutputCSV(bool outputCSV);
-  bool setOutputMTR(bool outputMTR);
-  bool setOutputESO(bool outputESO);
-  bool setOutputEIO(bool outputEIO);
-  bool setOutputTabular(bool outputTabular);
-  bool setOutputSQLite(bool outputSQLite);
-  bool setOutputJSON(bool outputJSON);
-  bool setOutputAUDIT(bool outputAUDIT);
-  bool setOutputSpaceSizing(bool outputSpaceSizing);
-  bool setOutputZoneSizing(bool outputZoneSizing);
-  bool setOutputSystemSizing(bool outputSystemSizing);
-  bool setOutputDXF(bool outputDXF);
-  bool setOutputBND(bool outputBND);
-  bool setOutputRDD(bool outputRDD);
-  bool setOutputMDD(bool outputMDD);
-  bool setOutputMTD(bool outputMTD);
-  bool setOutputSHD(bool outputSHD);
-  bool setOutputDFS(bool outputDFS);
-  bool setOutputGLHE(bool outputGLHE);
-  bool setOutputDelightIn(bool outputDelightIn);
-  bool setOutputDelightELdmp(bool outputDelightELdmp);
-  bool setOutputDelightDFdmp(bool outputDelightDFdmp);
-  bool setOutputEDD(bool outputEDD);
-  bool setOutputDBG(bool outputDBG);
-  bool setOutputPerfLog(bool outputPerfLog);
-  bool setOutputSLN(bool outputSLN);
-  bool setOutputSCI(bool outputSCI);
-  bool setOutputWRL(bool outputWRL);
-  bool setOutputScreen(bool outputScreen);
-  bool setOutputExtShd(bool outputExtShd);
-  bool setOutputTarcog(bool outputTarcog);
-  bool setOutputPlantComponentSizing(bool outputPlantComponentSizing);
+    bool outputMTR() const;
+    bool setOutputMTR(bool outputMTR);
 
- protected:
-  using ImplType = detail::OutputControlFiles_Impl;
+    bool outputESO() const;
+    bool setOutputESO(bool outputESO);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    bool outputEIO() const;
+    bool setOutputEIO(bool outputEIO);
 
-  explicit OutputControlFiles(std::shared_ptr<detail::OutputControlFiles_Impl> impl);
-};
+    bool outputTabular() const;
+    bool setOutputTabular(bool outputTabular);
+
+    bool outputSQLite() const;
+    bool setOutputSQLite(bool outputSQLite);
+
+    bool outputJSON() const;
+    bool setOutputJSON(bool outputJSON);
+
+    bool outputAUDIT() const;
+    bool setOutputAUDIT(bool outputAUDIT);
+
+    bool outputSpaceSizing() const;
+    bool setOutputSpaceSizing(bool outputSpaceSizing);
+
+    bool outputZoneSizing() const;
+    bool setOutputZoneSizing(bool outputZoneSizing);
+
+    bool outputSystemSizing() const;
+    bool setOutputSystemSizing(bool outputSystemSizing);
+
+    bool outputDXF() const;
+    bool setOutputDXF(bool outputDXF);
+
+    bool outputBND() const;
+    bool setOutputBND(bool outputBND);
+
+    bool outputRDD() const;
+    bool setOutputRDD(bool outputRDD);
+
+    bool outputMDD() const;
+    bool setOutputMDD(bool outputMDD);
+
+    bool outputMTD() const;
+    bool setOutputMTD(bool outputMTD);
+
+    bool outputSHD() const;
+    bool setOutputSHD(bool outputSHD);
+
+    bool outputDFS() const;
+    bool setOutputDFS(bool outputDFS);
+
+    bool outputGLHE() const;
+    bool setOutputGLHE(bool outputGLHE);
+
+    bool outputDelightIn() const;
+    bool setOutputDelightIn(bool outputDelightIn);
+
+    bool outputDelightELdmp() const;
+    bool setOutputDelightELdmp(bool outputDelightELdmp);
+
+    bool outputDelightDFdmp() const;
+    bool setOutputDelightDFdmp(bool outputDelightDFdmp);
+
+    bool outputEDD() const;
+    bool setOutputEDD(bool outputEDD);
+
+    bool outputDBG() const;
+    bool setOutputDBG(bool outputDBG);
+
+    bool outputPerfLog() const;
+    bool setOutputPerfLog(bool outputPerfLog);
+
+    bool outputSLN() const;
+    bool setOutputSLN(bool outputSLN);
+
+    bool outputSCI() const;
+    bool setOutputSCI(bool outputSCI);
+
+    bool outputWRL() const;
+    bool setOutputWRL(bool outputWRL);
+
+    bool outputScreen() const;
+    bool setOutputScreen(bool outputScreen);
+
+    bool outputExtShd() const;
+    bool setOutputExtShd(bool outputExtShd);
+
+    bool outputTarcog() const;
+    bool setOutputTarcog(bool outputTarcog);
+
+    bool outputPlantComponentSizing() const;
+    bool setOutputPlantComponentSizing(bool outputPlantComponentSizing);
+
+   protected:
+    using ImplType = detail::OutputControlFiles_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit OutputControlFiles(std::shared_ptr<detail::OutputControlFiles_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

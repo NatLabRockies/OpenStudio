@@ -17,47 +17,49 @@
 namespace openstudio {
 namespace epmodel {
 
-SiteSpectrumData::SiteSpectrumData(const Model& model) : ModelObject(SiteSpectrumData::iddObjectType(), model) {}
+  SiteSpectrumData::SiteSpectrumData(const Model& model) : ModelObject(SiteSpectrumData::iddObjectType(), model) {}
 
-SiteSpectrumData::SiteSpectrumData(std::shared_ptr<detail::SiteSpectrumData_Impl> impl) : ModelObject(std::move(impl)) {}
+  SiteSpectrumData::SiteSpectrumData(std::shared_ptr<detail::SiteSpectrumData_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType SiteSpectrumData::iddObjectType() {
-  return IddObjectType::Site_SpectrumData;
-}
+  IddObjectType SiteSpectrumData::iddObjectType() {
+    return IddObjectType::Site_SpectrumData;
+  }
 
-std::vector<std::string> SiteSpectrumData::spectrumDataTypeValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Site_SpectrumDataFields::SpectrumDataType);
-}
+  std::vector<std::string> SiteSpectrumData::spectrumDataTypeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Site_SpectrumDataFields::SpectrumDataType);
+  }
 
-std::string SiteSpectrumData::spectrumDataType() const {
-  return getImpl<detail::SiteSpectrumData_Impl>()->spectrumDataType();
-}
+  // Spectrum Data Type
+  std::string SiteSpectrumData::spectrumDataType() const {
+    return getImpl<detail::SiteSpectrumData_Impl>()->spectrumDataType();
+  }
 
-bool SiteSpectrumData::setSpectrumDataType(const std::string& spectrumDataType) {
-  return getImpl<detail::SiteSpectrumData_Impl>()->setSpectrumDataType(spectrumDataType);
-}
+  bool SiteSpectrumData::setSpectrumDataType(const std::string& spectrumDataType) {
+    return getImpl<detail::SiteSpectrumData_Impl>()->setSpectrumDataType(spectrumDataType);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string SiteSpectrumData_Impl::spectrumDataType() const {
-  const auto value = getString(openstudio::Site_SpectrumDataFields::SpectrumDataType, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::vector<std::string> SiteSpectrumData_Impl::spectrumDataTypeValues() const {
+      return openstudio::epmodel::SiteSpectrumData::spectrumDataTypeValues();
+    }
 
-bool SiteSpectrumData_Impl::setSpectrumDataType(const std::string& spectrumDataType) {
-  return setString(openstudio::Site_SpectrumDataFields::SpectrumDataType, spectrumDataType);
-}
+    // Spectrum Data Type
+    std::string SiteSpectrumData_Impl::spectrumDataType() const {
+      const auto value = getString(openstudio::Site_SpectrumDataFields::SpectrumDataType, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-std::vector<std::string> SiteSpectrumData_Impl::spectrumDataTypeValues() const {
-  return openstudio::epmodel::SiteSpectrumData::spectrumDataTypeValues();
-}
+    bool SiteSpectrumData_Impl::setSpectrumDataType(const std::string& spectrumDataType) {
+      return setString(openstudio::Site_SpectrumDataFields::SpectrumDataType, spectrumDataType);
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

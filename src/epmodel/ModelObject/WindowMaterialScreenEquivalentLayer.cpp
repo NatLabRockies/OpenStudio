@@ -39,99 +39,8 @@ namespace epmodel {
     return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->isScreenBeamBeamSolarTransmittanceAutocalculated();
   }
 
-  double WindowMaterialScreenEquivalentLayer::screenBeamDiffuseSolarTransmittance() const {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenBeamDiffuseSolarTransmittance();
-  }
-
-  double WindowMaterialScreenEquivalentLayer::screenBeamDiffuseSolarReflectance() const {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenBeamDiffuseSolarReflectance();
-  }
-
-  double WindowMaterialScreenEquivalentLayer::screenBeamBeamVisibleSolarTransmittance() const {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenBeamBeamVisibleSolarTransmittance();
-  }
-
-  double WindowMaterialScreenEquivalentLayer::screenBeamDiffuseVisibleSolarTransmittance() const {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenBeamDiffuseVisibleSolarTransmittance();
-  }
-
-  double WindowMaterialScreenEquivalentLayer::screenBeamDiffuseVisibleSolarReflectance() const {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenBeamDiffuseVisibleSolarReflectance();
-  }
-
-  double WindowMaterialScreenEquivalentLayer::screenInfraredTransmittance() const {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenInfraredTransmittance();
-  }
-
-  bool WindowMaterialScreenEquivalentLayer::isScreenInfraredTransmittanceDefaulted() const {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->isScreenInfraredTransmittanceDefaulted();
-  }
-
-  double WindowMaterialScreenEquivalentLayer::screenInfraredEmissivity() const {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenInfraredEmissivity();
-  }
-
-  bool WindowMaterialScreenEquivalentLayer::isScreenInfraredEmissivityDefaulted() const {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->isScreenInfraredEmissivityDefaulted();
-  }
-
-  double WindowMaterialScreenEquivalentLayer::screenWireSpacing() const {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenWireSpacing();
-  }
-
-  bool WindowMaterialScreenEquivalentLayer::isScreenWireSpacingDefaulted() const {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->isScreenWireSpacingDefaulted();
-  }
-
-  double WindowMaterialScreenEquivalentLayer::screenWireDiameter() const {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenWireDiameter();
-  }
-
-  bool WindowMaterialScreenEquivalentLayer::isScreenWireDiameterDefaulted() const {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->isScreenWireDiameterDefaulted();
-  }
-
   bool WindowMaterialScreenEquivalentLayer::setScreenBeamBeamSolarTransmittance(double screenBeamBeamSolarTransmittance) {
     return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenBeamBeamSolarTransmittance(screenBeamBeamSolarTransmittance);
-  }
-
-  bool WindowMaterialScreenEquivalentLayer::setScreenBeamDiffuseSolarTransmittance(double screenBeamDiffuseSolarTransmittance) {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenBeamDiffuseSolarTransmittance(screenBeamDiffuseSolarTransmittance);
-  }
-
-  bool WindowMaterialScreenEquivalentLayer::setScreenBeamDiffuseSolarReflectance(double screenBeamDiffuseSolarReflectance) {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenBeamDiffuseSolarReflectance(screenBeamDiffuseSolarReflectance);
-  }
-
-  bool WindowMaterialScreenEquivalentLayer::setScreenBeamBeamVisibleSolarTransmittance(double screenBeamBeamVisibleSolarTransmittance) {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenBeamBeamVisibleSolarTransmittance(
-      screenBeamBeamVisibleSolarTransmittance);
-  }
-
-  bool WindowMaterialScreenEquivalentLayer::setScreenBeamDiffuseVisibleSolarTransmittance(double screenBeamDiffuseVisibleSolarTransmittance) {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenBeamDiffuseVisibleSolarTransmittance(
-      screenBeamDiffuseVisibleSolarTransmittance);
-  }
-
-  bool WindowMaterialScreenEquivalentLayer::setScreenBeamDiffuseVisibleSolarReflectance(double screenBeamDiffuseVisibleSolarReflectance) {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenBeamDiffuseVisibleSolarReflectance(
-      screenBeamDiffuseVisibleSolarReflectance);
-  }
-
-  bool WindowMaterialScreenEquivalentLayer::setScreenInfraredTransmittance(double screenInfraredTransmittance) {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenInfraredTransmittance(screenInfraredTransmittance);
-  }
-
-  bool WindowMaterialScreenEquivalentLayer::setScreenInfraredEmissivity(double screenInfraredEmissivity) {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenInfraredEmissivity(screenInfraredEmissivity);
-  }
-
-  bool WindowMaterialScreenEquivalentLayer::setScreenWireSpacing(double screenWireSpacing) {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenWireSpacing(screenWireSpacing);
-  }
-
-  bool WindowMaterialScreenEquivalentLayer::setScreenWireDiameter(double screenWireDiameter) {
-    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenWireDiameter(screenWireDiameter);
   }
 
   void WindowMaterialScreenEquivalentLayer::resetScreenBeamBeamSolarTransmittance() {
@@ -142,16 +51,107 @@ namespace epmodel {
     getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->autocalculateScreenBeamBeamSolarTransmittance();
   }
 
+  double WindowMaterialScreenEquivalentLayer::screenBeamDiffuseSolarTransmittance() const {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenBeamDiffuseSolarTransmittance();
+  }
+
+  bool WindowMaterialScreenEquivalentLayer::setScreenBeamDiffuseSolarTransmittance(double screenBeamDiffuseSolarTransmittance) {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenBeamDiffuseSolarTransmittance(screenBeamDiffuseSolarTransmittance);
+  }
+
+  double WindowMaterialScreenEquivalentLayer::screenBeamDiffuseSolarReflectance() const {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenBeamDiffuseSolarReflectance();
+  }
+
+  bool WindowMaterialScreenEquivalentLayer::setScreenBeamDiffuseSolarReflectance(double screenBeamDiffuseSolarReflectance) {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenBeamDiffuseSolarReflectance(screenBeamDiffuseSolarReflectance);
+  }
+
+  double WindowMaterialScreenEquivalentLayer::screenBeamBeamVisibleSolarTransmittance() const {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenBeamBeamVisibleSolarTransmittance();
+  }
+
+  bool WindowMaterialScreenEquivalentLayer::setScreenBeamBeamVisibleSolarTransmittance(double screenBeamBeamVisibleSolarTransmittance) {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenBeamBeamVisibleSolarTransmittance(
+      screenBeamBeamVisibleSolarTransmittance);
+  }
+
+  double WindowMaterialScreenEquivalentLayer::screenBeamDiffuseVisibleSolarTransmittance() const {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenBeamDiffuseVisibleSolarTransmittance();
+  }
+
+  bool WindowMaterialScreenEquivalentLayer::setScreenBeamDiffuseVisibleSolarTransmittance(double screenBeamDiffuseVisibleSolarTransmittance) {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenBeamDiffuseVisibleSolarTransmittance(
+      screenBeamDiffuseVisibleSolarTransmittance);
+  }
+
+  double WindowMaterialScreenEquivalentLayer::screenBeamDiffuseVisibleSolarReflectance() const {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenBeamDiffuseVisibleSolarReflectance();
+  }
+
+  bool WindowMaterialScreenEquivalentLayer::setScreenBeamDiffuseVisibleSolarReflectance(double screenBeamDiffuseVisibleSolarReflectance) {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenBeamDiffuseVisibleSolarReflectance(
+      screenBeamDiffuseVisibleSolarReflectance);
+  }
+
+  double WindowMaterialScreenEquivalentLayer::screenInfraredTransmittance() const {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenInfraredTransmittance();
+  }
+
+  bool WindowMaterialScreenEquivalentLayer::isScreenInfraredTransmittanceDefaulted() const {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->isScreenInfraredTransmittanceDefaulted();
+  }
+
+  bool WindowMaterialScreenEquivalentLayer::setScreenInfraredTransmittance(double screenInfraredTransmittance) {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenInfraredTransmittance(screenInfraredTransmittance);
+  }
+
   void WindowMaterialScreenEquivalentLayer::resetScreenInfraredTransmittance() {
     getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->resetScreenInfraredTransmittance();
+  }
+
+  double WindowMaterialScreenEquivalentLayer::screenInfraredEmissivity() const {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenInfraredEmissivity();
+  }
+
+  bool WindowMaterialScreenEquivalentLayer::isScreenInfraredEmissivityDefaulted() const {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->isScreenInfraredEmissivityDefaulted();
+  }
+
+  bool WindowMaterialScreenEquivalentLayer::setScreenInfraredEmissivity(double screenInfraredEmissivity) {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenInfraredEmissivity(screenInfraredEmissivity);
   }
 
   void WindowMaterialScreenEquivalentLayer::resetScreenInfraredEmissivity() {
     getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->resetScreenInfraredEmissivity();
   }
 
+  double WindowMaterialScreenEquivalentLayer::screenWireSpacing() const {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenWireSpacing();
+  }
+
+  bool WindowMaterialScreenEquivalentLayer::isScreenWireSpacingDefaulted() const {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->isScreenWireSpacingDefaulted();
+  }
+
+  bool WindowMaterialScreenEquivalentLayer::setScreenWireSpacing(double screenWireSpacing) {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenWireSpacing(screenWireSpacing);
+  }
+
   void WindowMaterialScreenEquivalentLayer::resetScreenWireSpacing() {
     getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->resetScreenWireSpacing();
+  }
+
+  double WindowMaterialScreenEquivalentLayer::screenWireDiameter() const {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->screenWireDiameter();
+  }
+
+  bool WindowMaterialScreenEquivalentLayer::isScreenWireDiameterDefaulted() const {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->isScreenWireDiameterDefaulted();
+  }
+
+  bool WindowMaterialScreenEquivalentLayer::setScreenWireDiameter(double screenWireDiameter) {
+    return getImpl<detail::WindowMaterialScreenEquivalentLayer_Impl>()->setScreenWireDiameter(screenWireDiameter);
   }
 
   void WindowMaterialScreenEquivalentLayer::resetScreenWireDiameter() {

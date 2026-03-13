@@ -14,42 +14,39 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API MasslessOpaqueMaterial_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~MasslessOpaqueMaterial_Impl() override = default;
+    class EPMODEL_API MasslessOpaqueMaterial_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~MasslessOpaqueMaterial_Impl() override = default;
 
-  std::string roughness() const;
-  double thermalResistance() const;
+      std::string roughness() const;
+      bool setRoughness(const std::string& roughness);
 
-  boost::optional<double> thermalAbsorptance() const;
-  bool isThermalAbsorptanceDefaulted() const;
+      double thermalResistance() const;
+      bool setThermalResistance(double thermalResistance);
 
-  boost::optional<double> solarAbsorptance() const;
-  bool isSolarAbsorptanceDefaulted() const;
+      boost::optional<double> thermalAbsorptance() const;
+      bool isThermalAbsorptanceDefaulted() const;
+      bool setThermalAbsorptance(double thermalAbsorptance);
+      void resetThermalAbsorptance();
 
-  boost::optional<double> visibleAbsorptance() const;
-  bool isVisibleAbsorptanceDefaulted() const;
+      boost::optional<double> solarAbsorptance() const;
+      bool isSolarAbsorptanceDefaulted() const;
+      bool setSolarAbsorptance(double solarAbsorptance);
+      void resetSolarAbsorptance();
 
-  bool setRoughness(const std::string& roughness);
-  bool setThermalResistance(double thermalResistance);
+      boost::optional<double> visibleAbsorptance() const;
+      bool isVisibleAbsorptanceDefaulted() const;
+      bool setVisibleAbsorptance(double visibleAbsorptance);
+      void resetVisibleAbsorptance();
 
-  bool setThermalAbsorptance(double thermalAbsorptance);
-  void resetThermalAbsorptance();
+      std::vector<std::string> roughnessValues() const;
+    };
 
-  bool setSolarAbsorptance(double solarAbsorptance);
-  void resetSolarAbsorptance();
-
-  bool setVisibleAbsorptance(double visibleAbsorptance);
-  void resetVisibleAbsorptance();
-
-  std::vector<std::string> roughnessValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

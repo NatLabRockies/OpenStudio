@@ -15,150 +15,150 @@
 namespace openstudio {
 namespace epmodel {
 
-ConvergenceLimits::ConvergenceLimits(const Model& model) : ModelObject(ConvergenceLimits::iddObjectType(), model) {
-  // ForwardTranslator emits 1 when this field is blank.
-  OS_ASSERT(setMinimumSystemTimestep(1));
-}
+  ConvergenceLimits::ConvergenceLimits(const Model& model) : ModelObject(ConvergenceLimits::iddObjectType(), model) {
+    // ForwardTranslator emits 1 when this field is blank.
+    OS_ASSERT(setMinimumSystemTimestep(1));
+  }
 
-ConvergenceLimits::ConvergenceLimits(std::shared_ptr<detail::ConvergenceLimits_Impl> impl) : ModelObject(std::move(impl)) {}
+  ConvergenceLimits::ConvergenceLimits(std::shared_ptr<detail::ConvergenceLimits_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType ConvergenceLimits::iddObjectType() {
-  return IddObjectType::ConvergenceLimits;
-}
+  IddObjectType ConvergenceLimits::iddObjectType() {
+    return IddObjectType::ConvergenceLimits;
+  }
 
-boost::optional<int> ConvergenceLimits::minimumSystemTimestep() const {
-  return getImpl<detail::ConvergenceLimits_Impl>()->minimumSystemTimestep();
-}
+  boost::optional<int> ConvergenceLimits::minimumSystemTimestep() const {
+    return getImpl<detail::ConvergenceLimits_Impl>()->minimumSystemTimestep();
+  }
 
-int ConvergenceLimits::maximumHVACIterations() const {
-  return getImpl<detail::ConvergenceLimits_Impl>()->maximumHVACIterations();
-}
+  bool ConvergenceLimits::setMinimumSystemTimestep(int minimumSystemTimestep) {
+    return getImpl<detail::ConvergenceLimits_Impl>()->setMinimumSystemTimestep(minimumSystemTimestep);
+  }
 
-bool ConvergenceLimits::isMaximumHVACIterationsDefaulted() const {
-  return getImpl<detail::ConvergenceLimits_Impl>()->isMaximumHVACIterationsDefaulted();
-}
+  void ConvergenceLimits::resetMinimumSystemTimestep() {
+    getImpl<detail::ConvergenceLimits_Impl>()->resetMinimumSystemTimestep();
+  }
 
-int ConvergenceLimits::minimumPlantIterations() const {
-  return getImpl<detail::ConvergenceLimits_Impl>()->minimumPlantIterations();
-}
+  int ConvergenceLimits::maximumHVACIterations() const {
+    return getImpl<detail::ConvergenceLimits_Impl>()->maximumHVACIterations();
+  }
 
-bool ConvergenceLimits::isMinimumPlantIterationsDefaulted() const {
-  return getImpl<detail::ConvergenceLimits_Impl>()->isMinimumPlantIterationsDefaulted();
-}
+  bool ConvergenceLimits::isMaximumHVACIterationsDefaulted() const {
+    return getImpl<detail::ConvergenceLimits_Impl>()->isMaximumHVACIterationsDefaulted();
+  }
 
-int ConvergenceLimits::maximumPlantIterations() const {
-  return getImpl<detail::ConvergenceLimits_Impl>()->maximumPlantIterations();
-}
+  bool ConvergenceLimits::setMaximumHVACIterations(int maximumHVACIterations) {
+    return getImpl<detail::ConvergenceLimits_Impl>()->setMaximumHVACIterations(maximumHVACIterations);
+  }
 
-bool ConvergenceLimits::isMaximumPlantIterationsDefaulted() const {
-  return getImpl<detail::ConvergenceLimits_Impl>()->isMaximumPlantIterationsDefaulted();
-}
+  void ConvergenceLimits::resetMaximumHVACIterations() {
+    getImpl<detail::ConvergenceLimits_Impl>()->resetMaximumHVACIterations();
+  }
 
-bool ConvergenceLimits::setMinimumSystemTimestep(int minimumSystemTimestep) {
-  return getImpl<detail::ConvergenceLimits_Impl>()->setMinimumSystemTimestep(minimumSystemTimestep);
-}
+  int ConvergenceLimits::minimumPlantIterations() const {
+    return getImpl<detail::ConvergenceLimits_Impl>()->minimumPlantIterations();
+  }
 
-void ConvergenceLimits::resetMinimumSystemTimestep() {
-  getImpl<detail::ConvergenceLimits_Impl>()->resetMinimumSystemTimestep();
-}
+  bool ConvergenceLimits::isMinimumPlantIterationsDefaulted() const {
+    return getImpl<detail::ConvergenceLimits_Impl>()->isMinimumPlantIterationsDefaulted();
+  }
 
-bool ConvergenceLimits::setMaximumHVACIterations(int maximumHVACIterations) {
-  return getImpl<detail::ConvergenceLimits_Impl>()->setMaximumHVACIterations(maximumHVACIterations);
-}
+  bool ConvergenceLimits::setMinimumPlantIterations(int minimumPlantIterations) {
+    return getImpl<detail::ConvergenceLimits_Impl>()->setMinimumPlantIterations(minimumPlantIterations);
+  }
 
-void ConvergenceLimits::resetMaximumHVACIterations() {
-  getImpl<detail::ConvergenceLimits_Impl>()->resetMaximumHVACIterations();
-}
+  void ConvergenceLimits::resetMinimumPlantIterations() {
+    getImpl<detail::ConvergenceLimits_Impl>()->resetMinimumPlantIterations();
+  }
 
-bool ConvergenceLimits::setMinimumPlantIterations(int minimumPlantIterations) {
-  return getImpl<detail::ConvergenceLimits_Impl>()->setMinimumPlantIterations(minimumPlantIterations);
-}
+  int ConvergenceLimits::maximumPlantIterations() const {
+    return getImpl<detail::ConvergenceLimits_Impl>()->maximumPlantIterations();
+  }
 
-void ConvergenceLimits::resetMinimumPlantIterations() {
-  getImpl<detail::ConvergenceLimits_Impl>()->resetMinimumPlantIterations();
-}
+  bool ConvergenceLimits::isMaximumPlantIterationsDefaulted() const {
+    return getImpl<detail::ConvergenceLimits_Impl>()->isMaximumPlantIterationsDefaulted();
+  }
 
-bool ConvergenceLimits::setMaximumPlantIterations(int maximumPlantIterations) {
-  return getImpl<detail::ConvergenceLimits_Impl>()->setMaximumPlantIterations(maximumPlantIterations);
-}
+  bool ConvergenceLimits::setMaximumPlantIterations(int maximumPlantIterations) {
+    return getImpl<detail::ConvergenceLimits_Impl>()->setMaximumPlantIterations(maximumPlantIterations);
+  }
 
-void ConvergenceLimits::resetMaximumPlantIterations() {
-  getImpl<detail::ConvergenceLimits_Impl>()->resetMaximumPlantIterations();
-}
+  void ConvergenceLimits::resetMaximumPlantIterations() {
+    getImpl<detail::ConvergenceLimits_Impl>()->resetMaximumPlantIterations();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-boost::optional<int> ConvergenceLimits_Impl::minimumSystemTimestep() const {
-  return getInt(openstudio::ConvergenceLimitsFields::MinimumSystemTimestep, true);
-}
+    boost::optional<int> ConvergenceLimits_Impl::minimumSystemTimestep() const {
+      return getInt(openstudio::ConvergenceLimitsFields::MinimumSystemTimestep, true);
+    }
 
-int ConvergenceLimits_Impl::maximumHVACIterations() const {
-  const auto value = getInt(openstudio::ConvergenceLimitsFields::MaximumHVACIterations, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool ConvergenceLimits_Impl::setMinimumSystemTimestep(int minimumSystemTimestep) {
+      return setInt(openstudio::ConvergenceLimitsFields::MinimumSystemTimestep, minimumSystemTimestep);
+    }
 
-bool ConvergenceLimits_Impl::isMaximumHVACIterationsDefaulted() const {
-  return !getInt(openstudio::ConvergenceLimitsFields::MaximumHVACIterations, false);
-}
+    void ConvergenceLimits_Impl::resetMinimumSystemTimestep() {
+      OS_ASSERT(setString(openstudio::ConvergenceLimitsFields::MinimumSystemTimestep, ""));
+    }
 
-int ConvergenceLimits_Impl::minimumPlantIterations() const {
-  const auto value = getInt(openstudio::ConvergenceLimitsFields::MinimumPlantIterations, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    int ConvergenceLimits_Impl::maximumHVACIterations() const {
+      const auto value = getInt(openstudio::ConvergenceLimitsFields::MaximumHVACIterations, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool ConvergenceLimits_Impl::isMinimumPlantIterationsDefaulted() const {
-  return !getInt(openstudio::ConvergenceLimitsFields::MinimumPlantIterations, false);
-}
+    bool ConvergenceLimits_Impl::isMaximumHVACIterationsDefaulted() const {
+      return !getInt(openstudio::ConvergenceLimitsFields::MaximumHVACIterations, false);
+    }
 
-int ConvergenceLimits_Impl::maximumPlantIterations() const {
-  const auto value = getInt(openstudio::ConvergenceLimitsFields::MaximumPlantIterations, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool ConvergenceLimits_Impl::setMaximumHVACIterations(int maximumHVACIterations) {
+      return setInt(openstudio::ConvergenceLimitsFields::MaximumHVACIterations, maximumHVACIterations);
+    }
 
-bool ConvergenceLimits_Impl::isMaximumPlantIterationsDefaulted() const {
-  return !getInt(openstudio::ConvergenceLimitsFields::MaximumPlantIterations, false);
-}
+    void ConvergenceLimits_Impl::resetMaximumHVACIterations() {
+      OS_ASSERT(setString(openstudio::ConvergenceLimitsFields::MaximumHVACIterations, ""));
+    }
 
-bool ConvergenceLimits_Impl::setMinimumSystemTimestep(int minimumSystemTimestep) {
-  return setInt(openstudio::ConvergenceLimitsFields::MinimumSystemTimestep, minimumSystemTimestep);
-}
+    int ConvergenceLimits_Impl::minimumPlantIterations() const {
+      const auto value = getInt(openstudio::ConvergenceLimitsFields::MinimumPlantIterations, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-void ConvergenceLimits_Impl::resetMinimumSystemTimestep() {
-  OS_ASSERT(setString(openstudio::ConvergenceLimitsFields::MinimumSystemTimestep, ""));
-}
+    bool ConvergenceLimits_Impl::isMinimumPlantIterationsDefaulted() const {
+      return !getInt(openstudio::ConvergenceLimitsFields::MinimumPlantIterations, false);
+    }
 
-bool ConvergenceLimits_Impl::setMaximumHVACIterations(int maximumHVACIterations) {
-  return setInt(openstudio::ConvergenceLimitsFields::MaximumHVACIterations, maximumHVACIterations);
-}
+    bool ConvergenceLimits_Impl::setMinimumPlantIterations(int minimumPlantIterations) {
+      return setInt(openstudio::ConvergenceLimitsFields::MinimumPlantIterations, minimumPlantIterations);
+    }
 
-void ConvergenceLimits_Impl::resetMaximumHVACIterations() {
-  OS_ASSERT(setString(openstudio::ConvergenceLimitsFields::MaximumHVACIterations, ""));
-}
+    void ConvergenceLimits_Impl::resetMinimumPlantIterations() {
+      OS_ASSERT(setString(openstudio::ConvergenceLimitsFields::MinimumPlantIterations, ""));
+    }
 
-bool ConvergenceLimits_Impl::setMinimumPlantIterations(int minimumPlantIterations) {
-  return setInt(openstudio::ConvergenceLimitsFields::MinimumPlantIterations, minimumPlantIterations);
-}
+    int ConvergenceLimits_Impl::maximumPlantIterations() const {
+      const auto value = getInt(openstudio::ConvergenceLimitsFields::MaximumPlantIterations, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-void ConvergenceLimits_Impl::resetMinimumPlantIterations() {
-  OS_ASSERT(setString(openstudio::ConvergenceLimitsFields::MinimumPlantIterations, ""));
-}
+    bool ConvergenceLimits_Impl::isMaximumPlantIterationsDefaulted() const {
+      return !getInt(openstudio::ConvergenceLimitsFields::MaximumPlantIterations, false);
+    }
 
-bool ConvergenceLimits_Impl::setMaximumPlantIterations(int maximumPlantIterations) {
-  return setInt(openstudio::ConvergenceLimitsFields::MaximumPlantIterations, maximumPlantIterations);
-}
+    bool ConvergenceLimits_Impl::setMaximumPlantIterations(int maximumPlantIterations) {
+      return setInt(openstudio::ConvergenceLimitsFields::MaximumPlantIterations, maximumPlantIterations);
+    }
 
-void ConvergenceLimits_Impl::resetMaximumPlantIterations() {
-  OS_ASSERT(setString(openstudio::ConvergenceLimitsFields::MaximumPlantIterations, ""));
-}
+    void ConvergenceLimits_Impl::resetMaximumPlantIterations() {
+      OS_ASSERT(setString(openstudio::ConvergenceLimitsFields::MaximumPlantIterations, ""));
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

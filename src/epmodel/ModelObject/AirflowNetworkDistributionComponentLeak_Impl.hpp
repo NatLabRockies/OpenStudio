@@ -11,24 +11,24 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirflowNetworkDistributionComponentLeak_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirflowNetworkDistributionComponentLeak_Impl() override = default;
+    class EPMODEL_API AirflowNetworkDistributionComponentLeak_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirflowNetworkDistributionComponentLeak_Impl() override = default;
 
-  double airMassFlowCoefficient() const;
-  bool setAirMassFlowCoefficient(double airMassFlowCoefficient);
+      double airMassFlowCoefficient() const;
+      bool setAirMassFlowCoefficient(double airMassFlowCoefficient);
 
-  double airMassFlowExponent() const;
-  bool isAirMassFlowExponentDefaulted() const;
-  bool setAirMassFlowExponent(double airMassFlowExponent);
-  void resetAirMassFlowExponent();
-};
+      double airMassFlowExponent() const;
+      bool setAirMassFlowExponent(double airMassFlowExponent);
+      bool isAirMassFlowExponentDefaulted() const;
+      void resetAirMassFlowExponent();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

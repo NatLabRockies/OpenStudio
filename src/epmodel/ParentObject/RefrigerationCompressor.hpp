@@ -48,39 +48,41 @@ namespace epmodel {
     //   Transcritical Compressor Power Curve Name, Transcritical Compressor Capacity Curve Name) remain relationship-like and are excluded
     //   from this scalar-only scaffold.
 
-    /** @name Getters */
+    /** @name Scalar Accessors */
     //@{
+
+    // Rated Superheat
     boost::optional<double> ratedSuperheat() const;
-    boost::optional<double> ratedReturnGasTemperature() const;
-    boost::optional<double> ratedLiquidTemperature() const;
-    boost::optional<double> ratedSubcooling() const;
-
-    std::string endUseSubcategory() const;
-    bool isEndUseSubcategoryDefaulted() const;
-
-    std::string modeofOperation() const;
-    bool isModeofOperationDefaulted() const;
-    //@}
-
-    /** @name Setters */
-    //@{
     bool setRatedSuperheat(double ratedSuperheat);
     void resetRatedSuperheat();
 
+    // Rated Return Gas Temperature
+    boost::optional<double> ratedReturnGasTemperature() const;
     bool setRatedReturnGasTemperature(double ratedReturnGasTemperature);
     void resetRatedReturnGasTemperature();
 
+    // Rated Liquid Temperature
+    boost::optional<double> ratedLiquidTemperature() const;
     bool setRatedLiquidTemperature(double ratedLiquidTemperature);
     void resetRatedLiquidTemperature();
 
+    // Rated Subcooling
+    boost::optional<double> ratedSubcooling() const;
     bool setRatedSubcooling(double ratedSubcooling);
     void resetRatedSubcooling();
 
+    // End-use Subcategory
+    std::string endUseSubcategory() const;
+    bool isEndUseSubcategoryDefaulted() const;
     bool setEndUseSubcategory(const std::string& endUseSubcategory);
     void resetEndUseSubcategory();
 
+    // Mode of Operation
+    std::string modeofOperation() const;
+    bool isModeofOperationDefaulted() const;
     bool setModeofOperation(const std::string& modeofOperation);
     void resetModeofOperation();
+
     //@}
 
    protected:

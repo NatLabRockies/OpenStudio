@@ -21,11 +21,11 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~SurfaceConvectionAlgorithmInsideUserCurve_Impl() override = default;
 
+      std::vector<std::string> referenceTemperatureforConvectionHeatTransferValues() const;
+
       boost::optional<std::string> referenceTemperatureforConvectionHeatTransfer() const;
       bool setReferenceTemperatureforConvectionHeatTransfer(const std::string& referenceTemperatureforConvectionHeatTransfer);
       void resetReferenceTemperatureforConvectionHeatTransfer();
-
-      std::vector<std::string> referenceTemperatureforConvectionHeatTransferValues() const;
     };
 
   }  // namespace detail

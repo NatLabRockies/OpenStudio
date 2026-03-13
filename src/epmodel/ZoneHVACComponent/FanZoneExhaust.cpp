@@ -40,12 +40,12 @@ double FanZoneExhaust::fanTotalEfficiency() const {
   return getImpl<detail::FanZoneExhaust_Impl>()->fanTotalEfficiency();
 }
 
-double FanZoneExhaust::fanEfficiency() const {
-  return getImpl<detail::FanZoneExhaust_Impl>()->fanTotalEfficiency();
-}
-
 bool FanZoneExhaust::setFanTotalEfficiency(double fanTotalEfficiency) {
   return getImpl<detail::FanZoneExhaust_Impl>()->setFanTotalEfficiency(fanTotalEfficiency);
+}
+
+double FanZoneExhaust::fanEfficiency() const {
+  return getImpl<detail::FanZoneExhaust_Impl>()->fanTotalEfficiency();
 }
 
 bool FanZoneExhaust::setFanEfficiency(double fanTotalEfficiency) {

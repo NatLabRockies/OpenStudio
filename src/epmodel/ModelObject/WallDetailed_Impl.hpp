@@ -35,10 +35,10 @@ namespace epmodel {
       void resetWindExposure();
 
       boost::optional<double> viewFactorToGround() const;
-      bool isViewFactorToGroundDefaulted() const;
-      bool isViewFactorToGroundAutocalculated() const;
       bool setViewFactorToGround(double viewFactorToGround);
+      bool isViewFactorToGroundDefaulted() const;
       void resetViewFactorToGround();
+      bool isViewFactorToGroundAutocalculated() const;
       void autocalculateViewFactorToGround();
     };
 

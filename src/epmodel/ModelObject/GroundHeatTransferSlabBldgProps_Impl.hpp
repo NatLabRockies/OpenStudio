@@ -11,86 +11,99 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatTransferSlabBldgProps_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatTransferSlabBldgProps_Impl() override = default;
+    class EPMODEL_API GroundHeatTransferSlabBldgProps_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatTransferSlabBldgProps_Impl() override = default;
 
-  double iyrsNumberofyearstoiterate() const;
-  boost::optional<double> shapeSlabshape() const;
-  boost::optional<double> hbldgBuildingheight() const;
-  double tin1JanuaryIndoorAverageTemperatureSetpoint() const;
-  double tin2FebruaryIndoorAverageTemperatureSetpoint() const;
-  double tin3MarchIndoorAverageTemperatureSetpoint() const;
-  double tin4AprilIndoorAverageTemperatureSetpoint() const;
-  double tin5MayIndoorAverageTemperatureSetpoint() const;
-  double tin6JuneIndoorAverageTemperatureSetpoint() const;
-  double tin7JulyIndoorAverageTemperatureSetpoint() const;
-  double tin8AugustIndoorAverageTemperatureSetpoint() const;
-  double tin9SeptemberIndoorAverageTemperatureSetpoint() const;
-  double tin10OctoberIndoorAverageTemperatureSetpoint() const;
-  double tin11NovemberIndoorAverageTemperatureSetpoint() const;
-  double tin12DecemberIndoorAverageTemperatureSetpoint() const;
-  double tinAmpDailyIndoorsinewavevariationamplitude() const;
-  double convTolConvergenceTolerance() const;
+      double iyrsNumberofyearstoiterate() const;
+      bool isIyrsNumberofyearstoiterateDefaulted() const;
+      bool setIyrsNumberofyearstoiterate(double iyrsNumberofyearstoiterate);
+      void resetIyrsNumberofyearstoiterate();
 
-  bool isIyrsNumberofyearstoiterateDefaulted() const;
-  bool isTin1JanuaryIndoorAverageTemperatureSetpointDefaulted() const;
-  bool isTin2FebruaryIndoorAverageTemperatureSetpointDefaulted() const;
-  bool isTin3MarchIndoorAverageTemperatureSetpointDefaulted() const;
-  bool isTin4AprilIndoorAverageTemperatureSetpointDefaulted() const;
-  bool isTin5MayIndoorAverageTemperatureSetpointDefaulted() const;
-  bool isTin6JuneIndoorAverageTemperatureSetpointDefaulted() const;
-  bool isTin7JulyIndoorAverageTemperatureSetpointDefaulted() const;
-  bool isTin8AugustIndoorAverageTemperatureSetpointDefaulted() const;
-  bool isTin9SeptemberIndoorAverageTemperatureSetpointDefaulted() const;
-  bool isTin10OctoberIndoorAverageTemperatureSetpointDefaulted() const;
-  bool isTin11NovemberIndoorAverageTemperatureSetpointDefaulted() const;
-  bool isTin12DecemberIndoorAverageTemperatureSetpointDefaulted() const;
-  bool isTinAmpDailyIndoorsinewavevariationamplitudeDefaulted() const;
-  bool isConvTolConvergenceToleranceDefaulted() const;
+      boost::optional<double> shapeSlabshape() const;
+      bool setShapeSlabshape(double shapeSlabshape);
+      void resetShapeSlabshape();
 
-  bool setIyrsNumberofyearstoiterate(double iyrsNumberofyearstoiterate);
-  bool setShapeSlabshape(double shapeSlabshape);
-  bool setHbldgBuildingheight(double hbldgBuildingheight);
-  bool setTin1JanuaryIndoorAverageTemperatureSetpoint(double tin1JanuaryIndoorAverageTemperatureSetpoint);
-  bool setTin2FebruaryIndoorAverageTemperatureSetpoint(double tin2FebruaryIndoorAverageTemperatureSetpoint);
-  bool setTin3MarchIndoorAverageTemperatureSetpoint(double tin3MarchIndoorAverageTemperatureSetpoint);
-  bool setTin4AprilIndoorAverageTemperatureSetpoint(double tin4AprilIndoorAverageTemperatureSetpoint);
-  bool setTin5MayIndoorAverageTemperatureSetpoint(double tin5MayIndoorAverageTemperatureSetpoint);
-  bool setTin6JuneIndoorAverageTemperatureSetpoint(double tin6JuneIndoorAverageTemperatureSetpoint);
-  bool setTin7JulyIndoorAverageTemperatureSetpoint(double tin7JulyIndoorAverageTemperatureSetpoint);
-  bool setTin8AugustIndoorAverageTemperatureSetpoint(double tin8AugustIndoorAverageTemperatureSetpoint);
-  bool setTin9SeptemberIndoorAverageTemperatureSetpoint(double tin9SeptemberIndoorAverageTemperatureSetpoint);
-  bool setTin10OctoberIndoorAverageTemperatureSetpoint(double tin10OctoberIndoorAverageTemperatureSetpoint);
-  bool setTin11NovemberIndoorAverageTemperatureSetpoint(double tin11NovemberIndoorAverageTemperatureSetpoint);
-  bool setTin12DecemberIndoorAverageTemperatureSetpoint(double tin12DecemberIndoorAverageTemperatureSetpoint);
-  bool setTinAmpDailyIndoorsinewavevariationamplitude(double tinAmpDailyIndoorsinewavevariationamplitude);
-  bool setConvTolConvergenceTolerance(double convTolConvergenceTolerance);
+      boost::optional<double> hbldgBuildingheight() const;
+      bool setHbldgBuildingheight(double hbldgBuildingheight);
+      void resetHbldgBuildingheight();
 
-  void resetIyrsNumberofyearstoiterate();
-  void resetShapeSlabshape();
-  void resetHbldgBuildingheight();
-  void resetTin1JanuaryIndoorAverageTemperatureSetpoint();
-  void resetTin2FebruaryIndoorAverageTemperatureSetpoint();
-  void resetTin3MarchIndoorAverageTemperatureSetpoint();
-  void resetTin4AprilIndoorAverageTemperatureSetpoint();
-  void resetTin5MayIndoorAverageTemperatureSetpoint();
-  void resetTin6JuneIndoorAverageTemperatureSetpoint();
-  void resetTin7JulyIndoorAverageTemperatureSetpoint();
-  void resetTin8AugustIndoorAverageTemperatureSetpoint();
-  void resetTin9SeptemberIndoorAverageTemperatureSetpoint();
-  void resetTin10OctoberIndoorAverageTemperatureSetpoint();
-  void resetTin11NovemberIndoorAverageTemperatureSetpoint();
-  void resetTin12DecemberIndoorAverageTemperatureSetpoint();
-  void resetTinAmpDailyIndoorsinewavevariationamplitude();
-  void resetConvTolConvergenceTolerance();
-};
+      double tin1JanuaryIndoorAverageTemperatureSetpoint() const;
+      bool isTin1JanuaryIndoorAverageTemperatureSetpointDefaulted() const;
+      bool setTin1JanuaryIndoorAverageTemperatureSetpoint(double tin1JanuaryIndoorAverageTemperatureSetpoint);
+      void resetTin1JanuaryIndoorAverageTemperatureSetpoint();
 
-}  // namespace detail
+      double tin2FebruaryIndoorAverageTemperatureSetpoint() const;
+      bool isTin2FebruaryIndoorAverageTemperatureSetpointDefaulted() const;
+      bool setTin2FebruaryIndoorAverageTemperatureSetpoint(double tin2FebruaryIndoorAverageTemperatureSetpoint);
+      void resetTin2FebruaryIndoorAverageTemperatureSetpoint();
+
+      double tin3MarchIndoorAverageTemperatureSetpoint() const;
+      bool isTin3MarchIndoorAverageTemperatureSetpointDefaulted() const;
+      bool setTin3MarchIndoorAverageTemperatureSetpoint(double tin3MarchIndoorAverageTemperatureSetpoint);
+      void resetTin3MarchIndoorAverageTemperatureSetpoint();
+
+      double tin4AprilIndoorAverageTemperatureSetpoint() const;
+      bool isTin4AprilIndoorAverageTemperatureSetpointDefaulted() const;
+      bool setTin4AprilIndoorAverageTemperatureSetpoint(double tin4AprilIndoorAverageTemperatureSetpoint);
+      void resetTin4AprilIndoorAverageTemperatureSetpoint();
+
+      double tin5MayIndoorAverageTemperatureSetpoint() const;
+      bool isTin5MayIndoorAverageTemperatureSetpointDefaulted() const;
+      bool setTin5MayIndoorAverageTemperatureSetpoint(double tin5MayIndoorAverageTemperatureSetpoint);
+      void resetTin5MayIndoorAverageTemperatureSetpoint();
+
+      double tin6JuneIndoorAverageTemperatureSetpoint() const;
+      bool isTin6JuneIndoorAverageTemperatureSetpointDefaulted() const;
+      bool setTin6JuneIndoorAverageTemperatureSetpoint(double tin6JuneIndoorAverageTemperatureSetpoint);
+      void resetTin6JuneIndoorAverageTemperatureSetpoint();
+
+      double tin7JulyIndoorAverageTemperatureSetpoint() const;
+      bool isTin7JulyIndoorAverageTemperatureSetpointDefaulted() const;
+      bool setTin7JulyIndoorAverageTemperatureSetpoint(double tin7JulyIndoorAverageTemperatureSetpoint);
+      void resetTin7JulyIndoorAverageTemperatureSetpoint();
+
+      double tin8AugustIndoorAverageTemperatureSetpoint() const;
+      bool isTin8AugustIndoorAverageTemperatureSetpointDefaulted() const;
+      bool setTin8AugustIndoorAverageTemperatureSetpoint(double tin8AugustIndoorAverageTemperatureSetpoint);
+      void resetTin8AugustIndoorAverageTemperatureSetpoint();
+
+      double tin9SeptemberIndoorAverageTemperatureSetpoint() const;
+      bool isTin9SeptemberIndoorAverageTemperatureSetpointDefaulted() const;
+      bool setTin9SeptemberIndoorAverageTemperatureSetpoint(double tin9SeptemberIndoorAverageTemperatureSetpoint);
+      void resetTin9SeptemberIndoorAverageTemperatureSetpoint();
+
+      double tin10OctoberIndoorAverageTemperatureSetpoint() const;
+      bool isTin10OctoberIndoorAverageTemperatureSetpointDefaulted() const;
+      bool setTin10OctoberIndoorAverageTemperatureSetpoint(double tin10OctoberIndoorAverageTemperatureSetpoint);
+      void resetTin10OctoberIndoorAverageTemperatureSetpoint();
+
+      double tin11NovemberIndoorAverageTemperatureSetpoint() const;
+      bool isTin11NovemberIndoorAverageTemperatureSetpointDefaulted() const;
+      bool setTin11NovemberIndoorAverageTemperatureSetpoint(double tin11NovemberIndoorAverageTemperatureSetpoint);
+      void resetTin11NovemberIndoorAverageTemperatureSetpoint();
+
+      double tin12DecemberIndoorAverageTemperatureSetpoint() const;
+      bool isTin12DecemberIndoorAverageTemperatureSetpointDefaulted() const;
+      bool setTin12DecemberIndoorAverageTemperatureSetpoint(double tin12DecemberIndoorAverageTemperatureSetpoint);
+      void resetTin12DecemberIndoorAverageTemperatureSetpoint();
+
+      double tinAmpDailyIndoorsinewavevariationamplitude() const;
+      bool isTinAmpDailyIndoorsinewavevariationamplitudeDefaulted() const;
+      bool setTinAmpDailyIndoorsinewavevariationamplitude(double tinAmpDailyIndoorsinewavevariationamplitude);
+      void resetTinAmpDailyIndoorsinewavevariationamplitude();
+
+      double convTolConvergenceTolerance() const;
+      bool isConvTolConvergenceToleranceDefaulted() const;
+      bool setConvTolConvergenceTolerance(double convTolConvergenceTolerance);
+      void resetConvTolConvergenceTolerance();
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

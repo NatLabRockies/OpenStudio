@@ -45,6 +45,12 @@ namespace epmodel {
     // - API: No openstudio::model counterpart exists, so WaterUseStorage retains IDD-derived WaterUse:Storage naming.
     // - Field Mapping: Scalars map directly to WaterUse:Storage via WaterUse_StorageFields (Water Quality Subcategory, Maximum Capacity, Initial Volume, Design In Flow Rate, Design Out Flow Rate, Type of Supply Controlled by Float Valve, Float Valve On/Off/Backup Mains Capacities, Water Thermal Mode, Ambient Temperature Indicator, Tank Surface Area, Tank U Value).
     // - Field Mapping: Name is handled by ModelObject base APIs and object-list/reference fields (Overflow Destination, Other Tank Name, Water Temperature Schedule Name, Ambient Temperature Schedule Name, Zone Name, Tank Outside Surface Material Name) remain excluded relationship helpers per the contract.
+
+    /** @name Field accessors
+     *  Getter/setter pairs are grouped per field for clarity.
+     */
+    //@{
+
     boost::optional<std::string> waterQualitySubcategory() const;
     bool setWaterQualitySubcategory(const std::string& waterQualitySubcategory);
 
@@ -83,6 +89,8 @@ namespace epmodel {
 
     boost::optional<double> tankUValue() const;
     bool setTankUValue(double tankUValue);
+
+    //@}
 
    protected:
     using ImplType = detail::WaterUseStorage_Impl;

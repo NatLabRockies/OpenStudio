@@ -43,13 +43,13 @@ namespace epmodel {
 
     double uFactor() const;
 
-    double solarHeatGainCoefficient() const;
-
-    boost::optional<double> visibleTransmittance() const;
-
     bool setUFactor(double uFactor);
 
+    double solarHeatGainCoefficient() const;
+
     bool setSolarHeatGainCoefficient(double solarHeatGainCoefficient);
+
+    boost::optional<double> visibleTransmittance() const;
 
     bool setVisibleTransmittance(double visibleTransmittance);
 

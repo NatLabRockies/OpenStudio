@@ -43,12 +43,12 @@ std::string SetpointManagerSingleZoneOneStageHeating::controlVariable() const {
   return "Temperature";
 }
 
-double SetpointManagerSingleZoneOneStageHeating::heatingStageOnSupplyAirSetpointTemperature() const {
-  return getImpl<detail::SetpointManagerSingleZoneOneStageHeating_Impl>()->heatingStageOnSupplyAirSetpointTemperature();
+bool SetpointManagerSingleZoneOneStageHeating::setControlVariable(const std::string& controlVariable) {
+  return openstudio::istringEqual(controlVariable, "Temperature");
 }
 
-double SetpointManagerSingleZoneOneStageHeating::heatingStageOffSupplyAirSetpointTemperature() const {
-  return getImpl<detail::SetpointManagerSingleZoneOneStageHeating_Impl>()->heatingStageOffSupplyAirSetpointTemperature();
+double SetpointManagerSingleZoneOneStageHeating::heatingStageOnSupplyAirSetpointTemperature() const {
+  return getImpl<detail::SetpointManagerSingleZoneOneStageHeating_Impl>()->heatingStageOnSupplyAirSetpointTemperature();
 }
 
 bool SetpointManagerSingleZoneOneStageHeating::setHeatingStageOnSupplyAirSetpointTemperature(double heatingStageOnSupplyAirSetpointTemperature) {
@@ -59,8 +59,8 @@ bool SetpointManagerSingleZoneOneStageHeating::setHeatingStageOnSupplyAirSetpoin
   return result;
 }
 
-bool SetpointManagerSingleZoneOneStageHeating::setControlVariable(const std::string& controlVariable) {
-  return openstudio::istringEqual(controlVariable, "Temperature");
+double SetpointManagerSingleZoneOneStageHeating::heatingStageOffSupplyAirSetpointTemperature() const {
+  return getImpl<detail::SetpointManagerSingleZoneOneStageHeating_Impl>()->heatingStageOffSupplyAirSetpointTemperature();
 }
 
 bool SetpointManagerSingleZoneOneStageHeating::setHeatingStageOffSupplyAirSetpointTemperature(
@@ -85,17 +85,17 @@ double SetpointManagerSingleZoneOneStageHeating_Impl::heatingStageOnSupplyAirSet
   return *value;
 }
 
-double SetpointManagerSingleZoneOneStageHeating_Impl::heatingStageOffSupplyAirSetpointTemperature() const {
-  const auto value = getDouble(openstudio::SetpointManager_SingleZone_OneStageHeatingFields::HeatingStageOffSupplyAirSetpointTemperature, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
 bool SetpointManagerSingleZoneOneStageHeating_Impl::setHeatingStageOnSupplyAirSetpointTemperature(double heatingStageOnSupplyAirSetpointTemperature) {
   const bool result = setDouble(openstudio::SetpointManager_SingleZone_OneStageHeatingFields::HeatingStageOnSupplyAirSetpointTemperature,
                                 heatingStageOnSupplyAirSetpointTemperature);
   OS_ASSERT(result);
   return result;
+}
+
+double SetpointManagerSingleZoneOneStageHeating_Impl::heatingStageOffSupplyAirSetpointTemperature() const {
+  const auto value = getDouble(openstudio::SetpointManager_SingleZone_OneStageHeatingFields::HeatingStageOffSupplyAirSetpointTemperature, true);
+  OS_ASSERT(value);
+  return *value;
 }
 
 bool SetpointManagerSingleZoneOneStageHeating_Impl::setHeatingStageOffSupplyAirSetpointTemperature(

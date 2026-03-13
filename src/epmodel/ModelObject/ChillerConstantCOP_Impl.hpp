@@ -21,58 +21,58 @@ class EPMODEL_API ChillerConstantCOP_Impl : public ModelObject_Impl
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~ChillerConstantCOP_Impl() override = default;
 
+  std::vector<std::string> condenserTypeValues() const;
+  std::vector<std::string> chillerFlowModeValues() const;
+
   boost::optional<double> nominalCapacity() const;
-  bool isNominalCapacityAutosized() const;
   bool setNominalCapacity(double nominalCapacity);
+  bool isNominalCapacityAutosized() const;
   void autosizeNominalCapacity();
 
   double nominalCOP() const;
   bool setNominalCOP(double nominalCOP);
 
   boost::optional<double> designChilledWaterFlowRate() const;
-  bool isDesignChilledWaterFlowRateAutosized() const;
   bool setDesignChilledWaterFlowRate(double designChilledWaterFlowRate);
   void resetDesignChilledWaterFlowRate();
+  bool isDesignChilledWaterFlowRateAutosized() const;
   void autosizeDesignChilledWaterFlowRate();
 
   boost::optional<double> designCondenserWaterFlowRate() const;
-  bool isDesignCondenserWaterFlowRateAutosized() const;
   bool setDesignCondenserWaterFlowRate(double designCondenserWaterFlowRate);
   void resetDesignCondenserWaterFlowRate();
+  bool isDesignCondenserWaterFlowRateAutosized() const;
   void autosizeDesignCondenserWaterFlowRate();
 
   std::string condenserType() const;
-  bool isCondenserTypeDefaulted() const;
   bool setCondenserType(const std::string& condenserType);
+  bool isCondenserTypeDefaulted() const;
   void resetCondenserType();
 
   std::string chillerFlowMode() const;
-  bool isChillerFlowModeDefaulted() const;
   bool setChillerFlowMode(const std::string& chillerFlowMode);
+  bool isChillerFlowModeDefaulted() const;
   void resetChillerFlowMode();
 
   double sizingFactor() const;
-  bool isSizingFactorDefaulted() const;
   bool setSizingFactor(double sizingFactor);
+  bool isSizingFactorDefaulted() const;
   void resetSizingFactor();
 
   double basinHeaterCapacity() const;
-  bool isBasinHeaterCapacityDefaulted() const;
   bool setBasinHeaterCapacity(double basinHeaterCapacity);
+  bool isBasinHeaterCapacityDefaulted() const;
   void resetBasinHeaterCapacity();
 
   double basinHeaterSetpointTemperature() const;
-  bool isBasinHeaterSetpointTemperatureDefaulted() const;
   bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
+  bool isBasinHeaterSetpointTemperatureDefaulted() const;
   void resetBasinHeaterSetpointTemperature();
 
   double thermosiphonMinimumTemperatureDifference() const;
-  bool isThermosiphonMinimumTemperatureDifferenceDefaulted() const;
   bool setThermosiphonMinimumTemperatureDifference(double thermosiphonMinimumTemperatureDifference);
+  bool isThermosiphonMinimumTemperatureDifferenceDefaulted() const;
   void resetThermosiphonMinimumTemperatureDifference();
-
-  std::vector<std::string> condenserTypeValues() const;
-  std::vector<std::string> chillerFlowModeValues() const;
 };
 
 }  // namespace detail

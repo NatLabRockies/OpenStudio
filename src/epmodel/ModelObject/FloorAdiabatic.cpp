@@ -15,209 +15,223 @@
 namespace openstudio {
 namespace epmodel {
 
-FloorAdiabatic::FloorAdiabatic(const Model& model) : ModelObject(FloorAdiabatic::iddObjectType(), model) {}
+  FloorAdiabatic::FloorAdiabatic(const Model& model) : ModelObject(FloorAdiabatic::iddObjectType(), model) {}
 
-FloorAdiabatic::FloorAdiabatic(std::shared_ptr<detail::FloorAdiabatic_Impl> impl) : ModelObject(std::move(impl)) {}
+  FloorAdiabatic::FloorAdiabatic(std::shared_ptr<detail::FloorAdiabatic_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType FloorAdiabatic::iddObjectType() {
-  return IddObjectType::Floor_Adiabatic;
-}
+  IddObjectType FloorAdiabatic::iddObjectType() {
+    return IddObjectType::Floor_Adiabatic;
+  }
 
-boost::optional<double> FloorAdiabatic::azimuthAngle() const {
-  return getImpl<detail::FloorAdiabatic_Impl>()->azimuthAngle();
-}
+  // AzimuthAngle
+  boost::optional<double> FloorAdiabatic::azimuthAngle() const {
+    return getImpl<detail::FloorAdiabatic_Impl>()->azimuthAngle();
+  }
 
-bool FloorAdiabatic::setAzimuthAngle(double azimuthAngle) {
-  return getImpl<detail::FloorAdiabatic_Impl>()->setAzimuthAngle(azimuthAngle);
-}
+  bool FloorAdiabatic::setAzimuthAngle(double azimuthAngle) {
+    return getImpl<detail::FloorAdiabatic_Impl>()->setAzimuthAngle(azimuthAngle);
+  }
 
-void FloorAdiabatic::resetAzimuthAngle() {
-  getImpl<detail::FloorAdiabatic_Impl>()->resetAzimuthAngle();
-}
+  void FloorAdiabatic::resetAzimuthAngle() {
+    getImpl<detail::FloorAdiabatic_Impl>()->resetAzimuthAngle();
+  }
 
-double FloorAdiabatic::tiltAngle() const {
-  return getImpl<detail::FloorAdiabatic_Impl>()->tiltAngle();
-}
+  // TiltAngle
+  double FloorAdiabatic::tiltAngle() const {
+    return getImpl<detail::FloorAdiabatic_Impl>()->tiltAngle();
+  }
 
-bool FloorAdiabatic::isTiltAngleDefaulted() const {
-  return getImpl<detail::FloorAdiabatic_Impl>()->isTiltAngleDefaulted();
-}
+  bool FloorAdiabatic::isTiltAngleDefaulted() const {
+    return getImpl<detail::FloorAdiabatic_Impl>()->isTiltAngleDefaulted();
+  }
 
-bool FloorAdiabatic::setTiltAngle(double tiltAngle) {
-  return getImpl<detail::FloorAdiabatic_Impl>()->setTiltAngle(tiltAngle);
-}
+  bool FloorAdiabatic::setTiltAngle(double tiltAngle) {
+    return getImpl<detail::FloorAdiabatic_Impl>()->setTiltAngle(tiltAngle);
+  }
 
-void FloorAdiabatic::resetTiltAngle() {
-  getImpl<detail::FloorAdiabatic_Impl>()->resetTiltAngle();
-}
+  void FloorAdiabatic::resetTiltAngle() {
+    getImpl<detail::FloorAdiabatic_Impl>()->resetTiltAngle();
+  }
 
-boost::optional<double> FloorAdiabatic::startingXCoordinate() const {
-  return getImpl<detail::FloorAdiabatic_Impl>()->startingXCoordinate();
-}
+  // StartingXCoordinate
+  boost::optional<double> FloorAdiabatic::startingXCoordinate() const {
+    return getImpl<detail::FloorAdiabatic_Impl>()->startingXCoordinate();
+  }
 
-bool FloorAdiabatic::setStartingXCoordinate(double startingXCoordinate) {
-  return getImpl<detail::FloorAdiabatic_Impl>()->setStartingXCoordinate(startingXCoordinate);
-}
+  bool FloorAdiabatic::setStartingXCoordinate(double startingXCoordinate) {
+    return getImpl<detail::FloorAdiabatic_Impl>()->setStartingXCoordinate(startingXCoordinate);
+  }
 
-void FloorAdiabatic::resetStartingXCoordinate() {
-  getImpl<detail::FloorAdiabatic_Impl>()->resetStartingXCoordinate();
-}
+  void FloorAdiabatic::resetStartingXCoordinate() {
+    getImpl<detail::FloorAdiabatic_Impl>()->resetStartingXCoordinate();
+  }
 
-boost::optional<double> FloorAdiabatic::startingYCoordinate() const {
-  return getImpl<detail::FloorAdiabatic_Impl>()->startingYCoordinate();
-}
+  // StartingYCoordinate
+  boost::optional<double> FloorAdiabatic::startingYCoordinate() const {
+    return getImpl<detail::FloorAdiabatic_Impl>()->startingYCoordinate();
+  }
 
-bool FloorAdiabatic::setStartingYCoordinate(double startingYCoordinate) {
-  return getImpl<detail::FloorAdiabatic_Impl>()->setStartingYCoordinate(startingYCoordinate);
-}
+  bool FloorAdiabatic::setStartingYCoordinate(double startingYCoordinate) {
+    return getImpl<detail::FloorAdiabatic_Impl>()->setStartingYCoordinate(startingYCoordinate);
+  }
 
-void FloorAdiabatic::resetStartingYCoordinate() {
-  getImpl<detail::FloorAdiabatic_Impl>()->resetStartingYCoordinate();
-}
+  void FloorAdiabatic::resetStartingYCoordinate() {
+    getImpl<detail::FloorAdiabatic_Impl>()->resetStartingYCoordinate();
+  }
 
-boost::optional<double> FloorAdiabatic::startingZCoordinate() const {
-  return getImpl<detail::FloorAdiabatic_Impl>()->startingZCoordinate();
-}
+  // StartingZCoordinate
+  boost::optional<double> FloorAdiabatic::startingZCoordinate() const {
+    return getImpl<detail::FloorAdiabatic_Impl>()->startingZCoordinate();
+  }
 
-bool FloorAdiabatic::setStartingZCoordinate(double startingZCoordinate) {
-  return getImpl<detail::FloorAdiabatic_Impl>()->setStartingZCoordinate(startingZCoordinate);
-}
+  bool FloorAdiabatic::setStartingZCoordinate(double startingZCoordinate) {
+    return getImpl<detail::FloorAdiabatic_Impl>()->setStartingZCoordinate(startingZCoordinate);
+  }
 
-void FloorAdiabatic::resetStartingZCoordinate() {
-  getImpl<detail::FloorAdiabatic_Impl>()->resetStartingZCoordinate();
-}
+  void FloorAdiabatic::resetStartingZCoordinate() {
+    getImpl<detail::FloorAdiabatic_Impl>()->resetStartingZCoordinate();
+  }
 
-boost::optional<double> FloorAdiabatic::length() const {
-  return getImpl<detail::FloorAdiabatic_Impl>()->length();
-}
+  // Length
+  boost::optional<double> FloorAdiabatic::length() const {
+    return getImpl<detail::FloorAdiabatic_Impl>()->length();
+  }
 
-bool FloorAdiabatic::setLength(double length) {
-  return getImpl<detail::FloorAdiabatic_Impl>()->setLength(length);
-}
+  bool FloorAdiabatic::setLength(double length) {
+    return getImpl<detail::FloorAdiabatic_Impl>()->setLength(length);
+  }
 
-void FloorAdiabatic::resetLength() {
-  getImpl<detail::FloorAdiabatic_Impl>()->resetLength();
-}
+  void FloorAdiabatic::resetLength() {
+    getImpl<detail::FloorAdiabatic_Impl>()->resetLength();
+  }
 
-boost::optional<double> FloorAdiabatic::width() const {
-  return getImpl<detail::FloorAdiabatic_Impl>()->width();
-}
+  // Width
+  boost::optional<double> FloorAdiabatic::width() const {
+    return getImpl<detail::FloorAdiabatic_Impl>()->width();
+  }
 
-bool FloorAdiabatic::setWidth(double width) {
-  return getImpl<detail::FloorAdiabatic_Impl>()->setWidth(width);
-}
+  bool FloorAdiabatic::setWidth(double width) {
+    return getImpl<detail::FloorAdiabatic_Impl>()->setWidth(width);
+  }
 
-void FloorAdiabatic::resetWidth() {
-  getImpl<detail::FloorAdiabatic_Impl>()->resetWidth();
-}
+  void FloorAdiabatic::resetWidth() {
+    getImpl<detail::FloorAdiabatic_Impl>()->resetWidth();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-boost::optional<double> FloorAdiabatic_Impl::azimuthAngle() const {
-  return getDouble(openstudio::Floor_AdiabaticFields::AzimuthAngle, true);
-}
+    // AzimuthAngle
+    boost::optional<double> FloorAdiabatic_Impl::azimuthAngle() const {
+      return getDouble(openstudio::Floor_AdiabaticFields::AzimuthAngle, true);
+    }
 
-bool FloorAdiabatic_Impl::setAzimuthAngle(double azimuthAngle) {
-  return setDouble(openstudio::Floor_AdiabaticFields::AzimuthAngle, azimuthAngle);
-}
+    bool FloorAdiabatic_Impl::setAzimuthAngle(double azimuthAngle) {
+      return setDouble(openstudio::Floor_AdiabaticFields::AzimuthAngle, azimuthAngle);
+    }
 
-void FloorAdiabatic_Impl::resetAzimuthAngle() {
-  OS_ASSERT(setString(openstudio::Floor_AdiabaticFields::AzimuthAngle, ""));
-}
+    void FloorAdiabatic_Impl::resetAzimuthAngle() {
+      OS_ASSERT(setString(openstudio::Floor_AdiabaticFields::AzimuthAngle, ""));
+    }
 
-double FloorAdiabatic_Impl::tiltAngle() const {
-  const auto value = getDouble(openstudio::Floor_AdiabaticFields::TiltAngle, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    // TiltAngle
+    double FloorAdiabatic_Impl::tiltAngle() const {
+      const auto value = getDouble(openstudio::Floor_AdiabaticFields::TiltAngle, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool FloorAdiabatic_Impl::isTiltAngleDefaulted() const {
-  return isEmpty(openstudio::Floor_AdiabaticFields::TiltAngle);
-}
+    bool FloorAdiabatic_Impl::isTiltAngleDefaulted() const {
+      return isEmpty(openstudio::Floor_AdiabaticFields::TiltAngle);
+    }
 
-bool FloorAdiabatic_Impl::setTiltAngle(double tiltAngle) {
-  return setDouble(openstudio::Floor_AdiabaticFields::TiltAngle, tiltAngle);
-}
+    bool FloorAdiabatic_Impl::setTiltAngle(double tiltAngle) {
+      return setDouble(openstudio::Floor_AdiabaticFields::TiltAngle, tiltAngle);
+    }
 
-void FloorAdiabatic_Impl::resetTiltAngle() {
-  OS_ASSERT(setString(openstudio::Floor_AdiabaticFields::TiltAngle, ""));
-}
+    void FloorAdiabatic_Impl::resetTiltAngle() {
+      OS_ASSERT(setString(openstudio::Floor_AdiabaticFields::TiltAngle, ""));
+    }
 
-boost::optional<double> FloorAdiabatic_Impl::startingXCoordinate() const {
-  return getDouble(openstudio::Floor_AdiabaticFields::StartingXCoordinate, true);
-}
+    // StartingXCoordinate
+    boost::optional<double> FloorAdiabatic_Impl::startingXCoordinate() const {
+      return getDouble(openstudio::Floor_AdiabaticFields::StartingXCoordinate, true);
+    }
 
-bool FloorAdiabatic_Impl::setStartingXCoordinate(double startingXCoordinate) {
-  const bool result = setDouble(openstudio::Floor_AdiabaticFields::StartingXCoordinate, startingXCoordinate);
-  OS_ASSERT(result);
-  return result;
-}
+    bool FloorAdiabatic_Impl::setStartingXCoordinate(double startingXCoordinate) {
+      const bool result = setDouble(openstudio::Floor_AdiabaticFields::StartingXCoordinate, startingXCoordinate);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void FloorAdiabatic_Impl::resetStartingXCoordinate() {
-  OS_ASSERT(setString(openstudio::Floor_AdiabaticFields::StartingXCoordinate, ""));
-}
+    void FloorAdiabatic_Impl::resetStartingXCoordinate() {
+      OS_ASSERT(setString(openstudio::Floor_AdiabaticFields::StartingXCoordinate, ""));
+    }
 
-boost::optional<double> FloorAdiabatic_Impl::startingYCoordinate() const {
-  return getDouble(openstudio::Floor_AdiabaticFields::StartingYCoordinate, true);
-}
+    // StartingYCoordinate
+    boost::optional<double> FloorAdiabatic_Impl::startingYCoordinate() const {
+      return getDouble(openstudio::Floor_AdiabaticFields::StartingYCoordinate, true);
+    }
 
-bool FloorAdiabatic_Impl::setStartingYCoordinate(double startingYCoordinate) {
-  const bool result = setDouble(openstudio::Floor_AdiabaticFields::StartingYCoordinate, startingYCoordinate);
-  OS_ASSERT(result);
-  return result;
-}
+    bool FloorAdiabatic_Impl::setStartingYCoordinate(double startingYCoordinate) {
+      const bool result = setDouble(openstudio::Floor_AdiabaticFields::StartingYCoordinate, startingYCoordinate);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void FloorAdiabatic_Impl::resetStartingYCoordinate() {
-  OS_ASSERT(setString(openstudio::Floor_AdiabaticFields::StartingYCoordinate, ""));
-}
+    void FloorAdiabatic_Impl::resetStartingYCoordinate() {
+      OS_ASSERT(setString(openstudio::Floor_AdiabaticFields::StartingYCoordinate, ""));
+    }
 
-boost::optional<double> FloorAdiabatic_Impl::startingZCoordinate() const {
-  return getDouble(openstudio::Floor_AdiabaticFields::StartingZCoordinate, true);
-}
+    // StartingZCoordinate
+    boost::optional<double> FloorAdiabatic_Impl::startingZCoordinate() const {
+      return getDouble(openstudio::Floor_AdiabaticFields::StartingZCoordinate, true);
+    }
 
-bool FloorAdiabatic_Impl::setStartingZCoordinate(double startingZCoordinate) {
-  const bool result = setDouble(openstudio::Floor_AdiabaticFields::StartingZCoordinate, startingZCoordinate);
-  OS_ASSERT(result);
-  return result;
-}
+    bool FloorAdiabatic_Impl::setStartingZCoordinate(double startingZCoordinate) {
+      const bool result = setDouble(openstudio::Floor_AdiabaticFields::StartingZCoordinate, startingZCoordinate);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void FloorAdiabatic_Impl::resetStartingZCoordinate() {
-  OS_ASSERT(setString(openstudio::Floor_AdiabaticFields::StartingZCoordinate, ""));
-}
+    void FloorAdiabatic_Impl::resetStartingZCoordinate() {
+      OS_ASSERT(setString(openstudio::Floor_AdiabaticFields::StartingZCoordinate, ""));
+    }
 
-boost::optional<double> FloorAdiabatic_Impl::length() const {
-  return getDouble(openstudio::Floor_AdiabaticFields::Length, true);
-}
+    // Length
+    boost::optional<double> FloorAdiabatic_Impl::length() const {
+      return getDouble(openstudio::Floor_AdiabaticFields::Length, true);
+    }
 
-bool FloorAdiabatic_Impl::setLength(double length) {
-  const bool result = setDouble(openstudio::Floor_AdiabaticFields::Length, length);
-  OS_ASSERT(result);
-  return result;
-}
+    bool FloorAdiabatic_Impl::setLength(double length) {
+      const bool result = setDouble(openstudio::Floor_AdiabaticFields::Length, length);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void FloorAdiabatic_Impl::resetLength() {
-  OS_ASSERT(setString(openstudio::Floor_AdiabaticFields::Length, ""));
-}
+    void FloorAdiabatic_Impl::resetLength() {
+      OS_ASSERT(setString(openstudio::Floor_AdiabaticFields::Length, ""));
+    }
 
-boost::optional<double> FloorAdiabatic_Impl::width() const {
-  return getDouble(openstudio::Floor_AdiabaticFields::Width, true);
-}
+    // Width
+    boost::optional<double> FloorAdiabatic_Impl::width() const {
+      return getDouble(openstudio::Floor_AdiabaticFields::Width, true);
+    }
 
-bool FloorAdiabatic_Impl::setWidth(double width) {
-  const bool result = setDouble(openstudio::Floor_AdiabaticFields::Width, width);
-  OS_ASSERT(result);
-  return result;
-}
+    bool FloorAdiabatic_Impl::setWidth(double width) {
+      const bool result = setDouble(openstudio::Floor_AdiabaticFields::Width, width);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void FloorAdiabatic_Impl::resetWidth() {
-  OS_ASSERT(setString(openstudio::Floor_AdiabaticFields::Width, ""));
-}
+    void FloorAdiabatic_Impl::resetWidth() {
+      OS_ASSERT(setString(openstudio::Floor_AdiabaticFields::Width, ""));
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

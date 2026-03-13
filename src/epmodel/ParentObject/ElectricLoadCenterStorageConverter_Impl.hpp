@@ -11,34 +11,38 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ElectricLoadCenterStorageConverter_Impl : public ParentObject_Impl
-{
- public:
-  using ParentObject_Impl::ParentObject_Impl;
-  virtual ~ElectricLoadCenterStorageConverter_Impl() override = default;
+    class EPMODEL_API ElectricLoadCenterStorageConverter_Impl : public ParentObject_Impl
+    {
+     public:
+      using ParentObject_Impl::ParentObject_Impl;
+      virtual ~ElectricLoadCenterStorageConverter_Impl() override = default;
 
-  std::string powerConversionEfficiencyMethod() const;
+      std::string powerConversionEfficiencyMethod() const;
 
-  boost::optional<double> simpleFixedEfficiency() const;
-  bool setSimpleFixedEfficiency(double simpleFixedEfficiency);
+      // simpleFixedEfficiency field
+      boost::optional<double> simpleFixedEfficiency() const;
+      bool setSimpleFixedEfficiency(double simpleFixedEfficiency);
 
-  boost::optional<double> designMaximumContinuousInputPower() const;
-  bool setDesignMaximumContinuousInputPower(double designMaximumContinuousInputPower);
+      // designMaximumContinuousInputPower field
+      boost::optional<double> designMaximumContinuousInputPower() const;
+      bool setDesignMaximumContinuousInputPower(double designMaximumContinuousInputPower);
 
-  double ancillaryPowerConsumedInStandby() const;
-  bool isAncillaryPowerConsumedInStandbyDefaulted() const;
-  bool setAncillaryPowerConsumedInStandby(double ancillaryPowerConsumedInStandby);
-  void resetAncillaryPowerConsumedInStandby();
+      // ancillaryPowerConsumedInStandby field
+      double ancillaryPowerConsumedInStandby() const;
+      bool isAncillaryPowerConsumedInStandbyDefaulted() const;
+      bool setAncillaryPowerConsumedInStandby(double ancillaryPowerConsumedInStandby);
+      void resetAncillaryPowerConsumedInStandby();
 
-  double radiativeFraction() const;
-  bool isRadiativeFractionDefaulted() const;
-  bool setRadiativeFraction(double radiativeFraction);
-  void resetRadiativeFraction();
-};
+      // radiativeFraction field
+      double radiativeFraction() const;
+      bool isRadiativeFractionDefaulted() const;
+      bool setRadiativeFraction(double radiativeFraction);
+      void resetRadiativeFraction();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

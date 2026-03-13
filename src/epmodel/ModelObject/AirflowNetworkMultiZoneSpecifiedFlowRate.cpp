@@ -42,12 +42,12 @@ std::string AirflowNetworkMultiZoneSpecifiedFlowRate::airFlowUnits() const {
   return getImpl<detail::AirflowNetworkMultiZoneSpecifiedFlowRate_Impl>()->airFlowUnits();
 }
 
-bool AirflowNetworkMultiZoneSpecifiedFlowRate::isAirFlowUnitsDefaulted() const {
-  return getImpl<detail::AirflowNetworkMultiZoneSpecifiedFlowRate_Impl>()->isAirFlowUnitsDefaulted();
-}
-
 bool AirflowNetworkMultiZoneSpecifiedFlowRate::setAirFlowUnits(const std::string& airFlowUnits) {
   return getImpl<detail::AirflowNetworkMultiZoneSpecifiedFlowRate_Impl>()->setAirFlowUnits(airFlowUnits);
+}
+
+bool AirflowNetworkMultiZoneSpecifiedFlowRate::isAirFlowUnitsDefaulted() const {
+  return getImpl<detail::AirflowNetworkMultiZoneSpecifiedFlowRate_Impl>()->isAirFlowUnitsDefaulted();
 }
 
 void AirflowNetworkMultiZoneSpecifiedFlowRate::resetAirFlowUnits() {
@@ -79,12 +79,12 @@ std::string AirflowNetworkMultiZoneSpecifiedFlowRate_Impl::airFlowUnits() const 
   return *value;
 }
 
-bool AirflowNetworkMultiZoneSpecifiedFlowRate_Impl::isAirFlowUnitsDefaulted() const {
-  return isEmpty(openstudio::AirflowNetwork_MultiZone_SpecifiedFlowRateFields::AirFlowUnits);
-}
-
 bool AirflowNetworkMultiZoneSpecifiedFlowRate_Impl::setAirFlowUnits(const std::string& airFlowUnits) {
   return setString(openstudio::AirflowNetwork_MultiZone_SpecifiedFlowRateFields::AirFlowUnits, airFlowUnits);
+}
+
+bool AirflowNetworkMultiZoneSpecifiedFlowRate_Impl::isAirFlowUnitsDefaulted() const {
+  return isEmpty(openstudio::AirflowNetwork_MultiZone_SpecifiedFlowRateFields::AirFlowUnits);
 }
 
 void AirflowNetworkMultiZoneSpecifiedFlowRate_Impl::resetAirFlowUnits() {

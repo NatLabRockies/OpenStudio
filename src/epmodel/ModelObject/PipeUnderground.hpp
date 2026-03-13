@@ -17,62 +17,64 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class PipeUnderground_Impl;
-}
+  namespace detail {
+    class PipeUnderground_Impl;
+  }
 
-class EPMODEL_API PipeUnderground : public ModelObject
-{
- public:
-  explicit PipeUnderground(const Model& model);
+  class EPMODEL_API PipeUnderground : public ModelObject
+  {
+   public:
+    explicit PipeUnderground(const Model& model);
 
-  virtual ~PipeUnderground() override = default;
-  PipeUnderground(const PipeUnderground& other) = default;
-  PipeUnderground(PipeUnderground&& other) = default;
-  PipeUnderground& operator=(const PipeUnderground&) = default;
-  PipeUnderground& operator=(PipeUnderground&&) = default;
+    virtual ~PipeUnderground() override = default;
+    PipeUnderground(const PipeUnderground& other) = default;
+    PipeUnderground(PipeUnderground&& other) = default;
+    PipeUnderground& operator=(const PipeUnderground&) = default;
+    PipeUnderground& operator=(PipeUnderground&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> sunExposureValues();
-  static std::vector<std::string> undisturbedGroundTemperatureModelTypeValues();
+    static std::vector<std::string> sunExposureValues();
+    static std::vector<std::string> undisturbedGroundTemperatureModelTypeValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type keeps IDD-derived class/API naming.
-  // - Field Mapping: sunExposure, pipeInsideDiameter, pipeLength, soilMaterialName, and
-  //   undisturbedGroundTemperatureModelType map directly to E+ Pipe:Underground scalar fields.
-  // - Field Mapping: Construction Name, Fluid Inlet/Outlet Node Name, and Undisturbed Ground
-  //   Temperature Model Name are relationship-like link fields and are excluded from scalar APIs.
-  // - TODO(parity): Add typed relationship/link APIs after scalar scaffold saturation.
-  std::string sunExposure() const;
-  boost::optional<double> pipeInsideDiameter() const;
-  boost::optional<double> pipeLength() const;
-  std::string soilMaterialName() const;
-  std::string undisturbedGroundTemperatureModelType() const;
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type keeps IDD-derived class/API naming.
+    // - Field Mapping: sunExposure, pipeInsideDiameter, pipeLength, soilMaterialName, and
+    //   undisturbedGroundTemperatureModelType map directly to E+ Pipe:Underground scalar fields.
+    // - Field Mapping: Construction Name, Fluid Inlet/Outlet Node Name, and Undisturbed Ground
+    //   Temperature Model Name are relationship-like link fields and are excluded from scalar APIs.
+    // - TODO(parity): Add typed relationship/link APIs after scalar scaffold saturation.
 
-  bool isPipeInsideDiameterDefaulted() const;
-  bool isPipeLengthDefaulted() const;
+    std::string sunExposure() const;
+    bool setSunExposure(const std::string& sunExposure);
 
-  bool setSunExposure(const std::string& sunExposure);
-  bool setPipeInsideDiameter(double pipeInsideDiameter);
-  bool setPipeLength(double pipeLength);
-  bool setSoilMaterialName(const std::string& soilMaterialName);
-  bool setUndisturbedGroundTemperatureModelType(const std::string& undisturbedGroundTemperatureModelType);
+    boost::optional<double> pipeInsideDiameter() const;
+    bool isPipeInsideDiameterDefaulted() const;
+    bool setPipeInsideDiameter(double pipeInsideDiameter);
+    void resetPipeInsideDiameter();
 
-  void resetPipeInsideDiameter();
-  void resetPipeLength();
+    boost::optional<double> pipeLength() const;
+    bool isPipeLengthDefaulted() const;
+    bool setPipeLength(double pipeLength);
+    void resetPipeLength();
 
- protected:
-  using ImplType = detail::PipeUnderground_Impl;
+    std::string soilMaterialName() const;
+    bool setSoilMaterialName(const std::string& soilMaterialName);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    std::string undisturbedGroundTemperatureModelType() const;
+    bool setUndisturbedGroundTemperatureModelType(const std::string& undisturbedGroundTemperatureModelType);
 
-  explicit PipeUnderground(std::shared_ptr<detail::PipeUnderground_Impl> impl);
-};
+   protected:
+    using ImplType = detail::PipeUnderground_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit PipeUnderground(std::shared_ptr<detail::PipeUnderground_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

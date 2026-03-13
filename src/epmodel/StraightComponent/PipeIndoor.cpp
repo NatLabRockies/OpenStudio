@@ -15,101 +15,101 @@
 namespace openstudio {
 namespace epmodel {
 
-PipeIndoor::PipeIndoor(const Model& model) : StraightComponent(PipeIndoor::iddObjectType(), model) {
-  OS_ASSERT(getImpl<detail::PipeIndoor_Impl>());
+  PipeIndoor::PipeIndoor(const Model& model) : StraightComponent(PipeIndoor::iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::PipeIndoor_Impl>());
 
-  bool ok = true;
-  ok = setEnvironmentType("Zone");
-  OS_ASSERT(ok);
-  ok = setPipeInsideDiameter(0.05);
-  OS_ASSERT(ok);
-  ok = setPipeLength(100.0);
-  OS_ASSERT(ok);
-}
+    bool ok = true;
+    ok = setEnvironmentType("Zone");
+    OS_ASSERT(ok);
+    ok = setPipeInsideDiameter(0.05);
+    OS_ASSERT(ok);
+    ok = setPipeLength(100.0);
+    OS_ASSERT(ok);
+  }
 
-PipeIndoor::PipeIndoor(std::shared_ptr<detail::PipeIndoor_Impl> impl) : StraightComponent(std::move(impl)) {}
+  PipeIndoor::PipeIndoor(std::shared_ptr<detail::PipeIndoor_Impl> impl) : StraightComponent(std::move(impl)) {}
 
-IddObjectType PipeIndoor::iddObjectType() {
-  return IddObjectType::Pipe_Indoor;
-}
+  IddObjectType PipeIndoor::iddObjectType() {
+    return IddObjectType::Pipe_Indoor;
+  }
 
-std::vector<std::string> PipeIndoor::environmentTypeValues() {
-  return {"Zone", "Schedule"};
-}
+  std::vector<std::string> PipeIndoor::environmentTypeValues() {
+    return {"Zone", "Schedule"};
+  }
 
-std::string PipeIndoor::environmentType() const {
-  return getImpl<detail::PipeIndoor_Impl>()->environmentType();
-}
+  std::string PipeIndoor::environmentType() const {
+    return getImpl<detail::PipeIndoor_Impl>()->environmentType();
+  }
 
-bool PipeIndoor::setEnvironmentType(const std::string& environmentType) {
-  return getImpl<detail::PipeIndoor_Impl>()->setEnvironmentType(environmentType);
-}
+  bool PipeIndoor::setEnvironmentType(const std::string& environmentType) {
+    return getImpl<detail::PipeIndoor_Impl>()->setEnvironmentType(environmentType);
+  }
 
-double PipeIndoor::pipeInsideDiameter() const {
-  return getImpl<detail::PipeIndoor_Impl>()->pipeInsideDiameter();
-}
+  double PipeIndoor::pipeInsideDiameter() const {
+    return getImpl<detail::PipeIndoor_Impl>()->pipeInsideDiameter();
+  }
 
-bool PipeIndoor::setPipeInsideDiameter(double pipeInsideDiameter) {
-  return getImpl<detail::PipeIndoor_Impl>()->setPipeInsideDiameter(pipeInsideDiameter);
-}
+  bool PipeIndoor::setPipeInsideDiameter(double pipeInsideDiameter) {
+    return getImpl<detail::PipeIndoor_Impl>()->setPipeInsideDiameter(pipeInsideDiameter);
+  }
 
-double PipeIndoor::pipeLength() const {
-  return getImpl<detail::PipeIndoor_Impl>()->pipeLength();
-}
+  double PipeIndoor::pipeLength() const {
+    return getImpl<detail::PipeIndoor_Impl>()->pipeLength();
+  }
 
-bool PipeIndoor::setPipeLength(double pipeLength) {
-  return getImpl<detail::PipeIndoor_Impl>()->setPipeLength(pipeLength);
-}
+  bool PipeIndoor::setPipeLength(double pipeLength) {
+    return getImpl<detail::PipeIndoor_Impl>()->setPipeLength(pipeLength);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-unsigned PipeIndoor_Impl::inletPort() const {
-  return openstudio::Pipe_IndoorFields::FluidInletNodeName;
-}
+    std::vector<std::string> PipeIndoor_Impl::environmentTypeValues() const {
+      return openstudio::epmodel::PipeIndoor::environmentTypeValues();
+    }
 
-unsigned PipeIndoor_Impl::outletPort() const {
-  return openstudio::Pipe_IndoorFields::FluidOutletNodeName;
-}
+    unsigned PipeIndoor_Impl::inletPort() const {
+      return openstudio::Pipe_IndoorFields::FluidInletNodeName;
+    }
 
-std::string PipeIndoor_Impl::environmentType() const {
-  const auto value = getString(openstudio::Pipe_IndoorFields::EnvironmentType, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    unsigned PipeIndoor_Impl::outletPort() const {
+      return openstudio::Pipe_IndoorFields::FluidOutletNodeName;
+    }
 
-bool PipeIndoor_Impl::setEnvironmentType(const std::string& environmentType) {
-  return setString(openstudio::Pipe_IndoorFields::EnvironmentType, environmentType);
-}
+    std::string PipeIndoor_Impl::environmentType() const {
+      const auto value = getString(openstudio::Pipe_IndoorFields::EnvironmentType, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-double PipeIndoor_Impl::pipeInsideDiameter() const {
-  const auto value = getDouble(openstudio::Pipe_IndoorFields::PipeInsideDiameter, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool PipeIndoor_Impl::setEnvironmentType(const std::string& environmentType) {
+      return setString(openstudio::Pipe_IndoorFields::EnvironmentType, environmentType);
+    }
 
-bool PipeIndoor_Impl::setPipeInsideDiameter(double pipeInsideDiameter) {
-  return setDouble(openstudio::Pipe_IndoorFields::PipeInsideDiameter, pipeInsideDiameter);
-}
+    double PipeIndoor_Impl::pipeInsideDiameter() const {
+      const auto value = getDouble(openstudio::Pipe_IndoorFields::PipeInsideDiameter, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-double PipeIndoor_Impl::pipeLength() const {
-  const auto value = getDouble(openstudio::Pipe_IndoorFields::PipeLength, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool PipeIndoor_Impl::setPipeInsideDiameter(double pipeInsideDiameter) {
+      return setDouble(openstudio::Pipe_IndoorFields::PipeInsideDiameter, pipeInsideDiameter);
+    }
 
-bool PipeIndoor_Impl::setPipeLength(double pipeLength) {
-  return setDouble(openstudio::Pipe_IndoorFields::PipeLength, pipeLength);
-}
+    double PipeIndoor_Impl::pipeLength() const {
+      const auto value = getDouble(openstudio::Pipe_IndoorFields::PipeLength, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-std::vector<std::string> PipeIndoor_Impl::environmentTypeValues() const {
-  return openstudio::epmodel::PipeIndoor::environmentTypeValues();
-}
+    bool PipeIndoor_Impl::setPipeLength(double pipeLength) {
+      return setDouble(openstudio::Pipe_IndoorFields::PipeLength, pipeLength);
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

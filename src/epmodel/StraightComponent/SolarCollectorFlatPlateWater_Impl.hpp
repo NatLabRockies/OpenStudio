@@ -11,23 +11,26 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SolarCollectorFlatPlateWater_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~SolarCollectorFlatPlateWater_Impl() override = default;
+    class EPMODEL_API SolarCollectorFlatPlateWater_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~SolarCollectorFlatPlateWater_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
-  boost::optional<double> maximumFlowRate() const;
-  bool setMaximumFlowRate(double maximumFlowRate);
-  void resetMaximumFlowRate();
-};
+      /** @name Maximum flow rate */
+      //@{
+      boost::optional<double> maximumFlowRate() const;
+      bool setMaximumFlowRate(double maximumFlowRate);
+      void resetMaximumFlowRate();
+      //@}
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

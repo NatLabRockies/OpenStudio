@@ -12,29 +12,35 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CoilSystemCoolingWaterHeatExchangerAssisted_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~CoilSystemCoolingWaterHeatExchangerAssisted_Impl() override = default;
+    class EPMODEL_API CoilSystemCoolingWaterHeatExchangerAssisted_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~CoilSystemCoolingWaterHeatExchangerAssisted_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
-  // Scalar-only parity surface: relationship fields remain excluded by contract.
-  std::string heatExchangerObjectType() const;
-  bool setHeatExchangerObjectType(const std::string& heatExchangerObjectType);
+      std::vector<std::string> heatExchangerObjectTypeValues() const;
+      std::vector<std::string> coolingCoilObjectTypeValues() const;
 
-  std::string coolingCoilObjectType() const;
-  bool setCoolingCoilObjectType(const std::string& coolingCoilObjectType);
+      // Scalar-only parity surface: relationship fields remain excluded by contract.
+      /** @name Heat exchanger object type */
+      //@{
+      std::string heatExchangerObjectType() const;
+      bool setHeatExchangerObjectType(const std::string& heatExchangerObjectType);
+      //@}
 
-  std::vector<std::string> heatExchangerObjectTypeValues() const;
-  std::vector<std::string> coolingCoilObjectTypeValues() const;
-};
+      /** @name Cooling coil object type */
+      //@{
+      std::string coolingCoilObjectType() const;
+      bool setCoolingCoilObjectType(const std::string& coolingCoilObjectType);
+      //@}
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

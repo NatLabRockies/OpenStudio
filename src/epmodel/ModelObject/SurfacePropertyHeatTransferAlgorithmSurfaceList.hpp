@@ -45,8 +45,8 @@ namespace epmodel {
     // - Field Mapping: algorithm() and related helpers delegate directly to SurfaceProperty:HeatTransferAlgorithm:SurfaceList Algorithm.
     std::string algorithm() const;
     bool setAlgorithm(const std::string& algorithm);
-    bool isAlgorithmDefaulted() const;
     void resetAlgorithm();
+    bool isAlgorithmDefaulted() const;
 
    protected:
     using ImplType = detail::SurfacePropertyHeatTransferAlgorithmSurfaceList_Impl;

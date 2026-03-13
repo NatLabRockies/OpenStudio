@@ -11,55 +11,52 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HeatPumpWaterToWaterEquationFitHeating_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~HeatPumpWaterToWaterEquationFitHeating_Impl() override = default;
+    class EPMODEL_API HeatPumpWaterToWaterEquationFitHeating_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~HeatPumpWaterToWaterEquationFitHeating_Impl() override = default;
 
-  boost::optional<double> referenceLoadSideFlowRate() const;
-  double ratedLoadSideFlowRate() const;
-  bool isReferenceLoadSideFlowRateAutosized() const;
+      boost::optional<double> referenceLoadSideFlowRate() const;
+      bool isReferenceLoadSideFlowRateAutosized() const;
+      bool setReferenceLoadSideFlowRate(double referenceLoadSideFlowRate);
+      void autosizeReferenceLoadSideFlowRate();
+      boost::optional<double> autosizedReferenceLoadSideFlowRate() const;
 
-  boost::optional<double> referenceSourceSideFlowRate() const;
-  double ratedSourceSideFlowRate() const;
-  bool isReferenceSourceSideFlowRateAutosized() const;
+      double ratedLoadSideFlowRate() const;
+      bool setRatedLoadSideFlowRate(double ratedLoadSideFlowRate);
 
-  boost::optional<double> ratedHeatingCapacity() const;
-  bool isRatedHeatingCapacityAutosized() const;
+      boost::optional<double> referenceSourceSideFlowRate() const;
+      bool isReferenceSourceSideFlowRateAutosized() const;
+      bool setReferenceSourceSideFlowRate(double referenceSourceSideFlowRate);
+      void autosizeReferenceSourceSideFlowRate();
+      boost::optional<double> autosizedReferenceSourceSideFlowRate() const;
 
-  boost::optional<double> ratedHeatingPowerConsumption() const;
-  bool isRatedHeatingPowerConsumptionAutosized() const;
+      double ratedSourceSideFlowRate() const;
+      bool setRatedSourceSideFlowRate(double ratedSourceSideFlowRate);
 
-  double referenceCoefficientofPerformance() const;
-  double sizingFactor() const;
+      boost::optional<double> ratedHeatingCapacity() const;
+      bool isRatedHeatingCapacityAutosized() const;
+      bool setRatedHeatingCapacity(double ratedHeatingCapacity);
+      void autosizeRatedHeatingCapacity();
+      boost::optional<double> autosizedRatedHeatingCapacity() const;
 
-  bool setReferenceLoadSideFlowRate(double referenceLoadSideFlowRate);
-  bool setRatedLoadSideFlowRate(double ratedLoadSideFlowRate);
-  void autosizeReferenceLoadSideFlowRate();
+      boost::optional<double> ratedHeatingPowerConsumption() const;
+      bool isRatedHeatingPowerConsumptionAutosized() const;
+      bool setRatedHeatingPowerConsumption(double ratedHeatingPowerConsumption);
+      void autosizeRatedHeatingPowerConsumption();
+      boost::optional<double> autosizedRatedHeatingPowerConsumption() const;
 
-  bool setReferenceSourceSideFlowRate(double referenceSourceSideFlowRate);
-  bool setRatedSourceSideFlowRate(double ratedSourceSideFlowRate);
-  void autosizeReferenceSourceSideFlowRate();
+      double referenceCoefficientofPerformance() const;
+      bool setReferenceCoefficientofPerformance(double referenceCoefficientofPerformance);
 
-  bool setRatedHeatingCapacity(double ratedHeatingCapacity);
-  void autosizeRatedHeatingCapacity();
+      double sizingFactor() const;
+      bool setSizingFactor(double sizingFactor);
+    };
 
-  bool setRatedHeatingPowerConsumption(double ratedHeatingPowerConsumption);
-  void autosizeRatedHeatingPowerConsumption();
-
-  bool setReferenceCoefficientofPerformance(double referenceCoefficientofPerformance);
-  bool setSizingFactor(double sizingFactor);
-
-  boost::optional<double> autosizedReferenceLoadSideFlowRate() const;
-  boost::optional<double> autosizedReferenceSourceSideFlowRate() const;
-  boost::optional<double> autosizedRatedHeatingCapacity() const;
-  boost::optional<double> autosizedRatedHeatingPowerConsumption() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

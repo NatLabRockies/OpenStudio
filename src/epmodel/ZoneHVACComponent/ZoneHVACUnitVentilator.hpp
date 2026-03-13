@@ -49,41 +49,45 @@ namespace epmodel {
     // - Default/autosize helpers mirror the IDD metadata so required scalars (heating/cooling convergence tolerances) stay strict while the
     //   optional flow fields expose is...Autosized/autosize helpers consistent with the Ruby generator.
 
-    /** @name Getters */
+    /** @name Maximum supply air flow rate */
     //@{
     boost::optional<double> maximumSupplyAirFlowRate() const;
     bool isMaximumSupplyAirFlowRateAutosized() const;
+    bool setMaximumSupplyAirFlowRate(double maximumSupplyAirFlowRate);
+    void autosizeMaximumSupplyAirFlowRate();
+    boost::optional<double> autosizedMaximumSupplyAirFlowRate() const;
+    //@}
 
+    /** @name Outdoor air control type */
+    //@{
     std::string outdoorAirControlType() const;
+    bool setOutdoorAirControlType(const std::string& outdoorAirControlType);
+    //@}
 
+    /** @name Minimum outdoor air flow rate */
+    //@{
     boost::optional<double> minimumOutdoorAirFlowRate() const;
     bool isMinimumOutdoorAirFlowRateAutosized() const;
+    bool setMinimumOutdoorAirFlowRate(double minimumOutdoorAirFlowRate);
+    void autosizeMinimumOutdoorAirFlowRate();
+    boost::optional<double> autosizedMinimumOutdoorAirFlowRate() const;
+    //@}
 
+    /** @name Maximum outdoor air flow rate */
+    //@{
     boost::optional<double> maximumOutdoorAirFlowRate() const;
     bool isMaximumOutdoorAirFlowRateAutosized() const;
-
-    double heatingConvergenceTolerance() const;
-    double coolingConvergenceTolerance() const;
-
-    boost::optional<double> autosizedMaximumSupplyAirFlowRate() const;
-    boost::optional<double> autosizedMinimumOutdoorAirFlowRate() const;
+    bool setMaximumOutdoorAirFlowRate(double maximumOutdoorAirFlowRate);
+    void autosizeMaximumOutdoorAirFlowRate();
     boost::optional<double> autosizedMaximumOutdoorAirFlowRate() const;
     //@}
 
-    /** @name Setters */
+    /** @name Convergence tolerances */
     //@{
-    bool setMaximumSupplyAirFlowRate(double maximumSupplyAirFlowRate);
-    void autosizeMaximumSupplyAirFlowRate();
-
-    bool setOutdoorAirControlType(const std::string& outdoorAirControlType);
-
-    bool setMinimumOutdoorAirFlowRate(double minimumOutdoorAirFlowRate);
-    void autosizeMinimumOutdoorAirFlowRate();
-
-    bool setMaximumOutdoorAirFlowRate(double maximumOutdoorAirFlowRate);
-    void autosizeMaximumOutdoorAirFlowRate();
-
+    double heatingConvergenceTolerance() const;
     bool setHeatingConvergenceTolerance(double heatingConvergenceTolerance);
+
+    double coolingConvergenceTolerance() const;
     bool setCoolingConvergenceTolerance(double coolingConvergenceTolerance);
     //@}
 

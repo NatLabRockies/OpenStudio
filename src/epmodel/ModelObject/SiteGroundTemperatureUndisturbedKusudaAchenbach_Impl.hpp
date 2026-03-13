@@ -11,33 +11,37 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SiteGroundTemperatureUndisturbedKusudaAchenbach_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~SiteGroundTemperatureUndisturbedKusudaAchenbach_Impl() override = default;
+    class EPMODEL_API SiteGroundTemperatureUndisturbedKusudaAchenbach_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~SiteGroundTemperatureUndisturbedKusudaAchenbach_Impl() override = default;
 
-  double soilThermalConductivity() const;
-  double soilDensity() const;
-  double soilSpecificHeat() const;
-  boost::optional<double> averageSoilSurfaceTemperature() const;
-  boost::optional<double> averageAmplitudeofSurfaceTemperature() const;
-  boost::optional<double> phaseShiftofMinimumSurfaceTemperature() const;
+      double soilThermalConductivity() const;
+      bool setSoilThermalConductivity(double soilThermalConductivity);
 
-  bool setSoilThermalConductivity(double soilThermalConductivity);
-  bool setSoilDensity(double soilDensity);
-  bool setSoilSpecificHeat(double soilSpecificHeat);
-  bool setAverageSoilSurfaceTemperature(double averageSoilSurfaceTemperature);
-  void resetAverageSoilSurfaceTemperature();
-  bool setAverageAmplitudeofSurfaceTemperature(double averageAmplitudeofSurfaceTemperature);
-  void resetAverageAmplitudeofSurfaceTemperature();
-  bool setPhaseShiftofMinimumSurfaceTemperature(double phaseShiftofMinimumSurfaceTemperature);
-  void resetPhaseShiftofMinimumSurfaceTemperature();
-};
+      double soilDensity() const;
+      bool setSoilDensity(double soilDensity);
 
-}  // namespace detail
+      double soilSpecificHeat() const;
+      bool setSoilSpecificHeat(double soilSpecificHeat);
+
+      boost::optional<double> averageSoilSurfaceTemperature() const;
+      bool setAverageSoilSurfaceTemperature(double averageSoilSurfaceTemperature);
+      void resetAverageSoilSurfaceTemperature();
+
+      boost::optional<double> averageAmplitudeofSurfaceTemperature() const;
+      bool setAverageAmplitudeofSurfaceTemperature(double averageAmplitudeofSurfaceTemperature);
+      void resetAverageAmplitudeofSurfaceTemperature();
+
+      boost::optional<double> phaseShiftofMinimumSurfaceTemperature() const;
+      bool setPhaseShiftofMinimumSurfaceTemperature(double phaseShiftofMinimumSurfaceTemperature);
+      void resetPhaseShiftofMinimumSurfaceTemperature();
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

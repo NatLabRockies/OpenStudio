@@ -16,62 +16,62 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class ConstructionWithInternalSource_Impl;
-}
+  namespace detail {
+    class ConstructionWithInternalSource_Impl;
+  }
 
-class EPMODEL_API ConstructionWithInternalSource : public ModelObject
-{
- public:
-  explicit ConstructionWithInternalSource(const Model& model);
+  class EPMODEL_API ConstructionWithInternalSource : public ModelObject
+  {
+   public:
+    explicit ConstructionWithInternalSource(const Model& model);
 
-  virtual ~ConstructionWithInternalSource() override = default;
-  ConstructionWithInternalSource(const ConstructionWithInternalSource& other) = default;
-  ConstructionWithInternalSource(ConstructionWithInternalSource&& other) = default;
-  ConstructionWithInternalSource& operator=(const ConstructionWithInternalSource&) = default;
-  ConstructionWithInternalSource& operator=(ConstructionWithInternalSource&&) = default;
+    virtual ~ConstructionWithInternalSource() override = default;
+    ConstructionWithInternalSource(const ConstructionWithInternalSource& other) = default;
+    ConstructionWithInternalSource(ConstructionWithInternalSource&& other) = default;
+    ConstructionWithInternalSource& operator=(const ConstructionWithInternalSource&) = default;
+    ConstructionWithInternalSource& operator=(ConstructionWithInternalSource&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::ConstructionWithInternalSource scalar accessor names/signatures.
-  // - Field Mapping: Preserved ConstructionWithInternalSource scalar APIs map to
-  //   ConstructionProperty:InternalHeatSource scalar fields in EnergyPlus.
-  // - Field Mapping: Construction Name is an object-list relationship field and is intentionally excluded.
-  // - ForwardTranslator evidence: ForwardTranslateConstructionWithInternalSource.cpp maps
-  //   sourcePresentAfterLayerNumber / temperatureCalculationRequestedAfterLayerNumber /
-  //   dimensionsForTheCTFCalculation / tubeSpacing /
-  //   twoDimensionalTemperatureCalculationPosition directly to
-  //   ConstructionProperty:InternalHeatSource fields.
-  // - TODO(parity): Add layered material relationship APIs in a follow-up LayeredConstruction parity pass.
-  int sourcePresentAfterLayerNumber() const;
-  bool setSourcePresentAfterLayerNumber(int sourcePresentAfterLayerNumber);
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model::ConstructionWithInternalSource scalar accessor names/signatures.
+    // - Field Mapping: Preserved ConstructionWithInternalSource scalar APIs map to
+    //   ConstructionProperty:InternalHeatSource scalar fields in EnergyPlus.
+    // - Field Mapping: Construction Name is an object-list relationship field and is intentionally excluded.
+    // - ForwardTranslator evidence: ForwardTranslateConstructionWithInternalSource.cpp maps
+    //   sourcePresentAfterLayerNumber / temperatureCalculationRequestedAfterLayerNumber /
+    //   dimensionsForTheCTFCalculation / tubeSpacing /
+    //   twoDimensionalTemperatureCalculationPosition directly to
+    //   ConstructionProperty:InternalHeatSource fields.
+    // - TODO(parity): Add layered material relationship APIs in a follow-up LayeredConstruction parity pass.
+    int sourcePresentAfterLayerNumber() const;
+    bool setSourcePresentAfterLayerNumber(int sourcePresentAfterLayerNumber);
 
-  int temperatureCalculationRequestedAfterLayerNumber() const;
-  bool setTemperatureCalculationRequestedAfterLayerNumber(int temperatureCalculationRequestedAfterLayerNumber);
+    int temperatureCalculationRequestedAfterLayerNumber() const;
+    bool setTemperatureCalculationRequestedAfterLayerNumber(int temperatureCalculationRequestedAfterLayerNumber);
 
-  int dimensionsForTheCTFCalculation() const;
-  bool setDimensionsForTheCTFCalculation(int dimensionsForTheCTFCalculation);
+    int dimensionsForTheCTFCalculation() const;
+    bool setDimensionsForTheCTFCalculation(int dimensionsForTheCTFCalculation);
 
-  double tubeSpacing() const;
-  bool setTubeSpacing(double tubeSpacing);
+    double tubeSpacing() const;
+    bool setTubeSpacing(double tubeSpacing);
 
-  double twoDimensionalTemperatureCalculationPosition() const;
-  bool isTwoDimensionalTemperatureCalculationPositionDefaulted() const;
-  bool setTwoDimensionalTemperatureCalculationPosition(double twoDimensionalTemperatureCalculationPosition);
-  void resetTwoDimensionalTemperatureCalculationPosition();
+    double twoDimensionalTemperatureCalculationPosition() const;
+    bool setTwoDimensionalTemperatureCalculationPosition(double twoDimensionalTemperatureCalculationPosition);
+    bool isTwoDimensionalTemperatureCalculationPositionDefaulted() const;
+    void resetTwoDimensionalTemperatureCalculationPosition();
 
- protected:
-  using ImplType = detail::ConstructionWithInternalSource_Impl;
+   protected:
+    using ImplType = detail::ConstructionWithInternalSource_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit ConstructionWithInternalSource(std::shared_ptr<detail::ConstructionWithInternalSource_Impl> impl);
-};
+    explicit ConstructionWithInternalSource(std::shared_ptr<detail::ConstructionWithInternalSource_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

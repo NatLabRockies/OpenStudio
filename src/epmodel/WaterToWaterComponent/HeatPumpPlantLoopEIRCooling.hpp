@@ -18,7 +18,7 @@ namespace epmodel {
 class Model;
 
 namespace detail {
-class HeatPumpPlantLoopEIRCooling_Impl;
+  class HeatPumpPlantLoopEIRCooling_Impl;
 }
 
 class EPMODEL_API HeatPumpPlantLoopEIRCooling : public ModelObject
@@ -44,63 +44,58 @@ class EPMODEL_API HeatPumpPlantLoopEIRCooling : public ModelObject
   // - Field Mapping: ForwardTranslator evidence confirms direct mapping and Autosize string behavior for flow/capacity fields.
   // - TODO(parity): Add excluded non-scalar APIs and loop-coupling behavior in a dedicated parity pass.
   std::string condenserType() const;
+  bool setCondenserType(const std::string& condenserType);
 
   boost::optional<double> loadSideReferenceFlowRate() const;
   bool isLoadSideReferenceFlowRateAutosized() const;
+  bool setLoadSideReferenceFlowRate(double loadSideReferenceFlowRate);
+  void autosizeLoadSideReferenceFlowRate();
+  boost::optional<double> autosizedLoadSideReferenceFlowRate() const;
 
   boost::optional<double> sourceSideReferenceFlowRate() const;
   bool isSourceSideReferenceFlowRateAutosized() const;
+  bool setSourceSideReferenceFlowRate(double sourceSideReferenceFlowRate);
+  void autosizeSourceSideReferenceFlowRate();
+  boost::optional<double> autosizedSourceSideReferenceFlowRate() const;
 
   boost::optional<double> heatRecoveryReferenceFlowRate() const;
   bool isHeatRecoveryReferenceFlowRateAutosized() const;
+  bool setHeatRecoveryReferenceFlowRate(double heatRecoveryReferenceFlowRate);
+  void autosizeHeatRecoveryReferenceFlowRate();
+  boost::optional<double> autosizedHeatRecoveryReferenceFlowRate() const;
 
   boost::optional<double> referenceCapacity() const;
   bool isReferenceCapacityAutosized() const;
-
-  double referenceCoefficientofPerformance() const;
-  double sizingFactor() const;
-
-  std::string controlType() const;
-  std::string flowMode() const;
-
-  double minimumPartLoadRatio() const;
-  double minimumSourceInletTemperature() const;
-  double maximumSourceInletTemperature() const;
-
-  double maximumHeatRecoveryOutletTemperature() const;
-  double thermosiphonMinimumTemperatureDifference() const;
-
-  bool setCondenserType(const std::string& condenserType);
-
-  bool setLoadSideReferenceFlowRate(double loadSideReferenceFlowRate);
-  void autosizeLoadSideReferenceFlowRate();
-
-  bool setSourceSideReferenceFlowRate(double sourceSideReferenceFlowRate);
-  void autosizeSourceSideReferenceFlowRate();
-
-  bool setHeatRecoveryReferenceFlowRate(double heatRecoveryReferenceFlowRate);
-  void autosizeHeatRecoveryReferenceFlowRate();
-
   bool setReferenceCapacity(double referenceCapacity);
   void autosizeReferenceCapacity();
+  boost::optional<double> autosizedReferenceCapacity() const;
 
+  double referenceCoefficientofPerformance() const;
   bool setReferenceCoefficientofPerformance(double referenceCoefficientofPerformance);
+
+  double sizingFactor() const;
   bool setSizingFactor(double sizingFactor);
 
+  std::string controlType() const;
   bool setControlType(const std::string& controlType);
+
+  std::string flowMode() const;
   bool setFlowMode(const std::string& flowMode);
 
+  double minimumPartLoadRatio() const;
   bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
+
+  double minimumSourceInletTemperature() const;
   bool setMinimumSourceInletTemperature(double minimumSourceInletTemperature);
+
+  double maximumSourceInletTemperature() const;
   bool setMaximumSourceInletTemperature(double maximumSourceInletTemperature);
 
+  double maximumHeatRecoveryOutletTemperature() const;
   bool setMaximumHeatRecoveryOutletTemperature(double maximumHeatRecoveryOutletTemperature);
-  bool setThermosiphonMinimumTemperatureDifference(double thermosiphonMinimumTemperatureDifference);
 
-  boost::optional<double> autosizedLoadSideReferenceFlowRate() const;
-  boost::optional<double> autosizedSourceSideReferenceFlowRate() const;
-  boost::optional<double> autosizedHeatRecoveryReferenceFlowRate() const;
-  boost::optional<double> autosizedReferenceCapacity() const;
+  double thermosiphonMinimumTemperatureDifference() const;
+  bool setThermosiphonMinimumTemperatureDifference(double thermosiphonMinimumTemperatureDifference);
 
  protected:
   using ImplType = detail::HeatPumpPlantLoopEIRCooling_Impl;

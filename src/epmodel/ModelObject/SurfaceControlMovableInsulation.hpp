@@ -43,9 +43,20 @@ namespace epmodel {
     // - Field Mapping: insulationType maps directly to E+ SurfaceControl:MovableInsulation InsulationType field.
     // - Field Mapping: SurfaceName, MaterialName, ScheduleName are relationship fields and excluded from this scaffold.
     // - TODO(parity): Add non-scalar relationship APIs incrementally after scalar saturation.
+
+    /** @name Getters */
+    //@{
+
     std::string insulationType() const;
 
+    //@}
+
+    /** @name Setters */
+    //@{
+
     bool setInsulationType(const std::string& insulationType);
+
+    //@}
 
    protected:
     using ImplType = detail::SurfaceControlMovableInsulation_Impl;

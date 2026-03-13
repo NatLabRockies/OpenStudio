@@ -16,62 +16,63 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class GroundHeatTransferBasementBldgData_Impl;
-}
+  namespace detail {
+    class GroundHeatTransferBasementBldgData_Impl;
+  }
 
-class EPMODEL_API GroundHeatTransferBasementBldgData : public ModelObject
-{
- public:
-  explicit GroundHeatTransferBasementBldgData(const Model& model);
+  class EPMODEL_API GroundHeatTransferBasementBldgData : public ModelObject
+  {
+   public:
+    explicit GroundHeatTransferBasementBldgData(const Model& model);
 
-  virtual ~GroundHeatTransferBasementBldgData() override = default;
-  GroundHeatTransferBasementBldgData(const GroundHeatTransferBasementBldgData& other) = default;
-  GroundHeatTransferBasementBldgData(GroundHeatTransferBasementBldgData&& other) = default;
-  GroundHeatTransferBasementBldgData& operator=(const GroundHeatTransferBasementBldgData&) = default;
-  GroundHeatTransferBasementBldgData& operator=(GroundHeatTransferBasementBldgData&&) = default;
+    virtual ~GroundHeatTransferBasementBldgData() override = default;
+    GroundHeatTransferBasementBldgData(const GroundHeatTransferBasementBldgData& other) = default;
+    GroundHeatTransferBasementBldgData(GroundHeatTransferBasementBldgData&& other) = default;
+    GroundHeatTransferBasementBldgData& operator=(const GroundHeatTransferBasementBldgData&) = default;
+    GroundHeatTransferBasementBldgData& operator=(GroundHeatTransferBasementBldgData&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to GroundHeatTransfer:Basement:BldgData numeric fields.
-  // - TODO(parity): Add relationship APIs incrementally if future schema revisions introduce link fields.
-  double dwallWallthickness() const;
-  double dslabFloorslabthickness() const;
-  double dgravxyWidthofgravelpitbesidebasementwall() const;
-  double dgravznGraveldepthextendingabovethefloorslab() const;
-  double dgravzpGraveldepthbelowthefloorslab() const;
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to GroundHeatTransfer:Basement:BldgData numeric fields.
+    // - TODO(parity): Add relationship APIs incrementally if future schema revisions introduce link fields.
+    double dwallWallthickness() const;
+    bool isDwallWallthicknessDefaulted() const;
+    bool setDwallWallthickness(double dwallWallthickness);
+    void resetDwallWallthickness();
 
-  bool isDwallWallthicknessDefaulted() const;
-  bool isDslabFloorslabthicknessDefaulted() const;
-  bool isDgravxyWidthofgravelpitbesidebasementwallDefaulted() const;
-  bool isDgravznGraveldepthextendingabovethefloorslabDefaulted() const;
-  bool isDgravzpGraveldepthbelowthefloorslabDefaulted() const;
+    double dslabFloorslabthickness() const;
+    bool isDslabFloorslabthicknessDefaulted() const;
+    bool setDslabFloorslabthickness(double dslabFloorslabthickness);
+    void resetDslabFloorslabthickness();
 
-  bool setDwallWallthickness(double dwallWallthickness);
-  bool setDslabFloorslabthickness(double dslabFloorslabthickness);
-  bool setDgravxyWidthofgravelpitbesidebasementwall(double dgravxyWidthofgravelpitbesidebasementwall);
-  bool setDgravznGraveldepthextendingabovethefloorslab(double dgravznGraveldepthextendingabovethefloorslab);
-  bool setDgravzpGraveldepthbelowthefloorslab(double dgravzpGraveldepthbelowthefloorslab);
+    double dgravxyWidthofgravelpitbesidebasementwall() const;
+    bool isDgravxyWidthofgravelpitbesidebasementwallDefaulted() const;
+    bool setDgravxyWidthofgravelpitbesidebasementwall(double dgravxyWidthofgravelpitbesidebasementwall);
+    void resetDgravxyWidthofgravelpitbesidebasementwall();
 
-  void resetDwallWallthickness();
-  void resetDslabFloorslabthickness();
-  void resetDgravxyWidthofgravelpitbesidebasementwall();
-  void resetDgravznGraveldepthextendingabovethefloorslab();
-  void resetDgravzpGraveldepthbelowthefloorslab();
+    double dgravznGraveldepthextendingabovethefloorslab() const;
+    bool isDgravznGraveldepthextendingabovethefloorslabDefaulted() const;
+    bool setDgravznGraveldepthextendingabovethefloorslab(double dgravznGraveldepthextendingabovethefloorslab);
+    void resetDgravznGraveldepthextendingabovethefloorslab();
 
- protected:
-  using ImplType = detail::GroundHeatTransferBasementBldgData_Impl;
+    double dgravzpGraveldepthbelowthefloorslab() const;
+    bool isDgravzpGraveldepthbelowthefloorslabDefaulted() const;
+    bool setDgravzpGraveldepthbelowthefloorslab(double dgravzpGraveldepthbelowthefloorslab);
+    void resetDgravzpGraveldepthbelowthefloorslab();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::GroundHeatTransferBasementBldgData_Impl;
 
-  explicit GroundHeatTransferBasementBldgData(std::shared_ptr<detail::GroundHeatTransferBasementBldgData_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit GroundHeatTransferBasementBldgData(std::shared_ptr<detail::GroundHeatTransferBasementBldgData_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

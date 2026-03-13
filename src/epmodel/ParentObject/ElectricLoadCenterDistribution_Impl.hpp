@@ -13,73 +13,73 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ElectricLoadCenterDistribution_Impl : public ParentObject_Impl
-{
- public:
-  using ParentObject_Impl::ParentObject_Impl;
-  virtual ~ElectricLoadCenterDistribution_Impl() override = default;
+    class EPMODEL_API ElectricLoadCenterDistribution_Impl : public ParentObject_Impl
+    {
+     public:
+      using ParentObject_Impl::ParentObject_Impl;
+      virtual ~ElectricLoadCenterDistribution_Impl() override = default;
 
-  // Schema Alignment Notes:
-  // - ElectricLoadCenter:Generators is represented through ElectricLoadCenterDistribution + Generator objects.
-  // - Extensible generator-list fields are relationship-like and intentionally out of scalar scaffold scope.
+      // Schema Alignment Notes:
+      // - ElectricLoadCenter:Generators is represented through ElectricLoadCenterDistribution + Generator objects.
+      // - Extensible generator-list fields are relationship-like and intentionally out of scalar scaffold scope.
 
-  std::string generatorOperationSchemeType() const;
-  bool isGeneratorOperationSchemeTypeDefaulted() const;
-  bool setGeneratorOperationSchemeType(const std::string& generatorOperationSchemeType);
-  void resetGeneratorOperationSchemeType();
+      std::vector<std::string> generatorOperationSchemeTypeValues() const;
+      std::vector<std::string> electricalBussTypeValues() const;
+      std::vector<std::string> storageOperationSchemeValues() const;
 
-  boost::optional<double> demandLimitSchemePurchasedElectricDemandLimit() const;
-  bool setDemandLimitSchemePurchasedElectricDemandLimit(double demandLimitSchemePurchasedElectricDemandLimit);
-  void resetDemandLimitSchemePurchasedElectricDemandLimit();
+      std::string generatorOperationSchemeType() const;
+      bool setGeneratorOperationSchemeType(const std::string& generatorOperationSchemeType);
+      bool isGeneratorOperationSchemeTypeDefaulted() const;
+      void resetGeneratorOperationSchemeType();
 
-  boost::optional<std::string> trackMeterSchemeMeterName() const;
-  bool setTrackMeterSchemeMeterName(const std::string& trackMeterSchemeMeterName);
-  void resetTrackMeterSchemeMeterName();
+      boost::optional<double> demandLimitSchemePurchasedElectricDemandLimit() const;
+      bool setDemandLimitSchemePurchasedElectricDemandLimit(double demandLimitSchemePurchasedElectricDemandLimit);
+      void resetDemandLimitSchemePurchasedElectricDemandLimit();
 
-  std::string electricalBussType() const;
-  bool isElectricalBussTypeDefaulted() const;
-  bool setElectricalBussType(const std::string& electricalBussType);
-  void resetElectricalBussType();
+      boost::optional<std::string> trackMeterSchemeMeterName() const;
+      bool setTrackMeterSchemeMeterName(const std::string& trackMeterSchemeMeterName);
+      void resetTrackMeterSchemeMeterName();
 
-  std::string storageOperationScheme() const;
-  bool isStorageOperationSchemeDefaulted() const;
-  bool setStorageOperationScheme(const std::string& operationScheme);
-  void resetStorageOperationScheme();
+      std::string electricalBussType() const;
+      bool setElectricalBussType(const std::string& electricalBussType);
+      bool isElectricalBussTypeDefaulted() const;
+      void resetElectricalBussType();
 
-  boost::optional<std::string> storageControlTrackMeterName() const;
-  bool setStorageControlTrackMeterName(const std::string& meterName);
-  void resetStorageControlTrackMeterName();
+      std::string storageOperationScheme() const;
+      bool setStorageOperationScheme(const std::string& operationScheme);
+      bool isStorageOperationSchemeDefaulted() const;
+      void resetStorageOperationScheme();
 
-  double maximumStorageStateofChargeFraction() const;
-  bool isMaximumStorageStateofChargeFractionDefaulted() const;
-  bool setMaximumStorageStateofChargeFraction(double maxStateofCharge);
-  void resetMaximumStorageStateofChargeFraction();
+      boost::optional<std::string> storageControlTrackMeterName() const;
+      bool setStorageControlTrackMeterName(const std::string& meterName);
+      void resetStorageControlTrackMeterName();
 
-  double minimumStorageStateofChargeFraction() const;
-  bool isMinimumStorageStateofChargeFractionDefaulted() const;
-  bool setMinimumStorageStateofChargeFraction(double minStateofCharge);
-  void resetMinimumStorageStateofChargeFraction();
+      double maximumStorageStateofChargeFraction() const;
+      bool setMaximumStorageStateofChargeFraction(double maxStateofCharge);
+      bool isMaximumStorageStateofChargeFractionDefaulted() const;
+      void resetMaximumStorageStateofChargeFraction();
 
-  boost::optional<double> designStorageControlChargePower() const;
-  bool setDesignStorageControlChargePower(double designStorageControlChargePower);
-  void resetDesignStorageControlChargePower();
+      double minimumStorageStateofChargeFraction() const;
+      bool setMinimumStorageStateofChargeFraction(double minStateofCharge);
+      bool isMinimumStorageStateofChargeFractionDefaulted() const;
+      void resetMinimumStorageStateofChargeFraction();
 
-  boost::optional<double> designStorageControlDischargePower() const;
-  bool setDesignStorageControlDischargePower(double designStorageControlDischargePower);
-  void resetDesignStorageControlDischargePower();
+      boost::optional<double> designStorageControlChargePower() const;
+      bool setDesignStorageControlChargePower(double designStorageControlChargePower);
+      void resetDesignStorageControlChargePower();
 
-  boost::optional<double> storageControlUtilityDemandTarget() const;
-  bool setStorageControlUtilityDemandTarget(double storageControlUtilityDemandTarget);
-  void resetStorageControlUtilityDemandTarget();
+      boost::optional<double> designStorageControlDischargePower() const;
+      bool setDesignStorageControlDischargePower(double designStorageControlDischargePower);
+      void resetDesignStorageControlDischargePower();
 
-  std::vector<std::string> generatorOperationSchemeTypeValues() const;
-  std::vector<std::string> electricalBussTypeValues() const;
-  std::vector<std::string> storageOperationSchemeValues() const;
-};
+      boost::optional<double> storageControlUtilityDemandTarget() const;
+      bool setStorageControlUtilityDemandTarget(double storageControlUtilityDemandTarget);
+      void resetStorageControlUtilityDemandTarget();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

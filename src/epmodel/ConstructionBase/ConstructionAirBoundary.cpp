@@ -1,7 +1,7 @@
 /***********************************************************************************************************************
-*  OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC.
-*  See also https://openstudio.net/license
-***********************************************************************************************************************/
+ *  OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC.
+ *  See also https://openstudio.net/license
+ ***********************************************************************************************************************/
 
 #include "ConstructionBase/ConstructionAirBoundary.hpp"
 #include "ConstructionBase/ConstructionAirBoundary_Impl.hpp"
@@ -17,139 +17,131 @@
 namespace openstudio {
 namespace epmodel {
 
-ConstructionAirBoundary::ConstructionAirBoundary(const Model& model)
-  : ModelObject(ConstructionAirBoundary::iddObjectType(), model) {
-  const bool ok = setSimpleMixingAirChangesPerHour(0.0);
-  OS_ASSERT(ok);
-}
+  ConstructionAirBoundary::ConstructionAirBoundary(const Model& model) : ModelObject(ConstructionAirBoundary::iddObjectType(), model) {
+    const bool ok = setSimpleMixingAirChangesPerHour(0.0);
+    OS_ASSERT(ok);
+  }
 
-ConstructionAirBoundary::ConstructionAirBoundary(std::shared_ptr<detail::ConstructionAirBoundary_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  ConstructionAirBoundary::ConstructionAirBoundary(std::shared_ptr<detail::ConstructionAirBoundary_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType ConstructionAirBoundary::iddObjectType() {
-  return IddObjectType::Construction_AirBoundary;
-}
+  IddObjectType ConstructionAirBoundary::iddObjectType() {
+    return IddObjectType::Construction_AirBoundary;
+  }
 
-std::vector<std::string> ConstructionAirBoundary::solarAndDaylightingMethodValues() {
-  return {};
-}
+  std::vector<std::string> ConstructionAirBoundary::solarAndDaylightingMethodValues() {
+    return {};
+  }
 
-std::vector<std::string> ConstructionAirBoundary::radiantExchangeMethodValues() {
-  return {};
-}
+  std::vector<std::string> ConstructionAirBoundary::radiantExchangeMethodValues() {
+    return {};
+  }
 
-std::vector<std::string> ConstructionAirBoundary::airExchangeMethodValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::Construction_AirBoundaryFields::AirExchangeMethod);
-}
+  std::vector<std::string> ConstructionAirBoundary::airExchangeMethodValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Construction_AirBoundaryFields::AirExchangeMethod);
+  }
 
-std::string ConstructionAirBoundary::solarAndDaylightingMethod() const {
-  return "GroupedZones";
-}
+  std::string ConstructionAirBoundary::solarAndDaylightingMethod() const {
+    return "GroupedZones";
+  }
 
-bool ConstructionAirBoundary::isSolarAndDaylightingMethodDefaulted() const {
-  return true;
-}
+  bool ConstructionAirBoundary::isSolarAndDaylightingMethodDefaulted() const {
+    return true;
+  }
 
-std::string ConstructionAirBoundary::radiantExchangeMethod() const {
-  return "GroupedZones";
-}
+  bool ConstructionAirBoundary::setSolarAndDaylightingMethod(const std::string&) {
+    // Preserved legacy API: schema no longer has a mapped field for this deprecated concept.
+    return false;
+  }
 
-bool ConstructionAirBoundary::isRadiantExchangeMethodDefaulted() const {
-  return true;
-}
+  void ConstructionAirBoundary::resetSolarAndDaylightingMethod() {}
 
-std::string ConstructionAirBoundary::airExchangeMethod() const {
-  return getImpl<detail::ConstructionAirBoundary_Impl>()->airExchangeMethod();
-}
+  std::string ConstructionAirBoundary::radiantExchangeMethod() const {
+    return "GroupedZones";
+  }
 
-bool ConstructionAirBoundary::isAirExchangeMethodDefaulted() const {
-  return getImpl<detail::ConstructionAirBoundary_Impl>()->isAirExchangeMethodDefaulted();
-}
+  bool ConstructionAirBoundary::isRadiantExchangeMethodDefaulted() const {
+    return true;
+  }
 
-double ConstructionAirBoundary::simpleMixingAirChangesPerHour() const {
-  return getImpl<detail::ConstructionAirBoundary_Impl>()->simpleMixingAirChangesPerHour();
-}
+  bool ConstructionAirBoundary::setRadiantExchangeMethod(const std::string&) {
+    // Preserved legacy API: schema no longer has a mapped field for this deprecated concept.
+    return false;
+  }
 
-bool ConstructionAirBoundary::isSimpleMixingAirChangesPerHourDefaulted() const {
-  return getImpl<detail::ConstructionAirBoundary_Impl>()->isSimpleMixingAirChangesPerHourDefaulted();
-}
+  void ConstructionAirBoundary::resetRadiantExchangeMethod() {}
 
-bool ConstructionAirBoundary::setSolarAndDaylightingMethod(const std::string&) {
-  // Preserved legacy API: schema no longer has a mapped field for this deprecated concept.
-  return false;
-}
+  std::string ConstructionAirBoundary::airExchangeMethod() const {
+    return getImpl<detail::ConstructionAirBoundary_Impl>()->airExchangeMethod();
+  }
 
-void ConstructionAirBoundary::resetSolarAndDaylightingMethod() {}
+  bool ConstructionAirBoundary::isAirExchangeMethodDefaulted() const {
+    return getImpl<detail::ConstructionAirBoundary_Impl>()->isAirExchangeMethodDefaulted();
+  }
 
-bool ConstructionAirBoundary::setRadiantExchangeMethod(const std::string&) {
-  // Preserved legacy API: schema no longer has a mapped field for this deprecated concept.
-  return false;
-}
+  bool ConstructionAirBoundary::setAirExchangeMethod(const std::string& airExchangeMethod) {
+    return getImpl<detail::ConstructionAirBoundary_Impl>()->setAirExchangeMethod(airExchangeMethod);
+  }
 
-void ConstructionAirBoundary::resetRadiantExchangeMethod() {}
+  void ConstructionAirBoundary::resetAirExchangeMethod() {
+    getImpl<detail::ConstructionAirBoundary_Impl>()->resetAirExchangeMethod();
+  }
 
-bool ConstructionAirBoundary::setAirExchangeMethod(const std::string& airExchangeMethod) {
-  return getImpl<detail::ConstructionAirBoundary_Impl>()->setAirExchangeMethod(airExchangeMethod);
-}
+  double ConstructionAirBoundary::simpleMixingAirChangesPerHour() const {
+    return getImpl<detail::ConstructionAirBoundary_Impl>()->simpleMixingAirChangesPerHour();
+  }
 
-void ConstructionAirBoundary::resetAirExchangeMethod() {
-  getImpl<detail::ConstructionAirBoundary_Impl>()->resetAirExchangeMethod();
-}
+  bool ConstructionAirBoundary::isSimpleMixingAirChangesPerHourDefaulted() const {
+    return getImpl<detail::ConstructionAirBoundary_Impl>()->isSimpleMixingAirChangesPerHourDefaulted();
+  }
 
-bool ConstructionAirBoundary::setSimpleMixingAirChangesPerHour(double simpleMixingAirChangesPerHour) {
-  return getImpl<detail::ConstructionAirBoundary_Impl>()->setSimpleMixingAirChangesPerHour(simpleMixingAirChangesPerHour);
-}
+  bool ConstructionAirBoundary::setSimpleMixingAirChangesPerHour(double simpleMixingAirChangesPerHour) {
+    return getImpl<detail::ConstructionAirBoundary_Impl>()->setSimpleMixingAirChangesPerHour(simpleMixingAirChangesPerHour);
+  }
 
-void ConstructionAirBoundary::resetSimpleMixingAirChangesPerHour() {
-  getImpl<detail::ConstructionAirBoundary_Impl>()->resetSimpleMixingAirChangesPerHour();
-}
+  void ConstructionAirBoundary::resetSimpleMixingAirChangesPerHour() {
+    getImpl<detail::ConstructionAirBoundary_Impl>()->resetSimpleMixingAirChangesPerHour();
+  }
 
-}  // namespace epmodel
-}  // namespace openstudio
+  namespace detail {
 
-namespace openstudio {
-namespace epmodel {
-namespace detail {
+    std::string ConstructionAirBoundary_Impl::airExchangeMethod() const {
+      const auto value = getString(openstudio::Construction_AirBoundaryFields::AirExchangeMethod, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-std::string ConstructionAirBoundary_Impl::airExchangeMethod() const {
-  const auto value = getString(openstudio::Construction_AirBoundaryFields::AirExchangeMethod, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool ConstructionAirBoundary_Impl::isAirExchangeMethodDefaulted() const {
+      return isEmpty(openstudio::Construction_AirBoundaryFields::AirExchangeMethod);
+    }
 
-bool ConstructionAirBoundary_Impl::isAirExchangeMethodDefaulted() const {
-  return isEmpty(openstudio::Construction_AirBoundaryFields::AirExchangeMethod);
-}
+    bool ConstructionAirBoundary_Impl::setAirExchangeMethod(const std::string& airExchangeMethod) {
+      const bool result = setString(openstudio::Construction_AirBoundaryFields::AirExchangeMethod, airExchangeMethod);
+      return result;
+    }
 
-double ConstructionAirBoundary_Impl::simpleMixingAirChangesPerHour() const {
-  const auto value = getDouble(openstudio::Construction_AirBoundaryFields::SimpleMixingAirChangesperHour, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    void ConstructionAirBoundary_Impl::resetAirExchangeMethod() {
+      OS_ASSERT(setString(openstudio::Construction_AirBoundaryFields::AirExchangeMethod, ""));
+    }
 
-bool ConstructionAirBoundary_Impl::isSimpleMixingAirChangesPerHourDefaulted() const {
-  return isEmpty(openstudio::Construction_AirBoundaryFields::SimpleMixingAirChangesperHour);
-}
+    double ConstructionAirBoundary_Impl::simpleMixingAirChangesPerHour() const {
+      const auto value = getDouble(openstudio::Construction_AirBoundaryFields::SimpleMixingAirChangesperHour, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool ConstructionAirBoundary_Impl::setAirExchangeMethod(const std::string& airExchangeMethod) {
-  const bool result = setString(openstudio::Construction_AirBoundaryFields::AirExchangeMethod, airExchangeMethod);
-  return result;
-}
+    bool ConstructionAirBoundary_Impl::isSimpleMixingAirChangesPerHourDefaulted() const {
+      return isEmpty(openstudio::Construction_AirBoundaryFields::SimpleMixingAirChangesperHour);
+    }
 
-void ConstructionAirBoundary_Impl::resetAirExchangeMethod() {
-  OS_ASSERT(setString(openstudio::Construction_AirBoundaryFields::AirExchangeMethod, ""));
-}
+    bool ConstructionAirBoundary_Impl::setSimpleMixingAirChangesPerHour(double simpleMixingAirChangesPerHour) {
+      const bool result = setDouble(openstudio::Construction_AirBoundaryFields::SimpleMixingAirChangesperHour, simpleMixingAirChangesPerHour);
+      return result;
+    }
 
-bool ConstructionAirBoundary_Impl::setSimpleMixingAirChangesPerHour(double simpleMixingAirChangesPerHour) {
-  const bool result = setDouble(openstudio::Construction_AirBoundaryFields::SimpleMixingAirChangesperHour, simpleMixingAirChangesPerHour);
-  return result;
-}
+    void ConstructionAirBoundary_Impl::resetSimpleMixingAirChangesPerHour() {
+      OS_ASSERT(setString(openstudio::Construction_AirBoundaryFields::SimpleMixingAirChangesperHour, ""));
+    }
+  }  // namespace detail
 
-void ConstructionAirBoundary_Impl::resetSimpleMixingAirChangesPerHour() {
-  OS_ASSERT(setString(openstudio::Construction_AirBoundaryFields::SimpleMixingAirChangesperHour, ""));
-}
-
-}  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

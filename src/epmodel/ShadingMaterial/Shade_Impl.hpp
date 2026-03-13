@@ -20,69 +20,71 @@ namespace epmodel {
       virtual ~Shade_Impl() override = default;
 
       double thermalConductivity() const;
+      bool setThermalConductivity(double value);
+
       double thermalConductance() const;
+      bool setThermalConductance(double value);
+
       double thermalResistivity() const;
+      bool setThermalResistivity(double value);
+
       double thermalResistance() const;
+      bool setThermalResistance(double value);
 
       double solarTransmittance() const;
+      bool setSolarTransmittance(double solarTransmittance);
+
       double solarReflectance() const;
+      bool setSolarReflectance(double solarReflectance);
+
       double visibleTransmittance() const;
+      bool setVisibleTransmittance(double visibleTransmittance);
+
       double visibleReflectance() const;
+      bool setVisibleReflectance(double visibleReflectance);
+
       double thermalHemisphericalEmissivity() const;
+      bool setThermalHemisphericalEmissivity(double thermalHemisphericalEmissivity);
+
       double thermalTransmittance() const;
+      bool setThermalTransmittance(double thermalTransmittance);
+
       double solarAbsorptance() const;
       double visibleAbsorptance() const;
 
       double thickness() const;
+      bool setThickness(double thickness);
+
       double conductivity() const;
+      bool setConductivity(double conductivity);
 
       double shadetoGlassDistance() const;
       bool isShadetoGlassDistanceDefaulted() const;
-
-      double topOpeningMultiplier() const;
-      bool isTopOpeningMultiplierDefaulted() const;
-
-      double bottomOpeningMultiplier() const;
-      bool isBottomOpeningMultiplierDefaulted() const;
-
-      double leftSideOpeningMultiplier() const;
-      bool isLeftSideOpeningMultiplierDefaulted() const;
-
-      double rightSideOpeningMultiplier() const;
-      bool isRightSideOpeningMultiplierDefaulted() const;
-
-      double airflowPermeability() const;
-      bool isAirflowPermeabilityDefaulted() const;
-
-      bool setThermalConductivity(double value);
-      bool setThermalConductance(double value);
-      bool setThermalResistivity(double value);
-      bool setThermalResistance(double value);
-
-      bool setThermalTransmittance(double thermalTransmittance);
-      bool setSolarTransmittance(double solarTransmittance);
-      bool setSolarReflectance(double solarReflectance);
-      bool setVisibleTransmittance(double visibleTransmittance);
-      bool setVisibleReflectance(double visibleReflectance);
-      bool setThermalHemisphericalEmissivity(double thermalHemisphericalEmissivity);
-      bool setThickness(double thickness);
-      bool setConductivity(double conductivity);
-
       bool setShadetoGlassDistance(double shadetoGlassDistance);
       void resetShadetoGlassDistance();
 
+      double topOpeningMultiplier() const;
+      bool isTopOpeningMultiplierDefaulted() const;
       bool setTopOpeningMultiplier(double topOpeningMultiplier);
       void resetTopOpeningMultiplier();
 
+      double bottomOpeningMultiplier() const;
+      bool isBottomOpeningMultiplierDefaulted() const;
       bool setBottomOpeningMultiplier(double bottomOpeningMultiplier);
       void resetBottomOpeningMultiplier();
 
+      double leftSideOpeningMultiplier() const;
+      bool isLeftSideOpeningMultiplierDefaulted() const;
       bool setLeftSideOpeningMultiplier(double leftSideOpeningMultiplier);
       void resetLeftSideOpeningMultiplier();
 
+      double rightSideOpeningMultiplier() const;
+      bool isRightSideOpeningMultiplierDefaulted() const;
       bool setRightSideOpeningMultiplier(double rightSideOpeningMultiplier);
       void resetRightSideOpeningMultiplier();
 
+      double airflowPermeability() const;
+      bool isAirflowPermeabilityDefaulted() const;
       bool setAirflowPermeability(double airflowPermeability);
       void resetAirflowPermeability();
     };

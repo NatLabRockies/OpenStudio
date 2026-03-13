@@ -82,8 +82,8 @@ namespace epmodel {
     void autocalculatePlantLoopVolume();
 
     std::string commonPipeSimulation() const;
-    bool isCommonPipeSimulationDefaulted() const;
     bool setCommonPipeSimulation(const std::string& value);
+    bool isCommonPipeSimulationDefaulted() const;
     void resetCommonPipeSimulation();
 
    protected:

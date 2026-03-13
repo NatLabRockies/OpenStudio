@@ -41,12 +41,12 @@ namespace epmodel {
     return getImpl<detail::SurfacePropertyHeatTransferAlgorithmSurfaceList_Impl>()->setAlgorithm(algorithm);
   }
 
-  bool SurfacePropertyHeatTransferAlgorithmSurfaceList::isAlgorithmDefaulted() const {
-    return getImpl<detail::SurfacePropertyHeatTransferAlgorithmSurfaceList_Impl>()->isAlgorithmDefaulted();
-  }
-
   void SurfacePropertyHeatTransferAlgorithmSurfaceList::resetAlgorithm() {
     getImpl<detail::SurfacePropertyHeatTransferAlgorithmSurfaceList_Impl>()->resetAlgorithm();
+  }
+
+  bool SurfacePropertyHeatTransferAlgorithmSurfaceList::isAlgorithmDefaulted() const {
+    return getImpl<detail::SurfacePropertyHeatTransferAlgorithmSurfaceList_Impl>()->isAlgorithmDefaulted();
   }
 
 }  // namespace epmodel
@@ -66,12 +66,12 @@ namespace epmodel {
       return setString(openstudio::SurfaceProperty_HeatTransferAlgorithm_SurfaceListFields::Algorithm, algorithm);
     }
 
-    bool SurfacePropertyHeatTransferAlgorithmSurfaceList_Impl::isAlgorithmDefaulted() const {
-      return isEmpty(openstudio::SurfaceProperty_HeatTransferAlgorithm_SurfaceListFields::Algorithm);
-    }
-
     void SurfacePropertyHeatTransferAlgorithmSurfaceList_Impl::resetAlgorithm() {
       OS_ASSERT(setString(openstudio::SurfaceProperty_HeatTransferAlgorithm_SurfaceListFields::Algorithm, ""));
+    }
+
+    bool SurfacePropertyHeatTransferAlgorithmSurfaceList_Impl::isAlgorithmDefaulted() const {
+      return isEmpty(openstudio::SurfaceProperty_HeatTransferAlgorithm_SurfaceListFields::Algorithm);
     }
 
     std::vector<std::string> SurfacePropertyHeatTransferAlgorithmSurfaceList_Impl::algorithmValues() const {

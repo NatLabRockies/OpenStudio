@@ -13,33 +13,32 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HVACTemplatePlantTowerObjectReference_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~HVACTemplatePlantTowerObjectReference_Impl() override = default;
+    class EPMODEL_API HVACTemplatePlantTowerObjectReference_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~HVACTemplatePlantTowerObjectReference_Impl() override = default;
 
-  std::string coolingTowerObjectType() const;
-  boost::optional<double> priority() const;
-  boost::optional<std::string> templatePlantLoopType() const;
+      std::string coolingTowerObjectType() const;
+      bool setCoolingTowerObjectType(const std::string& coolingTowerObjectType);
+      bool isCoolingTowerObjectTypeDefaulted() const;
+      void resetCoolingTowerObjectType();
 
-  bool isCoolingTowerObjectTypeDefaulted() const;
+      boost::optional<double> priority() const;
+      bool setPriority(double priority);
+      void resetPriority();
 
-  bool setCoolingTowerObjectType(const std::string& coolingTowerObjectType);
-  bool setPriority(double priority);
-  bool setTemplatePlantLoopType(const std::string& templatePlantLoopType);
+      boost::optional<std::string> templatePlantLoopType() const;
+      bool setTemplatePlantLoopType(const std::string& templatePlantLoopType);
+      void resetTemplatePlantLoopType();
 
-  void resetCoolingTowerObjectType();
-  void resetPriority();
-  void resetTemplatePlantLoopType();
+      std::vector<std::string> coolingTowerObjectTypeValues() const;
+      std::vector<std::string> templatePlantLoopTypeValues() const;
+    };
 
-  std::vector<std::string> coolingTowerObjectTypeValues() const;
-  std::vector<std::string> templatePlantLoopTypeValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -15,72 +15,73 @@
 namespace openstudio {
 namespace epmodel {
 
-ExternalInterfaceFunctionalMockupUnitExportToSchedule::ExternalInterfaceFunctionalMockupUnitExportToSchedule(
-  const Model& model, const std::string& fMUVariableName)
-  : ModelObject(ExternalInterfaceFunctionalMockupUnitExportToSchedule::iddObjectType(), model) {
-  OS_ASSERT(setFMUVariableName(fMUVariableName));
-}
+  ExternalInterfaceFunctionalMockupUnitExportToSchedule::ExternalInterfaceFunctionalMockupUnitExportToSchedule(const Model& model,
+                                                                                                               const std::string& fMUVariableName)
+    : ModelObject(ExternalInterfaceFunctionalMockupUnitExportToSchedule::iddObjectType(), model) {
+    OS_ASSERT(setFMUVariableName(fMUVariableName));
+  }
 
-ExternalInterfaceFunctionalMockupUnitExportToSchedule::ExternalInterfaceFunctionalMockupUnitExportToSchedule(
-  const Model& model, const std::string& fMUVariableName, double initialValue)
-  : ModelObject(ExternalInterfaceFunctionalMockupUnitExportToSchedule::iddObjectType(), model) {
-  OS_ASSERT(setFMUVariableName(fMUVariableName));
-  OS_ASSERT(setInitialValue(initialValue));
-}
+  ExternalInterfaceFunctionalMockupUnitExportToSchedule::ExternalInterfaceFunctionalMockupUnitExportToSchedule(const Model& model,
+                                                                                                               const std::string& fMUVariableName,
+                                                                                                               double initialValue)
+    : ModelObject(ExternalInterfaceFunctionalMockupUnitExportToSchedule::iddObjectType(), model) {
+    OS_ASSERT(setFMUVariableName(fMUVariableName));
+    OS_ASSERT(setInitialValue(initialValue));
+  }
 
-ExternalInterfaceFunctionalMockupUnitExportToSchedule::ExternalInterfaceFunctionalMockupUnitExportToSchedule(
-  std::shared_ptr<detail::ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  ExternalInterfaceFunctionalMockupUnitExportToSchedule::ExternalInterfaceFunctionalMockupUnitExportToSchedule(
+    std::shared_ptr<detail::ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType ExternalInterfaceFunctionalMockupUnitExportToSchedule::iddObjectType() {
-  return IddObjectType::ExternalInterface_FunctionalMockupUnitExport_To_Schedule;
-}
+  IddObjectType ExternalInterfaceFunctionalMockupUnitExportToSchedule::iddObjectType() {
+    return IddObjectType::ExternalInterface_FunctionalMockupUnitExport_To_Schedule;
+  }
 
-std::string ExternalInterfaceFunctionalMockupUnitExportToSchedule::fMUVariableName() const {
-  return getImpl<detail::ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl>()->fMUVariableName();
-}
+  std::string ExternalInterfaceFunctionalMockupUnitExportToSchedule::fMUVariableName() const {
+    return getImpl<detail::ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl>()->fMUVariableName();
+  }
 
-bool ExternalInterfaceFunctionalMockupUnitExportToSchedule::setFMUVariableName(const std::string& fMUVariableName) {
-  return getImpl<detail::ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl>()->setFMUVariableName(fMUVariableName);
-}
+  bool ExternalInterfaceFunctionalMockupUnitExportToSchedule::setFMUVariableName(const std::string& fMUVariableName) {
+    return getImpl<detail::ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl>()->setFMUVariableName(fMUVariableName);
+  }
 
-boost::optional<double> ExternalInterfaceFunctionalMockupUnitExportToSchedule::initialValue() const {
-  return getImpl<detail::ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl>()->initialValue();
-}
+  namespace detail {
 
-bool ExternalInterfaceFunctionalMockupUnitExportToSchedule::setInitialValue(double initialValue) {
-  return getImpl<detail::ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl>()->setInitialValue(initialValue);
-}
+    std::string ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl::fMUVariableName() const {
+      const auto value = getString(openstudio::ExternalInterface_FunctionalMockupUnitExport_To_ScheduleFields::FMUVariableName, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-}  // namespace epmodel
-}  // namespace openstudio
+    bool ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl::setFMUVariableName(const std::string& fMUVariableName) {
+      const bool result = setString(openstudio::ExternalInterface_FunctionalMockupUnitExport_To_ScheduleFields::FMUVariableName, fMUVariableName);
+      OS_ASSERT(result);
+      return result;
+    }
 
-namespace openstudio {
-namespace epmodel {
-namespace detail {
+  }  // namespace detail
 
-std::string ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl::fMUVariableName() const {
-  const auto value = getString(openstudio::ExternalInterface_FunctionalMockupUnitExport_To_ScheduleFields::FMUVariableName, true);
-  OS_ASSERT(value);
-  return *value;
-}
+  boost::optional<double> ExternalInterfaceFunctionalMockupUnitExportToSchedule::initialValue() const {
+    return getImpl<detail::ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl>()->initialValue();
+  }
 
-bool ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl::setFMUVariableName(const std::string& fMUVariableName) {
-  const bool result = setString(openstudio::ExternalInterface_FunctionalMockupUnitExport_To_ScheduleFields::FMUVariableName, fMUVariableName);
-  OS_ASSERT(result);
-  return result;
-}
+  bool ExternalInterfaceFunctionalMockupUnitExportToSchedule::setInitialValue(double initialValue) {
+    return getImpl<detail::ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl>()->setInitialValue(initialValue);
+  }
 
-boost::optional<double> ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl::initialValue() const {
-  return getDouble(openstudio::ExternalInterface_FunctionalMockupUnitExport_To_ScheduleFields::InitialValue, true);
-}
+  namespace detail {
 
-bool ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl::setInitialValue(double initialValue) {
-  const bool result = setDouble(openstudio::ExternalInterface_FunctionalMockupUnitExport_To_ScheduleFields::InitialValue, initialValue);
-  OS_ASSERT(result);
-  return result;
-}
+    boost::optional<double> ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl::initialValue() const {
+      return getDouble(openstudio::ExternalInterface_FunctionalMockupUnitExport_To_ScheduleFields::InitialValue, true);
+    }
 
-}  // namespace detail
+    bool ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl::setInitialValue(double initialValue) {
+      const bool result = setDouble(openstudio::ExternalInterface_FunctionalMockupUnitExport_To_ScheduleFields::InitialValue, initialValue);
+      OS_ASSERT(result);
+      return result;
+    }
+
+  }  // namespace detail
+
 }  // namespace epmodel
 }  // namespace openstudio

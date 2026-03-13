@@ -258,8 +258,7 @@ namespace epmodel {
 
     bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::isSupplyAirFlowRateDuringCoolingOperationAutosized() const {
       bool result = false;
-      boost::optional<std::string> value =
-        getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingSupplyAirFlowRate, true);
+      boost::optional<std::string> value = getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingSupplyAirFlowRate, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -281,14 +280,18 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    // epmodel does not currently resolve autosized values from SQL results.
+    boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::autosizedSupplyAirFlowRateDuringCoolingOperation() const {
+      return boost::none;
+    }
+
     boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::supplyAirFlowRateWhenNoCoolingisNeeded() const {
       return getDouble(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::NoCoolingSupplyAirFlowRate, true);
     }
 
     bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::isSupplyAirFlowRateWhenNoCoolingisNeededAutosized() const {
       bool result = false;
-      boost::optional<std::string> value =
-        getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::NoCoolingSupplyAirFlowRate, true);
+      boost::optional<std::string> value = getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::NoCoolingSupplyAirFlowRate, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -315,14 +318,17 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::autosizedSupplyAirFlowRateWhenNoCoolingisNeeded() const {
+      return boost::none;
+    }
+
     boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::supplyAirFlowRateDuringHeatingOperation() const {
       return getDouble(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingSupplyAirFlowRate, true);
     }
 
     bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::isSupplyAirFlowRateDuringHeatingOperationAutosized() const {
       bool result = false;
-      boost::optional<std::string> value =
-        getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingSupplyAirFlowRate, true);
+      boost::optional<std::string> value = getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingSupplyAirFlowRate, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -344,14 +350,17 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::autosizedSupplyAirFlowRateDuringHeatingOperation() const {
+      return boost::none;
+    }
+
     boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::supplyAirFlowRateWhenNoHeatingisNeeded() const {
       return getDouble(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::NoHeatingSupplyAirFlowRate, true);
     }
 
     bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::isSupplyAirFlowRateWhenNoHeatingisNeededAutosized() const {
       bool result = false;
-      boost::optional<std::string> value =
-        getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::NoHeatingSupplyAirFlowRate, true);
+      boost::optional<std::string> value = getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::NoHeatingSupplyAirFlowRate, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -378,14 +387,17 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::autosizedSupplyAirFlowRateWhenNoHeatingisNeeded() const {
+      return boost::none;
+    }
+
     boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::outdoorAirFlowRateDuringCoolingOperation() const {
       return getDouble(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingOutdoorAirFlowRate, true);
     }
 
     bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::isOutdoorAirFlowRateDuringCoolingOperationAutosized() const {
       bool result = false;
-      boost::optional<std::string> value =
-        getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingOutdoorAirFlowRate, true);
+      boost::optional<std::string> value = getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingOutdoorAirFlowRate, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -407,14 +419,17 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::autosizedOutdoorAirFlowRateDuringCoolingOperation() const {
+      return boost::none;
+    }
+
     boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::outdoorAirFlowRateDuringHeatingOperation() const {
       return getDouble(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingOutdoorAirFlowRate, true);
     }
 
     bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::isOutdoorAirFlowRateDuringHeatingOperationAutosized() const {
       bool result = false;
-      boost::optional<std::string> value =
-        getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingOutdoorAirFlowRate, true);
+      boost::optional<std::string> value = getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingOutdoorAirFlowRate, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -436,14 +451,17 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::autosizedOutdoorAirFlowRateDuringHeatingOperation() const {
+      return boost::none;
+    }
+
     boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
       return getDouble(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::NoLoadOutdoorAirFlowRate, true);
     }
 
     bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const {
       bool result = false;
-      boost::optional<std::string> value =
-        getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::NoLoadOutdoorAirFlowRate, true);
+      boost::optional<std::string> value = getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::NoLoadOutdoorAirFlowRate, true);
       if (value) {
         result = openstudio::istringEqual(value.get(), "Autosize");
       }
@@ -452,11 +470,10 @@ namespace epmodel {
 
     bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(
       boost::optional<double> outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded) {
-      const bool result =
-        outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded
-          ? setDouble(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::NoLoadOutdoorAirFlowRate,
-                      outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded.get(), false)
-          : setString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::NoLoadOutdoorAirFlowRate, "", false);
+      const bool result = outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded
+                            ? setDouble(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::NoLoadOutdoorAirFlowRate,
+                                        outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded.get(), false)
+                            : setString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::NoLoadOutdoorAirFlowRate, "", false);
       OS_ASSERT(result);
       return result;
     }
@@ -467,9 +484,12 @@ namespace epmodel {
     }
 
     void ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() {
-      bool result =
-        setString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::NoLoadOutdoorAirFlowRate, "Autosize", false);
+      bool result = setString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::NoLoadOutdoorAirFlowRate, "Autosize", false);
       OS_ASSERT(result);
+    }
+
+    boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
+      return boost::none;
     }
 
     double ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::zoneTerminalUnitOnParasiticElectricEnergyUse() const {
@@ -509,8 +529,8 @@ namespace epmodel {
     }
 
     bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setRatedTotalHeatingCapacitySizingRatio(double ratedTotalHeatingCapacitySizingRatio) {
-      bool result = setDouble(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::RatedHeatingCapacitySizingRatio,
-                              ratedTotalHeatingCapacitySizingRatio, false);
+      bool result =
+        setDouble(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::RatedHeatingCapacitySizingRatio, ratedTotalHeatingCapacitySizingRatio, false);
       OS_ASSERT(result);
       return result;
     }
@@ -589,35 +609,6 @@ namespace epmodel {
     void ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::resetSupplyAirFanPlacement() {
       bool result = setString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanPlacement, "", false);
       OS_ASSERT(result);
-    }
-
-    boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::autosizedSupplyAirFlowRateDuringCoolingOperation() const {
-      // epmodel does not currently resolve autosized values from SQL results.
-      return boost::none;
-    }
-
-    boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::autosizedSupplyAirFlowRateWhenNoCoolingisNeeded() const {
-      return boost::none;
-    }
-
-    boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::autosizedSupplyAirFlowRateDuringHeatingOperation() const {
-      return boost::none;
-    }
-
-    boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::autosizedSupplyAirFlowRateWhenNoHeatingisNeeded() const {
-      return boost::none;
-    }
-
-    boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::autosizedOutdoorAirFlowRateDuringCoolingOperation() const {
-      return boost::none;
-    }
-
-    boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::autosizedOutdoorAirFlowRateDuringHeatingOperation() const {
-      return boost::none;
-    }
-
-    boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
-      return boost::none;
     }
 
   }  // namespace detail

@@ -11,24 +11,24 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirTerminalDualDuctVAVOutdoorAir_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirTerminalDualDuctVAVOutdoorAir_Impl() override = default;
+    class EPMODEL_API AirTerminalDualDuctVAVOutdoorAir_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirTerminalDualDuctVAVOutdoorAir_Impl() override = default;
 
-  boost::optional<double> maximumTerminalAirFlowRate() const;
-  bool isMaximumTerminalAirFlowRateAutosized() const;
-  bool setMaximumTerminalAirFlowRate(double maximumTerminalAirFlowRate);
-  void autosizeMaximumTerminalAirFlowRate();
+      boost::optional<double> maximumTerminalAirFlowRate() const;
+      bool setMaximumTerminalAirFlowRate(double maximumTerminalAirFlowRate);
+      void autosizeMaximumTerminalAirFlowRate();
+      bool isMaximumTerminalAirFlowRateAutosized() const;
 
-  std::string perPersonVentilationRateMode() const;
-  bool setPerPersonVentilationRateMode(const std::string& perPersonVentilationRateMode);
-};
+      std::string perPersonVentilationRateMode() const;
+      bool setPerPersonVentilationRateMode(const std::string& perPersonVentilationRateMode);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

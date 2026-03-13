@@ -20,29 +20,32 @@ namespace epmodel {
       virtual ~WallExterior_Impl() override = default;
 
       boost::optional<double> azimuthAngle() const;
+      bool setAzimuthAngle(double azimuthAngle);
+      void resetAzimuthAngle();
+
       double tiltAngle() const;
       bool isTiltAngleDefaulted() const;
+      bool setTiltAngle(double tiltAngle);
+      void resetTiltAngle();
 
       boost::optional<double> startingXCoordinate() const;
-      boost::optional<double> startingYCoordinate() const;
-      boost::optional<double> startingZCoordinate() const;
-      boost::optional<double> length() const;
-      boost::optional<double> height() const;
-
-      bool setAzimuthAngle(double azimuthAngle);
-      bool setTiltAngle(double tiltAngle);
       bool setStartingXCoordinate(double startingXCoordinate);
-      bool setStartingYCoordinate(double startingYCoordinate);
-      bool setStartingZCoordinate(double startingZCoordinate);
-      bool setLength(double length);
-      bool setHeight(double height);
-
-      void resetAzimuthAngle();
-      void resetTiltAngle();
       void resetStartingXCoordinate();
+
+      boost::optional<double> startingYCoordinate() const;
+      bool setStartingYCoordinate(double startingYCoordinate);
       void resetStartingYCoordinate();
+
+      boost::optional<double> startingZCoordinate() const;
+      bool setStartingZCoordinate(double startingZCoordinate);
       void resetStartingZCoordinate();
+
+      boost::optional<double> length() const;
+      bool setLength(double length);
       void resetLength();
+
+      boost::optional<double> height() const;
+      bool setHeight(double height);
       void resetHeight();
     };
 

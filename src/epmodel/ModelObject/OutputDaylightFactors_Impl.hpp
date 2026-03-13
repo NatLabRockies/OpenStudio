@@ -13,21 +13,21 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API OutputDaylightFactors_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~OutputDaylightFactors_Impl() override = default;
+    class EPMODEL_API OutputDaylightFactors_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~OutputDaylightFactors_Impl() override = default;
 
-  std::string reportingDays() const;
-  bool setReportingDays(const std::string& reportingDays);
+      std::vector<std::string> reportingDaysValues() const;
 
-  std::vector<std::string> reportingDaysValues() const;
-};
+      std::string reportingDays() const;
+      bool setReportingDays(const std::string& reportingDays);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

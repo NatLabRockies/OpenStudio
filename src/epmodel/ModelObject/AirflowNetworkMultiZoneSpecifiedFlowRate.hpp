@@ -48,8 +48,8 @@ class EPMODEL_API AirflowNetworkMultiZoneSpecifiedFlowRate : public ModelObject
   bool setAirFlowValue(double airFlowValue);
 
   std::string airFlowUnits() const;
-  bool isAirFlowUnitsDefaulted() const;
   bool setAirFlowUnits(const std::string& airFlowUnits);
+  bool isAirFlowUnitsDefaulted() const;
   void resetAirFlowUnits();
 
  protected:

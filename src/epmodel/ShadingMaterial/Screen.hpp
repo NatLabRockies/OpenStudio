@@ -47,78 +47,71 @@ namespace epmodel {
     //         energyplus::ForwardTranslator::translateScreen (ForwardTranslator/ForwardTranslateScreen.cpp).
     // - TODO(parity): Keep the derived thermal conductance/resistance helpers aligned with the model counterpart as the field
     //         semantics evolve.
+
     double thermalConductivity() const;
+    bool setThermalConductivity(double value);
+
     double thermalConductance() const;
+
     double thermalResistivity() const;
+    bool setThermalResistivity(double value);
+
     double thermalResistance() const;
 
     std::string reflectedBeamTransmittanceAccountingMethod() const;
     bool isReflectedBeamTransmittanceAccountingMethodDefaulted() const;
-
-    double diffuseSolarReflectance() const;
-
-    double diffuseVisibleReflectance() const;
-
-    double thermalHemisphericalEmissivity() const;
-    bool isThermalHemisphericalEmissivityDefaulted() const;
-
-    double conductivity() const;
-    bool isConductivityDefaulted() const;
-
-    double screenMaterialSpacing() const;
-
-    double screenMaterialDiameter() const;
-
-    double screentoGlassDistance() const;
-    bool isScreentoGlassDistanceDefaulted() const;
-
-    double topOpeningMultiplier() const;
-    bool isTopOpeningMultiplierDefaulted() const;
-
-    double bottomOpeningMultiplier() const;
-    bool isBottomOpeningMultiplierDefaulted() const;
-
-    double leftSideOpeningMultiplier() const;
-    bool isLeftSideOpeningMultiplierDefaulted() const;
-
-    double rightSideOpeningMultiplier() const;
-    bool isRightSideOpeningMultiplierDefaulted() const;
-
-    std::string angleofResolutionforScreenTransmittanceOutputMap() const;
-    bool isAngleofResolutionforScreenTransmittanceOutputMapDefaulted() const;
-
-    bool setThermalConductivity(double value);
-    bool setThermalResistivity(double value);
     bool setReflectedBeamTransmittanceAccountingMethod(const std::string& reflectedBeamTransmittanceAccountingMethod);
     void resetReflectedBeamTransmittanceAccountingMethod();
 
+    double diffuseSolarReflectance() const;
     bool setDiffuseSolarReflectance(double diffuseSolarReflectance);
+
+    double diffuseVisibleReflectance() const;
     bool setDiffuseVisibleReflectance(double diffuseVisibleReflectance);
 
+    double thermalHemisphericalEmissivity() const;
+    bool isThermalHemisphericalEmissivityDefaulted() const;
     bool setThermalHemisphericalEmissivity(double thermalHemisphericalEmissivity);
     void resetThermalHemisphericalEmissivity();
 
+    double conductivity() const;
+    bool isConductivityDefaulted() const;
     bool setConductivity(double conductivity);
     void resetConductivity();
 
+    double screenMaterialSpacing() const;
     bool setScreenMaterialSpacing(double screenMaterialSpacing);
+
+    double screenMaterialDiameter() const;
     bool setScreenMaterialDiameter(double screenMaterialDiameter);
 
+    double screentoGlassDistance() const;
+    bool isScreentoGlassDistanceDefaulted() const;
     bool setScreentoGlassDistance(double screentoGlassDistance);
     void resetScreentoGlassDistance();
 
+    double topOpeningMultiplier() const;
+    bool isTopOpeningMultiplierDefaulted() const;
     bool setTopOpeningMultiplier(double topOpeningMultiplier);
     void resetTopOpeningMultiplier();
 
+    double bottomOpeningMultiplier() const;
+    bool isBottomOpeningMultiplierDefaulted() const;
     bool setBottomOpeningMultiplier(double bottomOpeningMultiplier);
     void resetBottomOpeningMultiplier();
 
+    double leftSideOpeningMultiplier() const;
+    bool isLeftSideOpeningMultiplierDefaulted() const;
     bool setLeftSideOpeningMultiplier(double leftSideOpeningMultiplier);
     void resetLeftSideOpeningMultiplier();
 
+    double rightSideOpeningMultiplier() const;
+    bool isRightSideOpeningMultiplierDefaulted() const;
     bool setRightSideOpeningMultiplier(double rightSideOpeningMultiplier);
     void resetRightSideOpeningMultiplier();
 
+    std::string angleofResolutionforScreenTransmittanceOutputMap() const;
+    bool isAngleofResolutionforScreenTransmittanceOutputMapDefaulted() const;
     bool setAngleofResolutionforScreenTransmittanceOutputMap(const std::string& angleofResolutionforScreenTransmittanceOutputMap);
     void resetAngleofResolutionforScreenTransmittanceOutputMap();
 

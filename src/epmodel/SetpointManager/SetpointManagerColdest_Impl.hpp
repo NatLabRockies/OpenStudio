@@ -10,30 +10,31 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SetpointManagerColdest_Impl : public SetpointManager_Impl
-{
- public:
-  using SetpointManager_Impl::SetpointManager_Impl;
-  virtual ~SetpointManagerColdest_Impl() override = default;
+    class EPMODEL_API SetpointManagerColdest_Impl : public SetpointManager_Impl
+    {
+     public:
+      using SetpointManager_Impl::SetpointManager_Impl;
+      virtual ~SetpointManagerColdest_Impl() override = default;
 
-  double minimumSetpointTemperature() const;
-  double maximumSetpointTemperature() const;
-  std::string strategy() const;
+      double minimumSetpointTemperature() const;
+      bool setMinimumSetpointTemperature(double minimumSetpointTemperature);
 
-  bool setMinimumSetpointTemperature(double minimumSetpointTemperature);
-  bool setMaximumSetpointTemperature(double maximumSetpointTemperature);
-  bool setStrategy(const std::string& strategy);
+      double maximumSetpointTemperature() const;
+      bool setMaximumSetpointTemperature(double maximumSetpointTemperature);
 
- protected:
-  unsigned setpointNodeFieldIndex() const override;
-  unsigned controlVariableFieldIndex() const override;
+      std::string strategy() const;
+      bool setStrategy(const std::string& strategy);
 
-  void doCanonicalize(LoadContext& context) override;
-};
+     protected:
+      unsigned setpointNodeFieldIndex() const override;
+      unsigned controlVariableFieldIndex() const override;
 
-}  // namespace detail
+      void doCanonicalize(LoadContext& context) override;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

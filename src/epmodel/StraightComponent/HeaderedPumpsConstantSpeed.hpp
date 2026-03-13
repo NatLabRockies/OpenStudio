@@ -17,104 +17,90 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class HeaderedPumpsConstantSpeed_Impl;
-}
+  namespace detail {
+    class HeaderedPumpsConstantSpeed_Impl;
+  }
 
-class EPMODEL_API HeaderedPumpsConstantSpeed : public StraightComponent
-{
- public:
-  explicit HeaderedPumpsConstantSpeed(const Model& model);
+  class EPMODEL_API HeaderedPumpsConstantSpeed : public StraightComponent
+  {
+   public:
+    explicit HeaderedPumpsConstantSpeed(const Model& model);
 
-  virtual ~HeaderedPumpsConstantSpeed() override = default;
-  HeaderedPumpsConstantSpeed(const HeaderedPumpsConstantSpeed& other) = default;
-  HeaderedPumpsConstantSpeed(HeaderedPumpsConstantSpeed&& other) = default;
-  HeaderedPumpsConstantSpeed& operator=(const HeaderedPumpsConstantSpeed&) = default;
-  HeaderedPumpsConstantSpeed& operator=(HeaderedPumpsConstantSpeed&&) = default;
+    virtual ~HeaderedPumpsConstantSpeed() override = default;
+    HeaderedPumpsConstantSpeed(const HeaderedPumpsConstantSpeed& other) = default;
+    HeaderedPumpsConstantSpeed(HeaderedPumpsConstantSpeed&& other) = default;
+    HeaderedPumpsConstantSpeed& operator=(const HeaderedPumpsConstantSpeed&) = default;
+    HeaderedPumpsConstantSpeed& operator=(HeaderedPumpsConstantSpeed&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> flowSequencingControlSchemeValues();
-  static std::vector<std::string> pumpControlTypeValues();
-  static std::vector<std::string> designPowerSizingMethodValues();
+    static std::vector<std::string> flowSequencingControlSchemeValues();
+    static std::vector<std::string> pumpControlTypeValues();
+    static std::vector<std::string> designPowerSizingMethodValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::HeaderedPumpsConstantSpeed scalar accessor names/signatures for counterpart parity.
-  // - Field Mapping: totalRatedFlowRate/ratedPumpHead/ratedPowerConsumption APIs map to E+ HeaderedPumps:ConstantSpeed TotalDesignFlowRate/DesignPumpHead/DesignPowerConsumption.
-  // - Field Mapping: pumpFlowRateSchedule, thermalZone, and inlet/outlet node name fields are relationship-like fields and are excluded in this scalar-only pass.
-  // - ForwardTranslator evidence: ForwardTranslateHeaderedPumpsConstantSpeed.cpp maps the preserved API names to these E+ fields.
-  // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
-  boost::optional<double> totalRatedFlowRate() const;
-  bool isTotalRatedFlowRateAutosized() const;
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model::HeaderedPumpsConstantSpeed scalar accessor names/signatures for counterpart parity.
+    // - Field Mapping: totalRatedFlowRate/ratedPumpHead/ratedPowerConsumption APIs map to E+ HeaderedPumps:ConstantSpeed TotalDesignFlowRate/DesignPumpHead/DesignPowerConsumption.
+    // - Field Mapping: pumpFlowRateSchedule, thermalZone, and inlet/outlet node name fields are relationship-like fields and are excluded in this scalar-only pass.
+    // - ForwardTranslator evidence: ForwardTranslateHeaderedPumpsConstantSpeed.cpp maps the preserved API names to these E+ fields.
+    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
 
-  int numberofPumpsinBank() const;
+    boost::optional<double> totalRatedFlowRate() const;
+    bool isTotalRatedFlowRateAutosized() const;
+    bool setTotalRatedFlowRate(double totalRatedFlowRate);
+    void autosizeTotalRatedFlowRate();
+    boost::optional<double> autosizedTotalRatedFlowRate() const;
 
-  std::string flowSequencingControlScheme() const;
+    int numberofPumpsinBank() const;
+    bool setNumberofPumpsinBank(int numberofPumpsinBank);
 
-  double ratedPumpHead() const;
+    std::string flowSequencingControlScheme() const;
+    bool setFlowSequencingControlScheme(const std::string& flowSequencingControlScheme);
 
-  boost::optional<double> ratedPowerConsumption() const;
-  bool isRatedPowerConsumptionAutosized() const;
+    double ratedPumpHead() const;
+    bool setRatedPumpHead(double ratedPumpHead);
 
-  double motorEfficiency() const;
+    boost::optional<double> ratedPowerConsumption() const;
+    bool isRatedPowerConsumptionAutosized() const;
+    bool setRatedPowerConsumption(double ratedPowerConsumption);
+    void autosizeRatedPowerConsumption();
+    boost::optional<double> autosizedRatedPowerConsumption() const;
 
-  double fractionofMotorInefficienciestoFluidStream() const;
+    double motorEfficiency() const;
+    bool setMotorEfficiency(double motorEfficiency);
 
-  std::string pumpControlType() const;
+    double fractionofMotorInefficienciestoFluidStream() const;
+    bool setFractionofMotorInefficienciestoFluidStream(double fractionofMotorInefficienciestoFluidStream);
 
-  double skinLossRadiativeFraction() const;
+    std::string pumpControlType() const;
+    bool setPumpControlType(const std::string& pumpControlType);
 
-  std::string designPowerSizingMethod() const;
+    double skinLossRadiativeFraction() const;
+    bool setSkinLossRadiativeFraction(double skinLossRadiativeFraction);
 
-  double designElectricPowerPerUnitFlowRate() const;
+    std::string designPowerSizingMethod() const;
+    bool setDesignPowerSizingMethod(const std::string& designPowerSizingMethod);
 
-  double designShaftPowerPerUnitFlowRatePerUnitHead() const;
+    double designElectricPowerPerUnitFlowRate() const;
+    bool setDesignElectricPowerPerUnitFlowRate(double designElectricPowerPerUnitFlowRate);
 
-  std::string endUseSubcategory() const;
+    double designShaftPowerPerUnitFlowRatePerUnitHead() const;
+    bool setDesignShaftPowerPerUnitFlowRatePerUnitHead(double designShaftPowerPerUnitFlowRatePerUnitHead);
 
-  bool setTotalRatedFlowRate(double totalRatedFlowRate);
-  void autosizeTotalRatedFlowRate();
+    std::string endUseSubcategory() const;
+    bool setEndUseSubcategory(const std::string& endUseSubcategory);
 
-  bool setNumberofPumpsinBank(int numberofPumpsinBank);
+   protected:
+    using ImplType = detail::HeaderedPumpsConstantSpeed_Impl;
 
-  bool setFlowSequencingControlScheme(const std::string& flowSequencingControlScheme);
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  bool setRatedPumpHead(double ratedPumpHead);
-
-  bool setRatedPowerConsumption(double ratedPowerConsumption);
-  void autosizeRatedPowerConsumption();
-
-  bool setMotorEfficiency(double motorEfficiency);
-
-  bool setFractionofMotorInefficienciestoFluidStream(double fractionofMotorInefficienciestoFluidStream);
-
-  bool setPumpControlType(const std::string& pumpControlType);
-
-  bool setSkinLossRadiativeFraction(double skinLossRadiativeFraction);
-
-  bool setDesignPowerSizingMethod(const std::string& designPowerSizingMethod);
-
-  bool setDesignElectricPowerPerUnitFlowRate(double designElectricPowerPerUnitFlowRate);
-
-  bool setDesignShaftPowerPerUnitFlowRatePerUnitHead(double designShaftPowerPerUnitFlowRatePerUnitHead);
-
-  bool setEndUseSubcategory(const std::string& endUseSubcategory);
-
-  boost::optional<double> autosizedTotalRatedFlowRate() const;
-
-  boost::optional<double> autosizedRatedPowerConsumption() const;
-
- protected:
-  using ImplType = detail::HeaderedPumpsConstantSpeed_Impl;
-
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit HeaderedPumpsConstantSpeed(std::shared_ptr<detail::HeaderedPumpsConstantSpeed_Impl> impl);
-};
+    explicit HeaderedPumpsConstantSpeed(std::shared_ptr<detail::HeaderedPumpsConstantSpeed_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

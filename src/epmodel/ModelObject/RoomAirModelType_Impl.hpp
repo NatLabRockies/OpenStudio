@@ -12,29 +12,29 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API RoomAirModelType_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~RoomAirModelType_Impl() override = default;
+    class EPMODEL_API RoomAirModelType_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~RoomAirModelType_Impl() override = default;
 
-  std::string roomAirModelingType() const;
-  bool isRoomAirModelingTypeDefaulted() const;
-  std::string airTemperatureCouplingStrategy() const;
-  bool isAirTemperatureCouplingStrategyDefaulted() const;
+      std::string roomAirModelingType() const;
+      bool isRoomAirModelingTypeDefaulted() const;
+      bool setRoomAirModelingType(const std::string& roomAirModelingType);
+      void resetRoomAirModelingType();
 
-  bool setRoomAirModelingType(const std::string& roomAirModelingType);
-  void resetRoomAirModelingType();
-  bool setAirTemperatureCouplingStrategy(const std::string& airTemperatureCouplingStrategy);
-  void resetAirTemperatureCouplingStrategy();
+      std::string airTemperatureCouplingStrategy() const;
+      bool isAirTemperatureCouplingStrategyDefaulted() const;
+      bool setAirTemperatureCouplingStrategy(const std::string& airTemperatureCouplingStrategy);
+      void resetAirTemperatureCouplingStrategy();
 
-  std::vector<std::string> roomAirModelingTypeValues() const;
-  std::vector<std::string> airTemperatureCouplingStrategyValues() const;
-};
+      std::vector<std::string> roomAirModelingTypeValues() const;
+      std::vector<std::string> airTemperatureCouplingStrategyValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

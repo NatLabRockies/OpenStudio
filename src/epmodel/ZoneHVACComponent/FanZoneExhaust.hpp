@@ -18,60 +18,61 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class FanZoneExhaust_Impl;
-}
+  namespace detail {
+    class FanZoneExhaust_Impl;
+  }
 
-class EPMODEL_API FanZoneExhaust : public ModelObject
-{
- public:
-  explicit FanZoneExhaust(const Model& model);
+  class EPMODEL_API FanZoneExhaust : public ModelObject
+  {
+   public:
+    explicit FanZoneExhaust(const Model& model);
 
-  virtual ~FanZoneExhaust() override = default;
-  FanZoneExhaust(const FanZoneExhaust& other) = default;
-  FanZoneExhaust(FanZoneExhaust&& other) = default;
-  FanZoneExhaust& operator=(const FanZoneExhaust&) = default;
-  FanZoneExhaust& operator=(FanZoneExhaust&&) = default;
+    virtual ~FanZoneExhaust() override = default;
+    FanZoneExhaust(const FanZoneExhaust& other) = default;
+    FanZoneExhaust(FanZoneExhaust&& other) = default;
+    FanZoneExhaust& operator=(const FanZoneExhaust&) = default;
+    FanZoneExhaust& operator=(FanZoneExhaust&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> systemAvailabilityManagerCouplingModeValues();
+    static std::vector<std::string> systemAvailabilityManagerCouplingModeValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::FanZoneExhaust scalar accessor names/signatures for counterpart parity.
-  // - Field Mapping: fanEfficiency API delegates to FanTotalEfficiency (same as openstudio::model).
-  // - Field Mapping: scalar APIs map directly to E+ Fan:ZoneExhaust fields; relationship fields (schedules/nodes) remain excluded.
-  // - ForwardTranslator evidence: ForwardTranslateFanZoneExhaust.cpp writes these scalar fields directly.
-  // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
-  double fanTotalEfficiency() const;
-  double fanEfficiency() const;
-  bool setFanTotalEfficiency(double fanTotalEfficiency);
-  bool setFanEfficiency(double fanTotalEfficiency);
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model::FanZoneExhaust scalar accessor names/signatures for counterpart parity.
+    // - Field Mapping: fanEfficiency API delegates to FanTotalEfficiency (same as openstudio::model).
+    // - Field Mapping: scalar APIs map directly to E+ Fan:ZoneExhaust fields; relationship fields (schedules/nodes) remain excluded.
+    // - ForwardTranslator evidence: ForwardTranslateFanZoneExhaust.cpp writes these scalar fields directly.
+    // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
+    double fanTotalEfficiency() const;
+    bool setFanTotalEfficiency(double fanTotalEfficiency);
 
-  double pressureRise() const;
-  bool setPressureRise(double pressureRise);
+    double fanEfficiency() const;
+    bool setFanEfficiency(double fanTotalEfficiency);
 
-  boost::optional<double> maximumFlowRate() const;
-  bool setMaximumFlowRate(double maximumFlowRate);
-  void resetMaximumFlowRate();
+    double pressureRise() const;
+    bool setPressureRise(double pressureRise);
 
-  std::string endUseSubcategory() const;
-  bool setEndUseSubcategory(const std::string& endUseSubcategory);
+    boost::optional<double> maximumFlowRate() const;
+    bool setMaximumFlowRate(double maximumFlowRate);
+    void resetMaximumFlowRate();
 
-  std::string systemAvailabilityManagerCouplingMode() const;
-  bool setSystemAvailabilityManagerCouplingMode(const std::string& systemAvailabilityManagerCouplingMode);
+    std::string endUseSubcategory() const;
+    bool setEndUseSubcategory(const std::string& endUseSubcategory);
 
- protected:
-  using ImplType = detail::FanZoneExhaust_Impl;
+    std::string systemAvailabilityManagerCouplingMode() const;
+    bool setSystemAvailabilityManagerCouplingMode(const std::string& systemAvailabilityManagerCouplingMode);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::FanZoneExhaust_Impl;
 
-  explicit FanZoneExhaust(std::shared_ptr<detail::FanZoneExhaust_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit FanZoneExhaust(std::shared_ptr<detail::FanZoneExhaust_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -12,26 +12,25 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API FaultModelFoulingBoiler_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~FaultModelFoulingBoiler_Impl() override = default;
+    class EPMODEL_API FaultModelFoulingBoiler_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~FaultModelFoulingBoiler_Impl() override = default;
 
-  std::string boilerObjectType() const;
-  bool setBoilerObjectType(const std::string& boilerObjectType);
+      std::string boilerObjectType() const;
+      bool setBoilerObjectType(const std::string& boilerObjectType);
+      std::vector<std::string> boilerObjectTypeValues() const;
 
-  double foulingFactor() const;
-  bool isFoulingFactorDefaulted() const;
-  bool setFoulingFactor(double foulingFactor);
-  void resetFoulingFactor();
+      double foulingFactor() const;
+      bool isFoulingFactorDefaulted() const;
+      bool setFoulingFactor(double foulingFactor);
+      void resetFoulingFactor();
+    };
 
-  std::vector<std::string> boilerObjectTypeValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

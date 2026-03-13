@@ -39,9 +39,22 @@ namespace epmodel {
     // - API: RoomAir:Node:AirflowNetwork:InternalGains has no openstudio::model counterpart so the class name mirrors the IDD.
     // - Field Mapping: Name remains available through the base ModelObject scalar API while the internal-gain extensible
     //   groups (Internal Gain Object Type/Name/Fraction of Gains) represent relationship-like references and stay excluded
-    //   from this scalar-only pass.
+    //   from this scalar-only pass. The scalar fields for Internal Gain Object 1 Type/Name and Fraction of Gains to Node 1 are
+    //   exposed through this API.
     // - TODO(parity): Add typed helpers for the extensible internal-gain entries and RoomAirNodeGains linkage once scalar
     //   saturation is complete.
+
+    boost::optional<std::string> internalGainObject1Type() const;
+    bool setInternalGainObject1Type(const std::string& internalGainObject1Type);
+    void resetInternalGainObject1Type();
+
+    boost::optional<std::string> internalGainObject1Name() const;
+    bool setInternalGainObject1Name(const std::string& internalGainObject1Name);
+    void resetInternalGainObject1Name();
+
+    boost::optional<double> fractionOfGainsToNode1() const;
+    bool setFractionOfGainsToNode1(double fractionOfGainsToNode1);
+    void resetFractionOfGainsToNode1();
 
    protected:
     using ImplType = detail::RoomAirNodeAirflowNetworkInternalGains_Impl;

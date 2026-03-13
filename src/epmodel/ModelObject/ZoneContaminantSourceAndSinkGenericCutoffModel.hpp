@@ -40,10 +40,13 @@ namespace epmodel {
     // - Field Mapping: Scalar APIs map directly to ZoneContaminantSourceAndSink:Generic:CutoffModel numeric fields.
     // - Field Mapping: Zone Name and Schedule Name linkage fields remain excluded because they are relationship object-lists.
     // - TODO(parity): Add relationship APIs after scalar saturation without changing scalar signatures.
+
+    // Field group: Design Generation Rate Coefficient (DesignGenerationRateCoefficient)
     boost::optional<double> designGenerationRateCoefficient() const;
     bool setDesignGenerationRateCoefficient(double designGenerationRateCoefficient);
     void resetDesignGenerationRateCoefficient();
 
+    // Field group: Cutoff Generic Contaminant At Which Emission Ceases (CutoffGenericContaminantAtWhichEmissionCeases)
     boost::optional<double> cutoffGenericContaminantAtWhichEmissionCeases() const;
     bool setCutoffGenericContaminantAtWhichEmissionCeases(double cutoffGenericContaminantAtWhichEmissionCeases);
     void resetCutoffGenericContaminantAtWhichEmissionCeases();

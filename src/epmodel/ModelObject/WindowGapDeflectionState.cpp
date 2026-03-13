@@ -36,27 +36,6 @@ namespace epmodel {
     return getImpl<detail::WindowGapDeflectionState_Impl>()->setDeflectedThickness(deflectedThickness);
   }
 
-  double WindowGapDeflectionState::initialTemperature() const {
-    return getImpl<detail::WindowGapDeflectionState_Impl>()->initialTemperature();
-  }
-
-  bool WindowGapDeflectionState::setInitialTemperature(double initialTemperature) {
-    return getImpl<detail::WindowGapDeflectionState_Impl>()->setInitialTemperature(initialTemperature);
-  }
-
-  double WindowGapDeflectionState::initialPressure() const {
-    return getImpl<detail::WindowGapDeflectionState_Impl>()->initialPressure();
-  }
-
-  bool WindowGapDeflectionState::setInitialPressure(double initialPressure) {
-    return getImpl<detail::WindowGapDeflectionState_Impl>()->setInitialPressure(initialPressure);
-  }
-
-}  // namespace epmodel
-}  // namespace openstudio
-
-namespace openstudio {
-namespace epmodel {
   namespace detail {
 
     double WindowGapDeflectionState_Impl::deflectedThickness() const {
@@ -69,6 +48,18 @@ namespace epmodel {
       return setDouble(openstudio::WindowGap_DeflectionStateFields::DeflectedThickness, deflectedThickness);
     }
 
+  }  // namespace detail
+
+  double WindowGapDeflectionState::initialTemperature() const {
+    return getImpl<detail::WindowGapDeflectionState_Impl>()->initialTemperature();
+  }
+
+  bool WindowGapDeflectionState::setInitialTemperature(double initialTemperature) {
+    return getImpl<detail::WindowGapDeflectionState_Impl>()->setInitialTemperature(initialTemperature);
+  }
+
+  namespace detail {
+
     double WindowGapDeflectionState_Impl::initialTemperature() const {
       const auto value = getDouble(openstudio::WindowGap_DeflectionStateFields::InitialTemperature, true);
       OS_ASSERT(value);
@@ -78,6 +69,18 @@ namespace epmodel {
     bool WindowGapDeflectionState_Impl::setInitialTemperature(double initialTemperature) {
       return setDouble(openstudio::WindowGap_DeflectionStateFields::InitialTemperature, initialTemperature);
     }
+
+  }  // namespace detail
+
+  double WindowGapDeflectionState::initialPressure() const {
+    return getImpl<detail::WindowGapDeflectionState_Impl>()->initialPressure();
+  }
+
+  bool WindowGapDeflectionState::setInitialPressure(double initialPressure) {
+    return getImpl<detail::WindowGapDeflectionState_Impl>()->setInitialPressure(initialPressure);
+  }
+
+  namespace detail {
 
     double WindowGapDeflectionState_Impl::initialPressure() const {
       const auto value = getDouble(openstudio::WindowGap_DeflectionStateFields::InitialPressure, true);
@@ -90,5 +93,6 @@ namespace epmodel {
     }
 
   }  // namespace detail
+
 }  // namespace epmodel
 }  // namespace openstudio

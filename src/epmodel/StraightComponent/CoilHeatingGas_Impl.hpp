@@ -10,49 +10,49 @@
 
 namespace openstudio {
 namespace epmodel {
-class Node;
-namespace detail {
+  class Node;
+  namespace detail {
 
-class EPMODEL_API CoilHeatingGas_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~CoilHeatingGas_Impl() override = default;
+    class EPMODEL_API CoilHeatingGas_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~CoilHeatingGas_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
-  bool addToNode(Node& node);
+      bool addToNode(Node& node);
 
-  std::string fuelType() const;
-  bool setFuelType(const std::string& fuelType);
-  void resetFuelType();
+      std::string fuelType() const;
+      bool setFuelType(const std::string& fuelType);
+      void resetFuelType();
 
-  double gasBurnerEfficiency() const;
-  bool setGasBurnerEfficiency(double value);
+      double gasBurnerEfficiency() const;
+      bool setGasBurnerEfficiency(double value);
 
-  double parasiticElectricLoad() const;
-  double onCycleParasiticElectricLoad() const;
+      double parasiticElectricLoad() const;
+      bool setParasiticElectricLoad(double value);
 
-  bool setParasiticElectricLoad(double value);
-  bool setOnCycleParasiticElectricLoad(double value);
+      double onCycleParasiticElectricLoad() const;
+      bool setOnCycleParasiticElectricLoad(double value);
 
-  double parasiticGasLoad() const;
-  double offCycleParasiticGasLoad() const;
+      double parasiticGasLoad() const;
+      bool setParasiticGasLoad(double value);
 
-  bool setParasiticGasLoad(double value);
-  bool setOffCycleParasiticGasLoad(double value);
+      double offCycleParasiticGasLoad() const;
+      bool setOffCycleParasiticGasLoad(double value);
 
-  boost::optional<double> nominalCapacity() const;
-  bool isNominalCapacityAutosized() const;
-  bool setNominalCapacity(double nominalCapacity);
-  void resetNominalCapacity();
-  void autosizeNominalCapacity();
+      boost::optional<double> nominalCapacity() const;
+      bool isNominalCapacityAutosized() const;
+      bool setNominalCapacity(double nominalCapacity);
+      void resetNominalCapacity();
+      void autosizeNominalCapacity();
 
-  boost::optional<double> autosizedNominalCapacity() const;
-};
+      boost::optional<double> autosizedNominalCapacity() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

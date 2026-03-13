@@ -43,6 +43,7 @@ namespace epmodel {
     //   ZoneHVAC_LowTemperatureRadiant_ElectricFields in ForwardTranslateZoneHVACLowTemperatureRadiantElectric.cpp.
     //   Surface/relationship fields remain excluded from this scalar-focused API.
 
+    // Maximum electrical power-to-panel accessors
     boost::optional<double> maximumElectricalPowertoPanel() const;
     bool isMaximumElectricalPowertoPanelDefaulted() const;
     bool isMaximumElectricalPowertoPanelAutosized() const;
@@ -50,16 +51,19 @@ namespace epmodel {
     void resetMaximumElectricalPowertoPanel();
     void autosizeMaximumElectricalPowertoPanel();
 
+    // Temperature control type accessors
     std::string temperatureControlType() const;
     bool isTemperatureControlTypeDefaulted() const;
     bool setTemperatureControlType(const std::string& temperatureControlType);
     void resetTemperatureControlType();
 
+    // Setpoint control type accessors
     std::string setpointControlType() const;
     bool isSetpointControlTypeDefaulted() const;
     bool setSetpointControlType(const std::string& setpointControlType);
     void resetSetpointControlType();
 
+    // Heating throttling range accessors
     double heatingThrottlingRange() const;
     bool isHeatingThrottlingRangeDefaulted() const;
     bool setHeatingThrottlingRange(double heatingThrottlingRange);

@@ -25,22 +25,30 @@ class EPMODEL_API AvailabilityManagerAssignmentList_Impl : public ModelObject_Im
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~AvailabilityManagerAssignmentList_Impl() override = default;
 
+  /** @name Availability manager priority */
+  //@{
   unsigned availabilityManagerPriority(const openstudio::epmodel::AvailabilityManager& availabilityManager) const;
-  std::vector<openstudio::epmodel::AvailabilityManager> availabilityManagers() const;
+  bool setAvailabilityManagerPriority(const openstudio::epmodel::AvailabilityManager& availabilityManager, unsigned priority);
+  //@}
 
-  boost::optional<openstudio::epmodel::Loop> loop() const;
-  boost::optional<openstudio::epmodel::AirLoopHVAC> airLoopHVAC() const;
+  /** @name Availability manager assignments */
+  //@{
+  std::vector<openstudio::epmodel::AvailabilityManager> availabilityManagers() const;
+  bool setAvailabilityManagers(const std::vector<openstudio::epmodel::AvailabilityManager>& availabilityManagers);
+  void resetAvailabilityManagers();
 
   bool addAvailabilityManager(const openstudio::epmodel::AvailabilityManager& availabilityManager);
   bool addAvailabilityManager(const openstudio::epmodel::AvailabilityManager& availabilityManager, unsigned priority);
 
-  bool setAvailabilityManagers(const std::vector<openstudio::epmodel::AvailabilityManager>& availabilityManagers);
-  void resetAvailabilityManagers();
-
   bool removeAvailabilityManager(const openstudio::epmodel::AvailabilityManager& availabilityManager);
   bool removeAvailabilityManager(unsigned priority);
+  //@}
 
-  bool setAvailabilityManagerPriority(const openstudio::epmodel::AvailabilityManager& availabilityManager, unsigned priority);
+  /** @name Loop associations */
+  //@{
+  boost::optional<openstudio::epmodel::Loop> loop() const;
+  boost::optional<openstudio::epmodel::AirLoopHVAC> airLoopHVAC() const;
+  //@}
 
   void doCanonicalize(LoadContext& context) override;
 };

@@ -41,52 +41,42 @@ namespace epmodel {
     // - ForwardTranslator evidence: ForwardTranslateRefractionExtinctionGlazing.cpp maintains the same EnergyPlus field names for these scalar inputs.
 
     double thickness() const;
+    bool setThickness(double thickness);
 
     double solarIndexofRefraction() const;
+    bool setSolarIndexofRefraction(double solarIndexofRefraction);
 
     double solarExtinctionCoefficient() const;
+    bool setSolarExtinctionCoefficient(double solarExtinctionCoefficient);
 
     double visibleIndexofRefraction() const;
+    bool setVisibleIndexofRefraction(double visibleIndexofRefraction);
 
     double visibleExtinctionCoefficient() const;
+    bool setVisibleExtinctionCoefficient(double visibleExtinctionCoefficient);
 
     double infraredTransmittanceatNormalIncidence() const;
     bool isInfraredTransmittanceatNormalIncidenceDefaulted() const;
-
-    double infraredHemisphericalEmissivity() const;
-    bool isInfraredHemisphericalEmissivityDefaulted() const;
-
-    double conductivity() const;
-    bool isConductivityDefaulted() const;
-
-    double dirtCorrectionFactorforSolarandVisibleTransmittance() const;
-    bool isDirtCorrectionFactorforSolarandVisibleTransmittanceDefaulted() const;
-
-    bool solarDiffusing() const;
-    bool isSolarDiffusingDefaulted() const;
-
-    bool setThickness(double thickness);
-
-    bool setSolarIndexofRefraction(double solarIndexofRefraction);
-
-    bool setSolarExtinctionCoefficient(double solarExtinctionCoefficient);
-
-    bool setVisibleIndexofRefraction(double visibleIndexofRefraction);
-
-    bool setVisibleExtinctionCoefficient(double visibleExtinctionCoefficient);
-
     bool setInfraredTransmittanceatNormalIncidence(double infraredTransmittanceatNormalIncidence);
     void resetInfraredTransmittanceatNormalIncidence();
 
+    double infraredHemisphericalEmissivity() const;
+    bool isInfraredHemisphericalEmissivityDefaulted() const;
     bool setInfraredHemisphericalEmissivity(double infraredHemisphericalEmissivity);
     void resetInfraredHemisphericalEmissivity();
 
+    double conductivity() const;
+    bool isConductivityDefaulted() const;
     bool setConductivity(double conductivity);
     void resetConductivity();
 
+    double dirtCorrectionFactorforSolarandVisibleTransmittance() const;
+    bool isDirtCorrectionFactorforSolarandVisibleTransmittanceDefaulted() const;
     bool setDirtCorrectionFactorforSolarandVisibleTransmittance(double dirtCorrectionFactor);
     void resetDirtCorrectionFactorforSolarandVisibleTransmittance();
 
+    bool solarDiffusing() const;
+    bool isSolarDiffusingDefaulted() const;
     bool setSolarDiffusing(bool solarDiffusing);
     void setSolarDiffusingNoFail(bool solarDiffusing);
     void resetSolarDiffusing();

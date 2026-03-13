@@ -10,33 +10,33 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ConstructionWithInternalSource_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ConstructionWithInternalSource_Impl() override = default;
+    class EPMODEL_API ConstructionWithInternalSource_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ConstructionWithInternalSource_Impl() override = default;
 
-  int sourcePresentAfterLayerNumber() const;
-  bool setSourcePresentAfterLayerNumber(int sourcePresentAfterLayerNumber);
+      int sourcePresentAfterLayerNumber() const;
+      bool setSourcePresentAfterLayerNumber(int sourcePresentAfterLayerNumber);
 
-  int temperatureCalculationRequestedAfterLayerNumber() const;
-  bool setTemperatureCalculationRequestedAfterLayerNumber(int temperatureCalculationRequestedAfterLayerNumber);
+      int temperatureCalculationRequestedAfterLayerNumber() const;
+      bool setTemperatureCalculationRequestedAfterLayerNumber(int temperatureCalculationRequestedAfterLayerNumber);
 
-  int dimensionsForTheCTFCalculation() const;
-  bool setDimensionsForTheCTFCalculation(int dimensionsForTheCTFCalculation);
+      int dimensionsForTheCTFCalculation() const;
+      bool setDimensionsForTheCTFCalculation(int dimensionsForTheCTFCalculation);
 
-  double tubeSpacing() const;
-  bool setTubeSpacing(double tubeSpacing);
+      double tubeSpacing() const;
+      bool setTubeSpacing(double tubeSpacing);
 
-  double twoDimensionalTemperatureCalculationPosition() const;
-  bool isTwoDimensionalTemperatureCalculationPositionDefaulted() const;
-  bool setTwoDimensionalTemperatureCalculationPosition(double twoDimensionalTemperatureCalculationPosition);
-  void resetTwoDimensionalTemperatureCalculationPosition();
-};
+      double twoDimensionalTemperatureCalculationPosition() const;
+      bool setTwoDimensionalTemperatureCalculationPosition(double twoDimensionalTemperatureCalculationPosition);
+      bool isTwoDimensionalTemperatureCalculationPositionDefaulted() const;
+      void resetTwoDimensionalTemperatureCalculationPosition();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

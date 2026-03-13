@@ -22,6 +22,8 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~ZoneRefrigerationDoorMixing_Impl() override = default;
 
+      std::vector<std::string> doorProtectionTypeValues() const;
+
       double doorHeight() const;
       bool isDoorHeightDefaulted() const;
       bool setDoorHeight(double doorHeight);
@@ -36,8 +38,6 @@ namespace epmodel {
       bool isDoorProtectionTypeDefaulted() const;
       bool setDoorProtectionType(const std::string& doorProtectionType);
       void resetDoorProtectionType();
-
-      std::vector<std::string> doorProtectionTypeValues() const;
     };
 
   }  // namespace detail

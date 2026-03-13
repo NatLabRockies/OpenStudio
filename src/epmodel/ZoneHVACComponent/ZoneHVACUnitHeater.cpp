@@ -47,34 +47,6 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACUnitHeater_Impl>()->isMaximumSupplyAirFlowRateAutosized();
   }
 
-  std::string ZoneHVACUnitHeater::fanControlType() const {
-    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->fanControlType();
-  }
-
-  boost::optional<double> ZoneHVACUnitHeater::maximumHotWaterFlowRate() const {
-    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->maximumHotWaterFlowRate();
-  }
-
-  bool ZoneHVACUnitHeater::isMaximumHotWaterFlowRateAutosized() const {
-    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->isMaximumHotWaterFlowRateAutosized();
-  }
-
-  double ZoneHVACUnitHeater::minimumHotWaterFlowRate() const {
-    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->minimumHotWaterFlowRate();
-  }
-
-  bool ZoneHVACUnitHeater::isMinimumHotWaterFlowRateDefaulted() const {
-    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->isMinimumHotWaterFlowRateDefaulted();
-  }
-
-  double ZoneHVACUnitHeater::heatingConvergenceTolerance() const {
-    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->heatingConvergenceTolerance();
-  }
-
-  bool ZoneHVACUnitHeater::isHeatingConvergenceToleranceDefaulted() const {
-    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->isHeatingConvergenceToleranceDefaulted();
-  }
-
   bool ZoneHVACUnitHeater::setMaximumSupplyAirFlowRate(double maximumSupplyAirFlowRate) {
     return getImpl<detail::ZoneHVACUnitHeater_Impl>()->setMaximumSupplyAirFlowRate(maximumSupplyAirFlowRate);
   }
@@ -83,8 +55,24 @@ namespace epmodel {
     getImpl<detail::ZoneHVACUnitHeater_Impl>()->autosizeMaximumSupplyAirFlowRate();
   }
 
+  boost::optional<double> ZoneHVACUnitHeater::autosizedMaximumSupplyAirFlowRate() const {
+    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->autosizedMaximumSupplyAirFlowRate();
+  }
+
+  std::string ZoneHVACUnitHeater::fanControlType() const {
+    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->fanControlType();
+  }
+
   bool ZoneHVACUnitHeater::setFanControlType(const std::string& fanControlType) {
     return getImpl<detail::ZoneHVACUnitHeater_Impl>()->setFanControlType(fanControlType);
+  }
+
+  boost::optional<double> ZoneHVACUnitHeater::maximumHotWaterFlowRate() const {
+    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->maximumHotWaterFlowRate();
+  }
+
+  bool ZoneHVACUnitHeater::isMaximumHotWaterFlowRateAutosized() const {
+    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->isMaximumHotWaterFlowRateAutosized();
   }
 
   bool ZoneHVACUnitHeater::setMaximumHotWaterFlowRate(double maximumHotWaterFlowRate) {
@@ -99,6 +87,18 @@ namespace epmodel {
     getImpl<detail::ZoneHVACUnitHeater_Impl>()->autosizeMaximumHotWaterFlowRate();
   }
 
+  boost::optional<double> ZoneHVACUnitHeater::autosizedMaximumHotWaterFlowRate() const {
+    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->autosizedMaximumHotWaterFlowRate();
+  }
+
+  double ZoneHVACUnitHeater::minimumHotWaterFlowRate() const {
+    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->minimumHotWaterFlowRate();
+  }
+
+  bool ZoneHVACUnitHeater::isMinimumHotWaterFlowRateDefaulted() const {
+    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->isMinimumHotWaterFlowRateDefaulted();
+  }
+
   bool ZoneHVACUnitHeater::setMinimumHotWaterFlowRate(double minimumHotWaterFlowRate) {
     return getImpl<detail::ZoneHVACUnitHeater_Impl>()->setMinimumHotWaterFlowRate(minimumHotWaterFlowRate);
   }
@@ -107,20 +107,20 @@ namespace epmodel {
     getImpl<detail::ZoneHVACUnitHeater_Impl>()->resetMinimumHotWaterFlowRate();
   }
 
+  double ZoneHVACUnitHeater::heatingConvergenceTolerance() const {
+    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->heatingConvergenceTolerance();
+  }
+
+  bool ZoneHVACUnitHeater::isHeatingConvergenceToleranceDefaulted() const {
+    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->isHeatingConvergenceToleranceDefaulted();
+  }
+
   bool ZoneHVACUnitHeater::setHeatingConvergenceTolerance(double heatingConvergenceTolerance) {
     return getImpl<detail::ZoneHVACUnitHeater_Impl>()->setHeatingConvergenceTolerance(heatingConvergenceTolerance);
   }
 
   void ZoneHVACUnitHeater::resetHeatingConvergenceTolerance() {
     getImpl<detail::ZoneHVACUnitHeater_Impl>()->resetHeatingConvergenceTolerance();
-  }
-
-  boost::optional<double> ZoneHVACUnitHeater::autosizedMaximumSupplyAirFlowRate() const {
-    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->autosizedMaximumSupplyAirFlowRate();
-  }
-
-  boost::optional<double> ZoneHVACUnitHeater::autosizedMaximumHotWaterFlowRate() const {
-    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->autosizedMaximumHotWaterFlowRate();
   }
 
 }  // namespace epmodel

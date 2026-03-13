@@ -24,64 +24,62 @@ namespace epmodel {
       virtual ~WaterHeaterSizing_Impl() override = default;
 
       boost::optional<std::string> designMode() const;
-
-      boost::optional<double> timeStorageCanMeetPeakDraw() const;
-      boost::optional<double> timeforTankRecovery() const;
-      boost::optional<double> nominalTankVolumeforAutosizingPlantConnections() const;
-      boost::optional<int> numberofBedrooms() const;
-      boost::optional<int> numberofBathrooms() const;
-      boost::optional<double> storageCapacityperPerson() const;
-      boost::optional<double> recoveryCapacityperPerson() const;
-      boost::optional<double> storageCapacityperFloorArea() const;
-      boost::optional<double> recoveryCapacityperFloorArea() const;
-      boost::optional<double> numberofUnits() const;
-      boost::optional<double> storageCapacityperUnit() const;
-      boost::optional<double> recoveryCapacityPerUnit() const;
-      boost::optional<double> storageCapacityperCollectorArea() const;
-      boost::optional<double> heightAspectRatio() const;
-
       bool setDesignMode(const std::string& designMode);
       void resetDesignMode();
 
+      boost::optional<double> timeStorageCanMeetPeakDraw() const;
       bool setTimeStorageCanMeetPeakDraw(double timeStorageCanMeetPeakDraw);
       void resetTimeStorageCanMeetPeakDraw();
 
+      boost::optional<double> timeforTankRecovery() const;
       bool setTimeforTankRecovery(double timeforTankRecovery);
       void resetTimeforTankRecovery();
 
+      boost::optional<double> nominalTankVolumeforAutosizingPlantConnections() const;
       bool setNominalTankVolumeforAutosizingPlantConnections(double nominalTankVolumeforAutosizingPlantConnections);
       void resetNominalTankVolumeforAutosizingPlantConnections();
 
+      boost::optional<int> numberofBedrooms() const;
       bool setNumberofBedrooms(int numberofBedrooms);
       void resetNumberofBedrooms();
 
+      boost::optional<int> numberofBathrooms() const;
       bool setNumberofBathrooms(int numberofBathrooms);
       void resetNumberofBathrooms();
 
+      boost::optional<double> storageCapacityperPerson() const;
       bool setStorageCapacityperPerson(double storageCapacityperPerson);
       void resetStorageCapacityperPerson();
 
+      boost::optional<double> recoveryCapacityperPerson() const;
       bool setRecoveryCapacityperPerson(double recoveryCapacityperPerson);
       void resetRecoveryCapacityperPerson();
 
+      boost::optional<double> storageCapacityperFloorArea() const;
       bool setStorageCapacityperFloorArea(double storageCapacityperFloorArea);
       void resetStorageCapacityperFloorArea();
 
+      boost::optional<double> recoveryCapacityperFloorArea() const;
       bool setRecoveryCapacityperFloorArea(double recoveryCapacityperFloorArea);
       void resetRecoveryCapacityperFloorArea();
 
+      boost::optional<double> numberofUnits() const;
       bool setNumberofUnits(double numberofUnits);
       void resetNumberofUnits();
 
+      boost::optional<double> storageCapacityperUnit() const;
       bool setStorageCapacityperUnit(double storageCapacityperUnit);
       void resetStorageCapacityperUnit();
 
+      boost::optional<double> recoveryCapacityPerUnit() const;
       bool setRecoveryCapacityPerUnit(double recoveryCapacityPerUnit);
       void resetRecoveryCapacityPerUnit();
 
+      boost::optional<double> storageCapacityperCollectorArea() const;
       bool setStorageCapacityperCollectorArea(double storageCapacityperCollectorArea);
       void resetStorageCapacityperCollectorArea();
 
+      boost::optional<double> heightAspectRatio() const;
       bool setHeightAspectRatio(double heightAspectRatio);
       void resetHeightAspectRatio();
     };

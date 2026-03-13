@@ -18,66 +18,63 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class MasslessOpaqueMaterial_Impl;
-}
+  namespace detail {
+    class MasslessOpaqueMaterial_Impl;
+  }
 
-class EPMODEL_API MasslessOpaqueMaterial : public ModelObject
-{
- public:
-  explicit MasslessOpaqueMaterial(const Model& model, const std::string& roughness = "Smooth", double thermalResistance = 0.1);
+  class EPMODEL_API MasslessOpaqueMaterial : public ModelObject
+  {
+   public:
+    explicit MasslessOpaqueMaterial(const Model& model, const std::string& roughness = "Smooth", double thermalResistance = 0.1);
 
-  virtual ~MasslessOpaqueMaterial() override = default;
-  MasslessOpaqueMaterial(const MasslessOpaqueMaterial& other) = default;
-  MasslessOpaqueMaterial(MasslessOpaqueMaterial&& other) = default;
-  MasslessOpaqueMaterial& operator=(const MasslessOpaqueMaterial&) = default;
-  MasslessOpaqueMaterial& operator=(MasslessOpaqueMaterial&&) = default;
+    virtual ~MasslessOpaqueMaterial() override = default;
+    MasslessOpaqueMaterial(const MasslessOpaqueMaterial& other) = default;
+    MasslessOpaqueMaterial(MasslessOpaqueMaterial&& other) = default;
+    MasslessOpaqueMaterial& operator=(const MasslessOpaqueMaterial&) = default;
+    MasslessOpaqueMaterial& operator=(MasslessOpaqueMaterial&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> roughnessValues();
+    static std::vector<std::string> roughnessValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::MasslessOpaqueMaterial scalar accessor names/signatures.
-  // - Field Mapping: roughness, thermalResistance, and thermal/solar/visible absorptance APIs map directly to E+ Material:NoMass fields.
-  // - ForwardTranslator evidence: ForwardTranslateMasslessOpaqueMaterial.cpp writes these scalar APIs directly to Material:NoMass fields.
-  // - Field Mapping: material-property child-object relationships are intentionally excluded from this scalar-only scaffold pass.
-  // - TODO(parity): Add non-scalar material-property relationship APIs in a dedicated parity pass.
-  std::string roughness() const;
-  double thermalResistance() const;
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model::MasslessOpaqueMaterial scalar accessor names/signatures.
+    // - Field Mapping: roughness, thermalResistance, and thermal/solar/visible absorptance APIs map directly to E+ Material:NoMass fields.
+    // - ForwardTranslator evidence: ForwardTranslateMasslessOpaqueMaterial.cpp writes these scalar APIs directly to Material:NoMass fields.
+    // - Field Mapping: material-property child-object relationships are intentionally excluded from this scalar-only scaffold pass.
+    // - TODO(parity): Add non-scalar material-property relationship APIs in a dedicated parity pass.
+    std::string roughness() const;
+    bool setRoughness(const std::string& roughness);
 
-  boost::optional<double> thermalAbsorptance() const;
-  bool isThermalAbsorptanceDefaulted() const;
+    double thermalResistance() const;
+    bool setThermalResistance(double thermalResistance);
 
-  boost::optional<double> solarAbsorptance() const;
-  bool isSolarAbsorptanceDefaulted() const;
+    boost::optional<double> thermalAbsorptance() const;
+    bool isThermalAbsorptanceDefaulted() const;
+    bool setThermalAbsorptance(double thermalAbsorptance);
+    void resetThermalAbsorptance();
 
-  boost::optional<double> visibleAbsorptance() const;
-  bool isVisibleAbsorptanceDefaulted() const;
+    boost::optional<double> solarAbsorptance() const;
+    bool isSolarAbsorptanceDefaulted() const;
+    bool setSolarAbsorptance(double solarAbsorptance);
+    void resetSolarAbsorptance();
 
-  bool setRoughness(const std::string& roughness);
-  bool setThermalResistance(double thermalResistance);
+    boost::optional<double> visibleAbsorptance() const;
+    bool isVisibleAbsorptanceDefaulted() const;
+    bool setVisibleAbsorptance(double visibleAbsorptance);
+    void resetVisibleAbsorptance();
 
-  bool setThermalAbsorptance(double thermalAbsorptance);
-  void resetThermalAbsorptance();
+   protected:
+    using ImplType = detail::MasslessOpaqueMaterial_Impl;
 
-  bool setSolarAbsorptance(double solarAbsorptance);
-  void resetSolarAbsorptance();
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  bool setVisibleAbsorptance(double visibleAbsorptance);
-  void resetVisibleAbsorptance();
-
- protected:
-  using ImplType = detail::MasslessOpaqueMaterial_Impl;
-
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit MasslessOpaqueMaterial(std::shared_ptr<detail::MasslessOpaqueMaterial_Impl> impl);
-};
+    explicit MasslessOpaqueMaterial(std::shared_ptr<detail::MasslessOpaqueMaterial_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

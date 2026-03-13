@@ -27,11 +27,12 @@ namespace epmodel {
       virtual ~SpaceInfiltrationEffectiveLeakageArea_Impl() override = default;
 
       double effectiveAirLeakageArea() const;
-      double stackCoefficient() const;
-      double windCoefficient() const;
-
       bool setEffectiveAirLeakageArea(double effectiveAirLeakageArea);
+
+      double stackCoefficient() const;
       bool setStackCoefficient(double stackCoefficient);
+
+      double windCoefficient() const;
       bool setWindCoefficient(double windCoefficient);
 
      private:

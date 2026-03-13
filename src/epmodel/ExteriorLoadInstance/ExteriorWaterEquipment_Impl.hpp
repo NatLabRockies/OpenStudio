@@ -11,28 +11,26 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ExteriorWaterEquipment_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ExteriorWaterEquipment_Impl() override = default;
+    class EPMODEL_API ExteriorWaterEquipment_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ExteriorWaterEquipment_Impl() override = default;
 
-  double multiplier() const;
-  bool isMultiplierDefaulted() const;
+      double multiplier() const;
+      bool isMultiplierDefaulted() const;
+      bool setMultiplier(double multiplier);
+      void resetMultiplier();
 
-  std::string endUseSubcategory() const;
-  bool isEndUseSubcategoryDefaulted() const;
+      std::string endUseSubcategory() const;
+      bool isEndUseSubcategoryDefaulted() const;
+      bool setEndUseSubcategory(const std::string& endUseSubcategory);
+      void resetEndUseSubcategory();
+    };
 
-  bool setMultiplier(double multiplier);
-  void resetMultiplier();
-
-  bool setEndUseSubcategory(const std::string& endUseSubcategory);
-  void resetEndUseSubcategory();
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

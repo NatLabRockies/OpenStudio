@@ -15,139 +15,139 @@
 namespace openstudio {
 namespace epmodel {
 
-CurveFunctionalPressureDrop::CurveFunctionalPressureDrop(const Model& model) : ModelObject(CurveFunctionalPressureDrop::iddObjectType(), model) {
-  OS_ASSERT(getImpl<detail::CurveFunctionalPressureDrop_Impl>());
-  OS_ASSERT(setDiameter(0.05));
-}
+  CurveFunctionalPressureDrop::CurveFunctionalPressureDrop(const Model& model) : ModelObject(CurveFunctionalPressureDrop::iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::CurveFunctionalPressureDrop_Impl>());
+    OS_ASSERT(setDiameter(0.05));
+  }
 
-CurveFunctionalPressureDrop::CurveFunctionalPressureDrop(std::shared_ptr<detail::CurveFunctionalPressureDrop_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  CurveFunctionalPressureDrop::CurveFunctionalPressureDrop(std::shared_ptr<detail::CurveFunctionalPressureDrop_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType CurveFunctionalPressureDrop::iddObjectType() {
-  return IddObjectType::Curve_Functional_PressureDrop;
-}
+  IddObjectType CurveFunctionalPressureDrop::iddObjectType() {
+    return IddObjectType::Curve_Functional_PressureDrop;
+  }
 
-double CurveFunctionalPressureDrop::diameter() const {
-  return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->diameter();
-}
+  double CurveFunctionalPressureDrop::diameter() const {
+    return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->diameter();
+  }
 
-boost::optional<double> CurveFunctionalPressureDrop::minorLossCoefficient() const {
-  return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->minorLossCoefficient();
-}
+  bool CurveFunctionalPressureDrop::setDiameter(double diameter) {
+    return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->setDiameter(diameter);
+  }
 
-boost::optional<double> CurveFunctionalPressureDrop::length() const {
-  return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->length();
-}
+  boost::optional<double> CurveFunctionalPressureDrop::minorLossCoefficient() const {
+    return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->minorLossCoefficient();
+  }
 
-boost::optional<double> CurveFunctionalPressureDrop::roughness() const {
-  return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->roughness();
-}
+  bool CurveFunctionalPressureDrop::setMinorLossCoefficient(double minorLossCoefficient) {
+    return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->setMinorLossCoefficient(minorLossCoefficient);
+  }
 
-boost::optional<double> CurveFunctionalPressureDrop::fixedFrictionFactor() const {
-  return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->fixedFrictionFactor();
-}
+  void CurveFunctionalPressureDrop::resetMinorLossCoefficient() {
+    getImpl<detail::CurveFunctionalPressureDrop_Impl>()->resetMinorLossCoefficient();
+  }
 
-bool CurveFunctionalPressureDrop::setDiameter(double diameter) {
-  return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->setDiameter(diameter);
-}
+  boost::optional<double> CurveFunctionalPressureDrop::length() const {
+    return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->length();
+  }
 
-bool CurveFunctionalPressureDrop::setMinorLossCoefficient(double minorLossCoefficient) {
-  return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->setMinorLossCoefficient(minorLossCoefficient);
-}
+  bool CurveFunctionalPressureDrop::setLength(double length) {
+    return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->setLength(length);
+  }
 
-void CurveFunctionalPressureDrop::resetMinorLossCoefficient() {
-  getImpl<detail::CurveFunctionalPressureDrop_Impl>()->resetMinorLossCoefficient();
-}
+  void CurveFunctionalPressureDrop::resetLength() {
+    getImpl<detail::CurveFunctionalPressureDrop_Impl>()->resetLength();
+  }
 
-bool CurveFunctionalPressureDrop::setLength(double length) {
-  return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->setLength(length);
-}
+  boost::optional<double> CurveFunctionalPressureDrop::roughness() const {
+    return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->roughness();
+  }
 
-void CurveFunctionalPressureDrop::resetLength() {
-  getImpl<detail::CurveFunctionalPressureDrop_Impl>()->resetLength();
-}
+  bool CurveFunctionalPressureDrop::setRoughness(double roughness) {
+    return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->setRoughness(roughness);
+  }
 
-bool CurveFunctionalPressureDrop::setRoughness(double roughness) {
-  return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->setRoughness(roughness);
-}
+  void CurveFunctionalPressureDrop::resetRoughness() {
+    getImpl<detail::CurveFunctionalPressureDrop_Impl>()->resetRoughness();
+  }
 
-void CurveFunctionalPressureDrop::resetRoughness() {
-  getImpl<detail::CurveFunctionalPressureDrop_Impl>()->resetRoughness();
-}
+  boost::optional<double> CurveFunctionalPressureDrop::fixedFrictionFactor() const {
+    return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->fixedFrictionFactor();
+  }
 
-bool CurveFunctionalPressureDrop::setFixedFrictionFactor(double fixedFrictionFactor) {
-  return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->setFixedFrictionFactor(fixedFrictionFactor);
-}
+  bool CurveFunctionalPressureDrop::setFixedFrictionFactor(double fixedFrictionFactor) {
+    return getImpl<detail::CurveFunctionalPressureDrop_Impl>()->setFixedFrictionFactor(fixedFrictionFactor);
+  }
 
-void CurveFunctionalPressureDrop::resetFixedFrictionFactor() {
-  getImpl<detail::CurveFunctionalPressureDrop_Impl>()->resetFixedFrictionFactor();
-}
+  void CurveFunctionalPressureDrop::resetFixedFrictionFactor() {
+    getImpl<detail::CurveFunctionalPressureDrop_Impl>()->resetFixedFrictionFactor();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-double CurveFunctionalPressureDrop_Impl::diameter() const {
-  const auto value = getDouble(openstudio::Curve_Functional_PressureDropFields::Diameter, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double CurveFunctionalPressureDrop_Impl::diameter() const {
+      const auto value = getDouble(openstudio::Curve_Functional_PressureDropFields::Diameter, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-boost::optional<double> CurveFunctionalPressureDrop_Impl::minorLossCoefficient() const {
-  return getDouble(openstudio::Curve_Functional_PressureDropFields::MinorLossCoefficient, true);
-}
+    bool CurveFunctionalPressureDrop_Impl::setDiameter(double diameter) {
+      return setDouble(openstudio::Curve_Functional_PressureDropFields::Diameter, diameter);
+    }
 
-boost::optional<double> CurveFunctionalPressureDrop_Impl::length() const {
-  return getDouble(openstudio::Curve_Functional_PressureDropFields::Length, true);
-}
+    boost::optional<double> CurveFunctionalPressureDrop_Impl::minorLossCoefficient() const {
+      return getDouble(openstudio::Curve_Functional_PressureDropFields::MinorLossCoefficient, true);
+    }
 
-boost::optional<double> CurveFunctionalPressureDrop_Impl::roughness() const {
-  return getDouble(openstudio::Curve_Functional_PressureDropFields::Roughness, true);
-}
+    bool CurveFunctionalPressureDrop_Impl::setMinorLossCoefficient(double minorLossCoefficient) {
+      return setDouble(openstudio::Curve_Functional_PressureDropFields::MinorLossCoefficient, minorLossCoefficient);
+    }
 
-boost::optional<double> CurveFunctionalPressureDrop_Impl::fixedFrictionFactor() const {
-  return getDouble(openstudio::Curve_Functional_PressureDropFields::FixedFrictionFactor, true);
-}
+    void CurveFunctionalPressureDrop_Impl::resetMinorLossCoefficient() {
+      OS_ASSERT(setString(openstudio::Curve_Functional_PressureDropFields::MinorLossCoefficient, ""));
+    }
 
-bool CurveFunctionalPressureDrop_Impl::setDiameter(double diameter) {
-  return setDouble(openstudio::Curve_Functional_PressureDropFields::Diameter, diameter);
-}
+    boost::optional<double> CurveFunctionalPressureDrop_Impl::length() const {
+      return getDouble(openstudio::Curve_Functional_PressureDropFields::Length, true);
+    }
 
-bool CurveFunctionalPressureDrop_Impl::setMinorLossCoefficient(double minorLossCoefficient) {
-  return setDouble(openstudio::Curve_Functional_PressureDropFields::MinorLossCoefficient, minorLossCoefficient);
-}
+    bool CurveFunctionalPressureDrop_Impl::setLength(double length) {
+      return setDouble(openstudio::Curve_Functional_PressureDropFields::Length, length);
+    }
 
-void CurveFunctionalPressureDrop_Impl::resetMinorLossCoefficient() {
-  OS_ASSERT(setString(openstudio::Curve_Functional_PressureDropFields::MinorLossCoefficient, ""));
-}
+    void CurveFunctionalPressureDrop_Impl::resetLength() {
+      OS_ASSERT(setString(openstudio::Curve_Functional_PressureDropFields::Length, ""));
+    }
 
-bool CurveFunctionalPressureDrop_Impl::setLength(double length) {
-  return setDouble(openstudio::Curve_Functional_PressureDropFields::Length, length);
-}
+    boost::optional<double> CurveFunctionalPressureDrop_Impl::roughness() const {
+      return getDouble(openstudio::Curve_Functional_PressureDropFields::Roughness, true);
+    }
 
-void CurveFunctionalPressureDrop_Impl::resetLength() {
-  OS_ASSERT(setString(openstudio::Curve_Functional_PressureDropFields::Length, ""));
-}
+    bool CurveFunctionalPressureDrop_Impl::setRoughness(double roughness) {
+      return setDouble(openstudio::Curve_Functional_PressureDropFields::Roughness, roughness);
+    }
 
-bool CurveFunctionalPressureDrop_Impl::setRoughness(double roughness) {
-  return setDouble(openstudio::Curve_Functional_PressureDropFields::Roughness, roughness);
-}
+    void CurveFunctionalPressureDrop_Impl::resetRoughness() {
+      OS_ASSERT(setString(openstudio::Curve_Functional_PressureDropFields::Roughness, ""));
+    }
 
-void CurveFunctionalPressureDrop_Impl::resetRoughness() {
-  OS_ASSERT(setString(openstudio::Curve_Functional_PressureDropFields::Roughness, ""));
-}
+    boost::optional<double> CurveFunctionalPressureDrop_Impl::fixedFrictionFactor() const {
+      return getDouble(openstudio::Curve_Functional_PressureDropFields::FixedFrictionFactor, true);
+    }
 
-bool CurveFunctionalPressureDrop_Impl::setFixedFrictionFactor(double fixedFrictionFactor) {
-  return setDouble(openstudio::Curve_Functional_PressureDropFields::FixedFrictionFactor, fixedFrictionFactor);
-}
+    bool CurveFunctionalPressureDrop_Impl::setFixedFrictionFactor(double fixedFrictionFactor) {
+      return setDouble(openstudio::Curve_Functional_PressureDropFields::FixedFrictionFactor, fixedFrictionFactor);
+    }
 
-void CurveFunctionalPressureDrop_Impl::resetFixedFrictionFactor() {
-  OS_ASSERT(setString(openstudio::Curve_Functional_PressureDropFields::FixedFrictionFactor, ""));
-}
+    void CurveFunctionalPressureDrop_Impl::resetFixedFrictionFactor() {
+      OS_ASSERT(setString(openstudio::Curve_Functional_PressureDropFields::FixedFrictionFactor, ""));
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

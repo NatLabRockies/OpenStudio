@@ -57,12 +57,28 @@ namespace epmodel {
     return getImpl<detail::Screen_Impl>()->isReflectedBeamTransmittanceAccountingMethodDefaulted();
   }
 
+  bool Screen::setReflectedBeamTransmittanceAccountingMethod(const std::string& reflectedBeamTransmittanceAccountingMethod) {
+    return getImpl<detail::Screen_Impl>()->setReflectedBeamTransmittanceAccountingMethod(reflectedBeamTransmittanceAccountingMethod);
+  }
+
+  void Screen::resetReflectedBeamTransmittanceAccountingMethod() {
+    getImpl<detail::Screen_Impl>()->resetReflectedBeamTransmittanceAccountingMethod();
+  }
+
   double Screen::diffuseSolarReflectance() const {
     return getImpl<detail::Screen_Impl>()->diffuseSolarReflectance();
   }
 
+  bool Screen::setDiffuseSolarReflectance(double diffuseSolarReflectance) {
+    return getImpl<detail::Screen_Impl>()->setDiffuseSolarReflectance(diffuseSolarReflectance);
+  }
+
   double Screen::diffuseVisibleReflectance() const {
     return getImpl<detail::Screen_Impl>()->diffuseVisibleReflectance();
+  }
+
+  bool Screen::setDiffuseVisibleReflectance(double diffuseVisibleReflectance) {
+    return getImpl<detail::Screen_Impl>()->setDiffuseVisibleReflectance(diffuseVisibleReflectance);
   }
 
   double Screen::thermalHemisphericalEmissivity() const {
@@ -73,100 +89,20 @@ namespace epmodel {
     return getImpl<detail::Screen_Impl>()->isThermalHemisphericalEmissivityDefaulted();
   }
 
-  double Screen::conductivity() const {
-    return getImpl<detail::Screen_Impl>()->conductivity();
-  }
-
-  bool Screen::isConductivityDefaulted() const {
-    return getImpl<detail::Screen_Impl>()->isConductivityDefaulted();
-  }
-
-  double Screen::screenMaterialSpacing() const {
-    return getImpl<detail::Screen_Impl>()->screenMaterialSpacing();
-  }
-
-  double Screen::screenMaterialDiameter() const {
-    return getImpl<detail::Screen_Impl>()->screenMaterialDiameter();
-  }
-
-  double Screen::screentoGlassDistance() const {
-    return getImpl<detail::Screen_Impl>()->screentoGlassDistance();
-  }
-
-  bool Screen::isScreentoGlassDistanceDefaulted() const {
-    return getImpl<detail::Screen_Impl>()->isScreentoGlassDistanceDefaulted();
-  }
-
-  double Screen::topOpeningMultiplier() const {
-    return getImpl<detail::Screen_Impl>()->topOpeningMultiplier();
-  }
-
-  bool Screen::isTopOpeningMultiplierDefaulted() const {
-    return getImpl<detail::Screen_Impl>()->isTopOpeningMultiplierDefaulted();
-  }
-
-  double Screen::bottomOpeningMultiplier() const {
-    return getImpl<detail::Screen_Impl>()->bottomOpeningMultiplier();
-  }
-
-  bool Screen::isBottomOpeningMultiplierDefaulted() const {
-    return getImpl<detail::Screen_Impl>()->isBottomOpeningMultiplierDefaulted();
-  }
-
-  double Screen::leftSideOpeningMultiplier() const {
-    return getImpl<detail::Screen_Impl>()->leftSideOpeningMultiplier();
-  }
-
-  bool Screen::isLeftSideOpeningMultiplierDefaulted() const {
-    return getImpl<detail::Screen_Impl>()->isLeftSideOpeningMultiplierDefaulted();
-  }
-
-  double Screen::rightSideOpeningMultiplier() const {
-    return getImpl<detail::Screen_Impl>()->rightSideOpeningMultiplier();
-  }
-
-  bool Screen::isRightSideOpeningMultiplierDefaulted() const {
-    return getImpl<detail::Screen_Impl>()->isRightSideOpeningMultiplierDefaulted();
-  }
-
-  std::string Screen::angleofResolutionforScreenTransmittanceOutputMap() const {
-    return getImpl<detail::Screen_Impl>()->angleofResolutionforScreenTransmittanceOutputMap();
-  }
-
-  bool Screen::isAngleofResolutionforScreenTransmittanceOutputMapDefaulted() const {
-    return getImpl<detail::Screen_Impl>()->isAngleofResolutionforScreenTransmittanceOutputMapDefaulted();
-  }
-
-  bool Screen::setThermalConductivity(double value) {
-    return getImpl<detail::Screen_Impl>()->setThermalConductivity(value);
-  }
-
-  bool Screen::setThermalResistivity(double value) {
-    return getImpl<detail::Screen_Impl>()->setThermalResistivity(value);
-  }
-
-  bool Screen::setReflectedBeamTransmittanceAccountingMethod(const std::string& reflectedBeamTransmittanceAccountingMethod) {
-    return getImpl<detail::Screen_Impl>()->setReflectedBeamTransmittanceAccountingMethod(reflectedBeamTransmittanceAccountingMethod);
-  }
-
-  void Screen::resetReflectedBeamTransmittanceAccountingMethod() {
-    getImpl<detail::Screen_Impl>()->resetReflectedBeamTransmittanceAccountingMethod();
-  }
-
-  bool Screen::setDiffuseSolarReflectance(double diffuseSolarReflectance) {
-    return getImpl<detail::Screen_Impl>()->setDiffuseSolarReflectance(diffuseSolarReflectance);
-  }
-
-  bool Screen::setDiffuseVisibleReflectance(double diffuseVisibleReflectance) {
-    return getImpl<detail::Screen_Impl>()->setDiffuseVisibleReflectance(diffuseVisibleReflectance);
-  }
-
   bool Screen::setThermalHemisphericalEmissivity(double thermalHemisphericalEmissivity) {
     return getImpl<detail::Screen_Impl>()->setThermalHemisphericalEmissivity(thermalHemisphericalEmissivity);
   }
 
   void Screen::resetThermalHemisphericalEmissivity() {
     getImpl<detail::Screen_Impl>()->resetThermalHemisphericalEmissivity();
+  }
+
+  double Screen::conductivity() const {
+    return getImpl<detail::Screen_Impl>()->conductivity();
+  }
+
+  bool Screen::isConductivityDefaulted() const {
+    return getImpl<detail::Screen_Impl>()->isConductivityDefaulted();
   }
 
   bool Screen::setConductivity(double conductivity) {
@@ -177,12 +113,36 @@ namespace epmodel {
     getImpl<detail::Screen_Impl>()->resetConductivity();
   }
 
+  bool Screen::setThermalConductivity(double value) {
+    return getImpl<detail::Screen_Impl>()->setThermalConductivity(value);
+  }
+
+  bool Screen::setThermalResistivity(double value) {
+    return getImpl<detail::Screen_Impl>()->setThermalResistivity(value);
+  }
+
+  double Screen::screenMaterialSpacing() const {
+    return getImpl<detail::Screen_Impl>()->screenMaterialSpacing();
+  }
+
   bool Screen::setScreenMaterialSpacing(double screenMaterialSpacing) {
     return getImpl<detail::Screen_Impl>()->setScreenMaterialSpacing(screenMaterialSpacing);
   }
 
+  double Screen::screenMaterialDiameter() const {
+    return getImpl<detail::Screen_Impl>()->screenMaterialDiameter();
+  }
+
   bool Screen::setScreenMaterialDiameter(double screenMaterialDiameter) {
     return getImpl<detail::Screen_Impl>()->setScreenMaterialDiameter(screenMaterialDiameter);
+  }
+
+  double Screen::screentoGlassDistance() const {
+    return getImpl<detail::Screen_Impl>()->screentoGlassDistance();
+  }
+
+  bool Screen::isScreentoGlassDistanceDefaulted() const {
+    return getImpl<detail::Screen_Impl>()->isScreentoGlassDistanceDefaulted();
   }
 
   bool Screen::setScreentoGlassDistance(double screentoGlassDistance) {
@@ -193,12 +153,28 @@ namespace epmodel {
     getImpl<detail::Screen_Impl>()->resetScreentoGlassDistance();
   }
 
+  double Screen::topOpeningMultiplier() const {
+    return getImpl<detail::Screen_Impl>()->topOpeningMultiplier();
+  }
+
+  bool Screen::isTopOpeningMultiplierDefaulted() const {
+    return getImpl<detail::Screen_Impl>()->isTopOpeningMultiplierDefaulted();
+  }
+
   bool Screen::setTopOpeningMultiplier(double topOpeningMultiplier) {
     return getImpl<detail::Screen_Impl>()->setTopOpeningMultiplier(topOpeningMultiplier);
   }
 
   void Screen::resetTopOpeningMultiplier() {
     getImpl<detail::Screen_Impl>()->resetTopOpeningMultiplier();
+  }
+
+  double Screen::bottomOpeningMultiplier() const {
+    return getImpl<detail::Screen_Impl>()->bottomOpeningMultiplier();
+  }
+
+  bool Screen::isBottomOpeningMultiplierDefaulted() const {
+    return getImpl<detail::Screen_Impl>()->isBottomOpeningMultiplierDefaulted();
   }
 
   bool Screen::setBottomOpeningMultiplier(double bottomOpeningMultiplier) {
@@ -209,6 +185,14 @@ namespace epmodel {
     getImpl<detail::Screen_Impl>()->resetBottomOpeningMultiplier();
   }
 
+  double Screen::leftSideOpeningMultiplier() const {
+    return getImpl<detail::Screen_Impl>()->leftSideOpeningMultiplier();
+  }
+
+  bool Screen::isLeftSideOpeningMultiplierDefaulted() const {
+    return getImpl<detail::Screen_Impl>()->isLeftSideOpeningMultiplierDefaulted();
+  }
+
   bool Screen::setLeftSideOpeningMultiplier(double leftSideOpeningMultiplier) {
     return getImpl<detail::Screen_Impl>()->setLeftSideOpeningMultiplier(leftSideOpeningMultiplier);
   }
@@ -217,12 +201,28 @@ namespace epmodel {
     getImpl<detail::Screen_Impl>()->resetLeftSideOpeningMultiplier();
   }
 
+  double Screen::rightSideOpeningMultiplier() const {
+    return getImpl<detail::Screen_Impl>()->rightSideOpeningMultiplier();
+  }
+
+  bool Screen::isRightSideOpeningMultiplierDefaulted() const {
+    return getImpl<detail::Screen_Impl>()->isRightSideOpeningMultiplierDefaulted();
+  }
+
   bool Screen::setRightSideOpeningMultiplier(double rightSideOpeningMultiplier) {
     return getImpl<detail::Screen_Impl>()->setRightSideOpeningMultiplier(rightSideOpeningMultiplier);
   }
 
   void Screen::resetRightSideOpeningMultiplier() {
     getImpl<detail::Screen_Impl>()->resetRightSideOpeningMultiplier();
+  }
+
+  std::string Screen::angleofResolutionforScreenTransmittanceOutputMap() const {
+    return getImpl<detail::Screen_Impl>()->angleofResolutionforScreenTransmittanceOutputMap();
+  }
+
+  bool Screen::isAngleofResolutionforScreenTransmittanceOutputMapDefaulted() const {
+    return getImpl<detail::Screen_Impl>()->isAngleofResolutionforScreenTransmittanceOutputMapDefaulted();
   }
 
   bool Screen::setAngleofResolutionforScreenTransmittanceOutputMap(const std::string& angleofResolutionforScreenTransmittanceOutputMap) {
@@ -272,16 +272,39 @@ namespace epmodel {
       return isEmpty(openstudio::WindowMaterial_ScreenFields::ReflectedBeamTransmittanceAccountingMethod);
     }
 
+    bool Screen_Impl::setReflectedBeamTransmittanceAccountingMethod(const std::string& reflectedBeamTransmittanceAccountingMethod) {
+      const bool result =
+        setString(openstudio::WindowMaterial_ScreenFields::ReflectedBeamTransmittanceAccountingMethod, reflectedBeamTransmittanceAccountingMethod);
+      OS_ASSERT(result);
+      return result;
+    }
+
+    void Screen_Impl::resetReflectedBeamTransmittanceAccountingMethod() {
+      OS_ASSERT(setString(openstudio::WindowMaterial_ScreenFields::ReflectedBeamTransmittanceAccountingMethod, ""));
+    }
+
     double Screen_Impl::diffuseSolarReflectance() const {
       boost::optional<double> value = getDouble(openstudio::WindowMaterial_ScreenFields::DiffuseSolarReflectance, true);
       OS_ASSERT(value);
       return value.get();
     }
 
+    bool Screen_Impl::setDiffuseSolarReflectance(double diffuseSolarReflectance) {
+      const bool result = setDouble(openstudio::WindowMaterial_ScreenFields::DiffuseSolarReflectance, diffuseSolarReflectance);
+      OS_ASSERT(result);
+      return result;
+    }
+
     double Screen_Impl::diffuseVisibleReflectance() const {
       boost::optional<double> value = getDouble(openstudio::WindowMaterial_ScreenFields::DiffuseVisibleReflectance, true);
       OS_ASSERT(value);
       return value.get();
+    }
+
+    bool Screen_Impl::setDiffuseVisibleReflectance(double diffuseVisibleReflectance) {
+      const bool result = setDouble(openstudio::WindowMaterial_ScreenFields::DiffuseVisibleReflectance, diffuseVisibleReflectance);
+      OS_ASSERT(result);
+      return result;
     }
 
     double Screen_Impl::thermalHemisphericalEmissivity() const {
@@ -294,6 +317,16 @@ namespace epmodel {
       return isEmpty(openstudio::WindowMaterial_ScreenFields::ThermalHemisphericalEmissivity);
     }
 
+    bool Screen_Impl::setThermalHemisphericalEmissivity(double thermalHemisphericalEmissivity) {
+      const bool result = setDouble(openstudio::WindowMaterial_ScreenFields::ThermalHemisphericalEmissivity, thermalHemisphericalEmissivity);
+      OS_ASSERT(result);
+      return result;
+    }
+
+    void Screen_Impl::resetThermalHemisphericalEmissivity() {
+      OS_ASSERT(setString(openstudio::WindowMaterial_ScreenFields::ThermalHemisphericalEmissivity, ""));
+    }
+
     double Screen_Impl::conductivity() const {
       boost::optional<double> value = getDouble(openstudio::WindowMaterial_ScreenFields::Conductivity, true);
       OS_ASSERT(value);
@@ -304,76 +337,12 @@ namespace epmodel {
       return isEmpty(openstudio::WindowMaterial_ScreenFields::Conductivity);
     }
 
-    double Screen_Impl::screenMaterialSpacing() const {
-      boost::optional<double> value = getDouble(openstudio::WindowMaterial_ScreenFields::ScreenMaterialSpacing, true);
-      OS_ASSERT(value);
-      return value.get();
+    bool Screen_Impl::setConductivity(double conductivity) {
+      return setThermalConductivity(conductivity);
     }
 
-    double Screen_Impl::screenMaterialDiameter() const {
-      boost::optional<double> value = getDouble(openstudio::WindowMaterial_ScreenFields::ScreenMaterialDiameter, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    double Screen_Impl::screentoGlassDistance() const {
-      boost::optional<double> value = getDouble(openstudio::WindowMaterial_ScreenFields::ScreentoGlassDistance, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool Screen_Impl::isScreentoGlassDistanceDefaulted() const {
-      return isEmpty(openstudio::WindowMaterial_ScreenFields::ScreentoGlassDistance);
-    }
-
-    double Screen_Impl::topOpeningMultiplier() const {
-      boost::optional<double> value = getDouble(openstudio::WindowMaterial_ScreenFields::TopOpeningMultiplier, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool Screen_Impl::isTopOpeningMultiplierDefaulted() const {
-      return isEmpty(openstudio::WindowMaterial_ScreenFields::TopOpeningMultiplier);
-    }
-
-    double Screen_Impl::bottomOpeningMultiplier() const {
-      boost::optional<double> value = getDouble(openstudio::WindowMaterial_ScreenFields::BottomOpeningMultiplier, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool Screen_Impl::isBottomOpeningMultiplierDefaulted() const {
-      return isEmpty(openstudio::WindowMaterial_ScreenFields::BottomOpeningMultiplier);
-    }
-
-    double Screen_Impl::leftSideOpeningMultiplier() const {
-      boost::optional<double> value = getDouble(openstudio::WindowMaterial_ScreenFields::LeftSideOpeningMultiplier, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool Screen_Impl::isLeftSideOpeningMultiplierDefaulted() const {
-      return isEmpty(openstudio::WindowMaterial_ScreenFields::LeftSideOpeningMultiplier);
-    }
-
-    double Screen_Impl::rightSideOpeningMultiplier() const {
-      boost::optional<double> value = getDouble(openstudio::WindowMaterial_ScreenFields::RightSideOpeningMultiplier, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool Screen_Impl::isRightSideOpeningMultiplierDefaulted() const {
-      return isEmpty(openstudio::WindowMaterial_ScreenFields::RightSideOpeningMultiplier);
-    }
-
-    std::string Screen_Impl::angleofResolutionforScreenTransmittanceOutputMap() const {
-      boost::optional<std::string> value = getString(openstudio::WindowMaterial_ScreenFields::AngleofResolutionforScreenTransmittanceOutputMap, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool Screen_Impl::isAngleofResolutionforScreenTransmittanceOutputMapDefaulted() const {
-      return isEmpty(openstudio::WindowMaterial_ScreenFields::AngleofResolutionforScreenTransmittanceOutputMap);
+    void Screen_Impl::resetConductivity() {
+      OS_ASSERT(setString(openstudio::WindowMaterial_ScreenFields::Conductivity, ""));
     }
 
     bool Screen_Impl::setThermalConductivity(double value) {
@@ -387,45 +356,10 @@ namespace epmodel {
       return setThermalConductivity(1.0 / value);
     }
 
-    bool Screen_Impl::setReflectedBeamTransmittanceAccountingMethod(const std::string& reflectedBeamTransmittanceAccountingMethod) {
-      const bool result =
-        setString(openstudio::WindowMaterial_ScreenFields::ReflectedBeamTransmittanceAccountingMethod, reflectedBeamTransmittanceAccountingMethod);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    void Screen_Impl::resetReflectedBeamTransmittanceAccountingMethod() {
-      OS_ASSERT(setString(openstudio::WindowMaterial_ScreenFields::ReflectedBeamTransmittanceAccountingMethod, ""));
-    }
-
-    bool Screen_Impl::setDiffuseSolarReflectance(double diffuseSolarReflectance) {
-      const bool result = setDouble(openstudio::WindowMaterial_ScreenFields::DiffuseSolarReflectance, diffuseSolarReflectance);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool Screen_Impl::setDiffuseVisibleReflectance(double diffuseVisibleReflectance) {
-      const bool result = setDouble(openstudio::WindowMaterial_ScreenFields::DiffuseVisibleReflectance, diffuseVisibleReflectance);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    bool Screen_Impl::setThermalHemisphericalEmissivity(double thermalHemisphericalEmissivity) {
-      const bool result = setDouble(openstudio::WindowMaterial_ScreenFields::ThermalHemisphericalEmissivity, thermalHemisphericalEmissivity);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    void Screen_Impl::resetThermalHemisphericalEmissivity() {
-      OS_ASSERT(setString(openstudio::WindowMaterial_ScreenFields::ThermalHemisphericalEmissivity, ""));
-    }
-
-    bool Screen_Impl::setConductivity(double conductivity) {
-      return setThermalConductivity(conductivity);
-    }
-
-    void Screen_Impl::resetConductivity() {
-      OS_ASSERT(setString(openstudio::WindowMaterial_ScreenFields::Conductivity, ""));
+    double Screen_Impl::screenMaterialSpacing() const {
+      boost::optional<double> value = getDouble(openstudio::WindowMaterial_ScreenFields::ScreenMaterialSpacing, true);
+      OS_ASSERT(value);
+      return value.get();
     }
 
     bool Screen_Impl::setScreenMaterialSpacing(double screenMaterialSpacing) {
@@ -434,10 +368,26 @@ namespace epmodel {
       return result;
     }
 
+    double Screen_Impl::screenMaterialDiameter() const {
+      boost::optional<double> value = getDouble(openstudio::WindowMaterial_ScreenFields::ScreenMaterialDiameter, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
     bool Screen_Impl::setScreenMaterialDiameter(double screenMaterialDiameter) {
       const bool result = setDouble(openstudio::WindowMaterial_ScreenFields::ScreenMaterialDiameter, screenMaterialDiameter);
       OS_ASSERT(result);
       return result;
+    }
+
+    double Screen_Impl::screentoGlassDistance() const {
+      boost::optional<double> value = getDouble(openstudio::WindowMaterial_ScreenFields::ScreentoGlassDistance, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool Screen_Impl::isScreentoGlassDistanceDefaulted() const {
+      return isEmpty(openstudio::WindowMaterial_ScreenFields::ScreentoGlassDistance);
     }
 
     bool Screen_Impl::setScreentoGlassDistance(double screentoGlassDistance) {
@@ -450,6 +400,16 @@ namespace epmodel {
       OS_ASSERT(setString(openstudio::WindowMaterial_ScreenFields::ScreentoGlassDistance, ""));
     }
 
+    double Screen_Impl::topOpeningMultiplier() const {
+      boost::optional<double> value = getDouble(openstudio::WindowMaterial_ScreenFields::TopOpeningMultiplier, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool Screen_Impl::isTopOpeningMultiplierDefaulted() const {
+      return isEmpty(openstudio::WindowMaterial_ScreenFields::TopOpeningMultiplier);
+    }
+
     bool Screen_Impl::setTopOpeningMultiplier(double topOpeningMultiplier) {
       const bool result = setDouble(openstudio::WindowMaterial_ScreenFields::TopOpeningMultiplier, topOpeningMultiplier);
       OS_ASSERT(result);
@@ -458,6 +418,16 @@ namespace epmodel {
 
     void Screen_Impl::resetTopOpeningMultiplier() {
       OS_ASSERT(setString(openstudio::WindowMaterial_ScreenFields::TopOpeningMultiplier, ""));
+    }
+
+    double Screen_Impl::bottomOpeningMultiplier() const {
+      boost::optional<double> value = getDouble(openstudio::WindowMaterial_ScreenFields::BottomOpeningMultiplier, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool Screen_Impl::isBottomOpeningMultiplierDefaulted() const {
+      return isEmpty(openstudio::WindowMaterial_ScreenFields::BottomOpeningMultiplier);
     }
 
     bool Screen_Impl::setBottomOpeningMultiplier(double bottomOpeningMultiplier) {
@@ -470,6 +440,16 @@ namespace epmodel {
       OS_ASSERT(setString(openstudio::WindowMaterial_ScreenFields::BottomOpeningMultiplier, ""));
     }
 
+    double Screen_Impl::leftSideOpeningMultiplier() const {
+      boost::optional<double> value = getDouble(openstudio::WindowMaterial_ScreenFields::LeftSideOpeningMultiplier, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool Screen_Impl::isLeftSideOpeningMultiplierDefaulted() const {
+      return isEmpty(openstudio::WindowMaterial_ScreenFields::LeftSideOpeningMultiplier);
+    }
+
     bool Screen_Impl::setLeftSideOpeningMultiplier(double leftSideOpeningMultiplier) {
       const bool result = setDouble(openstudio::WindowMaterial_ScreenFields::LeftSideOpeningMultiplier, leftSideOpeningMultiplier);
       OS_ASSERT(result);
@@ -480,6 +460,16 @@ namespace epmodel {
       OS_ASSERT(setString(openstudio::WindowMaterial_ScreenFields::LeftSideOpeningMultiplier, ""));
     }
 
+    double Screen_Impl::rightSideOpeningMultiplier() const {
+      boost::optional<double> value = getDouble(openstudio::WindowMaterial_ScreenFields::RightSideOpeningMultiplier, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool Screen_Impl::isRightSideOpeningMultiplierDefaulted() const {
+      return isEmpty(openstudio::WindowMaterial_ScreenFields::RightSideOpeningMultiplier);
+    }
+
     bool Screen_Impl::setRightSideOpeningMultiplier(double rightSideOpeningMultiplier) {
       const bool result = setDouble(openstudio::WindowMaterial_ScreenFields::RightSideOpeningMultiplier, rightSideOpeningMultiplier);
       OS_ASSERT(result);
@@ -488,6 +478,16 @@ namespace epmodel {
 
     void Screen_Impl::resetRightSideOpeningMultiplier() {
       OS_ASSERT(setString(openstudio::WindowMaterial_ScreenFields::RightSideOpeningMultiplier, ""));
+    }
+
+    std::string Screen_Impl::angleofResolutionforScreenTransmittanceOutputMap() const {
+      boost::optional<std::string> value = getString(openstudio::WindowMaterial_ScreenFields::AngleofResolutionforScreenTransmittanceOutputMap, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool Screen_Impl::isAngleofResolutionforScreenTransmittanceOutputMapDefaulted() const {
+      return isEmpty(openstudio::WindowMaterial_ScreenFields::AngleofResolutionforScreenTransmittanceOutputMap);
     }
 
     bool Screen_Impl::setAngleofResolutionforScreenTransmittanceOutputMap(const std::string& angleofResolutionforScreenTransmittanceOutputMap) {

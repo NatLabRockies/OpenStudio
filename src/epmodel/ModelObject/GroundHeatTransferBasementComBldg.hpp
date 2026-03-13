@@ -16,94 +16,103 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class GroundHeatTransferBasementComBldg_Impl;
-}
+  namespace detail {
+    class GroundHeatTransferBasementComBldg_Impl;
+  }
 
-class EPMODEL_API GroundHeatTransferBasementComBldg : public ModelObject
-{
- public:
-  explicit GroundHeatTransferBasementComBldg(const Model& model);
+  class EPMODEL_API GroundHeatTransferBasementComBldg : public ModelObject
+  {
+   public:
+    explicit GroundHeatTransferBasementComBldg(const Model& model);
 
-  virtual ~GroundHeatTransferBasementComBldg() override = default;
-  GroundHeatTransferBasementComBldg(const GroundHeatTransferBasementComBldg& other) = default;
-  GroundHeatTransferBasementComBldg(GroundHeatTransferBasementComBldg&& other) = default;
-  GroundHeatTransferBasementComBldg& operator=(const GroundHeatTransferBasementComBldg&) = default;
-  GroundHeatTransferBasementComBldg& operator=(GroundHeatTransferBasementComBldg&&) = default;
+    virtual ~GroundHeatTransferBasementComBldg() override = default;
+    GroundHeatTransferBasementComBldg(const GroundHeatTransferBasementComBldg& other) = default;
+    GroundHeatTransferBasementComBldg(GroundHeatTransferBasementComBldg&& other) = default;
+    GroundHeatTransferBasementComBldg& operator=(const GroundHeatTransferBasementComBldg&) = default;
+    GroundHeatTransferBasementComBldg& operator=(GroundHeatTransferBasementComBldg&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to GroundHeatTransfer:Basement:ComBldg numeric fields.
-  // - TODO(parity): Add relationship APIs incrementally if future schema revisions introduce link fields.
-  double januaryaveragetemperature() const;
-  double februaryaveragetemperature() const;
-  double marchaveragetemperature() const;
-  double aprilaveragetemperature() const;
-  double mayaveragetemperature() const;
-  double juneaveragetemperature() const;
-  double julyaveragetemperature() const;
-  double augustaveragetemperature() const;
-  double septemberaveragetemperature() const;
-  double octoberaveragetemperature() const;
-  double novemberaveragetemperature() const;
-  double decemberaveragetemperature() const;
-  double dailyvariationsinewaveamplitude() const;
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to GroundHeatTransfer:Basement:ComBldg numeric fields.
+    // - TODO(parity): Add relationship APIs incrementally if future schema revisions introduce link fields.
+    double januaryaveragetemperature() const;
+    bool isJanuaryaveragetemperatureDefaulted() const;
+    bool setJanuaryaveragetemperature(double januaryaveragetemperature);
+    void resetJanuaryaveragetemperature();
 
-  bool isJanuaryaveragetemperatureDefaulted() const;
-  bool isFebruaryaveragetemperatureDefaulted() const;
-  bool isMarchaveragetemperatureDefaulted() const;
-  bool isAprilaveragetemperatureDefaulted() const;
-  bool isMayaveragetemperatureDefaulted() const;
-  bool isJuneaveragetemperatureDefaulted() const;
-  bool isJulyaveragetemperatureDefaulted() const;
-  bool isAugustaveragetemperatureDefaulted() const;
-  bool isSeptemberaveragetemperatureDefaulted() const;
-  bool isOctoberaveragetemperatureDefaulted() const;
-  bool isNovemberaveragetemperatureDefaulted() const;
-  bool isDecemberaveragetemperatureDefaulted() const;
-  bool isDailyvariationsinewaveamplitudeDefaulted() const;
+    double februaryaveragetemperature() const;
+    bool isFebruaryaveragetemperatureDefaulted() const;
+    bool setFebruaryaveragetemperature(double februaryaveragetemperature);
+    void resetFebruaryaveragetemperature();
 
-  bool setJanuaryaveragetemperature(double januaryaveragetemperature);
-  bool setFebruaryaveragetemperature(double februaryaveragetemperature);
-  bool setMarchaveragetemperature(double marchaveragetemperature);
-  bool setAprilaveragetemperature(double aprilaveragetemperature);
-  bool setMayaveragetemperature(double mayaveragetemperature);
-  bool setJuneaveragetemperature(double juneaveragetemperature);
-  bool setJulyaveragetemperature(double julyaveragetemperature);
-  bool setAugustaveragetemperature(double augustaveragetemperature);
-  bool setSeptemberaveragetemperature(double septemberaveragetemperature);
-  bool setOctoberaveragetemperature(double octoberaveragetemperature);
-  bool setNovemberaveragetemperature(double novemberaveragetemperature);
-  bool setDecemberaveragetemperature(double decemberaveragetemperature);
-  bool setDailyvariationsinewaveamplitude(double dailyvariationsinewaveamplitude);
+    double marchaveragetemperature() const;
+    bool isMarchaveragetemperatureDefaulted() const;
+    bool setMarchaveragetemperature(double marchaveragetemperature);
+    void resetMarchaveragetemperature();
 
-  void resetJanuaryaveragetemperature();
-  void resetFebruaryaveragetemperature();
-  void resetMarchaveragetemperature();
-  void resetAprilaveragetemperature();
-  void resetMayaveragetemperature();
-  void resetJuneaveragetemperature();
-  void resetJulyaveragetemperature();
-  void resetAugustaveragetemperature();
-  void resetSeptemberaveragetemperature();
-  void resetOctoberaveragetemperature();
-  void resetNovemberaveragetemperature();
-  void resetDecemberaveragetemperature();
-  void resetDailyvariationsinewaveamplitude();
+    double aprilaveragetemperature() const;
+    bool isAprilaveragetemperatureDefaulted() const;
+    bool setAprilaveragetemperature(double aprilaveragetemperature);
+    void resetAprilaveragetemperature();
 
- protected:
-  using ImplType = detail::GroundHeatTransferBasementComBldg_Impl;
+    double mayaveragetemperature() const;
+    bool isMayaveragetemperatureDefaulted() const;
+    bool setMayaveragetemperature(double mayaveragetemperature);
+    void resetMayaveragetemperature();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    double juneaveragetemperature() const;
+    bool isJuneaveragetemperatureDefaulted() const;
+    bool setJuneaveragetemperature(double juneaveragetemperature);
+    void resetJuneaveragetemperature();
 
-  explicit GroundHeatTransferBasementComBldg(std::shared_ptr<detail::GroundHeatTransferBasementComBldg_Impl> impl);
-};
+    double julyaveragetemperature() const;
+    bool isJulyaveragetemperatureDefaulted() const;
+    bool setJulyaveragetemperature(double julyaveragetemperature);
+    void resetJulyaveragetemperature();
+
+    double augustaveragetemperature() const;
+    bool isAugustaveragetemperatureDefaulted() const;
+    bool setAugustaveragetemperature(double augustaveragetemperature);
+    void resetAugustaveragetemperature();
+
+    double septemberaveragetemperature() const;
+    bool isSeptemberaveragetemperatureDefaulted() const;
+    bool setSeptemberaveragetemperature(double septemberaveragetemperature);
+    void resetSeptemberaveragetemperature();
+
+    double octoberaveragetemperature() const;
+    bool isOctoberaveragetemperatureDefaulted() const;
+    bool setOctoberaveragetemperature(double octoberaveragetemperature);
+    void resetOctoberaveragetemperature();
+
+    double novemberaveragetemperature() const;
+    bool isNovemberaveragetemperatureDefaulted() const;
+    bool setNovemberaveragetemperature(double novemberaveragetemperature);
+    void resetNovemberaveragetemperature();
+
+    double decemberaveragetemperature() const;
+    bool isDecemberaveragetemperatureDefaulted() const;
+    bool setDecemberaveragetemperature(double decemberaveragetemperature);
+    void resetDecemberaveragetemperature();
+
+    double dailyvariationsinewaveamplitude() const;
+    bool isDailyvariationsinewaveamplitudeDefaulted() const;
+    bool setDailyvariationsinewaveamplitude(double dailyvariationsinewaveamplitude);
+    void resetDailyvariationsinewaveamplitude();
+
+   protected:
+    using ImplType = detail::GroundHeatTransferBasementComBldg_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit GroundHeatTransferBasementComBldg(std::shared_ptr<detail::GroundHeatTransferBasementComBldg_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

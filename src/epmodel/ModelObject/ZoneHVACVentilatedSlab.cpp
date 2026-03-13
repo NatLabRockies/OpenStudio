@@ -54,12 +54,12 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->maximumAirFlowRate();
   }
 
-  bool ZoneHVACVentilatedSlab::isMaximumAirFlowRateAutosized() const {
-    return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->isMaximumAirFlowRateAutosized();
-  }
-
   bool ZoneHVACVentilatedSlab::setMaximumAirFlowRate(double maximumAirFlowRate) {
     return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->setMaximumAirFlowRate(maximumAirFlowRate);
+  }
+
+  bool ZoneHVACVentilatedSlab::isMaximumAirFlowRateAutosized() const {
+    return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->isMaximumAirFlowRateAutosized();
   }
 
   void ZoneHVACVentilatedSlab::autosizeMaximumAirFlowRate() {
@@ -70,12 +70,12 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->minimumOutdoorAirFlowRate();
   }
 
-  bool ZoneHVACVentilatedSlab::isMinimumOutdoorAirFlowRateAutosized() const {
-    return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->isMinimumOutdoorAirFlowRateAutosized();
-  }
-
   bool ZoneHVACVentilatedSlab::setMinimumOutdoorAirFlowRate(double minimumOutdoorAirFlowRate) {
     return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->setMinimumOutdoorAirFlowRate(minimumOutdoorAirFlowRate);
+  }
+
+  bool ZoneHVACVentilatedSlab::isMinimumOutdoorAirFlowRateAutosized() const {
+    return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->isMinimumOutdoorAirFlowRateAutosized();
   }
 
   void ZoneHVACVentilatedSlab::autosizeMinimumOutdoorAirFlowRate() {
@@ -86,12 +86,12 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->maximumOutdoorAirFlowRate();
   }
 
-  bool ZoneHVACVentilatedSlab::isMaximumOutdoorAirFlowRateAutosized() const {
-    return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->isMaximumOutdoorAirFlowRateAutosized();
-  }
-
   bool ZoneHVACVentilatedSlab::setMaximumOutdoorAirFlowRate(double maximumOutdoorAirFlowRate) {
     return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->setMaximumOutdoorAirFlowRate(maximumOutdoorAirFlowRate);
+  }
+
+  bool ZoneHVACVentilatedSlab::isMaximumOutdoorAirFlowRateAutosized() const {
+    return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->isMaximumOutdoorAirFlowRateAutosized();
   }
 
   void ZoneHVACVentilatedSlab::autosizeMaximumOutdoorAirFlowRate() {
@@ -110,12 +110,12 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->systemConfigurationType();
   }
 
-  bool ZoneHVACVentilatedSlab::isSystemConfigurationTypeDefaulted() const {
-    return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->isSystemConfigurationTypeDefaulted();
-  }
-
   bool ZoneHVACVentilatedSlab::setSystemConfigurationType(const std::string& systemConfigurationType) {
     return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->setSystemConfigurationType(systemConfigurationType);
+  }
+
+  bool ZoneHVACVentilatedSlab::isSystemConfigurationTypeDefaulted() const {
+    return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->isSystemConfigurationTypeDefaulted();
   }
 
   void ZoneHVACVentilatedSlab::resetSystemConfigurationType() {
@@ -126,12 +126,12 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->hollowCoreInsideDiameter();
   }
 
-  bool ZoneHVACVentilatedSlab::isHollowCoreInsideDiameterDefaulted() const {
-    return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->isHollowCoreInsideDiameterDefaulted();
-  }
-
   bool ZoneHVACVentilatedSlab::setHollowCoreInsideDiameter(double hollowCoreInsideDiameter) {
     return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->setHollowCoreInsideDiameter(hollowCoreInsideDiameter);
+  }
+
+  bool ZoneHVACVentilatedSlab::isHollowCoreInsideDiameterDefaulted() const {
+    return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->isHollowCoreInsideDiameterDefaulted();
   }
 
   void ZoneHVACVentilatedSlab::resetHollowCoreInsideDiameter() {
@@ -154,12 +154,12 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->temperatureControlType();
   }
 
-  bool ZoneHVACVentilatedSlab::isTemperatureControlTypeDefaulted() const {
-    return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->isTemperatureControlTypeDefaulted();
-  }
-
   bool ZoneHVACVentilatedSlab::setTemperatureControlType(const std::string& temperatureControlType) {
     return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->setTemperatureControlType(temperatureControlType);
+  }
+
+  bool ZoneHVACVentilatedSlab::isTemperatureControlTypeDefaulted() const {
+    return getImpl<detail::ZoneHVACVentilatedSlab_Impl>()->isTemperatureControlTypeDefaulted();
   }
 
   void ZoneHVACVentilatedSlab::resetTemperatureControlType() {
@@ -209,17 +209,17 @@ namespace epmodel {
       return getDouble(openstudio::ZoneHVAC_VentilatedSlabFields::MaximumAirFlowRate, true);
     }
 
+    bool ZoneHVACVentilatedSlab_Impl::setMaximumAirFlowRate(double maximumAirFlowRate) {
+      const bool result = setDouble(openstudio::ZoneHVAC_VentilatedSlabFields::MaximumAirFlowRate, maximumAirFlowRate);
+      OS_ASSERT(result);
+      return result;
+    }
+
     bool ZoneHVACVentilatedSlab_Impl::isMaximumAirFlowRateAutosized() const {
       if (auto value = getString(openstudio::ZoneHVAC_VentilatedSlabFields::MaximumAirFlowRate, true)) {
         return openstudio::istringEqual(*value, "autosize");
       }
       return false;
-    }
-
-    bool ZoneHVACVentilatedSlab_Impl::setMaximumAirFlowRate(double maximumAirFlowRate) {
-      const bool result = setDouble(openstudio::ZoneHVAC_VentilatedSlabFields::MaximumAirFlowRate, maximumAirFlowRate);
-      OS_ASSERT(result);
-      return result;
     }
 
     void ZoneHVACVentilatedSlab_Impl::autosizeMaximumAirFlowRate() {
@@ -230,17 +230,17 @@ namespace epmodel {
       return getDouble(openstudio::ZoneHVAC_VentilatedSlabFields::MinimumOutdoorAirFlowRate, true);
     }
 
+    bool ZoneHVACVentilatedSlab_Impl::setMinimumOutdoorAirFlowRate(double minimumOutdoorAirFlowRate) {
+      const bool result = setDouble(openstudio::ZoneHVAC_VentilatedSlabFields::MinimumOutdoorAirFlowRate, minimumOutdoorAirFlowRate);
+      OS_ASSERT(result);
+      return result;
+    }
+
     bool ZoneHVACVentilatedSlab_Impl::isMinimumOutdoorAirFlowRateAutosized() const {
       if (auto value = getString(openstudio::ZoneHVAC_VentilatedSlabFields::MinimumOutdoorAirFlowRate, true)) {
         return openstudio::istringEqual(*value, "autosize");
       }
       return false;
-    }
-
-    bool ZoneHVACVentilatedSlab_Impl::setMinimumOutdoorAirFlowRate(double minimumOutdoorAirFlowRate) {
-      const bool result = setDouble(openstudio::ZoneHVAC_VentilatedSlabFields::MinimumOutdoorAirFlowRate, minimumOutdoorAirFlowRate);
-      OS_ASSERT(result);
-      return result;
     }
 
     void ZoneHVACVentilatedSlab_Impl::autosizeMinimumOutdoorAirFlowRate() {
@@ -251,17 +251,17 @@ namespace epmodel {
       return getDouble(openstudio::ZoneHVAC_VentilatedSlabFields::MaximumOutdoorAirFlowRate, true);
     }
 
+    bool ZoneHVACVentilatedSlab_Impl::setMaximumOutdoorAirFlowRate(double maximumOutdoorAirFlowRate) {
+      const bool result = setDouble(openstudio::ZoneHVAC_VentilatedSlabFields::MaximumOutdoorAirFlowRate, maximumOutdoorAirFlowRate);
+      OS_ASSERT(result);
+      return result;
+    }
+
     bool ZoneHVACVentilatedSlab_Impl::isMaximumOutdoorAirFlowRateAutosized() const {
       if (auto value = getString(openstudio::ZoneHVAC_VentilatedSlabFields::MaximumOutdoorAirFlowRate, true)) {
         return openstudio::istringEqual(*value, "autosize");
       }
       return false;
-    }
-
-    bool ZoneHVACVentilatedSlab_Impl::setMaximumOutdoorAirFlowRate(double maximumOutdoorAirFlowRate) {
-      const bool result = setDouble(openstudio::ZoneHVAC_VentilatedSlabFields::MaximumOutdoorAirFlowRate, maximumOutdoorAirFlowRate);
-      OS_ASSERT(result);
-      return result;
     }
 
     void ZoneHVACVentilatedSlab_Impl::autosizeMaximumOutdoorAirFlowRate() {
@@ -284,12 +284,12 @@ namespace epmodel {
       return *value;
     }
 
-    bool ZoneHVACVentilatedSlab_Impl::isSystemConfigurationTypeDefaulted() const {
-      return isEmpty(openstudio::ZoneHVAC_VentilatedSlabFields::SystemConfigurationType);
-    }
-
     bool ZoneHVACVentilatedSlab_Impl::setSystemConfigurationType(const std::string& systemConfigurationType) {
       return setString(openstudio::ZoneHVAC_VentilatedSlabFields::SystemConfigurationType, systemConfigurationType);
+    }
+
+    bool ZoneHVACVentilatedSlab_Impl::isSystemConfigurationTypeDefaulted() const {
+      return isEmpty(openstudio::ZoneHVAC_VentilatedSlabFields::SystemConfigurationType);
     }
 
     void ZoneHVACVentilatedSlab_Impl::resetSystemConfigurationType() {
@@ -300,14 +300,14 @@ namespace epmodel {
       return getDouble(openstudio::ZoneHVAC_VentilatedSlabFields::HollowCoreInsideDiameter, true);
     }
 
-    bool ZoneHVACVentilatedSlab_Impl::isHollowCoreInsideDiameterDefaulted() const {
-      return isEmpty(openstudio::ZoneHVAC_VentilatedSlabFields::HollowCoreInsideDiameter);
-    }
-
     bool ZoneHVACVentilatedSlab_Impl::setHollowCoreInsideDiameter(double hollowCoreInsideDiameter) {
       const bool result = setDouble(openstudio::ZoneHVAC_VentilatedSlabFields::HollowCoreInsideDiameter, hollowCoreInsideDiameter);
       OS_ASSERT(result);
       return result;
+    }
+
+    bool ZoneHVACVentilatedSlab_Impl::isHollowCoreInsideDiameterDefaulted() const {
+      return isEmpty(openstudio::ZoneHVAC_VentilatedSlabFields::HollowCoreInsideDiameter);
     }
 
     void ZoneHVACVentilatedSlab_Impl::resetHollowCoreInsideDiameter() {
@@ -334,12 +334,12 @@ namespace epmodel {
       return *value;
     }
 
-    bool ZoneHVACVentilatedSlab_Impl::isTemperatureControlTypeDefaulted() const {
-      return isEmpty(openstudio::ZoneHVAC_VentilatedSlabFields::TemperatureControlType);
-    }
-
     bool ZoneHVACVentilatedSlab_Impl::setTemperatureControlType(const std::string& temperatureControlType) {
       return setString(openstudio::ZoneHVAC_VentilatedSlabFields::TemperatureControlType, temperatureControlType);
+    }
+
+    bool ZoneHVACVentilatedSlab_Impl::isTemperatureControlTypeDefaulted() const {
+      return isEmpty(openstudio::ZoneHVAC_VentilatedSlabFields::TemperatureControlType);
     }
 
     void ZoneHVACVentilatedSlab_Impl::resetTemperatureControlType() {

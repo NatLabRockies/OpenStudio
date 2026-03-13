@@ -17,118 +17,132 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class HVACTemplatePlantHotWaterLoop_Impl;
-}
+  namespace detail {
+    class HVACTemplatePlantHotWaterLoop_Impl;
+  }
 
-class EPMODEL_API HVACTemplatePlantHotWaterLoop : public ModelObject
-{
- public:
-  explicit HVACTemplatePlantHotWaterLoop(const Model& model);
+  class EPMODEL_API HVACTemplatePlantHotWaterLoop : public ModelObject
+  {
+   public:
+    explicit HVACTemplatePlantHotWaterLoop(const Model& model);
 
-  virtual ~HVACTemplatePlantHotWaterLoop() override = default;
-  HVACTemplatePlantHotWaterLoop(const HVACTemplatePlantHotWaterLoop& other) = default;
-  HVACTemplatePlantHotWaterLoop(HVACTemplatePlantHotWaterLoop&& other) = default;
-  HVACTemplatePlantHotWaterLoop& operator=(const HVACTemplatePlantHotWaterLoop&) = default;
-  HVACTemplatePlantHotWaterLoop& operator=(HVACTemplatePlantHotWaterLoop&&) = default;
+    virtual ~HVACTemplatePlantHotWaterLoop() override = default;
+    HVACTemplatePlantHotWaterLoop(const HVACTemplatePlantHotWaterLoop& other) = default;
+    HVACTemplatePlantHotWaterLoop(HVACTemplatePlantHotWaterLoop&& other) = default;
+    HVACTemplatePlantHotWaterLoop& operator=(const HVACTemplatePlantHotWaterLoop&) = default;
+    HVACTemplatePlantHotWaterLoop& operator=(HVACTemplatePlantHotWaterLoop&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> pumpControlTypeValues();
-  static std::vector<std::string> hotWaterPlantOperationSchemeTypeValues();
-  static std::vector<std::string> hotWaterPumpConfigurationValues();
-  static std::vector<std::string> hotWaterSetpointResetTypeValues();
-  static std::vector<std::string> hotWaterPumpTypeValues();
-  static std::vector<std::string> fluidTypeValues();
-  static std::vector<std::string> loadDistributionSchemeValues();
+    static std::vector<std::string> pumpControlTypeValues();
+    static std::vector<std::string> hotWaterPlantOperationSchemeTypeValues();
+    static std::vector<std::string> hotWaterPumpConfigurationValues();
+    static std::vector<std::string> hotWaterSetpointResetTypeValues();
+    static std::vector<std::string> hotWaterPumpTypeValues();
+    static std::vector<std::string> fluidTypeValues();
+    static std::vector<std::string> loadDistributionSchemeValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to HVACTemplate:Plant:HotWaterLoop non-name, non-link scalar fields.
-  // - Field Mapping: Pump/schedule/scheme name object-list fields are relationship-like and excluded from scalar accessors.
-  // - TODO(parity): Add relationship/object-link APIs in a later parity pass.
-  std::string pumpControlType() const;
-  std::string hotWaterPlantOperationSchemeType() const;
-  double hotWaterDesignSetpoint() const;
-  std::string hotWaterPumpConfiguration() const;
-  double hotWaterPumpRatedHead() const;
-  std::string hotWaterSetpointResetType() const;
-  double hotWaterSetpointatOutdoorDryBulbLow() const;
-  double hotWaterResetOutdoorDryBulbLow() const;
-  double hotWaterSetpointatOutdoorDryBulbHigh() const;
-  double hotWaterResetOutdoorDryBulbHigh() const;
-  std::string hotWaterPumpType() const;
-  bool supplySideBypassPipe() const;
-  bool demandSideBypassPipe() const;
-  std::string fluidType() const;
-  double loopDesignDeltaTemperature() const;
-  boost::optional<double> maximumOutdoorDryBulbTemperature() const;
-  std::string loadDistributionScheme() const;
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to HVACTemplate:Plant:HotWaterLoop non-name, non-link scalar fields.
+    // - Field Mapping: Pump/schedule/scheme name object-list fields are relationship-like and excluded from scalar accessors.
+    // - TODO(parity): Add relationship/object-link APIs in a later parity pass.
 
-  bool isPumpControlTypeDefaulted() const;
-  bool isHotWaterPlantOperationSchemeTypeDefaulted() const;
-  bool isHotWaterDesignSetpointDefaulted() const;
-  bool isHotWaterPumpConfigurationDefaulted() const;
-  bool isHotWaterPumpRatedHeadDefaulted() const;
-  bool isHotWaterSetpointResetTypeDefaulted() const;
-  bool isHotWaterSetpointatOutdoorDryBulbLowDefaulted() const;
-  bool isHotWaterResetOutdoorDryBulbLowDefaulted() const;
-  bool isHotWaterSetpointatOutdoorDryBulbHighDefaulted() const;
-  bool isHotWaterResetOutdoorDryBulbHighDefaulted() const;
-  bool isHotWaterPumpTypeDefaulted() const;
-  bool isSupplySideBypassPipeDefaulted() const;
-  bool isDemandSideBypassPipeDefaulted() const;
-  bool isFluidTypeDefaulted() const;
-  bool isLoopDesignDeltaTemperatureDefaulted() const;
-  bool isLoadDistributionSchemeDefaulted() const;
+    std::string pumpControlType() const;
+    bool isPumpControlTypeDefaulted() const;
+    bool setPumpControlType(const std::string& pumpControlType);
+    void resetPumpControlType();
 
-  bool setPumpControlType(const std::string& pumpControlType);
-  bool setHotWaterPlantOperationSchemeType(const std::string& hotWaterPlantOperationSchemeType);
-  bool setHotWaterDesignSetpoint(double hotWaterDesignSetpoint);
-  bool setHotWaterPumpConfiguration(const std::string& hotWaterPumpConfiguration);
-  bool setHotWaterPumpRatedHead(double hotWaterPumpRatedHead);
-  bool setHotWaterSetpointResetType(const std::string& hotWaterSetpointResetType);
-  bool setHotWaterSetpointatOutdoorDryBulbLow(double hotWaterSetpointatOutdoorDryBulbLow);
-  bool setHotWaterResetOutdoorDryBulbLow(double hotWaterResetOutdoorDryBulbLow);
-  bool setHotWaterSetpointatOutdoorDryBulbHigh(double hotWaterSetpointatOutdoorDryBulbHigh);
-  bool setHotWaterResetOutdoorDryBulbHigh(double hotWaterResetOutdoorDryBulbHigh);
-  bool setHotWaterPumpType(const std::string& hotWaterPumpType);
-  bool setSupplySideBypassPipe(bool supplySideBypassPipe);
-  bool setDemandSideBypassPipe(bool demandSideBypassPipe);
-  bool setFluidType(const std::string& fluidType);
-  bool setLoopDesignDeltaTemperature(double loopDesignDeltaTemperature);
-  bool setMaximumOutdoorDryBulbTemperature(double maximumOutdoorDryBulbTemperature);
-  bool setLoadDistributionScheme(const std::string& loadDistributionScheme);
+    std::string hotWaterPlantOperationSchemeType() const;
+    bool isHotWaterPlantOperationSchemeTypeDefaulted() const;
+    bool setHotWaterPlantOperationSchemeType(const std::string& hotWaterPlantOperationSchemeType);
+    void resetHotWaterPlantOperationSchemeType();
 
-  void resetPumpControlType();
-  void resetHotWaterPlantOperationSchemeType();
-  void resetHotWaterDesignSetpoint();
-  void resetHotWaterPumpConfiguration();
-  void resetHotWaterPumpRatedHead();
-  void resetHotWaterSetpointResetType();
-  void resetHotWaterSetpointatOutdoorDryBulbLow();
-  void resetHotWaterResetOutdoorDryBulbLow();
-  void resetHotWaterSetpointatOutdoorDryBulbHigh();
-  void resetHotWaterResetOutdoorDryBulbHigh();
-  void resetHotWaterPumpType();
-  void resetSupplySideBypassPipe();
-  void resetDemandSideBypassPipe();
-  void resetFluidType();
-  void resetLoopDesignDeltaTemperature();
-  void resetMaximumOutdoorDryBulbTemperature();
-  void resetLoadDistributionScheme();
+    double hotWaterDesignSetpoint() const;
+    bool isHotWaterDesignSetpointDefaulted() const;
+    bool setHotWaterDesignSetpoint(double hotWaterDesignSetpoint);
+    void resetHotWaterDesignSetpoint();
 
- protected:
-  using ImplType = detail::HVACTemplatePlantHotWaterLoop_Impl;
+    std::string hotWaterPumpConfiguration() const;
+    bool isHotWaterPumpConfigurationDefaulted() const;
+    bool setHotWaterPumpConfiguration(const std::string& hotWaterPumpConfiguration);
+    void resetHotWaterPumpConfiguration();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    double hotWaterPumpRatedHead() const;
+    bool isHotWaterPumpRatedHeadDefaulted() const;
+    bool setHotWaterPumpRatedHead(double hotWaterPumpRatedHead);
+    void resetHotWaterPumpRatedHead();
 
-  explicit HVACTemplatePlantHotWaterLoop(std::shared_ptr<detail::HVACTemplatePlantHotWaterLoop_Impl> impl);
-};
+    std::string hotWaterSetpointResetType() const;
+    bool isHotWaterSetpointResetTypeDefaulted() const;
+    bool setHotWaterSetpointResetType(const std::string& hotWaterSetpointResetType);
+    void resetHotWaterSetpointResetType();
+
+    double hotWaterSetpointatOutdoorDryBulbLow() const;
+    bool isHotWaterSetpointatOutdoorDryBulbLowDefaulted() const;
+    bool setHotWaterSetpointatOutdoorDryBulbLow(double hotWaterSetpointatOutdoorDryBulbLow);
+    void resetHotWaterSetpointatOutdoorDryBulbLow();
+
+    double hotWaterResetOutdoorDryBulbLow() const;
+    bool isHotWaterResetOutdoorDryBulbLowDefaulted() const;
+    bool setHotWaterResetOutdoorDryBulbLow(double hotWaterResetOutdoorDryBulbLow);
+    void resetHotWaterResetOutdoorDryBulbLow();
+
+    double hotWaterSetpointatOutdoorDryBulbHigh() const;
+    bool isHotWaterSetpointatOutdoorDryBulbHighDefaulted() const;
+    bool setHotWaterSetpointatOutdoorDryBulbHigh(double hotWaterSetpointatOutdoorDryBulbHigh);
+    void resetHotWaterSetpointatOutdoorDryBulbHigh();
+
+    double hotWaterResetOutdoorDryBulbHigh() const;
+    bool isHotWaterResetOutdoorDryBulbHighDefaulted() const;
+    bool setHotWaterResetOutdoorDryBulbHigh(double hotWaterResetOutdoorDryBulbHigh);
+    void resetHotWaterResetOutdoorDryBulbHigh();
+
+    std::string hotWaterPumpType() const;
+    bool isHotWaterPumpTypeDefaulted() const;
+    bool setHotWaterPumpType(const std::string& hotWaterPumpType);
+    void resetHotWaterPumpType();
+
+    bool supplySideBypassPipe() const;
+    bool isSupplySideBypassPipeDefaulted() const;
+    bool setSupplySideBypassPipe(bool supplySideBypassPipe);
+    void resetSupplySideBypassPipe();
+
+    bool demandSideBypassPipe() const;
+    bool isDemandSideBypassPipeDefaulted() const;
+    bool setDemandSideBypassPipe(bool demandSideBypassPipe);
+    void resetDemandSideBypassPipe();
+
+    std::string fluidType() const;
+    bool isFluidTypeDefaulted() const;
+    bool setFluidType(const std::string& fluidType);
+    void resetFluidType();
+
+    double loopDesignDeltaTemperature() const;
+    bool isLoopDesignDeltaTemperatureDefaulted() const;
+    bool setLoopDesignDeltaTemperature(double loopDesignDeltaTemperature);
+    void resetLoopDesignDeltaTemperature();
+
+    boost::optional<double> maximumOutdoorDryBulbTemperature() const;
+    bool setMaximumOutdoorDryBulbTemperature(double maximumOutdoorDryBulbTemperature);
+    void resetMaximumOutdoorDryBulbTemperature();
+
+    std::string loadDistributionScheme() const;
+    bool isLoadDistributionSchemeDefaulted() const;
+    bool setLoadDistributionScheme(const std::string& loadDistributionScheme);
+    void resetLoadDistributionScheme();
+
+   protected:
+    using ImplType = detail::HVACTemplatePlantHotWaterLoop_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit HVACTemplatePlantHotWaterLoop(std::shared_ptr<detail::HVACTemplatePlantHotWaterLoop_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

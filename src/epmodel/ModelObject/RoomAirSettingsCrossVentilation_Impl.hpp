@@ -12,23 +12,23 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API RoomAirSettingsCrossVentilation_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~RoomAirSettingsCrossVentilation_Impl() override = default;
+    class EPMODEL_API RoomAirSettingsCrossVentilation_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~RoomAirSettingsCrossVentilation_Impl() override = default;
 
-  boost::optional<std::string> airflowRegionUsedforThermalComfortEvaluation() const;
+      std::vector<std::string> airflowRegionUsedforThermalComfortEvaluationValues() const;
 
-  bool setAirflowRegionUsedforThermalComfortEvaluation(const std::string& airflowRegionUsedforThermalComfortEvaluation);
-  void resetAirflowRegionUsedforThermalComfortEvaluation();
+      boost::optional<std::string> airflowRegionUsedforThermalComfortEvaluation() const;
 
-  std::vector<std::string> airflowRegionUsedforThermalComfortEvaluationValues() const;
-};
+      bool setAirflowRegionUsedforThermalComfortEvaluation(const std::string& airflowRegionUsedforThermalComfortEvaluation);
+      void resetAirflowRegionUsedforThermalComfortEvaluation();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

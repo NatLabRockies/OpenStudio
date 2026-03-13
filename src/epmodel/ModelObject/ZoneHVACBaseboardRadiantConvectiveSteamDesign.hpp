@@ -50,13 +50,13 @@ namespace epmodel {
     void resetHeatingDesignCapacityPerFloorArea();
 
     double fractionofAutosizedHeatingDesignCapacity() const;
-    bool isFractionofAutosizedHeatingDesignCapacityDefaulted() const;
     bool setFractionofAutosizedHeatingDesignCapacity(double fractionofAutosizedHeatingDesignCapacity);
+    bool isFractionofAutosizedHeatingDesignCapacityDefaulted() const;
     void resetFractionofAutosizedHeatingDesignCapacity();
 
     double convergenceTolerance() const;
-    bool isConvergenceToleranceDefaulted() const;
     bool setConvergenceTolerance(double convergenceTolerance);
+    bool isConvergenceToleranceDefaulted() const;
     void resetConvergenceTolerance();
 
     double fractionRadiant() const;

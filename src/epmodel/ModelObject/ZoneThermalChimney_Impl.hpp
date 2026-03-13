@@ -26,8 +26,8 @@ namespace epmodel {
       bool setCrossSectionalAreaOfAirChannelOutlet(double crossSectionalAreaOfAirChannelOutlet);
 
       double dischargeCoefficient() const;
-      bool isDischargeCoefficientDefaulted() const;
       bool setDischargeCoefficient(double dischargeCoefficient);
+      bool isDischargeCoefficientDefaulted() const;
       void resetDischargeCoefficient();
     };
 

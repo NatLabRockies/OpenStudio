@@ -13,32 +13,32 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API PhotovoltaicPerformanceSimple_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~PhotovoltaicPerformanceSimple_Impl() override = default;
+    class EPMODEL_API PhotovoltaicPerformanceSimple_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~PhotovoltaicPerformanceSimple_Impl() override = default;
 
-  double fractionOfSurfaceAreaWithActiveSolarCells() const;
-  bool isfractionOfSurfaceAreaWithActiveSolarCellsDefaulted() const;
-  std::string conversionEfficiencyInputMode() const;
-  boost::optional<double> fixedEfficiency() const;
+      double fractionOfSurfaceAreaWithActiveSolarCells() const;
+      bool isfractionOfSurfaceAreaWithActiveSolarCellsDefaulted() const;
+      bool setFractionOfSurfaceAreaWithActiveSolarCells(double fractionOfSurfaceAreaWithActiveSolarCells);
+      void resetFractionOfSurfaceAreaWithActiveSolarCells();
 
-  bool setFractionOfSurfaceAreaWithActiveSolarCells(double fractionOfSurfaceAreaWithActiveSolarCells);
-  void resetFractionOfSurfaceAreaWithActiveSolarCells();
-  bool setConversionEfficiencyInputMode(const std::string& conversionEfficiencyInputMode);
-  bool setFixedEfficiency(double fixedEfficiency);
-  void resetFixedEfficiency();
+      std::string conversionEfficiencyInputMode() const;
+      bool setConversionEfficiencyInputMode(const std::string& conversionEfficiencyInputMode);
+      std::vector<std::string> conversionEfficiencyInputModeValues() const;
 
-  std::vector<std::string> conversionEfficiencyInputModeValues() const;
+      boost::optional<double> fixedEfficiency() const;
+      bool setFixedEfficiency(double fixedEfficiency);
+      void resetFixedEfficiency();
 
- private:
-  bool setDefaultFixedEfficiency();
-};
+     private:
+      bool setDefaultFixedEfficiency();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

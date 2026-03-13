@@ -17,54 +17,58 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class LifeCycleCostUsePriceEscalation_Impl;
-}
+  namespace detail {
+    class LifeCycleCostUsePriceEscalation_Impl;
+  }
 
-class EPMODEL_API LifeCycleCostUsePriceEscalation : public ParentObject
-{
- public:
-  explicit LifeCycleCostUsePriceEscalation(const Model& model);
+  class EPMODEL_API LifeCycleCostUsePriceEscalation : public ParentObject
+  {
+   public:
+    explicit LifeCycleCostUsePriceEscalation(const Model& model);
 
-  virtual ~LifeCycleCostUsePriceEscalation() override = default;
-  LifeCycleCostUsePriceEscalation(const LifeCycleCostUsePriceEscalation& other) = default;
-  LifeCycleCostUsePriceEscalation(LifeCycleCostUsePriceEscalation&& other) = default;
-  LifeCycleCostUsePriceEscalation& operator=(const LifeCycleCostUsePriceEscalation&) = default;
-  LifeCycleCostUsePriceEscalation& operator=(LifeCycleCostUsePriceEscalation&&) = default;
+    virtual ~LifeCycleCostUsePriceEscalation() override = default;
+    LifeCycleCostUsePriceEscalation(const LifeCycleCostUsePriceEscalation& other) = default;
+    LifeCycleCostUsePriceEscalation(LifeCycleCostUsePriceEscalation&& other) = default;
+    LifeCycleCostUsePriceEscalation& operator=(const LifeCycleCostUsePriceEscalation&) = default;
+    LifeCycleCostUsePriceEscalation& operator=(LifeCycleCostUsePriceEscalation&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> resourceValues();
-  static std::vector<std::string> escalationStartMonthValues();
+    static std::vector<std::string> resourceValues();
+    static std::vector<std::string> escalationStartMonthValues();
 
-  // Schema Alignment Notes:
-  // - API: No openstudio::model counterpart is used for this epmodel type in scaffold inventory; IDD-derived scalar naming is applied.
-  // - Field Mapping: resource, escalationStartYear, and escalationStartMonth map directly to LifeCycleCost:UsePriceEscalation scalar fields.
-  // - Field Mapping: extensible Year 1 Escalation (+ extensible years) is excluded from this scalar-only scaffold pass.
-  // - TODO(parity): Add typed extensible escalation-year APIs if/when extensible scaffold scope is enabled.
-  std::string resource() const;
-  bool setResource(const std::string& resource);
+    // Schema Alignment Notes:
+    // - API: No openstudio::model counterpart is used for this epmodel type in scaffold inventory; IDD-derived scalar naming is applied.
+    // - Field Mapping: resource, escalationStartYear, and escalationStartMonth map directly to LifeCycleCost:UsePriceEscalation scalar fields.
+    // - Field Mapping: extensible Year 1 Escalation (+ extensible years) is excluded from this scalar-only scaffold pass.
+    // - TODO(parity): Add typed extensible escalation-year APIs if/when extensible scaffold scope is enabled.
 
-  boost::optional<int> escalationStartYear() const;
-  bool setEscalationStartYear(int escalationStartYear);
-  void resetEscalationStartYear();
+    // Resource value
+    std::string resource() const;
+    bool setResource(const std::string& resource);
 
-  std::string escalationStartMonth() const;
-  bool isEscalationStartMonthDefaulted() const;
-  bool setEscalationStartMonth(const std::string& escalationStartMonth);
-  void resetEscalationStartMonth();
+    // Escalation start year
+    boost::optional<int> escalationStartYear() const;
+    bool setEscalationStartYear(int escalationStartYear);
+    void resetEscalationStartYear();
 
- protected:
-  using ImplType = detail::LifeCycleCostUsePriceEscalation_Impl;
+    // Escalation start month
+    std::string escalationStartMonth() const;
+    bool isEscalationStartMonthDefaulted() const;
+    bool setEscalationStartMonth(const std::string& escalationStartMonth);
+    void resetEscalationStartMonth();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::LifeCycleCostUsePriceEscalation_Impl;
 
-  explicit LifeCycleCostUsePriceEscalation(std::shared_ptr<detail::LifeCycleCostUsePriceEscalation_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit LifeCycleCostUsePriceEscalation(std::shared_ptr<detail::LifeCycleCostUsePriceEscalation_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

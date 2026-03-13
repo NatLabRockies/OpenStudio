@@ -19,13 +19,19 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~ZoneContaminantSourceAndSinkGenericDecaySource_Impl() override = default;
 
+      /** @name Initial emission rate helpers */
+      //@{
       boost::optional<double> initialEmissionRate() const;
       bool setInitialEmissionRate(double initialEmissionRate);
       void resetInitialEmissionRate();
+      //@}
 
+      /** @name Delay time constant helpers */
+      //@{
       boost::optional<double> delayTimeConstant() const;
       bool setDelayTimeConstant(double delayTimeConstant);
       void resetDelayTimeConstant();
+      //@}
     };
 
   }  // namespace detail

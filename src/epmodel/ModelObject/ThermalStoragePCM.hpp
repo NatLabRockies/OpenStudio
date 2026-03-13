@@ -41,8 +41,8 @@ namespace epmodel {
     // - Field Mapping: Availability Schedule Name, plant/use node names, and PCM Material Name remain relationship/object-list
     //   fields that are intentionally excluded from this scalar scaffold.
     boost::optional<double> tankCapacity() const;
-    bool isTankCapacityAutosized() const;
     bool setTankCapacity(double tankCapacity);
+    bool isTankCapacityAutosized() const;
     void autosizeTankCapacity();
 
     boost::optional<double> heatLossRate() const;
@@ -51,13 +51,13 @@ namespace epmodel {
     void resetHeatLossRate();
 
     boost::optional<double> useSideDesignFlowRate() const;
-    bool isUseSideDesignFlowRateAutosized() const;
     bool setUseSideDesignFlowRate(double useSideDesignFlowRate);
+    bool isUseSideDesignFlowRateAutosized() const;
     void autosizeUseSideDesignFlowRate();
 
     boost::optional<double> plantSideDesignFlowRate() const;
-    bool isPlantSideDesignFlowRateAutosized() const;
     bool setPlantSideDesignFlowRate(double plantSideDesignFlowRate);
+    bool isPlantSideDesignFlowRateAutosized() const;
     void autosizePlantSideDesignFlowRate();
 
    protected:

@@ -44,15 +44,14 @@ namespace epmodel {
     //   loop canonicalization, so they are not re-exposed as additional scalars.
     // - TODO(parity): Add pump/plant loop topology helpers once epmodel plant loop plumbing reaches the same coverage.
     boost::optional<Node> stream2SourceNode() const;
-    boost::optional<Node> temperatureSetpointNode() const;
-    boost::optional<Node> pumpOutletNode() const;
-
     bool setStream2SourceNode(const Node& stream2SourceNode);
     void resetStream2SourceNode();
 
+    boost::optional<Node> temperatureSetpointNode() const;
     bool setTemperatureSetpointNode(const Node& temperatureSetpointNode);
     void resetTemperatureSetpointNode();
 
+    boost::optional<Node> pumpOutletNode() const;
     bool setPumpOutletNode(const Node& pumpOutletNode);
     void resetPumpOutletNode();
 

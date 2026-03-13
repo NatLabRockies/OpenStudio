@@ -17,215 +17,215 @@
 namespace openstudio {
 namespace epmodel {
 
-OutputTableReportPeriod::OutputTableReportPeriod(const Model& model) : ModelObject(OutputTableReportPeriod::iddObjectType(), model) {}
+  OutputTableReportPeriod::OutputTableReportPeriod(const Model& model) : ModelObject(OutputTableReportPeriod::iddObjectType(), model) {}
 
-OutputTableReportPeriod::OutputTableReportPeriod(std::shared_ptr<detail::OutputTableReportPeriod_Impl> impl) : ModelObject(std::move(impl)) {}
+  OutputTableReportPeriod::OutputTableReportPeriod(std::shared_ptr<detail::OutputTableReportPeriod_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType OutputTableReportPeriod::iddObjectType() {
-  return IddObjectType::Output_Table_ReportPeriod;
-}
+  IddObjectType OutputTableReportPeriod::iddObjectType() {
+    return IddObjectType::Output_Table_ReportPeriod;
+  }
 
-std::vector<std::string> OutputTableReportPeriod::reportNameValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Output_Table_ReportPeriodFields::ReportName);
-}
+  std::vector<std::string> OutputTableReportPeriod::reportNameValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Output_Table_ReportPeriodFields::ReportName);
+  }
 
-boost::optional<std::string> OutputTableReportPeriod::reportName() const {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->reportName();
-}
+  boost::optional<std::string> OutputTableReportPeriod::reportName() const {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->reportName();
+  }
 
-boost::optional<int> OutputTableReportPeriod::beginYear() const {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->beginYear();
-}
+  bool OutputTableReportPeriod::setReportName(const std::string& reportName) {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->setReportName(reportName);
+  }
 
-int OutputTableReportPeriod::beginMonth() const {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->beginMonth();
-}
+  void OutputTableReportPeriod::resetReportName() {
+    getImpl<detail::OutputTableReportPeriod_Impl>()->resetReportName();
+  }
 
-int OutputTableReportPeriod::beginDayofMonth() const {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->beginDayofMonth();
-}
+  boost::optional<int> OutputTableReportPeriod::beginYear() const {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->beginYear();
+  }
 
-int OutputTableReportPeriod::beginHourofDay() const {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->beginHourofDay();
-}
+  bool OutputTableReportPeriod::setBeginYear(int beginYear) {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->setBeginYear(beginYear);
+  }
 
-boost::optional<int> OutputTableReportPeriod::endYear() const {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->endYear();
-}
+  void OutputTableReportPeriod::resetBeginYear() {
+    getImpl<detail::OutputTableReportPeriod_Impl>()->resetBeginYear();
+  }
 
-int OutputTableReportPeriod::endMonth() const {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->endMonth();
-}
+  int OutputTableReportPeriod::beginMonth() const {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->beginMonth();
+  }
 
-int OutputTableReportPeriod::endDayofMonth() const {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->endDayofMonth();
-}
+  bool OutputTableReportPeriod::setBeginMonth(int beginMonth) {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->setBeginMonth(beginMonth);
+  }
 
-int OutputTableReportPeriod::endHourofDay() const {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->endHourofDay();
-}
+  int OutputTableReportPeriod::beginDayofMonth() const {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->beginDayofMonth();
+  }
 
-bool OutputTableReportPeriod::setReportName(const std::string& reportName) {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->setReportName(reportName);
-}
+  bool OutputTableReportPeriod::setBeginDayofMonth(int beginDayofMonth) {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->setBeginDayofMonth(beginDayofMonth);
+  }
 
-void OutputTableReportPeriod::resetReportName() {
-  getImpl<detail::OutputTableReportPeriod_Impl>()->resetReportName();
-}
+  int OutputTableReportPeriod::beginHourofDay() const {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->beginHourofDay();
+  }
 
-bool OutputTableReportPeriod::setBeginYear(int beginYear) {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->setBeginYear(beginYear);
-}
+  bool OutputTableReportPeriod::setBeginHourofDay(int beginHourofDay) {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->setBeginHourofDay(beginHourofDay);
+  }
 
-void OutputTableReportPeriod::resetBeginYear() {
-  getImpl<detail::OutputTableReportPeriod_Impl>()->resetBeginYear();
-}
+  boost::optional<int> OutputTableReportPeriod::endYear() const {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->endYear();
+  }
 
-bool OutputTableReportPeriod::setBeginMonth(int beginMonth) {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->setBeginMonth(beginMonth);
-}
+  bool OutputTableReportPeriod::setEndYear(int endYear) {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->setEndYear(endYear);
+  }
 
-bool OutputTableReportPeriod::setBeginDayofMonth(int beginDayofMonth) {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->setBeginDayofMonth(beginDayofMonth);
-}
+  void OutputTableReportPeriod::resetEndYear() {
+    getImpl<detail::OutputTableReportPeriod_Impl>()->resetEndYear();
+  }
 
-bool OutputTableReportPeriod::setBeginHourofDay(int beginHourofDay) {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->setBeginHourofDay(beginHourofDay);
-}
+  int OutputTableReportPeriod::endMonth() const {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->endMonth();
+  }
 
-bool OutputTableReportPeriod::setEndYear(int endYear) {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->setEndYear(endYear);
-}
+  bool OutputTableReportPeriod::setEndMonth(int endMonth) {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->setEndMonth(endMonth);
+  }
 
-void OutputTableReportPeriod::resetEndYear() {
-  getImpl<detail::OutputTableReportPeriod_Impl>()->resetEndYear();
-}
+  int OutputTableReportPeriod::endDayofMonth() const {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->endDayofMonth();
+  }
 
-bool OutputTableReportPeriod::setEndMonth(int endMonth) {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->setEndMonth(endMonth);
-}
+  bool OutputTableReportPeriod::setEndDayofMonth(int endDayofMonth) {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->setEndDayofMonth(endDayofMonth);
+  }
 
-bool OutputTableReportPeriod::setEndDayofMonth(int endDayofMonth) {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->setEndDayofMonth(endDayofMonth);
-}
+  int OutputTableReportPeriod::endHourofDay() const {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->endHourofDay();
+  }
 
-bool OutputTableReportPeriod::setEndHourofDay(int endHourofDay) {
-  return getImpl<detail::OutputTableReportPeriod_Impl>()->setEndHourofDay(endHourofDay);
-}
+  bool OutputTableReportPeriod::setEndHourofDay(int endHourofDay) {
+    return getImpl<detail::OutputTableReportPeriod_Impl>()->setEndHourofDay(endHourofDay);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-boost::optional<std::string> OutputTableReportPeriod_Impl::reportName() const {
-  if (isEmpty(openstudio::Output_Table_ReportPeriodFields::ReportName)) {
-    return boost::none;
-  }
-  return getString(openstudio::Output_Table_ReportPeriodFields::ReportName, true);
-}
+    boost::optional<std::string> OutputTableReportPeriod_Impl::reportName() const {
+      if (isEmpty(openstudio::Output_Table_ReportPeriodFields::ReportName)) {
+        return boost::none;
+      }
+      return getString(openstudio::Output_Table_ReportPeriodFields::ReportName, true);
+    }
 
-boost::optional<int> OutputTableReportPeriod_Impl::beginYear() const {
-  return getInt(openstudio::Output_Table_ReportPeriodFields::BeginYear, true);
-}
+    bool OutputTableReportPeriod_Impl::setReportName(const std::string& reportName) {
+      return setString(openstudio::Output_Table_ReportPeriodFields::ReportName, reportName);
+    }
 
-int OutputTableReportPeriod_Impl::beginMonth() const {
-  const auto value = getInt(openstudio::Output_Table_ReportPeriodFields::BeginMonth, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    void OutputTableReportPeriod_Impl::resetReportName() {
+      const bool result = setString(openstudio::Output_Table_ReportPeriodFields::ReportName, "");
+      OS_ASSERT(result);
+    }
 
-int OutputTableReportPeriod_Impl::beginDayofMonth() const {
-  const auto value = getInt(openstudio::Output_Table_ReportPeriodFields::BeginDayofMonth, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    boost::optional<int> OutputTableReportPeriod_Impl::beginYear() const {
+      return getInt(openstudio::Output_Table_ReportPeriodFields::BeginYear, true);
+    }
 
-int OutputTableReportPeriod_Impl::beginHourofDay() const {
-  const auto value = getInt(openstudio::Output_Table_ReportPeriodFields::BeginHourofDay, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool OutputTableReportPeriod_Impl::setBeginYear(int beginYear) {
+      return setInt(openstudio::Output_Table_ReportPeriodFields::BeginYear, beginYear);
+    }
 
-boost::optional<int> OutputTableReportPeriod_Impl::endYear() const {
-  return getInt(openstudio::Output_Table_ReportPeriodFields::EndYear, true);
-}
+    void OutputTableReportPeriod_Impl::resetBeginYear() {
+      const bool result = setString(openstudio::Output_Table_ReportPeriodFields::BeginYear, "");
+      OS_ASSERT(result);
+    }
 
-int OutputTableReportPeriod_Impl::endMonth() const {
-  const auto value = getInt(openstudio::Output_Table_ReportPeriodFields::EndMonth, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    int OutputTableReportPeriod_Impl::beginMonth() const {
+      const auto value = getInt(openstudio::Output_Table_ReportPeriodFields::BeginMonth, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-int OutputTableReportPeriod_Impl::endDayofMonth() const {
-  const auto value = getInt(openstudio::Output_Table_ReportPeriodFields::EndDayofMonth, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool OutputTableReportPeriod_Impl::setBeginMonth(int beginMonth) {
+      return setInt(openstudio::Output_Table_ReportPeriodFields::BeginMonth, beginMonth);
+    }
 
-int OutputTableReportPeriod_Impl::endHourofDay() const {
-  const auto value = getInt(openstudio::Output_Table_ReportPeriodFields::EndHourofDay, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    int OutputTableReportPeriod_Impl::beginDayofMonth() const {
+      const auto value = getInt(openstudio::Output_Table_ReportPeriodFields::BeginDayofMonth, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool OutputTableReportPeriod_Impl::setReportName(const std::string& reportName) {
-  return setString(openstudio::Output_Table_ReportPeriodFields::ReportName, reportName);
-}
+    bool OutputTableReportPeriod_Impl::setBeginDayofMonth(int beginDayofMonth) {
+      return setInt(openstudio::Output_Table_ReportPeriodFields::BeginDayofMonth, beginDayofMonth);
+    }
 
-void OutputTableReportPeriod_Impl::resetReportName() {
-  const bool result = setString(openstudio::Output_Table_ReportPeriodFields::ReportName, "");
-  OS_ASSERT(result);
-}
+    int OutputTableReportPeriod_Impl::beginHourofDay() const {
+      const auto value = getInt(openstudio::Output_Table_ReportPeriodFields::BeginHourofDay, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool OutputTableReportPeriod_Impl::setBeginYear(int beginYear) {
-  return setInt(openstudio::Output_Table_ReportPeriodFields::BeginYear, beginYear);
-}
+    bool OutputTableReportPeriod_Impl::setBeginHourofDay(int beginHourofDay) {
+      return setInt(openstudio::Output_Table_ReportPeriodFields::BeginHourofDay, beginHourofDay);
+    }
 
-void OutputTableReportPeriod_Impl::resetBeginYear() {
-  const bool result = setString(openstudio::Output_Table_ReportPeriodFields::BeginYear, "");
-  OS_ASSERT(result);
-}
+    boost::optional<int> OutputTableReportPeriod_Impl::endYear() const {
+      return getInt(openstudio::Output_Table_ReportPeriodFields::EndYear, true);
+    }
 
-bool OutputTableReportPeriod_Impl::setBeginMonth(int beginMonth) {
-  return setInt(openstudio::Output_Table_ReportPeriodFields::BeginMonth, beginMonth);
-}
+    bool OutputTableReportPeriod_Impl::setEndYear(int endYear) {
+      return setInt(openstudio::Output_Table_ReportPeriodFields::EndYear, endYear);
+    }
 
-bool OutputTableReportPeriod_Impl::setBeginDayofMonth(int beginDayofMonth) {
-  return setInt(openstudio::Output_Table_ReportPeriodFields::BeginDayofMonth, beginDayofMonth);
-}
+    void OutputTableReportPeriod_Impl::resetEndYear() {
+      const bool result = setString(openstudio::Output_Table_ReportPeriodFields::EndYear, "");
+      OS_ASSERT(result);
+    }
 
-bool OutputTableReportPeriod_Impl::setBeginHourofDay(int beginHourofDay) {
-  return setInt(openstudio::Output_Table_ReportPeriodFields::BeginHourofDay, beginHourofDay);
-}
+    int OutputTableReportPeriod_Impl::endMonth() const {
+      const auto value = getInt(openstudio::Output_Table_ReportPeriodFields::EndMonth, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool OutputTableReportPeriod_Impl::setEndYear(int endYear) {
-  return setInt(openstudio::Output_Table_ReportPeriodFields::EndYear, endYear);
-}
+    bool OutputTableReportPeriod_Impl::setEndMonth(int endMonth) {
+      return setInt(openstudio::Output_Table_ReportPeriodFields::EndMonth, endMonth);
+    }
 
-void OutputTableReportPeriod_Impl::resetEndYear() {
-  const bool result = setString(openstudio::Output_Table_ReportPeriodFields::EndYear, "");
-  OS_ASSERT(result);
-}
+    int OutputTableReportPeriod_Impl::endDayofMonth() const {
+      const auto value = getInt(openstudio::Output_Table_ReportPeriodFields::EndDayofMonth, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool OutputTableReportPeriod_Impl::setEndMonth(int endMonth) {
-  return setInt(openstudio::Output_Table_ReportPeriodFields::EndMonth, endMonth);
-}
+    bool OutputTableReportPeriod_Impl::setEndDayofMonth(int endDayofMonth) {
+      return setInt(openstudio::Output_Table_ReportPeriodFields::EndDayofMonth, endDayofMonth);
+    }
 
-bool OutputTableReportPeriod_Impl::setEndDayofMonth(int endDayofMonth) {
-  return setInt(openstudio::Output_Table_ReportPeriodFields::EndDayofMonth, endDayofMonth);
-}
+    int OutputTableReportPeriod_Impl::endHourofDay() const {
+      const auto value = getInt(openstudio::Output_Table_ReportPeriodFields::EndHourofDay, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool OutputTableReportPeriod_Impl::setEndHourofDay(int endHourofDay) {
-  return setInt(openstudio::Output_Table_ReportPeriodFields::EndHourofDay, endHourofDay);
-}
+    bool OutputTableReportPeriod_Impl::setEndHourofDay(int endHourofDay) {
+      return setInt(openstudio::Output_Table_ReportPeriodFields::EndHourofDay, endHourofDay);
+    }
 
-std::vector<std::string> OutputTableReportPeriod_Impl::reportNameValues() const {
-  return openstudio::epmodel::OutputTableReportPeriod::reportNameValues();
-}
+    std::vector<std::string> OutputTableReportPeriod_Impl::reportNameValues() const {
+      return openstudio::epmodel::OutputTableReportPeriod::reportNameValues();
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

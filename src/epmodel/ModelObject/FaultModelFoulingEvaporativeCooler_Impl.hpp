@@ -12,26 +12,26 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API FaultModelFoulingEvaporativeCooler_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~FaultModelFoulingEvaporativeCooler_Impl() override = default;
+    class EPMODEL_API FaultModelFoulingEvaporativeCooler_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~FaultModelFoulingEvaporativeCooler_Impl() override = default;
 
-  std::string evaporativeCoolerObjectType() const;
-  bool setEvaporativeCoolerObjectType(const std::string& evaporativeCoolerObjectType);
+      std::string evaporativeCoolerObjectType() const;
+      bool setEvaporativeCoolerObjectType(const std::string& evaporativeCoolerObjectType);
 
-  double foulingFactor() const;
-  bool isFoulingFactorDefaulted() const;
-  bool setFoulingFactor(double foulingFactor);
-  void resetFoulingFactor();
+      double foulingFactor() const;
+      bool setFoulingFactor(double foulingFactor);
+      bool isFoulingFactorDefaulted() const;
+      void resetFoulingFactor();
 
-  std::vector<std::string> evaporativeCoolerObjectTypeValues() const;
-};
+      std::vector<std::string> evaporativeCoolerObjectTypeValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -18,63 +18,64 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
-class Node;
+  class Model;
+  class Node;
 
-namespace detail {
-  class FanConstantVolume_Impl;
-}
+  namespace detail {
+    class FanConstantVolume_Impl;
+  }
 
-class EPMODEL_API FanConstantVolume : public StraightComponent
-{
- public:
-  explicit FanConstantVolume(const Model& model);
+  class EPMODEL_API FanConstantVolume : public StraightComponent
+  {
+   public:
+    explicit FanConstantVolume(const Model& model);
 
-  virtual ~FanConstantVolume() override = default;
-  FanConstantVolume(const FanConstantVolume& other) = default;
-  FanConstantVolume(FanConstantVolume&& other) = default;
-  FanConstantVolume& operator=(const FanConstantVolume&) = default;
-  FanConstantVolume& operator=(FanConstantVolume&&) = default;
+    virtual ~FanConstantVolume() override = default;
+    FanConstantVolume(const FanConstantVolume& other) = default;
+    FanConstantVolume(FanConstantVolume&& other) = default;
+    FanConstantVolume& operator=(const FanConstantVolume&) = default;
+    FanConstantVolume& operator=(FanConstantVolume&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  bool addToNode(Node& node);
+    bool addToNode(Node& node);
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model scalar accessor names/signatures for counterpart parity.
-  // - Field Mapping: fan* efficiency, pressure rise, motor fields, and end-use subcategory map directly to E+ Fan:ConstantVolume fields.
-  // - Field Mapping: maximumFlowRate API preserves autosize/reset semantics by storing numeric values or the "autosize" token.
-  // - TODO(parity): Keep relationship fields (availability schedule and node targets) out of scalar scaffold coverage.
-  double fanTotalEfficiency() const;
-  double fanEfficiency() const;
-  bool setFanTotalEfficiency(double fanTotalEfficiency);
-  bool setFanEfficiency(double fanEfficiency);
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model scalar accessor names/signatures for counterpart parity.
+    // - Field Mapping: fan* efficiency, pressure rise, motor fields, and end-use subcategory map directly to E+ Fan:ConstantVolume fields.
+    // - Field Mapping: maximumFlowRate API preserves autosize/reset semantics by storing numeric values or the "autosize" token.
+    // - TODO(parity): Keep relationship fields (availability schedule and node targets) out of scalar scaffold coverage.
+    double fanTotalEfficiency() const;
+    bool setFanTotalEfficiency(double fanTotalEfficiency);
 
-  double pressureRise() const;
-  bool setPressureRise(double pressureRise);
+    double fanEfficiency() const;
+    bool setFanEfficiency(double fanEfficiency);
 
-  boost::optional<double> maximumFlowRate() const;
-  bool isMaximumFlowRateAutosized() const;
-  bool setMaximumFlowRate(double maximumFlowRate);
-  void resetMaximumFlowRate();
-  void autosizeMaximumFlowRate();
+    double pressureRise() const;
+    bool setPressureRise(double pressureRise);
 
-  double motorEfficiency() const;
-  bool setMotorEfficiency(double motorEfficiency);
+    boost::optional<double> maximumFlowRate() const;
+    bool setMaximumFlowRate(double maximumFlowRate);
+    void resetMaximumFlowRate();
+    void autosizeMaximumFlowRate();
+    bool isMaximumFlowRateAutosized() const;
 
-  double motorInAirstreamFraction() const;
-  bool setMotorInAirstreamFraction(double motorInAirstreamFraction);
+    double motorEfficiency() const;
+    bool setMotorEfficiency(double motorEfficiency);
 
-  std::string endUseSubcategory() const;
-  bool setEndUseSubcategory(const std::string& endUseSubcategory);
+    double motorInAirstreamFraction() const;
+    bool setMotorInAirstreamFraction(double motorInAirstreamFraction);
 
- protected:
-  using ImplType = detail::FanConstantVolume_Impl;
+    std::string endUseSubcategory() const;
+    bool setEndUseSubcategory(const std::string& endUseSubcategory);
 
-  friend class openstudio::epmodel::Model;
+   protected:
+    using ImplType = detail::FanConstantVolume_Impl;
 
-  explicit FanConstantVolume(std::shared_ptr<detail::FanConstantVolume_Impl> impl);
-};
+    friend class openstudio::epmodel::Model;
+
+    explicit FanConstantVolume(std::shared_ptr<detail::FanConstantVolume_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

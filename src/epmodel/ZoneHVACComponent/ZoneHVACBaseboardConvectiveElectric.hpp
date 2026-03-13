@@ -37,15 +37,21 @@ namespace epmodel {
     // - API: nominalCapacity/isNominalCapacityAutosized/autosizeNominalCapacity map to EnergyPlus ZoneHVAC:Baseboard:Convective:Electric Heating Design Capacity via ForwardTranslateZoneHVACBaseboardConvectiveElectric.cpp.
     // - API: efficiency/isEfficiencyDefaulted/resetEfficiency map to the EnergyPlus Efficiency field (default 1.0).
     // - Availability Schedule is a relationship field and remains excluded from scalar accessors until a relationship API exists.
+    /** @name Nominal capacity accessors */
+    //@{
     boost::optional<double> nominalCapacity() const;
     bool isNominalCapacityAutosized() const;
     bool setNominalCapacity(double nominalCapacity);
     void autosizeNominalCapacity();
+    //@}
 
+    /** @name Efficiency accessors */
+    //@{
     boost::optional<double> efficiency() const;
     bool isEfficiencyDefaulted() const;
     bool setEfficiency(double efficiency);
     void resetEfficiency();
+    //@}
 
    protected:
     using ImplType = detail::ZoneHVACBaseboardConvectiveElectric_Impl;

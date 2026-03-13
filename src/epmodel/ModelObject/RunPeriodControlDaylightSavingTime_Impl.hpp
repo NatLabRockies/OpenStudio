@@ -11,22 +11,22 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API RunPeriodControlDaylightSavingTime_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~RunPeriodControlDaylightSavingTime_Impl() override = default;
+    class EPMODEL_API RunPeriodControlDaylightSavingTime_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~RunPeriodControlDaylightSavingTime_Impl() override = default;
 
-  std::string startDate() const;
-  std::string endDate() const;
+      std::string startDate() const;
+      bool setStartDate(const std::string& startDate);
 
-  bool setStartDate(const std::string& startDate);
-  bool setEndDate(const std::string& endDate);
-};
+      std::string endDate() const;
+      bool setEndDate(const std::string& endDate);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

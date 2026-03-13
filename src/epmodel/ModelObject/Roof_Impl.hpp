@@ -24,8 +24,8 @@ namespace epmodel {
       void resetAzimuthAngle();
 
       double tiltAngle() const;
-      bool isTiltAngleDefaulted() const;
       bool setTiltAngle(double tiltAngle);
+      bool isTiltAngleDefaulted() const;
       void resetTiltAngle();
 
       boost::optional<double> startingXCoordinate() const;

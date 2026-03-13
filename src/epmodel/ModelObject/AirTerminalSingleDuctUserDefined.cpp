@@ -15,41 +15,38 @@
 namespace openstudio {
 namespace epmodel {
 
-AirTerminalSingleDuctUserDefined::AirTerminalSingleDuctUserDefined(const Model& model)
-  : ModelObject(AirTerminalSingleDuctUserDefined::iddObjectType(), model) {}
+  AirTerminalSingleDuctUserDefined::AirTerminalSingleDuctUserDefined(const Model& model)
+    : ModelObject(AirTerminalSingleDuctUserDefined::iddObjectType(), model) {}
 
-AirTerminalSingleDuctUserDefined::AirTerminalSingleDuctUserDefined(std::shared_ptr<detail::AirTerminalSingleDuctUserDefined_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  AirTerminalSingleDuctUserDefined::AirTerminalSingleDuctUserDefined(std::shared_ptr<detail::AirTerminalSingleDuctUserDefined_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType AirTerminalSingleDuctUserDefined::iddObjectType() {
-  return IddObjectType::AirTerminal_SingleDuct_UserDefined;
-}
+  IddObjectType AirTerminalSingleDuctUserDefined::iddObjectType() {
+    return IddObjectType::AirTerminal_SingleDuct_UserDefined;
+  }
 
-int AirTerminalSingleDuctUserDefined::numberofPlantLoopConnections() const {
-  return getImpl<detail::AirTerminalSingleDuctUserDefined_Impl>()->numberofPlantLoopConnections();
-}
+  int AirTerminalSingleDuctUserDefined::numberofPlantLoopConnections() const {
+    return getImpl<detail::AirTerminalSingleDuctUserDefined_Impl>()->numberofPlantLoopConnections();
+  }
 
-bool AirTerminalSingleDuctUserDefined::setNumberofPlantLoopConnections(int numberofPlantLoopConnections) {
-  return getImpl<detail::AirTerminalSingleDuctUserDefined_Impl>()->setNumberofPlantLoopConnections(numberofPlantLoopConnections);
-}
+  bool AirTerminalSingleDuctUserDefined::setNumberofPlantLoopConnections(int numberofPlantLoopConnections) {
+    return getImpl<detail::AirTerminalSingleDuctUserDefined_Impl>()->setNumberofPlantLoopConnections(numberofPlantLoopConnections);
+  }
 
-}  // namespace epmodel
-}  // namespace openstudio
+  // Detail implementations for the scalar accessors
+  namespace detail {
 
-namespace openstudio {
-namespace epmodel {
-namespace detail {
+    int AirTerminalSingleDuctUserDefined_Impl::numberofPlantLoopConnections() const {
+      const auto value = getInt(openstudio::AirTerminal_SingleDuct_UserDefinedFields::NumberofPlantLoopConnections, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-int AirTerminalSingleDuctUserDefined_Impl::numberofPlantLoopConnections() const {
-  const auto value = getInt(openstudio::AirTerminal_SingleDuct_UserDefinedFields::NumberofPlantLoopConnections, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    bool AirTerminalSingleDuctUserDefined_Impl::setNumberofPlantLoopConnections(int numberofPlantLoopConnections) {
+      return setInt(openstudio::AirTerminal_SingleDuct_UserDefinedFields::NumberofPlantLoopConnections, numberofPlantLoopConnections);
+    }
 
-bool AirTerminalSingleDuctUserDefined_Impl::setNumberofPlantLoopConnections(int numberofPlantLoopConnections) {
-  return setInt(openstudio::AirTerminal_SingleDuct_UserDefinedFields::NumberofPlantLoopConnections, numberofPlantLoopConnections);
-}
+  }  // namespace detail
 
-}  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

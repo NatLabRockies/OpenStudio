@@ -21,6 +21,8 @@ class EPMODEL_API AirflowNetworkDistributionNode_Impl : public ModelObject_Impl
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~AirflowNetworkDistributionNode_Impl() override = default;
 
+  std::vector<std::string> componentObjectTypeorNodeTypeValues() const;
+
   std::string componentObjectTypeorNodeType() const;
   bool isComponentObjectTypeorNodeTypeDefaulted() const;
   bool setComponentObjectTypeorNodeType(const std::string& componentObjectTypeorNodeType);
@@ -30,8 +32,6 @@ class EPMODEL_API AirflowNetworkDistributionNode_Impl : public ModelObject_Impl
   bool isNodeHeightDefaulted() const;
   bool setNodeHeight(double nodeHeight);
   void resetNodeHeight();
-
-  std::vector<std::string> componentObjectTypeorNodeTypeValues() const;
 };
 
 }  // namespace detail

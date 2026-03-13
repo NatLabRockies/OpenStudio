@@ -39,6 +39,10 @@ bool SetpointManagerScheduled::isControlVariableDefaulted() const {
   return getImpl<detail::SetpointManagerScheduled_Impl>()->isControlVariableDefaulted();
 }
 
+void SetpointManagerScheduled::resetControlVariable() {
+  getImpl<detail::SetpointManagerScheduled_Impl>()->resetControlVariable();
+}
+
 bool SetpointManagerScheduled::hasSchedule() const {
   auto scheduleName = getString(openstudio::SetpointManager_ScheduledFields::ScheduleName);
   return scheduleName && !scheduleName->empty();
@@ -46,10 +50,6 @@ bool SetpointManagerScheduled::hasSchedule() const {
 
 boost::optional<ModelObject> SetpointManagerScheduled::scheduleAsModelObject() const {
   return getModelObjectTarget<ModelObject>(openstudio::SetpointManager_ScheduledFields::ScheduleName);
-}
-
-void SetpointManagerScheduled::resetControlVariable() {
-  getImpl<detail::SetpointManagerScheduled_Impl>()->resetControlVariable();
 }
 
 }  // namespace epmodel

@@ -21,6 +21,8 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~SteamEquipment_Impl() override = default;
 
+      std::vector<std::string> designLevelCalculationMethodValues() const;
+
       std::string designLevelCalculationMethod() const;
       bool isDesignLevelCalculationMethodDefaulted() const;
       bool setDesignLevelCalculationMethod(const std::string& designLevelCalculationMethod);
@@ -60,8 +62,6 @@ namespace epmodel {
 
       bool setMultiplier(double multiplier);
       void resetMultiplier();
-
-      std::vector<std::string> designLevelCalculationMethodValues() const;
     };
 
   }  // namespace detail

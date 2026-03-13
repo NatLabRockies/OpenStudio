@@ -16,52 +16,54 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class AirflowNetworkDistributionDuctViewFactors_Impl;
-}
+  namespace detail {
+    class AirflowNetworkDistributionDuctViewFactors_Impl;
+  }
 
-class EPMODEL_API AirflowNetworkDistributionDuctViewFactors : public ModelObject
-{
- public:
-  explicit AirflowNetworkDistributionDuctViewFactors(const Model& model);
+  class EPMODEL_API AirflowNetworkDistributionDuctViewFactors : public ModelObject
+  {
+   public:
+    explicit AirflowNetworkDistributionDuctViewFactors(const Model& model);
 
-  virtual ~AirflowNetworkDistributionDuctViewFactors() override = default;
-  AirflowNetworkDistributionDuctViewFactors(const AirflowNetworkDistributionDuctViewFactors& other) = default;
-  AirflowNetworkDistributionDuctViewFactors(AirflowNetworkDistributionDuctViewFactors&& other) = default;
-  AirflowNetworkDistributionDuctViewFactors& operator=(const AirflowNetworkDistributionDuctViewFactors&) = default;
-  AirflowNetworkDistributionDuctViewFactors& operator=(AirflowNetworkDistributionDuctViewFactors&&) = default;
+    virtual ~AirflowNetworkDistributionDuctViewFactors() override = default;
+    AirflowNetworkDistributionDuctViewFactors(const AirflowNetworkDistributionDuctViewFactors& other) = default;
+    AirflowNetworkDistributionDuctViewFactors(AirflowNetworkDistributionDuctViewFactors&& other) = default;
+    AirflowNetworkDistributionDuctViewFactors& operator=(const AirflowNetworkDistributionDuctViewFactors&) = default;
+    AirflowNetworkDistributionDuctViewFactors& operator=(AirflowNetworkDistributionDuctViewFactors&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to EnergyPlus
-  //   AirflowNetwork:Distribution:DuctViewFactors scalar fields.
-  // - ForwardTranslator evidence: translateAirflowNetworkDuctViewFactors writes these scalar fields directly.
-  // - Field Mapping: Linkage Name and extensible Surface Name/View Factor pairs are relationship/extensible fields
-  //   and intentionally excluded from simple scalar accessor scaffolding.
-  // - TODO(parity): Re-evaluate naming/coverage if a future model-counterpart parity layer is introduced.
-  double ductSurfaceExposureFraction() const;
-  bool isDuctSurfaceExposureFractionDefaulted() const;
-  bool setDuctSurfaceExposureFraction(double ductSurfaceExposureFraction);
-  void resetDuctSurfaceExposureFraction();
+    // Schema Alignment Notes:
+    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to EnergyPlus
+    //   AirflowNetwork:Distribution:DuctViewFactors scalar fields.
+    // - ForwardTranslator evidence: translateAirflowNetworkDuctViewFactors writes these scalar fields directly.
+    // - Field Mapping: Linkage Name and extensible Surface Name/View Factor pairs are relationship/extensible fields
+    //   and intentionally excluded from simple scalar accessor scaffolding.
+    // - TODO(parity): Re-evaluate naming/coverage if a future model-counterpart parity layer is introduced.
+    // Duct surface exposure fraction accessors
+    double ductSurfaceExposureFraction() const;
+    bool isDuctSurfaceExposureFractionDefaulted() const;
+    bool setDuctSurfaceExposureFraction(double ductSurfaceExposureFraction);
+    void resetDuctSurfaceExposureFraction();
 
-  double ductSurfaceEmittance() const;
-  bool isDuctSurfaceEmittanceDefaulted() const;
-  bool setDuctSurfaceEmittance(double ductSurfaceEmittance);
-  void resetDuctSurfaceEmittance();
+    // Duct surface emittance accessors
+    double ductSurfaceEmittance() const;
+    bool isDuctSurfaceEmittanceDefaulted() const;
+    bool setDuctSurfaceEmittance(double ductSurfaceEmittance);
+    void resetDuctSurfaceEmittance();
 
- protected:
-  using ImplType = detail::AirflowNetworkDistributionDuctViewFactors_Impl;
+   protected:
+    using ImplType = detail::AirflowNetworkDistributionDuctViewFactors_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit AirflowNetworkDistributionDuctViewFactors(std::shared_ptr<detail::AirflowNetworkDistributionDuctViewFactors_Impl> impl);
-};
+    explicit AirflowNetworkDistributionDuctViewFactors(std::shared_ptr<detail::AirflowNetworkDistributionDuctViewFactors_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

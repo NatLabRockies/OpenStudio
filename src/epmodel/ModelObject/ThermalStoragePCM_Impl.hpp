@@ -25,8 +25,8 @@ namespace epmodel {
       void autosizeTankCapacity();
 
       boost::optional<double> heatLossRate() const;
-      bool setHeatLossRate(double heatLossRate);
       bool isHeatLossRateDefaulted() const;
+      bool setHeatLossRate(double heatLossRate);
       void resetHeatLossRate();
 
       boost::optional<double> useSideDesignFlowRate() const;

@@ -11,25 +11,24 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API RoomAirSettingsOneNodeDisplacementVentilation_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~RoomAirSettingsOneNodeDisplacementVentilation_Impl() override = default;
+    class EPMODEL_API RoomAirSettingsOneNodeDisplacementVentilation_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~RoomAirSettingsOneNodeDisplacementVentilation_Impl() override = default;
 
-  boost::optional<double> fractionofConvectiveInternalLoadsAddedtoFloorAir() const;
-  boost::optional<double> fractionofInfiltrationInternalLoadsAddedtoFloorAir() const;
+      boost::optional<double> fractionofConvectiveInternalLoadsAddedtoFloorAir() const;
+      bool setFractionofConvectiveInternalLoadsAddedtoFloorAir(double fractionofConvectiveInternalLoadsAddedtoFloorAir);
+      void resetFractionofConvectiveInternalLoadsAddedtoFloorAir();
 
-  bool setFractionofConvectiveInternalLoadsAddedtoFloorAir(double fractionofConvectiveInternalLoadsAddedtoFloorAir);
-  bool setFractionofInfiltrationInternalLoadsAddedtoFloorAir(double fractionofInfiltrationInternalLoadsAddedtoFloorAir);
+      boost::optional<double> fractionofInfiltrationInternalLoadsAddedtoFloorAir() const;
+      bool setFractionofInfiltrationInternalLoadsAddedtoFloorAir(double fractionofInfiltrationInternalLoadsAddedtoFloorAir);
+      void resetFractionofInfiltrationInternalLoadsAddedtoFloorAir();
+    };
 
-  void resetFractionofConvectiveInternalLoadsAddedtoFloorAir();
-  void resetFractionofInfiltrationInternalLoadsAddedtoFloorAir();
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

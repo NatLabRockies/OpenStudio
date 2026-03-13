@@ -22,6 +22,7 @@ namespace epmodel {
     return IddObjectType::ThermalStorage_Sizing;
   }
 
+  // On-peak period start time
   double ThermalStorageSizing::onPeakPeriodStartTime() const {
     return getImpl<detail::ThermalStorageSizing_Impl>()->onPeakPeriodStartTime();
   }
@@ -30,6 +31,7 @@ namespace epmodel {
     return getImpl<detail::ThermalStorageSizing_Impl>()->setOnPeakPeriodStartTime(onPeakPeriodStartTime);
   }
 
+  // On-peak period end time
   double ThermalStorageSizing::onPeakPeriodEndTime() const {
     return getImpl<detail::ThermalStorageSizing_Impl>()->onPeakPeriodEndTime();
   }
@@ -38,6 +40,7 @@ namespace epmodel {
     return getImpl<detail::ThermalStorageSizing_Impl>()->setOnPeakPeriodEndTime(onPeakPeriodEndTime);
   }
 
+  // Sizing factor
   double ThermalStorageSizing::sizingFactor() const {
     return getImpl<detail::ThermalStorageSizing_Impl>()->sizingFactor();
   }
@@ -61,6 +64,7 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    // On-peak period start time
     double ThermalStorageSizing_Impl::onPeakPeriodStartTime() const {
       const auto value = getDouble(ThermalStorage_SizingFields::OnPeakPeriodStartTime, true);
       OS_ASSERT(value);
@@ -73,6 +77,7 @@ namespace epmodel {
       return result;
     }
 
+    // On-peak period end time
     double ThermalStorageSizing_Impl::onPeakPeriodEndTime() const {
       const auto value = getDouble(ThermalStorage_SizingFields::OnPeakPeriodEndTime, true);
       OS_ASSERT(value);
@@ -85,6 +90,7 @@ namespace epmodel {
       return result;
     }
 
+    // Sizing factor
     double ThermalStorageSizing_Impl::sizingFactor() const {
       const auto value = getDouble(ThermalStorage_SizingFields::SizingFactor, true);
       OS_ASSERT(value);

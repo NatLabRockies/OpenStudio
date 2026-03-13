@@ -11,26 +11,26 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatTransferControl_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatTransferControl_Impl() override = default;
+    class EPMODEL_API GroundHeatTransferControl_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatTransferControl_Impl() override = default;
 
-  bool runBasementPreprocessor() const;
-  bool isRunBasementPreprocessorDefaulted() const;
-  bool setRunBasementPreprocessor(bool runBasementPreprocessor);
-  void resetRunBasementPreprocessor();
+      bool runBasementPreprocessor() const;
+      bool setRunBasementPreprocessor(bool runBasementPreprocessor);
+      bool isRunBasementPreprocessorDefaulted() const;
+      void resetRunBasementPreprocessor();
 
-  bool runSlabPreprocessor() const;
-  bool isRunSlabPreprocessorDefaulted() const;
-  bool setRunSlabPreprocessor(bool runSlabPreprocessor);
-  void resetRunSlabPreprocessor();
-};
+      bool runSlabPreprocessor() const;
+      bool setRunSlabPreprocessor(bool runSlabPreprocessor);
+      bool isRunSlabPreprocessorDefaulted() const;
+      void resetRunSlabPreprocessor();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

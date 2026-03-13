@@ -16,48 +16,50 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class GroundHeatTransferBasementSimParameters_Impl;
-}
+  namespace detail {
+    class GroundHeatTransferBasementSimParameters_Impl;
+  }
 
-class EPMODEL_API GroundHeatTransferBasementSimParameters : public ModelObject
-{
- public:
-  explicit GroundHeatTransferBasementSimParameters(const Model& model);
+  class EPMODEL_API GroundHeatTransferBasementSimParameters : public ModelObject
+  {
+   public:
+    explicit GroundHeatTransferBasementSimParameters(const Model& model);
 
-  virtual ~GroundHeatTransferBasementSimParameters() override = default;
-  GroundHeatTransferBasementSimParameters(const GroundHeatTransferBasementSimParameters& other) = default;
-  GroundHeatTransferBasementSimParameters(GroundHeatTransferBasementSimParameters&& other) = default;
-  GroundHeatTransferBasementSimParameters& operator=(const GroundHeatTransferBasementSimParameters&) = default;
-  GroundHeatTransferBasementSimParameters& operator=(GroundHeatTransferBasementSimParameters&&) = default;
+    virtual ~GroundHeatTransferBasementSimParameters() override = default;
+    GroundHeatTransferBasementSimParameters(const GroundHeatTransferBasementSimParameters& other) = default;
+    GroundHeatTransferBasementSimParameters(GroundHeatTransferBasementSimParameters&& other) = default;
+    GroundHeatTransferBasementSimParameters& operator=(const GroundHeatTransferBasementSimParameters&) = default;
+    GroundHeatTransferBasementSimParameters& operator=(GroundHeatTransferBasementSimParameters&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to GroundHeatTransfer:Basement:SimParameters fields
-  //   F: Multiplier for the ADI solution and IYRS: Maximum number of yearly iterations:.
-  // - TODO(parity): Add relationship APIs incrementally if future schema revisions introduce link fields.
-  boost::optional<double> fMultiplierfortheADIsolution() const;
-  bool setFMultiplierfortheADIsolution(double fMultiplierfortheADIsolution);
-  void resetFMultiplierfortheADIsolution();
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to GroundHeatTransfer:Basement:SimParameters fields.
+    // - TODO(parity): Add relationship APIs incrementally if future schema revisions introduce link fields.
 
-  int iYRSMaximumnumberofyearlyiterations() const;
-  bool isIYRSMaximumnumberofyearlyiterationsDefaulted() const;
-  bool setIYRSMaximumnumberofyearlyiterations(int iYRSMaximumnumberofyearlyiterations);
-  void resetIYRSMaximumnumberofyearlyiterations();
+    // Field: F, Multiplier for the ADI solution
+    boost::optional<double> fMultiplierfortheADIsolution() const;
+    bool setFMultiplierfortheADIsolution(double fMultiplierfortheADIsolution);
+    void resetFMultiplierfortheADIsolution();
 
- protected:
-  using ImplType = detail::GroundHeatTransferBasementSimParameters_Impl;
+    // Field: IYRS, Maximum number of yearly iterations
+    int iYRSMaximumnumberofyearlyiterations() const;
+    bool isIYRSMaximumnumberofyearlyiterationsDefaulted() const;
+    bool setIYRSMaximumnumberofyearlyiterations(int iYRSMaximumnumberofyearlyiterations);
+    void resetIYRSMaximumnumberofyearlyiterations();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::GroundHeatTransferBasementSimParameters_Impl;
 
-  explicit GroundHeatTransferBasementSimParameters(std::shared_ptr<detail::GroundHeatTransferBasementSimParameters_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit GroundHeatTransferBasementSimParameters(std::shared_ptr<detail::GroundHeatTransferBasementSimParameters_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

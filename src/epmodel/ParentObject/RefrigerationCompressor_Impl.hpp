@@ -22,31 +22,28 @@ namespace epmodel {
       virtual ~RefrigerationCompressor_Impl() override = default;
 
       boost::optional<double> ratedSuperheat() const;
-      boost::optional<double> ratedReturnGasTemperature() const;
-      boost::optional<double> ratedLiquidTemperature() const;
-      boost::optional<double> ratedSubcooling() const;
-
-      std::string endUseSubcategory() const;
-      bool isEndUseSubcategoryDefaulted() const;
-
-      std::string modeofOperation() const;
-      bool isModeofOperationDefaulted() const;
-
       bool setRatedSuperheat(double ratedSuperheat);
       void resetRatedSuperheat();
 
+      boost::optional<double> ratedReturnGasTemperature() const;
       bool setRatedReturnGasTemperature(double ratedReturnGasTemperature);
       void resetRatedReturnGasTemperature();
 
+      boost::optional<double> ratedLiquidTemperature() const;
       bool setRatedLiquidTemperature(double ratedLiquidTemperature);
       void resetRatedLiquidTemperature();
 
+      boost::optional<double> ratedSubcooling() const;
       bool setRatedSubcooling(double ratedSubcooling);
       void resetRatedSubcooling();
 
+      std::string endUseSubcategory() const;
+      bool isEndUseSubcategoryDefaulted() const;
       bool setEndUseSubcategory(const std::string& endUseSubcategory);
       void resetEndUseSubcategory();
 
+      std::string modeofOperation() const;
+      bool isModeofOperationDefaulted() const;
       bool setModeofOperation(const std::string& modeofOperation);
       void resetModeofOperation();
     };

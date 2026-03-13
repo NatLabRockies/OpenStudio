@@ -17,83 +17,79 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class Surface_Impl;
-}
+  namespace detail {
+    class Surface_Impl;
+  }
 
-class EPMODEL_API Surface : public ModelObject
-{
- public:
-  explicit Surface(const Model& model);
+  class EPMODEL_API Surface : public ModelObject
+  {
+   public:
+    explicit Surface(const Model& model);
 
-  virtual ~Surface() override = default;
-  Surface(const Surface& other) = default;
-  Surface(Surface&& other) = default;
-  Surface& operator=(const Surface&) = default;
-  Surface& operator=(Surface&&) = default;
+    virtual ~Surface() override = default;
+    Surface(const Surface& other) = default;
+    Surface(Surface&& other) = default;
+    Surface& operator=(const Surface&) = default;
+    Surface& operator=(Surface&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> validSurfaceTypeValues();
-  static std::vector<std::string> validOutsideBoundaryConditionValues();
-  static std::vector<std::string> validSunExposureValues();
-  static std::vector<std::string> validWindExposureValues();
+    static std::vector<std::string> validSurfaceTypeValues();
+    static std::vector<std::string> validOutsideBoundaryConditionValues();
+    static std::vector<std::string> validSunExposureValues();
+    static std::vector<std::string> validWindExposureValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model Surface scalar accessor names/signatures.
-  // - Field Mapping: These APIs map to BuildingSurface:Detailed fields in the EnergyPlus schema.
-  // - Field Mapping: Construction Name, Zone Name, Space Name, Outside Boundary Condition Object,
-  //   and extensible vertex coordinates are relationship/non-scalar fields and are intentionally excluded.
-  // - ForwardTranslator evidence: ForwardTranslateSurface.cpp maps surfaceType, outsideBoundaryCondition,
-  //   sunExposure, windExposure, and viewFactortoGround directly to BuildingSurface:Detailed.
-  // - TODO(parity): Add non-scalar geometry and relationship APIs in later parity milestones.
-  std::string surfaceType() const;
-  std::string outsideBoundaryCondition() const;
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model Surface scalar accessor names/signatures.
+    // - Field Mapping: These APIs map to BuildingSurface:Detailed fields in the EnergyPlus schema.
+    // - Field Mapping: Construction Name, Zone Name, Space Name, Outside Boundary Condition Object,
+    //   and extensible vertex coordinates are relationship/non-scalar fields and are intentionally excluded.
+    // - ForwardTranslator evidence: ForwardTranslateSurface.cpp maps surfaceType, outsideBoundaryCondition,
+    //   sunExposure, windExposure, and viewFactortoGround directly to BuildingSurface:Detailed.
+    // - TODO(parity): Add non-scalar geometry and relationship APIs in later parity milestones.
+    std::string surfaceType() const;
+    bool setSurfaceType(const std::string& surfaceType);
 
-  std::string sunExposure() const;
-  bool isSunExposureDefaulted() const;
+    std::string outsideBoundaryCondition() const;
+    bool setOutsideBoundaryCondition(const std::string& outsideBoundaryCondition);
 
-  std::string windExposure() const;
-  bool isWindExposureDefaulted() const;
+    std::string sunExposure() const;
+    bool isSunExposureDefaulted() const;
+    bool setSunExposure(const std::string& sunExposure);
+    void resetSunExposure();
 
-  boost::optional<double> viewFactortoGround() const;
-  bool isViewFactortoGroundDefaulted() const;
-  bool isViewFactortoGroundAutocalculated() const;
+    std::string windExposure() const;
+    bool isWindExposureDefaulted() const;
+    bool setWindExposure(const std::string& windExposure);
+    void resetWindExposure();
 
-  boost::optional<double> numberofVertices() const;
-  bool isNumberofVerticesDefaulted() const;
-  bool isNumberofVerticesAutocalculated() const;
+    boost::optional<double> viewFactortoGround() const;
+    bool isViewFactortoGroundDefaulted() const;
+    bool isViewFactortoGroundAutocalculated() const;
+    bool setViewFactortoGround(boost::optional<double> viewFactortoGround);
+    bool setViewFactortoGround(double viewFactortoGround);
+    void resetViewFactortoGround();
+    void autocalculateViewFactortoGround();
 
-  bool setSurfaceType(const std::string& surfaceType);
-  bool setOutsideBoundaryCondition(const std::string& outsideBoundaryCondition);
+    boost::optional<double> numberofVertices() const;
+    bool isNumberofVerticesDefaulted() const;
+    bool isNumberofVerticesAutocalculated() const;
+    bool setNumberofVertices(boost::optional<double> numberofVertices);
+    bool setNumberofVertices(double numberofVertices);
+    void resetNumberofVertices();
+    void autocalculateNumberofVertices();
 
-  bool setSunExposure(const std::string& sunExposure);
-  void resetSunExposure();
+   protected:
+    using ImplType = detail::Surface_Impl;
 
-  bool setWindExposure(const std::string& windExposure);
-  void resetWindExposure();
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  bool setViewFactortoGround(boost::optional<double> viewFactortoGround);
-  bool setViewFactortoGround(double viewFactortoGround);
-  void resetViewFactortoGround();
-  void autocalculateViewFactortoGround();
-
-  bool setNumberofVertices(boost::optional<double> numberofVertices);
-  bool setNumberofVertices(double numberofVertices);
-  void resetNumberofVertices();
-  void autocalculateNumberofVertices();
-
- protected:
-  using ImplType = detail::Surface_Impl;
-
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit Surface(std::shared_ptr<detail::Surface_Impl> impl);
-};
+    explicit Surface(std::shared_ptr<detail::Surface_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

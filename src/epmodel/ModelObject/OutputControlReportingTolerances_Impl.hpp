@@ -11,28 +11,26 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API OutputControlReportingTolerances_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~OutputControlReportingTolerances_Impl() override = default;
+    class EPMODEL_API OutputControlReportingTolerances_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~OutputControlReportingTolerances_Impl() override = default;
 
-  double toleranceforTimeHeatingSetpointNotMet() const;
-  bool isToleranceforTimeHeatingSetpointNotMetDefaulted() const;
+      double toleranceforTimeHeatingSetpointNotMet() const;
+      bool isToleranceforTimeHeatingSetpointNotMetDefaulted() const;
+      bool setToleranceforTimeHeatingSetpointNotMet(double toleranceforTimeHeatingSetpointNotMet);
+      void resetToleranceforTimeHeatingSetpointNotMet();
 
-  double toleranceforTimeCoolingSetpointNotMet() const;
-  bool isToleranceforTimeCoolingSetpointNotMetDefaulted() const;
+      double toleranceforTimeCoolingSetpointNotMet() const;
+      bool isToleranceforTimeCoolingSetpointNotMetDefaulted() const;
+      bool setToleranceforTimeCoolingSetpointNotMet(double toleranceforTimeCoolingSetpointNotMet);
+      void resetToleranceforTimeCoolingSetpointNotMet();
+    };
 
-  bool setToleranceforTimeHeatingSetpointNotMet(double toleranceforTimeHeatingSetpointNotMet);
-  void resetToleranceforTimeHeatingSetpointNotMet();
-
-  bool setToleranceforTimeCoolingSetpointNotMet(double toleranceforTimeCoolingSetpointNotMet);
-  void resetToleranceforTimeCoolingSetpointNotMet();
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

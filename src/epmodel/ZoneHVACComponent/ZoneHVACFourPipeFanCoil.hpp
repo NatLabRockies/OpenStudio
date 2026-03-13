@@ -99,13 +99,13 @@ namespace epmodel {
     bool setHeatingConvergenceTolerance(double heatingConvergenceTolerance);
     void resetHeatingConvergenceTolerance();
 
-    bool isMinimumSupplyAirTemperatureInCoolingModeAutosized() const;
     boost::optional<double> minimumSupplyAirTemperatureInCoolingMode() const;
+    bool isMinimumSupplyAirTemperatureInCoolingModeAutosized() const;
     bool setMinimumSupplyAirTemperatureInCoolingMode(double minimumSupplyAirTemperatureInCoolingMode);
     void autosizeMinimumSupplyAirTemperatureInCoolingMode();
 
-    bool isMaximumSupplyAirTemperatureInHeatingModeAutosized() const;
     boost::optional<double> maximumSupplyAirTemperatureInHeatingMode() const;
+    bool isMaximumSupplyAirTemperatureInHeatingModeAutosized() const;
     bool setMaximumSupplyAirTemperatureInHeatingMode(double maximumSupplyAirTemperatureInHeatingMode);
     void autosizeMaximumSupplyAirTemperatureInHeatingMode();
 

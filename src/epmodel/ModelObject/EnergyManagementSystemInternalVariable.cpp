@@ -17,82 +17,83 @@
 namespace openstudio {
 namespace epmodel {
 
-EnergyManagementSystemInternalVariable::EnergyManagementSystemInternalVariable(const Model& model, const std::string& internalDataType)
-  : ModelObject(EnergyManagementSystemInternalVariable::iddObjectType(), model) {
-  OS_ASSERT(getImpl<detail::EnergyManagementSystemInternalVariable_Impl>());
-  bool ok = setInternalDataType(internalDataType);
-  if (!ok) {
-    remove();
-    throw std::runtime_error("Unable to set EnergyManagementSystemInternalVariable Internal Data Type to '" + internalDataType + "'.");
+  EnergyManagementSystemInternalVariable::EnergyManagementSystemInternalVariable(const Model& model, const std::string& internalDataType)
+    : ModelObject(EnergyManagementSystemInternalVariable::iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::EnergyManagementSystemInternalVariable_Impl>());
+    bool ok = setInternalDataType(internalDataType);
+    if (!ok) {
+      remove();
+      throw std::runtime_error("Unable to set EnergyManagementSystemInternalVariable Internal Data Type to '" + internalDataType + "'.");
+    }
   }
-}
 
-EnergyManagementSystemInternalVariable::EnergyManagementSystemInternalVariable(
-  std::shared_ptr<detail::EnergyManagementSystemInternalVariable_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  EnergyManagementSystemInternalVariable::EnergyManagementSystemInternalVariable(
+    std::shared_ptr<detail::EnergyManagementSystemInternalVariable_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType EnergyManagementSystemInternalVariable::iddObjectType() {
-  return IddObjectType::EnergyManagementSystem_InternalVariable;
-}
+  IddObjectType EnergyManagementSystemInternalVariable::iddObjectType() {
+    return IddObjectType::EnergyManagementSystem_InternalVariable;
+  }
 
-std::string EnergyManagementSystemInternalVariable::internalDataIndexKeyName() const {
-  return getImpl<detail::EnergyManagementSystemInternalVariable_Impl>()->internalDataIndexKeyName();
-}
+  // EnergyManagementSystem_InternalVariable
+  std::string EnergyManagementSystemInternalVariable::internalDataIndexKeyName() const {
+    return getImpl<detail::EnergyManagementSystemInternalVariable_Impl>()->internalDataIndexKeyName();
+  }
 
-bool EnergyManagementSystemInternalVariable::setInternalDataIndexKeyName(const std::string& internalDataIndexKeyName) {
-  return getImpl<detail::EnergyManagementSystemInternalVariable_Impl>()->setInternalDataIndexKeyName(internalDataIndexKeyName);
-}
+  bool EnergyManagementSystemInternalVariable::setInternalDataIndexKeyName(const std::string& internalDataIndexKeyName) {
+    return getImpl<detail::EnergyManagementSystemInternalVariable_Impl>()->setInternalDataIndexKeyName(internalDataIndexKeyName);
+  }
 
-void EnergyManagementSystemInternalVariable::resetInternalDataIndexKeyName() {
-  getImpl<detail::EnergyManagementSystemInternalVariable_Impl>()->resetInternalDataIndexKeyName();
-}
+  void EnergyManagementSystemInternalVariable::resetInternalDataIndexKeyName() {
+    getImpl<detail::EnergyManagementSystemInternalVariable_Impl>()->resetInternalDataIndexKeyName();
+  }
 
-std::string EnergyManagementSystemInternalVariable::internalDataType() const {
-  return getImpl<detail::EnergyManagementSystemInternalVariable_Impl>()->internalDataType();
-}
+  std::string EnergyManagementSystemInternalVariable::internalDataType() const {
+    return getImpl<detail::EnergyManagementSystemInternalVariable_Impl>()->internalDataType();
+  }
 
-bool EnergyManagementSystemInternalVariable::setInternalDataType(const std::string& internalDataType) {
-  return getImpl<detail::EnergyManagementSystemInternalVariable_Impl>()->setInternalDataType(internalDataType);
-}
+  bool EnergyManagementSystemInternalVariable::setInternalDataType(const std::string& internalDataType) {
+    return getImpl<detail::EnergyManagementSystemInternalVariable_Impl>()->setInternalDataType(internalDataType);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string EnergyManagementSystemInternalVariable_Impl::internalDataIndexKeyName() const {
-  const auto value = getString(openstudio::EnergyManagementSystem_InternalVariableFields::InternalDataIndexKeyName, true);
-  if (value) {
-    return *value;
-  }
-  return "";
-}
+    std::string EnergyManagementSystemInternalVariable_Impl::internalDataIndexKeyName() const {
+      const auto value = getString(openstudio::EnergyManagementSystem_InternalVariableFields::InternalDataIndexKeyName, true);
+      if (value) {
+        return *value;
+      }
+      return "";
+    }
 
-bool EnergyManagementSystemInternalVariable_Impl::setInternalDataIndexKeyName(const std::string& internalDataIndexKeyName) {
-  const bool result = setString(openstudio::EnergyManagementSystem_InternalVariableFields::InternalDataIndexKeyName, internalDataIndexKeyName);
-  OS_ASSERT(result);
-  return result;
-}
+    bool EnergyManagementSystemInternalVariable_Impl::setInternalDataIndexKeyName(const std::string& internalDataIndexKeyName) {
+      const bool result = setString(openstudio::EnergyManagementSystem_InternalVariableFields::InternalDataIndexKeyName, internalDataIndexKeyName);
+      OS_ASSERT(result);
+      return result;
+    }
 
-void EnergyManagementSystemInternalVariable_Impl::resetInternalDataIndexKeyName() {
-  const bool result = setString(openstudio::EnergyManagementSystem_InternalVariableFields::InternalDataIndexKeyName, "");
-  OS_ASSERT(result);
-}
+    void EnergyManagementSystemInternalVariable_Impl::resetInternalDataIndexKeyName() {
+      const bool result = setString(openstudio::EnergyManagementSystem_InternalVariableFields::InternalDataIndexKeyName, "");
+      OS_ASSERT(result);
+    }
 
-std::string EnergyManagementSystemInternalVariable_Impl::internalDataType() const {
-  const auto value = getString(openstudio::EnergyManagementSystem_InternalVariableFields::InternalDataType, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string EnergyManagementSystemInternalVariable_Impl::internalDataType() const {
+      const auto value = getString(openstudio::EnergyManagementSystem_InternalVariableFields::InternalDataType, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool EnergyManagementSystemInternalVariable_Impl::setInternalDataType(const std::string& internalDataType) {
-  const bool result = setString(openstudio::EnergyManagementSystem_InternalVariableFields::InternalDataType, internalDataType);
-  OS_ASSERT(result);
-  return result;
-}
+    bool EnergyManagementSystemInternalVariable_Impl::setInternalDataType(const std::string& internalDataType) {
+      const bool result = setString(openstudio::EnergyManagementSystem_InternalVariableFields::InternalDataType, internalDataType);
+      OS_ASSERT(result);
+      return result;
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

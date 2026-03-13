@@ -54,30 +54,6 @@ namespace epmodel {
     return getImpl<detail::Space_Impl>()->isCeilingHeightAutocalculated();
   }
 
-  double Space::volume() const {
-    return getImpl<detail::Space_Impl>()->volume();
-  }
-
-  bool Space::isVolumeDefaulted() const {
-    return getImpl<detail::Space_Impl>()->isVolumeDefaulted();
-  }
-
-  bool Space::isVolumeAutocalculated() const {
-    return getImpl<detail::Space_Impl>()->isVolumeAutocalculated();
-  }
-
-  double Space::floorArea() const {
-    return getImpl<detail::Space_Impl>()->floorArea();
-  }
-
-  bool Space::isFloorAreaDefaulted() const {
-    return getImpl<detail::Space_Impl>()->isFloorAreaDefaulted();
-  }
-
-  bool Space::isFloorAreaAutocalculated() const {
-    return getImpl<detail::Space_Impl>()->isFloorAreaAutocalculated();
-  }
-
   bool Space::setCeilingHeight(double ceilingHeight) {
     return getImpl<detail::Space_Impl>()->setCeilingHeight(ceilingHeight);
   }
@@ -90,6 +66,18 @@ namespace epmodel {
     getImpl<detail::Space_Impl>()->resetCeilingHeight();
   }
 
+  double Space::volume() const {
+    return getImpl<detail::Space_Impl>()->volume();
+  }
+
+  bool Space::isVolumeDefaulted() const {
+    return getImpl<detail::Space_Impl>()->isVolumeDefaulted();
+  }
+
+  bool Space::isVolumeAutocalculated() const {
+    return getImpl<detail::Space_Impl>()->isVolumeAutocalculated();
+  }
+
   bool Space::setVolume(double volume) {
     return getImpl<detail::Space_Impl>()->setVolume(volume);
   }
@@ -100,6 +88,18 @@ namespace epmodel {
 
   void Space::resetVolume() {
     getImpl<detail::Space_Impl>()->resetVolume();
+  }
+
+  double Space::floorArea() const {
+    return getImpl<detail::Space_Impl>()->floorArea();
+  }
+
+  bool Space::isFloorAreaDefaulted() const {
+    return getImpl<detail::Space_Impl>()->isFloorAreaDefaulted();
+  }
+
+  bool Space::isFloorAreaAutocalculated() const {
+    return getImpl<detail::Space_Impl>()->isFloorAreaAutocalculated();
   }
 
   bool Space::setFloorArea(double floorArea) {
@@ -151,8 +151,8 @@ namespace epmodel {
         }
       }
 
-      boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList> findListContainingSpace(
-        const openstudio::epmodel::Model& model, const openstudio::epmodel::Space& space) {
+      boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList> findListContainingSpace(const openstudio::epmodel::Model& model,
+                                                                                                           const openstudio::epmodel::Space& space) {
         boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList> result;
         for (const auto& list : model.getConcreteModelObjects<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>()) {
           if (list.designSpecificationOutdoorAir(space)) {
@@ -166,7 +166,8 @@ namespace epmodel {
       }
 
       openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList getOrCreateOrphanSpaceList(const openstudio::epmodel::Model& model) {
-        if (auto existing = model.getConcreteModelObjectByName<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>(orphanDSOASpaceListName)) {
+        if (auto existing =
+              model.getConcreteModelObjectByName<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>(orphanDSOASpaceListName)) {
           return *existing;
         }
         auto created = openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList(model);
@@ -174,8 +175,7 @@ namespace epmodel {
         return created;
       }
 
-      openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList
-        getOrCreateZoneSpaceList(const openstudio::epmodel::ThermalZone& zone) {
+      openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList getOrCreateZoneSpaceList(const openstudio::epmodel::ThermalZone& zone) {
         auto sizingZone = zone.sizingZone();
         auto sizingZoneImpl = sizingZone.getImpl<openstudio::epmodel::detail::SizingZone_Impl>();
         OS_ASSERT(sizingZoneImpl);
@@ -385,8 +385,8 @@ namespace epmodel {
         }
       }
 
-      OS_ASSERT(canonicalList.getImpl<openstudio::epmodel::detail::DesignSpecificationOutdoorAirSpaceList_Impl>()
-                  ->setDesignSpecificationOutdoorAir(thisSpace, canonicalDSOA));
+      OS_ASSERT(canonicalList.getImpl<openstudio::epmodel::detail::DesignSpecificationOutdoorAirSpaceList_Impl>()->setDesignSpecificationOutdoorAir(
+        thisSpace, canonicalDSOA));
       removeSpaceFromAllListsExcept(thisSpace, canonicalList.handle());
 
       if (assignments.size() > 1u) {
@@ -401,18 +401,18 @@ namespace epmodel {
         }
         if (hasConflictingAssignments) {
           detail::addLoadWarning(context, "Space '" + thisSpace.nameString()
-                                           + "' had conflicting DSOA assignments across lists; canonicalization kept assignment from '"
-                                           + canonicalList.nameString() + "'.");
+                                            + "' had conflicting DSOA assignments across lists; canonicalization kept assignment from '"
+                                            + canonicalList.nameString() + "'.");
         }
       }
 
       if (!canonicalListHadAssignment) {
         detail::addLoadInfo(context,
-                            "Moved Space '" + thisSpace.nameString() + "' DSOA assignment into canonical list '"
-                              + canonicalList.nameString() + "'.");
+                            "Moved Space '" + thisSpace.nameString() + "' DSOA assignment into canonical list '" + canonicalList.nameString() + "'.");
       }
 
-      if (auto orphanList = model().getConcreteModelObjectByName<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>(orphanDSOASpaceListName)) {
+      if (auto orphanList =
+            model().getConcreteModelObjectByName<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>(orphanDSOASpaceListName)) {
         if (orphanList->numExtensibleGroups() == 0u) {
           orphanList->remove();
           detail::addLoadInfo(context,

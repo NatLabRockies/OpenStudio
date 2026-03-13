@@ -11,22 +11,22 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API OutputDebuggingData_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~OutputDebuggingData_Impl() override = default;
+    class EPMODEL_API OutputDebuggingData_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~OutputDebuggingData_Impl() override = default;
 
-  bool reportDebuggingData() const;
-  bool reportDuringWarmup() const;
+      bool reportDebuggingData() const;
+      bool setReportDebuggingData(bool reportDebuggingData);
 
-  bool setReportDebuggingData(bool reportDebuggingData);
-  bool setReportDuringWarmup(bool reportDuringWarmup);
-};
+      bool reportDuringWarmup() const;
+      bool setReportDuringWarmup(bool reportDuringWarmup);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

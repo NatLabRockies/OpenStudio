@@ -12,27 +12,27 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ScheduleDayList_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ScheduleDayList_Impl() override = default;
+    class EPMODEL_API ScheduleDayList_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ScheduleDayList_Impl() override = default;
 
-  std::string interpolatetoTimestep() const;
-  bool isInterpolatetoTimestepDefaulted() const;
-  boost::optional<int> minutesperItem() const;
+      std::string interpolatetoTimestep() const;
+      bool isInterpolatetoTimestepDefaulted() const;
+      bool setInterpolatetoTimestep(const std::string& interpolatetoTimestep);
+      void resetInterpolatetoTimestep();
 
-  bool setInterpolatetoTimestep(const std::string& interpolatetoTimestep);
-  void resetInterpolatetoTimestep();
-  bool setMinutesperItem(int minutesperItem);
-  void resetMinutesperItem();
+      boost::optional<int> minutesperItem() const;
+      bool setMinutesperItem(int minutesperItem);
+      void resetMinutesperItem();
 
-  std::vector<std::string> interpolatetoTimestepValues() const;
-};
+      std::vector<std::string> interpolatetoTimestepValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

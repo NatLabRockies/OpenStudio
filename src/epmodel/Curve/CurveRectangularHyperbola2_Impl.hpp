@@ -13,45 +13,52 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CurveRectangularHyperbola2_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~CurveRectangularHyperbola2_Impl() override = default;
+    class EPMODEL_API CurveRectangularHyperbola2_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~CurveRectangularHyperbola2_Impl() override = default;
 
-  double coefficient1C1() const;
-  double coefficient2C2() const;
-  double coefficient3C3() const;
-  double minimumValueofx() const;
-  double maximumValueofx() const;
-  boost::optional<double> minimumCurveOutput() const;
-  boost::optional<double> maximumCurveOutput() const;
-  std::string inputUnitTypeforx() const;
-  bool isInputUnitTypeforxDefaulted() const;
-  std::string outputUnitType() const;
-  bool isOutputUnitTypeDefaulted() const;
+      double coefficient1C1() const;
+      bool setCoefficient1C1(double coefficient1C1);
 
-  bool setCoefficient1C1(double coefficient1C1);
-  bool setCoefficient2C2(double coefficient2C2);
-  bool setCoefficient3C3(double coefficient3C3);
-  bool setMinimumValueofx(double minimumValueofx);
-  bool setMaximumValueofx(double maximumValueofx);
-  bool setMinimumCurveOutput(double minimumCurveOutput);
-  void resetMinimumCurveOutput();
-  bool setMaximumCurveOutput(double maximumCurveOutput);
-  void resetMaximumCurveOutput();
-  bool setInputUnitTypeforx(const std::string& inputUnitTypeforx);
-  void resetInputUnitTypeforx();
-  bool setOutputUnitType(const std::string& outputUnitType);
-  void resetOutputUnitType();
+      double coefficient2C2() const;
+      bool setCoefficient2C2(double coefficient2C2);
 
-  std::vector<std::string> validInputUnitTypeforxValues() const;
-  std::vector<std::string> validOutputUnitTypeValues() const;
-};
+      double coefficient3C3() const;
+      bool setCoefficient3C3(double coefficient3C3);
 
-}  // namespace detail
+      double minimumValueofx() const;
+      bool setMinimumValueofx(double minimumValueofx);
+
+      double maximumValueofx() const;
+      bool setMaximumValueofx(double maximumValueofx);
+
+      boost::optional<double> minimumCurveOutput() const;
+      bool setMinimumCurveOutput(double minimumCurveOutput);
+      void resetMinimumCurveOutput();
+
+      boost::optional<double> maximumCurveOutput() const;
+      bool setMaximumCurveOutput(double maximumCurveOutput);
+      void resetMaximumCurveOutput();
+
+      std::string inputUnitTypeforx() const;
+      bool isInputUnitTypeforxDefaulted() const;
+      bool setInputUnitTypeforx(const std::string& inputUnitTypeforx);
+      void resetInputUnitTypeforx();
+
+      std::string outputUnitType() const;
+      bool isOutputUnitTypeDefaulted() const;
+      bool setOutputUnitType(const std::string& outputUnitType);
+      void resetOutputUnitType();
+
+      std::vector<std::string> validInputUnitTypeforxValues() const;
+      std::vector<std::string> validOutputUnitTypeValues() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

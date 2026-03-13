@@ -11,33 +11,30 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SizingParameters_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~SizingParameters_Impl() override = default;
+    class EPMODEL_API SizingParameters_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~SizingParameters_Impl() override = default;
 
-  double heatingSizingFactor() const;
-  bool isHeatingSizingFactorDefaulted() const;
+      double heatingSizingFactor() const;
+      bool isHeatingSizingFactorDefaulted() const;
+      bool setHeatingSizingFactor(double heatingSizingFactor);
+      void resetHeatingSizingFactor();
 
-  double coolingSizingFactor() const;
-  bool isCoolingSizingFactorDefaulted() const;
+      double coolingSizingFactor() const;
+      bool isCoolingSizingFactorDefaulted() const;
+      bool setCoolingSizingFactor(double coolingSizingFactor);
+      void resetCoolingSizingFactor();
 
-  boost::optional<int> timestepsinAveragingWindow() const;
+      boost::optional<int> timestepsinAveragingWindow() const;
+      bool setTimestepsinAveragingWindow(boost::optional<int> timestepsinAveragingWindow);
+      void resetTimestepsinAveragingWindow();
+    };
 
-  bool setHeatingSizingFactor(double heatingSizingFactor);
-  void resetHeatingSizingFactor();
-
-  bool setCoolingSizingFactor(double coolingSizingFactor);
-  void resetCoolingSizingFactor();
-
-  bool setTimestepsinAveragingWindow(boost::optional<int> timestepsinAveragingWindow);
-  void resetTimestepsinAveragingWindow();
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

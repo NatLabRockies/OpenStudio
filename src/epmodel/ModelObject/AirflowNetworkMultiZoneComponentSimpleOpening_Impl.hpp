@@ -23,8 +23,8 @@ class EPMODEL_API AirflowNetworkMultiZoneComponentSimpleOpening_Impl : public Mo
   bool setAirMassFlowCoefficientWhenOpeningisClosed(double airMassFlowCoefficientWhenOpeningisClosed);
 
   double airMassFlowExponentWhenOpeningisClosed() const;
-  bool isAirMassFlowExponentWhenOpeningisClosedDefaulted() const;
   bool setAirMassFlowExponentWhenOpeningisClosed(double airMassFlowExponentWhenOpeningisClosed);
+  bool isAirMassFlowExponentWhenOpeningisClosedDefaulted() const;
   void resetAirMassFlowExponentWhenOpeningisClosed();
 
   double minimumDensityDifferenceforTwoWayFlow() const;

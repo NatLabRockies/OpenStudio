@@ -1,7 +1,7 @@
 /***********************************************************************************************************************
-*  OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC.
-*  See also https://openstudio.net/license
-***********************************************************************************************************************/
+ *  OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC.
+ *  See also https://openstudio.net/license
+ ***********************************************************************************************************************/
 
 #ifndef EPMODEL_MATERIALPROPERTYHEATANDMOISTURETRANSFERSETTINGS_IMPL_HPP
 #define EPMODEL_MATERIALPROPERTYHEATANDMOISTURETRANSFERSETTINGS_IMPL_HPP
@@ -23,8 +23,8 @@ class EPMODEL_API MaterialPropertyHeatAndMoistureTransferSettings_Impl : public 
   bool setPorosity(double porosity);
 
   double initialWaterContentRatio() const;
-  bool isInitialWaterContentRatioDefaulted() const;
   bool setInitialWaterContentRatio(double initialWaterContentRatio);
+  bool isInitialWaterContentRatioDefaulted() const;
   void resetInitialWaterContentRatio();
 };
 

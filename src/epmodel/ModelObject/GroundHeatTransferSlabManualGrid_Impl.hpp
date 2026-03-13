@@ -11,28 +11,31 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatTransferSlabManualGrid_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatTransferSlabManualGrid_Impl() override = default;
+    class EPMODEL_API GroundHeatTransferSlabManualGrid_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatTransferSlabManualGrid_Impl() override = default;
 
-  int nXNumberofcellsintheXdirection() const;
-  int nYNumberofcellsintheYdirection() const;
-  int nZNumberofcellsintheZdirection() const;
-  int iBOXXdirectioncellindicatorofslabedge() const;
-  int jBOXYdirectioncellindicatorofslabedge() const;
+      int nXNumberofcellsintheXdirection() const;
+      bool setNXNumberofcellsintheXdirection(int nXNumberofcellsintheXdirection);
 
-  bool setNXNumberofcellsintheXdirection(int nXNumberofcellsintheXdirection);
-  bool setNYNumberofcellsintheYdirection(int nYNumberofcellsintheYdirection);
-  bool setNZNumberofcellsintheZdirection(int nZNumberofcellsintheZdirection);
-  bool setIBOXXdirectioncellindicatorofslabedge(int iBOXXdirectioncellindicatorofslabedge);
-  bool setJBOXYdirectioncellindicatorofslabedge(int jBOXYdirectioncellindicatorofslabedge);
-};
+      int nYNumberofcellsintheYdirection() const;
+      bool setNYNumberofcellsintheYdirection(int nYNumberofcellsintheYdirection);
 
-}  // namespace detail
+      int nZNumberofcellsintheZdirection() const;
+      bool setNZNumberofcellsintheZdirection(int nZNumberofcellsintheZdirection);
+
+      int iBOXXdirectioncellindicatorofslabedge() const;
+      bool setIBOXXdirectioncellindicatorofslabedge(int iBOXXdirectioncellindicatorofslabedge);
+
+      int jBOXYdirectioncellindicatorofslabedge() const;
+      bool setJBOXYdirectioncellindicatorofslabedge(int jBOXYdirectioncellindicatorofslabedge);
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

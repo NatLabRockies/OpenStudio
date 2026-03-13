@@ -13,49 +13,56 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HeatExchangerAirToAirFlatPlate_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~HeatExchangerAirToAirFlatPlate_Impl() override = default;
+    class EPMODEL_API HeatExchangerAirToAirFlatPlate_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~HeatExchangerAirToAirFlatPlate_Impl() override = default;
 
-  boost::optional<std::string> flowArrangementType() const;
-  bool economizerLockout() const;
-  bool isEconomizerLockoutDefaulted() const;
-  boost::optional<double> ratioofSupplytoSecondaryhAValues() const;
-  boost::optional<double> nominalSupplyAirFlowRate() const;
-  bool isNominalSupplyAirFlowRateAutosized() const;
-  double nominalSupplyAirInletTemperature() const;
-  double nominalSupplyAirOutletTemperature() const;
-  boost::optional<double> nominalSecondaryAirFlowRate() const;
-  bool isNominalSecondaryAirFlowRateAutosized() const;
-  double nominalSecondaryAirInletTemperature() const;
-  boost::optional<double> nominalElectricPower() const;
+      boost::optional<std::string> flowArrangementType() const;
+      bool setFlowArrangementType(const std::string& flowArrangementType);
+      void resetFlowArrangementType();
 
-  bool setFlowArrangementType(const std::string& flowArrangementType);
-  void resetFlowArrangementType();
-  bool setEconomizerLockout(bool economizerLockout);
-  void resetEconomizerLockout();
-  bool setRatioofSupplytoSecondaryhAValues(double ratioofSupplytoSecondaryhAValues);
-  void resetRatioofSupplytoSecondaryhAValues();
-  bool setNominalSupplyAirFlowRate(double nominalSupplyAirFlowRate);
-  void resetNominalSupplyAirFlowRate();
-  void autosizeNominalSupplyAirFlowRate();
-  bool setNominalSupplyAirInletTemperature(double nominalSupplyAirInletTemperature);
-  bool setNominalSupplyAirOutletTemperature(double nominalSupplyAirOutletTemperature);
-  bool setNominalSecondaryAirFlowRate(double nominalSecondaryAirFlowRate);
-  void autosizeNominalSecondaryAirFlowRate();
-  bool setNominalSecondaryAirInletTemperature(double nominalSecondaryAirInletTemperature);
-  bool setNominalElectricPower(double nominalElectricPower);
-  void resetNominalElectricPower();
+      bool economizerLockout() const;
+      bool setEconomizerLockout(bool economizerLockout);
+      void resetEconomizerLockout();
+      bool isEconomizerLockoutDefaulted() const;
 
- private:
-  std::vector<std::string> flowArrangementTypeValues() const;
-};
+      boost::optional<double> ratioofSupplytoSecondaryhAValues() const;
+      bool setRatioofSupplytoSecondaryhAValues(double ratioofSupplytoSecondaryhAValues);
+      void resetRatioofSupplytoSecondaryhAValues();
 
-}  // namespace detail
+      boost::optional<double> nominalSupplyAirFlowRate() const;
+      bool setNominalSupplyAirFlowRate(double nominalSupplyAirFlowRate);
+      void resetNominalSupplyAirFlowRate();
+      void autosizeNominalSupplyAirFlowRate();
+      bool isNominalSupplyAirFlowRateAutosized() const;
+
+      double nominalSupplyAirInletTemperature() const;
+      bool setNominalSupplyAirInletTemperature(double nominalSupplyAirInletTemperature);
+
+      double nominalSupplyAirOutletTemperature() const;
+      bool setNominalSupplyAirOutletTemperature(double nominalSupplyAirOutletTemperature);
+
+      boost::optional<double> nominalSecondaryAirFlowRate() const;
+      bool setNominalSecondaryAirFlowRate(double nominalSecondaryAirFlowRate);
+      void autosizeNominalSecondaryAirFlowRate();
+      bool isNominalSecondaryAirFlowRateAutosized() const;
+
+      double nominalSecondaryAirInletTemperature() const;
+      bool setNominalSecondaryAirInletTemperature(double nominalSecondaryAirInletTemperature);
+
+      boost::optional<double> nominalElectricPower() const;
+      bool setNominalElectricPower(double nominalElectricPower);
+      void resetNominalElectricPower();
+
+     private:
+      std::vector<std::string> flowArrangementTypeValues() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

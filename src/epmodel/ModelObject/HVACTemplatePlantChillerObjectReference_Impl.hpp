@@ -13,29 +13,27 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API HVACTemplatePlantChillerObjectReference_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~HVACTemplatePlantChillerObjectReference_Impl() override = default;
+    class EPMODEL_API HVACTemplatePlantChillerObjectReference_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~HVACTemplatePlantChillerObjectReference_Impl() override = default;
 
-  std::string chillerObjectType() const;
-  boost::optional<double> priority() const;
+      std::string chillerObjectType() const;
+      bool isChillerObjectTypeDefaulted() const;
+      bool setChillerObjectType(const std::string& chillerObjectType);
+      void resetChillerObjectType();
 
-  bool isChillerObjectTypeDefaulted() const;
+      boost::optional<double> priority() const;
+      bool setPriority(double priority);
+      void resetPriority();
 
-  bool setChillerObjectType(const std::string& chillerObjectType);
-  bool setPriority(double priority);
+      std::vector<std::string> chillerObjectTypeValues() const;
+    };
 
-  void resetChillerObjectType();
-  void resetPriority();
-
-  std::vector<std::string> chillerObjectTypeValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -41,10 +41,13 @@ namespace epmodel {
     // - Field Mapping: Scalar APIs map directly to SurfaceContaminantSourceAndSink:Generic:BoundaryLayerDiffusion numeric fields.
     // - Field Mapping: Surface Name and Schedule Name linkage fields remain excluded as relationship fields.
     // - TODO(parity): Add relationship APIs after scalar saturation without changing scalar signatures.
+
+    // Mass transfer coefficient field
     boost::optional<double> massTransferCoefficient() const;
     bool setMassTransferCoefficient(double massTransferCoefficient);
     void resetMassTransferCoefficient();
 
+    // Henry adsorption constant or partition coefficient field
     boost::optional<double> henryAdsorptionConstantorPartitionCoefficient() const;
     bool setHenryAdsorptionConstantorPartitionCoefficient(double henryAdsorptionConstantorPartitionCoefficient);
     void resetHenryAdsorptionConstantorPartitionCoefficient();

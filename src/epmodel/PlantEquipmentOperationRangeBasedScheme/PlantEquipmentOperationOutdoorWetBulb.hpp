@@ -36,12 +36,18 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    // Schema Alignment Notes:
-    // - API: Exposes the PlantEquipmentOperation:OutdoorWetBulb wet-bulb range scalars so the epmodel API matches the openstudio::model counterpart.
-    // - Field Mapping: maximumUpperLimit() and minimumLowerLimit() read the Wet-Bulb Temperature Range upper/lower limits from the last/first extensible groups.
-    // - TODO(parity): Add direct helpers for related equipment lists once the generic extensible scaffolding arrives.
+    /**
+     * @name Outdoor wet-bulb range scalars
+     *
+     * Schema Alignment Notes:
+     * - API: Exposes the PlantEquipmentOperation:OutdoorWetBulb wet-bulb range scalars so the epmodel API matches the openstudio::model counterpart.
+     * - Field Mapping: maximumUpperLimit() and minimumLowerLimit() read the Wet-Bulb Temperature Range upper/lower limits from the last/first extensible groups.
+     * - TODO(parity): Add direct helpers for related equipment lists once the generic extensible scaffolding arrives.
+     */
+    //@{
     double maximumUpperLimit() const;
     double minimumLowerLimit() const;
+    //@}
 
    protected:
     using ImplType = detail::PlantEquipmentOperationOutdoorWetBulb_Impl;

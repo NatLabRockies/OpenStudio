@@ -16,50 +16,50 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class MaterialPropertyHeatAndMoistureTransferSettings_Impl;
-}
+  namespace detail {
+    class MaterialPropertyHeatAndMoistureTransferSettings_Impl;
+  }
 
-/** MaterialPropertyHeatAndMoistureTransferSettings is a ModelObject that wraps the EnergyPlus IDD object
+  /** MaterialPropertyHeatAndMoistureTransferSettings is a ModelObject that wraps the EnergyPlus IDD object
  * 'MaterialProperty:HeatAndMoistureTransfer:Settings'. */
-class EPMODEL_API MaterialPropertyHeatAndMoistureTransferSettings : public ModelObject
-{
- public:
-  explicit MaterialPropertyHeatAndMoistureTransferSettings(const Model& model);
+  class EPMODEL_API MaterialPropertyHeatAndMoistureTransferSettings : public ModelObject
+  {
+   public:
+    explicit MaterialPropertyHeatAndMoistureTransferSettings(const Model& model);
 
-  virtual ~MaterialPropertyHeatAndMoistureTransferSettings() override = default;
-  MaterialPropertyHeatAndMoistureTransferSettings(const MaterialPropertyHeatAndMoistureTransferSettings& other) = default;
-  MaterialPropertyHeatAndMoistureTransferSettings(MaterialPropertyHeatAndMoistureTransferSettings&& other) = default;
-  MaterialPropertyHeatAndMoistureTransferSettings& operator=(const MaterialPropertyHeatAndMoistureTransferSettings&) = default;
-  MaterialPropertyHeatAndMoistureTransferSettings& operator=(MaterialPropertyHeatAndMoistureTransferSettings&&) = default;
+    virtual ~MaterialPropertyHeatAndMoistureTransferSettings() override = default;
+    MaterialPropertyHeatAndMoistureTransferSettings(const MaterialPropertyHeatAndMoistureTransferSettings& other) = default;
+    MaterialPropertyHeatAndMoistureTransferSettings(MaterialPropertyHeatAndMoistureTransferSettings&& other) = default;
+    MaterialPropertyHeatAndMoistureTransferSettings& operator=(const MaterialPropertyHeatAndMoistureTransferSettings&) = default;
+    MaterialPropertyHeatAndMoistureTransferSettings& operator=(MaterialPropertyHeatAndMoistureTransferSettings&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: No openstudio::model counterpart exists; use IDD-derived scalar accessor naming.
-  // - Field Mapping: porosity and initialWaterContentRatio map directly to EnergyPlus scalar fields
-  //   Porosity and Initial Water Content Ratio.
-  // - Field Mapping: Material Name is an object-list relationship field and is intentionally excluded.
-  // - TODO(parity): Add relationship API for Material Name if/when non-scalar linkage is scaffolded.
-  double porosity() const;
-  bool setPorosity(double porosity);
+    // Schema Alignment Notes:
+    // - API: No openstudio::model counterpart exists; use IDD-derived scalar accessor naming.
+    // - Field Mapping: porosity and initialWaterContentRatio map directly to EnergyPlus scalar fields
+    //   Porosity and Initial Water Content Ratio.
+    // - Field Mapping: Material Name is an object-list relationship field and is intentionally excluded.
+    // - TODO(parity): Add relationship API for Material Name if/when non-scalar linkage is scaffolded.
+    double porosity() const;
+    bool setPorosity(double porosity);
 
-  double initialWaterContentRatio() const;
-  bool isInitialWaterContentRatioDefaulted() const;
-  bool setInitialWaterContentRatio(double initialWaterContentRatio);
-  void resetInitialWaterContentRatio();
+    double initialWaterContentRatio() const;
+    bool setInitialWaterContentRatio(double initialWaterContentRatio);
+    bool isInitialWaterContentRatioDefaulted() const;
+    void resetInitialWaterContentRatio();
 
- protected:
-  using ImplType = detail::MaterialPropertyHeatAndMoistureTransferSettings_Impl;
+   protected:
+    using ImplType = detail::MaterialPropertyHeatAndMoistureTransferSettings_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit MaterialPropertyHeatAndMoistureTransferSettings(std::shared_ptr<detail::MaterialPropertyHeatAndMoistureTransferSettings_Impl> impl);
-};
+    explicit MaterialPropertyHeatAndMoistureTransferSettings(std::shared_ptr<detail::MaterialPropertyHeatAndMoistureTransferSettings_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

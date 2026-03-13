@@ -10,32 +10,34 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SetpointManagerSystemNodeResetHumidity_Impl : public SetpointManager_Impl
-{
- public:
-  using SetpointManager_Impl::SetpointManager_Impl;
-  virtual ~SetpointManagerSystemNodeResetHumidity_Impl() override = default;
+    class EPMODEL_API SetpointManagerSystemNodeResetHumidity_Impl : public SetpointManager_Impl
+    {
+     public:
+      using SetpointManager_Impl::SetpointManager_Impl;
+      virtual ~SetpointManagerSystemNodeResetHumidity_Impl() override = default;
 
-  double setpointatLowReferenceHumidityRatio() const;
-  double setpointatHighReferenceHumidityRatio() const;
-  double lowReferenceHumidityRatio() const;
-  double highReferenceHumidityRatio() const;
+      double setpointatLowReferenceHumidityRatio() const;
+      bool setSetpointatLowReferenceHumidityRatio(double setpointatLowReferenceHumidityRatio);
 
-  bool setSetpointatLowReferenceHumidityRatio(double setpointatLowReferenceHumidityRatio);
-  bool setSetpointatHighReferenceHumidityRatio(double setpointatHighReferenceHumidityRatio);
-  bool setLowReferenceHumidityRatio(double lowReferenceHumidityRatio);
-  bool setHighReferenceHumidityRatio(double highReferenceHumidityRatio);
+      double setpointatHighReferenceHumidityRatio() const;
+      bool setSetpointatHighReferenceHumidityRatio(double setpointatHighReferenceHumidityRatio);
 
- protected:
-  unsigned setpointNodeFieldIndex() const override;
-  unsigned controlVariableFieldIndex() const override;
+      double lowReferenceHumidityRatio() const;
+      bool setLowReferenceHumidityRatio(double lowReferenceHumidityRatio);
 
-  void doCanonicalize(LoadContext& context) override;
-};
+      double highReferenceHumidityRatio() const;
+      bool setHighReferenceHumidityRatio(double highReferenceHumidityRatio);
 
-}  // namespace detail
+     protected:
+      unsigned setpointNodeFieldIndex() const override;
+      unsigned controlVariableFieldIndex() const override;
+
+      void doCanonicalize(LoadContext& context) override;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

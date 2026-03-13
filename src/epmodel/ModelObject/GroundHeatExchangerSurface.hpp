@@ -17,63 +17,67 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class GroundHeatExchangerSurface_Impl;
-}
+  namespace detail {
+    class GroundHeatExchangerSurface_Impl;
+  }
 
-class EPMODEL_API GroundHeatExchangerSurface : public ModelObject
-{
- public:
-  explicit GroundHeatExchangerSurface(const Model& model);
+  class EPMODEL_API GroundHeatExchangerSurface : public ModelObject
+  {
+   public:
+    explicit GroundHeatExchangerSurface(const Model& model);
 
-  virtual ~GroundHeatExchangerSurface() override = default;
-  GroundHeatExchangerSurface(const GroundHeatExchangerSurface& other) = default;
-  GroundHeatExchangerSurface(GroundHeatExchangerSurface&& other) = default;
-  GroundHeatExchangerSurface& operator=(const GroundHeatExchangerSurface&) = default;
-  GroundHeatExchangerSurface& operator=(GroundHeatExchangerSurface&&) = default;
+    virtual ~GroundHeatExchangerSurface() override = default;
+    GroundHeatExchangerSurface(const GroundHeatExchangerSurface& other) = default;
+    GroundHeatExchangerSurface(GroundHeatExchangerSurface&& other) = default;
+    GroundHeatExchangerSurface& operator=(const GroundHeatExchangerSurface&) = default;
+    GroundHeatExchangerSurface& operator=(GroundHeatExchangerSurface&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> lowerSurfaceEnvironmentValues();
+    static std::vector<std::string> lowerSurfaceEnvironmentValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to GroundHeatExchanger:Surface numeric/choice fields.
-  // - Field Mapping: Construction Name, Fluid Inlet Node Name, and Fluid Outlet Node Name are relationship-like fields and excluded.
-  // - TODO(parity): Add relationship APIs incrementally after scalar saturation.
-  boost::optional<double> hydronicTubingInsideDiameter() const;
-  boost::optional<int> numberofTubingCircuits() const;
-  boost::optional<double> hydronicTubeSpacing() const;
-  boost::optional<double> surfaceLength() const;
-  boost::optional<double> surfaceWidth() const;
-  std::string lowerSurfaceEnvironment() const;
-  bool isLowerSurfaceEnvironmentDefaulted() const;
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to GroundHeatExchanger:Surface numeric/choice fields.
+    // - Field Mapping: Construction Name, Fluid Inlet Node Name, and Fluid Outlet Node Name are relationship-like fields and excluded.
+    // - TODO(parity): Add relationship APIs incrementally after scalar saturation.
 
-  bool setHydronicTubingInsideDiameter(double hydronicTubingInsideDiameter);
-  bool setNumberofTubingCircuits(int numberofTubingCircuits);
-  bool setHydronicTubeSpacing(double hydronicTubeSpacing);
-  bool setSurfaceLength(double surfaceLength);
-  bool setSurfaceWidth(double surfaceWidth);
-  bool setLowerSurfaceEnvironment(const std::string& lowerSurfaceEnvironment);
+    boost::optional<double> hydronicTubingInsideDiameter() const;
+    bool setHydronicTubingInsideDiameter(double hydronicTubingInsideDiameter);
+    void resetHydronicTubingInsideDiameter();
 
-  void resetHydronicTubingInsideDiameter();
-  void resetNumberofTubingCircuits();
-  void resetHydronicTubeSpacing();
-  void resetSurfaceLength();
-  void resetSurfaceWidth();
-  void resetLowerSurfaceEnvironment();
+    boost::optional<int> numberofTubingCircuits() const;
+    bool setNumberofTubingCircuits(int numberofTubingCircuits);
+    void resetNumberofTubingCircuits();
 
- protected:
-  using ImplType = detail::GroundHeatExchangerSurface_Impl;
+    boost::optional<double> hydronicTubeSpacing() const;
+    bool setHydronicTubeSpacing(double hydronicTubeSpacing);
+    void resetHydronicTubeSpacing();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    boost::optional<double> surfaceLength() const;
+    bool setSurfaceLength(double surfaceLength);
+    void resetSurfaceLength();
 
-  explicit GroundHeatExchangerSurface(std::shared_ptr<detail::GroundHeatExchangerSurface_Impl> impl);
-};
+    boost::optional<double> surfaceWidth() const;
+    bool setSurfaceWidth(double surfaceWidth);
+    void resetSurfaceWidth();
+
+    std::string lowerSurfaceEnvironment() const;
+    bool isLowerSurfaceEnvironmentDefaulted() const;
+    bool setLowerSurfaceEnvironment(const std::string& lowerSurfaceEnvironment);
+    void resetLowerSurfaceEnvironment();
+
+   protected:
+    using ImplType = detail::GroundHeatExchangerSurface_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit GroundHeatExchangerSurface(std::shared_ptr<detail::GroundHeatExchangerSurface_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

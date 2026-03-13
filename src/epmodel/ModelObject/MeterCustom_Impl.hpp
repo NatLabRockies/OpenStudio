@@ -13,22 +13,22 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API MeterCustom_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~MeterCustom_Impl() override = default;
+    class EPMODEL_API MeterCustom_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~MeterCustom_Impl() override = default;
 
-  boost::optional<std::string> fuelType() const;
-  bool setFuelType(const std::string& fuelType);
-  void resetFuelType();
+      std::vector<std::string> fuelTypeValues() const;
 
-  std::vector<std::string> fuelTypeValues() const;
-};
+      boost::optional<std::string> fuelType() const;
+      bool setFuelType(const std::string& fuelType);
+      void resetFuelType();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

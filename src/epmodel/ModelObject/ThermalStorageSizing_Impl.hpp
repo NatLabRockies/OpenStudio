@@ -19,16 +19,25 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~ThermalStorageSizing_Impl() override = default;
 
+      /** @name On-peak period start time accessors */
+      //@{
       double onPeakPeriodStartTime() const;
       bool setOnPeakPeriodStartTime(double onPeakPeriodStartTime);
+      //@}
 
+      /** @name On-peak period end time accessors */
+      //@{
       double onPeakPeriodEndTime() const;
       bool setOnPeakPeriodEndTime(double onPeakPeriodEndTime);
+      //@}
 
+      /** @name Sizing factor accessors */
+      //@{
       double sizingFactor() const;
       bool setSizingFactor(double sizingFactor);
       bool isSizingFactorDefaulted() const;
       void resetSizingFactor();
+      //@}
     };
 
   }  // namespace detail

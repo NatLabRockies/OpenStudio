@@ -11,69 +11,56 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CoilCoolingDXCurveFitSpeed_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~CoilCoolingDXCurveFitSpeed_Impl() override = default;
+    class EPMODEL_API CoilCoolingDXCurveFitSpeed_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~CoilCoolingDXCurveFitSpeed_Impl() override = default;
 
-  double grossTotalCoolingCapacityFraction() const;
+      double grossTotalCoolingCapacityFraction() const;
+      bool setGrossTotalCoolingCapacityFraction(double grossTotalCoolingCapacityFraction);
 
-  double evaporatorAirFlowRateFraction() const;
+      double evaporatorAirFlowRateFraction() const;
+      bool setEvaporatorAirFlowRateFraction(double evaporatorAirFlowRateFraction);
 
-  double condenserAirFlowRateFraction() const;
+      double condenserAirFlowRateFraction() const;
+      bool setCondenserAirFlowRateFraction(double condenserAirFlowRateFraction);
 
-  boost::optional<double> grossSensibleHeatRatio() const;
+      boost::optional<double> grossSensibleHeatRatio() const;
+      bool isGrossSensibleHeatRatioAutosized() const;
+      bool setGrossSensibleHeatRatio(double grossSensibleHeatRatio);
+      void autosizeGrossSensibleHeatRatio();
+      boost::optional<double> autosizedGrossSensibleHeatRatio() const;
 
-  bool isGrossSensibleHeatRatioAutosized() const;
+      double grossCoolingCOP() const;
+      bool setGrossCoolingCOP(double grossCoolingCOP);
 
-  double grossCoolingCOP() const;
+      double activeFractionofCoilFaceArea() const;
+      bool setActiveFractionofCoilFaceArea(double activeFractionofCoilFaceArea);
 
-  double activeFractionofCoilFaceArea() const;
+      double ratedEvaporatorFanPowerPerVolumeFlowRate2017() const;
+      bool setRatedEvaporatorFanPowerPerVolumeFlowRate2017(double ratedEvaporatorFanPowerPerVolumeFlowRate2017);
 
-  double ratedEvaporatorFanPowerPerVolumeFlowRate2017() const;
+      double ratedEvaporatorFanPowerPerVolumeFlowRate2023() const;
+      bool setRatedEvaporatorFanPowerPerVolumeFlowRate2023(double ratedEvaporatorFanPowerPerVolumeFlowRate2023);
 
-  double ratedEvaporatorFanPowerPerVolumeFlowRate2023() const;
+      double evaporativeCondenserPumpPowerFraction() const;
+      bool setEvaporativeCondenserPumpPowerFraction(double evaporativeCondenserPumpPowerFraction);
 
-  double evaporativeCondenserPumpPowerFraction() const;
+      double evaporativeCondenserEffectiveness() const;
+      bool setEvaporativeCondenserEffectiveness(double evaporativeCondenserEffectiveness);
 
-  double evaporativeCondenserEffectiveness() const;
+      double ratedWasteHeatFractionofPowerInput() const;
+      bool setRatedWasteHeatFractionofPowerInput(double ratedWasteHeatFractionofPowerInput);
 
-  double ratedWasteHeatFractionofPowerInput() const;
+      void autosize();
 
-  bool setGrossTotalCoolingCapacityFraction(double grossTotalCoolingCapacityFraction);
+      void applySizingValues();
+    };
 
-  bool setEvaporatorAirFlowRateFraction(double evaporatorAirFlowRateFraction);
-
-  bool setCondenserAirFlowRateFraction(double condenserAirFlowRateFraction);
-
-  bool setGrossSensibleHeatRatio(double grossSensibleHeatRatio);
-  void autosizeGrossSensibleHeatRatio();
-
-  bool setGrossCoolingCOP(double grossCoolingCOP);
-
-  bool setActiveFractionofCoilFaceArea(double activeFractionofCoilFaceArea);
-
-  bool setRatedEvaporatorFanPowerPerVolumeFlowRate2017(double ratedEvaporatorFanPowerPerVolumeFlowRate2017);
-
-  bool setRatedEvaporatorFanPowerPerVolumeFlowRate2023(double ratedEvaporatorFanPowerPerVolumeFlowRate2023);
-
-  bool setEvaporativeCondenserPumpPowerFraction(double evaporativeCondenserPumpPowerFraction);
-
-  bool setEvaporativeCondenserEffectiveness(double evaporativeCondenserEffectiveness);
-
-  bool setRatedWasteHeatFractionofPowerInput(double ratedWasteHeatFractionofPowerInput);
-
-  boost::optional<double> autosizedGrossSensibleHeatRatio() const;
-
-  void autosize();
-
-  void applySizingValues();
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

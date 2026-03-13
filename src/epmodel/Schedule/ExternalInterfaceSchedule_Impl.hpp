@@ -18,6 +18,7 @@ class EPMODEL_API ExternalInterfaceSchedule_Impl : public ModelObject_Impl
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~ExternalInterfaceSchedule_Impl() override = default;
 
+  // Initial Value accessors
   double initialValue() const;
   bool setInitialValue(double initialValue);
 };

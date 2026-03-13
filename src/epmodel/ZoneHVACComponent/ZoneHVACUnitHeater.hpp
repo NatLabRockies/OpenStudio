@@ -49,40 +49,43 @@ namespace epmodel {
     // - Field Mapping: availability/supply fan/heating coil references and node targets remain relationship-only and are intentionally
     //   excluded from this scalar-only surface until dedicated helpers exist.
 
-    /** @name Getters */
+    /** @name Maximum Supply Air Flow Rate */
     //@{
     boost::optional<double> maximumSupplyAirFlowRate() const;
     bool isMaximumSupplyAirFlowRateAutosized() const;
-
-    std::string fanControlType() const;
-
-    boost::optional<double> maximumHotWaterFlowRate() const;
-    bool isMaximumHotWaterFlowRateAutosized() const;
-
-    double minimumHotWaterFlowRate() const;
-    bool isMinimumHotWaterFlowRateDefaulted() const;
-
-    double heatingConvergenceTolerance() const;
-    bool isHeatingConvergenceToleranceDefaulted() const;
-
-    boost::optional<double> autosizedMaximumSupplyAirFlowRate() const;
-    boost::optional<double> autosizedMaximumHotWaterFlowRate() const;
-    //@}
-
-    /** @name Setters */
-    //@{
     bool setMaximumSupplyAirFlowRate(double maximumSupplyAirFlowRate);
     void autosizeMaximumSupplyAirFlowRate();
+    boost::optional<double> autosizedMaximumSupplyAirFlowRate() const;
+    //@}
 
+    /** @name Fan Control Type */
+    //@{
+    std::string fanControlType() const;
     bool setFanControlType(const std::string& fanControlType);
+    //@}
 
+    /** @name Maximum Hot Water Flow Rate */
+    //@{
+    boost::optional<double> maximumHotWaterFlowRate() const;
+    bool isMaximumHotWaterFlowRateAutosized() const;
     bool setMaximumHotWaterFlowRate(double maximumHotWaterFlowRate);
     void resetMaximumHotWaterFlowRate();
     void autosizeMaximumHotWaterFlowRate();
+    boost::optional<double> autosizedMaximumHotWaterFlowRate() const;
+    //@}
 
+    /** @name Minimum Hot Water Flow Rate */
+    //@{
+    double minimumHotWaterFlowRate() const;
+    bool isMinimumHotWaterFlowRateDefaulted() const;
     bool setMinimumHotWaterFlowRate(double minimumHotWaterFlowRate);
     void resetMinimumHotWaterFlowRate();
+    //@}
 
+    /** @name Heating Convergence Tolerance */
+    //@{
+    double heatingConvergenceTolerance() const;
+    bool isHeatingConvergenceToleranceDefaulted() const;
     bool setHeatingConvergenceTolerance(double heatingConvergenceTolerance);
     void resetHeatingConvergenceTolerance();
     //@}

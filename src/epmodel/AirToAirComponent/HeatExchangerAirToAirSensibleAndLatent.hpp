@@ -17,91 +17,92 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class HeatExchangerAirToAirSensibleAndLatent_Impl;
-}
+  namespace detail {
+    class HeatExchangerAirToAirSensibleAndLatent_Impl;
+  }
 
-class EPMODEL_API HeatExchangerAirToAirSensibleAndLatent : public ModelObject
-{
- public:
-  explicit HeatExchangerAirToAirSensibleAndLatent(const Model& model);
+  class EPMODEL_API HeatExchangerAirToAirSensibleAndLatent : public ModelObject
+  {
+   public:
+    explicit HeatExchangerAirToAirSensibleAndLatent(const Model& model);
 
-  virtual ~HeatExchangerAirToAirSensibleAndLatent() override = default;
-  HeatExchangerAirToAirSensibleAndLatent(const HeatExchangerAirToAirSensibleAndLatent& other) = default;
-  HeatExchangerAirToAirSensibleAndLatent(HeatExchangerAirToAirSensibleAndLatent&& other) = default;
-  HeatExchangerAirToAirSensibleAndLatent& operator=(const HeatExchangerAirToAirSensibleAndLatent&) = default;
-  HeatExchangerAirToAirSensibleAndLatent& operator=(HeatExchangerAirToAirSensibleAndLatent&&) = default;
+    virtual ~HeatExchangerAirToAirSensibleAndLatent() override = default;
+    HeatExchangerAirToAirSensibleAndLatent(const HeatExchangerAirToAirSensibleAndLatent& other) = default;
+    HeatExchangerAirToAirSensibleAndLatent(HeatExchangerAirToAirSensibleAndLatent&& other) = default;
+    HeatExchangerAirToAirSensibleAndLatent& operator=(const HeatExchangerAirToAirSensibleAndLatent&) = default;
+    HeatExchangerAirToAirSensibleAndLatent& operator=(HeatExchangerAirToAirSensibleAndLatent&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> heatExchangerTypeValues();
-  static std::vector<std::string> frostControlTypeValues();
+    static std::vector<std::string> heatExchangerTypeValues();
+    static std::vector<std::string> frostControlTypeValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model scalar accessor names/signatures for counterpart compatibility.
-  // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus HeatExchanger:AirToAir:SensibleAndLatent scalar fields.
-  // - Field Mapping: Relationship fields (availability schedule, node names, curve references) are intentionally excluded.
-  // - TODO(parity): Add non-scalar relationship parity incrementally after scalar scaffold saturation.
-  boost::optional<double> nominalSupplyAirFlowRate() const;
-  bool isNominalSupplyAirFlowRateAutosized() const;
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model scalar accessor names/signatures for counterpart compatibility.
+    // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus HeatExchanger:AirToAir:SensibleAndLatent scalar fields.
+    // - Field Mapping: Relationship fields (availability schedule, node names, curve references) are intentionally excluded.
+    // - TODO(parity): Add non-scalar relationship parity incrementally after scalar scaffold saturation.
+    /** @name Field Accessors */
+    //@{
 
-  double sensibleEffectivenessat100HeatingAirFlow() const;
-  double latentEffectivenessat100HeatingAirFlow() const;
-  double sensibleEffectivenessat100CoolingAirFlow() const;
-  double latentEffectivenessat100CoolingAirFlow() const;
+    boost::optional<double> nominalSupplyAirFlowRate() const;
+    bool setNominalSupplyAirFlowRate(double nominalSupplyAirFlowRate);
+    bool isNominalSupplyAirFlowRateAutosized() const;
+    void autosizeNominalSupplyAirFlowRate();
 
-  double nominalElectricPower() const;
+    double sensibleEffectivenessat100HeatingAirFlow() const;
+    bool setSensibleEffectivenessat100HeatingAirFlow(double sensibleEffectivenessat100HeatingAirFlow);
 
-  bool supplyAirOutletTemperatureControl() const;
+    double latentEffectivenessat100HeatingAirFlow() const;
+    bool setLatentEffectivenessat100HeatingAirFlow(double latentEffectivenessat100HeatingAirFlow);
 
-  std::string heatExchangerType() const;
-  std::string frostControlType() const;
+    double sensibleEffectivenessat100CoolingAirFlow() const;
+    bool setSensibleEffectivenessat100CoolingAirFlow(double sensibleEffectivenessat100CoolingAirFlow);
 
-  double thresholdTemperature() const;
-  bool isThresholdTemperatureDefaulted() const;
+    double latentEffectivenessat100CoolingAirFlow() const;
+    bool setLatentEffectivenessat100CoolingAirFlow(double latentEffectivenessat100CoolingAirFlow);
 
-  boost::optional<double> initialDefrostTimeFraction() const;
-  boost::optional<double> rateofDefrostTimeFractionIncrease() const;
+    double nominalElectricPower() const;
+    bool setNominalElectricPower(double nominalElectricPower);
 
-  bool economizerLockout() const;
+    bool supplyAirOutletTemperatureControl() const;
+    bool setSupplyAirOutletTemperatureControl(bool supplyAirOutletTemperatureControl);
 
-  bool setNominalSupplyAirFlowRate(double nominalSupplyAirFlowRate);
-  void autosizeNominalSupplyAirFlowRate();
+    std::string heatExchangerType() const;
+    bool setHeatExchangerType(const std::string& heatExchangerType);
 
-  bool setSensibleEffectivenessat100HeatingAirFlow(double sensibleEffectivenessat100HeatingAirFlow);
-  bool setLatentEffectivenessat100HeatingAirFlow(double latentEffectivenessat100HeatingAirFlow);
-  bool setSensibleEffectivenessat100CoolingAirFlow(double sensibleEffectivenessat100CoolingAirFlow);
-  bool setLatentEffectivenessat100CoolingAirFlow(double latentEffectivenessat100CoolingAirFlow);
+    std::string frostControlType() const;
+    bool setFrostControlType(const std::string& frostControlType);
 
-  bool setNominalElectricPower(double nominalElectricPower);
+    double thresholdTemperature() const;
+    bool setThresholdTemperature(double thresholdTemperature);
+    bool isThresholdTemperatureDefaulted() const;
+    void resetThresholdTemperature();
 
-  bool setSupplyAirOutletTemperatureControl(bool supplyAirOutletTemperatureControl);
+    boost::optional<double> initialDefrostTimeFraction() const;
+    bool setInitialDefrostTimeFraction(double initialDefrostTimeFraction);
+    void resetInitialDefrostTimeFraction();
 
-  bool setHeatExchangerType(const std::string& heatExchangerType);
-  bool setFrostControlType(const std::string& frostControlType);
+    boost::optional<double> rateofDefrostTimeFractionIncrease() const;
+    bool setRateofDefrostTimeFractionIncrease(double rateofDefrostTimeFractionIncrease);
+    void resetRateofDefrostTimeFractionIncrease();
 
-  bool setThresholdTemperature(double thresholdTemperature);
-  void resetThresholdTemperature();
+    bool economizerLockout() const;
+    bool setEconomizerLockout(bool economizerLockout);
 
-  bool setInitialDefrostTimeFraction(double initialDefrostTimeFraction);
-  void resetInitialDefrostTimeFraction();
+    //@}
 
-  bool setRateofDefrostTimeFractionIncrease(double rateofDefrostTimeFractionIncrease);
-  void resetRateofDefrostTimeFractionIncrease();
+   protected:
+    using ImplType = detail::HeatExchangerAirToAirSensibleAndLatent_Impl;
 
-  bool setEconomizerLockout(bool economizerLockout);
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
- protected:
-  using ImplType = detail::HeatExchangerAirToAirSensibleAndLatent_Impl;
-
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit HeatExchangerAirToAirSensibleAndLatent(std::shared_ptr<detail::HeatExchangerAirToAirSensibleAndLatent_Impl> impl);
-};
+    explicit HeatExchangerAirToAirSensibleAndLatent(std::shared_ptr<detail::HeatExchangerAirToAirSensibleAndLatent_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

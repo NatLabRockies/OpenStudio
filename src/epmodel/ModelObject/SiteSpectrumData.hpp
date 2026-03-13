@@ -38,13 +38,16 @@ class EPMODEL_API SiteSpectrumData : public ModelObject
 
   static std::vector<std::string> spectrumDataTypeValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar API maps directly to EnergyPlus Site:SpectrumData Spectrum Data Type.
-  // - Field Mapping: Extensible [Wavelength, Spectrum] groups are excluded in this scalar-only scaffold.
-  // - TODO(parity): Add typed helpers for extensible spectrum data pairs in a dedicated non-scalar parity pass.
+  /** Schema Alignment Notes:
+   * - API: This no-counterpart type uses IDD-derived class/accessor naming.
+   * - Field Mapping: Scalar API maps directly to EnergyPlus Site:SpectrumData Spectrum Data Type.
+   * - Field Mapping: Extensible [Wavelength, Spectrum] groups are excluded in this scalar-only scaffold.
+   * - TODO(parity): Add typed helpers for extensible spectrum data pairs in a dedicated non-scalar parity pass.
+   */
+  //@{
   std::string spectrumDataType() const;
   bool setSpectrumDataType(const std::string& spectrumDataType);
+  //@}
 
  protected:
   using ImplType = detail::SiteSpectrumData_Impl;

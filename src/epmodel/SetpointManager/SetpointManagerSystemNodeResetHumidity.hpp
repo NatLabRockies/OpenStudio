@@ -15,56 +15,58 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SetpointManagerSystemNodeResetHumidity_Impl;
-}
+  namespace detail {
+    class SetpointManagerSystemNodeResetHumidity_Impl;
+  }
 
-class EPMODEL_API SetpointManagerSystemNodeResetHumidity : public SetpointManager
-{
- public:
-  explicit SetpointManagerSystemNodeResetHumidity(const Model& model);
+  class EPMODEL_API SetpointManagerSystemNodeResetHumidity : public SetpointManager
+  {
+   public:
+    explicit SetpointManagerSystemNodeResetHumidity(const Model& model);
 
-  virtual ~SetpointManagerSystemNodeResetHumidity() override = default;
-  SetpointManagerSystemNodeResetHumidity(const SetpointManagerSystemNodeResetHumidity& other) = default;
-  SetpointManagerSystemNodeResetHumidity(SetpointManagerSystemNodeResetHumidity&& other) = default;
-  SetpointManagerSystemNodeResetHumidity& operator=(const SetpointManagerSystemNodeResetHumidity&) = default;
-  SetpointManagerSystemNodeResetHumidity& operator=(SetpointManagerSystemNodeResetHumidity&&) = default;
+    virtual ~SetpointManagerSystemNodeResetHumidity() override = default;
+    SetpointManagerSystemNodeResetHumidity(const SetpointManagerSystemNodeResetHumidity& other) = default;
+    SetpointManagerSystemNodeResetHumidity(SetpointManagerSystemNodeResetHumidity&& other) = default;
+    SetpointManagerSystemNodeResetHumidity& operator=(const SetpointManagerSystemNodeResetHumidity&) = default;
+    SetpointManagerSystemNodeResetHumidity& operator=(SetpointManagerSystemNodeResetHumidity&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> controlVariableValues();
+    static std::vector<std::string> controlVariableValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-  // - Field Mapping: setpointatLowReferenceHumidityRatio, setpointatHighReferenceHumidityRatio,
-  //   lowReferenceHumidityRatio, and highReferenceHumidityRatio map directly to
-  //   E+ SetpointManager:SystemNodeReset:Humidity scalar fields.
-  // - ForwardTranslator Evidence: ForwardTranslateSetpointManagerSystemNodeResetHumidity writes these exact
-  //   scalar fields plus control variable using preserved model API names.
-  // - Field Mapping: Relationship fields Reference Node Name and Setpoint Node or NodeList Name are intentionally
-  //   excluded from scalar-only scaffolding.
-  // - TODO(parity): Add non-scalar relationship parity for explicit reference-node linkage in a follow-up pass.
-  double setpointatLowReferenceHumidityRatio() const;
-  double setpointatHighReferenceHumidityRatio() const;
-  double lowReferenceHumidityRatio() const;
-  double highReferenceHumidityRatio() const;
+    // Schema Alignment Notes:
+    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
+    // - Field Mapping: setpointatLowReferenceHumidityRatio, setpointatHighReferenceHumidityRatio,
+    //   lowReferenceHumidityRatio, and highReferenceHumidityRatio map directly to
+    //   E+ SetpointManager:SystemNodeReset:Humidity scalar fields.
+    // - ForwardTranslator Evidence: ForwardTranslateSetpointManagerSystemNodeResetHumidity writes these exact
+    //   scalar fields plus control variable using preserved model API names.
+    // - Field Mapping: Relationship fields Reference Node Name and Setpoint Node or NodeList Name are intentionally
+    //   excluded from scalar-only scaffolding.
+    // - TODO(parity): Add non-scalar relationship parity for explicit reference-node linkage in a follow-up pass.
+    double setpointatLowReferenceHumidityRatio() const;
+    bool setSetpointatLowReferenceHumidityRatio(double setpointatLowReferenceHumidityRatio);
 
-  bool setSetpointatLowReferenceHumidityRatio(double setpointatLowReferenceHumidityRatio);
-  bool setSetpointatHighReferenceHumidityRatio(double setpointatHighReferenceHumidityRatio);
-  bool setLowReferenceHumidityRatio(double lowReferenceHumidityRatio);
-  bool setHighReferenceHumidityRatio(double highReferenceHumidityRatio);
+    double setpointatHighReferenceHumidityRatio() const;
+    bool setSetpointatHighReferenceHumidityRatio(double setpointatHighReferenceHumidityRatio);
 
- protected:
-  using ImplType = detail::SetpointManagerSystemNodeResetHumidity_Impl;
+    double lowReferenceHumidityRatio() const;
+    bool setLowReferenceHumidityRatio(double lowReferenceHumidityRatio);
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    double highReferenceHumidityRatio() const;
+    bool setHighReferenceHumidityRatio(double highReferenceHumidityRatio);
 
-  explicit SetpointManagerSystemNodeResetHumidity(std::shared_ptr<detail::SetpointManagerSystemNodeResetHumidity_Impl> impl);
-};
+   protected:
+    using ImplType = detail::SetpointManagerSystemNodeResetHumidity_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit SetpointManagerSystemNodeResetHumidity(std::shared_ptr<detail::SetpointManagerSystemNodeResetHumidity_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

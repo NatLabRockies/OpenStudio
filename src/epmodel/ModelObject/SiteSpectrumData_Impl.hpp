@@ -13,21 +13,21 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SiteSpectrumData_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~SiteSpectrumData_Impl() override = default;
+    class EPMODEL_API SiteSpectrumData_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~SiteSpectrumData_Impl() override = default;
 
-  std::string spectrumDataType() const;
-  bool setSpectrumDataType(const std::string& spectrumDataType);
+      std::vector<std::string> spectrumDataTypeValues() const;
 
-  std::vector<std::string> spectrumDataTypeValues() const;
-};
+      std::string spectrumDataType() const;
+      bool setSpectrumDataType(const std::string& spectrumDataType);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

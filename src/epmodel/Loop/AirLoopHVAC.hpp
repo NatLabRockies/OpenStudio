@@ -56,9 +56,9 @@ namespace epmodel {
     //   (availabilityManagers/add/remove/priority) and is intentionally not exposed as a scalar string accessor.
     // - TODO(parity): Extend this class with additional scalar API parity where model counterparts exist.
     boost::optional<double> designSupplyAirFlowRate() const;
-    bool isDesignSupplyAirFlowRateAutosized() const;
     bool setDesignSupplyAirFlowRate(double designSupplyAirFlowRate);
     void resetDesignSupplyAirFlowRate();
+    bool isDesignSupplyAirFlowRateAutosized() const;
     void autosizeDesignSupplyAirFlowRate();
     double designReturnAirFlowFractionofSupplyAirFlow() const;
     bool setDesignReturnAirFlowFractionofSupplyAirFlow(double designReturnAirFlowFractionofSupplyAirFlow);

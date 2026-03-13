@@ -11,50 +11,53 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatTransferBasementInterior_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatTransferBasementInterior_Impl() override = default;
+    class EPMODEL_API GroundHeatTransferBasementInterior_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatTransferBasementInterior_Impl() override = default;
 
-  bool cONDFlagIsthebasementconditioned() const;
-  double hINDownwardconvectiononlyheattransfercoefficient() const;
-  double hINUpwardconvectiononlyheattransfercoefficient() const;
-  double hINHorizontalconvectiononlyheattransfercoefficient() const;
-  double hINDownwardcombinedconvectionandradiationheattransfercoefficient() const;
-  double hINUpwardcombinedconvectionandradiationheattransfercoefficient() const;
-  double hINHorizontalcombinedconvectionandradiationheattransfercoefficient() const;
+      bool cONDFlagIsthebasementconditioned() const;
+      bool isCONDFlagIsthebasementconditionedDefaulted() const;
+      bool setCONDFlagIsthebasementconditioned(bool cONDFlagIsthebasementconditioned);
+      void resetCONDFlagIsthebasementconditioned();
 
-  bool isCONDFlagIsthebasementconditionedDefaulted() const;
-  bool isHINDownwardconvectiononlyheattransfercoefficientDefaulted() const;
-  bool isHINUpwardconvectiononlyheattransfercoefficientDefaulted() const;
-  bool isHINHorizontalconvectiononlyheattransfercoefficientDefaulted() const;
-  bool isHINDownwardcombinedconvectionandradiationheattransfercoefficientDefaulted() const;
-  bool isHINUpwardcombinedconvectionandradiationheattransfercoefficientDefaulted() const;
-  bool isHINHorizontalcombinedconvectionandradiationheattransfercoefficientDefaulted() const;
+      double hINDownwardconvectiononlyheattransfercoefficient() const;
+      bool isHINDownwardconvectiononlyheattransfercoefficientDefaulted() const;
+      bool setHINDownwardconvectiononlyheattransfercoefficient(double hINDownwardconvectiononlyheattransfercoefficient);
+      void resetHINDownwardconvectiononlyheattransfercoefficient();
 
-  bool setCONDFlagIsthebasementconditioned(bool cONDFlagIsthebasementconditioned);
-  bool setHINDownwardconvectiononlyheattransfercoefficient(double hINDownwardconvectiononlyheattransfercoefficient);
-  bool setHINUpwardconvectiononlyheattransfercoefficient(double hINUpwardconvectiononlyheattransfercoefficient);
-  bool setHINHorizontalconvectiononlyheattransfercoefficient(double hINHorizontalconvectiononlyheattransfercoefficient);
-  bool setHINDownwardcombinedconvectionandradiationheattransfercoefficient(
-    double hINDownwardcombinedconvectionandradiationheattransfercoefficient);
-  bool setHINUpwardcombinedconvectionandradiationheattransfercoefficient(double hINUpwardcombinedconvectionandradiationheattransfercoefficient);
-  bool setHINHorizontalcombinedconvectionandradiationheattransfercoefficient(
-    double hINHorizontalcombinedconvectionandradiationheattransfercoefficient);
+      double hINUpwardconvectiononlyheattransfercoefficient() const;
+      bool isHINUpwardconvectiononlyheattransfercoefficientDefaulted() const;
+      bool setHINUpwardconvectiononlyheattransfercoefficient(double hINUpwardconvectiononlyheattransfercoefficient);
+      void resetHINUpwardconvectiononlyheattransfercoefficient();
 
-  void resetCONDFlagIsthebasementconditioned();
-  void resetHINDownwardconvectiononlyheattransfercoefficient();
-  void resetHINUpwardconvectiononlyheattransfercoefficient();
-  void resetHINHorizontalconvectiononlyheattransfercoefficient();
-  void resetHINDownwardcombinedconvectionandradiationheattransfercoefficient();
-  void resetHINUpwardcombinedconvectionandradiationheattransfercoefficient();
-  void resetHINHorizontalcombinedconvectionandradiationheattransfercoefficient();
-};
+      double hINHorizontalconvectiononlyheattransfercoefficient() const;
+      bool isHINHorizontalconvectiononlyheattransfercoefficientDefaulted() const;
+      bool setHINHorizontalconvectiononlyheattransfercoefficient(double hINHorizontalconvectiononlyheattransfercoefficient);
+      void resetHINHorizontalconvectiononlyheattransfercoefficient();
 
-}  // namespace detail
+      double hINDownwardcombinedconvectionandradiationheattransfercoefficient() const;
+      bool isHINDownwardcombinedconvectionandradiationheattransfercoefficientDefaulted() const;
+      bool
+        setHINDownwardcombinedconvectionandradiationheattransfercoefficient(double hINDownwardcombinedconvectionandradiationheattransfercoefficient);
+      void resetHINDownwardcombinedconvectionandradiationheattransfercoefficient();
+
+      double hINUpwardcombinedconvectionandradiationheattransfercoefficient() const;
+      bool isHINUpwardcombinedconvectionandradiationheattransfercoefficientDefaulted() const;
+      bool setHINUpwardcombinedconvectionandradiationheattransfercoefficient(double hINUpwardcombinedconvectionandradiationheattransfercoefficient);
+      void resetHINUpwardcombinedconvectionandradiationheattransfercoefficient();
+
+      double hINHorizontalcombinedconvectionandradiationheattransfercoefficient() const;
+      bool isHINHorizontalcombinedconvectionandradiationheattransfercoefficientDefaulted() const;
+      bool setHINHorizontalcombinedconvectionandradiationheattransfercoefficient(
+        double hINHorizontalcombinedconvectionandradiationheattransfercoefficient);
+      void resetHINHorizontalcombinedconvectionandradiationheattransfercoefficient();
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

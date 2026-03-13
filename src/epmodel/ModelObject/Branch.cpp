@@ -188,19 +188,6 @@ namespace epmodel {
       return target ? target->optionalCast<Node>() : boost::none;
     }
 
-    boost::optional<Node> Branch_Impl::componentOutletNode(unsigned index) const {
-      auto groups = extensibleGroups();
-      if (index >= groups.size()) {
-        return boost::none;
-      }
-      auto workspaceGroup = groups[index].optionalCast<openstudio::WorkspaceExtensibleGroup>();
-      if (!workspaceGroup) {
-        return boost::none;
-      }
-      auto target = workspaceGroup->getTarget(BranchExtensibleFields::ComponentOutletNodeName);
-      return target ? target->optionalCast<Node>() : boost::none;
-    }
-
     bool Branch_Impl::setComponentInletNode(unsigned index, const Node& node) {
       auto groups = extensibleGroups();
       if (index >= groups.size()) {
@@ -214,6 +201,19 @@ namespace epmodel {
         return false;
       }
       return workspaceGroup->setPointer(BranchExtensibleFields::ComponentInletNodeName, node.handle());
+    }
+
+    boost::optional<Node> Branch_Impl::componentOutletNode(unsigned index) const {
+      auto groups = extensibleGroups();
+      if (index >= groups.size()) {
+        return boost::none;
+      }
+      auto workspaceGroup = groups[index].optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!workspaceGroup) {
+        return boost::none;
+      }
+      auto target = workspaceGroup->getTarget(BranchExtensibleFields::ComponentOutletNodeName);
+      return target ? target->optionalCast<Node>() : boost::none;
     }
 
     bool Branch_Impl::setComponentOutletNode(unsigned index, const Node& node) {

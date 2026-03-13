@@ -12,44 +12,49 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ScheduleFile_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ScheduleFile_Impl() override = default;
+    class EPMODEL_API ScheduleFile_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ScheduleFile_Impl() override = default;
 
-  int columnNumber() const;
-  int rowstoSkipatTop() const;
-  boost::optional<int> numberofHoursofData() const;
-  bool isNumberofHoursofDataDefaulted() const;
-  std::string columnSeparator() const;
-  bool isColumnSeparatorDefaulted() const;
-  bool interpolatetoTimestep() const;
-  bool isInterpolatetoTimestepDefaulted() const;
-  boost::optional<std::string> minutesperItem() const;
-  bool isMinutesperItemDefaulted() const;
-  bool adjustScheduleforDaylightSavings() const;
-  bool isAdjustScheduleforDaylightSavingsDefaulted() const;
+      int columnNumber() const;
+      bool setColumnNumber(int columnNumber);
 
-  bool setColumnNumber(int columnNumber);
-  bool setRowstoSkipatTop(int rowstoSkipatTop);
-  bool setNumberofHoursofData(int numberofHours);
-  bool setColumnSeparator(const std::string& columnSeparator);
-  void resetColumnSeparator();
-  bool setInterpolatetoTimestep(bool interpolatetoTimestep);
-  void resetInterpolatetoTimestep();
-  bool setMinutesperItem(int minutesperItem);
-  void resetMinutesperItem();
-  bool setAdjustScheduleforDaylightSavings(bool adjustScheduleforDaylightSavings);
-  void resetAdjustScheduleforDaylightSavings();
+      int rowstoSkipatTop() const;
+      bool setRowstoSkipatTop(int rowstoSkipatTop);
 
-  std::vector<std::string> columnSeparatorValues() const;
-  std::vector<std::string> minutesperItemValues() const;
-};
+      boost::optional<int> numberofHoursofData() const;
+      bool isNumberofHoursofDataDefaulted() const;
+      bool setNumberofHoursofData(int numberofHours);
 
-}  // namespace detail
+      std::string columnSeparator() const;
+      bool isColumnSeparatorDefaulted() const;
+      bool setColumnSeparator(const std::string& columnSeparator);
+      void resetColumnSeparator();
+
+      bool interpolatetoTimestep() const;
+      bool isInterpolatetoTimestepDefaulted() const;
+      bool setInterpolatetoTimestep(bool interpolatetoTimestep);
+      void resetInterpolatetoTimestep();
+
+      boost::optional<std::string> minutesperItem() const;
+      bool isMinutesperItemDefaulted() const;
+      bool setMinutesperItem(int minutesperItem);
+      void resetMinutesperItem();
+
+      bool adjustScheduleforDaylightSavings() const;
+      bool isAdjustScheduleforDaylightSavingsDefaulted() const;
+      bool setAdjustScheduleforDaylightSavings(bool adjustScheduleforDaylightSavings);
+      void resetAdjustScheduleforDaylightSavings();
+
+      std::vector<std::string> columnSeparatorValues() const;
+      std::vector<std::string> minutesperItemValues() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

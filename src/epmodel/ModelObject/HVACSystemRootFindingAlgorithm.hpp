@@ -17,51 +17,51 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class HVACSystemRootFindingAlgorithm_Impl;
-}
+  namespace detail {
+    class HVACSystemRootFindingAlgorithm_Impl;
+  }
 
-class EPMODEL_API HVACSystemRootFindingAlgorithm : public ModelObject
-{
- public:
-  explicit HVACSystemRootFindingAlgorithm(const Model& model);
+  class EPMODEL_API HVACSystemRootFindingAlgorithm : public ModelObject
+  {
+   public:
+    explicit HVACSystemRootFindingAlgorithm(const Model& model);
 
-  virtual ~HVACSystemRootFindingAlgorithm() override = default;
-  HVACSystemRootFindingAlgorithm(const HVACSystemRootFindingAlgorithm& other) = default;
-  HVACSystemRootFindingAlgorithm(HVACSystemRootFindingAlgorithm&& other) = default;
-  HVACSystemRootFindingAlgorithm& operator=(const HVACSystemRootFindingAlgorithm&) = default;
-  HVACSystemRootFindingAlgorithm& operator=(HVACSystemRootFindingAlgorithm&&) = default;
+    virtual ~HVACSystemRootFindingAlgorithm() override = default;
+    HVACSystemRootFindingAlgorithm(const HVACSystemRootFindingAlgorithm& other) = default;
+    HVACSystemRootFindingAlgorithm(HVACSystemRootFindingAlgorithm&& other) = default;
+    HVACSystemRootFindingAlgorithm& operator=(const HVACSystemRootFindingAlgorithm&) = default;
+    HVACSystemRootFindingAlgorithm& operator=(HVACSystemRootFindingAlgorithm&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> algorithmValues();
+    static std::vector<std::string> algorithmValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-  // - Field Mapping: algorithm and numberofIterationsBeforeAlgorithmSwitch map directly to
-  //   EnergyPlus HVACSystemRootFindingAlgorithm scalar fields.
-  // - TODO(parity): Keep relationship APIs out of scope for this scalar-only scaffold pass.
-  std::string algorithm() const;
-  bool isAlgorithmDefaulted() const;
-  bool setAlgorithm(const std::string& algorithm);
-  void resetAlgorithm();
+    // Schema Alignment Notes:
+    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
+    // - Field Mapping: algorithm and numberofIterationsBeforeAlgorithmSwitch map directly to
+    //   EnergyPlus HVACSystemRootFindingAlgorithm scalar fields.
+    // - TODO(parity): Keep relationship APIs out of scope for this scalar-only scaffold pass.
+    std::string algorithm() const;
+    bool setAlgorithm(const std::string& algorithm);
+    bool isAlgorithmDefaulted() const;
+    void resetAlgorithm();
 
-  int numberofIterationsBeforeAlgorithmSwitch() const;
-  bool isNumberofIterationsBeforeAlgorithmSwitchDefaulted() const;
-  bool setNumberofIterationsBeforeAlgorithmSwitch(int numberofIterationsBeforeAlgorithmSwitch);
-  void resetNumberofIterationsBeforeAlgorithmSwitch();
+    int numberofIterationsBeforeAlgorithmSwitch() const;
+    bool setNumberofIterationsBeforeAlgorithmSwitch(int numberofIterationsBeforeAlgorithmSwitch);
+    bool isNumberofIterationsBeforeAlgorithmSwitchDefaulted() const;
+    void resetNumberofIterationsBeforeAlgorithmSwitch();
 
- protected:
-  using ImplType = detail::HVACSystemRootFindingAlgorithm_Impl;
+   protected:
+    using ImplType = detail::HVACSystemRootFindingAlgorithm_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit HVACSystemRootFindingAlgorithm(std::shared_ptr<detail::HVACSystemRootFindingAlgorithm_Impl> impl);
-};
+    explicit HVACSystemRootFindingAlgorithm(std::shared_ptr<detail::HVACSystemRootFindingAlgorithm_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

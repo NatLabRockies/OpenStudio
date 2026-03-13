@@ -23,19 +23,18 @@ namespace epmodel {
       bool setSubcoolerType(const std::string& subcoolerType);
 
       boost::optional<double> liquidSuctionDesignSubcoolingTemperatureDifference() const;
-      boost::optional<double> designLiquidInletTemperature() const;
-      boost::optional<double> designVaporInletTemperature() const;
-      boost::optional<double> outletControlTemperature() const;
-
       bool setLiquidSuctionDesignSubcoolingTemperatureDifference(boost::optional<double> value);
       void resetLiquidSuctionDesignSubcoolingTemperatureDifference();
 
+      boost::optional<double> designLiquidInletTemperature() const;
       bool setDesignLiquidInletTemperature(boost::optional<double> value);
       void resetDesignLiquidInletTemperature();
 
+      boost::optional<double> designVaporInletTemperature() const;
       bool setDesignVaporInletTemperature(boost::optional<double> value);
       void resetDesignVaporInletTemperature();
 
+      boost::optional<double> outletControlTemperature() const;
       bool setOutletControlTemperature(boost::optional<double> value);
       void resetOutletControlTemperature();
     };

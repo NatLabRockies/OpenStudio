@@ -17,47 +17,50 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SetpointManagerReturnAirBypassFlow_Impl;
-}
+  namespace detail {
+    class SetpointManagerReturnAirBypassFlow_Impl;
+  }
 
-class EPMODEL_API SetpointManagerReturnAirBypassFlow : public ModelObject
-{
- public:
-  explicit SetpointManagerReturnAirBypassFlow(const Model& model);
+  class EPMODEL_API SetpointManagerReturnAirBypassFlow : public ModelObject
+  {
+   public:
+    explicit SetpointManagerReturnAirBypassFlow(const Model& model);
 
-  virtual ~SetpointManagerReturnAirBypassFlow() override = default;
-  SetpointManagerReturnAirBypassFlow(const SetpointManagerReturnAirBypassFlow& other) = default;
-  SetpointManagerReturnAirBypassFlow(SetpointManagerReturnAirBypassFlow&& other) = default;
-  SetpointManagerReturnAirBypassFlow& operator=(const SetpointManagerReturnAirBypassFlow&) = default;
-  SetpointManagerReturnAirBypassFlow& operator=(SetpointManagerReturnAirBypassFlow&&) = default;
+    virtual ~SetpointManagerReturnAirBypassFlow() override = default;
+    SetpointManagerReturnAirBypassFlow(const SetpointManagerReturnAirBypassFlow& other) = default;
+    SetpointManagerReturnAirBypassFlow(SetpointManagerReturnAirBypassFlow&& other) = default;
+    SetpointManagerReturnAirBypassFlow& operator=(const SetpointManagerReturnAirBypassFlow&) = default;
+    SetpointManagerReturnAirBypassFlow& operator=(SetpointManagerReturnAirBypassFlow&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> controlVariableValues();
+    static std::vector<std::string> controlVariableValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to SetpointManager:ReturnAirBypassFlow fields.
-  // - Field Mapping: HVAC Air Loop Name and Temperature Setpoint Schedule Name are relationship
-  //   fields and are excluded from scalar-only scaffold scope.
-  // - TODO(parity): Add relationship APIs incrementally after scalar saturation.
-  std::string controlVariable() const;
-  bool isControlVariableDefaulted() const;
-  bool setControlVariable(const std::string& controlVariable);
-  void resetControlVariable();
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to SetpointManager:ReturnAirBypassFlow fields.
+    // - Field Mapping: HVAC Air Loop Name and Temperature Setpoint Schedule Name are relationship
+    //   fields and are excluded from scalar-only scaffold scope.
+    // - TODO(parity): Add relationship APIs incrementally after scalar saturation.
+    /** @name Control Variable */
+    //@{
+    std::string controlVariable() const;
+    bool isControlVariableDefaulted() const;
+    bool setControlVariable(const std::string& controlVariable);
+    void resetControlVariable();
+    //@}
 
- protected:
-  using ImplType = detail::SetpointManagerReturnAirBypassFlow_Impl;
+   protected:
+    using ImplType = detail::SetpointManagerReturnAirBypassFlow_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit SetpointManagerReturnAirBypassFlow(std::shared_ptr<detail::SetpointManagerReturnAirBypassFlow_Impl> impl);
-};
+    explicit SetpointManagerReturnAirBypassFlow(std::shared_ptr<detail::SetpointManagerReturnAirBypassFlow_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

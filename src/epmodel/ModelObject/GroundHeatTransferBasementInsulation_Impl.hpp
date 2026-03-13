@@ -11,23 +11,25 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatTransferBasementInsulation_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatTransferBasementInsulation_Impl() override = default;
+    class EPMODEL_API GroundHeatTransferBasementInsulation_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatTransferBasementInsulation_Impl() override = default;
 
-  boost::optional<double> rEXTRValueofanyexteriorinsulation() const;
-  bool setREXTRValueofanyexteriorinsulation(double rEXTRValueofanyexteriorinsulation);
-  void resetREXTRValueofanyexteriorinsulation();
+      // Accessors for REXT: R Value of any exterior insulation.
+      boost::optional<double> rEXTRValueofanyexteriorinsulation() const;
+      bool setREXTRValueofanyexteriorinsulation(double rEXTRValueofanyexteriorinsulation);
+      void resetREXTRValueofanyexteriorinsulation();
 
-  bool iNSFULLFlagIsthewallfullyinsulated() const;
-  bool setINSFULLFlagIsthewallfullyinsulated(bool iNSFULLFlagIsthewallfullyinsulated);
-};
+      // Accessors for INSFULL: Flag indicating the wall is fully insulated.
+      bool iNSFULLFlagIsthewallfullyinsulated() const;
+      bool setINSFULLFlagIsthewallfullyinsulated(bool iNSFULLFlagIsthewallfullyinsulated);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

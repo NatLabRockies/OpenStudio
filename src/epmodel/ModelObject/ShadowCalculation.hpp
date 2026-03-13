@@ -17,99 +17,89 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class ShadowCalculation_Impl;
-}
+  namespace detail {
+    class ShadowCalculation_Impl;
+  }
 
-class EPMODEL_API ShadowCalculation : public ModelObject
-{
- public:
-  explicit ShadowCalculation(const Model& model);
+  class EPMODEL_API ShadowCalculation : public ModelObject
+  {
+   public:
+    explicit ShadowCalculation(const Model& model);
 
-  virtual ~ShadowCalculation() override = default;
-  ShadowCalculation(const ShadowCalculation& other) = default;
-  ShadowCalculation(ShadowCalculation&& other) = default;
-  ShadowCalculation& operator=(const ShadowCalculation&) = default;
-  ShadowCalculation& operator=(ShadowCalculation&&) = default;
+    virtual ~ShadowCalculation() override = default;
+    ShadowCalculation(const ShadowCalculation& other) = default;
+    ShadowCalculation(ShadowCalculation&& other) = default;
+    ShadowCalculation& operator=(const ShadowCalculation&) = default;
+    ShadowCalculation& operator=(ShadowCalculation&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> shadingCalculationMethodValues();
-  static std::vector<std::string> validShadingCalculationMethodValues();
+    static std::vector<std::string> shadingCalculationMethodValues();
+    static std::vector<std::string> validShadingCalculationMethodValues();
 
-  static std::vector<std::string> shadingCalculationUpdateFrequencyMethodValues();
-  static std::vector<std::string> validShadingCalculationUpdateFrequencyMethodValues();
+    static std::vector<std::string> shadingCalculationUpdateFrequencyMethodValues();
+    static std::vector<std::string> validShadingCalculationUpdateFrequencyMethodValues();
 
-  static std::vector<std::string> polygonClippingAlgorithmValues();
-  static std::vector<std::string> validPolygonClippingAlgorithmValues();
+    static std::vector<std::string> polygonClippingAlgorithmValues();
+    static std::vector<std::string> validPolygonClippingAlgorithmValues();
 
-  static std::vector<std::string> skyDiffuseModelingAlgorithmValues();
-  static std::vector<std::string> validSkyDiffuseModelingAlgorithmValues();
+    static std::vector<std::string> skyDiffuseModelingAlgorithmValues();
+    static std::vector<std::string> validSkyDiffuseModelingAlgorithmValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model ShadowCalculation scalar accessor names/signatures, including legacy casing/wording.
-  // - Field Mapping: Scalar APIs below map directly to EnergyPlus ShadowCalculation fields with matching semantics.
-  // - ForwardTranslator Evidence: ForwardTranslateShadowCalculation.cpp writes these preserved APIs to the same E+ fields.
-  // - TODO(parity): Keep shading-zone-group extensible relationship APIs out of this scalar-only scaffold pass.
-  std::string shadingCalculationMethod() const;
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model ShadowCalculation scalar accessor names/signatures, including legacy casing/wording.
+    // - Field Mapping: Scalar APIs below map directly to EnergyPlus ShadowCalculation fields with matching semantics.
+    // - ForwardTranslator Evidence: ForwardTranslateShadowCalculation.cpp writes these preserved APIs to the same E+ fields.
+    // - TODO(parity): Keep shading-zone-group extensible relationship APIs out of this scalar-only scaffold pass.
+    std::string shadingCalculationMethod() const;
+    bool setShadingCalculationMethod(const std::string& shadingCalculationMethod);
 
-  std::string shadingCalculationUpdateFrequencyMethod() const;
-  bool isShadingCalculationUpdateFrequencyMethodDefaulted() const;
+    std::string shadingCalculationUpdateFrequencyMethod() const;
+    bool isShadingCalculationUpdateFrequencyMethodDefaulted() const;
+    bool setShadingCalculationUpdateFrequencyMethod(const std::string& shadingCalculationUpdateFrequencyMethod);
+    void resetShadingCalculationUpdateFrequencyMethod();
 
-  int shadingCalculationUpdateFrequency() const;
-  bool isShadingCalculationUpdateFrequencyDefaulted() const;
+    int shadingCalculationUpdateFrequency() const;
+    bool isShadingCalculationUpdateFrequencyDefaulted() const;
+    bool setShadingCalculationUpdateFrequency(int shadingCalculationUpdateFrequency);
+    void resetShadingCalculationUpdateFrequency();
 
-  int maximumFiguresInShadowOverlapCalculations() const;
-  bool isMaximumFiguresInShadowOverlapCalculationsDefaulted() const;
+    int maximumFiguresInShadowOverlapCalculations() const;
+    bool isMaximumFiguresInShadowOverlapCalculationsDefaulted() const;
+    bool setMaximumFiguresInShadowOverlapCalculations(int maximumFiguresInShadowOverlapCalculations);
+    void resetMaximumFiguresInShadowOverlapCalculations();
 
-  std::string polygonClippingAlgorithm() const;
+    std::string polygonClippingAlgorithm() const;
+    bool setPolygonClippingAlgorithm(const std::string& polygonClippingAlgorithm);
+    void resetPolygonClippingAlgorithm();
 
-  int pixelCountingResolution() const;
+    int pixelCountingResolution() const;
+    bool setPixelCountingResolution(int pixelCountingResolution);
 
-  std::string skyDiffuseModelingAlgorithm() const;
+    std::string skyDiffuseModelingAlgorithm() const;
+    bool setSkyDiffuseModelingAlgorithm(const std::string& skyDiffuseModelingAlgorithm);
+    void resetSkyDiffuseModelingAlgorithm();
 
-  bool outputExternalShadingCalculationResults() const;
+    bool outputExternalShadingCalculationResults() const;
+    bool setOutputExternalShadingCalculationResults(bool outputExternalShadingCalculationResults);
 
-  bool disableSelfShadingWithinShadingZoneGroups() const;
+    bool disableSelfShadingWithinShadingZoneGroups() const;
+    bool setDisableSelfShadingWithinShadingZoneGroups(bool disableSelfShadingWithinShadingZoneGroups);
 
-  bool disableSelfShadingFromShadingZoneGroupstoOtherZones() const;
+    bool disableSelfShadingFromShadingZoneGroupstoOtherZones() const;
+    bool setDisableSelfShadingFromShadingZoneGroupstoOtherZones(bool disableSelfShadingFromShadingZoneGroupstoOtherZones);
 
-  bool setShadingCalculationMethod(const std::string& shadingCalculationMethod);
+   protected:
+    using ImplType = detail::ShadowCalculation_Impl;
 
-  bool setShadingCalculationUpdateFrequencyMethod(const std::string& shadingCalculationUpdateFrequencyMethod);
-  void resetShadingCalculationUpdateFrequencyMethod();
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  bool setShadingCalculationUpdateFrequency(int shadingCalculationUpdateFrequency);
-  void resetShadingCalculationUpdateFrequency();
-
-  bool setMaximumFiguresInShadowOverlapCalculations(int maximumFiguresInShadowOverlapCalculations);
-  void resetMaximumFiguresInShadowOverlapCalculations();
-
-  bool setPolygonClippingAlgorithm(const std::string& polygonClippingAlgorithm);
-  void resetPolygonClippingAlgorithm();
-
-  bool setPixelCountingResolution(int pixelCountingResolution);
-
-  bool setSkyDiffuseModelingAlgorithm(const std::string& skyDiffuseModelingAlgorithm);
-  void resetSkyDiffuseModelingAlgorithm();
-
-  bool setOutputExternalShadingCalculationResults(bool outputExternalShadingCalculationResults);
-
-  bool setDisableSelfShadingWithinShadingZoneGroups(bool disableSelfShadingWithinShadingZoneGroups);
-
-  bool setDisableSelfShadingFromShadingZoneGroupstoOtherZones(bool disableSelfShadingFromShadingZoneGroupstoOtherZones);
-
- protected:
-  using ImplType = detail::ShadowCalculation_Impl;
-
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit ShadowCalculation(std::shared_ptr<detail::ShadowCalculation_Impl> impl);
-};
+    explicit ShadowCalculation(std::shared_ptr<detail::ShadowCalculation_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

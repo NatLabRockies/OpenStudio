@@ -25,6 +25,8 @@ IddObjectType MaterialPropertyPhaseChange::iddObjectType() {
   return IddObjectType::MaterialProperty_PhaseChange;
 }
 
+// TemperatureCoefficientforThermalConductivity field accessors.
+
 double MaterialPropertyPhaseChange::temperatureCoefficientforThermalConductivity() const {
   return getImpl<detail::MaterialPropertyPhaseChange_Impl>()->temperatureCoefficientforThermalConductivity();
 }
@@ -49,6 +51,7 @@ namespace openstudio {
 namespace epmodel {
 namespace detail {
 
+// TemperatureCoefficientforThermalConductivity field accessors.
 double MaterialPropertyPhaseChange_Impl::temperatureCoefficientforThermalConductivity() const {
   const auto value = getDouble(openstudio::MaterialProperty_PhaseChangeFields::TemperatureCoefficientforThermalConductivity, true);
   OS_ASSERT(value);

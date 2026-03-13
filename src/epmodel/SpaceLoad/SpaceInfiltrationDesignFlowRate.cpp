@@ -49,78 +49,6 @@ namespace epmodel {
       return result;
     }
 
-    boost::optional<double> SpaceInfiltrationDesignFlowRate_Impl::flowperSpaceFloorArea() const {
-      boost::optional<double> result;
-      if (istringEqual("Flow/Area", this->designFlowRateCalculationMethod())) {
-        result = getDouble(ZoneInfiltration_DesignFlowRateFields::FlowRateperFloorArea, true);
-      }
-      return result;
-    }
-
-    boost::optional<double> SpaceInfiltrationDesignFlowRate_Impl::flowperExteriorSurfaceArea() const {
-      boost::optional<double> result;
-      if (istringEqual("Flow/ExteriorArea", this->designFlowRateCalculationMethod())) {
-        result = getDouble(ZoneInfiltration_DesignFlowRateFields::FlowRateperExteriorSurfaceArea, true);
-      }
-      return result;
-    }
-
-    boost::optional<double> SpaceInfiltrationDesignFlowRate_Impl::flowperExteriorWallArea() const {
-      boost::optional<double> result;
-      if (istringEqual("Flow/ExteriorWallArea", this->designFlowRateCalculationMethod())) {
-        result = getDouble(ZoneInfiltration_DesignFlowRateFields::FlowRateperExteriorSurfaceArea, true);
-      }
-      return result;
-    }
-
-    boost::optional<double> SpaceInfiltrationDesignFlowRate_Impl::airChangesperHour() const {
-      boost::optional<double> result;
-      if (istringEqual("AirChanges/Hour", this->designFlowRateCalculationMethod())) {
-        result = getDouble(ZoneInfiltration_DesignFlowRateFields::AirChangesperHour, true);
-      }
-      return result;
-    }
-
-    double SpaceInfiltrationDesignFlowRate_Impl::constantTermCoefficient() const {
-      boost::optional<double> value = getDouble(ZoneInfiltration_DesignFlowRateFields::ConstantTermCoefficient, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool SpaceInfiltrationDesignFlowRate_Impl::isConstantTermCoefficientDefaulted() const {
-      return isEmpty(ZoneInfiltration_DesignFlowRateFields::ConstantTermCoefficient);
-    }
-
-    double SpaceInfiltrationDesignFlowRate_Impl::temperatureTermCoefficient() const {
-      boost::optional<double> value = getDouble(ZoneInfiltration_DesignFlowRateFields::TemperatureTermCoefficient, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool SpaceInfiltrationDesignFlowRate_Impl::isTemperatureTermCoefficientDefaulted() const {
-      return isEmpty(ZoneInfiltration_DesignFlowRateFields::TemperatureTermCoefficient);
-    }
-
-    double SpaceInfiltrationDesignFlowRate_Impl::velocityTermCoefficient() const {
-      boost::optional<double> value = getDouble(ZoneInfiltration_DesignFlowRateFields::VelocityTermCoefficient, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool SpaceInfiltrationDesignFlowRate_Impl::isVelocityTermCoefficientDefaulted() const {
-      return isEmpty(ZoneInfiltration_DesignFlowRateFields::VelocityTermCoefficient);
-    }
-
-    double SpaceInfiltrationDesignFlowRate_Impl::velocitySquaredTermCoefficient() const {
-      boost::optional<double> value = getDouble(ZoneInfiltration_DesignFlowRateFields::VelocitySquaredTermCoefficient, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool SpaceInfiltrationDesignFlowRate_Impl::isVelocitySquaredTermCoefficientDefaulted() const {
-      return isEmpty(ZoneInfiltration_DesignFlowRateFields::VelocitySquaredTermCoefficient);
-    }
-
     bool SpaceInfiltrationDesignFlowRate_Impl::setDesignFlowRate(double designFlowRate) {
       bool result = true;
       if (designFlowRate < 0) {
@@ -131,6 +59,14 @@ namespace epmodel {
           result = setString(ZoneInfiltration_DesignFlowRateFields::DesignFlowRateCalculationMethod, "Flow/Zone");
           OS_ASSERT(result);
         }
+      }
+      return result;
+    }
+
+    boost::optional<double> SpaceInfiltrationDesignFlowRate_Impl::flowperSpaceFloorArea() const {
+      boost::optional<double> result;
+      if (istringEqual("Flow/Area", this->designFlowRateCalculationMethod())) {
+        result = getDouble(ZoneInfiltration_DesignFlowRateFields::FlowRateperFloorArea, true);
       }
       return result;
     }
@@ -155,6 +91,14 @@ namespace epmodel {
       return result;
     }
 
+    boost::optional<double> SpaceInfiltrationDesignFlowRate_Impl::flowperExteriorSurfaceArea() const {
+      boost::optional<double> result;
+      if (istringEqual("Flow/ExteriorArea", this->designFlowRateCalculationMethod())) {
+        result = getDouble(ZoneInfiltration_DesignFlowRateFields::FlowRateperExteriorSurfaceArea, true);
+      }
+      return result;
+    }
+
     bool SpaceInfiltrationDesignFlowRate_Impl::setFlowperExteriorSurfaceArea(double flowperExteriorSurfaceArea) {
       bool result = true;
       if (flowperExteriorSurfaceArea < 0) {
@@ -171,6 +115,14 @@ namespace epmodel {
           result = setString(ZoneInfiltration_DesignFlowRateFields::AirChangesperHour, "");
           OS_ASSERT(result);
         }
+      }
+      return result;
+    }
+
+    boost::optional<double> SpaceInfiltrationDesignFlowRate_Impl::flowperExteriorWallArea() const {
+      boost::optional<double> result;
+      if (istringEqual("Flow/ExteriorWallArea", this->designFlowRateCalculationMethod())) {
+        result = getDouble(ZoneInfiltration_DesignFlowRateFields::FlowRateperExteriorSurfaceArea, true);
       }
       return result;
     }
@@ -195,6 +147,14 @@ namespace epmodel {
       return result;
     }
 
+    boost::optional<double> SpaceInfiltrationDesignFlowRate_Impl::airChangesperHour() const {
+      boost::optional<double> result;
+      if (istringEqual("AirChanges/Hour", this->designFlowRateCalculationMethod())) {
+        result = getDouble(ZoneInfiltration_DesignFlowRateFields::AirChangesperHour, true);
+      }
+      return result;
+    }
+
     bool SpaceInfiltrationDesignFlowRate_Impl::setAirChangesperHour(double airChangesperHour) {
       bool result = true;
       if (airChangesperHour < 0) {
@@ -215,6 +175,16 @@ namespace epmodel {
       return result;
     }
 
+    double SpaceInfiltrationDesignFlowRate_Impl::constantTermCoefficient() const {
+      boost::optional<double> value = getDouble(ZoneInfiltration_DesignFlowRateFields::ConstantTermCoefficient, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool SpaceInfiltrationDesignFlowRate_Impl::isConstantTermCoefficientDefaulted() const {
+      return isEmpty(ZoneInfiltration_DesignFlowRateFields::ConstantTermCoefficient);
+    }
+
     bool SpaceInfiltrationDesignFlowRate_Impl::setConstantTermCoefficient(double constantTermCoefficient) {
       return setDouble(ZoneInfiltration_DesignFlowRateFields::ConstantTermCoefficient, constantTermCoefficient);
     }
@@ -222,6 +192,16 @@ namespace epmodel {
     void SpaceInfiltrationDesignFlowRate_Impl::resetConstantTermCoefficient() {
       const bool result = setString(ZoneInfiltration_DesignFlowRateFields::ConstantTermCoefficient, "");
       OS_ASSERT(result);
+    }
+
+    double SpaceInfiltrationDesignFlowRate_Impl::temperatureTermCoefficient() const {
+      boost::optional<double> value = getDouble(ZoneInfiltration_DesignFlowRateFields::TemperatureTermCoefficient, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool SpaceInfiltrationDesignFlowRate_Impl::isTemperatureTermCoefficientDefaulted() const {
+      return isEmpty(ZoneInfiltration_DesignFlowRateFields::TemperatureTermCoefficient);
     }
 
     bool SpaceInfiltrationDesignFlowRate_Impl::setTemperatureTermCoefficient(double temperatureTermCoefficient) {
@@ -233,6 +213,16 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
+    double SpaceInfiltrationDesignFlowRate_Impl::velocityTermCoefficient() const {
+      boost::optional<double> value = getDouble(ZoneInfiltration_DesignFlowRateFields::VelocityTermCoefficient, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool SpaceInfiltrationDesignFlowRate_Impl::isVelocityTermCoefficientDefaulted() const {
+      return isEmpty(ZoneInfiltration_DesignFlowRateFields::VelocityTermCoefficient);
+    }
+
     bool SpaceInfiltrationDesignFlowRate_Impl::setVelocityTermCoefficient(double velocityTermCoefficient) {
       return setDouble(ZoneInfiltration_DesignFlowRateFields::VelocityTermCoefficient, velocityTermCoefficient);
     }
@@ -240,6 +230,16 @@ namespace epmodel {
     void SpaceInfiltrationDesignFlowRate_Impl::resetVelocityTermCoefficient() {
       const bool result = setString(ZoneInfiltration_DesignFlowRateFields::VelocityTermCoefficient, "");
       OS_ASSERT(result);
+    }
+
+    double SpaceInfiltrationDesignFlowRate_Impl::velocitySquaredTermCoefficient() const {
+      boost::optional<double> value = getDouble(ZoneInfiltration_DesignFlowRateFields::VelocitySquaredTermCoefficient, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool SpaceInfiltrationDesignFlowRate_Impl::isVelocitySquaredTermCoefficientDefaulted() const {
+      return isEmpty(ZoneInfiltration_DesignFlowRateFields::VelocitySquaredTermCoefficient);
     }
 
     bool SpaceInfiltrationDesignFlowRate_Impl::setVelocitySquaredTermCoefficient(double velocitySquaredTermCoefficient) {

@@ -13,32 +13,32 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API EnergyManagementSystemOutputVariable_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~EnergyManagementSystemOutputVariable_Impl() override = default;
+    class EPMODEL_API EnergyManagementSystemOutputVariable_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~EnergyManagementSystemOutputVariable_Impl() override = default;
 
-  std::string emsVariableName() const;
-  bool setEMSVariableName(const std::string& eMSVariableName);
+      std::vector<std::string> typeOfDataInVariableValues() const;
+      std::vector<std::string> updateFrequencyValues() const;
 
-  std::string typeOfDataInVariable() const;
-  bool setTypeOfDataInVariable(const std::string& typeofDatainVariable);
+      std::string emsVariableName() const;
+      bool setEMSVariableName(const std::string& eMSVariableName);
 
-  std::string updateFrequency() const;
-  bool setUpdateFrequency(const std::string& updateFrequency);
+      std::string typeOfDataInVariable() const;
+      bool setTypeOfDataInVariable(const std::string& typeofDatainVariable);
 
-  std::string units() const;
-  bool setUnits(const std::string& units);
-  void resetUnits();
+      std::string updateFrequency() const;
+      bool setUpdateFrequency(const std::string& updateFrequency);
 
-  std::vector<std::string> typeOfDataInVariableValues() const;
-  std::vector<std::string> updateFrequencyValues() const;
-};
+      std::string units() const;
+      bool setUnits(const std::string& units);
+      void resetUnits();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

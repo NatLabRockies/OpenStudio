@@ -12,76 +12,66 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ShadowCalculation_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ShadowCalculation_Impl() override = default;
+    class EPMODEL_API ShadowCalculation_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ShadowCalculation_Impl() override = default;
 
-  std::string shadingCalculationMethod() const;
+      std::vector<std::string> shadingCalculationMethodValues() const;
+      std::vector<std::string> validShadingCalculationMethodValues() const;
 
-  std::string shadingCalculationUpdateFrequencyMethod() const;
-  bool isShadingCalculationUpdateFrequencyMethodDefaulted() const;
+      std::vector<std::string> shadingCalculationUpdateFrequencyMethodValues() const;
+      std::vector<std::string> validShadingCalculationUpdateFrequencyMethodValues() const;
 
-  int shadingCalculationUpdateFrequency() const;
-  bool isShadingCalculationUpdateFrequencyDefaulted() const;
+      std::vector<std::string> polygonClippingAlgorithmValues() const;
+      std::vector<std::string> validPolygonClippingAlgorithmValues() const;
 
-  int maximumFiguresInShadowOverlapCalculations() const;
-  bool isMaximumFiguresInShadowOverlapCalculationsDefaulted() const;
+      std::vector<std::string> skyDiffuseModelingAlgorithmValues() const;
+      std::vector<std::string> validSkyDiffuseModelingAlgorithmValues() const;
 
-  std::string polygonClippingAlgorithm() const;
+      std::string shadingCalculationMethod() const;
+      bool setShadingCalculationMethod(const std::string& shadingCalculationMethod);
 
-  int pixelCountingResolution() const;
+      std::string shadingCalculationUpdateFrequencyMethod() const;
+      bool isShadingCalculationUpdateFrequencyMethodDefaulted() const;
+      bool setShadingCalculationUpdateFrequencyMethod(const std::string& shadingCalculationUpdateFrequencyMethod);
+      void resetShadingCalculationUpdateFrequencyMethod();
 
-  std::string skyDiffuseModelingAlgorithm() const;
+      int shadingCalculationUpdateFrequency() const;
+      bool isShadingCalculationUpdateFrequencyDefaulted() const;
+      bool setShadingCalculationUpdateFrequency(int shadingCalculationUpdateFrequency);
+      void resetShadingCalculationUpdateFrequency();
 
-  bool outputExternalShadingCalculationResults() const;
+      int maximumFiguresInShadowOverlapCalculations() const;
+      bool isMaximumFiguresInShadowOverlapCalculationsDefaulted() const;
+      bool setMaximumFiguresInShadowOverlapCalculations(int maximumFiguresInShadowOverlapCalculations);
+      void resetMaximumFiguresInShadowOverlapCalculations();
 
-  bool disableSelfShadingWithinShadingZoneGroups() const;
+      std::string polygonClippingAlgorithm() const;
+      bool setPolygonClippingAlgorithm(const std::string& polygonClippingAlgorithm);
+      void resetPolygonClippingAlgorithm();
 
-  bool disableSelfShadingFromShadingZoneGroupstoOtherZones() const;
+      int pixelCountingResolution() const;
+      bool setPixelCountingResolution(int pixelCountingResolution);
 
-  bool setShadingCalculationMethod(const std::string& shadingCalculationMethod);
+      std::string skyDiffuseModelingAlgorithm() const;
+      bool setSkyDiffuseModelingAlgorithm(const std::string& skyDiffuseModelingAlgorithm);
+      void resetSkyDiffuseModelingAlgorithm();
 
-  bool setShadingCalculationUpdateFrequencyMethod(const std::string& shadingCalculationUpdateFrequencyMethod);
-  void resetShadingCalculationUpdateFrequencyMethod();
+      bool outputExternalShadingCalculationResults() const;
+      bool setOutputExternalShadingCalculationResults(bool outputExternalShadingCalculationResults);
 
-  bool setShadingCalculationUpdateFrequency(int shadingCalculationUpdateFrequency);
-  void resetShadingCalculationUpdateFrequency();
+      bool disableSelfShadingWithinShadingZoneGroups() const;
+      bool setDisableSelfShadingWithinShadingZoneGroups(bool disableSelfShadingWithinShadingZoneGroups);
 
-  bool setMaximumFiguresInShadowOverlapCalculations(int maximumFiguresInShadowOverlapCalculations);
-  void resetMaximumFiguresInShadowOverlapCalculations();
+      bool disableSelfShadingFromShadingZoneGroupstoOtherZones() const;
+      bool setDisableSelfShadingFromShadingZoneGroupstoOtherZones(bool disableSelfShadingFromShadingZoneGroupstoOtherZones);
+    };
 
-  bool setPolygonClippingAlgorithm(const std::string& polygonClippingAlgorithm);
-  void resetPolygonClippingAlgorithm();
-
-  bool setPixelCountingResolution(int pixelCountingResolution);
-
-  bool setSkyDiffuseModelingAlgorithm(const std::string& skyDiffuseModelingAlgorithm);
-  void resetSkyDiffuseModelingAlgorithm();
-
-  bool setOutputExternalShadingCalculationResults(bool outputExternalShadingCalculationResults);
-
-  bool setDisableSelfShadingWithinShadingZoneGroups(bool disableSelfShadingWithinShadingZoneGroups);
-
-  bool setDisableSelfShadingFromShadingZoneGroupstoOtherZones(bool disableSelfShadingFromShadingZoneGroupstoOtherZones);
-
-  std::vector<std::string> shadingCalculationMethodValues() const;
-  std::vector<std::string> validShadingCalculationMethodValues() const;
-
-  std::vector<std::string> shadingCalculationUpdateFrequencyMethodValues() const;
-  std::vector<std::string> validShadingCalculationUpdateFrequencyMethodValues() const;
-
-  std::vector<std::string> polygonClippingAlgorithmValues() const;
-  std::vector<std::string> validPolygonClippingAlgorithmValues() const;
-
-  std::vector<std::string> skyDiffuseModelingAlgorithmValues() const;
-  std::vector<std::string> validSkyDiffuseModelingAlgorithmValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

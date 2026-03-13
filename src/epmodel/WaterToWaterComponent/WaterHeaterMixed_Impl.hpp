@@ -24,172 +24,142 @@ namespace epmodel {
       boost::optional<double> tankVolume() const;
       bool isTankVolumeDefaulted() const;
       bool isTankVolumeAutosized() const;
+      bool setTankVolume(double tankVolume);
+      void resetTankVolume();
+      void autosizeTankVolume();
+      boost::optional<double> autosizedTankVolume() const;
 
       double deadbandTemperatureDifference() const;
       bool isDeadbandTemperatureDifferenceDefaulted() const;
+      bool setDeadbandTemperatureDifference(double deadbandTemperatureDifference);
+      void resetDeadbandTemperatureDifference();
 
       boost::optional<double> maximumTemperatureLimit() const;
+      bool setMaximumTemperatureLimit(double maximumTemperatureLimit);
+      void resetMaximumTemperatureLimit();
 
       std::string heaterControlType() const;
       bool isHeaterControlTypeDefaulted() const;
+      bool setHeaterControlType(const std::string& heaterControlType);
+      void resetHeaterControlType();
 
       boost::optional<double> heaterMaximumCapacity() const;
       bool isHeaterMaximumCapacityAutosized() const;
+      bool setHeaterMaximumCapacity(double heaterMaximumCapacity);
+      void resetHeaterMaximumCapacity();
+      void autosizeHeaterMaximumCapacity();
+      boost::optional<double> autosizedHeaterMaximumCapacity() const;
 
       boost::optional<double> heaterMinimumCapacity() const;
+      bool setHeaterMinimumCapacity(double heaterMinimumCapacity);
+      void resetHeaterMinimumCapacity();
 
       double heaterIgnitionMinimumFlowRate() const;
       bool isHeaterIgnitionMinimumFlowRateDefaulted() const;
+      bool setHeaterIgnitionMinimumFlowRate(double heaterIgnitionMinimumFlowRate);
+      void resetHeaterIgnitionMinimumFlowRate();
 
       double heaterIgnitionDelay() const;
       bool isHeaterIgnitionDelayDefaulted() const;
+      bool setHeaterIgnitionDelay(double heaterIgnitionDelay);
+      void resetHeaterIgnitionDelay();
 
       std::string heaterFuelType() const;
+      bool setHeaterFuelType(const std::string& heaterFuelType);
+      void resetHeaterFuelType();
 
       boost::optional<double> heaterThermalEfficiency() const;
+      bool setHeaterThermalEfficiency(double heaterThermalEfficiency);
+      void resetHeaterThermalEfficiency();
 
       double offCycleParasiticFuelConsumptionRate() const;
       bool isOffCycleParasiticFuelConsumptionRateDefaulted() const;
+      bool setOffCycleParasiticFuelConsumptionRate(double offCycleParasiticFuelConsumptionRate);
+      void resetOffCycleParasiticFuelConsumptionRate();
 
       boost::optional<std::string> offCycleParasiticFuelType() const;
+      bool setOffCycleParasiticFuelType(const std::string& offCycleParasiticFuelType);
+      void resetOffCycleParasiticFuelType();
 
       double offCycleParasiticHeatFractiontoTank() const;
       bool isOffCycleParasiticHeatFractiontoTankDefaulted() const;
+      bool setOffCycleParasiticHeatFractiontoTank(double offCycleParasiticHeatFractiontoTank);
+      void resetOffCycleParasiticHeatFractiontoTank();
 
       double onCycleParasiticFuelConsumptionRate() const;
       bool isOnCycleParasiticFuelConsumptionRateDefaulted() const;
+      bool setOnCycleParasiticFuelConsumptionRate(double onCycleParasiticFuelConsumptionRate);
+      void resetOnCycleParasiticFuelConsumptionRate();
 
       boost::optional<std::string> onCycleParasiticFuelType() const;
+      bool setOnCycleParasiticFuelType(const std::string& onCycleParasiticFuelType);
+      void resetOnCycleParasiticFuelType();
 
       double onCycleParasiticHeatFractiontoTank() const;
       bool isOnCycleParasiticHeatFractiontoTankDefaulted() const;
+      bool setOnCycleParasiticHeatFractiontoTank(double onCycleParasiticHeatFractiontoTank);
+      void resetOnCycleParasiticHeatFractiontoTank();
 
       std::string ambientTemperatureIndicator() const;
+      bool setAmbientTemperatureIndicator(const std::string& ambientTemperatureIndicator);
 
       boost::optional<double> offCycleLossCoefficienttoAmbientTemperature() const;
+      bool setOffCycleLossCoefficienttoAmbientTemperature(double offCycleLossCoefficienttoAmbientTemperature);
+      void resetOffCycleLossCoefficienttoAmbientTemperature();
 
       double offCycleLossFractiontoThermalZone() const;
       bool isOffCycleLossFractiontoThermalZoneDefaulted() const;
+      bool setOffCycleLossFractiontoThermalZone(double offCycleLossFractiontoThermalZone);
+      void resetOffCycleLossFractiontoThermalZone();
 
       boost::optional<double> onCycleLossCoefficienttoAmbientTemperature() const;
+      bool setOnCycleLossCoefficienttoAmbientTemperature(double onCycleLossCoefficienttoAmbientTemperature);
+      void resetOnCycleLossCoefficienttoAmbientTemperature();
 
       double onCycleLossFractiontoThermalZone() const;
       bool isOnCycleLossFractiontoThermalZoneDefaulted() const;
+      bool setOnCycleLossFractiontoThermalZone(double onCycleLossFractiontoThermalZone);
+      void resetOnCycleLossFractiontoThermalZone();
 
       boost::optional<double> peakUseFlowRate() const;
+      bool setPeakUseFlowRate(double peakUseFlowRate);
+      void resetPeakUseFlowRate();
 
       double useSideEffectiveness() const;
       bool isUseSideEffectivenessDefaulted() const;
+      bool setUseSideEffectiveness(double useSideEffectiveness);
+      void resetUseSideEffectiveness();
 
       double sourceSideEffectiveness() const;
       bool isSourceSideEffectivenessDefaulted() const;
+      bool setSourceSideEffectiveness(double sourceSideEffectiveness);
+      void resetSourceSideEffectiveness();
 
       boost::optional<double> useSideDesignFlowRate() const;
       bool isUseSideDesignFlowRateDefaulted() const;
       bool isUseSideDesignFlowRateAutosized() const;
+      bool setUseSideDesignFlowRate(double useSideDesignFlowRate);
+      void resetUseSideDesignFlowRate();
+      void autosizeUseSideDesignFlowRate();
+      boost::optional<double> autosizedUseSideDesignFlowRate() const;
 
       boost::optional<double> sourceSideDesignFlowRate() const;
       bool isSourceSideDesignFlowRateDefaulted() const;
       bool isSourceSideDesignFlowRateAutosized() const;
-
-      double indirectWaterHeatingRecoveryTime() const;
-      bool isIndirectWaterHeatingRecoveryTimeDefaulted() const;
-
-      std::string sourceSideFlowControlMode() const;
-
-      std::string endUseSubcategory() const;
-
-      boost::optional<double> autosizedTankVolume() const;
-      boost::optional<double> autosizedHeaterMaximumCapacity() const;
-      boost::optional<double> autosizedUseSideDesignFlowRate() const;
-      boost::optional<double> autosizedSourceSideDesignFlowRate() const;
-
-      bool setTankVolume(double tankVolume);
-      void resetTankVolume();
-      void autosizeTankVolume();
-
-      bool setDeadbandTemperatureDifference(double deadbandTemperatureDifference);
-      void resetDeadbandTemperatureDifference();
-
-      bool setMaximumTemperatureLimit(double maximumTemperatureLimit);
-      void resetMaximumTemperatureLimit();
-
-      bool setHeaterControlType(const std::string& heaterControlType);
-      void resetHeaterControlType();
-
-      bool setHeaterMaximumCapacity(double heaterMaximumCapacity);
-      void resetHeaterMaximumCapacity();
-      void autosizeHeaterMaximumCapacity();
-
-      bool setHeaterMinimumCapacity(double heaterMinimumCapacity);
-      void resetHeaterMinimumCapacity();
-
-      bool setHeaterIgnitionMinimumFlowRate(double heaterIgnitionMinimumFlowRate);
-      void resetHeaterIgnitionMinimumFlowRate();
-
-      bool setHeaterIgnitionDelay(double heaterIgnitionDelay);
-      void resetHeaterIgnitionDelay();
-
-      bool setHeaterFuelType(const std::string& heaterFuelType);
-      void resetHeaterFuelType();
-
-      bool setHeaterThermalEfficiency(double heaterThermalEfficiency);
-      void resetHeaterThermalEfficiency();
-
-      bool setOffCycleParasiticFuelConsumptionRate(double offCycleParasiticFuelConsumptionRate);
-      void resetOffCycleParasiticFuelConsumptionRate();
-
-      bool setOffCycleParasiticFuelType(const std::string& offCycleParasiticFuelType);
-      void resetOffCycleParasiticFuelType();
-
-      bool setOffCycleParasiticHeatFractiontoTank(double offCycleParasiticHeatFractiontoTank);
-      void resetOffCycleParasiticHeatFractiontoTank();
-
-      bool setOnCycleParasiticFuelConsumptionRate(double onCycleParasiticFuelConsumptionRate);
-      void resetOnCycleParasiticFuelConsumptionRate();
-
-      bool setOnCycleParasiticFuelType(const std::string& onCycleParasiticFuelType);
-      void resetOnCycleParasiticFuelType();
-
-      bool setOnCycleParasiticHeatFractiontoTank(double onCycleParasiticHeatFractiontoTank);
-      void resetOnCycleParasiticHeatFractiontoTank();
-
-      bool setAmbientTemperatureIndicator(const std::string& ambientTemperatureIndicator);
-
-      bool setOffCycleLossCoefficienttoAmbientTemperature(double offCycleLossCoefficienttoAmbientTemperature);
-      void resetOffCycleLossCoefficienttoAmbientTemperature();
-
-      bool setOffCycleLossFractiontoThermalZone(double offCycleLossFractiontoThermalZone);
-      void resetOffCycleLossFractiontoThermalZone();
-
-      bool setOnCycleLossCoefficienttoAmbientTemperature(double onCycleLossCoefficienttoAmbientTemperature);
-      void resetOnCycleLossCoefficienttoAmbientTemperature();
-
-      bool setOnCycleLossFractiontoThermalZone(double onCycleLossFractiontoThermalZone);
-      void resetOnCycleLossFractiontoThermalZone();
-
-      bool setPeakUseFlowRate(double peakUseFlowRate);
-      void resetPeakUseFlowRate();
-
-      bool setUseSideEffectiveness(double useSideEffectiveness);
-      void resetUseSideEffectiveness();
-
-      bool setSourceSideEffectiveness(double sourceSideEffectiveness);
-      void resetSourceSideEffectiveness();
-
-      bool setUseSideDesignFlowRate(double useSideDesignFlowRate);
-      void resetUseSideDesignFlowRate();
-      void autosizeUseSideDesignFlowRate();
-
       bool setSourceSideDesignFlowRate(double sourceSideDesignFlowRate);
       void resetSourceSideDesignFlowRate();
       void autosizeSourceSideDesignFlowRate();
+      boost::optional<double> autosizedSourceSideDesignFlowRate() const;
 
+      double indirectWaterHeatingRecoveryTime() const;
+      bool isIndirectWaterHeatingRecoveryTimeDefaulted() const;
       bool setIndirectWaterHeatingRecoveryTime(double indirectWaterHeatingRecoveryTime);
       void resetIndirectWaterHeatingRecoveryTime();
 
+      std::string sourceSideFlowControlMode() const;
       bool setSourceSideFlowControlMode(const std::string& sourceSideFlowControlMode);
 
+      std::string endUseSubcategory() const;
       bool setEndUseSubcategory(const std::string& endUseSubcategory);
     };
 

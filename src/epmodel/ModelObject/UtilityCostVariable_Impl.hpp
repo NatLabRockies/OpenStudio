@@ -21,45 +21,43 @@ namespace epmodel {
 
       std::string variableType() const;
       bool isVariableTypeDefaulted() const;
-
-      boost::optional<double> januaryValue() const;
-      boost::optional<double> februaryValue() const;
-      boost::optional<double> marchValue() const;
-      boost::optional<double> aprilValue() const;
-      boost::optional<double> mayValue() const;
-      boost::optional<double> juneValue() const;
-      boost::optional<double> julyValue() const;
-      boost::optional<double> augustValue() const;
-      boost::optional<double> septemberValue() const;
-      boost::optional<double> octoberValue() const;
-      boost::optional<double> novemberValue() const;
-      boost::optional<double> decemberValue() const;
-
       bool setVariableType(const std::string& variableType);
       void resetVariableType();
 
+      boost::optional<double> januaryValue() const;
       bool setJanuaryValue(double januaryValue);
       void resetJanuaryValue();
+      boost::optional<double> februaryValue() const;
       bool setFebruaryValue(double februaryValue);
       void resetFebruaryValue();
+      boost::optional<double> marchValue() const;
       bool setMarchValue(double marchValue);
       void resetMarchValue();
+      boost::optional<double> aprilValue() const;
       bool setAprilValue(double aprilValue);
       void resetAprilValue();
+      boost::optional<double> mayValue() const;
       bool setMayValue(double mayValue);
       void resetMayValue();
+      boost::optional<double> juneValue() const;
       bool setJuneValue(double juneValue);
       void resetJuneValue();
+      boost::optional<double> julyValue() const;
       bool setJulyValue(double julyValue);
       void resetJulyValue();
+      boost::optional<double> augustValue() const;
       bool setAugustValue(double augustValue);
       void resetAugustValue();
+      boost::optional<double> septemberValue() const;
       bool setSeptemberValue(double septemberValue);
       void resetSeptemberValue();
+      boost::optional<double> octoberValue() const;
       bool setOctoberValue(double octoberValue);
       void resetOctoberValue();
+      boost::optional<double> novemberValue() const;
       bool setNovemberValue(double novemberValue);
       void resetNovemberValue();
+      boost::optional<double> decemberValue() const;
       bool setDecemberValue(double decemberValue);
       void resetDecemberValue();
     };

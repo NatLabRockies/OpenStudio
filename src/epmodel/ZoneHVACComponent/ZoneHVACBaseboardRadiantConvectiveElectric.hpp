@@ -43,6 +43,7 @@ namespace epmodel {
     // - API: efficiency/fractionRadiant/fractionofRadiantEnergyIncidentonPeople map to the corresponding Efficiency, Fraction Radiant and
     //   Fraction of Radiant Energy Incident on People fields while Availability Schedule Name, Heating Coil Name and the extensible surface entries
     //   remain relationship-only targets until dedicated APIs exist.
+
     std::string heatingDesignCapacityMethod() const;
     bool setHeatingDesignCapacityMethod(const std::string& heatingDesignCapacityMethod);
 

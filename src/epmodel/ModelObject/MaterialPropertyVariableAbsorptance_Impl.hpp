@@ -13,39 +13,38 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API MaterialPropertyVariableAbsorptance_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~MaterialPropertyVariableAbsorptance_Impl() override = default;
+    class EPMODEL_API MaterialPropertyVariableAbsorptance_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~MaterialPropertyVariableAbsorptance_Impl() override = default;
 
-  std::string controlSignal() const;
-  bool isControlSignalDefaulted() const;
-  bool setControlSignal(const std::string& controlSignal);
-  void resetControlSignal();
+      std::string controlSignal() const;
+      bool isControlSignalDefaulted() const;
+      bool setControlSignal(const std::string& controlSignal);
+      void resetControlSignal();
+      std::vector<std::string> controlSignalValues() const;
 
-  boost::optional<std::string> thermalAbsorptanceFunctionName() const;
-  bool setThermalAbsorptanceFunctionName(const std::string& thermalAbsorptanceFunctionName);
-  void resetThermalAbsorptanceFunctionName();
+      boost::optional<std::string> thermalAbsorptanceFunctionName() const;
+      bool setThermalAbsorptanceFunctionName(const std::string& thermalAbsorptanceFunctionName);
+      void resetThermalAbsorptanceFunctionName();
 
-  boost::optional<std::string> thermalAbsorptanceScheduleName() const;
-  bool setThermalAbsorptanceScheduleName(const std::string& thermalAbsorptanceScheduleName);
-  void resetThermalAbsorptanceScheduleName();
+      boost::optional<std::string> thermalAbsorptanceScheduleName() const;
+      bool setThermalAbsorptanceScheduleName(const std::string& thermalAbsorptanceScheduleName);
+      void resetThermalAbsorptanceScheduleName();
 
-  boost::optional<std::string> solarAbsorptanceFunctionName() const;
-  bool setSolarAbsorptanceFunctionName(const std::string& solarAbsorptanceFunctionName);
-  void resetSolarAbsorptanceFunctionName();
+      boost::optional<std::string> solarAbsorptanceFunctionName() const;
+      bool setSolarAbsorptanceFunctionName(const std::string& solarAbsorptanceFunctionName);
+      void resetSolarAbsorptanceFunctionName();
 
-  boost::optional<std::string> solarAbsorptanceScheduleName() const;
-  bool setSolarAbsorptanceScheduleName(const std::string& solarAbsorptanceScheduleName);
-  void resetSolarAbsorptanceScheduleName();
+      boost::optional<std::string> solarAbsorptanceScheduleName() const;
+      bool setSolarAbsorptanceScheduleName(const std::string& solarAbsorptanceScheduleName);
+      void resetSolarAbsorptanceScheduleName();
+    };
 
-  std::vector<std::string> controlSignalValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

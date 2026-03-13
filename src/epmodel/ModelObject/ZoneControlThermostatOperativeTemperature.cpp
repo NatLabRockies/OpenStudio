@@ -80,6 +80,14 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    std::vector<std::string> ZoneControlThermostatOperativeTemperature_Impl::radiativeFractionInputModeValues() const {
+      return openstudio::epmodel::ZoneControlThermostatOperativeTemperature::radiativeFractionInputModeValues();
+    }
+
+    std::vector<std::string> ZoneControlThermostatOperativeTemperature_Impl::adaptiveComfortModelTypeValues() const {
+      return openstudio::epmodel::ZoneControlThermostatOperativeTemperature::adaptiveComfortModelTypeValues();
+    }
+
     std::string ZoneControlThermostatOperativeTemperature_Impl::radiativeFractionInputMode() const {
       const auto value = getString(openstudio::ZoneControl_Thermostat_OperativeTemperatureFields::RadiativeFractionInputMode, true);
       OS_ASSERT(value);
@@ -117,14 +125,6 @@ namespace epmodel {
 
     void ZoneControlThermostatOperativeTemperature_Impl::resetAdaptiveComfortModelType() {
       OS_ASSERT(setString(openstudio::ZoneControl_Thermostat_OperativeTemperatureFields::AdaptiveComfortModelType, ""));
-    }
-
-    std::vector<std::string> ZoneControlThermostatOperativeTemperature_Impl::radiativeFractionInputModeValues() const {
-      return openstudio::epmodel::ZoneControlThermostatOperativeTemperature::radiativeFractionInputModeValues();
-    }
-
-    std::vector<std::string> ZoneControlThermostatOperativeTemperature_Impl::adaptiveComfortModelTypeValues() const {
-      return openstudio::epmodel::ZoneControlThermostatOperativeTemperature::adaptiveComfortModelTypeValues();
     }
 
   }  // namespace detail

@@ -11,82 +11,112 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API OutputControlFiles_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~OutputControlFiles_Impl() override = default;
+    class EPMODEL_API OutputControlFiles_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~OutputControlFiles_Impl() override = default;
 
-  bool outputCSV() const;
-  bool outputMTR() const;
-  bool outputESO() const;
-  bool outputEIO() const;
-  bool outputTabular() const;
-  bool outputSQLite() const;
-  bool outputJSON() const;
-  bool outputAUDIT() const;
-  bool outputSpaceSizing() const;
-  bool outputZoneSizing() const;
-  bool outputSystemSizing() const;
-  bool outputDXF() const;
-  bool outputBND() const;
-  bool outputRDD() const;
-  bool outputMDD() const;
-  bool outputMTD() const;
-  bool outputSHD() const;
-  bool outputDFS() const;
-  bool outputGLHE() const;
-  bool outputDelightIn() const;
-  bool outputDelightELdmp() const;
-  bool outputDelightDFdmp() const;
-  bool outputEDD() const;
-  bool outputDBG() const;
-  bool outputPerfLog() const;
-  bool outputSLN() const;
-  bool outputSCI() const;
-  bool outputWRL() const;
-  bool outputScreen() const;
-  bool outputExtShd() const;
-  bool outputTarcog() const;
-  bool outputPlantComponentSizing() const;
+      bool outputCSV() const;
+      bool setOutputCSV(bool outputCSV);
 
-  bool setOutputCSV(bool outputCSV);
-  bool setOutputMTR(bool outputMTR);
-  bool setOutputESO(bool outputESO);
-  bool setOutputEIO(bool outputEIO);
-  bool setOutputTabular(bool outputTabular);
-  bool setOutputSQLite(bool outputSQLite);
-  bool setOutputJSON(bool outputJSON);
-  bool setOutputAUDIT(bool outputAUDIT);
-  bool setOutputSpaceSizing(bool outputSpaceSizing);
-  bool setOutputZoneSizing(bool outputZoneSizing);
-  bool setOutputSystemSizing(bool outputSystemSizing);
-  bool setOutputDXF(bool outputDXF);
-  bool setOutputBND(bool outputBND);
-  bool setOutputRDD(bool outputRDD);
-  bool setOutputMDD(bool outputMDD);
-  bool setOutputMTD(bool outputMTD);
-  bool setOutputSHD(bool outputSHD);
-  bool setOutputDFS(bool outputDFS);
-  bool setOutputGLHE(bool outputGLHE);
-  bool setOutputDelightIn(bool outputDelightIn);
-  bool setOutputDelightELdmp(bool outputDelightELdmp);
-  bool setOutputDelightDFdmp(bool outputDelightDFdmp);
-  bool setOutputEDD(bool outputEDD);
-  bool setOutputDBG(bool outputDBG);
-  bool setOutputPerfLog(bool outputPerfLog);
-  bool setOutputSLN(bool outputSLN);
-  bool setOutputSCI(bool outputSCI);
-  bool setOutputWRL(bool outputWRL);
-  bool setOutputScreen(bool outputScreen);
-  bool setOutputExtShd(bool outputExtShd);
-  bool setOutputTarcog(bool outputTarcog);
-  bool setOutputPlantComponentSizing(bool outputPlantComponentSizing);
-};
+      bool outputMTR() const;
+      bool setOutputMTR(bool outputMTR);
 
-}  // namespace detail
+      bool outputESO() const;
+      bool setOutputESO(bool outputESO);
+
+      bool outputEIO() const;
+      bool setOutputEIO(bool outputEIO);
+
+      bool outputTabular() const;
+      bool setOutputTabular(bool outputTabular);
+
+      bool outputSQLite() const;
+      bool setOutputSQLite(bool outputSQLite);
+
+      bool outputJSON() const;
+      bool setOutputJSON(bool outputJSON);
+
+      bool outputAUDIT() const;
+      bool setOutputAUDIT(bool outputAUDIT);
+
+      bool outputSpaceSizing() const;
+      bool setOutputSpaceSizing(bool outputSpaceSizing);
+
+      bool outputZoneSizing() const;
+      bool setOutputZoneSizing(bool outputZoneSizing);
+
+      bool outputSystemSizing() const;
+      bool setOutputSystemSizing(bool outputSystemSizing);
+
+      bool outputDXF() const;
+      bool setOutputDXF(bool outputDXF);
+
+      bool outputBND() const;
+      bool setOutputBND(bool outputBND);
+
+      bool outputRDD() const;
+      bool setOutputRDD(bool outputRDD);
+
+      bool outputMDD() const;
+      bool setOutputMDD(bool outputMDD);
+
+      bool outputMTD() const;
+      bool setOutputMTD(bool outputMTD);
+
+      bool outputSHD() const;
+      bool setOutputSHD(bool outputSHD);
+
+      bool outputDFS() const;
+      bool setOutputDFS(bool outputDFS);
+
+      bool outputGLHE() const;
+      bool setOutputGLHE(bool outputGLHE);
+
+      bool outputDelightIn() const;
+      bool setOutputDelightIn(bool outputDelightIn);
+
+      bool outputDelightELdmp() const;
+      bool setOutputDelightELdmp(bool outputDelightELdmp);
+
+      bool outputDelightDFdmp() const;
+      bool setOutputDelightDFdmp(bool outputDelightDFdmp);
+
+      bool outputEDD() const;
+      bool setOutputEDD(bool outputEDD);
+
+      bool outputDBG() const;
+      bool setOutputDBG(bool outputDBG);
+
+      bool outputPerfLog() const;
+      bool setOutputPerfLog(bool outputPerfLog);
+
+      bool outputSLN() const;
+      bool setOutputSLN(bool outputSLN);
+
+      bool outputSCI() const;
+      bool setOutputSCI(bool outputSCI);
+
+      bool outputWRL() const;
+      bool setOutputWRL(bool outputWRL);
+
+      bool outputScreen() const;
+      bool setOutputScreen(bool outputScreen);
+
+      bool outputExtShd() const;
+      bool setOutputExtShd(bool outputExtShd);
+
+      bool outputTarcog() const;
+      bool setOutputTarcog(bool outputTarcog);
+
+      bool outputPlantComponentSizing() const;
+      bool setOutputPlantComponentSizing(bool outputPlantComponentSizing);
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

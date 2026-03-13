@@ -40,9 +40,12 @@ class EPMODEL_API HeatExchangerDesiccantBalancedFlow : public ModelObject
   // - Field Mapping: economizerLockout maps to EnergyPlus HeatExchanger:Desiccant:BalancedFlow, Economizer Lockout.
   // - Field Mapping: Relationship fields (availability schedule, node names, performance object type/name) are intentionally excluded.
   // - TODO(parity): Add non-scalar relationship parity incrementally after scalar scaffold saturation.
+  /** @name Economizer Lockout */
+  //@{
   bool economizerLockout() const;
 
   bool setEconomizerLockout(bool economizerLockout);
+  //@}
 
  protected:
   using ImplType = detail::HeatExchangerDesiccantBalancedFlow_Impl;

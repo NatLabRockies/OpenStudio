@@ -15,87 +15,90 @@
 namespace openstudio {
 namespace epmodel {
 
-AvailabilityManagerNightVentilation::AvailabilityManagerNightVentilation(const Model& model)
-  : ModelObject(AvailabilityManagerNightVentilation::iddObjectType(), model) {
-  setVentilationTemperatureDifference(2.0);
-  setVentilationTemperatureLowLimit(15.0);
-  setNightVentingFlowFraction(0.333);
-}
+  AvailabilityManagerNightVentilation::AvailabilityManagerNightVentilation(const Model& model)
+    : ModelObject(AvailabilityManagerNightVentilation::iddObjectType(), model) {
+    setVentilationTemperatureDifference(2.0);
+    setVentilationTemperatureLowLimit(15.0);
+    setNightVentingFlowFraction(0.333);
+  }
 
-AvailabilityManagerNightVentilation::AvailabilityManagerNightVentilation(
-  std::shared_ptr<detail::AvailabilityManagerNightVentilation_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  AvailabilityManagerNightVentilation::AvailabilityManagerNightVentilation(std::shared_ptr<detail::AvailabilityManagerNightVentilation_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType AvailabilityManagerNightVentilation::iddObjectType() {
-  return IddObjectType::AvailabilityManager_NightVentilation;
-}
+  IddObjectType AvailabilityManagerNightVentilation::iddObjectType() {
+    return IddObjectType::AvailabilityManager_NightVentilation;
+  }
 
-double AvailabilityManagerNightVentilation::ventilationTemperatureDifference() const {
-  return getImpl<detail::AvailabilityManagerNightVentilation_Impl>()->ventilationTemperatureDifference();
-}
+  double AvailabilityManagerNightVentilation::ventilationTemperatureDifference() const {
+    return getImpl<detail::AvailabilityManagerNightVentilation_Impl>()->ventilationTemperatureDifference();
+  }
 
-bool AvailabilityManagerNightVentilation::setVentilationTemperatureDifference(double ventilationTemperatureDifference) {
-  return getImpl<detail::AvailabilityManagerNightVentilation_Impl>()->setVentilationTemperatureDifference(ventilationTemperatureDifference);
-}
+  bool AvailabilityManagerNightVentilation::setVentilationTemperatureDifference(double ventilationTemperatureDifference) {
+    return getImpl<detail::AvailabilityManagerNightVentilation_Impl>()->setVentilationTemperatureDifference(ventilationTemperatureDifference);
+  }
 
-double AvailabilityManagerNightVentilation::ventilationTemperatureLowLimit() const {
-  return getImpl<detail::AvailabilityManagerNightVentilation_Impl>()->ventilationTemperatureLowLimit();
-}
+  double AvailabilityManagerNightVentilation::ventilationTemperatureLowLimit() const {
+    return getImpl<detail::AvailabilityManagerNightVentilation_Impl>()->ventilationTemperatureLowLimit();
+  }
 
-bool AvailabilityManagerNightVentilation::setVentilationTemperatureLowLimit(double ventilationTemperatureLowLimit) {
-  return getImpl<detail::AvailabilityManagerNightVentilation_Impl>()->setVentilationTemperatureLowLimit(ventilationTemperatureLowLimit);
-}
+  bool AvailabilityManagerNightVentilation::setVentilationTemperatureLowLimit(double ventilationTemperatureLowLimit) {
+    return getImpl<detail::AvailabilityManagerNightVentilation_Impl>()->setVentilationTemperatureLowLimit(ventilationTemperatureLowLimit);
+  }
 
-double AvailabilityManagerNightVentilation::nightVentingFlowFraction() const {
-  return getImpl<detail::AvailabilityManagerNightVentilation_Impl>()->nightVentingFlowFraction();
-}
+  double AvailabilityManagerNightVentilation::nightVentingFlowFraction() const {
+    return getImpl<detail::AvailabilityManagerNightVentilation_Impl>()->nightVentingFlowFraction();
+  }
 
-bool AvailabilityManagerNightVentilation::setNightVentingFlowFraction(double nightVentingFlowFraction) {
-  return getImpl<detail::AvailabilityManagerNightVentilation_Impl>()->setNightVentingFlowFraction(nightVentingFlowFraction);
-}
+  bool AvailabilityManagerNightVentilation::setNightVentingFlowFraction(double nightVentingFlowFraction) {
+    return getImpl<detail::AvailabilityManagerNightVentilation_Impl>()->setNightVentingFlowFraction(nightVentingFlowFraction);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-double AvailabilityManagerNightVentilation_Impl::ventilationTemperatureDifference() const {
-  const auto value = getDouble(openstudio::AvailabilityManager_NightVentilationFields::VentilationTemperatureDifference, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    // ventilationTemperatureDifference
+    double AvailabilityManagerNightVentilation_Impl::ventilationTemperatureDifference() const {
+      const auto value = getDouble(openstudio::AvailabilityManager_NightVentilationFields::VentilationTemperatureDifference, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool AvailabilityManagerNightVentilation_Impl::setVentilationTemperatureDifference(double ventilationTemperatureDifference) {
-  const bool result =
-    setDouble(openstudio::AvailabilityManager_NightVentilationFields::VentilationTemperatureDifference, ventilationTemperatureDifference);
-  OS_ASSERT(result);
-  return result;
-}
+    bool AvailabilityManagerNightVentilation_Impl::setVentilationTemperatureDifference(double ventilationTemperatureDifference) {
+      const bool result =
+        setDouble(openstudio::AvailabilityManager_NightVentilationFields::VentilationTemperatureDifference, ventilationTemperatureDifference);
+      OS_ASSERT(result);
+      return result;
+    }
 
-double AvailabilityManagerNightVentilation_Impl::ventilationTemperatureLowLimit() const {
-  const auto value = getDouble(openstudio::AvailabilityManager_NightVentilationFields::VentilationTemperatureLowLimit, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    // ventilationTemperatureLowLimit
+    double AvailabilityManagerNightVentilation_Impl::ventilationTemperatureLowLimit() const {
+      const auto value = getDouble(openstudio::AvailabilityManager_NightVentilationFields::VentilationTemperatureLowLimit, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool AvailabilityManagerNightVentilation_Impl::setVentilationTemperatureLowLimit(double ventilationTemperatureLowLimit) {
-  const bool result = setDouble(openstudio::AvailabilityManager_NightVentilationFields::VentilationTemperatureLowLimit, ventilationTemperatureLowLimit);
-  OS_ASSERT(result);
-  return result;
-}
+    bool AvailabilityManagerNightVentilation_Impl::setVentilationTemperatureLowLimit(double ventilationTemperatureLowLimit) {
+      const bool result =
+        setDouble(openstudio::AvailabilityManager_NightVentilationFields::VentilationTemperatureLowLimit, ventilationTemperatureLowLimit);
+      OS_ASSERT(result);
+      return result;
+    }
 
-double AvailabilityManagerNightVentilation_Impl::nightVentingFlowFraction() const {
-  const auto value = getDouble(openstudio::AvailabilityManager_NightVentilationFields::NightVentingFlowFraction, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    // nightVentingFlowFraction
+    double AvailabilityManagerNightVentilation_Impl::nightVentingFlowFraction() const {
+      const auto value = getDouble(openstudio::AvailabilityManager_NightVentilationFields::NightVentingFlowFraction, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool AvailabilityManagerNightVentilation_Impl::setNightVentingFlowFraction(double nightVentingFlowFraction) {
-  return setDouble(openstudio::AvailabilityManager_NightVentilationFields::NightVentingFlowFraction, nightVentingFlowFraction);
-}
+    bool AvailabilityManagerNightVentilation_Impl::setNightVentingFlowFraction(double nightVentingFlowFraction) {
+      return setDouble(openstudio::AvailabilityManager_NightVentilationFields::NightVentingFlowFraction, nightVentingFlowFraction);
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

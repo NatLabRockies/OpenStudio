@@ -22,6 +22,15 @@ namespace epmodel {
       return getDouble(SurfaceProperty_OtherSideCoefficientsFields::CombinedConvective_RadiativeFilmCoefficient, true);
     }
 
+    bool SurfacePropertyOtherSideCoefficients_Impl::setCombinedConvectiveRadiativeFilmCoefficient(double combinedConvectiveRadiativeFilmCoefficient) {
+      return setDouble(SurfaceProperty_OtherSideCoefficientsFields::CombinedConvective_RadiativeFilmCoefficient,
+                       combinedConvectiveRadiativeFilmCoefficient);
+    }
+
+    void SurfacePropertyOtherSideCoefficients_Impl::resetCombinedConvectiveRadiativeFilmCoefficient() {
+      OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::CombinedConvective_RadiativeFilmCoefficient, ""));
+    }
+
     double SurfacePropertyOtherSideCoefficients_Impl::constantTemperature() const {
       auto value = getDouble(SurfaceProperty_OtherSideCoefficientsFields::ConstantTemperature, true);
       OS_ASSERT(value);
@@ -30,6 +39,14 @@ namespace epmodel {
 
     bool SurfacePropertyOtherSideCoefficients_Impl::isConstantTemperatureDefaulted() const {
       return isEmpty(SurfaceProperty_OtherSideCoefficientsFields::ConstantTemperature);
+    }
+
+    bool SurfacePropertyOtherSideCoefficients_Impl::setConstantTemperature(double constantTemperature) {
+      return setDouble(SurfaceProperty_OtherSideCoefficientsFields::ConstantTemperature, constantTemperature);
+    }
+
+    void SurfacePropertyOtherSideCoefficients_Impl::resetConstantTemperature() {
+      OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::ConstantTemperature, ""));
     }
 
     double SurfacePropertyOtherSideCoefficients_Impl::constantTemperatureCoefficient() const {
@@ -42,6 +59,14 @@ namespace epmodel {
       return isEmpty(SurfaceProperty_OtherSideCoefficientsFields::ConstantTemperatureCoefficient);
     }
 
+    bool SurfacePropertyOtherSideCoefficients_Impl::setConstantTemperatureCoefficient(double constantTemperatureCoefficient) {
+      return setDouble(SurfaceProperty_OtherSideCoefficientsFields::ConstantTemperatureCoefficient, constantTemperatureCoefficient);
+    }
+
+    void SurfacePropertyOtherSideCoefficients_Impl::resetConstantTemperatureCoefficient() {
+      OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::ConstantTemperatureCoefficient, ""));
+    }
+
     double SurfacePropertyOtherSideCoefficients_Impl::externalDryBulbTemperatureCoefficient() const {
       auto value = getDouble(SurfaceProperty_OtherSideCoefficientsFields::ExternalDryBulbTemperatureCoefficient, true);
       OS_ASSERT(value);
@@ -50,6 +75,14 @@ namespace epmodel {
 
     bool SurfacePropertyOtherSideCoefficients_Impl::isExternalDryBulbTemperatureCoefficientDefaulted() const {
       return isEmpty(SurfaceProperty_OtherSideCoefficientsFields::ExternalDryBulbTemperatureCoefficient);
+    }
+
+    bool SurfacePropertyOtherSideCoefficients_Impl::setExternalDryBulbTemperatureCoefficient(double externalDryBulbTemperatureCoefficient) {
+      return setDouble(SurfaceProperty_OtherSideCoefficientsFields::ExternalDryBulbTemperatureCoefficient, externalDryBulbTemperatureCoefficient);
+    }
+
+    void SurfacePropertyOtherSideCoefficients_Impl::resetExternalDryBulbTemperatureCoefficient() {
+      OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::ExternalDryBulbTemperatureCoefficient, ""));
     }
 
     double SurfacePropertyOtherSideCoefficients_Impl::groundTemperatureCoefficient() const {
@@ -62,6 +95,14 @@ namespace epmodel {
       return isEmpty(SurfaceProperty_OtherSideCoefficientsFields::GroundTemperatureCoefficient);
     }
 
+    bool SurfacePropertyOtherSideCoefficients_Impl::setGroundTemperatureCoefficient(double groundTemperatureCoefficient) {
+      return setDouble(SurfaceProperty_OtherSideCoefficientsFields::GroundTemperatureCoefficient, groundTemperatureCoefficient);
+    }
+
+    void SurfacePropertyOtherSideCoefficients_Impl::resetGroundTemperatureCoefficient() {
+      OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::GroundTemperatureCoefficient, ""));
+    }
+
     double SurfacePropertyOtherSideCoefficients_Impl::windSpeedCoefficient() const {
       auto value = getDouble(SurfaceProperty_OtherSideCoefficientsFields::WindSpeedCoefficient, true);
       OS_ASSERT(value);
@@ -70,6 +111,14 @@ namespace epmodel {
 
     bool SurfacePropertyOtherSideCoefficients_Impl::isWindSpeedCoefficientDefaulted() const {
       return isEmpty(SurfaceProperty_OtherSideCoefficientsFields::WindSpeedCoefficient);
+    }
+
+    bool SurfacePropertyOtherSideCoefficients_Impl::setWindSpeedCoefficient(double windSpeedCoefficient) {
+      return setDouble(SurfaceProperty_OtherSideCoefficientsFields::WindSpeedCoefficient, windSpeedCoefficient);
+    }
+
+    void SurfacePropertyOtherSideCoefficients_Impl::resetWindSpeedCoefficient() {
+      OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::WindSpeedCoefficient, ""));
     }
 
     double SurfacePropertyOtherSideCoefficients_Impl::zoneAirTemperatureCoefficient() const {
@@ -82,6 +131,14 @@ namespace epmodel {
       return isEmpty(SurfaceProperty_OtherSideCoefficientsFields::ZoneAirTemperatureCoefficient);
     }
 
+    bool SurfacePropertyOtherSideCoefficients_Impl::setZoneAirTemperatureCoefficient(double zoneAirTemperatureCoefficient) {
+      return setDouble(SurfaceProperty_OtherSideCoefficientsFields::ZoneAirTemperatureCoefficient, zoneAirTemperatureCoefficient);
+    }
+
+    void SurfacePropertyOtherSideCoefficients_Impl::resetZoneAirTemperatureCoefficient() {
+      OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::ZoneAirTemperatureCoefficient, ""));
+    }
+
     bool SurfacePropertyOtherSideCoefficients_Impl::sinusoidalVariationofConstantTemperatureCoefficient() const {
       auto value = getString(SurfaceProperty_OtherSideCoefficientsFields::SinusoidalVariationofConstantTemperatureCoefficient, true);
       OS_ASSERT(value);
@@ -90,91 +147,6 @@ namespace epmodel {
 
     bool SurfacePropertyOtherSideCoefficients_Impl::isSinusoidalVariationofConstantTemperatureCoefficientDefaulted() const {
       return isEmpty(SurfaceProperty_OtherSideCoefficientsFields::SinusoidalVariationofConstantTemperatureCoefficient);
-    }
-
-    double SurfacePropertyOtherSideCoefficients_Impl::periodofSinusoidalVariation() const {
-      auto value = getDouble(SurfaceProperty_OtherSideCoefficientsFields::PeriodofSinusoidalVariation, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool SurfacePropertyOtherSideCoefficients_Impl::isPeriodofSinusoidalVariationDefaulted() const {
-      return isEmpty(SurfaceProperty_OtherSideCoefficientsFields::PeriodofSinusoidalVariation);
-    }
-
-    double SurfacePropertyOtherSideCoefficients_Impl::previousOtherSideTemperatureCoefficient() const {
-      auto value = getDouble(SurfaceProperty_OtherSideCoefficientsFields::PreviousOtherSideTemperatureCoefficient, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool SurfacePropertyOtherSideCoefficients_Impl::isPreviousOtherSideTemperatureCoefficientDefaulted() const {
-      return isEmpty(SurfaceProperty_OtherSideCoefficientsFields::PreviousOtherSideTemperatureCoefficient);
-    }
-
-    boost::optional<double> SurfacePropertyOtherSideCoefficients_Impl::minimumOtherSideTemperatureLimit() const {
-      return getDouble(SurfaceProperty_OtherSideCoefficientsFields::MinimumOtherSideTemperatureLimit, true);
-    }
-
-    boost::optional<double> SurfacePropertyOtherSideCoefficients_Impl::maximumOtherSideTemperatureLimit() const {
-      return getDouble(SurfaceProperty_OtherSideCoefficientsFields::MaximumOtherSideTemperatureLimit, true);
-    }
-
-    bool SurfacePropertyOtherSideCoefficients_Impl::setCombinedConvectiveRadiativeFilmCoefficient(double combinedConvectiveRadiativeFilmCoefficient) {
-      return setDouble(SurfaceProperty_OtherSideCoefficientsFields::CombinedConvective_RadiativeFilmCoefficient,
-                       combinedConvectiveRadiativeFilmCoefficient);
-    }
-
-    void SurfacePropertyOtherSideCoefficients_Impl::resetCombinedConvectiveRadiativeFilmCoefficient() {
-      OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::CombinedConvective_RadiativeFilmCoefficient, ""));
-    }
-
-    bool SurfacePropertyOtherSideCoefficients_Impl::setConstantTemperature(double constantTemperature) {
-      return setDouble(SurfaceProperty_OtherSideCoefficientsFields::ConstantTemperature, constantTemperature);
-    }
-
-    void SurfacePropertyOtherSideCoefficients_Impl::resetConstantTemperature() {
-      OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::ConstantTemperature, ""));
-    }
-
-    bool SurfacePropertyOtherSideCoefficients_Impl::setConstantTemperatureCoefficient(double constantTemperatureCoefficient) {
-      return setDouble(SurfaceProperty_OtherSideCoefficientsFields::ConstantTemperatureCoefficient, constantTemperatureCoefficient);
-    }
-
-    void SurfacePropertyOtherSideCoefficients_Impl::resetConstantTemperatureCoefficient() {
-      OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::ConstantTemperatureCoefficient, ""));
-    }
-
-    bool SurfacePropertyOtherSideCoefficients_Impl::setExternalDryBulbTemperatureCoefficient(double externalDryBulbTemperatureCoefficient) {
-      return setDouble(SurfaceProperty_OtherSideCoefficientsFields::ExternalDryBulbTemperatureCoefficient, externalDryBulbTemperatureCoefficient);
-    }
-
-    void SurfacePropertyOtherSideCoefficients_Impl::resetExternalDryBulbTemperatureCoefficient() {
-      OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::ExternalDryBulbTemperatureCoefficient, ""));
-    }
-
-    bool SurfacePropertyOtherSideCoefficients_Impl::setGroundTemperatureCoefficient(double groundTemperatureCoefficient) {
-      return setDouble(SurfaceProperty_OtherSideCoefficientsFields::GroundTemperatureCoefficient, groundTemperatureCoefficient);
-    }
-
-    void SurfacePropertyOtherSideCoefficients_Impl::resetGroundTemperatureCoefficient() {
-      OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::GroundTemperatureCoefficient, ""));
-    }
-
-    bool SurfacePropertyOtherSideCoefficients_Impl::setWindSpeedCoefficient(double windSpeedCoefficient) {
-      return setDouble(SurfaceProperty_OtherSideCoefficientsFields::WindSpeedCoefficient, windSpeedCoefficient);
-    }
-
-    void SurfacePropertyOtherSideCoefficients_Impl::resetWindSpeedCoefficient() {
-      OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::WindSpeedCoefficient, ""));
-    }
-
-    bool SurfacePropertyOtherSideCoefficients_Impl::setZoneAirTemperatureCoefficient(double zoneAirTemperatureCoefficient) {
-      return setDouble(SurfaceProperty_OtherSideCoefficientsFields::ZoneAirTemperatureCoefficient, zoneAirTemperatureCoefficient);
-    }
-
-    void SurfacePropertyOtherSideCoefficients_Impl::resetZoneAirTemperatureCoefficient() {
-      OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::ZoneAirTemperatureCoefficient, ""));
     }
 
     bool SurfacePropertyOtherSideCoefficients_Impl::setSinusoidalVariationofConstantTemperatureCoefficient(
@@ -189,12 +161,32 @@ namespace epmodel {
       OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::SinusoidalVariationofConstantTemperatureCoefficient, ""));
     }
 
+    double SurfacePropertyOtherSideCoefficients_Impl::periodofSinusoidalVariation() const {
+      auto value = getDouble(SurfaceProperty_OtherSideCoefficientsFields::PeriodofSinusoidalVariation, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool SurfacePropertyOtherSideCoefficients_Impl::isPeriodofSinusoidalVariationDefaulted() const {
+      return isEmpty(SurfaceProperty_OtherSideCoefficientsFields::PeriodofSinusoidalVariation);
+    }
+
     bool SurfacePropertyOtherSideCoefficients_Impl::setPeriodofSinusoidalVariation(double periodofSinusoidalVariation) {
       return setDouble(SurfaceProperty_OtherSideCoefficientsFields::PeriodofSinusoidalVariation, periodofSinusoidalVariation);
     }
 
     void SurfacePropertyOtherSideCoefficients_Impl::resetPeriodofSinusoidalVariation() {
       OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::PeriodofSinusoidalVariation, ""));
+    }
+
+    double SurfacePropertyOtherSideCoefficients_Impl::previousOtherSideTemperatureCoefficient() const {
+      auto value = getDouble(SurfaceProperty_OtherSideCoefficientsFields::PreviousOtherSideTemperatureCoefficient, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool SurfacePropertyOtherSideCoefficients_Impl::isPreviousOtherSideTemperatureCoefficientDefaulted() const {
+      return isEmpty(SurfaceProperty_OtherSideCoefficientsFields::PreviousOtherSideTemperatureCoefficient);
     }
 
     bool SurfacePropertyOtherSideCoefficients_Impl::setPreviousOtherSideTemperatureCoefficient(double previousOtherSideTemperatureCoefficient) {
@@ -205,12 +197,20 @@ namespace epmodel {
       OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::PreviousOtherSideTemperatureCoefficient, ""));
     }
 
+    boost::optional<double> SurfacePropertyOtherSideCoefficients_Impl::minimumOtherSideTemperatureLimit() const {
+      return getDouble(SurfaceProperty_OtherSideCoefficientsFields::MinimumOtherSideTemperatureLimit, true);
+    }
+
     bool SurfacePropertyOtherSideCoefficients_Impl::setMinimumOtherSideTemperatureLimit(double minimumOtherSideTemperatureLimit) {
       return setDouble(SurfaceProperty_OtherSideCoefficientsFields::MinimumOtherSideTemperatureLimit, minimumOtherSideTemperatureLimit);
     }
 
     void SurfacePropertyOtherSideCoefficients_Impl::resetMinimumOtherSideTemperatureLimit() {
       OS_ASSERT(setString(SurfaceProperty_OtherSideCoefficientsFields::MinimumOtherSideTemperatureLimit, ""));
+    }
+
+    boost::optional<double> SurfacePropertyOtherSideCoefficients_Impl::maximumOtherSideTemperatureLimit() const {
+      return getDouble(SurfaceProperty_OtherSideCoefficientsFields::MaximumOtherSideTemperatureLimit, true);
     }
 
     bool SurfacePropertyOtherSideCoefficients_Impl::setMaximumOtherSideTemperatureLimit(double maximumOtherSideTemperatureLimit) {

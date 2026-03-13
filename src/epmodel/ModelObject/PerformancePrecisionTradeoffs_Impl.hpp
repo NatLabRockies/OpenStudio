@@ -13,58 +13,52 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API PerformancePrecisionTradeoffs_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~PerformancePrecisionTradeoffs_Impl() override = default;
+    class EPMODEL_API PerformancePrecisionTradeoffs_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~PerformancePrecisionTradeoffs_Impl() override = default;
 
-  bool useCoilDirectSolutions() const;
-  bool isUseCoilDirectSolutionsDefaulted() const;
+      bool useCoilDirectSolutions() const;
+      bool isUseCoilDirectSolutionsDefaulted() const;
+      bool setUseCoilDirectSolutions(bool useCoilDirectSolutions);
+      void resetUseCoilDirectSolutions();
 
-  std::string zoneRadiantExchangeAlgorithm() const;
-  bool isZoneRadiantExchangeAlgorithmDefaulted() const;
+      std::string zoneRadiantExchangeAlgorithm() const;
+      bool isZoneRadiantExchangeAlgorithmDefaulted() const;
+      bool setZoneRadiantExchangeAlgorithm(const std::string& zoneRadiantExchangeAlgorithm);
+      void resetZoneRadiantExchangeAlgorithm();
 
-  std::string overrideMode() const;
-  bool isOverrideModeDefaulted() const;
+      std::string overrideMode() const;
+      bool isOverrideModeDefaulted() const;
+      bool setOverrideMode(const std::string& overrideMode);
+      void resetOverrideMode();
 
-  double maxZoneTempDiff() const;
-  bool isMaxZoneTempDiffDefaulted() const;
+      double maxZoneTempDiff() const;
+      bool isMaxZoneTempDiffDefaulted() const;
+      bool setMaxZoneTempDiff(double maxZoneTempDiff);
+      void resetMaxZoneTempDiff();
 
-  double maxAllowedDelTemp() const;
-  bool isMaxAllowedDelTempDefaulted() const;
+      double maxAllowedDelTemp() const;
+      bool isMaxAllowedDelTempDefaulted() const;
+      bool setMaxAllowedDelTemp(double maxAllowedDelTemp);
+      void resetMaxAllowedDelTemp();
 
-  bool useRepresentativeSurfacesforCalculations() const;
-  bool isUseRepresentativeSurfacesforCalculationsDefaulted() const;
+      bool useRepresentativeSurfacesforCalculations() const;
+      bool isUseRepresentativeSurfacesforCalculationsDefaulted() const;
+      bool setUseRepresentativeSurfacesforCalculations(bool useRepresentativeSurfacesforCalculations);
+      void resetUseRepresentativeSurfacesforCalculations();
 
-  bool setUseCoilDirectSolutions(bool useCoilDirectSolutions);
-  void resetUseCoilDirectSolutions();
+      std::vector<std::string> zoneRadiantExchangeAlgorithmValues() const;
+      std::vector<std::string> validZoneRadiantExchangeAlgorithmValues() const;
 
-  bool setZoneRadiantExchangeAlgorithm(const std::string& zoneRadiantExchangeAlgorithm);
-  void resetZoneRadiantExchangeAlgorithm();
+      std::vector<std::string> overrideModeValues() const;
+      std::vector<std::string> validOverrideModeValues() const;
+    };
 
-  bool setOverrideMode(const std::string& overrideMode);
-  void resetOverrideMode();
-
-  bool setMaxZoneTempDiff(double maxZoneTempDiff);
-  void resetMaxZoneTempDiff();
-
-  bool setMaxAllowedDelTemp(double maxAllowedDelTemp);
-  void resetMaxAllowedDelTemp();
-
-  bool setUseRepresentativeSurfacesforCalculations(bool useRepresentativeSurfacesforCalculations);
-  void resetUseRepresentativeSurfacesforCalculations();
-
-  std::vector<std::string> zoneRadiantExchangeAlgorithmValues() const;
-  std::vector<std::string> validZoneRadiantExchangeAlgorithmValues() const;
-
-  std::vector<std::string> overrideModeValues() const;
-  std::vector<std::string> validOverrideModeValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -11,44 +11,46 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatTransferSlabMatlProps_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatTransferSlabMatlProps_Impl() override = default;
+    class EPMODEL_API GroundHeatTransferSlabMatlProps_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatTransferSlabMatlProps_Impl() override = default;
 
-  double rHOSlabMaterialdensity() const;
-  double rHOSoilDensity() const;
-  double cPSlabCP() const;
-  double cPSoilCP() const;
-  double tCONSlabk() const;
-  double tCONSoilk() const;
+      double rHOSlabMaterialdensity() const;
+      bool isRHOSlabMaterialdensityDefaulted() const;
+      bool setRHOSlabMaterialdensity(double rHOSlabMaterialdensity);
+      void resetRHOSlabMaterialdensity();
 
-  bool isRHOSlabMaterialdensityDefaulted() const;
-  bool isRHOSoilDensityDefaulted() const;
-  bool isCPSlabCPDefaulted() const;
-  bool isCPSoilCPDefaulted() const;
-  bool isTCONSlabkDefaulted() const;
-  bool isTCONSoilkDefaulted() const;
+      double rHOSoilDensity() const;
+      bool isRHOSoilDensityDefaulted() const;
+      bool setRHOSoilDensity(double rHOSoilDensity);
+      void resetRHOSoilDensity();
 
-  bool setRHOSlabMaterialdensity(double rHOSlabMaterialdensity);
-  bool setRHOSoilDensity(double rHOSoilDensity);
-  bool setCPSlabCP(double cPSlabCP);
-  bool setCPSoilCP(double cPSoilCP);
-  bool setTCONSlabk(double tCONSlabk);
-  bool setTCONSoilk(double tCONSoilk);
+      double cPSlabCP() const;
+      bool isCPSlabCPDefaulted() const;
+      bool setCPSlabCP(double cPSlabCP);
+      void resetCPSlabCP();
 
-  void resetRHOSlabMaterialdensity();
-  void resetRHOSoilDensity();
-  void resetCPSlabCP();
-  void resetCPSoilCP();
-  void resetTCONSlabk();
-  void resetTCONSoilk();
-};
+      double cPSoilCP() const;
+      bool isCPSoilCPDefaulted() const;
+      bool setCPSoilCP(double cPSoilCP);
+      void resetCPSoilCP();
 
-}  // namespace detail
+      double tCONSlabk() const;
+      bool isTCONSlabkDefaulted() const;
+      bool setTCONSlabk(double tCONSlabk);
+      void resetTCONSlabk();
+
+      double tCONSoilk() const;
+      bool isTCONSoilkDefaulted() const;
+      bool setTCONSoilk(double tCONSoilk);
+      void resetTCONSoilk();
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

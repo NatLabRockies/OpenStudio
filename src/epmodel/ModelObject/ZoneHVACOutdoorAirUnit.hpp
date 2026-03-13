@@ -58,13 +58,13 @@ namespace epmodel {
     void resetExhaustAirFlowRate();
 
     std::string supplyFanPlacement() const;
-    bool setSupplyFanPlacement(const std::string& supplyFanPlacement);
     bool isSupplyFanPlacementDefaulted() const;
+    bool setSupplyFanPlacement(const std::string& supplyFanPlacement);
     void resetSupplyFanPlacement();
 
     std::string unitControlType() const;
-    bool setUnitControlType(const std::string& unitControlType);
     bool isUnitControlTypeDefaulted() const;
+    bool setUnitControlType(const std::string& unitControlType);
     void resetUnitControlType();
 
    protected:

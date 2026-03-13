@@ -13,57 +13,48 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API OutputTableReportPeriod_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~OutputTableReportPeriod_Impl() override = default;
+    class EPMODEL_API OutputTableReportPeriod_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~OutputTableReportPeriod_Impl() override = default;
 
-  boost::optional<std::string> reportName() const;
+      boost::optional<std::string> reportName() const;
+      bool setReportName(const std::string& reportName);
+      void resetReportName();
 
-  boost::optional<int> beginYear() const;
+      boost::optional<int> beginYear() const;
+      bool setBeginYear(int beginYear);
+      void resetBeginYear();
 
-  int beginMonth() const;
+      int beginMonth() const;
+      bool setBeginMonth(int beginMonth);
 
-  int beginDayofMonth() const;
+      int beginDayofMonth() const;
+      bool setBeginDayofMonth(int beginDayofMonth);
 
-  int beginHourofDay() const;
+      int beginHourofDay() const;
+      bool setBeginHourofDay(int beginHourofDay);
 
-  boost::optional<int> endYear() const;
+      boost::optional<int> endYear() const;
+      bool setEndYear(int endYear);
+      void resetEndYear();
 
-  int endMonth() const;
+      int endMonth() const;
+      bool setEndMonth(int endMonth);
 
-  int endDayofMonth() const;
+      int endDayofMonth() const;
+      bool setEndDayofMonth(int endDayofMonth);
 
-  int endHourofDay() const;
+      int endHourofDay() const;
+      bool setEndHourofDay(int endHourofDay);
 
-  bool setReportName(const std::string& reportName);
-  void resetReportName();
+      std::vector<std::string> reportNameValues() const;
+    };
 
-  bool setBeginYear(int beginYear);
-  void resetBeginYear();
-
-  bool setBeginMonth(int beginMonth);
-
-  bool setBeginDayofMonth(int beginDayofMonth);
-
-  bool setBeginHourofDay(int beginHourofDay);
-
-  bool setEndYear(int endYear);
-  void resetEndYear();
-
-  bool setEndMonth(int endMonth);
-
-  bool setEndDayofMonth(int endDayofMonth);
-
-  bool setEndHourofDay(int endHourofDay);
-
-  std::vector<std::string> reportNameValues() const;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

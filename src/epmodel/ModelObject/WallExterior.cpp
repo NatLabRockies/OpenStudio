@@ -121,6 +121,16 @@ namespace epmodel {
       return getDouble(openstudio::Wall_ExteriorFields::AzimuthAngle, true);
     }
 
+    bool WallExterior_Impl::setAzimuthAngle(double azimuthAngle) {
+      const bool result = setDouble(openstudio::Wall_ExteriorFields::AzimuthAngle, azimuthAngle);
+      return result;
+    }
+
+    void WallExterior_Impl::resetAzimuthAngle() {
+      const bool result = setString(openstudio::Wall_ExteriorFields::AzimuthAngle, "");
+      OS_ASSERT(result);
+    }
+
     double WallExterior_Impl::tiltAngle() const {
       const auto value = getDouble(openstudio::Wall_ExteriorFields::TiltAngle, true);
       OS_ASSERT(value);
@@ -131,34 +141,18 @@ namespace epmodel {
       return isEmpty(openstudio::Wall_ExteriorFields::TiltAngle);
     }
 
-    boost::optional<double> WallExterior_Impl::startingXCoordinate() const {
-      return getDouble(openstudio::Wall_ExteriorFields::StartingXCoordinate, true);
-    }
-
-    boost::optional<double> WallExterior_Impl::startingYCoordinate() const {
-      return getDouble(openstudio::Wall_ExteriorFields::StartingYCoordinate, true);
-    }
-
-    boost::optional<double> WallExterior_Impl::startingZCoordinate() const {
-      return getDouble(openstudio::Wall_ExteriorFields::StartingZCoordinate, true);
-    }
-
-    boost::optional<double> WallExterior_Impl::length() const {
-      return getDouble(openstudio::Wall_ExteriorFields::Length, true);
-    }
-
-    boost::optional<double> WallExterior_Impl::height() const {
-      return getDouble(openstudio::Wall_ExteriorFields::Height, true);
-    }
-
-    bool WallExterior_Impl::setAzimuthAngle(double azimuthAngle) {
-      const bool result = setDouble(openstudio::Wall_ExteriorFields::AzimuthAngle, azimuthAngle);
-      return result;
-    }
-
     bool WallExterior_Impl::setTiltAngle(double tiltAngle) {
       const bool result = setDouble(openstudio::Wall_ExteriorFields::TiltAngle, tiltAngle);
       return result;
+    }
+
+    void WallExterior_Impl::resetTiltAngle() {
+      const bool result = setString(openstudio::Wall_ExteriorFields::TiltAngle, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallExterior_Impl::startingXCoordinate() const {
+      return getDouble(openstudio::Wall_ExteriorFields::StartingXCoordinate, true);
     }
 
     bool WallExterior_Impl::setStartingXCoordinate(double startingXCoordinate) {
@@ -167,10 +161,28 @@ namespace epmodel {
       return result;
     }
 
+    void WallExterior_Impl::resetStartingXCoordinate() {
+      const bool result = setString(openstudio::Wall_ExteriorFields::StartingXCoordinate, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallExterior_Impl::startingYCoordinate() const {
+      return getDouble(openstudio::Wall_ExteriorFields::StartingYCoordinate, true);
+    }
+
     bool WallExterior_Impl::setStartingYCoordinate(double startingYCoordinate) {
       const bool result = setDouble(openstudio::Wall_ExteriorFields::StartingYCoordinate, startingYCoordinate);
       OS_ASSERT(result);
       return result;
+    }
+
+    void WallExterior_Impl::resetStartingYCoordinate() {
+      const bool result = setString(openstudio::Wall_ExteriorFields::StartingYCoordinate, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallExterior_Impl::startingZCoordinate() const {
+      return getDouble(openstudio::Wall_ExteriorFields::StartingZCoordinate, true);
     }
 
     bool WallExterior_Impl::setStartingZCoordinate(double startingZCoordinate) {
@@ -179,46 +191,34 @@ namespace epmodel {
       return result;
     }
 
+    void WallExterior_Impl::resetStartingZCoordinate() {
+      const bool result = setString(openstudio::Wall_ExteriorFields::StartingZCoordinate, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallExterior_Impl::length() const {
+      return getDouble(openstudio::Wall_ExteriorFields::Length, true);
+    }
+
     bool WallExterior_Impl::setLength(double length) {
       const bool result = setDouble(openstudio::Wall_ExteriorFields::Length, length);
       OS_ASSERT(result);
       return result;
     }
 
+    void WallExterior_Impl::resetLength() {
+      const bool result = setString(openstudio::Wall_ExteriorFields::Length, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<double> WallExterior_Impl::height() const {
+      return getDouble(openstudio::Wall_ExteriorFields::Height, true);
+    }
+
     bool WallExterior_Impl::setHeight(double height) {
       const bool result = setDouble(openstudio::Wall_ExteriorFields::Height, height);
       OS_ASSERT(result);
       return result;
-    }
-
-    void WallExterior_Impl::resetAzimuthAngle() {
-      const bool result = setString(openstudio::Wall_ExteriorFields::AzimuthAngle, "");
-      OS_ASSERT(result);
-    }
-
-    void WallExterior_Impl::resetTiltAngle() {
-      const bool result = setString(openstudio::Wall_ExteriorFields::TiltAngle, "");
-      OS_ASSERT(result);
-    }
-
-    void WallExterior_Impl::resetStartingXCoordinate() {
-      const bool result = setString(openstudio::Wall_ExteriorFields::StartingXCoordinate, "");
-      OS_ASSERT(result);
-    }
-
-    void WallExterior_Impl::resetStartingYCoordinate() {
-      const bool result = setString(openstudio::Wall_ExteriorFields::StartingYCoordinate, "");
-      OS_ASSERT(result);
-    }
-
-    void WallExterior_Impl::resetStartingZCoordinate() {
-      const bool result = setString(openstudio::Wall_ExteriorFields::StartingZCoordinate, "");
-      OS_ASSERT(result);
-    }
-
-    void WallExterior_Impl::resetLength() {
-      const bool result = setString(openstudio::Wall_ExteriorFields::Length, "");
-      OS_ASSERT(result);
     }
 
     void WallExterior_Impl::resetHeight() {

@@ -88,12 +88,12 @@ namespace epmodel {
     return getImpl<detail::UtilityCostQualify_Impl>()->numberOfMonths();
   }
 
-  bool UtilityCostQualify::isNumberOfMonthsDefaulted() const {
-    return getImpl<detail::UtilityCostQualify_Impl>()->isNumberOfMonthsDefaulted();
-  }
-
   bool UtilityCostQualify::setNumberOfMonths(int numberOfMonths) {
     return getImpl<detail::UtilityCostQualify_Impl>()->setNumberOfMonths(numberOfMonths);
+  }
+
+  bool UtilityCostQualify::isNumberOfMonthsDefaulted() const {
+    return getImpl<detail::UtilityCostQualify_Impl>()->isNumberOfMonthsDefaulted();
   }
 
   void UtilityCostQualify::resetNumberOfMonths() {
@@ -180,12 +180,12 @@ namespace epmodel {
       return *value;
     }
 
-    bool UtilityCostQualify_Impl::isNumberOfMonthsDefaulted() const {
-      return isEmpty(openstudio::UtilityCost_QualifyFields::NumberofMonths);
-    }
-
     bool UtilityCostQualify_Impl::setNumberOfMonths(int numberOfMonths) {
       return setInt(openstudio::UtilityCost_QualifyFields::NumberofMonths, numberOfMonths);
+    }
+
+    bool UtilityCostQualify_Impl::isNumberOfMonthsDefaulted() const {
+      return isEmpty(openstudio::UtilityCost_QualifyFields::NumberofMonths);
     }
 
     void UtilityCostQualify_Impl::resetNumberOfMonths() {

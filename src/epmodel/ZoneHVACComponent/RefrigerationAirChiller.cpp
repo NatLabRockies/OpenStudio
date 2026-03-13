@@ -65,6 +65,10 @@ namespace epmodel {
     return getImpl<detail::RefrigerationAirChiller_Impl>()->capacityRatingType();
   }
 
+  bool RefrigerationAirChiller::setCapacityRatingType(const std::string& capacityRatingType) {
+    return getImpl<detail::RefrigerationAirChiller_Impl>()->setCapacityRatingType(capacityRatingType);
+  }
+
   boost::optional<double> RefrigerationAirChiller::ratedUnitLoadFactor() const {
     return getImpl<detail::RefrigerationAirChiller_Impl>()->ratedUnitLoadFactor();
   }
@@ -349,10 +353,6 @@ namespace epmodel {
 
   void RefrigerationAirChiller::resetAverageRefrigerantChargeInventory() {
     getImpl<detail::RefrigerationAirChiller_Impl>()->resetAverageRefrigerantChargeInventory();
-  }
-
-  bool RefrigerationAirChiller::setCapacityRatingType(const std::string& capacityRatingType) {
-    return getImpl<detail::RefrigerationAirChiller_Impl>()->setCapacityRatingType(capacityRatingType);
   }
 
 }  // namespace epmodel

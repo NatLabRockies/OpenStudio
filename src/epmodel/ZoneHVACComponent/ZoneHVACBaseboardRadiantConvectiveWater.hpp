@@ -40,21 +40,26 @@ namespace epmodel {
     //   ForwardTranslateZoneHVACBaseboardRadiantConvectiveWater.cpp.
     // - Availability Schedule Name, Heating Coil Name, and the extensible surface entries remain relationship-only and are intentionally
     //   excluded from this scalar-only API.
+
+    // ratedAverageWaterTemperature accessors
     boost::optional<double> ratedAverageWaterTemperature() const;
     bool isRatedAverageWaterTemperatureDefaulted() const;
     bool setRatedAverageWaterTemperature(double ratedAverageWaterTemperature);
     void resetRatedAverageWaterTemperature();
 
+    // ratedWaterMassFlowRate accessors
     boost::optional<double> ratedWaterMassFlowRate() const;
     bool isRatedWaterMassFlowRateDefaulted() const;
     bool setRatedWaterMassFlowRate(double ratedWaterMassFlowRate);
     void resetRatedWaterMassFlowRate();
 
+    // heatingDesignCapacity accessors
     boost::optional<double> heatingDesignCapacity() const;
     bool isHeatingDesignCapacityAutosized() const;
     bool setHeatingDesignCapacity(double heatingDesignCapacity);
     void autosizeHeatingDesignCapacity();
 
+    // maximumWaterFlowRate accessors
     boost::optional<double> maximumWaterFlowRate() const;
     bool isMaximumWaterFlowRateAutosized() const;
     bool setMaximumWaterFlowRate(double maximumWaterFlowRate);

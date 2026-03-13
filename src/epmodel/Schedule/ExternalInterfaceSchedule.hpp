@@ -44,6 +44,7 @@ class EPMODEL_API ExternalInterfaceSchedule : public ModelObject
   //   (OS:ExternalInterface:Schedule ExportToBCVTB) and are not present on EnergyPlus ExternalInterface:Schedule.
   // - ForwardTranslator evidence: ForwardTranslateExternalInterfaceSchedule.cpp writes only ScheduleTypeLimitsName and InitialValue to E+.
   // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
+  // Initial Value accessors
   double initialValue() const;
   bool setInitialValue(double initialValue);
 

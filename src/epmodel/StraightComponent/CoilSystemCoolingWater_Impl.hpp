@@ -12,35 +12,38 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CoilSystemCoolingWater_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~CoilSystemCoolingWater_Impl() override = default;
+    class EPMODEL_API CoilSystemCoolingWater_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~CoilSystemCoolingWater_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
-  std::string dehumidificationControlType() const;
-  bool runonSensibleLoad() const;
-  bool runonLatentLoad() const;
-  double minimumAirToWaterTemperatureOffset() const;
-  bool economizerLockout() const;
-  double minimumWaterLoopTemperatureForHeatRecovery() const;
+      std::string dehumidificationControlType() const;
+      bool setDehumidificationControlType(const std::string& dehumidificationControlType);
+      std::vector<std::string> dehumidificationControlTypeValues() const;
 
-  bool setDehumidificationControlType(const std::string& dehumidificationControlType);
-  bool setRunonSensibleLoad(bool runonSensibleLoad);
-  bool setRunonLatentLoad(bool runonLatentLoad);
-  bool setMinimumAirToWaterTemperatureOffset(double minimumAirToWaterTemperatureOffset);
-  bool setEconomizerLockout(bool economizerLockout);
-  bool setMinimumWaterLoopTemperatureForHeatRecovery(double minimumWaterLoopTemperatureForHeatRecovery);
+      bool runonSensibleLoad() const;
+      bool setRunonSensibleLoad(bool runonSensibleLoad);
 
-  std::vector<std::string> dehumidificationControlTypeValues() const;
-};
+      bool runonLatentLoad() const;
+      bool setRunonLatentLoad(bool runonLatentLoad);
 
-}  // namespace detail
+      double minimumAirToWaterTemperatureOffset() const;
+      bool setMinimumAirToWaterTemperatureOffset(double minimumAirToWaterTemperatureOffset);
+
+      bool economizerLockout() const;
+      bool setEconomizerLockout(bool economizerLockout);
+
+      double minimumWaterLoopTemperatureForHeatRecovery() const;
+      bool setMinimumWaterLoopTemperatureForHeatRecovery(double minimumWaterLoopTemperatureForHeatRecovery);
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

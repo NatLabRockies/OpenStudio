@@ -17,70 +17,69 @@
 namespace openstudio {
 namespace epmodel {
 
-OutputControlIlluminanceMapStyle::OutputControlIlluminanceMapStyle(const Model& model)
-  : ModelObject(OutputControlIlluminanceMapStyle::iddObjectType(), model) {}
+  OutputControlIlluminanceMapStyle::OutputControlIlluminanceMapStyle(const Model& model)
+    : ModelObject(OutputControlIlluminanceMapStyle::iddObjectType(), model) {}
 
-OutputControlIlluminanceMapStyle::OutputControlIlluminanceMapStyle(
-  std::shared_ptr<detail::OutputControlIlluminanceMapStyle_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  OutputControlIlluminanceMapStyle::OutputControlIlluminanceMapStyle(std::shared_ptr<detail::OutputControlIlluminanceMapStyle_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType OutputControlIlluminanceMapStyle::iddObjectType() {
-  return IddObjectType::OutputControl_IlluminanceMap_Style;
-}
+  IddObjectType OutputControlIlluminanceMapStyle::iddObjectType() {
+    return IddObjectType::OutputControl_IlluminanceMap_Style;
+  }
 
-std::vector<std::string> OutputControlIlluminanceMapStyle::columnSeparatorValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::OutputControl_IlluminanceMap_StyleFields::ColumnSeparator);
-}
+  std::vector<std::string> OutputControlIlluminanceMapStyle::columnSeparatorValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::OutputControl_IlluminanceMap_StyleFields::ColumnSeparator);
+  }
 
-std::string OutputControlIlluminanceMapStyle::columnSeparator() const {
-  return getImpl<detail::OutputControlIlluminanceMapStyle_Impl>()->columnSeparator();
-}
+  std::string OutputControlIlluminanceMapStyle::columnSeparator() const {
+    return getImpl<detail::OutputControlIlluminanceMapStyle_Impl>()->columnSeparator();
+  }
 
-bool OutputControlIlluminanceMapStyle::isColumnSeparatorDefaulted() const {
-  return getImpl<detail::OutputControlIlluminanceMapStyle_Impl>()->isColumnSeparatorDefaulted();
-}
+  bool OutputControlIlluminanceMapStyle::isColumnSeparatorDefaulted() const {
+    return getImpl<detail::OutputControlIlluminanceMapStyle_Impl>()->isColumnSeparatorDefaulted();
+  }
 
-bool OutputControlIlluminanceMapStyle::setColumnSeparator(const std::string& columnSeparator) {
-  return getImpl<detail::OutputControlIlluminanceMapStyle_Impl>()->setColumnSeparator(columnSeparator);
-}
+  bool OutputControlIlluminanceMapStyle::setColumnSeparator(const std::string& columnSeparator) {
+    return getImpl<detail::OutputControlIlluminanceMapStyle_Impl>()->setColumnSeparator(columnSeparator);
+  }
 
-void OutputControlIlluminanceMapStyle::resetColumnSeparator() {
-  getImpl<detail::OutputControlIlluminanceMapStyle_Impl>()->resetColumnSeparator();
-}
+  void OutputControlIlluminanceMapStyle::resetColumnSeparator() {
+    getImpl<detail::OutputControlIlluminanceMapStyle_Impl>()->resetColumnSeparator();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string OutputControlIlluminanceMapStyle_Impl::columnSeparator() const {
-  if (auto value = getString(openstudio::OutputControl_IlluminanceMap_StyleFields::ColumnSeparator, false)) {
-    if (!value->empty()) {
-      return *value;
+    std::vector<std::string> OutputControlIlluminanceMapStyle_Impl::columnSeparatorValues() const {
+      return openstudio::epmodel::OutputControlIlluminanceMapStyle::columnSeparatorValues();
     }
-  }
-  return "Comma";
-}
 
-bool OutputControlIlluminanceMapStyle_Impl::isColumnSeparatorDefaulted() const {
-  return isEmpty(openstudio::OutputControl_IlluminanceMap_StyleFields::ColumnSeparator);
-}
+    std::string OutputControlIlluminanceMapStyle_Impl::columnSeparator() const {
+      if (auto value = getString(openstudio::OutputControl_IlluminanceMap_StyleFields::ColumnSeparator, false)) {
+        if (!value->empty()) {
+          return *value;
+        }
+      }
+      return "Comma";
+    }
 
-bool OutputControlIlluminanceMapStyle_Impl::setColumnSeparator(const std::string& columnSeparator) {
-  return setString(openstudio::OutputControl_IlluminanceMap_StyleFields::ColumnSeparator, columnSeparator);
-}
+    bool OutputControlIlluminanceMapStyle_Impl::isColumnSeparatorDefaulted() const {
+      return isEmpty(openstudio::OutputControl_IlluminanceMap_StyleFields::ColumnSeparator);
+    }
 
-void OutputControlIlluminanceMapStyle_Impl::resetColumnSeparator() {
-  OS_ASSERT(setString(openstudio::OutputControl_IlluminanceMap_StyleFields::ColumnSeparator, ""));
-}
+    bool OutputControlIlluminanceMapStyle_Impl::setColumnSeparator(const std::string& columnSeparator) {
+      return setString(openstudio::OutputControl_IlluminanceMap_StyleFields::ColumnSeparator, columnSeparator);
+    }
 
-std::vector<std::string> OutputControlIlluminanceMapStyle_Impl::columnSeparatorValues() const {
-  return openstudio::epmodel::OutputControlIlluminanceMapStyle::columnSeparatorValues();
-}
+    void OutputControlIlluminanceMapStyle_Impl::resetColumnSeparator() {
+      OS_ASSERT(setString(openstudio::OutputControl_IlluminanceMap_StyleFields::ColumnSeparator, ""));
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

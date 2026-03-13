@@ -38,12 +38,16 @@ namespace epmodel {
     // - Field Mapping: deflectedThickness, initialTemperature, and initialPressure delegate to WindowGap:DeflectionState fields Deflected Thickness, Initial Temperature, and Initial Pressure.
     // - Field Mapping: Name is managed by ModelObject so the measured deflection state can be referenced by name from WindowMaterial:Gap definitions.
     // - TODO(parity): Add any non-scalar relationship APIs once scalar saturation is complete.
+
+    // Deflected thickness
     double deflectedThickness() const;
     bool setDeflectedThickness(double deflectedThickness);
 
+    // Initial temperature
     double initialTemperature() const;
     bool setInitialTemperature(double initialTemperature);
 
+    // Initial pressure
     double initialPressure() const;
     bool setInitialPressure(double initialPressure);
 

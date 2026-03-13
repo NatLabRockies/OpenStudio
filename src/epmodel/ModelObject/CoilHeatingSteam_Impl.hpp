@@ -13,37 +13,37 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CoilHeatingSteam_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~CoilHeatingSteam_Impl() override = default;
+    class EPMODEL_API CoilHeatingSteam_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~CoilHeatingSteam_Impl() override = default;
 
-  boost::optional<double> maximumSteamFlowRate() const;
-  bool isMaximumSteamFlowRateAutosized() const;
-  bool setMaximumSteamFlowRate(double maximumSteamFlowRate);
-  void resetMaximumSteamFlowRate();
-  void autosizeMaximumSteamFlowRate();
+      std::vector<std::string> coilControlTypeValues() const;
 
-  boost::optional<double> degreeofSubCooling() const;
-  bool setDegreeofSubCooling(double degreeofSubCooling);
-  void resetDegreeofSubCooling();
+      boost::optional<double> maximumSteamFlowRate() const;
+      bool isMaximumSteamFlowRateAutosized() const;
+      bool setMaximumSteamFlowRate(double maximumSteamFlowRate);
+      void resetMaximumSteamFlowRate();
+      void autosizeMaximumSteamFlowRate();
 
-  double degreeofLoopSubCooling() const;
-  bool isDegreeofLoopSubCoolingDefaulted() const;
-  bool setDegreeofLoopSubCooling(double degreeofLoopSubCooling);
-  void resetDegreeofLoopSubCooling();
+      boost::optional<double> degreeofSubCooling() const;
+      bool setDegreeofSubCooling(double degreeofSubCooling);
+      void resetDegreeofSubCooling();
 
-  boost::optional<std::string> coilControlType() const;
-  bool setCoilControlType(const std::string& coilControlType);
-  void resetCoilControlType();
+      double degreeofLoopSubCooling() const;
+      bool isDegreeofLoopSubCoolingDefaulted() const;
+      bool setDegreeofLoopSubCooling(double degreeofLoopSubCooling);
+      void resetDegreeofLoopSubCooling();
 
-  std::vector<std::string> coilControlTypeValues() const;
-};
+      boost::optional<std::string> coilControlType() const;
+      bool setCoilControlType(const std::string& coilControlType);
+      void resetCoilControlType();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

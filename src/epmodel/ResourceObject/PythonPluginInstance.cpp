@@ -28,12 +28,12 @@ namespace epmodel {
     return getImpl<detail::PythonPluginInstance_Impl>()->runDuringWarmupDays();
   }
 
-  bool PythonPluginInstance::isRunDuringWarmupDaysDefaulted() const {
-    return getImpl<detail::PythonPluginInstance_Impl>()->isRunDuringWarmupDaysDefaulted();
-  }
-
   bool PythonPluginInstance::setRunDuringWarmupDays(bool runDuringWarmupDays) {
     return getImpl<detail::PythonPluginInstance_Impl>()->setRunDuringWarmupDays(runDuringWarmupDays);
+  }
+
+  bool PythonPluginInstance::isRunDuringWarmupDaysDefaulted() const {
+    return getImpl<detail::PythonPluginInstance_Impl>()->isRunDuringWarmupDaysDefaulted();
   }
 
   void PythonPluginInstance::resetRunDuringWarmupDays() {
@@ -81,14 +81,14 @@ namespace epmodel {
       return getBooleanFieldValue(*this, openstudio::PythonPlugin_InstanceFields::RunDuringWarmupDays);
     }
 
-    bool PythonPluginInstance_Impl::isRunDuringWarmupDaysDefaulted() const {
-      return isEmpty(openstudio::PythonPlugin_InstanceFields::RunDuringWarmupDays);
-    }
-
     bool PythonPluginInstance_Impl::setRunDuringWarmupDays(bool runDuringWarmupDays) {
       const bool result = setBooleanFieldValue(*this, openstudio::PythonPlugin_InstanceFields::RunDuringWarmupDays, runDuringWarmupDays);
       OS_ASSERT(result);
       return result;
+    }
+
+    bool PythonPluginInstance_Impl::isRunDuringWarmupDaysDefaulted() const {
+      return isEmpty(openstudio::PythonPlugin_InstanceFields::RunDuringWarmupDays);
     }
 
     void PythonPluginInstance_Impl::resetRunDuringWarmupDays() {

@@ -11,51 +11,48 @@
 namespace openstudio {
 namespace epmodel {
 
-class ThermalZone;
-class DesignSpecificationOutdoorAir;
+  class ThermalZone;
+  class DesignSpecificationOutdoorAir;
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API Space_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~Space_Impl() override = default;
+    class EPMODEL_API Space_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~Space_Impl() override = default;
 
-  double ceilingHeight() const;
-  bool isCeilingHeightDefaulted() const;
-  bool isCeilingHeightAutocalculated() const;
+      double ceilingHeight() const;
+      bool isCeilingHeightDefaulted() const;
+      bool isCeilingHeightAutocalculated() const;
+      bool setCeilingHeight(double ceilingHeight);
+      void autocalculateCeilingHeight();
+      void resetCeilingHeight();
 
-  double volume() const;
-  bool isVolumeDefaulted() const;
-  bool isVolumeAutocalculated() const;
+      double volume() const;
+      bool isVolumeDefaulted() const;
+      bool isVolumeAutocalculated() const;
+      bool setVolume(double volume);
+      void autocalculateVolume();
+      void resetVolume();
 
-  double floorArea() const;
-  bool isFloorAreaDefaulted() const;
-  bool isFloorAreaAutocalculated() const;
+      double floorArea() const;
+      bool isFloorAreaDefaulted() const;
+      bool isFloorAreaAutocalculated() const;
+      bool setFloorArea(double floorArea);
+      void autocalculateFloorArea();
+      void resetFloorArea();
 
-  bool setCeilingHeight(double ceilingHeight);
-  void autocalculateCeilingHeight();
-  void resetCeilingHeight();
+      boost::optional<openstudio::epmodel::ThermalZone> thermalZone() const;
+      bool setThermalZone(const openstudio::epmodel::ThermalZone& thermalZone);
+      void resetThermalZone();
+      boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAir> designSpecificationOutdoorAir() const;
+      bool setDesignSpecificationOutdoorAir(const openstudio::epmodel::DesignSpecificationOutdoorAir& designSpecificationOutdoorAir);
 
-  bool setVolume(double volume);
-  void autocalculateVolume();
-  void resetVolume();
+      void doCanonicalize(LoadContext& context) override;
+    };
 
-  bool setFloorArea(double floorArea);
-  void autocalculateFloorArea();
-  void resetFloorArea();
-
-  boost::optional<openstudio::epmodel::ThermalZone> thermalZone() const;
-  bool setThermalZone(const openstudio::epmodel::ThermalZone& thermalZone);
-  void resetThermalZone();
-  boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAir> designSpecificationOutdoorAir() const;
-  bool setDesignSpecificationOutdoorAir(const openstudio::epmodel::DesignSpecificationOutdoorAir& designSpecificationOutdoorAir);
-
-  void doCanonicalize(LoadContext& context) override;
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

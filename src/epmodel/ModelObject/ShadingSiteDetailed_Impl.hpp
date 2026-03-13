@@ -10,22 +10,22 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ShadingSiteDetailed_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ShadingSiteDetailed_Impl() override = default;
+    class EPMODEL_API ShadingSiteDetailed_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ShadingSiteDetailed_Impl() override = default;
 
-  boost::optional<int> numberofVertices() const;
-  bool setNumberofVertices(int numberofVertices);
-  bool isNumberofVerticesAutocalculated() const;
-  void autocalculateNumberofVertices();
-  void resetNumberofVertices();
-};
+      boost::optional<int> numberofVertices() const;
+      bool setNumberofVertices(int numberofVertices);
+      void resetNumberofVertices();
+      bool isNumberofVerticesAutocalculated() const;
+      void autocalculateNumberofVertices();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

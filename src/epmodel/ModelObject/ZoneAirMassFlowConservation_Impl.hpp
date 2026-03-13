@@ -21,19 +21,16 @@ namespace epmodel {
 
       std::string adjustZoneMixingandReturnForAirMassFlowBalance() const;
       bool isAdjustZoneMixingandReturnForAirMassFlowBalanceDefaulted() const;
-
-      std::string infiltrationBalancingMethod() const;
-      bool isInfiltrationBalancingMethodDefaulted() const;
-
-      std::string infiltrationBalancingZones() const;
-      bool isInfiltrationBalancingZonesDefaulted() const;
-
       bool setAdjustZoneMixingandReturnForAirMassFlowBalance(const std::string& adjustZoneMixingandReturnForAirMassFlowBalance);
       void resetAdjustZoneMixingandReturnForAirMassFlowBalance();
 
+      std::string infiltrationBalancingMethod() const;
+      bool isInfiltrationBalancingMethodDefaulted() const;
       bool setInfiltrationBalancingMethod(const std::string& infiltrationBalancingMethod);
       void resetInfiltrationBalancingMethod();
 
+      std::string infiltrationBalancingZones() const;
+      bool isInfiltrationBalancingZonesDefaulted() const;
       bool setInfiltrationBalancingZones(const std::string& infiltrationBalancingZones);
       void resetInfiltrationBalancingZones();
     };

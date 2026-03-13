@@ -67,24 +67,30 @@ namespace epmodel {
     bool setCustomMolecularWeight(double value);
 
     boost::optional<double> conductivityCoefficientA() const;
-    boost::optional<double> conductivityCoefficientB() const;
-    boost::optional<double> conductivityCoefficientC() const;
     bool setConductivityCoefficientA(double conductivityCoefficientA);
+
+    boost::optional<double> conductivityCoefficientB() const;
     bool setConductivityCoefficientB(double conductivityCoefficientB);
+
+    boost::optional<double> conductivityCoefficientC() const;
     bool setConductivityCoefficientC(double conductivityCoefficientC);
 
     boost::optional<double> viscosityCoefficientA() const;
-    boost::optional<double> viscosityCoefficientB() const;
-    boost::optional<double> viscosityCoefficientC() const;
     bool setViscosityCoefficientA(double viscosityCoefficientA);
+
+    boost::optional<double> viscosityCoefficientB() const;
     bool setViscosityCoefficientB(double viscosityCoefficientB);
+
+    boost::optional<double> viscosityCoefficientC() const;
     bool setViscosityCoefficientC(double viscosityCoefficientC);
 
     boost::optional<double> specificHeatCoefficientA() const;
-    boost::optional<double> specificHeatCoefficientB() const;
-    boost::optional<double> specificHeatCoefficientC() const;
     bool setSpecificHeatCoefficientA(double specificHeatCoefficientA);
+
+    boost::optional<double> specificHeatCoefficientB() const;
     bool setSpecificHeatCoefficientB(double specificHeatCoefficientB);
+
+    boost::optional<double> specificHeatCoefficientC() const;
     bool setSpecificHeatCoefficientC(double specificHeatCoefficientC);
 
     boost::optional<double> molecularWeight() const;

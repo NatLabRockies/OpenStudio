@@ -13,47 +13,47 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API DemandManagerVentilation_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~DemandManagerVentilation_Impl() override = default;
+    class EPMODEL_API DemandManagerVentilation_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~DemandManagerVentilation_Impl() override = default;
 
-  std::string limitControl() const;
-  bool setLimitControl(const std::string& limitControl);
+      std::vector<std::string> limitControlValues() const;
+      std::vector<std::string> selectionControlValues() const;
 
-  boost::optional<int> minimumLimitDuration() const;
-  bool setMinimumLimitDuration(int minimumLimitDuration);
-  void resetMinimumLimitDuration();
+      std::string limitControl() const;
+      bool setLimitControl(const std::string& limitControl);
 
-  boost::optional<double> fixedRate() const;
-  bool setFixedRate(double fixedRate);
-  void resetFixedRate();
+      boost::optional<int> minimumLimitDuration() const;
+      bool setMinimumLimitDuration(int minimumLimitDuration);
+      void resetMinimumLimitDuration();
 
-  boost::optional<double> reductionRatio() const;
-  bool setReductionRatio(double reductionRatio);
-  void resetReductionRatio();
+      boost::optional<double> fixedRate() const;
+      bool setFixedRate(double fixedRate);
+      void resetFixedRate();
 
-  boost::optional<double> limitStepChange() const;
-  bool setLimitStepChange(double limitStepChange);
-  void resetLimitStepChange();
+      boost::optional<double> reductionRatio() const;
+      bool setReductionRatio(double reductionRatio);
+      void resetReductionRatio();
 
-  std::string selectionControl() const;
-  bool isSelectionControlDefaulted() const;
-  bool setSelectionControl(const std::string& selectionControl);
-  void resetSelectionControl();
+      boost::optional<double> limitStepChange() const;
+      bool setLimitStepChange(double limitStepChange);
+      void resetLimitStepChange();
 
-  boost::optional<int> rotationDuration() const;
-  bool setRotationDuration(int rotationDuration);
-  void resetRotationDuration();
+      std::string selectionControl() const;
+      bool isSelectionControlDefaulted() const;
+      bool setSelectionControl(const std::string& selectionControl);
+      void resetSelectionControl();
 
-  std::vector<std::string> limitControlValues() const;
-  std::vector<std::string> selectionControlValues() const;
-};
+      boost::optional<int> rotationDuration() const;
+      bool setRotationDuration(int rotationDuration);
+      void resetRotationDuration();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

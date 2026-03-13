@@ -96,27 +96,6 @@ namespace epmodel {
       return {};
     }
 
-    void RoomAirNodeAirflowNetworkHVACEquipment_Impl::ensureRelationshipFields(openstudio::IdfExtensibleGroup& group) const {
-      const char* defaultType = "ZoneHVAC:PackagedTerminalAirConditioner";
-      const char* defaultName = "RoomAirHVACEquipment";
-
-      if (auto objectType = group.getString(ExtensibleFields::ZoneHVACorAirTerminalEquipmentObjectType, true)) {
-        if (objectType->empty()) {
-          group.setString(ExtensibleFields::ZoneHVACorAirTerminalEquipmentObjectType, defaultType);
-        }
-      } else {
-        group.setString(ExtensibleFields::ZoneHVACorAirTerminalEquipmentObjectType, defaultType);
-      }
-
-      if (auto objectName = group.getString(ExtensibleFields::ZoneHVACorAirTerminalEquipmentObjectName, true)) {
-        if (objectName->empty()) {
-          group.setString(ExtensibleFields::ZoneHVACorAirTerminalEquipmentObjectName, defaultName);
-        }
-      } else {
-        group.setString(ExtensibleFields::ZoneHVACorAirTerminalEquipmentObjectName, defaultName);
-      }
-    }
-
     bool RoomAirNodeAirflowNetworkHVACEquipment_Impl::setFractionOfOutputOrSupplyAirFromHVACEquipment1(
       double fractionOfOutputOrSupplyAirFromHVACEquipment1) {
       auto group = ensureEquipmentGroup();
@@ -147,6 +126,27 @@ namespace epmodel {
     void RoomAirNodeAirflowNetworkHVACEquipment_Impl::resetFractionOfInputOrReturnAirToHVACEquipment1() {
       if (auto group = equipmentGroup()) {
         OS_ASSERT(group->setString(ExtensibleFields::FractionofInputorReturnAirtoHVACEquipment, ""));
+      }
+    }
+
+    void RoomAirNodeAirflowNetworkHVACEquipment_Impl::ensureRelationshipFields(openstudio::IdfExtensibleGroup& group) const {
+      const char* defaultType = "ZoneHVAC:PackagedTerminalAirConditioner";
+      const char* defaultName = "RoomAirHVACEquipment";
+
+      if (auto objectType = group.getString(ExtensibleFields::ZoneHVACorAirTerminalEquipmentObjectType, true)) {
+        if (objectType->empty()) {
+          group.setString(ExtensibleFields::ZoneHVACorAirTerminalEquipmentObjectType, defaultType);
+        }
+      } else {
+        group.setString(ExtensibleFields::ZoneHVACorAirTerminalEquipmentObjectType, defaultType);
+      }
+
+      if (auto objectName = group.getString(ExtensibleFields::ZoneHVACorAirTerminalEquipmentObjectName, true)) {
+        if (objectName->empty()) {
+          group.setString(ExtensibleFields::ZoneHVACorAirTerminalEquipmentObjectName, defaultName);
+        }
+      } else {
+        group.setString(ExtensibleFields::ZoneHVACorAirTerminalEquipmentObjectName, defaultName);
       }
     }
 

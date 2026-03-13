@@ -75,12 +75,28 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isMaximumHeatingSupplyAirTemperatureDefaulted();
   }
 
+  bool ZoneHVACIdealLoadsAirSystem::setMaximumHeatingSupplyAirTemperature(double maximumHeatingSupplyAirTemperature) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setMaximumHeatingSupplyAirTemperature(maximumHeatingSupplyAirTemperature);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetMaximumHeatingSupplyAirTemperature() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetMaximumHeatingSupplyAirTemperature();
+  }
+
   double ZoneHVACIdealLoadsAirSystem::minimumCoolingSupplyAirTemperature() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->minimumCoolingSupplyAirTemperature();
   }
 
   bool ZoneHVACIdealLoadsAirSystem::isMinimumCoolingSupplyAirTemperatureDefaulted() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isMinimumCoolingSupplyAirTemperatureDefaulted();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setMinimumCoolingSupplyAirTemperature(double minimumCoolingSupplyAirTemperature) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setMinimumCoolingSupplyAirTemperature(minimumCoolingSupplyAirTemperature);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetMinimumCoolingSupplyAirTemperature() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetMinimumCoolingSupplyAirTemperature();
   }
 
   double ZoneHVACIdealLoadsAirSystem::maximumHeatingSupplyAirHumidityRatio() const {
@@ -91,12 +107,28 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isMaximumHeatingSupplyAirHumidityRatioDefaulted();
   }
 
+  bool ZoneHVACIdealLoadsAirSystem::setMaximumHeatingSupplyAirHumidityRatio(double maximumHeatingSupplyAirHumidityRatio) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setMaximumHeatingSupplyAirHumidityRatio(maximumHeatingSupplyAirHumidityRatio);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetMaximumHeatingSupplyAirHumidityRatio() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetMaximumHeatingSupplyAirHumidityRatio();
+  }
+
   double ZoneHVACIdealLoadsAirSystem::minimumCoolingSupplyAirHumidityRatio() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->minimumCoolingSupplyAirHumidityRatio();
   }
 
   bool ZoneHVACIdealLoadsAirSystem::isMinimumCoolingSupplyAirHumidityRatioDefaulted() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isMinimumCoolingSupplyAirHumidityRatioDefaulted();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setMinimumCoolingSupplyAirHumidityRatio(double minimumCoolingSupplyAirHumidityRatio) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setMinimumCoolingSupplyAirHumidityRatio(minimumCoolingSupplyAirHumidityRatio);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetMinimumCoolingSupplyAirHumidityRatio() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetMinimumCoolingSupplyAirHumidityRatio();
   }
 
   std::string ZoneHVACIdealLoadsAirSystem::heatingLimit() const {
@@ -107,12 +139,36 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isHeatingLimitDefaulted();
   }
 
+  bool ZoneHVACIdealLoadsAirSystem::setHeatingLimit(const std::string& heatingLimit) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setHeatingLimit(heatingLimit);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetHeatingLimit() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetHeatingLimit();
+  }
+
   boost::optional<double> ZoneHVACIdealLoadsAirSystem::maximumHeatingAirFlowRate() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->maximumHeatingAirFlowRate();
   }
 
   bool ZoneHVACIdealLoadsAirSystem::isMaximumHeatingAirFlowRateAutosized() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isMaximumHeatingAirFlowRateAutosized();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setMaximumHeatingAirFlowRate(double maximumHeatingAirFlowRate) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setMaximumHeatingAirFlowRate(maximumHeatingAirFlowRate);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetMaximumHeatingAirFlowRate() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetMaximumHeatingAirFlowRate();
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::autosizeMaximumHeatingAirFlowRate() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->autosizeMaximumHeatingAirFlowRate();
+  }
+
+  boost::optional<double> ZoneHVACIdealLoadsAirSystem::autosizedMaximumHeatingAirFlowRate() const {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->autosizedMaximumHeatingAirFlowRate();
   }
 
   boost::optional<double> ZoneHVACIdealLoadsAirSystem::maximumSensibleHeatingCapacity() const {
@@ -123,12 +179,36 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isMaximumSensibleHeatingCapacityAutosized();
   }
 
+  bool ZoneHVACIdealLoadsAirSystem::setMaximumSensibleHeatingCapacity(double maximumSensibleHeatingCapacity) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setMaximumSensibleHeatingCapacity(maximumSensibleHeatingCapacity);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetMaximumSensibleHeatingCapacity() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetMaximumSensibleHeatingCapacity();
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::autosizeMaximumSensibleHeatingCapacity() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->autosizeMaximumSensibleHeatingCapacity();
+  }
+
+  boost::optional<double> ZoneHVACIdealLoadsAirSystem::autosizedMaximumSensibleHeatingCapacity() const {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->autosizedMaximumSensibleHeatingCapacity();
+  }
+
   std::string ZoneHVACIdealLoadsAirSystem::coolingLimit() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->coolingLimit();
   }
 
   bool ZoneHVACIdealLoadsAirSystem::isCoolingLimitDefaulted() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isCoolingLimitDefaulted();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setCoolingLimit(const std::string& coolingLimit) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setCoolingLimit(coolingLimit);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetCoolingLimit() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetCoolingLimit();
   }
 
   boost::optional<double> ZoneHVACIdealLoadsAirSystem::maximumCoolingAirFlowRate() const {
@@ -139,12 +219,44 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isMaximumCoolingAirFlowRateAutosized();
   }
 
+  bool ZoneHVACIdealLoadsAirSystem::setMaximumCoolingAirFlowRate(double maximumCoolingAirFlowRate) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setMaximumCoolingAirFlowRate(maximumCoolingAirFlowRate);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetMaximumCoolingAirFlowRate() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetMaximumCoolingAirFlowRate();
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::autosizeMaximumCoolingAirFlowRate() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->autosizeMaximumCoolingAirFlowRate();
+  }
+
+  boost::optional<double> ZoneHVACIdealLoadsAirSystem::autosizedMaximumCoolingAirFlowRate() const {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->autosizedMaximumCoolingAirFlowRate();
+  }
+
   boost::optional<double> ZoneHVACIdealLoadsAirSystem::maximumTotalCoolingCapacity() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->maximumTotalCoolingCapacity();
   }
 
   bool ZoneHVACIdealLoadsAirSystem::isMaximumTotalCoolingCapacityAutosized() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isMaximumTotalCoolingCapacityAutosized();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setMaximumTotalCoolingCapacity(double maximumTotalCoolingCapacity) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setMaximumTotalCoolingCapacity(maximumTotalCoolingCapacity);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetMaximumTotalCoolingCapacity() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetMaximumTotalCoolingCapacity();
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::autosizeMaximumTotalCoolingCapacity() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->autosizeMaximumTotalCoolingCapacity();
+  }
+
+  boost::optional<double> ZoneHVACIdealLoadsAirSystem::autosizedMaximumTotalCoolingCapacity() const {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->autosizedMaximumTotalCoolingCapacity();
   }
 
   std::string ZoneHVACIdealLoadsAirSystem::dehumidificationControlType() const {
@@ -155,12 +267,28 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isDehumidificationControlTypeDefaulted();
   }
 
+  bool ZoneHVACIdealLoadsAirSystem::setDehumidificationControlType(const std::string& dehumidificationControlType) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setDehumidificationControlType(dehumidificationControlType);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetDehumidificationControlType() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetDehumidificationControlType();
+  }
+
   double ZoneHVACIdealLoadsAirSystem::coolingSensibleHeatRatio() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->coolingSensibleHeatRatio();
   }
 
   bool ZoneHVACIdealLoadsAirSystem::isCoolingSensibleHeatRatioDefaulted() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isCoolingSensibleHeatRatioDefaulted();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setCoolingSensibleHeatRatio(double coolingSensibleHeatRatio) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setCoolingSensibleHeatRatio(coolingSensibleHeatRatio);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetCoolingSensibleHeatRatio() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetCoolingSensibleHeatRatio();
   }
 
   std::string ZoneHVACIdealLoadsAirSystem::humidificationControlType() const {
@@ -171,12 +299,28 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isHumidificationControlTypeDefaulted();
   }
 
+  bool ZoneHVACIdealLoadsAirSystem::setHumidificationControlType(const std::string& humidificationControlType) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setHumidificationControlType(humidificationControlType);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetHumidificationControlType() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetHumidificationControlType();
+  }
+
   std::string ZoneHVACIdealLoadsAirSystem::demandControlledVentilationType() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->demandControlledVentilationType();
   }
 
   bool ZoneHVACIdealLoadsAirSystem::isDemandControlledVentilationTypeDefaulted() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isDemandControlledVentilationTypeDefaulted();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setDemandControlledVentilationType(const std::string& demandControlledVentilationType) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setDemandControlledVentilationType(demandControlledVentilationType);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetDemandControlledVentilationType() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetDemandControlledVentilationType();
   }
 
   std::string ZoneHVACIdealLoadsAirSystem::outdoorAirEconomizerType() const {
@@ -187,12 +331,28 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isOutdoorAirEconomizerTypeDefaulted();
   }
 
+  bool ZoneHVACIdealLoadsAirSystem::setOutdoorAirEconomizerType(const std::string& outdoorAirEconomizerType) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setOutdoorAirEconomizerType(outdoorAirEconomizerType);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetOutdoorAirEconomizerType() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetOutdoorAirEconomizerType();
+  }
+
   std::string ZoneHVACIdealLoadsAirSystem::heatRecoveryType() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->heatRecoveryType();
   }
 
   bool ZoneHVACIdealLoadsAirSystem::isHeatRecoveryTypeDefaulted() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isHeatRecoveryTypeDefaulted();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setHeatRecoveryType(const std::string& heatRecoveryType) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setHeatRecoveryType(heatRecoveryType);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetHeatRecoveryType() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetHeatRecoveryType();
   }
 
   double ZoneHVACIdealLoadsAirSystem::sensibleHeatRecoveryEffectiveness() const {
@@ -203,12 +363,28 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isSensibleHeatRecoveryEffectivenessDefaulted();
   }
 
+  bool ZoneHVACIdealLoadsAirSystem::setSensibleHeatRecoveryEffectiveness(double sensibleHeatRecoveryEffectiveness) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setSensibleHeatRecoveryEffectiveness(sensibleHeatRecoveryEffectiveness);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetSensibleHeatRecoveryEffectiveness() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetSensibleHeatRecoveryEffectiveness();
+  }
+
   double ZoneHVACIdealLoadsAirSystem::latentHeatRecoveryEffectiveness() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->latentHeatRecoveryEffectiveness();
   }
 
   bool ZoneHVACIdealLoadsAirSystem::isLatentHeatRecoveryEffectivenessDefaulted() const {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->isLatentHeatRecoveryEffectivenessDefaulted();
+  }
+
+  bool ZoneHVACIdealLoadsAirSystem::setLatentHeatRecoveryEffectiveness(double latentHeatRecoveryEffectiveness) {
+    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setLatentHeatRecoveryEffectiveness(latentHeatRecoveryEffectiveness);
+  }
+
+  void ZoneHVACIdealLoadsAirSystem::resetLatentHeatRecoveryEffectiveness() {
+    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetLatentHeatRecoveryEffectiveness();
   }
 
   std::string ZoneHVACIdealLoadsAirSystem::heatingFuelType() const {
@@ -225,182 +401,6 @@ namespace epmodel {
 
   bool ZoneHVACIdealLoadsAirSystem::setCoolingFuelType(const std::string& coolingFuelType) {
     return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setCoolingFuelType(coolingFuelType);
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setMaximumHeatingSupplyAirTemperature(double maximumHeatingSupplyAirTemperature) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setMaximumHeatingSupplyAirTemperature(maximumHeatingSupplyAirTemperature);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetMaximumHeatingSupplyAirTemperature() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetMaximumHeatingSupplyAirTemperature();
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setMinimumCoolingSupplyAirTemperature(double minimumCoolingSupplyAirTemperature) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setMinimumCoolingSupplyAirTemperature(minimumCoolingSupplyAirTemperature);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetMinimumCoolingSupplyAirTemperature() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetMinimumCoolingSupplyAirTemperature();
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setMaximumHeatingSupplyAirHumidityRatio(double maximumHeatingSupplyAirHumidityRatio) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setMaximumHeatingSupplyAirHumidityRatio(maximumHeatingSupplyAirHumidityRatio);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetMaximumHeatingSupplyAirHumidityRatio() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetMaximumHeatingSupplyAirHumidityRatio();
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setMinimumCoolingSupplyAirHumidityRatio(double minimumCoolingSupplyAirHumidityRatio) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setMinimumCoolingSupplyAirHumidityRatio(minimumCoolingSupplyAirHumidityRatio);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetMinimumCoolingSupplyAirHumidityRatio() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetMinimumCoolingSupplyAirHumidityRatio();
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setHeatingLimit(const std::string& heatingLimit) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setHeatingLimit(heatingLimit);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetHeatingLimit() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetHeatingLimit();
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setMaximumHeatingAirFlowRate(double maximumHeatingAirFlowRate) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setMaximumHeatingAirFlowRate(maximumHeatingAirFlowRate);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetMaximumHeatingAirFlowRate() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetMaximumHeatingAirFlowRate();
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::autosizeMaximumHeatingAirFlowRate() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->autosizeMaximumHeatingAirFlowRate();
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setMaximumSensibleHeatingCapacity(double maximumSensibleHeatingCapacity) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setMaximumSensibleHeatingCapacity(maximumSensibleHeatingCapacity);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetMaximumSensibleHeatingCapacity() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetMaximumSensibleHeatingCapacity();
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::autosizeMaximumSensibleHeatingCapacity() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->autosizeMaximumSensibleHeatingCapacity();
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setCoolingLimit(const std::string& coolingLimit) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setCoolingLimit(coolingLimit);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetCoolingLimit() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetCoolingLimit();
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setMaximumCoolingAirFlowRate(double maximumCoolingAirFlowRate) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setMaximumCoolingAirFlowRate(maximumCoolingAirFlowRate);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetMaximumCoolingAirFlowRate() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetMaximumCoolingAirFlowRate();
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::autosizeMaximumCoolingAirFlowRate() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->autosizeMaximumCoolingAirFlowRate();
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setMaximumTotalCoolingCapacity(double maximumTotalCoolingCapacity) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setMaximumTotalCoolingCapacity(maximumTotalCoolingCapacity);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetMaximumTotalCoolingCapacity() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetMaximumTotalCoolingCapacity();
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::autosizeMaximumTotalCoolingCapacity() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->autosizeMaximumTotalCoolingCapacity();
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setDehumidificationControlType(const std::string& dehumidificationControlType) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setDehumidificationControlType(dehumidificationControlType);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetDehumidificationControlType() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetDehumidificationControlType();
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setCoolingSensibleHeatRatio(double coolingSensibleHeatRatio) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setCoolingSensibleHeatRatio(coolingSensibleHeatRatio);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetCoolingSensibleHeatRatio() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetCoolingSensibleHeatRatio();
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setHumidificationControlType(const std::string& humidificationControlType) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setHumidificationControlType(humidificationControlType);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetHumidificationControlType() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetHumidificationControlType();
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setDemandControlledVentilationType(const std::string& demandControlledVentilationType) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setDemandControlledVentilationType(demandControlledVentilationType);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetDemandControlledVentilationType() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetDemandControlledVentilationType();
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setOutdoorAirEconomizerType(const std::string& outdoorAirEconomizerType) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setOutdoorAirEconomizerType(outdoorAirEconomizerType);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetOutdoorAirEconomizerType() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetOutdoorAirEconomizerType();
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setHeatRecoveryType(const std::string& heatRecoveryType) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setHeatRecoveryType(heatRecoveryType);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetHeatRecoveryType() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetHeatRecoveryType();
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setSensibleHeatRecoveryEffectiveness(double sensibleHeatRecoveryEffectiveness) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setSensibleHeatRecoveryEffectiveness(sensibleHeatRecoveryEffectiveness);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetSensibleHeatRecoveryEffectiveness() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetSensibleHeatRecoveryEffectiveness();
-  }
-
-  bool ZoneHVACIdealLoadsAirSystem::setLatentHeatRecoveryEffectiveness(double latentHeatRecoveryEffectiveness) {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->setLatentHeatRecoveryEffectiveness(latentHeatRecoveryEffectiveness);
-  }
-
-  void ZoneHVACIdealLoadsAirSystem::resetLatentHeatRecoveryEffectiveness() {
-    getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->resetLatentHeatRecoveryEffectiveness();
-  }
-
-  boost::optional<double> ZoneHVACIdealLoadsAirSystem::autosizedMaximumHeatingAirFlowRate() const {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->autosizedMaximumHeatingAirFlowRate();
-  }
-
-  boost::optional<double> ZoneHVACIdealLoadsAirSystem::autosizedMaximumSensibleHeatingCapacity() const {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->autosizedMaximumSensibleHeatingCapacity();
-  }
-
-  boost::optional<double> ZoneHVACIdealLoadsAirSystem::autosizedMaximumCoolingAirFlowRate() const {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->autosizedMaximumCoolingAirFlowRate();
-  }
-
-  boost::optional<double> ZoneHVACIdealLoadsAirSystem::autosizedMaximumTotalCoolingCapacity() const {
-    return getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>()->autosizedMaximumTotalCoolingCapacity();
   }
 
   namespace detail {

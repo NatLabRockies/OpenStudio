@@ -11,37 +11,34 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API InteriorPartitionSurface_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~InteriorPartitionSurface_Impl() override = default;
+    class EPMODEL_API InteriorPartitionSurface_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~InteriorPartitionSurface_Impl() override = default;
 
-  bool converttoInternalMass() const;
-  bool isConverttoInternalMassDefaulted() const;
+      bool converttoInternalMass() const;
+      bool isConverttoInternalMassDefaulted() const;
+      bool setConverttoInternalMass(bool converttoInternalMass);
+      void resetConverttoInternalMass();
 
-  boost::optional<double> surfaceArea() const;
+      boost::optional<double> surfaceArea() const;
+      bool setSurfaceArea(boost::optional<double> surfaceArea);
+      bool setSurfaceArea(double surfaceArea);
+      void resetSurfaceArea();
 
-  boost::optional<double> numberofVertices() const;
-  bool isNumberofVerticesDefaulted() const;
-  bool isNumberofVerticesAutocalculated() const;
+      boost::optional<double> numberofVertices() const;
+      bool isNumberofVerticesDefaulted() const;
+      bool isNumberofVerticesAutocalculated() const;
+      bool setNumberofVertices(boost::optional<double> numberofVertices);
+      bool setNumberofVertices(double numberofVertices);
+      void resetNumberofVertices();
+      void autocalculateNumberofVertices();
+    };
 
-  bool setConverttoInternalMass(bool converttoInternalMass);
-  void resetConverttoInternalMass();
-
-  bool setSurfaceArea(boost::optional<double> surfaceArea);
-  bool setSurfaceArea(double surfaceArea);
-  void resetSurfaceArea();
-
-  bool setNumberofVertices(boost::optional<double> numberofVertices);
-  bool setNumberofVertices(double numberofVertices);
-  void resetNumberofVertices();
-  void autocalculateNumberofVertices();
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

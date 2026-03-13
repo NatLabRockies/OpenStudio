@@ -11,32 +11,31 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GroundHeatTransferBasementEquivAutoGrid_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GroundHeatTransferBasementEquivAutoGrid_Impl() override = default;
+    class EPMODEL_API GroundHeatTransferBasementEquivAutoGrid_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GroundHeatTransferBasementEquivAutoGrid_Impl() override = default;
 
-  double clearanceDistancefromoutsideofwalltoedgeof3Dgrounddomain() const;
-  double slabDepthThicknessofthefloorslab() const;
-  double baseDepthDepthofthebasementwallbelowgrade() const;
+      double clearanceDistancefromoutsideofwalltoedgeof3Dgrounddomain() const;
+      bool isClearanceDistancefromoutsideofwalltoedgeof3DgrounddomainDefaulted() const;
+      bool setClearanceDistancefromoutsideofwalltoedgeof3Dgrounddomain(double clearanceDistancefromoutsideofwalltoedgeof3Dgrounddomain);
+      void resetClearanceDistancefromoutsideofwalltoedgeof3Dgrounddomain();
 
-  bool isClearanceDistancefromoutsideofwalltoedgeof3DgrounddomainDefaulted() const;
-  bool isSlabDepthThicknessofthefloorslabDefaulted() const;
-  bool isBaseDepthDepthofthebasementwallbelowgradeDefaulted() const;
+      double slabDepthThicknessofthefloorslab() const;
+      bool isSlabDepthThicknessofthefloorslabDefaulted() const;
+      bool setSlabDepthThicknessofthefloorslab(double slabDepthThicknessofthefloorslab);
+      void resetSlabDepthThicknessofthefloorslab();
 
-  bool setClearanceDistancefromoutsideofwalltoedgeof3Dgrounddomain(double clearanceDistancefromoutsideofwalltoedgeof3Dgrounddomain);
-  bool setSlabDepthThicknessofthefloorslab(double slabDepthThicknessofthefloorslab);
-  bool setBaseDepthDepthofthebasementwallbelowgrade(double baseDepthDepthofthebasementwallbelowgrade);
+      double baseDepthDepthofthebasementwallbelowgrade() const;
+      bool isBaseDepthDepthofthebasementwallbelowgradeDefaulted() const;
+      bool setBaseDepthDepthofthebasementwallbelowgrade(double baseDepthDepthofthebasementwallbelowgrade);
+      void resetBaseDepthDepthofthebasementwallbelowgrade();
+    };
 
-  void resetClearanceDistancefromoutsideofwalltoedgeof3Dgrounddomain();
-  void resetSlabDepthThicknessofthefloorslab();
-  void resetBaseDepthDepthofthebasementwallbelowgrade();
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

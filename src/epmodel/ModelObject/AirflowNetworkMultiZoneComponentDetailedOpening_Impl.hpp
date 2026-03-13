@@ -11,34 +11,34 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirflowNetworkMultiZoneComponentDetailedOpening_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirflowNetworkMultiZoneComponentDetailedOpening_Impl() override = default;
+    class EPMODEL_API AirflowNetworkMultiZoneComponentDetailedOpening_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirflowNetworkMultiZoneComponentDetailedOpening_Impl() override = default;
 
-  double airMassFlowCoefficientWhenOpeningisClosed() const;
-  bool setAirMassFlowCoefficientWhenOpeningisClosed(double airMassFlowCoefficientWhenOpeningisClosed);
+      double airMassFlowCoefficientWhenOpeningisClosed() const;
+      bool setAirMassFlowCoefficientWhenOpeningisClosed(double airMassFlowCoefficientWhenOpeningisClosed);
 
-  double airMassFlowExponentWhenOpeningisClosed() const;
-  bool isAirMassFlowExponentWhenOpeningisClosedDefaulted() const;
-  bool setAirMassFlowExponentWhenOpeningisClosed(double airMassFlowExponentWhenOpeningisClosed);
-  void resetAirMassFlowExponentWhenOpeningisClosed();
+      double airMassFlowExponentWhenOpeningisClosed() const;
+      bool setAirMassFlowExponentWhenOpeningisClosed(double airMassFlowExponentWhenOpeningisClosed);
+      bool isAirMassFlowExponentWhenOpeningisClosedDefaulted() const;
+      void resetAirMassFlowExponentWhenOpeningisClosed();
 
-  std::string typeofRectangularLargeVerticalOpeningLVO() const;
-  bool isTypeofRectangularLargeVerticalOpeningLVODefaulted() const;
-  bool setTypeofRectangularLargeVerticalOpeningLVO(const std::string& typeofRectangularLargeVerticalOpeningLVO);
-  void resetTypeofRectangularLargeVerticalOpeningLVO();
+      std::string typeofRectangularLargeVerticalOpeningLVO() const;
+      bool setTypeofRectangularLargeVerticalOpeningLVO(const std::string& typeofRectangularLargeVerticalOpeningLVO);
+      bool isTypeofRectangularLargeVerticalOpeningLVODefaulted() const;
+      void resetTypeofRectangularLargeVerticalOpeningLVO();
 
-  double extraCrackLengthorHeightofPivotingAxis() const;
-  bool isExtraCrackLengthorHeightofPivotingAxisDefaulted() const;
-  bool setExtraCrackLengthorHeightofPivotingAxis(double extraCrackLengthorHeightofPivotingAxis);
-  void resetExtraCrackLengthorHeightofPivotingAxis();
-};
+      double extraCrackLengthorHeightofPivotingAxis() const;
+      bool setExtraCrackLengthorHeightofPivotingAxis(double extraCrackLengthorHeightofPivotingAxis);
+      bool isExtraCrackLengthorHeightofPivotingAxisDefaulted() const;
+      void resetExtraCrackLengthorHeightofPivotingAxis();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

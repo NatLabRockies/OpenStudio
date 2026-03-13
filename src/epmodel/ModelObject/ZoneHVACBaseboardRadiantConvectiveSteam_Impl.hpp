@@ -22,18 +22,18 @@ namespace epmodel {
       virtual ~ZoneHVACBaseboardRadiantConvectiveSteam_Impl() override = default;
 
       boost::optional<double> heatingDesignCapacity() const;
-      bool isHeatingDesignCapacityAutosized() const;
       bool setHeatingDesignCapacity(double heatingDesignCapacity);
+      bool isHeatingDesignCapacityAutosized() const;
       void autosizeHeatingDesignCapacity();
 
       boost::optional<double> degreeofSubCooling() const;
-      bool isDegreeofSubCoolingDefaulted() const;
       bool setDegreeofSubCooling(double degreeofSubCooling);
+      bool isDegreeofSubCoolingDefaulted() const;
       void resetDegreeofSubCooling();
 
       boost::optional<double> maximumSteamFlowRate() const;
-      bool isMaximumSteamFlowRateAutosized() const;
       bool setMaximumSteamFlowRate(double maximumSteamFlowRate);
+      bool isMaximumSteamFlowRateAutosized() const;
       void autosizeMaximumSteamFlowRate();
     };
 

@@ -33,10 +33,13 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
+    /** @name Outlet control temperature accessors */
+    //@{
     boost::optional<double> outletControlTemperature() const;
 
     bool setOutletControlTemperature(double value);
     void resetOutletControlTemperature();
+    //@}
 
    protected:
     using ImplType = detail::RefrigerationSubcoolerMechanical_Impl;

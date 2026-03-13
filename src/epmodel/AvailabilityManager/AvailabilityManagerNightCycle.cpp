@@ -58,12 +58,12 @@ bool AvailabilityManagerNightCycle::setControlType(const std::string& controlTyp
   return getImpl<detail::AvailabilityManagerNightCycle_Impl>()->setControlType(controlType);
 }
 
-void AvailabilityManagerNightCycle::resetControlType() {
-  getImpl<detail::AvailabilityManagerNightCycle_Impl>()->resetControlType();
-}
-
 bool AvailabilityManagerNightCycle::isControlTypeDefaulted() const {
   return getImpl<detail::AvailabilityManagerNightCycle_Impl>()->isControlTypeDefaulted();
+}
+
+void AvailabilityManagerNightCycle::resetControlType() {
+  getImpl<detail::AvailabilityManagerNightCycle_Impl>()->resetControlType();
 }
 
 double AvailabilityManagerNightCycle::thermostatTolerance() const {
@@ -74,12 +74,12 @@ bool AvailabilityManagerNightCycle::setThermostatTolerance(double thermostatTole
   return getImpl<detail::AvailabilityManagerNightCycle_Impl>()->setThermostatTolerance(thermostatTolerance);
 }
 
-void AvailabilityManagerNightCycle::resetThermostatTolerance() {
-  getImpl<detail::AvailabilityManagerNightCycle_Impl>()->resetThermostatTolerance();
-}
-
 bool AvailabilityManagerNightCycle::isThermostatToleranceDefaulted() const {
   return getImpl<detail::AvailabilityManagerNightCycle_Impl>()->isThermostatToleranceDefaulted();
+}
+
+void AvailabilityManagerNightCycle::resetThermostatTolerance() {
+  getImpl<detail::AvailabilityManagerNightCycle_Impl>()->resetThermostatTolerance();
 }
 
 double AvailabilityManagerNightCycle::cyclingRunTime() const {
@@ -90,12 +90,12 @@ bool AvailabilityManagerNightCycle::setCyclingRunTime(double cyclingRunTime) {
   return getImpl<detail::AvailabilityManagerNightCycle_Impl>()->setCyclingRunTime(cyclingRunTime);
 }
 
-void AvailabilityManagerNightCycle::resetCyclingRunTime() {
-  getImpl<detail::AvailabilityManagerNightCycle_Impl>()->resetCyclingRunTime();
-}
-
 bool AvailabilityManagerNightCycle::isCyclingRunTimeDefaulted() const {
   return getImpl<detail::AvailabilityManagerNightCycle_Impl>()->isCyclingRunTimeDefaulted();
+}
+
+void AvailabilityManagerNightCycle::resetCyclingRunTime() {
+  getImpl<detail::AvailabilityManagerNightCycle_Impl>()->resetCyclingRunTime();
 }
 
 std::string AvailabilityManagerNightCycle::cyclingRunTimeControlType() const {
@@ -106,12 +106,12 @@ bool AvailabilityManagerNightCycle::setCyclingRunTimeControlType(const std::stri
   return getImpl<detail::AvailabilityManagerNightCycle_Impl>()->setCyclingRunTimeControlType(cyclingRunTimeControlType);
 }
 
-void AvailabilityManagerNightCycle::resetCyclingRunTimeControlType() {
-  getImpl<detail::AvailabilityManagerNightCycle_Impl>()->resetCyclingRunTimeControlType();
-}
-
 bool AvailabilityManagerNightCycle::isCyclingRunTimeControlTypeDefaulted() const {
   return getImpl<detail::AvailabilityManagerNightCycle_Impl>()->isCyclingRunTimeControlTypeDefaulted();
+}
+
+void AvailabilityManagerNightCycle::resetCyclingRunTimeControlType() {
+  getImpl<detail::AvailabilityManagerNightCycle_Impl>()->resetCyclingRunTimeControlType();
 }
 
 }  // namespace epmodel
@@ -139,12 +139,12 @@ bool AvailabilityManagerNightCycle_Impl::setControlType(const std::string& contr
   return setString(openstudio::AvailabilityManager_NightCycleFields::ControlType, controlType);
 }
 
-void AvailabilityManagerNightCycle_Impl::resetControlType() {
-  OS_ASSERT(setString(openstudio::AvailabilityManager_NightCycleFields::ControlType, ""));
-}
-
 bool AvailabilityManagerNightCycle_Impl::isControlTypeDefaulted() const {
   return isEmpty(openstudio::AvailabilityManager_NightCycleFields::ControlType);
+}
+
+void AvailabilityManagerNightCycle_Impl::resetControlType() {
+  OS_ASSERT(setString(openstudio::AvailabilityManager_NightCycleFields::ControlType, ""));
 }
 
 double AvailabilityManagerNightCycle_Impl::thermostatTolerance() const {
@@ -157,13 +157,13 @@ bool AvailabilityManagerNightCycle_Impl::setThermostatTolerance(double thermosta
   return setDouble(openstudio::AvailabilityManager_NightCycleFields::ThermostatTolerance, thermostatTolerance);
 }
 
+bool AvailabilityManagerNightCycle_Impl::isThermostatToleranceDefaulted() const {
+  return isEmpty(openstudio::AvailabilityManager_NightCycleFields::ThermostatTolerance);
+}
+
 void AvailabilityManagerNightCycle_Impl::resetThermostatTolerance() {
   const bool result = setString(openstudio::AvailabilityManager_NightCycleFields::ThermostatTolerance, "");
   OS_ASSERT(result);
-}
-
-bool AvailabilityManagerNightCycle_Impl::isThermostatToleranceDefaulted() const {
-  return isEmpty(openstudio::AvailabilityManager_NightCycleFields::ThermostatTolerance);
 }
 
 double AvailabilityManagerNightCycle_Impl::cyclingRunTime() const {
@@ -176,13 +176,13 @@ bool AvailabilityManagerNightCycle_Impl::setCyclingRunTime(double cyclingRunTime
   return setDouble(openstudio::AvailabilityManager_NightCycleFields::CyclingRunTime, cyclingRunTime);
 }
 
+bool AvailabilityManagerNightCycle_Impl::isCyclingRunTimeDefaulted() const {
+  return isEmpty(openstudio::AvailabilityManager_NightCycleFields::CyclingRunTime);
+}
+
 void AvailabilityManagerNightCycle_Impl::resetCyclingRunTime() {
   const bool result = setString(openstudio::AvailabilityManager_NightCycleFields::CyclingRunTime, "");
   OS_ASSERT(result);
-}
-
-bool AvailabilityManagerNightCycle_Impl::isCyclingRunTimeDefaulted() const {
-  return isEmpty(openstudio::AvailabilityManager_NightCycleFields::CyclingRunTime);
 }
 
 std::string AvailabilityManagerNightCycle_Impl::cyclingRunTimeControlType() const {
@@ -195,13 +195,13 @@ bool AvailabilityManagerNightCycle_Impl::setCyclingRunTimeControlType(const std:
   return setString(openstudio::AvailabilityManager_NightCycleFields::CyclingRunTimeControlType, cyclingRunTimeControlType);
 }
 
+bool AvailabilityManagerNightCycle_Impl::isCyclingRunTimeControlTypeDefaulted() const {
+  return isEmpty(openstudio::AvailabilityManager_NightCycleFields::CyclingRunTimeControlType);
+}
+
 void AvailabilityManagerNightCycle_Impl::resetCyclingRunTimeControlType() {
   const bool result = setString(openstudio::AvailabilityManager_NightCycleFields::CyclingRunTimeControlType, "");
   OS_ASSERT(result);
-}
-
-bool AvailabilityManagerNightCycle_Impl::isCyclingRunTimeControlTypeDefaulted() const {
-  return isEmpty(openstudio::AvailabilityManager_NightCycleFields::CyclingRunTimeControlType);
 }
 
 std::vector<std::string> AvailabilityManagerNightCycle_Impl::controlTypeValues() const {
