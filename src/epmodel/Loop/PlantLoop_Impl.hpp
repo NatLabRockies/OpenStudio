@@ -14,13 +14,21 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Node;
+
   namespace detail {
+    struct LoadContext;
 
     class EPMODEL_API PlantLoop_Impl : public Loop_Impl
     {
      public:
       using Loop_Impl::Loop_Impl;
       virtual ~PlantLoop_Impl() override = default;
+
+      openstudio::epmodel::Node supplyInletNode() const override;
+      openstudio::epmodel::Node supplyOutletNode() const override;
+      openstudio::epmodel::Node demandInletNode() const override;
+      openstudio::epmodel::Node demandOutletNode() const override;
 
       std::string loadDistributionScheme() const;
       bool setLoadDistributionScheme(const std::string& scheme);
@@ -56,6 +64,8 @@ namespace epmodel {
       bool setCommonPipeSimulation(const std::string& value);
       bool isCommonPipeSimulationDefaulted() const;
       void resetCommonPipeSimulation();
+
+      void doCanonicalize(LoadContext& context) override;
     };
 
   }  // namespace detail

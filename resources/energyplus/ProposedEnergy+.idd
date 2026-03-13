@@ -30474,6 +30474,8 @@ Coil:Cooling:DX,
    A1, \field Name
        \required-field
        \type alpha
+       \reference-class-name validBranchEquipmentTypes
+       \reference validBranchEquipmentNames
        \reference CoilCoolingDX
        \reference AFNCoilNames
        \reference DesuperHeatingCoilSources
@@ -30906,6 +30908,8 @@ Coil:Cooling:DX:SingleSpeed,
   A1 , \field Name
        \required-field
        \type alpha
+       \reference-class-name validBranchEquipmentTypes
+       \reference validBranchEquipmentNames
        \reference CoolingCoilsDX
        \reference CoolingCoilsDXSingleSpeed
        \reference CoolingCoilsDXMultiModeOrSingleSpeed
@@ -31170,6 +31174,8 @@ Coil:Cooling:DX:TwoSpeed,
   A1 , \field Name
        \required-field
        \type alpha
+       \reference-class-name validBranchEquipmentTypes
+       \reference validBranchEquipmentNames
        \reference CoolingCoilsDX
        \reference DesuperHeatingCoilSources
        \reference AFNCoilNames
@@ -32015,6 +32021,8 @@ Coil:Cooling:DX:TwoStageWithHumidityControlMode,
   A1 , \field Name
        \required-field
        \type alpha
+       \reference-class-name validBranchEquipmentTypes
+       \reference validBranchEquipmentNames
        \reference CoolingCoilsDX
        \reference CoolingCoilsDXMultiModeOrSingleSpeed
        \reference DesuperHeatingCoilSources
@@ -32354,6 +32362,8 @@ Coil:Heating:DX:VariableRefrigerantFlow,
   A1 , \field Name
        \required-field
        \type alpha
+       \reference-class-name validBranchEquipmentTypes
+       \reference validBranchEquipmentNames
        \reference HeatingCoilsDX
        \reference HeatingCoilsDXSingleSpeed
        \reference HeatingCoilsDXVarRefrigFlow
@@ -32924,6 +32934,8 @@ Coil:Heating:DX:SingleSpeed,
   A1 , \field Name
        \required-field
        \type alpha
+       \reference-class-name validBranchEquipmentTypes
+       \reference validBranchEquipmentNames
        \reference HeatingCoilsDX
        \reference HeatingCoilsDXSingleSpeed
        \reference AFNCoilNames

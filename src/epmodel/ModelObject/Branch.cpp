@@ -154,6 +154,9 @@ namespace epmodel {
       }
 
       auto group = insertExtensibleGroup(index, std::vector<std::string>{}, false);
+      // Keep field text and pointer metadata in sync immediately; setPointer
+      // alone updates relationship state but does not populate the stored field
+      // string until serialization.
       group.setString(BranchExtensibleFields::ComponentObjectType, component.iddObject().name());
       group.setString(BranchExtensibleFields::ComponentName, component.nameString());
       group.setString(BranchExtensibleFields::ComponentInletNodeName, inletNodeName);

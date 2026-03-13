@@ -12,6 +12,7 @@
 #include "../ExtensibleIndex.hpp"
 #include "../../core/Containers.hpp"
 
+#include <algorithm>
 #include <sstream>
 #include <string>
 
@@ -139,5 +140,24 @@ TEST_F(IddFixture, IddObject_uniqueNames) {
         EXPECT_GE(obj.references().size(), 1) << "Failed for " << obj.name() << ", it has the following references: " << ss.str();
       }
     }
+  }
+}
+
+TEST_F(IddFixture, IddObject_BranchEquipmentReferencesPresentForDirectDXCoils) {
+  const std::vector<IddObjectType> branchCoilTypes = {
+    IddObjectType::Coil_Cooling_DX,
+    IddObjectType::Coil_Cooling_DX_SingleSpeed,
+    IddObjectType::Coil_Cooling_DX_TwoSpeed,
+    IddObjectType::Coil_Cooling_DX_TwoStageWithHumidityControlMode,
+    IddObjectType::Coil_Heating_DX_SingleSpeed,
+    IddObjectType::Coil_Heating_DX_VariableRefrigerantFlow,
+  };
+
+  for (const auto& type : branchCoilTypes) {
+    auto object = IddFactory::instance().getObject(type);
+    ASSERT_TRUE(object);
+
+    const auto refs = object->references();
+    EXPECT_TRUE(std::find(refs.begin(), refs.end(), "validBranchEquipmentNames") != refs.end()) << object->name();
   }
 }

@@ -9,6 +9,8 @@
 #include "../ModelObject/Branch.hpp"
 #include "../ModelObject/Branch_Impl.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+#include <utilities/idd/Branch_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -26,6 +28,13 @@ TEST_F(EPModelFixture, API_Branch_ComponentAndNodeNameApis) {
   fan.setName("API Test Fan");
 
   ASSERT_TRUE(branch.getImpl<detail::Branch_Impl>()->appendComponent(fan.cast<ModelObject>(), "Inlet Node", "Outlet Node"));
+
+  auto workspaceGroup = branch.extensibleGroups().front().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+  ASSERT_TRUE(workspaceGroup);
+  ASSERT_TRUE(workspaceGroup->getString(openstudio::BranchExtensibleFields::ComponentName));
+  EXPECT_EQ(fan.nameString(), workspaceGroup->getString(openstudio::BranchExtensibleFields::ComponentName).get());
+  ASSERT_TRUE(workspaceGroup->getTarget(openstudio::BranchExtensibleFields::ComponentName));
+  EXPECT_EQ(fan.handle(), workspaceGroup->getTarget(openstudio::BranchExtensibleFields::ComponentName)->handle());
 
   const auto components = branch.components();
   ASSERT_EQ(1u, components.size());

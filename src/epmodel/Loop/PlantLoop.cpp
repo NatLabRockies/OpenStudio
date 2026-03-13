@@ -7,6 +7,7 @@
 #include "Loop/PlantLoop_Impl.hpp"
 
 #include "Model.hpp"
+#include "Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -17,7 +18,12 @@
 namespace openstudio {
 namespace epmodel {
 
-  PlantLoop::PlantLoop(const Model& model) : Loop(PlantLoop::iddObjectType(), model) {}
+  PlantLoop::PlantLoop(const Model& model) : Loop(PlantLoop::iddObjectType(), model) {
+    auto impl = getImpl<detail::PlantLoop_Impl>();
+    OS_ASSERT(impl);
+    detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
+    impl->canonicalize(context);
+  }
 
   PlantLoop::PlantLoop(std::shared_ptr<detail::PlantLoop_Impl> impl) : Loop(std::move(impl)) {}
 
@@ -135,6 +141,26 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    Node PlantLoop_Impl::supplyInletNode() const {
+      return getObject<PlantLoop>().getModelObjectTarget<Node>(openstudio::PlantLoopFields::PlantSideInletNodeName)
+        .get();
+    }
+
+    Node PlantLoop_Impl::supplyOutletNode() const {
+      return getObject<PlantLoop>().getModelObjectTarget<Node>(openstudio::PlantLoopFields::PlantSideOutletNodeName)
+        .get();
+    }
+
+    Node PlantLoop_Impl::demandInletNode() const {
+      return getObject<PlantLoop>().getModelObjectTarget<Node>(openstudio::PlantLoopFields::DemandSideInletNodeName)
+        .get();
+    }
+
+    Node PlantLoop_Impl::demandOutletNode() const {
+      return getObject<PlantLoop>().getModelObjectTarget<Node>(openstudio::PlantLoopFields::DemandSideOutletNodeName)
+        .get();
+    }
 
     std::string PlantLoop_Impl::loadDistributionScheme() const {
       const auto value = getString(openstudio::PlantLoopFields::LoadDistributionScheme, true);
@@ -263,6 +289,18 @@ namespace epmodel {
 
     void PlantLoop_Impl::resetCommonPipeSimulation() {
       OS_ASSERT(setString(openstudio::PlantLoopFields::CommonPipeSimulation, ""));
+    }
+
+    void PlantLoop_Impl::doCanonicalize(LoadContext&) {
+      const auto loopName = getObject<PlantLoop>().nameString();
+      // Minimal epmodel support: keep PlantLoop limited to stable anchor nodes
+      // so APIs that probe loop endpoints do not throw. Full plant topology,
+      // branch traversal, and canonical branch/path semantics remain
+      // intentionally unimplemented.
+      getOrCreateTarget<Node>(openstudio::PlantLoopFields::PlantSideInletNodeName, loopName + " Supply Inlet Node");
+      getOrCreateTarget<Node>(openstudio::PlantLoopFields::PlantSideOutletNodeName, loopName + " Supply Outlet Node");
+      getOrCreateTarget<Node>(openstudio::PlantLoopFields::DemandSideInletNodeName, loopName + " Demand Inlet Node");
+      getOrCreateTarget<Node>(openstudio::PlantLoopFields::DemandSideOutletNodeName, loopName + " Demand Outlet Node");
     }
 
   }  // namespace detail
