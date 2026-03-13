@@ -10,7 +10,7 @@ Operator pattern:
 Supported actions:
 
 - `describe`
-- `run it end to end`
+- `run`
 - `resume`
 
 The manifest stays small. It declares the code change, optional target filters,

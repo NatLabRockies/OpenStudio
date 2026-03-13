@@ -17,8 +17,9 @@ Primary interaction pattern:
 Supported actions:
 
 - `describe`
-- `run it end to end`
+- `run`
 - `resume`
+- `status`
 
 `describe` is the canonical resolution step. It resolves fuzzy target text into
 concrete subjects and work items, then persists that reviewed resolution under
@@ -41,6 +42,10 @@ Optional keys:
 - `targets.exclude`: target selectors to subtract from the include set
 - `execution.each_work_item`: freeform instructions for what each work item should do and validate
 - `execution.after_all_work_items`: freeform instructions for final build/test and optional final repair pass
+- `execution.backend`: `cli` by default or `server` for an opt-in shared OpenCode server backend
+- `execution.resolution_agent`: optional `model` and `variant` overrides for selector resolution
+- `execution.subject_agent`: optional `model`, `variant`, and `parallelism` overrides for per-subject execution
+- `execution.after_all_agent`: optional `model` and `variant` overrides for the final phase
 - `context.read`: repo paths to load eagerly before planning/execution
 - `context.references`: repo paths to keep available but load only when needed
 - `context.notes`: short operator guidance
@@ -81,8 +86,7 @@ Rules:
 - if the resolved subjects cannot be normalized cleanly to one work-item kind,
   the run fails hard during planning
 
-Current built-in accessor-grouping campaigns normalize to `type` work items even
-when the selector matched file subjects.
+Current built-in accessor-grouping campaigns resolve and execute as file subjects.
 
 ## Execution policy
 
@@ -103,7 +107,9 @@ Current backend behavior:
 
 - item-local execution is recorded per work item
 - when `after_all_work_items` is empty, the run can complete normally
-- when `after_all_work_items` is present, the backend records that final phase as deferred and pauses the run instead of guessing project-specific build/test commands
+- when `after_all_work_items` is present, the backend executes it as a final agent phase
+- manifest agent config overrides backend defaults for model speed/quality tradeoffs
+- subject parallelism is bounded and conflict-aware using editable-path locking
 
 ## Source of truth
 
@@ -136,11 +142,14 @@ The three files are intentionally distinct:
 
 Run artifacts:
 
-- `latest.json`: pointer to the latest run for this manifest stem
+- `latest-run.json`: pointer to the latest run for this manifest stem
 - `runs/<run_id>/run.json`: run state, manifest hash, plan, execution policy, subject summary, work-item summary
 - `runs/<run_id>/subjects.json`: resolved include/exclude subjects
 - `runs/<run_id>/work-items.json`: normalized work items with per-item status and changed files
 - `runs/<run_id>/events.jsonl`: append-only event log
+- `runs/<run_id>/control.json`: requested operator control state such as continue, pause, or cancel
+- `runs/<run_id>/controller.log`: detached controller output
+- `runs/<run_id>/server.log`: shared OpenCode server output when `execution.backend: server`
 
 Run states:
 
@@ -154,8 +163,8 @@ Run states:
 
 Execution phase states recorded in `run.json`:
 
-- `work_items`: `pending`, `running`, `completed`, `paused`, `failed`
-- `after_all_work_items`: `not_requested`, `pending`, `deferred`, `completed`, `failed`
+- `work_items`: `pending`, `running`, `completed`, `paused`, `failed`, `cancelled`
+- `after_all_work_items`: `not_requested`, `pending`, `running`, `completed`, `failed`
 
 Work-item states:
 
@@ -168,10 +177,18 @@ Work-item states:
 
 Resume behavior:
 
-- `run it end to end` requires a current persisted resolution from `describe`
+- `run` requires a current persisted resolution from `describe`
 - if the manifest hash changes after `describe`, the persisted resolution becomes stale and `run` fails until `describe` is run again
 - `resume` reuses the latest non-terminal run only when the manifest hash still matches
 - otherwise a new run is created
+
+Status and control behavior:
+
+- `status --manifest <path>` reports the latest run snapshot
+- `status --manifest <path> --watch` streams refreshed summaries until the run finishes
+- `pause --manifest <path>` requests a clean pause once active work items drain
+- `cancel --manifest <path>` requests a clean cancellation once active work items drain
+- `run` and `resume` detach by default; use `--foreground` for debugging
 
 ## Current built-in change support
 
@@ -194,4 +211,8 @@ CLI path:
 Commands:
 
 - `use --manifest <path> --action <text>`
+- `status --manifest <path> [--run-id <id>] [--json] [--watch]`
+- `pause --manifest <path> [--run-id <id>]`
+- `cancel --manifest <path> [--run-id <id>]`
+- `resume --manifest <path> [--foreground]`
 - `validate-manifest --manifest <path>`

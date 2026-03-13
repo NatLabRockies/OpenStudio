@@ -12,14 +12,15 @@ Use one sentence:
 Examples:
 
 - `Use manifest <path> and describe.`
-- `Use manifest <path> and run it end to end.`
+- `Use manifest <path> and run.`
 - `Use manifest <path> and resume.`
+- `Use manifest <path> and status.`
 
 Normal flow:
 
 1. run `describe`
 2. review the persisted resolution
-3. run `run it end to end`
+3. run `run`
 
 ## What the manifest says
 
@@ -27,6 +28,10 @@ Normal flow:
 - `targets`: optional include/exclude filters that resolve to subjects
 - `execution.each_work_item`: what each work item should do and whether to validate it immediately
 - `execution.after_all_work_items`: what should happen once all work items are complete
+- `execution.backend`: `cli` by default, or opt in to `server` for a shared OpenCode server
+- `execution.resolution_agent`: optional model/variant settings for fuzzy resolution work
+- `execution.subject_agent`: optional model/variant/parallelism settings for per-subject work
+- `execution.after_all_agent`: optional model/variant settings for final build/test/repair work
 - `context.read`: eager background material
 - `context.references`: lazy background material
 - `context.notes`: short operator guidance
@@ -53,8 +58,18 @@ resolve it against the live epmodel candidate catalog, then persists the result.
 
 - `execution.each_work_item` describes what happens inside each work item
 - `execution.after_all_work_items` describes final build/test work after every work item is done
+- `execution.subject_agent.parallelism` controls bounded subject fan-out for non-overlapping file sets
+- manifest-defined model settings override backend defaults for speed/quality tradeoffs
+- formatting/organization-heavy campaigns should generally prefer a mini subject model over Spark unless you explicitly want Spark
 - if final repair is requested, it happens as a separate final pass
 - the backend records this policy even when it cannot safely infer project-specific build/test commands on its own
+
+## Long-running runs
+
+- `run` and `resume` launch detached by default so the operator can keep interacting while work continues
+- use `status --manifest <path>` for a snapshot and `status --manifest <path> --watch` for live progress
+- use `pause --manifest <path>` or `cancel --manifest <path>` to control the latest run
+- when `execution.backend: server` is enabled, status also reports the shared OpenCode server URL while the run is active
 
 ## Eager vs lazy context
 
@@ -75,7 +90,7 @@ Example:
 - the interpreted execution policy
 - where local state will be recorded
 
-`describe` also persists the canonical reviewed resolution. `run it end to end`
+`describe` also persists the canonical reviewed resolution. `run`
 uses that persisted work-item set instead of re-resolving targets.
 
 ## Local state
@@ -89,6 +104,9 @@ Key files:
 - `resolution.json`
 - `subjects.json`
 - `work-items.json`
+- `latest-run.json`
+- `runs/<run_id>/run.json`
+- `runs/<run_id>/events.jsonl`
 
 These are meant to stay lean and non-overlapping:
 

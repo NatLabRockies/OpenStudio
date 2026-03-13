@@ -1,18 +1,24 @@
 workflow: epmodel_campaign
 
 change: |
-  Ensure getter/setter/default/reset methods pertaining to a specific field are grouped together.
+  Ensure getter/setter/default/reset methods pertaining to a specific field are grouped together. This is most important in the main header file (e.g. Foo.hpp as opposed to Foo_Impl.hpp), but you may group the impl.hpp and the cpp implementation.
+  This only applies to the basic scalor field accessor methods. The static methods such as those to get allowed enum values can stay at the top. Look at ModelClassGenerator.rb for guidance.
 
 targets:
   include:
     - all concrete epmodel types
 
 execution:
+  backend: cli
   each_work_item: |
     Edit the work item only. Do not run build or tests per work item.
   after_all_work_items: |
     Run the relevant build and tests once all work items are complete.
     If campaign-caused failures appear, do a final repair pass until green.
+  subject_agent:
+    model: openai/gpt-5.1-codex-mini
+    variant: minimal
+    parallelism: 4
 
 context:
   read:
