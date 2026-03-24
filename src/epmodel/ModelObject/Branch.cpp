@@ -22,10 +22,8 @@ namespace openstudio {
 namespace epmodel {
 
   Branch::Branch(const Model& model) : ModelObject(Branch::iddObjectType(), model) {
-    auto impl = getImpl<detail::Branch_Impl>();
-    OS_ASSERT(impl);
     detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
-    impl->canonicalize(context);
+    getImpl<detail::Branch_Impl>()->canonicalize(context);
   }
 
   Branch::Branch(std::shared_ptr<detail::Branch_Impl> impl) : ModelObject(std::move(impl)) {}
@@ -176,6 +174,23 @@ namespace epmodel {
 
     bool Branch_Impl::appendComponent(const ModelObject& component, const std::string& inletNodeName, const std::string& outletNodeName) {
       return insertComponent(static_cast<unsigned>(extensibleGroups().size()), component, inletNodeName, outletNodeName);
+    }
+
+    bool Branch_Impl::removeComponent(unsigned index) {
+      auto branch = getObject<openstudio::epmodel::Branch>();
+      const auto groups = branch.extensibleGroups();
+      if (index >= groups.size()) {
+        return false;
+      }
+      return !branch.eraseExtensibleGroup(index).empty();
+    }
+
+    void Branch_Impl::clearComponents() {
+      auto branch = getObject<openstudio::epmodel::Branch>();
+      while (!branch.extensibleGroups().empty()) {
+        const auto index = static_cast<unsigned>(branch.extensibleGroups().size() - 1u);
+        branch.eraseExtensibleGroup(index);
+      }
     }
 
     boost::optional<Node> Branch_Impl::componentInletNode(unsigned index) const {

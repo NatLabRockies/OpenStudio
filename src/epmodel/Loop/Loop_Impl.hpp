@@ -10,6 +10,7 @@
 #include "Model.hpp"
 #include "ModelObject.hpp"
 
+#include <utilities/core/Assert.hpp>
 #include <utilities/idf/Handle.hpp>
 
 namespace openstudio {
@@ -73,6 +74,23 @@ class EPMODEL_API Loop_Impl : public ParentObject_Impl
   virtual std::vector<openstudio::AppGFuelType> appGHeatingFuelTypes() const;
 
  protected:
+  // Loop traversal in epmodel is built from local topology objects such as
+  // Branch, Splitter, Mixer, and path objects. Different loop types expose that
+  // topology in different storage forms, but the higher-level APIs still need to
+  // answer the same question: "what is the ordered sequence of objects between
+  // these two points on the loop?"
+  //
+  // AdjacencyBuilder is a small utility for that job. Callers add the directed
+  // links that represent the loop topology they want to expose, then ask for the
+  // path from one object to another.
+  //
+  // The important detail is that this is not limited to a single straight chain.
+  // Plant loops, and the demand side of air loops, can fan out into parallel
+  // branches and merge again later. `walkPath()` keeps only the subgraph that
+  // lies on some path from `start` to `target`, then emits those objects in a
+  // deterministic order that respects the added edge ordering. That gives loop
+  // APIs a stable traversal without making callers implement graph logic over and
+  // over again.
   struct AdjacencyBuilder {
     using AdjacencyList = std::map<Handle, std::vector<Handle>>;
 
@@ -88,35 +106,129 @@ class EPMODEL_API Loop_Impl : public ParentObject_Impl
       adjacencyList[from.handle()].push_back(to.handle());
     }
 
+    // Return the ordered objects that participate in the topology between
+    // `start` and `target`. If there is no path, return an empty vector.
     std::vector<openstudio::epmodel::ModelObject> walkPath(const openstudio::epmodel::Model& model,
                                                            const openstudio::epmodel::ModelObject& start,
                                                            const openstudio::epmodel::ModelObject& target) const {
-      std::vector<openstudio::epmodel::ModelObject> path;
-      std::set<Handle> visited;
-      auto currentHandle = start.handle();
+      const auto startHandle = start.handle();
       const auto targetHandle = target.handle();
 
-      while (true) {
-        auto currentObject = model.getModelObject<openstudio::epmodel::ModelObject>(currentHandle);
+      auto startObject = model.getModelObject<openstudio::epmodel::ModelObject>(startHandle);
+      auto targetObject = model.getModelObject<openstudio::epmodel::ModelObject>(targetHandle);
+      if (!startObject || !targetObject) {
+        return {};
+      }
+
+      std::set<Handle> forwardReachable;
+      std::vector<Handle> stack{startHandle};
+      while (!stack.empty()) {
+        const auto current = stack.back();
+        stack.pop_back();
+        if (!forwardReachable.insert(current).second) {
+          continue;
+        }
+
+        if (const auto it = adjacencyList.find(current); it != adjacencyList.end()) {
+          for (auto childIt = it->second.rbegin(); childIt != it->second.rend(); ++childIt) {
+            stack.push_back(*childIt);
+          }
+        }
+      }
+
+      if (!forwardReachable.contains(targetHandle)) {
+        return {};
+      }
+
+      std::map<Handle, std::vector<Handle>> reverseAdjacency;
+      for (const auto& [from, children] : adjacencyList) {
+        reverseAdjacency.try_emplace(from, std::vector<Handle>{});
+        for (const auto& to : children) {
+          reverseAdjacency[to].push_back(from);
+        }
+      }
+
+      std::set<Handle> backwardReachable;
+      stack = {targetHandle};
+      while (!stack.empty()) {
+        const auto current = stack.back();
+        stack.pop_back();
+        if (!backwardReachable.insert(current).second) {
+          continue;
+        }
+
+        if (const auto it = reverseAdjacency.find(current); it != reverseAdjacency.end()) {
+          for (auto parentIt = it->second.rbegin(); parentIt != it->second.rend(); ++parentIt) {
+            stack.push_back(*parentIt);
+          }
+        }
+      }
+
+      std::set<Handle> relevantHandles;
+      for (const auto& handle : forwardReachable) {
+        if (backwardReachable.contains(handle)) {
+          relevantHandles.insert(handle);
+        }
+      }
+
+      if (!(relevantHandles.contains(startHandle) && relevantHandles.contains(targetHandle))) {
+        return {};
+      }
+
+      std::map<Handle, unsigned> indegree;
+      for (const auto& handle : relevantHandles) {
+        indegree.emplace(handle, 0u);
+      }
+
+      for (const auto& [from, children] : adjacencyList) {
+        if (!relevantHandles.contains(from)) {
+          continue;
+        }
+        for (const auto& to : children) {
+          if (relevantHandles.contains(to)) {
+            ++indegree[to];
+          }
+        }
+      }
+
+      std::vector<openstudio::epmodel::ModelObject> path;
+      std::set<Handle> emitted;
+      stack = {startHandle};
+
+      while (!stack.empty()) {
+        const auto current = stack.back();
+        stack.pop_back();
+        if (!emitted.insert(current).second) {
+          continue;
+        }
+
+        auto currentObject = model.getModelObject<openstudio::epmodel::ModelObject>(current);
         if (!currentObject) {
-          break;
+          return {};
         }
         path.push_back(currentObject.get());
-        if (visited.contains(currentHandle)) {
-          break;
-        }
-        visited.insert(currentHandle);
 
-        if (currentHandle == targetHandle) {
-          break;
+        if (const auto it = adjacencyList.find(current); it != adjacencyList.end()) {
+          for (auto childIt = it->second.rbegin(); childIt != it->second.rend(); ++childIt) {
+            const auto& child = *childIt;
+            if (!relevantHandles.contains(child)) {
+              continue;
+            }
+            auto indegreeIt = indegree.find(child);
+            if (indegreeIt == indegree.end()) {
+              continue;
+            }
+            OS_ASSERT(indegreeIt->second > 0u);
+            --indegreeIt->second;
+            if (indegreeIt->second == 0u) {
+              stack.push_back(child);
+            }
+          }
         }
+      }
 
-        const auto it = adjacencyList.find(currentHandle);
-        if (it == adjacencyList.end() || it->second.empty()) {
-          break;
-        }
-
-        currentHandle = it->second.front();
+      if (path.empty() || path.back().handle() != targetHandle) {
+        return {};
       }
 
       return path;

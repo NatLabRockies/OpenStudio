@@ -14,7 +14,14 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Branch;
+  class BranchList;
+  class ConnectorMixer;
+  class ConnectorSplitter;
+  class HVACComponent;
+  class Mixer;
   class Node;
+  class Splitter;
 
   namespace detail {
     struct LoadContext;
@@ -27,8 +34,40 @@ namespace epmodel {
 
       openstudio::epmodel::Node supplyInletNode() const override;
       openstudio::epmodel::Node supplyOutletNode() const override;
+      std::vector<openstudio::epmodel::Node> supplyOutletNodes() const override;
       openstudio::epmodel::Node demandInletNode() const override;
+      std::vector<openstudio::epmodel::Node> demandInletNodes() const override;
       openstudio::epmodel::Node demandOutletNode() const override;
+
+      openstudio::epmodel::BranchList supplyBranchList() const;
+      openstudio::epmodel::BranchList demandBranchList() const;
+      openstudio::epmodel::Branch supplyInletBranch() const;
+      openstudio::epmodel::Branch supplyOutletBranch() const;
+      openstudio::epmodel::Branch demandInletBranch() const;
+      openstudio::epmodel::Branch demandOutletBranch() const;
+      std::vector<openstudio::epmodel::Branch> supplyEquipmentBranches() const;
+      std::vector<openstudio::epmodel::Branch> demandEquipmentBranches() const;
+
+      openstudio::epmodel::Mixer supplyMixer() const;
+      openstudio::epmodel::Splitter supplySplitter() const;
+      openstudio::epmodel::Mixer demandMixer() const override;
+      openstudio::epmodel::Splitter demandSplitter() const override;
+
+      std::vector<openstudio::epmodel::ModelObject> supplyComponents(const openstudio::epmodel::HVACComponent& inletComp,
+                                                                     const openstudio::epmodel::HVACComponent& outletComp,
+                                                                     openstudio::IddObjectType type) const override;
+      std::vector<openstudio::epmodel::ModelObject> supplyComponents(openstudio::IddObjectType type) const override;
+      std::vector<openstudio::epmodel::ModelObject> demandComponents(const openstudio::epmodel::HVACComponent& inletComp,
+                                                                     const openstudio::epmodel::HVACComponent& outletComp,
+                                                                     openstudio::IddObjectType type) const override;
+      std::vector<openstudio::epmodel::ModelObject> demandComponents(openstudio::IddObjectType type) const override;
+
+      bool addSupplyBranchForComponent(openstudio::epmodel::HVACComponent hvacComponent);
+      bool removeSupplyBranchWithComponent(openstudio::epmodel::HVACComponent hvacComponent);
+      bool addDemandBranchForComponent(openstudio::epmodel::HVACComponent hvacComponent, bool tertiary = false);
+      bool removeDemandBranchWithComponent(openstudio::epmodel::HVACComponent hvacComponent);
+
+      boost::optional<openstudio::epmodel::Branch> branchForNode(const openstudio::epmodel::Node& node) const;
 
       std::string loadDistributionScheme() const;
       bool setLoadDistributionScheme(const std::string& scheme);
@@ -66,6 +105,14 @@ namespace epmodel {
       void resetCommonPipeSimulation();
 
       void doCanonicalize(LoadContext& context) override;
+
+     private:
+      bool syncConnectorPorts(openstudio::epmodel::Splitter& splitter, openstudio::epmodel::Mixer& mixer,
+                              const openstudio::epmodel::Branch& inletBranch, const openstudio::epmodel::Branch& outletBranch,
+                              const std::vector<openstudio::epmodel::Branch>& equipmentBranches) const;
+
+      boost::optional<openstudio::epmodel::Branch> supplyBranchForNode(const openstudio::epmodel::Node& node) const;
+      boost::optional<openstudio::epmodel::Branch> demandBranchForNode(const openstudio::epmodel::Node& node) const;
     };
 
   }  // namespace detail

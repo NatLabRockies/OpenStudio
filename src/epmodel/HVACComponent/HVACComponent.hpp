@@ -22,6 +22,7 @@ namespace epmodel {
   class Loop;
   class Model;
   class Node;
+  class PlantLoop;
   class Splitter;
   class StraightComponent;
 
@@ -40,8 +41,7 @@ namespace epmodel {
 
     boost::optional<Loop> loop() const;
     boost::optional<AirLoopHVAC> airLoopHVAC() const;
-    // boost::optional<PlantLoop> plantLoop() const;
-    // Placeholder for API parity with model::HVACComponent. Not implemented yet.
+    boost::optional<PlantLoop> plantLoop() const;
     // boost::optional<AirLoopHVACOutdoorAirSystem> airLoopHVACOutdoorAirSystem() const;
     // Placeholder for API parity with model::HVACComponent. Not implemented yet.
 

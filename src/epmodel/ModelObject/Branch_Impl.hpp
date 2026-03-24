@@ -27,6 +27,8 @@ class EPMODEL_API Branch_Impl : public ModelObject_Impl
   std::vector<openstudio::epmodel::ModelObject> components() const;
   bool insertComponent(unsigned index, const ModelObject& component, const std::string& inletNodeName, const std::string& outletNodeName);
   bool appendComponent(const ModelObject& component, const std::string& inletNodeName, const std::string& outletNodeName);
+  bool removeComponent(unsigned index);
+  void clearComponents();
   boost::optional<Node> componentInletNode(unsigned index) const;
   boost::optional<Node> componentOutletNode(unsigned index) const;
   bool setComponentInletNode(unsigned index, const Node& node);

@@ -58,7 +58,9 @@
 #include "StraightComponent/AirTerminalSingleDuctParallelPIUReheat_Impl.hpp"
 #include "StraightComponent/AirTerminalSingleDuctSeriesPIUReheat_Impl.hpp"
 #include "Mixer/AirLoopHVACZoneMixer_Impl.hpp"
+#include "Mixer/ConnectorMixer_Impl.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter_Impl.hpp"
+#include "Splitter/ConnectorSplitter_Impl.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Loop/PlantLoop_Impl.hpp"
 #include "ModelObject/AvailabilityManagerAssignmentList_Impl.hpp"
@@ -1255,6 +1257,8 @@ namespace epmodel {
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::CondenserEquipmentList, CondenserEquipmentList_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::CondenserEquipmentOperationSchemes, CondenserEquipmentOperationSchemes_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::CondenserLoop, CondenserLoop_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::Connector_Mixer, ConnectorMixer_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::Connector_Splitter, ConnectorSplitter_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Construction, Construction_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::ConstructionProperty_InternalHeatSource, ConstructionWithInternalSource_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Construction_AirBoundary, ConstructionAirBoundary_Impl);
@@ -2172,6 +2176,8 @@ namespace epmodel {
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::CondenserEquipmentList, CondenserEquipmentList_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::CondenserEquipmentOperationSchemes, CondenserEquipmentOperationSchemes_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::CondenserLoop, CondenserLoop_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::Connector_Mixer, ConnectorMixer_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::Connector_Splitter, ConnectorSplitter_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Construction, Construction_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::ConstructionProperty_InternalHeatSource, ConstructionWithInternalSource_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Construction_AirBoundary, ConstructionAirBoundary_Impl);

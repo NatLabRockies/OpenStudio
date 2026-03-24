@@ -20,10 +20,8 @@ namespace openstudio {
 namespace epmodel {
 
 BranchList::BranchList(const Model& model) : ModelObject(BranchList::iddObjectType(), model) {
-  auto impl = getImpl<detail::BranchList_Impl>();
-  OS_ASSERT(impl);
   detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
-  impl->canonicalize(context);
+  getImpl<detail::BranchList_Impl>()->canonicalize(context);
 }
 
 BranchList::BranchList(std::shared_ptr<detail::BranchList_Impl> impl) : ModelObject(std::move(impl)) {}
@@ -169,6 +167,10 @@ std::vector<openstudio::epmodel::Branch> BranchList_Impl::branches() const {
 }
 
 bool BranchList_Impl::addBranch(const openstudio::epmodel::Branch& branch) {
+  return insertBranch(static_cast<unsigned>(extensibleGroups().size()), branch);
+}
+
+bool BranchList_Impl::insertBranch(unsigned index, const openstudio::epmodel::Branch& branch) {
   if (branch.model() != model()) {
     return false;
   }
@@ -182,10 +184,17 @@ bool BranchList_Impl::addBranch(const openstudio::epmodel::Branch& branch) {
     }
   }
 
-  auto branchList = getObject<openstudio::epmodel::BranchList>();
-  auto group = branchList.pushExtensibleGroup();
+  auto groups = extensibleGroups();
+  if (index > groups.size()) {
+    return false;
+  }
+
+  auto group = insertExtensibleGroup(index, std::vector<std::string>{}, false);
   auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
   if (!workspaceGroup) {
+    return false;
+  }
+  if (!workspaceGroup->setString(openstudio::BranchListExtensibleFields::BranchName, branch.nameString())) {
     return false;
   }
   return workspaceGroup->setPointer(openstudio::BranchListExtensibleFields::BranchName, branch.handle());

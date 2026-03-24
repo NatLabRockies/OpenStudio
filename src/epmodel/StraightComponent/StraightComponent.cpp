@@ -8,6 +8,8 @@
 
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
+#include "Loop/PlantLoop.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
 #include "Branch.hpp"
@@ -29,8 +31,6 @@ namespace epmodel {
   namespace detail {
 
     bool StraightComponent_Impl::addToNode(Node& node) {
-      // TODO: This only supports single duct, supply side, AirLoopHVAC at the moment
-      // TODO: As scope increases for other contexts, this needs to be broken into smaller pieces
       const auto nodeName = node.name();
       if (!nodeName) {
         return false;
@@ -47,45 +47,74 @@ namespace epmodel {
       const auto thisName = thisObject.nameString();
 
       boost::optional<openstudio::epmodel::AirLoopHVAC> airLoop = node.airLoopHVAC();
+      boost::optional<openstudio::epmodel::PlantLoop> plantLoop;
+      boost::optional<openstudio::epmodel::Branch> branch;
 
-      if (!airLoop) {
-        return false;
+      if (airLoop) {
+        const auto branchList = airLoop->getImpl<detail::AirLoopHVAC_Impl>()->branchList();
+        branch = branchList.branches().front();
+      } else {
+        plantLoop = node.plantLoop();
+        if (!plantLoop) {
+          return false;
+        }
+        auto plantLoopImpl = plantLoop->getImpl<openstudio::epmodel::detail::PlantLoop_Impl>();
+        branch = plantLoopImpl->branchForNode(node);
+        if (!branch) {
+          return false;
+        }
       }
 
-      const auto branchList = airLoop->getImpl<detail::AirLoopHVAC_Impl>()->branchList();
-      auto branch = branchList.branches().front();
-
-      auto components = branch.components();
+      auto components = branch->components();
       if (components.empty()) {
-        // If there are no branch components, then this is probably a default constructed loop,
-        // therefore the drop node should be either the loop inlet or outlet node
-        const auto supplyInlet = airLoop->supplyInletNode();
-        const auto supplyOutlet = airLoop->supplyOutletNode();
-        if (node == supplyInlet || node == supplyOutlet) {
-          if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->appendComponent(thisObject, supplyInlet.nameString(),
-                                                                                           supplyOutlet.nameString())) {
+        std::string newInletName;
+        std::string newOutletName;
+
+        if (airLoop) {
+          const auto supplyInlet = airLoop->supplyInletNode();
+          const auto supplyOutlet = airLoop->supplyOutletNode();
+          if (!(node == supplyInlet || node == supplyOutlet)) {
+            LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
+                     "Empty branch encountered, but drop node '" << nodeName.get() << "' is not a loop inlet or outlet for AirLoopHVAC '"
+                                                                 << airLoop->nameString() << "'.");
             return false;
           }
-
-          setString(inletPort(), supplyInlet.nameString());
-          setString(outletPort(), supplyOutlet.nameString());
-          setPointer(inletPort(), supplyInlet.handle(), false);
-          setPointer(outletPort(), supplyOutlet.handle(), false);
-          auto airLoopImpl = airLoop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
-          OS_ASSERT(airLoopImpl);
-          airLoopImpl->syncSetpointManagerMixedAirFanNodes();
+          newInletName = supplyInlet.nameString();
+          newOutletName = supplyOutlet.nameString();
         } else {
-          LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
-                   "Empty branch encountered, but drop node '" << nodeName.get() << "' is not a loop inlet or outlet for AirLoopHVAC '"
-                                                               << airLoop->nameString() << "'.");
+          auto plantLoopImpl = plantLoop->getImpl<openstudio::epmodel::detail::PlantLoop_Impl>();
+
+          const bool isOutletAnchor = ((*branch == plantLoopImpl->supplyOutletBranch()) && (node == plantLoop->supplyOutletNode()))
+                                      || ((*branch == plantLoopImpl->demandOutletBranch()) && (node == plantLoop->demandOutletNode()));
+          if (isOutletAnchor) {
+            newInletName = *nodeName + " - " + thisName + " Inlet";
+            newOutletName = *nodeName;
+          } else {
+            newInletName = *nodeName;
+            newOutletName = *nodeName + " - " + thisName + " Outlet";
+          }
+        }
+
+        if (!branch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->appendComponent(thisObject, newInletName, newOutletName)) {
           return false;
         }
 
+        setString(inletPort(), newInletName);
+        setString(outletPort(), newOutletName);
+        auto newInletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(newInletName);
+        auto newOutletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(newOutletName);
+        setPointer(inletPort(), newInletNode.handle(), false);
+        setPointer(outletPort(), newOutletNode.handle(), false);
+
+        if (airLoop) {
+          auto airLoopImpl = airLoop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
+          airLoopImpl->syncSetpointManagerMixedAirFanNodes();
+        }
         return true;
       } else {
         for (std::size_t i = 0; i < components.size(); ++i) {
-          auto inletNode = branch.componentInletNode(static_cast<unsigned>(i));
-          auto outletNode = branch.componentOutletNode(static_cast<unsigned>(i));
+          auto inletNode = branch->componentInletNode(static_cast<unsigned>(i));
+          auto outletNode = branch->componentOutletNode(static_cast<unsigned>(i));
 
           // We're looking for the branch component whose inlet or outlet node name matches the drop-in node.
           // This identifies the insertion point for the new component on the branch.
@@ -134,7 +163,7 @@ namespace epmodel {
             newInletName = *nodeName;
             newOutletName = newNodeName;
           }
-          if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->insertComponent(insertIndex, thisObject, newInletName, newOutletName)) {
+          if (!branch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->insertComponent(insertIndex, thisObject, newInletName, newOutletName)) {
             return false;
           }
 
@@ -148,20 +177,21 @@ namespace epmodel {
           if (matchesInlet) {
             // The downstream component currently uses nodeName as its inlet; reroute it to newNodeName.
             auto newNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(newNodeName);
-            if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentInletNode(insertIndex + 1u, newNode)) {
+            if (!branch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentInletNode(insertIndex + 1u, newNode)) {
               return false;
             }
           } else {
             // The upstream component currently uses nodeName as its outlet; reroute it to newNodeName.
             auto newNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(newNodeName);
-            if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentOutletNode(insertIndex - 1u, newNode)) {
+            if (!branch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentOutletNode(insertIndex - 1u, newNode)) {
               return false;
             }
           }
 
-          auto airLoopImpl = airLoop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
-          OS_ASSERT(airLoopImpl);
-          airLoopImpl->syncSetpointManagerMixedAirFanNodes();
+          if (airLoop) {
+            auto airLoopImpl = airLoop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
+            airLoopImpl->syncSetpointManagerMixedAirFanNodes();
+          }
           return true;
         }
       }
@@ -291,49 +321,79 @@ namespace epmodel {
         return false;
       }
 
-      auto loop = thisComponent->airLoopHVAC();
-      if (!loop) {
+      if (auto loop = thisComponent->airLoopHVAC()) {
+        auto splitter = loop->zoneSplitter();
+        auto mixer = loop->zoneMixer();
+
+        const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(inletNode->cast<ModelObject>());
+        const auto mixerBranchIndex = mixer.branchIndexForInletModelObject(outletNode->cast<ModelObject>());
+        const bool isZoneBranch = (splitterBranchIndex == mixerBranchIndex)
+                                  && (splitter.outletModelObject(splitterBranchIndex) == inletNode->cast<ModelObject>())
+                                  && (mixer.inletModelObject(mixerBranchIndex) == outletNode->cast<ModelObject>());
+
+        if (isZoneBranch) {
+          splitter.setOutletModelObject(splitterBranchIndex, outletNode->cast<ModelObject>());
+        } else {
+          auto branchList = loop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>()->branchList();
+          const auto branches = branchList.branches();
+          if (branches.empty()) {
+            return false;
+          }
+          auto branch = branches.front();
+          auto components = branch.components();
+          for (unsigned i = 0; i < components.size(); ++i) {
+            if (components[i] != thisObject) {
+              continue;
+            }
+            if (i + 1u < components.size()) {
+              if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentInletNode(i + 1u, *inletNode)) {
+                return false;
+              }
+            }
+            if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->removeComponent(i)) {
+              return false;
+            }
+            break;
+          }
+        }
+
+        auto loopImpl = loop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
+        loopImpl->syncControllerMechanicalVentilationZoneOutdoorAirEntries();
+        loopImpl->syncSetpointManagerMixedAirFanNodes();
+        return true;
+      }
+
+      auto plantLoop = thisComponent->plantLoop();
+      if (!plantLoop) {
         return false;
       }
 
-      auto splitter = loop->zoneSplitter();
-      auto mixer = loop->zoneMixer();
-
-      const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(inletNode->cast<ModelObject>());
-      const auto mixerBranchIndex = mixer.branchIndexForInletModelObject(outletNode->cast<ModelObject>());
-      const bool isZoneBranch = (splitterBranchIndex == mixerBranchIndex)
-                                && (splitter.outletModelObject(splitterBranchIndex) == inletNode->cast<ModelObject>())
-                                && (mixer.inletModelObject(mixerBranchIndex) == outletNode->cast<ModelObject>());
-
-      if (isZoneBranch) {
-        splitter.setOutletModelObject(splitterBranchIndex, outletNode->cast<ModelObject>());
-      } else {
-        auto branchList = loop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>()->branchList();
-        const auto branches = branchList.branches();
-        if (branches.empty()) {
-          return false;
-        }
-        auto branch = branches.front();
-        auto components = branch.components();
-        for (unsigned i = 0; i < components.size(); ++i) {
-          if (components[i] != thisObject) {
-            continue;
-          }
-          if (i + 1u < components.size()) {
-            if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentInletNode(i + 1u, *inletNode)) {
-              return false;
-            }
-          }
-          branch.eraseExtensibleGroup(i);
-          break;
-        }
+      auto plantLoopImpl = plantLoop->getImpl<openstudio::epmodel::detail::PlantLoop_Impl>();
+      auto branch = plantLoopImpl->branchForNode(*inletNode);
+      if (!branch) {
+        branch = plantLoopImpl->branchForNode(*outletNode);
+      }
+      if (!branch) {
+        return false;
       }
 
-      auto loopImpl = loop->getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
-      OS_ASSERT(loopImpl);
-      loopImpl->syncControllerMechanicalVentilationZoneOutdoorAirEntries();
-      loopImpl->syncSetpointManagerMixedAirFanNodes();
-      return true;
+      auto components = branch->components();
+      for (unsigned i = 0; i < components.size(); ++i) {
+        if (components[i] != thisObject) {
+          continue;
+        }
+        if (i + 1u < components.size()) {
+          if (!branch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentInletNode(i + 1u, *inletNode)) {
+            return false;
+          }
+        }
+        if (!branch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->removeComponent(i)) {
+          return false;
+        }
+        return true;
+      }
+
+      return false;
     }
 
     std::vector<openstudio::IdfObject> StraightComponent_Impl::remove() {

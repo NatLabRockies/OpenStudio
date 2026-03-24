@@ -12,6 +12,8 @@
 #include "Model_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
+#include "Loop/PlantLoop.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
@@ -27,10 +29,8 @@ namespace openstudio {
 namespace epmodel {
 
   Node::Node(const Model& model) : StraightComponent(Node::iddObjectType(), model, false, true) {
-    auto impl = getImpl<detail::Node_Impl>();
-    OS_ASSERT(impl);
     detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
-    impl->canonicalize(context);
+    getImpl<detail::Node_Impl>()->canonicalize(context);
   }
 
   Node::Node(std::shared_ptr<detail::Node_Impl> impl) : StraightComponent(std::move(impl)) {}
@@ -51,9 +51,7 @@ namespace epmodel {
   }
 
   boost::optional<AirLoopHVACOutdoorAirSystem> Node::airLoopHVACOutdoorAirSystem() const {
-    auto impl = getImpl<detail::Node_Impl>();
-    OS_ASSERT(impl);
-    return impl->airLoopHVACOutdoorAirSystem();
+    return getImpl<detail::Node_Impl>()->airLoopHVACOutdoorAirSystem();
   }
 
   IddObjectType Node::iddObjectType() {
@@ -84,7 +82,7 @@ namespace epmodel {
 
         const auto index = matches.front();
         if (matches.size() > 1u) {
-          LOG_FREE(Warn, "openstudio.epmodel.Node", "Node appears multiple times in AirLoopHVAC supplyComponents path; using first occurrence.");
+          LOG_FREE(Warn, "openstudio.epmodel.Node", "Node appears multiple times in loop traversal path; using first occurrence.");
         }
 
         if (upstream) {
@@ -143,6 +141,16 @@ namespace epmodel {
       return boost::none;
     }
 
+    boost::optional<PlantLoop> Node_Impl::plantLoop() const {
+      const auto thisNode = getObject<openstudio::epmodel::Node>();
+      for (const auto& plantLoop : model().getConcreteModelObjects<openstudio::epmodel::PlantLoop>()) {
+        if (plantLoop.component(thisNode.handle())) {
+          return plantLoop;
+        }
+      }
+      return boost::none;
+    }
+
     boost::optional<AirLoopHVACOutdoorAirSystem> Node_Impl::airLoopHVACOutdoorAirSystem() const {
       const auto thisNode = getObject<openstudio::epmodel::Node>();
       const auto thisNodeObject = thisNode.cast<ModelObject>();
@@ -172,19 +180,26 @@ namespace epmodel {
       return boost::none;
     }
 
+    // Nodes are different from most StraightComponent-derived objects. A fan,
+    // coil, or pump can usually answer inlet/outlet questions from its own port
+    // fields, but a Node is part of the loop connective tissue itself. Its
+    // upstream and downstream neighbors are defined by the loop topology, so we
+    // resolve adjacency by asking the owning loop for the ordered traversal path
+    // on the supply or demand side and then looking for the objects around this
+    // node in that path.
     boost::optional<ModelObject> Node_Impl::inletModelObject() const {
       boost::optional<ModelObject> result;
-      // We derive adjacency from loop-level canonical supply ordering instead of
-      // storing node neighbors directly. This keeps Node wiring consistent with
-      // Branch/Path source-of-truth, at the cost of a relatively expensive walk.
-      // The call graph currently avoids recursion through this API; if loop
-      // traversal later depends on Node adjacency, this path must be revisited.
       const auto loop_ = loop();
 
       if (loop_) {
         const auto thisNode = getObject<openstudio::epmodel::Node>();
-        const auto path = loop_->supplyComponents(loop_->supplyInletNode(), thisNode, openstudio::IddObjectType::Catchall);
-        result = findAdjacentInPath(path, thisNode, true);
+        if (loop_->supplyComponent(thisNode.handle())) {
+          auto path = loop_->supplyComponents(loop_->supplyInletNode(), loop_->supplyOutletNode(), openstudio::IddObjectType::Catchall);
+          result = findAdjacentInPath(path, thisNode, true);
+        } else if (loop_->demandComponent(thisNode.handle())) {
+          auto path = loop_->demandComponents(loop_->demandInletNode(), loop_->demandOutletNode(), openstudio::IddObjectType::Catchall);
+          result = findAdjacentInPath(path, thisNode, true);
+        }
       }
 
       return result;
@@ -192,16 +207,17 @@ namespace epmodel {
 
     boost::optional<ModelObject> Node_Impl::outletModelObject() const {
       boost::optional<ModelObject> result;
-      // Mirror inletModelObject rationale: compute adjacency from canonical loop
-      // traversal so Node APIs stay aligned with loop topology source-of-truth.
-      // This remains intentionally derived (not cached) to avoid duplicate
-      // connectivity state that can drift.
       const auto loop_ = loop();
 
       if (loop_) {
         const auto thisNode = getObject<openstudio::epmodel::Node>();
-        const auto path = loop_->supplyComponents(thisNode, loop_->supplyOutletNode(), openstudio::IddObjectType::Catchall);
-        result = findAdjacentInPath(path, thisNode, false);
+        if (loop_->supplyComponent(thisNode.handle())) {
+          auto path = loop_->supplyComponents(loop_->supplyInletNode(), loop_->supplyOutletNode(), openstudio::IddObjectType::Catchall);
+          result = findAdjacentInPath(path, thisNode, false);
+        } else if (loop_->demandComponent(thisNode.handle())) {
+          auto path = loop_->demandComponents(loop_->demandInletNode(), loop_->demandOutletNode(), openstudio::IddObjectType::Catchall);
+          result = findAdjacentInPath(path, thisNode, false);
+        }
       }
 
       return result;

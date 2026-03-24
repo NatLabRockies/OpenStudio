@@ -10,11 +10,13 @@
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Loop/Loop.hpp"
 #include "Loop/Loop_Impl.hpp"
+#include "Loop/PlantLoop.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
 #include "Node.hpp"
-#include "Node_Impl.hpp"
 #include "HVACComponent/Splitter.hpp"
 #include "StraightComponent/StraightComponent.hpp"
 
+#include <algorithm>
 namespace openstudio {
 namespace epmodel {
 
@@ -24,20 +26,15 @@ namespace epmodel {
   HVACComponent::HVACComponent(std::shared_ptr<detail::HVACComponent_Impl> impl) : ParentObject(std::move(impl)) {}
 
   boost::optional<Loop> HVACComponent::loop() const {
-    if (auto impl = getImpl<detail::HVACComponent_Impl>()) {
-      return impl->loop();
-    }
-    return boost::none;
+    return getImpl<detail::HVACComponent_Impl>()->loop();
   }
 
   boost::optional<AirLoopHVAC> HVACComponent::airLoopHVAC() const {
-    if (auto nodeImpl = getImpl<detail::Node_Impl>()) {
-      return nodeImpl->airLoopHVAC();
-    }
-    if (auto impl = getImpl<detail::HVACComponent_Impl>()) {
-      return impl->airLoopHVAC();
-    }
-    return boost::none;
+    return getImpl<detail::HVACComponent_Impl>()->airLoopHVAC();
+  }
+
+  boost::optional<PlantLoop> HVACComponent::plantLoop() const {
+    return getImpl<detail::HVACComponent_Impl>()->plantLoop();
   }
 
   boost::optional<HVACComponent> HVACComponent::containingHVACComponent() const {
@@ -50,45 +47,33 @@ namespace epmodel {
   // }
 
   bool HVACComponent::addToNode(Node& node) {
-    if (auto impl = getImpl<detail::HVACComponent_Impl>()) {
-      return impl->addToNode(node);
-    }
-    return false;
+    return getImpl<detail::HVACComponent_Impl>()->addToNode(node);
   }
 
   bool HVACComponent::addToSplitter(Splitter& splitter) {
-    if (auto impl = getImpl<detail::HVACComponent_Impl>()) {
-      return impl->addToSplitter(splitter);
-    }
-    return false;
+    return getImpl<detail::HVACComponent_Impl>()->addToSplitter(splitter);
   }
 
   void HVACComponent::disconnect() {
-    if (auto impl = getImpl<detail::HVACComponent_Impl>()) {
-      impl->disconnect();
-    }
+    getImpl<detail::HVACComponent_Impl>()->disconnect();
   }
 
   bool HVACComponent::isRemovable() const {
-    if (auto impl = getImpl<detail::HVACComponent_Impl>()) {
-      return impl->isRemovable();
-    }
-    return false;
+    return getImpl<detail::HVACComponent_Impl>()->isRemovable();
   }
 
   std::vector<IdfObject> HVACComponent::remove() {
-    if (auto impl = getImpl<detail::HVACComponent_Impl>()) {
-      return impl->remove();
-    }
-    return {};
+    return getImpl<detail::HVACComponent_Impl>()->remove();
   }
 
   namespace detail {
 
     boost::optional<Loop> HVACComponent_Impl::loop() const {
-      // Mirror model behavior: check AirLoopHVAC first, then other loop types (PlantLoop not yet implemented).
       if (auto airLoop = airLoopHVAC()) {
         return airLoop->optionalCast<openstudio::epmodel::Loop>();
+      }
+      if (auto plantLoop_ = plantLoop()) {
+        return plantLoop_->optionalCast<openstudio::epmodel::Loop>();
       }
       return boost::none;
     }
@@ -103,6 +88,22 @@ namespace epmodel {
           if (component.handle() == handle()) {
             return airLoop;
           }
+        }
+      }
+      return boost::none;
+    }
+
+    boost::optional<PlantLoop> HVACComponent_Impl::plantLoop() const {
+      const auto plantLoops = model().getConcreteModelObjects<openstudio::epmodel::PlantLoop>();
+      for (const auto& plantLoop : plantLoops) {
+        const auto supplyComponents = plantLoop.supplyComponents(openstudio::IddObjectType::Catchall);
+        if (std::ranges::find_if(supplyComponents, [&](const auto& component) { return component.handle() == handle(); }) != supplyComponents.end()) {
+          return plantLoop;
+        }
+
+        const auto demandComponents = plantLoop.demandComponents(openstudio::IddObjectType::Catchall);
+        if (std::ranges::find_if(demandComponents, [&](const auto& component) { return component.handle() == handle(); }) != demandComponents.end()) {
+          return plantLoop;
         }
       }
       return boost::none;

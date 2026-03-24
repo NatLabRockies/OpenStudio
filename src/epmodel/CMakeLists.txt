@@ -1828,9 +1828,15 @@ set(${target_name}_src
   Splitter/AirLoopHVACZoneSplitter.hpp
   Splitter/AirLoopHVACZoneSplitter_Impl.hpp
   Splitter/AirLoopHVACZoneSplitter.cpp
+  Splitter/ConnectorSplitter.hpp
+  Splitter/ConnectorSplitter_Impl.hpp
+  Splitter/ConnectorSplitter.cpp
   Mixer/AirLoopHVACZoneMixer.hpp
   Mixer/AirLoopHVACZoneMixer_Impl.hpp
   Mixer/AirLoopHVACZoneMixer.cpp
+  Mixer/ConnectorMixer.hpp
+  Mixer/ConnectorMixer_Impl.hpp
+  Mixer/ConnectorMixer.cpp
   Mixer/AirTerminalDualDuctConstantVolume.hpp
   Mixer/AirTerminalDualDuctConstantVolume_Impl.hpp
   Mixer/AirTerminalDualDuctConstantVolume.cpp

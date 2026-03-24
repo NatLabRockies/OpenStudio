@@ -17,7 +17,12 @@
 namespace openstudio {
 namespace epmodel {
 
+  class HVACComponent;
   class Model;
+  class Mixer;
+  class ModelObject;
+  class Node;
+  class Splitter;
 
   namespace detail {
     class PlantLoop_Impl;
@@ -85,6 +90,31 @@ namespace epmodel {
     bool setCommonPipeSimulation(const std::string& value);
     bool isCommonPipeSimulationDefaulted() const;
     void resetCommonPipeSimulation();
+
+    Node supplyInletNode() const override;
+    Node supplyOutletNode() const override;
+    std::vector<Node> supplyOutletNodes() const override;
+
+    Node demandInletNode() const override;
+    std::vector<Node> demandInletNodes() const override;
+    Node demandOutletNode() const override;
+
+    Mixer supplyMixer() const;
+    Splitter supplySplitter() const;
+    Mixer demandMixer();
+    Splitter demandSplitter();
+
+    std::vector<ModelObject> supplyComponents(const HVACComponent& inletComp, const HVACComponent& outletComp,
+                                              openstudio::IddObjectType type = openstudio::IddObjectType::Catchall) const override;
+    std::vector<ModelObject> supplyComponents(openstudio::IddObjectType type = openstudio::IddObjectType::Catchall) const override;
+    std::vector<ModelObject> demandComponents(const HVACComponent& inletComp, const HVACComponent& outletComp,
+                                              openstudio::IddObjectType type = openstudio::IddObjectType::Catchall) const override;
+    std::vector<ModelObject> demandComponents(openstudio::IddObjectType type = openstudio::IddObjectType::Catchall) const override;
+
+    bool addSupplyBranchForComponent(HVACComponent hvacComponent);
+    bool removeSupplyBranchWithComponent(HVACComponent hvacComponent);
+    bool addDemandBranchForComponent(HVACComponent hvacComponent, bool tertiary = false);
+    bool removeDemandBranchWithComponent(HVACComponent hvacComponent);
 
    protected:
     using ImplType = detail::PlantLoop_Impl;
