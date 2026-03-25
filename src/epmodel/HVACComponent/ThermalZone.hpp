@@ -87,9 +87,9 @@ namespace epmodel {
 
     // Schema Alignment Notes:
     // - API: Preserve openstudio::model ThermalZone useIdealAirLoads/setUseIdealAirLoads names/signatures.
-    // - Field Mapping: API delegates to presence of HVACTemplate:Zone:IdealLoadsAirSystem mapped by Zone Name.
+    // - Field Mapping: API delegates to presence of HVACTemplate:Zone:IdealLoadsAirSystem objects that point back to this zone.
     // - ForwardTranslator Evidence: ForwardTranslateThermalZone writes HVACTemplate:Zone:IdealLoadsAirSystem when
-    //   ThermalZone::useIdealAirLoads() is true and sets Zone Name to ThermalZone nameString().
+    //   ThermalZone::useIdealAirLoads() is true and targets the translated zone.
     // - TODO(parity): Revisit when epmodel adds explicit ZoneHVACIdealLoadsAirSystem parity path.
     bool useIdealAirLoads() const;
     bool setUseIdealAirLoads(bool useIdealAirLoads);

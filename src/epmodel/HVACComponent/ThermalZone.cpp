@@ -1028,35 +1028,39 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
-    std::vector<openstudio::WorkspaceObject> ThermalZone_Impl::hvacTemplateZoneIdealLoadsAirSystemsForZone() const {
-      std::vector<openstudio::WorkspaceObject> result;
-      const auto zoneName = getObject<openstudio::epmodel::ThermalZone>().nameString();
-      for (const auto& object : model().getObjectsByType(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem)) {
-        auto mappedZoneName = object.getString(openstudio::HVACTemplate_Zone_IdealLoadsAirSystemFields::ZoneName, true);
-        if (mappedZoneName && openstudio::istringEqual(*mappedZoneName, zoneName)) {
-          result.emplace_back(object);
+    bool ThermalZone_Impl::useIdealAirLoads() const {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      for (const auto& object : zone.getSources(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem)) {
+        if (auto target = object.getTarget(openstudio::HVACTemplate_Zone_IdealLoadsAirSystemFields::ZoneName)) {
+          if (*target == zone) {
+            return true;
+          }
         }
       }
-      return result;
-    }
-
-    bool ThermalZone_Impl::useIdealAirLoads() const {
-      return !hvacTemplateZoneIdealLoadsAirSystemsForZone().empty();
+      return false;
     }
 
     bool ThermalZone_Impl::setUseIdealAirLoads(bool useIdealAirLoads) {
-      auto idealLoadsObjects = hvacTemplateZoneIdealLoadsAirSystemsForZone();
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      std::vector<openstudio::WorkspaceObject> idealLoadsObjects;
+      for (const auto& object : zone.getSources(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem)) {
+        if (auto target = object.getTarget(openstudio::HVACTemplate_Zone_IdealLoadsAirSystemFields::ZoneName)) {
+          if (*target == zone) {
+            idealLoadsObjects.emplace_back(object);
+          }
+        }
+      }
 
       if (useIdealAirLoads) {
         if (!idealLoadsObjects.empty()) {
           return true;
         }
         openstudio::IdfObject object(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem);
-        if (!object.setString(openstudio::HVACTemplate_Zone_IdealLoadsAirSystemFields::ZoneName,
-                              getObject<openstudio::epmodel::ThermalZone>().nameString())) {
+        auto added = model().addObject(object);
+        if (!added) {
           return false;
         }
-        return model().addObject(object).is_initialized();
+        return added->setPointer(openstudio::HVACTemplate_Zone_IdealLoadsAirSystemFields::ZoneName, zone.handle());
       }
 
       bool result = true;
@@ -1277,9 +1281,9 @@ namespace epmodel {
       const auto zone = getObject<openstudio::epmodel::ThermalZone>();
       openstudio::IdfObject object(openstudio::IddObjectType::ZoneControl_Thermostat);
       object.setString(ZoneControl_ThermostatFields::Name, zone.nameString() + " Thermostat");
-      object.setString(ZoneControl_ThermostatFields::ZoneorZoneListName, zone.nameString());
       auto added = model().addObject(object);
       OS_ASSERT(added);
+      OS_ASSERT(added->setPointer(ZoneControl_ThermostatFields::ZoneorZoneListName, zone.handle()));
       return *added;
     }
 
@@ -1302,10 +1306,10 @@ namespace epmodel {
       const auto zone = getObject<openstudio::epmodel::ThermalZone>();
       openstudio::IdfObject object(openstudio::IddObjectType::ZoneVentilation_DesignFlowRate);
       object.setString(ZoneVentilation_DesignFlowRateFields::Name, zone.nameString() + " Ventilation");
-      object.setString(ZoneVentilation_DesignFlowRateFields::ZoneorZoneListorSpaceorSpaceListName, zone.nameString());
       auto added = model().addObject(object);
       OS_ASSERT(added);
       auto workspaceObject = *added;
+      OS_ASSERT(workspaceObject.setPointer(ZoneVentilation_DesignFlowRateFields::ZoneorZoneListorSpaceorSpaceListName, zone.handle()));
       applyZoneVentilationDefaults(workspaceObject);
       return workspaceObject;
     }

@@ -216,7 +216,6 @@ namespace epmodel {
       void doCanonicalize(LoadContext& context) override;
 
      private:
-      std::vector<openstudio::WorkspaceObject> hvacTemplateZoneIdealLoadsAirSystemsForZone() const;
       boost::optional<double> daylightingFraction(unsigned referencePointIndex) const;
       bool setDaylightingFraction(unsigned referencePointIndex, double value);
       void resetDaylightingFraction(unsigned referencePointIndex);
