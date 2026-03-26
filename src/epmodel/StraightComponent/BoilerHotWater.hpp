@@ -7,7 +7,7 @@
 #define EPMODEL_BOILERHOTWATER_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <memory>
 #include <vector>
@@ -21,7 +21,7 @@ namespace detail {
 class BoilerHotWater_Impl;
 }
 
-class EPMODEL_API BoilerHotWater : public ModelObject
+class EPMODEL_API BoilerHotWater : public StraightComponent
 {
  public:
   explicit BoilerHotWater(const Model& model);
@@ -33,6 +33,10 @@ class EPMODEL_API BoilerHotWater : public ModelObject
   BoilerHotWater& operator=(BoilerHotWater&&) = default;
 
   static IddObjectType iddObjectType();
+
+  static std::vector<std::string> validFuelTypeValues();
+  static std::vector<std::string> validEfficiencyCurveTemperatureEvaluationVariableValues();
+  static std::vector<std::string> validBoilerFlowModeValues();
 
   static std::vector<std::string> fuelTypeValues();
   static std::vector<std::string> efficiencyCurveTemperatureEvaluationVariableValues();

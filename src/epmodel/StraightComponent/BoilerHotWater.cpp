@@ -6,7 +6,10 @@
 #include "StraightComponent/BoilerHotWater.hpp"
 #include "StraightComponent/BoilerHotWater_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
 #include "Model.hpp"
+#include "Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -17,25 +20,37 @@
 namespace openstudio {
 namespace epmodel {
 
-BoilerHotWater::BoilerHotWater(const Model& model) : ModelObject(BoilerHotWater::iddObjectType(), model) {}
+BoilerHotWater::BoilerHotWater(const Model& model) : StraightComponent(BoilerHotWater::iddObjectType(), model) {}
 
-BoilerHotWater::BoilerHotWater(std::shared_ptr<detail::BoilerHotWater_Impl> impl) : ModelObject(std::move(impl)) {}
+BoilerHotWater::BoilerHotWater(std::shared_ptr<detail::BoilerHotWater_Impl> impl) : StraightComponent(std::move(impl)) {}
 
 IddObjectType BoilerHotWater::iddObjectType() {
   return IddObjectType::Boiler_HotWater;
 }
 
-std::vector<std::string> BoilerHotWater::fuelTypeValues() {
+std::vector<std::string> BoilerHotWater::validFuelTypeValues() {
   return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Boiler_HotWaterFields::FuelType);
 }
 
-std::vector<std::string> BoilerHotWater::efficiencyCurveTemperatureEvaluationVariableValues() {
+std::vector<std::string> BoilerHotWater::validEfficiencyCurveTemperatureEvaluationVariableValues() {
   return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                         openstudio::Boiler_HotWaterFields::EfficiencyCurveTemperatureEvaluationVariable);
 }
 
-std::vector<std::string> BoilerHotWater::boilerFlowModeValues() {
+std::vector<std::string> BoilerHotWater::validBoilerFlowModeValues() {
   return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Boiler_HotWaterFields::BoilerFlowMode);
+}
+
+std::vector<std::string> BoilerHotWater::fuelTypeValues() {
+  return validFuelTypeValues();
+}
+
+std::vector<std::string> BoilerHotWater::efficiencyCurveTemperatureEvaluationVariableValues() {
+  return validEfficiencyCurveTemperatureEvaluationVariableValues();
+}
+
+std::vector<std::string> BoilerHotWater::boilerFlowModeValues() {
+  return validBoilerFlowModeValues();
 }
 
 std::string BoilerHotWater::fuelType() const {
@@ -244,6 +259,14 @@ bool BoilerHotWater::setOffCycleParasiticFuelLoad(double offCycleParasiticFuelLo
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+unsigned BoilerHotWater_Impl::inletPort() const {
+  return openstudio::Boiler_HotWaterFields::BoilerWaterInletNodeName;
+}
+
+unsigned BoilerHotWater_Impl::outletPort() const {
+  return openstudio::Boiler_HotWaterFields::BoilerWaterOutletNodeName;
+}
 
 std::string BoilerHotWater_Impl::fuelType() const {
   const auto value = getString(openstudio::Boiler_HotWaterFields::FuelType, true);
@@ -476,6 +499,20 @@ double BoilerHotWater_Impl::offCycleParasiticFuelLoad() const {
 
 bool BoilerHotWater_Impl::setOffCycleParasiticFuelLoad(double offCycleParasiticFuelLoad) {
   return setDouble(openstudio::Boiler_HotWaterFields::OffCycleParasiticFuelLoad, offCycleParasiticFuelLoad);
+}
+
+bool BoilerHotWater_Impl::addToNode(Node& node) {
+  for (auto& plant : model().getConcreteModelObjects<openstudio::epmodel::PlantLoop>()) {
+    if (!plant.supplyComponent(node.handle())) {
+      continue;
+    }
+    if (StraightComponent_Impl::addToNode(node)) {
+      plant.setFluidType("Water");
+      return true;
+    }
+  }
+
+  return false;
 }
 
 std::vector<std::string> BoilerHotWater_Impl::fuelTypeValues() const {

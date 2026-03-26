@@ -52,48 +52,31 @@ namespace epmodel {
   }
 
   unsigned AirLoopHVACZoneSplitter::inletPort() const {
-    return static_cast<unsigned>(openstudio::AirLoopHVAC_ZoneSplitterFields::InletNodeName);
+    return getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->inletPort();
   }
 
   unsigned AirLoopHVACZoneSplitter::outletPort(unsigned branchIndex) const {
-    return numNonextensibleFields() + branchIndex;
+    return getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->outletPort(branchIndex);
   }
 
   unsigned AirLoopHVACZoneSplitter::nextOutletPort() const {
-    return outletPort(nextBranchIndex());
+    return getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->nextOutletPort();
   }
 
   std::vector<ModelObject> AirLoopHVACZoneSplitter::outletModelObjects() const {
-    return Splitter::outletModelObjects();
+    return getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->outletModelObjects();
   }
 
   unsigned AirLoopHVACZoneSplitter::nextBranchIndex() const {
-    return static_cast<unsigned>(outletModelObjects().size());
+    return getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->nextBranchIndex();
   }
 
   void AirLoopHVACZoneSplitter::removePortForBranch(unsigned branchIndex) {
-    if (branchIndex < extensibleGroups().size()) {
-      eraseExtensibleGroup(branchIndex);
-    }
+    return getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->removePortForBranch(branchIndex);
   }
 
   bool AirLoopHVACZoneSplitter::setOutletModelObject(unsigned branchIndex, const ModelObject& modelObject) {
-    if (modelObject.model() != model()) {
-      return false;
-    }
-
-    auto groups = extensibleGroups();
-    IdfExtensibleGroup group = (branchIndex < groups.size()) ? groups[branchIndex] : pushExtensibleGroup();
-    auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
-    if (!workspaceGroup) {
-      return false;
-    }
-    if (auto node = modelObject.optionalCast<openstudio::epmodel::Node>()) {
-      if (!workspaceGroup->setString(openstudio::AirLoopHVAC_ZoneSplitterExtensibleFields::OutletNodeName, node->nameString())) {
-        return false;
-      }
-    }
-    return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ZoneSplitterExtensibleFields::OutletNodeName, modelObject.handle(), false);
+    return getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->setOutletModelObject(branchIndex, modelObject);
   }
 
 }  // namespace epmodel
@@ -102,6 +85,14 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+    unsigned AirLoopHVACZoneSplitter_Impl::inletPort() const {
+      return static_cast<unsigned>(openstudio::AirLoopHVAC_ZoneSplitterFields::InletNodeName);
+    }
+
+    unsigned AirLoopHVACZoneSplitter_Impl::outletPort(unsigned branchIndex) const {
+      return getObject<openstudio::epmodel::AirLoopHVACZoneSplitter>().numNonextensibleFields() + branchIndex;
+    }
 
     boost::optional<openstudio::epmodel::Node> AirLoopHVACZoneSplitter_Impl::inletNode() const {
       if (auto node = getObject<openstudio::epmodel::AirLoopHVACZoneSplitter>().getModelObjectTarget<openstudio::epmodel::Node>(

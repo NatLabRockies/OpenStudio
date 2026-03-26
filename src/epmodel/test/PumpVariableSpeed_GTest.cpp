@@ -6,6 +6,9 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/PumpVariableSpeed.hpp"
 
 using namespace openstudio::epmodel;
@@ -126,4 +129,27 @@ TEST_F(EPModelFixture, PumpVariableSpeed_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(pump.setEndUseSubcategory("General"));
   EXPECT_EQ("General", pump.endUseSubcategory());
+}
+
+TEST_F(EPModelFixture, PumpVariableSpeed_AddToNode_PlantOnly) {
+  Model model;
+  PumpVariableSpeed pump(model);
+
+  AirLoopHVAC airLoop(model);
+  auto airSupplyOutletNode = airLoop.supplyOutletNode();
+  EXPECT_FALSE(pump.addToNode(airSupplyOutletNode));
+  EXPECT_EQ(2u, airLoop.supplyComponents().size());
+
+  PlantLoop plantLoop(model);
+  auto supplyOutletNode = plantLoop.supplyOutletNode();
+  EXPECT_TRUE(pump.addToNode(supplyOutletNode));
+  EXPECT_EQ(7u, plantLoop.supplyComponents().size());
+
+  auto demandOutletNode = plantLoop.demandOutletNode();
+  EXPECT_TRUE(pump.addToNode(demandOutletNode));
+  EXPECT_EQ(7u, plantLoop.demandComponents().size());
+
+  PumpVariableSpeed pump2(model);
+  EXPECT_TRUE(pump2.addToNode(demandOutletNode));
+  EXPECT_EQ(9u, plantLoop.demandComponents().size());
 }

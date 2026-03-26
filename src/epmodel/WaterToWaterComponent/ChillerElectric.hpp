@@ -3,24 +3,59 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#ifndef EPMODEL_CHILLERELECTRIC_IMPL_HPP
-#define EPMODEL_CHILLERELECTRIC_IMPL_HPP
+#ifndef EPMODEL_CHILLERELECTRIC_HPP
+#define EPMODEL_CHILLERELECTRIC_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "EPModelAPI.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent.hpp"
 
+#include <memory>
 #include <vector>
 
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+class Model;
+class Node;
+class PlantLoop;
 
-class EPMODEL_API ChillerElectric_Impl : public ModelObject_Impl
+namespace detail {
+class ChillerElectric_Impl;
+}
+
+class EPMODEL_API ChillerElectric : public WaterToWaterComponent
 {
  public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ChillerElectric_Impl() override = default;
+  explicit ChillerElectric(const Model& model);
 
+  virtual ~ChillerElectric() override = default;
+  ChillerElectric(const ChillerElectric& other) = default;
+  ChillerElectric(ChillerElectric&& other) = default;
+  ChillerElectric& operator=(const ChillerElectric&) = default;
+  ChillerElectric& operator=(ChillerElectric&&) = default;
+
+  static IddObjectType iddObjectType();
+
+  static std::vector<std::string> condenserTypeValues();
+  static std::vector<std::string> chillerFlowModeValues();
+
+  boost::optional<PlantLoop> chilledWaterLoop() const;
+  boost::optional<Node> chilledWaterInletNode() const;
+  boost::optional<Node> chilledWaterOutletNode() const;
+
+  boost::optional<PlantLoop> condenserWaterLoop() const;
+  boost::optional<Node> condenserInletNode() const;
+  boost::optional<Node> condenserOutletNode() const;
+
+  boost::optional<PlantLoop> heatRecoveryLoop() const;
+  boost::optional<Node> heatRecoveryInletNode() const;
+  boost::optional<Node> heatRecoveryOutletNode() const;
+
+  // Schema Alignment Notes:
+  // - API: This no-counterpart type uses IDD-derived scalar accessor names.
+  // - Field Mapping: Scalar APIs map directly to EnergyPlus Chiller:Electric fields.
+  // - Topology: Water-side node and loop accessors follow the same naming used by the
+  //   model chiller wrappers so plant navigation reads naturally.
   std::string condenserType() const;
   bool isCondenserTypeDefaulted() const;
   bool setCondenserType(const std::string& condenserType);
@@ -149,11 +184,16 @@ class EPMODEL_API ChillerElectric_Impl : public ModelObject_Impl
   bool setThermosiphonMinimumTemperatureDifference(double thermosiphonMinimumTemperatureDifference);
   void resetThermosiphonMinimumTemperatureDifference();
 
-  std::vector<std::string> condenserTypeValues() const;
-  std::vector<std::string> chillerFlowModeValues() const;
+ protected:
+  using ImplType = detail::ChillerElectric_Impl;
+
+  friend class Model;
+  friend class openstudio::IdfObject;
+  friend class openstudio::detail::IdfObject_Impl;
+
+  explicit ChillerElectric(std::shared_ptr<detail::ChillerElectric_Impl> impl);
 };
 
-}  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

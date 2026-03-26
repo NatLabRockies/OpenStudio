@@ -283,9 +283,6 @@ namespace epmodel {
       if (!workspaceGroup) {
         return false;
       }
-      if (!workspaceGroup->setString(openstudio::AirLoopHVAC_ZoneSplitterExtensibleFields::OutletNodeName, branchNode.nameString())) {
-        return false;
-      }
       return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ZoneSplitterExtensibleFields::OutletNodeName, branchNode.handle(), false);
     }
 
@@ -294,9 +291,6 @@ namespace epmodel {
       IdfExtensibleGroup group = (branchIndex < groups.size()) ? groups[branchIndex] : mixer.pushExtensibleGroup();
       auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
       if (!workspaceGroup) {
-        return false;
-      }
-      if (!workspaceGroup->setString(openstudio::AirLoopHVAC_ZoneMixerExtensibleFields::InletNodeName, branchNode.nameString())) {
         return false;
       }
       return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ZoneMixerExtensibleFields::InletNodeName, branchNode.handle(), false);

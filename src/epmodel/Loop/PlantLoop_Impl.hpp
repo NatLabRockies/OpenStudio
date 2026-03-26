@@ -107,7 +107,7 @@ namespace epmodel {
       void doCanonicalize(LoadContext& context) override;
 
      private:
-      bool syncConnectorPorts(openstudio::epmodel::Splitter& splitter, openstudio::epmodel::Mixer& mixer,
+      bool syncConnectorPorts(openstudio::epmodel::ConnectorSplitter& splitter, openstudio::epmodel::ConnectorMixer& mixer,
                               const openstudio::epmodel::Branch& inletBranch, const openstudio::epmodel::Branch& outletBranch,
                               const std::vector<openstudio::epmodel::Branch>& equipmentBranches) const;
 

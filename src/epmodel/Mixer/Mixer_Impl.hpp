@@ -3,32 +3,29 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#ifndef EPMODEL_MIXER_HPP
-#define EPMODEL_MIXER_HPP
+#ifndef EPMODEL_MIXER_IMPL_HPP
+#define EPMODEL_MIXER_IMPL_HPP
 
-#include "HVACComponent/HVACComponent.hpp"
+#include "HVACComponent/HVACComponent_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
-class Loop_Impl;
-class Mixer_Impl;
-}
+class ModelObject;
 
- class EPMODEL_API Mixer : public HVACComponent
- {
-  public:
-    virtual ~Mixer() override = default;
-    Mixer(const Mixer& other) = default;
-    Mixer(Mixer&& other) = default;
-    Mixer& operator=(const Mixer&) = default;
-    Mixer& operator=(Mixer&&) = default;
+namespace detail {
+
+class EPMODEL_API Mixer_Impl : public HVACComponent_Impl
+{
+ public:
+  using HVACComponent_Impl::HVACComponent_Impl;
+  virtual ~Mixer_Impl() override = default;
+
+  virtual unsigned outletPort() const = 0;
+  virtual unsigned inletPort(unsigned branchIndex) const = 0;
+  virtual unsigned nextInletPort() const;
 
   virtual boost::optional<ModelObject> outletModelObject() const;
-  virtual unsigned outletPort() const;
-  virtual unsigned inletPort(unsigned branchIndex) const;
-  virtual unsigned nextInletPort() const;
   virtual boost::optional<ModelObject> inletModelObject(unsigned branchIndex) const;
   virtual boost::optional<ModelObject> lastInletModelObject() const;
   virtual std::vector<ModelObject> inletModelObjects() const;
@@ -36,21 +33,10 @@ class Mixer_Impl;
   virtual unsigned branchIndexForInletModelObject(const ModelObject& modelObject) const;
   virtual unsigned nextBranchIndex() const;
   virtual void removePortForBranch(unsigned branchIndex);
-
-  protected:
-  using ImplType = detail::Mixer_Impl;
-
-  friend class openstudio::epmodel::detail::Loop_Impl;
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit Mixer(const Model& model);
-  Mixer(IddObjectType type, const Model& model);
-  explicit Mixer(std::shared_ptr<ImplType> impl);
   virtual bool setInletModelObject(unsigned branchIndex, const ModelObject& modelObject);
 };
 
+}  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

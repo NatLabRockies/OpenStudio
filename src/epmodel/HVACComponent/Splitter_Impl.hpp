@@ -3,32 +3,29 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#ifndef EPMODEL_SPLITTER_HPP
-#define EPMODEL_SPLITTER_HPP
+#ifndef EPMODEL_SPLITTER_IMPL_HPP
+#define EPMODEL_SPLITTER_IMPL_HPP
 
-#include "HVACComponent/HVACComponent.hpp"
+#include "HVACComponent/HVACComponent_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
-class Loop_Impl;
-class Splitter_Impl;
-}
+class ModelObject;
 
- class EPMODEL_API Splitter : public HVACComponent
- {
-  public:
-    virtual ~Splitter() override = default;
-    Splitter(const Splitter& other) = default;
-    Splitter(Splitter&& other) = default;
-    Splitter& operator=(const Splitter&) = default;
-    Splitter& operator=(Splitter&&) = default;
+namespace detail {
+
+class EPMODEL_API Splitter_Impl : public HVACComponent_Impl
+{
+ public:
+  using HVACComponent_Impl::HVACComponent_Impl;
+  virtual ~Splitter_Impl() override = default;
+
+  virtual unsigned inletPort() const = 0;
+  virtual unsigned outletPort(unsigned branchIndex) const = 0;
+  virtual unsigned nextOutletPort() const;
 
   virtual boost::optional<ModelObject> inletModelObject() const;
-  virtual unsigned inletPort() const;
-  virtual unsigned outletPort(unsigned branchIndex) const;
-  virtual unsigned nextOutletPort() const;
   virtual boost::optional<ModelObject> outletModelObject(unsigned branchIndex) const;
   virtual boost::optional<ModelObject> lastOutletModelObject() const;
   virtual std::vector<ModelObject> outletModelObjects() const;
@@ -36,21 +33,10 @@ class Splitter_Impl;
   virtual unsigned branchIndexForOutletModelObject(ModelObject modelObject) const;
   virtual unsigned nextBranchIndex() const;
   virtual void removePortForBranch(unsigned branchIndex);
-
-  protected:
-  using ImplType = detail::Splitter_Impl;
-
-  friend class openstudio::epmodel::detail::Loop_Impl;
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit Splitter(const Model& model);
-  Splitter(IddObjectType type, const Model& model);
-  explicit Splitter(std::shared_ptr<ImplType> impl);
   virtual bool setOutletModelObject(unsigned branchIndex, const ModelObject& modelObject);
 };
 
+}  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

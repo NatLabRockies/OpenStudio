@@ -6,7 +6,9 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ChillerElectric.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../StraightComponent/Node.hpp"
+#include "../WaterToWaterComponent/ChillerElectric.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -92,4 +94,32 @@ TEST_F(EPModelFixture, ChillerElectric_ScalarAccessors_RoundTrip) {
   chiller.resetThermosiphonMinimumTemperatureDifference();
   EXPECT_TRUE(chiller.isThermosiphonMinimumTemperatureDifferenceDefaulted());
   EXPECT_DOUBLE_EQ(0.0, chiller.thermosiphonMinimumTemperatureDifference());
+}
+
+TEST_F(EPModelFixture, ChillerElectric_PlantLoopAttachmentParity_NoControllers) {
+  Model model;
+  PlantLoop condenserLoop(model);
+  PlantLoop heatRecoveryLoop(model);
+  ChillerElectric chiller(model);
+
+  EXPECT_TRUE(condenserLoop.addDemandBranchForComponent(chiller));
+  ASSERT_TRUE(chiller.condenserWaterLoop());
+  EXPECT_EQ(condenserLoop.handle(), chiller.condenserWaterLoop()->handle());
+  EXPECT_EQ("WaterCooled", chiller.condenserType());
+
+  EXPECT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(chiller));
+  ASSERT_TRUE(chiller.heatRecoveryLoop());
+  EXPECT_EQ(heatRecoveryLoop.handle(), chiller.heatRecoveryLoop()->handle());
+  ASSERT_TRUE(chiller.condenserWaterLoop());
+  EXPECT_EQ(condenserLoop.handle(), chiller.condenserWaterLoop()->handle());
+
+  Node condenserOutletNode = condenserLoop.supplyOutletNode();
+  EXPECT_FALSE(chiller.addToTertiaryNode(condenserOutletNode));
+
+  ASSERT_TRUE(chiller.heatRecoveryInletNode());
+  Node heatRecoveryInletNode = *chiller.heatRecoveryInletNode();
+  EXPECT_FALSE(chiller.addToTertiaryNode(heatRecoveryInletNode));
+
+  EXPECT_TRUE(chiller.removeFromSecondaryPlantLoop());
+  EXPECT_EQ("AirCooled", chiller.condenserType());
 }

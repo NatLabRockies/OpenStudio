@@ -18,9 +18,9 @@
 namespace openstudio {
 namespace epmodel {
 
-CoilHeatingWater::CoilHeatingWater(const Model& model) : ModelObject(CoilHeatingWater::iddObjectType(), model) {}
+CoilHeatingWater::CoilHeatingWater(const Model& model) : WaterToAirComponent(CoilHeatingWater::iddObjectType(), model) {}
 
-CoilHeatingWater::CoilHeatingWater(std::shared_ptr<detail::CoilHeatingWater_Impl> impl) : ModelObject(std::move(impl)) {}
+CoilHeatingWater::CoilHeatingWater(std::shared_ptr<detail::CoilHeatingWater_Impl> impl) : WaterToAirComponent(std::move(impl)) {}
 
 IddObjectType CoilHeatingWater::iddObjectType() {
   return IddObjectType::Coil_Heating_Water;
@@ -132,6 +132,22 @@ bool CoilHeatingWater::setRatedRatioForAirAndWaterConvection(double value) {
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+unsigned CoilHeatingWater_Impl::airInletPort() const {
+  return openstudio::Coil_Heating_WaterFields::AirInletNodeName;
+}
+
+unsigned CoilHeatingWater_Impl::airOutletPort() const {
+  return openstudio::Coil_Heating_WaterFields::AirOutletNodeName;
+}
+
+unsigned CoilHeatingWater_Impl::waterInletPort() const {
+  return openstudio::Coil_Heating_WaterFields::WaterInletNodeName;
+}
+
+unsigned CoilHeatingWater_Impl::waterOutletPort() const {
+  return openstudio::Coil_Heating_WaterFields::WaterOutletNodeName;
+}
 
 boost::optional<double> CoilHeatingWater_Impl::uFactorTimesAreaValue() const {
   return getDouble(openstudio::Coil_Heating_WaterFields::UFactorTimesAreaValue, true);

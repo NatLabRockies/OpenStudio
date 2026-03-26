@@ -18,9 +18,9 @@
 namespace openstudio {
 namespace epmodel {
 
-CoilCoolingWater::CoilCoolingWater(const Model& model) : ModelObject(CoilCoolingWater::iddObjectType(), model) {}
+CoilCoolingWater::CoilCoolingWater(const Model& model) : WaterToAirComponent(CoilCoolingWater::iddObjectType(), model) {}
 
-CoilCoolingWater::CoilCoolingWater(std::shared_ptr<detail::CoilCoolingWater_Impl> impl) : ModelObject(std::move(impl)) {}
+CoilCoolingWater::CoilCoolingWater(std::shared_ptr<detail::CoilCoolingWater_Impl> impl) : WaterToAirComponent(std::move(impl)) {}
 
 IddObjectType CoilCoolingWater::iddObjectType() {
   return IddObjectType::Coil_Cooling_Water;
@@ -169,6 +169,22 @@ bool CoilCoolingWater::setHeatExchangerConfiguration(const std::string& value) {
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+unsigned CoilCoolingWater_Impl::airInletPort() const {
+  return openstudio::Coil_Cooling_WaterFields::AirInletNodeName;
+}
+
+unsigned CoilCoolingWater_Impl::airOutletPort() const {
+  return openstudio::Coil_Cooling_WaterFields::AirOutletNodeName;
+}
+
+unsigned CoilCoolingWater_Impl::waterInletPort() const {
+  return openstudio::Coil_Cooling_WaterFields::WaterInletNodeName;
+}
+
+unsigned CoilCoolingWater_Impl::waterOutletPort() const {
+  return openstudio::Coil_Cooling_WaterFields::WaterOutletNodeName;
+}
 
 boost::optional<double> CoilCoolingWater_Impl::designWaterFlowRate() const {
   return getDouble(openstudio::Coil_Cooling_WaterFields::DesignWaterFlowRate, true);

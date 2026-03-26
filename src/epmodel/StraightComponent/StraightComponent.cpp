@@ -99,8 +99,6 @@ namespace epmodel {
           return false;
         }
 
-        setString(inletPort(), newInletName);
-        setString(outletPort(), newOutletName);
         auto newInletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(newInletName);
         auto newOutletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(newOutletName);
         setPointer(inletPort(), newInletNode.handle(), false);
@@ -167,8 +165,6 @@ namespace epmodel {
             return false;
           }
 
-          setString(inletPort(), newInletName);
-          setString(outletPort(), newOutletName);
           auto newInletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(newInletName);
           auto newOutletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(newOutletName);
           setPointer(inletPort(), newInletNode.handle(), false);
@@ -402,8 +398,6 @@ namespace epmodel {
     }
 
     void StraightComponent_Impl::disconnect() {
-      setString(inletPort(), "");
-      setString(outletPort(), "");
       setPointer(inletPort(), Handle(), false);
       setPointer(outletPort(), Handle(), false);
     }

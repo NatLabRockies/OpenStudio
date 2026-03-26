@@ -194,9 +194,6 @@ bool BranchList_Impl::insertBranch(unsigned index, const openstudio::epmodel::Br
   if (!workspaceGroup) {
     return false;
   }
-  if (!workspaceGroup->setString(openstudio::BranchListExtensibleFields::BranchName, branch.nameString())) {
-    return false;
-  }
   return workspaceGroup->setPointer(openstudio::BranchListExtensibleFields::BranchName, branch.handle());
 }
 

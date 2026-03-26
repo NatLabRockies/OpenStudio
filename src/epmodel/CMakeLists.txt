@@ -153,6 +153,9 @@ set(${target_name}_src
   HVACComponent/ControllerWaterCoil.hpp
   HVACComponent/ControllerWaterCoil_Impl.hpp
   HVACComponent/ControllerWaterCoil.cpp
+  WaterToAirComponent/WaterToAirComponent.hpp
+  WaterToAirComponent/WaterToAirComponent_Impl.hpp
+  WaterToAirComponent/WaterToAirComponent.cpp
   WaterToAirComponent/CoilCoolingWater.hpp
   WaterToAirComponent/CoilCoolingWater_Impl.hpp
   WaterToAirComponent/CoilCoolingWater.cpp
@@ -216,6 +219,9 @@ set(${target_name}_src
   WaterToWaterComponent/HeatExchangerFluidToFluid.hpp
   WaterToWaterComponent/HeatExchangerFluidToFluid_Impl.hpp
   WaterToWaterComponent/HeatExchangerFluidToFluid.cpp
+  WaterToWaterComponent/WaterToWaterComponent.hpp
+  WaterToWaterComponent/WaterToWaterComponent_Impl.hpp
+  WaterToWaterComponent/WaterToWaterComponent.cpp
   WaterToWaterComponent/WaterHeaterMixed.hpp
   WaterToWaterComponent/WaterHeaterMixed_Impl.hpp
   WaterToWaterComponent/WaterHeaterMixed.cpp
@@ -2176,9 +2182,9 @@ set(${target_name}_src
   ModelObject/ChillerEngineDriven.hpp
   ModelObject/ChillerEngineDriven_Impl.hpp
   ModelObject/ChillerEngineDriven.cpp
-  ModelObject/ChillerElectric.hpp
-  ModelObject/ChillerElectric_Impl.hpp
-  ModelObject/ChillerElectric.cpp
+  WaterToWaterComponent/ChillerElectric.hpp
+  WaterToWaterComponent/ChillerElectric_Impl.hpp
+  WaterToWaterComponent/ChillerElectric.cpp
   WaterToWaterComponent/ChillerElectricEIR.hpp
   WaterToWaterComponent/ChillerElectricEIR_Impl.hpp
   WaterToWaterComponent/ChillerElectricEIR.cpp
@@ -3370,7 +3376,8 @@ set(${target_name}_test_src
       test/UtilityCostRatchet_GTest.cpp
   test/UtilityCostTariff_GTest.cpp
   test/UtilityCostVariable_GTest.cpp
-  test/IDF_SmallOffice_GTest.cpp
+  test/idf/IDF_5ZoneAirCooled_GTest.cpp
+  test/idf/IDF_SmallOffice_GTest.cpp
   test/Version_GTest.cpp
 )
 

@@ -7,7 +7,7 @@
 #define EPMODEL_COILHEATINGWATER_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "WaterToAirComponent/WaterToAirComponent.hpp"
 
 #include <memory>
 #include <vector>
@@ -21,7 +21,7 @@ namespace epmodel {
     class CoilHeatingWater_Impl;
   }
 
-  class EPMODEL_API CoilHeatingWater : public ModelObject
+  class EPMODEL_API CoilHeatingWater : public WaterToAirComponent
   {
    public:
     explicit CoilHeatingWater(const Model& model);

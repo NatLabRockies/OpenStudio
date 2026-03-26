@@ -239,7 +239,7 @@
 #include "ElectricalStorage/ElectricLoadCenterStorageLiIonNMCBattery_Impl.hpp"
 #include "ModelObject/ChillerConstantCOP_Impl.hpp"
 #include "ModelObject/ChillerEngineDriven_Impl.hpp"
-#include "ModelObject/ChillerElectric_Impl.hpp"
+#include "WaterToWaterComponent/ChillerElectric_Impl.hpp"
 #include "WaterToWaterComponent/ChillerElectricEIR_Impl.hpp"
 #include "WaterToWaterComponent/ChillerElectricReformulatedEIR_Impl.hpp"
 #include "WaterToWaterComponent/ChillerElectricASHRAE205_Impl.hpp"

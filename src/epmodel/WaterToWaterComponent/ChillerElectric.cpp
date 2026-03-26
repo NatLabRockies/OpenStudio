@@ -3,10 +3,12 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#include "ChillerElectric.hpp"
-#include "ChillerElectric_Impl.hpp"
+#include "WaterToWaterComponent/ChillerElectric.hpp"
+#include "WaterToWaterComponent/ChillerElectric_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -17,9 +19,9 @@
 namespace openstudio {
 namespace epmodel {
 
-ChillerElectric::ChillerElectric(const Model& model) : ModelObject(ChillerElectric::iddObjectType(), model) {}
+ChillerElectric::ChillerElectric(const Model& model) : WaterToWaterComponent(ChillerElectric::iddObjectType(), model) {}
 
-ChillerElectric::ChillerElectric(std::shared_ptr<detail::ChillerElectric_Impl> impl) : ModelObject(std::move(impl)) {}
+ChillerElectric::ChillerElectric(std::shared_ptr<detail::ChillerElectric_Impl> impl) : WaterToWaterComponent(std::move(impl)) {}
 
 IddObjectType ChillerElectric::iddObjectType() {
   return IddObjectType::Chiller_Electric;
@@ -31,6 +33,42 @@ std::vector<std::string> ChillerElectric::condenserTypeValues() {
 
 std::vector<std::string> ChillerElectric::chillerFlowModeValues() {
   return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Chiller_ElectricFields::ChillerFlowMode);
+}
+
+boost::optional<PlantLoop> ChillerElectric::chilledWaterLoop() const {
+  return getImpl<detail::ChillerElectric_Impl>()->chilledWaterLoop();
+}
+
+boost::optional<Node> ChillerElectric::chilledWaterInletNode() const {
+  return getImpl<detail::ChillerElectric_Impl>()->chilledWaterInletNode();
+}
+
+boost::optional<Node> ChillerElectric::chilledWaterOutletNode() const {
+  return getImpl<detail::ChillerElectric_Impl>()->chilledWaterOutletNode();
+}
+
+boost::optional<PlantLoop> ChillerElectric::condenserWaterLoop() const {
+  return getImpl<detail::ChillerElectric_Impl>()->condenserWaterLoop();
+}
+
+boost::optional<Node> ChillerElectric::condenserInletNode() const {
+  return getImpl<detail::ChillerElectric_Impl>()->condenserInletNode();
+}
+
+boost::optional<Node> ChillerElectric::condenserOutletNode() const {
+  return getImpl<detail::ChillerElectric_Impl>()->condenserOutletNode();
+}
+
+boost::optional<PlantLoop> ChillerElectric::heatRecoveryLoop() const {
+  return getImpl<detail::ChillerElectric_Impl>()->heatRecoveryLoop();
+}
+
+boost::optional<Node> ChillerElectric::heatRecoveryInletNode() const {
+  return getImpl<detail::ChillerElectric_Impl>()->heatRecoveryInletNode();
+}
+
+boost::optional<Node> ChillerElectric::heatRecoveryOutletNode() const {
+  return getImpl<detail::ChillerElectric_Impl>()->heatRecoveryOutletNode();
 }
 
 std::string ChillerElectric::condenserType() const {
@@ -435,6 +473,115 @@ void ChillerElectric::resetThermosiphonMinimumTemperatureDifference() {
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+unsigned ChillerElectric_Impl::supplyInletPort() const {
+  return openstudio::Chiller_ElectricFields::ChilledWaterInletNodeName;
+}
+
+unsigned ChillerElectric_Impl::supplyOutletPort() const {
+  return openstudio::Chiller_ElectricFields::ChilledWaterOutletNodeName;
+}
+
+unsigned ChillerElectric_Impl::demandInletPort() const {
+  return openstudio::Chiller_ElectricFields::CondenserInletNodeName;
+}
+
+unsigned ChillerElectric_Impl::demandOutletPort() const {
+  return openstudio::Chiller_ElectricFields::CondenserOutletNodeName;
+}
+
+unsigned ChillerElectric_Impl::tertiaryInletPort() const {
+  return openstudio::Chiller_ElectricFields::HeatRecoveryInletNodeName;
+}
+
+unsigned ChillerElectric_Impl::tertiaryOutletPort() const {
+  return openstudio::Chiller_ElectricFields::HeatRecoveryOutletNodeName;
+}
+
+boost::optional<PlantLoop> ChillerElectric_Impl::chilledWaterLoop() const {
+  return WaterToWaterComponent_Impl::plantLoop();
+}
+
+boost::optional<Node> ChillerElectric_Impl::chilledWaterInletNode() const {
+  if (auto mo = supplyInletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<Node> ChillerElectric_Impl::chilledWaterOutletNode() const {
+  if (auto mo = supplyOutletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<PlantLoop> ChillerElectric_Impl::condenserWaterLoop() const {
+  return WaterToWaterComponent_Impl::secondaryPlantLoop();
+}
+
+boost::optional<Node> ChillerElectric_Impl::condenserInletNode() const {
+  if (auto mo = demandInletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<Node> ChillerElectric_Impl::condenserOutletNode() const {
+  if (auto mo = demandOutletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<PlantLoop> ChillerElectric_Impl::heatRecoveryLoop() const {
+  return WaterToWaterComponent_Impl::tertiaryPlantLoop();
+}
+
+boost::optional<Node> ChillerElectric_Impl::heatRecoveryInletNode() const {
+  return getObject<ModelObject>().getModelObjectTarget<Node>(openstudio::Chiller_ElectricFields::HeatRecoveryInletNodeName);
+}
+
+boost::optional<Node> ChillerElectric_Impl::heatRecoveryOutletNode() const {
+  return getObject<ModelObject>().getModelObjectTarget<Node>(openstudio::Chiller_ElectricFields::HeatRecoveryOutletNodeName);
+}
+
+bool ChillerElectric_Impl::addToNode(Node& node) {
+  auto t_plantLoop = node.plantLoop();
+
+  // If trying to add to a node that is on the demand side of a plant loop and
+  // there is already a condenser loop, prefer the heat-recovery side when this
+  // chiller has not yet claimed one. This mirrors the model-side chiller
+  // family behavior without pulling controller logic into epmodel yet.
+  if (t_plantLoop && t_plantLoop->demandComponent(node.handle())) {
+    if (auto cndLoop = condenserWaterLoop()) {
+      if (t_plantLoop.get() != cndLoop.get() && !heatRecoveryLoop()) {
+        return addToTertiaryNode(node);
+      }
+    }
+  }
+
+  const bool ok = WaterToWaterComponent_Impl::addToNode(node);
+  if (ok && condenserWaterLoop()) {
+    setCondenserType("WaterCooled");
+  }
+  return ok;
+}
+
+bool ChillerElectric_Impl::addToTertiaryNode(Node& node) {
+  auto t_plantLoop = node.plantLoop();
+  if (t_plantLoop && t_plantLoop->demandComponent(node.handle())) {
+    return WaterToWaterComponent_Impl::addToTertiaryNode(node);
+  }
+
+  return false;
+}
+
+bool ChillerElectric_Impl::removeFromSecondaryPlantLoop() {
+  const bool ok = WaterToWaterComponent_Impl::removeFromSecondaryPlantLoop();
+  setCondenserType("AirCooled");
+  return ok;
+}
 
 std::string ChillerElectric_Impl::condenserType() const {
   if (auto value = getString(openstudio::Chiller_ElectricFields::CondenserType, false)) {

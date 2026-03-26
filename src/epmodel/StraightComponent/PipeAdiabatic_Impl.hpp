@@ -21,6 +21,7 @@ class EPMODEL_API PipeAdiabatic_Impl : public StraightComponent_Impl
   // Pipe:Adiabatic has no type-specific scalar fields; only relationship-like node-link fields.
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+  bool addToNode(Node& node) override;
 };
 
 }  // namespace detail

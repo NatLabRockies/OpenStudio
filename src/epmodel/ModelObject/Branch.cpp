@@ -152,13 +152,7 @@ namespace epmodel {
       }
 
       auto group = insertExtensibleGroup(index, std::vector<std::string>{}, false);
-      // Keep field text and pointer metadata in sync immediately; setPointer
-      // alone updates relationship state but does not populate the stored field
-      // string until serialization.
       group.setString(BranchExtensibleFields::ComponentObjectType, component.iddObject().name());
-      group.setString(BranchExtensibleFields::ComponentName, component.nameString());
-      group.setString(BranchExtensibleFields::ComponentInletNodeName, inletNodeName);
-      group.setString(BranchExtensibleFields::ComponentOutletNodeName, outletNodeName);
 
       auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
       if (!workspaceGroup) {
@@ -211,9 +205,6 @@ namespace epmodel {
       if (index >= groups.size()) {
         return false;
       }
-      if (!groups[index].setString(BranchExtensibleFields::ComponentInletNodeName, node.nameString())) {
-        return false;
-      }
       auto workspaceGroup = groups[index].optionalCast<openstudio::WorkspaceExtensibleGroup>();
       if (!workspaceGroup) {
         return false;
@@ -237,9 +228,6 @@ namespace epmodel {
     bool Branch_Impl::setComponentOutletNode(unsigned index, const Node& node) {
       auto groups = extensibleGroups();
       if (index >= groups.size()) {
-        return false;
-      }
-      if (!groups[index].setString(BranchExtensibleFields::ComponentOutletNodeName, node.nameString())) {
         return false;
       }
       auto workspaceGroup = groups[index].optionalCast<openstudio::WorkspaceExtensibleGroup>();

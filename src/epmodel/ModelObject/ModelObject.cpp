@@ -85,10 +85,6 @@ namespace epmodel {
 
       auto name = getString(fieldIndex);
       openstudio::epmodel::Node node = model().getOrCreateTransientByNameOrCreate<openstudio::epmodel::Node>(name);
-      if (!setString(fieldIndex, node.nameString())) {
-        LOG_FREE_AND_THROW("openstudio.epmodel.ModelObject",
-                           "Failed to set node target name for field index " << fieldIndex << ".");
-      }
       setPointer(fieldIndex, node.handle(), false);
       return node;
     }

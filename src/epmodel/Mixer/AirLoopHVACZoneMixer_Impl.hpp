@@ -6,19 +6,21 @@
 #ifndef EPMODEL_AIRLOOPHVACZONEMIXER_IMPL_HPP
 #define EPMODEL_AIRLOOPHVACZONEMIXER_IMPL_HPP
 
-#include "HVACComponent/HVACComponent_Impl.hpp"
+#include "Mixer/Mixer_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 class Node;
 namespace detail {
 
-class EPMODEL_API AirLoopHVACZoneMixer_Impl : public HVACComponent_Impl
+class EPMODEL_API AirLoopHVACZoneMixer_Impl : public Mixer_Impl
 {
  public:
-  using HVACComponent_Impl::HVACComponent_Impl;
+  using Mixer_Impl::Mixer_Impl;
   virtual ~AirLoopHVACZoneMixer_Impl() override = default;
 
+  unsigned outletPort() const override;
+  unsigned inletPort(unsigned branchIndex) const override;
   boost::optional<openstudio::epmodel::Node> outletNode() const;
   bool setOutletNode(const openstudio::epmodel::Node& node);
 };

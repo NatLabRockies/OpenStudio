@@ -6,6 +6,9 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/BoilerHotWater.hpp"
 
 using namespace openstudio::epmodel;
@@ -48,4 +51,33 @@ TEST_F(EPModelFixture, BoilerHotWater_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(boiler.setOnCycleParasiticElectricLoad(10.0));
   EXPECT_DOUBLE_EQ(10.0, boiler.onCycleParasiticElectricLoad());
+}
+
+TEST_F(EPModelFixture, BoilerHotWater_StaticValueNames_MirrorModelShape) {
+  EXPECT_EQ(BoilerHotWater::validFuelTypeValues(), BoilerHotWater::fuelTypeValues());
+  EXPECT_EQ(BoilerHotWater::validEfficiencyCurveTemperatureEvaluationVariableValues(),
+            BoilerHotWater::efficiencyCurveTemperatureEvaluationVariableValues());
+  EXPECT_EQ(BoilerHotWater::validBoilerFlowModeValues(), BoilerHotWater::boilerFlowModeValues());
+  EXPECT_FALSE(BoilerHotWater::validFuelTypeValues().empty());
+  EXPECT_FALSE(BoilerHotWater::validBoilerFlowModeValues().empty());
+}
+
+TEST_F(EPModelFixture, BoilerHotWater_AddToNode_PlantSupplyOnly) {
+  Model model;
+  BoilerHotWater boiler(model);
+
+  AirLoopHVAC airLoop(model);
+  auto airSupplyOutletNode = airLoop.supplyOutletNode();
+  EXPECT_FALSE(boiler.addToNode(airSupplyOutletNode));
+  EXPECT_EQ(2u, airLoop.supplyComponents().size());
+
+  PlantLoop plantLoop(model);
+  auto supplyOutletNode = plantLoop.supplyOutletNode();
+  EXPECT_TRUE(boiler.addToNode(supplyOutletNode));
+  EXPECT_EQ("Water", plantLoop.fluidType());
+  EXPECT_EQ(7u, plantLoop.supplyComponents().size());
+
+  auto demandOutletNode = plantLoop.demandOutletNode();
+  EXPECT_FALSE(boiler.addToNode(demandOutletNode));
+  EXPECT_EQ(5u, plantLoop.demandComponents().size());
 }

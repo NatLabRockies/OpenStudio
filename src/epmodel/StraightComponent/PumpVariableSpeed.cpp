@@ -6,6 +6,9 @@
 #include "StraightComponent/PumpVariableSpeed.hpp"
 #include "StraightComponent/PumpVariableSpeed_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
+#include "Node.hpp"
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -690,6 +693,16 @@ namespace epmodel {
       const bool result = setString(openstudio::Pump_VariableSpeedFields::EndUseSubcategory, endUseSubcategory);
       OS_ASSERT(result);
       return result;
+    }
+
+    bool PumpVariableSpeed_Impl::addToNode(Node& node) {
+      for (const auto& plant : model().getConcreteModelObjects<openstudio::epmodel::PlantLoop>()) {
+        if (plant.component(node.handle())) {
+          return StraightComponent_Impl::addToNode(node);
+        }
+      }
+
+      return false;
     }
 
   }  // namespace detail

@@ -19,7 +19,13 @@
 #include "HVACComponent/Splitter.hpp"
 #include "Splitter/ConnectorSplitter.hpp"
 #include "Splitter/ConnectorSplitter_Impl.hpp"
+#include "WaterToAirComponent/CoilCoolingWater.hpp"
+#include "WaterToAirComponent/CoilCoolingWater_Impl.hpp"
+#include "WaterToAirComponent/CoilHeatingWater.hpp"
+#include "WaterToAirComponent/CoilHeatingWater_Impl.hpp"
 #include "StraightComponent/StraightComponent.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent_Impl.hpp"
 
 #include <algorithm>
 #include <set>
@@ -235,25 +241,21 @@ namespace detail {
     // after branch edits. The BranchList is the source of truth: one inlet branch,
     // one or more equipment branches in the middle, and one outlet branch. The
     // splitter and mixer are rebuilt to match that ordering exactly.
-    bool PlantLoop_Impl::syncConnectorPorts(Splitter& splitter, Mixer& mixer, const Branch& inletBranch, const Branch& outletBranch,
+    bool PlantLoop_Impl::syncConnectorPorts(ConnectorSplitter& splitter, ConnectorMixer& mixer, const Branch& inletBranch,
+                                            const Branch& outletBranch,
                                             const std::vector<Branch>& equipmentBranches) const {
-      auto splitterImpl = splitter.getImpl<openstudio::epmodel::detail::ConnectorSplitter_Impl>();
-      auto mixerImpl = mixer.getImpl<openstudio::epmodel::detail::ConnectorMixer_Impl>();
-      OS_ASSERT(splitterImpl);
-      OS_ASSERT(mixerImpl);
-
-      if (!splitterImpl->setInletBranch(inletBranch)) {
+      if (!splitter.getImpl<openstudio::epmodel::detail::ConnectorSplitter_Impl>()->setInletBranch(inletBranch)) {
         return false;
       }
-      if (!mixerImpl->setOutletBranch(outletBranch)) {
+      if (!mixer.getImpl<openstudio::epmodel::detail::ConnectorMixer_Impl>()->setOutletBranch(outletBranch)) {
         return false;
       }
 
-      while (splitter.outletModelObjects().size() > equipmentBranches.size()) {
-        splitter.removePortForBranch(static_cast<unsigned>(splitter.outletModelObjects().size() - 1u));
+      while (splitter.nextBranchIndex() > equipmentBranches.size()) {
+        splitter.removePortForBranch(splitter.nextBranchIndex() - 1u);
       }
-      while (mixer.inletModelObjects().size() > equipmentBranches.size()) {
-        mixer.removePortForBranch(static_cast<unsigned>(mixer.inletModelObjects().size() - 1u));
+      while (mixer.nextBranchIndex() > equipmentBranches.size()) {
+        mixer.removePortForBranch(mixer.nextBranchIndex() - 1u);
       }
 
       for (unsigned i = 0; i < equipmentBranches.size(); ++i) {
@@ -473,20 +475,18 @@ namespace detail {
       const auto equipmentBranches = supplyEquipmentBranches();
       boost::optional<ConnectorSplitter> result;
       for (const auto& splitter : model().getConcreteModelObjects<ConnectorSplitter>()) {
-        auto inletObject = splitter.inletModelObject();
-        auto inlet = inletObject ? inletObject->optionalCast<Branch>() : boost::none;
+        auto inlet = splitter.getModelObjectTarget<Branch>(splitter.inletPort());
         if (!inlet || !(*inlet == inletBranch)) {
           continue;
         }
 
-        const auto outletObjects = splitter.outletModelObjects();
-        if (outletObjects.size() != equipmentBranches.size()) {
+        if (splitter.nextBranchIndex() != equipmentBranches.size()) {
           continue;
         }
 
         bool allOutletsMatch = true;
         for (unsigned i = 0; i < equipmentBranches.size(); ++i) {
-          auto branch = outletObjects[i].optionalCast<Branch>();
+          auto branch = splitter.getModelObjectTarget<Branch>(splitter.outletPort(i));
           if (!branch || !(*branch == equipmentBranches[i])) {
             allOutletsMatch = false;
             break;
@@ -507,20 +507,18 @@ namespace detail {
       const auto equipmentBranches = supplyEquipmentBranches();
       boost::optional<ConnectorMixer> result;
       for (const auto& mixer : model().getConcreteModelObjects<ConnectorMixer>()) {
-        auto outletObject = mixer.outletModelObject();
-        auto outlet = outletObject ? outletObject->optionalCast<Branch>() : boost::none;
+        auto outlet = mixer.getModelObjectTarget<Branch>(mixer.outletPort());
         if (!outlet || !(*outlet == outletBranch)) {
           continue;
         }
 
-        const auto inletObjects = mixer.inletModelObjects();
-        if (inletObjects.size() != equipmentBranches.size()) {
+        if (mixer.nextBranchIndex() != equipmentBranches.size()) {
           continue;
         }
 
         bool allInletsMatch = true;
         for (unsigned i = 0; i < equipmentBranches.size(); ++i) {
-          auto branch = inletObjects[i].optionalCast<Branch>();
+          auto branch = mixer.getModelObjectTarget<Branch>(mixer.inletPort(i));
           if (!branch || !(*branch == equipmentBranches[i])) {
             allInletsMatch = false;
             break;
@@ -541,20 +539,18 @@ namespace detail {
       const auto equipmentBranches = demandEquipmentBranches();
       boost::optional<ConnectorSplitter> result;
       for (const auto& splitter : model().getConcreteModelObjects<ConnectorSplitter>()) {
-        auto inletObject = splitter.inletModelObject();
-        auto inlet = inletObject ? inletObject->optionalCast<Branch>() : boost::none;
+        auto inlet = splitter.getModelObjectTarget<Branch>(splitter.inletPort());
         if (!inlet || !(*inlet == inletBranch)) {
           continue;
         }
 
-        const auto outletObjects = splitter.outletModelObjects();
-        if (outletObjects.size() != equipmentBranches.size()) {
+        if (splitter.nextBranchIndex() != equipmentBranches.size()) {
           continue;
         }
 
         bool allOutletsMatch = true;
         for (unsigned i = 0; i < equipmentBranches.size(); ++i) {
-          auto branch = outletObjects[i].optionalCast<Branch>();
+          auto branch = splitter.getModelObjectTarget<Branch>(splitter.outletPort(i));
           if (!branch || !(*branch == equipmentBranches[i])) {
             allOutletsMatch = false;
             break;
@@ -575,20 +571,18 @@ namespace detail {
       const auto equipmentBranches = demandEquipmentBranches();
       boost::optional<ConnectorMixer> result;
       for (const auto& mixer : model().getConcreteModelObjects<ConnectorMixer>()) {
-        auto outletObject = mixer.outletModelObject();
-        auto outlet = outletObject ? outletObject->optionalCast<Branch>() : boost::none;
+        auto outlet = mixer.getModelObjectTarget<Branch>(mixer.outletPort());
         if (!outlet || !(*outlet == outletBranch)) {
           continue;
         }
 
-        const auto inletObjects = mixer.inletModelObjects();
-        if (inletObjects.size() != equipmentBranches.size()) {
+        if (mixer.nextBranchIndex() != equipmentBranches.size()) {
           continue;
         }
 
         bool allInletsMatch = true;
         for (unsigned i = 0; i < equipmentBranches.size(); ++i) {
-          auto branch = inletObjects[i].optionalCast<Branch>();
+          auto branch = mixer.getModelObjectTarget<Branch>(mixer.inletPort(i));
           if (!branch || !(*branch == equipmentBranches[i])) {
             allInletsMatch = false;
             break;
@@ -1000,16 +994,23 @@ namespace detail {
       if (hvacComponent.model() != model()) {
         return false;
       }
-      if (!hvacComponent.optionalCast<StraightComponent>()) {
+      if (!hvacComponent.optionalCast<StraightComponent>() && !hvacComponent.optionalCast<WaterToWaterComponent>()) {
         return false;
       }
-      if (hvacComponent.loop()) {
+      if (hvacComponent.optionalCast<StraightComponent>() && hvacComponent.loop()) {
         return false;
+      }
+      if (auto waterToWater = hvacComponent.optionalCast<WaterToWaterComponent>()) {
+        if (waterToWater->plantLoop()) {
+          return false;
+        }
       }
 
       auto branchList = supplyBranchList();
       auto equipmentBranches = supplyEquipmentBranches();
       OS_ASSERT(!equipmentBranches.empty());
+      auto splitter = supplySplitter().cast<ConnectorSplitter>();
+      auto mixer = supplyMixer().cast<ConnectorMixer>();
 
       // A newly canonicalized loop starts with one empty equipment branch. Reuse
       // that branch instead of manufacturing a second branch the first time
@@ -1028,8 +1029,6 @@ namespace detail {
         return false;
       }
 
-      auto splitter = supplySplitter();
-      auto mixer = supplyMixer();
       equipmentBranches = supplyEquipmentBranches();
       if (!syncConnectorPorts(splitter, mixer, supplyInletBranch(), supplyOutletBranch(), equipmentBranches)) {
         branchList.getImpl<detail::BranchList_Impl>()->removeBranch(branch);
@@ -1077,15 +1076,11 @@ namespace detail {
       }
 
       const auto components = targetBranch->components();
-      for (const auto& component : components) {
-        auto straightComponent = component.optionalCast<StraightComponent>();
-        if (!straightComponent) {
-          return false;
-        }
-      }
 
       auto branchList = supplyBranchList();
       const bool keepAsDefaultBranch = (equipmentBranches.size() == 1u);
+      auto splitter = supplySplitter().cast<ConnectorSplitter>();
+      auto mixer = supplyMixer().cast<ConnectorMixer>();
       if (!keepAsDefaultBranch) {
         if (!branchList.getImpl<detail::BranchList_Impl>()->removeBranch(*targetBranch)) {
           return false;
@@ -1094,13 +1089,17 @@ namespace detail {
 
       targetBranch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->clearComponents();
 
-      for (const auto& component : components) {
-        auto straightComponent = component.cast<StraightComponent>();
-        straightComponent.disconnect();
+      for (auto component : components) {
+        if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+          straightComponent->disconnect();
+        } else if (auto waterToWater = component.optionalCast<WaterToWaterComponent>()) {
+          component.setPointer(waterToWater->supplyInletPort(), Handle());
+          component.setPointer(waterToWater->supplyOutletPort(), Handle());
+        } else {
+          return false;
+        }
       }
 
-      auto splitter = supplySplitter();
-      auto mixer = supplyMixer();
       if (!keepAsDefaultBranch) {
         targetBranch->remove();
       }
@@ -1108,28 +1107,49 @@ namespace detail {
     }
 
     bool PlantLoop_Impl::addDemandBranchForComponent(HVACComponent hvacComponent, bool tertiary) {
-      if (tertiary) {
-        return false;
-      }
       if (hvacComponent.model() != model()) {
         return false;
       }
-      if (!hvacComponent.optionalCast<StraightComponent>()) {
+      if (!hvacComponent.optionalCast<StraightComponent>() && !hvacComponent.optionalCast<CoilHeatingWater>()
+          && !hvacComponent.optionalCast<CoilCoolingWater>() && !hvacComponent.optionalCast<WaterToWaterComponent>()) {
         return false;
       }
-      if (hvacComponent.loop()) {
+      if (auto waterToAir = hvacComponent.optionalCast<CoilHeatingWater>()) {
+        if (tertiary || waterToAir->plantLoop()) {
+          return false;
+        }
+      } else if (auto waterToAir = hvacComponent.optionalCast<CoilCoolingWater>()) {
+        if (tertiary || waterToAir->plantLoop()) {
+          return false;
+        }
+      }
+      if (hvacComponent.optionalCast<StraightComponent>() && hvacComponent.loop()) {
+        return false;
+      }
+      if (auto waterToWater = hvacComponent.optionalCast<WaterToWaterComponent>()) {
+        if (tertiary) {
+          if (waterToWater->tertiaryPlantLoop()) {
+            return false;
+          }
+        }
+      } else if (tertiary) {
         return false;
       }
 
       auto branchList = demandBranchList();
       auto equipmentBranches = demandEquipmentBranches();
       OS_ASSERT(!equipmentBranches.empty());
+      auto splitter = demandSplitter().cast<ConnectorSplitter>();
+      auto mixer = demandMixer().cast<ConnectorMixer>();
 
       // Mirror the supply-side behavior: the first real component should claim the
       // default empty equipment branch instead of forcing an unnecessary parallel
       // branch into existence.
       if ((equipmentBranches.size() == 1u) && equipmentBranches.front().components().empty()) {
         auto node = model().getOrCreateTransientByName<Node>(equipmentBranches.front().nameString() + " Node");
+        if (tertiary) {
+          return hvacComponent.cast<WaterToWaterComponent>().addToTertiaryNode(node);
+        }
         return hvacComponent.addToNode(node);
       }
 
@@ -1142,8 +1162,6 @@ namespace detail {
         return false;
       }
 
-      auto splitter = demandSplitter();
-      auto mixer = demandMixer();
       equipmentBranches = demandEquipmentBranches();
       if (!syncConnectorPorts(splitter, mixer, demandInletBranch(), demandOutletBranch(), equipmentBranches)) {
         branchList.getImpl<detail::BranchList_Impl>()->removeBranch(branch);
@@ -1152,7 +1170,13 @@ namespace detail {
       }
 
       auto node = model().getOrCreateTransientByName<Node>(branch.nameString() + " Node");
-      if (!hvacComponent.addToNode(node)) {
+      bool connected = false;
+      if (tertiary) {
+        connected = hvacComponent.cast<WaterToWaterComponent>().addToTertiaryNode(node);
+      } else {
+        connected = hvacComponent.addToNode(node);
+      }
+      if (!connected) {
         branchList.getImpl<detail::BranchList_Impl>()->removeBranch(branch);
         syncConnectorPorts(splitter, mixer, demandInletBranch(), demandOutletBranch(), demandEquipmentBranches());
         branch.remove();
@@ -1191,15 +1215,42 @@ namespace detail {
       }
 
       const auto components = targetBranch->components();
-      for (const auto& component : components) {
-        auto straightComponent = component.optionalCast<StraightComponent>();
-        if (!straightComponent) {
+
+      auto branchList = demandBranchList();
+      const bool keepAsDefaultBranch = (equipmentBranches.size() == 1u);
+      auto splitter = demandSplitter().cast<ConnectorSplitter>();
+      auto mixer = demandMixer().cast<ConnectorMixer>();
+
+      for (auto component : components) {
+        if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+          straightComponent->disconnect();
+        } else if (auto waterToAir = component.optionalCast<CoilHeatingWater>()) {
+          if (!waterToAir->removeFromPlantLoop()) {
+            return false;
+          }
+          if (!waterToAir->airLoopHVAC()) {
+            waterToAir->remove();
+          }
+        } else if (auto waterToAir = component.optionalCast<CoilCoolingWater>()) {
+          if (!waterToAir->removeFromPlantLoop()) {
+            return false;
+          }
+          if (!waterToAir->airLoopHVAC()) {
+            waterToAir->remove();
+          }
+        } else if (auto waterToWater = component.optionalCast<WaterToWaterComponent>()) {
+          if (auto tertiaryLoop = waterToWater->tertiaryPlantLoop(); tertiaryLoop && tertiaryLoop->handle() == getObject<PlantLoop>().handle()) {
+            component.setPointer(waterToWater->tertiaryInletPort(), Handle());
+            component.setPointer(waterToWater->tertiaryOutletPort(), Handle());
+          } else {
+            component.setPointer(waterToWater->demandInletPort(), Handle());
+            component.setPointer(waterToWater->demandOutletPort(), Handle());
+          }
+        } else {
           return false;
         }
       }
 
-      auto branchList = demandBranchList();
-      const bool keepAsDefaultBranch = (equipmentBranches.size() == 1u);
       if (!keepAsDefaultBranch) {
         if (!branchList.getImpl<detail::BranchList_Impl>()->removeBranch(*targetBranch)) {
           return false;
@@ -1208,13 +1259,6 @@ namespace detail {
 
       targetBranch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->clearComponents();
 
-      for (const auto& component : components) {
-        auto straightComponent = component.cast<StraightComponent>();
-        straightComponent.disconnect();
-      }
-
-      auto splitter = demandSplitter();
-      auto mixer = demandMixer();
       if (!keepAsDefaultBranch) {
         targetBranch->remove();
       }
@@ -1412,6 +1456,35 @@ namespace detail {
         }
       }
 
+      // Canonicalize the branch rows first so the branch names are stable
+      // before we materialize the empty equipment-branch nodes that the
+      // connector paths expect to exist.
+      auto supplyBranchListObject = supplyBranchList();
+      for (const auto& branch : supplyBranchListObject.branches()) {
+        if (auto branchImpl = branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()) {
+          branchImpl->canonicalize(context);
+        }
+      }
+
+      for (const auto& branch : supplyEquipmentBranches()) {
+        if (branch.components().empty()) {
+          model().getOrCreateTransientByName<Node>(branch.nameString() + " Node");
+        }
+      }
+
+      auto demandBranchListObject = demandBranchList();
+      for (const auto& branch : demandBranchListObject.branches()) {
+        if (auto branchImpl = branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()) {
+          branchImpl->canonicalize(context);
+        }
+      }
+
+      for (const auto& branch : demandEquipmentBranches()) {
+        if (branch.components().empty()) {
+          model().getOrCreateTransientByName<Node>(branch.nameString() + " Node");
+        }
+      }
+
       // Plant-side splitter/mixer pair are keyed by inlet/outlet branches.
       // These connector objects are the fan-out/fan-in connective tissue for
       // the canonical plant-side equipment branches.
@@ -1421,20 +1494,18 @@ namespace detail {
 
       boost::optional<ConnectorSplitter> supplySplitterObject;
       for (const auto& candidate : model().getConcreteModelObjects<ConnectorSplitter>()) {
-        auto inletObject = candidate.inletModelObject();
-        auto inlet = inletObject ? inletObject->optionalCast<Branch>() : boost::none;
+        auto inlet = candidate.getModelObjectTarget<Branch>(candidate.inletPort());
         if (!inlet || !(*inlet == supplyInletBranchRef)) {
           continue;
         }
 
-        const auto outletObjects = candidate.outletModelObjects();
-        if (outletObjects.size() != supplyEquipmentBranchRefs.size()) {
+        if (candidate.nextBranchIndex() != supplyEquipmentBranchRefs.size()) {
           continue;
         }
 
         bool allOutletsMatch = true;
         for (unsigned i = 0; i < supplyEquipmentBranchRefs.size(); ++i) {
-          auto branch = outletObjects[i].optionalCast<Branch>();
+          auto branch = candidate.getModelObjectTarget<Branch>(candidate.outletPort(i));
           if (!branch || !(*branch == supplyEquipmentBranchRefs[i])) {
             allOutletsMatch = false;
             break;
@@ -1455,20 +1526,18 @@ namespace detail {
 
       boost::optional<ConnectorMixer> supplyMixerObject;
       for (const auto& candidate : model().getConcreteModelObjects<ConnectorMixer>()) {
-        auto outletObject = candidate.outletModelObject();
-        auto outlet = outletObject ? outletObject->optionalCast<Branch>() : boost::none;
+        auto outlet = candidate.getModelObjectTarget<Branch>(candidate.outletPort());
         if (!outlet || !(*outlet == supplyOutletBranchRef)) {
           continue;
         }
 
-        const auto inletObjects = candidate.inletModelObjects();
-        if (inletObjects.size() != supplyEquipmentBranchRefs.size()) {
+        if (candidate.nextBranchIndex() != supplyEquipmentBranchRefs.size()) {
           continue;
         }
 
         bool allInletsMatch = true;
         for (unsigned i = 0; i < supplyEquipmentBranchRefs.size(); ++i) {
-          auto branch = inletObjects[i].optionalCast<Branch>();
+          auto branch = candidate.getModelObjectTarget<Branch>(candidate.inletPort(i));
           if (!branch || !(*branch == supplyEquipmentBranchRefs[i])) {
             allInletsMatch = false;
             break;
@@ -1487,8 +1556,8 @@ namespace detail {
                             "Created missing plant-side Connector:Mixer '" + supplyMixerObject->nameString() + "' for PlantLoop '" + loopName + "'.");
       }
 
-      if ((supplySplitterObject->outletModelObjects().size() != supplyEquipmentBranchRefs.size())
-          || (supplyMixerObject->inletModelObjects().size() != supplyEquipmentBranchRefs.size())) {
+      if ((supplySplitterObject->nextBranchIndex() != supplyEquipmentBranchRefs.size())
+          || (supplyMixerObject->nextBranchIndex() != supplyEquipmentBranchRefs.size())) {
         detail::addLoadWarning(context,
                                "Plant-side connector port count mismatch for PlantLoop '" + loopName + "'. Rebuilding ports from BranchList order.");
       }
@@ -1504,20 +1573,18 @@ namespace detail {
 
       boost::optional<ConnectorSplitter> demandSplitterObject;
       for (const auto& candidate : model().getConcreteModelObjects<ConnectorSplitter>()) {
-        auto inletObject = candidate.inletModelObject();
-        auto inlet = inletObject ? inletObject->optionalCast<Branch>() : boost::none;
+        auto inlet = candidate.getModelObjectTarget<Branch>(candidate.inletPort());
         if (!inlet || !(*inlet == demandInletBranchRef)) {
           continue;
         }
 
-        const auto outletObjects = candidate.outletModelObjects();
-        if (outletObjects.size() != demandEquipmentBranchRefs.size()) {
+        if (candidate.nextBranchIndex() != demandEquipmentBranchRefs.size()) {
           continue;
         }
 
         bool allOutletsMatch = true;
         for (unsigned i = 0; i < demandEquipmentBranchRefs.size(); ++i) {
-          auto branch = outletObjects[i].optionalCast<Branch>();
+          auto branch = candidate.getModelObjectTarget<Branch>(candidate.outletPort(i));
           if (!branch || !(*branch == demandEquipmentBranchRefs[i])) {
             allOutletsMatch = false;
             break;
@@ -1538,20 +1605,18 @@ namespace detail {
 
       boost::optional<ConnectorMixer> demandMixerObject;
       for (const auto& candidate : model().getConcreteModelObjects<ConnectorMixer>()) {
-        auto outletObject = candidate.outletModelObject();
-        auto outlet = outletObject ? outletObject->optionalCast<Branch>() : boost::none;
+        auto outlet = candidate.getModelObjectTarget<Branch>(candidate.outletPort());
         if (!outlet || !(*outlet == demandOutletBranchRef)) {
           continue;
         }
 
-        const auto inletObjects = candidate.inletModelObjects();
-        if (inletObjects.size() != demandEquipmentBranchRefs.size()) {
+        if (candidate.nextBranchIndex() != demandEquipmentBranchRefs.size()) {
           continue;
         }
 
         bool allInletsMatch = true;
         for (unsigned i = 0; i < demandEquipmentBranchRefs.size(); ++i) {
-          auto branch = inletObjects[i].optionalCast<Branch>();
+          auto branch = candidate.getModelObjectTarget<Branch>(candidate.inletPort(i));
           if (!branch || !(*branch == demandEquipmentBranchRefs[i])) {
             allInletsMatch = false;
             break;
@@ -1570,41 +1635,14 @@ namespace detail {
                             "Created missing demand-side Connector:Mixer '" + demandMixerObject->nameString() + "' for PlantLoop '" + loopName + "'.");
       }
 
-      if ((demandSplitterObject->outletModelObjects().size() != demandEquipmentBranchRefs.size())
-          || (demandMixerObject->inletModelObjects().size() != demandEquipmentBranchRefs.size())) {
+      if ((demandSplitterObject->nextBranchIndex() != demandEquipmentBranchRefs.size())
+          || (demandMixerObject->nextBranchIndex() != demandEquipmentBranchRefs.size())) {
         detail::addLoadWarning(context,
                                "Demand-side connector port count mismatch for PlantLoop '" + loopName + "'. Rebuilding ports from BranchList order.");
       }
 
       OS_ASSERT(syncConnectorPorts(*demandSplitterObject, *demandMixerObject, demandInletBranchRef, demandOutletBranchRef, demandEquipmentBranchRefs));
 
-      // Canonicalize plant-side branches and materialize default empty-branch nodes.
-      auto supplyBranchListObject = supplyBranchList();
-      for (const auto& branch : supplyBranchListObject.branches()) {
-        if (auto branchImpl = branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()) {
-          branchImpl->canonicalize(context);
-        }
-      }
-
-      for (const auto& branch : supplyEquipmentBranches()) {
-        if (branch.components().empty()) {
-          model().getOrCreateTransientByName<Node>(branch.nameString() + " Node");
-        }
-      }
-
-      // Canonicalize demand-side branches and materialize default empty-branch nodes.
-      auto demandBranchListObject = demandBranchList();
-      for (const auto& branch : demandBranchListObject.branches()) {
-        if (auto branchImpl = branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()) {
-          branchImpl->canonicalize(context);
-        }
-      }
-
-      for (const auto& branch : demandEquipmentBranches()) {
-        if (branch.components().empty()) {
-          model().getOrCreateTransientByName<Node>(branch.nameString() + " Node");
-        }
-      }
     }
 
 }  // namespace detail

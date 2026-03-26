@@ -16,6 +16,7 @@
 #include "../ModelObject/BranchList_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/PipeAdiabatic.hpp"
+#include "../WaterToAirComponent/CoilHeatingWater.hpp"
 
 #include <utilities/idd/PlantLoop_FieldEnums.hxx>
 
@@ -101,6 +102,20 @@ TEST_F(EPModelFixture, PlantLoop_AddRemoveDemandBranchForStraightComponent) {
   EXPECT_TRUE(plantLoop.removeDemandBranchWithComponent(pipe));
   EXPECT_FALSE(pipe.plantLoop());
   EXPECT_FALSE(pipe.loop());
+  EXPECT_EQ(5u, plantLoop.demandComponents().size());
+}
+
+TEST_F(EPModelFixture, PlantLoop_AddRemoveDemandBranchForWaterToAirComponent) {
+  Model model;
+  PlantLoop plantLoop(model);
+  CoilHeatingWater coil(model);
+
+  EXPECT_TRUE(plantLoop.addDemandBranchForComponent(coil));
+  ASSERT_TRUE(coil.plantLoop());
+  EXPECT_EQ(plantLoop.handle(), coil.plantLoop()->handle());
+  EXPECT_EQ(7u, plantLoop.demandComponents().size());
+
+  EXPECT_TRUE(plantLoop.removeDemandBranchWithComponent(coil));
   EXPECT_EQ(5u, plantLoop.demandComponents().size());
 }
 

@@ -6,6 +6,9 @@
 #include "StraightComponent/PipeAdiabatic.hpp"
 #include "StraightComponent/PipeAdiabatic_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
+#include "Node.hpp"
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -48,6 +51,16 @@ unsigned PipeAdiabatic_Impl::inletPort() const {
 unsigned PipeAdiabatic_Impl::outletPort() const {
   // Relationship mapping only: Pipe:Adiabatic Outlet Node Name
   return openstudio::Pipe_AdiabaticFields::OutletNodeName;
+}
+
+bool PipeAdiabatic_Impl::addToNode(Node& node) {
+  for (const auto& plant : model().getConcreteModelObjects<openstudio::epmodel::PlantLoop>()) {
+    if (plant.component(node.handle())) {
+      return StraightComponent_Impl::addToNode(node);
+    }
+  }
+
+  return false;
 }
 
 }  // namespace detail

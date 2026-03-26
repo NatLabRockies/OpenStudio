@@ -3,45 +3,51 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#ifndef EPMODEL_CHILLERELECTRIC_HPP
-#define EPMODEL_CHILLERELECTRIC_HPP
+#ifndef EPMODEL_CHILLERELECTRIC_IMPL_HPP
+#define EPMODEL_CHILLERELECTRIC_IMPL_HPP
 
-#include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent_Impl.hpp"
 
-#include <memory>
 #include <vector>
 
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+class Node;
 
 namespace detail {
-class ChillerElectric_Impl;
-}
 
-class EPMODEL_API ChillerElectric : public ModelObject
+class EPMODEL_API ChillerElectric_Impl : public WaterToWaterComponent_Impl
 {
  public:
-  explicit ChillerElectric(const Model& model);
+  using WaterToWaterComponent_Impl::WaterToWaterComponent_Impl;
+  virtual ~ChillerElectric_Impl() override = default;
 
-  virtual ~ChillerElectric() override = default;
-  ChillerElectric(const ChillerElectric& other) = default;
-  ChillerElectric(ChillerElectric&& other) = default;
-  ChillerElectric& operator=(const ChillerElectric&) = default;
-  ChillerElectric& operator=(ChillerElectric&&) = default;
+  bool addToNode(Node& node) override;
+  bool addToTertiaryNode(Node& node) override;
+  bool removeFromSecondaryPlantLoop() override;
 
-  static IddObjectType iddObjectType();
+  unsigned supplyInletPort() const override;
+  unsigned supplyOutletPort() const override;
 
-  static std::vector<std::string> condenserTypeValues();
-  static std::vector<std::string> chillerFlowModeValues();
+  unsigned demandInletPort() const override;
+  unsigned demandOutletPort() const override;
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived scalar accessor names.
-  // - Field Mapping: Scalar APIs map directly to EnergyPlus Chiller:Electric fields.
-  // - Field Mapping: Relationship fields (node/object-list/reference targets) are excluded from this scalar-only scaffold.
-  // - TODO(parity): Add excluded relationship APIs in a dedicated relationship pass.
+  unsigned tertiaryInletPort() const override;
+  unsigned tertiaryOutletPort() const override;
+
+  boost::optional<PlantLoop> chilledWaterLoop() const;
+  boost::optional<Node> chilledWaterInletNode() const;
+  boost::optional<Node> chilledWaterOutletNode() const;
+
+  boost::optional<PlantLoop> condenserWaterLoop() const;
+  boost::optional<Node> condenserInletNode() const;
+  boost::optional<Node> condenserOutletNode() const;
+
+  boost::optional<PlantLoop> heatRecoveryLoop() const;
+  boost::optional<Node> heatRecoveryInletNode() const;
+  boost::optional<Node> heatRecoveryOutletNode() const;
+
   std::string condenserType() const;
   bool isCondenserTypeDefaulted() const;
   bool setCondenserType(const std::string& condenserType);
@@ -170,16 +176,11 @@ class EPMODEL_API ChillerElectric : public ModelObject
   bool setThermosiphonMinimumTemperatureDifference(double thermosiphonMinimumTemperatureDifference);
   void resetThermosiphonMinimumTemperatureDifference();
 
- protected:
-  using ImplType = detail::ChillerElectric_Impl;
-
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit ChillerElectric(std::shared_ptr<detail::ChillerElectric_Impl> impl);
+  std::vector<std::string> condenserTypeValues() const;
+  std::vector<std::string> chillerFlowModeValues() const;
 };
 
+}  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

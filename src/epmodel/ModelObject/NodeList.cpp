@@ -91,12 +91,6 @@ openstudio::epmodel::NodeList NodeList_Impl::ensureAttachedNodeList(LoadContext&
   if (!nodeList.setName(nodeListName)) {
     LOG_FREE(Warn, "openstudio.epmodel.NodeList", "Failed to set NodeList name to '" << nodeListName << "' for '" << ownerName << "'.");
   }
-  // Keep string + pointer linkage aligned so rename propagation and target
-  // resolution both work across generic Workspace and typed epmodel APIs.
-  if (!owner.setString(fieldIndex, nodeList.nameString())) {
-    LOG_FREE_AND_THROW("openstudio.epmodel.NodeList", "Failed to set field index " << fieldIndex << " to NodeList '" << nodeList.nameString()
-                                                                                     << "' on '" << ownerName << "'.");
-  }
   if (!owner.setPointer(fieldIndex, nodeList.handle())) {
     LOG_FREE_AND_THROW("openstudio.epmodel.NodeList", "Failed to set pointer at field index " << fieldIndex << " to NodeList '"
                                                                                                  << nodeList.nameString() << "' on '" << ownerName

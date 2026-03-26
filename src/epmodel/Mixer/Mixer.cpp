@@ -4,9 +4,10 @@
 ***********************************************************************************************************************/
 
 #include "Mixer.hpp"
+#include "Mixer/Mixer_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
-#include "Node.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddEnums.hxx>
@@ -14,84 +15,29 @@
 namespace openstudio {
 namespace epmodel {
 
-Mixer::Mixer(const Model& model) : HVACComponent(openstudio::IddObjectType::Catchall, model) {}
+namespace detail {
 
-Mixer::Mixer(IddObjectType type, const Model& model) : HVACComponent(type, model) {}
-
-Mixer::Mixer(std::shared_ptr<detail::HVACComponent_Impl> impl) : HVACComponent(std::move(impl)) {}
-
-boost::optional<ModelObject> Mixer::outletModelObject() const {
-  const auto port = outletPort();
-  if (auto nodeName = getString(port)) {
-    if (nodeName->empty()) {
-      return boost::none;
-    }
-    if (auto node = getModelObjectTarget<openstudio::epmodel::Node>(port)) {
-      return node->cast<ModelObject>();
-    }
-    OS_ASSERT(false);
-    return boost::none;
-  }
-  return boost::none;
-}
-
-unsigned Mixer::outletPort() const {
-  // Base Mixer has no concrete field mapping.
-  return 0u;
-}
-
-unsigned Mixer::inletPort(unsigned branchIndex) const {
-  // Base Mixer has no concrete field mapping.
-  return branchIndex;
-}
-
-unsigned Mixer::nextInletPort() const {
+unsigned Mixer_Impl::nextInletPort() const {
   return inletPort(nextBranchIndex());
 }
 
-std::vector<ModelObject> Mixer::inletModelObjects() const {
-  std::vector<ModelObject> result;
-  for (unsigned i = 0u;; ++i) {
-    const auto port = inletPort(i);
-    if (auto inletNodeName = getString(port)) {
-      if (inletNodeName->empty()) {
-        break;
-      }
-      if (auto node = getModelObjectTarget<openstudio::epmodel::Node>(port)) {
-        result.emplace_back(node->cast<ModelObject>());
-        continue;
-      }
-      OS_ASSERT(false);
-      break;
-    }
-    break;
-  }
-  return result;
-}
-
-unsigned Mixer::newInletPortAfterBranch(unsigned branchIndex) {
-  return inletPort(branchIndex + 1u);
-}
-
-unsigned Mixer::branchIndexForInletModelObject(const ModelObject& modelObject) const {
-  const auto inlets = inletModelObjects();
-  for (unsigned i = 0u; i < inlets.size(); ++i) {
-    if (inlets[i] == modelObject) {
-      return i;
-    }
-  }
-  return 0u;
-}
-
-boost::optional<ModelObject> Mixer::inletModelObject(unsigned branchIndex) const {
-  const auto inlets = inletModelObjects();
-  if (branchIndex < inlets.size()) {
-    return inlets[branchIndex];
+boost::optional<ModelObject> Mixer_Impl::outletModelObject() const {
+  auto mixer = getObject<openstudio::epmodel::Mixer>();
+  if (auto node = mixer.getModelObjectTarget<openstudio::epmodel::Node>(outletPort())) {
+    return node->cast<ModelObject>();
   }
   return boost::none;
 }
 
-boost::optional<ModelObject> Mixer::lastInletModelObject() const {
+boost::optional<ModelObject> Mixer_Impl::inletModelObject(unsigned branchIndex) const {
+  auto mixer = getObject<openstudio::epmodel::Mixer>();
+  if (auto node = mixer.getModelObjectTarget<openstudio::epmodel::Node>(inletPort(branchIndex))) {
+    return node->cast<ModelObject>();
+  }
+  return boost::none;
+}
+
+boost::optional<ModelObject> Mixer_Impl::lastInletModelObject() const {
   const auto inlets = inletModelObjects();
   if (!inlets.empty()) {
     return inlets.back();
@@ -99,21 +45,135 @@ boost::optional<ModelObject> Mixer::lastInletModelObject() const {
   return boost::none;
 }
 
+std::vector<ModelObject> Mixer_Impl::inletModelObjects() const {
+  std::vector<ModelObject> result;
+  const auto stop = nextBranchIndex();
+  for (unsigned i = 0; i < stop; ++i) {
+    if (auto modelObject = inletModelObject(i)) {
+      result.push_back(*modelObject);
+    }
+  }
+  return result;
+}
+
+unsigned Mixer_Impl::newInletPortAfterBranch(unsigned branchIndex) {
+  const auto stop = nextBranchIndex();
+  for (int i = static_cast<int>(stop) - 1; i > static_cast<int>(branchIndex); --i) {
+    auto mo = inletModelObject(static_cast<unsigned>(i));
+    OS_ASSERT(mo);
+    if (!setInletModelObject(static_cast<unsigned>(i + 1), *mo)) {
+      return inletPort(branchIndex);
+    }
+  }
+
+  Model _model = model();
+  Node node(_model);
+  if (!setInletModelObject(branchIndex + 1u, node.cast<ModelObject>())) {
+    return inletPort(branchIndex);
+  }
+
+  return inletPort(branchIndex);
+}
+
+unsigned Mixer_Impl::branchIndexForInletModelObject(const ModelObject& modelObject) const {
+  const auto inlets = inletModelObjects();
+  for (unsigned i = 0; i < inlets.size(); ++i) {
+    if (inlets[i] == modelObject) {
+      return i;
+    }
+  }
+  return 0u;
+}
+
+unsigned Mixer_Impl::nextBranchIndex() const {
+  unsigned i = 0u;
+  while (inletModelObject(i)) {
+    ++i;
+  }
+  return i;
+}
+
+void Mixer_Impl::removePortForBranch(unsigned branchIndex) {
+  const auto next = nextBranchIndex();
+  auto mixer = getObject<openstudio::epmodel::Mixer>();
+  if (branchIndex >= next) {
+    return;
+  }
+
+  mixer.setPointer(inletPort(branchIndex), Handle());
+  for (unsigned i = branchIndex + 1; i < next; ++i) {
+    auto mo = inletModelObject(i);
+    OS_ASSERT(mo);
+    if (!setInletModelObject(i - 1u, *mo)) {
+      return;
+    }
+  }
+
+  mixer.setPointer(inletPort(next - 1u), Handle());
+}
+
+bool Mixer_Impl::setInletModelObject(unsigned branchIndex, const ModelObject& modelObject) {
+  auto mixer = getObject<openstudio::epmodel::Mixer>();
+  if (modelObject.model() != mixer.model()) {
+    return false;
+  }
+  return mixer.setPointer(inletPort(branchIndex), modelObject.handle());
+}
+
+}  // namespace detail
+
+Mixer::Mixer(const Model& model) : HVACComponent(openstudio::IddObjectType::Catchall, model) {}
+
+Mixer::Mixer(IddObjectType type, const Model& model) : HVACComponent(type, model) {}
+
+Mixer::Mixer(std::shared_ptr<ImplType> impl) : HVACComponent(std::move(impl)) {}
+
+boost::optional<ModelObject> Mixer::outletModelObject() const {
+  return getImpl<detail::Mixer_Impl>()->outletModelObject();
+}
+
+unsigned Mixer::outletPort() const {
+  return getImpl<detail::Mixer_Impl>()->outletPort();
+}
+
+unsigned Mixer::inletPort(unsigned branchIndex) const {
+  return getImpl<detail::Mixer_Impl>()->inletPort(branchIndex);
+}
+
+unsigned Mixer::nextInletPort() const {
+  return getImpl<detail::Mixer_Impl>()->nextInletPort();
+}
+
+std::vector<ModelObject> Mixer::inletModelObjects() const {
+  return getImpl<detail::Mixer_Impl>()->inletModelObjects();
+}
+
+unsigned Mixer::newInletPortAfterBranch(unsigned branchIndex) {
+  return getImpl<detail::Mixer_Impl>()->newInletPortAfterBranch(branchIndex);
+}
+
+unsigned Mixer::branchIndexForInletModelObject(const ModelObject& modelObject) const {
+  return getImpl<detail::Mixer_Impl>()->branchIndexForInletModelObject(modelObject);
+}
+
+boost::optional<ModelObject> Mixer::inletModelObject(unsigned branchIndex) const {
+  return getImpl<detail::Mixer_Impl>()->inletModelObject(branchIndex);
+}
+
+boost::optional<ModelObject> Mixer::lastInletModelObject() const {
+  return getImpl<detail::Mixer_Impl>()->lastInletModelObject();
+}
+
 unsigned Mixer::nextBranchIndex() const {
-  return static_cast<unsigned>(inletModelObjects().size());
+  return getImpl<detail::Mixer_Impl>()->nextBranchIndex();
 }
 
 void Mixer::removePortForBranch(unsigned branchIndex) {
-  if (branchIndex < nextBranchIndex()) {
-    setPointer(inletPort(branchIndex), Handle());
-  }
+  return getImpl<detail::Mixer_Impl>()->removePortForBranch(branchIndex);
 }
 
 bool Mixer::setInletModelObject(unsigned branchIndex, const ModelObject& modelObject) {
-  if (modelObject.model() != model()) {
-    return false;
-  }
-  return setPointer(inletPort(branchIndex), modelObject.handle());
+  return getImpl<detail::Mixer_Impl>()->setInletModelObject(branchIndex, modelObject);
 }
 
 }  // namespace epmodel

@@ -4,9 +4,10 @@
 ***********************************************************************************************************************/
 
 #include "Splitter.hpp"
+#include "HVACComponent/Splitter_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
-#include "Node.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddEnums.hxx>
@@ -14,84 +15,29 @@
 namespace openstudio {
 namespace epmodel {
 
-Splitter::Splitter(const Model& model) : HVACComponent(openstudio::IddObjectType::Catchall, model) {}
+namespace detail {
 
-Splitter::Splitter(IddObjectType type, const Model& model) : HVACComponent(type, model) {}
-
-Splitter::Splitter(std::shared_ptr<detail::HVACComponent_Impl> impl) : HVACComponent(std::move(impl)) {}
-
-boost::optional<ModelObject> Splitter::inletModelObject() const {
-  const auto port = inletPort();
-  if (auto inletNodeName = getString(port)) {
-    if (inletNodeName->empty()) {
-      return boost::none;
-    }
-    if (auto node = getModelObjectTarget<openstudio::epmodel::Node>(port)) {
-      return node->cast<ModelObject>();
-    }
-    OS_ASSERT(false);
-    return boost::none;
-  }
-  return boost::none;
-}
-
-unsigned Splitter::inletPort() const {
-  // Base Splitter has no concrete field mapping.
-  return 0u;
-}
-
-unsigned Splitter::outletPort(unsigned branchIndex) const {
-  // Base Splitter has no concrete field mapping.
-  return branchIndex;
-}
-
-unsigned Splitter::nextOutletPort() const {
+unsigned Splitter_Impl::nextOutletPort() const {
   return outletPort(nextBranchIndex());
 }
 
-std::vector<ModelObject> Splitter::outletModelObjects() const {
-  std::vector<ModelObject> result;
-  for (unsigned i = 0u;; ++i) {
-    const auto port = outletPort(i);
-    if (auto outletNodeName = getString(port)) {
-      if (outletNodeName->empty()) {
-        break;
-      }
-      if (auto node = getModelObjectTarget<openstudio::epmodel::Node>(port)) {
-        result.emplace_back(node->cast<ModelObject>());
-        continue;
-      }
-      OS_ASSERT(false);
-      break;
-    }
-    break;
-  }
-  return result;
-}
-
-unsigned Splitter::newOutletPortAfterBranch(unsigned branchIndex) {
-  return outletPort(branchIndex + 1u);
-}
-
-unsigned Splitter::branchIndexForOutletModelObject(ModelObject modelObject) const {
-  const auto outlets = outletModelObjects();
-  for (unsigned i = 0u; i < outlets.size(); ++i) {
-    if (outlets[i] == modelObject) {
-      return i;
-    }
-  }
-  return 0u;
-}
-
-boost::optional<ModelObject> Splitter::outletModelObject(unsigned branchIndex) const {
-  const auto outlets = outletModelObjects();
-  if (branchIndex < outlets.size()) {
-    return outlets[branchIndex];
+boost::optional<ModelObject> Splitter_Impl::inletModelObject() const {
+  auto splitter = getObject<openstudio::epmodel::Splitter>();
+  if (auto node = splitter.getModelObjectTarget<openstudio::epmodel::Node>(inletPort())) {
+    return node->cast<ModelObject>();
   }
   return boost::none;
 }
 
-boost::optional<ModelObject> Splitter::lastOutletModelObject() const {
+boost::optional<ModelObject> Splitter_Impl::outletModelObject(unsigned branchIndex) const {
+  auto splitter = getObject<openstudio::epmodel::Splitter>();
+  if (auto node = splitter.getModelObjectTarget<openstudio::epmodel::Node>(outletPort(branchIndex))) {
+    return node->cast<ModelObject>();
+  }
+  return boost::none;
+}
+
+boost::optional<ModelObject> Splitter_Impl::lastOutletModelObject() const {
   const auto outlets = outletModelObjects();
   if (!outlets.empty()) {
     return outlets.back();
@@ -99,21 +45,135 @@ boost::optional<ModelObject> Splitter::lastOutletModelObject() const {
   return boost::none;
 }
 
+std::vector<ModelObject> Splitter_Impl::outletModelObjects() const {
+  std::vector<ModelObject> result;
+  const auto stop = nextBranchIndex();
+  for (unsigned i = 0; i < stop; ++i) {
+    if (auto modelObject = outletModelObject(i)) {
+      result.push_back(*modelObject);
+    }
+  }
+  return result;
+}
+
+unsigned Splitter_Impl::newOutletPortAfterBranch(unsigned branchIndex) {
+  const auto stop = nextBranchIndex();
+  for (int i = static_cast<int>(stop) - 1; i > static_cast<int>(branchIndex); --i) {
+    auto mo = outletModelObject(static_cast<unsigned>(i));
+    OS_ASSERT(mo);
+    if (!setOutletModelObject(static_cast<unsigned>(i + 1), *mo)) {
+      return outletPort(branchIndex);
+    }
+  }
+
+  Model _model = model();
+  Node node(_model);
+  if (!setOutletModelObject(branchIndex + 1u, node.cast<ModelObject>())) {
+    return outletPort(branchIndex);
+  }
+
+  return outletPort(branchIndex);
+}
+
+unsigned Splitter_Impl::branchIndexForOutletModelObject(ModelObject modelObject) const {
+  const auto outlets = outletModelObjects();
+  for (unsigned i = 0; i < outlets.size(); ++i) {
+    if (outlets[i] == modelObject) {
+      return i;
+    }
+  }
+  return 0u;
+}
+
+unsigned Splitter_Impl::nextBranchIndex() const {
+  unsigned i = 0u;
+  while (outletModelObject(i)) {
+    ++i;
+  }
+  return i;
+}
+
+void Splitter_Impl::removePortForBranch(unsigned branchIndex) {
+  const auto next = nextBranchIndex();
+  auto splitter = getObject<openstudio::epmodel::Splitter>();
+  if (branchIndex >= next) {
+    return;
+  }
+
+  splitter.setPointer(outletPort(branchIndex), Handle());
+  for (unsigned i = branchIndex + 1; i < next; ++i) {
+    auto mo = outletModelObject(i);
+    OS_ASSERT(mo);
+    if (!setOutletModelObject(i - 1u, *mo)) {
+      return;
+    }
+  }
+
+  splitter.setPointer(outletPort(next - 1u), Handle());
+}
+
+bool Splitter_Impl::setOutletModelObject(unsigned branchIndex, const ModelObject& modelObject) {
+  auto splitter = getObject<openstudio::epmodel::Splitter>();
+  if (modelObject.model() != splitter.model()) {
+    return false;
+  }
+  return splitter.setPointer(outletPort(branchIndex), modelObject.handle());
+}
+
+}  // namespace detail
+
+Splitter::Splitter(const Model& model) : HVACComponent(openstudio::IddObjectType::Catchall, model) {}
+
+Splitter::Splitter(IddObjectType type, const Model& model) : HVACComponent(type, model) {}
+
+Splitter::Splitter(std::shared_ptr<ImplType> impl) : HVACComponent(std::move(impl)) {}
+
+boost::optional<ModelObject> Splitter::inletModelObject() const {
+  return getImpl<detail::Splitter_Impl>()->inletModelObject();
+}
+
+unsigned Splitter::inletPort() const {
+  return getImpl<detail::Splitter_Impl>()->inletPort();
+}
+
+unsigned Splitter::outletPort(unsigned branchIndex) const {
+  return getImpl<detail::Splitter_Impl>()->outletPort(branchIndex);
+}
+
+unsigned Splitter::nextOutletPort() const {
+  return getImpl<detail::Splitter_Impl>()->nextOutletPort();
+}
+
+std::vector<ModelObject> Splitter::outletModelObjects() const {
+  return getImpl<detail::Splitter_Impl>()->outletModelObjects();
+}
+
+unsigned Splitter::newOutletPortAfterBranch(unsigned branchIndex) {
+  return getImpl<detail::Splitter_Impl>()->newOutletPortAfterBranch(branchIndex);
+}
+
+unsigned Splitter::branchIndexForOutletModelObject(ModelObject modelObject) const {
+  return getImpl<detail::Splitter_Impl>()->branchIndexForOutletModelObject(modelObject);
+}
+
+boost::optional<ModelObject> Splitter::outletModelObject(unsigned branchIndex) const {
+  return getImpl<detail::Splitter_Impl>()->outletModelObject(branchIndex);
+}
+
+boost::optional<ModelObject> Splitter::lastOutletModelObject() const {
+  return getImpl<detail::Splitter_Impl>()->lastOutletModelObject();
+}
+
 unsigned Splitter::nextBranchIndex() const {
-  return static_cast<unsigned>(outletModelObjects().size());
+  return getImpl<detail::Splitter_Impl>()->nextBranchIndex();
 }
 
 void Splitter::removePortForBranch(unsigned branchIndex) {
-  if (branchIndex < nextBranchIndex()) {
-    setPointer(outletPort(branchIndex), Handle());
-  }
+  return getImpl<detail::Splitter_Impl>()->removePortForBranch(branchIndex);
 }
 
 bool Splitter::setOutletModelObject(unsigned branchIndex, const ModelObject& modelObject) {
-  if (modelObject.model() != model()) {
-    return false;
-  }
-  return setPointer(outletPort(branchIndex), modelObject.handle());
+  return getImpl<detail::Splitter_Impl>()->setOutletModelObject(branchIndex, modelObject);
 }
 
 }  // namespace epmodel

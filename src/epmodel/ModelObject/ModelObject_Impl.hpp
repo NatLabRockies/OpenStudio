@@ -47,10 +47,6 @@ class EPMODEL_API ModelObject_Impl : public openstudio::detail::WorkspaceObject_
     if (name && !name->empty()) {
       if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), *name, true)) {
         if (auto typed = obj->template optionalCast<T>()) {
-          if (!setString(fieldIndex, typed->nameString())) {
-            LOG_FREE_AND_THROW("openstudio.epmodel.ModelObject",
-                               "Failed to set field index " << fieldIndex << " to target '" << typed->nameString() << "'.");
-          }
           setPointer(fieldIndex, typed->handle(), false);
           return *typed;
         }
@@ -63,10 +59,6 @@ class EPMODEL_API ModelObject_Impl : public openstudio::detail::WorkspaceObject_
         LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
                  "Failed to apply existing name '" << *name << "' to newly created target at field index " << fieldIndex << ".");
       }
-    }
-    if (!setString(fieldIndex, created.nameString())) {
-      LOG_FREE_AND_THROW("openstudio.epmodel.ModelObject",
-                         "Failed to set field index " << fieldIndex << " to target '" << created.nameString() << "'.");
     }
     setPointer(fieldIndex, created.handle(), false);
     return created;
@@ -83,10 +75,6 @@ class EPMODEL_API ModelObject_Impl : public openstudio::detail::WorkspaceObject_
     if (!preferredName.empty()) {
       if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), preferredName, true)) {
         if (auto typed = obj->template optionalCast<T>()) {
-          if (!setString(fieldIndex, typed->nameString())) {
-            LOG_FREE_AND_THROW("openstudio.epmodel.ModelObject",
-                               "Failed to set field index " << fieldIndex << " to target '" << typed->nameString() << "'.");
-          }
           setPointer(fieldIndex, typed->handle(), false);
           return *typed;
         }
@@ -97,10 +85,6 @@ class EPMODEL_API ModelObject_Impl : public openstudio::detail::WorkspaceObject_
     if (name && !name->empty()) {
       if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), *name, true)) {
         if (auto typed = obj->template optionalCast<T>()) {
-          if (!setString(fieldIndex, typed->nameString())) {
-            LOG_FREE_AND_THROW("openstudio.epmodel.ModelObject",
-                               "Failed to set field index " << fieldIndex << " to target '" << typed->nameString() << "'.");
-          }
           setPointer(fieldIndex, typed->handle(), false);
           return *typed;
         }
@@ -118,10 +102,6 @@ class EPMODEL_API ModelObject_Impl : public openstudio::detail::WorkspaceObject_
         LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
                  "Failed to apply existing name '" << *name << "' to newly created target at field index " << fieldIndex << ".");
       }
-    }
-    if (!setString(fieldIndex, created.nameString())) {
-      LOG_FREE_AND_THROW("openstudio.epmodel.ModelObject",
-                         "Failed to set field index " << fieldIndex << " to target '" << created.nameString() << "'.");
     }
     setPointer(fieldIndex, created.handle(), false);
     return created;

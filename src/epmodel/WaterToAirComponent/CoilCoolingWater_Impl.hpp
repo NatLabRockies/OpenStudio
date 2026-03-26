@@ -6,7 +6,7 @@
 #ifndef EPMODEL_COILCOOLINGWATER_IMPL_HPP
 #define EPMODEL_COILCOOLINGWATER_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
 
 #include <vector>
 
@@ -15,11 +15,16 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API CoilCoolingWater_Impl : public ModelObject_Impl
+    class EPMODEL_API CoilCoolingWater_Impl : public WaterToAirComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using WaterToAirComponent_Impl::WaterToAirComponent_Impl;
       virtual ~CoilCoolingWater_Impl() override = default;
+
+      unsigned airInletPort() const override;
+      unsigned airOutletPort() const override;
+      unsigned waterInletPort() const override;
+      unsigned waterOutletPort() const override;
 
       // Design water flow rate
       boost::optional<double> designWaterFlowRate() const;

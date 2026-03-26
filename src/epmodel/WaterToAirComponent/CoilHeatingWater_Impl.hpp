@@ -6,7 +6,7 @@
 #ifndef EPMODEL_COILHEATINGWATER_IMPL_HPP
 #define EPMODEL_COILHEATINGWATER_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
 
 #include <vector>
 
@@ -15,11 +15,16 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API CoilHeatingWater_Impl : public ModelObject_Impl
+    class EPMODEL_API CoilHeatingWater_Impl : public WaterToAirComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using WaterToAirComponent_Impl::WaterToAirComponent_Impl;
       virtual ~CoilHeatingWater_Impl() override = default;
+
+      unsigned airInletPort() const override;
+      unsigned airOutletPort() const override;
+      unsigned waterInletPort() const override;
+      unsigned waterOutletPort() const override;
 
       boost::optional<double> uFactorTimesAreaValue() const;
       bool setUFactorTimesAreaValue(double value);
