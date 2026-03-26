@@ -17,9 +17,11 @@
 namespace openstudio {
 namespace epmodel {
 
-  ChillerAbsorptionIndirect::ChillerAbsorptionIndirect(const Model& model) : ModelObject(ChillerAbsorptionIndirect::iddObjectType(), model) {}
+  ChillerAbsorptionIndirect::ChillerAbsorptionIndirect(const Model& model)
+    : WaterToWaterComponent(ChillerAbsorptionIndirect::iddObjectType(), model) {}
 
-  ChillerAbsorptionIndirect::ChillerAbsorptionIndirect(std::shared_ptr<detail::ChillerAbsorptionIndirect_Impl> impl) : ModelObject(std::move(impl)) {}
+  ChillerAbsorptionIndirect::ChillerAbsorptionIndirect(std::shared_ptr<detail::ChillerAbsorptionIndirect_Impl> impl)
+    : WaterToWaterComponent(std::move(impl)) {}
 
   IddObjectType ChillerAbsorptionIndirect::iddObjectType() {
     return IddObjectType::Chiller_Absorption_Indirect;
@@ -452,6 +454,30 @@ namespace epmodel {
 
     std::vector<std::string> ChillerAbsorptionIndirect_Impl::generatorHeatSourceTypeValues() const {
       return openstudio::epmodel::ChillerAbsorptionIndirect::generatorHeatSourceTypeValues();
+    }
+
+    unsigned ChillerAbsorptionIndirect_Impl::supplyInletPort() const {
+      return openstudio::Chiller_Absorption_IndirectFields::ChilledWaterInletNodeName;
+    }
+
+    unsigned ChillerAbsorptionIndirect_Impl::supplyOutletPort() const {
+      return openstudio::Chiller_Absorption_IndirectFields::ChilledWaterOutletNodeName;
+    }
+
+    unsigned ChillerAbsorptionIndirect_Impl::demandInletPort() const {
+      return openstudio::Chiller_Absorption_IndirectFields::CondenserInletNodeName;
+    }
+
+    unsigned ChillerAbsorptionIndirect_Impl::demandOutletPort() const {
+      return openstudio::Chiller_Absorption_IndirectFields::CondenserOutletNodeName;
+    }
+
+    unsigned ChillerAbsorptionIndirect_Impl::tertiaryInletPort() const {
+      return openstudio::Chiller_Absorption_IndirectFields::GeneratorInletNodeName;
+    }
+
+    unsigned ChillerAbsorptionIndirect_Impl::tertiaryOutletPort() const {
+      return openstudio::Chiller_Absorption_IndirectFields::GeneratorOutletNodeName;
     }
 
   }  // namespace detail

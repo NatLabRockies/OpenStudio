@@ -7,7 +7,7 @@
 #define EPMODEL_WATERHEATERMIXED_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent.hpp"
 
 #include <boost/optional.hpp>
 
@@ -29,7 +29,7 @@ namespace epmodel {
 
   }
 
-  class EPMODEL_API WaterHeaterMixed : public ModelObject
+  class EPMODEL_API WaterHeaterMixed : public WaterToWaterComponent
   {
    public:
     explicit WaterHeaterMixed(const Model& model);
@@ -52,9 +52,7 @@ namespace epmodel {
     // Schema Alignment Notes:
     // - API: Preserve openstudio::model::WaterHeaterMixed scalar accessor names/signatures for counterpart parity.
     // - Field Mapping: Simple scalar methods map directly to the EnergyPlus WaterHeater:Mixed fields per ForwardTranslateWaterHeaterMixed.
-    // - Field Mapping: Relationship-like schedule, curve, node, and plant references (Setpoint Temperature Schedule, PartLoadFactorCurve, ambient node/zone/schedule fields, node/link names) are excluded from this scalar-only scaffold.
-    // - ForwardTranslator evidence: ForwardTranslateWaterHeaterMixed.cpp confirms these scalar mappings and the ThermalsZone->Zone token drift for AmbientTemperatureIndicator.
-    // - TODO(parity): Add missing relationship/object references (schedules, nodes, PlantLoop wiring) in a later parity pass.
+    // - Topology: Water-to-water loop behavior comes from WaterToWaterComponent; this wrapper only keeps the WaterHeater:Mixed field API.
 
     // Tank volume
     boost::optional<double> tankVolume() const;

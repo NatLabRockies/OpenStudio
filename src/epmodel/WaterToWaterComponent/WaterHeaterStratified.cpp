@@ -21,9 +21,11 @@
 namespace openstudio {
 namespace epmodel {
 
-  WaterHeaterStratified::WaterHeaterStratified(const Model& model) : ModelObject(WaterHeaterStratified::iddObjectType(), model) {}
+  WaterHeaterStratified::WaterHeaterStratified(const Model& model)
+    : WaterToWaterComponent(WaterHeaterStratified::iddObjectType(), model) {}
 
-  WaterHeaterStratified::WaterHeaterStratified(std::shared_ptr<detail::WaterHeaterStratified_Impl> impl) : ModelObject(std::move(impl)) {}
+  WaterHeaterStratified::WaterHeaterStratified(std::shared_ptr<detail::WaterHeaterStratified_Impl> impl)
+    : WaterToWaterComponent(std::move(impl)) {}
 
   IddObjectType WaterHeaterStratified::iddObjectType() {
     return IddObjectType::WaterHeater_Stratified;
@@ -584,6 +586,22 @@ namespace epmodel {
 #undef OS_IMPL_RESET
 #undef OS_IMPL_AUTOSIZE
 #undef OS_IMPL_AUTOCALCULATE
+
+    unsigned WaterHeaterStratified_Impl::supplyInletPort() const {
+      return openstudio::WaterHeater_StratifiedFields::UseSideInletNodeName;
+    }
+
+    unsigned WaterHeaterStratified_Impl::supplyOutletPort() const {
+      return openstudio::WaterHeater_StratifiedFields::UseSideOutletNodeName;
+    }
+
+    unsigned WaterHeaterStratified_Impl::demandInletPort() const {
+      return openstudio::WaterHeater_StratifiedFields::SourceSideInletNodeName;
+    }
+
+    unsigned WaterHeaterStratified_Impl::demandOutletPort() const {
+      return openstudio::WaterHeater_StratifiedFields::SourceSideOutletNodeName;
+    }
 
   }  // namespace detail
 }  // namespace epmodel

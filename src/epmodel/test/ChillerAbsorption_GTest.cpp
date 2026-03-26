@@ -8,6 +8,8 @@
 #include "EPModelFixture.hpp"
 #include "../WaterToWaterComponent/ChillerAbsorption.hpp"
 
+#include <limits>
+
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, ChillerAbsorption_DefaultConstructor) {
@@ -15,6 +17,9 @@ TEST_F(EPModelFixture, ChillerAbsorption_DefaultConstructor) {
   ChillerAbsorption chiller(model);
   EXPECT_EQ(ChillerAbsorption::iddObjectType(), chiller.iddObject().type());
   EXPECT_FALSE(chiller.nameString().empty());
+  EXPECT_NE(std::numeric_limits<unsigned>::max(), chiller.supplyInletPort());
+  EXPECT_NE(std::numeric_limits<unsigned>::max(), chiller.demandInletPort());
+  EXPECT_NE(std::numeric_limits<unsigned>::max(), chiller.tertiaryInletPort());
 }
 
 TEST_F(EPModelFixture, ChillerAbsorption_ScalarAccessors_RoundTrip) {

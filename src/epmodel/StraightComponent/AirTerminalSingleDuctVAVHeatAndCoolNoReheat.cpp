@@ -17,11 +17,11 @@ namespace openstudio {
 namespace epmodel {
 
 AirTerminalSingleDuctVAVHeatAndCoolNoReheat::AirTerminalSingleDuctVAVHeatAndCoolNoReheat(const Model& model)
-  : ModelObject(AirTerminalSingleDuctVAVHeatAndCoolNoReheat::iddObjectType(), model) {}
+  : StraightComponent(AirTerminalSingleDuctVAVHeatAndCoolNoReheat::iddObjectType(), model) {}
 
 AirTerminalSingleDuctVAVHeatAndCoolNoReheat::AirTerminalSingleDuctVAVHeatAndCoolNoReheat(
   std::shared_ptr<detail::AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : StraightComponent(std::move(impl)) {}
 
 IddObjectType AirTerminalSingleDuctVAVHeatAndCoolNoReheat::iddObjectType() {
   return IddObjectType::AirTerminal_SingleDuct_VAV_HeatAndCool_NoReheat;
@@ -85,6 +85,14 @@ double AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl::zoneMinimumAirFlowFract
 
 bool AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl::setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction) {
   return setDouble(openstudio::AirTerminal_SingleDuct_VAV_HeatAndCool_NoReheatFields::ZoneMinimumAirFlowFraction, zoneMinimumAirFlowFraction);
+}
+
+unsigned AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl::inletPort() const {
+  return openstudio::AirTerminal_SingleDuct_VAV_HeatAndCool_NoReheatFields::AirInletNodeName;
+}
+
+unsigned AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl::outletPort() const {
+  return openstudio::AirTerminal_SingleDuct_VAV_HeatAndCool_NoReheatFields::AirOutletNodeName;
 }
 
 }  // namespace detail

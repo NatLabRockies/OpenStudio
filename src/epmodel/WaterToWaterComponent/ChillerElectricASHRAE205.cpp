@@ -17,10 +17,11 @@
 namespace openstudio {
 namespace epmodel {
 
-ChillerElectricASHRAE205::ChillerElectricASHRAE205(const Model& model) : ModelObject(ChillerElectricASHRAE205::iddObjectType(), model) {}
+ChillerElectricASHRAE205::ChillerElectricASHRAE205(const Model& model)
+  : WaterToWaterComponent(ChillerElectricASHRAE205::iddObjectType(), model) {}
 
 ChillerElectricASHRAE205::ChillerElectricASHRAE205(std::shared_ptr<detail::ChillerElectricASHRAE205_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : WaterToWaterComponent(std::move(impl)) {}
 
 IddObjectType ChillerElectricASHRAE205::iddObjectType() {
   return IddObjectType::Chiller_Electric_ASHRAE205;
@@ -357,6 +358,30 @@ std::vector<std::string> ChillerElectricASHRAE205_Impl::ambientTemperatureIndica
 
 std::vector<std::string> ChillerElectricASHRAE205_Impl::chillerFlowModeValues() const {
   return ChillerElectricASHRAE205::chillerFlowModeValues();
+}
+
+unsigned ChillerElectricASHRAE205_Impl::supplyInletPort() const {
+  return openstudio::Chiller_Electric_ASHRAE205Fields::ChilledWaterInletNodeName;
+}
+
+unsigned ChillerElectricASHRAE205_Impl::supplyOutletPort() const {
+  return openstudio::Chiller_Electric_ASHRAE205Fields::ChilledWaterOutletNodeName;
+}
+
+unsigned ChillerElectricASHRAE205_Impl::demandInletPort() const {
+  return openstudio::Chiller_Electric_ASHRAE205Fields::CondenserInletNodeName;
+}
+
+unsigned ChillerElectricASHRAE205_Impl::demandOutletPort() const {
+  return openstudio::Chiller_Electric_ASHRAE205Fields::CondenserOutletNodeName;
+}
+
+unsigned ChillerElectricASHRAE205_Impl::tertiaryInletPort() const {
+  return openstudio::Chiller_Electric_ASHRAE205Fields::HeatRecoveryInletNodeName;
+}
+
+unsigned ChillerElectricASHRAE205_Impl::tertiaryOutletPort() const {
+  return openstudio::Chiller_Electric_ASHRAE205Fields::HeatRecoveryOutletNodeName;
 }
 
 }  // namespace detail

@@ -16,13 +16,13 @@
 namespace openstudio {
 namespace epmodel {
 
-  CentralHeatPumpSystem::CentralHeatPumpSystem(const Model& model) : ModelObject(CentralHeatPumpSystem::iddObjectType(), model) {
+  CentralHeatPumpSystem::CentralHeatPumpSystem(const Model& model) : WaterToWaterComponent(CentralHeatPumpSystem::iddObjectType(), model) {
     // Keep required scalar fields populated for strict non-optional getters.
     OS_ASSERT(setControlMethod("SmartMixing"));
     OS_ASSERT(setAncillaryPower(0.0));
   }
 
-  CentralHeatPumpSystem::CentralHeatPumpSystem(std::shared_ptr<detail::CentralHeatPumpSystem_Impl> impl) : ModelObject(std::move(impl)) {}
+  CentralHeatPumpSystem::CentralHeatPumpSystem(std::shared_ptr<detail::CentralHeatPumpSystem_Impl> impl) : WaterToWaterComponent(std::move(impl)) {}
 
   IddObjectType CentralHeatPumpSystem::iddObjectType() {
     return IddObjectType::CentralHeatPumpSystem;
@@ -77,6 +77,30 @@ namespace epmodel {
 
     bool CentralHeatPumpSystem_Impl::setAncillaryPower(double ancillaryPower) {
       return setDouble(openstudio::CentralHeatPumpSystemFields::AncillaryPower, ancillaryPower);
+    }
+
+    unsigned CentralHeatPumpSystem_Impl::supplyInletPort() const {
+      return openstudio::CentralHeatPumpSystemFields::CoolingLoopInletNodeName;
+    }
+
+    unsigned CentralHeatPumpSystem_Impl::supplyOutletPort() const {
+      return openstudio::CentralHeatPumpSystemFields::CoolingLoopOutletNodeName;
+    }
+
+    unsigned CentralHeatPumpSystem_Impl::demandInletPort() const {
+      return openstudio::CentralHeatPumpSystemFields::SourceLoopInletNodeName;
+    }
+
+    unsigned CentralHeatPumpSystem_Impl::demandOutletPort() const {
+      return openstudio::CentralHeatPumpSystemFields::SourceLoopOutletNodeName;
+    }
+
+    unsigned CentralHeatPumpSystem_Impl::tertiaryInletPort() const {
+      return openstudio::CentralHeatPumpSystemFields::HeatingLoopInletNodeName;
+    }
+
+    unsigned CentralHeatPumpSystem_Impl::tertiaryOutletPort() const {
+      return openstudio::CentralHeatPumpSystemFields::HeatingLoopOutletNodeName;
     }
 
   }  // namespace detail

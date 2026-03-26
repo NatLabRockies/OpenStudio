@@ -7,7 +7,7 @@
 #define EPMODEL_THERMALSTORAGECHILLEDBWATERSTRATIFIED_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent.hpp"
 
 #include <boost/optional.hpp>
 #include <memory>
@@ -23,7 +23,7 @@ namespace epmodel {
     class ThermalStorageChilledWaterStratified_Impl;
   }
 
-  class EPMODEL_API ThermalStorageChilledWaterStratified : public ModelObject
+  class EPMODEL_API ThermalStorageChilledWaterStratified : public WaterToWaterComponent
   {
    public:
     explicit ThermalStorageChilledWaterStratified(const Model& model);

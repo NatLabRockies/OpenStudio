@@ -17,7 +17,7 @@ namespace openstudio {
 namespace epmodel {
 
   HeatPumpWaterToWaterEquationFitCooling::HeatPumpWaterToWaterEquationFitCooling(const Model& model)
-    : ModelObject(HeatPumpWaterToWaterEquationFitCooling::iddObjectType(), model) {
+    : WaterToWaterComponent(HeatPumpWaterToWaterEquationFitCooling::iddObjectType(), model) {
     autosizeReferenceLoadSideFlowRate();
     autosizeReferenceSourceSideFlowRate();
     autosizeRatedCoolingCapacity();
@@ -28,7 +28,7 @@ namespace epmodel {
 
   HeatPumpWaterToWaterEquationFitCooling::HeatPumpWaterToWaterEquationFitCooling(
     std::shared_ptr<detail::HeatPumpWaterToWaterEquationFitCooling_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : WaterToWaterComponent(std::move(impl)) {}
 
   IddObjectType HeatPumpWaterToWaterEquationFitCooling::iddObjectType() {
     return IddObjectType::HeatPump_WaterToWater_EquationFit_Cooling;
@@ -298,6 +298,22 @@ namespace epmodel {
     boost::optional<double> HeatPumpWaterToWaterEquationFitCooling_Impl::autosizedRatedCoolingPowerConsumption() const {
       // epmodel does not currently resolve autosized values from SQL results.
       return boost::none;
+    }
+
+    unsigned HeatPumpWaterToWaterEquationFitCooling_Impl::supplyInletPort() const {
+      return openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::SourceSideInletNodeName;
+    }
+
+    unsigned HeatPumpWaterToWaterEquationFitCooling_Impl::supplyOutletPort() const {
+      return openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::SourceSideOutletNodeName;
+    }
+
+    unsigned HeatPumpWaterToWaterEquationFitCooling_Impl::demandInletPort() const {
+      return openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::LoadSideInletNodeName;
+    }
+
+    unsigned HeatPumpWaterToWaterEquationFitCooling_Impl::demandOutletPort() const {
+      return openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::LoadSideOutletNodeName;
     }
 
   }  // namespace detail

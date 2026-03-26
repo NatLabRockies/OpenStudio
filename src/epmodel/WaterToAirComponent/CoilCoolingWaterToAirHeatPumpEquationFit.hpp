@@ -7,7 +7,7 @@
 #define EPMODEL_COILCOOLINGWATERTOAIRHEATPUMPEQUATIONFIT_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "WaterToAirComponent.hpp"
 
 #include <memory>
 
@@ -20,7 +20,7 @@ namespace epmodel {
     class CoilCoolingWaterToAirHeatPumpEquationFit_Impl;
   }
 
-  class EPMODEL_API CoilCoolingWaterToAirHeatPumpEquationFit : public ModelObject
+  class EPMODEL_API CoilCoolingWaterToAirHeatPumpEquationFit : public WaterToAirComponent
   {
    public:
     explicit CoilCoolingWaterToAirHeatPumpEquationFit(const Model& model);
@@ -36,7 +36,7 @@ namespace epmodel {
     // Schema Alignment Notes:
     // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
     // - Field Mapping: ratedTotalCoolingCapacity/ratedSensibleCoolingCapacity/ratedCoolingCoefficientofPerformance map to E+ GrossRated* fields.
-    // - Field Mapping: relationship-like fields (availability schedule, node names, and curve references) are intentionally excluded in this scalar scaffold phase.
+    // - Field Mapping: relationship-like topology APIs are inherited from WaterToAirComponent; this type only re-exposes scalar fields here.
     // - ForwardTranslator evidence: ForwardTranslateCoilCoolingWaterToAirHeatPumpEquationFit.cpp writes these exact scalar fields and autosize semantics.
     // - TODO(parity): Add relationship field APIs when epmodel relationship scaffolding is enabled.
     boost::optional<double> ratedAirFlowRate() const;

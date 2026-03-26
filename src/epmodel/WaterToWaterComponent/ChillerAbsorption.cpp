@@ -17,9 +17,9 @@
 namespace openstudio {
 namespace epmodel {
 
-ChillerAbsorption::ChillerAbsorption(const Model& model) : ModelObject(ChillerAbsorption::iddObjectType(), model) {}
+ChillerAbsorption::ChillerAbsorption(const Model& model) : WaterToWaterComponent(ChillerAbsorption::iddObjectType(), model) {}
 
-ChillerAbsorption::ChillerAbsorption(std::shared_ptr<detail::ChillerAbsorption_Impl> impl) : ModelObject(std::move(impl)) {}
+ChillerAbsorption::ChillerAbsorption(std::shared_ptr<detail::ChillerAbsorption_Impl> impl) : WaterToWaterComponent(std::move(impl)) {}
 
 IddObjectType ChillerAbsorption::iddObjectType() {
   return IddObjectType::Chiller_Absorption;
@@ -522,6 +522,30 @@ namespace detail {
 
   std::vector<std::string> ChillerAbsorption_Impl::generatorHeatSourceTypeValues() const {
     return openstudio::epmodel::ChillerAbsorption::generatorHeatSourceTypeValues();
+  }
+
+  unsigned ChillerAbsorption_Impl::supplyInletPort() const {
+    return openstudio::Chiller_AbsorptionFields::ChilledWaterInletNodeName;
+  }
+
+  unsigned ChillerAbsorption_Impl::supplyOutletPort() const {
+    return openstudio::Chiller_AbsorptionFields::ChilledWaterOutletNodeName;
+  }
+
+  unsigned ChillerAbsorption_Impl::demandInletPort() const {
+    return openstudio::Chiller_AbsorptionFields::CondenserInletNodeName;
+  }
+
+  unsigned ChillerAbsorption_Impl::demandOutletPort() const {
+    return openstudio::Chiller_AbsorptionFields::CondenserOutletNodeName;
+  }
+
+  unsigned ChillerAbsorption_Impl::tertiaryInletPort() const {
+    return openstudio::Chiller_AbsorptionFields::GeneratorInletNodeName;
+  }
+
+  unsigned ChillerAbsorption_Impl::tertiaryOutletPort() const {
+    return openstudio::Chiller_AbsorptionFields::GeneratorOutletNodeName;
   }
 
 }  // namespace detail

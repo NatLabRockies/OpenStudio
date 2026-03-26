@@ -7,7 +7,7 @@
 #define EPMODEL_AIRTERMINALSINGLEDUCTVAVHEATANDCOOLREHEAT_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,7 @@ namespace epmodel {
     class AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl;
   }
 
-  class EPMODEL_API AirTerminalSingleDuctVAVHeatAndCoolReheat : public ModelObject
+  class EPMODEL_API AirTerminalSingleDuctVAVHeatAndCoolReheat : public StraightComponent
   {
    public:
     explicit AirTerminalSingleDuctVAVHeatAndCoolReheat(const Model& model);
@@ -65,7 +65,7 @@ namespace epmodel {
     double maximumReheatAirTemperature() const;
     bool setMaximumReheatAirTemperature(double maximumReheatAirTemperature);
 
-   protected:
+  protected:
     using ImplType = detail::AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl;
 
     friend class Model;

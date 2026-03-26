@@ -7,7 +7,7 @@
 #define EPMODEL_COILUSERDEFINED_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "WaterToAirComponent.hpp"
 
 #include <memory>
 
@@ -20,7 +20,7 @@ namespace detail {
 class CoilUserDefined_Impl;
 }
 
-class EPMODEL_API CoilUserDefined : public ModelObject
+class EPMODEL_API CoilUserDefined : public WaterToAirComponent
 {
  public:
   explicit CoilUserDefined(const Model& model);

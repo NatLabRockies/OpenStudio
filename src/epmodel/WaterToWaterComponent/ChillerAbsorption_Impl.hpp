@@ -6,7 +6,7 @@
 #ifndef EPMODEL_CHILLERABSORPTION_IMPL_HPP
 #define EPMODEL_CHILLERABSORPTION_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent_Impl.hpp"
 
 #include <vector>
 
@@ -15,11 +15,18 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API ChillerAbsorption_Impl : public ModelObject_Impl
+    class EPMODEL_API ChillerAbsorption_Impl : public WaterToWaterComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using WaterToWaterComponent_Impl::WaterToWaterComponent_Impl;
       virtual ~ChillerAbsorption_Impl() override = default;
+
+      unsigned supplyInletPort() const override;
+      unsigned supplyOutletPort() const override;
+      unsigned demandInletPort() const override;
+      unsigned demandOutletPort() const override;
+      unsigned tertiaryInletPort() const override;
+      unsigned tertiaryOutletPort() const override;
 
       boost::optional<double> nominalCapacity() const;
       bool isNominalCapacityAutosized() const;

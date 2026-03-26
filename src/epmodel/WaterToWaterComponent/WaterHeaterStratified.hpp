@@ -7,7 +7,7 @@
 #define EPMODEL_WATERHEATERSTRATIFIED_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent.hpp"
 
 #include <boost/optional.hpp>
 
@@ -29,7 +29,7 @@ namespace epmodel {
 
   }
 
-  class EPMODEL_API WaterHeaterStratified : public ModelObject
+  class EPMODEL_API WaterHeaterStratified : public WaterToWaterComponent
   {
    public:
     explicit WaterHeaterStratified(const Model& model);

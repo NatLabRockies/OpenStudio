@@ -7,7 +7,7 @@
 #define EPMODEL_HEATPUMPWATERTOWATEREQUATIONFITCOOLING_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent.hpp"
 
 #include <memory>
 
@@ -20,7 +20,7 @@ namespace epmodel {
     class HeatPumpWaterToWaterEquationFitCooling_Impl;
   }
 
-  class EPMODEL_API HeatPumpWaterToWaterEquationFitCooling : public ModelObject
+  class EPMODEL_API HeatPumpWaterToWaterEquationFitCooling : public WaterToWaterComponent
   {
    public:
     explicit HeatPumpWaterToWaterEquationFitCooling(const Model& model);

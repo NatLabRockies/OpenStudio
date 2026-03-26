@@ -6,7 +6,10 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
 #include "../StraightComponent/BoilerSteam.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -37,6 +40,7 @@ TEST_F(EPModelFixture, BoilerSteam_ScalarAccessors_RoundTrip) {
   EXPECT_FALSE(boiler.isNominalCapacityAutosized());
   boiler.autosizeNominalCapacity();
   EXPECT_TRUE(boiler.isNominalCapacityAutosized());
+  EXPECT_FALSE(boiler.autosizedNominalCapacity());
 
   EXPECT_TRUE(boiler.setMinimumPartLoadRatio(0.15));
   ASSERT_TRUE(boiler.minimumPartLoadRatio());
@@ -51,4 +55,24 @@ TEST_F(EPModelFixture, BoilerSteam_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(boiler.setEndUseSubcategory("Boiler"));
   EXPECT_EQ("Boiler", boiler.endUseSubcategory());
+}
+
+TEST_F(EPModelFixture, BoilerSteam_AddToNode_PlantSupplyOnly) {
+  Model model;
+  BoilerSteam boiler(model);
+
+  AirLoopHVAC airLoop(model);
+  auto airSupplyOutletNode = airLoop.supplyOutletNode();
+  EXPECT_FALSE(boiler.addToNode(airSupplyOutletNode));
+  EXPECT_EQ(2u, airLoop.supplyComponents().size());
+
+  PlantLoop plantLoop(model);
+  auto supplyOutletNode = plantLoop.supplyOutletNode();
+  EXPECT_TRUE(boiler.addToNode(supplyOutletNode));
+  EXPECT_EQ("Steam", plantLoop.fluidType());
+  EXPECT_EQ(7u, plantLoop.supplyComponents().size());
+
+  auto demandOutletNode = plantLoop.demandOutletNode();
+  EXPECT_FALSE(boiler.addToNode(demandOutletNode));
+  EXPECT_EQ(5u, plantLoop.demandComponents().size());
 }

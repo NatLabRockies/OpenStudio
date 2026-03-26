@@ -18,7 +18,7 @@ namespace openstudio {
 namespace epmodel {
 
 HeatExchangerFluidToFluid::HeatExchangerFluidToFluid(const Model& model)
-  : ModelObject(HeatExchangerFluidToFluid::iddObjectType(), model) {
+  : WaterToWaterComponent(HeatExchangerFluidToFluid::iddObjectType(), model) {
   // Keep required scalar fields populated for strict non-optional getters.
   autosizeLoopDemandSideDesignFlowRate();
   autosizeLoopSupplySideDesignFlowRate();
@@ -34,7 +34,7 @@ HeatExchangerFluidToFluid::HeatExchangerFluidToFluid(const Model& model)
 }
 
 HeatExchangerFluidToFluid::HeatExchangerFluidToFluid(std::shared_ptr<detail::HeatExchangerFluidToFluid_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : WaterToWaterComponent(std::move(impl)) {}
 
 IddObjectType HeatExchangerFluidToFluid::iddObjectType() {
   return IddObjectType::HeatExchanger_FluidToFluid;
@@ -483,6 +483,22 @@ std::vector<std::string> HeatExchangerFluidToFluid_Impl::heatTransferMeteringEnd
 
 std::vector<std::string> HeatExchangerFluidToFluid_Impl::componentOverrideCoolingControlTemperatureModeValues() const {
   return openstudio::epmodel::HeatExchangerFluidToFluid::componentOverrideCoolingControlTemperatureModeValues();
+}
+
+unsigned HeatExchangerFluidToFluid_Impl::supplyInletPort() const {
+  return openstudio::HeatExchanger_FluidToFluidFields::LoopSupplySideInletNodeName;
+}
+
+unsigned HeatExchangerFluidToFluid_Impl::supplyOutletPort() const {
+  return openstudio::HeatExchanger_FluidToFluidFields::LoopSupplySideOutletNodeName;
+}
+
+unsigned HeatExchangerFluidToFluid_Impl::demandInletPort() const {
+  return openstudio::HeatExchanger_FluidToFluidFields::LoopDemandSideInletNodeName;
+}
+
+unsigned HeatExchangerFluidToFluid_Impl::demandOutletPort() const {
+  return openstudio::HeatExchanger_FluidToFluidFields::LoopDemandSideOutletNodeName;
 }
 
 }  // namespace detail

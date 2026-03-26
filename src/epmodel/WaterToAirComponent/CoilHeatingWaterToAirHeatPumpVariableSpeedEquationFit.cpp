@@ -17,11 +17,11 @@ namespace openstudio {
 namespace epmodel {
 
 CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit(const Model& model)
-  : ModelObject(CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::iddObjectType(), model) {}
+  : WaterToAirComponent(CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::iddObjectType(), model) {}
 
 CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit(
   std::shared_ptr<detail::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : WaterToAirComponent(std::move(impl)) {}
 
 IddObjectType CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::iddObjectType() {
   return IddObjectType::Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFit;
@@ -99,6 +99,22 @@ void CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit::autosizeRatedWaterFl
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+unsigned CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::airInletPort() const {
+  return openstudio::Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFitFields::IndoorAirInletNodeName;
+}
+
+unsigned CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::airOutletPort() const {
+  return openstudio::Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFitFields::IndoorAirOutletNodeName;
+}
+
+unsigned CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::waterInletPort() const {
+  return openstudio::Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFitFields::WatertoRefrigerantHXWaterInletNodeName;
+}
+
+unsigned CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::waterOutletPort() const {
+  return openstudio::Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFitFields::WatertoRefrigerantHXWaterOutletNodeName;
+}
 
 int CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::nominalSpeedLevel() const {
   const auto value = getInt(openstudio::Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFitFields::NominalSpeedLevel, true);

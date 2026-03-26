@@ -7,7 +7,7 @@
 #define EPMODEL_AIRTERMINALSINGLEDUCTPARALLELPIUREHEAT_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace detail {
 class AirTerminalSingleDuctParallelPIUReheat_Impl;
 }
 
-class EPMODEL_API AirTerminalSingleDuctParallelPIUReheat : public ModelObject
+class EPMODEL_API AirTerminalSingleDuctParallelPIUReheat : public StraightComponent
 {
  public:
   explicit AirTerminalSingleDuctParallelPIUReheat(const Model& model);
@@ -101,7 +101,7 @@ class EPMODEL_API AirTerminalSingleDuctParallelPIUReheat : public ModelObject
   double highLimitHeatingDischargeAirTemperature() const;
   bool setHighLimitHeatingDischargeAirTemperature(double highLimitHeatingDischargeAirTemperature);
 
- protected:
+  protected:
   using ImplType = detail::AirTerminalSingleDuctParallelPIUReheat_Impl;
 
   friend class Model;

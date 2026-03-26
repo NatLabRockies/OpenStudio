@@ -6,18 +6,21 @@
 #ifndef EPMODEL_AIRTERMINALSINGLEDUCTCONSTANTVOLUMEFOURPIPEINDUCTION_IMPL_HPP
 #define EPMODEL_AIRTERMINALSINGLEDUCTCONSTANTVOLUMEFOURPIPEINDUCTION_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "StraightComponent/StraightComponent_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
 namespace detail {
 
-class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl() override = default;
+    class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl() override = default;
+
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
   boost::optional<double> maximumTotalAirFlowRate() const;
   bool isMaximumTotalAirFlowRateAutosized() const;

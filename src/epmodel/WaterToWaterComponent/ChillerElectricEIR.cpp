@@ -17,9 +17,9 @@
 namespace openstudio {
 namespace epmodel {
 
-ChillerElectricEIR::ChillerElectricEIR(const Model& model) : ModelObject(ChillerElectricEIR::iddObjectType(), model) {}
+ChillerElectricEIR::ChillerElectricEIR(const Model& model) : WaterToWaterComponent(ChillerElectricEIR::iddObjectType(), model) {}
 
-ChillerElectricEIR::ChillerElectricEIR(std::shared_ptr<detail::ChillerElectricEIR_Impl> impl) : ModelObject(std::move(impl)) {}
+ChillerElectricEIR::ChillerElectricEIR(std::shared_ptr<detail::ChillerElectricEIR_Impl> impl) : WaterToWaterComponent(std::move(impl)) {}
 
 IddObjectType ChillerElectricEIR::iddObjectType() {
   return IddObjectType::Chiller_Electric_EIR;
@@ -848,6 +848,30 @@ std::vector<std::string> ChillerElectricEIR_Impl::chillerFlowModeValues() const 
 
 std::vector<std::string> ChillerElectricEIR_Impl::condenserFlowControlValues() const {
   return ChillerElectricEIR::condenserFlowControlValues();
+}
+
+unsigned ChillerElectricEIR_Impl::supplyInletPort() const {
+  return openstudio::Chiller_Electric_EIRFields::ChilledWaterInletNodeName;
+}
+
+unsigned ChillerElectricEIR_Impl::supplyOutletPort() const {
+  return openstudio::Chiller_Electric_EIRFields::ChilledWaterOutletNodeName;
+}
+
+unsigned ChillerElectricEIR_Impl::demandInletPort() const {
+  return openstudio::Chiller_Electric_EIRFields::CondenserInletNodeName;
+}
+
+unsigned ChillerElectricEIR_Impl::demandOutletPort() const {
+  return openstudio::Chiller_Electric_EIRFields::CondenserOutletNodeName;
+}
+
+unsigned ChillerElectricEIR_Impl::tertiaryInletPort() const {
+  return openstudio::Chiller_Electric_EIRFields::HeatRecoveryInletNodeName;
+}
+
+unsigned ChillerElectricEIR_Impl::tertiaryOutletPort() const {
+  return openstudio::Chiller_Electric_EIRFields::HeatRecoveryOutletNodeName;
 }
 
 }  // namespace detail

@@ -7,7 +7,7 @@
 #define EPMODEL_CHILLERABSORPTIONINDIRECT_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent.hpp"
 
 #include <memory>
 #include <vector>
@@ -21,7 +21,7 @@ namespace epmodel {
     class ChillerAbsorptionIndirect_Impl;
   }
 
-  class EPMODEL_API ChillerAbsorptionIndirect : public ModelObject
+  class EPMODEL_API ChillerAbsorptionIndirect : public WaterToWaterComponent
   {
    public:
     explicit ChillerAbsorptionIndirect(const Model& model);

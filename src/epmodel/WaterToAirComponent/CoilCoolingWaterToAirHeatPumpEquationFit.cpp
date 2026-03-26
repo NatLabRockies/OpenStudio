@@ -17,11 +17,11 @@ namespace openstudio {
 namespace epmodel {
 
 CoilCoolingWaterToAirHeatPumpEquationFit::CoilCoolingWaterToAirHeatPumpEquationFit(const Model& model)
-  : ModelObject(CoilCoolingWaterToAirHeatPumpEquationFit::iddObjectType(), model) {}
+  : WaterToAirComponent(CoilCoolingWaterToAirHeatPumpEquationFit::iddObjectType(), model) {}
 
 CoilCoolingWaterToAirHeatPumpEquationFit::CoilCoolingWaterToAirHeatPumpEquationFit(
   std::shared_ptr<detail::CoilCoolingWaterToAirHeatPumpEquationFit_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : WaterToAirComponent(std::move(impl)) {}
 
 IddObjectType CoilCoolingWaterToAirHeatPumpEquationFit::iddObjectType() {
   return IddObjectType::Coil_Cooling_WaterToAirHeatPump_EquationFit;
@@ -461,6 +461,22 @@ double CoilCoolingWaterToAirHeatPumpEquationFit_Impl::fanDelayTime() const {
 
 bool CoilCoolingWaterToAirHeatPumpEquationFit_Impl::setFanDelayTime(double fanDelayTime) {
   return setDouble(openstudio::Coil_Cooling_WaterToAirHeatPump_EquationFitFields::FanDelayTime, fanDelayTime);
+}
+
+unsigned CoilCoolingWaterToAirHeatPumpEquationFit_Impl::airInletPort() const {
+  return openstudio::Coil_Cooling_WaterToAirHeatPump_EquationFitFields::AirInletNodeName;
+}
+
+unsigned CoilCoolingWaterToAirHeatPumpEquationFit_Impl::airOutletPort() const {
+  return openstudio::Coil_Cooling_WaterToAirHeatPump_EquationFitFields::AirOutletNodeName;
+}
+
+unsigned CoilCoolingWaterToAirHeatPumpEquationFit_Impl::waterInletPort() const {
+  return openstudio::Coil_Cooling_WaterToAirHeatPump_EquationFitFields::WaterInletNodeName;
+}
+
+unsigned CoilCoolingWaterToAirHeatPumpEquationFit_Impl::waterOutletPort() const {
+  return openstudio::Coil_Cooling_WaterToAirHeatPump_EquationFitFields::WaterOutletNodeName;
 }
 
 }  // namespace detail

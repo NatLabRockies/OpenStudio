@@ -7,7 +7,7 @@
 #define EPMODEL_AIRTERMINALSINGLEDUCTCONSTANTVOLUMEFOURPIPEBEAM_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <memory>
 
@@ -20,7 +20,7 @@ namespace detail {
 class AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl;
 }
 
-class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeBeam : public ModelObject
+class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeBeam : public StraightComponent
 {
  public:
   explicit AirTerminalSingleDuctConstantVolumeFourPipeBeam(const Model& model);

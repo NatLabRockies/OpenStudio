@@ -7,7 +7,7 @@
 #define EPMODEL_AIRTERMINALSINGLEDUCTCONSTANTVOLUMEREHEAT_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,7 @@ namespace detail {
 class AirTerminalSingleDuctConstantVolumeReheat_Impl;
 }
 
-class EPMODEL_API AirTerminalSingleDuctConstantVolumeReheat : public ModelObject
+class EPMODEL_API AirTerminalSingleDuctConstantVolumeReheat : public StraightComponent
 {
  public:
   explicit AirTerminalSingleDuctConstantVolumeReheat(const Model& model);

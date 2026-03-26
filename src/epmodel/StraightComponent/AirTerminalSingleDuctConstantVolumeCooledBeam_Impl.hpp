@@ -6,7 +6,7 @@
 #ifndef EPMODEL_AIRTERMINALSINGLEDUCTCONSTANTVOLUMECOOLEDBEAM_IMPL_HPP
 #define EPMODEL_AIRTERMINALSINGLEDUCTCONSTANTVOLUMECOOLEDBEAM_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "StraightComponent/StraightComponent_Impl.hpp"
 
 #include <vector>
 
@@ -15,11 +15,14 @@ namespace epmodel {
 
 namespace detail {
 
-class EPMODEL_API AirTerminalSingleDuctConstantVolumeCooledBeam_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirTerminalSingleDuctConstantVolumeCooledBeam_Impl() override = default;
+    class EPMODEL_API AirTerminalSingleDuctConstantVolumeCooledBeam_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~AirTerminalSingleDuctConstantVolumeCooledBeam_Impl() override = default;
+
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
   std::string cooledBeamType() const;
   bool setCooledBeamType(const std::string& cooledBeamType);

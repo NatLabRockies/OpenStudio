@@ -17,11 +17,11 @@ namespace openstudio {
 namespace epmodel {
 
 AirTerminalSingleDuctVAVHeatAndCoolReheat::AirTerminalSingleDuctVAVHeatAndCoolReheat(const Model& model)
-  : ModelObject(AirTerminalSingleDuctVAVHeatAndCoolReheat::iddObjectType(), model) {}
+  : StraightComponent(AirTerminalSingleDuctVAVHeatAndCoolReheat::iddObjectType(), model) {}
 
 AirTerminalSingleDuctVAVHeatAndCoolReheat::AirTerminalSingleDuctVAVHeatAndCoolReheat(
   std::shared_ptr<detail::AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : StraightComponent(std::move(impl)) {}
 
 IddObjectType AirTerminalSingleDuctVAVHeatAndCoolReheat::iddObjectType() {
   return IddObjectType::AirTerminal_SingleDuct_VAV_HeatAndCool_Reheat;
@@ -176,6 +176,14 @@ double AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl::maximumReheatAirTemperatu
 
 bool AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl::setMaximumReheatAirTemperature(double maximumReheatAirTemperature) {
   return setDouble(openstudio::AirTerminal_SingleDuct_VAV_HeatAndCool_ReheatFields::MaximumReheatAirTemperature, maximumReheatAirTemperature);
+}
+
+unsigned AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl::inletPort() const {
+  return openstudio::AirTerminal_SingleDuct_VAV_HeatAndCool_ReheatFields::AirInletNodeName;
+}
+
+unsigned AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl::outletPort() const {
+  return openstudio::AirTerminal_SingleDuct_VAV_HeatAndCool_ReheatFields::AirOutletNodeName;
 }
 
 }  // namespace detail

@@ -7,7 +7,7 @@
 #define EPMODEL_COILCOOLINGWATERTOAIRHEATPUMPVARIABLESPEEDEQUATIONFIT_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "WaterToAirComponent.hpp"
 
 #include <memory>
 
@@ -20,7 +20,7 @@ namespace epmodel {
     class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl;
   }
 
-  class EPMODEL_API CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit : public ModelObject
+class EPMODEL_API CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit : public WaterToAirComponent
   {
    public:
     explicit CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit(const Model& model);

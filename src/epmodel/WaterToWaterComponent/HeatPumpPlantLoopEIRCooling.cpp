@@ -17,7 +17,8 @@
 namespace openstudio {
 namespace epmodel {
 
-HeatPumpPlantLoopEIRCooling::HeatPumpPlantLoopEIRCooling(const Model& model) : ModelObject(HeatPumpPlantLoopEIRCooling::iddObjectType(), model) {
+HeatPumpPlantLoopEIRCooling::HeatPumpPlantLoopEIRCooling(const Model& model)
+  : WaterToWaterComponent(HeatPumpPlantLoopEIRCooling::iddObjectType(), model) {
   // Keep required scalar fields populated for strict non-optional getters.
   OS_ASSERT(setCondenserType("AirSource"));
   autosizeLoadSideReferenceFlowRate();
@@ -36,7 +37,7 @@ HeatPumpPlantLoopEIRCooling::HeatPumpPlantLoopEIRCooling(const Model& model) : M
 }
 
 HeatPumpPlantLoopEIRCooling::HeatPumpPlantLoopEIRCooling(std::shared_ptr<detail::HeatPumpPlantLoopEIRCooling_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : WaterToWaterComponent(std::move(impl)) {}
 
 IddObjectType HeatPumpPlantLoopEIRCooling::iddObjectType() {
   return IddObjectType::HeatPump_PlantLoop_EIR_Cooling;
@@ -420,6 +421,30 @@ namespace detail {
 
   std::vector<std::string> HeatPumpPlantLoopEIRCooling_Impl::condenserTypeValues() const {
     return openstudio::epmodel::HeatPumpPlantLoopEIRCooling::condenserTypeValues();
+  }
+
+  unsigned HeatPumpPlantLoopEIRCooling_Impl::supplyInletPort() const {
+    return openstudio::HeatPump_PlantLoop_EIR_CoolingFields::LoadSideInletNodeName;
+  }
+
+  unsigned HeatPumpPlantLoopEIRCooling_Impl::supplyOutletPort() const {
+    return openstudio::HeatPump_PlantLoop_EIR_CoolingFields::LoadSideOutletNodeName;
+  }
+
+  unsigned HeatPumpPlantLoopEIRCooling_Impl::demandInletPort() const {
+    return openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SourceSideInletNodeName;
+  }
+
+  unsigned HeatPumpPlantLoopEIRCooling_Impl::demandOutletPort() const {
+    return openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SourceSideOutletNodeName;
+  }
+
+  unsigned HeatPumpPlantLoopEIRCooling_Impl::tertiaryInletPort() const {
+    return openstudio::HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryInletNodeName;
+  }
+
+  unsigned HeatPumpPlantLoopEIRCooling_Impl::tertiaryOutletPort() const {
+    return openstudio::HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryOutletNodeName;
   }
 
 }  // namespace detail

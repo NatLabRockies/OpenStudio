@@ -7,7 +7,7 @@
 #define EPMODEL_HEATEXCHANGERFLUIDTOFLUID_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent.hpp"
 
 #include <memory>
 #include <vector>
@@ -21,7 +21,7 @@ namespace detail {
 class HeatExchangerFluidToFluid_Impl;
 }
 
-class EPMODEL_API HeatExchangerFluidToFluid : public ModelObject
+class EPMODEL_API HeatExchangerFluidToFluid : public WaterToWaterComponent
 {
  public:
   explicit HeatExchangerFluidToFluid(const Model& model);

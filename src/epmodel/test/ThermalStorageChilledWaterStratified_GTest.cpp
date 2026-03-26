@@ -8,6 +8,8 @@
 #include "EPModelFixture.hpp"
 #include "../WaterToWaterComponent/ThermalStorageChilledWaterStratified.hpp"
 
+#include <limits>
+
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, ThermalStorageChilledWaterStratified_DefaultConstructor) {
@@ -15,6 +17,8 @@ TEST_F(EPModelFixture, ThermalStorageChilledWaterStratified_DefaultConstructor) 
   ThermalStorageChilledWaterStratified storage(model);
   EXPECT_EQ(ThermalStorageChilledWaterStratified::iddObjectType(), storage.iddObject().type());
   EXPECT_FALSE(storage.nameString().empty());
+  EXPECT_NE(std::numeric_limits<unsigned>::max(), storage.supplyInletPort());
+  EXPECT_NE(std::numeric_limits<unsigned>::max(), storage.demandInletPort());
 }
 
 TEST_F(EPModelFixture, ThermalStorageChilledWaterStratified_ScalarAccessors_RoundTrip) {

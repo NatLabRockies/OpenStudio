@@ -17,11 +17,11 @@ namespace openstudio {
 namespace epmodel {
 
 AirConditionerVariableRefrigerantFlow::AirConditionerVariableRefrigerantFlow(const Model& model)
-  : ModelObject(AirConditionerVariableRefrigerantFlow::iddObjectType(), model) {}
+  : StraightComponent(AirConditionerVariableRefrigerantFlow::iddObjectType(), model) {}
 
 AirConditionerVariableRefrigerantFlow::AirConditionerVariableRefrigerantFlow(
   std::shared_ptr<detail::AirConditionerVariableRefrigerantFlow_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : StraightComponent(std::move(impl)) {}
 
 IddObjectType AirConditionerVariableRefrigerantFlow::iddObjectType() {
   return IddObjectType::AirConditioner_VariableRefrigerantFlow;
@@ -276,6 +276,14 @@ std::vector<std::string> AirConditionerVariableRefrigerantFlow_Impl::defrostStra
 
 std::vector<std::string> AirConditionerVariableRefrigerantFlow_Impl::condenserTypeValues() const {
   return openstudio::epmodel::AirConditionerVariableRefrigerantFlow::condenserTypeValues();
+}
+
+unsigned AirConditionerVariableRefrigerantFlow_Impl::inletPort() const {
+  return openstudio::AirConditioner_VariableRefrigerantFlowFields::CondenserInletNodeName;
+}
+
+unsigned AirConditionerVariableRefrigerantFlow_Impl::outletPort() const {
+  return openstudio::AirConditioner_VariableRefrigerantFlowFields::CondenserOutletNodeName;
 }
 
 }  // namespace detail

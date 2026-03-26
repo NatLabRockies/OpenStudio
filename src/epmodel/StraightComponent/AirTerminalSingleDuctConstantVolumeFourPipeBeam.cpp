@@ -17,7 +17,7 @@ namespace openstudio {
 namespace epmodel {
 
 AirTerminalSingleDuctConstantVolumeFourPipeBeam::AirTerminalSingleDuctConstantVolumeFourPipeBeam(const Model& model)
-  : ModelObject(AirTerminalSingleDuctConstantVolumeFourPipeBeam::iddObjectType(), model) {
+  : StraightComponent(AirTerminalSingleDuctConstantVolumeFourPipeBeam::iddObjectType(), model) {
   autosizeDesignPrimaryAirVolumeFlowRate();
   autosizeDesignChilledWaterVolumeFlowRate();
   autosizeDesignHotWaterVolumeFlowRate();
@@ -26,7 +26,7 @@ AirTerminalSingleDuctConstantVolumeFourPipeBeam::AirTerminalSingleDuctConstantVo
 
 AirTerminalSingleDuctConstantVolumeFourPipeBeam::AirTerminalSingleDuctConstantVolumeFourPipeBeam(
   std::shared_ptr<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : StraightComponent(std::move(impl)) {}
 
 IddObjectType AirTerminalSingleDuctConstantVolumeFourPipeBeam::iddObjectType() {
   return IddObjectType::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeam;
@@ -112,6 +112,14 @@ bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setRatedPrimaryAirFlowRate
 
 void AirTerminalSingleDuctConstantVolumeFourPipeBeam::resetRatedPrimaryAirFlowRateperBeamLength() {
   getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->resetRatedPrimaryAirFlowRateperBeamLength();
+}
+
+unsigned detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::inletPort() const {
+  return openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::PrimaryAirInletNodeName;
+}
+
+unsigned detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::outletPort() const {
+  return openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::PrimaryAirOutletNodeName;
 }
 
 }  // namespace epmodel

@@ -17,11 +17,11 @@ namespace openstudio {
 namespace epmodel {
 
 CoilHeatingWaterToAirHeatPumpEquationFit::CoilHeatingWaterToAirHeatPumpEquationFit(const Model& model)
-  : ModelObject(CoilHeatingWaterToAirHeatPumpEquationFit::iddObjectType(), model) {}
+  : WaterToAirComponent(CoilHeatingWaterToAirHeatPumpEquationFit::iddObjectType(), model) {}
 
 CoilHeatingWaterToAirHeatPumpEquationFit::CoilHeatingWaterToAirHeatPumpEquationFit(
   std::shared_ptr<detail::CoilHeatingWaterToAirHeatPumpEquationFit_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : WaterToAirComponent(std::move(impl)) {}
 
 IddObjectType CoilHeatingWaterToAirHeatPumpEquationFit::iddObjectType() {
   return IddObjectType::Coil_Heating_WaterToAirHeatPump_EquationFit;
@@ -161,6 +161,22 @@ bool CoilHeatingWaterToAirHeatPumpEquationFit::setRatioofRatedHeatingCapacitytoR
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+unsigned CoilHeatingWaterToAirHeatPumpEquationFit_Impl::airInletPort() const {
+  return openstudio::Coil_Heating_WaterToAirHeatPump_EquationFitFields::AirInletNodeName;
+}
+
+unsigned CoilHeatingWaterToAirHeatPumpEquationFit_Impl::airOutletPort() const {
+  return openstudio::Coil_Heating_WaterToAirHeatPump_EquationFitFields::AirOutletNodeName;
+}
+
+unsigned CoilHeatingWaterToAirHeatPumpEquationFit_Impl::waterInletPort() const {
+  return openstudio::Coil_Heating_WaterToAirHeatPump_EquationFitFields::WaterInletNodeName;
+}
+
+unsigned CoilHeatingWaterToAirHeatPumpEquationFit_Impl::waterOutletPort() const {
+  return openstudio::Coil_Heating_WaterToAirHeatPump_EquationFitFields::WaterOutletNodeName;
+}
 
 boost::optional<double> CoilHeatingWaterToAirHeatPumpEquationFit_Impl::ratedAirFlowRate() const {
   return getDouble(openstudio::Coil_Heating_WaterToAirHeatPump_EquationFitFields::RatedAirFlowRate, true);

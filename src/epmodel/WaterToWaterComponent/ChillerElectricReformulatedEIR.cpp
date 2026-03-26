@@ -17,11 +17,11 @@
 namespace openstudio {
 namespace epmodel {
 
-ChillerElectricReformulatedEIR::ChillerElectricReformulatedEIR(const Model& model)
-  : ModelObject(ChillerElectricReformulatedEIR::iddObjectType(), model) {}
+  ChillerElectricReformulatedEIR::ChillerElectricReformulatedEIR(const Model& model)
+    : WaterToWaterComponent(ChillerElectricReformulatedEIR::iddObjectType(), model) {}
 
-ChillerElectricReformulatedEIR::ChillerElectricReformulatedEIR(std::shared_ptr<detail::ChillerElectricReformulatedEIR_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  ChillerElectricReformulatedEIR::ChillerElectricReformulatedEIR(std::shared_ptr<detail::ChillerElectricReformulatedEIR_Impl> impl)
+    : WaterToWaterComponent(std::move(impl)) {}
 
 IddObjectType ChillerElectricReformulatedEIR::iddObjectType() {
   return IddObjectType::Chiller_Electric_ReformulatedEIR;
@@ -753,6 +753,30 @@ std::vector<std::string> ChillerElectricReformulatedEIR_Impl::validCondenserFlow
 
 std::vector<std::string> ChillerElectricReformulatedEIR_Impl::validElectricInputToCoolingOutputRatioFunctionOfPLRTypeValues() const {
   return ChillerElectricReformulatedEIR::validElectricInputToCoolingOutputRatioFunctionOfPLRTypeValues();
+}
+
+unsigned ChillerElectricReformulatedEIR_Impl::supplyInletPort() const {
+  return openstudio::Chiller_Electric_ReformulatedEIRFields::ChilledWaterInletNodeName;
+}
+
+unsigned ChillerElectricReformulatedEIR_Impl::supplyOutletPort() const {
+  return openstudio::Chiller_Electric_ReformulatedEIRFields::ChilledWaterOutletNodeName;
+}
+
+unsigned ChillerElectricReformulatedEIR_Impl::demandInletPort() const {
+  return openstudio::Chiller_Electric_ReformulatedEIRFields::CondenserInletNodeName;
+}
+
+unsigned ChillerElectricReformulatedEIR_Impl::demandOutletPort() const {
+  return openstudio::Chiller_Electric_ReformulatedEIRFields::CondenserOutletNodeName;
+}
+
+unsigned ChillerElectricReformulatedEIR_Impl::tertiaryInletPort() const {
+  return openstudio::Chiller_Electric_ReformulatedEIRFields::HeatRecoveryInletNodeName;
+}
+
+unsigned ChillerElectricReformulatedEIR_Impl::tertiaryOutletPort() const {
+  return openstudio::Chiller_Electric_ReformulatedEIRFields::HeatRecoveryOutletNodeName;
 }
 
 }  // namespace detail

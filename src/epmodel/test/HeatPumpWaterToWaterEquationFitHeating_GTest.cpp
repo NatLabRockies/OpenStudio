@@ -8,6 +8,8 @@
 #include "EPModelFixture.hpp"
 #include "../WaterToWaterComponent/HeatPumpWaterToWaterEquationFitHeating.hpp"
 
+#include <limits>
+
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, HeatPumpWaterToWaterEquationFitHeating_DefaultConstructor) {
@@ -15,6 +17,8 @@ TEST_F(EPModelFixture, HeatPumpWaterToWaterEquationFitHeating_DefaultConstructor
   HeatPumpWaterToWaterEquationFitHeating hp(model);
 
   EXPECT_EQ(HeatPumpWaterToWaterEquationFitHeating::iddObjectType(), hp.iddObject().type());
+  EXPECT_NE(std::numeric_limits<unsigned>::max(), hp.supplyInletPort());
+  EXPECT_NE(std::numeric_limits<unsigned>::max(), hp.demandInletPort());
 
   EXPECT_TRUE(hp.isReferenceLoadSideFlowRateAutosized());
   EXPECT_TRUE(hp.isReferenceSourceSideFlowRateAutosized());

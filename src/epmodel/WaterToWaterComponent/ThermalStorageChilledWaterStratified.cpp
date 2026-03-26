@@ -18,10 +18,10 @@ namespace openstudio {
 namespace epmodel {
 
   ThermalStorageChilledWaterStratified::ThermalStorageChilledWaterStratified(const Model& model)
-    : ModelObject(ThermalStorageChilledWaterStratified::iddObjectType(), model) {}
+    : WaterToWaterComponent(ThermalStorageChilledWaterStratified::iddObjectType(), model) {}
 
   ThermalStorageChilledWaterStratified::ThermalStorageChilledWaterStratified(std::shared_ptr<detail::ThermalStorageChilledWaterStratified_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : WaterToWaterComponent(std::move(impl)) {}
 
   IddObjectType ThermalStorageChilledWaterStratified::iddObjectType() {
     return IddObjectType::ThermalStorage_ChilledWater_Stratified;
@@ -828,6 +828,22 @@ namespace epmodel {
         setDouble(openstudio::ThermalStorage_ChilledWater_StratifiedFields::Node10AdditionalLossCoefficient, node10AdditionalLossCoefficient);
       OS_ASSERT(result);
       return result;
+    }
+
+    unsigned ThermalStorageChilledWaterStratified_Impl::supplyInletPort() const {
+      return openstudio::ThermalStorage_ChilledWater_StratifiedFields::UseSideInletNodeName;
+    }
+
+    unsigned ThermalStorageChilledWaterStratified_Impl::supplyOutletPort() const {
+      return openstudio::ThermalStorage_ChilledWater_StratifiedFields::UseSideOutletNodeName;
+    }
+
+    unsigned ThermalStorageChilledWaterStratified_Impl::demandInletPort() const {
+      return openstudio::ThermalStorage_ChilledWater_StratifiedFields::SourceSideInletNodeName;
+    }
+
+    unsigned ThermalStorageChilledWaterStratified_Impl::demandOutletPort() const {
+      return openstudio::ThermalStorage_ChilledWater_StratifiedFields::SourceSideOutletNodeName;
     }
 
   }  // namespace detail

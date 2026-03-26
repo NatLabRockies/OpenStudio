@@ -8,6 +8,8 @@
 #include "EPModelFixture.hpp"
 #include "../WaterToWaterComponent/ChillerElectricReformulatedEIR.hpp"
 
+#include <limits>
+
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, ChillerElectricReformulatedEIR_DefaultConstructor) {
@@ -15,6 +17,9 @@ TEST_F(EPModelFixture, ChillerElectricReformulatedEIR_DefaultConstructor) {
   ChillerElectricReformulatedEIR chiller(model);
   EXPECT_EQ(ChillerElectricReformulatedEIR::iddObjectType(), chiller.iddObject().type());
   EXPECT_FALSE(chiller.nameString().empty());
+  EXPECT_NE(std::numeric_limits<unsigned>::max(), chiller.supplyInletPort());
+  EXPECT_NE(std::numeric_limits<unsigned>::max(), chiller.demandInletPort());
+  EXPECT_NE(std::numeric_limits<unsigned>::max(), chiller.tertiaryInletPort());
 }
 
 TEST_F(EPModelFixture, ChillerElectricReformulatedEIR_ScalarAccessors_RoundTrip) {

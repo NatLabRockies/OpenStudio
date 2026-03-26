@@ -6,18 +6,23 @@
 #ifndef EPMODEL_HEATPUMPWATERTOWATEREQUATIONFITHEATING_IMPL_HPP
 #define EPMODEL_HEATPUMPWATERTOWATEREQUATIONFITHEATING_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API HeatPumpWaterToWaterEquationFitHeating_Impl : public ModelObject_Impl
+    class EPMODEL_API HeatPumpWaterToWaterEquationFitHeating_Impl : public WaterToWaterComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using WaterToWaterComponent_Impl::WaterToWaterComponent_Impl;
       virtual ~HeatPumpWaterToWaterEquationFitHeating_Impl() override = default;
+
+      unsigned supplyInletPort() const override;
+      unsigned supplyOutletPort() const override;
+      unsigned demandInletPort() const override;
+      unsigned demandOutletPort() const override;
 
       boost::optional<double> referenceLoadSideFlowRate() const;
       bool isReferenceLoadSideFlowRateAutosized() const;

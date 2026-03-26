@@ -6,19 +6,21 @@
 #ifndef EPMODEL_WATERHEATERMIXED_IMPL_HPP
 #define EPMODEL_WATERHEATERMIXED_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent_Impl.hpp"
 
 #include <boost/optional.hpp>
 
 namespace openstudio {
 namespace epmodel {
 
+  class PlantLoop;
+
   namespace detail {
 
-    class EPMODEL_API WaterHeaterMixed_Impl : public ModelObject_Impl
+    class EPMODEL_API WaterHeaterMixed_Impl : public WaterToWaterComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using WaterToWaterComponent_Impl::WaterToWaterComponent_Impl;
       virtual ~WaterHeaterMixed_Impl() override = default;
 
       boost::optional<double> tankVolume() const;
@@ -153,6 +155,12 @@ namespace epmodel {
 
       double indirectWaterHeatingRecoveryTime() const;
       bool isIndirectWaterHeatingRecoveryTimeDefaulted() const;
+      unsigned supplyInletPort() const override;
+      unsigned supplyOutletPort() const override;
+      unsigned demandInletPort() const override;
+      unsigned demandOutletPort() const override;
+      boost::optional<PlantLoop> plantLoop() const override;
+      boost::optional<PlantLoop> secondaryPlantLoop() const override;
       bool setIndirectWaterHeatingRecoveryTime(double indirectWaterHeatingRecoveryTime);
       void resetIndirectWaterHeatingRecoveryTime();
 

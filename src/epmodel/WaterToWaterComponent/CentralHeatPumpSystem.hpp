@@ -7,7 +7,7 @@
 #define EPMODEL_CENTRALHEATPUMPSYSTEM_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent.hpp"
 
 #include <memory>
 #include <vector>
@@ -21,7 +21,7 @@ namespace epmodel {
     class CentralHeatPumpSystem_Impl;
   }
 
-  class EPMODEL_API CentralHeatPumpSystem : public ModelObject
+class EPMODEL_API CentralHeatPumpSystem : public WaterToWaterComponent
   {
    public:
     explicit CentralHeatPumpSystem(const Model& model);

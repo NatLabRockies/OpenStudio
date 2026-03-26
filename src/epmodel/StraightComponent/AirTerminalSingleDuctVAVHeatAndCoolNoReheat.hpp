@@ -7,7 +7,7 @@
 #define EPMODEL_AIRTERMINALSINGLEDUCTVAVHEATANDCOOLNOREHEAT_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,7 @@ namespace detail {
 class AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl;
 }
 
-class EPMODEL_API AirTerminalSingleDuctVAVHeatAndCoolNoReheat : public ModelObject
+class EPMODEL_API AirTerminalSingleDuctVAVHeatAndCoolNoReheat : public StraightComponent
 {
  public:
   explicit AirTerminalSingleDuctVAVHeatAndCoolNoReheat(const Model& model);
@@ -51,7 +51,7 @@ class EPMODEL_API AirTerminalSingleDuctVAVHeatAndCoolNoReheat : public ModelObje
   double zoneMinimumAirFlowFraction() const;
   bool setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction);
 
- protected:
+protected:
   using ImplType = detail::AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl;
 
   friend class Model;

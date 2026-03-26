@@ -7,7 +7,7 @@
 #define EPMODEL_CHILLERELECTRICEIR_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent.hpp"
 
 #include <memory>
 #include <vector>
@@ -21,7 +21,7 @@ namespace detail {
 class ChillerElectricEIR_Impl;
 }
 
-class EPMODEL_API ChillerElectricEIR : public ModelObject
+class EPMODEL_API ChillerElectricEIR : public WaterToWaterComponent
 {
  public:
   explicit ChillerElectricEIR(const Model& model);

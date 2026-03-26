@@ -7,7 +7,7 @@
 #define EPMODEL_AIRCONDITIONERVARIABLEREFRIGERANTFLOW_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <memory>
 #include <vector>
@@ -21,7 +21,7 @@ namespace epmodel {
     class AirConditionerVariableRefrigerantFlow_Impl;
   }
 
-  class EPMODEL_API AirConditionerVariableRefrigerantFlow : public ModelObject
+  class EPMODEL_API AirConditionerVariableRefrigerantFlow : public StraightComponent
   {
    public:
     explicit AirConditionerVariableRefrigerantFlow(const Model& model);
@@ -78,7 +78,7 @@ namespace epmodel {
     bool isCondenserTypeDefaulted() const;
     void resetCondenserType();
 
-   protected:
+  protected:
     using ImplType = detail::AirConditionerVariableRefrigerantFlow_Impl;
 
     friend class Model;

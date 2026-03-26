@@ -7,7 +7,7 @@
 #define EPMODEL_AIRTERMINALSINGLEDUCTCONSTANTVOLUMECOOLEDBEAM_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <memory>
 #include <vector>
@@ -21,7 +21,7 @@ namespace detail {
 class AirTerminalSingleDuctConstantVolumeCooledBeam_Impl;
 }
 
-class EPMODEL_API AirTerminalSingleDuctConstantVolumeCooledBeam : public ModelObject
+class EPMODEL_API AirTerminalSingleDuctConstantVolumeCooledBeam : public StraightComponent
 {
  public:
   explicit AirTerminalSingleDuctConstantVolumeCooledBeam(const Model& model);
@@ -90,7 +90,7 @@ class EPMODEL_API AirTerminalSingleDuctConstantVolumeCooledBeam : public ModelOb
   void resetCoefficientofInductionKin();
   void autocalculateCoefficientofInductionKin();
 
- protected:
+protected:
   using ImplType = detail::AirTerminalSingleDuctConstantVolumeCooledBeam_Impl;
 
   friend class Model;

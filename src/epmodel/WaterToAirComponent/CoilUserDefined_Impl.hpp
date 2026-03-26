@@ -6,19 +6,23 @@
 #ifndef EPMODEL_COILUSERDEFINED_IMPL_HPP
 #define EPMODEL_COILUSERDEFINED_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "WaterToAirComponent_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
 namespace detail {
 
-class EPMODEL_API CoilUserDefined_Impl : public ModelObject_Impl
+class EPMODEL_API CoilUserDefined_Impl : public WaterToAirComponent_Impl
 {
  public:
-  // Scalar-only scaffold: relationship-like fields are intentionally excluded for this cycle.
-  using ModelObject_Impl::ModelObject_Impl;
+  using WaterToAirComponent_Impl::WaterToAirComponent_Impl;
   virtual ~CoilUserDefined_Impl() override = default;
+
+  unsigned airInletPort() const override;
+  unsigned airOutletPort() const override;
+  unsigned waterInletPort() const override;
+  unsigned waterOutletPort() const override;
 
   int numberofAirConnections() const;
 };

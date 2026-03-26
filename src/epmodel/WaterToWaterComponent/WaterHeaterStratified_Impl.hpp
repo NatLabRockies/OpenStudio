@@ -6,7 +6,7 @@
 #ifndef EPMODEL_WATERHEATERSTRATIFIED_IMPL_HPP
 #define EPMODEL_WATERHEATERSTRATIFIED_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent_Impl.hpp"
 
 #include <boost/optional.hpp>
 
@@ -17,11 +17,16 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API WaterHeaterStratified_Impl : public ModelObject_Impl
+    class EPMODEL_API WaterHeaterStratified_Impl : public WaterToWaterComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using WaterToWaterComponent_Impl::WaterToWaterComponent_Impl;
       virtual ~WaterHeaterStratified_Impl() override = default;
+
+      unsigned supplyInletPort() const override;
+      unsigned supplyOutletPort() const override;
+      unsigned demandInletPort() const override;
+      unsigned demandOutletPort() const override;
 
       std::string endUseSubcategory() const;
       bool setEndUseSubcategory(const std::string& endUseSubcategory);

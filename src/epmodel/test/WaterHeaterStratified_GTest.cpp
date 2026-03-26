@@ -8,6 +8,8 @@
 #include "EPModelFixture.hpp"
 #include "../WaterToWaterComponent/WaterHeaterStratified.hpp"
 
+#include <limits>
+
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, WaterHeaterStratified_DefaultConstructor) {
@@ -15,6 +17,8 @@ TEST_F(EPModelFixture, WaterHeaterStratified_DefaultConstructor) {
   WaterHeaterStratified heater(model);
   EXPECT_EQ(WaterHeaterStratified::iddObjectType(), heater.iddObject().type());
   EXPECT_FALSE(heater.nameString().empty());
+  EXPECT_NE(std::numeric_limits<unsigned>::max(), heater.supplyInletPort());
+  EXPECT_NE(std::numeric_limits<unsigned>::max(), heater.demandInletPort());
 }
 
 TEST_F(EPModelFixture, WaterHeaterStratified_ScalarAccessors_RoundTrip) {

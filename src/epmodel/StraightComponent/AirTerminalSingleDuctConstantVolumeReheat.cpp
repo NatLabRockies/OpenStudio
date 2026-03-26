@@ -17,7 +17,7 @@ namespace openstudio {
 namespace epmodel {
 
 AirTerminalSingleDuctConstantVolumeReheat::AirTerminalSingleDuctConstantVolumeReheat(const Model& model)
-  : ModelObject(AirTerminalSingleDuctConstantVolumeReheat::iddObjectType(), model) {
+  : StraightComponent(AirTerminalSingleDuctConstantVolumeReheat::iddObjectType(), model) {
   autosizeMaximumAirFlowRate();
   autosizeMaximumHotWaterorSteamFlowRate();
   OS_ASSERT(setMinimumHotWaterorSteamFlowRate(0.0));
@@ -27,7 +27,7 @@ AirTerminalSingleDuctConstantVolumeReheat::AirTerminalSingleDuctConstantVolumeRe
 
 AirTerminalSingleDuctConstantVolumeReheat::AirTerminalSingleDuctConstantVolumeReheat(
   std::shared_ptr<detail::AirTerminalSingleDuctConstantVolumeReheat_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : StraightComponent(std::move(impl)) {}
 
 IddObjectType AirTerminalSingleDuctConstantVolumeReheat::iddObjectType() {
   return IddObjectType::AirTerminal_SingleDuct_ConstantVolume_Reheat;
@@ -119,6 +119,14 @@ bool AirTerminalSingleDuctConstantVolumeReheat::setMaximumReheatAirTemperature(d
 
 void AirTerminalSingleDuctConstantVolumeReheat::resetMaximumReheatAirTemperature() {
   getImpl<detail::AirTerminalSingleDuctConstantVolumeReheat_Impl>()->resetMaximumReheatAirTemperature();
+}
+
+unsigned detail::AirTerminalSingleDuctConstantVolumeReheat_Impl::inletPort() const {
+  return openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::AirInletNodeName;
+}
+
+unsigned detail::AirTerminalSingleDuctConstantVolumeReheat_Impl::outletPort() const {
+  return openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::AirOutletNodeName;
 }
 
 }  // namespace epmodel

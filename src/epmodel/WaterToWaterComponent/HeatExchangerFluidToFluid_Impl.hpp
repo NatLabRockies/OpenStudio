@@ -6,7 +6,7 @@
 #ifndef EPMODEL_HEATEXCHANGERFLUIDTOFLUID_IMPL_HPP
 #define EPMODEL_HEATEXCHANGERFLUIDTOFLUID_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent_Impl.hpp"
 
 #include <vector>
 
@@ -15,11 +15,16 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API HeatExchangerFluidToFluid_Impl : public ModelObject_Impl
+    class EPMODEL_API HeatExchangerFluidToFluid_Impl : public WaterToWaterComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using WaterToWaterComponent_Impl::WaterToWaterComponent_Impl;
       virtual ~HeatExchangerFluidToFluid_Impl() override = default;
+
+      unsigned supplyInletPort() const override;
+      unsigned supplyOutletPort() const override;
+      unsigned demandInletPort() const override;
+      unsigned demandOutletPort() const override;
 
       boost::optional<double> loopDemandSideDesignFlowRate() const;
       bool isLoopDemandSideDesignFlowRateAutosized() const;

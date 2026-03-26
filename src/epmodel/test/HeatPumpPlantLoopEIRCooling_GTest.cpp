@@ -8,6 +8,8 @@
 #include "EPModelFixture.hpp"
 #include "../WaterToWaterComponent/HeatPumpPlantLoopEIRCooling.hpp"
 
+#include <limits>
+
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, HeatPumpPlantLoopEIRCooling_DefaultConstructor) {
@@ -15,6 +17,9 @@ TEST_F(EPModelFixture, HeatPumpPlantLoopEIRCooling_DefaultConstructor) {
   HeatPumpPlantLoopEIRCooling hp(model);
 
   EXPECT_EQ(HeatPumpPlantLoopEIRCooling::iddObjectType(), hp.iddObject().type());
+  EXPECT_NE(std::numeric_limits<unsigned>::max(), hp.supplyInletPort());
+  EXPECT_NE(std::numeric_limits<unsigned>::max(), hp.demandInletPort());
+  EXPECT_NE(std::numeric_limits<unsigned>::max(), hp.tertiaryInletPort());
   EXPECT_EQ("AirSource", hp.condenserType());
 
   EXPECT_TRUE(hp.isLoadSideReferenceFlowRateAutosized());

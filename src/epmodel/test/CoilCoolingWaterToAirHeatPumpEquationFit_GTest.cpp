@@ -8,12 +8,22 @@
 #include "EPModelFixture.hpp"
 #include "../WaterToAirComponent/CoilCoolingWaterToAirHeatPumpEquationFit.hpp"
 
+#include <utilities/idd/Coil_Cooling_WaterToAirHeatPump_EquationFit_FieldEnums.hxx>
+
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpEquationFit_DefaultConstructor) {
   Model model;
   CoilCoolingWaterToAirHeatPumpEquationFit coil(model);
   EXPECT_EQ(CoilCoolingWaterToAirHeatPumpEquationFit::iddObjectType(), coil.iddObject().type());
+  EXPECT_EQ(openstudio::Coil_Cooling_WaterToAirHeatPump_EquationFitFields::AirInletNodeName, coil.airInletPort());
+  EXPECT_EQ(openstudio::Coil_Cooling_WaterToAirHeatPump_EquationFitFields::AirOutletNodeName, coil.airOutletPort());
+  EXPECT_EQ(openstudio::Coil_Cooling_WaterToAirHeatPump_EquationFitFields::WaterInletNodeName, coil.waterInletPort());
+  EXPECT_EQ(openstudio::Coil_Cooling_WaterToAirHeatPump_EquationFitFields::WaterOutletNodeName, coil.waterOutletPort());
+  EXPECT_FALSE(coil.airInletModelObject());
+  EXPECT_FALSE(coil.airOutletModelObject());
+  EXPECT_FALSE(coil.waterInletModelObject());
+  EXPECT_FALSE(coil.waterOutletModelObject());
 }
 
 TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpEquationFit_ScalarAccessors_RoundTrip) {

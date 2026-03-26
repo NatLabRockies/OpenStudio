@@ -6,19 +6,23 @@
 #ifndef EPMODEL_COILHEATINGWATERTOAIRHEATPUMPVARIABLESPEEDEQUATIONFIT_IMPL_HPP
 #define EPMODEL_COILHEATINGWATERTOAIRHEATPUMPVARIABLESPEEDEQUATIONFIT_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "WaterToAirComponent_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
 namespace detail {
 
-class EPMODEL_API CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl : public ModelObject_Impl
+class EPMODEL_API CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl : public WaterToAirComponent_Impl
 {
  public:
-  // Scalar-only scaffold: relationship-like fields are intentionally excluded for this cycle.
-  using ModelObject_Impl::ModelObject_Impl;
+  using WaterToAirComponent_Impl::WaterToAirComponent_Impl;
   virtual ~CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl() override = default;
+
+  unsigned airInletPort() const override;
+  unsigned airOutletPort() const override;
+  unsigned waterInletPort() const override;
+  unsigned waterOutletPort() const override;
 
   int nominalSpeedLevel() const;
   bool setNominalSpeedLevel(int nominalSpeedLevel);

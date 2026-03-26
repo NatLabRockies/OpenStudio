@@ -17,7 +17,7 @@ namespace openstudio {
 namespace epmodel {
 
 AirTerminalSingleDuctConstantVolumeFourPipeInduction::AirTerminalSingleDuctConstantVolumeFourPipeInduction(const Model& model)
-  : ModelObject(AirTerminalSingleDuctConstantVolumeFourPipeInduction::iddObjectType(), model) {
+  : StraightComponent(AirTerminalSingleDuctConstantVolumeFourPipeInduction::iddObjectType(), model) {
   autosizeMaximumTotalAirFlowRate();
   autosizeMaximumHotWaterFlowRate();
   autosizeMaximumColdWaterFlowRate();
@@ -27,7 +27,7 @@ AirTerminalSingleDuctConstantVolumeFourPipeInduction::AirTerminalSingleDuctConst
 
 AirTerminalSingleDuctConstantVolumeFourPipeInduction::AirTerminalSingleDuctConstantVolumeFourPipeInduction(
   std::shared_ptr<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : StraightComponent(std::move(impl)) {}
 
 IddObjectType AirTerminalSingleDuctConstantVolumeFourPipeInduction::iddObjectType() {
   return IddObjectType::AirTerminal_SingleDuct_ConstantVolume_FourPipeInduction;
@@ -337,6 +337,14 @@ bool AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::setCoolingConver
 
 void AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::resetCoolingConvergenceTolerance() {
   OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::CoolingConvergenceTolerance, ""));
+}
+
+unsigned AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::inletPort() const {
+  return openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::SupplyAirInletNodeName;
+}
+
+unsigned AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::outletPort() const {
+  return openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::AirOutletNodeName;
 }
 
 }  // namespace detail

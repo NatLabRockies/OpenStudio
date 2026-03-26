@@ -8,12 +8,16 @@
 #include "EPModelFixture.hpp"
 #include "../WaterToWaterComponent/HeatExchangerFluidToFluid.hpp"
 
+#include <limits>
+
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, HeatExchangerFluidToFluid_DefaultConstructor) {
   Model model;
   HeatExchangerFluidToFluid hx(model);
   EXPECT_EQ(HeatExchangerFluidToFluid::iddObjectType(), hx.iddObject().type());
+  EXPECT_NE(std::numeric_limits<unsigned>::max(), hx.supplyInletPort());
+  EXPECT_NE(std::numeric_limits<unsigned>::max(), hx.demandInletPort());
 
   EXPECT_TRUE(hx.isLoopDemandSideDesignFlowRateAutosized());
   EXPECT_TRUE(hx.isLoopSupplySideDesignFlowRateAutosized());

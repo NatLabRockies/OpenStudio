@@ -7,7 +7,7 @@
 #define EPMODEL_HEATPUMPPLANTLOOPEIRCOOLING_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent.hpp"
 
 #include <memory>
 #include <vector>
@@ -21,7 +21,7 @@ namespace detail {
   class HeatPumpPlantLoopEIRCooling_Impl;
 }
 
-class EPMODEL_API HeatPumpPlantLoopEIRCooling : public ModelObject
+class EPMODEL_API HeatPumpPlantLoopEIRCooling : public WaterToWaterComponent
 {
  public:
   explicit HeatPumpPlantLoopEIRCooling(const Model& model);

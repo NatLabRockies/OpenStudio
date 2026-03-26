@@ -7,7 +7,7 @@
 #define EPMODEL_AIRTERMINALSINGLEDUCTCONSTANTVOLUMEFOURPIPEINDUCTION_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <memory>
 
@@ -20,7 +20,7 @@ namespace epmodel {
     class AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl;
   }
 
-  class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeInduction : public ModelObject
+  class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeInduction : public StraightComponent
   {
    public:
     explicit AirTerminalSingleDuctConstantVolumeFourPipeInduction(const Model& model);
@@ -84,7 +84,7 @@ namespace epmodel {
     bool isCoolingConvergenceToleranceDefaulted() const;
     void resetCoolingConvergenceTolerance();
 
-   protected:
+  protected:
     using ImplType = detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl;
 
     friend class Model;

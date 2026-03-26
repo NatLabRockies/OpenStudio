@@ -7,7 +7,7 @@
 #define EPMODEL_BOILERSTEAM_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <memory>
 #include <vector>
@@ -16,12 +16,13 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class BoilerSteam_Impl;
   }
 
-  class EPMODEL_API BoilerSteam : public ModelObject
+  class EPMODEL_API BoilerSteam : public StraightComponent
   {
    public:
     explicit BoilerSteam(const Model& model);
@@ -40,9 +41,11 @@ namespace epmodel {
     // - API: Preserve openstudio::model::BoilerSteam scalar accessor names/signatures for counterpart parity.
     // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus Boiler:Steam scalar fields.
     // - ForwardTranslator evidence: model::ForwardTranslateBoilerSteam maps these scalar methods to matching E+ fields.
-    // - TODO(parity): Add excluded relationship APIs (curve and node references) in a dedicated relationship pass.
+    // - Topology: Water inlet and steam outlet node fields are exposed through the StraightComponent contract.
     std::string fuelType() const;
     bool setFuelType(const std::string& fuelType);
+
+    bool addToNode(Node& node);
 
     boost::optional<double> maximumOperatingPressure() const;
     bool setMaximumOperatingPressure(double maximumOperatingPressure);
@@ -61,6 +64,7 @@ namespace epmodel {
     void resetNominalCapacity();
     void autosizeNominalCapacity();
     bool isNominalCapacityAutosized() const;
+    boost::optional<double> autosizedNominalCapacity() const;
 
     boost::optional<double> minimumPartLoadRatio() const;
     bool setMinimumPartLoadRatio(double minimumPartLoadRatio);

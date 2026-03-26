@@ -6,20 +6,26 @@
 #ifndef EPMODEL_BOILERSTEAM_IMPL_HPP
 #define EPMODEL_BOILERSTEAM_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "StraightComponent/StraightComponent_Impl.hpp"
 
 #include <vector>
 
 namespace openstudio {
 namespace epmodel {
 
+  class Node;
+
   namespace detail {
 
-    class EPMODEL_API BoilerSteam_Impl : public ModelObject_Impl
+    class EPMODEL_API BoilerSteam_Impl : public StraightComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using StraightComponent_Impl::StraightComponent_Impl;
       virtual ~BoilerSteam_Impl() override = default;
+
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
 
       std::string fuelType() const;
       bool setFuelType(const std::string& fuelType);
@@ -71,6 +77,8 @@ namespace epmodel {
       bool isSizingFactorDefaulted() const;
       bool setSizingFactor(double sizingFactor);
       void resetSizingFactor();
+
+      boost::optional<double> autosizedNominalCapacity() const;
 
       std::string endUseSubcategory() const;
       bool setEndUseSubcategory(const std::string& endUseSubcategory);

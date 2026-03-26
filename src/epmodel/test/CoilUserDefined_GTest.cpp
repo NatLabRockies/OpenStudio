@@ -16,6 +16,14 @@ TEST_F(EPModelFixture, CoilUserDefined_DefaultConstructor) {
   Model model;
   CoilUserDefined coil(model);
   EXPECT_EQ(CoilUserDefined::iddObjectType(), coil.iddObject().type());
+  EXPECT_EQ(openstudio::Coil_UserDefinedFields::AirConnection1InletNodeName, coil.airInletPort());
+  EXPECT_EQ(openstudio::Coil_UserDefinedFields::AirConnection1OutletNodeName, coil.airOutletPort());
+  EXPECT_EQ(openstudio::Coil_UserDefinedFields::PlantConnectionInletNodeName, coil.waterInletPort());
+  EXPECT_EQ(openstudio::Coil_UserDefinedFields::PlantConnectionOutletNodeName, coil.waterOutletPort());
+  EXPECT_FALSE(coil.airInletModelObject());
+  EXPECT_FALSE(coil.airOutletModelObject());
+  EXPECT_FALSE(coil.waterInletModelObject());
+  EXPECT_FALSE(coil.waterOutletModelObject());
 }
 
 TEST_F(EPModelFixture, CoilUserDefined_ScalarAccessors_RoundTrip) {

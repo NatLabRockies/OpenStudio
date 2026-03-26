@@ -7,7 +7,7 @@
 #define EPMODEL_AIRTERMINALSINGLEDUCTVAVNOREHEAT_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace epmodel {
     class AirTerminalSingleDuctVAVNoReheat_Impl;
   }
 
-  class EPMODEL_API AirTerminalSingleDuctVAVNoReheat : public ModelObject
+  class EPMODEL_API AirTerminalSingleDuctVAVNoReheat : public StraightComponent
   {
    public:
     explicit AirTerminalSingleDuctVAVNoReheat(const Model& model);
@@ -72,7 +72,7 @@ namespace epmodel {
     void autosizeFixedMinimumAirFlowRate();
     void resetFixedMinimumAirFlowRate();
 
-   protected:
+  protected:
     using ImplType = detail::AirTerminalSingleDuctVAVNoReheat_Impl;
 
     friend class Model;

@@ -19,14 +19,14 @@ namespace openstudio {
 namespace epmodel {
 
 AirTerminalSingleDuctConstantVolumeCooledBeam::AirTerminalSingleDuctConstantVolumeCooledBeam(const Model& model)
-  : ModelObject(AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType(), model) {
+  : StraightComponent(AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType(), model) {
   // Mirror model constructor behavior for this required choice field.
   OS_ASSERT(setCooledBeamType("Passive"));
 }
 
 AirTerminalSingleDuctConstantVolumeCooledBeam::AirTerminalSingleDuctConstantVolumeCooledBeam(
   std::shared_ptr<detail::AirTerminalSingleDuctConstantVolumeCooledBeam_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : StraightComponent(std::move(impl)) {}
 
 IddObjectType AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType() {
   return IddObjectType::AirTerminal_SingleDuct_ConstantVolume_CooledBeam;
@@ -393,6 +393,14 @@ void AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::autocalculateCoefficien
 
 std::vector<std::string> AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::cooledBeamTypeValues() const {
   return openstudio::epmodel::AirTerminalSingleDuctConstantVolumeCooledBeam::cooledBeamTypeValues();
+}
+
+unsigned AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::inletPort() const {
+  return openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirInletNodeName;
+}
+
+unsigned AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::outletPort() const {
+  return openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirOutletNodeName;
 }
 
 }  // namespace detail

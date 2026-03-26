@@ -6,7 +6,10 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/PlantLoop.hpp"
 #include "../WaterToWaterComponent/WaterHeaterMixed.hpp"
+
+#include <utilities/idd/WaterHeater_Mixed_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -146,4 +149,33 @@ TEST_F(EPModelFixture, WaterHeaterMixed_ScalarAccessors_RoundTrip) {
   EXPECT_FALSE(heater.autosizedHeaterMaximumCapacity());
   EXPECT_FALSE(heater.autosizedUseSideDesignFlowRate());
   EXPECT_FALSE(heater.autosizedSourceSideDesignFlowRate());
+}
+
+TEST_F(EPModelFixture, WaterHeaterMixed_WaterToWaterTopology) {
+  Model model;
+  WaterHeaterMixed heater(model);
+
+  EXPECT_EQ(openstudio::WaterHeater_MixedFields::UseSideInletNodeName, heater.supplyInletPort());
+  EXPECT_EQ(openstudio::WaterHeater_MixedFields::UseSideOutletNodeName, heater.supplyOutletPort());
+  EXPECT_EQ(openstudio::WaterHeater_MixedFields::SourceSideInletNodeName, heater.demandInletPort());
+  EXPECT_EQ(openstudio::WaterHeater_MixedFields::SourceSideOutletNodeName, heater.demandOutletPort());
+
+  EXPECT_FALSE(heater.tertiaryInletModelObject());
+  EXPECT_FALSE(heater.tertiaryOutletModelObject());
+
+  PlantLoop useLoop(model);
+  PlantLoop sourceLoop(model);
+
+  EXPECT_TRUE(useLoop.addSupplyBranchForComponent(heater));
+  EXPECT_TRUE(sourceLoop.addDemandBranchForComponent(heater));
+
+  ASSERT_TRUE(heater.supplyInletModelObject());
+  ASSERT_TRUE(heater.supplyOutletModelObject());
+  ASSERT_TRUE(heater.demandInletModelObject());
+  ASSERT_TRUE(heater.demandOutletModelObject());
+
+  ASSERT_TRUE(heater.plantLoop());
+  EXPECT_EQ(useLoop.handle(), heater.plantLoop()->handle());
+  ASSERT_TRUE(heater.secondaryPlantLoop());
+  EXPECT_EQ(sourceLoop.handle(), heater.secondaryPlantLoop()->handle());
 }

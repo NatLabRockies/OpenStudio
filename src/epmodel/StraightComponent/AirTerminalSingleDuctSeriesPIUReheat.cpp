@@ -19,7 +19,7 @@ namespace openstudio {
 namespace epmodel {
 
 AirTerminalSingleDuctSeriesPIUReheat::AirTerminalSingleDuctSeriesPIUReheat(const Model& model)
-  : ModelObject(AirTerminalSingleDuctSeriesPIUReheat::iddObjectType(), model) {
+  : StraightComponent(AirTerminalSingleDuctSeriesPIUReheat::iddObjectType(), model) {
   autosizeMaximumAirFlowRate();
   autosizeMaximumPrimaryAirFlowRate();
   autosizeMinimumPrimaryAirFlowFraction();
@@ -35,7 +35,7 @@ AirTerminalSingleDuctSeriesPIUReheat::AirTerminalSingleDuctSeriesPIUReheat(const
 
 AirTerminalSingleDuctSeriesPIUReheat::AirTerminalSingleDuctSeriesPIUReheat(
   std::shared_ptr<detail::AirTerminalSingleDuctSeriesPIUReheat_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : StraightComponent(std::move(impl)) {}
 
 IddObjectType AirTerminalSingleDuctSeriesPIUReheat::iddObjectType() {
   return IddObjectType::AirTerminal_SingleDuct_SeriesPIU_Reheat;
@@ -354,6 +354,14 @@ std::vector<std::string> AirTerminalSingleDuctSeriesPIUReheat_Impl::fanControlTy
 
 std::vector<std::string> AirTerminalSingleDuctSeriesPIUReheat_Impl::heatingControlTypeValues() const {
   return openstudio::epmodel::AirTerminalSingleDuctSeriesPIUReheat::heatingControlTypeValues();
+}
+
+unsigned AirTerminalSingleDuctSeriesPIUReheat_Impl::inletPort() const {
+  return openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::SupplyAirInletNodeName;
+}
+
+unsigned AirTerminalSingleDuctSeriesPIUReheat_Impl::outletPort() const {
+  return openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::OutletNodeName;
 }
 
 }  // namespace detail

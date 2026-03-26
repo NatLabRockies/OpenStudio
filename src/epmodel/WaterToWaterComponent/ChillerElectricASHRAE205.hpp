@@ -7,7 +7,7 @@
 #define EPMODEL_CHILLERELECTRICASHRAE205_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent.hpp"
 
 #include <memory>
 #include <vector>
@@ -21,7 +21,7 @@ namespace detail {
 class ChillerElectricASHRAE205_Impl;
 }
 
-class EPMODEL_API ChillerElectricASHRAE205 : public ModelObject
+class EPMODEL_API ChillerElectricASHRAE205 : public WaterToWaterComponent
 {
  public:
   explicit ChillerElectricASHRAE205(const Model& model);

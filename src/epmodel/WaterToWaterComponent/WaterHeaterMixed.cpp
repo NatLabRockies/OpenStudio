@@ -7,6 +7,9 @@
 #include "WaterToWaterComponent/WaterHeaterMixed_Impl.hpp"
 
 #include "Model.hpp"
+#include "Loop/PlantLoop.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -14,14 +17,15 @@
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/WaterHeater_Mixed_FieldEnums.hxx>
 
+#include <algorithm>
 #include <stdexcept>
 
 namespace openstudio {
 namespace epmodel {
 
-  WaterHeaterMixed::WaterHeaterMixed(const Model& model) : ModelObject(WaterHeaterMixed::iddObjectType(), model) {}
+  WaterHeaterMixed::WaterHeaterMixed(const Model& model) : WaterToWaterComponent(WaterHeaterMixed::iddObjectType(), model) {}
 
-  WaterHeaterMixed::WaterHeaterMixed(std::shared_ptr<detail::WaterHeaterMixed_Impl> impl) : ModelObject(std::move(impl)) {}
+  WaterHeaterMixed::WaterHeaterMixed(std::shared_ptr<detail::WaterHeaterMixed_Impl> impl) : WaterToWaterComponent(std::move(impl)) {}
 
   IddObjectType WaterHeaterMixed::iddObjectType() {
     return IddObjectType::WaterHeater_Mixed;
@@ -532,6 +536,22 @@ namespace epmodel {
 
     }  // namespace
 
+    unsigned WaterHeaterMixed_Impl::supplyInletPort() const {
+      return openstudio::WaterHeater_MixedFields::UseSideInletNodeName;
+    }
+
+    unsigned WaterHeaterMixed_Impl::supplyOutletPort() const {
+      return openstudio::WaterHeater_MixedFields::UseSideOutletNodeName;
+    }
+
+    unsigned WaterHeaterMixed_Impl::demandInletPort() const {
+      return openstudio::WaterHeater_MixedFields::SourceSideInletNodeName;
+    }
+
+    unsigned WaterHeaterMixed_Impl::demandOutletPort() const {
+      return openstudio::WaterHeater_MixedFields::SourceSideOutletNodeName;
+    }
+
 #define OS_IMPL_OPTIONAL_DOUBLE(method, field)                          \
   boost::optional<double> WaterHeaterMixed_Impl::method() const {       \
     return getDouble(openstudio::WaterHeater_MixedFields::field, true); \
@@ -749,6 +769,50 @@ namespace epmodel {
 
     boost::optional<double> WaterHeaterMixed_Impl::autosizedSourceSideDesignFlowRate() const {
       return boost::none;  // epmodel does not yet resolve autosized source side design flow rates from SQL
+    }
+
+    boost::optional<PlantLoop> WaterHeaterMixed_Impl::plantLoop() const {
+      if (auto sourceSidePlantLoop = secondaryPlantLoop()) {
+        for (const auto& plantLoop : model().getConcreteModelObjects<PlantLoop>()) {
+          const auto supplyComponents = plantLoop.supplyComponents(openstudio::IddObjectType::Catchall);
+          const auto matchesSourceLoop = std::find_if(supplyComponents.begin(), supplyComponents.end(), [&](const auto& component) {
+            return component.handle() == handle();
+          });
+          if (matchesSourceLoop != supplyComponents.end() && plantLoop.handle() != sourceSidePlantLoop->handle()) {
+            return plantLoop;
+          }
+        }
+      }
+
+      return WaterToWaterComponent_Impl::plantLoop();
+    }
+
+    boost::optional<PlantLoop> WaterHeaterMixed_Impl::secondaryPlantLoop() const {
+      if (auto secondaryLoop = WaterToWaterComponent_Impl::secondaryPlantLoop()) {
+        return secondaryLoop;
+      }
+
+      auto sourceSideOutletModelObject_ = demandOutletModelObject();
+      if (!sourceSideOutletModelObject_) {
+        return boost::none;
+      }
+
+      auto sourceSideOutletNode_ = sourceSideOutletModelObject_->optionalCast<Node>();
+      if (!sourceSideOutletNode_) {
+        return boost::none;
+      }
+
+      if (auto sourceSidePlantLoop = sourceSideOutletNode_->plantLoop()) {
+        const auto supplyComponents = sourceSidePlantLoop->supplyComponents(openstudio::IddObjectType::Catchall);
+        const auto matchesSourceLoop = std::find_if(supplyComponents.begin(), supplyComponents.end(), [&](const auto& component) {
+          return component.handle() == handle();
+        });
+        if (matchesSourceLoop != supplyComponents.end()) {
+          return sourceSidePlantLoop;
+        }
+      }
+
+      return boost::none;
     }
 
   }  // namespace detail

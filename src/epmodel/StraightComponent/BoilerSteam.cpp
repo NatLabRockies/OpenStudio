@@ -6,7 +6,9 @@
 #include "StraightComponent/BoilerSteam.hpp"
 #include "StraightComponent/BoilerSteam_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -17,9 +19,24 @@
 namespace openstudio {
 namespace epmodel {
 
-  BoilerSteam::BoilerSteam(const Model& model) : ModelObject(BoilerSteam::iddObjectType(), model) {}
+  BoilerSteam::BoilerSteam(const Model& model) : StraightComponent(BoilerSteam::iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::BoilerSteam_Impl>());
+    setFuelType("NaturalGas");
+    setMaximumOperatingPressure(160000);
+    setTheoreticalEfficiency(0.8);
+    setDesignOutletSteamTemperature(115);
+    autosizeNominalCapacity();
+    setMinimumPartLoadRatio(0.00001);
+    setMaximumPartLoadRatio(1.0);
+    setOptimumPartLoadRatio(0.2);
+    setCoefficient1ofFuelUseFunctionofPartLoadRatioCurve(0.8);
+    setCoefficient2ofFuelUseFunctionofPartLoadRatioCurve(0.1);
+    setCoefficient3ofFuelUseFunctionofPartLoadRatioCurve(0.1);
+    setSizingFactor(1.0);
+    setEndUseSubcategory("General");
+  }
 
-  BoilerSteam::BoilerSteam(std::shared_ptr<detail::BoilerSteam_Impl> impl) : ModelObject(std::move(impl)) {}
+  BoilerSteam::BoilerSteam(std::shared_ptr<detail::BoilerSteam_Impl> impl) : StraightComponent(std::move(impl)) {}
 
   IddObjectType BoilerSteam::iddObjectType() {
     return IddObjectType::Boiler_Steam;
@@ -35,6 +52,10 @@ namespace epmodel {
 
   bool BoilerSteam::setFuelType(const std::string& fuelType) {
     return getImpl<detail::BoilerSteam_Impl>()->setFuelType(fuelType);
+  }
+
+  bool BoilerSteam::addToNode(Node& node) {
+    return getImpl<detail::BoilerSteam_Impl>()->addToNode(node);
   }
 
   boost::optional<double> BoilerSteam::maximumOperatingPressure() const {
@@ -91,6 +112,10 @@ namespace epmodel {
 
   bool BoilerSteam::isNominalCapacityAutosized() const {
     return getImpl<detail::BoilerSteam_Impl>()->isNominalCapacityAutosized();
+  }
+
+  boost::optional<double> BoilerSteam::autosizedNominalCapacity() const {
+    return getImpl<detail::BoilerSteam_Impl>()->autosizedNominalCapacity();
   }
 
   boost::optional<double> BoilerSteam::minimumPartLoadRatio() const {
@@ -198,6 +223,25 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    unsigned BoilerSteam_Impl::inletPort() const {
+      return openstudio::Boiler_SteamFields::WaterInletNodeName;
+    }
+
+    unsigned BoilerSteam_Impl::outletPort() const {
+      return openstudio::Boiler_SteamFields::SteamOutletNodeName;
+    }
+
+    bool BoilerSteam_Impl::addToNode(Node& node) {
+      if (auto plant = node.plantLoop()) {
+        if (plant->supplyComponent(node.handle()) && StraightComponent_Impl::addToNode(node)) {
+          plant->setFluidType("Steam");
+          return true;
+        }
+      }
+
+      return false;
+    }
 
     std::string BoilerSteam_Impl::fuelType() const {
       const auto value = getString(openstudio::Boiler_SteamFields::FuelType, true);
@@ -381,6 +425,11 @@ namespace epmodel {
 
     bool BoilerSteam_Impl::setEndUseSubcategory(const std::string& endUseSubcategory) {
       return setString(openstudio::Boiler_SteamFields::EndUseSubcategory, endUseSubcategory);
+    }
+
+    boost::optional<double> BoilerSteam_Impl::autosizedNominalCapacity() const {
+      // epmodel does not currently resolve autosized values from SQL results.
+      return boost::none;
     }
 
     std::vector<std::string> BoilerSteam_Impl::fuelTypeValues() const {

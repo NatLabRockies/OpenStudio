@@ -19,14 +19,14 @@ namespace openstudio {
 namespace epmodel {
 
   AirTerminalSingleDuctVAVNoReheat::AirTerminalSingleDuctVAVNoReheat(const Model& model)
-    : ModelObject(AirTerminalSingleDuctVAVNoReheat::iddObjectType(), model) {
+  : StraightComponent(AirTerminalSingleDuctVAVNoReheat::iddObjectType(), model) {
     autosizeMaximumAirFlowRate();
     OS_ASSERT(setZoneMinimumAirFlowInputMethod("Constant"));
     OS_ASSERT(setConstantMinimumAirFlowFraction(0.3));
   }
 
   AirTerminalSingleDuctVAVNoReheat::AirTerminalSingleDuctVAVNoReheat(std::shared_ptr<detail::AirTerminalSingleDuctVAVNoReheat_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : StraightComponent(std::move(impl)) {}
 
   IddObjectType AirTerminalSingleDuctVAVNoReheat::iddObjectType() {
     return IddObjectType::AirTerminal_SingleDuct_VAV_NoReheat;
@@ -113,9 +113,17 @@ namespace epmodel {
     getImpl<detail::AirTerminalSingleDuctVAVNoReheat_Impl>()->resetFixedMinimumAirFlowRate();
   }
 
-  void AirTerminalSingleDuctVAVNoReheat::autosizeFixedMinimumAirFlowRate() {
-    getImpl<detail::AirTerminalSingleDuctVAVNoReheat_Impl>()->autosizeFixedMinimumAirFlowRate();
-  }
+void AirTerminalSingleDuctVAVNoReheat::autosizeFixedMinimumAirFlowRate() {
+  getImpl<detail::AirTerminalSingleDuctVAVNoReheat_Impl>()->autosizeFixedMinimumAirFlowRate();
+}
+
+unsigned detail::AirTerminalSingleDuctVAVNoReheat_Impl::inletPort() const {
+  return openstudio::AirTerminal_SingleDuct_VAV_NoReheatFields::AirInletNodeName;
+}
+
+unsigned detail::AirTerminalSingleDuctVAVNoReheat_Impl::outletPort() const {
+  return openstudio::AirTerminal_SingleDuct_VAV_NoReheatFields::AirOutletNodeName;
+}
 
 }  // namespace epmodel
 }  // namespace openstudio
