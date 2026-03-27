@@ -22,6 +22,8 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class HVACComponent;
+  class ModelObject;
 
   namespace detail {
     class ZoneHVACWaterToAirHeatPump_Impl;
@@ -47,7 +49,7 @@ namespace epmodel {
     // - API: Scalar accessors mirror the openstudio::model names and map directly to EnergyPlus ZoneHVAC:WaterToAirHeatPump fields
     //   via ZoneHVAC_WaterToAirHeatPumpFields (+ the DX Heating Coil Sizing Ratio field referenced in ForwardTranslateZoneHVACWaterToAirHeatPump.cpp).
     // - Field Mapping: Supplemental heater temperature limits and DX heating coil sizing stay on this object to preserve the IDD scalar surface.
-    // - Field Mapping: Fan/coil targets, schedules, node names, and availability manager links remain relationship-only and are intentionally excluded here.
+    // - Field Mapping: Fan/coil targets are relationship-backed children and participate in children() traversal.
 
     /** @name Scalar field accessors */
     //@{
@@ -127,6 +129,20 @@ namespace epmodel {
     bool isHeatPumpCoilWaterFlowModeDefaulted() const;
     bool setHeatPumpCoilWaterFlowMode(const std::string& heatPumpCoilWaterFlowMode);
     void resetHeatPumpCoilWaterFlowMode();
+
+    HVACComponent supplyAirFan() const;
+    bool setSupplyAirFan(HVACComponent& supplyAirFan);
+
+    HVACComponent heatingCoil() const;
+    bool setHeatingCoil(HVACComponent& heatingCoil);
+
+    HVACComponent coolingCoil() const;
+    bool setCoolingCoil(HVACComponent& coolingCoil);
+
+    HVACComponent supplementalHeatingCoil() const;
+    bool setSupplementalHeatingCoil(HVACComponent& supplementalHeatingCoil);
+
+    std::vector<ModelObject> children() const;
 
     double dXHeatingCoilSizingRatio() const;
     bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);

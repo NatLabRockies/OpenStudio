@@ -19,6 +19,8 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class ModelObject;
+  class HVACComponent;
 
   namespace detail {
     class ZoneHVACPackagedTerminalAirConditioner_Impl;
@@ -44,8 +46,8 @@ namespace epmodel {
     //   outdoorAirFlowRateDuringCoolingOperation, outdoorAirFlowRateDuringHeatingOperation, outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded,
     //   noLoadSupplyAirFlowRateControlSetToLowSpeed, and fanPlacement map to the EnergyPlus ZoneHVAC:PackagedTerminalAirConditioner fields
     //   enumerated by ZoneHVAC_PackagedTerminalAirConditionerFields; ForwardTranslateZoneHVACPackagedTerminalAirConditioner.cpp documents these mappings.
-    // - Field Mapping: relationship-like values (availability schedule, supply-air fan/heating/cooling coil links, node names, and the outdoor air mixer)
-    //   remain outside this scalar-focused interface.
+    // - Field Mapping: supply-air fan/heating/cooling coil links and node names map to the corresponding EnergyPlus fields and are exposed through
+    //   the type-specific relationship API below.
 
     boost::optional<double> supplyAirFlowRateDuringCoolingOperation() const;
     bool setSupplyAirFlowRateDuringCoolingOperation(double supplyAirFlowRateDuringCoolingOperation);
@@ -86,6 +88,17 @@ namespace epmodel {
     bool isFanPlacementDefaulted() const;
     bool setFanPlacement(const std::string& fanPlacement);
     void resetFanPlacement();
+
+    HVACComponent supplyAirFan() const;
+    bool setSupplyAirFan(HVACComponent& fan);
+
+    HVACComponent heatingCoil() const;
+    bool setHeatingCoil(HVACComponent& heatingCoil);
+
+    HVACComponent coolingCoil() const;
+    bool setCoolingCoil(HVACComponent& coolingCoil);
+
+    std::vector<ModelObject> children() const;
 
    protected:
     using ImplType = detail::ZoneHVACPackagedTerminalAirConditioner_Impl;

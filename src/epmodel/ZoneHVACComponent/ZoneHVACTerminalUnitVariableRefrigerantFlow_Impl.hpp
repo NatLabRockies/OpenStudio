@@ -15,6 +15,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class HVACComponent;
+
   namespace detail {
 
     class EPMODEL_API ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl : public ZoneHVACComponent_Impl
@@ -84,6 +86,24 @@ namespace epmodel {
       bool isSupplyAirFanPlacementDefaulted() const;
       bool setSupplyAirFanPlacement(const std::string& supplyAirFanPlacement);
       void resetSupplyAirFanPlacement();
+
+      HVACComponent supplyAirFan() const;
+      bool setSupplyAirFan(HVACComponent& fan);
+
+      boost::optional<HVACComponent> coolingCoil() const;
+      bool setCoolingCoil(HVACComponent& coil);
+
+      boost::optional<HVACComponent> heatingCoil() const;
+      bool setHeatingCoil(HVACComponent& coil);
+
+      boost::optional<HVACComponent> supplementalHeatingCoil() const;
+      bool setSupplementalHeatingCoil(HVACComponent& coil);
+      void resetSupplementalHeatingCoil();
+
+      std::vector<ModelObject> children() const;
+
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
       boost::optional<double> autosizedSupplyAirFlowRateDuringCoolingOperation() const;
       boost::optional<double> autosizedSupplyAirFlowRateWhenNoCoolingisNeeded() const;

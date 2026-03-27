@@ -11,9 +11,13 @@
 #include <utilities/idd/ZoneHVAC_PackagedTerminalAirConditioner_FieldEnums.hxx>
 
 #include <boost/optional.hpp>
+#include <vector>
 
 namespace openstudio {
 namespace epmodel {
+
+  class HVACComponent;
+  class ModelObject;
 
   namespace detail {
 
@@ -68,6 +72,19 @@ namespace epmodel {
       bool isFanPlacementDefaulted() const;
       bool setFanPlacement(const std::string& fanPlacement);
       void resetFanPlacement();
+
+      std::vector<ModelObject> children() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+
+      HVACComponent supplyAirFan() const;
+      bool setSupplyAirFan(HVACComponent& fan);
+
+      HVACComponent heatingCoil() const;
+      bool setHeatingCoil(HVACComponent& heatingCoil);
+
+      HVACComponent coolingCoil() const;
+      bool setCoolingCoil(HVACComponent& coolingCoil);
     };
 
   }  // namespace detail

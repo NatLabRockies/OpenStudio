@@ -14,6 +14,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class HVACComponent;
+
   namespace detail {
 
     class EPMODEL_API ZoneHVACWaterToAirHeatPump_Impl : public ZoneHVACComponent_Impl
@@ -97,6 +99,22 @@ namespace epmodel {
       bool isHeatPumpCoilWaterFlowModeDefaulted() const;
       bool setHeatPumpCoilWaterFlowMode(const std::string& heatPumpCoilWaterFlowMode);
       void resetHeatPumpCoilWaterFlowMode();
+
+      HVACComponent supplyAirFan() const;
+      bool setSupplyAirFan(HVACComponent& supplyAirFan);
+
+      HVACComponent heatingCoil() const;
+      bool setHeatingCoil(HVACComponent& heatingCoil);
+
+      HVACComponent coolingCoil() const;
+      bool setCoolingCoil(HVACComponent& coolingCoil);
+
+      HVACComponent supplementalHeatingCoil() const;
+      bool setSupplementalHeatingCoil(HVACComponent& supplementalHeatingCoil);
+
+      std::vector<ModelObject> children() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
       double dXHeatingCoilSizingRatio() const;
       bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);

@@ -6,7 +6,9 @@
 #include "ZoneHVACComponent/ZoneHVACPackagedTerminalHeatPump.hpp"
 #include "ZoneHVACComponent/ZoneHVACPackagedTerminalHeatPump_Impl.hpp"
 
+#include "HVACComponent/HVACComponent.hpp"
 #include "Model.hpp"
+#include "../ModelObject/ModelObject.hpp"
 
 #include "../utilities/core/Assert.hpp"
 #include "../utilities/core/Compare.hpp"
@@ -21,9 +23,7 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACPackagedTerminalHeatPump::ZoneHVACPackagedTerminalHeatPump(const Model& model)
-    : ZoneHVACComponent(ZoneHVACPackagedTerminalHeatPump::iddObjectType(), model) {
-    OS_ASSERT(getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>());
-  }
+    : ZoneHVACComponent(ZoneHVACPackagedTerminalHeatPump::iddObjectType(), model) {}
 
   ZoneHVACPackagedTerminalHeatPump::ZoneHVACPackagedTerminalHeatPump(std::shared_ptr<detail::ZoneHVACPackagedTerminalHeatPump_Impl> impl)
     : ZoneHVACComponent(std::move(impl)) {}
@@ -32,12 +32,24 @@ namespace epmodel {
     return IddObjectType::ZoneHVAC_PackagedTerminalHeatPump;
   }
 
+  unsigned ZoneHVACPackagedTerminalHeatPump::inletPort() const {
+    return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->inletPort();
+  }
+
+  unsigned ZoneHVACPackagedTerminalHeatPump::outletPort() const {
+    return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->outletPort();
+  }
+
   std::vector<std::string> ZoneHVACPackagedTerminalHeatPump::fanPlacementValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), ZoneHVAC_PackagedTerminalHeatPumpFields::FanPlacement);
   }
 
   std::vector<std::string> ZoneHVACPackagedTerminalHeatPump::validFanPlacementValues() {
     return fanPlacementValues();
+  }
+
+  std::vector<ModelObject> ZoneHVACPackagedTerminalHeatPump::children() const {
+    return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->children();
   }
 
   boost::optional<double> ZoneHVACPackagedTerminalHeatPump::supplyAirFlowRateDuringCoolingOperation() const {
@@ -262,6 +274,38 @@ namespace epmodel {
     getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->resetFanPlacement();
   }
 
+  HVACComponent ZoneHVACPackagedTerminalHeatPump::supplyAirFan() const {
+    return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->supplyAirFan();
+  }
+
+  bool ZoneHVACPackagedTerminalHeatPump::setSupplyAirFan(HVACComponent& supplyAirFan) {
+    return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->setSupplyAirFan(supplyAirFan);
+  }
+
+  HVACComponent ZoneHVACPackagedTerminalHeatPump::heatingCoil() const {
+    return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->heatingCoil();
+  }
+
+  bool ZoneHVACPackagedTerminalHeatPump::setHeatingCoil(HVACComponent& heatingCoil) {
+    return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->setHeatingCoil(heatingCoil);
+  }
+
+  HVACComponent ZoneHVACPackagedTerminalHeatPump::coolingCoil() const {
+    return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->coolingCoil();
+  }
+
+  bool ZoneHVACPackagedTerminalHeatPump::setCoolingCoil(HVACComponent& coolingCoil) {
+    return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->setCoolingCoil(coolingCoil);
+  }
+
+  HVACComponent ZoneHVACPackagedTerminalHeatPump::supplementalHeatingCoil() const {
+    return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->supplementalHeatingCoil();
+  }
+
+  bool ZoneHVACPackagedTerminalHeatPump::setSupplementalHeatingCoil(HVACComponent& supplementalHeatingCoil) {
+    return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->setSupplementalHeatingCoil(supplementalHeatingCoil);
+  }
+
   double ZoneHVACPackagedTerminalHeatPump::dXHeatingCoilSizingRatio() const {
     return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->dXHeatingCoilSizingRatio();
   }
@@ -271,6 +315,101 @@ namespace epmodel {
   }
 
   namespace detail {
+
+    std::vector<ModelObject> ZoneHVACPackagedTerminalHeatPump_Impl::children() const {
+      std::vector<ModelObject> result;
+      if (auto child = getObject<ModelObject>().getTarget(ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFanName)) {
+        if (auto object = child->optionalCast<ModelObject>()) {
+          result.push_back(*object);
+        }
+      }
+      if (auto child = getObject<ModelObject>().getTarget(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingCoilName)) {
+        if (auto object = child->optionalCast<ModelObject>()) {
+          result.push_back(*object);
+        }
+      }
+      if (auto child = getObject<ModelObject>().getTarget(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingCoilName)) {
+        if (auto object = child->optionalCast<ModelObject>()) {
+          result.push_back(*object);
+        }
+      }
+      if (auto child = getObject<ModelObject>().getTarget(ZoneHVAC_PackagedTerminalHeatPumpFields::SupplementalHeatingCoilName)) {
+        if (auto object = child->optionalCast<ModelObject>()) {
+          result.push_back(*object);
+        }
+      }
+      return result;
+    }
+
+    unsigned ZoneHVACPackagedTerminalHeatPump_Impl::inletPort() const {
+      return ZoneHVAC_PackagedTerminalHeatPumpFields::AirInletNodeName;
+    }
+
+    unsigned ZoneHVACPackagedTerminalHeatPump_Impl::outletPort() const {
+      return ZoneHVAC_PackagedTerminalHeatPumpFields::AirOutletNodeName;
+    }
+
+    HVACComponent ZoneHVACPackagedTerminalHeatPump_Impl::supplyAirFan() const {
+      auto child = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFanName);
+      OS_ASSERT(child);
+      return *child;
+    }
+
+    bool ZoneHVACPackagedTerminalHeatPump_Impl::setSupplyAirFan(HVACComponent& supplyAirFan) {
+      const auto iddObjectType = supplyAirFan.iddObject().type();
+      if ((iddObjectType != IddObjectType::OS_Fan_ConstantVolume) && (iddObjectType != IddObjectType::OS_Fan_OnOff)
+          && (iddObjectType != IddObjectType::OS_Fan_SystemModel) && (iddObjectType != IddObjectType::Fan_ConstantVolume)
+          && (iddObjectType != IddObjectType::Fan_OnOff) && (iddObjectType != IddObjectType::Fan_SystemModel)) {
+        return false;
+      }
+      return setPointer(ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFanName, supplyAirFan.handle());
+    }
+
+    HVACComponent ZoneHVACPackagedTerminalHeatPump_Impl::heatingCoil() const {
+      auto child = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingCoilName);
+      OS_ASSERT(child);
+      return *child;
+    }
+
+    bool ZoneHVACPackagedTerminalHeatPump_Impl::setHeatingCoil(HVACComponent& heatingCoil) {
+      const auto iddObjectType = heatingCoil.iddObject().type();
+      if ((iddObjectType != IddObjectType::OS_Coil_Heating_DX_SingleSpeed) && (iddObjectType != IddObjectType::OS_Coil_Heating_DX_VariableSpeed)
+          && (iddObjectType != IddObjectType::Coil_Heating_DX_SingleSpeed)
+          && (iddObjectType != IddObjectType::Coil_Heating_DX_VariableSpeed)) {
+        return false;
+      }
+      return setPointer(ZoneHVAC_PackagedTerminalHeatPumpFields::HeatingCoilName, heatingCoil.handle());
+    }
+
+    HVACComponent ZoneHVACPackagedTerminalHeatPump_Impl::coolingCoil() const {
+      auto child = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingCoilName);
+      OS_ASSERT(child);
+      return *child;
+    }
+
+    bool ZoneHVACPackagedTerminalHeatPump_Impl::setCoolingCoil(HVACComponent& coolingCoil) {
+      const auto iddObjectType = coolingCoil.iddObject().type();
+      if ((iddObjectType != IddObjectType::OS_Coil_Cooling_DX_SingleSpeed)
+          && (iddObjectType != IddObjectType::OS_Coil_Cooling_DX_VariableSpeed)
+          && (iddObjectType != IddObjectType::OS_CoilSystem_Cooling_DX_HeatExchangerAssisted)
+          && (iddObjectType != IddObjectType::OS_Coil_Cooling_DX) && (iddObjectType != IddObjectType::Coil_Cooling_DX_SingleSpeed)
+          && (iddObjectType != IddObjectType::Coil_Cooling_DX_VariableSpeed)
+          && (iddObjectType != IddObjectType::CoilSystem_Cooling_DX_HeatExchangerAssisted)
+          && (iddObjectType != IddObjectType::Coil_Cooling_DX)) {
+        return false;
+      }
+      return setPointer(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingCoilName, coolingCoil.handle());
+    }
+
+    HVACComponent ZoneHVACPackagedTerminalHeatPump_Impl::supplementalHeatingCoil() const {
+      auto child = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_PackagedTerminalHeatPumpFields::SupplementalHeatingCoilName);
+      OS_ASSERT(child);
+      return *child;
+    }
+
+    bool ZoneHVACPackagedTerminalHeatPump_Impl::setSupplementalHeatingCoil(HVACComponent& supplementalHeatingCoil) {
+      return setPointer(ZoneHVAC_PackagedTerminalHeatPumpFields::SupplementalHeatingCoilName, supplementalHeatingCoil.handle());
+    }
 
     boost::optional<double> ZoneHVACPackagedTerminalHeatPump_Impl::supplyAirFlowRateDuringCoolingOperation() const {
       return getDouble(ZoneHVAC_PackagedTerminalHeatPumpFields::CoolingSupplyAirFlowRate, true);

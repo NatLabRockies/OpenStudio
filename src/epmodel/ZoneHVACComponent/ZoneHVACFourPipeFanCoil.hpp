@@ -18,6 +18,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class HVACComponent;
 
   namespace detail {
     class ZoneHVACFourPipeFanCoil_Impl;
@@ -40,8 +41,8 @@ namespace epmodel {
 
     // Schema Alignment Notes:
     // - API: Scalar getters/setters map to EnergyPlus ZoneHVAC:FourPipeFanCoil fields (ZoneHVAC_FourPipeFanCoilFields) and ForwardTranslateZoneHVACFourPipeFanCoil.cpp.
-    // - Field Mapping: Schedule, fan, coil, node, and operating-mode relationships are intentionally excluded from this scalar-only scaffold.
-    // - TODO(parity): Add relationship/link APIs once scalar coverage is stable.
+    // - Field Mapping: The contained fan and heating/cooling coils are modeled explicitly because they are part of the component's topology.
+    // - TODO(parity): Add the remaining schedule/operating-mode relation APIs once the core child links are stable.
 
     std::string capacityControlMethod() const;
     bool setCapacityControlMethod(const std::string& capacityControlMethod);
@@ -68,6 +69,14 @@ namespace epmodel {
 
     std::string outdoorAirMixerObjectType() const;
     bool setOutdoorAirMixerObjectType(const std::string& outdoorAirMixerObjectType);
+
+    HVACComponent supplyAirFan() const;
+    HVACComponent coolingCoil() const;
+    HVACComponent heatingCoil() const;
+
+    bool setSupplyAirFan(HVACComponent& fan);
+    bool setCoolingCoil(HVACComponent& coolingCoil);
+    bool setHeatingCoil(HVACComponent& heatingCoil);
 
     boost::optional<double> maximumColdWaterFlowRate() const;
     bool isMaximumColdWaterFlowRateAutosized() const;

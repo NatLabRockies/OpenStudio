@@ -6,7 +6,9 @@
 #include "ZoneHVACComponent/ZoneHVACFourPipeFanCoil.hpp"
 #include "ZoneHVACComponent/ZoneHVACFourPipeFanCoil_Impl.hpp"
 
+#include "HVACComponent.hpp"
 #include "Model.hpp"
+#include "ModelObject.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -49,6 +51,18 @@ namespace epmodel {
 
   std::vector<std::string> ZoneHVACFourPipeFanCoil::outdoorAirMixerObjectTypeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType);
+  }
+
+  HVACComponent ZoneHVACFourPipeFanCoil::supplyAirFan() const {
+    return getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->supplyAirFan();
+  }
+
+  HVACComponent ZoneHVACFourPipeFanCoil::coolingCoil() const {
+    return getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->coolingCoil();
+  }
+
+  HVACComponent ZoneHVACFourPipeFanCoil::heatingCoil() const {
+    return getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->heatingCoil();
   }
 
   std::string ZoneHVACFourPipeFanCoil::capacityControlMethod() const {
@@ -129,6 +143,18 @@ namespace epmodel {
 
   bool ZoneHVACFourPipeFanCoil::setOutdoorAirMixerObjectType(const std::string& outdoorAirMixerObjectType) {
     return getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->setOutdoorAirMixerObjectType(outdoorAirMixerObjectType);
+  }
+
+  bool ZoneHVACFourPipeFanCoil::setSupplyAirFan(HVACComponent& fan) {
+    return getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->setSupplyAirFan(fan);
+  }
+
+  bool ZoneHVACFourPipeFanCoil::setCoolingCoil(HVACComponent& coolingCoil) {
+    return getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->setCoolingCoil(coolingCoil);
+  }
+
+  bool ZoneHVACFourPipeFanCoil::setHeatingCoil(HVACComponent& heatingCoil) {
+    return getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->setHeatingCoil(heatingCoil);
   }
 
   boost::optional<double> ZoneHVACFourPipeFanCoil::maximumColdWaterFlowRate() const {
@@ -261,6 +287,28 @@ namespace epmodel {
 
   namespace detail {
 
+    std::vector<ModelObject> ZoneHVACFourPipeFanCoil_Impl::children() const {
+      std::vector<ModelObject> result;
+      if (auto fan = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName)) {
+        result.push_back(*fan);
+      }
+      if (auto coolingCoil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName)) {
+        result.push_back(*coolingCoil);
+      }
+      if (auto heatingCoil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName)) {
+        result.push_back(*heatingCoil);
+      }
+      return result;
+    }
+
+    unsigned ZoneHVACFourPipeFanCoil_Impl::inletPort() const {
+      return ZoneHVAC_FourPipeFanCoilFields::AirInletNodeName;
+    }
+
+    unsigned ZoneHVACFourPipeFanCoil_Impl::outletPort() const {
+      return ZoneHVAC_FourPipeFanCoilFields::AirOutletNodeName;
+    }
+
     std::string ZoneHVACFourPipeFanCoil_Impl::capacityControlMethod() const {
       auto value = getString(ZoneHVAC_FourPipeFanCoilFields::CapacityControlMethod, true);
       OS_ASSERT(value);
@@ -369,6 +417,87 @@ namespace epmodel {
 
     std::vector<std::string> ZoneHVACFourPipeFanCoil_Impl::outdoorAirMixerObjectTypeValues() const {
       return ZoneHVACFourPipeFanCoil::outdoorAirMixerObjectTypeValues();
+    }
+
+    HVACComponent ZoneHVACFourPipeFanCoil_Impl::supplyAirFan() const {
+      auto fan = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName);
+      OS_ASSERT(fan);
+      return *fan;
+    }
+
+    HVACComponent ZoneHVACFourPipeFanCoil_Impl::coolingCoil() const {
+      auto coil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName);
+      OS_ASSERT(coil);
+      return *coil;
+    }
+
+    HVACComponent ZoneHVACFourPipeFanCoil_Impl::heatingCoil() const {
+      auto coil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName);
+      OS_ASSERT(coil);
+      return *coil;
+    }
+
+    bool ZoneHVACFourPipeFanCoil_Impl::setSupplyAirFan(HVACComponent& fan) {
+      bool isAllowedType = false;
+      const auto fanType = fan.iddObject().type();
+
+      if (fanType == IddObjectType::OS_Fan_SystemModel || fanType == IddObjectType::Fan_SystemModel) {
+        isAllowedType = true;
+      } else {
+        if (istringEqual(capacityControlMethod(), "ConstantFanVariableFlow")) {
+          if (fanType == IddObjectType::OS_Fan_ConstantVolume || fanType == IddObjectType::OS_Fan_OnOff
+              || fanType == IddObjectType::Fan_ConstantVolume || fanType == IddObjectType::Fan_OnOff) {
+            isAllowedType = true;
+          }
+        } else if (istringEqual(capacityControlMethod(), "CyclingFan")) {
+          if (fanType == IddObjectType::OS_Fan_OnOff || fanType == IddObjectType::Fan_OnOff) {
+            isAllowedType = true;
+          }
+        } else if (istringEqual(capacityControlMethod(), "VariableFanVariableFlow")
+                   || istringEqual(capacityControlMethod(), "VariableFanConstantFlow")) {
+          if (fanType == IddObjectType::OS_Fan_VariableVolume || fanType == IddObjectType::Fan_VariableVolume) {
+            isAllowedType = true;
+          }
+        }
+      }
+
+      if (isAllowedType) {
+        return setPointer(ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanName, fan.handle());
+      }
+
+      return false;
+    }
+
+    bool ZoneHVACFourPipeFanCoil_Impl::setCoolingCoil(HVACComponent& coolingCoil) {
+      bool isAllowedType = false;
+      const auto coolingCoilType = coolingCoil.iddObject().type();
+      if ((coolingCoilType == IddObjectType::OS_Coil_Cooling_Water)
+          || (coolingCoilType == IddObjectType::OS_CoilSystem_Cooling_Water_HeatExchangerAssisted)
+          || (coolingCoilType == IddObjectType::Coil_Cooling_Water)
+          || (coolingCoilType == IddObjectType::CoilSystem_Cooling_Water_HeatExchangerAssisted)) {
+        isAllowedType = true;
+      }
+
+      if (isAllowedType) {
+        return setPointer(ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName, coolingCoil.handle());
+      }
+
+      return false;
+    }
+
+    bool ZoneHVACFourPipeFanCoil_Impl::setHeatingCoil(HVACComponent& heatingCoil) {
+      bool isAllowedType = false;
+      const auto heatingCoilType = heatingCoil.iddObject().type();
+      if ((heatingCoilType == IddObjectType::OS_Coil_Heating_Water) || (heatingCoilType == IddObjectType::OS_Coil_Heating_Electric)
+          || (heatingCoilType == IddObjectType::Coil_Heating_Water) || (heatingCoilType == IddObjectType::Coil_Heating_Electric)) {
+        isAllowedType = true;
+      }
+
+      if (isAllowedType) {
+        return setPointer(ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName, heatingCoil.handle());
+      }
+
+      return false;
     }
 
     boost::optional<double> ZoneHVACFourPipeFanCoil_Impl::maximumColdWaterFlowRate() const {

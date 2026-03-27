@@ -6,6 +6,8 @@
 #include "ZoneHVACComponent/ZoneHVACPackagedTerminalAirConditioner.hpp"
 #include "ZoneHVACComponent/ZoneHVACPackagedTerminalAirConditioner_Impl.hpp"
 
+#include "HVACComponent.hpp"
+#include "ModelObject/ModelObject.hpp"
 #include "Model.hpp"
 
 #include "../utilities/core/Assert.hpp"
@@ -19,9 +21,7 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACPackagedTerminalAirConditioner::ZoneHVACPackagedTerminalAirConditioner(const Model& model)
-    : ZoneHVACComponent(ZoneHVACPackagedTerminalAirConditioner::iddObjectType(), model) {
-    OS_ASSERT(getImpl<detail::ZoneHVACPackagedTerminalAirConditioner_Impl>());
-  }
+    : ZoneHVACComponent(ZoneHVACPackagedTerminalAirConditioner::iddObjectType(), model) {}
 
   ZoneHVACPackagedTerminalAirConditioner::ZoneHVACPackagedTerminalAirConditioner(
     std::shared_ptr<detail::ZoneHVACPackagedTerminalAirConditioner_Impl> impl)
@@ -174,6 +174,34 @@ namespace epmodel {
 
   void ZoneHVACPackagedTerminalAirConditioner::resetFanPlacement() {
     getImpl<detail::ZoneHVACPackagedTerminalAirConditioner_Impl>()->resetFanPlacement();
+  }
+
+  HVACComponent ZoneHVACPackagedTerminalAirConditioner::supplyAirFan() const {
+    return getImpl<detail::ZoneHVACPackagedTerminalAirConditioner_Impl>()->supplyAirFan();
+  }
+
+  bool ZoneHVACPackagedTerminalAirConditioner::setSupplyAirFan(HVACComponent& fan) {
+    return getImpl<detail::ZoneHVACPackagedTerminalAirConditioner_Impl>()->setSupplyAirFan(fan);
+  }
+
+  HVACComponent ZoneHVACPackagedTerminalAirConditioner::heatingCoil() const {
+    return getImpl<detail::ZoneHVACPackagedTerminalAirConditioner_Impl>()->heatingCoil();
+  }
+
+  bool ZoneHVACPackagedTerminalAirConditioner::setHeatingCoil(HVACComponent& heatingCoil) {
+    return getImpl<detail::ZoneHVACPackagedTerminalAirConditioner_Impl>()->setHeatingCoil(heatingCoil);
+  }
+
+  HVACComponent ZoneHVACPackagedTerminalAirConditioner::coolingCoil() const {
+    return getImpl<detail::ZoneHVACPackagedTerminalAirConditioner_Impl>()->coolingCoil();
+  }
+
+  bool ZoneHVACPackagedTerminalAirConditioner::setCoolingCoil(HVACComponent& coolingCoil) {
+    return getImpl<detail::ZoneHVACPackagedTerminalAirConditioner_Impl>()->setCoolingCoil(coolingCoil);
+  }
+
+  std::vector<ModelObject> ZoneHVACPackagedTerminalAirConditioner::children() const {
+    return getImpl<detail::ZoneHVACPackagedTerminalAirConditioner_Impl>()->children();
   }
 
   namespace detail {
@@ -427,6 +455,81 @@ namespace epmodel {
     void ZoneHVACPackagedTerminalAirConditioner_Impl::resetFanPlacement() {
       bool result = setString(ZoneHVAC_PackagedTerminalAirConditionerFields::FanPlacement, "");
       OS_ASSERT(result);
+    }
+
+    std::vector<ModelObject> ZoneHVACPackagedTerminalAirConditioner_Impl::children() const {
+      std::vector<ModelObject> result;
+      if (auto heatingCoil = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+            ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingCoilName)) {
+        result.push_back(*heatingCoil);
+      }
+      if (auto fan = getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_PackagedTerminalAirConditionerFields::SupplyAirFanName)) {
+        result.push_back(*fan);
+      }
+      if (auto coolingCoil = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+            ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingCoilName)) {
+        result.push_back(*coolingCoil);
+      }
+      return result;
+    }
+
+    unsigned ZoneHVACPackagedTerminalAirConditioner_Impl::inletPort() const {
+      return ZoneHVAC_PackagedTerminalAirConditionerFields::AirInletNodeName;
+    }
+
+    unsigned ZoneHVACPackagedTerminalAirConditioner_Impl::outletPort() const {
+      return ZoneHVAC_PackagedTerminalAirConditionerFields::AirOutletNodeName;
+    }
+
+    HVACComponent ZoneHVACPackagedTerminalAirConditioner_Impl::supplyAirFan() const {
+      auto value = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_PackagedTerminalAirConditionerFields::SupplyAirFanName);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool ZoneHVACPackagedTerminalAirConditioner_Impl::setSupplyAirFan(HVACComponent& fan) {
+      const auto iddObjectType = fan.iddObject().type();
+      if ((iddObjectType == IddObjectType::OS_Fan_ConstantVolume) || (iddObjectType == IddObjectType::OS_Fan_OnOff)
+          || (iddObjectType == IddObjectType::OS_Fan_SystemModel) || (iddObjectType == IddObjectType::Fan_ConstantVolume)
+          || (iddObjectType == IddObjectType::Fan_OnOff) || (iddObjectType == IddObjectType::Fan_SystemModel)) {
+        return setPointer(ZoneHVAC_PackagedTerminalAirConditionerFields::SupplyAirFanName, fan.handle());
+      }
+      return false;
+    }
+
+    HVACComponent ZoneHVACPackagedTerminalAirConditioner_Impl::heatingCoil() const {
+      auto value = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingCoilName);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool ZoneHVACPackagedTerminalAirConditioner_Impl::setHeatingCoil(HVACComponent& heatingCoil) {
+      const auto iddObjectType = heatingCoil.iddObject().type();
+      if ((iddObjectType == IddObjectType::OS_Coil_Heating_Gas) || (iddObjectType == IddObjectType::OS_Coil_Heating_Electric)
+          || (iddObjectType == IddObjectType::OS_Coil_Heating_Water) || (iddObjectType == IddObjectType::Coil_Heating_Fuel)
+          || (iddObjectType == IddObjectType::Coil_Heating_Electric) || (iddObjectType == IddObjectType::Coil_Heating_Water)) {
+        return setPointer(ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingCoilName, heatingCoil.handle());
+      }
+      return false;
+    }
+
+    HVACComponent ZoneHVACPackagedTerminalAirConditioner_Impl::coolingCoil() const {
+      auto value = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingCoilName);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool ZoneHVACPackagedTerminalAirConditioner_Impl::setCoolingCoil(HVACComponent& coolingCoil) {
+      const auto iddObjectType = coolingCoil.iddObject().type();
+      if ((iddObjectType == IddObjectType::OS_Coil_Cooling_DX_SingleSpeed) || (iddObjectType == IddObjectType::OS_Coil_Cooling_DX_VariableSpeed)
+          || (iddObjectType == IddObjectType::OS_CoilSystem_Cooling_DX_HeatExchangerAssisted)
+          || (iddObjectType == IddObjectType::OS_Coil_Cooling_DX) || (iddObjectType == IddObjectType::Coil_Cooling_DX_SingleSpeed)
+          || (iddObjectType == IddObjectType::Coil_Cooling_DX_VariableSpeed)
+          || (iddObjectType == IddObjectType::CoilSystem_Cooling_DX_HeatExchangerAssisted)
+          || (iddObjectType == IddObjectType::Coil_Cooling_DX)) {
+        return setPointer(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingCoilName, coolingCoil.handle());
+      }
+      return false;
     }
 
   }  // namespace detail

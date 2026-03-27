@@ -6,7 +6,15 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../StraightComponent/FanOnOff.hpp"
+#include "../StraightComponent/Node.hpp"
+#include "../WaterToAirComponent/CoilCoolingWaterToAirHeatPumpEquationFit.hpp"
+#include "../WaterToAirComponent/CoilHeatingWater.hpp"
+#include "../WaterToAirComponent/CoilHeatingWaterToAirHeatPumpEquationFit.hpp"
 #include "../ZoneHVACComponent/ZoneHVACWaterToAirHeatPump.hpp"
+
+#include <utilities/idd/ZoneHVAC_WaterToAirHeatPump_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -97,4 +105,52 @@ TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(wahp.setDXHeatingCoilSizingRatio(1.1));
   EXPECT_DOUBLE_EQ(1.1, wahp.dXHeatingCoilSizingRatio());
+}
+
+TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_TopologyAndChildren) {
+  Model model;
+
+  FanOnOff fan(model);
+  CoilHeatingWaterToAirHeatPumpEquationFit heatingCoil(model);
+  CoilCoolingWaterToAirHeatPumpEquationFit coolingCoil(model);
+  CoilHeatingWater supplementalHeatingCoil(model);
+
+  ZoneHVACWaterToAirHeatPump wahp(model);
+
+  EXPECT_EQ(openstudio::ZoneHVAC_WaterToAirHeatPumpFields::AirInletNodeName, wahp.inletPort());
+  EXPECT_EQ(openstudio::ZoneHVAC_WaterToAirHeatPumpFields::AirOutletNodeName, wahp.outletPort());
+
+  EXPECT_TRUE(wahp.setSupplyAirFan(fan));
+  EXPECT_TRUE(wahp.setHeatingCoil(heatingCoil));
+  EXPECT_TRUE(wahp.setCoolingCoil(coolingCoil));
+  EXPECT_TRUE(wahp.setSupplementalHeatingCoil(supplementalHeatingCoil));
+
+  EXPECT_EQ(fan, wahp.supplyAirFan());
+  EXPECT_EQ(heatingCoil, wahp.heatingCoil());
+  EXPECT_EQ(coolingCoil, wahp.coolingCoil());
+  EXPECT_EQ(supplementalHeatingCoil, wahp.supplementalHeatingCoil());
+
+  const auto children = wahp.children();
+  ASSERT_EQ(4u, children.size());
+  EXPECT_EQ(fan, children[0]);
+  EXPECT_EQ(heatingCoil, children[1]);
+  EXPECT_EQ(coolingCoil, children[2]);
+  EXPECT_EQ(supplementalHeatingCoil, children[3]);
+
+  EXPECT_TRUE(fan.containingZoneHVACComponent());
+  EXPECT_EQ(wahp, fan.containingZoneHVACComponent().get());
+  EXPECT_TRUE(heatingCoil.containingZoneHVACComponent());
+  EXPECT_EQ(wahp, heatingCoil.containingZoneHVACComponent().get());
+  EXPECT_TRUE(coolingCoil.containingZoneHVACComponent());
+  EXPECT_EQ(wahp, coolingCoil.containingZoneHVACComponent().get());
+  EXPECT_TRUE(supplementalHeatingCoil.containingZoneHVACComponent());
+  EXPECT_EQ(wahp, supplementalHeatingCoil.containingZoneHVACComponent().get());
+
+  ThermalZone zone(model);
+  EXPECT_TRUE(wahp.addToThermalZone(zone));
+  EXPECT_TRUE(wahp.inletNode());
+  EXPECT_TRUE(wahp.outletNode());
+  wahp.removeFromThermalZone();
+  EXPECT_FALSE(wahp.inletNode());
+  EXPECT_FALSE(wahp.outletNode());
 }

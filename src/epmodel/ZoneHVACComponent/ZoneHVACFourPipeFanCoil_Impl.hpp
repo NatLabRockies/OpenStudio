@@ -23,6 +23,10 @@ namespace epmodel {
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACFourPipeFanCoil_Impl() override = default;
 
+      std::vector<ModelObject> children() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+
       std::string capacityControlMethod() const;
       bool setCapacityControlMethod(const std::string& capacityControlMethod);
       std::vector<std::string> capacityControlMethodValues() const;
@@ -50,6 +54,14 @@ namespace epmodel {
       std::string outdoorAirMixerObjectType() const;
       bool setOutdoorAirMixerObjectType(const std::string& outdoorAirMixerObjectType);
       std::vector<std::string> outdoorAirMixerObjectTypeValues() const;
+
+      HVACComponent supplyAirFan() const;
+      HVACComponent coolingCoil() const;
+      HVACComponent heatingCoil() const;
+
+      bool setSupplyAirFan(HVACComponent& fan);
+      bool setCoolingCoil(HVACComponent& coolingCoil);
+      bool setHeatingCoil(HVACComponent& heatingCoil);
 
       boost::optional<double> maximumColdWaterFlowRate() const;
       bool isMaximumColdWaterFlowRateAutosized() const;

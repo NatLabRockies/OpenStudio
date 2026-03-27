@@ -7,6 +7,7 @@
 #include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl.hpp"
 
 #include "Model.hpp"
+#include "ModelObject.hpp"
 
 #include "../utilities/core/Assert.hpp"
 
@@ -248,6 +249,46 @@ namespace epmodel {
 
   void ZoneHVACTerminalUnitVariableRefrigerantFlow::resetSupplyAirFanPlacement() {
     impl(this)->resetSupplyAirFanPlacement();
+  }
+
+  HVACComponent ZoneHVACTerminalUnitVariableRefrigerantFlow::supplyAirFan() const {
+    return impl(this)->supplyAirFan();
+  }
+
+  bool ZoneHVACTerminalUnitVariableRefrigerantFlow::setSupplyAirFan(HVACComponent& fan) {
+    return impl(this)->setSupplyAirFan(fan);
+  }
+
+  boost::optional<HVACComponent> ZoneHVACTerminalUnitVariableRefrigerantFlow::coolingCoil() const {
+    return impl(this)->coolingCoil();
+  }
+
+  bool ZoneHVACTerminalUnitVariableRefrigerantFlow::setCoolingCoil(HVACComponent& coil) {
+    return impl(this)->setCoolingCoil(coil);
+  }
+
+  boost::optional<HVACComponent> ZoneHVACTerminalUnitVariableRefrigerantFlow::heatingCoil() const {
+    return impl(this)->heatingCoil();
+  }
+
+  bool ZoneHVACTerminalUnitVariableRefrigerantFlow::setHeatingCoil(HVACComponent& coil) {
+    return impl(this)->setHeatingCoil(coil);
+  }
+
+  boost::optional<HVACComponent> ZoneHVACTerminalUnitVariableRefrigerantFlow::supplementalHeatingCoil() const {
+    return impl(this)->supplementalHeatingCoil();
+  }
+
+  bool ZoneHVACTerminalUnitVariableRefrigerantFlow::setSupplementalHeatingCoil(HVACComponent& coil) {
+    return impl(this)->setSupplementalHeatingCoil(coil);
+  }
+
+  void ZoneHVACTerminalUnitVariableRefrigerantFlow::resetSupplementalHeatingCoil() {
+    impl(this)->resetSupplementalHeatingCoil();
+  }
+
+  std::vector<ModelObject> ZoneHVACTerminalUnitVariableRefrigerantFlow::children() const {
+    return impl(this)->children();
   }
 
   namespace detail {
@@ -609,6 +650,80 @@ namespace epmodel {
     void ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::resetSupplyAirFanPlacement() {
       bool result = setString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanPlacement, "", false);
       OS_ASSERT(result);
+    }
+
+    HVACComponent ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::supplyAirFan() const {
+      auto fan = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName);
+      OS_ASSERT(fan);
+      return *fan;
+    }
+
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setSupplyAirFan(HVACComponent& fan) {
+      return setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName, fan.handle());
+    }
+
+    boost::optional<HVACComponent> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::coolingCoil() const {
+      return getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName);
+    }
+
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setCoolingCoil(HVACComponent& coil) {
+      return setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName, coil.handle());
+    }
+
+    boost::optional<HVACComponent> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::heatingCoil() const {
+      return getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName);
+    }
+
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setHeatingCoil(HVACComponent& coil) {
+      return setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName, coil.handle());
+    }
+
+    boost::optional<HVACComponent> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::supplementalHeatingCoil() const {
+      return getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilName);
+    }
+
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setSupplementalHeatingCoil(HVACComponent& coil) {
+      return setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilName, coil.handle());
+    }
+
+    void ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::resetSupplementalHeatingCoil() {
+      bool result = setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilName, Handle());
+      OS_ASSERT(result);
+    }
+
+    std::vector<ModelObject> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::children() const {
+      std::vector<ModelObject> result;
+
+      if (auto fan = getObject<ModelObject>().getTarget(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName)) {
+        if (auto mo = model().getModelObject<ModelObject>(fan->handle())) {
+          result.push_back(*mo);
+        }
+      }
+      if (auto coil = getObject<ModelObject>().getTarget(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName)) {
+        if (auto mo = model().getModelObject<ModelObject>(coil->handle())) {
+          result.push_back(*mo);
+        }
+      }
+      if (auto coil = getObject<ModelObject>().getTarget(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName)) {
+        if (auto mo = model().getModelObject<ModelObject>(coil->handle())) {
+          result.push_back(*mo);
+        }
+      }
+      if (auto coil = getObject<ModelObject>().getTarget(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilName)) {
+        if (auto mo = model().getModelObject<ModelObject>(coil->handle())) {
+          result.push_back(*mo);
+        }
+      }
+
+      return result;
+    }
+
+    unsigned ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::inletPort() const {
+      return ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::TerminalUnitAirInletNodeName;
+    }
+
+    unsigned ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::outletPort() const {
+      return ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::TerminalUnitAirOutletNodeName;
     }
 
   }  // namespace detail

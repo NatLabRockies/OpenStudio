@@ -65,6 +65,10 @@ namespace epmodel {
 
    protected:
     HVACComponent(IddObjectType type, const Model& model, bool fastName = false, bool isTransient = false);
+    using ImplType = detail::HVACComponent_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
     explicit HVACComponent(std::shared_ptr<detail::HVACComponent_Impl> impl);
   };
 

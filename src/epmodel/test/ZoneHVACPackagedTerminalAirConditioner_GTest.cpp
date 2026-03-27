@@ -7,6 +7,13 @@
 
 #include "EPModelFixture.hpp"
 #include "../ZoneHVACComponent/ZoneHVACPackagedTerminalAirConditioner.hpp"
+#include "../StraightComponent/Node.hpp"
+#include "../StraightComponent/FanConstantVolume.hpp"
+#include "../StraightComponent/CoilCoolingDXSingleSpeed.hpp"
+#include "../WaterToAirComponent/CoilHeatingWater.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+
+#include <utilities/idd/ZoneHVAC_PackagedTerminalAirConditioner_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -78,4 +85,44 @@ TEST_F(EPModelFixture, ZoneHVACPackagedTerminalAirConditioner_ScalarAccessors_Ro
   EXPECT_EQ("BlowThrough", ptac.fanPlacement());
   ptac.resetFanPlacement();
   EXPECT_TRUE(ptac.isFanPlacementDefaulted());
+}
+
+TEST_F(EPModelFixture, ZoneHVACPackagedTerminalAirConditioner_TopologyAndChildren) {
+  Model model;
+  FanConstantVolume fan(model);
+  CoilHeatingWater heatingCoil(model);
+  CoilCoolingDXSingleSpeed coolingCoil(model);
+  ZoneHVACPackagedTerminalAirConditioner ptac(model);
+
+  EXPECT_TRUE(ptac.setSupplyAirFan(fan));
+  EXPECT_TRUE(ptac.setHeatingCoil(heatingCoil));
+  EXPECT_TRUE(ptac.setCoolingCoil(coolingCoil));
+
+  const auto children = ptac.children();
+  ASSERT_EQ(3u, children.size());
+  EXPECT_EQ(heatingCoil, children[0]);
+  EXPECT_EQ(fan, children[1]);
+  EXPECT_EQ(coolingCoil, children[2]);
+
+  ASSERT_TRUE(fan.containingZoneHVACComponent());
+  ASSERT_TRUE(heatingCoil.containingZoneHVACComponent());
+  ASSERT_TRUE(coolingCoil.containingZoneHVACComponent());
+  EXPECT_EQ(ptac, fan.containingZoneHVACComponent().get());
+  EXPECT_EQ(ptac, heatingCoil.containingZoneHVACComponent().get());
+  EXPECT_EQ(ptac, coolingCoil.containingZoneHVACComponent().get());
+
+  EXPECT_EQ(openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::AirInletNodeName, ptac.inletPort());
+  EXPECT_EQ(openstudio::ZoneHVAC_PackagedTerminalAirConditionerFields::AirOutletNodeName, ptac.outletPort());
+
+  ThermalZone zone(model);
+  EXPECT_TRUE(ptac.addToThermalZone(zone));
+  ASSERT_TRUE(ptac.thermalZone());
+  ASSERT_TRUE(ptac.inletNode());
+  ASSERT_TRUE(ptac.outletNode());
+  EXPECT_EQ(zone, ptac.thermalZone().get());
+  EXPECT_NE(ptac.inletNode()->handle(), ptac.outletNode()->handle());
+  ptac.removeFromThermalZone();
+  EXPECT_FALSE(ptac.thermalZone());
+  EXPECT_FALSE(ptac.inletNode());
+  EXPECT_FALSE(ptac.outletNode());
 }

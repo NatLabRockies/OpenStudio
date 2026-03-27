@@ -310,6 +310,42 @@ namespace epmodel {
     getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->resetHeatPumpCoilWaterFlowMode();
   }
 
+  HVACComponent ZoneHVACWaterToAirHeatPump::supplyAirFan() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->supplyAirFan();
+  }
+
+  bool ZoneHVACWaterToAirHeatPump::setSupplyAirFan(HVACComponent& supplyAirFan) {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setSupplyAirFan(supplyAirFan);
+  }
+
+  HVACComponent ZoneHVACWaterToAirHeatPump::heatingCoil() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->heatingCoil();
+  }
+
+  bool ZoneHVACWaterToAirHeatPump::setHeatingCoil(HVACComponent& heatingCoil) {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setHeatingCoil(heatingCoil);
+  }
+
+  HVACComponent ZoneHVACWaterToAirHeatPump::coolingCoil() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->coolingCoil();
+  }
+
+  bool ZoneHVACWaterToAirHeatPump::setCoolingCoil(HVACComponent& coolingCoil) {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setCoolingCoil(coolingCoil);
+  }
+
+  HVACComponent ZoneHVACWaterToAirHeatPump::supplementalHeatingCoil() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->supplementalHeatingCoil();
+  }
+
+  bool ZoneHVACWaterToAirHeatPump::setSupplementalHeatingCoil(HVACComponent& supplementalHeatingCoil) {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setSupplementalHeatingCoil(supplementalHeatingCoil);
+  }
+
+  std::vector<ModelObject> ZoneHVACWaterToAirHeatPump::children() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->children();
+  }
+
   double ZoneHVACWaterToAirHeatPump::dXHeatingCoilSizingRatio() const {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->dXHeatingCoilSizingRatio();
   }
@@ -324,6 +360,72 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    HVACComponent ZoneHVACWaterToAirHeatPump_Impl::supplyAirFan() const {
+      auto child = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanName);
+      OS_ASSERT(child);
+      return *child;
+    }
+
+    bool ZoneHVACWaterToAirHeatPump_Impl::setSupplyAirFan(HVACComponent& supplyAirFan) {
+      return setPointer(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanName, supplyAirFan.handle());
+    }
+
+    HVACComponent ZoneHVACWaterToAirHeatPump_Impl::heatingCoil() const {
+      auto child = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_WaterToAirHeatPumpFields::HeatingCoilName);
+      OS_ASSERT(child);
+      return *child;
+    }
+
+    bool ZoneHVACWaterToAirHeatPump_Impl::setHeatingCoil(HVACComponent& heatingCoil) {
+      return setPointer(ZoneHVAC_WaterToAirHeatPumpFields::HeatingCoilName, heatingCoil.handle());
+    }
+
+    HVACComponent ZoneHVACWaterToAirHeatPump_Impl::coolingCoil() const {
+      auto child = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_WaterToAirHeatPumpFields::CoolingCoilName);
+      OS_ASSERT(child);
+      return *child;
+    }
+
+    bool ZoneHVACWaterToAirHeatPump_Impl::setCoolingCoil(HVACComponent& coolingCoil) {
+      return setPointer(ZoneHVAC_WaterToAirHeatPumpFields::CoolingCoilName, coolingCoil.handle());
+    }
+
+    HVACComponent ZoneHVACWaterToAirHeatPump_Impl::supplementalHeatingCoil() const {
+      auto child = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_WaterToAirHeatPumpFields::SupplementalHeatingCoilName);
+      OS_ASSERT(child);
+      return *child;
+    }
+
+    bool ZoneHVACWaterToAirHeatPump_Impl::setSupplementalHeatingCoil(HVACComponent& supplementalHeatingCoil) {
+      return setPointer(ZoneHVAC_WaterToAirHeatPumpFields::SupplementalHeatingCoilName, supplementalHeatingCoil.handle());
+    }
+
+    std::vector<ModelObject> ZoneHVACWaterToAirHeatPump_Impl::children() const {
+      std::vector<ModelObject> result;
+      if (auto child = getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanName)) {
+        result.push_back(*child);
+      }
+      if (auto child = getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_WaterToAirHeatPumpFields::HeatingCoilName)) {
+        result.push_back(*child);
+      }
+      if (auto child = getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_WaterToAirHeatPumpFields::CoolingCoilName)) {
+        result.push_back(*child);
+      }
+      if (auto child =
+            getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_WaterToAirHeatPumpFields::SupplementalHeatingCoilName)) {
+        result.push_back(*child);
+      }
+      return result;
+    }
+
+    unsigned ZoneHVACWaterToAirHeatPump_Impl::inletPort() const {
+      return ZoneHVAC_WaterToAirHeatPumpFields::AirInletNodeName;
+    }
+
+    unsigned ZoneHVACWaterToAirHeatPump_Impl::outletPort() const {
+      return ZoneHVAC_WaterToAirHeatPumpFields::AirOutletNodeName;
+    }
 
     boost::optional<double> ZoneHVACWaterToAirHeatPump_Impl::supplyAirFlowRateDuringCoolingOperation() const {
       return getDouble(ZoneHVAC_WaterToAirHeatPumpFields::CoolingSupplyAirFlowRate, true);

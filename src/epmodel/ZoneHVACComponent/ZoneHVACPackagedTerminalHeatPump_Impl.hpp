@@ -12,9 +12,13 @@
 
 #include <boost/optional.hpp>
 #include <string>
+#include <vector>
 
 namespace openstudio {
 namespace epmodel {
+
+  class HVACComponent;
+  class ModelObject;
 
   namespace detail {
 
@@ -23,6 +27,10 @@ namespace epmodel {
      public:
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACPackagedTerminalHeatPump_Impl() override = default;
+
+      std::vector<ModelObject> children() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
       boost::optional<double> supplyAirFlowRateDuringCoolingOperation() const;
       bool isSupplyAirFlowRateDuringCoolingOperationAutosized() const;
@@ -95,6 +103,18 @@ namespace epmodel {
       bool isFanPlacementDefaulted() const;
       bool setFanPlacement(const std::string& fanPlacement);
       void resetFanPlacement();
+
+      HVACComponent supplyAirFan() const;
+      bool setSupplyAirFan(HVACComponent& supplyAirFan);
+
+      HVACComponent heatingCoil() const;
+      bool setHeatingCoil(HVACComponent& heatingCoil);
+
+      HVACComponent coolingCoil() const;
+      bool setCoolingCoil(HVACComponent& coolingCoil);
+
+      HVACComponent supplementalHeatingCoil() const;
+      bool setSupplementalHeatingCoil(HVACComponent& supplementalHeatingCoil);
 
       double dXHeatingCoilSizingRatio() const;
       bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);

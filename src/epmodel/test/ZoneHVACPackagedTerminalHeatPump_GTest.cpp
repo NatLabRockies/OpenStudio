@@ -7,6 +7,14 @@
 
 #include "EPModelFixture.hpp"
 #include "../ZoneHVACComponent/ZoneHVACPackagedTerminalHeatPump.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../StraightComponent/Node.hpp"
+#include "../StraightComponent/CoilCoolingDXSingleSpeed.hpp"
+#include "../StraightComponent/CoilHeatingDXSingleSpeed.hpp"
+#include "../StraightComponent/CoilHeatingElectric.hpp"
+#include "../StraightComponent/FanOnOff.hpp"
+
+#include <utilities/idd/ZoneHVAC_PackagedTerminalHeatPump_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -111,4 +119,46 @@ TEST_F(EPModelFixture, ZoneHVACPackagedTerminalHeatPump_ScalarAccessors_RoundTri
 
   EXPECT_TRUE(pthp.setDXHeatingCoilSizingRatio(1.1));
   EXPECT_DOUBLE_EQ(1.1, pthp.dXHeatingCoilSizingRatio());
+}
+
+TEST_F(EPModelFixture, ZoneHVACPackagedTerminalHeatPump_TopologyAndChildren) {
+  Model model;
+  FanOnOff fan(model);
+  CoilHeatingDXSingleSpeed heatingCoil(model);
+  CoilCoolingDXSingleSpeed coolingCoil(model);
+  CoilHeatingElectric supplementalHeatingCoil(model);
+  ZoneHVACPackagedTerminalHeatPump pthp(model);
+
+  EXPECT_EQ(openstudio::ZoneHVAC_PackagedTerminalHeatPumpFields::AirInletNodeName, pthp.inletPort());
+  EXPECT_EQ(openstudio::ZoneHVAC_PackagedTerminalHeatPumpFields::AirOutletNodeName, pthp.outletPort());
+
+  EXPECT_TRUE(pthp.setSupplyAirFan(fan));
+  EXPECT_TRUE(pthp.setHeatingCoil(heatingCoil));
+  EXPECT_TRUE(pthp.setCoolingCoil(coolingCoil));
+  EXPECT_TRUE(pthp.setSupplementalHeatingCoil(supplementalHeatingCoil));
+
+  EXPECT_EQ(fan, pthp.supplyAirFan());
+  EXPECT_EQ(heatingCoil, pthp.heatingCoil());
+  EXPECT_EQ(coolingCoil, pthp.coolingCoil());
+  EXPECT_EQ(supplementalHeatingCoil, pthp.supplementalHeatingCoil());
+
+  const auto children = pthp.children();
+  ASSERT_EQ(4u, children.size());
+  EXPECT_EQ(fan, children.at(0));
+  EXPECT_EQ(heatingCoil, children.at(1));
+  EXPECT_EQ(coolingCoil, children.at(2));
+  EXPECT_EQ(supplementalHeatingCoil, children.at(3));
+
+  EXPECT_EQ(pthp, fan.containingZoneHVACComponent().get());
+  EXPECT_EQ(pthp, heatingCoil.containingZoneHVACComponent().get());
+  EXPECT_EQ(pthp, coolingCoil.containingZoneHVACComponent().get());
+  EXPECT_EQ(pthp, supplementalHeatingCoil.containingZoneHVACComponent().get());
+
+  ThermalZone zone(model);
+  EXPECT_TRUE(pthp.addToThermalZone(zone));
+  ASSERT_TRUE(pthp.inletNode());
+  ASSERT_TRUE(pthp.outletNode());
+  EXPECT_TRUE(pthp.thermalZone());
+  pthp.removeFromThermalZone();
+  EXPECT_FALSE(pthp.thermalZone());
 }

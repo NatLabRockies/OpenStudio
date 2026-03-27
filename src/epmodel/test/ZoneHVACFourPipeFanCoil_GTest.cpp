@@ -6,6 +6,11 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../StraightComponent/Node.hpp"
+#include "../StraightComponent/FanConstantVolume.hpp"
+#include "../WaterToAirComponent/CoilCoolingWater.hpp"
+#include "../WaterToAirComponent/CoilHeatingWater.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
 #include "../ZoneHVACComponent/ZoneHVACFourPipeFanCoil.hpp"
 
 using namespace openstudio::epmodel;
@@ -84,4 +89,41 @@ TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_ScalarAccessors_RoundTrip) {
 
   coil.autosizeMaximumSupplyAirTemperatureInHeatingMode();
   EXPECT_TRUE(coil.isMaximumSupplyAirTemperatureInHeatingModeAutosized());
+}
+
+TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_ChildrenAndZoneTopology) {
+  Model model;
+  FanConstantVolume fan(model);
+  CoilCoolingWater coolingCoil(model);
+  CoilHeatingWater heatingCoil(model);
+  ZoneHVACFourPipeFanCoil coil(model);
+  ThermalZone zone(model);
+
+  ASSERT_TRUE(coil.setCapacityControlMethod("ConstantFanVariableFlow"));
+  ASSERT_TRUE(coil.setSupplyAirFan(fan));
+  ASSERT_TRUE(coil.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(coil.setHeatingCoil(heatingCoil));
+
+  const auto children = coil.children();
+  ASSERT_EQ(3u, children.size());
+  EXPECT_EQ(fan.handle(), children[0].handle());
+  EXPECT_EQ(coolingCoil.handle(), children[1].handle());
+  EXPECT_EQ(heatingCoil.handle(), children[2].handle());
+
+  ASSERT_TRUE(fan.containingZoneHVACComponent());
+  ASSERT_TRUE(coolingCoil.containingZoneHVACComponent());
+  ASSERT_TRUE(heatingCoil.containingZoneHVACComponent());
+  EXPECT_EQ(coil, fan.containingZoneHVACComponent().get());
+  EXPECT_EQ(coil, coolingCoil.containingZoneHVACComponent().get());
+  EXPECT_EQ(coil, heatingCoil.containingZoneHVACComponent().get());
+
+  ASSERT_TRUE(coil.addToThermalZone(zone));
+  ASSERT_TRUE(coil.inletNode());
+  ASSERT_TRUE(coil.outletNode());
+  EXPECT_EQ(zone, coil.thermalZone().get());
+
+  coil.removeFromThermalZone();
+  EXPECT_FALSE(coil.thermalZone());
+  EXPECT_FALSE(coil.inletNode());
+  EXPECT_FALSE(coil.outletNode());
 }

@@ -20,6 +20,8 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class HVACComponent;
+  class ModelObject;
 
   namespace detail {
     class ZoneHVACPackagedTerminalHeatPump_Impl;
@@ -44,7 +46,13 @@ namespace epmodel {
     // - API: the scalar getters/setters in this class mirror openstudio::model's supply/air/outdoor flows, convergence tolerances, supplemental heater limits,
     //   and fan placement fields that map to EnergyPlus ZoneHVAC:PackagedTerminalHeatPump fields enumerated by ZoneHVAC_PackagedTerminalHeatPumpFields;
     //   ForwardTranslateZoneHVACPackagedTerminalHeatPump.cpp documents these mappings.
-    // - Field Mapping: relationship-like fields (availability schedule, outdoor air mixer links, fan/heating/cooling/supplemental coil object references, node names, capacity control) are intentionally excluded.
+    // - Field Mapping: fan/heating/cooling/supplemental-heating component references are represented by explicit child accessors; availability schedule,
+    //   outdoor air mixer links, node names, and capacity control remain excluded in this epmodel pass.
+
+    unsigned inletPort() const;
+    unsigned outletPort() const;
+
+    std::vector<ModelObject> children() const;
 
     boost::optional<double> supplyAirFlowRateDuringCoolingOperation() const;
     bool isSupplyAirFlowRateDuringCoolingOperationAutosized() const;
@@ -110,6 +118,18 @@ namespace epmodel {
     bool isFanPlacementDefaulted() const;
     bool setFanPlacement(const std::string& fanPlacement);
     void resetFanPlacement();
+
+    HVACComponent supplyAirFan() const;
+    bool setSupplyAirFan(HVACComponent& supplyAirFan);
+
+    HVACComponent heatingCoil() const;
+    bool setHeatingCoil(HVACComponent& heatingCoil);
+
+    HVACComponent coolingCoil() const;
+    bool setCoolingCoil(HVACComponent& coolingCoil);
+
+    HVACComponent supplementalHeatingCoil() const;
+    bool setSupplementalHeatingCoil(HVACComponent& supplementalHeatingCoil);
 
     double dXHeatingCoilSizingRatio() const;
     bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);
