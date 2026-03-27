@@ -41,14 +41,13 @@ namespace epmodel {
     static std::vector<std::string> thawProcessIndicatorValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for the numeric and choice fields listed here so the
-    //   epmodel type stays aligned with the model-counterpart thermal storage coverage.
-    // - Field Mapping: capacity, curve variable specifications, curve timestep, parasitic loads, tank loss, freezing temperature,
-    //   and thaw indicator map directly to the EnergyPlus ThermalStorage:Ice:Detailed real/choice fields tracked by
-    //   translateThermalStorageIceDetailed.
-    // - Field Mapping: Relationship-like fields (schedules, curves, node links) are intentionally excluded from this scalar-only
-    //   scaffold; node wiring is handled by StraightComponent inlet/outlet ports.
-    // - TODO(parity): Add curve/schedule wiring helpers once the relationship pass supplies those APIs.
+    // - Status: Partial Parity. The canonical ice-thermal-storage scalar surface is present, but curve, schedule, and node helpers are still missing.
+    // - Canonical Counterpart: openstudio::model::ThermalStorageIceDetailed.
+    // - Implemented Parity: The preserved scalar API matches the capacity, curve-specification, timestep, parasitic-load, tank-loss, freezing-temperature, and thaw-indicator accessors with matching autosize/default behavior.
+    // - Documented Delta: Curve, schedule, and node-link helpers remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `ThermalStorage:Ice:Detailed` scalar fields used by the forward translator.
+    // - Evidence: `src/model/ThermalStorageIceDetailed.hpp`, `src/model/ThermalStorageIceDetailed.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateThermalStorageIceDetailed.cpp`.
+    // - Remaining Parity Work: Add the omitted curve, schedule, and node helpers before claiming full parity.
 
     double capacity() const;
     bool setCapacity(double capacity);

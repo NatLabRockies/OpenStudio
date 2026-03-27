@@ -40,11 +40,13 @@ class EPMODEL_API CoolingTowerTwoSpeed : public StraightComponent
   static std::vector<std::string> cellControlValues();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::CoolingTowerTwoSpeed scalar accessor names/signatures for counterpart parity.
-  // - Field Mapping: Scalar APIs map directly to E+ CoolingTower:TwoSpeed scalar fields.
-  // - Field Mapping: Relationship-like fields (node names, schedules, and tank/object links) are excluded in this pass.
-  // - ForwardTranslator evidence: ForwardTranslateCoolingTowerTwoSpeed.cpp maps preserved scalar APIs to matching E+ fields.
-  // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+  // - Status: Scalar Parity. The canonical two-speed cooling-tower scalar surface is present, while node, schedule, and object-link helpers remain out of scope.
+  // - Canonical Counterpart: openstudio::model::CoolingTowerTwoSpeed.
+  // - Implemented Parity: The preserved scalar API covers the tower performance, fan-power, flow, blowdown, cell-control, and basin-heater fields with matching default/autosize behavior.
+  // - Documented Delta: Node-link, schedule, and object-link helpers remain intentionally excluded from this scalar pass.
+  // - Field/Storage Mapping: These accessors map directly to EnergyPlus `CoolingTower:TwoSpeed` scalar fields used by the forward translator.
+  // - Evidence: `src/model/CoolingTowerTwoSpeed.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateCoolingTowerTwoSpeed.cpp`.
+  // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
   boost::optional<double> designWaterFlowRate() const;
   bool isDesignWaterFlowRateAutosized() const;
   bool setDesignWaterFlowRate(double designWaterFlowRate);

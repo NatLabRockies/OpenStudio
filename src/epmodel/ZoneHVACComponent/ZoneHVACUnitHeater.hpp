@@ -43,11 +43,13 @@ namespace epmodel {
     static std::vector<std::string> fanControlTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Scalar accessors preserve the openstudio::model names (maximumSupplyAirFlowRate, fanControlType, maximumHotWaterFlowRate,
-    //   minimumHotWaterFlowRate, heatingConvergenceTolerance) while mapping directly to the EnergyPlus ZoneHVAC:UnitHeater fields via
-    //   ZoneHVAC_UnitHeaterFields (see ForwardTranslateZoneHVACUnitHeater.cpp for the mapping evidence).
-    // - Field Mapping: availability/supply fan/heating coil references and node targets remain relationship-only and are intentionally
-    //   excluded from this scalar-only surface until dedicated helpers exist.
+    // - Status: Partial Parity. The core unit-heater scalars are aligned, but the availability/fan/coil/node relationships remain separate.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACUnitHeater.
+    // - Implemented Parity: `maximumSupplyAirFlowRate`, `fanControlType`, `maximumHotWaterFlowRate`, `minimumHotWaterFlowRate`, and `heatingConvergenceTolerance` map directly to the EnergyPlus object.
+    // - Documented Delta: Availability, supply-fan, heating-coil, and node targets are relationship-only and remain outside the scalar surface.
+    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object while the omitted links are represented through child-object and topology state.
+    // - Evidence: `src/model/ZoneHVACUnitHeater.hpp`, `src/model/ZoneHVACUnitHeater.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACUnitHeater.cpp`, and `src/epmodel/test/ZoneHVACUnitHeater_GTest.cpp`.
+    // - Remaining Parity Work: Add the missing relationship helpers only if the canonical wrapper still exposes them as public API.
 
     /** @name Maximum Supply Air Flow Rate */
     //@{

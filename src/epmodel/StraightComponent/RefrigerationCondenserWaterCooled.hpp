@@ -37,10 +37,13 @@ namespace epmodel {
     static std::vector<std::string> waterCooledLoopFlowTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::RefrigerationCondenserWaterCooled scalar accessor names/signatures for this counterpart.
-    // - Field Mapping: Each scalar maps to OS_Refrigeration_Condenser_WaterCooledFields tracked by translateRefrigerationCondenserWaterCooled.
-    // - Field Mapping: Water outlet temperature schedule remains a relationship-only reference and is intentionally omitted from this scalar scaffold.
-    // - TODO(parity): Follow-up passes should add loop topology helpers once StraightComponent plumbing parity completes.
+    // - Status: Scalar Parity. The canonical water-cooled refrigeration-condenser scalar surface is present, while the water-outlet schedule helper remains out of scope.
+    // - Canonical Counterpart: openstudio::model::RefrigerationCondenserWaterCooled.
+    // - Implemented Parity: The preserved scalar API matches the rated heat-rejection, condensing-temperature, subcooling, loop-flow, flow-rate, temperature-limit, and inventory accessors with matching default behavior.
+    // - Documented Delta: The water-outlet-temperature schedule remains intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Refrigeration:Condenser:WaterCooled` scalar fields used by the forward translator.
+    // - Evidence: `src/model/RefrigerationCondenserWaterCooled.hpp`, `src/model/RefrigerationCondenserWaterCooled.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateRefrigerationCondenserWaterCooled.cpp`.
+    // - Remaining Parity Work: Add the omitted schedule helper without changing the preserved scalar signatures.
 
     boost::optional<double> ratedEffectiveTotalHeatRejectionRate() const;
     bool setRatedEffectiveTotalHeatRejectionRate(double ratedEffectiveTotalHeatRejectionRate);

@@ -36,11 +36,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: Scalar APIs map directly to Generator:FuelCell:StackCooler scalar fields in EnergyPlus.
-    // - ForwardTranslator evidence: ForwardTranslateGeneratorFuelCellStackCooler maps these APIs one-to-one.
-    // - TODO(parity): Add relationship APIs separately for HeatRecoveryWaterInletNodeName,
-    //   HeatRecoveryWaterOutletNodeName, and parent Generator:FuelCell linkage.
+    // - Status: Scalar Parity. The canonical fuel-cell stack-cooler scalar surface is present, while node and parent-link helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::GeneratorFuelCellStackCooler.
+    // - Implemented Parity: The preserved scalar API matches the stack-temperature, flow, heat-transfer, pump, and fan-coefficient accessors with matching scalar behavior.
+    // - Documented Delta: Heat-recovery node names and parent `Generator:FuelCell` linkage remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Generator:FuelCell:StackCooler` scalar fields used by the forward translator.
+    // - Evidence: `src/model/GeneratorFuelCellStackCooler.hpp`, `src/model/GeneratorFuelCellStackCooler.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateGeneratorFuelCellStackCooler.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
     double nominalStackTemperature() const;
     bool setNominalStackTemperature(double nominalStackTemperature);
     void resetNominalStackTemperature();

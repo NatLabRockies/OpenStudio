@@ -37,16 +37,13 @@ namespace epmodel {
     static std::vector<std::string> bottomSurfaceBoundaryConditionsTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::SolarCollectorIntegralCollectorStorage scalar accessor names/signatures.
-    // - Field Mapping: bottomSurfaceBoundaryConditionsType and isBottomSurfaceBoundaryConditionsTypeDefaulted map to E+
-    //   SolarCollector:IntegralCollectorStorage Bottom Surface Boundary Conditions Type.
-    // - Field Mapping: maximumFlowRate/setMaximumFlowRate/resetMaximumFlowRate map to E+
-    //   SolarCollector:IntegralCollectorStorage Maximum Flow Rate.
-    // - Field Mapping: integral collector storage parameters, surface, boundary condition model name, and inlet/outlet node
-    //   linkage are excluded relationship-like/non-scalar APIs in this scaffold pass.
-    // - ForwardTranslator evidence: ForwardTranslateSolarCollectorIntegralCollectorStorage.cpp writes
-    //   bottomSurfaceBoundaryConditionsType() and maximumFlowRate() to matching E+ fields.
-    // - TODO(parity): add excluded non-scalar APIs incrementally without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical integral-collector-storage scalar surface is present, while collector, surface, and node helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::SolarCollectorIntegralCollectorStorage.
+    // - Implemented Parity: The preserved scalar API matches the bottom-surface boundary-condition and maximum-flow-rate accessors with matching default behavior.
+    // - Documented Delta: Collector-storage parameters, boundary-condition model linkage, and inlet/outlet node helpers remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `SolarCollector:IntegralCollectorStorage` scalar fields used by the forward translator.
+    // - Evidence: `src/model/SolarCollectorIntegralCollectorStorage.hpp`, `src/model/SolarCollectorIntegralCollectorStorage.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateSolarCollectorIntegralCollectorStorage.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
     // Bottom surface boundary conditions type
     std::string bottomSurfaceBoundaryConditionsType() const;
     bool isBottomSurfaceBoundaryConditionsTypeDefaulted() const;

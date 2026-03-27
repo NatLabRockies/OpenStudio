@@ -40,11 +40,13 @@ namespace epmodel {
     static std::vector<std::string> performanceInputMethodValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::FluidCoolerTwoSpeed scalar accessor names/signatures.
-    // - Field Mapping: Preserved scalar APIs currently delegate directly to matching E+ FluidCooler:TwoSpeed scalar fields.
-    // - API: Relationship accessors outdoorAirInletNode()/setOutdoorAirInletNode()/resetOutdoorAirInletNode() are intentionally excluded in this scalar-only pass.
-    // - ForwardTranslator evidence: ForwardTranslateFluidCoolerTwoSpeed.cpp maps these preserved scalar APIs to the same E+ fields.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical two-speed fluid-cooler scalar surface is present, while the outdoor-air inlet relationship helper remains out of scope.
+    // - Canonical Counterpart: openstudio::model::FluidCoolerTwoSpeed.
+    // - Implemented Parity: The preserved scalar API matches the high/low speed performance, capacity, and temperature accessors with matching autosize/default behavior.
+    // - Documented Delta: `outdoorAirInletNode()` and its mutators remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `FluidCooler:TwoSpeed` scalar fields used by the forward translator.
+    // - Evidence: `src/model/FluidCoolerTwoSpeed.hpp`, `src/model/FluidCoolerTwoSpeed.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFluidCoolerTwoSpeed.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helper without changing the preserved scalar signatures.
     std::string performanceInputMethod() const;
     bool setPerformanceInputMethod(const std::string& performanceInputMethod);
 

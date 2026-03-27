@@ -37,19 +37,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::EvaporativeCoolerIndirectResearchSpecial scalar accessor names/signatures.
-    // - Field Mapping: coolerMaximumEffectiveness -> E+ Cooler Wetbulb Design Effectiveness.
-    // - Field Mapping: recirculatingWaterPumpPowerConsumption -> E+ Recirculating Water Pump Design Power.
-    // - Field Mapping: secondaryFanFlowRate -> E+ Secondary Air Design Flow Rate.
-    // - Field Mapping: legacy secondaryFanTotalEfficiency and secondaryFanDeltaPressure APIs both delegate to
-    //   E+ Secondary Air Fan Sizing Specific Power to preserve counterpart signatures while this scalar-only pass
-    //   omits non-scalar parity behavior.
-    // - Field Mapping: coolerDrybulbDesignEffectiveness, waterPumpPowerSizingFactor, secondaryAirFlowScalingFactor,
-    //   secondaryAirFanDesignPower, primaryDesignAirFlowRate, dewpointEffectivenessFactor, driftLossFraction, and
-    //   blowdownConcentrationRatio map directly to current E+ scalar fields.
-    // - Field Mapping: availability schedule, node-name, relief-air node, storage tank, and curve-name fields are
-    //   relationship-like and excluded from this scalar-only scaffold.
-    // - TODO(parity): Revisit secondary-fan dual-API mapping if richer non-scalar parity storage is introduced.
+    // - Status: Scalar Parity. The canonical indirect-research-special scalar surface is present, with secondary-fan and relationship helpers left out of this pass.
+    // - Canonical Counterpart: openstudio::model::EvaporativeCoolerIndirectResearchSpecial.
+    // - Implemented Parity: The preserved scalar API matches the effectiveness, pump-power, fan-flow, fan-power, and blowdown accessors with matching autosize/default behavior.
+    // - Documented Delta: The legacy secondary-fan dual-API mapping is preserved for compatibility, and schedule/node/storage-tank/curve helpers remain intentionally excluded.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `EvaporativeCooler:Indirect:ResearchSpecial` scalar fields used by the forward translator.
+    // - Evidence: `src/model/EvaporativeCoolerIndirectResearchSpecial.hpp`, `src/model/EvaporativeCoolerIndirectResearchSpecial.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateEvaporativeCoolerIndirectResearchSpecial.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
 
     double coolerMaximumEffectiveness() const;
     bool setCoolerMaximumEffectiveness(double coolerMaximumEffectiveness);

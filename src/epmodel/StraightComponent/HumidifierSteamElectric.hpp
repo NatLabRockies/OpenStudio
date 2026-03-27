@@ -37,14 +37,13 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::HumidifierSteamElectric scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: Preserved scalar APIs map directly to E+ Humidifier:Steam:Electric fields Rated Capacity, Rated Power,
-    //   Rated Fan Power, and Standby Power.
-    // - ForwardTranslator evidence: ForwardTranslateHumidifierSteamElectric.cpp maps these exact model methods to matching E+ fields,
-    //   including autosize handling for Rated Capacity and Rated Power.
-    // - Field Mapping: Availability Schedule Name, Air Inlet/Outlet Node Name, and Water Storage Tank Name are relationship-like
-    //   fields and are excluded from this scalar pass.
-    // - TODO(parity): Add excluded relationship APIs in a dedicated relationship pass.
+    // - Status: Scalar Parity. The canonical steam-electric humidifier scalar surface is present, while schedule, node, and storage-tank helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::HumidifierSteamElectric.
+    // - Implemented Parity: The preserved scalar API matches the rated-capacity, rated-power, fan-power, and standby-power accessors with matching autosize/default behavior.
+    // - Documented Delta: Availability schedule, inlet/outlet node, and water-storage-tank helpers remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Humidifier:Steam:Electric` scalar fields used by the forward translator.
+    // - Evidence: `src/model/HumidifierSteamElectric.hpp`, `src/model/HumidifierSteamElectric.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHumidifierSteamElectric.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
     boost::optional<double> ratedCapacity() const;
     bool isRatedCapacityAutosized() const;
     bool setRatedCapacity(double ratedCapacity);

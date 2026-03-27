@@ -41,10 +41,13 @@ namespace epmodel {
     static std::vector<std::string> defrostControlValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: Preserved scalar APIs map directly to matching E+ AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl fields.
-    // - Field Mapping: Relationship-like fields (schedule/curves/lists/nodes) are intentionally excluded in this scalar scaffold phase.
-    // - TODO(parity): Add non-scalar relationship API parity incrementally after scalar saturation.
+    // - Status: Scalar Parity. The long scalar VRF surface is aligned, while terminal, loading-index, and other relationship APIs are still omitted.
+    // - Canonical Counterpart: openstudio::model::AirConditionerVariableRefrigerantFlowFluidTemperatureControl.
+    // - Implemented Parity: The preserved scalar API surface mirrors the canonical VRF cooling/heating, refrigerant, defrost, pipe, and heat-recovery fields exposed in the model type.
+    // - Documented Delta: epmodel currently models this object as a `ModelObject` wrapper and does not expose terminal, loading-index, or curve/list relationship APIs yet.
+    // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl` storage.
+    // - Evidence: `src/model/AirConditionerVariableRefrigerantFlowFluidTemperatureControl.hpp`, `src/model/AirConditionerVariableRefrigerantFlowFluidTemperatureControl.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirConditionerVariableRefrigerantFlowFluidTemperatureControl.cpp`, `src/epmodel/test/AirConditionerVariableRefrigerantFlowFluidTemperatureControl_GTest.cpp`, and `src/model/test/AirConditionerVariableRefrigerantFlowFluidTemperatureControl_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted terminal, loading-index, and curve/list relationship APIs after the relationship layer is available.
 
     std::string refrigerantType() const;
     bool setRefrigerantType(const std::string& refrigerantType);

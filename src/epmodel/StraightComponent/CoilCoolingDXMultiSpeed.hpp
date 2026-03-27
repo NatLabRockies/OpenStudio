@@ -41,11 +41,13 @@ class EPMODEL_API CoilCoolingDXMultiSpeed : public StraightComponent
   bool addToNode(Node& node);
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::CoilCoolingDXMultiSpeed scalar accessor names/signatures.
-  // - Field Mapping: APIs below map directly to EnergyPlus Coil:Cooling:DX:MultiSpeed scalar fields.
-  // - Field Mapping: relationship-like fields (schedules, nodes, curves, tank links, extensible stage links) are excluded.
-  // - ForwardTranslator evidence: ForwardTranslateCoilCoolingDXMultiSpeed.cpp writes these fields directly.
-  // - TODO(parity): Add relationship and stage/extensible APIs in a follow-up without changing preserved scalar signatures.
+  // - Status: Scalar Parity. The canonical scalar DX-coil surface is largely present, while schedule, curve, stage, and node-link helpers remain out of scope.
+  // - Canonical Counterpart: openstudio::model::CoilCoolingDXMultiSpeed.
+  // - Implemented Parity: The scalar condenser, fuel, basin-heater, and compressor/capacity helpers preserve the canonical naming, defaults, and autosize behavior.
+  // - Documented Delta: Availability schedule, curves, stage data, and node-link helpers from canonical `openstudio::model::CoilCoolingDXMultiSpeed` are not exposed yet.
+  // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Cooling:DX:MultiSpeed` fields.
+  // - Evidence: `src/model/CoilCoolingDXMultiSpeed.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXMultiSpeed.cpp`, and `src/epmodel/test/CoilCoolingDXMultiSpeed_GTest.cpp`.
+  // - Remaining Parity Work: Add the omitted schedule, stage, and relationship helpers without changing the preserved scalar signatures.
   std::string condenserType() const;
   bool setCondenserType(const std::string& condenserType);
 

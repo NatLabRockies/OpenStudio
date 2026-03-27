@@ -39,11 +39,13 @@ namespace epmodel {
     static std::vector<std::string> evaporatorAirTemperatureTypeforCurveObjectsValues();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: Scalar APIs map directly to EnergyPlus Coil:WaterHeating:AirToWaterHeatPump:Pumped scalar fields.
-    // - ForwardTranslator evidence: ForwardTranslateCoilWaterHeatingAirToWaterHeatPump.cpp writes these exact scalar fields.
-    // - Field Mapping: Relationship-like fields (AvailabilityScheduleName, curve-name references, and node links) are intentionally excluded.
-    // - TODO(parity): Add relationship APIs incrementally after scalar scaffold saturation.
+    // - Status: Scalar Parity. The scalar rating and control surface is aligned, while availability-schedule, curve, and connection APIs are still omitted.
+    // - Canonical Counterpart: openstudio::model::CoilWaterHeatingAirToWaterHeatPump.
+    // - Implemented Parity: `evaporatorAirTemperatureTypeforCurveObjectsValues`, the rating setters/getters, pump/fan flags, and flow autosize helpers preserve the canonical scalar contract.
+    // - Documented Delta: Availability schedule, curve-link, and node-link accessors are not exposed yet even though they exist on the canonical model type.
+    // - Field/Storage Mapping: The epmodel wrapper maps the preserved scalar fields directly to EnergyPlus `Coil:WaterHeating:AirToWaterHeatPump:Pumped` storage.
+    // - Evidence: `src/model/CoilWaterHeatingAirToWaterHeatPump.hpp`, `src/model/CoilWaterHeatingAirToWaterHeatPump.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilWaterHeatingAirToWaterHeatPump.cpp`, and `src/epmodel/test/CoilWaterHeatingAirToWaterHeatPump_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted schedule, curve, and object-link APIs after the relationship layer is available.
     double ratedHeatingCapacity() const;
     bool setRatedHeatingCapacity(double ratedHeatingCapacity);
 

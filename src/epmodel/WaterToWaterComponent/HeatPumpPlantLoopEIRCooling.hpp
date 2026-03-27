@@ -38,11 +38,13 @@ class EPMODEL_API HeatPumpPlantLoopEIRCooling : public WaterToWaterComponent
   static std::vector<std::string> condenserTypeValues();
 
   // Schema Alignment Notes:
-  // - API: Preserves openstudio::model scalar accessor names/signatures for this model-counterpart class.
-  // - Field Mapping: Preserved scalar APIs map directly to E+ HeatPump:PlantLoop:EIR:Cooling scalar fields.
-  // - Field Mapping: Relationship-like fields (companion object, curves, node/link targets) are intentionally excluded.
-  // - Field Mapping: ForwardTranslator evidence confirms direct mapping and Autosize string behavior for flow/capacity fields.
-  // - TODO(parity): Add excluded non-scalar APIs and loop-coupling behavior in a dedicated parity pass.
+  // - Status: Scalar Parity. The plant-loop heat-pump cooling scalars are aligned, while companion-object and loop-link behavior remains excluded.
+  // - Canonical Counterpart: openstudio::model::HeatPumpPlantLoopEIRCooling.
+  // - Implemented Parity: Scalar accessors for condenser type, flow rates, heat-recovery flow, reference capacity, COP, sizing, control, and temperature limits preserve the canonical model API shape.
+  // - Documented Delta: Companion-object, curve, and node/link APIs are intentionally excluded in this pass.
+  // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `HeatPump:PlantLoop:EIR:Cooling` fields directly, including autosized flow/capacity behavior.
+  // - Evidence: `src/model/HeatPumpPlantLoopEIRCooling.hpp`, `src/model/HeatPumpPlantLoopEIRCooling.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatPumpPlantLoopEIRCooling.cpp`.
+  // - Remaining Parity Work: Add the excluded loop-coupling and companion-object APIs only if the family moves beyond scalar parity.
   std::string condenserType() const;
   bool setCondenserType(const std::string& condenserType);
 

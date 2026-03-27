@@ -39,16 +39,13 @@ namespace epmodel {
     static std::vector<std::string> perPersonVentilationRateModeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: maximumTerminalAirFlowRate maps directly to E+ AirTerminal:DualDuct:VAV:OutdoorAir Maximum Terminal Air Flow Rate.
-    // - Field Mapping: perPersonVentilationRateMode maps directly to E+ AirTerminal:DualDuct:VAV:OutdoorAir Per Person Ventilation Rate Mode.
-    // - Field Mapping: controlForOutdoorAir behavior in model relies on OS-side boolean + translator wiring to
-    //   Design Specification Outdoor Air Object Name; epmodel scalar scaffold excludes that relationship mapping.
-    // - Field Mapping: Availability Schedule Name, Air Outlet Node Name, Outdoor Air Inlet Node Name,
-    //   Recirculated Air Inlet Node Name, and Design Specification Outdoor Air Object Name are relationship fields
-    //   and intentionally excluded from scalar accessors.
-    // - ForwardTranslator evidence: translateAirTerminalDualDuctVAVOutdoorAir writes only these two scalar E+ fields plus relationship links.
-    // - TODO(parity): Add relationship APIs incrementally after scalar scaffold saturation.
+    // - Status: Scalar Parity. The scalar surface is aligned, but the canonical wrapper still exposes schedule, node, and DSOA-control convenience APIs that epmodel has not reintroduced.
+    // - Canonical Counterpart: openstudio::model::AirTerminalDualDuctVAVOutdoorAir.
+    // - Implemented Parity: `maximumTerminalAirFlowRate` and `perPersonVentilationRateMode` preserve the canonical scalar behavior and autosize semantics.
+    // - Documented Delta: epmodel still omits the availability-schedule, node, DSOA, and `controlForOutdoorAir` wrappers that canonical model code exposes.
+    // - Field/Storage Mapping: Availability Schedule Name, Air Outlet Node Name, Outdoor Air Inlet Node Name, Recirculated Air Inlet Node Name, and Design Specification Outdoor Air Object Name are relationship fields and intentionally excluded from scalar accessors.
+    // - Evidence: `src/model/AirTerminalDualDuctVAVOutdoorAir.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalDualDuctVAVOutdoorAir.cpp`, and `src/epmodel/test/AirTerminalDualDuctVAVOutdoorAir_GTest.cpp` show the same scalar mapping and omitted relationship surface.
+    // - Remaining Parity Work: Reintroduce the schedule, DSOA, outdoor-air control, and node-relationship wrappers if full model-side parity is needed.
     boost::optional<double> maximumTerminalAirFlowRate() const;
     bool setMaximumTerminalAirFlowRate(double maximumTerminalAirFlowRate);
     void autosizeMaximumTerminalAirFlowRate();

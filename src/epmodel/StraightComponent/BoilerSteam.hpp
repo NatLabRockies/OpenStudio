@@ -38,10 +38,13 @@ namespace epmodel {
     static std::vector<std::string> fuelTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::BoilerSteam scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus Boiler:Steam scalar fields.
-    // - ForwardTranslator evidence: model::ForwardTranslateBoilerSteam maps these scalar methods to matching E+ fields.
-    // - Topology: Water inlet and steam outlet node fields are exposed through the StraightComponent contract.
+    // - Status: Partial Parity. The canonical boiler-steam scalar surface is present, and the node topology is mostly inherited, but explicit relationship helpers remain limited.
+    // - Canonical Counterpart: openstudio::model::BoilerSteam.
+    // - Implemented Parity: The preserved scalar API covers the boiler performance, flow, curve, sizing, and end-use fields with matching default/autosize behavior.
+    // - Documented Delta: Relationship helpers beyond the inherited StraightComponent node contract remain intentionally limited in this pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Boiler:Steam` scalar fields used by the forward translator.
+    // - Evidence: `src/model/BoilerSteam.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateBoilerSteam.cpp`.
+    // - Remaining Parity Work: Add any remaining relationship convenience around the inlet and outlet nodes without changing the preserved scalar signatures.
     std::string fuelType() const;
     bool setFuelType(const std::string& fuelType);
 

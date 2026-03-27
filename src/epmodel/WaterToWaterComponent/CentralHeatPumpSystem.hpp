@@ -37,10 +37,13 @@ class EPMODEL_API CentralHeatPumpSystem : public WaterToWaterComponent
     static std::vector<std::string> controlMethodValues();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: controlMethod and ancillaryPower map directly to E+ CentralHeatPumpSystem ControlMethod/AncillaryPower.
-    // - Field Mapping: AncillaryOperationScheduleName, node fields, and module extensibles are relationship-like and intentionally excluded.
-    // - TODO(parity): Add non-scalar loop/module/schedule behavior incrementally after scalar saturation.
+    // - Status: Scalar Parity. The scalar control surface is aligned, but module, schedule, and loop-link behavior remains intentionally out of scope.
+    // - Canonical Counterpart: openstudio::model::CentralHeatPumpSystem.
+    // - Implemented Parity: `controlMethod` and `ancillaryPower` preserve the canonical model scalar API shape.
+    // - Documented Delta: Ancillary schedule, node, and module-extensible APIs are omitted because this type still relies on the EnergyPlus-backed module graph for topology.
+    // - Field/Storage Mapping: Scalar wrappers map directly to EnergyPlus `CentralHeatPumpSystem` control fields while the module structure remains storage-level connective tissue.
+    // - Evidence: `src/model/CentralHeatPumpSystem.hpp`, `src/model/CentralHeatPumpSystem.cpp`, and the matching forward translator for this type.
+    // - Remaining Parity Work: Add the omitted loop/module/schedule APIs once the non-scalar water-to-water topology layer is expanded.
     /** @name ControlMethod */
     //@{
     std::string controlMethod() const;

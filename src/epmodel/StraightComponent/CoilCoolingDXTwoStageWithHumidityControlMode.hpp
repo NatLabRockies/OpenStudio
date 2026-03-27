@@ -35,11 +35,13 @@ class EPMODEL_API CoilCoolingDXTwoStageWithHumidityControlMode : public Straight
   static IddObjectType iddObjectType();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::CoilCoolingDXTwoStageWithHumidityControlMode scalar accessor names/signatures.
-  // - Field Mapping: These APIs map directly to EnergyPlus Coil:Cooling:DX:TwoStageWithHumidityControlMode scalar fields.
-  // - Field Mapping: relationship-like fields (schedules, curves, stage performance object references, node links) are excluded.
-  // - ForwardTranslator evidence: ForwardTranslateCoilCoolingDXTwoStageWithHumidityControlMode.cpp writes these scalar values directly.
-  // - TODO(parity): Add excluded relationship APIs in a dedicated parity pass without changing scalar signatures.
+  // - Status: Scalar Parity. The canonical scalar two-stage DX surface is largely present, while schedule, curve, stage-object, and node-link helpers remain out of scope.
+  // - Canonical Counterpart: openstudio::model::CoilCoolingDXTwoStageWithHumidityControlMode.
+  // - Implemented Parity: The scalar compressor, humidity-control, basin-heater, and stage-count helpers preserve the canonical naming and defaults.
+  // - Documented Delta: Availability schedule, curves, stage-performance objects, and node-link helpers from canonical `openstudio::model::CoilCoolingDXTwoStageWithHumidityControlMode` are not exposed yet.
+  // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Cooling:DX:TwoStageWithHumidityControlMode` fields.
+  // - Evidence: `src/model/CoilCoolingDXTwoStageWithHumidityControlMode.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXTwoStageWithHumidityControlMode.cpp`, and `src/epmodel/test/CoilCoolingDXTwoStageWithHumidityControlMode_GTest.cpp`.
+  // - Remaining Parity Work: Add the omitted schedule, stage-object, and relationship helpers without changing the preserved scalar signatures.
   double crankcaseHeaterCapacity() const;
   bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
 

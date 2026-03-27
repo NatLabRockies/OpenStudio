@@ -39,11 +39,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::SwimmingPoolIndoor scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: The scalar accessors map directly to EnergyPlus SwimmingPool:Indoor fields (Average Depth, Cover* factors, Pool Heating System Maximum Water Flow Rate, Pool Miscellaneous Equipment Power, Maximum Number of People).
-    // - Relationship fields (Surface Name, all Schedule/Node references) are intentionally excluded from scalar accessors in this pass.
-    // - ForwardTranslator evidence: ForwardTranslateSwimmingPoolIndoor.cpp writes these scalar fields before handling schedules/nodes.
-    // - TODO(parity): Add the excluded relationship APIs (surface/schedule/node references) once the scalar surface is saturated.
+    // - Status: Scalar Parity. The canonical indoor-swimming-pool scalar surface is present, while surface, schedule, and node helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::SwimmingPoolIndoor.
+    // - Implemented Parity: The preserved scalar API matches the cover-factor, heating-flow, miscellaneous-power, depth, and occupancy accessors with matching default behavior.
+    // - Documented Delta: Surface-name and all schedule/node helpers remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `SwimmingPool:Indoor` scalar fields used by the forward translator.
+    // - Evidence: `src/model/SwimmingPoolIndoor.hpp`, `src/model/SwimmingPoolIndoor.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateSwimmingPoolIndoor.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
     double averageDepth() const;
     bool setAverageDepth(double averageDepth);
 

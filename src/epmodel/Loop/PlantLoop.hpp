@@ -42,19 +42,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model class naming for this model-counterpart type (PlantLoop).
-    // - Field Mapping: ForwardTranslator evidence (ForwardTranslatePlantLoop.cpp) confirms these scalar fields map directly
-    //   to the corresponding PlantLoop IDD fields, so we expose the same API names and signatures.
-    // - Field Mapping: Fluid Type and Load Distribution Scheme represent operating-mode choices and are exposed with the
-    //   same string accessors as the OS model, including Legacy Sequential/Uniform alias translations in the setter.
-    // - Field Mapping: Maximum/Minimum Loop Temperature, Flow Rate, and Plant Loop Volume mirror their numeric IDD
-    //   fields and carry over the autosize/autocalculate semantics through helper getters/setters.
-    // - Field Mapping: Common Pipe Simulation is the scalar CommonPipeSimulation choice (default None) and may be
-    //   reset via resetCommonPipeSimulation().
-    // - Field Mapping: Connector:Mixer Outlet Branch Name / extensible Inlet Branch Name remain expressed through topology APIs
-    //   such as supplyComponents/demandComponents rather than new scalar accessors.
-    // - Field Mapping: Name remains available through the base ModelObject scalar API.
-    // - TODO(parity): Broaden PlantLoop scalar coverage once additional translator evidence and IDD mappings stabilize.
+    // - Status: Partial Parity. Core loop operating scalars, supply/demand topology accessors, and branch add/remove APIs are present, but large portions of the canonical PlantLoop control and operation-scheme surface are still absent.
+    // - Canonical Counterpart: openstudio::model::PlantLoop.
+    // - Implemented Parity: `loadDistributionScheme`, `fluidType`, glycol concentration, loop temperature/flow/volume scalars, `commonPipeSimulation`, supply/demand node accessors, `supplyMixer`, `supplySplitter`, `demandMixer`, `demandSplitter`, `supplyComponents`, `demandComponents`, and branch add/remove APIs preserve the main canonical plant-loop topology contract.
+    // - Documented Delta: Public parity does not yet include setpoint-node helpers, operation-scheme/schedule APIs, sizing-plant access, clone/remove specializations, or autosized-result helpers from canonical `openstudio::model::PlantLoop`.
+    // - Field/Storage Mapping: Branch-name and connector linkage remain expressed through topology APIs over EnergyPlus-backed loop structure instead of exposing new scalar string accessors for mixer/splitter branch fields.
+    // - Evidence: `src/model/PlantLoop.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslatePlantLoop.cpp` define the canonical public surface and direct scalar mappings that this epmodel wrapper currently preserves in part.
+    // - Remaining Parity Work: Add the omitted setpoint-node, operation-scheme, sizing, clone/remove, and autosized-result APIs once plant-loop behavior parity is implemented beyond the current scalar/topology subset.
 
     std::string loadDistributionScheme() const;
     bool setLoadDistributionScheme(const std::string& scheme);

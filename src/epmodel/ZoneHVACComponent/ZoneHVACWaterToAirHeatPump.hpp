@@ -46,10 +46,13 @@ namespace epmodel {
     static std::vector<std::string> heatPumpCoilWaterFlowModeValues();
 
     // Schema Alignment Notes:
-    // - API: Scalar accessors mirror the openstudio::model names and map directly to EnergyPlus ZoneHVAC:WaterToAirHeatPump fields
-    //   via ZoneHVAC_WaterToAirHeatPumpFields (+ the DX Heating Coil Sizing Ratio field referenced in ForwardTranslateZoneHVACWaterToAirHeatPump.cpp).
-    // - Field Mapping: Supplemental heater temperature limits and DX heating coil sizing stay on this object to preserve the IDD scalar surface.
-    // - Field Mapping: Fan/coil targets are relationship-backed children and participate in children() traversal.
+    // - Status: Partial Parity. The scalar water-to-air heat-pump fields are aligned, but the fan/coil topology remains relationship-driven.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACWaterToAirHeatPump.
+    // - Implemented Parity: The supply-air, outdoor-air, supplemental-heater, and DX sizing scalar groups map directly to the EnergyPlus object.
+    // - Documented Delta: Fan and coil targets are relationship-backed children and are intentionally excluded from the scalar surface.
+    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while fan and coil topology is represented through child-object state and children() traversal.
+    // - Evidence: `src/model/ZoneHVACWaterToAirHeatPump.hpp`, `src/model/ZoneHVACWaterToAirHeatPump.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACWaterToAirHeatPump.cpp`, and `src/epmodel/test/ZoneHVACWaterToAirHeatPump_GTest.cpp`.
+    // - Remaining Parity Work: Add missing relationship helpers only if the canonical wrapper needs them as public epmodel APIs.
 
     /** @name Scalar field accessors */
     //@{

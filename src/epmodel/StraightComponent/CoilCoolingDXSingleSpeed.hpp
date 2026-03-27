@@ -38,11 +38,13 @@ class EPMODEL_API CoilCoolingDXSingleSpeed : public StraightComponent
   static std::vector<std::string> condenserTypeValues();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::CoilCoolingDXSingleSpeed scalar accessor naming/signatures where implemented.
-  // - Field Mapping: Scalar APIs below map to EnergyPlus Coil:Cooling:DX:SingleSpeed scalar fields.
-  // - Field Mapping: Relationship-like fields (schedules, curves, node links, and tank links) are excluded in this pass.
-  // - ForwardTranslator evidence: ForwardTranslateCoilCoolingDXSingleSpeed.cpp writes these scalar fields directly.
-  // - TODO(parity): Add remaining relationship APIs without changing preserved signatures.
+  // - Status: Scalar Parity. The canonical scalar DX-coil surface is largely present, while schedule, curve, node-link, and tank-link helpers remain out of scope.
+  // - Canonical Counterpart: openstudio::model::CoilCoolingDXSingleSpeed.
+  // - Implemented Parity: The scalar rated/capacity/efficiency and evaporative-condenser APIs preserve the canonical naming, defaults, autosize behavior, and 2017/2023 fan-power variants.
+  // - Documented Delta: Availability schedule, curves, condenser-air node, and other relationship helpers from canonical `openstudio::model::CoilCoolingDXSingleSpeed` are not exposed yet.
+  // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Cooling:DX:SingleSpeed` fields.
+  // - Evidence: `src/model/CoilCoolingDXSingleSpeed.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXSingleSpeed.cpp`, and `src/epmodel/test/CoilCoolingDXSingleSpeed_GTest.cpp`.
+  // - Remaining Parity Work: Add the omitted schedule, curve, and relationship helpers without changing the preserved scalar signatures.
   std::string condenserType() const;
   bool setCondenserType(const std::string& condenserType);
 

@@ -37,11 +37,13 @@ class EPMODEL_API AirTerminalSingleDuctConstantVolumeCooledBeam : public Straigh
   static std::vector<std::string> cooledBeamTypeValues();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-  // - Field Mapping: cooledBeamType and N1-N7 scalar APIs map directly to E+ AirTerminal:SingleDuct:ConstantVolume:CooledBeam fields.
-  // - Field Mapping: Availability Schedule Name, Cooling Coil Name, and all node name fields are relationship fields and are intentionally excluded.
-  // - ForwardTranslator evidence: translateAirTerminalSingleDuctConstantVolumeCooledBeam writes these scalar fields directly.
-  // - TODO(parity): Add relationship APIs incrementally after scalar scaffold saturation.
+  // - Status: Scalar Parity. The cooled-beam scalar surface is aligned, while the schedule, coil, and node-link surface remains intentionally narrower.
+  // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctConstantVolumeCooledBeam.
+  // - Implemented Parity: `cooledBeamType`, `supplyAirVolumetricFlowRate`, `maximumTotalChilledWaterVolumetricFlowRate`, `numberofBeams`, `beamLength`, `designInletWaterTemperature`, `designOutletWaterTemperature`, and `coefficientofInductionKin` preserve the canonical scalar contract with matching autosize/autocalculate behavior.
+  // - Documented Delta: Availability schedule, cooling-coil, and node-link accessors are not exposed as public methods yet.
+  // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:ConstantVolume:CooledBeam` fields.
+  // - Evidence: `src/model/AirTerminalSingleDuctConstantVolumeCooledBeam.hpp`, `src/model/AirTerminalSingleDuctConstantVolumeCooledBeam.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctConstantVolumeCooledBeam.cpp`, and `src/epmodel/test/AirTerminalSingleDuctConstantVolumeCooledBeam_GTest.cpp`.
+  // - Remaining Parity Work: Add the omitted schedule, coil, and node-link helpers when relationship parity expands.
   std::string cooledBeamType() const;
   bool setCooledBeamType(const std::string& cooledBeamType);
 

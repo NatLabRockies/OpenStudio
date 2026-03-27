@@ -38,11 +38,13 @@ class EPMODEL_API CoilCoolingDXTwoSpeed : public StraightComponent
   static std::vector<std::string> condenserTypeValues();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::CoilCoolingDXTwoSpeed scalar accessor names/signatures.
-  // - Field Mapping: APIs below map to EnergyPlus Coil:Cooling:DX:TwoSpeed scalar fields.
-  // - Field Mapping: relationship-like fields (schedules, curves, node links, and tank links) are excluded.
-  // - ForwardTranslator evidence: ForwardTranslateCoilCoolingDXTwoSpeed.cpp writes these scalar fields directly.
-  // - TODO(parity): Add excluded relationship APIs in follow-up without changing preserved scalar signatures.
+  // - Status: Scalar Parity. The canonical scalar two-speed DX surface is largely present, while schedule, curve, and relationship helpers remain out of scope.
+  // - Canonical Counterpart: openstudio::model::CoilCoolingDXTwoSpeed.
+  // - Implemented Parity: The high- and low-speed capacity, COP, airflow, fan-power, and condenser controls preserve the canonical naming and autosize behavior.
+  // - Documented Delta: Availability schedule, curves, and node-link helpers from canonical `openstudio::model::CoilCoolingDXTwoSpeed` are not exposed yet.
+  // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Cooling:DX:TwoSpeed` fields.
+  // - Evidence: `src/model/CoilCoolingDXTwoSpeed.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXTwoSpeed.cpp`, and `src/epmodel/test/CoilCoolingDXTwoSpeed_GTest.cpp`.
+  // - Remaining Parity Work: Add the omitted schedule, curve, and relationship helpers without changing the preserved scalar signatures.
   boost::optional<double> ratedHighSpeedTotalCoolingCapacity() const;
   bool isRatedHighSpeedTotalCoolingCapacityAutosized() const;
   bool setRatedHighSpeedTotalCoolingCapacity(double ratedHighSpeedTotalCoolingCapacity);

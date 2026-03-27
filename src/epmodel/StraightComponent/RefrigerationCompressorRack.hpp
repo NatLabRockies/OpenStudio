@@ -41,15 +41,13 @@ namespace epmodel {
     static std::vector<std::string> waterCooledLoopFlowTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::RefrigerationCompressorRack scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: heatRejectionLocation, designCompressorRackCOP, designCondenserFanPower, condenserType, waterCooledLoopFlowType,
-    //   waterCooledCondenserDesignFlowRate, waterCooledCondenserMaximumFlowRate, evaporativeCondenserEffectiveness, evaporativeCondenserAirFlowRate,
-    //   basinHeaterCapacity, basinHeaterSetpointTemperature, designEvaporativeCondenserWaterPumpPower, and endUseSubcategory map directly to
-    //   EnergyPlus Refrigeration:CompressorRack fields per ForwardTranslateRefrigerationCompressorRack.cpp.
-    // - Field Mapping: The autocalculatable evaporativeCondenserAirFlowRate and designEvaporativeCondenserWaterPumpPower fields expose
-    //   is...Autocalculated/autocalculate helpers mirroring the autocalculatable metadata in the IDD.
-    // - Field Mapping: Curve, schedule, node, and object-list fields (e.g., compressor/cop curves, schedule names, node names, and case/walk-in
-    //   lists) are intentionally excluded in this scalar-only pass.
+    // - Status: Scalar Parity. The canonical refrigeration-compressor-rack scalar surface is present, while curve, schedule, node, and object-list helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::RefrigerationCompressorRack.
+    // - Implemented Parity: The preserved scalar API covers heat-rejection, condenser configuration, pump power, basin-heater, and end-use fields with matching default/autocalculate behavior.
+    // - Documented Delta: Curve, schedule, node, and object-list helpers remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Refrigeration:CompressorRack` scalar fields used by the forward translator.
+    // - Evidence: `src/model/RefrigerationCompressorRack.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateRefrigerationCompressorRack.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
 
     // Heat rejection
     std::string heatRejectionLocation() const;

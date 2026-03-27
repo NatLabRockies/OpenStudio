@@ -39,12 +39,13 @@ class EPMODEL_API GeneratorFuelCellExhaustGasToWaterHeatExchanger : public Strai
   static std::vector<std::string> heatExchangerCalculationMethodValues();
 
   // Schema Alignment Notes:
-  // - API: Preserves openstudio::model scalar accessor naming/signatures for counterpart parity.
-  // - Field Mapping: Scalar APIs map directly to Generator:FuelCell:ExhaustGasToWaterHeatExchanger scalar fields.
-  // - Field Mapping: method* APIs preserve existing names while mapping to EnergyPlus Method1/Method2/Method3/Method4 fields.
-  // - ForwardTranslator evidence: ForwardTranslateGeneratorFuelCellExhaustGasToWaterHeatExchanger writes these scalar fields directly.
-  // - TODO(parity): Add relationship APIs separately for HeatRecoveryWaterInletNodeName, HeatRecoveryWaterOutletNodeName,
-  //   ExhaustOutletAirNodeName, and parent Generator:FuelCell linkage.
+  // - Status: Scalar Parity. The canonical fuel-cell exhaust-gas heat-exchanger scalar surface is present, while node and parent-link helpers remain out of scope.
+  // - Canonical Counterpart: openstudio::model::GeneratorFuelCellExhaustGasToWaterHeatExchanger.
+  // - Implemented Parity: The preserved scalar API matches the heat-recovery, method-selection, and method-parameter accessors with matching scalar behavior.
+  // - Documented Delta: Heat-recovery node names, exhaust-air node name, and parent `Generator:FuelCell` linkage remain intentionally excluded from this scalar pass.
+  // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Generator:FuelCell:ExhaustGasToWaterHeatExchanger` scalar fields used by the forward translator.
+  // - Evidence: `src/model/GeneratorFuelCellExhaustGasToWaterHeatExchanger.hpp`, `src/model/GeneratorFuelCellExhaustGasToWaterHeatExchanger.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateGeneratorFuelCellExhaustGasToWaterHeatExchanger.cpp`.
+  // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
   double heatRecoveryWaterMaximumFlowRate() const;
   bool setHeatRecoveryWaterMaximumFlowRate(double heatRecoveryWaterMaximumFlowRate);
   void resetHeatRecoveryWaterMaximumFlowRate();

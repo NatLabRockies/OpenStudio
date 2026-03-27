@@ -45,16 +45,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model accessor names for AirLoopHVAC scalar fields.
-    // - Field Mapping: designSupplyAirFlowRate and designReturnAirFlowFractionofSupplyAirFlow map directly to
-    //   AirLoopHVAC fields in E+ schema.
-    // - Field Mapping: AirLoopHVAC::ConnectorListName is relationship-only and maps through branch topology helpers
-    //   (zoneSplitter/zoneMixer + demand branch traversal), not scalar string accessors.
-    // - Field Mapping: Connector:Splitter mapping is relationship-only. AirLoopHVAC::zoneSplitter / zoneMixer and
-    //   demand branch topology APIs carry this linkage instead of scalar string accessors.
-    // - Field Mapping: AvailabilityManagerListName maps to AvailabilityManagerAssignmentList relationship APIs
-    //   (availabilityManagers/add/remove/priority) and is intentionally not exposed as a scalar string accessor.
-    // - TODO(parity): Extend this class with additional scalar API parity where model counterparts exist.
+    // - Status: Partial Parity. Core scalar accessors, node/traversal APIs, branch mutation, outdoor-air-system lookup, and availability-manager wiring are present, but the canonical AirLoopHVAC convenience surface is still incomplete.
+    // - Canonical Counterpart: openstudio::model::AirLoopHVAC.
+    // - Implemented Parity: `designSupplyAirFlowRate`, `designReturnAirFlowFractionofSupplyAirFlow`, supply/demand node accessors, `zoneSplitter`, `zoneMixer`, `supplyComponents`, `demandComponents`, `airLoopHVACOutdoorAirSystem`, `thermalZones`, and availability-manager APIs preserve the main single-duct loop-topology contract used by canonical model code.
+    // - Documented Delta: Public dual-duct helpers (`isDualDuct`, supply splitter helpers, multi-splitter surfaces) and outdoor-air node convenience APIs (`outdoorAirNode`, `reliefAirNode`, `mixedAirNode`, `returnAirNode`, `oaComponents`, fan helpers) are not exposed yet even though related topology storage exists in epmodel.
+    // - Field/Storage Mapping: Connector-list and splitter/mixer linkage remain relationship-driven through EnergyPlus branch topology helpers instead of scalar string accessors for `ConnectorListName` and related node names.
+    // - Evidence: `src/model/AirLoopHVAC.hpp`, the air-loop forward/reverse translator files, and `src/epmodel/test/IDF_SmallOffice_GTest.cpp` define the canonical loop traversal and topology expectations this wrapper is partially matching.
+    // - Remaining Parity Work: Add the remaining dual-duct, outdoor-air-node, and higher-level convenience APIs after the topology anchor types and zone-side branching helpers are fully normalized.
     boost::optional<double> designSupplyAirFlowRate() const;
     bool setDesignSupplyAirFlowRate(double designSupplyAirFlowRate);
     void resetDesignSupplyAirFlowRate();

@@ -34,11 +34,13 @@ class EPMODEL_API CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit : public
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: useHotGasReheat maps to E+ FlagforUsingHotGasReheat0or1 (0/1 integer) in this epmodel schema.
-    // - Field Mapping: relationship-like fields (availability schedule, node names, speed data list/extensibles, and curve references) are excluded.
-    // - ForwardTranslator evidence: ForwardTranslateCoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit.cpp writes these exact scalar fields and autosize semantics.
-    // - TODO(parity): Add relationship APIs when epmodel relationship scaffolding is enabled.
+    // - Status: Scalar Parity. The scalar speed-level fields and bitflag choice are aligned, while the extensible speed-data surface remains intentionally omitted.
+    // - Canonical Counterpart: openstudio::model::CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit.
+    // - Implemented Parity: `nominalSpeedLevel`, `grossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevel`, `ratedAirFlowRateAtSelectedNominalSpeedLevel`, `ratedWaterFlowRateAtSelectedNominalSpeedLevel`, `nominalTimeforCondensatetoBeginLeavingtheCoil`, `initialMoistureEvaporationRateDividedbySteadyStateACLatentCapacity`, `maximumCyclingRate`, `latentCapacityTimeConstant`, `fanDelayTime`, `useHotGasReheat`, and the autosize helpers preserve the canonical scalar contract.
+    // - Documented Delta: Availability schedule, part-load curve, and speed-data extensible objects are not exposed here even though the canonical model type owns them.
+    // - Field/Storage Mapping: Scalar fields map directly to the corresponding EnergyPlus `Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit` fields and bitflags.
+    // - Evidence: `src/model/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit.hpp`, `src/model/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit.cpp`, and `src/epmodel/test/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted curve, schedule, and extensible speed-data APIs only if the family moves beyond scalar parity.
     int nominalSpeedLevel() const;
     bool setNominalSpeedLevel(int nominalSpeedLevel);
 

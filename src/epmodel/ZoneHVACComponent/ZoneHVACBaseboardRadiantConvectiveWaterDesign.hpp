@@ -38,11 +38,13 @@ namespace epmodel {
     static std::vector<std::string> heatingDesignCapacityMethodValues();
 
     // Schema Alignment Notes:
-    // - API: heatingDesignCapacityMethod, heatingDesignCapacityPerFloorArea, fractionofAutosizedHeatingDesignCapacity,
-    //   convergenceTolerance, fractionRadiant, and fractionofRadiantEnergyIncidentonPeople map directly to the
-    //   EnergyPlus ZoneHVAC:Baseboard:RadiantConvective:Water:Design fields as enumerated by
-    //   ZoneHVAC_Baseboard_RadiantConvective_Water_DesignFields.
-    // - No additional relationship-only data exists on this object beyond the name handled by ModelObject.
+    // - Status: Scalar Parity. This split design-side wrapper exposes a small scalar surface and has no direct same-name canonical model peer.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACBaseboardRadiantConvectiveWater.
+    // - Implemented Parity: The design-capacity method, heating-capacity sizing scalars, convergence tolerance, radiant fraction, and people-incident radiant fraction map directly to the EnergyPlus design-only fields.
+    // - Documented Delta: This epmodel type is an EnergyPlus split-out design object with no same-name canonical `openstudio::model` wrapper, so the closest canonical behavior is represented by the broader ZoneHVACBaseboardRadiantConvectiveWater wrapper.
+    // - Field/Storage Mapping: The object carries only scalar design inputs; no additional relationship-only children exist beyond the base name storage.
+    // - Evidence: `src/model/ZoneHVACBaseboardRadiantConvectiveWater.hpp`, `src/model/ZoneHVACBaseboardRadiantConvectiveWater.cpp`, and `src/epmodel/test/ZoneHVACBaseboardRadiantConvectiveWaterDesign_GTest.cpp`.
+    // - Remaining Parity Work: Keep the split-design scalar surface aligned with the canonical baseboard wrapper and document any future split-out deltas here.
     std::string heatingDesignCapacityMethod() const;
     bool setHeatingDesignCapacityMethod(const std::string& heatingDesignCapacityMethod);
     void resetHeatingDesignCapacityMethod();

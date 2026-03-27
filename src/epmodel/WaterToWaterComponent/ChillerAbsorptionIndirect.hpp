@@ -38,11 +38,13 @@ namespace epmodel {
     static std::vector<std::string> generatorHeatSourceTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::ChillerAbsorptionIndirect scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus Chiller:Absorption:Indirect scalar fields.
-    // - Field Mapping: Node and curve relationship APIs are intentionally excluded in this scalar-only scaffold pass.
-    // - ForwardTranslator evidence: model::ForwardTranslateChillerAbsorptionIndirect maps these scalar methods to matching E+ fields.
-    // - TODO(parity): Add excluded relationship APIs in a dedicated relationship pass.
+    // - Status: Scalar Parity. The scalar absorption-indirect surface is aligned, while node and curve relationships remain omitted.
+    // - Canonical Counterpart: openstudio::model::ChillerAbsorptionIndirect.
+    // - Implemented Parity: Scalar accessors for nominal capacity, flows, limits, coefficients, flow mode, and generator metadata preserve the canonical model API shape.
+    // - Documented Delta: Node, curve, and related reference/link APIs are intentionally excluded in this pass.
+    // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `Chiller:Absorption:Indirect` fields directly; the excluded links stay in loop topology and component wiring.
+    // - Evidence: `src/model/ChillerAbsorptionIndirect.hpp`, `src/model/ChillerAbsorptionIndirect.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateChillerAbsorptionIndirect.cpp`.
+    // - Remaining Parity Work: Add the excluded relationship APIs when the non-scalar water-to-water pass is scheduled.
     boost::optional<double> nominalCapacity() const;
     bool isNominalCapacityAutosized() const;
     bool setNominalCapacity(double nominalCapacity);

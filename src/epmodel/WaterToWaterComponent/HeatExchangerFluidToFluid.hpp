@@ -40,11 +40,13 @@ class EPMODEL_API HeatExchangerFluidToFluid : public WaterToWaterComponent
   static std::vector<std::string> componentOverrideCoolingControlTemperatureModeValues();
 
   // Schema Alignment Notes:
-  // - API: Preserves openstudio::model scalar accessor names/signatures for this model-counterpart class.
-  // - Field Mapping: Preserved scalar APIs map directly to E+ HeatExchanger:FluidToFluid scalar fields.
-  // - Field Mapping: Relationship/node/reference fields are intentionally excluded from this scalar-only scaffold.
-  // - Field Mapping: ForwardTranslator evidence confirms direct field mapping and Autosize string behavior.
-  // - TODO(parity): Add excluded non-scalar APIs and loop-coupling behavior in a dedicated parity pass.
+  // - Status: Scalar Parity. The scalar heat-exchanger surface is aligned, while relationship and loop-coupling behavior remains omitted.
+  // - Canonical Counterpart: openstudio::model::HeatExchangerFluidToFluid.
+  // - Implemented Parity: Scalar accessors for design flow rates, model type, heat-transfer metering, control type, temperature limits, and sizing preserve the canonical model API shape.
+  // - Documented Delta: Relationship, node, and reference-link APIs are intentionally excluded in this pass.
+  // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `HeatExchanger:FluidToFluid` fields directly, with the excluded linkage remaining in loop topology.
+  // - Evidence: `src/model/HeatExchangerFluidToFluid.hpp`, `src/model/HeatExchangerFluidToFluid.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatExchangerFluidToFluid.cpp`.
+  // - Remaining Parity Work: Add the excluded non-scalar APIs and loop-coupling behavior when the water-loop relationship layer is extended.
   boost::optional<double> loopDemandSideDesignFlowRate() const;
   bool isLoopDemandSideDesignFlowRateAutosized() const;
   bool setLoopDemandSideDesignFlowRate(double loopDemandSideDesignFlowRate);

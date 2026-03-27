@@ -35,11 +35,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: ratedTotalHeatingCapacity maps directly to E+ RatedTotalHeatingCapacity.
-    // - Field Mapping: indoorUnitReferenceSubcooling maps directly to E+ IndoorUnitReferenceSubcooling.
-    // - ForwardTranslator evidence: ForwardTranslateCoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.cpp writes these exact E+ fields.
-    // - TODO(parity): Add relationship parity (availability schedule, condensing curve, node links) after scalar saturation.
+    // - Status: Scalar Parity. The scalar rating and indoor-unit reference surface is aligned, while schedule, curve, and connection APIs are still omitted.
+    // - Canonical Counterpart: openstudio::model::CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.
+    // - Implemented Parity: `ratedTotalHeatingCapacity`, `indoorUnitReferenceSubcooling`, and the autosize helper preserve the canonical scalar contract.
+    // - Documented Delta: Availability schedule, condensing-curve, and node-link accessors are not exposed yet even though they exist on the canonical model type.
+    // - Field/Storage Mapping: The epmodel wrapper maps the preserved scalar fields directly to EnergyPlus `Coil:Heating:DX:VariableRefrigerantFlow:FluidTemperatureControl` storage.
+    // - Evidence: `src/model/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.hpp`, `src/model/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.cpp`, and `src/epmodel/test/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted schedule, curve, and object-link APIs after the relationship layer is available.
     /** @name Rated total heating capacity */
     //@{
     boost::optional<double> ratedTotalHeatingCapacity() const;

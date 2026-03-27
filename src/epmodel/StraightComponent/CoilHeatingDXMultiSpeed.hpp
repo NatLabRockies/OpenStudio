@@ -42,11 +42,13 @@ class EPMODEL_API CoilHeatingDXMultiSpeed : public StraightComponent
   bool addToNode(Node& node);
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::CoilHeatingDXMultiSpeed scalar accessor names/signatures.
-  // - Field Mapping: APIs below map directly to EnergyPlus Coil:Heating:DX:MultiSpeed scalar fields.
-  // - Field Mapping: Relationship/extensible fields (availability schedule, inlet/outlet nodes, curves, stages) are excluded.
-  // - ForwardTranslator evidence: ForwardTranslateCoilHeatingDXMultiSpeed.cpp writes these scalar fields directly.
-  // - TODO(parity): Add relationship and stage APIs later without changing preserved scalar signatures.
+  // - Status: Scalar Parity. The canonical scalar heating DX surface is largely present, while schedule, curve, stage, and node-link helpers remain out of scope.
+  // - Canonical Counterpart: openstudio::model::CoilHeatingDXMultiSpeed.
+  // - Implemented Parity: The speed-level heating-capacity, airflow, defrost, crankcase-heater, and fuel-type helpers preserve the canonical naming and autosize behavior.
+  // - Documented Delta: Availability schedule, curves, stage data, and node-link helpers from canonical `openstudio::model::CoilHeatingDXMultiSpeed` are not exposed yet.
+  // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Heating:DX:MultiSpeed` fields.
+  // - Evidence: `src/model/CoilHeatingDXMultiSpeed.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingDXMultiSpeed.cpp`, and `src/epmodel/test/CoilHeatingDXMultiSpeed_GTest.cpp`.
+  // - Remaining Parity Work: Add the omitted schedule, stage, and relationship helpers without changing the preserved scalar signatures.
   double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
   bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);
 

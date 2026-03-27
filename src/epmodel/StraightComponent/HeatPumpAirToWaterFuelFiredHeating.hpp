@@ -41,11 +41,13 @@ class EPMODEL_API HeatPumpAirToWaterFuelFiredHeating : public StraightComponent
   static std::vector<std::string> defrostControlTypeValues();
 
   // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::HeatPumpAirToWaterFuelFiredHeating scalar accessor names/signatures.
-  // - Field Mapping: scalar methods map directly to E+ HeatPump:AirToWater:FuelFired:Heating fields with matching concepts.
-  // - Field Mapping: companion heat pump, node/object references, and curve/object target-link fields are intentionally excluded.
-  // - ForwardTranslator evidence: ForwardTranslateHeatPumpAirToWaterFuelFiredHeating.cpp writes these scalar APIs to the same E+ fields.
-  // - TODO(parity): add relationship/object-list APIs incrementally without changing scalar signatures.
+  // - Status: Scalar Parity. The canonical fuel-fired heating heat-pump scalar surface is present, while companion and relationship helpers remain out of scope.
+  // - Canonical Counterpart: openstudio::model::HeatPumpAirToWaterFuelFiredHeating.
+  // - Implemented Parity: The preserved scalar API matches the fuel, capacity, COP, flow, sizing, defrost, temperature, and power accessors with matching autosize/default behavior.
+  // - Documented Delta: Companion-heat-pump, node/object-reference, and curve/object target-link helpers remain intentionally excluded from this scalar pass.
+  // - Field/Storage Mapping: These accessors map directly to EnergyPlus `HeatPump:AirToWater:FuelFired:Heating` scalar fields used by the forward translator.
+  // - Evidence: `src/model/HeatPumpAirToWaterFuelFiredHeating.hpp`, `src/model/HeatPumpAirToWaterFuelFiredHeating.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatPumpAirToWaterFuelFiredHeating.cpp`.
+  // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
   std::string fuelType() const;
   bool setFuelType(const std::string& fuelType);
 

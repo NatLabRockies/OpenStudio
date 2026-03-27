@@ -37,12 +37,13 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::CoilHeatingGasMultiStage scalar-accessor names/signatures.
-    // - Field Mapping: offCycleParasiticGasLoad/parasiticGasLoad map to E+ Coil:Heating:Gas:MultiStage Off-Cycle Parasitic Gas Load.
-    // - Field Mapping: numberOfStages maps to E+ Coil:Heating:Gas:MultiStage Number of Stages.
-    // - Field Mapping: relationship/extensible fields (availability schedule, node links, curve link, stage data) are excluded.
-    // - ForwardTranslator evidence: ForwardTranslateCoilHeatingGasMultiStage.cpp writes OffCycleParasiticGasLoad and NumberofStages directly.
-    // - TODO(parity): Add excluded relationship/stage APIs later without changing preserved scalar signatures.
+    // - Status: Partial Parity. The stage-count and parasitic-load surface is present, but stage-data and relationship helpers remain model-owned.
+    // - Canonical Counterpart: openstudio::model::CoilHeatingGasMultiStage.
+    // - Implemented Parity: `parasiticGasLoad`, `offCycleParasiticGasLoad`, and `numberOfStages` preserve the canonical scalar API.
+    // - Documented Delta: Availability schedule, curve links, stage-data, and node-link helpers from canonical `openstudio::model::CoilHeatingGasMultiStage` are not exposed yet.
+    // - Field/Storage Mapping: The preserved API maps directly to EnergyPlus `Coil:Heating:Gas:MultiStage` storage.
+    // - Evidence: `src/model/CoilHeatingGasMultiStage.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingGasMultiStage.cpp`, and `src/epmodel/test/CoilHeatingGasMultiStage_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted stage-data and relationship helpers without changing the preserved scalar signatures.
     boost::optional<double> parasiticGasLoad() const;
     bool setParasiticGasLoad(double parasiticGasLoad);
     void resetParasiticGasLoad();

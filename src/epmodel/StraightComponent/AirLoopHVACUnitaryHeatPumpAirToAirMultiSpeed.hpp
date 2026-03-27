@@ -38,11 +38,13 @@ class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed : public Straight
   static std::vector<std::string> supplyAirFanPlacementValues();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-  // - Field Mapping: supplyAirFlowRateWhenNoCoolingorHeatingisNeeded maps to E+ NoLoadSupplyAirFlowRate.
-  // - Field Mapping: speed*SupplyAirFlowRateDuring*Operation APIs map to E+ Heating/Cooling Speed*SupplyAirFlowRate fields.
-  // - Field Mapping: supply fan, schedule, coil, node, and controlling-zone linkage fields are relationship-like and excluded.
-  // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
+  // - Status: Partial Parity. The multi-speed scalar controls are aligned, but the schedule, fan, coil, node, and zone-link surface is still intentionally narrower.
+  // - Canonical Counterpart: openstudio::model::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.
+  // - Implemented Parity: `supplyAirFanPlacement`, `dXHeatingCoilSizingRatio`, `maximumSupplyAirTemperaturefromSupplementalHeater`, `maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation`, `auxiliaryOnCycleElectricPower`, `auxiliaryOffCycleElectricPower`, `designHeatRecoveryWaterFlowRate`, `maximumTemperatureforHeatRecovery`, `supplyAirFlowRateWhenNoCoolingorHeatingisNeeded`, `numberofSpeedsforHeating`, `numberofSpeedsforCooling`, and the per-speed flow setters preserve the canonical scalar contract.
+  // - Documented Delta: Supply fan, schedule, coil, node, and controlling-zone linkage fields are not exposed as public accessors yet.
+  // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus multi-speed unitary fields; the forward translator wires the equipment graph separately.
+  // - Evidence: `src/model/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.hpp`, `src/model/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.cpp`, and `src/epmodel/test/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_GTest.cpp`.
+  // - Remaining Parity Work: Add the omitted fan, schedule, coil, node, and controlling-zone helpers when relationship parity expands.
   std::string supplyAirFanPlacement() const;
   bool setSupplyAirFanPlacement(const std::string& supplyAirFanPlacement);
 

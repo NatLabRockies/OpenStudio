@@ -34,13 +34,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::CoilHeatingDesuperheater scalar accessor names/signatures.
-    // - Field Mapping: heatReclaimRecoveryEfficiency maps to E+ Coil:Heating:Desuperheater Heat Reclaim Recovery Efficiency.
-    // - Field Mapping: onCycleParasiticElectricLoad and deprecated parasiticElectricLoad map to E+ On Cycle Parasitic Electric Load.
-    // - API: resetHeatReclaimRecoveryEfficiency/resetOnCycleParasiticElectricLoad are preserved but no-op because those E+ fields are required.
-    // - Field Mapping: Relationship-like fields (availability schedule, heating source, and node/target links) are excluded in this pass.
-    // - ForwardTranslator evidence: ForwardTranslateCoilHeatingDesuperheater.cpp writes these scalar fields directly.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical desuperheater scalar surface is largely present, while schedule, heating-source, and node-link helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::CoilHeatingDesuperheater.
+    // - Implemented Parity: `heatReclaimRecoveryEfficiency`, `parasiticElectricLoad`, and `onCycleParasiticElectricLoad` preserve the canonical scalar API, including the required-field no-op resets.
+    // - Documented Delta: Availability schedule, heating-source, and node-link helpers from canonical `openstudio::model::CoilHeatingDesuperheater` are not exposed yet.
+    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Heating:Desuperheater` fields.
+    // - Evidence: `src/model/CoilHeatingDesuperheater.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingDesuperheater.cpp`, and `src/epmodel/test/CoilHeatingDesuperheater_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted schedule, heating-source, and relationship helpers without changing the preserved scalar signatures.
 
     double heatReclaimRecoveryEfficiency() const;
     bool isHeatReclaimRecoveryEfficiencyDefaulted() const;

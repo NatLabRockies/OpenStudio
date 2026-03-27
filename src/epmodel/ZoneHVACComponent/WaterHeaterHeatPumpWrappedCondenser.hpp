@@ -44,11 +44,13 @@ namespace epmodel {
     static std::vector<std::string> tankElementControlLogicValues();
 
     // Schema Alignment Notes:
-    // - API: Scalar accessors mirror model-counterpart naming while keeping the energyplus field mapping explicit.
-    // - Field Mapping: Simple scalars map to WaterHeater:HeatPump:WrappedCondenser fields such as Dead Band Temperature Difference,
-    //   Condenser Bottom/Top Location, Evaporator Air Flow Rate, Axis temperatures, and parasitic electric loads.
-    // - Field Mapping: Relationship-like fields (schedules, nodes, tank/coil/fan references) are intentionally excluded from this scaffold.
-    // - TODO(parity): openstudio::model currently initializes Tank Element Control Logic as MutuallyExclusive even though the EnergyPlus default is Simultaneous.
+    // - Status: Partial Parity. The wrapped-condenser scalar fields are aligned, but the tank/coil/fan/schedule topology remains relationship-driven.
+    // - Canonical Counterpart: openstudio::model::WaterHeaterHeatPumpWrappedCondenser.
+    // - Implemented Parity: Dead-band, condenser location, evaporator-air flow, inlet-air configuration, compressor/fan placement, parasitic load, and tank-control scalars map directly to the EnergyPlus object.
+    // - Documented Delta: Relationship-like fields for schedules, nodes, and tank/coil/fan references stay outside the scalar surface.
+    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while the omitted links are represented through explicit attachment and topology state.
+    // - Evidence: `src/model/WaterHeaterHeatPumpWrappedCondenser.hpp`, `src/model/WaterHeaterHeatPumpWrappedCondenser.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateWaterHeaterHeatPumpWrappedCondenser.cpp`, and `src/epmodel/test/WaterHeaterHeatPumpWrappedCondenser_GTest.cpp`.
+    // - Remaining Parity Work: Resolve the `Tank Element Control Logic` default mismatch only if the canonical model continues to diverge from the EnergyPlus default.
     double deadBandTemperatureDifference() const;
     bool isDeadBandTemperatureDifferenceDefaulted() const;
     bool setDeadBandTemperatureDifference(double deadBandTemperatureDifference);

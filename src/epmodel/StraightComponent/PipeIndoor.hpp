@@ -37,11 +37,13 @@ namespace epmodel {
     static std::vector<std::string> environmentTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::PipeIndoor scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: environmentType, pipeInsideDiameter, and pipeLength map directly to E+ Pipe:Indoor fields.
-    // - ForwardTranslator evidence: ForwardTranslatePipeIndoor.cpp writes these scalar APIs directly to matching E+ fields.
-    // - Field Mapping: Construction, ambient zone/schedule links, and node names are relationship-like and excluded from this scalar pass.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical scalar pipe surface is present, while construction and ambient-relationship helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::PipeIndoor.
+    // - Implemented Parity: `environmentType`, `pipeInsideDiameter`, and `pipeLength` preserve the canonical scalar API surface.
+    // - Documented Delta: Construction, ambient zone/schedule helpers, and explicit node-link convenience APIs from canonical `openstudio::model::PipeIndoor` are not exposed yet.
+    // - Field/Storage Mapping: The preserved scalar APIs map directly to EnergyPlus `Pipe:Indoor` scalar fields used by the forward translator.
+    // - Evidence: `src/model/PipeIndoor.hpp` defines the canonical scalar and relationship surface, and `src/energyplus/ForwardTranslator/ForwardTranslatePipeIndoor.cpp` confirms the direct scalar field mapping.
+    // - Remaining Parity Work: Add the omitted construction, ambient-condition, and relationship helpers without changing the preserved scalar signatures.
 
     /** @name Environment Type */
     //@{

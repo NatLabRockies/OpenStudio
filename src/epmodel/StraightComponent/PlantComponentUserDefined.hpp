@@ -45,11 +45,13 @@ namespace epmodel {
     static std::vector<std::string> plantConnection4LoopFlowRequestModeValues();
 
     // Schema Alignment Notes:
-    // - API: numberOfPlantLoopConnections plus each plantConnection#LoadingMode and loopFlowRequestMode scalar mirrors
-    //   PlantComponent:UserDefined fields while deferring EMS program, node, and storage relationships to future passes.
-    // - Field Mapping: Node/object-list fields such as Air/Plant connection node names, EMS program calling managers, the
-    //   water storage tank references, and ambient zone reference are relationship behavior and intentionally excluded here.
-    // - TODO(parity): Extend this class with EMS/zone/storage relationship APIs when the non-scalar scaffold phase begins.
+    // - Status: Partial Parity. The canonical user-defined plant-component scalar surface is present, but the EMS, node, storage, and ambient-zone relationships are still missing.
+    // - Canonical Counterpart: openstudio::model::PlantComponentUserDefined.
+    // - Implemented Parity: The preserved scalar API matches the plant-loop-connection count and loading/flow-request mode accessors with matching value-domain behavior.
+    // - Documented Delta: Air/plant connection nodes, EMS program managers, water-storage-tank references, and ambient-zone linkage remain intentionally excluded from this pass.
+    // - Field/Storage Mapping: These accessors map directly to the EnergyPlus `PlantComponent:UserDefined` scalar fields used by the forward translator.
+    // - Evidence: `src/model/PlantComponentUserDefined.hpp`, `src/model/PlantComponentUserDefined.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslatePlantComponentUserDefined.cpp`.
+    // - Remaining Parity Work: Add the missing EMS, node, storage, and ambient-zone relationship APIs before claiming full parity.
     int numberOfPlantLoopConnections() const;
     bool setNumberOfPlantLoopConnections(int numberOfPlantLoopConnections);
 

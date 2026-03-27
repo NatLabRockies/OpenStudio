@@ -34,12 +34,13 @@ class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeBeam : public Strai
   static IddObjectType iddObjectType();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-  // - Field Mapping: designPrimaryAirVolumeFlowRate, designChilledWaterVolumeFlowRate, designHotWaterVolumeFlowRate, zoneTotalBeamLength,
-  //   and ratedPrimaryAirFlowRateperBeamLength map directly to E+ AirTerminal:SingleDuct:ConstantVolume:FourPipeBeam N1-N5 fields.
-  // - Field Mapping: schedule/node/coil/curve fields and coil-owned scalar fields are relationship fields and are intentionally excluded.
-  // - ForwardTranslator evidence: translateAirTerminalSingleDuctConstantVolumeFourPipeBeam writes these scalar fields directly.
-  // - TODO(parity): Add relationship and coil-coupled APIs incrementally after scalar scaffold saturation.
+  // - Status: Scalar Parity. The four-pipe beam scalar surface is aligned, while schedule, node, coil, and curve helpers remain intentionally narrower.
+  // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctConstantVolumeFourPipeBeam.
+  // - Implemented Parity: `designPrimaryAirVolumeFlowRate`, `designChilledWaterVolumeFlowRate`, `designHotWaterVolumeFlowRate`, `zoneTotalBeamLength`, and `ratedPrimaryAirFlowRateperBeamLength` preserve the canonical scalar contract.
+  // - Documented Delta: Schedule, node, coil, and curve helpers, plus coil-owned scalar fields, are not exposed as public methods yet.
+  // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:ConstantVolume:FourPipeBeam` fields.
+  // - Evidence: `src/model/AirTerminalSingleDuctConstantVolumeFourPipeBeam.hpp`, `src/model/AirTerminalSingleDuctConstantVolumeFourPipeBeam.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctConstantVolumeFourPipeBeam.cpp`, and canonical equipment-list/topology behavior in `src/epmodel/test/IDF_SmallOffice_GTest.cpp`.
+  // - Remaining Parity Work: Add the omitted schedule, node, coil, and curve helpers when relationship parity expands.
   boost::optional<double> designPrimaryAirVolumeFlowRate() const;
   bool isDesignPrimaryAirVolumeFlowRateAutosized() const;
   bool setDesignPrimaryAirVolumeFlowRate(double designPrimaryAirVolumeFlowRate);

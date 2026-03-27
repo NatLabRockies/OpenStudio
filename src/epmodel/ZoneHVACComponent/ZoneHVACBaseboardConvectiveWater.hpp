@@ -36,9 +36,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: heatingDesignCapacity* / heatingDesignCapacityPerFloorArea / fractionofAutosizedHeatingDesignCapacity / uFactorTimesAreaValue / maximumWaterFlowRate / convergenceTolerance
-    //   map to the EnergyPlus ZoneHVAC:Baseboard:Convective:Water fields documented in ForwardTranslateZoneHVACBaseboardConvectiveWater.cpp via ZoneHVAC_Baseboard_Convective_WaterFields.
-    // - Availability Schedule Name, Heating Coil Name, and the inlet/outlet node names remain relationship-only connectors handled elsewhere and are excluded from this scalar API.
+    // - Status: Scalar Parity. The scalar field surface is aligned, while schedule/coils/node wiring remains relationship-driven.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACBaseboardConvectiveWater.
+    // - Implemented Parity: `heatingDesignCapacityMethod`, heating-capacity scalars, `uFactorTimesAreaValue`, `maximumWaterFlowRate`, and `convergenceTolerance` map directly to the EnergyPlus ZoneHVAC:Baseboard:Convective:Water fields.
+    // - Documented Delta: Availability schedule, heating coil, and inlet/outlet node references are excluded because they are relationship-style links rather than scalar values.
+    // - Field/Storage Mapping: The scalar field group is stored directly on the EnergyPlus object, while the omitted links are handled through topology/child-object APIs elsewhere in epmodel.
+    // - Evidence: `src/model/ZoneHVACBaseboardConvectiveWater.hpp`, `src/model/ZoneHVACBaseboardConvectiveWater.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACBaseboardConvectiveWater.cpp`, and `src/epmodel/test/ZoneHVACBaseboardConvectiveWater_GTest.cpp`.
+    // - Remaining Parity Work: Add explicit relationship helpers only if the canonical model surface expands beyond the current scalar wrapper.
     static std::vector<std::string> heatingDesignCapacityMethodValues();
 
     std::string heatingDesignCapacityMethod() const;

@@ -44,11 +44,13 @@ namespace epmodel {
     static std::vector<std::string> verticalLocationValues();
 
     // Schema Alignment Notes:
-    // - API: Scalar accessors mirror the openstudio::model RefrigerationAirChiller names while mapping directly to the
-    //   EnergyPlus `Refrigeration:AirChiller` fields enumerated by Refrigeration_AirChillerFields (see
-    //   ForwardTranslateRefrigerationAirChiller.cpp for the translator evidence).
-    // - Field Mapping: availability/heating/defrost schedules plus other relationship-only fields remain outside this
-    //   scalar-focused API until dedicated helpers exist.
+    // - Status: Partial Parity. The refrigeration air-chiller scalars are aligned, but schedules and other relationship-only links remain separate.
+    // - Canonical Counterpart: openstudio::model::RefrigerationAirChiller.
+    // - Implemented Parity: Capacity-rating, correction-curve, fan-speed, defrost, and heating/cooling performance scalars map directly to the EnergyPlus object.
+    // - Documented Delta: Availability, heating, and defrost schedules plus other relationship-only fields remain outside this scalar-focused API.
+    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while schedule and child-object wiring are handled through explicit relationship state.
+    // - Evidence: `src/model/RefrigerationAirChiller.hpp`, `src/model/RefrigerationAirChiller.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateRefrigerationAirChiller.cpp`, and `src/epmodel/test/RefrigerationAirChiller_GTest.cpp`.
+    // - Remaining Parity Work: Add the missing schedule and relationship helpers only if the canonical wrapper still exposes them directly.
 
     std::string capacityRatingType() const;
     bool setCapacityRatingType(const std::string& capacityRatingType);

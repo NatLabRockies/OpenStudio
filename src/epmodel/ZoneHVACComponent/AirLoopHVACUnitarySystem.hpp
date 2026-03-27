@@ -45,13 +45,13 @@ class EPMODEL_API AirLoopHVACUnitarySystem : public ZoneHVACComponent
   static std::vector<std::string> supplyAirFlowRateMethodWhenNoCoolingorHeatingisRequiredValues();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-  // - Field Mapping: dOASDXCoolingCoilLeavingMinimumAirTemperature maps to E+ AirLoopHVAC:UnitarySystem MinimumSupplyAirTemperature.
-  // - Field Mapping: ancilliaryOnCycleElectricPower / ancilliaryOffCycleElectricPower map to E+ AncillaryOnCycleElectricPower /
-  //   AncillaryOffCycleElectricPower.
-  // - Field Mapping: supplyAirFlowRateMethodDuring* APIs map to E+ Cooling/Heating/NoLoad Supply Air Flow Rate Method fields.
-  // - Field Mapping: node/schedule/object reference fields remain excluded as relationship-like fields.
-  // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
+  // - Status: Partial Parity. The unitary-system scalar fields are aligned, but the node/schedule/object-reference wiring remains relationship-driven.
+  // - Canonical Counterpart: openstudio::model::AirLoopHVACUnitarySystem.
+  // - Implemented Parity: Control/dehumidification/fan-placement scalars, DX sizing ratios, DOAS cooling limits, latent-load control, and supply-air-flow-rate method fields map directly to the EnergyPlus object.
+  // - Documented Delta: Node, schedule, and object-reference fields remain outside the scalar surface.
+  // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while the omitted wiring is handled through child-object and topology state.
+  // - Evidence: `src/model/AirLoopHVACUnitarySystem.hpp`, `src/model/AirLoopHVACUnitarySystem.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACUnitarySystem.cpp`, and `src/epmodel/test/AirLoopHVACUnitarySystem_GTest.cpp`.
+  // - Remaining Parity Work: Add the missing relationship helpers only if the canonical wrapper still exposes them directly.
   std::string controlType() const;
   bool isControlTypeDefaulted() const;
   bool setControlType(const std::string& controlType);

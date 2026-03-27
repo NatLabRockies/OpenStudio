@@ -34,12 +34,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::GroundHeatExchangerHorizontalTrench scalar accessor names/signatures.
-    // - Field Mapping: preserved scalar APIs currently delegate directly to matching E+ GroundHeatExchanger:HorizontalTrench fields.
-    // - Field Mapping: UndisturbedGroundTemperatureModelName, UndisturbedGroundTemperatureModelType, InletNodeName, and OutletNodeName are
-    //   relationship-like fields and are intentionally excluded from this scalar-only scaffold.
-    // - ForwardTranslator evidence: ForwardTranslateGroundHeatExchangerHorizontalTrench.cpp maps these preserved scalar APIs directly to same E+ fields.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical horizontal-trench ground-heat-exchanger scalar surface is present, while linked ground-model and node helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::GroundHeatExchangerHorizontalTrench.
+    // - Implemented Parity: The preserved scalar API matches the design-flow and material-property accessors with matching scalar behavior.
+    // - Documented Delta: Undisturbed-ground-model fields and inlet/outlet node helpers remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `GroundHeatExchanger:HorizontalTrench` scalar fields used by the forward translator.
+    // - Evidence: `src/model/GroundHeatExchangerHorizontalTrench.hpp`, `src/model/GroundHeatExchangerHorizontalTrench.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateGroundHeatExchangerHorizontalTrench.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
     double designFlowRate() const;
     bool setDesignFlowRate(double designFlowRate);
 

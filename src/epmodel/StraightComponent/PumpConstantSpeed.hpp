@@ -40,14 +40,13 @@ namespace epmodel {
     static std::vector<std::string> designPowerSizingMethodValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::PumpConstantSpeed scalar method names/signatures for exact model-counterpart parity.
-    // - Field Mapping: ratedFlowRate/totalDesignFlowRate, ratedPumpHead/designPumpHead, ratedPowerConsumption/designPowerConsumption,
-    //   motorEfficiency, fractionofMotorInefficienciestoFluidStream, pumpControlType, impellerDiameter, rotationalSpeed,
-    //   skinLossRadiativeFraction map directly to the EnergyPlus OS:Pump:ConstantSpeed scalar fields, and designPowerSizingMethod,
-    //   designElectricPowerPerUnitFlowRate, designShaftPowerPerUnitFlowRatePerUnitHead, and endUseSubcategory match the E+ fields listed.
-    // - Field Mapping: pumpFlowRateSchedule, pumpCurve, zone linkage, and inlet/outlet node relationships are intentionally excluded from this scalar-only pass.
-    // - ForwardTranslator evidence: ForwardTranslatePumpConstantSpeed.cpp confirms these field mappings and autosize semantics.
-    // - TODO(parity): Add the relationship APIs once the scalar saturation milestone is complete without changing existing scalar signatures.
+    // - Status: Scalar Parity. The canonical scalar pump surface is largely present, while schedule, curve, zone, and richer relationship helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::PumpConstantSpeed.
+    // - Implemented Parity: Preserved scalar accessor names/signatures cover flow, head, power, efficiency, control type, impeller/rotation, radiative fraction, design-power sizing, and end-use metadata with matching autosize semantics.
+    // - Documented Delta: `pumpFlowRateSchedule`, `pumpCurve`, thermal-zone linkage, and explicit node-link convenience APIs are not exposed yet, so parity currently stops at the canonical scalar surface.
+    // - Field/Storage Mapping: The preserved scalar APIs map directly to EnergyPlus `Pump:ConstantSpeed` scalar fields used by the forward translator.
+    // - Evidence: `src/model/PumpConstantSpeed.hpp` defines the canonical wrapper surface, and `src/energyplus/ForwardTranslator/ForwardTranslatePumpConstantSpeed.cpp` confirms the direct scalar field mapping and autosize tokens.
+    // - Remaining Parity Work: Add the omitted schedule, curve, thermal-zone, and relationship helpers without changing the preserved scalar signatures.
 
     // ratedFlowRate
     boost::optional<double> ratedFlowRate() const;

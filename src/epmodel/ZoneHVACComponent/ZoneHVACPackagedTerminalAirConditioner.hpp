@@ -42,12 +42,13 @@ namespace epmodel {
     static std::vector<std::string> validFanPlacementValues();
 
     // Schema Alignment Notes:
-    // - API: supplyAirFlowRateDuringCoolingOperation, supplyAirFlowRateDuringHeatingOperation, supplyAirFlowRateWhenNoCoolingorHeatingisNeeded,
-    //   outdoorAirFlowRateDuringCoolingOperation, outdoorAirFlowRateDuringHeatingOperation, outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded,
-    //   noLoadSupplyAirFlowRateControlSetToLowSpeed, and fanPlacement map to the EnergyPlus ZoneHVAC:PackagedTerminalAirConditioner fields
-    //   enumerated by ZoneHVAC_PackagedTerminalAirConditionerFields; ForwardTranslateZoneHVACPackagedTerminalAirConditioner.cpp documents these mappings.
-    // - Field Mapping: supply-air fan/heating/cooling coil links and node names map to the corresponding EnergyPlus fields and are exposed through
-    //   the type-specific relationship API below.
+    // - Status: Partial Parity. The flow and fan-placement scalars are aligned, but the supply-fan/coils/node wiring remains relationship-driven.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACPackagedTerminalAirConditioner.
+    // - Implemented Parity: Supply-air and outdoor-air flow scalars, `noLoadSupplyAirFlowRateControlSetToLowSpeed`, and `fanPlacement` map directly to the EnergyPlus object.
+    // - Documented Delta: Supply-air fan, heating/cooling coil links, and node names are relationship-style fields and remain outside the scalar surface.
+    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while the contained equipment and node topology are modeled explicitly through child-object state.
+    // - Evidence: `src/model/ZoneHVACPackagedTerminalAirConditioner.hpp`, `src/model/ZoneHVACPackagedTerminalAirConditioner.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACPackagedTerminalAirConditioner.cpp`, and `src/epmodel/test/ZoneHVACPackagedTerminalAirConditioner_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers only if the canonical wrapper still exposes them directly.
 
     boost::optional<double> supplyAirFlowRateDuringCoolingOperation() const;
     bool setSupplyAirFlowRateDuringCoolingOperation(double supplyAirFlowRateDuringCoolingOperation);

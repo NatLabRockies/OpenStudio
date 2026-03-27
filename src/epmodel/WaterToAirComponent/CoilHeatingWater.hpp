@@ -37,11 +37,13 @@ namespace epmodel {
     static std::vector<std::string> performanceInputMethodValues();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: uFactorTimesAreaValue, maximumWaterFlowRate, ratedCapacity, and rated* temperature/ratio APIs map directly to EnergyPlus Coil:Heating:Water fields.
-    // - Field Mapping: performanceInputMethod maps directly to EnergyPlus PerformanceInputMethod.
-    // - ForwardTranslator evidence: ForwardTranslateCoilHeatingWater.cpp writes these exact scalar fields and autosize semantics.
-    // - Field Mapping: availability schedule, water/air node names, and controller linkage are relationship-like and intentionally excluded in this scalar scaffold phase.
+    // - Status: Scalar Parity. The scalar design fields and operating-mode choice are aligned, while canonical relationship behavior remains outside this wrapper surface.
+    // - Canonical Counterpart: openstudio::model::CoilHeatingWater.
+    // - Implemented Parity: `uFactorTimesAreaValue`, `maximumWaterFlowRate`, `performanceInputMethod`, `ratedCapacity`, `ratedInletWaterTemperature`, `ratedInletAirTemperature`, `ratedOutletWaterTemperature`, `ratedOutletAirTemperature`, `ratedRatioForAirAndWaterConvection`, and autosize helpers preserve the canonical scalar contract.
+    // - Documented Delta: Availability schedule, controller linkage, node-name accessors, and AFN/equivalent-duct helpers are not exposed here even though the canonical model type owns them.
+    // - Field/Storage Mapping: Scalar design and choice fields map directly to the corresponding EnergyPlus `Coil:Heating:Water` fields.
+    // - Evidence: `src/model/CoilHeatingWater.hpp`, `src/model/CoilHeatingWater.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingWater.cpp`, and `src/model/test/CoilHeatingWater_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship and helper APIs only if this family is brought beyond scalar parity.
     boost::optional<double> uFactorTimesAreaValue() const;
     bool isUFactorTimesAreaValueAutosized() const;
     void autosizeUFactorTimesAreaValue();

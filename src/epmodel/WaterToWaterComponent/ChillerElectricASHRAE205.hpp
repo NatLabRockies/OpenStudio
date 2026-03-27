@@ -39,10 +39,13 @@ class EPMODEL_API ChillerElectricASHRAE205 : public WaterToWaterComponent
   static std::vector<std::string> chillerFlowModeValues();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-  // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus Chiller:Electric:ASHRAE205 fields.
-  // - Field Mapping: representationFile/ambient schedule+zone and all node-link fields are excluded from this scalar-only scaffold phase.
-  // - TODO(parity): Add excluded relationship APIs and rich loop behavior in a dedicated parity pass.
+  // - Status: Scalar Parity. The ASHRAE205 chiller scalar surface is aligned, while representation-file and node/link behavior remains excluded.
+  // - Canonical Counterpart: openstudio::model::ChillerElectricASHRAE205.
+  // - Implemented Parity: Scalar accessors for capacity, COP, flow rates, PLR limits, condenser behavior, heat recovery, and sizing preserve the canonical model API shape.
+  // - Documented Delta: Representation-file, ambient schedule/zone, and node-link APIs are intentionally excluded in this pass.
+  // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `Chiller:Electric:ASHRAE205` fields directly; external-file linkage stays in separate storage-aware handling.
+  // - Evidence: `src/model/ChillerElectricASHRAE205.hpp`, `src/model/ChillerElectricASHRAE205.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateChillerElectricASHRAE205.cpp`.
+  // - Remaining Parity Work: Add the excluded relationship and external-file APIs only if the family advances beyond scalar parity.
   std::string performanceInterpolationMethod() const;
   bool setPerformanceInterpolationMethod(const std::string& performanceInterpolationMethod);
 

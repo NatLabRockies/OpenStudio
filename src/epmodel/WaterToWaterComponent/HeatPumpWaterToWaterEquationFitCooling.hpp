@@ -34,10 +34,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserves existing openstudio::model scalar accessor names/signatures, including legacy rated/reference aliases.
-    // - Field Mapping: ratedCoolingCapacity/ratedCoolingPowerConsumption map to E+ Reference Cooling fields per ForwardTranslator behavior.
-    // - Field Mapping: Relationship-like fields (nodes, curves, companion heat pump) are intentionally excluded in this scalar-only scaffold.
-    // - TODO(parity): Add non-scalar curve/companion APIs and WaterToWater component behavior in a dedicated parity pass.
+    // - Status: Scalar Parity. The equation-fit cooling surface is aligned, while nodes, curves, and companion heat-pump behavior remains excluded.
+    // - Canonical Counterpart: openstudio::model::HeatPumpWaterToWaterEquationFitCooling.
+    // - Implemented Parity: Scalar accessors for load/source flow rates, rated cooling capacity, power consumption, coefficient of performance, and sizing preserve the canonical model API shape.
+    // - Documented Delta: Node, curve, and companion-heat-pump APIs are intentionally excluded in this pass.
+    // - Field/Storage Mapping: Scalar wrappers target the EnergyPlus `WaterToWater` equation-fit cooling fields directly, with legacy rated/reference naming preserved where canonical model behavior expects it.
+    // - Evidence: `src/model/HeatPumpWaterToWaterEquationFitCooling.hpp`, `src/model/HeatPumpWaterToWaterEquationFitCooling.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatPumpWaterToWaterEquationFitCooling.cpp`.
+    // - Remaining Parity Work: Add the excluded curve, companion, and loop-coupling APIs only if the family moves beyond scalar parity.
 
     // Reference load-side flow rate
     boost::optional<double> referenceLoadSideFlowRate() const;

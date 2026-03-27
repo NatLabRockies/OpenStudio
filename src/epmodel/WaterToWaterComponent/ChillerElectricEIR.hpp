@@ -39,11 +39,13 @@ class EPMODEL_API ChillerElectricEIR : public WaterToWaterComponent
   static std::vector<std::string> condenserFlowControlValues();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-  // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus Chiller:Electric:EIR fields.
-  // - Field Mapping: Relationship fields (curve/schedule/node/object-list targets) are excluded from this scalar-only scaffold.
-  // - Field Mapping: ForwardTranslator evidence confirms direct mapping and autosize string behavior for capacity/flow fields.
-  // - TODO(parity): Add excluded relationship APIs and loop behavior in a dedicated parity pass.
+  // - Status: Scalar Parity. The EIR chiller scalar surface is aligned, while curve, schedule, and node/link behavior remains excluded.
+  // - Canonical Counterpart: openstudio::model::ChillerElectricEIR.
+  // - Implemented Parity: Scalar accessors for capacity, COP, flow rates, PLR limits, condenser behavior, heat recovery, and sizing preserve the canonical model API shape.
+  // - Documented Delta: Relationship fields such as curves, schedules, and node/object-link targets are intentionally excluded in this pass.
+  // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `Chiller:Electric:EIR` fields directly, and autosize/autocalculate behavior follows the canonical translator contract.
+  // - Evidence: `src/model/ChillerElectricEIR.hpp`, `src/model/ChillerElectricEIR.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateChillerElectricEIR.cpp`.
+  // - Remaining Parity Work: Add the excluded relationship APIs and any remaining loop behavior only if the family moves beyond scalar parity.
   boost::optional<double> referenceCapacity() const;
   bool isReferenceCapacityAutosized() const;
   bool setReferenceCapacity(boost::optional<double> referenceCapacity);

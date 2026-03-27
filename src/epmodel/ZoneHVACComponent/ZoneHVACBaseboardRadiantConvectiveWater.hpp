@@ -36,11 +36,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: ratedAverageWaterTemperature, ratedWaterMassFlowRate, heatingDesignCapacity, and maximumWaterFlowRate map to the EnergyPlus
-    //   ZoneHVAC:Baseboard:RadiantConvective:Water fields enumerated by ZoneHVAC_Baseboard_RadiantConvective_WaterFields via
-    //   ForwardTranslateZoneHVACBaseboardRadiantConvectiveWater.cpp.
-    // - Availability Schedule Name, Heating Coil Name, and the extensible surface entries remain relationship-only and are intentionally
-    //   excluded from this scalar-only API.
+    // - Status: Partial Parity. The scalar field surface and thermal-zone attachment behavior are present, but the schedule/coils/surface links remain relationship-driven.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACBaseboardRadiantConvectiveWater.
+    // - Implemented Parity: `ratedAverageWaterTemperature`, `ratedWaterMassFlowRate`, `heatingDesignCapacity`, `maximumWaterFlowRate`, and the thermal-zone attach/remove APIs map directly to the canonical wrapper behavior.
+    // - Documented Delta: Availability schedule, heating coil, and extensible surface entries are omitted because they are relationship-only wiring rather than scalar fields.
+    // - Field/Storage Mapping: EnergyPlus stores the scalar values directly on the object, while thermal-zone membership and surface coverage are maintained through explicit topology and child-object state.
+    // - Evidence: `src/model/ZoneHVACBaseboardRadiantConvectiveWater.hpp`, `src/model/ZoneHVACBaseboardRadiantConvectiveWater.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACBaseboardRadiantConvectiveWater.cpp`, and `src/epmodel/test/ZoneHVACBaseboardRadiantConvectiveWater_GTest.cpp`.
+    // - Remaining Parity Work: Add explicit relationship helpers only if canonical surface handling becomes a first-class epmodel concern.
 
     // ratedAverageWaterTemperature accessors
     boost::optional<double> ratedAverageWaterTemperature() const;

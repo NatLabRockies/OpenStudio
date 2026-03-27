@@ -41,10 +41,13 @@ class EPMODEL_API FanSystemModel : public StraightComponent
   static std::vector<std::string> designPowerSizingMethodValues();
 
   // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::FanSystemModel scalar accessor names/signatures for counterpart parity.
-  // - Field Mapping: Scalar APIs map directly to E+ Fan:SystemModel scalar fields (per ForwardTranslateFanSystemModel.cpp).
-  // - Field Mapping: Autosize APIs preserve EnergyPlus autosize-token semantics via the "autosize" string.
-  // - TODO(parity): Relationship/extensible fields (schedule/node/curve/thermal zone and speed extensibles) remain excluded in scalar scaffold.
+  // - Status: Partial Parity. The core scalar fan-sizing surface is aligned, but the canonical schedule, curve, thermal-zone, and extensible-speed APIs are still absent.
+  // - Canonical Counterpart: openstudio::model::FanSystemModel.
+  // - Implemented Parity: The scalar flow, sizing, pressure-rise, efficiency, and end-use-subcategory accessors preserve the canonical `openstudio::model` field behavior, including autosize semantics where exposed.
+  // - Documented Delta: Epmodel does not yet expose the canonical availability-schedule, curve, thermal-zone, airflow-network, or speed-collection APIs from `openstudio::model::FanSystemModel`.
+  // - Field/Storage Mapping: Scalar fields map directly to `Fan:SystemModel` storage in EnergyPlus, while multi-speed data remains a relationship/extensible concern in the canonical model.
+  // - Evidence: `src/model/FanSystemModel.hpp`, `src/model/FanSystemModel.cpp`, `src/model/test/FanSystemModel_GTest.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFanSystemModel.cpp` anchor the canonical API and translation behavior.
+  // - Remaining Parity Work: Add the schedule, curve, thermal-zone, and speed-extensible APIs once epmodel relationship and extensible-field support is in place.
   boost::optional<double> designMaximumAirFlowRate() const;
   bool isDesignMaximumAirFlowRateAutosized() const;
   bool setDesignMaximumAirFlowRate(double designMaximumAirFlowRate);

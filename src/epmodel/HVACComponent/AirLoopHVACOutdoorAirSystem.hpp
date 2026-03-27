@@ -37,13 +37,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model API names/signatures and existing non-scalar behavior for this model-counterpart class.
-    // - API: This class intentionally fronts `AirLoopHVAC:OutdoorAirSystem` while delegating node-port semantics to its contained `OutdoorAir:Mixer`.
-    // - Field Mapping: Controller List Name and Outdoor Air Equipment List Name map to companion objects and are intentionally exposed via relationship APIs.
-    // - Field Mapping: `outboardOANode()` provides the OA node used by ForwardTranslator when emitting `OutdoorAir:NodeList`.
-    // - Field Mapping: This E+ object has no class-specific simple scalar fields beyond Name; scalar saturation therefore relies on generic name accessors.
-    // - ForwardTranslator evidence: ForwardTranslateAirLoopHVACOutdoorAirSystem.cpp writes OutdoorAir:Mixer node fields from this API shape.
-    // - TODO(parity): Keep adding non-scalar parity behaviors incrementally without breaking existing API signatures.
+    // - Status: Partial Parity. The outdoor-air-system topology surface is present, but the canonical wrapper still exposes additional convenience and distribution-node behavior.
+    // - Canonical Counterpart: openstudio::model::AirLoopHVACOutdoorAirSystem.
+    // - Implemented Parity: Return/outdoor/relief/mixed air ports, node accessors, component traversal, controller wiring, and `addToNode` preserve the main canonical OA-system topology behavior.
+    // - Documented Delta: epmodel still omits the canonical airloop convenience helpers and the AirflowNetwork distribution-node surface that model code exposes on this class.
+    // - Field/Storage Mapping: Controller List Name and Outdoor Air Equipment List Name map to companion objects and are intentionally exposed via relationship APIs, not scalar string accessors.
+    // - Evidence: `src/model/AirLoopHVACOutdoorAirSystem.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACOutdoorAirSystem.cpp`, and `src/epmodel/test/AirLoopHVACOutdoorAirSystem_GTest.cpp` show the canonical API shape and the node-level topology path.
+    // - Remaining Parity Work: Add the remaining airloop convenience and distribution-node APIs once the epmodel topology layer exposes them consistently.
     // Mirroring openstudio::model API shape.
     unsigned returnAirPort() const;
     boost::optional<ModelObject> returnAirModelObject() const;

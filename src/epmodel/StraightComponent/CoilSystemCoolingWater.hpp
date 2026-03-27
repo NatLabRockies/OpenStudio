@@ -40,13 +40,13 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::CoilSystemCoolingWater scalar accessor names/signatures.
-    // - Field Mapping: dehumidificationControlType, runonSensibleLoad, runonLatentLoad,
-    //   minimumAirToWaterTemperatureOffset, economizerLockout, minimumWaterLoopTemperatureForHeatRecovery
-    //   map directly to matching E+ CoilSystem:Cooling:Water fields.
-    // - ForwardTranslator evidence: ForwardTranslateCoilSystemCoolingWater.cpp writes these scalar fields directly.
-    // - Field Mapping: availability schedule, cooling coil object/name, companion coil, and air node links are relationship-like and excluded.
-    // - TODO(parity): Add excluded relationship APIs incrementally without changing preserved scalar signatures.
+    // - Status: Partial Parity. The control and performance scalars are present, but coil, companion, schedule, and node-link helpers remain model-owned.
+    // - Canonical Counterpart: openstudio::model::CoilSystemCoolingWater.
+    // - Implemented Parity: `dehumidificationControlType`, run-on loads, temperature offset, economizer lockout, and heat-recovery limit preserve the canonical scalar API.
+    // - Documented Delta: Availability schedule, cooling-coil object/name, companion-coil, and air-node helpers from canonical `openstudio::model::CoilSystemCoolingWater` are not exposed yet.
+    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `CoilSystem:Cooling:Water` fields.
+    // - Evidence: `src/model/CoilSystemCoolingWater.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilSystemCoolingWater.cpp`, and `src/epmodel/test/CoilSystemCoolingWater_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted schedule, coil-link, companion-coil, and node-link helpers without changing the preserved scalar signatures.
     std::string dehumidificationControlType() const;
     bool setDehumidificationControlType(const std::string& dehumidificationControlType);
 

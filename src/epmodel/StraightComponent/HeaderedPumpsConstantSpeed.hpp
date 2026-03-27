@@ -41,11 +41,13 @@ namespace epmodel {
     static std::vector<std::string> designPowerSizingMethodValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::HeaderedPumpsConstantSpeed scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: totalRatedFlowRate/ratedPumpHead/ratedPowerConsumption APIs map to E+ HeaderedPumps:ConstantSpeed TotalDesignFlowRate/DesignPumpHead/DesignPowerConsumption.
-    // - Field Mapping: pumpFlowRateSchedule, thermalZone, and inlet/outlet node name fields are relationship-like fields and are excluded in this scalar-only pass.
-    // - ForwardTranslator evidence: ForwardTranslateHeaderedPumpsConstantSpeed.cpp maps the preserved API names to these E+ fields.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical scalar pump-bank surface is largely present, while schedule, zone, and richer relationship helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::HeaderedPumpsConstantSpeed.
+    // - Implemented Parity: Preserved scalar accessor names/signatures cover total flow, pump-bank count, sequencing scheme, head, power, efficiency, control type, radiative fraction, design-power sizing, and end-use metadata with matching autosize behavior.
+    // - Documented Delta: `pumpFlowRateSchedule`, thermal-zone linkage, and explicit node-link convenience APIs from canonical `openstudio::model::HeaderedPumpsConstantSpeed` are not exposed yet.
+    // - Field/Storage Mapping: The preserved scalar APIs map directly to EnergyPlus `HeaderedPumps:ConstantSpeed` scalar fields used by the forward translator.
+    // - Evidence: `src/model/HeaderedPumpsConstantSpeed.hpp` defines the canonical wrapper surface, and `src/energyplus/ForwardTranslator/ForwardTranslateHeaderedPumpsConstantSpeed.cpp` confirms the direct scalar mapping and autosize tokens.
+    // - Remaining Parity Work: Add the omitted schedule, thermal-zone, and relationship helpers without changing the preserved scalar signatures.
 
     boost::optional<double> totalRatedFlowRate() const;
     bool isTotalRatedFlowRateAutosized() const;

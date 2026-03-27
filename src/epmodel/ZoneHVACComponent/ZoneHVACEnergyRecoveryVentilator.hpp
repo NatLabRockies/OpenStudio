@@ -37,10 +37,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Scalar getters/setters map to EnergyPlus ZoneHVAC:EnergyRecoveryVentilator fields enumerated by
-    //   ZoneHVAC_EnergyRecoveryVentilatorFields via ForwardTranslateZoneHVACEnergyRecoveryVentilator.cpp.
-    // - Field Mapping: availability schedule, heat exchanger, supply/exhaust fans, controller, availability manager,
-    //   and node/link references are relationship-only and intentionally excluded from this scalar-only API.
+    // - Status: Partial Parity. The scalar ventilation fields are aligned, but the heat-exchanger and fan/controller relationships still live outside the scalar surface.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACEnergyRecoveryVentilator.
+    // - Implemented Parity: `supplyAirFlowRate`, `exhaustAirFlowRate`, `ventilationRateperUnitFloorArea`, `ventilationRateperOccupant`, and `children()` preserve the main canonical wrapper behavior.
+    // - Documented Delta: Availability schedule, heat exchanger, supply/exhaust fans, controller, availability manager, and node/link references remain relationship-only.
+    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object while the omitted links are represented through child-object and zone-topology state.
+    // - Evidence: `src/model/ZoneHVACEnergyRecoveryVentilator.hpp`, `src/model/ZoneHVACEnergyRecoveryVentilator.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACEnergyRecoveryVentilator.cpp`, and `src/epmodel/test/ZoneHVACEnergyRecoveryVentilator_GTest.cpp`.
+    // - Remaining Parity Work: Expose the missing relationship helpers only if the canonical model surface needs them as public epmodel APIs.
 
     boost::optional<double> supplyAirFlowRate() const;
     bool setSupplyAirFlowRate(double supplyAirFlowRate);

@@ -41,12 +41,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Scalar accessors preserve the openstudio::model names for designSupplyAirFlowRate, fanPlacement,
-    //   coolerUnitControlMethod, throttlingRangeTemperatureDifference, coolingLoadControlThresholdHeatTransferRate,
-    //   and shutOffRelativeHumidity while mapping directly to the EnergyPlus ZoneHVAC:EvaporativeCoolerUnit fields via
-    //   ZoneHVAC_EvaporativeCoolerUnitFields (ForwardTranslateZoneHVACEvaporativeCoolerUnit.cpp describes this mapping).
-    // - Field Mapping: Availability schedule, supply air fan, evaporative cooler objects, and connected node references
-    //   are relationship-only and intentionally excluded from this scalar API until dedicated relationship helpers exist.
+    // - Status: Partial Parity. The scalar fan/control fields are aligned, while the fan, cooler, and node wiring stays relationship-driven.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACEvaporativeCoolerUnit.
+    // - Implemented Parity: `designSupplyAirFlowRate`, `fanPlacement`, `coolerUnitControlMethod`, throttling-range, cooling-load threshold, and shutoff humidity map directly to the EnergyPlus object.
+    // - Documented Delta: Availability schedule, supply air fan, evaporative cooler children, and connected node references are relationship-only and remain excluded from the scalar surface.
+    // - Field/Storage Mapping: Scalar fields live directly on the EnergyPlus object; topology and child links are maintained through explicit child-object helpers.
+    // - Evidence: `src/model/ZoneHVACEvaporativeCoolerUnit.hpp`, `src/model/ZoneHVACEvaporativeCoolerUnit.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACEvaporativeCoolerUnit.cpp`, and `src/epmodel/test/ZoneHVACEvaporativeCoolerUnit_GTest.cpp`.
+    // - Remaining Parity Work: Add the missing relationship helpers only if the canonical wrapper needs them beyond the current child/topology surface.
     static std::vector<std::string> fanPlacementValues();
     static std::vector<std::string> coolerUnitControlMethodValues();
 

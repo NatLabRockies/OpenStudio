@@ -39,15 +39,13 @@ namespace epmodel {
     static std::vector<std::string> perPersonVentilationRateModeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: perPersonVentilationRateMode maps to EnergyPlus AirTerminal:SingleDuct:Mixer Per Person Ventilation Rate Mode.
-    // - Field Mapping: The model-only controlForOutdoorAir behavior maps through ForwardTranslator to
-    //   Design Specification Outdoor Air Object Name relationship wiring and is intentionally excluded from scalar epmodel accessors.
-    // - Field Mapping: ZoneHVAC Unit Object Type/Name, Mixer Connection Type, and node/DSOA fields are relationship/target-link concepts
-    //   and are intentionally excluded from scalar accessor generation in this saturation pass.
-    // - ForwardTranslator evidence: translateAirTerminalSingleDuctInletSideMixer writes MixerConnectionType as "InletSide" and
-    //   perPersonVentilationRateMode as a direct scalar, while relationship fields are resolved separately.
-    // - TODO(parity): Add relationship/non-scalar behavior incrementally after scalar scaffold saturation.
+    // - Status: Partial Parity. The scalar inlet-side mixer controls are aligned, but the outdoor-air control and target-link surface is still intentionally narrower.
+    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctInletSideMixer.
+    // - Implemented Parity: `perPersonVentilationRateMode` preserves the canonical scalar contract.
+    // - Documented Delta: `controlForOutdoorAir` is modeled through translator behavior rather than a dedicated public wrapper here, and zone/unit-object type, mixer connection, and node/DSOA fields are not exposed as public methods yet.
+    // - Field/Storage Mapping: The preserved scalar maps directly to EnergyPlus `AirTerminal:SingleDuct:Mixer` fields; the translator wires the outdoor-air and zone links separately.
+    // - Evidence: `src/model/AirTerminalSingleDuctInletSideMixer.hpp`, `src/model/AirTerminalSingleDuctInletSideMixer.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctInletSideMixer.cpp`, and `src/epmodel/test/AirTerminalSingleDuctInletSideMixer_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted outdoor-air, unit-object, mixer-connection, and node/DSOA helpers when relationship parity expands.
 
     /** @name Per Person Ventilation Rate Mode */
     //@{

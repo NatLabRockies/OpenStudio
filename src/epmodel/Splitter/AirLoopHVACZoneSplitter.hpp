@@ -37,10 +37,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserves existing model-counterpart behavior focused on topology, not dedicated scalar fields.
-    // - Field Mapping: AirLoopHVAC:ZoneSplitter Inlet Node Name and extensible Outlet Node Name rows are relationship fields.
-    // - Field Mapping: Name remains available through base ModelObject scalar API.
-    // - TODO(parity): Add explicit scalar APIs only if a future counterpart change introduces non-relationship scalar fields.
+    // - Status: Partial Parity. The zone-splitter topology surface is present, but the canonical wrapper exposes additional airflow-network convenience APIs.
+    // - Canonical Counterpart: openstudio::model::AirLoopHVACZoneSplitter.
+    // - Implemented Parity: Inlet/outlet port access, branch indexing, outlet-object enumeration, branch removal, and outlet-object assignment preserve the canonical zone-splitter topology contract.
+    // - Documented Delta: epmodel still omits the AirflowNetwork distribution-node convenience API present in the canonical wrapper.
+    // - Field/Storage Mapping: `AirLoopHVAC:ZoneSplitter` inlet-node and extensible outlet-node fields are represented as relationship fields.
+    // - Evidence: `src/model/AirLoopHVACZoneSplitter.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACZoneSplitter.cpp`, and `src/epmodel/test/idf/IDF_SmallOffice_GTest.cpp` exercise the same branch-index and inlet-node behavior.
+    // - Remaining Parity Work: Add the AirflowNetwork convenience wrappers only if epmodel needs to mirror that additional model-side surface.
     boost::optional<AirLoopHVAC> airLoopHVAC() const;
     unsigned inletPort() const override;
     unsigned outletPort(unsigned branchIndex) const override;

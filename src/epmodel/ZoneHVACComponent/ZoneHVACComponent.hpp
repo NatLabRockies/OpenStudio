@@ -37,6 +37,14 @@ class EPMODEL_API ZoneHVACComponent : public HVACComponent
   ZoneHVACComponent& operator=(const ZoneHVACComponent&) = default;
   ZoneHVACComponent& operator=(ZoneHVACComponent&&) = default;
 
+  // Schema Alignment Notes:
+  // - Status: Partial Parity. The shared zone-equipment topology contract is present, but the canonical base convenience surface is still somewhat broader than epmodel's wrapper.
+  // - Canonical Counterpart: openstudio::model::ZoneHVACComponent.
+  // - Implemented Parity: Inlet/outlet port and node accessors, `thermalZone`, `addToThermalZone`, `removeFromThermalZone`, return-plenum wiring, `addToNode`, `airLoopHVAC`, `removeFromAirLoopHVAC`, and air-side model-object traversal preserve the canonical zone-equipment topology contract.
+  // - Documented Delta: The epmodel base stays focused on zone-equipment attachment and loop plumbing; additional convenience remains on derived wrappers or is still omitted while relationship coverage matures.
+  // - Field/Storage Mapping: Public zone-equipment behavior is resolved through EnergyPlus `ZoneHVAC:EquipmentConnections` and `ZoneHVAC:EquipmentList` storage instead of OpenStudio-side connection objects.
+  // - Evidence: `src/model/ZoneHVACComponent.hpp` and `src/model/ZoneHVACComponent.cpp` define the canonical shared topology behavior exercised by the concrete zone-equipment wrappers.
+  // - Remaining Parity Work: Add any missing shared zone-equipment convenience only if it is needed across multiple derived wrappers after the family normalization pass.
   unsigned inletPort() const;
   boost::optional<Node> inletNode() const;
 

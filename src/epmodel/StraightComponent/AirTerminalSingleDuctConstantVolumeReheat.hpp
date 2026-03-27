@@ -36,13 +36,13 @@ class EPMODEL_API AirTerminalSingleDuctConstantVolumeReheat : public StraightCom
   static IddObjectType iddObjectType();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model scalar accessor names for this model-counterpart class.
-  // - Field Mapping: maximumAirFlowRate, maximumHotWaterorSteamFlowRate, minimumHotWaterorSteamFlowRate, convergenceTolerance,
-  //   and maximumReheatAirTemperature map directly to EnergyPlus AirTerminal:SingleDuct:ConstantVolume:Reheat fields.
-  // - Field Mapping: Availability Schedule Name, Air Inlet Node Name, Air Outlet Node Name, and Reheat Coil Name are relationship
-  //   fields and are intentionally excluded from scalar accessors.
-  // - ForwardTranslator evidence: translateAirTerminalSingleDuctConstantVolumeReheat writes those relationship fields and these scalar fields.
-  // - TODO(parity): Add relationship APIs incrementally after scalar scaffold saturation.
+  // - Status: Scalar Parity. The constant-volume reheat scalar surface is aligned, while schedule, node-link, and coil helpers remain intentionally narrower.
+  // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctConstantVolumeReheat.
+  // - Implemented Parity: `maximumAirFlowRate`, `maximumHotWaterorSteamFlowRate`, `minimumHotWaterorSteamFlowRate`, `convergenceTolerance`, and `maximumReheatAirTemperature` preserve the canonical scalar contract.
+  // - Documented Delta: Availability schedule, inlet node, outlet node, and reheat-coil accessors are not exposed as public methods yet.
+  // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:ConstantVolume:Reheat` fields, while the translator wires the topology links separately.
+  // - Evidence: `src/model/AirTerminalSingleDuctConstantVolumeReheat.hpp`, `src/model/AirTerminalSingleDuctConstantVolumeReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctConstantVolumeReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctConstantVolumeReheat_GTest.cpp`.
+  // - Remaining Parity Work: Add the omitted schedule, node-link, and coil helpers when relationship parity expands.
   boost::optional<double> maximumAirFlowRate() const;
   bool isMaximumAirFlowRateAutosized() const;
   bool setMaximumAirFlowRate(double maximumAirFlowRate);

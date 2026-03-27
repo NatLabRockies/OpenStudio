@@ -40,6 +40,14 @@ namespace epmodel {
     HVACComponent& operator=(const HVACComponent&) = default;
     HVACComponent& operator=(HVACComponent&&) = default;
 
+    // Schema Alignment Notes:
+    // - Status: Partial Parity. Core loop-membership, containment, connection-mutation, and removability APIs are present, but the canonical HVACComponent surface is still narrower in epmodel.
+    // - Canonical Counterpart: openstudio::model::HVACComponent.
+    // - Implemented Parity: `loop`, `airLoopHVAC`, `plantLoop`, `containingHVACComponent`, `containingZoneHVACComponent`, `addToNode`, `addToSplitter`, `disconnect`, `isRemovable`, and `remove` preserve the canonical model-facing topology contract.
+    // - Documented Delta: Public parity stops short of exposing `airLoopHVACOutdoorAirSystem`, `containingStraightComponent`, autosizing/apply-sizing helpers, and component/fuel-type helpers because epmodel topology coverage is not broad enough to support them with canonical semantics yet.
+    // - Field/Storage Mapping: Relationship queries are resolved from EnergyPlus-backed loop topology and transient epmodel connective-tissue objects rather than OpenStudio's `Connection`-based storage model.
+    // - Evidence: `src/model/HVACComponent.hpp` and `src/model/HVACComponent.cpp` define the canonical surface and topology behavior that this wrapper is matching selectively.
+    // - Remaining Parity Work: Add the omitted outdoor-air-system, containing-straight-component, sizing, and component/fuel-type APIs once topology and containment coverage can support canonical behavior.
     boost::optional<Loop> loop() const;
     boost::optional<AirLoopHVAC> airLoopHVAC() const;
     boost::optional<PlantLoop> plantLoop() const;

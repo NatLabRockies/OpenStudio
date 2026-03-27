@@ -40,14 +40,13 @@ namespace epmodel {
     static std::vector<std::string> inletWaterTemperatureOptionValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::HumidifierSteamGas scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: Preserved scalar APIs map directly to E+ Humidifier:Steam:Gas scalar fields Rated Capacity, Rated Gas Use Rate,
-    //   Thermal Efficiency, Rated Fan Power, Auxiliary Electric Power, and Inlet Water Temperature Option.
-    // - ForwardTranslator evidence: ForwardTranslateHumidifierSteamGas.cpp maps these exact methods to the same E+ fields,
-    //   including autosize behavior for Rated Capacity and Rated Gas Use Rate.
-    // - Field Mapping: Availability Schedule Name, Thermal Efficiency Modifier Curve Name, Air Inlet/Outlet Node Name, and
-    //   Water Storage Tank Name are relationship-like fields and are excluded from this scalar pass.
-    // - TODO(parity): Add excluded relationship APIs in a dedicated relationship pass.
+    // - Status: Scalar Parity. The canonical steam-gas humidifier scalar surface is present, while schedule, curve, node, and storage-tank helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::HumidifierSteamGas.
+    // - Implemented Parity: The preserved scalar API matches the rated-capacity, gas-use, efficiency, fan-power, auxiliary-power, and inlet-water-temperature accessors with matching autosize/default behavior.
+    // - Documented Delta: Availability schedule, curve, inlet/outlet node, and water-storage-tank helpers remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Humidifier:Steam:Gas` scalar fields used by the forward translator.
+    // - Evidence: `src/model/HumidifierSteamGas.hpp`, `src/model/HumidifierSteamGas.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHumidifierSteamGas.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
 
     // Rated Capacity
     boost::optional<double> ratedCapacity() const;

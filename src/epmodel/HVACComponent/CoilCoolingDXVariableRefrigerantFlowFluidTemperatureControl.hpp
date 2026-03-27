@@ -35,11 +35,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: ratedTotalCoolingCapacity and ratedSensibleHeatRatio map directly to matching E+ fields.
-    // - Field Mapping: indoorUnitReferenceSuperheating maps directly to E+ IndoorUnitReferenceSuperheating.
-    // - ForwardTranslator evidence: ForwardTranslateCoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl.cpp writes these exact E+ fields.
-    // - TODO(parity): Add relationship parity (availability schedule, nodes, superheating curve) after scalar saturation.
+    // - Status: Scalar Parity. The scalar rating and indoor-unit reference surface is aligned, while schedule, curve, and connection APIs are still omitted.
+    // - Canonical Counterpart: openstudio::model::CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl.
+    // - Implemented Parity: `ratedTotalCoolingCapacity`, `ratedSensibleHeatRatio`, `indoorUnitReferenceSuperheating`, and their autosize helpers preserve the canonical scalar contract.
+    // - Documented Delta: Availability schedule, superheating-curve, and node-link accessors are not exposed yet even though they exist on the canonical model type.
+    // - Field/Storage Mapping: The epmodel wrapper maps the preserved scalar fields directly to EnergyPlus `Coil:Cooling:DX:VariableRefrigerantFlow:FluidTemperatureControl` storage.
+    // - Evidence: `src/model/CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl.hpp`, `src/model/CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl.cpp`, and `src/epmodel/test/CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted schedule, curve, and object-link APIs after the relationship layer is available.
     boost::optional<double> ratedTotalCoolingCapacity() const;
     bool setRatedTotalCoolingCapacity(double ratedTotalCoolingCapacity);
     bool isRatedTotalCoolingCapacityAutosized() const;

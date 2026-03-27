@@ -41,12 +41,13 @@ class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAir : public StraightComponent
   static std::vector<std::string> validDehumidificationControlTypeValues();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-  // - Field Mapping: supplyAirFlowRateDuring* APIs map to E+ Cooling/Heating/NoLoad Supply Air Flow Rate fields.
-  // - Field Mapping: maximumSupplyAirTemperaturefromSupplementalHeater, maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation,
-  //   fanPlacement, dehumidificationControlType, and dXHeatingCoilSizingRatio map directly to same-name E+ fields.
-  // - Field Mapping: schedule/node/coil/fan/zone reference fields remain excluded as relationship fields.
-  // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
+  // - Status: Partial Parity. The scalar unitary heat-pump controls are aligned, but the schedule, fan, coil, and zone-link surface is still intentionally narrower.
+  // - Canonical Counterpart: openstudio::model::AirLoopHVACUnitaryHeatPumpAirToAir.
+  // - Implemented Parity: `supplyAirFlowRateDuringCoolingOperation`, `supplyAirFlowRateDuringHeatingOperation`, `supplyAirFlowRateWhenNoCoolingorHeatingisNeeded`, `maximumSupplyAirTemperaturefromSupplementalHeater`, `maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation`, `fanPlacement`, `dehumidificationControlType`, and `dXHeatingCoilSizingRatio` preserve the canonical scalar contract.
+  // - Documented Delta: Schedule, fan, coil, and zone reference fields are not exposed as public accessors yet.
+  // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus unitary heat-pump fields; the forward translator wires the equipment graph separately.
+  // - Evidence: `src/model/AirLoopHVACUnitaryHeatPumpAirToAir.hpp`, `src/model/AirLoopHVACUnitaryHeatPumpAirToAir.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACUnitaryHeatPumpAirToAir.cpp`, and `src/epmodel/test/AirLoopHVACUnitaryHeatPumpAirToAir_GTest.cpp`.
+  // - Remaining Parity Work: Add the omitted schedule, fan, coil, and zone-link helpers when relationship parity expands.
   boost::optional<double> supplyAirFlowRateDuringCoolingOperation() const;
   bool isSupplyAirFlowRateDuringCoolingOperationAutosized() const;
   bool setSupplyAirFlowRateDuringCoolingOperation(double supplyAirFlowRateDuringCoolingOperation);

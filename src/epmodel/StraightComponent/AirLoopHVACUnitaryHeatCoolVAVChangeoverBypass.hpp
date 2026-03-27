@@ -42,11 +42,13 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: systemAirFlowRateDuring* and outdoorAirFlowRateDuring* APIs map to E+ Cooling/Heating/NoLoad * Flow Rate fields.
-    // - Field Mapping: minimumRuntimeBeforeOperatingModeChange remains mapped directly to E+ field despite historical default nuance in model.
-    // - Field Mapping: availability schedule, fan/coil object references, node names, and plenum/mixer linkage fields are relationship-like and excluded.
-    // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
+    // - Status: Partial Parity. The core airflow and operating-mode scalars are aligned, but the canonical object-link and topology surface is still intentionally narrower.
+    // - Canonical Counterpart: openstudio::model::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.
+    // - Implemented Parity: `systemAirFlowRateDuringCoolingOperation`, `systemAirFlowRateDuringHeatingOperation`, `systemAirFlowRateWhenNoCoolingorHeatingisNeeded`, `outdoorAirFlowRateDuringCoolingOperation`, `outdoorAirFlowRateDuringHeatingOperation`, `outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded`, `supplyAirFanPlacement`, `priorityControlMode`, `minimumOutletAirTemperatureDuringCoolingOperation`, `maximumOutletAirTemperatureDuringHeatingOperation`, `dehumidificationControlType`, and `minimumRuntimeBeforeOperatingModeChange` preserve the canonical scalar contract.
+    // - Documented Delta: Availability schedule, fan/coil object references, node names, and plenum/mixer linkage fields are not exposed as public accessors yet.
+    // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus unitary-system flow and control fields; the forward translator wires fan/coil/topology objects separately.
+    // - Evidence: `src/model/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.hpp`, `src/model/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.cpp`, and `src/epmodel/test/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted schedule, coil, node, and plenum-link helpers once relationship parity is being filled in.
     boost::optional<double> systemAirFlowRateDuringCoolingOperation() const;
     bool setSystemAirFlowRateDuringCoolingOperation(double systemAirFlowRateDuringCoolingOperation);
     bool isSystemAirFlowRateDuringCoolingOperationAutosized() const;

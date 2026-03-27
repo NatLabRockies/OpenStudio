@@ -40,10 +40,13 @@ namespace epmodel {
     static std::vector<std::string> frostControlTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for counterpart compatibility.
-    // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus HeatExchanger:AirToAir:SensibleAndLatent scalar fields.
-    // - Field Mapping: Relationship fields (availability schedule, node names, curve references) are intentionally excluded.
-    // - TODO(parity): Add non-scalar relationship parity incrementally after scalar scaffold saturation.
+    // - Status: Partial Parity. Scalar effectiveness and control fields are aligned, but the canonical relationship/performance-surface is still incomplete.
+    // - Canonical Counterpart: openstudio::model::HeatExchangerAirToAirSensibleAndLatent.
+    // - Implemented Parity: The scalar effectiveness, frost-control, defrost, and economizer-lockout accessors preserve the canonical model-facing field semantics.
+    // - Documented Delta: Epmodel does not yet expose the canonical availability schedule, curve/table relationship APIs, or the historical 75% effectiveness compatibility helpers that remain part of `openstudio::model`.
+    // - Field/Storage Mapping: Preserved scalar APIs map directly to `HeatExchanger:AirToAir:SensibleAndLatent` fields in EnergyPlus storage.
+    // - Evidence: `src/model/HeatExchangerAirToAirSensibleAndLatent.hpp`, `src/model/HeatExchangerAirToAirSensibleAndLatent.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatExchangerAirToAirSensibleAndLatent.cpp` define the canonical surface and scalar translation behavior.
+    // - Remaining Parity Work: Add the schedule and curve/table relationship APIs, plus any remaining compatibility helpers, when the epmodel relationship surface is ready for them.
     /** @name Field Accessors */
     //@{
 

@@ -34,11 +34,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::DistrictHeatingWater scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: nominalCapacity/isNominalCapacityAutosized/setNominalCapacity/autosizeNominalCapacity map to E+ DistrictHeating:Water Nominal Capacity.
-    // - ForwardTranslator evidence: ForwardTranslateDistrictHeatingWater.cpp writes model.nominalCapacity()/isNominalCapacityAutosized() to DistrictHeating:Water Nominal Capacity.
-    // - Field Mapping: Hot water node names and Capacity Fraction Schedule are relationship-like fields and excluded in this scalar pass.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical district-heating-water scalar surface is present, while node and schedule helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::DistrictHeatingWater.
+    // - Implemented Parity: The preserved scalar API matches the nominal-capacity accessor set, including autosize behavior.
+    // - Documented Delta: Hot-water node names and the capacity-fraction schedule remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to the EnergyPlus `DistrictHeating:Water` nominal-capacity field used by the forward translator.
+    // - Evidence: `src/model/DistrictHeatingWater.hpp`, `src/model/DistrictHeatingWater.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateDistrictHeatingWater.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
     boost::optional<double> nominalCapacity() const;
     bool isNominalCapacityAutosized() const;
     boost::optional<double> autosizedNominalCapacity() const;

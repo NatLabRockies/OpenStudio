@@ -40,13 +40,13 @@ namespace epmodel {
     static std::vector<std::string> controlTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::HeatPumpAirToWater scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: operatingModeControl* and heatPumpDefrost*/controlType map directly to matching E+ HeatPump:AirToWater fields.
-    // - Field Mapping: minimumPartLoadRatio, maximumOutdoorDryBulbTemperatureForDefrostOperation,
-    //   resistiveDefrostHeaterCapacity, heatPumpMultiplier, crankcaseHeaterCapacity, and
-    //   maximumAmbientTemperatureforCrankcaseHeaterOperation map directly to same-name E+ scalar fields.
-    // - ForwardTranslator evidence: ForwardTranslateHeatPumpAirToWater.cpp writes these scalar APIs directly to HeatPump:AirToWater.
-    // - TODO(parity): schedule/curve/node and speed-data relationship fields remain intentionally excluded from this scalar scaffold.
+    // - Status: Scalar Parity. The canonical air-to-water heat-pump scalar surface is present, while schedule, curve, node, and speed-data helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::HeatPumpAirToWater.
+    // - Implemented Parity: The preserved scalar API matches the operating-mode, defrost, control, part-load, crankcase-heater, and multiplier accessors with matching default behavior.
+    // - Documented Delta: Schedule, curve, node, and speed-data helpers remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `HeatPump:AirToWater` scalar fields used by the forward translator.
+    // - Evidence: `src/model/HeatPumpAirToWater.hpp`, `src/model/HeatPumpAirToWater.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatPumpAirToWater.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
     std::string operatingModeControlMethod() const;
     bool setOperatingModeControlMethod(const std::string& operatingModeControlMethod);
     bool isOperatingModeControlMethodDefaulted() const;

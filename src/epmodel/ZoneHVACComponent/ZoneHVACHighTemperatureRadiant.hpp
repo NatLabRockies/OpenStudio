@@ -39,14 +39,13 @@ namespace epmodel {
     static std::vector<std::string> temperatureControlTypeValues();
 
     // Schema Alignment Notes:
-    // - API: maximumPowerInput, fuelType, combustionEfficiency, fractionofInputConvertedtoRadiantEnergy,
-    //   fractionofInputConvertedtoLatentEnergy, fractionofInputthatIsLost, temperatureControlType,
-    //   heatingThrottlingRange, and fractionofRadiantEnergyIncidentonPeople map directly to the EnergyPlus
-    //   ZoneHVAC:HighTemperatureRadiant fields enumerated by ZoneHVAC_HighTemperatureRadiantFields in
-    //   ForwardTranslateZoneHVACHighTemperatureRadiant.cpp; the translator also forces HeatingDesignCapacityMethod to
-    //   "HeatingDesignCapacity" and routes scheduled relationships separately.
-    // - Field Mapping: availability schedule, zone membership, heater schedule, and extensible surface groups stay
-    //   relationship-only and are intentionally excluded from this scalar-focused API.
+    // - Status: Partial Parity. The scalar radiant fields are aligned, but zone and surface relationships remain separate.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACHighTemperatureRadiant.
+    // - Implemented Parity: `maximumPowerInput`, `fuelType`, `combustionEfficiency`, the radiant/latent/lost fractions, `temperatureControlType`, `heatingThrottlingRange`, and `fractionofRadiantEnergyIncidentonPeople` map directly to the EnergyPlus object.
+    // - Documented Delta: Availability schedule, zone membership, heater schedule, and extensible surface groups remain relationship-only.
+    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object, while zone and surface membership are maintained through topology and child-object state.
+    // - Evidence: `src/model/ZoneHVACHighTemperatureRadiant.hpp`, `src/model/ZoneHVACHighTemperatureRadiant.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACHighTemperatureRadiant.cpp`, and `src/epmodel/test/ZoneHVACHighTemperatureRadiant_GTest.cpp`.
+    // - Remaining Parity Work: Add any missing relationship helpers only if the canonical wrapper still exposes them directly.
 
     boost::optional<double> maximumPowerInput() const;
     bool setMaximumPowerInput(double maximumPowerInput);

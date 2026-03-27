@@ -37,8 +37,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: these getters/setters expose numeric and choice fields sourced from the EnergyPlus ZoneHVAC:IdealLoadsAirSystem fields enumerated in ZoneHVAC_IdealLoadsAirSystem_FieldEnums.hxx (see ForwardTranslateZoneHVACIdealLoadsAirSystem.cpp for mapping evidence).
-    // - Relationship-like fields (AvailabilityScheduleName, Zone/OutdoorAir node names, DesignSpecificationOutdoorAirObjectName, Outdoor Air Method nodes/schedules, and fuel efficiency schedule names) remain outside this scalar surface.
+    // - Status: Partial Parity. The ideal-loads scalar fields are aligned, but the zone attachment and scheduling topology remain relationship-driven.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACIdealLoadsAirSystem.
+    // - Implemented Parity: The cooling/heating/dehumidification scalar groups and flow limits map directly to the EnergyPlus object.
+    // - Documented Delta: Zone/schedule/node references are relationship-only links and are intentionally not exposed as scalar fields.
+    // - Field/Storage Mapping: Scalar values live on the EnergyPlus object while zone membership is maintained through thermal-zone topology.
+    // - Evidence: `src/model/ZoneHVACIdealLoadsAirSystem.hpp`, `src/model/ZoneHVACIdealLoadsAirSystem.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACIdealLoadsAirSystem.cpp`, `src/energyplus/ReverseTranslator/ReverseTranslateZoneHVACIdealLoadsAirSystem.cpp`, and `src/epmodel/test/ZoneHVACIdealLoadsAirSystem_GTest.cpp`.
+    // - Remaining Parity Work: Add explicit relationship helpers only if the canonical model surface needs richer zone/schedule access.
     static std::vector<std::string> heatingLimitValues();
     static std::vector<std::string> coolingLimitValues();
     static std::vector<std::string> dehumidificationControlTypeValues();

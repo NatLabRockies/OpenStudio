@@ -43,11 +43,13 @@ namespace epmodel {
     static std::vector<std::string> validFanPlacementValues();
 
     // Schema Alignment Notes:
-    // - API: the scalar getters/setters in this class mirror openstudio::model's supply/air/outdoor flows, convergence tolerances, supplemental heater limits,
-    //   and fan placement fields that map to EnergyPlus ZoneHVAC:PackagedTerminalHeatPump fields enumerated by ZoneHVAC_PackagedTerminalHeatPumpFields;
-    //   ForwardTranslateZoneHVACPackagedTerminalHeatPump.cpp documents these mappings.
-    // - Field Mapping: fan/heating/cooling/supplemental-heating component references are represented by explicit child accessors; availability schedule,
-    //   outdoor air mixer links, node names, and capacity control remain excluded in this epmodel pass.
+    // - Status: Partial Parity. The scalar flow/control fields and child equipment links are present, but schedule, mixer, node, and capacity-control wiring remains relationship-driven.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACPackagedTerminalHeatPump.
+    // - Implemented Parity: Supply-air and outdoor-air flow scalars, convergence tolerances, supplemental-heater limits, and `fanPlacement` map directly to the EnergyPlus object; contained fan and coil children are exposed explicitly.
+    // - Documented Delta: Availability schedules, outdoor-air mixer links, node names, and capacity-control helpers remain outside the current public surface.
+    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while the fan and coil topology is modeled through child-object state.
+    // - Evidence: `src/model/ZoneHVACPackagedTerminalHeatPump.hpp`, `src/model/ZoneHVACPackagedTerminalHeatPump.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACPackagedTerminalHeatPump.cpp`, and `src/epmodel/test/ZoneHVACPackagedTerminalHeatPump_GTest.cpp`.
+    // - Remaining Parity Work: Add the missing relationship helpers only if the canonical wrapper continues to expose them directly.
 
     unsigned inletPort() const;
     unsigned outletPort() const;

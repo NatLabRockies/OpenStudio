@@ -34,11 +34,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: ratedTotalCoolingCapacity and ratedSensibleHeatRatio map to E+ GrossRated* fields.
-    // - Field Mapping: ratedAirFlowRate maps directly to E+ RatedAirFlowRate.
-    // - ForwardTranslator evidence: ForwardTranslateCoilCoolingDXVariableRefrigerantFlow.cpp writes these exact E+ fields.
-    // - Field Mapping: Relationship fields (availability schedule, curves, node links) are intentionally excluded in this scalar scaffold phase.
+    // - Status: Scalar Parity. The scalar rating surface is aligned, while schedule, curve, and connection APIs are still omitted.
+    // - Canonical Counterpart: openstudio::model::CoilCoolingDXVariableRefrigerantFlow.
+    // - Implemented Parity: `ratedTotalCoolingCapacity`, `ratedSensibleHeatRatio`, `ratedAirFlowRate`, and their autosize helpers preserve the canonical scalar rating contract.
+    // - Documented Delta: Availability schedule, performance-curve, and node-link accessors are not exposed yet even though they exist on the canonical model type.
+    // - Field/Storage Mapping: The epmodel wrapper maps the preserved scalar fields directly to EnergyPlus `Coil:Cooling:DX:VariableRefrigerantFlow` storage.
+    // - Evidence: `src/model/CoilCoolingDXVariableRefrigerantFlow.hpp`, `src/model/CoilCoolingDXVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXVariableRefrigerantFlow.cpp`, and `src/epmodel/test/CoilCoolingDXVariableRefrigerantFlow_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted schedule, curve, and object-link APIs after the relationship layer is available.
     boost::optional<double> ratedTotalCoolingCapacity() const;
     bool setRatedTotalCoolingCapacity(double ratedTotalCoolingCapacity);
     bool isRatedTotalCoolingCapacityAutosized() const;

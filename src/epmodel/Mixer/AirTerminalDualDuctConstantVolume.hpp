@@ -36,12 +36,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names for this model-counterpart class.
-    // - Field Mapping: maximumAirFlowRate maps directly to EnergyPlus AirTerminal:DualDuct:ConstantVolume Maximum Air Flow Rate.
-    // - Field Mapping: Availability Schedule Name, Air Outlet Node Name, Hot Air Inlet Node Name, and Cold Air Inlet Node Name are relationship fields and are
-    //   intentionally excluded from scalar accessors.
-    // - ForwardTranslator evidence: translateAirTerminalDualDuctConstantVolume writes only those relationship fields plus Maximum Air Flow Rate scalar.
-    // - TODO(parity): Add relationship APIs incrementally after scalar scaffold saturation.
+    // - Status: Scalar Parity. The scalar surface is aligned, but the canonical wrapper still exposes schedule and node-relationship convenience APIs that epmodel has not reintroduced.
+    // - Canonical Counterpart: openstudio::model::AirTerminalDualDuctConstantVolume.
+    // - Implemented Parity: `maximumAirFlowRate`, autosize support, and the core scalar value semantics match the canonical dual-duct constant-volume terminal.
+    // - Documented Delta: epmodel still omits the availability-schedule and hot/cold inlet convenience accessors that canonical model code exposes.
+    // - Field/Storage Mapping: Availability Schedule Name, Air Outlet Node Name, Hot Air Inlet Node Name, and Cold Air Inlet Node Name are relationship fields and are intentionally excluded from scalar accessors.
+    // - Evidence: `src/model/AirTerminalDualDuctConstantVolume.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalDualDuctConstantVolume.cpp`, and `src/epmodel/test/AirTerminalDualDuctConstantVolume_GTest.cpp` show the same scalar mapping and missing relationship surface.
+    // - Remaining Parity Work: Reintroduce the availability-schedule and node-relationship wrappers if epmodel needs full model-side parity here.
     boost::optional<double> maximumAirFlowRate() const;
     bool setMaximumAirFlowRate(double maximumAirFlowRate);
     bool isMaximumAirFlowRateAutosized() const;

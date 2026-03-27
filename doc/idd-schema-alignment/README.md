@@ -201,27 +201,49 @@ These notes capture working design guidance that emerged while building `openstu
 
 ### API/Field Divergence Tracking (for 500+ types)
 
-These notes are intentionally lightweight and are **not** a comprehensive list of all current API/field
-differences.
+These notes are now the primary type-local parity status record for epmodel. They are intentionally concise, but
+they should be explicit enough that a reviewer can understand current parity status without reconstructing it from
+headers, translators, and tests every time.
 
 Current convention:
 
-- Keep running notes as we discover differences during implementation/review.
-- Prefer per-type notes in `src/epmodel/<Type>.hpp` (`Schema Alignment Notes`) when a type has an important
-  divergence from `openstudio::model`.
-- Keep notes concise and factual: what differs now, and any obvious follow-up.
-- If a type has no notable note yet, that does not mean it is already at parity.
+- Keep the source of truth in the type header (`Schema Alignment Notes` in `src/epmodel/**/*.hpp`).
+- Compare each epmodel type to the canonical `openstudio::model` counterpart, not just to the EnergyPlus IDD.
+- Cover both public API parity and user-visible behavior/canonicalization differences when those differences matter.
+- Make intentional or unavoidable API deltas explicit instead of implying parity.
+- If a type has no note yet, do not assume it is already at parity.
 
-Recommended header note template:
+Required header note schema:
 
 ```cpp
 // Schema Alignment Notes:
-// - API: <method or behavior> currently delegates to <object/field> in E+ schema.
-// - Field Mapping: <OS concept> maps to <EnergyPlus object/field(s)>.
-// - TODO(parity): Replace/adjust when <target parity milestone>.
+// - Status: <Scaffolded | Scalar Parity | Partial Parity | Near Parity | Parity with documented deltas>. <1 sentence summary>.
+// - Canonical Counterpart: <openstudio::model::<Type> | none>.
+// - Implemented Parity: <public API and user-visible behavior already aligned with canonical openstudio::model>.
+// - Documented Delta: <unavoidable public API or behavior difference and why it exists>.
+// - Field/Storage Mapping: <only when needed to explain how canonical model concepts map onto EnergyPlus-backed storage>.
+// - Evidence: <canonical model / translator / epmodel behavior evidence used for the note>.
+// - Remaining Parity Work: <next concrete parity work, phrased as missing API/behavior rather than a vague TODO>.
 ```
 
-If/when we do a full audit, we will capture a comprehensive type-by-type pass separately.
+Formatting rules:
+
+- `Status`, `Canonical Counterpart`, and `Implemented Parity` are always required.
+- `Documented Delta`, `Field/Storage Mapping`, and `Evidence` are optional and should only be included when they add
+  real information.
+- `Remaining Parity Work` is required unless the type is truly at parity with only documented deltas remaining.
+- Keep bullets short and factual; prefer one bullet per concept rather than long mixed bullets.
+- Avoid implementation trivia unless it explains a user-visible parity delta.
+- For types with no canonical `openstudio::model` counterpart, say `none` and describe the type as epmodel-only or
+  EnergyPlus connective tissue.
+
+Status vocabulary:
+
+- `Scaffolded`: type exists and basic/generated accessors are present, but canonical-model behavior is still largely absent.
+- `Scalar Parity`: scalar API is mostly aligned, while relationship/extensible/topology behavior still has notable gaps.
+- `Partial Parity`: meaningful public API and behavior parity exists, but substantial gaps remain.
+- `Near Parity`: only limited gaps remain before parity.
+- `Parity with documented deltas`: effectively at parity except for explicit intentional differences that must remain documented.
 
 ## Workplan
 

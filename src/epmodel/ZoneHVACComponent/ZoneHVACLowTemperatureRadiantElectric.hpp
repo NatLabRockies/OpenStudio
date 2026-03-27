@@ -38,10 +38,13 @@ namespace epmodel {
     static std::vector<std::string> temperatureControlTypeValues();
 
     // Schema Alignment Notes:
-    // - API: maximumElectricalPowertoPanel, temperatureControlType, setpointControlType, and heatingThrottlingRange map
-    //   directly to the EnergyPlus ZoneHVAC:LowTemperatureRadiant:Electric fields enumerated by
-    //   ZoneHVAC_LowTemperatureRadiant_ElectricFields in ForwardTranslateZoneHVACLowTemperatureRadiantElectric.cpp.
-    //   Surface/relationship fields remain excluded from this scalar-focused API.
+    // - Status: Partial Parity. The scalar radiant-electric fields are aligned, but the surface/relationship links stay outside the public wrapper.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACLowTemperatureRadiantElectric.
+    // - Implemented Parity: `maximumElectricalPowertoPanel`, `temperatureControlType`, `setpointControlType`, and `heatingThrottlingRange` map directly to the EnergyPlus object.
+    // - Documented Delta: Surface and relationship fields remain excluded from this scalar-focused API.
+    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object while surface links are handled through explicit topology state.
+    // - Evidence: `src/model/ZoneHVACLowTemperatureRadiantElectric.hpp`, `src/model/ZoneHVACLowTemperatureRadiantElectric.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACLowTemperatureRadiantElectric.cpp`, and `src/epmodel/test/ZoneHVACLowTemperatureRadiantElectric_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers only if the canonical wrapper still exposes them directly.
 
     // Maximum electrical power-to-panel accessors
     boost::optional<double> maximumElectricalPowertoPanel() const;

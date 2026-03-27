@@ -43,11 +43,13 @@ class EPMODEL_API BoilerHotWater : public StraightComponent
   static std::vector<std::string> boilerFlowModeValues();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::BoilerHotWater scalar accessor names/signatures for counterpart parity.
-  // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus Boiler:HotWater scalar fields.
-  // - Field Mapping: setBoilerFlowMode preserves legacy "VariableFlow" by mapping to "LeavingSetpointModulated".
-  // - ForwardTranslator evidence: model::ForwardTranslateBoilerHotWater maps these scalar methods to matching E+ fields.
-  // - TODO(parity): Add excluded relationship APIs (curve and node references) in a dedicated relationship pass.
+  // - Status: Scalar Parity. The canonical boiler-hot-water scalar surface is present, with one legacy flow-mode alias preserved for compatibility.
+  // - Canonical Counterpart: openstudio::model::BoilerHotWater.
+  // - Implemented Parity: The preserved scalar API matches the canonical fuel, capacity, efficiency, flow, and part-load accessors with matching autosize/default behavior.
+  // - Documented Delta: `setBoilerFlowMode("VariableFlow")` still normalizes to `LeavingSetpointModulated` to preserve legacy compatibility; node and curve helpers remain intentionally excluded.
+  // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Boiler:HotWater` scalar fields used by the forward translator.
+  // - Evidence: `src/model/BoilerHotWater.hpp`, `src/model/BoilerHotWater.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateBoilerHotWater.cpp`.
+  // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
   std::string fuelType() const;
   bool setFuelType(const std::string& fuelType);
 

@@ -44,14 +44,13 @@ namespace epmodel {
     static std::vector<std::string> condensationControlTypeValues();
 
     // Schema Alignment Notes:
-    // - API: hydronicTubingLength, heatingDesignCapacity, maximumHotWaterFlow, coolingDesignCapacity,
-    //   maximumColdWaterFlow, numberofCircuits, and circuitLength map directly to the EnergyPlus
-    //   ZoneHVAC:LowTemperatureRadiant:VariableFlow fields enumerated by ZoneHVAC_LowTemperatureRadiant_VariableFlowFields
-    //   while ForwardTranslateZoneHVACLowTempRadiantVarFlow.cpp handles relationship-like surface/group and node data separately.
-    // - Field Mapping: Companion design/scalar detail lives on ZoneHVAC:LowTemperatureRadiant:VariableFlow:Design, so the
-    //   hydronic/control scalars introduced here (fluidtoRadiantSurfaceHeatTransferModel, hydronic tubing geometry/thermal
-    //   properties, control-method enums, heating/cooling throttling ranges, and condensation control options) mirror that
-    //   design object as enumerated by ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields while keeping this API scalar-only.
+    // - Status: Partial Parity. The hydronic and control scalars are aligned, but surface-group and node wiring remain relationship-driven.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACLowTempRadiantVarFlow.
+    // - Implemented Parity: The variable-flow radiant scalar groups map directly to the EnergyPlus object and its companion design object.
+    // - Documented Delta: Surface-group membership, node wiring, and other relationship-style links are not surfaced as scalar accessors.
+    // - Field/Storage Mapping: Scalar values live on the EnergyPlus object and companion design object, while the omitted links are handled through topology state and child-object APIs.
+    // - Evidence: `src/model/ZoneHVACLowTempRadiantVarFlow.hpp`, `src/model/ZoneHVACLowTempRadiantVarFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACLowTempRadiantVarFlow.cpp`, and `src/epmodel/test/ZoneHVACLowTempRadiantVarFlow_GTest.cpp`.
+    // - Remaining Parity Work: Add relationship helpers only if the canonical wrapper continues to require them directly.
 
     boost::optional<double> hydronicTubingLength() const;
     bool isHydronicTubingLengthAutosized() const;

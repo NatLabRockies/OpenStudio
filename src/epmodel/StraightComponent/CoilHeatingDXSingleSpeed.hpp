@@ -41,12 +41,13 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::CoilHeatingDXSingleSpeed scalar accessor names/signatures.
-    // - Field Mapping: ratedTotalHeatingCapacity/ratedCOP map to E+ GrossRatedHeatingCapacity/GrossRatedHeatingCOP.
-    // - Field Mapping: Deprecated ratedSupplyFanPowerPerVolumeFlowRate delegates to 2017 field API.
-    // - Field Mapping: Relationship-like fields (schedules, curves, and node links) are excluded in this pass.
-    // - ForwardTranslator evidence: ForwardTranslateCoilHeatingDXSingleSpeed.cpp writes these scalar fields directly.
-    // - TODO(parity): Add excluded relationship APIs later without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical scalar heating DX surface is largely present, while schedule, curve, and node-link helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::CoilHeatingDXSingleSpeed.
+    // - Implemented Parity: The heating-capacity, COP, fan-power, defrost, and crankcase-heater helpers preserve the canonical naming, including the 2017/2023 fan-power split.
+    // - Documented Delta: Availability schedule, curves, and node-link helpers from canonical `openstudio::model::CoilHeatingDXSingleSpeed` are not exposed yet.
+    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Heating:DX:SingleSpeed` fields.
+    // - Evidence: `src/model/CoilHeatingDXSingleSpeed.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingDXSingleSpeed.cpp`, and `src/epmodel/test/CoilHeatingDXSingleSpeed_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted schedule, curve, and relationship helpers without changing the preserved scalar signatures.
 
     boost::optional<double> ratedTotalHeatingCapacity() const;
     bool isRatedTotalHeatingCapacityAutosized() const;

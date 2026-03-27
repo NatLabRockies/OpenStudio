@@ -34,13 +34,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: maximumTotalAirFlowRate, inductionRatio, maximumHotWaterFlowRate, minimumHotWaterFlowRate,
-    //   heatingConvergenceTolerance, maximumColdWaterFlowRate, minimumColdWaterFlowRate, and coolingConvergenceTolerance
-    //   map directly to E+ AirTerminal:SingleDuct:ConstantVolume:FourPipeInduction scalar fields.
-    // - Field Mapping: schedule, coil, node, and zone mixer fields are relationship fields and are intentionally excluded.
-    // - ForwardTranslator evidence: translateAirTerminalSingleDuctConstantVolumeFourPipeInduction writes these scalar fields directly.
-    // - TODO(parity): Add relationship APIs incrementally after scalar scaffold saturation.
+    // - Status: Scalar Parity. The four-pipe induction scalar surface is aligned, while schedule, coil, node, and zone-mixer helpers remain intentionally narrower.
+    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctConstantVolumeFourPipeInduction.
+    // - Implemented Parity: `maximumTotalAirFlowRate`, `inductionRatio`, `maximumHotWaterFlowRate`, `minimumHotWaterFlowRate`, `heatingConvergenceTolerance`, `maximumColdWaterFlowRate`, `minimumColdWaterFlowRate`, and `coolingConvergenceTolerance` preserve the canonical scalar contract.
+    // - Documented Delta: Schedule, coil, node, and zone-mixer helpers are not exposed as public methods yet.
+    // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:ConstantVolume:FourPipeInduction` fields.
+    // - Evidence: `src/model/AirTerminalSingleDuctConstantVolumeFourPipeInduction.hpp`, `src/model/AirTerminalSingleDuctConstantVolumeFourPipeInduction.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctConstantVolumeFourPipeInduction.cpp`.
+    // - Remaining Parity Work: Add the omitted schedule, coil, node, and zone-mixer helpers when relationship parity expands.
 
     boost::optional<double> maximumTotalAirFlowRate() const;
     bool setMaximumTotalAirFlowRate(double maximumTotalAirFlowRate);

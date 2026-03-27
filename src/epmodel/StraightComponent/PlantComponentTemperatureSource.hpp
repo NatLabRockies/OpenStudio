@@ -37,13 +37,13 @@ namespace epmodel {
     static std::vector<std::string> temperatureSpecificationTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::PlantComponentTemperatureSource scalar accessor names/signatures.
-    // - Field Mapping: designVolumeFlowRate/isDesignVolumeFlowRateAutosized/set/autosize map to E+ Design Volume Flow Rate.
-    // - Field Mapping: temperatureSpecificationType maps to E+ Temperature Specification Type.
-    // - Field Mapping: sourceTemperature/set/resetSourceTemperature map to E+ Source Temperature.
-    // - ForwardTranslator evidence: ForwardTranslatePlantComponentTemperatureSource.cpp uses the same mappings and autosize semantics.
-    // - Field Mapping: inlet/outlet node names and sourceTemperatureSchedule are relationship fields and excluded from this scalar pass.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical temperature-source scalar surface is present, while node and schedule helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::PlantComponentTemperatureSource.
+    // - Implemented Parity: The preserved scalar API matches the design-flow, temperature-specification, and source-temperature accessors with matching autosize/default behavior.
+    // - Documented Delta: Inlet/outlet node names and the source-temperature schedule remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `PlantComponent:TemperatureSource` scalar fields used by the forward translator.
+    // - Evidence: `src/model/PlantComponentTemperatureSource.hpp`, `src/model/PlantComponentTemperatureSource.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslatePlantComponentTemperatureSource.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
 
     boost::optional<double> designVolumeFlowRate() const;
     bool isDesignVolumeFlowRateAutosized() const;

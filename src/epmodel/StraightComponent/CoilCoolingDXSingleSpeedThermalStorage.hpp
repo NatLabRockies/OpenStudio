@@ -40,12 +40,13 @@ class EPMODEL_API CoilCoolingDXSingleSpeedThermalStorage : public StraightCompon
   static std::vector<std::string> condenserTypeValues();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::CoilCoolingDXSingleSpeedThermalStorage scalar accessor names/signatures.
-  // - Field Mapping: APIs below map to EnergyPlus Coil:Cooling:DX:SingleSpeed:ThermalStorage scalar fields.
-  // - Field Mapping: API `glycolConcentration` is preserved via UserDefinedFluidType encoding (EnergyPlus has no direct concentration field).
-  // - Field Mapping: relationship fields (schedules, curves, node links, tank links) are intentionally excluded.
-  // - ForwardTranslator evidence: ForwardTranslateCoilCoolingDXSingleSpeedThermalStorage.cpp writes these scalar fields directly.
-  // - TODO(parity): Add excluded relationship APIs in follow-up without changing preserved scalar signatures.
+  // - Status: Partial Parity. The scalar thermal-storage surface is present, but storage relationships and topology helpers are still missing.
+  // - Canonical Counterpart: openstudio::model::CoilCoolingDXSingleSpeedThermalStorage.
+  // - Implemented Parity: The scalar operating-mode, storage, glycol, and capacity helpers preserve the canonical naming and autosize behavior.
+  // - Documented Delta: Availability schedule, curves, tank links, and other relationship helpers from canonical `openstudio::model::CoilCoolingDXSingleSpeedThermalStorage` are not exposed yet.
+  // - Field/Storage Mapping: `glycolConcentration` is preserved through the user-defined fluid type encoding because EnergyPlus has no direct concentration field.
+  // - Evidence: `src/model/CoilCoolingDXSingleSpeedThermalStorage.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXSingleSpeedThermalStorage.cpp`, and `src/epmodel/test/CoilCoolingDXSingleSpeedThermalStorage_GTest.cpp`.
+  // - Remaining Parity Work: Add the omitted schedule, curve, tank-link, and relationship helpers without changing the preserved scalar signatures.
   std::string operatingModeControlMethod() const;
   bool setOperatingModeControlMethod(const std::string& operatingModeControlMethod);
 

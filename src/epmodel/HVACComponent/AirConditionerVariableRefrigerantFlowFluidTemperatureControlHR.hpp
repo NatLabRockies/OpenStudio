@@ -43,10 +43,13 @@ namespace epmodel {
     static std::vector<std::string> defrostControlValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: Preserved scalar APIs map directly to matching E+ AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR fields.
-    // - Field Mapping: Relationship-like fields (schedule/curves/lists/extensibles) are intentionally excluded in this scalar scaffold phase.
-    // - TODO(parity): Add non-scalar relationship API parity incrementally after scalar saturation.
+    // - Status: Scalar Parity. The long scalar VRF heat-recovery surface is aligned, while terminal, loading-index, and other relationship APIs are still omitted.
+    // - Canonical Counterpart: openstudio::model::AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR.
+    // - Implemented Parity: The preserved scalar API surface mirrors the canonical heat-recovery, refrigerant, defrost, pipe, and compressor-field contract exposed in the model type.
+    // - Documented Delta: epmodel currently models this object as a `ModelObject` wrapper and does not expose terminal, loading-index, or curve/list relationship APIs yet.
+    // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirConditioner:VariableRefrigerantFlow:FluidTemperatureControl:HR` storage.
+    // - Evidence: `src/model/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR.hpp`, `src/model/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirConditionerVariableRefrigerantFlowFluidTemperatureControlHR.cpp`, `src/epmodel/test/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_GTest.cpp`, and `src/model/test/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted terminal, loading-index, and curve/list relationship APIs after the relationship layer is available.
     std::string refrigerantType() const;
     bool setRefrigerantType(const std::string& refrigerantType);
 

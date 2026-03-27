@@ -52,10 +52,13 @@ namespace epmodel {
     static std::vector<std::string> sourceSideFlowControlModeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::WaterHeaterStratified scalar accessor names/signatures to stay aligned with the translator.
-    // - Field Mapping: Simple scalar values map directly to the EnergyPlus WaterHeater:Stratified fields documented in ForwardTranslateWaterHeaterStratified.
-    // - TODO(parity): Surface, schedule, node, and plant relationships will be added later when the scalar scaffolding is complete.
-    // - Field Mapping: ambientTemperatureIndicator exposes the OpenStudio-friendly "ThermalZone" label even though the EnergyPlus field uses "Zone"; the setter/getter normalize between these values.
+    // - Status: Scalar Parity. The stratified water-heater scalar surface is aligned, while surface, schedule, node, and plant behavior remains excluded.
+    // - Canonical Counterpart: openstudio::model::WaterHeaterStratified.
+    // - Implemented Parity: Scalar accessors for tank geometry, heaters, parasitics, ambient settings, effectiveness, inlet/outlet heights, flows, destratification, and node-loss coefficients preserve the canonical model API shape.
+    // - Documented Delta: Surface, schedule, node, and plant relationship APIs are intentionally excluded in this pass.
+    // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `WaterHeater:Stratified` fields directly, and `ambientTemperatureIndicator` preserves the model-friendly `ThermalZone` vocabulary even where the IDD says `Zone`.
+    // - Evidence: `src/model/WaterHeaterStratified.hpp`, `src/model/WaterHeaterStratified.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateWaterHeaterStratified.cpp`.
+    // - Remaining Parity Work: Add the excluded relationship APIs only if the family advances beyond scalar parity.
     std::string endUseSubcategory() const;
     bool setEndUseSubcategory(const std::string& endUseSubcategory);
 

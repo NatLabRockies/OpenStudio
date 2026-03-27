@@ -40,11 +40,13 @@ class EPMODEL_API CoilCoolingDXVariableSpeed : public StraightComponent
   bool addToNode(Node& node);
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::CoilCoolingDXVariableSpeed scalar accessor names/signatures.
-  // - Field Mapping: APIs below map directly to EnergyPlus Coil:Cooling:DX:VariableSpeed scalar fields.
-  // - Field Mapping: relationship-like fields (schedules, curves, node links, tank links, speed list links) are excluded.
-  // - ForwardTranslator evidence: ForwardTranslateCoilCoolingDXVariableSpeed.cpp writes these scalar fields directly.
-  // - TODO(parity): Add excluded relationship APIs later without changing preserved scalar signatures.
+  // - Status: Scalar Parity. The canonical scalar variable-speed DX surface is largely present, while schedule, curve, speed-list, and relationship helpers remain out of scope.
+  // - Canonical Counterpart: openstudio::model::CoilCoolingDXVariableSpeed.
+  // - Implemented Parity: The speed-level capacity, airflow, compressor, condenser, and evaporative-condenser helpers preserve the canonical naming and autosize behavior.
+  // - Documented Delta: Availability schedule, curves, speed-list data, and node-link helpers from canonical `openstudio::model::CoilCoolingDXVariableSpeed` are not exposed yet.
+  // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Cooling:DX:VariableSpeed` fields.
+  // - Evidence: `src/model/CoilCoolingDXVariableSpeed.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXVariableSpeed.cpp`, and `src/epmodel/test/CoilCoolingDXVariableSpeed_GTest.cpp`.
+  // - Remaining Parity Work: Add the omitted schedule, curve, speed-list, and relationship helpers without changing the preserved scalar signatures.
   int nominalSpeedLevel() const;
   bool setNominalSpeedLevel(int nominalSpeedLevel);
 

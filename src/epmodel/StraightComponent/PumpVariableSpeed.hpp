@@ -43,10 +43,13 @@ namespace epmodel {
     static std::vector<std::string> vfdControlTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::PumpVariableSpeed scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: Scalar APIs map directly to EnergyPlus Pump:VariableSpeed fields used by ForwardTranslatePumpVariableSpeed.
-    // - ForwardTranslator evidence: ForwardTranslatePumpVariableSpeed populates these fields and autosize tokens in EnergyPlus.
-    // - TODO(parity): Schedule/curve references (pump flow rate, RPM, pressure) remain relationship-only and excluded from scalar coverage.
+    // - Status: Scalar Parity. The canonical scalar pump surface is largely present, while schedule, curve, and other relationship-backed helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::PumpVariableSpeed.
+    // - Implemented Parity: Preserved scalar accessor names/signatures cover flow, head, power, efficiency, part-load coefficients, minimum flow, control type, impeller data, VFD control, skin-loss fraction, and design-power sizing metadata with matching default/autosize behavior.
+    // - Documented Delta: `pumpFlowRateSchedule`, `pumpCurve`, `pumpRPMSchedule`, `minimumPressureSchedule`, and other relationship-backed helpers from canonical `openstudio::model::PumpVariableSpeed` are not exposed yet.
+    // - Field/Storage Mapping: The preserved scalar APIs map directly to EnergyPlus `Pump:VariableSpeed` scalar fields used by the forward translator.
+    // - Evidence: `src/model/PumpVariableSpeed.hpp` defines the canonical scalar and relationship surface, and `src/energyplus/ForwardTranslator/ForwardTranslatePumpVariableSpeed.cpp` confirms the direct scalar field mapping and autosize tokens.
+    // - Remaining Parity Work: Add the omitted schedule, curve, pressure, and relationship helpers without changing the preserved scalar signatures.
     boost::optional<double> ratedFlowRate() const;
     bool isRatedFlowRateDefaulted() const;
     bool isRatedFlowRateAutosized() const;

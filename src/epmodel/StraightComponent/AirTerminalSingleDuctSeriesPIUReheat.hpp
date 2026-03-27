@@ -40,17 +40,13 @@ namespace epmodel {
     static std::vector<std::string> heatingControlTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-    // - Field Mapping: maximumAirFlowRate, maximumPrimaryAirFlowRate, minimumPrimaryAirFlowFraction,
-    //   maximumHotWaterorSteamFlowRate, minimumHotWaterorSteamFlowRate, convergenceTolerance,
-    //   fanControlType, minimumFanTurnDownRatio, heatingControlType, designHeatingDischargeAirTemperature,
-    //   and highLimitHeatingDischargeAirTemperature map directly to EnergyPlus
-    //   AirTerminal:SingleDuct:SeriesPIU:Reheat scalar fields.
-    // - Field Mapping: Availability Schedule Name, node names, Zone Mixer/Fan/Reheat Coil references,
-    //   and related object-type/link fields are relationship fields and intentionally excluded.
-    // - ForwardTranslator evidence: translateAirTerminalSingleDuctSeriesPIUReheat writes these scalar fields directly
-    //   and handles relationship fields separately.
-    // - TODO(parity): Add relationship/non-scalar behavior incrementally after scalar scaffold saturation.
+    // - Status: Partial Parity. The scalar Series PIU reheat contract is aligned, but the coupled schedule/node surface remains intentionally narrower.
+    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctSeriesPIUReheat.
+    // - Implemented Parity: `maximumAirFlowRate`, `maximumPrimaryAirFlowRate`, `minimumPrimaryAirFlowFraction`, `maximumHotWaterorSteamFlowRate`, `minimumHotWaterorSteamFlowRate`, `convergenceTolerance`, `fanControlType`, `minimumFanTurnDownRatio`, `heatingControlType`, `designHeatingDischargeAirTemperature`, and `highLimitHeatingDischargeAirTemperature` preserve the canonical scalar contract.
+    // - Documented Delta: Availability schedule, node names, zone mixer/fan/reheat-coil references, and related object-type/link fields are not exposed as public methods yet.
+    // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:SeriesPIU:Reheat` fields; the translator wires the coupled components separately.
+    // - Evidence: `src/model/AirTerminalSingleDuctSeriesPIUReheat.hpp`, `src/model/AirTerminalSingleDuctSeriesPIUReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctSeriesPIUReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctSeriesPIUReheat_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted schedule, node, and coupled-component helpers when relationship parity expands.
     boost::optional<double> maximumAirFlowRate() const;
     bool isMaximumAirFlowRateAutosized() const;
     bool setMaximumAirFlowRate(double maximumAirFlowRate);

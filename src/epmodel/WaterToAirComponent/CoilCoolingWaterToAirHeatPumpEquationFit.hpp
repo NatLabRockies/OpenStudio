@@ -34,11 +34,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: ratedTotalCoolingCapacity/ratedSensibleCoolingCapacity/ratedCoolingCoefficientofPerformance map to E+ GrossRated* fields.
-    // - Field Mapping: relationship-like topology APIs are inherited from WaterToAirComponent; this type only re-exposes scalar fields here.
-    // - ForwardTranslator evidence: ForwardTranslateCoilCoolingWaterToAirHeatPumpEquationFit.cpp writes these exact scalar fields and autosize semantics.
-    // - TODO(parity): Add relationship field APIs when epmodel relationship scaffolding is enabled.
+    // - Status: Scalar Parity. The scalar fit fields and autosize semantics are aligned, while the curve/schedule/duct surface remains intentionally omitted.
+    // - Canonical Counterpart: openstudio::model::CoilCoolingWaterToAirHeatPumpEquationFit.
+    // - Implemented Parity: `ratedAirFlowRate`, `ratedWaterFlowRate`, `ratedTotalCoolingCapacity`, `ratedSensibleCoolingCapacity`, `ratedCoolingCoefficientofPerformance`, `ratedEnteringWaterTemperature`, `ratedEnteringAirDryBulbTemperature`, `ratedEnteringAirWetBulbTemperature`, `nominalTimeforCondensateRemovaltoBegin`, `ratioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity`, `maximumCyclingRate`, `latentCapacityTimeConstant`, `fanDelayTime`, and the autosize/reset helpers preserve the canonical scalar contract.
+    // - Documented Delta: Availability schedule, curve objects, and equivalent-duct helpers are not exposed here even though the canonical model type owns them.
+    // - Field/Storage Mapping: Scalar fit fields map directly to the corresponding EnergyPlus `Coil:Cooling:WaterToAirHeatPump:EquationFit` fields.
+    // - Evidence: `src/model/CoilCoolingWaterToAirHeatPumpEquationFit.hpp`, `src/model/CoilCoolingWaterToAirHeatPumpEquationFit.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingWaterToAirHeatPumpEquationFit.cpp`, and `src/epmodel/test/CoilCoolingWaterToAirHeatPumpEquationFit_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted curve, schedule, and helper APIs only if the family moves beyond scalar parity.
     boost::optional<double> ratedAirFlowRate() const;
     bool isRatedAirFlowRateDefaulted() const;
     bool isRatedAirFlowRateAutosized() const;

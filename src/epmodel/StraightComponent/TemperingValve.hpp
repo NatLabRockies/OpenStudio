@@ -36,13 +36,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::TemperingValve node getter/setter names/signatures for this model-counterpart type.
-    // - Field Mapping: stream2SourceNode, temperatureSetpointNode, and pumpOutletNode map directly to EnergyPlus
-    //   TemperingValve Stream2SourceNodeName, TemperatureSetpointNodeName, and PumpOutletNodeName fields tracked by
-    //   ForwardTranslateTemperingValve.
-    // - Field Mapping: InletNodeName/OutletNodeName port wiring is managed through StraightComponent inlet/outlet ports and
-    //   loop canonicalization, so they are not re-exposed as additional scalars.
-    // - TODO(parity): Add pump/plant loop topology helpers once epmodel plant loop plumbing reaches the same coverage.
+    // - Status: Partial Parity. The canonical tempering-valve node surface is present, but broader loop-topology helpers are still missing.
+    // - Canonical Counterpart: openstudio::model::TemperingValve.
+    // - Implemented Parity: The preserved node accessors match the stream/source, setpoint, and pump-outlet relationships already covered by the canonical model.
+    // - Documented Delta: Inlet/outlet port topology helpers are still managed by StraightComponent plumbing and remain intentionally limited in this pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `TemperingValve` node fields used by the forward translator.
+    // - Evidence: `src/model/TemperingValve.hpp`, `src/model/TemperingValve.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateTemperingValve.cpp`.
+    // - Remaining Parity Work: Add pump and plant-loop topology helpers once the broader plumbing surface is available.
     boost::optional<Node> stream2SourceNode() const;
     bool setStream2SourceNode(const Node& stream2SourceNode);
     void resetStream2SourceNode();

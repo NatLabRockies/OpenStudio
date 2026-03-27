@@ -37,15 +37,13 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::CoilHeatingGas scalar accessor names/signatures.
-    // - Field Mapping: gasBurnerEfficiency maps to E+ Coil:Heating:Fuel Burner Efficiency.
-    // - Field Mapping: onCycleParasiticElectricLoad/parasiticElectricLoad map to E+ On Cycle Parasitic Electric Load.
-    // - Field Mapping: offCycleParasiticGasLoad/parasiticGasLoad map to E+ Off Cycle Parasitic Fuel Load.
-    // - Field Mapping: nominalCapacity maps to E+ Nominal Capacity.
-    // - Field Mapping: relationship-like fields (availability schedule, node links, temperature setpoint, and part-load curve) are excluded.
-    // - ForwardTranslator evidence: ForwardTranslateCoilHeatingGas.cpp writes FuelType, BurnerEfficiency,
-    //   NominalCapacity, OnCycleParasiticElectricLoad, and OffCycleParasiticFuelLoad directly.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical gas-coil scalar surface is largely present, while schedule, curve, and node-link helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::CoilHeatingGas.
+    // - Implemented Parity: `fuelType`, burner efficiency, parasitic loads, and nominal-capacity helpers preserve the canonical naming and autosize behavior.
+    // - Documented Delta: Availability schedule, curves, temperature-setpoint node, and other relationship helpers from canonical `openstudio::model::CoilHeatingGas` are not exposed yet.
+    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Heating:Fuel` fields.
+    // - Evidence: `src/model/CoilHeatingGas.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingGas.cpp`, and `src/epmodel/test/CoilHeatingGas_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted schedule, curve, and relationship helpers without changing the preserved scalar signatures.
     static std::vector<std::string> validFuelTypeValues();
 
     std::string fuelType() const;

@@ -40,15 +40,13 @@ namespace epmodel {
     static std::vector<std::string> outdoorAirControlTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Scalar accessors keep the openstudio::model names (maximumSupplyAirFlowRate, outdoorAirControlType,
-    //   minimumOutdoorAirFlowRate, maximumOutdoorAirFlowRate, heatingConvergenceTolerance, coolingConvergenceTolerance)
-    //   while mapping directly to the EnergyPlus ZoneHVAC:UnitVentilator fields via OS_ZoneHVAC_UnitVentilatorFields.
-    //   ForwardTranslateZoneHVACUnitVentilator.cpp documents the field-name drift and autosize semantics that justify this mapping.
-    // - Field Mapping: availability/schedule targets (AvailabilityScheduleName, MinimumOutdoorAirScheduleName,
-    //   MaximumOutdoorAirFractionorTemperatureScheduleName), SupplyAirFan+/SupplyAirFanOperatingModeSchedule, heating/cooling coil
-    //   references, and inlet/outlet node targets remain relationship-only and are intentionally excluded from this scalar surface.
-    // - Default/autosize helpers mirror the IDD metadata so required scalars (heating/cooling convergence tolerances) stay strict while the
-    //   optional flow fields expose is...Autosized/autosize helpers consistent with the Ruby generator.
+    // - Status: Partial Parity. The unit-ventilator scalar fields are aligned, but the schedule/fan/coil/node relationships remain separate.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACUnitVentilator.
+    // - Implemented Parity: `maximumSupplyAirFlowRate`, `outdoorAirControlType`, `minimumOutdoorAirFlowRate`, `maximumOutdoorAirFlowRate`, `heatingConvergenceTolerance`, and `coolingConvergenceTolerance` map directly to the EnergyPlus object.
+    // - Documented Delta: Availability and outdoor-air schedules, supply-fan and operating-mode schedules, heating/cooling coil references, and inlet/outlet nodes remain relationship-only.
+    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object while schedule and node wiring are handled through explicit relationship state.
+    // - Evidence: `src/model/ZoneHVACUnitVentilator.hpp`, `src/model/ZoneHVACUnitVentilator.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACUnitVentilator.cpp`, and `src/epmodel/test/ZoneHVACUnitVentilator_GTest.cpp`.
+    // - Remaining Parity Work: Add the missing relationship helpers only if the canonical wrapper still exposes them directly.
 
     /** @name Maximum supply air flow rate */
     //@{

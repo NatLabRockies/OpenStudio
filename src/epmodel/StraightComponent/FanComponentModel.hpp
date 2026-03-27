@@ -40,11 +40,13 @@ class EPMODEL_API FanComponentModel : public StraightComponent
   bool addToNode(Node& node);
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::FanComponentModel scalar accessor names/signatures.
-  // - Field Mapping: Scalar APIs below map directly to Fan:ComponentModel scalar fields in EnergyPlus.
-  // - Field Mapping: Relationship fields (schedule/curve/node links) are intentionally excluded in this scaffold pass.
-  // - ForwardTranslator evidence: ForwardTranslateFanComponentModel.cpp writes these scalar fields directly.
-  // - TODO(parity): Add relationship-style APIs without changing preserved scalar signatures.
+  // - Status: Partial Parity. The core fan-component scalar surface and node insertion are aligned, but the canonical schedule and curve topology is still absent.
+  // - Canonical Counterpart: openstudio::model::FanComponentModel.
+  // - Implemented Parity: The scalar sizing, pulley/belt, efficiency, VFD, and end-use-subcategory accessors preserve the canonical field behavior exposed by `openstudio::model::FanComponentModel`.
+  // - Documented Delta: Epmodel does not yet expose the canonical availability-schedule constructor/accessor or the required and optional curve relationships that remain central to `openstudio::model`.
+  // - Field/Storage Mapping: Scalar fields map directly to `Fan:ComponentModel` storage in EnergyPlus.
+  // - Evidence: `src/model/FanComponentModel.hpp`, `src/model/FanComponentModel.cpp`, `src/model/test/FanComponentModel_GTest.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFanComponentModel.cpp` anchor the canonical API and translation behavior.
+  // - Remaining Parity Work: Add schedule and curve relationship APIs, plus any derived helper surface, once epmodel relationship support can represent them without weakening canonical semantics.
   boost::optional<double> maximumFlowRate() const;
   bool isMaximumFlowRateAutosized() const;
   bool setMaximumFlowRate(double maximumFlowRate);

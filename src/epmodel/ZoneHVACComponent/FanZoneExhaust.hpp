@@ -40,11 +40,13 @@ namespace epmodel {
     static std::vector<std::string> systemAvailabilityManagerCouplingModeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::FanZoneExhaust scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: fanEfficiency API delegates to FanTotalEfficiency (same as openstudio::model).
-    // - Field Mapping: scalar APIs map directly to E+ Fan:ZoneExhaust fields; relationship fields (schedules/nodes) remain excluded.
-    // - ForwardTranslator evidence: ForwardTranslateFanZoneExhaust.cpp writes these scalar fields directly.
-    // - TODO(parity): Add relationship APIs incrementally without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The exhaust-fan scalar fields are aligned, and the relationship-bearing schedule/node links stay outside the public surface.
+    // - Canonical Counterpart: openstudio::model::FanZoneExhaust.
+    // - Implemented Parity: `fanTotalEfficiency`, `fanEfficiency`, `pressureRise`, `maximumFlowRate`, `endUseSubcategory`, and `systemAvailabilityManagerCouplingMode` map directly to the EnergyPlus object.
+    // - Documented Delta: Schedule and node references remain relationship-only and are intentionally excluded from this wrapper.
+    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object, with no additional child topology to synchronize.
+    // - Evidence: `src/model/FanZoneExhaust.hpp`, `src/model/FanZoneExhaust.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateFanZoneExhaust.cpp`, and `src/epmodel/test/FanZoneExhaust_GTest.cpp`.
+    // - Remaining Parity Work: Keep the scalar API aligned; add relationship helpers only if the canonical wrapper later exposes them directly.
     double fanTotalEfficiency() const;
     bool setFanTotalEfficiency(double fanTotalEfficiency);
 

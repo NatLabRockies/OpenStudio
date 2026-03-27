@@ -36,10 +36,13 @@ class EPMODEL_API HeatExchangerDesiccantBalancedFlow : public ModelObject
   static IddObjectType iddObjectType();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model scalar accessor names/signatures for counterpart compatibility.
-  // - Field Mapping: economizerLockout maps to EnergyPlus HeatExchanger:Desiccant:BalancedFlow, Economizer Lockout.
-  // - Field Mapping: Relationship fields (availability schedule, node names, performance object type/name) are intentionally excluded.
-  // - TODO(parity): Add non-scalar relationship parity incrementally after scalar scaffold saturation.
+  // - Status: Partial Parity. The core economizer-lockout scalar is aligned, but the canonical performance-object and topology surface is still missing.
+  // - Canonical Counterpart: openstudio::model::HeatExchangerDesiccantBalancedFlow.
+  // - Implemented Parity: `economizerLockout` preserves the canonical scalar control behavior for the desiccant heat exchanger wrapper.
+  // - Documented Delta: Epmodel does not yet expose the canonical availability schedule, performance-object linkage, or airflow-network equivalent-duct helpers present in `openstudio::model`.
+  // - Field/Storage Mapping: The implemented scalar maps directly to `HeatExchanger:Desiccant:BalancedFlow` storage.
+  // - Evidence: `src/model/HeatExchangerDesiccantBalancedFlow.hpp`, `src/model/HeatExchangerDesiccantBalancedFlow.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatExchangerDesiccantBalancedFlow.cpp` anchor the canonical API and translator behavior.
+  // - Remaining Parity Work: Add the performance-object, schedule, and airflow-network relationship APIs when the epmodel relationship layer can represent them canonically.
   /** @name Economizer Lockout */
   //@{
   bool economizerLockout() const;

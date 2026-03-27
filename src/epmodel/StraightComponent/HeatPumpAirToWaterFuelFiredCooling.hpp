@@ -40,13 +40,13 @@ class EPMODEL_API HeatPumpAirToWaterFuelFiredCooling : public StraightComponent
   static std::vector<std::string> waterTemperatureCurveInputVariableValues();
 
   // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::HeatPumpAirToWaterFuelFiredCooling scalar accessor names/signatures.
-  // - Field Mapping: scalar methods map directly to E+ HeatPump:AirToWater:FuelFired:Cooling fields with matching concepts.
-  // - Field Mapping: the serial scaffold selection row is keyed by OutdoorAir:Node, but this API intentionally delegates to the
-  //   HeatPump:AirToWater:FuelFired:Cooling object that owns those scalar fields.
-  // - Field Mapping: companion heat pump, node/object references, and curve/object target-link fields are intentionally excluded.
-  // - ForwardTranslator evidence: ForwardTranslateHeatPumpAirToWaterFuelFiredCooling.cpp writes these scalar APIs to the same E+ fields.
-  // - TODO(parity): add relationship/object-list APIs incrementally without changing scalar signatures.
+  // - Status: Scalar Parity. The canonical fuel-fired cooling heat-pump scalar surface is present, while companion and relationship helpers remain out of scope.
+  // - Canonical Counterpart: openstudio::model::HeatPumpAirToWaterFuelFiredCooling.
+  // - Implemented Parity: The preserved scalar API matches the fuel, capacity, COP, flow, sizing, temperature, and power accessors with matching autosize/default behavior.
+  // - Documented Delta: Companion-heat-pump, node/object-reference, and curve/object target-link helpers remain intentionally excluded from this scalar pass.
+  // - Field/Storage Mapping: These accessors map directly to EnergyPlus `HeatPump:AirToWater:FuelFired:Cooling` scalar fields used by the forward translator.
+  // - Evidence: `src/model/HeatPumpAirToWaterFuelFiredCooling.hpp`, `src/model/HeatPumpAirToWaterFuelFiredCooling.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatPumpAirToWaterFuelFiredCooling.cpp`.
+  // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
   std::string fuelType() const;
   bool setFuelType(const std::string& fuelType);
 

@@ -34,11 +34,13 @@ class EPMODEL_API CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit : public
   static IddObjectType iddObjectType();
 
   // Schema Alignment Notes:
-  // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-  // - Field Mapping: ratedHeatingCapacityAtSelectedNominalSpeedLevel maps to E+ RatedHeatingCapacityAtSelectedNominalSpeedLevel.
-  // - Field Mapping: relationship-like fields (availability schedule, node names, speed data/extensibles, and curve references) are excluded.
-  // - ForwardTranslator evidence: ForwardTranslateCoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit.cpp writes these scalar fields and autosize semantics.
-  // - TODO(parity): Add relationship APIs when epmodel relationship scaffolding is enabled.
+  // - Status: Scalar Parity. The scalar speed-level fields are aligned, while the extensible speed-data surface remains intentionally omitted.
+  // - Canonical Counterpart: openstudio::model::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit.
+  // - Implemented Parity: `nominalSpeedLevel`, `ratedHeatingCapacityAtSelectedNominalSpeedLevel`, `ratedAirFlowRateAtSelectedNominalSpeedLevel`, `ratedWaterFlowRateAtSelectedNominalSpeedLevel`, and the autosize helpers preserve the canonical scalar contract.
+  // - Documented Delta: Availability schedule, part-load curve, and speed-data extensible objects are not exposed here even though the canonical model type owns them.
+  // - Field/Storage Mapping: Scalar fields map directly to the corresponding EnergyPlus `Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit` fields.
+  // - Evidence: `src/model/CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit.hpp`, `src/model/CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit.cpp`, and `src/epmodel/test/CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_GTest.cpp`.
+  // - Remaining Parity Work: Add the omitted curve, schedule, and extensible speed-data APIs only if the family moves beyond scalar parity.
   int nominalSpeedLevel() const;
   bool setNominalSpeedLevel(int nominalSpeedLevel);
 

@@ -36,14 +36,13 @@ class EPMODEL_API AirTerminalDualDuctVAV : public ModelObject
   static IddObjectType iddObjectType();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-  // - Field Mapping: maximumDamperAirFlowRate maps directly to E+ AirTerminal:DualDuct:VAV Maximum Damper Air Flow Rate.
-  // - Field Mapping: zoneMinimumAirFlowFraction maps directly to E+ AirTerminal:DualDuct:VAV Zone Minimum Air Flow Fraction.
-  // - Field Mapping: Availability Schedule Name, Air Outlet Node Name, Hot Air Inlet Node Name, Cold Air Inlet Node Name,
-  //   Design Specification Outdoor Air Object Name, and Minimum Air Flow Turndown Schedule Name are relationship fields and
-  //   intentionally excluded from scalar accessors.
-  // - ForwardTranslator evidence: translateAirTerminalDualDuctVAV writes these two scalar fields plus relationship links.
-  // - TODO(parity): Add relationship APIs incrementally after scalar scaffold saturation.
+  // - Status: Scalar Parity. The scalar surface is aligned, but the canonical wrapper still exposes schedule, node, and DSOA relationship convenience APIs that epmodel has not reintroduced.
+  // - Canonical Counterpart: openstudio::model::AirTerminalDualDuctVAV.
+  // - Implemented Parity: `maximumDamperAirFlowRate` and `zoneMinimumAirFlowFraction` preserve the canonical scalar behavior and autosize semantics.
+  // - Documented Delta: epmodel still omits the availability-schedule, node, DSOA, and turndown-schedule wrappers that canonical model code exposes.
+  // - Field/Storage Mapping: Availability Schedule Name, Air Outlet Node Name, Hot Air Inlet Node Name, Cold Air Inlet Node Name, Design Specification Outdoor Air Object Name, and Minimum Air Flow Turndown Schedule Name are relationship fields and intentionally excluded from scalar accessors.
+  // - Evidence: `src/model/AirTerminalDualDuctVAV.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalDualDuctVAV.cpp`, and `src/epmodel/test/AirTerminalDualDuctVAV_GTest.cpp` show the same scalar mapping and omitted relationship surface.
+  // - Remaining Parity Work: Reintroduce the schedule, DSOA, and node-relationship wrappers if full model-side parity is needed.
   boost::optional<double> maximumDamperAirFlowRate() const;
   bool isMaximumDamperAirFlowRateAutosized() const;
   bool setMaximumDamperAirFlowRate(double maximumDamperAirFlowRate);

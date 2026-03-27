@@ -41,13 +41,13 @@ class EPMODEL_API CoolingTowerSingleSpeed : public StraightComponent
   static std::vector<std::string> cellControlValues();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::CoolingTowerSingleSpeed scalar accessor names/signatures for counterpart parity.
-  // - Field Mapping: fanPoweratDesignAirFlowRate maps to E+ field DesignFanPower.
-  // - Field Mapping: uFactorTimesAreaValueatDesignAirFlowRate maps to E+ field DesignUFactorTimesAreaValue.
-  // - Field Mapping: *FreeConvection* APIs map to E+ FreeConvectionRegime* fields.
-  // - Field Mapping: relationship-like fields (node names, schedules, and tank/object links) are excluded in this pass.
-  // - ForwardTranslator evidence: ForwardTranslateCoolingTowerSingleSpeed.cpp maps these scalar methods directly to matching E+ fields.
-  // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+  // - Status: Scalar Parity. The canonical single-speed cooling-tower scalar surface is present, while node, schedule, tank, and object-link helpers remain out of scope.
+  // - Canonical Counterpart: openstudio::model::CoolingTowerSingleSpeed.
+  // - Implemented Parity: The preserved scalar API matches the tower performance, flow, free-convection, and control accessors with matching autosize/default behavior.
+  // - Documented Delta: Node-name, schedule, storage-tank, and other relationship helpers remain intentionally excluded from this scalar pass.
+  // - Field/Storage Mapping: These accessors map directly to EnergyPlus `CoolingTower:SingleSpeed` scalar fields used by the forward translator.
+  // - Evidence: `src/model/CoolingTowerSingleSpeed.hpp`, `src/model/CoolingTowerSingleSpeed.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateCoolingTowerSingleSpeed.cpp`.
+  // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
   boost::optional<double> designWaterFlowRate() const;
   bool isDesignWaterFlowRateAutosized() const;
   bool setDesignWaterFlowRate(double designWaterFlowRate);

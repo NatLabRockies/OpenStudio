@@ -38,11 +38,13 @@ class EPMODEL_API CoilCoolingWater : public WaterToAirComponent
   static std::vector<std::string> heatExchangerConfigurationValues();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-  // - Field Mapping: design* scalar APIs map directly to EnergyPlus Coil:Cooling:Water design scalar fields.
-  // - Field Mapping: typeOfAnalysis and heatExchangerConfiguration map directly to EnergyPlus TypeofAnalysis and HeatExchangerConfiguration.
-  // - ForwardTranslator evidence: ForwardTranslateCoilCoolingWater.cpp writes these exact scalar fields and autosize semantics.
-  // - Field Mapping: availability schedule, node names, and condensate tank linkage fields are relationship-like and excluded in this scalar scaffold phase.
+  // - Status: Scalar Parity. The scalar design fields and enumerated choices are aligned, while relationship-heavy convenience behavior remains intentionally outside this wrapper surface.
+  // - Canonical Counterpart: openstudio::model::CoilCoolingWater.
+  // - Implemented Parity: `designWaterFlowRate`, `designAirFlowRate`, `designInletWaterTemperature`, `designInletAirTemperature`, `designOutletAirTemperature`, `designInletAirHumidityRatio`, `designOutletAirHumidityRatio`, `typeOfAnalysis`, `heatExchangerConfiguration`, and their autosize/setter helpers preserve the canonical scalar contract.
+  // - Documented Delta: Availability schedule, controller linkage, node-name accessors, and AFN/equivalent-duct helpers are not exposed here even though the canonical model type owns them.
+  // - Field/Storage Mapping: Scalar design and choice fields map directly to the corresponding EnergyPlus `Coil:Cooling:Water` fields.
+  // - Evidence: `src/model/CoilCoolingWater.hpp`, `src/model/CoilCoolingWater.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingWater.cpp`, and `src/model/test/CoilCoolingWater_GTest.cpp`.
+  // - Remaining Parity Work: Add the omitted relationship and helper APIs only if this family is brought beyond scalar parity.
   boost::optional<double> designWaterFlowRate() const;
   bool setDesignWaterFlowRate(double value);
   bool isDesignWaterFlowRateAutosized() const;

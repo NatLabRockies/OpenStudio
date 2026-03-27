@@ -34,15 +34,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::EvaporativeCoolerDirectResearchSpecial scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: coolerDesignEffectiveness/coolerEffectiveness map to E+ Cooler Design Effectiveness.
-    // - Field Mapping: recirculatingWaterPumpPowerConsumption maps to E+ Recirculating Water Pump Design Power
-    //   (ForwardTranslateEvaporativeCoolerDirectResearchSpecial.cpp).
-    // - Field Mapping: primaryAirDesignFlowRate, driftLossFraction, blowdownConcentrationRatio, waterPumpPowerSizingFactor,
-    //   and evaporativeOperation*Temperature accessors map directly to same E+ object fields.
-    // - Field Mapping: Availability Schedule Name, Air Inlet/Outlet Node Name, Sensor Node Name, and curve-name fields are
-    //   relationship-like and excluded from this scalar-only scaffold.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical direct-research evaporative-cooler scalar surface is present, while schedule, node, and curve helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::EvaporativeCoolerDirectResearchSpecial.
+    // - Implemented Parity: The preserved scalar API covers the cooler effectiveness, pump power, flow, drift/blowdown, sizing, and operating-temperature fields with matching default/autosize behavior.
+    // - Documented Delta: Availability-schedule, node-link, sensor-node, and curve-name helpers remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `EvaporativeCooler:Direct:ResearchSpecial` scalar fields used by the forward translator.
+    // - Evidence: `src/model/EvaporativeCoolerDirectResearchSpecial.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateEvaporativeCoolerDirectResearchSpecial.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
     double coolerDesignEffectiveness() const;
     double coolerEffectiveness() const;
     bool setCoolerDesignEffectiveness(double value);

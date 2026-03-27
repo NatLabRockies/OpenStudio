@@ -50,9 +50,13 @@ namespace epmodel {
     static std::vector<std::string> sourceSideFlowControlModeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::WaterHeaterMixed scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: Simple scalar methods map directly to the EnergyPlus WaterHeater:Mixed fields per ForwardTranslateWaterHeaterMixed.
-    // - Topology: Water-to-water loop behavior comes from WaterToWaterComponent; this wrapper only keeps the WaterHeater:Mixed field API.
+    // - Status: Scalar Parity. The scalar heater surface is aligned, while the full water-loop topology remains inherited from the base component layer.
+    // - Canonical Counterpart: openstudio::model::WaterHeaterMixed.
+    // - Implemented Parity: Scalar accessors for tank, heater, parasitic, ambient, effectiveness, and flow-rate fields preserve the canonical model API shape.
+    // - Documented Delta: Detailed plant-side topology and node-link behavior are not restated here because they are inherited from `WaterToWaterComponent` and are not the focus of this scalar parity pass.
+    // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `WaterHeater:Mixed` fields directly; naming aliases such as fuel-type helpers normalize between model and IDD vocabulary.
+    // - Evidence: `src/model/WaterHeaterMixed.hpp`, `src/model/WaterHeaterMixed.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateWaterHeaterMixed.cpp`.
+    // - Remaining Parity Work: Expand the note only if new non-scalar heater topology behavior needs to be documented separately.
 
     // Tank volume
     boost::optional<double> tankVolume() const;

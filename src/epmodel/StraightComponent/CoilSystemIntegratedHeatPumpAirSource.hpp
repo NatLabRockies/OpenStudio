@@ -34,11 +34,13 @@ class EPMODEL_API CoilSystemIntegratedHeatPumpAirSource : public StraightCompone
   static IddObjectType iddObjectType();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::CoilSystemIntegratedHeatPumpAirSource scalar accessor names/signatures.
-  // - Field Mapping: Scalar APIs map directly to EnergyPlus CoilSystem:IntegratedHeatPump:AirSource numeric fields.
-  // - ForwardTranslator evidence: ForwardTranslateCoilSystemIntegratedHeatPumpAirSource writes these scalar fields directly.
-  // - Field Mapping: coil references and node-link fields (including Supply Hot Water Flow Sensor Node Name) are relationship-like and excluded here.
-  // - TODO(parity): Add relationship APIs in a dedicated parity pass without changing scalar signatures.
+  // - Status: Partial Parity. The scalar control surface is present, but coil-reference and node-link helpers remain model-owned.
+  // - Canonical Counterpart: openstudio::model::CoilSystemIntegratedHeatPumpAirSource.
+  // - Implemented Parity: The temperature-limit, load-control, speed-level, and water-flow control scalars preserve the canonical API.
+  // - Documented Delta: Coil references and node-link helpers from canonical `openstudio::model::CoilSystemIntegratedHeatPumpAirSource` are not exposed yet.
+  // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `CoilSystem:IntegratedHeatPump:AirSource` numeric fields.
+  // - Evidence: `src/model/CoilSystemIntegratedHeatPumpAirSource.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilSystemIntegratedHeatPumpAirSource.cpp`, and `src/epmodel/test/CoilSystemIntegratedHeatPumpAirSource_GTest.cpp`.
+  // - Remaining Parity Work: Add the omitted coil-reference and node-link helpers without changing the preserved scalar signatures.
   double indoorTemperatureLimitForSCWHMode() const;
   bool setIndoorTemperatureLimitForSCWHMode(double indoorTemperatureLimitForSCWHMode);
 

@@ -43,13 +43,13 @@ namespace epmodel {
     static std::vector<std::string> blowdownCalculationModeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::EvaporativeFluidCoolerSingleSpeed scalar accessor names/signatures.
-    // - Field Mapping: fanPoweratDesignAirFlowRate maps to E+ field DesignAirFlowRateFanPower.
-    // - Field Mapping: ufactorTimesAreaValueatDesignAirFlowRate maps to E+ field DesignAirFlowRateUfactorTimesAreaValue.
-    // - Field Mapping: all other scalar APIs map directly to matching E+ EvaporativeFluidCooler:SingleSpeed fields.
-    // - Field Mapping: node/schedule/storage-tank relationship-like fields are intentionally excluded from this scalar-only pass.
-    // - ForwardTranslator evidence: ForwardTranslateEvaporativeFluidCoolerSingleSpeed.cpp maps preserved scalar APIs to these fields.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical single-speed evaporative-fluid-cooler scalar surface is present, while node, schedule, and storage-tank helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::EvaporativeFluidCoolerSingleSpeed.
+    // - Implemented Parity: The preserved scalar API matches the design-flow, fan-power, spray-water, performance, and capacity accessors with matching autosize/default behavior.
+    // - Documented Delta: Node-name, schedule, and storage-tank helpers remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `EvaporativeFluidCooler:SingleSpeed` scalar fields used by the forward translator.
+    // - Evidence: `src/model/EvaporativeFluidCoolerSingleSpeed.hpp`, `src/model/EvaporativeFluidCoolerSingleSpeed.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateEvaporativeFluidCoolerSingleSpeed.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
 
     boost::optional<double> designAirFlowRate() const;
     bool isDesignAirFlowRateAutosized() const;

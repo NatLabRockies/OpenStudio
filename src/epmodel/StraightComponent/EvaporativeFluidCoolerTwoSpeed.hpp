@@ -42,11 +42,13 @@ namespace epmodel {
     static std::vector<std::string> blowdownCalculationModeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::EvaporativeFluidCoolerTwoSpeed scalar accessor names/signatures.
-    // - Field Mapping: Scalar APIs map directly to E+ EvaporativeFluidCooler:TwoSpeed scalar fields.
-    // - Field Mapping: Relationship-like fields (node/schedule/storage-tank links) are excluded from this scalar-only pass.
-    // - ForwardTranslator evidence: ForwardTranslateEvaporativeFluidCoolerTwoSpeed.cpp maps these preserved scalar APIs to matching E+ fields.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical two-speed evaporative-fluid-cooler scalar surface is present, while node, schedule, and storage-tank helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::EvaporativeFluidCoolerTwoSpeed.
+    // - Implemented Parity: The preserved scalar API matches the high/low speed flow, fan power, sizing-factor, spray-water, performance, and capacity accessors with matching autosize/default behavior.
+    // - Documented Delta: Node-name, schedule, and storage-tank helpers remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `EvaporativeFluidCooler:TwoSpeed` scalar fields used by the forward translator.
+    // - Evidence: `src/model/EvaporativeFluidCoolerTwoSpeed.hpp`, `src/model/EvaporativeFluidCoolerTwoSpeed.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateEvaporativeFluidCoolerTwoSpeed.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
 
     // High fan speed air flow rate
     boost::optional<double> highFanSpeedAirFlowRate() const;

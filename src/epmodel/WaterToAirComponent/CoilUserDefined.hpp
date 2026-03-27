@@ -34,12 +34,13 @@ class EPMODEL_API CoilUserDefined : public WaterToAirComponent
   static IddObjectType iddObjectType();
 
   // Schema Alignment Notes:
-  // - API: Preserves openstudio::model scalar accessor naming/signature for model-counterpart compatibility.
-  // - Field Mapping: numberofAirConnections maps directly to E+ Coil:UserDefined Number of Air Connections.
-  // - Field Mapping: node names, program/program-calling-manager names, ambient zone, actuator fields, and Plant Connection is Used are excluded
-  //   from scalar API generation for this cycle.
-  // - ForwardTranslator evidence: ForwardTranslateCoilUserDefined.cpp writes Number of Air Connections from numberofAirConnections().
-  // - TODO(parity): Add relationship and non-scalar behavior in later parity milestones.
+  // - Status: Scaffolded. The type exposes only the small numeric surface that is currently safe to mirror, while the canonical EMS-heavy behavior remains absent.
+  // - Canonical Counterpart: openstudio::model::CoilUserDefined.
+  // - Implemented Parity: `numberofAirConnections` preserves the one scalar-like field that is currently mirrored in epmodel.
+  // - Documented Delta: The canonical model type also owns EMS program/calling-manager, actuator, ambient-zone, and rename behavior, none of which are exposed here yet.
+  // - Field/Storage Mapping: The scalar field maps directly to the EnergyPlus `Coil:UserDefined` `Number of Air Connections` field.
+  // - Evidence: `src/model/CoilUserDefined.hpp`, `src/model/CoilUserDefined.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilUserDefined.cpp`, and `src/model/test/CoilUserDefined_GTest.cpp`.
+  // - Remaining Parity Work: Add the EMS companion-object APIs and rename behavior when the epmodel infrastructure for those relationships is available.
   int numberofAirConnections() const;
 
  protected:

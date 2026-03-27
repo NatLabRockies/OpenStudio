@@ -34,11 +34,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::SolarCollectorFlatPlateWater scalar accessor names/signatures.
-    // - Field Mapping: maximumFlowRate maps directly to E+ SolarCollector:FlatPlate:Water MaximumFlowRate.
-    // - Field Mapping: relationship/node fields (solar collector performance, surface, inlet/outlet nodes) are excluded from this scalar scaffold.
-    // - ForwardTranslator evidence: ForwardTranslateSolarCollectorFlatPlateWater.cpp reads maximumFlowRate() and writes MaximumFlowRate.
-    // - TODO(parity): add non-scalar relationship APIs incrementally without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical flat-plate-water solar-collector scalar surface is present, while performance, surface, and node helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::SolarCollectorFlatPlateWater.
+    // - Implemented Parity: The preserved scalar API matches the maximum-flow-rate accessor with matching reset/default behavior.
+    // - Documented Delta: Performance, surface, inlet, and outlet relationship helpers remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: This accessor maps directly to the EnergyPlus `SolarCollector:FlatPlate:Water` maximum-flow-rate field used by the forward translator.
+    // - Evidence: `src/model/SolarCollectorFlatPlateWater.hpp`, `src/model/SolarCollectorFlatPlateWater.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateSolarCollectorFlatPlateWater.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
 
     /** @name Maximum flow rate */
     //@{

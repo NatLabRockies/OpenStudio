@@ -41,11 +41,13 @@ namespace epmodel {
     static std::vector<std::string> inletModeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names/signatures to keep model-counterpart parity for this type.
-    // - Field Mapping: Scalar methods map directly to the real/integer/choice fields on EnergyPlus OS:ThermalStorage:ChilledWater:Stratified.
-    // - Field Mapping: Relationship-like fields (schedules, zones, node/object references, availability schedules) are intentionally excluded from this scalar-only scaffold.
-    // - ForwardTranslator evidence: translateThermalStorageChilledWaterStratified confirms these numeric and choice fields align with the current EnergyPlus schema.
-    // - TODO(parity): Add excluded relationship APIs once scalar saturation for this type is complete.
+    // - Status: Scalar Parity. The stratified thermal-storage scalar surface is aligned, while schedule, zone, and node-link behavior remains excluded.
+    // - Canonical Counterpart: openstudio::model::ThermalStorageChilledWaterStratified.
+    // - Implemented Parity: Scalar accessors for tank geometry, losses, limits, cooling capacity, effectiveness, inlet/outlet heights, flows, and destratification metadata preserve the canonical model API shape.
+    // - Documented Delta: Relationship-like schedule, zone, node/object-reference, and availability APIs are intentionally excluded in this pass.
+    // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `ThermalStorage:ChilledWater:Stratified` fields directly, while the excluded links remain in storage-level topology.
+    // - Evidence: `src/model/ThermalStorageChilledWaterStratified.hpp`, `src/model/ThermalStorageChilledWaterStratified.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateThermalStorageChilledWaterStratified.cpp`.
+    // - Remaining Parity Work: Add the excluded relationship APIs only if the family moves beyond scalar parity.
 
     double tankVolume() const;
     bool setTankVolume(double tankVolume);

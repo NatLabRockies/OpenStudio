@@ -41,11 +41,13 @@ namespace epmodel {
     static std::vector<std::string> designPowerSizingMethodValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::HeaderedPumpsVariableSpeed scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: totalRatedFlowRate/ratedPumpHead/ratedPowerConsumption APIs map to E+ HeaderedPumps:VariableSpeed TotalDesignFlowRate/DesignPumpHead/DesignPowerConsumption.
-    // - Field Mapping: pumpFlowRateSchedule, thermalZone, and inlet/outlet node name fields are relationship-like fields and are excluded in this scalar-only pass.
-    // - ForwardTranslator evidence: ForwardTranslateHeaderedPumpsVariableSpeed.cpp maps the preserved API names to these E+ fields.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical scalar variable-speed pump-bank surface is largely present, while schedule, zone, and richer relationship helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::HeaderedPumpsVariableSpeed.
+    // - Implemented Parity: Preserved scalar accessor names/signatures cover total flow, pump-bank count, sequencing scheme, head, power, efficiency, part-load coefficients, minimum flow fraction, control type, radiative fraction, design-power sizing, and end-use metadata with matching autosize behavior.
+    // - Documented Delta: `pumpFlowRateSchedule`, thermal-zone linkage, and explicit node-link convenience APIs from canonical `openstudio::model::HeaderedPumpsVariableSpeed` are not exposed yet.
+    // - Field/Storage Mapping: The preserved scalar APIs map directly to EnergyPlus `HeaderedPumps:VariableSpeed` scalar fields used by the forward translator.
+    // - Evidence: `src/model/HeaderedPumpsVariableSpeed.hpp` defines the canonical wrapper surface, and `src/energyplus/ForwardTranslator/ForwardTranslateHeaderedPumpsVariableSpeed.cpp` confirms the direct scalar mapping and autosize tokens.
+    // - Remaining Parity Work: Add the omitted schedule, thermal-zone, and relationship helpers without changing the preserved scalar signatures.
 
     boost::optional<double> totalRatedFlowRate() const;
     bool isTotalRatedFlowRateAutosized() const;

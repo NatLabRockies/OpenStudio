@@ -39,11 +39,13 @@ namespace epmodel {
     static std::vector<std::string> heatingDesignCapacityMethodValues();
 
     // Schema Alignment Notes:
-    // - API: heatingDesignCapacityMethod/heatingDesignCapacity/heatingDesignCapacityPerFloorArea/fractionofAutosizedHeatingDesignCapacity
-    //   map to EnergyPlus ZoneHVAC:Baseboard:RadiantConvective:Electric Heating Design Capacity group fields via ForwardTranslateZoneHVACBaseboardRadiantConvectiveElectric.cpp.
-    // - API: efficiency/fractionRadiant/fractionofRadiantEnergyIncidentonPeople map to the corresponding Efficiency, Fraction Radiant and
-    //   Fraction of Radiant Energy Incident on People fields while Availability Schedule Name, Heating Coil Name and the extensible surface entries
-    //   remain relationship-only targets until dedicated APIs exist.
+    // - Status: Partial Parity. The scalar field groups and thermal-zone attachment behavior are present, but the remaining relationship and surface-link surface is still incomplete.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACBaseboardRadiantConvectiveElectric.
+    // - Implemented Parity: `heatingDesignCapacityMethod`, heating-capacity scalars, `efficiency`, `fractionRadiant`, `fractionofRadiantEnergyIncidentonPeople`, and the thermal-zone attach/remove APIs preserve the main canonical wrapper behavior.
+    // - Documented Delta: Availability schedule, heating coil, and extensible surface entries are relationship-only and remain outside this public wrapper surface.
+    // - Field/Storage Mapping: The scalar fields map directly to the underlying EnergyPlus object, while surface membership is tracked through thermal-zone topology and child-object state.
+    // - Evidence: `src/model/ZoneHVACBaseboardRadiantConvectiveElectric.hpp`, `src/model/ZoneHVACBaseboardRadiantConvectiveElectric.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACBaseboardRadiantConvectiveElectric.cpp`, and `src/epmodel/test/ZoneHVACBaseboardRadiantConvectiveElectric_GTest.cpp`.
+    // - Remaining Parity Work: Add explicit relationship helpers for schedules, heating coil links, and extensible surfaces if those canonical behaviors need to become first-class.
 
     std::string heatingDesignCapacityMethod() const;
     bool setHeatingDesignCapacityMethod(const std::string& heatingDesignCapacityMethod);

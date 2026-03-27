@@ -39,11 +39,13 @@ class EPMODEL_API FanOnOff : public StraightComponent
   bool addToNode(Node& node);
 
   // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::FanOnOff scalar accessor names/signatures.
-  // - Field Mapping: fanTotalEfficiency/fanEfficiency, pressureRise, maximumFlowRate, motor* and endUseSubcategory map directly to E+ Fan:OnOff fields.
-  // - Field Mapping: maximumFlowRate preserves autosize/reset token semantics via the "autosize" value.
-  // - ForwardTranslator evidence: ForwardTranslateFanOnOff.cpp writes these scalar fields directly to Fan:OnOff.
-  // - TODO(parity): Relationship fields (availability schedule, curves, node links) remain excluded in this scalar scaffold.
+  // - Status: Partial Parity. Scalar fan properties and node insertion are aligned, but the canonical schedule, curve, and airflow-network surface is still absent.
+  // - Canonical Counterpart: openstudio::model::FanOnOff.
+  // - Implemented Parity: The fan total-efficiency, fan-efficiency, pressure-rise, maximum-flow-rate, motor, and end-use-subcategory accessors preserve the canonical scalar field behavior, including autosize/reset semantics for flow rate.
+  // - Documented Delta: Epmodel does not yet expose the canonical availability-schedule constructors/accessors, curve linkage APIs, or airflow-network fan helper surface from `openstudio::model::FanOnOff`.
+  // - Field/Storage Mapping: Scalar fields map directly to `Fan:OnOff` storage in EnergyPlus.
+  // - Evidence: `src/model/FanOnOff.hpp`, `src/model/FanOnOff.cpp`, `src/model/test/FanOnOff_GTest.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFanOnOff.cpp` establish the canonical API and translation behavior.
+  // - Remaining Parity Work: Add the schedule, curve, and airflow-network relationship APIs once epmodel relationship coverage can support them cleanly.
   double fanTotalEfficiency() const;
   bool isFanTotalEfficiencyDefaulted() const;
   bool setFanTotalEfficiency(double fanTotalEfficiency);

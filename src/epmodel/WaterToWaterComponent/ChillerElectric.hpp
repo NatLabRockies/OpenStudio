@@ -52,10 +52,13 @@ class EPMODEL_API ChillerElectric : public WaterToWaterComponent
   boost::optional<Node> heatRecoveryOutletNode() const;
 
   // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived scalar accessor names.
-  // - Field Mapping: Scalar APIs map directly to EnergyPlus Chiller:Electric fields.
-  // - Topology: Water-side node and loop accessors follow the same naming used by the
-  //   model chiller wrappers so plant navigation reads naturally.
+  // - Status: Scalar Parity. This type wraps the direct EnergyPlus `Chiller:Electric` object and exposes useful topology accessors, but it does not have a same-name canonical model counterpart.
+  // - Canonical Counterpart: none.
+  // - Implemented Parity: Scalar accessors for condenser type, nominal capacity/COP, part-load ratios, condenser behavior, chilled-water and condenser-water sizing, heat recovery, end-use metadata, and thermosiphon settings preserve the public IDD-derived API.
+  // - Documented Delta: `chilledWaterLoop`, `condenserWaterLoop`, and `heatRecoveryLoop` style navigation are epmodel convenience APIs for EnergyPlus plant topology; canonical `openstudio::model` represents this space through more specific chiller wrappers rather than a one-to-one `ChillerElectric` type.
+  // - Field/Storage Mapping: The public API is organized around EnergyPlus `Chiller:Electric` storage and loop wiring, not around a canonical OpenStudio class name.
+  // - Evidence: `src/model/ChillerElectricEIR.hpp`, `src/model/ChillerElectricReformulatedEIR.hpp`, `src/model/ChillerElectricASHRAE205.hpp`, and the matching forward translators show how the canonical model splits this EnergyPlus space across multiple more specific wrappers.
+  // - Remaining Parity Work: Keep this note conservative and revisit only if a future canonical wrapper is introduced for the aggregated EnergyPlus `Chiller:Electric` object.
   std::string condenserType() const;
   bool isCondenserTypeDefaulted() const;
   bool setCondenserType(const std::string& condenserType);

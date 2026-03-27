@@ -39,11 +39,13 @@ namespace epmodel {
     static std::vector<std::string> evaporatorAirTemperatureTypeforCurveObjectsValues();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-    // - Field Mapping: Scalar APIs map directly to EnergyPlus Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed fields.
-    // - ForwardTranslator evidence: ForwardTranslateCoilWaterHeatingAirToWaterHeatPumpVariableSpeed.cpp writes these exact scalar fields.
-    // - Field Mapping: Relationship-like fields (AvailabilityScheduleName, CrankcaseHeaterCapacityFunctionofTemperatureCurveName,
-    //   PartLoadFractionCorrelationCurveName, SpeedDataList) are intentionally excluded in this scalar scaffold phase.
+    // - Status: Scalar Parity. The scalar rating and control surface is aligned, while availability-schedule, curve, and speed-data APIs are still omitted.
+    // - Canonical Counterpart: openstudio::model::CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.
+    // - Implemented Parity: `evaporatorAirTemperatureTypeforCurveObjectsValues`, the rating setters/getters, pump/fan flags, and flow autocalculate helpers preserve the canonical scalar contract.
+    // - Documented Delta: Availability schedule, crankcase-heater curve, part-load curve, and speed-data list accessors are not exposed yet even though they exist on the canonical model type.
+    // - Field/Storage Mapping: The epmodel wrapper maps the preserved scalar fields directly to EnergyPlus `Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed` storage.
+    // - Evidence: `src/model/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.hpp`, `src/model/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilWaterHeatingAirToWaterHeatPumpVariableSpeed.cpp`, `src/model/test/CoilSystemIntegratedHeatPumpAirSource_GTest.cpp`, and `src/epmodel/test/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted schedule, curve, and speed-data APIs after the relationship layer is available.
     int nominalSpeedLevel() const;
     bool setNominalSpeedLevel(int nominalSpeedLevel);
 

@@ -36,13 +36,13 @@ class EPMODEL_API AirTerminalSingleDuctVAVHeatAndCoolNoReheat : public StraightC
   static IddObjectType iddObjectType();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model scalar accessor names/signatures for this model-counterpart class.
-  // - Field Mapping: maximumAirFlowRate maps directly to E+ AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat Maximum Air Flow Rate.
-  // - Field Mapping: zoneMinimumAirFlowFraction maps directly to E+ AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat Zone Minimum Air Flow Fraction.
-  // - Field Mapping: Availability Schedule Name, Air Outlet Node Name, Air Inlet Node Name, and Minimum Air Flow Turndown Schedule Name are relationship
-  //   fields and intentionally excluded from scalar accessors.
-  // - ForwardTranslator evidence: translateAirTerminalSingleDuctVAVHeatAndCoolNoReheat writes these two scalar fields plus relationship links.
-  // - TODO(parity): Add relationship APIs incrementally after scalar scaffold saturation.
+  // - Status: Scalar Parity. The scalar VAV heat-and-cool no-reheat contract is aligned; relationship and node plumbing remain narrower.
+  // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctVAVHeatAndCoolNoReheat.
+  // - Implemented Parity: `maximumAirFlowRate` and `zoneMinimumAirFlowFraction` preserve the canonical scalar contract.
+  // - Documented Delta: Availability schedule, air inlet/outlet node names, and the minimum air flow turndown schedule are relationship fields and are not exposed as public methods yet.
+  // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat` fields; the translator handles links separately.
+  // - Evidence: `src/model/AirTerminalSingleDuctVAVHeatAndCoolNoReheat.hpp`, `src/model/AirTerminalSingleDuctVAVHeatAndCoolNoReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctVAVHeatAndCoolNoReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctVAVHeatAndCoolNoReheat_GTest.cpp`.
+  // - Remaining Parity Work: Add the omitted relationship helpers when this type moves beyond scalar parity.
   boost::optional<double> maximumAirFlowRate() const;
   bool isMaximumAirFlowRateAutosized() const;
   bool setMaximumAirFlowRate(double maximumAirFlowRate);

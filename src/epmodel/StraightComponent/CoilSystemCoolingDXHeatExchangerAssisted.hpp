@@ -38,11 +38,13 @@ namespace epmodel {
     static std::vector<std::string> coolingCoilObjectTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model class naming for counterpart CoilSystemCoolingDXHeatExchangerAssisted.
-    // - Field Mapping: heatExchangerObjectType/coolingCoilObjectType map to EnergyPlus CoilSystem:Cooling:DX:HeatExchangerAssisted choice fields.
-    // - ForwardTranslator evidence: ForwardTranslateCoilSystemCoolingDXHeatExchangerAssisted sets these object-type fields from translated child objects.
-    // - Field Mapping: Heat Exchanger Name, Cooling Coil Name, and inlet/outlet node links are relationship-like and intentionally excluded from scalar APIs.
-    // - TODO(parity): Add relationship APIs in a dedicated parity pass without changing scalar signatures.
+    // - Status: Partial Parity. The object-type choice surface is present, but the child-object and topology helpers remain model-owned.
+    // - Canonical Counterpart: openstudio::model::CoilSystemCoolingDXHeatExchangerAssisted.
+    // - Implemented Parity: `heatExchangerObjectType` and `coolingCoilObjectType` preserve the canonical object-choice API.
+    // - Documented Delta: Heat-exchanger name, cooling-coil name, and node-link helpers from canonical `openstudio::model::CoilSystemCoolingDXHeatExchangerAssisted` are not exposed yet.
+    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `CoilSystem:Cooling:DX:HeatExchangerAssisted` choice fields.
+    // - Evidence: `src/model/CoilSystemCoolingDXHeatExchangerAssisted.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilSystemCoolingDXHeatExchangerAssisted.cpp`, and `src/epmodel/test/CoilSystemCoolingDXHeatExchangerAssisted_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted child-object and topology helpers without changing the preserved scalar signatures.
 
     // Heat exchanger object-type accessors
     std::string heatExchangerObjectType() const;

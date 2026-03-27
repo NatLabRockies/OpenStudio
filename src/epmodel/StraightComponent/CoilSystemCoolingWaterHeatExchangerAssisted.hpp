@@ -38,12 +38,13 @@ namespace epmodel {
     static std::vector<std::string> coolingCoilObjectTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model class naming for counterpart CoilSystemCoolingWaterHeatExchangerAssisted.
-    // - API: Keep counterpart-driven naming even when inventory rows are seeded under unrelated IDD types during serial queue runs.
-    // - Field Mapping: heatExchangerObjectType/coolingCoilObjectType map to EnergyPlus CoilSystem:Cooling:Water:HeatExchangerAssisted choice fields.
-    // - ForwardTranslator evidence: ForwardTranslateCoilSystemCoolingWaterHeatExchangerAssisted sets these object-type fields from translated child objects.
-    // - Field Mapping: Heat Exchanger Name, Cooling Coil Name, and inlet/outlet node links are relationship-like and intentionally excluded from scalar APIs.
-    // - TODO(parity): Add relationship APIs in a dedicated parity pass without changing scalar signatures.
+    // - Status: Partial Parity. The object-type choice surface is present, but the child-object and topology helpers remain model-owned.
+    // - Canonical Counterpart: openstudio::model::CoilSystemCoolingWaterHeatExchangerAssisted.
+    // - Implemented Parity: `heatExchangerObjectType` and `coolingCoilObjectType` preserve the canonical object-choice API.
+    // - Documented Delta: Heat-exchanger name, cooling-coil name, and node-link helpers from canonical `openstudio::model::CoilSystemCoolingWaterHeatExchangerAssisted` are not exposed yet.
+    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `CoilSystem:Cooling:Water:HeatExchangerAssisted` choice fields.
+    // - Evidence: `src/model/CoilSystemCoolingWaterHeatExchangerAssisted.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilSystemCoolingWaterHeatExchangerAssisted.cpp`, and `src/epmodel/test/CoilSystemCoolingWaterHeatExchangerAssisted_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted child-object and topology helpers without changing the preserved scalar signatures.
     /** @name Heat exchanger object type */
     //@{
     std::string heatExchangerObjectType() const;

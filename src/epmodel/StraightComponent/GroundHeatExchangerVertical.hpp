@@ -34,18 +34,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::GroundHeatExchangerVertical scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: designFlowRate(), groundThermalConductivity(), and groundThermalHeatCapacity() delegate to
-    //   GroundHeatExchanger:System fields DesignFlowRate, GroundThermalConductivity, and GroundThermalHeatCapacity via linked
-    //   GroundHeatExchanger:System objects keyed by GHE:Vertical:ResponseFactors Object Name.
-    // - Field Mapping: numberofBoreHoles() and gFunctionReferenceRatio() map to
-    //   GroundHeatExchanger:ResponseFactors fields NumberofBoreholes and GFunctionReferenceRatio.
-    // - Field Mapping: boreHoleTopDepth(), boreHoleLength(), boreHoleRadius(), groutThermalConductivity(),
-    //   pipeThermalConductivity(), pipeOutDiameter(), uTubeDistance(), and pipeThickness() delegate to linked
-    //   GroundHeatExchanger:Vertical:Properties fields (BoreholeRadius API maps to BoreholeDiameter / 2.0).
-    // - Field Mapping: undisturbed ground model APIs are relationship-based via GroundHeatExchanger:System fields and remain excluded.
-    // - Field Mapping: GFunction extensible pair entries are excluded from this scalar-only scaffold.
-    // - TODO(parity): Add excluded relationship/extensible APIs while preserving these scalar signatures.
+    // - Status: Scalar Parity. The canonical vertical ground-heat-exchanger scalar surface is present, while linked-object and extensible helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::GroundHeatExchangerVertical.
+    // - Implemented Parity: The preserved scalar API matches the borehole, pipe, thermal-property, and g-function reference accessors with matching scalar behavior.
+    // - Documented Delta: Undisturbed-ground-model helpers and the GFunction extensible entries remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `GroundHeatExchanger:Vertical`/linked `GroundHeatExchanger:*` scalar fields used by the forward translator.
+    // - Evidence: `src/model/GroundHeatExchangerVertical.hpp`, `src/model/GroundHeatExchangerVertical.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateGroundHeatExchangerVertical.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship and extensible helpers without changing the preserved scalar signatures.
 
     boost::optional<double> designFlowRate() const;
     bool setDesignFlowRate(double designFlowRate);

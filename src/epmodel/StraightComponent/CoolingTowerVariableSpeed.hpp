@@ -40,11 +40,13 @@ namespace epmodel {
     static std::vector<std::string> cellControlValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::CoolingTowerVariableSpeed scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: Scalar APIs map directly to E+ CoolingTower:VariableSpeed scalar fields.
-    // - Field Mapping: Relationship-like fields (node names, model coefficient object, curve, and schedules) are excluded in this pass.
-    // - ForwardTranslator evidence: ForwardTranslateCoolingTowerVariableSpeed.cpp maps preserved scalar APIs to matching E+ fields.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical variable-speed cooling-tower scalar surface is present, while node, schedule, curve, and model-coefficient helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::CoolingTowerVariableSpeed.
+    // - Implemented Parity: The preserved scalar API covers the tower performance, fan power, flow, blowdown, basin-heater, and cell-control fields with matching default/autosize behavior.
+    // - Documented Delta: Node-link, schedule, curve, and model-coefficient helpers remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `CoolingTower:VariableSpeed` scalar fields used by the forward translator.
+    // - Evidence: `src/model/CoolingTowerVariableSpeed.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateCoolingTowerVariableSpeed.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
     boost::optional<std::string> modelType() const;
     bool setModelType(const std::string& modelType);
     void resetModelType();

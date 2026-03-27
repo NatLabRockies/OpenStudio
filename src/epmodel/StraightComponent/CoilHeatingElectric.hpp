@@ -37,12 +37,13 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::CoilHeatingElectric scalar accessor names/signatures.
-    // - Field Mapping: efficiency maps to E+ Coil:Heating:Electric Efficiency.
-    // - Field Mapping: nominalCapacity maps to E+ Coil:Heating:Electric Nominal Capacity.
-    // - Field Mapping: Relationship-like fields (availability schedule, temperature setpoint node, and air node links) are excluded in this pass.
-    // - ForwardTranslator evidence: ForwardTranslateCoilHeatingElectric.cpp writes Efficiency and Nominal Capacity directly.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical electric-coil scalar surface is largely present, while schedule and node-link helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::CoilHeatingElectric.
+    // - Implemented Parity: `efficiency` and `nominalCapacity` preserve the canonical scalar API and autosize behavior.
+    // - Documented Delta: Availability schedule, temperature-setpoint node, and other relationship helpers from canonical `openstudio::model::CoilHeatingElectric` are not exposed yet.
+    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Heating:Electric` fields.
+    // - Evidence: `src/model/CoilHeatingElectric.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingElectric.cpp`, and `src/epmodel/test/CoilHeatingElectric_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted schedule and node-link helpers without changing the preserved scalar signatures.
 
     /** Efficiency */
     double efficiency() const;

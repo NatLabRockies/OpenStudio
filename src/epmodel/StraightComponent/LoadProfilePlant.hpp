@@ -40,10 +40,13 @@ class EPMODEL_API LoadProfilePlant : public StraightComponent
   static std::vector<std::string> plantLoopFluidTypeValues();
 
   // Schema Alignment Notes:
-  // - API: Preserves openstudio::model scalar accessor names/signatures for counterpart parity.
-  // - Field Mapping: peakFlowRate, plantLoopFluidType, degreeofSubCooling, and degreeofLoopSubCooling map directly to E+ LoadProfile:Plant fields.
-  // - Field Mapping: load/flow schedule and node-link fields are relationship fields and intentionally excluded from scalar scaffold coverage.
-  // - TODO(parity): Add non-scalar relationship APIs once broader epmodel connectivity parity is in scope.
+  // - Status: Scalar Parity. The canonical load-profile-plant scalar surface is present, while schedule and node-link helpers remain out of scope.
+  // - Canonical Counterpart: openstudio::model::LoadProfilePlant.
+  // - Implemented Parity: The preserved scalar API matches the flow, fluid-type, and subcooling accessors with matching default behavior.
+  // - Documented Delta: Load/flow schedule and node-link helpers remain intentionally excluded from this scalar pass.
+  // - Field/Storage Mapping: These accessors map directly to EnergyPlus `LoadProfile:Plant` scalar fields used by the forward translator.
+  // - Evidence: `src/model/LoadProfilePlant.hpp`, `src/model/LoadProfilePlant.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateLoadProfilePlant.cpp`.
+  // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
   double peakFlowRate() const;
   bool setPeakFlowRate(double peakFlowRate);
 

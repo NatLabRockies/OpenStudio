@@ -34,10 +34,12 @@ class EPMODEL_API Duct : public StraightComponent
   static IddObjectType iddObjectType();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::Duct API shape; counterpart class has no Duct-specific scalar accessors.
-  // - Field Mapping: EnergyPlus Duct fields are Inlet Node Name / Outlet Node Name and are relationship-like node links, excluded from scalar pass.
-  // - ForwardTranslator evidence: ForwardTranslateDuct.cpp maps inletModelObject()/outletModelObject() to Duct Inlet/Outlet Node Name.
-  // - TODO(parity): Add relationship/node-link APIs in a dedicated relationship pass without changing preserved API names/signatures.
+  // - Status: Near Parity. The canonical type-specific surface is already minimal and remains aligned through inherited `StraightComponent` topology behavior.
+  // - Canonical Counterpart: openstudio::model::Duct.
+  // - Implemented Parity: The wrapper preserves the canonical API shape, with no extra type-specific scalar surface beyond inherited straight-component topology behavior.
+  // - Field/Storage Mapping: EnergyPlus `Duct` stores only inlet/outlet node links, and epmodel keeps those links implicit through inherited topology helpers rather than adding new duct-local scalar APIs.
+  // - Evidence: `src/model/Duct.hpp` shows the canonical type-specific surface is empty, and `src/energyplus/ForwardTranslator/ForwardTranslateDuct.cpp` maps inherited inlet/outlet topology to EnergyPlus node-name fields.
+  // - Remaining Parity Work: Confirm whether any additional type-local convenience beyond inherited `StraightComponent` behavior is needed as broader relationship coverage matures.
 
  protected:
   using ImplType = detail::Duct_Impl;

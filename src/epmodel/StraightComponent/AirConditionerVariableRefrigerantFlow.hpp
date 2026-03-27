@@ -39,12 +39,13 @@ namespace epmodel {
     static std::vector<std::string> condenserTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model scalar accessor names for this model-counterpart class.
-    // - Field Mapping: grossRated* and ratedHeatingCapacitySizingRatio map directly to same-named E+ fields.
-    // - Field Mapping: heatingPerformanceCurveOutdoorTemperatureType, heatPumpWasteHeatRecovery,
-    //   numberofCompressors, defrostStrategy, and condenserType map to the corresponding E+ fields.
-    // - Field Mapping: condenserType preserves API semantics via explicit field value/default-reset behavior.
-    // - TODO(parity): Extend scalar coverage beyond this initial scaffold while keeping relationship fields excluded.
+    // - Status: Partial Parity. Core VRF scalar controls and sizing/performance fields are aligned, but terminal, schedule, curve, and zone-link APIs remain intentionally hidden.
+    // - Canonical Counterpart: openstudio::model::AirConditionerVariableRefrigerantFlow.
+    // - Implemented Parity: `grossRatedTotalCoolingCapacity`, `grossRatedCoolingCOP`, `grossRatedHeatingCapacity`, `ratedHeatingCapacitySizingRatio`, `heatingPerformanceCurveOutdoorTemperatureType`, `heatPumpWasteHeatRecovery`, `numberofCompressors`, `defrostStrategy`, and `condenserType` preserve the canonical scalar contract with matching default/reset behavior.
+    // - Documented Delta: Terminal attachments, schedules, curves, and other relationship-style helpers are not exposed yet, so the public API remains narrower than canonical `openstudio::model`.
+    // - Field/Storage Mapping: Scalar methods map directly to EnergyPlus `AirConditioner:VariableRefrigerantFlow` fields; the translator wires terminals and curves separately from these scalar fields.
+    // - Evidence: `src/model/AirConditionerVariableRefrigerantFlow.hpp`, `src/model/AirConditionerVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirConditionerVariableRefrigerantFlow.cpp`, and `src/epmodel/test/AirConditionerVariableRefrigerantFlow_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted terminal, schedule, curve, and zone-link accessors when relationship parity is in scope.
     boost::optional<double> grossRatedTotalCoolingCapacity() const;
     bool setGrossRatedTotalCoolingCapacity(double grossRatedTotalCoolingCapacity);
     bool isGrossRatedTotalCoolingCapacityAutosized() const;

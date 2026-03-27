@@ -34,11 +34,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::PipeOutdoor scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: pipeInsideDiameter and pipeLength map directly to E+ Pipe:Outdoor fields.
-    // - ForwardTranslator evidence: ForwardTranslatePipeOutdoor.cpp writes these scalar APIs directly to matching E+ fields.
-    // - Field Mapping: Construction, ambient outdoor-air node, and fluid node names are relationship-like and excluded from this scalar pass.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical scalar pipe surface is present, while construction and ambient-node helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::PipeOutdoor.
+    // - Implemented Parity: `pipeInsideDiameter` and `pipeLength` preserve the canonical scalar API surface.
+    // - Documented Delta: Construction, ambient outdoor-air node helpers, and explicit node-link convenience APIs from canonical `openstudio::model::PipeOutdoor` are not exposed yet.
+    // - Field/Storage Mapping: The preserved scalar APIs map directly to EnergyPlus `Pipe:Outdoor` scalar fields used by the forward translator.
+    // - Evidence: `src/model/PipeOutdoor.hpp` defines the canonical scalar and relationship surface, and `src/energyplus/ForwardTranslator/ForwardTranslatePipeOutdoor.cpp` confirms the direct scalar field mapping.
+    // - Remaining Parity Work: Add the omitted construction, ambient-node, and relationship helpers without changing the preserved scalar signatures.
 
     /** @name Pipe Inside Diameter */
     //@{

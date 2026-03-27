@@ -41,12 +41,13 @@ namespace epmodel {
     static std::vector<std::string> supplyAirFanPlacementValues();
 
     // Schema Alignment Notes:
-    // - API: the supply/outdoor air flow setters, fan placement helpers, parasitic electric, rated heating ratio, and supplemental
-    //   heater scalars map directly to the EnergyPlus ZoneHVAC:TerminalUnit:VariableRefrigerantFlow fields enumerated by
-    //   ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields; ForwardTranslateZoneHVACTerminalUnitVariableRefrigerantFlow.cpp maps these
-    //   scalars while the EnergyPlus translator and idf writer handle the coil, fan, schedule, and node relationships separately.
-    // - Field Mapping: relationship-like fields (TerminalUnitAvailabilitySchedule, SupplyAirFanOperatingModeScheduleName, SupplyAirFan,
-    //   CoolingCoil, HeatingCoil, SupplementalHeatingCoil, node names, and controlling zone references) remain outside this scalar-only API.
+    // - Status: Partial Parity. The scalar VRF terminal fields are aligned, but the fan/coil/schedule/node relationships remain separate.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACTerminalUnitVariableRefrigerantFlow.
+    // - Implemented Parity: Supply-air and outdoor-air flow scalars, parasitic electric loads, rated heating ratio, supplemental-heater limits, and fan-placement helpers map directly to the EnergyPlus object.
+    // - Documented Delta: Availability schedules, fan operating-mode schedules, child fan/coil links, node names, and controlling-zone references remain relationship-only.
+    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while the fan/coil/schedule/node topology is represented through explicit child and topology state.
+    // - Evidence: `src/model/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp`, `src/model/ZoneHVACTerminalUnitVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACTerminalUnitVariableRefrigerantFlow.cpp`, and `src/epmodel/test/ZoneHVACTerminalUnitVariableRefrigerantFlow_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers only if the canonical wrapper still exposes them directly.
 
     boost::optional<double> supplyAirFlowRateDuringCoolingOperation() const;
     bool isSupplyAirFlowRateDuringCoolingOperationAutosized() const;

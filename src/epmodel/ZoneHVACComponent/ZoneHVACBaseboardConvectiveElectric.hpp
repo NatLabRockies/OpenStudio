@@ -33,8 +33,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: nominalCapacity/isNominalCapacityAutosized/autosizeNominalCapacity map to EnergyPlus ZoneHVAC:Baseboard:Convective:Electric Heating Design Capacity via ForwardTranslateZoneHVACBaseboardConvectiveElectric.cpp.
-    // - API: efficiency/isEfficiencyDefaulted/resetEfficiency map to the EnergyPlus Efficiency field (default 1.0).
+    // - Status: Scalar Parity. The two scalar field groups are exposed with canonical-style accessors, and the remaining public surface is intentionally small.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACBaseboardConvectiveElectric.
+    // - Implemented Parity: `nominalCapacity` and `efficiency` map directly to the matching EnergyPlus ZoneHVAC:Baseboard:Convective:Electric fields, including the autosize/default helpers.
+    // - Documented Delta: There are no meaningful relationship or topology helpers on this wrapper yet, so the public API stays scalar-only.
+    // - Field/Storage Mapping: EnergyPlus-backed storage is read and written through the scalar field accessors, with no additional child objects to synchronize.
+    // - Evidence: `src/model/ZoneHVACBaseboardConvectiveElectric.hpp`, `src/model/ZoneHVACBaseboardConvectiveElectric.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACBaseboardConvectiveElectric.cpp`, and `src/epmodel/test/ZoneHVACBaseboardConvectiveElectric_GTest.cpp`.
+    // - Remaining Parity Work: None beyond keeping the scalar API aligned with future canonical changes.
     /** @name Nominal capacity accessors */
     //@{
     boost::optional<double> nominalCapacity() const;

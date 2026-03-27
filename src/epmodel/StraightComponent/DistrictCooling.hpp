@@ -34,11 +34,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::DistrictCooling scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: nominalCapacity/isNominalCapacityAutosized/setNominalCapacity/autosizeNominalCapacity map to E+ DistrictCooling Nominal Capacity.
-    // - ForwardTranslator evidence: ForwardTranslateDistrictCooling.cpp writes model.nominalCapacity()/isNominalCapacityAutosized() to DistrictCooling Nominal Capacity.
-    // - Field Mapping: Chilled water node names and Capacity Fraction Schedule are relationship-like fields and excluded in this scalar pass.
-    // - TODO(parity): Add excluded relationship APIs without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical district-cooling scalar surface is present, while node and schedule helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::DistrictCooling.
+    // - Implemented Parity: The preserved scalar API matches the nominal-capacity accessor set, including autosize behavior.
+    // - Documented Delta: Chilled-water node names and the capacity-fraction schedule remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to the EnergyPlus `DistrictCooling` nominal-capacity field used by the forward translator.
+    // - Evidence: `src/model/DistrictCooling.hpp`, `src/model/DistrictCooling.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateDistrictCooling.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
     boost::optional<double> nominalCapacity() const;
 
     bool setNominalCapacity(double nominalCapacity);

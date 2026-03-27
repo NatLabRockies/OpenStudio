@@ -40,9 +40,13 @@ namespace epmodel {
     static std::vector<std::string> outdoorAirMixerObjectTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Scalar getters/setters map to EnergyPlus ZoneHVAC:FourPipeFanCoil fields (ZoneHVAC_FourPipeFanCoilFields) and ForwardTranslateZoneHVACFourPipeFanCoil.cpp.
-    // - Field Mapping: The contained fan and heating/cooling coils are modeled explicitly because they are part of the component's topology.
-    // - TODO(parity): Add the remaining schedule/operating-mode relation APIs once the core child links are stable.
+    // - Status: Partial Parity. The core scalar fields and contained equipment links are present, but some schedule and operating-mode convenience APIs are still missing.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACFourPipeFanCoil.
+    // - Implemented Parity: `capacityControlMethod`, supply-air flow scalars, hot/cold water flow scalars, convergence tolerances, supply-air temperature limits, and the fan/coil child accessors preserve the canonical wrapper behavior.
+    // - Documented Delta: Some schedule and operating-mode relationship helpers are still not surfaced as public epmodel APIs.
+    // - Field/Storage Mapping: The component's fan and heating/cooling coils are modeled explicitly as child objects rather than scalar references.
+    // - Evidence: `src/model/ZoneHVACFourPipeFanCoil.hpp`, `src/model/ZoneHVACFourPipeFanCoil.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACFourPipeFanCoil.cpp`, and `src/epmodel/test/ZoneHVACFourPipeFanCoil_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted scheduling and operating-mode helpers if the canonical surface requires them to be first-class.
 
     std::string capacityControlMethod() const;
     bool setCapacityControlMethod(const std::string& capacityControlMethod);

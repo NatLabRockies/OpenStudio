@@ -41,10 +41,13 @@ namespace epmodel {
     static std::vector<std::string> condensationControlTypeValues();
 
     // Schema Alignment Notes:
-    // - API: scalar accessors mirror EnergyPlus ZoneHVAC:CoolingPanel:RadiantConvective:Water fields via ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields
-    //   (see ForwardTranslateZoneHVACCoolingPanelRadiantConvectiveWater.cpp).
-    // - Field Mapping: availability schedule, water inlet/outlet nodes, cooling coil/schedule relationships and the extensible surface groups
-    //   remain relationship-only and are intentionally excluded from this scalar-only API.
+    // - Status: Partial Parity. The scalar field groups are aligned, and the remaining schedule/node/surface wiring is still relationship-driven.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACCoolingPanelRadiantConvectiveWater.
+    // - Implemented Parity: The inlet temperatures, water mass flow, control type fields, condensation controls, and radiant-fraction scalars map directly to the EnergyPlus object and its translator.
+    // - Documented Delta: Availability schedule, water inlet/outlet nodes, cooling coil links, schedule links, and extensible surface groups are intentionally excluded from the scalar surface.
+    // - Field/Storage Mapping: Scalar inputs live on the EnergyPlus object; surface membership and hydraulic connections are tracked through explicit child/topology state.
+    // - Evidence: `src/model/ZoneHVACCoolingPanelRadiantConvectiveWater.hpp`, `src/model/ZoneHVACCoolingPanelRadiantConvectiveWater.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACCoolingPanelRadiantConvectiveWater.cpp`, and `src/epmodel/test/ZoneHVACCoolingPanelRadiantConvectiveWater_GTest.cpp`.
+    // - Remaining Parity Work: Add relationship helpers only if the canonical wrapper exposes more of the schedule and node topology directly.
 
     double ratedInletWaterTemperature() const;
     bool isRatedInletWaterTemperatureDefaulted() const;

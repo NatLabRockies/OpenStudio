@@ -34,10 +34,13 @@ class EPMODEL_API CoilCoolingDX : public StraightComponent
   static IddObjectType iddObjectType();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::CoilCoolingDX scalar accessor naming/signatures where available.
-  // - Field Mapping: condenserInletNodeName/condenserOutletNodeName map to EnergyPlus Coil:Cooling:DX condenser node fields.
-  // - ForwardTranslator evidence: ForwardTranslateCoilCoolingDX sets these fields as plain string node names.
-  // - TODO(parity): Add relationship APIs (schedule, condenser zone, performance object, tank links) in a dedicated pass.
+  // - Status: Partial Parity. The canonical wrapper surface is mostly relationship-heavy and only the condenser node links are surfaced in epmodel so far.
+  // - Canonical Counterpart: openstudio::model::CoilCoolingDX.
+  // - Implemented Parity: `condenserInletNodeName` and `condenserOutletNodeName` preserve the existing node-link portion of the canonical API.
+  // - Documented Delta: Availability schedule, performance-object, condenser-zone, and tank-link accessors from canonical `openstudio::model::CoilCoolingDX` are not exposed yet.
+  // - Field/Storage Mapping: The preserved API maps directly to EnergyPlus `Coil:Cooling:DX` condenser node-name fields.
+  // - Evidence: `src/model/CoilCoolingDX.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDX.cpp`.
+  // - Remaining Parity Work: Add the omitted schedule, performance-object, condenser-zone, and tank-link helpers when relationship parity is extended.
   std::string condenserInletNodeName() const;
   bool setCondenserInletNodeName(const std::string& condenserInletNodeName);
 

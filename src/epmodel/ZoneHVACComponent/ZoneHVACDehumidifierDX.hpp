@@ -34,14 +34,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve the openstudio::model scalar accessor names/signatures for ratedWaterRemoval, ratedEnergyFactor,
-    //   ratedAirFlowRate, minimum/maximumDryBulbTemperatureforDehumidifierOperation, and offCycleParasiticElectricLoad.
-    // - Field Mapping: These scalars map directly to the EnergyPlus ZoneHVAC:Dehumidifier:DX fields enumerated by
-    //   OS_ZoneHVAC_Dehumidifier_DXFields and are emitted via ForwardTranslateZoneHVACDehumidifierDX.cpp.
-    // - Field Mapping: Availability schedule, inlet/outlet node names, curve references, and the condensate collection
-    //   water storage tank are relationship-like references and are intentionally excluded from this scalar-only API.
-    // - TODO(parity): Expand the schema-alignment coverage with the remaining relationship/curve APIs once scalar
-    //   saturation has stabilized.
+    // - Status: Scalar Parity. The scalar dehumidifier fields are aligned, and the relationship-bearing references remain intentionally out of the public surface.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACDehumidifierDX.
+    // - Implemented Parity: `ratedWaterRemoval`, `ratedEnergyFactor`, `ratedAirFlowRate`, the min/max dry-bulb limits, and `offCycleParasiticElectricLoad` map directly to the EnergyPlus dehumidifier fields.
+    // - Documented Delta: Availability schedule, inlet/outlet nodes, curve references, and the condensate storage tank are relationship-like links and stay outside this scalar wrapper.
+    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object while the omitted links are modeled through topology/child-object state elsewhere.
+    // - Evidence: `src/model/ZoneHVACDehumidifierDX.hpp`, `src/model/ZoneHVACDehumidifierDX.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACDehumidifierDX.cpp`, and `src/epmodel/test/ZoneHVACDehumidifierDX_GTest.cpp`.
+    // - Remaining Parity Work: Add explicit relationship and curve helpers only if the canonical model surface requires them to be first-class epmodel APIs.
     double ratedWaterRemoval() const;
     bool setRatedWaterRemoval(double ratedWaterRemoval);
 

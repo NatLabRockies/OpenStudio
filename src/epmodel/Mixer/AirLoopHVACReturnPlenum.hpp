@@ -36,12 +36,13 @@ class EPMODEL_API AirLoopHVACReturnPlenum : public ModelObject
   static IddObjectType iddObjectType();
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model class naming for this model-counterpart type.
-  // - Field Mapping: Name remains available through base ModelObject scalar API.
-  // - Field Mapping: Zone Name, Zone Node Name, Outlet Node Name, Induced Air Outlet Node or NodeList Name, and extensible Inlet Node Name are relationship-like
-  //   links and excluded from scalar accessors.
-  // - ForwardTranslator evidence: translateAirLoopHVACReturnPlenum writes those fields through node/zone relationships and generated NodeList wiring.
-  // - TODO(parity): Add non-scalar relationship APIs incrementally after scalar saturation.
+  // - Status: Partial Parity. The return-plenum topology surface is present, but the canonical wrapper exposes additional zone-attachment convenience and airflow-network behavior.
+  // - Canonical Counterpart: openstudio::model::AirLoopHVACReturnPlenum.
+  // - Implemented Parity: `thermalZone`, `setThermalZone`, `resetThermalZone`, port access, and branch insertion preserve the main canonical return-plenum contract.
+  // - Documented Delta: epmodel keeps this object as topology-focused storage and does not yet expose the full AirflowNetwork convenience surface present in the canonical wrapper.
+  // - Field/Storage Mapping: The plenum zone relationship is maintained through EnergyPlus-backed node and branch topology rather than through a separate scalar field.
+  // - Evidence: `src/model/AirLoopHVACReturnPlenum.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACReturnPlenum.cpp`, and `src/epmodel/test/AirLoopHVACReturnPlenum_GTest.cpp` cover the same zone-plenum behavior.
+  // - Remaining Parity Work: Add any remaining model-side convenience APIs only if the epmodel topology layer needs them explicitly.
 
  protected:
   using ImplType = detail::AirLoopHVACReturnPlenum_Impl;

@@ -39,12 +39,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Scalar getters/setters preserve the openstudio::model naming while mapping directly to the
-    //   EnergyPlus OS:ZoneVentilation:WindandStackOpenArea fields via the OS_ZoneVentilation_WindandStackOpenAreaFields
-    //   enums (see ForwardTranslateZoneVentilationWindandStackOpenArea.cpp for the translator evidence).
-    // - Field Mapping: Schedule-based inputs such as Opening Area Fraction Schedule, Minimum/Maximum Indoor/Outdoor
-    //   Temperature Schedules, and the Delta Temperature Schedule are relationship-only and intentionally excluded from
-    //   this scalar-only surface until specialized helpers exist.
+    // - Status: Partial Parity. The opening and environmental scalar fields are aligned, but the schedule-driven control surface remains relationship-driven.
+    // - Canonical Counterpart: openstudio::model::ZoneVentilationWindandStackOpenArea.
+    // - Implemented Parity: `openingArea`, `openingEffectiveness`, `effectiveAngle`, `heightDifference`, `dischargeCoefficientforOpening`, and the indoor/outdoor temperature and wind limits map directly to the EnergyPlus object.
+    // - Documented Delta: Schedule-based inputs such as opening-area fraction, min/max indoor/outdoor temperature schedules, and delta-temperature schedules remain relationship-only.
+    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object while schedule inputs are managed through separate relationship state.
+    // - Evidence: `src/model/ZoneVentilationWindandStackOpenArea.hpp`, `src/model/ZoneVentilationWindandStackOpenArea.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneVentilationWindandStackOpenArea.cpp`, `src/energyplus/ReverseTranslator/ReverseTranslateZoneVentilationWindandStackOpenArea.cpp`, and `src/epmodel/test/ZoneVentilationWindandStackOpenArea_GTest.cpp`.
+    // - Remaining Parity Work: Add schedule helpers only if the canonical model surface continues to expose them directly.
 
     /** @name Field Accessors */
     //@{

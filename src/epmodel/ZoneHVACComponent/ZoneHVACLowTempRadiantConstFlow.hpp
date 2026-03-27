@@ -40,14 +40,13 @@ namespace epmodel {
     static std::vector<std::string> temperatureControlTypeValues();
 
     // Schema Alignment Notes:
-    // - API: these scalar getters/setters map directly to the EnergyPlus ZoneHVAC:LowTemperatureRadiant:ConstantFlow
-    //   fields enumerated by ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields as well as the auxiliary
-    //   ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields; ForwardTranslateZoneHVACLowTempRadiantConstFlow.cpp
-    //   routes coils/nodes/schedules/relationships separately while storing the hydronic and control-design scalars via
-    //   the design object.
-    // - Field Mapping: the same translator also writes the companion ZoneHVAC:LowTemperatureRadiant:SurfaceGroup
-    //   object. It derives the group name via radiantSurfaceType()/name() and emits the extensible Surface Name plus
-    //   Surface Area Fraction of Surface Group entries there while this API remains scalar-only.
+    // - Status: Partial Parity. The hydronic/control scalars are aligned, but the companion surface and node topology remains relationship-driven.
+    // - Canonical Counterpart: openstudio::model::ZoneHVACLowTempRadiantConstFlow.
+    // - Implemented Parity: The constant-flow radiant scalar groups map directly to the EnergyPlus object and its companion design/surface-group data.
+    // - Documented Delta: Coils, nodes, schedules, and extensible surface-group links remain separate from this scalar surface.
+    // - Field/Storage Mapping: Scalar values live on the EnergyPlus object and companion design object, while surface-group membership is emitted through explicit topology state.
+    // - Evidence: `src/model/ZoneHVACLowTempRadiantConstFlow.hpp`, `src/model/ZoneHVACLowTempRadiantConstFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACLowTempRadiantConstFlow.cpp`, and `src/epmodel/test/ZoneHVACLowTempRadiantConstFlow_GTest.cpp`.
+    // - Remaining Parity Work: Add relationship helpers only if the canonical wrapper continues to expose more of the surface topology directly.
 
     std::string fluidtoRadiantSurfaceHeatTransferModel() const;
     bool isFluidtoRadiantSurfaceHeatTransferModelDefaulted() const;

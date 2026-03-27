@@ -41,13 +41,13 @@ namespace epmodel {
     static std::vector<std::string> validActuatorVariableValues();
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model::ControllerWaterCoil scalar accessor names/signatures.
-    // - Field Mapping: controlVariable/action/actuatorVariable and actuated-flow tolerances map directly to
-    //   EnergyPlus Controller:WaterCoil scalar fields.
-    // - ForwardTranslator evidence: ForwardTranslateControllerWaterCoil.cpp writes these scalar fields directly.
-    // - Field Mapping: Relationship fields (Water Coil Name, Sensor Node Name, Actuator Node Name) are intentionally
-    //   excluded from this scalar scaffold pass.
-    // - TODO(parity): Add non-scalar relationship APIs incrementally without changing scalar signatures.
+    // - Status: Partial Parity. Core scalar control fields and value sets are aligned, but the canonical water-coil and node-link surface is still incomplete.
+    // - Canonical Counterpart: openstudio::model::ControllerWaterCoil.
+    // - Implemented Parity: `validControlVariableValues`, `validActionValues`, `validActuatorVariableValues`, `controlVariable`, `action`, `actuatorVariable`, and the convergence/flow setters preserve the canonical scalar control contract.
+    // - Documented Delta: Public accessors for the linked water coil, sensor node, and actuator node are not exposed yet, so the canonical relationship surface remains implementation-owned.
+    // - Field/Storage Mapping: The epmodel wrapper maps its scalars directly to EnergyPlus `Controller:WaterCoil` fields; object links are held by the underlying EnergyPlus-backed topology rather than exposed as public accessors.
+    // - Evidence: `src/model/ControllerWaterCoil.hpp`, `src/model/ControllerWaterCoil.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateControllerWaterCoil.cpp`, and `src/epmodel/test/ControllerWaterCoil_GTest.cpp`.
+    // - Remaining Parity Work: Add the missing object-link accessors for the wrapped water coil and nodes once relationship parity is in scope.
 
     boost::optional<std::string> controlVariable() const;
     bool isControlVariableDefaulted() const;

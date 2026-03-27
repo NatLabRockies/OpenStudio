@@ -34,11 +34,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::CoilWaterHeatingDesuperheater scalar accessor names/signatures.
-    // - Field Mapping: Preserved scalar APIs map directly to E+ Coil:WaterHeating:Desuperheater scalar fields.
-    // - Field Mapping: Relationship-like fields (schedules, tank/heating source, curve, and node links) are excluded in this pass.
-    // - ForwardTranslator evidence: ForwardTranslateCoilWaterHeatingDesuperheater.cpp writes these scalar fields directly.
-    // - TODO(parity): Add excluded relationship APIs incrementally without changing preserved scalar signatures.
+    // - Status: Scalar Parity. The canonical water-heating desuperheater scalar surface is largely present, while schedule, tank-link, curve, and node-link helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::CoilWaterHeatingDesuperheater.
+    // - Implemented Parity: The dead-band, heat-reclaim, water-flow, pump-power, and parasitic-load helpers preserve the canonical scalar API.
+    // - Documented Delta: Availability schedule, tank/heating-source links, curves, and node-link helpers from canonical `openstudio::model::CoilWaterHeatingDesuperheater` are not exposed yet.
+    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:WaterHeating:Desuperheater` fields.
+    // - Evidence: `src/model/CoilWaterHeatingDesuperheater.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilWaterHeatingDesuperheater.cpp`, and `src/epmodel/test/CoilWaterHeatingDesuperheater_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted schedule, tank-link, curve, and relationship helpers without changing the preserved scalar signatures.
 
     double deadBandTemperatureDifference() const;
     bool isDeadBandTemperatureDifferenceDefaulted() const;

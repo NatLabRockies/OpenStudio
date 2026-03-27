@@ -39,21 +39,23 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
     // Schema Alignment Notes:
-    // - API: `addToNode` keeps the EnergyPlus `ZoneHVAC:EquipmentConnections` object aligned with the current demand branch node when the
-    //   zone is connected to or moved between air loop branches.
-    // - Field Mapping: `ForwardTranslateThermalZone::translateThermalZone` writes the same `ZoneHVAC:EquipmentConnections` fields (Zone Air
-    //   Inlet/Exhaust/Node/Return references plus the Zone Conditioning Equipment List) so this method makes the backing nodes available for
-    //   the translator-friendly object.
+    // - Status: Partial Parity. ThermalZone preserves the main zone-control and topology-access surface, but the canonical model wrapper still exposes materially more zone, daylighting, and HVAC-control behavior.
+    // - Canonical Counterpart: openstudio::model::ThermalZone.
+    // - Implemented Parity: `addToNode`, scalar zone fields, `useIdealAirLoads`, thermostat-control scalars, outdoor-air scalars, and daylighting scalars preserve the main canonical zone wrapper behavior that is already implemented in epmodel.
+    // - Documented Delta: The epmodel wrapper still omits several canonical convenience APIs, including direct thermostat/contaminant/humidistat objects, zone-conditioning equipment list access, return-air helpers, and some daylighting/map convenience surfaces.
+    // - Field/Storage Mapping: `addToNode` keeps the EnergyPlus `ZoneHVAC:EquipmentConnections` object aligned with the current demand branch node when the zone is connected to or moved between air-loop branches.
+    // - Evidence: `src/model/ThermalZone.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateThermalZone.cpp`, `src/energyplus/ReverseTranslator/ReverseTranslateSizingZone.cpp`, and `src/epmodel/test/IDF_SmallOffice_GTest.cpp` show the canonical and epmodel zone-link behavior being preserved or exercised.
+    // - Remaining Parity Work: Add the missing zone object convenience APIs and the remaining HVAC-control wrappers once the corresponding epmodel object model is available.
     bool addToNode(Node& node);
     SizingZone sizingZone() const;
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model ThermalZone scalar accessors for multiplier, ceiling height, volume, and
-    //   convection-algorithm values.
-    // - Field Mapping: Each wrapper targets the matching EnergyPlus Zone field (Multiplier, Ceiling Height, Volume,
-    //   Zone Inside Convection Algorithm, Zone Outside Convection Algorithm).
-    // - ForwardTranslator Evidence: ForwardTranslateThermalZone::translateThermalZone writes these Zone fields when the
-    //   OpenStudio properties are populated.
+    // - Status: Partial Parity. The core zone scalar set is aligned, but the canonical wrapper has additional zone object and topology helpers outside this scalar block.
+    // - Canonical Counterpart: openstudio::model::ThermalZone.
+    // - Implemented Parity: Multiplier, ceiling-height, volume, and convection-algorithm accessors map cleanly to the canonical zone scalar fields and their default/autocalculation behavior.
+    // - Field/Storage Mapping: Each wrapper targets the matching EnergyPlus Zone field (Multiplier, Ceiling Height, Volume, Zone Inside Convection Algorithm, Zone Outside Convection Algorithm).
+    // - Evidence: `src/model/ThermalZone.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateThermalZone.cpp` confirm the same canonical scalar surface and field mapping.
+    // - Remaining Parity Work: Keep extending the zone wrapper with the remaining canonical object-level APIs, not more scalar reinterpretations.
     int multiplier() const;
     bool isMultiplierDefaulted() const;
     bool setMultiplier(int multiplier);
@@ -86,18 +88,24 @@ namespace epmodel {
     void resetZoneOutsideConvectionAlgorithm();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model ThermalZone useIdealAirLoads/setUseIdealAirLoads names/signatures.
-    // - Field Mapping: API delegates to presence of HVACTemplate:Zone:IdealLoadsAirSystem objects that point back to this zone.
-    // - ForwardTranslator Evidence: ForwardTranslateThermalZone writes HVACTemplate:Zone:IdealLoadsAirSystem when
-    //   ThermalZone::useIdealAirLoads() is true and targets the translated zone.
-    // - TODO(parity): Revisit when epmodel adds explicit ZoneHVACIdealLoadsAirSystem parity path.
+    // - Status: Partial Parity. The ideal-air-loads convenience surface is preserved, but it remains a derived-object proxy rather than a direct zone-HVAC object model.
+    // - Canonical Counterpart: openstudio::model::ThermalZone.
+    // - Implemented Parity: `useIdealAirLoads` and `setUseIdealAirLoads` preserve the canonical boolean-facing convenience API.
+    // - Documented Delta: epmodel still models the behavior through `HVACTemplate:Zone:IdealLoadsAirSystem` presence instead of a dedicated `ZoneHVACIdealLoadsAirSystem` parity object.
+    // - Field/Storage Mapping: API delegates to presence of `HVACTemplate:Zone:IdealLoadsAirSystem` objects that point back to this zone.
+    // - Evidence: `src/energyplus/ForwardTranslator/ForwardTranslateThermalZone.cpp` shows the same derived-object wiring, and the related epmodel tests exercise the zone attachment path.
+    // - Remaining Parity Work: Add the explicit zone-HVAC parity path if epmodel grows a first-class ideal-loads object.
     bool useIdealAirLoads() const;
     bool setUseIdealAirLoads(bool useIdealAirLoads);
 
     // Schema Alignment Notes:
-    // - API: Mirror the EnergyPlus ZoneControl:Thermostat scalar fields that describe thermostat control metadata on a ThermalZone.
-    // - Field Mapping: These getters/setters read/write the ZoneControl:Thermostat fields targeting this zone (Zone Name == ThermalZone nameString()), matching ForwardTranslateThermalZone behavior.
-    // - TODO(parity): Add explicit epmodel ZoneControlThermostat object once scalar coverage or relationships grow.
+    // - Status: Partial Parity. Thermostat control metadata is present as scalars, but the canonical object-level thermostat APIs remain unavailable.
+    // - Canonical Counterpart: openstudio::model::ThermalZone.
+    // - Implemented Parity: The thermostat control-type and cutout/setpoint scalar wrappers preserve the current canonical zone metadata surface.
+    // - Documented Delta: The canonical `ThermalZone` thermostat object accessors are not present here; this wrapper keeps those relationships implicit in the EnergyPlus-backed storage.
+    // - Field/Storage Mapping: These getters/setters read/write the ZoneControl:Thermostat fields targeting this zone (Zone Name == ThermalZone nameString()), matching ForwardTranslateThermalZone behavior.
+    // - Evidence: `src/model/ThermalZone.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateThermalZone.cpp` show the matching model surface and translator wiring.
+    // - Remaining Parity Work: Add explicit thermostat object wrappers once the epmodel relationship model can represent them cleanly.
     static std::vector<std::string> control1ObjectTypeValues();
     std::string control1ObjectType() const;
     bool setControl1ObjectType(const std::string& control1ObjectType);
@@ -123,12 +131,13 @@ namespace epmodel {
     void resetTemperatureDifferenceBetweenCutoutAndSetpoint();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model DesignSpecificationOutdoorAir scalar accessor names on ThermalZone wrappers.
-    // - Field Mapping: ThermalZone DSOA wrappers delegate to DesignSpecification:OutdoorAir scalar fields through
-    //   ThermalZone -> Sizing:Zone -> DesignSpecification:OutdoorAir:SpaceList -> DesignSpecification:OutdoorAir.
-    // - ForwardTranslator Evidence: ForwardTranslateThermalZone::getOrCreateThermalZoneDSOA resolves zone DSOA from
-    //   Space assignments (single DSOA or DSOA:SpaceList), matching this wrapper mapping path.
-    // - TODO(parity): Revisit if explicit zone-level DSOA object ownership is introduced in epmodel.
+    // - Status: Partial Parity. Zone outdoor-air accessors are preserved, but the object ownership remains indirect through sizing and space-list relationships.
+    // - Canonical Counterpart: openstudio::model::ThermalZone.
+    // - Implemented Parity: The DSOA scalar wrappers preserve the canonical zone-facing outdoor-air values used by current model code.
+    // - Documented Delta: epmodel still routes these through `SizingZone` and `DesignSpecification:OutdoorAir:SpaceList` ownership rather than exposing a first-class zone-owned DSOA object.
+    // - Field/Storage Mapping: ThermalZone DSOA wrappers delegate to DesignSpecification:OutdoorAir scalar fields through ThermalZone -> Sizing:Zone -> DesignSpecification:OutdoorAir:SpaceList -> DesignSpecification:OutdoorAir.
+    // - Evidence: `src/energyplus/ForwardTranslator/ForwardTranslateThermalZone.cpp` and `src/epmodel/ResourceObject/DesignSpecificationOutdoorAir.cpp` show the current storage path and canonicalization behavior.
+    // - Remaining Parity Work: Add direct zone-level DSOA ownership only if epmodel later introduces that object model.
     std::string outdoorAirMethod() const;
     bool setOutdoorAirMethod(const std::string& outdoorAirMethod);
 
@@ -145,13 +154,13 @@ namespace epmodel {
     bool setOutdoorAirFlowAirChangesperHour(double outdoorAirFlowAirChangesperHour);
 
     // Schema Alignment Notes:
-    // - API: Mirror OpenStudio's ZoneVentilationDesignFlowRate scalar accessors so a ThermalZone can work directly with the
-    //   EnergyPlus `ZoneVentilation:DesignFlowRate` object that targets this zone.
-    // - Field Mapping: ThermalZone methods map to the corresponding EnergyPlus `ZoneVentilation:DesignFlowRate` fields
-    //   (Design Flow Rate, Flow Rate per Zone Floor Area, Flow Rate per Person, Air Changes per Hour, Ventilation Type,
-    //   Fan performance coefficients, Temperature thresholds, Wind speed, Density basis).
-    // - ForwardTranslator Evidence: ForwardTranslateThermalZone will consume these scalars when wiring zone-level ventilation
-    //   data into `ZoneVentilation:DesignFlowRate` objects.
+    // - Status: Partial Parity. Zone ventilation scalars are preserved, but the canonical zone ventilation object model remains implicit.
+    // - Canonical Counterpart: openstudio::model::ThermalZone.
+    // - Implemented Parity: The `ZoneVentilation:DesignFlowRate` scalar bundle is exposed with the same values and default behavior as canonical model code.
+    // - Documented Delta: epmodel does not yet surface a dedicated zone-ventilation object wrapper for these fields.
+    // - Field/Storage Mapping: ThermalZone methods map to the corresponding EnergyPlus `ZoneVentilation:DesignFlowRate` fields (Design Flow Rate, Flow Rate per Zone Floor Area, Flow Rate per Person, Air Changes per Hour, Ventilation Type, Fan performance coefficients, Temperature thresholds, Wind speed, Density basis).
+    // - Evidence: `src/model/ThermalZone.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateThermalZone.cpp` confirm the same zone-level ventilation semantics.
+    // - Remaining Parity Work: Add a direct zone-ventilation wrapper only if epmodel needs to model that object explicitly.
     double designFlowRate() const;
     bool setDesignFlowRate(double designFlowRate);
 
@@ -209,12 +218,13 @@ namespace epmodel {
     bool setDensityBasis(const std::string& densityBasis);
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model ThermalZone daylighting fraction accessor names/signatures.
-    // - Field Mapping: API fractions delegate to Daylighting:Controls extensible field Fraction of Lights Controlled by Reference Point.
-    // - Field Mapping: Primary/secondary map to extensible group index 0/1, matching ForwardTranslateThermalZone behavior.
-    // - API: Daylighting:ReferencePoint coordinate scalars are exposed as ThermalZone primary/secondary daylighting control coordinate wrappers.
-    // - Field Mapping: Coordinate wrappers delegate to Daylighting:ReferencePoint X/Y/Z via Daylighting:Controls extensible DaylightingReferencePointName.
-    // - TODO(parity): Replace group-index mapping when explicit epmodel DaylightingControl objects are added.
+    // - Status: Partial Parity. Daylighting scalars are present, but the canonical daylighting object graph is still compressed into zone-level wrappers.
+    // - Canonical Counterpart: openstudio::model::ThermalZone.
+    // - Implemented Parity: The primary/secondary daylighting fractions and point-coordinate wrappers preserve the user-facing zone daylighting surface.
+    // - Documented Delta: epmodel still relies on group-indexed extensible data instead of dedicated daylighting-control objects and a richer zone daylighting graph.
+    // - Field/Storage Mapping: API fractions delegate to Daylighting:Controls extensible field Fraction of Lights Controlled by Reference Point.
+    // - Evidence: `src/model/ThermalZone.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateThermalZone.cpp` show the canonical daylighting behavior this wrapper mirrors.
+    // - Remaining Parity Work: Replace the group-indexed daylighting proxy with explicit daylighting-control objects when epmodel supports them.
     double fractionofZoneControlledbyPrimaryDaylightingControl() const;
     bool isFractionofZoneControlledbyPrimaryDaylightingControlDefaulted() const;
     bool setFractionofZoneControlledbyPrimaryDaylightingControl(double fractionofZoneControlledbyPrimaryDaylightingControl);
@@ -244,14 +254,13 @@ namespace epmodel {
     bool setSecondaryDaylightingControlZCoordinate(double secondaryDaylightingControlZCoordinate);
 
     // Schema Alignment Notes:
-    // - API: Illuminance map scalar wrappers preserve existing OpenStudio IlluminanceMap scalar naming
-    //   while exposing them on ThermalZone for epmodel schema-alignment workflow.
-    // - Field Mapping: API delegates to Output:IlluminanceMap by ZoneorSpaceName, with forward mapping:
-    //   originX -> X Minimum Coordinate, xLength -> X Maximum - X Minimum, originY -> Y Minimum Coordinate,
-    //   yLength -> Y Maximum - Y Minimum, originZ -> Z height, and grid points map directly.
-    // - ForwardTranslator Evidence: ForwardTranslateThermalZone.cpp writes Output:IlluminanceMap fields from
-    //   model::IlluminanceMap using this exact transform.
-    // - TODO(parity): Replace wrapper mapping when epmodel adds explicit IlluminanceMap object parity.
+    // - Status: Partial Parity. Illuminance-map scalars are preserved, but the canonical wrapper still exposes the richer IlluminanceMap object convenience surface.
+    // - Canonical Counterpart: openstudio::model::ThermalZone.
+    // - Implemented Parity: The illuminance-map origin, extents, and grid-point wrappers preserve the zone-facing mapping used by canonical model code.
+    // - Documented Delta: epmodel still represents this through zone-level scalar wrappers instead of a first-class `IlluminanceMap` parity object.
+    // - Field/Storage Mapping: API delegates to Output:IlluminanceMap by ZoneorSpaceName, with forward mapping from origin and extents into the EnergyPlus grid and coordinate fields.
+    // - Evidence: `src/model/ThermalZone.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateThermalZone.cpp`, and `src/epmodel/test/ThermalZone_GTest.cpp` cover the same illuminance-map transformation.
+    // - Remaining Parity Work: Replace the wrapper mapping when epmodel adds explicit `IlluminanceMap` object parity.
     double illuminanceMapOriginXCoordinate() const;
     bool setIlluminanceMapOriginXCoordinate(double illuminanceMapOriginXCoordinate);
 

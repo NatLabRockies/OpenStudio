@@ -37,11 +37,13 @@ class EPMODEL_API CoilHeatingElectricMultiStage : public StraightComponent
   bool addToNode(Node& node);
 
   // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::CoilHeatingElectricMultiStage scalar-accessor naming where present.
-  // - Field Mapping: numberOfStages() maps directly to E+ Coil:Heating:Electric:MultiStage Number of Stages.
-  // - Field Mapping: relationship-like fields (availability schedule, node links) and extensible stage data are excluded.
-  // - ForwardTranslator evidence: ForwardTranslateCoilHeatingElectricMultiStage.cpp writes NumberofStages from model stage count.
-  // - TODO(parity): Add stage/relationship APIs later without changing preserved scalar signatures.
+  // - Status: Partial Parity. The stage-count surface is present, but the stage-data and relationship helpers remain model-owned.
+  // - Canonical Counterpart: openstudio::model::CoilHeatingElectricMultiStage.
+  // - Implemented Parity: `numberOfStages` preserves the canonical stage-count API.
+  // - Documented Delta: Availability schedule, node links, and extensible stage-data APIs from canonical `openstudio::model::CoilHeatingElectricMultiStage` are not exposed yet.
+  // - Field/Storage Mapping: The preserved API maps directly to EnergyPlus `Coil:Heating:Electric:MultiStage` stage-count storage.
+  // - Evidence: `src/model/CoilHeatingElectricMultiStage.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingElectricMultiStage.cpp`, and `src/epmodel/test/CoilHeatingElectricMultiStage_GTest.cpp`.
+  // - Remaining Parity Work: Add the omitted stage-data and relationship helpers without changing the preserved scalar signatures.
   unsigned numberOfStages() const;
 
  protected:

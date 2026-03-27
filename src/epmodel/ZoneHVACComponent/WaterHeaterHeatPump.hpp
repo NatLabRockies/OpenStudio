@@ -44,10 +44,13 @@ namespace epmodel {
     static std::vector<std::string> tankElementControlLogicValues();
 
     // Schema Alignment Notes:
-    // - API: Scalar accessors preserve openstudio::model naming/signatures for this model-counterpart type.
-    // - Field Mapping: Simple scalars map directly to EnergyPlus WaterHeater:HeatPump:PumpedCondenser fields.
-    // - Field Mapping: Tank/DX coil/fan object types derive from attached components; relationship fields (schedules/nodes)
-    //   remain excluded from this scalar-only scaffold.
+    // - Status: Partial Parity. The water-heater heat-pump scalar fields are aligned, but the attached tank/DX-coil/fan topology remains relationship-driven.
+    // - Canonical Counterpart: openstudio::model::WaterHeaterHeatPump.
+    // - Implemented Parity: Dead-band, condenser-water, evaporator-air, inlet-air configuration, compressor/fan placement, parasitic load, and tank-control scalars map directly to the EnergyPlus object.
+    // - Documented Delta: The attached tank, coil, fan, and schedule/node relationships are not surfaced as scalar fields.
+    // - Field/Storage Mapping: Scalar data lives directly on the EnergyPlus object while child equipment and tank topology are represented through explicit attachment state.
+    // - Evidence: `src/model/WaterHeaterHeatPump.hpp`, `src/model/WaterHeaterHeatPump.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateWaterHeaterHeatPump.cpp`, and `src/epmodel/test/WaterHeaterHeatPump_GTest.cpp`.
+    // - Remaining Parity Work: Add relationship helpers only if the canonical wrapper still exposes them directly.
     double deadBandTemperatureDifference() const;
     bool isDeadBandTemperatureDifferenceDefaulted() const;
     bool setDeadBandTemperatureDifference(double deadBandTemperatureDifference);

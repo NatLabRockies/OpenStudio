@@ -39,11 +39,13 @@ namespace epmodel {
     static std::vector<std::string> drainWaterHeatExchangerDestinationValues();
 
     // Schema Alignment Notes:
-    // - API: Preserve openstudio::model::WaterUseConnections scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: drainWaterHeatExchangerType/destination map directly to EnergyPlus WaterUse:Connections Drain Water Heat Exchanger Type/Destination fields.
-    // - Field Mapping: drainWaterHeatExchangerUFactorTimesArea maps to OS_WaterUse_ConnectionsFields::DrainWaterHeatExchangerUFactorTimesArea with optional real semantics.
-    // - ForwardTranslator evidence: ForwardTranslateWaterUseConnections.cpp keeps these scalars mapped while excluding relationship fields.
-    // - TODO(parity): Relationship-like node, schedule, storage, and equipment references still need a dedicated pass.
+    // - Status: Scalar Parity. The canonical water-use-connections scalar surface is present, while node, schedule, storage, and equipment helpers remain out of scope.
+    // - Canonical Counterpart: openstudio::model::WaterUseConnections.
+    // - Implemented Parity: The preserved scalar API matches the drain-water-heat-exchanger type, destination, and U-factor/area accessors with matching optional semantics.
+    // - Documented Delta: Node, schedule, storage, and equipment relationship helpers remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `WaterUse:Connections` scalar fields used by the forward translator.
+    // - Evidence: `src/model/WaterUseConnections.hpp`, `src/model/WaterUseConnections.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateWaterUseConnections.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
     std::string drainWaterHeatExchangerType() const;
     bool setDrainWaterHeatExchangerType(const std::string& drainWaterHeatExchangerType);
 

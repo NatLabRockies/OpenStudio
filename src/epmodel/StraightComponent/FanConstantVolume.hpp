@@ -41,10 +41,13 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - API: Preserves openstudio::model scalar accessor names/signatures for counterpart parity.
-    // - Field Mapping: fan* efficiency, pressure rise, motor fields, and end-use subcategory map directly to E+ Fan:ConstantVolume fields.
-    // - Field Mapping: maximumFlowRate API preserves autosize/reset semantics by storing numeric values or the "autosize" token.
-    // - TODO(parity): Keep relationship fields (availability schedule and node targets) out of scalar scaffold coverage.
+    // - Status: Partial Parity. Scalar fan properties and node insertion are aligned, but the canonical schedule and airflow-network surface is still absent.
+    // - Canonical Counterpart: openstudio::model::FanConstantVolume.
+    // - Implemented Parity: The fan total-efficiency, fan-efficiency, pressure-rise, maximum-flow-rate, motor, and end-use-subcategory accessors preserve the canonical scalar field behavior, including autosize/reset semantics for flow rate.
+    // - Documented Delta: Epmodel does not yet expose the canonical availability-schedule constructor/accessors or the airflow-network fan relationship helpers that remain on `openstudio::model::FanConstantVolume`.
+    // - Field/Storage Mapping: Scalar fields map directly to `Fan:ConstantVolume` storage in EnergyPlus.
+    // - Evidence: `src/model/FanConstantVolume.hpp`, `src/model/FanConstantVolume.cpp`, `src/model/test/FanConstantVolume_GTest.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFanConstantVolume.cpp` establish the canonical API and translation behavior.
+    // - Remaining Parity Work: Add availability-schedule and airflow-network relationship support once epmodel relationship parity is broad enough to hold it without ad hoc shims.
     double fanTotalEfficiency() const;
     bool setFanTotalEfficiency(double fanTotalEfficiency);
 
