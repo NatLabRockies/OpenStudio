@@ -19,8 +19,6 @@ namespace epmodel {
 
   ZoneHVACEvaporativeCoolerUnit::ZoneHVACEvaporativeCoolerUnit(const Model& model)
     : ZoneHVACComponent(ZoneHVACEvaporativeCoolerUnit::iddObjectType(), model) {
-    OS_ASSERT(getImpl<detail::ZoneHVACEvaporativeCoolerUnit_Impl>());
-
     autosizeDesignSupplyAirFlowRate();
     OS_ASSERT(setFanPlacement("BlowThrough"));
     OS_ASSERT(setCoolerUnitControlMethod("ZoneTemperatureDeadbandOnOffCycling"));
@@ -43,6 +41,18 @@ namespace epmodel {
   std::vector<std::string> ZoneHVACEvaporativeCoolerUnit::coolerUnitControlMethodValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                           openstudio::ZoneHVAC_EvaporativeCoolerUnitFields::CoolerUnitControlMethod);
+  }
+
+  unsigned ZoneHVACEvaporativeCoolerUnit::inletPort() const {
+    return getImpl<detail::ZoneHVACEvaporativeCoolerUnit_Impl>()->inletPort();
+  }
+
+  unsigned ZoneHVACEvaporativeCoolerUnit::outletPort() const {
+    return getImpl<detail::ZoneHVACEvaporativeCoolerUnit_Impl>()->outletPort();
+  }
+
+  std::vector<ModelObject> ZoneHVACEvaporativeCoolerUnit::children() const {
+    return getImpl<detail::ZoneHVACEvaporativeCoolerUnit_Impl>()->children();
   }
 
   boost::optional<double> ZoneHVACEvaporativeCoolerUnit::designSupplyAirFlowRate() const {
@@ -108,6 +118,31 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    std::vector<ModelObject> ZoneHVACEvaporativeCoolerUnit_Impl::children() const {
+      std::vector<ModelObject> result;
+      if (auto supplyAirFan = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+            openstudio::ZoneHVAC_EvaporativeCoolerUnitFields::SupplyAirFanName)) {
+        result.push_back(*supplyAirFan);
+      }
+      if (auto firstEvaporativeCooler = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+            openstudio::ZoneHVAC_EvaporativeCoolerUnitFields::FirstEvaporativeCoolerObjectName)) {
+        result.push_back(*firstEvaporativeCooler);
+      }
+      if (auto secondEvaporativeCooler = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+            openstudio::ZoneHVAC_EvaporativeCoolerUnitFields::SecondEvaporativeCoolerName)) {
+        result.push_back(*secondEvaporativeCooler);
+      }
+      return result;
+    }
+
+    unsigned ZoneHVACEvaporativeCoolerUnit_Impl::inletPort() const {
+      return openstudio::ZoneHVAC_EvaporativeCoolerUnitFields::ZoneReliefAirNodeName;
+    }
+
+    unsigned ZoneHVACEvaporativeCoolerUnit_Impl::outletPort() const {
+      return openstudio::ZoneHVAC_EvaporativeCoolerUnitFields::CoolerOutletNodeName;
+    }
 
     boost::optional<double> ZoneHVACEvaporativeCoolerUnit_Impl::designSupplyAirFlowRate() const {
       return getDouble(openstudio::ZoneHVAC_EvaporativeCoolerUnitFields::DesignSupplyAirFlowRate, true);

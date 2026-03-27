@@ -6,10 +6,20 @@
 #include "ZoneHVACComponent/ZoneHVACEnergyRecoveryVentilator.hpp"
 #include "ZoneHVACComponent/ZoneHVACEnergyRecoveryVentilator_Impl.hpp"
 
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
+#include "ModelObject/ZoneHVACEquipmentConnections.hpp"
+#include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
+#include "ModelObject/ZoneHVACEquipmentList.hpp"
+#include "ModelObject/ZoneHVACEquipmentList_Impl.hpp"
+#include "../ModelObject/ModelObject.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/OS_ZoneHVAC_EnergyRecoveryVentilator_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EnergyRecoveryVentilator_FieldEnums.hxx>
 #include <utilities/core/StringHelpers.hpp>
 
@@ -18,7 +28,6 @@ namespace epmodel {
 
   ZoneHVACEnergyRecoveryVentilator::ZoneHVACEnergyRecoveryVentilator(const Model& model)
     : ZoneHVACComponent(ZoneHVACEnergyRecoveryVentilator::iddObjectType(), model) {
-    OS_ASSERT(getImpl<detail::ZoneHVACEnergyRecoveryVentilator_Impl>());
     autosizeSupplyAirFlowRate();
     autosizeExhaustAirFlowRate();
     OS_ASSERT(setVentilationRateperUnitFloorArea(0.000508));
@@ -80,6 +89,10 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACEnergyRecoveryVentilator_Impl>()->setVentilationRateperOccupant(ventilationRateperOccupant);
   }
 
+  std::vector<ModelObject> ZoneHVACEnergyRecoveryVentilator::children() const {
+    return getImpl<detail::ZoneHVACEnergyRecoveryVentilator_Impl>()->children();
+  }
+
   namespace detail {
 
     boost::optional<double> ZoneHVACEnergyRecoveryVentilator_Impl::supplyAirFlowRate() const {
@@ -138,6 +151,128 @@ namespace epmodel {
 
     bool ZoneHVACEnergyRecoveryVentilator_Impl::setVentilationRateperOccupant(double ventilationRateperOccupant) {
       return setDouble(ZoneHVAC_EnergyRecoveryVentilatorFields::VentilationRateperOccupant, ventilationRateperOccupant);
+    }
+
+    std::vector<ModelObject> ZoneHVACEnergyRecoveryVentilator_Impl::children() const {
+      std::vector<ModelObject> result;
+      if (auto intermediate = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+            ZoneHVAC_EnergyRecoveryVentilatorFields::SupplyAirFanName)) {
+        result.push_back(intermediate.get());
+      }
+      if (auto intermediate = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+            ZoneHVAC_EnergyRecoveryVentilatorFields::ExhaustAirFanName)) {
+        result.push_back(intermediate.get());
+      }
+      if (auto intermediate = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+            ZoneHVAC_EnergyRecoveryVentilatorFields::HeatExchangerName)) {
+        result.push_back(intermediate.get());
+      }
+      if (auto intermediate = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+            ZoneHVAC_EnergyRecoveryVentilatorFields::ControllerName)) {
+        result.push_back(intermediate.get());
+      }
+      return result;
+    }
+
+    boost::optional<Node> ZoneHVACEnergyRecoveryVentilator_Impl::inletNode() const {
+      if (!thermalZone()) {
+        return boost::none;
+      }
+      auto result = model().getModelObjectByName<Node>(getObject<ModelObject>().nameString() + " Air Inlet Node");
+      OS_ASSERT(result);
+      return result;
+    }
+
+    boost::optional<Node> ZoneHVACEnergyRecoveryVentilator_Impl::outletNode() const {
+      if (!thermalZone()) {
+        return boost::none;
+      }
+      auto result = model().getModelObjectByName<Node>(getObject<ModelObject>().nameString() + " Air Outlet Node");
+      OS_ASSERT(result);
+      return result;
+    }
+
+    bool ZoneHVACEnergyRecoveryVentilator_Impl::addToThermalZone(ThermalZone& thermalZone) {
+      if (thermalZone.model() != model()) {
+        return false;
+      }
+
+      removeFromThermalZone();
+      thermalZone.setUseIdealAirLoads(false);
+
+      auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
+      auto connections = zoneImpl->getZoneHVACEquipmentConnections();
+      auto equipmentList = zoneImpl->zoneHVACEquipmentList();
+      if (!equipmentList) {
+        ZoneHVACEquipmentList newEquipmentList(model());
+        if (!newEquipmentList.name()) {
+          newEquipmentList.createName();
+        }
+        OS_ASSERT(connections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName, newEquipmentList.handle()));
+        equipmentList = newEquipmentList;
+      }
+
+      if (!equipmentList->getImpl<detail::ZoneHVACEquipmentList_Impl>()->addEquipment(getObject<ModelObject>())) {
+        return false;
+      }
+
+      const auto objectName = getObject<ModelObject>().nameString();
+      auto inlet = model().getOrCreateTransientByName<Node>(objectName + " Air Inlet Node");
+      auto outlet = model().getOrCreateTransientByName<Node>(objectName + " Air Outlet Node");
+
+      if (!connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->setZoneAirInletNode(outlet)) {
+        return false;
+      }
+      if (!connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->setZoneReturnAirNode(inlet)) {
+        return false;
+      }
+
+      return true;
+    }
+
+    void ZoneHVACEnergyRecoveryVentilator_Impl::removeFromThermalZone() {
+      auto zone = thermalZone();
+      if (!zone) {
+        disconnect();
+        return;
+      }
+
+      auto inlet = inletNode();
+      auto outlet = outletNode();
+      auto zoneImpl = zone->getImpl<detail::ThermalZone_Impl>();
+      if (auto equipmentList = zoneImpl->zoneHVACEquipmentList()) {
+        equipmentList->getImpl<detail::ZoneHVACEquipmentList_Impl>()->removeEquipment(getObject<ModelObject>());
+      }
+
+      if (auto connections = zoneImpl->zoneHVACEquipmentConnections()) {
+        if (auto zoneInlet = connections->zoneAirInletNode()) {
+          if (outlet && (*zoneInlet == *outlet)) {
+            connections->setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName, Handle());
+          }
+        }
+        if (auto zoneReturn = connections->zoneReturnAirNode()) {
+          if (inlet && (*zoneReturn == *inlet)) {
+            connections->setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName, Handle());
+          }
+        }
+      }
+
+      if (inlet) {
+        inlet->remove();
+      }
+      if (outlet) {
+        outlet->remove();
+      }
+
+      disconnect();
+    }
+
+    unsigned ZoneHVACEnergyRecoveryVentilator_Impl::inletPort() const {
+      return OS_ZoneHVAC_EnergyRecoveryVentilatorFields::AirInletNodeName;
+    }
+
+    unsigned ZoneHVACEnergyRecoveryVentilator_Impl::outletPort() const {
+      return OS_ZoneHVAC_EnergyRecoveryVentilatorFields::AirOutletNodeName;
     }
 
   }  // namespace detail

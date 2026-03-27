@@ -5,8 +5,16 @@
 
 #include <gtest/gtest.h>
 
+#include "../ModelObject/ModelObject.hpp"
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../StraightComponent/CoilHeatingElectric.hpp"
+#include "../StraightComponent/FanConstantVolume.hpp"
+#include "../StraightComponent/Node.hpp"
+#include "../WaterToAirComponent/CoilCoolingWater.hpp"
 #include "../ZoneHVACComponent/ZoneHVACUnitVentilator.hpp"
+
+#include <utilities/idd/ZoneHVAC_UnitVentilator_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -62,4 +70,38 @@ TEST_F(EPModelFixture, ZoneHVACUnitVentilator_ScalarAccessors_RoundTrip) {
   ventilator.autosizeMaximumOutdoorAirFlowRate();
   EXPECT_TRUE(ventilator.isMaximumOutdoorAirFlowRateAutosized());
   EXPECT_FALSE(ventilator.maximumOutdoorAirFlowRate());
+}
+
+TEST_F(EPModelFixture, ZoneHVACUnitVentilator_TopologyAndChildren) {
+  Model model;
+  ZoneHVACUnitVentilator ventilator(model);
+  ThermalZone zone(model);
+
+  EXPECT_EQ(openstudio::ZoneHVAC_UnitVentilatorFields::AirInletNodeName, ventilator.inletPort());
+  EXPECT_EQ(openstudio::ZoneHVAC_UnitVentilatorFields::AirOutletNodeName, ventilator.outletPort());
+
+  EXPECT_TRUE(ventilator.addToThermalZone(zone));
+  ASSERT_TRUE(ventilator.thermalZone());
+  EXPECT_EQ(zone, ventilator.thermalZone().get());
+  EXPECT_TRUE(ventilator.inletNode());
+  EXPECT_TRUE(ventilator.outletNode());
+
+  FanConstantVolume supplyFan(model);
+  CoilHeatingElectric heatingCoil(model);
+  CoilCoolingWater coolingCoil(model);
+
+  ASSERT_TRUE(ventilator.setPointer(openstudio::ZoneHVAC_UnitVentilatorFields::SupplyAirFanName, supplyFan.handle()));
+  ASSERT_TRUE(ventilator.setPointer(openstudio::ZoneHVAC_UnitVentilatorFields::HeatingCoilName, heatingCoil.handle()));
+  ASSERT_TRUE(ventilator.setPointer(openstudio::ZoneHVAC_UnitVentilatorFields::CoolingCoilName, coolingCoil.handle()));
+
+  const auto children = ventilator.children();
+  ASSERT_EQ(3u, children.size());
+  EXPECT_EQ(supplyFan.handle(), children[0].handle());
+  EXPECT_EQ(heatingCoil.handle(), children[1].handle());
+  EXPECT_EQ(coolingCoil.handle(), children[2].handle());
+
+  ventilator.removeFromThermalZone();
+  EXPECT_FALSE(ventilator.thermalZone());
+  EXPECT_FALSE(ventilator.inletNode());
+  EXPECT_FALSE(ventilator.outletNode());
 }

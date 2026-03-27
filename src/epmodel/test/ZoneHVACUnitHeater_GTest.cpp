@@ -6,7 +6,13 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../StraightComponent/CoilHeatingElectric.hpp"
+#include "../StraightComponent/FanConstantVolume.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACUnitHeater.hpp"
+
+#include <utilities/idd/ZoneHVAC_UnitHeater_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -59,4 +65,32 @@ TEST_F(EPModelFixture, ZoneHVACUnitHeater_ScalarAccessors_RoundTrip) {
 
   unitHeater.resetHeatingConvergenceTolerance();
   EXPECT_TRUE(unitHeater.isHeatingConvergenceToleranceDefaulted());
+}
+
+TEST_F(EPModelFixture, ZoneHVACUnitHeater_TopologyAndChildren) {
+  Model model;
+  ThermalZone zone(model);
+  ZoneHVACUnitHeater unitHeater(model);
+
+  EXPECT_EQ(openstudio::ZoneHVAC_UnitHeaterFields::AirInletNodeName, unitHeater.inletPort());
+  EXPECT_EQ(openstudio::ZoneHVAC_UnitHeaterFields::AirOutletNodeName, unitHeater.outletPort());
+
+  EXPECT_TRUE(unitHeater.addToThermalZone(zone));
+  EXPECT_TRUE(unitHeater.inletNode());
+  EXPECT_TRUE(unitHeater.outletNode());
+
+  unitHeater.removeFromThermalZone();
+  EXPECT_FALSE(unitHeater.inletNode());
+  EXPECT_FALSE(unitHeater.outletNode());
+
+  FanConstantVolume fan(model);
+  CoilHeatingElectric coil(model);
+
+  EXPECT_TRUE(unitHeater.setPointer(openstudio::ZoneHVAC_UnitHeaterFields::SupplyAirFanName, fan.handle()));
+  EXPECT_TRUE(unitHeater.setPointer(openstudio::ZoneHVAC_UnitHeaterFields::HeatingCoilName, coil.handle()));
+
+  const auto children = unitHeater.children();
+  ASSERT_EQ(2u, children.size());
+  EXPECT_EQ(fan.handle(), children[0].handle());
+  EXPECT_EQ(coil.handle(), children[1].handle());
 }

@@ -47,6 +47,11 @@ namespace epmodel {
 
       double coolingConvergenceTolerance() const;
       bool setCoolingConvergenceTolerance(double coolingConvergenceTolerance);
+
+      std::vector<ModelObject> children() const;
+
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
     };
 
   }  // namespace detail

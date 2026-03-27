@@ -2,6 +2,29 @@
 
 These notes are specific to work under `src/epmodel/`.
 
+## Reference Docs
+
+When working on epmodel HVAC topology and API parity, read these two docs
+first:
+
+- `doc/idd-schema-alignment/README.md`
+- `doc/idd-schema-alignment/os_hvac_concepts.md`
+
+These are the primary narrative references for epmodel goals,
+canonicalization expectations, and the intended `openstudio::model` HVAC
+topology patterns that epmodel should mirror.
+
+Also keep `doc/idd-schema-alignment/InputOutputReference.pdf` in mind as a
+field-by-field EnergyPlus reference. When implementing or reviewing epmodel
+wrappers for specific E+ object types, use it to confirm what each field means
+and which fields are true object relationships versus plain scalar data.
+
+For epmodel schema questions, treat `resources/energyplus/ProposedEnergy+.idd`
+as the authoritative source of truth for object types, field order,
+extensibles, and object-list relationships. Use the Input Output Reference to
+understand field semantics and intent, but do not let it override the proposed
+IDD when there is any ambiguity about schema shape.
+
 ## Working Style Preferences
 
 Apply these preferences unless the user asks otherwise.
@@ -60,3 +83,6 @@ Apply these preferences unless the user asks otherwise.
   queries. Avoid generic `Workspace`/`IdfObject` relationship helpers such as
   `getModelObjectTarget`, `getTarget`, or similar field-level APIs unless the
   test is explicitly about that lower layer.
+- In epmodel tests, do not use `ModelObject::create(...)` as a shortcut when a
+  concrete wrapper type exists. Construct the actual epmodel wrapper the test
+  means to exercise.

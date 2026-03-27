@@ -20,8 +20,6 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACUnitVentilator::ZoneHVACUnitVentilator(const Model& model) : ZoneHVACComponent(ZoneHVACUnitVentilator::iddObjectType(), model) {
-    OS_ASSERT(getImpl<detail::ZoneHVACUnitVentilator_Impl>());
-
     OS_ASSERT(setOutdoorAirControlType("VariablePercent"));
     autosizeMaximumSupplyAirFlowRate();
     autosizeMinimumOutdoorAirFlowRate();
@@ -123,6 +121,10 @@ namespace epmodel {
 
   bool ZoneHVACUnitVentilator::setCoolingConvergenceTolerance(double coolingConvergenceTolerance) {
     return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->setCoolingConvergenceTolerance(coolingConvergenceTolerance);
+  }
+
+  std::vector<ModelObject> ZoneHVACUnitVentilator::children() const {
+    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->children();
   }
 
 }  // namespace epmodel
@@ -229,6 +231,36 @@ namespace epmodel {
       const bool result = setDouble(ZoneHVAC_UnitVentilatorFields::CoolingConvergenceTolerance, coolingConvergenceTolerance);
       OS_ASSERT(result);
       return result;
+    }
+
+    std::vector<ModelObject> ZoneHVACUnitVentilator_Impl::children() const {
+      std::vector<ModelObject> result;
+
+      if (auto const supplyFan = getObject<ModelObject>().getTarget(ZoneHVAC_UnitVentilatorFields::SupplyAirFanName)) {
+        if (auto mo = model().getModelObject<ModelObject>(supplyFan->handle())) {
+          result.push_back(*mo);
+        }
+      }
+      if (auto const heatingCoil = getObject<ModelObject>().getTarget(ZoneHVAC_UnitVentilatorFields::HeatingCoilName)) {
+        if (auto mo = model().getModelObject<ModelObject>(heatingCoil->handle())) {
+          result.push_back(*mo);
+        }
+      }
+      if (auto const coolingCoil = getObject<ModelObject>().getTarget(ZoneHVAC_UnitVentilatorFields::CoolingCoilName)) {
+        if (auto mo = model().getModelObject<ModelObject>(coolingCoil->handle())) {
+          result.push_back(*mo);
+        }
+      }
+
+      return result;
+    }
+
+    unsigned ZoneHVACUnitVentilator_Impl::inletPort() const {
+      return ZoneHVAC_UnitVentilatorFields::AirInletNodeName;
+    }
+
+    unsigned ZoneHVACUnitVentilator_Impl::outletPort() const {
+      return ZoneHVAC_UnitVentilatorFields::AirOutletNodeName;
     }
 
     boost::optional<double> ZoneHVACUnitVentilator_Impl::autosizedMaximumSupplyAirFlowRate() const {

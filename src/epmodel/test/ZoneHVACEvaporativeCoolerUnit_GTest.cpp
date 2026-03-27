@@ -6,7 +6,14 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../StraightComponent/Node.hpp"
+#include "../StraightComponent/EvaporativeCoolerDirectResearchSpecial.hpp"
+#include "../StraightComponent/EvaporativeCoolerIndirectResearchSpecial.hpp"
+#include "../StraightComponent/FanSystemModel.hpp"
 #include "../ZoneHVACComponent/ZoneHVACEvaporativeCoolerUnit.hpp"
+
+#include <utilities/idd/ZoneHVAC_EvaporativeCoolerUnit_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -45,4 +52,40 @@ TEST_F(EPModelFixture, ZoneHVACEvaporativeCoolerUnit_ScalarAccessors_RoundTrip) 
 
   cooler.autosizeDesignSupplyAirFlowRate();
   EXPECT_TRUE(cooler.isDesignSupplyAirFlowRateAutosized());
+}
+
+TEST_F(EPModelFixture, ZoneHVACEvaporativeCoolerUnit_PortsAndZoneAttachment) {
+  Model model;
+  ZoneHVACEvaporativeCoolerUnit cooler(model);
+  ThermalZone zone(model);
+
+  EXPECT_EQ(openstudio::ZoneHVAC_EvaporativeCoolerUnitFields::ZoneReliefAirNodeName, cooler.inletPort());
+  EXPECT_EQ(openstudio::ZoneHVAC_EvaporativeCoolerUnitFields::CoolerOutletNodeName, cooler.outletPort());
+
+  EXPECT_TRUE(cooler.addToThermalZone(zone));
+  ASSERT_TRUE(cooler.inletNode());
+  ASSERT_TRUE(cooler.outletNode());
+  EXPECT_EQ(zone, cooler.thermalZone().get());
+  cooler.removeFromThermalZone();
+  EXPECT_FALSE(cooler.thermalZone());
+  EXPECT_FALSE(cooler.inletNode());
+  EXPECT_FALSE(cooler.outletNode());
+}
+
+TEST_F(EPModelFixture, ZoneHVACEvaporativeCoolerUnit_ChildrenOrderAndContent) {
+  Model model;
+  ZoneHVACEvaporativeCoolerUnit cooler(model);
+  FanSystemModel fan(model);
+  EvaporativeCoolerDirectResearchSpecial firstEvaporativeCooler(model);
+  EvaporativeCoolerIndirectResearchSpecial secondEvaporativeCooler(model);
+
+  EXPECT_TRUE(cooler.setPointer(openstudio::ZoneHVAC_EvaporativeCoolerUnitFields::SupplyAirFanName, fan.handle()));
+  EXPECT_TRUE(cooler.setPointer(openstudio::ZoneHVAC_EvaporativeCoolerUnitFields::FirstEvaporativeCoolerObjectName, firstEvaporativeCooler.handle()));
+  EXPECT_TRUE(cooler.setPointer(openstudio::ZoneHVAC_EvaporativeCoolerUnitFields::SecondEvaporativeCoolerName, secondEvaporativeCooler.handle()));
+
+  const auto children = cooler.children();
+  ASSERT_EQ(3u, children.size());
+  EXPECT_EQ(fan.handle(), children[0].handle());
+  EXPECT_EQ(firstEvaporativeCooler.handle(), children[1].handle());
+  EXPECT_EQ(secondEvaporativeCooler.handle(), children[2].handle());
 }

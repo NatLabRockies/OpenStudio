@@ -18,6 +18,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class ModelObject;
 
   namespace detail {
     class ZoneHVACUnitVentilator_Impl;
@@ -90,6 +91,8 @@ namespace epmodel {
     double coolingConvergenceTolerance() const;
     bool setCoolingConvergenceTolerance(double coolingConvergenceTolerance);
     //@}
+
+    std::vector<ModelObject> children() const;
 
    protected:
     using ImplType = detail::ZoneHVACUnitVentilator_Impl;

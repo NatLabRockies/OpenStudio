@@ -8,6 +8,8 @@
 
 #include "ZoneHVACComponent_Impl.hpp"
 
+#include <vector>
+
 namespace openstudio {
 namespace epmodel {
 
@@ -34,6 +36,16 @@ namespace epmodel {
 
       double ventilationRateperOccupant() const;
       bool setVentilationRateperOccupant(double ventilationRateperOccupant);
+
+      std::vector<ModelObject> children() const override;
+
+      boost::optional<Node> inletNode() const override;
+      boost::optional<Node> outletNode() const override;
+      bool addToThermalZone(ThermalZone& thermalZone) override;
+      void removeFromThermalZone() override;
+
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
     };
 
   }  // namespace detail

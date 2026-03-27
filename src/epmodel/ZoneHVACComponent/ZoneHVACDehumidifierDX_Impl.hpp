@@ -19,6 +19,11 @@ namespace epmodel {
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACDehumidifierDX_Impl() override = default;
 
+      std::vector<ModelObject> children() const override;
+
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+
       double ratedWaterRemoval() const;
       bool setRatedWaterRemoval(double ratedWaterRemoval);
 

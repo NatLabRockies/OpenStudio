@@ -11,11 +11,13 @@
 
 #include <boost/optional.hpp>
 #include <memory>
+#include <vector>
 
 namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class ModelObject;
 
   namespace detail {
     class ZoneHVACEnergyRecoveryVentilator_Impl;
@@ -55,6 +57,8 @@ namespace epmodel {
 
     double ventilationRateperOccupant() const;
     bool setVentilationRateperOccupant(double ventilationRateperOccupant);
+
+    std::vector<ModelObject> children() const;
 
    protected:
     using ImplType = detail::ZoneHVACEnergyRecoveryVentilator_Impl;

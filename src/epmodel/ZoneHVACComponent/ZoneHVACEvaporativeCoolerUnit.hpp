@@ -50,6 +50,9 @@ namespace epmodel {
     static std::vector<std::string> fanPlacementValues();
     static std::vector<std::string> coolerUnitControlMethodValues();
 
+    unsigned inletPort() const;
+    unsigned outletPort() const;
+
     boost::optional<double> designSupplyAirFlowRate() const;
     bool isDesignSupplyAirFlowRateAutosized() const;
     bool setDesignSupplyAirFlowRate(double designSupplyAirFlowRate);
@@ -69,6 +72,8 @@ namespace epmodel {
 
     double shutOffRelativeHumidity() const;
     bool setShutOffRelativeHumidity(double shutOffRelativeHumidity);
+
+    std::vector<ModelObject> children() const;
 
    protected:
     using ImplType = detail::ZoneHVACEvaporativeCoolerUnit_Impl;

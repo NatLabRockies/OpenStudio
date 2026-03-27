@@ -26,6 +26,10 @@ namespace epmodel {
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACEvaporativeCoolerUnit_Impl() override = default;
 
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+      std::vector<ModelObject> children() const override;
+
       boost::optional<double> designSupplyAirFlowRate() const;
       bool isDesignSupplyAirFlowRateAutosized() const;
       bool setDesignSupplyAirFlowRate(double designSupplyAirFlowRate);

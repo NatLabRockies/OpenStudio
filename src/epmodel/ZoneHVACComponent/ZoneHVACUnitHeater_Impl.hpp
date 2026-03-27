@@ -10,9 +10,12 @@
 
 #include <boost/optional.hpp>
 #include <string>
+#include <vector>
 
 namespace openstudio {
 namespace epmodel {
+
+  class ModelObject;
 
   namespace detail {
 
@@ -21,6 +24,10 @@ namespace epmodel {
      public:
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACUnitHeater_Impl() override = default;
+
+      std::vector<ModelObject> children() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
       boost::optional<double> maximumSupplyAirFlowRate() const;
       bool isMaximumSupplyAirFlowRateAutosized() const;

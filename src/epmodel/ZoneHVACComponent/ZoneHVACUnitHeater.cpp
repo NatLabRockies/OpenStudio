@@ -20,8 +20,6 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACUnitHeater::ZoneHVACUnitHeater(const Model& model) : ZoneHVACComponent(ZoneHVACUnitHeater::iddObjectType(), model) {
-    OS_ASSERT(getImpl<detail::ZoneHVACUnitHeater_Impl>());
-
     autosizeMaximumSupplyAirFlowRate();
     OS_ASSERT(setFanControlType("No"));
     autosizeMaximumHotWaterFlowRate();
@@ -129,6 +127,25 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    std::vector<ModelObject> ZoneHVACUnitHeater_Impl::children() const {
+      std::vector<ModelObject> result;
+      if (auto fan = getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_UnitHeaterFields::SupplyAirFanName)) {
+        result.push_back(*fan);
+      }
+      if (auto coil = getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_UnitHeaterFields::HeatingCoilName)) {
+        result.push_back(*coil);
+      }
+      return result;
+    }
+
+    unsigned ZoneHVACUnitHeater_Impl::inletPort() const {
+      return ZoneHVAC_UnitHeaterFields::AirInletNodeName;
+    }
+
+    unsigned ZoneHVACUnitHeater_Impl::outletPort() const {
+      return ZoneHVAC_UnitHeaterFields::AirOutletNodeName;
+    }
 
     boost::optional<double> ZoneHVACUnitHeater_Impl::maximumSupplyAirFlowRate() const {
       return getDouble(ZoneHVAC_UnitHeaterFields::MaximumSupplyAirFlowRate, true);

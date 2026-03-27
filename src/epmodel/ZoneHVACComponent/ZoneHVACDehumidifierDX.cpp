@@ -6,6 +6,8 @@
 #include "ZoneHVACDehumidifierDX.hpp"
 #include "ZoneHVACDehumidifierDX_Impl.hpp"
 
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -87,6 +89,29 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    std::vector<ModelObject> ZoneHVACDehumidifierDX_Impl::children() const {
+      std::vector<ModelObject> result;
+      if (auto const waterRemovalCurve = getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::ZoneHVAC_Dehumidifier_DXFields::WaterRemovalCurveName)) {
+        result.push_back(*waterRemovalCurve);
+      }
+      if (auto const energyFactorCurve = getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::ZoneHVAC_Dehumidifier_DXFields::EnergyFactorCurveName)) {
+        result.push_back(*energyFactorCurve);
+      }
+      if (auto const partLoadFractionCorrelationCurve =
+            getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::ZoneHVAC_Dehumidifier_DXFields::PartLoadFractionCorrelationCurveName)) {
+        result.push_back(*partLoadFractionCorrelationCurve);
+      }
+      return result;
+    }
+
+    unsigned ZoneHVACDehumidifierDX_Impl::inletPort() const {
+      return openstudio::ZoneHVAC_Dehumidifier_DXFields::AirInletNodeName;
+    }
+
+    unsigned ZoneHVACDehumidifierDX_Impl::outletPort() const {
+      return openstudio::ZoneHVAC_Dehumidifier_DXFields::AirOutletNodeName;
+    }
 
     double ZoneHVACDehumidifierDX_Impl::ratedWaterRemoval() const {
       const auto value = getDouble(openstudio::ZoneHVAC_Dehumidifier_DXFields::RatedWaterRemoval, true);
