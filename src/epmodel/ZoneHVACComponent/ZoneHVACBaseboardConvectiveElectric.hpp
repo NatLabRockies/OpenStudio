@@ -15,7 +15,6 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
-
   namespace detail {
     class ZoneHVACBaseboardConvectiveElectric_Impl;
   }
@@ -36,7 +35,6 @@ namespace epmodel {
     // Schema Alignment Notes:
     // - API: nominalCapacity/isNominalCapacityAutosized/autosizeNominalCapacity map to EnergyPlus ZoneHVAC:Baseboard:Convective:Electric Heating Design Capacity via ForwardTranslateZoneHVACBaseboardConvectiveElectric.cpp.
     // - API: efficiency/isEfficiencyDefaulted/resetEfficiency map to the EnergyPlus Efficiency field (default 1.0).
-    // - Availability Schedule is a relationship field and remains excluded from scalar accessors until a relationship API exists.
     /** @name Nominal capacity accessors */
     //@{
     boost::optional<double> nominalCapacity() const;

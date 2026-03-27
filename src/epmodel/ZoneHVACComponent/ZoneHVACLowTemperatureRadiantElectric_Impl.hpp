@@ -22,6 +22,9 @@ namespace epmodel {
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACLowTemperatureRadiantElectric_Impl() override = default;
 
+      unsigned inletPort() const;
+      unsigned outletPort() const;
+
       boost::optional<double> maximumElectricalPowertoPanel() const;
       bool isMaximumElectricalPowertoPanelDefaulted() const;
       bool isMaximumElectricalPowertoPanelAutosized() const;

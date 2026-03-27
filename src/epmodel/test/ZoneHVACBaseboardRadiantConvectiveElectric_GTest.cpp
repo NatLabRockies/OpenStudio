@@ -8,6 +8,8 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveElectric.hpp"
 
 using namespace openstudio::epmodel;
@@ -49,4 +51,25 @@ TEST_F(EPModelFixture, ZoneHVACBaseboardRadiantConvectiveElectric_ScalarAccessor
   auto values = ZoneHVACBaseboardRadiantConvectiveElectric::heatingDesignCapacityMethodValues();
   EXPECT_FALSE(values.empty());
   EXPECT_NE(values.cend(), std::find(values.cbegin(), values.cend(), "HeatingDesignCapacity"));
+}
+
+TEST_F(EPModelFixture, ZoneHVACBaseboardRadiantConvectiveElectric_ZoneAttachmentRoundTrip) {
+  Model model;
+  ThermalZone zone(model);
+  ZoneHVACBaseboardRadiantConvectiveElectric baseboard(model);
+
+  EXPECT_EQ(0u, baseboard.inletPort());
+  EXPECT_EQ(0u, baseboard.outletPort());
+  EXPECT_FALSE(baseboard.inletNode());
+  EXPECT_FALSE(baseboard.outletNode());
+  EXPECT_FALSE(baseboard.thermalZone());
+
+  EXPECT_TRUE(baseboard.addToThermalZone(zone));
+  ASSERT_TRUE(baseboard.thermalZone());
+  EXPECT_EQ(zone, *baseboard.thermalZone());
+
+  baseboard.removeFromThermalZone();
+  EXPECT_FALSE(baseboard.thermalZone());
+  EXPECT_FALSE(baseboard.inletNode());
+  EXPECT_FALSE(baseboard.outletNode());
 }

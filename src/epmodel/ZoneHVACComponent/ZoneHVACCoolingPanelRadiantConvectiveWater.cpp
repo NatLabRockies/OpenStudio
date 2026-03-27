@@ -42,6 +42,14 @@ namespace epmodel {
     return {"Off", "SimpleOff", "VariableOff"};
   }
 
+  unsigned detail::ZoneHVACCoolingPanelRadiantConvectiveWater_Impl::inletPort() const {
+    return 0u;
+  }
+
+  unsigned detail::ZoneHVACCoolingPanelRadiantConvectiveWater_Impl::outletPort() const {
+    return 0u;
+  }
+
   double ZoneHVACCoolingPanelRadiantConvectiveWater::ratedInletWaterTemperature() const {
     return getImpl<detail::ZoneHVACCoolingPanelRadiantConvectiveWater_Impl>()->ratedInletWaterTemperature();
   }

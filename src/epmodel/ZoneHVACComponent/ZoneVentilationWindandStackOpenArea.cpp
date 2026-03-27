@@ -6,6 +6,8 @@
 #include "ZoneHVACComponent/ZoneVentilationWindandStackOpenArea.hpp"
 #include "ZoneHVACComponent/ZoneVentilationWindandStackOpenArea_Impl.hpp"
 
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -279,6 +281,35 @@ namespace epmodel {
 
     bool ZoneVentilationWindandStackOpenArea_Impl::setMaximumWindSpeed(double maximumWindSpeed) {
       return setDouble(ZoneVentilation_WindandStackOpenAreaFields::MaximumWindSpeed, maximumWindSpeed);
+    }
+
+    unsigned ZoneVentilationWindandStackOpenArea_Impl::inletPort() const {
+      return 0u;
+    }
+
+    unsigned ZoneVentilationWindandStackOpenArea_Impl::outletPort() const {
+      return 0u;
+    }
+
+    boost::optional<ThermalZone> ZoneVentilationWindandStackOpenArea_Impl::thermalZone() const {
+      auto target = getTarget(ZoneVentilation_WindandStackOpenAreaFields::ZoneorSpaceName);
+      if (!target) {
+        return boost::none;
+      }
+      return target->optionalCast<ThermalZone>();
+    }
+
+    bool ZoneVentilationWindandStackOpenArea_Impl::addToThermalZone(ThermalZone& thermalZone) {
+      if (thermalZone.model() != model()) {
+        return false;
+      }
+
+      removeFromThermalZone();
+      return setPointer(ZoneVentilation_WindandStackOpenAreaFields::ZoneorSpaceName, thermalZone.handle());
+    }
+
+    void ZoneVentilationWindandStackOpenArea_Impl::removeFromThermalZone() {
+      OS_ASSERT(setPointer(ZoneVentilation_WindandStackOpenAreaFields::ZoneorSpaceName, Handle()));
     }
 
   }  // namespace detail

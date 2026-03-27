@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class ThermalZone;
 
   namespace detail {
     class ZoneHVACBaseboardRadiantConvectiveWater_Impl;
@@ -64,6 +65,10 @@ namespace epmodel {
     bool isMaximumWaterFlowRateAutosized() const;
     bool setMaximumWaterFlowRate(double maximumWaterFlowRate);
     void autosizeMaximumWaterFlowRate();
+
+    boost::optional<ThermalZone> thermalZone() const override;
+    bool addToThermalZone(ThermalZone& thermalZone);
+    void removeFromThermalZone();
 
    protected:
     using ImplType = detail::ZoneHVACBaseboardRadiantConvectiveWater_Impl;

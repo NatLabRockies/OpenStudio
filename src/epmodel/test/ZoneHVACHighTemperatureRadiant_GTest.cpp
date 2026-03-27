@@ -6,6 +6,8 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACHighTemperatureRadiant.hpp"
 
 using namespace openstudio::epmodel;
@@ -31,6 +33,8 @@ TEST_F(EPModelFixture, ZoneHVACHighTemperatureRadiant_DefaultConstructor) {
   EXPECT_FALSE(radiant.isFractionofInputthatIsLostDefaulted());
   EXPECT_FALSE(radiant.isTemperatureControlTypeDefaulted());
   EXPECT_FALSE(radiant.isHeatingThrottlingRangeDefaulted());
+  EXPECT_EQ(0u, radiant.inletPort());
+  EXPECT_EQ(0u, radiant.outletPort());
 }
 
 TEST_F(EPModelFixture, ZoneHVACHighTemperatureRadiant_ScalarAccessors_RoundTrip) {
@@ -82,4 +86,19 @@ TEST_F(EPModelFixture, ZoneHVACHighTemperatureRadiant_ScalarAccessors_RoundTrip)
 
   EXPECT_TRUE(radiant.setFractionofRadiantEnergyIncidentonPeople(0.21));
   EXPECT_DOUBLE_EQ(0.21, radiant.fractionofRadiantEnergyIncidentonPeople());
+}
+
+TEST_F(EPModelFixture, ZoneHVACHighTemperatureRadiant_ZoneAttachment) {
+  Model model;
+  ThermalZone zone(model);
+  ZoneHVACHighTemperatureRadiant radiant(model);
+
+  EXPECT_TRUE(radiant.addToThermalZone(zone));
+  ASSERT_TRUE(radiant.thermalZone());
+  EXPECT_EQ(zone, radiant.thermalZone().get());
+  EXPECT_FALSE(radiant.inletNode());
+  EXPECT_FALSE(radiant.outletNode());
+
+  radiant.removeFromThermalZone();
+  EXPECT_FALSE(radiant.thermalZone());
 }

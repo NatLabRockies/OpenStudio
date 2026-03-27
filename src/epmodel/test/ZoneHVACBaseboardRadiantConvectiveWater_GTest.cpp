@@ -6,6 +6,8 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWater.hpp"
 
 using namespace openstudio::epmodel;
@@ -38,4 +40,25 @@ TEST_F(EPModelFixture, ZoneHVACBaseboardRadiantConvectiveWater_ScalarAccessors_R
   EXPECT_DOUBLE_EQ(0.12, baseboard.maximumWaterFlowRate().get());
   baseboard.autosizeMaximumWaterFlowRate();
   EXPECT_TRUE(baseboard.isMaximumWaterFlowRateAutosized());
+}
+
+TEST_F(EPModelFixture, ZoneHVACBaseboardRadiantConvectiveWater_ZoneAttachmentRoundTrip) {
+  Model model;
+  ThermalZone zone(model);
+  ZoneHVACBaseboardRadiantConvectiveWater baseboard(model);
+
+  EXPECT_EQ(0u, baseboard.inletPort());
+  EXPECT_EQ(0u, baseboard.outletPort());
+  EXPECT_FALSE(baseboard.inletNode());
+  EXPECT_FALSE(baseboard.outletNode());
+  EXPECT_FALSE(baseboard.thermalZone());
+
+  EXPECT_TRUE(baseboard.addToThermalZone(zone));
+  ASSERT_TRUE(baseboard.thermalZone());
+  EXPECT_EQ(zone, *baseboard.thermalZone());
+
+  baseboard.removeFromThermalZone();
+  EXPECT_FALSE(baseboard.thermalZone());
+  EXPECT_FALSE(baseboard.inletNode());
+  EXPECT_FALSE(baseboard.outletNode());
 }

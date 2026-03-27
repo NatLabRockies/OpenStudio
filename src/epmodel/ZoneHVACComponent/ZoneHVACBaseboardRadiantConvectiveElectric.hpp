@@ -17,6 +17,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class ThermalZone;
 
   namespace detail {
     class ZoneHVACBaseboardRadiantConvectiveElectric_Impl;
@@ -66,6 +67,10 @@ namespace epmodel {
 
     double fractionofRadiantEnergyIncidentonPeople() const;
     bool setFractionofRadiantEnergyIncidentonPeople(double fractionofRadiantEnergyIncidentonPeople);
+
+    boost::optional<ThermalZone> thermalZone() const override;
+    bool addToThermalZone(ThermalZone& thermalZone);
+    void removeFromThermalZone();
 
    protected:
     using ImplType = detail::ZoneHVACBaseboardRadiantConvectiveElectric_Impl;

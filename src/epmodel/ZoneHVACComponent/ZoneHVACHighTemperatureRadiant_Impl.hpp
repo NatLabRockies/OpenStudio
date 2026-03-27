@@ -21,6 +21,9 @@ namespace epmodel {
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACHighTemperatureRadiant_Impl() override = default;
 
+      unsigned inletPort() const;
+      unsigned outletPort() const;
+
       boost::optional<double> maximumPowerInput() const;
       bool isMaximumPowerInputAutosized() const;
       bool setMaximumPowerInput(double maximumPowerInput);

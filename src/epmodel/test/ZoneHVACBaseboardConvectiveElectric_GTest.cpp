@@ -14,7 +14,9 @@ using namespace openstudio::epmodel;
 TEST_F(EPModelFixture, ZoneHVACBaseboardConvectiveElectric_DefaultConstructor) {
   Model model;
   ZoneHVACBaseboardConvectiveElectric baseboard(model);
-  (void)baseboard;
+  EXPECT_TRUE(baseboard.isNominalCapacityAutosized());
+  ASSERT_TRUE(baseboard.efficiency());
+  EXPECT_DOUBLE_EQ(1.0, baseboard.efficiency().get());
 }
 
 TEST_F(EPModelFixture, ZoneHVACBaseboardConvectiveElectric_ScalarAccessors_RoundTrip) {

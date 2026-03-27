@@ -48,6 +48,14 @@ namespace epmodel {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), ZoneHVAC_HighTemperatureRadiantFields::TemperatureControlType);
   }
 
+  unsigned detail::ZoneHVACHighTemperatureRadiant_Impl::inletPort() const {
+    return 0u;
+  }
+
+  unsigned detail::ZoneHVACHighTemperatureRadiant_Impl::outletPort() const {
+    return 0u;
+  }
+
   // -- MaximumPowerInput ---------------------------------------------------
   boost::optional<double> ZoneHVACHighTemperatureRadiant::maximumPowerInput() const {
     return getImpl<detail::ZoneHVACHighTemperatureRadiant_Impl>()->maximumPowerInput();

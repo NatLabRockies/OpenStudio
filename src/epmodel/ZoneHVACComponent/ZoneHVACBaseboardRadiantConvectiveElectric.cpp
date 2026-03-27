@@ -6,6 +6,7 @@
 #include "ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveElectric.hpp"
 #include "ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveElectric_Impl.hpp"
 
+#include "HVACComponent/ThermalZone.hpp"
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -19,8 +20,6 @@ namespace epmodel {
 
   ZoneHVACBaseboardRadiantConvectiveElectric::ZoneHVACBaseboardRadiantConvectiveElectric(const Model& model)
     : ZoneHVACComponent(ZoneHVACBaseboardRadiantConvectiveElectric::iddObjectType(), model) {
-    OS_ASSERT(getImpl<detail::ZoneHVACBaseboardRadiantConvectiveElectric_Impl>());
-
     OS_ASSERT(setHeatingDesignCapacityMethod("HeatingDesignCapacity"));
     autosizeHeatingDesignCapacity();
     OS_ASSERT(setHeatingDesignCapacityPerFloorArea(0.0));
@@ -108,6 +107,18 @@ namespace epmodel {
   bool ZoneHVACBaseboardRadiantConvectiveElectric::setFractionofRadiantEnergyIncidentonPeople(double fractionofRadiantEnergyIncidentonPeople) {
     return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveElectric_Impl>()->setFractionofRadiantEnergyIncidentonPeople(
       fractionofRadiantEnergyIncidentonPeople);
+  }
+
+  boost::optional<ThermalZone> ZoneHVACBaseboardRadiantConvectiveElectric::thermalZone() const {
+    return ZoneHVACComponent::thermalZone();
+  }
+
+  bool ZoneHVACBaseboardRadiantConvectiveElectric::addToThermalZone(ThermalZone& thermalZone) {
+    return ZoneHVACComponent::addToThermalZone(thermalZone);
+  }
+
+  void ZoneHVACBaseboardRadiantConvectiveElectric::removeFromThermalZone() {
+    ZoneHVACComponent::removeFromThermalZone();
   }
 
   namespace detail {

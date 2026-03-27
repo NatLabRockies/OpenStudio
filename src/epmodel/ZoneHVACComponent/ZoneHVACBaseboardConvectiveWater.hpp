@@ -18,7 +18,6 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
-
   namespace detail {
     class ZoneHVACBaseboardConvectiveWater_Impl;
   }

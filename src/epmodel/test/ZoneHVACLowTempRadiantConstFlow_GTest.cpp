@@ -6,6 +6,8 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow.hpp"
 
 using namespace openstudio;
@@ -17,6 +19,8 @@ TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_DefaultConstructor) {
 
   EXPECT_FALSE(radiant.hydronicTubingLength());
   EXPECT_FALSE(radiant.ratedFlowRate());
+  EXPECT_EQ(0u, radiant.inletPort());
+  EXPECT_EQ(0u, radiant.outletPort());
 }
 
 TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_ScalarAccessors_RoundTrip) {
@@ -95,4 +99,19 @@ TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_ScalarAccessors_RoundTrip
   EXPECT_DOUBLE_EQ(200.0, radiant.circuitLength());
   radiant.resetCircuitLength();
   EXPECT_TRUE(radiant.isCircuitLengthDefaulted());
+}
+
+TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_ZoneAttachment) {
+  Model model;
+  ThermalZone zone(model);
+  ZoneHVACLowTempRadiantConstFlow radiant(model);
+
+  EXPECT_TRUE(radiant.addToThermalZone(zone));
+  ASSERT_TRUE(radiant.thermalZone());
+  EXPECT_EQ(zone, radiant.thermalZone().get());
+  EXPECT_FALSE(radiant.inletNode());
+  EXPECT_FALSE(radiant.outletNode());
+
+  radiant.removeFromThermalZone();
+  EXPECT_FALSE(radiant.thermalZone());
 }

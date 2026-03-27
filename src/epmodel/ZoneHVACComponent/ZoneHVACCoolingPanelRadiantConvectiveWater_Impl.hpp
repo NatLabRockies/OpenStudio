@@ -21,6 +21,9 @@ namespace epmodel {
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACCoolingPanelRadiantConvectiveWater_Impl() override = default;
 
+      unsigned inletPort() const;
+      unsigned outletPort() const;
+
       double ratedInletWaterTemperature() const;
       bool isRatedInletWaterTemperatureDefaulted() const;
       bool setRatedInletWaterTemperature(double ratedInletWaterTemperature);

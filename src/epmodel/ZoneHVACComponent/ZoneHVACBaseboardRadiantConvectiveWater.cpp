@@ -6,6 +6,7 @@
 #include "ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWater.hpp"
 #include "ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWater_Impl.hpp"
 
+#include "HVACComponent/ThermalZone.hpp"
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -18,8 +19,6 @@ namespace epmodel {
 
   ZoneHVACBaseboardRadiantConvectiveWater::ZoneHVACBaseboardRadiantConvectiveWater(const Model& model)
     : ZoneHVACComponent(ZoneHVACBaseboardRadiantConvectiveWater::iddObjectType(), model) {
-    OS_ASSERT(getImpl<detail::ZoneHVACBaseboardRadiantConvectiveWater_Impl>());
-
     autosizeHeatingDesignCapacity();
     autosizeMaximumWaterFlowRate();
   }
@@ -94,6 +93,18 @@ namespace epmodel {
 
   void ZoneHVACBaseboardRadiantConvectiveWater::autosizeMaximumWaterFlowRate() {
     getImpl<detail::ZoneHVACBaseboardRadiantConvectiveWater_Impl>()->autosizeMaximumWaterFlowRate();
+  }
+
+  boost::optional<ThermalZone> ZoneHVACBaseboardRadiantConvectiveWater::thermalZone() const {
+    return ZoneHVACComponent::thermalZone();
+  }
+
+  bool ZoneHVACBaseboardRadiantConvectiveWater::addToThermalZone(ThermalZone& thermalZone) {
+    return ZoneHVACComponent::addToThermalZone(thermalZone);
+  }
+
+  void ZoneHVACBaseboardRadiantConvectiveWater::removeFromThermalZone() {
+    ZoneHVACComponent::removeFromThermalZone();
   }
 
   namespace detail {

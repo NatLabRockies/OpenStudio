@@ -45,6 +45,14 @@ namespace epmodel {
                           ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::TemperatureControlType);
   }
 
+  unsigned detail::ZoneHVACLowTempRadiantConstFlow_Impl::inletPort() const {
+    return 0u;
+  }
+
+  unsigned detail::ZoneHVACLowTempRadiantConstFlow_Impl::outletPort() const {
+    return 0u;
+  }
+
   std::string ZoneHVACLowTempRadiantConstFlow::fluidtoRadiantSurfaceHeatTransferModel() const {
     return getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->fluidtoRadiantSurfaceHeatTransferModel();
   }

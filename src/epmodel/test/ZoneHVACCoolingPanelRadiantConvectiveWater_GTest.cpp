@@ -6,6 +6,8 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater.hpp"
 
 using namespace openstudio::epmodel;
@@ -16,6 +18,8 @@ TEST_F(EPModelFixture, ZoneHVACCoolingPanelRadiantConvectiveWater_DefaultConstru
 
   EXPECT_EQ(ZoneHVACCoolingPanelRadiantConvectiveWater::iddObjectType(), panel.iddObject().type());
   EXPECT_FALSE(panel.nameString().empty());
+  EXPECT_EQ(0u, panel.inletPort());
+  EXPECT_EQ(0u, panel.outletPort());
 }
 
 TEST_F(EPModelFixture, ZoneHVACCoolingPanelRadiantConvectiveWater_ScalarAccessors_RoundTrip) {
@@ -90,4 +94,19 @@ TEST_F(EPModelFixture, ZoneHVACCoolingPanelRadiantConvectiveWater_ScalarAccessor
   EXPECT_EQ("VariableOff", panel.condensationControlType());
   panel.resetCondensationControlType();
   EXPECT_TRUE(panel.isCondensationControlTypeDefaulted());
+}
+
+TEST_F(EPModelFixture, ZoneHVACCoolingPanelRadiantConvectiveWater_ZoneAttachment) {
+  Model model;
+  ThermalZone zone(model);
+  ZoneHVACCoolingPanelRadiantConvectiveWater panel(model);
+
+  EXPECT_TRUE(panel.addToThermalZone(zone));
+  ASSERT_TRUE(panel.thermalZone());
+  EXPECT_EQ(zone, panel.thermalZone().get());
+  EXPECT_FALSE(panel.inletNode());
+  EXPECT_FALSE(panel.outletNode());
+
+  panel.removeFromThermalZone();
+  EXPECT_FALSE(panel.thermalZone());
 }

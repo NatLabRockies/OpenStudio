@@ -6,6 +6,8 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACLowTemperatureRadiantElectric.hpp"
 
 using namespace openstudio;
@@ -21,6 +23,8 @@ TEST_F(EPModelFixture, ZoneHVACLowTemperatureRadiantElectric_DefaultConstructor)
   EXPECT_TRUE(radiant.isTemperatureControlTypeDefaulted());
   EXPECT_TRUE(radiant.isSetpointControlTypeDefaulted());
   EXPECT_TRUE(radiant.isHeatingThrottlingRangeDefaulted());
+  EXPECT_EQ(0u, radiant.inletPort());
+  EXPECT_EQ(0u, radiant.outletPort());
 }
 
 TEST_F(EPModelFixture, ZoneHVACLowTemperatureRadiantElectric_ScalarAccessors_RoundTrip) {
@@ -52,4 +56,19 @@ TEST_F(EPModelFixture, ZoneHVACLowTemperatureRadiantElectric_ScalarAccessors_Rou
   EXPECT_DOUBLE_EQ(2.5, radiant.heatingThrottlingRange());
   radiant.resetHeatingThrottlingRange();
   EXPECT_TRUE(radiant.isHeatingThrottlingRangeDefaulted());
+}
+
+TEST_F(EPModelFixture, ZoneHVACLowTemperatureRadiantElectric_ZoneAttachment) {
+  Model model;
+  ThermalZone zone(model);
+  ZoneHVACLowTemperatureRadiantElectric radiant(model);
+
+  EXPECT_TRUE(radiant.addToThermalZone(zone));
+  ASSERT_TRUE(radiant.thermalZone());
+  EXPECT_EQ(zone, radiant.thermalZone().get());
+  EXPECT_FALSE(radiant.inletNode());
+  EXPECT_FALSE(radiant.outletNode());
+
+  radiant.removeFromThermalZone();
+  EXPECT_FALSE(radiant.thermalZone());
 }

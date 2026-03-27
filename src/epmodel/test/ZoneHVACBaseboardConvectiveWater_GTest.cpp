@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
 #include "../ZoneHVACComponent/ZoneHVACBaseboardConvectiveWater.hpp"
 
 using namespace openstudio::epmodel;
@@ -56,4 +57,18 @@ TEST_F(EPModelFixture, ZoneHVACBaseboardConvectiveWater_ScalarAccessors_RoundTri
   baseboard.resetConvergenceTolerance();
   EXPECT_TRUE(baseboard.isConvergenceToleranceDefaulted());
   EXPECT_DOUBLE_EQ(0.001, baseboard.convergenceTolerance());
+}
+
+TEST_F(EPModelFixture, ZoneHVACBaseboardConvectiveWater_ZoneAttachmentRoundTrip) {
+  Model model;
+  ThermalZone zone(model);
+  ZoneHVACBaseboardConvectiveWater baseboard(model);
+
+  EXPECT_FALSE(baseboard.thermalZone());
+  EXPECT_TRUE(baseboard.addToThermalZone(zone));
+  ASSERT_TRUE(baseboard.thermalZone());
+  EXPECT_EQ(zone, *baseboard.thermalZone());
+
+  baseboard.removeFromThermalZone();
+  EXPECT_FALSE(baseboard.thermalZone());
 }

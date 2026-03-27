@@ -22,6 +22,9 @@ namespace epmodel {
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACLowTempRadiantVarFlow_Impl() override = default;
 
+      unsigned inletPort() const;
+      unsigned outletPort() const;
+
       boost::optional<double> hydronicTubingLength() const;
       bool isHydronicTubingLengthAutosized() const;
       bool setHydronicTubingLength(double hydronicTubingLength);

@@ -65,6 +65,14 @@ namespace epmodel {
                           ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields::CondensationControlType);
   }
 
+  unsigned detail::ZoneHVACLowTempRadiantVarFlow_Impl::inletPort() const {
+    return 0u;
+  }
+
+  unsigned detail::ZoneHVACLowTempRadiantVarFlow_Impl::outletPort() const {
+    return 0u;
+  }
+
   boost::optional<double> ZoneHVACLowTempRadiantVarFlow::hydronicTubingLength() const {
     return getImpl<detail::ZoneHVACLowTempRadiantVarFlow_Impl>()->hydronicTubingLength();
   }

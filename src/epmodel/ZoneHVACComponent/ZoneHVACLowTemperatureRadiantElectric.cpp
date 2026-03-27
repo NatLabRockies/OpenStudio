@@ -35,6 +35,14 @@ namespace epmodel {
                           ZoneHVAC_LowTemperatureRadiant_ElectricFields::TemperatureControlType);
   }
 
+  unsigned detail::ZoneHVACLowTemperatureRadiantElectric_Impl::inletPort() const {
+    return 0u;
+  }
+
+  unsigned detail::ZoneHVACLowTemperatureRadiantElectric_Impl::outletPort() const {
+    return 0u;
+  }
+
   boost::optional<double> ZoneHVACLowTemperatureRadiantElectric::maximumElectricalPowertoPanel() const {
     return getImpl<detail::ZoneHVACLowTemperatureRadiantElectric_Impl>()->maximumElectricalPowertoPanel();
   }

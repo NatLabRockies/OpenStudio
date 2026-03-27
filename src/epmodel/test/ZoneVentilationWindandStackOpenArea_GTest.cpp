@@ -6,6 +6,8 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneVentilationWindandStackOpenArea.hpp"
 
 using namespace openstudio::epmodel;
@@ -69,4 +71,24 @@ TEST_F(EPModelFixture, ZoneVentilationWindandStackOpenArea_ScalarAccessors_Round
   ventilation.autocalculateDischargeCoefficientforOpening();
   EXPECT_TRUE(ventilation.isDischargeCoefficientforOpeningAutocalculated());
   EXPECT_FALSE(ventilation.dischargeCoefficientforOpening());
+}
+
+TEST_F(EPModelFixture, ZoneVentilationWindandStackOpenArea_ZoneAttachmentRoundTrip) {
+  Model model;
+  ThermalZone zone(model);
+  ZoneVentilationWindandStackOpenArea ventilation(model);
+
+  EXPECT_EQ(0u, ventilation.inletPort());
+  EXPECT_EQ(0u, ventilation.outletPort());
+  EXPECT_FALSE(ventilation.thermalZone());
+  EXPECT_TRUE(ventilation.addToThermalZone(zone));
+  ASSERT_TRUE(ventilation.thermalZone());
+  EXPECT_EQ(zone, ventilation.thermalZone().get());
+  EXPECT_FALSE(ventilation.inletNode());
+  EXPECT_FALSE(ventilation.outletNode());
+
+  ventilation.removeFromThermalZone();
+  EXPECT_FALSE(ventilation.thermalZone());
+  EXPECT_FALSE(ventilation.inletNode());
+  EXPECT_FALSE(ventilation.outletNode());
 }

@@ -13,6 +13,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class ThermalZone;
+
   namespace detail {
 
     class EPMODEL_API ZoneVentilationWindandStackOpenArea_Impl : public ZoneHVACComponent_Impl
@@ -20,6 +22,12 @@ namespace epmodel {
      public:
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneVentilationWindandStackOpenArea_Impl() override = default;
+
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+      boost::optional<ThermalZone> thermalZone() const override;
+      bool addToThermalZone(ThermalZone& thermalZone) override;
+      void removeFromThermalZone() override;
 
       double openingArea() const;
       bool setOpeningArea(double openingArea);
