@@ -6,7 +6,7 @@
 #ifndef EPMODEL_ZONEHVACPACKAGEDTERMINALAIRCONDITIONER_IMPL_HPP
 #define EPMODEL_ZONEHVACPACKAGEDTERMINALAIRCONDITIONER_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "ZoneHVACComponent_Impl.hpp"
 
 #include <utilities/idd/ZoneHVAC_PackagedTerminalAirConditioner_FieldEnums.hxx>
 
@@ -17,10 +17,10 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API ZoneHVACPackagedTerminalAirConditioner_Impl : public ModelObject_Impl
+    class EPMODEL_API ZoneHVACPackagedTerminalAirConditioner_Impl : public ZoneHVACComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACPackagedTerminalAirConditioner_Impl() override = default;
 
       boost::optional<double> supplyAirFlowRateDuringCoolingOperation() const;

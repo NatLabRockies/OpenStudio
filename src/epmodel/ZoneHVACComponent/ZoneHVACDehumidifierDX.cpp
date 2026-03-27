@@ -15,7 +15,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  ZoneHVACDehumidifierDX::ZoneHVACDehumidifierDX(const Model& model) : ModelObject(ZoneHVACDehumidifierDX::iddObjectType(), model) {
+  ZoneHVACDehumidifierDX::ZoneHVACDehumidifierDX(const Model& model) : ZoneHVACComponent(ZoneHVACDehumidifierDX::iddObjectType(), model) {
     OS_ASSERT(setRatedWaterRemoval(50.16));
     OS_ASSERT(setRatedEnergyFactor(3.412));
     OS_ASSERT(setRatedAirFlowRate(0.12036));
@@ -24,7 +24,8 @@ namespace epmodel {
     OS_ASSERT(setOffCycleParasiticElectricLoad(0.0));
   }
 
-  ZoneHVACDehumidifierDX::ZoneHVACDehumidifierDX(std::shared_ptr<detail::ZoneHVACDehumidifierDX_Impl> impl) : ModelObject(std::move(impl)) {}
+  ZoneHVACDehumidifierDX::ZoneHVACDehumidifierDX(std::shared_ptr<detail::ZoneHVACDehumidifierDX_Impl> impl)
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACDehumidifierDX::iddObjectType() {
     return {IddObjectType::ZoneHVAC_Dehumidifier_DX};

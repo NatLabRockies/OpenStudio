@@ -18,6 +18,7 @@ class AirLoopHVAC;
 class Loop;
 class PlantLoop;
 class Splitter;
+class ZoneHVACComponent;
 namespace detail {
 
 class EPMODEL_API HVACComponent_Impl : public ParentObject_Impl
@@ -29,6 +30,7 @@ class EPMODEL_API HVACComponent_Impl : public ParentObject_Impl
   virtual boost::optional<Loop> loop() const;
   virtual boost::optional<AirLoopHVAC> airLoopHVAC() const;
   virtual boost::optional<PlantLoop> plantLoop() const;
+  virtual boost::optional<ZoneHVACComponent> containingZoneHVACComponent() const;
 
   virtual bool addToNode(Node& node);
   virtual bool addToSplitter(Splitter& splitter);

@@ -25,6 +25,7 @@ namespace epmodel {
   class PlantLoop;
   class Splitter;
   class StraightComponent;
+  class ZoneHVACComponent;
 
   namespace detail {
     class HVACComponent_Impl;
@@ -46,8 +47,7 @@ namespace epmodel {
     // Placeholder for API parity with model::HVACComponent. Not implemented yet.
 
     boost::optional<HVACComponent> containingHVACComponent() const;
-    // boost::optional<ZoneHVACComponent> containingZoneHVACComponent() const;
-    // Placeholder for API parity with model::HVACComponent. Not implemented yet.
+    boost::optional<ZoneHVACComponent> containingZoneHVACComponent() const;
     // TODO: Implement containingStraightComponent once containment tracking is ready.
     // boost::optional<StraightComponent> containingStraightComponent() const;
 

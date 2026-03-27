@@ -7,12 +7,15 @@
 #include "ZoneHVACEquipmentList_Impl.hpp"
 
 #include "Model.hpp"
+#include "ModelObject.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentList_FieldEnums.hxx>
+#include <utilities/idf/IdfExtensibleGroup.hpp>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -54,6 +57,10 @@ namespace epmodel {
     getImpl<detail::ZoneHVACEquipmentList_Impl>()->resetLoadDistributionScheme();
   }
 
+  std::vector<ModelObject> ZoneHVACEquipmentList::equipment() const {
+    return getImpl<detail::ZoneHVACEquipmentList_Impl>()->equipment();
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -86,6 +93,89 @@ namespace epmodel {
 
     void ZoneHVACEquipmentList_Impl::resetLoadDistributionScheme() {
       OS_ASSERT(setString(openstudio::ZoneHVAC_EquipmentListFields::LoadDistributionScheme, "", false));
+    }
+
+    std::vector<openstudio::epmodel::ModelObject> ZoneHVACEquipmentList_Impl::equipment() const {
+      std::vector<openstudio::epmodel::ModelObject> result;
+      for (const auto& group : getObject<openstudio::epmodel::ZoneHVACEquipmentList>().extensibleGroups()) {
+        auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        if (!workspaceGroup) {
+          continue;
+        }
+
+        auto target = workspaceGroup->getTarget(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentName);
+        if (!target) {
+          continue;
+        }
+
+        if (auto modelObject = target->optionalCast<openstudio::epmodel::ModelObject>()) {
+          result.push_back(*modelObject);
+        }
+      }
+      return result;
+    }
+
+    bool ZoneHVACEquipmentList_Impl::addEquipment(const openstudio::epmodel::ModelObject& component) {
+      if (component.model() != model()) {
+        return false;
+      }
+
+      auto currentEquipment = equipment();
+      if (std::ranges::find(currentEquipment, component) != currentEquipment.end()) {
+        return true;
+      }
+
+      auto equipmentList = getObject<openstudio::epmodel::ZoneHVACEquipmentList>();
+      auto group = equipmentList.pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!group) {
+        return false;
+      }
+
+      if (!group->setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentObjectType, component.iddObject().name())) {
+        return false;
+      }
+      if (!group->setPointer(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentName, component.handle())) {
+        return false;
+      }
+
+      const unsigned priority = static_cast<unsigned>(currentEquipment.size() + 1u);
+      if (!group->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentCoolingSequence, priority)) {
+        return false;
+      }
+      return group->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence, priority);
+    }
+
+    bool ZoneHVACEquipmentList_Impl::removeEquipment(const openstudio::epmodel::ModelObject& component) {
+      auto equipmentList = getObject<openstudio::epmodel::ZoneHVACEquipmentList>();
+      const auto groups = equipmentList.extensibleGroups();
+      for (unsigned i = 0; i < groups.size(); ++i) {
+        auto workspaceGroup = groups[i].optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        if (!workspaceGroup) {
+          continue;
+        }
+
+        auto target = workspaceGroup->getTarget(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentName);
+        if (!target || !(*target == component)) {
+          continue;
+        }
+
+        equipmentList.eraseExtensibleGroup(i);
+
+        auto remainingGroups = equipmentList.extensibleGroups();
+        for (unsigned j = 0; j < remainingGroups.size(); ++j) {
+          auto remainingGroup = remainingGroups[j].optionalCast<openstudio::WorkspaceExtensibleGroup>();
+          if (!remainingGroup) {
+            continue;
+          }
+          const unsigned priority = j + 1u;
+          OS_ASSERT(remainingGroup->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentCoolingSequence,
+                                                priority));
+          OS_ASSERT(remainingGroup->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence,
+                                                priority));
+        }
+        return true;
+      }
+      return false;
     }
 
   }  // namespace detail

@@ -7,7 +7,7 @@
 #define EPMODEL_ZONEHVACDEHUMIDIFIERDX_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ZoneHVACComponent.hpp"
 
 #include <memory>
 
@@ -20,7 +20,7 @@ namespace epmodel {
     class ZoneHVACDehumidifierDX_Impl;
   }
 
-  class EPMODEL_API ZoneHVACDehumidifierDX : public ModelObject
+  class EPMODEL_API ZoneHVACDehumidifierDX : public ZoneHVACComponent
   {
    public:
     explicit ZoneHVACDehumidifierDX(const Model& model);

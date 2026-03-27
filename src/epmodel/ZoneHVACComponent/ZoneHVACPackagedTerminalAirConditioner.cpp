@@ -19,13 +19,13 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACPackagedTerminalAirConditioner::ZoneHVACPackagedTerminalAirConditioner(const Model& model)
-    : ModelObject(ZoneHVACPackagedTerminalAirConditioner::iddObjectType(), model) {
+    : ZoneHVACComponent(ZoneHVACPackagedTerminalAirConditioner::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACPackagedTerminalAirConditioner_Impl>());
   }
 
   ZoneHVACPackagedTerminalAirConditioner::ZoneHVACPackagedTerminalAirConditioner(
     std::shared_ptr<detail::ZoneHVACPackagedTerminalAirConditioner_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACPackagedTerminalAirConditioner::iddObjectType() {
     return IddObjectType::ZoneHVAC_PackagedTerminalAirConditioner;

@@ -7,7 +7,7 @@
 #define EPMODEL_ZONEHVACFOURPIPEFANCOIL_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ZoneHVACComponent.hpp"
 
 #include <boost/optional.hpp>
 #include <memory>
@@ -23,7 +23,7 @@ namespace epmodel {
     class ZoneHVACFourPipeFanCoil_Impl;
   }
 
-  class EPMODEL_API ZoneHVACFourPipeFanCoil : public ModelObject
+  class EPMODEL_API ZoneHVACFourPipeFanCoil : public ZoneHVACComponent
   {
    public:
     explicit ZoneHVACFourPipeFanCoil(const Model& model);

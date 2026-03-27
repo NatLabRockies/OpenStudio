@@ -6,7 +6,7 @@
 #ifndef EPMODEL_WATERHEATERHEATPUMPWRAPPEDCONDENSER_IMPL_HPP
 #define EPMODEL_WATERHEATERHEATPUMPWRAPPEDCONDENSER_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "ZoneHVACComponent_Impl.hpp"
 
 #include <string>
 
@@ -15,10 +15,10 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API WaterHeaterHeatPumpWrappedCondenser_Impl : public ModelObject_Impl
+    class EPMODEL_API WaterHeaterHeatPumpWrappedCondenser_Impl : public ZoneHVACComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~WaterHeaterHeatPumpWrappedCondenser_Impl() override = default;
 
       double deadBandTemperatureDifference() const;

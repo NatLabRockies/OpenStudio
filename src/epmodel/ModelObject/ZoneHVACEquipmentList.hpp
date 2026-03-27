@@ -17,6 +17,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class ModelObject;
 
   namespace detail {
     class ZoneHVACEquipmentList_Impl;
@@ -45,6 +46,8 @@ namespace epmodel {
     bool setLoadDistributionScheme(const std::string& loadDistributionScheme);
     bool isLoadDistributionSchemeDefaulted() const;
     void resetLoadDistributionScheme();
+
+    std::vector<ModelObject> equipment() const;
 
    protected:
     using ImplType = detail::ZoneHVACEquipmentList_Impl;

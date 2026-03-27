@@ -7,7 +7,7 @@
 #define EPMODEL_ZONEVENTILATIONWINDANDSTACKOPENAREA_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ZoneHVACComponent/ZoneHVACComponent.hpp"
 
 #include <memory>
 
@@ -25,7 +25,7 @@ namespace epmodel {
     class ZoneVentilationWindandStackOpenArea_Impl;
   }
 
-  class EPMODEL_API ZoneVentilationWindandStackOpenArea : public ModelObject
+  class EPMODEL_API ZoneVentilationWindandStackOpenArea : public ZoneHVACComponent
   {
    public:
     explicit ZoneVentilationWindandStackOpenArea(const Model& model);

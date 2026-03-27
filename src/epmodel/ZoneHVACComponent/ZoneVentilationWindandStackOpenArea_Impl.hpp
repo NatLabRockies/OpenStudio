@@ -6,7 +6,7 @@
 #ifndef EPMODEL_ZONEVENTILATIONWINDANDSTACKOPENAREA_IMPL_HPP
 #define EPMODEL_ZONEVENTILATIONWINDANDSTACKOPENAREA_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACComponent_Impl.hpp"
 
 #include <boost/optional.hpp>
 
@@ -15,10 +15,10 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API ZoneVentilationWindandStackOpenArea_Impl : public ModelObject_Impl
+    class EPMODEL_API ZoneVentilationWindandStackOpenArea_Impl : public ZoneHVACComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneVentilationWindandStackOpenArea_Impl() override = default;
 
       double openingArea() const;

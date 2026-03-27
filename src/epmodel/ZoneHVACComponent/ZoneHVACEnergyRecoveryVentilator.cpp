@@ -17,7 +17,7 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACEnergyRecoveryVentilator::ZoneHVACEnergyRecoveryVentilator(const Model& model)
-    : ModelObject(ZoneHVACEnergyRecoveryVentilator::iddObjectType(), model) {
+    : ZoneHVACComponent(ZoneHVACEnergyRecoveryVentilator::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACEnergyRecoveryVentilator_Impl>());
     autosizeSupplyAirFlowRate();
     autosizeExhaustAirFlowRate();
@@ -26,7 +26,7 @@ namespace epmodel {
   }
 
   ZoneHVACEnergyRecoveryVentilator::ZoneHVACEnergyRecoveryVentilator(std::shared_ptr<detail::ZoneHVACEnergyRecoveryVentilator_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACEnergyRecoveryVentilator::iddObjectType() {
     return IddObjectType::ZoneHVAC_EnergyRecoveryVentilator;

@@ -7,7 +7,7 @@
 #define EPMODEL_ZONEHVACENERGYRECOVERYVENTILATOR_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ZoneHVACComponent.hpp"
 
 #include <boost/optional.hpp>
 #include <memory>
@@ -21,7 +21,7 @@ namespace epmodel {
     class ZoneHVACEnergyRecoveryVentilator_Impl;
   }
 
-  class EPMODEL_API ZoneHVACEnergyRecoveryVentilator : public ModelObject
+  class EPMODEL_API ZoneHVACEnergyRecoveryVentilator : public ZoneHVACComponent
   {
    public:
     explicit ZoneHVACEnergyRecoveryVentilator(const Model& model);

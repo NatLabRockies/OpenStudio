@@ -18,7 +18,7 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACEvaporativeCoolerUnit::ZoneHVACEvaporativeCoolerUnit(const Model& model)
-    : ModelObject(ZoneHVACEvaporativeCoolerUnit::iddObjectType(), model) {
+    : ZoneHVACComponent(ZoneHVACEvaporativeCoolerUnit::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACEvaporativeCoolerUnit_Impl>());
 
     autosizeDesignSupplyAirFlowRate();
@@ -30,7 +30,7 @@ namespace epmodel {
   }
 
   ZoneHVACEvaporativeCoolerUnit::ZoneHVACEvaporativeCoolerUnit(std::shared_ptr<detail::ZoneHVACEvaporativeCoolerUnit_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACEvaporativeCoolerUnit::iddObjectType() {
     return IddObjectType::ZoneHVAC_EvaporativeCoolerUnit;

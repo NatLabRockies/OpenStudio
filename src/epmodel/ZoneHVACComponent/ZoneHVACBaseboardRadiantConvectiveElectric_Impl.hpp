@@ -6,7 +6,7 @@
 #ifndef EPMODEL_ZONEHVACBASEBOARDRADIANTCONVECTIVEELECTRIC_IMPL_HPP
 #define EPMODEL_ZONEHVACBASEBOARDRADIANTCONVECTIVEELECTRIC_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACComponent_Impl.hpp"
 
 #include <string>
 
@@ -15,10 +15,10 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API ZoneHVACBaseboardRadiantConvectiveElectric_Impl : public ModelObject_Impl
+    class EPMODEL_API ZoneHVACBaseboardRadiantConvectiveElectric_Impl : public ZoneHVACComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACBaseboardRadiantConvectiveElectric_Impl() override = default;
 
       std::string heatingDesignCapacityMethod() const;

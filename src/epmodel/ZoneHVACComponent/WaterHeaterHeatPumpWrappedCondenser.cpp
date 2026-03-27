@@ -17,12 +17,12 @@ namespace openstudio {
 namespace epmodel {
 
   WaterHeaterHeatPumpWrappedCondenser::WaterHeaterHeatPumpWrappedCondenser(const Model& model)
-    : ModelObject(WaterHeaterHeatPumpWrappedCondenser::iddObjectType(), model) {
+    : ZoneHVACComponent(WaterHeaterHeatPumpWrappedCondenser::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>());
   }
 
   WaterHeaterHeatPumpWrappedCondenser::WaterHeaterHeatPumpWrappedCondenser(std::shared_ptr<detail::WaterHeaterHeatPumpWrappedCondenser_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType WaterHeaterHeatPumpWrappedCondenser::iddObjectType() {
     return IddObjectType::WaterHeater_HeatPump_WrappedCondenser;

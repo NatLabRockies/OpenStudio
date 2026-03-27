@@ -10,6 +10,7 @@
 
 namespace openstudio {
 namespace epmodel {
+  class ModelObject;
   namespace detail {
 
     class EPMODEL_API ZoneHVACEquipmentList_Impl : public ModelObject_Impl
@@ -22,6 +23,9 @@ namespace epmodel {
       bool setLoadDistributionScheme(const std::string& loadDistributionScheme);
       bool isLoadDistributionSchemeDefaulted() const;
       void resetLoadDistributionScheme();
+      std::vector<openstudio::epmodel::ModelObject> equipment() const;
+      bool addEquipment(const openstudio::epmodel::ModelObject& component);
+      bool removeEquipment(const openstudio::epmodel::ModelObject& component);
     };
 
   }  // namespace detail

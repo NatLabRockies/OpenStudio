@@ -7,7 +7,7 @@
 #define EPMODEL_ZONEHVACWATERTOAIRHEATPUMP_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ZoneHVACComponent.hpp"
 
 #include <memory>
 #include <string>
@@ -27,7 +27,7 @@ namespace epmodel {
     class ZoneHVACWaterToAirHeatPump_Impl;
   }
 
-  class EPMODEL_API ZoneHVACWaterToAirHeatPump : public ModelObject
+  class EPMODEL_API ZoneHVACWaterToAirHeatPump : public ZoneHVACComponent
   {
    public:
     explicit ZoneHVACWaterToAirHeatPump(const Model& model);

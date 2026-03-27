@@ -19,7 +19,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  ZoneHVACUnitVentilator::ZoneHVACUnitVentilator(const Model& model) : ModelObject(ZoneHVACUnitVentilator::iddObjectType(), model) {
+  ZoneHVACUnitVentilator::ZoneHVACUnitVentilator(const Model& model) : ZoneHVACComponent(ZoneHVACUnitVentilator::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACUnitVentilator_Impl>());
 
     OS_ASSERT(setOutdoorAirControlType("VariablePercent"));
@@ -30,7 +30,8 @@ namespace epmodel {
     OS_ASSERT(setCoolingConvergenceTolerance(0.001));
   }
 
-  ZoneHVACUnitVentilator::ZoneHVACUnitVentilator(std::shared_ptr<detail::ZoneHVACUnitVentilator_Impl> impl) : ModelObject(std::move(impl)) {}
+  ZoneHVACUnitVentilator::ZoneHVACUnitVentilator(std::shared_ptr<detail::ZoneHVACUnitVentilator_Impl> impl)
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACUnitVentilator::iddObjectType() {
     return IddObjectType::ZoneHVAC_UnitVentilator;

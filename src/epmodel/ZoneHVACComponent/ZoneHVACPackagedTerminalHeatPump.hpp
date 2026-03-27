@@ -7,7 +7,7 @@
 #define EPMODEL_ZONEHVACPACKAGEDTERMINALHEATPUMP_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ZoneHVACComponent.hpp"
 
 #include <utilities/idd/ZoneHVAC_PackagedTerminalHeatPump_FieldEnums.hxx>
 
@@ -25,7 +25,7 @@ namespace epmodel {
     class ZoneHVACPackagedTerminalHeatPump_Impl;
   }
 
-  class EPMODEL_API ZoneHVACPackagedTerminalHeatPump : public ModelObject
+  class EPMODEL_API ZoneHVACPackagedTerminalHeatPump : public ZoneHVACComponent
   {
    public:
     explicit ZoneHVACPackagedTerminalHeatPump(const Model& model);

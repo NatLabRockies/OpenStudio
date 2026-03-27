@@ -6,7 +6,7 @@
 #ifndef EPMODEL_FANZONEEXHAUST_IMPL_HPP
 #define EPMODEL_FANZONEEXHAUST_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "ZoneHVACComponent_Impl.hpp"
 
 #include <string>
 #include <vector>
@@ -16,10 +16,10 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API FanZoneExhaust_Impl : public ModelObject_Impl
+    class EPMODEL_API FanZoneExhaust_Impl : public ZoneHVACComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~FanZoneExhaust_Impl() override = default;
 
       std::vector<std::string> systemAvailabilityManagerCouplingModeValues() const;

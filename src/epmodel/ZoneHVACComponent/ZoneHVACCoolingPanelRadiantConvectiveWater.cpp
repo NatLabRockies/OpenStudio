@@ -19,11 +19,11 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACCoolingPanelRadiantConvectiveWater::ZoneHVACCoolingPanelRadiantConvectiveWater(const Model& model)
-    : ModelObject(ZoneHVACCoolingPanelRadiantConvectiveWater::iddObjectType(), model) {}
+    : ZoneHVACComponent(ZoneHVACCoolingPanelRadiantConvectiveWater::iddObjectType(), model) {}
 
   ZoneHVACCoolingPanelRadiantConvectiveWater::ZoneHVACCoolingPanelRadiantConvectiveWater(
     std::shared_ptr<detail::ZoneHVACCoolingPanelRadiantConvectiveWater_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACCoolingPanelRadiantConvectiveWater::iddObjectType() {
     return IddObjectType::ZoneHVAC_CoolingPanel_RadiantConvective_Water;

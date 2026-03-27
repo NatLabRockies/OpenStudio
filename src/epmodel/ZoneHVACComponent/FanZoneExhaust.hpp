@@ -7,7 +7,7 @@
 #define EPMODEL_FANZONEEXHAUST_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ZoneHVACComponent.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -24,7 +24,7 @@ namespace epmodel {
     class FanZoneExhaust_Impl;
   }
 
-  class EPMODEL_API FanZoneExhaust : public ModelObject
+  class EPMODEL_API FanZoneExhaust : public ZoneHVACComponent
   {
    public:
     explicit FanZoneExhaust(const Model& model);

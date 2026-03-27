@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
 #include "../ZoneHVACComponent/ZoneHVACIdealLoadsAirSystem.hpp"
 
 using namespace openstudio::epmodel;
@@ -149,4 +150,18 @@ TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(system.setCoolingFuelType("NaturalGas"));
   EXPECT_EQ("NaturalGas", system.coolingFuelType());
+}
+
+TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_ZoneAttachmentRoundTrip) {
+  Model model;
+  ThermalZone zone(model);
+  ZoneHVACIdealLoadsAirSystem system(model);
+
+  EXPECT_FALSE(system.thermalZone());
+  EXPECT_TRUE(system.addToThermalZone(zone));
+  ASSERT_TRUE(system.thermalZone());
+  EXPECT_EQ(zone, *system.thermalZone());
+
+  system.removeFromThermalZone();
+  EXPECT_FALSE(system.thermalZone());
 }

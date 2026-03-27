@@ -7,7 +7,7 @@
 #define EPMODEL_REFRIGERATIONAIRCHILLER_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ZoneHVACComponent.hpp"
 
 #include <boost/optional.hpp>
 #include <memory>
@@ -23,7 +23,7 @@ namespace epmodel {
     class RefrigerationAirChiller_Impl;
   }
 
-  class EPMODEL_API RefrigerationAirChiller : public ModelObject
+  class EPMODEL_API RefrigerationAirChiller : public ZoneHVACComponent
   {
    public:
     explicit RefrigerationAirChiller(const Model& model);

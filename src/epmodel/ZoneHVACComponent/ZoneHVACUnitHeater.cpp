@@ -19,7 +19,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  ZoneHVACUnitHeater::ZoneHVACUnitHeater(const Model& model) : ModelObject(ZoneHVACUnitHeater::iddObjectType(), model) {
+  ZoneHVACUnitHeater::ZoneHVACUnitHeater(const Model& model) : ZoneHVACComponent(ZoneHVACUnitHeater::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACUnitHeater_Impl>());
 
     autosizeMaximumSupplyAirFlowRate();
@@ -29,7 +29,7 @@ namespace epmodel {
     OS_ASSERT(setHeatingConvergenceTolerance(0.001));
   }
 
-  ZoneHVACUnitHeater::ZoneHVACUnitHeater(std::shared_ptr<detail::ZoneHVACUnitHeater_Impl> impl) : ModelObject(std::move(impl)) {}
+  ZoneHVACUnitHeater::ZoneHVACUnitHeater(std::shared_ptr<detail::ZoneHVACUnitHeater_Impl> impl) : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACUnitHeater::iddObjectType() {
     return IddObjectType::ZoneHVAC_UnitHeater;

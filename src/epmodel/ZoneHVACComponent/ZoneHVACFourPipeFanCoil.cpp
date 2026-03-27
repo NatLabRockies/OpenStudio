@@ -17,7 +17,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  ZoneHVACFourPipeFanCoil::ZoneHVACFourPipeFanCoil(const Model& model) : ModelObject(ZoneHVACFourPipeFanCoil::iddObjectType(), model) {
+  ZoneHVACFourPipeFanCoil::ZoneHVACFourPipeFanCoil(const Model& model) : ZoneHVACComponent(ZoneHVACFourPipeFanCoil::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>());
 
     auto capacityMethods = ZoneHVACFourPipeFanCoil::capacityControlMethodValues();
@@ -36,7 +36,8 @@ namespace epmodel {
     autosizeMaximumSupplyAirTemperatureInHeatingMode();
   }
 
-  ZoneHVACFourPipeFanCoil::ZoneHVACFourPipeFanCoil(std::shared_ptr<detail::ZoneHVACFourPipeFanCoil_Impl> impl) : ModelObject(std::move(impl)) {}
+  ZoneHVACFourPipeFanCoil::ZoneHVACFourPipeFanCoil(std::shared_ptr<detail::ZoneHVACFourPipeFanCoil_Impl> impl)
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACFourPipeFanCoil::iddObjectType() {
     return IddObjectType::ZoneHVAC_FourPipeFanCoil;

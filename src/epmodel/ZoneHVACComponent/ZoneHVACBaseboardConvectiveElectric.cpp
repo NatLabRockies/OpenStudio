@@ -17,7 +17,7 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACBaseboardConvectiveElectric::ZoneHVACBaseboardConvectiveElectric(const Model& model)
-    : ModelObject(ZoneHVACBaseboardConvectiveElectric::iddObjectType(), model) {
+    : ZoneHVACComponent(ZoneHVACBaseboardConvectiveElectric::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACBaseboardConvectiveElectric_Impl>());
 
     autosizeNominalCapacity();
@@ -25,7 +25,7 @@ namespace epmodel {
   }
 
   ZoneHVACBaseboardConvectiveElectric::ZoneHVACBaseboardConvectiveElectric(std::shared_ptr<detail::ZoneHVACBaseboardConvectiveElectric_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACBaseboardConvectiveElectric::iddObjectType() {
     return IddObjectType::ZoneHVAC_Baseboard_Convective_Electric;

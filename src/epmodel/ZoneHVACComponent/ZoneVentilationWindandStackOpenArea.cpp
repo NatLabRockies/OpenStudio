@@ -19,7 +19,7 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneVentilationWindandStackOpenArea::ZoneVentilationWindandStackOpenArea(const Model& model)
-    : ModelObject(ZoneVentilationWindandStackOpenArea::iddObjectType(), model) {
+    : ZoneHVACComponent(ZoneVentilationWindandStackOpenArea::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneVentilationWindandStackOpenArea_Impl>());
 
     setOpeningArea(0.0);
@@ -36,7 +36,7 @@ namespace epmodel {
   }
 
   ZoneVentilationWindandStackOpenArea::ZoneVentilationWindandStackOpenArea(std::shared_ptr<detail::ZoneVentilationWindandStackOpenArea_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneVentilationWindandStackOpenArea::iddObjectType() {
     return IddObjectType::ZoneVentilation_WindandStackOpenArea;

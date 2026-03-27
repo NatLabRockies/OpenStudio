@@ -7,7 +7,7 @@
 #define EPMODEL_ZONEHVACLOWTEMPRADIANTCONSTFLOW_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ZoneHVACComponent/ZoneHVACComponent.hpp"
 
 #include <boost/optional.hpp>
 #include <memory>
@@ -23,7 +23,7 @@ namespace epmodel {
     class ZoneHVACLowTempRadiantConstFlow_Impl;
   }
 
-  class EPMODEL_API ZoneHVACLowTempRadiantConstFlow : public ModelObject
+  class EPMODEL_API ZoneHVACLowTempRadiantConstFlow : public ZoneHVACComponent
   {
    public:
     explicit ZoneHVACLowTempRadiantConstFlow(const Model& model);

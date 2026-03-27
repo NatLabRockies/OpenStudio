@@ -18,7 +18,7 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACBaseboardRadiantConvectiveElectric::ZoneHVACBaseboardRadiantConvectiveElectric(const Model& model)
-    : ModelObject(ZoneHVACBaseboardRadiantConvectiveElectric::iddObjectType(), model) {
+    : ZoneHVACComponent(ZoneHVACBaseboardRadiantConvectiveElectric::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACBaseboardRadiantConvectiveElectric_Impl>());
 
     OS_ASSERT(setHeatingDesignCapacityMethod("HeatingDesignCapacity"));
@@ -32,7 +32,7 @@ namespace epmodel {
 
   ZoneHVACBaseboardRadiantConvectiveElectric::ZoneHVACBaseboardRadiantConvectiveElectric(
     std::shared_ptr<detail::ZoneHVACBaseboardRadiantConvectiveElectric_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACBaseboardRadiantConvectiveElectric::iddObjectType() {
     return IddObjectType::ZoneHVAC_Baseboard_RadiantConvective_Electric;

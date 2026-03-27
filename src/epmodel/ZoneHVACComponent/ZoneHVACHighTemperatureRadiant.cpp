@@ -19,7 +19,7 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACHighTemperatureRadiant::ZoneHVACHighTemperatureRadiant(const Model& model)
-    : ModelObject(ZoneHVACHighTemperatureRadiant::iddObjectType(), model) {
+    : ZoneHVACComponent(ZoneHVACHighTemperatureRadiant::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACHighTemperatureRadiant_Impl>());
 
     autosizeMaximumPowerInput();
@@ -34,7 +34,7 @@ namespace epmodel {
   }
 
   ZoneHVACHighTemperatureRadiant::ZoneHVACHighTemperatureRadiant(std::shared_ptr<detail::ZoneHVACHighTemperatureRadiant_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACHighTemperatureRadiant::iddObjectType() {
     return IddObjectType::ZoneHVAC_HighTemperatureRadiant;

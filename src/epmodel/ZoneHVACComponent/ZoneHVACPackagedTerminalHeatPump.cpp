@@ -21,12 +21,12 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACPackagedTerminalHeatPump::ZoneHVACPackagedTerminalHeatPump(const Model& model)
-    : ModelObject(ZoneHVACPackagedTerminalHeatPump::iddObjectType(), model) {
+    : ZoneHVACComponent(ZoneHVACPackagedTerminalHeatPump::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>());
   }
 
   ZoneHVACPackagedTerminalHeatPump::ZoneHVACPackagedTerminalHeatPump(std::shared_ptr<detail::ZoneHVACPackagedTerminalHeatPump_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACPackagedTerminalHeatPump::iddObjectType() {
     return IddObjectType::ZoneHVAC_PackagedTerminalHeatPump;

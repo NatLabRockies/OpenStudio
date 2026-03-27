@@ -7,7 +7,7 @@
 #define EPMODEL_ZONEHVACTERMINALUNITVARIABLEREFRIGERANTFLOW_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ZoneHVACComponent.hpp"
 
 #include <utilities/idd/ZoneHVAC_TerminalUnit_VariableRefrigerantFlow_FieldEnums.hxx>
 #include <boost/optional.hpp>
@@ -24,7 +24,7 @@ namespace epmodel {
     class ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl;
   }
 
-  class EPMODEL_API ZoneHVACTerminalUnitVariableRefrigerantFlow : public ModelObject
+  class EPMODEL_API ZoneHVACTerminalUnitVariableRefrigerantFlow : public ZoneHVACComponent
   {
    public:
     explicit ZoneHVACTerminalUnitVariableRefrigerantFlow(const Model& model);

@@ -16,7 +16,8 @@
 namespace openstudio {
 namespace epmodel {
 
-  RefrigerationAirChiller::RefrigerationAirChiller(const Model& model) : ModelObject(RefrigerationAirChiller::iddObjectType(), model) {
+  RefrigerationAirChiller::RefrigerationAirChiller(const Model& model)
+    : ZoneHVACComponent(RefrigerationAirChiller::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::RefrigerationAirChiller_Impl>());
 
     OS_ASSERT(setCapacityRatingType("UnitLoadFactorSensibleOnly"));
@@ -31,7 +32,8 @@ namespace epmodel {
     OS_ASSERT(setVerticalLocation("Middle"));
   }
 
-  RefrigerationAirChiller::RefrigerationAirChiller(std::shared_ptr<detail::RefrigerationAirChiller_Impl> impl) : ModelObject(std::move(impl)) {}
+  RefrigerationAirChiller::RefrigerationAirChiller(std::shared_ptr<detail::RefrigerationAirChiller_Impl> impl)
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType RefrigerationAirChiller::iddObjectType() {
     return IddObjectType::Refrigeration_AirChiller;

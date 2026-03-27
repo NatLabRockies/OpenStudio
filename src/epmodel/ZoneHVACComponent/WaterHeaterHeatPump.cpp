@@ -15,7 +15,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  WaterHeaterHeatPump::WaterHeaterHeatPump(const Model& model) : ModelObject(WaterHeaterHeatPump::iddObjectType(), model) {
+  WaterHeaterHeatPump::WaterHeaterHeatPump(const Model& model) : ZoneHVACComponent(WaterHeaterHeatPump::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::WaterHeaterHeatPump_Impl>());
 
     OS_ASSERT(setDeadBandTemperatureDifference(5.0));
@@ -33,7 +33,8 @@ namespace epmodel {
     OS_ASSERT(setControlSensor1Weight(1.0));
   }
 
-  WaterHeaterHeatPump::WaterHeaterHeatPump(std::shared_ptr<detail::WaterHeaterHeatPump_Impl> impl) : ModelObject(std::move(impl)) {}
+  WaterHeaterHeatPump::WaterHeaterHeatPump(std::shared_ptr<detail::WaterHeaterHeatPump_Impl> impl)
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType WaterHeaterHeatPump::iddObjectType() {
     return IddObjectType::WaterHeater_HeatPump_PumpedCondenser;

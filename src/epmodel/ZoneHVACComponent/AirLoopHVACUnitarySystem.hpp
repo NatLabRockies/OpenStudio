@@ -7,7 +7,7 @@
 #define EPMODEL_AIRLOOPHVACUNITARYSYSTEM_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ZoneHVACComponent.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace detail {
 class AirLoopHVACUnitarySystem_Impl;
 }
 
-class EPMODEL_API AirLoopHVACUnitarySystem : public ModelObject
+class EPMODEL_API AirLoopHVACUnitarySystem : public ZoneHVACComponent
 {
  public:
   explicit AirLoopHVACUnitarySystem(const Model& model);

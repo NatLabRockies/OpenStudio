@@ -15,6 +15,8 @@
 #include "Node.hpp"
 #include "Splitter/Splitter.hpp"
 #include "StraightComponent/StraightComponent.hpp"
+#include "ZoneHVACComponent/ZoneHVACComponent.hpp"
+#include "ZoneHVACComponent/ZoneHVACComponent_Impl.hpp"
 
 #include <algorithm>
 namespace openstudio {
@@ -39,6 +41,10 @@ namespace epmodel {
 
   boost::optional<HVACComponent> HVACComponent::containingHVACComponent() const {
     return boost::none;
+  }
+
+  boost::optional<ZoneHVACComponent> HVACComponent::containingZoneHVACComponent() const {
+    return getImpl<detail::HVACComponent_Impl>()->containingZoneHVACComponent();
   }
 
   // TODO: Implement containingStraightComponent once containment tracking is ready.
@@ -104,6 +110,17 @@ namespace epmodel {
         const auto demandComponents = plantLoop.demandComponents(openstudio::IddObjectType::Catchall);
         if (std::ranges::find_if(demandComponents, [&](const auto& component) { return component.handle() == handle(); }) != demandComponents.end()) {
           return plantLoop;
+        }
+      }
+      return boost::none;
+    }
+
+    boost::optional<ZoneHVACComponent> HVACComponent_Impl::containingZoneHVACComponent() const {
+      const auto thisObject = getObject<ModelObject>();
+      for (const auto& zoneEquipment : model().getModelObjects<openstudio::epmodel::ZoneHVACComponent>()) {
+        const auto children = zoneEquipment.children();
+        if (std::ranges::find(children, thisObject) != children.end()) {
+          return zoneEquipment;
         }
       }
       return boost::none;

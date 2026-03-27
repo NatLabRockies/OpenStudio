@@ -19,12 +19,13 @@
 namespace openstudio {
 namespace epmodel {
 
-  ZoneHVACIdealLoadsAirSystem::ZoneHVACIdealLoadsAirSystem(const Model& model) : ModelObject(ZoneHVACIdealLoadsAirSystem::iddObjectType(), model) {
+  ZoneHVACIdealLoadsAirSystem::ZoneHVACIdealLoadsAirSystem(const Model& model)
+    : ZoneHVACComponent(ZoneHVACIdealLoadsAirSystem::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>());
   }
 
   ZoneHVACIdealLoadsAirSystem::ZoneHVACIdealLoadsAirSystem(std::shared_ptr<detail::ZoneHVACIdealLoadsAirSystem_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACIdealLoadsAirSystem::iddObjectType() {
     return IddObjectType::ZoneHVAC_IdealLoadsAirSystem;

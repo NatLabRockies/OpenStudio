@@ -19,12 +19,12 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACLowTempRadiantVarFlow::ZoneHVACLowTempRadiantVarFlow(const Model& model)
-    : ModelObject(ZoneHVACLowTempRadiantVarFlow::iddObjectType(), model) {
+    : ZoneHVACComponent(ZoneHVACLowTempRadiantVarFlow::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACLowTempRadiantVarFlow_Impl>());
   }
 
   ZoneHVACLowTempRadiantVarFlow::ZoneHVACLowTempRadiantVarFlow(std::shared_ptr<detail::ZoneHVACLowTempRadiantVarFlow_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACLowTempRadiantVarFlow::iddObjectType() {
     return IddObjectType::ZoneHVAC_LowTemperatureRadiant_VariableFlow;

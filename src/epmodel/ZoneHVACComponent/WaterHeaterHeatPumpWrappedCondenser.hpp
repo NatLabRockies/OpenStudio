@@ -7,7 +7,7 @@
 #define EPMODEL_WATERHEATERHEATPUMPWRAPPEDCONDENSER_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ZoneHVACComponent.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -24,7 +24,7 @@ namespace epmodel {
     class WaterHeaterHeatPumpWrappedCondenser_Impl;
   }
 
-  class EPMODEL_API WaterHeaterHeatPumpWrappedCondenser : public ModelObject
+  class EPMODEL_API WaterHeaterHeatPumpWrappedCondenser : public ZoneHVACComponent
   {
    public:
     explicit WaterHeaterHeatPumpWrappedCondenser(const Model& model);

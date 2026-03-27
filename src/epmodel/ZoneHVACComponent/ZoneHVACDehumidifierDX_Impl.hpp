@@ -6,17 +6,17 @@
 #ifndef EPMODEL_ZONEHVACDEHUMIDIFIERDX_IMPL_HPP
 #define EPMODEL_ZONEHVACDEHUMIDIFIERDX_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "ZoneHVACComponent_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API ZoneHVACDehumidifierDX_Impl : public ModelObject_Impl
+    class EPMODEL_API ZoneHVACDehumidifierDX_Impl : public ZoneHVACComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACDehumidifierDX_Impl() override = default;
 
       double ratedWaterRemoval() const;

@@ -18,13 +18,13 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACLowTemperatureRadiantElectric::ZoneHVACLowTemperatureRadiantElectric(const Model& model)
-    : ModelObject(ZoneHVACLowTemperatureRadiantElectric::iddObjectType(), model) {
+    : ZoneHVACComponent(ZoneHVACLowTemperatureRadiantElectric::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACLowTemperatureRadiantElectric_Impl>());
   }
 
   ZoneHVACLowTemperatureRadiantElectric::ZoneHVACLowTemperatureRadiantElectric(
     std::shared_ptr<detail::ZoneHVACLowTemperatureRadiantElectric_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACLowTemperatureRadiantElectric::iddObjectType() {
     return IddObjectType::ZoneHVAC_LowTemperatureRadiant_Electric;

@@ -7,7 +7,7 @@
 #define EPMODEL_ZONEHVACPACKAGEDTERMINALAIRCONDITIONER_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ZoneHVACComponent.hpp"
 
 #include <utilities/idd/ZoneHVAC_PackagedTerminalAirConditioner_FieldEnums.hxx>
 #include <boost/optional.hpp>
@@ -24,7 +24,7 @@ namespace epmodel {
     class ZoneHVACPackagedTerminalAirConditioner_Impl;
   }
 
-  class EPMODEL_API ZoneHVACPackagedTerminalAirConditioner : public ModelObject
+  class EPMODEL_API ZoneHVACPackagedTerminalAirConditioner : public ZoneHVACComponent
   {
    public:
     explicit ZoneHVACPackagedTerminalAirConditioner(const Model& model);

@@ -19,13 +19,13 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACTerminalUnitVariableRefrigerantFlow::ZoneHVACTerminalUnitVariableRefrigerantFlow(const Model& model)
-    : ModelObject(ZoneHVACTerminalUnitVariableRefrigerantFlow::iddObjectType(), model) {
+    : ZoneHVACComponent(ZoneHVACTerminalUnitVariableRefrigerantFlow::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>());
   }
 
   ZoneHVACTerminalUnitVariableRefrigerantFlow::ZoneHVACTerminalUnitVariableRefrigerantFlow(
     std::shared_ptr<detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACTerminalUnitVariableRefrigerantFlow::iddObjectType() {
     return IddObjectType::ZoneHVAC_TerminalUnit_VariableRefrigerantFlow;

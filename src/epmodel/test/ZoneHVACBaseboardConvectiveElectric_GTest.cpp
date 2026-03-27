@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
 #include "../ZoneHVACComponent/ZoneHVACBaseboardConvectiveElectric.hpp"
 
 using namespace openstudio::epmodel;
@@ -33,4 +34,18 @@ TEST_F(EPModelFixture, ZoneHVACBaseboardConvectiveElectric_ScalarAccessors_Round
   EXPECT_TRUE(baseboard.isEfficiencyDefaulted());
   ASSERT_TRUE(baseboard.efficiency());
   EXPECT_DOUBLE_EQ(1.0, baseboard.efficiency().get());
+}
+
+TEST_F(EPModelFixture, ZoneHVACBaseboardConvectiveElectric_ZoneAttachmentRoundTrip) {
+  Model model;
+  ThermalZone zone(model);
+  ZoneHVACBaseboardConvectiveElectric baseboard(model);
+
+  EXPECT_FALSE(baseboard.thermalZone());
+  EXPECT_TRUE(baseboard.addToThermalZone(zone));
+  ASSERT_TRUE(baseboard.thermalZone());
+  EXPECT_EQ(zone, *baseboard.thermalZone());
+
+  baseboard.removeFromThermalZone();
+  EXPECT_FALSE(baseboard.thermalZone());
 }

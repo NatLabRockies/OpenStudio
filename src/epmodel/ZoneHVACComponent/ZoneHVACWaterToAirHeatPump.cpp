@@ -34,12 +34,13 @@ namespace epmodel {
 
   }  // namespace
 
-  ZoneHVACWaterToAirHeatPump::ZoneHVACWaterToAirHeatPump(const Model& model) : ModelObject(ZoneHVACWaterToAirHeatPump::iddObjectType(), model) {
+  ZoneHVACWaterToAirHeatPump::ZoneHVACWaterToAirHeatPump(const Model& model)
+    : ZoneHVACComponent(ZoneHVACWaterToAirHeatPump::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>());
   }
 
   ZoneHVACWaterToAirHeatPump::ZoneHVACWaterToAirHeatPump(std::shared_ptr<detail::ZoneHVACWaterToAirHeatPump_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACWaterToAirHeatPump::iddObjectType() {
     return IddObjectType::ZoneHVAC_WaterToAirHeatPump;

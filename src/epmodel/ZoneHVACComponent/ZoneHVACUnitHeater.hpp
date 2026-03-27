@@ -7,7 +7,7 @@
 #define EPMODEL_ZONEHVACUNITHEATER_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ZoneHVACComponent.hpp"
 
 #include <memory>
 #include <string>
@@ -27,7 +27,7 @@ namespace epmodel {
     class ZoneHVACUnitHeater_Impl;
   }
 
-  class EPMODEL_API ZoneHVACUnitHeater : public ModelObject
+  class EPMODEL_API ZoneHVACUnitHeater : public ZoneHVACComponent
   {
    public:
     explicit ZoneHVACUnitHeater(const Model& model);

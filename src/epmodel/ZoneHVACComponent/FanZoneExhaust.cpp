@@ -17,7 +17,7 @@
 namespace openstudio {
 namespace epmodel {
 
-FanZoneExhaust::FanZoneExhaust(const Model& model) : ModelObject(FanZoneExhaust::iddObjectType(), model) {
+FanZoneExhaust::FanZoneExhaust(const Model& model) : ZoneHVACComponent(FanZoneExhaust::iddObjectType(), model) {
   // Mirror openstudio::model constructor defaults for required scalar fields.
   OS_ASSERT(setFanTotalEfficiency(0.60));
   OS_ASSERT(setPressureRise(0.0));
@@ -25,7 +25,7 @@ FanZoneExhaust::FanZoneExhaust(const Model& model) : ModelObject(FanZoneExhaust:
   OS_ASSERT(setSystemAvailabilityManagerCouplingMode("Decoupled"));
 }
 
-FanZoneExhaust::FanZoneExhaust(std::shared_ptr<detail::FanZoneExhaust_Impl> impl) : ModelObject(std::move(impl)) {}
+FanZoneExhaust::FanZoneExhaust(std::shared_ptr<detail::FanZoneExhaust_Impl> impl) : ZoneHVACComponent(std::move(impl)) {}
 
 IddObjectType FanZoneExhaust::iddObjectType() {
   return IddObjectType::Fan_ZoneExhaust;

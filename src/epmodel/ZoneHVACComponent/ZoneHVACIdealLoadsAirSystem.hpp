@@ -7,7 +7,7 @@
 #define EPMODEL_ZONEHVACIDEALLOADSAIRSYSTEM_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ZoneHVACComponent.hpp"
 
 #include <boost/optional.hpp>
 #include <memory>
@@ -23,7 +23,7 @@ namespace epmodel {
     class ZoneHVACIdealLoadsAirSystem_Impl;
   }
 
-  class EPMODEL_API ZoneHVACIdealLoadsAirSystem : public ModelObject
+  class EPMODEL_API ZoneHVACIdealLoadsAirSystem : public ZoneHVACComponent
   {
    public:
     explicit ZoneHVACIdealLoadsAirSystem(const Model& model);

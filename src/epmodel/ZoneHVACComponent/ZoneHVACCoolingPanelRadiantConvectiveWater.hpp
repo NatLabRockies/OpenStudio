@@ -7,7 +7,7 @@
 #define EPMODEL_ZONEHVACCOOLINGPANELRADIANTCONVECTIVEWATER_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ZoneHVACComponent/ZoneHVACComponent.hpp"
 
 #include <boost/optional.hpp>
 #include <memory>
@@ -23,7 +23,7 @@ namespace epmodel {
     class ZoneHVACCoolingPanelRadiantConvectiveWater_Impl;
   }
 
-  class EPMODEL_API ZoneHVACCoolingPanelRadiantConvectiveWater : public ModelObject
+  class EPMODEL_API ZoneHVACCoolingPanelRadiantConvectiveWater : public ZoneHVACComponent
   {
    public:
     explicit ZoneHVACCoolingPanelRadiantConvectiveWater(const Model& model);

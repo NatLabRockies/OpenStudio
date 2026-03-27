@@ -177,6 +177,9 @@ set(${target_name}_src
   WaterToAirComponent/CoilUserDefined.hpp
   WaterToAirComponent/CoilUserDefined_Impl.hpp
   WaterToAirComponent/CoilUserDefined.cpp
+  ZoneHVACComponent/ZoneHVACComponent.hpp
+  ZoneHVACComponent/ZoneHVACComponent_Impl.hpp
+  ZoneHVACComponent/ZoneHVACComponent.cpp
   ModelObject/CoilCoolingWaterToAirHeatPumpParameterEstimation.hpp
   ModelObject/CoilCoolingWaterToAirHeatPumpParameterEstimation_Impl.hpp
   ModelObject/CoilCoolingWaterToAirHeatPumpParameterEstimation.cpp

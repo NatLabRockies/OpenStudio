@@ -7,7 +7,7 @@
 #define EPMODEL_ZONEHVACBASEBOARDCONVECTIVEELECTRIC_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "ZoneHVACComponent/ZoneHVACComponent.hpp"
 
 #include <memory>
 
@@ -20,7 +20,7 @@ namespace epmodel {
     class ZoneHVACBaseboardConvectiveElectric_Impl;
   }
 
-  class EPMODEL_API ZoneHVACBaseboardConvectiveElectric : public ModelObject
+  class EPMODEL_API ZoneHVACBaseboardConvectiveElectric : public ZoneHVACComponent
   {
    public:
     explicit ZoneHVACBaseboardConvectiveElectric(const Model& model);

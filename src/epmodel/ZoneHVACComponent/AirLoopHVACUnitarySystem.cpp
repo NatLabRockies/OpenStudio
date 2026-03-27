@@ -18,7 +18,8 @@
 namespace openstudio {
 namespace epmodel {
 
-AirLoopHVACUnitarySystem::AirLoopHVACUnitarySystem(const Model& model) : ModelObject(AirLoopHVACUnitarySystem::iddObjectType(), model) {
+AirLoopHVACUnitarySystem::AirLoopHVACUnitarySystem(const Model& model)
+  : ZoneHVACComponent(AirLoopHVACUnitarySystem::iddObjectType(), model) {
   // Mirror model constructor defaults for scalar fields with strict/non-optional getters.
   OS_ASSERT(setControlType("Load"));
   OS_ASSERT(setDehumidificationControlType("None"));
@@ -36,7 +37,8 @@ AirLoopHVACUnitarySystem::AirLoopHVACUnitarySystem(const Model& model) : ModelOb
   OS_ASSERT(setAncilliaryOffCycleElectricPower(0.0));
 }
 
-AirLoopHVACUnitarySystem::AirLoopHVACUnitarySystem(std::shared_ptr<detail::AirLoopHVACUnitarySystem_Impl> impl) : ModelObject(std::move(impl)) {}
+AirLoopHVACUnitarySystem::AirLoopHVACUnitarySystem(std::shared_ptr<detail::AirLoopHVACUnitarySystem_Impl> impl)
+  : ZoneHVACComponent(std::move(impl)) {}
 
 IddObjectType AirLoopHVACUnitarySystem::iddObjectType() {
   return IddObjectType::AirLoopHVAC_UnitarySystem;

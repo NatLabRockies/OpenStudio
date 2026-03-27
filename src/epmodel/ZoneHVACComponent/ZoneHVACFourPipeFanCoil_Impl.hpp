@@ -6,7 +6,7 @@
 #ifndef EPMODEL_ZONEHVACFOURPIPEFANCOIL_IMPL_HPP
 #define EPMODEL_ZONEHVACFOURPIPEFANCOIL_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "ZoneHVACComponent_Impl.hpp"
 
 #include <boost/optional.hpp>
 #include <string>
@@ -17,10 +17,10 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API ZoneHVACFourPipeFanCoil_Impl : public ModelObject_Impl
+    class EPMODEL_API ZoneHVACFourPipeFanCoil_Impl : public ZoneHVACComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACFourPipeFanCoil_Impl() override = default;
 
       std::string capacityControlMethod() const;

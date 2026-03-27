@@ -18,7 +18,7 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACBaseboardConvectiveWater::ZoneHVACBaseboardConvectiveWater(const Model& model)
-    : ModelObject(ZoneHVACBaseboardConvectiveWater::iddObjectType(), model) {
+    : ZoneHVACComponent(ZoneHVACBaseboardConvectiveWater::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACBaseboardConvectiveWater_Impl>());
 
     OS_ASSERT(setHeatingDesignCapacityMethod("HeatingDesignCapacity"));
@@ -29,7 +29,7 @@ namespace epmodel {
   }
 
   ZoneHVACBaseboardConvectiveWater::ZoneHVACBaseboardConvectiveWater(std::shared_ptr<detail::ZoneHVACBaseboardConvectiveWater_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACBaseboardConvectiveWater::iddObjectType() {
     return IddObjectType::ZoneHVAC_Baseboard_Convective_Water;
