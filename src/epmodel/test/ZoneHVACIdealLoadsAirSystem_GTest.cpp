@@ -7,6 +7,7 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACIdealLoadsAirSystem.hpp"
 
 using namespace openstudio::epmodel;
@@ -15,6 +16,8 @@ TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_DefaultConstructor) {
   Model model;
   ZoneHVACIdealLoadsAirSystem system(model);
 
+  EXPECT_EQ("DistrictHeatingWater", system.heatingFuelType());
+  EXPECT_EQ("DistrictCooling", system.coolingFuelType());
   EXPECT_DOUBLE_EQ(50.0, system.maximumHeatingSupplyAirTemperature());
   EXPECT_DOUBLE_EQ(13.0, system.minimumCoolingSupplyAirTemperature());
   EXPECT_DOUBLE_EQ(0.0156, system.maximumHeatingSupplyAirHumidityRatio());
@@ -157,11 +160,17 @@ TEST_F(EPModelFixture, ZoneHVACIdealLoadsAirSystem_ZoneAttachmentRoundTrip) {
   ThermalZone zone(model);
   ZoneHVACIdealLoadsAirSystem system(model);
 
+  EXPECT_NE(0u, system.inletPort());
+  EXPECT_NE(0u, system.outletPort());
   EXPECT_FALSE(system.thermalZone());
   EXPECT_TRUE(system.addToThermalZone(zone));
   ASSERT_TRUE(system.thermalZone());
   EXPECT_EQ(zone, *system.thermalZone());
+  EXPECT_TRUE(system.inletNode());
+  EXPECT_TRUE(system.outletNode());
 
   system.removeFromThermalZone();
   EXPECT_FALSE(system.thermalZone());
+  EXPECT_FALSE(system.inletNode());
+  EXPECT_FALSE(system.outletNode());
 }

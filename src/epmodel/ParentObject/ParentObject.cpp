@@ -9,13 +9,21 @@
 namespace openstudio {
 namespace epmodel {
 
+  namespace detail {
+
+    std::vector<ModelObject> ParentObject_Impl::children() const {
+      return {};
+    }
+
+  }  // namespace detail
+
   ParentObject::ParentObject(IddObjectType type, const Model& model, bool fastName, bool isTransient)
     : ModelObject(type, model, fastName, isTransient) {}
 
   ParentObject::ParentObject(std::shared_ptr<ImplType> impl) : ModelObject(std::move(impl)) {}
 
   std::vector<ModelObject> ParentObject::children() const {
-    return {};
+    return getImpl<detail::ParentObject_Impl>()->children();
   }
 
 }  // namespace epmodel

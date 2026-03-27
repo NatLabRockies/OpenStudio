@@ -14,6 +14,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class ThermalZone;
+
   namespace detail {
 
     class EPMODEL_API RefrigerationAirChiller_Impl : public ZoneHVACComponent_Impl

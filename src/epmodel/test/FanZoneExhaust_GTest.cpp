@@ -6,7 +6,11 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/FanZoneExhaust.hpp"
+
+#include <utilities/idd/Fan_ZoneExhaust_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -43,4 +47,22 @@ TEST_F(EPModelFixture, FanZoneExhaust_ScalarAccessors_RoundTrip) {
   ASSERT_FALSE(couplingModes.empty());
   EXPECT_TRUE(fan.setSystemAvailabilityManagerCouplingMode(couplingModes.front()));
   EXPECT_EQ(couplingModes.front(), fan.systemAvailabilityManagerCouplingMode());
+}
+
+TEST_F(EPModelFixture, FanZoneExhaust_Topology) {
+  Model model;
+  FanZoneExhaust fan(model);
+  ThermalZone zone(model);
+
+  EXPECT_EQ(openstudio::Fan_ZoneExhaustFields::AirInletNodeName, fan.inletPort());
+  EXPECT_EQ(openstudio::Fan_ZoneExhaustFields::AirOutletNodeName, fan.outletPort());
+
+  EXPECT_TRUE(fan.addToThermalZone(zone));
+  ASSERT_TRUE(fan.thermalZone());
+  EXPECT_EQ(zone, fan.thermalZone().get());
+  EXPECT_TRUE(fan.inletNode());
+  EXPECT_TRUE(fan.outletNode());
+
+  fan.removeFromThermalZone();
+  EXPECT_FALSE(fan.thermalZone());
 }

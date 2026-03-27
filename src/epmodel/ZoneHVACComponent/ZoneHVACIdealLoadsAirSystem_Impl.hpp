@@ -22,6 +22,9 @@ namespace epmodel {
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACIdealLoadsAirSystem_Impl() override = default;
 
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+
       double maximumHeatingSupplyAirTemperature() const;
       bool isMaximumHeatingSupplyAirTemperatureDefaulted() const;
       bool setMaximumHeatingSupplyAirTemperature(double maximumHeatingSupplyAirTemperature);

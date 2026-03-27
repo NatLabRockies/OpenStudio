@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
 #include "../ZoneHVACComponent/RefrigerationAirChiller.hpp"
 
 using namespace openstudio::epmodel;
@@ -15,6 +16,9 @@ TEST_F(EPModelFixture, RefrigerationAirChiller_DefaultConstructor) {
   RefrigerationAirChiller chiller(model);
 
   EXPECT_EQ(RefrigerationAirChiller::iddObjectType(), chiller.iddObject().type());
+  EXPECT_EQ(0u, chiller.inletPort());
+  EXPECT_EQ(0u, chiller.outletPort());
+  EXPECT_FALSE(chiller.thermalZone());
   EXPECT_EQ("UnitLoadFactorSensibleOnly", chiller.capacityRatingType());
   EXPECT_EQ("LinearSHR60", chiller.capacityCorrectionCurveType());
   EXPECT_DOUBLE_EQ(0.0, chiller.ratedCoolingSourceTemperature());

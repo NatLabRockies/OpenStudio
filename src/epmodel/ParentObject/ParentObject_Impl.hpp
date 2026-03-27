@@ -8,8 +8,13 @@
 
 #include "ModelObject_Impl.hpp"
 
+#include <vector>
+
 namespace openstudio {
 namespace epmodel {
+
+class ModelObject;
+
 namespace detail {
 
 class EPMODEL_API ParentObject_Impl : public ModelObject_Impl
@@ -17,6 +22,8 @@ class EPMODEL_API ParentObject_Impl : public ModelObject_Impl
  public:
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~ParentObject_Impl() = default;
+
+  virtual std::vector<ModelObject> children() const;
 };
 
 }  // namespace detail

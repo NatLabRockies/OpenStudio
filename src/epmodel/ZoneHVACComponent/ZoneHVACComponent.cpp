@@ -205,6 +205,13 @@ void ZoneHVACComponent_Impl::removeFromThermalZone() {
     }
   }
 
+  if (inletPort() != 0u) {
+    setPointer(inletPort(), Handle());
+  }
+  if (outletPort() != 0u) {
+    setPointer(outletPort(), Handle());
+  }
+
   disconnect();
 }
 

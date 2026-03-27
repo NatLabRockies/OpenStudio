@@ -14,6 +14,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class ThermalZone;
+
   namespace detail {
 
     class EPMODEL_API FanZoneExhaust_Impl : public ZoneHVACComponent_Impl
@@ -21,6 +23,10 @@ namespace epmodel {
      public:
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~FanZoneExhaust_Impl() override = default;
+
+      bool addToThermalZone(ThermalZone& thermalZone) override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
 
       std::vector<std::string> systemAvailabilityManagerCouplingModeValues() const;
 

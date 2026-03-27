@@ -21,7 +21,11 @@ namespace epmodel {
 
   ZoneHVACIdealLoadsAirSystem::ZoneHVACIdealLoadsAirSystem(const Model& model)
     : ZoneHVACComponent(ZoneHVACIdealLoadsAirSystem::iddObjectType(), model) {
-    OS_ASSERT(getImpl<detail::ZoneHVACIdealLoadsAirSystem_Impl>());
+    bool ok = true;
+    ok = setHeatingFuelType("DistrictHeatingWater");
+    OS_ASSERT(ok);
+    ok = setCoolingFuelType("DistrictCooling");
+    OS_ASSERT(ok);
   }
 
   ZoneHVACIdealLoadsAirSystem::ZoneHVACIdealLoadsAirSystem(std::shared_ptr<detail::ZoneHVACIdealLoadsAirSystem_Impl> impl)
@@ -405,6 +409,14 @@ namespace epmodel {
   }
 
   namespace detail {
+
+    unsigned ZoneHVACIdealLoadsAirSystem_Impl::inletPort() const {
+      return ZoneHVAC_IdealLoadsAirSystemFields::ZoneSupplyAirNodeName;
+    }
+
+    unsigned ZoneHVACIdealLoadsAirSystem_Impl::outletPort() const {
+      return ZoneHVAC_IdealLoadsAirSystemFields::ZoneExhaustAirNodeName;
+    }
 
     double ZoneHVACIdealLoadsAirSystem_Impl::maximumHeatingSupplyAirTemperature() const {
       auto value = getDouble(ZoneHVAC_IdealLoadsAirSystemFields::MaximumHeatingSupplyAirTemperature, true);

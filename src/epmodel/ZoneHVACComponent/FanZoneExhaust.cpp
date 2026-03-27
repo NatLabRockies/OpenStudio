@@ -6,13 +6,20 @@
 #include "ZoneHVACComponent/FanZoneExhaust.hpp"
 #include "ZoneHVACComponent/FanZoneExhaust_Impl.hpp"
 
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Model.hpp"
+#include "ModelObject/ZoneHVACEquipmentConnections.hpp"
+#include "ModelObject/ZoneHVACEquipmentList.hpp"
+#include "ModelObject/ZoneHVACEquipmentList_Impl.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/Fan_ZoneExhaust_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
+#include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 
 namespace openstudio {
 namespace epmodel {
@@ -94,6 +101,47 @@ bool FanZoneExhaust::setSystemAvailabilityManagerCouplingMode(const std::string&
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+bool FanZoneExhaust_Impl::addToThermalZone(ThermalZone& thermalZone) {
+  if (thermalZone.model() != model()) {
+    return false;
+  }
+
+  removeFromThermalZone();
+  thermalZone.setUseIdealAirLoads(false);
+
+  auto inletNode = model().getOrCreateTransientByName<Node>(getObject<ModelObject>().nameString() + " Air Inlet Node");
+  auto outletNode = model().getOrCreateTransientByName<Node>(getObject<ModelObject>().nameString() + " Air Outlet Node");
+
+  if (!setPointer(inletPort(), inletNode.handle(), false)) {
+    return false;
+  }
+  if (!setPointer(outletPort(), outletNode.handle(), false)) {
+    return false;
+  }
+
+  auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
+  auto connections = zoneImpl->getZoneHVACEquipmentConnections();
+  auto equipmentList = zoneImpl->zoneHVACEquipmentList();
+  if (!equipmentList) {
+    ZoneHVACEquipmentList newEquipmentList(model());
+    if (!newEquipmentList.name()) {
+      newEquipmentList.createName();
+    }
+    OS_ASSERT(connections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName, newEquipmentList.handle()));
+    equipmentList = newEquipmentList;
+  }
+
+  return equipmentList->getImpl<detail::ZoneHVACEquipmentList_Impl>()->addEquipment(getObject<ModelObject>());
+}
+
+unsigned FanZoneExhaust_Impl::inletPort() const {
+  return openstudio::Fan_ZoneExhaustFields::AirInletNodeName;
+}
+
+unsigned FanZoneExhaust_Impl::outletPort() const {
+  return openstudio::Fan_ZoneExhaustFields::AirOutletNodeName;
+}
 
 double FanZoneExhaust_Impl::fanTotalEfficiency() const {
   const auto value = getDouble(openstudio::Fan_ZoneExhaustFields::FanTotalEfficiency, true);
