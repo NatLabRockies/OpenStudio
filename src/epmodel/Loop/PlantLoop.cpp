@@ -16,7 +16,7 @@
 #include "Mixer/ConnectorMixer_Impl.hpp"
 #include "HVACComponent/HVACComponent.hpp"
 #include "ModelObject.hpp"
-#include "HVACComponent/Splitter.hpp"
+#include "Splitter/Splitter.hpp"
 #include "Splitter/ConnectorSplitter.hpp"
 #include "Splitter/ConnectorSplitter_Impl.hpp"
 #include "WaterToAirComponent/CoilCoolingWater.hpp"

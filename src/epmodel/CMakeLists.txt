@@ -2533,8 +2533,8 @@ set(${target_name}_src
   ModelObject/ZoneHVACEquipmentList.hpp
   ModelObject/ZoneHVACEquipmentList_Impl.hpp
   ModelObject/ZoneHVACEquipmentList.cpp
-  HVACComponent/Splitter.hpp
-  HVACComponent/Splitter.cpp
+  Splitter/Splitter.hpp
+  Splitter/Splitter.cpp
   Mixer/Mixer.hpp
   Mixer/Mixer.cpp
   Loop/Loop.hpp

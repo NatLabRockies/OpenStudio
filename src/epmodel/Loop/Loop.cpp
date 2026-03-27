@@ -11,7 +11,7 @@
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "Node.hpp"
-#include "HVACComponent/Splitter.hpp"
+#include "Splitter/Splitter.hpp"
 
 #include <utilities/data/DataEnums.hpp>
 #include <utilities/idd/IddEnums.hxx>

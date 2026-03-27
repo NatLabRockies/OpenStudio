@@ -6,7 +6,7 @@
 #ifndef EPMODEL_AIRLOOPHVACZONESPLITTER_IMPL_HPP
 #define EPMODEL_AIRLOOPHVACZONESPLITTER_IMPL_HPP
 
-#include "HVACComponent/Splitter_Impl.hpp"
+#include "Splitter/Splitter_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {

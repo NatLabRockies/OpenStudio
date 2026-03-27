@@ -13,7 +13,7 @@
 #include "Node.hpp"
 #include "ModelObject/NodeList.hpp"
 #include "ModelObject/NodeList_Impl.hpp"
-#include "HVACComponent/Splitter.hpp"
+#include "Splitter/Splitter.hpp"
 
 #include <utilities/data/DataEnums.hpp>
 #include <utilities/idf/IdfObject.hpp>

@@ -13,7 +13,7 @@
 #include "Loop/PlantLoop.hpp"
 #include "Loop/PlantLoop_Impl.hpp"
 #include "Node.hpp"
-#include "HVACComponent/Splitter.hpp"
+#include "Splitter/Splitter.hpp"
 #include "StraightComponent/StraightComponent.hpp"
 
 #include <algorithm>

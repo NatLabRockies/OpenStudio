@@ -7,7 +7,7 @@
 #define EPMODEL_CONNECTORSPLITTER_HPP
 
 #include "EPModelAPI.hpp"
-#include "HVACComponent/Splitter.hpp"
+#include "Splitter/Splitter.hpp"
 
 #include "../utilities/idd/IddEnums.hpp"
 

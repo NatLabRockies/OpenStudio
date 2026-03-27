@@ -6,7 +6,7 @@
 #ifndef EPMODEL_CONNECTORSPLITTER_IMPL_HPP
 #define EPMODEL_CONNECTORSPLITTER_IMPL_HPP
 
-#include "HVACComponent/Splitter_Impl.hpp"
+#include "Splitter/Splitter_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {

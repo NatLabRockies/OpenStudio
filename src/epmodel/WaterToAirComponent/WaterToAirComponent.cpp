@@ -14,7 +14,7 @@
 #include "Model.hpp"
 #include "ModelObject/Branch_Impl.hpp"
 #include "StraightComponent/Node.hpp"
-#include "HVACComponent/Splitter.hpp"
+#include "Splitter/Splitter.hpp"
 
 #include <utilities/core/StringHelpers.hpp>
 

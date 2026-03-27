@@ -3,8 +3,8 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#include "Splitter.hpp"
-#include "HVACComponent/Splitter_Impl.hpp"
+#include "Splitter/Splitter.hpp"
+#include "Splitter/Splitter_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
 #include "StraightComponent/Node.hpp"

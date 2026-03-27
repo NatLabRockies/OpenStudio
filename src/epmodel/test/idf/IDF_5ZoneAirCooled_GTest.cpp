@@ -17,7 +17,7 @@
 #include "../../StraightComponent/PipeAdiabatic_Impl.hpp"
 #include "../../StraightComponent/PumpVariableSpeed.hpp"
 #include "../../StraightComponent/PumpVariableSpeed_Impl.hpp"
-#include "../../HVACComponent/Splitter.hpp"
+#include "../../Splitter/Splitter.hpp"
 #include "../../WaterToAirComponent/CoilCoolingWater.hpp"
 #include "../../WaterToAirComponent/CoilCoolingWater_Impl.hpp"
 #include "../../WaterToAirComponent/CoilHeatingWater.hpp"

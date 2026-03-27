@@ -10,7 +10,7 @@
 #include "../Loop/PlantLoop.hpp"
 #include "../Loop/PlantLoop_Impl.hpp"
 #include "../Mixer/Mixer.hpp"
-#include "../HVACComponent/Splitter.hpp"
+#include "../Splitter/Splitter.hpp"
 #include "../ModelObject/Branch.hpp"
 #include "../ModelObject/BranchList.hpp"
 #include "../ModelObject/BranchList_Impl.hpp"
