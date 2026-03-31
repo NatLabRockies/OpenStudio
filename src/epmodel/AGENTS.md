@@ -19,11 +19,12 @@ field-by-field EnergyPlus reference. When implementing or reviewing epmodel
 wrappers for specific E+ object types, use it to confirm what each field means
 and which fields are true object relationships versus plain scalar data.
 
-For epmodel schema questions, treat `resources/energyplus/ProposedEnergy+.idd`
-as the authoritative source of truth for object types, field order,
+For epmodel schema questions, treat the EnergyPlus IDD under
+`resources/energyplus/` as the authoritative source of truth for object types,
+field order,
 extensibles, and object-list relationships. Use the Input Output Reference to
-understand field semantics and intent, but do not let it override the proposed
-IDD when there is any ambiguity about schema shape.
+understand field semantics and intent, but do not let it override the
+EnergyPlus IDD when there is any ambiguity about schema shape.
 
 ## Working Style Preferences
 
@@ -67,6 +68,23 @@ Apply these preferences unless the user asks otherwise.
   implementation code should assume canonical state and use assertions to
   verify invariants rather than performing conditional fallback logic or
   on-the-fly repair.
+- In canonicalizers, raw field-level APIs such as `getString`,
+  `setPointer`, `getModelObjectTarget`, and extensible-group mutation are
+  acceptable on the owning type itself. This is the layer that is closest to
+  the EnergyPlus-backed schema and is allowed to normalize it directly.
+- Do not reach into another object's raw fields from unrelated code, even from
+  another canonicalizer, unless the aggregate object truly owns that persisted
+  structure and there is no cleaner owner-local repair point. Prefer to move
+  field-level repair behind the owning type or let that type canonicalize
+  itself.
+- Prefer owner-local canonicalization when the repair decision depends only on
+  the object's own fields. Prefer aggregate canonicalization when the invariant
+  spans multiple objects or requires parent context such as membership,
+  ordering, topology placement, or generated default names.
+- Private impl-only `ensure*` helpers are allowed when they encode a concrete
+  canonicalization invariant on the owning type. They should stay typed,
+  should not expose raw schema details like field strings to callers, and
+  should not become general runtime mutation APIs.
 - For relationship fields, prefer `setPointer(...)` directly. Do not pair
   `setString(name)` with `setPointer(handle)` on the same field unless there is
   a very specific documented reason, because pointer fields already derive
@@ -86,3 +104,30 @@ Apply these preferences unless the user asks otherwise.
 - In epmodel tests, do not use `ModelObject::create(...)` as a shortcut when a
   concrete wrapper type exists. Construct the actual epmodel wrapper the test
   means to exercise.
+
+## Canonicalization Policy
+
+These rules apply to epmodel canonicalizers in general, not only HVAC types.
+
+- Canonicalizers must always converge the model to a valid epmodel state.
+- Prefer repair over rejection when the intended structure can be recovered
+  reasonably from the persisted EnergyPlus-backed schema.
+- If content is not salvageable without inventing unsupported semantics, drop
+  the minimum invalid content necessary to restore validity.
+- Do not leave partially repaired or internally contradictory topology behind.
+  Canonicalization should finish in a state that normal API code can trust.
+- Outside canonicalizers, do not add fallback repair logic for malformed
+  state. Runtime code should assume canonicalized invariants and use
+  assertions for impossible conditions.
+- Canonicalizers must log all meaningful repairs, drops, normalizations, and
+  failed repair attempts through `addLoadInfo`, `addLoadWarning`, and
+  `addLoadError`.
+- Use `addLoadInfo` for benign normalization and default creation,
+  `addLoadWarning` for recoverable invalid input that required repair or
+  content removal, and `addLoadError` for unrecoverable conditions or failed
+  repair attempts.
+- When dropping content, prefer preserving the owning object and the maximum
+  amount of unambiguous structure around it.
+- Keep canonicalization logic close to the owning type so
+  relationship-specific repair decisions remain local, explicit, and
+  reviewable.

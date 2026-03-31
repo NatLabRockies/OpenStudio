@@ -30,7 +30,7 @@ TEST_F(EPModelFixture, FanConstantVolume_AddToNodeAcceptsAirLoopSupplyNode) {
   EXPECT_TRUE(fan.addToNode(supplyInletNode));
 }
 
-TEST_F(EPModelFixture, FanConstantVolume_AddToNodeRejectsOutboardOANode) {
+TEST_F(EPModelFixture, FanConstantVolume_AddToNodeSupportsOutboardOANode) {
   Model model;
   AirLoopHVAC airLoop(model);
   AirLoopHVACOutdoorAirSystem oaSystem(model);
@@ -40,7 +40,29 @@ TEST_F(EPModelFixture, FanConstantVolume_AddToNodeRejectsOutboardOANode) {
   auto outboardOANode = oaSystem.outboardOANode();
   ASSERT_TRUE(outboardOANode);
   FanConstantVolume fan(model);
-  EXPECT_FALSE(fan.addToNode(*outboardOANode));
+  EXPECT_TRUE(fan.addToNode(*outboardOANode));
+  EXPECT_EQ(3u, oaSystem.oaComponents().size());
+}
+
+TEST_F(EPModelFixture, FanConstantVolume_RemoveDetachesFromOutdoorAirSystem) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+
+  FanConstantVolume fan(model);
+  ASSERT_TRUE(fan.addToNode(*outboardOANode));
+  ASSERT_EQ(3u, oaSystem.oaComponents().size());
+  const auto fanHandle = fan.handle();
+
+  fan.remove();
+
+  EXPECT_LT(oaSystem.oaComponents().size(), 3u);
+  EXPECT_FALSE(oaSystem.component(fanHandle));
 }
 
 TEST_F(EPModelFixture, FanConstantVolume_AddToNodeRejectsDemandBranchNode) {

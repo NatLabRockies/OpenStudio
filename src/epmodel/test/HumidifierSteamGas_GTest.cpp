@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
@@ -108,4 +109,19 @@ TEST_F(EPModelFixture, HumidifierSteamGas_AddToNodeSupplyOnly) {
   auto demandInletNode = airLoop.demandInletNode();
   EXPECT_FALSE(demandHumidifier.addToNode(demandInletNode));
   EXPECT_FALSE(demandHumidifier.airLoopHVAC());
+}
+
+TEST_F(EPModelFixture, HumidifierSteamGas_AddToNodeSupportsOutboardOANode) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+
+  HumidifierSteamGas humidifier(model);
+  EXPECT_TRUE(humidifier.addToNode(*outboardOANode));
+  EXPECT_EQ(3u, oaSystem.oaComponents().size());
 }

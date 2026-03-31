@@ -6,6 +6,9 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../WaterToAirComponent/CoilCoolingWaterToAirHeatPumpEquationFit.hpp"
 
 #include <utilities/idd/Coil_Cooling_WaterToAirHeatPump_EquationFit_FieldEnums.hxx>
@@ -100,4 +103,22 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpEquationFit_ScalarAccessors_
 
   EXPECT_TRUE(coil.setFanDelayTime(100.0));
   EXPECT_DOUBLE_EQ(100.0, coil.fanDelayTime());
+}
+
+TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpEquationFit_AddToNodeRejectsOutboardOANode) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+
+  CoilCoolingWaterToAirHeatPumpEquationFit coil(model);
+
+  EXPECT_FALSE(coil.addToNode(*outboardOANode));
+
+  const auto oaComponents = oaSystem.oaComponents();
+  ASSERT_EQ(1u, oaComponents.size());
 }

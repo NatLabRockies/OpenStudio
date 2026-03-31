@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../StraightComponent/EvaporativeCoolerDirectResearchSpecial.hpp"
 #include "../StraightComponent/Node.hpp"
@@ -98,4 +99,19 @@ TEST_F(EPModelFixture, EvaporativeCoolerDirectResearchSpecial_AddToDemandBranchR
 
   EXPECT_FALSE(evaporativeCooler.addToNode(*branchNode));
   EXPECT_FALSE(evaporativeCooler.airLoopHVAC());
+}
+
+TEST_F(EPModelFixture, EvaporativeCoolerDirectResearchSpecial_AddToNodeSupportsOutboardOANode) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+
+  EvaporativeCoolerDirectResearchSpecial evaporativeCooler(model);
+  EXPECT_TRUE(evaporativeCooler.addToNode(*outboardOANode));
+  EXPECT_EQ(3u, oaSystem.oaComponents().size());
 }

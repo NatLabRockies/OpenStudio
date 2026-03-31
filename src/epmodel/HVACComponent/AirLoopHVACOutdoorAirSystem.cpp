@@ -6,8 +6,11 @@
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
 
+#include "AirToAirComponent/AirToAirComponent.hpp"
+#include "AirToAirComponent/AirToAirComponent_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
+#include "Loop/Loop_Impl.hpp"
 #include "AirLoopHVACControllerList.hpp"
 #include "AirLoopHVACControllerList_Impl.hpp"
 #include "AirLoopHVACOutdoorAirSystemEquipmentList.hpp"
@@ -23,8 +26,16 @@
 #include "Node.hpp"
 #include "ModelObject/OutdoorAirMixer.hpp"
 #include "ModelObject/OutdoorAirMixer_Impl.hpp"
+#include "StraightComponent/StraightComponent.hpp"
+#include "StraightComponent/StraightComponent_Impl.hpp"
+#include "WaterToAirComponent/WaterToAirComponent.hpp"
+#include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACComponent.hpp"
+#include "ZoneHVACComponent/ZoneHVACComponent_Impl.hpp"
 
 #include <algorithm>
+#include <set>
+#include <map>
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Compare.hpp>
 #include <utilities/idd/AirLoopHVAC_OutdoorAirSystem_FieldEnums.hxx>
@@ -131,6 +142,294 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    // These OA helper methods form the shared topology extraction layer for three different
+    // responsibilities in this file: stream navigation, stream mutation, and canonicalization.
+    // Inlining this logic into every caller would duplicate the same component-family dispatch and
+    // stream-walk rules several times, which would make future parity fixes harder to review and
+    // easier to drift.
+
+    // Decode the air-side node pair a component presents on one OA stream. This is the place where
+    // the EnergyPlus-backed object graph is translated into a uniform "stream inlet node /
+    // stream outlet node" view for traversal. Canonicalization uses the same extractor after it
+    // has established the owning OA-system invariants needed for traversal, and the runtime callers
+    // rely on those same invariants too. This method therefore does not try to repair missing or
+    // contradictory relationships on its own.
+    boost::optional<std::pair<Node, Node>> AirLoopHVACOutdoorAirSystem_Impl::streamNodesFor(const ModelObject& object, OAStream stream) const {
+      if (auto airToAir = object.optionalCast<openstudio::epmodel::AirToAirComponent>()) {
+        const auto inlet = (stream == OAStream::OutdoorAir) ? airToAir->primaryAirInletModelObject() : airToAir->secondaryAirInletModelObject();
+        const auto outlet = (stream == OAStream::OutdoorAir) ? airToAir->primaryAirOutletModelObject() : airToAir->secondaryAirOutletModelObject();
+        if (inlet && outlet) {
+          auto inletNode = inlet->optionalCast<Node>();
+          auto outletNode = outlet->optionalCast<Node>();
+          if (inletNode && outletNode) {
+            return std::make_pair(*inletNode, *outletNode);
+          }
+        }
+        return boost::none;
+      }
+
+      if (auto straight = object.optionalCast<openstudio::epmodel::StraightComponent>()) {
+        auto inlet = straight->inletModelObject();
+        auto outlet = straight->outletModelObject();
+        if (inlet && outlet) {
+          auto inletNode = inlet->optionalCast<Node>();
+          auto outletNode = outlet->optionalCast<Node>();
+          if (inletNode && outletNode) {
+            return std::make_pair(*inletNode, *outletNode);
+          }
+        }
+        return boost::none;
+      }
+
+      if (auto waterToAir = object.optionalCast<openstudio::epmodel::WaterToAirComponent>()) {
+        auto inlet = waterToAir->airInletModelObject();
+        auto outlet = waterToAir->airOutletModelObject();
+        if (inlet && outlet) {
+          auto inletNode = inlet->optionalCast<Node>();
+          auto outletNode = outlet->optionalCast<Node>();
+          if (inletNode && outletNode) {
+            return std::make_pair(*inletNode, *outletNode);
+          }
+        }
+        return boost::none;
+      }
+
+      if (auto zoneHVAC = object.optionalCast<openstudio::epmodel::ZoneHVACComponent>()) {
+        auto inlet = zoneHVAC->airInletModelObject();
+        auto outlet = zoneHVAC->airOutletModelObject();
+        if (inlet && outlet) {
+          auto inletNode = inlet->optionalCast<Node>();
+          auto outletNode = outlet->optionalCast<Node>();
+          if (inletNode && outletNode) {
+            return std::make_pair(*inletNode, *outletNode);
+          }
+        }
+        return boost::none;
+      }
+
+      return boost::none;
+    }
+
+    // Walk the realized OA stream from the mixer-side outdoor-air node outward to the outboard OA
+    // node, then reverse that intermediate result so callers see airflow order from outdoors toward
+    // the mixer. This walk is intentionally derived from canonicalized node connectivity rather than
+    // from equipment-list order alone, because the equipment list is only the persisted membership
+    // spine, not the complete executable topology.
+    std::vector<ModelObject> AirLoopHVACOutdoorAirSystem_Impl::walkOutdoorAirStream() const {
+      auto mixerOutdoor = outdoorAirModelObject();
+      if (!mixerOutdoor) {
+        return {};
+      }
+      auto currentNode = mixerOutdoor->optionalCast<Node>();
+      if (!currentNode) {
+        return {};
+      }
+
+      std::vector<ModelObject> candidates;
+      for (const auto& equipment : airLoopHVACOutdoorAirSystemEquipmentList().equipment()) {
+        if (!equipment.optionalCast<OutdoorAirMixer>()) {
+          candidates.push_back(equipment);
+        }
+      }
+      std::vector<ModelObject> reversePath;
+      reversePath.push_back(currentNode->cast<ModelObject>());
+      std::set<Handle> used;
+
+      while (true) {
+        boost::optional<ModelObject> previousComponent;
+        boost::optional<Node> previousNode;
+        for (const auto& candidate : candidates) {
+          if (used.contains(candidate.handle())) {
+            continue;
+          }
+          if (auto streamNodes = streamNodesFor(candidate, OAStream::OutdoorAir)) {
+            if (streamNodes->second == *currentNode) {
+              previousComponent = candidate;
+              previousNode = streamNodes->first;
+              break;
+            }
+          }
+        }
+        if (!previousComponent || !previousNode) {
+          break;
+        }
+        used.insert(previousComponent->handle());
+        reversePath.push_back(*previousComponent);
+        reversePath.push_back(previousNode->cast<ModelObject>());
+        currentNode = previousNode;
+      }
+
+      std::reverse(reversePath.begin(), reversePath.end());
+      return reversePath;
+    }
+
+    // Walk the realized relief stream in airflow order from the mixer-side relief node out toward
+    // the outboard relief node. This mirrors the OA walk above, but the direction already matches
+    // the relief airflow convention that the public API exposes.
+    std::vector<ModelObject> AirLoopHVACOutdoorAirSystem_Impl::walkReliefAirStream() const {
+      auto mixerRelief = reliefAirModelObject();
+      if (!mixerRelief) {
+        return {};
+      }
+      auto currentNode = mixerRelief->optionalCast<Node>();
+      if (!currentNode) {
+        return {};
+      }
+
+      std::vector<ModelObject> candidates;
+      for (const auto& equipment : airLoopHVACOutdoorAirSystemEquipmentList().equipment()) {
+        if (!equipment.optionalCast<OutdoorAirMixer>()) {
+          candidates.push_back(equipment);
+        }
+      }
+      std::vector<ModelObject> path;
+      path.push_back(currentNode->cast<ModelObject>());
+      std::set<Handle> used;
+
+      while (true) {
+        boost::optional<ModelObject> nextComponent;
+        boost::optional<Node> nextNode;
+        for (const auto& candidate : candidates) {
+          if (used.contains(candidate.handle())) {
+            continue;
+          }
+          if (auto streamNodes = streamNodesFor(candidate, OAStream::ReliefAir)) {
+            if (streamNodes->first == *currentNode) {
+              nextComponent = candidate;
+              nextNode = streamNodes->second;
+              break;
+            }
+          }
+        }
+        if (!nextComponent || !nextNode) {
+          break;
+        }
+        used.insert(nextComponent->handle());
+        path.push_back(*nextComponent);
+        path.push_back(nextNode->cast<ModelObject>());
+        currentNode = nextNode;
+      }
+
+      return path;
+    }
+
+    // Rebuild the persisted OA equipment-list order from the canonicalized node graph. The
+    // equipment list remains the persisted serialization spine required by the EnergyPlus schema,
+    // but once topology has been canonicalized the node graph is the better source for deriving the
+    // stream-ordered projections that users expect. This method is therefore the one place that
+    // reconciles those two views back into a stable persisted order.
+    bool AirLoopHVACOutdoorAirSystem_Impl::rewriteEquipmentListOrder() {
+      return rewriteEquipmentListOrder(static_cast<LoadContext*>(nullptr));
+    }
+
+    bool AirLoopHVACOutdoorAirSystem_Impl::rewriteEquipmentListOrder(LoadContext& context) {
+      return rewriteEquipmentListOrder(&context);
+    }
+
+    bool AirLoopHVACOutdoorAirSystem_Impl::rewriteEquipmentListOrder(LoadContext* context) {
+      auto equipmentList = airLoopHVACOutdoorAirSystemEquipmentList();
+      auto equipmentListImpl = equipmentList.getImpl<detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl>();
+      OS_ASSERT(equipmentListImpl);
+
+      const auto oaPath = walkOutdoorAirStream();
+      const auto reliefPath = walkReliefAirStream();
+      auto mixer = outdoorAirMixer().cast<ModelObject>();
+
+      std::vector<ModelObject> ordered;
+      ordered.push_back(mixer);
+
+      std::set<Handle> seen;
+      seen.insert(mixer.handle());
+
+      for (const auto& object : oaPath) {
+        if (object.optionalCast<Node>()) {
+          continue;
+        }
+        if (seen.insert(object.handle()).second) {
+          ordered.push_back(object);
+        }
+      }
+      for (const auto& object : reliefPath) {
+        if (object.optionalCast<Node>() || object.optionalCast<openstudio::epmodel::AirToAirComponent>()) {
+          continue;
+        }
+        if (seen.insert(object.handle()).second) {
+          ordered.push_back(object);
+        }
+      }
+
+      std::vector<ModelObject> dropped;
+      for (const auto& object : equipmentList.equipment()) {
+        if (!seen.contains(object.handle())) {
+          dropped.push_back(object);
+        }
+      }
+
+      while (!equipmentList.extensibleGroups().empty()) {
+        equipmentList.eraseExtensibleGroup(static_cast<unsigned>(equipmentList.extensibleGroups().size() - 1u));
+      }
+      for (const auto& object : ordered) {
+        if (!equipmentListImpl->addEquipment(object)) {
+          return false;
+        }
+      }
+
+      if (context) {
+        for (const auto& object : dropped) {
+          detail::addLoadWarning(*context, "Dropped unsalvageable OA equipment '" + object.nameString() + "' (" + object.iddObject().name()
+                                             + ") from AirLoopHVAC:OutdoorAirSystem '" + getObject<AirLoopHVACOutdoorAirSystem>().nameString()
+                                             + "' because its stream placement could not be resolved.");
+        }
+      }
+
+      return true;
+    }
+
+    // Update one adjacent component's stream-facing node reference after a splice or removal on an
+    // OA or relief stream. This stays centralized because the caller already knows which neighbor
+    // needs to move, but the port that must be rewritten still depends on the component family and
+    // on which stream is being edited.
+    bool AirLoopHVACOutdoorAirSystem_Impl::updateAdjacentStreamNode(const ModelObject& object, OAStream stream, bool updateInlet, const Node& node) {
+      auto mutableObject = object;
+      if (auto airToAir = mutableObject.optionalCast<openstudio::epmodel::AirToAirComponent>()) {
+        const auto port = updateInlet ? ((stream == OAStream::OutdoorAir) ? airToAir->primaryAirInletPort() : airToAir->secondaryAirInletPort())
+                                      : ((stream == OAStream::OutdoorAir) ? airToAir->primaryAirOutletPort() : airToAir->secondaryAirOutletPort());
+        return airToAir->setPointer(port, node.handle());
+      }
+      if (auto straight = mutableObject.optionalCast<openstudio::epmodel::StraightComponent>()) {
+        return straight->setPointer(updateInlet ? straight->inletPort() : straight->outletPort(), node.handle());
+      }
+      if (auto waterToAir = mutableObject.optionalCast<openstudio::epmodel::WaterToAirComponent>()) {
+        const auto port = updateInlet ? waterToAir->airInletPort() : waterToAir->airOutletPort();
+        return waterToAir->setPointer(port, node.handle());
+      }
+      return false;
+    }
+
+    bool AirLoopHVACOutdoorAirSystem_Impl::setOutdoorAirStreamNode(const Node& node) {
+      return outdoorAirMixer().setPointer(outdoorAirPort(), node.handle());
+    }
+
+    bool AirLoopHVACOutdoorAirSystem_Impl::setReliefAirStreamNode(const Node& node) {
+      return outdoorAirMixer().setPointer(reliefAirPort(), node.handle());
+    }
+
+    bool AirLoopHVACOutdoorAirSystem_Impl::updateOutdoorAirStreamInletNode(const ModelObject& object, const Node& node) {
+      return updateAdjacentStreamNode(object, OAStream::OutdoorAir, true, node);
+    }
+
+    bool AirLoopHVACOutdoorAirSystem_Impl::updateOutdoorAirStreamOutletNode(const ModelObject& object, const Node& node) {
+      return updateAdjacentStreamNode(object, OAStream::OutdoorAir, false, node);
+    }
+
+    bool AirLoopHVACOutdoorAirSystem_Impl::updateReliefAirStreamInletNode(const ModelObject& object, const Node& node) {
+      return updateAdjacentStreamNode(object, OAStream::ReliefAir, true, node);
+    }
+
+    bool AirLoopHVACOutdoorAirSystem_Impl::updateReliefAirStreamOutletNode(const ModelObject& object, const Node& node) {
+      return updateAdjacentStreamNode(object, OAStream::ReliefAir, false, node);
+    }
+
     unsigned AirLoopHVACOutdoorAirSystem_Impl::returnAirPort() const {
       // Schema Alignment Notes:
       // - Field Mapping: AirLoopHVACOutdoorAirSystem node-port APIs map to OutdoorAir:Mixer field enums.
@@ -170,10 +469,6 @@ namespace epmodel {
       if (auto node = mixer.getModelObjectTarget<openstudio::epmodel::Node>(returnAirPort())) {
         return node->cast<openstudio::epmodel::ModelObject>();
       }
-
-      if (auto nodeName = mixer.getString(returnAirPort())) {
-        OS_ASSERT(nodeName->empty());
-      }
       return boost::none;
     }
 
@@ -182,10 +477,6 @@ namespace epmodel {
 
       if (auto node = mixer.getModelObjectTarget<openstudio::epmodel::Node>(outdoorAirPort())) {
         return node->cast<openstudio::epmodel::ModelObject>();
-      }
-
-      if (auto nodeName = mixer.getString(outdoorAirPort())) {
-        OS_ASSERT(nodeName->empty());
       }
       return boost::none;
     }
@@ -196,10 +487,6 @@ namespace epmodel {
       if (auto node = mixer.getModelObjectTarget<openstudio::epmodel::Node>(reliefAirPort())) {
         return node->cast<openstudio::epmodel::ModelObject>();
       }
-
-      if (auto nodeName = mixer.getString(reliefAirPort())) {
-        OS_ASSERT(nodeName->empty());
-      }
       return boost::none;
     }
 
@@ -209,30 +496,55 @@ namespace epmodel {
       if (auto node = mixer.getModelObjectTarget<openstudio::epmodel::Node>(mixedAirPort())) {
         return node->cast<openstudio::epmodel::ModelObject>();
       }
-
-      if (auto nodeName = mixer.getString(mixedAirPort())) {
-        OS_ASSERT(nodeName->empty());
-      }
       return boost::none;
     }
 
-    std::vector<openstudio::epmodel::ModelObject> AirLoopHVACOutdoorAirSystem_Impl::oaComponents(openstudio::IddObjectType) const {
-      auto oaSystem = getObject<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>();
-      auto equipmentList = oaSystem.getModelObjectTarget<openstudio::epmodel::AirLoopHVACOutdoorAirSystemEquipmentList>(
-        openstudio::AirLoopHVAC_OutdoorAirSystemFields::OutdoorAirEquipmentListName);
-      if (!equipmentList) {
+    std::vector<openstudio::epmodel::ModelObject> AirLoopHVACOutdoorAirSystem_Impl::oaComponents(openstudio::IddObjectType type) const {
+      auto start = outboardOANode();
+      auto target = outdoorAirModelObject();
+      if (!start || !target) {
         return {};
       }
-      return equipmentList->equipment();
+      openstudio::epmodel::detail::Loop_Impl::AdjacencyBuilder builder;
+      const auto oaPath = walkOutdoorAirStream();
+      for (std::size_t i = 1; i < oaPath.size(); ++i) {
+        builder.addLink(oaPath[i - 1], oaPath[i]);
+      }
+      auto path = builder.walkPath(model(), start->cast<ModelObject>(), *target);
+      if (type == openstudio::IddObjectType::Catchall) {
+        return path;
+      }
+      std::vector<ModelObject> filtered;
+      for (const auto& object : path) {
+        if (object.iddObject().type() == type) {
+          filtered.push_back(object);
+        }
+      }
+      return filtered;
     }
 
     std::vector<openstudio::epmodel::ModelObject> AirLoopHVACOutdoorAirSystem_Impl::reliefComponents(openstudio::IddObjectType type) const {
-      if (auto mo = reliefAirModelObject()) {
-        if ((type == openstudio::IddObjectType::Catchall) || (mo->iddObject().type() == type)) {
-          return {*mo};
+      auto start = reliefAirModelObject();
+      auto target = outboardReliefNode();
+      if (!start || !target) {
+        return {};
+      }
+      openstudio::epmodel::detail::Loop_Impl::AdjacencyBuilder builder;
+      const auto reliefPath = walkReliefAirStream();
+      for (std::size_t i = 1; i < reliefPath.size(); ++i) {
+        builder.addLink(reliefPath[i - 1], reliefPath[i]);
+      }
+      auto path = builder.walkPath(model(), *start, target->cast<ModelObject>());
+      if (type == openstudio::IddObjectType::Catchall) {
+        return path;
+      }
+      std::vector<ModelObject> filtered;
+      for (const auto& object : path) {
+        if (object.iddObject().type() == type) {
+          filtered.push_back(object);
         }
       }
-      return {};
+      return filtered;
     }
 
     std::vector<openstudio::epmodel::ModelObject> AirLoopHVACOutdoorAirSystem_Impl::components(openstudio::IddObjectType type) const {
@@ -294,17 +606,17 @@ namespace epmodel {
     }
 
     boost::optional<openstudio::epmodel::Node> AirLoopHVACOutdoorAirSystem_Impl::outboardOANode() const {
-      // Schema Alignment Notes:
-      // - Field Mapping: ForwardTranslateAirLoopHVACOutdoorAirSystem.cpp emits OutdoorAir:NodeList from outboardOANode()->name().
-      if (auto mo = outdoorAirModelObject()) {
-        return mo->optionalCast<openstudio::epmodel::Node>();
+      auto path = walkOutdoorAirStream();
+      if (!path.empty()) {
+        return path.front().optionalCast<openstudio::epmodel::Node>();
       }
       return boost::none;
     }
 
     boost::optional<openstudio::epmodel::Node> AirLoopHVACOutdoorAirSystem_Impl::outboardReliefNode() const {
-      if (auto mo = reliefAirModelObject()) {
-        return mo->optionalCast<openstudio::epmodel::Node>();
+      auto path = walkReliefAirStream();
+      if (!path.empty()) {
+        return path.back().optionalCast<openstudio::epmodel::Node>();
       }
       return boost::none;
     }
@@ -379,42 +691,20 @@ namespace epmodel {
       }
 
       OS_ASSERT(mixer);
+      auto mixerImpl = mixer->getImpl<openstudio::epmodel::detail::OutdoorAirMixer_Impl>();
+      mixerImpl->canonicalize(context);
 
-      if (!mixer->getModelObjectTarget<openstudio::epmodel::Node>(returnAirPort())) {
-        if (auto nodeName = mixer->getString(returnAirPort()); nodeName && !nodeName->empty()) {
-          auto node = model().getOrCreateTransientByName<openstudio::epmodel::Node>(*nodeName);
-          OS_ASSERT(mixer->setPointer(returnAirPort(), node.handle()));
-        }
+      if (!mixerImpl->outdoorAirNode()) {
+        auto outdoorAirNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(oaSystemName + " Outboard OA Node");
+        OS_ASSERT(mixerImpl->setOutdoorAirNode(outdoorAirNode));
       }
 
-      if (!mixer->getModelObjectTarget<openstudio::epmodel::Node>(mixedAirPort())) {
-        if (auto nodeName = mixer->getString(mixedAirPort()); nodeName && !nodeName->empty()) {
-          auto node = model().getOrCreateTransientByName<openstudio::epmodel::Node>(*nodeName);
-          OS_ASSERT(mixer->setPointer(mixedAirPort(), node.handle()));
-        }
+      if (!mixerImpl->reliefAirNode()) {
+        auto reliefAirNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(oaSystemName + " Relief Node");
+        OS_ASSERT(mixerImpl->setReliefAirNode(reliefAirNode));
       }
 
-      if (!mixer->getModelObjectTarget<openstudio::epmodel::Node>(outdoorAirPort())) {
-        const auto nodeName = [&]() -> std::string {
-          if (auto value = mixer->getString(outdoorAirPort()); value && !value->empty()) {
-            return *value;
-          }
-          return oaSystemName + " Outboard OA Node";
-        }();
-        auto node = model().getOrCreateTransientByName<openstudio::epmodel::Node>(nodeName);
-        OS_ASSERT(mixer->setPointer(outdoorAirPort(), node.handle()));
-      }
-
-      if (!mixer->getModelObjectTarget<openstudio::epmodel::Node>(reliefAirPort())) {
-        const auto nodeName = [&]() -> std::string {
-          if (auto value = mixer->getString(reliefAirPort()); value && !value->empty()) {
-            return *value;
-          }
-          return oaSystemName + " Relief Node";
-        }();
-        auto node = model().getOrCreateTransientByName<openstudio::epmodel::Node>(nodeName);
-        OS_ASSERT(mixer->setPointer(reliefAirPort(), node.handle()));
-      }
+      OS_ASSERT(rewriteEquipmentListOrder(context));
     }
 
     bool AirLoopHVACOutdoorAirSystem_Impl::addToNode(Node& node) {

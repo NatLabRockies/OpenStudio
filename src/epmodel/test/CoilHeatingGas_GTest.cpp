@@ -77,7 +77,7 @@ TEST_F(EPModelFixture, CoilHeatingGas_AddToNodeRejectsAirLoopDemandNode) {
   EXPECT_FALSE(coil.addToNode(*demandBranchNode));
 }
 
-TEST_F(EPModelFixture, CoilHeatingGas_AddToNodeRejectsOutboardOANode) {
+TEST_F(EPModelFixture, CoilHeatingGas_AddToNodeSupportsOutboardOANode) {
   Model model;
   AirLoopHVAC airLoop(model);
   AirLoopHVACOutdoorAirSystem oaSystem(model);
@@ -87,5 +87,6 @@ TEST_F(EPModelFixture, CoilHeatingGas_AddToNodeRejectsOutboardOANode) {
   ASSERT_TRUE(outboardOANode);
 
   CoilHeatingGas coil(model);
-  EXPECT_FALSE(coil.addToNode(*outboardOANode));
+  EXPECT_TRUE(coil.addToNode(*outboardOANode));
+  EXPECT_EQ(3u, oaSystem.oaComponents().size());
 }

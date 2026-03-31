@@ -6,7 +6,7 @@
 #ifndef EPMODEL_HEATEXCHANGERAIRTOAIRSENSIBLEANDLATENT_IMPL_HPP
 #define EPMODEL_HEATEXCHANGERAIRTOAIRSENSIBLEANDLATENT_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "AirToAirComponent/AirToAirComponent_Impl.hpp"
 
 #include <vector>
 
@@ -15,10 +15,12 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API HeatExchangerAirToAirSensibleAndLatent_Impl : public ModelObject_Impl
+    class EPMODEL_API HeatExchangerAirToAirSensibleAndLatent_Impl : public AirToAirComponent_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      HeatExchangerAirToAirSensibleAndLatent_Impl(const IdfObject& idfObject, Model_Impl* model, bool keepHandle);
+      HeatExchangerAirToAirSensibleAndLatent_Impl(const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model, bool keepHandle);
+      HeatExchangerAirToAirSensibleAndLatent_Impl(const HeatExchangerAirToAirSensibleAndLatent_Impl& other, Model_Impl* model, bool keepHandle);
       virtual ~HeatExchangerAirToAirSensibleAndLatent_Impl() override = default;
 
       boost::optional<double> nominalSupplyAirFlowRate() const;
@@ -65,6 +67,11 @@ namespace epmodel {
 
       bool economizerLockout() const;
       bool setEconomizerLockout(bool economizerLockout);
+
+      unsigned primaryAirInletPort() const override;
+      unsigned primaryAirOutletPort() const override;
+      unsigned secondaryAirInletPort() const override;
+      unsigned secondaryAirOutletPort() const override;
 
      private:
       std::vector<std::string> heatExchangerTypeValues() const;

@@ -6,6 +6,9 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/EvaporativeCoolerIndirectResearchSpecial.hpp"
 
 using namespace openstudio::epmodel;
@@ -117,4 +120,19 @@ TEST_F(EPModelFixture, EvaporativeCoolerIndirectResearchSpecial_ScalarAccessors_
   EXPECT_FALSE(evaporativeCooler.autosizedSecondaryFanFlowRate());
   EXPECT_FALSE(evaporativeCooler.autosizedSecondaryAirFanDesignPower());
   EXPECT_FALSE(evaporativeCooler.autosizedPrimaryDesignAirFlowRate());
+}
+
+TEST_F(EPModelFixture, EvaporativeCoolerIndirectResearchSpecial_AddToNodeSupportsOutboardOANode) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+
+  EvaporativeCoolerIndirectResearchSpecial evaporativeCooler(model);
+  EXPECT_TRUE(evaporativeCooler.addToNode(*outboardOANode));
+  EXPECT_EQ(3u, oaSystem.oaComponents().size());
 }

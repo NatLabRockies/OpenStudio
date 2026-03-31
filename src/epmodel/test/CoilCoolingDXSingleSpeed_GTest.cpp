@@ -32,6 +32,7 @@ TEST_F(EPModelFixture, CoilCoolingDXSingleSpeed_AddToNodeRejectsOutboardOANode) 
 
   CoilCoolingDXSingleSpeed coil(model);
   EXPECT_FALSE(coil.addToNode(*outboardOANode));
+  EXPECT_EQ(1u, oaSystem.oaComponents().size());
 }
 
 TEST_F(EPModelFixture, CoilCoolingDXSingleSpeed_AddToNodeRejectsDemandBranchNode) {

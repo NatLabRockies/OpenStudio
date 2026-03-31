@@ -6,6 +6,9 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../WaterToAirComponent/CoilCoolingWater.hpp"
 
 using namespace openstudio::epmodel;
@@ -74,4 +77,44 @@ TEST_F(EPModelFixture, CoilCoolingWater_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(coil.setHeatExchangerConfiguration("CounterFlow"));
   EXPECT_EQ("CounterFlow", coil.heatExchangerConfiguration());
+}
+
+TEST_F(EPModelFixture, CoilCoolingWater_AddToNodeSupportsOutboardOANode) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+
+  CoilCoolingWater coil(model);
+
+  EXPECT_TRUE(coil.addToNode(*outboardOANode));
+
+  const auto oaComponents = oaSystem.oaComponents();
+  ASSERT_EQ(3u, oaComponents.size());
+  EXPECT_EQ(coil.handle(), oaComponents[1].handle());
+}
+
+TEST_F(EPModelFixture, CoilCoolingWater_RemoveDetachesFromOutdoorAirSystem) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+
+  CoilCoolingWater coil(model);
+  ASSERT_TRUE(coil.addToNode(*outboardOANode));
+  ASSERT_EQ(3u, oaSystem.oaComponents().size());
+  const auto coilHandle = coil.handle();
+
+  coil.remove();
+
+  EXPECT_LT(oaSystem.oaComponents().size(), 3u);
+  EXPECT_FALSE(oaSystem.component(coilHandle));
 }

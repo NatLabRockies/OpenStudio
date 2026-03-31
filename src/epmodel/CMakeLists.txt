@@ -390,6 +390,9 @@ set(${target_name}_src
   ModelObject/IndoorLivingWall.hpp
   ModelObject/IndoorLivingWall_Impl.hpp
   ModelObject/IndoorLivingWall.cpp
+  AirToAirComponent/AirToAirComponent.hpp
+  AirToAirComponent/AirToAirComponent_Impl.hpp
+  AirToAirComponent/AirToAirComponent.cpp
   AirToAirComponent/HeatExchangerAirToAirSensibleAndLatent.hpp
   AirToAirComponent/HeatExchangerAirToAirSensibleAndLatent_Impl.hpp
   AirToAirComponent/HeatExchangerAirToAirSensibleAndLatent.cpp

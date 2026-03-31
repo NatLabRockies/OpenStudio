@@ -155,10 +155,10 @@ namespace epmodel {
       const auto thisNode = getObject<openstudio::epmodel::Node>();
       const auto thisNodeObject = thisNode.cast<ModelObject>();
 
-      // Temporary ownership heuristic until full OA incoming/relief stream
-      // topology is modeled in epmodel. For now, treat any node that is one of
-      // the OA mixer ports or part of OA/relief component chains as belonging
-      // to that OA system.
+      // OA-system ownership is resolved from the canonicalized OA/relief
+      // topology surface on AirLoopHVACOutdoorAirSystem. That keeps node
+      // ownership aligned with the same traversal APIs used elsewhere instead
+      // of maintaining a second ad hoc graph here.
       for (const auto& oaSystem : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
         if (auto returnNode = oaSystem.returnAirModelObject(); returnNode && (*returnNode == thisNodeObject)) {
           return oaSystem;

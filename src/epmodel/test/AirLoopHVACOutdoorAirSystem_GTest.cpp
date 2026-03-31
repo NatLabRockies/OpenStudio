@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../AirToAirComponent/HeatExchangerAirToAirSensibleAndLatent.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../ParentObject/ControllerOutdoorAir.hpp"
@@ -14,6 +15,20 @@
 #include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
+
+namespace {
+
+std::vector<ModelObject> nonNodeObjects(const std::vector<ModelObject>& objects) {
+  std::vector<ModelObject> result;
+  for (const auto& object : objects) {
+    if (!object.optionalCast<Node>()) {
+      result.push_back(object);
+    }
+  }
+  return result;
+}
+
+}  // namespace
 
 TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_DefaultConstructor) {
   Model model;
@@ -246,4 +261,121 @@ TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_ObjectRenamePreservesLoop
 
   EXPECT_TRUE(outdoorAirSystem.returnAirModelObject());
   EXPECT_TRUE(outdoorAirSystem.mixedAirModelObject());
+}
+
+TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_ReliefSideSingleStreamInsertionAndRemoval) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardReliefNode = oaSystem.outboardReliefNode();
+  ASSERT_TRUE(outboardReliefNode);
+
+  FanConstantVolume reliefFan(model);
+  ASSERT_TRUE(reliefFan.addToNode(*outboardReliefNode));
+
+  const auto reliefPath = oaSystem.reliefComponents();
+  ASSERT_EQ(3u, reliefPath.size());
+  EXPECT_EQ((std::vector<ModelObject>{reliefFan.cast<ModelObject>()}), nonNodeObjects(reliefPath));
+  EXPECT_EQ(1u, oaSystem.oaComponents().size());
+
+  reliefFan.remove();
+
+  EXPECT_EQ(1u, oaSystem.reliefComponents().size());
+  EXPECT_TRUE(nonNodeObjects(oaSystem.reliefComponents()).empty());
+}
+
+TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_MultipleAirToAirComponentsPreserveExactStreamOrder) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+
+  HeatExchangerAirToAirSensibleAndLatent hx1(model);
+  HeatExchangerAirToAirSensibleAndLatent hx2(model);
+  ASSERT_TRUE(hx1.addToNode(*outboardOANode));
+  ASSERT_TRUE(hx2.addToNode(*outboardOANode));
+
+  EXPECT_EQ((std::vector<ModelObject>{hx2.cast<ModelObject>(), hx1.cast<ModelObject>()}), nonNodeObjects(oaSystem.oaComponents()));
+  EXPECT_EQ((std::vector<ModelObject>{hx1.cast<ModelObject>(), hx2.cast<ModelObject>()}), nonNodeObjects(oaSystem.reliefComponents()));
+}
+
+TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_MixedChainPreservesExactStreamOrder) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardOANode = oaSystem.outboardOANode();
+  auto outboardReliefNode = oaSystem.outboardReliefNode();
+  ASSERT_TRUE(outboardOANode);
+  ASSERT_TRUE(outboardReliefNode);
+
+  FanConstantVolume oaFan(model);
+  HeatExchangerAirToAirSensibleAndLatent hx(model);
+  FanConstantVolume reliefFan(model);
+
+  ASSERT_TRUE(oaFan.addToNode(*outboardOANode));
+  ASSERT_TRUE(hx.addToNode(*outboardOANode));
+  ASSERT_TRUE(reliefFan.addToNode(*outboardReliefNode));
+
+  EXPECT_EQ((std::vector<ModelObject>{hx.cast<ModelObject>(), oaFan.cast<ModelObject>()}), nonNodeObjects(oaSystem.oaComponents()));
+  EXPECT_EQ((std::vector<ModelObject>{hx.cast<ModelObject>(), reliefFan.cast<ModelObject>()}), nonNodeObjects(oaSystem.reliefComponents()));
+}
+
+TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_InternalOutdoorAirNodeInsertionPreservesExactStreamOrder) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+
+  FanConstantVolume oaFan(model);
+  ASSERT_TRUE(oaFan.addToNode(*outboardOANode));
+
+  auto internalOANodeObject = oaFan.outletModelObject();
+  ASSERT_TRUE(internalOANodeObject);
+  auto internalOANode = internalOANodeObject->optionalCast<Node>();
+  ASSERT_TRUE(internalOANode);
+
+  HeatExchangerAirToAirSensibleAndLatent hx(model);
+  ASSERT_TRUE(hx.addToNode(*internalOANode));
+
+  EXPECT_EQ((std::vector<ModelObject>{oaFan.cast<ModelObject>(), hx.cast<ModelObject>()}), nonNodeObjects(oaSystem.oaComponents()));
+  EXPECT_EQ((std::vector<ModelObject>{hx.cast<ModelObject>()}), nonNodeObjects(oaSystem.reliefComponents()));
+}
+
+TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_InternalReliefNodeInsertionPreservesExactStreamOrder) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardReliefNode = oaSystem.outboardReliefNode();
+  ASSERT_TRUE(outboardReliefNode);
+
+  FanConstantVolume reliefFan(model);
+  ASSERT_TRUE(reliefFan.addToNode(*outboardReliefNode));
+
+  auto internalReliefNodeObject = reliefFan.inletModelObject();
+  ASSERT_TRUE(internalReliefNodeObject);
+  auto internalReliefNode = internalReliefNodeObject->optionalCast<Node>();
+  ASSERT_TRUE(internalReliefNode);
+
+  HeatExchangerAirToAirSensibleAndLatent hx(model);
+  ASSERT_TRUE(hx.addToNode(*internalReliefNode));
+
+  EXPECT_EQ((std::vector<ModelObject>{hx.cast<ModelObject>()}), nonNodeObjects(oaSystem.oaComponents()));
+  EXPECT_EQ((std::vector<ModelObject>{hx.cast<ModelObject>(), reliefFan.cast<ModelObject>()}), nonNodeObjects(oaSystem.reliefComponents()));
 }

@@ -8,6 +8,8 @@
 
 #include "HVACComponent_Impl.hpp"
 
+#include <utility>
+
 namespace openstudio {
 namespace epmodel {
 
@@ -58,9 +60,32 @@ class EPMODEL_API AirLoopHVACOutdoorAirSystem_Impl : public HVACComponent_Impl
 
   void doCanonicalize(LoadContext& context) override;
   bool addToNode(Node& node);
+  bool setOutdoorAirStreamNode(const Node& node);
+  bool setReliefAirStreamNode(const Node& node);
+  bool updateOutdoorAirStreamInletNode(const ModelObject& object, const Node& node);
+  bool updateOutdoorAirStreamOutletNode(const ModelObject& object, const Node& node);
+  bool updateReliefAirStreamInletNode(const ModelObject& object, const Node& node);
+  bool updateReliefAirStreamOutletNode(const ModelObject& object, const Node& node);
+  bool rewriteEquipmentListOrder();
+  bool rewriteEquipmentListOrder(LoadContext& context);
 
  private:
+  // These remaining helpers are the core OA topology extractors and mutators reused across
+  // navigation, canonicalization, and stream mutation. The smaller plumbing that used to sit
+  // around them has been pushed back into the owning methods so the implementation reads more
+  // directly from the public behavior.
+  enum class OAStream
+  {
+    OutdoorAir,
+    ReliefAir,
+  };
+
   openstudio::epmodel::AirLoopHVACControllerList airLoopHVACControllerList() const;
+  boost::optional<std::pair<Node, Node>> streamNodesFor(const ModelObject& object, OAStream stream) const;
+  std::vector<openstudio::epmodel::ModelObject> walkOutdoorAirStream() const;
+  std::vector<openstudio::epmodel::ModelObject> walkReliefAirStream() const;
+  bool rewriteEquipmentListOrder(LoadContext* context);
+  static bool updateAdjacentStreamNode(const ModelObject& object, OAStream stream, bool updateInlet, const Node& node);
 };
 
 }  // namespace detail

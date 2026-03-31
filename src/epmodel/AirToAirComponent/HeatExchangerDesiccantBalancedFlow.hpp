@@ -7,7 +7,7 @@
 #define EPMODEL_HEATEXCHANGERDESICCANTBALANCEDFLOW_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "AirToAirComponent/AirToAirComponent.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,7 @@ namespace detail {
 class HeatExchangerDesiccantBalancedFlow_Impl;
 }
 
-class EPMODEL_API HeatExchangerDesiccantBalancedFlow : public ModelObject
+class EPMODEL_API HeatExchangerDesiccantBalancedFlow : public AirToAirComponent
 {
  public:
   explicit HeatExchangerDesiccantBalancedFlow(const Model& model);

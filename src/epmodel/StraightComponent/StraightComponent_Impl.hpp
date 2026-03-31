@@ -13,6 +13,7 @@
 
 namespace openstudio {
 namespace epmodel {
+class AirLoopHVACOutdoorAirSystem;
 namespace detail {
 
 class EPMODEL_API StraightComponent_Impl : public HVACComponent_Impl
@@ -32,6 +33,10 @@ class EPMODEL_API StraightComponent_Impl : public HVACComponent_Impl
   void doCanonicalize(LoadContext& context) override;
 
   virtual bool addToNode(Node& node) override;
+
+ private:
+  bool addToOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem, Node& node);
+  bool removeFromOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem);
 };
 
 }  // namespace detail

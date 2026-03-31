@@ -7,7 +7,7 @@
 #define EPMODEL_HEATEXCHANGERAIRTOAIRSENSIBLEANDLATENT_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "AirToAirComponent/AirToAirComponent.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace epmodel {
     class HeatExchangerAirToAirSensibleAndLatent_Impl;
   }
 
-  class EPMODEL_API HeatExchangerAirToAirSensibleAndLatent : public ModelObject
+  class EPMODEL_API HeatExchangerAirToAirSensibleAndLatent : public AirToAirComponent
   {
    public:
     explicit HeatExchangerAirToAirSensibleAndLatent(const Model& model);

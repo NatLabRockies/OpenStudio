@@ -6,6 +6,7 @@
 #include "StraightComponent/HumidifierSteamGas.hpp"
 #include "StraightComponent/HumidifierSteamGas_Impl.hpp"
 
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
 #include "StraightComponent/Node.hpp"
@@ -158,6 +159,10 @@ unsigned HumidifierSteamGas_Impl::outletPort() const {
 }
 
 bool HumidifierSteamGas_Impl::addToNode(Node& node) {
+  if (node.airLoopHVACOutdoorAirSystem()) {
+    return StraightComponent_Impl::addToNode(node);
+  }
+
   auto airLoop = node.airLoopHVAC();
 
   if (!(airLoop && airLoop->supplyComponent(node.handle()))) {

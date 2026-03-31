@@ -6,17 +6,24 @@
 #include "WaterToAirComponent/WaterToAirComponent.hpp"
 #include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
 
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
 #include "Loop/PlantLoop_Impl.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Model.hpp"
+#include "ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.hpp"
+#include "ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp"
 #include "ModelObject/Branch_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 #include "Splitter/Splitter.hpp"
 
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
+
+#include <algorithm>
 
 namespace openstudio {
 namespace epmodel {
@@ -99,6 +106,172 @@ bool WaterToAirComponent::removeFromPlantLoop() {
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+bool WaterToAirComponent_Impl::addToOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem, Node& node) {
+  auto thisObject = getObject<ModelObject>();
+  if (!thisObject.name()) {
+    thisObject.createName();
+    if (!thisObject.name()) {
+      return false;
+    }
+  }
+  if (!detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl::isValidOASystemEquipment(thisObject)) {
+    LOG_FREE(Warn, "openstudio.epmodel.Model",
+             "Refusing to add " << thisObject.briefDescription() << " to " << oaSystem.briefDescription()
+                                << " because the EnergyPlus IDD does not include type '" << thisObject.iddObject().name()
+                                << "' in validOASysEquipmentTypes");
+    return false;
+  }
+
+  const bool onOutdoorAirStream = oaSystem.oaComponent(node.handle()).has_value();
+  const bool onReliefStream = oaSystem.reliefComponent(node.handle()).has_value();
+  if (!onOutdoorAirStream && !onReliefStream) {
+    return false;
+  }
+
+  auto oaSystemImpl = oaSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>();
+  OS_ASSERT(oaSystemImpl);
+  auto equipmentListImpl =
+    oaSystemImpl->airLoopHVACOutdoorAirSystemEquipmentList().getImpl<detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl>();
+  OS_ASSERT(equipmentListImpl);
+  if (!equipmentListImpl->containsEquipment(thisObject) && !equipmentListImpl->addEquipment(thisObject)) {
+    return false;
+  }
+
+  auto path = onOutdoorAirStream ? oaSystem.oaComponents() : oaSystem.reliefComponents();
+  const auto nodeIt = std::find_if(path.begin(), path.end(), [&](const auto& object) { return object.handle() == node.handle(); });
+  if (nodeIt == path.end()) {
+    return false;
+  }
+
+  auto inletNode = node;
+  auto outletNode = node;
+  if (path.size() == 1u) {
+    auto newNode = model().getOrCreateTransientByName<Node>(node.nameString() + " - " + thisObject.nameString() + " Outlet");
+    if (onOutdoorAirStream) {
+      outletNode = newNode;
+      if (!oaSystemImpl->setOutdoorAirStreamNode(newNode)) {
+        return false;
+      }
+    } else {
+      inletNode = newNode;
+      if (!oaSystemImpl->setReliefAirStreamNode(newNode)) {
+        return false;
+      }
+    }
+  } else {
+    const auto index = static_cast<std::size_t>(std::distance(path.begin(), nodeIt));
+    const bool hasPreviousComponent = index >= 1u && !path[index - 1u].optionalCast<Node>();
+    const bool hasNextComponent = (index + 1u) < path.size() && !path[index + 1u].optionalCast<Node>();
+    auto newNode = model().getOrCreateTransientByName<Node>(node.nameString() + " - " + thisObject.nameString() + " Outlet");
+
+    if (!hasNextComponent && hasPreviousComponent) {
+      inletNode = newNode;
+      if (onOutdoorAirStream) {
+        if (!oaSystemImpl->updateOutdoorAirStreamOutletNode(path[index - 1u], newNode)) {
+          return false;
+        }
+      } else if (!oaSystemImpl->updateReliefAirStreamOutletNode(path[index - 1u], newNode)) {
+        return false;
+      }
+    } else {
+      outletNode = newNode;
+      if (hasNextComponent) {
+        if (onOutdoorAirStream) {
+          if (!oaSystemImpl->updateOutdoorAirStreamInletNode(path[index + 1u], newNode)) {
+            return false;
+          }
+        } else if (!oaSystemImpl->updateReliefAirStreamInletNode(path[index + 1u], newNode)) {
+          return false;
+        }
+      }
+    }
+  }
+
+  if (!setPointer(airInletPort(), inletNode.handle(), false) || !setPointer(airOutletPort(), outletNode.handle(), false)) {
+    return false;
+  }
+
+  return oaSystemImpl->rewriteEquipmentListOrder();
+}
+
+bool WaterToAirComponent_Impl::removeFromOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem) {
+  auto inletObject = airInletModelObject();
+  auto outletObject = airOutletModelObject();
+  if (!inletObject || !outletObject) {
+    return false;
+  }
+
+  auto inletNode = inletObject->optionalCast<Node>();
+  auto outletNode = outletObject->optionalCast<Node>();
+  if (!inletNode || !outletNode) {
+    return false;
+  }
+
+  const auto thisObject = getObject<ModelObject>();
+  const bool onOutdoorAirStream = oaSystem.oaComponent(handle()).has_value();
+  const bool onReliefStream = oaSystem.reliefComponent(handle()).has_value();
+  if (!onOutdoorAirStream && !onReliefStream) {
+    return false;
+  }
+
+  auto path = onOutdoorAirStream ? oaSystem.oaComponents() : oaSystem.reliefComponents();
+  auto it = std::find_if(path.begin(), path.end(), [&](const auto& object) { return object.handle() == thisObject.handle(); });
+  if (it == path.end()) {
+    return false;
+  }
+
+  auto oaSystemImpl = oaSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>();
+  OS_ASSERT(oaSystemImpl);
+  const auto index = static_cast<std::size_t>(std::distance(path.begin(), it));
+  if (path.size() == 3u) {
+    if (onOutdoorAirStream) {
+      if (!oaSystemImpl->setOutdoorAirStreamNode(*inletNode)) {
+        return false;
+      }
+    } else if (!oaSystemImpl->setReliefAirStreamNode(*outletNode)) {
+      return false;
+    }
+  } else if (index >= 1u && (index + 1u) < path.size()) {
+    auto previousNode = path[index - 1u].optionalCast<Node>();
+    auto nextNode = path[index + 1u].optionalCast<Node>();
+    if (!previousNode || !nextNode) {
+      return false;
+    }
+
+    if (index >= 2u) {
+      if (onOutdoorAirStream) {
+        if (!oaSystemImpl->updateOutdoorAirStreamOutletNode(path[index - 2u], *previousNode)) {
+          return false;
+        }
+      } else if (!oaSystemImpl->updateReliefAirStreamOutletNode(path[index - 2u], *previousNode)) {
+        return false;
+      }
+    }
+    if ((index + 2u) < path.size()) {
+      if (onOutdoorAirStream) {
+        if (!oaSystemImpl->updateOutdoorAirStreamInletNode(path[index + 2u], *previousNode)) {
+          return false;
+        }
+      } else if (!oaSystemImpl->updateReliefAirStreamInletNode(path[index + 2u], *previousNode)) {
+        return false;
+      }
+    } else if (onOutdoorAirStream) {
+      if (!oaSystemImpl->setOutdoorAirStreamNode(*previousNode)) {
+        return false;
+      }
+    } else if (!oaSystemImpl->setReliefAirStreamNode(*previousNode)) {
+      return false;
+    }
+  }
+
+  disconnectAirSide();
+  auto equipmentListImpl =
+    oaSystemImpl->airLoopHVACOutdoorAirSystemEquipmentList().getImpl<detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl>();
+  OS_ASSERT(equipmentListImpl);
+  equipmentListImpl->removeEquipment(thisObject);
+  return oaSystemImpl->rewriteEquipmentListOrder();
+}
 
 bool WaterToAirComponent_Impl::insertOnBranch(Node& node, const Branch& branch, unsigned inletPort, unsigned outletPort) {
   const auto nodeName = node.name();
@@ -195,8 +368,8 @@ bool WaterToAirComponent_Impl::addToNode(Node& node) {
       || waterOutletModelObject() == nodeObject) {
     return false;
   }
-  if (node.airLoopHVACOutdoorAirSystem()) {
-    return false;
+  if (auto oaSystem = node.airLoopHVACOutdoorAirSystem()) {
+    return addToOutdoorAirSystem(*oaSystem, node);
   }
 
   if (auto airLoop = node.airLoopHVAC()) {
@@ -267,11 +440,6 @@ void WaterToAirComponent_Impl::disconnect() {
 
 bool WaterToAirComponent_Impl::removeFromAirLoopHVAC() {
   auto thisObject = getObject<ModelObject>();
-  auto airLoop = thisObject.cast<WaterToAirComponent>().airLoopHVAC();
-  if (!airLoop || !airLoop->supplyComponent(handle())) {
-    return false;
-  }
-
   auto inletObject = airInletModelObject();
   auto outletObject = airOutletModelObject();
   if (!inletObject || !outletObject) {
@@ -281,6 +449,17 @@ bool WaterToAirComponent_Impl::removeFromAirLoopHVAC() {
   auto inletNode = inletObject->optionalCast<Node>();
   auto outletNode = outletObject->optionalCast<Node>();
   if (!inletNode || !outletNode) {
+    return false;
+  }
+
+  for (auto oaSystem : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
+    if (oaSystem.component(handle())) {
+      return removeFromOutdoorAirSystem(oaSystem);
+    }
+  }
+
+  auto airLoop = thisObject.cast<WaterToAirComponent>().airLoopHVAC();
+  if (!airLoop || !airLoop->supplyComponent(handle())) {
     return false;
   }
 

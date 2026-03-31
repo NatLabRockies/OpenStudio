@@ -6,6 +6,9 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/FanSystemModel.hpp"
 
 using namespace openstudio::epmodel;
@@ -87,4 +90,19 @@ TEST_F(EPModelFixture, FanSystemModel_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(fan.setEndUseSubcategory("Fans"));
   EXPECT_EQ("Fans", fan.endUseSubcategory());
+}
+
+TEST_F(EPModelFixture, FanSystemModel_AddToNodeSupportsOutboardOANode) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+
+  FanSystemModel fan(model);
+  EXPECT_TRUE(fan.addToNode(*outboardOANode));
+  EXPECT_EQ(3u, oaSystem.oaComponents().size());
 }

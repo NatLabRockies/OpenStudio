@@ -6,6 +6,7 @@
 #include "StraightComponent/FanComponentModel.hpp"
 #include "StraightComponent/FanComponentModel_Impl.hpp"
 
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
 #include "StraightComponent/Node.hpp"
@@ -265,6 +266,10 @@ unsigned FanComponentModel_Impl::outletPort() const {
 }
 
 bool FanComponentModel_Impl::addToNode(Node& node) {
+  if (node.airLoopHVACOutdoorAirSystem()) {
+    return StraightComponent_Impl::addToNode(node);
+  }
+
   auto airLoop = node.airLoopHVAC();
 
   if (!(airLoop && airLoop->supplyComponent(node.handle()))) {

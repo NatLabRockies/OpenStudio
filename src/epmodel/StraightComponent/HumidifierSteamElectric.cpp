@@ -6,6 +6,7 @@
 #include "StraightComponent/HumidifierSteamElectric.hpp"
 #include "StraightComponent/HumidifierSteamElectric_Impl.hpp"
 
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
 #include "StraightComponent/Node.hpp"
@@ -117,6 +118,10 @@ namespace epmodel {
     }
 
     bool HumidifierSteamElectric_Impl::addToNode(Node& node) {
+      if (node.airLoopHVACOutdoorAirSystem()) {
+        return StraightComponent_Impl::addToNode(node);
+      }
+
       auto airLoop = node.airLoopHVAC();
 
       if (!(airLoop && airLoop->supplyComponent(node.handle()))) {

@@ -6,6 +6,9 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../WaterToAirComponent/CoilUserDefined.hpp"
 
 #include <utilities/idd/Coil_UserDefined_FieldEnums.hxx>
@@ -35,4 +38,23 @@ TEST_F(EPModelFixture, CoilUserDefined_ScalarAccessors_RoundTrip) {
 
   ASSERT_TRUE(coil.setInt(openstudio::Coil_UserDefinedFields::NumberofAirConnections, 2));
   EXPECT_EQ(2, coil.numberofAirConnections());
+}
+
+TEST_F(EPModelFixture, CoilUserDefined_AddToNodeSupportsOutboardOANode) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+
+  CoilUserDefined coil(model);
+
+  EXPECT_TRUE(coil.addToNode(*outboardOANode));
+
+  const auto oaComponents = oaSystem.oaComponents();
+  ASSERT_EQ(3u, oaComponents.size());
+  EXPECT_EQ(coil.handle(), oaComponents[1].handle());
 }

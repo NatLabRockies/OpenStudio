@@ -7,6 +7,9 @@
 
 #include "EPModelFixture.hpp"
 #include "../AirToAirComponent/HeatExchangerAirToAirSensibleAndLatent.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../StraightComponent/Node.hpp"
 
 #include <algorithm>
 
@@ -102,4 +105,94 @@ TEST_F(EPModelFixture, HeatExchangerAirToAirSensibleAndLatent_ScalarAccessors_Ro
 
   EXPECT_TRUE(object.setFrostControlType(frostType));
   EXPECT_EQ(frostType, object.frostControlType());
+}
+
+TEST_F(EPModelFixture, HeatExchangerAirToAirSensibleAndLatent_AddToOANodeBuildsBothStreams) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+
+  HeatExchangerAirToAirSensibleAndLatent hx(model);
+  ASSERT_TRUE(hx.addToNode(*outboardOANode));
+
+  EXPECT_EQ(3u, oaSystem.oaComponents().size());
+  EXPECT_EQ(3u, oaSystem.reliefComponents().size());
+  EXPECT_TRUE(hx.primaryAirInletModelObject());
+  EXPECT_TRUE(hx.primaryAirOutletModelObject());
+  EXPECT_TRUE(hx.secondaryAirInletModelObject());
+  EXPECT_TRUE(hx.secondaryAirOutletModelObject());
+}
+
+TEST_F(EPModelFixture, HeatExchangerAirToAirSensibleAndLatent_AddToReliefNodeBuildsBothStreams) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardReliefNode = oaSystem.outboardReliefNode();
+  ASSERT_TRUE(outboardReliefNode);
+
+  HeatExchangerAirToAirSensibleAndLatent hx(model);
+  ASSERT_TRUE(hx.addToNode(*outboardReliefNode));
+
+  EXPECT_EQ(3u, oaSystem.oaComponents().size());
+  EXPECT_EQ(3u, oaSystem.reliefComponents().size());
+  EXPECT_TRUE(hx.primaryAirInletModelObject());
+  EXPECT_TRUE(hx.primaryAirOutletModelObject());
+  EXPECT_TRUE(hx.secondaryAirInletModelObject());
+  EXPECT_TRUE(hx.secondaryAirOutletModelObject());
+}
+
+TEST_F(EPModelFixture, HeatExchangerAirToAirSensibleAndLatent_RemoveDetachesFromOutdoorAirSystem) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+
+  HeatExchangerAirToAirSensibleAndLatent hx(model);
+  ASSERT_TRUE(hx.addToNode(*outboardOANode));
+  ASSERT_EQ(3u, oaSystem.oaComponents().size());
+  ASSERT_EQ(3u, oaSystem.reliefComponents().size());
+  const auto hxHandle = hx.handle();
+
+  hx.remove();
+
+  EXPECT_LT(oaSystem.oaComponents().size(), 3u);
+  EXPECT_LT(oaSystem.reliefComponents().size(), 3u);
+  EXPECT_FALSE(oaSystem.oaComponent(hxHandle));
+  EXPECT_FALSE(oaSystem.reliefComponent(hxHandle));
+}
+
+TEST_F(EPModelFixture, HeatExchangerAirToAirSensibleAndLatent_RemoveDetachesFromOutdoorAirSystemWhenAddedFromReliefSide) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outboardReliefNode = oaSystem.outboardReliefNode();
+  ASSERT_TRUE(outboardReliefNode);
+
+  HeatExchangerAirToAirSensibleAndLatent hx(model);
+  ASSERT_TRUE(hx.addToNode(*outboardReliefNode));
+  ASSERT_EQ(3u, oaSystem.oaComponents().size());
+  ASSERT_EQ(3u, oaSystem.reliefComponents().size());
+  const auto hxHandle = hx.handle();
+
+  hx.remove();
+
+  EXPECT_EQ(1u, oaSystem.oaComponents().size());
+  EXPECT_EQ(1u, oaSystem.reliefComponents().size());
+  EXPECT_FALSE(oaSystem.oaComponent(hxHandle));
+  EXPECT_FALSE(oaSystem.reliefComponent(hxHandle));
 }

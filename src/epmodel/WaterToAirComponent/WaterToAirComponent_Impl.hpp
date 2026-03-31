@@ -12,6 +12,7 @@
 
 namespace openstudio {
 namespace epmodel {
+class AirLoopHVACOutdoorAirSystem;
 namespace detail {
 
 class EPMODEL_API WaterToAirComponent_Impl : public HVACComponent_Impl
@@ -42,9 +43,11 @@ class EPMODEL_API WaterToAirComponent_Impl : public HVACComponent_Impl
   void disconnect() override;
 
   bool removeFromAirLoopHVAC();
-  bool removeFromPlantLoop();
+ bool removeFromPlantLoop();
 
  private:
+  bool addToOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem, Node& node);
+  bool removeFromOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem);
   bool insertOnBranch(Node& node, const Branch& branch, unsigned inletPort, unsigned outletPort);
 };
 

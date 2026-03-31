@@ -19,11 +19,11 @@ namespace openstudio {
 namespace epmodel {
 
   HeatExchangerAirToAirSensibleAndLatent::HeatExchangerAirToAirSensibleAndLatent(const Model& model)
-    : ModelObject(HeatExchangerAirToAirSensibleAndLatent::iddObjectType(), model) {}
+    : AirToAirComponent(HeatExchangerAirToAirSensibleAndLatent::iddObjectType(), model) {}
 
   HeatExchangerAirToAirSensibleAndLatent::HeatExchangerAirToAirSensibleAndLatent(
     std::shared_ptr<detail::HeatExchangerAirToAirSensibleAndLatent_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : AirToAirComponent(std::move(impl)) {}
 
   IddObjectType HeatExchangerAirToAirSensibleAndLatent::iddObjectType() {
     return IddObjectType::HeatExchanger_AirToAir_SensibleAndLatent;
@@ -177,6 +177,18 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    HeatExchangerAirToAirSensibleAndLatent_Impl::HeatExchangerAirToAirSensibleAndLatent_Impl(const IdfObject& idfObject, Model_Impl* model,
+                                                                                             bool keepHandle)
+      : AirToAirComponent_Impl(idfObject, model, keepHandle) {}
+
+    HeatExchangerAirToAirSensibleAndLatent_Impl::HeatExchangerAirToAirSensibleAndLatent_Impl(
+      const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model, bool keepHandle)
+      : AirToAirComponent_Impl(other, model, keepHandle) {}
+
+    HeatExchangerAirToAirSensibleAndLatent_Impl::HeatExchangerAirToAirSensibleAndLatent_Impl(
+      const HeatExchangerAirToAirSensibleAndLatent_Impl& other, Model_Impl* model, bool keepHandle)
+      : AirToAirComponent_Impl(other, model, keepHandle) {}
 
     boost::optional<double> HeatExchangerAirToAirSensibleAndLatent_Impl::nominalSupplyAirFlowRate() const {
       return getDouble(openstudio::HeatExchanger_AirToAir_SensibleAndLatentFields::NominalSupplyAirFlowRate, true);
@@ -337,6 +349,22 @@ namespace epmodel {
 
     bool HeatExchangerAirToAirSensibleAndLatent_Impl::setEconomizerLockout(bool economizerLockout) {
       return setString(openstudio::HeatExchanger_AirToAir_SensibleAndLatentFields::EconomizerLockout, economizerLockout ? "Yes" : "No");
+    }
+
+    unsigned HeatExchangerAirToAirSensibleAndLatent_Impl::primaryAirInletPort() const {
+      return openstudio::HeatExchanger_AirToAir_SensibleAndLatentFields::SupplyAirInletNodeName;
+    }
+
+    unsigned HeatExchangerAirToAirSensibleAndLatent_Impl::primaryAirOutletPort() const {
+      return openstudio::HeatExchanger_AirToAir_SensibleAndLatentFields::SupplyAirOutletNodeName;
+    }
+
+    unsigned HeatExchangerAirToAirSensibleAndLatent_Impl::secondaryAirInletPort() const {
+      return openstudio::HeatExchanger_AirToAir_SensibleAndLatentFields::ExhaustAirInletNodeName;
+    }
+
+    unsigned HeatExchangerAirToAirSensibleAndLatent_Impl::secondaryAirOutletPort() const {
+      return openstudio::HeatExchanger_AirToAir_SensibleAndLatentFields::ExhaustAirOutletNodeName;
     }
 
     std::vector<std::string> HeatExchangerAirToAirSensibleAndLatent_Impl::heatExchangerTypeValues() const {

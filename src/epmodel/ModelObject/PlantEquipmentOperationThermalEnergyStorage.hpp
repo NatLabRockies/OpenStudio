@@ -57,7 +57,7 @@ class EPMODEL_API PlantEquipmentOperationThermalEnergyStorage : public ModelObje
   static std::vector<std::string> component10OperationTypeValues();
 
   // Schema Alignment Notes:
-  // - API: Scalar naming follows PlantEquipmentOperation:ThermalEnergyStorage from ProposedEnergy+.idd (non-charging/charging temperatures plus component object types/flow rates/operation types).
+  // - API: Scalar naming follows PlantEquipmentOperation:ThermalEnergyStorage from the EnergyPlus IDD (non-charging/charging temperatures plus component object types/flow rates/operation types).
   // - Field Mapping: On-Peak and Charging Availability schedules, component names, and node references remain relationship/object-list fields and are intentionally excluded from this scalar scaffold.
   // - TODO(parity): Add the missing relationship APIs (schedules, component listings, and node links) once scalar parity is satisfied.
   double nonChargingChilledWaterTemperature() const;

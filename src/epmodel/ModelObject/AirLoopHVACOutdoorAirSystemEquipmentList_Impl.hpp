@@ -8,6 +8,8 @@
 
 #include "ModelObject_Impl.hpp"
 
+#include <string_view>
+
 namespace openstudio {
 namespace epmodel {
 namespace detail {
@@ -19,8 +21,11 @@ class EPMODEL_API AirLoopHVACOutdoorAirSystemEquipmentList_Impl : public ModelOb
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~AirLoopHVACOutdoorAirSystemEquipmentList_Impl() override = default;
 
-  std::vector<openstudio::epmodel::ModelObject> equipment() const;
+ std::vector<openstudio::epmodel::ModelObject> equipment() const;
+  static bool isValidOASystemEquipmentTypeName(std::string_view typeName);
+  static bool isValidOASystemEquipment(const openstudio::epmodel::ModelObject& component);
   bool addEquipment(const openstudio::epmodel::ModelObject& component);
+  bool containsEquipment(const openstudio::epmodel::ModelObject& component) const;
   bool removeEquipment(const openstudio::epmodel::ModelObject& component);
   void doCanonicalize(LoadContext& context) override;
 };

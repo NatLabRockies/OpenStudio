@@ -34,7 +34,7 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: IDD-derived PlantEquipmentOperation:UserDefined naming is preserved per ProposedEnergy+.idd.
+    // - API: IDD-derived PlantEquipmentOperation:UserDefined naming is preserved per the EnergyPlus IDD.
     // - Field Mapping: Name is exposed through the base ModelObject scalar API.
     // - Field Mapping: Main Model Program Calling Manager Name, Initialization Program Calling Manager Name, and the extensible Equipment Object Type/Name pairs are relationship-like object-list concepts and intentionally excluded from this scalar-only pass.
     // - TODO(parity): Add targeted helpers for the excluded program/equipment references once extensible/relationship support is required.

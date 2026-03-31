@@ -37,7 +37,7 @@ namespace epmodel {
     static std::vector<std::string> controlSchemeObjectTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Exposes the scalar Control Scheme N Object Type choices defined on PlantEquipmentOperationSchemes in the ProposedEnergy+.idd.
+    // - API: Exposes the scalar Control Scheme N Object Type choices defined on PlantEquipmentOperationSchemes in the EnergyPlus IDD.
     // - Field Mapping: Control Scheme Name and Control Scheme Schedule remain relationship-like object-list/schedule fields and are intentionally excluded from this scalar scaffold.
     // - TODO(parity): Add Control Scheme relationships once scalar parity is satisfied.
     std::string controlScheme1ObjectType() const;

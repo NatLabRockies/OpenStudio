@@ -36,7 +36,7 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: IDD-derived name follows ProposedEnergy+.idd PlantEquipmentOperation:Uncontrolled.
+    // - API: IDD-derived name follows EnergyPlus IDD PlantEquipmentOperation:Uncontrolled.
     // - Field Mapping: Name remains available through the base ModelObject scalar API.
     // - Field Mapping: Equipment List Name is a PlantAndCondenserEquipmentLists object list (see PlantEquipmentOperation_UncontrolledFields::EquipmentListName and ForwardTranslatePlantEquipmentOperationSchemes mapping) and is intentionally excluded from scalar accessors.
     // - TODO(parity): Add helper APIs for the referenced PlantAndCondenserEquipmentLists once scalar parity work is complete.

@@ -73,7 +73,7 @@ class EPMODEL_API Loop_Impl : public ParentObject_Impl
   virtual std::vector<openstudio::FuelType> heatingFuelTypes() const;
   virtual std::vector<openstudio::AppGFuelType> appGHeatingFuelTypes() const;
 
- protected:
+ public:
   // Loop traversal in epmodel is built from local topology objects such as
   // Branch, Splitter, Mixer, and path objects. Different loop types expose that
   // topology in different storage forms, but the higher-level APIs still need to
@@ -234,6 +234,8 @@ class EPMODEL_API Loop_Impl : public ParentObject_Impl
       return path;
     }
   };
+
+ protected:
 };
 
 }  // namespace detail
