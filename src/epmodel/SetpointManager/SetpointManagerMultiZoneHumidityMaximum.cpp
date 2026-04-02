@@ -101,18 +101,27 @@ namespace epmodel {
       return result;
     }
 
-    unsigned SetpointManagerMultiZoneHumidityMaximum_Impl::setpointNodeFieldIndex() const {
-      return openstudio::SetpointManager_MultiZone_Humidity_MaximumFields::SetpointNodeorNodeListName;
+    boost::optional<openstudio::epmodel::Node> SetpointManagerMultiZoneHumidityMaximum_Impl::setpointNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+        openstudio::SetpointManager_MultiZone_Humidity_MaximumFields::SetpointNodeorNodeListName);
     }
 
-    unsigned SetpointManagerMultiZoneHumidityMaximum_Impl::controlVariableFieldIndex() const {
-      // E+ SetpointManager:MultiZone:Humidity:Maximum has no explicit control variable field;
-      // this placeholder index satisfies the abstract SetpointManager_Impl contract.
-      return openstudio::SetpointManager_MultiZone_Humidity_MaximumFields::HVACAirLoopName;
+    std::string SetpointManagerMultiZoneHumidityMaximum_Impl::controlVariable() const {
+      return "MaximumHumidityRatio";
+    }
+
+    bool SetpointManagerMultiZoneHumidityMaximum_Impl::setControlVariable(const std::string& value) {
+      return openstudio::istringEqual(value, "MaximumHumidityRatio");
+    }
+
+    bool SetpointManagerMultiZoneHumidityMaximum_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_MultiZone_Humidity_MaximumFields::SetpointNodeorNodeListName,
+                                                 node.handle());
     }
 
     void SetpointManagerMultiZoneHumidityMaximum_Impl::doCanonicalize(LoadContext& context) {
       SetpointManager_Impl::doCanonicalize(context);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_MultiZone_Humidity_MaximumFields::SetpointNodeorNodeListName);
 
       if (auto value = getDouble(openstudio::SetpointManager_MultiZone_Humidity_MaximumFields::MinimumSetpointHumidityRatio, true)) {
         (void)value;
@@ -127,7 +136,7 @@ namespace epmodel {
       } else {
         OS_ASSERT(setDouble(openstudio::SetpointManager_MultiZone_Humidity_MaximumFields::MaximumSetpointHumidityRatio, 0.015));
         detail::addLoadInfo(context, "Set default Maximum Setpoint Humidity Ratio to 0.015 for SetpointManager:MultiZone:Humidity:Maximum '"
-                                       + getObject<ModelObject>().nameString() + "'.");
+                                      + getObject<ModelObject>().nameString() + "'.");
       }
     }
 

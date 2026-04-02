@@ -131,14 +131,27 @@ namespace epmodel {
       OS_ASSERT(result);
     }
 
-    unsigned SetpointManagerMultiZoneMinimumHumidityAverage_Impl::setpointNodeFieldIndex() const {
-      return openstudio::SetpointManager_MultiZone_MinimumHumidity_AverageFields::SetpointNodeorNodeListName;
+    boost::optional<openstudio::epmodel::Node> SetpointManagerMultiZoneMinimumHumidityAverage_Impl::setpointNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+        openstudio::SetpointManager_MultiZone_MinimumHumidity_AverageFields::SetpointNodeorNodeListName);
     }
 
-    unsigned SetpointManagerMultiZoneMinimumHumidityAverage_Impl::controlVariableFieldIndex() const {
-      // E+ SetpointManager:MultiZone:MinimumHumidity:Average has no explicit control variable field;
-      // this placeholder index satisfies the abstract SetpointManager_Impl contract.
-      return openstudio::SetpointManager_MultiZone_MinimumHumidity_AverageFields::HVACAirLoopName;
+    std::string SetpointManagerMultiZoneMinimumHumidityAverage_Impl::controlVariable() const {
+      return "MinimumHumidityRatio";
+    }
+
+    bool SetpointManagerMultiZoneMinimumHumidityAverage_Impl::setControlVariable(const std::string& value) {
+      return openstudio::istringEqual(value, "MinimumHumidityRatio");
+    }
+
+    bool SetpointManagerMultiZoneMinimumHumidityAverage_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_MultiZone_MinimumHumidity_AverageFields::SetpointNodeorNodeListName,
+                                                 node.handle());
+    }
+
+    void SetpointManagerMultiZoneMinimumHumidityAverage_Impl::doCanonicalize(LoadContext& context) {
+      SetpointManager_Impl::doCanonicalize(context);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_MultiZone_MinimumHumidity_AverageFields::SetpointNodeorNodeListName);
     }
 
   }  // namespace detail

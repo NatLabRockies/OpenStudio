@@ -84,16 +84,30 @@ namespace epmodel {
       return result;
     }
 
-    unsigned SetpointManagerSingleZoneCooling_Impl::setpointNodeFieldIndex() const {
-      return openstudio::SetpointManager_SingleZone_CoolingFields::SetpointNodeorNodeListName;
+    boost::optional<openstudio::epmodel::Node> SetpointManagerSingleZoneCooling_Impl::setpointNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+        openstudio::SetpointManager_SingleZone_CoolingFields::SetpointNodeorNodeListName);
     }
 
-    unsigned SetpointManagerSingleZoneCooling_Impl::controlVariableFieldIndex() const {
-      return openstudio::SetpointManager_SingleZone_CoolingFields::ControlVariable;
+    std::string SetpointManagerSingleZoneCooling_Impl::controlVariable() const {
+      if (auto value = getString(openstudio::SetpointManager_SingleZone_CoolingFields::ControlVariable, true)) {
+        return *value;
+      }
+      return "";
+    }
+
+    bool SetpointManagerSingleZoneCooling_Impl::setControlVariable(const std::string& value) {
+      return setString(openstudio::SetpointManager_SingleZone_CoolingFields::ControlVariable, value);
+    }
+
+    bool SetpointManagerSingleZoneCooling_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_SingleZone_CoolingFields::SetpointNodeorNodeListName,
+                                                 node.handle());
     }
 
     void SetpointManagerSingleZoneCooling_Impl::doCanonicalize(LoadContext& context) {
       SetpointManager_Impl::doCanonicalize(context);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_SingleZone_CoolingFields::SetpointNodeorNodeListName);
 
       if (auto value = getString(openstudio::SetpointManager_SingleZone_CoolingFields::ControlVariable, true)) {
         if (!value->empty()) {

@@ -8,12 +8,12 @@
 
 #include "EPModelAPI.hpp"
 #include "HVACComponent/HVACComponent.hpp"
+#include "StraightComponent/Node.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
 class Model;
-class Node;
 
 namespace detail {
 class SetpointManager_Impl;

@@ -50,14 +50,27 @@ namespace openstudio {
 namespace epmodel {
 namespace detail {
 
-unsigned SetpointManagerSingleZoneHumidityMinimum_Impl::setpointNodeFieldIndex() const {
-  return openstudio::SetpointManager_SingleZone_Humidity_MinimumFields::SetpointNodeorNodeListName;
+boost::optional<openstudio::epmodel::Node> SetpointManagerSingleZoneHumidityMinimum_Impl::setpointNode() const {
+  return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+    openstudio::SetpointManager_SingleZone_Humidity_MinimumFields::SetpointNodeorNodeListName);
 }
 
-unsigned SetpointManagerSingleZoneHumidityMinimum_Impl::controlVariableFieldIndex() const {
-  // E+ SetpointManager:SingleZone:Humidity:Minimum has no explicit control variable field;
-  // this placeholder index satisfies the abstract SetpointManager_Impl contract.
-  return openstudio::SetpointManager_SingleZone_Humidity_MinimumFields::ControlZoneAirNodeName;
+std::string SetpointManagerSingleZoneHumidityMinimum_Impl::controlVariable() const {
+  return "MinimumHumidityRatio";
+}
+
+bool SetpointManagerSingleZoneHumidityMinimum_Impl::setControlVariable(const std::string& value) {
+  return openstudio::istringEqual(value, "MinimumHumidityRatio");
+}
+
+bool SetpointManagerSingleZoneHumidityMinimum_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+  return getObject<ModelObject>().setPointer(openstudio::SetpointManager_SingleZone_Humidity_MinimumFields::SetpointNodeorNodeListName,
+                                             node.handle());
+}
+
+void SetpointManagerSingleZoneHumidityMinimum_Impl::doCanonicalize(LoadContext& context) {
+  SetpointManager_Impl::doCanonicalize(context);
+  canonicalizeSetpointNodeField(context, openstudio::SetpointManager_SingleZone_Humidity_MinimumFields::SetpointNodeorNodeListName);
 }
 
 }  // namespace detail

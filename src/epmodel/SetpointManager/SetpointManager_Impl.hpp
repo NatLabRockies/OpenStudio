@@ -7,11 +7,10 @@
 #define EPMODEL_SETPOINTMANAGER_IMPL_HPP
 
 #include "HVACComponent/HVACComponent_Impl.hpp"
+#include "StraightComponent/Node.hpp"
 
 namespace openstudio {
 namespace epmodel {
-
-  class Node;
 
   namespace detail {
 
@@ -21,10 +20,10 @@ namespace epmodel {
       using HVACComponent_Impl::HVACComponent_Impl;
       virtual ~SetpointManager_Impl() override = default;
 
-      boost::optional<openstudio::epmodel::Node> setpointNode() const;
+      virtual boost::optional<openstudio::epmodel::Node> setpointNode() const = 0;
 
-      std::string controlVariable() const;
-      bool setControlVariable(const std::string& value);
+      virtual std::string controlVariable() const = 0;
+      virtual bool setControlVariable(const std::string& value) = 0;
 
       virtual bool isAllowedOnPlantLoop() const;
       bool addToNode(openstudio::epmodel::Node& node) override;
@@ -32,10 +31,10 @@ namespace epmodel {
       void doCanonicalize(LoadContext& context) override;
 
      protected:
-      virtual unsigned setpointNodeFieldIndex() const = 0;
-      bool setSetpointNode(openstudio::epmodel::Node& node);
+      void canonicalizeSetpointNodeField(LoadContext& context, unsigned fieldIndex);
 
-      virtual unsigned controlVariableFieldIndex() const = 0;
+     private:
+      virtual bool setSetpointNode(const openstudio::epmodel::Node& node) = 0;
     };
 
   }  // namespace detail

@@ -49,16 +49,30 @@ bool SetpointManagerScheduledDualSetpoint_Impl::isAllowedOnPlantLoop() const {
   return true;
 }
 
-unsigned SetpointManagerScheduledDualSetpoint_Impl::setpointNodeFieldIndex() const {
-  return openstudio::SetpointManager_Scheduled_DualSetpointFields::SetpointNodeorNodeListName;
+boost::optional<openstudio::epmodel::Node> SetpointManagerScheduledDualSetpoint_Impl::setpointNode() const {
+  return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+    openstudio::SetpointManager_Scheduled_DualSetpointFields::SetpointNodeorNodeListName);
 }
 
-unsigned SetpointManagerScheduledDualSetpoint_Impl::controlVariableFieldIndex() const {
-  return openstudio::SetpointManager_Scheduled_DualSetpointFields::ControlVariable;
+std::string SetpointManagerScheduledDualSetpoint_Impl::controlVariable() const {
+  if (auto value = getString(openstudio::SetpointManager_Scheduled_DualSetpointFields::ControlVariable, true)) {
+    return *value;
+  }
+  return "";
+}
+
+bool SetpointManagerScheduledDualSetpoint_Impl::setControlVariable(const std::string& value) {
+  return setString(openstudio::SetpointManager_Scheduled_DualSetpointFields::ControlVariable, value);
+}
+
+bool SetpointManagerScheduledDualSetpoint_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+  return getObject<ModelObject>().setPointer(openstudio::SetpointManager_Scheduled_DualSetpointFields::SetpointNodeorNodeListName,
+                                             node.handle());
 }
 
 void SetpointManagerScheduledDualSetpoint_Impl::doCanonicalize(LoadContext& context) {
   SetpointManager_Impl::doCanonicalize(context);
+  canonicalizeSetpointNodeField(context, openstudio::SetpointManager_Scheduled_DualSetpointFields::SetpointNodeorNodeListName);
 
   if (auto value = getString(openstudio::SetpointManager_Scheduled_DualSetpointFields::ControlVariable, true)) {
     if (!value->empty()) {

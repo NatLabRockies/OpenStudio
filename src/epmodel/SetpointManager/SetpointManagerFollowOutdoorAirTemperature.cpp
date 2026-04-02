@@ -138,16 +138,30 @@ namespace epmodel {
       return true;
     }
 
-    unsigned SetpointManagerFollowOutdoorAirTemperature_Impl::setpointNodeFieldIndex() const {
-      return openstudio::SetpointManager_FollowOutdoorAirTemperatureFields::SetpointNodeorNodeListName;
+    boost::optional<openstudio::epmodel::Node> SetpointManagerFollowOutdoorAirTemperature_Impl::setpointNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+        openstudio::SetpointManager_FollowOutdoorAirTemperatureFields::SetpointNodeorNodeListName);
     }
 
-    unsigned SetpointManagerFollowOutdoorAirTemperature_Impl::controlVariableFieldIndex() const {
-      return openstudio::SetpointManager_FollowOutdoorAirTemperatureFields::ControlVariable;
+    std::string SetpointManagerFollowOutdoorAirTemperature_Impl::controlVariable() const {
+      if (auto value = getString(openstudio::SetpointManager_FollowOutdoorAirTemperatureFields::ControlVariable, true)) {
+        return *value;
+      }
+      return "";
+    }
+
+    bool SetpointManagerFollowOutdoorAirTemperature_Impl::setControlVariable(const std::string& value) {
+      return setString(openstudio::SetpointManager_FollowOutdoorAirTemperatureFields::ControlVariable, value);
+    }
+
+    bool SetpointManagerFollowOutdoorAirTemperature_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_FollowOutdoorAirTemperatureFields::SetpointNodeorNodeListName,
+                                                 node.handle());
     }
 
     void SetpointManagerFollowOutdoorAirTemperature_Impl::doCanonicalize(LoadContext& context) {
       SetpointManager_Impl::doCanonicalize(context);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_FollowOutdoorAirTemperatureFields::SetpointNodeorNodeListName);
 
       if (auto value = getString(openstudio::SetpointManager_FollowOutdoorAirTemperatureFields::ControlVariable, true)) {
         if (!value->empty()) {

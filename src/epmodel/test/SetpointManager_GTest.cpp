@@ -28,6 +28,9 @@
 #include "../SetpointManager/SetpointManagerWarmest.hpp"
 #include "../SetpointManager/SetpointManagerWarmestTemperatureFlow.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../Schedule/ScheduleCompact.hpp"
+
+#include <utilities/idd/SetpointManager_Scheduled_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -57,6 +60,24 @@ TEST_F(EPModelFixture, SetpointManagerScheduled_ScalarAccessors_RoundTrip) {
   spm.resetControlVariable();
   EXPECT_TRUE(spm.isControlVariableDefaulted());
   EXPECT_EQ("", spm.controlVariable());
+}
+
+TEST_F(EPModelFixture, SetpointManagerScheduled_CanonicalizeReattachesNamedSchedule) {
+  Model model;
+  ScheduleCompact compactSchedule(model);
+  ASSERT_TRUE(compactSchedule.setName("SPM Schedule"));
+  ASSERT_TRUE(compactSchedule.setToConstantValue(0.75));
+
+  SetpointManagerScheduled spm(model);
+  ASSERT_TRUE(spm.setString(openstudio::SetpointManager_ScheduledFields::ScheduleName, compactSchedule.nameString()));
+
+  auto report = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(0u, report.errorCount);
+  EXPECT_TRUE(spm.hasSchedule());
+
+  auto scheduleObject = spm.scheduleAsModelObject();
+  ASSERT_TRUE(scheduleObject);
+  EXPECT_EQ(compactSchedule.cast<ModelObject>(), *scheduleObject);
 }
 
 TEST_F(EPModelFixture, SetpointManagerScheduledDualSetpoint_DefaultConstructor) {

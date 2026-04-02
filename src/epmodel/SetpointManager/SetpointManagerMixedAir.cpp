@@ -72,16 +72,29 @@ namespace epmodel {
       return true;
     }
 
-    unsigned SetpointManagerMixedAir_Impl::setpointNodeFieldIndex() const {
-      return openstudio::SetpointManager_MixedAirFields::SetpointNodeorNodeListName;
+    boost::optional<openstudio::epmodel::Node> SetpointManagerMixedAir_Impl::setpointNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+        openstudio::SetpointManager_MixedAirFields::SetpointNodeorNodeListName);
     }
 
-    unsigned SetpointManagerMixedAir_Impl::controlVariableFieldIndex() const {
-      return openstudio::SetpointManager_MixedAirFields::ControlVariable;
+    std::string SetpointManagerMixedAir_Impl::controlVariable() const {
+      if (auto value = getString(openstudio::SetpointManager_MixedAirFields::ControlVariable, true)) {
+        return *value;
+      }
+      return "";
+    }
+
+    bool SetpointManagerMixedAir_Impl::setControlVariable(const std::string& value) {
+      return setString(openstudio::SetpointManager_MixedAirFields::ControlVariable, value);
+    }
+
+    bool SetpointManagerMixedAir_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_MixedAirFields::SetpointNodeorNodeListName, node.handle());
     }
 
     void SetpointManagerMixedAir_Impl::doCanonicalize(LoadContext& context) {
       SetpointManager_Impl::doCanonicalize(context);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_MixedAirFields::SetpointNodeorNodeListName);
 
       if (auto value = getString(openstudio::SetpointManager_MixedAirFields::ControlVariable, true)) {
         if (!value->empty()) {

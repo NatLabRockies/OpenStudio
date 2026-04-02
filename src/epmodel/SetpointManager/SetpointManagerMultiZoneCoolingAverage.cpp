@@ -99,18 +99,27 @@ namespace epmodel {
       return result;
     }
 
-    unsigned SetpointManagerMultiZoneCoolingAverage_Impl::setpointNodeFieldIndex() const {
-      return openstudio::SetpointManager_MultiZone_Cooling_AverageFields::SetpointNodeorNodeListName;
+    boost::optional<openstudio::epmodel::Node> SetpointManagerMultiZoneCoolingAverage_Impl::setpointNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+        openstudio::SetpointManager_MultiZone_Cooling_AverageFields::SetpointNodeorNodeListName);
     }
 
-    unsigned SetpointManagerMultiZoneCoolingAverage_Impl::controlVariableFieldIndex() const {
-      // E+ SetpointManager:MultiZone:Cooling:Average has no explicit control variable field;
-      // this placeholder index satisfies the abstract SetpointManager_Impl contract.
-      return openstudio::SetpointManager_MultiZone_Cooling_AverageFields::HVACAirLoopName;
+    std::string SetpointManagerMultiZoneCoolingAverage_Impl::controlVariable() const {
+      return "Temperature";
+    }
+
+    bool SetpointManagerMultiZoneCoolingAverage_Impl::setControlVariable(const std::string& value) {
+      return openstudio::istringEqual(value, "Temperature");
+    }
+
+    bool SetpointManagerMultiZoneCoolingAverage_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_MultiZone_Cooling_AverageFields::SetpointNodeorNodeListName,
+                                                 node.handle());
     }
 
     void SetpointManagerMultiZoneCoolingAverage_Impl::doCanonicalize(LoadContext& context) {
       SetpointManager_Impl::doCanonicalize(context);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_MultiZone_Cooling_AverageFields::SetpointNodeorNodeListName);
 
       if (auto value = getDouble(openstudio::SetpointManager_MultiZone_Cooling_AverageFields::MinimumSetpointTemperature, true)) {
         (void)value;
@@ -125,7 +134,7 @@ namespace epmodel {
       } else {
         OS_ASSERT(setDouble(openstudio::SetpointManager_MultiZone_Cooling_AverageFields::MaximumSetpointTemperature, 18.0));
         detail::addLoadInfo(context, "Set default Maximum Setpoint Temperature to 18 for SetpointManager:MultiZone:Cooling:Average '"
-                                       + getObject<ModelObject>().nameString() + "'.");
+                                      + getObject<ModelObject>().nameString() + "'.");
       }
     }
 

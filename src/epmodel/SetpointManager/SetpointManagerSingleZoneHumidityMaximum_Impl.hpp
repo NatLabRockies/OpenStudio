@@ -18,9 +18,15 @@ class EPMODEL_API SetpointManagerSingleZoneHumidityMaximum_Impl : public Setpoin
   using SetpointManager_Impl::SetpointManager_Impl;
   virtual ~SetpointManagerSingleZoneHumidityMaximum_Impl() override = default;
 
+  boost::optional<openstudio::epmodel::Node> setpointNode() const override;
+  std::string controlVariable() const override;
+  bool setControlVariable(const std::string& value) override;
+
  protected:
-  unsigned setpointNodeFieldIndex() const override;
-  unsigned controlVariableFieldIndex() const override;
+  void doCanonicalize(LoadContext& context) override;
+
+ private:
+  bool setSetpointNode(const openstudio::epmodel::Node& node) override;
 };
 
 }  // namespace detail

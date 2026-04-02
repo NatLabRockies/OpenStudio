@@ -104,18 +104,27 @@ namespace epmodel {
       return result;
     }
 
-    unsigned SetpointManagerSingleZoneOneStageCooling_Impl::setpointNodeFieldIndex() const {
-      return openstudio::SetpointManager_SingleZone_OneStageCoolingFields::SetpointNodeorNodeListName;
+    boost::optional<openstudio::epmodel::Node> SetpointManagerSingleZoneOneStageCooling_Impl::setpointNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+        openstudio::SetpointManager_SingleZone_OneStageCoolingFields::SetpointNodeorNodeListName);
     }
 
-    unsigned SetpointManagerSingleZoneOneStageCooling_Impl::controlVariableFieldIndex() const {
-      // E+ SetpointManager:SingleZone:OneStageCooling has no explicit control variable field;
-      // this placeholder index satisfies the abstract SetpointManager_Impl contract.
-      return openstudio::SetpointManager_SingleZone_OneStageCoolingFields::ControlZoneName;
+    std::string SetpointManagerSingleZoneOneStageCooling_Impl::controlVariable() const {
+      return "Temperature";
+    }
+
+    bool SetpointManagerSingleZoneOneStageCooling_Impl::setControlVariable(const std::string& value) {
+      return openstudio::istringEqual(value, "Temperature");
+    }
+
+    bool SetpointManagerSingleZoneOneStageCooling_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_SingleZone_OneStageCoolingFields::SetpointNodeorNodeListName,
+                                                 node.handle());
     }
 
     void SetpointManagerSingleZoneOneStageCooling_Impl::doCanonicalize(LoadContext& context) {
       SetpointManager_Impl::doCanonicalize(context);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_SingleZone_OneStageCoolingFields::SetpointNodeorNodeListName);
 
       if (auto value = getDouble(openstudio::SetpointManager_SingleZone_OneStageCoolingFields::CoolingStageOnSupplyAirSetpointTemperature, true)) {
         (void)value;

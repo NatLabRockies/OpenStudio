@@ -50,14 +50,27 @@ namespace openstudio {
 namespace epmodel {
 namespace detail {
 
-unsigned SetpointManagerSingleZoneHumidityMaximum_Impl::setpointNodeFieldIndex() const {
-  return openstudio::SetpointManager_SingleZone_Humidity_MaximumFields::SetpointNodeorNodeListName;
+boost::optional<openstudio::epmodel::Node> SetpointManagerSingleZoneHumidityMaximum_Impl::setpointNode() const {
+  return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+    openstudio::SetpointManager_SingleZone_Humidity_MaximumFields::SetpointNodeorNodeListName);
 }
 
-unsigned SetpointManagerSingleZoneHumidityMaximum_Impl::controlVariableFieldIndex() const {
-  // E+ SetpointManager:SingleZone:Humidity:Maximum has no explicit control variable field;
-  // this placeholder index satisfies the abstract SetpointManager_Impl contract.
-  return openstudio::SetpointManager_SingleZone_Humidity_MaximumFields::ControlZoneAirNodeName;
+std::string SetpointManagerSingleZoneHumidityMaximum_Impl::controlVariable() const {
+  return "MaximumHumidityRatio";
+}
+
+bool SetpointManagerSingleZoneHumidityMaximum_Impl::setControlVariable(const std::string& value) {
+  return openstudio::istringEqual(value, "MaximumHumidityRatio");
+}
+
+bool SetpointManagerSingleZoneHumidityMaximum_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+  return getObject<ModelObject>().setPointer(openstudio::SetpointManager_SingleZone_Humidity_MaximumFields::SetpointNodeorNodeListName,
+                                             node.handle());
+}
+
+void SetpointManagerSingleZoneHumidityMaximum_Impl::doCanonicalize(LoadContext& context) {
+  SetpointManager_Impl::doCanonicalize(context);
+  canonicalizeSetpointNodeField(context, openstudio::SetpointManager_SingleZone_Humidity_MaximumFields::SetpointNodeorNodeListName);
 }
 
 }  // namespace detail

@@ -142,16 +142,30 @@ namespace epmodel {
       return result;
     }
 
-    unsigned SetpointManagerSystemNodeResetTemperature_Impl::setpointNodeFieldIndex() const {
-      return openstudio::SetpointManager_SystemNodeReset_TemperatureFields::SetpointNodeorNodeListName;
+    boost::optional<openstudio::epmodel::Node> SetpointManagerSystemNodeResetTemperature_Impl::setpointNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+        openstudio::SetpointManager_SystemNodeReset_TemperatureFields::SetpointNodeorNodeListName);
     }
 
-    unsigned SetpointManagerSystemNodeResetTemperature_Impl::controlVariableFieldIndex() const {
-      return openstudio::SetpointManager_SystemNodeReset_TemperatureFields::ControlVariable;
+    std::string SetpointManagerSystemNodeResetTemperature_Impl::controlVariable() const {
+      if (auto value = getString(openstudio::SetpointManager_SystemNodeReset_TemperatureFields::ControlVariable, true)) {
+        return *value;
+      }
+      return "";
+    }
+
+    bool SetpointManagerSystemNodeResetTemperature_Impl::setControlVariable(const std::string& value) {
+      return setString(openstudio::SetpointManager_SystemNodeReset_TemperatureFields::ControlVariable, value);
+    }
+
+    bool SetpointManagerSystemNodeResetTemperature_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+      return getObject<ModelObject>().setPointer(
+        openstudio::SetpointManager_SystemNodeReset_TemperatureFields::SetpointNodeorNodeListName, node.handle());
     }
 
     void SetpointManagerSystemNodeResetTemperature_Impl::doCanonicalize(LoadContext& context) {
       SetpointManager_Impl::doCanonicalize(context);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_SystemNodeReset_TemperatureFields::SetpointNodeorNodeListName);
 
       if (auto value = getString(openstudio::SetpointManager_SystemNodeReset_TemperatureFields::ControlVariable, true)) {
         if (!value->empty()) {

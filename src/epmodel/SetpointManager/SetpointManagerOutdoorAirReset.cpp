@@ -295,16 +295,29 @@ namespace epmodel {
       OS_ASSERT(setString(openstudio::SetpointManager_OutdoorAirResetFields::OutdoorHighTemperature2, ""));
     }
 
-    unsigned SetpointManagerOutdoorAirReset_Impl::setpointNodeFieldIndex() const {
-      return openstudio::SetpointManager_OutdoorAirResetFields::SetpointNodeorNodeListName;
+    boost::optional<openstudio::epmodel::Node> SetpointManagerOutdoorAirReset_Impl::setpointNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+        openstudio::SetpointManager_OutdoorAirResetFields::SetpointNodeorNodeListName);
     }
 
-    unsigned SetpointManagerOutdoorAirReset_Impl::controlVariableFieldIndex() const {
-      return openstudio::SetpointManager_OutdoorAirResetFields::ControlVariable;
+    std::string SetpointManagerOutdoorAirReset_Impl::controlVariable() const {
+      if (auto value = getString(openstudio::SetpointManager_OutdoorAirResetFields::ControlVariable, true)) {
+        return *value;
+      }
+      return "";
+    }
+
+    bool SetpointManagerOutdoorAirReset_Impl::setControlVariable(const std::string& value) {
+      return setString(openstudio::SetpointManager_OutdoorAirResetFields::ControlVariable, value);
+    }
+
+    bool SetpointManagerOutdoorAirReset_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_OutdoorAirResetFields::SetpointNodeorNodeListName, node.handle());
     }
 
     void SetpointManagerOutdoorAirReset_Impl::doCanonicalize(LoadContext& context) {
       SetpointManager_Impl::doCanonicalize(context);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_OutdoorAirResetFields::SetpointNodeorNodeListName);
 
       if (auto value = getString(openstudio::SetpointManager_OutdoorAirResetFields::ControlVariable, true)) {
         if (!value->empty()) {

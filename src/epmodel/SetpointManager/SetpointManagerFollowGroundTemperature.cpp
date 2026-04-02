@@ -140,16 +140,30 @@ namespace epmodel {
       return result;
     }
 
-    unsigned SetpointManagerFollowGroundTemperature_Impl::setpointNodeFieldIndex() const {
-      return openstudio::SetpointManager_FollowGroundTemperatureFields::SetpointNodeorNodeListName;
+    boost::optional<openstudio::epmodel::Node> SetpointManagerFollowGroundTemperature_Impl::setpointNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+        openstudio::SetpointManager_FollowGroundTemperatureFields::SetpointNodeorNodeListName);
     }
 
-    unsigned SetpointManagerFollowGroundTemperature_Impl::controlVariableFieldIndex() const {
-      return openstudio::SetpointManager_FollowGroundTemperatureFields::ControlVariable;
+    std::string SetpointManagerFollowGroundTemperature_Impl::controlVariable() const {
+      if (auto value = getString(openstudio::SetpointManager_FollowGroundTemperatureFields::ControlVariable, true)) {
+        return *value;
+      }
+      return "";
+    }
+
+    bool SetpointManagerFollowGroundTemperature_Impl::setControlVariable(const std::string& value) {
+      return setString(openstudio::SetpointManager_FollowGroundTemperatureFields::ControlVariable, value);
+    }
+
+    bool SetpointManagerFollowGroundTemperature_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_FollowGroundTemperatureFields::SetpointNodeorNodeListName,
+                                                 node.handle());
     }
 
     void SetpointManagerFollowGroundTemperature_Impl::doCanonicalize(LoadContext& context) {
       SetpointManager_Impl::doCanonicalize(context);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_FollowGroundTemperatureFields::SetpointNodeorNodeListName);
 
       if (auto value = getString(openstudio::SetpointManager_FollowGroundTemperatureFields::ControlVariable, true)) {
         if (!value->empty()) {

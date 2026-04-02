@@ -106,18 +106,27 @@ bool SetpointManagerSingleZoneOneStageHeating_Impl::setHeatingStageOffSupplyAirS
   return result;
 }
 
-unsigned SetpointManagerSingleZoneOneStageHeating_Impl::setpointNodeFieldIndex() const {
-  return openstudio::SetpointManager_SingleZone_OneStageHeatingFields::SetpointNodeorNodeListName;
+boost::optional<openstudio::epmodel::Node> SetpointManagerSingleZoneOneStageHeating_Impl::setpointNode() const {
+  return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+    openstudio::SetpointManager_SingleZone_OneStageHeatingFields::SetpointNodeorNodeListName);
 }
 
-unsigned SetpointManagerSingleZoneOneStageHeating_Impl::controlVariableFieldIndex() const {
-  // E+ SetpointManager:SingleZone:OneStageHeating has no explicit control variable field;
-  // this placeholder index satisfies the abstract SetpointManager_Impl contract.
-  return openstudio::SetpointManager_SingleZone_OneStageHeatingFields::ControlZoneName;
+std::string SetpointManagerSingleZoneOneStageHeating_Impl::controlVariable() const {
+  return "Temperature";
+}
+
+bool SetpointManagerSingleZoneOneStageHeating_Impl::setControlVariable(const std::string& value) {
+  return openstudio::istringEqual(value, "Temperature");
+}
+
+bool SetpointManagerSingleZoneOneStageHeating_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+  return getObject<ModelObject>().setPointer(openstudio::SetpointManager_SingleZone_OneStageHeatingFields::SetpointNodeorNodeListName,
+                                             node.handle());
 }
 
 void SetpointManagerSingleZoneOneStageHeating_Impl::doCanonicalize(LoadContext& context) {
   SetpointManager_Impl::doCanonicalize(context);
+  canonicalizeSetpointNodeField(context, openstudio::SetpointManager_SingleZone_OneStageHeatingFields::SetpointNodeorNodeListName);
 
   if (auto value = getDouble(openstudio::SetpointManager_SingleZone_OneStageHeatingFields::HeatingStageOnSupplyAirSetpointTemperature, true)) {
     (void)value;

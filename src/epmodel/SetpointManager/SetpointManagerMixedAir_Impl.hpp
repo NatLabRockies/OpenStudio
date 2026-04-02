@@ -19,16 +19,19 @@ class EPMODEL_API SetpointManagerMixedAir_Impl : public SetpointManager_Impl
   using SetpointManager_Impl::SetpointManager_Impl;
   virtual ~SetpointManagerMixedAir_Impl() override = default;
 
+  boost::optional<openstudio::epmodel::Node> setpointNode() const override;
+  std::string controlVariable() const override;
+  bool setControlVariable(const std::string& value) override;
   bool addToNode(Node& node) override;
   bool setReferenceSetpointNode(const Node& node);
   bool setFanInletNode(const Node& node);
   bool setFanOutletNode(const Node& node);
 
  protected:
-  unsigned setpointNodeFieldIndex() const override;
-  unsigned controlVariableFieldIndex() const override;
-
   void doCanonicalize(LoadContext& context) override;
+
+ private:
+  bool setSetpointNode(const openstudio::epmodel::Node& node) override;
 };
 
 }  // namespace detail

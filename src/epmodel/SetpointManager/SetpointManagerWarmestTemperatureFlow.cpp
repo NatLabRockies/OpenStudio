@@ -138,16 +138,30 @@ namespace epmodel {
       return result;
     }
 
-    unsigned SetpointManagerWarmestTemperatureFlow_Impl::setpointNodeFieldIndex() const {
-      return openstudio::SetpointManager_WarmestTemperatureFlowFields::SetpointNodeorNodeListName;
+    boost::optional<openstudio::epmodel::Node> SetpointManagerWarmestTemperatureFlow_Impl::setpointNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+        openstudio::SetpointManager_WarmestTemperatureFlowFields::SetpointNodeorNodeListName);
     }
 
-    unsigned SetpointManagerWarmestTemperatureFlow_Impl::controlVariableFieldIndex() const {
-      return openstudio::SetpointManager_WarmestTemperatureFlowFields::ControlVariable;
+    std::string SetpointManagerWarmestTemperatureFlow_Impl::controlVariable() const {
+      if (auto value = getString(openstudio::SetpointManager_WarmestTemperatureFlowFields::ControlVariable, true)) {
+        return *value;
+      }
+      return "";
+    }
+
+    bool SetpointManagerWarmestTemperatureFlow_Impl::setControlVariable(const std::string& value) {
+      return setString(openstudio::SetpointManager_WarmestTemperatureFlowFields::ControlVariable, value);
+    }
+
+    bool SetpointManagerWarmestTemperatureFlow_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_WarmestTemperatureFlowFields::SetpointNodeorNodeListName,
+                                                 node.handle());
     }
 
     void SetpointManagerWarmestTemperatureFlow_Impl::doCanonicalize(LoadContext& context) {
       SetpointManager_Impl::doCanonicalize(context);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_WarmestTemperatureFlowFields::SetpointNodeorNodeListName);
 
       if (auto value = getString(openstudio::SetpointManager_WarmestTemperatureFlowFields::ControlVariable, true)) {
         if (!value->empty()) {

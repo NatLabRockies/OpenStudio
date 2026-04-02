@@ -142,16 +142,30 @@ namespace epmodel {
       return result;
     }
 
-    unsigned SetpointManagerSystemNodeResetHumidity_Impl::setpointNodeFieldIndex() const {
-      return openstudio::SetpointManager_SystemNodeReset_HumidityFields::SetpointNodeorNodeListName;
+    boost::optional<openstudio::epmodel::Node> SetpointManagerSystemNodeResetHumidity_Impl::setpointNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+        openstudio::SetpointManager_SystemNodeReset_HumidityFields::SetpointNodeorNodeListName);
     }
 
-    unsigned SetpointManagerSystemNodeResetHumidity_Impl::controlVariableFieldIndex() const {
-      return openstudio::SetpointManager_SystemNodeReset_HumidityFields::ControlVariable;
+    std::string SetpointManagerSystemNodeResetHumidity_Impl::controlVariable() const {
+      if (auto value = getString(openstudio::SetpointManager_SystemNodeReset_HumidityFields::ControlVariable, true)) {
+        return *value;
+      }
+      return "";
+    }
+
+    bool SetpointManagerSystemNodeResetHumidity_Impl::setControlVariable(const std::string& value) {
+      return setString(openstudio::SetpointManager_SystemNodeReset_HumidityFields::ControlVariable, value);
+    }
+
+    bool SetpointManagerSystemNodeResetHumidity_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_SystemNodeReset_HumidityFields::SetpointNodeorNodeListName,
+                                                 node.handle());
     }
 
     void SetpointManagerSystemNodeResetHumidity_Impl::doCanonicalize(LoadContext& context) {
       SetpointManager_Impl::doCanonicalize(context);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_SystemNodeReset_HumidityFields::SetpointNodeorNodeListName);
 
       if (auto value = getString(openstudio::SetpointManager_SystemNodeReset_HumidityFields::ControlVariable, true)) {
         if (!value->empty()) {

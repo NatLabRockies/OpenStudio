@@ -84,16 +84,30 @@ namespace epmodel {
       return result;
     }
 
-    unsigned SetpointManagerSingleZoneHeating_Impl::setpointNodeFieldIndex() const {
-      return openstudio::SetpointManager_SingleZone_HeatingFields::SetpointNodeorNodeListName;
+    boost::optional<openstudio::epmodel::Node> SetpointManagerSingleZoneHeating_Impl::setpointNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+        openstudio::SetpointManager_SingleZone_HeatingFields::SetpointNodeorNodeListName);
     }
 
-    unsigned SetpointManagerSingleZoneHeating_Impl::controlVariableFieldIndex() const {
-      return openstudio::SetpointManager_SingleZone_HeatingFields::ControlVariable;
+    std::string SetpointManagerSingleZoneHeating_Impl::controlVariable() const {
+      if (auto value = getString(openstudio::SetpointManager_SingleZone_HeatingFields::ControlVariable, true)) {
+        return *value;
+      }
+      return "";
+    }
+
+    bool SetpointManagerSingleZoneHeating_Impl::setControlVariable(const std::string& value) {
+      return setString(openstudio::SetpointManager_SingleZone_HeatingFields::ControlVariable, value);
+    }
+
+    bool SetpointManagerSingleZoneHeating_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_SingleZone_HeatingFields::SetpointNodeorNodeListName,
+                                                 node.handle());
     }
 
     void SetpointManagerSingleZoneHeating_Impl::doCanonicalize(LoadContext& context) {
       SetpointManager_Impl::doCanonicalize(context);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_SingleZone_HeatingFields::SetpointNodeorNodeListName);
 
       if (auto value = getString(openstudio::SetpointManager_SingleZone_HeatingFields::ControlVariable, true)) {
         if (!value->empty()) {

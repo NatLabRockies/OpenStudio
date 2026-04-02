@@ -110,16 +110,29 @@ namespace epmodel {
       return setString(openstudio::SetpointManager_ColdestFields::Strategy, strategy);
     }
 
-    unsigned SetpointManagerColdest_Impl::setpointNodeFieldIndex() const {
-      return openstudio::SetpointManager_ColdestFields::SetpointNodeorNodeListName;
+    boost::optional<openstudio::epmodel::Node> SetpointManagerColdest_Impl::setpointNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+        openstudio::SetpointManager_ColdestFields::SetpointNodeorNodeListName);
     }
 
-    unsigned SetpointManagerColdest_Impl::controlVariableFieldIndex() const {
-      return openstudio::SetpointManager_ColdestFields::ControlVariable;
+    std::string SetpointManagerColdest_Impl::controlVariable() const {
+      if (auto value = getString(openstudio::SetpointManager_ColdestFields::ControlVariable, true)) {
+        return *value;
+      }
+      return "";
+    }
+
+    bool SetpointManagerColdest_Impl::setControlVariable(const std::string& value) {
+      return setString(openstudio::SetpointManager_ColdestFields::ControlVariable, value);
+    }
+
+    bool SetpointManagerColdest_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {
+      return getObject<ModelObject>().setPointer(openstudio::SetpointManager_ColdestFields::SetpointNodeorNodeListName, node.handle());
     }
 
     void SetpointManagerColdest_Impl::doCanonicalize(LoadContext& context) {
       SetpointManager_Impl::doCanonicalize(context);
+      canonicalizeSetpointNodeField(context, openstudio::SetpointManager_ColdestFields::SetpointNodeorNodeListName);
 
       if (auto value = getString(openstudio::SetpointManager_ColdestFields::ControlVariable, true)) {
         if (!value->empty()) {

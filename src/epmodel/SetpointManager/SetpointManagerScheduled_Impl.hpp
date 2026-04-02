@@ -18,14 +18,17 @@ class EPMODEL_API SetpointManagerScheduled_Impl : public SetpointManager_Impl
   using SetpointManager_Impl::SetpointManager_Impl;
   virtual ~SetpointManagerScheduled_Impl() override = default;
 
+  boost::optional<openstudio::epmodel::Node> setpointNode() const override;
+  std::string controlVariable() const override;
+  bool setControlVariable(const std::string& value) override;
   bool isControlVariableDefaulted() const;
   void resetControlVariable();
 
  protected:
-  unsigned setpointNodeFieldIndex() const override;
-  unsigned controlVariableFieldIndex() const override;
-
   void doCanonicalize(LoadContext& context) override;
+
+ private:
+  bool setSetpointNode(const openstudio::epmodel::Node& node) override;
 };
 
 }  // namespace detail

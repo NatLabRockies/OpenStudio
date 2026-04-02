@@ -38,13 +38,16 @@ namespace epmodel {
       bool setMaximumSetpointHumidityRatio(double maximumSetpointHumidityRatio);
       void resetMaximumSetpointHumidityRatio();
 
+      boost::optional<openstudio::epmodel::Node> setpointNode() const override;
+      std::string controlVariable() const override;
+      bool setControlVariable(const std::string& value) override;
       void resetControlVariable();
 
      protected:
-      unsigned setpointNodeFieldIndex() const override;
-      unsigned controlVariableFieldIndex() const override;
-
       void doCanonicalize(LoadContext& context) override;
+
+     private:
+      bool setSetpointNode(const openstudio::epmodel::Node& node) override;
     };
 
   }  // namespace detail

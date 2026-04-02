@@ -50,41 +50,8 @@ namespace openstudio {
 namespace epmodel {
 namespace detail {
 
-boost::optional<openstudio::epmodel::Node> SetpointManager_Impl::setpointNode() const {
-  const auto field = setpointNodeFieldIndex();
-  if (auto nodeName = getString(field)) {
-    if (nodeName->empty()) {
-      return boost::none;
-    }
-    if (auto node = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(field)) {
-      return node;
-    }
-    OS_ASSERT(false);
-  }
-  return boost::none;
-}
-
-std::string SetpointManager_Impl::controlVariable() const {
-  if (auto value = getString(controlVariableFieldIndex(), true)) {
-    return *value;
-  }
-  return "";
-}
-
-bool SetpointManager_Impl::setControlVariable(const std::string& value) {
-  return setString(controlVariableFieldIndex(), value);
-}
-
 bool SetpointManager_Impl::isAllowedOnPlantLoop() const {
   return false;
-}
-
-bool SetpointManager_Impl::setSetpointNode(openstudio::epmodel::Node& node) {
-  auto spm = getObject<ModelObject>();
-  if (spm.model() != node.model()) {
-    return false;
-  }
-  return spm.setPointer(setpointNodeFieldIndex(), node.handle());
 }
 
 bool SetpointManager_Impl::addToNode(openstudio::epmodel::Node& node) {
@@ -137,8 +104,10 @@ bool SetpointManager_Impl::addToNode(openstudio::epmodel::Node& node) {
 
 void SetpointManager_Impl::doCanonicalize(LoadContext& context) {
   (void)context;
+}
 
-  const auto field = setpointNodeFieldIndex();
+void SetpointManager_Impl::canonicalizeSetpointNodeField(LoadContext& context, unsigned field) {
+  (void)context;
   if (auto nodeName = getString(field)) {
     if (!nodeName->empty()) {
       auto node = model().getOrCreateTransientByName<openstudio::epmodel::Node>(*nodeName);
