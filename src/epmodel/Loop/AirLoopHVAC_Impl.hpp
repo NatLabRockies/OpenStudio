@@ -23,6 +23,7 @@ namespace epmodel {
   class ThermalZone;
   class AirLoopHVACZoneMixer;
   class AirLoopHVACZoneSplitter;
+  class SizingSystem;
   class ZoneHVACEquipmentConnections;
   class Node;
   class StraightComponent;
@@ -58,7 +59,16 @@ namespace epmodel {
                                                                      const openstudio::epmodel::HVACComponent& outletComp,
                                                                      openstudio::IddObjectType type) const override;
       std::vector<openstudio::epmodel::ModelObject> demandComponents(openstudio::IddObjectType type) const override;
+      std::vector<openstudio::epmodel::ModelObject> oaComponents(openstudio::IddObjectType type) const;
+      boost::optional<openstudio::epmodel::Node> outdoorAirNode() const;
+      boost::optional<openstudio::epmodel::Node> reliefAirNode() const;
+      boost::optional<openstudio::epmodel::Node> mixedAirNode() const;
+      boost::optional<openstudio::epmodel::Node> returnAirNode() const;
       boost::optional<openstudio::epmodel::AirLoopHVACOutdoorAirSystem> airLoopHVACOutdoorAirSystem() const;
+      boost::optional<openstudio::epmodel::HVACComponent> supplyFan() const;
+      boost::optional<openstudio::epmodel::HVACComponent> returnFan() const;
+      boost::optional<openstudio::epmodel::HVACComponent> reliefFan() const;
+      openstudio::epmodel::SizingSystem sizingSystem() const;
       std::vector<openstudio::epmodel::ThermalZone> thermalZones() const;
       // Schema Alignment Notes:
       // - Field Mapping: AirLoopHVAC::AvailabilityManagerListName stores a relationship target.
@@ -73,6 +83,8 @@ namespace epmodel {
       bool removeAvailabilityManager(unsigned priority);
       bool setAvailabilityManagerPriority(const openstudio::epmodel::AvailabilityManager& availabilityManager, unsigned priority);
       unsigned availabilityManagerPriority(const openstudio::epmodel::AvailabilityManager& availabilityManager) const;
+      bool setNightCycleControlType(const std::string& controlType);
+      std::string nightCycleControlType() const;
       bool addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone);
       bool addBranchForZone(openstudio::epmodel::ThermalZone& thermalZone, openstudio::epmodel::HVACComponent& airTerminal);
       bool addBranchForHVACComponent(openstudio::epmodel::HVACComponent& hvacComponent);
@@ -100,6 +112,9 @@ namespace epmodel {
                                                 const openstudio::epmodel::Node& branchNode);
       static bool resolveZoneMixerBranchNode(openstudio::epmodel::AirLoopHVACZoneMixer& mixer, unsigned branchIndex,
                                              const openstudio::epmodel::Node& branchNode);
+      static bool isSupportedMixedAirFanType(openstudio::IddObjectType objectType);
+      static boost::optional<openstudio::epmodel::HVACComponent> lastSupportedFan(
+        const std::vector<openstudio::epmodel::ModelObject>& components);
       // Schema Alignment Notes:
       // - Field Mapping: AirLoopHVAC::ConnectorListName stores branch connector relationships, not scalar data.
       // - API: AirLoopHVAC exposes Connector:Splitter behavior through zoneSplitter()/zoneMixer() and demand topology traversal.

@@ -10,12 +10,21 @@
 #include "../Loop/AirLoopHVAC_Impl.hpp"
 #include "../ModelObject/AirLoopHVACReturnPath.hpp"
 #include "../ModelObject/AirLoopHVACSupplyPath.hpp"
+#include "../ModelObject/SizingSystem.hpp"
+#include "../ModelObject/SizingSystem_Impl.hpp"
+#include "../AvailabilityManager/AvailabilityManagerNightCycle.hpp"
+#include "../AvailabilityManager/AvailabilityManagerNightCycle_Impl.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
+#include "../StraightComponent/FanComponentModel.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
+#include "../StraightComponent/FanSystemModel.hpp"
+#include "../StraightComponent/FanVariableVolume.hpp"
 #include "../StraightComponent/Node.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../SetpointManager/SetpointManagerMixedAir.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 #include <utilities/idd/IddEnums.hxx>
@@ -728,4 +737,153 @@ TEST_F(EPModelFixture, AirLoopHVAC_DemandSide_HVACComponentRemove_UpdatesTopolog
     EXPECT_TRUE(airLoop.thermalZones().empty());
     EXPECT_EQ(5u, airLoop.demandComponents().size());
   }
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_OutdoorAirConvenienceApis_WithoutOASystem) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+
+  EXPECT_TRUE(airLoop.oaComponents().empty());
+  EXPECT_FALSE(airLoop.outdoorAirNode());
+  EXPECT_FALSE(airLoop.reliefAirNode());
+  EXPECT_FALSE(airLoop.mixedAirNode());
+  EXPECT_FALSE(airLoop.returnAirNode());
+  EXPECT_FALSE(airLoop.returnFan());
+  EXPECT_FALSE(airLoop.reliefFan());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_OutdoorAirConvenienceApis_WithOASystem) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+
+  auto outdoorAirNode = airLoop.outdoorAirNode();
+  ASSERT_TRUE(outdoorAirNode);
+  EXPECT_EQ(*outdoorAirNode, *oaSystem.outboardOANode());
+
+  auto reliefAirNode = airLoop.reliefAirNode();
+  ASSERT_TRUE(reliefAirNode);
+  EXPECT_EQ(*reliefAirNode, *oaSystem.outboardReliefNode());
+
+  auto mixedAirNode = airLoop.mixedAirNode();
+  ASSERT_TRUE(mixedAirNode);
+  ASSERT_TRUE(oaSystem.mixedAirModelObject());
+  EXPECT_EQ(*mixedAirNode, oaSystem.mixedAirModelObject()->cast<Node>());
+
+  auto returnAirNode = airLoop.returnAirNode();
+  ASSERT_TRUE(returnAirNode);
+  ASSERT_TRUE(oaSystem.returnAirModelObject());
+  EXPECT_EQ(*returnAirNode, oaSystem.returnAirModelObject()->cast<Node>());
+
+  EXPECT_EQ(oaSystem.components(), airLoop.oaComponents());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_FanHelpers_SelectExpectedFans) {
+  {
+    Model model;
+    AirLoopHVAC airLoop(model);
+    AirLoopHVACOutdoorAirSystem oaSystem(model);
+    FanConstantVolume returnFan(model);
+    FanComponentModel reliefFan(model);
+
+    auto supplyInletNode = airLoop.supplyInletNode();
+    ASSERT_TRUE(returnFan.addToNode(supplyInletNode));
+
+    auto returnFanOutletObject = returnFan.outletModelObject();
+    ASSERT_TRUE(returnFanOutletObject);
+    auto returnFanOutletNode = returnFanOutletObject->optionalCast<Node>();
+    ASSERT_TRUE(returnFanOutletNode);
+    ASSERT_TRUE(oaSystem.addToNode(*returnFanOutletNode));
+
+    auto reliefNode = oaSystem.outboardReliefNode();
+    ASSERT_TRUE(reliefNode);
+    ASSERT_TRUE(reliefFan.addToNode(*reliefNode));
+
+    auto selectedReturnFan = airLoop.returnFan();
+    ASSERT_TRUE(selectedReturnFan);
+    EXPECT_EQ(returnFan.cast<HVACComponent>(), *selectedReturnFan);
+
+    auto selectedReliefFan = airLoop.reliefFan();
+    ASSERT_TRUE(selectedReliefFan);
+    EXPECT_EQ(reliefFan.cast<HVACComponent>(), *selectedReliefFan);
+  }
+
+  {
+    Model model;
+    AirLoopHVAC airLoop(model);
+    FanVariableVolume supplyFan1(model);
+    FanSystemModel supplyFan2(model);
+
+    auto supplyInletNode = airLoop.supplyInletNode();
+    ASSERT_TRUE(supplyFan1.addToNode(supplyInletNode));
+
+    auto supplyFan1Outlet = supplyFan1.outletModelObject();
+    ASSERT_TRUE(supplyFan1Outlet);
+    auto supplyFan1OutletNode = supplyFan1Outlet->optionalCast<Node>();
+    ASSERT_TRUE(supplyFan1OutletNode);
+    ASSERT_TRUE(supplyFan2.addToNode(*supplyFan1OutletNode));
+
+    auto selectedSupplyFan = airLoop.supplyFan();
+    ASSERT_TRUE(selectedSupplyFan);
+    EXPECT_EQ(supplyFan2.cast<HVACComponent>(), *selectedSupplyFan);
+  }
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_SizingSystem_IsLoopOwnedCompanionObject) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+
+  auto sizingSystem = airLoop.sizingSystem();
+  EXPECT_EQ(SizingSystem::iddObjectType(), sizingSystem.iddObject().type());
+
+  const auto sizingSystems = model.getConcreteModelObjects<SizingSystem>();
+  ASSERT_EQ(1u, sizingSystems.size());
+  EXPECT_EQ(sizingSystem, sizingSystems.front());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_NightCycleControlType_UsesAvailabilityManagerNightCycle) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+
+  EXPECT_EQ("StayOff", airLoop.nightCycleControlType());
+  EXPECT_TRUE(airLoop.setNightCycleControlType("CycleOnAny"));
+  EXPECT_EQ("CycleOnAny", airLoop.nightCycleControlType());
+
+  bool foundNightCycle = false;
+  for (const auto& availabilityManager : airLoop.availabilityManagers()) {
+    if (auto nightCycle = availabilityManager.optionalCast<AvailabilityManagerNightCycle>()) {
+      foundNightCycle = true;
+      EXPECT_EQ("CycleOnAny", nightCycle->controlType());
+    }
+  }
+  EXPECT_TRUE(foundNightCycle);
+
+  EXPECT_FALSE(airLoop.setNightCycleControlType("NotAValidControlType"));
+  EXPECT_EQ("CycleOnAny", airLoop.nightCycleControlType());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_SyncSetpointManagerMixedAirFanNodes_RecognizesVariableVolumeFan) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  FanVariableVolume fan(model);
+  SetpointManagerMixedAir setpointManager(model);
+
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(fan.addToNode(supplyInletNode));
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(setpointManager.addToNode(supplyOutletNode));
+
+  auto fanInletObject = fan.inletModelObject();
+  ASSERT_TRUE(fanInletObject);
+  auto fanOutletObject = fan.outletModelObject();
+  ASSERT_TRUE(fanOutletObject);
+
+  ASSERT_TRUE(setpointManager.fanInletNode());
+  ASSERT_TRUE(setpointManager.fanOutletNode());
+  EXPECT_EQ(fanInletObject->cast<Node>(), *setpointManager.fanInletNode());
+  EXPECT_EQ(fanOutletObject->cast<Node>(), *setpointManager.fanOutletNode());
 }

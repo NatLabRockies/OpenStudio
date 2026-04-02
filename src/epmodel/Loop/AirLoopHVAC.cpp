@@ -9,6 +9,8 @@
 #include "BranchList.hpp"
 #include "BranchList_Impl.hpp"
 #include "AvailabilityManager/AvailabilityManager.hpp"
+#include "AvailabilityManager/AvailabilityManagerNightCycle.hpp"
+#include "AvailabilityManager/AvailabilityManagerNightCycle_Impl.hpp"
 #include "ModelObject/AvailabilityManagerAssignmentList.hpp"
 #include "ModelObject/AvailabilityManagerAssignmentList_Impl.hpp"
 #include "Branch.hpp"
@@ -41,6 +43,8 @@
 #include "SizingZone_Impl.hpp"
 #include "ModelObject/DesignSpecificationOutdoorAirSpaceList.hpp"
 #include "ModelObject/DesignSpecificationOutdoorAirSpaceList_Impl.hpp"
+#include "ModelObject/SizingSystem.hpp"
+#include "ModelObject/SizingSystem_Impl.hpp"
 #include "SetpointManager/SetpointManagerMixedAir.hpp"
 #include "SetpointManager/SetpointManagerMixedAir_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections.hpp"
@@ -56,6 +60,7 @@
 #include <utilities/idd/BranchList_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/NodeList_FieldEnums.hxx>
+#include <utilities/idd/Sizing_System_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include <utilities/idd/Sizing_Zone_FieldEnums.hxx>
 #include <utilities/core/Logger.hpp>
@@ -165,8 +170,44 @@ namespace epmodel {
     return getImpl<detail::AirLoopHVAC_Impl>()->demandComponents(type);
   }
 
+  std::vector<ModelObject> AirLoopHVAC::oaComponents(openstudio::IddObjectType type) const {
+    return getImpl<detail::AirLoopHVAC_Impl>()->oaComponents(type);
+  }
+
+  boost::optional<Node> AirLoopHVAC::outdoorAirNode() const {
+    return getImpl<detail::AirLoopHVAC_Impl>()->outdoorAirNode();
+  }
+
+  boost::optional<Node> AirLoopHVAC::reliefAirNode() const {
+    return getImpl<detail::AirLoopHVAC_Impl>()->reliefAirNode();
+  }
+
+  boost::optional<Node> AirLoopHVAC::mixedAirNode() const {
+    return getImpl<detail::AirLoopHVAC_Impl>()->mixedAirNode();
+  }
+
+  boost::optional<Node> AirLoopHVAC::returnAirNode() const {
+    return getImpl<detail::AirLoopHVAC_Impl>()->returnAirNode();
+  }
+
   boost::optional<AirLoopHVACOutdoorAirSystem> AirLoopHVAC::airLoopHVACOutdoorAirSystem() const {
     return getImpl<detail::AirLoopHVAC_Impl>()->airLoopHVACOutdoorAirSystem();
+  }
+
+  boost::optional<HVACComponent> AirLoopHVAC::supplyFan() const {
+    return getImpl<detail::AirLoopHVAC_Impl>()->supplyFan();
+  }
+
+  boost::optional<HVACComponent> AirLoopHVAC::returnFan() const {
+    return getImpl<detail::AirLoopHVAC_Impl>()->returnFan();
+  }
+
+  boost::optional<HVACComponent> AirLoopHVAC::reliefFan() const {
+    return getImpl<detail::AirLoopHVAC_Impl>()->reliefFan();
+  }
+
+  SizingSystem AirLoopHVAC::sizingSystem() const {
+    return getImpl<detail::AirLoopHVAC_Impl>()->sizingSystem();
   }
 
   std::vector<ThermalZone> AirLoopHVAC::thermalZones() const {
@@ -207,6 +248,14 @@ namespace epmodel {
 
   unsigned AirLoopHVAC::availabilityManagerPriority(const AvailabilityManager& availabilityManager) const {
     return getImpl<detail::AirLoopHVAC_Impl>()->availabilityManagerPriority(availabilityManager);
+  }
+
+  bool AirLoopHVAC::setNightCycleControlType(const std::string& controlType) {
+    return getImpl<detail::AirLoopHVAC_Impl>()->setNightCycleControlType(controlType);
+  }
+
+  std::string AirLoopHVAC::nightCycleControlType() const {
+    return getImpl<detail::AirLoopHVAC_Impl>()->nightCycleControlType();
   }
 
   bool AirLoopHVAC::addBranchForZone(ThermalZone& thermalZone) {
@@ -643,6 +692,23 @@ namespace epmodel {
         syncSetpointManagerMixedAirFanNodes();
       }
 
+      {  // Sizing:System is a loop-owned companion object.
+         // Loop-level sizing APIs assume one companion object per AirLoopHVAC,
+         // so canonicalization creates it when missing.
+        bool hasSizingSystem = false;
+        for (const auto& sizingSystem : model().getConcreteModelObjects<SizingSystem>()) {
+          auto linkedAirLoop = sizingSystem.getModelObjectTarget<AirLoopHVAC>(openstudio::Sizing_SystemFields::AirLoopName);
+          if (linkedAirLoop && *linkedAirLoop == airLoop) {
+            hasSizingSystem = true;
+            break;
+          }
+        }
+        if (!hasSizingSystem) {
+          auto sizingSystem = SizingSystem(model(), airLoop);
+          detail::addLoadInfo(context, "Created missing Sizing:System '" + sizingSystem.nameString() + "' for AirLoopHVAC '" + loopName + "'.");
+        }
+      }
+
       availabilityManagerAssignmentList().getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->canonicalize(context);
     }
 
@@ -942,27 +1008,38 @@ namespace epmodel {
       }
     }
 
+    bool AirLoopHVAC_Impl::isSupportedMixedAirFanType(openstudio::IddObjectType objectType) {
+      return objectType == openstudio::IddObjectType::Fan_ConstantVolume || objectType == openstudio::IddObjectType::Fan_VariableVolume
+             || objectType == openstudio::IddObjectType::Fan_SystemModel || objectType == openstudio::IddObjectType::Fan_ComponentModel;
+    }
+
+    boost::optional<HVACComponent> AirLoopHVAC_Impl::lastSupportedFan(const std::vector<ModelObject>& components) {
+      for (auto it = components.rbegin(); it != components.rend(); ++it) {
+        if (!isSupportedMixedAirFanType(it->iddObject().type())) {
+          continue;
+        }
+        if (auto fan = it->optionalCast<HVACComponent>()) {
+          return *fan;
+        }
+      }
+      return boost::none;
+    }
+
     void AirLoopHVAC_Impl::syncSetpointManagerMixedAirFanNodes() {
-      auto airLoop = getObject<AirLoopHVAC>();
       auto supplyPath = supplyComponents(openstudio::IddObjectType::Catchall);
 
       // Mirror model intent: choose the last supply fan encountered on the
       // supply path (the one closest to supply outlet in path order).
-      boost::optional<StraightComponent> selectedFan;
-      for (const auto& object : supplyPath) {
-        if (object.iddObject().type() == openstudio::IddObjectType::Fan_ConstantVolume) {
-          auto fan = object.optionalCast<StraightComponent>();
-          OS_ASSERT(fan);
-          selectedFan = *fan;
-        }
-      }
-
+      auto selectedFan = lastSupportedFan(supplyPath);
       if (!selectedFan) {
         return;
       }
 
-      auto fanInlet = selectedFan->inletModelObject();
-      auto fanOutlet = selectedFan->outletModelObject();
+      auto fan = selectedFan->optionalCast<StraightComponent>();
+      OS_ASSERT(fan);
+
+      auto fanInlet = fan->inletModelObject();
+      auto fanOutlet = fan->outletModelObject();
       OS_ASSERT(fanInlet);
       OS_ASSERT(fanOutlet);
 
@@ -1144,7 +1221,6 @@ namespace epmodel {
 
     std::vector<ModelObject> AirLoopHVAC_Impl::supplyComponents(const HVACComponent& inletComp, const HVACComponent& outletComp,
                                                                 openstudio::IddObjectType type) const {
-
       // Build an adjacency graph from BranchList ordering and explicit node
       // links. This makes supply traversal deterministic and independent from
       // call-site assumptions about specific component classes.
@@ -1317,6 +1393,45 @@ namespace epmodel {
       return demandComponents(demandInletNode(), demandOutletNode(), type);
     }
 
+    std::vector<ModelObject> AirLoopHVAC_Impl::oaComponents(openstudio::IddObjectType type) const {
+      if (auto oaSystem = airLoopHVACOutdoorAirSystem()) {
+        return oaSystem->components(type);
+      }
+      return {};
+    }
+
+    boost::optional<Node> AirLoopHVAC_Impl::outdoorAirNode() const {
+      if (auto oaSystem = airLoopHVACOutdoorAirSystem()) {
+        return oaSystem->outboardOANode();
+      }
+      return boost::none;
+    }
+
+    boost::optional<Node> AirLoopHVAC_Impl::reliefAirNode() const {
+      if (auto oaSystem = airLoopHVACOutdoorAirSystem()) {
+        return oaSystem->outboardReliefNode();
+      }
+      return boost::none;
+    }
+
+    boost::optional<Node> AirLoopHVAC_Impl::mixedAirNode() const {
+      if (auto oaSystem = airLoopHVACOutdoorAirSystem()) {
+        if (auto modelObject = oaSystem->mixedAirModelObject()) {
+          return modelObject->optionalCast<Node>();
+        }
+      }
+      return boost::none;
+    }
+
+    boost::optional<Node> AirLoopHVAC_Impl::returnAirNode() const {
+      if (auto oaSystem = airLoopHVACOutdoorAirSystem()) {
+        if (auto modelObject = oaSystem->returnAirModelObject()) {
+          return modelObject->optionalCast<Node>();
+        }
+      }
+      return boost::none;
+    }
+
     boost::optional<openstudio::epmodel::AirLoopHVACOutdoorAirSystem> AirLoopHVAC_Impl::airLoopHVACOutdoorAirSystem() const {
       auto oaSystems =
         subsetCastVector<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>(supplyComponents(openstudio::IddObjectType::AirLoopHVAC_OutdoorAirSystem));
@@ -1327,9 +1442,69 @@ namespace epmodel {
       return oaSystems.front();
     }
 
+    boost::optional<HVACComponent> AirLoopHVAC_Impl::supplyFan() const {
+      boost::optional<HVACComponent> start = supplyInletNode();
+      if (auto oaSystem = airLoopHVACOutdoorAirSystem()) {
+        start = *oaSystem;
+      }
+      OS_ASSERT(start);
+      return lastSupportedFan(supplyComponents(*start, supplyOutletNode(), openstudio::IddObjectType::Catchall));
+    }
+
+    boost::optional<HVACComponent> AirLoopHVAC_Impl::returnFan() const {
+      if (auto oaSystem = airLoopHVACOutdoorAirSystem()) {
+        return lastSupportedFan(supplyComponents(supplyInletNode(), *oaSystem, openstudio::IddObjectType::Catchall));
+      }
+      return boost::none;
+    }
+
+    boost::optional<HVACComponent> AirLoopHVAC_Impl::reliefFan() const {
+      if (auto oaSystem = airLoopHVACOutdoorAirSystem()) {
+        return lastSupportedFan(oaSystem->reliefComponents());
+      }
+      return boost::none;
+    }
+
+    SizingSystem AirLoopHVAC_Impl::sizingSystem() const {
+      const auto airLoop = getObject<AirLoopHVAC>();
+      for (const auto& sizingSystem : model().getConcreteModelObjects<SizingSystem>()) {
+        auto linkedAirLoop = sizingSystem.getModelObjectTarget<AirLoopHVAC>(openstudio::Sizing_SystemFields::AirLoopName);
+        if (linkedAirLoop && *linkedAirLoop == airLoop) {
+          return sizingSystem;
+        }
+      }
+      OS_ASSERT(false);
+      return SizingSystem(model(), airLoop);
+    }
+
     std::vector<openstudio::epmodel::ThermalZone> AirLoopHVAC_Impl::thermalZones() const {
       auto zones = subsetCastVector<openstudio::epmodel::ThermalZone>(demandComponents(openstudio::IddObjectType::Zone));
       return zones;
+    }
+
+    bool AirLoopHVAC_Impl::setNightCycleControlType(const std::string& controlType) {
+      for (auto& availabilityManager : availabilityManagers()) {
+        if (auto nightCycle = availabilityManager.optionalCast<AvailabilityManagerNightCycle>()) {
+          return nightCycle->setControlType(controlType);
+        }
+      }
+
+      AvailabilityManagerNightCycle nightCycle(model());
+      if (!nightCycle.setControlType(controlType)) {
+        nightCycle.remove();
+        return false;
+      }
+
+      return addAvailabilityManager(nightCycle);
+    }
+
+    std::string AirLoopHVAC_Impl::nightCycleControlType() const {
+      for (auto& availabilityManager : availabilityManagers()) {
+        if (auto nightCycle = availabilityManager.optionalCast<AvailabilityManagerNightCycle>()) {
+          return nightCycle->controlType();
+        }
+      }
+      return "StayOff";
     }
 
   }  // namespace detail
