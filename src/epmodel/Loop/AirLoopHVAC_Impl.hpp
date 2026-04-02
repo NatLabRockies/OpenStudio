@@ -112,6 +112,18 @@ namespace epmodel {
                                                 const openstudio::epmodel::Node& branchNode);
       static bool resolveZoneMixerBranchNode(openstudio::epmodel::AirLoopHVACZoneMixer& mixer, unsigned branchIndex,
                                              const openstudio::epmodel::Node& branchNode);
+      // Demand-side branch mutation always starts by reserving a splitter/mixer
+      // branch slot. For the default one-branch loop we reuse the shared
+      // splitter<->mixer node; once real branching already exists we allocate a
+      // new branch row and transient node as one unit so later rollback can
+      // cleanly remove only the newly introduced topology.
+      bool reserveDemandBranchSlot(openstudio::epmodel::AirLoopHVACZoneSplitter& splitter, openstudio::epmodel::AirLoopHVACZoneMixer& mixer,
+                                   unsigned& targetBranchIndex, boost::optional<openstudio::epmodel::Node>& branchNode, bool& createdNewBranch);
+      // Undo only the reservation work performed by reserveDemandBranchSlot().
+      // This intentionally does not try to remove any component or zone that
+      // was successfully attached later in the mutation flow.
+      void rollbackReservedDemandBranchSlot(openstudio::epmodel::AirLoopHVACZoneSplitter& splitter, openstudio::epmodel::AirLoopHVACZoneMixer& mixer,
+                                            unsigned targetBranchIndex, bool createdNewBranch);
       static bool isSupportedMixedAirFanType(openstudio::IddObjectType objectType);
       static boost::optional<openstudio::epmodel::HVACComponent> lastSupportedFan(
         const std::vector<openstudio::epmodel::ModelObject>& components);

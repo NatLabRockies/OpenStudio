@@ -345,6 +345,51 @@ namespace epmodel {
       return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ZoneMixerExtensibleFields::InletNodeName, branchNode.handle(), false);
     }
 
+    bool AirLoopHVAC_Impl::reserveDemandBranchSlot(AirLoopHVACZoneSplitter& splitter, AirLoopHVACZoneMixer& mixer, unsigned& targetBranchIndex,
+                                                   boost::optional<Node>& branchNode, bool& createdNewBranch) {
+      const auto splitterOutlets = splitter.outletModelObjects();
+      const auto mixerInlets = mixer.inletModelObjects();
+
+      // The default single-branch loop starts with splitter and mixer sharing
+      // one branch node. Reusing that shared node preserves the canonical
+      // "empty demand branch" baseline until a real second branch is needed.
+      if (splitterOutlets.size() == 1u && mixerInlets.size() == 1u && splitterOutlets.front() == mixerInlets.front()) {
+        targetBranchIndex = 0u;
+        auto existingBranchNode = splitterOutlets.front().optionalCast<Node>();
+        if (!existingBranchNode) {
+          return false;
+        }
+        branchNode = *existingBranchNode;
+        createdNewBranch = false;
+        return true;
+      }
+
+      targetBranchIndex = splitter.nextBranchIndex();
+      const auto branchNodeName = getObject<AirLoopHVAC>().nameString() + " Demand Branch Node " + std::to_string(targetBranchIndex + 1u);
+      branchNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(branchNodeName);
+      createdNewBranch = true;
+      // Splitter and mixer rows must be created as a pair. If the second write
+      // fails, undo the first immediately so the loop never exposes a
+      // half-created demand branch.
+      if (!resolveZoneSplitterBranchNode(splitter, targetBranchIndex, *branchNode)) {
+        return false;
+      }
+      if (!resolveZoneMixerBranchNode(mixer, targetBranchIndex, *branchNode)) {
+        splitter.removePortForBranch(targetBranchIndex);
+        return false;
+      }
+      return true;
+    }
+
+    void AirLoopHVAC_Impl::rollbackReservedDemandBranchSlot(AirLoopHVACZoneSplitter& splitter, AirLoopHVACZoneMixer& mixer, unsigned targetBranchIndex,
+                                                            bool createdNewBranch) {
+      if (!createdNewBranch) {
+        return;
+      }
+      splitter.removePortForBranch(targetBranchIndex);
+      mixer.removePortForBranch(targetBranchIndex);
+    }
+
     boost::optional<ThermalZone> AirLoopHVAC_Impl::resolveZoneServedByInletNode(const Node& zoneInletNode) {
       const auto& m = zoneInletNode.model();
       std::vector<ThermalZone> zones;
@@ -543,6 +588,20 @@ namespace epmodel {
       OS_ASSERT(!airLoop.nameString().empty());
       const auto loopName = airLoop.nameString();
 
+      // These keyed companions are the loop-level connective tissue later
+      // queried through demand inlet/outlet association. Canonicalization keeps
+      // a single canonical object for each key so const APIs never have to
+      // guess which duplicate "really" belongs to the loop.
+      auto removeDuplicateModelObject = [&](ModelObject duplicate, const std::string& roleDescription) {
+        if (duplicate.remove().empty()) {
+          detail::addLoadWarning(context, "Failed to remove duplicate " + roleDescription + " '" + duplicate.nameString() + "' for AirLoopHVAC '" + loopName
+                                            + "'.");
+        } else {
+          detail::addLoadWarning(context, "Removed duplicate " + roleDescription + " '" + duplicate.nameString() + "' for AirLoopHVAC '" + loopName
+                                            + "'.");
+        }
+      };
+
       {  // Canonical topology anchor points.
          // These node references are the entry/exit contracts used by supply
          // and demand path traversal; if they drift, most loop APIs become
@@ -569,21 +628,34 @@ namespace epmodel {
         }
       }
 
+      const auto demandInlet = demandInletNode();
+      const auto demandOutlet = demandOutletNode();
+
       {  // Demand-side splitter anchor keyed by demand inlet node.
          // This reproduces openstudio::model topology assumptions while storing
          // the association using E+ node-linkage semantics.
-        boost::optional<AirLoopHVACZoneSplitter> zoneSplitter;
-        const auto inletNode = demandInletNode();
+        std::vector<AirLoopHVACZoneSplitter> matches;
         for (auto& zp : model().getConcreteModelObjects<AirLoopHVACZoneSplitter>()) {
-          if (zp.getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->inletNode() == inletNode) {
-            zoneSplitter = zp;
-            break;
+          if (zp.getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->inletNode() == demandInlet) {
+            matches.push_back(zp);
           }
         }
+
+        boost::optional<AirLoopHVACZoneSplitter> zoneSplitter;
+        if (!matches.empty()) {
+          // Use name ordering only as a deterministic tiebreaker, then remove
+          // every other object with the same demand-inlet key.
+          std::sort(matches.begin(), matches.end(), [](const auto& lhs, const auto& rhs) { return lhs.nameString() < rhs.nameString(); });
+          zoneSplitter = matches.front();
+          for (auto it = std::next(matches.begin()); it != matches.end(); ++it) {
+            removeDuplicateModelObject(it->cast<ModelObject>(), "AirLoopHVAC:ZoneSplitter");
+          }
+        }
+
         if (!zoneSplitter) {
           zoneSplitter = AirLoopHVACZoneSplitter(model());
           zoneSplitter->setName(loopName + " Zone Splitter");
-          zoneSplitter->getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->setInletNode(inletNode);
+          zoneSplitter->getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->setInletNode(demandInlet);
           detail::addLoadInfo(context,
                               "Created missing AirLoopHVAC:ZoneSplitter '" + zoneSplitter->nameString() + "' for AirLoopHVAC '" + loopName + "'.");
         }
@@ -592,18 +664,26 @@ namespace epmodel {
 
       {  // Demand-side mixer anchor keyed by demand outlet node.
          // Splitter + mixer pair define branch fan-out/fan-in boundaries.
-        boost::optional<AirLoopHVACZoneMixer> zoneMixer;
-        const auto outletNode = demandOutletNode();
+        std::vector<AirLoopHVACZoneMixer> matches;
         for (auto& zm : model().getConcreteModelObjects<AirLoopHVACZoneMixer>()) {
-          if (zm.getImpl<detail::AirLoopHVACZoneMixer_Impl>()->outletNode() == outletNode) {
-            zoneMixer = zm;
-            break;
+          if (zm.getImpl<detail::AirLoopHVACZoneMixer_Impl>()->outletNode() == demandOutlet) {
+            matches.push_back(zm);
           }
         }
+
+        boost::optional<AirLoopHVACZoneMixer> zoneMixer;
+        if (!matches.empty()) {
+          std::sort(matches.begin(), matches.end(), [](const auto& lhs, const auto& rhs) { return lhs.nameString() < rhs.nameString(); });
+          zoneMixer = matches.front();
+          for (auto it = std::next(matches.begin()); it != matches.end(); ++it) {
+            removeDuplicateModelObject(it->cast<ModelObject>(), "AirLoopHVAC:ZoneMixer");
+          }
+        }
+
         if (!zoneMixer) {
           zoneMixer = AirLoopHVACZoneMixer(model());
           zoneMixer->setName(loopName + " Zone Mixer");
-          zoneMixer->getImpl<detail::AirLoopHVACZoneMixer_Impl>()->setOutletNode(outletNode);
+          zoneMixer->getImpl<detail::AirLoopHVACZoneMixer_Impl>()->setOutletNode(demandOutlet);
           detail::addLoadInfo(context, "Created missing AirLoopHVAC:ZoneMixer '" + zoneMixer->nameString() + "' for AirLoopHVAC '" + loopName + "'.");
         }
         zoneMixer->getImpl<detail::AirLoopHVACZoneMixer_Impl>()->canonicalize(context);
@@ -612,14 +692,22 @@ namespace epmodel {
       {  // SupplyPath object keyed by demand inlet node.
          // Path objects are connective tissue in E+ schema; we keep them
          // explicit so traversal and mutation do not infer hidden links.
-        boost::optional<AirLoopHVACSupplyPath> supplyPath;
-        const auto inletNode = demandInletNode();
+        std::vector<AirLoopHVACSupplyPath> matches;
         for (auto& sp : model().getConcreteModelObjects<AirLoopHVACSupplyPath>()) {
-          if (sp.getImpl<detail::AirLoopHVACSupplyPath_Impl>()->supplyAirPathInletNode() == inletNode) {
-            supplyPath = sp;
-            break;
+          if (sp.getImpl<detail::AirLoopHVACSupplyPath_Impl>()->supplyAirPathInletNode() == demandInlet) {
+            matches.push_back(sp);
           }
         }
+
+        boost::optional<AirLoopHVACSupplyPath> supplyPath;
+        if (!matches.empty()) {
+          std::sort(matches.begin(), matches.end(), [](const auto& lhs, const auto& rhs) { return lhs.nameString() < rhs.nameString(); });
+          supplyPath = matches.front();
+          for (auto it = std::next(matches.begin()); it != matches.end(); ++it) {
+            removeDuplicateModelObject(it->cast<ModelObject>(), "AirLoopHVAC:SupplyPath");
+          }
+        }
+
         if (!supplyPath) {
           supplyPath = AirLoopHVACSupplyPath(model());
           supplyPath->setName(loopName + " Supply Path");
@@ -633,14 +721,22 @@ namespace epmodel {
       {  // ReturnPath object keyed by demand outlet node.
          // Together with SupplyPath this keeps demand topology round-trippable
          // through IDF connective-tissue objects.
-        boost::optional<AirLoopHVACReturnPath> returnPath;
-        const auto outletNode = demandOutletNode();
+        std::vector<AirLoopHVACReturnPath> matches;
         for (auto& rp : model().getConcreteModelObjects<AirLoopHVACReturnPath>()) {
-          if (rp.getImpl<detail::AirLoopHVACReturnPath_Impl>()->returnAirPathOutletNode() == outletNode) {
-            returnPath = rp;
-            break;
+          if (rp.getImpl<detail::AirLoopHVACReturnPath_Impl>()->returnAirPathOutletNode() == demandOutlet) {
+            matches.push_back(rp);
           }
         }
+
+        boost::optional<AirLoopHVACReturnPath> returnPath;
+        if (!matches.empty()) {
+          std::sort(matches.begin(), matches.end(), [](const auto& lhs, const auto& rhs) { return lhs.nameString() < rhs.nameString(); });
+          returnPath = matches.front();
+          for (auto it = std::next(matches.begin()); it != matches.end(); ++it) {
+            removeDuplicateModelObject(it->cast<ModelObject>(), "AirLoopHVAC:ReturnPath");
+          }
+        }
+
         if (!returnPath) {
           returnPath = AirLoopHVACReturnPath(model());
           returnPath->setName(loopName + " Return Path");
@@ -695,17 +791,25 @@ namespace epmodel {
       {  // Sizing:System is a loop-owned companion object.
          // Loop-level sizing APIs assume one companion object per AirLoopHVAC,
          // so canonicalization creates it when missing.
-        bool hasSizingSystem = false;
+        std::vector<SizingSystem> matches;
         for (const auto& sizingSystem : model().getConcreteModelObjects<SizingSystem>()) {
           auto linkedAirLoop = sizingSystem.getModelObjectTarget<AirLoopHVAC>(openstudio::Sizing_SystemFields::AirLoopName);
           if (linkedAirLoop && *linkedAirLoop == airLoop) {
-            hasSizingSystem = true;
-            break;
+            matches.push_back(sizingSystem);
           }
         }
-        if (!hasSizingSystem) {
+
+        if (matches.empty()) {
           auto sizingSystem = SizingSystem(model(), airLoop);
           detail::addLoadInfo(context, "Created missing Sizing:System '" + sizingSystem.nameString() + "' for AirLoopHVAC '" + loopName + "'.");
+        } else {
+          // Loop-facing sizing APIs assume a total 1:1 relationship, so
+          // duplicate loop-owned sizing objects are dropped here instead of
+          // leaking ambiguity into sizingSystem().
+          std::sort(matches.begin(), matches.end(), [](const auto& lhs, const auto& rhs) { return lhs.nameString() < rhs.nameString(); });
+          for (auto it = std::next(matches.begin()); it != matches.end(); ++it) {
+            removeDuplicateModelObject(it->cast<ModelObject>(), "Sizing:System");
+          }
         }
       }
 
@@ -769,31 +873,15 @@ namespace epmodel {
 
       auto splitter = zoneSplitter();
       auto mixer = zoneMixer();
-      auto splitterOutlets = splitter.outletModelObjects();
-      auto mixerInlets = mixer.inletModelObjects();
-      boost::optional<unsigned> targetBranchIndex;
+      unsigned targetBranchIndex = 0u;
       boost::optional<Node> branchNode;
-      if (splitterOutlets.size() == 1u && mixerInlets.size() == 1u && splitterOutlets.front() == mixerInlets.front()) {
-        targetBranchIndex = 0u;
-        branchNode = splitterOutlets.front().optionalCast<Node>();
-      } else {
-        targetBranchIndex = splitter.nextBranchIndex();
-        const auto branchNodeName = getObject<AirLoopHVAC>().nameString() + " Demand Branch Node " + std::to_string(*targetBranchIndex + 1u);
-        branchNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(branchNodeName);
-        if (!resolveZoneSplitterBranchNode(splitter, *targetBranchIndex, *branchNode)) {
-          return false;
-        }
-        if (!resolveZoneMixerBranchNode(mixer, *targetBranchIndex, *branchNode)) {
-          splitter.removePortForBranch(*targetBranchIndex);
-          return false;
-        }
+      bool createdNewBranch = false;
+      if (!reserveDemandBranchSlot(splitter, mixer, targetBranchIndex, branchNode, createdNewBranch)) {
+        return false;
       }
 
-      if (!hvacComponent.addToNode(*branchNode)) {
-        if (*targetBranchIndex >= splitterOutlets.size()) {
-          splitter.removePortForBranch(*targetBranchIndex);
-          mixer.removePortForBranch(*targetBranchIndex);
-        }
+      if (!branchNode || !hvacComponent.addToNode(*branchNode)) {
+        rollbackReservedDemandBranchSlot(splitter, mixer, targetBranchIndex, createdNewBranch);
         return false;
       }
 
@@ -813,30 +901,14 @@ namespace epmodel {
 
       auto splitter = zoneSplitter();
       auto mixer = zoneMixer();
-      auto splitterOutlets = splitter.outletModelObjects();
-      auto mixerInlets = mixer.inletModelObjects();
-      boost::optional<unsigned> targetBranchIndex;
+      unsigned targetBranchIndex = 0u;
       boost::optional<Node> branchNode;
-      if (splitterOutlets.size() == 1u && mixerInlets.size() == 1u && splitterOutlets.front() == mixerInlets.front()) {
-        targetBranchIndex = 0u;
-        branchNode = splitterOutlets.front().optionalCast<Node>();
-      } else {
-        targetBranchIndex = splitter.nextBranchIndex();
-        const auto branchNodeName = getObject<AirLoopHVAC>().nameString() + " Demand Branch Node " + std::to_string(*targetBranchIndex + 1u);
-        branchNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(branchNodeName);
-        if (!resolveZoneSplitterBranchNode(splitter, *targetBranchIndex, *branchNode)) {
-          return false;
-        }
-        if (!resolveZoneMixerBranchNode(mixer, *targetBranchIndex, *branchNode)) {
-          splitter.removePortForBranch(*targetBranchIndex);
-          return false;
-        }
+      bool createdNewBranch = false;
+      if (!reserveDemandBranchSlot(splitter, mixer, targetBranchIndex, branchNode, createdNewBranch)) {
+        return false;
       }
-      if (!thermalZone.addToNode(*branchNode)) {
-        if (*targetBranchIndex >= splitterOutlets.size()) {
-          splitter.removePortForBranch(*targetBranchIndex);
-          mixer.removePortForBranch(*targetBranchIndex);
-        }
+      if (!branchNode || !thermalZone.addToNode(*branchNode)) {
+        rollbackReservedDemandBranchSlot(splitter, mixer, targetBranchIndex, createdNewBranch);
         return false;
       }
       syncControllerMechanicalVentilationZoneOutdoorAirEntries();
@@ -859,48 +931,32 @@ namespace epmodel {
 
       auto splitter = zoneSplitter();
       auto mixer = zoneMixer();
-      auto splitterOutlets = splitter.outletModelObjects();
-      auto mixerInlets = mixer.inletModelObjects();
-      boost::optional<unsigned> targetBranchIndex;
+      unsigned targetBranchIndex = 0u;
       boost::optional<Node> branchNode;
-      if (splitterOutlets.size() == 1u && mixerInlets.size() == 1u && splitterOutlets.front() == mixerInlets.front()) {
-        targetBranchIndex = 0u;
-        branchNode = splitterOutlets.front().optionalCast<Node>();
-      } else {
-        targetBranchIndex = splitter.nextBranchIndex();
-        const auto branchNodeName = getObject<AirLoopHVAC>().nameString() + " Demand Branch Node " + std::to_string(*targetBranchIndex + 1u);
-        branchNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(branchNodeName);
-        if (!resolveZoneSplitterBranchNode(splitter, *targetBranchIndex, *branchNode)) {
-          return false;
-        }
-        if (!resolveZoneMixerBranchNode(mixer, *targetBranchIndex, *branchNode)) {
-          splitter.removePortForBranch(*targetBranchIndex);
-          return false;
-        }
+      bool createdNewBranch = false;
+      if (!reserveDemandBranchSlot(splitter, mixer, targetBranchIndex, branchNode, createdNewBranch)) {
+        return false;
       }
-      if (!thermalZone.addToNode(*branchNode)) {
-        if (*targetBranchIndex >= splitterOutlets.size()) {
-          splitter.removePortForBranch(*targetBranchIndex);
-          mixer.removePortForBranch(*targetBranchIndex);
-        }
+      if (!branchNode || !thermalZone.addToNode(*branchNode)) {
+        rollbackReservedDemandBranchSlot(splitter, mixer, targetBranchIndex, createdNewBranch);
         return false;
       }
 
       auto conn = resolveZoneConnections(thermalZone);
       if (!conn) {
-        if (*targetBranchIndex >= splitterOutlets.size()) {
-          splitter.removePortForBranch(*targetBranchIndex);
-          mixer.removePortForBranch(*targetBranchIndex);
-        }
+        // ThermalZone::addToNode has already mutated splitter/mixer rows and
+        // zone equipment connections. Reuse the normal branch-removal path to
+        // unwind that partial attach instead of duplicating teardown logic.
+        removeBranchForZone(thermalZone);
         return false;
       }
 
       auto zoneNode = conn->zoneAirInletNode();
       if (!zoneNode || !airTerminal.addToNode(*zoneNode)) {
-        if (*targetBranchIndex >= splitterOutlets.size()) {
-          splitter.removePortForBranch(*targetBranchIndex);
-          mixer.removePortForBranch(*targetBranchIndex);
-        }
+        // Same rollback rule: once the zone is on the branch, failed terminal
+        // insertion must remove the partial branch rather than only clearing
+        // the reserved splitter/mixer slot.
+        removeBranchForZone(thermalZone);
         return false;
       }
 

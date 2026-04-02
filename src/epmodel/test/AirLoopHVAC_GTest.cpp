@@ -9,13 +9,17 @@
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/AirLoopHVAC_Impl.hpp"
 #include "../ModelObject/AirLoopHVACReturnPath.hpp"
+#include "../ModelObject/AirLoopHVACReturnPath_Impl.hpp"
 #include "../ModelObject/AirLoopHVACSupplyPath.hpp"
+#include "../ModelObject/AirLoopHVACSupplyPath_Impl.hpp"
 #include "../ModelObject/SizingSystem.hpp"
 #include "../ModelObject/SizingSystem_Impl.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightCycle.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightCycle_Impl.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
+#include "../Mixer/AirLoopHVACZoneMixer_Impl.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter_Impl.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
 #include "../StraightComponent/FanComponentModel.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
@@ -28,6 +32,7 @@
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/Sizing_System_FieldEnums.hxx>
 #include <algorithm>
 #include <set>
 
@@ -37,6 +42,61 @@ namespace {
 
 unsigned demandCount(const AirLoopHVAC& airLoop, openstudio::IddObjectType type) {
   return static_cast<unsigned>(airLoop.demandComponents(type).size());
+}
+
+unsigned matchingSupplyPathCount(const Model& model, const AirLoopHVAC& airLoop) {
+  unsigned count = 0u;
+  for (const auto& supplyPath : model.getConcreteModelObjects<AirLoopHVACSupplyPath>()) {
+    auto inletNode = supplyPath.getImpl<detail::AirLoopHVACSupplyPath_Impl>()->supplyAirPathInletNode();
+    if (inletNode && *inletNode == airLoop.demandInletNode()) {
+      ++count;
+    }
+  }
+  return count;
+}
+
+unsigned matchingReturnPathCount(const Model& model, const AirLoopHVAC& airLoop) {
+  unsigned count = 0u;
+  for (const auto& returnPath : model.getConcreteModelObjects<AirLoopHVACReturnPath>()) {
+    auto outletNode = returnPath.getImpl<detail::AirLoopHVACReturnPath_Impl>()->returnAirPathOutletNode();
+    if (outletNode && *outletNode == airLoop.demandOutletNode()) {
+      ++count;
+    }
+  }
+  return count;
+}
+
+unsigned matchingZoneSplitterCount(const Model& model, const AirLoopHVAC& airLoop) {
+  unsigned count = 0u;
+  for (const auto& zoneSplitter : model.getConcreteModelObjects<AirLoopHVACZoneSplitter>()) {
+    auto inletNode = zoneSplitter.getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->inletNode();
+    if (inletNode && *inletNode == airLoop.demandInletNode()) {
+      ++count;
+    }
+  }
+  return count;
+}
+
+unsigned matchingZoneMixerCount(const Model& model, const AirLoopHVAC& airLoop) {
+  unsigned count = 0u;
+  for (const auto& zoneMixer : model.getConcreteModelObjects<AirLoopHVACZoneMixer>()) {
+    auto outletNode = zoneMixer.getImpl<detail::AirLoopHVACZoneMixer_Impl>()->outletNode();
+    if (outletNode && *outletNode == airLoop.demandOutletNode()) {
+      ++count;
+    }
+  }
+  return count;
+}
+
+unsigned matchingSizingSystemCount(const Model& model, const AirLoopHVAC& airLoop) {
+  unsigned count = 0u;
+  for (const auto& sizingSystem : model.getConcreteModelObjects<SizingSystem>()) {
+    auto linkedAirLoop = sizingSystem.getModelObjectTarget<AirLoopHVAC>(openstudio::Sizing_SystemFields::AirLoopName);
+    if (linkedAirLoop && *linkedAirLoop == airLoop) {
+      ++count;
+    }
+  }
+  return count;
 }
 
 void expectDemandBranchParity(const AirLoopHVAC& airLoop) {
@@ -647,6 +707,26 @@ TEST_F(EPModelFixture, AirLoopHVAC_AddBranchForZone_FailurePaths_NoTopologyMutat
   expectUnchanged();
 }
 
+TEST_F(EPModelFixture, AirLoopHVAC_AddBranchForZone_InvalidAirTerminal_RollsBackPartialZoneAttachment) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  FanConstantVolume invalidAirTerminal(model);
+
+  const auto baselineDemand = airLoop.demandComponents();
+  const auto baselineZones = zoneHandles(airLoop);
+  const auto baselineSplitterOutlets = airLoop.zoneSplitter().outletModelObjects();
+  const auto baselineMixerInlets = airLoop.zoneMixer().inletModelObjects();
+
+  EXPECT_FALSE(airLoop.addBranchForZone(zone, invalidAirTerminal));
+
+  EXPECT_EQ(baselineDemand, airLoop.demandComponents());
+  EXPECT_EQ(baselineZones, zoneHandles(airLoop));
+  EXPECT_EQ(baselineSplitterOutlets, airLoop.zoneSplitter().outletModelObjects());
+  EXPECT_EQ(baselineMixerInlets, airLoop.zoneMixer().inletModelObjects());
+  EXPECT_TRUE(airLoop.thermalZones().empty());
+}
+
 TEST_F(EPModelFixture, AirLoopHVAC_RemoveBranchForZone_FailurePaths_NoTopologyMutation) {
   Model model;
   AirLoopHVAC airLoop(model);
@@ -842,6 +922,64 @@ TEST_F(EPModelFixture, AirLoopHVAC_SizingSystem_IsLoopOwnedCompanionObject) {
   const auto sizingSystems = model.getConcreteModelObjects<SizingSystem>();
   ASSERT_EQ(1u, sizingSystems.size());
   EXPECT_EQ(sizingSystem, sizingSystems.front());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_Canonicalize_DeduplicatesKeyedCompanions) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+
+  AirLoopHVACSupplyPath duplicateSupplyPath(model);
+  duplicateSupplyPath.setName("Duplicate Supply Path");
+  ASSERT_TRUE(duplicateSupplyPath.getImpl<detail::AirLoopHVACSupplyPath_Impl>()->setSupplyAirPathInletNode(airLoop.demandInletNode()));
+
+  AirLoopHVACReturnPath duplicateReturnPath(model);
+  duplicateReturnPath.setName("Duplicate Return Path");
+  ASSERT_TRUE(duplicateReturnPath.getImpl<detail::AirLoopHVACReturnPath_Impl>()->setReturnAirPathOutletNode(airLoop.demandOutletNode()));
+
+  AirLoopHVACZoneSplitter duplicateZoneSplitter(model);
+  duplicateZoneSplitter.setName("Duplicate Zone Splitter");
+  ASSERT_TRUE(duplicateZoneSplitter.getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->setInletNode(airLoop.demandInletNode()));
+
+  AirLoopHVACZoneMixer duplicateZoneMixer(model);
+  duplicateZoneMixer.setName("Duplicate Zone Mixer");
+  ASSERT_TRUE(duplicateZoneMixer.getImpl<detail::AirLoopHVACZoneMixer_Impl>()->setOutletNode(airLoop.demandOutletNode()));
+
+  SizingSystem duplicateSizingSystem(model, airLoop);
+  duplicateSizingSystem.setName("Duplicate Sizing System");
+
+  EXPECT_EQ(2u, matchingSupplyPathCount(model, airLoop));
+  EXPECT_EQ(2u, matchingReturnPathCount(model, airLoop));
+  EXPECT_EQ(2u, matchingZoneSplitterCount(model, airLoop));
+  EXPECT_EQ(2u, matchingZoneMixerCount(model, airLoop));
+  EXPECT_EQ(2u, matchingSizingSystemCount(model, airLoop));
+
+  auto report = model.canonicalize(SanitizationPolicy::Repair);
+
+  EXPECT_EQ(1u, matchingSupplyPathCount(model, airLoop));
+  EXPECT_EQ(1u, matchingReturnPathCount(model, airLoop));
+  EXPECT_EQ(1u, matchingZoneSplitterCount(model, airLoop));
+  EXPECT_EQ(1u, matchingZoneMixerCount(model, airLoop));
+  EXPECT_EQ(1u, matchingSizingSystemCount(model, airLoop));
+  EXPECT_GT(report.warningCount, 0u);
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_Canonicalize_RepairsDemandBranchCountMismatch) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+
+  Node extraBranchNode(model);
+  extraBranchNode.setName("Mismatched Demand Branch Node");
+  ASSERT_TRUE(airLoop.zoneSplitter().setOutletModelObject(1u, extraBranchNode));
+
+  EXPECT_EQ(2u, airLoop.zoneSplitter().outletModelObjects().size());
+  EXPECT_EQ(1u, airLoop.zoneMixer().inletModelObjects().size());
+
+  auto report = model.canonicalize(SanitizationPolicy::Repair);
+
+  EXPECT_EQ(1u, airLoop.zoneSplitter().outletModelObjects().size());
+  EXPECT_EQ(1u, airLoop.zoneMixer().inletModelObjects().size());
+  EXPECT_EQ(airLoop.zoneSplitter().outletModelObjects().front(), airLoop.zoneMixer().inletModelObjects().front());
+  EXPECT_GT(report.warningCount, 0u);
 }
 
 TEST_F(EPModelFixture, AirLoopHVAC_NightCycleControlType_UsesAvailabilityManagerNightCycle) {
