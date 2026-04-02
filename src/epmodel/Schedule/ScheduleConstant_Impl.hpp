@@ -6,16 +6,16 @@
 #ifndef EPMODEL_SCHEDULECONSTANT_IMPL_HPP
 #define EPMODEL_SCHEDULECONSTANT_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 namespace detail {
 
-class EPMODEL_API ScheduleConstant_Impl : public ModelObject_Impl
+class EPMODEL_API ScheduleConstant_Impl : public Schedule_Impl
 {
  public:
-  using ModelObject_Impl::ModelObject_Impl;
+  using Schedule_Impl::Schedule_Impl;
   virtual ~ScheduleConstant_Impl() override = default;
 
   double value() const;

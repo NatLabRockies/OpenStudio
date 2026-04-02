@@ -17,7 +17,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  ScheduleFile::ScheduleFile(const Model& model) : ModelObject(ScheduleFile::iddObjectType(), model) {
+  ScheduleFile::ScheduleFile(const Model& model) : Schedule(ScheduleFile::iddObjectType(), model) {
     // Mirror preserved counterpart constructor behavior for required scalar fields.
     bool ok = true;
     ok &= setColumnNumber(1);
@@ -25,7 +25,7 @@ namespace epmodel {
     OS_ASSERT(ok);
   }
 
-  ScheduleFile::ScheduleFile(std::shared_ptr<detail::ScheduleFile_Impl> impl) : ModelObject(std::move(impl)) {}
+  ScheduleFile::ScheduleFile(std::shared_ptr<detail::ScheduleFile_Impl> impl) : Schedule(std::move(impl)) {}
 
   IddObjectType ScheduleFile::iddObjectType() {
     return IddObjectType::Schedule_File;

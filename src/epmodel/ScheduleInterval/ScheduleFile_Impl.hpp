@@ -6,7 +6,7 @@
 #ifndef EPMODEL_SCHEDULEFILE_IMPL_HPP
 #define EPMODEL_SCHEDULEFILE_IMPL_HPP
 
-#include "ModelObject/ModelObject_Impl.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <vector>
 
@@ -14,10 +14,10 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
-    class EPMODEL_API ScheduleFile_Impl : public ModelObject_Impl
+    class EPMODEL_API ScheduleFile_Impl : public Schedule_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using Schedule_Impl::Schedule_Impl;
       virtual ~ScheduleFile_Impl() override = default;
 
       int columnNumber() const;

@@ -7,8 +7,11 @@
 
 #include "EPModelFixture.hpp"
 #include "../Schedule/ExternalInterfaceSchedule.hpp"
+#include "../Schedule/Schedule.hpp"
+#include "../Schedule/Schedule_Impl.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleRuleset.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -73,4 +76,28 @@ TEST_F(EPModelFixture, ScheduleConstant_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(object.setValue(-1.5));
   EXPECT_DOUBLE_EQ(-1.5, object.value());
+}
+
+TEST_F(EPModelFixture, ScheduleBase_CastsAcrossConcreteScheduleTypes) {
+  Model model;
+  ScheduleConstant scheduleConstant(model);
+  ScheduleCompact scheduleCompact(model);
+  ScheduleRuleset scheduleRuleset(model);
+  ExternalInterfaceSchedule externalSchedule(model);
+
+  auto constantBase = scheduleConstant.optionalCast<Schedule>();
+  ASSERT_TRUE(constantBase);
+  EXPECT_EQ(scheduleConstant.cast<ModelObject>(), constantBase->cast<ModelObject>());
+
+  auto compactBase = scheduleCompact.optionalCast<Schedule>();
+  ASSERT_TRUE(compactBase);
+  EXPECT_EQ(scheduleCompact.cast<ModelObject>(), compactBase->cast<ModelObject>());
+
+  auto rulesetBase = scheduleRuleset.optionalCast<Schedule>();
+  ASSERT_TRUE(rulesetBase);
+  EXPECT_EQ(scheduleRuleset.cast<ModelObject>(), rulesetBase->cast<ModelObject>());
+
+  auto externalBase = externalSchedule.optionalCast<Schedule>();
+  ASSERT_TRUE(externalBase);
+  EXPECT_EQ(externalSchedule.cast<ModelObject>(), externalBase->cast<ModelObject>());
 }

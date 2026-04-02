@@ -981,6 +981,9 @@ set(${target_name}_src
   Schedule/ExternalInterfaceSchedule.hpp
   Schedule/ExternalInterfaceSchedule_Impl.hpp
   Schedule/ExternalInterfaceSchedule.cpp
+  Schedule/Schedule.hpp
+  Schedule/Schedule_Impl.hpp
+  Schedule/Schedule.cpp
   Schedule/ScheduleCompact.hpp
   Schedule/ScheduleCompact_Impl.hpp
   Schedule/ScheduleCompact.cpp

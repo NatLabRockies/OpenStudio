@@ -18,16 +18,16 @@
 namespace openstudio {
 namespace epmodel {
 
-  ScheduleCompact::ScheduleCompact(const Model& model) : ModelObject(ScheduleCompact::iddObjectType(), model) {
+  ScheduleCompact::ScheduleCompact(const Model& model) : Schedule(ScheduleCompact::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ScheduleCompact_Impl>());
   }
 
-  ScheduleCompact::ScheduleCompact(const Model& model, double constantValue) : ModelObject(ScheduleCompact::iddObjectType(), model) {
+  ScheduleCompact::ScheduleCompact(const Model& model, double constantValue) : Schedule(ScheduleCompact::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ScheduleCompact_Impl>());
     OS_ASSERT(setToConstantValue(constantValue));
   }
 
-  ScheduleCompact::ScheduleCompact(std::shared_ptr<detail::ScheduleCompact_Impl> impl) : ModelObject(std::move(impl)) {}
+  ScheduleCompact::ScheduleCompact(std::shared_ptr<detail::ScheduleCompact_Impl> impl) : Schedule(std::move(impl)) {}
 
   IddObjectType ScheduleCompact::iddObjectType() {
     return IddObjectType::Schedule_Compact;

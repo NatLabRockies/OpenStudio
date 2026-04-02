@@ -7,7 +7,7 @@
 #define EPMODEL_SCHEDULERULESET_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,7 @@ namespace detail {
 class ScheduleRuleset_Impl;
 }
 
-class EPMODEL_API ScheduleRuleset : public ModelObject
+class EPMODEL_API ScheduleRuleset : public Schedule
 {
  public:
   explicit ScheduleRuleset(const Model& model);

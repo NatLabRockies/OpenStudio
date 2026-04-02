@@ -9,6 +9,8 @@
 #include "BranchList.hpp"
 #include "BranchList_Impl.hpp"
 #include "AvailabilityManager/AvailabilityManager.hpp"
+#include "AvailabilityManager/AvailabilityManagerScheduledOn.hpp"
+#include "AvailabilityManager/AvailabilityManagerScheduledOn_Impl.hpp"
 #include "AvailabilityManager/AvailabilityManagerNightCycle.hpp"
 #include "AvailabilityManager/AvailabilityManagerNightCycle_Impl.hpp"
 #include "ModelObject/AvailabilityManagerAssignmentList.hpp"
@@ -49,6 +51,7 @@
 #include "SetpointManager/SetpointManagerMixedAir_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
+#include "Schedule/Schedule.hpp"
 
 #include <algorithm>
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
@@ -208,6 +211,14 @@ namespace epmodel {
 
   SizingSystem AirLoopHVAC::sizingSystem() const {
     return getImpl<detail::AirLoopHVAC_Impl>()->sizingSystem();
+  }
+
+  Schedule AirLoopHVAC::availabilitySchedule() const {
+    return getImpl<detail::AirLoopHVAC_Impl>()->availabilitySchedule();
+  }
+
+  bool AirLoopHVAC::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::AirLoopHVAC_Impl>()->setAvailabilitySchedule(schedule);
   }
 
   std::vector<ThermalZone> AirLoopHVAC::thermalZones() const {
@@ -813,7 +824,18 @@ namespace epmodel {
         }
       }
 
-      availabilityManagerAssignmentList().getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->canonicalize(context);
+      auto assignmentList = availabilityManagerAssignmentList();
+      assignmentList.getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->canonicalize(context);
+
+      // AirLoopHVAC availability-schedule APIs are backed by one canonical
+      // scheduled-on manager in the assignment list. Canonicalization ensures
+      // it exists before any loop-facing availabilitySchedule() call relies on
+      // it, then canonicalizes all current availability managers.
+      auto availabilityScheduleManager = ensureAvailabilityScheduleManager();
+      availabilityScheduleManager.getImpl<detail::AvailabilityManagerScheduledOn_Impl>()->canonicalize(context);
+      for (auto& availabilityManager : availabilityManagers()) {
+        availabilityManager.getImpl<detail::AvailabilityManager_Impl>()->canonicalize(context);
+      }
     }
 
     // Schema Alignment Notes:
@@ -830,6 +852,29 @@ namespace epmodel {
       return availabilityManagerAssignmentList().availabilityManagers();
     }
 
+    boost::optional<openstudio::epmodel::AvailabilityManagerScheduledOn> AirLoopHVAC_Impl::availabilityScheduleManager() const {
+      for (const auto& availabilityManager : availabilityManagers()) {
+        if (auto scheduledOn = availabilityManager.optionalCast<openstudio::epmodel::AvailabilityManagerScheduledOn>()) {
+          return scheduledOn;
+        }
+      }
+      return boost::none;
+    }
+
+    openstudio::epmodel::AvailabilityManagerScheduledOn AirLoopHVAC_Impl::ensureAvailabilityScheduleManager() {
+      if (auto scheduledOn = availabilityScheduleManager()) {
+        return *scheduledOn;
+      }
+
+      auto scheduledOn = openstudio::epmodel::AvailabilityManagerScheduledOn(model());
+      auto airLoop = getObject<AirLoopHVAC>();
+      if (!airLoop.nameString().empty()) {
+        scheduledOn.setName(airLoop.nameString() + " Availability Manager Scheduled On");
+      }
+      OS_ASSERT(availabilityManagerAssignmentList().addAvailabilityManager(scheduledOn));
+      return scheduledOn;
+    }
+
     bool AirLoopHVAC_Impl::addAvailabilityManager(const AvailabilityManager& availabilityManager) {
       return availabilityManagerAssignmentList().addAvailabilityManager(availabilityManager);
     }
@@ -839,19 +884,32 @@ namespace epmodel {
     }
 
     bool AirLoopHVAC_Impl::setAvailabilityManagers(const std::vector<AvailabilityManager>& availabilityManagers) {
-      return availabilityManagerAssignmentList().setAvailabilityManagers(availabilityManagers);
+      if (!availabilityManagerAssignmentList().setAvailabilityManagers(availabilityManagers)) {
+        return false;
+      }
+      ensureAvailabilityScheduleManager();
+      return true;
     }
 
     void AirLoopHVAC_Impl::resetAvailabilityManagers() {
       availabilityManagerAssignmentList().resetAvailabilityManagers();
+      ensureAvailabilityScheduleManager();
     }
 
     bool AirLoopHVAC_Impl::removeAvailabilityManager(const AvailabilityManager& availabilityManager) {
-      return availabilityManagerAssignmentList().removeAvailabilityManager(availabilityManager);
+      if (!availabilityManagerAssignmentList().removeAvailabilityManager(availabilityManager)) {
+        return false;
+      }
+      ensureAvailabilityScheduleManager();
+      return true;
     }
 
     bool AirLoopHVAC_Impl::removeAvailabilityManager(unsigned priority) {
-      return availabilityManagerAssignmentList().removeAvailabilityManager(priority);
+      if (!availabilityManagerAssignmentList().removeAvailabilityManager(priority)) {
+        return false;
+      }
+      ensureAvailabilityScheduleManager();
+      return true;
     }
 
     bool AirLoopHVAC_Impl::setAvailabilityManagerPriority(const AvailabilityManager& availabilityManager, unsigned priority) {
@@ -1531,6 +1589,19 @@ namespace epmodel {
       }
       OS_ASSERT(false);
       return SizingSystem(model(), airLoop);
+    }
+
+    openstudio::epmodel::Schedule AirLoopHVAC_Impl::availabilitySchedule() const {
+      auto scheduledOn = availabilityScheduleManager();
+      OS_ASSERT(scheduledOn);
+      return scheduledOn->schedule();
+    }
+
+    bool AirLoopHVAC_Impl::setAvailabilitySchedule(openstudio::epmodel::Schedule& schedule) {
+      if (schedule.model() != model()) {
+        return false;
+      }
+      return ensureAvailabilityScheduleManager().setSchedule(schedule);
     }
 
     std::vector<openstudio::epmodel::ThermalZone> AirLoopHVAC_Impl::thermalZones() const {

@@ -7,7 +7,7 @@
 #define EPMODEL_SCHEDULECONSTANT_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,7 @@ namespace epmodel {
     class ScheduleConstant_Impl;
   }
 
-  class EPMODEL_API ScheduleConstant : public ModelObject
+  class EPMODEL_API ScheduleConstant : public Schedule
   {
    public:
     explicit ScheduleConstant(const Model& model);

@@ -6,18 +6,24 @@
 #ifndef EPMODEL_AVAILABILITYMANAGERSCHEDULEDON_IMPL_HPP
 #define EPMODEL_AVAILABILITYMANAGERSCHEDULEDON_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "AvailabilityManager/AvailabilityManager_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
+class Schedule;
+
 namespace detail {
 
-class EPMODEL_API AvailabilityManagerScheduledOn_Impl : public ModelObject_Impl
+class EPMODEL_API AvailabilityManagerScheduledOn_Impl : public AvailabilityManager_Impl
 {
  public:
-  using ModelObject_Impl::ModelObject_Impl;
+  using AvailabilityManager_Impl::AvailabilityManager_Impl;
   virtual ~AvailabilityManagerScheduledOn_Impl() override = default;
+
+ openstudio::epmodel::Schedule schedule() const;
+  bool setSchedule(openstudio::epmodel::Schedule& schedule);
+  void doCanonicalize(LoadContext& context) override;
 };
 
 }  // namespace detail

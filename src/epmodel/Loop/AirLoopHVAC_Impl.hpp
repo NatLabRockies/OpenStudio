@@ -18,8 +18,10 @@ namespace epmodel {
   class AirLoopHVACReturnPath;
   class AirLoopHVACSupplyPath;
   class AvailabilityManager;
+  class AvailabilityManagerScheduledOn;
   class AvailabilityManagerAssignmentList;
   class AirLoopHVACOutdoorAirSystem;
+  class Schedule;
   class ThermalZone;
   class AirLoopHVACZoneMixer;
   class AirLoopHVACZoneSplitter;
@@ -69,6 +71,8 @@ namespace epmodel {
       boost::optional<openstudio::epmodel::HVACComponent> returnFan() const;
       boost::optional<openstudio::epmodel::HVACComponent> reliefFan() const;
       openstudio::epmodel::SizingSystem sizingSystem() const;
+      openstudio::epmodel::Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(openstudio::epmodel::Schedule& schedule);
       std::vector<openstudio::epmodel::ThermalZone> thermalZones() const;
       // Schema Alignment Notes:
       // - Field Mapping: AirLoopHVAC::AvailabilityManagerListName stores a relationship target.
@@ -127,6 +131,12 @@ namespace epmodel {
       static bool isSupportedMixedAirFanType(openstudio::IddObjectType objectType);
       static boost::optional<openstudio::epmodel::HVACComponent> lastSupportedFan(
         const std::vector<openstudio::epmodel::ModelObject>& components);
+      // AirLoopHVAC availability-schedule APIs are mapped onto one canonical
+      // AvailabilityManager:ScheduledOn entry in the loop assignment list.
+      // These helpers centralize that policy so public APIs and availability
+      // manager mutators preserve the same invariant.
+      boost::optional<openstudio::epmodel::AvailabilityManagerScheduledOn> availabilityScheduleManager() const;
+      openstudio::epmodel::AvailabilityManagerScheduledOn ensureAvailabilityScheduleManager();
       // Schema Alignment Notes:
       // - Field Mapping: AirLoopHVAC::ConnectorListName stores branch connector relationships, not scalar data.
       // - API: AirLoopHVAC exposes Connector:Splitter behavior through zoneSplitter()/zoneMixer() and demand topology traversal.

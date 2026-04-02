@@ -7,7 +7,7 @@
 #define EPMODEL_SCHEDULEFILE_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject/ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace epmodel {
     class ScheduleFile_Impl;
   }
 
-  class EPMODEL_API ScheduleFile : public ModelObject
+  class EPMODEL_API ScheduleFile : public Schedule
   {
    public:
     explicit ScheduleFile(const Model& model);

@@ -13,9 +13,9 @@
 namespace openstudio {
 namespace epmodel {
 
-ScheduleRuleset::ScheduleRuleset(const Model& model) : ModelObject(ScheduleRuleset::iddObjectType(), model) {}
+ScheduleRuleset::ScheduleRuleset(const Model& model) : Schedule(ScheduleRuleset::iddObjectType(), model) {}
 
-ScheduleRuleset::ScheduleRuleset(std::shared_ptr<detail::ScheduleRuleset_Impl> impl) : ModelObject(std::move(impl)) {}
+ScheduleRuleset::ScheduleRuleset(std::shared_ptr<detail::ScheduleRuleset_Impl> impl) : Schedule(std::move(impl)) {}
 
 IddObjectType ScheduleRuleset::iddObjectType() {
   return IddObjectType::Schedule_Year;

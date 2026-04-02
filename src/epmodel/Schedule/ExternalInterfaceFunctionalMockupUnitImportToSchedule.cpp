@@ -16,11 +16,11 @@ namespace openstudio {
 namespace epmodel {
 
   ExternalInterfaceFunctionalMockupUnitImportToSchedule::ExternalInterfaceFunctionalMockupUnitImportToSchedule(const Model& model)
-    : ModelObject(ExternalInterfaceFunctionalMockupUnitImportToSchedule::iddObjectType(), model) {}
+    : Schedule(ExternalInterfaceFunctionalMockupUnitImportToSchedule::iddObjectType(), model) {}
 
   ExternalInterfaceFunctionalMockupUnitImportToSchedule::ExternalInterfaceFunctionalMockupUnitImportToSchedule(
     std::shared_ptr<detail::ExternalInterfaceFunctionalMockupUnitImportToSchedule_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : Schedule(std::move(impl)) {}
 
   IddObjectType ExternalInterfaceFunctionalMockupUnitImportToSchedule::iddObjectType() {
     return IddObjectType::ExternalInterface_FunctionalMockupUnitImport_To_Schedule;

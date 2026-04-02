@@ -9,6 +9,8 @@
 
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../ModelObject/AvailabilityManagerAssignmentList.hpp"
+#include "../AvailabilityManager/AvailabilityManagerScheduledOn.hpp"
+#include "../AvailabilityManager/AvailabilityManagerScheduledOn_Impl.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightCycle.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightVentilation.hpp"
 
@@ -86,25 +88,32 @@ TEST_F(EPModelFixture, AirLoopHVAC_AvailabilityManagerApis) {
   AvailabilityManagerNightCycle availabilityManager1(model);
   AvailabilityManagerNightCycle availabilityManager2(model);
 
-  ASSERT_TRUE(airLoop.addAvailabilityManager(availabilityManager1));
   auto managers = airLoop.availabilityManagers();
   ASSERT_EQ(1u, managers.size());
-  EXPECT_EQ(availabilityManager1, managers.front());
-  EXPECT_EQ(1u, airLoop.availabilityManagerPriority(availabilityManager1));
+  auto scheduledOn = managers.front().optionalCast<AvailabilityManagerScheduledOn>();
+  ASSERT_TRUE(scheduledOn);
+  EXPECT_EQ(1u, airLoop.availabilityManagerPriority(*scheduledOn));
+
+  ASSERT_TRUE(airLoop.addAvailabilityManager(availabilityManager1));
+  managers = airLoop.availabilityManagers();
+  ASSERT_EQ(2u, managers.size());
+  EXPECT_EQ(2u, airLoop.availabilityManagerPriority(availabilityManager1));
+  EXPECT_EQ(1u, airLoop.availabilityManagerPriority(*scheduledOn));
 
   ASSERT_TRUE(airLoop.addAvailabilityManager(availabilityManager2, 1u));
   managers = airLoop.availabilityManagers();
-  ASSERT_EQ(2u, managers.size());
+  ASSERT_EQ(3u, managers.size());
   EXPECT_EQ(availabilityManager2, managers[0]);
-  EXPECT_EQ(availabilityManager1, managers[1]);
   EXPECT_EQ(1u, airLoop.availabilityManagerPriority(availabilityManager2));
-  EXPECT_EQ(2u, airLoop.availabilityManagerPriority(availabilityManager1));
+  EXPECT_EQ(2u, airLoop.availabilityManagerPriority(*scheduledOn));
+  EXPECT_EQ(3u, airLoop.availabilityManagerPriority(availabilityManager1));
 
   ASSERT_TRUE(airLoop.setAvailabilityManagerPriority(availabilityManager1, 1u));
   managers = airLoop.availabilityManagers();
-  ASSERT_EQ(2u, managers.size());
+  ASSERT_EQ(3u, managers.size());
   EXPECT_EQ(availabilityManager1, managers[0]);
-  EXPECT_EQ(availabilityManager2, managers[1]);
+  EXPECT_EQ(2u, airLoop.availabilityManagerPriority(availabilityManager2));
+  EXPECT_EQ(3u, airLoop.availabilityManagerPriority(*scheduledOn));
 
   ASSERT_TRUE(availabilityManager1.loop());
   auto owningAirLoop = availabilityManager1.airLoopHVAC();
@@ -113,18 +122,23 @@ TEST_F(EPModelFixture, AirLoopHVAC_AvailabilityManagerApis) {
 
   ASSERT_TRUE(airLoop.removeAvailabilityManager(availabilityManager2));
   managers = airLoop.availabilityManagers();
-  ASSERT_EQ(1u, managers.size());
+  ASSERT_EQ(2u, managers.size());
   EXPECT_EQ(availabilityManager1, managers.front());
 
   ASSERT_TRUE(airLoop.removeAvailabilityManager(1u));
-  EXPECT_TRUE(airLoop.availabilityManagers().empty());
+  managers = airLoop.availabilityManagers();
+  ASSERT_EQ(1u, managers.size());
+  EXPECT_TRUE(managers.front().optionalCast<AvailabilityManagerScheduledOn>());
 
   ASSERT_TRUE(airLoop.setAvailabilityManagers({availabilityManager2, availabilityManager1}));
   managers = airLoop.availabilityManagers();
-  ASSERT_EQ(2u, managers.size());
+  ASSERT_EQ(3u, managers.size());
   EXPECT_EQ(availabilityManager2, managers[0]);
   EXPECT_EQ(availabilityManager1, managers[1]);
+  EXPECT_TRUE(managers[2].optionalCast<AvailabilityManagerScheduledOn>());
 
   airLoop.resetAvailabilityManagers();
-  EXPECT_TRUE(airLoop.availabilityManagers().empty());
+  managers = airLoop.availabilityManagers();
+  ASSERT_EQ(1u, managers.size());
+  EXPECT_TRUE(managers.front().optionalCast<AvailabilityManagerScheduledOn>());
 }

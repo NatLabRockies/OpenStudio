@@ -7,7 +7,7 @@
 #define EPMODEL_EXTERNALINTERFACESCHEDULE_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,7 @@ namespace detail {
 class ExternalInterfaceSchedule_Impl;
 }
 
-class EPMODEL_API ExternalInterfaceSchedule : public ModelObject
+class EPMODEL_API ExternalInterfaceSchedule : public Schedule
 {
  public:
   explicit ExternalInterfaceSchedule(const Model& model, double initialValue);

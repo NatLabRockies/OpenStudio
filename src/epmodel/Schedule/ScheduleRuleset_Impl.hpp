@@ -6,16 +6,16 @@
 #ifndef EPMODEL_SCHEDULERULESET_IMPL_HPP
 #define EPMODEL_SCHEDULERULESET_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 namespace detail {
 
-class EPMODEL_API ScheduleRuleset_Impl : public ModelObject_Impl
+class EPMODEL_API ScheduleRuleset_Impl : public Schedule_Impl
 {
  public:
-  using ModelObject_Impl::ModelObject_Impl;
+  using Schedule_Impl::Schedule_Impl;
   virtual ~ScheduleRuleset_Impl() override = default;
 };
 

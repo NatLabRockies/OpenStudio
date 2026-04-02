@@ -16,16 +16,16 @@ namespace openstudio {
 namespace epmodel {
 
 ExternalInterfaceSchedule::ExternalInterfaceSchedule(const Model& model, double initialValue)
-  : ModelObject(ExternalInterfaceSchedule::iddObjectType(), model) {
+  : Schedule(ExternalInterfaceSchedule::iddObjectType(), model) {
   OS_ASSERT(setInitialValue(initialValue));
 }
 
-ExternalInterfaceSchedule::ExternalInterfaceSchedule(const Model& model) : ModelObject(ExternalInterfaceSchedule::iddObjectType(), model) {
+ExternalInterfaceSchedule::ExternalInterfaceSchedule(const Model& model) : Schedule(ExternalInterfaceSchedule::iddObjectType(), model) {
   OS_ASSERT(setInitialValue(0.0));
 }
 
 ExternalInterfaceSchedule::ExternalInterfaceSchedule(std::shared_ptr<detail::ExternalInterfaceSchedule_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : Schedule(std::move(impl)) {}
 
 IddObjectType ExternalInterfaceSchedule::iddObjectType() {
   return IddObjectType::ExternalInterface_Schedule;

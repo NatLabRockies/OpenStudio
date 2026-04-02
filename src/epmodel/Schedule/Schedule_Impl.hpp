@@ -3,24 +3,20 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#ifndef EPMODEL_EXTERNALINTERFACESCHEDULE_IMPL_HPP
-#define EPMODEL_EXTERNALINTERFACESCHEDULE_IMPL_HPP
+#ifndef EPMODEL_SCHEDULE_IMPL_HPP
+#define EPMODEL_SCHEDULE_IMPL_HPP
 
-#include "Schedule/Schedule_Impl.hpp"
+#include "ModelObject_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 namespace detail {
 
-class EPMODEL_API ExternalInterfaceSchedule_Impl : public Schedule_Impl
+class EPMODEL_API Schedule_Impl : public ModelObject_Impl
 {
  public:
-  using Schedule_Impl::Schedule_Impl;
-  virtual ~ExternalInterfaceSchedule_Impl() override = default;
-
-  // Initial Value accessors
-  double initialValue() const;
-  bool setInitialValue(double initialValue);
+  using ModelObject_Impl::ModelObject_Impl;
+  virtual ~Schedule_Impl() override = default;
 };
 
 }  // namespace detail

@@ -17,21 +17,21 @@ namespace epmodel {
 
   ExternalInterfaceFunctionalMockupUnitExportToSchedule::ExternalInterfaceFunctionalMockupUnitExportToSchedule(const Model& model,
                                                                                                                const std::string& fMUVariableName)
-    : ModelObject(ExternalInterfaceFunctionalMockupUnitExportToSchedule::iddObjectType(), model) {
+    : Schedule(ExternalInterfaceFunctionalMockupUnitExportToSchedule::iddObjectType(), model) {
     OS_ASSERT(setFMUVariableName(fMUVariableName));
   }
 
   ExternalInterfaceFunctionalMockupUnitExportToSchedule::ExternalInterfaceFunctionalMockupUnitExportToSchedule(const Model& model,
                                                                                                                const std::string& fMUVariableName,
                                                                                                                double initialValue)
-    : ModelObject(ExternalInterfaceFunctionalMockupUnitExportToSchedule::iddObjectType(), model) {
+    : Schedule(ExternalInterfaceFunctionalMockupUnitExportToSchedule::iddObjectType(), model) {
     OS_ASSERT(setFMUVariableName(fMUVariableName));
     OS_ASSERT(setInitialValue(initialValue));
   }
 
   ExternalInterfaceFunctionalMockupUnitExportToSchedule::ExternalInterfaceFunctionalMockupUnitExportToSchedule(
     std::shared_ptr<detail::ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl> impl)
-    : ModelObject(std::move(impl)) {}
+    : Schedule(std::move(impl)) {}
 
   IddObjectType ExternalInterfaceFunctionalMockupUnitExportToSchedule::iddObjectType() {
     return IddObjectType::ExternalInterface_FunctionalMockupUnitExport_To_Schedule;

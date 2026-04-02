@@ -7,7 +7,7 @@
 #define EPMODEL_AVAILABILITYMANAGERSCHEDULEDOFF_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "AvailabilityManager/AvailabilityManager.hpp"
 
 #include <memory>
 
@@ -15,12 +15,13 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Schedule;
 
 namespace detail {
 class AvailabilityManagerScheduledOff_Impl;
 }
 
-class EPMODEL_API AvailabilityManagerScheduledOff : public ModelObject
+class EPMODEL_API AvailabilityManagerScheduledOff : public AvailabilityManager
 {
  public:
   explicit AvailabilityManagerScheduledOff(const Model& model);
@@ -36,8 +37,10 @@ class EPMODEL_API AvailabilityManagerScheduledOff : public ModelObject
   // Schema Alignment Notes:
   // - API: Preserves model-counterpart class naming for AvailabilityManagerScheduledOff.
   // - Field Mapping: EnergyPlus AvailabilityManager:ScheduledOff exposes only Schedule Name beyond Name.
+  // - Implemented Parity: `schedule()` and `setSchedule(...)` now expose the shared schedule relationship surface.
   // - ForwardTranslator evidence: model::ForwardTranslateAvailabilityManagerScheduledOff maps only Schedule Name.
-  // - TODO(parity): Keep Schedule Name as a relationship field for a later relationship-focused pass.
+  Schedule schedule() const;
+  bool setSchedule(Schedule& schedule);
 
  protected:
   using ImplType = detail::AvailabilityManagerScheduledOff_Impl;

@@ -14,6 +14,8 @@
 #include "../ModelObject/AirLoopHVACSupplyPath_Impl.hpp"
 #include "../ModelObject/SizingSystem.hpp"
 #include "../ModelObject/SizingSystem_Impl.hpp"
+#include "../AvailabilityManager/AvailabilityManagerScheduledOn.hpp"
+#include "../AvailabilityManager/AvailabilityManagerScheduledOn_Impl.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightCycle.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightCycle_Impl.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
@@ -28,6 +30,10 @@
 #include "../StraightComponent/Node.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../Schedule/ScheduleCompact.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
+#include "../Schedule/ScheduleRuleset.hpp"
 #include "../SetpointManager/SetpointManagerMixedAir.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
@@ -922,6 +928,63 @@ TEST_F(EPModelFixture, AirLoopHVAC_SizingSystem_IsLoopOwnedCompanionObject) {
   const auto sizingSystems = model.getConcreteModelObjects<SizingSystem>();
   ASSERT_EQ(1u, sizingSystems.size());
   EXPECT_EQ(sizingSystem, sizingSystems.front());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_AvailabilitySchedule_IsBackedByCanonicalScheduledOnManager) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+
+  auto schedule = airLoop.availabilitySchedule();
+  auto defaultConstant = schedule.optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(defaultConstant);
+  EXPECT_DOUBLE_EQ(1.0, defaultConstant->value());
+
+  auto managers = airLoop.availabilityManagers();
+  ASSERT_EQ(1u, managers.size());
+  auto scheduledOn = managers.front().optionalCast<AvailabilityManagerScheduledOn>();
+  ASSERT_TRUE(scheduledOn);
+  EXPECT_EQ(schedule.cast<ModelObject>(), scheduledOn->schedule().cast<ModelObject>());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_SetAvailabilitySchedule_UsesScheduledOnManager) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ScheduleCompact compactSchedule(model);
+  ASSERT_TRUE(compactSchedule.setToConstantValue(0.4));
+
+  EXPECT_TRUE(airLoop.setAvailabilitySchedule(compactSchedule));
+  EXPECT_EQ(compactSchedule.cast<ModelObject>(), airLoop.availabilitySchedule().cast<ModelObject>());
+
+  auto managers = airLoop.availabilityManagers();
+  ASSERT_EQ(1u, managers.size());
+  auto scheduledOn = managers.front().optionalCast<AvailabilityManagerScheduledOn>();
+  ASSERT_TRUE(scheduledOn);
+  EXPECT_EQ(compactSchedule.cast<ModelObject>(), scheduledOn->schedule().cast<ModelObject>());
+
+  ScheduleRuleset rulesetSchedule(model);
+  EXPECT_TRUE(airLoop.setAvailabilitySchedule(rulesetSchedule));
+  EXPECT_EQ(rulesetSchedule.cast<ModelObject>(), airLoop.availabilitySchedule().cast<ModelObject>());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_AvailabilityManagerMutators_PreserveCanonicalScheduledOnManager) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AvailabilityManagerNightCycle nightCycle(model);
+
+  EXPECT_TRUE(airLoop.addAvailabilityManager(nightCycle));
+  EXPECT_EQ(2u, airLoop.availabilityManagers().size());
+
+  airLoop.resetAvailabilityManagers();
+  auto managersAfterReset = airLoop.availabilityManagers();
+  ASSERT_EQ(1u, managersAfterReset.size());
+  EXPECT_TRUE(managersAfterReset.front().optionalCast<AvailabilityManagerScheduledOn>());
+
+  auto scheduledOn = managersAfterReset.front().cast<AvailabilityManagerScheduledOn>();
+  EXPECT_TRUE(airLoop.removeAvailabilityManager(scheduledOn));
+
+  auto managersAfterRemove = airLoop.availabilityManagers();
+  ASSERT_EQ(1u, managersAfterRemove.size());
+  EXPECT_TRUE(managersAfterRemove.front().optionalCast<AvailabilityManagerScheduledOn>());
 }
 
 TEST_F(EPModelFixture, AirLoopHVAC_Canonicalize_DeduplicatesKeyedCompanions) {

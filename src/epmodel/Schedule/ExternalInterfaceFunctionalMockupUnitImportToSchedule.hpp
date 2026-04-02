@@ -7,7 +7,7 @@
 #define EPMODEL_EXTERNALINTERFACEFUNCTIONALMOCKUPUNITIMPORTTOSCHEDULE_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,7 @@ namespace epmodel {
     class ExternalInterfaceFunctionalMockupUnitImportToSchedule_Impl;
   }
 
-  class EPMODEL_API ExternalInterfaceFunctionalMockupUnitImportToSchedule : public ModelObject
+  class EPMODEL_API ExternalInterfaceFunctionalMockupUnitImportToSchedule : public Schedule
   {
    public:
     explicit ExternalInterfaceFunctionalMockupUnitImportToSchedule(const Model& model);

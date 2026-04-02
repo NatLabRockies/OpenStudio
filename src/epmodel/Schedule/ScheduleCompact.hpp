@@ -7,7 +7,7 @@
 #define EPMODEL_SCHEDULECOMPACT_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -22,7 +22,7 @@ namespace epmodel {
     class ScheduleCompact_Impl;
   }
 
-  class EPMODEL_API ScheduleCompact : public ModelObject
+  class EPMODEL_API ScheduleCompact : public Schedule
   {
    public:
     explicit ScheduleCompact(const Model& model);

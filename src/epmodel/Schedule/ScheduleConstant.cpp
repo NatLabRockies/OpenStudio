@@ -15,11 +15,11 @@
 namespace openstudio {
 namespace epmodel {
 
-ScheduleConstant::ScheduleConstant(const Model& model) : ModelObject(ScheduleConstant::iddObjectType(), model) {
+ScheduleConstant::ScheduleConstant(const Model& model) : Schedule(ScheduleConstant::iddObjectType(), model) {
   OS_ASSERT(setValue(0.0));
 }
 
-ScheduleConstant::ScheduleConstant(std::shared_ptr<detail::ScheduleConstant_Impl> impl) : ModelObject(std::move(impl)) {}
+ScheduleConstant::ScheduleConstant(std::shared_ptr<detail::ScheduleConstant_Impl> impl) : Schedule(std::move(impl)) {}
 
 IddObjectType ScheduleConstant::iddObjectType() {
   return IddObjectType::Schedule_Constant;
