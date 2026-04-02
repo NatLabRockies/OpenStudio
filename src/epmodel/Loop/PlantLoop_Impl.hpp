@@ -16,11 +16,14 @@ namespace epmodel {
 
   class Branch;
   class BranchList;
+  class AvailabilityManager;
+  class AvailabilityManagerAssignmentList;
   class ConnectorMixer;
   class ConnectorSplitter;
   class HVACComponent;
   class Mixer;
   class Node;
+  class SizingPlant;
   class Splitter;
 
   namespace detail {
@@ -103,6 +106,20 @@ namespace epmodel {
       bool setCommonPipeSimulation(const std::string& value);
       bool isCommonPipeSimulationDefaulted() const;
       void resetCommonPipeSimulation();
+
+      openstudio::epmodel::Node loopTemperatureSetpointNode() const;
+      bool setLoopTemperatureSetpointNode(openstudio::epmodel::Node& node);
+      openstudio::epmodel::SizingPlant sizingPlant() const;
+      openstudio::epmodel::AvailabilityManagerAssignmentList availabilityManagerAssignmentList() const;
+      std::vector<openstudio::epmodel::AvailabilityManager> availabilityManagers() const;
+      bool addAvailabilityManager(const openstudio::epmodel::AvailabilityManager& availabilityManager);
+      bool addAvailabilityManager(const openstudio::epmodel::AvailabilityManager& availabilityManager, unsigned priority);
+      bool setAvailabilityManagers(const std::vector<openstudio::epmodel::AvailabilityManager>& availabilityManagers);
+      void resetAvailabilityManagers();
+      bool removeAvailabilityManager(const openstudio::epmodel::AvailabilityManager& availabilityManager);
+      bool removeAvailabilityManager(unsigned priority);
+      bool setAvailabilityManagerPriority(const openstudio::epmodel::AvailabilityManager& availabilityManager, unsigned priority);
+      unsigned availabilityManagerPriority(const openstudio::epmodel::AvailabilityManager& availabilityManager) const;
 
       void doCanonicalize(LoadContext& context) override;
 

@@ -22,6 +22,8 @@ namespace epmodel {
   class Mixer;
   class ModelObject;
   class Node;
+  class SizingPlant;
+  class AvailabilityManager;
   class Splitter;
 
   namespace detail {
@@ -42,13 +44,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. Core loop operating scalars, supply/demand topology accessors, and branch add/remove APIs are present, but large portions of the canonical PlantLoop control and operation-scheme surface are still absent.
+    // - Status: Partial Parity. Core loop operating scalars, supply/demand topology accessors, branch add/remove APIs, setpoint-node helpers, sizing ownership, and availability-manager ownership are present, but the canonical PlantLoop surface is still incomplete.
     // - Canonical Counterpart: openstudio::model::PlantLoop.
-    // - Implemented Parity: `loadDistributionScheme`, `fluidType`, glycol concentration, loop temperature/flow/volume scalars, `commonPipeSimulation`, supply/demand node accessors, `supplyMixer`, `supplySplitter`, `demandMixer`, `demandSplitter`, `supplyComponents`, `demandComponents`, and branch add/remove APIs preserve the main canonical plant-loop topology contract.
-    // - Documented Delta: Public parity does not yet include setpoint-node helpers, operation-scheme/schedule APIs, sizing-plant access, clone/remove specializations, or autosized-result helpers from canonical `openstudio::model::PlantLoop`.
+    // - Implemented Parity: `loadDistributionScheme`, `fluidType`, glycol concentration, loop temperature/flow/volume scalars, `commonPipeSimulation`, setpoint-node helpers, sizing ownership, supply/demand node accessors, supply/demand mixers and splitters, supply/demand traversal, availability-manager ownership, and branch add/remove APIs preserve the main canonical plant-loop topology contract.
+    // - Documented Delta: Plant operation-scheme and operation-schedule APIs remain deferred because epmodel `PlantLoop` wraps the EnergyPlus-backed `PlantLoop`/`PlantEquipmentOperationSchemes` storage shape rather than the canonical `OS:PlantLoop` split fields; clone/remove specializations and autosized-result helpers also remain omitted.
     // - Field/Storage Mapping: Branch-name and connector linkage remain expressed through topology APIs over EnergyPlus-backed loop structure instead of exposing new scalar string accessors for mixer/splitter branch fields.
     // - Evidence: `src/model/PlantLoop.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslatePlantLoop.cpp` define the canonical public surface and direct scalar mappings that this epmodel wrapper currently preserves in part.
-    // - Remaining Parity Work: Add the omitted setpoint-node, operation-scheme, sizing, clone/remove, and autosized-result APIs once plant-loop behavior parity is implemented beyond the current scalar/topology subset.
+    // - Remaining Parity Work: Add plant operation-scheme and operation-schedule parity through the EnergyPlus-backed `PlantEquipmentOperationSchemes` owner object, then follow with clone/remove specializations and autosized-result helpers.
 
     std::string loadDistributionScheme() const;
     bool setLoadDistributionScheme(const std::string& scheme);
@@ -85,6 +87,9 @@ namespace epmodel {
     bool isCommonPipeSimulationDefaulted() const;
     void resetCommonPipeSimulation();
 
+    Node loopTemperatureSetpointNode();
+    bool setLoopTemperatureSetpointNode(Node& node);
+
     Node supplyInletNode() const override;
     Node supplyOutletNode() const override;
     std::vector<Node> supplyOutletNodes() const override;
@@ -109,6 +114,16 @@ namespace epmodel {
     bool removeSupplyBranchWithComponent(HVACComponent hvacComponent);
     bool addDemandBranchForComponent(HVACComponent hvacComponent, bool tertiary = false);
     bool removeDemandBranchWithComponent(HVACComponent hvacComponent);
+    SizingPlant sizingPlant() const;
+    std::vector<AvailabilityManager> availabilityManagers() const;
+    bool addAvailabilityManager(const AvailabilityManager& availabilityManager);
+    bool addAvailabilityManager(const AvailabilityManager& availabilityManager, unsigned priority);
+    bool setAvailabilityManagers(const std::vector<AvailabilityManager>& availabilityManagers);
+    void resetAvailabilityManagers();
+    bool removeAvailabilityManager(const AvailabilityManager& availabilityManager);
+    bool removeAvailabilityManager(unsigned priority);
+    bool setAvailabilityManagerPriority(const AvailabilityManager& availabilityManager, unsigned priority);
+    unsigned availabilityManagerPriority(const AvailabilityManager& availabilityManager) const;
 
    protected:
     using ImplType = detail::PlantLoop_Impl;

@@ -5,20 +5,27 @@
 
 #include <gtest/gtest.h>
 
+#include "../AvailabilityManager/AvailabilityManagerNightCycle.hpp"
 #include "EPModelFixture.hpp"
+#include "../AvailabilityManager/AvailabilityManagerScheduledOn.hpp"
 #include "../Model.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../Loop/PlantLoop_Impl.hpp"
 #include "../Mixer/Mixer.hpp"
+#include "../ModelObject/AvailabilityManagerAssignmentList.hpp"
+#include "../ModelObject/AvailabilityManagerAssignmentList_Impl.hpp"
 #include "../Splitter/Splitter.hpp"
 #include "../ModelObject/Branch.hpp"
 #include "../ModelObject/BranchList.hpp"
 #include "../ModelObject/BranchList_Impl.hpp"
+#include "../ModelObject/SizingPlant.hpp"
+#include "../ModelObject/SizingPlant_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/PipeAdiabatic.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 
 #include <utilities/idd/PlantLoop_FieldEnums.hxx>
+#include <utilities/idd/Sizing_Plant_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -26,6 +33,22 @@ TEST_F(EPModelFixture, PlantLoop_DefaultConstructor) {
   Model model;
   PlantLoop plantLoop(model);
   EXPECT_EQ(PlantLoop::iddObjectType(), plantLoop.iddObject().type());
+}
+
+TEST_F(EPModelFixture, PlantLoop_DefaultConstructor_CreatesCanonicalCompanions) {
+  Model model;
+  PlantLoop plantLoop(model);
+
+  EXPECT_EQ(plantLoop.supplyOutletNode(), plantLoop.loopTemperatureSetpointNode());
+
+  auto sizingPlant = plantLoop.sizingPlant();
+  auto sizingPlantLoop = sizingPlant.getModelObjectTarget<PlantLoop>(openstudio::Sizing_PlantFields::PlantorCondenserLoopName);
+  ASSERT_TRUE(sizingPlantLoop);
+  EXPECT_EQ(plantLoop, *sizingPlantLoop);
+
+  auto assignmentList = plantLoop.getModelObjectTarget<AvailabilityManagerAssignmentList>(openstudio::PlantLoopFields::AvailabilityManagerListName);
+  ASSERT_TRUE(assignmentList);
+  EXPECT_TRUE(plantLoop.availabilityManagers().empty());
 }
 
 TEST_F(EPModelFixture, PlantLoop_ScalarAccessors_RoundTrip) {
@@ -69,6 +92,32 @@ TEST_F(EPModelFixture, PlantLoop_CanonicalTopology) {
   EXPECT_EQ(plantLoop.supplyOutletNode(), supply.back().cast<Node>());
   EXPECT_EQ(plantLoop.demandInletNode(), demand.front().cast<Node>());
   EXPECT_EQ(plantLoop.demandOutletNode(), demand.back().cast<Node>());
+}
+
+TEST_F(EPModelFixture, PlantLoop_AvailabilityManagerMutators_RoundTrip) {
+  Model model;
+  PlantLoop plantLoop(model);
+  AvailabilityManagerScheduledOn firstManager(model);
+  AvailabilityManagerScheduledOn secondManager(model);
+  AvailabilityManagerNightCycle nightCycleManager(model);
+
+  EXPECT_TRUE(plantLoop.addAvailabilityManager(firstManager));
+  EXPECT_TRUE(plantLoop.addAvailabilityManager(secondManager));
+  EXPECT_FALSE(plantLoop.addAvailabilityManager(nightCycleManager));
+  ASSERT_EQ(2u, plantLoop.availabilityManagers().size());
+  EXPECT_EQ(1u, plantLoop.availabilityManagerPriority(firstManager));
+  EXPECT_EQ(2u, plantLoop.availabilityManagerPriority(secondManager));
+
+  EXPECT_TRUE(plantLoop.setAvailabilityManagerPriority(secondManager, 1u));
+  EXPECT_EQ(1u, plantLoop.availabilityManagerPriority(secondManager));
+  EXPECT_EQ(2u, plantLoop.availabilityManagerPriority(firstManager));
+
+  EXPECT_TRUE(plantLoop.removeAvailabilityManager(firstManager));
+  ASSERT_EQ(1u, plantLoop.availabilityManagers().size());
+  EXPECT_EQ(secondManager.cast<ModelObject>(), plantLoop.availabilityManagers().front().cast<ModelObject>());
+
+  plantLoop.resetAvailabilityManagers();
+  EXPECT_TRUE(plantLoop.availabilityManagers().empty());
 }
 
 TEST_F(EPModelFixture, PlantLoop_AddRemoveSupplyBranchForStraightComponent) {
@@ -190,6 +239,37 @@ TEST_F(EPModelFixture, PlantLoop_Canonicalize_TwoBranchListsBecomeParallelEquipm
   EXPECT_EQ(2u, plantLoop.supplyMixer().inletModelObjects().size());
   EXPECT_EQ(2u, plantLoop.demandSplitter().outletModelObjects().size());
   EXPECT_EQ(2u, plantLoop.demandMixer().inletModelObjects().size());
+}
+
+TEST_F(EPModelFixture, PlantLoop_Canonicalize_RepairsSetpointAndDeduplicatesSizingPlant) {
+  Model model;
+  PlantLoop plantLoop(model);
+
+  ASSERT_TRUE(plantLoop.setString(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName, "Missing Setpoint Node"));
+
+  SizingPlant duplicateSizingPlant(model, plantLoop);
+
+  unsigned attachedSizingPlantCount = 0u;
+  for (const auto& sizingPlant : model.getConcreteModelObjects<SizingPlant>()) {
+    auto sizingPlantLoop = sizingPlant.getModelObjectTarget<PlantLoop>(openstudio::Sizing_PlantFields::PlantorCondenserLoopName);
+    if (sizingPlantLoop && (*sizingPlantLoop == plantLoop)) {
+      ++attachedSizingPlantCount;
+    }
+  }
+  EXPECT_EQ(2u, attachedSizingPlantCount);
+
+  auto report = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(0u, report.errorCount);
+  EXPECT_EQ(plantLoop.supplyOutletNode(), plantLoop.loopTemperatureSetpointNode());
+
+  attachedSizingPlantCount = 0u;
+  for (const auto& sizingPlant : model.getConcreteModelObjects<SizingPlant>()) {
+    auto sizingPlantLoop = sizingPlant.getModelObjectTarget<PlantLoop>(openstudio::Sizing_PlantFields::PlantorCondenserLoopName);
+    if (sizingPlantLoop && (*sizingPlantLoop == plantLoop)) {
+      ++attachedSizingPlantCount;
+    }
+  }
+  EXPECT_EQ(1u, attachedSizingPlantCount);
 }
 
 TEST_F(EPModelFixture, PlantLoop_AddDemandBranchRejectsTertiaryForStraightComponent) {

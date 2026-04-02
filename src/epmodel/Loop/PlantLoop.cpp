@@ -7,6 +7,13 @@
 #include "Loop/PlantLoop_Impl.hpp"
 
 #include "Model.hpp"
+#include "AvailabilityManager/AvailabilityManager.hpp"
+#include "ModelObject/AvailabilityManagerAssignmentList.hpp"
+#include "ModelObject/AvailabilityManagerAssignmentList_Impl.hpp"
+#include "ModelObject/PlantEquipmentOperationSchemes.hpp"
+#include "ModelObject/PlantEquipmentOperationSchemes_Impl.hpp"
+#include "ModelObject/SizingPlant.hpp"
+#include "ModelObject/SizingPlant_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 #include "ModelObject/Branch.hpp"
 #include "ModelObject/Branch_Impl.hpp"
@@ -35,6 +42,7 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/OS_PlantLoop_FieldEnums.hxx>
 #include <utilities/idd/PlantLoop_FieldEnums.hxx>
+#include <utilities/idd/Sizing_Plant_FieldEnums.hxx>
 
 namespace openstudio {
 namespace epmodel {
@@ -154,6 +162,14 @@ namespace epmodel {
     getImpl<detail::PlantLoop_Impl>()->resetCommonPipeSimulation();
   }
 
+  Node PlantLoop::loopTemperatureSetpointNode() {
+    return getImpl<detail::PlantLoop_Impl>()->loopTemperatureSetpointNode();
+  }
+
+  bool PlantLoop::setLoopTemperatureSetpointNode(Node& node) {
+    return getImpl<detail::PlantLoop_Impl>()->setLoopTemperatureSetpointNode(node);
+  }
+
   Node PlantLoop::supplyInletNode() const {
     return getImpl<detail::PlantLoop_Impl>()->supplyInletNode();
   }
@@ -228,12 +244,85 @@ namespace epmodel {
     return getImpl<detail::PlantLoop_Impl>()->removeDemandBranchWithComponent(hvacComponent);
   }
 
+  SizingPlant PlantLoop::sizingPlant() const {
+    return getImpl<detail::PlantLoop_Impl>()->sizingPlant();
+  }
+
+  std::vector<AvailabilityManager> PlantLoop::availabilityManagers() const {
+    return getImpl<detail::PlantLoop_Impl>()->availabilityManagers();
+  }
+
+  bool PlantLoop::addAvailabilityManager(const AvailabilityManager& availabilityManager) {
+    return getImpl<detail::PlantLoop_Impl>()->addAvailabilityManager(availabilityManager);
+  }
+
+  bool PlantLoop::addAvailabilityManager(const AvailabilityManager& availabilityManager, unsigned priority) {
+    return getImpl<detail::PlantLoop_Impl>()->addAvailabilityManager(availabilityManager, priority);
+  }
+
+  bool PlantLoop::setAvailabilityManagers(const std::vector<AvailabilityManager>& availabilityManagers) {
+    return getImpl<detail::PlantLoop_Impl>()->setAvailabilityManagers(availabilityManagers);
+  }
+
+  void PlantLoop::resetAvailabilityManagers() {
+    getImpl<detail::PlantLoop_Impl>()->resetAvailabilityManagers();
+  }
+
+  bool PlantLoop::removeAvailabilityManager(const AvailabilityManager& availabilityManager) {
+    return getImpl<detail::PlantLoop_Impl>()->removeAvailabilityManager(availabilityManager);
+  }
+
+  bool PlantLoop::removeAvailabilityManager(unsigned priority) {
+    return getImpl<detail::PlantLoop_Impl>()->removeAvailabilityManager(priority);
+  }
+
+  bool PlantLoop::setAvailabilityManagerPriority(const AvailabilityManager& availabilityManager, unsigned priority) {
+    return getImpl<detail::PlantLoop_Impl>()->setAvailabilityManagerPriority(availabilityManager, priority);
+  }
+
+  unsigned PlantLoop::availabilityManagerPriority(const AvailabilityManager& availabilityManager) const {
+    return getImpl<detail::PlantLoop_Impl>()->availabilityManagerPriority(availabilityManager);
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+    bool branchContainsNode(Model model, const Branch& branch, const Node& node, const Node& inletNode, const Node& outletNode, bool isInletBranch,
+                            bool isOutletBranch, bool isEquipmentBranch) {
+      const auto components = branch.components();
+      if (components.empty()) {
+        if (isEquipmentBranch) {
+          return model.getOrCreateTransientByName<Node>(branch.nameString() + " Node") == node;
+        }
+        if (isInletBranch) {
+          return inletNode == node;
+        }
+        if (isOutletBranch) {
+          return outletNode == node;
+        }
+        return false;
+      }
+
+      if (auto firstInletNode = branch.componentInletNode(0u)) {
+        if (*firstInletNode == node) {
+          return true;
+        }
+      }
+
+      for (unsigned i = 0; i < components.size(); ++i) {
+        if (auto branchOutletNode = branch.componentOutletNode(i)) {
+          if (*branchOutletNode == node) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    }
 
     // PlantLoop stores its topology in EnergyPlus branch/connective-tissue objects,
     // but the API we are trying to preserve is the higher-level OpenStudio loop API.
@@ -282,49 +371,17 @@ namespace detail {
       const auto inletNode = supplyInletNode();
       const auto outletNode = supplyOutletNode();
 
-      const auto branchContainsNode = [&](const Branch& branch, bool isInletBranch, bool isOutletBranch, bool isEquipmentBranch) {
-        const auto components = branch.components();
-        if (components.empty()) {
-          if (isEquipmentBranch) {
-            return model().getOrCreateTransientByName<Node>(branch.nameString() + " Node") == node;
-          }
-          if (isInletBranch) {
-            return inletNode == node;
-          }
-          if (isOutletBranch) {
-            return outletNode == node;
-          }
-          return false;
-        }
-
-        if (auto firstInletNode = branch.componentInletNode(0u)) {
-          if (*firstInletNode == node) {
-            return true;
-          }
-        }
-
-        for (unsigned i = 0; i < components.size(); ++i) {
-          if (auto branchOutletNode = branch.componentOutletNode(i)) {
-            if (*branchOutletNode == node) {
-              return true;
-            }
-          }
-        }
-
-        return false;
-      };
-
-      if (branchContainsNode(inletBranch, true, false, false)) {
+      if (branchContainsNode(model(), inletBranch, node, inletNode, outletNode, true, false, false)) {
         return inletBranch;
       }
 
       for (const auto& branch : equipmentBranches) {
-        if (branchContainsNode(branch, false, false, true)) {
+        if (branchContainsNode(model(), branch, node, inletNode, outletNode, false, false, true)) {
           return branch;
         }
       }
 
-      if (branchContainsNode(outletBranch, false, true, false)) {
+      if (branchContainsNode(model(), outletBranch, node, inletNode, outletNode, false, true, false)) {
         return outletBranch;
       }
 
@@ -341,49 +398,17 @@ namespace detail {
       const auto inletNode = demandInletNode();
       const auto outletNode = demandOutletNode();
 
-      const auto branchContainsNode = [&](const Branch& branch, bool isInletBranch, bool isOutletBranch, bool isEquipmentBranch) {
-        const auto components = branch.components();
-        if (components.empty()) {
-          if (isEquipmentBranch) {
-            return model().getOrCreateTransientByName<Node>(branch.nameString() + " Node") == node;
-          }
-          if (isInletBranch) {
-            return inletNode == node;
-          }
-          if (isOutletBranch) {
-            return outletNode == node;
-          }
-          return false;
-        }
-
-        if (auto firstInletNode = branch.componentInletNode(0u)) {
-          if (*firstInletNode == node) {
-            return true;
-          }
-        }
-
-        for (unsigned i = 0; i < components.size(); ++i) {
-          if (auto branchOutletNode = branch.componentOutletNode(i)) {
-            if (*branchOutletNode == node) {
-              return true;
-            }
-          }
-        }
-
-        return false;
-      };
-
-      if (branchContainsNode(inletBranch, true, false, false)) {
+      if (branchContainsNode(model(), inletBranch, node, inletNode, outletNode, true, false, false)) {
         return inletBranch;
       }
 
       for (const auto& branch : equipmentBranches) {
-        if (branchContainsNode(branch, false, false, true)) {
+        if (branchContainsNode(model(), branch, node, inletNode, outletNode, false, false, true)) {
           return branch;
         }
       }
 
-      if (branchContainsNode(outletBranch, false, true, false)) {
+      if (branchContainsNode(model(), outletBranch, node, inletNode, outletNode, false, true, false)) {
         return outletBranch;
       }
 
@@ -990,6 +1015,94 @@ namespace detail {
       OS_ASSERT(setString(openstudio::PlantLoopFields::CommonPipeSimulation, ""));
     }
 
+    Node PlantLoop_Impl::loopTemperatureSetpointNode() const {
+      auto node = getObject<PlantLoop>().getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
+      OS_ASSERT(node);
+      return *node;
+    }
+
+    bool PlantLoop_Impl::setLoopTemperatureSetpointNode(Node& node) {
+      if (node.model() != model()) {
+        return false;
+      }
+      return setPointer(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName, node.handle(), false);
+    }
+
+    SizingPlant PlantLoop_Impl::sizingPlant() const {
+      boost::optional<SizingPlant> result;
+      for (const auto& candidate : model().getConcreteModelObjects<SizingPlant>()) {
+        auto plantLoop = candidate.getModelObjectTarget<PlantLoop>(openstudio::Sizing_PlantFields::PlantorCondenserLoopName);
+        if (!plantLoop || !(*plantLoop == getObject<PlantLoop>())) {
+          continue;
+        }
+
+        if (!result) {
+          result = candidate;
+        }
+      }
+
+      OS_ASSERT(result);
+      return *result;
+    }
+
+    AvailabilityManagerAssignmentList PlantLoop_Impl::availabilityManagerAssignmentList() const {
+      auto assignmentList =
+        getObject<PlantLoop>().getModelObjectTarget<AvailabilityManagerAssignmentList>(openstudio::PlantLoopFields::AvailabilityManagerListName);
+      OS_ASSERT(assignmentList);
+      return *assignmentList;
+    }
+
+    std::vector<AvailabilityManager> PlantLoop_Impl::availabilityManagers() const {
+      return availabilityManagerAssignmentList().availabilityManagers();
+    }
+
+    bool PlantLoop_Impl::addAvailabilityManager(const AvailabilityManager& availabilityManager) {
+      const auto type = availabilityManager.iddObject().type();
+      if ((type == IddObjectType::AvailabilityManager_NightCycle) || (type == IddObjectType::AvailabilityManager_HybridVentilation)
+          || (type == IddObjectType::AvailabilityManager_NightVentilation)) {
+        return false;
+      }
+      return availabilityManagerAssignmentList().addAvailabilityManager(availabilityManager);
+    }
+
+    bool PlantLoop_Impl::addAvailabilityManager(const AvailabilityManager& availabilityManager, unsigned priority) {
+      if (!addAvailabilityManager(availabilityManager)) {
+        return false;
+      }
+      return availabilityManagerAssignmentList().setAvailabilityManagerPriority(availabilityManager, priority);
+    }
+
+    bool PlantLoop_Impl::setAvailabilityManagers(const std::vector<AvailabilityManager>& availabilityManagers) {
+      for (const auto& availabilityManager : availabilityManagers) {
+        const auto type = availabilityManager.iddObject().type();
+        if ((type == IddObjectType::AvailabilityManager_NightCycle) || (type == IddObjectType::AvailabilityManager_HybridVentilation)
+            || (type == IddObjectType::AvailabilityManager_NightVentilation)) {
+          return false;
+        }
+      }
+      return availabilityManagerAssignmentList().setAvailabilityManagers(availabilityManagers);
+    }
+
+    void PlantLoop_Impl::resetAvailabilityManagers() {
+      availabilityManagerAssignmentList().resetAvailabilityManagers();
+    }
+
+    bool PlantLoop_Impl::removeAvailabilityManager(const AvailabilityManager& availabilityManager) {
+      return availabilityManagerAssignmentList().removeAvailabilityManager(availabilityManager);
+    }
+
+    bool PlantLoop_Impl::removeAvailabilityManager(unsigned priority) {
+      return availabilityManagerAssignmentList().removeAvailabilityManager(priority);
+    }
+
+    bool PlantLoop_Impl::setAvailabilityManagerPriority(const AvailabilityManager& availabilityManager, unsigned priority) {
+      return availabilityManagerAssignmentList().setAvailabilityManagerPriority(availabilityManager, priority);
+    }
+
+    unsigned PlantLoop_Impl::availabilityManagerPriority(const AvailabilityManager& availabilityManager) const {
+      return availabilityManagerAssignmentList().availabilityManagerPriority(availabilityManager);
+    }
+
     bool PlantLoop_Impl::addSupplyBranchForComponent(HVACComponent hvacComponent) {
       if (hvacComponent.model() != model()) {
         return false;
@@ -1053,10 +1166,11 @@ namespace detail {
       }
 
       auto equipmentBranches = supplyEquipmentBranches();
+      const auto targetComponent = hvacComponent.cast<ModelObject>();
       boost::optional<Branch> targetBranch;
       for (const auto& branch : equipmentBranches) {
         const auto components = branch.components();
-        if (std::ranges::find_if(components, [&](const auto& component) { return component.handle() == hvacComponent.handle(); }) != components.end()) {
+        if (std::ranges::find(components, targetComponent) != components.end()) {
           targetBranch = branch;
           break;
         }
@@ -1103,7 +1217,16 @@ namespace detail {
       if (!keepAsDefaultBranch) {
         targetBranch->remove();
       }
-      return syncConnectorPorts(splitter, mixer, supplyInletBranch(), supplyOutletBranch(), supplyEquipmentBranches());
+
+      if (!syncConnectorPorts(splitter, mixer, supplyInletBranch(), supplyOutletBranch(), supplyEquipmentBranches())) {
+        return false;
+      }
+
+      if (!getObject<PlantLoop>().getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName)) {
+        OS_ASSERT(setPointer(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName, supplyOutletNode().handle(), false));
+      }
+
+      return true;
     }
 
     bool PlantLoop_Impl::addDemandBranchForComponent(HVACComponent hvacComponent, bool tertiary) {
@@ -1192,10 +1315,11 @@ namespace detail {
       }
 
       auto equipmentBranches = demandEquipmentBranches();
+      const auto targetComponent = hvacComponent.cast<ModelObject>();
       boost::optional<Branch> targetBranch;
       for (const auto& branch : equipmentBranches) {
         const auto components = branch.components();
-        if (std::ranges::find_if(components, [&](const auto& component) { return component.handle() == hvacComponent.handle(); }) != components.end()) {
+        if (std::ranges::find(components, targetComponent) != components.end()) {
           targetBranch = branch;
           break;
         }
@@ -1262,7 +1386,16 @@ namespace detail {
       if (!keepAsDefaultBranch) {
         targetBranch->remove();
       }
-      return syncConnectorPorts(splitter, mixer, demandInletBranch(), demandOutletBranch(), demandEquipmentBranches());
+
+      if (!syncConnectorPorts(splitter, mixer, demandInletBranch(), demandOutletBranch(), demandEquipmentBranches())) {
+        return false;
+      }
+
+      if (!getObject<PlantLoop>().getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName)) {
+        OS_ASSERT(setPointer(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName, supplyOutletNode().handle(), false));
+      }
+
+      return true;
     }
 
     void PlantLoop_Impl::doCanonicalize(LoadContext& context) {
@@ -1642,6 +1775,75 @@ namespace detail {
       }
 
       OS_ASSERT(syncConnectorPorts(*demandSplitterObject, *demandMixerObject, demandInletBranchRef, demandOutletBranchRef, demandEquipmentBranchRefs));
+
+      // PlantLoop owns one canonical setpoint anchor, one sizing object, and
+      // one availability-manager assignment list. Create or repair them here so
+      // the public loop-facing APIs can trust that these relationships exist.
+      if (auto setpointNode = plantLoop.getModelObjectTarget<Node>(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName)) {
+        (void)setpointNode;
+      } else {
+        const auto originalSetpointNodeName = plantLoop.getString(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName);
+        bool repairedByName = false;
+        if (originalSetpointNodeName && !originalSetpointNodeName->empty()) {
+          for (const auto& candidate : model().getObjectsByName(*originalSetpointNodeName, true, true)) {
+            if (auto node = candidate.optionalCast<Node>()) {
+              OS_ASSERT(setPointer(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName, node->handle(), false));
+              detail::addLoadWarning(context,
+                                     "Recovered Loop Temperature Setpoint Node for PlantLoop '" + loopName + "' by matching Node '"
+                                       + node->nameString() + "' by name.");
+              repairedByName = true;
+              break;
+            }
+          }
+        }
+
+        if (!repairedByName) {
+          OS_ASSERT(setPointer(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName, supplyOutletNode().handle(), false));
+          if (originalSetpointNodeName && !originalSetpointNodeName->empty()) {
+            detail::addLoadWarning(context,
+                                   "PlantLoop '" + loopName + "' had an invalid Loop Temperature Setpoint Node reference. Reset it to the supply outlet node.");
+          } else {
+            detail::addLoadInfo(context,
+                                "Created default Loop Temperature Setpoint Node reference for PlantLoop '" + loopName + "' on the supply outlet node.");
+          }
+        }
+      }
+
+      std::vector<SizingPlant> sizingPlantsForLoop;
+      for (const auto& candidate : model().getConcreteModelObjects<SizingPlant>()) {
+        auto ownedLoop = candidate.getModelObjectTarget<PlantLoop>(openstudio::Sizing_PlantFields::PlantorCondenserLoopName);
+        if (ownedLoop && (*ownedLoop == plantLoop)) {
+          sizingPlantsForLoop.push_back(candidate);
+        }
+      }
+
+      if (sizingPlantsForLoop.empty()) {
+        SizingPlant sizingPlant(model(), plantLoop);
+        if (!sizingPlant.setName(loopName + " Sizing Plant")) {
+          sizingPlant.setName(model().nextName(openstudio::IddObjectType::Sizing_Plant, true));
+        }
+        detail::addLoadInfo(context, "Created missing Sizing:Plant '" + sizingPlant.nameString() + "' for PlantLoop '" + loopName + "'.");
+      } else if (sizingPlantsForLoop.size() > 1u) {
+        for (unsigned i = 1u; i < sizingPlantsForLoop.size(); ++i) {
+          OS_ASSERT(sizingPlantsForLoop[i].setString(openstudio::Sizing_PlantFields::PlantorCondenserLoopName, ""));
+        }
+        detail::addLoadWarning(context,
+                               "PlantLoop '" + loopName + "' had multiple Sizing:Plant objects attached. Kept '"
+                                 + sizingPlantsForLoop.front().nameString() + "' and detached the extras.");
+      }
+
+      auto assignmentList =
+        getOrCreateTarget<AvailabilityManagerAssignmentList>(openstudio::PlantLoopFields::AvailabilityManagerListName, loopName + " Availability Manager List");
+      if (assignmentList.nameString().empty()) {
+        assignmentList.setName(loopName + " Availability Manager List");
+      }
+      assignmentList.getImpl<detail::AvailabilityManagerAssignmentList_Impl>()->canonicalize(context);
+
+      auto operationSchemes = getOrCreateTarget<PlantEquipmentOperationSchemes>(openstudio::PlantLoopFields::PlantEquipmentOperationSchemeName,
+                                                                                loopName + " Operation Schemes");
+      if (operationSchemes.nameString().empty()) {
+        operationSchemes.setName(loopName + " Operation Schemes");
+      }
 
     }
 
