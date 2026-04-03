@@ -13,6 +13,7 @@
 namespace openstudio {
 namespace epmodel {
 class Node;
+class Schedule;
 namespace detail {
 
 class EPMODEL_API FanComponentModel_Impl : public StraightComponent_Impl
@@ -24,6 +25,8 @@ class EPMODEL_API FanComponentModel_Impl : public StraightComponent_Impl
   unsigned inletPort() const override;
   unsigned outletPort() const override;
   bool addToNode(Node& node) override;
+  openstudio::epmodel::Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(openstudio::epmodel::Schedule& schedule);
 
   std::vector<std::string> vFDEfficiencyTypeValues() const;
 

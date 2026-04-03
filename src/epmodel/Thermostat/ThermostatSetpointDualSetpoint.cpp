@@ -134,10 +134,8 @@ namespace epmodel {
     }
 
     bool ThermostatSetpointDualSetpoint_Impl::setHeatingSetpointTemperatureSchedule(openstudio::epmodel::Schedule& schedule) {
-      if (schedule.model() != model()) {
-        return false;
-      }
-      return setPointer(openstudio::ThermostatSetpoint_DualSetpointFields::HeatingSetpointTemperatureScheduleName, schedule.handle(), false);
+      return ModelObject_Impl::setSchedule(openstudio::ThermostatSetpoint_DualSetpointFields::HeatingSetpointTemperatureScheduleName,
+                                           "ThermostatSetpointDualSetpoint", "Heating Setpoint Temperature", schedule);
     }
 
     void ThermostatSetpointDualSetpoint_Impl::resetHeatingSetpointTemperatureSchedule() {
@@ -145,10 +143,8 @@ namespace epmodel {
     }
 
     bool ThermostatSetpointDualSetpoint_Impl::setCoolingSetpointTemperatureSchedule(openstudio::epmodel::Schedule& schedule) {
-      if (schedule.model() != model()) {
-        return false;
-      }
-      return setPointer(openstudio::ThermostatSetpoint_DualSetpointFields::CoolingSetpointTemperatureScheduleName, schedule.handle(), false);
+      return ModelObject_Impl::setSchedule(openstudio::ThermostatSetpoint_DualSetpointFields::CoolingSetpointTemperatureScheduleName,
+                                           "ThermostatSetpointDualSetpoint", "Cooling Setpoint Temperature", schedule);
     }
 
     void ThermostatSetpointDualSetpoint_Impl::resetCoolingSetpointTemperatureSchedule() {

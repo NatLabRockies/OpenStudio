@@ -18,6 +18,7 @@ namespace epmodel {
 
 class Model;
 class Node;
+class Schedule;
 
 namespace detail {
 class FanOnOff_Impl;
@@ -39,13 +40,16 @@ class EPMODEL_API FanOnOff : public StraightComponent
   bool addToNode(Node& node);
 
   // Schema Alignment Notes:
-  // - Status: Partial Parity. Scalar fan properties and node insertion are aligned, but the canonical schedule, curve, and airflow-network surface is still absent.
+  // - Status: Partial Parity. Scalar fan properties, availability-schedule wiring, and node insertion are aligned, but the canonical curve and airflow-network surface is still absent.
   // - Canonical Counterpart: openstudio::model::FanOnOff.
-  // - Implemented Parity: The fan total-efficiency, fan-efficiency, pressure-rise, maximum-flow-rate, motor, and end-use-subcategory accessors preserve the canonical scalar field behavior, including autosize/reset semantics for flow rate.
-  // - Documented Delta: Epmodel does not yet expose the canonical availability-schedule constructors/accessors, curve linkage APIs, or airflow-network fan helper surface from `openstudio::model::FanOnOff`.
-  // - Field/Storage Mapping: Scalar fields map directly to `Fan:OnOff` storage in EnergyPlus.
+  // - Implemented Parity: The availability-schedule, fan total-efficiency, fan-efficiency, pressure-rise, maximum-flow-rate, motor, and end-use-subcategory accessors preserve the canonical scalar field behavior, including autosize/reset semantics for flow rate.
+  // - Documented Delta: Epmodel still omits the curve linkage APIs and airflow-network fan helper surface from `openstudio::model::FanOnOff`.
+  // - Field/Storage Mapping: The availability schedule is represented as a typed `Schedule` relationship, while the scalar fields map directly to `Fan:OnOff` storage in EnergyPlus.
   // - Evidence: `src/model/FanOnOff.hpp`, `src/model/FanOnOff.cpp`, `src/model/test/FanOnOff_GTest.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFanOnOff.cpp` establish the canonical API and translation behavior.
-  // - Remaining Parity Work: Add the schedule, curve, and airflow-network relationship APIs once epmodel relationship coverage can support them cleanly.
+  // - Remaining Parity Work: Add the curve and airflow-network relationship APIs once epmodel relationship coverage can support them cleanly.
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+
   double fanTotalEfficiency() const;
   bool isFanTotalEfficiencyDefaulted() const;
   bool setFanTotalEfficiency(double fanTotalEfficiency);

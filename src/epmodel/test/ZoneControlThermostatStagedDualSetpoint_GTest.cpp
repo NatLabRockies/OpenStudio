@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Thermostat/ZoneControlThermostatStagedDualSetpoint.hpp"
 
@@ -74,14 +75,33 @@ TEST_F(EPModelFixture, ZoneControlThermostatStagedDualSetpoint_ScheduleRelations
   EXPECT_TRUE(thermostat.setHeatingTemperatureSetpointSchedule(heatingSchedule));
   EXPECT_TRUE(thermostat.heatingTemperatureSetpointSchedule());
   EXPECT_EQ(heatingSchedule, thermostat.heatingTemperatureSetpointSchedule().get());
+  ASSERT_TRUE(heatingSchedule.scheduleTypeLimits());
+  EXPECT_EQ("Temperature", heatingSchedule.scheduleTypeLimits()->unitType());
 
   EXPECT_TRUE(thermostat.setCoolingTemperatureSetpointBaseSchedule(coolingSchedule));
   EXPECT_TRUE(thermostat.coolingTemperatureSetpointBaseSchedule());
   EXPECT_EQ(coolingSchedule, thermostat.coolingTemperatureSetpointBaseSchedule().get());
+  ASSERT_TRUE(coolingSchedule.scheduleTypeLimits());
+  EXPECT_EQ("Temperature", coolingSchedule.scheduleTypeLimits()->unitType());
 
   thermostat.resetHeatingTemperatureSetpointSchedule();
   EXPECT_FALSE(thermostat.heatingTemperatureSetpointSchedule());
 
   thermostat.resetCoolingTemperatureSetpointBaseSchedule();
   EXPECT_FALSE(thermostat.coolingTemperatureSetpointBaseSchedule());
+}
+
+TEST_F(EPModelFixture, ZoneControlThermostatStagedDualSetpoint_ScheduleRelationships_RejectIncompatibleScheduleTypeLimits) {
+  Model model;
+  ZoneControlThermostatStagedDualSetpoint thermostat(model);
+  ScheduleConstant wrongSchedule(model);
+  ASSERT_TRUE(wrongSchedule.setValue(1.0));
+  ScheduleTypeLimits availabilityLimits(model);
+  ASSERT_TRUE(availabilityLimits.setUnitType("Availability"));
+  ASSERT_TRUE(availabilityLimits.setLowerLimitValue(0.0));
+  ASSERT_TRUE(availabilityLimits.setUpperLimitValue(1.0));
+  ASSERT_TRUE(wrongSchedule.setScheduleTypeLimits(availabilityLimits));
+
+  EXPECT_FALSE(thermostat.setHeatingTemperatureSetpointSchedule(wrongSchedule));
+  EXPECT_FALSE(thermostat.setCoolingTemperatureSetpointBaseSchedule(wrongSchedule));
 }

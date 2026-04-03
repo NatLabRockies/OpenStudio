@@ -10,6 +10,9 @@
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -26,6 +29,9 @@ FanSystemModel::FanSystemModel(const Model& model) : StraightComponent(FanSystem
   OS_ASSERT(impl);
   detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
   impl->canonicalize(context);
+  ScheduleConstant schedule(model);
+  OS_ASSERT(schedule.setValue(1.0));
+  OS_ASSERT(setAvailabilitySchedule(schedule));
 }
 
 FanSystemModel::FanSystemModel(std::shared_ptr<detail::FanSystemModel_Impl> impl) : StraightComponent(std::move(impl)) {}
@@ -40,6 +46,14 @@ std::vector<std::string> FanSystemModel::speedControlMethodValues() {
 
 std::vector<std::string> FanSystemModel::designPowerSizingMethodValues() {
   return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Fan_SystemModelFields::DesignPowerSizingMethod);
+}
+
+Schedule FanSystemModel::availabilitySchedule() const {
+  return getImpl<detail::FanSystemModel_Impl>()->availabilitySchedule();
+}
+
+bool FanSystemModel::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::FanSystemModel_Impl>()->setAvailabilitySchedule(schedule);
 }
 
 boost::optional<double> FanSystemModel::designMaximumAirFlowRate() const {
@@ -233,6 +247,18 @@ std::vector<std::string> FanSystemModel_Impl::speedControlMethodValues() const {
 
 std::vector<std::string> FanSystemModel_Impl::designPowerSizingMethodValues() const {
   return FanSystemModel::designPowerSizingMethodValues();
+}
+
+openstudio::epmodel::Schedule FanSystemModel_Impl::availabilitySchedule() const {
+  auto value =
+    getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Schedule>(openstudio::Fan_SystemModelFields::AvailabilityScheduleName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool FanSystemModel_Impl::setAvailabilitySchedule(openstudio::epmodel::Schedule& schedule) {
+  return ModelObject_Impl::setSchedule(openstudio::Fan_SystemModelFields::AvailabilityScheduleName, "FanSystemModel", "Availability",
+                                       schedule);
 }
 
 boost::optional<double> FanSystemModel_Impl::designMaximumAirFlowRate() const {

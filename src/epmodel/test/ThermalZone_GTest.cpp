@@ -18,6 +18,7 @@
 #include "../ModelObject/ZoneControlHumidistat.hpp"
 #include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "../ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
+#include "../ModelObject/ZoneHVACEquipmentList.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
 #include "../Thermostat/Thermostat.hpp"
 #include "../Thermostat/Thermostat_Impl.hpp"
@@ -271,6 +272,13 @@ TEST_F(EPModelFixture, API_ThermalZone_ZoneConditioningEquipmentListName_RoundTr
 
   auto equipmentListObject = model.getObjectByTypeAndName(openstudio::IddObjectType::ZoneHVAC_EquipmentList, "Zone Equipment A");
   ASSERT_TRUE(equipmentListObject);
+
+  auto zoneImpl = zone.getImpl<detail::ThermalZone_Impl>();
+  ASSERT_TRUE(zoneImpl);
+  auto equipmentList = zoneImpl->zoneHVACEquipmentList();
+  ASSERT_TRUE(equipmentList);
+  EXPECT_EQ("Zone Equipment A", equipmentList->nameString());
+  EXPECT_EQ(equipmentListObject->cast<ModelObject>(), equipmentList->cast<ModelObject>());
 }
 
 TEST_F(EPModelFixture, API_ThermalZone_ThermostatSetpointDualSetpoint_Relationships) {

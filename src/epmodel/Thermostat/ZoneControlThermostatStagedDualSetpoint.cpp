@@ -186,11 +186,9 @@ namespace epmodel {
     }
 
     bool ZoneControlThermostatStagedDualSetpoint_Impl::setHeatingTemperatureSetpointSchedule(openstudio::epmodel::Schedule& schedule) {
-      if (schedule.model() != model()) {
-        return false;
-      }
-      return setPointer(openstudio::ZoneControl_Thermostat_StagedDualSetpointFields::HeatingTemperatureSetpointScheduleName,
-                        schedule.handle(), false);
+      return ModelObject_Impl::setSchedule(
+        openstudio::ZoneControl_Thermostat_StagedDualSetpointFields::HeatingTemperatureSetpointScheduleName,
+        "ZoneControlThermostatStagedDualSetpoint", "Heating Temperature Setpoint Schedule", schedule);
     }
 
     void ZoneControlThermostatStagedDualSetpoint_Impl::resetHeatingTemperatureSetpointSchedule() {
@@ -264,11 +262,9 @@ namespace epmodel {
     }
 
     bool ZoneControlThermostatStagedDualSetpoint_Impl::setCoolingTemperatureSetpointBaseSchedule(openstudio::epmodel::Schedule& schedule) {
-      if (schedule.model() != model()) {
-        return false;
-      }
-      return setPointer(openstudio::ZoneControl_Thermostat_StagedDualSetpointFields::CoolingTemperatureSetpointBaseScheduleName,
-                        schedule.handle(), false);
+      return ModelObject_Impl::setSchedule(
+        openstudio::ZoneControl_Thermostat_StagedDualSetpointFields::CoolingTemperatureSetpointBaseScheduleName,
+        "ZoneControlThermostatStagedDualSetpoint", "Cooling Temperature Setpoint Base Schedule", schedule);
     }
 
     void ZoneControlThermostatStagedDualSetpoint_Impl::resetCoolingTemperatureSetpointBaseSchedule() {

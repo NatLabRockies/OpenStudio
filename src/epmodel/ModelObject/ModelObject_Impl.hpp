@@ -13,12 +13,14 @@
 #include "../../utilities/idf/WorkspaceObject_Impl.hpp"
 #include "../../utilities/core/Logger.hpp"
 #include <boost/optional.hpp>
+#include <string>
 namespace openstudio {
 class IdfObject;
 namespace epmodel {
 
 class Model;
 class Node;
+class Schedule;
 
 namespace detail {
   class Model_Impl;
@@ -107,6 +109,7 @@ class EPMODEL_API ModelObject_Impl : public openstudio::detail::WorkspaceObject_
     return created;
   }
   openstudio::epmodel::Node getOrCreateNodeTarget(unsigned fieldIndex);
+  bool setSchedule(unsigned fieldIndex, const std::string& className, const std::string& scheduleDisplayName, openstudio::epmodel::Schedule& schedule);
 
   virtual void doCanonicalize(LoadContext& context);
 };

@@ -10,6 +10,9 @@
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -24,6 +27,9 @@ namespace epmodel {
     OS_ASSERT(impl);
     detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
     impl->canonicalize(context);
+    ScheduleConstant schedule(model);
+    OS_ASSERT(schedule.setValue(1.0));
+    OS_ASSERT(setAvailabilitySchedule(schedule));
   }
 
   FanConstantVolume::FanConstantVolume(std::shared_ptr<detail::FanConstantVolume_Impl> impl) : StraightComponent(std::move(impl)) {}
@@ -34,6 +40,14 @@ namespace epmodel {
 
   bool FanConstantVolume::addToNode(Node& node) {
     return getImpl<detail::FanConstantVolume_Impl>()->addToNode(node);
+  }
+
+  Schedule FanConstantVolume::availabilitySchedule() const {
+    return getImpl<detail::FanConstantVolume_Impl>()->availabilitySchedule();
+  }
+
+  bool FanConstantVolume::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::FanConstantVolume_Impl>()->setAvailabilitySchedule(schedule);
   }
 
   double FanConstantVolume::fanTotalEfficiency() const {
@@ -140,6 +154,18 @@ namespace epmodel {
       }
 
       return false;
+    }
+
+    openstudio::epmodel::Schedule FanConstantVolume_Impl::availabilitySchedule() const {
+      auto value = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Schedule>(
+        openstudio::Fan_ConstantVolumeFields::AvailabilityScheduleName);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool FanConstantVolume_Impl::setAvailabilitySchedule(openstudio::epmodel::Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::Fan_ConstantVolumeFields::AvailabilityScheduleName, "FanConstantVolume",
+                                           "Availability", schedule);
     }
 
     double FanConstantVolume_Impl::fanTotalEfficiency() const {

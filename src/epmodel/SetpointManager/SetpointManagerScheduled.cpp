@@ -18,28 +18,6 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace {
-
-boost::optional<openstudio::epmodel::Schedule> resolveScheduleTarget(const openstudio::epmodel::ModelObject& object, unsigned fieldIndex) {
-  if (auto schedule = object.getModelObjectTarget<openstudio::epmodel::Schedule>(fieldIndex)) {
-    return schedule;
-  }
-
-  if (auto scheduleName = object.getString(fieldIndex)) {
-    if (!scheduleName->empty()) {
-      for (const auto& candidate : object.model().getObjectsByName(*scheduleName, true, true)) {
-        if (auto schedule = candidate.optionalCast<openstudio::epmodel::Schedule>()) {
-          return schedule;
-        }
-      }
-    }
-  }
-
-  return boost::none;
-}
-
-}  // namespace
-
 SetpointManagerScheduled::SetpointManagerScheduled(const Model& model) : SetpointManager(SetpointManagerScheduled::iddObjectType(), model) {
   auto impl = getImpl<detail::SetpointManagerScheduled_Impl>();
   OS_ASSERT(impl);
@@ -68,11 +46,11 @@ void SetpointManagerScheduled::resetControlVariable() {
 }
 
 bool SetpointManagerScheduled::hasSchedule() const {
-  return static_cast<bool>(resolveScheduleTarget(*this, openstudio::SetpointManager_ScheduledFields::ScheduleName));
+  return static_cast<bool>(getModelObjectTarget<openstudio::epmodel::Schedule>(openstudio::SetpointManager_ScheduledFields::ScheduleName));
 }
 
 boost::optional<ModelObject> SetpointManagerScheduled::scheduleAsModelObject() const {
-  if (auto schedule = resolveScheduleTarget(*this, openstudio::SetpointManager_ScheduledFields::ScheduleName)) {
+  if (auto schedule = getModelObjectTarget<openstudio::epmodel::Schedule>(openstudio::SetpointManager_ScheduledFields::ScheduleName)) {
     return schedule->cast<ModelObject>();
   }
   return boost::none;
@@ -128,9 +106,21 @@ void SetpointManagerScheduled_Impl::doCanonicalize(LoadContext& context) {
                                    + getObject<ModelObject>().nameString() + "'.");
   }
 
-  if (auto schedule = resolveScheduleTarget(getObject<ModelObject>(), openstudio::SetpointManager_ScheduledFields::ScheduleName)) {
+  if (auto schedule = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Schedule>(
+        openstudio::SetpointManager_ScheduledFields::ScheduleName)) {
     OS_ASSERT(setPointer(openstudio::SetpointManager_ScheduledFields::ScheduleName, schedule->handle(), false));
     return;
+  }
+
+  if (auto scheduleName = getString(openstudio::SetpointManager_ScheduledFields::ScheduleName)) {
+    if (!scheduleName->empty()) {
+      for (const auto& candidate : model().getObjectsByName(*scheduleName, true, true)) {
+        if (auto schedule = candidate.optionalCast<openstudio::epmodel::Schedule>()) {
+          OS_ASSERT(setPointer(openstudio::SetpointManager_ScheduledFields::ScheduleName, schedule->handle(), false));
+          return;
+        }
+      }
+    }
   }
 }
 

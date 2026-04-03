@@ -9,6 +9,7 @@
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../Model.hpp"
 #include "../Model_Impl.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Thermostat/ThermostatSetpointDualSetpoint.hpp"
 #include "../Thermostat/ThermostatSetpointDualSetpoint_Impl.hpp"
@@ -42,10 +43,14 @@ TEST_F(EPModelFixture, ThermostatSetpointDualSetpoint_ScheduleRelationships_Roun
   EXPECT_TRUE(thermostat.setHeatingSetpointTemperatureSchedule(heatingSchedule));
   EXPECT_TRUE(thermostat.heatingSetpointTemperatureSchedule());
   EXPECT_EQ(heatingSchedule, thermostat.heatingSetpointTemperatureSchedule().get());
+  ASSERT_TRUE(heatingSchedule.scheduleTypeLimits());
+  EXPECT_EQ("Temperature", heatingSchedule.scheduleTypeLimits()->unitType());
 
   EXPECT_TRUE(thermostat.setCoolingSetpointTemperatureSchedule(coolingSchedule));
   EXPECT_TRUE(thermostat.coolingSetpointTemperatureSchedule());
   EXPECT_EQ(coolingSchedule, thermostat.coolingSetpointTemperatureSchedule().get());
+  ASSERT_TRUE(coolingSchedule.scheduleTypeLimits());
+  EXPECT_EQ("Temperature", coolingSchedule.scheduleTypeLimits()->unitType());
 
   EXPECT_TRUE(thermostat.setHeatingSchedule(coolingSchedule));
   EXPECT_TRUE(thermostat.getHeatingSchedule());
@@ -60,6 +65,21 @@ TEST_F(EPModelFixture, ThermostatSetpointDualSetpoint_ScheduleRelationships_Roun
 
   thermostat.resetCoolingSchedule();
   EXPECT_FALSE(thermostat.coolingSetpointTemperatureSchedule());
+}
+
+TEST_F(EPModelFixture, ThermostatSetpointDualSetpoint_ScheduleRelationships_RejectIncompatibleScheduleTypeLimits) {
+  Model model;
+  ThermostatSetpointDualSetpoint thermostat(model);
+  ScheduleConstant wrongSchedule(model);
+  ASSERT_TRUE(wrongSchedule.setValue(1.0));
+  ScheduleTypeLimits availabilityLimits(model);
+  ASSERT_TRUE(availabilityLimits.setUnitType("Availability"));
+  ASSERT_TRUE(availabilityLimits.setLowerLimitValue(0.0));
+  ASSERT_TRUE(availabilityLimits.setUpperLimitValue(1.0));
+  ASSERT_TRUE(wrongSchedule.setScheduleTypeLimits(availabilityLimits));
+
+  EXPECT_FALSE(thermostat.setHeatingSetpointTemperatureSchedule(wrongSchedule));
+  EXPECT_FALSE(thermostat.setCoolingSetpointTemperatureSchedule(wrongSchedule));
 }
 
 TEST_F(EPModelFixture, ThermostatSetpointDualSetpoint_TemperatureDifference_UnattachedRoundTrip) {

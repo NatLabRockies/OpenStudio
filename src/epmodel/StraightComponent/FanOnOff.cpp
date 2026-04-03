@@ -8,6 +8,9 @@
 
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -23,6 +26,9 @@ FanOnOff::FanOnOff(const Model& model) : StraightComponent(FanOnOff::iddObjectTy
   OS_ASSERT(impl);
   detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
   impl->canonicalize(context);
+  ScheduleConstant schedule(model);
+  OS_ASSERT(schedule.setValue(1.0));
+  OS_ASSERT(setAvailabilitySchedule(schedule));
 }
 
 FanOnOff::FanOnOff(std::shared_ptr<detail::FanOnOff_Impl> impl) : StraightComponent(std::move(impl)) {}
@@ -33,6 +39,14 @@ IddObjectType FanOnOff::iddObjectType() {
 
 bool FanOnOff::addToNode(Node& node) {
   return getImpl<detail::FanOnOff_Impl>()->addToNode(node);
+}
+
+Schedule FanOnOff::availabilitySchedule() const {
+  return getImpl<detail::FanOnOff_Impl>()->availabilitySchedule();
+}
+
+bool FanOnOff::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::FanOnOff_Impl>()->setAvailabilitySchedule(schedule);
 }
 
 double FanOnOff::fanTotalEfficiency() const {
@@ -162,6 +176,16 @@ bool FanOnOff_Impl::addToNode(Node& node) {
   }
 
   return StraightComponent_Impl::addToNode(node);
+}
+
+openstudio::epmodel::Schedule FanOnOff_Impl::availabilitySchedule() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Schedule>(openstudio::Fan_OnOffFields::AvailabilityScheduleName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool FanOnOff_Impl::setAvailabilitySchedule(openstudio::epmodel::Schedule& schedule) {
+  return ModelObject_Impl::setSchedule(openstudio::Fan_OnOffFields::AvailabilityScheduleName, "FanOnOff", "Availability", schedule);
 }
 
 double FanOnOff_Impl::fanTotalEfficiency() const {

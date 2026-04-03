@@ -9,6 +9,9 @@
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -26,6 +29,9 @@ FanComponentModel::FanComponentModel(const Model& model) : StraightComponent(Fan
   OS_ASSERT(impl);
   detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
   impl->canonicalize(context);
+  ScheduleConstant schedule(model);
+  OS_ASSERT(schedule.setValue(1.0));
+  OS_ASSERT(setAvailabilitySchedule(schedule));
 }
 
 FanComponentModel::FanComponentModel(std::shared_ptr<detail::FanComponentModel_Impl> impl) : StraightComponent(std::move(impl)) {}
@@ -36,6 +42,14 @@ IddObjectType FanComponentModel::iddObjectType() {
 
 bool FanComponentModel::addToNode(Node& node) {
   return getImpl<detail::FanComponentModel_Impl>()->addToNode(node);
+}
+
+Schedule FanComponentModel::availabilitySchedule() const {
+  return getImpl<detail::FanComponentModel_Impl>()->availabilitySchedule();
+}
+
+bool FanComponentModel::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::FanComponentModel_Impl>()->setAvailabilitySchedule(schedule);
 }
 
 std::vector<std::string> FanComponentModel::vFDEfficiencyTypeValues() {
@@ -300,6 +314,18 @@ bool FanComponentModel_Impl::isMaximumFlowRateAutosized() const {
     return openstudio::istringEqual(*value, "autosize");
   }
   return false;
+}
+
+openstudio::epmodel::Schedule FanComponentModel_Impl::availabilitySchedule() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Schedule>(
+    openstudio::Fan_ComponentModelFields::AvailabilityScheduleName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool FanComponentModel_Impl::setAvailabilitySchedule(openstudio::epmodel::Schedule& schedule) {
+  return ModelObject_Impl::setSchedule(openstudio::Fan_ComponentModelFields::AvailabilityScheduleName, "FanComponentModel",
+                                       "Availability", schedule);
 }
 
 bool FanComponentModel_Impl::setMaximumFlowRate(double maximumFlowRate) {

@@ -16,6 +16,7 @@
 #include "../ModelObject/SizingSystem_Impl.hpp"
 #include "../AvailabilityManager/AvailabilityManagerScheduledOn.hpp"
 #include "../AvailabilityManager/AvailabilityManagerScheduledOn_Impl.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightCycle.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightCycle_Impl.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
@@ -954,6 +955,8 @@ TEST_F(EPModelFixture, AirLoopHVAC_SetAvailabilitySchedule_UsesScheduledOnManage
 
   EXPECT_TRUE(airLoop.setAvailabilitySchedule(compactSchedule));
   EXPECT_EQ(compactSchedule.cast<ModelObject>(), airLoop.availabilitySchedule().cast<ModelObject>());
+  ASSERT_TRUE(compactSchedule.scheduleTypeLimits());
+  EXPECT_EQ("Availability", compactSchedule.scheduleTypeLimits()->unitType());
 
   auto managers = airLoop.availabilityManagers();
   ASSERT_EQ(1u, managers.size());
@@ -964,6 +967,20 @@ TEST_F(EPModelFixture, AirLoopHVAC_SetAvailabilitySchedule_UsesScheduledOnManage
   ScheduleRuleset rulesetSchedule(model);
   EXPECT_TRUE(airLoop.setAvailabilitySchedule(rulesetSchedule));
   EXPECT_EQ(rulesetSchedule.cast<ModelObject>(), airLoop.availabilitySchedule().cast<ModelObject>());
+  ASSERT_TRUE(rulesetSchedule.scheduleTypeLimits());
+  EXPECT_EQ("Availability", rulesetSchedule.scheduleTypeLimits()->unitType());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_SetAvailabilitySchedule_RejectsIncompatibleScheduleTypeLimits) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ScheduleConstant wrongSchedule(model);
+  ASSERT_TRUE(wrongSchedule.setValue(18.0));
+  ScheduleTypeLimits temperatureLimits(model);
+  ASSERT_TRUE(temperatureLimits.setUnitType("Temperature"));
+  ASSERT_TRUE(wrongSchedule.setScheduleTypeLimits(temperatureLimits));
+
+  EXPECT_FALSE(airLoop.setAvailabilitySchedule(wrongSchedule));
 }
 
 TEST_F(EPModelFixture, AirLoopHVAC_AvailabilityManagerMutators_PreserveCanonicalScheduledOnManager) {

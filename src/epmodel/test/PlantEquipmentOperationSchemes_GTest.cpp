@@ -83,6 +83,39 @@ TEST_F(EPModelFixture, PlantEquipmentOperationSchemes_ReadOnlyTypedAccessorsRefl
   EXPECT_EQ(componentSchedule.handle(), componentScheduleResult->handle());
 }
 
+TEST_F(EPModelFixture, PlantEquipmentOperationSchemes_NameOnlyRelationshipsRequireCanonicalization) {
+  Model model;
+  PlantEquipmentOperationSchemes schemes(model);
+  auto impl = schemes.getImpl<detail::PlantEquipmentOperationSchemes_Impl>();
+  ASSERT_TRUE(impl);
+  PlantEquipmentOperationHeatingLoad heating(model);
+  ScheduleConstant heatingSchedule(model);
+
+  auto group = schemes.pushExtensibleGroup();
+  ASSERT_FALSE(group.empty());
+  const unsigned groupStartIndex = schemes.numNonextensibleFields();
+  ASSERT_TRUE(impl->openstudio::detail::IdfObject_Impl::setString(
+    groupStartIndex + openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeObjectType, heating.iddObject().name(), false));
+  ASSERT_TRUE(impl->openstudio::detail::IdfObject_Impl::setString(
+    groupStartIndex + openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeName, heating.nameString(), false));
+  ASSERT_TRUE(impl->openstudio::detail::IdfObject_Impl::setString(
+    groupStartIndex + openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeScheduleName, heatingSchedule.nameString(), false));
+
+  EXPECT_FALSE(schemes.plantEquipmentOperationHeatingLoad());
+  EXPECT_FALSE(schemes.plantEquipmentOperationHeatingLoadSchedule());
+
+  auto report = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(0u, report.errorCount);
+
+  auto heatingResult = schemes.plantEquipmentOperationHeatingLoad();
+  ASSERT_TRUE(heatingResult);
+  EXPECT_EQ(heating.handle(), heatingResult->handle());
+
+  auto heatingScheduleResult = schemes.plantEquipmentOperationHeatingLoadSchedule();
+  ASSERT_TRUE(heatingScheduleResult);
+  EXPECT_EQ(heatingSchedule.handle(), heatingScheduleResult->handle());
+}
+
 TEST_F(EPModelFixture, PlantEquipmentOperationSchemes_HeatingAndCoolingSchedulesCanExistWithoutSchemes) {
   Model model;
   PlantEquipmentOperationSchemes schemes(model);
@@ -158,21 +191,30 @@ TEST_F(EPModelFixture, PlantEquipmentOperationSchemes_SetPrimaryUsesCanonicalPri
 TEST_F(EPModelFixture, PlantEquipmentOperationSchemes_CanonicalizeMergesPrimaryScheduleOnlyAndSchemeRows) {
   Model model;
   PlantEquipmentOperationSchemes schemes(model);
+  auto impl = schemes.getImpl<detail::PlantEquipmentOperationSchemes_Impl>();
+  ASSERT_TRUE(impl);
   ScheduleConstant primarySchedule(model);
   PlantEquipmentOperationOutdoorDryBulb primary(model);
 
   auto scheduleOnlyGroup = schemes.pushExtensibleGroup();
   ASSERT_FALSE(scheduleOnlyGroup.empty());
-  ASSERT_TRUE(scheduleOnlyGroup.setString(openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeObjectType,
-                                          "PlantEquipmentOperation:Uncontrolled"));
-  ASSERT_TRUE(scheduleOnlyGroup.setString(openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeScheduleName,
-                                          primarySchedule.nameString()));
+  const unsigned extensibleGroupSize = schemes.iddObject().properties().numExtensible;
+  const unsigned scheduleOnlyGroupStartIndex = schemes.numNonextensibleFields();
+  ASSERT_TRUE(impl->openstudio::detail::IdfObject_Impl::setString(
+    scheduleOnlyGroupStartIndex + openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeObjectType,
+    "PlantEquipmentOperation:Uncontrolled", false));
+  ASSERT_TRUE(impl->openstudio::detail::IdfObject_Impl::setString(
+    scheduleOnlyGroupStartIndex + openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeScheduleName,
+    primarySchedule.nameString(), false));
 
   auto schemeOnlyGroup = schemes.pushExtensibleGroup();
   ASSERT_FALSE(schemeOnlyGroup.empty());
-  ASSERT_TRUE(schemeOnlyGroup.setString(openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeObjectType,
-                                        primary.iddObject().name()));
-  ASSERT_TRUE(schemeOnlyGroup.setString(openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeName, primary.nameString()));
+  const unsigned schemeOnlyGroupStartIndex = schemes.numNonextensibleFields() + extensibleGroupSize;
+  ASSERT_TRUE(impl->openstudio::detail::IdfObject_Impl::setString(
+    schemeOnlyGroupStartIndex + openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeObjectType, primary.iddObject().name(),
+    false));
+  ASSERT_TRUE(impl->openstudio::detail::IdfObject_Impl::setString(
+    schemeOnlyGroupStartIndex + openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeName, primary.nameString(), false));
 
   auto report = model.canonicalize(SanitizationPolicy::Repair);
   EXPECT_EQ(0u, report.errorCount);

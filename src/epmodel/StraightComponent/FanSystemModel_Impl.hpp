@@ -15,6 +15,7 @@
 
 namespace openstudio {
 namespace epmodel {
+class Schedule;
 namespace detail {
 
 class EPMODEL_API FanSystemModel_Impl : public StraightComponent_Impl
@@ -27,6 +28,8 @@ class EPMODEL_API FanSystemModel_Impl : public StraightComponent_Impl
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+  openstudio::epmodel::Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(openstudio::epmodel::Schedule& schedule);
 
   std::vector<std::string> speedControlMethodValues() const;
   std::vector<std::string> designPowerSizingMethodValues() const;

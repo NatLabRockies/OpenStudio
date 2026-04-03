@@ -17,6 +17,7 @@ namespace epmodel {
 
 class Model;
 class Node;
+class Schedule;
 
 namespace detail {
 class FanComponentModel_Impl;
@@ -40,13 +41,16 @@ class EPMODEL_API FanComponentModel : public StraightComponent
   bool addToNode(Node& node);
 
   // Schema Alignment Notes:
-  // - Status: Partial Parity. The core fan-component scalar surface and node insertion are aligned, but the canonical schedule and curve topology is still absent.
+  // - Status: Partial Parity. The core fan-component scalar surface, availability-schedule wiring, and node insertion are aligned, but the canonical curve topology is still absent.
   // - Canonical Counterpart: openstudio::model::FanComponentModel.
-  // - Implemented Parity: The scalar sizing, pulley/belt, efficiency, VFD, and end-use-subcategory accessors preserve the canonical field behavior exposed by `openstudio::model::FanComponentModel`.
-  // - Documented Delta: Epmodel does not yet expose the canonical availability-schedule constructor/accessor or the required and optional curve relationships that remain central to `openstudio::model`.
-  // - Field/Storage Mapping: Scalar fields map directly to `Fan:ComponentModel` storage in EnergyPlus.
+  // - Implemented Parity: The availability-schedule plus scalar sizing, pulley/belt, efficiency, VFD, and end-use-subcategory accessors preserve the canonical field behavior exposed by `openstudio::model::FanComponentModel`.
+  // - Documented Delta: Epmodel still omits the required and optional curve relationships that remain central to `openstudio::model`.
+  // - Field/Storage Mapping: The availability schedule is represented as a typed `Schedule` relationship, while the scalar fields map directly to `Fan:ComponentModel` storage in EnergyPlus.
   // - Evidence: `src/model/FanComponentModel.hpp`, `src/model/FanComponentModel.cpp`, `src/model/test/FanComponentModel_GTest.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFanComponentModel.cpp` anchor the canonical API and translation behavior.
-  // - Remaining Parity Work: Add schedule and curve relationship APIs, plus any derived helper surface, once epmodel relationship support can represent them without weakening canonical semantics.
+  // - Remaining Parity Work: Add the curve relationship APIs, plus any derived helper surface, once epmodel relationship support can represent them without weakening canonical semantics.
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+
   boost::optional<double> maximumFlowRate() const;
   bool isMaximumFlowRateAutosized() const;
   bool setMaximumFlowRate(double maximumFlowRate);

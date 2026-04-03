@@ -20,6 +20,7 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Schedule;
 
   namespace detail {
     class FanConstantVolume_Impl;
@@ -41,13 +42,16 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. Scalar fan properties and node insertion are aligned, but the canonical schedule and airflow-network surface is still absent.
+    // - Status: Partial Parity. Scalar fan properties, availability-schedule wiring, and node insertion are aligned, but the canonical airflow-network surface is still absent.
     // - Canonical Counterpart: openstudio::model::FanConstantVolume.
-    // - Implemented Parity: The fan total-efficiency, fan-efficiency, pressure-rise, maximum-flow-rate, motor, and end-use-subcategory accessors preserve the canonical scalar field behavior, including autosize/reset semantics for flow rate.
-    // - Documented Delta: Epmodel does not yet expose the canonical availability-schedule constructor/accessors or the airflow-network fan relationship helpers that remain on `openstudio::model::FanConstantVolume`.
-    // - Field/Storage Mapping: Scalar fields map directly to `Fan:ConstantVolume` storage in EnergyPlus.
+    // - Implemented Parity: The availability-schedule, fan total-efficiency, fan-efficiency, pressure-rise, maximum-flow-rate, motor, and end-use-subcategory accessors preserve the canonical scalar field behavior, including autosize/reset semantics for flow rate.
+    // - Documented Delta: Epmodel still omits the airflow-network fan relationship helpers that remain on `openstudio::model::FanConstantVolume`.
+    // - Field/Storage Mapping: The availability schedule is represented as a typed `Schedule` relationship, while the scalar fields map directly to `Fan:ConstantVolume` storage in EnergyPlus.
     // - Evidence: `src/model/FanConstantVolume.hpp`, `src/model/FanConstantVolume.cpp`, `src/model/test/FanConstantVolume_GTest.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFanConstantVolume.cpp` establish the canonical API and translation behavior.
-    // - Remaining Parity Work: Add availability-schedule and airflow-network relationship support once epmodel relationship parity is broad enough to hold it without ad hoc shims.
+    // - Remaining Parity Work: Add airflow-network relationship support once epmodel relationship parity is broad enough to hold it without ad hoc shims.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
     double fanTotalEfficiency() const;
     bool setFanTotalEfficiency(double fanTotalEfficiency);
 

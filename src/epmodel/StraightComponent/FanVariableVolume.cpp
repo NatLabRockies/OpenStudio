@@ -10,6 +10,9 @@
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -26,6 +29,9 @@ FanVariableVolume::FanVariableVolume(const Model& model) : StraightComponent(Fan
   OS_ASSERT(impl);
   detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
   impl->canonicalize(context);
+  ScheduleConstant schedule(model);
+  OS_ASSERT(schedule.setValue(1.0));
+  OS_ASSERT(setAvailabilitySchedule(schedule));
 }
 
 FanVariableVolume::FanVariableVolume(std::shared_ptr<detail::FanVariableVolume_Impl> impl) : StraightComponent(std::move(impl)) {}
@@ -36,6 +42,14 @@ IddObjectType FanVariableVolume::iddObjectType() {
 
 bool FanVariableVolume::addToNode(Node& node) {
   return getImpl<detail::FanVariableVolume_Impl>()->addToNode(node);
+}
+
+Schedule FanVariableVolume::availabilitySchedule() const {
+  return getImpl<detail::FanVariableVolume_Impl>()->availabilitySchedule();
+}
+
+bool FanVariableVolume::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::FanVariableVolume_Impl>()->setAvailabilitySchedule(schedule);
 }
 
 std::vector<std::string> FanVariableVolume::fanPowerMinimumFlowRateInputMethodValues() {
@@ -339,6 +353,18 @@ bool FanVariableVolume_Impl::isMaximumFlowRateAutosized() const {
     return openstudio::istringEqual(*value, "autosize");
   }
   return false;
+}
+
+openstudio::epmodel::Schedule FanVariableVolume_Impl::availabilitySchedule() const {
+  auto value =
+    getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Schedule>(openstudio::Fan_VariableVolumeFields::AvailabilityScheduleName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool FanVariableVolume_Impl::setAvailabilitySchedule(openstudio::epmodel::Schedule& schedule) {
+  return ModelObject_Impl::setSchedule(openstudio::Fan_VariableVolumeFields::AvailabilityScheduleName, "FanVariableVolume",
+                                       "Availability", schedule);
 }
 
 bool FanVariableVolume_Impl::setMaximumFlowRate(double maximumFlowRate) {

@@ -8,6 +8,10 @@
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
+#include "../Schedule/ScheduleCompact.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/FanSystemModel.hpp"
 
@@ -18,6 +22,29 @@ TEST_F(EPModelFixture, FanSystemModel_DefaultConstructor) {
   FanSystemModel fan(model);
   EXPECT_EQ(FanSystemModel::iddObjectType(), fan.iddObject().type());
   EXPECT_FALSE(fan.nameString().empty());
+  auto defaultSchedule = fan.availabilitySchedule();
+  auto constantSchedule = defaultSchedule.optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(constantSchedule);
+  EXPECT_DOUBLE_EQ(1.0, constantSchedule->value());
+}
+
+TEST_F(EPModelFixture, FanSystemModel_AvailabilitySchedule_RoundTripAndValidation) {
+  Model model;
+  FanSystemModel fan(model);
+
+  ScheduleCompact compactSchedule(model);
+  ASSERT_TRUE(compactSchedule.setToConstantValue(0.7));
+  EXPECT_TRUE(fan.setAvailabilitySchedule(compactSchedule));
+  EXPECT_EQ(compactSchedule.cast<ModelObject>(), fan.availabilitySchedule().cast<ModelObject>());
+  ASSERT_TRUE(compactSchedule.scheduleTypeLimits());
+  EXPECT_EQ("Availability", compactSchedule.scheduleTypeLimits()->unitType());
+
+  ScheduleConstant wrongSchedule(model);
+  ASSERT_TRUE(wrongSchedule.setValue(16.0));
+  ScheduleTypeLimits temperatureLimits(model);
+  ASSERT_TRUE(temperatureLimits.setUnitType("Temperature"));
+  ASSERT_TRUE(wrongSchedule.setScheduleTypeLimits(temperatureLimits));
+  EXPECT_FALSE(fan.setAvailabilitySchedule(wrongSchedule));
 }
 
 TEST_F(EPModelFixture, FanSystemModel_ScalarAccessors_RoundTrip) {

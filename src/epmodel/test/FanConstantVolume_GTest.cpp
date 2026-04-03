@@ -8,6 +8,11 @@
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
+#include "../Schedule/ScheduleCompact.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
+#include "../Schedule/ScheduleRuleset.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/Node.hpp"
@@ -19,6 +24,35 @@ TEST_F(EPModelFixture, FanConstantVolume_DefaultConstructor) {
   FanConstantVolume fan(model);
   EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Fan_ConstantVolume), fan.iddObject().type());
   EXPECT_FALSE(fan.nameString().empty());
+  auto defaultSchedule = fan.availabilitySchedule();
+  auto constantSchedule = defaultSchedule.optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(constantSchedule);
+  EXPECT_DOUBLE_EQ(1.0, constantSchedule->value());
+}
+
+TEST_F(EPModelFixture, FanConstantVolume_AvailabilitySchedule_RoundTripAndValidation) {
+  Model model;
+  FanConstantVolume fan(model);
+
+  ScheduleCompact compactSchedule(model);
+  ASSERT_TRUE(compactSchedule.setToConstantValue(0.4));
+  EXPECT_TRUE(fan.setAvailabilitySchedule(compactSchedule));
+  EXPECT_EQ(compactSchedule.cast<ModelObject>(), fan.availabilitySchedule().cast<ModelObject>());
+  ASSERT_TRUE(compactSchedule.scheduleTypeLimits());
+  EXPECT_EQ("Availability", compactSchedule.scheduleTypeLimits()->unitType());
+
+  ScheduleRuleset rulesetSchedule(model);
+  EXPECT_TRUE(fan.setAvailabilitySchedule(rulesetSchedule));
+  EXPECT_EQ(rulesetSchedule.cast<ModelObject>(), fan.availabilitySchedule().cast<ModelObject>());
+  ASSERT_TRUE(rulesetSchedule.scheduleTypeLimits());
+  EXPECT_EQ("Availability", rulesetSchedule.scheduleTypeLimits()->unitType());
+
+  ScheduleConstant wrongSchedule(model);
+  ASSERT_TRUE(wrongSchedule.setValue(22.0));
+  ScheduleTypeLimits temperatureLimits(model);
+  ASSERT_TRUE(temperatureLimits.setUnitType("Temperature"));
+  ASSERT_TRUE(wrongSchedule.setScheduleTypeLimits(temperatureLimits));
+  EXPECT_FALSE(fan.setAvailabilitySchedule(wrongSchedule));
 }
 
 TEST_F(EPModelFixture, FanConstantVolume_AddToNodeAcceptsAirLoopSupplyNode) {

@@ -228,7 +228,6 @@ namespace epmodel {
       if (target) {
         return target->optionalCast<openstudio::epmodel::ModelObject>();
       }
-
       const auto name = group->getString(ExtensibleFields::ControlSchemeName, true);
       if (!name || name->empty()) {
         return boost::none;
@@ -239,7 +238,6 @@ namespace epmodel {
           return typedCandidate;
         }
       }
-
       return boost::none;
     }
 
@@ -315,7 +313,6 @@ namespace epmodel {
       if (target) {
         return target->optionalCast<openstudio::epmodel::Schedule>();
       }
-
       const auto name = group->getString(ExtensibleFields::ControlSchemeScheduleName, true);
       if (!name || name->empty()) {
         return boost::none;
@@ -326,7 +323,6 @@ namespace epmodel {
           return typedCandidate;
         }
       }
-
       return boost::none;
     }
 

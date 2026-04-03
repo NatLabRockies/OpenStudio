@@ -18,28 +18,6 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace {
-
-boost::optional<openstudio::epmodel::Schedule> resolveScheduleTarget(const openstudio::epmodel::ModelObject& object, unsigned fieldIndex) {
-  if (auto schedule = object.getModelObjectTarget<openstudio::epmodel::Schedule>(fieldIndex)) {
-    return schedule;
-  }
-
-  if (auto scheduleName = object.getString(fieldIndex)) {
-    if (!scheduleName->empty()) {
-      for (const auto& candidate : object.model().getObjectsByName(*scheduleName, true, true)) {
-        if (auto schedule = candidate.optionalCast<openstudio::epmodel::Schedule>()) {
-          return schedule;
-        }
-      }
-    }
-  }
-
-  return boost::none;
-}
-
-}  // namespace
-
 AvailabilityManagerScheduledOff::AvailabilityManagerScheduledOff(const Model& model)
   : AvailabilityManager(AvailabilityManagerScheduledOff::iddObjectType(), model) {
   auto impl = getImpl<detail::AvailabilityManagerScheduledOff_Impl>();
@@ -72,23 +50,34 @@ namespace epmodel {
 namespace detail {
 
 openstudio::epmodel::Schedule AvailabilityManagerScheduledOff_Impl::schedule() const {
-  auto schedule = resolveScheduleTarget(getObject<ModelObject>(), openstudio::AvailabilityManager_ScheduledOffFields::ScheduleName);
+  auto schedule = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Schedule>(
+    openstudio::AvailabilityManager_ScheduledOffFields::ScheduleName);
   OS_ASSERT(schedule);
   return *schedule;
 }
 
 bool AvailabilityManagerScheduledOff_Impl::setSchedule(openstudio::epmodel::Schedule& schedule) {
-  if (schedule.model() != model()) {
-    return false;
-  }
-  return setPointer(openstudio::AvailabilityManager_ScheduledOffFields::ScheduleName, schedule.handle(), false);
+  return ModelObject_Impl::setSchedule(openstudio::AvailabilityManager_ScheduledOffFields::ScheduleName,
+                                       "AvailabilityManagerScheduledOff", "Availability Manager Scheduled Off", schedule);
 }
 
 void AvailabilityManagerScheduledOff_Impl::doCanonicalize(LoadContext& context) {
   auto manager = getObject<openstudio::epmodel::AvailabilityManagerScheduledOff>();
-  if (auto schedule = resolveScheduleTarget(getObject<ModelObject>(), openstudio::AvailabilityManager_ScheduledOffFields::ScheduleName)) {
+  if (auto schedule = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Schedule>(
+        openstudio::AvailabilityManager_ScheduledOffFields::ScheduleName)) {
     OS_ASSERT(setPointer(openstudio::AvailabilityManager_ScheduledOffFields::ScheduleName, schedule->handle(), false));
     return;
+  }
+
+  if (auto scheduleName = getString(openstudio::AvailabilityManager_ScheduledOffFields::ScheduleName)) {
+    if (!scheduleName->empty()) {
+      for (const auto& candidate : model().getObjectsByName(*scheduleName, true, true)) {
+        if (auto schedule = candidate.optionalCast<openstudio::epmodel::Schedule>()) {
+          OS_ASSERT(setPointer(openstudio::AvailabilityManager_ScheduledOffFields::ScheduleName, schedule->handle(), false));
+          return;
+        }
+      }
+    }
   }
 
   ScheduleConstant schedule(model());

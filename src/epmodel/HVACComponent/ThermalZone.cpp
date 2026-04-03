@@ -939,13 +939,10 @@ namespace epmodel {
         return boost::none;
       }
 
-      const auto equipmentListName = conn->getString(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName);
-      if (!equipmentListName || equipmentListName->empty()) {
-        return boost::none;
-      }
-
-      if (auto object = model().getObjectByTypeAndName(openstudio::IddObjectType::ZoneHVAC_EquipmentList, *equipmentListName, true)) {
-        return object->optionalCast<openstudio::epmodel::ZoneHVACEquipmentList>();
+      if (auto equipmentList =
+            conn->getModelObjectTarget<openstudio::epmodel::ZoneHVACEquipmentList>(
+              openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName)) {
+        return equipmentList;
       }
 
       return boost::none;

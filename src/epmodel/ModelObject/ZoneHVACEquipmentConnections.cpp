@@ -69,12 +69,7 @@ namespace epmodel {
   }
 
   boost::optional<ThermalZone> ZoneHVACEquipmentConnections::thermalZone() const {
-    if (auto zoneName = getString(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName)) {
-      if (auto zoneObject = model().getObjectByTypeAndName(ThermalZone::iddObjectType(), *zoneName, true)) {
-        return zoneObject->optionalCast<ThermalZone>();
-      }
-    }
-    return boost::none;
+    return getModelObjectTarget<ThermalZone>(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName);
   }
 
   namespace detail {

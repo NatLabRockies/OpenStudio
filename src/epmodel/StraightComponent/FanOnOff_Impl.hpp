@@ -14,6 +14,7 @@
 namespace openstudio {
 namespace epmodel {
 class Node;
+class Schedule;
 namespace detail {
 
 class EPMODEL_API FanOnOff_Impl : public StraightComponent_Impl
@@ -26,6 +27,8 @@ class EPMODEL_API FanOnOff_Impl : public StraightComponent_Impl
   unsigned outletPort() const override;
 
   bool addToNode(Node& node) override;
+  openstudio::epmodel::Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(openstudio::epmodel::Schedule& schedule);
 
   double fanTotalEfficiency() const;
   bool isFanTotalEfficiencyDefaulted() const;

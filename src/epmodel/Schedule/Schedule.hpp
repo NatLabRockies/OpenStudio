@@ -8,6 +8,7 @@
 
 #include "EPModelAPI.hpp"
 #include "ModelObject.hpp"
+#include "ResourceObject/ScheduleTypeLimits.hpp"
 
 #include <boost/optional.hpp>
 
@@ -31,6 +32,10 @@ class EPMODEL_API Schedule : public ModelObject
   Schedule(Schedule&& other) = default;
   Schedule& operator=(const Schedule&) = default;
   Schedule& operator=(Schedule&&) = default;
+
+  boost::optional<ScheduleTypeLimits> scheduleTypeLimits() const;
+  bool setScheduleTypeLimits(const ScheduleTypeLimits& scheduleTypeLimits);
+  bool resetScheduleTypeLimits();
 
  protected:
   using ImplType = detail::Schedule_Impl;

@@ -7,6 +7,7 @@
 
 #include "EPModelFixture.hpp"
 #include "../AvailabilityManager/AvailabilityManagerScheduledOn.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
@@ -43,10 +44,26 @@ TEST_F(EPModelFixture, AvailabilityManagerScheduledOn_ScheduleRelationship_Round
   ASSERT_TRUE(compactSchedule.setToConstantValue(0.5));
   EXPECT_TRUE(availabilityManagerScheduledOn.setSchedule(compactSchedule));
   EXPECT_EQ(compactSchedule.cast<ModelObject>(), availabilityManagerScheduledOn.schedule().cast<ModelObject>());
+  ASSERT_TRUE(compactSchedule.scheduleTypeLimits());
+  EXPECT_EQ("Availability", compactSchedule.scheduleTypeLimits()->unitType());
 
   ScheduleRuleset rulesetSchedule(model);
   EXPECT_TRUE(availabilityManagerScheduledOn.setSchedule(rulesetSchedule));
   EXPECT_EQ(rulesetSchedule.cast<ModelObject>(), availabilityManagerScheduledOn.schedule().cast<ModelObject>());
+  ASSERT_TRUE(rulesetSchedule.scheduleTypeLimits());
+  EXPECT_EQ("Availability", rulesetSchedule.scheduleTypeLimits()->unitType());
+}
+
+TEST_F(EPModelFixture, AvailabilityManagerScheduledOn_ScheduleRelationship_RejectsIncompatibleScheduleTypeLimits) {
+  Model model;
+  AvailabilityManagerScheduledOn availabilityManagerScheduledOn(model);
+  ScheduleConstant wrongSchedule(model);
+  ASSERT_TRUE(wrongSchedule.setValue(21.0));
+  ScheduleTypeLimits temperatureLimits(model);
+  ASSERT_TRUE(temperatureLimits.setUnitType("Temperature"));
+  ASSERT_TRUE(wrongSchedule.setScheduleTypeLimits(temperatureLimits));
+
+  EXPECT_FALSE(availabilityManagerScheduledOn.setSchedule(wrongSchedule));
 }
 
 TEST_F(EPModelFixture, AvailabilityManagerScheduledOn_CanonicalizeReattachesNamedSchedule) {
