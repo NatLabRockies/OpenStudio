@@ -8,7 +8,7 @@
 #include <utilities/idf/IdfExtensibleGroup.hpp>
 
 #include "EPModelFixture.hpp"
-#include "../PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationCoolingLoad.hpp"
+#include "../PlantEquipmentOperationScheme/PlantEquipmentOperationCoolingLoad.hpp"
 
 using namespace openstudio::epmodel;
 

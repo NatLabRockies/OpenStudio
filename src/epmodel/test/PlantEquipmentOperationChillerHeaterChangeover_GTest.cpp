@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/PlantEquipmentOperationChillerHeaterChangeover.hpp"
+#include "../PlantEquipmentOperationScheme/PlantEquipmentOperationChillerHeaterChangeover.hpp"
 
 using namespace openstudio::epmodel;
 

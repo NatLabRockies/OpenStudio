@@ -8,12 +8,16 @@
 
 #include "Model.hpp"
 #include "AvailabilityManager/AvailabilityManager.hpp"
+#include "PlantEquipmentOperationScheme/PlantEquipmentOperationScheme.hpp"
 #include "ModelObject/AvailabilityManagerAssignmentList.hpp"
 #include "ModelObject/AvailabilityManagerAssignmentList_Impl.hpp"
 #include "ModelObject/PlantEquipmentOperationSchemes.hpp"
 #include "ModelObject/PlantEquipmentOperationSchemes_Impl.hpp"
 #include "ModelObject/SizingPlant.hpp"
 #include "ModelObject/SizingPlant_Impl.hpp"
+#include "PlantEquipmentOperationScheme/PlantEquipmentOperationCoolingLoad.hpp"
+#include "PlantEquipmentOperationScheme/PlantEquipmentOperationHeatingLoad.hpp"
+#include "Schedule/Schedule.hpp"
 #include "StraightComponent/Node.hpp"
 #include "ModelObject/Branch.hpp"
 #include "ModelObject/Branch_Impl.hpp"
@@ -168,6 +172,90 @@ namespace epmodel {
 
   bool PlantLoop::setLoopTemperatureSetpointNode(Node& node) {
     return getImpl<detail::PlantLoop_Impl>()->setLoopTemperatureSetpointNode(node);
+  }
+
+  boost::optional<PlantEquipmentOperationHeatingLoad> PlantLoop::plantEquipmentOperationHeatingLoad() const {
+    return getImpl<detail::PlantLoop_Impl>()->plantEquipmentOperationHeatingLoad();
+  }
+
+  bool PlantLoop::setPlantEquipmentOperationHeatingLoad(const PlantEquipmentOperationHeatingLoad& plantOperation) {
+    return getImpl<detail::PlantLoop_Impl>()->setPlantEquipmentOperationHeatingLoad(plantOperation);
+  }
+
+  void PlantLoop::resetPlantEquipmentOperationHeatingLoad() {
+    getImpl<detail::PlantLoop_Impl>()->resetPlantEquipmentOperationHeatingLoad();
+  }
+
+  bool PlantLoop::setPlantEquipmentOperationHeatingLoadSchedule(Schedule& schedule) {
+    return getImpl<detail::PlantLoop_Impl>()->setPlantEquipmentOperationHeatingLoadSchedule(schedule);
+  }
+
+  void PlantLoop::resetPlantEquipmentOperationHeatingLoadSchedule() {
+    getImpl<detail::PlantLoop_Impl>()->resetPlantEquipmentOperationHeatingLoadSchedule();
+  }
+
+  boost::optional<Schedule> PlantLoop::plantEquipmentOperationHeatingLoadSchedule() const {
+    return getImpl<detail::PlantLoop_Impl>()->plantEquipmentOperationHeatingLoadSchedule();
+  }
+
+  boost::optional<PlantEquipmentOperationCoolingLoad> PlantLoop::plantEquipmentOperationCoolingLoad() const {
+    return getImpl<detail::PlantLoop_Impl>()->plantEquipmentOperationCoolingLoad();
+  }
+
+  bool PlantLoop::setPlantEquipmentOperationCoolingLoad(const PlantEquipmentOperationCoolingLoad& plantOperation) {
+    return getImpl<detail::PlantLoop_Impl>()->setPlantEquipmentOperationCoolingLoad(plantOperation);
+  }
+
+  void PlantLoop::resetPlantEquipmentOperationCoolingLoad() {
+    getImpl<detail::PlantLoop_Impl>()->resetPlantEquipmentOperationCoolingLoad();
+  }
+
+  bool PlantLoop::setPlantEquipmentOperationCoolingLoadSchedule(Schedule& schedule) {
+    return getImpl<detail::PlantLoop_Impl>()->setPlantEquipmentOperationCoolingLoadSchedule(schedule);
+  }
+
+  boost::optional<Schedule> PlantLoop::plantEquipmentOperationCoolingLoadSchedule() const {
+    return getImpl<detail::PlantLoop_Impl>()->plantEquipmentOperationCoolingLoadSchedule();
+  }
+
+  void PlantLoop::resetPlantEquipmentOperationCoolingLoadSchedule() {
+    getImpl<detail::PlantLoop_Impl>()->resetPlantEquipmentOperationCoolingLoadSchedule();
+  }
+
+  boost::optional<PlantEquipmentOperationScheme> PlantLoop::primaryPlantEquipmentOperationScheme() const {
+    return getImpl<detail::PlantLoop_Impl>()->primaryPlantEquipmentOperationScheme();
+  }
+
+  bool PlantLoop::setPrimaryPlantEquipmentOperationScheme(const PlantEquipmentOperationScheme& plantOperation) {
+    return getImpl<detail::PlantLoop_Impl>()->setPrimaryPlantEquipmentOperationScheme(plantOperation);
+  }
+
+  void PlantLoop::resetPrimaryPlantEquipmentOperationScheme() {
+    getImpl<detail::PlantLoop_Impl>()->resetPrimaryPlantEquipmentOperationScheme();
+  }
+
+  bool PlantLoop::setPrimaryPlantEquipmentOperationSchemeSchedule(Schedule& schedule) {
+    return getImpl<detail::PlantLoop_Impl>()->setPrimaryPlantEquipmentOperationSchemeSchedule(schedule);
+  }
+
+  void PlantLoop::resetPrimaryPlantEquipmentOperationSchemeSchedule() {
+    getImpl<detail::PlantLoop_Impl>()->resetPrimaryPlantEquipmentOperationSchemeSchedule();
+  }
+
+  boost::optional<Schedule> PlantLoop::primaryPlantEquipmentOperationSchemeSchedule() const {
+    return getImpl<detail::PlantLoop_Impl>()->primaryPlantEquipmentOperationSchemeSchedule();
+  }
+
+  bool PlantLoop::setComponentSetpointOperationSchemeSchedule(Schedule& schedule) {
+    return getImpl<detail::PlantLoop_Impl>()->setComponentSetpointOperationSchemeSchedule(schedule);
+  }
+
+  void PlantLoop::resetComponentSetpointOperationSchemeSchedule() {
+    getImpl<detail::PlantLoop_Impl>()->resetComponentSetpointOperationSchemeSchedule();
+  }
+
+  boost::optional<Schedule> PlantLoop::componentSetpointOperationSchemeSchedule() const {
+    return getImpl<detail::PlantLoop_Impl>()->componentSetpointOperationSchemeSchedule();
   }
 
   Node PlantLoop::supplyInletNode() const {
@@ -1028,6 +1116,105 @@ namespace detail {
       return setPointer(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName, node.handle(), false);
     }
 
+    PlantEquipmentOperationSchemes PlantLoop_Impl::plantEquipmentOperationSchemes() const {
+      auto operationSchemes =
+        getObject<PlantLoop>().getModelObjectTarget<PlantEquipmentOperationSchemes>(openstudio::PlantLoopFields::PlantEquipmentOperationSchemeName);
+      OS_ASSERT(operationSchemes);
+      return *operationSchemes;
+    }
+
+    boost::optional<PlantEquipmentOperationHeatingLoad> PlantLoop_Impl::plantEquipmentOperationHeatingLoad() const {
+      return plantEquipmentOperationSchemes().plantEquipmentOperationHeatingLoad();
+    }
+
+    bool PlantLoop_Impl::setPlantEquipmentOperationHeatingLoad(const PlantEquipmentOperationHeatingLoad& plantOperation) {
+      return plantEquipmentOperationSchemes().getImpl<detail::PlantEquipmentOperationSchemes_Impl>()->setPlantEquipmentOperationHeatingLoad(
+        plantOperation);
+    }
+
+    void PlantLoop_Impl::resetPlantEquipmentOperationHeatingLoad() {
+      plantEquipmentOperationSchemes().getImpl<detail::PlantEquipmentOperationSchemes_Impl>()->resetPlantEquipmentOperationHeatingLoad();
+    }
+
+    bool PlantLoop_Impl::setPlantEquipmentOperationHeatingLoadSchedule(Schedule& schedule) {
+      return plantEquipmentOperationSchemes().getImpl<detail::PlantEquipmentOperationSchemes_Impl>()->setPlantEquipmentOperationHeatingLoadSchedule(
+        schedule);
+    }
+
+    void PlantLoop_Impl::resetPlantEquipmentOperationHeatingLoadSchedule() {
+      plantEquipmentOperationSchemes().getImpl<detail::PlantEquipmentOperationSchemes_Impl>()->resetPlantEquipmentOperationHeatingLoadSchedule();
+    }
+
+    boost::optional<Schedule> PlantLoop_Impl::plantEquipmentOperationHeatingLoadSchedule() const {
+      return plantEquipmentOperationSchemes().plantEquipmentOperationHeatingLoadSchedule();
+    }
+
+    boost::optional<PlantEquipmentOperationCoolingLoad> PlantLoop_Impl::plantEquipmentOperationCoolingLoad() const {
+      return plantEquipmentOperationSchemes().plantEquipmentOperationCoolingLoad();
+    }
+
+    bool PlantLoop_Impl::setPlantEquipmentOperationCoolingLoad(const PlantEquipmentOperationCoolingLoad& plantOperation) {
+      return plantEquipmentOperationSchemes().getImpl<detail::PlantEquipmentOperationSchemes_Impl>()->setPlantEquipmentOperationCoolingLoad(
+        plantOperation);
+    }
+
+    void PlantLoop_Impl::resetPlantEquipmentOperationCoolingLoad() {
+      plantEquipmentOperationSchemes().getImpl<detail::PlantEquipmentOperationSchemes_Impl>()->resetPlantEquipmentOperationCoolingLoad();
+    }
+
+    bool PlantLoop_Impl::setPlantEquipmentOperationCoolingLoadSchedule(Schedule& schedule) {
+      return plantEquipmentOperationSchemes().getImpl<detail::PlantEquipmentOperationSchemes_Impl>()->setPlantEquipmentOperationCoolingLoadSchedule(
+        schedule);
+    }
+
+    boost::optional<Schedule> PlantLoop_Impl::plantEquipmentOperationCoolingLoadSchedule() const {
+      return plantEquipmentOperationSchemes().plantEquipmentOperationCoolingLoadSchedule();
+    }
+
+    void PlantLoop_Impl::resetPlantEquipmentOperationCoolingLoadSchedule() {
+      plantEquipmentOperationSchemes().getImpl<detail::PlantEquipmentOperationSchemes_Impl>()->resetPlantEquipmentOperationCoolingLoadSchedule();
+    }
+
+    boost::optional<PlantEquipmentOperationScheme> PlantLoop_Impl::primaryPlantEquipmentOperationScheme() const {
+      return plantEquipmentOperationSchemes().primaryPlantEquipmentOperationScheme();
+    }
+
+    bool PlantLoop_Impl::setPrimaryPlantEquipmentOperationScheme(const PlantEquipmentOperationScheme& plantOperation) {
+      return plantEquipmentOperationSchemes().getImpl<detail::PlantEquipmentOperationSchemes_Impl>()->setPrimaryPlantEquipmentOperationScheme(
+        plantOperation);
+    }
+
+    void PlantLoop_Impl::resetPrimaryPlantEquipmentOperationScheme() {
+      plantEquipmentOperationSchemes().getImpl<detail::PlantEquipmentOperationSchemes_Impl>()->resetPrimaryPlantEquipmentOperationScheme();
+    }
+
+    bool PlantLoop_Impl::setPrimaryPlantEquipmentOperationSchemeSchedule(Schedule& schedule) {
+      return plantEquipmentOperationSchemes()
+        .getImpl<detail::PlantEquipmentOperationSchemes_Impl>()
+        ->setPrimaryPlantEquipmentOperationSchemeSchedule(schedule);
+    }
+
+    void PlantLoop_Impl::resetPrimaryPlantEquipmentOperationSchemeSchedule() {
+      plantEquipmentOperationSchemes().getImpl<detail::PlantEquipmentOperationSchemes_Impl>()->resetPrimaryPlantEquipmentOperationSchemeSchedule();
+    }
+
+    boost::optional<Schedule> PlantLoop_Impl::primaryPlantEquipmentOperationSchemeSchedule() const {
+      return plantEquipmentOperationSchemes().primaryPlantEquipmentOperationSchemeSchedule();
+    }
+
+    bool PlantLoop_Impl::setComponentSetpointOperationSchemeSchedule(Schedule& schedule) {
+      return plantEquipmentOperationSchemes().getImpl<detail::PlantEquipmentOperationSchemes_Impl>()->setComponentSetpointOperationSchemeSchedule(
+        schedule);
+    }
+
+    void PlantLoop_Impl::resetComponentSetpointOperationSchemeSchedule() {
+      plantEquipmentOperationSchemes().getImpl<detail::PlantEquipmentOperationSchemes_Impl>()->resetComponentSetpointOperationSchemeSchedule();
+    }
+
+    boost::optional<Schedule> PlantLoop_Impl::componentSetpointOperationSchemeSchedule() const {
+      return plantEquipmentOperationSchemes().componentSetpointOperationSchemeSchedule();
+    }
+
     SizingPlant PlantLoop_Impl::sizingPlant() const {
       boost::optional<SizingPlant> result;
       for (const auto& candidate : model().getConcreteModelObjects<SizingPlant>()) {
@@ -1844,6 +2031,7 @@ namespace detail {
       if (operationSchemes.nameString().empty()) {
         operationSchemes.setName(loopName + " Operation Schemes");
       }
+      operationSchemes.getImpl<detail::PlantEquipmentOperationSchemes_Impl>()->canonicalize(context);
 
     }
 

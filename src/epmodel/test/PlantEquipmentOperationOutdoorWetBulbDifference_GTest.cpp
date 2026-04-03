@@ -8,7 +8,7 @@
 #include <utilities/idf/IdfExtensibleGroup.hpp>
 
 #include "EPModelFixture.hpp"
-#include "PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorWetBulbDifference.hpp"
+#include "PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorWetBulbDifference.hpp"
 
 using namespace openstudio::epmodel;
 

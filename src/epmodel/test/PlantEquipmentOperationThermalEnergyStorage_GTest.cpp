@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/PlantEquipmentOperationThermalEnergyStorage.hpp"
+#include "../PlantEquipmentOperationScheme/PlantEquipmentOperationThermalEnergyStorage.hpp"
 
 using namespace openstudio::epmodel;
 

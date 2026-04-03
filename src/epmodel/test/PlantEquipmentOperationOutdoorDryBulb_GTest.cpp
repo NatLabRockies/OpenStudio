@@ -8,7 +8,7 @@
 #include <utilities/idf/IdfExtensibleGroup.hpp>
 
 #include "EPModelFixture.hpp"
-#include "PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDryBulb.hpp"
+#include "PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorDryBulb.hpp"
 
 using namespace openstudio::epmodel;
 

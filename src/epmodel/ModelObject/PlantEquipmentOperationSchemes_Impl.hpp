@@ -12,10 +12,16 @@
 #include <string>
 #include <vector>
 
-#include <utilities/idf/IdfExtensibleGroup.hpp>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 namespace openstudio {
 namespace epmodel {
+
+  class ModelObject;
+  class PlantEquipmentOperationCoolingLoad;
+  class PlantEquipmentOperationHeatingLoad;
+  class PlantEquipmentOperationScheme;
+  class Schedule;
 
   namespace detail {
 
@@ -25,43 +31,66 @@ namespace epmodel {
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~PlantEquipmentOperationSchemes_Impl() override = default;
 
-      std::string controlScheme1ObjectType() const;
-      bool setControlScheme1ObjectType(const std::string& controlScheme1ObjectType);
+      boost::optional<openstudio::epmodel::PlantEquipmentOperationHeatingLoad> plantEquipmentOperationHeatingLoad() const;
+      bool setPlantEquipmentOperationHeatingLoad(const openstudio::epmodel::PlantEquipmentOperationHeatingLoad& controlScheme);
+      void resetPlantEquipmentOperationHeatingLoad();
+      boost::optional<openstudio::epmodel::Schedule> plantEquipmentOperationHeatingLoadSchedule() const;
+      bool setPlantEquipmentOperationHeatingLoadSchedule(openstudio::epmodel::Schedule& schedule);
+      void resetPlantEquipmentOperationHeatingLoadSchedule();
 
-      boost::optional<std::string> controlScheme2ObjectType() const;
-      bool setControlScheme2ObjectType(const std::string& controlScheme2ObjectType);
-      void resetControlScheme2ObjectType();
+      boost::optional<openstudio::epmodel::PlantEquipmentOperationCoolingLoad> plantEquipmentOperationCoolingLoad() const;
+      bool setPlantEquipmentOperationCoolingLoad(const openstudio::epmodel::PlantEquipmentOperationCoolingLoad& controlScheme);
+      void resetPlantEquipmentOperationCoolingLoad();
+      boost::optional<openstudio::epmodel::Schedule> plantEquipmentOperationCoolingLoadSchedule() const;
+      bool setPlantEquipmentOperationCoolingLoadSchedule(openstudio::epmodel::Schedule& schedule);
+      void resetPlantEquipmentOperationCoolingLoadSchedule();
 
-      boost::optional<std::string> controlScheme3ObjectType() const;
-      bool setControlScheme3ObjectType(const std::string& controlScheme3ObjectType);
-      void resetControlScheme3ObjectType();
+      boost::optional<openstudio::epmodel::PlantEquipmentOperationScheme> primaryPlantEquipmentOperationScheme() const;
+      bool setPrimaryPlantEquipmentOperationScheme(const openstudio::epmodel::PlantEquipmentOperationScheme& controlScheme);
+      void resetPrimaryPlantEquipmentOperationScheme();
+      boost::optional<openstudio::epmodel::Schedule> primaryPlantEquipmentOperationSchemeSchedule() const;
+      bool setPrimaryPlantEquipmentOperationSchemeSchedule(openstudio::epmodel::Schedule& schedule);
+      void resetPrimaryPlantEquipmentOperationSchemeSchedule();
 
-      boost::optional<std::string> controlScheme4ObjectType() const;
-      bool setControlScheme4ObjectType(const std::string& controlScheme4ObjectType);
-      void resetControlScheme4ObjectType();
-
-      boost::optional<std::string> controlScheme5ObjectType() const;
-      bool setControlScheme5ObjectType(const std::string& controlScheme5ObjectType);
-      void resetControlScheme5ObjectType();
-
-      boost::optional<std::string> controlScheme6ObjectType() const;
-      bool setControlScheme6ObjectType(const std::string& controlScheme6ObjectType);
-      void resetControlScheme6ObjectType();
-
-      boost::optional<std::string> controlScheme7ObjectType() const;
-      bool setControlScheme7ObjectType(const std::string& controlScheme7ObjectType);
-      void resetControlScheme7ObjectType();
-
-      boost::optional<std::string> controlScheme8ObjectType() const;
-      bool setControlScheme8ObjectType(const std::string& controlScheme8ObjectType);
-      void resetControlScheme8ObjectType();
+      boost::optional<openstudio::epmodel::Schedule> componentSetpointOperationSchemeSchedule() const;
+      bool setComponentSetpointOperationSchemeSchedule(openstudio::epmodel::Schedule& schedule);
+      void resetComponentSetpointOperationSchemeSchedule();
 
       std::vector<std::string> controlSchemeObjectTypeValues() const;
 
+      void doCanonicalize(LoadContext& context) override;
+
      private:
+      static const std::string& heatingLoadControlSchemeObjectType();
+      static const std::string& coolingLoadControlSchemeObjectType();
+      static const std::string& componentSetpointControlSchemeObjectType();
+      static const std::string& defaultPrimaryControlSchemeObjectType();
+      static bool isSupportedControlSchemeType(const std::string& controlSchemeObjectType);
+      static bool isPrimaryControlSchemeType(const std::string& controlSchemeObjectType);
+
       boost::optional<std::string> controlSchemeObjectTypeField(unsigned schemeIndex) const;
-      boost::optional<IdfExtensibleGroup> controlSchemeGroup(unsigned schemeIndex) const;
-      boost::optional<IdfExtensibleGroup> ensureControlSchemeGroup(unsigned schemeIndex);
+      boost::optional<unsigned> controlSchemeIndex(const std::string& controlSchemeObjectType) const;
+      boost::optional<unsigned> primaryControlSchemeIndex() const;
+
+      boost::optional<openstudio::epmodel::ModelObject> controlScheme(const std::string& controlSchemeObjectType) const;
+      boost::optional<openstudio::epmodel::ModelObject> controlScheme(unsigned schemeIndex) const;
+      bool setControlScheme(unsigned schemeIndex, const std::string& controlSchemeObjectType,
+                            const openstudio::epmodel::ModelObject& controlScheme);
+      bool setControlScheme(const std::string& controlSchemeObjectType, const openstudio::epmodel::ModelObject& controlScheme);
+      void resetControlScheme(const std::string& controlSchemeObjectType);
+      boost::optional<openstudio::epmodel::Schedule> controlSchemeSchedule(const std::string& controlSchemeObjectType) const;
+      boost::optional<openstudio::epmodel::Schedule> controlSchemeSchedule(unsigned schemeIndex) const;
+      bool setControlSchemeSchedule(unsigned schemeIndex, openstudio::epmodel::Schedule& schedule);
+      bool setControlSchemeSchedule(const std::string& controlSchemeObjectType, openstudio::epmodel::Schedule& schedule);
+      void resetControlSchemeSchedule(const std::string& controlSchemeObjectType);
+      bool clearControlScheme(unsigned schemeIndex);
+      bool clearControlSchemeSchedule(unsigned schemeIndex);
+      void eraseControlSchemeGroupIfEmpty(unsigned schemeIndex);
+      bool groupHasControlScheme(unsigned schemeIndex) const;
+      bool groupHasControlSchemeSchedule(unsigned schemeIndex) const;
+
+      boost::optional<WorkspaceExtensibleGroup> controlSchemeGroup(unsigned schemeIndex) const;
+      boost::optional<WorkspaceExtensibleGroup> ensureControlSchemeGroup(unsigned schemeIndex);
     };
 
   }  // namespace detail

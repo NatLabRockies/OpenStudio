@@ -14,12 +14,18 @@
 #include "../Mixer/Mixer.hpp"
 #include "../ModelObject/AvailabilityManagerAssignmentList.hpp"
 #include "../ModelObject/AvailabilityManagerAssignmentList_Impl.hpp"
+#include "../ModelObject/PlantEquipmentOperationSchemes.hpp"
+#include "../ModelObject/PlantEquipmentOperationSchemes_Impl.hpp"
 #include "../Splitter/Splitter.hpp"
 #include "../ModelObject/Branch.hpp"
 #include "../ModelObject/BranchList.hpp"
 #include "../ModelObject/BranchList_Impl.hpp"
 #include "../ModelObject/SizingPlant.hpp"
 #include "../ModelObject/SizingPlant_Impl.hpp"
+#include "../PlantEquipmentOperationScheme/PlantEquipmentOperationCoolingLoad.hpp"
+#include "../PlantEquipmentOperationScheme/PlantEquipmentOperationHeatingLoad.hpp"
+#include "../PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorDryBulb.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/PipeAdiabatic.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
@@ -49,6 +55,11 @@ TEST_F(EPModelFixture, PlantLoop_DefaultConstructor_CreatesCanonicalCompanions) 
   auto assignmentList = plantLoop.getModelObjectTarget<AvailabilityManagerAssignmentList>(openstudio::PlantLoopFields::AvailabilityManagerListName);
   ASSERT_TRUE(assignmentList);
   EXPECT_TRUE(plantLoop.availabilityManagers().empty());
+
+  auto operationSchemes = plantLoop.getModelObjectTarget<PlantEquipmentOperationSchemes>(openstudio::PlantLoopFields::PlantEquipmentOperationSchemeName);
+  ASSERT_TRUE(operationSchemes);
+  EXPECT_FALSE(plantLoop.plantEquipmentOperationHeatingLoad());
+  EXPECT_FALSE(plantLoop.primaryPlantEquipmentOperationScheme());
 }
 
 TEST_F(EPModelFixture, PlantLoop_ScalarAccessors_RoundTrip) {
@@ -118,6 +129,80 @@ TEST_F(EPModelFixture, PlantLoop_AvailabilityManagerMutators_RoundTrip) {
 
   plantLoop.resetAvailabilityManagers();
   EXPECT_TRUE(plantLoop.availabilityManagers().empty());
+}
+
+TEST_F(EPModelFixture, PlantLoop_OperationSchemes_RoundTrip) {
+  Model model;
+  PlantLoop plantLoop(model);
+  PlantEquipmentOperationHeatingLoad heating(model);
+  PlantEquipmentOperationCoolingLoad cooling(model);
+  PlantEquipmentOperationOutdoorDryBulb primary(model);
+  ScheduleConstant heatingSchedule(model);
+  ScheduleConstant coolingSchedule(model);
+  ScheduleConstant primarySchedule(model);
+  ScheduleConstant componentSchedule(model);
+
+  ASSERT_TRUE(plantLoop.setPlantEquipmentOperationHeatingLoad(heating));
+  ASSERT_TRUE(plantLoop.setPlantEquipmentOperationHeatingLoadSchedule(heatingSchedule));
+  ASSERT_TRUE(plantLoop.setPlantEquipmentOperationCoolingLoad(cooling));
+  ASSERT_TRUE(plantLoop.setPlantEquipmentOperationCoolingLoadSchedule(coolingSchedule));
+  ASSERT_TRUE(plantLoop.setPrimaryPlantEquipmentOperationScheme(primary));
+  ASSERT_TRUE(plantLoop.setPrimaryPlantEquipmentOperationSchemeSchedule(primarySchedule));
+  ASSERT_TRUE(plantLoop.setComponentSetpointOperationSchemeSchedule(componentSchedule));
+
+  auto heatingResult = plantLoop.plantEquipmentOperationHeatingLoad();
+  ASSERT_TRUE(heatingResult);
+  EXPECT_EQ(heating.handle(), heatingResult->handle());
+
+  auto coolingResult = plantLoop.plantEquipmentOperationCoolingLoad();
+  ASSERT_TRUE(coolingResult);
+  EXPECT_EQ(cooling.handle(), coolingResult->handle());
+
+  auto primaryResult = plantLoop.primaryPlantEquipmentOperationScheme();
+  ASSERT_TRUE(primaryResult);
+  EXPECT_EQ(primary.handle(), primaryResult->handle());
+
+  auto heatingScheduleResult = plantLoop.plantEquipmentOperationHeatingLoadSchedule();
+  ASSERT_TRUE(heatingScheduleResult);
+  EXPECT_EQ(heatingSchedule.handle(), heatingScheduleResult->handle());
+
+  auto coolingScheduleResult = plantLoop.plantEquipmentOperationCoolingLoadSchedule();
+  ASSERT_TRUE(coolingScheduleResult);
+  EXPECT_EQ(coolingSchedule.handle(), coolingScheduleResult->handle());
+
+  auto primaryScheduleResult = plantLoop.primaryPlantEquipmentOperationSchemeSchedule();
+  ASSERT_TRUE(primaryScheduleResult);
+  EXPECT_EQ(primarySchedule.handle(), primaryScheduleResult->handle());
+
+  auto componentScheduleResult = plantLoop.componentSetpointOperationSchemeSchedule();
+  ASSERT_TRUE(componentScheduleResult);
+  EXPECT_EQ(componentSchedule.handle(), componentScheduleResult->handle());
+}
+
+TEST_F(EPModelFixture, PlantLoop_HeatingScheduleCanExistWithoutHeatingScheme) {
+  Model model;
+  PlantLoop plantLoop(model);
+  ScheduleConstant heatingSchedule(model);
+
+  ASSERT_TRUE(plantLoop.setPlantEquipmentOperationHeatingLoadSchedule(heatingSchedule));
+  EXPECT_FALSE(plantLoop.plantEquipmentOperationHeatingLoad());
+
+  auto heatingScheduleResult = plantLoop.plantEquipmentOperationHeatingLoadSchedule();
+  ASSERT_TRUE(heatingScheduleResult);
+  EXPECT_EQ(heatingSchedule.handle(), heatingScheduleResult->handle());
+}
+
+TEST_F(EPModelFixture, PlantLoop_PrimaryScheduleCanExistWithoutPrimaryScheme) {
+  Model model;
+  PlantLoop plantLoop(model);
+  ScheduleConstant primarySchedule(model);
+
+  ASSERT_TRUE(plantLoop.setPrimaryPlantEquipmentOperationSchemeSchedule(primarySchedule));
+  EXPECT_FALSE(plantLoop.primaryPlantEquipmentOperationScheme());
+
+  auto primaryScheduleResult = plantLoop.primaryPlantEquipmentOperationSchemeSchedule();
+  ASSERT_TRUE(primaryScheduleResult);
+  EXPECT_EQ(primarySchedule.handle(), primaryScheduleResult->handle());
 }
 
 TEST_F(EPModelFixture, PlantLoop_AddRemoveSupplyBranchForStraightComponent) {

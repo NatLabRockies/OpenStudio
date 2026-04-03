@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/PlantEquipmentOperationUncontrolled.hpp"
+#include "../PlantEquipmentOperationScheme/PlantEquipmentOperationUncontrolled.hpp"
 
 using namespace openstudio::epmodel;
 

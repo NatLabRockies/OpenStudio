@@ -8,7 +8,7 @@
 #include <utilities/idf/IdfExtensibleGroup.hpp>
 
 #include "EPModelFixture.hpp"
-#include "../PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorDewpointDifference.hpp"
+#include "../PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorDewpointDifference.hpp"
 
 using namespace openstudio::epmodel;
 

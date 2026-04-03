@@ -8,7 +8,7 @@
 #include <utilities/idf/IdfExtensibleGroup.hpp>
 
 #include "EPModelFixture.hpp"
-#include "PlantEquipmentOperationRangeBasedScheme/PlantEquipmentOperationOutdoorRelativeHumidity.hpp"
+#include "PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorRelativeHumidity.hpp"
 
 using namespace openstudio::epmodel;
 

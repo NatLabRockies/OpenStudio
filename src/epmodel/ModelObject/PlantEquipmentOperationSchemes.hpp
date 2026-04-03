@@ -17,6 +17,10 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class PlantEquipmentOperationCoolingLoad;
+  class PlantEquipmentOperationHeatingLoad;
+  class PlantEquipmentOperationScheme;
+  class Schedule;
 
   namespace detail {
     class PlantEquipmentOperationSchemes_Impl;
@@ -37,39 +41,22 @@ namespace epmodel {
     static std::vector<std::string> controlSchemeObjectTypeValues();
 
     // Schema Alignment Notes:
-    // - API: Exposes the scalar Control Scheme N Object Type choices defined on PlantEquipmentOperationSchemes in the EnergyPlus IDD.
-    // - Field Mapping: Control Scheme Name and Control Scheme Schedule remain relationship-like object-list/schedule fields and are intentionally excluded from this scalar scaffold.
-    // - TODO(parity): Add Control Scheme relationships once scalar parity is satisfied.
-    std::string controlScheme1ObjectType() const;
-    bool setControlScheme1ObjectType(const std::string& controlScheme1ObjectType);
+    // - API: Public epmodel owner wrapper is intentionally read-only; typed PlantLoop-facing mutation remains on the impl layer.
+    // - Field Mapping: Exposes typed inspection of the heating, cooling, primary, and component-setpoint control-scheme rows stored on the
+    //   EnergyPlus PlantEquipmentOperationSchemes object instead of mirroring numbered extensible-row accessors.
+    // - Canonical Counterpart: There is no direct openstudio::model public counterpart for this owner object; it exists here to back the
+    //   canonical PlantLoop parity surface without exposing raw extensible-row mutation.
 
-    boost::optional<std::string> controlScheme2ObjectType() const;
-    bool setControlScheme2ObjectType(const std::string& controlScheme2ObjectType);
-    void resetControlScheme2ObjectType();
+    boost::optional<PlantEquipmentOperationHeatingLoad> plantEquipmentOperationHeatingLoad() const;
+    boost::optional<Schedule> plantEquipmentOperationHeatingLoadSchedule() const;
 
-    boost::optional<std::string> controlScheme3ObjectType() const;
-    bool setControlScheme3ObjectType(const std::string& controlScheme3ObjectType);
-    void resetControlScheme3ObjectType();
+    boost::optional<PlantEquipmentOperationCoolingLoad> plantEquipmentOperationCoolingLoad() const;
+    boost::optional<Schedule> plantEquipmentOperationCoolingLoadSchedule() const;
 
-    boost::optional<std::string> controlScheme4ObjectType() const;
-    bool setControlScheme4ObjectType(const std::string& controlScheme4ObjectType);
-    void resetControlScheme4ObjectType();
+    boost::optional<PlantEquipmentOperationScheme> primaryPlantEquipmentOperationScheme() const;
+    boost::optional<Schedule> primaryPlantEquipmentOperationSchemeSchedule() const;
 
-    boost::optional<std::string> controlScheme5ObjectType() const;
-    bool setControlScheme5ObjectType(const std::string& controlScheme5ObjectType);
-    void resetControlScheme5ObjectType();
-
-    boost::optional<std::string> controlScheme6ObjectType() const;
-    bool setControlScheme6ObjectType(const std::string& controlScheme6ObjectType);
-    void resetControlScheme6ObjectType();
-
-    boost::optional<std::string> controlScheme7ObjectType() const;
-    bool setControlScheme7ObjectType(const std::string& controlScheme7ObjectType);
-    void resetControlScheme7ObjectType();
-
-    boost::optional<std::string> controlScheme8ObjectType() const;
-    bool setControlScheme8ObjectType(const std::string& controlScheme8ObjectType);
-    void resetControlScheme8ObjectType();
+    boost::optional<Schedule> componentSetpointOperationSchemeSchedule() const;
 
    protected:
     using ImplType = detail::PlantEquipmentOperationSchemes_Impl;

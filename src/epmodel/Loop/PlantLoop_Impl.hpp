@@ -23,6 +23,11 @@ namespace epmodel {
   class HVACComponent;
   class Mixer;
   class Node;
+  class PlantEquipmentOperationCoolingLoad;
+  class PlantEquipmentOperationHeatingLoad;
+  class PlantEquipmentOperationScheme;
+  class PlantEquipmentOperationSchemes;
+  class Schedule;
   class SizingPlant;
   class Splitter;
 
@@ -109,6 +114,27 @@ namespace epmodel {
 
       openstudio::epmodel::Node loopTemperatureSetpointNode() const;
       bool setLoopTemperatureSetpointNode(openstudio::epmodel::Node& node);
+      boost::optional<openstudio::epmodel::PlantEquipmentOperationHeatingLoad> plantEquipmentOperationHeatingLoad() const;
+      bool setPlantEquipmentOperationHeatingLoad(const openstudio::epmodel::PlantEquipmentOperationHeatingLoad& plantOperation);
+      void resetPlantEquipmentOperationHeatingLoad();
+      bool setPlantEquipmentOperationHeatingLoadSchedule(openstudio::epmodel::Schedule& schedule);
+      void resetPlantEquipmentOperationHeatingLoadSchedule();
+      boost::optional<openstudio::epmodel::Schedule> plantEquipmentOperationHeatingLoadSchedule() const;
+      boost::optional<openstudio::epmodel::PlantEquipmentOperationCoolingLoad> plantEquipmentOperationCoolingLoad() const;
+      bool setPlantEquipmentOperationCoolingLoad(const openstudio::epmodel::PlantEquipmentOperationCoolingLoad& plantOperation);
+      void resetPlantEquipmentOperationCoolingLoad();
+      bool setPlantEquipmentOperationCoolingLoadSchedule(openstudio::epmodel::Schedule& schedule);
+      boost::optional<openstudio::epmodel::Schedule> plantEquipmentOperationCoolingLoadSchedule() const;
+      void resetPlantEquipmentOperationCoolingLoadSchedule();
+      boost::optional<openstudio::epmodel::PlantEquipmentOperationScheme> primaryPlantEquipmentOperationScheme() const;
+      bool setPrimaryPlantEquipmentOperationScheme(const openstudio::epmodel::PlantEquipmentOperationScheme& plantOperation);
+      void resetPrimaryPlantEquipmentOperationScheme();
+      bool setPrimaryPlantEquipmentOperationSchemeSchedule(openstudio::epmodel::Schedule& schedule);
+      void resetPrimaryPlantEquipmentOperationSchemeSchedule();
+      boost::optional<openstudio::epmodel::Schedule> primaryPlantEquipmentOperationSchemeSchedule() const;
+      bool setComponentSetpointOperationSchemeSchedule(openstudio::epmodel::Schedule& schedule);
+      void resetComponentSetpointOperationSchemeSchedule();
+      boost::optional<openstudio::epmodel::Schedule> componentSetpointOperationSchemeSchedule() const;
       openstudio::epmodel::SizingPlant sizingPlant() const;
       openstudio::epmodel::AvailabilityManagerAssignmentList availabilityManagerAssignmentList() const;
       std::vector<openstudio::epmodel::AvailabilityManager> availabilityManagers() const;
@@ -123,7 +149,8 @@ namespace epmodel {
 
       void doCanonicalize(LoadContext& context) override;
 
-     private:
+    private:
+      openstudio::epmodel::PlantEquipmentOperationSchemes plantEquipmentOperationSchemes() const;
       bool syncConnectorPorts(openstudio::epmodel::ConnectorSplitter& splitter, openstudio::epmodel::ConnectorMixer& mixer,
                               const openstudio::epmodel::Branch& inletBranch, const openstudio::epmodel::Branch& outletBranch,
                               const std::vector<openstudio::epmodel::Branch>& equipmentBranches) const;

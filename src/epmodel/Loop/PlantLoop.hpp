@@ -22,8 +22,12 @@ namespace epmodel {
   class Mixer;
   class ModelObject;
   class Node;
+  class PlantEquipmentOperationCoolingLoad;
+  class PlantEquipmentOperationHeatingLoad;
+  class PlantEquipmentOperationScheme;
   class SizingPlant;
   class AvailabilityManager;
+  class Schedule;
   class Splitter;
 
   namespace detail {
@@ -44,13 +48,18 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. Core loop operating scalars, supply/demand topology accessors, branch add/remove APIs, setpoint-node helpers, sizing ownership, and availability-manager ownership are present, but the canonical PlantLoop surface is still incomplete.
+    // - Status: Partial Parity. Core loop operating scalars, supply/demand topology accessors, branch add/remove APIs, setpoint-node helpers,
+    //   sizing ownership, availability-manager ownership, and plant operation-scheme/schedule APIs are present, but the canonical PlantLoop
+    //   surface is still incomplete.
     // - Canonical Counterpart: openstudio::model::PlantLoop.
-    // - Implemented Parity: `loadDistributionScheme`, `fluidType`, glycol concentration, loop temperature/flow/volume scalars, `commonPipeSimulation`, setpoint-node helpers, sizing ownership, supply/demand node accessors, supply/demand mixers and splitters, supply/demand traversal, availability-manager ownership, and branch add/remove APIs preserve the main canonical plant-loop topology contract.
-    // - Documented Delta: Plant operation-scheme and operation-schedule APIs remain deferred because epmodel `PlantLoop` wraps the EnergyPlus-backed `PlantLoop`/`PlantEquipmentOperationSchemes` storage shape rather than the canonical `OS:PlantLoop` split fields; clone/remove specializations and autosized-result helpers also remain omitted.
+    // - Implemented Parity: `loadDistributionScheme`, `fluidType`, glycol concentration, loop temperature/flow/volume scalars,
+    //   `commonPipeSimulation`, setpoint-node helpers, plant operation-scheme/schedule APIs, sizing ownership, supply/demand node accessors,
+    //   supply/demand mixers and splitters, supply/demand traversal, availability-manager ownership, and branch add/remove APIs preserve the
+    //   main canonical plant-loop topology contract.
+    // - Documented Delta: clone/remove specializations and autosized-result helpers remain omitted.
     // - Field/Storage Mapping: Branch-name and connector linkage remain expressed through topology APIs over EnergyPlus-backed loop structure instead of exposing new scalar string accessors for mixer/splitter branch fields.
     // - Evidence: `src/model/PlantLoop.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslatePlantLoop.cpp` define the canonical public surface and direct scalar mappings that this epmodel wrapper currently preserves in part.
-    // - Remaining Parity Work: Add plant operation-scheme and operation-schedule parity through the EnergyPlus-backed `PlantEquipmentOperationSchemes` owner object, then follow with clone/remove specializations and autosized-result helpers.
+    // - Remaining Parity Work: Add clone/remove specializations and autosized-result helpers.
 
     std::string loadDistributionScheme() const;
     bool setLoadDistributionScheme(const std::string& scheme);
@@ -89,6 +98,34 @@ namespace epmodel {
 
     Node loopTemperatureSetpointNode();
     bool setLoopTemperatureSetpointNode(Node& node);
+
+    boost::optional<PlantEquipmentOperationHeatingLoad> plantEquipmentOperationHeatingLoad() const;
+    bool setPlantEquipmentOperationHeatingLoad(const PlantEquipmentOperationHeatingLoad& plantOperation);
+    void resetPlantEquipmentOperationHeatingLoad();
+
+    bool setPlantEquipmentOperationHeatingLoadSchedule(Schedule& schedule);
+    void resetPlantEquipmentOperationHeatingLoadSchedule();
+    boost::optional<Schedule> plantEquipmentOperationHeatingLoadSchedule() const;
+
+    boost::optional<PlantEquipmentOperationCoolingLoad> plantEquipmentOperationCoolingLoad() const;
+    bool setPlantEquipmentOperationCoolingLoad(const PlantEquipmentOperationCoolingLoad& plantOperation);
+    void resetPlantEquipmentOperationCoolingLoad();
+
+    bool setPlantEquipmentOperationCoolingLoadSchedule(Schedule& schedule);
+    boost::optional<Schedule> plantEquipmentOperationCoolingLoadSchedule() const;
+    void resetPlantEquipmentOperationCoolingLoadSchedule();
+
+    boost::optional<PlantEquipmentOperationScheme> primaryPlantEquipmentOperationScheme() const;
+    bool setPrimaryPlantEquipmentOperationScheme(const PlantEquipmentOperationScheme& plantOperation);
+    void resetPrimaryPlantEquipmentOperationScheme();
+
+    bool setPrimaryPlantEquipmentOperationSchemeSchedule(Schedule& schedule);
+    void resetPrimaryPlantEquipmentOperationSchemeSchedule();
+    boost::optional<Schedule> primaryPlantEquipmentOperationSchemeSchedule() const;
+
+    bool setComponentSetpointOperationSchemeSchedule(Schedule& schedule);
+    void resetComponentSetpointOperationSchemeSchedule();
+    boost::optional<Schedule> componentSetpointOperationSchemeSchedule() const;
 
     Node supplyInletNode() const override;
     Node supplyOutletNode() const override;
