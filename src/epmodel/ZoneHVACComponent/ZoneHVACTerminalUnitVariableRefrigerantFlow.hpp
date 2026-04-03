@@ -21,6 +21,8 @@ namespace epmodel {
   class Model;
   class HVACComponent;
   class ModelObject;
+  class Schedule;
+  class ThermalZone;
 
   namespace detail {
     class ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl;
@@ -44,10 +46,13 @@ namespace epmodel {
     // - Status: Partial Parity. The scalar VRF terminal fields are aligned, but the fan/coil/schedule/node relationships remain separate.
     // - Canonical Counterpart: openstudio::model::ZoneHVACTerminalUnitVariableRefrigerantFlow.
     // - Implemented Parity: Supply-air and outdoor-air flow scalars, parasitic electric loads, rated heating ratio, supplemental-heater limits, and fan-placement helpers map directly to the EnergyPlus object.
-    // - Documented Delta: Availability schedules, fan operating-mode schedules, child fan/coil links, node names, and controlling-zone references remain relationship-only.
+    // - Documented Delta: Node names remain relationship-only; the availability, fan operating-mode, child fan/coil, and controlling-zone links are now surfaced directly.
     // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while the fan/coil/schedule/node topology is represented through explicit child and topology state.
     // - Evidence: `src/model/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp`, `src/model/ZoneHVACTerminalUnitVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACTerminalUnitVariableRefrigerantFlow.cpp`, and `src/epmodel/test/ZoneHVACTerminalUnitVariableRefrigerantFlow_GTest.cpp`.
     // - Remaining Parity Work: Add the omitted relationship helpers only if the canonical wrapper still exposes them directly.
+
+    Schedule terminalUnitAvailabilityschedule() const;
+    bool setTerminalUnitAvailabilityschedule(Schedule& schedule);
 
     boost::optional<double> supplyAirFlowRateDuringCoolingOperation() const;
     bool isSupplyAirFlowRateDuringCoolingOperationAutosized() const;
@@ -114,6 +119,9 @@ namespace epmodel {
     HVACComponent supplyAirFan() const;
     bool setSupplyAirFan(HVACComponent& fan);
 
+    Schedule supplyAirFanOperatingModeSchedule() const;
+    bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+
     boost::optional<HVACComponent> coolingCoil() const;
     bool setCoolingCoil(HVACComponent& coil);
 
@@ -123,6 +131,10 @@ namespace epmodel {
     boost::optional<HVACComponent> supplementalHeatingCoil() const;
     bool setSupplementalHeatingCoil(HVACComponent& coil);
     void resetSupplementalHeatingCoil();
+
+    boost::optional<ThermalZone> controllingZoneorThermostatLocation() const;
+    bool setControllingZoneorThermostatLocation(const ThermalZone& thermalZone);
+    void resetControllingZoneorThermostatLocation();
 
     std::vector<ModelObject> children() const;
 

@@ -11,6 +11,9 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+  class HVACComponent;
+
   namespace detail {
 
     class EPMODEL_API AirTerminalSingleDuctConstantVolumeReheat_Impl : public StraightComponent_Impl
@@ -21,6 +24,13 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
+      HVACComponent reheatCoil() const;
+      bool setReheatCoil(const HVACComponent& coil);
+      void resetReheatCoil();
 
       boost::optional<double> maximumAirFlowRate() const;
       bool setMaximumAirFlowRate(double maximumAirFlowRate);

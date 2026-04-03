@@ -18,6 +18,9 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Schedule;
+class HVACComponent;
+class Node;
 
 namespace detail {
 class AirTerminalSingleDuctParallelPIUReheat_Impl;
@@ -43,10 +46,21 @@ class EPMODEL_API AirTerminalSingleDuctParallelPIUReheat : public StraightCompon
   // - Status: Partial Parity. The scalar parallel-PIU controls are aligned, but the schedule and coupled-component surface remains intentionally narrower.
   // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctParallelPIUReheat.
   // - Implemented Parity: `maximumPrimaryAirFlowRate`, `maximumSecondaryAirFlowRate`, `minimumPrimaryAirFlowFraction`, `fanOnFlowFraction`, `maximumHotWaterorSteamFlowRate`, `minimumHotWaterorSteamFlowRate`, `convergenceTolerance`, `fanControlType`, `minimumFanTurnDownRatio`, `heatingControlType`, `designHeatingDischargeAirTemperature`, and `highLimitHeatingDischargeAirTemperature` preserve the canonical contract.
-  // - Documented Delta: Availability schedule, node names, zone mixer/fan/reheat-coil references, and related object-type/link fields are not exposed as public methods yet.
+  // - Documented Delta: Node names and the zone-mixer object-link surface remain outside this pass.
   // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:ParallelPIU:Reheat` fields; the translator wires the coupled components separately.
   // - Evidence: `src/model/AirTerminalSingleDuctParallelPIUReheat.hpp`, `src/model/AirTerminalSingleDuctParallelPIUReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctParallelPIUReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctParallelPIUReheat_GTest.cpp`.
   // - Remaining Parity Work: Add the omitted schedule, node, and coupled-component helpers when relationship parity expands.
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+
+  HVACComponent fan() const;
+  bool setFan(HVACComponent& hvacComponent);
+
+  HVACComponent reheatCoil() const;
+  bool setReheatCoil(HVACComponent& hvacComponent);
+
+  boost::optional<Node> secondaryAirInletNode() const;
+
   boost::optional<double> maximumPrimaryAirFlowRate() const;
   bool isMaximumPrimaryAirFlowRateAutosized() const;
   bool setMaximumPrimaryAirFlowRate(double maximumPrimaryAirFlowRate);

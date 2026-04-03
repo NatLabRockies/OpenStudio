@@ -19,6 +19,7 @@ namespace epmodel {
 
   class Model;
   class HVACComponent;
+  class Schedule;
 
   namespace detail {
     class ZoneHVACFourPipeFanCoil_Impl;
@@ -43,10 +44,13 @@ namespace epmodel {
     // - Status: Partial Parity. The core scalar fields and contained equipment links are present, but some schedule and operating-mode convenience APIs are still missing.
     // - Canonical Counterpart: openstudio::model::ZoneHVACFourPipeFanCoil.
     // - Implemented Parity: `capacityControlMethod`, supply-air flow scalars, hot/cold water flow scalars, convergence tolerances, supply-air temperature limits, and the fan/coil child accessors preserve the canonical wrapper behavior.
-    // - Documented Delta: Some schedule and operating-mode relationship helpers are still not surfaced as public epmodel APIs.
-    // - Field/Storage Mapping: The component's fan and heating/cooling coils are modeled explicitly as child objects rather than scalar references.
+    // - Documented Delta: Outdoor-air mixer linkage remains string-backed; node topology still comes from the shared zone-equipment base.
+    // - Field/Storage Mapping: The component's fan, heating/cooling coils, and schedule links are modeled explicitly rather than flattened into scalar references.
     // - Evidence: `src/model/ZoneHVACFourPipeFanCoil.hpp`, `src/model/ZoneHVACFourPipeFanCoil.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACFourPipeFanCoil.cpp`, and `src/epmodel/test/ZoneHVACFourPipeFanCoil_GTest.cpp`.
     // - Remaining Parity Work: Add the omitted scheduling and operating-mode helpers if the canonical surface requires them to be first-class.
+
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
 
     std::string capacityControlMethod() const;
     bool setCapacityControlMethod(const std::string& capacityControlMethod);
@@ -74,6 +78,10 @@ namespace epmodel {
     std::string outdoorAirMixerObjectType() const;
     bool setOutdoorAirMixerObjectType(const std::string& outdoorAirMixerObjectType);
 
+    boost::optional<Schedule> outdoorAirSchedule() const;
+    bool setOutdoorAirSchedule(Schedule& schedule);
+    void resetOutdoorAirSchedule();
+
     HVACComponent supplyAirFan() const;
     HVACComponent coolingCoil() const;
     HVACComponent heatingCoil() const;
@@ -81,6 +89,10 @@ namespace epmodel {
     bool setSupplyAirFan(HVACComponent& fan);
     bool setCoolingCoil(HVACComponent& coolingCoil);
     bool setHeatingCoil(HVACComponent& heatingCoil);
+
+    boost::optional<Schedule> supplyAirFanOperatingModeSchedule() const;
+    bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+    void resetSupplyAirFanOperatingModeSchedule();
 
     boost::optional<double> maximumColdWaterFlowRate() const;
     bool isMaximumColdWaterFlowRateAutosized() const;

@@ -22,6 +22,7 @@ namespace epmodel {
   class Model;
   class HVACComponent;
   class ModelObject;
+  class Schedule;
 
   namespace detail {
     class ZoneHVACPackagedTerminalHeatPump_Impl;
@@ -46,8 +47,8 @@ namespace epmodel {
     // - Status: Partial Parity. The scalar flow/control fields and child equipment links are present, but schedule, mixer, node, and capacity-control wiring remains relationship-driven.
     // - Canonical Counterpart: openstudio::model::ZoneHVACPackagedTerminalHeatPump.
     // - Implemented Parity: Supply-air and outdoor-air flow scalars, convergence tolerances, supplemental-heater limits, and `fanPlacement` map directly to the EnergyPlus object; contained fan and coil children are exposed explicitly.
-    // - Documented Delta: Availability schedules, outdoor-air mixer links, node names, and capacity-control helpers remain outside the current public surface.
-    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while the fan and coil topology is modeled through child-object state.
+    // - Documented Delta: Outdoor-air mixer links and node names remain outside the current public surface.
+    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while schedules and the fan/coil topology are modeled through child-object state.
     // - Evidence: `src/model/ZoneHVACPackagedTerminalHeatPump.hpp`, `src/model/ZoneHVACPackagedTerminalHeatPump.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACPackagedTerminalHeatPump.cpp`, and `src/epmodel/test/ZoneHVACPackagedTerminalHeatPump_GTest.cpp`.
     // - Remaining Parity Work: Add the missing relationship helpers only if the canonical wrapper continues to expose them directly.
 
@@ -55,6 +56,9 @@ namespace epmodel {
     unsigned outletPort() const;
 
     std::vector<ModelObject> children() const;
+
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
 
     boost::optional<double> supplyAirFlowRateDuringCoolingOperation() const;
     bool isSupplyAirFlowRateDuringCoolingOperationAutosized() const;
@@ -123,6 +127,9 @@ namespace epmodel {
 
     HVACComponent supplyAirFan() const;
     bool setSupplyAirFan(HVACComponent& supplyAirFan);
+
+    Schedule supplyAirFanOperatingModeSchedule() const;
+    bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
 
     HVACComponent heatingCoil() const;
     bool setHeatingCoil(HVACComponent& heatingCoil);

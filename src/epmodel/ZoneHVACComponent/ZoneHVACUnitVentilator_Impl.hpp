@@ -14,6 +14,9 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+  class HVACComponent;
+
   namespace detail {
 
     class EPMODEL_API ZoneHVACUnitVentilator_Impl : public ZoneHVACComponent_Impl
@@ -27,6 +30,30 @@ namespace epmodel {
       bool setMaximumSupplyAirFlowRate(double maximumSupplyAirFlowRate);
       void autosizeMaximumSupplyAirFlowRate();
       boost::optional<double> autosizedMaximumSupplyAirFlowRate() const;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
+      Schedule minimumOutdoorAirSchedule() const;
+      bool setMinimumOutdoorAirSchedule(Schedule& schedule);
+
+      Schedule maximumOutdoorAirFractionorTemperatureSchedule() const;
+      bool setMaximumOutdoorAirFractionorTemperatureSchedule(Schedule& schedule);
+
+      HVACComponent supplyAirFan() const;
+      bool setSupplyAirFan(const HVACComponent& supplyAirFan);
+
+      boost::optional<Schedule> supplyAirFanOperatingModeSchedule() const;
+      bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+      void resetSupplyAirFanOperatingModeSchedule();
+
+      boost::optional<HVACComponent> heatingCoil() const;
+      bool setHeatingCoil(const HVACComponent& heatingCoil);
+      void resetHeatingCoil();
+
+      boost::optional<HVACComponent> coolingCoil() const;
+      bool setCoolingCoil(const HVACComponent& coolingCoil);
+      void resetCoolingCoil();
 
       std::string outdoorAirControlType() const;
       bool setOutdoorAirControlType(const std::string& outdoorAirControlType);

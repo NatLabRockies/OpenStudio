@@ -6,7 +6,12 @@
 #include "StraightComponent/AirTerminalSingleDuctVAVReheat.hpp"
 #include "StraightComponent/AirTerminalSingleDuctVAVReheat_Impl.hpp"
 
+#include "HVACComponent.hpp"
 #include "Model.hpp"
+#include "ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -20,6 +25,9 @@ namespace epmodel {
 
 AirTerminalSingleDuctVAVReheat::AirTerminalSingleDuctVAVReheat(const Model& model)
   : StraightComponent(AirTerminalSingleDuctVAVReheat::iddObjectType(), model) {
+  ScheduleConstant alwaysOn(model);
+  OS_ASSERT(alwaysOn.setValue(1.0));
+  OS_ASSERT(setAvailabilitySchedule(alwaysOn));
   autosizeMaximumAirFlowRate();
   OS_ASSERT(setZoneMinimumAirFlowInputMethod("Constant"));
   OS_ASSERT(setConstantMinimumAirFlowFraction(0.3));
@@ -49,6 +57,46 @@ std::vector<std::string> AirTerminalSingleDuctVAVReheat::zoneMinimumAirFlowInput
 std::vector<std::string> AirTerminalSingleDuctVAVReheat::damperHeatingActionValues() {
   return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                         openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperHeatingAction);
+}
+
+HVACComponent AirTerminalSingleDuctVAVReheat::reheatCoil() const {
+  return getImpl<detail::AirTerminalSingleDuctVAVReheat_Impl>()->reheatCoil();
+}
+
+bool AirTerminalSingleDuctVAVReheat::setReheatCoil(HVACComponent& coil) {
+  return getImpl<detail::AirTerminalSingleDuctVAVReheat_Impl>()->setReheatCoil(coil);
+}
+
+Schedule AirTerminalSingleDuctVAVReheat::availabilitySchedule() const {
+  return getImpl<detail::AirTerminalSingleDuctVAVReheat_Impl>()->availabilitySchedule();
+}
+
+bool AirTerminalSingleDuctVAVReheat::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::AirTerminalSingleDuctVAVReheat_Impl>()->setAvailabilitySchedule(schedule);
+}
+
+boost::optional<Schedule> AirTerminalSingleDuctVAVReheat::minimumAirFlowFractionSchedule() const {
+  return getImpl<detail::AirTerminalSingleDuctVAVReheat_Impl>()->minimumAirFlowFractionSchedule();
+}
+
+bool AirTerminalSingleDuctVAVReheat::setMinimumAirFlowFractionSchedule(Schedule& schedule) {
+  return getImpl<detail::AirTerminalSingleDuctVAVReheat_Impl>()->setMinimumAirFlowFractionSchedule(schedule);
+}
+
+void AirTerminalSingleDuctVAVReheat::resetMinimumAirFlowFractionSchedule() {
+  getImpl<detail::AirTerminalSingleDuctVAVReheat_Impl>()->resetMinimumAirFlowFractionSchedule();
+}
+
+boost::optional<Schedule> AirTerminalSingleDuctVAVReheat::minimumAirFlowTurndownSchedule() const {
+  return getImpl<detail::AirTerminalSingleDuctVAVReheat_Impl>()->minimumAirFlowTurndownSchedule();
+}
+
+bool AirTerminalSingleDuctVAVReheat::setMinimumAirFlowTurndownSchedule(Schedule& schedule) {
+  return getImpl<detail::AirTerminalSingleDuctVAVReheat_Impl>()->setMinimumAirFlowTurndownSchedule(schedule);
+}
+
+void AirTerminalSingleDuctVAVReheat::resetMinimumAirFlowTurndownSchedule() {
+  getImpl<detail::AirTerminalSingleDuctVAVReheat_Impl>()->resetMinimumAirFlowTurndownSchedule();
 }
 
 boost::optional<double> AirTerminalSingleDuctVAVReheat::maximumAirFlowRate() const {
@@ -217,6 +265,58 @@ unsigned detail::AirTerminalSingleDuctVAVReheat_Impl::outletPort() const {
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+HVACComponent AirTerminalSingleDuctVAVReheat_Impl::reheatCoil() const {
+  auto coil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::ReheatCoilName);
+  OS_ASSERT(coil);
+  return *coil;
+}
+
+bool AirTerminalSingleDuctVAVReheat_Impl::setReheatCoil(HVACComponent& coil) {
+  if (coil.model() != model()) {
+    return false;
+  }
+  return setPointer(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::ReheatCoilName, coil.handle(), false);
+}
+
+Schedule AirTerminalSingleDuctVAVReheat_Impl::availabilitySchedule() const {
+  auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::AvailabilityScheduleName);
+  OS_ASSERT(schedule);
+  return *schedule;
+}
+
+bool AirTerminalSingleDuctVAVReheat_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return ModelObject_Impl::setSchedule(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::AvailabilityScheduleName,
+                                       "AirTerminalSingleDuctVAVReheat", "Availability", schedule);
+}
+
+boost::optional<Schedule> AirTerminalSingleDuctVAVReheat_Impl::minimumAirFlowFractionSchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::MinimumAirFlowFractionScheduleName);
+}
+
+bool AirTerminalSingleDuctVAVReheat_Impl::setMinimumAirFlowFractionSchedule(Schedule& schedule) {
+  return ModelObject_Impl::setSchedule(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::MinimumAirFlowFractionScheduleName,
+                                       "AirTerminalSingleDuctVAVReheat", "Minimum Air Flow Fraction", schedule);
+}
+
+void AirTerminalSingleDuctVAVReheat_Impl::resetMinimumAirFlowFractionSchedule() {
+  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::MinimumAirFlowFractionScheduleName, ""));
+}
+
+boost::optional<Schedule> AirTerminalSingleDuctVAVReheat_Impl::minimumAirFlowTurndownSchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::MinimumAirFlowTurndownScheduleName);
+}
+
+bool AirTerminalSingleDuctVAVReheat_Impl::setMinimumAirFlowTurndownSchedule(Schedule& schedule) {
+  return ModelObject_Impl::setSchedule(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::MinimumAirFlowTurndownScheduleName,
+                                       "AirTerminalSingleDuctVAVReheat", "Minimum Air Flow Turndown", schedule);
+}
+
+void AirTerminalSingleDuctVAVReheat_Impl::resetMinimumAirFlowTurndownSchedule() {
+  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::MinimumAirFlowTurndownScheduleName, ""));
+}
 
 boost::optional<double> AirTerminalSingleDuctVAVReheat_Impl::maximumAirFlowRate() const {
   return getDouble(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::MaximumAirFlowRate, true);

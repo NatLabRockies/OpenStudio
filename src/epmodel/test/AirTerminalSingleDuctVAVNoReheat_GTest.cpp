@@ -6,6 +6,9 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Schedule/ScheduleCompact.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctVAVNoReheat.hpp"
 
 using namespace openstudio::epmodel;
@@ -63,4 +66,34 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVNoReheat_ScalarAccessors_RoundTri
   terminal.resetFixedMinimumAirFlowRate();
   EXPECT_TRUE(terminal.isFixedMinimumAirFlowRateDefaulted());
   EXPECT_FALSE(terminal.fixedMinimumAirFlowRate());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVNoReheat_ScheduleRelationships_RoundTrip) {
+  Model model;
+  AirTerminalSingleDuctVAVNoReheat terminal(model);
+
+  auto defaultSchedule = terminal.availabilitySchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(defaultSchedule);
+  EXPECT_DOUBLE_EQ(1.0, defaultSchedule->value());
+
+  ScheduleCompact availability(model);
+  ScheduleCompact minimumFraction(model);
+  ScheduleCompact turndown(model);
+  ASSERT_TRUE(availability.setToConstantValue(0.6));
+  ASSERT_TRUE(minimumFraction.setToConstantValue(0.2));
+  ASSERT_TRUE(turndown.setToConstantValue(0.4));
+
+  EXPECT_TRUE(terminal.setAvailabilitySchedule(availability));
+  EXPECT_TRUE(terminal.setMinimumAirFlowFractionSchedule(minimumFraction));
+  EXPECT_TRUE(terminal.setMinimumAirFlowTurndownSchedule(turndown));
+  EXPECT_EQ(availability.handle(), terminal.availabilitySchedule().handle());
+  ASSERT_TRUE(terminal.minimumAirFlowFractionSchedule());
+  EXPECT_EQ(minimumFraction.handle(), terminal.minimumAirFlowFractionSchedule()->handle());
+  ASSERT_TRUE(terminal.minimumAirFlowTurndownSchedule());
+  EXPECT_EQ(turndown.handle(), terminal.minimumAirFlowTurndownSchedule()->handle());
+
+  terminal.resetMinimumAirFlowFractionSchedule();
+  EXPECT_FALSE(terminal.minimumAirFlowFractionSchedule());
+  terminal.resetMinimumAirFlowTurndownSchedule();
+  EXPECT_FALSE(terminal.minimumAirFlowTurndownSchedule());
 }

@@ -19,6 +19,8 @@ namespace epmodel {
 
   class Model;
   class ModelObject;
+  class Schedule;
+  class HVACComponent;
 
   namespace detail {
     class ZoneHVACUnitVentilator_Impl;
@@ -43,10 +45,13 @@ namespace epmodel {
     // - Status: Partial Parity. The unit-ventilator scalar fields are aligned, but the schedule/fan/coil/node relationships remain separate.
     // - Canonical Counterpart: openstudio::model::ZoneHVACUnitVentilator.
     // - Implemented Parity: `maximumSupplyAirFlowRate`, `outdoorAirControlType`, `minimumOutdoorAirFlowRate`, `maximumOutdoorAirFlowRate`, `heatingConvergenceTolerance`, and `coolingConvergenceTolerance` map directly to the EnergyPlus object.
-    // - Documented Delta: Availability and outdoor-air schedules, supply-fan and operating-mode schedules, heating/cooling coil references, and inlet/outlet nodes remain relationship-only.
-    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object while schedule and node wiring are handled through explicit relationship state.
+    // - Documented Delta: The outdoor-air temperature/fraction schedule pair remains partially specialized; inlet/outlet nodes continue to come from the shared component topology.
+    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object while schedule, fan, and coil wiring are handled through explicit relationship state.
     // - Evidence: `src/model/ZoneHVACUnitVentilator.hpp`, `src/model/ZoneHVACUnitVentilator.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACUnitVentilator.cpp`, and `src/epmodel/test/ZoneHVACUnitVentilator_GTest.cpp`.
     // - Remaining Parity Work: Add the missing relationship helpers only if the canonical wrapper still exposes them directly.
+
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
 
     /** @name Maximum supply air flow rate */
     //@{
@@ -56,6 +61,27 @@ namespace epmodel {
     void autosizeMaximumSupplyAirFlowRate();
     boost::optional<double> autosizedMaximumSupplyAirFlowRate() const;
     //@}
+
+    Schedule minimumOutdoorAirSchedule() const;
+    bool setMinimumOutdoorAirSchedule(Schedule& schedule);
+
+    Schedule maximumOutdoorAirFractionorTemperatureSchedule() const;
+    bool setMaximumOutdoorAirFractionorTemperatureSchedule(Schedule& schedule);
+
+    HVACComponent supplyAirFan() const;
+    bool setSupplyAirFan(const HVACComponent& supplyAirFan);
+
+    boost::optional<Schedule> supplyAirFanOperatingModeSchedule() const;
+    bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+    void resetSupplyAirFanOperatingModeSchedule();
+
+    boost::optional<HVACComponent> heatingCoil() const;
+    bool setHeatingCoil(const HVACComponent& heatingCoil);
+    void resetHeatingCoil();
+
+    boost::optional<HVACComponent> coolingCoil() const;
+    bool setCoolingCoil(const HVACComponent& coolingCoil);
+    void resetCoolingCoil();
 
     /** @name Outdoor air control type */
     //@{

@@ -6,7 +6,12 @@
 #include "StraightComponent/AirTerminalSingleDuctSeriesPIUReheat.hpp"
 #include "StraightComponent/AirTerminalSingleDuctSeriesPIUReheat_Impl.hpp"
 
+#include "HVACComponent.hpp"
 #include "Model.hpp"
+#include "ModelObject.hpp"
+#include "Node.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -49,6 +54,38 @@ std::vector<std::string> AirTerminalSingleDuctSeriesPIUReheat::fanControlTypeVal
 std::vector<std::string> AirTerminalSingleDuctSeriesPIUReheat::heatingControlTypeValues() {
   return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                         openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::HeatingControlType);
+}
+
+boost::optional<Schedule> AirTerminalSingleDuctSeriesPIUReheat::availabilitySchedule() const {
+  return getImpl<detail::AirTerminalSingleDuctSeriesPIUReheat_Impl>()->availabilitySchedule();
+}
+
+bool AirTerminalSingleDuctSeriesPIUReheat::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::AirTerminalSingleDuctSeriesPIUReheat_Impl>()->setAvailabilitySchedule(schedule);
+}
+
+void AirTerminalSingleDuctSeriesPIUReheat::resetAvailabilitySchedule() {
+  getImpl<detail::AirTerminalSingleDuctSeriesPIUReheat_Impl>()->resetAvailabilitySchedule();
+}
+
+HVACComponent AirTerminalSingleDuctSeriesPIUReheat::fan() const {
+  return getImpl<detail::AirTerminalSingleDuctSeriesPIUReheat_Impl>()->fan();
+}
+
+bool AirTerminalSingleDuctSeriesPIUReheat::setFan(const HVACComponent& fan) {
+  return getImpl<detail::AirTerminalSingleDuctSeriesPIUReheat_Impl>()->setFan(fan);
+}
+
+HVACComponent AirTerminalSingleDuctSeriesPIUReheat::reheatCoil() const {
+  return getImpl<detail::AirTerminalSingleDuctSeriesPIUReheat_Impl>()->reheatCoil();
+}
+
+bool AirTerminalSingleDuctSeriesPIUReheat::setReheatCoil(const HVACComponent& coil) {
+  return getImpl<detail::AirTerminalSingleDuctSeriesPIUReheat_Impl>()->setReheatCoil(coil);
+}
+
+boost::optional<Node> AirTerminalSingleDuctSeriesPIUReheat::secondaryAirInletNode() const {
+  return getImpl<detail::AirTerminalSingleDuctSeriesPIUReheat_Impl>()->secondaryAirInletNode();
 }
 
 boost::optional<double> AirTerminalSingleDuctSeriesPIUReheat::maximumAirFlowRate() const {
@@ -181,6 +218,51 @@ bool AirTerminalSingleDuctSeriesPIUReheat::setHighLimitHeatingDischargeAirTemper
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+boost::optional<Schedule> AirTerminalSingleDuctSeriesPIUReheat_Impl::availabilitySchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::AvailabilityScheduleName);
+}
+
+bool AirTerminalSingleDuctSeriesPIUReheat_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return ModelObject_Impl::setSchedule(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::AvailabilityScheduleName,
+                                       "AirTerminalSingleDuctSeriesPIUReheat", "Availability", schedule);
+}
+
+void AirTerminalSingleDuctSeriesPIUReheat_Impl::resetAvailabilitySchedule() {
+  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::AvailabilityScheduleName, ""));
+}
+
+HVACComponent AirTerminalSingleDuctSeriesPIUReheat_Impl::fan() const {
+  auto fan = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::FanName);
+  OS_ASSERT(fan);
+  return *fan;
+}
+
+bool AirTerminalSingleDuctSeriesPIUReheat_Impl::setFan(const HVACComponent& fan) {
+  if (fan.model() != model()) {
+    return false;
+  }
+  return setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::FanName, fan.handle(), false);
+}
+
+HVACComponent AirTerminalSingleDuctSeriesPIUReheat_Impl::reheatCoil() const {
+  auto coil =
+    getObject<ModelObject>().getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName);
+  OS_ASSERT(coil);
+  return *coil;
+}
+
+bool AirTerminalSingleDuctSeriesPIUReheat_Impl::setReheatCoil(const HVACComponent& coil) {
+  if (coil.model() != model()) {
+    return false;
+  }
+  return setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::ReheatCoilName, coil.handle(), false);
+}
+
+boost::optional<Node> AirTerminalSingleDuctSeriesPIUReheat_Impl::secondaryAirInletNode() const {
+  return getObject<ModelObject>().getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::SecondaryAirInletNodeName);
+}
 
 boost::optional<double> AirTerminalSingleDuctSeriesPIUReheat_Impl::maximumAirFlowRate() const {
   return getDouble(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::MaximumAirFlowRate, true);

@@ -18,6 +18,8 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
+  class HVACComponent;
 
   namespace detail {
     class AirTerminalSingleDuctVAVReheat_Impl;
@@ -43,10 +45,24 @@ namespace epmodel {
     // - Status: Scalar Parity. The scalar VAV reheat contract is aligned; relationship and node plumbing remain narrower.
     // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctVAVReheat.
     // - Implemented Parity: `maximumAirFlowRate`, `zoneMinimumAirFlowInputMethod`, `zoneMinimumAirFlowMethod`, `constantMinimumAirFlowFraction`, `fixedMinimumAirFlowRate`, `maximumHotWaterorSteamFlowRate`, `minimumHotWaterorSteamFlowRate`, `maximumReheatAirTemperature`, and the legacy naming compatibility around `setMinimumHotWaterOrStreamFlowRate` preserve the canonical scalar contract.
-    // - Documented Delta: Availability schedule, damper/air inlet/air outlet node names, reheat-coil references, minimum air flow fraction schedule, design specification outdoor air reference, minimum air flow turndown schedule, and `controlForOutdoorAir` behavior are relationship fields and are not exposed as public methods yet.
+    // - Documented Delta: Damper/air inlet/air outlet node names, design-specification-outdoor-air behavior, and `controlForOutdoorAir` remain outside this pass.
     // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:VAV:Reheat` fields; the translator handles links separately.
     // - Evidence: `src/model/AirTerminalSingleDuctVAVReheat.hpp`, `src/model/AirTerminalSingleDuctVAVReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctVAVReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctVAVReheat_GTest.cpp`.
     // - Remaining Parity Work: Add the omitted relationship helpers when this type moves beyond scalar parity.
+    HVACComponent reheatCoil() const;
+    bool setReheatCoil(HVACComponent& coil);
+
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    boost::optional<Schedule> minimumAirFlowFractionSchedule() const;
+    bool setMinimumAirFlowFractionSchedule(Schedule& schedule);
+    void resetMinimumAirFlowFractionSchedule();
+
+    boost::optional<Schedule> minimumAirFlowTurndownSchedule() const;
+    bool setMinimumAirFlowTurndownSchedule(Schedule& schedule);
+    void resetMinimumAirFlowTurndownSchedule();
+
     boost::optional<double> maximumAirFlowRate() const;
     bool isMaximumAirFlowRateAutosized() const;
     bool setMaximumAirFlowRate(double maximumAirFlowRate);

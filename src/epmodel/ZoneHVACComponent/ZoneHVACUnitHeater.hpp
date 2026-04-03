@@ -22,6 +22,8 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
+  class HVACComponent;
 
   namespace detail {
     class ZoneHVACUnitHeater_Impl;
@@ -46,10 +48,19 @@ namespace epmodel {
     // - Status: Partial Parity. The core unit-heater scalars are aligned, but the availability/fan/coil/node relationships remain separate.
     // - Canonical Counterpart: openstudio::model::ZoneHVACUnitHeater.
     // - Implemented Parity: `maximumSupplyAirFlowRate`, `fanControlType`, `maximumHotWaterFlowRate`, `minimumHotWaterFlowRate`, and `heatingConvergenceTolerance` map directly to the EnergyPlus object.
-    // - Documented Delta: Availability, supply-fan, heating-coil, and node targets are relationship-only and remain outside the scalar surface.
-    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object while the omitted links are represented through child-object and topology state.
+    // - Documented Delta: Node targets remain relationship-only; the core availability, supply-fan, and heating-coil links are now exposed directly.
+    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object while relationship targets are preserved as typed object links.
     // - Evidence: `src/model/ZoneHVACUnitHeater.hpp`, `src/model/ZoneHVACUnitHeater.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACUnitHeater.cpp`, and `src/epmodel/test/ZoneHVACUnitHeater_GTest.cpp`.
     // - Remaining Parity Work: Add the missing relationship helpers only if the canonical wrapper still exposes them as public API.
+
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    HVACComponent supplyAirFan() const;
+    bool setSupplyAirFan(const HVACComponent& fan);
+
+    HVACComponent heatingCoil() const;
+    bool setHeatingCoil(const HVACComponent& heatingCoil);
 
     /** @name Maximum Supply Air Flow Rate */
     //@{

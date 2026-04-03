@@ -21,6 +21,7 @@ namespace epmodel {
   class Model;
   class ModelObject;
   class HVACComponent;
+  class Schedule;
 
   namespace detail {
     class ZoneHVACPackagedTerminalAirConditioner_Impl;
@@ -45,10 +46,13 @@ namespace epmodel {
     // - Status: Partial Parity. The flow and fan-placement scalars are aligned, but the supply-fan/coils/node wiring remains relationship-driven.
     // - Canonical Counterpart: openstudio::model::ZoneHVACPackagedTerminalAirConditioner.
     // - Implemented Parity: Supply-air and outdoor-air flow scalars, `noLoadSupplyAirFlowRateControlSetToLowSpeed`, and `fanPlacement` map directly to the EnergyPlus object.
-    // - Documented Delta: Supply-air fan, heating/cooling coil links, and node names are relationship-style fields and remain outside the scalar surface.
-    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while the contained equipment and node topology are modeled explicitly through child-object state.
+    // - Documented Delta: Outdoor-air mixer references and node names remain outside the public surface.
+    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while schedules and contained equipment are modeled explicitly through child-object state.
     // - Evidence: `src/model/ZoneHVACPackagedTerminalAirConditioner.hpp`, `src/model/ZoneHVACPackagedTerminalAirConditioner.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACPackagedTerminalAirConditioner.cpp`, and `src/epmodel/test/ZoneHVACPackagedTerminalAirConditioner_GTest.cpp`.
     // - Remaining Parity Work: Add the omitted relationship helpers only if the canonical wrapper still exposes them directly.
+
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
 
     boost::optional<double> supplyAirFlowRateDuringCoolingOperation() const;
     bool setSupplyAirFlowRateDuringCoolingOperation(double supplyAirFlowRateDuringCoolingOperation);
@@ -92,6 +96,9 @@ namespace epmodel {
 
     HVACComponent supplyAirFan() const;
     bool setSupplyAirFan(HVACComponent& fan);
+
+    Schedule supplyAirFanOperatingModeSchedule() const;
+    bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
 
     HVACComponent heatingCoil() const;
     bool setHeatingCoil(HVACComponent& heatingCoil);

@@ -6,6 +6,8 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Schedule/ScheduleCompact.hpp"
+#include "../StraightComponent/CoilHeatingElectric.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctVAVHeatAndCoolReheat.hpp"
 
 using namespace openstudio::epmodel;
@@ -46,4 +48,33 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVHeatAndCoolReheat_ScalarAccessors
 
   EXPECT_TRUE(terminal.setMaximumReheatAirTemperature(41.2));
   EXPECT_DOUBLE_EQ(41.2, terminal.maximumReheatAirTemperature());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVHeatAndCoolReheat_Relationships_RoundTrip) {
+  Model model;
+  AirTerminalSingleDuctVAVHeatAndCoolReheat terminal(model);
+
+  EXPECT_FALSE(terminal.availabilitySchedule());
+  EXPECT_FALSE(terminal.minimumAirFlowTurndownSchedule());
+
+  ScheduleCompact availability(model);
+  ScheduleCompact turndown(model);
+  ASSERT_TRUE(availability.setToConstantValue(0.6));
+  ASSERT_TRUE(turndown.setToConstantValue(0.4));
+
+  EXPECT_TRUE(terminal.setAvailabilitySchedule(availability));
+  EXPECT_TRUE(terminal.setMinimumAirFlowTurndownSchedule(turndown));
+  ASSERT_TRUE(terminal.availabilitySchedule());
+  EXPECT_EQ(availability.handle(), terminal.availabilitySchedule()->handle());
+  ASSERT_TRUE(terminal.minimumAirFlowTurndownSchedule());
+  EXPECT_EQ(turndown.handle(), terminal.minimumAirFlowTurndownSchedule()->handle());
+
+  CoilHeatingElectric reheatCoil(model);
+  EXPECT_TRUE(terminal.setReheatCoil(reheatCoil));
+  EXPECT_EQ(reheatCoil.handle(), terminal.reheatCoil().handle());
+
+  terminal.resetAvailabilitySchedule();
+  EXPECT_FALSE(terminal.availabilitySchedule());
+  terminal.resetMinimumAirFlowTurndownSchedule();
+  EXPECT_FALSE(terminal.minimumAirFlowTurndownSchedule());
 }

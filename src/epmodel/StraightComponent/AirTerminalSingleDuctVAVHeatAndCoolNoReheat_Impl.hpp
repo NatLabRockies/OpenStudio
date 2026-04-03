@@ -11,6 +11,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl : public StraightComponent_Impl
@@ -21,6 +23,14 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+
+      boost::optional<Schedule> availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+      void resetAvailabilitySchedule();
+
+      boost::optional<Schedule> minimumAirFlowTurndownSchedule() const;
+      bool setMinimumAirFlowTurndownSchedule(Schedule& schedule);
+      void resetMinimumAirFlowTurndownSchedule();
 
       boost::optional<double> maximumAirFlowRate() const;
       bool setMaximumAirFlowRate(double maximumAirFlowRate);

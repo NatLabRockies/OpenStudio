@@ -7,6 +7,9 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../Schedule/ScheduleCompact.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/Node.hpp"
@@ -93,4 +96,25 @@ TEST_F(EPModelFixture, ZoneHVACUnitHeater_TopologyAndChildren) {
   ASSERT_EQ(2u, children.size());
   EXPECT_EQ(fan.handle(), children[0].handle());
   EXPECT_EQ(coil.handle(), children[1].handle());
+}
+
+TEST_F(EPModelFixture, ZoneHVACUnitHeater_HvacRelationships_RoundTrip) {
+  Model model;
+  ZoneHVACUnitHeater unitHeater(model);
+
+  auto defaultSchedule = unitHeater.availabilitySchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(defaultSchedule);
+  EXPECT_DOUBLE_EQ(1.0, defaultSchedule->value());
+
+  ScheduleCompact compactSchedule(model);
+  ASSERT_TRUE(compactSchedule.setToConstantValue(0.4));
+  EXPECT_TRUE(unitHeater.setAvailabilitySchedule(compactSchedule));
+  EXPECT_EQ(compactSchedule.handle(), unitHeater.availabilitySchedule().handle());
+
+  FanConstantVolume fan(model);
+  CoilHeatingElectric coil(model);
+  EXPECT_TRUE(unitHeater.setSupplyAirFan(fan));
+  EXPECT_TRUE(unitHeater.setHeatingCoil(coil));
+  EXPECT_EQ(fan.handle(), unitHeater.supplyAirFan().handle());
+  EXPECT_EQ(coil.handle(), unitHeater.heatingCoil().handle());
 }

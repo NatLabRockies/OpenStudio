@@ -6,8 +6,13 @@
 #include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp"
 #include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl.hpp"
 
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
 
 #include "../utilities/core/Assert.hpp"
 
@@ -22,6 +27,10 @@ namespace epmodel {
   ZoneHVACTerminalUnitVariableRefrigerantFlow::ZoneHVACTerminalUnitVariableRefrigerantFlow(const Model& model)
     : ZoneHVACComponent(ZoneHVACTerminalUnitVariableRefrigerantFlow::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>());
+    ScheduleConstant alwaysOn(model);
+    OS_ASSERT(alwaysOn.setValue(1.0));
+    OS_ASSERT(setTerminalUnitAvailabilityschedule(alwaysOn));
+    OS_ASSERT(setSupplyAirFanOperatingModeSchedule(alwaysOn));
   }
 
   ZoneHVACTerminalUnitVariableRefrigerantFlow::ZoneHVACTerminalUnitVariableRefrigerantFlow(
@@ -35,6 +44,14 @@ namespace epmodel {
   std::vector<std::string> ZoneHVACTerminalUnitVariableRefrigerantFlow::supplyAirFanPlacementValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                           ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanPlacement);
+  }
+
+  Schedule ZoneHVACTerminalUnitVariableRefrigerantFlow::terminalUnitAvailabilityschedule() const {
+    return getImpl<detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>()->terminalUnitAvailabilityschedule();
+  }
+
+  bool ZoneHVACTerminalUnitVariableRefrigerantFlow::setTerminalUnitAvailabilityschedule(Schedule& schedule) {
+    return getImpl<detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>()->setTerminalUnitAvailabilityschedule(schedule);
   }
 
   namespace {
@@ -259,6 +276,14 @@ namespace epmodel {
     return impl(this)->setSupplyAirFan(fan);
   }
 
+  Schedule ZoneHVACTerminalUnitVariableRefrigerantFlow::supplyAirFanOperatingModeSchedule() const {
+    return impl(this)->supplyAirFanOperatingModeSchedule();
+  }
+
+  bool ZoneHVACTerminalUnitVariableRefrigerantFlow::setSupplyAirFanOperatingModeSchedule(Schedule& schedule) {
+    return impl(this)->setSupplyAirFanOperatingModeSchedule(schedule);
+  }
+
   boost::optional<HVACComponent> ZoneHVACTerminalUnitVariableRefrigerantFlow::coolingCoil() const {
     return impl(this)->coolingCoil();
   }
@@ -287,11 +312,35 @@ namespace epmodel {
     impl(this)->resetSupplementalHeatingCoil();
   }
 
+  boost::optional<ThermalZone> ZoneHVACTerminalUnitVariableRefrigerantFlow::controllingZoneorThermostatLocation() const {
+    return impl(this)->controllingZoneorThermostatLocation();
+  }
+
+  bool ZoneHVACTerminalUnitVariableRefrigerantFlow::setControllingZoneorThermostatLocation(const ThermalZone& thermalZone) {
+    return impl(this)->setControllingZoneorThermostatLocation(thermalZone);
+  }
+
+  void ZoneHVACTerminalUnitVariableRefrigerantFlow::resetControllingZoneorThermostatLocation() {
+    impl(this)->resetControllingZoneorThermostatLocation();
+  }
+
   std::vector<ModelObject> ZoneHVACTerminalUnitVariableRefrigerantFlow::children() const {
     return impl(this)->children();
   }
 
   namespace detail {
+
+    Schedule ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::terminalUnitAvailabilityschedule() const {
+      auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::TerminalUnitAvailabilitySchedule);
+      OS_ASSERT(schedule);
+      return *schedule;
+    }
+
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setTerminalUnitAvailabilityschedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::TerminalUnitAvailabilitySchedule,
+                                           "ZoneHVACTerminalUnitVariableRefrigerantFlow", "Terminal Unit Availability", schedule);
+    }
 
     boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::supplyAirFlowRateDuringCoolingOperation() const {
       return getDouble(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingSupplyAirFlowRate, true);
@@ -662,6 +711,18 @@ namespace epmodel {
       return setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName, fan.handle());
     }
 
+    Schedule ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::supplyAirFanOperatingModeSchedule() const {
+      auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanOperatingModeScheduleName);
+      OS_ASSERT(schedule);
+      return *schedule;
+    }
+
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setSupplyAirFanOperatingModeSchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanOperatingModeScheduleName,
+                                           "ZoneHVACTerminalUnitVariableRefrigerantFlow", "Supply Air Fan Operating Mode", schedule);
+    }
+
     boost::optional<HVACComponent> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::coolingCoil() const {
       return getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName);
     }
@@ -689,6 +750,22 @@ namespace epmodel {
     void ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::resetSupplementalHeatingCoil() {
       bool result = setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilName, Handle());
       OS_ASSERT(result);
+    }
+
+    boost::optional<ThermalZone> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::controllingZoneorThermostatLocation() const {
+      return getObject<ModelObject>().getModelObjectTarget<ThermalZone>(
+        ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::ControllingZoneorThermostatLocation);
+    }
+
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setControllingZoneorThermostatLocation(const ThermalZone& thermalZone) {
+      if (thermalZone.model() != model()) {
+        return false;
+      }
+      return setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::ControllingZoneorThermostatLocation, thermalZone.handle(), false);
+    }
+
+    void ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::resetControllingZoneorThermostatLocation() {
+      OS_ASSERT(setString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::ControllingZoneorThermostatLocation, ""));
     }
 
     std::vector<ModelObject> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::children() const {

@@ -6,7 +6,11 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Schedule/ScheduleCompact.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeReheat.hpp"
+#include "../StraightComponent/CoilHeatingElectric.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -52,4 +56,22 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeReheat_ScalarAccessors
   EXPECT_FALSE(terminal.isMaximumReheatAirTemperatureDefaulted());
   terminal.resetMaximumReheatAirTemperature();
   EXPECT_TRUE(terminal.isMaximumReheatAirTemperatureDefaulted());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeReheat_Relationships_RoundTrip) {
+  Model model;
+  AirTerminalSingleDuctConstantVolumeReheat terminal(model);
+
+  auto defaultSchedule = terminal.availabilitySchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(defaultSchedule);
+  EXPECT_DOUBLE_EQ(1.0, defaultSchedule->value());
+
+  ScheduleCompact compactSchedule(model);
+  ASSERT_TRUE(compactSchedule.setToConstantValue(0.7));
+  EXPECT_TRUE(terminal.setAvailabilitySchedule(compactSchedule));
+  EXPECT_EQ(compactSchedule.handle(), terminal.availabilitySchedule().handle());
+
+  CoilHeatingElectric reheatCoil(model);
+  EXPECT_TRUE(terminal.setReheatCoil(reheatCoil));
+  EXPECT_EQ(reheatCoil.handle(), terminal.reheatCoil().handle());
 }

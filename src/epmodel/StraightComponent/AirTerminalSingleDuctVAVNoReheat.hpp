@@ -18,6 +18,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class AirTerminalSingleDuctVAVNoReheat_Impl;
@@ -42,10 +43,21 @@ namespace epmodel {
     // - Status: Scalar Parity. The scalar VAV no-reheat contract is aligned; relationship and node plumbing remain narrower.
     // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctVAVNoReheat.
     // - Implemented Parity: `maximumAirFlowRate`, `zoneMinimumAirFlowInputMethod`, `constantMinimumAirFlowFraction`, and `fixedMinimumAirFlowRate` preserve the canonical scalar contract.
-    // - Documented Delta: Availability schedule, air inlet/outlet node names, minimum air flow fraction schedule, design specification outdoor air reference, and minimum air flow turndown schedule are relationship fields and are not exposed as public methods yet.
+    // - Documented Delta: Air inlet/outlet node names and design-specification-outdoor-air behavior remain outside this public surface.
     // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:VAV:NoReheat` fields; the translator handles links separately.
     // - Evidence: `src/model/AirTerminalSingleDuctVAVNoReheat.hpp`, `src/model/AirTerminalSingleDuctVAVNoReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctVAVNoReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctVAVNoReheat_GTest.cpp`.
     // - Remaining Parity Work: Add the omitted relationship helpers when this type moves beyond scalar parity.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    boost::optional<Schedule> minimumAirFlowFractionSchedule() const;
+    bool setMinimumAirFlowFractionSchedule(Schedule& schedule);
+    void resetMinimumAirFlowFractionSchedule();
+
+    boost::optional<Schedule> minimumAirFlowTurndownSchedule() const;
+    bool setMinimumAirFlowTurndownSchedule(Schedule& schedule);
+    void resetMinimumAirFlowTurndownSchedule();
+
     boost::optional<double> maximumAirFlowRate() const;
     bool isMaximumAirFlowRateAutosized() const;
     bool setMaximumAirFlowRate(double maximumAirFlowRate);

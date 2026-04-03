@@ -15,6 +15,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API ZoneHVACFourPipeFanCoil_Impl : public ZoneHVACComponent_Impl
@@ -26,6 +28,9 @@ namespace epmodel {
       std::vector<ModelObject> children() const override;
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
 
       std::string capacityControlMethod() const;
       bool setCapacityControlMethod(const std::string& capacityControlMethod);
@@ -55,6 +60,10 @@ namespace epmodel {
       bool setOutdoorAirMixerObjectType(const std::string& outdoorAirMixerObjectType);
       std::vector<std::string> outdoorAirMixerObjectTypeValues() const;
 
+      boost::optional<Schedule> outdoorAirSchedule() const;
+      bool setOutdoorAirSchedule(Schedule& schedule);
+      void resetOutdoorAirSchedule();
+
       HVACComponent supplyAirFan() const;
       HVACComponent coolingCoil() const;
       HVACComponent heatingCoil() const;
@@ -62,6 +71,10 @@ namespace epmodel {
       bool setSupplyAirFan(HVACComponent& fan);
       bool setCoolingCoil(HVACComponent& coolingCoil);
       bool setHeatingCoil(HVACComponent& heatingCoil);
+
+      boost::optional<Schedule> supplyAirFanOperatingModeSchedule() const;
+      bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+      void resetSupplyAirFanOperatingModeSchedule();
 
       boost::optional<double> maximumColdWaterFlowRate() const;
       bool isMaximumColdWaterFlowRateAutosized() const;

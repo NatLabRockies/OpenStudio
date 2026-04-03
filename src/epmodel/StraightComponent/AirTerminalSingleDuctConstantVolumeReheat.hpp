@@ -17,6 +17,8 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Schedule;
+class HVACComponent;
 
 namespace detail {
 class AirTerminalSingleDuctConstantVolumeReheat_Impl;
@@ -39,10 +41,17 @@ class EPMODEL_API AirTerminalSingleDuctConstantVolumeReheat : public StraightCom
   // - Status: Scalar Parity. The constant-volume reheat scalar surface is aligned, while schedule, node-link, and coil helpers remain intentionally narrower.
   // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctConstantVolumeReheat.
   // - Implemented Parity: `maximumAirFlowRate`, `maximumHotWaterorSteamFlowRate`, `minimumHotWaterorSteamFlowRate`, `convergenceTolerance`, and `maximumReheatAirTemperature` preserve the canonical scalar contract.
-  // - Documented Delta: Availability schedule, inlet node, outlet node, and reheat-coil accessors are not exposed as public methods yet.
+  // - Documented Delta: Inlet and outlet node conveniences continue to come from the shared straight-component topology.
   // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:ConstantVolume:Reheat` fields, while the translator wires the topology links separately.
   // - Evidence: `src/model/AirTerminalSingleDuctConstantVolumeReheat.hpp`, `src/model/AirTerminalSingleDuctConstantVolumeReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctConstantVolumeReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctConstantVolumeReheat_GTest.cpp`.
   // - Remaining Parity Work: Add the omitted schedule, node-link, and coil helpers when relationship parity expands.
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+
+  HVACComponent reheatCoil() const;
+  bool setReheatCoil(const HVACComponent& coil);
+  void resetReheatCoil();
+
   boost::optional<double> maximumAirFlowRate() const;
   bool isMaximumAirFlowRateAutosized() const;
   bool setMaximumAirFlowRate(double maximumAirFlowRate);

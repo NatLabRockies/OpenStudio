@@ -8,6 +8,9 @@
 #include "EPModelFixture.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
+#include "../Schedule/ScheduleCompact.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../WaterToAirComponent/CoilCoolingWater.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
@@ -126,4 +129,34 @@ TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_ChildrenAndZoneTopology) {
   EXPECT_FALSE(coil.thermalZone());
   EXPECT_FALSE(coil.inletNode());
   EXPECT_FALSE(coil.outletNode());
+}
+
+TEST_F(EPModelFixture, ZoneHVACFourPipeFanCoil_ScheduleRelationships_RoundTrip) {
+  Model model;
+  ZoneHVACFourPipeFanCoil coil(model);
+
+  auto defaultSchedule = coil.availabilitySchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(defaultSchedule);
+  EXPECT_DOUBLE_EQ(1.0, defaultSchedule->value());
+
+  ScheduleCompact availability(model);
+  ScheduleCompact outdoorAir(model);
+  ScheduleCompact fanMode(model);
+  ASSERT_TRUE(availability.setToConstantValue(0.3));
+  ASSERT_TRUE(outdoorAir.setToConstantValue(0.4));
+  ASSERT_TRUE(fanMode.setToConstantValue(1.0));
+
+  EXPECT_TRUE(coil.setAvailabilitySchedule(availability));
+  EXPECT_TRUE(coil.setOutdoorAirSchedule(outdoorAir));
+  EXPECT_TRUE(coil.setSupplyAirFanOperatingModeSchedule(fanMode));
+  EXPECT_EQ(availability.handle(), coil.availabilitySchedule().handle());
+  ASSERT_TRUE(coil.outdoorAirSchedule());
+  EXPECT_EQ(outdoorAir.handle(), coil.outdoorAirSchedule()->handle());
+  ASSERT_TRUE(coil.supplyAirFanOperatingModeSchedule());
+  EXPECT_EQ(fanMode.handle(), coil.supplyAirFanOperatingModeSchedule()->handle());
+
+  coil.resetOutdoorAirSchedule();
+  EXPECT_FALSE(coil.outdoorAirSchedule());
+  coil.resetSupplyAirFanOperatingModeSchedule();
+  EXPECT_FALSE(coil.supplyAirFanOperatingModeSchedule());
 }

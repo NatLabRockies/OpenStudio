@@ -8,6 +8,11 @@
 #include <algorithm>
 
 #include "EPModelFixture.hpp"
+#include "../Schedule/ScheduleCompact.hpp"
+#include "../StraightComponent/CoilHeatingElectric.hpp"
+#include "../StraightComponent/FanConstantVolume.hpp"
+#include "../StraightComponent/Node.hpp"
+#include <utilities/idd/AirTerminal_SingleDuct_SeriesPIU_Reheat_FieldEnums.hxx>
 #include "../StraightComponent/AirTerminalSingleDuctSeriesPIUReheat.hpp"
 
 using namespace openstudio::epmodel;
@@ -83,4 +88,31 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_ScalarAccessors_Roun
   const auto heatingControlTypeValues = AirTerminalSingleDuctSeriesPIUReheat::heatingControlTypeValues();
   EXPECT_FALSE(heatingControlTypeValues.empty());
   EXPECT_TRUE(std::find(heatingControlTypeValues.begin(), heatingControlTypeValues.end(), "Staged") != heatingControlTypeValues.end());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_Relationships_RoundTrip) {
+  Model model;
+  AirTerminalSingleDuctSeriesPIUReheat terminal(model);
+
+  EXPECT_FALSE(terminal.availabilitySchedule());
+
+  ScheduleCompact availability(model);
+  ASSERT_TRUE(availability.setToConstantValue(0.5));
+  EXPECT_TRUE(terminal.setAvailabilitySchedule(availability));
+  ASSERT_TRUE(terminal.availabilitySchedule());
+  EXPECT_EQ(availability.handle(), terminal.availabilitySchedule()->handle());
+
+  FanConstantVolume fan(model);
+  CoilHeatingElectric reheatCoil(model);
+  Node secondaryNode(model);
+  EXPECT_TRUE(terminal.setFan(fan));
+  EXPECT_TRUE(terminal.setReheatCoil(reheatCoil));
+  EXPECT_TRUE(terminal.setPointer(openstudio::AirTerminal_SingleDuct_SeriesPIU_ReheatFields::SecondaryAirInletNodeName, secondaryNode.handle()));
+  EXPECT_EQ(fan.handle(), terminal.fan().handle());
+  EXPECT_EQ(reheatCoil.handle(), terminal.reheatCoil().handle());
+  ASSERT_TRUE(terminal.secondaryAirInletNode());
+  EXPECT_EQ(secondaryNode.handle(), terminal.secondaryAirInletNode()->handle());
+
+  terminal.resetAvailabilitySchedule();
+  EXPECT_FALSE(terminal.availabilitySchedule());
 }

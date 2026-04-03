@@ -16,6 +16,8 @@ namespace openstudio {
 namespace epmodel {
 
   class ModelObject;
+  class Schedule;
+  class HVACComponent;
 
   namespace detail {
 
@@ -28,6 +30,15 @@ namespace epmodel {
       std::vector<ModelObject> children() const override;
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
+      HVACComponent supplyAirFan() const;
+      bool setSupplyAirFan(const HVACComponent& fan);
+
+      HVACComponent heatingCoil() const;
+      bool setHeatingCoil(const HVACComponent& heatingCoil);
 
       boost::optional<double> maximumSupplyAirFlowRate() const;
       bool isMaximumSupplyAirFlowRateAutosized() const;

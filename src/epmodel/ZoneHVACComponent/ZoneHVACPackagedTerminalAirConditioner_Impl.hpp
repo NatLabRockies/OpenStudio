@@ -18,6 +18,7 @@ namespace epmodel {
 
   class HVACComponent;
   class ModelObject;
+  class Schedule;
 
   namespace detail {
 
@@ -26,6 +27,9 @@ namespace epmodel {
      public:
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACPackagedTerminalAirConditioner_Impl() override = default;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
 
       boost::optional<double> supplyAirFlowRateDuringCoolingOperation() const;
       bool setSupplyAirFlowRateDuringCoolingOperation(boost::optional<double> supplyAirFlowRateDuringCoolingOperation);
@@ -79,6 +83,9 @@ namespace epmodel {
 
       HVACComponent supplyAirFan() const;
       bool setSupplyAirFan(HVACComponent& fan);
+
+      Schedule supplyAirFanOperatingModeSchedule() const;
+      bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
 
       HVACComponent heatingCoil() const;
       bool setHeatingCoil(HVACComponent& heatingCoil);

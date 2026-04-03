@@ -13,6 +13,10 @@
 namespace openstudio {
 namespace epmodel {
 
+class Schedule;
+class HVACComponent;
+class Node;
+
 namespace detail {
 
 class EPMODEL_API AirTerminalSingleDuctParallelPIUReheat_Impl : public StraightComponent_Impl
@@ -23,6 +27,17 @@ class EPMODEL_API AirTerminalSingleDuctParallelPIUReheat_Impl : public StraightC
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+
+  HVACComponent fan() const;
+  bool setFan(HVACComponent& hvacComponent);
+
+  HVACComponent reheatCoil() const;
+  bool setReheatCoil(HVACComponent& hvacComponent);
+
+  boost::optional<Node> secondaryAirInletNode() const;
 
   boost::optional<double> maximumPrimaryAirFlowRate() const;
   bool isMaximumPrimaryAirFlowRateAutosized() const;

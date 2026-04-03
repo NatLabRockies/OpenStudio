@@ -9,6 +9,9 @@
 #include "HVACComponent.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -21,6 +24,10 @@ namespace epmodel {
 
   ZoneHVACFourPipeFanCoil::ZoneHVACFourPipeFanCoil(const Model& model) : ZoneHVACComponent(ZoneHVACFourPipeFanCoil::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>());
+
+    ScheduleConstant alwaysOn(model);
+    OS_ASSERT(alwaysOn.setValue(1.0));
+    OS_ASSERT(setAvailabilitySchedule(alwaysOn));
 
     auto capacityMethods = ZoneHVACFourPipeFanCoil::capacityControlMethodValues();
     OS_ASSERT(!capacityMethods.empty());
@@ -51,6 +58,14 @@ namespace epmodel {
 
   std::vector<std::string> ZoneHVACFourPipeFanCoil::outdoorAirMixerObjectTypeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType);
+  }
+
+  Schedule ZoneHVACFourPipeFanCoil::availabilitySchedule() const {
+    return getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->availabilitySchedule();
+  }
+
+  bool ZoneHVACFourPipeFanCoil::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->setAvailabilitySchedule(schedule);
   }
 
   HVACComponent ZoneHVACFourPipeFanCoil::supplyAirFan() const {
@@ -145,6 +160,18 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->setOutdoorAirMixerObjectType(outdoorAirMixerObjectType);
   }
 
+  boost::optional<Schedule> ZoneHVACFourPipeFanCoil::outdoorAirSchedule() const {
+    return getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->outdoorAirSchedule();
+  }
+
+  bool ZoneHVACFourPipeFanCoil::setOutdoorAirSchedule(Schedule& schedule) {
+    return getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->setOutdoorAirSchedule(schedule);
+  }
+
+  void ZoneHVACFourPipeFanCoil::resetOutdoorAirSchedule() {
+    getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->resetOutdoorAirSchedule();
+  }
+
   bool ZoneHVACFourPipeFanCoil::setSupplyAirFan(HVACComponent& fan) {
     return getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->setSupplyAirFan(fan);
   }
@@ -155,6 +182,18 @@ namespace epmodel {
 
   bool ZoneHVACFourPipeFanCoil::setHeatingCoil(HVACComponent& heatingCoil) {
     return getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->setHeatingCoil(heatingCoil);
+  }
+
+  boost::optional<Schedule> ZoneHVACFourPipeFanCoil::supplyAirFanOperatingModeSchedule() const {
+    return getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->supplyAirFanOperatingModeSchedule();
+  }
+
+  bool ZoneHVACFourPipeFanCoil::setSupplyAirFanOperatingModeSchedule(Schedule& schedule) {
+    return getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->setSupplyAirFanOperatingModeSchedule(schedule);
+  }
+
+  void ZoneHVACFourPipeFanCoil::resetSupplyAirFanOperatingModeSchedule() {
+    getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>()->resetSupplyAirFanOperatingModeSchedule();
   }
 
   boost::optional<double> ZoneHVACFourPipeFanCoil::maximumColdWaterFlowRate() const {
@@ -309,6 +348,17 @@ namespace epmodel {
       return ZoneHVAC_FourPipeFanCoilFields::AirOutletNodeName;
     }
 
+    Schedule ZoneHVACFourPipeFanCoil_Impl::availabilitySchedule() const {
+      auto target = getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_FourPipeFanCoilFields::AvailabilityScheduleName);
+      OS_ASSERT(target);
+      return *target;
+    }
+
+    bool ZoneHVACFourPipeFanCoil_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(ZoneHVAC_FourPipeFanCoilFields::AvailabilityScheduleName, "ZoneHVACFourPipeFanCoil",
+                                           "Availability", schedule);
+    }
+
     std::string ZoneHVACFourPipeFanCoil_Impl::capacityControlMethod() const {
       auto value = getString(ZoneHVAC_FourPipeFanCoilFields::CapacityControlMethod, true);
       OS_ASSERT(value);
@@ -415,6 +465,19 @@ namespace epmodel {
       return setString(ZoneHVAC_FourPipeFanCoilFields::OutdoorAirMixerObjectType, outdoorAirMixerObjectType);
     }
 
+    boost::optional<Schedule> ZoneHVACFourPipeFanCoil_Impl::outdoorAirSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_FourPipeFanCoilFields::OutdoorAirScheduleName);
+    }
+
+    bool ZoneHVACFourPipeFanCoil_Impl::setOutdoorAirSchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(ZoneHVAC_FourPipeFanCoilFields::OutdoorAirScheduleName, "ZoneHVACFourPipeFanCoil", "Outdoor Air",
+                                           schedule);
+    }
+
+    void ZoneHVACFourPipeFanCoil_Impl::resetOutdoorAirSchedule() {
+      OS_ASSERT(setString(ZoneHVAC_FourPipeFanCoilFields::OutdoorAirScheduleName, ""));
+    }
+
     std::vector<std::string> ZoneHVACFourPipeFanCoil_Impl::outdoorAirMixerObjectTypeValues() const {
       return ZoneHVACFourPipeFanCoil::outdoorAirMixerObjectTypeValues();
     }
@@ -498,6 +561,19 @@ namespace epmodel {
       }
 
       return false;
+    }
+
+    boost::optional<Schedule> ZoneHVACFourPipeFanCoil_Impl::supplyAirFanOperatingModeSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanOperatingModeScheduleName);
+    }
+
+    bool ZoneHVACFourPipeFanCoil_Impl::setSupplyAirFanOperatingModeSchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanOperatingModeScheduleName, "ZoneHVACFourPipeFanCoil",
+                                           "Supply Air Fan Operating Mode", schedule);
+    }
+
+    void ZoneHVACFourPipeFanCoil_Impl::resetSupplyAirFanOperatingModeSchedule() {
+      OS_ASSERT(setString(ZoneHVAC_FourPipeFanCoilFields::SupplyAirFanOperatingModeScheduleName, ""));
     }
 
     boost::optional<double> ZoneHVACFourPipeFanCoil_Impl::maximumColdWaterFlowRate() const {

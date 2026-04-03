@@ -9,6 +9,9 @@
 #include "HVACComponent/HVACComponent.hpp"
 #include "Model.hpp"
 #include "../ModelObject/ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
 
 #include "../utilities/core/Assert.hpp"
 #include "../utilities/core/Compare.hpp"
@@ -23,7 +26,12 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACPackagedTerminalHeatPump::ZoneHVACPackagedTerminalHeatPump(const Model& model)
-    : ZoneHVACComponent(ZoneHVACPackagedTerminalHeatPump::iddObjectType(), model) {}
+    : ZoneHVACComponent(ZoneHVACPackagedTerminalHeatPump::iddObjectType(), model) {
+    ScheduleConstant alwaysOn(model);
+    OS_ASSERT(alwaysOn.setValue(1.0));
+    OS_ASSERT(setAvailabilitySchedule(alwaysOn));
+    OS_ASSERT(setSupplyAirFanOperatingModeSchedule(alwaysOn));
+  }
 
   ZoneHVACPackagedTerminalHeatPump::ZoneHVACPackagedTerminalHeatPump(std::shared_ptr<detail::ZoneHVACPackagedTerminalHeatPump_Impl> impl)
     : ZoneHVACComponent(std::move(impl)) {}
@@ -46,6 +54,14 @@ namespace epmodel {
 
   std::vector<std::string> ZoneHVACPackagedTerminalHeatPump::validFanPlacementValues() {
     return fanPlacementValues();
+  }
+
+  Schedule ZoneHVACPackagedTerminalHeatPump::availabilitySchedule() const {
+    return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->availabilitySchedule();
+  }
+
+  bool ZoneHVACPackagedTerminalHeatPump::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->setAvailabilitySchedule(schedule);
   }
 
   std::vector<ModelObject> ZoneHVACPackagedTerminalHeatPump::children() const {
@@ -282,6 +298,14 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->setSupplyAirFan(supplyAirFan);
   }
 
+  Schedule ZoneHVACPackagedTerminalHeatPump::supplyAirFanOperatingModeSchedule() const {
+    return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->supplyAirFanOperatingModeSchedule();
+  }
+
+  bool ZoneHVACPackagedTerminalHeatPump::setSupplyAirFanOperatingModeSchedule(Schedule& schedule) {
+    return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->setSupplyAirFanOperatingModeSchedule(schedule);
+  }
+
   HVACComponent ZoneHVACPackagedTerminalHeatPump::heatingCoil() const {
     return getImpl<detail::ZoneHVACPackagedTerminalHeatPump_Impl>()->heatingCoil();
   }
@@ -349,6 +373,17 @@ namespace epmodel {
       return ZoneHVAC_PackagedTerminalHeatPumpFields::AirOutletNodeName;
     }
 
+    Schedule ZoneHVACPackagedTerminalHeatPump_Impl::availabilitySchedule() const {
+      auto child = getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_PackagedTerminalHeatPumpFields::AvailabilityScheduleName);
+      OS_ASSERT(child);
+      return *child;
+    }
+
+    bool ZoneHVACPackagedTerminalHeatPump_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(ZoneHVAC_PackagedTerminalHeatPumpFields::AvailabilityScheduleName,
+                                           "ZoneHVACPackagedTerminalHeatPump", "Availability", schedule);
+    }
+
     HVACComponent ZoneHVACPackagedTerminalHeatPump_Impl::supplyAirFan() const {
       auto child = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFanName);
       OS_ASSERT(child);
@@ -363,6 +398,18 @@ namespace epmodel {
         return false;
       }
       return setPointer(ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFanName, supplyAirFan.handle());
+    }
+
+    Schedule ZoneHVACPackagedTerminalHeatPump_Impl::supplyAirFanOperatingModeSchedule() const {
+      auto child =
+        getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFanOperatingModeScheduleName);
+      OS_ASSERT(child);
+      return *child;
+    }
+
+    bool ZoneHVACPackagedTerminalHeatPump_Impl::setSupplyAirFanOperatingModeSchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(ZoneHVAC_PackagedTerminalHeatPumpFields::SupplyAirFanOperatingModeScheduleName,
+                                           "ZoneHVACPackagedTerminalHeatPump", "Supply Air Fan Operating Mode", schedule);
     }
 
     HVACComponent ZoneHVACPackagedTerminalHeatPump_Impl::heatingCoil() const {

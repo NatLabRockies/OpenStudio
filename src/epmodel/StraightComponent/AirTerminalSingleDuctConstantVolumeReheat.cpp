@@ -6,7 +6,12 @@
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeReheat.hpp"
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeReheat_Impl.hpp"
 
+#include "HVACComponent.hpp"
 #include "Model.hpp"
+#include "ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -18,6 +23,9 @@ namespace epmodel {
 
 AirTerminalSingleDuctConstantVolumeReheat::AirTerminalSingleDuctConstantVolumeReheat(const Model& model)
   : StraightComponent(AirTerminalSingleDuctConstantVolumeReheat::iddObjectType(), model) {
+  ScheduleConstant alwaysOn(model);
+  OS_ASSERT(alwaysOn.setValue(1.0));
+  OS_ASSERT(setAvailabilitySchedule(alwaysOn));
   autosizeMaximumAirFlowRate();
   autosizeMaximumHotWaterorSteamFlowRate();
   OS_ASSERT(setMinimumHotWaterorSteamFlowRate(0.0));
@@ -31,6 +39,26 @@ AirTerminalSingleDuctConstantVolumeReheat::AirTerminalSingleDuctConstantVolumeRe
 
 IddObjectType AirTerminalSingleDuctConstantVolumeReheat::iddObjectType() {
   return IddObjectType::AirTerminal_SingleDuct_ConstantVolume_Reheat;
+}
+
+Schedule AirTerminalSingleDuctConstantVolumeReheat::availabilitySchedule() const {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeReheat_Impl>()->availabilitySchedule();
+}
+
+bool AirTerminalSingleDuctConstantVolumeReheat::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeReheat_Impl>()->setAvailabilitySchedule(schedule);
+}
+
+HVACComponent AirTerminalSingleDuctConstantVolumeReheat::reheatCoil() const {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeReheat_Impl>()->reheatCoil();
+}
+
+bool AirTerminalSingleDuctConstantVolumeReheat::setReheatCoil(const HVACComponent& coil) {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeReheat_Impl>()->setReheatCoil(coil);
+}
+
+void AirTerminalSingleDuctConstantVolumeReheat::resetReheatCoil() {
+  getImpl<detail::AirTerminalSingleDuctConstantVolumeReheat_Impl>()->resetReheatCoil();
 }
 
 boost::optional<double> AirTerminalSingleDuctConstantVolumeReheat::maximumAirFlowRate() const {
@@ -135,6 +163,35 @@ unsigned detail::AirTerminalSingleDuctConstantVolumeReheat_Impl::outletPort() co
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+Schedule AirTerminalSingleDuctConstantVolumeReheat_Impl::availabilitySchedule() const {
+  auto schedule =
+    getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::AvailabilityScheduleName);
+  OS_ASSERT(schedule);
+  return *schedule;
+}
+
+bool AirTerminalSingleDuctConstantVolumeReheat_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return ModelObject_Impl::setSchedule(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::AvailabilityScheduleName,
+                                       "AirTerminalSingleDuctConstantVolumeReheat", "Availability", schedule);
+}
+
+HVACComponent AirTerminalSingleDuctConstantVolumeReheat_Impl::reheatCoil() const {
+  auto coil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName);
+  OS_ASSERT(coil);
+  return *coil;
+}
+
+bool AirTerminalSingleDuctConstantVolumeReheat_Impl::setReheatCoil(const HVACComponent& coil) {
+  if (coil.model() != model()) {
+    return false;
+  }
+  return setPointer(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName, coil.handle(), false);
+}
+
+void AirTerminalSingleDuctConstantVolumeReheat_Impl::resetReheatCoil() {
+  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName, ""));
+}
 
 boost::optional<double> AirTerminalSingleDuctConstantVolumeReheat_Impl::maximumAirFlowRate() const {
   return getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::MaximumAirFlowRate, true);

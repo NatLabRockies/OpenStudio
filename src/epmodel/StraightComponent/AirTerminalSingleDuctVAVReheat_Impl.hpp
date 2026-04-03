@@ -12,6 +12,8 @@
 
 namespace openstudio {
 namespace epmodel {
+  class Schedule;
+  class HVACComponent;
   namespace detail {
 
     class EPMODEL_API AirTerminalSingleDuctVAVReheat_Impl : public StraightComponent_Impl
@@ -22,6 +24,20 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+
+      HVACComponent reheatCoil() const;
+      bool setReheatCoil(HVACComponent& coil);
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
+      boost::optional<Schedule> minimumAirFlowFractionSchedule() const;
+      bool setMinimumAirFlowFractionSchedule(Schedule& schedule);
+      void resetMinimumAirFlowFractionSchedule();
+
+      boost::optional<Schedule> minimumAirFlowTurndownSchedule() const;
+      bool setMinimumAirFlowTurndownSchedule(Schedule& schedule);
+      void resetMinimumAirFlowTurndownSchedule();
 
       std::vector<std::string> zoneMinimumAirFlowInputMethodValues() const;
 

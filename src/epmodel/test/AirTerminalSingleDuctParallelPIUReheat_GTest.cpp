@@ -8,6 +8,13 @@
 #include <algorithm>
 
 #include "EPModelFixture.hpp"
+#include "../Schedule/ScheduleCompact.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
+#include "../StraightComponent/CoilHeatingElectric.hpp"
+#include "../StraightComponent/FanConstantVolume.hpp"
+#include "../StraightComponent/Node.hpp"
+#include <utilities/idd/AirTerminal_SingleDuct_ParallelPIU_Reheat_FieldEnums.hxx>
 #include "../StraightComponent/AirTerminalSingleDuctParallelPIUReheat.hpp"
 
 using namespace openstudio::epmodel;
@@ -96,4 +103,29 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_ScalarAccessors_Ro
   const auto heatingControlTypeValues = AirTerminalSingleDuctParallelPIUReheat::heatingControlTypeValues();
   EXPECT_FALSE(heatingControlTypeValues.empty());
   EXPECT_TRUE(std::find(heatingControlTypeValues.begin(), heatingControlTypeValues.end(), "Staged") != heatingControlTypeValues.end());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_Relationships_RoundTrip) {
+  Model model;
+  AirTerminalSingleDuctParallelPIUReheat terminal(model);
+
+  auto defaultSchedule = terminal.availabilitySchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(defaultSchedule);
+  EXPECT_DOUBLE_EQ(1.0, defaultSchedule->value());
+
+  ScheduleCompact availability(model);
+  ASSERT_TRUE(availability.setToConstantValue(0.5));
+  EXPECT_TRUE(terminal.setAvailabilitySchedule(availability));
+  EXPECT_EQ(availability.handle(), terminal.availabilitySchedule().handle());
+
+  FanConstantVolume fan(model);
+  CoilHeatingElectric reheatCoil(model);
+  Node secondaryNode(model);
+  EXPECT_TRUE(terminal.setFan(fan));
+  EXPECT_TRUE(terminal.setReheatCoil(reheatCoil));
+  EXPECT_TRUE(terminal.setPointer(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::SecondaryAirInletNodeName, secondaryNode.handle()));
+  EXPECT_EQ(fan.handle(), terminal.fan().handle());
+  EXPECT_EQ(reheatCoil.handle(), terminal.reheatCoil().handle());
+  ASSERT_TRUE(terminal.secondaryAirInletNode());
+  EXPECT_EQ(secondaryNode.handle(), terminal.secondaryAirInletNode()->handle());
 }

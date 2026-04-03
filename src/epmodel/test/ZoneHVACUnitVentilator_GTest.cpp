@@ -8,6 +8,9 @@
 #include "../ModelObject/ModelObject.hpp"
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../Schedule/ScheduleCompact.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/Node.hpp"
@@ -104,4 +107,52 @@ TEST_F(EPModelFixture, ZoneHVACUnitVentilator_TopologyAndChildren) {
   EXPECT_FALSE(ventilator.thermalZone());
   EXPECT_FALSE(ventilator.inletNode());
   EXPECT_FALSE(ventilator.outletNode());
+}
+
+TEST_F(EPModelFixture, ZoneHVACUnitVentilator_HvacRelationships_RoundTrip) {
+  Model model;
+  ZoneHVACUnitVentilator ventilator(model);
+
+  auto defaultSchedule = ventilator.availabilitySchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(defaultSchedule);
+  EXPECT_DOUBLE_EQ(1.0, defaultSchedule->value());
+
+  ScheduleCompact availability(model);
+  ScheduleCompact minimumOutdoorAir(model);
+  ScheduleCompact maximumOutdoorAir(model);
+  ScheduleCompact fanMode(model);
+  ASSERT_TRUE(availability.setToConstantValue(0.5));
+  ASSERT_TRUE(minimumOutdoorAir.setToConstantValue(0.2));
+  ASSERT_TRUE(maximumOutdoorAir.setToConstantValue(0.7));
+  ASSERT_TRUE(fanMode.setToConstantValue(1.0));
+
+  EXPECT_TRUE(ventilator.setAvailabilitySchedule(availability));
+  EXPECT_TRUE(ventilator.setMinimumOutdoorAirSchedule(minimumOutdoorAir));
+  EXPECT_TRUE(ventilator.setMaximumOutdoorAirFractionorTemperatureSchedule(maximumOutdoorAir));
+  EXPECT_TRUE(ventilator.setSupplyAirFanOperatingModeSchedule(fanMode));
+
+  EXPECT_EQ(availability.handle(), ventilator.availabilitySchedule().handle());
+  EXPECT_EQ(minimumOutdoorAir.handle(), ventilator.minimumOutdoorAirSchedule().handle());
+  EXPECT_EQ(maximumOutdoorAir.handle(), ventilator.maximumOutdoorAirFractionorTemperatureSchedule().handle());
+  ASSERT_TRUE(ventilator.supplyAirFanOperatingModeSchedule());
+  EXPECT_EQ(fanMode.handle(), ventilator.supplyAirFanOperatingModeSchedule()->handle());
+
+  FanConstantVolume supplyFan(model);
+  CoilHeatingElectric heatingCoil(model);
+  CoilCoolingWater coolingCoil(model);
+  EXPECT_TRUE(ventilator.setSupplyAirFan(supplyFan));
+  EXPECT_TRUE(ventilator.setHeatingCoil(heatingCoil));
+  EXPECT_TRUE(ventilator.setCoolingCoil(coolingCoil));
+  EXPECT_EQ(supplyFan.handle(), ventilator.supplyAirFan().handle());
+  ASSERT_TRUE(ventilator.heatingCoil());
+  EXPECT_EQ(heatingCoil.handle(), ventilator.heatingCoil()->handle());
+  ASSERT_TRUE(ventilator.coolingCoil());
+  EXPECT_EQ(coolingCoil.handle(), ventilator.coolingCoil()->handle());
+
+  ventilator.resetSupplyAirFanOperatingModeSchedule();
+  EXPECT_FALSE(ventilator.supplyAirFanOperatingModeSchedule());
+  ventilator.resetHeatingCoil();
+  EXPECT_FALSE(ventilator.heatingCoil());
+  ventilator.resetCoolingCoil();
+  EXPECT_FALSE(ventilator.coolingCoil());
 }

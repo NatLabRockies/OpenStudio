@@ -6,7 +6,11 @@
 #include "StraightComponent/AirTerminalSingleDuctVAVHeatAndCoolReheat.hpp"
 #include "StraightComponent/AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl.hpp"
 
+#include "HVACComponent.hpp"
 #include "Model.hpp"
+#include "ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -25,6 +29,38 @@ AirTerminalSingleDuctVAVHeatAndCoolReheat::AirTerminalSingleDuctVAVHeatAndCoolRe
 
 IddObjectType AirTerminalSingleDuctVAVHeatAndCoolReheat::iddObjectType() {
   return IddObjectType::AirTerminal_SingleDuct_VAV_HeatAndCool_Reheat;
+}
+
+boost::optional<Schedule> AirTerminalSingleDuctVAVHeatAndCoolReheat::availabilitySchedule() const {
+  return getImpl<detail::AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl>()->availabilitySchedule();
+}
+
+bool AirTerminalSingleDuctVAVHeatAndCoolReheat::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl>()->setAvailabilitySchedule(schedule);
+}
+
+void AirTerminalSingleDuctVAVHeatAndCoolReheat::resetAvailabilitySchedule() {
+  getImpl<detail::AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl>()->resetAvailabilitySchedule();
+}
+
+HVACComponent AirTerminalSingleDuctVAVHeatAndCoolReheat::reheatCoil() const {
+  return getImpl<detail::AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl>()->reheatCoil();
+}
+
+bool AirTerminalSingleDuctVAVHeatAndCoolReheat::setReheatCoil(const HVACComponent& heatingCoilName) {
+  return getImpl<detail::AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl>()->setReheatCoil(heatingCoilName);
+}
+
+boost::optional<Schedule> AirTerminalSingleDuctVAVHeatAndCoolReheat::minimumAirFlowTurndownSchedule() const {
+  return getImpl<detail::AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl>()->minimumAirFlowTurndownSchedule();
+}
+
+bool AirTerminalSingleDuctVAVHeatAndCoolReheat::setMinimumAirFlowTurndownSchedule(Schedule& schedule) {
+  return getImpl<detail::AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl>()->setMinimumAirFlowTurndownSchedule(schedule);
+}
+
+void AirTerminalSingleDuctVAVHeatAndCoolReheat::resetMinimumAirFlowTurndownSchedule() {
+  getImpl<detail::AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl>()->resetMinimumAirFlowTurndownSchedule();
 }
 
 boost::optional<double> AirTerminalSingleDuctVAVHeatAndCoolReheat::maximumAirFlowRate() const {
@@ -97,6 +133,48 @@ bool AirTerminalSingleDuctVAVHeatAndCoolReheat::setMaximumReheatAirTemperature(d
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+boost::optional<Schedule> AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl::availabilitySchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::AirTerminal_SingleDuct_VAV_HeatAndCool_ReheatFields::AvailabilityScheduleName);
+}
+
+bool AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return ModelObject_Impl::setSchedule(openstudio::AirTerminal_SingleDuct_VAV_HeatAndCool_ReheatFields::AvailabilityScheduleName,
+                                       "AirTerminalSingleDuctVAVHeatAndCoolReheat", "Availability", schedule);
+}
+
+void AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl::resetAvailabilitySchedule() {
+  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_VAV_HeatAndCool_ReheatFields::AvailabilityScheduleName, ""));
+}
+
+HVACComponent AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl::reheatCoil() const {
+  auto coil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+    openstudio::AirTerminal_SingleDuct_VAV_HeatAndCool_ReheatFields::ReheatCoilName);
+  OS_ASSERT(coil);
+  return *coil;
+}
+
+bool AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl::setReheatCoil(const HVACComponent& heatingCoilName) {
+  if (heatingCoilName.model() != model()) {
+    return false;
+  }
+  return setPointer(openstudio::AirTerminal_SingleDuct_VAV_HeatAndCool_ReheatFields::ReheatCoilName, heatingCoilName.handle(), false);
+}
+
+boost::optional<Schedule> AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl::minimumAirFlowTurndownSchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::AirTerminal_SingleDuct_VAV_HeatAndCool_ReheatFields::MinimumAirFlowTurndownScheduleName);
+}
+
+bool AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl::setMinimumAirFlowTurndownSchedule(Schedule& schedule) {
+  return ModelObject_Impl::setSchedule(openstudio::AirTerminal_SingleDuct_VAV_HeatAndCool_ReheatFields::MinimumAirFlowTurndownScheduleName,
+                                       "AirTerminalSingleDuctVAVHeatAndCoolReheat", "Minimum Air Flow Turndown", schedule);
+}
+
+void AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl::resetMinimumAirFlowTurndownSchedule() {
+  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_VAV_HeatAndCool_ReheatFields::MinimumAirFlowTurndownScheduleName, ""));
+}
 
 boost::optional<double> AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl::maximumAirFlowRate() const {
   return getDouble(openstudio::AirTerminal_SingleDuct_VAV_HeatAndCool_ReheatFields::MaximumAirFlowRate, true);

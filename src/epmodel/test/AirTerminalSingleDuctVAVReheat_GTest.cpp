@@ -6,7 +6,11 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Schedule/ScheduleCompact.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctVAVReheat.hpp"
+#include "../StraightComponent/CoilHeatingElectric.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -85,4 +89,38 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_ScalarAccessors_RoundTrip)
 
   EXPECT_TRUE(terminal.setMaximumReheatAirTemperature(41.2));
   EXPECT_DOUBLE_EQ(41.2, terminal.maximumReheatAirTemperature());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_Relationships_RoundTrip) {
+  Model model;
+  AirTerminalSingleDuctVAVReheat terminal(model);
+
+  auto defaultSchedule = terminal.availabilitySchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(defaultSchedule);
+  EXPECT_DOUBLE_EQ(1.0, defaultSchedule->value());
+
+  ScheduleCompact availability(model);
+  ScheduleCompact minimumFraction(model);
+  ScheduleCompact turndown(model);
+  ASSERT_TRUE(availability.setToConstantValue(0.6));
+  ASSERT_TRUE(minimumFraction.setToConstantValue(0.2));
+  ASSERT_TRUE(turndown.setToConstantValue(0.4));
+
+  EXPECT_TRUE(terminal.setAvailabilitySchedule(availability));
+  EXPECT_TRUE(terminal.setMinimumAirFlowFractionSchedule(minimumFraction));
+  EXPECT_TRUE(terminal.setMinimumAirFlowTurndownSchedule(turndown));
+  EXPECT_EQ(availability.handle(), terminal.availabilitySchedule().handle());
+  ASSERT_TRUE(terminal.minimumAirFlowFractionSchedule());
+  EXPECT_EQ(minimumFraction.handle(), terminal.minimumAirFlowFractionSchedule()->handle());
+  ASSERT_TRUE(terminal.minimumAirFlowTurndownSchedule());
+  EXPECT_EQ(turndown.handle(), terminal.minimumAirFlowTurndownSchedule()->handle());
+
+  CoilHeatingElectric reheatCoil(model);
+  EXPECT_TRUE(terminal.setReheatCoil(reheatCoil));
+  EXPECT_EQ(reheatCoil.handle(), terminal.reheatCoil().handle());
+
+  terminal.resetMinimumAirFlowFractionSchedule();
+  EXPECT_FALSE(terminal.minimumAirFlowFractionSchedule());
+  terminal.resetMinimumAirFlowTurndownSchedule();
+  EXPECT_FALSE(terminal.minimumAirFlowTurndownSchedule());
 }

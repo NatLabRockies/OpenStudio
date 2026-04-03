@@ -19,6 +19,7 @@ namespace epmodel {
 
   class HVACComponent;
   class ModelObject;
+  class Schedule;
 
   namespace detail {
 
@@ -31,6 +32,9 @@ namespace epmodel {
       std::vector<ModelObject> children() const override;
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
 
       boost::optional<double> supplyAirFlowRateDuringCoolingOperation() const;
       bool isSupplyAirFlowRateDuringCoolingOperationAutosized() const;
@@ -106,6 +110,9 @@ namespace epmodel {
 
       HVACComponent supplyAirFan() const;
       bool setSupplyAirFan(HVACComponent& supplyAirFan);
+
+      Schedule supplyAirFanOperatingModeSchedule() const;
+      bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
 
       HVACComponent heatingCoil() const;
       bool setHeatingCoil(HVACComponent& heatingCoil);

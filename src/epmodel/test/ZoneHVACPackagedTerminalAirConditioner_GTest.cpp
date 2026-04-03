@@ -7,6 +7,9 @@
 
 #include "EPModelFixture.hpp"
 #include "../ZoneHVACComponent/ZoneHVACPackagedTerminalAirConditioner.hpp"
+#include "../Schedule/ScheduleCompact.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/CoilCoolingDXSingleSpeed.hpp"
@@ -125,4 +128,26 @@ TEST_F(EPModelFixture, ZoneHVACPackagedTerminalAirConditioner_TopologyAndChildre
   EXPECT_FALSE(ptac.thermalZone());
   EXPECT_FALSE(ptac.inletNode());
   EXPECT_FALSE(ptac.outletNode());
+}
+
+TEST_F(EPModelFixture, ZoneHVACPackagedTerminalAirConditioner_ScheduleRelationships_RoundTrip) {
+  Model model;
+  ZoneHVACPackagedTerminalAirConditioner ptac(model);
+
+  auto defaultAvailability = ptac.availabilitySchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(defaultAvailability);
+  EXPECT_DOUBLE_EQ(1.0, defaultAvailability->value());
+  auto defaultFanMode = ptac.supplyAirFanOperatingModeSchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(defaultFanMode);
+  EXPECT_DOUBLE_EQ(1.0, defaultFanMode->value());
+
+  ScheduleCompact availability(model);
+  ScheduleCompact fanMode(model);
+  ASSERT_TRUE(availability.setToConstantValue(0.6));
+  ASSERT_TRUE(fanMode.setToConstantValue(0.0));
+
+  EXPECT_TRUE(ptac.setAvailabilitySchedule(availability));
+  EXPECT_TRUE(ptac.setSupplyAirFanOperatingModeSchedule(fanMode));
+  EXPECT_EQ(availability.handle(), ptac.availabilitySchedule().handle());
+  EXPECT_EQ(fanMode.handle(), ptac.supplyAirFanOperatingModeSchedule().handle());
 }

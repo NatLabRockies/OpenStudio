@@ -6,7 +6,11 @@
 #include "ZoneHVACComponent/ZoneHVACUnitHeater.hpp"
 #include "ZoneHVACComponent/ZoneHVACUnitHeater_Impl.hpp"
 
+#include "HVACComponent.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
 
 #include <boost/none.hpp>
 
@@ -20,6 +24,9 @@ namespace openstudio {
 namespace epmodel {
 
   ZoneHVACUnitHeater::ZoneHVACUnitHeater(const Model& model) : ZoneHVACComponent(ZoneHVACUnitHeater::iddObjectType(), model) {
+    ScheduleConstant alwaysOn(model);
+    OS_ASSERT(alwaysOn.setValue(1.0));
+    OS_ASSERT(setAvailabilitySchedule(alwaysOn));
     autosizeMaximumSupplyAirFlowRate();
     OS_ASSERT(setFanControlType("No"));
     autosizeMaximumHotWaterFlowRate();
@@ -35,6 +42,30 @@ namespace epmodel {
 
   std::vector<std::string> ZoneHVACUnitHeater::fanControlTypeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), ZoneHVAC_UnitHeaterFields::SupplyAirFanOperationDuringNoHeating);
+  }
+
+  Schedule ZoneHVACUnitHeater::availabilitySchedule() const {
+    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->availabilitySchedule();
+  }
+
+  bool ZoneHVACUnitHeater::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  HVACComponent ZoneHVACUnitHeater::supplyAirFan() const {
+    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->supplyAirFan();
+  }
+
+  bool ZoneHVACUnitHeater::setSupplyAirFan(const HVACComponent& fan) {
+    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->setSupplyAirFan(fan);
+  }
+
+  HVACComponent ZoneHVACUnitHeater::heatingCoil() const {
+    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->heatingCoil();
+  }
+
+  bool ZoneHVACUnitHeater::setHeatingCoil(const HVACComponent& heatingCoil) {
+    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->setHeatingCoil(heatingCoil);
   }
 
   boost::optional<double> ZoneHVACUnitHeater::maximumSupplyAirFlowRate() const {
@@ -145,6 +176,42 @@ namespace epmodel {
 
     unsigned ZoneHVACUnitHeater_Impl::outletPort() const {
       return ZoneHVAC_UnitHeaterFields::AirOutletNodeName;
+    }
+
+    Schedule ZoneHVACUnitHeater_Impl::availabilitySchedule() const {
+      auto target = getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_UnitHeaterFields::AvailabilityScheduleName);
+      OS_ASSERT(target);
+      return *target;
+    }
+
+    bool ZoneHVACUnitHeater_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(ZoneHVAC_UnitHeaterFields::AvailabilityScheduleName, "ZoneHVACUnitHeater", "Availability", schedule);
+    }
+
+    HVACComponent ZoneHVACUnitHeater_Impl::supplyAirFan() const {
+      auto target = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_UnitHeaterFields::SupplyAirFanName);
+      OS_ASSERT(target);
+      return *target;
+    }
+
+    bool ZoneHVACUnitHeater_Impl::setSupplyAirFan(const HVACComponent& fan) {
+      if (fan.model() != model()) {
+        return false;
+      }
+      return setPointer(ZoneHVAC_UnitHeaterFields::SupplyAirFanName, fan.handle(), false);
+    }
+
+    HVACComponent ZoneHVACUnitHeater_Impl::heatingCoil() const {
+      auto target = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_UnitHeaterFields::HeatingCoilName);
+      OS_ASSERT(target);
+      return *target;
+    }
+
+    bool ZoneHVACUnitHeater_Impl::setHeatingCoil(const HVACComponent& heatingCoil) {
+      if (heatingCoil.model() != model()) {
+        return false;
+      }
+      return setPointer(ZoneHVAC_UnitHeaterFields::HeatingCoilName, heatingCoil.handle(), false);
     }
 
     boost::optional<double> ZoneHVACUnitHeater_Impl::maximumSupplyAirFlowRate() const {

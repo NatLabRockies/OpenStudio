@@ -12,6 +12,7 @@
 
 namespace openstudio {
 namespace epmodel {
+  class Schedule;
   namespace detail {
 
     class EPMODEL_API AirTerminalSingleDuctConstantVolumeNoReheat_Impl : public StraightComponent_Impl
@@ -26,6 +27,9 @@ namespace epmodel {
 
       boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
       bool addToNode(Node& node);
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
 
       /** @name Maximum air flow rate */
       //@{

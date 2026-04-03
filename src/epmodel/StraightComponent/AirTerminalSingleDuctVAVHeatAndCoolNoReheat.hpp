@@ -17,6 +17,7 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Schedule;
 
 namespace detail {
 class AirTerminalSingleDuctVAVHeatAndCoolNoReheat_Impl;
@@ -39,10 +40,18 @@ class EPMODEL_API AirTerminalSingleDuctVAVHeatAndCoolNoReheat : public StraightC
   // - Status: Scalar Parity. The scalar VAV heat-and-cool no-reheat contract is aligned; relationship and node plumbing remain narrower.
   // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctVAVHeatAndCoolNoReheat.
   // - Implemented Parity: `maximumAirFlowRate` and `zoneMinimumAirFlowFraction` preserve the canonical scalar contract.
-  // - Documented Delta: Availability schedule, air inlet/outlet node names, and the minimum air flow turndown schedule are relationship fields and are not exposed as public methods yet.
+  // - Documented Delta: Air inlet/outlet node names remain outside this public surface.
   // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:VAV:HeatAndCool:NoReheat` fields; the translator handles links separately.
   // - Evidence: `src/model/AirTerminalSingleDuctVAVHeatAndCoolNoReheat.hpp`, `src/model/AirTerminalSingleDuctVAVHeatAndCoolNoReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctVAVHeatAndCoolNoReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctVAVHeatAndCoolNoReheat_GTest.cpp`.
   // - Remaining Parity Work: Add the omitted relationship helpers when this type moves beyond scalar parity.
+  boost::optional<Schedule> availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+  void resetAvailabilitySchedule();
+
+  boost::optional<Schedule> minimumAirFlowTurndownSchedule() const;
+  bool setMinimumAirFlowTurndownSchedule(Schedule& schedule);
+  void resetMinimumAirFlowTurndownSchedule();
+
   boost::optional<double> maximumAirFlowRate() const;
   bool isMaximumAirFlowRateAutosized() const;
   bool setMaximumAirFlowRate(double maximumAirFlowRate);

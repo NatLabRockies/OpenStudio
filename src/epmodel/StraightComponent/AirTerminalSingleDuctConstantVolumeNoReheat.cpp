@@ -18,6 +18,9 @@
 #include "ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Logger.hpp>
@@ -35,6 +38,9 @@ namespace epmodel {
     OS_ASSERT(impl);
     detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
     impl->canonicalize(context);
+    ScheduleConstant alwaysOn(model);
+    OS_ASSERT(alwaysOn.setValue(1.0));
+    OS_ASSERT(setAvailabilitySchedule(alwaysOn));
   }
 
   AirTerminalSingleDuctConstantVolumeNoReheat::AirTerminalSingleDuctConstantVolumeNoReheat(
@@ -47,6 +53,14 @@ namespace epmodel {
 
   bool AirTerminalSingleDuctConstantVolumeNoReheat::addToNode(Node& node) {
     return getImpl<detail::AirTerminalSingleDuctConstantVolumeNoReheat_Impl>()->addToNode(node);
+  }
+
+  Schedule AirTerminalSingleDuctConstantVolumeNoReheat::availabilitySchedule() const {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeNoReheat_Impl>()->availabilitySchedule();
+  }
+
+  bool AirTerminalSingleDuctConstantVolumeNoReheat::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeNoReheat_Impl>()->setAvailabilitySchedule(schedule);
   }
 
   boost::optional<double> AirTerminalSingleDuctConstantVolumeNoReheat::maximumAirFlowRate() const {
@@ -119,6 +133,18 @@ namespace epmodel {
         }
       }
       return boost::none;
+    }
+
+    Schedule AirTerminalSingleDuctConstantVolumeNoReheat_Impl::availabilitySchedule() const {
+      auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        AirTerminal_SingleDuct_ConstantVolume_NoReheatFields::AvailabilityScheduleName);
+      OS_ASSERT(schedule);
+      return *schedule;
+    }
+
+    bool AirTerminalSingleDuctConstantVolumeNoReheat_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(AirTerminal_SingleDuct_ConstantVolume_NoReheatFields::AvailabilityScheduleName,
+                                           "AirTerminalSingleDuctConstantVolumeNoReheat", "Availability", schedule);
     }
 
     boost::optional<double> AirTerminalSingleDuctConstantVolumeNoReheat_Impl::maximumAirFlowRate() const {

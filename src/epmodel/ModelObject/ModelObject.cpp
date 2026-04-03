@@ -74,7 +74,7 @@ namespace epmodel {
     };
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static const std::array<ScheduleTypeSpec, 11> specs{{
+      static const std::array<ScheduleTypeSpec, 37> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOn", "Availability Manager Scheduled On", false, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOff", "Availability Manager Scheduled Off", false, "Availability", 0.0, 1.0},
@@ -86,6 +86,32 @@ namespace epmodel {
         {"FanOnOff", "Availability", false, "Availability", 0.0, 1.0},
         {"FanVariableVolume", "Availability", false, "Availability", 0.0, 1.0},
         {"FanSystemModel", "Availability", false, "Availability", 0.0, 1.0},
+        {"ZoneHVACUnitHeater", "Availability", false, "Availability", 0.0, 1.0},
+        {"ZoneHVACUnitVentilator", "Availability", false, "Availability", 0.0, 1.0},
+        {"ZoneHVACUnitVentilator", "Supply Air Fan Operating Mode", false, "Availability", 0.0, 1.0},
+        {"ZoneHVACFourPipeFanCoil", "Availability", false, "Availability", 0.0, 1.0},
+        {"ZoneHVACFourPipeFanCoil", "Outdoor Air", true, "Dimensionless", 0.0, 1.0},
+        {"ZoneHVACFourPipeFanCoil", "Supply Air Fan Operating Mode", false, "Availability", 0.0, 1.0},
+        {"ZoneHVACPackagedTerminalAirConditioner", "Availability", false, "Availability", 0.0, 1.0},
+        {"ZoneHVACPackagedTerminalAirConditioner", "Supply Air Fan Operating Mode", false, "Availability", 0.0, 1.0},
+        {"ZoneHVACPackagedTerminalHeatPump", "Availability", false, "Availability", 0.0, 1.0},
+        {"ZoneHVACPackagedTerminalHeatPump", "Supply Air Fan Operating Mode", false, "Availability", 0.0, 1.0},
+        {"ZoneHVACTerminalUnitVariableRefrigerantFlow", "Terminal Unit Availability", false, "Availability", 0.0, 1.0},
+        {"ZoneHVACTerminalUnitVariableRefrigerantFlow", "Supply Air Fan Operating Mode", false, "Availability", 0.0, 1.0},
+        {"AirTerminalSingleDuctConstantVolumeNoReheat", "Availability", false, "Availability", 0.0, 1.0},
+        {"AirTerminalSingleDuctConstantVolumeReheat", "Availability", false, "Availability", 0.0, 1.0},
+        {"AirTerminalSingleDuctVAVNoReheat", "Availability", false, "Availability", 0.0, 1.0},
+        {"AirTerminalSingleDuctVAVNoReheat", "Minimum Air Flow Fraction", true, "Dimensionless", 0.0, 1.0},
+        {"AirTerminalSingleDuctVAVNoReheat", "Minimum Air Flow Turndown", true, "Dimensionless", 0.0, 1.0},
+        {"AirTerminalSingleDuctVAVReheat", "Availability", false, "Availability", 0.0, 1.0},
+        {"AirTerminalSingleDuctVAVReheat", "Minimum Air Flow Fraction", true, "Dimensionless", 0.0, 1.0},
+        {"AirTerminalSingleDuctVAVReheat", "Minimum Air Flow Turndown", true, "Dimensionless", 0.0, 1.0},
+        {"AirTerminalSingleDuctSeriesPIUReheat", "Availability", false, "Availability", 0.0, 1.0},
+        {"AirTerminalSingleDuctParallelPIUReheat", "Availability", false, "Availability", 0.0, 1.0},
+        {"AirTerminalSingleDuctVAVHeatAndCoolNoReheat", "Availability", false, "Availability", 0.0, 1.0},
+        {"AirTerminalSingleDuctVAVHeatAndCoolNoReheat", "Minimum Air Flow Turndown", true, "Dimensionless", 0.0, 1.0},
+        {"AirTerminalSingleDuctVAVHeatAndCoolReheat", "Availability", false, "Availability", 0.0, 1.0},
+        {"AirTerminalSingleDuctVAVHeatAndCoolReheat", "Minimum Air Flow Turndown", true, "Dimensionless", 0.0, 1.0},
       }};
 
       for (const auto& spec : specs) {

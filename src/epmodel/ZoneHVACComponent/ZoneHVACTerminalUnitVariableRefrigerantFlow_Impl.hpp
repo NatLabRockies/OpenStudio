@@ -16,6 +16,8 @@ namespace openstudio {
 namespace epmodel {
 
   class HVACComponent;
+  class Schedule;
+  class ThermalZone;
 
   namespace detail {
 
@@ -24,6 +26,9 @@ namespace epmodel {
      public:
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl() override = default;
+
+      Schedule terminalUnitAvailabilityschedule() const;
+      bool setTerminalUnitAvailabilityschedule(Schedule& schedule);
 
       boost::optional<double> supplyAirFlowRateDuringCoolingOperation() const;
       bool isSupplyAirFlowRateDuringCoolingOperationAutosized() const;
@@ -90,6 +95,9 @@ namespace epmodel {
       HVACComponent supplyAirFan() const;
       bool setSupplyAirFan(HVACComponent& fan);
 
+      Schedule supplyAirFanOperatingModeSchedule() const;
+      bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+
       boost::optional<HVACComponent> coolingCoil() const;
       bool setCoolingCoil(HVACComponent& coil);
 
@@ -99,6 +107,10 @@ namespace epmodel {
       boost::optional<HVACComponent> supplementalHeatingCoil() const;
       bool setSupplementalHeatingCoil(HVACComponent& coil);
       void resetSupplementalHeatingCoil();
+
+      boost::optional<ThermalZone> controllingZoneorThermostatLocation() const;
+      bool setControllingZoneorThermostatLocation(const ThermalZone& thermalZone);
+      void resetControllingZoneorThermostatLocation();
 
       std::vector<ModelObject> children() const;
 

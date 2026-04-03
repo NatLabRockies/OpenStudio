@@ -9,6 +9,9 @@
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/CoilCoolingDXVariableRefrigerantFlow.hpp"
 #include "../HVACComponent/CoilHeatingDXVariableRefrigerantFlow.hpp"
+#include "../Schedule/ScheduleCompact.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
 #include "../StraightComponent/FanOnOff.hpp"
 #include "../StraightComponent/Node.hpp"
@@ -157,4 +160,33 @@ TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_TopologyAndCh
   EXPECT_EQ(coolingCoil.handle(), children[1].handle());
   EXPECT_EQ(heatingCoil.handle(), children[2].handle());
   EXPECT_EQ(supplementalHeatingCoil.handle(), children[3].handle());
+}
+
+TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_ControlRelationships_RoundTrip) {
+  Model model;
+  ZoneHVACTerminalUnitVariableRefrigerantFlow vrf(model);
+  ThermalZone zone(model);
+
+  auto defaultAvailability = vrf.terminalUnitAvailabilityschedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(defaultAvailability);
+  EXPECT_DOUBLE_EQ(1.0, defaultAvailability->value());
+  auto defaultFanMode = vrf.supplyAirFanOperatingModeSchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(defaultFanMode);
+  EXPECT_DOUBLE_EQ(1.0, defaultFanMode->value());
+
+  ScheduleCompact availability(model);
+  ScheduleCompact fanMode(model);
+  ASSERT_TRUE(availability.setToConstantValue(0.3));
+  ASSERT_TRUE(fanMode.setToConstantValue(1.0));
+
+  EXPECT_TRUE(vrf.setTerminalUnitAvailabilityschedule(availability));
+  EXPECT_TRUE(vrf.setSupplyAirFanOperatingModeSchedule(fanMode));
+  EXPECT_TRUE(vrf.setControllingZoneorThermostatLocation(zone));
+  EXPECT_EQ(availability.handle(), vrf.terminalUnitAvailabilityschedule().handle());
+  EXPECT_EQ(fanMode.handle(), vrf.supplyAirFanOperatingModeSchedule().handle());
+  ASSERT_TRUE(vrf.controllingZoneorThermostatLocation());
+  EXPECT_EQ(zone.handle(), vrf.controllingZoneorThermostatLocation()->handle());
+
+  vrf.resetControllingZoneorThermostatLocation();
+  EXPECT_FALSE(vrf.controllingZoneorThermostatLocation());
 }

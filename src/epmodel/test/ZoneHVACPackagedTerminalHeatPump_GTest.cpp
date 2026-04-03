@@ -8,6 +8,9 @@
 #include "EPModelFixture.hpp"
 #include "../ZoneHVACComponent/ZoneHVACPackagedTerminalHeatPump.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../Schedule/ScheduleCompact.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/CoilCoolingDXSingleSpeed.hpp"
 #include "../StraightComponent/CoilHeatingDXSingleSpeed.hpp"
@@ -161,4 +164,26 @@ TEST_F(EPModelFixture, ZoneHVACPackagedTerminalHeatPump_TopologyAndChildren) {
   EXPECT_TRUE(pthp.thermalZone());
   pthp.removeFromThermalZone();
   EXPECT_FALSE(pthp.thermalZone());
+}
+
+TEST_F(EPModelFixture, ZoneHVACPackagedTerminalHeatPump_ScheduleRelationships_RoundTrip) {
+  Model model;
+  ZoneHVACPackagedTerminalHeatPump pthp(model);
+
+  auto defaultAvailability = pthp.availabilitySchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(defaultAvailability);
+  EXPECT_DOUBLE_EQ(1.0, defaultAvailability->value());
+  auto defaultFanMode = pthp.supplyAirFanOperatingModeSchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(defaultFanMode);
+  EXPECT_DOUBLE_EQ(1.0, defaultFanMode->value());
+
+  ScheduleCompact availability(model);
+  ScheduleCompact fanMode(model);
+  ASSERT_TRUE(availability.setToConstantValue(0.6));
+  ASSERT_TRUE(fanMode.setToConstantValue(0.0));
+
+  EXPECT_TRUE(pthp.setAvailabilitySchedule(availability));
+  EXPECT_TRUE(pthp.setSupplyAirFanOperatingModeSchedule(fanMode));
+  EXPECT_EQ(availability.handle(), pthp.availabilitySchedule().handle());
+  EXPECT_EQ(fanMode.handle(), pthp.supplyAirFanOperatingModeSchedule().handle());
 }
