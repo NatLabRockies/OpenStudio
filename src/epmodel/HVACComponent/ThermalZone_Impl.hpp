@@ -16,11 +16,16 @@
 namespace openstudio {
 namespace epmodel {
 
+  class HVACComponent;
   class ZoneHVACEquipmentConnections;
   class ZoneHVACEquipmentList;
   class SizingZone;
   class Space;
   class DesignSpecificationOutdoorAir;
+  class Thermostat;
+  class ThermostatSetpointDualSetpoint;
+  class ZoneControlContaminantController;
+  class ZoneControlHumidistat;
 
   namespace detail {
 
@@ -74,6 +79,33 @@ namespace epmodel {
 
       bool useIdealAirLoads() const;
       bool setUseIdealAirLoads(bool useIdealAirLoads);
+
+      std::string zoneConditioningEquipmentListName() const;
+      bool setZoneConditioningEquipmentListName(const std::string& zoneConditioningEquipmentListName);
+
+      boost::optional<openstudio::epmodel::Thermostat> thermostat() const;
+      bool setThermostat(const openstudio::epmodel::Thermostat& thermostat);
+      void resetThermostat();
+
+      boost::optional<openstudio::epmodel::ThermostatSetpointDualSetpoint> thermostatSetpointDualSetpoint() const;
+      bool setThermostatSetpointDualSetpoint(const openstudio::epmodel::ThermostatSetpointDualSetpoint& thermostat);
+      void resetThermostatSetpointDualSetpoint();
+
+      boost::optional<openstudio::epmodel::ZoneControlHumidistat> zoneControlHumidistat() const;
+      bool setZoneControlHumidistat(const openstudio::epmodel::ZoneControlHumidistat& humidistat);
+      void resetZoneControlHumidistat();
+
+      boost::optional<openstudio::epmodel::ZoneControlContaminantController> zoneControlContaminantController() const;
+      bool setZoneControlContaminantController(const openstudio::epmodel::ZoneControlContaminantController& contaminantController);
+      void resetZoneControlContaminantController();
+
+      boost::optional<openstudio::epmodel::ModelObject> returnAirModelObject() const;
+      std::vector<openstudio::epmodel::ModelObject> returnAirModelObjects() const;
+      openstudio::epmodel::Node zoneAirNode() const;
+
+      std::vector<openstudio::epmodel::ModelObject> equipment() const;
+      boost::optional<openstudio::epmodel::HVACComponent> airLoopHVACTerminal() const;
+      std::vector<openstudio::epmodel::HVACComponent> airLoopHVACTerminals() const;
 
       static std::vector<std::string> control1ObjectTypeValues();
       std::string control1ObjectType() const;

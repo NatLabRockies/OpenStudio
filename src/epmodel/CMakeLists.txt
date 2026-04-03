@@ -1202,6 +1202,9 @@ set(${target_name}_src
   ModelObject/ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling.hpp
   ModelObject/ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling_Impl.hpp
   ModelObject/ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling.cpp
+  Thermostat/Thermostat.hpp
+  Thermostat/Thermostat_Impl.hpp
+  Thermostat/Thermostat.cpp
   Thermostat/ThermostatSetpointDualSetpoint.hpp
   Thermostat/ThermostatSetpointDualSetpoint_Impl.hpp
   Thermostat/ThermostatSetpointDualSetpoint.cpp

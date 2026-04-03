@@ -14,8 +14,16 @@
 #include "../PlanarSurfaceGroup/Space.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
+#include "../ModelObject/ZoneControlContaminantController.hpp"
+#include "../ModelObject/ZoneControlHumidistat.hpp"
 #include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "../ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
+#include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
+#include "../Thermostat/Thermostat.hpp"
+#include "../Thermostat/Thermostat_Impl.hpp"
+#include "../Thermostat/ThermostatSetpointDualSetpoint.hpp"
+#include "../Thermostat/ThermostatSetpointDualSetpoint_Impl.hpp"
+#include "../ZoneHVACComponent/ZoneHVACBaseboardConvectiveElectric.hpp"
 #include "../../utilities/idf/IdfExtensibleGroup.hpp"
 #include "../../utilities/idf/IdfObject.hpp"
 #include <utilities/idd/Daylighting_Controls_FieldEnums.hxx>
@@ -251,6 +259,175 @@ TEST_F(EPModelFixture, API_ThermalZone_UseIdealAirLoads_RoundTrip) {
   EXPECT_TRUE(zone.setUseIdealAirLoads(false));
   EXPECT_FALSE(zone.useIdealAirLoads());
   EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem).empty());
+}
+
+TEST_F(EPModelFixture, API_ThermalZone_ZoneConditioningEquipmentListName_RoundTrip) {
+  Model model;
+  ThermalZone zone(model);
+
+  EXPECT_TRUE(zone.zoneConditioningEquipmentListName().empty());
+  EXPECT_TRUE(zone.setZoneConditioningEquipmentListName("Zone Equipment A"));
+  EXPECT_EQ("Zone Equipment A", zone.zoneConditioningEquipmentListName());
+
+  auto equipmentListObject = model.getObjectByTypeAndName(openstudio::IddObjectType::ZoneHVAC_EquipmentList, "Zone Equipment A");
+  ASSERT_TRUE(equipmentListObject);
+}
+
+TEST_F(EPModelFixture, API_ThermalZone_ThermostatSetpointDualSetpoint_Relationships) {
+  Model model;
+  ThermalZone zone1(model);
+  ThermalZone zone2(model);
+  ThermostatSetpointDualSetpoint thermostat(model);
+  ASSERT_TRUE(thermostat.setName("Shared Thermostat"));
+
+  EXPECT_FALSE(zone1.thermostatSetpointDualSetpoint());
+  EXPECT_TRUE(zone1.setThermostatSetpointDualSetpoint(thermostat));
+  ASSERT_TRUE(zone1.thermostat());
+  ASSERT_TRUE(zone1.thermostatSetpointDualSetpoint());
+  EXPECT_EQ(zone1.thermostatSetpointDualSetpoint().get(), zone1.thermostat().get());
+  EXPECT_EQ("Shared Thermostat", zone1.thermostatSetpointDualSetpoint()->nameString());
+
+  EXPECT_TRUE(zone2.setThermostat(thermostat));
+  ASSERT_TRUE(zone2.thermostat());
+  ASSERT_TRUE(zone2.thermostatSetpointDualSetpoint());
+  EXPECT_EQ(zone2.thermostatSetpointDualSetpoint().get(), zone2.thermostat().get());
+  EXPECT_NE(zone1.thermostatSetpointDualSetpoint().get(), zone2.thermostatSetpointDualSetpoint().get());
+
+  zone1.resetThermostat();
+  EXPECT_FALSE(zone1.thermostat());
+  EXPECT_FALSE(zone1.thermostatSetpointDualSetpoint());
+  ASSERT_TRUE(zone2.thermostatSetpointDualSetpoint());
+}
+
+TEST_F(EPModelFixture, API_ThermalZone_Thermostat_Relationships) {
+  Model model;
+  ThermalZone zone(model);
+  ThermostatSetpointDualSetpoint thermostat(model);
+  ASSERT_TRUE(thermostat.setName("Generic Thermostat"));
+
+  EXPECT_FALSE(zone.thermostat());
+  EXPECT_TRUE(zone.setThermostat(thermostat));
+
+  auto genericThermostat = zone.thermostat();
+  ASSERT_TRUE(genericThermostat);
+  EXPECT_EQ("Generic Thermostat", genericThermostat->nameString());
+  EXPECT_EQ(ThermostatSetpointDualSetpoint::iddObjectType(), genericThermostat->iddObject().type());
+  ASSERT_TRUE(zone.thermostatSetpointDualSetpoint());
+  EXPECT_EQ(zone.thermostatSetpointDualSetpoint().get(), genericThermostat.get());
+  ASSERT_TRUE(thermostat.thermalZone());
+  EXPECT_EQ(zone, *thermostat.thermalZone());
+
+  zone.resetThermostat();
+  EXPECT_FALSE(zone.thermostat());
+  EXPECT_FALSE(zone.thermostatSetpointDualSetpoint());
+  EXPECT_FALSE(thermostat.thermalZone());
+}
+
+TEST_F(EPModelFixture, API_ThermalZone_ZoneControlHumidistat_Relationships) {
+  Model model;
+  ThermalZone zone1(model);
+  ThermalZone zone2(model);
+  ZoneControlHumidistat humidistat(model);
+  ASSERT_TRUE(humidistat.setName("Shared Humidistat"));
+
+  EXPECT_FALSE(zone1.zoneControlHumidistat());
+  EXPECT_TRUE(zone1.setZoneControlHumidistat(humidistat));
+  ASSERT_TRUE(zone1.zoneControlHumidistat());
+  EXPECT_EQ("Shared Humidistat", zone1.zoneControlHumidistat()->nameString());
+
+  EXPECT_TRUE(zone2.setZoneControlHumidistat(humidistat));
+  ASSERT_TRUE(zone2.zoneControlHumidistat());
+  EXPECT_NE(zone1.zoneControlHumidistat().get(), zone2.zoneControlHumidistat().get());
+
+  zone1.resetZoneControlHumidistat();
+  EXPECT_FALSE(zone1.zoneControlHumidistat());
+  ASSERT_TRUE(zone2.zoneControlHumidistat());
+}
+
+TEST_F(EPModelFixture, API_ThermalZone_ZoneControlContaminantController_Relationships) {
+  Model model;
+  ThermalZone zone1(model);
+  ThermalZone zone2(model);
+  ZoneControlContaminantController controller(model);
+  ASSERT_TRUE(controller.setName("Shared Controller"));
+
+  EXPECT_FALSE(zone1.zoneControlContaminantController());
+  EXPECT_TRUE(zone1.setZoneControlContaminantController(controller));
+  ASSERT_TRUE(zone1.zoneControlContaminantController());
+  EXPECT_EQ("Shared Controller", zone1.zoneControlContaminantController()->nameString());
+
+  EXPECT_TRUE(zone2.setZoneControlContaminantController(controller));
+  ASSERT_TRUE(zone2.zoneControlContaminantController());
+  EXPECT_NE(zone1.zoneControlContaminantController().get(), zone2.zoneControlContaminantController().get());
+
+  zone1.resetZoneControlContaminantController();
+  EXPECT_FALSE(zone1.zoneControlContaminantController());
+  ASSERT_TRUE(zone2.zoneControlContaminantController());
+}
+
+TEST_F(EPModelFixture, API_ThermalZone_EquipmentAndTopologyHelpers_RoundTrip) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  ZoneHVACBaseboardConvectiveElectric baseboard(model);
+  AirTerminalSingleDuctConstantVolumeNoReheat terminal(model);
+
+  ASSERT_TRUE(zone.setZoneConditioningEquipmentListName("Zone Equipment List"));
+  ASSERT_TRUE(baseboard.addToThermalZone(zone));
+  ASSERT_EQ(1u, zone.equipment().size());
+  EXPECT_EQ(baseboard.cast<ModelObject>(), zone.equipment().front());
+  EXPECT_FALSE(zone.airLoopHVACTerminal());
+  EXPECT_TRUE(zone.airLoopHVACTerminals().empty());
+
+  auto branchObject = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(branchObject);
+  auto branchNode = branchObject->optionalCast<Node>();
+  ASSERT_TRUE(branchNode);
+  ASSERT_TRUE(zone.addToNode(*branchNode));
+
+  auto zoneAirNode = zone.zoneAirNode();
+  ASSERT_TRUE(terminal.addToNode(zoneAirNode));
+
+  EXPECT_EQ(zone.nameString() + " Demand Branch Node", zoneAirNode.nameString());
+
+  auto returnAirObject = zone.returnAirModelObject();
+  ASSERT_TRUE(returnAirObject);
+  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), *returnAirObject);
+
+  auto returnAirObjects = zone.returnAirModelObjects();
+  ASSERT_EQ(1u, returnAirObjects.size());
+  EXPECT_EQ(zoneAirNode.cast<ModelObject>(), returnAirObjects.front());
+
+  auto airLoopTerminal = zone.airLoopHVACTerminal();
+  ASSERT_TRUE(airLoopTerminal);
+  EXPECT_EQ(terminal.cast<HVACComponent>(), *airLoopTerminal);
+
+  auto airLoopTerminals = zone.airLoopHVACTerminals();
+  ASSERT_EQ(1u, airLoopTerminals.size());
+  EXPECT_EQ(terminal.cast<HVACComponent>(), airLoopTerminals.front());
+}
+
+TEST_F(EPModelFixture, API_ThermalZone_UseIdealAirLoads_RemovesAirLoopBranch) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+
+  auto branchObject = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(branchObject);
+  auto branchNode = branchObject->optionalCast<Node>();
+  ASSERT_TRUE(branchNode);
+  ASSERT_TRUE(zone.addToNode(*branchNode));
+  ASSERT_EQ(1u, airLoop.thermalZones().size());
+
+  EXPECT_TRUE(zone.setUseIdealAirLoads(true));
+  EXPECT_TRUE(zone.useIdealAirLoads());
+  EXPECT_TRUE(airLoop.thermalZones().empty());
+
+  const auto idealLoads = model.getObjectsByType(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem);
+  ASSERT_EQ(1u, idealLoads.size());
+  auto mappedZoneName = idealLoads.front().getString(openstudio::HVACTemplate_Zone_IdealLoadsAirSystemFields::ZoneName, true);
+  ASSERT_TRUE(mappedZoneName);
+  EXPECT_EQ(zone.nameString(), *mappedZoneName);
 }
 
 TEST_F(EPModelFixture, API_ThermalZone_OutputIlluminanceMapScalars_RoundTrip) {

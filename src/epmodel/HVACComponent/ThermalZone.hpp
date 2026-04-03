@@ -18,9 +18,14 @@
 namespace openstudio {
 namespace epmodel {
 
+  class HVACComponent;
   class Model;
   class Node;
   class SizingZone;
+  class Thermostat;
+  class ThermostatSetpointDualSetpoint;
+  class ZoneControlContaminantController;
+  class ZoneControlHumidistat;
 
   namespace detail {
     class ThermalZone_Impl;
@@ -39,13 +44,16 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
     // Schema Alignment Notes:
-    // - Status: Partial Parity. ThermalZone preserves the main zone-control and topology-access surface, but the canonical model wrapper still exposes materially more zone, daylighting, and HVAC-control behavior.
+    // - Status: Near Parity. ThermalZone preserves the main HVAC topology, sizing, equipment, ideal-loads, and zone-control surfaces needed by downstream
+    //   air-side and zone-equipment code, while broader daylighting and some thermostat-abstraction parity remain outstanding.
     // - Canonical Counterpart: openstudio::model::ThermalZone.
-    // - Implemented Parity: `addToNode`, scalar zone fields, `useIdealAirLoads`, thermostat-control scalars, outdoor-air scalars, and daylighting scalars preserve the main canonical zone wrapper behavior that is already implemented in epmodel.
-    // - Documented Delta: The epmodel wrapper still omits several canonical convenience APIs, including direct thermostat/contaminant/humidistat objects, zone-conditioning equipment list access, return-air helpers, and some daylighting/map convenience surfaces.
+    // - Implemented Parity: `addToNode`, scalar zone fields, `useIdealAirLoads`, thermostat convenience, humidistat/contaminant-controller
+    //   relationships, zone equipment list/name helpers, return-air/zone-air helpers, outdoor-air scalars, and daylighting scalars preserve the main
+    //   canonical HVAC-facing zone wrapper behavior that is already implemented in epmodel.
+    // - Documented Delta: Daylighting-control and illuminance-map object conveniences remain deferred.
     // - Field/Storage Mapping: `addToNode` keeps the EnergyPlus `ZoneHVAC:EquipmentConnections` object aligned with the current demand branch node when the zone is connected to or moved between air-loop branches.
     // - Evidence: `src/model/ThermalZone.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateThermalZone.cpp`, `src/energyplus/ReverseTranslator/ReverseTranslateSizingZone.cpp`, and `src/epmodel/test/IDF_SmallOffice_GTest.cpp` show the canonical and epmodel zone-link behavior being preserved or exercised.
-    // - Remaining Parity Work: Add the missing zone object convenience APIs and the remaining HVAC-control wrappers once the corresponding epmodel object model is available.
+    // - Remaining Parity Work: Close the remaining daylighting and illuminance-map object convenience gaps.
     bool addToNode(Node& node);
     SizingZone sizingZone() const;
 
@@ -88,9 +96,10 @@ namespace epmodel {
     void resetZoneOutsideConvectionAlgorithm();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The ideal-air-loads convenience surface is preserved, but it remains a derived-object proxy rather than a direct zone-HVAC object model.
+    // - Status: Near Parity. The ideal-air-loads convenience surface preserves canonical zone-facing behavior, including incompatibility with active air-loop attachment.
     // - Canonical Counterpart: openstudio::model::ThermalZone.
-    // - Implemented Parity: `useIdealAirLoads` and `setUseIdealAirLoads` preserve the canonical boolean-facing convenience API.
+    // - Implemented Parity: `useIdealAirLoads` and `setUseIdealAirLoads` preserve the canonical boolean-facing convenience API and clear active
+    //   air-loop attachment before enabling ideal loads.
     // - Documented Delta: epmodel still models the behavior through `HVACTemplate:Zone:IdealLoadsAirSystem` presence instead of a dedicated `ZoneHVACIdealLoadsAirSystem` parity object.
     // - Field/Storage Mapping: API delegates to presence of `HVACTemplate:Zone:IdealLoadsAirSystem` objects that point back to this zone.
     // - Evidence: `src/energyplus/ForwardTranslator/ForwardTranslateThermalZone.cpp` shows the same derived-object wiring, and the related epmodel tests exercise the zone attachment path.
@@ -98,14 +107,46 @@ namespace epmodel {
     bool useIdealAirLoads() const;
     bool setUseIdealAirLoads(bool useIdealAirLoads);
 
+    std::string zoneConditioningEquipmentListName() const;
+    bool setZoneConditioningEquipmentListName(const std::string& zoneConditioningEquipmentListName);
+
+    boost::optional<Thermostat> thermostat() const;
+    bool setThermostat(const Thermostat& thermostat);
+    void resetThermostat();
+
+    boost::optional<ThermostatSetpointDualSetpoint> thermostatSetpointDualSetpoint() const;
+    /** \deprecated */
+    bool setThermostatSetpointDualSetpoint(const ThermostatSetpointDualSetpoint& thermostat);
+    /** \deprecated */
+    void resetThermostatSetpointDualSetpoint();
+
+    boost::optional<ZoneControlHumidistat> zoneControlHumidistat() const;
+    bool setZoneControlHumidistat(const ZoneControlHumidistat& humidistat);
+    void resetZoneControlHumidistat();
+
+    boost::optional<ZoneControlContaminantController> zoneControlContaminantController() const;
+    bool setZoneControlContaminantController(const ZoneControlContaminantController& contaminantController);
+    void resetZoneControlContaminantController();
+
+    OptionalModelObject returnAirModelObject() const;
+    std::vector<ModelObject> returnAirModelObjects() const;
+    Node zoneAirNode() const;
+
+    std::vector<ModelObject> equipment() const;
+    boost::optional<HVACComponent> airLoopHVACTerminal() const;
+    std::vector<HVACComponent> airLoopHVACTerminals() const;
+
     // Schema Alignment Notes:
-    // - Status: Partial Parity. Thermostat control metadata is present as scalars, but the canonical object-level thermostat APIs remain unavailable.
+    // - Status: Near Parity. Thermostat control metadata and the canonical thermostat/humidistat/contaminant relationship helpers are exposed for the
+    //   thermostat subclasses epmodel currently models.
     // - Canonical Counterpart: openstudio::model::ThermalZone.
-    // - Implemented Parity: The thermostat control-type and cutout/setpoint scalar wrappers preserve the current canonical zone metadata surface.
-    // - Documented Delta: The canonical `ThermalZone` thermostat object accessors are not present here; this wrapper keeps those relationships implicit in the EnergyPlus-backed storage.
-    // - Field/Storage Mapping: These getters/setters read/write the ZoneControl:Thermostat fields targeting this zone (Zone Name == ThermalZone nameString()), matching ForwardTranslateThermalZone behavior.
+    // - Implemented Parity: The thermostat control-type and cutout/setpoint scalar wrappers preserve the canonical zone metadata surface, and the
+    //   canonical thermostat/humidistat/contaminant-controller convenience APIs expose the currently modeled object relationships.
+    // - Documented Delta: epmodel still models only a subset of the broader thermostat family, so unsupported thermostat subclasses remain outside this wrapper.
+    // - Field/Storage Mapping: The scalar accessors and thermostat convenience read/write the `ZoneControl:Thermostat` fields targeting this zone
+    //   (Zone Name == ThermalZone nameString()), while humidistat and contaminant-controller relationships resolve directly from their owning objects.
     // - Evidence: `src/model/ThermalZone.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateThermalZone.cpp` show the matching model surface and translator wiring.
-    // - Remaining Parity Work: Add explicit thermostat object wrappers once the epmodel relationship model can represent them cleanly.
+    // - Remaining Parity Work: Extend thermostat-family coverage if epmodel later adds additional canonical thermostat subclasses beyond the currently modeled ones.
     static std::vector<std::string> control1ObjectTypeValues();
     std::string control1ObjectType() const;
     bool setControl1ObjectType(const std::string& control1ObjectType);

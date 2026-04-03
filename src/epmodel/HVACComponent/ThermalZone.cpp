@@ -6,10 +6,12 @@
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
 
+#include "HVACComponent/HVACComponent.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter.hpp"
+#include "Splitter/AirLoopHVACZoneSplitter_Impl.hpp"
 #include "ResourceObject/DesignSpecificationOutdoorAir.hpp"
 #include "ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp"
 #include "Model.hpp"
@@ -22,6 +24,13 @@
 #include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentList.hpp"
 #include "ModelObject/ZoneHVACEquipmentList_Impl.hpp"
+#include "ModelObject/ZoneControlContaminantController.hpp"
+#include "ModelObject/ZoneControlContaminantController_Impl.hpp"
+#include "ModelObject/ZoneControlHumidistat.hpp"
+#include "ModelObject/ZoneControlHumidistat_Impl.hpp"
+#include "Thermostat/Thermostat.hpp"
+#include "Thermostat/ThermostatSetpointDualSetpoint_Impl.hpp"
+#include "Thermostat/ThermostatSetpointDualSetpoint.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Compare.hpp>
@@ -34,6 +43,8 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/Output_IlluminanceMap_FieldEnums.hxx>
 #include <utilities/idd/Zone_FieldEnums.hxx>
+#include <utilities/idd/ZoneControl_ContaminantController_FieldEnums.hxx>
+#include <utilities/idd/ZoneControl_Humidistat_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include <utilities/idd/ZoneControl_Thermostat_FieldEnums.hxx>
 #include <utilities/idd/ZoneList_FieldEnums.hxx>
@@ -241,6 +252,10 @@ namespace epmodel {
       return false;
     }
 
+    if (useIdealAirLoads() && !setUseIdealAirLoads(false)) {
+      return false;
+    }
+
     const std::string zoneBranchNodeName = nameString() + " Demand Branch Node";
     auto zoneBranchNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(zoneBranchNodeName);
 
@@ -386,6 +401,86 @@ namespace epmodel {
 
   bool ThermalZone::setUseIdealAirLoads(bool useIdealAirLoads) {
     return getImpl<detail::ThermalZone_Impl>()->setUseIdealAirLoads(useIdealAirLoads);
+  }
+
+  std::string ThermalZone::zoneConditioningEquipmentListName() const {
+    return getImpl<detail::ThermalZone_Impl>()->zoneConditioningEquipmentListName();
+  }
+
+  bool ThermalZone::setZoneConditioningEquipmentListName(const std::string& zoneConditioningEquipmentListName) {
+    return getImpl<detail::ThermalZone_Impl>()->setZoneConditioningEquipmentListName(zoneConditioningEquipmentListName);
+  }
+
+  boost::optional<Thermostat> ThermalZone::thermostat() const {
+    return getImpl<detail::ThermalZone_Impl>()->thermostat();
+  }
+
+  bool ThermalZone::setThermostat(const Thermostat& thermostat) {
+    return getImpl<detail::ThermalZone_Impl>()->setThermostat(thermostat);
+  }
+
+  void ThermalZone::resetThermostat() {
+    getImpl<detail::ThermalZone_Impl>()->resetThermostat();
+  }
+
+  boost::optional<ThermostatSetpointDualSetpoint> ThermalZone::thermostatSetpointDualSetpoint() const {
+    return getImpl<detail::ThermalZone_Impl>()->thermostatSetpointDualSetpoint();
+  }
+
+  bool ThermalZone::setThermostatSetpointDualSetpoint(const ThermostatSetpointDualSetpoint& thermostat) {
+    return getImpl<detail::ThermalZone_Impl>()->setThermostatSetpointDualSetpoint(thermostat);
+  }
+
+  void ThermalZone::resetThermostatSetpointDualSetpoint() {
+    getImpl<detail::ThermalZone_Impl>()->resetThermostatSetpointDualSetpoint();
+  }
+
+  boost::optional<ZoneControlHumidistat> ThermalZone::zoneControlHumidistat() const {
+    return getImpl<detail::ThermalZone_Impl>()->zoneControlHumidistat();
+  }
+
+  bool ThermalZone::setZoneControlHumidistat(const ZoneControlHumidistat& humidistat) {
+    return getImpl<detail::ThermalZone_Impl>()->setZoneControlHumidistat(humidistat);
+  }
+
+  void ThermalZone::resetZoneControlHumidistat() {
+    getImpl<detail::ThermalZone_Impl>()->resetZoneControlHumidistat();
+  }
+
+  boost::optional<ZoneControlContaminantController> ThermalZone::zoneControlContaminantController() const {
+    return getImpl<detail::ThermalZone_Impl>()->zoneControlContaminantController();
+  }
+
+  bool ThermalZone::setZoneControlContaminantController(const ZoneControlContaminantController& contaminantController) {
+    return getImpl<detail::ThermalZone_Impl>()->setZoneControlContaminantController(contaminantController);
+  }
+
+  void ThermalZone::resetZoneControlContaminantController() {
+    getImpl<detail::ThermalZone_Impl>()->resetZoneControlContaminantController();
+  }
+
+  OptionalModelObject ThermalZone::returnAirModelObject() const {
+    return getImpl<detail::ThermalZone_Impl>()->returnAirModelObject();
+  }
+
+  std::vector<ModelObject> ThermalZone::returnAirModelObjects() const {
+    return getImpl<detail::ThermalZone_Impl>()->returnAirModelObjects();
+  }
+
+  Node ThermalZone::zoneAirNode() const {
+    return getImpl<detail::ThermalZone_Impl>()->zoneAirNode();
+  }
+
+  std::vector<ModelObject> ThermalZone::equipment() const {
+    return getImpl<detail::ThermalZone_Impl>()->equipment();
+  }
+
+  boost::optional<HVACComponent> ThermalZone::airLoopHVACTerminal() const {
+    return getImpl<detail::ThermalZone_Impl>()->airLoopHVACTerminal();
+  }
+
+  std::vector<HVACComponent> ThermalZone::airLoopHVACTerminals() const {
+    return getImpl<detail::ThermalZone_Impl>()->airLoopHVACTerminals();
   }
 
   std::vector<std::string> ThermalZone::control1ObjectTypeValues() {
@@ -809,7 +904,7 @@ namespace epmodel {
     // - Field Mapping: Returns the `ZoneHVACEquipmentConnections` object that represents the EnergyPlus `ZoneHVAC:EquipmentConnections`
     //   object tied to this zone.
     boost::optional<openstudio::epmodel::ZoneHVACEquipmentConnections> ThermalZone_Impl::zoneHVACEquipmentConnections() const {
-      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto zone = getObject<openstudio::epmodel::ThermalZone>();
       for (const auto& conn : model().getConcreteModelObjects<openstudio::epmodel::ZoneHVACEquipmentConnections>()) {
         if (auto linkedZone = conn.thermalZone()) {
           if (*linkedZone == zone) {
@@ -825,7 +920,7 @@ namespace epmodel {
         return *conn;
       }
 
-      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto zone = getObject<openstudio::epmodel::ThermalZone>();
       openstudio::epmodel::ZoneHVACEquipmentConnections conn(model());
       conn.createName();
       if (!conn.name() || conn.name()->empty()) {
@@ -857,7 +952,7 @@ namespace epmodel {
     }
 
     boost::optional<openstudio::epmodel::SizingZone> ThermalZone_Impl::optionalSizingZone() const {
-      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto zone = getObject<openstudio::epmodel::ThermalZone>();
       for (const auto& sizingZone : model().getConcreteModelObjects<openstudio::epmodel::SizingZone>()) {
         auto sizingZoneImpl = sizingZone.getImpl<openstudio::epmodel::detail::SizingZone_Impl>();
         OS_ASSERT(sizingZoneImpl);
@@ -1029,7 +1124,7 @@ namespace epmodel {
     }
 
     bool ThermalZone_Impl::useIdealAirLoads() const {
-      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto zone = getObject<openstudio::epmodel::ThermalZone>();
       for (const auto& object : zone.getSources(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem)) {
         if (auto target = object.getTarget(openstudio::HVACTemplate_Zone_IdealLoadsAirSystemFields::ZoneName)) {
           if (*target == zone) {
@@ -1041,7 +1136,7 @@ namespace epmodel {
     }
 
     bool ThermalZone_Impl::setUseIdealAirLoads(bool useIdealAirLoads) {
-      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto zone = getObject<openstudio::epmodel::ThermalZone>();
       std::vector<openstudio::WorkspaceObject> idealLoadsObjects;
       for (const auto& object : zone.getSources(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem)) {
         if (auto target = object.getTarget(openstudio::HVACTemplate_Zone_IdealLoadsAirSystemFields::ZoneName)) {
@@ -1052,6 +1147,20 @@ namespace epmodel {
       }
 
       if (useIdealAirLoads) {
+        for (auto& component : equipment()) {
+          component.remove();
+        }
+
+        if (auto zoneConnections = zoneHVACEquipmentConnections()) {
+          if (auto zoneNode = zoneConnections->zoneAirInletNode()) {
+            if (auto airLoop = zoneNode->airLoopHVAC()) {
+              if (!airLoop->removeBranchForZone(zone)) {
+                return false;
+              }
+            }
+          }
+        }
+
         if (!idealLoadsObjects.empty()) {
           return true;
         }
@@ -1066,6 +1175,310 @@ namespace epmodel {
       bool result = true;
       for (auto& object : idealLoadsObjects) {
         result = !object.remove().empty() && result;
+      }
+      return result;
+    }
+
+    std::string ThermalZone_Impl::zoneConditioningEquipmentListName() const {
+      if (auto conn = zoneHVACEquipmentConnections()) {
+        if (auto name = conn->getString(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName, true)) {
+          return *name;
+        }
+      }
+      return std::string();
+    }
+
+    bool ThermalZone_Impl::setZoneConditioningEquipmentListName(const std::string& zoneConditioningEquipmentListName) {
+      if (zoneConditioningEquipmentListName.empty()) {
+        return false;
+      }
+
+      auto connections = getZoneHVACEquipmentConnections();
+      if (auto existing = model().getObjectByTypeAndName(openstudio::IddObjectType::ZoneHVAC_EquipmentList, zoneConditioningEquipmentListName, true)) {
+        return connections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName, existing->handle());
+      }
+
+      if (auto equipmentList = zoneHVACEquipmentList()) {
+        if (!equipmentList->setName(zoneConditioningEquipmentListName)) {
+          return false;
+        }
+        return connections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName, equipmentList->handle());
+      }
+
+      openstudio::epmodel::ZoneHVACEquipmentList equipmentList(model());
+      if (!equipmentList.setName(zoneConditioningEquipmentListName)) {
+        return false;
+      }
+      return connections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName, equipmentList.handle());
+    }
+
+    boost::optional<openstudio::epmodel::Thermostat> ThermalZone_Impl::thermostat() const {
+      if (auto object = zoneControlThermostatObject()) {
+        if (auto target = object->getTarget(openstudio::ZoneControl_ThermostatFields::Control1Name)) {
+          return target->optionalCast<openstudio::epmodel::Thermostat>();
+        }
+      }
+      return boost::none;
+    }
+
+    bool ThermalZone_Impl::setThermostat(const openstudio::epmodel::Thermostat& thermostat) {
+      if (thermostat.model() != model()) {
+        return false;
+      }
+
+      auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      if (auto currentThermostat = thermostatSetpointDualSetpoint()) {
+        currentThermostat->getImpl<openstudio::epmodel::detail::ThermostatSetpointDualSetpoint_Impl>()
+          ->syncTemperatureDifferenceBetweenCutoutAndSetpointFromThermalZone(zone);
+      }
+
+      bool incomingDualSetpointHasLiveTemperatureDifference = false;
+      bool incomingDualSetpointTemperatureDifferenceDefaulted = true;
+      double incomingDualSetpointTemperatureDifference = 0.0;
+      if (auto incomingDualSetpoint = thermostat.optionalCast<openstudio::epmodel::ThermostatSetpointDualSetpoint>()) {
+        if (auto sourceZone = incomingDualSetpoint->thermalZone()) {
+          incomingDualSetpointHasLiveTemperatureDifference = true;
+          incomingDualSetpointTemperatureDifferenceDefaulted = sourceZone->isTemperatureDifferenceBetweenCutoutAndSetpointDefaulted();
+          incomingDualSetpointTemperatureDifference = sourceZone->temperatureDifferenceBetweenCutoutAndSetpoint();
+          incomingDualSetpoint->getImpl<openstudio::epmodel::detail::ThermostatSetpointDualSetpoint_Impl>()
+            ->syncTemperatureDifferenceBetweenCutoutAndSetpointFromThermalZone(*sourceZone);
+        }
+      }
+
+      if (auto current = this->thermostat()) {
+        if (*current == thermostat) {
+          return true;
+        }
+      }
+
+      auto assigned = thermostat;
+      for (const auto& zoneControl : model().getObjectsByType(openstudio::IddObjectType::ZoneControl_Thermostat, true)) {
+        if (auto target = zoneControl.getTarget(openstudio::ZoneControl_ThermostatFields::Control1Name)) {
+          if ((*target == thermostat) && !zoneControlThermostatTargetsZone(zone, zoneControl)) {
+            auto clonedObject = model().addObject(thermostat.clone());
+            if (!clonedObject) {
+              return false;
+            }
+            assigned = clonedObject->cast<openstudio::epmodel::Thermostat>();
+            break;
+          }
+        }
+      }
+
+      auto object = getOrCreateZoneControlThermostatObject();
+      if (!object.setString(openstudio::ZoneControl_ThermostatFields::Control1ObjectType, thermostat.iddObject().name())) {
+        return false;
+      }
+      if (!object.setPointer(openstudio::ZoneControl_ThermostatFields::Control1Name, assigned.handle())) {
+        return false;
+      }
+
+      if (auto dualSetpoint = assigned.optionalCast<openstudio::epmodel::ThermostatSetpointDualSetpoint>()) {
+        if (incomingDualSetpointHasLiveTemperatureDifference) {
+          if (incomingDualSetpointTemperatureDifferenceDefaulted) {
+            zone.resetTemperatureDifferenceBetweenCutoutAndSetpoint();
+          } else {
+            OS_ASSERT(zone.setTemperatureDifferenceBetweenCutoutAndSetpoint(incomingDualSetpointTemperatureDifference));
+          }
+          dualSetpoint->getImpl<openstudio::epmodel::detail::ThermostatSetpointDualSetpoint_Impl>()
+            ->syncTemperatureDifferenceBetweenCutoutAndSetpointFromThermalZone(zone);
+        } else {
+          dualSetpoint->getImpl<openstudio::epmodel::detail::ThermostatSetpointDualSetpoint_Impl>()
+            ->applyTemperatureDifferenceBetweenCutoutAndSetpointToThermalZone(zone);
+        }
+      }
+      return true;
+    }
+
+    void ThermalZone_Impl::resetThermostat() {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      if (auto currentThermostat = thermostatSetpointDualSetpoint()) {
+        currentThermostat->getImpl<openstudio::epmodel::detail::ThermostatSetpointDualSetpoint_Impl>()
+          ->syncTemperatureDifferenceBetweenCutoutAndSetpointFromThermalZone(zone);
+      }
+
+      if (auto object = zoneControlThermostatObject()) {
+        OS_ASSERT(object->setString(openstudio::ZoneControl_ThermostatFields::Control1ObjectType, ""));
+        OS_ASSERT(object->setString(openstudio::ZoneControl_ThermostatFields::Control1Name, ""));
+      }
+    }
+
+    boost::optional<openstudio::epmodel::ThermostatSetpointDualSetpoint> ThermalZone_Impl::thermostatSetpointDualSetpoint() const {
+      if (auto genericThermostat = thermostat()) {
+        return genericThermostat->optionalCast<openstudio::epmodel::ThermostatSetpointDualSetpoint>();
+      }
+      return boost::none;
+    }
+
+    bool ThermalZone_Impl::setThermostatSetpointDualSetpoint(const openstudio::epmodel::ThermostatSetpointDualSetpoint& thermostat) {
+      return setThermostat(thermostat);
+    }
+
+    void ThermalZone_Impl::resetThermostatSetpointDualSetpoint() {
+      resetThermostat();
+    }
+
+    boost::optional<openstudio::epmodel::ZoneControlHumidistat> ThermalZone_Impl::zoneControlHumidistat() const {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      for (const auto& humidistat : model().getConcreteModelObjects<openstudio::epmodel::ZoneControlHumidistat>()) {
+        if (auto target = humidistat.getTarget(openstudio::ZoneControl_HumidistatFields::ZoneName)) {
+          if (*target == zone) {
+            return humidistat;
+          }
+        } else if (auto zoneName = humidistat.getString(openstudio::ZoneControl_HumidistatFields::ZoneName, true)) {
+          if (openstudio::istringEqual(*zoneName, zone.nameString())) {
+            return humidistat;
+          }
+        }
+      }
+      return boost::none;
+    }
+
+    bool ThermalZone_Impl::setZoneControlHumidistat(const openstudio::epmodel::ZoneControlHumidistat& humidistat) {
+      if (humidistat.model() != model()) {
+        return false;
+      }
+
+      if (auto current = zoneControlHumidistat()) {
+        if (*current == humidistat) {
+          return true;
+        }
+      }
+
+      auto assigned = humidistat;
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      if (auto zoneName = humidistat.getString(openstudio::ZoneControl_HumidistatFields::ZoneName, true)) {
+        if (!zoneName->empty() && !openstudio::istringEqual(*zoneName, zone.nameString())) {
+          auto clonedObject = model().addObject(humidistat.clone());
+          if (!clonedObject) {
+            return false;
+          }
+          assigned = clonedObject->cast<openstudio::epmodel::ZoneControlHumidistat>();
+        }
+      }
+
+      resetZoneControlHumidistat();
+      return assigned.setPointer(openstudio::ZoneControl_HumidistatFields::ZoneName, zone.handle());
+    }
+
+    void ThermalZone_Impl::resetZoneControlHumidistat() {
+      if (auto humidistat = zoneControlHumidistat()) {
+        OS_ASSERT(humidistat->setString(openstudio::ZoneControl_HumidistatFields::ZoneName, ""));
+      }
+    }
+
+    boost::optional<openstudio::epmodel::ZoneControlContaminantController> ThermalZone_Impl::zoneControlContaminantController() const {
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      for (const auto& controller : model().getConcreteModelObjects<openstudio::epmodel::ZoneControlContaminantController>()) {
+        if (auto target = controller.getTarget(openstudio::ZoneControl_ContaminantControllerFields::ZoneName)) {
+          if (*target == zone) {
+            return controller;
+          }
+        } else if (auto zoneName = controller.getString(openstudio::ZoneControl_ContaminantControllerFields::ZoneName, true)) {
+          if (openstudio::istringEqual(*zoneName, zone.nameString())) {
+            return controller;
+          }
+        }
+      }
+      return boost::none;
+    }
+
+    bool ThermalZone_Impl::setZoneControlContaminantController(
+      const openstudio::epmodel::ZoneControlContaminantController& contaminantController) {
+      if (contaminantController.model() != model()) {
+        return false;
+      }
+
+      if (auto current = zoneControlContaminantController()) {
+        if (*current == contaminantController) {
+          return true;
+        }
+      }
+
+      auto assigned = contaminantController;
+      const auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      if (auto zoneName = contaminantController.getString(openstudio::ZoneControl_ContaminantControllerFields::ZoneName, true)) {
+        if (!zoneName->empty() && !openstudio::istringEqual(*zoneName, zone.nameString())) {
+          auto clonedObject = model().addObject(contaminantController.clone());
+          if (!clonedObject) {
+            return false;
+          }
+          assigned = clonedObject->cast<openstudio::epmodel::ZoneControlContaminantController>();
+        }
+      }
+
+      resetZoneControlContaminantController();
+      return assigned.setPointer(openstudio::ZoneControl_ContaminantControllerFields::ZoneName, zone.handle());
+    }
+
+    void ThermalZone_Impl::resetZoneControlContaminantController() {
+      if (auto controller = zoneControlContaminantController()) {
+        OS_ASSERT(controller->setString(openstudio::ZoneControl_ContaminantControllerFields::ZoneName, ""));
+      }
+    }
+
+    boost::optional<openstudio::epmodel::ModelObject> ThermalZone_Impl::returnAirModelObject() const {
+      const auto modelObjects = returnAirModelObjects();
+      if (!modelObjects.empty()) {
+        return modelObjects.front();
+      }
+      return boost::none;
+    }
+
+    std::vector<openstudio::epmodel::ModelObject> ThermalZone_Impl::returnAirModelObjects() const {
+      std::vector<openstudio::epmodel::ModelObject> result;
+      if (auto connections = zoneHVACEquipmentConnections()) {
+        for (const auto& node : connections->zoneReturnAirNodes()) {
+          result.emplace_back(node.cast<openstudio::epmodel::ModelObject>());
+        }
+      }
+      return result;
+    }
+
+    openstudio::epmodel::Node ThermalZone_Impl::zoneAirNode() const {
+      if (auto connections = zoneHVACEquipmentConnections()) {
+        if (auto node = connections->zoneAirInletNode()) {
+          return *node;
+        }
+        if (auto node = connections->zoneReturnAirNode()) {
+          return *node;
+        }
+      }
+
+      auto zone = getObject<openstudio::epmodel::ThermalZone>();
+      auto currentModel = model();
+      return currentModel.getOrCreateTransientByName<openstudio::epmodel::Node>(zone.nameString() + " Demand Branch Node");
+    }
+
+    std::vector<openstudio::epmodel::ModelObject> ThermalZone_Impl::equipment() const {
+      if (auto equipmentList = zoneHVACEquipmentList()) {
+        return equipmentList->equipment();
+      }
+      return {};
+    }
+
+    boost::optional<openstudio::epmodel::HVACComponent> ThermalZone_Impl::airLoopHVACTerminal() const {
+      auto terminals = airLoopHVACTerminals();
+      if (!terminals.empty()) {
+        return terminals.front();
+      }
+      return boost::none;
+    }
+
+    std::vector<openstudio::epmodel::HVACComponent> ThermalZone_Impl::airLoopHVACTerminals() const {
+      std::vector<openstudio::epmodel::HVACComponent> result;
+      if (auto connections = zoneHVACEquipmentConnections()) {
+        for (const auto& node : connections->zoneAirInletNodes()) {
+          auto inletObject = node.inletModelObject();
+          if (!inletObject || inletObject->optionalCast<openstudio::epmodel::AirLoopHVACZoneSplitter>()) {
+            continue;
+          }
+
+          auto terminal = inletObject->optionalCast<openstudio::epmodel::HVACComponent>();
+          if (terminal && (std::ranges::find(result, *terminal) == result.end())) {
+            result.push_back(*terminal);
+          }
+        }
       }
       return result;
     }

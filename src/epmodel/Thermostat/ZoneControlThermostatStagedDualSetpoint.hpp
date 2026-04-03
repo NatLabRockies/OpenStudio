@@ -6,23 +6,24 @@
 #ifndef EPMODEL_THERMOSTAT_ZONECONTROLTHERMOSTATSTAGEDDUALSETPOINT_HPP
 #define EPMODEL_THERMOSTAT_ZONECONTROLTHERMOSTATSTAGEDDUALSETPOINT_HPP
 
-#include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Thermostat/Thermostat.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
 #include <memory>
+#include <vector>
 
 namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class ZoneControlThermostatStagedDualSetpoint_Impl;
   }
 
-  class EPMODEL_API ZoneControlThermostatStagedDualSetpoint : public ModelObject
+  class EPMODEL_API ZoneControlThermostatStagedDualSetpoint : public Thermostat
   {
    public:
     explicit ZoneControlThermostatStagedDualSetpoint(const Model& model);
@@ -36,13 +37,20 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: Mirrors the openstudio::model ZoneControlThermostatStagedDualSetpoint interface so scalar names/signatures are preserved for compatibility.
-    // - Field Mapping: ForwardTranslator translateZoneControlThermostatStagedDualSetpoint wires the staging numeric fields (numberofHeatingStages, heatingThrottlingTemperatureRange, stage heating/cooling offsets, numberofCoolingStages, coolingThrottlingTemperatureRange) directly to the EnergyPlus ZoneControl:Thermostat:StagedDualSetpoint fields listed in the IDD.
-    // - Field Mapping: Heating Temperature Setpoint Schedule and Cooling Temperature Setpoint Base Schedule remain relationship-like schedule references and are intentionally excluded from this scalar-only API.
-    // - TODO(parity): Add explicit schedule helpers after relationship coverage reaches parity with the Ruby generator.
+    // - Status: Near Parity. The canonical staged-dual-setpoint scalar and schedule surfaces are preserved, including constructor defaults.
+    // - Canonical Counterpart: openstudio::model::ZoneControlThermostatStagedDualSetpoint.
+    // - Implemented Parity: The staged temperature offsets, throttling ranges, stage counts, and the heating/cooling schedule relationship APIs match
+    //   the canonical model surface.
+    // - Field/Storage Mapping: Numeric staging methods map directly to the corresponding ZoneControl:Thermostat:StagedDualSetpoint numeric fields. The
+    //   heating/cooling schedule accessors bind to the matching schedule object-list fields.
+    // - Remaining Parity Work: Add canonical schedule-type validation in the heating/cooling schedule setters.
 
     int numberofHeatingStages() const;
     bool setNumberofHeatingStages(int numberofHeatingStages);
+
+    boost::optional<Schedule> heatingTemperatureSetpointSchedule() const;
+    bool setHeatingTemperatureSetpointSchedule(Schedule& schedule);
+    void resetHeatingTemperatureSetpointSchedule();
 
     double heatingThrottlingTemperatureRange() const;
     bool setHeatingThrottlingTemperatureRange(double heatingThrottlingTemperatureRange);
@@ -61,6 +69,10 @@ namespace epmodel {
 
     int numberofCoolingStages() const;
     bool setNumberofCoolingStages(int numberofCoolingStages);
+
+    boost::optional<Schedule> coolingTemperatureSetpointBaseSchedule() const;
+    bool setCoolingTemperatureSetpointBaseSchedule(Schedule& schedule);
+    void resetCoolingTemperatureSetpointBaseSchedule();
 
     double coolingThrottlingTemperatureRange() const;
     bool setCoolingThrottlingTemperatureRange(double coolingThrottlingTemperatureRange);
@@ -86,6 +98,9 @@ namespace epmodel {
 
     explicit ZoneControlThermostatStagedDualSetpoint(std::shared_ptr<detail::ZoneControlThermostatStagedDualSetpoint_Impl> impl);
   };
+
+  using OptionalZoneControlThermostatStagedDualSetpoint = boost::optional<ZoneControlThermostatStagedDualSetpoint>;
+  using ZoneControlThermostatStagedDualSetpointVector = std::vector<ZoneControlThermostatStagedDualSetpoint>;
 
 }  // namespace epmodel
 }  // namespace openstudio

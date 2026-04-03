@@ -6,21 +6,27 @@
 #ifndef EPMODEL_THERMOSTAT_ZONECONTROLTHERMOSTATSTAGEDDUALSETPOINT_IMPL_HPP
 #define EPMODEL_THERMOSTAT_ZONECONTROLTHERMOSTATSTAGEDDUALSETPOINT_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "Thermostat/Thermostat_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+
   namespace detail {
 
-    class EPMODEL_API ZoneControlThermostatStagedDualSetpoint_Impl : public ModelObject_Impl
+    class EPMODEL_API ZoneControlThermostatStagedDualSetpoint_Impl : public Thermostat_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using Thermostat_Impl::Thermostat_Impl;
       virtual ~ZoneControlThermostatStagedDualSetpoint_Impl() override = default;
 
       int numberofHeatingStages() const;
       bool setNumberofHeatingStages(int numberofHeatingStages);
+
+      boost::optional<openstudio::epmodel::Schedule> heatingTemperatureSetpointSchedule() const;
+      bool setHeatingTemperatureSetpointSchedule(openstudio::epmodel::Schedule& schedule);
+      void resetHeatingTemperatureSetpointSchedule();
 
       double heatingThrottlingTemperatureRange() const;
       bool setHeatingThrottlingTemperatureRange(double heatingThrottlingTemperatureRange);
@@ -39,6 +45,10 @@ namespace epmodel {
 
       int numberofCoolingStages() const;
       bool setNumberofCoolingStages(int numberofCoolingStages);
+
+      boost::optional<openstudio::epmodel::Schedule> coolingTemperatureSetpointBaseSchedule() const;
+      bool setCoolingTemperatureSetpointBaseSchedule(openstudio::epmodel::Schedule& schedule);
+      void resetCoolingTemperatureSetpointBaseSchedule();
 
       double coolingThrottlingTemperatureRange() const;
       bool setCoolingThrottlingTemperatureRange(double coolingThrottlingTemperatureRange);

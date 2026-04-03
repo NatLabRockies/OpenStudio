@@ -6,8 +6,7 @@
 #ifndef EPMODEL_THERMOSTAT_THERMOSTATSETPOINTDUALSETPOINT_HPP
 #define EPMODEL_THERMOSTAT_THERMOSTATSETPOINTDUALSETPOINT_HPP
 
-#include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Thermostat/Thermostat.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -17,12 +16,13 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class ThermostatSetpointDualSetpoint_Impl;
   }
 
-  class EPMODEL_API ThermostatSetpointDualSetpoint : public ModelObject
+  class EPMODEL_API ThermostatSetpointDualSetpoint : public Thermostat
   {
    public:
     explicit ThermostatSetpointDualSetpoint(const Model& model);
@@ -36,11 +36,43 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - API: This model-counterpart class mirrors the EnergyPlus ThermostatSetpoint:DualSetpoint naming and the C++ model counterpart.
-    // - Field Mapping: Name remains available through the base ModelObject scalar API.
-    // - Field Mapping: Heating Setpoint Temperature Schedule Name and Cooling Setpoint Temperature Schedule Name reference Schedule object lists and are intentionally omitted from scalar accessors.
-    // - Field Mapping: ThermostatSetpoint:SingleCooling and ThermostatSetpoint:SingleHeating are translated into this class when only a cooling or heating schedule exists, so Model_Impl::createObject now maps those IDD types here too while still exposing only the base Name scalar.
-    // - TODO(parity): Add relationship-centric helpers for those schedule references once scalar saturation allows it.
+    // - Status: Near Parity. The canonical thermostat base and the dual-setpoint schedule/temperature-difference surface are preserved.
+    // - Canonical Counterpart: openstudio::model::ThermostatSetpointDualSetpoint.
+    // - Implemented Parity: Heating/cooling schedule relationships, deprecated schedule aliases, and the cutout/setpoint temperature-difference
+    //   accessors mirror the canonical model surface.
+    // - Field/Storage Mapping: Schedule relationships bind directly to the EnergyPlus Heating/Cooling Setpoint Temperature Schedule Name object-list
+    //   fields. TemperatureDifferenceBetweenCutoutAndSetpoint synchronizes to the attached ZoneControl:Thermostat companion when a zone owns the
+    //   thermostat, and epmodel keeps runtime thermostat-local state for the unattached canonical API behavior.
+    // - Documented Delta: ThermostatSetpoint:SingleCooling and ThermostatSetpoint:SingleHeating continue to be imported into this wrapper shape, so
+    //   schedule semantics still reflect the imported EnergyPlus object type when loaded from those source objects.
+    // - Remaining Parity Work: Persist unattached temperature-difference state across save/load boundaries without depending on a zone attachment, and
+    //   add canonical schedule-type validation in the heating/cooling schedule setters.
+    boost::optional<Schedule> heatingSetpointTemperatureSchedule() const;
+    boost::optional<Schedule> coolingSetpointTemperatureSchedule() const;
+
+    bool setHeatingSetpointTemperatureSchedule(Schedule& schedule);
+    void resetHeatingSetpointTemperatureSchedule();
+
+    bool setCoolingSetpointTemperatureSchedule(Schedule& schedule);
+    void resetCoolingSetpointTemperatureSchedule();
+
+    double temperatureDifferenceBetweenCutoutAndSetpoint() const;
+    bool setTemperatureDifferenceBetweenCutoutAndSetpoint(double deltaT);
+    bool isTemperatureDifferenceBetweenCutoutAndSetpointDefaulted() const;
+
+    /** \deprecated */
+    boost::optional<Schedule> getHeatingSchedule() const;
+    /** \deprecated */
+    bool setHeatingSchedule(Schedule& schedule);
+    /** \deprecated */
+    void resetHeatingSchedule();
+
+    /** \deprecated */
+    boost::optional<Schedule> getCoolingSchedule() const;
+    /** \deprecated */
+    bool setCoolingSchedule(Schedule& schedule);
+    /** \deprecated */
+    void resetCoolingSchedule();
 
    protected:
     using ImplType = detail::ThermostatSetpointDualSetpoint_Impl;
@@ -51,6 +83,8 @@ namespace epmodel {
 
     explicit ThermostatSetpointDualSetpoint(std::shared_ptr<detail::ThermostatSetpointDualSetpoint_Impl> impl);
   };
+
+  using OptionalThermostatSetpointDualSetpoint = boost::optional<ThermostatSetpointDualSetpoint>;
 
 }  // namespace epmodel
 }  // namespace openstudio
