@@ -16,6 +16,9 @@
 namespace openstudio {
 namespace epmodel {
 class Schedule;
+class Curve;
+class ThermalZone;
+class FanSystemModelSpeed;
 namespace detail {
 
 class EPMODEL_API FanSystemModel_Impl : public StraightComponent_Impl
@@ -71,6 +74,10 @@ class EPMODEL_API FanSystemModel_Impl : public StraightComponent_Impl
   double fanTotalEfficiency() const;
   bool setFanTotalEfficiency(double fanTotalEfficiency);
 
+  boost::optional<openstudio::epmodel::Curve> electricPowerFunctionofFlowFractionCurve() const;
+  bool setElectricPowerFunctionofFlowFractionCurve(const openstudio::epmodel::Curve& curve);
+  void resetElectricPowerFunctionofFlowFractionCurve();
+
   boost::optional<double> nightVentilationModePressureRise() const;
   bool setNightVentilationModePressureRise(double nightVentilationModePressureRise);
   void resetNightVentilationModePressureRise();
@@ -79,11 +86,29 @@ class EPMODEL_API FanSystemModel_Impl : public StraightComponent_Impl
   bool setNightVentilationModeFlowFraction(double nightVentilationModeFlowFraction);
   void resetNightVentilationModeFlowFraction();
 
+  boost::optional<openstudio::epmodel::ThermalZone> motorLossZone() const;
+  bool setMotorLossZone(const openstudio::epmodel::ThermalZone& thermalZone);
+  void resetMotorLossZone();
+
   double motorLossRadiativeFraction() const;
   bool setMotorLossRadiativeFraction(double motorLossRadiativeFraction);
 
   std::string endUseSubcategory() const;
   bool setEndUseSubcategory(const std::string& endUseSubcategory);
+
+  unsigned numberofSpeeds() const;
+  boost::optional<unsigned> speedIndex(const openstudio::epmodel::FanSystemModelSpeed& speed) const;
+  std::vector<openstudio::epmodel::FanSystemModelSpeed> speeds() const;
+  boost::optional<openstudio::epmodel::FanSystemModelSpeed> getSpeed(unsigned speedIndex) const;
+  bool addSpeed(const openstudio::epmodel::FanSystemModelSpeed& speed);
+  bool addSpeed(double flowFraction);
+  bool addSpeed(double flowFraction, double electricPowerFraction);
+  bool removeSpeed(unsigned speedIndex);
+  void removeAllSpeeds();
+  bool setSpeeds(const std::vector<openstudio::epmodel::FanSystemModelSpeed>& speeds);
+
+ private:
+  bool addSpeedPrivate(double flowFraction, boost::optional<double> electricPowerFraction);
 };
 
 }  // namespace detail

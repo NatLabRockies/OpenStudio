@@ -6,12 +6,14 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Curve/Curve.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
+#include "../StraightComponent/FanSystemModel.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/FanVariableVolume.hpp"
 
@@ -26,6 +28,9 @@ TEST_F(EPModelFixture, FanVariableVolume_DefaultConstructor) {
   auto constantSchedule = defaultSchedule.optionalCast<ScheduleConstant>();
   ASSERT_TRUE(constantSchedule);
   EXPECT_DOUBLE_EQ(1.0, constantSchedule->value());
+  EXPECT_DOUBLE_EQ(0.6045, fan.fanTotalEfficiency());
+  EXPECT_DOUBLE_EQ(1017.592, fan.pressureRise());
+  EXPECT_TRUE(fan.isMaximumFlowRateAutosized());
 }
 
 TEST_F(EPModelFixture, FanVariableVolume_AvailabilitySchedule_RoundTripAndValidation) {
@@ -51,7 +56,7 @@ TEST_F(EPModelFixture, FanVariableVolume_ScalarAccessors_RoundTrip) {
   Model model;
   FanVariableVolume fan(model);
 
-  EXPECT_TRUE(fan.isFanTotalEfficiencyDefaulted());
+  EXPECT_FALSE(fan.isFanTotalEfficiencyDefaulted());
   EXPECT_TRUE(fan.setFanTotalEfficiency(0.81));
   EXPECT_DOUBLE_EQ(0.81, fan.fanTotalEfficiency());
   EXPECT_DOUBLE_EQ(0.81, fan.fanEfficiency());
@@ -98,7 +103,8 @@ TEST_F(EPModelFixture, FanVariableVolume_ScalarAccessors_RoundTrip) {
   fan.resetFanPowerMinimumFlowFraction();
   EXPECT_TRUE(fan.isFanPowerMinimumFlowFractionDefaulted());
 
-  EXPECT_FALSE(fan.fanPowerMinimumAirFlowRate());
+  ASSERT_TRUE(fan.fanPowerMinimumAirFlowRate());
+  EXPECT_DOUBLE_EQ(0.0, fan.fanPowerMinimumAirFlowRate().get());
   EXPECT_TRUE(fan.setFanPowerMinimumAirFlowRate(0.28));
   ASSERT_TRUE(fan.fanPowerMinimumAirFlowRate());
   EXPECT_DOUBLE_EQ(0.28, fan.fanPowerMinimumAirFlowRate().get());
@@ -106,7 +112,7 @@ TEST_F(EPModelFixture, FanVariableVolume_ScalarAccessors_RoundTrip) {
   fan.resetFanPowerMinimumAirFlowRate();
   EXPECT_FALSE(fan.fanPowerMinimumAirFlowRate());
 
-  EXPECT_TRUE(fan.isMotorEfficiencyDefaulted());
+  EXPECT_FALSE(fan.isMotorEfficiencyDefaulted());
   EXPECT_TRUE(fan.setMotorEfficiency(0.91));
   EXPECT_DOUBLE_EQ(0.91, fan.motorEfficiency());
   EXPECT_FALSE(fan.isMotorEfficiencyDefaulted());
@@ -114,7 +120,7 @@ TEST_F(EPModelFixture, FanVariableVolume_ScalarAccessors_RoundTrip) {
   fan.resetMotorEfficiency();
   EXPECT_TRUE(fan.isMotorEfficiencyDefaulted());
 
-  EXPECT_TRUE(fan.isMotorInAirstreamFractionDefaulted());
+  EXPECT_FALSE(fan.isMotorInAirstreamFractionDefaulted());
   EXPECT_TRUE(fan.setMotorInAirstreamFraction(1.0));
   EXPECT_DOUBLE_EQ(1.0, fan.motorInAirstreamFraction());
   EXPECT_FALSE(fan.isMotorInAirstreamFractionDefaulted());
@@ -122,7 +128,8 @@ TEST_F(EPModelFixture, FanVariableVolume_ScalarAccessors_RoundTrip) {
   fan.resetMotorInAirstreamFraction();
   EXPECT_TRUE(fan.isMotorInAirstreamFractionDefaulted());
 
-  EXPECT_FALSE(fan.fanPowerCoefficient1());
+  ASSERT_TRUE(fan.fanPowerCoefficient1());
+  EXPECT_DOUBLE_EQ(0.0407598940, fan.fanPowerCoefficient1().get());
   EXPECT_TRUE(fan.setFanPowerCoefficient1(0.0015302446));
   ASSERT_TRUE(fan.fanPowerCoefficient1());
   EXPECT_DOUBLE_EQ(0.0015302446, fan.fanPowerCoefficient1().get());
@@ -175,4 +182,17 @@ TEST_F(EPModelFixture, FanVariableVolume_AddToNodeSupportsOutboardOANode) {
   FanVariableVolume fan(model);
   EXPECT_TRUE(fan.addToNode(*outboardOANode));
   EXPECT_EQ(3u, oaSystem.oaComponents().size());
+}
+
+TEST_F(EPModelFixture, FanVariableVolume_ConvertToFanSystemModel) {
+  Model model;
+  FanVariableVolume fan(model);
+  ASSERT_TRUE(fan.setEndUseSubcategory("Fans"));
+
+  FanSystemModel convertedFan = fan.convertToFanSystemModel();
+  EXPECT_EQ("Fans", convertedFan.endUseSubcategory());
+  EXPECT_DOUBLE_EQ(fan.fanTotalEfficiency(), convertedFan.fanTotalEfficiency());
+  EXPECT_DOUBLE_EQ(fan.pressureRise(), convertedFan.designPressureRise());
+  EXPECT_EQ("Continuous", convertedFan.speedControlMethod());
+  ASSERT_TRUE(convertedFan.electricPowerFunctionofFlowFractionCurve());
 }

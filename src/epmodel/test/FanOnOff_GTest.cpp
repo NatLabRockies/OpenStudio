@@ -6,6 +6,11 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Curve/CurveCubic.hpp"
+#include "../Curve/CurveCubic_Impl.hpp"
+#include "../Curve/CurveExponent.hpp"
+#include "../Curve/CurveExponent_Impl.hpp"
+#include "../Curve/CurveQuadratic.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../ResourceObject/ScheduleTypeLimits.hpp"
@@ -27,6 +32,13 @@ TEST_F(EPModelFixture, FanOnOff_DefaultConstructor) {
   auto constantSchedule = defaultSchedule.optionalCast<ScheduleConstant>();
   ASSERT_TRUE(constantSchedule);
   EXPECT_DOUBLE_EQ(1.0, constantSchedule->value());
+  EXPECT_DOUBLE_EQ(0.6, fan.fanTotalEfficiency());
+  EXPECT_DOUBLE_EQ(300.0, fan.pressureRise());
+  EXPECT_TRUE(fan.isMaximumFlowRateAutosized());
+  auto powerCurve = fan.fanPowerRatioFunctionofSpeedRatioCurve().optionalCast<CurveExponent>();
+  ASSERT_TRUE(powerCurve);
+  auto efficiencyCurve = fan.fanEfficiencyRatioFunctionofSpeedRatioCurve().optionalCast<CurveCubic>();
+  ASSERT_TRUE(efficiencyCurve);
 }
 
 TEST_F(EPModelFixture, FanOnOff_AvailabilitySchedule_RoundTripAndValidation) {
@@ -52,7 +64,7 @@ TEST_F(EPModelFixture, FanOnOff_ScalarAccessors_RoundTrip) {
   Model model;
   FanOnOff fan(model);
 
-  EXPECT_TRUE(fan.isFanTotalEfficiencyDefaulted());
+  EXPECT_FALSE(fan.isFanTotalEfficiencyDefaulted());
   EXPECT_TRUE(fan.setFanTotalEfficiency(0.81));
   EXPECT_DOUBLE_EQ(0.81, fan.fanTotalEfficiency());
   EXPECT_DOUBLE_EQ(0.81, fan.fanEfficiency());
@@ -82,7 +94,7 @@ TEST_F(EPModelFixture, FanOnOff_ScalarAccessors_RoundTrip) {
   EXPECT_FALSE(fan.maximumFlowRate());
   EXPECT_FALSE(fan.isMaximumFlowRateAutosized());
 
-  EXPECT_TRUE(fan.isMotorEfficiencyDefaulted());
+  EXPECT_FALSE(fan.isMotorEfficiencyDefaulted());
   EXPECT_TRUE(fan.setMotorEfficiency(0.88));
   EXPECT_DOUBLE_EQ(0.88, fan.motorEfficiency());
   EXPECT_FALSE(fan.isMotorEfficiencyDefaulted());
@@ -108,19 +120,34 @@ TEST_F(EPModelFixture, FanOnOff_ScalarAccessors_RoundTrip) {
   EXPECT_TRUE(fan.isEndUseSubcategoryDefaulted());
 }
 
-TEST_F(EPModelFixture, FanOnOff_AddToNodeSupplyOnly) {
+TEST_F(EPModelFixture, FanOnOff_CurveRelationships_RoundTrip) {
+  Model model;
+  ScheduleConstant schedule(model);
+  ASSERT_TRUE(schedule.setValue(1.0));
+  CurveExponent powerCurve(model);
+  CurveQuadratic efficiencyCurve(model);
+
+  FanOnOff fan(model, schedule, powerCurve, efficiencyCurve);
+  EXPECT_EQ(powerCurve.cast<ModelObject>(), fan.fanPowerRatioFunctionofSpeedRatioCurve().cast<ModelObject>());
+  EXPECT_EQ(efficiencyCurve.cast<ModelObject>(), fan.fanEfficiencyRatioFunctionofSpeedRatioCurve().cast<ModelObject>());
+
+  CurveExponent replacementPowerCurve(model);
+  CurveCubic replacementEfficiencyCurve(model);
+  EXPECT_TRUE(fan.setFanPowerRatioFunctionofSpeedRatioCurve(replacementPowerCurve));
+  EXPECT_TRUE(fan.setFanEfficiencyRatioFunctionofSpeedRatioCurve(replacementEfficiencyCurve));
+  EXPECT_EQ(replacementPowerCurve.cast<ModelObject>(), fan.fanPowerRatioFunctionofSpeedRatioCurve().cast<ModelObject>());
+  EXPECT_EQ(replacementEfficiencyCurve.cast<ModelObject>(), fan.fanEfficiencyRatioFunctionofSpeedRatioCurve().cast<ModelObject>());
+}
+
+TEST_F(EPModelFixture, FanOnOff_AddToNodeRejectsAirLoopNodes) {
   Model model;
   AirLoopHVAC airLoop(model);
-  FanOnOff supplyFan(model);
-  FanOnOff demandFan(model);
+  FanOnOff fan(model);
 
   auto supplyInletNode = airLoop.supplyInletNode();
-  EXPECT_TRUE(supplyFan.addToNode(supplyInletNode));
-  ASSERT_TRUE(supplyFan.inletModelObject());
-  EXPECT_EQ(supplyInletNode, supplyFan.inletModelObject()->cast<Node>());
-  EXPECT_TRUE(supplyFan.outletModelObject());
+  EXPECT_FALSE(fan.addToNode(supplyInletNode));
 
   auto demandInletNode = airLoop.demandInletNode();
-  EXPECT_FALSE(demandFan.addToNode(demandInletNode));
-  EXPECT_FALSE(demandFan.airLoopHVAC());
+  EXPECT_FALSE(fan.addToNode(demandInletNode));
+  EXPECT_FALSE(fan.airLoopHVAC());
 }

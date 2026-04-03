@@ -6,6 +6,16 @@
 #include "StraightComponent/FanComponentModel.hpp"
 #include "StraightComponent/FanComponentModel_Impl.hpp"
 
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
+#include "Curve/CurveExponentialDecay.hpp"
+#include "Curve/CurveExponentialSkewNormal.hpp"
+#include "Curve/CurveFanPressureRise.hpp"
+#include "Curve/CurveLinear.hpp"
+#include "Curve/CurveQuartic.hpp"
+#include "Curve/CurveRectangularHyperbola1.hpp"
+#include "Curve/CurveRectangularHyperbola2.hpp"
+#include "Curve/CurveSigmoid.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
@@ -32,6 +42,141 @@ FanComponentModel::FanComponentModel(const Model& model) : StraightComponent(Fan
   ScheduleConstant schedule(model);
   OS_ASSERT(schedule.setValue(1.0));
   OS_ASSERT(setAvailabilitySchedule(schedule));
+  autosizeMaximumFlowRate();
+  autosizeMinimumFlowRate();
+  OS_ASSERT(setFanSizingFactor(1.0));
+  autosizeMotorFanPulleyRatio();
+  OS_ASSERT(setBeltSizingFactor(1.0));
+  OS_ASSERT(setBeltFractionalTorqueTransition(0.167));
+  OS_ASSERT(setMotorSizingFactor(1.0));
+  OS_ASSERT(setMotorInAirstreamFraction(1.0));
+  OS_ASSERT(setVFDSizingFactor(1.0));
+  OS_ASSERT(setEndUseSubcategory("General"));
+  OS_ASSERT(setFanWheelDiameter(0.3048));
+  OS_ASSERT(setFanOutletArea(0.0873288576));
+  OS_ASSERT(setMaximumFanStaticEfficiency(0.514));
+  OS_ASSERT(setEulerNumberatMaximumFanStaticEfficiency(9.76));
+  OS_ASSERT(setMaximumDimensionlessFanAirflow(0.160331811647483));
+  autosizeBeltMaximumTorque();
+  OS_ASSERT(setMotorMaximumSpeed(1800.0));
+  autosizeMaximumMotorOutputPower();
+  autosizeMaximumVFDOutputPower();
+  OS_ASSERT(setVFDEfficiencyType("Power"));
+
+  CurveFanPressureRise fanPressureRiseCurve(model);
+  OS_ASSERT(fanPressureRiseCurve.setName("VSD Example"));
+  OS_ASSERT(fanPressureRiseCurve.setCoefficient1C1(1446.75833497653));
+  OS_ASSERT(fanPressureRiseCurve.setCoefficient2C2(0.0));
+  OS_ASSERT(fanPressureRiseCurve.setCoefficient3C3(0.0));
+  OS_ASSERT(fanPressureRiseCurve.setCoefficient4C4(1.0));
+  OS_ASSERT(fanPressureRiseCurve.setMinimumValueofQfan(0.0));
+  OS_ASSERT(fanPressureRiseCurve.setMaximumValueofQfan(100.0));
+  OS_ASSERT(fanPressureRiseCurve.setMinimumValueofPsm(62.5));
+  OS_ASSERT(fanPressureRiseCurve.setMaximumValueofPsm(300.0));
+  OS_ASSERT(fanPressureRiseCurve.setMinimumCurveOutput(0.0));
+  OS_ASSERT(fanPressureRiseCurve.setMaximumCurveOutput(5000.0));
+  OS_ASSERT(setFanPressureRiseCurve(fanPressureRiseCurve));
+
+  CurveLinear ductStaticPressureResetCurve(model);
+  OS_ASSERT(ductStaticPressureResetCurve.setName("DiagnosticSPR"));
+  OS_ASSERT(ductStaticPressureResetCurve.setCoefficient1Constant(248.84));
+  OS_ASSERT(ductStaticPressureResetCurve.setCoefficient2x(0.0));
+  OS_ASSERT(ductStaticPressureResetCurve.setMinimumValueofx(0.0));
+  OS_ASSERT(ductStaticPressureResetCurve.setMaximumValueofx(100.0));
+  OS_ASSERT(ductStaticPressureResetCurve.setMinimumCurveOutput(62.5));
+  OS_ASSERT(ductStaticPressureResetCurve.setMaximumCurveOutput(248.84));
+  OS_ASSERT(setDuctStaticPressureResetCurve(ductStaticPressureResetCurve));
+
+  CurveExponentialSkewNormal normalEfficiencyCurve(model);
+  OS_ASSERT(normalEfficiencyCurve.setName("FanEff120CPLANormal"));
+  OS_ASSERT(normalEfficiencyCurve.setCoefficient1C1(0.072613));
+  OS_ASSERT(normalEfficiencyCurve.setCoefficient2C2(0.833213));
+  OS_ASSERT(normalEfficiencyCurve.setCoefficient3C3(0.0));
+  OS_ASSERT(normalEfficiencyCurve.setCoefficient4C4(0.013911));
+  OS_ASSERT(normalEfficiencyCurve.setMinimumValueofx(-4.0));
+  OS_ASSERT(normalEfficiencyCurve.setMaximumValueofx(5.0));
+  OS_ASSERT(normalEfficiencyCurve.setMinimumCurveOutput(0.1));
+  OS_ASSERT(normalEfficiencyCurve.setMaximumCurveOutput(1.0));
+  OS_ASSERT(setNormalizedFanStaticEfficiencyCurveNonStallRegion(normalEfficiencyCurve));
+
+  CurveExponentialSkewNormal stallEfficiencyCurve(model);
+  OS_ASSERT(stallEfficiencyCurve.setName("FanEff120CPLAStall"));
+  OS_ASSERT(stallEfficiencyCurve.setCoefficient1C1(-1.674931));
+  OS_ASSERT(stallEfficiencyCurve.setCoefficient2C2(1.980182));
+  OS_ASSERT(stallEfficiencyCurve.setCoefficient3C3(0.0));
+  OS_ASSERT(stallEfficiencyCurve.setCoefficient4C4(1.84495));
+  OS_ASSERT(stallEfficiencyCurve.setMinimumValueofx(-4.0));
+  OS_ASSERT(stallEfficiencyCurve.setMaximumValueofx(5.0));
+  OS_ASSERT(stallEfficiencyCurve.setMinimumCurveOutput(0.1));
+  OS_ASSERT(stallEfficiencyCurve.setMaximumCurveOutput(1.0));
+  OS_ASSERT(setNormalizedFanStaticEfficiencyCurveStallRegion(stallEfficiencyCurve));
+
+  CurveSigmoid normalAirflowCurve(model);
+  OS_ASSERT(normalAirflowCurve.setName("FanDimFlowNormal"));
+  OS_ASSERT(normalAirflowCurve.setCoefficient1C1(0.0));
+  OS_ASSERT(normalAirflowCurve.setCoefficient2C2(1.001423));
+  OS_ASSERT(normalAirflowCurve.setCoefficient3C3(0.123935));
+  OS_ASSERT(normalAirflowCurve.setCoefficient4C4(-0.476026));
+  OS_ASSERT(normalAirflowCurve.setCoefficient5C5(1.0));
+  OS_ASSERT(normalAirflowCurve.setMinimumValueofx(-4.0));
+  OS_ASSERT(normalAirflowCurve.setMaximumValueofx(5.0));
+  OS_ASSERT(normalAirflowCurve.setMinimumCurveOutput(0.05));
+  OS_ASSERT(normalAirflowCurve.setMaximumCurveOutput(1.0));
+  OS_ASSERT(setNormalizedDimensionlessAirflowCurveNonStallRegion(normalAirflowCurve));
+
+  CurveSigmoid stallAirflowCurve(model);
+  OS_ASSERT(stallAirflowCurve.setName("FanDimFlowStall"));
+  OS_ASSERT(stallAirflowCurve.setCoefficient1C1(0.0));
+  OS_ASSERT(stallAirflowCurve.setCoefficient2C2(5.924993));
+  OS_ASSERT(stallAirflowCurve.setCoefficient3C3(-1.91636));
+  OS_ASSERT(stallAirflowCurve.setCoefficient4C4(-0.851779));
+  OS_ASSERT(stallAirflowCurve.setCoefficient5C5(1.0));
+  OS_ASSERT(stallAirflowCurve.setMinimumValueofx(-4.0));
+  OS_ASSERT(stallAirflowCurve.setMaximumValueofx(5.0));
+  OS_ASSERT(stallAirflowCurve.setMinimumCurveOutput(0.05));
+  OS_ASSERT(stallAirflowCurve.setMaximumCurveOutput(1.0));
+  OS_ASSERT(setNormalizedDimensionlessAirflowCurveStallRegion(stallAirflowCurve));
+}
+
+FanComponentModel::FanComponentModel(const Model& model, const Curve& fanPressureRiseCurve, const Curve& ductStaticPressureResetCurve,
+                                     const Curve& normalizedFanStaticEfficiencyCurveNonStallRegion,
+                                     const Curve& normalizedFanStaticEfficiencyCurveStallRegion,
+                                     const Curve& normalizedDimensionlessAirflowCurveNonStallRegion,
+                                     const Curve& normalizedDimensionlessAirflowCurveStallRegion)
+  : StraightComponent(FanComponentModel::iddObjectType(), model) {
+  auto impl = getImpl<detail::FanComponentModel_Impl>();
+  OS_ASSERT(impl);
+  detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
+  impl->canonicalize(context);
+  ScheduleConstant schedule(model);
+  OS_ASSERT(schedule.setValue(1.0));
+  OS_ASSERT(setAvailabilitySchedule(schedule));
+  autosizeMaximumFlowRate();
+  autosizeMinimumFlowRate();
+  OS_ASSERT(setFanSizingFactor(1.0));
+  autosizeMotorFanPulleyRatio();
+  OS_ASSERT(setBeltSizingFactor(1.0));
+  OS_ASSERT(setBeltFractionalTorqueTransition(0.167));
+  OS_ASSERT(setMotorSizingFactor(1.0));
+  OS_ASSERT(setMotorInAirstreamFraction(1.0));
+  OS_ASSERT(setVFDSizingFactor(1.0));
+  OS_ASSERT(setEndUseSubcategory("General"));
+  OS_ASSERT(setFanWheelDiameter(0.3048));
+  OS_ASSERT(setFanOutletArea(0.0873288576));
+  OS_ASSERT(setMaximumFanStaticEfficiency(0.514));
+  OS_ASSERT(setEulerNumberatMaximumFanStaticEfficiency(9.76));
+  OS_ASSERT(setMaximumDimensionlessFanAirflow(0.160331811647483));
+  autosizeBeltMaximumTorque();
+  OS_ASSERT(setMotorMaximumSpeed(1800.0));
+  autosizeMaximumMotorOutputPower();
+  autosizeMaximumVFDOutputPower();
+  OS_ASSERT(setVFDEfficiencyType("Power"));
+  OS_ASSERT(setFanPressureRiseCurve(fanPressureRiseCurve));
+  OS_ASSERT(setDuctStaticPressureResetCurve(ductStaticPressureResetCurve));
+  OS_ASSERT(setNormalizedFanStaticEfficiencyCurveNonStallRegion(normalizedFanStaticEfficiencyCurveNonStallRegion));
+  OS_ASSERT(setNormalizedFanStaticEfficiencyCurveStallRegion(normalizedFanStaticEfficiencyCurveStallRegion));
+  OS_ASSERT(setNormalizedDimensionlessAirflowCurveNonStallRegion(normalizedDimensionlessAirflowCurveNonStallRegion));
+  OS_ASSERT(setNormalizedDimensionlessAirflowCurveStallRegion(normalizedDimensionlessAirflowCurveStallRegion));
 }
 
 FanComponentModel::FanComponentModel(std::shared_ptr<detail::FanComponentModel_Impl> impl) : StraightComponent(std::move(impl)) {}
@@ -256,12 +401,227 @@ bool FanComponentModel::setVFDSizingFactor(double vFDSizingFactor) {
   return getImpl<detail::FanComponentModel_Impl>()->setVFDSizingFactor(vFDSizingFactor);
 }
 
+Curve FanComponentModel::fanPressureRiseCurve() const {
+  return getImpl<detail::FanComponentModel_Impl>()->fanPressureRiseCurve();
+}
+
+bool FanComponentModel::setFanPressureRiseCurve(const Curve& bivariateFunctions) {
+  return getImpl<detail::FanComponentModel_Impl>()->setFanPressureRiseCurve(bivariateFunctions);
+}
+
+Curve FanComponentModel::ductStaticPressureResetCurve() const {
+  return getImpl<detail::FanComponentModel_Impl>()->ductStaticPressureResetCurve();
+}
+
+bool FanComponentModel::setDuctStaticPressureResetCurve(const Curve& univariateFunctions) {
+  return getImpl<detail::FanComponentModel_Impl>()->setDuctStaticPressureResetCurve(univariateFunctions);
+}
+
+Curve FanComponentModel::normalizedFanStaticEfficiencyCurveNonStallRegion() const {
+  return getImpl<detail::FanComponentModel_Impl>()->normalizedFanStaticEfficiencyCurveNonStallRegion();
+}
+
+bool FanComponentModel::setNormalizedFanStaticEfficiencyCurveNonStallRegion(const Curve& univariateFunctions) {
+  return getImpl<detail::FanComponentModel_Impl>()->setNormalizedFanStaticEfficiencyCurveNonStallRegion(univariateFunctions);
+}
+
+Curve FanComponentModel::normalizedFanStaticEfficiencyCurveStallRegion() const {
+  return getImpl<detail::FanComponentModel_Impl>()->normalizedFanStaticEfficiencyCurveStallRegion();
+}
+
+bool FanComponentModel::setNormalizedFanStaticEfficiencyCurveStallRegion(const Curve& univariateFunctions) {
+  return getImpl<detail::FanComponentModel_Impl>()->setNormalizedFanStaticEfficiencyCurveStallRegion(univariateFunctions);
+}
+
+Curve FanComponentModel::normalizedDimensionlessAirflowCurveNonStallRegion() const {
+  return getImpl<detail::FanComponentModel_Impl>()->normalizedDimensionlessAirflowCurveNonStallRegion();
+}
+
+bool FanComponentModel::setNormalizedDimensionlessAirflowCurveNonStallRegion(const Curve& univariateFunctions) {
+  return getImpl<detail::FanComponentModel_Impl>()->setNormalizedDimensionlessAirflowCurveNonStallRegion(univariateFunctions);
+}
+
+Curve FanComponentModel::normalizedDimensionlessAirflowCurveStallRegion() const {
+  return getImpl<detail::FanComponentModel_Impl>()->normalizedDimensionlessAirflowCurveStallRegion();
+}
+
+bool FanComponentModel::setNormalizedDimensionlessAirflowCurveStallRegion(const Curve& univariateFunctions) {
+  return getImpl<detail::FanComponentModel_Impl>()->setNormalizedDimensionlessAirflowCurveStallRegion(univariateFunctions);
+}
+
+boost::optional<Curve> FanComponentModel::maximumBeltEfficiencyCurve() const {
+  return getImpl<detail::FanComponentModel_Impl>()->maximumBeltEfficiencyCurve();
+}
+
+bool FanComponentModel::setMaximumBeltEfficiencyCurve(const Curve& univariateFunctions) {
+  return getImpl<detail::FanComponentModel_Impl>()->setMaximumBeltEfficiencyCurve(univariateFunctions);
+}
+
+void FanComponentModel::resetMaximumBeltEfficiencyCurve() {
+  getImpl<detail::FanComponentModel_Impl>()->resetMaximumBeltEfficiencyCurve();
+}
+
+boost::optional<Curve> FanComponentModel::normalizedBeltEfficiencyCurveRegion1() const {
+  return getImpl<detail::FanComponentModel_Impl>()->normalizedBeltEfficiencyCurveRegion1();
+}
+
+bool FanComponentModel::setNormalizedBeltEfficiencyCurveRegion1(const Curve& univariateFunctions) {
+  return getImpl<detail::FanComponentModel_Impl>()->setNormalizedBeltEfficiencyCurveRegion1(univariateFunctions);
+}
+
+void FanComponentModel::resetNormalizedBeltEfficiencyCurveRegion1() {
+  getImpl<detail::FanComponentModel_Impl>()->resetNormalizedBeltEfficiencyCurveRegion1();
+}
+
+boost::optional<Curve> FanComponentModel::normalizedBeltEfficiencyCurveRegion2() const {
+  return getImpl<detail::FanComponentModel_Impl>()->normalizedBeltEfficiencyCurveRegion2();
+}
+
+bool FanComponentModel::setNormalizedBeltEfficiencyCurveRegion2(const Curve& univariateFunctions) {
+  return getImpl<detail::FanComponentModel_Impl>()->setNormalizedBeltEfficiencyCurveRegion2(univariateFunctions);
+}
+
+void FanComponentModel::resetNormalizedBeltEfficiencyCurveRegion2() {
+  getImpl<detail::FanComponentModel_Impl>()->resetNormalizedBeltEfficiencyCurveRegion2();
+}
+
+boost::optional<Curve> FanComponentModel::normalizedBeltEfficiencyCurveRegion3() const {
+  return getImpl<detail::FanComponentModel_Impl>()->normalizedBeltEfficiencyCurveRegion3();
+}
+
+bool FanComponentModel::setNormalizedBeltEfficiencyCurveRegion3(const Curve& univariateFunctions) {
+  return getImpl<detail::FanComponentModel_Impl>()->setNormalizedBeltEfficiencyCurveRegion3(univariateFunctions);
+}
+
+void FanComponentModel::resetNormalizedBeltEfficiencyCurveRegion3() {
+  getImpl<detail::FanComponentModel_Impl>()->resetNormalizedBeltEfficiencyCurveRegion3();
+}
+
+boost::optional<Curve> FanComponentModel::maximumMotorEfficiencyCurve() const {
+  return getImpl<detail::FanComponentModel_Impl>()->maximumMotorEfficiencyCurve();
+}
+
+bool FanComponentModel::setMaximumMotorEfficiencyCurve(const Curve& univariateFunctions) {
+  return getImpl<detail::FanComponentModel_Impl>()->setMaximumMotorEfficiencyCurve(univariateFunctions);
+}
+
+void FanComponentModel::resetMaximumMotorEfficiencyCurve() {
+  getImpl<detail::FanComponentModel_Impl>()->resetMaximumMotorEfficiencyCurve();
+}
+
+boost::optional<Curve> FanComponentModel::normalizedMotorEfficiencyCurve() const {
+  return getImpl<detail::FanComponentModel_Impl>()->normalizedMotorEfficiencyCurve();
+}
+
+bool FanComponentModel::setNormalizedMotorEfficiencyCurve(const Curve& univariateFunctions) {
+  return getImpl<detail::FanComponentModel_Impl>()->setNormalizedMotorEfficiencyCurve(univariateFunctions);
+}
+
+void FanComponentModel::resetNormalizedMotorEfficiencyCurve() {
+  getImpl<detail::FanComponentModel_Impl>()->resetNormalizedMotorEfficiencyCurve();
+}
+
+boost::optional<Curve> FanComponentModel::vFDEfficiencyCurve() const {
+  return getImpl<detail::FanComponentModel_Impl>()->vFDEfficiencyCurve();
+}
+
+bool FanComponentModel::setVFDEfficiencyCurve(const Curve& univariateFunctions) {
+  return getImpl<detail::FanComponentModel_Impl>()->setVFDEfficiencyCurve(univariateFunctions);
+}
+
+void FanComponentModel::resetVFDEfficiencyCurve() {
+  getImpl<detail::FanComponentModel_Impl>()->resetVFDEfficiencyCurve();
+}
+
 std::string FanComponentModel::endUseSubcategory() const {
   return getImpl<detail::FanComponentModel_Impl>()->endUseSubcategory();
 }
 
 bool FanComponentModel::setEndUseSubcategory(const std::string& endUseSubcategory) {
   return getImpl<detail::FanComponentModel_Impl>()->setEndUseSubcategory(endUseSubcategory);
+}
+
+bool FanComponentModel::assignDefaultOptionalCurves() {
+  CurveQuartic maximumBeltEfficiency(model());
+  OS_ASSERT(maximumBeltEfficiency.setName("BeltMaxEffMedium"));
+  OS_ASSERT(maximumBeltEfficiency.setCoefficient1Constant(-0.09504));
+  OS_ASSERT(maximumBeltEfficiency.setCoefficient2x(0.03415));
+  OS_ASSERT(maximumBeltEfficiency.setCoefficient3xPOW2(-0.008897));
+  OS_ASSERT(maximumBeltEfficiency.setCoefficient4xPOW3(0.001159));
+  OS_ASSERT(maximumBeltEfficiency.setCoefficient5xPOW4(-6.132e-05));
+  OS_ASSERT(maximumBeltEfficiency.setMinimumValueofx(-1.2));
+  OS_ASSERT(maximumBeltEfficiency.setMaximumValueofx(6.2));
+  OS_ASSERT(maximumBeltEfficiency.setMinimumCurveOutput(-4.6));
+  OS_ASSERT(maximumBeltEfficiency.setMaximumCurveOutput(0.0));
+  OS_ASSERT(setMaximumBeltEfficiencyCurve(maximumBeltEfficiency));
+
+  CurveRectangularHyperbola2 beltEfficiencyRegion1(model());
+  OS_ASSERT(beltEfficiencyRegion1.setName("BeltPartLoadRegion1"));
+  OS_ASSERT(beltEfficiencyRegion1.setCoefficient1C1(0.920797));
+  OS_ASSERT(beltEfficiencyRegion1.setCoefficient2C2(0.0262686));
+  OS_ASSERT(beltEfficiencyRegion1.setCoefficient3C3(0.151594));
+  OS_ASSERT(beltEfficiencyRegion1.setMinimumValueofx(0.0));
+  OS_ASSERT(beltEfficiencyRegion1.setMaximumValueofx(1.0));
+  OS_ASSERT(beltEfficiencyRegion1.setMinimumCurveOutput(0.01));
+  OS_ASSERT(beltEfficiencyRegion1.setMaximumCurveOutput(1.0));
+  OS_ASSERT(setNormalizedBeltEfficiencyCurveRegion1(beltEfficiencyRegion1));
+
+  CurveExponentialDecay beltEfficiencyRegion2(model());
+  OS_ASSERT(beltEfficiencyRegion2.setName("BeltPartLoadRegion2"));
+  OS_ASSERT(beltEfficiencyRegion2.setCoefficient1C1(1.011965));
+  OS_ASSERT(beltEfficiencyRegion2.setCoefficient2C2(-0.339038));
+  OS_ASSERT(beltEfficiencyRegion2.setCoefficient3C3(-3.43626));
+  OS_ASSERT(beltEfficiencyRegion2.setMinimumValueofx(0.0));
+  OS_ASSERT(beltEfficiencyRegion2.setMaximumValueofx(1.0));
+  OS_ASSERT(beltEfficiencyRegion2.setMinimumCurveOutput(0.01));
+  OS_ASSERT(beltEfficiencyRegion2.setMaximumCurveOutput(1.0));
+  OS_ASSERT(setNormalizedBeltEfficiencyCurveRegion2(beltEfficiencyRegion2));
+
+  CurveRectangularHyperbola2 beltEfficiencyRegion3(model());
+  OS_ASSERT(beltEfficiencyRegion3.setName("BeltPartLoadRegion3"));
+  OS_ASSERT(beltEfficiencyRegion3.setCoefficient1C1(1.037778));
+  OS_ASSERT(beltEfficiencyRegion3.setCoefficient2C2(0.0103068));
+  OS_ASSERT(beltEfficiencyRegion3.setCoefficient3C3(-0.0268146));
+  OS_ASSERT(beltEfficiencyRegion3.setMinimumValueofx(0.0));
+  OS_ASSERT(beltEfficiencyRegion3.setMaximumValueofx(1.0));
+  OS_ASSERT(beltEfficiencyRegion3.setMinimumCurveOutput(0.01));
+  OS_ASSERT(beltEfficiencyRegion3.setMaximumCurveOutput(1.0));
+  OS_ASSERT(setNormalizedBeltEfficiencyCurveRegion3(beltEfficiencyRegion3));
+
+  CurveRectangularHyperbola1 maximumMotorEfficiency(model());
+  OS_ASSERT(maximumMotorEfficiency.setName("MotorMaxEffAvg"));
+  OS_ASSERT(maximumMotorEfficiency.setCoefficient1C1(0.29228));
+  OS_ASSERT(maximumMotorEfficiency.setCoefficient2C2(3.368739));
+  OS_ASSERT(maximumMotorEfficiency.setCoefficient3C3(0.762471));
+  OS_ASSERT(maximumMotorEfficiency.setMinimumValueofx(0.0));
+  OS_ASSERT(maximumMotorEfficiency.setMaximumValueofx(7.6));
+  OS_ASSERT(maximumMotorEfficiency.setMinimumCurveOutput(0.01));
+  OS_ASSERT(maximumMotorEfficiency.setMaximumCurveOutput(1.0));
+  OS_ASSERT(setMaximumMotorEfficiencyCurve(maximumMotorEfficiency));
+
+  CurveRectangularHyperbola2 normalizedMotorEfficiency(model());
+  OS_ASSERT(normalizedMotorEfficiency.setName("MotorPartLoad"));
+  OS_ASSERT(normalizedMotorEfficiency.setCoefficient1C1(1.137209));
+  OS_ASSERT(normalizedMotorEfficiency.setCoefficient2C2(0.0502359));
+  OS_ASSERT(normalizedMotorEfficiency.setCoefficient3C3(-0.0891503));
+  OS_ASSERT(normalizedMotorEfficiency.setMinimumValueofx(0.0));
+  OS_ASSERT(normalizedMotorEfficiency.setMaximumValueofx(1.0));
+  OS_ASSERT(normalizedMotorEfficiency.setMinimumCurveOutput(0.01));
+  OS_ASSERT(normalizedMotorEfficiency.setMaximumCurveOutput(1.0));
+  OS_ASSERT(setNormalizedMotorEfficiencyCurve(normalizedMotorEfficiency));
+
+  CurveRectangularHyperbola2 vfdEfficiency(model());
+  OS_ASSERT(vfdEfficiency.setName("VFDPartLoad"));
+  OS_ASSERT(vfdEfficiency.setCoefficient1C1(0.987405));
+  OS_ASSERT(vfdEfficiency.setCoefficient2C2(0.0155361));
+  OS_ASSERT(vfdEfficiency.setCoefficient3C3(-0.0059365));
+  OS_ASSERT(vfdEfficiency.setMinimumValueofx(0.0));
+  OS_ASSERT(vfdEfficiency.setMaximumValueofx(1.0));
+  OS_ASSERT(vfdEfficiency.setMinimumCurveOutput(0.01));
+  OS_ASSERT(vfdEfficiency.setMaximumCurveOutput(1.0));
+  OS_ASSERT(setVFDEfficiencyCurve(vfdEfficiency));
+
+  return true;
 }
 
 }  // namespace epmodel
@@ -565,6 +925,162 @@ double FanComponentModel_Impl::vFDSizingFactor() const {
 
 bool FanComponentModel_Impl::setVFDSizingFactor(double vFDSizingFactor) {
   return setDouble(openstudio::Fan_ComponentModelFields::VFDSizingFactor, vFDSizingFactor);
+}
+
+openstudio::epmodel::Curve FanComponentModel_Impl::fanPressureRiseCurve() const {
+  auto curve = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Curve>(openstudio::Fan_ComponentModelFields::FanPressureRiseCurveName);
+  OS_ASSERT(curve);
+  return *curve;
+}
+
+bool FanComponentModel_Impl::setFanPressureRiseCurve(const openstudio::epmodel::Curve& bivariateFunctions) {
+  return setPointer(openstudio::Fan_ComponentModelFields::FanPressureRiseCurveName, bivariateFunctions.handle());
+}
+
+openstudio::epmodel::Curve FanComponentModel_Impl::ductStaticPressureResetCurve() const {
+  auto curve =
+    getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Curve>(openstudio::Fan_ComponentModelFields::DuctStaticPressureResetCurveName);
+  OS_ASSERT(curve);
+  return *curve;
+}
+
+bool FanComponentModel_Impl::setDuctStaticPressureResetCurve(const openstudio::epmodel::Curve& univariateFunctions) {
+  return setPointer(openstudio::Fan_ComponentModelFields::DuctStaticPressureResetCurveName, univariateFunctions.handle());
+}
+
+openstudio::epmodel::Curve FanComponentModel_Impl::normalizedFanStaticEfficiencyCurveNonStallRegion() const {
+  auto curve = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Curve>(
+    openstudio::Fan_ComponentModelFields::NormalizedFanStaticEfficiencyCurveNameNonStallRegion);
+  OS_ASSERT(curve);
+  return *curve;
+}
+
+bool FanComponentModel_Impl::setNormalizedFanStaticEfficiencyCurveNonStallRegion(const openstudio::epmodel::Curve& univariateFunctions) {
+  return setPointer(openstudio::Fan_ComponentModelFields::NormalizedFanStaticEfficiencyCurveNameNonStallRegion, univariateFunctions.handle());
+}
+
+openstudio::epmodel::Curve FanComponentModel_Impl::normalizedFanStaticEfficiencyCurveStallRegion() const {
+  auto curve = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Curve>(
+    openstudio::Fan_ComponentModelFields::NormalizedFanStaticEfficiencyCurveNameStallRegion);
+  OS_ASSERT(curve);
+  return *curve;
+}
+
+bool FanComponentModel_Impl::setNormalizedFanStaticEfficiencyCurveStallRegion(const openstudio::epmodel::Curve& univariateFunctions) {
+  return setPointer(openstudio::Fan_ComponentModelFields::NormalizedFanStaticEfficiencyCurveNameStallRegion, univariateFunctions.handle());
+}
+
+openstudio::epmodel::Curve FanComponentModel_Impl::normalizedDimensionlessAirflowCurveNonStallRegion() const {
+  auto curve = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Curve>(
+    openstudio::Fan_ComponentModelFields::NormalizedDimensionlessAirflowCurveNameNonStallRegion);
+  OS_ASSERT(curve);
+  return *curve;
+}
+
+bool FanComponentModel_Impl::setNormalizedDimensionlessAirflowCurveNonStallRegion(const openstudio::epmodel::Curve& univariateFunctions) {
+  return setPointer(openstudio::Fan_ComponentModelFields::NormalizedDimensionlessAirflowCurveNameNonStallRegion, univariateFunctions.handle());
+}
+
+openstudio::epmodel::Curve FanComponentModel_Impl::normalizedDimensionlessAirflowCurveStallRegion() const {
+  auto curve = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Curve>(
+    openstudio::Fan_ComponentModelFields::NormalizedDimensionlessAirflowCurveNameStallRegion);
+  OS_ASSERT(curve);
+  return *curve;
+}
+
+bool FanComponentModel_Impl::setNormalizedDimensionlessAirflowCurveStallRegion(const openstudio::epmodel::Curve& univariateFunctions) {
+  return setPointer(openstudio::Fan_ComponentModelFields::NormalizedDimensionlessAirflowCurveNameStallRegion, univariateFunctions.handle());
+}
+
+boost::optional<openstudio::epmodel::Curve> FanComponentModel_Impl::maximumBeltEfficiencyCurve() const {
+  return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Curve>(openstudio::Fan_ComponentModelFields::MaximumBeltEfficiencyCurveName);
+}
+
+bool FanComponentModel_Impl::setMaximumBeltEfficiencyCurve(const openstudio::epmodel::Curve& univariateFunctions) {
+  return setPointer(openstudio::Fan_ComponentModelFields::MaximumBeltEfficiencyCurveName, univariateFunctions.handle());
+}
+
+void FanComponentModel_Impl::resetMaximumBeltEfficiencyCurve() {
+  const bool result = setString(openstudio::Fan_ComponentModelFields::MaximumBeltEfficiencyCurveName, "");
+  OS_ASSERT(result);
+}
+
+boost::optional<openstudio::epmodel::Curve> FanComponentModel_Impl::normalizedBeltEfficiencyCurveRegion1() const {
+  return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Curve>(openstudio::Fan_ComponentModelFields::NormalizedBeltEfficiencyCurveNameRegion1);
+}
+
+bool FanComponentModel_Impl::setNormalizedBeltEfficiencyCurveRegion1(const openstudio::epmodel::Curve& univariateFunctions) {
+  return setPointer(openstudio::Fan_ComponentModelFields::NormalizedBeltEfficiencyCurveNameRegion1, univariateFunctions.handle());
+}
+
+void FanComponentModel_Impl::resetNormalizedBeltEfficiencyCurveRegion1() {
+  const bool result = setString(openstudio::Fan_ComponentModelFields::NormalizedBeltEfficiencyCurveNameRegion1, "");
+  OS_ASSERT(result);
+}
+
+boost::optional<openstudio::epmodel::Curve> FanComponentModel_Impl::normalizedBeltEfficiencyCurveRegion2() const {
+  return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Curve>(openstudio::Fan_ComponentModelFields::NormalizedBeltEfficiencyCurveNameRegion2);
+}
+
+bool FanComponentModel_Impl::setNormalizedBeltEfficiencyCurveRegion2(const openstudio::epmodel::Curve& univariateFunctions) {
+  return setPointer(openstudio::Fan_ComponentModelFields::NormalizedBeltEfficiencyCurveNameRegion2, univariateFunctions.handle());
+}
+
+void FanComponentModel_Impl::resetNormalizedBeltEfficiencyCurveRegion2() {
+  const bool result = setString(openstudio::Fan_ComponentModelFields::NormalizedBeltEfficiencyCurveNameRegion2, "");
+  OS_ASSERT(result);
+}
+
+boost::optional<openstudio::epmodel::Curve> FanComponentModel_Impl::normalizedBeltEfficiencyCurveRegion3() const {
+  return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Curve>(openstudio::Fan_ComponentModelFields::NormalizedBeltEfficiencyCurveNameRegion3);
+}
+
+bool FanComponentModel_Impl::setNormalizedBeltEfficiencyCurveRegion3(const openstudio::epmodel::Curve& univariateFunctions) {
+  return setPointer(openstudio::Fan_ComponentModelFields::NormalizedBeltEfficiencyCurveNameRegion3, univariateFunctions.handle());
+}
+
+void FanComponentModel_Impl::resetNormalizedBeltEfficiencyCurveRegion3() {
+  const bool result = setString(openstudio::Fan_ComponentModelFields::NormalizedBeltEfficiencyCurveNameRegion3, "");
+  OS_ASSERT(result);
+}
+
+boost::optional<openstudio::epmodel::Curve> FanComponentModel_Impl::maximumMotorEfficiencyCurve() const {
+  return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Curve>(openstudio::Fan_ComponentModelFields::MaximumMotorEfficiencyCurveName);
+}
+
+bool FanComponentModel_Impl::setMaximumMotorEfficiencyCurve(const openstudio::epmodel::Curve& univariateFunctions) {
+  return setPointer(openstudio::Fan_ComponentModelFields::MaximumMotorEfficiencyCurveName, univariateFunctions.handle());
+}
+
+void FanComponentModel_Impl::resetMaximumMotorEfficiencyCurve() {
+  const bool result = setString(openstudio::Fan_ComponentModelFields::MaximumMotorEfficiencyCurveName, "");
+  OS_ASSERT(result);
+}
+
+boost::optional<openstudio::epmodel::Curve> FanComponentModel_Impl::normalizedMotorEfficiencyCurve() const {
+  return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Curve>(openstudio::Fan_ComponentModelFields::NormalizedMotorEfficiencyCurveName);
+}
+
+bool FanComponentModel_Impl::setNormalizedMotorEfficiencyCurve(const openstudio::epmodel::Curve& univariateFunctions) {
+  return setPointer(openstudio::Fan_ComponentModelFields::NormalizedMotorEfficiencyCurveName, univariateFunctions.handle());
+}
+
+void FanComponentModel_Impl::resetNormalizedMotorEfficiencyCurve() {
+  const bool result = setString(openstudio::Fan_ComponentModelFields::NormalizedMotorEfficiencyCurveName, "");
+  OS_ASSERT(result);
+}
+
+boost::optional<openstudio::epmodel::Curve> FanComponentModel_Impl::vFDEfficiencyCurve() const {
+  return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Curve>(openstudio::Fan_ComponentModelFields::VFDEfficiencyCurveName);
+}
+
+bool FanComponentModel_Impl::setVFDEfficiencyCurve(const openstudio::epmodel::Curve& univariateFunctions) {
+  return setPointer(openstudio::Fan_ComponentModelFields::VFDEfficiencyCurveName, univariateFunctions.handle());
+}
+
+void FanComponentModel_Impl::resetVFDEfficiencyCurve() {
+  const bool result = setString(openstudio::Fan_ComponentModelFields::VFDEfficiencyCurveName, "");
+  OS_ASSERT(result);
 }
 
 std::string FanComponentModel_Impl::endUseSubcategory() const {

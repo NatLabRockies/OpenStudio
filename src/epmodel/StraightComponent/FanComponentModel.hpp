@@ -9,7 +9,9 @@
 #include "EPModelAPI.hpp"
 #include "StraightComponent/StraightComponent.hpp"
 
+#include <boost/optional.hpp>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace openstudio {
@@ -18,6 +20,7 @@ namespace epmodel {
 class Model;
 class Node;
 class Schedule;
+class Curve;
 
 namespace detail {
 class FanComponentModel_Impl;
@@ -27,6 +30,11 @@ class EPMODEL_API FanComponentModel : public StraightComponent
 {
  public:
   explicit FanComponentModel(const Model& model);
+  explicit FanComponentModel(const Model& model, const Curve& fanPressureRiseCurve, const Curve& ductStaticPressureResetCurve,
+                             const Curve& normalizedFanStaticEfficiencyCurveNonStallRegion,
+                             const Curve& normalizedFanStaticEfficiencyCurveStallRegion,
+                             const Curve& normalizedDimensionlessAirflowCurveNonStallRegion,
+                             const Curve& normalizedDimensionlessAirflowCurveStallRegion);
 
   virtual ~FanComponentModel() override = default;
   FanComponentModel(const FanComponentModel& other) = default;
@@ -41,13 +49,13 @@ class EPMODEL_API FanComponentModel : public StraightComponent
   bool addToNode(Node& node);
 
   // Schema Alignment Notes:
-  // - Status: Partial Parity. The core fan-component scalar surface, availability-schedule wiring, and node insertion are aligned, but the canonical curve topology is still absent.
+  // - Status: Near Parity. The core fan-component scalar surface, required and optional curve relationships, constructor defaults, and node insertion are aligned.
   // - Canonical Counterpart: openstudio::model::FanComponentModel.
-  // - Implemented Parity: The availability-schedule plus scalar sizing, pulley/belt, efficiency, VFD, and end-use-subcategory accessors preserve the canonical field behavior exposed by `openstudio::model::FanComponentModel`.
-  // - Documented Delta: Epmodel still omits the required and optional curve relationships that remain central to `openstudio::model`.
-  // - Field/Storage Mapping: The availability schedule is represented as a typed `Schedule` relationship, while the scalar fields map directly to `Fan:ComponentModel` storage in EnergyPlus.
+  // - Implemented Parity: The canonical constructors, required and optional curve relationships, `assignDefaultOptionalCurves()`, and the availability-schedule plus scalar sizing, pulley/belt, efficiency, VFD, and end-use-subcategory accessors preserve the main `openstudio::model::FanComponentModel` behavior.
+  // - Documented Delta: Autosized convenience getters and airflow-network helpers from the canonical model remain absent.
+  // - Field/Storage Mapping: The availability schedule and curve references are typed object relationships, while the scalar fields map directly to `Fan:ComponentModel` storage in EnergyPlus.
   // - Evidence: `src/model/FanComponentModel.hpp`, `src/model/FanComponentModel.cpp`, `src/model/test/FanComponentModel_GTest.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFanComponentModel.cpp` anchor the canonical API and translation behavior.
-  // - Remaining Parity Work: Add the curve relationship APIs, plus any derived helper surface, once epmodel relationship support can represent them without weakening canonical semantics.
+  // - Remaining Parity Work: Add the remaining autosized convenience getters and any airflow-network helper surface if epmodel later grows the corresponding fan helper types.
   Schedule availabilitySchedule() const;
   bool setAvailabilitySchedule(Schedule& schedule);
 
@@ -120,8 +128,56 @@ class EPMODEL_API FanComponentModel : public StraightComponent
   double vFDSizingFactor() const;
   bool setVFDSizingFactor(double vFDSizingFactor);
 
+  Curve fanPressureRiseCurve() const;
+  bool setFanPressureRiseCurve(const Curve& bivariateFunctions);
+
+  Curve ductStaticPressureResetCurve() const;
+  bool setDuctStaticPressureResetCurve(const Curve& univariateFunctions);
+
+  Curve normalizedFanStaticEfficiencyCurveNonStallRegion() const;
+  bool setNormalizedFanStaticEfficiencyCurveNonStallRegion(const Curve& univariateFunctions);
+
+  Curve normalizedFanStaticEfficiencyCurveStallRegion() const;
+  bool setNormalizedFanStaticEfficiencyCurveStallRegion(const Curve& univariateFunctions);
+
+  Curve normalizedDimensionlessAirflowCurveNonStallRegion() const;
+  bool setNormalizedDimensionlessAirflowCurveNonStallRegion(const Curve& univariateFunctions);
+
+  Curve normalizedDimensionlessAirflowCurveStallRegion() const;
+  bool setNormalizedDimensionlessAirflowCurveStallRegion(const Curve& univariateFunctions);
+
+  boost::optional<Curve> maximumBeltEfficiencyCurve() const;
+  bool setMaximumBeltEfficiencyCurve(const Curve& univariateFunctions);
+  void resetMaximumBeltEfficiencyCurve();
+
+  boost::optional<Curve> normalizedBeltEfficiencyCurveRegion1() const;
+  bool setNormalizedBeltEfficiencyCurveRegion1(const Curve& univariateFunctions);
+  void resetNormalizedBeltEfficiencyCurveRegion1();
+
+  boost::optional<Curve> normalizedBeltEfficiencyCurveRegion2() const;
+  bool setNormalizedBeltEfficiencyCurveRegion2(const Curve& univariateFunctions);
+  void resetNormalizedBeltEfficiencyCurveRegion2();
+
+  boost::optional<Curve> normalizedBeltEfficiencyCurveRegion3() const;
+  bool setNormalizedBeltEfficiencyCurveRegion3(const Curve& univariateFunctions);
+  void resetNormalizedBeltEfficiencyCurveRegion3();
+
+  boost::optional<Curve> maximumMotorEfficiencyCurve() const;
+  bool setMaximumMotorEfficiencyCurve(const Curve& univariateFunctions);
+  void resetMaximumMotorEfficiencyCurve();
+
+  boost::optional<Curve> normalizedMotorEfficiencyCurve() const;
+  bool setNormalizedMotorEfficiencyCurve(const Curve& univariateFunctions);
+  void resetNormalizedMotorEfficiencyCurve();
+
+  boost::optional<Curve> vFDEfficiencyCurve() const;
+  bool setVFDEfficiencyCurve(const Curve& univariateFunctions);
+  void resetVFDEfficiencyCurve();
+
   std::string endUseSubcategory() const;
   bool setEndUseSubcategory(const std::string& endUseSubcategory);
+
+  bool assignDefaultOptionalCurves();
 
  protected:
   using ImplType = detail::FanComponentModel_Impl;

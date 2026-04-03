@@ -15,6 +15,7 @@ namespace openstudio {
 namespace epmodel {
 class Node;
 class Schedule;
+class Curve;
 namespace detail {
 
 class EPMODEL_API FanOnOff_Impl : public StraightComponent_Impl
@@ -57,6 +58,12 @@ class EPMODEL_API FanOnOff_Impl : public StraightComponent_Impl
   bool isEndUseSubcategoryDefaulted() const;
   bool setEndUseSubcategory(const std::string& endUseSubcategory);
   void resetEndUseSubcategory();
+
+  openstudio::epmodel::Curve fanPowerRatioFunctionofSpeedRatioCurve() const;
+  bool setFanPowerRatioFunctionofSpeedRatioCurve(const openstudio::epmodel::Curve& curve);
+
+  openstudio::epmodel::Curve fanEfficiencyRatioFunctionofSpeedRatioCurve() const;
+  bool setFanEfficiencyRatioFunctionofSpeedRatioCurve(const openstudio::epmodel::Curve& curve);
 };
 
 }  // namespace detail

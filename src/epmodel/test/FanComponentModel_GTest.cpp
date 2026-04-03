@@ -6,6 +6,22 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Curve/CurveExponentialDecay.hpp"
+#include "../Curve/CurveExponentialDecay_Impl.hpp"
+#include "../Curve/CurveExponentialSkewNormal.hpp"
+#include "../Curve/CurveExponentialSkewNormal_Impl.hpp"
+#include "../Curve/CurveFanPressureRise.hpp"
+#include "../Curve/CurveFanPressureRise_Impl.hpp"
+#include "../Curve/CurveLinear.hpp"
+#include "../Curve/CurveLinear_Impl.hpp"
+#include "../Curve/CurveQuartic.hpp"
+#include "../Curve/CurveQuartic_Impl.hpp"
+#include "../Curve/CurveRectangularHyperbola1.hpp"
+#include "../Curve/CurveRectangularHyperbola1_Impl.hpp"
+#include "../Curve/CurveRectangularHyperbola2.hpp"
+#include "../Curve/CurveRectangularHyperbola2_Impl.hpp"
+#include "../Curve/CurveSigmoid.hpp"
+#include "../Curve/CurveSigmoid_Impl.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
@@ -29,6 +45,14 @@ TEST_F(EPModelFixture, FanComponentModel_DefaultConstructor) {
   auto constantSchedule = defaultSchedule.optionalCast<ScheduleConstant>();
   ASSERT_TRUE(constantSchedule);
   EXPECT_DOUBLE_EQ(1.0, constantSchedule->value());
+  EXPECT_TRUE(fan.fanPressureRiseCurve().optionalCast<CurveFanPressureRise>());
+  EXPECT_TRUE(fan.ductStaticPressureResetCurve().optionalCast<CurveLinear>());
+  EXPECT_TRUE(fan.normalizedFanStaticEfficiencyCurveNonStallRegion().optionalCast<CurveExponentialSkewNormal>());
+  EXPECT_TRUE(fan.normalizedFanStaticEfficiencyCurveStallRegion().optionalCast<CurveExponentialSkewNormal>());
+  EXPECT_TRUE(fan.normalizedDimensionlessAirflowCurveNonStallRegion().optionalCast<CurveSigmoid>());
+  EXPECT_TRUE(fan.normalizedDimensionlessAirflowCurveStallRegion().optionalCast<CurveSigmoid>());
+  EXPECT_FALSE(fan.maximumBeltEfficiencyCurve());
+  EXPECT_FALSE(fan.vFDEfficiencyCurve());
 }
 
 TEST_F(EPModelFixture, FanComponentModel_AvailabilitySchedule_RoundTripAndValidation) {
@@ -86,6 +110,41 @@ TEST_F(EPModelFixture, FanComponentModel_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(fan.setEndUseSubcategory("Fans"));
   EXPECT_EQ("Fans", fan.endUseSubcategory());
+}
+
+TEST_F(EPModelFixture, FanComponentModel_CurveRelationships_RoundTrip) {
+  Model model;
+  FanComponentModel fan(model);
+
+  CurveFanPressureRise fanPressureRiseCurve(model);
+  CurveLinear ductStaticPressureResetCurve(model);
+  CurveExponentialSkewNormal normalEfficiencyCurve(model);
+  CurveExponentialSkewNormal stallEfficiencyCurve(model);
+  CurveSigmoid normalAirflowCurve(model);
+  CurveSigmoid stallAirflowCurve(model);
+
+  EXPECT_TRUE(fan.setFanPressureRiseCurve(fanPressureRiseCurve));
+  EXPECT_TRUE(fan.setDuctStaticPressureResetCurve(ductStaticPressureResetCurve));
+  EXPECT_TRUE(fan.setNormalizedFanStaticEfficiencyCurveNonStallRegion(normalEfficiencyCurve));
+  EXPECT_TRUE(fan.setNormalizedFanStaticEfficiencyCurveStallRegion(stallEfficiencyCurve));
+  EXPECT_TRUE(fan.setNormalizedDimensionlessAirflowCurveNonStallRegion(normalAirflowCurve));
+  EXPECT_TRUE(fan.setNormalizedDimensionlessAirflowCurveStallRegion(stallAirflowCurve));
+  EXPECT_EQ(fanPressureRiseCurve.cast<ModelObject>(), fan.fanPressureRiseCurve().cast<ModelObject>());
+  EXPECT_EQ(ductStaticPressureResetCurve.cast<ModelObject>(), fan.ductStaticPressureResetCurve().cast<ModelObject>());
+
+  EXPECT_TRUE(fan.assignDefaultOptionalCurves());
+  EXPECT_TRUE(fan.maximumBeltEfficiencyCurve());
+  EXPECT_TRUE(fan.normalizedBeltEfficiencyCurveRegion1());
+  EXPECT_TRUE(fan.normalizedBeltEfficiencyCurveRegion2());
+  EXPECT_TRUE(fan.normalizedBeltEfficiencyCurveRegion3());
+  EXPECT_TRUE(fan.maximumMotorEfficiencyCurve());
+  EXPECT_TRUE(fan.normalizedMotorEfficiencyCurve());
+  EXPECT_TRUE(fan.vFDEfficiencyCurve());
+
+  fan.resetMaximumBeltEfficiencyCurve();
+  EXPECT_FALSE(fan.maximumBeltEfficiencyCurve());
+  fan.resetVFDEfficiencyCurve();
+  EXPECT_FALSE(fan.vFDEfficiencyCurve());
 }
 
 TEST_F(EPModelFixture, FanComponentModel_AddToNodeSupplyOnly) {

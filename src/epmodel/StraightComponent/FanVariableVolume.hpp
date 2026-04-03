@@ -22,6 +22,7 @@ namespace epmodel {
 class Model;
 class Node;
 class Schedule;
+class FanSystemModel;
 
 namespace detail {
 class FanVariableVolume_Impl;
@@ -31,6 +32,7 @@ class EPMODEL_API FanVariableVolume : public StraightComponent
 {
  public:
   explicit FanVariableVolume(const Model& model);
+  FanVariableVolume(const Model& model, Schedule& schedule);
 
   virtual ~FanVariableVolume() override = default;
   FanVariableVolume(const FanVariableVolume& other) = default;
@@ -48,13 +50,13 @@ class EPMODEL_API FanVariableVolume : public StraightComponent
   static std::vector<std::string> validFanPowerMinimumFlowRateInputMethodValues();
 
   // Schema Alignment Notes:
-  // - Status: Partial Parity. Scalar fan properties, availability-schedule wiring, and the fan-power input-method helpers are aligned, but the canonical airflow-network surface is still absent.
+  // - Status: Near Parity. The canonical constructors, scalar surface, and FanSystemModel conversion helper are aligned, while the airflow-network surface remains absent.
   // - Canonical Counterpart: openstudio::model::FanVariableVolume.
-  // - Implemented Parity: The availability-schedule, fan total-efficiency, fan-efficiency, pressure-rise, maximum-flow-rate, fan-power input-method, motor, coefficient, and end-use-subcategory accessors preserve the canonical scalar field behavior, including autosize/reset semantics for flow rate.
-  // - Documented Delta: Epmodel still omits the airflow-network fan helper surface from `openstudio::model::FanVariableVolume`.
+  // - Implemented Parity: The canonical constructors, scalar accessors, fan-power input-method helpers, and `convertToFanSystemModel()` preserve the main `openstudio::model::FanVariableVolume` behavior, including autosize/reset semantics for flow rate.
+  // - Documented Delta: Epmodel still omits the airflow-network fan helper surface and autosized-maximum-flow-rate convenience from `openstudio::model::FanVariableVolume`.
   // - Field/Storage Mapping: The availability schedule is represented as a typed `Schedule` relationship, while the scalar fields map directly to `Fan:VariableVolume` storage in EnergyPlus.
   // - Evidence: `src/model/FanVariableVolume.hpp`, `src/model/FanVariableVolume.cpp`, `src/model/test/FanVariableVolume_GTest.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFanVariableVolume.cpp` establish the canonical API and translation behavior.
-  // - Remaining Parity Work: Add airflow-network relationship support once the epmodel relationship layer is ready for it.
+  // - Remaining Parity Work: Add airflow-network relationship support and the autosized flow-rate convenience once epmodel grows the corresponding fan helper surface.
   Schedule availabilitySchedule() const;
   bool setAvailabilitySchedule(Schedule& schedule);
 
@@ -125,6 +127,8 @@ class EPMODEL_API FanVariableVolume : public StraightComponent
   bool isEndUseSubcategoryDefaulted() const;
   bool setEndUseSubcategory(const std::string& endUseSubcategory);
   void resetEndUseSubcategory();
+
+  FanSystemModel convertToFanSystemModel() const;
 
  protected:
   using ImplType = detail::FanVariableVolume_Impl;

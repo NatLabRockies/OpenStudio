@@ -14,6 +14,7 @@ namespace openstudio {
 namespace epmodel {
 class Node;
 class Schedule;
+class Curve;
 namespace detail {
 
 class EPMODEL_API FanComponentModel_Impl : public StraightComponent_Impl
@@ -98,6 +99,52 @@ class EPMODEL_API FanComponentModel_Impl : public StraightComponent_Impl
 
   double vFDSizingFactor() const;
   bool setVFDSizingFactor(double vFDSizingFactor);
+
+  openstudio::epmodel::Curve fanPressureRiseCurve() const;
+  bool setFanPressureRiseCurve(const openstudio::epmodel::Curve& bivariateFunctions);
+
+  openstudio::epmodel::Curve ductStaticPressureResetCurve() const;
+  bool setDuctStaticPressureResetCurve(const openstudio::epmodel::Curve& univariateFunctions);
+
+  openstudio::epmodel::Curve normalizedFanStaticEfficiencyCurveNonStallRegion() const;
+  bool setNormalizedFanStaticEfficiencyCurveNonStallRegion(const openstudio::epmodel::Curve& univariateFunctions);
+
+  openstudio::epmodel::Curve normalizedFanStaticEfficiencyCurveStallRegion() const;
+  bool setNormalizedFanStaticEfficiencyCurveStallRegion(const openstudio::epmodel::Curve& univariateFunctions);
+
+  openstudio::epmodel::Curve normalizedDimensionlessAirflowCurveNonStallRegion() const;
+  bool setNormalizedDimensionlessAirflowCurveNonStallRegion(const openstudio::epmodel::Curve& univariateFunctions);
+
+  openstudio::epmodel::Curve normalizedDimensionlessAirflowCurveStallRegion() const;
+  bool setNormalizedDimensionlessAirflowCurveStallRegion(const openstudio::epmodel::Curve& univariateFunctions);
+
+  boost::optional<openstudio::epmodel::Curve> maximumBeltEfficiencyCurve() const;
+  bool setMaximumBeltEfficiencyCurve(const openstudio::epmodel::Curve& univariateFunctions);
+  void resetMaximumBeltEfficiencyCurve();
+
+  boost::optional<openstudio::epmodel::Curve> normalizedBeltEfficiencyCurveRegion1() const;
+  bool setNormalizedBeltEfficiencyCurveRegion1(const openstudio::epmodel::Curve& univariateFunctions);
+  void resetNormalizedBeltEfficiencyCurveRegion1();
+
+  boost::optional<openstudio::epmodel::Curve> normalizedBeltEfficiencyCurveRegion2() const;
+  bool setNormalizedBeltEfficiencyCurveRegion2(const openstudio::epmodel::Curve& univariateFunctions);
+  void resetNormalizedBeltEfficiencyCurveRegion2();
+
+  boost::optional<openstudio::epmodel::Curve> normalizedBeltEfficiencyCurveRegion3() const;
+  bool setNormalizedBeltEfficiencyCurveRegion3(const openstudio::epmodel::Curve& univariateFunctions);
+  void resetNormalizedBeltEfficiencyCurveRegion3();
+
+  boost::optional<openstudio::epmodel::Curve> maximumMotorEfficiencyCurve() const;
+  bool setMaximumMotorEfficiencyCurve(const openstudio::epmodel::Curve& univariateFunctions);
+  void resetMaximumMotorEfficiencyCurve();
+
+  boost::optional<openstudio::epmodel::Curve> normalizedMotorEfficiencyCurve() const;
+  bool setNormalizedMotorEfficiencyCurve(const openstudio::epmodel::Curve& univariateFunctions);
+  void resetNormalizedMotorEfficiencyCurve();
+
+  boost::optional<openstudio::epmodel::Curve> vFDEfficiencyCurve() const;
+  bool setVFDEfficiencyCurve(const openstudio::epmodel::Curve& univariateFunctions);
+  void resetVFDEfficiencyCurve();
 
   std::string endUseSubcategory() const;
   bool setEndUseSubcategory(const std::string& endUseSubcategory);

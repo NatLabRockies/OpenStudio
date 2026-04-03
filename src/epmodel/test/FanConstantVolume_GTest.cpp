@@ -28,6 +28,8 @@ TEST_F(EPModelFixture, FanConstantVolume_DefaultConstructor) {
   auto constantSchedule = defaultSchedule.optionalCast<ScheduleConstant>();
   ASSERT_TRUE(constantSchedule);
   EXPECT_DOUBLE_EQ(1.0, constantSchedule->value());
+  EXPECT_TRUE(fan.isMaximumFlowRateAutosized());
+  EXPECT_EQ("General", fan.endUseSubcategory());
 }
 
 TEST_F(EPModelFixture, FanConstantVolume_AvailabilitySchedule_RoundTripAndValidation) {

@@ -6,6 +6,7 @@
 #include "StraightComponent/FanVariableVolume.hpp"
 #include "StraightComponent/FanVariableVolume_Impl.hpp"
 
+#include "Curve/CurveQuartic.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
@@ -13,6 +14,7 @@
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 #include "Schedule/ScheduleConstant.hpp"
+#include "StraightComponent/FanSystemModel.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -32,6 +34,42 @@ FanVariableVolume::FanVariableVolume(const Model& model) : StraightComponent(Fan
   ScheduleConstant schedule(model);
   OS_ASSERT(schedule.setValue(1.0));
   OS_ASSERT(setAvailabilitySchedule(schedule));
+  OS_ASSERT(setEndUseSubcategory(""));
+  OS_ASSERT(setFanTotalEfficiency(0.6045));
+  OS_ASSERT(setPressureRise(1017.592));
+  autosizeMaximumFlowRate();
+  OS_ASSERT(setFanPowerMinimumFlowRateInputMethod("FixedFlowRate"));
+  OS_ASSERT(setFanPowerMinimumFlowFraction(0.0));
+  OS_ASSERT(setFanPowerMinimumAirFlowRate(0.0));
+  OS_ASSERT(setMotorEfficiency(0.93));
+  OS_ASSERT(setMotorInAirstreamFraction(1.0));
+  OS_ASSERT(setFanPowerCoefficient1(0.0407598940));
+  OS_ASSERT(setFanPowerCoefficient2(0.08804497));
+  OS_ASSERT(setFanPowerCoefficient3(-0.072926120));
+  OS_ASSERT(setFanPowerCoefficient4(0.9437398230));
+  OS_ASSERT(setFanPowerCoefficient5(0.0));
+}
+
+FanVariableVolume::FanVariableVolume(const Model& model, Schedule& schedule) : StraightComponent(FanVariableVolume::iddObjectType(), model) {
+  auto impl = getImpl<detail::FanVariableVolume_Impl>();
+  OS_ASSERT(impl);
+  detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
+  impl->canonicalize(context);
+  OS_ASSERT(setAvailabilitySchedule(schedule));
+  OS_ASSERT(setEndUseSubcategory(""));
+  OS_ASSERT(setFanTotalEfficiency(0.6045));
+  OS_ASSERT(setPressureRise(1017.592));
+  autosizeMaximumFlowRate();
+  OS_ASSERT(setFanPowerMinimumFlowRateInputMethod("FixedFlowRate"));
+  OS_ASSERT(setFanPowerMinimumFlowFraction(0.0));
+  OS_ASSERT(setFanPowerMinimumAirFlowRate(0.0));
+  OS_ASSERT(setMotorEfficiency(0.93));
+  OS_ASSERT(setMotorInAirstreamFraction(1.0));
+  OS_ASSERT(setFanPowerCoefficient1(0.0407598940));
+  OS_ASSERT(setFanPowerCoefficient2(0.08804497));
+  OS_ASSERT(setFanPowerCoefficient3(-0.072926120));
+  OS_ASSERT(setFanPowerCoefficient4(0.9437398230));
+  OS_ASSERT(setFanPowerCoefficient5(0.0));
 }
 
 FanVariableVolume::FanVariableVolume(std::shared_ptr<detail::FanVariableVolume_Impl> impl) : StraightComponent(std::move(impl)) {}
@@ -270,6 +308,54 @@ bool FanVariableVolume::setEndUseSubcategory(const std::string& endUseSubcategor
 
 void FanVariableVolume::resetEndUseSubcategory() {
   getImpl<detail::FanVariableVolume_Impl>()->resetEndUseSubcategory();
+}
+
+FanSystemModel FanVariableVolume::convertToFanSystemModel() const {
+  FanSystemModel fan(model());
+  OS_ASSERT(fan.setName(nameString() + " FanSystemModel"));
+  auto availability = availabilitySchedule();
+  OS_ASSERT(fan.setAvailabilitySchedule(availability));
+  OS_ASSERT(fan.setFanTotalEfficiency(fanTotalEfficiency()));
+  OS_ASSERT(fan.setDesignPressureRise(pressureRise()));
+  if (isMaximumFlowRateAutosized()) {
+    fan.autosizeDesignMaximumAirFlowRate();
+  } else if (auto value = maximumFlowRate()) {
+    OS_ASSERT(fan.setDesignMaximumAirFlowRate(*value));
+  }
+  OS_ASSERT(fan.setMotorEfficiency(motorEfficiency()));
+  OS_ASSERT(fan.setMotorInAirStreamFraction(motorInAirstreamFraction()));
+  OS_ASSERT(fan.setSpeedControlMethod("Continuous"));
+  OS_ASSERT(fan.setElectricPowerMinimumFlowRateFraction(0.0));
+  fan.autosizeDesignElectricPowerConsumption();
+  OS_ASSERT(fan.setDesignPowerSizingMethod("TotalEfficiencyAndPressure"));
+  OS_ASSERT(fan.setEndUseSubcategory(endUseSubcategory()));
+
+  CurveQuartic curve(model());
+  OS_ASSERT(curve.setName(fan.nameString() + " Curve"));
+  if (auto value = fanPowerCoefficient1()) {
+    OS_ASSERT(curve.setCoefficient1Constant(*value));
+  }
+  if (auto value = fanPowerCoefficient2()) {
+    OS_ASSERT(curve.setCoefficient2x(*value));
+  }
+  if (auto value = fanPowerCoefficient3()) {
+    OS_ASSERT(curve.setCoefficient3xPOW2(*value));
+  }
+  if (auto value = fanPowerCoefficient4()) {
+    OS_ASSERT(curve.setCoefficient4xPOW3(*value));
+  }
+  if (auto value = fanPowerCoefficient5()) {
+    OS_ASSERT(curve.setCoefficient5xPOW4(*value));
+  }
+  OS_ASSERT(curve.setMinimumValueofx(0.0));
+  OS_ASSERT(curve.setMaximumValueofx(1.0));
+  OS_ASSERT(curve.setMinimumCurveOutput(0.0));
+  OS_ASSERT(curve.setMaximumCurveOutput(5.0));
+  OS_ASSERT(curve.setInputUnitTypeforX("Dimensionless"));
+  OS_ASSERT(curve.setOutputUnitType("Dimensionless"));
+  OS_ASSERT(fan.setElectricPowerFunctionofFlowFractionCurve(curve));
+
+  return fan;
 }
 
 }  // namespace epmodel

@@ -6,7 +6,10 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Curve/CurveBiquadratic.hpp"
+#include "../Curve/CurveCubic.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
@@ -26,6 +29,9 @@ TEST_F(EPModelFixture, FanSystemModel_DefaultConstructor) {
   auto constantSchedule = defaultSchedule.optionalCast<ScheduleConstant>();
   ASSERT_TRUE(constantSchedule);
   EXPECT_DOUBLE_EQ(1.0, constantSchedule->value());
+  EXPECT_TRUE(fan.isDesignMaximumAirFlowRateAutosized());
+  EXPECT_EQ("Discrete", fan.speedControlMethod());
+  EXPECT_EQ("PowerPerFlowPerPressure", fan.designPowerSizingMethod());
 }
 
 TEST_F(EPModelFixture, FanSystemModel_AvailabilitySchedule_RoundTripAndValidation) {
@@ -117,6 +123,54 @@ TEST_F(EPModelFixture, FanSystemModel_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(fan.setEndUseSubcategory("Fans"));
   EXPECT_EQ("Fans", fan.endUseSubcategory());
+}
+
+TEST_F(EPModelFixture, FanSystemModel_RelationshipAndSpeedAccessors_RoundTrip) {
+  Model model;
+  FanSystemModel fan(model);
+
+  CurveCubic powerCurve(model);
+  EXPECT_TRUE(fan.setElectricPowerFunctionofFlowFractionCurve(powerCurve));
+  ASSERT_TRUE(fan.electricPowerFunctionofFlowFractionCurve());
+  EXPECT_EQ(powerCurve.cast<ModelObject>(), fan.electricPowerFunctionofFlowFractionCurve()->cast<ModelObject>());
+
+  CurveBiquadratic badCurve(model);
+  EXPECT_FALSE(fan.setElectricPowerFunctionofFlowFractionCurve(badCurve));
+  ASSERT_TRUE(fan.electricPowerFunctionofFlowFractionCurve());
+  EXPECT_EQ(powerCurve.cast<ModelObject>(), fan.electricPowerFunctionofFlowFractionCurve()->cast<ModelObject>());
+
+  fan.resetElectricPowerFunctionofFlowFractionCurve();
+  EXPECT_FALSE(fan.electricPowerFunctionofFlowFractionCurve());
+
+  ThermalZone zone(model);
+  EXPECT_TRUE(fan.setMotorLossZone(zone));
+  ASSERT_TRUE(fan.motorLossZone());
+  EXPECT_EQ(zone.cast<ModelObject>(), fan.motorLossZone()->cast<ModelObject>());
+  fan.resetMotorLossZone();
+  EXPECT_FALSE(fan.motorLossZone());
+
+  EXPECT_EQ(0u, fan.numberofSpeeds());
+  EXPECT_TRUE(fan.addSpeed(0.4));
+  EXPECT_TRUE(fan.addSpeed(0.8, 0.9));
+  EXPECT_EQ(2u, fan.numberofSpeeds());
+  auto speeds = fan.speeds();
+  ASSERT_EQ(2u, speeds.size());
+  EXPECT_DOUBLE_EQ(0.4, speeds[0].flowFraction());
+  EXPECT_FALSE(speeds[0].electricPowerFraction());
+  EXPECT_DOUBLE_EQ(0.8, speeds[1].flowFraction());
+  ASSERT_TRUE(speeds[1].electricPowerFraction());
+  EXPECT_DOUBLE_EQ(0.9, *speeds[1].electricPowerFraction());
+
+  auto index = fan.speedIndex(FanSystemModelSpeed(0.8));
+  ASSERT_TRUE(index);
+  auto speed = fan.getSpeed(*index);
+  ASSERT_TRUE(speed);
+  EXPECT_DOUBLE_EQ(0.8, speed->flowFraction());
+
+  EXPECT_TRUE(fan.removeSpeed(0u));
+  EXPECT_EQ(1u, fan.numberofSpeeds());
+  fan.removeAllSpeeds();
+  EXPECT_EQ(0u, fan.numberofSpeeds());
 }
 
 TEST_F(EPModelFixture, FanSystemModel_AddToNodeSupportsOutboardOANode) {

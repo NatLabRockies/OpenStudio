@@ -11,6 +11,7 @@
 
 #include <boost/optional.hpp>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -20,10 +21,30 @@ namespace epmodel {
 class Model;
 class Node;
 class Schedule;
+class Curve;
+class ThermalZone;
 
 namespace detail {
 class FanSystemModel_Impl;
 }
+
+class EPMODEL_API FanSystemModelSpeed
+{
+ public:
+  explicit FanSystemModelSpeed(double flowFraction);
+  FanSystemModelSpeed(double flowFraction, double electricPowerFraction);
+
+  double flowFraction() const;
+  boost::optional<double> electricPowerFraction() const;
+
+  bool operator<(const FanSystemModelSpeed& other) const;
+
+ private:
+  double m_flowFraction;
+  boost::optional<double> m_electricPowerFraction;
+};
+
+EPMODEL_API std::ostream& operator<<(std::ostream& out, const FanSystemModelSpeed& speed);
 
 class EPMODEL_API FanSystemModel : public StraightComponent
 {
@@ -42,13 +63,13 @@ class EPMODEL_API FanSystemModel : public StraightComponent
   static std::vector<std::string> designPowerSizingMethodValues();
 
   // Schema Alignment Notes:
-  // - Status: Partial Parity. The core scalar fan-sizing surface and availability-schedule wiring are aligned, but the canonical curve, thermal-zone, and extensible-speed APIs are still absent.
+  // - Status: Near Parity. The canonical curve, thermal-zone, and extensible-speed APIs are aligned, while the airflow-network helper surface remains absent.
   // - Canonical Counterpart: openstudio::model::FanSystemModel.
-  // - Implemented Parity: The availability-schedule plus scalar flow, sizing, pressure-rise, efficiency, and end-use-subcategory accessors preserve the canonical `openstudio::model` field behavior, including autosize semantics where exposed.
-  // - Documented Delta: Epmodel still omits the curve, thermal-zone, airflow-network, and speed-collection APIs from `openstudio::model::FanSystemModel`.
-  // - Field/Storage Mapping: The availability schedule is represented as a typed `Schedule` relationship, while the scalar fields map directly to `Fan:SystemModel` storage in EnergyPlus; multi-speed data remains a relationship/extensible concern in the canonical model.
+  // - Implemented Parity: The constructor defaults, availability-schedule wiring, scalar sizing surface, electric-power curve relationship, motor-loss-zone relationship, and extensible speed APIs preserve the main `openstudio::model::FanSystemModel` behavior.
+  // - Documented Delta: Epmodel still omits the airflow-network helper surface from `openstudio::model::FanSystemModel`.
+  // - Field/Storage Mapping: The availability schedule, electric-power curve, and motor-loss zone are typed object relationships, while multi-speed data maps directly to `Fan:SystemModel` extensible groups in EnergyPlus.
   // - Evidence: `src/model/FanSystemModel.hpp`, `src/model/FanSystemModel.cpp`, `src/model/test/FanSystemModel_GTest.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFanSystemModel.cpp` anchor the canonical API and translation behavior.
-  // - Remaining Parity Work: Add the curve, thermal-zone, and speed-extensible APIs once epmodel relationship and extensible-field support is in place.
+  // - Remaining Parity Work: Add airflow-network relationship support once epmodel grows the corresponding fan helper surface.
   Schedule availabilitySchedule() const;
   bool setAvailabilitySchedule(Schedule& schedule);
 
@@ -89,6 +110,10 @@ class EPMODEL_API FanSystemModel : public StraightComponent
   double fanTotalEfficiency() const;
   bool setFanTotalEfficiency(double fanTotalEfficiency);
 
+  boost::optional<Curve> electricPowerFunctionofFlowFractionCurve() const;
+  bool setElectricPowerFunctionofFlowFractionCurve(const Curve& curve);
+  void resetElectricPowerFunctionofFlowFractionCurve();
+
   boost::optional<double> nightVentilationModePressureRise() const;
   bool setNightVentilationModePressureRise(double nightVentilationModePressureRise);
   void resetNightVentilationModePressureRise();
@@ -97,11 +122,27 @@ class EPMODEL_API FanSystemModel : public StraightComponent
   bool setNightVentilationModeFlowFraction(double nightVentilationModeFlowFraction);
   void resetNightVentilationModeFlowFraction();
 
+  boost::optional<ThermalZone> motorLossZone() const;
+  bool setMotorLossZone(const ThermalZone& thermalZone);
+  void resetMotorLossZone();
+
   double motorLossRadiativeFraction() const;
   bool setMotorLossRadiativeFraction(double motorLossRadiativeFraction);
 
   std::string endUseSubcategory() const;
   bool setEndUseSubcategory(const std::string& endUseSubcategory);
+
+  unsigned numberofSpeeds() const;
+  std::vector<FanSystemModelSpeed> speeds() const;
+  boost::optional<unsigned> speedIndex(const FanSystemModelSpeed& speed) const;
+  boost::optional<FanSystemModelSpeed> getSpeed(unsigned speedIndex) const;
+
+  bool addSpeed(const FanSystemModelSpeed& speed);
+  bool addSpeed(double flowFraction);
+  bool addSpeed(double flowFraction, double electricPowerFraction);
+  bool removeSpeed(unsigned speedIndex);
+  void removeAllSpeeds();
+  bool setSpeeds(const std::vector<FanSystemModelSpeed>& speeds);
 
   bool addToNode(Node& node);
 

@@ -6,7 +6,11 @@
 #include "StraightComponent/FanSystemModel.hpp"
 #include "StraightComponent/FanSystemModel_Impl.hpp"
 
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
@@ -20,9 +24,50 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
+#include <utilities/idf/IdfExtensibleGroup.hpp>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
+
+#include <stdexcept>
 
 namespace openstudio {
 namespace epmodel {
+
+FanSystemModelSpeed::FanSystemModelSpeed(double flowFraction) : m_flowFraction(flowFraction) {
+  if ((m_flowFraction < 0.0) || (m_flowFraction > 1.0)) {
+    throw std::runtime_error("Unable to create FanSystemModelSpeed: flowFraction is outside the range [0, 1]");
+  }
+}
+
+FanSystemModelSpeed::FanSystemModelSpeed(double flowFraction, double electricPowerFraction)
+  : m_flowFraction(flowFraction), m_electricPowerFraction(electricPowerFraction) {
+  if ((m_flowFraction < 0.0) || (m_flowFraction > 1.0)) {
+    throw std::runtime_error("Unable to create FanSystemModelSpeed: flowFraction is outside the range [0, 1]");
+  }
+  if ((electricPowerFraction < 0.0) || (electricPowerFraction > 1.0)) {
+    throw std::runtime_error("Unable to create FanSystemModelSpeed: electricPowerFraction is outside the range [0, 1]");
+  }
+}
+
+double FanSystemModelSpeed::flowFraction() const {
+  return m_flowFraction;
+}
+
+boost::optional<double> FanSystemModelSpeed::electricPowerFraction() const {
+  return m_electricPowerFraction;
+}
+
+bool FanSystemModelSpeed::operator<(const FanSystemModelSpeed& other) const {
+  return m_flowFraction < other.m_flowFraction;
+}
+
+std::ostream& operator<<(std::ostream& out, const FanSystemModelSpeed& speed) {
+  out << "{flowFraction=" << speed.flowFraction();
+  if (const auto electricPowerFraction = speed.electricPowerFraction()) {
+    out << ", electricPowerFraction=" << *electricPowerFraction;
+  }
+  out << "}";
+  return out;
+}
 
 FanSystemModel::FanSystemModel(const Model& model) : StraightComponent(FanSystemModel::iddObjectType(), model) {
   auto impl = getImpl<detail::FanSystemModel_Impl>();
@@ -32,6 +77,19 @@ FanSystemModel::FanSystemModel(const Model& model) : StraightComponent(FanSystem
   ScheduleConstant schedule(model);
   OS_ASSERT(schedule.setValue(1.0));
   OS_ASSERT(setAvailabilitySchedule(schedule));
+  autosizeDesignMaximumAirFlowRate();
+  OS_ASSERT(setDesignPressureRise(500.0));
+  OS_ASSERT(setSpeedControlMethod("Discrete"));
+  OS_ASSERT(setElectricPowerMinimumFlowRateFraction(0.2));
+  OS_ASSERT(setMotorEfficiency(0.9));
+  OS_ASSERT(setMotorInAirStreamFraction(1.0));
+  autosizeDesignElectricPowerConsumption();
+  OS_ASSERT(setElectricPowerPerUnitFlowRate(840.0));
+  OS_ASSERT(setElectricPowerPerUnitFlowRatePerUnitPressure(1.66667));
+  OS_ASSERT(setDesignPowerSizingMethod("PowerPerFlowPerPressure"));
+  OS_ASSERT(setFanTotalEfficiency(0.7));
+  OS_ASSERT(setMotorLossRadiativeFraction(0.0));
+  OS_ASSERT(setEndUseSubcategory("General"));
 }
 
 FanSystemModel::FanSystemModel(std::shared_ptr<detail::FanSystemModel_Impl> impl) : StraightComponent(std::move(impl)) {}
@@ -160,6 +218,18 @@ bool FanSystemModel::setFanTotalEfficiency(double fanTotalEfficiency) {
   return getImpl<detail::FanSystemModel_Impl>()->setFanTotalEfficiency(fanTotalEfficiency);
 }
 
+boost::optional<Curve> FanSystemModel::electricPowerFunctionofFlowFractionCurve() const {
+  return getImpl<detail::FanSystemModel_Impl>()->electricPowerFunctionofFlowFractionCurve();
+}
+
+bool FanSystemModel::setElectricPowerFunctionofFlowFractionCurve(const Curve& curve) {
+  return getImpl<detail::FanSystemModel_Impl>()->setElectricPowerFunctionofFlowFractionCurve(curve);
+}
+
+void FanSystemModel::resetElectricPowerFunctionofFlowFractionCurve() {
+  getImpl<detail::FanSystemModel_Impl>()->resetElectricPowerFunctionofFlowFractionCurve();
+}
+
 boost::optional<double> FanSystemModel::nightVentilationModePressureRise() const {
   return getImpl<detail::FanSystemModel_Impl>()->nightVentilationModePressureRise();
 }
@@ -184,6 +254,18 @@ void FanSystemModel::resetNightVentilationModeFlowFraction() {
   getImpl<detail::FanSystemModel_Impl>()->resetNightVentilationModeFlowFraction();
 }
 
+boost::optional<ThermalZone> FanSystemModel::motorLossZone() const {
+  return getImpl<detail::FanSystemModel_Impl>()->motorLossZone();
+}
+
+bool FanSystemModel::setMotorLossZone(const ThermalZone& thermalZone) {
+  return getImpl<detail::FanSystemModel_Impl>()->setMotorLossZone(thermalZone);
+}
+
+void FanSystemModel::resetMotorLossZone() {
+  getImpl<detail::FanSystemModel_Impl>()->resetMotorLossZone();
+}
+
 double FanSystemModel::motorLossRadiativeFraction() const {
   return getImpl<detail::FanSystemModel_Impl>()->motorLossRadiativeFraction();
 }
@@ -198,6 +280,46 @@ std::string FanSystemModel::endUseSubcategory() const {
 
 bool FanSystemModel::setEndUseSubcategory(const std::string& endUseSubcategory) {
   return getImpl<detail::FanSystemModel_Impl>()->setEndUseSubcategory(endUseSubcategory);
+}
+
+unsigned FanSystemModel::numberofSpeeds() const {
+  return getImpl<detail::FanSystemModel_Impl>()->numberofSpeeds();
+}
+
+std::vector<FanSystemModelSpeed> FanSystemModel::speeds() const {
+  return getImpl<detail::FanSystemModel_Impl>()->speeds();
+}
+
+boost::optional<unsigned> FanSystemModel::speedIndex(const FanSystemModelSpeed& speed) const {
+  return getImpl<detail::FanSystemModel_Impl>()->speedIndex(speed);
+}
+
+boost::optional<FanSystemModelSpeed> FanSystemModel::getSpeed(unsigned speedIndex) const {
+  return getImpl<detail::FanSystemModel_Impl>()->getSpeed(speedIndex);
+}
+
+bool FanSystemModel::addSpeed(const FanSystemModelSpeed& speed) {
+  return getImpl<detail::FanSystemModel_Impl>()->addSpeed(speed);
+}
+
+bool FanSystemModel::addSpeed(double flowFraction) {
+  return getImpl<detail::FanSystemModel_Impl>()->addSpeed(flowFraction);
+}
+
+bool FanSystemModel::addSpeed(double flowFraction, double electricPowerFraction) {
+  return getImpl<detail::FanSystemModel_Impl>()->addSpeed(flowFraction, electricPowerFraction);
+}
+
+bool FanSystemModel::removeSpeed(unsigned speedIndex) {
+  return getImpl<detail::FanSystemModel_Impl>()->removeSpeed(speedIndex);
+}
+
+void FanSystemModel::removeAllSpeeds() {
+  getImpl<detail::FanSystemModel_Impl>()->removeAllSpeeds();
+}
+
+bool FanSystemModel::setSpeeds(const std::vector<FanSystemModelSpeed>& speeds) {
+  return getImpl<detail::FanSystemModel_Impl>()->setSpeeds(speeds);
 }
 
 bool FanSystemModel::addToNode(Node& node) {
@@ -391,6 +513,20 @@ bool FanSystemModel_Impl::setFanTotalEfficiency(double fanTotalEfficiency) {
   return setDouble(openstudio::Fan_SystemModelFields::FanTotalEfficiency, fanTotalEfficiency);
 }
 
+boost::optional<openstudio::epmodel::Curve> FanSystemModel_Impl::electricPowerFunctionofFlowFractionCurve() const {
+  return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Curve>(
+    openstudio::Fan_SystemModelFields::ElectricPowerFunctionofFlowFractionCurveName);
+}
+
+bool FanSystemModel_Impl::setElectricPowerFunctionofFlowFractionCurve(const openstudio::epmodel::Curve& curve) {
+  return setPointer(openstudio::Fan_SystemModelFields::ElectricPowerFunctionofFlowFractionCurveName, curve.handle());
+}
+
+void FanSystemModel_Impl::resetElectricPowerFunctionofFlowFractionCurve() {
+  const bool result = setString(openstudio::Fan_SystemModelFields::ElectricPowerFunctionofFlowFractionCurveName, "");
+  OS_ASSERT(result);
+}
+
 boost::optional<double> FanSystemModel_Impl::nightVentilationModePressureRise() const {
   return getDouble(openstudio::Fan_SystemModelFields::NightVentilationModePressureRise, true);
 }
@@ -417,6 +553,19 @@ void FanSystemModel_Impl::resetNightVentilationModeFlowFraction() {
   OS_ASSERT(result);
 }
 
+boost::optional<openstudio::epmodel::ThermalZone> FanSystemModel_Impl::motorLossZone() const {
+  return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::ThermalZone>(openstudio::Fan_SystemModelFields::MotorLossZoneName);
+}
+
+bool FanSystemModel_Impl::setMotorLossZone(const openstudio::epmodel::ThermalZone& thermalZone) {
+  return setPointer(openstudio::Fan_SystemModelFields::MotorLossZoneName, thermalZone.handle());
+}
+
+void FanSystemModel_Impl::resetMotorLossZone() {
+  const bool result = setString(openstudio::Fan_SystemModelFields::MotorLossZoneName, "");
+  OS_ASSERT(result);
+}
+
 double FanSystemModel_Impl::motorLossRadiativeFraction() const {
   const auto value = getDouble(openstudio::Fan_SystemModelFields::MotorLossRadiativeFraction, true);
   OS_ASSERT(value);
@@ -436,6 +585,120 @@ std::string FanSystemModel_Impl::endUseSubcategory() const {
 bool FanSystemModel_Impl::setEndUseSubcategory(const std::string& endUseSubcategory) {
   const bool result = setString(openstudio::Fan_SystemModelFields::EndUseSubcategory, endUseSubcategory);
   OS_ASSERT(result);
+  return result;
+}
+
+unsigned FanSystemModel_Impl::numberofSpeeds() const {
+  return numExtensibleGroups();
+}
+
+boost::optional<unsigned> FanSystemModel_Impl::speedIndex(const openstudio::epmodel::FanSystemModelSpeed& speed) const {
+  const auto flowFraction = openstudio::string_conversions::number(speed.flowFraction());
+  for (unsigned i = 0; i < numExtensibleGroups(); ++i) {
+    auto groups = extensibleGroups();
+    if ((i < groups.size()) && (groups[i].getField(openstudio::Fan_SystemModelExtensibleFields::SpeedFlowFraction) == flowFraction)) {
+      return i;
+    }
+  }
+  return boost::none;
+}
+
+std::vector<openstudio::epmodel::FanSystemModelSpeed> FanSystemModel_Impl::speeds() const {
+  std::vector<openstudio::epmodel::FanSystemModelSpeed> result;
+  for (const auto& group : extensibleGroups()) {
+    if (auto flowFraction = group.getDouble(openstudio::Fan_SystemModelExtensibleFields::SpeedFlowFraction)) {
+      if (auto electricPowerFraction = group.getDouble(openstudio::Fan_SystemModelExtensibleFields::SpeedElectricPowerFraction)) {
+        result.emplace_back(*flowFraction, *electricPowerFraction);
+      } else {
+        result.emplace_back(*flowFraction);
+      }
+    }
+  }
+  return result;
+}
+
+boost::optional<openstudio::epmodel::FanSystemModelSpeed> FanSystemModel_Impl::getSpeed(unsigned speedIndex) const {
+  if (speedIndex >= numExtensibleGroups()) {
+    return boost::none;
+  }
+
+  const auto groups = extensibleGroups();
+  if (speedIndex >= groups.size()) {
+    return boost::none;
+  }
+
+  auto flowFraction = groups[speedIndex].getDouble(openstudio::Fan_SystemModelExtensibleFields::SpeedFlowFraction);
+  OS_ASSERT(flowFraction);
+  if (auto electricPowerFraction = groups[speedIndex].getDouble(openstudio::Fan_SystemModelExtensibleFields::SpeedElectricPowerFraction)) {
+    return openstudio::epmodel::FanSystemModelSpeed(*flowFraction, *electricPowerFraction);
+  }
+  return openstudio::epmodel::FanSystemModelSpeed(*flowFraction);
+}
+
+bool FanSystemModel_Impl::addSpeedPrivate(double flowFraction, boost::optional<double> electricPowerFraction) {
+  auto group = getObject<ModelObject>().pushExtensibleGroup();
+  const bool flowResult = group.setDouble(openstudio::Fan_SystemModelExtensibleFields::SpeedFlowFraction, flowFraction);
+  const bool powerResult = electricPowerFraction
+                             ? group.setDouble(openstudio::Fan_SystemModelExtensibleFields::SpeedElectricPowerFraction, *electricPowerFraction)
+                             : group.setString(openstudio::Fan_SystemModelExtensibleFields::SpeedElectricPowerFraction, "");
+  if (flowResult && powerResult) {
+    return true;
+  }
+  getObject<ModelObject>().eraseExtensibleGroup(group.groupIndex());
+  return false;
+}
+
+bool FanSystemModel_Impl::addSpeed(const openstudio::epmodel::FanSystemModelSpeed& speed) {
+  auto currentSpeeds = speeds();
+  currentSpeeds.push_back(speed);
+  return setSpeeds(currentSpeeds);
+}
+
+bool FanSystemModel_Impl::addSpeed(double flowFraction) {
+  return addSpeed(openstudio::epmodel::FanSystemModelSpeed(flowFraction));
+}
+
+bool FanSystemModel_Impl::addSpeed(double flowFraction, double electricPowerFraction) {
+  return addSpeed(openstudio::epmodel::FanSystemModelSpeed(flowFraction, electricPowerFraction));
+}
+
+bool FanSystemModel_Impl::removeSpeed(unsigned speedIndex) {
+  if (speedIndex >= numExtensibleGroups()) {
+    return false;
+  }
+  return !getObject<ModelObject>().eraseExtensibleGroup(speedIndex).empty();
+}
+
+void FanSystemModel_Impl::removeAllSpeeds() {
+  getObject<ModelObject>().clearExtensibleGroups();
+}
+
+bool FanSystemModel_Impl::setSpeeds(const std::vector<openstudio::epmodel::FanSystemModelSpeed>& speeds) {
+  getObject<ModelObject>().clearExtensibleGroups();
+
+  std::vector<std::pair<double, boost::optional<double>>> speedPairs;
+  speedPairs.reserve(speeds.size());
+  for (const auto& speed : speeds) {
+    speedPairs.emplace_back(speed.flowFraction(), speed.electricPowerFraction());
+  }
+  std::sort(speedPairs.begin(), speedPairs.end());
+
+  bool result = true;
+  for (const auto& speedPair : speedPairs) {
+    result = addSpeedPrivate(speedPair.first, speedPair.second) && result;
+  }
+
+  if (!electricPowerFunctionofFlowFractionCurve()) {
+    for (const auto& group : extensibleGroups()) {
+      if (group.isEmpty(openstudio::Fan_SystemModelExtensibleFields::SpeedElectricPowerFraction)) {
+        LOG_FREE(Warn, "openstudio.epmodel.FanSystemModel",
+                 "For " << briefDescription()
+                        << ", you have speeds with blank ElectricPowerFraction but you did not assign an Electric Power Function of Flow Fraction Curve.");
+        break;
+      }
+    }
+  }
+
   return result;
 }
 
