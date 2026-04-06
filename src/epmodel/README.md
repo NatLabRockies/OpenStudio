@@ -241,6 +241,9 @@ also has a real import and repair story, a typed model layer across many
 domains, and a large amount of `openstudio::model` parity work.
 At the same time, it does not yet include every type that is exclusive to the
 original `OpenStudio.idd`.
+For the concrete backlog of `OpenStudio.idd`-exclusive types that still need
+to migrate into epmodel, see `doc/idd-schema-alignment/idd_mapping.md` under
+`## OS-only Types`.
 
 What is still incomplete is not basic type presence or scalar field coverage.
 The big-picture distinction is that HVAC is already fairly well developed,
