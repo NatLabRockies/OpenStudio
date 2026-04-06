@@ -34,7 +34,7 @@
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
-#include "../Schedule/ScheduleRuleset.hpp"
+#include "../Schedule/ScheduleYear.hpp"
 #include "../SetpointManager/SetpointManagerMixedAir.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
@@ -964,11 +964,11 @@ TEST_F(EPModelFixture, AirLoopHVAC_SetAvailabilitySchedule_UsesScheduledOnManage
   ASSERT_TRUE(scheduledOn);
   EXPECT_EQ(compactSchedule.cast<ModelObject>(), scheduledOn->schedule().cast<ModelObject>());
 
-  ScheduleRuleset rulesetSchedule(model);
-  EXPECT_TRUE(airLoop.setAvailabilitySchedule(rulesetSchedule));
-  EXPECT_EQ(rulesetSchedule.cast<ModelObject>(), airLoop.availabilitySchedule().cast<ModelObject>());
-  ASSERT_TRUE(rulesetSchedule.scheduleTypeLimits());
-  EXPECT_EQ("Availability", rulesetSchedule.scheduleTypeLimits()->unitType());
+  ScheduleYear yearSchedule(model);
+  EXPECT_TRUE(airLoop.setAvailabilitySchedule(yearSchedule));
+  EXPECT_EQ(yearSchedule.cast<ModelObject>(), airLoop.availabilitySchedule().cast<ModelObject>());
+  ASSERT_TRUE(yearSchedule.scheduleTypeLimits());
+  EXPECT_EQ("Availability", yearSchedule.scheduleTypeLimits()->unitType());
 }
 
 TEST_F(EPModelFixture, AirLoopHVAC_SetAvailabilitySchedule_RejectsIncompatibleScheduleTypeLimits) {

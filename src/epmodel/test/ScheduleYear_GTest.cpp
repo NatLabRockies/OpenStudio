@@ -6,20 +6,20 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../Schedule/ScheduleRuleset.hpp"
+#include "../Schedule/ScheduleYear.hpp"
 
 using namespace openstudio::epmodel;
 
-TEST_F(EPModelFixture, ScheduleRuleset_DefaultConstructor) {
+TEST_F(EPModelFixture, ScheduleYear_DefaultConstructor) {
   Model model;
-  ScheduleRuleset object(model);
-  EXPECT_EQ(ScheduleRuleset::iddObjectType(), object.iddObject().type());
+  ScheduleYear object(model);
+  EXPECT_EQ(ScheduleYear::iddObjectType(), object.iddObject().type());
 }
 
-TEST_F(EPModelFixture, ScheduleRuleset_ScalarAccessors_RoundTrip) {
+TEST_F(EPModelFixture, ScheduleYear_ScalarAccessors_RoundTrip) {
   Model model;
-  ScheduleRuleset object(model);
+  ScheduleYear object(model);
 
-  EXPECT_TRUE(object.setName("Yearly Ruleset"));
-  EXPECT_EQ("Yearly Ruleset", object.nameString());
+  EXPECT_TRUE(object.setName("Yearly Schedule"));
+  EXPECT_EQ("Yearly Schedule", object.nameString());
 }

@@ -3,23 +3,24 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#include "ScheduleRuleset.hpp"
-#include "ScheduleRuleset_Impl.hpp"
+#ifndef EPMODEL_SCHEDULEYEAR_IMPL_HPP
+#define EPMODEL_SCHEDULEYEAR_IMPL_HPP
 
-#include "Model.hpp"
-
-#include <utilities/idd/IddEnums.hxx>
+#include "Schedule/Schedule_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
+namespace detail {
 
-ScheduleRuleset::ScheduleRuleset(const Model& model) : Schedule(ScheduleRuleset::iddObjectType(), model) {}
+class EPMODEL_API ScheduleYear_Impl : public Schedule_Impl
+{
+ public:
+  using Schedule_Impl::Schedule_Impl;
+  virtual ~ScheduleYear_Impl() override = default;
+};
 
-ScheduleRuleset::ScheduleRuleset(std::shared_ptr<detail::ScheduleRuleset_Impl> impl) : Schedule(std::move(impl)) {}
-
-IddObjectType ScheduleRuleset::iddObjectType() {
-  return IddObjectType::Schedule_Year;
-}
-
+}  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
+
+#endif

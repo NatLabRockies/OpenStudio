@@ -11,7 +11,7 @@
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
-#include "../Schedule/ScheduleRuleset.hpp"
+#include "../Schedule/ScheduleYear.hpp"
 
 #include <utilities/idd/AvailabilityManager_ScheduledOn_FieldEnums.hxx>
 
@@ -47,11 +47,11 @@ TEST_F(EPModelFixture, AvailabilityManagerScheduledOn_ScheduleRelationship_Round
   ASSERT_TRUE(compactSchedule.scheduleTypeLimits());
   EXPECT_EQ("Availability", compactSchedule.scheduleTypeLimits()->unitType());
 
-  ScheduleRuleset rulesetSchedule(model);
-  EXPECT_TRUE(availabilityManagerScheduledOn.setSchedule(rulesetSchedule));
-  EXPECT_EQ(rulesetSchedule.cast<ModelObject>(), availabilityManagerScheduledOn.schedule().cast<ModelObject>());
-  ASSERT_TRUE(rulesetSchedule.scheduleTypeLimits());
-  EXPECT_EQ("Availability", rulesetSchedule.scheduleTypeLimits()->unitType());
+  ScheduleYear yearSchedule(model);
+  EXPECT_TRUE(availabilityManagerScheduledOn.setSchedule(yearSchedule));
+  EXPECT_EQ(yearSchedule.cast<ModelObject>(), availabilityManagerScheduledOn.schedule().cast<ModelObject>());
+  ASSERT_TRUE(yearSchedule.scheduleTypeLimits());
+  EXPECT_EQ("Availability", yearSchedule.scheduleTypeLimits()->unitType());
 }
 
 TEST_F(EPModelFixture, AvailabilityManagerScheduledOn_ScheduleRelationship_RejectsIncompatibleScheduleTypeLimits) {

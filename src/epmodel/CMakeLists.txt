@@ -992,9 +992,9 @@ set(${target_name}_src
   Schedule/ScheduleConstant.hpp
   Schedule/ScheduleConstant_Impl.hpp
   Schedule/ScheduleConstant.cpp
-  Schedule/ScheduleRuleset.hpp
-  Schedule/ScheduleRuleset_Impl.hpp
-  Schedule/ScheduleRuleset.cpp
+  Schedule/ScheduleYear.hpp
+  Schedule/ScheduleYear_Impl.hpp
+  Schedule/ScheduleYear.cpp
   ScheduleBase/ScheduleDay.hpp
   ScheduleBase/ScheduleDay_Impl.hpp
   ScheduleBase/ScheduleDay.cpp
@@ -2619,7 +2619,7 @@ set(${target_name}_test_src
   test/ExternalInterfaceFunctionalMockupUnitExportToVariable_GTest.cpp
   test/ExternalInterfaceFunctionalMockupUnitExportToSchedule_GTest.cpp
   test/ExternalInterfaceSchedule_GTest.cpp
-  test/ScheduleRuleset_GTest.cpp
+  test/ScheduleYear_GTest.cpp
   test/ScheduleDay_GTest.cpp
   test/ScheduleDayList_GTest.cpp
   test/ScheduleDayHourly_GTest.cpp

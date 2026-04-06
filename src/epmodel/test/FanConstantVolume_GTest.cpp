@@ -12,7 +12,7 @@
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
-#include "../Schedule/ScheduleRuleset.hpp"
+#include "../Schedule/ScheduleYear.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/Node.hpp"
@@ -43,11 +43,11 @@ TEST_F(EPModelFixture, FanConstantVolume_AvailabilitySchedule_RoundTripAndValida
   ASSERT_TRUE(compactSchedule.scheduleTypeLimits());
   EXPECT_EQ("Availability", compactSchedule.scheduleTypeLimits()->unitType());
 
-  ScheduleRuleset rulesetSchedule(model);
-  EXPECT_TRUE(fan.setAvailabilitySchedule(rulesetSchedule));
-  EXPECT_EQ(rulesetSchedule.cast<ModelObject>(), fan.availabilitySchedule().cast<ModelObject>());
-  ASSERT_TRUE(rulesetSchedule.scheduleTypeLimits());
-  EXPECT_EQ("Availability", rulesetSchedule.scheduleTypeLimits()->unitType());
+  ScheduleYear yearSchedule(model);
+  EXPECT_TRUE(fan.setAvailabilitySchedule(yearSchedule));
+  EXPECT_EQ(yearSchedule.cast<ModelObject>(), fan.availabilitySchedule().cast<ModelObject>());
+  ASSERT_TRUE(yearSchedule.scheduleTypeLimits());
+  EXPECT_EQ("Availability", yearSchedule.scheduleTypeLimits()->unitType());
 
   ScheduleConstant wrongSchedule(model);
   ASSERT_TRUE(wrongSchedule.setValue(22.0));

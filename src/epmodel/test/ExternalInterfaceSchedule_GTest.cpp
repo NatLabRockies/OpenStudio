@@ -11,7 +11,7 @@
 #include "../Schedule/Schedule_Impl.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
-#include "../Schedule/ScheduleRuleset.hpp"
+#include "../Schedule/ScheduleYear.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -82,7 +82,7 @@ TEST_F(EPModelFixture, ScheduleBase_CastsAcrossConcreteScheduleTypes) {
   Model model;
   ScheduleConstant scheduleConstant(model);
   ScheduleCompact scheduleCompact(model);
-  ScheduleRuleset scheduleRuleset(model);
+  ScheduleYear scheduleYear(model);
   ExternalInterfaceSchedule externalSchedule(model);
 
   auto constantBase = scheduleConstant.optionalCast<Schedule>();
@@ -93,9 +93,9 @@ TEST_F(EPModelFixture, ScheduleBase_CastsAcrossConcreteScheduleTypes) {
   ASSERT_TRUE(compactBase);
   EXPECT_EQ(scheduleCompact.cast<ModelObject>(), compactBase->cast<ModelObject>());
 
-  auto rulesetBase = scheduleRuleset.optionalCast<Schedule>();
-  ASSERT_TRUE(rulesetBase);
-  EXPECT_EQ(scheduleRuleset.cast<ModelObject>(), rulesetBase->cast<ModelObject>());
+  auto yearBase = scheduleYear.optionalCast<Schedule>();
+  ASSERT_TRUE(yearBase);
+  EXPECT_EQ(scheduleYear.cast<ModelObject>(), yearBase->cast<ModelObject>());
 
   auto externalBase = externalSchedule.optionalCast<Schedule>();
   ASSERT_TRUE(externalBase);

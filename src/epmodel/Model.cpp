@@ -635,7 +635,7 @@
 #include "Schedule/ExternalInterfaceSchedule_Impl.hpp"
 #include "Schedule/ScheduleCompact_Impl.hpp"
 #include "Schedule/ScheduleConstant_Impl.hpp"
-#include "Schedule/ScheduleRuleset_Impl.hpp"
+#include "Schedule/ScheduleYear_Impl.hpp"
 #include "ScheduleBase/ScheduleDay_Impl.hpp"
 #include "ScheduleInterval/ScheduleFile_Impl.hpp"
 #include "ModelObject/ScheduleFileShading_Impl.hpp"
@@ -1694,7 +1694,7 @@ namespace epmodel {
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Schedule_File_Shading, ScheduleFileShading_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Schedule_Week_Compact, ScheduleWeekCompact_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Schedule_Week_Daily, ScheduleWeek_Impl);
-      REGISTER_NEW_CONSTRUCTOR(IddObjectType::Schedule_Year, ScheduleRuleset_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::Schedule_Year, ScheduleYear_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SetpointManager_Coldest, SetpointManagerColdest_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SetpointManager_CondenserEnteringReset, SetpointManagerCondenserEnteringReset_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::SetpointManager_CondenserEnteringReset_Ideal, SetpointManagerCondenserEnteringResetIdeal_Impl);
@@ -2620,7 +2620,7 @@ namespace epmodel {
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Schedule_File_Shading, ScheduleFileShading_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Schedule_Week_Compact, ScheduleWeekCompact_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Schedule_Week_Daily, ScheduleWeek_Impl);
-      REGISTER_COPY_CONSTRUCTOR(IddObjectType::Schedule_Year, ScheduleRuleset_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::Schedule_Year, ScheduleYear_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SetpointManager_Coldest, SetpointManagerColdest_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SetpointManager_CondenserEnteringReset, SetpointManagerCondenserEnteringReset_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::SetpointManager_CondenserEnteringReset_Ideal, SetpointManagerCondenserEnteringResetIdeal_Impl);
