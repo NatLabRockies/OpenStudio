@@ -40,7 +40,7 @@ namespace epmodel {
   }
 
   boost::optional<HVACComponent> HVACComponent::containingHVACComponent() const {
-    return boost::none;
+    return getImpl<detail::HVACComponent_Impl>()->containingHVACComponent();
   }
 
   boost::optional<ZoneHVACComponent> HVACComponent::containingZoneHVACComponent() const {
@@ -126,6 +126,21 @@ namespace epmodel {
       return boost::none;
     }
 
+    boost::optional<HVACComponent> HVACComponent_Impl::containingHVACComponent() const {
+      const auto thisObject = getObject<ModelObject>();
+      for (const auto& component : model().getModelObjects<openstudio::epmodel::HVACComponent>()) {
+        if (component.handle() == thisObject.handle()) {
+          continue;
+        }
+
+        const auto children = component.children();
+        if (std::ranges::find(children, thisObject) != children.end()) {
+          return component;
+        }
+      }
+      return boost::none;
+    }
+
     bool HVACComponent_Impl::addToNode(Node& /*node*/) {
       return false;
     }
@@ -137,7 +152,7 @@ namespace epmodel {
     void HVACComponent_Impl::disconnect() {}
 
     bool HVACComponent_Impl::isRemovable() const {
-      return true;
+      return !containingHVACComponent();
     }
 
     std::vector<IdfObject> HVACComponent_Impl::remove() {

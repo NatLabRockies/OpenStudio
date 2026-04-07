@@ -197,6 +197,14 @@ namespace epmodel {
     }
 
     bool StraightComponent_Impl::addToNode(Node& node) {
+      if (auto owner = getObject<openstudio::epmodel::HVACComponent>().containingHVACComponent()) {
+        LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
+                 "Refusing to move " << getObject<ModelObject>().briefDescription() << " onto node '" << node.nameString()
+                                     << "' because its air-side connectivity is owned by "
+                                     << owner->briefDescription() << ".");
+        return false;
+      }
+
       const auto nodeName = node.name();
       if (!nodeName) {
         return false;
@@ -475,6 +483,13 @@ namespace epmodel {
         return false;
       }
 
+      if (auto owner = thisComponent->containingHVACComponent()) {
+        LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
+                 "Refusing to remove " << thisObject.briefDescription() << " from its loop topology because that connectivity is owned by "
+                                       << owner->briefDescription() << ".");
+        return false;
+      }
+
       const auto inletObject = inletModelObject();
       const auto outletObject = outletModelObject();
       if (!inletObject || !outletObject) {
@@ -574,6 +589,14 @@ namespace epmodel {
     }
 
     void StraightComponent_Impl::disconnect() {
+      if (auto owner = getObject<openstudio::epmodel::HVACComponent>().containingHVACComponent()) {
+        LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
+                 "Refusing to disconnect " << getObject<ModelObject>().briefDescription()
+                                           << " because its air-side connectivity is owned by "
+                                           << owner->briefDescription() << ".");
+        return;
+      }
+
       setPointer(inletPort(), Handle(), false);
       setPointer(outletPort(), Handle(), false);
     }

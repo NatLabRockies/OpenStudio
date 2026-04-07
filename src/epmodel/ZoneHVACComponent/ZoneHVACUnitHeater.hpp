@@ -22,6 +22,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
   class Schedule;
   class HVACComponent;
 
@@ -45,13 +46,13 @@ namespace epmodel {
     static std::vector<std::string> fanControlTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The core unit-heater scalars are aligned, but the availability/fan/coil/node relationships remain separate.
+    // - Status: Partial Parity. The core unit-heater scalars and contained fan/coil air-path wiring are aligned, but broader unit-heater parity remains incomplete.
     // - Canonical Counterpart: openstudio::model::ZoneHVACUnitHeater.
-    // - Implemented Parity: `maximumSupplyAirFlowRate`, `fanControlType`, `maximumHotWaterFlowRate`, `minimumHotWaterFlowRate`, and `heatingConvergenceTolerance` map directly to the EnergyPlus object.
-    // - Documented Delta: Node targets remain relationship-only; the core availability, supply-fan, and heating-coil links are now exposed directly.
-    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object while relationship targets are preserved as typed object links.
+    // - Implemented Parity: `maximumSupplyAirFlowRate`, `fanControlType`, `maximumHotWaterFlowRate`, `minimumHotWaterFlowRate`, and `heatingConvergenceTolerance` map directly to the EnergyPlus object, and the contained supply-fan/heating-coil path is maintained through explicit transient epmodel nodes with direct access to the internal fan-outlet node.
+    // - Documented Delta: `fanOutletNode()` is exposed as an additive convenience so callers can inspect and rename the meaningful internal node owned by the compound.
+    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object while relationship targets are preserved as typed object links and contained air-path nodes are synchronized through transient Node objects.
     // - Evidence: `src/model/ZoneHVACUnitHeater.hpp`, `src/model/ZoneHVACUnitHeater.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACUnitHeater.cpp`, and `src/epmodel/test/ZoneHVACUnitHeater_GTest.cpp`.
-    // - Remaining Parity Work: Add the missing relationship helpers only if the canonical wrapper still exposes them as public API.
+    // - Remaining Parity Work: Add any remaining canonical unit-heater relationship conveniences only if the model wrapper still exposes them as public API.
 
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
@@ -61,6 +62,8 @@ namespace epmodel {
 
     HVACComponent heatingCoil() const;
     bool setHeatingCoil(const HVACComponent& heatingCoil);
+
+    boost::optional<Node> fanOutletNode() const;
 
     /** @name Maximum Supply Air Flow Rate */
     //@{

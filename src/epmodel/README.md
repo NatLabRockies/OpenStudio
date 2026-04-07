@@ -287,6 +287,42 @@ The main remaining gaps are:
 - inlet, outlet, and control-node conveniences
 - stronger zone attachment and equipment-list ergonomics
 
+#### Compound HVAC Relationship Strategy
+
+For compound zone and unitary HVAC types, the parent object should be the
+place that keeps the internal air path consistent.
+
+In practice, that means the fan, coils, and other contained components should
+still be available through normal typed relationships, but the parent decides
+which nodes they use and in what order they are connected. Internal nodes with
+clear user meaning should be exposed through the parent compound itself. We
+should preserve that structure through the normal typed APIs instead of
+letting unrelated child objects break it and then trying to repair the damage
+afterward.
+
+This also means direct attempts to change the connectivity of contained
+components should be rejected through the normal typed APIs. If a fan or coil
+is owned by a compound unitary, operations such as disconnecting it or moving
+it onto another node should fail rather than silently damaging the parent
+topology. Containment queries such as `containingHVACComponent()` are the
+mechanism for enforcing that rule.
+
+Canonicalization is still where we repair bad persisted state. If an IDF load,
+raw field edit, or other non-canonical input leaves the internal wiring in a
+bad state, canonicalization should put it back into a valid epmodel form.
+
+When an internal node has a clear meaning to users, epmodel may expose an
+accessor for that node on the owning compound even if the canonical
+`openstudio::model` type never did. That is meant to make common workflows
+easier, not to replace or break existing ones. The compound still owns the
+wiring itself, but the returned `Node` is a normal model object that users can
+inspect and rename.
+
+`ZoneHVACUnitHeater` is the first concrete example of this pattern: the parent
+owns the internal air path, exposes the meaningful internal fan-outlet node on
+the compound, and rejects direct typed topology edits on the contained
+air-side components.
+
 ### Water-To-Air Families
 
 The main remaining gaps are:

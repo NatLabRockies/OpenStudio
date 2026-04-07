@@ -18,8 +18,11 @@ namespace epmodel {
   class ModelObject;
   class Schedule;
   class HVACComponent;
+  class Node;
+  class ThermalZone;
 
   namespace detail {
+    struct LoadContext;
 
     class EPMODEL_API ZoneHVACUnitHeater_Impl : public ZoneHVACComponent_Impl
     {
@@ -30,6 +33,9 @@ namespace epmodel {
       std::vector<ModelObject> children() const override;
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToThermalZone(ThermalZone& thermalZone) override;
+      void removeFromThermalZone() override;
+      void doCanonicalize(LoadContext& context) override;
 
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);
@@ -39,6 +45,7 @@ namespace epmodel {
 
       HVACComponent heatingCoil() const;
       bool setHeatingCoil(const HVACComponent& heatingCoil);
+      boost::optional<Node> fanOutletNode() const;
 
       boost::optional<double> maximumSupplyAirFlowRate() const;
       bool isMaximumSupplyAirFlowRateAutosized() const;
@@ -65,6 +72,8 @@ namespace epmodel {
       bool isHeatingConvergenceToleranceDefaulted() const;
       bool setHeatingConvergenceTolerance(double heatingConvergenceTolerance);
       void resetHeatingConvergenceTolerance();
+
+      bool reconcileContainedAirPath(LoadContext* context = nullptr);
     };
 
   }  // namespace detail

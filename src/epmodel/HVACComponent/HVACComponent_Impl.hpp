@@ -15,6 +15,7 @@ namespace openstudio {
 namespace epmodel {
 class Node;
 class AirLoopHVAC;
+class HVACComponent;
 class Loop;
 class PlantLoop;
 class Splitter;
@@ -30,6 +31,7 @@ class EPMODEL_API HVACComponent_Impl : public ParentObject_Impl
   virtual boost::optional<Loop> loop() const;
   virtual boost::optional<AirLoopHVAC> airLoopHVAC() const;
   virtual boost::optional<PlantLoop> plantLoop() const;
+  virtual boost::optional<HVACComponent> containingHVACComponent() const;
   virtual boost::optional<ZoneHVACComponent> containingZoneHVACComponent() const;
 
   virtual bool addToNode(Node& node);

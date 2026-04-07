@@ -7,6 +7,7 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
@@ -74,28 +75,31 @@ TEST_F(EPModelFixture, ZoneHVACUnitHeater_TopologyAndChildren) {
   Model model;
   ThermalZone zone(model);
   ZoneHVACUnitHeater unitHeater(model);
+  FanConstantVolume fan(model);
+  CoilHeatingElectric coil(model);
 
   EXPECT_EQ(openstudio::ZoneHVAC_UnitHeaterFields::AirInletNodeName, unitHeater.inletPort());
   EXPECT_EQ(openstudio::ZoneHVAC_UnitHeaterFields::AirOutletNodeName, unitHeater.outletPort());
 
+  EXPECT_TRUE(unitHeater.setSupplyAirFan(fan));
+  EXPECT_TRUE(unitHeater.setHeatingCoil(coil));
+  EXPECT_TRUE(unitHeater.inletNode());
+  EXPECT_TRUE(unitHeater.outletNode());
+  EXPECT_TRUE(unitHeater.fanOutletNode());
+
   EXPECT_TRUE(unitHeater.addToThermalZone(zone));
   EXPECT_TRUE(unitHeater.inletNode());
   EXPECT_TRUE(unitHeater.outletNode());
+  EXPECT_TRUE(unitHeater.fanOutletNode());
 
   unitHeater.removeFromThermalZone();
-  EXPECT_FALSE(unitHeater.inletNode());
-  EXPECT_FALSE(unitHeater.outletNode());
-
-  FanConstantVolume fan(model);
-  CoilHeatingElectric coil(model);
-
-  EXPECT_TRUE(unitHeater.setPointer(openstudio::ZoneHVAC_UnitHeaterFields::SupplyAirFanName, fan.handle()));
-  EXPECT_TRUE(unitHeater.setPointer(openstudio::ZoneHVAC_UnitHeaterFields::HeatingCoilName, coil.handle()));
+  EXPECT_TRUE(unitHeater.inletNode());
+  EXPECT_TRUE(unitHeater.outletNode());
 
   const auto children = unitHeater.children();
   ASSERT_EQ(2u, children.size());
-  EXPECT_EQ(fan.handle(), children[0].handle());
-  EXPECT_EQ(coil.handle(), children[1].handle());
+  EXPECT_EQ(fan, children[0]);
+  EXPECT_EQ(coil, children[1]);
 }
 
 TEST_F(EPModelFixture, ZoneHVACUnitHeater_HvacRelationships_RoundTrip) {
@@ -117,4 +121,171 @@ TEST_F(EPModelFixture, ZoneHVACUnitHeater_HvacRelationships_RoundTrip) {
   EXPECT_TRUE(unitHeater.setHeatingCoil(coil));
   EXPECT_EQ(fan.handle(), unitHeater.supplyAirFan().handle());
   EXPECT_EQ(coil.handle(), unitHeater.heatingCoil().handle());
+}
+
+TEST_F(EPModelFixture, ZoneHVACUnitHeater_ContainedNodePath_RoundTrip) {
+  Model model;
+  ZoneHVACUnitHeater unitHeater(model);
+  FanConstantVolume fan(model);
+  CoilHeatingElectric coil(model);
+
+  ASSERT_TRUE(unitHeater.setSupplyAirFan(fan));
+  ASSERT_TRUE(unitHeater.setHeatingCoil(coil));
+
+  auto unitHeaterInlet = unitHeater.inletNode();
+  auto unitHeaterOutlet = unitHeater.outletNode();
+  auto unitHeaterFanOutlet = unitHeater.fanOutletNode();
+  auto fanInlet = fan.inletModelObject();
+  auto fanOutlet = fan.outletModelObject();
+  auto coilInlet = coil.inletModelObject();
+  auto coilOutlet = coil.outletModelObject();
+
+  ASSERT_TRUE(unitHeaterInlet);
+  ASSERT_TRUE(unitHeaterOutlet);
+  ASSERT_TRUE(unitHeaterFanOutlet);
+  ASSERT_TRUE(fanInlet);
+  ASSERT_TRUE(fanOutlet);
+  ASSERT_TRUE(coilInlet);
+  ASSERT_TRUE(coilOutlet);
+
+  auto fanInletNode = fanInlet->optionalCast<Node>();
+  auto fanOutletNode = fanOutlet->optionalCast<Node>();
+  auto coilInletNode = coilInlet->optionalCast<Node>();
+  auto coilOutletNode = coilOutlet->optionalCast<Node>();
+  ASSERT_TRUE(fanInletNode);
+  ASSERT_TRUE(fanOutletNode);
+  ASSERT_TRUE(coilInletNode);
+  ASSERT_TRUE(coilOutletNode);
+
+  EXPECT_EQ(*unitHeaterInlet, *fanInletNode);
+  EXPECT_EQ(*unitHeaterFanOutlet, *fanOutletNode);
+  EXPECT_EQ(*fanOutletNode, *coilInletNode);
+  EXPECT_EQ(*coilOutletNode, *unitHeaterOutlet);
+  EXPECT_NE(*unitHeaterInlet, *fanOutletNode);
+  EXPECT_NE(*fanOutletNode, *unitHeaterOutlet);
+
+  ASSERT_TRUE(fan.containingHVACComponent());
+  ASSERT_TRUE(coil.containingHVACComponent());
+  EXPECT_EQ(unitHeater, fan.containingHVACComponent().get());
+  EXPECT_EQ(unitHeater, coil.containingHVACComponent().get());
+}
+
+TEST_F(EPModelFixture, ZoneHVACUnitHeater_FanOutletNode_RenameSurvivesCanonicalize) {
+  Model model;
+  ZoneHVACUnitHeater unitHeater(model);
+  FanConstantVolume fan(model);
+  CoilHeatingElectric coil(model);
+
+  ASSERT_TRUE(unitHeater.setSupplyAirFan(fan));
+  ASSERT_TRUE(unitHeater.setHeatingCoil(coil));
+
+  auto internalNode = unitHeater.fanOutletNode();
+  ASSERT_TRUE(internalNode);
+  ASSERT_TRUE(internalNode->setName("Custom Unit Heater Fan Outlet"));
+
+  auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+
+  auto renamedNode = unitHeater.fanOutletNode();
+  auto fanOutletNode = fan.outletModelObject()->optionalCast<Node>();
+  auto coilInletNode = coil.inletModelObject()->optionalCast<Node>();
+  ASSERT_TRUE(renamedNode);
+  ASSERT_TRUE(fanOutletNode);
+  ASSERT_TRUE(coilInletNode);
+
+  EXPECT_EQ("Custom Unit Heater Fan Outlet", renamedNode->nameString());
+  EXPECT_EQ(*renamedNode, *fanOutletNode);
+  EXPECT_EQ(*renamedNode, *coilInletNode);
+}
+
+TEST_F(EPModelFixture, ZoneHVACUnitHeater_ContainedChildTopologyMutationsAreRejected) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ZoneHVACUnitHeater unitHeater(model);
+  FanConstantVolume fan(model);
+  CoilHeatingElectric coil(model);
+
+  ASSERT_TRUE(unitHeater.setSupplyAirFan(fan));
+  ASSERT_TRUE(unitHeater.setHeatingCoil(coil));
+
+  auto originalFanInlet = fan.inletModelObject()->optionalCast<Node>();
+  auto originalFanOutlet = fan.outletModelObject()->optionalCast<Node>();
+  auto originalCoilOutlet = coil.outletModelObject()->optionalCast<Node>();
+  auto originalUnitHeaterFanOutlet = unitHeater.fanOutletNode();
+  ASSERT_TRUE(originalFanInlet);
+  ASSERT_TRUE(originalFanOutlet);
+  ASSERT_TRUE(originalCoilOutlet);
+  ASSERT_TRUE(originalUnitHeaterFanOutlet);
+
+  fan.disconnect();
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  EXPECT_FALSE(fan.addToNode(supplyOutletNode));
+  EXPECT_FALSE(fan.isRemovable());
+  EXPECT_TRUE(fan.remove().empty());
+
+  auto currentFanInlet = fan.inletModelObject()->optionalCast<Node>();
+  auto currentFanOutlet = fan.outletModelObject()->optionalCast<Node>();
+  auto currentCoilInlet = coil.inletModelObject()->optionalCast<Node>();
+  auto currentCoilOutlet = coil.outletModelObject()->optionalCast<Node>();
+  auto currentUnitHeaterFanOutlet = unitHeater.fanOutletNode();
+  ASSERT_TRUE(currentFanInlet);
+  ASSERT_TRUE(currentFanOutlet);
+  ASSERT_TRUE(currentCoilInlet);
+  ASSERT_TRUE(currentCoilOutlet);
+  ASSERT_TRUE(currentUnitHeaterFanOutlet);
+
+  EXPECT_EQ(*originalFanInlet, *currentFanInlet);
+  EXPECT_EQ(*originalFanOutlet, *currentFanOutlet);
+  EXPECT_EQ(*currentFanOutlet, *currentCoilInlet);
+  EXPECT_EQ(*originalCoilOutlet, *currentCoilOutlet);
+  EXPECT_EQ(*originalUnitHeaterFanOutlet, *currentUnitHeaterFanOutlet);
+
+  const auto children = unitHeater.children();
+  ASSERT_EQ(2u, children.size());
+  EXPECT_EQ(fan, children[0]);
+  EXPECT_EQ(coil, children[1]);
+}
+
+TEST_F(EPModelFixture, ZoneHVACUnitHeater_CanonicalizeRepairsContainedNodePath) {
+  Model model;
+  ZoneHVACUnitHeater unitHeater(model);
+  FanConstantVolume fan(model);
+  CoilHeatingElectric coil(model);
+
+  ASSERT_TRUE(unitHeater.setSupplyAirFan(fan));
+  ASSERT_TRUE(unitHeater.setHeatingCoil(coil));
+
+  auto expectedFanInlet = fan.inletModelObject()->optionalCast<Node>();
+  auto expectedCoilOutlet = coil.outletModelObject()->optionalCast<Node>();
+  ASSERT_TRUE(expectedFanInlet);
+  ASSERT_TRUE(expectedCoilOutlet);
+
+  Node rogueInlet(model);
+  ASSERT_TRUE(rogueInlet.setName("Rogue Unit Heater Inlet"));
+  Node rogueInternal(model);
+  ASSERT_TRUE(rogueInternal.setName("Rogue Unit Heater Internal"));
+  ASSERT_TRUE(fan.setPointer(fan.inletPort(), rogueInlet.handle()));
+  ASSERT_TRUE(fan.setPointer(fan.outletPort(), rogueInternal.handle()));
+  ASSERT_TRUE(coil.setPointer(coil.inletPort(), rogueInlet.handle()));
+  ASSERT_TRUE(coil.setPointer(coil.outletPort(), rogueInternal.handle()));
+
+  auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+
+  auto repairedFanInlet = fan.inletModelObject()->optionalCast<Node>();
+  auto repairedFanOutlet = fan.outletModelObject()->optionalCast<Node>();
+  auto repairedCoilInlet = coil.inletModelObject()->optionalCast<Node>();
+  auto repairedCoilOutlet = coil.outletModelObject()->optionalCast<Node>();
+  auto repairedUnitHeaterFanOutlet = unitHeater.fanOutletNode();
+  ASSERT_TRUE(repairedFanInlet);
+  ASSERT_TRUE(repairedFanOutlet);
+  ASSERT_TRUE(repairedCoilInlet);
+  ASSERT_TRUE(repairedCoilOutlet);
+  ASSERT_TRUE(repairedUnitHeaterFanOutlet);
+
+  EXPECT_EQ(*expectedFanInlet, *repairedFanInlet);
+  EXPECT_EQ(*repairedFanOutlet, *repairedCoilInlet);
+  EXPECT_EQ(*expectedCoilOutlet, *repairedCoilOutlet);
+  EXPECT_EQ(*repairedFanOutlet, *repairedUnitHeaterFanOutlet);
+  EXPECT_EQ("Rogue Unit Heater Internal", repairedFanOutlet->nameString());
 }

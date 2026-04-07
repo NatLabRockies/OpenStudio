@@ -7,10 +7,13 @@
 #include "ZoneHVACComponent/ZoneHVACUnitHeater_Impl.hpp"
 
 #include "HVACComponent.hpp"
+#include "HVACComponent/ThermalZone.hpp"
 #include "Model.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 #include "Schedule/ScheduleConstant.hpp"
+#include "StraightComponent/Node.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <boost/none.hpp>
 
@@ -66,6 +69,10 @@ namespace epmodel {
 
   bool ZoneHVACUnitHeater::setHeatingCoil(const HVACComponent& heatingCoil) {
     return getImpl<detail::ZoneHVACUnitHeater_Impl>()->setHeatingCoil(heatingCoil);
+  }
+
+  boost::optional<Node> ZoneHVACUnitHeater::fanOutletNode() const {
+    return getImpl<detail::ZoneHVACUnitHeater_Impl>()->fanOutletNode();
   }
 
   boost::optional<double> ZoneHVACUnitHeater::maximumSupplyAirFlowRate() const {
@@ -178,6 +185,24 @@ namespace epmodel {
       return ZoneHVAC_UnitHeaterFields::AirOutletNodeName;
     }
 
+    bool ZoneHVACUnitHeater_Impl::addToThermalZone(ThermalZone& thermalZone) {
+      if (!ZoneHVACComponent_Impl::addToThermalZone(thermalZone)) {
+        return false;
+      }
+
+      reconcileContainedAirPath();
+      return true;
+    }
+
+    void ZoneHVACUnitHeater_Impl::removeFromThermalZone() {
+      ZoneHVACComponent_Impl::removeFromThermalZone();
+      reconcileContainedAirPath();
+    }
+
+    void ZoneHVACUnitHeater_Impl::doCanonicalize(LoadContext& context) {
+      reconcileContainedAirPath(&context);
+    }
+
     Schedule ZoneHVACUnitHeater_Impl::availabilitySchedule() const {
       auto target = getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_UnitHeaterFields::AvailabilityScheduleName);
       OS_ASSERT(target);
@@ -198,7 +223,15 @@ namespace epmodel {
       if (fan.model() != model()) {
         return false;
       }
-      return setPointer(ZoneHVAC_UnitHeaterFields::SupplyAirFanName, fan.handle(), false);
+      if (!fan.optionalCast<StraightComponent>()) {
+        return false;
+      }
+
+      const bool result = setPointer(ZoneHVAC_UnitHeaterFields::SupplyAirFanName, fan.handle(), false);
+      if (result) {
+        reconcileContainedAirPath();
+      }
+      return result;
     }
 
     HVACComponent ZoneHVACUnitHeater_Impl::heatingCoil() const {
@@ -211,7 +244,47 @@ namespace epmodel {
       if (heatingCoil.model() != model()) {
         return false;
       }
-      return setPointer(ZoneHVAC_UnitHeaterFields::HeatingCoilName, heatingCoil.handle(), false);
+      if (!heatingCoil.optionalCast<StraightComponent>()) {
+        return false;
+      }
+
+      const bool result = setPointer(ZoneHVAC_UnitHeaterFields::HeatingCoilName, heatingCoil.handle(), false);
+      if (result) {
+        reconcileContainedAirPath();
+      }
+      return result;
+    }
+
+    boost::optional<Node> ZoneHVACUnitHeater_Impl::fanOutletNode() const {
+      auto thisObject = getObject<ModelObject>();
+      auto unitHeaterInlet = thisObject.getModelObjectTarget<Node>(inletPort());
+      auto unitHeaterOutlet = thisObject.getModelObjectTarget<Node>(outletPort());
+
+      auto fanObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_UnitHeaterFields::SupplyAirFanName);
+      auto coilObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_UnitHeaterFields::HeatingCoilName);
+      auto fan = fanObject ? fanObject->optionalCast<StraightComponent>() : boost::none;
+      auto coil = coilObject ? coilObject->optionalCast<StraightComponent>() : boost::none;
+      if (!fan || !coil) {
+        return boost::none;
+      }
+
+      auto fanOutlet = fan->outletModelObject();
+      auto coilInlet = coil->inletModelObject();
+      if (!fanOutlet || !coilInlet) {
+        return boost::none;
+      }
+
+      auto fanOutletNode = fanOutlet->optionalCast<Node>();
+      auto coilInletNode = coilInlet->optionalCast<Node>();
+      if (!fanOutletNode || !coilInletNode || (*fanOutletNode != *coilInletNode)) {
+        return boost::none;
+      }
+
+      if ((unitHeaterInlet && (*fanOutletNode == *unitHeaterInlet)) || (unitHeaterOutlet && (*fanOutletNode == *unitHeaterOutlet))) {
+        return boost::none;
+      }
+
+      return fanOutletNode;
     }
 
     boost::optional<double> ZoneHVACUnitHeater_Impl::maximumSupplyAirFlowRate() const {
@@ -318,6 +391,152 @@ namespace epmodel {
 
     boost::optional<double> ZoneHVACUnitHeater_Impl::autosizedMaximumHotWaterFlowRate() const {
       return boost::none;
+    }
+
+    bool ZoneHVACUnitHeater_Impl::reconcileContainedAirPath(LoadContext* context) {
+      auto thisObject = getObject<ModelObject>();
+      if (!thisObject.name()) {
+        thisObject.createName();
+      }
+
+      auto fanObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_UnitHeaterFields::SupplyAirFanName);
+      auto coilObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_UnitHeaterFields::HeatingCoilName);
+      auto fan = fanObject ? fanObject->optionalCast<StraightComponent>() : boost::none;
+      auto coil = coilObject ? coilObject->optionalCast<StraightComponent>() : boost::none;
+      if (!fan && !coil) {
+        return false;
+      }
+
+      const auto baseName = thisObject.nameString();
+      auto inletNode = thisObject.getModelObjectTarget<Node>(inletPort());
+      if (!inletNode) {
+        if (auto existingName = thisObject.getString(inletPort()); existingName && !existingName->empty()) {
+          inletNode = model().getOrCreateTransientByName<Node>(*existingName);
+        } else {
+          inletNode = model().getOrCreateTransientByName<Node>(baseName + " Air Inlet Node");
+        }
+      }
+
+      auto outletNode = thisObject.getModelObjectTarget<Node>(outletPort());
+      if (!outletNode) {
+        if (auto existingName = thisObject.getString(outletPort()); existingName && !existingName->empty()) {
+          outletNode = model().getOrCreateTransientByName<Node>(*existingName);
+        } else {
+          outletNode = model().getOrCreateTransientByName<Node>(baseName + " Air Outlet Node");
+        }
+      }
+
+      bool changed = false;
+      const auto currentInletTarget = thisObject.getModelObjectTarget<Node>(inletPort());
+      const auto currentInletName = thisObject.getString(inletPort());
+      if (!(currentInletTarget && (*currentInletTarget == *inletNode) && currentInletName
+            && openstudio::istringEqual(*currentInletName, inletNode->nameString()))) {
+        OS_ASSERT(thisObject.setPointer(inletPort(), inletNode->handle()));
+        changed = true;
+      }
+
+      const auto currentOutletTarget = thisObject.getModelObjectTarget<Node>(outletPort());
+      const auto currentOutletName = thisObject.getString(outletPort());
+      if (!(currentOutletTarget && (*currentOutletTarget == *outletNode) && currentOutletName
+            && openstudio::istringEqual(*currentOutletName, outletNode->nameString()))) {
+        OS_ASSERT(thisObject.setPointer(outletPort(), outletNode->handle()));
+        changed = true;
+      }
+
+      if (fan && coil) {
+        auto internalNode = fanOutletNode();
+        if (!internalNode) {
+          if (auto fanOutletName = fan->getString(fan->outletPort()); fanOutletName && !fanOutletName->empty()) {
+            auto candidate = model().getOrCreateTransientByName<Node>(*fanOutletName);
+            if ((candidate != *inletNode) && (candidate != *outletNode)) {
+              internalNode = candidate;
+            }
+          }
+          if (!internalNode) {
+            if (auto coilInletName = coil->getString(coil->inletPort()); coilInletName && !coilInletName->empty()) {
+              auto candidate = model().getOrCreateTransientByName<Node>(*coilInletName);
+              if ((candidate != *inletNode) && (candidate != *outletNode)) {
+                internalNode = candidate;
+              }
+            }
+          }
+          if (!internalNode) {
+            internalNode = model().getOrCreateTransientByName<Node>(baseName + " Fan Outlet Node");
+          }
+        }
+
+        // The unit heater owns this internal node. Reuse the existing node object if
+        // one is already wired so user renames survive later reconciliation.
+        const auto fanInletTarget = fan->getModelObjectTarget<Node>(fan->inletPort());
+        const auto fanInletName = fan->getString(fan->inletPort());
+        if (!(fanInletTarget && (*fanInletTarget == *inletNode) && fanInletName
+              && openstudio::istringEqual(*fanInletName, inletNode->nameString()))) {
+          OS_ASSERT(fan->setPointer(fan->inletPort(), inletNode->handle()));
+          changed = true;
+        }
+
+        const auto fanOutletTarget = fan->getModelObjectTarget<Node>(fan->outletPort());
+        const auto fanOutletName = fan->getString(fan->outletPort());
+        if (!(fanOutletTarget && (*fanOutletTarget == *internalNode) && fanOutletName
+              && openstudio::istringEqual(*fanOutletName, internalNode->nameString()))) {
+          OS_ASSERT(fan->setPointer(fan->outletPort(), internalNode->handle()));
+          changed = true;
+        }
+
+        const auto coilInletTarget = coil->getModelObjectTarget<Node>(coil->inletPort());
+        const auto coilInletName = coil->getString(coil->inletPort());
+        if (!(coilInletTarget && (*coilInletTarget == *internalNode) && coilInletName
+              && openstudio::istringEqual(*coilInletName, internalNode->nameString()))) {
+          OS_ASSERT(coil->setPointer(coil->inletPort(), internalNode->handle()));
+          changed = true;
+        }
+
+        const auto coilOutletTarget = coil->getModelObjectTarget<Node>(coil->outletPort());
+        const auto coilOutletName = coil->getString(coil->outletPort());
+        if (!(coilOutletTarget && (*coilOutletTarget == *outletNode) && coilOutletName
+              && openstudio::istringEqual(*coilOutletName, outletNode->nameString()))) {
+          OS_ASSERT(coil->setPointer(coil->outletPort(), outletNode->handle()));
+          changed = true;
+        }
+      } else if (fan) {
+        const auto fanInletTarget = fan->getModelObjectTarget<Node>(fan->inletPort());
+        const auto fanInletName = fan->getString(fan->inletPort());
+        if (!(fanInletTarget && (*fanInletTarget == *inletNode) && fanInletName
+              && openstudio::istringEqual(*fanInletName, inletNode->nameString()))) {
+          OS_ASSERT(fan->setPointer(fan->inletPort(), inletNode->handle()));
+          changed = true;
+        }
+
+        const auto fanOutletTarget = fan->getModelObjectTarget<Node>(fan->outletPort());
+        const auto fanOutletName = fan->getString(fan->outletPort());
+        if (!(fanOutletTarget && (*fanOutletTarget == *outletNode) && fanOutletName
+              && openstudio::istringEqual(*fanOutletName, outletNode->nameString()))) {
+          OS_ASSERT(fan->setPointer(fan->outletPort(), outletNode->handle()));
+          changed = true;
+        }
+      } else {
+        const auto coilInletTarget = coil->getModelObjectTarget<Node>(coil->inletPort());
+        const auto coilInletName = coil->getString(coil->inletPort());
+        if (!(coilInletTarget && (*coilInletTarget == *inletNode) && coilInletName
+              && openstudio::istringEqual(*coilInletName, inletNode->nameString()))) {
+          OS_ASSERT(coil->setPointer(coil->inletPort(), inletNode->handle()));
+          changed = true;
+        }
+
+        const auto coilOutletTarget = coil->getModelObjectTarget<Node>(coil->outletPort());
+        const auto coilOutletName = coil->getString(coil->outletPort());
+        if (!(coilOutletTarget && (*coilOutletTarget == *outletNode) && coilOutletName
+              && openstudio::istringEqual(*coilOutletName, outletNode->nameString()))) {
+          OS_ASSERT(coil->setPointer(coil->outletPort(), outletNode->handle()));
+          changed = true;
+        }
+      }
+
+      if (changed && context) {
+        detail::addLoadInfo(*context, "Reconciled internal node wiring for ZoneHVAC:UnitHeater '" + baseName + "'.");
+      }
+
+      return changed;
     }
 
   }  // namespace detail
