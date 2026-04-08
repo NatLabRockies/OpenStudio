@@ -50,9 +50,9 @@ namespace epmodel {
         return false;
       }
 
-      auto equipmentListImpl =
-        oaSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>()->airLoopHVACOutdoorAirSystemEquipmentList().getImpl<
-          detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl>();
+      auto equipmentListImpl = oaSystem.getImpl<openstudio::epmodel::detail::AirLoopHVACOutdoorAirSystem_Impl>()
+                                 ->airLoopHVACOutdoorAirSystemEquipmentList()
+                                 .getImpl<detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl>();
       OS_ASSERT(equipmentListImpl);
       if (!equipmentListImpl->containsEquipment(thisObject) && !equipmentListImpl->addEquipment(thisObject)) {
         return false;
@@ -200,8 +200,7 @@ namespace epmodel {
       if (auto owner = getObject<openstudio::epmodel::HVACComponent>().containingHVACComponent()) {
         LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
                  "Refusing to move " << getObject<ModelObject>().briefDescription() << " onto node '" << node.nameString()
-                                     << "' because its air-side connectivity is owned by "
-                                     << owner->briefDescription() << ".");
+                                     << "' because its air-side connectivity is owned by " << owner->briefDescription() << ".");
         return false;
       }
 
@@ -401,11 +400,11 @@ namespace epmodel {
           return false;
         }
 
-        auto node = model().getOrCreateTransientByName<openstudio::epmodel::Node>(*nodeName);
-        if (!setPointer(port, node.handle(), false)) {
+        auto node = resolvedNodeTarget(port);
+        if (!node) {
           std::ostringstream oss;
-          oss << "StraightComponent canonicalize: failed to set node pointer for " << portLabel << " port index " << port << " on object '"
-              << thisObject.nameString() << "' (" << thisObject.iddObject().name() << ") to transient Node '" << *nodeName << "'.";
+          oss << "StraightComponent canonicalize: failed to resolve node pointer for " << portLabel << " port index " << port << " on object '"
+              << thisObject.nameString() << "' (" << thisObject.iddObject().name() << ") to Node '" << *nodeName << "'.";
           detail::addLoadError(context, oss.str());
           return false;
         }
@@ -479,19 +478,19 @@ namespace epmodel {
         return false;
       }
 
-	      auto inletNode = inletObject->optionalCast<openstudio::epmodel::Node>();
-	      auto outletNode = outletObject->optionalCast<openstudio::epmodel::Node>();
-	      if (!inletNode || !outletNode) {
-	        return false;
-	      }
+      auto inletNode = inletObject->optionalCast<openstudio::epmodel::Node>();
+      auto outletNode = outletObject->optionalCast<openstudio::epmodel::Node>();
+      if (!inletNode || !outletNode) {
+        return false;
+      }
 
-	      for (auto oaSystem : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
-	        if (oaSystem.component(handle())) {
-	          return removeFromOutdoorAirSystem(oaSystem);
-	        }
-	      }
+      for (auto oaSystem : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
+        if (oaSystem.component(handle())) {
+          return removeFromOutdoorAirSystem(oaSystem);
+        }
+      }
 
-	      if (auto loop = thisComponent->airLoopHVAC()) {
+      if (auto loop = thisComponent->airLoopHVAC()) {
         auto splitter = loop->zoneSplitter();
         auto mixer = loop->zoneMixer();
 
@@ -574,8 +573,7 @@ namespace epmodel {
     void StraightComponent_Impl::disconnect() {
       if (auto owner = getObject<openstudio::epmodel::HVACComponent>().containingHVACComponent()) {
         LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
-                 "Refusing to disconnect " << getObject<ModelObject>().briefDescription()
-                                           << " because its air-side connectivity is owned by "
+                 "Refusing to disconnect " << getObject<ModelObject>().briefDescription() << " because its air-side connectivity is owned by "
                                            << owner->briefDescription() << ".");
         return;
       }

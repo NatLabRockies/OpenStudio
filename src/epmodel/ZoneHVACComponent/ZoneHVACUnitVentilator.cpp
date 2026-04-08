@@ -10,6 +10,7 @@
 #include "HVACComponent/ThermalZone.hpp"
 #include "Model.hpp"
 #include "ModelObject/ModelObject.hpp"
+#include "ModelObject/ModelObject_Impl.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 #include "Schedule/ScheduleConstant.hpp"
@@ -93,8 +94,7 @@ namespace epmodel {
     OS_ASSERT(setCoolingConvergenceTolerance(0.001));
   }
 
-  ZoneHVACUnitVentilator::ZoneHVACUnitVentilator(std::shared_ptr<detail::ZoneHVACUnitVentilator_Impl> impl)
-    : ZoneHVACComponent(std::move(impl)) {}
+  ZoneHVACUnitVentilator::ZoneHVACUnitVentilator(std::shared_ptr<detail::ZoneHVACUnitVentilator_Impl> impl) : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACUnitVentilator::iddObjectType() {
     return IddObjectType::ZoneHVAC_UnitVentilator;
@@ -377,8 +377,8 @@ namespace epmodel {
     }
 
     Schedule ZoneHVACUnitVentilator_Impl::maximumOutdoorAirFractionorTemperatureSchedule() const {
-      auto target = getObject<ModelObject>().getModelObjectTarget<Schedule>(
-        ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFractionorTemperatureScheduleName);
+      auto target =
+        getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFractionorTemperatureScheduleName);
       OS_ASSERT(target);
       return *target;
     }
@@ -637,7 +637,8 @@ namespace epmodel {
       }
 
       const auto currentHeatingType = thisObject.getString(ZoneHVAC_UnitVentilatorFields::HeatingCoilObjectType, true);
-      const auto expectedHeatingType = heatingObject ? boost::optional<std::string>(heatingObject->iddObject().name()) : boost::optional<std::string>();
+      const auto expectedHeatingType =
+        heatingObject ? boost::optional<std::string>(heatingObject->iddObject().name()) : boost::optional<std::string>();
       if (expectedHeatingType) {
         if (!currentHeatingType || !openstudio::istringEqual(*currentHeatingType, *expectedHeatingType)) {
           OS_ASSERT(thisObject.setString(ZoneHVAC_UnitVentilatorFields::HeatingCoilObjectType, *expectedHeatingType));
@@ -649,7 +650,8 @@ namespace epmodel {
       }
 
       const auto currentCoolingType = thisObject.getString(ZoneHVAC_UnitVentilatorFields::CoolingCoilObjectType, true);
-      const auto expectedCoolingType = coolingObject ? boost::optional<std::string>(coolingObject->iddObject().name()) : boost::optional<std::string>();
+      const auto expectedCoolingType =
+        coolingObject ? boost::optional<std::string>(coolingObject->iddObject().name()) : boost::optional<std::string>();
       if (expectedCoolingType) {
         if (!currentCoolingType || !openstudio::istringEqual(*currentCoolingType, *expectedCoolingType)) {
           OS_ASSERT(thisObject.setString(ZoneHVAC_UnitVentilatorFields::CoolingCoilObjectType, *expectedCoolingType));
@@ -702,22 +704,19 @@ namespace epmodel {
           auto currentDownstreamInlet = downstream && componentAirInletPort(*downstream) != 0u
                                           ? downstream->getModelObjectTarget<Node>(componentAirInletPort(*downstream))
                                           : boost::none;
-          if (currentFanOutlet && currentDownstreamInlet && (*currentFanOutlet == *currentDownstreamInlet)
-              && (*currentFanOutlet != mixedAir) && (*currentFanOutlet != outletNode)) {
+          if (currentFanOutlet && currentDownstreamInlet && (*currentFanOutlet == *currentDownstreamInlet) && (*currentFanOutlet != mixedAir)
+              && (*currentFanOutlet != outletNode)) {
             fanOutlet = currentFanOutlet;
           }
         } else {
           fanOutlet = fanOutletNode();
         }
         if (!fanOutlet && allowChildNodeRecovery) {
-          // Canonicalization is allowed to salvage a user-named internal node
-          // from the child fields after raw pointer drift. Ordinary owner
-          // mutations do not do that guessing; they keep the intended path or
-          // create a fresh default node if the internal link is missing.
-          if (auto fanOutletName = fan->getString(fan->outletPort()); fanOutletName && !fanOutletName->empty()) {
-            auto candidate = model().getOrCreateTransientByName<Node>(*fanOutletName);
-            if ((candidate != inletNode) && (candidate != outletNode) && (candidate != mixedAir)) {
-              fanOutlet = candidate;
+          // Canonicalization may recover a named child node link that drifted
+          // out of sync, but it should do so through the shared node resolver.
+          if (auto candidate = fan->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(fan->outletPort())) {
+            if ((*candidate != inletNode) && (*candidate != outletNode) && (*candidate != mixedAir)) {
+              fanOutlet = *candidate;
             }
           }
         }
@@ -726,10 +725,9 @@ namespace epmodel {
           if (downstream) {
             const auto downstreamInletPort = componentAirInletPort(*downstream);
             if (downstreamInletPort != 0u) {
-              if (auto downstreamInletName = downstream->getString(downstreamInletPort); downstreamInletName && !downstreamInletName->empty()) {
-                auto candidate = model().getOrCreateTransientByName<Node>(*downstreamInletName);
-                if ((candidate != inletNode) && (candidate != outletNode) && (candidate != mixedAir)) {
-                  fanOutlet = candidate;
+              if (auto candidate = downstream->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(downstreamInletPort)) {
+                if ((*candidate != inletNode) && (*candidate != outletNode) && (*candidate != mixedAir)) {
+                  fanOutlet = *candidate;
                 }
               }
             }
@@ -743,8 +741,10 @@ namespace epmodel {
       boost::optional<Node> coolingOutlet;
       if (cooling && heating) {
         if (!allowChildNodeRecovery) {
-          auto currentCoolingOutlet = componentAirOutletModelObject(*cooling) ? componentAirOutletModelObject(*cooling)->optionalCast<Node>() : boost::none;
-          const auto heatingAirInlet = componentAirInletPort(*heating) != 0u ? heating->getModelObjectTarget<Node>(componentAirInletPort(*heating)) : boost::none;
+          auto currentCoolingOutlet =
+            componentAirOutletModelObject(*cooling) ? componentAirOutletModelObject(*cooling)->optionalCast<Node>() : boost::none;
+          const auto heatingAirInlet =
+            componentAirInletPort(*heating) != 0u ? heating->getModelObjectTarget<Node>(componentAirInletPort(*heating)) : boost::none;
           if (currentCoolingOutlet && heatingAirInlet && (*currentCoolingOutlet == *heatingAirInlet) && (*currentCoolingOutlet != outletNode)
               && (!fanOutlet || (*currentCoolingOutlet != *fanOutlet))) {
             coolingOutlet = currentCoolingOutlet;
@@ -755,10 +755,9 @@ namespace epmodel {
         if (!coolingOutlet && allowChildNodeRecovery) {
           const auto coolingAirOutletPort = componentAirOutletPort(*cooling);
           if (coolingAirOutletPort != 0u) {
-            if (auto coolingOutletName = cooling->getString(coolingAirOutletPort); coolingOutletName && !coolingOutletName->empty()) {
-              auto candidate = model().getOrCreateTransientByName<Node>(*coolingOutletName);
-              if ((candidate != inletNode) && (candidate != outletNode) && (candidate != mixedAir) && (!fanOutlet || (candidate != *fanOutlet))) {
-                coolingOutlet = candidate;
+            if (auto candidate = cooling->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(coolingAirOutletPort)) {
+              if ((*candidate != inletNode) && (*candidate != outletNode) && (*candidate != mixedAir) && (!fanOutlet || (*candidate != *fanOutlet))) {
+                coolingOutlet = *candidate;
               }
             }
           }
@@ -766,10 +765,9 @@ namespace epmodel {
         if (!coolingOutlet && allowChildNodeRecovery) {
           const auto heatingAirInletPort = componentAirInletPort(*heating);
           if (heatingAirInletPort != 0u) {
-            if (auto heatingInletName = heating->getString(heatingAirInletPort); heatingInletName && !heatingInletName->empty()) {
-              auto candidate = model().getOrCreateTransientByName<Node>(*heatingInletName);
-              if ((candidate != inletNode) && (candidate != outletNode) && (candidate != mixedAir) && (!fanOutlet || (candidate != *fanOutlet))) {
-                coolingOutlet = candidate;
+            if (auto candidate = heating->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(heatingAirInletPort)) {
+              if ((*candidate != inletNode) && (*candidate != outletNode) && (*candidate != mixedAir) && (!fanOutlet || (*candidate != *fanOutlet))) {
+                coolingOutlet = *candidate;
               }
             }
           }

@@ -9,6 +9,7 @@
 #include "HVACComponent.hpp"
 #include "HVACComponent/ThermalZone.hpp"
 #include "Model.hpp"
+#include "ModelObject/ModelObject_Impl.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 #include "Schedule/ScheduleConstant.hpp"
@@ -422,8 +423,8 @@ namespace epmodel {
       if (fan && coil) {
         boost::optional<Node> internalNode;
         if (!allowChildNodeRecovery) {
-          auto currentFanOutlet = fan->outletModelObject() ? fan->outletModelObject()->optionalCast<Node>() : boost::none;
-          auto currentCoilInlet = coil->inletModelObject() ? coil->inletModelObject()->optionalCast<Node>() : boost::none;
+          auto currentFanOutlet = fan->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(fan->outletPort());
+          auto currentCoilInlet = coil->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(coil->inletPort());
           if (currentFanOutlet && currentCoilInlet && (*currentFanOutlet == *currentCoilInlet) && (*currentFanOutlet != inletNode)
               && (*currentFanOutlet != outletNode)) {
             internalNode = currentFanOutlet;
@@ -432,20 +433,18 @@ namespace epmodel {
           internalNode = fanOutletNode();
         }
         if (!internalNode && allowChildNodeRecovery) {
-          // Canonicalization can recover a user-named internal node after raw
-          // child-field drift. Ordinary owner mutations should not guess from
-          // damaged child wiring; they restore the intended path directly.
-          if (auto fanOutletName = fan->getString(fan->outletPort()); fanOutletName && !fanOutletName->empty()) {
-            auto candidate = model().getOrCreateTransientByName<Node>(*fanOutletName);
-            if ((candidate != inletNode) && (candidate != outletNode)) {
+          // Canonicalization can recover a user-named internal node from the
+          // child fields through the shared node resolver. Ordinary owner
+          // mutations should not guess from damaged child wiring.
+          if (auto candidate = fan->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(fan->outletPort())) {
+            if ((*candidate != inletNode) && (*candidate != outletNode)) {
               internalNode = candidate;
             }
           }
         }
         if (!internalNode && allowChildNodeRecovery) {
-          if (auto coilInletName = coil->getString(coil->inletPort()); coilInletName && !coilInletName->empty()) {
-            auto candidate = model().getOrCreateTransientByName<Node>(*coilInletName);
-            if ((candidate != inletNode) && (candidate != outletNode)) {
+          if (auto candidate = coil->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(coil->inletPort())) {
+            if ((*candidate != inletNode) && (*candidate != outletNode)) {
               internalNode = candidate;
             }
           }
@@ -458,8 +457,7 @@ namespace epmodel {
         // one is already wired so user renames survive later reconciliation.
         const auto fanInletTarget = fan->getModelObjectTarget<Node>(fan->inletPort());
         const auto fanInletName = fan->getString(fan->inletPort());
-        if (!(fanInletTarget && (*fanInletTarget == inletNode) && fanInletName
-              && openstudio::istringEqual(*fanInletName, inletNode.nameString()))) {
+        if (!(fanInletTarget && (*fanInletTarget == inletNode) && fanInletName && openstudio::istringEqual(*fanInletName, inletNode.nameString()))) {
           OS_ASSERT(fan->setPointer(fan->inletPort(), inletNode.handle()));
           changed = true;
         }
@@ -490,8 +488,7 @@ namespace epmodel {
       } else if (fan) {
         const auto fanInletTarget = fan->getModelObjectTarget<Node>(fan->inletPort());
         const auto fanInletName = fan->getString(fan->inletPort());
-        if (!(fanInletTarget && (*fanInletTarget == inletNode) && fanInletName
-              && openstudio::istringEqual(*fanInletName, inletNode.nameString()))) {
+        if (!(fanInletTarget && (*fanInletTarget == inletNode) && fanInletName && openstudio::istringEqual(*fanInletName, inletNode.nameString()))) {
           OS_ASSERT(fan->setPointer(fan->inletPort(), inletNode.handle()));
           changed = true;
         }

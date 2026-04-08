@@ -288,6 +288,49 @@ TEST_F(EPModelFixture, ZoneHVACUnitHeater_OwnerMutationsRebuildContainedPathWith
   EXPECT_EQ(*repairedInternalNode, *coil.inletModelObject()->optionalCast<Node>());
 }
 
+TEST_F(EPModelFixture, ZoneHVACUnitHeater_OwnerMutationsMaterializeNamedBoundaryNodes) {
+  Model model;
+  ZoneHVACUnitHeater unitHeater(model);
+  FanConstantVolume fan(model);
+  CoilHeatingElectric coil(model);
+
+  ASSERT_TRUE(unitHeater.setSupplyAirFan(fan));
+  ASSERT_TRUE(unitHeater.setHeatingCoil(coil));
+
+  Node namedInlet(model);
+  ASSERT_TRUE(namedInlet.setName("Named Unit Heater Inlet"));
+  Node namedOutlet(model);
+  ASSERT_TRUE(namedOutlet.setName("Named Unit Heater Outlet"));
+
+  ASSERT_TRUE(unitHeater.setString(unitHeater.inletPort(), "Named Unit Heater Inlet"));
+  ASSERT_TRUE(unitHeater.setPointer(unitHeater.inletPort(), openstudio::Handle()));
+  ASSERT_TRUE(unitHeater.setString(unitHeater.outletPort(), "Named Unit Heater Outlet"));
+  ASSERT_TRUE(unitHeater.setPointer(unitHeater.outletPort(), openstudio::Handle()));
+  // The field strings already name real nodes in the model. Owner maintenance
+  // should keep those exact nodes wired to the unit heater instead of
+  // inventing replacements during later reconciliation.
+
+  FanConstantVolume replacementFan(model);
+  ASSERT_TRUE(unitHeater.setSupplyAirFan(replacementFan));
+  ASSERT_TRUE(unitHeater.setSupplyAirFan(fan));
+
+  auto inletNode = unitHeater.inletNode();
+  auto outletNode = unitHeater.outletNode();
+  auto inletTarget = unitHeater.getModelObjectTarget<Node>(unitHeater.inletPort());
+  auto outletTarget = unitHeater.getModelObjectTarget<Node>(unitHeater.outletPort());
+  ASSERT_TRUE(inletNode);
+  ASSERT_TRUE(outletNode);
+  ASSERT_TRUE(inletTarget);
+  ASSERT_TRUE(outletTarget);
+
+  EXPECT_EQ("Named Unit Heater Inlet", inletNode->nameString());
+  EXPECT_EQ("Named Unit Heater Outlet", outletNode->nameString());
+  EXPECT_EQ(namedInlet, *inletNode);
+  EXPECT_EQ(namedOutlet, *outletNode);
+  EXPECT_EQ(*inletNode, *inletTarget);
+  EXPECT_EQ(*outletNode, *outletTarget);
+}
+
 TEST_F(EPModelFixture, ZoneHVACUnitHeater_CanonicalizeRepairsContainedNodePath) {
   Model model;
   ZoneHVACUnitHeater unitHeater(model);

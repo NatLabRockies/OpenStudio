@@ -7,6 +7,7 @@
 #include "ZoneHVACAirDistributionUnit_Impl.hpp"
 
 #include "Model.hpp"
+#include "ModelObject/ModelObject_Impl.hpp"
 #include "Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -59,7 +60,8 @@ namespace epmodel {
   }  // namespace detail
 
   boost::optional<Node> ZoneHVACAirDistributionUnit::outletNode() const {
-    return getModelObjectTarget<Node>(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName);
+    return getImpl<detail::ZoneHVACAirDistributionUnit_Impl>()->resolvedNodeTarget(
+      openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName);
   }
 
   namespace detail {
@@ -95,14 +97,7 @@ namespace epmodel {
         }
       }
 
-      if (auto nodeName = adu.getString(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName)) {
-        if (!nodeName->empty()) {
-          auto node = model().getOrCreateTransientByName<openstudio::epmodel::Node>(*nodeName);
-          if (!adu.setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName, node.handle())) {
-            OS_ASSERT(false);
-          }
-        }
-      }
+      (void)resolvedNodeTarget(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName);
     }
 
   }  // namespace detail

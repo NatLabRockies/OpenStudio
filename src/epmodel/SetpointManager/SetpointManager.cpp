@@ -17,105 +17,100 @@
 namespace openstudio {
 namespace epmodel {
 
-SetpointManager::SetpointManager(IddObjectType type, const Model& model) : HVACComponent(type, model) {
-  OS_ASSERT(getImpl<detail::SetpointManager_Impl>());
-}
+  SetpointManager::SetpointManager(IddObjectType type, const Model& model) : HVACComponent(type, model) {
+    OS_ASSERT(getImpl<detail::SetpointManager_Impl>());
+  }
 
-SetpointManager::SetpointManager(std::shared_ptr<detail::SetpointManager_Impl> impl) : HVACComponent(std::move(impl)) {}
+  SetpointManager::SetpointManager(std::shared_ptr<detail::SetpointManager_Impl> impl) : HVACComponent(std::move(impl)) {}
 
-boost::optional<Node> SetpointManager::setpointNode() const {
-  return getImpl<detail::SetpointManager_Impl>()->setpointNode();
-}
+  boost::optional<Node> SetpointManager::setpointNode() const {
+    return getImpl<detail::SetpointManager_Impl>()->setpointNode();
+  }
 
-std::string SetpointManager::controlVariable() const {
-  return getImpl<detail::SetpointManager_Impl>()->controlVariable();
-}
+  std::string SetpointManager::controlVariable() const {
+    return getImpl<detail::SetpointManager_Impl>()->controlVariable();
+  }
 
-bool SetpointManager::setControlVariable(const std::string& value) {
-  return getImpl<detail::SetpointManager_Impl>()->setControlVariable(value);
-}
+  bool SetpointManager::setControlVariable(const std::string& value) {
+    return getImpl<detail::SetpointManager_Impl>()->setControlVariable(value);
+  }
 
-bool SetpointManager::isAllowedOnPlantLoop() const {
-  return getImpl<detail::SetpointManager_Impl>()->isAllowedOnPlantLoop();
-}
+  bool SetpointManager::isAllowedOnPlantLoop() const {
+    return getImpl<detail::SetpointManager_Impl>()->isAllowedOnPlantLoop();
+  }
 
-bool SetpointManager::addToNode(Node& node) {
-  return getImpl<detail::SetpointManager_Impl>()->addToNode(node);
-}
+  bool SetpointManager::addToNode(Node& node) {
+    return getImpl<detail::SetpointManager_Impl>()->addToNode(node);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-bool SetpointManager_Impl::isAllowedOnPlantLoop() const {
-  return false;
-}
-
-bool SetpointManager_Impl::addToNode(openstudio::epmodel::Node& node) {
-  auto thisObject = getObject<openstudio::epmodel::SetpointManager>();
-  if (node.model() != thisObject.model()) {
-    return false;
-  }
-
-  // Keep one SPM per control variable on the node, matching model behavior.
-  for (const auto& object : model().objects()) {
-    auto spm = object.optionalCast<openstudio::epmodel::SetpointManager>();
-    if (!spm || (*spm == thisObject)) {
-      continue;
+    bool SetpointManager_Impl::isAllowedOnPlantLoop() const {
+      return false;
     }
 
-    auto spmNode = spm->setpointNode();
-    if (!spmNode || (*spmNode != node)) {
-      continue;
-    }
-
-    if (openstudio::istringEqual(spm->controlVariable(), thisObject.controlVariable())) {
-      spm->remove();
-    }
-  }
-
-  if (auto airLoop = node.airLoopHVAC()) {
-    if (airLoop->supplyComponent(node.handle())) {
-      return setSetpointNode(node);
-    }
-  }
-
-  if (auto oaSystem = node.airLoopHVACOutdoorAirSystem()) {
-    // Match model behavior: OA outboard nodes are never valid SPM placement
-    // points, while other OA-system nodes are allowed.
-    if (auto outboardOANode = oaSystem->outboardOANode()) {
-      if (*outboardOANode == node) {
+    bool SetpointManager_Impl::addToNode(openstudio::epmodel::Node& node) {
+      auto thisObject = getObject<openstudio::epmodel::SetpointManager>();
+      if (node.model() != thisObject.model()) {
         return false;
       }
-    }
-    if (auto outboardReliefNode = oaSystem->outboardReliefNode()) {
-      if (*outboardReliefNode == node) {
-        return false;
+
+      // Keep one SPM per control variable on the node, matching model behavior.
+      for (const auto& object : model().objects()) {
+        auto spm = object.optionalCast<openstudio::epmodel::SetpointManager>();
+        if (!spm || (*spm == thisObject)) {
+          continue;
+        }
+
+        auto spmNode = spm->setpointNode();
+        if (!spmNode || (*spmNode != node)) {
+          continue;
+        }
+
+        if (openstudio::istringEqual(spm->controlVariable(), thisObject.controlVariable())) {
+          spm->remove();
+        }
       }
+
+      if (auto airLoop = node.airLoopHVAC()) {
+        if (airLoop->supplyComponent(node.handle())) {
+          return setSetpointNode(node);
+        }
+      }
+
+      if (auto oaSystem = node.airLoopHVACOutdoorAirSystem()) {
+        // Match model behavior: OA outboard nodes are never valid SPM placement
+        // points, while other OA-system nodes are allowed.
+        if (auto outboardOANode = oaSystem->outboardOANode()) {
+          if (*outboardOANode == node) {
+            return false;
+          }
+        }
+        if (auto outboardReliefNode = oaSystem->outboardReliefNode()) {
+          if (*outboardReliefNode == node) {
+            return false;
+          }
+        }
+        return setSetpointNode(node);
+      }
+
+      return false;
     }
-    return setSetpointNode(node);
-  }
 
-  return false;
-}
-
-void SetpointManager_Impl::doCanonicalize(LoadContext& context) {
-  (void)context;
-}
-
-void SetpointManager_Impl::canonicalizeSetpointNodeField(LoadContext& context, unsigned field) {
-  (void)context;
-  if (auto nodeName = getString(field)) {
-    if (!nodeName->empty()) {
-      auto node = model().getOrCreateTransientByName<openstudio::epmodel::Node>(*nodeName);
-      OS_ASSERT(getObject<ModelObject>().setPointer(field, node.handle()));
+    void SetpointManager_Impl::doCanonicalize(LoadContext& context) {
+      (void)context;
     }
-  }
-}
 
-}  // namespace detail
+    void SetpointManager_Impl::canonicalizeSetpointNodeField(LoadContext& context, unsigned field) {
+      (void)context;
+      (void)resolvedNodeTarget(field);
+    }
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

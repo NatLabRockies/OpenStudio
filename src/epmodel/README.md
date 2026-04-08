@@ -327,6 +327,16 @@ inspect and rename. If two exposed roles happen to resolve to the same `Node`
 in a valid configuration, that is acceptable. The accessor should return
 `none` only when that role does not exist at all in the current shape.
 
+When code needs the `Node` referenced by a node field, it should go through the
+shared `ModelObject_Impl` node-field helpers instead of repeating local
+"read the string, find the node by name, maybe create a transient node"
+logic. `resolvedNodeTarget()` is for fields that already name a node and may
+materialize the pointer link during lookup so later renames stay tracked.
+`resolvedOrCreatedNodeTarget()` is the stronger helper for cases where owner
+maintenance or canonicalization must preserve any existing field meaning first
+and, only when the field is blank, choose and attach a node using the caller's
+suggested name.
+
 `ZoneHVACUnitHeater` is the first concrete example of this pattern: the parent
 owns the internal air path, exposes the meaningful internal fan-outlet node on
 the compound, and rejects direct typed topology edits on the contained

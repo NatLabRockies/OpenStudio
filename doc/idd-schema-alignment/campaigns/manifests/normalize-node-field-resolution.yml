@@ -1,0 +1,100 @@
+workflow: epmodel_campaign
+
+change: |
+  Normalize node-field resolution throughout src/epmodel so code that needs a Node
+  from a node field goes through shared ModelObject_Impl helper methods instead of
+  local by-name lookup or transient-node creation logic.
+
+  The policy for this campaign is:
+  - if code returns a Node for a node field, the owning object should be linked to that Node
+  - resolving an already-named node field is allowed to materialize the link
+  - creating a default-named node when the field is blank is a stronger separate path
+  - do not hand-roll "read node name string and get/create transient Node" logic in local types
+
+targets:
+  include:
+    - src/epmodel/ModelObject/ModelObject.hpp
+    - src/epmodel/ModelObject/ModelObject.cpp
+    - src/epmodel/ModelObject/ModelObject_Impl.hpp
+    - src/epmodel/StraightComponent/StraightComponent.hpp
+    - src/epmodel/StraightComponent/StraightComponent.cpp
+    - src/epmodel/AirToAirComponent/AirToAirComponent.hpp
+    - src/epmodel/AirToAirComponent/AirToAirComponent.cpp
+    - src/epmodel/Mixer/ConnectorMixer.hpp
+    - src/epmodel/Mixer/ConnectorMixer.cpp
+    - src/epmodel/Splitter/ConnectorSplitter.hpp
+    - src/epmodel/Splitter/ConnectorSplitter.cpp
+    - src/epmodel/ModelObject/AirLoopHVACSupplyPath.hpp
+    - src/epmodel/ModelObject/AirLoopHVACSupplyPath.cpp
+    - src/epmodel/ModelObject/AirLoopHVACReturnPath.hpp
+    - src/epmodel/ModelObject/AirLoopHVACReturnPath.cpp
+    - src/epmodel/ModelObject/NodeList.hpp
+    - src/epmodel/ModelObject/NodeList.cpp
+    - src/epmodel/ModelObject/OutdoorAirMixer.hpp
+    - src/epmodel/ModelObject/OutdoorAirMixer.cpp
+    - src/epmodel/ModelObject/OutdoorAirMixer_Impl.hpp
+    - src/epmodel/ModelObject/ZoneHVACAirDistributionUnit.hpp
+    - src/epmodel/ModelObject/ZoneHVACAirDistributionUnit.cpp
+    - src/epmodel/ModelObject/ZoneHVACEquipmentConnections.hpp
+    - src/epmodel/ModelObject/ZoneHVACEquipmentConnections.cpp
+    - src/epmodel/SetpointManager/SetpointManager.hpp
+    - src/epmodel/SetpointManager/SetpointManager.cpp
+    - src/epmodel/ZoneHVACComponent/ZoneHVACUnitHeater.hpp
+    - src/epmodel/ZoneHVACComponent/ZoneHVACUnitHeater.cpp
+    - src/epmodel/ZoneHVACComponent/ZoneHVACUnitHeater_Impl.hpp
+    - src/epmodel/ZoneHVACComponent/ZoneHVACEnergyRecoveryVentilator.hpp
+    - src/epmodel/ZoneHVACComponent/ZoneHVACEnergyRecoveryVentilator.cpp
+    - src/epmodel/ZoneHVACComponent/ZoneHVACUnitVentilator.hpp
+    - src/epmodel/ZoneHVACComponent/ZoneHVACUnitVentilator.cpp
+    - src/epmodel/ZoneHVACComponent/ZoneHVACUnitVentilator_Impl.hpp
+  exclude:
+    - src/epmodel/test/**
+
+execution:
+  backend: server
+  work_item_grouping: type_family
+  each_work_item: |
+    Inspect one epmodel type family at a time.
+    Replace local node-field-by-name resolution logic with shared ModelObject_Impl node helpers where the behavior matches.
+    Preserve real semantic differences, but do not keep duplicate helper logic just because it already exists locally.
+    Keep changes local to the work item unless a shared helper or shared base genuinely needs to move first.
+    Do not run build or tests per work item unless the local change clearly needs it.
+  after_all_work_items: |
+    Run the broad epmodel validation pass once all work items are complete.
+    1. cmake --build "build" --target openstudio_epmodel_tests -- -j32
+    2. If campaign-caused failures remain, do a final repair pass until the relevant epmodel build/tests are green.
+  resolution_agent:
+    model: openai/gpt-5.4
+    variant: high
+  subject_agent:
+    model: openai/gpt-5.4-mini
+    variant: medium
+    parallelism: 4
+  after_all_agent:
+    model: openai/gpt-5.2
+    variant: high
+
+context:
+  read:
+    - src/epmodel/README.md
+    - src/epmodel/AGENTS.md
+    - src/epmodel/ModelObject/ModelObject.hpp
+    - src/epmodel/ModelObject/ModelObject_Impl.hpp
+    - src/epmodel/ModelObject/ModelObject.cpp
+    - src/utilities/idf/WorkspaceObject.cpp
+  references:
+    - src/epmodel/ZoneHVACComponent/ZoneHVACUnitHeater.cpp
+    - src/epmodel/ZoneHVACComponent/ZoneHVACUnitVentilator.cpp
+    - src/epmodel/ModelObject/OutdoorAirMixer.cpp
+    - src/epmodel/ModelObject/ZoneHVACAirDistributionUnit.cpp
+    - src/epmodel/SetpointManager/SetpointManager.cpp
+    - src/epmodel/StraightComponent/StraightComponent.cpp
+    - src/epmodel/AirToAirComponent/AirToAirComponent.cpp
+  notes: |
+    Use the shared helper path consistently for node fields. None of the local "get node field by name"
+    variants should remain unless the behavior is genuinely different and clearly justified.
+    Public node getters should keep returning live tracked Nodes or none. Avoid returning an interpreted
+    Node that is not actually linked back to the owning object.
+    Keep public node getters const. The important behavioral split is not const versus non-const;
+    it is "resolve existing named node and link it" versus "create and link a default node when blank."
+    Respect the epmodel rule that ordinary APIs rely on invariants and canonicalization is the repair boundary.

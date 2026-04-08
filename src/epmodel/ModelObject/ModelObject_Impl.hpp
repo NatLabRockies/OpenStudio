@@ -18,104 +18,121 @@ namespace openstudio {
 class IdfObject;
 namespace epmodel {
 
-class Model;
-class Node;
-class Schedule;
+  class Model;
+  class Node;
+  class Schedule;
 
-namespace detail {
-  class Model_Impl;
-  struct LoadContext;
+  namespace detail {
+    class Model_Impl;
+    struct LoadContext;
 
-class EPMODEL_API ModelObject_Impl : public openstudio::detail::WorkspaceObject_Impl
-{
- public:
-  ModelObject_Impl(const openstudio::IdfObject& idfObject, Model_Impl* model, bool keepHandle);
-  ModelObject_Impl(const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model, bool keepHandle);
-  virtual ~ModelObject_Impl() override = default;
+    class EPMODEL_API ModelObject_Impl : public openstudio::detail::WorkspaceObject_Impl
+    {
+     public:
+      ModelObject_Impl(const openstudio::IdfObject& idfObject, Model_Impl* model, bool keepHandle);
+      ModelObject_Impl(const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model, bool keepHandle);
+      virtual ~ModelObject_Impl() override = default;
 
-  openstudio::epmodel::Model model() const;
-  void canonicalize(LoadContext& context);
+      openstudio::epmodel::Model model() const;
+      void canonicalize(LoadContext& context);
 
- protected:
-  template <typename T>
-  T getOrCreateTarget(unsigned fieldIndex) {
-    if (auto target = getTarget(fieldIndex)) {
-      if (auto typed = target->template optionalCast<T>()) {
-        return *typed;
-      }
-    }
+      // Node field helpers follow one simple rule: if we hand a Node back to
+      // a caller, it must already be linked to this object. That keeps later
+      // Node renames tracked by the owning field instead of drifting away as
+      // an unlinked transient object.
+      //
+      // `resolvedNodeTarget` is the read path for a NodeType field that
+      // already has persisted meaning. If the pointer is missing but the
+      // field still names a Node, this method materializes the pointer before
+      // returning. If the field is blank, or the link cannot be established,
+      // it returns none.
+      //
+      // `resolvedOrCreatedNodeTarget` is the stronger form used by owner
+      // maintenance and canonicalization. It first preserves any existing
+      // field meaning. Only when the field is blank does it create or reuse a
+      // Node with the caller's suggested name and link it immediately.
+      boost::optional<openstudio::epmodel::Node> resolvedNodeTarget(unsigned fieldIndex) const;
+      openstudio::epmodel::Node resolvedOrCreatedNodeTarget(unsigned fieldIndex, const std::string& suggestedName);
 
-    auto name = getString(fieldIndex);
-    if (name && !name->empty()) {
-      if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), *name, true)) {
-        if (auto typed = obj->template optionalCast<T>()) {
-          setPointer(fieldIndex, typed->handle(), false);
-          return *typed;
+     protected:
+      template <typename T>
+      T getOrCreateTarget(unsigned fieldIndex) {
+        if (auto target = getTarget(fieldIndex)) {
+          if (auto typed = target->template optionalCast<T>()) {
+            return *typed;
+          }
         }
-      }
-    }
 
-    T created(model());
-    if (name && !name->empty()) {
-      if (!created.setName(*name)) {
-        LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
-                 "Failed to apply existing name '" << *name << "' to newly created target at field index " << fieldIndex << ".");
-      }
-    }
-    setPointer(fieldIndex, created.handle(), false);
-    return created;
-  }
-
-  template <typename T>
-  T getOrCreateTarget(unsigned fieldIndex, const std::string& preferredName) {
-    if (auto target = getTarget(fieldIndex)) {
-      if (auto typed = target->template optionalCast<T>()) {
-        return *typed;
-      }
-    }
-
-    if (!preferredName.empty()) {
-      if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), preferredName, true)) {
-        if (auto typed = obj->template optionalCast<T>()) {
-          setPointer(fieldIndex, typed->handle(), false);
-          return *typed;
+        auto name = getString(fieldIndex);
+        if (name && !name->empty()) {
+          if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), *name, true)) {
+            if (auto typed = obj->template optionalCast<T>()) {
+              setPointer(fieldIndex, typed->handle(), false);
+              return *typed;
+            }
+          }
         }
-      }
-    }
 
-    auto name = getString(fieldIndex);
-    if (name && !name->empty()) {
-      if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), *name, true)) {
-        if (auto typed = obj->template optionalCast<T>()) {
-          setPointer(fieldIndex, typed->handle(), false);
-          return *typed;
+        T created(model());
+        if (name && !name->empty()) {
+          if (!created.setName(*name)) {
+            LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
+                     "Failed to apply existing name '" << *name << "' to newly created target at field index " << fieldIndex << ".");
+          }
         }
+        setPointer(fieldIndex, created.handle(), false);
+        return created;
       }
-    }
 
-    T created(model());
-    if (!preferredName.empty()) {
-      if (!created.setName(preferredName)) {
-        LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
-                 "Failed to apply preferred name '" << preferredName << "' to newly created target at field index " << fieldIndex << ".");
+      template <typename T>
+      T getOrCreateTarget(unsigned fieldIndex, const std::string& preferredName) {
+        if (auto target = getTarget(fieldIndex)) {
+          if (auto typed = target->template optionalCast<T>()) {
+            return *typed;
+          }
+        }
+
+        if (!preferredName.empty()) {
+          if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), preferredName, true)) {
+            if (auto typed = obj->template optionalCast<T>()) {
+              setPointer(fieldIndex, typed->handle(), false);
+              return *typed;
+            }
+          }
+        }
+
+        auto name = getString(fieldIndex);
+        if (name && !name->empty()) {
+          if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), *name, true)) {
+            if (auto typed = obj->template optionalCast<T>()) {
+              setPointer(fieldIndex, typed->handle(), false);
+              return *typed;
+            }
+          }
+        }
+
+        T created(model());
+        if (!preferredName.empty()) {
+          if (!created.setName(preferredName)) {
+            LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
+                     "Failed to apply preferred name '" << preferredName << "' to newly created target at field index " << fieldIndex << ".");
+          }
+        } else if (name && !name->empty()) {
+          if (!created.setName(*name)) {
+            LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
+                     "Failed to apply existing name '" << *name << "' to newly created target at field index " << fieldIndex << ".");
+          }
+        }
+        setPointer(fieldIndex, created.handle(), false);
+        return created;
       }
-    } else if (name && !name->empty()) {
-      if (!created.setName(*name)) {
-        LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
-                 "Failed to apply existing name '" << *name << "' to newly created target at field index " << fieldIndex << ".");
-      }
-    }
-    setPointer(fieldIndex, created.handle(), false);
-    return created;
-  }
-  boost::optional<openstudio::epmodel::Node> resolvedNodeTarget(unsigned fieldIndex) const;
-  openstudio::epmodel::Node resolvedOrCreatedNodeTarget(unsigned fieldIndex, const std::string& defaultName);
-  bool setSchedule(unsigned fieldIndex, const std::string& className, const std::string& scheduleDisplayName, openstudio::epmodel::Schedule& schedule);
+      bool setSchedule(unsigned fieldIndex, const std::string& className, const std::string& scheduleDisplayName,
+                       openstudio::epmodel::Schedule& schedule);
 
-  virtual void doCanonicalize(LoadContext& context);
-};
+      virtual void doCanonicalize(LoadContext& context);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

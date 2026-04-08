@@ -21,39 +21,6 @@
 namespace openstudio {
 namespace epmodel {
 
-  namespace {
-
-    std::vector<Node> resolveNodeOrNodeListByName(const Model& model, const boost::optional<std::string>& nodeOrListName) {
-      if (!nodeOrListName || nodeOrListName->empty()) {
-        return {};
-      }
-
-      if (auto node = model.getObjectByTypeAndName(Node::iddObjectType(), *nodeOrListName, true)) {
-        if (auto castNode = node->optionalCast<Node>()) {
-          return {*castNode};
-        }
-      }
-
-      std::vector<Node> result;
-      if (auto nodeList = model.getObjectByTypeAndName(openstudio::IddObjectType::NodeList, *nodeOrListName, true)) {
-        for (const auto& group : nodeList->extensibleGroups()) {
-          auto listedNodeName = group.getString(openstudio::NodeListExtensibleFields::NodeName);
-          if (!listedNodeName || listedNodeName->empty()) {
-            continue;
-          }
-          if (auto listedNode = model.getObjectByTypeAndName(Node::iddObjectType(), *listedNodeName, true)) {
-            if (auto castNode = listedNode->optionalCast<Node>()) {
-              result.push_back(*castNode);
-            }
-          }
-        }
-      }
-
-      return result;
-    }
-
-  }  // namespace
-
   ZoneHVACEquipmentConnections::ZoneHVACEquipmentConnections(const Model& model) : ModelObject(ZoneHVACEquipmentConnections::iddObjectType(), model) {
     auto impl = getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
     OS_ASSERT(impl);
@@ -86,15 +53,60 @@ namespace epmodel {
 
   boost::optional<Node> ZoneHVACEquipmentConnections::zoneAirInletNode() const {
     const auto nodes = zoneAirInletNodes();
-    if (!nodes.empty()) {
-      return nodes.front();
-    }
-    return boost::none;
+    return nodes.empty() ? boost::optional<Node>() : boost::optional<Node>(nodes.front());
   }
 
   std::vector<Node> ZoneHVACEquipmentConnections::zoneAirInletNodes() const {
-    auto nodeOrListName = getString(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName);
-    return resolveNodeOrNodeListByName(model(), nodeOrListName);
+    const auto field = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName;
+    if (auto target = getTarget(field)) {
+      if (auto node = target->optionalCast<Node>()) {
+        return {*node};
+      }
+      if (target->iddObject().type() == openstudio::IddObjectType::NodeList) {
+        std::vector<Node> result;
+        for (const auto& group : target->extensibleGroups()) {
+          auto listedNodeName = group.getString(openstudio::NodeListExtensibleFields::NodeName);
+          if (!listedNodeName || listedNodeName->empty()) {
+            continue;
+          }
+          if (auto listedNode = model().getObjectByTypeAndName(Node::iddObjectType(), *listedNodeName, true)) {
+            if (auto castNode = listedNode->optionalCast<Node>()) {
+              result.push_back(*castNode);
+            }
+          }
+        }
+        return result;
+      }
+    }
+
+    if (auto nodeOrListName = getString(field)) {
+      if (!nodeOrListName->empty()) {
+        if (auto nodeList = model().getObjectByTypeAndName(openstudio::IddObjectType::NodeList, *nodeOrListName, true)) {
+          if (!getImpl<detail::ModelObject_Impl>()->setPointer(field, nodeList->handle(), false)) {
+            return {};
+          }
+          std::vector<Node> result;
+          for (const auto& group : nodeList->extensibleGroups()) {
+            auto listedNodeName = group.getString(openstudio::NodeListExtensibleFields::NodeName);
+            if (!listedNodeName || listedNodeName->empty()) {
+              continue;
+            }
+            if (auto listedNode = model().getObjectByTypeAndName(Node::iddObjectType(), *listedNodeName, true)) {
+              if (auto castNode = listedNode->optionalCast<Node>()) {
+                result.push_back(*castNode);
+              }
+            }
+          }
+          return result;
+        }
+
+        if (auto node = getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(field)) {
+          return {*node};
+        }
+      }
+    }
+
+    return {};
   }
 
   namespace detail {
@@ -111,15 +123,60 @@ namespace epmodel {
 
   boost::optional<Node> ZoneHVACEquipmentConnections::zoneReturnAirNode() const {
     const auto nodes = zoneReturnAirNodes();
-    if (!nodes.empty()) {
-      return nodes.front();
-    }
-    return boost::none;
+    return nodes.empty() ? boost::optional<Node>() : boost::optional<Node>(nodes.front());
   }
 
   std::vector<Node> ZoneHVACEquipmentConnections::zoneReturnAirNodes() const {
-    auto nodeOrListName = getString(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName);
-    return resolveNodeOrNodeListByName(model(), nodeOrListName);
+    const auto field = openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName;
+    if (auto target = getTarget(field)) {
+      if (auto node = target->optionalCast<Node>()) {
+        return {*node};
+      }
+      if (target->iddObject().type() == openstudio::IddObjectType::NodeList) {
+        std::vector<Node> result;
+        for (const auto& group : target->extensibleGroups()) {
+          auto listedNodeName = group.getString(openstudio::NodeListExtensibleFields::NodeName);
+          if (!listedNodeName || listedNodeName->empty()) {
+            continue;
+          }
+          if (auto listedNode = model().getObjectByTypeAndName(Node::iddObjectType(), *listedNodeName, true)) {
+            if (auto castNode = listedNode->optionalCast<Node>()) {
+              result.push_back(*castNode);
+            }
+          }
+        }
+        return result;
+      }
+    }
+
+    if (auto nodeOrListName = getString(field)) {
+      if (!nodeOrListName->empty()) {
+        if (auto nodeList = model().getObjectByTypeAndName(openstudio::IddObjectType::NodeList, *nodeOrListName, true)) {
+          if (!getImpl<detail::ModelObject_Impl>()->setPointer(field, nodeList->handle(), false)) {
+            return {};
+          }
+          std::vector<Node> result;
+          for (const auto& group : nodeList->extensibleGroups()) {
+            auto listedNodeName = group.getString(openstudio::NodeListExtensibleFields::NodeName);
+            if (!listedNodeName || listedNodeName->empty()) {
+              continue;
+            }
+            if (auto listedNode = model().getObjectByTypeAndName(Node::iddObjectType(), *listedNodeName, true)) {
+              if (auto castNode = listedNode->optionalCast<Node>()) {
+                result.push_back(*castNode);
+              }
+            }
+          }
+          return result;
+        }
+
+        if (auto node = getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(field)) {
+          return {*node};
+        }
+      }
+    }
+
+    return {};
   }
 
   namespace detail {

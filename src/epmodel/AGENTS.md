@@ -47,6 +47,10 @@ Apply these preferences unless the user asks otherwise.
   Use low-level field access only when no equivalent typed composition exists.
 - Prefer pointer/object-target linkage APIs over direct name-string writes for
   object relationships. Reserve `setString(...)` for true scalar data.
+- For `NodeType` fields, use the shared `ModelObject_Impl` node resolver
+  helpers instead of local "read the string and look up the node by name"
+  logic. If a getter returns a `Node`, it should be a live linked node, not
+  an untracked transient object.
 - Do not reach into raw extensible-group mechanics from unrelated code. If a
   caller needs structured extensible mutation, add a private impl-level API on
   the owning type and keep storage manipulation there.
@@ -87,6 +91,10 @@ Apply these preferences unless the user asks otherwise.
   owner maintenance and canonicalization repair, such as
   `maintainContainedAirPath()` and `repairContainedAirPath(LoadContext&)`.
   Do not collapse those two call paths back into one public-facing routine.
+- Do not hand-roll node-field resolution in local files. If code needs the
+  `Node` behind a node field, use the shared `ModelObject_Impl`
+  node-field helpers so resolved nodes are linked back to the owning field and
+  later renames stay tracked.
 
 ## Schema Alignment Notes Convention
 

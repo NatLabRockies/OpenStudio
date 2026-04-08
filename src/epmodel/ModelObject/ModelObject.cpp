@@ -222,17 +222,33 @@ namespace epmodel {
 
       auto name = getString(fieldIndex);
       if (name && !name->empty()) {
-        return model().getOrCreateTransientByName<openstudio::epmodel::Node>(*name);
+        // WorkspaceObject::getTarget(...) already treats Node fields as a
+        // special case and may materialize the pointer during const lookup.
+        // We follow the same rule here: resolving an already-named Node is
+        // restoring the live link for existing persisted meaning, not
+        // inventing new topology.
+        auto node = model().getOrCreateTransientByName<openstudio::epmodel::Node>(*name);
+        if (!const_cast<ModelObject_Impl*>(this)->setPointer(fieldIndex, node.handle(), false)) {
+          LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
+                   "Resolved transient Node '" << node.nameString() << "' for field index " << fieldIndex << " but failed to attach the pointer.");
+          return boost::none;
+        }
+        return node;
       }
 
       return boost::none;
     }
 
-    openstudio::epmodel::Node ModelObject_Impl::resolvedOrCreatedNodeTarget(unsigned fieldIndex, const std::string& defaultName) {
+    openstudio::epmodel::Node ModelObject_Impl::resolvedOrCreatedNodeTarget(unsigned fieldIndex, const std::string& suggestedName) {
       if (auto existingNode = resolvedNodeTarget(fieldIndex)) {
         return *existingNode;
       }
-      return model().getOrCreateTransientByName<openstudio::epmodel::Node>(defaultName);
+
+      // The field was blank, so this call is choosing a new node on purpose
+      // rather than merely materializing persisted meaning.
+      auto node = model().getOrCreateTransientByName<openstudio::epmodel::Node>(suggestedName);
+      OS_ASSERT(setPointer(fieldIndex, node.handle(), false));
+      return node;
     }
 
     bool ModelObject_Impl::setSchedule(unsigned fieldIndex, const std::string& className, const std::string& scheduleDisplayName,

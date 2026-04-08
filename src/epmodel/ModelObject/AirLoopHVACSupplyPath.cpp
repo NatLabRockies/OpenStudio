@@ -87,7 +87,7 @@ namespace epmodel {
         }
 
         try {
-          auto iddType = openstudio::IddObjectType(componentType.c_str());
+          auto iddType = openstudio::IddObjectType(componentType);
           if (auto wo = model().getObjectByTypeAndName(iddType, *componentName)) {
             if (auto object = wo->optionalCast<openstudio::epmodel::ModelObject>()) {
               result.push_back(*object);
@@ -135,19 +135,7 @@ namespace epmodel {
     }
 
     boost::optional<openstudio::epmodel::Node> AirLoopHVACSupplyPath_Impl::supplyAirPathInletNode() const {
-      if (auto node = getObject<openstudio::epmodel::AirLoopHVACSupplyPath>().getModelObjectTarget<openstudio::epmodel::Node>(
-            openstudio::AirLoopHVAC_SupplyPathFields::SupplyAirPathInletNodeName)) {
-        return node;
-      }
-
-      auto name = getString(openstudio::AirLoopHVAC_SupplyPathFields::SupplyAirPathInletNodeName);
-      if (name && !name->empty()) {
-        if (auto object = workspace().getObjectByTypeAndName(openstudio::IddObjectType::Node, *name, true)) {
-          return object->optionalCast<openstudio::epmodel::Node>();
-        }
-      }
-
-      return boost::none;
+      return resolvedNodeTarget(openstudio::AirLoopHVAC_SupplyPathFields::SupplyAirPathInletNodeName);
     }
 
     bool AirLoopHVACSupplyPath_Impl::setSupplyAirPathInletNode(const openstudio::epmodel::Node& node) {
