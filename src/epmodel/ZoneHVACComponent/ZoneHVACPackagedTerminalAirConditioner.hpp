@@ -19,6 +19,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
   class ModelObject;
   class HVACComponent;
   class Schedule;
@@ -43,13 +44,20 @@ namespace epmodel {
     static std::vector<std::string> validFanPlacementValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The flow and fan-placement scalars are aligned, but the supply-fan/coils/node wiring remains relationship-driven.
+    // - Status: Partial Parity. The flow and fan-placement scalars are aligned, and the contained fan/coil air path is now kept consistent
+    //   through parent-owned epmodel nodes, but broader PTAC parity remains incomplete.
     // - Canonical Counterpart: openstudio::model::ZoneHVACPackagedTerminalAirConditioner.
-    // - Implemented Parity: Supply-air and outdoor-air flow scalars, `noLoadSupplyAirFlowRateControlSetToLowSpeed`, and `fanPlacement` map directly to the EnergyPlus object.
-    // - Documented Delta: Outdoor-air mixer references and node names remain outside the public surface.
-    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while schedules and contained equipment are modeled explicitly through child-object state.
+    // - Implemented Parity: Supply-air and outdoor-air flow scalars, `noLoadSupplyAirFlowRateControlSetToLowSpeed`, and `fanPlacement`
+    //   map directly to the EnergyPlus object. The contained supply fan, cooling coil, and heating coil now share a parent-owned air path
+    //   with direct access to the meaningful fan-outlet, cooling-coil-outlet, and heating-coil-outlet roles on the compound.
+    // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are exposed as additive conveniences
+    //   so callers can inspect and rename the meaningful node roles owned by the compound, even when those roles alias each other or the
+    //   parent outlet in a valid configuration. Outdoor-air mixer references and OA-mixer-only node roles remain outside the public wrapper.
+    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while schedules and contained equipment are modeled
+    //   explicitly through child-object state and transient epmodel nodes.
     // - Evidence: `src/model/ZoneHVACPackagedTerminalAirConditioner.hpp`, `src/model/ZoneHVACPackagedTerminalAirConditioner.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACPackagedTerminalAirConditioner.cpp`, and `src/epmodel/test/ZoneHVACPackagedTerminalAirConditioner_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers only if the canonical wrapper still exposes them directly.
+    // - Remaining Parity Work: Outdoor-air mixer references and OA-mixer-only node roles are still intentionally omitted from the public
+    //   wrapper. Add them later if we decide the wrapper should expose that part of the canonical PTAC surface directly.
 
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
@@ -95,16 +103,20 @@ namespace epmodel {
     void resetFanPlacement();
 
     HVACComponent supplyAirFan() const;
-    bool setSupplyAirFan(HVACComponent& fan);
+    bool setSupplyAirFan(const HVACComponent& fan);
 
     Schedule supplyAirFanOperatingModeSchedule() const;
     bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
 
     HVACComponent heatingCoil() const;
-    bool setHeatingCoil(HVACComponent& heatingCoil);
+    bool setHeatingCoil(const HVACComponent& heatingCoil);
 
     HVACComponent coolingCoil() const;
-    bool setCoolingCoil(HVACComponent& coolingCoil);
+    bool setCoolingCoil(const HVACComponent& coolingCoil);
+
+    boost::optional<Node> fanOutletNode() const;
+    boost::optional<Node> coolingCoilOutletNode() const;
+    boost::optional<Node> heatingCoilOutletNode() const;
 
     std::vector<ModelObject> children() const;
 

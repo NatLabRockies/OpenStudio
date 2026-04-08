@@ -22,6 +22,7 @@ namespace epmodel {
   class Model;
   class HVACComponent;
   class ModelObject;
+  class Node;
   class Schedule;
 
   namespace detail {
@@ -44,13 +45,23 @@ namespace epmodel {
     static std::vector<std::string> validFanPlacementValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar flow/control fields and child equipment links are present, but schedule, mixer, node, and capacity-control wiring remains relationship-driven.
+    // - Status: Partial Parity. The flow and control scalars are aligned, and the contained fan/coil air path is now kept consistent through
+    //   parent-owned epmodel nodes, but broader heat-pump parity remains incomplete.
     // - Canonical Counterpart: openstudio::model::ZoneHVACPackagedTerminalHeatPump.
-    // - Implemented Parity: Supply-air and outdoor-air flow scalars, convergence tolerances, supplemental-heater limits, and `fanPlacement` map directly to the EnergyPlus object; contained fan and coil children are exposed explicitly.
-    // - Documented Delta: Outdoor-air mixer links and node names remain outside the current public surface.
-    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while schedules and the fan/coil topology are modeled through child-object state.
-    // - Evidence: `src/model/ZoneHVACPackagedTerminalHeatPump.hpp`, `src/model/ZoneHVACPackagedTerminalHeatPump.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACPackagedTerminalHeatPump.cpp`, and `src/epmodel/test/ZoneHVACPackagedTerminalHeatPump_GTest.cpp`.
-    // - Remaining Parity Work: Add the missing relationship helpers only if the canonical wrapper continues to expose them directly.
+    // - Implemented Parity: Supply-air and outdoor-air flow scalars, convergence tolerances, supplemental-heater limits, `fanPlacement`, and
+    //   the contained fan/coil child accessors preserve the canonical wrapper behavior. The contained supply fan, cooling coil, heating coil,
+    //   and supplemental heating coil now share a parent-owned air path, with direct access to the meaningful fan-outlet,
+    //   cooling-coil-outlet, and heating-coil-outlet roles on the compound.
+    // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are exposed as additive conveniences so
+    //   callers can inspect and rename the meaningful node roles owned by the compound, even when those roles alias each other or the parent
+    //   outlet in a valid configuration. Outdoor-air mixer references and OA-mixer-only node roles remain outside the public wrapper.
+    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while schedules and contained equipment are modeled
+    //   explicitly through child-object state and transient epmodel nodes.
+    // - Evidence: `src/model/ZoneHVACPackagedTerminalHeatPump.hpp`, `src/model/ZoneHVACPackagedTerminalHeatPump.cpp`,
+    //   `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACPackagedTerminalHeatPump.cpp`, and
+    //   `src/epmodel/test/ZoneHVACPackagedTerminalHeatPump_GTest.cpp`.
+    // - Remaining Parity Work: Add any remaining canonical heat-pump relationship conveniences only if the model wrapper still exposes them as
+    //   public API.
 
     unsigned inletPort() const;
     unsigned outletPort() const;
@@ -126,19 +137,23 @@ namespace epmodel {
     void resetFanPlacement();
 
     HVACComponent supplyAirFan() const;
-    bool setSupplyAirFan(HVACComponent& supplyAirFan);
+    bool setSupplyAirFan(const HVACComponent& supplyAirFan);
 
     Schedule supplyAirFanOperatingModeSchedule() const;
     bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
 
     HVACComponent heatingCoil() const;
-    bool setHeatingCoil(HVACComponent& heatingCoil);
+    bool setHeatingCoil(const HVACComponent& heatingCoil);
 
     HVACComponent coolingCoil() const;
-    bool setCoolingCoil(HVACComponent& coolingCoil);
+    bool setCoolingCoil(const HVACComponent& coolingCoil);
 
     HVACComponent supplementalHeatingCoil() const;
-    bool setSupplementalHeatingCoil(HVACComponent& supplementalHeatingCoil);
+    bool setSupplementalHeatingCoil(const HVACComponent& supplementalHeatingCoil);
+
+    boost::optional<Node> fanOutletNode() const;
+    boost::optional<Node> coolingCoilOutletNode() const;
+    boost::optional<Node> heatingCoilOutletNode() const;
 
     double dXHeatingCoilSizingRatio() const;
     bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);

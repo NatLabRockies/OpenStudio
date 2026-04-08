@@ -53,7 +53,6 @@ namespace epmodel {
       // Node with the caller's suggested name and link it immediately.
       boost::optional<openstudio::epmodel::Node> resolvedNodeTarget(unsigned fieldIndex) const;
       openstudio::epmodel::Node resolvedOrCreatedNodeTarget(unsigned fieldIndex, const std::string& suggestedName);
-
      protected:
       template <typename T>
       T getOrCreateTarget(unsigned fieldIndex) {

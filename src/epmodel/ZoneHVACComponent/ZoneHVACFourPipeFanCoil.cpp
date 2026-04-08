@@ -30,25 +30,6 @@
 namespace openstudio {
 namespace epmodel {
 
-  namespace {
-
-    // Four-pipe fan coils have to normalize both StraightComponent-style air
-    // ports and WaterToAirComponent-style air ports. Keeping that repetitive
-    // shape-matching here lets the owner logic below read like the actual
-    // serial air path instead of a pile of type-dispatch noise.
-    bool assignPortNodeIfNeeded(ModelObject& object, unsigned port, const Node& node) {
-      const auto currentTarget = object.getModelObjectTarget<Node>(port);
-      const auto currentName = object.getString(port);
-      if (currentTarget && (*currentTarget == node) && currentName && openstudio::istringEqual(*currentName, node.nameString())) {
-        return false;
-      }
-
-      OS_ASSERT(object.setPointer(port, node.handle()));
-      return true;
-    }
-
-  }  // namespace
-
   ZoneHVACFourPipeFanCoil::ZoneHVACFourPipeFanCoil(const Model& model) : ZoneHVACComponent(ZoneHVACFourPipeFanCoil::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>());
 
@@ -924,8 +905,8 @@ namespace epmodel {
       auto inletNode = resolvedOrCreatedNodeTarget(inletPort(), baseName + " Air Inlet Node");
       auto outletNode = resolvedOrCreatedNodeTarget(outletPort(), baseName + " Air Outlet Node");
 
-      changed = assignPortNodeIfNeeded(thisObject, inletPort(), inletNode) || changed;
-      changed = assignPortNodeIfNeeded(thisObject, outletPort(), outletNode) || changed;
+      changed = setPointer(inletPort(), inletNode.handle(), false) || changed;
+      changed = setPointer(outletPort(), outletNode.handle(), false) || changed;
 
       boost::optional<Node> fanOutlet;
       if (fan && (cooling || heating)) {
@@ -1010,11 +991,11 @@ namespace epmodel {
       }
 
       if (fan) {
-        changed = assignPortNodeIfNeeded(*fan, fan->inletPort(), inletNode) || changed;
+        changed = fan->getImpl<detail::ModelObject_Impl>()->setPointer(fan->inletPort(), inletNode.handle(), false) || changed;
         if (fanOutlet) {
-          changed = assignPortNodeIfNeeded(*fan, fan->outletPort(), *fanOutlet) || changed;
+          changed = fan->getImpl<detail::ModelObject_Impl>()->setPointer(fan->outletPort(), fanOutlet->handle(), false) || changed;
         } else {
-          changed = assignPortNodeIfNeeded(*fan, fan->outletPort(), outletNode) || changed;
+          changed = fan->getImpl<detail::ModelObject_Impl>()->setPointer(fan->outletPort(), outletNode.handle(), false) || changed;
         }
       }
 
@@ -1023,16 +1004,16 @@ namespace epmodel {
         const auto coolingAirOutletPort = detail::containedAirOutletPort(*cooling);
         if (coolingAirInletPort != 0u) {
           if (fanOutlet) {
-            changed = assignPortNodeIfNeeded(*cooling, coolingAirInletPort, *fanOutlet) || changed;
+            changed = cooling->getImpl<detail::ModelObject_Impl>()->setPointer(coolingAirInletPort, fanOutlet->handle(), false) || changed;
           } else {
-            changed = assignPortNodeIfNeeded(*cooling, coolingAirInletPort, inletNode) || changed;
+            changed = cooling->getImpl<detail::ModelObject_Impl>()->setPointer(coolingAirInletPort, inletNode.handle(), false) || changed;
           }
         }
         if (coolingAirOutletPort != 0u) {
           if (coolingOutlet) {
-            changed = assignPortNodeIfNeeded(*cooling, coolingAirOutletPort, *coolingOutlet) || changed;
+            changed = cooling->getImpl<detail::ModelObject_Impl>()->setPointer(coolingAirOutletPort, coolingOutlet->handle(), false) || changed;
           } else {
-            changed = assignPortNodeIfNeeded(*cooling, coolingAirOutletPort, outletNode) || changed;
+            changed = cooling->getImpl<detail::ModelObject_Impl>()->setPointer(coolingAirOutletPort, outletNode.handle(), false) || changed;
           }
         }
       }
@@ -1042,15 +1023,15 @@ namespace epmodel {
         const auto heatingAirOutletPort = detail::containedAirOutletPort(*heating);
         if (heatingAirInletPort != 0u) {
           if (coolingOutlet) {
-            changed = assignPortNodeIfNeeded(*heating, heatingAirInletPort, *coolingOutlet) || changed;
+            changed = heating->getImpl<detail::ModelObject_Impl>()->setPointer(heatingAirInletPort, coolingOutlet->handle(), false) || changed;
           } else if (fanOutlet) {
-            changed = assignPortNodeIfNeeded(*heating, heatingAirInletPort, *fanOutlet) || changed;
+            changed = heating->getImpl<detail::ModelObject_Impl>()->setPointer(heatingAirInletPort, fanOutlet->handle(), false) || changed;
           } else {
-            changed = assignPortNodeIfNeeded(*heating, heatingAirInletPort, inletNode) || changed;
+            changed = heating->getImpl<detail::ModelObject_Impl>()->setPointer(heatingAirInletPort, inletNode.handle(), false) || changed;
           }
         }
         if (heatingAirOutletPort != 0u) {
-          changed = assignPortNodeIfNeeded(*heating, heatingAirOutletPort, outletNode) || changed;
+          changed = heating->getImpl<detail::ModelObject_Impl>()->setPointer(heatingAirOutletPort, outletNode.handle(), false) || changed;
         }
       }
 

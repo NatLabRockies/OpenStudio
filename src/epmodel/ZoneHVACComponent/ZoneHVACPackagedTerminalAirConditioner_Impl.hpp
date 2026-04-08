@@ -18,9 +18,13 @@ namespace epmodel {
 
   class HVACComponent;
   class ModelObject;
+  class Node;
   class Schedule;
+  class ThermalZone;
 
   namespace detail {
+
+    struct LoadContext;
 
     class EPMODEL_API ZoneHVACPackagedTerminalAirConditioner_Impl : public ZoneHVACComponent_Impl
     {
@@ -80,18 +84,30 @@ namespace epmodel {
       std::vector<ModelObject> children() const override;
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToThermalZone(ThermalZone& thermalZone) override;
+      void removeFromThermalZone() override;
+      void doCanonicalize(LoadContext& context) override;
 
       HVACComponent supplyAirFan() const;
-      bool setSupplyAirFan(HVACComponent& fan);
+      bool setSupplyAirFan(const HVACComponent& fan);
 
       Schedule supplyAirFanOperatingModeSchedule() const;
       bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
 
       HVACComponent heatingCoil() const;
-      bool setHeatingCoil(HVACComponent& heatingCoil);
+      bool setHeatingCoil(const HVACComponent& heatingCoil);
 
       HVACComponent coolingCoil() const;
-      bool setCoolingCoil(HVACComponent& coolingCoil);
+      bool setCoolingCoil(const HVACComponent& coolingCoil);
+
+      boost::optional<Node> fanOutletNode() const;
+      boost::optional<Node> coolingCoilOutletNode() const;
+      boost::optional<Node> heatingCoilOutletNode() const;
+
+     private:
+      bool maintainContainedAirPath();
+      bool repairContainedAirPath(LoadContext& context);
+      bool reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context = nullptr);
     };
 
   }  // namespace detail
