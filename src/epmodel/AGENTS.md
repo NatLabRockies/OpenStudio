@@ -83,6 +83,10 @@ Apply these preferences unless the user asks otherwise.
   `addLoadError`.
 - Keep canonicalization logic close to the owning type so repair decisions
   remain local, explicit, and reviewable.
+- For compound HVAC owners, implement separate impl-level methods for normal
+  owner maintenance and canonicalization repair, such as
+  `maintainContainedAirPath()` and `repairContainedAirPath(LoadContext&)`.
+  Do not collapse those two call paths back into one public-facing routine.
 
 ## Schema Alignment Notes Convention
 

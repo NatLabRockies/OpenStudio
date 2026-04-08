@@ -50,21 +50,6 @@ constexpr unsigned returnAirNodeField() {
   return openstudio::OutdoorAir_MixerFields::ReturnAirStreamNodeName;
 }
 
-boost::optional<openstudio::epmodel::Node> resolvedNodeAtField(const OutdoorAirMixer_Impl& impl, unsigned fieldIndex) {
-  if (auto node = impl.getObject<openstudio::epmodel::OutdoorAirMixer>().getModelObjectTarget<openstudio::epmodel::Node>(fieldIndex)) {
-    return node;
-  }
-
-  auto name = impl.getString(fieldIndex);
-  if (name && !name->empty()) {
-    if (auto object = impl.workspace().getObjectByTypeAndName(openstudio::IddObjectType::Node, *name, true)) {
-      return object->optionalCast<openstudio::epmodel::Node>();
-    }
-  }
-
-  return boost::none;
-}
-
 bool assignNodeAtField(OutdoorAirMixer_Impl& impl, unsigned fieldIndex, const openstudio::epmodel::Node& node) {
   auto mixer = impl.getObject<openstudio::epmodel::OutdoorAirMixer>();
   if (node.model() != mixer.model()) {
@@ -74,8 +59,17 @@ bool assignNodeAtField(OutdoorAirMixer_Impl& impl, unsigned fieldIndex, const op
 }
 
 void reconcileNamedNodeField(OutdoorAirMixer_Impl& impl, unsigned fieldIndex) {
-  if (resolvedNodeAtField(impl, fieldIndex)) {
+  if (auto node = impl.getObject<openstudio::epmodel::OutdoorAirMixer>().getModelObjectTarget<openstudio::epmodel::Node>(fieldIndex)) {
     return;
+  }
+
+  auto existingName = impl.getString(fieldIndex);
+  if (existingName && !existingName->empty()) {
+    if (auto object = impl.workspace().getObjectByTypeAndName(openstudio::IddObjectType::Node, *existingName, true)) {
+      if (object->optionalCast<openstudio::epmodel::Node>()) {
+        return;
+      }
+    }
   }
 
   auto nodeName = impl.getString(fieldIndex);
@@ -88,19 +82,19 @@ void reconcileNamedNodeField(OutdoorAirMixer_Impl& impl, unsigned fieldIndex) {
 }
 
 boost::optional<openstudio::epmodel::Node> OutdoorAirMixer_Impl::mixedAirNode() const {
-  return resolvedNodeAtField(*this, mixedAirNodeField());
+  return resolvedNodeTarget(mixedAirNodeField());
 }
 
 boost::optional<openstudio::epmodel::Node> OutdoorAirMixer_Impl::outdoorAirNode() const {
-  return resolvedNodeAtField(*this, outdoorAirNodeField());
+  return resolvedNodeTarget(outdoorAirNodeField());
 }
 
 boost::optional<openstudio::epmodel::Node> OutdoorAirMixer_Impl::reliefAirNode() const {
-  return resolvedNodeAtField(*this, reliefAirNodeField());
+  return resolvedNodeTarget(reliefAirNodeField());
 }
 
 boost::optional<openstudio::epmodel::Node> OutdoorAirMixer_Impl::returnAirNode() const {
-  return resolvedNodeAtField(*this, returnAirNodeField());
+  return resolvedNodeTarget(returnAirNodeField());
 }
 
 bool OutdoorAirMixer_Impl::setMixedAirNode(const openstudio::epmodel::Node& node) {

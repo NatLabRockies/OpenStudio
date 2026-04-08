@@ -108,7 +108,8 @@ class EPMODEL_API ModelObject_Impl : public openstudio::detail::WorkspaceObject_
     setPointer(fieldIndex, created.handle(), false);
     return created;
   }
-  openstudio::epmodel::Node getOrCreateNodeTarget(unsigned fieldIndex);
+  boost::optional<openstudio::epmodel::Node> resolvedNodeTarget(unsigned fieldIndex) const;
+  openstudio::epmodel::Node resolvedOrCreatedNodeTarget(unsigned fieldIndex, const std::string& defaultName);
   bool setSchedule(unsigned fieldIndex, const std::string& className, const std::string& scheduleDisplayName, openstudio::epmodel::Schedule& schedule);
 
   virtual void doCanonicalize(LoadContext& context);

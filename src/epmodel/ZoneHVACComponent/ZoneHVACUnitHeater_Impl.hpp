@@ -73,7 +73,10 @@ namespace epmodel {
       bool setHeatingConvergenceTolerance(double heatingConvergenceTolerance);
       void resetHeatingConvergenceTolerance();
 
-      bool reconcileContainedAirPath(LoadContext* context = nullptr);
+     private:
+      bool maintainContainedAirPath();
+      bool repairContainedAirPath(LoadContext& context);
+      bool reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context = nullptr);
     };
 
   }  // namespace detail

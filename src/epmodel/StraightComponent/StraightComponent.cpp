@@ -434,17 +434,8 @@ namespace epmodel {
         if (nodeName->empty()) {
           return boost::none;
         }
-        if (auto node = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(port)) {
-          return node->cast<ModelObject>();
-        }
-
-        // Fallback: resolve by name for node fields that haven't been wired with pointers.
-        // This keeps IDF-loaded models usable even if pointer canonicalization for this field fails.
-        try {
-          auto resolved = model().getOrCreateTransientByName<openstudio::epmodel::Node>(*nodeName);
-          return resolved.cast<ModelObject>();
-        } catch (...) {
-          return boost::none;
+        if (auto resolved = resolvedNodeTarget(port)) {
+          return resolved->cast<ModelObject>();
         }
       }
       return boost::none;
@@ -460,16 +451,8 @@ namespace epmodel {
         if (nodeName->empty()) {
           return boost::none;
         }
-        if (auto node = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(port)) {
-          return node->cast<ModelObject>();
-        }
-
-        // Fallback: resolve by name for node fields that haven't been wired with pointers.
-        try {
-          auto resolved = model().getOrCreateTransientByName<openstudio::epmodel::Node>(*nodeName);
-          return resolved.cast<ModelObject>();
-        } catch (...) {
-          return boost::none;
+        if (auto resolved = resolvedNodeTarget(port)) {
+          return resolved->cast<ModelObject>();
         }
       }
       return boost::none;

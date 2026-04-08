@@ -170,6 +170,22 @@ TEST_F(EPModelFixture, ZoneHVACUnitHeater_ContainedNodePath_RoundTrip) {
   EXPECT_EQ(unitHeater, coil.containingHVACComponent().get());
 }
 
+TEST_F(EPModelFixture, ZoneHVACUnitHeater_FanOutletNodeMayAliasOutlet) {
+  Model model;
+  ZoneHVACUnitHeater unitHeater(model);
+  FanConstantVolume fan(model);
+
+  ASSERT_TRUE(unitHeater.setSupplyAirFan(fan));
+
+  auto fanOutletNode = unitHeater.fanOutletNode();
+  auto unitHeaterOutlet = unitHeater.outletNode();
+  ASSERT_TRUE(fanOutletNode);
+  ASSERT_TRUE(unitHeaterOutlet);
+
+  EXPECT_EQ(*fanOutletNode, *fan.outletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*fanOutletNode, *unitHeaterOutlet);
+}
+
 TEST_F(EPModelFixture, ZoneHVACUnitHeater_FanOutletNode_RenameSurvivesCanonicalize) {
   Model model;
   ZoneHVACUnitHeater unitHeater(model);
@@ -244,6 +260,32 @@ TEST_F(EPModelFixture, ZoneHVACUnitHeater_ContainedChildTopologyMutationsAreReje
   ASSERT_EQ(2u, children.size());
   EXPECT_EQ(fan, children[0]);
   EXPECT_EQ(coil, children[1]);
+}
+
+TEST_F(EPModelFixture, ZoneHVACUnitHeater_OwnerMutationsRebuildContainedPathWithoutSalvage) {
+  Model model;
+  ZoneHVACUnitHeater unitHeater(model);
+  FanConstantVolume fan(model);
+  CoilHeatingElectric coil(model);
+
+  ASSERT_TRUE(unitHeater.setSupplyAirFan(fan));
+  ASSERT_TRUE(unitHeater.setHeatingCoil(coil));
+
+  Node rogueInternalNode(model);
+  ASSERT_TRUE(rogueInternalNode.setName("Rogue Unit Heater Internal Node"));
+  ASSERT_TRUE(fan.setPointer(fan.outletPort(), rogueInternalNode.handle()));
+  ASSERT_TRUE(coil.setPointer(coil.inletPort(), rogueInternalNode.handle()));
+
+  FanConstantVolume replacementFan(model);
+  ASSERT_TRUE(unitHeater.setSupplyAirFan(replacementFan));
+  ASSERT_TRUE(unitHeater.setSupplyAirFan(fan));
+
+  auto repairedInternalNode = unitHeater.fanOutletNode();
+  ASSERT_TRUE(repairedInternalNode);
+
+  EXPECT_NE("Rogue Unit Heater Internal Node", repairedInternalNode->nameString());
+  EXPECT_EQ(*repairedInternalNode, *fan.outletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*repairedInternalNode, *coil.inletModelObject()->optionalCast<Node>());
 }
 
 TEST_F(EPModelFixture, ZoneHVACUnitHeater_CanonicalizeRepairsContainedNodePath) {

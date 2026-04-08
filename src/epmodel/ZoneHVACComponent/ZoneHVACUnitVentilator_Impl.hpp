@@ -14,16 +14,28 @@
 namespace openstudio {
 namespace epmodel {
 
+  class ModelObject;
+  class Node;
   class Schedule;
   class HVACComponent;
+  class ThermalZone;
 
   namespace detail {
+
+    struct LoadContext;
 
     class EPMODEL_API ZoneHVACUnitVentilator_Impl : public ZoneHVACComponent_Impl
     {
      public:
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACUnitVentilator_Impl() override = default;
+
+      std::vector<ModelObject> children() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+      bool addToThermalZone(ThermalZone& thermalZone) override;
+      void removeFromThermalZone() override;
+      void doCanonicalize(LoadContext& context) override;
 
       boost::optional<double> maximumSupplyAirFlowRate() const;
       bool isMaximumSupplyAirFlowRateAutosized() const;
@@ -54,6 +66,11 @@ namespace epmodel {
       boost::optional<HVACComponent> coolingCoil() const;
       bool setCoolingCoil(const HVACComponent& coolingCoil);
       void resetCoolingCoil();
+      boost::optional<Node> mixedAirNode() const;
+      boost::optional<Node> outdoorAirNode() const;
+      boost::optional<Node> exhaustAirNode() const;
+      boost::optional<Node> fanOutletNode() const;
+      boost::optional<Node> coolingCoilOutletNode() const;
 
       std::string outdoorAirControlType() const;
       bool setOutdoorAirControlType(const std::string& outdoorAirControlType);
@@ -75,10 +92,10 @@ namespace epmodel {
       double coolingConvergenceTolerance() const;
       bool setCoolingConvergenceTolerance(double coolingConvergenceTolerance);
 
-      std::vector<ModelObject> children() const;
-
-      unsigned inletPort() const override;
-      unsigned outletPort() const override;
+     private:
+      bool maintainContainedAirPath();
+      bool repairContainedAirPath(LoadContext& context);
+      bool reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context = nullptr);
     };
 
   }  // namespace detail

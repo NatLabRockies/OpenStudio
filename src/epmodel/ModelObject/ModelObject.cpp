@@ -215,17 +215,24 @@ namespace epmodel {
 
     void ModelObject_Impl::doCanonicalize(LoadContext&) {}
 
-    openstudio::epmodel::Node ModelObject_Impl::getOrCreateNodeTarget(unsigned fieldIndex) {
-      if (auto target = getTarget(fieldIndex)) {
-        if (auto node = target->optionalCast<openstudio::epmodel::Node>()) {
-          return *node;
-        }
+    boost::optional<openstudio::epmodel::Node> ModelObject_Impl::resolvedNodeTarget(unsigned fieldIndex) const {
+      if (auto node = getObject<openstudio::epmodel::ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(fieldIndex)) {
+        return node;
       }
 
       auto name = getString(fieldIndex);
-      openstudio::epmodel::Node node = model().getOrCreateTransientByNameOrCreate<openstudio::epmodel::Node>(name);
-      setPointer(fieldIndex, node.handle(), false);
-      return node;
+      if (name && !name->empty()) {
+        return model().getOrCreateTransientByName<openstudio::epmodel::Node>(*name);
+      }
+
+      return boost::none;
+    }
+
+    openstudio::epmodel::Node ModelObject_Impl::resolvedOrCreatedNodeTarget(unsigned fieldIndex, const std::string& defaultName) {
+      if (auto existingNode = resolvedNodeTarget(fieldIndex)) {
+        return *existingNode;
+      }
+      return model().getOrCreateTransientByName<openstudio::epmodel::Node>(defaultName);
     }
 
     bool ModelObject_Impl::setSchedule(unsigned fieldIndex, const std::string& className, const std::string& scheduleDisplayName,

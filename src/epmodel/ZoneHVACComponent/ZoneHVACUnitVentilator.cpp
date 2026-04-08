@@ -7,10 +7,16 @@
 #include "ZoneHVACComponent/ZoneHVACUnitVentilator_Impl.hpp"
 
 #include "HVACComponent.hpp"
+#include "HVACComponent/ThermalZone.hpp"
 #include "Model.hpp"
+#include "ModelObject/ModelObject.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 #include "Schedule/ScheduleConstant.hpp"
+#include "StraightComponent/Node.hpp"
+#include "StraightComponent/StraightComponent.hpp"
+#include "WaterToAirComponent/WaterToAirComponent.hpp"
+#include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
 
 #include <boost/none.hpp>
 
@@ -22,6 +28,58 @@
 
 namespace openstudio {
 namespace epmodel {
+
+  namespace {
+
+    // Keep these helpers local so the real unit-ventilator wiring logic stays
+    // easy to read. They only remove the repetitive port-shape branching and
+    // "is this exact node already here?" checks from the actual topology rules.
+    bool assignPortNodeIfNeeded(ModelObject& object, unsigned port, const Node& node) {
+      const auto currentTarget = object.getModelObjectTarget<Node>(port);
+      const auto currentName = object.getString(port);
+      if (currentTarget && (*currentTarget == node) && currentName && openstudio::istringEqual(*currentName, node.nameString())) {
+        return false;
+      }
+
+      OS_ASSERT(object.setPointer(port, node.handle()));
+      return true;
+    }
+
+    bool isAirPathComponent(const HVACComponent& component) {
+      return component.optionalCast<StraightComponent>() || component.optionalCast<WaterToAirComponent>();
+    }
+
+    unsigned componentAirInletPort(const HVACComponent& component) {
+      if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+        return straightComponent->inletPort();
+      }
+      if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+        return waterToAirComponent->airInletPort();
+      }
+      return 0u;
+    }
+
+    unsigned componentAirOutletPort(const HVACComponent& component) {
+      if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+        return straightComponent->outletPort();
+      }
+      if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+        return waterToAirComponent->airOutletPort();
+      }
+      return 0u;
+    }
+
+    boost::optional<ModelObject> componentAirOutletModelObject(const HVACComponent& component) {
+      if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+        return straightComponent->outletModelObject();
+      }
+      if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+        return waterToAirComponent->airOutletModelObject();
+      }
+      return boost::none;
+    }
+
+  }  // namespace
 
   ZoneHVACUnitVentilator::ZoneHVACUnitVentilator(const Model& model) : ZoneHVACComponent(ZoneHVACUnitVentilator::iddObjectType(), model) {
     ScheduleConstant alwaysOn(model);
@@ -134,6 +192,26 @@ namespace epmodel {
     getImpl<detail::ZoneHVACUnitVentilator_Impl>()->resetCoolingCoil();
   }
 
+  boost::optional<Node> ZoneHVACUnitVentilator::mixedAirNode() const {
+    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->mixedAirNode();
+  }
+
+  boost::optional<Node> ZoneHVACUnitVentilator::outdoorAirNode() const {
+    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->outdoorAirNode();
+  }
+
+  boost::optional<Node> ZoneHVACUnitVentilator::exhaustAirNode() const {
+    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->exhaustAirNode();
+  }
+
+  boost::optional<Node> ZoneHVACUnitVentilator::fanOutletNode() const {
+    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->fanOutletNode();
+  }
+
+  boost::optional<Node> ZoneHVACUnitVentilator::coolingCoilOutletNode() const {
+    return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->coolingCoilOutletNode();
+  }
+
   std::string ZoneHVACUnitVentilator::outdoorAirControlType() const {
     return getImpl<detail::ZoneHVACUnitVentilator_Impl>()->outdoorAirControlType();
   }
@@ -209,6 +287,46 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    std::vector<ModelObject> ZoneHVACUnitVentilator_Impl::children() const {
+      std::vector<ModelObject> result;
+      if (auto supplyFan = getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_UnitVentilatorFields::SupplyAirFanName)) {
+        result.push_back(*supplyFan);
+      }
+      if (auto heatingCoil = getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_UnitVentilatorFields::HeatingCoilName)) {
+        result.push_back(*heatingCoil);
+      }
+      if (auto coolingCoil = getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_UnitVentilatorFields::CoolingCoilName)) {
+        result.push_back(*coolingCoil);
+      }
+      return result;
+    }
+
+    unsigned ZoneHVACUnitVentilator_Impl::inletPort() const {
+      return ZoneHVAC_UnitVentilatorFields::AirInletNodeName;
+    }
+
+    unsigned ZoneHVACUnitVentilator_Impl::outletPort() const {
+      return ZoneHVAC_UnitVentilatorFields::AirOutletNodeName;
+    }
+
+    bool ZoneHVACUnitVentilator_Impl::addToThermalZone(ThermalZone& thermalZone) {
+      if (!ZoneHVACComponent_Impl::addToThermalZone(thermalZone)) {
+        return false;
+      }
+
+      maintainContainedAirPath();
+      return true;
+    }
+
+    void ZoneHVACUnitVentilator_Impl::removeFromThermalZone() {
+      ZoneHVACComponent_Impl::removeFromThermalZone();
+      maintainContainedAirPath();
+    }
+
+    void ZoneHVACUnitVentilator_Impl::doCanonicalize(LoadContext& context) {
+      repairContainedAirPath(context);
+    }
+
     Schedule ZoneHVACUnitVentilator_Impl::availabilitySchedule() const {
       auto target = getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_UnitVentilatorFields::AvailabilityScheduleName);
       OS_ASSERT(target);
@@ -241,116 +359,7 @@ namespace epmodel {
       OS_ASSERT(setString(ZoneHVAC_UnitVentilatorFields::MaximumSupplyAirFlowRate, "autosize"));
     }
 
-    std::string ZoneHVACUnitVentilator_Impl::outdoorAirControlType() const {
-      auto value = getString(ZoneHVAC_UnitVentilatorFields::OutdoorAirControlType, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool ZoneHVACUnitVentilator_Impl::setOutdoorAirControlType(const std::string& outdoorAirControlType) {
-      const bool result = setString(ZoneHVAC_UnitVentilatorFields::OutdoorAirControlType, outdoorAirControlType);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    boost::optional<double> ZoneHVACUnitVentilator_Impl::minimumOutdoorAirFlowRate() const {
-      return getDouble(ZoneHVAC_UnitVentilatorFields::MinimumOutdoorAirFlowRate, true);
-    }
-
-    bool ZoneHVACUnitVentilator_Impl::isMinimumOutdoorAirFlowRateAutosized() const {
-      if (auto value = getString(ZoneHVAC_UnitVentilatorFields::MinimumOutdoorAirFlowRate, true)) {
-        return openstudio::istringEqual(value.get(), "autosize");
-      }
-      return false;
-    }
-
-    bool ZoneHVACUnitVentilator_Impl::setMinimumOutdoorAirFlowRate(double minimumOutdoorAirFlowRate) {
-      const bool result = setDouble(ZoneHVAC_UnitVentilatorFields::MinimumOutdoorAirFlowRate, minimumOutdoorAirFlowRate);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    void ZoneHVACUnitVentilator_Impl::autosizeMinimumOutdoorAirFlowRate() {
-      OS_ASSERT(setString(ZoneHVAC_UnitVentilatorFields::MinimumOutdoorAirFlowRate, "autosize"));
-    }
-
-    boost::optional<double> ZoneHVACUnitVentilator_Impl::maximumOutdoorAirFlowRate() const {
-      return getDouble(ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFlowRate, true);
-    }
-
-    bool ZoneHVACUnitVentilator_Impl::isMaximumOutdoorAirFlowRateAutosized() const {
-      if (auto value = getString(ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFlowRate, true)) {
-        return openstudio::istringEqual(value.get(), "autosize");
-      }
-      return false;
-    }
-
-    bool ZoneHVACUnitVentilator_Impl::setMaximumOutdoorAirFlowRate(double maximumOutdoorAirFlowRate) {
-      const bool result = setDouble(ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFlowRate, maximumOutdoorAirFlowRate);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    void ZoneHVACUnitVentilator_Impl::autosizeMaximumOutdoorAirFlowRate() {
-      OS_ASSERT(setString(ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFlowRate, "autosize"));
-    }
-
-    double ZoneHVACUnitVentilator_Impl::heatingConvergenceTolerance() const {
-      auto value = getDouble(ZoneHVAC_UnitVentilatorFields::HeatingConvergenceTolerance, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool ZoneHVACUnitVentilator_Impl::setHeatingConvergenceTolerance(double heatingConvergenceTolerance) {
-      const bool result = setDouble(ZoneHVAC_UnitVentilatorFields::HeatingConvergenceTolerance, heatingConvergenceTolerance);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    double ZoneHVACUnitVentilator_Impl::coolingConvergenceTolerance() const {
-      auto value = getDouble(ZoneHVAC_UnitVentilatorFields::CoolingConvergenceTolerance, true);
-      OS_ASSERT(value);
-      return value.get();
-    }
-
-    bool ZoneHVACUnitVentilator_Impl::setCoolingConvergenceTolerance(double coolingConvergenceTolerance) {
-      const bool result = setDouble(ZoneHVAC_UnitVentilatorFields::CoolingConvergenceTolerance, coolingConvergenceTolerance);
-      OS_ASSERT(result);
-      return result;
-    }
-
-    std::vector<ModelObject> ZoneHVACUnitVentilator_Impl::children() const {
-      std::vector<ModelObject> result;
-
-      if (auto const supplyFan = getObject<ModelObject>().getTarget(ZoneHVAC_UnitVentilatorFields::SupplyAirFanName)) {
-        if (auto mo = model().getModelObject<ModelObject>(supplyFan->handle())) {
-          result.push_back(*mo);
-        }
-      }
-      if (auto const heatingCoil = getObject<ModelObject>().getTarget(ZoneHVAC_UnitVentilatorFields::HeatingCoilName)) {
-        if (auto mo = model().getModelObject<ModelObject>(heatingCoil->handle())) {
-          result.push_back(*mo);
-        }
-      }
-      if (auto const coolingCoil = getObject<ModelObject>().getTarget(ZoneHVAC_UnitVentilatorFields::CoolingCoilName)) {
-        if (auto mo = model().getModelObject<ModelObject>(coolingCoil->handle())) {
-          result.push_back(*mo);
-        }
-      }
-
-      return result;
-    }
-
-    unsigned ZoneHVACUnitVentilator_Impl::inletPort() const {
-      return ZoneHVAC_UnitVentilatorFields::AirInletNodeName;
-    }
-
-    unsigned ZoneHVACUnitVentilator_Impl::outletPort() const {
-      return ZoneHVAC_UnitVentilatorFields::AirOutletNodeName;
-    }
-
     boost::optional<double> ZoneHVACUnitVentilator_Impl::autosizedMaximumSupplyAirFlowRate() const {
-      // epmodel does not currently resolve autosized values from SQL results.
       return boost::none;
     }
 
@@ -388,10 +397,15 @@ namespace epmodel {
     }
 
     bool ZoneHVACUnitVentilator_Impl::setSupplyAirFan(const HVACComponent& supplyAirFan) {
-      if (supplyAirFan.model() != model()) {
+      if ((supplyAirFan.model() != model()) || !supplyAirFan.optionalCast<StraightComponent>()) {
         return false;
       }
-      return setPointer(ZoneHVAC_UnitVentilatorFields::SupplyAirFanName, supplyAirFan.handle(), false);
+
+      const bool result = setPointer(ZoneHVAC_UnitVentilatorFields::SupplyAirFanName, supplyAirFan.handle(), false);
+      if (result) {
+        maintainContainedAirPath();
+      }
+      return result;
     }
 
     boost::optional<Schedule> ZoneHVACUnitVentilator_Impl::supplyAirFanOperatingModeSchedule() const {
@@ -412,14 +426,20 @@ namespace epmodel {
     }
 
     bool ZoneHVACUnitVentilator_Impl::setHeatingCoil(const HVACComponent& heatingCoil) {
-      if (heatingCoil.model() != model()) {
+      if ((heatingCoil.model() != model()) || !isAirPathComponent(heatingCoil)) {
         return false;
       }
-      return setPointer(ZoneHVAC_UnitVentilatorFields::HeatingCoilName, heatingCoil.handle(), false);
+
+      const bool result = setPointer(ZoneHVAC_UnitVentilatorFields::HeatingCoilName, heatingCoil.handle(), false);
+      if (result) {
+        maintainContainedAirPath();
+      }
+      return result;
     }
 
     void ZoneHVACUnitVentilator_Impl::resetHeatingCoil() {
       OS_ASSERT(setString(ZoneHVAC_UnitVentilatorFields::HeatingCoilName, ""));
+      maintainContainedAirPath();
     }
 
     boost::optional<HVACComponent> ZoneHVACUnitVentilator_Impl::coolingCoil() const {
@@ -427,22 +447,388 @@ namespace epmodel {
     }
 
     bool ZoneHVACUnitVentilator_Impl::setCoolingCoil(const HVACComponent& coolingCoil) {
-      if (coolingCoil.model() != model()) {
+      if ((coolingCoil.model() != model()) || !isAirPathComponent(coolingCoil)) {
         return false;
       }
-      return setPointer(ZoneHVAC_UnitVentilatorFields::CoolingCoilName, coolingCoil.handle(), false);
+
+      const bool result = setPointer(ZoneHVAC_UnitVentilatorFields::CoolingCoilName, coolingCoil.handle(), false);
+      if (result) {
+        maintainContainedAirPath();
+      }
+      return result;
     }
 
     void ZoneHVACUnitVentilator_Impl::resetCoolingCoil() {
       OS_ASSERT(setString(ZoneHVAC_UnitVentilatorFields::CoolingCoilName, ""));
+      maintainContainedAirPath();
+    }
+
+    boost::optional<Node> ZoneHVACUnitVentilator_Impl::mixedAirNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<Node>(ZoneHVAC_UnitVentilatorFields::MixedAirNodeName);
+    }
+
+    boost::optional<Node> ZoneHVACUnitVentilator_Impl::outdoorAirNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<Node>(ZoneHVAC_UnitVentilatorFields::OutdoorAirNodeName);
+    }
+
+    boost::optional<Node> ZoneHVACUnitVentilator_Impl::exhaustAirNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<Node>(ZoneHVAC_UnitVentilatorFields::ExhaustAirNodeName);
+    }
+
+    // Unit ventilators can have a few valid contained air-path shapes:
+    //
+    // - mixed air -> fan -> outlet
+    // - mixed air -> fan -> cooling coil -> outlet
+    // - mixed air -> fan -> heating coil -> outlet
+    // - mixed air -> fan -> cooling coil -> heating coil -> outlet
+    //
+    // This getter exposes the fan-outlet role on the parent. That role may
+    // alias another parent node such as the unit outlet when there is no
+    // downstream coil. The important question is whether the fan exists and
+    // has an outlet node, not whether that node is distinct.
+    boost::optional<Node> ZoneHVACUnitVentilator_Impl::fanOutletNode() const {
+      auto thisObject = getObject<ModelObject>();
+
+      auto fanObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_UnitVentilatorFields::SupplyAirFanName);
+      auto fan = fanObject ? fanObject->optionalCast<StraightComponent>() : boost::none;
+      if (!fan) {
+        return boost::none;
+      }
+
+      auto fanOutlet = fan->outletModelObject();
+      return fanOutlet ? fanOutlet->optionalCast<Node>() : boost::none;
+    }
+
+    // This getter exposes the cooling-coil-outlet role on the parent. That
+    // role exists whenever a cooling coil exists, even if the outlet node is
+    // also the unit outlet because there is no downstream heating coil.
+    boost::optional<Node> ZoneHVACUnitVentilator_Impl::coolingCoilOutletNode() const {
+      auto thisObject = getObject<ModelObject>();
+
+      auto coolingObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_UnitVentilatorFields::CoolingCoilName);
+      auto cooling = (coolingObject && isAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject) : boost::none;
+      if (!cooling) {
+        return boost::none;
+      }
+
+      auto coolingOutlet = componentAirOutletModelObject(*cooling);
+      return coolingOutlet ? coolingOutlet->optionalCast<Node>() : boost::none;
+    }
+
+    std::string ZoneHVACUnitVentilator_Impl::outdoorAirControlType() const {
+      auto value = getString(ZoneHVAC_UnitVentilatorFields::OutdoorAirControlType, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool ZoneHVACUnitVentilator_Impl::setOutdoorAirControlType(const std::string& outdoorAirControlType) {
+      const bool result = setString(ZoneHVAC_UnitVentilatorFields::OutdoorAirControlType, outdoorAirControlType);
+      OS_ASSERT(result);
+      return result;
+    }
+
+    boost::optional<double> ZoneHVACUnitVentilator_Impl::minimumOutdoorAirFlowRate() const {
+      return getDouble(ZoneHVAC_UnitVentilatorFields::MinimumOutdoorAirFlowRate, true);
+    }
+
+    bool ZoneHVACUnitVentilator_Impl::isMinimumOutdoorAirFlowRateAutosized() const {
+      if (auto value = getString(ZoneHVAC_UnitVentilatorFields::MinimumOutdoorAirFlowRate, true)) {
+        return openstudio::istringEqual(value.get(), "autosize");
+      }
+      return false;
+    }
+
+    bool ZoneHVACUnitVentilator_Impl::setMinimumOutdoorAirFlowRate(double minimumOutdoorAirFlowRate) {
+      const bool result = setDouble(ZoneHVAC_UnitVentilatorFields::MinimumOutdoorAirFlowRate, minimumOutdoorAirFlowRate);
+      OS_ASSERT(result);
+      return result;
+    }
+
+    void ZoneHVACUnitVentilator_Impl::autosizeMinimumOutdoorAirFlowRate() {
+      OS_ASSERT(setString(ZoneHVAC_UnitVentilatorFields::MinimumOutdoorAirFlowRate, "autosize"));
     }
 
     boost::optional<double> ZoneHVACUnitVentilator_Impl::autosizedMinimumOutdoorAirFlowRate() const {
       return boost::none;
     }
 
+    boost::optional<double> ZoneHVACUnitVentilator_Impl::maximumOutdoorAirFlowRate() const {
+      return getDouble(ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFlowRate, true);
+    }
+
+    bool ZoneHVACUnitVentilator_Impl::isMaximumOutdoorAirFlowRateAutosized() const {
+      if (auto value = getString(ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFlowRate, true)) {
+        return openstudio::istringEqual(value.get(), "autosize");
+      }
+      return false;
+    }
+
+    bool ZoneHVACUnitVentilator_Impl::setMaximumOutdoorAirFlowRate(double maximumOutdoorAirFlowRate) {
+      const bool result = setDouble(ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFlowRate, maximumOutdoorAirFlowRate);
+      OS_ASSERT(result);
+      return result;
+    }
+
+    void ZoneHVACUnitVentilator_Impl::autosizeMaximumOutdoorAirFlowRate() {
+      OS_ASSERT(setString(ZoneHVAC_UnitVentilatorFields::MaximumOutdoorAirFlowRate, "autosize"));
+    }
+
     boost::optional<double> ZoneHVACUnitVentilator_Impl::autosizedMaximumOutdoorAirFlowRate() const {
       return boost::none;
+    }
+
+    double ZoneHVACUnitVentilator_Impl::heatingConvergenceTolerance() const {
+      auto value = getDouble(ZoneHVAC_UnitVentilatorFields::HeatingConvergenceTolerance, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool ZoneHVACUnitVentilator_Impl::setHeatingConvergenceTolerance(double heatingConvergenceTolerance) {
+      const bool result = setDouble(ZoneHVAC_UnitVentilatorFields::HeatingConvergenceTolerance, heatingConvergenceTolerance);
+      OS_ASSERT(result);
+      return result;
+    }
+
+    double ZoneHVACUnitVentilator_Impl::coolingConvergenceTolerance() const {
+      auto value = getDouble(ZoneHVAC_UnitVentilatorFields::CoolingConvergenceTolerance, true);
+      OS_ASSERT(value);
+      return value.get();
+    }
+
+    bool ZoneHVACUnitVentilator_Impl::setCoolingConvergenceTolerance(double coolingConvergenceTolerance) {
+      const bool result = setDouble(ZoneHVAC_UnitVentilatorFields::CoolingConvergenceTolerance, coolingConvergenceTolerance);
+      OS_ASSERT(result);
+      return result;
+    }
+
+    bool ZoneHVACUnitVentilator_Impl::maintainContainedAirPath() {
+      return reconcileContainedAirPath(false, nullptr);
+    }
+
+    bool ZoneHVACUnitVentilator_Impl::repairContainedAirPath(LoadContext& context) {
+      return reconcileContainedAirPath(true, &context);
+    }
+
+    bool ZoneHVACUnitVentilator_Impl::reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context) {
+      auto thisObject = getObject<ModelObject>();
+      if (!thisObject.name()) {
+        thisObject.createName();
+      }
+
+      auto fanObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_UnitVentilatorFields::SupplyAirFanName);
+      auto heatingObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_UnitVentilatorFields::HeatingCoilName);
+      auto coolingObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_UnitVentilatorFields::CoolingCoilName);
+      auto fan = fanObject ? fanObject->optionalCast<StraightComponent>() : boost::none;
+      auto heating = (heatingObject && isAirPathComponent(*heatingObject)) ? boost::optional<HVACComponent>(*heatingObject) : boost::none;
+      auto cooling = (coolingObject && isAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject) : boost::none;
+
+      bool changed = false;
+
+      const auto currentFanType = thisObject.getString(ZoneHVAC_UnitVentilatorFields::SupplyAirFanObjectType, true);
+      const auto expectedFanType = fanObject ? boost::optional<std::string>(fanObject->iddObject().name()) : boost::optional<std::string>();
+      if (expectedFanType) {
+        if (!currentFanType || !openstudio::istringEqual(*currentFanType, *expectedFanType)) {
+          OS_ASSERT(thisObject.setString(ZoneHVAC_UnitVentilatorFields::SupplyAirFanObjectType, *expectedFanType));
+          changed = true;
+        }
+      } else if (currentFanType && !currentFanType->empty()) {
+        OS_ASSERT(thisObject.setString(ZoneHVAC_UnitVentilatorFields::SupplyAirFanObjectType, ""));
+        changed = true;
+      }
+
+      const auto currentHeatingType = thisObject.getString(ZoneHVAC_UnitVentilatorFields::HeatingCoilObjectType, true);
+      const auto expectedHeatingType = heatingObject ? boost::optional<std::string>(heatingObject->iddObject().name()) : boost::optional<std::string>();
+      if (expectedHeatingType) {
+        if (!currentHeatingType || !openstudio::istringEqual(*currentHeatingType, *expectedHeatingType)) {
+          OS_ASSERT(thisObject.setString(ZoneHVAC_UnitVentilatorFields::HeatingCoilObjectType, *expectedHeatingType));
+          changed = true;
+        }
+      } else if (currentHeatingType && !currentHeatingType->empty()) {
+        OS_ASSERT(thisObject.setString(ZoneHVAC_UnitVentilatorFields::HeatingCoilObjectType, ""));
+        changed = true;
+      }
+
+      const auto currentCoolingType = thisObject.getString(ZoneHVAC_UnitVentilatorFields::CoolingCoilObjectType, true);
+      const auto expectedCoolingType = coolingObject ? boost::optional<std::string>(coolingObject->iddObject().name()) : boost::optional<std::string>();
+      if (expectedCoolingType) {
+        if (!currentCoolingType || !openstudio::istringEqual(*currentCoolingType, *expectedCoolingType)) {
+          OS_ASSERT(thisObject.setString(ZoneHVAC_UnitVentilatorFields::CoolingCoilObjectType, *expectedCoolingType));
+          changed = true;
+        }
+      } else if (currentCoolingType && !currentCoolingType->empty()) {
+        OS_ASSERT(thisObject.setString(ZoneHVAC_UnitVentilatorFields::CoolingCoilObjectType, ""));
+        changed = true;
+      }
+
+      std::string expectedCoilOption = "None";
+      if (heating && cooling) {
+        expectedCoilOption = "HeatingAndCooling";
+      } else if (heating) {
+        expectedCoilOption = "Heating";
+      } else if (cooling) {
+        expectedCoilOption = "Cooling";
+      }
+      const auto currentCoilOption = thisObject.getString(ZoneHVAC_UnitVentilatorFields::CoilOption, true);
+      if (!currentCoilOption || !openstudio::istringEqual(*currentCoilOption, expectedCoilOption)) {
+        OS_ASSERT(thisObject.setString(ZoneHVAC_UnitVentilatorFields::CoilOption, expectedCoilOption));
+        changed = true;
+      }
+
+      if (!fan && !heating && !cooling) {
+        if (changed && context) {
+          detail::addLoadInfo(*context, "Reconciled internal node wiring for ZoneHVAC:UnitVentilator '" + thisObject.nameString() + "'.");
+        }
+        return changed;
+      }
+
+      const auto baseName = thisObject.nameString();
+      auto inletNode = resolvedOrCreatedNodeTarget(inletPort(), baseName + " Air Inlet Node");
+      auto outletNode = resolvedOrCreatedNodeTarget(outletPort(), baseName + " Air Outlet Node");
+      auto mixedAir = resolvedOrCreatedNodeTarget(ZoneHVAC_UnitVentilatorFields::MixedAirNodeName, baseName + " Mixed Air Node");
+      auto outdoorAir = resolvedOrCreatedNodeTarget(ZoneHVAC_UnitVentilatorFields::OutdoorAirNodeName, baseName + " OA Node");
+      auto exhaustAir = resolvedOrCreatedNodeTarget(ZoneHVAC_UnitVentilatorFields::ExhaustAirNodeName, baseName + " Exhaust Air Node");
+
+      changed = assignPortNodeIfNeeded(thisObject, inletPort(), inletNode) || changed;
+      changed = assignPortNodeIfNeeded(thisObject, outletPort(), outletNode) || changed;
+      changed = assignPortNodeIfNeeded(thisObject, ZoneHVAC_UnitVentilatorFields::MixedAirNodeName, mixedAir) || changed;
+      changed = assignPortNodeIfNeeded(thisObject, ZoneHVAC_UnitVentilatorFields::OutdoorAirNodeName, outdoorAir) || changed;
+      changed = assignPortNodeIfNeeded(thisObject, ZoneHVAC_UnitVentilatorFields::ExhaustAirNodeName, exhaustAir) || changed;
+
+      boost::optional<Node> fanOutlet;
+      if (fan && (cooling || heating)) {
+        if (!allowChildNodeRecovery) {
+          auto currentFanOutlet = fan->outletModelObject() ? fan->outletModelObject()->optionalCast<Node>() : boost::none;
+          const boost::optional<HVACComponent> downstream = cooling ? cooling : heating;
+          auto currentDownstreamInlet = downstream && componentAirInletPort(*downstream) != 0u
+                                          ? downstream->getModelObjectTarget<Node>(componentAirInletPort(*downstream))
+                                          : boost::none;
+          if (currentFanOutlet && currentDownstreamInlet && (*currentFanOutlet == *currentDownstreamInlet)
+              && (*currentFanOutlet != mixedAir) && (*currentFanOutlet != outletNode)) {
+            fanOutlet = currentFanOutlet;
+          }
+        } else {
+          fanOutlet = fanOutletNode();
+        }
+        if (!fanOutlet && allowChildNodeRecovery) {
+          // Canonicalization is allowed to salvage a user-named internal node
+          // from the child fields after raw pointer drift. Ordinary owner
+          // mutations do not do that guessing; they keep the intended path or
+          // create a fresh default node if the internal link is missing.
+          if (auto fanOutletName = fan->getString(fan->outletPort()); fanOutletName && !fanOutletName->empty()) {
+            auto candidate = model().getOrCreateTransientByName<Node>(*fanOutletName);
+            if ((candidate != inletNode) && (candidate != outletNode) && (candidate != mixedAir)) {
+              fanOutlet = candidate;
+            }
+          }
+        }
+        if (!fanOutlet && allowChildNodeRecovery) {
+          const boost::optional<HVACComponent> downstream = cooling ? cooling : heating;
+          if (downstream) {
+            const auto downstreamInletPort = componentAirInletPort(*downstream);
+            if (downstreamInletPort != 0u) {
+              if (auto downstreamInletName = downstream->getString(downstreamInletPort); downstreamInletName && !downstreamInletName->empty()) {
+                auto candidate = model().getOrCreateTransientByName<Node>(*downstreamInletName);
+                if ((candidate != inletNode) && (candidate != outletNode) && (candidate != mixedAir)) {
+                  fanOutlet = candidate;
+                }
+              }
+            }
+          }
+        }
+        if (!fanOutlet) {
+          fanOutlet = model().getOrCreateTransientByName<Node>(baseName + " Fan Outlet Node");
+        }
+      }
+
+      boost::optional<Node> coolingOutlet;
+      if (cooling && heating) {
+        if (!allowChildNodeRecovery) {
+          auto currentCoolingOutlet = componentAirOutletModelObject(*cooling) ? componentAirOutletModelObject(*cooling)->optionalCast<Node>() : boost::none;
+          const auto heatingAirInlet = componentAirInletPort(*heating) != 0u ? heating->getModelObjectTarget<Node>(componentAirInletPort(*heating)) : boost::none;
+          if (currentCoolingOutlet && heatingAirInlet && (*currentCoolingOutlet == *heatingAirInlet) && (*currentCoolingOutlet != outletNode)
+              && (!fanOutlet || (*currentCoolingOutlet != *fanOutlet))) {
+            coolingOutlet = currentCoolingOutlet;
+          }
+        } else {
+          coolingOutlet = coolingCoilOutletNode();
+        }
+        if (!coolingOutlet && allowChildNodeRecovery) {
+          const auto coolingAirOutletPort = componentAirOutletPort(*cooling);
+          if (coolingAirOutletPort != 0u) {
+            if (auto coolingOutletName = cooling->getString(coolingAirOutletPort); coolingOutletName && !coolingOutletName->empty()) {
+              auto candidate = model().getOrCreateTransientByName<Node>(*coolingOutletName);
+              if ((candidate != inletNode) && (candidate != outletNode) && (candidate != mixedAir) && (!fanOutlet || (candidate != *fanOutlet))) {
+                coolingOutlet = candidate;
+              }
+            }
+          }
+        }
+        if (!coolingOutlet && allowChildNodeRecovery) {
+          const auto heatingAirInletPort = componentAirInletPort(*heating);
+          if (heatingAirInletPort != 0u) {
+            if (auto heatingInletName = heating->getString(heatingAirInletPort); heatingInletName && !heatingInletName->empty()) {
+              auto candidate = model().getOrCreateTransientByName<Node>(*heatingInletName);
+              if ((candidate != inletNode) && (candidate != outletNode) && (candidate != mixedAir) && (!fanOutlet || (candidate != *fanOutlet))) {
+                coolingOutlet = candidate;
+              }
+            }
+          }
+        }
+        if (!coolingOutlet) {
+          coolingOutlet = model().getOrCreateTransientByName<Node>(baseName + " Cooling Coil Outlet Node");
+        }
+      }
+
+      if (fan) {
+        changed = assignPortNodeIfNeeded(*fan, fan->inletPort(), mixedAir) || changed;
+        if (fanOutlet) {
+          changed = assignPortNodeIfNeeded(*fan, fan->outletPort(), *fanOutlet) || changed;
+        } else {
+          changed = assignPortNodeIfNeeded(*fan, fan->outletPort(), outletNode) || changed;
+        }
+      }
+
+      if (cooling) {
+        const auto coolingAirInletPort = componentAirInletPort(*cooling);
+        const auto coolingAirOutletPort = componentAirOutletPort(*cooling);
+        if (coolingAirInletPort != 0u) {
+          if (fanOutlet) {
+            changed = assignPortNodeIfNeeded(*cooling, coolingAirInletPort, *fanOutlet) || changed;
+          } else {
+            changed = assignPortNodeIfNeeded(*cooling, coolingAirInletPort, mixedAir) || changed;
+          }
+        }
+        if (coolingAirOutletPort != 0u) {
+          if (coolingOutlet) {
+            changed = assignPortNodeIfNeeded(*cooling, coolingAirOutletPort, *coolingOutlet) || changed;
+          } else {
+            changed = assignPortNodeIfNeeded(*cooling, coolingAirOutletPort, outletNode) || changed;
+          }
+        }
+      }
+
+      if (heating) {
+        const auto heatingAirInletPort = componentAirInletPort(*heating);
+        const auto heatingAirOutletPort = componentAirOutletPort(*heating);
+        if (heatingAirInletPort != 0u) {
+          if (coolingOutlet) {
+            changed = assignPortNodeIfNeeded(*heating, heatingAirInletPort, *coolingOutlet) || changed;
+          } else if (fanOutlet) {
+            changed = assignPortNodeIfNeeded(*heating, heatingAirInletPort, *fanOutlet) || changed;
+          } else {
+            changed = assignPortNodeIfNeeded(*heating, heatingAirInletPort, mixedAir) || changed;
+          }
+        }
+        if (heatingAirOutletPort != 0u) {
+          changed = assignPortNodeIfNeeded(*heating, heatingAirOutletPort, outletNode) || changed;
+        }
+      }
+
+      if (changed && context) {
+        detail::addLoadInfo(*context, "Reconciled internal node wiring for ZoneHVAC:UnitVentilator '" + baseName + "'.");
+      }
+
+      return changed;
     }
 
   }  // namespace detail

@@ -311,12 +311,21 @@ Canonicalization is still where we repair bad persisted state. If an IDF load,
 raw field edit, or other non-canonical input leaves the internal wiring in a
 bad state, canonicalization should put it back into a valid epmodel form.
 
-When an internal node has a clear meaning to users, epmodel may expose an
-accessor for that node on the owning compound even if the canonical
+To keep that boundary obvious in code, compound `*_Impl` types should
+implement separate owner-maintenance and canonicalization-repair entry points,
+for example `maintainContainedAirPath()` for ordinary typed mutations and
+`repairContainedAirPath(LoadContext&)` for canonicalization. Any shared
+internal helper can stay private, but the two call paths should remain
+distinct.
+
+When an internal node role has a clear meaning to users, epmodel may expose an
+accessor for that role on the owning compound even if the canonical
 `openstudio::model` type never did. That is meant to make common workflows
 easier, not to replace or break existing ones. The compound still owns the
 wiring itself, but the returned `Node` is a normal model object that users can
-inspect and rename.
+inspect and rename. If two exposed roles happen to resolve to the same `Node`
+in a valid configuration, that is acceptable. The accessor should return
+`none` only when that role does not exist at all in the current shape.
 
 `ZoneHVACUnitHeater` is the first concrete example of this pattern: the parent
 owns the internal air path, exposes the meaningful internal fan-outlet node on

@@ -20,7 +20,6 @@
 #include "StraightComponent/Node.hpp"
 #include "Splitter/Splitter.hpp"
 
-#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
 
 #include <algorithm>
@@ -369,10 +368,16 @@ bool WaterToAirComponent_Impl::addToNode(Node& node) {
     return false;
   }
   if (auto oaSystem = node.airLoopHVACOutdoorAirSystem()) {
+    if (containingHVACComponent()) {
+      return false;
+    }
     return addToOutdoorAirSystem(*oaSystem, node);
   }
 
   if (auto airLoop = node.airLoopHVAC()) {
+    if (containingHVACComponent()) {
+      return false;
+    }
     if (airLoop->demandComponent(node.handle())) {
       return false;
     }
@@ -429,16 +434,32 @@ void WaterToAirComponent_Impl::disconnectWaterSide() {
 }
 
 void WaterToAirComponent_Impl::disconnectAirSide() {
+  if (containingHVACComponent()) {
+    // A compound owner is responsible for this air-side path. Ignoring a direct
+    // child disconnect keeps ordinary API calls from tearing open the parent.
+    return;
+  }
+
   setPointer(airInletPort(), Handle(), false);
   setPointer(airOutletPort(), Handle(), false);
 }
 
 void WaterToAirComponent_Impl::disconnect() {
+  if (containingHVACComponent()) {
+    // This call would tear apart both the parent-owned air path and any live
+    // water-side hookup in one step, so contained children reject it outright.
+    return;
+  }
+
   disconnectWaterSide();
   disconnectAirSide();
 }
 
 bool WaterToAirComponent_Impl::removeFromAirLoopHVAC() {
+  if (containingHVACComponent()) {
+    return false;
+  }
+
   auto thisObject = getObject<ModelObject>();
   auto inletObject = airInletModelObject();
   auto outletObject = airOutletModelObject();
