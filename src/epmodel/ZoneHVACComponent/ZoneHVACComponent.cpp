@@ -17,6 +17,9 @@
 #include "ModelObject/ZoneHVACEquipmentList.hpp"
 #include "ModelObject/ZoneHVACEquipmentList_Impl.hpp"
 #include "StraightComponent/Node.hpp"
+#include "StraightComponent/StraightComponent.hpp"
+#include "WaterToAirComponent/WaterToAirComponent.hpp"
+#include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
@@ -94,6 +97,40 @@ boost::optional<ModelObject> ZoneHVACComponent::airOutletModelObject() const {
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+bool isContainedAirPathComponent(const HVACComponent& component) {
+  return component.optionalCast<StraightComponent>() || component.optionalCast<WaterToAirComponent>();
+}
+
+unsigned containedAirInletPort(const HVACComponent& component) {
+  if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+    return straightComponent->inletPort();
+  }
+  if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+    return waterToAirComponent->airInletPort();
+  }
+  return 0u;
+}
+
+unsigned containedAirOutletPort(const HVACComponent& component) {
+  if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+    return straightComponent->outletPort();
+  }
+  if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+    return waterToAirComponent->airOutletPort();
+  }
+  return 0u;
+}
+
+boost::optional<ModelObject> containedAirOutletModelObject(const HVACComponent& component) {
+  if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+    return straightComponent->outletModelObject();
+  }
+  if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+    return waterToAirComponent->airOutletModelObject();
+  }
+  return boost::none;
+}
 
 unsigned ZoneHVACComponent_Impl::inletPort() const {
   return 0u;
