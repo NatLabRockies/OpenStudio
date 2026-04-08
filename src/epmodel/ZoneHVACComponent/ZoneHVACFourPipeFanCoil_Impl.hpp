@@ -15,9 +15,13 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Node;
   class Schedule;
+  class ThermalZone;
 
   namespace detail {
+
+    struct LoadContext;
 
     class EPMODEL_API ZoneHVACFourPipeFanCoil_Impl : public ZoneHVACComponent_Impl
     {
@@ -28,6 +32,9 @@ namespace epmodel {
       std::vector<ModelObject> children() const override;
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToThermalZone(ThermalZone& thermalZone) override;
+      void removeFromThermalZone() override;
+      void doCanonicalize(LoadContext& context) override;
 
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);
@@ -67,10 +74,12 @@ namespace epmodel {
       HVACComponent supplyAirFan() const;
       HVACComponent coolingCoil() const;
       HVACComponent heatingCoil() const;
+      boost::optional<Node> fanOutletNode() const;
+      boost::optional<Node> coolingCoilOutletNode() const;
 
-      bool setSupplyAirFan(HVACComponent& fan);
-      bool setCoolingCoil(HVACComponent& coolingCoil);
-      bool setHeatingCoil(HVACComponent& heatingCoil);
+      bool setSupplyAirFan(const HVACComponent& fan);
+      bool setCoolingCoil(const HVACComponent& coolingCoil);
+      bool setHeatingCoil(const HVACComponent& heatingCoil);
 
       boost::optional<Schedule> supplyAirFanOperatingModeSchedule() const;
       bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
@@ -115,6 +124,11 @@ namespace epmodel {
       boost::optional<double> maximumSupplyAirTemperatureInHeatingMode() const;
       bool setMaximumSupplyAirTemperatureInHeatingMode(double maximumSupplyAirTemperatureInHeatingMode);
       void autosizeMaximumSupplyAirTemperatureInHeatingMode();
+
+     private:
+      bool maintainContainedAirPath();
+      bool repairContainedAirPath(LoadContext& context);
+      bool reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context = nullptr);
     };
 
   }  // namespace detail

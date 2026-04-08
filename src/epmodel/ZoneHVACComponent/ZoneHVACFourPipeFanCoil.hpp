@@ -19,6 +19,7 @@ namespace epmodel {
 
   class Model;
   class HVACComponent;
+  class Node;
   class Schedule;
 
   namespace detail {
@@ -41,13 +42,22 @@ namespace epmodel {
     static std::vector<std::string> outdoorAirMixerObjectTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The core scalar fields and contained equipment links are present, but some schedule and operating-mode convenience APIs are still missing.
+    // - Status: Partial Parity. The core scalar fields and contained equipment links are present, and the contained fan/coil air path is now kept
+    //   consistent through parent-owned epmodel nodes, but broader fan-coil parity remains incomplete.
     // - Canonical Counterpart: openstudio::model::ZoneHVACFourPipeFanCoil.
-    // - Implemented Parity: `capacityControlMethod`, supply-air flow scalars, hot/cold water flow scalars, convergence tolerances, supply-air temperature limits, and the fan/coil child accessors preserve the canonical wrapper behavior.
-    // - Documented Delta: Outdoor-air mixer linkage remains string-backed; node topology still comes from the shared zone-equipment base.
-    // - Field/Storage Mapping: The component's fan, heating/cooling coils, and schedule links are modeled explicitly rather than flattened into scalar references.
+    // - Implemented Parity: `capacityControlMethod`, supply-air flow scalars, hot/cold water flow scalars, convergence tolerances, supply-air
+    //   temperature limits, and the fan/coil child accessors preserve the canonical wrapper behavior. The contained supply fan, cooling coil,
+    //   and heating coil now share a parent-owned air path with direct access to the meaningful fan-outlet and cooling-coil-outlet roles on
+    //   the compound.
+    // - Documented Delta: `fanOutletNode()` and `coolingCoilOutletNode()` are exposed as additive conveniences so callers can inspect and
+    //   rename the meaningful node roles owned by the compound, even when those roles alias each other or the parent outlet in a valid
+    //   configuration. Outdoor-air mixer linkage remains string-backed, so the OA-mixer-only node roles are still outside the public wrapper
+    //   for now.
+    // - Field/Storage Mapping: The component's fan, heating/cooling coils, and schedule links are modeled explicitly rather than flattened into
+    //   scalar references, and the contained air-path nodes are synchronized through transient Node objects.
     // - Evidence: `src/model/ZoneHVACFourPipeFanCoil.hpp`, `src/model/ZoneHVACFourPipeFanCoil.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACFourPipeFanCoil.cpp`, and `src/epmodel/test/ZoneHVACFourPipeFanCoil_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted scheduling and operating-mode helpers if the canonical surface requires them to be first-class.
+    // - Remaining Parity Work: Add any remaining canonical fan-coil relationship conveniences only if the model wrapper still exposes them as
+    //   public API.
 
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
@@ -85,10 +95,12 @@ namespace epmodel {
     HVACComponent supplyAirFan() const;
     HVACComponent coolingCoil() const;
     HVACComponent heatingCoil() const;
+    boost::optional<Node> fanOutletNode() const;
+    boost::optional<Node> coolingCoilOutletNode() const;
 
-    bool setSupplyAirFan(HVACComponent& fan);
-    bool setCoolingCoil(HVACComponent& coolingCoil);
-    bool setHeatingCoil(HVACComponent& heatingCoil);
+    bool setSupplyAirFan(const HVACComponent& fan);
+    bool setCoolingCoil(const HVACComponent& coolingCoil);
+    bool setHeatingCoil(const HVACComponent& heatingCoil);
 
     boost::optional<Schedule> supplyAirFanOperatingModeSchedule() const;
     bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
