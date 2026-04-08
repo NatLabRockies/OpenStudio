@@ -69,17 +69,26 @@ namespace epmodel {
       static bool isPrimaryControlSchemeType(const std::string& controlSchemeObjectType);
 
       boost::optional<std::string> controlSchemeObjectTypeField(unsigned schemeIndex) const;
+      boost::optional<std::string> controlSchemeRawField(unsigned schemeIndex, unsigned fieldIndex) const;
       boost::optional<unsigned> controlSchemeIndex(const std::string& controlSchemeObjectType) const;
       boost::optional<unsigned> primaryControlSchemeIndex() const;
 
       boost::optional<openstudio::epmodel::ModelObject> controlScheme(const std::string& controlSchemeObjectType) const;
       boost::optional<openstudio::epmodel::ModelObject> controlScheme(unsigned schemeIndex) const;
+      // Canonicalization-only repair helper. Ordinary APIs are expected to work
+      // from live pointers or explicit typed setters, not by resolving raw
+      // imported field strings on demand.
+      boost::optional<openstudio::epmodel::ModelObject> resolveAndAttachControlScheme(unsigned schemeIndex);
       bool setControlScheme(unsigned schemeIndex, const std::string& controlSchemeObjectType,
                             const openstudio::epmodel::ModelObject& controlScheme);
       bool setControlScheme(const std::string& controlSchemeObjectType, const openstudio::epmodel::ModelObject& controlScheme);
       void resetControlScheme(const std::string& controlSchemeObjectType);
       boost::optional<openstudio::epmodel::Schedule> controlSchemeSchedule(const std::string& controlSchemeObjectType) const;
       boost::optional<openstudio::epmodel::Schedule> controlSchemeSchedule(unsigned schemeIndex) const;
+      // Canonicalization-only repair helper. Ordinary APIs are expected to work
+      // from live pointers or explicit typed setters, not by resolving raw
+      // imported field strings on demand.
+      boost::optional<openstudio::epmodel::Schedule> resolveAndAttachControlSchemeSchedule(unsigned schemeIndex);
       bool setControlSchemeSchedule(unsigned schemeIndex, openstudio::epmodel::Schedule& schedule);
       bool setControlSchemeSchedule(const std::string& controlSchemeObjectType, openstudio::epmodel::Schedule& schedule);
       void resetControlSchemeSchedule(const std::string& controlSchemeObjectType);

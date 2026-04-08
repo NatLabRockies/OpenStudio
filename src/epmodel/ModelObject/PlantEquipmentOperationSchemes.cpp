@@ -32,25 +32,6 @@
 namespace openstudio {
 namespace epmodel {
 
-  namespace {
-    std::vector<std::string> fallbackControlSchemeObjectTypeValues() {
-      return {"PlantEquipmentOperation:Uncontrolled",
-              "PlantEquipmentOperation:CoolingLoad",
-              "PlantEquipmentOperation:HeatingLoad",
-              "PlantEquipmentOperation:OutdoorDryBulb",
-              "PlantEquipmentOperation:OutdoorWetBulb",
-              "PlantEquipmentOperation:OutdoorRelativeHumidity",
-              "PlantEquipmentOperation:OutdoorDewpoint",
-              "PlantEquipmentOperation:OutdoorDryBulbDifference",
-              "PlantEquipmentOperation:OutdoorWetBulbDifference",
-              "PlantEquipmentOperation:OutdoorDewpointDifference",
-              "PlantEquipmentOperation:ComponentSetpoint",
-              "PlantEquipmentOperation:ThermalEnergyStorage",
-              "PlantEquipmentOperation:ChillerHeaterChangeover",
-              "PlantEquipmentOperation:UserDefined"};
-    }
-  }  // namespace
-
   PlantEquipmentOperationSchemes::PlantEquipmentOperationSchemes(const Model& model)
     : ModelObject(PlantEquipmentOperationSchemes::iddObjectType(), model) {}
 
@@ -62,11 +43,15 @@ namespace epmodel {
   }
 
   std::vector<std::string> PlantEquipmentOperationSchemes::controlSchemeObjectTypeValues() {
-    auto values = getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                                 openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeObjectType);
-    if (values.empty()) {
-      return fallbackControlSchemeObjectTypeValues();
-    }
+    auto iddObject = IddFactory::instance().getObject(iddObjectType()).get();
+    // Extensible field enums are relative to the extensible group, but
+    // getIddKeyNames expects an absolute object field index.
+    auto values =
+      getIddKeyNames(iddObject, iddObject.numFields() + openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeObjectType);
+    // We own this IDD. If the key list is empty, the generated metadata is out
+    // of sync or we are asking the wrong field, and we want that to fail
+    // loudly instead of silently papering over it.
+    OS_ASSERT(!values.empty());
     return values;
   }
 
@@ -107,11 +92,6 @@ namespace epmodel {
 
     namespace {
       using ExtensibleFields = openstudio::PlantEquipmentOperationSchemesExtensibleFields;
-
-      bool hasNonEmptyField(const WorkspaceExtensibleGroup& group, unsigned fieldIndex) {
-        const auto value = group.getString(fieldIndex, true);
-        return value && !value->empty();
-      }
     }  // namespace
 
     const std::string& PlantEquipmentOperationSchemes_Impl::heatingLoadControlSchemeObjectType() {
@@ -176,6 +156,13 @@ namespace epmodel {
       return boost::none;
     }
 
+    boost::optional<std::string> PlantEquipmentOperationSchemes_Impl::controlSchemeRawField(unsigned schemeIndex, unsigned fieldIndex) const {
+      const auto& schemes = getObject<openstudio::epmodel::PlantEquipmentOperationSchemes>();
+      const unsigned absoluteIndex =
+        schemes.numNonextensibleFields() + (schemeIndex * schemes.iddObject().properties().numExtensible) + fieldIndex;
+      return openstudio::detail::IdfObject_Impl::getField(absoluteIndex, true);
+    }
+
     boost::optional<unsigned> PlantEquipmentOperationSchemes_Impl::controlSchemeIndex(const std::string& controlSchemeObjectType) const {
       for (unsigned schemeIndex = 0; schemeIndex < numExtensibleGroups(); ++schemeIndex) {
         const auto type = controlSchemeObjectTypeField(schemeIndex);
@@ -197,29 +184,31 @@ namespace epmodel {
     }
 
     bool PlantEquipmentOperationSchemes_Impl::groupHasControlScheme(unsigned schemeIndex) const {
-      const auto group = controlSchemeGroup(schemeIndex);
+      auto group = controlSchemeGroup(schemeIndex);
       if (!group) {
         return false;
       }
       if (group->getTarget(ExtensibleFields::ControlSchemeName)) {
         return true;
       }
-      return hasNonEmptyField(*group, ExtensibleFields::ControlSchemeName);
+      return controlSchemeRawField(schemeIndex, ExtensibleFields::ControlSchemeName).is_initialized()
+             && !controlSchemeRawField(schemeIndex, ExtensibleFields::ControlSchemeName)->empty();
     }
 
     bool PlantEquipmentOperationSchemes_Impl::groupHasControlSchemeSchedule(unsigned schemeIndex) const {
-      const auto group = controlSchemeGroup(schemeIndex);
+      auto group = controlSchemeGroup(schemeIndex);
       if (!group) {
         return false;
       }
       if (group->getTarget(ExtensibleFields::ControlSchemeScheduleName)) {
         return true;
       }
-      return hasNonEmptyField(*group, ExtensibleFields::ControlSchemeScheduleName);
+      return controlSchemeRawField(schemeIndex, ExtensibleFields::ControlSchemeScheduleName).is_initialized()
+             && !controlSchemeRawField(schemeIndex, ExtensibleFields::ControlSchemeScheduleName)->empty();
     }
 
     boost::optional<openstudio::epmodel::ModelObject> PlantEquipmentOperationSchemes_Impl::controlScheme(unsigned schemeIndex) const {
-      const auto group = controlSchemeGroup(schemeIndex);
+      auto group = controlSchemeGroup(schemeIndex);
       if (!group) {
         return boost::none;
       }
@@ -228,16 +217,46 @@ namespace epmodel {
       if (target) {
         return target->optionalCast<openstudio::epmodel::ModelObject>();
       }
-      const auto name = group->getString(ExtensibleFields::ControlSchemeName, true);
-      if (!name || name->empty()) {
+      return boost::none;
+    }
+
+    boost::optional<openstudio::epmodel::ModelObject> PlantEquipmentOperationSchemes_Impl::resolveAndAttachControlScheme(unsigned schemeIndex) {
+      // Canonicalization-only helper. Normal API paths should already have a
+      // live pointer here or should go through the typed setters that create
+      // one. This exists to repair imported rows that only have raw field text.
+      if (auto scheme = controlScheme(schemeIndex)) {
+        return scheme;
+      }
+
+      auto group = controlSchemeGroup(schemeIndex);
+      if (!group) {
         return boost::none;
       }
 
+      const auto type = controlSchemeObjectTypeField(schemeIndex);
+      // Canonicalization needs the raw stored field text here. The workspace
+      // wrapper getters only reflect live linked targets for source fields,
+      // which is exactly what is missing in the imported rows we are fixing.
+      const auto name = controlSchemeRawField(schemeIndex, ExtensibleFields::ControlSchemeName);
+      if (!type || type->empty() || !name || name->empty()) {
+        return boost::none;
+      }
+
+      // This object stores scheme relationships as extensible name/type rows.
+      // During ordinary API use we rely on a live pointer. During canonicalize
+      // we repair raw imported rows by finding the named object and attaching
+      // the pointer so later renames stay tracked.
       for (const auto& candidate : model().getObjectsByName(*name, true, true)) {
         if (auto typedCandidate = candidate.optionalCast<openstudio::epmodel::ModelObject>()) {
-          return typedCandidate;
+          if (typedCandidate->iddObject().name() != *type) {
+            continue;
+          }
+          if (group->setPointer(ExtensibleFields::ControlSchemeName, typedCandidate->handle(), false)) {
+            return typedCandidate;
+          }
         }
       }
+
       return boost::none;
     }
 
@@ -304,7 +323,7 @@ namespace epmodel {
     }
 
     boost::optional<openstudio::epmodel::Schedule> PlantEquipmentOperationSchemes_Impl::controlSchemeSchedule(unsigned schemeIndex) const {
-      const auto group = controlSchemeGroup(schemeIndex);
+      auto group = controlSchemeGroup(schemeIndex);
       if (!group) {
         return boost::none;
       }
@@ -313,16 +332,35 @@ namespace epmodel {
       if (target) {
         return target->optionalCast<openstudio::epmodel::Schedule>();
       }
-      const auto name = group->getString(ExtensibleFields::ControlSchemeScheduleName, true);
+      return boost::none;
+    }
+
+    boost::optional<openstudio::epmodel::Schedule> PlantEquipmentOperationSchemes_Impl::resolveAndAttachControlSchemeSchedule(unsigned schemeIndex) {
+      // Canonicalization-only helper. Normal API paths should already have a
+      // live pointer here or should go through the typed setters that create
+      // one. This exists to repair imported rows that only have raw field text.
+      if (auto schedule = controlSchemeSchedule(schemeIndex)) {
+        return schedule;
+      }
+
+      auto group = ensureControlSchemeGroup(schemeIndex);
+      if (!group) {
+        return boost::none;
+      }
+
+      const auto name = controlSchemeRawField(schemeIndex, ExtensibleFields::ControlSchemeScheduleName);
       if (!name || name->empty()) {
         return boost::none;
       }
 
       for (const auto& candidate : model().getObjectsByName(*name, true, true)) {
-        if (auto typedCandidate = candidate.optionalCast<openstudio::epmodel::Schedule>()) {
-          return typedCandidate;
+        if (auto schedule = candidate.optionalCast<openstudio::epmodel::Schedule>()) {
+          if (group->setPointer(ExtensibleFields::ControlSchemeScheduleName, schedule->handle(), false)) {
+            return schedule;
+          }
         }
       }
+
       return boost::none;
     }
 
@@ -533,10 +571,23 @@ namespace epmodel {
       auto schemes = getObject<openstudio::epmodel::PlantEquipmentOperationSchemes>();
       const auto ownerName = schemes.nameString().empty() ? std::string{"PlantEquipmentOperationSchemes"} : schemes.nameString();
 
+      // Canonical form for this object is simple:
+      // - each populated control-scheme slot is represented by one extensible row
+      // - the row's type string matches the referenced scheme object's actual type
+      // - the row carries live pointers to the scheme and schedule when those names resolve
+      // - duplicate rows for the same slot are merged instead of preserved side by side
+      //
+      // In practice imported data can drift away from that shape. We see rows with
+      // only names and no pointers, rows with a stale type string that disagrees with
+      // the referenced scheme object, and duplicate rows where one has the scheme and
+      // another has the schedule. This pass repairs those cases and leaves behind the
+      // smallest set of rows that still represents the intended relationships.
       std::map<std::string, unsigned> keptIndexBySlot;
       std::map<std::string, int> keptScoreBySlot;
       std::vector<unsigned> groupsToErase;
       auto mergeGroupState = [this](unsigned survivorIndex, unsigned duplicateIndex) {
+        // When two rows really describe the same slot, keep one row and copy over any
+        // missing relationships from the weaker row before erasing it.
         if (!groupHasControlScheme(survivorIndex)) {
           if (auto duplicateScheme = controlScheme(duplicateIndex)) {
             OS_ASSERT(setControlScheme(survivorIndex, duplicateScheme->iddObject().name(), *duplicateScheme));
@@ -556,7 +607,11 @@ namespace epmodel {
         }
 
         auto type = controlSchemeObjectTypeField(schemeIndex);
-        if (auto scheme = controlScheme(schemeIndex)) {
+        // Repair name-only imports first. These helpers read the raw stored field text,
+        // find the referenced objects by name, and attach live pointers so the rest of
+        // canonicalization can reason about one consistent representation.
+        (void)resolveAndAttachControlSchemeSchedule(schemeIndex);
+        if (auto scheme = resolveAndAttachControlScheme(schemeIndex)) {
           const auto targetType = scheme->iddObject().name();
           if (isSupportedControlSchemeType(targetType) && ((!type || type->empty()) || (*type != targetType))) {
             OS_ASSERT(group->setString(ExtensibleFields::ControlSchemeObjectType, targetType));
@@ -585,6 +640,9 @@ namespace epmodel {
           continue;
         }
 
+        // Heating and cooling slots are unique by their explicit type. Everything else
+        // behaves like a single "primary" slot, so duplicates in that broader bucket
+        // need to be merged down to one surviving row.
         const std::string slotKey = isPrimaryControlSchemeType(*type) ? std::string{"__primary__"} : *type;
         const int slotScore = (groupHasControlScheme(schemeIndex) ? 2 : 0) + (groupHasControlSchemeSchedule(schemeIndex) ? 1 : 0);
         const auto keptIndex = keptIndexBySlot.find(slotKey);
