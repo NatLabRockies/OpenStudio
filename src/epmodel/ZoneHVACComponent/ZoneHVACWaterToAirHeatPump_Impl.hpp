@@ -15,14 +15,21 @@ namespace openstudio {
 namespace epmodel {
 
   class HVACComponent;
+  class Node;
+  class Schedule;
+  class ThermalZone;
 
   namespace detail {
+    struct LoadContext;
 
     class EPMODEL_API ZoneHVACWaterToAirHeatPump_Impl : public ZoneHVACComponent_Impl
     {
      public:
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACWaterToAirHeatPump_Impl() override = default;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
 
       boost::optional<double> supplyAirFlowRateDuringCoolingOperation() const;
       bool isSupplyAirFlowRateDuringCoolingOperationAutosized() const;
@@ -100,24 +107,41 @@ namespace epmodel {
       bool setHeatPumpCoilWaterFlowMode(const std::string& heatPumpCoilWaterFlowMode);
       void resetHeatPumpCoilWaterFlowMode();
 
+      boost::optional<Schedule> supplyAirFanOperatingModeSchedule() const;
+      bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+      void resetSupplyAirFanOperatingModeSchedule();
+
       HVACComponent supplyAirFan() const;
-      bool setSupplyAirFan(HVACComponent& supplyAirFan);
+      bool setSupplyAirFan(const HVACComponent& supplyAirFan);
 
       HVACComponent heatingCoil() const;
-      bool setHeatingCoil(HVACComponent& heatingCoil);
+      bool setHeatingCoil(const HVACComponent& heatingCoil);
 
       HVACComponent coolingCoil() const;
-      bool setCoolingCoil(HVACComponent& coolingCoil);
+      bool setCoolingCoil(const HVACComponent& coolingCoil);
 
       HVACComponent supplementalHeatingCoil() const;
-      bool setSupplementalHeatingCoil(HVACComponent& supplementalHeatingCoil);
+      bool setSupplementalHeatingCoil(const HVACComponent& supplementalHeatingCoil);
+
+      boost::optional<Node> fanOutletNode() const;
+      boost::optional<Node> coolingCoilOutletNode() const;
+      boost::optional<Node> heatingCoilOutletNode() const;
 
       std::vector<ModelObject> children() const override;
       unsigned inletPort() const override;
       unsigned outletPort() const override;
 
+      bool addToThermalZone(ThermalZone& thermalZone) override;
+      void removeFromThermalZone() override;
+      void doCanonicalize(LoadContext& context) override;
+
       double dXHeatingCoilSizingRatio() const;
       bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);
+
+     private:
+      bool maintainContainedAirPath();
+      bool repairContainedAirPath(LoadContext& context);
+      bool reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context = nullptr);
     };
 
   }  // namespace detail

@@ -318,6 +318,13 @@ for example `maintainContainedAirPath()` for ordinary typed mutations and
 internal helper can stay private, but the two call paths should remain
 distinct.
 
+The child-routing rules inside that owned air path should also stay local to
+the owning family. In practice, that means each compound type should spell out
+the exact child kinds it supports when it decides how to read air inlet and
+outlet ports. That can look a little repetitive, but it is easier to review
+and less brittle than growing a shared base helper that tries to know every
+possible child type for every compound family.
+
 When an internal node role has a clear meaning to users, epmodel may expose an
 accessor for that role on the owning compound even if the canonical
 `openstudio::model` type never did. That is meant to make common workflows

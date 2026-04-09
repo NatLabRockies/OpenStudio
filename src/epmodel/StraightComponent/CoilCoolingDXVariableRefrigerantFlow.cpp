@@ -3,10 +3,11 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#include "HVACComponent/CoilCoolingDXVariableRefrigerantFlow.hpp"
-#include "HVACComponent/CoilCoolingDXVariableRefrigerantFlow_Impl.hpp"
+#include "StraightComponent/CoilCoolingDXVariableRefrigerantFlow.hpp"
+#include "StraightComponent/CoilCoolingDXVariableRefrigerantFlow_Impl.hpp"
 
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -17,11 +18,11 @@ namespace openstudio {
 namespace epmodel {
 
 CoilCoolingDXVariableRefrigerantFlow::CoilCoolingDXVariableRefrigerantFlow(const Model& model)
-  : HVACComponent(CoilCoolingDXVariableRefrigerantFlow::iddObjectType(), model) {}
+  : StraightComponent(CoilCoolingDXVariableRefrigerantFlow::iddObjectType(), model) {}
 
 CoilCoolingDXVariableRefrigerantFlow::CoilCoolingDXVariableRefrigerantFlow(
   std::shared_ptr<detail::CoilCoolingDXVariableRefrigerantFlow_Impl> impl)
-  : HVACComponent(std::move(impl)) {}
+  : StraightComponent(std::move(impl)) {}
 
 IddObjectType CoilCoolingDXVariableRefrigerantFlow::iddObjectType() {
   return IddObjectType::Coil_Cooling_DX_VariableRefrigerantFlow;
@@ -81,6 +82,21 @@ void CoilCoolingDXVariableRefrigerantFlow::autosizeRatedAirFlowRate() {
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+unsigned CoilCoolingDXVariableRefrigerantFlow_Impl::inletPort() const {
+  return openstudio::Coil_Cooling_DX_VariableRefrigerantFlowFields::CoilAirInletNode;
+}
+
+unsigned CoilCoolingDXVariableRefrigerantFlow_Impl::outletPort() const {
+  return openstudio::Coil_Cooling_DX_VariableRefrigerantFlowFields::CoilAirOutletNode;
+}
+
+bool CoilCoolingDXVariableRefrigerantFlow_Impl::addToNode(Node& /*node*/) {
+  // This coil has a simple one-inlet/one-outlet air shape, so epmodel exposes
+  // it as a StraightComponent. It is still intended to live inside VRF-owned
+  // terminal topology, not to participate as standalone loop equipment.
+  return false;
+}
 
 boost::optional<double> CoilCoolingDXVariableRefrigerantFlow_Impl::ratedTotalCoolingCapacity() const {
   return getDouble(openstudio::Coil_Cooling_DX_VariableRefrigerantFlowFields::GrossRatedTotalCoolingCapacity, true);

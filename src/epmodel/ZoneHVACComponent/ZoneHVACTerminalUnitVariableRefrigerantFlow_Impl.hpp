@@ -16,10 +16,12 @@ namespace openstudio {
 namespace epmodel {
 
   class HVACComponent;
+  class Node;
   class Schedule;
   class ThermalZone;
 
   namespace detail {
+    struct LoadContext;
 
     class EPMODEL_API ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl : public ZoneHVACComponent_Impl
     {
@@ -93,29 +95,38 @@ namespace epmodel {
       void resetSupplyAirFanPlacement();
 
       HVACComponent supplyAirFan() const;
-      bool setSupplyAirFan(HVACComponent& fan);
+      bool setSupplyAirFan(const HVACComponent& fan);
 
       Schedule supplyAirFanOperatingModeSchedule() const;
       bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
 
       boost::optional<HVACComponent> coolingCoil() const;
-      bool setCoolingCoil(HVACComponent& coil);
+      bool setCoolingCoil(const HVACComponent& coil);
 
       boost::optional<HVACComponent> heatingCoil() const;
-      bool setHeatingCoil(HVACComponent& coil);
+      bool setHeatingCoil(const HVACComponent& coil);
 
       boost::optional<HVACComponent> supplementalHeatingCoil() const;
-      bool setSupplementalHeatingCoil(HVACComponent& coil);
+      bool setSupplementalHeatingCoil(const HVACComponent& coil);
       void resetSupplementalHeatingCoil();
+
+      boost::optional<Node> fanOutletNode() const;
+      boost::optional<Node> coolingCoilOutletNode() const;
+      boost::optional<Node> heatingCoilOutletNode() const;
 
       boost::optional<ThermalZone> controllingZoneorThermostatLocation() const;
       bool setControllingZoneorThermostatLocation(const ThermalZone& thermalZone);
       void resetControllingZoneorThermostatLocation();
 
-      std::vector<ModelObject> children() const;
+      std::vector<ModelObject> children() const override;
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToThermalZone(ThermalZone& thermalZone) override;
+      void removeFromThermalZone() override;
+      void doCanonicalize(LoadContext& context) override;
+
+      bool isFluidTemperatureControl() const;
 
       boost::optional<double> autosizedSupplyAirFlowRateDuringCoolingOperation() const;
       boost::optional<double> autosizedSupplyAirFlowRateWhenNoCoolingisNeeded() const;
@@ -124,6 +135,11 @@ namespace epmodel {
       boost::optional<double> autosizedOutdoorAirFlowRateDuringCoolingOperation() const;
       boost::optional<double> autosizedOutdoorAirFlowRateDuringHeatingOperation() const;
       boost::optional<double> autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
+
+     private:
+      bool maintainContainedAirPath();
+      bool repairContainedAirPath(LoadContext& context);
+      bool reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context = nullptr);
     };
 
   }  // namespace detail

@@ -91,6 +91,11 @@ Apply these preferences unless the user asks otherwise.
   owner maintenance and canonicalization repair, such as
   `maintainContainedAirPath()` and `repairContainedAirPath(LoadContext&)`.
   Do not collapse those two call paths back into one public-facing routine.
+- Keep contained-child routing rules owner-local. If a compound family needs
+  to switch on supported child types to find air inlet or outlet ports, do it
+  in that family's `.cpp` with a plain comment that says what is allowed.
+  Do not keep growing shared base helpers that try to enumerate every child
+  shape used by every compound HVAC family.
 - Do not hand-roll node-field resolution in local files. If code needs the
   `Node` behind a node field, use the shared `ModelObject_Impl`
   node-field helpers so resolved nodes are linked back to the owning field and

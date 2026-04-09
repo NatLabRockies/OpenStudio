@@ -16,6 +16,8 @@
 #include "Schedule/ScheduleConstant.hpp"
 #include "StraightComponent/Node.hpp"
 #include "StraightComponent/StraightComponent.hpp"
+#include "WaterToAirComponent/WaterToAirComponent.hpp"
+#include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
 
 #include "../utilities/core/Assert.hpp"
 #include "../utilities/core/Compare.hpp"
@@ -27,6 +29,48 @@
 
 namespace openstudio {
 namespace epmodel {
+
+  namespace {
+
+    // PTAC only wires a small, explicit set of child families into its owned
+    // serial air path: straight air-side components plus water heating coils.
+    // Keeping that rule local here is more honest than teaching the shared
+    // ZoneHVAC base about every component family that might show up in one
+    // compound unit.
+    bool isPackagedTerminalAirConditionerAirPathComponent(const HVACComponent& component) {
+      return static_cast<bool>(component.optionalCast<StraightComponent>())
+             || static_cast<bool>(component.optionalCast<WaterToAirComponent>());
+    }
+
+    unsigned packagedTerminalAirConditionerAirInletPort(const HVACComponent& component) {
+      if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+        return straightComponent->inletPort();
+      }
+      if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+        return waterToAirComponent->airInletPort();
+      }
+      return 0u;
+    }
+
+    unsigned packagedTerminalAirConditionerAirOutletPort(const HVACComponent& component) {
+      if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+        return straightComponent->outletPort();
+      }
+      if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+        return waterToAirComponent->airOutletPort();
+      }
+      return 0u;
+    }
+
+    boost::optional<Node> packagedTerminalAirConditionerAirOutletNode(const HVACComponent& component) {
+      const auto outletPort = packagedTerminalAirConditionerAirOutletPort(component);
+      if (outletPort == 0u) {
+        return boost::none;
+      }
+      return component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(outletPort);
+    }
+
+  }  // namespace
 
   ZoneHVACPackagedTerminalAirConditioner::ZoneHVACPackagedTerminalAirConditioner(const Model& model)
     : ZoneHVACComponent(ZoneHVACPackagedTerminalAirConditioner::iddObjectType(), model) {
@@ -600,7 +644,7 @@ namespace epmodel {
     }
 
     bool ZoneHVACPackagedTerminalAirConditioner_Impl::setHeatingCoil(const HVACComponent& heatingCoil) {
-      if ((heatingCoil.model() != model()) || !detail::isContainedAirPathComponent(heatingCoil)) {
+      if ((heatingCoil.model() != model()) || !isPackagedTerminalAirConditionerAirPathComponent(heatingCoil)) {
         return false;
       }
 
@@ -635,7 +679,7 @@ namespace epmodel {
           || (iddObjectType == IddObjectType::Coil_Cooling_DX_VariableSpeed)
           || (iddObjectType == IddObjectType::CoilSystem_Cooling_DX_HeatExchangerAssisted)
           || (iddObjectType == IddObjectType::Coil_Cooling_DX)) {
-        if ((detail::containedAirInletPort(coolingCoil) == 0u) || (detail::containedAirOutletPort(coolingCoil) == 0u)) {
+        if ((packagedTerminalAirConditionerAirInletPort(coolingCoil) == 0u) || (packagedTerminalAirConditionerAirOutletPort(coolingCoil) == 0u)) {
           return false;
         }
         const bool result = setPointer(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingCoilName, coolingCoil.handle(), false);
@@ -669,26 +713,26 @@ namespace epmodel {
 
     boost::optional<Node> ZoneHVACPackagedTerminalAirConditioner_Impl::coolingCoilOutletNode() const {
       auto coolingObject = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingCoilName);
-      auto cooling =
-        (coolingObject && detail::isContainedAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject) : boost::none;
+      auto cooling = (coolingObject && isPackagedTerminalAirConditionerAirPathComponent(*coolingObject))
+                       ? boost::optional<HVACComponent>(*coolingObject)
+                       : boost::none;
       if (!cooling) {
         return boost::none;
       }
 
-      auto coolingOutlet = detail::containedAirOutletModelObject(*cooling);
-      return coolingOutlet ? coolingOutlet->optionalCast<Node>() : boost::none;
+      return packagedTerminalAirConditionerAirOutletNode(*cooling);
     }
 
     boost::optional<Node> ZoneHVACPackagedTerminalAirConditioner_Impl::heatingCoilOutletNode() const {
       auto heatingObject = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_PackagedTerminalAirConditionerFields::HeatingCoilName);
-      auto heating =
-        (heatingObject && detail::isContainedAirPathComponent(*heatingObject)) ? boost::optional<HVACComponent>(*heatingObject) : boost::none;
+      auto heating = (heatingObject && isPackagedTerminalAirConditionerAirPathComponent(*heatingObject))
+                       ? boost::optional<HVACComponent>(*heatingObject)
+                       : boost::none;
       if (!heating) {
         return boost::none;
       }
 
-      auto heatingOutlet = detail::containedAirOutletModelObject(*heating);
-      return heatingOutlet ? heatingOutlet->optionalCast<Node>() : boost::none;
+      return packagedTerminalAirConditionerAirOutletNode(*heating);
     }
 
     bool ZoneHVACPackagedTerminalAirConditioner_Impl::maintainContainedAirPath() {
@@ -710,10 +754,12 @@ namespace epmodel {
       auto coolingObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_PackagedTerminalAirConditionerFields::CoolingCoilName);
 
       auto fan = fanObject ? fanObject->optionalCast<StraightComponent>() : boost::none;
-      auto heating =
-        (heatingObject && detail::isContainedAirPathComponent(*heatingObject)) ? boost::optional<HVACComponent>(*heatingObject) : boost::none;
-      auto cooling =
-        (coolingObject && detail::isContainedAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject) : boost::none;
+      auto heating = (heatingObject && isPackagedTerminalAirConditionerAirPathComponent(*heatingObject))
+                       ? boost::optional<HVACComponent>(*heatingObject)
+                       : boost::none;
+      auto cooling = (coolingObject && isPackagedTerminalAirConditionerAirPathComponent(*coolingObject))
+                       ? boost::optional<HVACComponent>(*coolingObject)
+                       : boost::none;
 
       bool changed = false;
       bool nodeWiringChanged = false;
@@ -799,7 +845,8 @@ namespace epmodel {
         OS_ASSERT(firstComponent);
 
         if (allowChildNodeRecovery) {
-          if (auto candidate = firstComponent->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(detail::containedAirInletPort(*firstComponent))) {
+          if (auto candidate = firstComponent->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(
+                packagedTerminalAirConditionerAirInletPort(*firstComponent))) {
             if ((*candidate != inletNode) && (*candidate != outletNode)) {
               sourceNode = candidate;
             }
@@ -840,14 +887,14 @@ namespace epmodel {
 
       Node upstreamNode = sourceNode ? *sourceNode : inletNode;
       auto& firstComponent = orderedComponents.front();
-      trackNodeChange(firstComponent.getImpl<detail::ModelObject_Impl>()->setPointer(detail::containedAirInletPort(firstComponent),
+      trackNodeChange(firstComponent.getImpl<detail::ModelObject_Impl>()->setPointer(packagedTerminalAirConditionerAirInletPort(firstComponent),
                                                                                     upstreamNode.handle(), false));
 
       for (size_t i = 0; i < orderedComponents.size(); ++i) {
         auto& component = orderedComponents[i];
         const bool hasNext = (i + 1u) < orderedComponents.size();
         if (!hasNext) {
-          trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(detail::containedAirOutletPort(component),
+          trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(packagedTerminalAirConditionerAirOutletPort(component),
                                                                                    outletNode.handle(), false));
           continue;
         }
@@ -855,8 +902,10 @@ namespace epmodel {
         auto& downstream = orderedComponents[i + 1u];
         boost::optional<Node> connectorNode;
 
-        if (auto currentOutlet = component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(detail::containedAirOutletPort(component))) {
-          if (auto downstreamInlet = downstream.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(detail::containedAirInletPort(downstream))) {
+        if (auto currentOutlet =
+              component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(packagedTerminalAirConditionerAirOutletPort(component))) {
+          if (auto downstreamInlet = downstream.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(
+                packagedTerminalAirConditionerAirInletPort(downstream))) {
             if ((*currentOutlet == *downstreamInlet) && (*currentOutlet != inletNode) && (*currentOutlet != outletNode)
                 && (!sourceNode || (*currentOutlet != *sourceNode))) {
               connectorNode = currentOutlet;
@@ -868,7 +917,8 @@ namespace epmodel {
         }
 
         if (!connectorNode && allowChildNodeRecovery) {
-          if (auto downstreamInlet = downstream.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(detail::containedAirInletPort(downstream))) {
+          if (auto downstreamInlet = downstream.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(
+                packagedTerminalAirConditionerAirInletPort(downstream))) {
             if ((*downstreamInlet != inletNode) && (*downstreamInlet != outletNode) && (!sourceNode || (*downstreamInlet != *sourceNode))) {
               connectorNode = downstreamInlet;
             }
@@ -887,9 +937,9 @@ namespace epmodel {
           connectorNode = model().getOrCreateTransientByName<Node>(suggestedName);
         }
 
-        trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(detail::containedAirOutletPort(component),
+        trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(packagedTerminalAirConditionerAirOutletPort(component),
                                                                                  connectorNode->handle(), false));
-        trackNodeChange(downstream.getImpl<detail::ModelObject_Impl>()->setPointer(detail::containedAirInletPort(downstream),
+        trackNodeChange(downstream.getImpl<detail::ModelObject_Impl>()->setPointer(packagedTerminalAirConditionerAirInletPort(downstream),
                                                                                   connectorNode->handle(), false));
       }
 

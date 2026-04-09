@@ -30,6 +30,46 @@
 namespace openstudio {
 namespace epmodel {
 
+  namespace {
+
+    // Four-pipe fan coil only treats straight components and water-side coils
+    // as serial air-path children. Keeping that dispatch here makes the owned
+    // topology rules explicit for this family instead of hiding them in a base
+    // helper that has to know about every compound type.
+    bool isFourPipeFanCoilAirPathComponent(const HVACComponent& component) {
+      return component.optionalCast<StraightComponent>() || component.optionalCast<WaterToAirComponent>();
+    }
+
+    unsigned fourPipeFanCoilAirInletPort(const HVACComponent& component) {
+      if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+        return straightComponent->inletPort();
+      }
+      if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+        return waterToAirComponent->airInletPort();
+      }
+      return 0u;
+    }
+
+    unsigned fourPipeFanCoilAirOutletPort(const HVACComponent& component) {
+      if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+        return straightComponent->outletPort();
+      }
+      if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+        return waterToAirComponent->airOutletPort();
+      }
+      return 0u;
+    }
+
+    boost::optional<Node> fourPipeFanCoilAirOutletNode(const HVACComponent& component) {
+      const auto outletPort = fourPipeFanCoilAirOutletPort(component);
+      if (outletPort == 0u) {
+        return boost::none;
+      }
+      return component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(outletPort);
+    }
+
+  }  // namespace
+
   ZoneHVACFourPipeFanCoil::ZoneHVACFourPipeFanCoil(const Model& model) : ZoneHVACComponent(ZoneHVACFourPipeFanCoil::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACFourPipeFanCoil_Impl>());
 
@@ -569,13 +609,12 @@ namespace epmodel {
     boost::optional<Node> ZoneHVACFourPipeFanCoil_Impl::coolingCoilOutletNode() const {
       auto coolingObject = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::CoolingCoilName);
       auto cooling =
-        (coolingObject && detail::isContainedAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject) : boost::none;
+        (coolingObject && isFourPipeFanCoilAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject) : boost::none;
       if (!cooling) {
         return boost::none;
       }
 
-      auto coolingOutlet = detail::containedAirOutletModelObject(*cooling);
-      return coolingOutlet ? coolingOutlet->optionalCast<Node>() : boost::none;
+      return fourPipeFanCoilAirOutletNode(*cooling);
     }
 
     bool ZoneHVACFourPipeFanCoil_Impl::setSupplyAirFan(const HVACComponent& fan) {
@@ -850,9 +889,9 @@ namespace epmodel {
       auto heatingObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_FourPipeFanCoilFields::HeatingCoilName);
       auto fan = fanObject ? fanObject->optionalCast<StraightComponent>() : boost::none;
       auto cooling =
-        (coolingObject && detail::isContainedAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject) : boost::none;
+        (coolingObject && isFourPipeFanCoilAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject) : boost::none;
       auto heating =
-        (heatingObject && detail::isContainedAirPathComponent(*heatingObject)) ? boost::optional<HVACComponent>(*heatingObject) : boost::none;
+        (heatingObject && isFourPipeFanCoilAirPathComponent(*heatingObject)) ? boost::optional<HVACComponent>(*heatingObject) : boost::none;
 
       bool changed = false;
 
@@ -913,8 +952,8 @@ namespace epmodel {
         if (!allowChildNodeRecovery) {
           auto currentFanOutlet = fan->outletModelObject() ? fan->outletModelObject()->optionalCast<Node>() : boost::none;
           const auto downstream = cooling ? cooling : heating;
-          auto currentDownstreamInlet = downstream && detail::containedAirInletPort(*downstream) != 0u
-                                          ? downstream->getModelObjectTarget<Node>(detail::containedAirInletPort(*downstream))
+          auto currentDownstreamInlet = downstream && fourPipeFanCoilAirInletPort(*downstream) != 0u
+                                          ? downstream->getModelObjectTarget<Node>(fourPipeFanCoilAirInletPort(*downstream))
                                           : boost::none;
           if (currentFanOutlet && currentDownstreamInlet && (*currentFanOutlet == *currentDownstreamInlet) && (*currentFanOutlet != inletNode)
               && (*currentFanOutlet != outletNode)) {
@@ -933,7 +972,7 @@ namespace epmodel {
         if (!fanOutlet && allowChildNodeRecovery) {
           const auto downstream = cooling ? cooling : heating;
           if (downstream) {
-            const auto downstreamInletPort = detail::containedAirInletPort(*downstream);
+            const auto downstreamInletPort = fourPipeFanCoilAirInletPort(*downstream);
             if (downstreamInletPort != 0u) {
               if (auto candidate = downstream->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(downstreamInletPort)) {
                 if ((*candidate != inletNode) && (*candidate != outletNode)) {
@@ -951,11 +990,9 @@ namespace epmodel {
       boost::optional<Node> coolingOutlet;
       if (cooling && heating) {
         if (!allowChildNodeRecovery) {
-          auto currentCoolingOutlet = detail::containedAirOutletModelObject(*cooling)
-                                        ? detail::containedAirOutletModelObject(*cooling)->optionalCast<Node>()
-                                        : boost::none;
-          auto currentHeatingInlet = detail::containedAirInletPort(*heating) != 0u
-                                       ? heating->getModelObjectTarget<Node>(detail::containedAirInletPort(*heating))
+          auto currentCoolingOutlet = fourPipeFanCoilAirOutletNode(*cooling);
+          auto currentHeatingInlet = fourPipeFanCoilAirInletPort(*heating) != 0u
+                                       ? heating->getModelObjectTarget<Node>(fourPipeFanCoilAirInletPort(*heating))
                                        : boost::none;
           if (currentCoolingOutlet && currentHeatingInlet && (*currentCoolingOutlet == *currentHeatingInlet)
               && (*currentCoolingOutlet != inletNode) && (*currentCoolingOutlet != outletNode)
@@ -966,7 +1003,7 @@ namespace epmodel {
           coolingOutlet = coolingCoilOutletNode();
         }
         if (!coolingOutlet && allowChildNodeRecovery) {
-          const auto coolingAirOutletPort = detail::containedAirOutletPort(*cooling);
+          const auto coolingAirOutletPort = fourPipeFanCoilAirOutletPort(*cooling);
           if (coolingAirOutletPort != 0u) {
             if (auto candidate = cooling->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(coolingAirOutletPort)) {
               if ((*candidate != inletNode) && (*candidate != outletNode) && (!fanOutlet || (*candidate != *fanOutlet))) {
@@ -976,7 +1013,7 @@ namespace epmodel {
           }
         }
         if (!coolingOutlet && allowChildNodeRecovery) {
-          const auto heatingAirInletPort = detail::containedAirInletPort(*heating);
+          const auto heatingAirInletPort = fourPipeFanCoilAirInletPort(*heating);
           if (heatingAirInletPort != 0u) {
             if (auto candidate = heating->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(heatingAirInletPort)) {
               if ((*candidate != inletNode) && (*candidate != outletNode) && (!fanOutlet || (*candidate != *fanOutlet))) {
@@ -1000,8 +1037,8 @@ namespace epmodel {
       }
 
       if (cooling) {
-        const auto coolingAirInletPort = detail::containedAirInletPort(*cooling);
-        const auto coolingAirOutletPort = detail::containedAirOutletPort(*cooling);
+        const auto coolingAirInletPort = fourPipeFanCoilAirInletPort(*cooling);
+        const auto coolingAirOutletPort = fourPipeFanCoilAirOutletPort(*cooling);
         if (coolingAirInletPort != 0u) {
           if (fanOutlet) {
             changed = cooling->getImpl<detail::ModelObject_Impl>()->setPointer(coolingAirInletPort, fanOutlet->handle(), false) || changed;
@@ -1019,8 +1056,8 @@ namespace epmodel {
       }
 
       if (heating) {
-        const auto heatingAirInletPort = detail::containedAirInletPort(*heating);
-        const auto heatingAirOutletPort = detail::containedAirOutletPort(*heating);
+        const auto heatingAirInletPort = fourPipeFanCoilAirInletPort(*heating);
+        const auto heatingAirOutletPort = fourPipeFanCoilAirOutletPort(*heating);
         if (heatingAirInletPort != 0u) {
           if (coolingOutlet) {
             changed = heating->getImpl<detail::ModelObject_Impl>()->setPointer(heatingAirInletPort, coolingOutlet->handle(), false) || changed;

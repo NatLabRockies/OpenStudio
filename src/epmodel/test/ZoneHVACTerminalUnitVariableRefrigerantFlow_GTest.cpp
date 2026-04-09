@@ -6,9 +6,10 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../StraightComponent/CoilCoolingDXVariableRefrigerantFlow.hpp"
+#include "../StraightComponent/CoilHeatingDXVariableRefrigerantFlow.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
-#include "../HVACComponent/CoilCoolingDXVariableRefrigerantFlow.hpp"
-#include "../HVACComponent/CoilHeatingDXVariableRefrigerantFlow.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
@@ -17,6 +18,8 @@
 #include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp"
 
+#include <utilities/idd/Coil_Cooling_DX_VariableRefrigerantFlow_FieldEnums.hxx>
+#include <utilities/idd/Coil_Heating_DX_VariableRefrigerantFlow_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_TerminalUnit_VariableRefrigerantFlow_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
@@ -121,38 +124,28 @@ TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_ScalarAccesso
 TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_TopologyAndChildren) {
   Model model;
   ThermalZone zone(model);
-  ZoneHVACTerminalUnitVariableRefrigerantFlow vrf(model);
-
-  EXPECT_EQ(openstudio::ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::TerminalUnitAirInletNodeName, vrf.inletPort());
-  EXPECT_EQ(openstudio::ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::TerminalUnitAirOutletNodeName, vrf.outletPort());
-
-  EXPECT_TRUE(vrf.addToThermalZone(zone));
-  ASSERT_TRUE(vrf.inletNode());
-  ASSERT_TRUE(vrf.outletNode());
-  EXPECT_EQ(zone, vrf.thermalZone().get());
-
-  vrf.removeFromThermalZone();
-  EXPECT_FALSE(vrf.inletNode());
-  EXPECT_FALSE(vrf.outletNode());
-  EXPECT_FALSE(vrf.thermalZone());
-
   FanOnOff fan(model);
   CoilCoolingDXVariableRefrigerantFlow coolingCoil(model);
   CoilHeatingDXVariableRefrigerantFlow heatingCoil(model);
   CoilHeatingElectric supplementalHeatingCoil(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow vrf(model);
 
-  EXPECT_TRUE(vrf.setSupplyAirFan(fan));
-  EXPECT_TRUE(vrf.setCoolingCoil(coolingCoil));
-  EXPECT_TRUE(vrf.setHeatingCoil(heatingCoil));
-  EXPECT_TRUE(vrf.setSupplementalHeatingCoil(supplementalHeatingCoil));
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateDuringCoolingOperation(0.0));
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateDuringHeatingOperation(0.0));
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.0));
+  ASSERT_TRUE(vrf.setSupplyAirFan(fan));
+  ASSERT_TRUE(vrf.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(vrf.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(vrf.setSupplementalHeatingCoil(supplementalHeatingCoil));
 
-  EXPECT_EQ(fan, vrf.supplyAirFan());
-  ASSERT_TRUE(vrf.coolingCoil());
-  EXPECT_EQ(coolingCoil, vrf.coolingCoil().get());
-  ASSERT_TRUE(vrf.heatingCoil());
-  EXPECT_EQ(heatingCoil, vrf.heatingCoil().get());
-  ASSERT_TRUE(vrf.supplementalHeatingCoil());
-  EXPECT_EQ(supplementalHeatingCoil, vrf.supplementalHeatingCoil().get());
+  EXPECT_EQ(openstudio::ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::TerminalUnitAirInletNodeName, vrf.inletPort());
+  EXPECT_EQ(openstudio::ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::TerminalUnitAirOutletNodeName, vrf.outletPort());
+
+  ASSERT_TRUE(vrf.inletNode());
+  ASSERT_TRUE(vrf.outletNode());
+  ASSERT_TRUE(vrf.fanOutletNode());
+  ASSERT_TRUE(vrf.coolingCoilOutletNode());
+  ASSERT_TRUE(vrf.heatingCoilOutletNode());
 
   const auto children = vrf.children();
   ASSERT_EQ(4u, children.size());
@@ -160,6 +153,53 @@ TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_TopologyAndCh
   EXPECT_EQ(coolingCoil.handle(), children[1].handle());
   EXPECT_EQ(heatingCoil.handle(), children[2].handle());
   EXPECT_EQ(supplementalHeatingCoil.handle(), children[3].handle());
+
+  ASSERT_TRUE(fan.containingHVACComponent());
+  ASSERT_TRUE(coolingCoil.containingHVACComponent());
+  ASSERT_TRUE(heatingCoil.containingHVACComponent());
+  ASSERT_TRUE(supplementalHeatingCoil.containingHVACComponent());
+  EXPECT_EQ(vrf, fan.containingHVACComponent().get());
+  EXPECT_EQ(vrf, coolingCoil.containingHVACComponent().get());
+  EXPECT_EQ(vrf, heatingCoil.containingHVACComponent().get());
+  EXPECT_EQ(vrf, supplementalHeatingCoil.containingHVACComponent().get());
+
+  ASSERT_TRUE(vrf.addToThermalZone(zone));
+  ASSERT_TRUE(vrf.thermalZone());
+  EXPECT_EQ(zone, vrf.thermalZone().get());
+
+  auto fanInlet = fan.inletModelObject()->optionalCast<Node>();
+  auto fanOutlet = fan.outletModelObject()->optionalCast<Node>();
+  auto supplementalInlet = supplementalHeatingCoil.inletModelObject()->optionalCast<Node>();
+  auto supplementalOutlet = supplementalHeatingCoil.outletModelObject()->optionalCast<Node>();
+  ASSERT_TRUE(fanInlet);
+  ASSERT_TRUE(fanOutlet);
+  ASSERT_TRUE(supplementalInlet);
+  ASSERT_TRUE(supplementalOutlet);
+  auto coolingInlet = coolingCoil.getString(openstudio::Coil_Cooling_DX_VariableRefrigerantFlowFields::CoilAirInletNode, true);
+  auto coolingOutlet = coolingCoil.getString(openstudio::Coil_Cooling_DX_VariableRefrigerantFlowFields::CoilAirOutletNode, true);
+  auto heatingInlet = heatingCoil.getString(openstudio::Coil_Heating_DX_VariableRefrigerantFlowFields::CoilAirInletNode, true);
+  auto heatingOutlet = heatingCoil.getString(openstudio::Coil_Heating_DX_VariableRefrigerantFlowFields::CoilAirOutletNode, true);
+  ASSERT_TRUE(coolingInlet);
+  ASSERT_TRUE(coolingOutlet);
+  ASSERT_TRUE(heatingInlet);
+  ASSERT_TRUE(heatingOutlet);
+
+  EXPECT_EQ(vrf.inletNode()->nameString(), *coolingInlet);
+  EXPECT_EQ(vrf.coolingCoilOutletNode()->nameString(), *coolingOutlet);
+  EXPECT_EQ(vrf.coolingCoilOutletNode()->nameString(), *heatingInlet);
+  EXPECT_EQ(vrf.heatingCoilOutletNode()->nameString(), *heatingOutlet);
+  EXPECT_EQ(*vrf.heatingCoilOutletNode(), *fanInlet);
+  EXPECT_EQ(*vrf.fanOutletNode(), *fanOutlet);
+  EXPECT_EQ(*vrf.fanOutletNode(), *supplementalInlet);
+  EXPECT_EQ(*vrf.outletNode(), *supplementalOutlet);
+
+  vrf.removeFromThermalZone();
+  EXPECT_FALSE(vrf.thermalZone());
+  EXPECT_TRUE(vrf.inletNode());
+  EXPECT_TRUE(vrf.outletNode());
+  EXPECT_TRUE(vrf.fanOutletNode());
+  EXPECT_TRUE(vrf.coolingCoilOutletNode());
+  EXPECT_TRUE(vrf.heatingCoilOutletNode());
 }
 
 TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_ControlRelationships_RoundTrip) {
@@ -189,4 +229,186 @@ TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_ControlRelati
 
   vrf.resetControllingZoneorThermostatLocation();
   EXPECT_FALSE(vrf.controllingZoneorThermostatLocation());
+}
+
+TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_NodeRolesFollowBlowThroughOrder) {
+  Model model;
+  FanOnOff fan(model);
+  CoilCoolingDXVariableRefrigerantFlow coolingCoil(model);
+  CoilHeatingDXVariableRefrigerantFlow heatingCoil(model);
+  CoilHeatingElectric supplementalHeatingCoil(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow vrf(model);
+
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateDuringCoolingOperation(0.0));
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateDuringHeatingOperation(0.0));
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.0));
+  ASSERT_TRUE(vrf.setSupplyAirFanPlacement("BlowThrough"));
+  ASSERT_TRUE(vrf.setSupplyAirFan(fan));
+  ASSERT_TRUE(vrf.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(vrf.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(vrf.setSupplementalHeatingCoil(supplementalHeatingCoil));
+
+  ASSERT_TRUE(vrf.fanOutletNode());
+  ASSERT_TRUE(vrf.coolingCoilOutletNode());
+  ASSERT_TRUE(vrf.heatingCoilOutletNode());
+  ASSERT_TRUE(vrf.outletNode());
+
+  auto coolingInlet = coolingCoil.getString(openstudio::Coil_Cooling_DX_VariableRefrigerantFlowFields::CoilAirInletNode, true);
+  auto heatingInlet = heatingCoil.getString(openstudio::Coil_Heating_DX_VariableRefrigerantFlowFields::CoilAirInletNode, true);
+  ASSERT_TRUE(coolingInlet);
+  ASSERT_TRUE(heatingInlet);
+  EXPECT_EQ(vrf.fanOutletNode()->nameString(), *coolingInlet);
+  EXPECT_EQ(vrf.coolingCoilOutletNode()->nameString(), *heatingInlet);
+  EXPECT_EQ(*vrf.heatingCoilOutletNode(), *supplementalHeatingCoil.inletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*vrf.outletNode(), *supplementalHeatingCoil.outletModelObject()->optionalCast<Node>());
+}
+
+TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_InternalNodeRenamesSurviveCanonicalize) {
+  Model model;
+  FanOnOff fan(model);
+  CoilCoolingDXVariableRefrigerantFlow coolingCoil(model);
+  CoilHeatingDXVariableRefrigerantFlow heatingCoil(model);
+  CoilHeatingElectric supplementalHeatingCoil(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow vrf(model);
+
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateDuringCoolingOperation(0.0));
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateDuringHeatingOperation(0.0));
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.0));
+  ASSERT_TRUE(vrf.setSupplyAirFan(fan));
+  ASSERT_TRUE(vrf.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(vrf.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(vrf.setSupplementalHeatingCoil(supplementalHeatingCoil));
+
+  ASSERT_TRUE(vrf.fanOutletNode());
+  ASSERT_TRUE(vrf.coolingCoilOutletNode());
+  ASSERT_TRUE(vrf.heatingCoilOutletNode());
+  ASSERT_TRUE(vrf.fanOutletNode()->setName("Custom VRF Fan Outlet"));
+  ASSERT_TRUE(vrf.coolingCoilOutletNode()->setName("Custom VRF Cooling Outlet"));
+  ASSERT_TRUE(vrf.heatingCoilOutletNode()->setName("Custom VRF Heating Outlet"));
+
+  auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+
+  ASSERT_TRUE(vrf.fanOutletNode());
+  ASSERT_TRUE(vrf.coolingCoilOutletNode());
+  ASSERT_TRUE(vrf.heatingCoilOutletNode());
+  EXPECT_EQ("Custom VRF Fan Outlet", vrf.fanOutletNode()->nameString());
+  EXPECT_EQ("Custom VRF Cooling Outlet", vrf.coolingCoilOutletNode()->nameString());
+  EXPECT_EQ("Custom VRF Heating Outlet", vrf.heatingCoilOutletNode()->nameString());
+}
+
+TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_ContainedChildTopologyMutationsAreRejected) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  FanOnOff fan(model);
+  CoilCoolingDXVariableRefrigerantFlow coolingCoil(model);
+  CoilHeatingDXVariableRefrigerantFlow heatingCoil(model);
+  CoilHeatingElectric supplementalHeatingCoil(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow vrf(model);
+
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateDuringCoolingOperation(0.0));
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateDuringHeatingOperation(0.0));
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.0));
+  ASSERT_TRUE(vrf.setSupplyAirFan(fan));
+  ASSERT_TRUE(vrf.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(vrf.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(vrf.setSupplementalHeatingCoil(supplementalHeatingCoil));
+
+  auto originalFanOutlet = vrf.fanOutletNode();
+  auto originalCoolingOutlet = vrf.coolingCoilOutletNode();
+  auto originalHeatingOutlet = vrf.heatingCoilOutletNode();
+  ASSERT_TRUE(originalFanOutlet);
+  ASSERT_TRUE(originalCoolingOutlet);
+  ASSERT_TRUE(originalHeatingOutlet);
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+
+  fan.disconnect();
+  EXPECT_FALSE(fan.addToNode(supplyOutletNode));
+  EXPECT_FALSE(fan.isRemovable());
+  EXPECT_TRUE(fan.remove().empty());
+
+  coolingCoil.disconnect();
+  EXPECT_FALSE(coolingCoil.addToNode(supplyOutletNode));
+  EXPECT_FALSE(coolingCoil.isRemovable());
+  EXPECT_TRUE(coolingCoil.remove().empty());
+
+  heatingCoil.disconnect();
+  EXPECT_FALSE(heatingCoil.addToNode(supplyOutletNode));
+  EXPECT_FALSE(heatingCoil.isRemovable());
+  EXPECT_TRUE(heatingCoil.remove().empty());
+
+  supplementalHeatingCoil.disconnect();
+  EXPECT_FALSE(supplementalHeatingCoil.addToNode(supplyOutletNode));
+  EXPECT_FALSE(supplementalHeatingCoil.isRemovable());
+  EXPECT_TRUE(supplementalHeatingCoil.remove().empty());
+
+  ASSERT_TRUE(vrf.fanOutletNode());
+  ASSERT_TRUE(vrf.coolingCoilOutletNode());
+  ASSERT_TRUE(vrf.heatingCoilOutletNode());
+  EXPECT_EQ(*originalFanOutlet, *vrf.fanOutletNode());
+  EXPECT_EQ(*originalCoolingOutlet, *vrf.coolingCoilOutletNode());
+  EXPECT_EQ(*originalHeatingOutlet, *vrf.heatingCoilOutletNode());
+}
+
+TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_CanonicalizeRepairsContainedNodePath) {
+  Model model;
+  FanOnOff fan(model);
+  CoilCoolingDXVariableRefrigerantFlow coolingCoil(model);
+  CoilHeatingDXVariableRefrigerantFlow heatingCoil(model);
+  CoilHeatingElectric supplementalHeatingCoil(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow vrf(model);
+
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateDuringCoolingOperation(0.0));
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateDuringHeatingOperation(0.0));
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.0));
+  ASSERT_TRUE(vrf.setSupplyAirFanPlacement("DrawThrough"));
+  ASSERT_TRUE(vrf.setSupplyAirFan(fan));
+  ASSERT_TRUE(vrf.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(vrf.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(vrf.setSupplementalHeatingCoil(supplementalHeatingCoil));
+
+  ASSERT_TRUE(vrf.inletNode());
+  ASSERT_TRUE(vrf.outletNode());
+  auto expectedInlet = vrf.inletNode();
+  auto expectedOutlet = vrf.outletNode();
+  ASSERT_TRUE(expectedInlet);
+  ASSERT_TRUE(expectedOutlet);
+
+  Node rogueCoolingOutlet(model);
+  ASSERT_TRUE(rogueCoolingOutlet.setName("Rogue VRF Cooling Outlet"));
+  Node rogueHeatingOutlet(model);
+  ASSERT_TRUE(rogueHeatingOutlet.setName("Rogue VRF Heating Outlet"));
+  Node rogueFanOutlet(model);
+  ASSERT_TRUE(rogueFanOutlet.setName("Rogue VRF Fan Outlet"));
+
+  ASSERT_TRUE(coolingCoil.setPointer(openstudio::Coil_Cooling_DX_VariableRefrigerantFlowFields::CoilAirInletNode, vrf.inletNode()->handle()));
+  ASSERT_TRUE(coolingCoil.setPointer(openstudio::Coil_Cooling_DX_VariableRefrigerantFlowFields::CoilAirOutletNode, rogueCoolingOutlet.handle()));
+  ASSERT_TRUE(heatingCoil.setPointer(openstudio::Coil_Heating_DX_VariableRefrigerantFlowFields::CoilAirInletNode, rogueCoolingOutlet.handle()));
+  ASSERT_TRUE(heatingCoil.setPointer(openstudio::Coil_Heating_DX_VariableRefrigerantFlowFields::CoilAirOutletNode, rogueHeatingOutlet.handle()));
+  ASSERT_TRUE(fan.setPointer(fan.inletPort(), rogueHeatingOutlet.handle()));
+  ASSERT_TRUE(fan.setPointer(fan.outletPort(), rogueFanOutlet.handle()));
+  ASSERT_TRUE(supplementalHeatingCoil.setPointer(supplementalHeatingCoil.inletPort(), rogueFanOutlet.handle()));
+  ASSERT_TRUE(supplementalHeatingCoil.setPointer(supplementalHeatingCoil.outletPort(), vrf.outletNode()->handle()));
+
+  auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+
+  ASSERT_TRUE(vrf.inletNode());
+  ASSERT_TRUE(vrf.outletNode());
+  ASSERT_TRUE(vrf.coolingCoilOutletNode());
+  ASSERT_TRUE(vrf.heatingCoilOutletNode());
+  ASSERT_TRUE(vrf.fanOutletNode());
+  EXPECT_EQ(*expectedInlet, *vrf.inletNode());
+  EXPECT_EQ(*expectedOutlet, *vrf.outletNode());
+  EXPECT_EQ("Rogue VRF Cooling Outlet", vrf.coolingCoilOutletNode()->nameString());
+  EXPECT_EQ("Rogue VRF Heating Outlet", vrf.heatingCoilOutletNode()->nameString());
+  EXPECT_EQ("Rogue VRF Fan Outlet", vrf.fanOutletNode()->nameString());
+  auto repairedHeatingInlet =
+    heatingCoil.getString(openstudio::Coil_Heating_DX_VariableRefrigerantFlowFields::CoilAirInletNode, true);
+  ASSERT_TRUE(repairedHeatingInlet);
+  EXPECT_EQ(vrf.coolingCoilOutletNode()->nameString(), *repairedHeatingInlet);
+  EXPECT_EQ(*vrf.heatingCoilOutletNode(), *fan.inletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*vrf.fanOutletNode(), *supplementalHeatingCoil.inletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*vrf.outletNode(), *supplementalHeatingCoil.outletModelObject()->optionalCast<Node>());
 }

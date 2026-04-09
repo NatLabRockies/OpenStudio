@@ -12,21 +12,11 @@ namespace openstudio {
 namespace epmodel {
 
 class AirLoopHVACReturnPlenum;
-class HVACComponent;
 class ModelObject;
 class Node;
 class ThermalZone;
 
 namespace detail {
-
-// Compound zone HVAC owners like UnitVentilator and FourPipeFanCoil need one
-// shared way to treat StraightComponent and WaterToAirComponent children as a
-// single serial air path. Keep that type dispatch private here instead of
-// spreading it through each owner implementation.
-EPMODEL_API bool isContainedAirPathComponent(const HVACComponent& component);
-EPMODEL_API unsigned containedAirInletPort(const HVACComponent& component);
-EPMODEL_API unsigned containedAirOutletPort(const HVACComponent& component);
-EPMODEL_API boost::optional<ModelObject> containedAirOutletModelObject(const HVACComponent& component);
 
 class EPMODEL_API ZoneHVACComponent_Impl : public HVACComponent_Impl
 {

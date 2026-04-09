@@ -7,6 +7,11 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../Schedule/ScheduleCompact.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/FanOnOff.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../WaterToAirComponent/CoilCoolingWaterToAirHeatPumpEquationFit.hpp"
@@ -109,26 +114,30 @@ TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_ScalarAccessors_RoundTrip) {
 
 TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_TopologyAndChildren) {
   Model model;
-
+  ThermalZone zone(model);
   FanOnOff fan(model);
   CoilHeatingWaterToAirHeatPumpEquationFit heatingCoil(model);
   CoilCoolingWaterToAirHeatPumpEquationFit coolingCoil(model);
   CoilHeatingWater supplementalHeatingCoil(model);
-
   ZoneHVACWaterToAirHeatPump wahp(model);
+
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateDuringCoolingOperation(0.0));
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateDuringHeatingOperation(0.0));
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.0));
+  ASSERT_TRUE(wahp.setFanPlacement("DrawThrough"));
+  ASSERT_TRUE(wahp.setSupplyAirFan(fan));
+  ASSERT_TRUE(wahp.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(wahp.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(wahp.setSupplementalHeatingCoil(supplementalHeatingCoil));
 
   EXPECT_EQ(openstudio::ZoneHVAC_WaterToAirHeatPumpFields::AirInletNodeName, wahp.inletPort());
   EXPECT_EQ(openstudio::ZoneHVAC_WaterToAirHeatPumpFields::AirOutletNodeName, wahp.outletPort());
 
-  EXPECT_TRUE(wahp.setSupplyAirFan(fan));
-  EXPECT_TRUE(wahp.setHeatingCoil(heatingCoil));
-  EXPECT_TRUE(wahp.setCoolingCoil(coolingCoil));
-  EXPECT_TRUE(wahp.setSupplementalHeatingCoil(supplementalHeatingCoil));
-
-  EXPECT_EQ(fan, wahp.supplyAirFan());
-  EXPECT_EQ(heatingCoil, wahp.heatingCoil());
-  EXPECT_EQ(coolingCoil, wahp.coolingCoil());
-  EXPECT_EQ(supplementalHeatingCoil, wahp.supplementalHeatingCoil());
+  ASSERT_TRUE(wahp.inletNode());
+  ASSERT_TRUE(wahp.outletNode());
+  ASSERT_TRUE(wahp.fanOutletNode());
+  ASSERT_TRUE(wahp.coolingCoilOutletNode());
+  ASSERT_TRUE(wahp.heatingCoilOutletNode());
 
   const auto children = wahp.children();
   ASSERT_EQ(4u, children.size());
@@ -137,20 +146,257 @@ TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_TopologyAndChildren) {
   EXPECT_EQ(coolingCoil, children[2]);
   EXPECT_EQ(supplementalHeatingCoil, children[3]);
 
-  EXPECT_TRUE(fan.containingZoneHVACComponent());
-  EXPECT_EQ(wahp, fan.containingZoneHVACComponent().get());
-  EXPECT_TRUE(heatingCoil.containingZoneHVACComponent());
-  EXPECT_EQ(wahp, heatingCoil.containingZoneHVACComponent().get());
-  EXPECT_TRUE(coolingCoil.containingZoneHVACComponent());
-  EXPECT_EQ(wahp, coolingCoil.containingZoneHVACComponent().get());
-  EXPECT_TRUE(supplementalHeatingCoil.containingZoneHVACComponent());
-  EXPECT_EQ(wahp, supplementalHeatingCoil.containingZoneHVACComponent().get());
+  ASSERT_TRUE(fan.containingHVACComponent());
+  ASSERT_TRUE(heatingCoil.containingHVACComponent());
+  ASSERT_TRUE(coolingCoil.containingHVACComponent());
+  ASSERT_TRUE(supplementalHeatingCoil.containingHVACComponent());
+  EXPECT_EQ(wahp, fan.containingHVACComponent().get());
+  EXPECT_EQ(wahp, heatingCoil.containingHVACComponent().get());
+  EXPECT_EQ(wahp, coolingCoil.containingHVACComponent().get());
+  EXPECT_EQ(wahp, supplementalHeatingCoil.containingHVACComponent().get());
 
-  ThermalZone zone(model);
-  EXPECT_TRUE(wahp.addToThermalZone(zone));
+  ASSERT_TRUE(wahp.addToThermalZone(zone));
+  ASSERT_TRUE(wahp.thermalZone());
+  EXPECT_EQ(zone, wahp.thermalZone().get());
+
+  auto coolingInlet = coolingCoil.airInletModelObject()->optionalCast<Node>();
+  auto coolingOutlet = coolingCoil.airOutletModelObject()->optionalCast<Node>();
+  auto heatingInlet = heatingCoil.airInletModelObject()->optionalCast<Node>();
+  auto heatingOutlet = heatingCoil.airOutletModelObject()->optionalCast<Node>();
+  auto fanInlet = fan.inletModelObject()->optionalCast<Node>();
+  auto fanOutlet = fan.outletModelObject()->optionalCast<Node>();
+  auto supplementalInlet = supplementalHeatingCoil.airInletModelObject()->optionalCast<Node>();
+  auto supplementalOutlet = supplementalHeatingCoil.airOutletModelObject()->optionalCast<Node>();
+  ASSERT_TRUE(coolingInlet);
+  ASSERT_TRUE(coolingOutlet);
+  ASSERT_TRUE(heatingInlet);
+  ASSERT_TRUE(heatingOutlet);
+  ASSERT_TRUE(fanInlet);
+  ASSERT_TRUE(fanOutlet);
+  ASSERT_TRUE(supplementalInlet);
+  ASSERT_TRUE(supplementalOutlet);
+
+  EXPECT_EQ(*wahp.inletNode(), *coolingInlet);
+  EXPECT_EQ(*wahp.coolingCoilOutletNode(), *coolingOutlet);
+  EXPECT_EQ(*wahp.coolingCoilOutletNode(), *heatingInlet);
+  EXPECT_EQ(*wahp.heatingCoilOutletNode(), *heatingOutlet);
+  EXPECT_EQ(*wahp.heatingCoilOutletNode(), *fanInlet);
+  EXPECT_EQ(*wahp.fanOutletNode(), *fanOutlet);
+  EXPECT_EQ(*wahp.fanOutletNode(), *supplementalInlet);
+  EXPECT_EQ(*wahp.outletNode(), *supplementalOutlet);
+
+  wahp.removeFromThermalZone();
+  EXPECT_FALSE(wahp.thermalZone());
   EXPECT_TRUE(wahp.inletNode());
   EXPECT_TRUE(wahp.outletNode());
-  wahp.removeFromThermalZone();
-  EXPECT_FALSE(wahp.inletNode());
-  EXPECT_FALSE(wahp.outletNode());
+  EXPECT_TRUE(wahp.fanOutletNode());
+  EXPECT_TRUE(wahp.coolingCoilOutletNode());
+  EXPECT_TRUE(wahp.heatingCoilOutletNode());
+}
+
+TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_ScheduleRelationships_RoundTrip) {
+  Model model;
+  ZoneHVACWaterToAirHeatPump wahp(model);
+
+  auto defaultAvailability = wahp.availabilitySchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(defaultAvailability);
+  EXPECT_DOUBLE_EQ(1.0, defaultAvailability->value());
+  auto defaultFanMode = wahp.supplyAirFanOperatingModeSchedule()->optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(defaultFanMode);
+  EXPECT_DOUBLE_EQ(1.0, defaultFanMode->value());
+
+  ScheduleCompact availability(model);
+  ScheduleCompact fanMode(model);
+  ASSERT_TRUE(availability.setToConstantValue(0.6));
+  ASSERT_TRUE(fanMode.setToConstantValue(1.0));
+
+  EXPECT_TRUE(wahp.setAvailabilitySchedule(availability));
+  EXPECT_TRUE(wahp.setSupplyAirFanOperatingModeSchedule(fanMode));
+  EXPECT_EQ(availability.handle(), wahp.availabilitySchedule().handle());
+  ASSERT_TRUE(wahp.supplyAirFanOperatingModeSchedule());
+  EXPECT_EQ(fanMode.handle(), wahp.supplyAirFanOperatingModeSchedule()->handle());
+}
+
+TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_NodeRolesFollowBlowThroughOrder) {
+  Model model;
+  FanOnOff fan(model);
+  CoilHeatingWaterToAirHeatPumpEquationFit heatingCoil(model);
+  CoilCoolingWaterToAirHeatPumpEquationFit coolingCoil(model);
+  CoilHeatingWater supplementalHeatingCoil(model);
+  ZoneHVACWaterToAirHeatPump wahp(model);
+
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateDuringCoolingOperation(0.0));
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateDuringHeatingOperation(0.0));
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.0));
+  ASSERT_TRUE(wahp.setFanPlacement("BlowThrough"));
+  ASSERT_TRUE(wahp.setSupplyAirFan(fan));
+  ASSERT_TRUE(wahp.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(wahp.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(wahp.setSupplementalHeatingCoil(supplementalHeatingCoil));
+
+  ASSERT_TRUE(wahp.fanOutletNode());
+  ASSERT_TRUE(wahp.coolingCoilOutletNode());
+  ASSERT_TRUE(wahp.heatingCoilOutletNode());
+  ASSERT_TRUE(wahp.outletNode());
+
+  EXPECT_EQ(*wahp.fanOutletNode(), *coolingCoil.airInletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*wahp.coolingCoilOutletNode(), *heatingCoil.airInletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*wahp.heatingCoilOutletNode(), *supplementalHeatingCoil.airInletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*wahp.outletNode(), *supplementalHeatingCoil.airOutletModelObject()->optionalCast<Node>());
+}
+
+TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_InternalNodeRenamesSurviveCanonicalize) {
+  Model model;
+  FanOnOff fan(model);
+  CoilHeatingWaterToAirHeatPumpEquationFit heatingCoil(model);
+  CoilCoolingWaterToAirHeatPumpEquationFit coolingCoil(model);
+  CoilHeatingWater supplementalHeatingCoil(model);
+  ZoneHVACWaterToAirHeatPump wahp(model);
+
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateDuringCoolingOperation(0.0));
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateDuringHeatingOperation(0.0));
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.0));
+  ASSERT_TRUE(wahp.setSupplyAirFan(fan));
+  ASSERT_TRUE(wahp.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(wahp.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(wahp.setSupplementalHeatingCoil(supplementalHeatingCoil));
+
+  ASSERT_TRUE(wahp.fanOutletNode());
+  ASSERT_TRUE(wahp.coolingCoilOutletNode());
+  ASSERT_TRUE(wahp.heatingCoilOutletNode());
+  ASSERT_TRUE(wahp.fanOutletNode()->setName("Custom WTAHP Fan Outlet"));
+  ASSERT_TRUE(wahp.coolingCoilOutletNode()->setName("Custom WTAHP Cooling Outlet"));
+  ASSERT_TRUE(wahp.heatingCoilOutletNode()->setName("Custom WTAHP Heating Outlet"));
+
+  auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+
+  ASSERT_TRUE(wahp.fanOutletNode());
+  ASSERT_TRUE(wahp.coolingCoilOutletNode());
+  ASSERT_TRUE(wahp.heatingCoilOutletNode());
+  EXPECT_EQ("Custom WTAHP Fan Outlet", wahp.fanOutletNode()->nameString());
+  EXPECT_EQ("Custom WTAHP Cooling Outlet", wahp.coolingCoilOutletNode()->nameString());
+  EXPECT_EQ("Custom WTAHP Heating Outlet", wahp.heatingCoilOutletNode()->nameString());
+}
+
+TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_ContainedChildTopologyMutationsAreRejected) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+  FanOnOff fan(model);
+  CoilHeatingWaterToAirHeatPumpEquationFit heatingCoil(model);
+  CoilCoolingWaterToAirHeatPumpEquationFit coolingCoil(model);
+  CoilHeatingWater supplementalHeatingCoil(model);
+  ZoneHVACWaterToAirHeatPump wahp(model);
+
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateDuringCoolingOperation(0.0));
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateDuringHeatingOperation(0.0));
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.0));
+  ASSERT_TRUE(wahp.setSupplyAirFan(fan));
+  ASSERT_TRUE(wahp.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(wahp.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(wahp.setSupplementalHeatingCoil(supplementalHeatingCoil));
+
+  auto originalFanOutlet = wahp.fanOutletNode();
+  auto originalCoolingOutlet = wahp.coolingCoilOutletNode();
+  auto originalHeatingOutlet = wahp.heatingCoilOutletNode();
+  ASSERT_TRUE(originalFanOutlet);
+  ASSERT_TRUE(originalCoolingOutlet);
+  ASSERT_TRUE(originalHeatingOutlet);
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+
+  fan.disconnect();
+  EXPECT_FALSE(fan.addToNode(supplyOutletNode));
+  EXPECT_FALSE(fan.isRemovable());
+  EXPECT_TRUE(fan.remove().empty());
+
+  heatingCoil.disconnectAirSide();
+  EXPECT_FALSE(heatingCoil.addToNode(supplyOutletNode));
+  EXPECT_FALSE(heatingCoil.removeFromAirLoopHVAC());
+  EXPECT_FALSE(heatingCoil.isRemovable());
+  EXPECT_TRUE(heatingCoil.remove().empty());
+
+  coolingCoil.disconnectAirSide();
+  EXPECT_FALSE(coolingCoil.addToNode(supplyOutletNode));
+  EXPECT_FALSE(coolingCoil.removeFromAirLoopHVAC());
+  EXPECT_FALSE(coolingCoil.isRemovable());
+  EXPECT_TRUE(coolingCoil.remove().empty());
+
+  supplementalHeatingCoil.disconnectAirSide();
+  EXPECT_FALSE(supplementalHeatingCoil.addToNode(supplyOutletNode));
+  EXPECT_FALSE(supplementalHeatingCoil.removeFromAirLoopHVAC());
+  EXPECT_FALSE(supplementalHeatingCoil.isRemovable());
+  EXPECT_TRUE(supplementalHeatingCoil.remove().empty());
+  EXPECT_TRUE(plantLoop.addDemandBranchForComponent(supplementalHeatingCoil));
+  ASSERT_TRUE(supplementalHeatingCoil.plantLoop());
+  supplementalHeatingCoil.disconnect();
+  ASSERT_TRUE(supplementalHeatingCoil.plantLoop());
+  EXPECT_EQ(plantLoop, supplementalHeatingCoil.plantLoop().get());
+
+  ASSERT_TRUE(wahp.fanOutletNode());
+  ASSERT_TRUE(wahp.coolingCoilOutletNode());
+  ASSERT_TRUE(wahp.heatingCoilOutletNode());
+  EXPECT_EQ(*originalFanOutlet, *wahp.fanOutletNode());
+  EXPECT_EQ(*originalCoolingOutlet, *wahp.coolingCoilOutletNode());
+  EXPECT_EQ(*originalHeatingOutlet, *wahp.heatingCoilOutletNode());
+}
+
+TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_CanonicalizeRepairsContainedNodePath) {
+  Model model;
+  FanOnOff fan(model);
+  CoilHeatingWaterToAirHeatPumpEquationFit heatingCoil(model);
+  CoilCoolingWaterToAirHeatPumpEquationFit coolingCoil(model);
+  CoilHeatingWater supplementalHeatingCoil(model);
+  ZoneHVACWaterToAirHeatPump wahp(model);
+
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateDuringCoolingOperation(0.0));
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateDuringHeatingOperation(0.0));
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.0));
+  ASSERT_TRUE(wahp.setFanPlacement("DrawThrough"));
+  ASSERT_TRUE(wahp.setSupplyAirFan(fan));
+  ASSERT_TRUE(wahp.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(wahp.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(wahp.setSupplementalHeatingCoil(supplementalHeatingCoil));
+
+  ASSERT_TRUE(wahp.inletNode());
+  ASSERT_TRUE(wahp.outletNode());
+  auto expectedInlet = wahp.inletNode();
+  auto expectedOutlet = wahp.outletNode();
+  ASSERT_TRUE(expectedInlet);
+  ASSERT_TRUE(expectedOutlet);
+
+  Node rogueCoolingOutlet(model);
+  ASSERT_TRUE(rogueCoolingOutlet.setName("Rogue WTAHP Cooling Outlet"));
+  Node rogueHeatingOutlet(model);
+  ASSERT_TRUE(rogueHeatingOutlet.setName("Rogue WTAHP Heating Outlet"));
+  Node rogueFanOutlet(model);
+  ASSERT_TRUE(rogueFanOutlet.setName("Rogue WTAHP Fan Outlet"));
+
+  ASSERT_TRUE(coolingCoil.setPointer(coolingCoil.airInletPort(), wahp.inletNode()->handle()));
+  ASSERT_TRUE(coolingCoil.setPointer(coolingCoil.airOutletPort(), rogueCoolingOutlet.handle()));
+  ASSERT_TRUE(heatingCoil.setPointer(heatingCoil.airInletPort(), rogueCoolingOutlet.handle()));
+  ASSERT_TRUE(heatingCoil.setPointer(heatingCoil.airOutletPort(), rogueHeatingOutlet.handle()));
+  ASSERT_TRUE(fan.setPointer(fan.inletPort(), rogueHeatingOutlet.handle()));
+  ASSERT_TRUE(fan.setPointer(fan.outletPort(), rogueFanOutlet.handle()));
+  ASSERT_TRUE(supplementalHeatingCoil.setPointer(supplementalHeatingCoil.airInletPort(), rogueFanOutlet.handle()));
+  ASSERT_TRUE(supplementalHeatingCoil.setPointer(supplementalHeatingCoil.airOutletPort(), wahp.outletNode()->handle()));
+
+  auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+
+  ASSERT_TRUE(wahp.inletNode());
+  ASSERT_TRUE(wahp.outletNode());
+  ASSERT_TRUE(wahp.coolingCoilOutletNode());
+  ASSERT_TRUE(wahp.heatingCoilOutletNode());
+  ASSERT_TRUE(wahp.fanOutletNode());
+  EXPECT_EQ(*expectedInlet, *wahp.inletNode());
+  EXPECT_EQ(*expectedOutlet, *wahp.outletNode());
+  EXPECT_EQ("Rogue WTAHP Cooling Outlet", wahp.coolingCoilOutletNode()->nameString());
+  EXPECT_EQ("Rogue WTAHP Heating Outlet", wahp.heatingCoilOutletNode()->nameString());
+  EXPECT_EQ("Rogue WTAHP Fan Outlet", wahp.fanOutletNode()->nameString());
+  EXPECT_EQ(*wahp.coolingCoilOutletNode(), *heatingCoil.airInletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*wahp.heatingCoilOutletNode(), *fan.inletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*wahp.fanOutletNode(), *supplementalHeatingCoil.airInletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*wahp.outletNode(), *supplementalHeatingCoil.airOutletModelObject()->optionalCast<Node>());
 }

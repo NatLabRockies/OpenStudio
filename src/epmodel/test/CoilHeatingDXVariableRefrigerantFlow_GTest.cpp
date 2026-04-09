@@ -6,7 +6,11 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../HVACComponent/CoilHeatingDXVariableRefrigerantFlow.hpp"
+#include "../StraightComponent/CoilHeatingDXVariableRefrigerantFlow.hpp"
+#include "../StraightComponent/Node.hpp"
+#include "../StraightComponent/StraightComponent.hpp"
+
+#include <utilities/idd/Coil_Heating_DX_VariableRefrigerantFlow_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -34,4 +38,15 @@ TEST_F(EPModelFixture, CoilHeatingDXVariableRefrigerantFlow_ScalarAccessors_Roun
   EXPECT_FALSE(coil.isRatedAirFlowRateAutosized());
   coil.autosizeRatedAirFlowRate();
   EXPECT_TRUE(coil.isRatedAirFlowRateAutosized());
+}
+
+TEST_F(EPModelFixture, CoilHeatingDXVariableRefrigerantFlow_StraightComponentPortsWithoutLoopPlacement) {
+  Model model;
+  CoilHeatingDXVariableRefrigerantFlow coil(model);
+  Node node(model);
+
+  EXPECT_TRUE(coil.optionalCast<StraightComponent>());
+  EXPECT_EQ(openstudio::Coil_Heating_DX_VariableRefrigerantFlowFields::CoilAirInletNode, coil.inletPort());
+  EXPECT_EQ(openstudio::Coil_Heating_DX_VariableRefrigerantFlowFields::CoilAirOutletNode, coil.outletPort());
+  EXPECT_FALSE(coil.addToNode(node));
 }

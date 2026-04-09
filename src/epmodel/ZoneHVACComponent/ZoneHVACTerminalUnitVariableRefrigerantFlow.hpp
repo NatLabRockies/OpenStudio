@@ -21,6 +21,7 @@ namespace epmodel {
   class Model;
   class HVACComponent;
   class ModelObject;
+  class Node;
   class Schedule;
   class ThermalZone;
 
@@ -43,11 +44,18 @@ namespace epmodel {
     static std::vector<std::string> supplyAirFanPlacementValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar VRF terminal fields are aligned, but the fan/coil/schedule/node relationships remain separate.
+    // - Status: Partial Parity. The scalar VRF terminal fields are aligned, and the contained fan/coil air path is now kept consistent through
+    //   parent-owned epmodel nodes, but broader VRF terminal parity remains incomplete.
     // - Canonical Counterpart: openstudio::model::ZoneHVACTerminalUnitVariableRefrigerantFlow.
-    // - Implemented Parity: Supply-air and outdoor-air flow scalars, parasitic electric loads, rated heating ratio, supplemental-heater limits, and fan-placement helpers map directly to the EnergyPlus object.
-    // - Documented Delta: Node names remain relationship-only; the availability, fan operating-mode, child fan/coil, and controlling-zone links are now surfaced directly.
-    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while the fan/coil/schedule/node topology is represented through explicit child and topology state.
+    // - Implemented Parity: Supply-air and outdoor-air flow scalars, parasitic electric loads, rated heating ratio, supplemental-heater limits,
+    //   fan-placement helpers, schedules, controlling-zone links, and contained fan/coil child accessors preserve the canonical wrapper
+    //   behavior. The contained supply fan, cooling coil, heating coil, and optional supplemental heating coil now share a parent-owned air
+    //   path, with direct access to the meaningful fan-outlet, cooling-coil-outlet, and heating-coil-outlet roles on the compound.
+    // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are exposed as additive conveniences so
+    //   callers can inspect and rename the meaningful node roles owned by the compound, even when those roles alias each other or the parent
+    //   outlet in a valid configuration. Outdoor-air-mixer-only node roles still remain outside the public wrapper.
+    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while the fan/coil/schedule/node topology is represented
+    //   through explicit child state and transient epmodel nodes.
     // - Evidence: `src/model/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp`, `src/model/ZoneHVACTerminalUnitVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACTerminalUnitVariableRefrigerantFlow.cpp`, and `src/epmodel/test/ZoneHVACTerminalUnitVariableRefrigerantFlow_GTest.cpp`.
     // - Remaining Parity Work: Add the omitted relationship helpers only if the canonical wrapper still exposes them directly.
 
@@ -117,20 +125,24 @@ namespace epmodel {
     void resetSupplyAirFanPlacement();
 
     HVACComponent supplyAirFan() const;
-    bool setSupplyAirFan(HVACComponent& fan);
+    bool setSupplyAirFan(const HVACComponent& fan);
 
     Schedule supplyAirFanOperatingModeSchedule() const;
     bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
 
     boost::optional<HVACComponent> coolingCoil() const;
-    bool setCoolingCoil(HVACComponent& coil);
+    bool setCoolingCoil(const HVACComponent& coil);
 
     boost::optional<HVACComponent> heatingCoil() const;
-    bool setHeatingCoil(HVACComponent& coil);
+    bool setHeatingCoil(const HVACComponent& coil);
 
     boost::optional<HVACComponent> supplementalHeatingCoil() const;
-    bool setSupplementalHeatingCoil(HVACComponent& coil);
+    bool setSupplementalHeatingCoil(const HVACComponent& coil);
     void resetSupplementalHeatingCoil();
+
+    boost::optional<Node> fanOutletNode() const;
+    boost::optional<Node> coolingCoilOutletNode() const;
+    boost::optional<Node> heatingCoilOutletNode() const;
 
     boost::optional<ThermalZone> controllingZoneorThermostatLocation() const;
     bool setControllingZoneorThermostatLocation(const ThermalZone& thermalZone);

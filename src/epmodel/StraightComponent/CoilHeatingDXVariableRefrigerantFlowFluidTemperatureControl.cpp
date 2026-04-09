@@ -3,10 +3,11 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#include "HVACComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.hpp"
-#include "HVACComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp"
+#include "StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.hpp"
+#include "StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp"
 
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -17,11 +18,11 @@ namespace openstudio {
 namespace epmodel {
 
 CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl::CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl(const Model& model)
-  : HVACComponent(CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl::iddObjectType(), model) {}
+  : StraightComponent(CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl::iddObjectType(), model) {}
 
 CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl::CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl(
   std::shared_ptr<detail::CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl> impl)
-  : HVACComponent(std::move(impl)) {}
+  : StraightComponent(std::move(impl)) {}
 
 IddObjectType CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl::iddObjectType() {
   return IddObjectType::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl;
@@ -58,6 +59,21 @@ bool CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl::setIndoorUnitR
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+unsigned CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl::inletPort() const {
+  return openstudio::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControlFields::CoilAirInletNode;
+}
+
+unsigned CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl::outletPort() const {
+  return openstudio::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControlFields::CoilAirOutletNode;
+}
+
+bool CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl::addToNode(Node& /*node*/) {
+  // This coil has a simple one-inlet/one-outlet air shape, so epmodel exposes
+  // it as a StraightComponent. It is still intended to live inside VRF-owned
+  // terminal topology, not to participate as standalone loop equipment.
+  return false;
+}
 
 boost::optional<double> CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl::ratedTotalHeatingCapacity() const {
   return getDouble(openstudio::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControlFields::RatedTotalHeatingCapacity, true);

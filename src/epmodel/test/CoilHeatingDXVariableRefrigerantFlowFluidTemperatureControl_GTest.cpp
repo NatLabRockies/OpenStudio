@@ -6,7 +6,11 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../HVACComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.hpp"
+#include "../StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.hpp"
+#include "../StraightComponent/Node.hpp"
+#include "../StraightComponent/StraightComponent.hpp"
+
+#include <utilities/idd/Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -30,4 +34,15 @@ TEST_F(EPModelFixture, CoilHeatingDXVariableRefrigerantFlowFluidTemperatureContr
 
   EXPECT_TRUE(coil.setIndoorUnitReferenceSubcooling(7.5));
   EXPECT_DOUBLE_EQ(7.5, coil.indoorUnitReferenceSubcooling());
+}
+
+TEST_F(EPModelFixture, CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_StraightComponentPortsWithoutLoopPlacement) {
+  Model model;
+  CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl coil(model);
+  Node node(model);
+
+  EXPECT_TRUE(coil.optionalCast<StraightComponent>());
+  EXPECT_EQ(openstudio::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControlFields::CoilAirInletNode, coil.inletPort());
+  EXPECT_EQ(openstudio::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControlFields::CoilAirOutletNode, coil.outletPort());
+  EXPECT_FALSE(coil.addToNode(node));
 }

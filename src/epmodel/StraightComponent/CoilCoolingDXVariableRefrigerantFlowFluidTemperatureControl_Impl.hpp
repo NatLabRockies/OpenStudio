@@ -6,18 +6,22 @@
 #ifndef EPMODEL_COILCOOLINGDXVARIABLEREFRIGERANTFLOWFLUIDTEMPERATURECONTROL_IMPL_HPP
 #define EPMODEL_COILCOOLINGDXVARIABLEREFRIGERANTFLOWFLUIDTEMPERATURECONTROL_IMPL_HPP
 
-#include "HVACComponent_Impl.hpp"
+#include "StraightComponent/StraightComponent_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl : public HVACComponent_Impl
+    class EPMODEL_API CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl : public StraightComponent_Impl
     {
      public:
-      using HVACComponent_Impl::HVACComponent_Impl;
+      using StraightComponent_Impl::StraightComponent_Impl;
       virtual ~CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl() override = default;
+
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
 
       boost::optional<double> ratedTotalCoolingCapacity() const;
       bool setRatedTotalCoolingCapacity(double ratedTotalCoolingCapacity);

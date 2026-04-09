@@ -24,6 +24,8 @@ namespace epmodel {
   class Model;
   class HVACComponent;
   class ModelObject;
+  class Node;
+  class Schedule;
 
   namespace detail {
     class ZoneHVACWaterToAirHeatPump_Impl;
@@ -46,13 +48,22 @@ namespace epmodel {
     static std::vector<std::string> heatPumpCoilWaterFlowModeValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar water-to-air heat-pump fields are aligned, but the fan/coil topology remains relationship-driven.
+    // - Status: Partial Parity. The scalar water-to-air heat-pump fields are aligned, and the contained fan/coil air path is now kept
+    //   consistent through parent-owned epmodel nodes, but broader water-to-air heat-pump parity remains incomplete.
     // - Canonical Counterpart: openstudio::model::ZoneHVACWaterToAirHeatPump.
-    // - Implemented Parity: The supply-air, outdoor-air, supplemental-heater, and DX sizing scalar groups map directly to the EnergyPlus object.
-    // - Documented Delta: Fan and coil targets are relationship-backed children and are intentionally excluded from the scalar surface.
-    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while fan and coil topology is represented through child-object state and children() traversal.
+    // - Implemented Parity: The supply-air, outdoor-air, supplemental-heater, and DX sizing scalar groups map directly to the EnergyPlus
+    //   object. The contained supply fan, cooling coil, heating coil, and supplemental heating coil now share a parent-owned air path with
+    //   direct access to the meaningful fan-outlet, cooling-coil-outlet, and heating-coil-outlet roles on the compound.
+    // - Documented Delta: These node accessors are additive conveniences so callers can inspect and rename the internal node roles owned by
+    //   the compound, even when some roles alias each other or the parent outlet in a valid configuration. Outdoor-air-mixer-only node roles
+    //   still remain outside the public wrapper because they do not have parent-backed field storage on this object.
+    // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while fan and coil topology is represented through
+    //   explicit child-object state and transient epmodel nodes.
     // - Evidence: `src/model/ZoneHVACWaterToAirHeatPump.hpp`, `src/model/ZoneHVACWaterToAirHeatPump.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACWaterToAirHeatPump.cpp`, and `src/epmodel/test/ZoneHVACWaterToAirHeatPump_GTest.cpp`.
-    // - Remaining Parity Work: Add missing relationship helpers only if the canonical wrapper needs them as public epmodel APIs.
+    // - Remaining Parity Work: Add any remaining canonical relationship conveniences only if the model wrapper still exposes them as public API.
+
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
 
     /** @name Scalar field accessors */
     //@{
@@ -133,17 +144,25 @@ namespace epmodel {
     bool setHeatPumpCoilWaterFlowMode(const std::string& heatPumpCoilWaterFlowMode);
     void resetHeatPumpCoilWaterFlowMode();
 
+    boost::optional<Schedule> supplyAirFanOperatingModeSchedule() const;
+    bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+    void resetSupplyAirFanOperatingModeSchedule();
+
     HVACComponent supplyAirFan() const;
-    bool setSupplyAirFan(HVACComponent& supplyAirFan);
+    bool setSupplyAirFan(const HVACComponent& supplyAirFan);
 
     HVACComponent heatingCoil() const;
-    bool setHeatingCoil(HVACComponent& heatingCoil);
+    bool setHeatingCoil(const HVACComponent& heatingCoil);
 
     HVACComponent coolingCoil() const;
-    bool setCoolingCoil(HVACComponent& coolingCoil);
+    bool setCoolingCoil(const HVACComponent& coolingCoil);
 
     HVACComponent supplementalHeatingCoil() const;
-    bool setSupplementalHeatingCoil(HVACComponent& supplementalHeatingCoil);
+    bool setSupplementalHeatingCoil(const HVACComponent& supplementalHeatingCoil);
+
+    boost::optional<Node> fanOutletNode() const;
+    boost::optional<Node> coolingCoilOutletNode() const;
+    boost::optional<Node> heatingCoilOutletNode() const;
 
     std::vector<ModelObject> children() const;
 

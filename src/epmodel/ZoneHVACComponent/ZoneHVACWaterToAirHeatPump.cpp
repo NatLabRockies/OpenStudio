@@ -6,15 +6,30 @@
 #include "ZoneHVACComponent/ZoneHVACWaterToAirHeatPump.hpp"
 #include "ZoneHVACComponent/ZoneHVACWaterToAirHeatPump_Impl.hpp"
 
+#include "HVACComponent.hpp"
+#include "HVACComponent/ThermalZone.hpp"
 #include "Model.hpp"
+#include "ModelObject/ModelObject.hpp"
+#include "ModelObject/ModelObject_Impl.hpp"
+#include "ModelObject/OutdoorAirMixer.hpp"
+#include "ModelObject/OutdoorAirMixer_Impl.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
+#include "StraightComponent/Node.hpp"
+#include "StraightComponent/StraightComponent.hpp"
+#include "WaterToAirComponent/WaterToAirComponent.hpp"
+#include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
 
 #include "../utilities/core/Assert.hpp"
+#include "../utilities/core/Compare.hpp"
 #include "../utilities/core/StringHelpers.hpp"
 
 #include <boost/optional.hpp>
 
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
+#include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_WaterToAirHeatPump_FieldEnums.hxx>
 
 namespace openstudio {
@@ -22,6 +37,8 @@ namespace epmodel {
 
   namespace {
 
+    // These two helpers exist only to keep the repeated Yes/No scalar mapping
+    // readable in this file.
     bool getBooleanFieldValue(const detail::ModelObject_Impl& impl, int fieldIndex) {
       const auto value = impl.getString(fieldIndex, true);
       OS_ASSERT(value);
@@ -32,11 +49,96 @@ namespace epmodel {
       return impl.setString(fieldIndex, value ? "Yes" : "No");
     }
 
+    // Water-to-air heat pump owns a mixed family of internal air-side children:
+    // the supply fan is a straight component, while the water-side coils expose
+    // dedicated air inlet/outlet fields. Keep that routing logic local here so
+    // the supported child set stays explicit in the type that owns the path.
+    bool isWaterToAirHeatPumpAirPathComponent(const HVACComponent& component) {
+      return component.optionalCast<StraightComponent>() || component.optionalCast<WaterToAirComponent>();
+    }
+
+    unsigned waterToAirHeatPumpAirInletPort(const HVACComponent& component) {
+      if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+        return straightComponent->inletPort();
+      }
+      if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+        return waterToAirComponent->airInletPort();
+      }
+      return 0u;
+    }
+
+    unsigned waterToAirHeatPumpAirOutletPort(const HVACComponent& component) {
+      if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+        return straightComponent->outletPort();
+      }
+      if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+        return waterToAirComponent->airOutletPort();
+      }
+      return 0u;
+    }
+
+    boost::optional<Node> waterToAirHeatPumpAirOutletNode(const HVACComponent& component) {
+      const auto outletPort = waterToAirHeatPumpAirOutletPort(component);
+      if (outletPort == 0u) {
+        return boost::none;
+      }
+      return component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(outletPort);
+    }
+
+    OutdoorAirMixer getOrCreateOwnedOutdoorAirMixer(ModelObject& owner, unsigned fieldIndex, const std::string& preferredName) {
+      if (auto existing = owner.getModelObjectTarget<OutdoorAirMixer>(fieldIndex)) {
+        return *existing;
+      }
+
+      auto currentName = owner.getString(fieldIndex, true);
+      if (currentName && !currentName->empty()) {
+        if (auto existing = owner.model().getConcreteModelObjectByName<OutdoorAirMixer>(*currentName)) {
+          return *existing;
+        }
+      }
+
+      if (!preferredName.empty()) {
+        if (auto existing = owner.model().getConcreteModelObjectByName<OutdoorAirMixer>(preferredName)) {
+          return *existing;
+        }
+      }
+
+      OutdoorAirMixer created(owner.model());
+      if (!preferredName.empty() && !created.setName(preferredName)) {
+        OS_ASSERT(created.setName(owner.model().nextName(OutdoorAirMixer::iddObjectType(), true)));
+      }
+      return created;
+    }
+
+    bool clearOwnedOutdoorAirMixer(ModelObject& owner, unsigned fieldIndex) {
+      auto current = owner.getModelObjectTarget<OutdoorAirMixer>(fieldIndex);
+      bool ownerIsOnlySource = false;
+      if (current) {
+        ownerIsOnlySource = true;
+        for (const auto& source : current->sources()) {
+          if (source.handle() != owner.handle()) {
+            ownerIsOnlySource = false;
+            break;
+          }
+        }
+      }
+
+      bool changed = owner.getImpl<detail::ModelObject_Impl>()->setPointer(fieldIndex, Handle(), false);
+      if (current && ownerIsOnlySource && !current->remove().empty()) {
+        changed = true;
+      }
+      return changed;
+    }
+
   }  // namespace
 
   ZoneHVACWaterToAirHeatPump::ZoneHVACWaterToAirHeatPump(const Model& model)
     : ZoneHVACComponent(ZoneHVACWaterToAirHeatPump::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>());
+    ScheduleConstant alwaysOn(model);
+    OS_ASSERT(alwaysOn.setValue(1.0));
+    OS_ASSERT(setAvailabilitySchedule(alwaysOn));
+    OS_ASSERT(setSupplyAirFanOperatingModeSchedule(alwaysOn));
   }
 
   ZoneHVACWaterToAirHeatPump::ZoneHVACWaterToAirHeatPump(std::shared_ptr<detail::ZoneHVACWaterToAirHeatPump_Impl> impl)
@@ -52,6 +154,14 @@ namespace epmodel {
 
   std::vector<std::string> ZoneHVACWaterToAirHeatPump::heatPumpCoilWaterFlowModeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), ZoneHVAC_WaterToAirHeatPumpFields::HeatPumpCoilWaterFlowMode);
+  }
+
+  Schedule ZoneHVACWaterToAirHeatPump::availabilitySchedule() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->availabilitySchedule();
+  }
+
+  bool ZoneHVACWaterToAirHeatPump::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setAvailabilitySchedule(schedule);
   }
 
   boost::optional<double> ZoneHVACWaterToAirHeatPump::supplyAirFlowRateDuringCoolingOperation() const {
@@ -310,11 +420,23 @@ namespace epmodel {
     getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->resetHeatPumpCoilWaterFlowMode();
   }
 
+  boost::optional<Schedule> ZoneHVACWaterToAirHeatPump::supplyAirFanOperatingModeSchedule() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->supplyAirFanOperatingModeSchedule();
+  }
+
+  bool ZoneHVACWaterToAirHeatPump::setSupplyAirFanOperatingModeSchedule(Schedule& schedule) {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setSupplyAirFanOperatingModeSchedule(schedule);
+  }
+
+  void ZoneHVACWaterToAirHeatPump::resetSupplyAirFanOperatingModeSchedule() {
+    getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->resetSupplyAirFanOperatingModeSchedule();
+  }
+
   HVACComponent ZoneHVACWaterToAirHeatPump::supplyAirFan() const {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->supplyAirFan();
   }
 
-  bool ZoneHVACWaterToAirHeatPump::setSupplyAirFan(HVACComponent& supplyAirFan) {
+  bool ZoneHVACWaterToAirHeatPump::setSupplyAirFan(const HVACComponent& supplyAirFan) {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setSupplyAirFan(supplyAirFan);
   }
 
@@ -322,7 +444,7 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->heatingCoil();
   }
 
-  bool ZoneHVACWaterToAirHeatPump::setHeatingCoil(HVACComponent& heatingCoil) {
+  bool ZoneHVACWaterToAirHeatPump::setHeatingCoil(const HVACComponent& heatingCoil) {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setHeatingCoil(heatingCoil);
   }
 
@@ -330,7 +452,7 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->coolingCoil();
   }
 
-  bool ZoneHVACWaterToAirHeatPump::setCoolingCoil(HVACComponent& coolingCoil) {
+  bool ZoneHVACWaterToAirHeatPump::setCoolingCoil(const HVACComponent& coolingCoil) {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setCoolingCoil(coolingCoil);
   }
 
@@ -338,8 +460,20 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->supplementalHeatingCoil();
   }
 
-  bool ZoneHVACWaterToAirHeatPump::setSupplementalHeatingCoil(HVACComponent& supplementalHeatingCoil) {
+  bool ZoneHVACWaterToAirHeatPump::setSupplementalHeatingCoil(const HVACComponent& supplementalHeatingCoil) {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->setSupplementalHeatingCoil(supplementalHeatingCoil);
+  }
+
+  boost::optional<Node> ZoneHVACWaterToAirHeatPump::fanOutletNode() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->fanOutletNode();
+  }
+
+  boost::optional<Node> ZoneHVACWaterToAirHeatPump::coolingCoilOutletNode() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->coolingCoilOutletNode();
+  }
+
+  boost::optional<Node> ZoneHVACWaterToAirHeatPump::heatingCoilOutletNode() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->heatingCoilOutletNode();
   }
 
   std::vector<ModelObject> ZoneHVACWaterToAirHeatPump::children() const {
@@ -361,14 +495,72 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
-    HVACComponent ZoneHVACWaterToAirHeatPump_Impl::supplyAirFan() const {
-      auto child = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanName);
-      OS_ASSERT(child);
-      return *child;
+    Schedule ZoneHVACWaterToAirHeatPump_Impl::availabilitySchedule() const {
+      auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_WaterToAirHeatPumpFields::AvailabilityScheduleName);
+      OS_ASSERT(value);
+      return *value;
     }
 
-    bool ZoneHVACWaterToAirHeatPump_Impl::setSupplyAirFan(HVACComponent& supplyAirFan) {
-      return setPointer(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanName, supplyAirFan.handle());
+    bool ZoneHVACWaterToAirHeatPump_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(ZoneHVAC_WaterToAirHeatPumpFields::AvailabilityScheduleName, "ZoneHVACWaterToAirHeatPump",
+                                           "Availability", schedule);
+    }
+
+    bool ZoneHVACWaterToAirHeatPump_Impl::addToThermalZone(ThermalZone& thermalZone) {
+      if (!ZoneHVACComponent_Impl::addToThermalZone(thermalZone)) {
+        return false;
+      }
+      maintainContainedAirPath();
+      return true;
+    }
+
+    void ZoneHVACWaterToAirHeatPump_Impl::removeFromThermalZone() {
+      ZoneHVACComponent_Impl::removeFromThermalZone();
+      maintainContainedAirPath();
+    }
+
+    void ZoneHVACWaterToAirHeatPump_Impl::doCanonicalize(LoadContext& context) {
+      repairContainedAirPath(context);
+    }
+
+    HVACComponent ZoneHVACWaterToAirHeatPump_Impl::supplyAirFan() const {
+      auto fan = getObject<ModelObject>().getModelObjectTarget<StraightComponent>(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanName);
+      OS_ASSERT(fan);
+      return fan->cast<HVACComponent>();
+    }
+
+    bool ZoneHVACWaterToAirHeatPump_Impl::setSupplyAirFan(const HVACComponent& supplyAirFan) {
+      if (supplyAirFan.model() != model()) {
+        return false;
+      }
+
+      const auto iddObjectType = supplyAirFan.iddObject().type();
+      if ((iddObjectType != IddObjectType::OS_Fan_ConstantVolume) && (iddObjectType != IddObjectType::OS_Fan_OnOff)
+          && (iddObjectType != IddObjectType::OS_Fan_SystemModel) && (iddObjectType != IddObjectType::Fan_ConstantVolume)
+          && (iddObjectType != IddObjectType::Fan_OnOff) && (iddObjectType != IddObjectType::Fan_SystemModel)) {
+        return false;
+      }
+
+      const bool result = setPointer(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanName, supplyAirFan.handle(), false);
+      if (result) {
+        OS_ASSERT(setString(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanObjectType, supplyAirFan.iddObject().name()));
+        maintainContainedAirPath();
+      }
+      return result;
+    }
+
+    boost::optional<Schedule> ZoneHVACWaterToAirHeatPump_Impl::supplyAirFanOperatingModeSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanOperatingModeScheduleName);
+    }
+
+    bool ZoneHVACWaterToAirHeatPump_Impl::setSupplyAirFanOperatingModeSchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanOperatingModeScheduleName,
+                                           "ZoneHVACWaterToAirHeatPump", "Supply Air Fan Operating Mode", schedule);
+    }
+
+    void ZoneHVACWaterToAirHeatPump_Impl::resetSupplyAirFanOperatingModeSchedule() {
+      bool result = setString(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanOperatingModeScheduleName, "", false);
+      OS_ASSERT(result);
     }
 
     HVACComponent ZoneHVACWaterToAirHeatPump_Impl::heatingCoil() const {
@@ -377,8 +569,24 @@ namespace epmodel {
       return *child;
     }
 
-    bool ZoneHVACWaterToAirHeatPump_Impl::setHeatingCoil(HVACComponent& heatingCoil) {
-      return setPointer(ZoneHVAC_WaterToAirHeatPumpFields::HeatingCoilName, heatingCoil.handle());
+    bool ZoneHVACWaterToAirHeatPump_Impl::setHeatingCoil(const HVACComponent& heatingCoil) {
+      if (heatingCoil.model() != model()) {
+        return false;
+      }
+
+      const auto iddObjectType = heatingCoil.iddObject().type();
+      if ((iddObjectType != IddObjectType::OS_Coil_Heating_WaterToAirHeatPump_EquationFit)
+          && (iddObjectType != IddObjectType::OS_Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFit)
+          && (iddObjectType != IddObjectType::Coil_Heating_WaterToAirHeatPump_EquationFit)
+          && (iddObjectType != IddObjectType::Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFit)) {
+        return false;
+      }
+
+      const bool result = setPointer(ZoneHVAC_WaterToAirHeatPumpFields::HeatingCoilName, heatingCoil.handle(), false);
+      if (result) {
+        maintainContainedAirPath();
+      }
+      return result;
     }
 
     HVACComponent ZoneHVACWaterToAirHeatPump_Impl::coolingCoil() const {
@@ -387,8 +595,24 @@ namespace epmodel {
       return *child;
     }
 
-    bool ZoneHVACWaterToAirHeatPump_Impl::setCoolingCoil(HVACComponent& coolingCoil) {
-      return setPointer(ZoneHVAC_WaterToAirHeatPumpFields::CoolingCoilName, coolingCoil.handle());
+    bool ZoneHVACWaterToAirHeatPump_Impl::setCoolingCoil(const HVACComponent& coolingCoil) {
+      if (coolingCoil.model() != model()) {
+        return false;
+      }
+
+      const auto iddObjectType = coolingCoil.iddObject().type();
+      if ((iddObjectType != IddObjectType::OS_Coil_Cooling_WaterToAirHeatPump_EquationFit)
+          && (iddObjectType != IddObjectType::OS_Coil_Cooling_WaterToAirHeatPump_VariableSpeedEquationFit)
+          && (iddObjectType != IddObjectType::Coil_Cooling_WaterToAirHeatPump_EquationFit)
+          && (iddObjectType != IddObjectType::Coil_Cooling_WaterToAirHeatPump_VariableSpeedEquationFit)) {
+        return false;
+      }
+
+      const bool result = setPointer(ZoneHVAC_WaterToAirHeatPumpFields::CoolingCoilName, coolingCoil.handle(), false);
+      if (result) {
+        maintainContainedAirPath();
+      }
+      return result;
     }
 
     HVACComponent ZoneHVACWaterToAirHeatPump_Impl::supplementalHeatingCoil() const {
@@ -397,8 +621,55 @@ namespace epmodel {
       return *child;
     }
 
-    bool ZoneHVACWaterToAirHeatPump_Impl::setSupplementalHeatingCoil(HVACComponent& supplementalHeatingCoil) {
-      return setPointer(ZoneHVAC_WaterToAirHeatPumpFields::SupplementalHeatingCoilName, supplementalHeatingCoil.handle());
+    bool ZoneHVACWaterToAirHeatPump_Impl::setSupplementalHeatingCoil(const HVACComponent& supplementalHeatingCoil) {
+      if ((supplementalHeatingCoil.model() != model()) || !isWaterToAirHeatPumpAirPathComponent(supplementalHeatingCoil)) {
+        return false;
+      }
+
+      const auto iddObjectType = supplementalHeatingCoil.iddObject().type();
+      if ((iddObjectType != IddObjectType::OS_Coil_Heating_Gas) && (iddObjectType != IddObjectType::OS_Coil_Heating_Electric)
+          && (iddObjectType != IddObjectType::OS_Coil_Heating_Water) && (iddObjectType != IddObjectType::Coil_Heating_Fuel)
+          && (iddObjectType != IddObjectType::Coil_Heating_Electric) && (iddObjectType != IddObjectType::Coil_Heating_Water)) {
+        return false;
+      }
+
+      const bool result = setPointer(ZoneHVAC_WaterToAirHeatPumpFields::SupplementalHeatingCoilName, supplementalHeatingCoil.handle(), false);
+      if (result) {
+        maintainContainedAirPath();
+      }
+      return result;
+    }
+
+    boost::optional<Node> ZoneHVACWaterToAirHeatPump_Impl::fanOutletNode() const {
+      auto fan = getObject<ModelObject>().getModelObjectTarget<StraightComponent>(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanName);
+      if (!fan) {
+        return boost::none;
+      }
+
+      auto fanOutlet = fan->outletModelObject();
+      return fanOutlet ? fanOutlet->optionalCast<Node>() : boost::none;
+    }
+
+    boost::optional<Node> ZoneHVACWaterToAirHeatPump_Impl::coolingCoilOutletNode() const {
+      auto coolingObject = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_WaterToAirHeatPumpFields::CoolingCoilName);
+      auto cooling = (coolingObject && isWaterToAirHeatPumpAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject)
+                                                                                              : boost::none;
+      if (!cooling) {
+        return boost::none;
+      }
+
+      return waterToAirHeatPumpAirOutletNode(*cooling);
+    }
+
+    boost::optional<Node> ZoneHVACWaterToAirHeatPump_Impl::heatingCoilOutletNode() const {
+      auto heatingObject = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_WaterToAirHeatPumpFields::HeatingCoilName);
+      auto heating = (heatingObject && isWaterToAirHeatPumpAirPathComponent(*heatingObject)) ? boost::optional<HVACComponent>(*heatingObject)
+                                                                                              : boost::none;
+      if (!heating) {
+        return boost::none;
+      }
+
+      return waterToAirHeatPumpAirOutletNode(*heating);
     }
 
     std::vector<ModelObject> ZoneHVACWaterToAirHeatPump_Impl::children() const {
@@ -416,6 +687,9 @@ namespace epmodel {
             getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_WaterToAirHeatPumpFields::SupplementalHeatingCoilName)) {
         result.push_back(*child);
       }
+      if (auto child = getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerName)) {
+        result.push_back(*child);
+      }
       return result;
     }
 
@@ -425,6 +699,271 @@ namespace epmodel {
 
     unsigned ZoneHVACWaterToAirHeatPump_Impl::outletPort() const {
       return ZoneHVAC_WaterToAirHeatPumpFields::AirOutletNodeName;
+    }
+
+    bool ZoneHVACWaterToAirHeatPump_Impl::maintainContainedAirPath() {
+      return reconcileContainedAirPath(false, nullptr);
+    }
+
+    bool ZoneHVACWaterToAirHeatPump_Impl::repairContainedAirPath(LoadContext& context) {
+      return reconcileContainedAirPath(true, &context);
+    }
+
+    bool ZoneHVACWaterToAirHeatPump_Impl::reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context) {
+      // Valid water-to-air heat-pump air paths follow the same packaged
+      // terminal pattern as the other finished compound zone equipment:
+      // cooling -> heating -> fan -> supplemental (draw-through)
+      // fan -> cooling -> heating -> supplemental (blow-through)
+      // When the hidden OA mixer is active, the first component sees a mixed
+      // air node instead of the parent inlet. Ordinary owner mutations keep
+      // that shape intact. Canonicalization may additionally preserve already
+      // shared child nodes from imported raw state.
+      auto thisObject = getObject<ModelObject>();
+      if (!thisObject.name()) {
+        thisObject.createName();
+      }
+
+      auto heatingObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_WaterToAirHeatPumpFields::HeatingCoilName);
+      auto coolingObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_WaterToAirHeatPumpFields::CoolingCoilName);
+      auto supplementalObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_WaterToAirHeatPumpFields::SupplementalHeatingCoilName);
+
+      auto fan = thisObject.getModelObjectTarget<StraightComponent>(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanName);
+      auto fanObject = fan ? boost::optional<HVACComponent>(fan->cast<HVACComponent>()) : boost::none;
+      auto heating = (heatingObject && isWaterToAirHeatPumpAirPathComponent(*heatingObject)) ? boost::optional<HVACComponent>(*heatingObject)
+                                                                                              : boost::none;
+      auto cooling = (coolingObject && isWaterToAirHeatPumpAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject)
+                                                                                              : boost::none;
+      auto supplemental = (supplementalObject && isWaterToAirHeatPumpAirPathComponent(*supplementalObject))
+                            ? boost::optional<HVACComponent>(*supplementalObject)
+                            : boost::none;
+
+      bool changed = false;
+      bool nodeWiringChanged = false;
+      auto trackNodeChange = [&](bool value) {
+        nodeWiringChanged = nodeWiringChanged || value;
+        changed = changed || value;
+        return value;
+      };
+
+      const auto currentFanType = thisObject.getString(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanObjectType, true);
+      const auto expectedFanType = fanObject ? boost::optional<std::string>(fanObject->iddObject().name()) : boost::optional<std::string>();
+      if (expectedFanType) {
+        if (!currentFanType || !openstudio::istringEqual(*currentFanType, *expectedFanType)) {
+          OS_ASSERT(thisObject.setString(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanObjectType, *expectedFanType));
+          changed = true;
+        }
+      } else if (currentFanType && !currentFanType->empty()) {
+        OS_ASSERT(thisObject.setString(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanObjectType, ""));
+        changed = true;
+      }
+
+      const auto currentHeatingType = thisObject.getString(ZoneHVAC_WaterToAirHeatPumpFields::HeatingCoilObjectType, true);
+      const auto expectedHeatingType =
+        heatingObject ? boost::optional<std::string>(heatingObject->iddObject().name()) : boost::optional<std::string>();
+      if (expectedHeatingType) {
+        if (!currentHeatingType || !openstudio::istringEqual(*currentHeatingType, *expectedHeatingType)) {
+          OS_ASSERT(thisObject.setString(ZoneHVAC_WaterToAirHeatPumpFields::HeatingCoilObjectType, *expectedHeatingType));
+          changed = true;
+        }
+      } else if (currentHeatingType && !currentHeatingType->empty()) {
+        OS_ASSERT(thisObject.setString(ZoneHVAC_WaterToAirHeatPumpFields::HeatingCoilObjectType, ""));
+        changed = true;
+      }
+
+      const auto currentCoolingType = thisObject.getString(ZoneHVAC_WaterToAirHeatPumpFields::CoolingCoilObjectType, true);
+      const auto expectedCoolingType =
+        coolingObject ? boost::optional<std::string>(coolingObject->iddObject().name()) : boost::optional<std::string>();
+      if (expectedCoolingType) {
+        if (!currentCoolingType || !openstudio::istringEqual(*currentCoolingType, *expectedCoolingType)) {
+          OS_ASSERT(thisObject.setString(ZoneHVAC_WaterToAirHeatPumpFields::CoolingCoilObjectType, *expectedCoolingType));
+          changed = true;
+        }
+      } else if (currentCoolingType && !currentCoolingType->empty()) {
+        OS_ASSERT(thisObject.setString(ZoneHVAC_WaterToAirHeatPumpFields::CoolingCoilObjectType, ""));
+        changed = true;
+      }
+
+      const auto currentSupplementalType =
+        thisObject.getString(ZoneHVAC_WaterToAirHeatPumpFields::SupplementalHeatingCoilObjectType, true);
+      const auto expectedSupplementalType =
+        supplementalObject ? boost::optional<std::string>(supplementalObject->iddObject().name()) : boost::optional<std::string>();
+      if (expectedSupplementalType) {
+        if (!currentSupplementalType || !openstudio::istringEqual(*currentSupplementalType, *expectedSupplementalType)) {
+          OS_ASSERT(thisObject.setString(ZoneHVAC_WaterToAirHeatPumpFields::SupplementalHeatingCoilObjectType, *expectedSupplementalType));
+          changed = true;
+        }
+      } else if (currentSupplementalType && !currentSupplementalType->empty()) {
+        OS_ASSERT(thisObject.setString(ZoneHVAC_WaterToAirHeatPumpFields::SupplementalHeatingCoilObjectType, ""));
+        changed = true;
+      }
+
+      if (!fan && !heating && !cooling && !supplemental) {
+        return changed;
+      }
+
+      const auto baseName = thisObject.nameString();
+      auto inletNode = resolvedOrCreatedNodeTarget(inletPort(), baseName + " Air Inlet Node");
+      auto outletNode = resolvedOrCreatedNodeTarget(outletPort(), baseName + " Air Outlet Node");
+      trackNodeChange(setPointer(inletPort(), inletNode.handle(), false));
+      trackNodeChange(setPointer(outletPort(), outletNode.handle(), false));
+
+      const bool blowThrough = openstudio::istringEqual(fanPlacement(), "BlowThrough");
+      bool zeroOutdoorAir = false;
+      if (auto value = outdoorAirFlowRateDuringCoolingOperation()) {
+        zeroOutdoorAir = (*value == 0.0);
+      }
+      if (auto value = outdoorAirFlowRateDuringHeatingOperation()) {
+        zeroOutdoorAir = zeroOutdoorAir && (*value == 0.0);
+      }
+      if (auto value = outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded()) {
+        zeroOutdoorAir = zeroOutdoorAir && (*value == 0.0);
+      }
+      const bool usesHiddenMixedAir = !airLoopHVAC() && !zeroOutdoorAir;
+
+      boost::optional<Node> sourceNode;
+      boost::optional<OutdoorAirMixer> outdoorAirMixer;
+      if (usesHiddenMixedAir) {
+        const HVACComponent* firstComponent = nullptr;
+        if (blowThrough && fan) {
+          firstComponent = &(*fan);
+        } else if (cooling) {
+          firstComponent = &(*cooling);
+        } else if (heating) {
+          firstComponent = &(*heating);
+        } else if (fan) {
+          firstComponent = &(*fan);
+        } else if (supplemental) {
+          firstComponent = &(*supplemental);
+        }
+        OS_ASSERT(firstComponent);
+
+        if (allowChildNodeRecovery) {
+          // Canonicalization can preserve an existing mixed-air node when the
+          // first child already points at one that is not a boundary node.
+          if (auto candidate =
+                firstComponent->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(waterToAirHeatPumpAirInletPort(*firstComponent))) {
+            if ((*candidate != inletNode) && (*candidate != outletNode)) {
+              sourceNode = candidate;
+            }
+          }
+        }
+
+        if (!sourceNode) {
+          sourceNode = model().getOrCreateTransientByName<Node>(baseName + " Mixed Air Node");
+        }
+
+        outdoorAirMixer =
+          getOrCreateOwnedOutdoorAirMixer(thisObject, ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerName, baseName + " OA Mixer");
+        changed = setPointer(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerName, outdoorAirMixer->handle()) || changed;
+
+        const auto currentMixerType = thisObject.getString(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerObjectType, true);
+        const std::string expectedMixerType = outdoorAirMixer->iddObject().name();
+        if (!currentMixerType || !openstudio::istringEqual(*currentMixerType, expectedMixerType)) {
+          OS_ASSERT(thisObject.setString(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerObjectType, expectedMixerType));
+          changed = true;
+        }
+
+        auto outdoorAirNode = model().getOrCreateTransientByName<Node>(baseName + " OA Node");
+        auto reliefAirNode = model().getOrCreateTransientByName<Node>(baseName + " Relief Air Node");
+        changed = outdoorAirMixer->setPointer(OutdoorAir_MixerFields::MixedAirNodeName, sourceNode->handle()) || changed;
+        changed = outdoorAirMixer->setPointer(OutdoorAir_MixerFields::OutdoorAirStreamNodeName, outdoorAirNode.handle()) || changed;
+        changed = outdoorAirMixer->setPointer(OutdoorAir_MixerFields::ReliefAirStreamNodeName, reliefAirNode.handle()) || changed;
+        changed = outdoorAirMixer->setPointer(OutdoorAir_MixerFields::ReturnAirStreamNodeName, inletNode.handle()) || changed;
+      } else {
+        const auto currentMixerType = thisObject.getString(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerObjectType, true);
+        if (currentMixerType && !currentMixerType->empty()) {
+          OS_ASSERT(thisObject.setString(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerObjectType, ""));
+          changed = true;
+        }
+        changed = clearOwnedOutdoorAirMixer(thisObject, ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerName) || changed;
+      }
+
+      std::vector<HVACComponent> orderedComponents;
+      if (blowThrough) {
+        if (fan) {
+          orderedComponents.push_back(*fan);
+        }
+        if (cooling) {
+          orderedComponents.push_back(*cooling);
+        }
+        if (heating) {
+          orderedComponents.push_back(*heating);
+        }
+      } else {
+        if (cooling) {
+          orderedComponents.push_back(*cooling);
+        }
+        if (heating) {
+          orderedComponents.push_back(*heating);
+        }
+        if (fan) {
+          orderedComponents.push_back(*fan);
+        }
+      }
+      if (supplemental) {
+        orderedComponents.push_back(*supplemental);
+      }
+
+      if (orderedComponents.empty()) {
+        return changed;
+      }
+
+      auto connectorName = [&](const HVACComponent& component) {
+        if (fan && (component.handle() == fan->handle())) {
+          return baseName + " Fan Outlet Node";
+        }
+        if (cooling && (component.handle() == cooling->handle())) {
+          return baseName + " Cooling Coil Outlet Node";
+        }
+        if (heating && (component.handle() == heating->handle())) {
+          return baseName + " Heating Coil Outlet Node";
+        }
+        return component.nameString() + " Outlet Node";
+      };
+
+      Node upstreamNode = sourceNode ? *sourceNode : inletNode;
+      for (std::size_t i = 0; i < orderedComponents.size(); ++i) {
+        auto component = orderedComponents[i];
+        trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(waterToAirHeatPumpAirInletPort(component), upstreamNode.handle(),
+                                                                                 false));
+
+        Node downstreamNode = outletNode;
+        if ((i + 1u) < orderedComponents.size()) {
+          auto downstream = orderedComponents[i + 1u];
+          boost::optional<Node> connectorNode;
+
+          if (allowChildNodeRecovery) {
+            // Canonicalization keeps an existing shared connector when adjacent
+            // children already agree on it and it is not one of the parent-owned
+            // boundary or mixed-air nodes.
+            if (auto currentOutlet =
+                  component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(waterToAirHeatPumpAirOutletPort(component))) {
+              if (auto downstreamInlet =
+                    downstream.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(waterToAirHeatPumpAirInletPort(downstream))) {
+                if ((*currentOutlet == *downstreamInlet) && (*currentOutlet != inletNode) && (*currentOutlet != outletNode)
+                    && (!sourceNode || (*currentOutlet != *sourceNode))) {
+                  connectorNode = currentOutlet;
+                }
+              }
+            }
+          }
+
+          if (!connectorNode) {
+            connectorNode = model().getOrCreateTransientByName<Node>(connectorName(component));
+          }
+          downstreamNode = *connectorNode;
+        }
+
+        trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(waterToAirHeatPumpAirOutletPort(component),
+                                                                                 downstreamNode.handle(), false));
+        upstreamNode = downstreamNode;
+      }
+
+      if (context && nodeWiringChanged) {
+        detail::addLoadInfo(*context, "Reconciled internal node wiring for ZoneHVAC:WaterToAirHeatPump '" + baseName + "'.");
+      }
+
+      return changed;
     }
 
     boost::optional<double> ZoneHVACWaterToAirHeatPump_Impl::supplyAirFlowRateDuringCoolingOperation() const {
@@ -780,12 +1319,16 @@ namespace epmodel {
     bool ZoneHVACWaterToAirHeatPump_Impl::setFanPlacement(const std::string& fanPlacement) {
       const bool result = setString(ZoneHVAC_WaterToAirHeatPumpFields::FanPlacement, fanPlacement);
       OS_ASSERT(result);
+      if (result) {
+        maintainContainedAirPath();
+      }
       return result;
     }
 
     void ZoneHVACWaterToAirHeatPump_Impl::resetFanPlacement() {
       bool result = setString(ZoneHVAC_WaterToAirHeatPumpFields::FanPlacement, "");
       OS_ASSERT(result);
+      maintainContainedAirPath();
     }
 
     std::string ZoneHVACWaterToAirHeatPump_Impl::heatPumpCoilWaterFlowMode() const {

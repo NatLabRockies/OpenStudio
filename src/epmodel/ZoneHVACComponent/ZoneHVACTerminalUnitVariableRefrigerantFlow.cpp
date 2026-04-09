@@ -6,18 +6,28 @@
 #include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp"
 #include "ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl.hpp"
 
+#include "HVACComponent.hpp"
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
+#include "ModelObject/OutdoorAirMixer.hpp"
+#include "ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 #include "Schedule/ScheduleConstant.hpp"
+#include "StraightComponent/Node.hpp"
+#include "StraightComponent/StraightComponent.hpp"
+#include "WaterToAirComponent/WaterToAirComponent.hpp"
+#include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
 
 #include "../utilities/core/Assert.hpp"
+#include "../utilities/core/Compare.hpp"
+#include "../utilities/core/StringHelpers.hpp"
 
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_TerminalUnit_VariableRefrigerantFlow_FieldEnums.hxx>
 #include <utility>
 
@@ -62,6 +72,105 @@ namespace epmodel {
 
     detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl* impl(ZoneHVACTerminalUnitVariableRefrigerantFlow* object) {
       return object->getImpl<detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl>().get();
+    }
+
+    // VRF terminals accept a small family of DX coil objects in both the
+    // OpenStudio and EnergyPlus IDD spaces. Keeping that check local here
+    // makes the setter rules explicit without pushing VRF-specific type
+    // knowledge into the shared ZoneHVAC helpers.
+    bool isVRFDXCoil(const HVACComponent& component) {
+      const auto iddObjectType = component.iddObject().type();
+      return (iddObjectType == IddObjectType::OS_Coil_Cooling_DX_VariableRefrigerantFlow)
+             || (iddObjectType == IddObjectType::OS_Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl)
+             || (iddObjectType == IddObjectType::OS_Coil_Heating_DX_VariableRefrigerantFlow)
+             || (iddObjectType == IddObjectType::OS_Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl)
+             || (iddObjectType == IddObjectType::Coil_Cooling_DX_VariableRefrigerantFlow)
+             || (iddObjectType == IddObjectType::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl)
+             || (iddObjectType == IddObjectType::Coil_Heating_DX_VariableRefrigerantFlow)
+             || (iddObjectType == IddObjectType::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl);
+    }
+
+    // VRF terminal has one straight fan, VRF coils that epmodel now exposes as
+    // straight components, and an optional water supplemental heater. Keeping
+    // that supported child set local here still matters, but the actual port
+    // lookup can now use the shared serial-air bases instead of hard-coding
+    // each VRF coil field enum again.
+    bool isVRFTerminalAirPathComponent(const HVACComponent& component) {
+      return static_cast<bool>(component.optionalCast<StraightComponent>())
+             || static_cast<bool>(component.optionalCast<WaterToAirComponent>());
+    }
+
+    unsigned vrfTerminalAirInletPort(const HVACComponent& component) {
+      if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+        return straightComponent->inletPort();
+      }
+      if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+        return waterToAirComponent->airInletPort();
+      }
+      return 0u;
+    }
+
+    unsigned vrfTerminalAirOutletPort(const HVACComponent& component) {
+      if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+        return straightComponent->outletPort();
+      }
+      if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+        return waterToAirComponent->airOutletPort();
+      }
+      return 0u;
+    }
+
+    boost::optional<Node> vrfTerminalAirOutletNode(const HVACComponent& component) {
+      const auto outletPort = vrfTerminalAirOutletPort(component);
+      if (outletPort == 0u) {
+        return boost::none;
+      }
+      return component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(outletPort);
+    }
+
+    OutdoorAirMixer getOrCreateOwnedOutdoorAirMixer(ModelObject& owner, unsigned fieldIndex, const std::string& preferredName) {
+      if (auto existing = owner.getModelObjectTarget<OutdoorAirMixer>(fieldIndex)) {
+        return *existing;
+      }
+
+      auto currentName = owner.getString(fieldIndex, true);
+      if (currentName && !currentName->empty()) {
+        if (auto existing = owner.model().getConcreteModelObjectByName<OutdoorAirMixer>(*currentName)) {
+          return *existing;
+        }
+      }
+
+      if (!preferredName.empty()) {
+        if (auto existing = owner.model().getConcreteModelObjectByName<OutdoorAirMixer>(preferredName)) {
+          return *existing;
+        }
+      }
+
+      OutdoorAirMixer created(owner.model());
+      if (!preferredName.empty() && !created.setName(preferredName)) {
+        OS_ASSERT(created.setName(owner.model().nextName(OutdoorAirMixer::iddObjectType(), true)));
+      }
+      return created;
+    }
+
+    bool clearOwnedOutdoorAirMixer(ModelObject& owner, unsigned fieldIndex) {
+      auto current = owner.getModelObjectTarget<OutdoorAirMixer>(fieldIndex);
+      bool ownerIsOnlySource = false;
+      if (current) {
+        ownerIsOnlySource = true;
+        for (const auto& source : current->sources()) {
+          if (source.handle() != owner.handle()) {
+            ownerIsOnlySource = false;
+            break;
+          }
+        }
+      }
+
+      bool changed = owner.getImpl<detail::ModelObject_Impl>()->setPointer(fieldIndex, Handle(), false);
+      if (current && ownerIsOnlySource && !current->remove().empty()) {
+        changed = true;
+      }
+      return changed;
     }
 
   }  // namespace
@@ -272,7 +381,7 @@ namespace epmodel {
     return impl(this)->supplyAirFan();
   }
 
-  bool ZoneHVACTerminalUnitVariableRefrigerantFlow::setSupplyAirFan(HVACComponent& fan) {
+  bool ZoneHVACTerminalUnitVariableRefrigerantFlow::setSupplyAirFan(const HVACComponent& fan) {
     return impl(this)->setSupplyAirFan(fan);
   }
 
@@ -288,7 +397,7 @@ namespace epmodel {
     return impl(this)->coolingCoil();
   }
 
-  bool ZoneHVACTerminalUnitVariableRefrigerantFlow::setCoolingCoil(HVACComponent& coil) {
+  bool ZoneHVACTerminalUnitVariableRefrigerantFlow::setCoolingCoil(const HVACComponent& coil) {
     return impl(this)->setCoolingCoil(coil);
   }
 
@@ -296,7 +405,7 @@ namespace epmodel {
     return impl(this)->heatingCoil();
   }
 
-  bool ZoneHVACTerminalUnitVariableRefrigerantFlow::setHeatingCoil(HVACComponent& coil) {
+  bool ZoneHVACTerminalUnitVariableRefrigerantFlow::setHeatingCoil(const HVACComponent& coil) {
     return impl(this)->setHeatingCoil(coil);
   }
 
@@ -304,12 +413,24 @@ namespace epmodel {
     return impl(this)->supplementalHeatingCoil();
   }
 
-  bool ZoneHVACTerminalUnitVariableRefrigerantFlow::setSupplementalHeatingCoil(HVACComponent& coil) {
+  bool ZoneHVACTerminalUnitVariableRefrigerantFlow::setSupplementalHeatingCoil(const HVACComponent& coil) {
     return impl(this)->setSupplementalHeatingCoil(coil);
   }
 
   void ZoneHVACTerminalUnitVariableRefrigerantFlow::resetSupplementalHeatingCoil() {
     impl(this)->resetSupplementalHeatingCoil();
+  }
+
+  boost::optional<Node> ZoneHVACTerminalUnitVariableRefrigerantFlow::fanOutletNode() const {
+    return impl(this)->fanOutletNode();
+  }
+
+  boost::optional<Node> ZoneHVACTerminalUnitVariableRefrigerantFlow::coolingCoilOutletNode() const {
+    return impl(this)->coolingCoilOutletNode();
+  }
+
+  boost::optional<Node> ZoneHVACTerminalUnitVariableRefrigerantFlow::heatingCoilOutletNode() const {
+    return impl(this)->heatingCoilOutletNode();
   }
 
   boost::optional<ThermalZone> ZoneHVACTerminalUnitVariableRefrigerantFlow::controllingZoneorThermostatLocation() const {
@@ -693,12 +814,16 @@ namespace epmodel {
     bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setSupplyAirFanPlacement(const std::string& supplyAirFanPlacement) {
       bool result = setString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanPlacement, supplyAirFanPlacement, false);
       OS_ASSERT(result);
+      if (result) {
+        maintainContainedAirPath();
+      }
       return result;
     }
 
     void ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::resetSupplyAirFanPlacement() {
       bool result = setString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanPlacement, "", false);
       OS_ASSERT(result);
+      maintainContainedAirPath();
     }
 
     HVACComponent ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::supplyAirFan() const {
@@ -707,8 +832,28 @@ namespace epmodel {
       return *fan;
     }
 
-    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setSupplyAirFan(HVACComponent& fan) {
-      return setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName, fan.handle());
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setSupplyAirFan(const HVACComponent& fan) {
+      if (fan.model() != model()) {
+        return false;
+      }
+
+      const auto iddObjectType = fan.iddObject().type();
+      if (isFluidTemperatureControl()) {
+        if ((iddObjectType != IddObjectType::OS_Fan_SystemModel) && (iddObjectType != IddObjectType::OS_Fan_VariableVolume)
+            && (iddObjectType != IddObjectType::Fan_SystemModel) && (iddObjectType != IddObjectType::Fan_VariableVolume)) {
+          return false;
+        }
+      } else if ((iddObjectType != IddObjectType::OS_Fan_ConstantVolume) && (iddObjectType != IddObjectType::OS_Fan_OnOff)
+                 && (iddObjectType != IddObjectType::OS_Fan_SystemModel) && (iddObjectType != IddObjectType::Fan_ConstantVolume)
+                 && (iddObjectType != IddObjectType::Fan_OnOff) && (iddObjectType != IddObjectType::Fan_SystemModel)) {
+        return false;
+      }
+
+      const bool result = setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName, fan.handle(), false);
+      if (result) {
+        maintainContainedAirPath();
+      }
+      return result;
     }
 
     Schedule ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::supplyAirFanOperatingModeSchedule() const {
@@ -727,29 +872,130 @@ namespace epmodel {
       return getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName);
     }
 
-    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setCoolingCoil(HVACComponent& coil) {
-      return setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName, coil.handle());
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setCoolingCoil(const HVACComponent& coil) {
+      if ((coil.model() != model()) || !isVRFDXCoil(coil) || (vrfTerminalAirInletPort(coil) == 0u) || (vrfTerminalAirOutletPort(coil) == 0u)) {
+        return false;
+      }
+
+      const auto iddObjectType = coil.iddObject().type();
+      if ((iddObjectType != IddObjectType::OS_Coil_Cooling_DX_VariableRefrigerantFlow)
+          && (iddObjectType != IddObjectType::OS_Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl)
+          && (iddObjectType != IddObjectType::Coil_Cooling_DX_VariableRefrigerantFlow)
+          && (iddObjectType != IddObjectType::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl)) {
+        return false;
+      }
+
+      if (auto heating = heatingCoil()) {
+        const auto heatingType = heating->iddObject().type();
+        const bool heatingFluidControl =
+          (heatingType == IddObjectType::OS_Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl)
+          || (heatingType == IddObjectType::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl);
+        const bool coolingFluidControl =
+          (iddObjectType == IddObjectType::OS_Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl)
+          || (iddObjectType == IddObjectType::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl);
+        if (heatingFluidControl != coolingFluidControl) {
+          return false;
+        }
+      }
+
+      const bool result = setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName, coil.handle(), false);
+      if (result) {
+        maintainContainedAirPath();
+      }
+      return result;
     }
 
     boost::optional<HVACComponent> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::heatingCoil() const {
       return getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName);
     }
 
-    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setHeatingCoil(HVACComponent& coil) {
-      return setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName, coil.handle());
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setHeatingCoil(const HVACComponent& coil) {
+      if ((coil.model() != model()) || !isVRFDXCoil(coil) || (vrfTerminalAirInletPort(coil) == 0u) || (vrfTerminalAirOutletPort(coil) == 0u)) {
+        return false;
+      }
+
+      const auto iddObjectType = coil.iddObject().type();
+      if ((iddObjectType != IddObjectType::OS_Coil_Heating_DX_VariableRefrigerantFlow)
+          && (iddObjectType != IddObjectType::OS_Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl)
+          && (iddObjectType != IddObjectType::Coil_Heating_DX_VariableRefrigerantFlow)
+          && (iddObjectType != IddObjectType::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl)) {
+        return false;
+      }
+
+      if (auto cooling = coolingCoil()) {
+        const auto coolingType = cooling->iddObject().type();
+        const bool coolingFluidControl =
+          (coolingType == IddObjectType::OS_Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl)
+          || (coolingType == IddObjectType::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl);
+        const bool heatingFluidControl =
+          (iddObjectType == IddObjectType::OS_Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl)
+          || (iddObjectType == IddObjectType::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl);
+        if (coolingFluidControl != heatingFluidControl) {
+          return false;
+        }
+      }
+
+      const bool result = setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName, coil.handle(), false);
+      if (result) {
+        maintainContainedAirPath();
+      }
+      return result;
     }
 
     boost::optional<HVACComponent> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::supplementalHeatingCoil() const {
       return getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilName);
     }
 
-    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setSupplementalHeatingCoil(HVACComponent& coil) {
-      return setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilName, coil.handle());
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::setSupplementalHeatingCoil(const HVACComponent& coil) {
+      if ((coil.model() != model()) || !isVRFTerminalAirPathComponent(coil)) {
+        return false;
+      }
+
+      const auto iddObjectType = coil.iddObject().type();
+      if ((iddObjectType != IddObjectType::OS_Coil_Heating_Gas) && (iddObjectType != IddObjectType::OS_Coil_Heating_Electric)
+          && (iddObjectType != IddObjectType::OS_Coil_Heating_Water) && (iddObjectType != IddObjectType::Coil_Heating_Fuel)
+          && (iddObjectType != IddObjectType::Coil_Heating_Electric) && (iddObjectType != IddObjectType::Coil_Heating_Water)) {
+        return false;
+      }
+
+      const bool result = setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilName, coil.handle(), false);
+      if (result) {
+        maintainContainedAirPath();
+      }
+      return result;
     }
 
     void ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::resetSupplementalHeatingCoil() {
-      bool result = setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilName, Handle());
+      bool result = setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilName, Handle(), false);
       OS_ASSERT(result);
+      maintainContainedAirPath();
+    }
+
+    boost::optional<Node> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::fanOutletNode() const {
+      auto fanObject = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName);
+      auto fan = fanObject ? fanObject->optionalCast<StraightComponent>() : boost::none;
+      if (!fan) {
+        return boost::none;
+      }
+
+      auto fanOutlet = fan->outletModelObject();
+      return fanOutlet ? fanOutlet->optionalCast<Node>() : boost::none;
+    }
+
+    boost::optional<Node> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::coolingCoilOutletNode() const {
+      auto cooling = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName);
+      if (!cooling) {
+        return boost::none;
+      }
+      return vrfTerminalAirOutletNode(*cooling);
+    }
+
+    boost::optional<Node> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::heatingCoilOutletNode() const {
+      auto heating = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName);
+      if (!heating) {
+        return boost::none;
+      }
+      return vrfTerminalAirOutletNode(*heating);
     }
 
     boost::optional<ThermalZone> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::controllingZoneorThermostatLocation() const {
@@ -771,25 +1017,25 @@ namespace epmodel {
     std::vector<ModelObject> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::children() const {
       std::vector<ModelObject> result;
 
-      if (auto fan = getObject<ModelObject>().getTarget(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName)) {
-        if (auto mo = model().getModelObject<ModelObject>(fan->handle())) {
-          result.push_back(*mo);
-        }
+      if (auto fan = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+            ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName)) {
+        result.push_back(*fan);
       }
-      if (auto coil = getObject<ModelObject>().getTarget(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName)) {
-        if (auto mo = model().getModelObject<ModelObject>(coil->handle())) {
-          result.push_back(*mo);
-        }
+      if (auto coil = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+            ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName)) {
+        result.push_back(*coil);
       }
-      if (auto coil = getObject<ModelObject>().getTarget(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName)) {
-        if (auto mo = model().getModelObject<ModelObject>(coil->handle())) {
-          result.push_back(*mo);
-        }
+      if (auto coil = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+            ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName)) {
+        result.push_back(*coil);
       }
-      if (auto coil = getObject<ModelObject>().getTarget(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilName)) {
-        if (auto mo = model().getModelObject<ModelObject>(coil->handle())) {
-          result.push_back(*mo);
-        }
+      if (auto coil = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+            ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilName)) {
+        result.push_back(*coil);
+      }
+      if (auto mixer = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+            ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectName)) {
+        result.push_back(*mixer);
       }
 
       return result;
@@ -801,6 +1047,270 @@ namespace epmodel {
 
     unsigned ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::outletPort() const {
       return ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::TerminalUnitAirOutletNodeName;
+    }
+
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::addToThermalZone(ThermalZone& thermalZone) {
+      if (!ZoneHVACComponent_Impl::addToThermalZone(thermalZone)) {
+        return false;
+      }
+      maintainContainedAirPath();
+      return true;
+    }
+
+    void ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::removeFromThermalZone() {
+      ZoneHVACComponent_Impl::removeFromThermalZone();
+      maintainContainedAirPath();
+    }
+
+    void ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::doCanonicalize(LoadContext& context) {
+      repairContainedAirPath(context);
+    }
+
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::isFluidTemperatureControl() const {
+      const auto cooling = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName);
+      const auto heating = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName);
+      const auto isFluidTemp = [](const boost::optional<HVACComponent>& component) {
+        if (!component) {
+          return false;
+        }
+        const auto iddObjectType = component->iddObject().type();
+        return (iddObjectType == IddObjectType::OS_Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl)
+               || (iddObjectType == IddObjectType::OS_Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl)
+               || (iddObjectType == IddObjectType::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl)
+               || (iddObjectType == IddObjectType::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl);
+      };
+      return isFluidTemp(cooling) || isFluidTemp(heating);
+    }
+
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::maintainContainedAirPath() {
+      return reconcileContainedAirPath(false, nullptr);
+    }
+
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::repairContainedAirPath(LoadContext& context) {
+      return reconcileContainedAirPath(true, &context);
+    }
+
+    bool ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context) {
+      // Valid VRF terminal air paths follow the same serial shapes as the
+      // packaged terminal families:
+      // cooling -> heating -> fan -> supplemental (draw-through)
+      // fan -> cooling -> heating -> supplemental (blow-through)
+      // When the hidden OA mixer is active, the first component sees a mixed
+      // air node instead of the parent inlet. Ordinary owner mutations keep
+      // that shape intact. Canonicalization may additionally preserve already
+      // shared child nodes from imported raw state.
+      auto thisObject = getObject<ModelObject>();
+      if (!thisObject.name()) {
+        thisObject.createName();
+      }
+
+      auto fanObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectName);
+      auto coolingObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectName);
+      auto heatingObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectName);
+      auto supplementalObject = thisObject.getModelObjectTarget<HVACComponent>(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilName);
+
+      auto fan = fanObject ? fanObject->optionalCast<StraightComponent>() : boost::none;
+      auto cooling =
+        (coolingObject && isVRFTerminalAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject) : boost::none;
+      auto heating =
+        (heatingObject && isVRFTerminalAirPathComponent(*heatingObject)) ? boost::optional<HVACComponent>(*heatingObject) : boost::none;
+      auto supplemental = (supplementalObject && isVRFTerminalAirPathComponent(*supplementalObject))
+                            ? boost::optional<HVACComponent>(*supplementalObject)
+                            : boost::none;
+
+      bool changed = false;
+      bool nodeWiringChanged = false;
+      auto trackNodeChange = [&](bool value) {
+        nodeWiringChanged = nodeWiringChanged || value;
+        changed = changed || value;
+        return value;
+      };
+
+      const auto syncTypeField = [&](unsigned fieldIndex, const boost::optional<HVACComponent>& component) {
+        const auto currentValue = thisObject.getString(fieldIndex, true);
+        const auto expectedValue = component ? boost::optional<std::string>(component->iddObject().name()) : boost::optional<std::string>();
+        if (expectedValue) {
+          if (!currentValue || !openstudio::istringEqual(*currentValue, *expectedValue)) {
+            OS_ASSERT(thisObject.setString(fieldIndex, *expectedValue));
+            changed = true;
+          }
+        } else if (currentValue && !currentValue->empty()) {
+          OS_ASSERT(thisObject.setString(fieldIndex, ""));
+          changed = true;
+        }
+      };
+
+      syncTypeField(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplyAirFanObjectType,
+                    fanObject ? boost::optional<HVACComponent>(*fanObject) : boost::none);
+      syncTypeField(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::CoolingCoilObjectType, cooling);
+      syncTypeField(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectType, heating);
+      syncTypeField(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilObjectType, supplemental);
+
+      bool zeroOutdoorAir = false;
+      if (auto value = outdoorAirFlowRateDuringCoolingOperation()) {
+        zeroOutdoorAir = (*value == 0.0);
+      }
+      if (auto value = outdoorAirFlowRateDuringHeatingOperation()) {
+        zeroOutdoorAir = zeroOutdoorAir && (*value == 0.0);
+      }
+      if (auto value = outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded()) {
+        zeroOutdoorAir = zeroOutdoorAir && (*value == 0.0);
+      }
+      const bool usesHiddenMixedAir = !airLoopHVAC() && !zeroOutdoorAir;
+
+      if (!fan && !cooling && !heating && !supplemental) {
+        return changed;
+      }
+
+      const auto baseName = thisObject.nameString();
+      auto inletNode = resolvedOrCreatedNodeTarget(inletPort(), baseName + " Air Inlet Node");
+      auto outletNode = resolvedOrCreatedNodeTarget(outletPort(), baseName + " Air Outlet Node");
+      trackNodeChange(setPointer(inletPort(), inletNode.handle(), false));
+      trackNodeChange(setPointer(outletPort(), outletNode.handle(), false));
+
+      boost::optional<OutdoorAirMixer> outdoorAirMixer;
+      boost::optional<Node> sourceNode;
+      if (usesHiddenMixedAir) {
+        sourceNode = model().getOrCreateTransientByName<Node>(baseName + " Mixer Outlet Node");
+        outdoorAirMixer =
+          getOrCreateOwnedOutdoorAirMixer(thisObject, ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectName,
+                                          baseName + " OA Mixer");
+        changed = setPointer(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectName, outdoorAirMixer->handle()) || changed;
+
+        const auto currentMixerType = thisObject.getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectType, true);
+        const std::string expectedMixerType = outdoorAirMixer->iddObject().name();
+        if (!currentMixerType || !openstudio::istringEqual(*currentMixerType, expectedMixerType)) {
+          OS_ASSERT(thisObject.setString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectType, expectedMixerType));
+          changed = true;
+        }
+
+        auto outdoorAirNode = model().getOrCreateTransientByName<Node>(baseName + " Outdoor Air Node");
+        auto reliefAirNode = model().getOrCreateTransientByName<Node>(baseName + " Relief Air Node");
+        changed = outdoorAirMixer->setPointer(OutdoorAir_MixerFields::MixedAirNodeName, sourceNode->handle()) || changed;
+        changed = outdoorAirMixer->setPointer(OutdoorAir_MixerFields::ReturnAirStreamNodeName, inletNode.handle()) || changed;
+        changed = outdoorAirMixer->setPointer(OutdoorAir_MixerFields::OutdoorAirStreamNodeName, outdoorAirNode.handle()) || changed;
+        changed = outdoorAirMixer->setPointer(OutdoorAir_MixerFields::ReliefAirStreamNodeName, reliefAirNode.handle()) || changed;
+      } else {
+        const auto currentMixerType = thisObject.getString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectType, true);
+        if (currentMixerType && !currentMixerType->empty()) {
+          OS_ASSERT(thisObject.setString(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectType, ""));
+          changed = true;
+        }
+        changed = clearOwnedOutdoorAirMixer(thisObject, ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectName) || changed;
+      }
+
+      const bool blowThrough = openstudio::istringEqual(supplyAirFanPlacement(), "BlowThrough");
+      std::vector<HVACComponent> orderedComponents;
+      if (blowThrough) {
+        if (fan) {
+          orderedComponents.push_back(*fan);
+        }
+        if (cooling) {
+          orderedComponents.push_back(*cooling);
+        }
+        if (heating) {
+          orderedComponents.push_back(*heating);
+        }
+      } else {
+        if (cooling) {
+          orderedComponents.push_back(*cooling);
+        }
+        if (heating) {
+          orderedComponents.push_back(*heating);
+        }
+        if (fan) {
+          orderedComponents.push_back(*fan);
+        }
+      }
+      if (supplemental) {
+        orderedComponents.push_back(*supplemental);
+      }
+
+      if (orderedComponents.empty()) {
+        return changed;
+      }
+
+      if (usesHiddenMixedAir) {
+        const auto& firstComponent = orderedComponents.front();
+        if (allowChildNodeRecovery) {
+          // Canonicalization can preserve an existing mixed-air node when the
+          // first child already points at one that is not a boundary node.
+          if (auto candidate =
+                firstComponent.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(vrfTerminalAirInletPort(firstComponent))) {
+            if ((*candidate != inletNode) && (*candidate != outletNode)) {
+              sourceNode = candidate;
+              changed = outdoorAirMixer->setPointer(OutdoorAir_MixerFields::MixedAirNodeName, sourceNode->handle()) || changed;
+            }
+          }
+        }
+      }
+
+      Node upstreamNode = sourceNode ? *sourceNode : inletNode;
+      auto& firstComponent = orderedComponents.front();
+      trackNodeChange(firstComponent.getImpl<detail::ModelObject_Impl>()->setPointer(vrfTerminalAirInletPort(firstComponent),
+                                                                                    upstreamNode.handle(), false));
+
+      for (size_t i = 0; i < orderedComponents.size(); ++i) {
+        auto& component = orderedComponents[i];
+        const bool hasNext = (i + 1u) < orderedComponents.size();
+        if (!hasNext) {
+          trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(vrfTerminalAirOutletPort(component),
+                                                                                   outletNode.handle(), false));
+          continue;
+        }
+
+        auto& downstream = orderedComponents[i + 1u];
+        boost::optional<Node> connectorNode;
+
+        if (auto currentOutlet =
+              component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(vrfTerminalAirOutletPort(component))) {
+          if (auto downstreamInlet =
+                downstream.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(vrfTerminalAirInletPort(downstream))) {
+            if ((*currentOutlet == *downstreamInlet) && (*currentOutlet != inletNode) && (*currentOutlet != outletNode)
+                && (!sourceNode || (*currentOutlet != *sourceNode))) {
+              connectorNode = currentOutlet;
+            }
+          } else if (allowChildNodeRecovery && (*currentOutlet != inletNode) && (*currentOutlet != outletNode)
+                     && (!sourceNode || (*currentOutlet != *sourceNode))) {
+            connectorNode = currentOutlet;
+          }
+        }
+
+        if (!connectorNode && allowChildNodeRecovery) {
+          // Canonicalization keeps an existing shared connector when adjacent
+          // children already agree on it and it is not one of the parent-owned
+          // boundary or mixed-air nodes.
+          if (auto downstreamInlet =
+                downstream.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(vrfTerminalAirInletPort(downstream))) {
+            if ((*downstreamInlet != inletNode) && (*downstreamInlet != outletNode) && (!sourceNode || (*downstreamInlet != *sourceNode))) {
+              connectorNode = downstreamInlet;
+            }
+          }
+        }
+
+        if (!connectorNode) {
+          std::string suggestedName;
+          if (fan && component == *fan) {
+            suggestedName = baseName + " Fan Outlet Node";
+          } else if (cooling && component == *cooling) {
+            suggestedName = baseName + " Cooling Coil Outlet Node";
+          } else {
+            suggestedName = baseName + " Heating Coil Outlet Node";
+          }
+          connectorNode = model().getOrCreateTransientByName<Node>(suggestedName);
+        }
+
+        trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(vrfTerminalAirOutletPort(component),
+                                                                                 connectorNode->handle(), false));
+        trackNodeChange(downstream.getImpl<detail::ModelObject_Impl>()->setPointer(vrfTerminalAirInletPort(downstream),
+                                                                                  connectorNode->handle(), false));
+      }
+
+      if (nodeWiringChanged && context) {
+        detail::addLoadInfo(*context, "Reconciled internal node wiring for ZoneHVAC:TerminalUnit:VariableRefrigerantFlow '" + baseName + "'.");
+      }
+
+      return changed;
     }
 
   }  // namespace detail
