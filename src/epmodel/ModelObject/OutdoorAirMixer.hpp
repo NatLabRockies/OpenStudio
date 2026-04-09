@@ -15,6 +15,7 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Node;
 
 namespace detail {
 class OutdoorAirMixer_Impl;
@@ -32,6 +33,11 @@ class EPMODEL_API OutdoorAirMixer : public ModelObject
   OutdoorAirMixer& operator=(OutdoorAirMixer&&) = default;
 
   static IddObjectType iddObjectType();
+
+  boost::optional<Node> mixedAirNode() const;
+  boost::optional<Node> outdoorAirNode() const;
+  boost::optional<Node> reliefAirNode() const;
+  boost::optional<Node> returnAirNode() const;
 
  protected:
   using ImplType = detail::OutdoorAirMixer_Impl;

@@ -22,6 +22,7 @@ namespace epmodel {
   class HVACComponent;
   class ModelObject;
   class Node;
+  class OutdoorAirMixer;
   class Schedule;
   class ThermalZone;
 
@@ -50,12 +51,13 @@ namespace epmodel {
     // - Implemented Parity: Supply-air and outdoor-air flow scalars, parasitic electric loads, rated heating ratio, supplemental-heater limits,
     //   fan-placement helpers, schedules, controlling-zone links, and contained fan/coil child accessors preserve the canonical wrapper
     //   behavior. The contained supply fan, cooling coil, heating coil, and optional supplemental heating coil now share a parent-owned air
-    //   path, with direct access to the meaningful fan-outlet, cooling-coil-outlet, and heating-coil-outlet roles on the compound.
+    //   path, with direct access to the meaningful fan-outlet, cooling-coil-outlet, heating-coil-outlet, and outdoor-air-mixer node roles on
+    //   the compound.
     // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are exposed as additive conveniences so
     //   callers can inspect and rename the meaningful node roles owned by the compound, even when those roles alias each other or the parent
-    //   outlet in a valid configuration. Outdoor-air-mixer-only node roles still remain outside the public wrapper.
+    //   outlet in a valid configuration. The owned outdoor-air mixer is also exposed as an additive child convenience.
     // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while the fan/coil/schedule/node topology is represented
-    //   through explicit child state and transient epmodel nodes.
+    //   through explicit child state, a persisted outdoor-air mixer whenever the unit owns its local OA path, and transient epmodel nodes.
     // - Evidence: `src/model/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp`, `src/model/ZoneHVACTerminalUnitVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACTerminalUnitVariableRefrigerantFlow.cpp`, and `src/epmodel/test/ZoneHVACTerminalUnitVariableRefrigerantFlow_GTest.cpp`.
     // - Remaining Parity Work: Add the omitted relationship helpers only if the canonical wrapper still exposes them directly.
 
@@ -143,6 +145,10 @@ namespace epmodel {
     boost::optional<Node> fanOutletNode() const;
     boost::optional<Node> coolingCoilOutletNode() const;
     boost::optional<Node> heatingCoilOutletNode() const;
+    boost::optional<Node> mixedAirNode() const;
+    boost::optional<Node> outdoorAirNode() const;
+    boost::optional<Node> reliefAirNode() const;
+    boost::optional<OutdoorAirMixer> outdoorAirMixer() const;
 
     boost::optional<ThermalZone> controllingZoneorThermostatLocation() const;
     bool setControllingZoneorThermostatLocation(const ThermalZone& thermalZone);

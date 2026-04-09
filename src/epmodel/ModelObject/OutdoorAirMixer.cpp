@@ -29,6 +29,22 @@ namespace epmodel {
     return IddObjectType::OutdoorAir_Mixer;
   }
 
+  boost::optional<Node> OutdoorAirMixer::mixedAirNode() const {
+    return getImpl<detail::OutdoorAirMixer_Impl>()->mixedAirNode();
+  }
+
+  boost::optional<Node> OutdoorAirMixer::outdoorAirNode() const {
+    return getImpl<detail::OutdoorAirMixer_Impl>()->outdoorAirNode();
+  }
+
+  boost::optional<Node> OutdoorAirMixer::reliefAirNode() const {
+    return getImpl<detail::OutdoorAirMixer_Impl>()->reliefAirNode();
+  }
+
+  boost::optional<Node> OutdoorAirMixer::returnAirNode() const {
+    return getImpl<detail::OutdoorAirMixer_Impl>()->returnAirNode();
+  }
+
   namespace detail {
 
     constexpr unsigned mixedAirNodeField = openstudio::OutdoorAir_MixerFields::MixedAirNodeName;

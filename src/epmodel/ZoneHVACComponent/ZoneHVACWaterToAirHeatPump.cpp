@@ -476,6 +476,22 @@ namespace epmodel {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->heatingCoilOutletNode();
   }
 
+  boost::optional<Node> ZoneHVACWaterToAirHeatPump::mixedAirNode() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->mixedAirNode();
+  }
+
+  boost::optional<Node> ZoneHVACWaterToAirHeatPump::outdoorAirNode() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->outdoorAirNode();
+  }
+
+  boost::optional<Node> ZoneHVACWaterToAirHeatPump::reliefAirNode() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->reliefAirNode();
+  }
+
+  boost::optional<OutdoorAirMixer> ZoneHVACWaterToAirHeatPump::outdoorAirMixer() const {
+    return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->outdoorAirMixer();
+  }
+
   std::vector<ModelObject> ZoneHVACWaterToAirHeatPump::children() const {
     return getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>()->children();
   }
@@ -672,6 +688,25 @@ namespace epmodel {
       return waterToAirHeatPumpAirOutletNode(*heating);
     }
 
+    boost::optional<Node> ZoneHVACWaterToAirHeatPump_Impl::mixedAirNode() const {
+      auto mixer = outdoorAirMixer();
+      return mixer ? mixer->mixedAirNode() : boost::none;
+    }
+
+    boost::optional<Node> ZoneHVACWaterToAirHeatPump_Impl::outdoorAirNode() const {
+      auto mixer = outdoorAirMixer();
+      return mixer ? mixer->outdoorAirNode() : boost::none;
+    }
+
+    boost::optional<Node> ZoneHVACWaterToAirHeatPump_Impl::reliefAirNode() const {
+      auto mixer = outdoorAirMixer();
+      return mixer ? mixer->reliefAirNode() : boost::none;
+    }
+
+    boost::optional<OutdoorAirMixer> ZoneHVACWaterToAirHeatPump_Impl::outdoorAirMixer() const {
+      return getObject<ModelObject>().getModelObjectTarget<OutdoorAirMixer>(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerName);
+    }
+
     std::vector<ModelObject> ZoneHVACWaterToAirHeatPump_Impl::children() const {
       std::vector<ModelObject> result;
       if (auto child = getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanName)) {
@@ -714,7 +749,7 @@ namespace epmodel {
       // terminal pattern as the other finished compound zone equipment:
       // cooling -> heating -> fan -> supplemental (draw-through)
       // fan -> cooling -> heating -> supplemental (blow-through)
-      // When the hidden OA mixer is active, the first component sees a mixed
+      // When the owned local OA mixer is active, the first component sees a mixed
       // air node instead of the parent inlet. Ordinary owner mutations keep
       // that shape intact. Canonicalization may additionally preserve already
       // shared child nodes from imported raw state.
@@ -808,17 +843,10 @@ namespace epmodel {
       trackNodeChange(setPointer(outletPort(), outletNode.handle(), false));
 
       const bool blowThrough = openstudio::istringEqual(fanPlacement(), "BlowThrough");
-      bool zeroOutdoorAir = false;
-      if (auto value = outdoorAirFlowRateDuringCoolingOperation()) {
-        zeroOutdoorAir = (*value == 0.0);
-      }
-      if (auto value = outdoorAirFlowRateDuringHeatingOperation()) {
-        zeroOutdoorAir = zeroOutdoorAir && (*value == 0.0);
-      }
-      if (auto value = outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded()) {
-        zeroOutdoorAir = zeroOutdoorAir && (*value == 0.0);
-      }
-      const bool usesHiddenMixedAir = !airLoopHVAC() && !zeroOutdoorAir;
+      // The water-to-air heat pump owns this local OA mixer whenever it owns
+      // its own zone-side air path. Zero OA flow does not remove the topology
+      // object; it only affects the flow through that already-defined path.
+      const bool usesHiddenMixedAir = !airLoopHVAC();
 
       boost::optional<Node> sourceNode;
       boost::optional<OutdoorAirMixer> outdoorAirMixer;

@@ -9,6 +9,7 @@
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../ModelObject/OutdoorAirMixer.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
@@ -19,6 +20,7 @@
 #include "../WaterToAirComponent/CoilHeatingWaterToAirHeatPumpEquationFit.hpp"
 #include "../ZoneHVACComponent/ZoneHVACWaterToAirHeatPump.hpp"
 
+#include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/ZoneHVAC_WaterToAirHeatPump_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
@@ -138,13 +140,18 @@ TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_TopologyAndChildren) {
   ASSERT_TRUE(wahp.fanOutletNode());
   ASSERT_TRUE(wahp.coolingCoilOutletNode());
   ASSERT_TRUE(wahp.heatingCoilOutletNode());
+  ASSERT_TRUE(wahp.outdoorAirMixer());
+  ASSERT_TRUE(wahp.mixedAirNode());
+  ASSERT_TRUE(wahp.outdoorAirNode());
+  ASSERT_TRUE(wahp.reliefAirNode());
 
   const auto children = wahp.children();
-  ASSERT_EQ(4u, children.size());
+  ASSERT_EQ(5u, children.size());
   EXPECT_EQ(fan, children[0]);
   EXPECT_EQ(heatingCoil, children[1]);
   EXPECT_EQ(coolingCoil, children[2]);
   EXPECT_EQ(supplementalHeatingCoil, children[3]);
+  EXPECT_EQ(wahp.outdoorAirMixer()->handle(), children[4].handle());
 
   ASSERT_TRUE(fan.containingHVACComponent());
   ASSERT_TRUE(heatingCoil.containingHVACComponent());
@@ -176,7 +183,11 @@ TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_TopologyAndChildren) {
   ASSERT_TRUE(supplementalInlet);
   ASSERT_TRUE(supplementalOutlet);
 
-  EXPECT_EQ(*wahp.inletNode(), *coolingInlet);
+  EXPECT_EQ(*wahp.inletNode(), *wahp.outdoorAirMixer()->returnAirNode());
+  EXPECT_EQ(*wahp.mixedAirNode(), *coolingInlet);
+  EXPECT_EQ(*wahp.mixedAirNode(), *wahp.outdoorAirMixer()->mixedAirNode());
+  EXPECT_EQ(*wahp.outdoorAirNode(), *wahp.outdoorAirMixer()->outdoorAirNode());
+  EXPECT_EQ(*wahp.reliefAirNode(), *wahp.outdoorAirMixer()->reliefAirNode());
   EXPECT_EQ(*wahp.coolingCoilOutletNode(), *coolingOutlet);
   EXPECT_EQ(*wahp.coolingCoilOutletNode(), *heatingInlet);
   EXPECT_EQ(*wahp.heatingCoilOutletNode(), *heatingOutlet);
@@ -192,6 +203,43 @@ TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_TopologyAndChildren) {
   EXPECT_TRUE(wahp.fanOutletNode());
   EXPECT_TRUE(wahp.coolingCoilOutletNode());
   EXPECT_TRUE(wahp.heatingCoilOutletNode());
+  EXPECT_TRUE(wahp.outdoorAirMixer());
+  EXPECT_TRUE(wahp.mixedAirNode());
+  EXPECT_TRUE(wahp.outdoorAirNode());
+  EXPECT_TRUE(wahp.reliefAirNode());
+}
+
+TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_OutdoorAirMixerIsExposedWhenUsed) {
+  Model model;
+  FanOnOff fan(model);
+  CoilHeatingWaterToAirHeatPumpEquationFit heatingCoil(model);
+  CoilCoolingWaterToAirHeatPumpEquationFit coolingCoil(model);
+  CoilHeatingWater supplementalHeatingCoil(model);
+  ZoneHVACWaterToAirHeatPump wahp(model);
+
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateDuringCoolingOperation(0.2));
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateDuringHeatingOperation(0.15));
+  ASSERT_TRUE(wahp.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.05));
+  ASSERT_TRUE(wahp.setFanPlacement("DrawThrough"));
+  ASSERT_TRUE(wahp.setSupplyAirFan(fan));
+  ASSERT_TRUE(wahp.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(wahp.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(wahp.setSupplementalHeatingCoil(supplementalHeatingCoil));
+
+  ASSERT_TRUE(wahp.outdoorAirMixer());
+  ASSERT_TRUE(wahp.mixedAirNode());
+  ASSERT_TRUE(wahp.outdoorAirNode());
+  ASSERT_TRUE(wahp.reliefAirNode());
+  ASSERT_TRUE(wahp.outdoorAirMixer()->mixedAirNode());
+  ASSERT_TRUE(wahp.outdoorAirMixer()->outdoorAirNode());
+  ASSERT_TRUE(wahp.outdoorAirMixer()->reliefAirNode());
+  const auto children = wahp.children();
+  ASSERT_EQ(5u, children.size());
+  EXPECT_EQ(wahp.outdoorAirMixer()->handle(), children.back().handle());
+  EXPECT_EQ(OutdoorAirMixer::iddObjectType(), wahp.outdoorAirMixer()->iddObjectType());
+  EXPECT_EQ(*wahp.mixedAirNode(), *wahp.outdoorAirMixer()->mixedAirNode());
+  EXPECT_EQ(*wahp.outdoorAirNode(), *wahp.outdoorAirMixer()->outdoorAirNode());
+  EXPECT_EQ(*wahp.reliefAirNode(), *wahp.outdoorAirMixer()->reliefAirNode());
 }
 
 TEST_F(EPModelFixture, ZoneHVACWaterToAirHeatPump_ScheduleRelationships_RoundTrip) {

@@ -433,6 +433,22 @@ namespace epmodel {
     return impl(this)->heatingCoilOutletNode();
   }
 
+  boost::optional<Node> ZoneHVACTerminalUnitVariableRefrigerantFlow::mixedAirNode() const {
+    return impl(this)->mixedAirNode();
+  }
+
+  boost::optional<Node> ZoneHVACTerminalUnitVariableRefrigerantFlow::outdoorAirNode() const {
+    return impl(this)->outdoorAirNode();
+  }
+
+  boost::optional<Node> ZoneHVACTerminalUnitVariableRefrigerantFlow::reliefAirNode() const {
+    return impl(this)->reliefAirNode();
+  }
+
+  boost::optional<OutdoorAirMixer> ZoneHVACTerminalUnitVariableRefrigerantFlow::outdoorAirMixer() const {
+    return impl(this)->outdoorAirMixer();
+  }
+
   boost::optional<ThermalZone> ZoneHVACTerminalUnitVariableRefrigerantFlow::controllingZoneorThermostatLocation() const {
     return impl(this)->controllingZoneorThermostatLocation();
   }
@@ -998,6 +1014,26 @@ namespace epmodel {
       return vrfTerminalAirOutletNode(*heating);
     }
 
+    boost::optional<Node> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::mixedAirNode() const {
+      auto mixer = outdoorAirMixer();
+      return mixer ? mixer->mixedAirNode() : boost::none;
+    }
+
+    boost::optional<Node> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::outdoorAirNode() const {
+      auto mixer = outdoorAirMixer();
+      return mixer ? mixer->outdoorAirNode() : boost::none;
+    }
+
+    boost::optional<Node> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::reliefAirNode() const {
+      auto mixer = outdoorAirMixer();
+      return mixer ? mixer->reliefAirNode() : boost::none;
+    }
+
+    boost::optional<OutdoorAirMixer> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::outdoorAirMixer() const {
+      return getObject<ModelObject>().getModelObjectTarget<OutdoorAirMixer>(
+        ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::OutsideAirMixerObjectName);
+    }
+
     boost::optional<ThermalZone> ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl::controllingZoneorThermostatLocation() const {
       return getObject<ModelObject>().getModelObjectTarget<ThermalZone>(
         ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::ControllingZoneorThermostatLocation);
@@ -1095,7 +1131,7 @@ namespace epmodel {
       // packaged terminal families:
       // cooling -> heating -> fan -> supplemental (draw-through)
       // fan -> cooling -> heating -> supplemental (blow-through)
-      // When the hidden OA mixer is active, the first component sees a mixed
+      // When the owned local OA mixer is active, the first component sees a mixed
       // air node instead of the parent inlet. Ordinary owner mutations keep
       // that shape intact. Canonicalization may additionally preserve already
       // shared child nodes from imported raw state.
@@ -1146,17 +1182,10 @@ namespace epmodel {
       syncTypeField(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::HeatingCoilObjectType, heating);
       syncTypeField(ZoneHVAC_TerminalUnit_VariableRefrigerantFlowFields::SupplementalHeatingCoilObjectType, supplemental);
 
-      bool zeroOutdoorAir = false;
-      if (auto value = outdoorAirFlowRateDuringCoolingOperation()) {
-        zeroOutdoorAir = (*value == 0.0);
-      }
-      if (auto value = outdoorAirFlowRateDuringHeatingOperation()) {
-        zeroOutdoorAir = zeroOutdoorAir && (*value == 0.0);
-      }
-      if (auto value = outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded()) {
-        zeroOutdoorAir = zeroOutdoorAir && (*value == 0.0);
-      }
-      const bool usesHiddenMixedAir = !airLoopHVAC() && !zeroOutdoorAir;
+      // The terminal owns this local OA mixer whenever it owns its own zone-side
+      // air path. Zero OA flow still means a valid local mixer topology in
+      // EnergyPlus; it should not make the topology object appear and disappear.
+      const bool usesHiddenMixedAir = !airLoopHVAC();
 
       if (!fan && !cooling && !heating && !supplemental) {
         return changed;

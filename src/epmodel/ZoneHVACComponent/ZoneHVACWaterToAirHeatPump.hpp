@@ -25,6 +25,7 @@ namespace epmodel {
   class HVACComponent;
   class ModelObject;
   class Node;
+  class OutdoorAirMixer;
   class Schedule;
 
   namespace detail {
@@ -53,12 +54,13 @@ namespace epmodel {
     // - Canonical Counterpart: openstudio::model::ZoneHVACWaterToAirHeatPump.
     // - Implemented Parity: The supply-air, outdoor-air, supplemental-heater, and DX sizing scalar groups map directly to the EnergyPlus
     //   object. The contained supply fan, cooling coil, heating coil, and supplemental heating coil now share a parent-owned air path with
-    //   direct access to the meaningful fan-outlet, cooling-coil-outlet, and heating-coil-outlet roles on the compound.
+    //   direct access to the meaningful fan-outlet, cooling-coil-outlet, heating-coil-outlet, and outdoor-air-mixer node roles on the
+    //   compound.
     // - Documented Delta: These node accessors are additive conveniences so callers can inspect and rename the internal node roles owned by
-    //   the compound, even when some roles alias each other or the parent outlet in a valid configuration. Outdoor-air-mixer-only node roles
-    //   still remain outside the public wrapper because they do not have parent-backed field storage on this object.
+    //   the compound, even when some roles alias each other or the parent outlet in a valid configuration. The owned outdoor-air mixer is
+    //   also exposed as an additive child convenience.
     // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while fan and coil topology is represented through
-    //   explicit child-object state and transient epmodel nodes.
+    //   explicit child-object state, a persisted outdoor-air mixer whenever the unit owns its local OA path, and transient epmodel nodes.
     // - Evidence: `src/model/ZoneHVACWaterToAirHeatPump.hpp`, `src/model/ZoneHVACWaterToAirHeatPump.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACWaterToAirHeatPump.cpp`, and `src/epmodel/test/ZoneHVACWaterToAirHeatPump_GTest.cpp`.
     // - Remaining Parity Work: Add any remaining canonical relationship conveniences only if the model wrapper still exposes them as public API.
 
@@ -163,6 +165,10 @@ namespace epmodel {
     boost::optional<Node> fanOutletNode() const;
     boost::optional<Node> coolingCoilOutletNode() const;
     boost::optional<Node> heatingCoilOutletNode() const;
+    boost::optional<Node> mixedAirNode() const;
+    boost::optional<Node> outdoorAirNode() const;
+    boost::optional<Node> reliefAirNode() const;
+    boost::optional<OutdoorAirMixer> outdoorAirMixer() const;
 
     std::vector<ModelObject> children() const;
 

@@ -10,6 +10,7 @@
 #include "../StraightComponent/CoilHeatingDXVariableRefrigerantFlow.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
+#include "../ModelObject/OutdoorAirMixer.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
@@ -18,6 +19,7 @@
 #include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACTerminalUnitVariableRefrigerantFlow.hpp"
 
+#include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/Coil_Cooling_DX_VariableRefrigerantFlow_FieldEnums.hxx>
 #include <utilities/idd/Coil_Heating_DX_VariableRefrigerantFlow_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_TerminalUnit_VariableRefrigerantFlow_FieldEnums.hxx>
@@ -146,13 +148,18 @@ TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_TopologyAndCh
   ASSERT_TRUE(vrf.fanOutletNode());
   ASSERT_TRUE(vrf.coolingCoilOutletNode());
   ASSERT_TRUE(vrf.heatingCoilOutletNode());
+  ASSERT_TRUE(vrf.outdoorAirMixer());
+  ASSERT_TRUE(vrf.mixedAirNode());
+  ASSERT_TRUE(vrf.outdoorAirNode());
+  ASSERT_TRUE(vrf.reliefAirNode());
 
   const auto children = vrf.children();
-  ASSERT_EQ(4u, children.size());
+  ASSERT_EQ(5u, children.size());
   EXPECT_EQ(fan.handle(), children[0].handle());
   EXPECT_EQ(coolingCoil.handle(), children[1].handle());
   EXPECT_EQ(heatingCoil.handle(), children[2].handle());
   EXPECT_EQ(supplementalHeatingCoil.handle(), children[3].handle());
+  EXPECT_EQ(vrf.outdoorAirMixer()->handle(), children[4].handle());
 
   ASSERT_TRUE(fan.containingHVACComponent());
   ASSERT_TRUE(coolingCoil.containingHVACComponent());
@@ -184,7 +191,11 @@ TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_TopologyAndCh
   ASSERT_TRUE(heatingInlet);
   ASSERT_TRUE(heatingOutlet);
 
-  EXPECT_EQ(vrf.inletNode()->nameString(), *coolingInlet);
+  EXPECT_EQ(*vrf.inletNode(), *vrf.outdoorAirMixer()->returnAirNode());
+  EXPECT_EQ(vrf.mixedAirNode()->nameString(), *coolingInlet);
+  EXPECT_EQ(*vrf.mixedAirNode(), *vrf.outdoorAirMixer()->mixedAirNode());
+  EXPECT_EQ(*vrf.outdoorAirNode(), *vrf.outdoorAirMixer()->outdoorAirNode());
+  EXPECT_EQ(*vrf.reliefAirNode(), *vrf.outdoorAirMixer()->reliefAirNode());
   EXPECT_EQ(vrf.coolingCoilOutletNode()->nameString(), *coolingOutlet);
   EXPECT_EQ(vrf.coolingCoilOutletNode()->nameString(), *heatingInlet);
   EXPECT_EQ(vrf.heatingCoilOutletNode()->nameString(), *heatingOutlet);
@@ -200,6 +211,42 @@ TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_TopologyAndCh
   EXPECT_TRUE(vrf.fanOutletNode());
   EXPECT_TRUE(vrf.coolingCoilOutletNode());
   EXPECT_TRUE(vrf.heatingCoilOutletNode());
+  EXPECT_TRUE(vrf.outdoorAirMixer());
+  EXPECT_TRUE(vrf.mixedAirNode());
+  EXPECT_TRUE(vrf.outdoorAirNode());
+  EXPECT_TRUE(vrf.reliefAirNode());
+}
+
+TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_OutdoorAirMixerIsExposedWhenUsed) {
+  Model model;
+  FanOnOff fan(model);
+  CoilCoolingDXVariableRefrigerantFlow coolingCoil(model);
+  CoilHeatingDXVariableRefrigerantFlow heatingCoil(model);
+  CoilHeatingElectric supplementalHeatingCoil(model);
+  ZoneHVACTerminalUnitVariableRefrigerantFlow vrf(model);
+
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateDuringCoolingOperation(0.08));
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateDuringHeatingOperation(0.03));
+  ASSERT_TRUE(vrf.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0.01));
+  ASSERT_TRUE(vrf.setSupplyAirFan(fan));
+  ASSERT_TRUE(vrf.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(vrf.setHeatingCoil(heatingCoil));
+  ASSERT_TRUE(vrf.setSupplementalHeatingCoil(supplementalHeatingCoil));
+
+  ASSERT_TRUE(vrf.outdoorAirMixer());
+  ASSERT_TRUE(vrf.mixedAirNode());
+  ASSERT_TRUE(vrf.outdoorAirNode());
+  ASSERT_TRUE(vrf.reliefAirNode());
+  ASSERT_TRUE(vrf.outdoorAirMixer()->mixedAirNode());
+  ASSERT_TRUE(vrf.outdoorAirMixer()->outdoorAirNode());
+  ASSERT_TRUE(vrf.outdoorAirMixer()->reliefAirNode());
+  const auto children = vrf.children();
+  ASSERT_EQ(5u, children.size());
+  EXPECT_EQ(vrf.outdoorAirMixer()->handle(), children.back().handle());
+  EXPECT_EQ(OutdoorAirMixer::iddObjectType(), vrf.outdoorAirMixer()->iddObjectType());
+  EXPECT_EQ(*vrf.mixedAirNode(), *vrf.outdoorAirMixer()->mixedAirNode());
+  EXPECT_EQ(*vrf.outdoorAirNode(), *vrf.outdoorAirMixer()->outdoorAirNode());
+  EXPECT_EQ(*vrf.reliefAirNode(), *vrf.outdoorAirMixer()->reliefAirNode());
 }
 
 TEST_F(EPModelFixture, ZoneHVACTerminalUnitVariableRefrigerantFlow_ControlRelationships_RoundTrip) {

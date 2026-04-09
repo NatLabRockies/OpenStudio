@@ -17,6 +17,7 @@ namespace epmodel {
 
   class HVACComponent;
   class Node;
+  class OutdoorAirMixer;
   class Schedule;
   class ThermalZone;
 
@@ -113,6 +114,10 @@ namespace epmodel {
       boost::optional<Node> fanOutletNode() const;
       boost::optional<Node> coolingCoilOutletNode() const;
       boost::optional<Node> heatingCoilOutletNode() const;
+      boost::optional<Node> mixedAirNode() const;
+      boost::optional<Node> outdoorAirNode() const;
+      boost::optional<Node> reliefAirNode() const;
+      boost::optional<OutdoorAirMixer> outdoorAirMixer() const;
 
       boost::optional<ThermalZone> controllingZoneorThermostatLocation() const;
       bool setControllingZoneorThermostatLocation(const ThermalZone& thermalZone);
