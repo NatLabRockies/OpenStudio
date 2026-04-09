@@ -89,8 +89,10 @@ Apply these preferences unless the user asks otherwise.
   remain local, explicit, and reviewable.
 - For compound HVAC owners, implement separate impl-level methods for normal
   owner maintenance and canonicalization repair, such as
-  `maintainContainedAirPath()` and `repairContainedAirPath(LoadContext&)`.
-  Do not collapse those two call paths back into one public-facing routine.
+  `maintainContainedAirPath()` and `repairContainedAirPath(LoadContext&)`, or
+  `maintainContainedTopology()` and `repairContainedTopology(LoadContext&)`
+  when the owned structure is broader than air alone. Do not collapse those
+  two call paths back into one public-facing routine.
 - Keep contained-child routing rules owner-local. If a compound family needs
   to switch on supported child types to find air inlet or outlet ports, do it
   in that family's `.cpp` with a plain comment that says what is allowed.

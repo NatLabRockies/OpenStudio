@@ -368,11 +368,21 @@ namespace detail {
   }
 
   boost::optional<Node> ZoneHVACEnergyRecoveryVentilator_Impl::inletNode() const {
-    return resolvedNodeTarget(inletPort());
+    auto heatExchangerObject = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_EnergyRecoveryVentilatorFields::HeatExchangerName);
+    auto heatExchanger = heatExchangerObject ? heatExchangerObject->optionalCast<HeatExchangerAirToAirSensibleAndLatent>() : boost::none;
+    if (!heatExchanger) {
+      return boost::none;
+    }
+    return connectedNode(heatExchanger->secondaryAirInletModelObject());
   }
 
   boost::optional<Node> ZoneHVACEnergyRecoveryVentilator_Impl::outletNode() const {
-    return resolvedNodeTarget(outletPort());
+    auto fanObject = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_EnergyRecoveryVentilatorFields::SupplyAirFanName);
+    auto fan = fanObject ? fanObject->optionalCast<StraightComponent>() : boost::none;
+    if (!fan) {
+      return boost::none;
+    }
+    return connectedNode(fan->outletModelObject());
   }
 
   boost::optional<Node> ZoneHVACEnergyRecoveryVentilator_Impl::outdoorAirNode() const {
@@ -436,8 +446,8 @@ namespace detail {
     }
 
     const auto objectName = getObject<ModelObject>().nameString();
-    auto inlet = resolvedOrCreatedNodeTarget(inletPort(), objectName + " Air Inlet Node");
-    auto outlet = resolvedOrCreatedNodeTarget(outletPort(), objectName + " Air Outlet Node");
+    auto inlet = model().getOrCreateTransientByName<Node>(objectName + " Air Inlet Node");
+    auto outlet = model().getOrCreateTransientByName<Node>(objectName + " Air Outlet Node");
 
     if (!connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->setZoneAirInletNode(outlet)) {
       return false;
@@ -534,8 +544,8 @@ namespace detail {
     };
 
     const std::string baseName = thisObject.nameString();
-    Node zoneExhaustNode = resolvedOrCreatedNodeTarget(inletPort(), baseName + " Air Inlet Node");
-    Node zoneInletNode = resolvedOrCreatedNodeTarget(outletPort(), baseName + " Air Outlet Node");
+    Node zoneExhaustNode = model().getOrCreateTransientByName<Node>(baseName + " Air Inlet Node");
+    Node zoneInletNode = model().getOrCreateTransientByName<Node>(baseName + " Air Outlet Node");
     Node outdoorAirNodeValue = outdoorAirNode().value_or(model().getOrCreateTransientByName<Node>(baseName + " OA Node"));
     Node supplyAirFanInletNodeValue =
       supplyAirFanInletNode().value_or(model().getOrCreateTransientByName<Node>(baseName + " Supply Fan Inlet Node"));
@@ -543,8 +553,6 @@ namespace detail {
       exhaustAirFanInletNode().value_or(model().getOrCreateTransientByName<Node>(baseName + " Exhaust Fan Inlet Node"));
     Node reliefAirNodeValue = reliefAirNode().value_or(model().getOrCreateTransientByName<Node>(baseName + " Exhaust Fan Outlet Node"));
 
-    trackNodeChange(setPointer(inletPort(), zoneExhaustNode.handle(), false));
-    trackNodeChange(setPointer(outletPort(), zoneInletNode.handle(), false));
     trackNodeChange(heatExchanger->getImpl<ModelObject_Impl>()->setPointer(heatExchanger->primaryAirInletPort(), outdoorAirNodeValue.handle(), false));
     trackNodeChange(
       heatExchanger->getImpl<ModelObject_Impl>()->setPointer(heatExchanger->primaryAirOutletPort(), supplyAirFanInletNodeValue.handle(), false));

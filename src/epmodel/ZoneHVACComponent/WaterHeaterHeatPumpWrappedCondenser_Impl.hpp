@@ -13,6 +13,13 @@
 namespace openstudio {
 namespace epmodel {
 
+  class HVACComponent;
+  class LoadContext;
+  class ModelObject;
+  class Node;
+  class Schedule;
+  class ThermalZone;
+
   namespace detail {
 
     class EPMODEL_API WaterHeaterHeatPumpWrappedCondenser_Impl : public ZoneHVACComponent_Impl
@@ -20,6 +27,13 @@ namespace epmodel {
      public:
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~WaterHeaterHeatPumpWrappedCondenser_Impl() override = default;
+
+      boost::optional<Schedule> availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+      void resetAvailabilitySchedule();
+
+      Schedule compressorSetpointTemperatureSchedule() const;
+      bool setCompressorSetpointTemperatureSchedule(Schedule& schedule);
 
       double deadBandTemperatureDifference() const;
       bool isDeadBandTemperatureDifferenceDefaulted() const;
@@ -43,6 +57,20 @@ namespace epmodel {
       std::string inletAirConfiguration() const;
       bool setInletAirConfiguration(const std::string& inletAirConfiguration);
 
+      boost::optional<Schedule> inletAirTemperatureSchedule() const;
+      bool setInletAirTemperatureSchedule(Schedule& schedule);
+      void resetInletAirTemperatureSchedule();
+
+      boost::optional<Schedule> inletAirHumiditySchedule() const;
+      bool setInletAirHumiditySchedule(Schedule& schedule);
+      void resetInletAirHumiditySchedule();
+
+      HVACComponent tank() const;
+      bool setTank(const HVACComponent& waterHeaterStratified);
+
+      ModelObject dXCoil() const;
+      bool setDXCoil(const ModelObject& heatPumpWaterHeaterDXCoilWrapped);
+
       double minimumInletAirTemperatureforCompressorOperation() const;
       bool isMinimumInletAirTemperatureforCompressorOperationDefaulted() const;
       bool setMinimumInletAirTemperatureforCompressorOperation(double minimumInletAirTemperatureforCompressorOperation);
@@ -55,6 +83,13 @@ namespace epmodel {
 
       std::string compressorLocation() const;
       bool setCompressorLocation(const std::string& compressorLocation);
+
+      boost::optional<Schedule> compressorAmbientTemperatureSchedule() const;
+      bool setCompressorAmbientTemperatureSchedule(Schedule& schedule);
+      void resetCompressorAmbientTemperatureSchedule();
+
+      HVACComponent fan() const;
+      bool setFan(const HVACComponent& fan);
 
       std::string fanPlacement() const;
       bool isFanPlacementDefaulted() const;
@@ -76,10 +111,29 @@ namespace epmodel {
       bool setParasiticHeatRejectionLocation(const std::string& parasiticHeatRejectionLocation);
       void resetParasiticHeatRejectionLocation();
 
+      boost::optional<Schedule> inletAirMixerSchedule() const;
+      bool setInletAirMixerSchedule(Schedule& schedule);
+      void resetInletAirMixerSchedule();
+
       std::string tankElementControlLogic() const;
       bool isTankElementControlLogicDefaulted() const;
       bool setTankElementControlLogic(const std::string& tankElementControlLogic);
       void resetTankElementControlLogic();
+
+      std::string airInletNodeName() const;
+      std::string airOutletNodeName() const;
+      boost::optional<Node> fanOutletNode() const;
+      boost::optional<Node> mixedAirNode() const;
+      boost::optional<Node> outdoorAirNode() const;
+      boost::optional<Node> reliefAirNode() const;
+
+      std::vector<ModelObject> children() const override;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+
+      bool addToThermalZone(ThermalZone& thermalZone) override;
+      void removeFromThermalZone() override;
+      void doCanonicalize(LoadContext& context) override;
 
       boost::optional<double> controlSensor1HeightInStratifiedTank() const;
       bool setControlSensor1HeightInStratifiedTank(double controlSensor1HeightInStratifiedTank);
@@ -93,6 +147,11 @@ namespace epmodel {
       boost::optional<double> controlSensor2HeightInStratifiedTank() const;
       bool setControlSensor2HeightInStratifiedTank(double controlSensor2HeightInStratifiedTank);
       void resetControlSensor2HeightInStratifiedTank();
+
+     private:
+      bool maintainContainedAirPath();
+      bool repairContainedAirPath(LoadContext& context);
+      bool reconcileContainedAirPath(bool allowNodeRecovery, LoadContext* context = nullptr);
     };
 
   }  // namespace detail

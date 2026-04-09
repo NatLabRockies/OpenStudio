@@ -8,7 +8,10 @@
 #include <algorithm>
 
 #include "EPModelFixture.hpp"
-#include "../HVACComponent/CoilWaterHeatingAirToWaterHeatPump.hpp"
+#include "../WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPump.hpp"
+#include "../StraightComponent/Node.hpp"
+
+#include <utilities/idd/Coil_WaterHeating_AirToWaterHeatPump_Pumped_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -17,6 +20,18 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPump_DefaultConstructor) {
   CoilWaterHeatingAirToWaterHeatPump coil(model);
   EXPECT_EQ(CoilWaterHeatingAirToWaterHeatPump::iddObjectType(), coil.iddObject().type());
   EXPECT_FALSE(coil.nameString().empty());
+}
+
+TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPump_WaterToAirPortsWithoutLoopPlacement) {
+  Model model;
+  CoilWaterHeatingAirToWaterHeatPump coil(model);
+  Node node(model);
+
+  EXPECT_EQ(openstudio::Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::EvaporatorAirInletNodeName, coil.airInletPort());
+  EXPECT_EQ(openstudio::Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::EvaporatorAirOutletNodeName, coil.airOutletPort());
+  EXPECT_EQ(openstudio::Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::CondenserWaterInletNodeName, coil.waterInletPort());
+  EXPECT_EQ(openstudio::Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::CondenserWaterOutletNodeName, coil.waterOutletPort());
+  EXPECT_FALSE(coil.addToNode(node));
 }
 
 TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPump_ScalarAccessors_RoundTrip) {

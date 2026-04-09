@@ -146,12 +146,12 @@ set(${target_name}_src
   StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.hpp
   StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp
   StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.cpp
-  HVACComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.hpp
-  HVACComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl.hpp
-  HVACComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.cpp
-  HVACComponent/CoilWaterHeatingAirToWaterHeatPump.hpp
-  HVACComponent/CoilWaterHeatingAirToWaterHeatPump_Impl.hpp
-  HVACComponent/CoilWaterHeatingAirToWaterHeatPump.cpp
+  WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.hpp
+  WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl.hpp
+  WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.cpp
+  WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPump.hpp
+  WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPump_Impl.hpp
+  WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPump.cpp
   HVACComponent/ControllerWaterCoil.hpp
   HVACComponent/ControllerWaterCoil_Impl.hpp
   HVACComponent/ControllerWaterCoil.cpp
@@ -203,9 +203,9 @@ set(${target_name}_src
   ModelObject/CoilHeatingSteam.hpp
   ModelObject/CoilHeatingSteam_Impl.hpp
   ModelObject/CoilHeatingSteam.cpp
-  ModelObject/CoilWaterHeatingAirToWaterHeatPumpWrapped.hpp
-  ModelObject/CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl.hpp
-  ModelObject/CoilWaterHeatingAirToWaterHeatPumpWrapped.cpp
+  StraightComponent/CoilWaterHeatingAirToWaterHeatPumpWrapped.hpp
+  StraightComponent/CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl.hpp
+  StraightComponent/CoilWaterHeatingAirToWaterHeatPumpWrapped.cpp
   WaterToWaterComponent/CentralHeatPumpSystem.hpp
   WaterToWaterComponent/CentralHeatPumpSystem_Impl.hpp
   WaterToWaterComponent/CentralHeatPumpSystem.cpp

@@ -3,8 +3,8 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#include "CoilWaterHeatingAirToWaterHeatPumpWrapped.hpp"
-#include "CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl.hpp"
+#include "StraightComponent/CoilWaterHeatingAirToWaterHeatPumpWrapped.hpp"
+#include "StraightComponent/CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl.hpp"
 
 #include "Model.hpp"
 
@@ -19,11 +19,11 @@ namespace openstudio {
 namespace epmodel {
 
 CoilWaterHeatingAirToWaterHeatPumpWrapped::CoilWaterHeatingAirToWaterHeatPumpWrapped(const Model& model)
-  : ModelObject(CoilWaterHeatingAirToWaterHeatPumpWrapped::iddObjectType(), model) {}
+  : StraightComponent(CoilWaterHeatingAirToWaterHeatPumpWrapped::iddObjectType(), model) {}
 
 CoilWaterHeatingAirToWaterHeatPumpWrapped::CoilWaterHeatingAirToWaterHeatPumpWrapped(
   std::shared_ptr<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : StraightComponent(std::move(impl)) {}
 
 IddObjectType CoilWaterHeatingAirToWaterHeatPumpWrapped::iddObjectType() {
   return IddObjectType::Coil_WaterHeating_AirToWaterHeatPump_Wrapped;
@@ -219,6 +219,19 @@ void CoilWaterHeatingAirToWaterHeatPumpWrapped::resetEvaporatorAirTemperatureTyp
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+unsigned CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::inletPort() const {
+  return openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::EvaporatorAirInletNodeName;
+}
+
+unsigned CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::outletPort() const {
+  return openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::EvaporatorAirOutletNodeName;
+}
+
+bool CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::addToNode(Node& node) {
+  (void)node;
+  return false;
+}
 
 double CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::ratedHeatingCapacity() const {
   const auto value = getDouble(openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::RatedHeatingCapacity, true);

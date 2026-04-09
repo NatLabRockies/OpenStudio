@@ -8,7 +8,10 @@
 #include <algorithm>
 
 #include "EPModelFixture.hpp"
-#include "../HVACComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.hpp"
+#include "../WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.hpp"
+#include "../StraightComponent/Node.hpp"
+
+#include <utilities/idd/Coil_WaterHeating_AirToWaterHeatPump_VariableSpeed_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -17,6 +20,18 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_DefaultCo
   CoilWaterHeatingAirToWaterHeatPumpVariableSpeed coil(model);
   EXPECT_EQ(CoilWaterHeatingAirToWaterHeatPumpVariableSpeed::iddObjectType(), coil.iddObject().type());
   EXPECT_FALSE(coil.nameString().empty());
+}
+
+TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_WaterToAirPortsWithoutLoopPlacement) {
+  Model model;
+  CoilWaterHeatingAirToWaterHeatPumpVariableSpeed coil(model);
+  Node node(model);
+
+  EXPECT_EQ(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::EvaporatorAirInletNodeName, coil.airInletPort());
+  EXPECT_EQ(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::EvaporatorAirOutletNodeName, coil.airOutletPort());
+  EXPECT_EQ(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::CondenserWaterInletNodeName, coil.waterInletPort());
+  EXPECT_EQ(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::CondenserWaterOutletNodeName, coil.waterOutletPort());
+  EXPECT_FALSE(coil.addToNode(node));
 }
 
 TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_ScalarAccessors_RoundTrip) {

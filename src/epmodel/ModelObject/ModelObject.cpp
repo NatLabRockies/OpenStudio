@@ -74,7 +74,7 @@ namespace epmodel {
     };
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static const std::array<ScheduleTypeSpec, 41> specs{{
+      static const std::array<ScheduleTypeSpec, 53> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOn", "Availability Manager Scheduled On", false, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOff", "Availability Manager Scheduled Off", false, "Availability", 0.0, 1.0},
@@ -102,6 +102,18 @@ namespace epmodel {
         {"ZoneHVACEvaporativeCoolerUnit", "Availability", false, "Availability", 0.0, 1.0},
         {"ZoneHVACTerminalUnitVariableRefrigerantFlow", "Terminal Unit Availability", false, "Availability", 0.0, 1.0},
         {"ZoneHVACTerminalUnitVariableRefrigerantFlow", "Supply Air Fan Operating Mode", false, "Availability", 0.0, 1.0},
+        {"WaterHeaterHeatPump", "Availability", false, "Availability", 0.0, 1.0},
+        {"WaterHeaterHeatPump", "Compressor Setpoint Temperature", true, "Temperature", boost::none, boost::none},
+        {"WaterHeaterHeatPump", "Inlet Air Temperature", true, "Temperature", boost::none, boost::none},
+        {"WaterHeaterHeatPump", "Inlet Air Humidity", true, "Dimensionless", 0.0, 1.0},
+        {"WaterHeaterHeatPump", "Compressor Ambient Temperature", true, "Temperature", boost::none, boost::none},
+        {"WaterHeaterHeatPump", "Inlet Air Mixer", true, "Dimensionless", 0.0, 1.0},
+        {"WaterHeaterHeatPumpWrappedCondenser", "Availability", false, "Availability", 0.0, 1.0},
+        {"WaterHeaterHeatPumpWrappedCondenser", "Compressor Setpoint Temperature", true, "Temperature", boost::none, boost::none},
+        {"WaterHeaterHeatPumpWrappedCondenser", "Inlet Air Temperature", true, "Temperature", boost::none, boost::none},
+        {"WaterHeaterHeatPumpWrappedCondenser", "Inlet Air Humidity", true, "Dimensionless", 0.0, 1.0},
+        {"WaterHeaterHeatPumpWrappedCondenser", "Compressor Ambient Temperature", true, "Temperature", boost::none, boost::none},
+        {"WaterHeaterHeatPumpWrappedCondenser", "Inlet Air Mixer", true, "Dimensionless", 0.0, 1.0},
         {"AirTerminalSingleDuctConstantVolumeNoReheat", "Availability", false, "Availability", 0.0, 1.0},
         {"AirTerminalSingleDuctConstantVolumeReheat", "Availability", false, "Availability", 0.0, 1.0},
         {"AirTerminalSingleDuctVAVNoReheat", "Availability", false, "Availability", 0.0, 1.0},

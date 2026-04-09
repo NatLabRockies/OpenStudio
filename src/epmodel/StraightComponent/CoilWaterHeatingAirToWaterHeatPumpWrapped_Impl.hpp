@@ -3,47 +3,28 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#ifndef EPMODEL_COILWATERHEATINGAIRTOWATERHEATPUMPWRAPPED_HPP
-#define EPMODEL_COILWATERHEATINGAIRTOWATERHEATPUMPWRAPPED_HPP
+#ifndef EPMODEL_COILWATERHEATINGAIRTOWATERHEATPUMPWRAPPED_IMPL_HPP
+#define EPMODEL_COILWATERHEATINGAIRTOWATERHEATPUMPWRAPPED_IMPL_HPP
 
-#include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "StraightComponent_Impl.hpp"
 
-#include <utilities/idd/IddEnums.hxx>
-
-#include <memory>
 #include <vector>
 
 namespace openstudio {
 namespace epmodel {
 
-class Model;
-
 namespace detail {
-class CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl;
-}
 
-class EPMODEL_API CoilWaterHeatingAirToWaterHeatPumpWrapped : public ModelObject
+class EPMODEL_API CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl : public StraightComponent_Impl
 {
  public:
-  explicit CoilWaterHeatingAirToWaterHeatPumpWrapped(const Model& model);
+  using StraightComponent_Impl::StraightComponent_Impl;
+  virtual ~CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl() override = default;
 
-  virtual ~CoilWaterHeatingAirToWaterHeatPumpWrapped() override = default;
-  CoilWaterHeatingAirToWaterHeatPumpWrapped(const CoilWaterHeatingAirToWaterHeatPumpWrapped& other) = default;
-  CoilWaterHeatingAirToWaterHeatPumpWrapped(CoilWaterHeatingAirToWaterHeatPumpWrapped&& other) = default;
-  CoilWaterHeatingAirToWaterHeatPumpWrapped& operator=(const CoilWaterHeatingAirToWaterHeatPumpWrapped&) = default;
-  CoilWaterHeatingAirToWaterHeatPumpWrapped& operator=(CoilWaterHeatingAirToWaterHeatPumpWrapped&&) = default;
+  unsigned inletPort() const override;
+  unsigned outletPort() const override;
+  bool addToNode(Node& node) override;
 
-  static IddObjectType iddObjectType();
-
-  static std::vector<std::string> evaporatorAirTemperatureTypeforCurveObjectsValues();
-
-  // Schema Alignment Notes:
-  // - API: Preserves openstudio::model scalar accessor names/signatures for model-counterpart compatibility.
-  // - Field Mapping: Scalar APIs map directly to EnergyPlus Coil:WaterHeating:AirToWaterHeatPump:Wrapped scalar fields.
-  // - ForwardTranslator evidence: ForwardTranslateCoilWaterHeatingAirToWaterHeatPumpWrapped.cpp writes these exact scalar fields.
-  // - Field Mapping: Relationship-like fields (AvailabilityScheduleName, node names, and curve-name references) are intentionally excluded.
-  // - TODO(parity): Add relationship APIs incrementally after scalar scaffold saturation.
   double ratedHeatingCapacity() const;
   bool setRatedHeatingCapacity(double ratedHeatingCapacity);
 
@@ -98,16 +79,10 @@ class EPMODEL_API CoilWaterHeatingAirToWaterHeatPumpWrapped : public ModelObject
   bool setEvaporatorAirTemperatureTypeforCurveObjects(const std::string& evaporatorAirTemperatureTypeforCurveObjects);
   void resetEvaporatorAirTemperatureTypeforCurveObjects();
 
- protected:
-  using ImplType = detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl;
-
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-
-  explicit CoilWaterHeatingAirToWaterHeatPumpWrapped(std::shared_ptr<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl> impl);
+  std::vector<std::string> evaporatorAirTemperatureTypeforCurveObjectsValues() const;
 };
 
+}  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

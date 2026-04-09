@@ -7,8 +7,22 @@
 #include "ZoneHVACComponent/WaterHeaterHeatPumpWrappedCondenser_Impl.hpp"
 
 #include "Model.hpp"
+#include "ModelObject/ModelObject.hpp"
+#include "ModelObject/ModelObject_Impl.hpp"
+#include "HVACComponent/ThermalZone.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
+#include "StraightComponent/CoilWaterHeatingAirToWaterHeatPumpWrapped.hpp"
+#include "StraightComponent/CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl.hpp"
+#include "StraightComponent/FanOnOff.hpp"
+#include "StraightComponent/Node.hpp"
+#include "StraightComponent/StraightComponent.hpp"
+#include "WaterToWaterComponent/WaterHeaterStratified.hpp"
+#include "WaterToWaterComponent/WaterHeaterStratified_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/WaterHeater_HeatPump_WrappedCondenser_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -16,9 +30,81 @@
 namespace openstudio {
 namespace epmodel {
 
+  namespace {
+
+    // The wrapped-condenser variant owns a simpler child set than the pumped
+    // condenser type: one stratified tank, one wrapped DX coil, and one
+    // one-in/one-out air-side fan. Keeping those checks local makes the
+    // supported child set explicit without growing another shared registry.
+
+    bool isSupportedWrappedCondenserTank(const HVACComponent& component) {
+      return static_cast<bool>(component.optionalCast<WaterHeaterStratified>());
+    }
+
+    bool isSupportedWrappedCondenserDXCoil(const ModelObject& object) {
+      return static_cast<bool>(object.optionalCast<CoilWaterHeatingAirToWaterHeatPumpWrapped>());
+    }
+
+    bool clearStringIfNeeded(ModelObject& object, unsigned fieldIndex) {
+      if (auto value = object.getString(fieldIndex, true); value && !value->empty()) {
+        return object.setString(fieldIndex, "");
+      }
+      return false;
+    }
+
+  }  // namespace
+
   WaterHeaterHeatPumpWrappedCondenser::WaterHeaterHeatPumpWrappedCondenser(const Model& model)
     : ZoneHVACComponent(WaterHeaterHeatPumpWrappedCondenser::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>());
+
+    CoilWaterHeatingAirToWaterHeatPumpWrapped dxCoil(model);
+    OS_ASSERT(setDXCoil(dxCoil));
+
+    WaterHeaterStratified tank(model);
+    OS_ASSERT(setTank(tank));
+
+    FanOnOff fan(model);
+    OS_ASSERT(setFan(fan));
+
+    ScheduleConstant availability(model);
+    OS_ASSERT(availability.setValue(1.0));
+    OS_ASSERT(setAvailabilitySchedule(availability));
+
+    ScheduleConstant compressorSetpoint(model);
+    OS_ASSERT(compressorSetpoint.setValue(60.0));
+    OS_ASSERT(setCompressorSetpointTemperatureSchedule(compressorSetpoint));
+
+    ScheduleConstant inletAirMixer(model);
+    OS_ASSERT(inletAirMixer.setValue(0.2));
+    OS_ASSERT(setInletAirMixerSchedule(inletAirMixer));
+
+    ScheduleConstant inletAirTemperature(model);
+    OS_ASSERT(inletAirTemperature.setValue(19.7));
+    OS_ASSERT(setInletAirTemperatureSchedule(inletAirTemperature));
+
+    ScheduleConstant inletAirHumidity(model);
+    OS_ASSERT(inletAirHumidity.setValue(0.5));
+    OS_ASSERT(setInletAirHumiditySchedule(inletAirHumidity));
+
+    ScheduleConstant compressorAmbient(model);
+    OS_ASSERT(compressorAmbient.setValue(21.0));
+    OS_ASSERT(setCompressorAmbientTemperatureSchedule(compressorAmbient));
+
+    OS_ASSERT(setDeadBandTemperatureDifference(5.0));
+    OS_ASSERT(setCondenserBottomLocation(0.0));
+    OS_ASSERT(setCondenserTopLocation(0.867));
+    autocalculateEvaporatorAirFlowRate();
+    OS_ASSERT(setInletAirConfiguration("Schedule"));
+    OS_ASSERT(setMinimumInletAirTemperatureforCompressorOperation(10.0));
+    OS_ASSERT(setMaximumInletAirTemperatureforCompressorOperation(48.89));
+    OS_ASSERT(setCompressorLocation("Schedule"));
+    OS_ASSERT(setFanPlacement("DrawThrough"));
+    OS_ASSERT(setOnCycleParasiticElectricLoad(0.0));
+    OS_ASSERT(setOffCycleParasiticElectricLoad(0.0));
+    OS_ASSERT(setParasiticHeatRejectionLocation("Outdoors"));
+    OS_ASSERT(setTankElementControlLogic("MutuallyExclusive"));
+    OS_ASSERT(setControlSensor1Weight(1.0));
   }
 
   WaterHeaterHeatPumpWrappedCondenser::WaterHeaterHeatPumpWrappedCondenser(std::shared_ptr<detail::WaterHeaterHeatPumpWrappedCondenser_Impl> impl)
@@ -50,6 +136,26 @@ namespace epmodel {
   std::vector<std::string> WaterHeaterHeatPumpWrappedCondenser::tankElementControlLogicValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                           WaterHeater_HeatPump_WrappedCondenserFields::TankElementControlLogic);
+  }
+
+  boost::optional<Schedule> WaterHeaterHeatPumpWrappedCondenser::availabilitySchedule() const {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->availabilitySchedule();
+  }
+
+  bool WaterHeaterHeatPumpWrappedCondenser::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  void WaterHeaterHeatPumpWrappedCondenser::resetAvailabilitySchedule() {
+    getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->resetAvailabilitySchedule();
+  }
+
+  Schedule WaterHeaterHeatPumpWrappedCondenser::compressorSetpointTemperatureSchedule() const {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->compressorSetpointTemperatureSchedule();
+  }
+
+  bool WaterHeaterHeatPumpWrappedCondenser::setCompressorSetpointTemperatureSchedule(Schedule& schedule) {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->setCompressorSetpointTemperatureSchedule(schedule);
   }
 
   double WaterHeaterHeatPumpWrappedCondenser::deadBandTemperatureDifference() const {
@@ -120,6 +226,46 @@ namespace epmodel {
     return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->setInletAirConfiguration(inletAirConfiguration);
   }
 
+  boost::optional<Schedule> WaterHeaterHeatPumpWrappedCondenser::inletAirTemperatureSchedule() const {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->inletAirTemperatureSchedule();
+  }
+
+  bool WaterHeaterHeatPumpWrappedCondenser::setInletAirTemperatureSchedule(Schedule& schedule) {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->setInletAirTemperatureSchedule(schedule);
+  }
+
+  void WaterHeaterHeatPumpWrappedCondenser::resetInletAirTemperatureSchedule() {
+    getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->resetInletAirTemperatureSchedule();
+  }
+
+  boost::optional<Schedule> WaterHeaterHeatPumpWrappedCondenser::inletAirHumiditySchedule() const {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->inletAirHumiditySchedule();
+  }
+
+  bool WaterHeaterHeatPumpWrappedCondenser::setInletAirHumiditySchedule(Schedule& schedule) {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->setInletAirHumiditySchedule(schedule);
+  }
+
+  void WaterHeaterHeatPumpWrappedCondenser::resetInletAirHumiditySchedule() {
+    getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->resetInletAirHumiditySchedule();
+  }
+
+  HVACComponent WaterHeaterHeatPumpWrappedCondenser::tank() const {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->tank();
+  }
+
+  bool WaterHeaterHeatPumpWrappedCondenser::setTank(const HVACComponent& waterHeaterStratified) {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->setTank(waterHeaterStratified);
+  }
+
+  ModelObject WaterHeaterHeatPumpWrappedCondenser::dXCoil() const {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->dXCoil();
+  }
+
+  bool WaterHeaterHeatPumpWrappedCondenser::setDXCoil(const ModelObject& heatPumpWaterHeaterDXCoilWrapped) {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->setDXCoil(heatPumpWaterHeaterDXCoilWrapped);
+  }
+
   double WaterHeaterHeatPumpWrappedCondenser::minimumInletAirTemperatureforCompressorOperation() const {
     return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->minimumInletAirTemperatureforCompressorOperation();
   }
@@ -162,6 +308,26 @@ namespace epmodel {
 
   bool WaterHeaterHeatPumpWrappedCondenser::setCompressorLocation(const std::string& compressorLocation) {
     return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->setCompressorLocation(compressorLocation);
+  }
+
+  boost::optional<Schedule> WaterHeaterHeatPumpWrappedCondenser::compressorAmbientTemperatureSchedule() const {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->compressorAmbientTemperatureSchedule();
+  }
+
+  bool WaterHeaterHeatPumpWrappedCondenser::setCompressorAmbientTemperatureSchedule(Schedule& schedule) {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->setCompressorAmbientTemperatureSchedule(schedule);
+  }
+
+  void WaterHeaterHeatPumpWrappedCondenser::resetCompressorAmbientTemperatureSchedule() {
+    getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->resetCompressorAmbientTemperatureSchedule();
+  }
+
+  HVACComponent WaterHeaterHeatPumpWrappedCondenser::fan() const {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->fan();
+  }
+
+  bool WaterHeaterHeatPumpWrappedCondenser::setFan(const HVACComponent& fan) {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->setFan(fan);
   }
 
   std::string WaterHeaterHeatPumpWrappedCondenser::fanPlacement() const {
@@ -228,6 +394,18 @@ namespace epmodel {
     getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->resetParasiticHeatRejectionLocation();
   }
 
+  boost::optional<Schedule> WaterHeaterHeatPumpWrappedCondenser::inletAirMixerSchedule() const {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->inletAirMixerSchedule();
+  }
+
+  bool WaterHeaterHeatPumpWrappedCondenser::setInletAirMixerSchedule(Schedule& schedule) {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->setInletAirMixerSchedule(schedule);
+  }
+
+  void WaterHeaterHeatPumpWrappedCondenser::resetInletAirMixerSchedule() {
+    getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->resetInletAirMixerSchedule();
+  }
+
   std::string WaterHeaterHeatPumpWrappedCondenser::tankElementControlLogic() const {
     return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->tankElementControlLogic();
   }
@@ -242,6 +420,34 @@ namespace epmodel {
 
   void WaterHeaterHeatPumpWrappedCondenser::resetTankElementControlLogic() {
     getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->resetTankElementControlLogic();
+  }
+
+  std::string WaterHeaterHeatPumpWrappedCondenser::airInletNodeName() const {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->airInletNodeName();
+  }
+
+  std::string WaterHeaterHeatPumpWrappedCondenser::airOutletNodeName() const {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->airOutletNodeName();
+  }
+
+  boost::optional<Node> WaterHeaterHeatPumpWrappedCondenser::fanOutletNode() const {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->fanOutletNode();
+  }
+
+  boost::optional<Node> WaterHeaterHeatPumpWrappedCondenser::mixedAirNode() const {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->mixedAirNode();
+  }
+
+  boost::optional<Node> WaterHeaterHeatPumpWrappedCondenser::outdoorAirNode() const {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->outdoorAirNode();
+  }
+
+  boost::optional<Node> WaterHeaterHeatPumpWrappedCondenser::reliefAirNode() const {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->reliefAirNode();
+  }
+
+  std::vector<ModelObject> WaterHeaterHeatPumpWrappedCondenser::children() const {
+    return getImpl<detail::WaterHeaterHeatPumpWrappedCondenser_Impl>()->children();
   }
 
   boost::optional<double> WaterHeaterHeatPumpWrappedCondenser::controlSensor1HeightInStratifiedTank() const {
@@ -285,6 +491,394 @@ namespace epmodel {
   }
 
   namespace detail {
+
+    boost::optional<Schedule> WaterHeaterHeatPumpWrappedCondenser_Impl::availabilitySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(WaterHeater_HeatPump_WrappedCondenserFields::AvailabilityScheduleName);
+    }
+
+    bool WaterHeaterHeatPumpWrappedCondenser_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return setSchedule(WaterHeater_HeatPump_WrappedCondenserFields::AvailabilityScheduleName, "WaterHeaterHeatPumpWrappedCondenser",
+                         "Availability", schedule);
+    }
+
+    void WaterHeaterHeatPumpWrappedCondenser_Impl::resetAvailabilitySchedule() {
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::AvailabilityScheduleName, ""));
+    }
+
+    Schedule WaterHeaterHeatPumpWrappedCondenser_Impl::compressorSetpointTemperatureSchedule() const {
+      auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        WaterHeater_HeatPump_WrappedCondenserFields::CompressorSetpointTemperatureScheduleName);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool WaterHeaterHeatPumpWrappedCondenser_Impl::setCompressorSetpointTemperatureSchedule(Schedule& schedule) {
+      return setSchedule(WaterHeater_HeatPump_WrappedCondenserFields::CompressorSetpointTemperatureScheduleName,
+                         "WaterHeaterHeatPumpWrappedCondenser", "Compressor Setpoint Temperature", schedule);
+    }
+
+    boost::optional<Schedule> WaterHeaterHeatPumpWrappedCondenser_Impl::inletAirTemperatureSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(WaterHeater_HeatPump_WrappedCondenserFields::InletAirTemperatureScheduleName);
+    }
+
+    bool WaterHeaterHeatPumpWrappedCondenser_Impl::setInletAirTemperatureSchedule(Schedule& schedule) {
+      return setSchedule(WaterHeater_HeatPump_WrappedCondenserFields::InletAirTemperatureScheduleName,
+                         "WaterHeaterHeatPumpWrappedCondenser", "Inlet Air Temperature", schedule);
+    }
+
+    void WaterHeaterHeatPumpWrappedCondenser_Impl::resetInletAirTemperatureSchedule() {
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::InletAirTemperatureScheduleName, ""));
+    }
+
+    boost::optional<Schedule> WaterHeaterHeatPumpWrappedCondenser_Impl::inletAirHumiditySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(WaterHeater_HeatPump_WrappedCondenserFields::InletAirHumidityScheduleName);
+    }
+
+    bool WaterHeaterHeatPumpWrappedCondenser_Impl::setInletAirHumiditySchedule(Schedule& schedule) {
+      return setSchedule(WaterHeater_HeatPump_WrappedCondenserFields::InletAirHumidityScheduleName,
+                         "WaterHeaterHeatPumpWrappedCondenser", "Inlet Air Humidity", schedule);
+    }
+
+    void WaterHeaterHeatPumpWrappedCondenser_Impl::resetInletAirHumiditySchedule() {
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::InletAirHumidityScheduleName, ""));
+    }
+
+    HVACComponent WaterHeaterHeatPumpWrappedCondenser_Impl::tank() const {
+      auto value = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(WaterHeater_HeatPump_WrappedCondenserFields::TankName);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool WaterHeaterHeatPumpWrappedCondenser_Impl::setTank(const HVACComponent& waterHeaterStratified) {
+      if ((waterHeaterStratified.model() != model()) || !isSupportedWrappedCondenserTank(waterHeaterStratified)) {
+        return false;
+      }
+
+      const bool result = setPointer(WaterHeater_HeatPump_WrappedCondenserFields::TankName, waterHeaterStratified.handle(), false);
+      if (result) {
+        maintainContainedAirPath();
+      }
+      return result;
+    }
+
+    ModelObject WaterHeaterHeatPumpWrappedCondenser_Impl::dXCoil() const {
+      auto value = getObject<ModelObject>().getModelObjectTarget<ModelObject>(WaterHeater_HeatPump_WrappedCondenserFields::DXCoilName);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool WaterHeaterHeatPumpWrappedCondenser_Impl::setDXCoil(const ModelObject& heatPumpWaterHeaterDXCoilWrapped) {
+      if ((heatPumpWaterHeaterDXCoilWrapped.model() != model()) || !isSupportedWrappedCondenserDXCoil(heatPumpWaterHeaterDXCoilWrapped)) {
+        return false;
+      }
+
+      const bool result = setPointer(WaterHeater_HeatPump_WrappedCondenserFields::DXCoilName, heatPumpWaterHeaterDXCoilWrapped.handle(), false);
+      if (result) {
+        maintainContainedAirPath();
+      }
+      return result;
+    }
+
+    boost::optional<Schedule> WaterHeaterHeatPumpWrappedCondenser_Impl::compressorAmbientTemperatureSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        WaterHeater_HeatPump_WrappedCondenserFields::CompressorAmbientTemperatureScheduleName);
+    }
+
+    bool WaterHeaterHeatPumpWrappedCondenser_Impl::setCompressorAmbientTemperatureSchedule(Schedule& schedule) {
+      return setSchedule(WaterHeater_HeatPump_WrappedCondenserFields::CompressorAmbientTemperatureScheduleName,
+                         "WaterHeaterHeatPumpWrappedCondenser", "Compressor Ambient Temperature", schedule);
+    }
+
+    void WaterHeaterHeatPumpWrappedCondenser_Impl::resetCompressorAmbientTemperatureSchedule() {
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::CompressorAmbientTemperatureScheduleName, ""));
+    }
+
+    HVACComponent WaterHeaterHeatPumpWrappedCondenser_Impl::fan() const {
+      auto value = getObject<ModelObject>().getModelObjectTarget<StraightComponent>(WaterHeater_HeatPump_WrappedCondenserFields::FanName);
+      OS_ASSERT(value);
+      return value->cast<HVACComponent>();
+    }
+
+    bool WaterHeaterHeatPumpWrappedCondenser_Impl::setFan(const HVACComponent& fanComponent) {
+      if ((fanComponent.model() != model()) || !fanComponent.optionalCast<StraightComponent>()) {
+        return false;
+      }
+
+      const bool result = setPointer(WaterHeater_HeatPump_WrappedCondenserFields::FanName, fanComponent.handle(), false);
+      if (result) {
+        maintainContainedAirPath();
+      }
+      return result;
+    }
+
+    std::string WaterHeaterHeatPumpWrappedCondenser_Impl::airInletNodeName() const {
+      if (openstudio::istringEqual(inletAirConfiguration(), "OutdoorAirOnly")) {
+        return {};
+      }
+      if (auto node = resolvedNodeTarget(WaterHeater_HeatPump_WrappedCondenserFields::AirInletNodeName)) {
+        return node->nameString();
+      }
+      return {};
+    }
+
+    std::string WaterHeaterHeatPumpWrappedCondenser_Impl::airOutletNodeName() const {
+      if (openstudio::istringEqual(inletAirConfiguration(), "OutdoorAirOnly")) {
+        return {};
+      }
+      if (auto node = resolvedNodeTarget(WaterHeater_HeatPump_WrappedCondenserFields::AirOutletNodeName)) {
+        return node->nameString();
+      }
+      return {};
+    }
+
+    boost::optional<Schedule> WaterHeaterHeatPumpWrappedCondenser_Impl::inletAirMixerSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(WaterHeater_HeatPump_WrappedCondenserFields::InletAirMixerScheduleName);
+    }
+
+    bool WaterHeaterHeatPumpWrappedCondenser_Impl::setInletAirMixerSchedule(Schedule& schedule) {
+      return setSchedule(WaterHeater_HeatPump_WrappedCondenserFields::InletAirMixerScheduleName, "WaterHeaterHeatPumpWrappedCondenser",
+                         "Inlet Air Mixer", schedule);
+    }
+
+    void WaterHeaterHeatPumpWrappedCondenser_Impl::resetInletAirMixerSchedule() {
+      OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::InletAirMixerScheduleName, ""));
+    }
+
+    boost::optional<Node> WaterHeaterHeatPumpWrappedCondenser_Impl::fanOutletNode() const {
+      auto fanComponent = getObject<ModelObject>().getModelObjectTarget<StraightComponent>(WaterHeater_HeatPump_WrappedCondenserFields::FanName);
+      if (!fanComponent) {
+        return boost::none;
+      }
+      return fanComponent->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(fanComponent->outletPort());
+    }
+
+    boost::optional<Node> WaterHeaterHeatPumpWrappedCondenser_Impl::mixedAirNode() const {
+      return resolvedNodeTarget(WaterHeater_HeatPump_WrappedCondenserFields::InletAirMixerNodeName);
+    }
+
+    boost::optional<Node> WaterHeaterHeatPumpWrappedCondenser_Impl::outdoorAirNode() const {
+      return resolvedNodeTarget(WaterHeater_HeatPump_WrappedCondenserFields::OutdoorAirNodeName);
+    }
+
+    boost::optional<Node> WaterHeaterHeatPumpWrappedCondenser_Impl::reliefAirNode() const {
+      return resolvedNodeTarget(WaterHeater_HeatPump_WrappedCondenserFields::ExhaustAirNodeName);
+    }
+
+    std::vector<ModelObject> WaterHeaterHeatPumpWrappedCondenser_Impl::children() const {
+      std::vector<ModelObject> result;
+      if (auto child = getObject<ModelObject>().getModelObjectTarget<ModelObject>(WaterHeater_HeatPump_WrappedCondenserFields::TankName)) {
+        result.push_back(*child);
+      }
+      if (auto child = getObject<ModelObject>().getModelObjectTarget<ModelObject>(WaterHeater_HeatPump_WrappedCondenserFields::DXCoilName)) {
+        result.push_back(*child);
+      }
+      if (auto child = getObject<ModelObject>().getModelObjectTarget<ModelObject>(WaterHeater_HeatPump_WrappedCondenserFields::FanName)) {
+        result.push_back(*child);
+      }
+      return result;
+    }
+
+    unsigned WaterHeaterHeatPumpWrappedCondenser_Impl::inletPort() const {
+      return WaterHeater_HeatPump_WrappedCondenserFields::AirInletNodeName;
+    }
+
+    unsigned WaterHeaterHeatPumpWrappedCondenser_Impl::outletPort() const {
+      return WaterHeater_HeatPump_WrappedCondenserFields::AirOutletNodeName;
+    }
+
+    bool WaterHeaterHeatPumpWrappedCondenser_Impl::addToThermalZone(ThermalZone& thermalZone) {
+      if (!ZoneHVACComponent_Impl::addToThermalZone(thermalZone)) {
+        return false;
+      }
+      setCompressorLocation("Zone");
+      setInletAirConfiguration("ZoneAirOnly");
+      maintainContainedAirPath();
+      return true;
+    }
+
+    void WaterHeaterHeatPumpWrappedCondenser_Impl::removeFromThermalZone() {
+      ZoneHVACComponent_Impl::removeFromThermalZone();
+      maintainContainedAirPath();
+    }
+
+    void WaterHeaterHeatPumpWrappedCondenser_Impl::doCanonicalize(LoadContext& context) {
+      ZoneHVACComponent_Impl::doCanonicalize(context);
+      repairContainedAirPath(context);
+    }
+
+    bool WaterHeaterHeatPumpWrappedCondenser_Impl::maintainContainedAirPath() {
+      return reconcileContainedAirPath(false, nullptr);
+    }
+
+    bool WaterHeaterHeatPumpWrappedCondenser_Impl::repairContainedAirPath(LoadContext& context) {
+      return reconcileContainedAirPath(true, &context);
+    }
+
+    bool WaterHeaterHeatPumpWrappedCondenser_Impl::reconcileContainedAirPath(bool allowNodeRecovery, LoadContext* /*context*/) {
+      auto thisObject = getObject<ModelObject>();
+      if (!thisObject.name()) {
+        thisObject.createName();
+      }
+      const std::string baseName = thisObject.nameString();
+
+      auto tankObject = thisObject.getModelObjectTarget<HVACComponent>(WaterHeater_HeatPump_WrappedCondenserFields::TankName);
+      auto dxObject = thisObject.getModelObjectTarget<ModelObject>(WaterHeater_HeatPump_WrappedCondenserFields::DXCoilName);
+      auto fanObject = thisObject.getModelObjectTarget<StraightComponent>(WaterHeater_HeatPump_WrappedCondenserFields::FanName);
+
+      auto tankComponent = tankObject ? tankObject->optionalCast<WaterHeaterStratified>() : boost::none;
+      auto dxCoil = dxObject ? dxObject->optionalCast<CoilWaterHeatingAirToWaterHeatPumpWrapped>() : boost::none;
+
+      bool changed = false;
+      auto syncObjectType = [&](unsigned fieldIndex, const boost::optional<std::string>& expectedType) {
+        const auto currentType = thisObject.getString(fieldIndex, true);
+        if (expectedType) {
+          if (!currentType || !openstudio::istringEqual(*currentType, *expectedType)) {
+            OS_ASSERT(thisObject.setString(fieldIndex, *expectedType));
+            changed = true;
+          }
+        } else if (currentType && !currentType->empty()) {
+          OS_ASSERT(thisObject.setString(fieldIndex, ""));
+          changed = true;
+        }
+      };
+
+      syncObjectType(WaterHeater_HeatPump_WrappedCondenserFields::TankObjectType,
+                     tankObject ? boost::optional<std::string>(tankObject->iddObject().name()) : boost::none);
+      syncObjectType(WaterHeater_HeatPump_WrappedCondenserFields::DXCoilObjectType,
+                     dxObject ? boost::optional<std::string>(dxObject->iddObject().name()) : boost::none);
+      syncObjectType(WaterHeater_HeatPump_WrappedCondenserFields::FanObjectType,
+                     fanObject ? boost::optional<std::string>(fanObject->iddObject().name()) : boost::none);
+
+      if (tankComponent) {
+        if (auto supplyInlet = tankComponent->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(tankComponent->supplyInletPort())) {
+          changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(
+                      WaterHeater_HeatPump_WrappedCondenserFields::TankUseSideInletNodeName, supplyInlet->handle(), false)
+                    || changed;
+        } else {
+          changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_WrappedCondenserFields::TankUseSideInletNodeName) || changed;
+        }
+        if (auto supplyOutlet = tankComponent->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(tankComponent->supplyOutletPort())) {
+          changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(
+                      WaterHeater_HeatPump_WrappedCondenserFields::TankUseSideOutletNodeName, supplyOutlet->handle(), false)
+                    || changed;
+        } else {
+          changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_WrappedCondenserFields::TankUseSideOutletNodeName) || changed;
+        }
+      }
+
+      if (!tankComponent || !dxCoil || !fanObject) {
+        return changed;
+      }
+
+      const bool outdoorOnly = openstudio::istringEqual(inletAirConfiguration(), "OutdoorAirOnly");
+      const bool zoneAndOutdoorAir = openstudio::istringEqual(inletAirConfiguration(), "ZoneAndOutdoorAir");
+      const bool drawThrough = !openstudio::istringEqual(fanPlacement(), "BlowThrough");
+
+      boost::optional<Node> airInlet;
+      boost::optional<Node> airOutlet;
+      if (!outdoorOnly) {
+        const std::string inletName =
+          openstudio::istringEqual(inletAirConfiguration(), "Schedule") ? baseName + " Inlet" : baseName + " Air Inlet Node";
+        const std::string outletName =
+          openstudio::istringEqual(inletAirConfiguration(), "Schedule") ? baseName + " Outlet" : baseName + " Air Outlet Node";
+        airInlet = resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_WrappedCondenserFields::AirInletNodeName, inletName);
+        airOutlet = resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_WrappedCondenserFields::AirOutletNodeName, outletName);
+        changed =
+          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::AirInletNodeName,
+                                                                     airInlet->handle(), false)
+          || changed;
+        changed =
+          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::AirOutletNodeName,
+                                                                     airOutlet->handle(), false)
+          || changed;
+      } else {
+        changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_WrappedCondenserFields::AirInletNodeName) || changed;
+        changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_WrappedCondenserFields::AirOutletNodeName) || changed;
+      }
+
+      if (auto zone = thermalZone(); zone && !outdoorOnly && !openstudio::istringEqual(inletAirConfiguration(), "Schedule")) {
+        if (auto zoneName = zone->nameString(); !zoneName.empty()) {
+          if (auto currentZoneName = thisObject.getString(WaterHeater_HeatPump_WrappedCondenserFields::InletAirZoneName, true);
+              !currentZoneName || !openstudio::istringEqual(*currentZoneName, zoneName)) {
+            OS_ASSERT(thisObject.setString(WaterHeater_HeatPump_WrappedCondenserFields::InletAirZoneName, zoneName));
+            changed = true;
+          }
+        }
+      } else {
+        changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_WrappedCondenserFields::InletAirZoneName) || changed;
+      }
+
+      boost::optional<Node> outdoorAir;
+      boost::optional<Node> reliefAir;
+      boost::optional<Node> mixedAir;
+      boost::optional<Node> splitterNode;
+      if (outdoorOnly || zoneAndOutdoorAir) {
+        outdoorAir = resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_WrappedCondenserFields::OutdoorAirNodeName, baseName + " Outdoor Air");
+        reliefAir = resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_WrappedCondenserFields::ExhaustAirNodeName, baseName + " Exhaust Air");
+        changed =
+          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::OutdoorAirNodeName,
+                                                                     outdoorAir->handle(), false)
+          || changed;
+        changed =
+          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::ExhaustAirNodeName,
+                                                                     reliefAir->handle(), false)
+          || changed;
+      } else {
+        changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_WrappedCondenserFields::OutdoorAirNodeName) || changed;
+        changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_WrappedCondenserFields::ExhaustAirNodeName) || changed;
+      }
+
+      if (zoneAndOutdoorAir) {
+        mixedAir = resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_WrappedCondenserFields::InletAirMixerNodeName, baseName + " Mixed Air Node");
+        splitterNode =
+          resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_WrappedCondenserFields::OutletAirSplitterNodeName, baseName + " Fan Outlet Node");
+        changed =
+          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::InletAirMixerNodeName,
+                                                                     mixedAir->handle(), false)
+          || changed;
+        changed =
+          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_WrappedCondenserFields::OutletAirSplitterNodeName,
+                                                                     splitterNode->handle(), false)
+          || changed;
+      } else {
+        changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_WrappedCondenserFields::InletAirMixerNodeName) || changed;
+        changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_WrappedCondenserFields::OutletAirSplitterNodeName) || changed;
+      }
+
+      boost::optional<Node> evaporatorInlet;
+      boost::optional<Node> evaporatorOutlet;
+      boost::optional<Node> fanInlet;
+      boost::optional<Node> fanOutlet;
+
+      if (drawThrough) {
+        evaporatorInlet = outdoorOnly ? outdoorAir : (zoneAndOutdoorAir ? mixedAir : airInlet);
+        if (allowNodeRecovery) {
+          evaporatorOutlet = dxCoil->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(dxCoil->outletPort());
+        }
+        if (!evaporatorOutlet) {
+          evaporatorOutlet = model().getOrCreateTransientByName<Node>(baseName + " Evaporator Outlet - Fan Inlet");
+        }
+        fanInlet = evaporatorOutlet;
+        fanOutlet = outdoorOnly ? reliefAir : (zoneAndOutdoorAir ? splitterNode : airOutlet);
+      } else {
+        fanInlet = outdoorOnly ? outdoorAir : (zoneAndOutdoorAir ? mixedAir : airInlet);
+        if (allowNodeRecovery) {
+          fanOutlet = fanObject->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(fanObject->outletPort());
+        }
+        if (!fanOutlet) {
+          fanOutlet = model().getOrCreateTransientByName<Node>(baseName + " Fan Outlet - Evaporator Inlet");
+        }
+        evaporatorInlet = fanOutlet;
+        evaporatorOutlet = outdoorOnly ? reliefAir : (zoneAndOutdoorAir ? splitterNode : airOutlet);
+      }
+
+      changed = fanObject->getImpl<detail::ModelObject_Impl>()->setPointer(fanObject->inletPort(), fanInlet->handle(), false) || changed;
+      changed = fanObject->getImpl<detail::ModelObject_Impl>()->setPointer(fanObject->outletPort(), fanOutlet->handle(), false) || changed;
+      changed = dxCoil->getImpl<detail::ModelObject_Impl>()->setPointer(dxCoil->inletPort(), evaporatorInlet->handle(), false) || changed;
+      changed = dxCoil->getImpl<detail::ModelObject_Impl>()->setPointer(dxCoil->outletPort(), evaporatorOutlet->handle(), false) || changed;
+
+      return changed;
+    }
 
     double WaterHeaterHeatPumpWrappedCondenser_Impl::deadBandTemperatureDifference() const {
       const auto value = getDouble(WaterHeater_HeatPump_WrappedCondenserFields::DeadBandTemperatureDifference, true);
@@ -371,6 +965,9 @@ namespace epmodel {
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setInletAirConfiguration(const std::string& inletAirConfiguration) {
       const bool result = setString(WaterHeater_HeatPump_WrappedCondenserFields::InletAirConfiguration, inletAirConfiguration);
+      if (result) {
+        maintainContainedAirPath();
+      }
       OS_ASSERT(result);
       return result;
     }
@@ -443,12 +1040,16 @@ namespace epmodel {
 
     bool WaterHeaterHeatPumpWrappedCondenser_Impl::setFanPlacement(const std::string& fanPlacement) {
       const bool result = setString(WaterHeater_HeatPump_WrappedCondenserFields::FanPlacement, fanPlacement);
+      if (result) {
+        maintainContainedAirPath();
+      }
       OS_ASSERT(result);
       return result;
     }
 
     void WaterHeaterHeatPumpWrappedCondenser_Impl::resetFanPlacement() {
       OS_ASSERT(setString(WaterHeater_HeatPump_WrappedCondenserFields::FanPlacement, ""));
+      maintainContainedAirPath();
     }
 
     double WaterHeaterHeatPumpWrappedCondenser_Impl::onCycleParasiticElectricLoad() const {

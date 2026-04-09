@@ -3,8 +3,8 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#include "HVACComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.hpp"
-#include "HVACComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl.hpp"
+#include "WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.hpp"
+#include "WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl.hpp"
 
 #include "Model.hpp"
 
@@ -19,11 +19,11 @@ namespace openstudio {
 namespace epmodel {
 
   CoilWaterHeatingAirToWaterHeatPumpVariableSpeed::CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(const Model& model)
-    : HVACComponent(CoilWaterHeatingAirToWaterHeatPumpVariableSpeed::iddObjectType(), model) {}
+    : WaterToAirComponent(CoilWaterHeatingAirToWaterHeatPumpVariableSpeed::iddObjectType(), model) {}
 
   CoilWaterHeatingAirToWaterHeatPumpVariableSpeed::CoilWaterHeatingAirToWaterHeatPumpVariableSpeed(
     std::shared_ptr<detail::CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl> impl)
-    : HVACComponent(std::move(impl)) {}
+    : WaterToAirComponent(std::move(impl)) {}
 
   IddObjectType CoilWaterHeatingAirToWaterHeatPumpVariableSpeed::iddObjectType() {
     return IddObjectType::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeed;
@@ -184,6 +184,32 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    unsigned CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::airInletPort() const {
+      return openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::EvaporatorAirInletNodeName;
+    }
+
+    unsigned CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::airOutletPort() const {
+      return openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::EvaporatorAirOutletNodeName;
+    }
+
+    unsigned CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::waterInletPort() const {
+      return openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::CondenserWaterInletNodeName;
+    }
+
+    unsigned CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::waterOutletPort() const {
+      return openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::CondenserWaterOutletNodeName;
+    }
+
+    bool CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::addToNode(Node& node) {
+      (void)node;
+      return false;
+    }
+
+    bool CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::addToSplitter(Splitter& splitter) {
+      (void)splitter;
+      return false;
+    }
 
     int CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::nominalSpeedLevel() const {
       const auto value = getInt(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::NominalSpeedLevel, true);

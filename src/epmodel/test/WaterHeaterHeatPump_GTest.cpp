@@ -6,6 +6,13 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../StraightComponent/FanOnOff.hpp"
+#include "../StraightComponent/Node.hpp"
+#include "../WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPump.hpp"
+#include "../WaterToAirComponent/WaterToAirComponent.hpp"
+#include "../WaterToWaterComponent/WaterHeaterMixed.hpp"
+#include "../WaterToWaterComponent/WaterToWaterComponent.hpp"
 #include "../ZoneHVACComponent/WaterHeaterHeatPump.hpp"
 
 using namespace openstudio::epmodel;
@@ -112,4 +119,170 @@ TEST_F(EPModelFixture, WaterHeaterHeatPump_ScalarAccessors_RoundTrip) {
   EXPECT_DOUBLE_EQ(0.9, heatPump.controlSensor2HeightInStratifiedTank().get());
   heatPump.resetControlSensor2HeightInStratifiedTank();
   EXPECT_FALSE(heatPump.controlSensor2HeightInStratifiedTank());
+}
+
+TEST_F(EPModelFixture, WaterHeaterHeatPump_DefaultChildrenSchedulesAndOwnedNodes) {
+  Model model;
+  WaterHeaterHeatPump heatPump(model);
+
+  auto availability = heatPump.availabilitySchedule();
+  ASSERT_TRUE(availability);
+  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Schedule_Constant), availability->iddObject().type());
+
+  auto compressorSetpoint = heatPump.compressorSetpointTemperatureSchedule();
+  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Schedule_Constant), compressorSetpoint.iddObject().type());
+
+  auto inletMixer = heatPump.inletAirMixerSchedule();
+  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Schedule_Constant), inletMixer.iddObject().type());
+
+  auto inletAirTemperature = heatPump.inletAirTemperatureSchedule();
+  ASSERT_TRUE(inletAirTemperature);
+  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Schedule_Constant), inletAirTemperature->iddObject().type());
+  auto inletAirHumidity = heatPump.inletAirHumiditySchedule();
+  ASSERT_TRUE(inletAirHumidity);
+  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Schedule_Constant), inletAirHumidity->iddObject().type());
+  auto compressorAmbient = heatPump.compressorAmbientTemperatureSchedule();
+  ASSERT_TRUE(compressorAmbient);
+  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Schedule_Constant), compressorAmbient->iddObject().type());
+
+  auto tank = heatPump.tank();
+  auto dxCoil = heatPump.dXCoil();
+  auto fan = heatPump.fan();
+  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::WaterHeater_Mixed), tank.iddObject().type());
+  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Coil_WaterHeating_AirToWaterHeatPump_Pumped), dxCoil.iddObject().type());
+  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Fan_OnOff), fan.iddObject().type());
+
+  const auto children = heatPump.children();
+  ASSERT_EQ(3u, children.size());
+  EXPECT_EQ(tank.handle(), children[0].handle());
+  EXPECT_EQ(dxCoil.handle(), children[1].handle());
+  EXPECT_EQ(fan.handle(), children[2].handle());
+
+  ASSERT_TRUE(heatPump.condenserWaterInletNode());
+  ASSERT_TRUE(heatPump.condenserWaterOutletNode());
+  EXPECT_FALSE(heatPump.condenserWaterInletNode()->nameString().empty());
+  EXPECT_FALSE(heatPump.condenserWaterOutletNode()->nameString().empty());
+
+  EXPECT_TRUE(fan.containingHVACComponent());
+  EXPECT_EQ(heatPump, *fan.containingHVACComponent());
+}
+
+TEST_F(EPModelFixture, WaterHeaterHeatPump_OwnedAirPathTracksConfigurationAndRejectsChildDisconnect) {
+  Model model;
+  WaterHeaterMixed tank(model);
+  CoilWaterHeatingAirToWaterHeatPump dxCoil(model);
+  FanOnOff fan(model);
+  WaterHeaterHeatPump heatPump(model);
+
+  ASSERT_TRUE(heatPump.setTank(tank));
+  ASSERT_TRUE(heatPump.setDXCoil(dxCoil));
+  ASSERT_TRUE(heatPump.setFan(fan));
+
+  ASSERT_TRUE(heatPump.setInletAirConfiguration("ZoneAndOutdoorAir"));
+  ASSERT_TRUE(heatPump.setFanPlacement("BlowThrough"));
+
+  ASSERT_TRUE(heatPump.mixedAirNode());
+  ASSERT_TRUE(heatPump.outdoorAirNode());
+  ASSERT_TRUE(heatPump.reliefAirNode());
+  ASSERT_TRUE(heatPump.fanOutletNode());
+  ASSERT_TRUE(heatPump.outletNode());
+
+  auto fanInlet = fan.inletModelObject()->optionalCast<Node>();
+  auto fanOutlet = fan.outletModelObject()->optionalCast<Node>();
+  auto coilAirInlet = dxCoil.airInletModelObject()->optionalCast<Node>();
+  auto coilAirOutlet = dxCoil.airOutletModelObject()->optionalCast<Node>();
+  ASSERT_TRUE(fanInlet);
+  ASSERT_TRUE(fanOutlet);
+  ASSERT_TRUE(coilAirInlet);
+  ASSERT_TRUE(coilAirOutlet);
+
+  EXPECT_EQ(*heatPump.mixedAirNode(), *fanInlet);
+  EXPECT_EQ(*heatPump.fanOutletNode(), *fanOutlet);
+  EXPECT_EQ(*heatPump.fanOutletNode(), *coilAirInlet);
+  EXPECT_NE(*heatPump.fanOutletNode(), *coilAirOutlet);
+
+  fan.disconnect();
+  auto fanInletAfter = fan.inletModelObject()->optionalCast<Node>();
+  auto fanOutletAfter = fan.outletModelObject()->optionalCast<Node>();
+  ASSERT_TRUE(fanInletAfter);
+  ASSERT_TRUE(fanOutletAfter);
+  EXPECT_EQ(*heatPump.mixedAirNode(), *fanInletAfter);
+  EXPECT_EQ(*heatPump.fanOutletNode(), *fanOutletAfter);
+
+  dxCoil.disconnectAirSide();
+  auto coilAirInletAfter = dxCoil.airInletModelObject()->optionalCast<Node>();
+  auto coilAirOutletAfter = dxCoil.airOutletModelObject()->optionalCast<Node>();
+  ASSERT_TRUE(coilAirInletAfter);
+  ASSERT_TRUE(coilAirOutletAfter);
+  EXPECT_EQ(*coilAirInlet, *coilAirInletAfter);
+  EXPECT_EQ(*coilAirOutlet, *coilAirOutletAfter);
+}
+
+TEST_F(EPModelFixture, WaterHeaterHeatPump_CanonicalizeRepairsOwnedTopology) {
+  Model model;
+  WaterHeaterMixed tank(model);
+  CoilWaterHeatingAirToWaterHeatPump dxCoil(model);
+  FanOnOff fan(model);
+  WaterHeaterHeatPump heatPump(model);
+
+  ASSERT_TRUE(heatPump.setTank(tank));
+  ASSERT_TRUE(heatPump.setDXCoil(dxCoil));
+  ASSERT_TRUE(heatPump.setFan(fan));
+  ASSERT_TRUE(heatPump.setInletAirConfiguration("ZoneAirOnly"));
+  ASSERT_TRUE(heatPump.setFanPlacement("BlowThrough"));
+
+  auto expectedInlet = heatPump.inletNode();
+  auto expectedOutlet = heatPump.outletNode();
+  auto expectedFanOutlet = heatPump.fanOutletNode();
+  auto expectedCondenserInlet = heatPump.condenserWaterInletNode();
+  auto expectedCondenserOutlet = heatPump.condenserWaterOutletNode();
+  ASSERT_TRUE(expectedInlet);
+  ASSERT_TRUE(expectedOutlet);
+  ASSERT_TRUE(expectedFanOutlet);
+  ASSERT_TRUE(expectedCondenserInlet);
+  ASSERT_TRUE(expectedCondenserOutlet);
+
+  Node rogueFanInlet(model);
+  Node rogueFanOutlet(model);
+  Node rogueCoilAirInlet(model);
+  Node rogueCoilAirOutlet(model);
+  Node rogueCondenserInlet(model);
+  Node rogueCondenserOutlet(model);
+
+  ASSERT_TRUE(fan.setPointer(fan.inletPort(), rogueFanInlet.handle()));
+  ASSERT_TRUE(fan.setPointer(fan.outletPort(), rogueFanOutlet.handle()));
+  ASSERT_TRUE(dxCoil.setPointer(dxCoil.airInletPort(), rogueCoilAirInlet.handle()));
+  ASSERT_TRUE(dxCoil.setPointer(dxCoil.airOutletPort(), rogueCoilAirOutlet.handle()));
+  ASSERT_TRUE(dxCoil.setPointer(dxCoil.waterInletPort(), rogueCondenserInlet.handle()));
+  ASSERT_TRUE(dxCoil.setPointer(dxCoil.waterOutletPort(), rogueCondenserOutlet.handle()));
+  ASSERT_TRUE(tank.setPointer(tank.demandOutletPort(), rogueCondenserInlet.handle()));
+  ASSERT_TRUE(tank.setPointer(tank.demandInletPort(), rogueCondenserOutlet.handle()));
+
+  auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+
+  auto fanInletAfter = fan.inletModelObject()->optionalCast<Node>();
+  auto fanOutletAfter = fan.outletModelObject()->optionalCast<Node>();
+  auto coilAirInletAfter = dxCoil.airInletModelObject()->optionalCast<Node>();
+  auto coilAirOutletAfter = dxCoil.airOutletModelObject()->optionalCast<Node>();
+  auto coilWaterInletAfter = dxCoil.waterInletModelObject()->optionalCast<Node>();
+  auto coilWaterOutletAfter = dxCoil.waterOutletModelObject()->optionalCast<Node>();
+  auto tankDemandOutletAfter = tank.demandOutletModelObject()->optionalCast<Node>();
+  auto tankDemandInletAfter = tank.demandInletModelObject()->optionalCast<Node>();
+  ASSERT_TRUE(fanInletAfter);
+  ASSERT_TRUE(fanOutletAfter);
+  ASSERT_TRUE(coilAirInletAfter);
+  ASSERT_TRUE(coilAirOutletAfter);
+  ASSERT_TRUE(coilWaterInletAfter);
+  ASSERT_TRUE(coilWaterOutletAfter);
+  ASSERT_TRUE(tankDemandOutletAfter);
+  ASSERT_TRUE(tankDemandInletAfter);
+
+  EXPECT_EQ(*expectedInlet, *fanInletAfter);
+  EXPECT_EQ(*fanOutletAfter, *coilAirInletAfter);
+  EXPECT_EQ(*expectedOutlet, *coilAirOutletAfter);
+  EXPECT_EQ(*expectedCondenserInlet, *coilWaterInletAfter);
+  EXPECT_EQ(*expectedCondenserOutlet, *coilWaterOutletAfter);
+  EXPECT_EQ(*expectedCondenserInlet, *tankDemandOutletAfter);
+  EXPECT_EQ(*expectedCondenserOutlet, *tankDemandInletAfter);
 }

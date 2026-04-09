@@ -3,10 +3,10 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#ifndef EPMODEL_COILWATERHEATINGAIRTOWATERHEATPUMP_IMPL_HPP
-#define EPMODEL_COILWATERHEATINGAIRTOWATERHEATPUMP_IMPL_HPP
+#ifndef EPMODEL_COILWATERHEATINGAIRTOWATERHEATPUMPVARIABLESPEED_IMPL_HPP
+#define EPMODEL_COILWATERHEATINGAIRTOWATERHEATPUMPVARIABLESPEED_IMPL_HPP
 
-#include "HVACComponent_Impl.hpp"
+#include "WaterToAirComponent_Impl.hpp"
 
 #include <vector>
 
@@ -15,51 +15,53 @@ namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API CoilWaterHeatingAirToWaterHeatPump_Impl : public HVACComponent_Impl
+    class EPMODEL_API CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl : public WaterToAirComponent_Impl
     {
      public:
-      using HVACComponent_Impl::HVACComponent_Impl;
-      virtual ~CoilWaterHeatingAirToWaterHeatPump_Impl() override = default;
+      using WaterToAirComponent_Impl::WaterToAirComponent_Impl;
+      virtual ~CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl() override = default;
 
-      double ratedHeatingCapacity() const;
-      bool setRatedHeatingCapacity(double ratedHeatingCapacity);
+      unsigned airInletPort() const override;
+      unsigned airOutletPort() const override;
+      unsigned waterInletPort() const override;
+      unsigned waterOutletPort() const override;
+      bool addToNode(Node& node) override;
+      bool addToSplitter(Splitter& splitter) override;
 
-      double ratedCOP() const;
-      bool setRatedCOP(double ratedCOP);
+      int nominalSpeedLevel() const;
+      bool setNominalSpeedLevel(int nominalSpeedLevel);
 
-      double ratedSensibleHeatRatio() const;
-      bool setRatedSensibleHeatRatio(double ratedSensibleHeatRatio);
+      double ratedWaterHeatingCapacity() const;
+      bool setRatedWaterHeatingCapacity(double ratedWaterHeatingCapacity);
 
       double ratedEvaporatorInletAirDryBulbTemperature() const;
       bool setRatedEvaporatorInletAirDryBulbTemperature(double ratedEvaporatorInletAirDryBulbTemperature);
 
       double ratedEvaporatorInletAirWetBulbTemperature() const;
-      bool setRatedEvaporatorInletAirWetBulbTemperature(double ratedEvaporatorInletAirWetBulbTemperature);
+      bool setRatedEvaporatorInletAirWetBulbTemperature(double ratedEvaporatorInletWetDryBulbTemperature);
 
       double ratedCondenserInletWaterTemperature() const;
       bool setRatedCondenserInletWaterTemperature(double ratedCondenserInletWaterTemperature);
 
       boost::optional<double> ratedEvaporatorAirFlowRate() const;
       bool setRatedEvaporatorAirFlowRate(double ratedEvaporatorAirFlowRate);
-      bool isRatedEvaporatorAirFlowRateAutosized() const;
-      void autosizeRatedEvaporatorAirFlowRate();
+      bool isRatedEvaporatorAirFlowRateAutocalculated() const;
+      void autocalculateRatedEvaporatorAirFlowRate();
 
       boost::optional<double> ratedCondenserWaterFlowRate() const;
       bool setRatedCondenserWaterFlowRate(double ratedCondenserWaterFlowRate);
-      bool isRatedCondenserWaterFlowRateAutosized() const;
-      void autosizeRatedCondenserWaterFlowRate();
+      bool isRatedCondenserWaterFlowRateAutocalculated() const;
+      void autocalculateRatedCondenserWaterFlowRate();
 
-      bool evaporatorFanPowerIncludedinRatedCOP() const;
-      bool setEvaporatorFanPowerIncludedinRatedCOP(bool evaporatorFanPowerIncludedinRatedCOP);
+      std::string evaporatorFanPowerIncludedinRatedCOP() const;
+      bool setEvaporatorFanPowerIncludedinRatedCOP(const std::string& evaporatorFanPowerIncludedinRatedCOP);
 
-      bool condenserPumpPowerIncludedinRatedCOP() const;
-      bool setCondenserPumpPowerIncludedinRatedCOP(bool condenserPumpPowerIncludedinRatedCOP);
+      std::string condenserPumpPowerIncludedinRatedCOP() const;
+      bool setCondenserPumpPowerIncludedinRatedCOP(const std::string& condenserPumpPowerIncludedinRatedCOP);
 
-      bool condenserPumpHeatIncludedinRatedHeatingCapacityandRatedCOP() const;
-      bool setCondenserPumpHeatIncludedinRatedHeatingCapacityandRatedCOP(bool condenserPumpHeatIncludedinRatedHeatingCapacityandRatedCOP);
-
-      double condenserWaterPumpPower() const;
-      bool setCondenserWaterPumpPower(double condenserWaterPumpPower);
+      std::string condenserPumpHeatIncludedinRatedHeatingCapacityandRatedCOP() const;
+      bool
+        setCondenserPumpHeatIncludedinRatedHeatingCapacityandRatedCOP(const std::string& condenserPumpHeatIncludedinRatedHeatingCapacityandRatedCOP);
 
       double fractionofCondenserPumpHeattoWater() const;
       bool setFractionofCondenserPumpHeattoWater(double fractionofCondenserPumpHeattoWater);

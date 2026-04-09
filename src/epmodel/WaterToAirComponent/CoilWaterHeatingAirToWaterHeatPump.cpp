@@ -3,8 +3,8 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#include "HVACComponent/CoilWaterHeatingAirToWaterHeatPump.hpp"
-#include "HVACComponent/CoilWaterHeatingAirToWaterHeatPump_Impl.hpp"
+#include "WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPump.hpp"
+#include "WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPump_Impl.hpp"
 
 #include "Model.hpp"
 
@@ -19,10 +19,10 @@ namespace openstudio {
 namespace epmodel {
 
 CoilWaterHeatingAirToWaterHeatPump::CoilWaterHeatingAirToWaterHeatPump(const Model& model)
-  : HVACComponent(CoilWaterHeatingAirToWaterHeatPump::iddObjectType(), model) {}
+  : WaterToAirComponent(CoilWaterHeatingAirToWaterHeatPump::iddObjectType(), model) {}
 
 CoilWaterHeatingAirToWaterHeatPump::CoilWaterHeatingAirToWaterHeatPump(std::shared_ptr<detail::CoilWaterHeatingAirToWaterHeatPump_Impl> impl)
-  : HVACComponent(std::move(impl)) {}
+  : WaterToAirComponent(std::move(impl)) {}
 
 IddObjectType CoilWaterHeatingAirToWaterHeatPump::iddObjectType() {
   return IddObjectType::Coil_WaterHeating_AirToWaterHeatPump_Pumped;
@@ -194,6 +194,32 @@ bool CoilWaterHeatingAirToWaterHeatPump::setEvaporatorAirTemperatureTypeforCurve
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+unsigned CoilWaterHeatingAirToWaterHeatPump_Impl::airInletPort() const {
+  return openstudio::Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::EvaporatorAirInletNodeName;
+}
+
+unsigned CoilWaterHeatingAirToWaterHeatPump_Impl::airOutletPort() const {
+  return openstudio::Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::EvaporatorAirOutletNodeName;
+}
+
+unsigned CoilWaterHeatingAirToWaterHeatPump_Impl::waterInletPort() const {
+  return openstudio::Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::CondenserWaterInletNodeName;
+}
+
+unsigned CoilWaterHeatingAirToWaterHeatPump_Impl::waterOutletPort() const {
+  return openstudio::Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::CondenserWaterOutletNodeName;
+}
+
+bool CoilWaterHeatingAirToWaterHeatPump_Impl::addToNode(Node& node) {
+  (void)node;
+  return false;
+}
+
+bool CoilWaterHeatingAirToWaterHeatPump_Impl::addToSplitter(Splitter& splitter) {
+  (void)splitter;
+  return false;
+}
 
 double CoilWaterHeatingAirToWaterHeatPump_Impl::ratedHeatingCapacity() const {
   const auto value = getDouble(openstudio::Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::RatedHeatingCapacity, true);

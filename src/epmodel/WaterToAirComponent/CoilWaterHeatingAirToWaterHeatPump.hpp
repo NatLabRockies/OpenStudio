@@ -7,7 +7,7 @@
 #define EPMODEL_COILWATERHEATINGAIRTOWATERHEATPUMP_HPP
 
 #include "EPModelAPI.hpp"
-#include "HVACComponent.hpp"
+#include "WaterToAirComponent.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -23,7 +23,7 @@ namespace epmodel {
     class CoilWaterHeatingAirToWaterHeatPump_Impl;
   }
 
-  class EPMODEL_API CoilWaterHeatingAirToWaterHeatPump : public HVACComponent
+  class EPMODEL_API CoilWaterHeatingAirToWaterHeatPump : public WaterToAirComponent
   {
    public:
     explicit CoilWaterHeatingAirToWaterHeatPump(const Model& model);
@@ -39,11 +39,12 @@ namespace epmodel {
     static std::vector<std::string> evaporatorAirTemperatureTypeforCurveObjectsValues();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The scalar rating and control surface is aligned, while availability-schedule, curve, and connection APIs are still omitted.
+    // - Status: Scalar Parity. The scalar rating and control surface is aligned, while availability-schedule and curve APIs are still omitted.
     // - Canonical Counterpart: openstudio::model::CoilWaterHeatingAirToWaterHeatPump.
     // - Implemented Parity: `evaporatorAirTemperatureTypeforCurveObjectsValues`, the rating setters/getters, pump/fan flags, and flow autosize helpers preserve the canonical scalar contract.
-    // - Documented Delta: Availability schedule, curve-link, and node-link accessors are not exposed yet even though they exist on the canonical model type.
-    // - Field/Storage Mapping: The epmodel wrapper maps the preserved scalar fields directly to EnergyPlus `Coil:WaterHeating:AirToWaterHeatPump:Pumped` storage.
+    // - Documented Delta: epmodel promotes this wrapper to `WaterToAirComponent` so the real evaporator-air and condenser-water ports are explicit. This is an additive hierarchy change compared to canonical model.
+    // - Documented Delta: Despite the base-class promotion, generic loop-placement APIs remain intentionally rejected because this coil is normally owned by a compound heat-pump water-heater parent.
+    // - Field/Storage Mapping: The epmodel wrapper maps the preserved scalar fields directly to EnergyPlus `Coil:WaterHeating:AirToWaterHeatPump:Pumped` storage, including the real air and water node fields.
     // - Evidence: `src/model/CoilWaterHeatingAirToWaterHeatPump.hpp`, `src/model/CoilWaterHeatingAirToWaterHeatPump.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilWaterHeatingAirToWaterHeatPump.cpp`, and `src/epmodel/test/CoilWaterHeatingAirToWaterHeatPump_GTest.cpp`.
     // - Remaining Parity Work: Add the omitted schedule, curve, and object-link APIs after the relationship layer is available.
     double ratedHeatingCapacity() const;

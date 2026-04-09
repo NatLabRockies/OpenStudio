@@ -290,7 +290,9 @@ The main remaining gaps are:
 #### Compound HVAC Relationship Strategy
 
 For compound zone and unitary HVAC types, the parent object should be the
-place that keeps the internal air path consistent.
+place that keeps the owned internal topology consistent. For many families
+that just means the internal air path. For some water-heater-style compounds,
+it also includes owned condenser-water links.
 
 In practice, that means the fan, coils, and other contained components should
 still be available through normal typed relationships, but the parent decides
@@ -313,10 +315,10 @@ bad state, canonicalization should put it back into a valid epmodel form.
 
 To keep that boundary obvious in code, compound `*_Impl` types should
 implement separate owner-maintenance and canonicalization-repair entry points,
-for example `maintainContainedAirPath()` for ordinary typed mutations and
-`repairContainedAirPath(LoadContext&)` for canonicalization. Any shared
-internal helper can stay private, but the two call paths should remain
-distinct.
+for example `maintainContainedAirPath()` / `repairContainedAirPath(LoadContext&)`
+for air-side families or `maintainContainedTopology()` / `repairContainedTopology(LoadContext&)`
+when the owned structure is broader than air alone. Any shared internal helper
+can stay private, but the two call paths should remain distinct.
 
 The child-routing rules inside that owned air path should also stay local to
 the owning family. In practice, that means each compound type should spell out
