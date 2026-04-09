@@ -114,6 +114,9 @@ namespace epmodel {
     }
 
     bool AirToAirComponent_Impl::addToNode(Node& node) {
+      if (auto owner = getObject<openstudio::epmodel::HVACComponent>().containingHVACComponent()) {
+        return false;
+      }
       if (auto oaSystem = node.airLoopHVACOutdoorAirSystem()) {
         return addToOutdoorAirSystem(*oaSystem, node);
       }
@@ -121,6 +124,9 @@ namespace epmodel {
     }
 
     void AirToAirComponent_Impl::disconnect() {
+      if (auto owner = getObject<openstudio::epmodel::HVACComponent>().containingHVACComponent()) {
+        return;
+      }
       setPointer(primaryAirInletPort(), Handle(), false);
       setPointer(primaryAirOutletPort(), Handle(), false);
       setPointer(secondaryAirInletPort(), Handle(), false);

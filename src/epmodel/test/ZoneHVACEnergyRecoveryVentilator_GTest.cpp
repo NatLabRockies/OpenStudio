@@ -9,10 +9,13 @@
 #include "../AirToAirComponent/HeatExchangerAirToAirSensibleAndLatent.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../ParentObject/ZoneHVACEnergyRecoveryVentilatorController.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
 #include "../StraightComponent/FanOnOff.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACEnergyRecoveryVentilator.hpp"
 
+#include <utilities/idd/Fan_OnOff_FieldEnums.hxx>
+#include <utilities/idd/HeatExchanger_AirToAir_SensibleAndLatent_FieldEnums.hxx>
 #include <utilities/idd/OS_ZoneHVAC_EnergyRecoveryVentilator_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EnergyRecoveryVentilator_FieldEnums.hxx>
 
@@ -23,10 +26,18 @@ TEST_F(EPModelFixture, ZoneHVACEnergyRecoveryVentilator_DefaultConstructor) {
   ZoneHVACEnergyRecoveryVentilator ventilator(model);
 
   EXPECT_EQ(ZoneHVACEnergyRecoveryVentilator::iddObjectType(), ventilator.iddObject().type());
+  EXPECT_EQ(openstudio::IddObjectType::Schedule_Constant, ventilator.availabilitySchedule().iddObject().type().value());
+  EXPECT_EQ(openstudio::IddObjectType::HeatExchanger_AirToAir_SensibleAndLatent, ventilator.heatExchanger().iddObject().type().value());
+  EXPECT_EQ(openstudio::IddObjectType::Fan_OnOff, ventilator.supplyAirFan().iddObject().type().value());
+  EXPECT_EQ(openstudio::IddObjectType::Fan_OnOff, ventilator.exhaustAirFan().iddObject().type().value());
   EXPECT_EQ(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilatorFields::AirInletNodeName, ventilator.inletPort());
   EXPECT_EQ(openstudio::OS_ZoneHVAC_EnergyRecoveryVentilatorFields::AirOutletNodeName, ventilator.outletPort());
-  EXPECT_FALSE(ventilator.inletNode());
-  EXPECT_FALSE(ventilator.outletNode());
+  EXPECT_TRUE(ventilator.inletNode());
+  EXPECT_TRUE(ventilator.outletNode());
+  EXPECT_TRUE(ventilator.outdoorAirNode());
+  EXPECT_TRUE(ventilator.supplyAirFanInletNode());
+  EXPECT_TRUE(ventilator.exhaustAirFanInletNode());
+  EXPECT_TRUE(ventilator.reliefAirNode());
   EXPECT_FALSE(ventilator.thermalZone());
   EXPECT_FALSE(ventilator.supplyAirFlowRate());
   EXPECT_TRUE(ventilator.isSupplyAirFlowRateAutosized());
@@ -49,8 +60,12 @@ TEST_F(EPModelFixture, ZoneHVACEnergyRecoveryVentilator_ThermalZoneAttachDetach)
 
   ventilator.removeFromThermalZone();
   EXPECT_FALSE(ventilator.thermalZone());
-  EXPECT_FALSE(ventilator.inletNode());
-  EXPECT_FALSE(ventilator.outletNode());
+  EXPECT_TRUE(ventilator.inletNode());
+  EXPECT_TRUE(ventilator.outletNode());
+  EXPECT_TRUE(ventilator.outdoorAirNode());
+  EXPECT_TRUE(ventilator.supplyAirFanInletNode());
+  EXPECT_TRUE(ventilator.exhaustAirFanInletNode());
+  EXPECT_TRUE(ventilator.reliefAirNode());
 }
 
 TEST_F(EPModelFixture, ZoneHVACEnergyRecoveryVentilator_ScalarAccessors_RoundTrip) {
@@ -104,4 +119,74 @@ TEST_F(EPModelFixture, ZoneHVACEnergyRecoveryVentilator_ChildrenOrderAndContent)
   EXPECT_EQ(openstudio::IddObjectType::Fan_OnOff, children[1].iddObject().type().value());
   EXPECT_EQ(openstudio::IddObjectType::HeatExchanger_AirToAir_SensibleAndLatent, children[2].iddObject().type().value());
   EXPECT_EQ(openstudio::IddObjectType::ZoneHVAC_EnergyRecoveryVentilator_Controller, children[3].iddObject().type().value());
+}
+
+TEST_F(EPModelFixture, ZoneHVACEnergyRecoveryVentilator_RelationshipsAndOwnedNodes) {
+  Model model;
+  ZoneHVACEnergyRecoveryVentilator ventilator(model);
+  FanOnOff supplyFan(model);
+  FanOnOff exhaustFan(model);
+  HeatExchangerAirToAirSensibleAndLatent heatExchanger(model);
+  ZoneHVACEnergyRecoveryVentilatorController controller(model);
+  ThermalZone zone(model);
+
+  ASSERT_TRUE(ventilator.setSupplyAirFan(supplyFan));
+  ASSERT_TRUE(ventilator.setExhaustAirFan(exhaustFan));
+  ASSERT_TRUE(ventilator.setHeatExchanger(heatExchanger));
+  ASSERT_TRUE(ventilator.setController(controller));
+  ASSERT_TRUE(ventilator.addToThermalZone(zone));
+
+  auto zoneExhaustNode = ventilator.inletNode();
+  auto zoneInletNode = ventilator.outletNode();
+  auto oaNode = ventilator.outdoorAirNode();
+  auto supplyFanInletNode = ventilator.supplyAirFanInletNode();
+  auto exhaustFanInletNode = ventilator.exhaustAirFanInletNode();
+  auto reliefNode = ventilator.reliefAirNode();
+  ASSERT_TRUE(zoneExhaustNode);
+  ASSERT_TRUE(zoneInletNode);
+  ASSERT_TRUE(oaNode);
+  ASSERT_TRUE(supplyFanInletNode);
+  ASSERT_TRUE(exhaustFanInletNode);
+  ASSERT_TRUE(reliefNode);
+
+  EXPECT_EQ(*oaNode, *heatExchanger.primaryAirInletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*supplyFanInletNode, *heatExchanger.primaryAirOutletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*zoneExhaustNode, *heatExchanger.secondaryAirInletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*exhaustFanInletNode, *heatExchanger.secondaryAirOutletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*supplyFanInletNode, *supplyFan.inletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*zoneInletNode, *supplyFan.outletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*exhaustFanInletNode, *exhaustFan.inletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*reliefNode, *exhaustFan.outletModelObject()->optionalCast<Node>());
+}
+
+TEST_F(EPModelFixture, ZoneHVACEnergyRecoveryVentilator_ContainedChildTopologyEditsAreRejectedAndCanonicalizationRepairsRawDrift) {
+  Model model;
+  ZoneHVACEnergyRecoveryVentilator ventilator(model);
+  HeatExchangerAirToAirSensibleAndLatent heatExchanger(model);
+  FanOnOff supplyFan(model);
+  FanOnOff exhaustFan(model);
+  ThermalZone zone(model);
+  ASSERT_TRUE(ventilator.setHeatExchanger(heatExchanger));
+  ASSERT_TRUE(ventilator.setSupplyAirFan(supplyFan));
+  ASSERT_TRUE(ventilator.setExhaustAirFan(exhaustFan));
+  ASSERT_TRUE(ventilator.addToThermalZone(zone));
+  Node strayNode(model);
+
+  auto originalZoneInlet = ventilator.outletNode();
+  ASSERT_TRUE(originalZoneInlet);
+
+  heatExchanger.disconnect();
+  EXPECT_EQ(*originalZoneInlet, *ventilator.outletNode());
+
+  ASSERT_TRUE(heatExchanger.setPointer(openstudio::HeatExchanger_AirToAir_SensibleAndLatentFields::SupplyAirOutletNodeName, strayNode.handle()));
+  ASSERT_TRUE(supplyFan.setPointer(openstudio::Fan_OnOffFields::AirOutletNodeName, strayNode.handle()));
+
+  model.canonicalize(SanitizationPolicy::Repair);
+
+  auto repairedSupplyFanInlet = ventilator.supplyAirFanInletNode();
+  auto repairedZoneInlet = ventilator.outletNode();
+  ASSERT_TRUE(repairedSupplyFanInlet);
+  ASSERT_TRUE(repairedZoneInlet);
+  EXPECT_EQ(*repairedSupplyFanInlet, *heatExchanger.primaryAirOutletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*repairedZoneInlet, *supplyFan.outletModelObject()->optionalCast<Node>());
 }

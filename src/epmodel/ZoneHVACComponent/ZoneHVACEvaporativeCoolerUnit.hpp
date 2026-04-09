@@ -9,6 +9,8 @@
 #include "EPModelAPI.hpp"
 #include "ZoneHVACComponent.hpp"
 
+#include <boost/optional.hpp>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -21,9 +23,14 @@ class optional;
 namespace openstudio {
 namespace epmodel {
 
+  class HVACComponent;
   class Model;
+  class ModelObject;
+  class Node;
+  class Schedule;
 
   namespace detail {
+    struct LoadContext;
     class ZoneHVACEvaporativeCoolerUnit_Impl;
   }
 
@@ -41,18 +48,31 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar fan/control fields are aligned, while the fan, cooler, and node wiring stays relationship-driven.
+    // - Status: Partial Parity. The scalar fan/control fields are aligned, and the contained fan/cooler air path is now kept consistent
+    //   through parent-owned epmodel nodes, but broader evaporative-cooler-unit parity remains incomplete.
     // - Canonical Counterpart: openstudio::model::ZoneHVACEvaporativeCoolerUnit.
-    // - Implemented Parity: `designSupplyAirFlowRate`, `fanPlacement`, `coolerUnitControlMethod`, throttling-range, cooling-load threshold, and shutoff humidity map directly to the EnergyPlus object.
-    // - Documented Delta: Availability schedule, supply air fan, evaporative cooler children, and connected node references are relationship-only and remain excluded from the scalar surface.
-    // - Field/Storage Mapping: Scalar fields live directly on the EnergyPlus object; topology and child links are maintained through explicit child-object helpers.
+    // - Implemented Parity: `availabilitySchedule`, `supplyAirFan`, `firstEvaporativeCooler`, optional `secondEvaporativeCooler`,
+    //   `designSupplyAirFlowRate`, `fanPlacement`, `coolerUnitControlMethod`, throttling-range, cooling-load threshold, and shutoff humidity
+    //   map directly to the EnergyPlus object. The contained fan and evaporative coolers now share a parent-owned air path with direct access
+    //   to the meaningful outdoor-air, fan-outlet, and first-cooler-outlet roles on the compound.
+    // - Documented Delta: `outdoorAirNode()`, `fanOutletNode()`, `firstEvaporativeCoolerOutletNode()`, and
+    //   `secondEvaporativeCoolerOutletNode()` are exposed as additive conveniences so callers can inspect and rename the owned node roles even
+    //   when those roles alias each other or the parent outlet in a valid configuration.
+    // - Field/Storage Mapping: Scalar fields live directly on the EnergyPlus object while schedules and contained equipment are modeled
+    //   explicitly through child-object state and transient epmodel nodes.
     // - Evidence: `src/model/ZoneHVACEvaporativeCoolerUnit.hpp`, `src/model/ZoneHVACEvaporativeCoolerUnit.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACEvaporativeCoolerUnit.cpp`, and `src/epmodel/test/ZoneHVACEvaporativeCoolerUnit_GTest.cpp`.
-    // - Remaining Parity Work: Add the missing relationship helpers only if the canonical wrapper needs them beyond the current child/topology surface.
+    // - Remaining Parity Work: Add any remaining public relationship helpers only if the canonical wrapper still exposes them directly.
     static std::vector<std::string> fanPlacementValues();
     static std::vector<std::string> coolerUnitControlMethodValues();
 
     unsigned inletPort() const;
     unsigned outletPort() const;
+
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    HVACComponent supplyAirFan() const;
+    bool setSupplyAirFan(const HVACComponent& hvacComponent);
 
     boost::optional<double> designSupplyAirFlowRate() const;
     bool isDesignSupplyAirFlowRateAutosized() const;
@@ -71,8 +91,20 @@ namespace epmodel {
     double coolingLoadControlThresholdHeatTransferRate() const;
     bool setCoolingLoadControlThresholdHeatTransferRate(double coolingLoadControlThresholdHeatTransferRate);
 
+    HVACComponent firstEvaporativeCooler() const;
+    bool setFirstEvaporativeCooler(const HVACComponent& hvacComponent);
+
+    boost::optional<HVACComponent> secondEvaporativeCooler() const;
+    bool setSecondEvaporativeCooler(const HVACComponent& hvacComponent);
+    void resetSecondEvaporativeCooler();
+
     double shutOffRelativeHumidity() const;
     bool setShutOffRelativeHumidity(double shutOffRelativeHumidity);
+
+    boost::optional<Node> outdoorAirNode() const;
+    boost::optional<Node> fanOutletNode() const;
+    boost::optional<Node> firstEvaporativeCoolerOutletNode() const;
+    boost::optional<Node> secondEvaporativeCoolerOutletNode() const;
 
     std::vector<ModelObject> children() const;
 

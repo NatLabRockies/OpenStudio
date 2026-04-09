@@ -8,17 +8,20 @@
 
 #include "ZoneHVACComponent_Impl.hpp"
 
-#include <string>
+#include <boost/optional.hpp>
 
-namespace boost {
-template <typename T>
-class optional;
-}
+#include <string>
 
 namespace openstudio {
 namespace epmodel {
 
+  class HVACComponent;
+  class Node;
+  class Schedule;
+
   namespace detail {
+
+    struct LoadContext;
 
     class EPMODEL_API ZoneHVACEvaporativeCoolerUnit_Impl : public ZoneHVACComponent_Impl
     {
@@ -29,6 +32,15 @@ namespace epmodel {
       unsigned inletPort() const override;
       unsigned outletPort() const override;
       std::vector<ModelObject> children() const override;
+      bool addToThermalZone(ThermalZone& thermalZone) override;
+      void removeFromThermalZone() override;
+      void doCanonicalize(LoadContext& context) override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
+      HVACComponent supplyAirFan() const;
+      bool setSupplyAirFan(const HVACComponent& supplyAirFan);
 
       boost::optional<double> designSupplyAirFlowRate() const;
       bool isDesignSupplyAirFlowRateAutosized() const;
@@ -47,8 +59,25 @@ namespace epmodel {
       double coolingLoadControlThresholdHeatTransferRate() const;
       bool setCoolingLoadControlThresholdHeatTransferRate(double coolingLoadControlThresholdHeatTransferRate);
 
+      HVACComponent firstEvaporativeCooler() const;
+      bool setFirstEvaporativeCooler(const HVACComponent& firstEvaporativeCooler);
+
+      boost::optional<HVACComponent> secondEvaporativeCooler() const;
+      bool setSecondEvaporativeCooler(const HVACComponent& secondEvaporativeCooler);
+      void resetSecondEvaporativeCooler();
+
       double shutOffRelativeHumidity() const;
       bool setShutOffRelativeHumidity(double shutOffRelativeHumidity);
+
+      boost::optional<Node> outdoorAirNode() const;
+      boost::optional<Node> fanOutletNode() const;
+      boost::optional<Node> firstEvaporativeCoolerOutletNode() const;
+      boost::optional<Node> secondEvaporativeCoolerOutletNode() const;
+
+     private:
+      bool maintainContainedAirPath();
+      bool repairContainedAirPath(LoadContext& context);
+      bool reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context = nullptr);
     };
 
   }  // namespace detail
