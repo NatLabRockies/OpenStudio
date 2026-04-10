@@ -71,6 +71,9 @@ namespace epmodel {
   class Node;
   class CoilHeatingLowTempRadiantConstFlow;
   class CoilCoolingLowTempRadiantConstFlow;
+  class CoilHeatingLowTempRadiantVarFlow;
+  class CoilCoolingLowTempRadiantVarFlow;
+  class CoilCoolingWaterPanelRadiant;
 
 class EPMODEL_API Model
   : public openstudio::Workspace
@@ -231,6 +234,21 @@ namespace detail {
 
   template <>
   struct is_transient_factory_type<openstudio::epmodel::CoilCoolingLowTempRadiantConstFlow> : std::true_type
+  {
+  };
+
+  template <>
+  struct is_transient_factory_type<openstudio::epmodel::CoilHeatingLowTempRadiantVarFlow> : std::true_type
+  {
+  };
+
+  template <>
+  struct is_transient_factory_type<openstudio::epmodel::CoilCoolingLowTempRadiantVarFlow> : std::true_type
+  {
+  };
+
+  template <>
+  struct is_transient_factory_type<openstudio::epmodel::CoilCoolingWaterPanelRadiant> : std::true_type
   {
   };
 }  // namespace detail

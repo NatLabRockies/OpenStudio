@@ -146,12 +146,21 @@ set(${target_name}_src
   StraightComponent/CoilHeatingLowTempRadiantConstFlow.hpp
   StraightComponent/CoilHeatingLowTempRadiantConstFlow_Impl.hpp
   StraightComponent/CoilHeatingLowTempRadiantConstFlow.cpp
+  StraightComponent/CoilHeatingLowTempRadiantVarFlow.hpp
+  StraightComponent/CoilHeatingLowTempRadiantVarFlow_Impl.hpp
+  StraightComponent/CoilHeatingLowTempRadiantVarFlow.cpp
   StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.hpp
   StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp
   StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.cpp
   StraightComponent/CoilCoolingLowTempRadiantConstFlow.hpp
   StraightComponent/CoilCoolingLowTempRadiantConstFlow_Impl.hpp
   StraightComponent/CoilCoolingLowTempRadiantConstFlow.cpp
+  StraightComponent/CoilCoolingLowTempRadiantVarFlow.hpp
+  StraightComponent/CoilCoolingLowTempRadiantVarFlow_Impl.hpp
+  StraightComponent/CoilCoolingLowTempRadiantVarFlow.cpp
+  StraightComponent/CoilCoolingWaterPanelRadiant.hpp
+  StraightComponent/CoilCoolingWaterPanelRadiant_Impl.hpp
+  StraightComponent/CoilCoolingWaterPanelRadiant.cpp
   WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.hpp
   WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl.hpp
   WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.cpp
@@ -1406,6 +1415,9 @@ set(${target_name}_src
     ModelObject/ZoneHVACLowTempRadiantConstFlowDesign.hpp
     ModelObject/ZoneHVACLowTempRadiantConstFlowDesign_Impl.hpp
     ModelObject/ZoneHVACLowTempRadiantConstFlowDesign.cpp
+    ModelObject/ZoneHVACLowTempRadiantVarFlowDesign.hpp
+    ModelObject/ZoneHVACLowTempRadiantVarFlowDesign_Impl.hpp
+    ModelObject/ZoneHVACLowTempRadiantVarFlowDesign.cpp
     ModelObject/ZoneHVACLowTemperatureRadiantSurfaceGroup.hpp
     ModelObject/ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl.hpp
     ModelObject/ZoneHVACLowTemperatureRadiantSurfaceGroup.cpp
@@ -3143,6 +3155,10 @@ set(${target_name}_test_src
   test/ZoneHVACLowTemperatureRadiantSurfaceGroup_GTest.cpp
   test/CoilHeatingLowTempRadiantConstFlow_GTest.cpp
   test/CoilCoolingLowTempRadiantConstFlow_GTest.cpp
+  test/ZoneHVACLowTempRadiantVarFlowDesign_GTest.cpp
+  test/CoilHeatingLowTempRadiantVarFlow_GTest.cpp
+  test/CoilCoolingLowTempRadiantVarFlow_GTest.cpp
+  test/CoilCoolingWaterPanelRadiant_GTest.cpp
      test/ZoneHVACLowTempRadiantVarFlow_GTest.cpp
   test/ZoneHVACLowTemperatureRadiantElectric_GTest.cpp
   test/ZoneHVACIdealLoadsAirSystem_GTest.cpp

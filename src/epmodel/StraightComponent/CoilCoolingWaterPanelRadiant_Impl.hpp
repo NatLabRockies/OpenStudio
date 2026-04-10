@@ -3,54 +3,39 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#ifndef EPMODEL_ZONEHVACCOOLINGPANELRADIANTCONVECTIVEWATER_IMPL_HPP
-#define EPMODEL_ZONEHVACCOOLINGPANELRADIANTCONVECTIVEWATER_IMPL_HPP
+#ifndef EPMODEL_COILCOOLINGWATERPANELRADIANT_IMPL_HPP
+#define EPMODEL_COILCOOLINGWATERPANELRADIANT_IMPL_HPP
 
-#include "ZoneHVACComponent/ZoneHVACComponent_Impl.hpp"
+#include "StraightComponent/StraightComponent_Impl.hpp"
 
 #include <boost/optional.hpp>
 
 namespace openstudio {
 namespace epmodel {
 
-class HVACComponent;
 class ModelObject;
+class Node;
 class Schedule;
-class Surface;
-class ThermalZone;
 class ZoneHVACCoolingPanelRadiantConvectiveWater;
 
 namespace detail {
 
-class CoilCoolingWaterPanelRadiant_Impl;
-
-std::string transientCoolingCoilName(const openstudio::epmodel::ZoneHVACCoolingPanelRadiantConvectiveWater& parent);
-
-class EPMODEL_API ZoneHVACCoolingPanelRadiantConvectiveWater_Impl : public ZoneHVACComponent_Impl
+class CoilCoolingWaterPanelRadiant_Impl : public StraightComponent_Impl
 {
  public:
-  using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
-  virtual ~ZoneHVACCoolingPanelRadiantConvectiveWater_Impl() override = default;
+  using StraightComponent_Impl::StraightComponent_Impl;
+  virtual ~CoilCoolingWaterPanelRadiant_Impl() override = default;
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
-  bool addToThermalZone(ThermalZone& thermalZone) override;
-  void removeFromThermalZone() override;
-  std::vector<ModelObject> children() const override;
-  void doCanonicalize(LoadContext& context) override;
 
-  Schedule availabilitySchedule() const;
-  bool setAvailabilitySchedule(Schedule& schedule);
-  void resetAvailabilitySchedule();
+  boost::optional<ModelObject> inletModelObject() const override;
+  boost::optional<ModelObject> outletModelObject() const override;
+  bool addToNode(Node& node) override;
+  bool removeFromLoop() override;
+  void disconnect() override;
 
-  double fractionRadiant() const;
-  bool setFractionRadiant(double fractionRadiant);
-
-  double fractionofRadiantEnergyIncidentonPeople() const;
-  bool setFractionofRadiantEnergyIncidentonPeople(double fractionofRadiantEnergyIncidentonPeople);
-
-  HVACComponent coolingCoil() const;
-  bool setCoolingCoil(HVACComponent& coolingCoil);
+  boost::optional<ZoneHVACCoolingPanelRadiantConvectiveWater> parent() const;
 
   double ratedInletWaterTemperature() const;
   bool isRatedInletWaterTemperatureDefaulted() const;
@@ -76,19 +61,19 @@ class EPMODEL_API ZoneHVACCoolingPanelRadiantConvectiveWater_Impl : public ZoneH
   bool isCoolingDesignCapacityAutosized() const;
   bool setCoolingDesignCapacity(double coolingDesignCapacity);
   void autosizeCoolingDesignCapacity();
+  boost::optional<double> autosizedCoolingDesignCapacity() const;
 
-  boost::optional<double> coolingDesignCapacityPerFloorArea() const;
+  double coolingDesignCapacityPerFloorArea() const;
   bool setCoolingDesignCapacityPerFloorArea(double coolingDesignCapacityPerFloorArea);
-  void resetCoolingDesignCapacityPerFloorArea();
 
-  boost::optional<double> fractionofAutosizedCoolingDesignCapacity() const;
-  bool setFractionOfAutosizedCoolingDesignCapacity(double fractionOfAutosizedCoolingDesignCapacity);
-  void resetFractionOfAutosizedCoolingDesignCapacity();
+  double fractionofAutosizedCoolingDesignCapacity() const;
+  bool setFractionofAutosizedCoolingDesignCapacity(double fractionofAutosizedCoolingDesignCapacity);
 
   boost::optional<double> maximumChilledWaterFlowRate() const;
   bool isMaximumChilledWaterFlowRateAutosized() const;
   bool setMaximumChilledWaterFlowRate(double maximumChilledWaterFlowRate);
   void autosizeMaximumChilledWaterFlowRate();
+  boost::optional<double> autosizedMaximumChilledWaterFlowRate() const;
 
   std::string controlType() const;
   bool isControlTypeDefaulted() const;
@@ -100,6 +85,10 @@ class EPMODEL_API ZoneHVACCoolingPanelRadiantConvectiveWater_Impl : public ZoneH
   bool setCoolingControlThrottlingRange(double coolingControlThrottlingRange);
   void resetCoolingControlThrottlingRange();
 
+  boost::optional<Schedule> coolingControlTemperatureSchedule() const;
+  bool setCoolingControlTemperatureSchedule(Schedule& coolingControlTemperatureSchedule);
+  void resetCoolingControlTemperatureSchedule();
+
   std::string condensationControlType() const;
   bool isCondensationControlTypeDefaulted() const;
   bool setCondensationControlType(const std::string& condensationControlType);
@@ -109,14 +98,6 @@ class EPMODEL_API ZoneHVACCoolingPanelRadiantConvectiveWater_Impl : public ZoneH
   bool isCondensationControlDewpointOffsetDefaulted() const;
   bool setCondensationControlDewpointOffset(double condensationControlDewpointOffset);
   void resetCondensationControlDewpointOffset();
-
- private:
-  friend class openstudio::epmodel::ZoneHVACCoolingPanelRadiantConvectiveWater;
-  friend class CoilCoolingWaterPanelRadiant_Impl;
-
-  boost::optional<Schedule> optionalAvailabilitySchedule() const;
-  std::vector<Surface> zoneSurfaces() const;
-  void rewriteSurfaceFractions();
 };
 
 }  // namespace detail

@@ -14,7 +14,23 @@
 namespace openstudio {
 namespace epmodel {
 
+  class HVACComponent;
+  class ModelObject;
+  class Schedule;
+  class Surface;
+  class ZoneHVACLowTempRadiantVarFlow;
+  class ZoneHVACLowTempRadiantVarFlowDesign;
+  class ZoneHVACLowTemperatureRadiantSurfaceGroup;
+  class CoilHeatingLowTempRadiantVarFlow;
+  class CoilCoolingLowTempRadiantVarFlow;
+
   namespace detail {
+
+    class CoilHeatingLowTempRadiantVarFlow_Impl;
+    class CoilCoolingLowTempRadiantVarFlow_Impl;
+
+    std::string transientHeatingCoilName(const openstudio::epmodel::ZoneHVACLowTempRadiantVarFlow& parent);
+    std::string transientCoolingCoilName(const openstudio::epmodel::ZoneHVACLowTempRadiantVarFlow& parent);
 
     class EPMODEL_API ZoneHVACLowTempRadiantVarFlow_Impl : public ZoneHVACComponent_Impl
     {
@@ -25,7 +41,33 @@ namespace epmodel {
       unsigned inletPort() const;
       unsigned outletPort() const;
 
+      boost::optional<Schedule> availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+      void resetAvailabilitySchedule();
+
+      boost::optional<std::string> radiantSurfaceType() const;
+      bool setRadiantSurfaceType(const std::string& radiantSurfaceType);
+      void resetRadiantSurfaceType();
+
+      std::vector<Surface> surfaces() const;
+
+      boost::optional<HVACComponent> heatingCoil() const;
+      bool setHeatingCoil(HVACComponent& heatingCoil);
+      void resetHeatingCoil();
+
+      boost::optional<HVACComponent> coolingCoil() const;
+      bool setCoolingCoil(HVACComponent& coolingCoil);
+      void resetCoolingCoil();
+
+      boost::optional<Schedule> changeoverDelayTimePeriodSchedule() const;
+      bool setChangeoverDelayTimePeriodSchedule(Schedule& schedule);
+      void resetChangeoverDelayTimePeriodSchedule();
+
+      std::vector<ModelObject> children() const override;
+      void doCanonicalize(LoadContext& context) override;
+
       boost::optional<double> hydronicTubingLength() const;
+      boost::optional<double> autosizedHydronicTubingLength() const;
       bool isHydronicTubingLengthAutosized() const;
       bool setHydronicTubingLength(double hydronicTubingLength);
       void autosizeHydronicTubingLength();
@@ -138,22 +180,15 @@ namespace epmodel {
       void resetCircuitLength();
 
      private:
-      boost::optional<std::string> m_fluidtoRadiantSurfaceHeatTransferModel;
-      boost::optional<double> m_hydronicTubingInsideDiameter;
-      boost::optional<double> m_hydronicTubingOutsideDiameter;
-      boost::optional<double> m_hydronicTubingConductivity;
-      boost::optional<std::string> m_temperatureControlType;
-      boost::optional<std::string> m_setpointControlType;
-      boost::optional<std::string> m_heatingDesignCapacityMethod;
-      boost::optional<double> m_heatingDesignCapacityPerFloorArea;
-      boost::optional<double> m_fractionofAutosizedHeatingDesignCapacity;
-      boost::optional<double> m_heatingControlThrottlingRange;
-      boost::optional<std::string> m_coolingDesignCapacityMethod;
-      boost::optional<double> m_coolingDesignCapacityPerFloorArea;
-      boost::optional<double> m_fractionofAutosizedCoolingDesignCapacity;
-      boost::optional<double> m_coolingControlThrottlingRange;
-      boost::optional<std::string> m_condensationControlType;
-      boost::optional<double> m_condensationControlDewpointOffset;
+      friend class openstudio::epmodel::ZoneHVACLowTempRadiantVarFlow;
+      friend class CoilHeatingLowTempRadiantVarFlow_Impl;
+      friend class CoilCoolingLowTempRadiantVarFlow_Impl;
+
+      boost::optional<ZoneHVACLowTempRadiantVarFlowDesign> designObject() const;
+      ZoneHVACLowTempRadiantVarFlowDesign ensureDesignObject();
+
+      boost::optional<ZoneHVACLowTemperatureRadiantSurfaceGroup> surfaceGroup() const;
+      ZoneHVACLowTemperatureRadiantSurfaceGroup ensureSurfaceGroup();
     };
 
   }  // namespace detail

@@ -344,9 +344,12 @@
 #include "HVACComponent/AirConditionerVariableRefrigerantFlowFluidTemperatureControlHR_Impl.hpp"
 #include "StraightComponent/CoilCoolingDXVariableRefrigerantFlow_Impl.hpp"
 #include "StraightComponent/CoilCoolingLowTempRadiantConstFlow_Impl.hpp"
+#include "StraightComponent/CoilCoolingLowTempRadiantVarFlow_Impl.hpp"
+#include "StraightComponent/CoilCoolingWaterPanelRadiant_Impl.hpp"
 #include "StraightComponent/CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp"
 #include "StraightComponent/CoilHeatingDXVariableRefrigerantFlow_Impl.hpp"
 #include "StraightComponent/CoilHeatingLowTempRadiantConstFlow_Impl.hpp"
+#include "StraightComponent/CoilHeatingLowTempRadiantVarFlow_Impl.hpp"
 #include "StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp"
 #include "WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl.hpp"
 #include "HVACComponent/ControllerWaterCoil_Impl.hpp"
@@ -741,6 +744,7 @@
 #include "ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWaterDesign_Impl.hpp"
 #include "ModelObject/ZoneHVACLowTempRadiantConstFlowDesign_Impl.hpp"
+#include "ModelObject/ZoneHVACLowTempRadiantVarFlowDesign_Impl.hpp"
 #include "ModelObject/ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACBaseboardConvectiveWater_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACDehumidifierDX_Impl.hpp"
@@ -1220,6 +1224,8 @@ namespace epmodel {
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl,
                                CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_ConstantFlow, CoilCoolingLowTempRadiantConstFlow_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_VariableFlow, CoilCoolingLowTempRadiantVarFlow_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_Water_Panel_Radiant, CoilCoolingWaterPanelRadiant_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_Cooling_DX_VariableSpeed, CoilCoolingDXVariableSpeed_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_Cooling_Water, CoilCoolingWater_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_Cooling_WaterToAirHeatPump_EquationFit, CoilCoolingWaterToAirHeatPumpEquationFit_Impl);
@@ -1235,6 +1241,7 @@ namespace epmodel {
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl,
                                CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Heating_LowTemperatureRadiant_ConstantFlow, CoilHeatingLowTempRadiantConstFlow_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Heating_LowTemperatureRadiant_VariableFlow, CoilHeatingLowTempRadiantVarFlow_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_Heating_DX_VariableSpeed, CoilHeatingDXVariableSpeed_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_Heating_Desuperheater, CoilHeatingDesuperheater_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_Heating_Electric, CoilHeatingElectric_Impl);
@@ -1951,7 +1958,7 @@ namespace epmodel {
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_Electric, ZoneHVACLowTemperatureRadiantElectric_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_SurfaceGroup, ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_VariableFlow, ZoneHVACLowTempRadiantVarFlow_Impl);
-      REGISTER_NEW_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_VariableFlow_Design, ZoneHVACLowTempRadiantVarFlow_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_VariableFlow_Design, ZoneHVACLowTempRadiantVarFlowDesign_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::ZoneHVAC_OutdoorAirUnit, ZoneHVACOutdoorAirUnit_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::ZoneHVAC_OutdoorAirUnit_EquipmentList, ZoneHVACOutdoorAirUnitEquipmentList_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::ZoneHVAC_PackagedTerminalAirConditioner, ZoneHVACPackagedTerminalAirConditioner_Impl);
@@ -2143,6 +2150,8 @@ namespace epmodel {
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl,
                                 CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_ConstantFlow, CoilCoolingLowTempRadiantConstFlow_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_VariableFlow, CoilCoolingLowTempRadiantVarFlow_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_Water_Panel_Radiant, CoilCoolingWaterPanelRadiant_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_Cooling_DX_VariableSpeed, CoilCoolingDXVariableSpeed_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_Cooling_Water, CoilCoolingWater_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_Cooling_WaterToAirHeatPump_EquationFit, CoilCoolingWaterToAirHeatPumpEquationFit_Impl);
@@ -2158,6 +2167,7 @@ namespace epmodel {
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl,
                                 CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Heating_LowTemperatureRadiant_ConstantFlow, CoilHeatingLowTempRadiantConstFlow_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Heating_LowTemperatureRadiant_VariableFlow, CoilHeatingLowTempRadiantVarFlow_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_Heating_DX_VariableSpeed, CoilHeatingDXVariableSpeed_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_Heating_Desuperheater, CoilHeatingDesuperheater_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_Heating_Electric, CoilHeatingElectric_Impl);
@@ -2883,7 +2893,7 @@ namespace epmodel {
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_Electric, ZoneHVACLowTemperatureRadiantElectric_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_SurfaceGroup, ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_VariableFlow, ZoneHVACLowTempRadiantVarFlow_Impl);
-      REGISTER_COPY_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_VariableFlow_Design, ZoneHVACLowTempRadiantVarFlow_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_VariableFlow_Design, ZoneHVACLowTempRadiantVarFlowDesign_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::ZoneHVAC_OutdoorAirUnit, ZoneHVACOutdoorAirUnit_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::ZoneHVAC_OutdoorAirUnit_EquipmentList, ZoneHVACOutdoorAirUnitEquipmentList_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::ZoneHVAC_PackagedTerminalAirConditioner, ZoneHVACPackagedTerminalAirConditioner_Impl);

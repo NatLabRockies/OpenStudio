@@ -7,6 +7,9 @@
 #define EPMODEL_ZONEHVACLOWTEMPRADIANTVARFLOW_HPP
 
 #include "EPModelAPI.hpp"
+#include "PlanarSurface/Surface.hpp"
+#include "StraightComponent/CoilCoolingLowTempRadiantVarFlow.hpp"
+#include "StraightComponent/CoilHeatingLowTempRadiantVarFlow.hpp"
 #include "ZoneHVACComponent/ZoneHVACComponent.hpp"
 
 #include <boost/optional.hpp>
@@ -17,7 +20,12 @@
 namespace openstudio {
 namespace epmodel {
 
+  class HVACComponent;
   class Model;
+  class ModelObject;
+  class Schedule;
+  class ZoneHVACLowTempRadiantVarFlowDesign;
+  class ZoneHVACLowTemperatureRadiantSurfaceGroup;
 
   namespace detail {
     class ZoneHVACLowTempRadiantVarFlow_Impl;
@@ -27,6 +35,8 @@ namespace epmodel {
   {
    public:
     explicit ZoneHVACLowTempRadiantVarFlow(const Model& model);
+    ZoneHVACLowTempRadiantVarFlow(const Model& model, Schedule& availabilitySchedule, HVACComponent& heatingCoil,
+                                  HVACComponent& coolingCoil);
 
     virtual ~ZoneHVACLowTempRadiantVarFlow() override = default;
     ZoneHVACLowTempRadiantVarFlow(const ZoneHVACLowTempRadiantVarFlow& other) = default;
@@ -35,6 +45,7 @@ namespace epmodel {
     ZoneHVACLowTempRadiantVarFlow& operator=(ZoneHVACLowTempRadiantVarFlow&&) = default;
 
     static IddObjectType iddObjectType();
+    static std::vector<std::string> radiantSurfaceTypeValues();
     static std::vector<std::string> numberofCircuitsValues();
     static std::vector<std::string> fluidtoRadiantSurfaceHeatTransferModelValues();
     static std::vector<std::string> temperatureControlTypeValues();
@@ -44,15 +55,62 @@ namespace epmodel {
     static std::vector<std::string> condensationControlTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The hydronic and control scalars are aligned, but surface-group and node wiring remain relationship-driven.
+    // - Status: Partial Parity. The hydronic and control scalars are aligned, epmodel preserves the canonical optional
+    //   heating/cooling companion coils as transient child views, and the canonical radiant-surface APIs now route through
+    //   the persisted EnergyPlus surface-group object and design companion object.
     // - Canonical Counterpart: openstudio::model::ZoneHVACLowTempRadiantVarFlow.
-    // - Implemented Parity: The variable-flow radiant scalar groups map directly to the EnergyPlus object and its companion design object.
-    // - Documented Delta: Surface-group membership, node wiring, and other relationship-style links are not surfaced as scalar accessors.
-    // - Field/Storage Mapping: Scalar values live on the EnergyPlus object and companion design object, while the omitted links are handled through topology state and child-object APIs.
+    // - Why This Type Is Slightly Different: canonical OpenStudio splits this family into one parent object plus optional
+    //   heating/cooling coil wrappers and a higher-level `RadiantSurfaceType` selector. EnergyPlus does not persist those
+    //   child coil objects or that selector directly. It stores the flattened result on the parent radiant object, the
+    //   persisted `...:Design` object, and a referenced `ZoneHVAC:LowTemperatureRadiant:SurfaceGroup`.
+    // - Implemented Parity: The canonical availability schedule, optional heating/cooling companion coils, radiant-surface
+    //   APIs, and changeover schedule are preserved additively while staying anchored to that EnergyPlus storage shape.
+    // - Documented Delta: `setRadiantSurfaceType(...)` currently snapshots the matching zone surfaces into the EnergyPlus
+    //   surface group. Later zone/surface edits do not yet automatically resynchronize that group.
+    // - Field/Storage Mapping: Main hydronic fields live on the EnergyPlus object, design-side controls live on the
+    //   EnergyPlus design object, the surface selection lives as a referenced EnergyPlus surface group, and the transient
+    //   child coils are views over those persisted parent fields rather than standalone EnergyPlus objects.
     // - Evidence: `src/model/ZoneHVACLowTempRadiantVarFlow.hpp`, `src/model/ZoneHVACLowTempRadiantVarFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACLowTempRadiantVarFlow.cpp`, and `src/epmodel/test/ZoneHVACLowTempRadiantVarFlow_GTest.cpp`.
-    // - Remaining Parity Work: Add relationship helpers only if the canonical wrapper continues to require them directly.
+    // - Remaining Parity Work: Add automatic surface-group resynchronization after later zone/surface edits and close any
+    //   remaining relationship gaps.
+
+    boost::optional<Schedule> availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+    void resetAvailabilitySchedule();
+
+    // This preserves the canonical higher-level selector even though EnergyPlus stores the actual persisted
+    // surface membership in a referenced `ZoneHVAC:LowTemperatureRadiant:SurfaceGroup`.
+    boost::optional<std::string> radiantSurfaceType() const;
+    // For now this snapshots the current matching zone surfaces into the persisted EnergyPlus surface-group object.
+    // Later zone or surface edits do not yet automatically resynchronize that group.
+    bool setRadiantSurfaceType(const std::string& radiantSurfaceType);
+    // Reset follows the canonical default of `Ceilings` when the parent is attached to a zone. Without a zone, there
+    // is no canonical surface selection to materialize, so the persisted surface-group membership is simply cleared.
+    void resetRadiantSurfaceType();
+
+    // This returns the actual surfaces currently referenced by the persisted EnergyPlus surface-group object, not a
+    // live recomputation from the attached thermal zone.
+    std::vector<Surface> surfaces() const;
+
+    boost::optional<HVACComponent> heatingCoil() const;
+    bool setHeatingCoil(HVACComponent& heatingCoil);
+    void resetHeatingCoil();
+
+    boost::optional<HVACComponent> coolingCoil() const;
+    bool setCoolingCoil(HVACComponent& coolingCoil);
+    void resetCoolingCoil();
+
+    boost::optional<Schedule> changeoverDelayTimePeriodSchedule() const;
+    bool setChangeoverDelayTimePeriodSchedule(Schedule& schedule);
+    void resetChangeoverDelayTimePeriodSchedule();
+
+    std::vector<ModelObject> children() const;
+
+    boost::optional<ZoneHVACLowTempRadiantVarFlowDesign> designObject() const;
+    boost::optional<ZoneHVACLowTemperatureRadiantSurfaceGroup> surfaceGroup() const;
 
     boost::optional<double> hydronicTubingLength() const;
+    boost::optional<double> autosizedHydronicTubingLength() const;
     bool isHydronicTubingLengthAutosized() const;
     bool setHydronicTubingLength(double hydronicTubingLength);
     void autosizeHydronicTubingLength();
