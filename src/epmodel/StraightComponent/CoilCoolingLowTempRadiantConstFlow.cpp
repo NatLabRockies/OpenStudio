@@ -11,6 +11,8 @@
 #include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 #include "ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow.hpp"
+#include "ModelObject/ZoneHVACLowTempRadiantConstFlowDesign.hpp"
+#include "ModelObject/ZoneHVACLowTempRadiantConstFlowDesign_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -213,10 +215,7 @@ boost::optional<Schedule> CoilCoolingLowTempRadiantConstFlow_Impl::coolingLowCon
 std::string CoilCoolingLowTempRadiantConstFlow_Impl::condensationControlType() const {
   if (auto p = parent()) {
     if (const auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->designObject()) {
-      if (const auto value =
-            design->getString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::CondensationControlType, true)) {
-        return *value;
-      }
+      return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->condensationControlType();
     }
   }
   return kDefaultCondensationControlType;
@@ -225,7 +224,7 @@ std::string CoilCoolingLowTempRadiantConstFlow_Impl::condensationControlType() c
 bool CoilCoolingLowTempRadiantConstFlow_Impl::isCondensationControlTypeDefaulted() const {
   if (auto p = parent()) {
     if (const auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->designObject()) {
-      return design->isEmpty(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::CondensationControlType);
+      return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->isCondensationControlTypeDefaulted();
     }
   }
   return true;
@@ -234,10 +233,7 @@ bool CoilCoolingLowTempRadiantConstFlow_Impl::isCondensationControlTypeDefaulted
 double CoilCoolingLowTempRadiantConstFlow_Impl::condensationControlDewpointOffset() const {
   if (auto p = parent()) {
     if (const auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->designObject()) {
-      if (const auto value =
-            design->getDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::CondensationControlDewpointOffset, true)) {
-        return *value;
-      }
+      return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->condensationControlDewpointOffset();
     }
   }
   return kDefaultCondensationControlDewpointOffset;
@@ -246,7 +242,7 @@ double CoilCoolingLowTempRadiantConstFlow_Impl::condensationControlDewpointOffse
 bool CoilCoolingLowTempRadiantConstFlow_Impl::isCondensationControlDewpointOffsetDefaulted() const {
   if (auto p = parent()) {
     if (const auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->designObject()) {
-      return design->isEmpty(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::CondensationControlDewpointOffset);
+      return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->isCondensationControlDewpointOffsetDefaulted();
     }
   }
   return true;
@@ -311,8 +307,7 @@ void CoilCoolingLowTempRadiantConstFlow_Impl::resetCoolingLowControlTemperatureS
 bool CoilCoolingLowTempRadiantConstFlow_Impl::setCondensationControlType(const std::string& condensationControlType) {
   if (auto p = parent()) {
     auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->ensureDesignObject();
-    return design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::CondensationControlType,
-                            condensationControlType);
+    return design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->setCondensationControlType(condensationControlType);
   }
   return false;
 }
@@ -320,15 +315,15 @@ bool CoilCoolingLowTempRadiantConstFlow_Impl::setCondensationControlType(const s
 void CoilCoolingLowTempRadiantConstFlow_Impl::resetCondensationControlType() {
   if (auto p = parent()) {
     auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->ensureDesignObject();
-    OS_ASSERT(design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::CondensationControlType, ""));
+    design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->resetCondensationControlType();
   }
 }
 
 bool CoilCoolingLowTempRadiantConstFlow_Impl::setCondensationControlDewpointOffset(double condensationControlDewpointOffset) {
   if (auto p = parent()) {
     auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->ensureDesignObject();
-    return design.setDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::CondensationControlDewpointOffset,
-                            condensationControlDewpointOffset);
+    return design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->setCondensationControlDewpointOffset(
+      condensationControlDewpointOffset);
   }
   return false;
 }
@@ -336,8 +331,7 @@ bool CoilCoolingLowTempRadiantConstFlow_Impl::setCondensationControlDewpointOffs
 void CoilCoolingLowTempRadiantConstFlow_Impl::resetCondensationControlDewpointOffset() {
   if (auto p = parent()) {
     auto design = p->getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->ensureDesignObject();
-    OS_ASSERT(
-      design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::CondensationControlDewpointOffset, ""));
+    design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->resetCondensationControlDewpointOffset();
   }
 }
 

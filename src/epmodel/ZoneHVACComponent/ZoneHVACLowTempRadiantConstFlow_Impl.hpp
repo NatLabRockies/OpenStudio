@@ -15,9 +15,13 @@ namespace openstudio {
 namespace epmodel {
 
   class Schedule;
+  class HVACComponent;
   class ModelObject;
+  class Surface;
   class CoilHeatingLowTempRadiantConstFlow;
   class CoilCoolingLowTempRadiantConstFlow;
+  class ZoneHVACLowTempRadiantConstFlowDesign;
+  class ZoneHVACLowTemperatureRadiantSurfaceGroup;
 
   namespace detail {
 
@@ -40,8 +44,16 @@ namespace epmodel {
       bool setAvailabilitySchedule(Schedule& schedule);
       void resetAvailabilitySchedule();
 
+      boost::optional<std::string> radiantSurfaceType() const;
+      bool setRadiantSurfaceType(const std::string& radiantSurfaceType);
+      void resetRadiantSurfaceType();
+
+      std::vector<Surface> surfaces() const;
+
       CoilHeatingLowTempRadiantConstFlow heatingCoil() const;
+      bool setHeatingCoil(HVACComponent& heatingCoil);
       CoilCoolingLowTempRadiantConstFlow coolingCoil() const;
+      bool setCoolingCoil(HVACComponent& coolingCoil);
 
       boost::optional<Schedule> pumpFlowRateSchedule() const;
       bool setPumpFlowRateSchedule(Schedule& schedule);
@@ -55,11 +67,13 @@ namespace epmodel {
       void doCanonicalize(LoadContext& context) override;
 
       boost::optional<double> hydronicTubingLength() const;
+      boost::optional<double> autosizedHydronicTubingLength() const;
       bool isHydronicTubingLengthAutosized() const;
       bool setHydronicTubingLength(double hydronicTubingLength);
       void autosizeHydronicTubingLength();
 
       boost::optional<double> ratedFlowRate() const;
+      boost::optional<double> autosizedRatedFlowRate() const;
       bool isRatedFlowRateAutosized() const;
       bool setRatedFlowRate(double ratedFlowRate);
       void autosizeRatedFlowRate();
@@ -128,8 +142,11 @@ namespace epmodel {
       friend class CoilHeatingLowTempRadiantConstFlow_Impl;
       friend class CoilCoolingLowTempRadiantConstFlow_Impl;
 
-      boost::optional<ModelObject> designObject() const;
-      ModelObject ensureDesignObject();
+      boost::optional<ZoneHVACLowTempRadiantConstFlowDesign> designObject() const;
+      ZoneHVACLowTempRadiantConstFlowDesign ensureDesignObject();
+
+      boost::optional<ZoneHVACLowTemperatureRadiantSurfaceGroup> surfaceGroup() const;
+      ZoneHVACLowTemperatureRadiantSurfaceGroup ensureSurfaceGroup();
     };
 
   }  // namespace detail

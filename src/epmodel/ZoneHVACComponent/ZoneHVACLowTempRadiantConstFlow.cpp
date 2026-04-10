@@ -5,23 +5,45 @@
 
 #include "ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow.hpp"
 #include "ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow_Impl.hpp"
+#include "ModelObject/ZoneHVACLowTempRadiantConstFlowDesign.hpp"
+#include "ModelObject/ZoneHVACLowTempRadiantConstFlowDesign_Impl.hpp"
+#include "ModelObject/ZoneHVACLowTemperatureRadiantSurfaceGroup.hpp"
+#include "ModelObject/ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl.hpp"
 
 #include "Model.hpp"
+#include "HVACComponent/HVACComponent.hpp"
 #include "ModelObject/ModelObject.hpp"
+#include "PlanarSurface/Surface.hpp"
+#include "PlanarSurface/Surface_Impl.hpp"
+#include "PlanarSurfaceGroup/Space.hpp"
+#include "PlanarSurfaceGroup/Space_Impl.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/CoilCoolingLowTempRadiantConstFlow.hpp"
 #include "StraightComponent/CoilCoolingLowTempRadiantConstFlow_Impl.hpp"
 #include "StraightComponent/CoilHeatingLowTempRadiantConstFlow.hpp"
 #include "StraightComponent/CoilHeatingLowTempRadiantConstFlow_Impl.hpp"
+#include "StraightComponent/Node.hpp"
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
+#include "LayeredConstruction/ConstructionWithInternalSource.hpp"
+#include "LayeredConstruction/ConstructionWithInternalSource_Impl.hpp"
 
 #include "../utilities/core/Assert.hpp"
 #include "../utilities/core/Compare.hpp"
 
+#include <utilities/geometry/Geometry.hpp>
+#include <utilities/geometry/Point3d.hpp>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/BuildingSurface_Detailed_FieldEnums.hxx>
+#include <utilities/idd/ConstructionProperty_InternalHeatSource_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_LowTemperatureRadiant_ConstantFlow_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_LowTemperatureRadiant_ConstantFlow_Design_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_LowTemperatureRadiant_SurfaceGroup_FieldEnums.hxx>
+#include <utilities/idf/IdfExtensibleGroup.hpp>
+
+#include <algorithm>
 
 namespace openstudio {
 namespace epmodel {
@@ -50,6 +72,145 @@ std::string transientCoolingCoilName(const openstudio::epmodel::ZoneHVACLowTempR
   return "__transient__" + openstudio::toString(parent.handle()) + "__cooling_low_temp_radiant_const_flow";
 }
 
+using SurfaceGroupFields = openstudio::ZoneHVAC_LowTemperatureRadiant_SurfaceGroupExtensibleFields;
+using SurfaceFields = openstudio::BuildingSurface_DetailedFields;
+using SurfaceVertexFields = openstudio::BuildingSurface_DetailedExtensibleFields;
+
+// The envelope side of epmodel is still relatively thin compared to the HVAC
+// side. In particular, this family does not yet have rich wrapper support for
+// radiant surface groups, internal-source construction relationships, or
+// surface geometry helpers at the same level as canonical openstudio::model.
+// For now we therefore do the honest low-level work here:
+// - inspect persisted BuildingSurface fields directly
+// - resolve the internal-heat-source relationship through the underlying fields
+// - populate the EnergyPlus surface-group extensible rows explicitly
+//
+// That is acceptable for this prototype because the goal is to preserve the
+// canonical public API while staying anchored to EnergyPlus storage. It should
+// be revisited as the envelope portion of epmodel grows more fully developed.
+bool surfaceMatchesRadiantSelection(const openstudio::epmodel::Surface& surface, const std::string& radiantSurfaceType) {
+  const auto surfaceType = surface.surfaceType();
+  const bool isCeilingLike = openstudio::istringEqual(surfaceType, "RoofCeiling") || openstudio::istringEqual(surfaceType, "Roof")
+                             || openstudio::istringEqual(surfaceType, "Ceiling");
+  if (openstudio::istringEqual(radiantSurfaceType, "Ceilings")) {
+    return isCeilingLike;
+  }
+  if (openstudio::istringEqual(radiantSurfaceType, "Floors")) {
+    return openstudio::istringEqual(surfaceType, "Floor");
+  }
+  if (openstudio::istringEqual(radiantSurfaceType, "CeilingsandFloors")) {
+    return isCeilingLike || openstudio::istringEqual(surfaceType, "Floor");
+  }
+  if (openstudio::istringEqual(radiantSurfaceType, "AllSurfaces")) {
+    return true;
+  }
+  return false;
+}
+
+bool surfaceHasInternalSourceConstruction(const openstudio::epmodel::Surface& surface) {
+  const auto construction = surface.getModelObjectTarget<openstudio::epmodel::ModelObject>(SurfaceFields::ConstructionName);
+  if (!construction) {
+    return false;
+  }
+
+  for (const auto& internalSourceProperty : surface.model().getConcreteModelObjects<openstudio::epmodel::ConstructionWithInternalSource>()) {
+    if (auto propertyConstruction =
+          internalSourceProperty.getModelObjectTarget<openstudio::epmodel::ModelObject>(openstudio::ConstructionProperty_InternalHeatSourceFields::ConstructionName)) {
+      if (propertyConstruction->handle() == construction->handle()) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+std::vector<openstudio::Point3d> surfaceVertices(const openstudio::epmodel::Surface& surface) {
+  std::vector<openstudio::Point3d> result;
+  for (const auto& group : surface.extensibleGroups()) {
+    auto x = group.getDouble(SurfaceVertexFields::VertexXcoordinate, true);
+    auto y = group.getDouble(SurfaceVertexFields::VertexYcoordinate, true);
+    auto z = group.getDouble(SurfaceVertexFields::VertexZcoordinate, true);
+    if (!x || !y || !z) {
+      return {};
+    }
+    result.emplace_back(*x, *y, *z);
+  }
+  return result;
+}
+
+double surfaceGrossArea(const openstudio::epmodel::Surface& surface) {
+  const auto vertices = surfaceVertices(surface);
+  if (vertices.size() < 3u) {
+    return 0.0;
+  }
+  if (const auto area = openstudio::getArea(vertices)) {
+    return *area;
+  }
+  return 0.0;
+}
+
+std::vector<openstudio::epmodel::Surface> eligibleRadiantSurfaces(const openstudio::epmodel::Model& model,
+                                                                  const openstudio::epmodel::ThermalZone& zone,
+                                                                  const std::string& radiantSurfaceType) {
+  std::vector<openstudio::epmodel::Surface> result;
+
+  for (const auto& surface : model.getConcreteModelObjects<openstudio::epmodel::Surface>()) {
+    bool belongsToZone = false;
+    if (auto space = surface.getModelObjectTarget<openstudio::epmodel::Space>(SurfaceFields::SpaceName)) {
+      if (auto surfaceZone = space->thermalZone()) {
+        belongsToZone = (*surfaceZone == zone);
+      }
+    } else if (auto directZone = surface.getModelObjectTarget<openstudio::epmodel::ThermalZone>(SurfaceFields::ZoneName)) {
+      belongsToZone = (*directZone == zone);
+    }
+
+    if (!belongsToZone) {
+      continue;
+    }
+    if (!surfaceHasInternalSourceConstruction(surface)) {
+      continue;
+    }
+    if (!surfaceMatchesRadiantSelection(surface, radiantSurfaceType)) {
+      continue;
+    }
+    result.push_back(surface);
+  }
+
+  return result;
+}
+
+std::string inferRadiantSurfaceType(const std::vector<openstudio::epmodel::Surface>& surfaces) {
+  bool sawFloor = false;
+  bool sawCeiling = false;
+  bool sawOther = false;
+
+  for (const auto& surface : surfaces) {
+    if (openstudio::istringEqual(surface.surfaceType(), "Floor")) {
+      sawFloor = true;
+    } else if (openstudio::istringEqual(surface.surfaceType(), "RoofCeiling") || openstudio::istringEqual(surface.surfaceType(), "Roof")
+               || openstudio::istringEqual(surface.surfaceType(), "Ceiling")) {
+      sawCeiling = true;
+    } else {
+      sawOther = true;
+    }
+  }
+
+  if (sawOther) {
+    return "AllSurfaces";
+  }
+  if (sawFloor && sawCeiling) {
+    return "CeilingsandFloors";
+  }
+  if (sawCeiling) {
+    return "Ceilings";
+  }
+  if (sawFloor) {
+    return "Floors";
+  }
+  return {};
+}
+
 }  // namespace detail
 
 ZoneHVACLowTempRadiantConstFlow::ZoneHVACLowTempRadiantConstFlow(const Model& model)
@@ -59,11 +220,34 @@ ZoneHVACLowTempRadiantConstFlow::ZoneHVACLowTempRadiantConstFlow(const Model& mo
   impl->ensureDesignObject();
 }
 
+ZoneHVACLowTempRadiantConstFlow::ZoneHVACLowTempRadiantConstFlow(const Model& model, Schedule& availabilitySchedule, HVACComponent& heatingCoil,
+                                                                 HVACComponent& coolingCoil, double hydronicTubingLength)
+  : ZoneHVACLowTempRadiantConstFlow(model) {
+  OS_ASSERT(setAvailabilitySchedule(availabilitySchedule));
+  OS_ASSERT(setHeatingCoil(heatingCoil));
+  OS_ASSERT(setCoolingCoil(coolingCoil));
+  OS_ASSERT(setHydronicTubingLength(hydronicTubingLength));
+}
+
+ZoneHVACLowTempRadiantConstFlow::ZoneHVACLowTempRadiantConstFlow(const Model& model, Schedule& availabilitySchedule, HVACComponent& heatingCoil,
+                                                                 HVACComponent& coolingCoil)
+  : ZoneHVACLowTempRadiantConstFlow(model) {
+  OS_ASSERT(setAvailabilitySchedule(availabilitySchedule));
+  OS_ASSERT(setHeatingCoil(heatingCoil));
+  OS_ASSERT(setCoolingCoil(coolingCoil));
+  autosizeHydronicTubingLength();
+}
+
 ZoneHVACLowTempRadiantConstFlow::ZoneHVACLowTempRadiantConstFlow(std::shared_ptr<detail::ZoneHVACLowTempRadiantConstFlow_Impl> impl)
   : ZoneHVACComponent(std::move(impl)) {}
 
 IddObjectType ZoneHVACLowTempRadiantConstFlow::iddObjectType() {
   return IddObjectType::ZoneHVAC_LowTemperatureRadiant_ConstantFlow;
+}
+
+std::vector<std::string> ZoneHVACLowTempRadiantConstFlow::radiantSurfaceTypeValues() {
+  static const std::vector<std::string> values{"Ceilings", "Floors", "CeilingsandFloors", "AllSurfaces"};
+  return values;
 }
 
 std::vector<std::string> ZoneHVACLowTempRadiantConstFlow::numberofCircuitsValues() {
@@ -93,12 +277,36 @@ void ZoneHVACLowTempRadiantConstFlow::resetAvailabilitySchedule() {
   getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->resetAvailabilitySchedule();
 }
 
+boost::optional<std::string> ZoneHVACLowTempRadiantConstFlow::radiantSurfaceType() const {
+  return getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->radiantSurfaceType();
+}
+
+bool ZoneHVACLowTempRadiantConstFlow::setRadiantSurfaceType(const std::string& radiantSurfaceType) {
+  return getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->setRadiantSurfaceType(radiantSurfaceType);
+}
+
+void ZoneHVACLowTempRadiantConstFlow::resetRadiantSurfaceType() {
+  getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->resetRadiantSurfaceType();
+}
+
+std::vector<Surface> ZoneHVACLowTempRadiantConstFlow::surfaces() const {
+  return getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->surfaces();
+}
+
 CoilHeatingLowTempRadiantConstFlow ZoneHVACLowTempRadiantConstFlow::heatingCoil() const {
   return getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->heatingCoil();
 }
 
+bool ZoneHVACLowTempRadiantConstFlow::setHeatingCoil(HVACComponent& heatingCoil) {
+  return getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->setHeatingCoil(heatingCoil);
+}
+
 CoilCoolingLowTempRadiantConstFlow ZoneHVACLowTempRadiantConstFlow::coolingCoil() const {
   return getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->coolingCoil();
+}
+
+bool ZoneHVACLowTempRadiantConstFlow::setCoolingCoil(HVACComponent& coolingCoil) {
+  return getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->setCoolingCoil(coolingCoil);
 }
 
 boost::optional<Schedule> ZoneHVACLowTempRadiantConstFlow::pumpFlowRateSchedule() const {
@@ -127,6 +335,14 @@ void ZoneHVACLowTempRadiantConstFlow::resetChangeoverDelayTimePeriodSchedule() {
 
 std::vector<ModelObject> ZoneHVACLowTempRadiantConstFlow::children() const {
   return getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->children();
+}
+
+boost::optional<ZoneHVACLowTempRadiantConstFlowDesign> ZoneHVACLowTempRadiantConstFlow::designObject() const {
+  return getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->designObject();
+}
+
+boost::optional<ZoneHVACLowTemperatureRadiantSurfaceGroup> ZoneHVACLowTempRadiantConstFlow::surfaceGroup() const {
+  return getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->surfaceGroup();
 }
 
 std::string ZoneHVACLowTempRadiantConstFlow::fluidtoRadiantSurfaceHeatTransferModel() const {
@@ -265,6 +481,10 @@ boost::optional<double> ZoneHVACLowTempRadiantConstFlow::hydronicTubingLength() 
   return getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->hydronicTubingLength();
 }
 
+boost::optional<double> ZoneHVACLowTempRadiantConstFlow::autosizedHydronicTubingLength() const {
+  return getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->autosizedHydronicTubingLength();
+}
+
 bool ZoneHVACLowTempRadiantConstFlow::isHydronicTubingLengthAutosized() const {
   return getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->isHydronicTubingLengthAutosized();
 }
@@ -279,6 +499,10 @@ void ZoneHVACLowTempRadiantConstFlow::autosizeHydronicTubingLength() {
 
 boost::optional<double> ZoneHVACLowTempRadiantConstFlow::ratedFlowRate() const {
   return getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->ratedFlowRate();
+}
+
+boost::optional<double> ZoneHVACLowTempRadiantConstFlow::autosizedRatedFlowRate() const {
+  return getImpl<detail::ZoneHVACLowTempRadiantConstFlow_Impl>()->autosizedRatedFlowRate();
 }
 
 bool ZoneHVACLowTempRadiantConstFlow::isRatedFlowRateAutosized() const {
@@ -380,14 +604,195 @@ void ZoneHVACLowTempRadiantConstFlow_Impl::resetAvailabilitySchedule() {
   OS_ASSERT(setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::AvailabilityScheduleName, "", false));
 }
 
+boost::optional<std::string> ZoneHVACLowTempRadiantConstFlow_Impl::radiantSurfaceType() const {
+  const auto groupSurfaces = surfaces();
+  if (groupSurfaces.empty()) {
+    return boost::none;
+  }
+
+  const auto inferred = detail::inferRadiantSurfaceType(groupSurfaces);
+  if (inferred.empty()) {
+    return boost::none;
+  }
+  return inferred;
+}
+
+bool ZoneHVACLowTempRadiantConstFlow_Impl::setRadiantSurfaceType(const std::string& radiantSurfaceType) {
+  const auto validTypes = openstudio::epmodel::ZoneHVACLowTempRadiantConstFlow::radiantSurfaceTypeValues();
+  if (std::find_if(validTypes.begin(), validTypes.end(),
+                   [&](const std::string& candidate) { return openstudio::istringEqual(candidate, radiantSurfaceType); })
+      == validTypes.end()) {
+    return false;
+  }
+
+  auto zone = thermalZone();
+  if (!zone) {
+    return false;
+  }
+
+  auto groupObject = ensureSurfaceGroup();
+  groupObject.getImpl<detail::ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl>()->clearSurfaces();
+
+  // For now this is a snapshot rewrite of the persisted EnergyPlus surface
+  // group. We are not yet trying to hook later zone or surface edits back into
+  // this membership automatically.
+  const auto groupSurfaces = detail::eligibleRadiantSurfaces(model(), *zone, radiantSurfaceType);
+  double totalArea = 0.0;
+  for (const auto& surface : groupSurfaces) {
+    totalArea += detail::surfaceGrossArea(surface);
+  }
+
+  const double fallbackFraction = groupSurfaces.empty() ? 0.0 : (1.0 / static_cast<double>(groupSurfaces.size()));
+  for (const auto& surface : groupSurfaces) {
+    const double area = detail::surfaceGrossArea(surface);
+    const double fraction = (totalArea > 0.0) ? (area / totalArea) : fallbackFraction;
+    if (!groupObject.getImpl<detail::ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl>()->addSurface(const_cast<Surface&>(surface), fraction)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void ZoneHVACLowTempRadiantConstFlow_Impl::resetRadiantSurfaceType() {
+  if (auto zone = thermalZone()) {
+    OS_ASSERT(setRadiantSurfaceType("Ceilings"));
+  } else if (auto group = surfaceGroup()) {
+    group->getImpl<detail::ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl>()->clearSurfaces();
+  }
+}
+
+std::vector<Surface> ZoneHVACLowTempRadiantConstFlow_Impl::surfaces() const {
+  if (auto groupObject = surfaceGroup()) {
+    return groupObject->getImpl<detail::ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl>()->surfaces();
+  }
+  return {};
+}
+
 CoilHeatingLowTempRadiantConstFlow ZoneHVACLowTempRadiantConstFlow_Impl::heatingCoil() const {
   const auto parent = getObject<openstudio::epmodel::ZoneHVACLowTempRadiantConstFlow>();
   return model().getOrCreateTransientByName<openstudio::epmodel::CoilHeatingLowTempRadiantConstFlow>(detail::transientHeatingCoilName(parent));
 }
 
+bool ZoneHVACLowTempRadiantConstFlow_Impl::setHeatingCoil(HVACComponent& heatingCoil) {
+  auto source = heatingCoil.optionalCast<CoilHeatingLowTempRadiantConstFlow>();
+  if (!source) {
+    return false;
+  }
+
+  auto target = this->heatingCoil();
+  bool result = true;
+
+  if (auto schedule = source->heatingHighWaterTemperatureSchedule()) {
+    result = target.setHeatingHighWaterTemperatureSchedule(*schedule) && result;
+  } else {
+    target.resetHeatingHighWaterTemperatureSchedule();
+  }
+
+  if (auto schedule = source->heatingLowWaterTemperatureSchedule()) {
+    result = target.setHeatingLowWaterTemperatureSchedule(*schedule) && result;
+  } else {
+    target.resetHeatingLowWaterTemperatureSchedule();
+  }
+
+  if (auto schedule = source->heatingHighControlTemperatureSchedule()) {
+    result = target.setHeatingHighControlTemperatureSchedule(*schedule) && result;
+  } else {
+    target.resetHeatingHighControlTemperatureSchedule();
+  }
+
+  if (auto schedule = source->heatingLowControlTemperatureSchedule()) {
+    result = target.setHeatingLowControlTemperatureSchedule(*schedule) && result;
+  } else {
+    target.resetHeatingLowControlTemperatureSchedule();
+  }
+
+  if (auto inlet = source->inletModelObject()) {
+    if (auto node = inlet->optionalCast<Node>()) {
+      result = setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingWaterInletNodeName, node->handle(), false) && result;
+    }
+  } else {
+    result = setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingWaterInletNodeName, "", false) && result;
+  }
+
+  if (auto outlet = source->outletModelObject()) {
+    if (auto node = outlet->optionalCast<Node>()) {
+      result = setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingWaterOutletNodeName, node->handle(), false) && result;
+    }
+  } else {
+    result = setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingWaterOutletNodeName, "", false) && result;
+  }
+
+  return result;
+}
+
 CoilCoolingLowTempRadiantConstFlow ZoneHVACLowTempRadiantConstFlow_Impl::coolingCoil() const {
   const auto parent = getObject<openstudio::epmodel::ZoneHVACLowTempRadiantConstFlow>();
   return model().getOrCreateTransientByName<openstudio::epmodel::CoilCoolingLowTempRadiantConstFlow>(detail::transientCoolingCoilName(parent));
+}
+
+bool ZoneHVACLowTempRadiantConstFlow_Impl::setCoolingCoil(HVACComponent& coolingCoil) {
+  auto source = coolingCoil.optionalCast<CoilCoolingLowTempRadiantConstFlow>();
+  if (!source) {
+    return false;
+  }
+
+  auto target = this->coolingCoil();
+  bool result = true;
+
+  if (auto schedule = source->coolingHighWaterTemperatureSchedule()) {
+    result = target.setCoolingHighWaterTemperatureSchedule(*schedule) && result;
+  } else {
+    target.resetCoolingHighWaterTemperatureSchedule();
+  }
+
+  if (auto schedule = source->coolingLowWaterTemperatureSchedule()) {
+    result = target.setCoolingLowWaterTemperatureSchedule(*schedule) && result;
+  } else {
+    target.resetCoolingLowWaterTemperatureSchedule();
+  }
+
+  if (auto schedule = source->coolingHighControlTemperatureSchedule()) {
+    result = target.setCoolingHighControlTemperatureSchedule(*schedule) && result;
+  } else {
+    target.resetCoolingHighControlTemperatureSchedule();
+  }
+
+  if (auto schedule = source->coolingLowControlTemperatureSchedule()) {
+    result = target.setCoolingLowControlTemperatureSchedule(*schedule) && result;
+  } else {
+    target.resetCoolingLowControlTemperatureSchedule();
+  }
+
+  if (source->isCondensationControlTypeDefaulted()) {
+    target.resetCondensationControlType();
+  } else {
+    result = target.setCondensationControlType(source->condensationControlType()) && result;
+  }
+
+  if (source->isCondensationControlDewpointOffsetDefaulted()) {
+    target.resetCondensationControlDewpointOffset();
+  } else {
+    result = target.setCondensationControlDewpointOffset(source->condensationControlDewpointOffset()) && result;
+  }
+
+  if (auto inlet = source->inletModelObject()) {
+    if (auto node = inlet->optionalCast<Node>()) {
+      result = setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterInletNodeName, node->handle(), false) && result;
+    }
+  } else {
+    result = setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterInletNodeName, "", false) && result;
+  }
+
+  if (auto outlet = source->outletModelObject()) {
+    if (auto node = outlet->optionalCast<Node>()) {
+      result = setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterOutletNodeName, node->handle(), false) && result;
+    }
+  } else {
+    result = setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterOutletNodeName, "", false) && result;
+  }
+
+  return result;
 }
 
 boost::optional<Schedule> ZoneHVACLowTempRadiantConstFlow_Impl::pumpFlowRateSchedule() const {
@@ -404,20 +809,19 @@ void ZoneHVACLowTempRadiantConstFlow_Impl::resetPumpFlowRateSchedule() {
 
 boost::optional<Schedule> ZoneHVACLowTempRadiantConstFlow_Impl::changeoverDelayTimePeriodSchedule() const {
   if (auto design = designObject()) {
-    return design->getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::ChangeoverDelayTimePeriodSchedule);
+    return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->changeoverDelayTimePeriodSchedule();
   }
   return boost::none;
 }
 
 bool ZoneHVACLowTempRadiantConstFlow_Impl::setChangeoverDelayTimePeriodSchedule(Schedule& schedule) {
   auto design = ensureDesignObject();
-  return design.setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::ChangeoverDelayTimePeriodSchedule,
-                           schedule.handle());
+  return design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->setChangeoverDelayTimePeriodSchedule(schedule);
 }
 
 void ZoneHVACLowTempRadiantConstFlow_Impl::resetChangeoverDelayTimePeriodSchedule() {
   auto design = ensureDesignObject();
-  OS_ASSERT(design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::ChangeoverDelayTimePeriodSchedule, ""));
+  design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->resetChangeoverDelayTimePeriodSchedule();
 }
 
 std::vector<ModelObject> ZoneHVACLowTempRadiantConstFlow_Impl::children() const {
@@ -430,16 +834,16 @@ void ZoneHVACLowTempRadiantConstFlow_Impl::doCanonicalize(LoadContext& context) 
   }
 }
 
-boost::optional<ModelObject> ZoneHVACLowTempRadiantConstFlow_Impl::designObject() const {
+boost::optional<ZoneHVACLowTempRadiantConstFlowDesign> ZoneHVACLowTempRadiantConstFlow_Impl::designObject() const {
   if (auto target = getTarget(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::DesignObject)) {
-    if (auto typed = target->optionalCast<ModelObject>()) {
+    if (auto typed = target->optionalCast<ZoneHVACLowTempRadiantConstFlowDesign>()) {
       return *typed;
     }
   }
 
   if (auto name = getString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::DesignObject, true); name && !name->empty()) {
     if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_Design, *name, true)) {
-      if (auto typed = obj->optionalCast<ModelObject>()) {
+      if (auto typed = obj->optionalCast<ZoneHVACLowTempRadiantConstFlowDesign>()) {
         auto* self = const_cast<ZoneHVACLowTempRadiantConstFlow_Impl*>(this);
         self->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::DesignObject, typed->handle(), false);
         return *typed;
@@ -450,12 +854,12 @@ boost::optional<ModelObject> ZoneHVACLowTempRadiantConstFlow_Impl::designObject(
   return boost::none;
 }
 
-ModelObject ZoneHVACLowTempRadiantConstFlow_Impl::ensureDesignObject() {
+ZoneHVACLowTempRadiantConstFlowDesign ZoneHVACLowTempRadiantConstFlow_Impl::ensureDesignObject() {
   if (auto existing = designObject()) {
     return *existing;
   }
 
-  auto created = ModelObject::create(IddObjectType::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_Design, model());
+  ZoneHVACLowTempRadiantConstFlowDesign created(model());
   if (const auto existingName = getString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::DesignObject, true);
       existingName && !existingName->empty()) {
     created.setName(*existingName);
@@ -466,19 +870,63 @@ ModelObject ZoneHVACLowTempRadiantConstFlow_Impl::ensureDesignObject() {
   return created;
 }
 
+boost::optional<ZoneHVACLowTemperatureRadiantSurfaceGroup> ZoneHVACLowTempRadiantConstFlow_Impl::surfaceGroup() const {
+  // This is still intentionally field-driven for now. We now have a thin typed
+  // wrapper for the persisted EnergyPlus surface-group object, but we still do
+  // not have a richer envelope-side ownership/synchronization layer yet.
+  // Resolving the referenced object from the stored parent field keeps the
+  // persisted relationship honest while that broader surface domain develops.
+  if (auto target = getTarget(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::SurfaceNameorRadiantSurfaceGroupName)) {
+    if (auto typed = target->optionalCast<ZoneHVACLowTemperatureRadiantSurfaceGroup>()) {
+      return *typed;
+    }
+  }
+
+  if (auto name = getString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::SurfaceNameorRadiantSurfaceGroupName, true);
+      name && !name->empty()) {
+    if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_LowTemperatureRadiant_SurfaceGroup, *name, true)) {
+      if (auto typed = obj->optionalCast<ZoneHVACLowTemperatureRadiantSurfaceGroup>()) {
+        auto* self = const_cast<ZoneHVACLowTempRadiantConstFlow_Impl*>(this);
+        self->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::SurfaceNameorRadiantSurfaceGroupName, typed->handle(), false);
+        return *typed;
+      }
+    }
+  }
+
+  return boost::none;
+}
+
+ZoneHVACLowTemperatureRadiantSurfaceGroup ZoneHVACLowTempRadiantConstFlow_Impl::ensureSurfaceGroup() {
+  if (auto existing = surfaceGroup()) {
+    return *existing;
+  }
+
+  // This is a real persisted EnergyPlus companion object, not a transient
+  // canonical wrapper. The typed wrapper is intentionally thin for now; the
+  // richer surface-group semantics still live mostly on the parent until the
+  // envelope side of epmodel is developed further.
+  ZoneHVACLowTemperatureRadiantSurfaceGroup created(model());
+  if (const auto existingName = getString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::SurfaceNameorRadiantSurfaceGroupName, true);
+      existingName && !existingName->empty()) {
+    created.setName(*existingName);
+  } else {
+    created.setName(getObject<ModelObject>().nameString() + " Surface Group");
+  }
+  OS_ASSERT(
+    setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::SurfaceNameorRadiantSurfaceGroupName, created.handle(), false));
+  return created;
+}
+
 std::string ZoneHVACLowTempRadiantConstFlow_Impl::fluidtoRadiantSurfaceHeatTransferModel() const {
   if (const auto design = designObject()) {
-    if (const auto value =
-          design->getString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::FluidtoRadiantSurfaceHeatTransferModel, true)) {
-      return *value;
-    }
+    return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->fluidtoRadiantSurfaceHeatTransferModel();
   }
   return kDefaultFluidtoRadiantSurfaceHeatTransferModel;
 }
 
 bool ZoneHVACLowTempRadiantConstFlow_Impl::isFluidtoRadiantSurfaceHeatTransferModelDefaulted() const {
   if (const auto design = designObject()) {
-    return design->isEmpty(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::FluidtoRadiantSurfaceHeatTransferModel);
+    return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->isFluidtoRadiantSurfaceHeatTransferModelDefaulted();
   }
   return true;
 }
@@ -486,137 +934,122 @@ bool ZoneHVACLowTempRadiantConstFlow_Impl::isFluidtoRadiantSurfaceHeatTransferMo
 bool ZoneHVACLowTempRadiantConstFlow_Impl::setFluidtoRadiantSurfaceHeatTransferModel(
   const std::string& fluidtoRadiantSurfaceHeatTransferModel) {
   auto design = ensureDesignObject();
-  return design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::FluidtoRadiantSurfaceHeatTransferModel,
-                          fluidtoRadiantSurfaceHeatTransferModel);
+  return design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->setFluidtoRadiantSurfaceHeatTransferModel(
+    fluidtoRadiantSurfaceHeatTransferModel);
 }
 
 void ZoneHVACLowTempRadiantConstFlow_Impl::resetFluidtoRadiantSurfaceHeatTransferModel() {
   auto design = ensureDesignObject();
-  OS_ASSERT(design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::FluidtoRadiantSurfaceHeatTransferModel, ""));
+  design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->resetFluidtoRadiantSurfaceHeatTransferModel();
 }
 
 double ZoneHVACLowTempRadiantConstFlow_Impl::hydronicTubingInsideDiameter() const {
   if (const auto design = designObject()) {
-    if (const auto value = design->getDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::HydronicTubingInsideDiameter, true)) {
-      return *value;
-    }
+    return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->hydronicTubingInsideDiameter();
   }
   return kDefaultHydronicTubingInsideDiameter;
 }
 
 bool ZoneHVACLowTempRadiantConstFlow_Impl::isHydronicTubingInsideDiameterDefaulted() const {
   if (const auto design = designObject()) {
-    return design->isEmpty(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::HydronicTubingInsideDiameter);
+    return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->isHydronicTubingInsideDiameterDefaulted();
   }
   return true;
 }
 
 bool ZoneHVACLowTempRadiantConstFlow_Impl::setHydronicTubingInsideDiameter(double hydronicTubingInsideDiameter) {
   auto design = ensureDesignObject();
-  return design.setDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::HydronicTubingInsideDiameter,
-                          hydronicTubingInsideDiameter);
+  return design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->setHydronicTubingInsideDiameter(hydronicTubingInsideDiameter);
 }
 
 void ZoneHVACLowTempRadiantConstFlow_Impl::resetHydronicTubingInsideDiameter() {
   auto design = ensureDesignObject();
-  OS_ASSERT(design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::HydronicTubingInsideDiameter, ""));
+  design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->resetHydronicTubingInsideDiameter();
 }
 
 double ZoneHVACLowTempRadiantConstFlow_Impl::hydronicTubingOutsideDiameter() const {
   if (const auto design = designObject()) {
-    if (const auto value =
-          design->getDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::HydronicTubingOutsideDiameter, true)) {
-      return *value;
-    }
+    return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->hydronicTubingOutsideDiameter();
   }
   return kDefaultHydronicTubingOutsideDiameter;
 }
 
 bool ZoneHVACLowTempRadiantConstFlow_Impl::isHydronicTubingOutsideDiameterDefaulted() const {
   if (const auto design = designObject()) {
-    return design->isEmpty(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::HydronicTubingOutsideDiameter);
+    return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->isHydronicTubingOutsideDiameterDefaulted();
   }
   return true;
 }
 
 bool ZoneHVACLowTempRadiantConstFlow_Impl::setHydronicTubingOutsideDiameter(double hydronicTubingOutsideDiameter) {
   auto design = ensureDesignObject();
-  return design.setDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::HydronicTubingOutsideDiameter,
-                          hydronicTubingOutsideDiameter);
+  return design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->setHydronicTubingOutsideDiameter(
+    hydronicTubingOutsideDiameter);
 }
 
 void ZoneHVACLowTempRadiantConstFlow_Impl::resetHydronicTubingOutsideDiameter() {
   auto design = ensureDesignObject();
-  OS_ASSERT(design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::HydronicTubingOutsideDiameter, ""));
+  design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->resetHydronicTubingOutsideDiameter();
 }
 
 double ZoneHVACLowTempRadiantConstFlow_Impl::hydronicTubingConductivity() const {
   if (const auto design = designObject()) {
-    if (const auto value = design->getDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::HydronicTubingConductivity, true)) {
-      return *value;
-    }
+    return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->hydronicTubingConductivity();
   }
   return kDefaultHydronicTubingConductivity;
 }
 
 bool ZoneHVACLowTempRadiantConstFlow_Impl::isHydronicTubingConductivityDefaulted() const {
   if (const auto design = designObject()) {
-    return design->isEmpty(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::HydronicTubingConductivity);
+    return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->isHydronicTubingConductivityDefaulted();
   }
   return true;
 }
 
 bool ZoneHVACLowTempRadiantConstFlow_Impl::setHydronicTubingConductivity(double hydronicTubingConductivity) {
   auto design = ensureDesignObject();
-  return design.setDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::HydronicTubingConductivity,
-                          hydronicTubingConductivity);
+  return design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->setHydronicTubingConductivity(hydronicTubingConductivity);
 }
 
 void ZoneHVACLowTempRadiantConstFlow_Impl::resetHydronicTubingConductivity() {
   auto design = ensureDesignObject();
-  OS_ASSERT(design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::HydronicTubingConductivity, ""));
+  design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->resetHydronicTubingConductivity();
 }
 
 std::string ZoneHVACLowTempRadiantConstFlow_Impl::temperatureControlType() const {
   if (const auto design = designObject()) {
-    if (const auto value = design->getString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::TemperatureControlType, true)) {
-      return *value;
-    }
+    return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->temperatureControlType();
   }
   return kDefaultTemperatureControlType;
 }
 
 bool ZoneHVACLowTempRadiantConstFlow_Impl::isTemperatureControlTypeDefaulted() const {
   if (const auto design = designObject()) {
-    return design->isEmpty(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::TemperatureControlType);
+    return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->isTemperatureControlTypeDefaulted();
   }
   return true;
 }
 
 bool ZoneHVACLowTempRadiantConstFlow_Impl::setTemperatureControlType(const std::string& temperatureControlType) {
   auto design = ensureDesignObject();
-  return design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::TemperatureControlType, temperatureControlType);
+  return design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->setTemperatureControlType(temperatureControlType);
 }
 
 void ZoneHVACLowTempRadiantConstFlow_Impl::resetTemperatureControlType() {
   auto design = ensureDesignObject();
-  OS_ASSERT(design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::TemperatureControlType, ""));
+  design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->resetTemperatureControlType();
 }
 
 double ZoneHVACLowTempRadiantConstFlow_Impl::runningMeanOutdoorDryBulbTemperatureWeightingFactor() const {
   if (const auto design = designObject()) {
-    if (const auto value = design->getDouble(
-          openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::RunningMeanOutdoorDryBulbTemperatureWeightingFactor, true)) {
-      return *value;
-    }
+    return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->runningMeanOutdoorDryBulbTemperatureWeightingFactor();
   }
   return kDefaultRunningMeanOutdoorDryBulbTemperatureWeightingFactor;
 }
 
 bool ZoneHVACLowTempRadiantConstFlow_Impl::isRunningMeanOutdoorDryBulbTemperatureWeightingFactorDefaulted() const {
   if (const auto design = designObject()) {
-    return design->isEmpty(
-      openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::RunningMeanOutdoorDryBulbTemperatureWeightingFactor);
+    return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->isRunningMeanOutdoorDryBulbTemperatureWeightingFactorDefaulted();
   }
   return true;
 }
@@ -624,56 +1057,49 @@ bool ZoneHVACLowTempRadiantConstFlow_Impl::isRunningMeanOutdoorDryBulbTemperatur
 bool ZoneHVACLowTempRadiantConstFlow_Impl::setRunningMeanOutdoorDryBulbTemperatureWeightingFactor(
   double runningMeanOutdoorDryBulbTemperatureWeightingFactor) {
   auto design = ensureDesignObject();
-  return design.setDouble(
-    openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::RunningMeanOutdoorDryBulbTemperatureWeightingFactor,
+  return design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->setRunningMeanOutdoorDryBulbTemperatureWeightingFactor(
     runningMeanOutdoorDryBulbTemperatureWeightingFactor);
 }
 
 void ZoneHVACLowTempRadiantConstFlow_Impl::resetRunningMeanOutdoorDryBulbTemperatureWeightingFactor() {
   auto design = ensureDesignObject();
-  OS_ASSERT(design.setString(
-    openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::RunningMeanOutdoorDryBulbTemperatureWeightingFactor, ""));
+  design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->resetRunningMeanOutdoorDryBulbTemperatureWeightingFactor();
 }
 
 double ZoneHVACLowTempRadiantConstFlow_Impl::motorEfficiency() const {
   if (const auto design = designObject()) {
-    if (const auto value = design->getDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::MotorEfficiency, true)) {
-      return *value;
-    }
+    return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->motorEfficiency();
   }
   return kDefaultMotorEfficiency;
 }
 
 bool ZoneHVACLowTempRadiantConstFlow_Impl::isMotorEfficiencyDefaulted() const {
   if (const auto design = designObject()) {
-    return design->isEmpty(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::MotorEfficiency);
+    return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->isMotorEfficiencyDefaulted();
   }
   return true;
 }
 
 bool ZoneHVACLowTempRadiantConstFlow_Impl::setMotorEfficiency(double motorEfficiency) {
   auto design = ensureDesignObject();
-  return design.setDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::MotorEfficiency, motorEfficiency);
+  return design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->setMotorEfficiency(motorEfficiency);
 }
 
 void ZoneHVACLowTempRadiantConstFlow_Impl::resetMotorEfficiency() {
   auto design = ensureDesignObject();
-  OS_ASSERT(design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::MotorEfficiency, ""));
+  design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->resetMotorEfficiency();
 }
 
 double ZoneHVACLowTempRadiantConstFlow_Impl::fractionofMotorInefficienciestoFluidStream() const {
   if (const auto design = designObject()) {
-    if (const auto value = design->getDouble(
-          openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::FractionofMotorInefficienciestoFluidStream, true)) {
-      return *value;
-    }
+    return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->fractionofMotorInefficienciestoFluidStream();
   }
   return kDefaultFractionofMotorInefficienciestoFluidStream;
 }
 
 bool ZoneHVACLowTempRadiantConstFlow_Impl::isFractionofMotorInefficienciestoFluidStreamDefaulted() const {
   if (const auto design = designObject()) {
-    return design->isEmpty(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::FractionofMotorInefficienciestoFluidStream);
+    return design->getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->isFractionofMotorInefficienciestoFluidStreamDefaulted();
   }
   return true;
 }
@@ -681,18 +1107,21 @@ bool ZoneHVACLowTempRadiantConstFlow_Impl::isFractionofMotorInefficienciestoFlui
 bool ZoneHVACLowTempRadiantConstFlow_Impl::setFractionofMotorInefficienciestoFluidStream(
   double fractionofMotorInefficienciestoFluidStream) {
   auto design = ensureDesignObject();
-  return design.setDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::FractionofMotorInefficienciestoFluidStream,
-                          fractionofMotorInefficienciestoFluidStream);
+  return design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->setFractionofMotorInefficienciestoFluidStream(
+    fractionofMotorInefficienciestoFluidStream);
 }
 
 void ZoneHVACLowTempRadiantConstFlow_Impl::resetFractionofMotorInefficienciestoFluidStream() {
   auto design = ensureDesignObject();
-  OS_ASSERT(design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::FractionofMotorInefficienciestoFluidStream,
-                             ""));
+  design.getImpl<detail::ZoneHVACLowTempRadiantConstFlowDesign_Impl>()->resetFractionofMotorInefficienciestoFluidStream();
 }
 
 boost::optional<double> ZoneHVACLowTempRadiantConstFlow_Impl::hydronicTubingLength() const {
   return getDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HydronicTubingLength, true);
+}
+
+boost::optional<double> ZoneHVACLowTempRadiantConstFlow_Impl::autosizedHydronicTubingLength() const {
+  return {};
 }
 
 bool ZoneHVACLowTempRadiantConstFlow_Impl::isHydronicTubingLengthAutosized() const {
@@ -712,6 +1141,10 @@ void ZoneHVACLowTempRadiantConstFlow_Impl::autosizeHydronicTubingLength() {
 
 boost::optional<double> ZoneHVACLowTempRadiantConstFlow_Impl::ratedFlowRate() const {
   return getDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::RatedFlowRate, true);
+}
+
+boost::optional<double> ZoneHVACLowTempRadiantConstFlow_Impl::autosizedRatedFlowRate() const {
+  return {};
 }
 
 bool ZoneHVACLowTempRadiantConstFlow_Impl::isRatedFlowRateAutosized() const {

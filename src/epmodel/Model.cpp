@@ -740,6 +740,8 @@
 #include "ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWater_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWaterDesign_Impl.hpp"
+#include "ModelObject/ZoneHVACLowTempRadiantConstFlowDesign_Impl.hpp"
+#include "ModelObject/ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACBaseboardConvectiveWater_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACDehumidifierDX_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACEnergyRecoveryVentilator_Impl.hpp"
@@ -1945,7 +1947,9 @@ namespace epmodel {
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::ZoneHVAC_HybridUnitaryHVAC, ZoneHVACHybridUnitaryHVAC_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::ZoneHVAC_IdealLoadsAirSystem, ZoneHVACIdealLoadsAirSystem_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_ConstantFlow, ZoneHVACLowTempRadiantConstFlow_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_Design, ZoneHVACLowTempRadiantConstFlowDesign_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_Electric, ZoneHVACLowTemperatureRadiantElectric_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_SurfaceGroup, ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_VariableFlow, ZoneHVACLowTempRadiantVarFlow_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_VariableFlow_Design, ZoneHVACLowTempRadiantVarFlow_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::ZoneHVAC_OutdoorAirUnit, ZoneHVACOutdoorAirUnit_Impl);
@@ -2875,7 +2879,9 @@ namespace epmodel {
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::ZoneHVAC_HybridUnitaryHVAC, ZoneHVACHybridUnitaryHVAC_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::ZoneHVAC_IdealLoadsAirSystem, ZoneHVACIdealLoadsAirSystem_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_ConstantFlow, ZoneHVACLowTempRadiantConstFlow_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_Design, ZoneHVACLowTempRadiantConstFlowDesign_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_Electric, ZoneHVACLowTemperatureRadiantElectric_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_SurfaceGroup, ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_VariableFlow, ZoneHVACLowTempRadiantVarFlow_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::ZoneHVAC_LowTemperatureRadiant_VariableFlow_Design, ZoneHVACLowTempRadiantVarFlow_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::ZoneHVAC_OutdoorAirUnit, ZoneHVACOutdoorAirUnit_Impl);

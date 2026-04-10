@@ -29,6 +29,11 @@ Apply these preferences unless the user asks otherwise.
 - For EnergyPlus-only connective-tissue types with no canonical
   `openstudio::model` counterpart, keep public wrapper APIs minimal and keep
   mutators in `*_Impl`.
+- For EnergyPlus-only types that exist as real persisted E+ objects but still
+  have no canonical same-name `openstudio::model` wrapper, prefer read-only
+  public wrappers for now. Let owning parent types and impl code perform
+  mutation through `*_Impl` instead of growing standalone public mutator
+  surfaces prematurely.
 - Prefer the `AirLoopHVAC` style of implementation: keep topology traversal,
   lookup, and canonicalization logic local and readable in the main method
   body.
@@ -50,6 +55,11 @@ Apply these preferences unless the user asks otherwise.
   Use low-level field access only when no equivalent typed composition exists.
 - Prefer pointer/object-target linkage APIs over direct name-string writes for
   object relationships. Reserve `setString(...)` for true scalar data.
+- For extensible object-list rows, cast to `WorkspaceExtensibleGroup` and use
+  `getTarget(...)` / `setPointer(...)` instead of hand-rolled type-and-name
+  lookup. If that path does not work, first suspect missing or incorrect
+  object-list/reference markup in the IDD schema rather than falling back to
+  name lookup silently.
 - For `NodeType` fields, use the shared `ModelObject_Impl` node resolver
   helpers instead of local "read the string and look up the node by name"
   logic. If a getter returns a `Node`, it should be a live linked node, not

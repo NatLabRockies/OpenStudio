@@ -1403,6 +1403,12 @@ set(${target_name}_src
     ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWaterDesign.hpp
     ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWaterDesign_Impl.hpp
     ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWaterDesign.cpp
+    ModelObject/ZoneHVACLowTempRadiantConstFlowDesign.hpp
+    ModelObject/ZoneHVACLowTempRadiantConstFlowDesign_Impl.hpp
+    ModelObject/ZoneHVACLowTempRadiantConstFlowDesign.cpp
+    ModelObject/ZoneHVACLowTemperatureRadiantSurfaceGroup.hpp
+    ModelObject/ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl.hpp
+    ModelObject/ZoneHVACLowTemperatureRadiantSurfaceGroup.cpp
     ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater.hpp
     ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater_Impl.hpp
     ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater.cpp
@@ -3133,6 +3139,8 @@ set(${target_name}_test_src
   test/ZoneHVACPackagedTerminalHeatPump_GTest.cpp
   test/ZoneHVACTerminalUnitVariableRefrigerantFlow_GTest.cpp
   test/ZoneHVACLowTempRadiantConstFlow_GTest.cpp
+  test/ZoneHVACLowTempRadiantConstFlowDesign_GTest.cpp
+  test/ZoneHVACLowTemperatureRadiantSurfaceGroup_GTest.cpp
   test/CoilHeatingLowTempRadiantConstFlow_GTest.cpp
   test/CoilCoolingLowTempRadiantConstFlow_GTest.cpp
      test/ZoneHVACLowTempRadiantVarFlow_GTest.cpp

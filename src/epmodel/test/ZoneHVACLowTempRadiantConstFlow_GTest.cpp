@@ -8,9 +8,19 @@
 #include "EPModelFixture.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../LayeredConstruction/ConstructionWithInternalSource.hpp"
+#include "../ModelObject/ModelObject.hpp"
+#include "../PlanarSurface/Surface.hpp"
+#include "../PlanarSurfaceGroup/Space.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow.hpp"
+#include <utilities/idd/BuildingSurface_Detailed_FieldEnums.hxx>
+#include <utilities/idd/ConstructionProperty_InternalHeatSource_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_LowTemperatureRadiant_ConstantFlow_FieldEnums.hxx>
+#include <utilities/idf/IdfExtensibleGroup.hpp>
+
+#include <array>
+#include <algorithm>
 
 using namespace openstudio;
 using namespace openstudio::epmodel;
@@ -24,6 +34,76 @@ TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_DefaultConstructor) {
   EXPECT_EQ(0u, radiant.inletPort());
   EXPECT_EQ(0u, radiant.outletPort());
   ASSERT_EQ(2u, radiant.children().size());
+  EXPECT_FALSE(radiant.autosizedHydronicTubingLength());
+  EXPECT_FALSE(radiant.autosizedRatedFlowRate());
+}
+
+TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_ConvenienceConstructorsAndParentCoilSetters) {
+  Model model;
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(availability.setValue(1.0));
+
+  ZoneHVACLowTempRadiantConstFlow source(model);
+  auto sourceHeating = source.heatingCoil();
+  auto sourceCooling = source.coolingCoil();
+
+  ScheduleConstant heatingHighWater(model);
+  ScheduleConstant heatingLowWater(model);
+  ScheduleConstant heatingHighControl(model);
+  ScheduleConstant heatingLowControl(model);
+  ScheduleConstant coolingHighWater(model);
+  ScheduleConstant coolingLowWater(model);
+  ScheduleConstant coolingHighControl(model);
+  ScheduleConstant coolingLowControl(model);
+
+  ASSERT_TRUE(heatingHighWater.setValue(60.0));
+  ASSERT_TRUE(heatingLowWater.setValue(35.0));
+  ASSERT_TRUE(heatingHighControl.setValue(23.0));
+  ASSERT_TRUE(heatingLowControl.setValue(20.0));
+  ASSERT_TRUE(coolingHighWater.setValue(18.0));
+  ASSERT_TRUE(coolingLowWater.setValue(12.0));
+  ASSERT_TRUE(coolingHighControl.setValue(26.0));
+  ASSERT_TRUE(coolingLowControl.setValue(22.0));
+
+  ASSERT_TRUE(sourceHeating.setHeatingHighWaterTemperatureSchedule(heatingHighWater));
+  ASSERT_TRUE(sourceHeating.setHeatingLowWaterTemperatureSchedule(heatingLowWater));
+  ASSERT_TRUE(sourceHeating.setHeatingHighControlTemperatureSchedule(heatingHighControl));
+  ASSERT_TRUE(sourceHeating.setHeatingLowControlTemperatureSchedule(heatingLowControl));
+
+  ASSERT_TRUE(sourceCooling.setCoolingHighWaterTemperatureSchedule(coolingHighWater));
+  ASSERT_TRUE(sourceCooling.setCoolingLowWaterTemperatureSchedule(coolingLowWater));
+  ASSERT_TRUE(sourceCooling.setCoolingHighControlTemperatureSchedule(coolingHighControl));
+  ASSERT_TRUE(sourceCooling.setCoolingLowControlTemperatureSchedule(coolingLowControl));
+  ASSERT_TRUE(sourceCooling.setCondensationControlType("VariableOff"));
+  ASSERT_TRUE(sourceCooling.setCondensationControlDewpointOffset(1.5));
+
+  ZoneHVACLowTempRadiantConstFlow autosized(model, availability, sourceHeating, sourceCooling);
+  ASSERT_TRUE(autosized.availabilitySchedule());
+  EXPECT_EQ(availability.handle(), autosized.availabilitySchedule()->handle());
+  EXPECT_TRUE(autosized.isHydronicTubingLengthAutosized());
+  EXPECT_FALSE(autosized.autosizedHydronicTubingLength());
+
+  ASSERT_TRUE(autosized.heatingCoil().heatingHighWaterTemperatureSchedule());
+  EXPECT_EQ(heatingHighWater.handle(), autosized.heatingCoil().heatingHighWaterTemperatureSchedule()->handle());
+  ASSERT_TRUE(autosized.coolingCoil().coolingHighWaterTemperatureSchedule());
+  EXPECT_EQ(coolingHighWater.handle(), autosized.coolingCoil().coolingHighWaterTemperatureSchedule()->handle());
+  EXPECT_EQ("VariableOff", autosized.coolingCoil().condensationControlType());
+  EXPECT_DOUBLE_EQ(1.5, autosized.coolingCoil().condensationControlDewpointOffset());
+
+  ZoneHVACLowTempRadiantConstFlow explicitLength(model, availability, sourceHeating, sourceCooling, 125.0);
+  ASSERT_TRUE(explicitLength.hydronicTubingLength());
+  EXPECT_DOUBLE_EQ(125.0, explicitLength.hydronicTubingLength().get());
+
+  ZoneHVACLowTempRadiantConstFlow copied(model);
+  EXPECT_TRUE(copied.setHeatingCoil(sourceHeating));
+  EXPECT_TRUE(copied.setCoolingCoil(sourceCooling));
+
+  ASSERT_TRUE(copied.heatingCoil().heatingLowControlTemperatureSchedule());
+  EXPECT_EQ(heatingLowControl.handle(), copied.heatingCoil().heatingLowControlTemperatureSchedule()->handle());
+  ASSERT_TRUE(copied.coolingCoil().coolingLowControlTemperatureSchedule());
+  EXPECT_EQ(coolingLowControl.handle(), copied.coolingCoil().coolingLowControlTemperatureSchedule()->handle());
+  EXPECT_EQ("VariableOff", copied.coolingCoil().condensationControlType());
+  EXPECT_DOUBLE_EQ(1.5, copied.coolingCoil().condensationControlDewpointOffset());
 }
 
 TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_ScalarAccessors_RoundTrip) {
@@ -35,12 +115,14 @@ TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_ScalarAccessors_RoundTrip
   EXPECT_DOUBLE_EQ(200.0, radiant.hydronicTubingLength().get());
   radiant.autosizeHydronicTubingLength();
   EXPECT_TRUE(radiant.isHydronicTubingLengthAutosized());
+  EXPECT_FALSE(radiant.autosizedHydronicTubingLength());
 
   EXPECT_TRUE(radiant.setRatedFlowRate(0.25));
   ASSERT_TRUE(radiant.ratedFlowRate());
   EXPECT_DOUBLE_EQ(0.25, radiant.ratedFlowRate().get());
   radiant.autosizeRatedFlowRate();
   EXPECT_TRUE(radiant.isRatedFlowRateAutosized());
+  EXPECT_FALSE(radiant.autosizedRatedFlowRate());
 
   EXPECT_TRUE(radiant.setRatedPumpHead(150000));
   EXPECT_DOUBLE_EQ(150000, radiant.ratedPumpHead());
@@ -226,4 +308,83 @@ TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_TransientCompanionCoils_R
 
   EXPECT_FALSE(heatingCoil.addToNode(heatingInlet));
   EXPECT_FALSE(coolingCoil.addToNode(coolingInlet));
+}
+
+TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_RadiantSurfaceType_RewritesPersistedSurfaceGroup) {
+  Model model;
+  ThermalZone zone(model);
+  Space space(model);
+  ASSERT_TRUE(space.setThermalZone(zone));
+
+  // This test currently has to set up the radiant-eligible envelope state
+  // through low-level fields because epmodel does not yet have much developed
+  // surface/surface-group/construction convenience on the envelope side. That
+  // is acceptable for now because the production implementation is working with
+  // the same persisted EnergyPlus fields, but this test should be revisited
+  // once richer envelope wrappers exist.
+  ModelObject construction = ModelObject::create(IddObjectType::Construction, model);
+  ConstructionWithInternalSource radiantConstruction(model);
+  ASSERT_TRUE(radiantConstruction.setPointer(openstudio::ConstructionProperty_InternalHeatSourceFields::ConstructionName, construction.handle()));
+
+  auto makeSurface = [&](const std::string& name, const std::string& surfaceType,
+                         const std::vector<std::array<double, 3>>& vertices) -> Surface {
+    Surface surface(model);
+    EXPECT_TRUE(surface.setName(name));
+    EXPECT_TRUE(surface.setSurfaceType(surfaceType));
+    EXPECT_TRUE(surface.setPointer(openstudio::BuildingSurface_DetailedFields::ConstructionName, construction.handle()));
+    EXPECT_TRUE(surface.setPointer(openstudio::BuildingSurface_DetailedFields::SpaceName, space.handle()));
+    for (const auto& vertex : vertices) {
+      auto group = surface.pushExtensibleGroup();
+      EXPECT_TRUE(group.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexXcoordinate, vertex[0]));
+      EXPECT_TRUE(group.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexYcoordinate, vertex[1]));
+      EXPECT_TRUE(group.setDouble(openstudio::BuildingSurface_DetailedExtensibleFields::VertexZcoordinate, vertex[2]));
+    }
+    return surface;
+  };
+
+  auto floor = makeSurface("Radiant Floor", "Floor", {{0.0, 0.0, 0.0}, {4.0, 0.0, 0.0}, {4.0, 3.0, 0.0}, {0.0, 3.0, 0.0}});
+  auto ceiling = makeSurface("Radiant Ceiling", "Roof", {{0.0, 0.0, 3.0}, {4.0, 0.0, 3.0}, {4.0, 3.0, 3.0}, {0.0, 3.0, 3.0}});
+  auto wall = makeSurface("Radiant Wall", "Wall", {{0.0, 0.0, 0.0}, {4.0, 0.0, 0.0}, {4.0, 0.0, 3.0}, {0.0, 0.0, 3.0}});
+
+  auto sortedHandles = [](const std::vector<Surface>& surfaces) {
+    std::vector<Handle> result;
+    result.reserve(surfaces.size());
+    for (const auto& surface : surfaces) {
+      result.push_back(surface.handle());
+    }
+    std::sort(result.begin(), result.end());
+    return result;
+  };
+
+  auto sortedExpected = [](std::vector<Handle> handles) {
+    std::sort(handles.begin(), handles.end());
+    return handles;
+  };
+
+  ZoneHVACLowTempRadiantConstFlow radiant(model);
+  ASSERT_TRUE(radiant.addToThermalZone(zone));
+
+  EXPECT_TRUE(radiant.setRadiantSurfaceType("Floors"));
+  ASSERT_TRUE(radiant.radiantSurfaceType());
+  EXPECT_EQ("Floors", *radiant.radiantSurfaceType());
+  ASSERT_EQ(1u, radiant.surfaces().size());
+  EXPECT_EQ(floor.handle(), radiant.surfaces().front().handle());
+
+  EXPECT_TRUE(radiant.setRadiantSurfaceType("CeilingsandFloors"));
+  ASSERT_TRUE(radiant.radiantSurfaceType());
+  EXPECT_EQ("CeilingsandFloors", *radiant.radiantSurfaceType());
+  ASSERT_EQ(2u, radiant.surfaces().size());
+  EXPECT_EQ(sortedExpected({ceiling.handle(), floor.handle()}), sortedHandles(radiant.surfaces()));
+
+  EXPECT_TRUE(radiant.setRadiantSurfaceType("AllSurfaces"));
+  ASSERT_TRUE(radiant.radiantSurfaceType());
+  EXPECT_EQ("AllSurfaces", *radiant.radiantSurfaceType());
+  ASSERT_EQ(3u, radiant.surfaces().size());
+  EXPECT_EQ(sortedExpected({ceiling.handle(), floor.handle(), wall.handle()}), sortedHandles(radiant.surfaces()));
+
+  radiant.resetRadiantSurfaceType();
+  ASSERT_TRUE(radiant.radiantSurfaceType());
+  EXPECT_EQ("Ceilings", *radiant.radiantSurfaceType());
+  ASSERT_EQ(1u, radiant.surfaces().size());
+  EXPECT_EQ(ceiling.handle(), radiant.surfaces().front().handle());
 }
