@@ -2565,7 +2565,7 @@ set(${target_name}_src
   Mixer/Mixer.cpp
   Loop/Loop.hpp
   Loop/Loop_Impl.hpp
-  Loop_Impl.cpp
+  Loop/Loop_Impl.cpp
   Loop/Loop.cpp
   )
 
