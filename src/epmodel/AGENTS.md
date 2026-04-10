@@ -39,6 +39,9 @@ Apply these preferences unless the user asks otherwise.
   names for the same conceptual object when the public name already works.
 - Keep public wrapper classes thin. For parity-oriented types, put
   substantive behavior, relationship mutation, and helper logic in `*_Impl`.
+- In public wrapper headers, group accessors by field or concept. Prefer
+  getter / setter / reset blocks for one field at a time over separate
+  "all getters" and "all setters" sections.
 - If adding a new aligned parent type, add the corresponding `*_Impl` layer
   too. Do not concentrate new behavior in the public base class.
 - Prefer high-level typed APIs over raw workspace field access when both
@@ -102,6 +105,11 @@ Apply these preferences unless the user asks otherwise.
   `Node` behind a node field, use the shared `ModelObject_Impl`
   node-field helpers so resolved nodes are linked back to the owning field and
   later renames stay tracked.
+- When canonical `openstudio::model` exposes OS-only companion objects that do
+  not exist as standalone EnergyPlus objects, epmodel may model them additively
+  as transient child wrappers backed by persisted parent storage. Keep that
+  write-through mapping explicit, document it in the type notes, and avoid
+  inventing fake persisted children.
 
 ## Schema Alignment Notes Convention
 

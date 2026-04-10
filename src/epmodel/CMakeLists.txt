@@ -143,9 +143,15 @@ set(${target_name}_src
   StraightComponent/CoilHeatingDXVariableRefrigerantFlow.hpp
   StraightComponent/CoilHeatingDXVariableRefrigerantFlow_Impl.hpp
   StraightComponent/CoilHeatingDXVariableRefrigerantFlow.cpp
+  StraightComponent/CoilHeatingLowTempRadiantConstFlow.hpp
+  StraightComponent/CoilHeatingLowTempRadiantConstFlow_Impl.hpp
+  StraightComponent/CoilHeatingLowTempRadiantConstFlow.cpp
   StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.hpp
   StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp
   StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl.cpp
+  StraightComponent/CoilCoolingLowTempRadiantConstFlow.hpp
+  StraightComponent/CoilCoolingLowTempRadiantConstFlow_Impl.hpp
+  StraightComponent/CoilCoolingLowTempRadiantConstFlow.cpp
   WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.hpp
   WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl.hpp
   WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.cpp
@@ -3127,6 +3133,8 @@ set(${target_name}_test_src
   test/ZoneHVACPackagedTerminalHeatPump_GTest.cpp
   test/ZoneHVACTerminalUnitVariableRefrigerantFlow_GTest.cpp
   test/ZoneHVACLowTempRadiantConstFlow_GTest.cpp
+  test/CoilHeatingLowTempRadiantConstFlow_GTest.cpp
+  test/CoilCoolingLowTempRadiantConstFlow_GTest.cpp
      test/ZoneHVACLowTempRadiantVarFlow_GTest.cpp
   test/ZoneHVACLowTemperatureRadiantElectric_GTest.cpp
   test/ZoneHVACIdealLoadsAirSystem_GTest.cpp

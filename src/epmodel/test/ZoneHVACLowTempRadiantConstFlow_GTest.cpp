@@ -6,9 +6,11 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow.hpp"
+#include <utilities/idd/ZoneHVAC_LowTemperatureRadiant_ConstantFlow_FieldEnums.hxx>
 
 using namespace openstudio;
 using namespace openstudio::epmodel;
@@ -21,6 +23,7 @@ TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_DefaultConstructor) {
   EXPECT_FALSE(radiant.ratedFlowRate());
   EXPECT_EQ(0u, radiant.inletPort());
   EXPECT_EQ(0u, radiant.outletPort());
+  ASSERT_EQ(2u, radiant.children().size());
 }
 
 TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_ScalarAccessors_RoundTrip) {
@@ -114,4 +117,113 @@ TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_ZoneAttachment) {
 
   radiant.removeFromThermalZone();
   EXPECT_FALSE(radiant.thermalZone());
+}
+
+TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_TransientCompanionCoils_WriteThroughParentStorage) {
+  Model model;
+  ZoneHVACLowTempRadiantConstFlow radiant(model);
+
+  ScheduleConstant availability(model);
+  ScheduleConstant pump(model);
+  ScheduleConstant changeover(model);
+  ScheduleConstant heatingHighWater(model);
+  ScheduleConstant heatingLowWater(model);
+  ScheduleConstant heatingHighControl(model);
+  ScheduleConstant heatingLowControl(model);
+  ScheduleConstant coolingHighWater(model);
+  ScheduleConstant coolingLowWater(model);
+  ScheduleConstant coolingHighControl(model);
+  ScheduleConstant coolingLowControl(model);
+
+  ASSERT_TRUE(availability.setValue(1.0));
+  ASSERT_TRUE(pump.setValue(0.5));
+  ASSERT_TRUE(changeover.setValue(2.0));
+  ASSERT_TRUE(heatingHighWater.setValue(60.0));
+  ASSERT_TRUE(heatingLowWater.setValue(35.0));
+  ASSERT_TRUE(heatingHighControl.setValue(23.0));
+  ASSERT_TRUE(heatingLowControl.setValue(20.0));
+  ASSERT_TRUE(coolingHighWater.setValue(18.0));
+  ASSERT_TRUE(coolingLowWater.setValue(12.0));
+  ASSERT_TRUE(coolingHighControl.setValue(26.0));
+  ASSERT_TRUE(coolingLowControl.setValue(22.0));
+
+  EXPECT_TRUE(radiant.setAvailabilitySchedule(availability));
+  EXPECT_TRUE(radiant.setPumpFlowRateSchedule(pump));
+  EXPECT_TRUE(radiant.setChangeoverDelayTimePeriodSchedule(changeover));
+
+  auto heatingCoil = radiant.heatingCoil();
+  auto coolingCoil = radiant.coolingCoil();
+
+  EXPECT_TRUE(heatingCoil.setHeatingHighWaterTemperatureSchedule(heatingHighWater));
+  EXPECT_TRUE(heatingCoil.setHeatingLowWaterTemperatureSchedule(heatingLowWater));
+  EXPECT_TRUE(heatingCoil.setHeatingHighControlTemperatureSchedule(heatingHighControl));
+  EXPECT_TRUE(heatingCoil.setHeatingLowControlTemperatureSchedule(heatingLowControl));
+
+  EXPECT_TRUE(coolingCoil.setCoolingHighWaterTemperatureSchedule(coolingHighWater));
+  EXPECT_TRUE(coolingCoil.setCoolingLowWaterTemperatureSchedule(coolingLowWater));
+  EXPECT_TRUE(coolingCoil.setCoolingHighControlTemperatureSchedule(coolingHighControl));
+  EXPECT_TRUE(coolingCoil.setCoolingLowControlTemperatureSchedule(coolingLowControl));
+  EXPECT_TRUE(coolingCoil.setCondensationControlType("VariableOff"));
+  EXPECT_TRUE(coolingCoil.setCondensationControlDewpointOffset(1.5));
+
+  ASSERT_TRUE(radiant.availabilitySchedule());
+  EXPECT_EQ(availability.handle(), radiant.availabilitySchedule()->handle());
+  ASSERT_TRUE(radiant.pumpFlowRateSchedule());
+  EXPECT_EQ(pump.handle(), radiant.pumpFlowRateSchedule()->handle());
+  ASSERT_TRUE(radiant.changeoverDelayTimePeriodSchedule());
+  EXPECT_EQ(changeover.handle(), radiant.changeoverDelayTimePeriodSchedule()->handle());
+
+  ASSERT_TRUE(heatingCoil.heatingHighWaterTemperatureSchedule());
+  EXPECT_EQ(heatingHighWater.handle(), heatingCoil.heatingHighWaterTemperatureSchedule()->handle());
+  ASSERT_TRUE(heatingCoil.heatingLowWaterTemperatureSchedule());
+  EXPECT_EQ(heatingLowWater.handle(), heatingCoil.heatingLowWaterTemperatureSchedule()->handle());
+  ASSERT_TRUE(heatingCoil.heatingHighControlTemperatureSchedule());
+  EXPECT_EQ(heatingHighControl.handle(), heatingCoil.heatingHighControlTemperatureSchedule()->handle());
+  ASSERT_TRUE(heatingCoil.heatingLowControlTemperatureSchedule());
+  EXPECT_EQ(heatingLowControl.handle(), heatingCoil.heatingLowControlTemperatureSchedule()->handle());
+
+  ASSERT_TRUE(coolingCoil.coolingHighWaterTemperatureSchedule());
+  EXPECT_EQ(coolingHighWater.handle(), coolingCoil.coolingHighWaterTemperatureSchedule()->handle());
+  ASSERT_TRUE(coolingCoil.coolingLowWaterTemperatureSchedule());
+  EXPECT_EQ(coolingLowWater.handle(), coolingCoil.coolingLowWaterTemperatureSchedule()->handle());
+  ASSERT_TRUE(coolingCoil.coolingHighControlTemperatureSchedule());
+  EXPECT_EQ(coolingHighControl.handle(), coolingCoil.coolingHighControlTemperatureSchedule()->handle());
+  ASSERT_TRUE(coolingCoil.coolingLowControlTemperatureSchedule());
+  EXPECT_EQ(coolingLowControl.handle(), coolingCoil.coolingLowControlTemperatureSchedule()->handle());
+  EXPECT_EQ("VariableOff", coolingCoil.condensationControlType());
+  EXPECT_DOUBLE_EQ(1.5, coolingCoil.condensationControlDewpointOffset());
+}
+
+TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlow_TransientCompanionCoils_ResolveParentWaterNodes) {
+  Model model;
+  ZoneHVACLowTempRadiantConstFlow radiant(model);
+
+  Node heatingInlet = model.getOrCreateTransientByName<Node>("Radiant Heating Inlet");
+  Node heatingOutlet = model.getOrCreateTransientByName<Node>("Radiant Heating Outlet");
+  Node coolingInlet = model.getOrCreateTransientByName<Node>("Radiant Cooling Inlet");
+  Node coolingOutlet = model.getOrCreateTransientByName<Node>("Radiant Cooling Outlet");
+
+  ASSERT_TRUE(
+    radiant.setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingWaterInletNodeName, heatingInlet.handle()));
+  ASSERT_TRUE(
+    radiant.setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingWaterOutletNodeName, heatingOutlet.handle()));
+  ASSERT_TRUE(
+    radiant.setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterInletNodeName, coolingInlet.handle()));
+  ASSERT_TRUE(
+    radiant.setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::CoolingWaterOutletNodeName, coolingOutlet.handle()));
+
+  auto heatingCoil = radiant.heatingCoil();
+  auto coolingCoil = radiant.coolingCoil();
+
+  ASSERT_TRUE(heatingCoil.inletModelObject());
+  EXPECT_EQ(heatingInlet.handle(), heatingCoil.inletModelObject()->handle());
+  ASSERT_TRUE(heatingCoil.outletModelObject());
+  EXPECT_EQ(heatingOutlet.handle(), heatingCoil.outletModelObject()->handle());
+  ASSERT_TRUE(coolingCoil.inletModelObject());
+  EXPECT_EQ(coolingInlet.handle(), coolingCoil.inletModelObject()->handle());
+  ASSERT_TRUE(coolingCoil.outletModelObject());
+  EXPECT_EQ(coolingOutlet.handle(), coolingCoil.outletModelObject()->handle());
+
+  EXPECT_FALSE(heatingCoil.addToNode(heatingInlet));
+  EXPECT_FALSE(coolingCoil.addToNode(coolingInlet));
 }

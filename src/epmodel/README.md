@@ -165,15 +165,25 @@ are not written out to the saved file. This is mainly used where the public
 modeling surface wants object identity even though EnergyPlus does not persist
 the same concept as a standalone object.
 
-The current factory-backed transient type is `Node`. That is an important
-detail, but the larger point is architectural: epmodel is willing to keep
-runtime-only `ModelObject` wrappers when they are needed to preserve the
-canonical model API, even if EnergyPlus does not persist the same concept as a
-standalone object. `Node` is the clearest current example of that policy.
+`Node` is the oldest and still the clearest example of this policy, but it is
+not the only one anymore. The larger point is architectural: epmodel is
+willing to keep runtime-only `ModelObject` wrappers when they are needed to
+preserve the canonical model API, even if EnergyPlus does not persist the same
+concept as a standalone object.
 
 Transient objects are created and retrieved by name. That by-name identity is
 intentional; it prevents the topology layer from silently multiplying
 equivalent runtime objects during wiring and traversal.
+
+This same pattern also applies when canonical `openstudio::model` factors one
+EnergyPlus object into multiple wrapper objects. In those cases, epmodel may
+add transient companion wrappers that read and write through to a real
+persisted parent object instead of inventing fake persisted children. The
+constant-flow low-temperature radiant family is the first concrete example:
+the canonical heating and cooling coil objects are exposed in epmodel as
+transient child views backed by the parent
+`ZoneHVAC:LowTemperatureRadiant:ConstantFlow` object and its linked design
+object.
 
 ## Relationship-Driven Modeling
 
@@ -326,6 +336,13 @@ the exact child kinds it supports when it decides how to read air inlet and
 outlet ports. That can look a little repetitive, but it is easier to review
 and less brittle than growing a shared base helper that tries to know every
 possible child type for every compound family.
+
+Not every `ZoneHVAC` family fits that compound-topology pattern. Radiant
+families are the clearest counterexample. Their canonical wrappers are often
+relationship-driven and may expose OS-only companion objects whose state is
+flattened onto one EnergyPlus parent object. In those cases, epmodel may use
+transient child wrappers to preserve the canonical object shape without
+pretending EnergyPlus persisted separate child objects.
 
 When an internal node role has a clear meaning to users, epmodel may expose an
 accessor for that role on the owning compound even if the canonical

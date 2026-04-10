@@ -14,7 +14,18 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+  class ModelObject;
+  class CoilHeatingLowTempRadiantConstFlow;
+  class CoilCoolingLowTempRadiantConstFlow;
+
   namespace detail {
+
+    class CoilHeatingLowTempRadiantConstFlow_Impl;
+    class CoilCoolingLowTempRadiantConstFlow_Impl;
+
+    std::string transientHeatingCoilName(const openstudio::epmodel::ZoneHVACLowTempRadiantConstFlow& parent);
+    std::string transientCoolingCoilName(const openstudio::epmodel::ZoneHVACLowTempRadiantConstFlow& parent);
 
     class EPMODEL_API ZoneHVACLowTempRadiantConstFlow_Impl : public ZoneHVACComponent_Impl
     {
@@ -24,6 +35,24 @@ namespace epmodel {
 
       unsigned inletPort() const;
       unsigned outletPort() const;
+
+      boost::optional<Schedule> availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+      void resetAvailabilitySchedule();
+
+      CoilHeatingLowTempRadiantConstFlow heatingCoil() const;
+      CoilCoolingLowTempRadiantConstFlow coolingCoil() const;
+
+      boost::optional<Schedule> pumpFlowRateSchedule() const;
+      bool setPumpFlowRateSchedule(Schedule& schedule);
+      void resetPumpFlowRateSchedule();
+
+      boost::optional<Schedule> changeoverDelayTimePeriodSchedule() const;
+      bool setChangeoverDelayTimePeriodSchedule(Schedule& schedule);
+      void resetChangeoverDelayTimePeriodSchedule();
+
+      std::vector<ModelObject> children() const override;
+      void doCanonicalize(LoadContext& context) override;
 
       boost::optional<double> hydronicTubingLength() const;
       bool isHydronicTubingLengthAutosized() const;
@@ -95,14 +124,12 @@ namespace epmodel {
       void resetFractionofMotorInefficienciestoFluidStream();
 
      private:
-      boost::optional<std::string> m_fluidtoRadiantSurfaceHeatTransferModel;
-      boost::optional<double> m_hydronicTubingInsideDiameter;
-      boost::optional<double> m_hydronicTubingOutsideDiameter;
-      boost::optional<double> m_hydronicTubingConductivity;
-      boost::optional<std::string> m_temperatureControlType;
-      boost::optional<double> m_runningMeanOutdoorDryBulbTemperatureWeightingFactor;
-      boost::optional<double> m_motorEfficiency;
-      boost::optional<double> m_fractionofMotorInefficienciestoFluidStream;
+      friend class openstudio::epmodel::ZoneHVACLowTempRadiantConstFlow;
+      friend class CoilHeatingLowTempRadiantConstFlow_Impl;
+      friend class CoilCoolingLowTempRadiantConstFlow_Impl;
+
+      boost::optional<ModelObject> designObject() const;
+      ModelObject ensureDesignObject();
     };
 
   }  // namespace detail

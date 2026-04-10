@@ -7,6 +7,8 @@
 #define EPMODEL_ZONEHVACLOWTEMPRADIANTCONSTFLOW_HPP
 
 #include "EPModelAPI.hpp"
+#include "StraightComponent/CoilCoolingLowTempRadiantConstFlow.hpp"
+#include "StraightComponent/CoilHeatingLowTempRadiantConstFlow.hpp"
 #include "ZoneHVACComponent/ZoneHVACComponent.hpp"
 
 #include <boost/optional.hpp>
@@ -18,6 +20,8 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
+  class ModelObject;
 
   namespace detail {
     class ZoneHVACLowTempRadiantConstFlow_Impl;
@@ -40,13 +44,33 @@ namespace epmodel {
     static std::vector<std::string> temperatureControlTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The hydronic/control scalars are aligned, but the companion surface and node topology remains relationship-driven.
+    // - Status: Partial Parity. The hydronic/control scalars are aligned, and epmodel now exposes the canonical heating/cooling companion coils
+    //   as transient child views over the parent radiant object. Surface membership behavior is still relationship-driven.
     // - Canonical Counterpart: openstudio::model::ZoneHVACLowTempRadiantConstFlow.
-    // - Implemented Parity: The constant-flow radiant scalar groups map directly to the EnergyPlus object and its companion design/surface-group data.
-    // - Documented Delta: Coils, nodes, schedules, and extensible surface-group links remain separate from this scalar surface.
-    // - Field/Storage Mapping: Scalar values live on the EnergyPlus object and companion design object, while surface-group membership is emitted through explicit topology state.
+    // - Implemented Parity: The constant-flow radiant scalar groups map directly to the EnergyPlus object and its companion design object.
+    //   The canonical heating and cooling coil wrappers are exposed additively as transient children that write through to that parent storage.
+    // - Documented Delta: Surface membership and the fuller canonical surface-group behavior are still not exposed directly.
+    // - Field/Storage Mapping: Main hydronic fields live on the EnergyPlus object, design-side controls live on the EnergyPlus design object,
+    //   and the transient child coils are views over those persisted parent fields rather than standalone EnergyPlus objects.
     // - Evidence: `src/model/ZoneHVACLowTempRadiantConstFlow.hpp`, `src/model/ZoneHVACLowTempRadiantConstFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACLowTempRadiantConstFlow.cpp`, and `src/epmodel/test/ZoneHVACLowTempRadiantConstFlow_GTest.cpp`.
-    // - Remaining Parity Work: Add relationship helpers only if the canonical wrapper continues to expose more of the surface topology directly.
+    // - Remaining Parity Work: Add the canonical surface and other relationship helpers once the transient companion pattern is settled.
+
+    boost::optional<Schedule> availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+    void resetAvailabilitySchedule();
+
+    CoilHeatingLowTempRadiantConstFlow heatingCoil() const;
+    CoilCoolingLowTempRadiantConstFlow coolingCoil() const;
+
+    boost::optional<Schedule> pumpFlowRateSchedule() const;
+    bool setPumpFlowRateSchedule(Schedule& schedule);
+    void resetPumpFlowRateSchedule();
+
+    boost::optional<Schedule> changeoverDelayTimePeriodSchedule() const;
+    bool setChangeoverDelayTimePeriodSchedule(Schedule& schedule);
+    void resetChangeoverDelayTimePeriodSchedule();
+
+    std::vector<ModelObject> children() const;
 
     std::string fluidtoRadiantSurfaceHeatTransferModel() const;
     bool isFluidtoRadiantSurfaceHeatTransferModelDefaulted() const;
