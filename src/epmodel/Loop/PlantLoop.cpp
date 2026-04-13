@@ -35,8 +35,24 @@
 #include "WaterToAirComponent/CoilHeatingWater.hpp"
 #include "WaterToAirComponent/CoilHeatingWater_Impl.hpp"
 #include "StraightComponent/StraightComponent.hpp"
+#include "StraightComponent/CoilCoolingLowTempRadiantConstFlow.hpp"
+#include "StraightComponent/CoilCoolingLowTempRadiantConstFlow_Impl.hpp"
+#include "StraightComponent/CoilCoolingLowTempRadiantVarFlow.hpp"
+#include "StraightComponent/CoilCoolingLowTempRadiantVarFlow_Impl.hpp"
+#include "StraightComponent/CoilCoolingWaterPanelRadiant.hpp"
+#include "StraightComponent/CoilCoolingWaterPanelRadiant_Impl.hpp"
+#include "StraightComponent/CoilHeatingLowTempRadiantConstFlow.hpp"
+#include "StraightComponent/CoilHeatingLowTempRadiantConstFlow_Impl.hpp"
+#include "StraightComponent/CoilHeatingLowTempRadiantVarFlow.hpp"
+#include "StraightComponent/CoilHeatingLowTempRadiantVarFlow_Impl.hpp"
 #include "WaterToWaterComponent/WaterToWaterComponent.hpp"
 #include "WaterToWaterComponent/WaterToWaterComponent_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater.hpp"
+#include "ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow.hpp"
+#include "ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACLowTempRadiantVarFlow.hpp"
+#include "ZoneHVACComponent/ZoneHVACLowTempRadiantVarFlow_Impl.hpp"
 
 #include <algorithm>
 #include <set>
@@ -379,8 +395,19 @@ namespace openstudio {
 namespace epmodel {
 namespace detail {
 
-    bool branchContainsNode(Model model, const Branch& branch, const Node& node, const Node& inletNode, const Node& outletNode, bool isInletBranch,
-                            bool isOutletBranch, bool isEquipmentBranch) {
+    namespace {
+
+      // PlantLoop still stores branch topology in the raw EnergyPlus branch
+      // objects, so a number of small local helpers are needed to answer
+      // higher-level OpenStudio questions without promoting them into broader
+      // reusable APIs prematurely. Keep these helpers file-local unless and
+      // until the same behavior is needed in more than one loop
+      // implementation.
+      bool branchContainsNode(Model model, const Branch& branch, const Node& node, const Node& inletNode, const Node& outletNode,
+                              bool isInletBranch, bool isOutletBranch, bool isEquipmentBranch) {
+        // Empty equipment branches are represented by a transient branch node
+        // rather than a persisted component row. The inlet and outlet anchor
+        // branches use the loop's canonical inlet/outlet nodes instead.
       const auto components = branch.components();
       if (components.empty()) {
         if (isEquipmentBranch) {
@@ -410,7 +437,84 @@ namespace detail {
       }
 
       return false;
-    }
+      }
+
+      // Plant-loop projection is driven by exact node-role matches, not by
+      // child names or parent type alone. That keeps traversal aligned with
+      // the actual branch row that was inserted into the loop.
+      bool sameNodeTargets(const boost::optional<Node>& lhs, const boost::optional<Node>& rhs) {
+        return lhs && rhs && (*lhs == *rhs);
+      }
+
+      // Some radiant families persist the parent ZoneHVAC object on the branch
+      // even though the canonical OpenStudio API exposes a child coil on the
+      // loop. This helper projects the stored parent row back to the transient
+      // child coil when the branch inlet/outlet nodes line up with that
+      // specific heating or cooling role.
+      boost::optional<ModelObject> projectPlantTraversalComponent(const ModelObject& component, const boost::optional<Node>& branchInletNode,
+                                                                  const boost::optional<Node>& branchOutletNode) {
+        if (auto radiant = component.optionalCast<ZoneHVACLowTempRadiantConstFlow>()) {
+          const auto heatingCoil = radiant->heatingCoil();
+          const auto heatingInlet = heatingCoil.inletModelObject() ? heatingCoil.inletModelObject()->optionalCast<Node>() : boost::none;
+          const auto heatingOutlet = heatingCoil.outletModelObject() ? heatingCoil.outletModelObject()->optionalCast<Node>() : boost::none;
+          if (sameNodeTargets(branchInletNode, heatingInlet) && sameNodeTargets(branchOutletNode, heatingOutlet)) {
+            return heatingCoil.cast<ModelObject>();
+          }
+
+          const auto coolingCoil = radiant->coolingCoil();
+          const auto coolingInlet = coolingCoil.inletModelObject() ? coolingCoil.inletModelObject()->optionalCast<Node>() : boost::none;
+          const auto coolingOutlet = coolingCoil.outletModelObject() ? coolingCoil.outletModelObject()->optionalCast<Node>() : boost::none;
+          if (sameNodeTargets(branchInletNode, coolingInlet) && sameNodeTargets(branchOutletNode, coolingOutlet)) {
+            return coolingCoil.cast<ModelObject>();
+          }
+        }
+
+        if (auto radiant = component.optionalCast<ZoneHVACLowTempRadiantVarFlow>()) {
+          if (auto heating = radiant->heatingCoil()) {
+            auto heatingCoil = heating->cast<CoilHeatingLowTempRadiantVarFlow>();
+            const auto heatingInlet = heatingCoil.inletModelObject() ? heatingCoil.inletModelObject()->optionalCast<Node>() : boost::none;
+            const auto heatingOutlet = heatingCoil.outletModelObject() ? heatingCoil.outletModelObject()->optionalCast<Node>() : boost::none;
+            if (sameNodeTargets(branchInletNode, heatingInlet) && sameNodeTargets(branchOutletNode, heatingOutlet)) {
+              return heatingCoil.cast<ModelObject>();
+            }
+          }
+
+          if (auto cooling = radiant->coolingCoil()) {
+            auto coolingCoil = cooling->cast<CoilCoolingLowTempRadiantVarFlow>();
+            const auto coolingInlet = coolingCoil.inletModelObject() ? coolingCoil.inletModelObject()->optionalCast<Node>() : boost::none;
+            const auto coolingOutlet = coolingCoil.outletModelObject() ? coolingCoil.outletModelObject()->optionalCast<Node>() : boost::none;
+            if (sameNodeTargets(branchInletNode, coolingInlet) && sameNodeTargets(branchOutletNode, coolingOutlet)) {
+              return coolingCoil.cast<ModelObject>();
+            }
+          }
+        }
+
+        if (auto panel = component.optionalCast<ZoneHVACCoolingPanelRadiantConvectiveWater>()) {
+          const auto coolingCoil = panel->coolingCoil().cast<CoilCoolingWaterPanelRadiant>();
+          const auto coolingInlet = coolingCoil.inletModelObject() ? coolingCoil.inletModelObject()->optionalCast<Node>() : boost::none;
+          const auto coolingOutlet = coolingCoil.outletModelObject() ? coolingCoil.outletModelObject()->optionalCast<Node>() : boost::none;
+          if (sameNodeTargets(branchInletNode, coolingInlet) && sameNodeTargets(branchOutletNode, coolingOutlet)) {
+            return coolingCoil.cast<ModelObject>();
+          }
+        }
+
+        return component;
+      }
+
+      // Branch rows remain the persisted source of truth. This helper only
+      // rewrites the traversal view that higher-level OpenStudio-style APIs
+      // return to callers.
+      std::vector<ModelObject> projectedBranchComponents(const Branch& branch) {
+        const auto rawComponents = branch.components();
+        std::vector<ModelObject> result;
+        result.reserve(rawComponents.size());
+        for (unsigned i = 0; i < rawComponents.size(); ++i) {
+          result.push_back(*projectPlantTraversalComponent(rawComponents[i], branch.componentInletNode(i), branch.componentOutletNode(i)));
+        }
+        return result;
+      }
+
+    }  // namespace
 
     // PlantLoop stores its topology in EnergyPlus branch/connective-tissue objects,
     // but the API we are trying to preserve is the higher-level OpenStudio loop API.
@@ -722,7 +826,7 @@ namespace detail {
       ModelObject previousObject = supplyInlet;
       {
         const auto branch = supplyInletBranch();
-        const auto components = branch.components();
+        const auto components = projectedBranchComponents(branch);
         if (!components.empty()) {
           if (auto inletNode = branch.componentInletNode(0u)) {
             if (previousObject != inletNode->cast<ModelObject>()) {
@@ -753,7 +857,7 @@ namespace detail {
 
       for (const auto& branch : supplyEquipmentBranches()) {
         previousObject = splitter;
-        const auto components = branch.components();
+        const auto components = projectedBranchComponents(branch);
         if (components.empty()) {
           const auto branchNode = model().getOrCreateTransientByName<Node>(branch.nameString() + " Node").cast<ModelObject>();
           if (previousObject != branchNode) {
@@ -791,7 +895,7 @@ namespace detail {
       previousObject = mixer;
       {
         const auto branch = supplyOutletBranch();
-        const auto components = branch.components();
+        const auto components = projectedBranchComponents(branch);
         if (!components.empty()) {
           if (auto inletNode = branch.componentInletNode(0u)) {
             if (previousObject != inletNode->cast<ModelObject>()) {
@@ -850,7 +954,7 @@ namespace detail {
       ModelObject previousObject = demandInlet;
       {
         const auto branch = demandInletBranch();
-        const auto components = branch.components();
+        const auto components = projectedBranchComponents(branch);
         if (!components.empty()) {
           if (auto inletNode = branch.componentInletNode(0u)) {
             if (previousObject != inletNode->cast<ModelObject>()) {
@@ -881,7 +985,7 @@ namespace detail {
 
       for (const auto& branch : demandEquipmentBranches()) {
         previousObject = splitter;
-        const auto components = branch.components();
+        const auto components = projectedBranchComponents(branch);
         if (components.empty()) {
           const auto branchNode = model().getOrCreateTransientByName<Node>(branch.nameString() + " Node").cast<ModelObject>();
           if (previousObject != branchNode) {
@@ -919,7 +1023,7 @@ namespace detail {
       previousObject = mixer;
       {
         const auto branch = demandOutletBranch();
-        const auto components = branch.components();
+        const auto components = projectedBranchComponents(branch);
         if (!components.empty()) {
           if (auto inletNode = branch.componentInletNode(0u)) {
             if (previousObject != inletNode->cast<ModelObject>()) {

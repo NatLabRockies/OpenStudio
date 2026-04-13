@@ -48,9 +48,10 @@ class EPMODEL_API CoilHeatingLowTempRadiantVarFlow : public StraightComponent
   //   parent-owned fields.
   // - Implemented Parity: The canonical heating-capacity, hot-water-flow, control schedule, throttling, and water-node
   //   APIs are available through this transient child wrapper.
-  // - Documented Delta: Because this child is transient, it does not claim to be a persisted standalone loop
-  //   component. `addToNode(...)` therefore remains disabled in the impl instead of pretending there is a real E+
-  //   coil object behind the canonical child view.
+  // - Plant Loop Behavior: The child is still transient, but it now supports the canonical plant-loop API surface.
+  //   Epmodel persists the parent radiant unit on the branch and projects that stored parent row back to this
+  //   transient heating coil in high-level plant-loop traversal when the branch water-node pair matches the
+  //   heating-side role.
   // - Field/Storage Mapping: Heating-side scalar fields live on the parent `ZoneHVAC:LowTemperatureRadiant:VariableFlow`
   //   object and its persisted `...:Design` companion object. This child is a write-through view over that storage.
   boost::optional<double> maximumHotWaterFlow() const;

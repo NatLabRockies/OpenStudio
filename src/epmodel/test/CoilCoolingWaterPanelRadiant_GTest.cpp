@@ -3,9 +3,11 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
+#include <algorithm>
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/PlantLoop.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../StraightComponent/CoilCoolingWaterPanelRadiant.hpp"
 #include "../StraightComponent/CoilCoolingWaterPanelRadiant_Impl.hpp"
@@ -72,4 +74,29 @@ TEST_F(EPModelFixture, CoilCoolingWaterPanelRadiant_ResolvesParentWaterNodesAndW
   ASSERT_TRUE(coil.outletModelObject());
   EXPECT_EQ(outlet.handle(), coil.outletModelObject()->handle());
   EXPECT_FALSE(coil.addToNode(inlet));
+}
+
+TEST_F(EPModelFixture, CoilCoolingWaterPanelRadiant_PlantLoopTraversalProjectsTransientChild) {
+  Model model;
+  PlantLoop plantLoop(model);
+  ZoneHVACCoolingPanelRadiantConvectiveWater panel(model);
+  auto coil = panel.coolingCoil().cast<CoilCoolingWaterPanelRadiant>();
+
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil));
+  ASSERT_TRUE(coil.plantLoop());
+  EXPECT_EQ(plantLoop.handle(), coil.plantLoop()->handle());
+  EXPECT_FALSE(panel.plantLoop());
+
+  const auto demandComponents = plantLoop.demandComponents();
+  EXPECT_TRUE(std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == coil.handle(); }));
+  EXPECT_FALSE(std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == panel.handle(); }));
+
+  auto inletNode = coil.inletModelObject()->cast<Node>();
+  ASSERT_TRUE(inletNode.outletModelObject());
+  EXPECT_EQ(coil.handle(), inletNode.outletModelObject()->handle());
+
+  ASSERT_TRUE(coil.removeFromLoop());
+  EXPECT_FALSE(coil.plantLoop());
+  EXPECT_FALSE(coil.inletModelObject());
+  EXPECT_FALSE(coil.outletModelObject());
 }

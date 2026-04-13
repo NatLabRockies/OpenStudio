@@ -185,6 +185,34 @@ transient child views backed by the parent
 `ZoneHVAC:LowTemperatureRadiant:ConstantFlow` object and its linked design
 object.
 
+This pattern now also covers three radiant `ZoneHVAC` families whose canonical
+OpenStudio API exposes plant-side coil children:
+
+- `ZoneHVACLowTempRadiantConstFlow`
+- `ZoneHVACLowTempRadiantVarFlow`
+- `ZoneHVACCoolingPanelRadiantConvectiveWater`
+
+In all three cases, canonical `openstudio::model` exposes a coil child that is
+meant to participate in plant-loop placement and traversal. In epmodel, those
+coil children are still transient views because EnergyPlus stores the real
+plant-side object identity on the parent zone equipment object instead of as a
+separate standalone coil object.
+
+The current solution is deliberate:
+
+- the persisted branch row still stores the real parent `ZoneHVAC` object
+- the transient child coil can still be added to the plant loop through the
+  canonical child-facing API
+- high-level plant-loop traversal then projects that stored parent row back to
+  the transient child coil when the branch inlet and outlet nodes match that
+  coil's specific heating or cooling water-node pair
+
+This keeps the saved EnergyPlus graph truthful while still preserving the
+canonical OpenStudio experience that callers expect. The object that the user
+adds to the loop is also the object that the high-level loop traversal APIs
+return, even though the underlying branch storage still belongs to the parent
+zone equipment object.
+
 ## Relationship-Driven Modeling
 
 One of the easiest ways to misunderstand epmodel is to expect every useful

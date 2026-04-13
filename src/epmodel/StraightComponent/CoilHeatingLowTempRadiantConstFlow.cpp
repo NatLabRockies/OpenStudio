@@ -7,11 +7,15 @@
 #include "StraightComponent/CoilHeatingLowTempRadiantConstFlow_Impl.hpp"
 
 #include "Model.hpp"
+#include "Loop/PlantLoop.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 #include "ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow.hpp"
 #include "ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow_Impl.hpp"
+#include "ModelObject/Branch.hpp"
+#include "ModelObject/Branch_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -87,6 +91,152 @@ namespace openstudio {
 namespace epmodel {
 namespace detail {
 
+namespace {
+
+bool addTransientRadiantParentToPlantNode(Node& node, ModelObject parentObject, unsigned inletField, unsigned outletField, const std::string& roleLabel) {
+  auto plantLoop = node.plantLoop();
+  if (!plantLoop) {
+    return false;
+  }
+
+  auto plantLoopImpl = plantLoop->getImpl<detail::PlantLoop_Impl>();
+  auto branch = plantLoopImpl->branchForNode(node);
+  if (!branch) {
+    return false;
+  }
+
+  const auto nodeName = node.name();
+  if (!nodeName) {
+    return false;
+  }
+
+  if (!parentObject.name()) {
+    parentObject.createName();
+    if (!parentObject.name()) {
+      return false;
+    }
+  }
+
+  const auto parentName = parentObject.nameString();
+  const auto roleObjectName = parentName + " " + roleLabel;
+  const auto setParentNodes = [&](const Node& inletNode, const Node& outletNode) {
+    return parentObject.setPointer(inletField, inletNode.handle()) && parentObject.setPointer(outletField, outletNode.handle());
+  };
+
+  auto components = branch->components();
+  if (components.empty()) {
+    std::string newInletName;
+    std::string newOutletName;
+    const bool isOutletAnchor = ((*branch == plantLoopImpl->supplyOutletBranch()) && (node == plantLoop->supplyOutletNode()))
+                                || ((*branch == plantLoopImpl->demandOutletBranch()) && (node == plantLoop->demandOutletNode()));
+    if (isOutletAnchor) {
+      newInletName = *nodeName + " - " + roleObjectName + " Inlet";
+      newOutletName = *nodeName;
+    } else {
+      newInletName = *nodeName;
+      newOutletName = *nodeName + " - " + roleObjectName + " Outlet";
+    }
+
+    if (!branch->getImpl<detail::Branch_Impl>()->appendComponent(parentObject, newInletName, newOutletName)) {
+      return false;
+    }
+
+    auto inletNode = node.model().getOrCreateTransientByName<Node>(newInletName);
+    auto outletNode = node.model().getOrCreateTransientByName<Node>(newOutletName);
+    return setParentNodes(inletNode, outletNode);
+  }
+
+  for (unsigned i = 0; i < components.size(); ++i) {
+    const auto inletNode = branch->componentInletNode(i);
+    const auto outletNode = branch->componentOutletNode(i);
+    const bool matchesInlet = inletNode && (*inletNode == node);
+    const bool matchesOutlet = outletNode && (*outletNode == node);
+    if (!matchesInlet && !matchesOutlet) {
+      continue;
+    }
+
+    const std::string newNodeName = *nodeName + " - " + roleObjectName + " Outlet";
+    const unsigned insertIndex = matchesInlet ? i : static_cast<unsigned>(i + 1u);
+
+    std::string newInletName;
+    std::string newOutletName;
+    if (matchesOutlet && (i + 1u == components.size())) {
+      newInletName = newNodeName;
+      newOutletName = *nodeName;
+    } else {
+      newInletName = *nodeName;
+      newOutletName = newNodeName;
+    }
+
+    if (!branch->getImpl<detail::Branch_Impl>()->insertComponent(insertIndex, parentObject, newInletName, newOutletName)) {
+      return false;
+    }
+
+    auto newInletNode = node.model().getOrCreateTransientByName<Node>(newInletName);
+    auto newOutletNode = node.model().getOrCreateTransientByName<Node>(newOutletName);
+    if (!setParentNodes(newInletNode, newOutletNode)) {
+      return false;
+    }
+
+    auto newNode = node.model().getOrCreateTransientByName<Node>(newNodeName);
+    if (matchesInlet) {
+      return branch->getImpl<detail::Branch_Impl>()->setComponentInletNode(insertIndex + 1u, newNode);
+    }
+    return branch->getImpl<detail::Branch_Impl>()->setComponentOutletNode(insertIndex - 1u, newNode);
+  }
+
+  return false;
+}
+
+bool removeTransientRadiantParentFromPlantLoop(const CoilHeatingLowTempRadiantConstFlow_Impl& coilImpl, ModelObject parentObject, unsigned inletField,
+                                               unsigned outletField) {
+  auto inletNode = coilImpl.inletModelObject() ? coilImpl.inletModelObject()->optionalCast<Node>() : boost::none;
+  auto outletNode = coilImpl.outletModelObject() ? coilImpl.outletModelObject()->optionalCast<Node>() : boost::none;
+  if (!inletNode || !outletNode) {
+    return false;
+  }
+
+  auto plantLoop = coilImpl.getObject<openstudio::epmodel::HVACComponent>().plantLoop();
+  if (!plantLoop) {
+    return false;
+  }
+
+  auto plantLoopImpl = plantLoop->getImpl<detail::PlantLoop_Impl>();
+  auto branch = plantLoopImpl->branchForNode(*inletNode);
+  if (!branch) {
+    branch = plantLoopImpl->branchForNode(*outletNode);
+  }
+  if (!branch) {
+    return false;
+  }
+
+  auto components = branch->components();
+  for (unsigned i = 0; i < components.size(); ++i) {
+    if (components[i] != parentObject) {
+      continue;
+    }
+
+    const auto branchInletNode = branch->componentInletNode(i);
+    const auto branchOutletNode = branch->componentOutletNode(i);
+    if (!(branchInletNode && branchOutletNode && (*branchInletNode == *inletNode) && (*branchOutletNode == *outletNode))) {
+      continue;
+    }
+
+    if ((i + 1u < components.size()) && !branch->getImpl<detail::Branch_Impl>()->setComponentInletNode(i + 1u, *inletNode)) {
+      return false;
+    }
+    if (!branch->getImpl<detail::Branch_Impl>()->removeComponent(i)) {
+      return false;
+    }
+
+    return parentObject.setPointer(inletField, Handle()) && parentObject.setPointer(outletField, Handle());
+  }
+
+  return false;
+}
+
+}  // namespace
+
 unsigned CoilHeatingLowTempRadiantConstFlow_Impl::inletPort() const {
   return openstudio::OS_Coil_Heating_LowTemperatureRadiant_ConstantFlowFields::HeatingWaterInletNodeName;
 }
@@ -115,16 +265,38 @@ boost::optional<ModelObject> CoilHeatingLowTempRadiantConstFlow_Impl::outletMode
   return boost::none;
 }
 
-bool CoilHeatingLowTempRadiantConstFlow_Impl::addToNode(Node& /*node*/) {
-  // This transient child is only a view over parent-owned radiant storage.
-  return false;
+bool CoilHeatingLowTempRadiantConstFlow_Impl::addToNode(Node& node) {
+  auto p = parent();
+  if (!p || plantLoop()) {
+    return false;
+  }
+
+  // The canonical OpenStudio surface lets the transient heating coil behave
+  // like a plant component. EnergyPlus persists the parent radiant unit on the
+  // branch instead, so this method inserts the parent object into the branch
+  // and then wires the parent's heating-side water nodes to match the branch
+  // row that conceptually belongs to this transient child.
+  return addTransientRadiantParentToPlantNode(node, p->cast<ModelObject>(),
+                                              openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingWaterInletNodeName,
+                                              openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingWaterOutletNodeName,
+                                              "Heating Coil");
 }
 
 bool CoilHeatingLowTempRadiantConstFlow_Impl::removeFromLoop() {
+  if (auto p = parent()) {
+    return removeTransientRadiantParentFromPlantLoop(*this, p->cast<ModelObject>(),
+                                                     openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingWaterInletNodeName,
+                                                     openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingWaterOutletNodeName);
+  }
   return false;
 }
 
-void CoilHeatingLowTempRadiantConstFlow_Impl::disconnect() {}
+void CoilHeatingLowTempRadiantConstFlow_Impl::disconnect() {
+  if (auto p = parent()) {
+    p->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingWaterInletNodeName, Handle());
+    p->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingWaterOutletNodeName, Handle());
+  }
+}
 
 boost::optional<ZoneHVACLowTempRadiantConstFlow> CoilHeatingLowTempRadiantConstFlow_Impl::parent() const {
   const auto thisName = getObject<openstudio::epmodel::CoilHeatingLowTempRadiantConstFlow>().name();
