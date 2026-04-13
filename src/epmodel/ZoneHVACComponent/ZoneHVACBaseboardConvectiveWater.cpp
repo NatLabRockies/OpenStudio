@@ -7,6 +7,13 @@
 #include "ZoneHVACComponent/ZoneHVACBaseboardConvectiveWater_Impl.hpp"
 
 #include "Model.hpp"
+#include "ModelObject/ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/ScheduleConstant.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "StraightComponent/CoilHeatingWaterBaseboard.hpp"
+#include "StraightComponent/CoilHeatingWaterBaseboard_Impl.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -14,18 +21,47 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/ZoneHVAC_Baseboard_Convective_Water_FieldEnums.hxx>
 
+#include <stdexcept>
+
 namespace openstudio {
 namespace epmodel {
+
+namespace detail {
+
+// These companion coils are transient views over parent-owned storage, so they
+// still need a stable model-level identity while the parent exists. We key
+// that identity off the parent handle instead of the parent display name so a
+// rename does not orphan the transient child.
+std::string transientHeatingCoilName(const openstudio::epmodel::ZoneHVACBaseboardConvectiveWater& parent) {
+  return "__transient__" + openstudio::toString(parent.handle()) + "__heating_water_baseboard";
+}
+
+}  // namespace detail
 
   ZoneHVACBaseboardConvectiveWater::ZoneHVACBaseboardConvectiveWater(const Model& model)
     : ZoneHVACComponent(ZoneHVACBaseboardConvectiveWater::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACBaseboardConvectiveWater_Impl>());
 
+    ScheduleConstant alwaysOn(model);
+    OS_ASSERT(alwaysOn.setValue(1.0));
+    OS_ASSERT(setAvailabilitySchedule(alwaysOn));
     OS_ASSERT(setHeatingDesignCapacityMethod("HeatingDesignCapacity"));
     autosizeHeatingDesignCapacity();
     OS_ASSERT(setHeatingDesignCapacityPerFloorArea(0.0));
-    OS_ASSERT(setFractionofAutosizedHeatingDesignCapacity(0.8));
-    OS_ASSERT(setConvergenceTolerance(0.001));
+    OS_ASSERT(setFractionofAutosizedHeatingDesignCapacity(1.0));
+  }
+
+  ZoneHVACBaseboardConvectiveWater::ZoneHVACBaseboardConvectiveWater(const Model& model, Schedule& availabilitySchedule,
+                                                                     StraightComponent& heatingCoilBaseboard)
+    : ZoneHVACBaseboardConvectiveWater(model) {
+    if (!setAvailabilitySchedule(availabilitySchedule)) {
+      remove();
+      throw std::runtime_error("Unable to set baseboard convective water availability schedule.");
+    }
+    if (!setHeatingCoil(heatingCoilBaseboard)) {
+      remove();
+      throw std::runtime_error("Unable to set baseboard convective water heating coil.");
+    }
   }
 
   ZoneHVACBaseboardConvectiveWater::ZoneHVACBaseboardConvectiveWater(std::shared_ptr<detail::ZoneHVACBaseboardConvectiveWater_Impl> impl)
@@ -38,6 +74,26 @@ namespace epmodel {
   std::vector<std::string> ZoneHVACBaseboardConvectiveWater::heatingDesignCapacityMethodValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                           ZoneHVAC_Baseboard_Convective_WaterFields::HeatingDesignCapacityMethod);
+  }
+
+  Schedule ZoneHVACBaseboardConvectiveWater::availabilitySchedule() const {
+    return getImpl<detail::ZoneHVACBaseboardConvectiveWater_Impl>()->availabilitySchedule();
+  }
+
+  bool ZoneHVACBaseboardConvectiveWater::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::ZoneHVACBaseboardConvectiveWater_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  StraightComponent ZoneHVACBaseboardConvectiveWater::heatingCoil() const {
+    return getImpl<detail::ZoneHVACBaseboardConvectiveWater_Impl>()->heatingCoil();
+  }
+
+  bool ZoneHVACBaseboardConvectiveWater::setHeatingCoil(const StraightComponent& heatingCoilBaseboard) {
+    return getImpl<detail::ZoneHVACBaseboardConvectiveWater_Impl>()->setHeatingCoil(heatingCoilBaseboard);
+  }
+
+  std::vector<ModelObject> ZoneHVACBaseboardConvectiveWater::children() const {
+    return getImpl<detail::ZoneHVACBaseboardConvectiveWater_Impl>()->children();
   }
 
   std::string ZoneHVACBaseboardConvectiveWater::heatingDesignCapacityMethod() const {
@@ -146,6 +202,91 @@ namespace epmodel {
   }
 
   namespace detail {
+
+    unsigned ZoneHVACBaseboardConvectiveWater_Impl::inletPort() const {
+      return 0u;
+    }
+
+    unsigned ZoneHVACBaseboardConvectiveWater_Impl::outletPort() const {
+      return 0u;
+    }
+
+    Schedule ZoneHVACBaseboardConvectiveWater_Impl::availabilitySchedule() const {
+      if (auto target = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+            openstudio::ZoneHVAC_Baseboard_Convective_WaterFields::AvailabilityScheduleName)) {
+        return *target;
+      }
+      throw std::runtime_error("Baseboard convective water is missing its availability schedule.");
+    }
+
+    bool ZoneHVACBaseboardConvectiveWater_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return setSchedule(openstudio::ZoneHVAC_Baseboard_Convective_WaterFields::AvailabilityScheduleName,
+                         "ZoneHVACBaseboardConvectiveWater", "Availability", schedule);
+    }
+
+    StraightComponent ZoneHVACBaseboardConvectiveWater_Impl::heatingCoil() const {
+      const auto parent = getObject<openstudio::epmodel::ZoneHVACBaseboardConvectiveWater>();
+      return model().getOrCreateTransientByName<openstudio::epmodel::CoilHeatingWaterBaseboard>(detail::transientHeatingCoilName(parent));
+    }
+
+    bool ZoneHVACBaseboardConvectiveWater_Impl::setHeatingCoil(const StraightComponent& heatingCoil) {
+      auto source = heatingCoil.optionalCast<CoilHeatingWaterBaseboard>();
+      if (!source) {
+        return false;
+      }
+
+      auto target = this->heatingCoil().cast<CoilHeatingWaterBaseboard>();
+      bool result = true;
+
+      result = target.setHeatingDesignCapacityMethod(source->heatingDesignCapacityMethod()) && result;
+      if (source->heatingDesignCapacity()) {
+        result = target.setHeatingDesignCapacity(*source->heatingDesignCapacity()) && result;
+      } else {
+        target.autosizeHeatingDesignCapacity();
+      }
+      result = target.setHeatingDesignCapacityPerFloorArea(source->heatingDesignCapacityPerFloorArea()) && result;
+      result = target.setFractionofAutosizedHeatingDesignCapacity(source->fractionofAutosizedHeatingDesignCapacity()) && result;
+
+      if (source->uFactorTimesAreaValue()) {
+        result = target.setUFactorTimesAreaValue(*source->uFactorTimesAreaValue()) && result;
+      } else if (source->isUFactorTimesAreaValueAutosized()) {
+        target.autosizeUFactorTimesAreaValue();
+      } else {
+        target.resetUFactorTimesAreaValue();
+      }
+
+      if (source->maximumWaterFlowRate()) {
+        result = target.setMaximumWaterFlowRate(*source->maximumWaterFlowRate()) && result;
+      } else if (source->isMaximumWaterFlowRateAutosized()) {
+        target.autosizeMaximumWaterFlowRate();
+      } else {
+        target.resetMaximumWaterFlowRate();
+      }
+
+      result = target.setConvergenceTolerance(source->convergenceTolerance()) && result;
+
+      if (auto inlet = source->inletModelObject()) {
+        if (auto node = inlet->optionalCast<Node>()) {
+          result = setPointer(openstudio::ZoneHVAC_Baseboard_Convective_WaterFields::InletNodeName, node->handle(), false) && result;
+        }
+      } else {
+        result = setPointer(openstudio::ZoneHVAC_Baseboard_Convective_WaterFields::InletNodeName, Handle(), false) && result;
+      }
+
+      if (auto outlet = source->outletModelObject()) {
+        if (auto node = outlet->optionalCast<Node>()) {
+          result = setPointer(openstudio::ZoneHVAC_Baseboard_Convective_WaterFields::OutletNodeName, node->handle(), false) && result;
+        }
+      } else {
+        result = setPointer(openstudio::ZoneHVAC_Baseboard_Convective_WaterFields::OutletNodeName, Handle(), false) && result;
+      }
+
+      return result;
+    }
+
+    std::vector<ModelObject> ZoneHVACBaseboardConvectiveWater_Impl::children() const {
+      return {heatingCoil().cast<ModelObject>()};
+    }
 
     std::string ZoneHVACBaseboardConvectiveWater_Impl::heatingDesignCapacityMethod() const {
       auto value = getString(ZoneHVAC_Baseboard_Convective_WaterFields::HeatingDesignCapacityMethod, true);

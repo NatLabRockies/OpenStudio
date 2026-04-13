@@ -9,17 +9,35 @@
 #include "ZoneHVACComponent/ZoneHVACComponent_Impl.hpp"
 
 #include <string>
+#include <vector>
 
 namespace openstudio {
 namespace epmodel {
 
+  class ModelObject;
+  class Schedule;
+  class StraightComponent;
+
   namespace detail {
+
+    std::string transientHeatingCoilName(const openstudio::epmodel::ZoneHVACBaseboardConvectiveWater& parent);
 
     class EPMODEL_API ZoneHVACBaseboardConvectiveWater_Impl : public ZoneHVACComponent_Impl
     {
      public:
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACBaseboardConvectiveWater_Impl() override = default;
+
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
+      StraightComponent heatingCoil() const;
+      bool setHeatingCoil(const StraightComponent& heatingCoil);
+
+      std::vector<ModelObject> children() const override;
 
       std::string heatingDesignCapacityMethod() const;
       bool setHeatingDesignCapacityMethod(const std::string& heatingDesignCapacityMethod);

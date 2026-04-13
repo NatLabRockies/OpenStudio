@@ -193,7 +193,15 @@ OpenStudio API exposes plant-side coil children:
 - `ZoneHVACCoolingPanelRadiantConvectiveWater`
 - `ZoneHVACBaseboardRadiantConvectiveWater`
 
-In all four cases, canonical `openstudio::model` exposes a coil child that is
+The same architectural pattern now also covers
+`ZoneHVACBaseboardConvectiveWater`. Canonical OpenStudio exposes a
+`CoilHeatingWaterBaseboard` child, but EnergyPlus stores that coil's fields
+directly on the parent `ZoneHVAC:Baseboard:Convective:Water` object. epmodel
+therefore preserves the canonical child as a transient straight-component view
+over the persisted parent object instead of inventing a fake standalone
+EnergyPlus coil.
+
+In all five cases, canonical `openstudio::model` exposes a coil child that is
 meant to participate in plant-loop placement and traversal. In epmodel, those
 coil children are still transient views because EnergyPlus stores the real
 plant-side object identity on the parent zone equipment object instead of as a

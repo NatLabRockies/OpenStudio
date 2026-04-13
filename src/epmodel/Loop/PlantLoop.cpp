@@ -42,8 +42,10 @@
 #include "StraightComponent/CoilCoolingWaterPanelRadiant.hpp"
 #include "StraightComponent/CoilCoolingWaterPanelRadiant_Impl.hpp"
 #include "StraightComponent/CoilHeatingLowTempRadiantConstFlow.hpp"
+#include "StraightComponent/CoilHeatingWaterBaseboard.hpp"
 #include "StraightComponent/CoilHeatingWaterBaseboardRadiant.hpp"
 #include "StraightComponent/CoilHeatingLowTempRadiantConstFlow_Impl.hpp"
+#include "StraightComponent/CoilHeatingWaterBaseboard_Impl.hpp"
 #include "StraightComponent/CoilHeatingWaterBaseboardRadiant_Impl.hpp"
 #include "StraightComponent/CoilHeatingLowTempRadiantVarFlow.hpp"
 #include "StraightComponent/CoilHeatingLowTempRadiantVarFlow_Impl.hpp"
@@ -51,6 +53,8 @@
 #include "WaterToWaterComponent/WaterToWaterComponent_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater.hpp"
 #include "ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACBaseboardConvectiveWater.hpp"
+#include "ZoneHVACComponent/ZoneHVACBaseboardConvectiveWater_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow.hpp"
 #include "ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWater.hpp"
 #include "ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWater_Impl.hpp"
@@ -495,6 +499,15 @@ namespace detail {
 
         if (auto baseboard = component.optionalCast<ZoneHVACBaseboardRadiantConvectiveWater>()) {
           const auto heatingCoil = baseboard->heatingCoil().cast<CoilHeatingWaterBaseboardRadiant>();
+          const auto heatingInlet = heatingCoil.inletModelObject() ? heatingCoil.inletModelObject()->optionalCast<Node>() : boost::none;
+          const auto heatingOutlet = heatingCoil.outletModelObject() ? heatingCoil.outletModelObject()->optionalCast<Node>() : boost::none;
+          if (sameNodeTargets(branchInletNode, heatingInlet) && sameNodeTargets(branchOutletNode, heatingOutlet)) {
+            return heatingCoil.cast<ModelObject>();
+          }
+        }
+
+        if (auto baseboard = component.optionalCast<ZoneHVACBaseboardConvectiveWater>()) {
+          const auto heatingCoil = baseboard->heatingCoil().cast<CoilHeatingWaterBaseboard>();
           const auto heatingInlet = heatingCoil.inletModelObject() ? heatingCoil.inletModelObject()->optionalCast<Node>() : boost::none;
           const auto heatingOutlet = heatingCoil.outletModelObject() ? heatingCoil.outletModelObject()->optionalCast<Node>() : boost::none;
           if (sameNodeTargets(branchInletNode, heatingInlet) && sameNodeTargets(branchOutletNode, heatingOutlet)) {
