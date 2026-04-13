@@ -13,6 +13,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API ZoneHVACHighTemperatureRadiant_Impl : public ZoneHVACComponent_Impl
@@ -24,10 +26,15 @@ namespace epmodel {
       unsigned inletPort() const;
       unsigned outletPort() const;
 
+      boost::optional<Schedule> availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+      void resetAvailabilitySchedule();
+
       boost::optional<double> maximumPowerInput() const;
       bool isMaximumPowerInputAutosized() const;
       bool setMaximumPowerInput(double maximumPowerInput);
       void autosizeMaximumPowerInput();
+      boost::optional<double> autosizedMaximumPowerInput() const;
 
       std::string fuelType() const;
       bool isFuelTypeDefaulted() const;
@@ -63,6 +70,10 @@ namespace epmodel {
       bool isHeatingThrottlingRangeDefaulted() const;
       bool setHeatingThrottlingRange(double heatingThrottlingRange);
       void resetHeatingThrottlingRange();
+
+      boost::optional<Schedule> heatingSetpointTemperatureSchedule() const;
+      bool setHeatingSetpointTemperatureSchedule(Schedule& schedule);
+      void resetHeatingSetpointTemperatureSchedule();
 
       double fractionofRadiantEnergyIncidentonPeople() const;
       bool setFractionofRadiantEnergyIncidentonPeople(double fractionofRadiantEnergyIncidentonPeople);

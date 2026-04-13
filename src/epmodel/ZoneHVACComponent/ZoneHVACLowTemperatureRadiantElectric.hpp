@@ -7,6 +7,8 @@
 #define EPMODEL_ZONEHVACLOWTEMPERATURERADIANTELECTRIC_HPP
 
 #include "EPModelAPI.hpp"
+#include "ModelObject/ZoneHVACLowTemperatureRadiantSurfaceGroup.hpp"
+#include "PlanarSurface/Surface.hpp"
 #include "ZoneHVACComponent/ZoneHVACComponent.hpp"
 
 #include <boost/optional.hpp>
@@ -18,6 +20,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class ZoneHVACLowTemperatureRadiantElectric_Impl;
@@ -26,7 +29,7 @@ namespace epmodel {
   class EPMODEL_API ZoneHVACLowTemperatureRadiantElectric : public ZoneHVACComponent
   {
    public:
-    explicit ZoneHVACLowTemperatureRadiantElectric(const Model& model);
+    ZoneHVACLowTemperatureRadiantElectric(const Model& model, Schedule& availabilitySchedule, Schedule& heatingTemperatureSchedule);
 
     virtual ~ZoneHVACLowTemperatureRadiantElectric() override = default;
     ZoneHVACLowTemperatureRadiantElectric(const ZoneHVACLowTemperatureRadiantElectric& other) = default;
@@ -38,13 +41,59 @@ namespace epmodel {
     static std::vector<std::string> temperatureControlTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar radiant-electric fields are aligned, but the surface/relationship links stay outside the public wrapper.
+    // - Status: Partial Parity. The scalar radiant-electric fields are aligned, and epmodel now preserves the canonical
+    //   schedule and radiant-surface APIs through the persisted EnergyPlus surface-group storage.
     // - Canonical Counterpart: openstudio::model::ZoneHVACLowTemperatureRadiantElectric.
-    // - Implemented Parity: `maximumElectricalPowertoPanel`, `temperatureControlType`, `setpointControlType`, and `heatingThrottlingRange` map directly to the EnergyPlus object.
-    // - Documented Delta: Surface and relationship fields remain excluded from this scalar-focused API.
-    // - Field/Storage Mapping: Scalar values are stored directly on the EnergyPlus object while surface links are handled through explicit topology state.
+    // - Implemented Parity: `availabilitySchedule`, `heatingSetpointTemperatureSchedule`, `radiantSurfaceType`,
+    //   `surfaces()`, `maximumElectricalPowertoPanel`, `temperatureControlType`, `setpointControlType`, and
+    //   `heatingThrottlingRange` map onto the EnergyPlus parent object plus its referenced surface group.
+    // - Why This Type Is Slightly Different: canonical OpenStudio stores a higher-level `RadiantSurfaceType` selector.
+    //   EnergyPlus does not. It stores the flattened result as a referenced `ZoneHVAC:LowTemperatureRadiant:SurfaceGroup`.
+    //   Epmodel therefore preserves the canonical API additively while staying anchored to EnergyPlus storage.
+    // - Documented Delta: `setRadiantSurfaceType(...)` currently snapshots the matching zone surfaces into the persisted
+    //   EnergyPlus surface group. Later zone or surface edits do not yet automatically resynchronize that group.
+    // - Field/Storage Mapping: Scalar values and schedules live on the EnergyPlus parent object, while the selected surfaces
+    //   live on the referenced EnergyPlus surface-group object.
     // - Evidence: `src/model/ZoneHVACLowTemperatureRadiantElectric.hpp`, `src/model/ZoneHVACLowTemperatureRadiantElectric.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACLowTemperatureRadiantElectric.cpp`, and `src/epmodel/test/ZoneHVACLowTemperatureRadiantElectric_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers only if the canonical wrapper still exposes them directly.
+    // - Remaining Parity Work: Add automatic surface-group resynchronization after later zone or surface edits.
+
+    static std::vector<std::string> radiantSurfaceTypeValues();
+
+    // Availability is canonical required API.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    // Canonical OpenStudio also treats this as required API. Epmodel keeps the
+    // getter required. If imported data omits the underlying EnergyPlus field,
+    // the getter logs and throws instead of silently inventing new schedule
+    // state.
+    Schedule heatingSetpointTemperatureSchedule() const;
+    bool setHeatingSetpointTemperatureSchedule(Schedule& schedule);
+
+    // `radiantSurfaceType()` is a canonical convenience view, not a first-class
+    // EnergyPlus field. We infer it from the persisted EnergyPlus surface-group
+    // membership when that membership matches one of the canonical OpenStudio
+    // buckets (`Ceilings`, `Floors`, `CeilingsandFloors`, or `AllSurfaces`).
+    // If the stored group does not correspond cleanly to one of those buckets,
+    // `boost::none` is returned.
+    boost::optional<std::string> radiantSurfaceType() const;
+
+    // This preserves the canonical OpenStudio selector while staying anchored
+    // to EnergyPlus storage. Today it is intentionally a snapshot rewrite of
+    // the persisted EnergyPlus surface group based on the currently attached
+    // thermal zone and the currently eligible matching surfaces.
+    bool setRadiantSurfaceType(const std::string& radiantSurfaceType);
+    void resetRadiantSurfaceType();
+
+    // Returns the surfaces currently stored on the persisted EnergyPlus surface
+    // group, not a freshly recomputed live view.
+    std::vector<Surface> surfaces() const;
+
+    // Additive epmodel API: canonical openstudio::model does not expose the
+    // EnergyPlus surface-group companion object directly. Epmodel returns it
+    // here because it is the real persisted storage behind the canonical
+    // `radiantSurfaceType()` / `surfaces()` view.
+    boost::optional<ZoneHVACLowTemperatureRadiantSurfaceGroup> surfaceGroup() const;
 
     // Maximum electrical power-to-panel accessors
     boost::optional<double> maximumElectricalPowertoPanel() const;
@@ -53,6 +102,7 @@ namespace epmodel {
     bool setMaximumElectricalPowertoPanel(double maximumElectricalPowertoPanel);
     void resetMaximumElectricalPowertoPanel();
     void autosizeMaximumElectricalPowertoPanel();
+    boost::optional<double> autosizedMaximumElectricalPowertoPanel() const;
 
     // Temperature control type accessors
     std::string temperatureControlType() const;

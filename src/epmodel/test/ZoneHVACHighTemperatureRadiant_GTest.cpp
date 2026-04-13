@@ -7,6 +7,8 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACHighTemperatureRadiant.hpp"
 
@@ -40,6 +42,23 @@ TEST_F(EPModelFixture, ZoneHVACHighTemperatureRadiant_DefaultConstructor) {
 TEST_F(EPModelFixture, ZoneHVACHighTemperatureRadiant_ScalarAccessors_RoundTrip) {
   Model model;
   ZoneHVACHighTemperatureRadiant radiant(model);
+  ScheduleConstant availability(model);
+  ScheduleConstant heatingSetpoint(model);
+
+  ASSERT_TRUE(availability.setValue(1.0));
+  ASSERT_TRUE(heatingSetpoint.setValue(21.0));
+
+  EXPECT_TRUE(radiant.setAvailabilitySchedule(availability));
+  ASSERT_TRUE(radiant.availabilitySchedule());
+  EXPECT_EQ(availability.handle(), radiant.availabilitySchedule()->handle());
+  radiant.resetAvailabilitySchedule();
+  EXPECT_FALSE(radiant.availabilitySchedule());
+
+  EXPECT_TRUE(radiant.setHeatingSetpointTemperatureSchedule(heatingSetpoint));
+  ASSERT_TRUE(radiant.heatingSetpointTemperatureSchedule());
+  EXPECT_EQ(heatingSetpoint.handle(), radiant.heatingSetpointTemperatureSchedule()->handle());
+  radiant.resetHeatingSetpointTemperatureSchedule();
+  EXPECT_FALSE(radiant.heatingSetpointTemperatureSchedule());
 
   EXPECT_TRUE(radiant.setMaximumPowerInput(12000.0));
   ASSERT_TRUE(radiant.maximumPowerInput());
@@ -86,6 +105,7 @@ TEST_F(EPModelFixture, ZoneHVACHighTemperatureRadiant_ScalarAccessors_RoundTrip)
 
   EXPECT_TRUE(radiant.setFractionofRadiantEnergyIncidentonPeople(0.21));
   EXPECT_DOUBLE_EQ(0.21, radiant.fractionofRadiantEnergyIncidentonPeople());
+  EXPECT_FALSE(radiant.autosizedMaximumPowerInput());
 }
 
 TEST_F(EPModelFixture, ZoneHVACHighTemperatureRadiant_ZoneAttachment) {

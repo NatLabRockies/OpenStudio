@@ -180,35 +180,26 @@ std::vector<openstudio::epmodel::Surface> eligibleRadiantSurfaces(const openstud
   return result;
 }
 
-std::string inferRadiantSurfaceType(const std::vector<openstudio::epmodel::Surface>& surfaces) {
-  bool sawFloor = false;
-  bool sawCeiling = false;
-  bool sawOther = false;
-
-  for (const auto& surface : surfaces) {
-    if (openstudio::istringEqual(surface.surfaceType(), "Floor")) {
-      sawFloor = true;
-    } else if (openstudio::istringEqual(surface.surfaceType(), "RoofCeiling") || openstudio::istringEqual(surface.surfaceType(), "Roof")
-               || openstudio::istringEqual(surface.surfaceType(), "Ceiling")) {
-      sawCeiling = true;
-    } else {
-      sawOther = true;
-    }
+bool sameConstFlowSurfaceSet(const std::vector<openstudio::epmodel::Surface>& lhs, const std::vector<openstudio::epmodel::Surface>& rhs) {
+  if (lhs.size() != rhs.size()) {
+    return false;
   }
 
-  if (sawOther) {
-    return "AllSurfaces";
+  std::vector<openstudio::Handle> lhsHandles;
+  lhsHandles.reserve(lhs.size());
+  for (const auto& surface : lhs) {
+    lhsHandles.push_back(surface.handle());
   }
-  if (sawFloor && sawCeiling) {
-    return "CeilingsandFloors";
+  std::sort(lhsHandles.begin(), lhsHandles.end());
+
+  std::vector<openstudio::Handle> rhsHandles;
+  rhsHandles.reserve(rhs.size());
+  for (const auto& surface : rhs) {
+    rhsHandles.push_back(surface.handle());
   }
-  if (sawCeiling) {
-    return "Ceilings";
-  }
-  if (sawFloor) {
-    return "Floors";
-  }
-  return {};
+  std::sort(rhsHandles.begin(), rhsHandles.end());
+
+  return lhsHandles == rhsHandles;
 }
 
 }  // namespace detail
@@ -610,11 +601,18 @@ boost::optional<std::string> ZoneHVACLowTempRadiantConstFlow_Impl::radiantSurfac
     return boost::none;
   }
 
-  const auto inferred = detail::inferRadiantSurfaceType(groupSurfaces);
-  if (inferred.empty()) {
+  const auto zone = thermalZone();
+  if (!zone) {
     return boost::none;
   }
-  return inferred;
+
+  for (const auto& candidate : openstudio::epmodel::ZoneHVACLowTempRadiantConstFlow::radiantSurfaceTypeValues()) {
+    if (detail::sameConstFlowSurfaceSet(groupSurfaces, detail::eligibleRadiantSurfaces(model(), *zone, candidate))) {
+      return candidate;
+    }
+  }
+
+  return boost::none;
 }
 
 bool ZoneHVACLowTempRadiantConstFlow_Impl::setRadiantSurfaceType(const std::string& radiantSurfaceType) {
@@ -871,25 +869,12 @@ ZoneHVACLowTempRadiantConstFlowDesign ZoneHVACLowTempRadiantConstFlow_Impl::ensu
 }
 
 boost::optional<ZoneHVACLowTemperatureRadiantSurfaceGroup> ZoneHVACLowTempRadiantConstFlow_Impl::surfaceGroup() const {
-  // This is still intentionally field-driven for now. We now have a thin typed
-  // wrapper for the persisted EnergyPlus surface-group object, but we still do
-  // not have a richer envelope-side ownership/synchronization layer yet.
-  // Resolving the referenced object from the stored parent field keeps the
-  // persisted relationship honest while that broader surface domain develops.
+  // Ordinary typed access should reflect the persisted relationship that is
+  // already linked, not silently repair it by stored name. Repair and
+  // materialization belong in canonicalization or setter-side helper paths.
   if (auto target = getTarget(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::SurfaceNameorRadiantSurfaceGroupName)) {
     if (auto typed = target->optionalCast<ZoneHVACLowTemperatureRadiantSurfaceGroup>()) {
       return *typed;
-    }
-  }
-
-  if (auto name = getString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::SurfaceNameorRadiantSurfaceGroupName, true);
-      name && !name->empty()) {
-    if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_LowTemperatureRadiant_SurfaceGroup, *name, true)) {
-      if (auto typed = obj->optionalCast<ZoneHVACLowTemperatureRadiantSurfaceGroup>()) {
-        auto* self = const_cast<ZoneHVACLowTempRadiantConstFlow_Impl*>(this);
-        self->setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::SurfaceNameorRadiantSurfaceGroupName, typed->handle(), false);
-        return *typed;
-      }
     }
   }
 
@@ -905,6 +890,17 @@ ZoneHVACLowTemperatureRadiantSurfaceGroup ZoneHVACLowTempRadiantConstFlow_Impl::
   // canonical wrapper. The typed wrapper is intentionally thin for now; the
   // richer surface-group semantics still live mostly on the parent until the
   // envelope side of epmodel is developed further.
+  if (const auto existingName = getString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::SurfaceNameorRadiantSurfaceGroupName, true);
+      existingName && !existingName->empty()) {
+    if (auto obj = workspace().getObjectByTypeAndName(IddObjectType::ZoneHVAC_LowTemperatureRadiant_SurfaceGroup, *existingName, true)) {
+      if (auto typed = obj->optionalCast<ZoneHVACLowTemperatureRadiantSurfaceGroup>()) {
+        OS_ASSERT(
+          setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::SurfaceNameorRadiantSurfaceGroupName, typed->handle(), false));
+        return *typed;
+      }
+    }
+  }
+
   ZoneHVACLowTemperatureRadiantSurfaceGroup created(model());
   if (const auto existingName = getString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::SurfaceNameorRadiantSurfaceGroupName, true);
       existingName && !existingName->empty()) {

@@ -74,7 +74,7 @@ namespace epmodel {
     };
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static const std::array<ScheduleTypeSpec, 55> specs{{
+      static const std::array<ScheduleTypeSpec, 59> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOn", "Availability Manager Scheduled On", false, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOff", "Availability Manager Scheduled Off", false, "Availability", 0.0, 1.0},
@@ -100,6 +100,10 @@ namespace epmodel {
         {"ZoneHVACWaterToAirHeatPump", "Supply Air Fan Operating Mode", false, "Availability", 0.0, 1.0},
         {"ZoneHVACBaseboardRadiantConvectiveWater", "Availability", false, "Availability", 0.0, 1.0},
         {"ZoneHVACBaseboardRadiantConvectiveElectric", "Availability", false, "Availability", 0.0, 1.0},
+        {"ZoneHVACHighTemperatureRadiant", "Availability", false, "Availability", 0.0, 1.0},
+        {"ZoneHVACHighTemperatureRadiant", "Heating Setpoint Temperature", true, "Temperature", boost::none, boost::none},
+        {"ZoneHVACLowTemperatureRadiantElectric", "Availability", false, "Availability", 0.0, 1.0},
+        {"ZoneHVACLowTemperatureRadiantElectric", "Heating Setpoint Temperature", true, "Temperature", boost::none, boost::none},
         {"ZoneHVACEnergyRecoveryVentilator", "Availability", false, "Availability", 0.0, 1.0},
         {"ZoneHVACEvaporativeCoolerUnit", "Availability", false, "Availability", 0.0, 1.0},
         {"ZoneHVACTerminalUnitVariableRefrigerantFlow", "Terminal Unit Availability", false, "Availability", 0.0, 1.0},

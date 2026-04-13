@@ -7,6 +7,10 @@
 #include "ZoneHVACComponent/ZoneHVACHighTemperatureRadiant_Impl.hpp"
 
 #include "Model.hpp"
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include "../utilities/core/Assert.hpp"
 #include "../utilities/core/Compare.hpp"
@@ -56,6 +60,36 @@ namespace epmodel {
     return 0u;
   }
 
+  // -- Availability Schedule ----------------------------------------------
+  boost::optional<Schedule> ZoneHVACHighTemperatureRadiant::availabilitySchedule() const {
+    return getImpl<detail::ZoneHVACHighTemperatureRadiant_Impl>()->availabilitySchedule();
+  }
+
+  bool ZoneHVACHighTemperatureRadiant::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::ZoneHVACHighTemperatureRadiant_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  void ZoneHVACHighTemperatureRadiant::resetAvailabilitySchedule() {
+    getImpl<detail::ZoneHVACHighTemperatureRadiant_Impl>()->resetAvailabilitySchedule();
+  }
+
+  namespace detail {
+
+    boost::optional<Schedule> ZoneHVACHighTemperatureRadiant_Impl::availabilitySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_HighTemperatureRadiantFields::AvailabilityScheduleName);
+    }
+
+    bool ZoneHVACHighTemperatureRadiant_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return setSchedule(ZoneHVAC_HighTemperatureRadiantFields::AvailabilityScheduleName, "ZoneHVACHighTemperatureRadiant", "Availability",
+                         schedule);
+    }
+
+    void ZoneHVACHighTemperatureRadiant_Impl::resetAvailabilitySchedule() {
+      OS_ASSERT(setString(ZoneHVAC_HighTemperatureRadiantFields::AvailabilityScheduleName, "", false));
+    }
+
+  }  // namespace detail
+
   // -- MaximumPowerInput ---------------------------------------------------
   boost::optional<double> ZoneHVACHighTemperatureRadiant::maximumPowerInput() const {
     return getImpl<detail::ZoneHVACHighTemperatureRadiant_Impl>()->maximumPowerInput();
@@ -71,6 +105,10 @@ namespace epmodel {
 
   void ZoneHVACHighTemperatureRadiant::autosizeMaximumPowerInput() {
     getImpl<detail::ZoneHVACHighTemperatureRadiant_Impl>()->autosizeMaximumPowerInput();
+  }
+
+  boost::optional<double> ZoneHVACHighTemperatureRadiant::autosizedMaximumPowerInput() const {
+    return getImpl<detail::ZoneHVACHighTemperatureRadiant_Impl>()->autosizedMaximumPowerInput();
   }
 
   namespace detail {
@@ -94,6 +132,10 @@ namespace epmodel {
 
     void ZoneHVACHighTemperatureRadiant_Impl::autosizeMaximumPowerInput() {
       OS_ASSERT(setString(ZoneHVAC_HighTemperatureRadiantFields::HeatingDesignCapacity, "autosize"));
+    }
+
+    boost::optional<double> ZoneHVACHighTemperatureRadiant_Impl::autosizedMaximumPowerInput() const {
+      return boost::none;
     }
 
   }  // namespace detail
@@ -380,6 +422,36 @@ namespace epmodel {
 
     void ZoneHVACHighTemperatureRadiant_Impl::resetHeatingThrottlingRange() {
       OS_ASSERT(setString(ZoneHVAC_HighTemperatureRadiantFields::HeatingThrottlingRange, ""));
+    }
+
+  }  // namespace detail
+
+  // -- Heating Setpoint Temperature Schedule ------------------------------
+  boost::optional<Schedule> ZoneHVACHighTemperatureRadiant::heatingSetpointTemperatureSchedule() const {
+    return getImpl<detail::ZoneHVACHighTemperatureRadiant_Impl>()->heatingSetpointTemperatureSchedule();
+  }
+
+  bool ZoneHVACHighTemperatureRadiant::setHeatingSetpointTemperatureSchedule(Schedule& schedule) {
+    return getImpl<detail::ZoneHVACHighTemperatureRadiant_Impl>()->setHeatingSetpointTemperatureSchedule(schedule);
+  }
+
+  void ZoneHVACHighTemperatureRadiant::resetHeatingSetpointTemperatureSchedule() {
+    getImpl<detail::ZoneHVACHighTemperatureRadiant_Impl>()->resetHeatingSetpointTemperatureSchedule();
+  }
+
+  namespace detail {
+
+    boost::optional<Schedule> ZoneHVACHighTemperatureRadiant_Impl::heatingSetpointTemperatureSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_HighTemperatureRadiantFields::HeatingSetpointTemperatureScheduleName);
+    }
+
+    bool ZoneHVACHighTemperatureRadiant_Impl::setHeatingSetpointTemperatureSchedule(Schedule& schedule) {
+      return setSchedule(ZoneHVAC_HighTemperatureRadiantFields::HeatingSetpointTemperatureScheduleName, "ZoneHVACHighTemperatureRadiant",
+                         "Heating Setpoint Temperature", schedule);
+    }
+
+    void ZoneHVACHighTemperatureRadiant_Impl::resetHeatingSetpointTemperatureSchedule() {
+      OS_ASSERT(setString(ZoneHVAC_HighTemperatureRadiantFields::HeatingSetpointTemperatureScheduleName, "", false));
     }
 
   }  // namespace detail

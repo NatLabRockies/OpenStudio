@@ -14,6 +14,10 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+  class Surface;
+  class ZoneHVACLowTemperatureRadiantSurfaceGroup;
+
   namespace detail {
 
     class EPMODEL_API ZoneHVACLowTemperatureRadiantElectric_Impl : public ZoneHVACComponent_Impl
@@ -25,12 +29,26 @@ namespace epmodel {
       unsigned inletPort() const;
       unsigned outletPort() const;
 
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
+      Schedule heatingSetpointTemperatureSchedule() const;
+      bool setHeatingSetpointTemperatureSchedule(Schedule& schedule);
+
+      boost::optional<std::string> radiantSurfaceType() const;
+      bool setRadiantSurfaceType(const std::string& radiantSurfaceType);
+      void resetRadiantSurfaceType();
+      std::vector<Surface> surfaces() const;
+      boost::optional<ZoneHVACLowTemperatureRadiantSurfaceGroup> surfaceGroup() const;
+      ZoneHVACLowTemperatureRadiantSurfaceGroup ensureSurfaceGroup();
+
       boost::optional<double> maximumElectricalPowertoPanel() const;
       bool isMaximumElectricalPowertoPanelDefaulted() const;
       bool isMaximumElectricalPowertoPanelAutosized() const;
       bool setMaximumElectricalPowertoPanel(double maximumElectricalPowertoPanel);
       void resetMaximumElectricalPowertoPanel();
       void autosizeMaximumElectricalPowertoPanel();
+      boost::optional<double> autosizedMaximumElectricalPowertoPanel() const;
 
       std::string temperatureControlType() const;
       bool isTemperatureControlTypeDefaulted() const;
