@@ -9,6 +9,8 @@
 #include "../Curve/CurveBiquadratic.hpp"
 #include "../Curve/CurveQuadratic.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../Schedule/Schedule.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACDehumidifierDX.hpp"
 
@@ -24,6 +26,11 @@ TEST_F(EPModelFixture, ZoneHVACDehumidifierDX_DefaultConstructor) {
   EXPECT_EQ(openstudio::ZoneHVAC_Dehumidifier_DXFields::AirOutletNodeName, dehumidifier.outletPort());
   EXPECT_FALSE(dehumidifier.inletNode());
   EXPECT_FALSE(dehumidifier.outletNode());
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule().handle(), dehumidifier.availabilitySchedule().handle());
+  EXPECT_EQ(openstudio::IddObjectType::Schedule_Constant, dehumidifier.availabilitySchedule().iddObject().type().value());
+  EXPECT_EQ(openstudio::IddObjectType::Curve_Biquadratic, dehumidifier.waterRemovalCurve().iddObject().type().value());
+  EXPECT_EQ(openstudio::IddObjectType::Curve_Biquadratic, dehumidifier.energyFactorCurve().iddObject().type().value());
+  EXPECT_EQ(openstudio::IddObjectType::Curve_Quadratic, dehumidifier.partLoadFractionCorrelationCurve().iddObject().type().value());
   EXPECT_DOUBLE_EQ(50.16, dehumidifier.ratedWaterRemoval());
   EXPECT_DOUBLE_EQ(3.412, dehumidifier.ratedEnergyFactor());
   EXPECT_DOUBLE_EQ(0.12036, dehumidifier.ratedAirFlowRate());
@@ -68,6 +75,24 @@ TEST_F(EPModelFixture, ZoneHVACDehumidifierDX_ScalarAccessors_RoundTrip) {
   EXPECT_DOUBLE_EQ(2.5, dehumidifier.offCycleParasiticElectricLoad());
 }
 
+TEST_F(EPModelFixture, ZoneHVACDehumidifierDX_CanonicalRelationshipsAndConstructor) {
+  Model model;
+  ScheduleConstant availability(model);
+  CurveBiquadratic waterRemovalCurve(model);
+  CurveBiquadratic energyFactorCurve(model);
+  CurveQuadratic partLoadCurve(model);
+
+  ZoneHVACDehumidifierDX dehumidifier(model, waterRemovalCurve, energyFactorCurve, partLoadCurve);
+  EXPECT_TRUE(dehumidifier.setAvailabilitySchedule(availability));
+
+  EXPECT_EQ(availability.handle(), dehumidifier.availabilitySchedule().handle());
+  EXPECT_EQ(waterRemovalCurve.handle(), dehumidifier.waterRemovalCurve().handle());
+  EXPECT_EQ(energyFactorCurve.handle(), dehumidifier.energyFactorCurve().handle());
+  EXPECT_EQ(partLoadCurve.handle(), dehumidifier.partLoadFractionCorrelationCurve().handle());
+  EXPECT_EQ(2u, model.getObjectsByType(openstudio::IddObjectType::Curve_Biquadratic).size());
+  EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::Curve_Quadratic).size());
+}
+
 TEST_F(EPModelFixture, ZoneHVACDehumidifierDX_ChildrenOrderAndContent) {
   Model model;
   ZoneHVACDehumidifierDX dehumidifier(model);
@@ -76,9 +101,9 @@ TEST_F(EPModelFixture, ZoneHVACDehumidifierDX_ChildrenOrderAndContent) {
   CurveBiquadratic energyFactorCurve(model);
   CurveQuadratic partLoadCurve(model);
 
-  EXPECT_TRUE(dehumidifier.setPointer(openstudio::ZoneHVAC_Dehumidifier_DXFields::WaterRemovalCurveName, waterRemovalCurve.handle()));
-  EXPECT_TRUE(dehumidifier.setPointer(openstudio::ZoneHVAC_Dehumidifier_DXFields::EnergyFactorCurveName, energyFactorCurve.handle()));
-  EXPECT_TRUE(dehumidifier.setPointer(openstudio::ZoneHVAC_Dehumidifier_DXFields::PartLoadFractionCorrelationCurveName, partLoadCurve.handle()));
+  EXPECT_TRUE(dehumidifier.setWaterRemovalCurve(waterRemovalCurve));
+  EXPECT_TRUE(dehumidifier.setEnergyFactorCurve(energyFactorCurve));
+  EXPECT_TRUE(dehumidifier.setPartLoadFractionCorrelationCurve(partLoadCurve));
 
   const auto children = dehumidifier.children();
   ASSERT_EQ(3u, children.size());

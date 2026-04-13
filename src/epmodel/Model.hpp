@@ -26,6 +26,8 @@ class IdfFile;
 
 namespace epmodel {
 
+  class Schedule;
+
   enum class SanitizationPolicy
   {
     None,
@@ -81,10 +83,12 @@ class EPMODEL_API Model
   : public openstudio::Workspace
 {
  public:
-  Model();
+ Model();
   explicit Model(const openstudio::IdfFile& idfFile);
   explicit Model(const openstudio::Workspace& workspace);
   static boost::optional<Model> load(const openstudio::path& idfPath);
+  Schedule alwaysOnDiscreteSchedule() const;
+  std::string alwaysOnDiscreteScheduleName() const;
   SanitizationReport canonicalize(SanitizationPolicy policy = SanitizationPolicy::Repair);
 
   virtual ~Model() override = default;

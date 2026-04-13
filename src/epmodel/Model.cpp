@@ -641,6 +641,7 @@
 #include "Schedule/ExternalInterfaceFunctionalMockupUnitExportToSchedule_Impl.hpp"
 #include "Schedule/ExternalInterfaceSchedule_Impl.hpp"
 #include "Schedule/ScheduleCompact_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
 #include "Schedule/ScheduleConstant_Impl.hpp"
 #include "Schedule/ScheduleYear_Impl.hpp"
 #include "ScheduleBase/ScheduleDay_Impl.hpp"
@@ -649,6 +650,7 @@
 #include "ModelObject/ScheduleDayList_Impl.hpp"
 #include "ModelObject/ScheduleDayHourly_Impl.hpp"
 #include "ModelObject/ScheduleWeekCompact_Impl.hpp"
+#include "ResourceObject/ScheduleTypeLimits.hpp"
 #include "ResourceObject/ScheduleTypeLimits_Impl.hpp"
 #include "ResourceObject/ScheduleWeek_Impl.hpp"
 #include "ResourceObject/SpaceType_Impl.hpp"
@@ -942,6 +944,43 @@ namespace epmodel {
     }
 
     return Model(*idfFile);
+  }
+
+  Schedule Model::alwaysOnDiscreteSchedule() const {
+    const auto alwaysOnName = alwaysOnDiscreteScheduleName();
+
+    for (const auto& schedule : getConcreteModelObjects<ScheduleConstant>()) {
+      if (auto candidateName = schedule.name()) {
+        if (openstudio::istringEqual(*candidateName, alwaysOnName) && (schedule.value() == 1.0)) {
+          if (auto limits = schedule.scheduleTypeLimits()) {
+            if (auto numericType = limits->numericType()) {
+              if (openstudio::istringEqual(*numericType, "Discrete")) {
+                return schedule;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    ScheduleConstant schedule(*this);
+    schedule.setName(alwaysOnName);
+
+    ScheduleTypeLimits limits(*this);
+    limits.setName("OnOff");
+    OS_ASSERT(limits.setNumericType("Discrete"));
+    OS_ASSERT(limits.setUnitType("Availability"));
+    OS_ASSERT(limits.setLowerLimitValue(0.0));
+    OS_ASSERT(limits.setUpperLimitValue(1.0));
+
+    OS_ASSERT(schedule.setScheduleTypeLimits(limits));
+    OS_ASSERT(schedule.setValue(1.0));
+
+    return std::move(schedule);
+  }
+
+  std::string Model::alwaysOnDiscreteScheduleName() const {
+    return "Always On Discrete";
   }
 
   // Internal bridge used when wrapping an already-constructed Model_Impl.

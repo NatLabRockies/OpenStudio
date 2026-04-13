@@ -24,6 +24,9 @@ namespace epmodel {
       unsigned inletPort() const override;
       unsigned outletPort() const override;
 
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
       double ratedWaterRemoval() const;
       bool setRatedWaterRemoval(double ratedWaterRemoval);
 
@@ -32,6 +35,15 @@ namespace epmodel {
 
       double ratedAirFlowRate() const;
       bool setRatedAirFlowRate(double ratedAirFlowRate);
+
+      Curve waterRemovalCurve() const;
+      bool setWaterRemovalCurve(const Curve& curve);
+
+      Curve energyFactorCurve() const;
+      bool setEnergyFactorCurve(const Curve& curve);
+
+      Curve partLoadFractionCorrelationCurve() const;
+      bool setPartLoadFractionCorrelationCurve(const Curve& curve);
 
       double minimumDryBulbTemperatureforDehumidifierOperation() const;
       bool setMinimumDryBulbTemperatureforDehumidifierOperation(double minimumDryBulbTemperatureforDehumidifierOperation);

@@ -13,6 +13,7 @@
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/CoilHeatingWaterBaseboard.hpp"
+#include "../StraightComponent/CoilHeatingWaterBaseboard_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACBaseboardConvectiveWater.hpp"
 
