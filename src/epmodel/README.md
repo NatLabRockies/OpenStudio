@@ -214,6 +214,42 @@ adds to the loop is also the object that the high-level loop traversal APIs
 return, even though the underlying branch storage still belongs to the parent
 zone equipment object.
 
+### Some Canonical Surface Intent Is Projected Into EnergyPlus Companion Objects
+
+Transient child objects are only one half of the radiant-family problem. The
+other half is that canonical `openstudio::model` sometimes stores higher-level
+intent that EnergyPlus does not store in the same form.
+
+The low-temperature radiant families are the clearest example. Canonical
+OpenStudio exposes a selector such as `radiantSurfaceType()` and a derived
+`surfaces()` view. EnergyPlus does not persist that selector directly. Instead,
+it persists a referenced `ZoneHVAC:LowTemperatureRadiant:SurfaceGroup` object
+that spells out the actual surfaces and their fractions.
+
+epmodel handles that mismatch deliberately:
+
+- the real persisted EnergyPlus surface-group object remains the storage truth
+- the canonical OpenStudio-facing API is preserved on the parent wrapper
+- `setRadiantSurfaceType(...)` rewrites the persisted EnergyPlus surface group
+  from the current attached zone and the chosen canonical selector
+- `surfaces()` reads the actual stored EnergyPlus group membership back out
+- `radiantSurfaceType()` returns a canonical value only when the stored surface
+  group exactly matches one of the recognized canonical buckets for the
+  attached zone; otherwise it returns `none`
+
+This is different from the transient-coil pattern. In the coil case, epmodel is
+preserving missing child object identity over one persisted parent object. In
+the surface-group case, epmodel is preserving missing high-level canonical
+intent over a lower-level persisted EnergyPlus companion object.
+
+The practical rule is:
+
+- use transient wrappers when canonical OpenStudio exposes child objects that
+  EnergyPlus flattened away
+- use additive canonical views over persisted companion objects when canonical
+  OpenStudio exposes higher-level intent that EnergyPlus stored only as emitted
+  projection state
+
 ## Relationship-Driven Modeling
 
 One of the easiest ways to misunderstand epmodel is to expect every useful
