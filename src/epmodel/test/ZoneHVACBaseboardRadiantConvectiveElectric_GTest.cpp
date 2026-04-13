@@ -9,6 +9,8 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveElectric.hpp"
 
@@ -17,12 +19,19 @@ using namespace openstudio::epmodel;
 TEST_F(EPModelFixture, ZoneHVACBaseboardRadiantConvectiveElectric_DefaultConstructor) {
   Model model;
   ZoneHVACBaseboardRadiantConvectiveElectric baseboard(model);
-  (void)baseboard;
+
+  auto alwaysOn = baseboard.availabilitySchedule().cast<ScheduleConstant>();
+  EXPECT_DOUBLE_EQ(1.0, alwaysOn.value());
+  EXPECT_TRUE(baseboard.isHeatingDesignCapacityAutosized());
 }
 
 TEST_F(EPModelFixture, ZoneHVACBaseboardRadiantConvectiveElectric_ScalarAccessors_RoundTrip) {
   Model model;
   ZoneHVACBaseboardRadiantConvectiveElectric baseboard(model);
+  ScheduleConstant availability(model);
+
+  EXPECT_TRUE(baseboard.setAvailabilitySchedule(availability));
+  EXPECT_EQ(availability.handle(), baseboard.availabilitySchedule().handle());
 
   EXPECT_TRUE(baseboard.setHeatingDesignCapacityMethod("CapacityPerFloorArea"));
   ASSERT_EQ("CapacityPerFloorArea", baseboard.heatingDesignCapacityMethod());
@@ -32,6 +41,7 @@ TEST_F(EPModelFixture, ZoneHVACBaseboardRadiantConvectiveElectric_ScalarAccessor
   EXPECT_DOUBLE_EQ(2000.0, baseboard.heatingDesignCapacity().get());
   baseboard.autosizeHeatingDesignCapacity();
   EXPECT_TRUE(baseboard.isHeatingDesignCapacityAutosized());
+  EXPECT_FALSE(baseboard.autosizedHeatingDesignCapacity());
 
   EXPECT_TRUE(baseboard.setHeatingDesignCapacityPerFloorArea(0.6));
   EXPECT_DOUBLE_EQ(0.6, baseboard.heatingDesignCapacityPerFloorArea());

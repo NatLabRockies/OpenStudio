@@ -17,6 +17,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
   class ThermalZone;
 
   namespace detail {
@@ -39,13 +40,22 @@ namespace epmodel {
     static std::vector<std::string> heatingDesignCapacityMethodValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar field groups and thermal-zone attachment behavior are present, but the remaining relationship and surface-link surface is still incomplete.
+    // - Status: Partial Parity. The canonical availability-schedule and scalar field groups are present, and thermal-zone attachment matches
+    //   the canonical wrapper shape. Derived surface coverage is still not exposed directly on the public epmodel wrapper.
     // - Canonical Counterpart: openstudio::model::ZoneHVACBaseboardRadiantConvectiveElectric.
-    // - Implemented Parity: `heatingDesignCapacityMethod`, heating-capacity scalars, `efficiency`, `fractionRadiant`, `fractionofRadiantEnergyIncidentonPeople`, and the thermal-zone attach/remove APIs preserve the main canonical wrapper behavior.
-    // - Documented Delta: Availability schedule, heating coil, and extensible surface entries are relationship-only and remain outside this public wrapper surface.
-    // - Field/Storage Mapping: The scalar fields map directly to the underlying EnergyPlus object, while surface membership is tracked through thermal-zone topology and child-object state.
+    // - Implemented Parity: `availabilitySchedule`, `heatingDesignCapacityMethod`, heating-capacity scalars, `autosizedHeatingDesignCapacity`,
+    //   `efficiency`, `fractionRadiant`, `fractionofRadiantEnergyIncidentonPeople`, and the thermal-zone attach/remove APIs preserve the
+    //   canonical wrapper behavior.
+    // - Documented Delta: Canonical model derives the emitted radiant surface fractions from all surfaces in the attached thermal zone.
+    //   Epmodel does not yet expose that derived surface coverage as a first-class public API on this wrapper.
+    // - Field/Storage Mapping: The scalar fields map directly to the underlying EnergyPlus object. Surface membership remains derived from
+    //   the attached thermal zone and is emitted through the parent object's extensible rows at translation time.
     // - Evidence: `src/model/ZoneHVACBaseboardRadiantConvectiveElectric.hpp`, `src/model/ZoneHVACBaseboardRadiantConvectiveElectric.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateZoneHVACBaseboardRadiantConvectiveElectric.cpp`, and `src/epmodel/test/ZoneHVACBaseboardRadiantConvectiveElectric_GTest.cpp`.
-    // - Remaining Parity Work: Add explicit relationship helpers for schedules, heating coil links, and extensible surfaces if those canonical behaviors need to become first-class.
+    // - Remaining Parity Work: If surface and envelope relationships become a stronger first-class concern in epmodel, decide whether the
+    //   canonical derived surface coverage should become directly inspectable here.
+
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
 
     std::string heatingDesignCapacityMethod() const;
     bool setHeatingDesignCapacityMethod(const std::string& heatingDesignCapacityMethod);
@@ -54,6 +64,7 @@ namespace epmodel {
     bool isHeatingDesignCapacityAutosized() const;
     bool setHeatingDesignCapacity(double heatingDesignCapacity);
     void autosizeHeatingDesignCapacity();
+    boost::optional<double> autosizedHeatingDesignCapacity() const;
 
     double heatingDesignCapacityPerFloorArea() const;
     bool setHeatingDesignCapacityPerFloorArea(double heatingDesignCapacityPerFloorArea);

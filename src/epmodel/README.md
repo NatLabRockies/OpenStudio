@@ -185,14 +185,15 @@ transient child views backed by the parent
 `ZoneHVAC:LowTemperatureRadiant:ConstantFlow` object and its linked design
 object.
 
-This pattern now also covers three radiant `ZoneHVAC` families whose canonical
+This pattern now also covers four radiant `ZoneHVAC` families whose canonical
 OpenStudio API exposes plant-side coil children:
 
 - `ZoneHVACLowTempRadiantConstFlow`
 - `ZoneHVACLowTempRadiantVarFlow`
 - `ZoneHVACCoolingPanelRadiantConvectiveWater`
+- `ZoneHVACBaseboardRadiantConvectiveWater`
 
-In all three cases, canonical `openstudio::model` exposes a coil child that is
+In all four cases, canonical `openstudio::model` exposes a coil child that is
 meant to participate in plant-loop placement and traversal. In epmodel, those
 coil children are still transient views because EnergyPlus stores the real
 plant-side object identity on the parent zone equipment object instead of as a

@@ -8,6 +8,10 @@
 
 #include "HVACComponent/ThermalZone.hpp"
 #include "Model.hpp"
+#include "ModelObject/ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/ScheduleConstant.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -15,11 +19,16 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/ZoneHVAC_Baseboard_RadiantConvective_Electric_FieldEnums.hxx>
 
+#include <stdexcept>
+
 namespace openstudio {
 namespace epmodel {
 
   ZoneHVACBaseboardRadiantConvectiveElectric::ZoneHVACBaseboardRadiantConvectiveElectric(const Model& model)
     : ZoneHVACComponent(ZoneHVACBaseboardRadiantConvectiveElectric::iddObjectType(), model) {
+    ScheduleConstant alwaysOn(model);
+    OS_ASSERT(alwaysOn.setValue(1.0));
+    OS_ASSERT(setAvailabilitySchedule(alwaysOn));
     OS_ASSERT(setHeatingDesignCapacityMethod("HeatingDesignCapacity"));
     autosizeHeatingDesignCapacity();
     OS_ASSERT(setHeatingDesignCapacityPerFloorArea(0.0));
@@ -40,6 +49,14 @@ namespace epmodel {
   std::vector<std::string> ZoneHVACBaseboardRadiantConvectiveElectric::heatingDesignCapacityMethodValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                           ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::HeatingDesignCapacityMethod);
+  }
+
+  Schedule ZoneHVACBaseboardRadiantConvectiveElectric::availabilitySchedule() const {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveElectric_Impl>()->availabilitySchedule();
+  }
+
+  bool ZoneHVACBaseboardRadiantConvectiveElectric::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveElectric_Impl>()->setAvailabilitySchedule(schedule);
   }
 
   std::string ZoneHVACBaseboardRadiantConvectiveElectric::heatingDesignCapacityMethod() const {
@@ -64,6 +81,10 @@ namespace epmodel {
 
   void ZoneHVACBaseboardRadiantConvectiveElectric::autosizeHeatingDesignCapacity() {
     getImpl<detail::ZoneHVACBaseboardRadiantConvectiveElectric_Impl>()->autosizeHeatingDesignCapacity();
+  }
+
+  boost::optional<double> ZoneHVACBaseboardRadiantConvectiveElectric::autosizedHeatingDesignCapacity() const {
+    return getImpl<detail::ZoneHVACBaseboardRadiantConvectiveElectric_Impl>()->autosizedHeatingDesignCapacity();
   }
 
   double ZoneHVACBaseboardRadiantConvectiveElectric::heatingDesignCapacityPerFloorArea() const {
@@ -123,6 +144,19 @@ namespace epmodel {
 
   namespace detail {
 
+    Schedule ZoneHVACBaseboardRadiantConvectiveElectric_Impl::availabilitySchedule() const {
+      if (auto target = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+            ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::AvailabilityScheduleName)) {
+        return *target;
+      }
+      throw std::runtime_error("Baseboard radiant convective electric is missing its availability schedule.");
+    }
+
+    bool ZoneHVACBaseboardRadiantConvectiveElectric_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return setSchedule(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::AvailabilityScheduleName,
+                         "ZoneHVACBaseboardRadiantConvectiveElectric", "Availability", schedule);
+    }
+
     std::string ZoneHVACBaseboardRadiantConvectiveElectric_Impl::heatingDesignCapacityMethod() const {
       boost::optional<std::string> value = getString(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::HeatingDesignCapacityMethod, true);
       OS_ASSERT(value);
@@ -153,6 +187,10 @@ namespace epmodel {
 
     void ZoneHVACBaseboardRadiantConvectiveElectric_Impl::autosizeHeatingDesignCapacity() {
       OS_ASSERT(setString(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::HeatingDesignCapacity, "autosize"));
+    }
+
+    boost::optional<double> ZoneHVACBaseboardRadiantConvectiveElectric_Impl::autosizedHeatingDesignCapacity() const {
+      return boost::none;
     }
 
     double ZoneHVACBaseboardRadiantConvectiveElectric_Impl::heatingDesignCapacityPerFloorArea() const {

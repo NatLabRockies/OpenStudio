@@ -51,11 +51,13 @@ class EPMODEL_API ZoneHVACCoolingPanelRadiantConvectiveWater : public ZoneHVACCo
   // - Implemented Parity: Availability schedule, radiant fractions, zone
   //   attachment, canonical cooling coil access, and canonical child discovery
   //   are all available.
-  // - Documented Delta: The transient cooling-coil child cannot currently
-  //   place itself independently on a plant loop, and the persisted surface
-  //   rows are recomputed when the panel is attached to a zone, detached,
-  //   canonicalized, or when the people-radiation fraction changes. Later zone
-  //   surface edits do not yet automatically resynchronize those rows.
+  // - Documented Delta: The transient cooling-coil child can be added through
+  //   the canonical child-facing API, but the persisted plant branch row still
+  //   stores the parent panel object and high-level loop traversal projects
+  //   that row back to the child. The persisted surface rows are recomputed
+  //   when the panel is attached to a zone, detached, canonicalized, or when
+  //   the people-radiation fraction changes. Later zone surface edits do not
+  //   yet automatically resynchronize those rows.
   // - Field/Storage Mapping: Coil scalar fields and water nodes live on the
   //   persisted EnergyPlus parent object. The child coil is a transient view
   //   over that parent storage. Surface membership and per-surface radiant

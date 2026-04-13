@@ -349,6 +349,7 @@
 #include "StraightComponent/CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp"
 #include "StraightComponent/CoilHeatingDXVariableRefrigerantFlow_Impl.hpp"
 #include "StraightComponent/CoilHeatingLowTempRadiantConstFlow_Impl.hpp"
+#include "StraightComponent/CoilHeatingWaterBaseboardRadiant_Impl.hpp"
 #include "StraightComponent/CoilHeatingLowTempRadiantVarFlow_Impl.hpp"
 #include "StraightComponent/CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp"
 #include "WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl.hpp"
@@ -1241,6 +1242,7 @@ namespace epmodel {
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl,
                                CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Heating_LowTemperatureRadiant_ConstantFlow, CoilHeatingLowTempRadiantConstFlow_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Heating_Water_Baseboard_Radiant, CoilHeatingWaterBaseboardRadiant_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Heating_LowTemperatureRadiant_VariableFlow, CoilHeatingLowTempRadiantVarFlow_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_Heating_DX_VariableSpeed, CoilHeatingDXVariableSpeed_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_Heating_Desuperheater, CoilHeatingDesuperheater_Impl);
@@ -2167,6 +2169,7 @@ namespace epmodel {
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_Heating_DX_VariableRefrigerantFlow_FluidTemperatureControl,
                                 CoilHeatingDXVariableRefrigerantFlowFluidTemperatureControl_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Heating_LowTemperatureRadiant_ConstantFlow, CoilHeatingLowTempRadiantConstFlow_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Heating_Water_Baseboard_Radiant, CoilHeatingWaterBaseboardRadiant_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Heating_LowTemperatureRadiant_VariableFlow, CoilHeatingLowTempRadiantVarFlow_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_Heating_DX_VariableSpeed, CoilHeatingDXVariableSpeed_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_Heating_Desuperheater, CoilHeatingDesuperheater_Impl);

@@ -146,6 +146,9 @@ set(${target_name}_src
   StraightComponent/CoilHeatingLowTempRadiantConstFlow.hpp
   StraightComponent/CoilHeatingLowTempRadiantConstFlow_Impl.hpp
   StraightComponent/CoilHeatingLowTempRadiantConstFlow.cpp
+  StraightComponent/CoilHeatingWaterBaseboardRadiant.hpp
+  StraightComponent/CoilHeatingWaterBaseboardRadiant_Impl.hpp
+  StraightComponent/CoilHeatingWaterBaseboardRadiant.cpp
   StraightComponent/CoilHeatingLowTempRadiantVarFlow.hpp
   StraightComponent/CoilHeatingLowTempRadiantVarFlow_Impl.hpp
   StraightComponent/CoilHeatingLowTempRadiantVarFlow.cpp
@@ -3154,6 +3157,7 @@ set(${target_name}_test_src
   test/ZoneHVACLowTempRadiantConstFlowDesign_GTest.cpp
   test/ZoneHVACLowTemperatureRadiantSurfaceGroup_GTest.cpp
   test/CoilHeatingLowTempRadiantConstFlow_GTest.cpp
+  test/CoilHeatingWaterBaseboardRadiant_GTest.cpp
   test/CoilCoolingLowTempRadiantConstFlow_GTest.cpp
   test/ZoneHVACLowTempRadiantVarFlowDesign_GTest.cpp
   test/CoilHeatingLowTempRadiantVarFlow_GTest.cpp

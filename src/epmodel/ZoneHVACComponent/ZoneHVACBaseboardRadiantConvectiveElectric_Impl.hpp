@@ -13,6 +13,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API ZoneHVACBaseboardRadiantConvectiveElectric_Impl : public ZoneHVACComponent_Impl
@@ -21,6 +23,9 @@ namespace epmodel {
       using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
       virtual ~ZoneHVACBaseboardRadiantConvectiveElectric_Impl() override = default;
 
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
       std::string heatingDesignCapacityMethod() const;
       bool setHeatingDesignCapacityMethod(const std::string& heatingDesignCapacityMethod);
 
@@ -28,6 +33,7 @@ namespace epmodel {
       bool isHeatingDesignCapacityAutosized() const;
       bool setHeatingDesignCapacity(double heatingDesignCapacity);
       void autosizeHeatingDesignCapacity();
+      boost::optional<double> autosizedHeatingDesignCapacity() const;
 
       double heatingDesignCapacityPerFloorArea() const;
       bool setHeatingDesignCapacityPerFloorArea(double heatingDesignCapacityPerFloorArea);

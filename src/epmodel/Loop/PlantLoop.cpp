@@ -42,7 +42,9 @@
 #include "StraightComponent/CoilCoolingWaterPanelRadiant.hpp"
 #include "StraightComponent/CoilCoolingWaterPanelRadiant_Impl.hpp"
 #include "StraightComponent/CoilHeatingLowTempRadiantConstFlow.hpp"
+#include "StraightComponent/CoilHeatingWaterBaseboardRadiant.hpp"
 #include "StraightComponent/CoilHeatingLowTempRadiantConstFlow_Impl.hpp"
+#include "StraightComponent/CoilHeatingWaterBaseboardRadiant_Impl.hpp"
 #include "StraightComponent/CoilHeatingLowTempRadiantVarFlow.hpp"
 #include "StraightComponent/CoilHeatingLowTempRadiantVarFlow_Impl.hpp"
 #include "WaterToWaterComponent/WaterToWaterComponent.hpp"
@@ -50,6 +52,8 @@
 #include "ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater.hpp"
 #include "ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow.hpp"
+#include "ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWater.hpp"
+#include "ZoneHVACComponent/ZoneHVACBaseboardRadiantConvectiveWater_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACLowTempRadiantConstFlow_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACLowTempRadiantVarFlow.hpp"
 #include "ZoneHVACComponent/ZoneHVACLowTempRadiantVarFlow_Impl.hpp"
@@ -486,6 +490,15 @@ namespace detail {
             if (sameNodeTargets(branchInletNode, coolingInlet) && sameNodeTargets(branchOutletNode, coolingOutlet)) {
               return coolingCoil.cast<ModelObject>();
             }
+          }
+        }
+
+        if (auto baseboard = component.optionalCast<ZoneHVACBaseboardRadiantConvectiveWater>()) {
+          const auto heatingCoil = baseboard->heatingCoil().cast<CoilHeatingWaterBaseboardRadiant>();
+          const auto heatingInlet = heatingCoil.inletModelObject() ? heatingCoil.inletModelObject()->optionalCast<Node>() : boost::none;
+          const auto heatingOutlet = heatingCoil.outletModelObject() ? heatingCoil.outletModelObject()->optionalCast<Node>() : boost::none;
+          if (sameNodeTargets(branchInletNode, heatingInlet) && sameNodeTargets(branchOutletNode, heatingOutlet)) {
+            return heatingCoil.cast<ModelObject>();
           }
         }
 
