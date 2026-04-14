@@ -13,6 +13,9 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+  class Curve;
+
   namespace detail {
 
     class EPMODEL_API CoilWaterHeatingAirToWaterHeatPump_Impl : public WaterToAirComponent_Impl
@@ -27,6 +30,9 @@ namespace epmodel {
       unsigned waterOutletPort() const override;
       bool addToNode(Node& node) override;
       bool addToSplitter(Splitter& splitter) override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& availabilitySchedule);
 
       double ratedHeatingCapacity() const;
       bool setRatedHeatingCapacity(double ratedHeatingCapacity);
@@ -74,11 +80,39 @@ namespace epmodel {
       double crankcaseHeaterCapacity() const;
       bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
 
+      boost::optional<Curve> crankcaseHeaterCapacityFunctionofTemperatureCurve() const;
+      bool setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& crankcaseHeaterCapacityFunctionofTemperatureCurve);
+      void resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
+
       double maximumAmbientTemperatureforCrankcaseHeaterOperation() const;
       bool setMaximumAmbientTemperatureforCrankcaseHeaterOperation(double maximumAmbientTemperatureforCrankcaseHeaterOperation);
 
       std::string evaporatorAirTemperatureTypeforCurveObjects() const;
       bool setEvaporatorAirTemperatureTypeforCurveObjects(const std::string& evaporatorAirTemperatureTypeforCurveObjects);
+
+      Curve heatingCapacityFunctionofTemperatureCurve() const;
+      bool setHeatingCapacityFunctionofTemperatureCurve(const Curve& heatingCapacityFunctionofTemperatureCurve);
+
+      Curve heatingCapacityFunctionofAirFlowFractionCurve() const;
+      bool setHeatingCapacityFunctionofAirFlowFractionCurve(const Curve& heatingCapacityFunctionofAirFlowFractionCurve);
+
+      Curve heatingCapacityFunctionofWaterFlowFractionCurve() const;
+      bool setHeatingCapacityFunctionofWaterFlowFractionCurve(const Curve& heatingCapacityFunctionofWaterFlowFractionCurve);
+
+      Curve heatingCOPFunctionofTemperatureCurve() const;
+      bool setHeatingCOPFunctionofTemperatureCurve(const Curve& heatingCOPFunctionofTemperatureCurve);
+
+      Curve heatingCOPFunctionofAirFlowFractionCurve() const;
+      bool setHeatingCOPFunctionofAirFlowFractionCurve(const Curve& heatingCOPFunctionofAirFlowFractionCurve);
+
+      Curve heatingCOPFunctionofWaterFlowFractionCurve() const;
+      bool setHeatingCOPFunctionofWaterFlowFractionCurve(const Curve& heatingCOPFunctionofWaterFlowFractionCurve);
+
+      Curve partLoadFractionCorrelationCurve() const;
+      bool setPartLoadFractionCorrelationCurve(const Curve& partLoadFractionCorrelationCurve);
+
+      boost::optional<double> autosizedRatedEvaporatorAirFlowRate() const;
+      boost::optional<double> autosizedRatedCondenserWaterFlowRate() const;
 
       std::vector<std::string> evaporatorAirTemperatureTypeforCurveObjectsValues() const;
     };
