@@ -364,6 +364,7 @@
 #include "WaterToAirComponent/CoilUserDefined_Impl.hpp"
 #include "ParentObject/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData_Impl.hpp"
 #include "ParentObject/CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData_Impl.hpp"
+#include "ParentObject/CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_Impl.hpp"
 #include "ModelObject/CoilCoolingWaterToAirHeatPumpParameterEstimation_Impl.hpp"
 #include "ModelObject/CoilHeatingWaterToAirHeatPumpParameterEstimation_Impl.hpp"
 #include "ModelObject/CoilCoolingWaterDetailedGeometry_Impl.hpp"
@@ -1280,6 +1281,8 @@ namespace epmodel {
                                CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFit_SpeedData,
                                CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_WaterHeating_AirToWaterHeatPump_VariableSpeed_SpeedData,
+                               CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_Cooling_Water_DetailedGeometry, CoilCoolingWaterDetailedGeometry_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_DX_ASHRAE205_Performance, CoilDXASHRAE205Performance_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_Heating_DX_MultiSpeed, CoilHeatingDXMultiSpeed_Impl);
@@ -2212,6 +2215,8 @@ namespace epmodel {
                                 CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Heating_WaterToAirHeatPump_VariableSpeedEquationFit_SpeedData,
                                 CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_WaterHeating_AirToWaterHeatPump_VariableSpeed_SpeedData,
+                                CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_Cooling_Water_DetailedGeometry, CoilCoolingWaterDetailedGeometry_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_DX_ASHRAE205_Performance, CoilDXASHRAE205Performance_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_Heating_DX_MultiSpeed, CoilHeatingDXMultiSpeed_Impl);

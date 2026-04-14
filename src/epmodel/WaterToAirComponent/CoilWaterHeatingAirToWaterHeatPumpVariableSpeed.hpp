@@ -18,6 +18,9 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
+  class Curve;
+  class CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData;
 
   namespace detail {
     class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl;
@@ -39,14 +42,27 @@ namespace epmodel {
     static std::vector<std::string> evaporatorAirTemperatureTypeforCurveObjectsValues();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The scalar rating and control surface is aligned, while availability-schedule, curve, and speed-data APIs are still omitted.
+    // - Status: Parity with documented deltas.
     // - Canonical Counterpart: openstudio::model::CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.
-    // - Implemented Parity: `evaporatorAirTemperatureTypeforCurveObjectsValues`, the rating setters/getters, pump/fan flags, and flow autocalculate helpers preserve the canonical scalar contract.
-    // - Documented Delta: epmodel promotes this wrapper to `WaterToAirComponent` so the real evaporator-air and condenser-water ports are explicit. This is an additive hierarchy change compared to canonical model.
-    // - Documented Delta: Despite the base-class promotion, generic loop-placement APIs remain intentionally rejected because this coil is normally owned by a compound heat-pump water-heater parent.
-    // - Field/Storage Mapping: The epmodel wrapper maps the preserved scalar fields directly to EnergyPlus `Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed` storage, including the real air and water node fields.
-    // - Evidence: `src/model/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.hpp`, `src/model/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilWaterHeatingAirToWaterHeatPumpVariableSpeed.cpp`, `src/model/test/CoilSystemIntegratedHeatPumpAirSource_GTest.cpp`, and `src/epmodel/test/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted schedule, curve, and speed-data APIs after the relationship layer is available.
+    // - Implemented Parity: The canonical availability schedule, part-load curve, optional crankcase-heater curve,
+    //   scalar rating surface, autosized-query stubs, and speed-data child APIs are exposed here. epmodel preserves the
+    //   canonical speed-data children as transient ParentObject wrappers: detached transient wrappers hold their own
+    //   OpenStudio-style fields until added to a parent coil, while attached transient wrappers read and write a specific
+    //   EnergyPlus extensible speed row on the parent object.
+    // - Documented Delta: epmodel promotes this wrapper to `WaterToAirComponent` so the real evaporator-air and
+    //   condenser-water ports are explicit. This is an additive hierarchy change compared to canonical model.
+    // - Documented Delta: Generic loop-placement APIs remain intentionally rejected because this coil is normally owned
+    //   by a compound heat-pump water-heater parent.
+    // - Documented Delta: `AirflowNetworkEquivalentDuct` parity is still deferred. High-level child traversal therefore
+    //   returns the part-load curve, optional crankcase-heater curve, and speed-data children, but not the canonical
+    //   AirflowNetwork companion. The autosized query methods are also API-preserving stubs for now: they return `none`
+    //   until epmodel grows the SQL-backed autosized result lookup used by the canonical model layer.
+    // - Field/Storage Mapping: Scalar fields map directly to the corresponding EnergyPlus
+    //   `Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed` fields. The canonical speed-data children are backed by the
+    //   parent's real EnergyPlus extensible speed rows, not by separate persisted EnergyPlus objects.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
     int nominalSpeedLevel() const;
     bool setNominalSpeedLevel(int nominalSpeedLevel);
 
@@ -66,11 +82,13 @@ namespace epmodel {
     bool setRatedEvaporatorAirFlowRate(double ratedEvaporatorAirFlowRate);
     bool isRatedEvaporatorAirFlowRateAutocalculated() const;
     void autocalculateRatedEvaporatorAirFlowRate();
+    boost::optional<double> autocalculatedRatedEvaporatorAirFlowRate() const;
 
     boost::optional<double> ratedCondenserWaterFlowRate() const;
     bool setRatedCondenserWaterFlowRate(double ratedCondenserWaterFlowRate);
     bool isRatedCondenserWaterFlowRateAutocalculated() const;
     void autocalculateRatedCondenserWaterFlowRate();
+    boost::optional<double> autocalculatedRatedCondenserWaterFlowRate() const;
 
     std::string evaporatorFanPowerIncludedinRatedCOP() const;
     bool setEvaporatorFanPowerIncludedinRatedCOP(const std::string& evaporatorFanPowerIncludedinRatedCOP);
@@ -87,11 +105,25 @@ namespace epmodel {
     double crankcaseHeaterCapacity() const;
     bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
 
+    boost::optional<Curve> crankcaseHeaterCapacityFunctionofTemperatureCurve() const;
+    bool setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve);
+    void resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
+
     double maximumAmbientTemperatureforCrankcaseHeaterOperation() const;
     bool setMaximumAmbientTemperatureforCrankcaseHeaterOperation(double maximumAmbientTemperatureforCrankcaseHeaterOperation);
 
     std::string evaporatorAirTemperatureTypeforCurveObjects() const;
     bool setEvaporatorAirTemperatureTypeforCurveObjects(const std::string& evaporatorAirTemperatureTypeforCurveObjects);
+
+    Curve partLoadFractionCorrelationCurve() const;
+    bool setPartLoadFractionCorrelationCurve(const Curve& curve);
+
+    std::vector<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData> speeds() const;
+    bool addSpeed(const CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData& speed);
+    void removeSpeed(const CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData& speed);
+    void removeAllSpeeds();
+
+    std::vector<ModelObject> children() const;
 
    protected:
     using ImplType = detail::CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl;

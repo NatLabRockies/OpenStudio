@@ -170,6 +170,9 @@ set(${target_name}_src
   WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.hpp
   WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl.hpp
   WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.cpp
+  ParentObject/CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData.hpp
+  ParentObject/CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_Impl.hpp
+  ParentObject/CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData.cpp
   WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPump.hpp
   WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPump_Impl.hpp
   WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPump.cpp
@@ -3248,6 +3251,7 @@ set(${target_name}_test_src
   test/CoilWaterHeatingAirToWaterHeatPump_GTest.cpp
   test/CoilWaterHeatingAirToWaterHeatPumpWrapped_GTest.cpp
   test/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_GTest.cpp
+  test/CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_GTest.cpp
   test/CoilHeatingGas_GTest.cpp
   test/CoilSystemCoolingDX_GTest.cpp
   test/CoilSystemHeatingDX_GTest.cpp

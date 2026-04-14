@@ -8,30 +8,36 @@
 #include <algorithm>
 
 #include "EPModelFixture.hpp"
-#include "../WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.hpp"
+#include "../Curve/CurveQuadratic.hpp"
+#include "../ParentObject/CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData.hpp"
+#include "../Schedule/Schedule.hpp"
+#include "../Schedule/Schedule_Impl.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
 #include "../StraightComponent/Node.hpp"
+#include "../WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.hpp"
 
 #include <utilities/idd/Coil_WaterHeating_AirToWaterHeatPump_VariableSpeed_FieldEnums.hxx>
+#include <utilities/idd/IddEnums.hxx>
+#include <utilities/idf/Handle.hpp>
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_DefaultConstructor) {
   Model model;
   CoilWaterHeatingAirToWaterHeatPumpVariableSpeed coil(model);
+
   EXPECT_EQ(CoilWaterHeatingAirToWaterHeatPumpVariableSpeed::iddObjectType(), coil.iddObject().type());
-  EXPECT_FALSE(coil.nameString().empty());
-}
-
-TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_WaterToAirPortsWithoutLoopPlacement) {
-  Model model;
-  CoilWaterHeatingAirToWaterHeatPumpVariableSpeed coil(model);
-  Node node(model);
-
   EXPECT_EQ(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::EvaporatorAirInletNodeName, coil.airInletPort());
   EXPECT_EQ(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::EvaporatorAirOutletNodeName, coil.airOutletPort());
   EXPECT_EQ(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::CondenserWaterInletNodeName, coil.waterInletPort());
   EXPECT_EQ(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::CondenserWaterOutletNodeName, coil.waterOutletPort());
+  Node node(model);
   EXPECT_FALSE(coil.addToNode(node));
+
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule(), coil.availabilitySchedule());
+  EXPECT_EQ(openstudio::IddObjectType::Curve_Quadratic, coil.partLoadFractionCorrelationCurve().iddObject().type().value());
+  EXPECT_EQ(1u, coil.children().size());
+  EXPECT_TRUE(coil.speeds().empty());
 }
 
 TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_ScalarAccessors_RoundTrip) {
@@ -58,12 +64,14 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_ScalarAcc
   EXPECT_DOUBLE_EQ(0.52, coil.ratedEvaporatorAirFlowRate().get());
   coil.autocalculateRatedEvaporatorAirFlowRate();
   EXPECT_TRUE(coil.isRatedEvaporatorAirFlowRateAutocalculated());
+  EXPECT_FALSE(coil.autocalculatedRatedEvaporatorAirFlowRate());
 
   EXPECT_TRUE(coil.setRatedCondenserWaterFlowRate(0.12));
   ASSERT_TRUE(coil.ratedCondenserWaterFlowRate());
   EXPECT_DOUBLE_EQ(0.12, coil.ratedCondenserWaterFlowRate().get());
   coil.autocalculateRatedCondenserWaterFlowRate();
   EXPECT_TRUE(coil.isRatedCondenserWaterFlowRateAutocalculated());
+  EXPECT_FALSE(coil.autocalculatedRatedCondenserWaterFlowRate());
 
   EXPECT_TRUE(coil.setEvaporatorFanPowerIncludedinRatedCOP("Yes"));
   EXPECT_EQ("Yes", coil.evaporatorFanPowerIncludedinRatedCOP());
@@ -80,6 +88,13 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_ScalarAcc
   EXPECT_TRUE(coil.setCrankcaseHeaterCapacity(100.0));
   EXPECT_DOUBLE_EQ(100.0, coil.crankcaseHeaterCapacity());
 
+  CurveQuadratic crankcaseCurve(model);
+  EXPECT_TRUE(coil.setCrankcaseHeaterCapacityFunctionofTemperatureCurve(crankcaseCurve));
+  ASSERT_TRUE(coil.crankcaseHeaterCapacityFunctionofTemperatureCurve());
+  EXPECT_EQ(crankcaseCurve, coil.crankcaseHeaterCapacityFunctionofTemperatureCurve().get());
+  coil.resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
+  EXPECT_FALSE(coil.crankcaseHeaterCapacityFunctionofTemperatureCurve());
+
   EXPECT_TRUE(coil.setMaximumAmbientTemperatureforCrankcaseHeaterOperation(10.0));
   EXPECT_DOUBLE_EQ(10.0, coil.maximumAmbientTemperatureforCrankcaseHeaterOperation());
 
@@ -90,4 +105,62 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_ScalarAcc
 
   EXPECT_TRUE(coil.setEvaporatorAirTemperatureTypeforCurveObjects("WetBulbTemperature"));
   EXPECT_EQ("WetBulbTemperature", coil.evaporatorAirTemperatureTypeforCurveObjects());
+
+  CurveQuadratic replacementPLF(model);
+  EXPECT_TRUE(coil.setPartLoadFractionCorrelationCurve(replacementPLF));
+  EXPECT_EQ(replacementPLF, coil.partLoadFractionCorrelationCurve());
+}
+
+TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_SpeedChildrenRoundTrip) {
+  Model model;
+  CoilWaterHeatingAirToWaterHeatPumpVariableSpeed coil(model);
+  CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData speed(model);
+  CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData speed2(model);
+
+  ASSERT_TRUE(speed2.setRatedWaterHeatingCOP(5.2));
+
+  EXPECT_TRUE(coil.addSpeed(speed));
+  EXPECT_TRUE(coil.addSpeed(speed2));
+  ASSERT_EQ(2u, coil.speeds().size());
+  EXPECT_EQ(speed.handle(), coil.speeds()[0].handle());
+  EXPECT_EQ(speed2.handle(), coil.speeds()[1].handle());
+  EXPECT_EQ(3u, coil.children().size());
+
+  EXPECT_TRUE(speed2.setRatedWaterHeatingCOP(5.6));
+  EXPECT_DOUBLE_EQ(5.6, coil.speeds()[1].ratedWaterHeatingCOP());
+
+  auto attachedSpeed = coil.speeds()[0];
+  EXPECT_DOUBLE_EQ(400.0, attachedSpeed.ratedWaterHeatingCapacity());
+  EXPECT_EQ(openstudio::IddObjectType::Curve_Biquadratic,
+            attachedSpeed.totalWaterHeatingCapacityFunctionofTemperatureCurve().iddObject().type().value());
+  EXPECT_EQ(6u, attachedSpeed.children().size());
+
+  EXPECT_TRUE(attachedSpeed.setRatedWaterHeatingCOP(4.5));
+  EXPECT_DOUBLE_EQ(4.5, coil.speeds().front().ratedWaterHeatingCOP());
+
+  coil.removeSpeed(attachedSpeed);
+  ASSERT_EQ(1u, coil.speeds().size());
+  EXPECT_EQ(speed2.handle(), coil.speeds().front().handle());
+  EXPECT_DOUBLE_EQ(5.6, coil.speeds().front().ratedWaterHeatingCOP());
+
+  coil.removeAllSpeeds();
+  EXPECT_TRUE(coil.speeds().empty());
+  EXPECT_EQ(1u, coil.children().size());
+}
+
+TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_AvailabilityScheduleGetterRepairsMissingRequiredReference) {
+  Model model;
+  CoilWaterHeatingAirToWaterHeatPumpVariableSpeed coil(model);
+
+  ASSERT_TRUE(
+    coil.setPointer(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::AvailabilityScheduleName, openstudio::Handle()));
+  EXPECT_FALSE(
+    coil.getModelObjectTarget<Schedule>(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::AvailabilityScheduleName));
+
+  const auto schedule = coil.availabilitySchedule();
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule(), schedule);
+  const auto repairedSchedule =
+    coil.getModelObjectTarget<Schedule>(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::AvailabilityScheduleName);
+  ASSERT_TRUE(repairedSchedule);
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule(), *repairedSchedule);
 }
