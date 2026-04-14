@@ -74,7 +74,7 @@ namespace epmodel {
     };
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static const std::array<ScheduleTypeSpec, 69> specs{{
+      static const std::array<ScheduleTypeSpec, 78> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOn", "Availability Manager Scheduled On", false, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOff", "Availability Manager Scheduled Off", false, "Availability", 0.0, 1.0},
@@ -110,6 +110,15 @@ namespace epmodel {
         {"ZoneHVACEvaporativeCoolerUnit", "Availability", false, "Availability", 0.0, 1.0},
         {"ZoneHVACTerminalUnitVariableRefrigerantFlow", "Terminal Unit Availability", false, "Availability", 0.0, 1.0},
         {"ZoneHVACTerminalUnitVariableRefrigerantFlow", "Supply Air Fan Operating Mode", false, "Availability", 0.0, 1.0},
+        {"AirLoopHVACUnitarySystem", "Availability", false, "Availability", 0.0, 1.0},
+        {"AirLoopHVACUnitarySystem", "Supply Air Fan Operating Mode", false, "Availability", 0.0, 1.0},
+        {"AirLoopHVACUnitaryHeatPumpAirToAir", "Availability", false, "Availability", 0.0, 1.0},
+        {"AirLoopHVACUnitaryHeatPumpAirToAir", "Supply Air Fan Operating Mode", false, "Availability", 0.0, 1.0},
+        {"AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed", "Availability Schedule", false, "Availability", 0.0, 1.0},
+        {"AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed", "Supply Air Fan Operating Mode Schedule", false, "Availability", 0.0, 1.0},
+        {"AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass", "Availability Schedule", false, "Availability", 0.0, 1.0},
+        {"AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass", "Outdoor Air Flow Rate Multiplier Schedule", true, "Dimensionless", 0.0, 1.0},
+        {"AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass", "Supply Air Fan Operating Mode Schedule", false, "Availability", 0.0, 1.0},
         {"CoilCoolingWater", "Availability", false, "Availability", 0.0, 1.0},
         {"CoilHeatingWater", "Availability", false, "Availability", 0.0, 1.0},
         {"CoilWaterHeatingAirToWaterHeatPump", "Availability Schedule", false, "Availability", 0.0, 1.0},
