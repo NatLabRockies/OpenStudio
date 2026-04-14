@@ -25,6 +25,9 @@ class EnergyManagementSystemActuator_Impl;
 class EPMODEL_API EnergyManagementSystemActuator : public ModelObject
 {
  public:
+  explicit EnergyManagementSystemActuator(const ModelObject& actuatedComponent, const std::string& actuatedComponentType,
+                                          const std::string& actuatedComponentControlType);
+
   explicit EnergyManagementSystemActuator(const Model& model);
 
   virtual ~EnergyManagementSystemActuator() override = default;
@@ -36,12 +39,17 @@ class EPMODEL_API EnergyManagementSystemActuator : public ModelObject
   static IddObjectType iddObjectType();
 
   // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::EnergyManagementSystemActuator scalar accessor names/signatures.
-  // - Field Mapping: actuatedComponentType -> EnergyPlus EnergyManagementSystem:Actuator, Actuated Component Type.
-  // - Field Mapping: actuatedComponentControlType -> EnergyPlus EnergyManagementSystem:Actuator, Actuated Component Control Type.
-  // - Field Mapping: actuated component identity/zone-or-space targeting remains relationship-like and intentionally excluded from scalar scaffold.
-  // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemActuator.cpp writes these scalar fields directly.
-  // - TODO(parity): Add relationship APIs incrementally without changing these scalar signatures.
+  // - API: Preserves the canonical actuator constructor plus the main actuated-component and scalar accessors.
+  // - Field Mapping: `actuatedComponent` resolves the real EnergyPlus `Actuated Component Unique Name` field. That field is still string-backed in the
+  //   current schema metadata, so epmodel resolves it by exact object name instead of a live object-list reference.
+  // - Field Mapping: `actuatedComponentType` -> EnergyPlus `Actuated Component Type`.
+  // - Field Mapping: `actuatedComponentControlType` -> EnergyPlus `Actuated Component Control Type`.
+  // - Documented Delta: Space-load-specific zone-or-space targeting convenience is still not exposed in epmodel.
+  // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemActuator.cpp writes these scalar fields directly and uses the
+  //   actuated-component relationship as the source of the emitted unique name.
+  boost::optional<ModelObject> actuatedComponent() const;
+  bool setActuatedComponent(const ModelObject& actuatedComponent);
+
   std::string actuatedComponentControlType() const;
   bool setActuatedComponentControlType(const std::string& actuatedComponentControlType);
 

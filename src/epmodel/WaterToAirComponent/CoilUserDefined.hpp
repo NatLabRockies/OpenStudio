@@ -15,6 +15,11 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Node;
+class ThermalZone;
+class EnergyManagementSystemActuator;
+class EnergyManagementSystemProgram;
+class EnergyManagementSystemProgramCallingManager;
 
 namespace detail {
 class CoilUserDefined_Impl;
@@ -34,14 +39,65 @@ class EPMODEL_API CoilUserDefined : public WaterToAirComponent
   static IddObjectType iddObjectType();
 
   // Schema Alignment Notes:
-  // - Status: Scaffolded. The type exposes only the small numeric surface that is currently safe to mirror, while the canonical EMS-heavy behavior remains absent.
+  // - Status: Near Parity. The canonical EMS-heavy companion-object surface is preserved in epmodel, but it is expressed over the real EnergyPlus
+  //   storage layout instead of the OpenStudio-only direct pointer fields.
   // - Canonical Counterpart: openstudio::model::CoilUserDefined.
-  // - Implemented Parity: `numberofAirConnections` preserves the one scalar-like field that is currently mirrored in epmodel.
-  // - Documented Delta: The canonical model type also owns EMS program/calling-manager, actuator, ambient-zone, and rename behavior, none of which are exposed here yet.
-  // - Field/Storage Mapping: The scalar field maps directly to the EnergyPlus `Coil:UserDefined` `Number of Air Connections` field.
-  // - Evidence: `src/model/CoilUserDefined.hpp`, `src/model/CoilUserDefined.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilUserDefined.cpp`, and `src/model/test/CoilUserDefined_GTest.cpp`.
-  // - Remaining Parity Work: Add the EMS companion-object APIs and rename behavior when the epmodel infrastructure for those relationships is available.
+  // - Implemented Parity: the required program calling managers, derived overall/initialization programs, actuator helpers, ambient-zone relationship,
+  //   `children`, and `renameEMSSubComponents` now match the canonical public contract.
+  // - Field/Storage Mapping: the two program-calling-manager relationships map directly to the EnergyPlus `Coil:UserDefined` fields, while
+  //   `overallSimulationProgram` and `initializationSimulationProgram` are derived from the first program row on those managers because EnergyPlus
+  //   stores the program relationship there instead of on the coil object itself.
+  // - Field/Storage Mapping: actuator helpers resolve and manage the real EnergyPlus `EnergyManagementSystem:Actuator` objects that target this coil.
+  // - Evidence: `src/model/CoilUserDefined.hpp`, `src/model/CoilUserDefined.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilUserDefined.cpp`,
+  //   and `src/model/test/CoilUserDefined_GTest.cpp`.
   int numberofAirConnections() const;
+  bool addToNode(Node& node);
+  void disconnectAirSide();
+  bool removeFromAirLoopHVAC();
+
+  EnergyManagementSystemProgramCallingManager overallModelSimulationProgramCallingManager() const;
+  bool setOverallModelSimulationProgramCallingManager(const EnergyManagementSystemProgramCallingManager& emsProgramCallingManager);
+
+  EnergyManagementSystemProgramCallingManager modelSetupandSizingProgramCallingManager() const;
+  bool setModelSetupandSizingProgramCallingManager(const EnergyManagementSystemProgramCallingManager& emsProgramCallingManager);
+
+  boost::optional<ThermalZone> ambientZone() const;
+  bool setAmbientZone(const ThermalZone& thermalZone);
+  void resetAmbientZone();
+
+  EnergyManagementSystemProgram overallSimulationProgram() const;
+  bool setOverallSimulationProgram(const EnergyManagementSystemProgram& emsProgram);
+
+  EnergyManagementSystemProgram initializationSimulationProgram() const;
+  bool setInitializationSimulationProgram(const EnergyManagementSystemProgram& emsProgram);
+
+  EnergyManagementSystemActuator airOutletTemperatureActuator() const;
+  bool setAirOutletTemperatureActuator(const EnergyManagementSystemActuator& emsActuator);
+
+  EnergyManagementSystemActuator airOutletHumidityRatioActuator() const;
+  bool setAirOutletHumidityRatioActuator(const EnergyManagementSystemActuator& emsActuator);
+
+  EnergyManagementSystemActuator airMassFlowRateActuator() const;
+  bool setAirMassFlowRateActuator(const EnergyManagementSystemActuator& emsActuator);
+
+  EnergyManagementSystemActuator plantMinimumMassFlowRateActuator() const;
+  bool setPlantMinimumMassFlowRateActuator(const EnergyManagementSystemActuator& emsActuator);
+
+  EnergyManagementSystemActuator plantMaximumMassFlowRateActuator() const;
+  bool setPlantMaximumMassFlowRateActuator(const EnergyManagementSystemActuator& emsActuator);
+
+  EnergyManagementSystemActuator plantDesignVolumeFlowRateActuator() const;
+  bool setPlantDesignVolumeFlowRateActuator(const EnergyManagementSystemActuator& emsActuator);
+
+  EnergyManagementSystemActuator plantOutletTemperatureActuator() const;
+  bool setPlantOutletTemperatureActuator(const EnergyManagementSystemActuator& emsActuator);
+
+  EnergyManagementSystemActuator plantMassFlowRateActuator() const;
+  bool setPlantMassFlowRateActuator(const EnergyManagementSystemActuator& emsActuator);
+
+  std::vector<ModelObject> children() const;
+
+  void renameEMSSubComponents();
 
  protected:
   using ImplType = detail::CoilUserDefined_Impl;

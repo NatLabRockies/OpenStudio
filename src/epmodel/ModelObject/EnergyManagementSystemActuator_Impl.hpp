@@ -19,6 +19,9 @@ class EPMODEL_API EnergyManagementSystemActuator_Impl : public ModelObject_Impl
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~EnergyManagementSystemActuator_Impl() override = default;
 
+  boost::optional<ModelObject> actuatedComponent() const;
+  bool setActuatedComponent(const ModelObject& actuatedComponent);
+
   std::string actuatedComponentControlType() const;
   bool setActuatedComponentControlType(const std::string& actuatedComponentControlType);
 

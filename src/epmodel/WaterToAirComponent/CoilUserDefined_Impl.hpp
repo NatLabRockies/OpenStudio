@@ -11,6 +11,11 @@
 namespace openstudio {
 namespace epmodel {
 
+class ThermalZone;
+class EnergyManagementSystemActuator;
+class EnergyManagementSystemProgram;
+class EnergyManagementSystemProgramCallingManager;
+
 namespace detail {
 
 class EPMODEL_API CoilUserDefined_Impl : public WaterToAirComponent_Impl
@@ -25,6 +30,48 @@ class EPMODEL_API CoilUserDefined_Impl : public WaterToAirComponent_Impl
   unsigned waterOutletPort() const override;
 
   int numberofAirConnections() const;
+
+  EnergyManagementSystemProgramCallingManager overallModelSimulationProgramCallingManager() const;
+  bool setOverallModelSimulationProgramCallingManager(const EnergyManagementSystemProgramCallingManager& emsProgramCallingManager);
+
+  EnergyManagementSystemProgramCallingManager modelSetupandSizingProgramCallingManager() const;
+  bool setModelSetupandSizingProgramCallingManager(const EnergyManagementSystemProgramCallingManager& emsProgramCallingManager);
+
+  boost::optional<ThermalZone> ambientZone() const;
+  bool setAmbientZone(const ThermalZone& thermalZone);
+  void resetAmbientZone();
+
+  EnergyManagementSystemProgram overallSimulationProgram() const;
+  bool setOverallSimulationProgram(const EnergyManagementSystemProgram& emsProgram);
+
+  EnergyManagementSystemProgram initializationSimulationProgram() const;
+  bool setInitializationSimulationProgram(const EnergyManagementSystemProgram& emsProgram);
+
+  EnergyManagementSystemActuator airOutletTemperatureActuator() const;
+  bool setAirOutletTemperatureActuator(const EnergyManagementSystemActuator& emsActuator);
+
+  EnergyManagementSystemActuator airOutletHumidityRatioActuator() const;
+  bool setAirOutletHumidityRatioActuator(const EnergyManagementSystemActuator& emsActuator);
+
+  EnergyManagementSystemActuator airMassFlowRateActuator() const;
+  bool setAirMassFlowRateActuator(const EnergyManagementSystemActuator& emsActuator);
+
+  EnergyManagementSystemActuator plantMinimumMassFlowRateActuator() const;
+  bool setPlantMinimumMassFlowRateActuator(const EnergyManagementSystemActuator& emsActuator);
+
+  EnergyManagementSystemActuator plantMaximumMassFlowRateActuator() const;
+  bool setPlantMaximumMassFlowRateActuator(const EnergyManagementSystemActuator& emsActuator);
+
+  EnergyManagementSystemActuator plantDesignVolumeFlowRateActuator() const;
+  bool setPlantDesignVolumeFlowRateActuator(const EnergyManagementSystemActuator& emsActuator);
+
+  EnergyManagementSystemActuator plantOutletTemperatureActuator() const;
+  bool setPlantOutletTemperatureActuator(const EnergyManagementSystemActuator& emsActuator);
+
+  EnergyManagementSystemActuator plantMassFlowRateActuator() const;
+  bool setPlantMassFlowRateActuator(const EnergyManagementSystemActuator& emsActuator);
+
+  std::vector<ModelObject> children() const override;
 };
 
 }  // namespace detail

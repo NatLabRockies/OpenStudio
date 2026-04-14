@@ -7,6 +7,7 @@
 #define EPMODEL_ENERGYMANAGEMENTSYSTEMPROGRAMCALLINGMANAGER_HPP
 
 #include "EPModelAPI.hpp"
+#include "EnergyManagementSystemProgram.hpp"
 #include "ModelObject.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
@@ -18,6 +19,7 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class EnergyManagementSystemProgram;
 
 namespace detail {
 class EnergyManagementSystemProgramCallingManager_Impl;
@@ -39,13 +41,22 @@ class EPMODEL_API EnergyManagementSystemProgramCallingManager : public ModelObje
   static std::vector<std::string> validCallingPointValues();
 
   // Schema Alignment Notes:
-  // - API: Preserves openstudio::model::EnergyManagementSystemProgramCallingManager class and scalar accessor naming/signatures.
-  // - Field Mapping: callingPoint -> EnergyPlus EnergyManagementSystem:ProgramCallingManager, EnergyPlus Model Calling Point.
-  // - Field Mapping: program list APIs (programs/getProgram/addProgram/setProgram/erasePrograms/setPrograms) are extensible relationship-like and excluded from scalar scaffold.
-  // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemProgramCallingManager.cpp writes EnergyPlusModelCallingPoint and copies extensible ProgramName groups.
-  // - TODO(parity): Add program extensible relationship APIs incrementally without changing these scalar signatures.
+  // - API: Preserves the canonical calling-point and program-list surface.
+  // - Field Mapping: `callingPoint` -> EnergyPlus `Energy Plus Model Calling Point`.
+  // - Field Mapping: `programs` and related mutators use the real EnergyPlus extensible `Program Name` rows through `WorkspaceExtensibleGroup`.
+  // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemProgramCallingManager.cpp writes the calling point and copies the same
+  //   extensible program rows.
   std::string callingPoint() const;
   bool setCallingPoint(const std::string& callingPoint);
+
+  std::vector<EnergyManagementSystemProgram> programs() const;
+  boost::optional<EnergyManagementSystemProgram> getProgram(unsigned index) const;
+
+  bool eraseProgram(unsigned index);
+  void erasePrograms();
+  bool addProgram(const EnergyManagementSystemProgram& program);
+  bool setProgram(const EnergyManagementSystemProgram& program, unsigned index);
+  bool setPrograms(const std::vector<EnergyManagementSystemProgram>& programs);
 
  protected:
   using ImplType = detail::EnergyManagementSystemProgramCallingManager_Impl;

@@ -13,6 +13,8 @@
 namespace openstudio {
 namespace epmodel {
 
+class EnergyManagementSystemProgram;
+
 namespace detail {
 
 class EPMODEL_API EnergyManagementSystemProgramCallingManager_Impl : public ModelObject_Impl
@@ -25,6 +27,15 @@ class EPMODEL_API EnergyManagementSystemProgramCallingManager_Impl : public Mode
 
   std::string callingPoint() const;
   bool setCallingPoint(const std::string& callingPoint);
+
+  std::vector<EnergyManagementSystemProgram> programs() const;
+  boost::optional<EnergyManagementSystemProgram> getProgram(unsigned index) const;
+
+  bool eraseProgram(unsigned index);
+  void erasePrograms();
+  bool addProgram(const EnergyManagementSystemProgram& program);
+  bool setProgram(const EnergyManagementSystemProgram& program, unsigned index);
+  bool setPrograms(const std::vector<EnergyManagementSystemProgram>& programs);
 };
 
 }  // namespace detail
