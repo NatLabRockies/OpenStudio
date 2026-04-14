@@ -9,12 +9,16 @@
 #include "EPModelAPI.hpp"
 #include "WaterToWaterComponent/WaterToWaterComponent.hpp"
 
+#include <utilities/core/Deprecated.hpp>
+
 #include <memory>
 
 namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class CurveQuadLinear;
+  class HeatPumpWaterToWaterEquationFitHeating;
 
   namespace detail {
     class HeatPumpWaterToWaterEquationFitCooling_Impl;
@@ -23,6 +27,8 @@ namespace epmodel {
   class EPMODEL_API HeatPumpWaterToWaterEquationFitCooling : public WaterToWaterComponent
   {
    public:
+    explicit HeatPumpWaterToWaterEquationFitCooling(const Model& model, const CurveQuadLinear& coolingCapacityCurve,
+                                                    const CurveQuadLinear& coolingCompressorPowerCurve);
     explicit HeatPumpWaterToWaterEquationFitCooling(const Model& model);
 
     virtual ~HeatPumpWaterToWaterEquationFitCooling() override = default;
@@ -34,13 +40,17 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The equation-fit cooling surface is aligned, while nodes, curves, and companion heat-pump behavior remains excluded.
+    // - Status: Parity with documented deltas. The canonical curve, companion, constructor, scalar, and deprecated alias
+    //   surface is preserved here.
     // - Canonical Counterpart: openstudio::model::HeatPumpWaterToWaterEquationFitCooling.
-    // - Implemented Parity: Scalar accessors for load/source flow rates, rated cooling capacity, power consumption, coefficient of performance, and sizing preserve the canonical model API shape.
-    // - Documented Delta: Node, curve, and companion-heat-pump APIs are intentionally excluded in this pass.
+    // - Implemented Parity: The curve-taking constructor, default curve creation, load/source flow, capacity/power,
+    //   coefficient of performance, sizing, required cooling curve relationships, companion heating heat-pump link, and
+    //   deprecated coefficient aliases preserve the canonical model API shape.
+    // - Documented Delta: Autosized-value query helpers still return `none` because epmodel does not yet resolve
+    //   SQL-backed autosized results for this family.
     // - Field/Storage Mapping: Scalar wrappers target the EnergyPlus `WaterToWater` equation-fit cooling fields directly, with legacy rated/reference naming preserved where canonical model behavior expects it.
     // - Evidence: `src/model/HeatPumpWaterToWaterEquationFitCooling.hpp`, `src/model/HeatPumpWaterToWaterEquationFitCooling.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatPumpWaterToWaterEquationFitCooling.cpp`.
-    // - Remaining Parity Work: Add the excluded curve, companion, and loop-coupling APIs only if the family moves beyond scalar parity.
+    // - Remaining Parity Work: Loop-coupling ergonomics remain inherited from the shared water-to-water base.
 
     // Reference load-side flow rate
     boost::optional<double> referenceLoadSideFlowRate() const;
@@ -78,12 +88,41 @@ namespace epmodel {
     void autosizeRatedCoolingPowerConsumption();
     boost::optional<double> autosizedRatedCoolingPowerConsumption() const;
 
+    CurveQuadLinear coolingCapacityCurve() const;
+    bool setCoolingCapacityCurve(const CurveQuadLinear& coolingCapacityCurve);
+    OS_DEPRECATED(3, 2, 0) double coolingCapacityCoefficient1() const;
+    OS_DEPRECATED(3, 2, 0) bool setCoolingCapacityCoefficient1(double coolingCapacityCoefficient1);
+    OS_DEPRECATED(3, 2, 0) double coolingCapacityCoefficient2() const;
+    OS_DEPRECATED(3, 2, 0) bool setCoolingCapacityCoefficient2(double coolingCapacityCoefficient2);
+    OS_DEPRECATED(3, 2, 0) double coolingCapacityCoefficient3() const;
+    OS_DEPRECATED(3, 2, 0) bool setCoolingCapacityCoefficient3(double coolingCapacityCoefficient3);
+    OS_DEPRECATED(3, 2, 0) double coolingCapacityCoefficient4() const;
+    OS_DEPRECATED(3, 2, 0) bool setCoolingCapacityCoefficient4(double coolingCapacityCoefficient4);
+    OS_DEPRECATED(3, 2, 0) double coolingCapacityCoefficient5() const;
+    OS_DEPRECATED(3, 2, 0) bool setCoolingCapacityCoefficient5(double coolingCapacityCoefficient5);
+
+    CurveQuadLinear coolingCompressorPowerCurve() const;
+    bool setCoolingCompressorPowerCurve(const CurveQuadLinear& coolingCompressorPowerCurve);
+    OS_DEPRECATED(3, 2, 0) double coolingCompressorPowerCoefficient1() const;
+    OS_DEPRECATED(3, 2, 0) bool setCoolingCompressorPowerCoefficient1(double coolingCompressorPowerCoefficient1);
+    OS_DEPRECATED(3, 2, 0) double coolingCompressorPowerCoefficient2() const;
+    OS_DEPRECATED(3, 2, 0) bool setCoolingCompressorPowerCoefficient2(double coolingCompressorPowerCoefficient2);
+    OS_DEPRECATED(3, 2, 0) double coolingCompressorPowerCoefficient3() const;
+    OS_DEPRECATED(3, 2, 0) bool setCoolingCompressorPowerCoefficient3(double coolingCompressorPowerCoefficient3);
+    OS_DEPRECATED(3, 2, 0) double coolingCompressorPowerCoefficient4() const;
+    OS_DEPRECATED(3, 2, 0) bool setCoolingCompressorPowerCoefficient4(double coolingCompressorPowerCoefficient4);
+    OS_DEPRECATED(3, 2, 0) double coolingCompressorPowerCoefficient5() const;
+    OS_DEPRECATED(3, 2, 0) bool setCoolingCompressorPowerCoefficient5(double coolingCompressorPowerCoefficient5);
+
     // Performance tuning
     double referenceCoefficientofPerformance() const;
     bool setReferenceCoefficientofPerformance(double referenceCoefficientofPerformance);
 
     double sizingFactor() const;
     bool setSizingFactor(double sizingFactor);
+
+    boost::optional<HeatPumpWaterToWaterEquationFitHeating> companionHeatingHeatPump() const;
+    bool setCompanionHeatingHeatPump(const HeatPumpWaterToWaterEquationFitHeating& companionHeatingHeatPump);
 
    protected:
     using ImplType = detail::HeatPumpWaterToWaterEquationFitCooling_Impl;
