@@ -11,6 +11,11 @@
 namespace openstudio {
 namespace epmodel {
 
+class Curve;
+class Model;
+class ModelObject;
+class Schedule;
+
 namespace detail {
 
 class EPMODEL_API CoilCoolingWaterToAirHeatPumpEquationFit_Impl : public WaterToAirComponent_Impl
@@ -24,12 +29,16 @@ class EPMODEL_API CoilCoolingWaterToAirHeatPumpEquationFit_Impl : public WaterTo
   unsigned waterInletPort() const override;
   unsigned waterOutletPort() const override;
 
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+
   boost::optional<double> ratedAirFlowRate() const;
   bool isRatedAirFlowRateDefaulted() const;
   bool isRatedAirFlowRateAutosized() const;
   bool setRatedAirFlowRate(double ratedAirFlowRate);
   void resetRatedAirFlowRate();
   void autosizeRatedAirFlowRate();
+  boost::optional<double> autosizedRatedAirFlowRate() const;
 
   boost::optional<double> ratedWaterFlowRate() const;
   bool isRatedWaterFlowRateDefaulted() const;
@@ -37,6 +46,7 @@ class EPMODEL_API CoilCoolingWaterToAirHeatPumpEquationFit_Impl : public WaterTo
   bool setRatedWaterFlowRate(double ratedWaterFlowRate);
   void resetRatedWaterFlowRate();
   void autosizeRatedWaterFlowRate();
+  boost::optional<double> autosizedRatedWaterFlowRate() const;
 
   boost::optional<double> ratedTotalCoolingCapacity() const;
   bool isRatedTotalCoolingCapacityDefaulted() const;
@@ -44,6 +54,7 @@ class EPMODEL_API CoilCoolingWaterToAirHeatPumpEquationFit_Impl : public WaterTo
   bool setRatedTotalCoolingCapacity(double ratedTotalCoolingCapacity);
   void resetRatedTotalCoolingCapacity();
   void autosizeRatedTotalCoolingCapacity();
+  boost::optional<double> autosizedRatedTotalCoolingCapacity() const;
 
   boost::optional<double> ratedSensibleCoolingCapacity() const;
   bool isRatedSensibleCoolingCapacityDefaulted() const;
@@ -51,19 +62,32 @@ class EPMODEL_API CoilCoolingWaterToAirHeatPumpEquationFit_Impl : public WaterTo
   bool setRatedSensibleCoolingCapacity(double ratedSensibleCoolingCapacity);
   void resetRatedSensibleCoolingCapacity();
   void autosizeRatedSensibleCoolingCapacity();
+  boost::optional<double> autosizedRatedSensibleCoolingCapacity() const;
 
   double ratedCoolingCoefficientofPerformance() const;
   bool isRatedCoolingCoefficientofPerformanceDefaulted() const;
   bool setRatedCoolingCoefficientofPerformance(double ratedCoolingCoefficientofPerformance);
 
   double ratedEnteringWaterTemperature() const;
-  bool setRatedEnteringWaterTemperature(double ratedEnteringAirDryBulbTemperature);
+  bool setRatedEnteringWaterTemperature(double ratedEnteringWaterTemperature);
 
   double ratedEnteringAirDryBulbTemperature() const;
   bool setRatedEnteringAirDryBulbTemperature(double ratedEnteringAirDryBulbTemperature);
 
   double ratedEnteringAirWetBulbTemperature() const;
   bool setRatedEnteringAirWetBulbTemperature(double ratedEnteringAirWetBulbTemperature);
+
+  Curve totalCoolingCapacityCurve() const;
+  bool setTotalCoolingCapacityCurve(const Curve& totalCoolingCapacityCurve);
+
+  Curve sensibleCoolingCapacityCurve() const;
+  bool setSensibleCoolingCapacityCurve(const Curve& sensibleCoolingCapacityCurve);
+
+  Curve coolingPowerConsumptionCurve() const;
+  bool setCoolingPowerConsumptionCurve(const Curve& coolingPowerConsumptionCurve);
+
+  Curve partLoadFractionCorrelationCurve() const;
+  bool setPartLoadFractionCorrelationCurve(const Curve& partLoadFractionCorrelationCurve);
 
   double nominalTimeforCondensateRemovaltoBegin() const;
   bool isNominalTimeforCondensateRemovaltoBeginDefaulted() const;
@@ -84,6 +108,8 @@ class EPMODEL_API CoilCoolingWaterToAirHeatPumpEquationFit_Impl : public WaterTo
 
   double fanDelayTime() const;
   bool setFanDelayTime(double fanDelayTime);
+
+  void setConstructorSharedDefaults(const Model& model);
 };
 
 }  // namespace detail
