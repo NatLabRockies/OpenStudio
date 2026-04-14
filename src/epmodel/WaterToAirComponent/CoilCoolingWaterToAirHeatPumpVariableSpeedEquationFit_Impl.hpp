@@ -11,7 +11,15 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Curve;
+  class Schedule;
+  class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit;
+  class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData;
+
   namespace detail {
+
+    std::string transientSpeedDataName(const openstudio::epmodel::CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit& parent,
+                                       unsigned speedIndex);
 
     class EPMODEL_API CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl : public WaterToAirComponent_Impl
     {
@@ -24,6 +32,9 @@ namespace epmodel {
       unsigned waterInletPort() const override;
       unsigned waterOutletPort() const override;
 
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
       int nominalSpeedLevel() const;
       bool setNominalSpeedLevel(int nominalSpeedLevel);
 
@@ -31,16 +42,19 @@ namespace epmodel {
       bool setGrossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevel(double grossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevel);
       void autosizeGrossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevel();
       bool isGrossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevelAutosized() const;
+      boost::optional<double> autosizedGrossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevel() const;
 
       boost::optional<double> ratedAirFlowRateAtSelectedNominalSpeedLevel() const;
       bool setRatedAirFlowRateAtSelectedNominalSpeedLevel(double ratedAirFlowRateAtSelectedNominalSpeedLevel);
       void autosizeRatedAirFlowRateAtSelectedNominalSpeedLevel();
       bool isRatedAirFlowRateAtSelectedNominalSpeedLevelAutosized() const;
+      boost::optional<double> autosizedRatedAirFlowRateAtSelectedNominalSpeedLevel() const;
 
       boost::optional<double> ratedWaterFlowRateAtSelectedNominalSpeedLevel() const;
       bool setRatedWaterFlowRateAtSelectedNominalSpeedLevel(double ratedWaterFlowRateAtSelectedNominalSpeedLevel);
       void autosizeRatedWaterFlowRateAtSelectedNominalSpeedLevel();
       bool isRatedWaterFlowRateAtSelectedNominalSpeedLevelAutosized() const;
+      boost::optional<double> autosizedRatedWaterFlowRateAtSelectedNominalSpeedLevel() const;
 
       double nominalTimeforCondensatetoBeginLeavingtheCoil() const;
       bool setNominalTimeforCondensatetoBeginLeavingtheCoil(double nominalTimeforCondensatetoBeginLeavingtheCoil);
@@ -60,6 +74,18 @@ namespace epmodel {
 
       bool useHotGasReheat() const;
       bool setUseHotGasReheat(bool useHotGasReheat);
+
+      Curve energyPartLoadFractionCurve() const;
+      bool setEnergyPartLoadFractionCurve(const Curve& curve);
+
+      std::vector<CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData> speeds() const;
+      bool addSpeed(const CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData& speed);
+      void removeSpeed(const CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData& speed);
+      void removeAllSpeeds();
+
+      std::vector<ModelObject> children() const override;
+
+      void setConstructorSharedDefaults(const Model& model);
     };
 
   }  // namespace detail

@@ -2220,6 +2220,9 @@ set(${target_name}_src
   ParentObject/CoilPerformanceDXCooling.hpp
   ParentObject/CoilPerformanceDXCooling_Impl.hpp
   ParentObject/CoilPerformanceDXCooling.cpp
+  ParentObject/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData.hpp
+  ParentObject/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData_Impl.hpp
+  ParentObject/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData.cpp
   ModelObject/ChillerConstantCOP.hpp
   ModelObject/ChillerConstantCOP_Impl.hpp
   ModelObject/ChillerConstantCOP.cpp
@@ -3207,6 +3210,7 @@ set(${target_name}_test_src
   test/CoilCoolingDXTwoSpeed_GTest.cpp
   test/CoilCoolingDXTwoStageWithHumidityControlMode_GTest.cpp
   test/CoilPerformanceDXCooling_GTest.cpp
+  test/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData_GTest.cpp
    test/CoilCoolingDXCurveFitPerformance_GTest.cpp
    test/CoilCoolingDXCurveFitOperatingMode_GTest.cpp
    test/CoilCoolingDXCurveFitSpeed_GTest.cpp

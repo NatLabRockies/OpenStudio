@@ -14,11 +14,14 @@
 #include "../Curve/CurveQuintLinear_Impl.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
+#include "../Schedule/Schedule.hpp"
+#include "../Schedule/Schedule_Impl.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../WaterToAirComponent/CoilCoolingWaterToAirHeatPumpEquationFit.hpp"
 
 #include <utilities/idd/Coil_Cooling_WaterToAirHeatPump_EquationFit_FieldEnums.hxx>
+#include <utilities/idf/Handle.hpp>
 
 using namespace openstudio::epmodel;
 
@@ -78,15 +81,16 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpEquationFit_AvailabilitySche
   Model model;
   CoilCoolingWaterToAirHeatPumpEquationFit coil(model);
 
-  ASSERT_TRUE(
-    coil.setString(openstudio::Coil_Cooling_WaterToAirHeatPump_EquationFitFields::AvailabilityScheduleName, "", false));
+  ASSERT_TRUE(coil.setPointer(openstudio::Coil_Cooling_WaterToAirHeatPump_EquationFitFields::AvailabilityScheduleName, openstudio::Handle()));
   EXPECT_FALSE(
     coil.getModelObjectTarget<Schedule>(openstudio::Coil_Cooling_WaterToAirHeatPump_EquationFitFields::AvailabilityScheduleName));
 
   const auto schedule = coil.availabilitySchedule();
   EXPECT_EQ(model.alwaysOnDiscreteSchedule(), schedule);
-  EXPECT_EQ(model.alwaysOnDiscreteSchedule(),
-            coil.getModelObjectTarget<Schedule>(openstudio::Coil_Cooling_WaterToAirHeatPump_EquationFitFields::AvailabilityScheduleName));
+  const auto repairedSchedule =
+    coil.getModelObjectTarget<Schedule>(openstudio::Coil_Cooling_WaterToAirHeatPump_EquationFitFields::AvailabilityScheduleName);
+  ASSERT_TRUE(repairedSchedule);
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule(), *repairedSchedule);
 }
 
 TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpEquationFit_DeprecatedCoefficientAliasesDelegateThroughStoredCurves) {
