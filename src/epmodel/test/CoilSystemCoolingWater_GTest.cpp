@@ -8,10 +8,13 @@
 #include <algorithm>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ControllerWaterCoil.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../WaterToAirComponent/CoilCoolingWater.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/CoilSystemCoolingWater.hpp"
+#include <utilities/idd/CoilSystem_Cooling_Water_FieldEnums.hxx>
 #include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
@@ -74,4 +77,20 @@ TEST_F(EPModelFixture, CoilSystemCoolingWater_AddToNodeSupplyOnly) {
   auto demandInletNode = airLoop.demandInletNode();
   EXPECT_FALSE(demandCoilSystem.addToNode(demandInletNode));
   EXPECT_FALSE(demandCoilSystem.airLoopHVAC());
+}
+
+TEST_F(EPModelFixture, CoilSystemCoolingWater_ContainedCoolingCoilDoesNotCreateStandaloneController) {
+  Model model;
+  CoilSystemCoolingWater system(model);
+  CoilCoolingWater coil(model);
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+
+  ASSERT_TRUE(system.setPointer(openstudio::CoilSystem_Cooling_WaterFields::CoolingCoilName, coil.handle()));
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coil.addToNode(supplyOutletNode));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil));
+
+  EXPECT_FALSE(coil.controllerWaterCoil());
 }

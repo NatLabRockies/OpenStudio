@@ -16,6 +16,8 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Schedule;
+class ControllerWaterCoil;
 
 namespace detail {
 class CoilCoolingWater_Impl;
@@ -24,6 +26,7 @@ class CoilCoolingWater_Impl;
 class EPMODEL_API CoilCoolingWater : public WaterToAirComponent
 {
  public:
+  CoilCoolingWater(const Model& model, Schedule& availabilitySchedule);
   explicit CoilCoolingWater(const Model& model);
 
   virtual ~CoilCoolingWater() override = default;
@@ -38,44 +41,73 @@ class EPMODEL_API CoilCoolingWater : public WaterToAirComponent
   static std::vector<std::string> heatExchangerConfigurationValues();
 
   // Schema Alignment Notes:
-  // - Status: Scalar Parity. The scalar design fields and enumerated choices are aligned, while relationship-heavy convenience behavior remains intentionally outside this wrapper surface.
+  // - Status: Partial Parity. The scalar design fields, availability schedule surface, and controller linkage now align,
+  //   while AFN helper objects remain outside this wrapper surface.
   // - Canonical Counterpart: openstudio::model::CoilCoolingWater.
-  // - Implemented Parity: `designWaterFlowRate`, `designAirFlowRate`, `designInletWaterTemperature`, `designInletAirTemperature`, `designOutletAirTemperature`, `designInletAirHumidityRatio`, `designOutletAirHumidityRatio`, `typeOfAnalysis`, `heatExchangerConfiguration`, and their autosize/setter helpers preserve the canonical scalar contract.
-  // - Documented Delta: Availability schedule, controller linkage, node-name accessors, and AFN/equivalent-duct helpers are not exposed here even though the canonical model type owns them.
-  // - Field/Storage Mapping: Scalar design and choice fields map directly to the corresponding EnergyPlus `Coil:Cooling:Water` fields.
+  // - Implemented Parity: `setAvailabilitySchedule`, `setAvailableSchedule`, `controllerWaterCoil`,
+  //   `designWaterFlowRate`, `designAirFlowRate`, `designInletWaterTemperature`,
+  //   `designInletAirTemperature`, `designOutletAirTemperature`, `designInletAirHumidityRatio`,
+  //   `designOutletAirHumidityRatio`, `typeOfAnalysis`, `heatExchangerConfiguration`, and their autosize/setter helpers
+  //   preserve the canonical coil-facing API.
+  // - Documented Delta: Node-name convenience helpers and AFN/equivalent-duct helpers are still not exposed here.
+  //   For malformed imported data with no persisted availability schedule, the getter returns the model always-on
+  //   discrete schedule without repairing storage.
+  // - Field/Storage Mapping: The availability schedule and scalar design fields map directly to EnergyPlus
+  //   `Coil:Cooling:Water`. Controller linkage is inferred from the persisted `Controller:WaterCoil` sensor and actuator
+  //   nodes because the EnergyPlus controller object does not store a direct back-reference to the coil. If malformed
+  //   imported data omits the required availability schedule, the getter falls back to the model always-on discrete
+  //   schedule without mutating persisted state.
   // - Evidence: `src/model/CoilCoolingWater.hpp`, `src/model/CoilCoolingWater.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingWater.cpp`, and `src/model/test/CoilCoolingWater_GTest.cpp`.
-  // - Remaining Parity Work: Add the omitted relationship and helper APIs only if this family is brought beyond scalar parity.
+  // - Remaining Parity Work: Add the omitted node-name and AFN helper APIs only if the supporting epmodel wrappers are
+  //   developed.
+  Schedule availabilitySchedule() const;
+
+  /** \deprecated */
+  Schedule availableSchedule() const;
+
+  bool setAvailabilitySchedule(Schedule& schedule);
+
+  /** \deprecated */
+  bool setAvailableSchedule(Schedule& schedule);
+
   boost::optional<double> designWaterFlowRate() const;
+  boost::optional<double> autosizedDesignWaterFlowRate() const;
   bool setDesignWaterFlowRate(double value);
   bool isDesignWaterFlowRateAutosized() const;
   void autosizeDesignWaterFlowRate();
 
   boost::optional<double> designAirFlowRate() const;
+  boost::optional<double> autosizedDesignAirFlowRate() const;
   bool setDesignAirFlowRate(double value);
   bool isDesignAirFlowRateAutosized() const;
   void autosizeDesignAirFlowRate();
 
   boost::optional<double> designInletWaterTemperature() const;
+  boost::optional<double> autosizedDesignInletWaterTemperature() const;
   bool setDesignInletWaterTemperature(double value);
   bool isDesignInletWaterTemperatureAutosized() const;
   void autosizeDesignInletWaterTemperature();
 
   boost::optional<double> designInletAirTemperature() const;
+  boost::optional<double> autosizedDesignInletAirTemperature() const;
   bool setDesignInletAirTemperature(double value);
   bool isDesignInletAirTemperatureAutosized() const;
   void autosizeDesignInletAirTemperature();
 
   boost::optional<double> designOutletAirTemperature() const;
+  boost::optional<double> autosizedDesignOutletAirTemperature() const;
   bool setDesignOutletAirTemperature(double value);
   bool isDesignOutletAirTemperatureAutosized() const;
   void autosizeDesignOutletAirTemperature();
 
   boost::optional<double> designInletAirHumidityRatio() const;
+  boost::optional<double> autosizedDesignInletAirHumidityRatio() const;
   bool setDesignInletAirHumidityRatio(double value);
   bool isDesignInletAirHumidityRatioAutosized() const;
   void autosizeDesignInletAirHumidityRatio();
 
   boost::optional<double> designOutletAirHumidityRatio() const;
+  boost::optional<double> autosizedDesignOutletAirHumidityRatio() const;
   bool setDesignOutletAirHumidityRatio(double value);
   bool isDesignOutletAirHumidityRatioAutosized() const;
   void autosizeDesignOutletAirHumidityRatio();
@@ -85,6 +117,9 @@ class EPMODEL_API CoilCoolingWater : public WaterToAirComponent
 
   std::string heatExchangerConfiguration() const;
   bool setHeatExchangerConfiguration(const std::string& value);
+
+  boost::optional<ControllerWaterCoil> controllerWaterCoil() const;
+  boost::optional<double> autosizedDesignCoilLoad() const;
 
  protected:
   using ImplType = detail::CoilCoolingWater_Impl;

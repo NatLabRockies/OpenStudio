@@ -42,8 +42,8 @@ class EPMODEL_API WaterToAirComponent_Impl : public HVACComponent_Impl
   void disconnectAirSide();
   void disconnect() override;
 
-  bool removeFromAirLoopHVAC();
- bool removeFromPlantLoop();
+  virtual bool removeFromAirLoopHVAC();
+  virtual bool removeFromPlantLoop();
 
  private:
   bool addToOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem, Node& node);
