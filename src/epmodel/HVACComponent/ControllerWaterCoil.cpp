@@ -7,6 +7,11 @@
 #include "HVACComponent/ControllerWaterCoil_Impl.hpp"
 
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
+#include "WaterToAirComponent/CoilCoolingWater.hpp"
+#include "WaterToAirComponent/CoilCoolingWater_Impl.hpp"
+#include "WaterToAirComponent/CoilHeatingWater.hpp"
+#include "WaterToAirComponent/CoilHeatingWater_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -17,6 +22,29 @@
 
 namespace openstudio {
 namespace epmodel {
+
+  namespace {
+
+    template <typename CoilType>
+    boost::optional<HVACComponent> inferWaterCoilByNodes(const detail::ControllerWaterCoil_Impl& controllerImpl) {
+      const auto actuatorNode = controllerImpl.actuatorNode();
+      const auto sensorNode = controllerImpl.sensorNode();
+      if (!actuatorNode || !sensorNode) {
+        return boost::none;
+      }
+
+      for (const auto& coil : controllerImpl.model().getConcreteModelObjects<CoilType>()) {
+        const auto waterInlet = coil.waterInletModelObject();
+        const auto airOutlet = coil.airOutletModelObject();
+        if (waterInlet && airOutlet && waterInlet->handle() == actuatorNode->handle() && airOutlet->handle() == sensorNode->handle()) {
+          return coil.template cast<HVACComponent>();
+        }
+      }
+
+      return boost::none;
+    }
+
+  }  // namespace
 
   ControllerWaterCoil::ControllerWaterCoil(const Model& model) : HVACComponent(ControllerWaterCoil::iddObjectType(), model) {
     resetMinimumActuatedFlow();
@@ -38,6 +66,10 @@ namespace epmodel {
 
   std::vector<std::string> ControllerWaterCoil::validActuatorVariableValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Controller_WaterCoilFields::ActuatorVariable);
+  }
+
+  boost::optional<HVACComponent> ControllerWaterCoil::waterCoil() const {
+    return getImpl<detail::ControllerWaterCoil_Impl>()->waterCoil();
   }
 
   boost::optional<std::string> ControllerWaterCoil::controlVariable() const {
@@ -82,6 +114,22 @@ namespace epmodel {
 
   void ControllerWaterCoil::resetActuatorVariable() {
     getImpl<detail::ControllerWaterCoil_Impl>()->resetActuatorVariable();
+  }
+
+  boost::optional<Node> ControllerWaterCoil::sensorNode() const {
+    return getImpl<detail::ControllerWaterCoil_Impl>()->sensorNode();
+  }
+
+  bool ControllerWaterCoil::setSensorNode(const Node& sensorNode) {
+    return getImpl<detail::ControllerWaterCoil_Impl>()->setSensorNode(sensorNode);
+  }
+
+  boost::optional<Node> ControllerWaterCoil::actuatorNode() const {
+    return getImpl<detail::ControllerWaterCoil_Impl>()->actuatorNode();
+  }
+
+  bool ControllerWaterCoil::setActuatorNode(const Node& actuatorNode) {
+    return getImpl<detail::ControllerWaterCoil_Impl>()->setActuatorNode(actuatorNode);
   }
 
   boost::optional<double> ControllerWaterCoil::controllerConvergenceTolerance() const {
@@ -159,6 +207,13 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    boost::optional<HVACComponent> ControllerWaterCoil_Impl::waterCoil() const {
+      if (auto coolingCoil = inferWaterCoilByNodes<CoilCoolingWater>(*this)) {
+        return coolingCoil;
+      }
+      return inferWaterCoilByNodes<CoilHeatingWater>(*this);
+    }
+
     boost::optional<std::string> ControllerWaterCoil_Impl::controlVariable() const {
       return getString(openstudio::Controller_WaterCoilFields::ControlVariable, true);
     }
@@ -204,6 +259,22 @@ namespace epmodel {
     void ControllerWaterCoil_Impl::resetActuatorVariable() {
       const bool result = setString(openstudio::Controller_WaterCoilFields::ActuatorVariable, "");
       OS_ASSERT(result);
+    }
+
+    boost::optional<Node> ControllerWaterCoil_Impl::sensorNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<Node>(openstudio::Controller_WaterCoilFields::SensorNodeName);
+    }
+
+    bool ControllerWaterCoil_Impl::setSensorNode(const Node& sensorNode) {
+      return setPointer(openstudio::Controller_WaterCoilFields::SensorNodeName, sensorNode.handle());
+    }
+
+    boost::optional<Node> ControllerWaterCoil_Impl::actuatorNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<Node>(openstudio::Controller_WaterCoilFields::ActuatorNodeName);
+    }
+
+    bool ControllerWaterCoil_Impl::setActuatorNode(const Node& actuatorNode) {
+      return setPointer(openstudio::Controller_WaterCoilFields::ActuatorNodeName, actuatorNode.handle());
     }
 
     boost::optional<double> ControllerWaterCoil_Impl::controllerConvergenceTolerance() const {

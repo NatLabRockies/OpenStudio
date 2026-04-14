@@ -18,6 +18,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class ControllerWaterCoil_Impl;
@@ -41,13 +42,15 @@ namespace epmodel {
     static std::vector<std::string> validActuatorVariableValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. Core scalar control fields and value sets are aligned, but the canonical water-coil and node-link surface is still incomplete.
+    // - Status: Partial Parity. Core scalar control fields, valid-value sets, and sensor/actuator node relationships are aligned, and the wrapped water-coil relationship is inferred from persisted node topology.
     // - Canonical Counterpart: openstudio::model::ControllerWaterCoil.
-    // - Implemented Parity: `validControlVariableValues`, `validActionValues`, `validActuatorVariableValues`, `controlVariable`, `action`, `actuatorVariable`, and the convergence/flow setters preserve the canonical scalar control contract.
-    // - Documented Delta: Public accessors for the linked water coil, sensor node, and actuator node are not exposed yet, so the canonical relationship surface remains implementation-owned.
-    // - Field/Storage Mapping: The epmodel wrapper maps its scalars directly to EnergyPlus `Controller:WaterCoil` fields; object links are held by the underlying EnergyPlus-backed topology rather than exposed as public accessors.
+    // - Implemented Parity: `validControlVariableValues`, `validActionValues`, `validActuatorVariableValues`, `waterCoil`, `controlVariable`, `action`, `actuatorVariable`, the actuator/sensor node accessors, and the convergence/flow setters preserve the canonical scalar and node-link control contract.
+    // - Documented Delta: EnergyPlus does not persist a direct controller-to-coil reference, so `waterCoil()` is inferred from the controller node pair instead of reading a stored object pointer.
+    // - Field/Storage Mapping: The epmodel wrapper maps its scalars directly to EnergyPlus `Controller:WaterCoil` fields, exposes the persisted actuator/sensor node references as typed `Node` relationships, and infers the wrapped water coil from those same nodes.
     // - Evidence: `src/model/ControllerWaterCoil.hpp`, `src/model/ControllerWaterCoil.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateControllerWaterCoil.cpp`, and `src/epmodel/test/ControllerWaterCoil_GTest.cpp`.
-    // - Remaining Parity Work: Add the missing object-link accessors for the wrapped water coil and nodes once relationship parity is in scope.
+    // - Remaining Parity Work: Add the missing wrapped water-coil relationship once relationship parity is in scope.
+
+    boost::optional<HVACComponent> waterCoil() const;
 
     boost::optional<std::string> controlVariable() const;
     bool isControlVariableDefaulted() const;
@@ -62,6 +65,12 @@ namespace epmodel {
     bool isActuatorVariableDefaulted() const;
     bool setActuatorVariable(const std::string& actuatorVariable);
     void resetActuatorVariable();
+
+    boost::optional<Node> sensorNode() const;
+    bool setSensorNode(const Node& sensorNode);
+
+    boost::optional<Node> actuatorNode() const;
+    bool setActuatorNode(const Node& actuatorNode);
 
     boost::optional<double> controllerConvergenceTolerance() const;
     bool isControllerConvergenceToleranceDefaulted() const;

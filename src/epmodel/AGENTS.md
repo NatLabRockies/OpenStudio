@@ -148,3 +148,12 @@ Status vocabulary:
 - `Partial Parity`
 - `Near Parity`
 - `Parity with documented deltas`
+
+## Review Guidlines
+
+For any non trivial code changes use dedicated sub agents to review for *at minimum* the following items.
+
+- Adherence to the agent notes in this file
+- Adherence to the epmodel/README.md
+- Any required updates to epmodel/README.md to maintain consistency between code and README.
+- Consistency with prior art in similar data types and bodies of code.

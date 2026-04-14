@@ -179,13 +179,13 @@ This same pattern also applies when canonical `openstudio::model` factors one
 EnergyPlus object into multiple wrapper objects. In those cases, epmodel may
 add transient companion wrappers that read and write through to a real
 persisted parent object instead of inventing fake persisted children. The
-constant-flow low-temperature radiant family is the first concrete example:
-the canonical heating and cooling coil objects are exposed in epmodel as
+constant-flow low-temperature radiant family is a representative example: the
+canonical heating and cooling coil objects are exposed in epmodel as
 transient child views backed by the parent
 `ZoneHVAC:LowTemperatureRadiant:ConstantFlow` object and its linked design
 object.
 
-This pattern now also covers four radiant `ZoneHVAC` families whose canonical
+This pattern also covers four radiant `ZoneHVAC` families whose canonical
 OpenStudio API exposes plant-side coil children:
 
 - `ZoneHVACLowTempRadiantConstFlow`
@@ -193,7 +193,7 @@ OpenStudio API exposes plant-side coil children:
 - `ZoneHVACCoolingPanelRadiantConvectiveWater`
 - `ZoneHVACBaseboardRadiantConvectiveWater`
 
-The same architectural pattern now also covers
+The same architectural pattern also covers
 `ZoneHVACBaseboardConvectiveWater`. Canonical OpenStudio exposes a
 `CoilHeatingWaterBaseboard` child, but EnergyPlus stores that coil's fields
 directly on the parent `ZoneHVAC:Baseboard:Convective:Water` object. epmodel
@@ -221,6 +221,29 @@ canonical OpenStudio experience that callers expect. The object that the user
 adds to the loop is also the object that the high-level loop traversal APIs
 return, even though the underlying branch storage still belongs to the parent
 zone equipment object.
+
+The current transient type inventory is:
+
+- Topology connective tissue:
+  `Node`
+- Canonical radiant and baseboard coil children that EnergyPlus flattened onto
+  a persisted parent object:
+  `CoilHeatingLowTempRadiantConstFlow`
+  `CoilCoolingLowTempRadiantConstFlow`
+  `CoilHeatingLowTempRadiantVarFlow`
+  `CoilCoolingLowTempRadiantVarFlow`
+  `CoilCoolingWaterPanelRadiant`
+  `CoilHeatingWaterBaseboardRadiant`
+  `CoilHeatingWaterBaseboard`
+- Canonical variable-speed speed-data children that EnergyPlus stores only as
+  extensible rows on the parent coil:
+  `CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData`
+  `CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData`
+  `CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData`
+
+`src/epmodel/Model.hpp` is the authoritative registration point for transient
+factory types. When a new transient type is added there, this README should be
+updated in the same change so the documented inventory stays complete.
 
 ### Some Canonical Surface Intent Is Projected Into EnergyPlus Companion Objects
 
@@ -320,8 +343,8 @@ and still selectively incomplete.
 
 It already has complete coverage of the EnergyPlus IDD type set, including
 type-safe accessor methods for scalar properties and fields on those types. It
-also has a real import and repair story, a typed model layer across many
-domains, and a large amount of `openstudio::model` parity work.
+also has import and repair support, a typed model layer across many domains,
+and a large amount of `openstudio::model` parity work.
 At the same time, it does not yet include every type that is exclusive to the
 original `OpenStudio.idd`.
 For the concrete backlog of `OpenStudio.idd`-exclusive types that still need
@@ -369,6 +392,42 @@ The main remaining gaps are:
 - availability and operating schedule relationships
 - inlet, outlet, and control-node conveniences
 - stronger zone attachment and equipment-list ergonomics
+
+#### Remaining ZoneHVAC Wrappers
+
+Most of the main `ZoneHVACComponent` families now have their core parity and
+ownership work in place. The remaining wrappers are a smaller set of
+special-case types whose open work does not fit the same compound-unit or
+radiant-family patterns documented above.
+
+The current remaining set is:
+
+- `ZoneHVACIdealLoadsAirSystem`
+- `AirLoopHVACUnitarySystem`
+- `RefrigerationAirChiller`
+- `FanZoneExhaust`
+- `ZoneVentilationWindandStackOpenArea`
+
+These should not be treated as another generic compound-zone-unit batch.
+
+- `ZoneHVACIdealLoadsAirSystem` is still a true `ZoneHVAC` wrapper, but its
+  remaining work is mostly canonical relationship, schedule, and helper
+  surface rather than child-topology ownership.
+- `AirLoopHVACUnitarySystem` lives in `ZoneHVACComponent` for historical API
+  reasons, but it is really a broader unitary-system parity track rather than
+  one more zone-equipment family.
+- `RefrigerationAirChiller` is a zone-adjacent refrigeration object, not part
+  of the same family shape as the unitary and radiant `ZoneHVAC` families
+  described above.
+- `FanZoneExhaust` and `ZoneVentilationWindandStackOpenArea` are both genuine
+  zone-side objects, but their remaining work is mostly specialized airflow
+  and zone-linkage behavior, not compound internal topology.
+
+The practical consequence is that the broad `ZoneHVAC` ownership strategy is
+already established. The remaining wrappers should be handled as targeted
+special cases, with their own canonical evidence and design review, instead of
+being forced into patterns that were designed for unitary, radiant, or
+water-heater families.
 
 #### Compound HVAC Relationship Strategy
 
@@ -436,7 +495,7 @@ maintenance or canonicalization must preserve any existing field meaning first
 and, only when the field is blank, choose and attach a node using the caller's
 suggested name.
 
-`ZoneHVACUnitHeater` is the first concrete example of this pattern: the parent
+`ZoneHVACUnitHeater` is a representative example of this pattern: the parent
 owns the internal air path, exposes the meaningful internal fan-outlet node on
 the compound, and rejects direct typed topology edits on the contained
 air-side components.
@@ -506,7 +565,7 @@ The main remaining gaps are:
 ### EnergyPlus-Only Wrapper Work
 
 Some wrappers have no canonical `openstudio::model` counterpart. Those types
-still matter, but they should not be forced into an artificial parity story.
+still matter, but they should not be forced into an artificial parity frame.
 
 The current guidance is:
 

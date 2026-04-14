@@ -13,6 +13,9 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Node;
+  class HVACComponent;
+
   namespace detail {
 
     class EPMODEL_API ControllerWaterCoil_Impl : public HVACComponent_Impl
@@ -20,6 +23,8 @@ namespace epmodel {
      public:
       using HVACComponent_Impl::HVACComponent_Impl;
       virtual ~ControllerWaterCoil_Impl() override = default;
+
+      boost::optional<HVACComponent> waterCoil() const;
 
       boost::optional<std::string> controlVariable() const;
       bool isControlVariableDefaulted() const;
@@ -34,6 +39,12 @@ namespace epmodel {
       bool isActuatorVariableDefaulted() const;
       bool setActuatorVariable(const std::string& actuatorVariable);
       void resetActuatorVariable();
+
+      boost::optional<Node> sensorNode() const;
+      bool setSensorNode(const Node& sensorNode);
+
+      boost::optional<Node> actuatorNode() const;
+      bool setActuatorNode(const Node& actuatorNode);
 
       boost::optional<double> controllerConvergenceTolerance() const;
       bool isControllerConvergenceToleranceDefaulted() const;

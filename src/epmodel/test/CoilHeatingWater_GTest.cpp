@@ -129,8 +129,8 @@ TEST_F(EPModelFixture, CoilHeatingWater_ControllerWaterCoil_IsInferredFromLoopNo
   ASSERT_TRUE(controller->action());
   EXPECT_EQ("Normal", *controller->action());
 
-  auto actuatorNode = controller->getModelObjectTarget<Node>(openstudio::Controller_WaterCoilFields::ActuatorNodeName);
-  auto sensorNode = controller->getModelObjectTarget<Node>(openstudio::Controller_WaterCoilFields::SensorNodeName);
+  auto actuatorNode = controller->actuatorNode();
+  auto sensorNode = controller->sensorNode();
   ASSERT_TRUE(actuatorNode);
   ASSERT_TRUE(sensorNode);
   ASSERT_TRUE(coil.waterInletModelObject());

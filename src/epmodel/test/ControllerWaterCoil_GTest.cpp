@@ -9,6 +9,11 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ControllerWaterCoil.hpp"
+#include "../StraightComponent/Node.hpp"
+#include "../WaterToAirComponent/CoilCoolingWater.hpp"
+#include "../WaterToAirComponent/CoilHeatingWater.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -78,4 +83,57 @@ TEST_F(EPModelFixture, ControllerWaterCoil_ScalarAccessors_RoundTrip) {
   controller.resetMinimumActuatedFlow();
   EXPECT_TRUE(controller.isMinimumActuatedFlowDefaulted());
   EXPECT_DOUBLE_EQ(0.0, controller.minimumActuatedFlow());
+}
+
+TEST_F(EPModelFixture, ControllerWaterCoil_NodeAccessors_RoundTrip) {
+  Model model;
+  ControllerWaterCoil controller(model);
+
+  Node actuator = model.getOrCreateTransientByName<Node>("Controller Water Coil Actuator Node");
+  Node sensor = model.getOrCreateTransientByName<Node>("Controller Water Coil Sensor Node");
+
+  EXPECT_FALSE(controller.actuatorNode());
+  EXPECT_FALSE(controller.sensorNode());
+
+  EXPECT_TRUE(controller.setActuatorNode(actuator));
+  EXPECT_TRUE(controller.setSensorNode(sensor));
+
+  ASSERT_TRUE(controller.sensorNode());
+  EXPECT_EQ(sensor.handle(), controller.sensorNode()->handle());
+  ASSERT_TRUE(controller.actuatorNode());
+  EXPECT_EQ(actuator.handle(), controller.actuatorNode()->handle());
+}
+
+TEST_F(EPModelFixture, ControllerWaterCoil_WaterCoilIsInferredFromCoolingCoilNodes) {
+  Model model;
+  CoilCoolingWater coil(model);
+  PlantLoop plantLoop(model);
+  AirLoopHVAC airLoop(model);
+
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil));
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coil.addToNode(supplyOutletNode));
+
+  auto controller = coil.controllerWaterCoil();
+  ASSERT_TRUE(controller);
+  auto waterCoil = controller->waterCoil();
+  ASSERT_TRUE(waterCoil);
+  EXPECT_EQ(coil.handle(), waterCoil->handle());
+}
+
+TEST_F(EPModelFixture, ControllerWaterCoil_WaterCoilIsInferredFromHeatingCoilNodes) {
+  Model model;
+  CoilHeatingWater coil(model);
+  PlantLoop plantLoop(model);
+  AirLoopHVAC airLoop(model);
+
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil));
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coil.addToNode(supplyOutletNode));
+
+  auto controller = coil.controllerWaterCoil();
+  ASSERT_TRUE(controller);
+  auto waterCoil = controller->waterCoil();
+  ASSERT_TRUE(waterCoil);
+  EXPECT_EQ(coil.handle(), waterCoil->handle());
 }

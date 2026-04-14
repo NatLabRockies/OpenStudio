@@ -38,8 +38,8 @@ boost::optional<ControllerWaterCoil> inferControllerForCoil(const CoilHeatingWat
   }
 
   for (const auto& controller : coil.model().getConcreteModelObjects<ControllerWaterCoil>()) {
-    const auto actuatorNode = controller.getModelObjectTarget<Node>(openstudio::Controller_WaterCoilFields::ActuatorNodeName);
-    const auto sensorNode = controller.getModelObjectTarget<Node>(openstudio::Controller_WaterCoilFields::SensorNodeName);
+    const auto actuatorNode = controller.actuatorNode();
+    const auto sensorNode = controller.sensorNode();
     if (actuatorNode && sensorNode && actuatorNode->handle() == waterInlet->handle() && sensorNode->handle() == airOutlet->handle()) {
       return controller;
     }
@@ -237,21 +237,26 @@ bool CoilHeatingWater_Impl::addToNode(Node& node) {
   if (!waterInlet || !airOutlet) {
     return true;
   }
+  const auto actuatorNode = waterInlet->optionalCast<Node>();
+  const auto sensorNode = airOutlet->optionalCast<Node>();
+  if (!actuatorNode || !sensorNode) {
+    return true;
+  }
 
   if (auto controller = inferControllerForCoil(thisCoil)) {
     if (auto action = controller->action(); action && !openstudio::istringEqual(*action, "Normal")) {
       LOG_FREE(Warn, "openstudio.epmodel.CoilHeatingWater",
                thisCoil.briefDescription() << " has an existing ControllerWaterCoil with action set to something other than 'Normal'.");
     }
-    OS_ASSERT(controller->setPointer(openstudio::Controller_WaterCoilFields::ActuatorNodeName, waterInlet->handle()));
-    OS_ASSERT(controller->setPointer(openstudio::Controller_WaterCoilFields::SensorNodeName, airOutlet->handle()));
+    OS_ASSERT(controller->setActuatorNode(*actuatorNode));
+    OS_ASSERT(controller->setSensorNode(*sensorNode));
     return true;
   }
 
   ControllerWaterCoil controller(model());
   OS_ASSERT(controller.setAction("Normal"));
-  OS_ASSERT(controller.setPointer(openstudio::Controller_WaterCoilFields::ActuatorNodeName, waterInlet->handle()));
-  OS_ASSERT(controller.setPointer(openstudio::Controller_WaterCoilFields::SensorNodeName, airOutlet->handle()));
+  OS_ASSERT(controller.setActuatorNode(*actuatorNode));
+  OS_ASSERT(controller.setSensorNode(*sensorNode));
   return true;
 }
 
