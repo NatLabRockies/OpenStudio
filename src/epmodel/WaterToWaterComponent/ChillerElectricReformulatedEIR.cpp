@@ -6,7 +6,16 @@
 #include "WaterToWaterComponent/ChillerElectricReformulatedEIR.hpp"
 #include "WaterToWaterComponent/ChillerElectricReformulatedEIR_Impl.hpp"
 
+#include "Curve/Curve.hpp"
+#include "Curve/CurveBicubic.hpp"
+#include "Curve/CurveBiquadratic.hpp"
+#include "Curve/Curve_Impl.hpp"
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "StraightComponent/Node.hpp"
+#include "StraightComponent/Node_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -17,8 +26,82 @@
 namespace openstudio {
 namespace epmodel {
 
+  ChillerElectricReformulatedEIR::ChillerElectricReformulatedEIR(
+    const Model& model, const Curve& CCFofT, const Curve& EItoCORFofT, const Curve& EItoCORFofPLR)
+    : WaterToWaterComponent(ChillerElectricReformulatedEIR::iddObjectType(), model) {
+    OS_ASSERT(setCoolingCapacityFunctionOfTemperature(CCFofT));
+    OS_ASSERT(setElectricInputToCoolingOutputRatioFunctionOfTemperature(EItoCORFofT));
+    OS_ASSERT(setElectricInputToCoolingOutputRatioFunctionOfPLR(EItoCORFofPLR));
+    OS_ASSERT(setReferenceCOP(3.99));
+    autosizeReferenceCapacity();
+    autosizeReferenceChilledWaterFlowRate();
+    autosizeDesignHeatRecoveryWaterFlowRate();
+    OS_ASSERT(setCondenserHeatRecoveryRelativeCapacityFraction(1.0));
+    resetHeatRecoveryLeavingTemperatureSetpointNode();
+    resetHeatRecoveryInletHighTemperatureLimitSchedule();
+    OS_ASSERT(setEndUseSubcategory("General"));
+    OS_ASSERT(setCondenserFlowControl("ConstantFlow"));
+    OS_ASSERT(setCondenserMinimumFlowFraction(0.2));
+    OS_ASSERT(setThermosiphonMinimumTemperatureDifference(0.0));
+  }
+
   ChillerElectricReformulatedEIR::ChillerElectricReformulatedEIR(const Model& model)
-    : WaterToWaterComponent(ChillerElectricReformulatedEIR::iddObjectType(), model) {}
+    : WaterToWaterComponent(ChillerElectricReformulatedEIR::iddObjectType(), model) {
+    CurveBiquadratic CCFofT(model);
+    OS_ASSERT(CCFofT.setCoefficient1Constant(0.958546443));
+    OS_ASSERT(CCFofT.setCoefficient2x(0.035168695));
+    OS_ASSERT(CCFofT.setCoefficient3xPOW2(0.000124662));
+    OS_ASSERT(CCFofT.setCoefficient4y(-0.00274551));
+    OS_ASSERT(CCFofT.setCoefficient5yPOW2(-0.00005000));
+    OS_ASSERT(CCFofT.setCoefficient6xTIMESY(-0.00017234));
+    OS_ASSERT(CCFofT.setMinimumValueofx(5.0));
+    OS_ASSERT(CCFofT.setMaximumValueofx(10.0));
+    OS_ASSERT(CCFofT.setMinimumValueofy(20.0));
+    OS_ASSERT(CCFofT.setMaximumValueofy(40.94));
+
+    CurveBiquadratic EIRToCorfOfT(model);
+    OS_ASSERT(EIRToCorfOfT.setCoefficient1Constant(0.732700123));
+    OS_ASSERT(EIRToCorfOfT.setCoefficient2x(-0.00834360));
+    OS_ASSERT(EIRToCorfOfT.setCoefficient3xPOW2(0.000638530));
+    OS_ASSERT(EIRToCorfOfT.setCoefficient4y(-0.00303753));
+    OS_ASSERT(EIRToCorfOfT.setCoefficient5yPOW2(0.000484952));
+    OS_ASSERT(EIRToCorfOfT.setCoefficient6xTIMESY(-0.00083584));
+    OS_ASSERT(EIRToCorfOfT.setMinimumValueofx(5.0));
+    OS_ASSERT(EIRToCorfOfT.setMaximumValueofx(10.0));
+    OS_ASSERT(EIRToCorfOfT.setMinimumValueofy(20.0));
+    OS_ASSERT(EIRToCorfOfT.setMaximumValueofy(40.94));
+
+    CurveBicubic EIRToCorfOfPLR(model);
+    OS_ASSERT(EIRToCorfOfPLR.setCoefficient1Constant(0.070862846));
+    OS_ASSERT(EIRToCorfOfPLR.setCoefficient2x(0.002787560));
+    OS_ASSERT(EIRToCorfOfPLR.setCoefficient3xPOW2(-0.00000891));
+    OS_ASSERT(EIRToCorfOfPLR.setCoefficient4y(0.230973399));
+    OS_ASSERT(EIRToCorfOfPLR.setCoefficient5yPOW2(1.250442176));
+    OS_ASSERT(EIRToCorfOfPLR.setCoefficient6xTIMESY(-0.00216102));
+    OS_ASSERT(EIRToCorfOfPLR.setCoefficient7xPOW3(0.000000));
+    OS_ASSERT(EIRToCorfOfPLR.setCoefficient8yPOW3(-0.56300936));
+    OS_ASSERT(EIRToCorfOfPLR.setCoefficient9xPOW2TIMESY(0.000000));
+    OS_ASSERT(EIRToCorfOfPLR.setCoefficient10xTIMESYPOW2(0.000000));
+    OS_ASSERT(EIRToCorfOfPLR.setMinimumValueofx(20.0));
+    OS_ASSERT(EIRToCorfOfPLR.setMaximumValueofx(40.94));
+    OS_ASSERT(EIRToCorfOfPLR.setMinimumValueofy(0.01));
+    OS_ASSERT(EIRToCorfOfPLR.setMaximumValueofy(1.0));
+
+    OS_ASSERT(setCoolingCapacityFunctionOfTemperature(CCFofT));
+    OS_ASSERT(setElectricInputToCoolingOutputRatioFunctionOfTemperature(EIRToCorfOfT));
+    OS_ASSERT(setElectricInputToCoolingOutputRatioFunctionOfPLR(EIRToCorfOfPLR));
+    OS_ASSERT(setReferenceCOP(3.99));
+    autosizeReferenceCapacity();
+    autosizeReferenceChilledWaterFlowRate();
+    autosizeDesignHeatRecoveryWaterFlowRate();
+    OS_ASSERT(setCondenserHeatRecoveryRelativeCapacityFraction(1.0));
+    resetHeatRecoveryLeavingTemperatureSetpointNode();
+    resetHeatRecoveryInletHighTemperatureLimitSchedule();
+    OS_ASSERT(setEndUseSubcategory("General"));
+    OS_ASSERT(setCondenserFlowControl("ConstantFlow"));
+    OS_ASSERT(setCondenserMinimumFlowFraction(0.2));
+    OS_ASSERT(setThermosiphonMinimumTemperatureDifference(0.0));
+  }
 
   ChillerElectricReformulatedEIR::ChillerElectricReformulatedEIR(std::shared_ptr<detail::ChillerElectricReformulatedEIR_Impl> impl)
     : WaterToWaterComponent(std::move(impl)) {}
@@ -150,6 +233,22 @@ void ChillerElectricReformulatedEIR::autosizeReferenceCondenserWaterFlowRate() {
   getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->autosizeReferenceCondenserWaterFlowRate();
 }
 
+Curve ChillerElectricReformulatedEIR::coolingCapacityFunctionOfTemperature() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->coolingCapacityFunctionOfTemperature();
+}
+
+bool ChillerElectricReformulatedEIR::setCoolingCapacityFunctionOfTemperature(const Curve& curve) {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->setCoolingCapacityFunctionOfTemperature(curve);
+}
+
+Curve ChillerElectricReformulatedEIR::electricInputToCoolingOutputRatioFunctionOfTemperature() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->electricInputToCoolingOutputRatioFunctionOfTemperature();
+}
+
+bool ChillerElectricReformulatedEIR::setElectricInputToCoolingOutputRatioFunctionOfTemperature(const Curve& curve) {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->setElectricInputToCoolingOutputRatioFunctionOfTemperature(curve);
+}
+
 std::string ChillerElectricReformulatedEIR::electricInputToCoolingOutputRatioFunctionOfPLRType() const {
   return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->electricInputToCoolingOutputRatioFunctionOfPLRType();
 }
@@ -162,6 +261,14 @@ bool ChillerElectricReformulatedEIR::setElectricInputToCoolingOutputRatioFunctio
 
 void ChillerElectricReformulatedEIR::resetElectricInputToCoolingOutputRatioFunctionOfPLRType() {
   getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->resetElectricInputToCoolingOutputRatioFunctionOfPLRType();
+}
+
+Curve ChillerElectricReformulatedEIR::electricInputToCoolingOutputRatioFunctionOfPLR() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->electricInputToCoolingOutputRatioFunctionOfPLR();
+}
+
+bool ChillerElectricReformulatedEIR::setElectricInputToCoolingOutputRatioFunctionOfPLR(const Curve& curve) {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->setElectricInputToCoolingOutputRatioFunctionOfPLR(curve);
 }
 
 double ChillerElectricReformulatedEIR::minimumPartLoadRatio() const {
@@ -320,6 +427,30 @@ bool ChillerElectricReformulatedEIR::setCondenserHeatRecoveryRelativeCapacityFra
     condenserHeatRecoveryRelativeCapacityFraction);
 }
 
+boost::optional<Schedule> ChillerElectricReformulatedEIR::heatRecoveryInletHighTemperatureLimitSchedule() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->heatRecoveryInletHighTemperatureLimitSchedule();
+}
+
+bool ChillerElectricReformulatedEIR::setHeatRecoveryInletHighTemperatureLimitSchedule(Schedule& schedule) {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->setHeatRecoveryInletHighTemperatureLimitSchedule(schedule);
+}
+
+void ChillerElectricReformulatedEIR::resetHeatRecoveryInletHighTemperatureLimitSchedule() {
+  getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->resetHeatRecoveryInletHighTemperatureLimitSchedule();
+}
+
+boost::optional<Node> ChillerElectricReformulatedEIR::heatRecoveryLeavingTemperatureSetpointNode() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->heatRecoveryLeavingTemperatureSetpointNode();
+}
+
+bool ChillerElectricReformulatedEIR::setHeatRecoveryLeavingTemperatureSetpointNode(const Node& node) {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->setHeatRecoveryLeavingTemperatureSetpointNode(node);
+}
+
+void ChillerElectricReformulatedEIR::resetHeatRecoveryLeavingTemperatureSetpointNode() {
+  getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->resetHeatRecoveryLeavingTemperatureSetpointNode();
+}
+
 std::string ChillerElectricReformulatedEIR::endUseSubcategory() const {
   return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->endUseSubcategory();
 }
@@ -336,12 +467,48 @@ bool ChillerElectricReformulatedEIR::setCondenserFlowControl(const std::string& 
   return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->setCondenserFlowControl(condenserFlowControl);
 }
 
+boost::optional<Curve> ChillerElectricReformulatedEIR::condenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurve() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->condenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurve();
+}
+
+bool ChillerElectricReformulatedEIR::setCondenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurve(const Curve& curve) {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->setCondenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurve(curve);
+}
+
+void ChillerElectricReformulatedEIR::resetCondenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurve() {
+  getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->resetCondenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurve();
+}
+
+boost::optional<Schedule> ChillerElectricReformulatedEIR::temperatureDifferenceAcrossCondenserSchedule() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->temperatureDifferenceAcrossCondenserSchedule();
+}
+
+bool ChillerElectricReformulatedEIR::setTemperatureDifferenceAcrossCondenserSchedule(Schedule& schedule) {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->setTemperatureDifferenceAcrossCondenserSchedule(schedule);
+}
+
+void ChillerElectricReformulatedEIR::resetTemperatureDifferenceAcrossCondenserSchedule() {
+  getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->resetTemperatureDifferenceAcrossCondenserSchedule();
+}
+
 double ChillerElectricReformulatedEIR::condenserMinimumFlowFraction() const {
   return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->condenserMinimumFlowFraction();
 }
 
 bool ChillerElectricReformulatedEIR::setCondenserMinimumFlowFraction(double condenserMinimumFlowFraction) {
   return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->setCondenserMinimumFlowFraction(condenserMinimumFlowFraction);
+}
+
+boost::optional<Curve> ChillerElectricReformulatedEIR::thermosiphonCapacityFractionCurve() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->thermosiphonCapacityFractionCurve();
+}
+
+bool ChillerElectricReformulatedEIR::setThermosiphonCapacityFractionCurve(const Curve& curve) {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->setThermosiphonCapacityFractionCurve(curve);
+}
+
+void ChillerElectricReformulatedEIR::resetThermosiphonCapacityFractionCurve() {
+  getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->resetThermosiphonCapacityFractionCurve();
 }
 
 double ChillerElectricReformulatedEIR::thermosiphonMinimumTemperatureDifference() const {
@@ -351,6 +518,58 @@ double ChillerElectricReformulatedEIR::thermosiphonMinimumTemperatureDifference(
 bool ChillerElectricReformulatedEIR::setThermosiphonMinimumTemperatureDifference(double thermosiphonMinimumTemperatureDifference) {
   return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->setThermosiphonMinimumTemperatureDifference(
     thermosiphonMinimumTemperatureDifference);
+}
+
+boost::optional<double> ChillerElectricReformulatedEIR::autosizedReferenceCapacity() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->autosizedReferenceCapacity();
+}
+
+boost::optional<double> ChillerElectricReformulatedEIR::autosizedReferenceChilledWaterFlowRate() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->autosizedReferenceChilledWaterFlowRate();
+}
+
+boost::optional<double> ChillerElectricReformulatedEIR::autosizedReferenceCondenserWaterFlowRate() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->autosizedReferenceCondenserWaterFlowRate();
+}
+
+boost::optional<double> ChillerElectricReformulatedEIR::autosizedDesignHeatRecoveryWaterFlowRate() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->autosizedDesignHeatRecoveryWaterFlowRate();
+}
+
+boost::optional<PlantLoop> ChillerElectricReformulatedEIR::chilledWaterLoop() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->chilledWaterLoop();
+}
+
+boost::optional<Node> ChillerElectricReformulatedEIR::chilledWaterInletNode() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->chilledWaterInletNode();
+}
+
+boost::optional<Node> ChillerElectricReformulatedEIR::chilledWaterOutletNode() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->chilledWaterOutletNode();
+}
+
+boost::optional<PlantLoop> ChillerElectricReformulatedEIR::condenserWaterLoop() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->condenserWaterLoop();
+}
+
+boost::optional<Node> ChillerElectricReformulatedEIR::condenserInletNode() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->condenserInletNode();
+}
+
+boost::optional<Node> ChillerElectricReformulatedEIR::condenserOutletNode() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->condenserOutletNode();
+}
+
+boost::optional<PlantLoop> ChillerElectricReformulatedEIR::heatRecoveryLoop() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->heatRecoveryLoop();
+}
+
+boost::optional<Node> ChillerElectricReformulatedEIR::heatRecoveryInletNode() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->heatRecoveryInletNode();
+}
+
+boost::optional<Node> ChillerElectricReformulatedEIR::heatRecoveryOutletNode() const {
+  return getImpl<detail::ChillerElectricReformulatedEIR_Impl>()->heatRecoveryOutletNode();
 }
 
 }  // namespace epmodel
@@ -501,6 +720,33 @@ void ChillerElectricReformulatedEIR_Impl::autosizeReferenceCondenserWaterFlowRat
   OS_ASSERT(setString(openstudio::Chiller_Electric_ReformulatedEIRFields::ReferenceCondenserWaterFlowRate, "Autosize"));
 }
 
+boost::optional<double> ChillerElectricReformulatedEIR_Impl::autosizedReferenceCondenserWaterFlowRate() const {
+  return boost::none;
+}
+
+Curve ChillerElectricReformulatedEIR_Impl::coolingCapacityFunctionOfTemperature() const {
+  auto target = getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Chiller_Electric_ReformulatedEIRFields::CoolingCapacityFunctionofTemperatureCurveName);
+  OS_ASSERT(target);
+  return *target;
+}
+
+bool ChillerElectricReformulatedEIR_Impl::setCoolingCapacityFunctionOfTemperature(const Curve& curve) {
+  return setPointer(openstudio::Chiller_Electric_ReformulatedEIRFields::CoolingCapacityFunctionofTemperatureCurveName, curve.handle());
+}
+
+Curve ChillerElectricReformulatedEIR_Impl::electricInputToCoolingOutputRatioFunctionOfTemperature() const {
+  auto target = getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Chiller_Electric_ReformulatedEIRFields::ElectricInputtoCoolingOutputRatioFunctionofTemperatureCurveName);
+  OS_ASSERT(target);
+  return *target;
+}
+
+bool ChillerElectricReformulatedEIR_Impl::setElectricInputToCoolingOutputRatioFunctionOfTemperature(const Curve& curve) {
+  return setPointer(openstudio::Chiller_Electric_ReformulatedEIRFields::ElectricInputtoCoolingOutputRatioFunctionofTemperatureCurveName,
+                    curve.handle());
+}
+
 std::string ChillerElectricReformulatedEIR_Impl::electricInputToCoolingOutputRatioFunctionOfPLRType() const {
   const auto value =
     getString(openstudio::Chiller_Electric_ReformulatedEIRFields::ElectricInputtoCoolingOutputRatioFunctionofPartLoadRatioCurveType, true);
@@ -517,6 +763,18 @@ bool ChillerElectricReformulatedEIR_Impl::setElectricInputToCoolingOutputRatioFu
 void ChillerElectricReformulatedEIR_Impl::resetElectricInputToCoolingOutputRatioFunctionOfPLRType() {
   OS_ASSERT(
     setString(openstudio::Chiller_Electric_ReformulatedEIRFields::ElectricInputtoCoolingOutputRatioFunctionofPartLoadRatioCurveType, ""));
+}
+
+Curve ChillerElectricReformulatedEIR_Impl::electricInputToCoolingOutputRatioFunctionOfPLR() const {
+  auto target = getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Chiller_Electric_ReformulatedEIRFields::ElectricInputtoCoolingOutputRatioFunctionofPartLoadRatioCurveName);
+  OS_ASSERT(target);
+  return *target;
+}
+
+bool ChillerElectricReformulatedEIR_Impl::setElectricInputToCoolingOutputRatioFunctionOfPLR(const Curve& curve) {
+  return setPointer(openstudio::Chiller_Electric_ReformulatedEIRFields::ElectricInputtoCoolingOutputRatioFunctionofPartLoadRatioCurveName,
+                    curve.handle());
 }
 
 double ChillerElectricReformulatedEIR_Impl::minimumPartLoadRatio() const {
@@ -673,6 +931,10 @@ void ChillerElectricReformulatedEIR_Impl::autosizeDesignHeatRecoveryWaterFlowRat
   OS_ASSERT(setString(openstudio::Chiller_Electric_ReformulatedEIRFields::DesignHeatRecoveryWaterFlowRate, "Autosize"));
 }
 
+boost::optional<double> ChillerElectricReformulatedEIR_Impl::autosizedDesignHeatRecoveryWaterFlowRate() const {
+  return boost::none;
+}
+
 double ChillerElectricReformulatedEIR_Impl::sizingFactor() const {
   const auto value = getDouble(openstudio::Chiller_Electric_ReformulatedEIRFields::SizingFactor, true);
   OS_ASSERT(value);
@@ -702,6 +964,33 @@ bool ChillerElectricReformulatedEIR_Impl::setCondenserHeatRecoveryRelativeCapaci
                    condenserHeatRecoveryRelativeCapacityFraction);
 }
 
+boost::optional<Schedule> ChillerElectricReformulatedEIR_Impl::heatRecoveryInletHighTemperatureLimitSchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::Chiller_Electric_ReformulatedEIRFields::HeatRecoveryInletHighTemperatureLimitScheduleName);
+}
+
+bool ChillerElectricReformulatedEIR_Impl::setHeatRecoveryInletHighTemperatureLimitSchedule(Schedule& schedule) {
+  return setSchedule(openstudio::Chiller_Electric_ReformulatedEIRFields::HeatRecoveryInletHighTemperatureLimitScheduleName,
+                     "ChillerElectricReformulatedEIR", "Heat Recovery Inlet High Temperature Limit", schedule);
+}
+
+void ChillerElectricReformulatedEIR_Impl::resetHeatRecoveryInletHighTemperatureLimitSchedule() {
+  OS_ASSERT(setString(openstudio::Chiller_Electric_ReformulatedEIRFields::HeatRecoveryInletHighTemperatureLimitScheduleName, ""));
+}
+
+boost::optional<Node> ChillerElectricReformulatedEIR_Impl::heatRecoveryLeavingTemperatureSetpointNode() const {
+  return getObject<ModelObject>().getModelObjectTarget<Node>(
+    openstudio::Chiller_Electric_ReformulatedEIRFields::HeatRecoveryLeavingTemperatureSetpointNodeName);
+}
+
+bool ChillerElectricReformulatedEIR_Impl::setHeatRecoveryLeavingTemperatureSetpointNode(const Node& node) {
+  return setPointer(openstudio::Chiller_Electric_ReformulatedEIRFields::HeatRecoveryLeavingTemperatureSetpointNodeName, node.handle());
+}
+
+void ChillerElectricReformulatedEIR_Impl::resetHeatRecoveryLeavingTemperatureSetpointNode() {
+  setPointer(openstudio::Chiller_Electric_ReformulatedEIRFields::HeatRecoveryLeavingTemperatureSetpointNodeName, Handle(), false);
+}
+
 std::string ChillerElectricReformulatedEIR_Impl::endUseSubcategory() const {
   const auto value = getString(openstudio::Chiller_Electric_ReformulatedEIRFields::EndUseSubcategory, true);
   OS_ASSERT(value);
@@ -722,6 +1011,35 @@ bool ChillerElectricReformulatedEIR_Impl::setCondenserFlowControl(const std::str
   return setString(openstudio::Chiller_Electric_ReformulatedEIRFields::CondenserFlowControl, condenserFlowControl);
 }
 
+boost::optional<Curve> ChillerElectricReformulatedEIR_Impl::condenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurve() const {
+  return getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Chiller_Electric_ReformulatedEIRFields::CondenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurveName);
+}
+
+bool ChillerElectricReformulatedEIR_Impl::setCondenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurve(const Curve& curve) {
+  return setPointer(openstudio::Chiller_Electric_ReformulatedEIRFields::CondenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurveName,
+                    curve.handle());
+}
+
+void ChillerElectricReformulatedEIR_Impl::resetCondenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurve() {
+  setPointer(openstudio::Chiller_Electric_ReformulatedEIRFields::CondenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurveName, Handle(),
+             false);
+}
+
+boost::optional<Schedule> ChillerElectricReformulatedEIR_Impl::temperatureDifferenceAcrossCondenserSchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::Chiller_Electric_ReformulatedEIRFields::TemperatureDifferenceAcrossCondenserScheduleName);
+}
+
+bool ChillerElectricReformulatedEIR_Impl::setTemperatureDifferenceAcrossCondenserSchedule(Schedule& schedule) {
+  return setSchedule(openstudio::Chiller_Electric_ReformulatedEIRFields::TemperatureDifferenceAcrossCondenserScheduleName,
+                     "ChillerElectricReformulatedEIR", "Temperature Difference Across Condenser", schedule);
+}
+
+void ChillerElectricReformulatedEIR_Impl::resetTemperatureDifferenceAcrossCondenserSchedule() {
+  OS_ASSERT(setString(openstudio::Chiller_Electric_ReformulatedEIRFields::TemperatureDifferenceAcrossCondenserScheduleName, ""));
+}
+
 double ChillerElectricReformulatedEIR_Impl::condenserMinimumFlowFraction() const {
   const auto value = getDouble(openstudio::Chiller_Electric_ReformulatedEIRFields::CondenserMinimumFlowFraction, true);
   OS_ASSERT(value);
@@ -730,6 +1048,19 @@ double ChillerElectricReformulatedEIR_Impl::condenserMinimumFlowFraction() const
 
 bool ChillerElectricReformulatedEIR_Impl::setCondenserMinimumFlowFraction(double condenserMinimumFlowFraction) {
   return setDouble(openstudio::Chiller_Electric_ReformulatedEIRFields::CondenserMinimumFlowFraction, condenserMinimumFlowFraction);
+}
+
+boost::optional<Curve> ChillerElectricReformulatedEIR_Impl::thermosiphonCapacityFractionCurve() const {
+  return getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Chiller_Electric_ReformulatedEIRFields::ThermosiphonCapacityFractionCurveName);
+}
+
+bool ChillerElectricReformulatedEIR_Impl::setThermosiphonCapacityFractionCurve(const Curve& curve) {
+  return setPointer(openstudio::Chiller_Electric_ReformulatedEIRFields::ThermosiphonCapacityFractionCurveName, curve.handle());
+}
+
+void ChillerElectricReformulatedEIR_Impl::resetThermosiphonCapacityFractionCurve() {
+  setPointer(openstudio::Chiller_Electric_ReformulatedEIRFields::ThermosiphonCapacityFractionCurveName, Handle(), false);
 }
 
 double ChillerElectricReformulatedEIR_Impl::thermosiphonMinimumTemperatureDifference() const {
@@ -741,6 +1072,83 @@ double ChillerElectricReformulatedEIR_Impl::thermosiphonMinimumTemperatureDiffer
 bool ChillerElectricReformulatedEIR_Impl::setThermosiphonMinimumTemperatureDifference(double thermosiphonMinimumTemperatureDifference) {
   return setDouble(openstudio::Chiller_Electric_ReformulatedEIRFields::ThermosiphonMinimumTemperatureDifference,
                    thermosiphonMinimumTemperatureDifference);
+}
+
+boost::optional<double> ChillerElectricReformulatedEIR_Impl::autosizedReferenceCapacity() const {
+  return boost::none;
+}
+
+boost::optional<double> ChillerElectricReformulatedEIR_Impl::autosizedReferenceChilledWaterFlowRate() const {
+  return boost::none;
+}
+
+boost::optional<PlantLoop> ChillerElectricReformulatedEIR_Impl::chilledWaterLoop() const {
+  return WaterToWaterComponent_Impl::plantLoop();
+}
+
+boost::optional<Node> ChillerElectricReformulatedEIR_Impl::chilledWaterInletNode() const {
+  if (auto mo = supplyInletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<Node> ChillerElectricReformulatedEIR_Impl::chilledWaterOutletNode() const {
+  if (auto mo = supplyOutletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<PlantLoop> ChillerElectricReformulatedEIR_Impl::condenserWaterLoop() const {
+  return WaterToWaterComponent_Impl::secondaryPlantLoop();
+}
+
+boost::optional<Node> ChillerElectricReformulatedEIR_Impl::condenserInletNode() const {
+  if (auto mo = demandInletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<Node> ChillerElectricReformulatedEIR_Impl::condenserOutletNode() const {
+  if (auto mo = demandOutletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<PlantLoop> ChillerElectricReformulatedEIR_Impl::heatRecoveryLoop() const {
+  return WaterToWaterComponent_Impl::tertiaryPlantLoop();
+}
+
+boost::optional<Node> ChillerElectricReformulatedEIR_Impl::heatRecoveryInletNode() const {
+  if (auto mo = tertiaryInletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<Node> ChillerElectricReformulatedEIR_Impl::heatRecoveryOutletNode() const {
+  if (auto mo = tertiaryOutletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+bool ChillerElectricReformulatedEIR_Impl::addToNode(Node& node) {
+  if (shouldRouteDemandSideNodeToTertiary(node)) {
+    return addToTertiaryNode(node);
+  }
+  return WaterToWaterComponent_Impl::addToNode(node);
+}
+
+bool ChillerElectricReformulatedEIR_Impl::addToTertiaryNode(Node& node) {
+  return addToDemandSideTertiaryNode(node);
+}
+
+bool ChillerElectricReformulatedEIR_Impl::removeFromSecondaryPlantLoop() {
+  return WaterToWaterComponent_Impl::removeFromSecondaryPlantLoop();
 }
 
 std::vector<std::string> ChillerElectricReformulatedEIR_Impl::validChillerFlowModeValues() const {

@@ -74,7 +74,7 @@ namespace epmodel {
     };
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static const std::array<ScheduleTypeSpec, 78> specs{{
+      static const std::array<ScheduleTypeSpec, 85> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOn", "Availability Manager Scheduled On", false, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOff", "Availability Manager Scheduled Off", false, "Availability", 0.0, 1.0},
@@ -121,6 +121,13 @@ namespace epmodel {
         {"AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass", "Supply Air Fan Operating Mode Schedule", false, "Availability", 0.0, 1.0},
         {"CoilCoolingWater", "Availability", false, "Availability", 0.0, 1.0},
         {"CoilHeatingWater", "Availability", false, "Availability", 0.0, 1.0},
+        {"HeatExchangerFluidToFluid", "Availability", false, "Availability", 0.0, 1.0},
+        {"ChillerElectricEIR", "Basin Heater Operating", false, "Availability", 0.0, 1.0},
+        {"ChillerElectricEIR", "Heat Recovery Inlet High Temperature Limit", true, "Temperature", boost::none, boost::none},
+        {"ChillerElectricEIR", "Temperature Difference Across Condenser", true, "Temperature", boost::none, boost::none},
+        {"ChillerElectricASHRAE205", "Ambient Temperature", true, "Temperature", boost::none, boost::none},
+        {"ChillerElectricReformulatedEIR", "Heat Recovery Inlet High Temperature Limit", true, "Temperature", boost::none, boost::none},
+        {"ChillerElectricReformulatedEIR", "Temperature Difference Across Condenser", true, "Temperature", boost::none, boost::none},
         {"CoilWaterHeatingAirToWaterHeatPump", "Availability Schedule", false, "Availability", 0.0, 1.0},
         {"CoilCoolingWaterToAirHeatPumpEquationFit", "Availability Schedule", false, "Availability", 0.0, 1.0},
         {"CoilHeatingWaterToAirHeatPumpEquationFit", "Availability Schedule", false, "Availability", 0.0, 1.0},

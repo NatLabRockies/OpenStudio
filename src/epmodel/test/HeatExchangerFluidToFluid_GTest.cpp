@@ -6,6 +6,8 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../WaterToWaterComponent/HeatExchangerFluidToFluid.hpp"
 
 #include <limits>
@@ -18,6 +20,9 @@ TEST_F(EPModelFixture, HeatExchangerFluidToFluid_DefaultConstructor) {
   EXPECT_EQ(HeatExchangerFluidToFluid::iddObjectType(), hx.iddObject().type());
   EXPECT_NE(std::numeric_limits<unsigned>::max(), hx.supplyInletPort());
   EXPECT_NE(std::numeric_limits<unsigned>::max(), hx.demandInletPort());
+  EXPECT_FALSE(hx.availabilitySchedule());
+  EXPECT_FALSE(hx.componentOverrideLoopSupplySideInletNode());
+  EXPECT_FALSE(hx.componentOverrideLoopDemandSideInletNode());
 
   EXPECT_TRUE(hx.isLoopDemandSideDesignFlowRateAutosized());
   EXPECT_TRUE(hx.isLoopSupplySideDesignFlowRateAutosized());
@@ -32,6 +37,33 @@ TEST_F(EPModelFixture, HeatExchangerFluidToFluid_DefaultConstructor) {
   EXPECT_DOUBLE_EQ(0.0, *hx.operationMinimumTemperatureLimit());
   ASSERT_TRUE(hx.operationMaximumTemperatureLimit());
   EXPECT_DOUBLE_EQ(100.0, *hx.operationMaximumTemperatureLimit());
+}
+
+TEST_F(EPModelFixture, HeatExchangerFluidToFluid_RelationshipAccessors_RoundTrip) {
+  Model model;
+  HeatExchangerFluidToFluid hx(model);
+  ScheduleConstant availability(model);
+  Node supplyOverride(model);
+  Node demandOverride(model);
+
+  EXPECT_TRUE(availability.setValue(1.0));
+  EXPECT_TRUE(hx.setAvailabilitySchedule(availability));
+  ASSERT_TRUE(hx.availabilitySchedule());
+  EXPECT_EQ(availability.handle(), hx.availabilitySchedule()->handle());
+  hx.resetAvailabilitySchedule();
+  EXPECT_FALSE(hx.availabilitySchedule());
+
+  EXPECT_TRUE(hx.setComponentOverrideLoopSupplySideInletNode(supplyOverride));
+  ASSERT_TRUE(hx.componentOverrideLoopSupplySideInletNode());
+  EXPECT_EQ(supplyOverride.handle(), hx.componentOverrideLoopSupplySideInletNode()->handle());
+  hx.resetComponentOverrideLoopSupplySideInletNode();
+  EXPECT_FALSE(hx.componentOverrideLoopSupplySideInletNode());
+
+  EXPECT_TRUE(hx.setComponentOverrideLoopDemandSideInletNode(demandOverride));
+  ASSERT_TRUE(hx.componentOverrideLoopDemandSideInletNode());
+  EXPECT_EQ(demandOverride.handle(), hx.componentOverrideLoopDemandSideInletNode()->handle());
+  hx.resetComponentOverrideLoopDemandSideInletNode();
+  EXPECT_FALSE(hx.componentOverrideLoopDemandSideInletNode());
 }
 
 TEST_F(EPModelFixture, HeatExchangerFluidToFluid_ScalarAccessors_RoundTrip) {

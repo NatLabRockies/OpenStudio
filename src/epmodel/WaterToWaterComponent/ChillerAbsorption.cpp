@@ -6,7 +6,9 @@
 #include "WaterToWaterComponent/ChillerAbsorption.hpp"
 #include "WaterToWaterComponent/ChillerAbsorption_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -17,7 +19,28 @@
 namespace openstudio {
 namespace epmodel {
 
-ChillerAbsorption::ChillerAbsorption(const Model& model) : WaterToWaterComponent(ChillerAbsorption::iddObjectType(), model) {}
+ChillerAbsorption::ChillerAbsorption(const Model& model) : WaterToWaterComponent(ChillerAbsorption::iddObjectType(), model) {
+  autosizeNominalCapacity();
+  autosizeNominalPumpingPower();
+  OS_ASSERT(setMinimumPartLoadRatio(0.15));
+  OS_ASSERT(setMaximumPartLoadRatio(1.0));
+  OS_ASSERT(setOptimumPartLoadRatio(0.65));
+  OS_ASSERT(setDesignCondenserInletTemperature(35.0));
+  autosizeDesignChilledWaterFlowRate();
+  autosizeDesignCondenserWaterFlowRate();
+  OS_ASSERT(setCoefficient1oftheHotWaterorSteamUsePartLoadRatioCurve(0.03303));
+  OS_ASSERT(setCoefficient2oftheHotWaterorSteamUsePartLoadRatioCurve(0.6852));
+  OS_ASSERT(setCoefficient3oftheHotWaterorSteamUsePartLoadRatioCurve(0.2818));
+  OS_ASSERT(setCoefficient1ofthePumpElectricUsePartLoadRatioCurve(1.0));
+  OS_ASSERT(setCoefficient2ofthePumpElectricUsePartLoadRatioCurve(0.0));
+  OS_ASSERT(setCoefficient3ofthePumpElectricUsePartLoadRatioCurve(0.0));
+  OS_ASSERT(setChilledWaterOutletTemperatureLowerLimit(5.0));
+  OS_ASSERT(setChillerFlowMode("NotModulated"));
+  OS_ASSERT(setGeneratorHeatSourceType("Steam"));
+  autosizeDesignGeneratorFluidFlowRate();
+  OS_ASSERT(setDegreeofSubcoolinginSteamGenerator(1.0));
+  OS_ASSERT(setSizingFactor(1.0));
+}
 
 ChillerAbsorption::ChillerAbsorption(std::shared_ptr<detail::ChillerAbsorption_Impl> impl) : WaterToWaterComponent(std::move(impl)) {}
 
@@ -237,6 +260,38 @@ double ChillerAbsorption::sizingFactor() const {
 
 bool ChillerAbsorption::setSizingFactor(double sizingFactor) {
   return getImpl<detail::ChillerAbsorption_Impl>()->setSizingFactor(sizingFactor);
+}
+
+boost::optional<double> ChillerAbsorption::autosizedNominalCapacity() const {
+  return getImpl<detail::ChillerAbsorption_Impl>()->autosizedNominalCapacity();
+}
+
+boost::optional<double> ChillerAbsorption::autosizedNominalPumpingPower() const {
+  return getImpl<detail::ChillerAbsorption_Impl>()->autosizedNominalPumpingPower();
+}
+
+boost::optional<double> ChillerAbsorption::autosizedDesignChilledWaterFlowRate() const {
+  return getImpl<detail::ChillerAbsorption_Impl>()->autosizedDesignChilledWaterFlowRate();
+}
+
+boost::optional<double> ChillerAbsorption::autosizedDesignCondenserWaterFlowRate() const {
+  return getImpl<detail::ChillerAbsorption_Impl>()->autosizedDesignCondenserWaterFlowRate();
+}
+
+boost::optional<double> ChillerAbsorption::autosizedDesignGeneratorFluidFlowRate() const {
+  return getImpl<detail::ChillerAbsorption_Impl>()->autosizedDesignGeneratorFluidFlowRate();
+}
+
+boost::optional<PlantLoop> ChillerAbsorption::chilledWaterLoop() const {
+  return getImpl<detail::ChillerAbsorption_Impl>()->chilledWaterLoop();
+}
+
+boost::optional<PlantLoop> ChillerAbsorption::condenserWaterLoop() const {
+  return getImpl<detail::ChillerAbsorption_Impl>()->condenserWaterLoop();
+}
+
+boost::optional<PlantLoop> ChillerAbsorption::generatorLoop() const {
+  return getImpl<detail::ChillerAbsorption_Impl>()->generatorLoop();
 }
 }  // namespace epmodel
 }  // namespace openstudio
@@ -470,9 +525,14 @@ namespace detail {
     return *value;
   }
 
-  bool ChillerAbsorption_Impl::setGeneratorHeatSourceType(const std::string& generatorHeatSourceType) {
-    return setString(openstudio::Chiller_AbsorptionFields::GeneratorHeatSourceType, generatorHeatSourceType);
+bool ChillerAbsorption_Impl::setGeneratorHeatSourceType(const std::string& generatorHeatSourceType) {
+  if (istringEqual("Steam", generatorHeatSourceType) && generatorLoop()) {
+    LOG_FREE(Warn, "openstudio.epmodel.ChillerAbsorption",
+             "Cannot set generatorHeatSourceType to 'Steam' while chiller '" << nameString() << "' is connected to a generator loop");
+    return false;
   }
+  return setString(openstudio::Chiller_AbsorptionFields::GeneratorHeatSourceType, generatorHeatSourceType);
+}
 
   boost::optional<double> ChillerAbsorption_Impl::designGeneratorFluidFlowRate() const {
     return getDouble(openstudio::Chiller_AbsorptionFields::DesignGeneratorFluidFlowRate, true);
@@ -512,9 +572,9 @@ namespace detail {
     return *value;
   }
 
-  bool ChillerAbsorption_Impl::setSizingFactor(double sizingFactor) {
-    return setDouble(openstudio::Chiller_AbsorptionFields::SizingFactor, sizingFactor);
-  }
+bool ChillerAbsorption_Impl::setSizingFactor(double sizingFactor) {
+  return setDouble(openstudio::Chiller_AbsorptionFields::SizingFactor, sizingFactor);
+}
 
   std::vector<std::string> ChillerAbsorption_Impl::chillerFlowModeValues() const {
     return openstudio::epmodel::ChillerAbsorption::chillerFlowModeValues();
@@ -544,9 +604,72 @@ namespace detail {
     return openstudio::Chiller_AbsorptionFields::GeneratorInletNodeName;
   }
 
-  unsigned ChillerAbsorption_Impl::tertiaryOutletPort() const {
-    return openstudio::Chiller_AbsorptionFields::GeneratorOutletNodeName;
+unsigned ChillerAbsorption_Impl::tertiaryOutletPort() const {
+  return openstudio::Chiller_AbsorptionFields::GeneratorOutletNodeName;
+}
+
+bool ChillerAbsorption_Impl::addToNode(Node& node) {
+  if (shouldRouteDemandSideNodeToTertiary(node)) {
+    LOG_FREE(Warn, "openstudio.epmodel.ChillerAbsorption",
+             "Routing second demand-side loop attachment through addToTertiaryNode for " << briefDescription());
+    return addToTertiaryNode(node);
   }
+
+  return WaterToWaterComponent_Impl::addToNode(node);
+}
+
+bool ChillerAbsorption_Impl::addToTertiaryNode(Node& node) {
+  const bool ok = addToDemandSideTertiaryNode(node);
+  if (ok) {
+    LOG_FREE(Info, "openstudio.epmodel.ChillerAbsorption",
+             "Setting Generator Heat Source Type to 'HotWater' for " << briefDescription());
+    return setGeneratorHeatSourceType("HotWater");
+  }
+
+  LOG_FREE(Info, "openstudio.epmodel.ChillerAbsorption",
+           "Generator loop connections can only be placed on the demand side of a plant loop for " << briefDescription());
+  return false;
+}
+
+bool ChillerAbsorption_Impl::removeFromTertiaryPlantLoop() {
+  const bool ok = WaterToWaterComponent_Impl::removeFromTertiaryPlantLoop();
+  if (ok) {
+    OS_ASSERT(setString(openstudio::Chiller_AbsorptionFields::GeneratorHeatSourceType, "Steam"));
+  }
+  return ok;
+}
+
+boost::optional<PlantLoop> ChillerAbsorption_Impl::chilledWaterLoop() const {
+  return WaterToWaterComponent_Impl::plantLoop();
+}
+
+boost::optional<PlantLoop> ChillerAbsorption_Impl::condenserWaterLoop() const {
+  return WaterToWaterComponent_Impl::secondaryPlantLoop();
+}
+
+boost::optional<PlantLoop> ChillerAbsorption_Impl::generatorLoop() const {
+  return WaterToWaterComponent_Impl::tertiaryPlantLoop();
+}
+
+boost::optional<double> ChillerAbsorption_Impl::autosizedNominalCapacity() const {
+  return boost::none;
+}
+
+boost::optional<double> ChillerAbsorption_Impl::autosizedNominalPumpingPower() const {
+  return boost::none;
+}
+
+boost::optional<double> ChillerAbsorption_Impl::autosizedDesignChilledWaterFlowRate() const {
+  return boost::none;
+}
+
+boost::optional<double> ChillerAbsorption_Impl::autosizedDesignCondenserWaterFlowRate() const {
+  return boost::none;
+}
+
+boost::optional<double> ChillerAbsorption_Impl::autosizedDesignGeneratorFluidFlowRate() const {
+  return boost::none;
+}
 
 }  // namespace detail
 }  // namespace epmodel

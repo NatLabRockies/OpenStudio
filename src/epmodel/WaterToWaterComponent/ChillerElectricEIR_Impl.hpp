@@ -13,6 +13,11 @@
 namespace openstudio {
 namespace epmodel {
 
+class Curve;
+class Schedule;
+class PlantLoop;
+class Node;
+
 namespace detail {
 
 class EPMODEL_API ChillerElectricEIR_Impl : public WaterToWaterComponent_Impl
@@ -20,6 +25,10 @@ class EPMODEL_API ChillerElectricEIR_Impl : public WaterToWaterComponent_Impl
  public:
   using WaterToWaterComponent_Impl::WaterToWaterComponent_Impl;
   virtual ~ChillerElectricEIR_Impl() override = default;
+
+  bool addToNode(Node& node) override;
+  bool addToTertiaryNode(Node& node) override;
+  bool removeFromSecondaryPlantLoop() override;
 
   unsigned supplyInletPort() const override;
   unsigned supplyOutletPort() const override;
@@ -60,6 +69,16 @@ class EPMODEL_API ChillerElectricEIR_Impl : public WaterToWaterComponent_Impl
   bool setReferenceCondenserFluidFlowRate(double referenceCondenserFluidFlowRate);
   void resetReferenceCondenserFluidFlowRate();
   void autosizeReferenceCondenserFluidFlowRate();
+  boost::optional<double> autosizedReferenceCondenserFluidFlowRate() const;
+
+  Curve coolingCapacityFunctionOfTemperature() const;
+  bool setCoolingCapacityFunctionOfTemperature(const Curve& curve);
+
+  Curve electricInputToCoolingOutputRatioFunctionOfTemperature() const;
+  bool setElectricInputToCoolingOutputRatioFunctionOfTemperature(const Curve& curve);
+
+  Curve electricInputToCoolingOutputRatioFunctionOfPLR() const;
+  bool setElectricInputToCoolingOutputRatioFunctionOfPLR(const Curve& curve);
 
   double minimumPartLoadRatio() const;
   bool isMinimumPartLoadRatioDefaulted() const;
@@ -112,6 +131,7 @@ class EPMODEL_API ChillerElectricEIR_Impl : public WaterToWaterComponent_Impl
   bool isDesignHeatRecoveryWaterFlowRateAutosized() const;
   bool setDesignHeatRecoveryWaterFlowRate(double designHeatRecoveryWaterFlowRate);
   void autosizeDesignHeatRecoveryWaterFlowRate();
+  boost::optional<double> autosizedDesignHeatRecoveryWaterFlowRate() const;
 
   double sizingFactor() const;
   bool isSizingFactorDefaulted() const;
@@ -128,8 +148,20 @@ class EPMODEL_API ChillerElectricEIR_Impl : public WaterToWaterComponent_Impl
   bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
   void resetBasinHeaterSetpointTemperature();
 
+  boost::optional<Schedule> basinHeaterSchedule() const;
+  bool setBasinHeaterSchedule(Schedule& schedule);
+  void resetBasinHeaterSchedule();
+
   double condenserHeatRecoveryRelativeCapacityFraction() const;
   bool setCondenserHeatRecoveryRelativeCapacityFraction(double condenserHeatRecoveryRelativeCapacityFraction);
+
+  boost::optional<Schedule> heatRecoveryInletHighTemperatureLimitSchedule() const;
+  bool setHeatRecoveryInletHighTemperatureLimitSchedule(Schedule& schedule);
+  void resetHeatRecoveryInletHighTemperatureLimitSchedule();
+
+  boost::optional<Node> heatRecoveryLeavingTemperatureSetpointNode() const;
+  bool setHeatRecoveryLeavingTemperatureSetpointNode(const Node& node);
+  void resetHeatRecoveryLeavingTemperatureSetpointNode();
 
   std::string endUseSubcategory() const;
   bool setEndUseSubcategory(const std::string& endUseSubcategory);
@@ -138,12 +170,38 @@ class EPMODEL_API ChillerElectricEIR_Impl : public WaterToWaterComponent_Impl
   bool setCondenserFlowControl(const std::string& condenserFlowControl);
   std::vector<std::string> condenserFlowControlValues() const;
 
+  boost::optional<Curve> condenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurve() const;
+  bool setCondenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurve(const Curve& curve);
+  void resetCondenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurve();
+
+  boost::optional<Schedule> temperatureDifferenceAcrossCondenserSchedule() const;
+  bool setTemperatureDifferenceAcrossCondenserSchedule(Schedule& schedule);
+  void resetTemperatureDifferenceAcrossCondenserSchedule();
+
   double condenserMinimumFlowFraction() const;
   bool setCondenserMinimumFlowFraction(double condenserMinimumFlowFraction);
+
+  boost::optional<Curve> thermosiphonCapacityFractionCurve() const;
+  bool setThermosiphonCapacityFractionCurve(const Curve& curve);
+  void resetThermosiphonCapacityFractionCurve();
 
   double thermosiphonMinimumTemperatureDifference() const;
   bool setThermosiphonMinimumTemperatureDifference(double thermosiphonMinimumTemperatureDifference);
 
+  boost::optional<double> autosizedReferenceCapacity() const;
+  boost::optional<double> autosizedReferenceChilledWaterFlowRate() const;
+
+  boost::optional<PlantLoop> chilledWaterLoop() const;
+  boost::optional<Node> chilledWaterInletNode() const;
+  boost::optional<Node> chilledWaterOutletNode() const;
+
+  boost::optional<PlantLoop> condenserWaterLoop() const;
+  boost::optional<Node> condenserInletNode() const;
+  boost::optional<Node> condenserOutletNode() const;
+
+  boost::optional<PlantLoop> heatRecoveryLoop() const;
+  boost::optional<Node> heatRecoveryInletNode() const;
+  boost::optional<Node> heatRecoveryOutletNode() const;
 };
 
 }  // namespace detail

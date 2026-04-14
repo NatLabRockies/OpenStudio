@@ -495,16 +495,8 @@ boost::optional<Node> HeatPumpPlantLoopEIRCooling_Impl::heatRecoveryOutletNode()
 }
 
 bool HeatPumpPlantLoopEIRCooling_Impl::addToNode(Node& node) {
-  if (auto loop = node.plantLoop()) {
-    if (loop->demandComponent(node.handle())) {
-      if (auto sourceLoop = sourceSideWaterLoop()) {
-        if (loop->handle() != sourceLoop->handle()) {
-          if (!heatRecoveryLoop()) {
-            return addToTertiaryNode(node);
-          }
-        }
-      }
-    }
+  if (shouldRouteDemandSideNodeToTertiary(node)) {
+    return addToTertiaryNode(node);
   }
 
   const bool ok = WaterToWaterComponent_Impl::addToNode(node);
@@ -515,12 +507,7 @@ bool HeatPumpPlantLoopEIRCooling_Impl::addToNode(Node& node) {
 }
 
 bool HeatPumpPlantLoopEIRCooling_Impl::addToTertiaryNode(Node& node) {
-  if (auto loop = node.plantLoop()) {
-    if (loop->demandComponent(node.handle())) {
-      return WaterToWaterComponent_Impl::addToTertiaryNode(node);
-    }
-  }
-  return false;
+  return addToDemandSideTertiaryNode(node);
 }
 
 bool HeatPumpPlantLoopEIRCooling_Impl::removeFromSecondaryPlantLoop() {

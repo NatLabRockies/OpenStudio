@@ -16,6 +16,10 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Curve;
+class Schedule;
+class Node;
+class PlantLoop;
 
 namespace detail {
 class ChillerElectricEIR_Impl;
@@ -24,6 +28,7 @@ class ChillerElectricEIR_Impl;
 class EPMODEL_API ChillerElectricEIR : public WaterToWaterComponent
 {
  public:
+  explicit ChillerElectricEIR(const Model& model, const Curve& CCFofT, const Curve& EItoCORFofT, const Curve& EItoCORFofPLR);
   explicit ChillerElectricEIR(const Model& model);
 
   virtual ~ChillerElectricEIR() override = default;
@@ -39,13 +44,15 @@ class EPMODEL_API ChillerElectricEIR : public WaterToWaterComponent
   static std::vector<std::string> condenserFlowControlValues();
 
   // Schema Alignment Notes:
-  // - Status: Scalar Parity. The EIR chiller scalar surface is aligned, while curve, schedule, and node/link behavior remains excluded.
+  // - Status: Parity with documented deltas. The canonical scalar, curve, schedule, and loop convenience surface is aligned.
   // - Canonical Counterpart: openstudio::model::ChillerElectricEIR.
-  // - Implemented Parity: Scalar accessors for capacity, COP, flow rates, PLR limits, condenser behavior, heat recovery, and sizing preserve the canonical model API shape.
-  // - Documented Delta: Relationship fields such as curves, schedules, and node/object-link targets are intentionally excluded in this pass.
-  // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `Chiller:Electric:EIR` fields directly, and autosize/autocalculate behavior follows the canonical translator contract.
+  // - Implemented Parity: Canonical constructor defaults, required and optional relationship fields, chilled/condenser/heat-recovery loop conveniences,
+  //   and shared tertiary-routing behavior preserve the model-side API shape.
+  // - Documented Delta: Autosized-value helpers are present but remain epmodel stubs that return `none` until autosized results are surfaced here.
+  // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `Chiller:Electric:EIR` fields directly, while curve, schedule, and node relationships are
+  //   persisted as ordinary object links on the same object and interpreted through the shared water-to-water topology layer.
   // - Evidence: `src/model/ChillerElectricEIR.hpp`, `src/model/ChillerElectricEIR.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateChillerElectricEIR.cpp`.
-  // - Remaining Parity Work: Add the excluded relationship APIs and any remaining loop behavior only if the family moves beyond scalar parity.
+  // - Remaining Parity Work: Additional work should factor shared abstractions only when multiple chiller wrappers need the same non-generic behavior.
   boost::optional<double> referenceCapacity() const;
   bool isReferenceCapacityAutosized() const;
   bool setReferenceCapacity(boost::optional<double> referenceCapacity);
@@ -78,6 +85,15 @@ class EPMODEL_API ChillerElectricEIR : public WaterToWaterComponent
   bool setReferenceCondenserFluidFlowRate(double referenceCondenserFluidFlowRate);
   void resetReferenceCondenserFluidFlowRate();
   void autosizeReferenceCondenserFluidFlowRate();
+
+  Curve coolingCapacityFunctionOfTemperature() const;
+  bool setCoolingCapacityFunctionOfTemperature(const Curve& curve);
+
+  Curve electricInputToCoolingOutputRatioFunctionOfTemperature() const;
+  bool setElectricInputToCoolingOutputRatioFunctionOfTemperature(const Curve& curve);
+
+  Curve electricInputToCoolingOutputRatioFunctionOfPLR() const;
+  bool setElectricInputToCoolingOutputRatioFunctionOfPLR(const Curve& curve);
 
   double minimumPartLoadRatio() const;
   bool isMinimumPartLoadRatioDefaulted() const;
@@ -144,8 +160,20 @@ class EPMODEL_API ChillerElectricEIR : public WaterToWaterComponent
   bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
   void resetBasinHeaterSetpointTemperature();
 
+  boost::optional<Schedule> basinHeaterSchedule() const;
+  bool setBasinHeaterSchedule(Schedule& schedule);
+  void resetBasinHeaterSchedule();
+
   double condenserHeatRecoveryRelativeCapacityFraction() const;
   bool setCondenserHeatRecoveryRelativeCapacityFraction(double condenserHeatRecoveryRelativeCapacityFraction);
+
+  boost::optional<Schedule> heatRecoveryInletHighTemperatureLimitSchedule() const;
+  bool setHeatRecoveryInletHighTemperatureLimitSchedule(Schedule& schedule);
+  void resetHeatRecoveryInletHighTemperatureLimitSchedule();
+
+  boost::optional<Node> heatRecoveryLeavingTemperatureSetpointNode() const;
+  bool setHeatRecoveryLeavingTemperatureSetpointNode(const Node& node);
+  void resetHeatRecoveryLeavingTemperatureSetpointNode();
 
   std::string endUseSubcategory() const;
   bool setEndUseSubcategory(const std::string& endUseSubcategory);
@@ -153,11 +181,40 @@ class EPMODEL_API ChillerElectricEIR : public WaterToWaterComponent
   std::string condenserFlowControl() const;
   bool setCondenserFlowControl(const std::string& condenserFlowControl);
 
+  boost::optional<Curve> condenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurve() const;
+  bool setCondenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurve(const Curve& curve);
+  void resetCondenserLoopFlowRateFractionFunctionofLoopPartLoadRatioCurve();
+
+  boost::optional<Schedule> temperatureDifferenceAcrossCondenserSchedule() const;
+  bool setTemperatureDifferenceAcrossCondenserSchedule(Schedule& schedule);
+  void resetTemperatureDifferenceAcrossCondenserSchedule();
+
   double condenserMinimumFlowFraction() const;
   bool setCondenserMinimumFlowFraction(double condenserMinimumFlowFraction);
 
+  boost::optional<Curve> thermosiphonCapacityFractionCurve() const;
+  bool setThermosiphonCapacityFractionCurve(const Curve& curve);
+  void resetThermosiphonCapacityFractionCurve();
+
   double thermosiphonMinimumTemperatureDifference() const;
   bool setThermosiphonMinimumTemperatureDifference(double thermosiphonMinimumTemperatureDifference);
+
+  boost::optional<double> autosizedReferenceCapacity() const;
+  boost::optional<double> autosizedReferenceChilledWaterFlowRate() const;
+  boost::optional<double> autosizedReferenceCondenserFluidFlowRate() const;
+  boost::optional<double> autosizedDesignHeatRecoveryWaterFlowRate() const;
+
+  boost::optional<PlantLoop> chilledWaterLoop() const;
+  boost::optional<Node> chilledWaterInletNode() const;
+  boost::optional<Node> chilledWaterOutletNode() const;
+
+  boost::optional<PlantLoop> condenserWaterLoop() const;
+  boost::optional<Node> condenserInletNode() const;
+  boost::optional<Node> condenserOutletNode() const;
+
+  boost::optional<PlantLoop> heatRecoveryLoop() const;
+  boost::optional<Node> heatRecoveryInletNode() const;
+  boost::optional<Node> heatRecoveryOutletNode() const;
 
  protected:
   using ImplType = detail::ChillerElectricEIR_Impl;

@@ -6,6 +6,8 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../WaterToWaterComponent/ChillerAbsorption.hpp"
 
 #include <limits>
@@ -20,6 +22,29 @@ TEST_F(EPModelFixture, ChillerAbsorption_DefaultConstructor) {
   EXPECT_NE(std::numeric_limits<unsigned>::max(), chiller.supplyInletPort());
   EXPECT_NE(std::numeric_limits<unsigned>::max(), chiller.demandInletPort());
   EXPECT_NE(std::numeric_limits<unsigned>::max(), chiller.tertiaryInletPort());
+  EXPECT_TRUE(chiller.isNominalCapacityAutosized());
+  EXPECT_TRUE(chiller.isNominalPumpingPowerAutosized());
+  EXPECT_DOUBLE_EQ(0.15, chiller.minimumPartLoadRatio());
+  EXPECT_DOUBLE_EQ(1.0, chiller.maximumPartLoadRatio());
+  EXPECT_DOUBLE_EQ(0.65, chiller.optimumPartLoadRatio());
+  EXPECT_DOUBLE_EQ(35.0, chiller.designCondenserInletTemperature());
+  EXPECT_TRUE(chiller.isDesignChilledWaterFlowRateAutosized());
+  EXPECT_TRUE(chiller.isDesignCondenserWaterFlowRateAutosized());
+  EXPECT_DOUBLE_EQ(0.03303, chiller.coefficient1oftheHotWaterorSteamUsePartLoadRatioCurve());
+  EXPECT_DOUBLE_EQ(0.6852, chiller.coefficient2oftheHotWaterorSteamUsePartLoadRatioCurve());
+  EXPECT_DOUBLE_EQ(0.2818, chiller.coefficient3oftheHotWaterorSteamUsePartLoadRatioCurve());
+  EXPECT_DOUBLE_EQ(1.0, chiller.coefficient1ofthePumpElectricUsePartLoadRatioCurve());
+  EXPECT_DOUBLE_EQ(0.0, chiller.coefficient2ofthePumpElectricUsePartLoadRatioCurve());
+  EXPECT_DOUBLE_EQ(0.0, chiller.coefficient3ofthePumpElectricUsePartLoadRatioCurve());
+  EXPECT_DOUBLE_EQ(5.0, chiller.chilledWaterOutletTemperatureLowerLimit());
+  EXPECT_EQ("NotModulated", chiller.chillerFlowMode());
+  EXPECT_EQ("Steam", chiller.generatorHeatSourceType());
+  EXPECT_TRUE(chiller.isDesignGeneratorFluidFlowRateAutosized());
+  EXPECT_DOUBLE_EQ(1.0, chiller.degreeofSubcoolinginSteamGenerator());
+  EXPECT_DOUBLE_EQ(1.0, chiller.sizingFactor());
+  EXPECT_FALSE(chiller.chilledWaterLoop());
+  EXPECT_FALSE(chiller.condenserWaterLoop());
+  EXPECT_FALSE(chiller.generatorLoop());
 }
 
 TEST_F(EPModelFixture, ChillerAbsorption_ScalarAccessors_RoundTrip) {
@@ -95,4 +120,35 @@ TEST_F(EPModelFixture, ChillerAbsorption_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(chiller.setSizingFactor(1.1));
   EXPECT_DOUBLE_EQ(1.1, chiller.sizingFactor());
+}
+
+TEST_F(EPModelFixture, ChillerAbsorption_PlantLoopAttachmentParity) {
+  Model model;
+  PlantLoop chilledWaterLoop(model);
+  PlantLoop condenserWaterLoop(model);
+  PlantLoop generatorLoop(model);
+  ChillerAbsorption chiller(model);
+
+  EXPECT_TRUE(chilledWaterLoop.addSupplyBranchForComponent(chiller));
+  ASSERT_TRUE(chiller.chilledWaterLoop());
+  EXPECT_EQ(chilledWaterLoop.handle(), chiller.chilledWaterLoop()->handle());
+
+  EXPECT_TRUE(condenserWaterLoop.addDemandBranchForComponent(chiller));
+  ASSERT_TRUE(chiller.condenserWaterLoop());
+  EXPECT_EQ(condenserWaterLoop.handle(), chiller.condenserWaterLoop()->handle());
+  EXPECT_EQ("Steam", chiller.generatorHeatSourceType());
+
+  EXPECT_TRUE(generatorLoop.addDemandBranchForComponent(chiller));
+  ASSERT_TRUE(chiller.generatorLoop());
+  EXPECT_EQ(generatorLoop.handle(), chiller.generatorLoop()->handle());
+  EXPECT_EQ("HotWater", chiller.generatorHeatSourceType());
+  EXPECT_FALSE(chiller.setGeneratorHeatSourceType("Steam"));
+  EXPECT_EQ("HotWater", chiller.generatorHeatSourceType());
+
+  Node chilledSupplyOutletNode = chilledWaterLoop.supplyOutletNode();
+  EXPECT_FALSE(chiller.addToTertiaryNode(chilledSupplyOutletNode));
+
+  EXPECT_TRUE(chiller.removeFromTertiaryPlantLoop());
+  EXPECT_FALSE(chiller.generatorLoop());
+  EXPECT_EQ("Steam", chiller.generatorHeatSourceType());
 }

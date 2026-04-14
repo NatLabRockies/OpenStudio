@@ -365,6 +365,26 @@ boost::optional<PlantLoop> WaterToWaterComponent_Impl::tertiaryPlantLoop() const
   return boost::none;
 }
 
+bool WaterToWaterComponent_Impl::shouldRouteDemandSideNodeToTertiary(const Node& node) const {
+  const auto inletPort = tertiaryInletPort();
+  const auto outletPort = tertiaryOutletPort();
+  if ((inletPort == std::numeric_limits<unsigned>::max()) || (outletPort == std::numeric_limits<unsigned>::max())) {
+    return false;
+  }
+
+  auto plantLoop_ = node.plantLoop();
+  if (!plantLoop_ || !plantLoop_->demandComponent(node.handle())) {
+    return false;
+  }
+
+  auto demandLoop = secondaryPlantLoop();
+  if (!demandLoop || (plantLoop_->handle() == demandLoop->handle())) {
+    return false;
+  }
+
+  return !tertiaryPlantLoop();
+}
+
 bool WaterToWaterComponent_Impl::removeFromTertiaryPlantLoop() {
   const auto inletPort = tertiaryInletPort();
   const auto outletPort = tertiaryOutletPort();
@@ -400,6 +420,14 @@ bool WaterToWaterComponent_Impl::addToTertiaryNode(Node& node) {
 
   removeFromTertiaryPlantLoop();
   return insertOnBranch(node, *branch, inletPort, outletPort);
+}
+
+bool WaterToWaterComponent_Impl::addToDemandSideTertiaryNode(Node& node) {
+  auto plantLoop_ = node.plantLoop();
+  if (!plantLoop_ || !plantLoop_->demandComponent(node.handle())) {
+    return false;
+  }
+  return WaterToWaterComponent_Impl::addToTertiaryNode(node);
 }
 
 }  // namespace detail

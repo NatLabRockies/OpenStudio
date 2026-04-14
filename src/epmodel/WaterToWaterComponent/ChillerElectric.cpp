@@ -547,18 +547,8 @@ boost::optional<Node> ChillerElectric_Impl::heatRecoveryOutletNode() const {
 }
 
 bool ChillerElectric_Impl::addToNode(Node& node) {
-  auto t_plantLoop = node.plantLoop();
-
-  // If trying to add to a node that is on the demand side of a plant loop and
-  // there is already a condenser loop, prefer the heat-recovery side when this
-  // chiller has not yet claimed one. This mirrors the model-side chiller
-  // family behavior without pulling controller logic into epmodel yet.
-  if (t_plantLoop && t_plantLoop->demandComponent(node.handle())) {
-    if (auto cndLoop = condenserWaterLoop()) {
-      if (t_plantLoop.get() != cndLoop.get() && !heatRecoveryLoop()) {
-        return addToTertiaryNode(node);
-      }
-    }
+  if (shouldRouteDemandSideNodeToTertiary(node)) {
+    return addToTertiaryNode(node);
   }
 
   const bool ok = WaterToWaterComponent_Impl::addToNode(node);
@@ -569,12 +559,7 @@ bool ChillerElectric_Impl::addToNode(Node& node) {
 }
 
 bool ChillerElectric_Impl::addToTertiaryNode(Node& node) {
-  auto t_plantLoop = node.plantLoop();
-  if (t_plantLoop && t_plantLoop->demandComponent(node.handle())) {
-    return WaterToWaterComponent_Impl::addToTertiaryNode(node);
-  }
-
-  return false;
+  return addToDemandSideTertiaryNode(node);
 }
 
 bool ChillerElectric_Impl::removeFromSecondaryPlantLoop() {

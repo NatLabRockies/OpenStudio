@@ -6,7 +6,21 @@
 #include "WaterToWaterComponent/ChillerElectricASHRAE205.hpp"
 #include "WaterToWaterComponent/ChillerElectricASHRAE205_Impl.hpp"
 
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
+#include "Loop/PlantLoop.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
 #include "Model.hpp"
+#include "ModelObject/Branch.hpp"
+#include "ModelObject/BranchList.hpp"
+#include "ModelObject/BranchList_Impl.hpp"
+#include "Mixer/ConnectorMixer.hpp"
+#include "Mixer/ConnectorMixer_Impl.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Splitter/ConnectorSplitter.hpp"
+#include "Splitter/ConnectorSplitter_Impl.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -14,11 +28,40 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 
+namespace {
+
+bool syncDemandConnectorPorts(openstudio::epmodel::PlantLoop& plantLoop, const std::vector<openstudio::epmodel::Branch>& equipmentBranches) {
+  auto splitter = plantLoop.demandSplitter().cast<openstudio::epmodel::ConnectorSplitter>();
+  auto mixer = plantLoop.demandMixer().cast<openstudio::epmodel::ConnectorMixer>();
+
+  while (splitter.nextBranchIndex() > equipmentBranches.size()) {
+    splitter.removePortForBranch(splitter.nextBranchIndex() - 1u);
+  }
+  while (mixer.nextBranchIndex() > equipmentBranches.size()) {
+    mixer.removePortForBranch(mixer.nextBranchIndex() - 1u);
+  }
+
+  for (unsigned i = 0; i < equipmentBranches.size(); ++i) {
+    if (!splitter.setOutletModelObject(i, equipmentBranches[i].cast<openstudio::epmodel::ModelObject>())) {
+      return false;
+    }
+    if (!mixer.setInletModelObject(i, equipmentBranches[i].cast<openstudio::epmodel::ModelObject>())) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+}  // namespace
+
 namespace openstudio {
 namespace epmodel {
 
 ChillerElectricASHRAE205::ChillerElectricASHRAE205(const Model& model)
-  : WaterToWaterComponent(ChillerElectricASHRAE205::iddObjectType(), model) {}
+  : WaterToWaterComponent(ChillerElectricASHRAE205::iddObjectType(), model) {
+  OS_ASSERT(setString(openstudio::Chiller_Electric_ASHRAE205Fields::AmbientTemperatureIndicator, "Outdoors"));
+}
 
 ChillerElectricASHRAE205::ChillerElectricASHRAE205(std::shared_ptr<detail::ChillerElectricASHRAE205_Impl> impl)
   : WaterToWaterComponent(std::move(impl)) {}
@@ -76,6 +119,30 @@ bool ChillerElectricASHRAE205::setSizingFactor(double sizingFactor) {
 
 std::string ChillerElectricASHRAE205::ambientTemperatureIndicator() const {
   return getImpl<detail::ChillerElectricASHRAE205_Impl>()->ambientTemperatureIndicator();
+}
+
+boost::optional<Schedule> ChillerElectricASHRAE205::ambientTemperatureSchedule() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->ambientTemperatureSchedule();
+}
+
+bool ChillerElectricASHRAE205::setAmbientTemperatureSchedule(Schedule& schedule) {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->setAmbientTemperatureSchedule(schedule);
+}
+
+void ChillerElectricASHRAE205::resetAmbientTemperatureSchedule() {
+  getImpl<detail::ChillerElectricASHRAE205_Impl>()->resetAmbientTemperatureSchedule();
+}
+
+boost::optional<ThermalZone> ChillerElectricASHRAE205::ambientTemperatureZone() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->ambientTemperatureZone();
+}
+
+bool ChillerElectricASHRAE205::setAmbientTemperatureZone(const ThermalZone& thermalZone) {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->setAmbientTemperatureZone(thermalZone);
+}
+
+void ChillerElectricASHRAE205::resetAmbientTemperatureZone() {
+  getImpl<detail::ChillerElectricASHRAE205_Impl>()->resetAmbientTemperatureZone();
 }
 
 boost::optional<std::string> ChillerElectricASHRAE205::ambientTemperatureOutdoorAirNodeName() const {
@@ -170,6 +237,134 @@ void ChillerElectricASHRAE205::resetEndUseSubcategory() {
   getImpl<detail::ChillerElectricASHRAE205_Impl>()->resetEndUseSubcategory();
 }
 
+boost::optional<double> ChillerElectricASHRAE205::autosizedRatedCapacity() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->autosizedRatedCapacity();
+}
+
+boost::optional<double> ChillerElectricASHRAE205::autosizedChilledWaterMaximumRequestedFlowRate() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->autosizedChilledWaterMaximumRequestedFlowRate();
+}
+
+boost::optional<double> ChillerElectricASHRAE205::autosizedCondenserMaximumRequestedFlowRate() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->autosizedCondenserMaximumRequestedFlowRate();
+}
+
+boost::optional<PlantLoop> ChillerElectricASHRAE205::chilledWaterLoop() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->chilledWaterLoop();
+}
+
+boost::optional<Node> ChillerElectricASHRAE205::chilledWaterInletNode() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->chilledWaterInletNode();
+}
+
+boost::optional<Node> ChillerElectricASHRAE205::chilledWaterOutletNode() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->chilledWaterOutletNode();
+}
+
+boost::optional<PlantLoop> ChillerElectricASHRAE205::condenserWaterLoop() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->condenserWaterLoop();
+}
+
+boost::optional<Node> ChillerElectricASHRAE205::condenserInletNode() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->condenserInletNode();
+}
+
+boost::optional<Node> ChillerElectricASHRAE205::condenserOutletNode() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->condenserOutletNode();
+}
+
+boost::optional<PlantLoop> ChillerElectricASHRAE205::heatRecoveryLoop() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->heatRecoveryLoop();
+}
+
+boost::optional<Node> ChillerElectricASHRAE205::heatRecoveryInletNode() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->heatRecoveryInletNode();
+}
+
+boost::optional<Node> ChillerElectricASHRAE205::heatRecoveryOutletNode() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->heatRecoveryOutletNode();
+}
+
+unsigned ChillerElectricASHRAE205::oilCoolerInletPort() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->oilCoolerInletPort();
+}
+
+boost::optional<ModelObject> ChillerElectricASHRAE205::oilCoolerInletModelObject() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->oilCoolerInletModelObject();
+}
+
+boost::optional<Node> ChillerElectricASHRAE205::oilCoolerInletNode() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->oilCoolerInletNode();
+}
+
+unsigned ChillerElectricASHRAE205::oilCoolerOutletPort() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->oilCoolerOutletPort();
+}
+
+boost::optional<ModelObject> ChillerElectricASHRAE205::oilCoolerOutletModelObject() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->oilCoolerOutletModelObject();
+}
+
+boost::optional<Node> ChillerElectricASHRAE205::oilCoolerOutletNode() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->oilCoolerOutletNode();
+}
+
+boost::optional<PlantLoop> ChillerElectricASHRAE205::oilCoolerLoop() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->oilCoolerLoop();
+}
+
+bool ChillerElectricASHRAE205::addDemandBranchOnOilCoolerLoop(PlantLoop& plantLoop) {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->addDemandBranchOnOilCoolerLoop(plantLoop);
+}
+
+bool ChillerElectricASHRAE205::addToOilCoolerLoopNode(Node& node) {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->addToOilCoolerLoopNode(node);
+}
+
+bool ChillerElectricASHRAE205::removeFromOilCoolerLoop() {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->removeFromOilCoolerLoop();
+}
+
+unsigned ChillerElectricASHRAE205::auxiliaryInletPort() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->auxiliaryInletPort();
+}
+
+boost::optional<ModelObject> ChillerElectricASHRAE205::auxiliaryInletModelObject() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->auxiliaryInletModelObject();
+}
+
+boost::optional<Node> ChillerElectricASHRAE205::auxiliaryInletNode() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->auxiliaryInletNode();
+}
+
+unsigned ChillerElectricASHRAE205::auxiliaryOutletPort() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->auxiliaryOutletPort();
+}
+
+boost::optional<ModelObject> ChillerElectricASHRAE205::auxiliaryOutletModelObject() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->auxiliaryOutletModelObject();
+}
+
+boost::optional<Node> ChillerElectricASHRAE205::auxiliaryOutletNode() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->auxiliaryOutletNode();
+}
+
+boost::optional<PlantLoop> ChillerElectricASHRAE205::auxiliaryLoop() const {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->auxiliaryLoop();
+}
+
+bool ChillerElectricASHRAE205::addDemandBranchOnAuxiliaryLoop(PlantLoop& plantLoop) {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->addDemandBranchOnAuxiliaryLoop(plantLoop);
+}
+
+bool ChillerElectricASHRAE205::addToAuxiliaryLoopNode(Node& node) {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->addToAuxiliaryLoopNode(node);
+}
+
+bool ChillerElectricASHRAE205::removeFromAuxiliaryLoop() {
+  return getImpl<detail::ChillerElectricASHRAE205_Impl>()->removeFromAuxiliaryLoop();
+}
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -230,8 +425,54 @@ bool ChillerElectricASHRAE205_Impl::setAmbientTemperatureIndicator(const std::st
   return result;
 }
 
+boost::optional<Schedule> ChillerElectricASHRAE205_Impl::ambientTemperatureSchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Chiller_Electric_ASHRAE205Fields::AmbientTemperatureScheduleName);
+}
+
+bool ChillerElectricASHRAE205_Impl::setAmbientTemperatureSchedule(Schedule& schedule) {
+  const bool result =
+    setSchedule(openstudio::Chiller_Electric_ASHRAE205Fields::AmbientTemperatureScheduleName, "ChillerElectricASHRAE205",
+                "Ambient Temperature", schedule);
+  if (result) {
+    const bool ok = setAmbientTemperatureIndicator("Schedule");
+    OS_ASSERT(ok);
+  }
+  return result;
+}
+
+void ChillerElectricASHRAE205_Impl::resetAmbientTemperatureSchedule() {
+  OS_ASSERT(setString(openstudio::Chiller_Electric_ASHRAE205Fields::AmbientTemperatureScheduleName, ""));
+  if (openstudio::istringEqual("Schedule", ambientTemperatureIndicator())) {
+    OS_ASSERT(setAmbientTemperatureIndicator("Outdoors"));
+  }
+}
+
+boost::optional<ThermalZone> ChillerElectricASHRAE205_Impl::ambientTemperatureZone() const {
+  return getObject<ModelObject>().getModelObjectTarget<ThermalZone>(openstudio::Chiller_Electric_ASHRAE205Fields::AmbientTemperatureZoneName);
+}
+
+bool ChillerElectricASHRAE205_Impl::setAmbientTemperatureZone(const ThermalZone& thermalZone) {
+  const bool result = setPointer(openstudio::Chiller_Electric_ASHRAE205Fields::AmbientTemperatureZoneName, thermalZone.handle());
+  if (result) {
+    const bool ok = setAmbientTemperatureIndicator("Zone");
+    OS_ASSERT(ok);
+  }
+  return result;
+}
+
+void ChillerElectricASHRAE205_Impl::resetAmbientTemperatureZone() {
+  OS_ASSERT(setPointer(openstudio::Chiller_Electric_ASHRAE205Fields::AmbientTemperatureZoneName, Handle(), false));
+  if (openstudio::istringEqual("Zone", ambientTemperatureIndicator())) {
+    OS_ASSERT(setAmbientTemperatureIndicator("Outdoors"));
+  }
+}
+
 boost::optional<std::string> ChillerElectricASHRAE205_Impl::ambientTemperatureOutdoorAirNodeName() const {
-  return getString(openstudio::Chiller_Electric_ASHRAE205Fields::AmbientTemperatureOutdoorAirNodeName, false);
+  auto value = getString(openstudio::Chiller_Electric_ASHRAE205Fields::AmbientTemperatureOutdoorAirNodeName, false, true);
+  if (value && value->empty()) {
+    return boost::none;
+  }
+  return value;
 }
 
 bool ChillerElectricASHRAE205_Impl::setAmbientTemperatureOutdoorAirNodeName(const std::string& ambientTemperatureOutdoorAirNodeName) {
@@ -348,6 +589,18 @@ void ChillerElectricASHRAE205_Impl::resetEndUseSubcategory() {
   OS_ASSERT(setString(openstudio::Chiller_Electric_ASHRAE205Fields::EndUseSubcategory, ""));
 }
 
+boost::optional<double> ChillerElectricASHRAE205_Impl::autosizedRatedCapacity() const {
+  return boost::none;
+}
+
+boost::optional<double> ChillerElectricASHRAE205_Impl::autosizedChilledWaterMaximumRequestedFlowRate() const {
+  return boost::none;
+}
+
+boost::optional<double> ChillerElectricASHRAE205_Impl::autosizedCondenserMaximumRequestedFlowRate() const {
+  return boost::none;
+}
+
 std::vector<std::string> ChillerElectricASHRAE205_Impl::performanceInterpolationMethodValues() const {
   return ChillerElectricASHRAE205::performanceInterpolationMethodValues();
 }
@@ -358,6 +611,60 @@ std::vector<std::string> ChillerElectricASHRAE205_Impl::ambientTemperatureIndica
 
 std::vector<std::string> ChillerElectricASHRAE205_Impl::chillerFlowModeValues() const {
   return ChillerElectricASHRAE205::chillerFlowModeValues();
+}
+
+boost::optional<PlantLoop> ChillerElectricASHRAE205_Impl::chilledWaterLoop() const {
+  return plantLoop();
+}
+
+boost::optional<Node> ChillerElectricASHRAE205_Impl::chilledWaterInletNode() const {
+  if (auto mo = supplyInletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<Node> ChillerElectricASHRAE205_Impl::chilledWaterOutletNode() const {
+  if (auto mo = supplyOutletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<PlantLoop> ChillerElectricASHRAE205_Impl::condenserWaterLoop() const {
+  return secondaryPlantLoop();
+}
+
+boost::optional<Node> ChillerElectricASHRAE205_Impl::condenserInletNode() const {
+  if (auto mo = demandInletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<Node> ChillerElectricASHRAE205_Impl::condenserOutletNode() const {
+  if (auto mo = demandOutletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<PlantLoop> ChillerElectricASHRAE205_Impl::heatRecoveryLoop() const {
+  return tertiaryPlantLoop();
+}
+
+boost::optional<Node> ChillerElectricASHRAE205_Impl::heatRecoveryInletNode() const {
+  if (auto mo = tertiaryInletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<Node> ChillerElectricASHRAE205_Impl::heatRecoveryOutletNode() const {
+  if (auto mo = tertiaryOutletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
 }
 
 unsigned ChillerElectricASHRAE205_Impl::supplyInletPort() const {
@@ -382,6 +689,209 @@ unsigned ChillerElectricASHRAE205_Impl::tertiaryInletPort() const {
 
 unsigned ChillerElectricASHRAE205_Impl::tertiaryOutletPort() const {
   return openstudio::Chiller_Electric_ASHRAE205Fields::HeatRecoveryOutletNodeName;
+}
+
+unsigned ChillerElectricASHRAE205_Impl::oilCoolerInletPort() const {
+  return openstudio::Chiller_Electric_ASHRAE205Fields::OilCoolerInletNodeName;
+}
+
+boost::optional<ModelObject> ChillerElectricASHRAE205_Impl::oilCoolerInletModelObject() const {
+  return getObject<ModelObject>().getModelObjectTarget<ModelObject>(oilCoolerInletPort());
+}
+
+boost::optional<Node> ChillerElectricASHRAE205_Impl::oilCoolerInletNode() const {
+  if (auto mo = oilCoolerInletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+unsigned ChillerElectricASHRAE205_Impl::oilCoolerOutletPort() const {
+  return openstudio::Chiller_Electric_ASHRAE205Fields::OilCoolerOutletNodeName;
+}
+
+boost::optional<ModelObject> ChillerElectricASHRAE205_Impl::oilCoolerOutletModelObject() const {
+  return getObject<ModelObject>().getModelObjectTarget<ModelObject>(oilCoolerOutletPort());
+}
+
+boost::optional<Node> ChillerElectricASHRAE205_Impl::oilCoolerOutletNode() const {
+  if (auto mo = oilCoolerOutletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<PlantLoop> ChillerElectricASHRAE205_Impl::oilCoolerLoop() const {
+  if (auto node = oilCoolerOutletNode()) {
+    return node->plantLoop();
+  }
+  return boost::none;
+}
+
+bool ChillerElectricASHRAE205_Impl::removeFromOilCoolerLoop() {
+  return removeFromBranch(oilCoolerInletPort(), oilCoolerOutletPort(), oilCoolerLoop());
+}
+
+bool ChillerElectricASHRAE205_Impl::addDemandBranchOnOilCoolerLoop(PlantLoop& plantLoop) {
+  if (plantLoop.model() != model()) {
+    return false;
+  }
+
+  auto equipmentBranches = plantLoop.getImpl<detail::PlantLoop_Impl>()->demandEquipmentBranches();
+  if ((equipmentBranches.size() == 1u) && equipmentBranches.front().components().empty()) {
+    auto node = model().getOrCreateTransientByName<Node>(equipmentBranches.front().nameString() + " Node");
+    return addToOilCoolerLoopNode(node);
+  }
+
+  auto branchList = plantLoop.getImpl<detail::PlantLoop_Impl>()->demandBranchList();
+  const auto insertIndex = static_cast<unsigned>(branchList.branches().size() - 1u);
+  Branch branch(model());
+  if (!branch.setName(plantLoop.nameString() + " Demand Branch " + std::to_string(static_cast<unsigned>(equipmentBranches.size() + 1u)))) {
+    branch.setName(model().nextName(openstudio::IddObjectType::Branch, true));
+  }
+  if (!branchList.getImpl<detail::BranchList_Impl>()->insertBranch(insertIndex, branch)) {
+    return false;
+  }
+
+  equipmentBranches = plantLoop.getImpl<detail::PlantLoop_Impl>()->demandEquipmentBranches();
+  if (!syncDemandConnectorPorts(plantLoop, equipmentBranches)) {
+    branchList.getImpl<detail::BranchList_Impl>()->removeBranch(branch);
+    branch.remove();
+    return false;
+  }
+
+  auto node = model().getOrCreateTransientByName<Node>(branch.nameString() + " Node");
+  if (addToOilCoolerLoopNode(node)) {
+    return true;
+  }
+
+  branchList.getImpl<detail::BranchList_Impl>()->removeBranch(branch);
+  syncDemandConnectorPorts(plantLoop, plantLoop.getImpl<detail::PlantLoop_Impl>()->demandEquipmentBranches());
+  branch.remove();
+  node.remove();
+  return false;
+}
+
+bool ChillerElectricASHRAE205_Impl::addToOilCoolerLoopNode(Node& node) {
+  auto plantLoop_ = node.plantLoop();
+  if (!plantLoop_ || !plantLoop_->demandComponent(node.handle())) {
+    return false;
+  }
+
+  auto branch = plantLoop_->getImpl<detail::PlantLoop_Impl>()->branchForNode(node);
+  if (!branch) {
+    return false;
+  }
+
+  removeFromOilCoolerLoop();
+  return insertOnBranch(node, *branch, oilCoolerInletPort(), oilCoolerOutletPort());
+}
+
+unsigned ChillerElectricASHRAE205_Impl::auxiliaryInletPort() const {
+  return openstudio::Chiller_Electric_ASHRAE205Fields::AuxiliaryInletNodeName;
+}
+
+boost::optional<ModelObject> ChillerElectricASHRAE205_Impl::auxiliaryInletModelObject() const {
+  return getObject<ModelObject>().getModelObjectTarget<ModelObject>(auxiliaryInletPort());
+}
+
+boost::optional<Node> ChillerElectricASHRAE205_Impl::auxiliaryInletNode() const {
+  if (auto mo = auxiliaryInletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+unsigned ChillerElectricASHRAE205_Impl::auxiliaryOutletPort() const {
+  return openstudio::Chiller_Electric_ASHRAE205Fields::AuxiliaryOutletNodeName;
+}
+
+boost::optional<ModelObject> ChillerElectricASHRAE205_Impl::auxiliaryOutletModelObject() const {
+  return getObject<ModelObject>().getModelObjectTarget<ModelObject>(auxiliaryOutletPort());
+}
+
+boost::optional<Node> ChillerElectricASHRAE205_Impl::auxiliaryOutletNode() const {
+  if (auto mo = auxiliaryOutletModelObject()) {
+    return mo->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<PlantLoop> ChillerElectricASHRAE205_Impl::auxiliaryLoop() const {
+  if (auto node = auxiliaryOutletNode()) {
+    return node->plantLoop();
+  }
+  return boost::none;
+}
+
+bool ChillerElectricASHRAE205_Impl::removeFromAuxiliaryLoop() {
+  return removeFromBranch(auxiliaryInletPort(), auxiliaryOutletPort(), auxiliaryLoop());
+}
+
+bool ChillerElectricASHRAE205_Impl::addDemandBranchOnAuxiliaryLoop(PlantLoop& plantLoop) {
+  if (plantLoop.model() != model()) {
+    return false;
+  }
+
+  auto equipmentBranches = plantLoop.getImpl<detail::PlantLoop_Impl>()->demandEquipmentBranches();
+  if ((equipmentBranches.size() == 1u) && equipmentBranches.front().components().empty()) {
+    auto node = model().getOrCreateTransientByName<Node>(equipmentBranches.front().nameString() + " Node");
+    return addToAuxiliaryLoopNode(node);
+  }
+
+  auto branchList = plantLoop.getImpl<detail::PlantLoop_Impl>()->demandBranchList();
+  const auto insertIndex = static_cast<unsigned>(branchList.branches().size() - 1u);
+  Branch branch(model());
+  if (!branch.setName(plantLoop.nameString() + " Demand Branch " + std::to_string(static_cast<unsigned>(equipmentBranches.size() + 1u)))) {
+    branch.setName(model().nextName(openstudio::IddObjectType::Branch, true));
+  }
+  if (!branchList.getImpl<detail::BranchList_Impl>()->insertBranch(insertIndex, branch)) {
+    return false;
+  }
+
+  equipmentBranches = plantLoop.getImpl<detail::PlantLoop_Impl>()->demandEquipmentBranches();
+  if (!syncDemandConnectorPorts(plantLoop, equipmentBranches)) {
+    branchList.getImpl<detail::BranchList_Impl>()->removeBranch(branch);
+    branch.remove();
+    return false;
+  }
+
+  auto node = model().getOrCreateTransientByName<Node>(branch.nameString() + " Node");
+  if (addToAuxiliaryLoopNode(node)) {
+    return true;
+  }
+
+  branchList.getImpl<detail::BranchList_Impl>()->removeBranch(branch);
+  syncDemandConnectorPorts(plantLoop, plantLoop.getImpl<detail::PlantLoop_Impl>()->demandEquipmentBranches());
+  branch.remove();
+  node.remove();
+  return false;
+}
+
+bool ChillerElectricASHRAE205_Impl::addToAuxiliaryLoopNode(Node& node) {
+  auto plantLoop_ = node.plantLoop();
+  if (!plantLoop_ || !plantLoop_->demandComponent(node.handle())) {
+    return false;
+  }
+
+  auto branch = plantLoop_->getImpl<detail::PlantLoop_Impl>()->branchForNode(node);
+  if (!branch) {
+    return false;
+  }
+
+  removeFromAuxiliaryLoop();
+  return insertOnBranch(node, *branch, auxiliaryInletPort(), auxiliaryOutletPort());
+}
+
+bool ChillerElectricASHRAE205_Impl::addToNode(Node& node) {
+  if (shouldRouteDemandSideNodeToTertiary(node)) {
+    return false;
+  }
+  return WaterToWaterComponent_Impl::addToNode(node);
+}
+
+bool ChillerElectricASHRAE205_Impl::addToTertiaryNode(Node&) {
+  return false;
 }
 
 }  // namespace detail
