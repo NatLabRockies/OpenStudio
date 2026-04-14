@@ -79,6 +79,7 @@ namespace epmodel {
   class CoilCoolingLowTempRadiantVarFlow;
   class CoilCoolingWaterPanelRadiant;
   class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData;
+  class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData;
 
 class EPMODEL_API Model
   : public openstudio::Workspace
@@ -271,6 +272,11 @@ namespace detail {
 
   template <>
   struct is_transient_factory_type<openstudio::epmodel::CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData> : std::true_type
+  {
+  };
+
+  template <>
+  struct is_transient_factory_type<openstudio::epmodel::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData> : std::true_type
   {
   };
 }  // namespace detail
