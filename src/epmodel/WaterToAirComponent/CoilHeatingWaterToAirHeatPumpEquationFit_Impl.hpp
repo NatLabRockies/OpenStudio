@@ -11,6 +11,10 @@
 namespace openstudio {
 namespace epmodel {
 
+class Curve;
+class Model;
+class Schedule;
+
 namespace detail {
 
 class EPMODEL_API CoilHeatingWaterToAirHeatPumpEquationFit_Impl : public WaterToAirComponent_Impl
@@ -24,6 +28,9 @@ class EPMODEL_API CoilHeatingWaterToAirHeatPumpEquationFit_Impl : public WaterTo
   unsigned waterInletPort() const override;
   unsigned waterOutletPort() const override;
 
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+
   boost::optional<double> ratedAirFlowRate() const;
   bool isRatedAirFlowRateDefaulted() const;
   bool isRatedAirFlowRateAutosized() const;
@@ -31,6 +38,7 @@ class EPMODEL_API CoilHeatingWaterToAirHeatPumpEquationFit_Impl : public WaterTo
   bool setRatedAirFlowRate(double ratedAirFlowRate);
   void resetRatedAirFlowRate();
   void autosizeRatedAirFlowRate();
+  boost::optional<double> autosizedRatedAirFlowRate() const;
 
   boost::optional<double> ratedWaterFlowRate() const;
   bool isRatedWaterFlowRateDefaulted() const;
@@ -39,6 +47,7 @@ class EPMODEL_API CoilHeatingWaterToAirHeatPumpEquationFit_Impl : public WaterTo
   bool setRatedWaterFlowRate(double ratedWaterFlowRate);
   void resetRatedWaterFlowRate();
   void autosizeRatedWaterFlowRate();
+  boost::optional<double> autosizedRatedWaterFlowRate() const;
 
   boost::optional<double> ratedHeatingCapacity() const;
   bool isRatedHeatingCapacityDefaulted() const;
@@ -47,6 +56,7 @@ class EPMODEL_API CoilHeatingWaterToAirHeatPumpEquationFit_Impl : public WaterTo
   bool setRatedHeatingCapacity(double ratedHeatingCapacity);
   void resetRatedHeatingCapacity();
   void autosizeRatedHeatingCapacity();
+  boost::optional<double> autosizedRatedHeatingCapacity() const;
 
   double ratedHeatingCoefficientofPerformance() const;
   bool isRatedHeatingCoefficientofPerformanceDefaulted() const;
@@ -59,8 +69,19 @@ class EPMODEL_API CoilHeatingWaterToAirHeatPumpEquationFit_Impl : public WaterTo
   double ratedEnteringAirDryBulbTemperature() const;
   bool setRatedEnteringAirDryBulbTemperature(double ratedEnteringAirDryBulbTemperature);
 
+  Curve heatingCapacityCurve() const;
+  bool setHeatingCapacityCurve(const Curve& heatingCapacityCurve);
+
+  Curve heatingPowerConsumptionCurve() const;
+  bool setHeatingPowerConsumptionCurve(const Curve& heatingPowerConsumptionCurve);
+
+  Curve partLoadFractionCorrelationCurve() const;
+  bool setPartLoadFractionCorrelationCurve(const Curve& partLoadFractionCorrelationCurve);
+
   double ratioofRatedHeatingCapacitytoRatedCoolingCapacity() const;
   bool setRatioofRatedHeatingCapacitytoRatedCoolingCapacity(double ratioofRatedHeatingCapacitytoRatedCoolingCapacity);
+
+  void setConstructorSharedDefaults(const Model& model);
 };
 
 }  // namespace detail
