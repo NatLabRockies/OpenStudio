@@ -13,6 +13,11 @@
 namespace openstudio {
 namespace epmodel {
 
+class Curve;
+class PlantLoop;
+class Node;
+class HeatPumpPlantLoopEIRHeating;
+
 namespace detail {
 
   class EPMODEL_API HeatPumpPlantLoopEIRCooling_Impl : public WaterToWaterComponent_Impl
@@ -27,10 +32,26 @@ namespace detail {
     unsigned demandOutletPort() const override;
     unsigned tertiaryInletPort() const override;
     unsigned tertiaryOutletPort() const override;
+    bool addToNode(Node& node) override;
+    bool addToTertiaryNode(Node& node) override;
+    bool removeFromSecondaryPlantLoop() override;
+
+    boost::optional<PlantLoop> loadSideWaterLoop() const;
+    boost::optional<PlantLoop> sourceSideWaterLoop() const;
+    boost::optional<PlantLoop> heatRecoveryLoop() const;
+    boost::optional<Node> sourceSideWaterInletNode() const;
+    boost::optional<Node> sourceSideWaterOutletNode() const;
+    boost::optional<Node> loadSideWaterInletNode() const;
+    boost::optional<Node> loadSideWaterOutletNode() const;
+    boost::optional<Node> heatRecoveryInletNode() const;
+    boost::optional<Node> heatRecoveryOutletNode() const;
 
     std::string condenserType() const;
     bool setCondenserType(const std::string& condenserType);
     std::vector<std::string> condenserTypeValues() const;
+
+    boost::optional<HeatPumpPlantLoopEIRHeating> companionHeatingHeatPump() const;
+    bool setCompanionHeatingHeatPump(const HeatPumpPlantLoopEIRHeating& companionHeatingHeatPump);
 
     boost::optional<double> loadSideReferenceFlowRate() const;
     bool isLoadSideReferenceFlowRateAutosized() const;
@@ -62,6 +83,15 @@ namespace detail {
     double sizingFactor() const;
     bool setSizingFactor(double sizingFactor);
 
+    Curve capacityModifierFunctionofTemperatureCurve() const;
+    bool setCapacityModifierFunctionofTemperatureCurve(const Curve& capacityModifierFunctionofTemperatureCurve);
+
+    Curve electricInputtoOutputRatioModifierFunctionofTemperatureCurve() const;
+    bool setElectricInputtoOutputRatioModifierFunctionofTemperatureCurve(const Curve& electricInputtoOutputRatioModifierFunctionofTemperatureCurve);
+
+    Curve electricInputtoOutputRatioModifierFunctionofPartLoadRatioCurve() const;
+    bool setElectricInputtoOutputRatioModifierFunctionofPartLoadRatioCurve(const Curve& electricInputtoOutputRatioModifierFunctionofPartLoadRatioCurve);
+
     std::string controlType() const;
     bool setControlType(const std::string& controlType);
 
@@ -77,8 +107,29 @@ namespace detail {
     double maximumSourceInletTemperature() const;
     bool setMaximumSourceInletTemperature(double maximumSourceInletTemperature);
 
+    boost::optional<Curve> minimumSupplyWaterTemperatureCurve() const;
+    bool setMinimumSupplyWaterTemperatureCurve(const Curve& minimumSupplyWaterTemperatureCurve);
+    void resetMinimumSupplyWaterTemperatureCurve();
+
+    boost::optional<Curve> maximumSupplyWaterTemperatureCurve() const;
+    bool setMaximumSupplyWaterTemperatureCurve(const Curve& maximumSupplyWaterTemperatureCurve);
+    void resetMaximumSupplyWaterTemperatureCurve();
+
     double maximumHeatRecoveryOutletTemperature() const;
     bool setMaximumHeatRecoveryOutletTemperature(double maximumHeatRecoveryOutletTemperature);
+
+    boost::optional<Curve> heatRecoveryCapacityModifierFunctionofTemperatureCurve() const;
+    bool setHeatRecoveryCapacityModifierFunctionofTemperatureCurve(const Curve& heatRecoveryCapacityModifierFunctionofTemperatureCurve);
+    void resetHeatRecoveryCapacityModifierFunctionofTemperatureCurve();
+
+    boost::optional<Curve> heatRecoveryElectricInputtoOutputRatioModifierFunctionofTemperatureCurve() const;
+    bool setHeatRecoveryElectricInputtoOutputRatioModifierFunctionofTemperatureCurve(
+      const Curve& heatRecoveryElectricInputtoOutputRatioModifierFunctionofTemperatureCurve);
+    void resetHeatRecoveryElectricInputtoOutputRatioModifierFunctionofTemperatureCurve();
+
+    boost::optional<Curve> thermosiphonCapacityFractionCurve() const;
+    bool setThermosiphonCapacityFractionCurve(const Curve& thermosiphonCapacityFractionCurve);
+    void resetThermosiphonCapacityFractionCurve();
 
     double thermosiphonMinimumTemperatureDifference() const;
     bool setThermosiphonMinimumTemperatureDifference(double thermosiphonMinimumTemperatureDifference);
