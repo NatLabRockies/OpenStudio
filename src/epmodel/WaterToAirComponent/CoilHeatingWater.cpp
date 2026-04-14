@@ -6,11 +6,18 @@
 #include "WaterToAirComponent/CoilHeatingWater.hpp"
 #include "WaterToAirComponent/CoilHeatingWater_Impl.hpp"
 
+#include "HVACComponent/ControllerWaterCoil.hpp"
+#include "HVACComponent/ControllerWaterCoil_Impl.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "StraightComponent/Node.hpp"
+#include "ZoneHVACComponent/ZoneHVACComponent.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/Coil_Heating_Water_FieldEnums.hxx>
+#include <utilities/idd/Controller_WaterCoil_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
@@ -18,7 +25,40 @@
 namespace openstudio {
 namespace epmodel {
 
-CoilHeatingWater::CoilHeatingWater(const Model& model) : WaterToAirComponent(CoilHeatingWater::iddObjectType(), model) {}
+namespace {
+
+// EnergyPlus stores the heating-coil controller relationship only through the
+// shared actuator and sensor nodes. Matching those nodes back to the coil gives
+// us the same user-facing association without inventing an epmodel-only link.
+boost::optional<ControllerWaterCoil> inferControllerForCoil(const CoilHeatingWater& coil) {
+  const auto waterInlet = coil.waterInletModelObject();
+  const auto airOutlet = coil.airOutletModelObject();
+  if (!waterInlet || !airOutlet) {
+    return boost::none;
+  }
+
+  for (const auto& controller : coil.model().getConcreteModelObjects<ControllerWaterCoil>()) {
+    const auto actuatorNode = controller.getModelObjectTarget<Node>(openstudio::Controller_WaterCoilFields::ActuatorNodeName);
+    const auto sensorNode = controller.getModelObjectTarget<Node>(openstudio::Controller_WaterCoilFields::SensorNodeName);
+    if (actuatorNode && sensorNode && actuatorNode->handle() == waterInlet->handle() && sensorNode->handle() == airOutlet->handle()) {
+      return controller;
+    }
+  }
+
+  return boost::none;
+}
+
+}  // namespace
+
+CoilHeatingWater::CoilHeatingWater(const Model& model, Schedule& availabilitySchedule)
+  : WaterToAirComponent(CoilHeatingWater::iddObjectType(), model) {
+  OS_ASSERT(setAvailabilitySchedule(availabilitySchedule));
+}
+
+CoilHeatingWater::CoilHeatingWater(const Model& model) : WaterToAirComponent(CoilHeatingWater::iddObjectType(), model) {
+  auto schedule = model.alwaysOnDiscreteSchedule();
+  OS_ASSERT(setAvailabilitySchedule(schedule));
+}
 
 CoilHeatingWater::CoilHeatingWater(std::shared_ptr<detail::CoilHeatingWater_Impl> impl) : WaterToAirComponent(std::move(impl)) {}
 
@@ -28,6 +68,22 @@ IddObjectType CoilHeatingWater::iddObjectType() {
 
 std::vector<std::string> CoilHeatingWater::performanceInputMethodValues() {
   return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Coil_Heating_WaterFields::PerformanceInputMethod);
+}
+
+Schedule CoilHeatingWater::availabilitySchedule() const {
+  return getImpl<detail::CoilHeatingWater_Impl>()->availabilitySchedule();
+}
+
+Schedule CoilHeatingWater::availableSchedule() const {
+  return availabilitySchedule();
+}
+
+bool CoilHeatingWater::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::CoilHeatingWater_Impl>()->setAvailabilitySchedule(schedule);
+}
+
+bool CoilHeatingWater::setAvailableSchedule(Schedule& schedule) {
+  return setAvailabilitySchedule(schedule);
 }
 
 boost::optional<double> CoilHeatingWater::uFactorTimesAreaValue() const {
@@ -46,6 +102,10 @@ void CoilHeatingWater::autosizeUFactorTimesAreaValue() {
   getImpl<detail::CoilHeatingWater_Impl>()->autosizeUFactorTimesAreaValue();
 }
 
+boost::optional<double> CoilHeatingWater::autosizedUFactorTimesAreaValue() const {
+  return getImpl<detail::CoilHeatingWater_Impl>()->autosizedUFactorTimesAreaValue();
+}
+
 boost::optional<double> CoilHeatingWater::maximumWaterFlowRate() const {
   return getImpl<detail::CoilHeatingWater_Impl>()->maximumWaterFlowRate();
 }
@@ -60,6 +120,10 @@ bool CoilHeatingWater::isMaximumWaterFlowRateAutosized() const {
 
 void CoilHeatingWater::autosizeMaximumWaterFlowRate() {
   getImpl<detail::CoilHeatingWater_Impl>()->autosizeMaximumWaterFlowRate();
+}
+
+boost::optional<double> CoilHeatingWater::autosizedMaximumWaterFlowRate() const {
+  return getImpl<detail::CoilHeatingWater_Impl>()->autosizedMaximumWaterFlowRate();
 }
 
 std::string CoilHeatingWater::performanceInputMethod() const {
@@ -84,6 +148,10 @@ bool CoilHeatingWater::isRatedCapacityAutosized() const {
 
 void CoilHeatingWater::autosizeRatedCapacity() {
   getImpl<detail::CoilHeatingWater_Impl>()->autosizeRatedCapacity();
+}
+
+boost::optional<double> CoilHeatingWater::autosizedRatedCapacity() const {
+  return getImpl<detail::CoilHeatingWater_Impl>()->autosizedRatedCapacity();
 }
 
 double CoilHeatingWater::ratedInletWaterTemperature() const {
@@ -126,6 +194,10 @@ bool CoilHeatingWater::setRatedRatioForAirAndWaterConvection(double value) {
   return getImpl<detail::CoilHeatingWater_Impl>()->setRatedRatioForAirAndWaterConvection(value);
 }
 
+boost::optional<ControllerWaterCoil> CoilHeatingWater::controllerWaterCoil() const {
+  return inferControllerForCoil(*this);
+}
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -149,6 +221,62 @@ unsigned CoilHeatingWater_Impl::waterOutletPort() const {
   return openstudio::Coil_Heating_WaterFields::WaterOutletNodeName;
 }
 
+bool CoilHeatingWater_Impl::addToNode(Node& node) {
+  const bool success = WaterToAirComponent_Impl::addToNode(node);
+  if (!success) {
+    return false;
+  }
+
+  if (containingZoneHVACComponent()) {
+    return true;
+  }
+
+  auto thisCoil = getObject<openstudio::epmodel::CoilHeatingWater>();
+  const auto waterInlet = thisCoil.waterInletModelObject();
+  const auto airOutlet = thisCoil.airOutletModelObject();
+  if (!waterInlet || !airOutlet) {
+    return true;
+  }
+
+  if (auto controller = inferControllerForCoil(thisCoil)) {
+    if (auto action = controller->action(); action && !openstudio::istringEqual(*action, "Normal")) {
+      LOG_FREE(Warn, "openstudio.epmodel.CoilHeatingWater",
+               thisCoil.briefDescription() << " has an existing ControllerWaterCoil with action set to something other than 'Normal'.");
+    }
+    OS_ASSERT(controller->setPointer(openstudio::Controller_WaterCoilFields::ActuatorNodeName, waterInlet->handle()));
+    OS_ASSERT(controller->setPointer(openstudio::Controller_WaterCoilFields::SensorNodeName, airOutlet->handle()));
+    return true;
+  }
+
+  ControllerWaterCoil controller(model());
+  OS_ASSERT(controller.setAction("Normal"));
+  OS_ASSERT(controller.setPointer(openstudio::Controller_WaterCoilFields::ActuatorNodeName, waterInlet->handle()));
+  OS_ASSERT(controller.setPointer(openstudio::Controller_WaterCoilFields::SensorNodeName, airOutlet->handle()));
+  return true;
+}
+
+bool CoilHeatingWater_Impl::removeFromPlantLoop() {
+  if (auto controller = inferControllerForCoil(getObject<openstudio::epmodel::CoilHeatingWater>())) {
+    controller->remove();
+  }
+  return WaterToAirComponent_Impl::removeFromPlantLoop();
+}
+
+Schedule CoilHeatingWater_Impl::availabilitySchedule() const {
+  auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Heating_WaterFields::AvailabilityScheduleName);
+  if (!schedule) {
+    LOG_FREE(Error, "openstudio.epmodel.CoilHeatingWater",
+             "Required availability schedule not set, returning the model always-on discrete schedule without repairing persisted state");
+    schedule = model().alwaysOnDiscreteSchedule();
+  }
+  OS_ASSERT(schedule);
+  return *schedule;
+}
+
+bool CoilHeatingWater_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return setSchedule(openstudio::Coil_Heating_WaterFields::AvailabilityScheduleName, "CoilHeatingWater", "Availability", schedule);
+}
+
 boost::optional<double> CoilHeatingWater_Impl::uFactorTimesAreaValue() const {
   return getDouble(openstudio::Coil_Heating_WaterFields::UFactorTimesAreaValue, true);
 }
@@ -168,6 +296,10 @@ void CoilHeatingWater_Impl::autosizeUFactorTimesAreaValue() {
   OS_ASSERT(setString(openstudio::Coil_Heating_WaterFields::UFactorTimesAreaValue, "autosize"));
 }
 
+boost::optional<double> CoilHeatingWater_Impl::autosizedUFactorTimesAreaValue() const {
+  return boost::none;
+}
+
 boost::optional<double> CoilHeatingWater_Impl::maximumWaterFlowRate() const {
   return getDouble(openstudio::Coil_Heating_WaterFields::MaximumWaterFlowRate, true);
 }
@@ -185,6 +317,10 @@ bool CoilHeatingWater_Impl::isMaximumWaterFlowRateAutosized() const {
 
 void CoilHeatingWater_Impl::autosizeMaximumWaterFlowRate() {
   OS_ASSERT(setString(openstudio::Coil_Heating_WaterFields::MaximumWaterFlowRate, "autosize"));
+}
+
+boost::optional<double> CoilHeatingWater_Impl::autosizedMaximumWaterFlowRate() const {
+  return boost::none;
 }
 
 std::string CoilHeatingWater_Impl::performanceInputMethod() const {
@@ -214,6 +350,10 @@ bool CoilHeatingWater_Impl::isRatedCapacityAutosized() const {
 
 void CoilHeatingWater_Impl::autosizeRatedCapacity() {
   OS_ASSERT(setString(openstudio::Coil_Heating_WaterFields::RatedCapacity, "autosize"));
+}
+
+boost::optional<double> CoilHeatingWater_Impl::autosizedRatedCapacity() const {
+  return boost::none;
 }
 
 double CoilHeatingWater_Impl::ratedInletWaterTemperature() const {

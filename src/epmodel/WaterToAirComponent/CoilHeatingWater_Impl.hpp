@@ -13,6 +13,9 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Node;
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API CoilHeatingWater_Impl : public WaterToAirComponent_Impl
@@ -25,16 +28,23 @@ namespace epmodel {
       unsigned airOutletPort() const override;
       unsigned waterInletPort() const override;
       unsigned waterOutletPort() const override;
+      bool addToNode(Node& node) override;
+      bool removeFromPlantLoop() override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
 
       boost::optional<double> uFactorTimesAreaValue() const;
       bool setUFactorTimesAreaValue(double value);
       bool isUFactorTimesAreaValueAutosized() const;
       void autosizeUFactorTimesAreaValue();
+      boost::optional<double> autosizedUFactorTimesAreaValue() const;
 
       boost::optional<double> maximumWaterFlowRate() const;
       bool setMaximumWaterFlowRate(double value);
       bool isMaximumWaterFlowRateAutosized() const;
       void autosizeMaximumWaterFlowRate();
+      boost::optional<double> autosizedMaximumWaterFlowRate() const;
 
       std::string performanceInputMethod() const;
       bool setPerformanceInputMethod(const std::string& value);
@@ -44,6 +54,7 @@ namespace epmodel {
       bool setRatedCapacity(double value);
       bool isRatedCapacityAutosized() const;
       void autosizeRatedCapacity();
+      boost::optional<double> autosizedRatedCapacity() const;
 
       double ratedInletWaterTemperature() const;
       bool setRatedInletWaterTemperature(double value);
