@@ -14,6 +14,10 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+  class ThermalZone;
+  class WaterHeaterSizing;
+
   namespace detail {
 
     class EPMODEL_API ThermalStorageChilledWaterStratified_Impl : public WaterToWaterComponent_Impl
@@ -22,6 +26,7 @@ namespace epmodel {
       using WaterToWaterComponent_Impl::WaterToWaterComponent_Impl;
       virtual ~ThermalStorageChilledWaterStratified_Impl() override = default;
 
+      std::vector<ModelObject> children() const override;
       unsigned supplyInletPort() const override;
       unsigned supplyOutletPort() const override;
       unsigned demandInletPort() const override;
@@ -39,6 +44,10 @@ namespace epmodel {
       boost::optional<double> tankPerimeter() const;
       bool setTankPerimeter(double tankPerimeter);
       void resetTankPerimeter();
+
+      boost::optional<Schedule> setpointTemperatureSchedule() const;
+      bool setSetpointTemperatureSchedule(Schedule& schedule);
+      void resetSetpointTemperatureSchedule();
 
       double deadbandTemperatureDifference() const;
       bool setDeadbandTemperatureDifference(double deadbandTemperatureDifference);
@@ -59,6 +68,18 @@ namespace epmodel {
       std::string ambientTemperatureIndicator() const;
       bool setAmbientTemperatureIndicator(const std::string& ambientTemperatureIndicator);
 
+      boost::optional<Schedule> ambientTemperatureSchedule() const;
+      bool setAmbientTemperatureSchedule(Schedule& schedule);
+      void resetAmbientTemperatureSchedule();
+
+      boost::optional<ThermalZone> ambientTemperatureThermalZone() const;
+      bool setAmbientTemperatureThermalZone(const ThermalZone& thermalZone);
+      void resetAmbientTemperatureThermalZone();
+
+      boost::optional<std::string> ambientTemperatureOutdoorAirNodeName() const;
+      bool setAmbientTemperatureOutdoorAirNodeName(const std::string& ambientTemperatureOutdoorAirNodeName);
+      void resetAmbientTemperatureOutdoorAirNodeName();
+
       boost::optional<double> uniformSkinLossCoefficientperUnitAreatoAmbientTemperature() const;
       bool setUniformSkinLossCoefficientperUnitAreatoAmbientTemperature(double uniformSkinLossCoefficientperUnitAreatoAmbientTemperature);
       void resetUniformSkinLossCoefficientperUnitAreatoAmbientTemperature();
@@ -67,6 +88,10 @@ namespace epmodel {
       bool setUseSideHeatTransferEffectiveness(double useSideHeatTransferEffectiveness);
       bool isUseSideHeatTransferEffectivenessDefaulted() const;
       void resetUseSideHeatTransferEffectiveness();
+
+      boost::optional<Schedule> useSideAvailabilitySchedule() const;
+      bool setUseSideAvailabilitySchedule(Schedule& schedule);
+      void resetUseSideAvailabilitySchedule();
 
       boost::optional<double> useSideInletHeight() const;
       bool setUseSideInletHeight(double useSideInletHeight);
@@ -87,6 +112,10 @@ namespace epmodel {
       bool setSourceSideHeatTransferEffectiveness(double sourceSideHeatTransferEffectiveness);
       bool isSourceSideHeatTransferEffectivenessDefaulted() const;
       void resetSourceSideHeatTransferEffectiveness();
+
+      boost::optional<Schedule> sourceSideAvailabilitySchedule() const;
+      bool setSourceSideAvailabilitySchedule(Schedule& schedule);
+      void resetSourceSideAvailabilitySchedule();
 
       double sourceSideInletHeight() const;
       bool setSourceSideInletHeight(double sourceSideInletHeight);
@@ -144,6 +173,11 @@ namespace epmodel {
 
       double node10AdditionalLossCoefficient() const;
       bool setNode10AdditionalLossCoefficient(double node10AdditionalLossCoefficient);
+
+      WaterHeaterSizing waterHeaterSizing() const;
+      boost::optional<double> autosizedNominalCoolingCapacity() const;
+      boost::optional<double> autosizedUseSideDesignFlowRate() const;
+      boost::optional<double> autosizedSourceSideDesignFlowRate() const;
     };
 
   }  // namespace detail

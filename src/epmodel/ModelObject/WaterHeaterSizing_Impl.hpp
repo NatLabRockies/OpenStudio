@@ -15,6 +15,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class WaterToWaterComponent;
+
   namespace detail {
 
     class EPMODEL_API WaterHeaterSizing_Impl : public ModelObject_Impl
@@ -22,6 +24,9 @@ namespace epmodel {
      public:
       using ModelObject_Impl::ModelObject_Impl;
       virtual ~WaterHeaterSizing_Impl() override = default;
+
+      WaterToWaterComponent waterHeater() const;
+      bool setWaterHeater(const WaterToWaterComponent& waterHeater);
 
       boost::optional<std::string> designMode() const;
       bool setDesignMode(const std::string& designMode);

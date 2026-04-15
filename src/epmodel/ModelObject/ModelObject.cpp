@@ -74,7 +74,7 @@ namespace epmodel {
     };
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static const std::array<ScheduleTypeSpec, 85> specs{{
+      static const std::array<ScheduleTypeSpec, 89> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOn", "Availability Manager Scheduled On", false, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOff", "Availability Manager Scheduled Off", false, "Availability", 0.0, 1.0},
@@ -122,6 +122,10 @@ namespace epmodel {
         {"CoilCoolingWater", "Availability", false, "Availability", 0.0, 1.0},
         {"CoilHeatingWater", "Availability", false, "Availability", 0.0, 1.0},
         {"HeatExchangerFluidToFluid", "Availability", false, "Availability", 0.0, 1.0},
+        {"ThermalStorageChilledWaterStratified", "Setpoint Temperature", true, "Temperature", boost::none, boost::none},
+        {"ThermalStorageChilledWaterStratified", "Ambient Temperature", true, "Temperature", boost::none, boost::none},
+        {"ThermalStorageChilledWaterStratified", "Use Side Availability", false, "Availability", 0.0, 1.0},
+        {"ThermalStorageChilledWaterStratified", "Source Side Availability", false, "Availability", 0.0, 1.0},
         {"ChillerElectricEIR", "Basin Heater Operating", false, "Availability", 0.0, 1.0},
         {"ChillerElectricEIR", "Heat Recovery Inlet High Temperature Limit", true, "Temperature", boost::none, boost::none},
         {"ChillerElectricEIR", "Temperature Difference Across Condenser", true, "Temperature", boost::none, boost::none},
