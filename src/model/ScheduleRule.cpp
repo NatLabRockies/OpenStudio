@@ -575,11 +575,13 @@ namespace model {
     bool result = setPointer(OS_Schedule_RuleFields::ScheduleRulesetName, scheduleRuleset.handle());
     OS_ASSERT(result);
 
-    ModelObject clone = daySchedule.clone(scheduleRuleset.model());
-    result = setPointer(OS_Schedule_RuleFields::DayScheduleName, clone.handle());
+    //ModelObject clone = daySchedule.clone(scheduleRuleset.model());
+    //result = setPointer(OS_Schedule_RuleFields::DayScheduleName, clone.handle());
+    result = setPointer(OS_Schedule_RuleFields::DayScheduleName, daySchedule.handle());
     OS_ASSERT(result);
     if (OptionalScheduleTypeLimits limits = scheduleRuleset.scheduleTypeLimits()) {
-      clone.cast<ScheduleDay>().setScheduleTypeLimits(*limits);
+      //clone.cast<ScheduleDay>().setScheduleTypeLimits(*limits);
+      daySchedule.cast<ScheduleDay>().setScheduleTypeLimits(*limits);
     }
 
     this->setRuleIndex(std::numeric_limits<int>::max());

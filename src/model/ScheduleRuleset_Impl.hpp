@@ -100,6 +100,8 @@ namespace model {
       /** @name Setters */
       //@{
 
+      bool setDefaultDaySchedule(const ScheduleDay& schedule);
+
       /// Sets the summer design day schedule.
       bool setSummerDesignDaySchedule(const ScheduleDay& schedule);
 

@@ -802,7 +802,7 @@ namespace energyplus {
         break;
       }
       case openstudio::IddObjectType::Schedule_Week_Daily: {
-        modelObject = translateScheduleWeekDaily(workspaceObject);
+        //modelObject = translateScheduleWeekDaily(workspaceObject);
         break;
       }
       case openstudio::IddObjectType::Schedule_Year: {

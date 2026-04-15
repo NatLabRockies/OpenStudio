@@ -53,6 +53,12 @@ namespace energyplus {
       return (holidayScheduleDayNames.size() > 1 || summerDesignDayScheduleDayNames.size() > 1 || winterDesignDayScheduleDayNames.size() > 1
               || customDay1ScheduleDayNames.size() > 1 || customDay2ScheduleDayNames.size() > 1);
     }
+    [[nodiscard]] bool hasSameScheduleDays() const {
+      return (holidayScheduleDayNames == summerDesignDayScheduleDayNames
+              && summerDesignDayScheduleDayNames == winterDesignDayScheduleDayNames
+              && winterDesignDayScheduleDayNames == customDay1ScheduleDayNames
+              && customDay1ScheduleDayNames == customDay2ScheduleDayNames);
+    }
   };
 
   SpecialDayScheduleNames getSpecialDayScheduleNames(const WorkspaceObject& workspaceObject) {
@@ -335,34 +341,51 @@ namespace energyplus {
       }  // End loop on extensible groups
 
       // Common path to both Schedule_Week_Daily and Schedule_Week_Compact
-      if (holidayScheduleDay) {
-        if (auto mo_ = translateAndMapWorkspaceObject(*holidayScheduleDay)) {
-          auto scheduleDay = mo_->cast<ScheduleDay>();
-          scheduleRuleset.setHolidaySchedule(scheduleDay);
+      if (specialDayScheduleNames.hasSameScheduleDays()) {
+        if (holidayScheduleDay) {
+          if (auto mo_ = translateAndMapWorkspaceObject(*holidayScheduleDay)) {
+            auto scheduleDay = mo_->cast<ScheduleDay>();
+            // transfer values from correct day schedule to the one created by the ctor
+            // this still appends the " 1" on the name
+/*             ScheduleDay defaultDaySchedule = scheduleRuleset.defaultDaySchedule();
+            defaultDaySchedule.setName(scheduleDay.nameString());
+            defaultDaySchedule.clearValues();
+            for (Time time : scheduleDay.times()) {
+              defaultDaySchedule.addValue(time, scheduleDay.getValue(time));
+            } */
+            scheduleRuleset.setDefaultDaySchedule(scheduleDay); // alternative is ruleset ctor with day schedule?
+          }
         }
-      }
-      if (summerDesignDayScheduleDay) {
-        if (auto mo_ = translateAndMapWorkspaceObject(*summerDesignDayScheduleDay)) {
-          auto scheduleDay = mo_->cast<ScheduleDay>();
-          scheduleRuleset.setSummerDesignDaySchedule(scheduleDay);
+      } else {
+        if (holidayScheduleDay) {
+          if (auto mo_ = translateAndMapWorkspaceObject(*holidayScheduleDay)) {
+            auto scheduleDay = mo_->cast<ScheduleDay>();
+            scheduleRuleset.setHolidaySchedule(scheduleDay);
+          }
         }
-      }
-      if (winterDesignDayScheduleDay) {
-        if (auto mo_ = translateAndMapWorkspaceObject(*winterDesignDayScheduleDay)) {
-          auto scheduleDay = mo_->cast<ScheduleDay>();
-          scheduleRuleset.setWinterDesignDaySchedule(scheduleDay);
+        if (summerDesignDayScheduleDay) {
+          if (auto mo_ = translateAndMapWorkspaceObject(*summerDesignDayScheduleDay)) {
+            auto scheduleDay = mo_->cast<ScheduleDay>();
+            scheduleRuleset.setSummerDesignDaySchedule(scheduleDay);
+          }
         }
-      }
-      if (customDay1ScheduleDay) {
-        if (auto mo_ = translateAndMapWorkspaceObject(*customDay1ScheduleDay)) {
-          auto scheduleDay = mo_->cast<ScheduleDay>();
-          scheduleRuleset.setCustomDay1Schedule(scheduleDay);
+        if (winterDesignDayScheduleDay) {
+          if (auto mo_ = translateAndMapWorkspaceObject(*winterDesignDayScheduleDay)) {
+            auto scheduleDay = mo_->cast<ScheduleDay>();
+            scheduleRuleset.setWinterDesignDaySchedule(scheduleDay);
+          }
         }
-      }
-      if (customDay2ScheduleDay) {
-        if (auto mo_ = translateAndMapWorkspaceObject(*customDay2ScheduleDay)) {
-          auto scheduleDay = mo_->cast<ScheduleDay>();
-          scheduleRuleset.setCustomDay2Schedule(scheduleDay);
+        if (customDay1ScheduleDay) {
+          if (auto mo_ = translateAndMapWorkspaceObject(*customDay1ScheduleDay)) {
+            auto scheduleDay = mo_->cast<ScheduleDay>();
+            scheduleRuleset.setCustomDay1Schedule(scheduleDay);
+          }
+        }
+        if (customDay2ScheduleDay) {
+          if (auto mo_ = translateAndMapWorkspaceObject(*customDay2ScheduleDay)) {
+            auto scheduleDay = mo_->cast<ScheduleDay>();
+            scheduleRuleset.setCustomDay2Schedule(scheduleDay);
+          }
         }
       }
       return scheduleRuleset;

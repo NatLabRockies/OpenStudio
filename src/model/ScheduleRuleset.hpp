@@ -95,6 +95,8 @@ namespace model {
     /** @name Setters */
     //@{
 
+    bool setDefaultDaySchedule(const ScheduleDay& schedule);
+
     /// Sets the summer design day schedule if ScheduleTypeLimits are compatible. Calls remove
     /// on any existing non-default summer design day schedule. Clones schedule and parents the
     /// clone, but does not call remove on the original schedule.

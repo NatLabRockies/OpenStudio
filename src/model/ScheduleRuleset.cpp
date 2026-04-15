@@ -318,6 +318,12 @@ namespace model {
       return this->isEmpty(OS_Schedule_RulesetFields::CustomDay2ScheduleName);
     }
 
+    bool ScheduleRuleset_Impl::setDefaultDaySchedule(const ScheduleDay& schedule) {
+      bool result = setPointer(OS_Schedule_RulesetFields::DefaultDayScheduleName, schedule.handle());
+      OS_ASSERT(result);
+      return result;
+    }
+
     bool ScheduleRuleset_Impl::setSummerDesignDaySchedule(const ScheduleDay& schedule) {
       if (OptionalScheduleTypeLimits candidateLimits = schedule.scheduleTypeLimits()) {
         if (OptionalScheduleTypeLimits parentLimits = scheduleTypeLimits()) {
@@ -735,6 +741,10 @@ namespace model {
 
   bool ScheduleRuleset::isCustomDay2ScheduleDefaulted() const {
     return getImpl<detail::ScheduleRuleset_Impl>()->isCustomDay2ScheduleDefaulted();
+  }
+
+  bool ScheduleRuleset::setDefaultDaySchedule(const ScheduleDay& schedule) {
+    return getImpl<detail::ScheduleRuleset_Impl>()->setDefaultDaySchedule(schedule);
   }
 
   bool ScheduleRuleset::setSummerDesignDaySchedule(const ScheduleDay& schedule) {
