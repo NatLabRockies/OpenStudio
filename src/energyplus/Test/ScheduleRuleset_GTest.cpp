@@ -27,12 +27,15 @@
 #include "../../model/YearDescription.hpp"
 #include "../../model/YearDescription_Impl.hpp"
 
+#include "../../utilities/idf/IdfFile.hpp"
 #include "../../utilities/idf/IdfExtensibleGroup.hpp"
 #include "../../utilities/idf/WorkspaceExtensibleGroup.hpp"
 #include <utilities/idd/Schedule_Year_FieldEnums.hxx>
 #include <utilities/idd/Schedule_Week_Compact_FieldEnums.hxx>
 #include <utilities/idd/Schedule_Week_Daily_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+
+#include <resources.hxx>
 
 #include <sstream>
 
@@ -1853,258 +1856,247 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ScheduleRuleset_Bug5113_2) {
   }
 }
 
-TEST_F(EnergyPlusFixture, Translator_ScheduleRuleset_RoundTrip) {
-  // start with IDF
+void Run_RoundTrip_IDF_to_IDF(const std::string& filename, Workspace& w) {
+  w.save(filename + "_1.idf", true);
 
-  {  // 1 - Schedule:Week:Daily
-    Workspace w(StrictnessLevel::Minimal, IddFileType::EnergyPlus);
+  ReverseTranslator rt;
+  Model m = rt.translateWorkspace(w);
 
-    IdfObject scheduleTypeLimits(openstudio::IddObjectType::ScheduleTypeLimits);
-    scheduleTypeLimits.setString(0, "Fractional");
-    scheduleTypeLimits.setInt(1, 0);
-    scheduleTypeLimits.setInt(2, 1);
-    scheduleTypeLimits.setString(3, "Continuous");
+  // TODO: temporary code for testing.
+  // how do we access calendar year from ScheduleRuleset RT?
+  model::YearDescription yd = m.getUniqueModelObject<model::YearDescription>();
+  m.setCalendarYear(2007);
+  //model::ScheduleRule scheduleRule = m.getModelObjects<model::ScheduleRule>()[0];
+  //scheduleRule.setApplySunday(false);  // this is for RoundTrip_IDF_ScheduleRuleset_2_ScheduleWeekDaily
+  //
 
-    IdfObject scheduleDayInterval1(openstudio::IddObjectType::Schedule_Day_Interval);
-    scheduleDayInterval1.setString(0, "occupants schedule day");
-    scheduleDayInterval1.setString(1, "Fractional");
-    scheduleDayInterval1.setString(2, "No");
+  m.save(filename + "_2.osm", true);
 
-    IdfExtensibleGroup group1 = scheduleDayInterval1.pushExtensibleGroup();
-    group1.setString(0, "05:00");
-    group1.setDouble(1, 0.426829268292683);
-    IdfExtensibleGroup group2 = scheduleDayInterval1.pushExtensibleGroup();
-    group2.setString(0, "06:00");
-    group2.setDouble(1, 0.719512195121951);
-    IdfExtensibleGroup group3 = scheduleDayInterval1.pushExtensibleGroup();
-    group3.setString(0, "07:00");
-    group3.setDouble(1, 1);
+  ForwardTranslator ft;
+  Workspace w2 = ft.translateModel(m);
 
-    IdfObject scheduleWeekDaily(openstudio::IddObjectType::Schedule_Week_Daily);
-    scheduleWeekDaily.setString(0, "occupants schedule Week Rule - Jan1-Dec31");
-    scheduleWeekDaily.setString(1, "occupants schedule day");
-    scheduleWeekDaily.setString(2, "occupants schedule day");
-    scheduleWeekDaily.setString(3, "occupants schedule day");
-    scheduleWeekDaily.setString(4, "occupants schedule day");
-    scheduleWeekDaily.setString(5, "occupants schedule day");
-    scheduleWeekDaily.setString(6, "occupants schedule day");
-    scheduleWeekDaily.setString(7, "occupants schedule day");
-    scheduleWeekDaily.setString(8, "occupants schedule default day");
-    scheduleWeekDaily.setString(9, "occupants schedule default day");
-    scheduleWeekDaily.setString(10, "occupants schedule default day");
-    scheduleWeekDaily.setString(11, "occupants schedule default day");
-    scheduleWeekDaily.setString(12, "occupants schedule default day");
-    
-    IdfObject scheduleYear(openstudio::IddObjectType::Schedule_Year);
-    scheduleYear.setString(0, "occupants schedule");
-    scheduleYear.setString(1, "Fractional");
-    IdfExtensibleGroup group4 = scheduleYear.pushExtensibleGroup();
-    group4.setString(0, "occupants schedule Week Rule - Jan1-Dec31");
-    group4.setInt(1, 1);
-    group4.setInt(2, 1);
-    group4.setInt(3, 12);
-    group4.setInt(4, 31);
+  w2.save(filename + "_3.idf", true);
 
-    IdfObject scheduleDayInterval2(openstudio::IddObjectType::Schedule_Day_Interval);
-    scheduleDayInterval2.setString(0, "occupants schedule default day");
-    scheduleDayInterval2.setString(1, "Fractional");
-    scheduleDayInterval2.setString(2, "No");
-    IdfExtensibleGroup group5 = scheduleDayInterval2.pushExtensibleGroup();
-    group5.setString(0, "24:00");
-    group5.setDouble(1, 1);
+  std::vector<WorkspaceObject> scheduleYears = w.getObjectsByType(IddObjectType::Schedule_Year);
+  std::vector<WorkspaceObject> scheduleYears2 = w2.getObjectsByType(IddObjectType::Schedule_Year);
+  EXPECT_EQ(scheduleYears.size(), scheduleYears2.size());
 
-    w.addObject(scheduleTypeLimits);
-    w.addObject(scheduleDayInterval1);
-    w.addObject(scheduleDayInterval2);
-    w.addObject(scheduleWeekDaily);
-    w.addObject(scheduleYear);
+  std::vector<WorkspaceObject> scheduleWeekDailys = w.getObjectsByType(IddObjectType::Schedule_Week_Daily);
+  std::vector<WorkspaceObject> scheduleWeekDailys2 = w2.getObjectsByType(IddObjectType::Schedule_Week_Daily);
+  EXPECT_EQ(scheduleWeekDailys.size(), scheduleWeekDailys2.size());
 
-    w.save("1_ScheduleRuleset_RT_FT_RoundTrip_1.idf", true);
+  std::vector<WorkspaceObject> scheduleTypeLimitss = w.getObjectsByType(IddObjectType::ScheduleTypeLimits);
+  std::vector<WorkspaceObject> scheduleTypeLimitss2 = w2.getObjectsByType(IddObjectType::ScheduleTypeLimits);
+  EXPECT_EQ(scheduleTypeLimitss.size(), scheduleTypeLimitss2.size() - 3); // OnOff, OnOff 1, Fractional 1
 
-    ReverseTranslator rt;
-    Model m = rt.translateWorkspace(w);
+  std::vector<WorkspaceObject> scheduleDayInterval1s = w.getObjectsByType(IddObjectType::Schedule_Day_Interval);
+  std::vector<WorkspaceObject> scheduleDayInterval1s2 = w2.getObjectsByType(IddObjectType::Schedule_Day_Interval);
+  EXPECT_EQ(scheduleDayInterval1s.size(), scheduleDayInterval1s2.size());
+}
 
-    m.save("1_ScheduleRuleset_RT_FT_RoundTrip_2.osm", true);
+void Run_RoundTrip_OSM_to_OSM(const std::string& filename, Model& m) {
+  m.save(filename + "_1.osm", true);
 
-    ForwardTranslator ft;
-    Workspace w2 = ft.translateModel(m);
+  ForwardTranslator ft;
+  Workspace w = ft.translateModel(m);
 
-    w2.save("1_ScheduleRuleset_RT_FT_RoundTrip_3.idf", true);
+  w.save(filename + "_2.idf", true);
 
-    std::vector<WorkspaceObject> scheduleYears = w.getObjectsByType(IddObjectType::Schedule_Year);
-    std::vector<WorkspaceObject> scheduleYears2 = w2.getObjectsByType(IddObjectType::Schedule_Year);
-    EXPECT_EQ(scheduleYears.size(), scheduleYears2.size());
+  ReverseTranslator rt;
+  Model m2 = rt.translateWorkspace(w);
 
-    std::vector<WorkspaceObject> scheduleWeekDailys = w.getObjectsByType(IddObjectType::Schedule_Week_Daily);
-    std::vector<WorkspaceObject> scheduleWeekDailys2 = w2.getObjectsByType(IddObjectType::Schedule_Week_Daily);
-    EXPECT_EQ(scheduleWeekDailys.size(), scheduleWeekDailys2.size());
+  m2.save(filename + "_3.osm", true);
 
-    std::vector<WorkspaceObject> scheduleTypeLimitss = w.getObjectsByType(IddObjectType::ScheduleTypeLimits);
-    std::vector<WorkspaceObject> scheduleTypeLimitss2 = w2.getObjectsByType(IddObjectType::ScheduleTypeLimits);
-    EXPECT_EQ(scheduleTypeLimitss.size(), scheduleTypeLimitss2.size() - 3); // OnOff, OnOff 1, Fractional 1
+  // TODO: compare model objects
+}
 
-    std::vector<WorkspaceObject> scheduleDayInterval1s = w.getObjectsByType(IddObjectType::Schedule_Day_Interval);
-    std::vector<WorkspaceObject> scheduleDayInterval1s2 = w2.getObjectsByType(IddObjectType::Schedule_Day_Interval);
-    EXPECT_EQ(scheduleDayInterval1s.size(), scheduleDayInterval1s2.size());
-  }
+TEST_F(EnergyPlusFixture, RoundTrip_IDF_ScheduleRuleset_1_ScheduleWeekDaily) {
+  Workspace w(StrictnessLevel::Minimal, IddFileType::EnergyPlus);
 
-  {  // 2 - Schedule:Week:Daily
-    Workspace w(StrictnessLevel::Minimal, IddFileType::EnergyPlus);
+  IdfObject scheduleTypeLimits(openstudio::IddObjectType::ScheduleTypeLimits);
+  scheduleTypeLimits.setString(0, "Fractional");
+  scheduleTypeLimits.setInt(1, 0);
+  scheduleTypeLimits.setInt(2, 1);
+  scheduleTypeLimits.setString(3, "Continuous");
 
-    IdfObject scheduleTypeLimits(openstudio::IddObjectType::ScheduleTypeLimits);
-    scheduleTypeLimits.setString(0, "OnOff");
-    scheduleTypeLimits.setInt(1, 0);
-    scheduleTypeLimits.setInt(2, 1);
-    scheduleTypeLimits.setString(3, "Discrete");
-    scheduleTypeLimits.setString(4, "availability");
+  IdfObject scheduleDayInterval1(openstudio::IddObjectType::Schedule_Day_Interval);
+  scheduleDayInterval1.setString(0, "occupants schedule day");
+  scheduleDayInterval1.setString(1, "Fractional");
+  scheduleDayInterval1.setString(2, "No");
 
-    IdfObject scheduleDayInterval1(openstudio::IddObjectType::Schedule_Day_Interval);
-    scheduleDayInterval1.setString(0, "natural vent schedule day");
-    scheduleDayInterval1.setString(1, "OnOff");
-    scheduleDayInterval1.setString(2, "No");
+  IdfExtensibleGroup group1 = scheduleDayInterval1.pushExtensibleGroup();
+  group1.setString(0, "05:00");
+  group1.setDouble(1, 0.426829268292683);
+  IdfExtensibleGroup group2 = scheduleDayInterval1.pushExtensibleGroup();
+  group2.setString(0, "06:00");
+  group2.setDouble(1, 0.719512195121951);
+  IdfExtensibleGroup group3 = scheduleDayInterval1.pushExtensibleGroup();
+  group3.setString(0, "07:00");
+  group3.setDouble(1, 1);
 
-    IdfExtensibleGroup group1 = scheduleDayInterval1.pushExtensibleGroup();
-    group1.setString(0, "24:00");
-    group1.setDouble(1, 1);
+  IdfObject scheduleWeekDaily(openstudio::IddObjectType::Schedule_Week_Daily);
+  scheduleWeekDaily.setString(0, "occupants schedule Week Rule - Jan1-Dec31");
+  scheduleWeekDaily.setString(1, "occupants schedule day");
+  scheduleWeekDaily.setString(2, "occupants schedule day");
+  scheduleWeekDaily.setString(3, "occupants schedule day");
+  scheduleWeekDaily.setString(4, "occupants schedule day");
+  scheduleWeekDaily.setString(5, "occupants schedule day");
+  scheduleWeekDaily.setString(6, "occupants schedule day");
+  scheduleWeekDaily.setString(7, "occupants schedule day");
+  scheduleWeekDaily.setString(8, "occupants schedule default day");
+  scheduleWeekDaily.setString(9, "occupants schedule default day");
+  scheduleWeekDaily.setString(10, "occupants schedule default day");
+  scheduleWeekDaily.setString(11, "occupants schedule default day");
+  scheduleWeekDaily.setString(12, "occupants schedule default day");
+  
+  IdfObject scheduleYear(openstudio::IddObjectType::Schedule_Year);
+  scheduleYear.setString(0, "occupants schedule");
+  scheduleYear.setString(1, "Fractional");
+  IdfExtensibleGroup group4 = scheduleYear.pushExtensibleGroup();
+  group4.setString(0, "occupants schedule Week Rule - Jan1-Dec31");
+  group4.setInt(1, 1);
+  group4.setInt(2, 1);
+  group4.setInt(3, 12);
+  group4.setInt(4, 31);
 
-    IdfObject scheduleWeekDaily1(openstudio::IddObjectType::Schedule_Week_Daily);
-    scheduleWeekDaily1.setString(0, "natural vent schedule Week Rule - Jan1-Jan6");
-    scheduleWeekDaily1.setString(1, "natural vent schedule day");
-    scheduleWeekDaily1.setString(2, "natural vent schedule day");
-    scheduleWeekDaily1.setString(3, "natural vent schedule default day");
-    scheduleWeekDaily1.setString(4, "natural vent schedule day");
-    scheduleWeekDaily1.setString(5, "natural vent schedule default day");
-    scheduleWeekDaily1.setString(6, "natural vent schedule day");
-    scheduleWeekDaily1.setString(7, "natural vent schedule default day");
-    scheduleWeekDaily1.setString(8, "natural vent schedule default day");
-    scheduleWeekDaily1.setString(9, "natural vent schedule default day");
-    scheduleWeekDaily1.setString(10, "natural vent schedule default day");
-    scheduleWeekDaily1.setString(11, "natural vent schedule default day");
-    scheduleWeekDaily1.setString(12, "natural vent schedule default day");
+  IdfObject scheduleDayInterval2(openstudio::IddObjectType::Schedule_Day_Interval);
+  scheduleDayInterval2.setString(0, "occupants schedule default day");
+  scheduleDayInterval2.setString(1, "Fractional");
+  scheduleDayInterval2.setString(2, "No");
+  IdfExtensibleGroup group5 = scheduleDayInterval2.pushExtensibleGroup();
+  group5.setString(0, "24:00");
+  group5.setDouble(1, 1);
 
-    IdfObject scheduleWeekDaily2(openstudio::IddObjectType::Schedule_Week_Daily);
-    scheduleWeekDaily2.setString(0, "natural vent schedule Week Rule - Jan7-Dec31");
-    scheduleWeekDaily2.setString(1, "natural vent schedule default day");
-    scheduleWeekDaily2.setString(2, "natural vent schedule day");
-    scheduleWeekDaily2.setString(3, "natural vent schedule default day");
-    scheduleWeekDaily2.setString(4, "natural vent schedule day");
-    scheduleWeekDaily2.setString(5, "natural vent schedule default day");
-    scheduleWeekDaily2.setString(6, "natural vent schedule day");
-    scheduleWeekDaily2.setString(7, "natural vent schedule default day");
-    scheduleWeekDaily2.setString(8, "natural vent schedule default day");
-    scheduleWeekDaily2.setString(9, "natural vent schedule default day");
-    scheduleWeekDaily2.setString(10, "natural vent schedule default day");
-    scheduleWeekDaily2.setString(11, "natural vent schedule default day");
-    scheduleWeekDaily2.setString(12, "natural vent schedule default day");
+  w.addObject(scheduleTypeLimits);
+  w.addObject(scheduleDayInterval1);
+  w.addObject(scheduleDayInterval2);
+  w.addObject(scheduleWeekDaily);
+  w.addObject(scheduleYear);
 
-    IdfObject scheduleYear(openstudio::IddObjectType::Schedule_Year);
-    scheduleYear.setString(0, "natural vent schedule");
-    scheduleYear.setString(1, "OnOff");
-    IdfExtensibleGroup group2 = scheduleYear.pushExtensibleGroup();
-    group2.setString(0, "natural vent schedule Week Rule - Jan1-Jan6");
-    group2.setInt(1, 1);
-    group2.setInt(2, 1);
-    group2.setInt(3, 1);
-    group2.setInt(4, 6);
-    IdfExtensibleGroup group3 = scheduleYear.pushExtensibleGroup();
-    group3.setString(0, "natural vent schedule Week Rule - Jan7-Dec31");
-    group3.setInt(1, 1);
-    group3.setInt(2, 7);
-    group3.setInt(3, 12);
-    group3.setInt(4, 31);
+  Run_RoundTrip_IDF_to_IDF("RoundTrip_ScheduleRuleset", w);
+}
 
-    IdfObject scheduleDayInterval2(openstudio::IddObjectType::Schedule_Day_Interval);
-    scheduleDayInterval2.setString(0, "natural vent schedule default day");
-    scheduleDayInterval2.setString(1, "OnOff");
-    scheduleDayInterval2.setString(2, "No");
-    IdfExtensibleGroup group4 = scheduleDayInterval2.pushExtensibleGroup();
-    group4.setString(0, "24:00");
-    group4.setDouble(1, 0);
+TEST_F(EnergyPlusFixture, RoundTrip_IDF_ScheduleRuleset_2_ScheduleWeekDaily) {
+  Workspace w(StrictnessLevel::Minimal, IddFileType::EnergyPlus);
 
-    w.addObject(scheduleTypeLimits);
-    w.addObject(scheduleDayInterval1);
-    w.addObject(scheduleDayInterval2);
-    w.addObject(scheduleWeekDaily1);
-    w.addObject(scheduleWeekDaily2);
-    w.addObject(scheduleYear);
+  IdfObject scheduleTypeLimits(openstudio::IddObjectType::ScheduleTypeLimits);
+  scheduleTypeLimits.setString(0, "OnOff");
+  scheduleTypeLimits.setInt(1, 0);
+  scheduleTypeLimits.setInt(2, 1);
+  scheduleTypeLimits.setString(3, "Discrete");
+  scheduleTypeLimits.setString(4, "availability");
 
-    w.save("2_ScheduleRuleset_RT_FT_RoundTrip_1.idf", true);
+  IdfObject scheduleDayInterval1(openstudio::IddObjectType::Schedule_Day_Interval);
+  scheduleDayInterval1.setString(0, "natural vent schedule day");
+  scheduleDayInterval1.setString(1, "OnOff");
+  scheduleDayInterval1.setString(2, "No");
 
-    ReverseTranslator rt;
-    Model m = rt.translateWorkspace(w);
+  IdfExtensibleGroup group1 = scheduleDayInterval1.pushExtensibleGroup();
+  group1.setString(0, "24:00");
+  group1.setDouble(1, 1);
 
-    // TODO: temporary code for testing.
-    // how do we access calendar year from ScheduleRuleset RT?
-    model::YearDescription yd = m.getUniqueModelObject<model::YearDescription>();
-    m.setCalendarYear(2007);
-    model::ScheduleRule scheduleRule = m.getModelObjects<model::ScheduleRule>()[0];
-    scheduleRule.setApplySunday(false);
-    //
+  IdfObject scheduleWeekDaily1(openstudio::IddObjectType::Schedule_Week_Daily);
+  scheduleWeekDaily1.setString(0, "natural vent schedule Week Rule - Jan1-Jan6");
+  scheduleWeekDaily1.setString(1, "natural vent schedule day");
+  scheduleWeekDaily1.setString(2, "natural vent schedule day");
+  scheduleWeekDaily1.setString(3, "natural vent schedule default day");
+  scheduleWeekDaily1.setString(4, "natural vent schedule day");
+  scheduleWeekDaily1.setString(5, "natural vent schedule default day");
+  scheduleWeekDaily1.setString(6, "natural vent schedule day");
+  scheduleWeekDaily1.setString(7, "natural vent schedule default day");
+  scheduleWeekDaily1.setString(8, "natural vent schedule default day");
+  scheduleWeekDaily1.setString(9, "natural vent schedule default day");
+  scheduleWeekDaily1.setString(10, "natural vent schedule default day");
+  scheduleWeekDaily1.setString(11, "natural vent schedule default day");
+  scheduleWeekDaily1.setString(12, "natural vent schedule default day");
 
-    m.save("2_ScheduleRuleset_RT_FT_RoundTrip_2.osm", true);
+  IdfObject scheduleWeekDaily2(openstudio::IddObjectType::Schedule_Week_Daily);
+  scheduleWeekDaily2.setString(0, "natural vent schedule Week Rule - Jan7-Dec31");
+  scheduleWeekDaily2.setString(1, "natural vent schedule default day");
+  scheduleWeekDaily2.setString(2, "natural vent schedule day");
+  scheduleWeekDaily2.setString(3, "natural vent schedule default day");
+  scheduleWeekDaily2.setString(4, "natural vent schedule day");
+  scheduleWeekDaily2.setString(5, "natural vent schedule default day");
+  scheduleWeekDaily2.setString(6, "natural vent schedule day");
+  scheduleWeekDaily2.setString(7, "natural vent schedule default day");
+  scheduleWeekDaily2.setString(8, "natural vent schedule default day");
+  scheduleWeekDaily2.setString(9, "natural vent schedule default day");
+  scheduleWeekDaily2.setString(10, "natural vent schedule default day");
+  scheduleWeekDaily2.setString(11, "natural vent schedule default day");
+  scheduleWeekDaily2.setString(12, "natural vent schedule default day");
 
-    ForwardTranslator ft;
-    Workspace w2 = ft.translateModel(m);
+  IdfObject scheduleYear(openstudio::IddObjectType::Schedule_Year);
+  scheduleYear.setString(0, "natural vent schedule");
+  scheduleYear.setString(1, "OnOff");
+  IdfExtensibleGroup group2 = scheduleYear.pushExtensibleGroup();
+  group2.setString(0, "natural vent schedule Week Rule - Jan1-Jan6");
+  group2.setInt(1, 1);
+  group2.setInt(2, 1);
+  group2.setInt(3, 1);
+  group2.setInt(4, 6);
+  IdfExtensibleGroup group3 = scheduleYear.pushExtensibleGroup();
+  group3.setString(0, "natural vent schedule Week Rule - Jan7-Dec31");
+  group3.setInt(1, 1);
+  group3.setInt(2, 7);
+  group3.setInt(3, 12);
+  group3.setInt(4, 31);
 
-    w2.save("2_ScheduleRuleset_RT_FT_RoundTrip_3.idf", true);
+  IdfObject scheduleDayInterval2(openstudio::IddObjectType::Schedule_Day_Interval);
+  scheduleDayInterval2.setString(0, "natural vent schedule default day");
+  scheduleDayInterval2.setString(1, "OnOff");
+  scheduleDayInterval2.setString(2, "No");
+  IdfExtensibleGroup group4 = scheduleDayInterval2.pushExtensibleGroup();
+  group4.setString(0, "24:00");
+  group4.setDouble(1, 0);
 
-    std::vector<WorkspaceObject> scheduleYears = w.getObjectsByType(IddObjectType::Schedule_Year);
-    std::vector<WorkspaceObject> scheduleYears2 = w2.getObjectsByType(IddObjectType::Schedule_Year);
-    EXPECT_EQ(scheduleYears.size(), scheduleYears2.size());
+  w.addObject(scheduleTypeLimits);
+  w.addObject(scheduleDayInterval1);
+  w.addObject(scheduleDayInterval2);
+  w.addObject(scheduleWeekDaily1);
+  w.addObject(scheduleWeekDaily2);
+  w.addObject(scheduleYear);
 
-    std::vector<WorkspaceObject> scheduleWeekDailys = w.getObjectsByType(IddObjectType::Schedule_Week_Daily);
-    std::vector<WorkspaceObject> scheduleWeekDailys2 = w2.getObjectsByType(IddObjectType::Schedule_Week_Daily);
-    EXPECT_EQ(scheduleWeekDailys.size(), scheduleWeekDailys2.size());
+  Run_RoundTrip_IDF_to_IDF("RoundTrip_ScheduleRuleset", w);
+}
 
-    std::vector<WorkspaceObject> scheduleTypeLimitss = w.getObjectsByType(IddObjectType::ScheduleTypeLimits);
-    std::vector<WorkspaceObject> scheduleTypeLimitss2 = w2.getObjectsByType(IddObjectType::ScheduleTypeLimits);
-    EXPECT_EQ(scheduleTypeLimitss.size(), scheduleTypeLimitss2.size() - 3); // OnOff, OnOff 1, Fractional 1
+TEST_F(EnergyPlusFixture, RoundTrip_IDF_ScheduleRuleset_Monthly_ScheduleWeekDaily) {
+  openstudio::path idfPath = resourcesPath() / toPath("energyplus/ScheduleRuleset/monthly.idf");
+  OptionalIdfFile idfFile = IdfFile::load(idfPath, IddFileType::EnergyPlus);
+  ASSERT_TRUE(idfFile);
+  Workspace w(*idfFile);
 
-    std::vector<WorkspaceObject> scheduleDayInterval1s = w.getObjectsByType(IddObjectType::Schedule_Day_Interval);
-    std::vector<WorkspaceObject> scheduleDayInterval1s2 = w2.getObjectsByType(IddObjectType::Schedule_Day_Interval);
-    EXPECT_EQ(scheduleDayInterval1s.size(), scheduleDayInterval1s2.size());
-  }
+  Run_RoundTrip_IDF_to_IDF("RoundTrip_ScheduleRuleset", w);
+}
 
-  {  // start with OSM
-    Model m;
+TEST_F(EnergyPlusFixture, RoundTrip_OSM_ScheduleRuleset_1_ScheduleRule) {
+  Model m;
 
-    ScheduleTypeLimits scheduleTypeLimits(m);
-    scheduleTypeLimits.setName("Fractional");
-    scheduleTypeLimits.setLowerLimitValue(0);
-    scheduleTypeLimits.setUpperLimitValue(0);
-    scheduleTypeLimits.setNumericType("Continuous");
+  ScheduleTypeLimits scheduleTypeLimits(m);
+  scheduleTypeLimits.setName("Fractional");
+  scheduleTypeLimits.setLowerLimitValue(0);
+  scheduleTypeLimits.setUpperLimitValue(0);
+  scheduleTypeLimits.setNumericType("Continuous");
 
-    ScheduleRuleset scheduleRuleset(m);
-    scheduleRuleset.setName("occupants schedule");
-    scheduleRuleset.setScheduleTypeLimits(scheduleTypeLimits);
+  ScheduleRuleset scheduleRuleset(m);
+  scheduleRuleset.setName("occupants schedule");
+  scheduleRuleset.setScheduleTypeLimits(scheduleTypeLimits);
 
-    ScheduleDay defaultDaySchedule = scheduleRuleset.defaultDaySchedule();
-    defaultDaySchedule.setName("occupants schedule default day");
-    defaultDaySchedule.setScheduleTypeLimits(scheduleTypeLimits);
+  ScheduleDay defaultDaySchedule = scheduleRuleset.defaultDaySchedule();
+  defaultDaySchedule.setName("occupants schedule default day");
+  defaultDaySchedule.setScheduleTypeLimits(scheduleTypeLimits);
 
-    ScheduleRule scheduleRule(scheduleRuleset);
-    scheduleRule.setName("occupants schedule allday rule");
-    scheduleRule.setApplyAllDays(true);
-    scheduleRule.setStartDate(Date(1, 1));
-    scheduleRule.setEndDate(Date(12, 31));
+  ScheduleRule scheduleRule(scheduleRuleset);
+  scheduleRule.setName("occupants schedule allday rule");
+  scheduleRule.setApplyAllDays(true);
+  scheduleRule.setStartDate(Date(1, 1));
+  scheduleRule.setEndDate(Date(12, 31));
 
-    ScheduleDay daySchedule = scheduleRule.daySchedule();
-    daySchedule.setName("occupants schedule day");
-    daySchedule.setScheduleTypeLimits(scheduleTypeLimits);
-    daySchedule.addValue(Time(0, 5), 0.426829268292683);
-    daySchedule.addValue(Time(0, 6), 0.719512195121951);
-    daySchedule.addValue(Time(0, 7), 1);
+  ScheduleDay daySchedule = scheduleRule.daySchedule();
+  daySchedule.setName("occupants schedule day");
+  daySchedule.setScheduleTypeLimits(scheduleTypeLimits);
+  daySchedule.addValue(Time(0, 5), 0.426829268292683);
+  daySchedule.addValue(Time(0, 6), 0.719512195121951);
+  daySchedule.addValue(Time(0, 7), 1);
 
-    //m.save("ScheduleRuleset_FT_RT_RoundTrip_1.osm", true);
-
-    ForwardTranslator ft;
-    Workspace w = ft.translateModel(m);
-
-    //w.save("ScheduleRuleset_FT_RT_RoundTrip_2.idf", true);
-
-    ReverseTranslator rt;
-    Model m2 = rt.translateWorkspace(w);
-
-    //m2.save("ScheduleRuleset_FT_RT_RoundTrip_3.osm", true);
-  }
+  Run_RoundTrip_OSM_to_OSM("RoundTrip_ScheduleRuleset", m);
 }
