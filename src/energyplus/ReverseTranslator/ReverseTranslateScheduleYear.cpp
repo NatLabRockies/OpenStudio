@@ -226,7 +226,8 @@ namespace energyplus {
 
         // Lambda helper, not making it into a function since I need the ReverseTranslator context to call translateAndMapWorkspaceObject and I don't
         // want to define it into the ReverseTranslator.hpp
-        auto getOrCreateRule = [this, &scheduleRuleset, &startDate, &endDate, &dayScheduleNames, &scheduleRules, &specialDayScheduleNames](const boost::optional<WorkspaceObject>& scheduleDay, const std::string& scheduleWeekName) {
+        auto getOrCreateRule = [this, &scheduleRuleset, &startDate, &endDate, &dayScheduleNames, &scheduleRules, &specialDayScheduleNames]
+                               (const boost::optional<WorkspaceObject>& scheduleDay, const std::string& scheduleWeekName, const int dayOfWeek = 0) {
           boost::optional<ScheduleRule> scheduleRule;
 
           if (scheduleDay) {
@@ -234,8 +235,17 @@ namespace energyplus {
 
             auto it = std::find(dayScheduleNames.begin(), dayScheduleNames.end(), scheduleDayName);
             if (it != dayScheduleNames.end()) {
+              // this is the previous week's schedule rule
               scheduleRule = scheduleRules[it - dayScheduleNames.begin()];
-              scheduleRule->setEndDate(endDate); // TODO: not sure about this
+              if ((dayOfWeek == 6) || ((endDate.monthOfYear().value() == 12) && (endDate.dayOfMonth() == 31))) {
+                // use this week's endDate if
+                // - we made it to saturday of this week, or
+                // - this is the last week
+                scheduleRule->setEndDate(endDate);
+              } else {
+                // this is the new week's startDate
+                scheduleRule->setEndDate(startDate + dayOfWeek);
+              }
             } else {
               auto it2 = std::find(specialDayScheduleNames.holidayScheduleDayNames.begin(), specialDayScheduleNames.holidayScheduleDayNames.end(), scheduleDayName);
               if (!(specialDayScheduleNames.isDefaultDaySchedule() && (it2 != specialDayScheduleNames.holidayScheduleDayNames.end()))) {
@@ -245,8 +255,9 @@ namespace energyplus {
                   scheduleRule = ScheduleRule(scheduleRuleset, daySchedule, false);
                   // LOG(Debug, "Creating a new rule named " << scheduleRule->nameString() << " for " << scheduleWeekName << " with daySchedule"
                   //                                         << daySchedule.nameString() << ", startDate=" << startDate << ", endDate=" << endDate);
+                  //scheduleRule->setName(scheduleWeekName);
                   scheduleRule->setName(scheduleRuleset.nameString() + " rule");
-                  scheduleRule->setStartDate(startDate);
+                  scheduleRule->setStartDate(startDate + dayOfWeek);
                   scheduleRule->setEndDate(endDate);
                   scheduleRule->setApplyAllDays(false);
 
@@ -270,26 +281,26 @@ namespace energyplus {
           customDay2ScheduleDay = scheduleWeek->getTarget(Schedule_Week_DailyFields::CustomDay2Schedule_DayName);
 
           std::string scheduleWeekDailyName = scheduleWeek->getString(Schedule_Week_DailyFields::Name).get();
-          if (auto schRule_ = getOrCreateRule(scheduleWeek->getTarget(Schedule_Week_DailyFields::SundaySchedule_DayName), scheduleWeekDailyName)) {
+          if (auto schRule_ = getOrCreateRule(scheduleWeek->getTarget(Schedule_Week_DailyFields::SundaySchedule_DayName), scheduleWeekDailyName, 0)) {
             // TODO: if this is the first week, depending on the start day of week and how many week schedules there are, we may actually set this (and monday, etc) to false.
             schRule_->setApplySunday(true);
           }
-          if (auto schRule_ = getOrCreateRule(scheduleWeek->getTarget(Schedule_Week_DailyFields::MondaySchedule_DayName), scheduleWeekDailyName)) {
+          if (auto schRule_ = getOrCreateRule(scheduleWeek->getTarget(Schedule_Week_DailyFields::MondaySchedule_DayName), scheduleWeekDailyName, 1)) {
             schRule_->setApplyMonday(true);
           }
-          if (auto schRule_ = getOrCreateRule(scheduleWeek->getTarget(Schedule_Week_DailyFields::TuesdaySchedule_DayName), scheduleWeekDailyName)) {
+          if (auto schRule_ = getOrCreateRule(scheduleWeek->getTarget(Schedule_Week_DailyFields::TuesdaySchedule_DayName), scheduleWeekDailyName, 2)) {
             schRule_->setApplyTuesday(true);
           }
-          if (auto schRule_ = getOrCreateRule(scheduleWeek->getTarget(Schedule_Week_DailyFields::WednesdaySchedule_DayName), scheduleWeekDailyName)) {
+          if (auto schRule_ = getOrCreateRule(scheduleWeek->getTarget(Schedule_Week_DailyFields::WednesdaySchedule_DayName), scheduleWeekDailyName, 3)) {
             schRule_->setApplyWednesday(true);
           }
-          if (auto schRule_ = getOrCreateRule(scheduleWeek->getTarget(Schedule_Week_DailyFields::ThursdaySchedule_DayName), scheduleWeekDailyName)) {
+          if (auto schRule_ = getOrCreateRule(scheduleWeek->getTarget(Schedule_Week_DailyFields::ThursdaySchedule_DayName), scheduleWeekDailyName, 4)) {
             schRule_->setApplyThursday(true);
           }
-          if (auto schRule_ = getOrCreateRule(scheduleWeek->getTarget(Schedule_Week_DailyFields::FridaySchedule_DayName), scheduleWeekDailyName)) {
+          if (auto schRule_ = getOrCreateRule(scheduleWeek->getTarget(Schedule_Week_DailyFields::FridaySchedule_DayName), scheduleWeekDailyName, 5)) {
             schRule_->setApplyFriday(true);
           }
-          if (auto schRule_ = getOrCreateRule(scheduleWeek->getTarget(Schedule_Week_DailyFields::SaturdaySchedule_DayName), scheduleWeekDailyName)) {
+          if (auto schRule_ = getOrCreateRule(scheduleWeek->getTarget(Schedule_Week_DailyFields::SaturdaySchedule_DayName), scheduleWeekDailyName, 6)) {
             schRule_->setApplySaturday(true);
           }
 
