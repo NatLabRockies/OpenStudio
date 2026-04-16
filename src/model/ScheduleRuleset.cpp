@@ -319,8 +319,10 @@ namespace model {
     }
 
     bool ScheduleRuleset_Impl::setDefaultDaySchedule(const ScheduleDay& schedule) {
+      ScheduleDay defaultDaySchedule = this->defaultDaySchedule();
       bool result = setPointer(OS_Schedule_RulesetFields::DefaultDayScheduleName, schedule.handle());
       OS_ASSERT(result);
+      defaultDaySchedule.remove();
       return result;
     }
 
@@ -687,6 +689,11 @@ namespace model {
   ScheduleRuleset::ScheduleRuleset(const Model& model, double value) : Schedule(ScheduleRuleset::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ScheduleRuleset_Impl>());
     ScheduleDay defaultDaySchedule(model, value);
+    getImpl<detail::ScheduleRuleset_Impl>()->setPointer(OS_Schedule_RulesetFields::DefaultDayScheduleName, defaultDaySchedule.handle());
+  }
+
+  ScheduleRuleset::ScheduleRuleset(const Model& model, const ScheduleDay& defaultDaySchedule) : Schedule(ScheduleRuleset::iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::ScheduleRuleset_Impl>());
     getImpl<detail::ScheduleRuleset_Impl>()->setPointer(OS_Schedule_RulesetFields::DefaultDayScheduleName, defaultDaySchedule.handle());
   }
 
