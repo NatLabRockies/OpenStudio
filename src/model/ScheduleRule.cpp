@@ -568,20 +568,27 @@ namespace model {
     OS_ASSERT(result);
   }
 
-  ScheduleRule::ScheduleRule(ScheduleRuleset& scheduleRuleset, const ScheduleDay& daySchedule)
+  ScheduleRule::ScheduleRule(ScheduleRuleset& scheduleRuleset, const ScheduleDay& daySchedule, bool cloneDaySchedule)
     : ParentObject(ScheduleRule::iddObjectType(), scheduleRuleset.model()) {
     OS_ASSERT(getImpl<detail::ScheduleRule_Impl>());
 
     bool result = setPointer(OS_Schedule_RuleFields::ScheduleRulesetName, scheduleRuleset.handle());
     OS_ASSERT(result);
 
-    //ModelObject clone = daySchedule.clone(scheduleRuleset.model());
-    //result = setPointer(OS_Schedule_RuleFields::DayScheduleName, clone.handle());
-    result = setPointer(OS_Schedule_RuleFields::DayScheduleName, daySchedule.handle());
+    OptionalModelObject clone;
+    if (cloneDaySchedule) {
+      clone = daySchedule.clone(scheduleRuleset.model());
+      result = setPointer(OS_Schedule_RuleFields::DayScheduleName, clone->handle());
+    } else {
+      result = setPointer(OS_Schedule_RuleFields::DayScheduleName, daySchedule.handle());
+    }
     OS_ASSERT(result);
     if (OptionalScheduleTypeLimits limits = scheduleRuleset.scheduleTypeLimits()) {
-      //clone.cast<ScheduleDay>().setScheduleTypeLimits(*limits);
-      daySchedule.cast<ScheduleDay>().setScheduleTypeLimits(*limits);
+      if (cloneDaySchedule) {
+        clone->cast<ScheduleDay>().setScheduleTypeLimits(*limits);
+      } else {
+        daySchedule.cast<ScheduleDay>().setScheduleTypeLimits(*limits);
+      }
     }
 
     this->setRuleIndex(std::numeric_limits<int>::max());

@@ -38,10 +38,10 @@ namespace model {
 
     /// Constructor associates this rule with the given ruleset. This rule is made to be the highest priority rule.
     /// The given daySchedule is cloned and the new object is owned by (a child of) this rule.
-    explicit ScheduleRule(ScheduleRuleset& scheduleRuleset, const ScheduleDay& daySchedule);
+    explicit ScheduleRule(ScheduleRuleset& scheduleRuleset, const ScheduleDay& daySchedule, bool cloneDaySchedule = true);
 
     virtual ~ScheduleRule() override = default;
-    // Default the copy and move operators because the virtual dtor is explicit
+    // Default the copy and move operators because the virtual ctor is explicit
     ScheduleRule(const ScheduleRule& other) = default;
     ScheduleRule(ScheduleRule&& other) = default;
     ScheduleRule& operator=(const ScheduleRule&) = default;
