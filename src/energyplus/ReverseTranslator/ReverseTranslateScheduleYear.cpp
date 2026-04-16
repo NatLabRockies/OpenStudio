@@ -18,6 +18,8 @@
 #include "../../model/ScheduleRule_Impl.hpp"
 #include "../../model/ScheduleDay.hpp"
 #include "../../model/ScheduleDay_Impl.hpp"
+#include "../../model/YearDescription.hpp"
+#include "../../model/YearDescription_Impl.hpp"
 
 #include "../../utilities/idf/IdfExtensibleGroup.hpp"
 #include "../../utilities/idf/WorkspaceExtensibleGroup.hpp"
@@ -53,7 +55,7 @@ namespace energyplus {
       return (holidayScheduleDayNames.size() > 1 || summerDesignDayScheduleDayNames.size() > 1 || winterDesignDayScheduleDayNames.size() > 1
               || customDay1ScheduleDayNames.size() > 1 || customDay2ScheduleDayNames.size() > 1);
     }
-    [[nodiscard]] bool hasSameScheduleDays() const {
+    [[nodiscard]] bool isDefaultDaySchedule() const {
       return (holidayScheduleDayNames == summerDesignDayScheduleDayNames
               && summerDesignDayScheduleDayNames == winterDesignDayScheduleDayNames
               && winterDesignDayScheduleDayNames == customDay1ScheduleDayNames
@@ -179,6 +181,9 @@ namespace energyplus {
     } else {
       // Special Days: for each type, not more than one exists (ScheduleRuleset can only accept a single one for each type)
 
+      model::YearDescription yd = m_model.getUniqueModelObject<model::YearDescription>();
+      openstudio::Date jan1 = yd.makeDate(MonthOfYear::Jan, 1);
+
       ScheduleRuleset scheduleRuleset(m_model);
 
       // Name
@@ -199,6 +204,9 @@ namespace energyplus {
       OptionalWorkspaceObject customDay1ScheduleDay;
       OptionalWorkspaceObject customDay2ScheduleDay;
 
+      std::vector<std::string> dayScheduleNames;
+      std::vector<ScheduleRule> scheduleRules;
+
       for (const IdfExtensibleGroup& idfGroup : extensibleGroups) {
         auto workspaceGroup = idfGroup.cast<WorkspaceExtensibleGroup>();
 
@@ -212,13 +220,13 @@ namespace energyplus {
         Date startDate(*startMonth, *startDay);
         Date endDate(*endMonth, *endDay);
 
-        std::vector<std::string> dayScheduleNames;
-        std::vector<ScheduleRule> scheduleRules;
+        // Moved these up out of this loop so that we don't always create at least one rule for every week.
+        //std::vector<std::string> dayScheduleNames;
+        //std::vector<ScheduleRule> scheduleRules;
 
         // Lambda helper, not making it into a function since I need the ReverseTranslator context to call translateAndMapWorkspaceObject and I don't
         // want to define it into the ReverseTranslator.hpp
-        auto getOrCreateRule = [this, &scheduleRuleset, &startDate, &endDate, &dayScheduleNames,
-                                &scheduleRules](const boost::optional<WorkspaceObject>& scheduleDay, const std::string& scheduleWeekName) {
+        auto getOrCreateRule = [this, &scheduleRuleset, &startDate, &endDate, &dayScheduleNames, &scheduleRules, &specialDayScheduleNames](const boost::optional<WorkspaceObject>& scheduleDay, const std::string& scheduleWeekName) {
           boost::optional<ScheduleRule> scheduleRule;
 
           if (scheduleDay) {
@@ -227,20 +235,24 @@ namespace energyplus {
             auto it = std::find(dayScheduleNames.begin(), dayScheduleNames.end(), scheduleDayName);
             if (it != dayScheduleNames.end()) {
               scheduleRule = scheduleRules[it - dayScheduleNames.begin()];
+              scheduleRule->setEndDate(endDate); // TODO: not sure about this
             } else {
-              if (OptionalModelObject mo_daySchedule = translateAndMapWorkspaceObject(*scheduleDay)) {
-                auto daySchedule = mo_daySchedule->cast<ScheduleDay>();
-                // TODO: this clones daySchedule and sets the clone with a different name, which is annoying
+              auto it2 = std::find(specialDayScheduleNames.holidayScheduleDayNames.begin(), specialDayScheduleNames.holidayScheduleDayNames.end(), scheduleDayName);
+              if (!(specialDayScheduleNames.isDefaultDaySchedule() && (it2 != specialDayScheduleNames.holidayScheduleDayNames.end()))) {
+                if (OptionalModelObject mo_daySchedule = translateAndMapWorkspaceObject(*scheduleDay)) {
+                  auto daySchedule = mo_daySchedule->cast<ScheduleDay>();
 
-                scheduleRule = ScheduleRule(scheduleRuleset, daySchedule);
-                // LOG(Debug, "Creating a new rule named " << scheduleRule->nameString() << " for " << scheduleWeekName << " with daySchedule"
-                //                                         << daySchedule.nameString() << ", startDate=" << startDate << ", endDate=" << endDate);
-                scheduleRule->setName(scheduleWeekName);
-                scheduleRule->setStartDate(startDate);
-                scheduleRule->setEndDate(endDate);
+                  scheduleRule = ScheduleRule(scheduleRuleset, daySchedule, false);
+                  // LOG(Debug, "Creating a new rule named " << scheduleRule->nameString() << " for " << scheduleWeekName << " with daySchedule"
+                  //                                         << daySchedule.nameString() << ", startDate=" << startDate << ", endDate=" << endDate);
+                  scheduleRule->setName(scheduleRuleset.nameString() + " rule");
+                  scheduleRule->setStartDate(startDate);
+                  scheduleRule->setEndDate(endDate);
+                  scheduleRule->setApplyAllDays(false);
 
-                dayScheduleNames.push_back(scheduleDayName);
-                scheduleRules.push_back(*scheduleRule);
+                  dayScheduleNames.push_back(scheduleDayName);
+                  scheduleRules.push_back(*scheduleRule);
+                }
               }
             }
           }
@@ -259,6 +271,7 @@ namespace energyplus {
 
           std::string scheduleWeekDailyName = scheduleWeek->getString(Schedule_Week_DailyFields::Name).get();
           if (auto schRule_ = getOrCreateRule(scheduleWeek->getTarget(Schedule_Week_DailyFields::SundaySchedule_DayName), scheduleWeekDailyName)) {
+            // TODO: if this is the first week, depending on the start day of week and how many week schedules there are, we may actually set this (and monday, etc) to false.
             schRule_->setApplySunday(true);
           }
           if (auto schRule_ = getOrCreateRule(scheduleWeek->getTarget(Schedule_Week_DailyFields::MondaySchedule_DayName), scheduleWeekDailyName)) {
@@ -341,19 +354,11 @@ namespace energyplus {
       }  // End loop on extensible groups
 
       // Common path to both Schedule_Week_Daily and Schedule_Week_Compact
-      if (specialDayScheduleNames.hasSameScheduleDays()) {
+      if (specialDayScheduleNames.isDefaultDaySchedule()) {
         if (holidayScheduleDay) {
           if (auto mo_ = translateAndMapWorkspaceObject(*holidayScheduleDay)) {
             auto scheduleDay = mo_->cast<ScheduleDay>();
-            // transfer values from correct day schedule to the one created by the ctor
-            // this still appends the " 1" on the name
-/*             ScheduleDay defaultDaySchedule = scheduleRuleset.defaultDaySchedule();
-            defaultDaySchedule.setName(scheduleDay.nameString());
-            defaultDaySchedule.clearValues();
-            for (Time time : scheduleDay.times()) {
-              defaultDaySchedule.addValue(time, scheduleDay.getValue(time));
-            } */
-            scheduleRuleset.setDefaultDaySchedule(scheduleDay); // alternative is ruleset ctor with day schedule?
+            scheduleRuleset.setDefaultDaySchedule(scheduleDay);
           }
         }
       } else {
