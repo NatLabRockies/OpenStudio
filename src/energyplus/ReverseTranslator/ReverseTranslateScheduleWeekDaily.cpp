@@ -10,7 +10,11 @@
 #include "../../model/ScheduleDay.hpp"
 #include "../../model/ScheduleDay_Impl.hpp"
 
+#include "../../utilities/idf/IdfExtensibleGroup.hpp"
+#include "../../utilities/idf/WorkspaceExtensibleGroup.hpp"
+
 #include <utilities/idd/Schedule_Week_Daily_FieldEnums.hxx>
+#include <utilities/idd/Schedule_Year_FieldEnums.hxx>
 #include <utilities/idd/OS_Schedule_Week_FieldEnums.hxx>
 #include "../../utilities/idd/IddEnums.hpp"
 #include <utilities/idd/IddEnums.hxx>
@@ -26,6 +30,18 @@ namespace energyplus {
       LOG(Error, "WorkspaceObject is not IddObjectType: Schedule:Week");
       return boost::none;
     }
+
+/*     for (const WorkspaceObject& scheduleYear : m_workspace.getObjectsByType(IddObjectType::Schedule_Year)) {
+      std::vector<IdfExtensibleGroup> extensibleGroups = scheduleYear.extensibleGroups();
+      for (const IdfExtensibleGroup& idfGroup : extensibleGroups) {
+        auto workspaceGroup = idfGroup.cast<WorkspaceExtensibleGroup>();
+        if (OptionalWorkspaceObject scheduleWeek = workspaceGroup.getTarget(Schedule_YearExtensibleFields::Schedule_WeekName)) {
+          if (scheduleWeek->nameString() == workspaceObject.nameString()) {
+            return boost::none;
+          }
+        }
+      }
+    } */
 
     // create the schedule
     ScheduleWeek scheduleWeek(m_model);

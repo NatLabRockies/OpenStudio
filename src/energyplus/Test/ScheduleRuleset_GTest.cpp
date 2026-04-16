@@ -2100,3 +2100,86 @@ TEST_F(EnergyPlusFixture, RoundTrip_OSM_ScheduleRuleset_1_ScheduleRule) {
 
   Run_RoundTrip_OSM_to_OSM("RoundTrip_ScheduleRuleset", m);
 }
+
+TEST_F(EnergyPlusFixture, RoundTrip_IDF_ScheduleYear_2_ScheduleWeekDaily) {
+  Workspace w(StrictnessLevel::Minimal, IddFileType::EnergyPlus);
+
+  IdfObject scheduleTypeLimits(openstudio::IddObjectType::ScheduleTypeLimits);
+  scheduleTypeLimits.setString(0, "OnOff");
+  scheduleTypeLimits.setInt(1, 0);
+  scheduleTypeLimits.setInt(2, 1);
+  scheduleTypeLimits.setString(3, "Discrete");
+  scheduleTypeLimits.setString(4, "availability");
+
+  IdfObject scheduleDayInterval1(openstudio::IddObjectType::Schedule_Day_Interval);
+  scheduleDayInterval1.setString(0, "natural vent schedule day");
+  scheduleDayInterval1.setString(1, "OnOff");
+  scheduleDayInterval1.setString(2, "No");
+
+  IdfExtensibleGroup group1 = scheduleDayInterval1.pushExtensibleGroup();
+  group1.setString(0, "24:00");
+  group1.setDouble(1, 1);
+
+  IdfObject scheduleWeekDaily1(openstudio::IddObjectType::Schedule_Week_Daily);
+  scheduleWeekDaily1.setString(0, "natural vent schedule Week Rule - Jan1-Jan6");
+  scheduleWeekDaily1.setString(1, "natural vent schedule day");
+  scheduleWeekDaily1.setString(2, "natural vent schedule day");
+  scheduleWeekDaily1.setString(3, "natural vent schedule default day");
+  scheduleWeekDaily1.setString(4, "natural vent schedule day");
+  scheduleWeekDaily1.setString(5, "natural vent schedule default day");
+  scheduleWeekDaily1.setString(6, "natural vent schedule day");
+  scheduleWeekDaily1.setString(7, "natural vent schedule default day");
+  scheduleWeekDaily1.setString(8, "natural vent schedule default day");
+  scheduleWeekDaily1.setString(9, "natural vent schedule default day");
+  scheduleWeekDaily1.setString(10, "natural vent schedule default day");
+  scheduleWeekDaily1.setString(11, "natural vent schedule default day");
+  scheduleWeekDaily1.setString(12, "natural vent schedule default day");
+
+  IdfObject scheduleWeekDaily2(openstudio::IddObjectType::Schedule_Week_Daily);
+  scheduleWeekDaily2.setString(0, "natural vent schedule Week Rule - Jan7-Dec31");
+  scheduleWeekDaily2.setString(1, "natural vent schedule default day");
+  scheduleWeekDaily2.setString(2, "natural vent schedule day");
+  scheduleWeekDaily2.setString(3, "natural vent schedule default day");
+  scheduleWeekDaily2.setString(4, "natural vent schedule day");
+  scheduleWeekDaily2.setString(5, "natural vent schedule default day");
+  scheduleWeekDaily2.setString(6, "natural vent schedule day");
+  scheduleWeekDaily2.setString(7, "natural vent schedule default day");
+  scheduleWeekDaily2.setString(8, "natural vent schedule default day");
+  scheduleWeekDaily2.setString(9, "natural vent schedule default day");
+  scheduleWeekDaily2.setString(10, "natural vent schedule day");  // <-- different day schedule
+  scheduleWeekDaily2.setString(11, "natural vent schedule default day");
+  scheduleWeekDaily2.setString(12, "natural vent schedule default day");
+
+  IdfObject scheduleYear(openstudio::IddObjectType::Schedule_Year);
+  scheduleYear.setString(0, "natural vent schedule");
+  scheduleYear.setString(1, "OnOff");
+  IdfExtensibleGroup group2 = scheduleYear.pushExtensibleGroup();
+  group2.setString(0, "natural vent schedule Week Rule - Jan1-Jan6");
+  group2.setInt(1, 1);
+  group2.setInt(2, 1);
+  group2.setInt(3, 1);
+  group2.setInt(4, 6);
+  IdfExtensibleGroup group3 = scheduleYear.pushExtensibleGroup();
+  group3.setString(0, "natural vent schedule Week Rule - Jan7-Dec31");
+  group3.setInt(1, 1);
+  group3.setInt(2, 7);
+  group3.setInt(3, 12);
+  group3.setInt(4, 31);
+
+  IdfObject scheduleDayInterval2(openstudio::IddObjectType::Schedule_Day_Interval);
+  scheduleDayInterval2.setString(0, "natural vent schedule default day");
+  scheduleDayInterval2.setString(1, "OnOff");
+  scheduleDayInterval2.setString(2, "No");
+  IdfExtensibleGroup group4 = scheduleDayInterval2.pushExtensibleGroup();
+  group4.setString(0, "24:00");
+  group4.setDouble(1, 0);
+
+  w.addObject(scheduleTypeLimits);
+  w.addObject(scheduleDayInterval1);
+  w.addObject(scheduleDayInterval2);
+  w.addObject(scheduleWeekDaily1);
+  w.addObject(scheduleWeekDaily2);
+  w.addObject(scheduleYear);
+
+  Run_RoundTrip_IDF_to_IDF("RoundTrip_ScheduleRuleset", w);
+}

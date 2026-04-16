@@ -169,9 +169,9 @@ namespace energyplus {
         // reverse translate schedule week
         target = extensibleGroups[i].cast<WorkspaceExtensibleGroup>().getTarget(Schedule_YearExtensibleFields::Schedule_WeekName);
         if (target) {
-          OptionalModelObject scheduleWeekName = translateAndMapWorkspaceObject(*target);
-          if (scheduleWeekName) {
-            scheduleYear.addScheduleWeek(Date(*endMonth, *endDay), scheduleWeekName->cast<ScheduleWeek>());
+          OptionalModelObject scheduleWeek = translateAndMapWorkspaceObject(*target);
+          if (scheduleWeek) {
+            scheduleYear.addScheduleWeek(Date(*endMonth, *endDay), scheduleWeek->cast<ScheduleWeek>());
           }
         }
       }

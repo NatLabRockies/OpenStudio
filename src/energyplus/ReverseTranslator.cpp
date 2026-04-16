@@ -186,7 +186,14 @@ namespace energyplus {
     LOG(Trace, "Translating remaining objects.");
     vector<WorkspaceObject> all = m_workspace.objects();
     for (auto& elem : all) {
-      translateAndMapWorkspaceObject(elem);
+      switch (elem.iddObject().type().value()) {
+        case openstudio::IddObjectType::Schedule_Week_Daily: {
+          break;  // no-op
+        }
+        default: {
+          translateAndMapWorkspaceObject(elem);
+        }
+      }
     }
 
     LOG(Trace, "Translation nominally complete.");
@@ -802,7 +809,7 @@ namespace energyplus {
         break;
       }
       case openstudio::IddObjectType::Schedule_Week_Daily: {
-        //modelObject = translateScheduleWeekDaily(workspaceObject);
+        modelObject = translateScheduleWeekDaily(workspaceObject);
         break;
       }
       case openstudio::IddObjectType::Schedule_Year: {
