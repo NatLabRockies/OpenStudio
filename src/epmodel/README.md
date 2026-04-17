@@ -6,17 +6,15 @@ project can explore a future EnergyPlus-aligned model layer based on
 `Energy+.idd` without destabilizing the long-lived `openstudio::model` stack
 that is built around `OpenStudio.idd`.
 
-At a high level, epmodel is no longer just a narrow experiment around a few
-HVAC wrappers. It has grown into a broad model layer with real object
-coverage, its own topology and canonicalization rules, and a large amount of
-API work aimed at reproducing the canonical `openstudio::model` API. That
-parity with `openstudio::model` is the central goal of the project. It is
-still an incubation branch of the architecture, but it should be read as a
-serious model implementation, not as a throwaway prototype.
+`openstudio::epmodel` is actively evolving into a broad model layer with
+meaningful object coverage, its own topology and canonicalization rules, and
+substantial API work aimed at reproducing the canonical
+`openstudio::model` surface. Achieving strong parity with
+`openstudio::model` is the project's central goal. 
 
 ## Why epmodel exists
 
-The motivating tension is straightforward:
+The motivating tension is that:
 
 - OpenStudio's canonical public model API is widely adopted and too
   significant to deprecate in whole.
@@ -41,50 +39,37 @@ once:
 Keeping epmodel separate from `openstudio::model` is deliberate. It allows the
 project to evolve storage choices, canonicalization behavior, and wrapper
 shape in an EnergyPlus-first way without creating churn in the existing model
-implementation before the tradeoffs are well understood.
-
-## What The Codebase Covers Today
-
-epmodel now spans much more than a small HVAC island. The code under
-`src/epmodel` reaches into many domains, even though the amount of deliberate,
-hands-on implementation work is not uniform across them. The tree includes
-types in areas such as:
-
-- HVAC loops, components, zone equipment, thermostats, setpoint managers, and
-  availability managers
-- plant and air-side families, including water-to-air, water-to-water, and
-  air-to-air component groups
-- schedules, schedule bases, resource objects, and sizing-period objects
-- geometry-facing and enclosure-facing domains such as spaces, surfaces,
-  constructions, materials, glazing, and shading
-- space loads, exterior loads, and related instance objects
-- electrical and generation domains including generators, inverters, storage,
-  and photovoltaic performance objects
-- AirflowNetwork-related objects and other EnergyPlus-specific families
-
-The practical takeaway is that epmodel should be understood as a growing model
-layer for the broader EnergyPlus object space, not just as an HVAC sandbox.
-At the same time, the deepest sustained implementation effort has still been
-concentrated in some parts of the model more than others, with HVAC remaining
-the most active front.
+implementation before the tradeoffs are well understood. At the same time, the
+nearby, stable `openstudio::model` implementation remains an important source
+of truth and reference point for epmodel build-out.
 
 ## Core Architectural Ideas
 
 ### EnergyPlus Is The Persisted Schema
 
 `epmodel::Model` derives from `Workspace` and enforces
-`IddFileType::EnergyPlus`. The model is not a thin facade over
-`openstudio::model`; it is its own implementation with its own impl types and
-its own rules about how typed wrappers map onto EnergyPlus-backed storage,
-even as the public wrapper hierarchy is intended to mirror
-`openstudio::model`.
+`IddFileType::EnergyPlus`. In practical terms, `openstudio::epmodel::Model`
+loads and saves IDF content directly, unlike `openstudio::model::Model`, which
+loads and saves OSM content.
 
-This matters because many modeling concepts that feel like first-class objects
-in canonical OpenStudio APIs are not stored that way in EnergyPlus. That is
-not unique to epmodel; the model API has always exposed a higher-level view
-over persisted data rather than acting as a direct view into the persistence
-layer. epmodel continues that pattern, but it does so against `Energy+.idd`
-instead of `OpenStudio.idd`.
+That removes a whole translation boundary inside epmodel itself. Once content
+is in IDF form, epmodel does not need a separate translator layer to turn that
+IDF into some other persisted model representation before normal model APIs can
+operate on it.
+
+### Migration Pathway
+
+This does not mean existing OSM assets lose a migration path. The established
+`openstudio::osversion::VersionTranslator` still provides the upgrade path for
+older OpenStudio models into the current `openstudio::model` schema, including
+the current 3.11 generation of OSM files.
+
+From there, the existing EnergyPlus `ForwardTranslator` provides the next step:
+translate the current `openstudio::model::Model` to IDF, then load that IDF
+into `epmodel::Model`. The practical migration story is therefore incremental
+rather than disruptive: old OSM content can move forward through the existing
+OpenStudio upgrade machinery, then cross once into EnergyPlus-backed epmodel
+storage.
 
 ### Typed Object Materialization Happens At Import Boundaries
 
@@ -112,19 +97,25 @@ to rely on afterward.
 
 That design is a response to the reality of EnergyPlus-backed storage. Many
 relationships can be represented in more than one partial or inconsistent way,
-especially when content comes from imported files, cloning, or intermediate
-mutation states. It is also a recognition that incoming IDF content may be
-inaccurate, incomplete, or simply broken. In practice, epmodel often has to
-deal with content that was authored or edited by humans, and that means the
-library cannot assume the persisted file is already internally coherent.
-epmodel chooses to make canonicalization the place where that incoming content
-is normalized back into a coherent in-memory model.
+especially when IDF content comes from unknown sources. It also reflects the
+fact that incoming IDF content may be inaccurate, incomplete, or simply
+broken.
+
+In practice, epmodel often has to deal with content that was authored or
+edited by humans, and that means the library cannot assume the persisted file
+is already internally coherent. epmodel chooses to make canonicalization the
+place where that incoming content is normalized back into a coherent in-memory
+model. In implementation terms, that work is centered on
+`openstudio::epmodel::ModelObject_Impl::doCanonicalize(...)` and the derived
+overrides that repair object-specific structure.
 
 ### EnergyPlus Connective Tissue Is Part Of The Real Model
 
 Objects such as `Branch`, `BranchList`, `ConnectorList`, and related path
 objects are not treated as incidental implementation details that can simply
 be ignored. In EnergyPlus, they are part of how topology is actually persisted.
+Today this is most visible in HVAC, but the same pattern will likely appear in
+other domains as epmodel expands.
 
 epmodel therefore treats them as legitimate storage representation while still
 building toward parity with the higher-level `openstudio::model` traversal and
@@ -160,52 +151,41 @@ name strings.
 
 ### Some Topology Objects Are Intentionally Transient
 
-epmodel supports transient `ModelObject` instances that exist in memory but
-are not written out to the saved file. This is mainly used where the public
-modeling surface wants object identity even though EnergyPlus does not persist
-the same concept as a standalone object.
+epmodel supports transient `ModelObject` instances that exist at runtime but
+are not written to the saved file. This is used when the canonical modeling
+surface wants object identity for a concept that EnergyPlus does not persist
+as a standalone object.
 
-`Node` is the oldest and still the clearest example of this policy, but it is
-not the only one anymore. The larger point is architectural: epmodel is
-willing to keep runtime-only `ModelObject` wrappers when they are needed to
-preserve the canonical model API, even if EnergyPlus does not persist the same
-concept as a standalone object.
+`Node` is the oldest and still the clearest example, but it is no longer the
+only one. More generally, epmodel is willing to keep runtime-only wrappers
+when that is the cleanest way to preserve canonical `openstudio::model`
+semantics over EnergyPlus-backed storage.
 
 Transient objects are created and retrieved by name. That by-name identity is
-intentional; it prevents the topology layer from silently multiplying
-equivalent runtime objects during wiring and traversal.
+intentional: it prevents wiring and traversal code from silently creating
+duplicate runtime objects for the same conceptual element.
 
-This same pattern also applies when canonical `openstudio::model` factors one
+A second recurring case appears when canonical `openstudio::model` factors one
 EnergyPlus object into multiple wrapper objects. In those cases, epmodel may
-add transient companion wrappers that read and write through to a real
-persisted parent object instead of inventing fake persisted children. The
-constant-flow low-temperature radiant family is a representative example: the
-canonical heating and cooling coil objects are exposed in epmodel as
-transient child views backed by the parent
-`ZoneHVAC:LowTemperatureRadiant:ConstantFlow` object and its linked design
-object.
+expose transient companion wrappers that read and write through to a real
+persisted parent object instead of introducing persisted children that do not
+exist in the EnergyPlus schema or in the saved IDF.
 
-This pattern also covers four radiant `ZoneHVAC` families whose canonical
-OpenStudio API exposes plant-side coil children:
+The clearest current examples are four radiant `ZoneHVAC` families whose
+canonical OpenStudio API exposes plant-side coil children:
 
 - `ZoneHVACLowTempRadiantConstFlow`
 - `ZoneHVACLowTempRadiantVarFlow`
 - `ZoneHVACCoolingPanelRadiantConvectiveWater`
 - `ZoneHVACBaseboardRadiantConvectiveWater`
 
-The same architectural pattern also covers
-`ZoneHVACBaseboardConvectiveWater`. Canonical OpenStudio exposes a
-`CoilHeatingWaterBaseboard` child, but EnergyPlus stores that coil's fields
-directly on the parent `ZoneHVAC:Baseboard:Convective:Water` object. epmodel
-therefore preserves the canonical child as a transient straight-component view
-over the persisted parent object instead of inventing a fake standalone
-EnergyPlus coil.
-
-In all five cases, canonical `openstudio::model` exposes a coil child that is
-meant to participate in plant-loop placement and traversal. In epmodel, those
-coil children are still transient views because EnergyPlus stores the real
-plant-side object identity on the parent zone equipment object instead of as a
-separate standalone coil object.
+The same architectural pattern also applies to
+`ZoneHVACBaseboardConvectiveWater`. In all five cases, canonical
+`openstudio::model` exposes a coil child that is meant to participate in
+plant-loop placement and traversal, but EnergyPlus stores the relevant
+plant-side identity and fields on the parent zone equipment object instead of
+as a separate standalone coil object. epmodel therefore preserves the
+canonical coil child as a transient view over the persisted parent object.
 
 The current solution is deliberate:
 
@@ -224,21 +204,17 @@ zone equipment object.
 
 The current transient type inventory is:
 
-- Topology connective tissue:
-  `Node`
-- Canonical radiant and baseboard coil children that EnergyPlus flattened onto
-  a persisted parent object:
-  `CoilHeatingLowTempRadiantConstFlow`
-  `CoilCoolingLowTempRadiantConstFlow`
-  `CoilHeatingLowTempRadiantVarFlow`
-  `CoilCoolingLowTempRadiantVarFlow`
-  `CoilCoolingWaterPanelRadiant`
-  `CoilHeatingWaterBaseboardRadiant`
-  `CoilHeatingWaterBaseboard`
-- Canonical variable-speed speed-data children that EnergyPlus stores only as
-  extensible rows on the parent coil:
-  `CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData`
-  `CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData`
+- Topology connective tissue: `Node`
+- Canonical radiant and baseboard coil children projected from a persisted
+  parent object: `CoilHeatingLowTempRadiantConstFlow`,
+  `CoilCoolingLowTempRadiantConstFlow`,
+  `CoilHeatingLowTempRadiantVarFlow`,
+  `CoilCoolingLowTempRadiantVarFlow`, `CoilCoolingWaterPanelRadiant`,
+  `CoilHeatingWaterBaseboardRadiant`, `CoilHeatingWaterBaseboard`
+- Canonical variable-speed speed-data children projected from parent-coil
+  extensible rows:
+  `CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData`,
+  `CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData`,
   `CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData`
 
 `src/epmodel/Model.hpp` is the authoritative registration point for transient
@@ -283,86 +259,176 @@ The practical rule is:
 
 ## Relationship-Driven Modeling
 
-One of the easiest ways to misunderstand epmodel is to expect every useful
-modeling concept to have one obvious persisted home. In many cases that is not
-how the EnergyPlus object graph works.
+One of the challenges of the EnergyPlus object graph is that a modeling
+concept does not always have one obvious persisted home. epmodel therefore has
+to choose an authoritative relationship path, normalize to it, and treat some
+other EnergyPlus-facing objects as derived projection state rather than as the
+canonical home of the relationship.
 
-Several important surfaces in epmodel are therefore relationship-driven:
-
-- loop topology is expressed through branches, connectors, nodes, and ordered
-  traversal paths
-- ownership and adjacency are often recovered from typed traversal APIs rather
-  than from a single scalar field
-- some EnergyPlus-facing objects are best understood as derived projection
-  state rather than as the canonical home of the relationship
-
-One example of this broader pattern is outdoor-air assignment. It is useful
-here because it shows how epmodel chooses an authoritative relationship path.
-In the current model, the canonical zone outdoor-air relationship runs
-through:
+Outdoor-air assignment is a representative example. In the current model, the
+canonical zone outdoor-air relationship runs through:
 
 `Space -> ThermalZone -> Sizing:Zone -> DesignSpecification:OutdoorAir:SpaceList`
 
-This illustrates a larger implementation pattern in epmodel: choose an
-authoritative relationship path, normalize to it, and keep any derived
-EnergyPlus-facing projection state synchronized through typed owner APIs.
+The important point is not just that this path exists. It is that epmodel uses
+this path as the authoritative one, normalizes imported or edited state back
+to it, and keeps any derived EnergyPlus-facing projection state synchronized
+through typed owner APIs.
+
+In the current implementation, that rule shows up concretely in a few places:
+
+- `Space::designSpecificationOutdoorAir()` first follows the zone-owned
+  `SizingZone` path to `designSpecificationOutdoorAirSpaceList()` and resolves
+  the per-space assignment there. Only if that canonical path is absent does
+  it fall back to scanning lists that already contain the space.
+- `Space::setDesignSpecificationOutdoorAir(...)` writes through the same owner
+  path. Zoned spaces are routed to the zone's `DesignSpecification:OutdoorAir:SpaceList`;
+  unzoned spaces are routed to an orphan list. The setter then removes the
+  space from every other list so one space does not quietly accumulate multiple
+  competing assignments.
+- `SizingZone_Impl::doCanonicalize(...)` makes the representation explicit. If
+  a zone has spaces and any outdoor-air assignment exists, canonicalization
+  rebuilds one `DesignSpecification:OutdoorAir:SpaceList` from current zone
+  membership and resolved per-space assignments, then points `Sizing:Zone` at
+  that list. Direct `Sizing:Zone -> DesignSpecification:OutdoorAir` storage is
+  treated as non-canonical and normalized away into the space-list form.
+- The zone-facing `ThermalZone` scalar API is still preserved, but it is a
+  projection over the underlying space assignments rather than an independent
+  persisted owner. `zoneSharedDesignSpecificationOutdoorAir()` only reports a
+  zone-level DSOA when every space in the zone resolves to the same object, and
+  the corresponding setters create or reuse one shared DSOA and push it back
+  down onto all of the zone's spaces.
+
+That is the larger relationship-driven pattern in epmodel. Public APIs can
+still present a clean zone-facing surface, but the code chooses one
+authoritative storage path underneath, rewrites incoming state back to that
+path, and treats other views as projections over it.
 
 ## HVAC Topology Notes
 
-`Node::inletModelObject()` and `Node::outletModelObject()` are a good example
-of how epmodel approaches topology. A fan, coil, or pump can often answer
-inlet and outlet questions from its own ports. A `Node` is different. It is
-part of the loop connective tissue, so its upstream and downstream neighbors
-have to be resolved from the owning loop topology rather than from a local
-field lookup alone.
+For the canonical `openstudio::model` picture, see
+`doc/idd-schema-alignment/os_hvac_concepts.md`. That document describes the
+OpenStudio HVAC topology built around explicit `OS:Connection` wiring and the
+familiar model-layer loop scaffolding.
 
-In practice, that means:
+The epmodel challenge is not that this public topology disappears. It is that
+the persisted EnergyPlus representation underneath is different. As noted
+earlier, EnergyPlus connective tissue such as `Branch`, `BranchList`,
+`AirLoopHVAC:SupplyPath`, `AirLoopHVAC:ReturnPath`, and `Connector:*` objects
+is part of the real model. That changes how traversal and ownership questions
+have to be answered.
+
+`Node` is a good example of that difference. In canonical OpenStudio, a node is
+easy to think about as one more object in the explicit connection chain. In
+epmodel, a fan, coil, or pump can often still answer inlet and outlet
+questions from its own port fields, but a `Node` usually cannot. Its upstream
+and downstream meaning depends on where it sits in the canonicalized supply,
+demand, or outdoor-air traversal path for the owning loop.
+
+In practice:
 
 - `StraightComponent::inletModelObject()` and
-  `StraightComponent::outletModelObject()` use direct port-based lookups where
-  that is sufficient
-- `Node::inletModelObject()` and `Node::outletModelObject()` resolve through
-  ordered loop traversal paths
+  `StraightComponent::outletModelObject()` still use direct port-based lookups
+  where that is sufficient
+- `Node::inletModelObject()` and `Node::outletModelObject()` resolve adjacency
+  by asking the owning loop for its ordered `supplyComponents(...)` or
+  `demandComponents(...)` path and then finding the neighboring objects around
+  the node in that path
 - `Node::airLoopHVAC()` and `Node::airLoopHVACOutdoorAirSystem()` resolve
   ownership from canonicalized loop and outdoor-air-system traversal surfaces,
-  with a few targeted branch-node checks where current mutation flows still
-  need them
-- more general helpers such as `HVACComponent::airLoopHVAC()` can use
-  `Loop::components()`, which concatenates supply and demand paths, but
-  supply-side, demand-side, and outdoor-air-specific traversal helpers should
-  still be preferred when role-specific behavior matters
+  with a few targeted branch-node checks retained for current mutation flows
+- OpenStudio-style meta traversal APIs such as `Loop::components()`,
+  `supplyComponents(...)`, and `demandComponents(...)` still matter in
+  epmodel; the difference is that epmodel has to reconstruct them over
+  canonicalized EnergyPlus topology, and role-specific helpers should be
+  preferred when role-specific behavior matters
 
-No caching is assumed by default here. The current bias is toward correct and
-deterministic traversal first, with caching added only if performance proves it
-is necessary.
+That does not mean every `StraightComponent` is freely insertable everywhere a
+straight-through port pair exists. Some canonical wrappers deliberately narrow
+placement to one loop role. `WaterUseConnections`, `RefrigerationCondenserWaterCooled`,
+`RefrigerationCompressorRack`, and `SwimmingPoolIndoor` are the clearest
+current plant-demand-only examples in this category: despite inheriting the
+generic straight-component shape, canonical `openstudio::model` and epmodel
+only allow them on plant loop demand nodes because they represent demand-side
+water-use, refrigeration-rack condenser-water, refrigeration-condenser, and
+pool-heating subsystems rather than
+general-purpose air or plant inline components. For `RefrigerationCompressorRack`, the condenser schedule helpers rely on the shared epmodel schedule-type registry rather than wrapper-local validation alone, and the same-loop plant-demand reattach path is now covered explicitly in the entity test suite. For `SwimmingPoolIndoor`, that
+placement parity is only one slice of the story: epmodel still intentionally
+omits the canonical surface and schedule relationship helpers and currently
+retains extra cover-factor default/reset conveniences that are documented as
+wrapper-local behavior rather than canonical parity. `HeatPumpAirToWater` is a
+different restricted case: the wrapper itself is non-insertable, and canonical
+loop attachment happens through the underlying heating and cooling
+operation-mode objects instead.
+`PlantComponentUserDefined` is another special case in a different direction:
+its canonical `openstudio::model` wrapper is still a one-connection
+`StraightComponent`, but the EnergyPlus-backed epmodel wrapper also preserves
+the persisted Number of Plant Loop Connections field and Plant Connection 2-4
+loading and flow-request scalar fields as direct pass-through accessors while
+still enforcing the canonical one-connection write contract and intentionally
+omitting the canonical EMS, actuator, and ambient-zone companion-object
+surface. Canonical `openstudio::model` also bootstraps those EMS companion
+objects in its constructor; epmodel intentionally stops at the persisted
+EnergyPlus scalar defaults for Plant Connection 1.
+
+The guiding principle is that these traversal APIs should reflect the
+canonicalized topology accurately and consistently. That may carry performance
+implications in some cases, but those should be addressed as needed through
+targeted optimization and/or caching rather than by weakening the topology
+model itself.
+
+### Compound HVAC Ownership
+
+Several canonical HVAC family shapes follow the same general principle:
+`ZoneHVACComponent` types with multiple internal series components, `AirTerminal`
+types with internal components, and `AirLoopHVACUnitary` families all rely on
+the parent object to own the internal topology. Child fans, coils, and other
+contained components should still be available through normal typed
+relationships, but the parent decides which nodes they use, in what order they
+are connected, and which internal node roles are meaningful enough to expose.
+
+That has two consequences. First, direct attempts to rewire contained
+components through normal typed APIs should fail rather than silently damaging
+the parent topology. Second, canonicalization remains the place where bad
+persisted state is repaired back into a valid epmodel form when an IDF load or
+other non-canonical input arrives in a broken shape.
+
+This pattern is not universal. Radiant families are the clearest
+counterexample: they are more relationship-driven, and epmodel may use
+transient child wrappers or companion-object views to preserve the canonical
+object shape without pretending EnergyPlus persisted separate child objects.
+`GroundHeatExchangerVertical` is a related persisted-storage case: the
+canonical straight-component wrapper is backed by a
+`GroundHeatExchanger:ResponseFactors` object plus linked
+`GroundHeatExchanger:System` and `GroundHeatExchanger:Vertical:Properties`
+companions, and plant-loop traversal projects the stored system branch row
+back to the wrapper callers attached to the loop. The current epmodel parity
+slice still intentionally omits the canonical `groundTemperature()` and
+`maximumLengthofSimulation()` helpers because the EnergyPlus-backed storage
+does not expose direct persisted fields for that OpenStudio-only state.
 
 ## Current Status
 
-The big-picture summary is that epmodel is broad, structurally serious,
-and still selectively incomplete.
+Current status, in brief:
 
-It already has complete coverage of the EnergyPlus IDD type set, including
-type-safe accessor methods for scalar properties and fields on those types. It
-also has import and repair support, a typed model layer across many domains,
-and a large amount of `openstudio::model` parity work.
-At the same time, it does not yet include every type that is exclusive to the
-original `OpenStudio.idd`.
-For the concrete backlog of `OpenStudio.idd`-exclusive types that still need
-to migrate into epmodel, see `doc/idd-schema-alignment/idd_mapping.md` under
-`## OS-only Types`.
-
-What is still incomplete is not basic type presence or scalar field coverage.
-The big-picture distinction is that HVAC is already fairly well developed,
-while form, fabric, and loads have not yet received the same level of focused
-implementation work. The main remaining gaps are therefore less about whether
-epmodel has the corresponding EnergyPlus types and more about where sustained
-human development effort has gone so far.
+- EnergyPlus IDD coverage is complete, including type-safe scalar accessors
+  across that type set.
+- The library already includes import, repair, canonicalization, and a typed
+  model layer across many domains.
+- `openstudio::model` parity work is substantial, with HVAC currently the most
+  developed area.
+- Not every `OpenStudio.idd`-exclusive type has migrated yet. For that backlog,
+  see `doc/idd-schema-alignment/idd_mapping.generated.md` under
+  `## OS Types With No EP Output Evidence`.
+- The main remaining gaps are now less about basic type presence and more about
+  depth of focused implementation effort, especially outside HVAC.
 
 ## Active HVAC Parity Work
 
-Although epmodel spans many domains, HVAC is still the most active parity area
-right now. The list below is meant to summarize the current implementation
-fronts without turning the README into a day-by-day work log.
+epmodel aims to expand across the full model domain, but HVAC is still the
+most active parity area right now. The list below is meant to summarize the
+current implementation fronts without turning the README into a day-by-day
+work log.
 
 ### Scope
 
@@ -429,81 +495,14 @@ special cases, with their own canonical evidence and design review, instead of
 being forced into patterns that were designed for unitary, radiant, or
 water-heater families.
 
-#### Compound HVAC Relationship Strategy
-
-For compound zone and unitary HVAC types, the parent object should be the
-place that keeps the owned internal topology consistent. For many families
-that just means the internal air path. For some water-heater-style compounds,
-it also includes owned condenser-water links.
-
-In practice, that means the fan, coils, and other contained components should
-still be available through normal typed relationships, but the parent decides
-which nodes they use and in what order they are connected. Internal nodes with
-clear user meaning should be exposed through the parent compound itself. We
-should preserve that structure through the normal typed APIs instead of
-letting unrelated child objects break it and then trying to repair the damage
-afterward.
-
-This also means direct attempts to change the connectivity of contained
-components should be rejected through the normal typed APIs. If a fan or coil
-is owned by a compound unitary, operations such as disconnecting it or moving
-it onto another node should fail rather than silently damaging the parent
-topology. Containment queries such as `containingHVACComponent()` are the
-mechanism for enforcing that rule.
-
-Canonicalization is still where we repair bad persisted state. If an IDF load,
-raw field edit, or other non-canonical input leaves the internal wiring in a
-bad state, canonicalization should put it back into a valid epmodel form.
-
-To keep that boundary obvious in code, compound `*_Impl` types should
-implement separate owner-maintenance and canonicalization-repair entry points,
-for example `maintainContainedAirPath()` / `repairContainedAirPath(LoadContext&)`
-for air-side families or `maintainContainedTopology()` / `repairContainedTopology(LoadContext&)`
-when the owned structure is broader than air alone. Any shared internal helper
-can stay private, but the two call paths should remain distinct.
-
-The child-routing rules inside that owned air path should also stay local to
-the owning family. In practice, that means each compound type should spell out
-the exact child kinds it supports when it decides how to read air inlet and
-outlet ports. That can look a little repetitive, but it is easier to review
-and less brittle than growing a shared base helper that tries to know every
-possible child type for every compound family.
-
-Not every `ZoneHVAC` family fits that compound-topology pattern. Radiant
-families are the clearest counterexample. Their canonical wrappers are often
-relationship-driven and may expose OS-only companion objects whose state is
-flattened onto one EnergyPlus parent object. In those cases, epmodel may use
-transient child wrappers to preserve the canonical object shape without
-pretending EnergyPlus persisted separate child objects.
-
-When an internal node role has a clear meaning to users, epmodel may expose an
-accessor for that role on the owning compound even if the canonical
-`openstudio::model` type never did. That is meant to make common workflows
-easier, not to replace or break existing ones. The compound still owns the
-wiring itself, but the returned `Node` is a normal model object that users can
-inspect and rename. If two exposed roles happen to resolve to the same `Node`
-in a valid configuration, that is acceptable. The accessor should return
-`none` only when that role does not exist at all in the current shape.
-
-When code needs the `Node` referenced by a node field, it should go through the
-shared `ModelObject_Impl` node-field helpers instead of repeating local
-"read the string, find the node by name, maybe create a transient node"
-logic. `resolvedNodeTarget()` is for fields that already name a node and may
-materialize the pointer link during lookup so later renames stay tracked.
-`resolvedOrCreatedNodeTarget()` is the stronger helper for cases where owner
-maintenance or canonicalization must preserve any existing field meaning first
-and, only when the field is blank, choose and attach a node using the caller's
-suggested name.
-
-`ZoneHVACUnitHeater` is a representative example of this pattern: the parent
-owns the internal air path, exposes the meaningful internal fan-outlet node on
-the compound, and rejects direct typed topology edits on the contained
-air-side components.
-
 ### Water-To-Air Families
 
-The main remaining gaps are:
+Much of the core water-to-air surface appears to be in place already. What may
+still require an active cleanup pass is:
 
+- `HeatPumpAirToWater` now covers the wrapper-level operating-mode schedule, air-node-name, and direct curve-reference helpers, but the wrapper itself remains non-insertable and epmodel still lacks the canonical heating/cooling operation-mode child wrappers that own plant-loop placement.
+- `HeatPumpAirToWaterFuelFiredCooling` now covers the canonical companion-heating link and direct required/optional curve-reference helpers, and it stays plant-supply-only like the canonical straight-component wrapper; the remaining documented delta is the omitted air-source-node helper for the translator-emitted `OutdoorAir:Node` companion object.
+- `HeatPumpAirToWaterFuelFiredHeating` now matches the same heating-side parity slice: canonical default curves and explicit-curve constructor, companion-cooling and optional curve-reference helpers, and plant-supply-only placement are all preserved; the remaining documented delta is again the omitted air-source-node helper for the translator-emitted `OutdoorAir:Node` companion object.
 - performance curves
 - schedules and control relationships
 - speed, stage, and performance-data APIs
@@ -519,24 +518,6 @@ The main remaining gaps are:
 - staging and extensible performance data
 - explicit plant-loop coupling helpers
 - family-consistent companion-object access
-
-### Shared Relationship Cleanup
-
-Some of the remaining work is not really about one HVAC family. It is about
-cleaning up cross-cutting relationship patterns so families can build on a
-more consistent base.
-
-That cleanup is follow-on work, not a restart of the current infrastructure.
-The main remaining gaps are:
-
-- canonical schedule-type validation where the canonical model enforces
-  schedule type keys
-- direct inlet, outlet, and control-node conveniences on remaining component
-  families
-- performance curve and table relationship helpers that repeat across owners
-- consistent optional companion-object access patterns
-- methodical removal of remaining raw name-lookup fallbacks from ordinary
-  typed accessors, keeping repair paths in canonicalization only
 
 ### Outdoor-Air Completion
 
@@ -612,9 +593,8 @@ Those notes should compare epmodel types to the canonical
 `openstudio::model` counterpart when one exists, and they should document:
 
 - current parity status
-- meaningful public API or behavior deltas
-- EnergyPlus-backed storage mapping when that mapping matters
-- the next concrete missing parity work
+- meaningful public API or behavior deltas relative to `openstudio::model`
+- EnergyPlus-backed storage mapping when that mapping is not obvious
 
 ## Reference Docs
 
