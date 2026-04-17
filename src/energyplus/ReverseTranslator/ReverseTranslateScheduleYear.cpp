@@ -99,19 +99,19 @@ namespace energyplus {
           std::string dayTypeLower = openstudio::ascii_to_lower_copy(dayType_.get());
           boost::optional<std::string> scheduleDayName = dayTypeWorkspaceGroup.getString(Schedule_Week_CompactExtensibleFields::Schedule_DayName);
 
-          if (dayTypeLower == "holiday") {
+          if (dayTypeLower.find("holiday") != std::string::npos) {
             specialDayScheduleNames.holidayScheduleDayNames.emplace(*scheduleDayName);
           }
-          if (dayTypeLower == "summerdesignDay") {
+          if (dayTypeLower.find("summerdesignday") != std::string::npos) {
             specialDayScheduleNames.summerDesignDayScheduleDayNames.emplace(*scheduleDayName);
           }
-          if (dayTypeLower == "winterdesignDay") {
+          if (dayTypeLower.find("winterdesignday") != std::string::npos) {
             specialDayScheduleNames.winterDesignDayScheduleDayNames.emplace(*scheduleDayName);
           }
-          if (dayTypeLower == "customday1") {
+          if (dayTypeLower.find("customday1") != std::string::npos) {
             specialDayScheduleNames.customDay1ScheduleDayNames.emplace(*scheduleDayName);
           }
-          if (dayTypeLower == "customday2") {
+          if (dayTypeLower.find("customday2") != std::string::npos) {
             specialDayScheduleNames.customDay2ScheduleDayNames.emplace(*scheduleDayName);
           }
         }
@@ -170,8 +170,11 @@ namespace energyplus {
         target = extensibleGroups[i].cast<WorkspaceExtensibleGroup>().getTarget(Schedule_YearExtensibleFields::Schedule_WeekName);
         if (target) {
           OptionalModelObject scheduleWeek = translateAndMapWorkspaceObject(*target);
-          if (scheduleWeek) {
+          if (scheduleWeek->iddObjectType() == IddObjectType::OS_Schedule_Week) {
             scheduleYear.addScheduleWeek(Date(*endMonth, *endDay), scheduleWeek->cast<ScheduleWeek>());
+          } else {  // e.g., Schedule:Week:Compact does not reverse translate
+            LOG(Error, scheduleWeek->nameString() + " does not translate.");
+            return boost::none;
           }
         }
       }
@@ -315,19 +318,19 @@ namespace energyplus {
             std::string dayTypeLower = openstudio::ascii_to_lower_copy(dayType);
             OptionalWorkspaceObject scheduleDay = dayTypeWorkspaceGroup.getTarget(Schedule_Week_CompactExtensibleFields::Schedule_DayName);
 
-            if (dayTypeLower == "holiday") {
+            if (dayTypeLower.find("holiday") != std::string::npos) {
               holidayScheduleDay = scheduleDay;
-            } else if (dayTypeLower == "summerdesignday") {
+            } else if (dayTypeLower.find("summerdesignday") != std::string::npos) {
               summerDesignDayScheduleDay = scheduleDay;
-            } else if (dayTypeLower == "winterdesignday") {
+            } else if (dayTypeLower.find("winterdesignday") != std::string::npos) {
               winterDesignDayScheduleDay = scheduleDay;
-            } else if (dayTypeLower == "customday1") {
+            } else if (dayTypeLower.find("customday1") != std::string::npos) {
               customDay1ScheduleDay = scheduleDay;
-            } else if (dayTypeLower == "customday2") {
+            } else if (dayTypeLower.find("customday2") != std::string::npos) {
               customDay2ScheduleDay = scheduleDay;
             } else if (auto schRule_ = getOrCreateRule(scheduleDay, scheduleWeekCompactName)) {
               // TODO: allotherdays not correctly handled here
-              if (dayTypeLower == "alldays" || dayTypeLower == "allotherdays") {
+              if ((dayTypeLower.find("alldays") != std::string::npos) || (dayTypeLower.find("allotherdays") != std::string::npos)) {
                 schRule_->setApplySunday(true);
                 schRule_->setApplyMonday(true);
                 schRule_->setApplyTuesday(true);
@@ -335,28 +338,28 @@ namespace energyplus {
                 schRule_->setApplyThursday(true);
                 schRule_->setApplyFriday(true);
                 schRule_->setApplySaturday(true);
-              } else if (dayTypeLower == "weekdays") {
+              } else if (dayTypeLower.find("weekdays") != std::string::npos) {
                 schRule_->setApplyMonday(true);
                 schRule_->setApplyTuesday(true);
                 schRule_->setApplyWednesday(true);
                 schRule_->setApplyThursday(true);
                 schRule_->setApplyFriday(true);
-              } else if (dayTypeLower == "weekends") {
+              } else if (dayTypeLower.find("weekends") != std::string::npos) {
                 schRule_->setApplySunday(true);
                 schRule_->setApplySaturday(true);
-              } else if (dayTypeLower == "sunday") {
+              } else if (dayTypeLower.find("sunday") != std::string::npos) {
                 schRule_->setApplySunday(true);
-              } else if (dayTypeLower == "monday") {
+              } else if (dayTypeLower.find("monday") != std::string::npos) {
                 schRule_->setApplyMonday(true);
-              } else if (dayTypeLower == "tuesday") {
+              } else if (dayTypeLower.find("tuesday") != std::string::npos) {
                 schRule_->setApplyTuesday(true);
-              } else if (dayTypeLower == "wednesday") {
+              } else if (dayTypeLower.find("wednesday") != std::string::npos) {
                 schRule_->setApplyWednesday(true);
-              } else if (dayTypeLower == "thursday") {
+              } else if (dayTypeLower.find("thursday") != std::string::npos) {
                 schRule_->setApplyThursday(true);
-              } else if (dayTypeLower == "friday") {
+              } else if (dayTypeLower.find("friday") != std::string::npos) {
                 schRule_->setApplyFriday(true);
-              } else if (dayTypeLower == "saturday") {
+              } else if (dayTypeLower.find("saturday") != std::string::npos) {
                 schRule_->setApplySaturday(true);
               }
             }

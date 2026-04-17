@@ -1885,6 +1885,10 @@ void Run_RoundTrip_IDF_to_IDF(const std::string& filename, Workspace& w) {
   std::vector<WorkspaceObject> scheduleWeekDailys2 = w2.getObjectsByType(IddObjectType::Schedule_Week_Daily);
   EXPECT_EQ(scheduleWeekDailys.size(), scheduleWeekDailys2.size());
 
+  std::vector<WorkspaceObject> scheduleWeekCompacts = w.getObjectsByType(IddObjectType::Schedule_Week_Compact);
+  std::vector<WorkspaceObject> scheduleWeekCompacts2 = w2.getObjectsByType(IddObjectType::Schedule_Week_Compact);
+  EXPECT_EQ(scheduleWeekCompacts.size(), scheduleWeekCompacts2.size());
+
   std::vector<WorkspaceObject> scheduleTypeLimitss = w.getObjectsByType(IddObjectType::ScheduleTypeLimits);
   std::vector<WorkspaceObject> scheduleTypeLimitss2 = w2.getObjectsByType(IddObjectType::ScheduleTypeLimits);
   EXPECT_EQ(scheduleTypeLimitss.size(), scheduleTypeLimitss2.size() - 3); // OnOff, OnOff 1, Fractional 1
@@ -1892,22 +1896,6 @@ void Run_RoundTrip_IDF_to_IDF(const std::string& filename, Workspace& w) {
   std::vector<WorkspaceObject> scheduleDayInterval1s = w.getObjectsByType(IddObjectType::Schedule_Day_Interval);
   std::vector<WorkspaceObject> scheduleDayInterval1s2 = w2.getObjectsByType(IddObjectType::Schedule_Day_Interval);
   EXPECT_EQ(scheduleDayInterval1s.size(), scheduleDayInterval1s2.size());
-}
-
-void Run_RoundTrip_OSM_to_OSM(const std::string& filename, Model& m) {
-  m.save(filename + "_1.osm", true);
-
-  ForwardTranslator ft;
-  Workspace w = ft.translateModel(m);
-
-  w.save(filename + "_2.idf", true);
-
-  ReverseTranslator rt;
-  Model m2 = rt.translateWorkspace(w);
-
-  m2.save(filename + "_3.osm", true);
-
-  // TODO: compare model objects
 }
 
 TEST_F(EnergyPlusFixture, RoundTrip_IDF_ScheduleRuleset_1_ScheduleWeekDaily) {
@@ -2068,37 +2056,43 @@ TEST_F(EnergyPlusFixture, RoundTrip_IDF_ScheduleRuleset_Monthly_ScheduleWeekDail
   Run_RoundTrip_IDF_to_IDF("RoundTrip_ScheduleRuleset", w);
 }
 
-TEST_F(EnergyPlusFixture, RoundTrip_OSM_ScheduleRuleset_1_ScheduleRule) {
-  Model m;
+TEST_F(EnergyPlusFixture, RoundTrip_IDF_ScheduleRuleset_1_ScheduleWeekCompact) {
+  Workspace w(StrictnessLevel::Minimal, IddFileType::EnergyPlus);
 
-  ScheduleTypeLimits scheduleTypeLimits(m);
-  scheduleTypeLimits.setName("Fractional");
-  scheduleTypeLimits.setLowerLimitValue(0);
-  scheduleTypeLimits.setUpperLimitValue(0);
-  scheduleTypeLimits.setNumericType("Continuous");
+  IdfObject scheduleTypeLimits(openstudio::IddObjectType::ScheduleTypeLimits);
+  scheduleTypeLimits.setString(0, "Fraction");
+  scheduleTypeLimits.setInt(1, 0);
+  scheduleTypeLimits.setInt(2, 1);
+  scheduleTypeLimits.setString(3, "Continuous");
 
-  ScheduleRuleset scheduleRuleset(m);
-  scheduleRuleset.setName("occupants schedule");
-  scheduleRuleset.setScheduleTypeLimits(scheduleTypeLimits);
+  IdfObject scheduleDayHourly1(openstudio::IddObjectType::Schedule_Day_Hourly);
+  scheduleDayHourly1.setString(0, "RefrigeratorDay");
+  scheduleDayHourly1.setString(1, "Fraction");
+  scheduleDayHourly1.setDouble(2, 0.8);
+  scheduleDayHourly1.setDouble(3, 0.782696177062374);
+  scheduleDayHourly1.setDouble(4, 0.765593561368209);
 
-  ScheduleDay defaultDaySchedule = scheduleRuleset.defaultDaySchedule();
-  defaultDaySchedule.setName("occupants schedule default day");
-  defaultDaySchedule.setScheduleTypeLimits(scheduleTypeLimits);
+  IdfObject scheduleWeekCompact(openstudio::IddObjectType::Schedule_Week_Compact);
+  scheduleWeekCompact.setString(0, "RefrigeratorWeek");
+  scheduleWeekCompact.setString(1, "For: AllDays");
+  scheduleWeekCompact.setString(2, "RefrigeratorDay");
 
-  ScheduleRule scheduleRule(scheduleRuleset);
-  scheduleRule.setName("occupants schedule allday rule");
-  scheduleRule.setApplyAllDays(true);
-  scheduleRule.setStartDate(Date(1, 1));
-  scheduleRule.setEndDate(Date(12, 31));
+  IdfObject scheduleYear(openstudio::IddObjectType::Schedule_Year);
+  scheduleYear.setString(0, "Refrigerator");
+  scheduleYear.setString(1, "Fraction");
+  IdfExtensibleGroup group4 = scheduleYear.pushExtensibleGroup();
+  group4.setString(0, "RefrigeratorWeek");
+  group4.setInt(1, 1);
+  group4.setInt(2, 1);
+  group4.setInt(3, 12);
+  group4.setInt(4, 31);
 
-  ScheduleDay daySchedule = scheduleRule.daySchedule();
-  daySchedule.setName("occupants schedule day");
-  daySchedule.setScheduleTypeLimits(scheduleTypeLimits);
-  daySchedule.addValue(Time(0, 5), 0.426829268292683);
-  daySchedule.addValue(Time(0, 6), 0.719512195121951);
-  daySchedule.addValue(Time(0, 7), 1);
+  w.addObject(scheduleTypeLimits);
+  w.addObject(scheduleDayHourly1);
+  w.addObject(scheduleWeekCompact);
+  w.addObject(scheduleYear);
 
-  Run_RoundTrip_OSM_to_OSM("RoundTrip_ScheduleRuleset", m);
+  Run_RoundTrip_IDF_to_IDF("RoundTrip_ScheduleRuleset", w);
 }
 
 TEST_F(EnergyPlusFixture, RoundTrip_IDF_ScheduleYear_2_ScheduleWeekDaily) {
@@ -2181,5 +2175,112 @@ TEST_F(EnergyPlusFixture, RoundTrip_IDF_ScheduleYear_2_ScheduleWeekDaily) {
   w.addObject(scheduleWeekDaily2);
   w.addObject(scheduleYear);
 
-  Run_RoundTrip_IDF_to_IDF("RoundTrip_ScheduleRuleset", w);
+  Run_RoundTrip_IDF_to_IDF("RoundTrip_ScheduleYear", w);
+}
+
+TEST_F(EnergyPlusFixture, RoundTrip_IDF_ScheduleYear_2_ScheduleWeekCompact) {
+  Workspace w(StrictnessLevel::Minimal, IddFileType::EnergyPlus);
+
+  IdfObject scheduleTypeLimits(openstudio::IddObjectType::ScheduleTypeLimits);
+  scheduleTypeLimits.setString(0, "Fraction");
+  scheduleTypeLimits.setInt(1, 0);
+  scheduleTypeLimits.setInt(2, 1);
+  scheduleTypeLimits.setString(3, "Continuous");
+
+  IdfObject scheduleDayHourly1(openstudio::IddObjectType::Schedule_Day_Hourly);
+  scheduleDayHourly1.setString(0, "RefrigeratorDay");
+  scheduleDayHourly1.setString(1, "Fraction");
+  scheduleDayHourly1.setDouble(2, 0.8);
+  scheduleDayHourly1.setDouble(3, 0.782696177062374);
+  scheduleDayHourly1.setDouble(4, 0.765593561368209);
+
+  IdfObject scheduleDayHourly2(openstudio::IddObjectType::Schedule_Day_Hourly);
+  scheduleDayHourly2.setString(0, "RefrigeratorDay2");
+  scheduleDayHourly2.setString(1, "Fraction");
+  scheduleDayHourly2.setDouble(2, 0.1);
+  scheduleDayHourly2.setDouble(3, 0.2);
+
+  IdfObject scheduleWeekCompact1(openstudio::IddObjectType::Schedule_Week_Compact);
+  scheduleWeekCompact1.setString(0, "RefrigeratorWeek");
+  scheduleWeekCompact1.setString(1, "For: WinterDesignDay");
+  scheduleWeekCompact1.setString(2, "RefrigeratorDay");
+
+  IdfObject scheduleWeekCompact2(openstudio::IddObjectType::Schedule_Week_Compact);
+  scheduleWeekCompact2.setString(0, "RefrigeratorWeek2");
+  scheduleWeekCompact2.setString(1, "For: WinterDesignDay");
+  scheduleWeekCompact2.setString(2, "RefrigeratorDay2");  // <-- different day schedule
+
+  IdfObject scheduleYear(openstudio::IddObjectType::Schedule_Year);
+  scheduleYear.setString(0, "Refrigerator");
+  scheduleYear.setString(1, "Fraction");
+  IdfExtensibleGroup group4 = scheduleYear.pushExtensibleGroup();
+  group4.setString(0, "RefrigeratorWeek");
+  group4.setInt(1, 1);
+  group4.setInt(2, 1);
+  group4.setInt(3, 1);
+  group4.setInt(4, 6);
+  IdfExtensibleGroup group5 = scheduleYear.pushExtensibleGroup();
+  group5.setString(0, "RefrigeratorWeek2");
+  group5.setInt(1, 1);
+  group5.setInt(2, 7);
+  group5.setInt(3, 12);
+  group5.setInt(4, 31);
+
+  w.addObject(scheduleTypeLimits);
+  w.addObject(scheduleDayHourly1);
+  w.addObject(scheduleDayHourly2);
+  w.addObject(scheduleWeekCompact1);
+  w.addObject(scheduleWeekCompact2);
+  w.addObject(scheduleYear);
+
+  Run_RoundTrip_IDF_to_IDF("RoundTrip_ScheduleYear", w);
+}
+
+void Run_RoundTrip_OSM_to_OSM(const std::string& filename, Model& m) {
+  m.save(filename + "_1.osm", true);
+
+  ForwardTranslator ft;
+  Workspace w = ft.translateModel(m);
+
+  w.save(filename + "_2.idf", true);
+
+  ReverseTranslator rt;
+  Model m2 = rt.translateWorkspace(w);
+
+  m2.save(filename + "_3.osm", true);
+
+  // TODO: compare model objects
+}
+
+TEST_F(EnergyPlusFixture, RoundTrip_OSM_ScheduleRuleset_1_ScheduleRule) {
+  Model m;
+
+  ScheduleTypeLimits scheduleTypeLimits(m);
+  scheduleTypeLimits.setName("Fractional");
+  scheduleTypeLimits.setLowerLimitValue(0);
+  scheduleTypeLimits.setUpperLimitValue(0);
+  scheduleTypeLimits.setNumericType("Continuous");
+
+  ScheduleRuleset scheduleRuleset(m);
+  scheduleRuleset.setName("occupants schedule");
+  scheduleRuleset.setScheduleTypeLimits(scheduleTypeLimits);
+
+  ScheduleDay defaultDaySchedule = scheduleRuleset.defaultDaySchedule();
+  defaultDaySchedule.setName("occupants schedule default day");
+  defaultDaySchedule.setScheduleTypeLimits(scheduleTypeLimits);
+
+  ScheduleRule scheduleRule(scheduleRuleset);
+  scheduleRule.setName("occupants schedule allday rule");
+  scheduleRule.setApplyAllDays(true);
+  scheduleRule.setStartDate(Date(1, 1));
+  scheduleRule.setEndDate(Date(12, 31));
+
+  ScheduleDay daySchedule = scheduleRule.daySchedule();
+  daySchedule.setName("occupants schedule day");
+  daySchedule.setScheduleTypeLimits(scheduleTypeLimits);
+  daySchedule.addValue(Time(0, 5), 0.426829268292683);
+  daySchedule.addValue(Time(0, 6), 0.719512195121951);
+  daySchedule.addValue(Time(0, 7), 1);
+
+  Run_RoundTrip_OSM_to_OSM("RoundTrip_ScheduleRuleset", m);
 }
