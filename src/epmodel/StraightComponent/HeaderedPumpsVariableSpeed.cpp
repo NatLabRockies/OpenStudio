@@ -6,7 +6,9 @@
 #include "StraightComponent/HeaderedPumpsVariableSpeed.hpp"
 #include "StraightComponent/HeaderedPumpsVariableSpeed_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -234,6 +236,10 @@ namespace epmodel {
     return getImpl<detail::HeaderedPumpsVariableSpeed_Impl>()->setEndUseSubcategory(endUseSubcategory);
   }
 
+  bool HeaderedPumpsVariableSpeed::addToNode(Node& node) {
+    return getImpl<detail::HeaderedPumpsVariableSpeed_Impl>()->addToNode(node);
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -247,6 +253,14 @@ namespace epmodel {
 
     unsigned HeaderedPumpsVariableSpeed_Impl::outletPort() const {
       return openstudio::HeaderedPumps_VariableSpeedFields::OutletNodeName;
+    }
+
+    bool HeaderedPumpsVariableSpeed_Impl::addToNode(Node& node) {
+      if (node.plantLoop()) {
+        return StraightComponent_Impl::addToNode(node);
+      }
+
+      return false;
     }
 
     boost::optional<double> HeaderedPumpsVariableSpeed_Impl::totalRatedFlowRate() const {

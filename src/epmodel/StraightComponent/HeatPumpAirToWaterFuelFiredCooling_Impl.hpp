@@ -13,6 +13,10 @@
 namespace openstudio {
 namespace epmodel {
 
+class Curve;
+class HeatPumpAirToWaterFuelFiredHeating;
+class Node;
+
 namespace detail {
 
 class EPMODEL_API HeatPumpAirToWaterFuelFiredCooling_Impl : public StraightComponent_Impl
@@ -21,11 +25,13 @@ class EPMODEL_API HeatPumpAirToWaterFuelFiredCooling_Impl : public StraightCompo
   using StraightComponent_Impl::StraightComponent_Impl;
   virtual ~HeatPumpAirToWaterFuelFiredCooling_Impl() override = default;
 
-  // Schema Alignment Notes:
-  // - API: selected inventory row idd_type is OutdoorAir:Node, but Impl methods intentionally target
-  //   HeatPump_AirToWater_FuelFired_CoolingFields to preserve openstudio::model scalar API parity.
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+  bool addToNode(Node& node) override;
+
+  boost::optional<HeatPumpAirToWaterFuelFiredHeating> companionHeatingHeatPump() const;
+  bool setCompanionHeatingHeatPump(const HeatPumpAirToWaterFuelFiredHeating& heatPumpAirToWaterFuelFiredHeating);
+  void resetCompanionHeatingHeatPump();
 
   std::string fuelType() const;
   bool setFuelType(const std::string& fuelType);
@@ -73,14 +79,35 @@ class EPMODEL_API HeatPumpAirToWaterFuelFiredCooling_Impl : public StraightCompo
   std::string waterTemperatureCurveInputVariable() const;
   bool setWaterTemperatureCurveInputVariable(const std::string& waterTemperatureCurveInputVariable);
 
+  Curve normalizedCapacityFunctionofTemperatureCurve() const;
+  bool setNormalizedCapacityFunctionofTemperatureCurve(const Curve& normalizedCapacityFunctionofTemperatureCurve);
+
+  Curve fuelEnergyInputRatioFunctionofTemperatureCurve() const;
+  bool setFuelEnergyInputRatioFunctionofTemperatureCurve(const Curve& fuelEnergyInputRatioFunctionofTemperatureCurve);
+
+  Curve fuelEnergyInputRatioFunctionofPLRCurve() const;
+  bool setFuelEnergyInputRatioFunctionofPLRCurve(const Curve& fuelEnergyInputRatioFunctionofPLRCurve);
+
   double minimumPartLoadRatio() const;
   bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
 
   double maximumPartLoadRatio() const;
   bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
 
+  boost::optional<Curve> cyclingRatioFactorCurve() const;
+  bool setCyclingRatioFactorCurve(const Curve& cyclingRatioFactorCurve);
+  void resetCyclingRatioFactorCurve();
+
   double nominalAuxiliaryElectricPower() const;
   bool setNominalAuxiliaryElectricPower(double nominalAuxiliaryElectricPower);
+
+  boost::optional<Curve> auxiliaryElectricEnergyInputRatioFunctionofTemperatureCurve() const;
+  bool setAuxiliaryElectricEnergyInputRatioFunctionofTemperatureCurve(const Curve& auxiliaryElectricEnergyInputRatioFunctionofTemperatureCurve);
+  void resetAuxiliaryElectricEnergyInputRatioFunctionofTemperatureCurve();
+
+  boost::optional<Curve> auxiliaryElectricEnergyInputRatioFunctionofPLRCurve() const;
+  bool setAuxiliaryElectricEnergyInputRatioFunctionofPLRCurve(const Curve& auxiliaryElectricEnergyInputRatioFunctionofPLRCurve);
+  void resetAuxiliaryElectricEnergyInputRatioFunctionofPLRCurve();
 
   double standbyElectricPower() const;
   bool setStandbyElectricPower(double standbyElectricPower);

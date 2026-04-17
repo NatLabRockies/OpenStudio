@@ -7,8 +7,14 @@
 #include "StraightComponent/HeatPumpAirToWater_Impl.hpp"
 
 #include "Model.hpp"
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/HeatPump_AirToWater_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
@@ -91,6 +97,18 @@ void HeatPumpAirToWater::resetOperatingModeControlOptionforMultipleUnit() {
   getImpl<detail::HeatPumpAirToWater_Impl>()->resetOperatingModeControlOptionforMultipleUnit();
 }
 
+boost::optional<Schedule> HeatPumpAirToWater::operatingModeControlSchedule() const {
+  return getImpl<detail::HeatPumpAirToWater_Impl>()->operatingModeControlSchedule();
+}
+
+bool HeatPumpAirToWater::setOperatingModeControlSchedule(Schedule& operatingModeControlSchedule) {
+  return getImpl<detail::HeatPumpAirToWater_Impl>()->setOperatingModeControlSchedule(operatingModeControlSchedule);
+}
+
+void HeatPumpAirToWater::resetOperatingModeControlSchedule() {
+  getImpl<detail::HeatPumpAirToWater_Impl>()->resetOperatingModeControlSchedule();
+}
+
 double HeatPumpAirToWater::minimumPartLoadRatio() const {
   return getImpl<detail::HeatPumpAirToWater_Impl>()->minimumPartLoadRatio();
 }
@@ -105,6 +123,30 @@ bool HeatPumpAirToWater::setMinimumPartLoadRatio(double minimumPartLoadRatio) {
 
 void HeatPumpAirToWater::resetMinimumPartLoadRatio() {
   getImpl<detail::HeatPumpAirToWater_Impl>()->resetMinimumPartLoadRatio();
+}
+
+boost::optional<std::string> HeatPumpAirToWater::airInletNodeName() const {
+  return getImpl<detail::HeatPumpAirToWater_Impl>()->airInletNodeName();
+}
+
+bool HeatPumpAirToWater::setAirInletNodeName(const std::string& airInletNodeName) {
+  return getImpl<detail::HeatPumpAirToWater_Impl>()->setAirInletNodeName(airInletNodeName);
+}
+
+void HeatPumpAirToWater::resetAirInletNodeName() {
+  getImpl<detail::HeatPumpAirToWater_Impl>()->resetAirInletNodeName();
+}
+
+boost::optional<std::string> HeatPumpAirToWater::airOutletNodeName() const {
+  return getImpl<detail::HeatPumpAirToWater_Impl>()->airOutletNodeName();
+}
+
+bool HeatPumpAirToWater::setAirOutletNodeName(const std::string& airOutletNodeName) {
+  return getImpl<detail::HeatPumpAirToWater_Impl>()->setAirOutletNodeName(airOutletNodeName);
+}
+
+void HeatPumpAirToWater::resetAirOutletNodeName() {
+  getImpl<detail::HeatPumpAirToWater_Impl>()->resetAirOutletNodeName();
 }
 
 double HeatPumpAirToWater::maximumOutdoorDryBulbTemperatureForDefrostOperation() const {
@@ -172,6 +214,19 @@ void HeatPumpAirToWater::resetResistiveDefrostHeaterCapacity() {
   getImpl<detail::HeatPumpAirToWater_Impl>()->resetResistiveDefrostHeaterCapacity();
 }
 
+boost::optional<Curve> HeatPumpAirToWater::defrostEnergyInputRatioFunctionofTemperatureCurve() const {
+  return getImpl<detail::HeatPumpAirToWater_Impl>()->defrostEnergyInputRatioFunctionofTemperatureCurve();
+}
+
+bool HeatPumpAirToWater::setDefrostEnergyInputRatioFunctionofTemperatureCurve(const Curve& defrostEnergyInputRatioFunctionofTemperatureCurve) {
+  return getImpl<detail::HeatPumpAirToWater_Impl>()->setDefrostEnergyInputRatioFunctionofTemperatureCurve(
+    defrostEnergyInputRatioFunctionofTemperatureCurve);
+}
+
+void HeatPumpAirToWater::resetDefrostEnergyInputRatioFunctionofTemperatureCurve() {
+  getImpl<detail::HeatPumpAirToWater_Impl>()->resetDefrostEnergyInputRatioFunctionofTemperatureCurve();
+}
+
 int HeatPumpAirToWater::heatPumpMultiplier() const {
   return getImpl<detail::HeatPumpAirToWater_Impl>()->heatPumpMultiplier();
 }
@@ -220,6 +275,19 @@ void HeatPumpAirToWater::resetCrankcaseHeaterCapacity() {
   getImpl<detail::HeatPumpAirToWater_Impl>()->resetCrankcaseHeaterCapacity();
 }
 
+boost::optional<Curve> HeatPumpAirToWater::crankcaseHeaterCapacityFunctionofTemperatureCurve() const {
+  return getImpl<detail::HeatPumpAirToWater_Impl>()->crankcaseHeaterCapacityFunctionofTemperatureCurve();
+}
+
+bool HeatPumpAirToWater::setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& crankcaseHeaterCapacityFunctionofTemperatureCurve) {
+  return getImpl<detail::HeatPumpAirToWater_Impl>()->setCrankcaseHeaterCapacityFunctionofTemperatureCurve(
+    crankcaseHeaterCapacityFunctionofTemperatureCurve);
+}
+
+void HeatPumpAirToWater::resetCrankcaseHeaterCapacityFunctionofTemperatureCurve() {
+  getImpl<detail::HeatPumpAirToWater_Impl>()->resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
+}
+
 double HeatPumpAirToWater::maximumAmbientTemperatureforCrankcaseHeaterOperation() const {
   return getImpl<detail::HeatPumpAirToWater_Impl>()->maximumAmbientTemperatureforCrankcaseHeaterOperation();
 }
@@ -252,6 +320,11 @@ unsigned HeatPumpAirToWater_Impl::outletPort() const {
   return openstudio::HeatPump_AirToWaterFields::AirOutletNodeName;
 }
 
+bool HeatPumpAirToWater_Impl::addToNode(Node& node) {
+  static_cast<void>(node);
+  return false;
+}
+
 std::string HeatPumpAirToWater_Impl::operatingModeControlMethod() const {
   const auto value = getString(openstudio::HeatPump_AirToWaterFields::OperatingModeControlMethod, true);
   OS_ASSERT(value);
@@ -263,6 +336,9 @@ bool HeatPumpAirToWater_Impl::isOperatingModeControlMethodDefaulted() const {
 }
 
 bool HeatPumpAirToWater_Impl::setOperatingModeControlMethod(const std::string& operatingModeControlMethod) {
+  if (openstudio::istringEqual(operatingModeControlMethod, "ScheduledModes") && !operatingModeControlSchedule()) {
+    return false;
+  }
   const bool result = setString(openstudio::HeatPump_AirToWaterFields::OperatingModeControlMethod, operatingModeControlMethod);
   OS_ASSERT(result);
   return result;
@@ -279,6 +355,10 @@ std::string HeatPumpAirToWater_Impl::operatingModeControlOptionforMultipleUnit()
   return *value;
 }
 
+boost::optional<Schedule> HeatPumpAirToWater_Impl::operatingModeControlSchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::HeatPump_AirToWaterFields::OperatingModeControlScheduleName);
+}
+
 bool HeatPumpAirToWater_Impl::isOperatingModeControlOptionforMultipleUnitDefaulted() const {
   return isEmpty(openstudio::HeatPump_AirToWaterFields::OperatingModeControlOptionforMultipleUnit);
 }
@@ -293,6 +373,22 @@ bool HeatPumpAirToWater_Impl::setOperatingModeControlOptionforMultipleUnit(const
 void HeatPumpAirToWater_Impl::resetOperatingModeControlOptionforMultipleUnit() {
   const bool result = setString(openstudio::HeatPump_AirToWaterFields::OperatingModeControlOptionforMultipleUnit, "");
   OS_ASSERT(result);
+}
+
+bool HeatPumpAirToWater_Impl::setOperatingModeControlSchedule(Schedule& operatingModeControlSchedule) {
+  bool result = setSchedule(openstudio::HeatPump_AirToWaterFields::OperatingModeControlScheduleName,
+                            "HeatPumpAirToWater", "Operating Mode Control", operatingModeControlSchedule);
+  if (result) {
+    result = setString(openstudio::HeatPump_AirToWaterFields::OperatingModeControlMethod, "ScheduledModes");
+    OS_ASSERT(result);
+  }
+  return result;
+}
+
+void HeatPumpAirToWater_Impl::resetOperatingModeControlSchedule() {
+  const bool result = setString(openstudio::HeatPump_AirToWaterFields::OperatingModeControlScheduleName, "");
+  OS_ASSERT(result);
+  OS_ASSERT(setString(openstudio::HeatPump_AirToWaterFields::OperatingModeControlMethod, "Load"));
 }
 
 double HeatPumpAirToWater_Impl::minimumPartLoadRatio() const {
@@ -314,6 +410,48 @@ bool HeatPumpAirToWater_Impl::setMinimumPartLoadRatio(double minimumPartLoadRati
 void HeatPumpAirToWater_Impl::resetMinimumPartLoadRatio() {
   const bool result = setString(openstudio::HeatPump_AirToWaterFields::MinimumPartLoadRatio, "");
   OS_ASSERT(result);
+}
+
+boost::optional<std::string> HeatPumpAirToWater_Impl::airInletNodeName() const {
+  auto value = getString(openstudio::HeatPump_AirToWaterFields::AirInletNodeName, false, true);
+  if (value && value->empty()) {
+    return boost::none;
+  }
+  return value;
+}
+
+bool HeatPumpAirToWater_Impl::setAirInletNodeName(const std::string& airInletNodeName) {
+  const bool result = setString(openstudio::HeatPump_AirToWaterFields::AirInletNodeName, airInletNodeName);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HeatPumpAirToWater_Impl::resetAirInletNodeName() {
+  const bool clearedName = setString(openstudio::HeatPump_AirToWaterFields::AirInletNodeName, "");
+  const bool clearedPointer = setPointer(openstudio::HeatPump_AirToWaterFields::AirInletNodeName, Handle(), false);
+  OS_ASSERT(clearedName);
+  OS_ASSERT(clearedPointer);
+}
+
+boost::optional<std::string> HeatPumpAirToWater_Impl::airOutletNodeName() const {
+  auto value = getString(openstudio::HeatPump_AirToWaterFields::AirOutletNodeName, false, true);
+  if (value && value->empty()) {
+    return boost::none;
+  }
+  return value;
+}
+
+bool HeatPumpAirToWater_Impl::setAirOutletNodeName(const std::string& airOutletNodeName) {
+  const bool result = setString(openstudio::HeatPump_AirToWaterFields::AirOutletNodeName, airOutletNodeName);
+  OS_ASSERT(result);
+  return result;
+}
+
+void HeatPumpAirToWater_Impl::resetAirOutletNodeName() {
+  const bool clearedName = setString(openstudio::HeatPump_AirToWaterFields::AirOutletNodeName, "");
+  const bool clearedPointer = setPointer(openstudio::HeatPump_AirToWaterFields::AirOutletNodeName, Handle(), false);
+  OS_ASSERT(clearedName);
+  OS_ASSERT(clearedPointer);
 }
 
 double HeatPumpAirToWater_Impl::maximumOutdoorDryBulbTemperatureForDefrostOperation() const {
@@ -402,6 +540,24 @@ void HeatPumpAirToWater_Impl::resetResistiveDefrostHeaterCapacity() {
   OS_ASSERT(result);
 }
 
+boost::optional<Curve> HeatPumpAirToWater_Impl::defrostEnergyInputRatioFunctionofTemperatureCurve() const {
+  return getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::HeatPump_AirToWaterFields::DefrostEnergyInputRatioFunctionofTemperatureCurveName);
+}
+
+bool HeatPumpAirToWater_Impl::setDefrostEnergyInputRatioFunctionofTemperatureCurve(const Curve& defrostEnergyInputRatioFunctionofTemperatureCurve) {
+  if (defrostEnergyInputRatioFunctionofTemperatureCurve.model() != model()) {
+    return false;
+  }
+  return setPointer(openstudio::HeatPump_AirToWaterFields::DefrostEnergyInputRatioFunctionofTemperatureCurveName,
+                    defrostEnergyInputRatioFunctionofTemperatureCurve.handle());
+}
+
+void HeatPumpAirToWater_Impl::resetDefrostEnergyInputRatioFunctionofTemperatureCurve() {
+  const bool result = setString(openstudio::HeatPump_AirToWaterFields::DefrostEnergyInputRatioFunctionofTemperatureCurveName, "");
+  OS_ASSERT(result);
+}
+
 int HeatPumpAirToWater_Impl::heatPumpMultiplier() const {
   const auto value = getInt(openstudio::HeatPump_AirToWaterFields::HeatPumpMultiplier, true);
   OS_ASSERT(value);
@@ -462,6 +618,24 @@ bool HeatPumpAirToWater_Impl::setCrankcaseHeaterCapacity(double crankcaseHeaterC
 
 void HeatPumpAirToWater_Impl::resetCrankcaseHeaterCapacity() {
   const bool result = setString(openstudio::HeatPump_AirToWaterFields::CrankcaseHeaterCapacity, "");
+  OS_ASSERT(result);
+}
+
+boost::optional<Curve> HeatPumpAirToWater_Impl::crankcaseHeaterCapacityFunctionofTemperatureCurve() const {
+  return getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::HeatPump_AirToWaterFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName);
+}
+
+bool HeatPumpAirToWater_Impl::setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& crankcaseHeaterCapacityFunctionofTemperatureCurve) {
+  if (crankcaseHeaterCapacityFunctionofTemperatureCurve.model() != model()) {
+    return false;
+  }
+  return setPointer(openstudio::HeatPump_AirToWaterFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName,
+                    crankcaseHeaterCapacityFunctionofTemperatureCurve.handle());
+}
+
+void HeatPumpAirToWater_Impl::resetCrankcaseHeaterCapacityFunctionofTemperatureCurve() {
+  const bool result = setString(openstudio::HeatPump_AirToWaterFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName, "");
   OS_ASSERT(result);
 }
 

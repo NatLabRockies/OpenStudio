@@ -18,6 +18,9 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
+  class Schedule;
+  class Curve;
 
   namespace detail {
     class ThermalStorageIceDetailed_Impl;
@@ -41,13 +44,23 @@ namespace epmodel {
     static std::vector<std::string> thawProcessIndicatorValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical ice-thermal-storage scalar surface is present, but curve, schedule, and node helpers are still missing.
+    // - Status: Near Parity. The canonical availability-schedule, curve, scalar, and plant-demand-side node surface is present for the bounded slice.
     // - Canonical Counterpart: openstudio::model::ThermalStorageIceDetailed.
-    // - Implemented Parity: The preserved scalar API matches the capacity, curve-specification, timestep, parasitic-load, tank-loss, freezing-temperature, and thaw-indicator accessors with matching autosize/default behavior.
-    // - Documented Delta: Curve, schedule, and node-link helpers remain intentionally excluded from this scalar pass.
+    // - Implemented Parity: `availabilitySchedule`, `dischargingCurve`, `chargingCurve`, the preserved scalar API, and plant-demand-side `addToNode(...)`
+    //   match the canonical wrapper surface and default behavior for this campaign slice.
     // - Field/Storage Mapping: These accessors map directly to EnergyPlus `ThermalStorage:Ice:Detailed` scalar fields used by the forward translator.
     // - Evidence: `src/model/ThermalStorageIceDetailed.hpp`, `src/model/ThermalStorageIceDetailed.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateThermalStorageIceDetailed.cpp`.
-    // - Remaining Parity Work: Add the omitted curve, schedule, and node helpers before claiming full parity.
+    // - Remaining Parity Work: Broader epmodel topology work remains outside this entity slice.
+
+    boost::optional<Schedule> availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+    void resetAvailabilitySchedule();
+
+    Curve dischargingCurve() const;
+    bool setDischargingCurve(const Curve& dischargingCurve);
+
+    Curve chargingCurve() const;
+    bool setChargingCurve(const Curve& chargingCurve);
 
     double capacity() const;
     bool setCapacity(double capacity);
@@ -85,6 +98,8 @@ namespace epmodel {
     bool setThawProcessIndicator(const std::string& thawProcessIndicator);
     bool isThawProcessIndicatorDefaulted() const;
     void resetThawProcessIndicator();
+
+    bool addToNode(Node& node);
 
    protected:
     using ImplType = detail::ThermalStorageIceDetailed_Impl;

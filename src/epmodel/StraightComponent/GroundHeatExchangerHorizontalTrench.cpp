@@ -6,9 +6,17 @@
 #include "StraightComponent/GroundHeatExchangerHorizontalTrench.hpp"
 #include "StraightComponent/GroundHeatExchangerHorizontalTrench_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "ModelObject/SiteGroundTemperatureUndisturbedKusudaAchenbach.hpp"
+#include "ModelObject/SiteGroundTemperatureUndisturbedKusudaAchenbach_Impl.hpp"
+#include "ModelObject/SiteGroundTemperatureUndisturbedXing.hpp"
+#include "ModelObject/SiteGroundTemperatureUndisturbedXing_Impl.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/DeprecatedHelpers.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/idd/GroundHeatExchanger_HorizontalTrench_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 
@@ -17,7 +25,53 @@ namespace epmodel {
 
   GroundHeatExchangerHorizontalTrench::GroundHeatExchangerHorizontalTrench(const Model& model)
     : StraightComponent(GroundHeatExchangerHorizontalTrench::iddObjectType(), model) {
-    bool ok = true;
+    SiteGroundTemperatureUndisturbedKusudaAchenbach undisturbedGroundTemperatureModel(model);
+    bool ok = setUndisturbedGroundTemperatureModel(undisturbedGroundTemperatureModel);
+    OS_ASSERT(ok);
+    ok = setDesignFlowRate(0.004);
+    OS_ASSERT(ok);
+    ok = setTrenchLengthinPipeAxialDirection(75.0);
+    OS_ASSERT(ok);
+    ok = setNumberofTrenches(2);
+    OS_ASSERT(ok);
+    ok = setHorizontalSpacingBetweenPipes(2.0);
+    OS_ASSERT(ok);
+    ok = setPipeInnerDiameter(0.016);
+    OS_ASSERT(ok);
+    ok = setPipeOuterDiameter(0.02667);
+    OS_ASSERT(ok);
+    ok = setBurialDepth(1.25);
+    OS_ASSERT(ok);
+    ok = setSoilThermalConductivity(1.08);
+    OS_ASSERT(ok);
+    ok = setSoilDensity(962.0);
+    OS_ASSERT(ok);
+    ok = setSoilSpecificHeat(2576.0);
+    OS_ASSERT(ok);
+    ok = setPipeThermalConductivity(0.3895);
+    OS_ASSERT(ok);
+    ok = setPipeDensity(641.0);
+    OS_ASSERT(ok);
+    ok = setPipeSpecificHeat(2405.0);
+    OS_ASSERT(ok);
+    ok = setSoilMoistureContentPercent(30.0);
+    OS_ASSERT(ok);
+    ok = setSoilMoistureContentPercentatSaturation(50.0);
+    OS_ASSERT(ok);
+    ok = setEvapotranspirationGroundCoverParameter(0.408);
+    OS_ASSERT(ok);
+  }
+
+  GroundHeatExchangerHorizontalTrench::GroundHeatExchangerHorizontalTrench(const Model& model,
+                                                                           const ModelObject& undisturbedGroundTemperatureModel)
+    : StraightComponent(GroundHeatExchangerHorizontalTrench::iddObjectType(), model) {
+    bool ok = setUndisturbedGroundTemperatureModel(undisturbedGroundTemperatureModel);
+    if (!ok) {
+      remove();
+      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
+                         "Unable to set " << briefDescription() << "'s Undisturbed Ground Temperature Model to "
+                                           << undisturbedGroundTemperatureModel.briefDescription() << ".");
+    }
     ok = setDesignFlowRate(0.004);
     OS_ASSERT(ok);
     ok = setTrenchLengthinPipeAxialDirection(75.0);
@@ -57,6 +111,12 @@ namespace epmodel {
 
   IddObjectType GroundHeatExchangerHorizontalTrench::iddObjectType() {
     return IddObjectType::GroundHeatExchanger_HorizontalTrench;
+  }
+
+  std::vector<std::string> GroundHeatExchangerHorizontalTrench::groundTemperatureModelValues() {
+    DEPRECATED_AT_MSG(3, 6, 0, "Use undisturbedGroundTemperatureModel instead.");
+    std::vector<std::string> result{"KusudaAchenbach", "SiteGroundTemperature"};
+    return result;
   }
 
   double GroundHeatExchangerHorizontalTrench::designFlowRate() const {
@@ -123,6 +183,60 @@ namespace epmodel {
     return getImpl<detail::GroundHeatExchangerHorizontalTrench_Impl>()->evapotranspirationGroundCoverParameter();
   }
 
+  std::string GroundHeatExchangerHorizontalTrench::groundTemperatureModel() const {
+    LOG_FREE(Warn, "openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
+             "As of 3.6.0, groundTemperatureModel is deprecated. Use undisturbedGroundTemperatureModel instead. It will be removed within three releases.");
+    if (undisturbedGroundTemperatureModel().iddObject().type() == IddObjectType::Site_GroundTemperature_Undisturbed_KusudaAchenbach) {
+      return "KusudaAchenbach";
+    }
+    return "SiteGroundTemperature";
+  }
+
+  bool GroundHeatExchangerHorizontalTrench::isGroundTemperatureModelDefaulted() const {
+    DEPRECATED_AT_MSG(3, 6, 0, "Use undisturbedGroundTemperatureModel instead.");
+    return false;
+  }
+
+  double GroundHeatExchangerHorizontalTrench::kusudaAchenbachAverageSurfaceTemperature() const {
+    DEPRECATED_AT_MSG(3, 6, 0, "Use undisturbedGroundTemperatureModel instead.");
+    if (undisturbedGroundTemperatureModel().iddObject().type() != IddObjectType::Site_GroundTemperature_Undisturbed_KusudaAchenbach) {
+      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
+                         "Undisturbed ground temperature model is not KusudaAchenbach.");
+    }
+    auto kusuda = undisturbedGroundTemperatureModel().cast<SiteGroundTemperatureUndisturbedKusudaAchenbach>();
+    auto value = kusuda.averageSoilSurfaceTemperature();
+    OS_ASSERT(value);
+    return *value;
+  }
+
+  double GroundHeatExchangerHorizontalTrench::kusudaAchenbachAverageAmplitudeofSurfaceTemperature() const {
+    DEPRECATED_AT_MSG(3, 6, 0, "Use undisturbedGroundTemperatureModel instead.");
+    if (undisturbedGroundTemperatureModel().iddObject().type() != IddObjectType::Site_GroundTemperature_Undisturbed_KusudaAchenbach) {
+      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
+                         "Undisturbed ground temperature model is not KusudaAchenbach.");
+    }
+    auto kusuda = undisturbedGroundTemperatureModel().cast<SiteGroundTemperatureUndisturbedKusudaAchenbach>();
+    auto value = kusuda.averageAmplitudeofSurfaceTemperature();
+    OS_ASSERT(value);
+    return *value;
+  }
+
+  double GroundHeatExchangerHorizontalTrench::kusudaAchenbachPhaseShiftofMinimumSurfaceTemperature() const {
+    DEPRECATED_AT_MSG(3, 6, 0, "Use undisturbedGroundTemperatureModel instead.");
+    if (undisturbedGroundTemperatureModel().iddObject().type() != IddObjectType::Site_GroundTemperature_Undisturbed_KusudaAchenbach) {
+      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
+                         "Undisturbed ground temperature model is not KusudaAchenbach.");
+    }
+    auto kusuda = undisturbedGroundTemperatureModel().cast<SiteGroundTemperatureUndisturbedKusudaAchenbach>();
+    auto value = kusuda.phaseShiftofMinimumSurfaceTemperature();
+    OS_ASSERT(value);
+    return *value;
+  }
+
+  ModelObject GroundHeatExchangerHorizontalTrench::undisturbedGroundTemperatureModel() const {
+    return getImpl<detail::GroundHeatExchangerHorizontalTrench_Impl>()->undisturbedGroundTemperatureModel();
+  }
+
   bool GroundHeatExchangerHorizontalTrench::setDesignFlowRate(double designFlowRate) {
     return getImpl<detail::GroundHeatExchangerHorizontalTrench_Impl>()->setDesignFlowRate(designFlowRate);
   }
@@ -184,9 +298,58 @@ namespace epmodel {
       soilMoistureContentPercentatSaturation);
   }
 
+  bool GroundHeatExchangerHorizontalTrench::setGroundTemperatureModel(const std::string& groundTemperatureModel) {
+    DEPRECATED_AT_MSG(3, 6, 0, "Use undisturbedGroundTemperatureModel instead.");
+    (void)groundTemperatureModel;
+    return false;
+  }
+
+  void GroundHeatExchangerHorizontalTrench::resetGroundTemperatureModel() {
+    DEPRECATED_AT_MSG(3, 6, 0, "Use undisturbedGroundTemperatureModel instead.");
+  }
+
+  bool GroundHeatExchangerHorizontalTrench::setKusudaAchenbachAverageSurfaceTemperature(double kusudaAchenbachAverageSurfaceTemperature) {
+    DEPRECATED_AT_MSG(3, 6, 0, "Use undisturbedGroundTemperatureModel instead.");
+    if (undisturbedGroundTemperatureModel().iddObject().type() != IddObjectType::Site_GroundTemperature_Undisturbed_KusudaAchenbach) {
+      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
+                         "Undisturbed ground temperature model is not KusudaAchenbach.");
+    }
+    return undisturbedGroundTemperatureModel()
+      .cast<SiteGroundTemperatureUndisturbedKusudaAchenbach>()
+      .setAverageSoilSurfaceTemperature(kusudaAchenbachAverageSurfaceTemperature);
+  }
+
+  bool GroundHeatExchangerHorizontalTrench::setKusudaAchenbachAverageAmplitudeofSurfaceTemperature(
+    double kusudaAchenbachAverageAmplitudeofSurfaceTemperature) {
+    DEPRECATED_AT_MSG(3, 6, 0, "Use undisturbedGroundTemperatureModel instead.");
+    if (undisturbedGroundTemperatureModel().iddObject().type() != IddObjectType::Site_GroundTemperature_Undisturbed_KusudaAchenbach) {
+      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
+                         "Undisturbed ground temperature model is not KusudaAchenbach.");
+    }
+    return undisturbedGroundTemperatureModel()
+      .cast<SiteGroundTemperatureUndisturbedKusudaAchenbach>()
+      .setAverageAmplitudeofSurfaceTemperature(kusudaAchenbachAverageAmplitudeofSurfaceTemperature);
+  }
+
+  bool GroundHeatExchangerHorizontalTrench::setKusudaAchenbachPhaseShiftofMinimumSurfaceTemperature(
+    double kusudaAchenbachPhaseShiftofMinimumSurfaceTemperature) {
+    DEPRECATED_AT_MSG(3, 6, 0, "Use undisturbedGroundTemperatureModel instead.");
+    if (undisturbedGroundTemperatureModel().iddObject().type() != IddObjectType::Site_GroundTemperature_Undisturbed_KusudaAchenbach) {
+      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
+                         "Undisturbed ground temperature model is not KusudaAchenbach.");
+    }
+    return undisturbedGroundTemperatureModel()
+      .cast<SiteGroundTemperatureUndisturbedKusudaAchenbach>()
+      .setPhaseShiftofMinimumSurfaceTemperature(kusudaAchenbachPhaseShiftofMinimumSurfaceTemperature);
+  }
+
   bool GroundHeatExchangerHorizontalTrench::setEvapotranspirationGroundCoverParameter(double evapotranspirationGroundCoverParameter) {
     return getImpl<detail::GroundHeatExchangerHorizontalTrench_Impl>()->setEvapotranspirationGroundCoverParameter(
       evapotranspirationGroundCoverParameter);
+  }
+
+  bool GroundHeatExchangerHorizontalTrench::setUndisturbedGroundTemperatureModel(const ModelObject& undisturbedGroundTemperatureModel) {
+    return getImpl<detail::GroundHeatExchangerHorizontalTrench_Impl>()->setUndisturbedGroundTemperatureModel(undisturbedGroundTemperatureModel);
   }
 
 }  // namespace epmodel
@@ -202,6 +365,15 @@ namespace epmodel {
 
     unsigned GroundHeatExchangerHorizontalTrench_Impl::outletPort() const {
       return openstudio::GroundHeatExchanger_HorizontalTrenchFields::OutletNodeName;
+    }
+
+    bool GroundHeatExchangerHorizontalTrench_Impl::addToNode(Node& node) {
+      if (auto plantLoop = node.plantLoop()) {
+        if (!plantLoop->demandComponent(node.handle())) {
+          return StraightComponent_Impl::addToNode(node);
+        }
+      }
+      return false;
     }
 
     bool GroundHeatExchangerHorizontalTrench_Impl::setDesignFlowRate(double designFlowRate) {
@@ -364,6 +536,32 @@ namespace epmodel {
     bool GroundHeatExchangerHorizontalTrench_Impl::setEvapotranspirationGroundCoverParameter(double evapotranspirationGroundCoverParameter) {
       return setDouble(openstudio::GroundHeatExchanger_HorizontalTrenchFields::EvapotranspirationGroundCoverParameter,
                        evapotranspirationGroundCoverParameter);
+    }
+
+    ModelObject GroundHeatExchangerHorizontalTrench_Impl::undisturbedGroundTemperatureModel() const {
+      auto value = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+        openstudio::GroundHeatExchanger_HorizontalTrenchFields::UndisturbedGroundTemperatureModelName);
+      if (!value) {
+        LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerHorizontalTrench",
+                           briefDescription() << " does not have an Undisturbed Ground Temperature Model attached.");
+      }
+      return *value;
+    }
+
+    bool GroundHeatExchangerHorizontalTrench_Impl::setUndisturbedGroundTemperatureModel(const ModelObject& undisturbedGroundTemperatureModel) {
+      const auto type = undisturbedGroundTemperatureModel.iddObject().type();
+      if ((type != IddObjectType::Site_GroundTemperature_Undisturbed_KusudaAchenbach)
+          && (type != IddObjectType::Site_GroundTemperature_Undisturbed_Xing)
+          && (type != IddObjectType::Site_GroundTemperature_Undisturbed_FiniteDifference)) {
+        return false;
+      }
+      const bool ok = setPointer(openstudio::GroundHeatExchanger_HorizontalTrenchFields::UndisturbedGroundTemperatureModelName,
+                                 undisturbedGroundTemperatureModel.handle(), false);
+      if (!ok) {
+        return false;
+      }
+      return setString(openstudio::GroundHeatExchanger_HorizontalTrenchFields::UndisturbedGroundTemperatureModelType,
+                       undisturbedGroundTemperatureModel.iddObject().name());
     }
 
   }  // namespace detail

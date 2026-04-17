@@ -6,7 +6,11 @@
 #include "StraightComponent/GeneratorFuelCellStackCooler.hpp"
 #include "StraightComponent/GeneratorFuelCellStackCooler_Impl.hpp"
 
+#include "Generator/GeneratorFuelCell.hpp"
+#include "Generator/GeneratorFuelCell_Impl.hpp"
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/Generator_FuelCell_StackCooler_FieldEnums.hxx>
@@ -262,6 +266,10 @@ namespace epmodel {
 
   void GeneratorFuelCellStackCooler::resetStackAirCoolerFanCoefficientf2() {
     getImpl<detail::GeneratorFuelCellStackCooler_Impl>()->resetStackAirCoolerFanCoefficientf2();
+  }
+
+  boost::optional<GeneratorFuelCell> GeneratorFuelCellStackCooler::fuelCell() const {
+    return getImpl<detail::GeneratorFuelCellStackCooler_Impl>()->fuelCell();
   }
 
 }  // namespace epmodel
@@ -573,6 +581,35 @@ namespace epmodel {
 
     void GeneratorFuelCellStackCooler_Impl::resetStackAirCoolerFanCoefficientf2() {
       OS_ASSERT(setDouble(openstudio::Generator_FuelCell_StackCoolerFields::StackAirCoolerFanCoefficientf2, 0.0));
+    }
+
+    boost::optional<openstudio::epmodel::GeneratorFuelCell> GeneratorFuelCellStackCooler_Impl::fuelCell() const {
+      boost::optional<openstudio::epmodel::GeneratorFuelCell> result;
+      unsigned count = 0;
+
+      // WorkspaceObject::sources() returns a sorted, de-duplicated list, so the malformed multi-parent
+      // fallback here is "last matching GeneratorFuelCell in sorted source order".
+      for (const auto& source : getObject<ModelObject>().sources()) {
+        if (auto generator = source.optionalCast<openstudio::epmodel::GeneratorFuelCell>()) {
+          ++count;
+          result = generator;
+        }
+      }
+
+      if (count > 1u) {
+        LOG_FREE(Error, "openstudio.epmodel.GeneratorFuelCellStackCooler",
+                 briefDescription() << " is referenced by more than one GeneratorFuelCell, returning the last matching source");
+      }
+
+      return result;
+    }
+
+    bool GeneratorFuelCellStackCooler_Impl::addToNode(Node& node) {
+      if (node.plantLoop()) {
+        return StraightComponent_Impl::addToNode(node);
+      }
+
+      return false;
     }
 
   }  // namespace detail

@@ -6,13 +6,18 @@
 #include "StraightComponent/EvaporativeCoolerDirectResearchSpecial.hpp"
 #include "StraightComponent/EvaporativeCoolerDirectResearchSpecial_Impl.hpp"
 
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <algorithm>
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/EvaporativeCooler_Direct_ResearchSpecial_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -22,8 +27,28 @@ namespace epmodel {
 
   EvaporativeCoolerDirectResearchSpecial::EvaporativeCoolerDirectResearchSpecial(const Model& model)
     : StraightComponent(EvaporativeCoolerDirectResearchSpecial::iddObjectType(), model) {
-    autosizeRecirculatingWaterPumpPowerConsumption();
-    autosizePrimaryAirDesignFlowRate();
+    auto alwaysOn = model.alwaysOnDiscreteSchedule();
+    bool ok = setAvailabilitySchedule(alwaysOn);
+    OS_ASSERT(ok);
+    ok = setCoolerDesignEffectiveness(1.0);
+    OS_ASSERT(ok);
+    ok = setRecirculatingWaterPumpPowerConsumption(0.0);
+    OS_ASSERT(ok);
+    ok = getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->setString(
+      openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::PrimaryAirDesignFlowRate, "");
+    OS_ASSERT(ok);
+    ok = setDriftLossFraction(0.0);
+    OS_ASSERT(ok);
+    ok = setBlowdownConcentrationRatio(2.0);
+    OS_ASSERT(ok);
+    ok = setWaterPumpPowerSizingFactor(0.1);
+    OS_ASSERT(ok);
+    ok = setEvaporativeOperationMinimumDrybulbTemperature(16.0);
+    OS_ASSERT(ok);
+    ok = setEvaporativeOperationMaximumLimitWetbulbTemperature(24.0);
+    OS_ASSERT(ok);
+    ok = setEvaporativeOperationMaximumLimitDrybulbTemperature(28.0);
+    OS_ASSERT(ok);
   }
 
   EvaporativeCoolerDirectResearchSpecial::EvaporativeCoolerDirectResearchSpecial(
@@ -32,6 +57,22 @@ namespace epmodel {
 
   IddObjectType EvaporativeCoolerDirectResearchSpecial::iddObjectType() {
     return IddObjectType::EvaporativeCooler_Direct_ResearchSpecial;
+  }
+
+  Schedule EvaporativeCoolerDirectResearchSpecial::availabilitySchedule() const {
+    return getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->availabilitySchedule();
+  }
+
+  Schedule EvaporativeCoolerDirectResearchSpecial::availableSchedule() const {
+    return getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->availabilitySchedule();
+  }
+
+  bool EvaporativeCoolerDirectResearchSpecial::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  bool EvaporativeCoolerDirectResearchSpecial::setAvailableSchedule(Schedule& schedule) {
+    return getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->setAvailabilitySchedule(schedule);
   }
 
   double EvaporativeCoolerDirectResearchSpecial::coolerDesignEffectiveness() const {
@@ -90,6 +131,14 @@ namespace epmodel {
     return getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->autosizedPrimaryAirDesignFlowRate();
   }
 
+  boost::optional<Node> EvaporativeCoolerDirectResearchSpecial::sensorNode() const {
+    return getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->sensorNode();
+  }
+
+  bool EvaporativeCoolerDirectResearchSpecial::setSensorNode(const Node& node) {
+    return getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->setSensorNode(node);
+  }
+
   double EvaporativeCoolerDirectResearchSpecial::driftLossFraction() const {
     return getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->driftLossFraction();
   }
@@ -106,12 +155,36 @@ namespace epmodel {
     return getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->setBlowdownConcentrationRatio(value);
   }
 
+  boost::optional<Curve> EvaporativeCoolerDirectResearchSpecial::effectivenessFlowRatioModifierCurve() const {
+    return getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->effectivenessFlowRatioModifierCurve();
+  }
+
+  bool EvaporativeCoolerDirectResearchSpecial::setEffectivenessFlowRatioModifierCurve(const Curve& curve) {
+    return getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->setEffectivenessFlowRatioModifierCurve(curve);
+  }
+
+  void EvaporativeCoolerDirectResearchSpecial::resetEffectivenessFlowRatioModifierCurve() {
+    getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->resetEffectivenessFlowRatioModifierCurve();
+  }
+
   double EvaporativeCoolerDirectResearchSpecial::waterPumpPowerSizingFactor() const {
     return getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->waterPumpPowerSizingFactor();
   }
 
   bool EvaporativeCoolerDirectResearchSpecial::setWaterPumpPowerSizingFactor(double waterPumpPowerSizingFactor) {
     return getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->setWaterPumpPowerSizingFactor(waterPumpPowerSizingFactor);
+  }
+
+  boost::optional<Curve> EvaporativeCoolerDirectResearchSpecial::waterPumpPowerModifierCurve() const {
+    return getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->waterPumpPowerModifierCurve();
+  }
+
+  bool EvaporativeCoolerDirectResearchSpecial::setWaterPumpPowerModifierCurve(const Curve& curve) {
+    return getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->setWaterPumpPowerModifierCurve(curve);
+  }
+
+  void EvaporativeCoolerDirectResearchSpecial::resetWaterPumpPowerModifierCurve() {
+    getImpl<detail::EvaporativeCoolerDirectResearchSpecial_Impl>()->resetWaterPumpPowerModifierCurve();
   }
 
   double EvaporativeCoolerDirectResearchSpecial::evaporativeOperationMinimumDrybulbTemperature() const {
@@ -153,7 +226,13 @@ namespace epmodel {
 
     bool EvaporativeCoolerDirectResearchSpecial_Impl::addToNode(Node& node) {
       if (node.airLoopHVACOutdoorAirSystem()) {
-        return StraightComponent_Impl::addToNode(node);
+        if (StraightComponent_Impl::addToNode(node)) {
+          if (auto outletNode = outletModelObject()->optionalCast<Node>()) {
+            setSensorNode(*outletNode);
+          }
+          return true;
+        }
+        return false;
       }
 
       auto airLoop = node.airLoopHVAC();
@@ -162,7 +241,35 @@ namespace epmodel {
         return false;
       }
 
-      return StraightComponent_Impl::addToNode(node);
+      if (StraightComponent_Impl::addToNode(node)) {
+        if (auto outletNode = outletModelObject()->optionalCast<Node>()) {
+          setSensorNode(*outletNode);
+        }
+        return true;
+      }
+
+      return false;
+    }
+
+    Schedule EvaporativeCoolerDirectResearchSpecial_Impl::availabilitySchedule() const {
+      auto schedule =
+        getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::AvailabilityScheduleName);
+      if (!schedule) {
+        LOG_FREE(Error, "openstudio.epmodel.EvaporativeCoolerDirectResearchSpecial",
+                 "Required availability schedule not set, repairing persisted state with the model always-on discrete schedule");
+        schedule = model().alwaysOnDiscreteSchedule();
+        const bool ok = const_cast<EvaporativeCoolerDirectResearchSpecial_Impl*>(this)->setAvailabilitySchedule(*schedule);
+        OS_ASSERT(ok);
+        schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+          openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::AvailabilityScheduleName);
+      }
+      OS_ASSERT(schedule);
+      return *schedule;
+    }
+
+    bool EvaporativeCoolerDirectResearchSpecial_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::AvailabilityScheduleName,
+                                           "EvaporativeCoolerDirectResearchSpecial", "Availability", schedule);
     }
 
     unsigned EvaporativeCoolerDirectResearchSpecial_Impl::inletPort() const {
@@ -215,10 +322,18 @@ namespace epmodel {
     }
 
     bool EvaporativeCoolerDirectResearchSpecial_Impl::isPrimaryAirDesignFlowRateAutosized() const {
-      if (auto value = getString(openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::PrimaryAirDesignFlowRate, true)) {
+      if (auto value = getString(openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::PrimaryAirDesignFlowRate, false)) {
         return openstudio::istringEqual(*value, "autosize");
       }
       return false;
+    }
+
+    boost::optional<Node> EvaporativeCoolerDirectResearchSpecial_Impl::sensorNode() const {
+      return resolvedNodeTarget(openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::SensorNodeName);
+    }
+
+    bool EvaporativeCoolerDirectResearchSpecial_Impl::setSensorNode(const Node& node) {
+      return setPointer(openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::SensorNodeName, node.handle(), false);
     }
 
     double EvaporativeCoolerDirectResearchSpecial_Impl::driftLossFraction() const {
@@ -241,6 +356,19 @@ namespace epmodel {
       return setDouble(openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::BlowdownConcentrationRatio, value);
     }
 
+    boost::optional<Curve> EvaporativeCoolerDirectResearchSpecial_Impl::effectivenessFlowRatioModifierCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(
+        openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::EffectivenessFlowRatioModifierCurveName);
+    }
+
+    bool EvaporativeCoolerDirectResearchSpecial_Impl::setEffectivenessFlowRatioModifierCurve(const Curve& curve) {
+      return setPointer(openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::EffectivenessFlowRatioModifierCurveName, curve.handle(), false);
+    }
+
+    void EvaporativeCoolerDirectResearchSpecial_Impl::resetEffectivenessFlowRatioModifierCurve() {
+      OS_ASSERT(setString(openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::EffectivenessFlowRatioModifierCurveName, ""));
+    }
+
     double EvaporativeCoolerDirectResearchSpecial_Impl::waterPumpPowerSizingFactor() const {
       const auto value = getDouble(openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::WaterPumpPowerSizingFactor, true);
       OS_ASSERT(value);
@@ -252,6 +380,19 @@ namespace epmodel {
         setDouble(openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::WaterPumpPowerSizingFactor, waterPumpPowerSizingFactor);
       OS_ASSERT(result);
       return result;
+    }
+
+    boost::optional<Curve> EvaporativeCoolerDirectResearchSpecial_Impl::waterPumpPowerModifierCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(
+        openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::WaterPumpPowerModifierCurveName);
+    }
+
+    bool EvaporativeCoolerDirectResearchSpecial_Impl::setWaterPumpPowerModifierCurve(const Curve& curve) {
+      return setPointer(openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::WaterPumpPowerModifierCurveName, curve.handle(), false);
+    }
+
+    void EvaporativeCoolerDirectResearchSpecial_Impl::resetWaterPumpPowerModifierCurve() {
+      OS_ASSERT(setString(openstudio::EvaporativeCooler_Direct_ResearchSpecialFields::WaterPumpPowerModifierCurveName, ""));
     }
 
     double EvaporativeCoolerDirectResearchSpecial_Impl::evaporativeOperationMinimumDrybulbTemperature() const {

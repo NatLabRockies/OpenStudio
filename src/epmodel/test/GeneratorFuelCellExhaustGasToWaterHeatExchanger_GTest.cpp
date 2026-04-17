@@ -6,7 +6,15 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Generator/GeneratorFuelCell.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../Loop/Loop.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/GeneratorFuelCellExhaustGasToWaterHeatExchanger.hpp"
+#include "../StraightComponent/Node.hpp"
+
+#include <utilities/idd/Generator_FuelCell_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -14,6 +22,50 @@ TEST_F(EPModelFixture, GeneratorFuelCellExhaustGasToWaterHeatExchanger_DefaultCo
   Model model;
   GeneratorFuelCellExhaustGasToWaterHeatExchanger exchanger(model);
   EXPECT_EQ(GeneratorFuelCellExhaustGasToWaterHeatExchanger::iddObjectType(), exchanger.iddObject().type());
+  EXPECT_DOUBLE_EQ(0.0004, exchanger.heatRecoveryWaterMaximumFlowRate());
+  EXPECT_EQ("Condensing", exchanger.heatExchangerCalculationMethod());
+  ASSERT_TRUE(exchanger.method2Parameterhxs0());
+  ASSERT_TRUE(exchanger.method2Parameterhxs1());
+  ASSERT_TRUE(exchanger.method2Parameterhxs2());
+  ASSERT_TRUE(exchanger.method2Parameterhxs3());
+  ASSERT_TRUE(exchanger.method2Parameterhxs4());
+  EXPECT_DOUBLE_EQ(83.1, exchanger.method2Parameterhxs0().get());
+  EXPECT_DOUBLE_EQ(4798.0, exchanger.method2Parameterhxs1().get());
+  EXPECT_DOUBLE_EQ(-138e3, exchanger.method2Parameterhxs2().get());
+  EXPECT_DOUBLE_EQ(-353.8e3, exchanger.method2Parameterhxs3().get());
+  EXPECT_DOUBLE_EQ(5.15e8, exchanger.method2Parameterhxs4().get());
+  ASSERT_TRUE(exchanger.method4hxl1Coefficient());
+  ASSERT_TRUE(exchanger.method4hxl2Coefficient());
+  ASSERT_TRUE(exchanger.method4CondensationThreshold());
+  EXPECT_DOUBLE_EQ(-0.000196, exchanger.method4hxl1Coefficient().get());
+  EXPECT_DOUBLE_EQ(0.0031, exchanger.method4hxl2Coefficient().get());
+  EXPECT_DOUBLE_EQ(35.0, exchanger.method4CondensationThreshold().get());
+  EXPECT_FALSE(exchanger.exhaustOutletAirNode());
+  EXPECT_FALSE(exchanger.fuelCell());
+}
+
+TEST_F(EPModelFixture, GeneratorFuelCellExhaustGasToWaterHeatExchanger_NodeConstructorAndRelationships) {
+  Model model;
+  Node exhaustNode(model);
+  GeneratorFuelCellExhaustGasToWaterHeatExchanger exchanger(model, exhaustNode);
+
+  EXPECT_EQ("FixedEffectiveness", exchanger.heatExchangerCalculationMethod());
+  ASSERT_TRUE(exchanger.method1HeatExchangerEffectiveness());
+  EXPECT_DOUBLE_EQ(1.0, exchanger.method1HeatExchangerEffectiveness().get());
+  ASSERT_TRUE(exchanger.exhaustOutletAirNode());
+  EXPECT_EQ(exhaustNode, exchanger.exhaustOutletAirNode().get());
+
+  Node replacementNode(model);
+  EXPECT_TRUE(exchanger.setExhaustOutletAirNode(replacementNode));
+  ASSERT_TRUE(exchanger.exhaustOutletAirNode());
+  EXPECT_EQ(replacementNode, exchanger.exhaustOutletAirNode().get());
+  exchanger.resetExhaustOutletAirNode();
+  EXPECT_FALSE(exchanger.exhaustOutletAirNode());
+
+  GeneratorFuelCell generator(model);
+  EXPECT_TRUE(generator.setPointer(openstudio::Generator_FuelCellFields::HeatExchangerName, exchanger.handle()));
+  ASSERT_TRUE(exchanger.fuelCell());
+  EXPECT_EQ(generator, exchanger.fuelCell().get());
 }
 
 TEST_F(EPModelFixture, GeneratorFuelCellExhaustGasToWaterHeatExchanger_ScalarAccessors_RoundTrip) {
@@ -125,4 +177,43 @@ TEST_F(EPModelFixture, GeneratorFuelCellExhaustGasToWaterHeatExchanger_ScalarAcc
   EXPECT_FALSE(exchanger.method4hxl1Coefficient());
   EXPECT_FALSE(exchanger.method4hxl2Coefficient());
   EXPECT_FALSE(exchanger.method4CondensationThreshold());
+}
+
+TEST_F(EPModelFixture, GeneratorFuelCellExhaustGasToWaterHeatExchanger_AddToNode_PlantLoopOnly) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+  GeneratorFuelCellExhaustGasToWaterHeatExchanger supplyExchanger(model);
+  GeneratorFuelCellExhaustGasToWaterHeatExchanger demandExchanger(model);
+
+  auto airSupplyNode = airLoop.supplyOutletNode();
+  auto airDemandNode = airLoop.zoneSplitter().lastOutletModelObject()->cast<Node>();
+  auto plantSupplyNode = plantLoop.supplyOutletNode();
+  auto plantDemandNode = plantLoop.demandInletNode();
+  Node unconnectedNode(model);
+
+  EXPECT_FALSE(supplyExchanger.addToNode(airSupplyNode));
+  EXPECT_FALSE(supplyExchanger.addToNode(airDemandNode));
+  EXPECT_FALSE(supplyExchanger.addToNode(unconnectedNode));
+
+  EXPECT_TRUE(supplyExchanger.addToNode(plantSupplyNode));
+  ASSERT_TRUE(supplyExchanger.loop());
+  EXPECT_EQ(plantLoop.handle(), supplyExchanger.loop()->handle());
+  ASSERT_TRUE(supplyExchanger.inletModelObject());
+  ASSERT_TRUE(supplyExchanger.outletModelObject());
+  EXPECT_TRUE(plantLoop.supplyComponent(supplyExchanger.handle()));
+  EXPECT_FALSE(plantLoop.demandComponent(supplyExchanger.handle()));
+
+  EXPECT_TRUE(demandExchanger.addToNode(plantDemandNode));
+  ASSERT_TRUE(demandExchanger.loop());
+  EXPECT_EQ(plantLoop.handle(), demandExchanger.loop()->handle());
+  ASSERT_TRUE(demandExchanger.inletModelObject());
+  ASSERT_TRUE(demandExchanger.outletModelObject());
+  EXPECT_TRUE(plantLoop.demandComponent(demandExchanger.handle()));
+  EXPECT_FALSE(plantLoop.supplyComponent(demandExchanger.handle()));
+
+  EXPECT_TRUE(supplyExchanger.removeFromLoop());
+  EXPECT_FALSE(supplyExchanger.loop());
+  EXPECT_TRUE(demandExchanger.removeFromLoop());
+  EXPECT_FALSE(demandExchanger.loop());
 }

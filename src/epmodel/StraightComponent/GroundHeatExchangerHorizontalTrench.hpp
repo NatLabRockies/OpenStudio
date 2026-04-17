@@ -9,12 +9,16 @@
 #include "EPModelAPI.hpp"
 #include "StraightComponent/StraightComponent.hpp"
 
+#include <utilities/core/Deprecated.hpp>
+
 #include <memory>
+#include <vector>
 
 namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class ModelObject;
 
   namespace detail {
     class GroundHeatExchangerHorizontalTrench_Impl;
@@ -24,6 +28,7 @@ namespace epmodel {
   {
    public:
     explicit GroundHeatExchangerHorizontalTrench(const Model& model);
+    explicit GroundHeatExchangerHorizontalTrench(const Model& model, const ModelObject& undisturbedGroundTemperatureModel);
 
     virtual ~GroundHeatExchangerHorizontalTrench() override = default;
     GroundHeatExchangerHorizontalTrench(const GroundHeatExchangerHorizontalTrench& other) = default;
@@ -34,13 +39,20 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical horizontal-trench ground-heat-exchanger scalar surface is present, while linked ground-model and node helpers remain out of scope.
+    // - Status: Parity with documented deltas.
     // - Canonical Counterpart: openstudio::model::GroundHeatExchangerHorizontalTrench.
-    // - Implemented Parity: The preserved scalar API matches the design-flow and material-property accessors with matching scalar behavior.
-    // - Documented Delta: Undisturbed-ground-model fields and inlet/outlet node helpers remain intentionally excluded from this scalar pass.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `GroundHeatExchanger:HorizontalTrench` scalar fields used by the forward translator.
-    // - Evidence: `src/model/GroundHeatExchangerHorizontalTrench.hpp`, `src/model/GroundHeatExchangerHorizontalTrench.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateGroundHeatExchangerHorizontalTrench.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
+    // - Implemented Parity: The canonical constructor defaults, undisturbed-ground-model relationship, deprecated compatibility shims, scalar accessors,
+    //   and plant-side non-demand `addToNode(...)` behavior are preserved.
+    // - Documented Delta: epmodel still inherits any broader shared StraightComponent/HVACComponent public-surface gaps; this wrapper adds no new
+    //   type-local divergence.
+    // - Field/Storage Mapping: Scalar accessors map directly to EnergyPlus `GroundHeatExchanger:HorizontalTrench` numeric fields, and the
+    //   undisturbed-ground-model helper keeps the paired type/name fields aligned with the linked EnergyPlus object used directly by simulation.
+    // - Evidence: `src/model/GroundHeatExchangerHorizontalTrench.hpp`, `src/model/GroundHeatExchangerHorizontalTrench.cpp`,
+    //   `src/energyplus/ForwardTranslator/ForwardTranslateGroundHeatExchangerHorizontalTrench.cpp`, and
+    //   `src/epmodel/test/GroundHeatExchangerHorizontalTrench_GTest.cpp`.
+    // - Remaining Parity Work: None within the current canonical public surface.
+    OS_DEPRECATED(3, 6, 0) static std::vector<std::string> groundTemperatureModelValues();
+
     double designFlowRate() const;
     bool setDesignFlowRate(double designFlowRate);
 
@@ -89,6 +101,22 @@ namespace epmodel {
     double evapotranspirationGroundCoverParameter() const;
     bool setEvapotranspirationGroundCoverParameter(double evapotranspirationGroundCoverParameter);
 
+    OS_DEPRECATED(3, 6, 0) std::string groundTemperatureModel() const;
+    OS_DEPRECATED(3, 6, 0) bool isGroundTemperatureModelDefaulted() const;
+    OS_DEPRECATED(3, 6, 0) double kusudaAchenbachAverageSurfaceTemperature() const;
+    OS_DEPRECATED(3, 6, 0) double kusudaAchenbachAverageAmplitudeofSurfaceTemperature() const;
+    OS_DEPRECATED(3, 6, 0) double kusudaAchenbachPhaseShiftofMinimumSurfaceTemperature() const;
+
+    ModelObject undisturbedGroundTemperatureModel() const;
+
+    OS_DEPRECATED(3, 6, 0) bool setGroundTemperatureModel(const std::string& groundTemperatureModel);
+    OS_DEPRECATED(3, 6, 0) void resetGroundTemperatureModel();
+    OS_DEPRECATED(3, 6, 0) bool setKusudaAchenbachAverageSurfaceTemperature(double kusudaAchenbachAverageSurfaceTemperature);
+    OS_DEPRECATED(3, 6, 0) bool setKusudaAchenbachAverageAmplitudeofSurfaceTemperature(double kusudaAchenbachAverageAmplitudeofSurfaceTemperature);
+    OS_DEPRECATED(3, 6, 0) bool setKusudaAchenbachPhaseShiftofMinimumSurfaceTemperature(double kusudaAchenbachPhaseShiftofMinimumSurfaceTemperature);
+
+    bool setUndisturbedGroundTemperatureModel(const ModelObject& undisturbedGroundTemperatureModel);
+
    protected:
     using ImplType = detail::GroundHeatExchangerHorizontalTrench_Impl;
 
@@ -97,7 +125,13 @@ namespace epmodel {
     friend class openstudio::detail::IdfObject_Impl;
 
     explicit GroundHeatExchangerHorizontalTrench(std::shared_ptr<detail::GroundHeatExchangerHorizontalTrench_Impl> impl);
+
+   private:
+    REGISTER_LOGGER("openstudio.epmodel.GroundHeatExchangerHorizontalTrench");
   };
+
+  using OptionalGroundHeatExchangerHorizontalTrench = boost::optional<GroundHeatExchangerHorizontalTrench>;
+  using GroundHeatExchangerHorizontalTrenchVector = std::vector<GroundHeatExchangerHorizontalTrench>;
 
 }  // namespace epmodel
 }  // namespace openstudio

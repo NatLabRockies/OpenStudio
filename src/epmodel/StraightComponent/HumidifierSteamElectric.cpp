@@ -9,6 +9,9 @@
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -22,6 +25,7 @@ namespace epmodel {
   HumidifierSteamElectric::HumidifierSteamElectric(const Model& model) : StraightComponent(HumidifierSteamElectric::iddObjectType(), model) {
     autosizeRatedCapacity();
     setRatedPower(10200.0);
+    setString(openstudio::Humidifier_Steam_ElectricFields::WaterStorageTankName, "");
   }
 
   HumidifierSteamElectric::HumidifierSteamElectric(std::shared_ptr<detail::HumidifierSteamElectric_Impl> impl) : StraightComponent(std::move(impl)) {}
@@ -32,6 +36,18 @@ namespace epmodel {
 
   bool HumidifierSteamElectric::addToNode(Node& node) {
     return getImpl<detail::HumidifierSteamElectric_Impl>()->addToNode(node);
+  }
+
+  boost::optional<Schedule> HumidifierSteamElectric::availabilitySchedule() const {
+    return getImpl<detail::HumidifierSteamElectric_Impl>()->availabilitySchedule();
+  }
+
+  bool HumidifierSteamElectric::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::HumidifierSteamElectric_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  void HumidifierSteamElectric::resetAvailabilitySchedule() {
+    getImpl<detail::HumidifierSteamElectric_Impl>()->resetAvailabilitySchedule();
   }
 
   boost::optional<double> HumidifierSteamElectric::ratedCapacity() const {
@@ -124,11 +140,26 @@ namespace epmodel {
 
       auto airLoop = node.airLoopHVAC();
 
+      // This family is intentionally limited to air-loop supply placement unless it is being
+      // inserted onto an OA-system outboard stream node through the shared straight-component path.
       if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
         return false;
       }
 
       return StraightComponent_Impl::addToNode(node);
+    }
+
+    boost::optional<Schedule> HumidifierSteamElectric_Impl::availabilitySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Humidifier_Steam_ElectricFields::AvailabilityScheduleName);
+    }
+
+    bool HumidifierSteamElectric_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::Humidifier_Steam_ElectricFields::AvailabilityScheduleName, "HumidifierSteamElectric",
+                                           "Availability", schedule);
+    }
+
+    void HumidifierSteamElectric_Impl::resetAvailabilitySchedule() {
+      OS_ASSERT(setString(openstudio::Humidifier_Steam_ElectricFields::AvailabilityScheduleName, ""));
     }
 
     boost::optional<double> HumidifierSteamElectric_Impl::ratedCapacity() const {

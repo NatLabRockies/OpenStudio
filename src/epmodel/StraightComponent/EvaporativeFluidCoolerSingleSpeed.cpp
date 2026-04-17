@@ -6,7 +6,9 @@
 #include "StraightComponent/EvaporativeFluidCoolerSingleSpeed.hpp"
 #include "StraightComponent/EvaporativeFluidCoolerSingleSpeed_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -374,6 +376,16 @@ namespace epmodel {
 
     unsigned EvaporativeFluidCoolerSingleSpeed_Impl::outletPort() const {
       return openstudio::EvaporativeFluidCooler_SingleSpeedFields::WaterOutletNodeName;
+    }
+
+    bool EvaporativeFluidCoolerSingleSpeed_Impl::addToNode(Node& node) {
+      if (auto plantLoop = node.plantLoop()) {
+        if (plantLoop->supplyComponent(node.handle())) {
+          return StraightComponent_Impl::addToNode(node);
+        }
+      }
+
+      return false;
     }
 
     std::vector<std::string> EvaporativeFluidCoolerSingleSpeed_Impl::performanceInputMethodValues() const {

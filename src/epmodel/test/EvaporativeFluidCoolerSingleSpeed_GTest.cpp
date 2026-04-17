@@ -6,7 +6,11 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/EvaporativeFluidCoolerSingleSpeed.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -162,4 +166,73 @@ TEST_F(EPModelFixture, EvaporativeFluidCoolerSingleSpeed_ScalarAccessors_RoundTr
   EXPECT_FALSE(evap.autosizedUfactorTimesAreaValueatDesignAirFlowRate());
   EXPECT_FALSE(evap.autosizedDesignWaterFlowRate());
   EXPECT_FALSE(evap.autosizedDesignEnteringWaterTemperature());
+}
+
+TEST_F(EPModelFixture, EvaporativeFluidCoolerSingleSpeed_AddToNode_PlantSupplyOnly) {
+  Model model;
+  EvaporativeFluidCoolerSingleSpeed evap(model);
+
+  AirLoopHVAC airLoop(model);
+  auto airSupplyOutletNode = airLoop.supplyOutletNode();
+  EXPECT_FALSE(evap.addToNode(airSupplyOutletNode));
+  EXPECT_EQ(2u, airLoop.supplyComponents().size());
+  EXPECT_FALSE(evap.loop());
+  EXPECT_FALSE(evap.inletModelObject());
+  EXPECT_FALSE(evap.outletModelObject());
+
+  auto splitterBranch = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(splitterBranch);
+  auto demandBranchNode = splitterBranch->optionalCast<Node>();
+  ASSERT_TRUE(demandBranchNode);
+  EXPECT_FALSE(evap.addToNode(*demandBranchNode));
+  EXPECT_EQ(5u, airLoop.demandComponents().size());
+  EXPECT_FALSE(evap.loop());
+  EXPECT_FALSE(evap.inletModelObject());
+  EXPECT_FALSE(evap.outletModelObject());
+
+  PlantLoop plantLoop(model);
+  auto plantSupplyOutletNode = plantLoop.supplyOutletNode();
+  EXPECT_TRUE(evap.addToNode(plantSupplyOutletNode));
+  EXPECT_EQ(7u, plantLoop.supplyComponents().size());
+  ASSERT_TRUE(evap.loop());
+  EXPECT_EQ(plantLoop.handle(), evap.loop()->handle());
+  ASSERT_TRUE(evap.inletModelObject());
+  ASSERT_TRUE(evap.outletModelObject());
+
+  EvaporativeFluidCoolerSingleSpeed secondEvap(model);
+  auto plantDemandOutletNode = plantLoop.demandOutletNode();
+  EXPECT_FALSE(secondEvap.addToNode(plantDemandOutletNode));
+  EXPECT_EQ(5u, plantLoop.demandComponents().size());
+  EXPECT_FALSE(secondEvap.loop());
+  EXPECT_FALSE(secondEvap.inletModelObject());
+  EXPECT_FALSE(secondEvap.outletModelObject());
+}
+
+TEST_F(EPModelFixture, EvaporativeFluidCoolerSingleSpeed_InvalidInputsRejected) {
+  Model model;
+  EvaporativeFluidCoolerSingleSpeed evap(model);
+
+  EXPECT_FALSE(evap.setDesignAirFlowRate(0.0));
+  EXPECT_FALSE(evap.setDesignAirFlowRate(-1.0));
+  EXPECT_TRUE(evap.isDesignAirFlowRateAutosized());
+
+  EXPECT_FALSE(evap.setFanPoweratDesignAirFlowRate(0.0));
+  EXPECT_FALSE(evap.setFanPoweratDesignAirFlowRate(-1.0));
+  EXPECT_TRUE(evap.isFanPoweratDesignAirFlowRateAutosized());
+
+  EXPECT_FALSE(evap.setDesignSprayWaterFlowRate(0.0));
+  EXPECT_FALSE(evap.setDesignSprayWaterFlowRate(-1.0));
+  EXPECT_DOUBLE_EQ(0.03, evap.designSprayWaterFlowRate());
+
+  EXPECT_FALSE(evap.setPerformanceInputMethod("Not Valid Entry"));
+  EXPECT_EQ("UFactorTimesAreaAndDesignWaterFlowRate", evap.performanceInputMethod());
+
+  EXPECT_FALSE(evap.setCapacityControl("Not Valid Entry"));
+  EXPECT_EQ("FanCycling", evap.capacityControl());
+
+  EXPECT_FALSE(evap.setEvaporationLossMode("Not Valid Entry"));
+  EXPECT_EQ("SaturatedExit", evap.evaporationLossMode());
+
+  EXPECT_FALSE(evap.setBlowdownCalculationMode("Not Valid Entry"));
+  EXPECT_EQ("ConcentrationRatio", evap.blowdownCalculationMode());
 }

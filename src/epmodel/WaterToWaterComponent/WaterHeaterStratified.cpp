@@ -6,7 +6,14 @@
 #include "WaterToWaterComponent/WaterHeaterStratified.hpp"
 #include "WaterToWaterComponent/WaterHeaterStratified_Impl.hpp"
 
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Model.hpp"
+#include "ModelObject/WaterHeaterSizing.hpp"
+#include "ModelObject/WaterHeaterSizing_Impl.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/ScheduleConstant.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -22,7 +29,75 @@ namespace openstudio {
 namespace epmodel {
 
   WaterHeaterStratified::WaterHeaterStratified(const Model& model)
-    : WaterToWaterComponent(WaterHeaterStratified::iddObjectType(), model) {}
+    : WaterToWaterComponent(WaterHeaterStratified::iddObjectType(), model) {
+    setTankVolume(0.1893);
+    setTankHeight(1.4);
+    setTankShape("VerticalCylinder");
+    setMaximumTemperatureLimit(82.22);
+    setHeaterPriorityControl("MasterSlave");
+
+    ScheduleConstant heater1Setpoint(model);
+    ScheduleConstant heater2Setpoint(model);
+    ScheduleConstant ambientSchedule(model);
+    OS_ASSERT(heater1Setpoint.setValue(48.89));
+    OS_ASSERT(heater2Setpoint.setValue(48.89));
+    OS_ASSERT(ambientSchedule.setValue(22.0));
+
+    OS_ASSERT(setHeater1SetpointTemperatureSchedule(heater1Setpoint));
+    setHeater1DeadbandTemperatureDifference(2.0);
+    setHeater1Capacity(4500.0);
+    setHeater1Height(1.0);
+
+    OS_ASSERT(setHeater2SetpointTemperatureSchedule(heater2Setpoint));
+    setHeater2DeadbandTemperatureDifference(5.0);
+    setHeater2Capacity(4500.0);
+    setHeater2Height(0.0);
+
+    setHeaterFuelType(FuelType::Electricity);
+    setHeaterThermalEfficiency(0.98);
+    setOffCycleParasiticFuelConsumptionRate(10.0);
+    setOffCycleParasiticFuelType(FuelType::Electricity);
+    setOffCycleParasiticHeatFractiontoTank(0.0);
+    setOffCycleParasiticHeight(0.0);
+    setOnCycleParasiticFuelConsumptionRate(10.0);
+    setOnCycleParasiticFuelType(FuelType::Electricity);
+    setOnCycleParasiticHeatFractiontoTank(0.0);
+    setOnCycleParasiticHeight(0.0);
+    setAmbientTemperatureIndicator("Schedule");
+    OS_ASSERT(setAmbientTemperatureSchedule(ambientSchedule));
+    setSkinLossFractiontoZone(1.0);
+    setUniformSkinLossCoefficientperUnitAreatoAmbientTemperature(0.846);
+    setOffCycleFlueLossCoefficienttoAmbientTemperature(0.0);
+    setOffCycleFlueLossFractiontoZone(1.0);
+    setUseSideEffectiveness(1.0);
+    setUseSideInletHeight(0.0);
+    autocalculateUseSideOutletHeight();
+    setSourceSideEffectiveness(1.0);
+    autocalculateSourceSideInletHeight();
+    setSourceSideOutletHeight(0.0);
+    setInletMode("Fixed");
+    autosizeUseSideDesignFlowRate();
+    autosizeSourceSideDesignFlowRate();
+    setIndirectWaterHeatingRecoveryTime(1.5);
+    setEndUseSubcategory("General");
+    setNumberofNodes(6);
+    setAdditionalDestratificationConductivity(0.1);
+    setNode1AdditionalLossCoefficient(0.15);
+    setNode2AdditionalLossCoefficient(0.0);
+    setNode3AdditionalLossCoefficient(0.0);
+    setNode4AdditionalLossCoefficient(0.0);
+    setNode5AdditionalLossCoefficient(0.0);
+    setNode6AdditionalLossCoefficient(0.1);
+    setNode7AdditionalLossCoefficient(0.0);
+    setNode8AdditionalLossCoefficient(0.0);
+    setNode9AdditionalLossCoefficient(0.0);
+    setNode10AdditionalLossCoefficient(0.0);
+    setNode11AdditionalLossCoefficient(0.0);
+    setNode12AdditionalLossCoefficient(0.0);
+    setSourceSideFlowControlMode("IndirectHeatPrimarySetpoint");
+
+    WaterHeaterSizing waterHeaterSizing(*this);
+  }
 
   WaterHeaterStratified::WaterHeaterStratified(std::shared_ptr<detail::WaterHeaterStratified_Impl> impl)
     : WaterToWaterComponent(std::move(impl)) {}
@@ -110,6 +185,10 @@ namespace epmodel {
   EPM_FORWARD_GET(std::string, heaterPriorityControl)
   EPM_FORWARD_SET(bool, setHeaterPriorityControl, (const std::string& heaterPriorityControl), (heaterPriorityControl))
 
+  EPM_FORWARD_GET(boost::optional<Schedule>, heater1SetpointTemperatureSchedule)
+  EPM_FORWARD_SET(bool, setHeater1SetpointTemperatureSchedule, (Schedule& schedule), (schedule))
+  EPM_FORWARD_VOID(resetHeater1SetpointTemperatureSchedule, (), ())
+
   EPM_FORWARD_GET(double, heater1DeadbandTemperatureDifference)
   EPM_FORWARD_SET(bool, setHeater1DeadbandTemperatureDifference, (double heater1DeadbandTemperatureDifference),
                   (heater1DeadbandTemperatureDifference))
@@ -122,6 +201,10 @@ namespace epmodel {
 
   EPM_FORWARD_GET(double, heater1Height)
   EPM_FORWARD_SET(bool, setHeater1Height, (double heater1Height), (heater1Height))
+
+  EPM_FORWARD_GET(boost::optional<Schedule>, heater2SetpointTemperatureSchedule)
+  EPM_FORWARD_SET(bool, setHeater2SetpointTemperatureSchedule, (Schedule& schedule), (schedule))
+  EPM_FORWARD_VOID(resetHeater2SetpointTemperatureSchedule, (), ())
 
   EPM_FORWARD_GET(double, heater2DeadbandTemperatureDifference)
   EPM_FORWARD_SET(bool, setHeater2DeadbandTemperatureDifference, (double heater2DeadbandTemperatureDifference),
@@ -164,6 +247,14 @@ namespace epmodel {
   EPM_FORWARD_GET(std::string, ambientTemperatureIndicator)
   EPM_FORWARD_SET(bool, setAmbientTemperatureIndicator, (const std::string& ambientTemperatureIndicator), (ambientTemperatureIndicator))
 
+  EPM_FORWARD_GET(boost::optional<Schedule>, ambientTemperatureSchedule)
+  EPM_FORWARD_SET(bool, setAmbientTemperatureSchedule, (Schedule& schedule), (schedule))
+  EPM_FORWARD_VOID(resetAmbientTemperatureSchedule, (), ())
+
+  EPM_FORWARD_GET(boost::optional<ThermalZone>, ambientTemperatureThermalZone)
+  EPM_FORWARD_SET(bool, setAmbientTemperatureThermalZone, (const ThermalZone& thermalZone), (thermalZone))
+  EPM_FORWARD_VOID(resetAmbientTemperatureThermalZone, (), ())
+
   EPM_FORWARD_GET(boost::optional<std::string>, ambientTemperatureOutdoorAirNodeName)
   EPM_FORWARD_SET(bool, setAmbientTemperatureOutdoorAirNodeName, (const std::string& ambientTemperatureOutdoorAirNodeName),
                   (ambientTemperatureOutdoorAirNodeName))
@@ -188,6 +279,14 @@ namespace epmodel {
   EPM_FORWARD_GET(boost::optional<double>, peakUseFlowRate)
   EPM_FORWARD_SET(bool, setPeakUseFlowRate, (double peakUseFlowRate), (peakUseFlowRate))
   EPM_FORWARD_VOID(resetPeakUseFlowRate, (), ())
+
+  EPM_FORWARD_GET(boost::optional<Schedule>, useFlowRateFractionSchedule)
+  EPM_FORWARD_SET(bool, setUseFlowRateFractionSchedule, (Schedule& schedule), (schedule))
+  EPM_FORWARD_VOID(resetUseFlowRateFractionSchedule, (), ())
+
+  EPM_FORWARD_GET(boost::optional<Schedule>, coldWaterSupplyTemperatureSchedule)
+  EPM_FORWARD_SET(bool, setColdWaterSupplyTemperatureSchedule, (Schedule& schedule), (schedule))
+  EPM_FORWARD_VOID(resetColdWaterSupplyTemperatureSchedule, (), ())
 
   EPM_FORWARD_GET(double, useSideEffectiveness)
   EPM_FORWARD_SET(bool, setUseSideEffectiveness, (double useSideEffectiveness), (useSideEffectiveness))
@@ -275,6 +374,12 @@ namespace epmodel {
   EPM_FORWARD_GET(std::string, sourceSideFlowControlMode)
   EPM_FORWARD_SET(bool, setSourceSideFlowControlMode, (const std::string& sourceSideFlowControlMode), (sourceSideFlowControlMode))
 
+  EPM_FORWARD_GET(boost::optional<Schedule>, indirectAlternateSetpointTemperatureSchedule)
+  EPM_FORWARD_SET(bool, setIndirectAlternateSetpointTemperatureSchedule, (Schedule& schedule), (schedule))
+  EPM_FORWARD_VOID(resetIndirectAlternateSetpointTemperatureSchedule, (), ())
+
+  EPM_FORWARD_GET(WaterHeaterSizing, waterHeaterSizing)
+
   bool WaterHeaterStratified::setHeaterFuelType(const FuelType& heaterFuelType) {
     return getImpl<detail::WaterHeaterStratified_Impl>()->setHeaterFuelType(heaterFuelType.valueDescription());
   }
@@ -334,6 +439,10 @@ namespace epmodel {
       }
 
     }  // namespace
+
+    std::vector<ModelObject> WaterHeaterStratified_Impl::children() const {
+      return {waterHeaterSizing()};
+    }
 
 #define OS_IMPL_OPTIONAL_DOUBLE(method, field)                               \
   boost::optional<double> WaterHeaterStratified_Impl::method() const {       \
@@ -417,10 +526,18 @@ namespace epmodel {
     OS_IMPL_OPTIONAL_DOUBLE(tankPerimeter, TankPerimeter)
     OS_IMPL_REQUIRED_DOUBLE(maximumTemperatureLimit, MaximumTemperatureLimit)
     OS_IMPL_REQUIRED_STRING(heaterPriorityControl, HeaterPriorityControl)
+    boost::optional<Schedule> WaterHeaterStratified_Impl::heater1SetpointTemperatureSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::WaterHeater_StratifiedFields::Heater1SetpointTemperatureScheduleName);
+    }
     OS_IMPL_REQUIRED_DOUBLE(heater1DeadbandTemperatureDifference, Heater1DeadbandTemperatureDifference)
     OS_IMPL_OPTIONAL_DOUBLE(heater1Capacity, Heater1Capacity)
     OS_IMPL_IS_AUTOSIZED(isHeater1CapacityAutosized, Heater1Capacity)
     OS_IMPL_REQUIRED_DOUBLE(heater1Height, Heater1Height)
+    boost::optional<Schedule> WaterHeaterStratified_Impl::heater2SetpointTemperatureSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::WaterHeater_StratifiedFields::Heater2SetpointTemperatureScheduleName);
+    }
     OS_IMPL_REQUIRED_DOUBLE(heater2DeadbandTemperatureDifference, Heater2DeadbandTemperatureDifference)
     OS_IMPL_REQUIRED_DOUBLE(heater2Capacity, Heater2Capacity)
     OS_IMPL_REQUIRED_DOUBLE(heater2Height, Heater2Height)
@@ -447,12 +564,25 @@ namespace epmodel {
       }
       return *value;
     }
+    boost::optional<Schedule> WaterHeaterStratified_Impl::ambientTemperatureSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::WaterHeater_StratifiedFields::AmbientTemperatureScheduleName);
+    }
+    boost::optional<ThermalZone> WaterHeaterStratified_Impl::ambientTemperatureThermalZone() const {
+      return getObject<ModelObject>().getModelObjectTarget<ThermalZone>(openstudio::WaterHeater_StratifiedFields::AmbientTemperatureZoneName);
+    }
     OS_IMPL_OPTIONAL_STRING(ambientTemperatureOutdoorAirNodeName, AmbientTemperatureOutdoorAirNodeName)
     OS_IMPL_OPTIONAL_DOUBLE(uniformSkinLossCoefficientperUnitAreatoAmbientTemperature, UniformSkinLossCoefficientperUnitAreatoAmbientTemperature)
     OS_IMPL_REQUIRED_DOUBLE(skinLossFractiontoZone, SkinLossFractiontoZone)
     OS_IMPL_OPTIONAL_DOUBLE(offCycleFlueLossCoefficienttoAmbientTemperature, OffCycleFlueLossCoefficienttoAmbientTemperature)
     OS_IMPL_REQUIRED_DOUBLE(offCycleFlueLossFractiontoZone, OffCycleFlueLossFractiontoZone)
     OS_IMPL_OPTIONAL_DOUBLE(peakUseFlowRate, PeakUseFlowRate)
+    boost::optional<Schedule> WaterHeaterStratified_Impl::useFlowRateFractionSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::WaterHeater_StratifiedFields::UseFlowRateFractionScheduleName);
+    }
+    boost::optional<Schedule> WaterHeaterStratified_Impl::coldWaterSupplyTemperatureSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::WaterHeater_StratifiedFields::ColdWaterSupplyTemperatureScheduleName);
+    }
     OS_IMPL_REQUIRED_DOUBLE(useSideEffectiveness, UseSideEffectiveness)
     OS_IMPL_REQUIRED_DOUBLE(useSideInletHeight, UseSideInletHeight)
     OS_IMPL_OPTIONAL_DOUBLE(useSideOutletHeight, UseSideOutletHeight)
@@ -482,6 +612,10 @@ namespace epmodel {
     OS_IMPL_REQUIRED_DOUBLE(node11AdditionalLossCoefficient, Node11AdditionalLossCoefficient)
     OS_IMPL_REQUIRED_DOUBLE(node12AdditionalLossCoefficient, Node12AdditionalLossCoefficient)
     OS_IMPL_REQUIRED_STRING(sourceSideFlowControlMode, SourceSideFlowControlMode)
+    boost::optional<Schedule> WaterHeaterStratified_Impl::indirectAlternateSetpointTemperatureSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::WaterHeater_StratifiedFields::IndirectAlternateSetpointTemperatureScheduleName);
+    }
 
     boost::optional<double> WaterHeaterStratified_Impl::autosizedTankVolume() const {
       return boost::none;
@@ -509,10 +643,24 @@ namespace epmodel {
     OS_IMPL_RESET(resetTankPerimeter, TankPerimeter)
     OS_IMPL_SET_DOUBLE(setMaximumTemperatureLimit, MaximumTemperatureLimit)
     OS_IMPL_SET_STRING(setHeaterPriorityControl, HeaterPriorityControl)
+    bool WaterHeaterStratified_Impl::setHeater1SetpointTemperatureSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::WaterHeater_StratifiedFields::Heater1SetpointTemperatureScheduleName, "WaterHeaterStratified",
+                         "Heater 1 Setpoint Temperature", schedule);
+    }
+    void WaterHeaterStratified_Impl::resetHeater1SetpointTemperatureSchedule() {
+      OS_ASSERT(setString(openstudio::WaterHeater_StratifiedFields::Heater1SetpointTemperatureScheduleName, ""));
+    }
     OS_IMPL_SET_DOUBLE(setHeater1DeadbandTemperatureDifference, Heater1DeadbandTemperatureDifference)
     OS_IMPL_SET_DOUBLE(setHeater1Capacity, Heater1Capacity)
     OS_IMPL_AUTOSIZE(autosizeHeater1Capacity, Heater1Capacity)
     OS_IMPL_SET_DOUBLE(setHeater1Height, Heater1Height)
+    bool WaterHeaterStratified_Impl::setHeater2SetpointTemperatureSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::WaterHeater_StratifiedFields::Heater2SetpointTemperatureScheduleName, "WaterHeaterStratified",
+                         "Heater 2 Setpoint Temperature", schedule);
+    }
+    void WaterHeaterStratified_Impl::resetHeater2SetpointTemperatureSchedule() {
+      OS_ASSERT(setString(openstudio::WaterHeater_StratifiedFields::Heater2SetpointTemperatureScheduleName, ""));
+    }
     OS_IMPL_SET_DOUBLE(setHeater2DeadbandTemperatureDifference, Heater2DeadbandTemperatureDifference)
     OS_IMPL_SET_DOUBLE(setHeater2Capacity, Heater2Capacity)
     OS_IMPL_SET_DOUBLE(setHeater2Height, Heater2Height)
@@ -533,6 +681,19 @@ namespace epmodel {
       }
       return setString(openstudio::WaterHeater_StratifiedFields::AmbientTemperatureIndicator, normalized);
     }
+    bool WaterHeaterStratified_Impl::setAmbientTemperatureSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::WaterHeater_StratifiedFields::AmbientTemperatureScheduleName, "WaterHeaterStratified",
+                         "Ambient Temperature", schedule);
+    }
+    void WaterHeaterStratified_Impl::resetAmbientTemperatureSchedule() {
+      OS_ASSERT(setString(openstudio::WaterHeater_StratifiedFields::AmbientTemperatureScheduleName, ""));
+    }
+    bool WaterHeaterStratified_Impl::setAmbientTemperatureThermalZone(const ThermalZone& thermalZone) {
+      return setPointer(openstudio::WaterHeater_StratifiedFields::AmbientTemperatureZoneName, thermalZone.handle());
+    }
+    void WaterHeaterStratified_Impl::resetAmbientTemperatureThermalZone() {
+      OS_ASSERT(setString(openstudio::WaterHeater_StratifiedFields::AmbientTemperatureZoneName, ""));
+    }
     OS_IMPL_SET_STRING(setAmbientTemperatureOutdoorAirNodeName, AmbientTemperatureOutdoorAirNodeName)
     OS_IMPL_RESET(resetAmbientTemperatureOutdoorAirNodeName, AmbientTemperatureOutdoorAirNodeName)
     OS_IMPL_SET_DOUBLE(setUniformSkinLossCoefficientperUnitAreatoAmbientTemperature, UniformSkinLossCoefficientperUnitAreatoAmbientTemperature)
@@ -543,6 +704,20 @@ namespace epmodel {
     OS_IMPL_SET_DOUBLE(setOffCycleFlueLossFractiontoZone, OffCycleFlueLossFractiontoZone)
     OS_IMPL_SET_DOUBLE(setPeakUseFlowRate, PeakUseFlowRate)
     OS_IMPL_RESET(resetPeakUseFlowRate, PeakUseFlowRate)
+    bool WaterHeaterStratified_Impl::setUseFlowRateFractionSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::WaterHeater_StratifiedFields::UseFlowRateFractionScheduleName, "WaterHeaterStratified",
+                         "Use Flow Rate Fraction", schedule);
+    }
+    void WaterHeaterStratified_Impl::resetUseFlowRateFractionSchedule() {
+      OS_ASSERT(setString(openstudio::WaterHeater_StratifiedFields::UseFlowRateFractionScheduleName, ""));
+    }
+    bool WaterHeaterStratified_Impl::setColdWaterSupplyTemperatureSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::WaterHeater_StratifiedFields::ColdWaterSupplyTemperatureScheduleName, "WaterHeaterStratified",
+                         "Cold Water Supply Temperature", schedule);
+    }
+    void WaterHeaterStratified_Impl::resetColdWaterSupplyTemperatureSchedule() {
+      OS_ASSERT(setString(openstudio::WaterHeater_StratifiedFields::ColdWaterSupplyTemperatureScheduleName, ""));
+    }
     OS_IMPL_SET_DOUBLE(setUseSideEffectiveness, UseSideEffectiveness)
     OS_IMPL_SET_DOUBLE(setUseSideInletHeight, UseSideInletHeight)
     OS_IMPL_SET_DOUBLE(setUseSideOutletHeight, UseSideOutletHeight)
@@ -572,6 +747,13 @@ namespace epmodel {
     OS_IMPL_SET_DOUBLE(setNode11AdditionalLossCoefficient, Node11AdditionalLossCoefficient)
     OS_IMPL_SET_DOUBLE(setNode12AdditionalLossCoefficient, Node12AdditionalLossCoefficient)
     OS_IMPL_SET_STRING(setSourceSideFlowControlMode, SourceSideFlowControlMode)
+    bool WaterHeaterStratified_Impl::setIndirectAlternateSetpointTemperatureSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::WaterHeater_StratifiedFields::IndirectAlternateSetpointTemperatureScheduleName, "WaterHeaterStratified",
+                         "Indirect Alternate Setpoint Temperature", schedule);
+    }
+    void WaterHeaterStratified_Impl::resetIndirectAlternateSetpointTemperatureSchedule() {
+      OS_ASSERT(setString(openstudio::WaterHeater_StratifiedFields::IndirectAlternateSetpointTemperatureScheduleName, ""));
+    }
 
 #undef OS_IMPL_OPTIONAL_DOUBLE
 #undef OS_IMPL_REQUIRED_DOUBLE
@@ -601,6 +783,15 @@ namespace epmodel {
 
     unsigned WaterHeaterStratified_Impl::demandOutletPort() const {
       return openstudio::WaterHeater_StratifiedFields::SourceSideOutletNodeName;
+    }
+
+    WaterHeaterSizing WaterHeaterStratified_Impl::waterHeaterSizing() const {
+      for (const auto& sizing : model().getConcreteModelObjects<WaterHeaterSizing>()) {
+        if (sizing.waterHeater().handle() == handle()) {
+          return sizing;
+        }
+      }
+      throw std::runtime_error("WaterHeaterStratified missing WaterHeater:Sizing object.");
     }
 
   }  // namespace detail

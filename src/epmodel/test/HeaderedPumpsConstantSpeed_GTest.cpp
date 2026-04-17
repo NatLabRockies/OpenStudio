@@ -6,6 +6,10 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/HeaderedPumpsConstantSpeed.hpp"
 
 using namespace openstudio::epmodel;
@@ -111,4 +115,31 @@ TEST_F(EPModelFixture, HeaderedPumpsConstantSpeed_ScalarAccessors_RoundTrip) {
 
   EXPECT_FALSE(pump.autosizedTotalRatedFlowRate());
   EXPECT_FALSE(pump.autosizedRatedPowerConsumption());
+}
+
+TEST_F(EPModelFixture, HeaderedPumpsConstantSpeed_AddToNode_PlantOnly) {
+  Model model;
+  HeaderedPumpsConstantSpeed pump(model);
+
+  AirLoopHVAC airLoop(model);
+  Node airSupplyOutletNode = airLoop.supplyOutletNode();
+  EXPECT_FALSE(pump.addToNode(airSupplyOutletNode));
+  EXPECT_EQ(2u, airLoop.supplyComponents().size());
+
+  Node airDemandNode = airLoop.zoneSplitter().lastOutletModelObject()->cast<Node>();
+  EXPECT_FALSE(pump.addToNode(airDemandNode));
+  EXPECT_EQ(5u, airLoop.demandComponents().size());
+
+  PlantLoop plantLoop(model);
+  Node plantSupplyOutletNode = plantLoop.supplyOutletNode();
+  EXPECT_TRUE(pump.addToNode(plantSupplyOutletNode));
+  EXPECT_EQ(7u, plantLoop.supplyComponents().size());
+
+  Node plantDemandOutletNode = plantLoop.demandOutletNode();
+  EXPECT_TRUE(pump.addToNode(plantDemandOutletNode));
+  EXPECT_EQ(7u, plantLoop.demandComponents().size());
+
+  HeaderedPumpsConstantSpeed pump2(model);
+  EXPECT_TRUE(pump2.addToNode(plantDemandOutletNode));
+  EXPECT_EQ(9u, plantLoop.demandComponents().size());
 }

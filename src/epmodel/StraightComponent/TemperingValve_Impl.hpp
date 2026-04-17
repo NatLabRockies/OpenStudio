@@ -25,6 +25,7 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
 
       boost::optional<Node> stream2SourceNode() const;
       boost::optional<Node> temperatureSetpointNode() const;
@@ -38,6 +39,8 @@ namespace epmodel {
 
       bool setPumpOutletNode(const Node& pumpOutletNode);
       void resetPumpOutletNode();
+
+      bool setControlNodes();
     };
 
   }  // namespace detail

@@ -11,7 +11,8 @@
 namespace openstudio {
 class WorkspaceObject;
 namespace epmodel {
-  namespace detail {
+class ModelObject;
+namespace detail {
 
     class EPMODEL_API GroundHeatExchangerVertical_Impl : public StraightComponent_Impl
     {
@@ -21,6 +22,17 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      boost::optional<ModelObject> inletModelObject() const override;
+      boost::optional<ModelObject> outletModelObject() const override;
+      bool addToNode(Node& node) override;
+      bool removeFromLoop() override;
+      std::vector<IdfObject> remove() override;
+      void disconnect() override;
+
+      bool addGFunction(double gFunctionLN, double gFunctionGValue);
+      void removeGFunction(unsigned groupIndex);
+      void removeAllGFunctions();
+      std::vector<std::pair<double, double>> gFunctions();
 
       boost::optional<double> designFlowRate() const;
       bool setDesignFlowRate(double designFlowRate);
@@ -72,6 +84,9 @@ namespace epmodel {
       bool isGFunctionReferenceRatioDefaulted() const;
       bool setGFunctionReferenceRatio(double gFunctionReferenceRatio);
       void resetGFunctionReferenceRatio();
+
+      ModelObject undisturbedGroundTemperatureModel() const;
+      bool setUndisturbedGroundTemperatureModel(const ModelObject& undisturbedGroundTemperatureModel);
 
      private:
       boost::optional<openstudio::WorkspaceObject> groundHeatExchangerSystem() const;

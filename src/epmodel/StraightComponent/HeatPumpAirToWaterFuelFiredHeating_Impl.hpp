@@ -13,98 +13,132 @@
 namespace openstudio {
 namespace epmodel {
 
-  namespace detail {
+class Curve;
+class HeatPumpAirToWaterFuelFiredCooling;
+class Node;
 
-    class EPMODEL_API HeatPumpAirToWaterFuelFiredHeating_Impl : public StraightComponent_Impl
-    {
-     public:
-      using StraightComponent_Impl::StraightComponent_Impl;
-      virtual ~HeatPumpAirToWaterFuelFiredHeating_Impl() override = default;
+namespace detail {
 
-      unsigned inletPort() const override;
-      unsigned outletPort() const override;
+class EPMODEL_API HeatPumpAirToWaterFuelFiredHeating_Impl : public StraightComponent_Impl
+{
+ public:
+  using StraightComponent_Impl::StraightComponent_Impl;
+  virtual ~HeatPumpAirToWaterFuelFiredHeating_Impl() override = default;
 
-      std::string fuelType() const;
-      bool setFuelType(const std::string& fuelType);
+  unsigned inletPort() const override;
+  unsigned outletPort() const override;
+  bool addToNode(Node& node) override;
 
-      std::string endUseSubcategory() const;
-      bool setEndUseSubcategory(const std::string& endUseSubcategory);
-      bool isEndUseSubcategoryDefaulted() const;
-      void resetEndUseSubcategory();
+  boost::optional<HeatPumpAirToWaterFuelFiredCooling> companionCoolingHeatPump() const;
+  bool setCompanionCoolingHeatPump(const HeatPumpAirToWaterFuelFiredCooling& heatPumpAirToWaterFuelFiredCooling);
+  void resetCompanionCoolingHeatPump();
 
-      boost::optional<double> nominalHeatingCapacity() const;
-      bool setNominalHeatingCapacity(double nominalHeatingCapacity);
-      void resetNominalHeatingCapacity();
-      bool isNominalHeatingCapacityAutosized() const;
-      boost::optional<double> autosizedNominalHeatingCapacity();
-      void autosizeNominalHeatingCapacity();
+  std::string fuelType() const;
+  bool setFuelType(const std::string& fuelType);
 
-      double nominalCOP() const;
-      bool setNominalCOP(double nominalCOP);
+  std::string endUseSubcategory() const;
+  bool isEndUseSubcategoryDefaulted() const;
+  bool setEndUseSubcategory(const std::string& endUseSubcategory);
+  void resetEndUseSubcategory();
 
-      boost::optional<double> designFlowRate() const;
-      bool setDesignFlowRate(double designFlowRate);
-      void resetDesignFlowRate();
-      bool isDesignFlowRateAutosized() const;
-      boost::optional<double> autosizedDesignFlowRate();
-      void autosizeDesignFlowRate();
+  boost::optional<double> nominalHeatingCapacity() const;
+  bool isNominalHeatingCapacityAutosized() const;
+  boost::optional<double> autosizedNominalHeatingCapacity();
+  bool setNominalHeatingCapacity(double nominalHeatingCapacity);
+  void resetNominalHeatingCapacity();
+  void autosizeNominalHeatingCapacity();
 
-      double designSupplyTemperature() const;
-      bool setDesignSupplyTemperature(double designSupplyTemperature);
+  double nominalCOP() const;
+  bool setNominalCOP(double nominalCOP);
 
-      boost::optional<double> designTemperatureLift() const;
-      bool setDesignTemperatureLift(double designTemperatureLift);
-      bool isDesignTemperatureLiftAutosized() const;
-      boost::optional<double> autosizedDesignTemperatureLift();
-      void autosizeDesignTemperatureLift();
+  boost::optional<double> designFlowRate() const;
+  bool isDesignFlowRateAutosized() const;
+  boost::optional<double> autosizedDesignFlowRate();
+  bool setDesignFlowRate(double designFlowRate);
+  void resetDesignFlowRate();
+  void autosizeDesignFlowRate();
 
-      double sizingFactor() const;
-      bool setSizingFactor(double sizingFactor);
+  double designSupplyTemperature() const;
+  bool setDesignSupplyTemperature(double designSupplyTemperature);
 
-      std::string flowMode() const;
-      bool setFlowMode(const std::string& flowMode);
+  boost::optional<double> designTemperatureLift() const;
+  bool isDesignTemperatureLiftAutosized() const;
+  boost::optional<double> autosizedDesignTemperatureLift();
+  bool setDesignTemperatureLift(double designTemperatureLift);
+  void autosizeDesignTemperatureLift();
 
-      std::string outdoorAirTemperatureCurveInputVariable() const;
-      bool setOutdoorAirTemperatureCurveInputVariable(const std::string& outdoorAirTemperatureCurveInputVariable);
+  double sizingFactor() const;
+  bool setSizingFactor(double sizingFactor);
 
-      std::string waterTemperatureCurveInputVariable() const;
-      bool setWaterTemperatureCurveInputVariable(const std::string& waterTemperatureCurveInputVariable);
+  std::string flowMode() const;
+  bool setFlowMode(const std::string& flowMode);
 
-      double minimumPartLoadRatio() const;
-      bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
+  std::string outdoorAirTemperatureCurveInputVariable() const;
+  bool setOutdoorAirTemperatureCurveInputVariable(const std::string& outdoorAirTemperatureCurveInputVariable);
 
-      double maximumPartLoadRatio() const;
-      bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
+  std::string waterTemperatureCurveInputVariable() const;
+  bool setWaterTemperatureCurveInputVariable(const std::string& waterTemperatureCurveInputVariable);
 
-      std::string defrostControlType() const;
-      bool setDefrostControlType(const std::string& defrostControlType);
+  Curve normalizedCapacityFunctionofTemperatureCurve() const;
+  bool setNormalizedCapacityFunctionofTemperatureCurve(const Curve& normalizedCapacityFunctionofTemperatureCurve);
 
-      double defrostOperationTimeFraction() const;
-      bool setDefrostOperationTimeFraction(double defrostOperationTimeFraction);
+  Curve fuelEnergyInputRatioFunctionofTemperatureCurve() const;
+  bool setFuelEnergyInputRatioFunctionofTemperatureCurve(const Curve& fuelEnergyInputRatioFunctionofTemperatureCurve);
 
-      double resistiveDefrostHeaterCapacity() const;
-      bool setResistiveDefrostHeaterCapacity(double resistiveDefrostHeaterCapacity);
+  Curve fuelEnergyInputRatioFunctionofPLRCurve() const;
+  bool setFuelEnergyInputRatioFunctionofPLRCurve(const Curve& fuelEnergyInputRatioFunctionofPLRCurve);
 
-      double maximumOutdoorDrybulbTemperatureforDefrostOperation() const;
-      bool setMaximumOutdoorDrybulbTemperatureforDefrostOperation(double maximumOutdoorDrybulbTemperatureforDefrostOperation);
+  double minimumPartLoadRatio() const;
+  bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
 
-      double nominalAuxiliaryElectricPower() const;
-      bool setNominalAuxiliaryElectricPower(double nominalAuxiliaryElectricPower);
+  double maximumPartLoadRatio() const;
+  bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
 
-      double standbyElectricPower() const;
-      bool setStandbyElectricPower(double standbyElectricPower);
+  std::string defrostControlType() const;
+  bool setDefrostControlType(const std::string& defrostControlType);
 
-      double minimumUnloadingRatio() const;
-      bool setMinimumUnloadingRatio(double minimumUnloadingRatio);
+  double defrostOperationTimeFraction() const;
+  bool setDefrostOperationTimeFraction(double defrostOperationTimeFraction);
 
-      std::vector<std::string> fuelTypeValues() const;
-      std::vector<std::string> flowModeValues() const;
-      std::vector<std::string> outdoorAirTemperatureCurveInputVariableValues() const;
-      std::vector<std::string> waterTemperatureCurveInputVariableValues() const;
-      std::vector<std::string> defrostControlTypeValues() const;
-    };
+  boost::optional<Curve> fuelEnergyInputRatioDefrostAdjustmentCurve() const;
+  bool setFuelEnergyInputRatioDefrostAdjustmentCurve(const Curve& fuelEnergyInputRatioDefrostAdjustmentCurve);
+  void resetFuelEnergyInputRatioDefrostAdjustmentCurve();
 
-  }  // namespace detail
+  double resistiveDefrostHeaterCapacity() const;
+  bool setResistiveDefrostHeaterCapacity(double resistiveDefrostHeaterCapacity);
+
+  double maximumOutdoorDrybulbTemperatureforDefrostOperation() const;
+  bool setMaximumOutdoorDrybulbTemperatureforDefrostOperation(double maximumOutdoorDrybulbTemperatureforDefrostOperation);
+
+  boost::optional<Curve> cyclingRatioFactorCurve() const;
+  bool setCyclingRatioFactorCurve(const Curve& cyclingRatioFactorCurve);
+  void resetCyclingRatioFactorCurve();
+
+  double nominalAuxiliaryElectricPower() const;
+  bool setNominalAuxiliaryElectricPower(double nominalAuxiliaryElectricPower);
+
+  boost::optional<Curve> auxiliaryElectricEnergyInputRatioFunctionofTemperatureCurve() const;
+  bool setAuxiliaryElectricEnergyInputRatioFunctionofTemperatureCurve(const Curve& auxiliaryElectricEnergyInputRatioFunctionofTemperatureCurve);
+  void resetAuxiliaryElectricEnergyInputRatioFunctionofTemperatureCurve();
+
+  boost::optional<Curve> auxiliaryElectricEnergyInputRatioFunctionofPLRCurve() const;
+  bool setAuxiliaryElectricEnergyInputRatioFunctionofPLRCurve(const Curve& auxiliaryElectricEnergyInputRatioFunctionofPLRCurve);
+  void resetAuxiliaryElectricEnergyInputRatioFunctionofPLRCurve();
+
+  double standbyElectricPower() const;
+  bool setStandbyElectricPower(double standbyElectricPower);
+
+  double minimumUnloadingRatio() const;
+  bool setMinimumUnloadingRatio(double minimumUnloadingRatio);
+
+  std::vector<std::string> fuelTypeValues() const;
+  std::vector<std::string> flowModeValues() const;
+  std::vector<std::string> outdoorAirTemperatureCurveInputVariableValues() const;
+  std::vector<std::string> waterTemperatureCurveInputVariableValues() const;
+  std::vector<std::string> defrostControlTypeValues() const;
+};
+
+}  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

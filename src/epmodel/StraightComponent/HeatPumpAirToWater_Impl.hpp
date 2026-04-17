@@ -13,6 +13,10 @@
 namespace openstudio {
 namespace epmodel {
 
+class Schedule;
+class Curve;
+class Node;
+
 namespace detail {
 
 class EPMODEL_API HeatPumpAirToWater_Impl : public StraightComponent_Impl
@@ -23,6 +27,7 @@ class EPMODEL_API HeatPumpAirToWater_Impl : public StraightComponent_Impl
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+  bool addToNode(Node& node) override;
 
   std::string operatingModeControlMethod() const;
   bool isOperatingModeControlMethodDefaulted() const;
@@ -34,10 +39,22 @@ class EPMODEL_API HeatPumpAirToWater_Impl : public StraightComponent_Impl
   bool setOperatingModeControlOptionforMultipleUnit(const std::string& operatingModeControlOptionforMultipleUnit);
   void resetOperatingModeControlOptionforMultipleUnit();
 
+  boost::optional<Schedule> operatingModeControlSchedule() const;
+  bool setOperatingModeControlSchedule(Schedule& operatingModeControlSchedule);
+  void resetOperatingModeControlSchedule();
+
   double minimumPartLoadRatio() const;
   bool isMinimumPartLoadRatioDefaulted() const;
   bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
   void resetMinimumPartLoadRatio();
+
+  boost::optional<std::string> airInletNodeName() const;
+  bool setAirInletNodeName(const std::string& airInletNodeName);
+  void resetAirInletNodeName();
+
+  boost::optional<std::string> airOutletNodeName() const;
+  bool setAirOutletNodeName(const std::string& airOutletNodeName);
+  void resetAirOutletNodeName();
 
   double maximumOutdoorDryBulbTemperatureForDefrostOperation() const;
   bool isMaximumOutdoorDryBulbTemperatureForDefrostOperationDefaulted() const;
@@ -59,6 +76,10 @@ class EPMODEL_API HeatPumpAirToWater_Impl : public StraightComponent_Impl
   bool setResistiveDefrostHeaterCapacity(double resistiveDefrostHeaterCapacity);
   void resetResistiveDefrostHeaterCapacity();
 
+  boost::optional<Curve> defrostEnergyInputRatioFunctionofTemperatureCurve() const;
+  bool setDefrostEnergyInputRatioFunctionofTemperatureCurve(const Curve& defrostEnergyInputRatioFunctionofTemperatureCurve);
+  void resetDefrostEnergyInputRatioFunctionofTemperatureCurve();
+
   int heatPumpMultiplier() const;
   bool isHeatPumpMultiplierDefaulted() const;
   bool setHeatPumpMultiplier(int heatPumpMultiplier);
@@ -73,6 +94,10 @@ class EPMODEL_API HeatPumpAirToWater_Impl : public StraightComponent_Impl
   bool isCrankcaseHeaterCapacityDefaulted() const;
   bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
   void resetCrankcaseHeaterCapacity();
+
+  boost::optional<Curve> crankcaseHeaterCapacityFunctionofTemperatureCurve() const;
+  bool setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& crankcaseHeaterCapacityFunctionofTemperatureCurve);
+  void resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
 
   double maximumAmbientTemperatureforCrankcaseHeaterOperation() const;
   bool isMaximumAmbientTemperatureforCrankcaseHeaterOperationDefaulted() const;

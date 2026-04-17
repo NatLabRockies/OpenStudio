@@ -10,6 +10,9 @@
 
 namespace openstudio {
 namespace epmodel {
+
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API DistrictCooling_Impl : public StraightComponent_Impl
@@ -20,8 +23,11 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
 
       boost::optional<double> nominalCapacity() const;
+      Schedule capacityFractionSchedule() const;
+      bool setCapacityFractionSchedule(Schedule& schedule);
       bool setNominalCapacity(double nominalCapacity);
       void autosizeNominalCapacity();
       bool isNominalCapacityAutosized() const;

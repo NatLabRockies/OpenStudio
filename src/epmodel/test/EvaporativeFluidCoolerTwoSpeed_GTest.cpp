@@ -5,8 +5,14 @@
 
 #include <gtest/gtest.h>
 
+#include <utilities/idd/EvaporativeFluidCooler_TwoSpeed_FieldEnums.hxx>
+
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/EvaporativeFluidCoolerTwoSpeed.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -222,4 +228,51 @@ TEST_F(EPModelFixture, EvaporativeFluidCoolerTwoSpeed_ScalarAccessors_RoundTrip)
   EXPECT_FALSE(evap.autosizedDesignWaterFlowRate());
   EXPECT_FALSE(evap.autosizedLowSpeedUserSpecifiedDesignCapacity());
   EXPECT_FALSE(evap.autosizedDesignEnteringWaterTemperature());
+}
+
+TEST_F(EPModelFixture, EvaporativeFluidCoolerTwoSpeed_AddToNode_PlantSupplyOnly) {
+  Model model;
+  EvaporativeFluidCoolerTwoSpeed evap(model);
+
+  AirLoopHVAC airLoop(model);
+  Node airSupplyOutletNode = airLoop.supplyOutletNode();
+  EXPECT_FALSE(evap.addToNode(airSupplyOutletNode));
+  EXPECT_EQ(2u, airLoop.supplyComponents().size());
+  EXPECT_FALSE(evap.loop());
+  EXPECT_FALSE(evap.inletModelObject());
+  EXPECT_FALSE(evap.outletModelObject());
+
+  auto splitterBranch = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(splitterBranch);
+  auto demandBranchNode = splitterBranch->optionalCast<Node>();
+  ASSERT_TRUE(demandBranchNode);
+  EXPECT_FALSE(evap.addToNode(*demandBranchNode));
+  EXPECT_EQ(5u, airLoop.demandComponents().size());
+  EXPECT_FALSE(evap.loop());
+  EXPECT_FALSE(evap.inletModelObject());
+  EXPECT_FALSE(evap.outletModelObject());
+
+  PlantLoop plantLoop(model);
+  Node plantSupplyOutletNode = plantLoop.supplyOutletNode();
+  EXPECT_TRUE(evap.addToNode(plantSupplyOutletNode));
+  EXPECT_EQ(7u, plantLoop.supplyComponents().size());
+  ASSERT_TRUE(evap.loop());
+  EXPECT_EQ(plantLoop.handle(), evap.loop()->handle());
+  ASSERT_TRUE(evap.inletModelObject());
+  ASSERT_TRUE(evap.outletModelObject());
+
+  auto inletNode = evap.getModelObjectTarget<Node>(openstudio::EvaporativeFluidCooler_TwoSpeedFields::WaterInletNodeName);
+  auto outletNode = evap.getModelObjectTarget<Node>(openstudio::EvaporativeFluidCooler_TwoSpeedFields::WaterOutletNodeName);
+  ASSERT_TRUE(inletNode);
+  ASSERT_TRUE(outletNode);
+  EXPECT_EQ(evap.inletModelObject()->handle(), inletNode->handle());
+  EXPECT_EQ(evap.outletModelObject()->handle(), outletNode->handle());
+
+  EvaporativeFluidCoolerTwoSpeed secondEvap(model);
+  Node plantDemandOutletNode = plantLoop.demandOutletNode();
+  EXPECT_FALSE(secondEvap.addToNode(plantDemandOutletNode));
+  EXPECT_EQ(5u, plantLoop.demandComponents().size());
+  EXPECT_FALSE(secondEvap.loop());
+  EXPECT_FALSE(secondEvap.inletModelObject());
+  EXPECT_FALSE(secondEvap.outletModelObject());
 }

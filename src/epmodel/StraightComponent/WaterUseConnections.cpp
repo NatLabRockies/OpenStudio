@@ -6,12 +6,19 @@
 #include "StraightComponent/WaterUseConnections.hpp"
 #include "StraightComponent/WaterUseConnections_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "SpaceLoadInstance/WaterUseEquipment.hpp"
+#include "SpaceLoadInstance/WaterUseEquipment_Impl.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/WaterUse_Connections_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -37,6 +44,42 @@ namespace epmodel {
   std::vector<std::string> WaterUseConnections::drainWaterHeatExchangerDestinationValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                           openstudio::WaterUse_ConnectionsFields::DrainWaterHeatExchangerDestination);
+  }
+
+  boost::optional<Schedule> WaterUseConnections::hotWaterSupplyTemperatureSchedule() const {
+    return getImpl<detail::WaterUseConnections_Impl>()->hotWaterSupplyTemperatureSchedule();
+  }
+
+  bool WaterUseConnections::setHotWaterSupplyTemperatureSchedule(Schedule& hotWaterSupplyTemperatureSchedule) {
+    return getImpl<detail::WaterUseConnections_Impl>()->setHotWaterSupplyTemperatureSchedule(hotWaterSupplyTemperatureSchedule);
+  }
+
+  void WaterUseConnections::resetHotWaterSupplyTemperatureSchedule() {
+    getImpl<detail::WaterUseConnections_Impl>()->resetHotWaterSupplyTemperatureSchedule();
+  }
+
+  boost::optional<Schedule> WaterUseConnections::coldWaterSupplyTemperatureSchedule() const {
+    return getImpl<detail::WaterUseConnections_Impl>()->coldWaterSupplyTemperatureSchedule();
+  }
+
+  bool WaterUseConnections::setColdWaterSupplyTemperatureSchedule(Schedule& coldWaterSupplyTemperatureSchedule) {
+    return getImpl<detail::WaterUseConnections_Impl>()->setColdWaterSupplyTemperatureSchedule(coldWaterSupplyTemperatureSchedule);
+  }
+
+  void WaterUseConnections::resetColdWaterSupplyTemperatureSchedule() {
+    getImpl<detail::WaterUseConnections_Impl>()->resetColdWaterSupplyTemperatureSchedule();
+  }
+
+  std::vector<WaterUseEquipment> WaterUseConnections::waterUseEquipment() const {
+    return getImpl<detail::WaterUseConnections_Impl>()->waterUseEquipment();
+  }
+
+  bool WaterUseConnections::addWaterUseEquipment(const WaterUseEquipment& waterUseEquipment) {
+    return getImpl<detail::WaterUseConnections_Impl>()->addWaterUseEquipment(waterUseEquipment);
+  }
+
+  bool WaterUseConnections::removeWaterUseEquipment(WaterUseEquipment& waterUseEquipment) {
+    return getImpl<detail::WaterUseConnections_Impl>()->removeWaterUseEquipment(waterUseEquipment);
   }
 
   std::string WaterUseConnections::drainWaterHeatExchangerType() const {
@@ -68,6 +111,81 @@ namespace epmodel {
   }
 
   namespace detail {
+
+    boost::optional<Schedule> WaterUseConnections_Impl::hotWaterSupplyTemperatureSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::WaterUse_ConnectionsFields::HotWaterSupplyTemperatureScheduleName);
+    }
+
+    bool WaterUseConnections_Impl::setHotWaterSupplyTemperatureSchedule(Schedule& hotWaterSupplyTemperatureSchedule) {
+      return setSchedule(openstudio::WaterUse_ConnectionsFields::HotWaterSupplyTemperatureScheduleName, "WaterUseConnections",
+                         "Hot Water Supply Temperature", hotWaterSupplyTemperatureSchedule);
+    }
+
+    void WaterUseConnections_Impl::resetHotWaterSupplyTemperatureSchedule() {
+      OS_ASSERT(setString(openstudio::WaterUse_ConnectionsFields::HotWaterSupplyTemperatureScheduleName, ""));
+    }
+
+    boost::optional<Schedule> WaterUseConnections_Impl::coldWaterSupplyTemperatureSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::WaterUse_ConnectionsFields::ColdWaterSupplyTemperatureScheduleName);
+    }
+
+    bool WaterUseConnections_Impl::setColdWaterSupplyTemperatureSchedule(Schedule& coldWaterSupplyTemperatureSchedule) {
+      return setSchedule(openstudio::WaterUse_ConnectionsFields::ColdWaterSupplyTemperatureScheduleName, "WaterUseConnections",
+                         "Cold Water Supply Temperature", coldWaterSupplyTemperatureSchedule);
+    }
+
+    void WaterUseConnections_Impl::resetColdWaterSupplyTemperatureSchedule() {
+      OS_ASSERT(setString(openstudio::WaterUse_ConnectionsFields::ColdWaterSupplyTemperatureScheduleName, ""));
+    }
+
+    std::vector<WaterUseEquipment> WaterUseConnections_Impl::waterUseEquipment() const {
+      std::vector<WaterUseEquipment> result;
+      auto object = getObject<ModelObject>();
+      auto groups = object.extensibleGroups();
+      result.reserve(groups.size());
+      for (const auto& group : groups) {
+        auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        if (!workspaceGroup) {
+          continue;
+        }
+        if (auto target = workspaceGroup->getTarget(openstudio::WaterUse_ConnectionsExtensibleFields::WaterUseEquipmentName)) {
+          if (auto equipment = target->optionalCast<WaterUseEquipment>()) {
+            result.emplace_back(*equipment);
+          }
+        }
+      }
+      return result;
+    }
+
+    bool WaterUseConnections_Impl::addWaterUseEquipment(const WaterUseEquipment& waterUseEquipment) {
+      if (waterUseEquipment.model() != model()) {
+        return false;
+      }
+
+      auto group = getObject<ModelObject>().pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!group) {
+        return false;
+      }
+
+      return group->setPointer(openstudio::WaterUse_ConnectionsExtensibleFields::WaterUseEquipmentName, waterUseEquipment.handle());
+    }
+
+    bool WaterUseConnections_Impl::removeWaterUseEquipment(WaterUseEquipment& waterUseEquipment) {
+      auto object = getObject<ModelObject>();
+      auto groups = object.extensibleGroups();
+      for (unsigned index = 0; index < groups.size(); ++index) {
+        auto workspaceGroup = groups[index].optionalCast<openstudio::WorkspaceExtensibleGroup>();
+        if (!workspaceGroup) {
+          continue;
+        }
+        auto target = workspaceGroup->getTarget(openstudio::WaterUse_ConnectionsExtensibleFields::WaterUseEquipmentName);
+        if (target && target->handle() == waterUseEquipment.handle()) {
+          object.eraseExtensibleGroup(index);
+          return true;
+        }
+      }
+      return false;
+    }
 
     std::string WaterUseConnections_Impl::drainWaterHeatExchangerType() const {
       const auto value = getString(openstudio::WaterUse_ConnectionsFields::DrainWaterHeatExchangerType, true);
@@ -107,6 +225,15 @@ namespace epmodel {
 
     std::vector<std::string> WaterUseConnections_Impl::drainWaterHeatExchangerDestinationValues() const {
       return openstudio::epmodel::WaterUseConnections::drainWaterHeatExchangerDestinationValues();
+    }
+
+    bool WaterUseConnections_Impl::addToNode(Node& node) {
+      if (auto plantLoop = node.plantLoop()) {
+        if (plantLoop->demandComponent(node.handle())) {
+          return StraightComponent_Impl::addToNode(node);
+        }
+      }
+      return false;
     }
 
     unsigned WaterUseConnections_Impl::inletPort() const {

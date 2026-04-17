@@ -15,6 +15,10 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+  class ThermalZone;
+  class WaterHeaterSizing;
+
   namespace detail {
 
     class EPMODEL_API WaterHeaterStratified_Impl : public WaterToWaterComponent_Impl
@@ -23,6 +27,7 @@ namespace epmodel {
       using WaterToWaterComponent_Impl::WaterToWaterComponent_Impl;
       virtual ~WaterHeaterStratified_Impl() override = default;
 
+      std::vector<ModelObject> children() const override;
       unsigned supplyInletPort() const override;
       unsigned supplyOutletPort() const override;
       unsigned demandInletPort() const override;
@@ -56,6 +61,10 @@ namespace epmodel {
       std::string heaterPriorityControl() const;
       bool setHeaterPriorityControl(const std::string& heaterPriorityControl);
 
+      boost::optional<Schedule> heater1SetpointTemperatureSchedule() const;
+      bool setHeater1SetpointTemperatureSchedule(Schedule& schedule);
+      void resetHeater1SetpointTemperatureSchedule();
+
       double heater1DeadbandTemperatureDifference() const;
       bool setHeater1DeadbandTemperatureDifference(double heater1DeadbandTemperatureDifference);
 
@@ -67,6 +76,10 @@ namespace epmodel {
 
       double heater1Height() const;
       bool setHeater1Height(double heater1Height);
+
+      boost::optional<Schedule> heater2SetpointTemperatureSchedule() const;
+      bool setHeater2SetpointTemperatureSchedule(Schedule& schedule);
+      void resetHeater2SetpointTemperatureSchedule();
 
       double heater2DeadbandTemperatureDifference() const;
       bool setHeater2DeadbandTemperatureDifference(double heater2DeadbandTemperatureDifference);
@@ -110,6 +123,14 @@ namespace epmodel {
       std::string ambientTemperatureIndicator() const;
       bool setAmbientTemperatureIndicator(const std::string& ambientTemperatureIndicator);
 
+      boost::optional<Schedule> ambientTemperatureSchedule() const;
+      bool setAmbientTemperatureSchedule(Schedule& schedule);
+      void resetAmbientTemperatureSchedule();
+
+      boost::optional<ThermalZone> ambientTemperatureThermalZone() const;
+      bool setAmbientTemperatureThermalZone(const ThermalZone& thermalZone);
+      void resetAmbientTemperatureThermalZone();
+
       boost::optional<std::string> ambientTemperatureOutdoorAirNodeName() const;
       bool setAmbientTemperatureOutdoorAirNodeName(const std::string& ambientTemperatureOutdoorAirNodeName);
       void resetAmbientTemperatureOutdoorAirNodeName();
@@ -131,6 +152,14 @@ namespace epmodel {
       boost::optional<double> peakUseFlowRate() const;
       bool setPeakUseFlowRate(double peakUseFlowRate);
       void resetPeakUseFlowRate();
+
+      boost::optional<Schedule> useFlowRateFractionSchedule() const;
+      bool setUseFlowRateFractionSchedule(Schedule& schedule);
+      void resetUseFlowRateFractionSchedule();
+
+      boost::optional<Schedule> coldWaterSupplyTemperatureSchedule() const;
+      bool setColdWaterSupplyTemperatureSchedule(Schedule& schedule);
+      void resetColdWaterSupplyTemperatureSchedule();
 
       double useSideEffectiveness() const;
       bool setUseSideEffectiveness(double useSideEffectiveness);
@@ -216,6 +245,12 @@ namespace epmodel {
 
       std::string sourceSideFlowControlMode() const;
       bool setSourceSideFlowControlMode(const std::string& sourceSideFlowControlMode);
+
+      boost::optional<Schedule> indirectAlternateSetpointTemperatureSchedule() const;
+      bool setIndirectAlternateSetpointTemperatureSchedule(Schedule& schedule);
+      void resetIndirectAlternateSetpointTemperatureSchedule();
+
+      WaterHeaterSizing waterHeaterSizing() const;
     };
 
   }  // namespace detail

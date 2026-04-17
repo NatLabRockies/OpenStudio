@@ -40,13 +40,17 @@ namespace epmodel {
     static std::vector<std::string> performanceInputMethodValues();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical single-speed fluid-cooler scalar surface is present, while the outdoor-air inlet relationship helper remains out of scope.
+    // - Status: Parity with documented deltas. The canonical single-speed fluid-cooler scalar surface and plant-supply placement rule are present, while
+    //   the outdoor-air inlet relationship helper and resolved autosized-value lookup remain out of scope.
     // - Canonical Counterpart: openstudio::model::FluidCoolerSingleSpeed.
-    // - Implemented Parity: The preserved scalar API matches the performance, capacity, and temperature accessors with matching autosize/default behavior.
-    // - Documented Delta: `outdoorAirInletNode()` and its mutators remain intentionally excluded from this scalar pass.
+    // - Implemented Parity: The preserved API matches the canonical performance, capacity, temperature, and autosize-token accessors with matching
+    //   default behavior, and inherited `addToNode(...)` follows the canonical plant-supply-only insertion contract.
+    // - Documented Delta: The public wrapper still omits `outdoorAirInletNode()` and its mutators, and the `autosized*()` getters remain intentionally
+    //   unresolved because epmodel does not yet expose SQL-backed sizing results.
     // - Field/Storage Mapping: These accessors map directly to EnergyPlus `FluidCooler:SingleSpeed` scalar fields used by the forward translator.
     // - Evidence: `src/model/FluidCoolerSingleSpeed.hpp`, `src/model/FluidCoolerSingleSpeed.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateFluidCoolerSingleSpeed.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helper without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Add the omitted outdoor-air relationship helper and wire `autosized*()` to resolved sizing results without changing the
+    //   preserved scalar signatures.
     std::string performanceInputMethod() const;
     bool setPerformanceInputMethod(const std::string& performanceInputMethod);
 

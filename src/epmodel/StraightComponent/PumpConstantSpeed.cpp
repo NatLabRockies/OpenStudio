@@ -7,24 +7,35 @@
 #include "StraightComponent/PumpConstantSpeed_Impl.hpp"
 
 #include "Model.hpp"
+#include "Loop/PlantLoop.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
-#include <utilities/idd/OS_Pump_ConstantSpeed_FieldEnums.hxx>
+#include <utilities/idd/Pump_ConstantSpeed_FieldEnums.hxx>
 
 namespace openstudio {
 namespace epmodel {
 
   PumpConstantSpeed::PumpConstantSpeed(const Model& model) : StraightComponent(PumpConstantSpeed::iddObjectType(), model) {
+    autosizeRatedFlowRate();
+    autosizeRatedPowerConsumption();
     OS_ASSERT(setRatedPumpHead(179352.0));
     OS_ASSERT(setMotorEfficiency(0.9));
+    OS_ASSERT(setPumpControlType("Intermittent"));
     OS_ASSERT(setFractionofMotorInefficienciestoFluidStream(0.0));
     OS_ASSERT(setDesignPowerSizingMethod("PowerPerFlowPerPressure"));
     OS_ASSERT(setDesignElectricPowerPerUnitFlowRate(348701.1));
     OS_ASSERT(setDesignShaftPowerPerUnitFlowRatePerUnitHead(1.282051282));
+    setString(openstudio::Pump_ConstantSpeedFields::PumpFlowRateScheduleName, "");
+    setString(openstudio::Pump_ConstantSpeedFields::PumpCurveName, "");
+    setString(openstudio::Pump_ConstantSpeedFields::ImpellerDiameter, "");
+    setString(openstudio::Pump_ConstantSpeedFields::RotationalSpeed, "");
+    setString(openstudio::Pump_ConstantSpeedFields::ZoneName, "");
+    setString(openstudio::Pump_ConstantSpeedFields::SkinLossRadiativeFraction, "");
     setEndUseSubcategory("General");
   }
 
@@ -35,11 +46,11 @@ namespace epmodel {
   }
 
   std::vector<std::string> PumpConstantSpeed::pumpControlTypeValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::OS_Pump_ConstantSpeedFields::PumpControlType);
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Pump_ConstantSpeedFields::PumpControlType);
   }
 
   std::vector<std::string> PumpConstantSpeed::designPowerSizingMethodValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::OS_Pump_ConstantSpeedFields::DesignPowerSizingMethod);
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Pump_ConstantSpeedFields::DesignPowerSizingMethod);
   }
 
   boost::optional<double> PumpConstantSpeed::ratedFlowRate() const {
@@ -214,6 +225,10 @@ namespace epmodel {
     return getImpl<detail::PumpConstantSpeed_Impl>()->setEndUseSubcategory(endUseSubcategory);
   }
 
+  bool PumpConstantSpeed::addToNode(Node& node) {
+    return getImpl<detail::PumpConstantSpeed_Impl>()->addToNode(node);
+  }
+
   boost::optional<double> PumpConstantSpeed::autosizedRatedFlowRate() const {
     return getImpl<detail::PumpConstantSpeed_Impl>()->autosizedRatedFlowRate();
   }
@@ -230,119 +245,127 @@ namespace epmodel {
   namespace detail {
 
     unsigned PumpConstantSpeed_Impl::inletPort() const {
-      return openstudio::OS_Pump_ConstantSpeedFields::InletNodeName;
+      return openstudio::Pump_ConstantSpeedFields::InletNodeName;
     }
 
     unsigned PumpConstantSpeed_Impl::outletPort() const {
-      return openstudio::OS_Pump_ConstantSpeedFields::OutletNodeName;
+      return openstudio::Pump_ConstantSpeedFields::OutletNodeName;
+    }
+
+    bool PumpConstantSpeed_Impl::addToNode(Node& node) {
+      if (node.plantLoop()) {
+        return StraightComponent_Impl::addToNode(node);
+      }
+
+      return false;
     }
 
     boost::optional<double> PumpConstantSpeed_Impl::ratedFlowRate() const {
-      return getDouble(openstudio::OS_Pump_ConstantSpeedFields::RatedFlowRate, true);
+      return getDouble(openstudio::Pump_ConstantSpeedFields::DesignFlowRate, true);
     }
 
     bool PumpConstantSpeed_Impl::isRatedFlowRateAutosized() const {
       if (m_isRatedFlowRateAutosized) {
         return true;
       }
-      if (const auto value = getString(openstudio::OS_Pump_ConstantSpeedFields::RatedFlowRate, true)) {
+      if (const auto value = getString(openstudio::Pump_ConstantSpeedFields::DesignFlowRate, true)) {
         return openstudio::istringEqual(*value, "autosize");
       }
       return false;
     }
 
     double PumpConstantSpeed_Impl::ratedPumpHead() const {
-      const auto value = getDouble(openstudio::OS_Pump_ConstantSpeedFields::RatedPumpHead, true);
+      const auto value = getDouble(openstudio::Pump_ConstantSpeedFields::DesignPumpHead, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool PumpConstantSpeed_Impl::isRatedPumpHeadDefaulted() const {
-      return isEmpty(openstudio::OS_Pump_ConstantSpeedFields::RatedPumpHead);
+      return isEmpty(openstudio::Pump_ConstantSpeedFields::DesignPumpHead);
     }
 
     boost::optional<double> PumpConstantSpeed_Impl::ratedPowerConsumption() const {
-      return getDouble(openstudio::OS_Pump_ConstantSpeedFields::RatedPowerConsumption, true);
+      return getDouble(openstudio::Pump_ConstantSpeedFields::DesignPowerConsumption, true);
     }
 
     bool PumpConstantSpeed_Impl::isRatedPowerConsumptionAutosized() const {
       if (m_isRatedPowerConsumptionAutosized) {
         return true;
       }
-      if (const auto value = getString(openstudio::OS_Pump_ConstantSpeedFields::RatedPowerConsumption, true)) {
+      if (const auto value = getString(openstudio::Pump_ConstantSpeedFields::DesignPowerConsumption, true)) {
         return openstudio::istringEqual(*value, "autosize");
       }
       return false;
     }
 
     double PumpConstantSpeed_Impl::motorEfficiency() const {
-      const auto value = getDouble(openstudio::OS_Pump_ConstantSpeedFields::MotorEfficiency, true);
+      const auto value = getDouble(openstudio::Pump_ConstantSpeedFields::MotorEfficiency, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool PumpConstantSpeed_Impl::isMotorEfficiencyDefaulted() const {
-      return isEmpty(openstudio::OS_Pump_ConstantSpeedFields::MotorEfficiency);
+      return isEmpty(openstudio::Pump_ConstantSpeedFields::MotorEfficiency);
     }
 
     double PumpConstantSpeed_Impl::fractionofMotorInefficienciestoFluidStream() const {
-      const auto value = getDouble(openstudio::OS_Pump_ConstantSpeedFields::FractionofMotorInefficienciestoFluidStream, true);
+      const auto value = getDouble(openstudio::Pump_ConstantSpeedFields::FractionofMotorInefficienciestoFluidStream, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool PumpConstantSpeed_Impl::isFractionofMotorInefficienciestoFluidStreamDefaulted() const {
-      return isEmpty(openstudio::OS_Pump_ConstantSpeedFields::FractionofMotorInefficienciestoFluidStream);
+      return isEmpty(openstudio::Pump_ConstantSpeedFields::FractionofMotorInefficienciestoFluidStream);
     }
 
     std::string PumpConstantSpeed_Impl::pumpControlType() const {
-      const auto value = getString(openstudio::OS_Pump_ConstantSpeedFields::PumpControlType, true);
+      const auto value = getString(openstudio::Pump_ConstantSpeedFields::PumpControlType, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool PumpConstantSpeed_Impl::isPumpControlTypeDefaulted() const {
-      return isEmpty(openstudio::OS_Pump_ConstantSpeedFields::PumpControlType);
+      return isEmpty(openstudio::Pump_ConstantSpeedFields::PumpControlType);
     }
 
     boost::optional<double> PumpConstantSpeed_Impl::impellerDiameter() const {
-      return getDouble(openstudio::OS_Pump_ConstantSpeedFields::ImpellerDiameter, true);
+      return getDouble(openstudio::Pump_ConstantSpeedFields::ImpellerDiameter, true);
     }
 
     boost::optional<double> PumpConstantSpeed_Impl::rotationalSpeed() const {
-      return getDouble(openstudio::OS_Pump_ConstantSpeedFields::RotationalSpeed, true);
+      return getDouble(openstudio::Pump_ConstantSpeedFields::RotationalSpeed, true);
     }
 
     boost::optional<double> PumpConstantSpeed_Impl::skinLossRadiativeFraction() const {
-      return getDouble(openstudio::OS_Pump_ConstantSpeedFields::SkinLossRadiativeFraction, true);
+      return getDouble(openstudio::Pump_ConstantSpeedFields::SkinLossRadiativeFraction, true);
     }
 
     std::string PumpConstantSpeed_Impl::designPowerSizingMethod() const {
-      const auto value = getString(openstudio::OS_Pump_ConstantSpeedFields::DesignPowerSizingMethod, true);
+      const auto value = getString(openstudio::Pump_ConstantSpeedFields::DesignPowerSizingMethod, true);
       OS_ASSERT(value);
       return *value;
     }
 
     double PumpConstantSpeed_Impl::designElectricPowerPerUnitFlowRate() const {
-      const auto value = getDouble(openstudio::OS_Pump_ConstantSpeedFields::DesignElectricPowerperUnitFlowRate, true);
+      const auto value = getDouble(openstudio::Pump_ConstantSpeedFields::DesignElectricPowerperUnitFlowRate, true);
       OS_ASSERT(value);
       return *value;
     }
 
     double PumpConstantSpeed_Impl::designShaftPowerPerUnitFlowRatePerUnitHead() const {
-      const auto value = getDouble(openstudio::OS_Pump_ConstantSpeedFields::DesignShaftPowerperUnitFlowRateperUnitHead, true);
+      const auto value = getDouble(openstudio::Pump_ConstantSpeedFields::DesignShaftPowerperUnitFlowRateperUnitHead, true);
       OS_ASSERT(value);
       return *value;
     }
 
     std::string PumpConstantSpeed_Impl::endUseSubcategory() const {
-      const auto value = getString(openstudio::OS_Pump_ConstantSpeedFields::EndUseSubcategory, true);
+      const auto value = getString(openstudio::Pump_ConstantSpeedFields::EndUseSubcategory, true);
       OS_ASSERT(value);
       return *value;
     }
 
     bool PumpConstantSpeed_Impl::setRatedFlowRate(double ratedFlowRate) {
-      const bool result = setDouble(openstudio::OS_Pump_ConstantSpeedFields::RatedFlowRate, ratedFlowRate);
+      const bool result = setDouble(openstudio::Pump_ConstantSpeedFields::DesignFlowRate, ratedFlowRate);
       if (result) {
         m_isRatedFlowRateAutosized = false;
       }
@@ -350,26 +373,26 @@ namespace epmodel {
     }
 
     void PumpConstantSpeed_Impl::resetRatedFlowRate() {
-      setString(openstudio::OS_Pump_ConstantSpeedFields::RatedFlowRate, "", false);
+      setString(openstudio::Pump_ConstantSpeedFields::DesignFlowRate, "", false);
       m_isRatedFlowRateAutosized = true;
     }
 
     void PumpConstantSpeed_Impl::autosizeRatedFlowRate() {
-      setString(openstudio::OS_Pump_ConstantSpeedFields::RatedFlowRate, "Autosize", false);
+      setString(openstudio::Pump_ConstantSpeedFields::DesignFlowRate, "Autosize", false);
       m_isRatedFlowRateAutosized = true;
     }
 
     bool PumpConstantSpeed_Impl::setRatedPumpHead(double ratedPumpHead) {
-      return setDouble(openstudio::OS_Pump_ConstantSpeedFields::RatedPumpHead, ratedPumpHead, false);
+      return setDouble(openstudio::Pump_ConstantSpeedFields::DesignPumpHead, ratedPumpHead, false);
     }
 
     void PumpConstantSpeed_Impl::resetRatedPumpHead() {
-      const bool result = setString(openstudio::OS_Pump_ConstantSpeedFields::RatedPumpHead, "");
+      const bool result = setString(openstudio::Pump_ConstantSpeedFields::DesignPumpHead, "");
       OS_ASSERT(result);
     }
 
     bool PumpConstantSpeed_Impl::setRatedPowerConsumption(double ratedPowerConsumption) {
-      const bool result = setDouble(openstudio::OS_Pump_ConstantSpeedFields::RatedPowerConsumption, ratedPowerConsumption);
+      const bool result = setDouble(openstudio::Pump_ConstantSpeedFields::DesignPowerConsumption, ratedPowerConsumption);
       if (result) {
         m_isRatedPowerConsumptionAutosized = false;
       }
@@ -377,84 +400,84 @@ namespace epmodel {
     }
 
     void PumpConstantSpeed_Impl::resetRatedPowerConsumption() {
-      setString(openstudio::OS_Pump_ConstantSpeedFields::RatedPowerConsumption, "", false);
+      setString(openstudio::Pump_ConstantSpeedFields::DesignPowerConsumption, "", false);
       m_isRatedPowerConsumptionAutosized = true;
     }
 
     void PumpConstantSpeed_Impl::autosizeRatedPowerConsumption() {
-      setString(openstudio::OS_Pump_ConstantSpeedFields::RatedPowerConsumption, "Autosize", false);
+      setString(openstudio::Pump_ConstantSpeedFields::DesignPowerConsumption, "Autosize", false);
       m_isRatedPowerConsumptionAutosized = true;
     }
 
     bool PumpConstantSpeed_Impl::setMotorEfficiency(double motorEfficiency) {
-      return setDouble(openstudio::OS_Pump_ConstantSpeedFields::MotorEfficiency, motorEfficiency, false);
+      return setDouble(openstudio::Pump_ConstantSpeedFields::MotorEfficiency, motorEfficiency, false);
     }
 
     void PumpConstantSpeed_Impl::resetMotorEfficiency() {
-      const bool result = setString(openstudio::OS_Pump_ConstantSpeedFields::MotorEfficiency, "");
+      const bool result = setString(openstudio::Pump_ConstantSpeedFields::MotorEfficiency, "");
       OS_ASSERT(result);
     }
 
     bool PumpConstantSpeed_Impl::setFractionofMotorInefficienciestoFluidStream(double fractionofMotorInefficienciestoFluidStream) {
-      return setDouble(openstudio::OS_Pump_ConstantSpeedFields::FractionofMotorInefficienciestoFluidStream,
+      return setDouble(openstudio::Pump_ConstantSpeedFields::FractionofMotorInefficienciestoFluidStream,
                        fractionofMotorInefficienciestoFluidStream, false);
     }
 
     void PumpConstantSpeed_Impl::resetFractionofMotorInefficienciestoFluidStream() {
-      const bool result = setString(openstudio::OS_Pump_ConstantSpeedFields::FractionofMotorInefficienciestoFluidStream, "");
+      const bool result = setString(openstudio::Pump_ConstantSpeedFields::FractionofMotorInefficienciestoFluidStream, "");
       OS_ASSERT(result);
     }
 
     bool PumpConstantSpeed_Impl::setPumpControlType(const std::string& pumpControlType) {
-      return setString(openstudio::OS_Pump_ConstantSpeedFields::PumpControlType, pumpControlType, false);
+      return setString(openstudio::Pump_ConstantSpeedFields::PumpControlType, pumpControlType, false);
     }
 
     void PumpConstantSpeed_Impl::resetPumpControlType() {
-      setString(openstudio::OS_Pump_ConstantSpeedFields::PumpControlType, "", false);
+      setString(openstudio::Pump_ConstantSpeedFields::PumpControlType, "", false);
     }
 
     bool PumpConstantSpeed_Impl::setImpellerDiameter(double impellerDiameter) {
-      return setDouble(openstudio::OS_Pump_ConstantSpeedFields::ImpellerDiameter, impellerDiameter);
+      return setDouble(openstudio::Pump_ConstantSpeedFields::ImpellerDiameter, impellerDiameter);
     }
 
     void PumpConstantSpeed_Impl::resetImpellerDiameter() {
-      const bool result = setString(openstudio::OS_Pump_ConstantSpeedFields::ImpellerDiameter, "");
+      const bool result = setString(openstudio::Pump_ConstantSpeedFields::ImpellerDiameter, "");
       OS_ASSERT(result);
     }
 
     bool PumpConstantSpeed_Impl::setRotationalSpeed(double rotationalSpeed) {
-      return setDouble(openstudio::OS_Pump_ConstantSpeedFields::RotationalSpeed, rotationalSpeed);
+      return setDouble(openstudio::Pump_ConstantSpeedFields::RotationalSpeed, rotationalSpeed);
     }
 
     void PumpConstantSpeed_Impl::resetRotationalSpeed() {
-      const bool result = setString(openstudio::OS_Pump_ConstantSpeedFields::RotationalSpeed, "");
+      const bool result = setString(openstudio::Pump_ConstantSpeedFields::RotationalSpeed, "");
       OS_ASSERT(result);
     }
 
     bool PumpConstantSpeed_Impl::setSkinLossRadiativeFraction(double skinLossRadiativeFraction) {
-      return setDouble(openstudio::OS_Pump_ConstantSpeedFields::SkinLossRadiativeFraction, skinLossRadiativeFraction);
+      return setDouble(openstudio::Pump_ConstantSpeedFields::SkinLossRadiativeFraction, skinLossRadiativeFraction);
     }
 
     void PumpConstantSpeed_Impl::resetSkinLossRadiativeFraction() {
-      const bool result = setString(openstudio::OS_Pump_ConstantSpeedFields::SkinLossRadiativeFraction, "");
+      const bool result = setString(openstudio::Pump_ConstantSpeedFields::SkinLossRadiativeFraction, "");
       OS_ASSERT(result);
     }
 
     bool PumpConstantSpeed_Impl::setDesignPowerSizingMethod(const std::string& designPowerSizingMethod) {
-      return setString(openstudio::OS_Pump_ConstantSpeedFields::DesignPowerSizingMethod, designPowerSizingMethod, false);
+      return setString(openstudio::Pump_ConstantSpeedFields::DesignPowerSizingMethod, designPowerSizingMethod, false);
     }
 
     bool PumpConstantSpeed_Impl::setDesignElectricPowerPerUnitFlowRate(double designElectricPowerPerUnitFlowRate) {
-      return setDouble(openstudio::OS_Pump_ConstantSpeedFields::DesignElectricPowerperUnitFlowRate, designElectricPowerPerUnitFlowRate, false);
+      return setDouble(openstudio::Pump_ConstantSpeedFields::DesignElectricPowerperUnitFlowRate, designElectricPowerPerUnitFlowRate, false);
     }
 
     bool PumpConstantSpeed_Impl::setDesignShaftPowerPerUnitFlowRatePerUnitHead(double designShaftPowerPerUnitFlowRatePerUnitHead) {
-      return setDouble(openstudio::OS_Pump_ConstantSpeedFields::DesignShaftPowerperUnitFlowRateperUnitHead,
+      return setDouble(openstudio::Pump_ConstantSpeedFields::DesignShaftPowerperUnitFlowRateperUnitHead,
                        designShaftPowerPerUnitFlowRatePerUnitHead, false);
     }
 
     bool PumpConstantSpeed_Impl::setEndUseSubcategory(const std::string& endUseSubcategory) {
-      return setString(openstudio::OS_Pump_ConstantSpeedFields::EndUseSubcategory, endUseSubcategory, false);
+      return setString(openstudio::Pump_ConstantSpeedFields::EndUseSubcategory, endUseSubcategory, false);
     }
 
     boost::optional<double> PumpConstantSpeed_Impl::autosizedRatedFlowRate() const {

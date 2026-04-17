@@ -6,7 +6,11 @@
 #include "StraightComponent/DistrictCooling.hpp"
 #include "StraightComponent/DistrictCooling_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -18,6 +22,9 @@ namespace epmodel {
 
   DistrictCooling::DistrictCooling(const Model& model) : StraightComponent(DistrictCooling::iddObjectType(), model) {
     autosizeNominalCapacity();
+
+    auto capacityFractionSchedule = model.alwaysOnContinuousSchedule();
+    OS_ASSERT(getImpl<detail::DistrictCooling_Impl>()->setCapacityFractionSchedule(capacityFractionSchedule));
   }
 
   DistrictCooling::DistrictCooling(std::shared_ptr<detail::DistrictCooling_Impl> impl) : StraightComponent(std::move(impl)) {}
@@ -30,8 +37,16 @@ namespace epmodel {
     return getImpl<detail::DistrictCooling_Impl>()->nominalCapacity();
   }
 
+  Schedule DistrictCooling::capacityFractionSchedule() const {
+    return getImpl<detail::DistrictCooling_Impl>()->capacityFractionSchedule();
+  }
+
   bool DistrictCooling::setNominalCapacity(double nominalCapacity) {
     return getImpl<detail::DistrictCooling_Impl>()->setNominalCapacity(nominalCapacity);
+  }
+
+  bool DistrictCooling::setCapacityFractionSchedule(Schedule& schedule) {
+    return getImpl<detail::DistrictCooling_Impl>()->setCapacityFractionSchedule(schedule);
   }
 
   bool DistrictCooling::isNominalCapacityAutosized() const {
@@ -44,6 +59,10 @@ namespace epmodel {
 
   boost::optional<double> DistrictCooling::autosizedNominalCapacity() const {
     return getImpl<detail::DistrictCooling_Impl>()->autosizedNominalCapacity();
+  }
+
+  bool DistrictCooling::addToNode(Node& node) {
+    return getImpl<detail::DistrictCooling_Impl>()->addToNode(node);
   }
 
 }  // namespace epmodel
@@ -61,8 +80,28 @@ namespace epmodel {
       return openstudio::DistrictCoolingFields::ChilledWaterOutletNodeName;
     }
 
+    bool DistrictCooling_Impl::addToNode(Node& node) {
+      if (auto plant = node.plantLoop()) {
+        if (plant->supplyComponent(node.handle())) {
+          return StraightComponent_Impl::addToNode(node);
+        }
+      }
+
+      return false;
+    }
+
     boost::optional<double> DistrictCooling_Impl::nominalCapacity() const {
       return getDouble(openstudio::DistrictCoolingFields::NominalCapacity, true);
+    }
+
+    Schedule DistrictCooling_Impl::capacityFractionSchedule() const {
+      auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::DistrictCoolingFields::CapacityFractionScheduleName);
+      OS_ASSERT(schedule);
+      return *schedule;
+    }
+
+    bool DistrictCooling_Impl::setCapacityFractionSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::DistrictCoolingFields::CapacityFractionScheduleName, "DistrictCooling", "Capacity Fraction", schedule);
     }
 
     bool DistrictCooling_Impl::setNominalCapacity(double nominalCapacity) {

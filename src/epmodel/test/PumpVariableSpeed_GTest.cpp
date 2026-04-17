@@ -18,6 +18,14 @@ TEST_F(EPModelFixture, PumpVariableSpeed_DefaultConstructor) {
   PumpVariableSpeed pump(model);
   EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Pump_VariableSpeed), pump.iddObject().type());
   EXPECT_FALSE(pump.nameString().empty());
+  EXPECT_FALSE(pump.isPumpControlTypeDefaulted());
+  EXPECT_EQ("Intermittent", pump.pumpControlType());
+  EXPECT_DOUBLE_EQ(0.5, pump.skinLossRadiativeFraction());
+  EXPECT_EQ("PowerPerFlowPerPressure", pump.designPowerSizingMethod());
+  EXPECT_DOUBLE_EQ(348701.1, pump.designElectricPowerPerUnitFlowRate());
+  EXPECT_DOUBLE_EQ(1.282051282, pump.designShaftPowerPerUnitFlowRatePerUnitHead());
+  EXPECT_DOUBLE_EQ(0.0, pump.designMinimumFlowRateFraction());
+  EXPECT_EQ("General", pump.endUseSubcategory());
 }
 
 TEST_F(EPModelFixture, PumpVariableSpeed_ScalarAccessors_RoundTrip) {

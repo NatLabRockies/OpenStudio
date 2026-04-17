@@ -6,7 +6,10 @@
 #include "StraightComponent/SolarCollectorFlatPlatePhotovoltaicThermal.hpp"
 #include "StraightComponent/SolarCollectorFlatPlatePhotovoltaicThermal_Impl.hpp"
 
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -84,7 +87,41 @@ unsigned SolarCollectorFlatPlatePhotovoltaicThermal_Impl::outletPort() const {
   return openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::WaterOutletNodeName;
 }
 
+bool SolarCollectorFlatPlatePhotovoltaicThermal_Impl::addToNode(Node& node) {
+  if (auto plantLoop = node.plantLoop()) {
+    if (plantLoop->supplyComponent(node.handle())) {
+      if (auto hvacComponent = getObject<openstudio::epmodel::HVACComponent>(); hvacComponent.loop()) {
+        if (!removeFromLoop()) {
+          return false;
+        }
+      }
+      if (!setString(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::ThermalWorkingFluidType, "Water")) {
+        return false;
+      }
+      return StraightComponent_Impl::addToNode(node);
+    }
+    return false;
+  }
+
+  if (auto oaSystem = node.airLoopHVACOutdoorAirSystem()) {
+    if (oaSystem->oaComponent(node.handle())) {
+      if (auto hvacComponent = getObject<openstudio::epmodel::HVACComponent>(); hvacComponent.loop()) {
+        if (!removeFromLoop()) {
+          return false;
+        }
+      }
+      if (!setString(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::ThermalWorkingFluidType, "Air")) {
+        return false;
+      }
+      return StraightComponent_Impl::addToNode(node);
+    }
+  }
+
+  return false;
+}
+
 boost::optional<double> SolarCollectorFlatPlatePhotovoltaicThermal_Impl::designFlowRate() const {
+
   return getDouble(openstudio::SolarCollector_FlatPlate_PhotovoltaicThermalFields::DesignFlowRate, true);
 }
 
@@ -96,6 +133,7 @@ bool SolarCollectorFlatPlatePhotovoltaicThermal_Impl::isDesignFlowRateAutosized(
 }
 
 boost::optional<double> SolarCollectorFlatPlatePhotovoltaicThermal_Impl::autosizedDesignFlowRate() const {
+  // epmodel does not currently resolve autosized values from SQL results.
   return boost::none;
 }
 

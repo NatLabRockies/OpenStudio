@@ -6,7 +6,11 @@
 #include "StraightComponent/CoolingTowerTwoSpeed.hpp"
 #include "StraightComponent/CoolingTowerTwoSpeed_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -17,7 +21,22 @@
 namespace openstudio {
 namespace epmodel {
 
-CoolingTowerTwoSpeed::CoolingTowerTwoSpeed(const Model& model) : StraightComponent(CoolingTowerTwoSpeed::iddObjectType(), model) {}
+CoolingTowerTwoSpeed::CoolingTowerTwoSpeed(const Model& model)
+  : StraightComponent(CoolingTowerTwoSpeed::iddObjectType(), model) {
+  autosizeDesignWaterFlowRate();
+  autosizeHighFanSpeedAirFlowRate();
+  autosizeHighFanSpeedFanPower();
+  autosizeHighFanSpeedUFactorTimesAreaValue();
+  autosizeLowFanSpeedAirFlowRate();
+  autosizeLowFanSpeedFanPower();
+  autosizeLowFanSpeedUFactorTimesAreaValue();
+  OS_ASSERT(setSizingFactor(1.0));
+  OS_ASSERT(setDesignInletAirDryBulbTemperature(35.0));
+  OS_ASSERT(setDesignInletAirWetBulbTemperature(25.6));
+  autosizeDesignApproachTemperature();
+  autosizeDesignRangeTemperature();
+  OS_ASSERT(setEndUseSubcategory("General"));
+}
 
 CoolingTowerTwoSpeed::CoolingTowerTwoSpeed(std::shared_ptr<detail::CoolingTowerTwoSpeed_Impl> impl) : StraightComponent(std::move(impl)) {}
 
@@ -444,6 +463,18 @@ void CoolingTowerTwoSpeed::resetBasinHeaterSetpointTemperature() {
   getImpl<detail::CoolingTowerTwoSpeed_Impl>()->resetBasinHeaterSetpointTemperature();
 }
 
+boost::optional<Schedule> CoolingTowerTwoSpeed::basinHeaterOperatingSchedule() const {
+  return getImpl<detail::CoolingTowerTwoSpeed_Impl>()->basinHeaterOperatingSchedule();
+}
+
+bool CoolingTowerTwoSpeed::setBasinHeaterOperatingSchedule(Schedule& basinHeaterOperatingSchedule) {
+  return getImpl<detail::CoolingTowerTwoSpeed_Impl>()->setBasinHeaterOperatingSchedule(basinHeaterOperatingSchedule);
+}
+
+void CoolingTowerTwoSpeed::resetBasinHeaterOperatingSchedule() {
+  getImpl<detail::CoolingTowerTwoSpeed_Impl>()->resetBasinHeaterOperatingSchedule();
+}
+
 std::string CoolingTowerTwoSpeed::evaporationLossMode() const {
   return getImpl<detail::CoolingTowerTwoSpeed_Impl>()->evaporationLossMode();
 }
@@ -522,6 +553,18 @@ bool CoolingTowerTwoSpeed::setBlowdownConcentrationRatio(double blowdownConcentr
 
 void CoolingTowerTwoSpeed::resetBlowdownConcentrationRatio() {
   getImpl<detail::CoolingTowerTwoSpeed_Impl>()->resetBlowdownConcentrationRatio();
+}
+
+boost::optional<Schedule> CoolingTowerTwoSpeed::blowdownMakeupWaterUsageSchedule() const {
+  return getImpl<detail::CoolingTowerTwoSpeed_Impl>()->blowdownMakeupWaterUsageSchedule();
+}
+
+bool CoolingTowerTwoSpeed::setBlowdownMakeupWaterUsageSchedule(Schedule& blowdownMakeupWaterUsageSchedule) {
+  return getImpl<detail::CoolingTowerTwoSpeed_Impl>()->setBlowdownMakeupWaterUsageSchedule(blowdownMakeupWaterUsageSchedule);
+}
+
+void CoolingTowerTwoSpeed::resetBlowdownMakeupWaterUsageSchedule() {
+  getImpl<detail::CoolingTowerTwoSpeed_Impl>()->resetBlowdownMakeupWaterUsageSchedule();
 }
 
 int CoolingTowerTwoSpeed::numberofCells() const {
@@ -673,6 +716,16 @@ unsigned CoolingTowerTwoSpeed_Impl::inletPort() const {
 
 unsigned CoolingTowerTwoSpeed_Impl::outletPort() const {
   return openstudio::CoolingTower_TwoSpeedFields::WaterOutletNodeName;
+}
+
+bool CoolingTowerTwoSpeed_Impl::addToNode(Node& node) {
+  if (auto plantLoop = node.plantLoop()) {
+    if (plantLoop->supplyComponent(node.handle())) {
+      return StraightComponent_Impl::addToNode(node);
+    }
+  }
+
+  return false;
 }
 
 std::vector<std::string> CoolingTowerTwoSpeed_Impl::performanceInputMethodValues() const {
@@ -1148,6 +1201,19 @@ void CoolingTowerTwoSpeed_Impl::resetBasinHeaterSetpointTemperature() {
   OS_ASSERT(setString(openstudio::CoolingTower_TwoSpeedFields::BasinHeaterSetpointTemperature, ""));
 }
 
+boost::optional<Schedule> CoolingTowerTwoSpeed_Impl::basinHeaterOperatingSchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::CoolingTower_TwoSpeedFields::BasinHeaterOperatingScheduleName);
+}
+
+bool CoolingTowerTwoSpeed_Impl::setBasinHeaterOperatingSchedule(Schedule& basinHeaterOperatingSchedule) {
+  return setSchedule(openstudio::CoolingTower_TwoSpeedFields::BasinHeaterOperatingScheduleName, "CoolingTowerTwoSpeed",
+                     "Basin Heater Operating", basinHeaterOperatingSchedule);
+}
+
+void CoolingTowerTwoSpeed_Impl::resetBasinHeaterOperatingSchedule() {
+  OS_ASSERT(setPointer(openstudio::CoolingTower_TwoSpeedFields::BasinHeaterOperatingScheduleName, openstudio::Handle(), false));
+}
+
 std::string CoolingTowerTwoSpeed_Impl::evaporationLossMode() const {
   const auto value = getString(openstudio::CoolingTower_TwoSpeedFields::EvaporationLossMode, true);
   OS_ASSERT(value);
@@ -1238,6 +1304,19 @@ void CoolingTowerTwoSpeed_Impl::resetBlowdownConcentrationRatio() {
   OS_ASSERT(setString(openstudio::CoolingTower_TwoSpeedFields::BlowdownConcentrationRatio, ""));
 }
 
+boost::optional<Schedule> CoolingTowerTwoSpeed_Impl::blowdownMakeupWaterUsageSchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::CoolingTower_TwoSpeedFields::BlowdownMakeupWaterUsageScheduleName);
+}
+
+bool CoolingTowerTwoSpeed_Impl::setBlowdownMakeupWaterUsageSchedule(Schedule& blowdownMakeupWaterUsageSchedule) {
+  return setSchedule(openstudio::CoolingTower_TwoSpeedFields::BlowdownMakeupWaterUsageScheduleName, "CoolingTowerTwoSpeed",
+                     "Blowdown Makeup Water Usage", blowdownMakeupWaterUsageSchedule);
+}
+
+void CoolingTowerTwoSpeed_Impl::resetBlowdownMakeupWaterUsageSchedule() {
+  OS_ASSERT(setPointer(openstudio::CoolingTower_TwoSpeedFields::BlowdownMakeupWaterUsageScheduleName, openstudio::Handle(), false));
+}
+
 int CoolingTowerTwoSpeed_Impl::numberofCells() const {
   const auto value = getInt(openstudio::CoolingTower_TwoSpeedFields::NumberofCells, true);
   OS_ASSERT(value);
@@ -1257,9 +1336,12 @@ void CoolingTowerTwoSpeed_Impl::resetNumberofCells() {
 }
 
 std::string CoolingTowerTwoSpeed_Impl::cellControl() const {
-  const auto value = getString(openstudio::CoolingTower_TwoSpeedFields::CellControl, true);
-  OS_ASSERT(value);
-  return *value;
+  if (const auto value = getString(openstudio::CoolingTower_TwoSpeedFields::CellControl, false)) {
+    if (!value->empty()) {
+      return *value;
+    }
+  }
+  return "MinimalCell";
 }
 
 bool CoolingTowerTwoSpeed_Impl::isCellControlDefaulted() const {

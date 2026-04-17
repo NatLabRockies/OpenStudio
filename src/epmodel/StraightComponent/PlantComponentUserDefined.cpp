@@ -16,7 +16,12 @@
 namespace openstudio {
 namespace epmodel {
 
-  PlantComponentUserDefined::PlantComponentUserDefined(const Model& model) : StraightComponent(PlantComponentUserDefined::iddObjectType(), model) {}
+  PlantComponentUserDefined::PlantComponentUserDefined(const Model& model) : StraightComponent(PlantComponentUserDefined::iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::PlantComponentUserDefined_Impl>());
+    OS_ASSERT(setNumberOfPlantLoopConnections(1));
+    OS_ASSERT(setPlantConnection1LoadingMode("MeetsLoadWithNominalCapacityHiOutLimit"));
+    OS_ASSERT(setPlantConnection1LoopFlowRequestMode("NeedsFlowIfLoopOn"));
+  }
 
   PlantComponentUserDefined::PlantComponentUserDefined(std::shared_ptr<detail::PlantComponentUserDefined_Impl> impl)
     : StraightComponent(std::move(impl)) {}
@@ -183,9 +188,10 @@ namespace epmodel {
     }
 
     bool PlantComponentUserDefined_Impl::setNumberOfPlantLoopConnections(int numberOfPlantLoopConnections) {
-      const bool result = setInt(openstudio::PlantComponent_UserDefinedFields::NumberofPlantLoopConnections, numberOfPlantLoopConnections);
-      OS_ASSERT(result);
-      return result;
+      if (numberOfPlantLoopConnections != 1) {
+        return false;
+      }
+      return setInt(openstudio::PlantComponent_UserDefinedFields::NumberofPlantLoopConnections, numberOfPlantLoopConnections);
     }
 
     std::string PlantComponentUserDefined_Impl::plantConnection1LoadingMode() const {
@@ -195,9 +201,7 @@ namespace epmodel {
     }
 
     bool PlantComponentUserDefined_Impl::setPlantConnection1LoadingMode(const std::string& plantConnection1LoadingMode) {
-      const bool result = setString(openstudio::PlantComponent_UserDefinedFields::PlantConnection1LoadingMode, plantConnection1LoadingMode);
-      OS_ASSERT(result);
-      return result;
+      return setString(openstudio::PlantComponent_UserDefinedFields::PlantConnection1LoadingMode, plantConnection1LoadingMode);
     }
 
     std::vector<std::string> PlantComponentUserDefined_Impl::plantConnection1LoadingModeValues() const {
@@ -211,10 +215,7 @@ namespace epmodel {
     }
 
     bool PlantComponentUserDefined_Impl::setPlantConnection1LoopFlowRequestMode(const std::string& plantConnection1LoopFlowRequestMode) {
-      const bool result =
-        setString(openstudio::PlantComponent_UserDefinedFields::PlantConnection1LoopFlowRequestMode, plantConnection1LoopFlowRequestMode);
-      OS_ASSERT(result);
-      return result;
+      return setString(openstudio::PlantComponent_UserDefinedFields::PlantConnection1LoopFlowRequestMode, plantConnection1LoopFlowRequestMode);
     }
 
     std::vector<std::string> PlantComponentUserDefined_Impl::plantConnection1LoopFlowRequestModeValues() const {
@@ -226,9 +227,7 @@ namespace epmodel {
     }
 
     bool PlantComponentUserDefined_Impl::setPlantConnection2LoadingMode(const std::string& plantConnection2LoadingMode) {
-      const bool result = setString(openstudio::PlantComponent_UserDefinedFields::PlantConnection2LoadingMode, plantConnection2LoadingMode);
-      OS_ASSERT(result);
-      return result;
+      return setString(openstudio::PlantComponent_UserDefinedFields::PlantConnection2LoadingMode, plantConnection2LoadingMode);
     }
 
     void PlantComponentUserDefined_Impl::resetPlantConnection2LoadingMode() {
@@ -244,10 +243,7 @@ namespace epmodel {
     }
 
     bool PlantComponentUserDefined_Impl::setPlantConnection2LoopFlowRequestMode(const std::string& plantConnection2LoopFlowRequestMode) {
-      const bool result =
-        setString(openstudio::PlantComponent_UserDefinedFields::PlantConnection2LoopFlowRequestMode, plantConnection2LoopFlowRequestMode);
-      OS_ASSERT(result);
-      return result;
+      return setString(openstudio::PlantComponent_UserDefinedFields::PlantConnection2LoopFlowRequestMode, plantConnection2LoopFlowRequestMode);
     }
 
     void PlantComponentUserDefined_Impl::resetPlantConnection2LoopFlowRequestMode() {
@@ -263,9 +259,7 @@ namespace epmodel {
     }
 
     bool PlantComponentUserDefined_Impl::setPlantConnection3LoadingMode(const std::string& plantConnection3LoadingMode) {
-      const bool result = setString(openstudio::PlantComponent_UserDefinedFields::PlantConnection3LoadingMode, plantConnection3LoadingMode);
-      OS_ASSERT(result);
-      return result;
+      return setString(openstudio::PlantComponent_UserDefinedFields::PlantConnection3LoadingMode, plantConnection3LoadingMode);
     }
 
     void PlantComponentUserDefined_Impl::resetPlantConnection3LoadingMode() {
@@ -281,10 +275,7 @@ namespace epmodel {
     }
 
     bool PlantComponentUserDefined_Impl::setPlantConnection3LoopFlowRequestMode(const std::string& plantConnection3LoopFlowRequestMode) {
-      const bool result =
-        setString(openstudio::PlantComponent_UserDefinedFields::PlantConnection3LoopFlowRequestMode, plantConnection3LoopFlowRequestMode);
-      OS_ASSERT(result);
-      return result;
+      return setString(openstudio::PlantComponent_UserDefinedFields::PlantConnection3LoopFlowRequestMode, plantConnection3LoopFlowRequestMode);
     }
 
     void PlantComponentUserDefined_Impl::resetPlantConnection3LoopFlowRequestMode() {
@@ -300,9 +291,7 @@ namespace epmodel {
     }
 
     bool PlantComponentUserDefined_Impl::setPlantConnection4LoadingMode(const std::string& plantConnection4LoadingMode) {
-      const bool result = setString(openstudio::PlantComponent_UserDefinedFields::PlantConnection4LoadingMode, plantConnection4LoadingMode);
-      OS_ASSERT(result);
-      return result;
+      return setString(openstudio::PlantComponent_UserDefinedFields::PlantConnection4LoadingMode, plantConnection4LoadingMode);
     }
 
     void PlantComponentUserDefined_Impl::resetPlantConnection4LoadingMode() {
@@ -318,10 +307,7 @@ namespace epmodel {
     }
 
     bool PlantComponentUserDefined_Impl::setPlantConnection4LoopFlowRequestMode(const std::string& plantConnection4LoopFlowRequestMode) {
-      const bool result =
-        setString(openstudio::PlantComponent_UserDefinedFields::PlantConnection4LoopFlowRequestMode, plantConnection4LoopFlowRequestMode);
-      OS_ASSERT(result);
-      return result;
+      return setString(openstudio::PlantComponent_UserDefinedFields::PlantConnection4LoopFlowRequestMode, plantConnection4LoopFlowRequestMode);
     }
 
     void PlantComponentUserDefined_Impl::resetPlantConnection4LoopFlowRequestMode() {

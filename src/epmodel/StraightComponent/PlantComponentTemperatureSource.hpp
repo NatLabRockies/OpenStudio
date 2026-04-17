@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class PlantComponentTemperatureSource_Impl;
@@ -37,13 +38,19 @@ namespace epmodel {
     static std::vector<std::string> temperatureSpecificationTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical temperature-source scalar surface is present, while node and schedule helpers remain out of scope.
+    // - Status: Near Parity. The canonical temperature-source scalar surface, source-temperature schedule relationship, and inherited straight-component
+    //   topology behavior are present.
     // - Canonical Counterpart: openstudio::model::PlantComponentTemperatureSource.
-    // - Implemented Parity: The preserved scalar API matches the design-flow, temperature-specification, and source-temperature accessors with matching autosize/default behavior.
-    // - Documented Delta: Inlet/outlet node names and the source-temperature schedule remain intentionally excluded from this scalar pass.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `PlantComponent:TemperatureSource` scalar fields used by the forward translator.
-    // - Evidence: `src/model/PlantComponentTemperatureSource.hpp`, `src/model/PlantComponentTemperatureSource.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslatePlantComponentTemperatureSource.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
+    // - Implemented Parity: The design-flow, temperature-specification, source-temperature, and source-temperature-schedule accessors now match the
+    //   canonical wrapper alongside the inherited straight-component add/remove topology behavior.
+    // - Documented Delta: epmodel still inherits the shared HVACComponent/StraightComponent base-surface gaps around broader canonical convenience such as
+    //   `airLoopHVAC()` re-exposure and component/fuel-type reporting; this wrapper does not add type-local divergence.
+    // - Field/Storage Mapping: These accessors map directly to the EnergyPlus `PlantComponent:TemperatureSource` scalar and schedule fields used by the
+    //   forward translator.
+    // - Evidence: `src/model/PlantComponentTemperatureSource.hpp`, `src/model/PlantComponentTemperatureSource.cpp`, and
+    //   `src/energyplus/ForwardTranslator/ForwardTranslatePlantComponentTemperatureSource.cpp`.
+    // - Remaining Parity Work: Close the remaining shared HVACComponent/StraightComponent base-surface gaps so this wrapper can inherit the missing
+    //   canonical conveniences without local divergence.
 
     boost::optional<double> designVolumeFlowRate() const;
     bool isDesignVolumeFlowRateAutosized() const;
@@ -57,6 +64,10 @@ namespace epmodel {
     boost::optional<double> sourceTemperature() const;
     bool setSourceTemperature(double sourceTemperature);
     void resetSourceTemperature();
+
+    boost::optional<Schedule> sourceTemperatureSchedule() const;
+    bool setSourceTemperatureSchedule(Schedule& schedule);
+    void resetSourceTemperatureSchedule();
 
    protected:
     using ImplType = detail::PlantComponentTemperatureSource_Impl;

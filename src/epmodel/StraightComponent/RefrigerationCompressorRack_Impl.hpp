@@ -13,6 +13,11 @@
 
 namespace openstudio {
 namespace epmodel {
+
+  class Curve;
+  class Schedule;
+  class ThermalZone;
+
   namespace detail {
 
     class EPMODEL_API RefrigerationCompressorRack_Impl : public StraightComponent_Impl
@@ -23,6 +28,9 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
+      std::vector<ModelObject> children() const override;
+      std::vector<IdfObject> remove() override;
 
       std::string heatRejectionLocation() const;
       bool setHeatRejectionLocation(const std::string& heatRejectionLocation);
@@ -30,14 +38,25 @@ namespace epmodel {
       double designCompressorRackCOP() const;
       bool setDesignCompressorRackCOP(double designCompressorRackCOP);
 
+      Curve compressorRackCOPFunctionofTemperatureCurve() const;
+      bool setCompressorRackCOPFunctionofTemperatureCurve(const Curve& curve);
+
       double designCondenserFanPower() const;
       bool setDesignCondenserFanPower(double designCondenserFanPower);
+
+      boost::optional<Curve> condenserFanPowerFunctionofTemperatureCurve() const;
+      bool setCondenserFanPowerFunctionofTemperatureCurve(const Curve& curve);
+      void resetCondenserFanPowerFunctionofTemperatureCurve();
 
       std::string condenserType() const;
       bool setCondenserType(const std::string& condenserType);
 
       std::string waterCooledLoopFlowType() const;
       bool setWaterCooledLoopFlowType(const std::string& waterCooledLoopFlowType);
+
+      boost::optional<Schedule> waterCooledCondenserOutletTemperatureSchedule() const;
+      bool setWaterCooledCondenserOutletTemperatureSchedule(Schedule& schedule);
+      void resetWaterCooledCondenserOutletTemperatureSchedule();
 
       boost::optional<double> waterCooledCondenserDesignFlowRate() const;
       bool setWaterCooledCondenserDesignFlowRate(double waterCooledCondenserDesignFlowRate);
@@ -52,6 +71,10 @@ namespace epmodel {
 
       double waterCooledCondenserMinimumWaterInletTemperature() const;
       bool setWaterCooledCondenserMinimumWaterInletTemperature(double waterCooledCondenserMinimumWaterInletTemperature);
+
+      boost::optional<Schedule> evaporativeCondenserAvailabilitySchedule() const;
+      bool setEvaporativeCondenserAvailabilitySchedule(Schedule& schedule);
+      void resetEvaporativeCondenserAvailabilitySchedule();
 
       double evaporativeCondenserEffectiveness() const;
       bool setEvaporativeCondenserEffectiveness(double evaporativeCondenserEffectiveness);
@@ -76,6 +99,10 @@ namespace epmodel {
       bool isEndUseSubcategoryDefaulted() const;
       bool setEndUseSubcategory(const std::string& endUseSubcategory);
       void resetEndUseSubcategory();
+
+      boost::optional<ThermalZone> heatRejectionZone() const;
+      bool setHeatRejectionZone(const ThermalZone& thermalZone);
+      void resetHeatRejectionZone();
     };
 
   }  // namespace detail

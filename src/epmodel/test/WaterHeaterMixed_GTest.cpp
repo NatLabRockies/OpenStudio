@@ -5,8 +5,12 @@
 
 #include <gtest/gtest.h>
 
+#include "../Curve/CurveCubic.hpp"
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../ModelObject/WaterHeaterSizing.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
 #include "../WaterToWaterComponent/WaterHeaterMixed.hpp"
 
 #include <utilities/idd/WaterHeater_Mixed_FieldEnums.hxx>
@@ -18,6 +22,11 @@ TEST_F(EPModelFixture, WaterHeaterMixed_DefaultConstructor) {
   WaterHeaterMixed heater(model);
   EXPECT_EQ(WaterHeaterMixed::iddObjectType(), heater.iddObject().type());
   EXPECT_FALSE(heater.nameString().empty());
+  EXPECT_TRUE(heater.setpointTemperatureSchedule());
+  EXPECT_TRUE(heater.ambientTemperatureSchedule());
+  EXPECT_EQ(heater.handle(), heater.waterHeaterSizing().waterHeater().handle());
+  ASSERT_EQ(1u, heater.children().size());
+  EXPECT_EQ(heater.waterHeaterSizing().handle(), heater.children().front().handle());
 }
 
 TEST_F(EPModelFixture, WaterHeaterMixed_ScalarAccessors_RoundTrip) {
@@ -71,6 +80,13 @@ TEST_F(EPModelFixture, WaterHeaterMixed_ScalarAccessors_RoundTrip) {
   EXPECT_TRUE(heater.setHeaterThermalEfficiency(0.92));
   ASSERT_TRUE(heater.heaterThermalEfficiency());
   heater.resetHeaterThermalEfficiency();
+
+  CurveCubic partLoadFactorCurve(model);
+  EXPECT_TRUE(heater.setPartLoadFactorCurve(partLoadFactorCurve));
+  ASSERT_TRUE(heater.partLoadFactorCurve());
+  EXPECT_EQ(partLoadFactorCurve.handle(), heater.partLoadFactorCurve()->handle());
+  heater.resetPartLoadFactorCurve();
+  EXPECT_FALSE(heater.partLoadFactorCurve());
 
   EXPECT_TRUE(heater.setOffCycleParasiticFuelConsumptionRate(25.0));
   EXPECT_DOUBLE_EQ(25.0, heater.offCycleParasiticFuelConsumptionRate());
@@ -149,6 +165,78 @@ TEST_F(EPModelFixture, WaterHeaterMixed_ScalarAccessors_RoundTrip) {
   EXPECT_FALSE(heater.autosizedHeaterMaximumCapacity());
   EXPECT_FALSE(heater.autosizedUseSideDesignFlowRate());
   EXPECT_FALSE(heater.autosizedSourceSideDesignFlowRate());
+}
+
+TEST_F(EPModelFixture, WaterHeaterMixed_RelationshipAccessors_RoundTrip) {
+  Model model;
+  WaterHeaterMixed heater(model);
+
+  ScheduleConstant setpoint(model);
+  ScheduleConstant ambient(model);
+  ScheduleConstant useFlowFraction(model);
+  ScheduleConstant coldWater(model);
+  ScheduleConstant indirectAlternate(model);
+  ThermalZone thermalZone(model);
+  CurveCubic partLoadFactorCurve(model);
+
+  ASSERT_TRUE(setpoint.setValue(58.0));
+  ASSERT_TRUE(ambient.setValue(23.0));
+  ASSERT_TRUE(useFlowFraction.setValue(0.5));
+  ASSERT_TRUE(coldWater.setValue(14.0));
+  ASSERT_TRUE(indirectAlternate.setValue(52.0));
+
+  EXPECT_TRUE(heater.setSetpointTemperatureSchedule(setpoint));
+  ASSERT_TRUE(heater.setpointTemperatureSchedule());
+  EXPECT_EQ(setpoint.handle(), heater.setpointTemperatureSchedule()->handle());
+  heater.resetSetpointTemperatureSchedule();
+  EXPECT_FALSE(heater.setpointTemperatureSchedule());
+
+  EXPECT_TRUE(heater.setAmbientTemperatureSchedule(ambient));
+  ASSERT_TRUE(heater.ambientTemperatureSchedule());
+  EXPECT_EQ(ambient.handle(), heater.ambientTemperatureSchedule()->handle());
+  heater.resetAmbientTemperatureSchedule();
+  EXPECT_FALSE(heater.ambientTemperatureSchedule());
+
+  EXPECT_TRUE(heater.setAmbientTemperatureThermalZone(thermalZone));
+  ASSERT_TRUE(heater.ambientTemperatureThermalZone());
+  EXPECT_EQ(thermalZone.handle(), heater.ambientTemperatureThermalZone()->handle());
+  heater.resetAmbientTemperatureThermalZone();
+  EXPECT_FALSE(heater.ambientTemperatureThermalZone());
+
+  EXPECT_TRUE(heater.setAmbientTemperatureOutdoorAirNodeName("Mixed Water Heater OA Node"));
+  ASSERT_TRUE(heater.ambientTemperatureOutdoorAirNodeName());
+  EXPECT_EQ("Mixed Water Heater OA Node", heater.ambientTemperatureOutdoorAirNodeName().get());
+  heater.resetAmbientTemperatureOutdoorAirNodeName();
+  EXPECT_FALSE(heater.ambientTemperatureOutdoorAirNodeName());
+
+  EXPECT_TRUE(heater.setUseFlowRateFractionSchedule(useFlowFraction));
+  ASSERT_TRUE(heater.useFlowRateFractionSchedule());
+  EXPECT_EQ(useFlowFraction.handle(), heater.useFlowRateFractionSchedule()->handle());
+  heater.resetUseFlowRateFractionSchedule();
+  EXPECT_FALSE(heater.useFlowRateFractionSchedule());
+
+  EXPECT_TRUE(heater.setColdWaterSupplyTemperatureSchedule(coldWater));
+  ASSERT_TRUE(heater.coldWaterSupplyTemperatureSchedule());
+  EXPECT_EQ(coldWater.handle(), heater.coldWaterSupplyTemperatureSchedule()->handle());
+  heater.resetColdWaterSupplyTemperatureSchedule();
+  EXPECT_FALSE(heater.coldWaterSupplyTemperatureSchedule());
+
+  EXPECT_TRUE(heater.setPartLoadFactorCurve(partLoadFactorCurve));
+  ASSERT_TRUE(heater.partLoadFactorCurve());
+  EXPECT_EQ(partLoadFactorCurve.handle(), heater.partLoadFactorCurve()->handle());
+  heater.resetPartLoadFactorCurve();
+  EXPECT_FALSE(heater.partLoadFactorCurve());
+
+  EXPECT_TRUE(heater.setIndirectAlternateSetpointTemperatureSchedule(indirectAlternate));
+  ASSERT_TRUE(heater.indirectAlternateSetpointTemperatureSchedule());
+  EXPECT_EQ(indirectAlternate.handle(), heater.indirectAlternateSetpointTemperatureSchedule()->handle());
+  EXPECT_EQ("IndirectHeatAlternateSetpoint", heater.sourceSideFlowControlMode());
+  heater.resetIndirectAlternateSetpointTemperatureSchedule();
+  EXPECT_FALSE(heater.indirectAlternateSetpointTemperatureSchedule());
+  EXPECT_EQ("IndirectHeatPrimarySetpoint", heater.sourceSideFlowControlMode());
+
+  WaterHeaterSizing sizing = heater.waterHeaterSizing();
+  EXPECT_EQ(heater.handle(), sizing.waterHeater().handle());
 }
 
 TEST_F(EPModelFixture, WaterHeaterMixed_WaterToWaterTopology) {

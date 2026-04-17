@@ -6,7 +6,11 @@
 #include "StraightComponent/RefrigerationCondenserWaterCooled.hpp"
 #include "StraightComponent/RefrigerationCondenserWaterCooled_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include "../utilities/core/Assert.hpp"
 
@@ -18,7 +22,19 @@ namespace openstudio {
 namespace epmodel {
 
   RefrigerationCondenserWaterCooled::RefrigerationCondenserWaterCooled(const Model& model)
-    : StraightComponent(RefrigerationCondenserWaterCooled::iddObjectType(), model) {}
+    : StraightComponent(RefrigerationCondenserWaterCooled::iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::RefrigerationCondenserWaterCooled_Impl>());
+
+    OS_ASSERT(setRatedEffectiveTotalHeatRejectionRate(58000.0));
+    OS_ASSERT(setRatedCondensingTemperature(29.4));
+    OS_ASSERT(setRatedSubcoolingTemperatureDifference(0.0));
+    OS_ASSERT(setRatedWaterInletTemperature(10.0));
+    OS_ASSERT(setWaterCooledLoopFlowType("ConstantFlow"));
+    OS_ASSERT(setWaterDesignFlowRate(0.0025));
+    OS_ASSERT(setWaterMaximumFlowRate(0.003));
+    OS_ASSERT(setWaterMaximumWaterOutletTemperature(55.0));
+    OS_ASSERT(setWaterMinimumWaterInletTemperature(10.0));
+  }
 
   RefrigerationCondenserWaterCooled::RefrigerationCondenserWaterCooled(std::shared_ptr<detail::RefrigerationCondenserWaterCooled_Impl> impl)
     : StraightComponent(std::move(impl)) {}
@@ -90,6 +106,18 @@ namespace epmodel {
 
   void RefrigerationCondenserWaterCooled::resetWaterCooledLoopFlowType() {
     getImpl<detail::RefrigerationCondenserWaterCooled_Impl>()->resetWaterCooledLoopFlowType();
+  }
+
+  boost::optional<Schedule> RefrigerationCondenserWaterCooled::waterOutletTemperatureSchedule() const {
+    return getImpl<detail::RefrigerationCondenserWaterCooled_Impl>()->waterOutletTemperatureSchedule();
+  }
+
+  bool RefrigerationCondenserWaterCooled::setWaterOutletTemperatureSchedule(Schedule& waterOutletTemperatureSchedule) {
+    return getImpl<detail::RefrigerationCondenserWaterCooled_Impl>()->setWaterOutletTemperatureSchedule(waterOutletTemperatureSchedule);
+  }
+
+  void RefrigerationCondenserWaterCooled::resetWaterOutletTemperatureSchedule() {
+    getImpl<detail::RefrigerationCondenserWaterCooled_Impl>()->resetWaterOutletTemperatureSchedule();
   }
 
   boost::optional<double> RefrigerationCondenserWaterCooled::waterDesignFlowRate() const {
@@ -217,6 +245,16 @@ namespace epmodel {
       return Refrigeration_Condenser_WaterCooledFields::WaterOutletNodeName;
     }
 
+    bool RefrigerationCondenserWaterCooled_Impl::addToNode(Node& node) {
+      if (auto plantLoop = node.plantLoop()) {
+        if (plantLoop->demandComponent(node.handle())) {
+          return StraightComponent_Impl::addToNode(node);
+        }
+      }
+
+      return false;
+    }
+
     boost::optional<double> RefrigerationCondenserWaterCooled_Impl::ratedEffectiveTotalHeatRejectionRate() const {
       return getDouble(Refrigeration_Condenser_WaterCooledFields::RatedEffectiveTotalHeatRejectionRate, true);
     }
@@ -294,6 +332,20 @@ namespace epmodel {
 
     void RefrigerationCondenserWaterCooled_Impl::resetWaterCooledLoopFlowType() {
       const bool result = setString(Refrigeration_Condenser_WaterCooledFields::WaterCooledLoopFlowType, "");
+      OS_ASSERT(result);
+    }
+
+    boost::optional<Schedule> RefrigerationCondenserWaterCooled_Impl::waterOutletTemperatureSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(Refrigeration_Condenser_WaterCooledFields::WaterOutletTemperatureScheduleName);
+    }
+
+    bool RefrigerationCondenserWaterCooled_Impl::setWaterOutletTemperatureSchedule(Schedule& waterOutletTemperatureSchedule) {
+      return setSchedule(Refrigeration_Condenser_WaterCooledFields::WaterOutletTemperatureScheduleName,
+                         "RefrigerationCondenserWaterCooled", "Water Outlet Temperature", waterOutletTemperatureSchedule);
+    }
+
+    void RefrigerationCondenserWaterCooled_Impl::resetWaterOutletTemperatureSchedule() {
+      const bool result = setString(Refrigeration_Condenser_WaterCooledFields::WaterOutletTemperatureScheduleName, "");
       OS_ASSERT(result);
     }
 

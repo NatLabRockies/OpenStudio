@@ -10,6 +10,7 @@
 
 namespace openstudio {
 namespace epmodel {
+  class ModelObject;
   namespace detail {
 
     class EPMODEL_API GroundHeatExchangerHorizontalTrench_Impl : public StraightComponent_Impl
@@ -20,6 +21,7 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
 
       double designFlowRate() const;
       bool setDesignFlowRate(double designFlowRate);
@@ -68,6 +70,9 @@ namespace epmodel {
 
       double evapotranspirationGroundCoverParameter() const;
       bool setEvapotranspirationGroundCoverParameter(double evapotranspirationGroundCoverParameter);
+
+      ModelObject undisturbedGroundTemperatureModel() const;
+      bool setUndisturbedGroundTemperatureModel(const ModelObject& undisturbedGroundTemperatureModel);
     };
 
   }  // namespace detail

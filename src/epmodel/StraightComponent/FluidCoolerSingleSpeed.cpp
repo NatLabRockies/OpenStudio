@@ -6,7 +6,9 @@
 #include "StraightComponent/FluidCoolerSingleSpeed.hpp"
 #include "StraightComponent/FluidCoolerSingleSpeed_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -184,6 +186,16 @@ unsigned FluidCoolerSingleSpeed_Impl::outletPort() const {
   return openstudio::FluidCooler_SingleSpeedFields::WaterOutletNodeName;
 }
 
+bool FluidCoolerSingleSpeed_Impl::addToNode(Node& node) {
+  if (auto plantLoop = node.plantLoop()) {
+    if (plantLoop->supplyComponent(node.handle())) {
+      return StraightComponent_Impl::addToNode(node);
+    }
+  }
+
+  return false;
+}
+
     std::vector<std::string> FluidCoolerSingleSpeed_Impl::performanceInputMethodValues() const {
       return FluidCoolerSingleSpeed::performanceInputMethodValues();
     }
@@ -223,6 +235,7 @@ unsigned FluidCoolerSingleSpeed_Impl::outletPort() const {
     }
 
     boost::optional<double> FluidCoolerSingleSpeed_Impl::autosizedDesignAirFlowRateUfactorTimesAreaValue() const {
+      // epmodel does not currently resolve autosized values from SQL results.
       return boost::none;
     }
 
@@ -302,6 +315,7 @@ unsigned FluidCoolerSingleSpeed_Impl::outletPort() const {
     }
 
     boost::optional<double> FluidCoolerSingleSpeed_Impl::autosizedDesignWaterFlowRate() const {
+      // epmodel does not currently resolve autosized values from SQL results.
       return boost::none;
     }
 
@@ -329,6 +343,7 @@ unsigned FluidCoolerSingleSpeed_Impl::outletPort() const {
     }
 
     boost::optional<double> FluidCoolerSingleSpeed_Impl::autosizedDesignAirFlowRate() const {
+      // epmodel does not currently resolve autosized values from SQL results.
       return boost::none;
     }
 
@@ -356,6 +371,7 @@ unsigned FluidCoolerSingleSpeed_Impl::outletPort() const {
     }
 
     boost::optional<double> FluidCoolerSingleSpeed_Impl::autosizedDesignAirFlowRateFanPower() const {
+      // epmodel does not currently resolve autosized values from SQL results.
       return boost::none;
     }
 

@@ -20,6 +20,7 @@ namespace epmodel {
       using StraightComponent_Impl::StraightComponent_Impl;
       virtual ~SwimmingPoolIndoor_Impl() override = default;
 
+      bool addToNode(Node& node) override;
       unsigned inletPort() const override;
       unsigned outletPort() const override;
 
@@ -46,16 +47,17 @@ namespace epmodel {
       bool setCoverLongWavelengthRadiationFactor(double coverLongWavelengthRadiationFactor);
       void resetCoverLongWavelengthRadiationFactor();
 
-      boost::optional<double> poolHeatingSystemMaximumWaterFlowRate() const;
+      double poolHeatingSystemMaximumWaterFlowRate() const;
       bool setPoolHeatingSystemMaximumWaterFlowRate(double poolHeatingSystemMaximumWaterFlowRate);
-      void resetPoolHeatingSystemMaximumWaterFlowRate();
 
-      boost::optional<double> poolMiscellaneousEquipmentPower() const;
+      double poolMiscellaneousEquipmentPower() const;
       bool setPoolMiscellaneousEquipmentPower(double poolMiscellaneousEquipmentPower);
-      void resetPoolMiscellaneousEquipmentPower();
 
       double maximumNumberofPeople() const;
       bool setMaximumNumberofPeople(double maximumNumberofPeople);
+
+      boost::optional<Node> poolWaterInletNode() const;
+      boost::optional<Node> poolWaterOutletNode() const;
     };
 
   }  // namespace detail

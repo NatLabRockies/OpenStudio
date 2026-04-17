@@ -42,12 +42,17 @@ namespace epmodel {
     static std::vector<std::string> blowdownCalculationModeValues();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical two-speed evaporative-fluid-cooler scalar surface is present, while node, schedule, and storage-tank helpers remain out of scope.
+    // - Status: Parity with documented deltas. The canonical scalar surface and plant-supply placement rule are present, while the outdoor-air and
+    //   blowdown schedule relationship helpers plus the legacy storage-tank placeholder remain out of scope.
     // - Canonical Counterpart: openstudio::model::EvaporativeFluidCoolerTwoSpeed.
-    // - Implemented Parity: The preserved scalar API matches the high/low speed flow, fan power, sizing-factor, spray-water, performance, and capacity accessors with matching autosize/default behavior.
-    // - Documented Delta: Node-name, schedule, and storage-tank helpers remain intentionally excluded from this scalar pass.
+    // - Implemented Parity: The preserved API matches the canonical high/low speed flow, fan power, sizing-factor, spray-water, performance, and
+    //   capacity accessors with matching autosize/default behavior, and inherited `addToNode(...)` now follows the canonical plant-supply-only
+    //   insertion contract.
+    // - Documented Delta: The public wrapper still omits `outdoorAirInletNodeName()`, `blowdownMakeupWaterUsageSchedule()`, their mutators, and the
+    //   legacy storage-tank helper.
     // - Field/Storage Mapping: These accessors map directly to EnergyPlus `EvaporativeFluidCooler:TwoSpeed` scalar fields used by the forward translator.
-    // - Evidence: `src/model/EvaporativeFluidCoolerTwoSpeed.hpp`, `src/model/EvaporativeFluidCoolerTwoSpeed.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateEvaporativeFluidCoolerTwoSpeed.cpp`.
+    // - Evidence: `src/model/EvaporativeFluidCoolerTwoSpeed.hpp`, `src/model/EvaporativeFluidCoolerTwoSpeed.cpp`, and
+    //   `src/energyplus/ForwardTranslator/ForwardTranslateEvaporativeFluidCoolerTwoSpeed.cpp`.
     // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
 
     // High fan speed air flow rate

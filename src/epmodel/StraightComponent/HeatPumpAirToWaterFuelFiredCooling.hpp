@@ -15,6 +15,8 @@
 namespace openstudio {
 namespace epmodel {
 
+class Curve;
+class HeatPumpAirToWaterFuelFiredHeating;
 class Model;
 
 namespace detail {
@@ -25,6 +27,9 @@ class EPMODEL_API HeatPumpAirToWaterFuelFiredCooling : public StraightComponent
 {
  public:
   explicit HeatPumpAirToWaterFuelFiredCooling(const Model& model);
+  explicit HeatPumpAirToWaterFuelFiredCooling(const Model& model, const Curve& normalizedCapacityFunctionofTemperatureCurve,
+                                              const Curve& fuelEnergyInputRatioFunctionofTemperatureCurve,
+                                              const Curve& fuelEnergyInputRatioFunctionofPLRCurve);
 
   virtual ~HeatPumpAirToWaterFuelFiredCooling() override = default;
   HeatPumpAirToWaterFuelFiredCooling(const HeatPumpAirToWaterFuelFiredCooling& other) = default;
@@ -40,13 +45,17 @@ class EPMODEL_API HeatPumpAirToWaterFuelFiredCooling : public StraightComponent
   static std::vector<std::string> waterTemperatureCurveInputVariableValues();
 
   // Schema Alignment Notes:
-  // - Status: Scalar Parity. The canonical fuel-fired cooling heat-pump scalar surface is present, while companion and relationship helpers remain out of scope.
+  // - Status: Partial Parity.
   // - Canonical Counterpart: openstudio::model::HeatPumpAirToWaterFuelFiredCooling.
-  // - Implemented Parity: The preserved scalar API matches the fuel, capacity, COP, flow, sizing, temperature, and power accessors with matching autosize/default behavior.
-  // - Documented Delta: Companion-heat-pump, node/object-reference, and curve/object target-link helpers remain intentionally excluded from this scalar pass.
-  // - Field/Storage Mapping: These accessors map directly to EnergyPlus `HeatPump:AirToWater:FuelFired:Cooling` scalar fields used by the forward translator.
+  // - Implemented Parity: Preserves the canonical constructor defaults, the companion-heating relationship, required/optional curve target helpers, the plant-supply-only `addToNode(...)` contract, and the scalar fuel, capacity, COP, flow, sizing, temperature, and power APIs with matching autosize/default behavior.
+  // - Documented Delta: Air-source node handling remains intentionally omitted because epmodel does not currently project the translator-created `OutdoorAir:Node` companion object into a canonical wrapper-level helper.
+  // - Field/Storage Mapping: Scalar and object-target accessors map directly to persisted `HeatPump:AirToWater:FuelFired:Cooling` fields, while plant connectivity stays on the cooling object's water node fields.
   // - Evidence: `src/model/HeatPumpAirToWaterFuelFiredCooling.hpp`, `src/model/HeatPumpAirToWaterFuelFiredCooling.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatPumpAirToWaterFuelFiredCooling.cpp`.
-  // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
+  // - Remaining Parity Work: Add the omitted air-source-node helper if epmodel later chooses to model the translator-emitted `OutdoorAir:Node` companion relationship directly.
+  boost::optional<HeatPumpAirToWaterFuelFiredHeating> companionHeatingHeatPump() const;
+  bool setCompanionHeatingHeatPump(const HeatPumpAirToWaterFuelFiredHeating& heatPumpAirToWaterFuelFiredHeating);
+  void resetCompanionHeatingHeatPump();
+
   std::string fuelType() const;
   bool setFuelType(const std::string& fuelType);
 
@@ -93,14 +102,35 @@ class EPMODEL_API HeatPumpAirToWaterFuelFiredCooling : public StraightComponent
   std::string waterTemperatureCurveInputVariable() const;
   bool setWaterTemperatureCurveInputVariable(const std::string& waterTemperatureCurveInputVariable);
 
+  Curve normalizedCapacityFunctionofTemperatureCurve() const;
+  bool setNormalizedCapacityFunctionofTemperatureCurve(const Curve& normalizedCapacityFunctionofTemperatureCurve);
+
+  Curve fuelEnergyInputRatioFunctionofTemperatureCurve() const;
+  bool setFuelEnergyInputRatioFunctionofTemperatureCurve(const Curve& fuelEnergyInputRatioFunctionofTemperatureCurve);
+
+  Curve fuelEnergyInputRatioFunctionofPLRCurve() const;
+  bool setFuelEnergyInputRatioFunctionofPLRCurve(const Curve& fuelEnergyInputRatioFunctionofPLRCurve);
+
   double minimumPartLoadRatio() const;
   bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
 
   double maximumPartLoadRatio() const;
   bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
 
+  boost::optional<Curve> cyclingRatioFactorCurve() const;
+  bool setCyclingRatioFactorCurve(const Curve& cyclingRatioFactorCurve);
+  void resetCyclingRatioFactorCurve();
+
   double nominalAuxiliaryElectricPower() const;
   bool setNominalAuxiliaryElectricPower(double nominalAuxiliaryElectricPower);
+
+  boost::optional<Curve> auxiliaryElectricEnergyInputRatioFunctionofTemperatureCurve() const;
+  bool setAuxiliaryElectricEnergyInputRatioFunctionofTemperatureCurve(const Curve& auxiliaryElectricEnergyInputRatioFunctionofTemperatureCurve);
+  void resetAuxiliaryElectricEnergyInputRatioFunctionofTemperatureCurve();
+
+  boost::optional<Curve> auxiliaryElectricEnergyInputRatioFunctionofPLRCurve() const;
+  bool setAuxiliaryElectricEnergyInputRatioFunctionofPLRCurve(const Curve& auxiliaryElectricEnergyInputRatioFunctionofPLRCurve);
+  void resetAuxiliaryElectricEnergyInputRatioFunctionofPLRCurve();
 
   double standbyElectricPower() const;
   bool setStandbyElectricPower(double standbyElectricPower);

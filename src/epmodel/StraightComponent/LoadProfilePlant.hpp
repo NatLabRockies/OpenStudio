@@ -18,62 +18,80 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
+  class Node;
+  class Schedule;
 
-namespace detail {
-class LoadProfilePlant_Impl;
-}
+  namespace detail {
+    class LoadProfilePlant_Impl;
+  }
 
-class EPMODEL_API LoadProfilePlant : public StraightComponent
-{
- public:
-  explicit LoadProfilePlant(const Model& model);
+  class EPMODEL_API LoadProfilePlant : public StraightComponent
+  {
+   public:
+    explicit LoadProfilePlant(const Model& model);
+    explicit LoadProfilePlant(const Model& model, Schedule& loadSchedule, Schedule& flowRateFractionSchedule);
 
-  virtual ~LoadProfilePlant() override = default;
-  LoadProfilePlant(const LoadProfilePlant& other) = default;
-  LoadProfilePlant(LoadProfilePlant&& other) = default;
-  LoadProfilePlant& operator=(const LoadProfilePlant&) = default;
-  LoadProfilePlant& operator=(LoadProfilePlant&&) = default;
+    virtual ~LoadProfilePlant() override = default;
+    LoadProfilePlant(const LoadProfilePlant& other) = default;
+    LoadProfilePlant(LoadProfilePlant&& other) = default;
+    LoadProfilePlant& operator=(const LoadProfilePlant&) = default;
+    LoadProfilePlant& operator=(LoadProfilePlant&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> plantLoopFluidTypeValues();
+    static std::vector<std::string> plantLoopFluidTypeValues();
 
-  // Schema Alignment Notes:
-  // - Status: Scalar Parity. The canonical load-profile-plant scalar surface is present, while schedule and node-link helpers remain out of scope.
-  // - Canonical Counterpart: openstudio::model::LoadProfilePlant.
-  // - Implemented Parity: The preserved scalar API matches the flow, fluid-type, and subcooling accessors with matching default behavior.
-  // - Documented Delta: Load/flow schedule and node-link helpers remain intentionally excluded from this scalar pass.
-  // - Field/Storage Mapping: These accessors map directly to EnergyPlus `LoadProfile:Plant` scalar fields used by the forward translator.
-  // - Evidence: `src/model/LoadProfilePlant.hpp`, `src/model/LoadProfilePlant.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateLoadProfilePlant.cpp`.
-  // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
-  double peakFlowRate() const;
-  bool setPeakFlowRate(double peakFlowRate);
+    // Schema Alignment Notes:
+    // - Status: Parity with documented deltas. The canonical load-profile-plant wrapper surface, constructor seeding, required schedule relationships, and
+    //   plant-demand placement contract are present.
+    // - Canonical Counterpart: openstudio::model::LoadProfilePlant.
+    // - Implemented Parity: `loadSchedule()`, `setLoadSchedule(...)`, `flowRateFractionSchedule()`, `setFlowRateFractionSchedule(...)`,
+    //   both public constructors, and demand-side-only `addToNode(...)` match the canonical wrapper surface alongside the scalar accessors.
+    // - Documented Delta: The default seeded load schedule uses `ScheduleCompact` because epmodel does not yet expose `ScheduleRuleset`.
+    // - Documented Delta: epmodel currently retains the extra default/reset helpers inherited from the underlying EnergyPlus field semantics:
+    //   `plantLoopFluidTypeValues()`, `isPlantLoopFluidTypeDefaulted()`, `resetPlantLoopFluidType()`, `isDegreeofSubCoolingDefaulted()`,
+    //   `resetDegreeofSubCooling()`, `isDegreeofLoopSubCoolingDefaulted()`, and `resetDegreeofLoopSubCooling()`.
+    // - Field/Storage Mapping: The wrapper maps directly to `LoadProfile:Plant` node, schedule, flow, fluid-type, and subcooling fields used by the
+    //   forward translator.
+    // - Evidence: `src/model/LoadProfilePlant.hpp`, `src/model/LoadProfilePlant.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateLoadProfilePlant.cpp`.
+    // - Remaining Parity Work: Replace the default seeded `ScheduleCompact` with the canonical `ScheduleRuleset` once epmodel exposes that schedule family,
+    //   then reassess whether the extra epmodel-only default/reset helpers should remain public.
+    Schedule loadSchedule() const;
+    bool setLoadSchedule(Schedule& schedule);
 
-  std::string plantLoopFluidType() const;
-  bool setPlantLoopFluidType(const std::string& plantLoopFluidType);
-  bool isPlantLoopFluidTypeDefaulted() const;
-  void resetPlantLoopFluidType();
+    double peakFlowRate() const;
+    bool setPeakFlowRate(double peakFlowRate);
 
-  double degreeofSubCooling() const;
-  bool setDegreeofSubCooling(double degreeofSubCooling);
-  bool isDegreeofSubCoolingDefaulted() const;
-  void resetDegreeofSubCooling();
+    Schedule flowRateFractionSchedule() const;
+    bool setFlowRateFractionSchedule(Schedule& schedule);
 
-  double degreeofLoopSubCooling() const;
-  bool setDegreeofLoopSubCooling(double degreeofLoopSubCooling);
-  bool isDegreeofLoopSubCoolingDefaulted() const;
-  void resetDegreeofLoopSubCooling();
+    std::string plantLoopFluidType() const;
+    bool setPlantLoopFluidType(const std::string& plantLoopFluidType);
+    bool isPlantLoopFluidTypeDefaulted() const;
+    void resetPlantLoopFluidType();
 
- protected:
-  using ImplType = detail::LoadProfilePlant_Impl;
+    double degreeofSubCooling() const;
+    bool setDegreeofSubCooling(double degreeofSubCooling);
+    bool isDegreeofSubCoolingDefaulted() const;
+    void resetDegreeofSubCooling();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    double degreeofLoopSubCooling() const;
+    bool setDegreeofLoopSubCooling(double degreeofLoopSubCooling);
+    bool isDegreeofLoopSubCoolingDefaulted() const;
+    void resetDegreeofLoopSubCooling();
 
-  explicit LoadProfilePlant(std::shared_ptr<detail::LoadProfilePlant_Impl> impl);
-};
+    bool addToNode(Node& node);
+
+   protected:
+    using ImplType = detail::LoadProfilePlant_Impl;
+
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit LoadProfilePlant(std::shared_ptr<detail::LoadProfilePlant_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

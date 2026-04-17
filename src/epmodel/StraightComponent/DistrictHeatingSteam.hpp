@@ -15,6 +15,8 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
+  class Schedule;
 
   namespace detail {
     class DistrictHeatingSteam_Impl;
@@ -34,18 +36,27 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical district-heating-steam scalar surface is present, while node and schedule helpers remain out of scope.
+    // - Status: Parity with documented deltas. The canonical district-heating-steam wrapper surface, constructor default schedule seeding, and plant-supply
+    //   placement contract are present, while autosized-result lookup remains a documented gap.
     // - Canonical Counterpart: openstudio::model::DistrictHeatingSteam.
-    // - Implemented Parity: The preserved scalar API matches the nominal-capacity accessor set, including autosize behavior.
-    // - Documented Delta: Steam inlet/outlet node names and the capacity-fraction schedule remain intentionally excluded from this scalar pass.
-    // - Field/Storage Mapping: These accessors map directly to the EnergyPlus `DistrictHeating:Steam` nominal-capacity field used by the forward translator.
+    // - Implemented Parity: The nominal-capacity accessors, capacity-fraction schedule getter/setter, constructor default schedule seeding, and
+    //   plant-supply-only `addToNode(...)` behavior match the canonical wrapper surface.
+    // - Documented Delta: Resolved autosized nominal-capacity lookup remains intentionally unavailable because epmodel does not yet expose SQL-backed sizing
+    //   results.
+    // - Field/Storage Mapping: These accessors map directly to the EnergyPlus `DistrictHeating:Steam` nominal-capacity and capacity-fraction-schedule fields
+    //   used by the forward translator.
     // - Evidence: `src/model/DistrictHeatingSteam.hpp`, `src/model/DistrictHeatingSteam.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateDistrictHeatingSteam.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Wire `autosizedNominalCapacity()` to resolved sizing results once epmodel exposes the needed simulation-result query surface.
     boost::optional<double> nominalCapacity() const;
-    bool setNominalCapacity(double nominalCapacity);
-    void autosizeNominalCapacity();
-    boost::optional<double> autosizedNominalCapacity() const;
+    Schedule capacityFractionSchedule() const;
     bool isNominalCapacityAutosized() const;
+    boost::optional<double> autosizedNominalCapacity() const;
+
+    bool setNominalCapacity(double nominalCapacity);
+    bool setCapacityFractionSchedule(Schedule& schedule);
+    void autosizeNominalCapacity();
+
+    bool addToNode(Node& node);
 
    protected:
     using ImplType = detail::DistrictHeatingSteam_Impl;

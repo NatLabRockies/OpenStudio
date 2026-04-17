@@ -6,7 +6,9 @@
 #include "StraightComponent/HeaderedPumpsConstantSpeed.hpp"
 #include "StraightComponent/HeaderedPumpsConstantSpeed_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -185,6 +187,10 @@ namespace epmodel {
     return getImpl<detail::HeaderedPumpsConstantSpeed_Impl>()->setEndUseSubcategory(endUseSubcategory);
   }
 
+  bool HeaderedPumpsConstantSpeed::addToNode(Node& node) {
+    return getImpl<detail::HeaderedPumpsConstantSpeed_Impl>()->addToNode(node);
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -198,6 +204,14 @@ namespace epmodel {
 
     unsigned HeaderedPumpsConstantSpeed_Impl::outletPort() const {
       return openstudio::HeaderedPumps_ConstantSpeedFields::OutletNodeName;
+    }
+
+    bool HeaderedPumpsConstantSpeed_Impl::addToNode(Node& node) {
+      if (node.plantLoop()) {
+        return StraightComponent_Impl::addToNode(node);
+      }
+
+      return false;
     }
 
     boost::optional<double> HeaderedPumpsConstantSpeed_Impl::totalRatedFlowRate() const {

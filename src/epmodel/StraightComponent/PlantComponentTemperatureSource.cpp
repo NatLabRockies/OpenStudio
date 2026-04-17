@@ -7,6 +7,8 @@
 #include "StraightComponent/PlantComponentTemperatureSource_Impl.hpp"
 
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -19,6 +21,7 @@ namespace epmodel {
 
   PlantComponentTemperatureSource::PlantComponentTemperatureSource(const Model& model)
     : StraightComponent(PlantComponentTemperatureSource::iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::PlantComponentTemperatureSource_Impl>());
     autosizeDesignVolumeFlowRate();
     OS_ASSERT(setTemperatureSpecificationType("Constant"));
     OS_ASSERT(setSourceTemperature(8.0));
@@ -74,6 +77,18 @@ namespace epmodel {
 
   void PlantComponentTemperatureSource::resetSourceTemperature() {
     getImpl<detail::PlantComponentTemperatureSource_Impl>()->resetSourceTemperature();
+  }
+
+  boost::optional<Schedule> PlantComponentTemperatureSource::sourceTemperatureSchedule() const {
+    return getImpl<detail::PlantComponentTemperatureSource_Impl>()->sourceTemperatureSchedule();
+  }
+
+  bool PlantComponentTemperatureSource::setSourceTemperatureSchedule(Schedule& schedule) {
+    return getImpl<detail::PlantComponentTemperatureSource_Impl>()->setSourceTemperatureSchedule(schedule);
+  }
+
+  void PlantComponentTemperatureSource::resetSourceTemperatureSchedule() {
+    getImpl<detail::PlantComponentTemperatureSource_Impl>()->resetSourceTemperatureSchedule();
   }
 
 }  // namespace epmodel
@@ -139,6 +154,19 @@ namespace epmodel {
 
     void PlantComponentTemperatureSource_Impl::resetSourceTemperature() {
       OS_ASSERT(setString(openstudio::PlantComponent_TemperatureSourceFields::SourceTemperature, ""));
+    }
+
+    boost::optional<Schedule> PlantComponentTemperatureSource_Impl::sourceTemperatureSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::PlantComponent_TemperatureSourceFields::SourceTemperatureScheduleName);
+    }
+
+    bool PlantComponentTemperatureSource_Impl::setSourceTemperatureSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::PlantComponent_TemperatureSourceFields::SourceTemperatureScheduleName, "PlantComponentTemperatureSource",
+                         "Source Temperature", schedule);
+    }
+
+    void PlantComponentTemperatureSource_Impl::resetSourceTemperatureSchedule() {
+      OS_ASSERT(setString(openstudio::PlantComponent_TemperatureSourceFields::SourceTemperatureScheduleName, ""));
     }
 
   }  // namespace detail

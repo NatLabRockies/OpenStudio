@@ -6,7 +6,11 @@
 #include "StraightComponent/CoolingTowerSingleSpeed.hpp"
 #include "StraightComponent/CoolingTowerSingleSpeed_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -18,7 +22,38 @@ namespace openstudio {
 namespace epmodel {
 
 CoolingTowerSingleSpeed::CoolingTowerSingleSpeed(const Model& model)
-  : StraightComponent(CoolingTowerSingleSpeed::iddObjectType(), model) {}
+  : StraightComponent(CoolingTowerSingleSpeed::iddObjectType(), model) {
+  autosizeDesignWaterFlowRate();
+  autosizeDesignAirFlowRate();
+  autosizeFanPoweratDesignAirFlowRate();
+  autosizeUFactorTimesAreaValueatDesignAirFlowRate();
+  autosizeAirFlowRateinFreeConvectionRegime();
+  autosizeUFactorTimesAreaValueatFreeConvectionAirFlowRate();
+  OS_ASSERT(setPerformanceInputMethod("UFactorTimesAreaAndDesignWaterFlowRate"));
+  OS_ASSERT(setFreeConvectionCapacity(0.0));
+  OS_ASSERT(setBasinHeaterCapacity(0.0));
+  OS_ASSERT(setBasinHeaterSetpointTemperature(2.0));
+  OS_ASSERT(setEvaporationLossMode("LossFactor"));
+  OS_ASSERT(setEvaporationLossFactor(0.2));
+  OS_ASSERT(setDriftLossPercent(0.008));
+  OS_ASSERT(setBlowdownCalculationMode("ConcentrationRatio"));
+  OS_ASSERT(setBlowdownConcentrationRatio(3.0));
+  OS_ASSERT(setCapacityControl("FanCycling"));
+  OS_ASSERT(setNumberofCells(1));
+  OS_ASSERT(setCellControl("MinimalCell"));
+  OS_ASSERT(setCellMinimumWaterFlowRateFraction(0.33));
+  OS_ASSERT(setCellMaximumWaterFlowRateFraction(2.5));
+  OS_ASSERT(setSizingFactor(1.0));
+  OS_ASSERT(setFreeConvectionAirFlowRateSizingFactor(0.1));
+  OS_ASSERT(setFreeConvectionUFactorTimesAreaValueSizingFactor(0.1));
+  OS_ASSERT(setHeatRejectionCapacityAndNominalCapacitySizingRatio(1.25));
+  OS_ASSERT(setFreeConvectionNominalCapacitySizingFactor(0.1));
+  OS_ASSERT(setDesignInletAirDryBulbTemperature(35.0));
+  OS_ASSERT(setDesignInletAirWetBulbTemperature(25.6));
+  autosizeDesignApproachTemperature();
+  autosizeDesignRangeTemperature();
+  OS_ASSERT(setEndUseSubcategory("General"));
+}
 
 CoolingTowerSingleSpeed::CoolingTowerSingleSpeed(std::shared_ptr<detail::CoolingTowerSingleSpeed_Impl> impl)
   : StraightComponent(std::move(impl)) {}
@@ -241,6 +276,18 @@ void CoolingTowerSingleSpeed::resetBasinHeaterSetpointTemperature() {
   getImpl<detail::CoolingTowerSingleSpeed_Impl>()->resetBasinHeaterSetpointTemperature();
 }
 
+boost::optional<Schedule> CoolingTowerSingleSpeed::basinHeaterOperatingSchedule() const {
+  return getImpl<detail::CoolingTowerSingleSpeed_Impl>()->basinHeaterOperatingSchedule();
+}
+
+bool CoolingTowerSingleSpeed::setBasinHeaterOperatingSchedule(Schedule& basinHeaterOperatingSchedule) {
+  return getImpl<detail::CoolingTowerSingleSpeed_Impl>()->setBasinHeaterOperatingSchedule(basinHeaterOperatingSchedule);
+}
+
+void CoolingTowerSingleSpeed::resetBasinHeaterOperatingSchedule() {
+  getImpl<detail::CoolingTowerSingleSpeed_Impl>()->resetBasinHeaterOperatingSchedule();
+}
+
 std::string CoolingTowerSingleSpeed::evaporationLossMode() const {
   return getImpl<detail::CoolingTowerSingleSpeed_Impl>()->evaporationLossMode();
 }
@@ -319,6 +366,18 @@ bool CoolingTowerSingleSpeed::setBlowdownConcentrationRatio(double blowdownConce
 
 void CoolingTowerSingleSpeed::resetBlowdownConcentrationRatio() {
   getImpl<detail::CoolingTowerSingleSpeed_Impl>()->resetBlowdownConcentrationRatio();
+}
+
+boost::optional<Schedule> CoolingTowerSingleSpeed::blowdownMakeupWaterUsageSchedule() const {
+  return getImpl<detail::CoolingTowerSingleSpeed_Impl>()->blowdownMakeupWaterUsageSchedule();
+}
+
+bool CoolingTowerSingleSpeed::setBlowdownMakeupWaterUsageSchedule(Schedule& blowdownMakeupWaterUsageSchedule) {
+  return getImpl<detail::CoolingTowerSingleSpeed_Impl>()->setBlowdownMakeupWaterUsageSchedule(blowdownMakeupWaterUsageSchedule);
+}
+
+void CoolingTowerSingleSpeed::resetBlowdownMakeupWaterUsageSchedule() {
+  getImpl<detail::CoolingTowerSingleSpeed_Impl>()->resetBlowdownMakeupWaterUsageSchedule();
 }
 
 std::string CoolingTowerSingleSpeed::capacityControl() const {
@@ -520,6 +579,16 @@ unsigned CoolingTowerSingleSpeed_Impl::inletPort() const {
 
 unsigned CoolingTowerSingleSpeed_Impl::outletPort() const {
   return openstudio::CoolingTower_SingleSpeedFields::WaterOutletNodeName;
+}
+
+bool CoolingTowerSingleSpeed_Impl::addToNode(Node& node) {
+  if (auto plantLoop = node.plantLoop()) {
+    if (plantLoop->supplyComponent(node.handle())) {
+      return StraightComponent_Impl::addToNode(node);
+    }
+  }
+
+  return false;
 }
 
 std::vector<std::string> CoolingTowerSingleSpeed_Impl::performanceInputMethodValues() const {
@@ -759,6 +828,19 @@ void CoolingTowerSingleSpeed_Impl::resetBasinHeaterSetpointTemperature() {
   OS_ASSERT(setString(openstudio::CoolingTower_SingleSpeedFields::BasinHeaterSetpointTemperature, ""));
 }
 
+boost::optional<Schedule> CoolingTowerSingleSpeed_Impl::basinHeaterOperatingSchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::CoolingTower_SingleSpeedFields::BasinHeaterOperatingScheduleName);
+}
+
+bool CoolingTowerSingleSpeed_Impl::setBasinHeaterOperatingSchedule(Schedule& basinHeaterOperatingSchedule) {
+  return setSchedule(openstudio::CoolingTower_SingleSpeedFields::BasinHeaterOperatingScheduleName, "CoolingTowerSingleSpeed",
+                     "Basin Heater Operating", basinHeaterOperatingSchedule);
+}
+
+void CoolingTowerSingleSpeed_Impl::resetBasinHeaterOperatingSchedule() {
+  OS_ASSERT(setPointer(openstudio::CoolingTower_SingleSpeedFields::BasinHeaterOperatingScheduleName, openstudio::Handle(), false));
+}
+
 std::string CoolingTowerSingleSpeed_Impl::evaporationLossMode() const {
   const auto value = getString(openstudio::CoolingTower_SingleSpeedFields::EvaporationLossMode, true);
   OS_ASSERT(value);
@@ -847,6 +929,20 @@ bool CoolingTowerSingleSpeed_Impl::setBlowdownConcentrationRatio(double blowdown
 
 void CoolingTowerSingleSpeed_Impl::resetBlowdownConcentrationRatio() {
   OS_ASSERT(setString(openstudio::CoolingTower_SingleSpeedFields::BlowdownConcentrationRatio, ""));
+}
+
+boost::optional<Schedule> CoolingTowerSingleSpeed_Impl::blowdownMakeupWaterUsageSchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::CoolingTower_SingleSpeedFields::BlowdownMakeupWaterUsageScheduleName);
+}
+
+bool CoolingTowerSingleSpeed_Impl::setBlowdownMakeupWaterUsageSchedule(Schedule& blowdownMakeupWaterUsageSchedule) {
+  return setSchedule(openstudio::CoolingTower_SingleSpeedFields::BlowdownMakeupWaterUsageScheduleName, "CoolingTowerSingleSpeed",
+                     "Blowdown Makeup Water Usage", blowdownMakeupWaterUsageSchedule);
+}
+
+void CoolingTowerSingleSpeed_Impl::resetBlowdownMakeupWaterUsageSchedule() {
+  OS_ASSERT(setPointer(openstudio::CoolingTower_SingleSpeedFields::BlowdownMakeupWaterUsageScheduleName, openstudio::Handle(), false));
 }
 
 std::string CoolingTowerSingleSpeed_Impl::capacityControl() const {
