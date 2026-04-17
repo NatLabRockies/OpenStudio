@@ -21,12 +21,13 @@ namespace detail {
 
 class EPMODEL_API AirTerminalSingleDuctParallelPIUReheat_Impl : public StraightComponent_Impl
 {
- public:
+  public:
   using StraightComponent_Impl::StraightComponent_Impl;
   virtual ~AirTerminalSingleDuctParallelPIUReheat_Impl() override = default;
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+  bool addToNode(Node& node) override;
 
   Schedule availabilitySchedule() const;
   bool setAvailabilitySchedule(Schedule& schedule);
@@ -38,6 +39,7 @@ class EPMODEL_API AirTerminalSingleDuctParallelPIUReheat_Impl : public StraightC
   bool setReheatCoil(HVACComponent& hvacComponent);
 
   boost::optional<Node> secondaryAirInletNode() const;
+  unsigned secondaryAirInletPort() const;
 
   boost::optional<double> maximumPrimaryAirFlowRate() const;
   bool isMaximumPrimaryAirFlowRateAutosized() const;

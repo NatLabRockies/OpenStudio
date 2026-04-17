@@ -13,6 +13,8 @@
 namespace openstudio {
 namespace epmodel {
 class Node;
+class Schedule;
+class Curve;
 namespace detail {
 
 class EPMODEL_API CoilHeatingDXVariableSpeed_Impl : public StraightComponent_Impl
@@ -23,8 +25,12 @@ class EPMODEL_API CoilHeatingDXVariableSpeed_Impl : public StraightComponent_Imp
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+  std::vector<ModelObject> children() const override;
 
   bool addToNode(Node& node) override;
+
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
 
   int nominalSpeedLevel() const;
   bool setNominalSpeedLevel(int nominalSpeedLevel);
@@ -39,6 +45,13 @@ class EPMODEL_API CoilHeatingDXVariableSpeed_Impl : public StraightComponent_Imp
   bool setRatedAirFlowRateAtSelectedNominalSpeedLevel(double ratedAirFlowRateAtSelectedNominalSpeedLevel);
   void autosizeRatedAirFlowRateAtSelectedNominalSpeedLevel();
 
+  Curve energyPartLoadFractionCurve() const;
+  bool setEnergyPartLoadFractionCurve(const Curve& curve);
+
+  boost::optional<Curve> defrostEnergyInputRatioFunctionofTemperatureCurve() const;
+  bool setDefrostEnergyInputRatioFunctionofTemperatureCurve(const Curve& curve);
+  void resetDefrostEnergyInputRatioFunctionofTemperatureCurve();
+
   double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
   bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);
 
@@ -51,6 +64,10 @@ class EPMODEL_API CoilHeatingDXVariableSpeed_Impl : public StraightComponent_Imp
 
   double crankcaseHeaterCapacity() const;
   bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
+
+  boost::optional<Curve> crankcaseHeaterCapacityFunctionofTemperatureCurve() const;
+  bool setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve);
+  void resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
 
   double maximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation() const;
   bool setMaximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation(double maximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation);

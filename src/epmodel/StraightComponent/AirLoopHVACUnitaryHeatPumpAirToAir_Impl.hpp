@@ -29,6 +29,7 @@ namespace epmodel {
       unsigned outletPort() const override;
       bool addToNode(Node& node) override;
       void doCanonicalize(LoadContext& context) override;
+      std::vector<ModelObject> children() const override;
 
 	      std::vector<std::string> validFanPlacementValues() const;
 	      std::vector<std::string> validDehumidificationControlTypeValues() const;

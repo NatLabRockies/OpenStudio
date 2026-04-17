@@ -6,11 +6,32 @@
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam.hpp"
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam_Impl.hpp"
 
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
+#include "Loop/AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
+#include "Model_Impl.hpp"
+#include "ModelObject.hpp"
+#include "ModelObject/ZoneHVACEquipmentConnections.hpp"
+#include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
+#include "ModelObject/ZoneHVACEquipmentList.hpp"
+#include "ModelObject/ZoneHVACEquipmentList_Impl.hpp"
+#include "Node.hpp"
+#include "Node_Impl.hpp"
+#include "Mixer/AirLoopHVACZoneMixer.hpp"
+#include "Mixer/AirLoopHVACZoneMixer_Impl.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Splitter/AirLoopHVACZoneSplitter.hpp"
+#include "Splitter/AirLoopHVACZoneSplitter_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
-#include <utilities/idd/AirTerminal_SingleDuct_ConstantVolume_CooledBeam_FieldEnums.hxx>
+#include <algorithm>
+#include <utilities/idd/OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeam_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
@@ -18,10 +39,76 @@
 namespace openstudio {
 namespace epmodel {
 
+  namespace {
+
+    void applyConstructorDefaults(AirTerminalSingleDuctConstantVolumeCooledBeam& terminal) {
+      OS_ASSERT(terminal.setCooledBeamType("Passive"));
+    }
+
+    boost::optional<ThermalZone> owningThermalZoneForBranchNode(const Model& model, const Node& node) {
+      for (const auto& zone : model.getConcreteModelObjects<ThermalZone>()) {
+        if (zone.zoneAirNode() == node) {
+          return zone;
+        }
+      }
+      return boost::none;
+    }
+
+    bool registerTerminalWithThermalZone(const ModelObject& terminal, ThermalZone& thermalZone) {
+      auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
+      OS_ASSERT(zoneImpl);
+
+      auto zoneConnections = zoneImpl->getZoneHVACEquipmentConnections();
+      auto equipmentList = zoneImpl->zoneHVACEquipmentList();
+      if (!equipmentList) {
+        ZoneHVACEquipmentList newEquipmentList(thermalZone.model());
+        if (!newEquipmentList.name()) {
+          newEquipmentList.createName();
+        }
+        if (!zoneConnections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName, newEquipmentList.handle())) {
+          return false;
+        }
+        equipmentList = newEquipmentList;
+      }
+
+      auto equipmentListImpl = equipmentList->getImpl<detail::ZoneHVACEquipmentList_Impl>();
+      OS_ASSERT(equipmentListImpl);
+      return equipmentListImpl->addEquipment(terminal);
+    }
+
+  }  // namespace
+
 AirTerminalSingleDuctConstantVolumeCooledBeam::AirTerminalSingleDuctConstantVolumeCooledBeam(const Model& model)
   : StraightComponent(AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType(), model) {
-  // Mirror model constructor behavior for this required choice field.
-  OS_ASSERT(setCooledBeamType("Passive"));
+  auto impl = getImpl<detail::AirTerminalSingleDuctConstantVolumeCooledBeam_Impl>();
+  OS_ASSERT(impl);
+  detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
+  impl->canonicalize(context);
+
+  if (!name()) {
+    createName();
+  }
+
+  auto alwaysOn = model.alwaysOnDiscreteSchedule();
+  OS_ASSERT(setAvailabilitySchedule(alwaysOn));
+  applyConstructorDefaults(*this);
+}
+
+AirTerminalSingleDuctConstantVolumeCooledBeam::AirTerminalSingleDuctConstantVolumeCooledBeam(const Model& model, Schedule& availabilitySchedule,
+                                                                                             ModelObject& coilCoolingCooledBeam)
+  : StraightComponent(AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType(), model) {
+  auto impl = getImpl<detail::AirTerminalSingleDuctConstantVolumeCooledBeam_Impl>();
+  OS_ASSERT(impl);
+  detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
+  impl->canonicalize(context);
+
+  if (!name()) {
+    createName();
+  }
+
+  OS_ASSERT(setAvailabilitySchedule(availabilitySchedule));
+  OS_ASSERT(setCoolingCoil(coilCoolingCooledBeam));
+  applyConstructorDefaults(*this);
 }
 
 AirTerminalSingleDuctConstantVolumeCooledBeam::AirTerminalSingleDuctConstantVolumeCooledBeam(
@@ -29,12 +116,32 @@ AirTerminalSingleDuctConstantVolumeCooledBeam::AirTerminalSingleDuctConstantVolu
   : StraightComponent(std::move(impl)) {}
 
 IddObjectType AirTerminalSingleDuctConstantVolumeCooledBeam::iddObjectType() {
-  return IddObjectType::AirTerminal_SingleDuct_ConstantVolume_CooledBeam;
+  return IddObjectType::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeam;
+}
+
+bool AirTerminalSingleDuctConstantVolumeCooledBeam::addToNode(Node& node) {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeCooledBeam_Impl>()->addToNode(node);
 }
 
 std::vector<std::string> AirTerminalSingleDuctConstantVolumeCooledBeam::cooledBeamTypeValues() {
   return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CooledBeamType);
+                        openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CooledBeamType);
+}
+
+Schedule AirTerminalSingleDuctConstantVolumeCooledBeam::availabilitySchedule() const {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeCooledBeam_Impl>()->availabilitySchedule();
+}
+
+bool AirTerminalSingleDuctConstantVolumeCooledBeam::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeCooledBeam_Impl>()->setAvailabilitySchedule(schedule);
+}
+
+ModelObject AirTerminalSingleDuctConstantVolumeCooledBeam::coilCoolingCooledBeam() const {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeCooledBeam_Impl>()->coilCoolingCooledBeam();
+}
+
+bool AirTerminalSingleDuctConstantVolumeCooledBeam::setCoolingCoil(ModelObject& coilCoolingCooledBeam) {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeCooledBeam_Impl>()->setCoolingCoil(coilCoolingCooledBeam);
 }
 
 std::string AirTerminalSingleDuctConstantVolumeCooledBeam::cooledBeamType() const {
@@ -206,54 +313,120 @@ namespace openstudio {
 namespace epmodel {
 namespace detail {
 
+boost::optional<openstudio::epmodel::AirLoopHVAC> AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::airLoopHVAC() const {
+  auto outletObject = outletModelObject();
+  auto outletNode = outletObject ? outletObject->optionalCast<openstudio::epmodel::Node>() : boost::none;
+  if (!outletNode) {
+    return boost::none;
+  }
+
+  boost::optional<openstudio::epmodel::ThermalZone> thermalZone;
+  for (const auto& zone : model().getConcreteModelObjects<openstudio::epmodel::ThermalZone>()) {
+    if (zone.zoneAirNode() == *outletNode) {
+      thermalZone = zone;
+      break;
+    }
+  }
+  if (!thermalZone) {
+    return boost::none;
+  }
+
+  for (const auto& airLoop : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
+    const auto loopZones = airLoop.thermalZones();
+    if (std::ranges::find(loopZones, *thermalZone) != loopZones.end()) {
+      return airLoop;
+    }
+  }
+
+  return boost::none;
+}
+
 std::string AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::cooledBeamType() const {
-  const auto value = getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CooledBeamType, true);
+  const auto value = getString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CooledBeamType, true);
   OS_ASSERT(value);
   return *value;
 }
 
+Schedule AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::availabilitySchedule() const {
+  auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::AvailabilityScheduleName);
+  if (!schedule) {
+    LOG_FREE(Error, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeCooledBeam",
+             "Required availability schedule not set, repairing persisted state with the model always-on discrete schedule");
+    schedule = model().alwaysOnDiscreteSchedule();
+    const bool ok = const_cast<AirTerminalSingleDuctConstantVolumeCooledBeam_Impl*>(this)->setAvailabilitySchedule(*schedule);
+    OS_ASSERT(ok);
+    schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+      openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::AvailabilityScheduleName);
+  }
+  OS_ASSERT(schedule);
+  return *schedule;
+}
+
+bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return ModelObject_Impl::setSchedule(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::AvailabilityScheduleName,
+                                       "AirTerminalSingleDuctConstantVolumeCooledBeam", "Availability", schedule);
+}
+
+ModelObject AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::coilCoolingCooledBeam() const {
+  auto coil =
+    getObject<ModelObject>().getModelObjectTarget<ModelObject>(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoolingCoilName);
+  OS_ASSERT(coil);
+  return *coil;
+}
+
+bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::setCoolingCoil(ModelObject& coolingCoilCooledBeam) {
+  if (coolingCoilCooledBeam.model() != model()) {
+    return false;
+  }
+  if (coolingCoilCooledBeam.iddObject().type() != IddObjectType::OS_Coil_Cooling_CooledBeam) {
+    return false;
+  }
+  return setPointer(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoolingCoilName, coolingCoilCooledBeam.handle(), false);
+}
+
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::setCooledBeamType(const std::string& cooledBeamType) {
-  return setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CooledBeamType, cooledBeamType);
+  return setString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CooledBeamType, cooledBeamType);
 }
 
 boost::optional<double> AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::supplyAirVolumetricFlowRate() const {
-  return getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirVolumetricFlowRate, true);
+  return getDouble(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirVolumetricFlowRate, true);
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::isSupplyAirVolumetricFlowRateDefaulted() const {
-  return isEmpty(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirVolumetricFlowRate);
+  return isEmpty(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirVolumetricFlowRate);
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::isSupplyAirVolumetricFlowRateAutosized() const {
-  if (auto value = getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirVolumetricFlowRate, true)) {
+  if (auto value = getString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirVolumetricFlowRate, true)) {
     return openstudio::istringEqual(*value, "autosize");
   }
   return false;
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::setSupplyAirVolumetricFlowRate(double supplyAirVolumetricFlowRate) {
-  return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirVolumetricFlowRate, supplyAirVolumetricFlowRate);
+  return setDouble(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirVolumetricFlowRate, supplyAirVolumetricFlowRate);
 }
 
 void AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::resetSupplyAirVolumetricFlowRate() {
-  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirVolumetricFlowRate, ""));
+  OS_ASSERT(setString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirVolumetricFlowRate, ""));
 }
 
 void AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::autosizeSupplyAirVolumetricFlowRate() {
-  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirVolumetricFlowRate, "autosize"));
+  OS_ASSERT(setString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirVolumetricFlowRate, "autosize"));
 }
 
 boost::optional<double> AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::maximumTotalChilledWaterVolumetricFlowRate() const {
-  return getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::MaximumTotalChilledWaterVolumetricFlowRate, true);
+  return getDouble(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::MaximumTotalChilledWaterVolumetricFlowRate, true);
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::isMaximumTotalChilledWaterVolumetricFlowRateDefaulted() const {
-  return isEmpty(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::MaximumTotalChilledWaterVolumetricFlowRate);
+  return isEmpty(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::MaximumTotalChilledWaterVolumetricFlowRate);
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::isMaximumTotalChilledWaterVolumetricFlowRateAutosized() const {
   if (auto value =
-        getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::MaximumTotalChilledWaterVolumetricFlowRate, true)) {
+        getString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::MaximumTotalChilledWaterVolumetricFlowRate, true)) {
     return openstudio::istringEqual(*value, "autosize");
   }
   return false;
@@ -261,134 +434,199 @@ bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::isMaximumTotalChilledWa
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::setMaximumTotalChilledWaterVolumetricFlowRate(
   double maximumTotalChilledWaterVolumetricFlowRate) {
-  return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::MaximumTotalChilledWaterVolumetricFlowRate,
+  return setDouble(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::MaximumTotalChilledWaterVolumetricFlowRate,
                    maximumTotalChilledWaterVolumetricFlowRate);
 }
 
 void AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::resetMaximumTotalChilledWaterVolumetricFlowRate() {
-  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::MaximumTotalChilledWaterVolumetricFlowRate, ""));
+  OS_ASSERT(setString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::MaximumTotalChilledWaterVolumetricFlowRate, ""));
 }
 
 void AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::autosizeMaximumTotalChilledWaterVolumetricFlowRate() {
-  OS_ASSERT(
-    setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::MaximumTotalChilledWaterVolumetricFlowRate, "autosize"));
+  OS_ASSERT(setString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::MaximumTotalChilledWaterVolumetricFlowRate, "autosize"));
 }
 
 boost::optional<int> AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::numberofBeams() const {
-  return getInt(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::NumberofBeams, true);
+  return getInt(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::NumberofBeams, true);
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::isNumberofBeamsDefaulted() const {
-  return isEmpty(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::NumberofBeams);
+  return isEmpty(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::NumberofBeams);
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::isNumberofBeamsAutosized() const {
-  if (auto value = getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::NumberofBeams, true)) {
+  if (auto value = getString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::NumberofBeams, true)) {
     return openstudio::istringEqual(*value, "autosize");
   }
   return false;
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::setNumberofBeams(int numberofBeams) {
-  return setInt(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::NumberofBeams, numberofBeams);
+  return setInt(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::NumberofBeams, numberofBeams);
 }
 
 void AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::resetNumberofBeams() {
-  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::NumberofBeams, ""));
+  OS_ASSERT(setString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::NumberofBeams, ""));
 }
 
 void AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::autosizeNumberofBeams() {
-  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::NumberofBeams, "autosize"));
+  OS_ASSERT(setString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::NumberofBeams, "autosize"));
 }
 
 boost::optional<double> AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::beamLength() const {
-  return getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::BeamLength, true);
+  return getDouble(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::BeamLength, true);
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::isBeamLengthDefaulted() const {
-  return isEmpty(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::BeamLength);
+  return isEmpty(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::BeamLength);
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::isBeamLengthAutosized() const {
-  if (auto value = getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::BeamLength, true)) {
+  if (auto value = getString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::BeamLength, true)) {
     return openstudio::istringEqual(*value, "autosize");
   }
   return false;
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::setBeamLength(double beamLength) {
-  return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::BeamLength, beamLength);
+  return setDouble(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::BeamLength, beamLength);
 }
 
 void AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::resetBeamLength() {
-  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::BeamLength, ""));
+  OS_ASSERT(setString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::BeamLength, ""));
 }
 
 void AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::autosizeBeamLength() {
-  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::BeamLength, "autosize"));
+  OS_ASSERT(setString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::BeamLength, "autosize"));
 }
 
 double AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::designInletWaterTemperature() const {
-  const auto value = getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::DesignInletWaterTemperature, true);
+  const auto value = getDouble(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::DesignInletWaterTemperature, true);
   OS_ASSERT(value);
   return *value;
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::isDesignInletWaterTemperatureDefaulted() const {
-  return isEmpty(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::DesignInletWaterTemperature);
+  return isEmpty(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::DesignInletWaterTemperature);
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::setDesignInletWaterTemperature(double designInletWaterTemperature) {
-  return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::DesignInletWaterTemperature, designInletWaterTemperature);
+  return setDouble(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::DesignInletWaterTemperature, designInletWaterTemperature);
 }
 
 void AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::resetDesignInletWaterTemperature() {
-  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::DesignInletWaterTemperature, ""));
+  OS_ASSERT(setString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::DesignInletWaterTemperature, ""));
 }
 
 double AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::designOutletWaterTemperature() const {
-  const auto value = getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::DesignOutletWaterTemperature, true);
+  const auto value = getDouble(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::DesignOutletWaterTemperature, true);
   OS_ASSERT(value);
   return *value;
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::isDesignOutletWaterTemperatureDefaulted() const {
-  return isEmpty(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::DesignOutletWaterTemperature);
+  return isEmpty(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::DesignOutletWaterTemperature);
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::setDesignOutletWaterTemperature(double designOutletWaterTemperature) {
-  return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::DesignOutletWaterTemperature, designOutletWaterTemperature);
+  return setDouble(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::DesignOutletWaterTemperature, designOutletWaterTemperature);
 }
 
 void AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::resetDesignOutletWaterTemperature() {
-  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::DesignOutletWaterTemperature, ""));
+  OS_ASSERT(setString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::DesignOutletWaterTemperature, ""));
 }
 
 boost::optional<double> AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::coefficientofInductionKin() const {
-  return getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoefficientofInductionKin, true);
+  return getDouble(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoefficientofInductionKin, true);
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::isCoefficientofInductionKinDefaulted() const {
-  return isEmpty(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoefficientofInductionKin);
+  return isEmpty(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoefficientofInductionKin);
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::isCoefficientofInductionKinAutocalculated() const {
-  if (auto value = getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoefficientofInductionKin, true)) {
+  if (auto value = getString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoefficientofInductionKin, true)) {
     return openstudio::istringEqual(*value, "autocalculate");
   }
   return false;
 }
 
 bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::setCoefficientofInductionKin(double coefficientofInductionKin) {
-  return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoefficientofInductionKin, coefficientofInductionKin);
+  return setDouble(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoefficientofInductionKin, coefficientofInductionKin);
 }
 
 void AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::resetCoefficientofInductionKin() {
-  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoefficientofInductionKin, ""));
+  OS_ASSERT(setString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoefficientofInductionKin, ""));
 }
 
 void AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::autocalculateCoefficientofInductionKin() {
-  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoefficientofInductionKin, "autocalculate"));
+  OS_ASSERT(setString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CoefficientofInductionKin, "autocalculate"));
+}
+
+bool AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::addToNode(Node& node) {
+  if (node.model() != model()) {
+    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeCooledBeam",
+             "addToNode requires a node in the same model as the cooled beam.");
+    return false;
+  }
+
+  const auto thisNode = node.cast<ModelObject>();
+  auto airLoop = node.airLoopHVAC();
+  if (!airLoop) {
+    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeCooledBeam",
+             "addToNode requires a node that resolves to an AirLoopHVAC context.");
+    return false;
+  }
+
+  auto zoneSplitter = airLoop->zoneSplitter();
+  auto zoneMixer = airLoop->zoneMixer();
+  const auto splitterOutlets = zoneSplitter.outletModelObjects();
+  const auto splitterIt = std::ranges::find(splitterOutlets, thisNode);
+  if (splitterIt == splitterOutlets.end()) {
+    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeCooledBeam",
+             "addToNode requires the drop node to be a ZoneSplitter outlet node for the target AirLoopHVAC.");
+    return false;
+  }
+  const auto splitterBranchIndex = static_cast<unsigned>(std::distance(splitterOutlets.begin(), splitterIt));
+
+  if (!zoneMixer.inletModelObject(splitterBranchIndex)) {
+    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeCooledBeam",
+             "addToNode requires a corresponding ZoneMixer inlet for ZoneSplitter branch index " << splitterBranchIndex << ".");
+    return false;
+  }
+
+  auto thisObject = getObject<openstudio::epmodel::ModelObject>();
+  if (!thisObject.name()) {
+    thisObject.createName();
+    if (!thisObject.name()) {
+      return false;
+    }
+  }
+
+  const std::string inletNodeName = node.nameString() + " - " + thisObject.nameString() + " Inlet Node";
+  auto inletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(inletNodeName);
+
+  if (!zoneSplitter.setOutletModelObject(splitterBranchIndex, inletNode.cast<ModelObject>())) {
+    return false;
+  }
+
+  if (!setPointer(inletPort(), inletNode.handle(), false)) {
+    return false;
+  }
+
+  if (!setPointer(outletPort(), node.handle(), false)) {
+    return false;
+  }
+
+  if (auto thermalZone = owningThermalZoneForBranchNode(model(), node)) {
+    if (!registerTerminalWithThermalZone(thisObject, *thermalZone)) {
+      LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeCooledBeam",
+               "addToNode failed to register the cooled beam with the owning thermal zone.");
+      return false;
+    }
+  }
+
+  return true;
 }
 
 std::vector<std::string> AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::cooledBeamTypeValues() const {
@@ -396,11 +634,11 @@ std::vector<std::string> AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::coo
 }
 
 unsigned AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::inletPort() const {
-  return openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirInletNodeName;
+  return openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirInletNodeName;
 }
 
 unsigned AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::outletPort() const {
-  return openstudio::AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirOutletNodeName;
+  return openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::SupplyAirOutletNodeName;
 }
 
 }  // namespace detail

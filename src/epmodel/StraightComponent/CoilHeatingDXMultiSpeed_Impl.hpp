@@ -12,6 +12,8 @@ namespace openstudio {
 namespace epmodel {
 
 class Node;
+class Schedule;
+class Curve;
 
 namespace detail {
 
@@ -23,8 +25,21 @@ class EPMODEL_API CoilHeatingDXMultiSpeed_Impl : public StraightComponent_Impl
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+  std::vector<ModelObject> children() const override;
 
   bool addToNode(Node& node) override;
+
+  boost::optional<Schedule> availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+  void resetAvailabilitySchedule();
+
+  boost::optional<Curve> defrostEnergyInputRatioFunctionofTemperatureCurve() const;
+  bool setDefrostEnergyInputRatioFunctionofTemperatureCurve(const Curve& curve);
+  void resetDefrostEnergyInputRatioFunctionofTemperatureCurve();
+
+  boost::optional<Curve> crankcaseHeaterCapacityFunctionofTemperatureCurve() const;
+  bool setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve);
+  void resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
 
   double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
   bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);

@@ -6,8 +6,12 @@
 #include "StraightComponent/CoilHeatingDXMultiSpeed.hpp"
 #include "StraightComponent/CoilHeatingDXMultiSpeed_Impl.hpp"
 
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -23,6 +27,8 @@ namespace epmodel {
 CoilHeatingDXMultiSpeed::CoilHeatingDXMultiSpeed(const Model& model)
   : StraightComponent(CoilHeatingDXMultiSpeed::iddObjectType(), model) {
   // Preserve model-constructor scalar defaults while excluding relationship and stage fields.
+  auto availabilitySchedule = model.alwaysOnDiscreteSchedule();
+  OS_ASSERT(setAvailabilitySchedule(availabilitySchedule));
   OS_ASSERT(setMinimumOutdoorDryBulbTemperatureforCompressorOperation(-8.0));
   OS_ASSERT(setCrankcaseHeaterCapacity(0.0));
   OS_ASSERT(setMaximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation(10.0));
@@ -60,6 +66,42 @@ std::vector<std::string> CoilHeatingDXMultiSpeed::fuelTypeValues() {
 
 bool CoilHeatingDXMultiSpeed::addToNode(Node& node) {
   return getImpl<detail::CoilHeatingDXMultiSpeed_Impl>()->addToNode(node);
+}
+
+boost::optional<Schedule> CoilHeatingDXMultiSpeed::availabilitySchedule() const {
+  return getImpl<detail::CoilHeatingDXMultiSpeed_Impl>()->availabilitySchedule();
+}
+
+bool CoilHeatingDXMultiSpeed::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::CoilHeatingDXMultiSpeed_Impl>()->setAvailabilitySchedule(schedule);
+}
+
+void CoilHeatingDXMultiSpeed::resetAvailabilitySchedule() {
+  getImpl<detail::CoilHeatingDXMultiSpeed_Impl>()->resetAvailabilitySchedule();
+}
+
+boost::optional<Curve> CoilHeatingDXMultiSpeed::defrostEnergyInputRatioFunctionofTemperatureCurve() const {
+  return getImpl<detail::CoilHeatingDXMultiSpeed_Impl>()->defrostEnergyInputRatioFunctionofTemperatureCurve();
+}
+
+bool CoilHeatingDXMultiSpeed::setDefrostEnergyInputRatioFunctionofTemperatureCurve(const Curve& curve) {
+  return getImpl<detail::CoilHeatingDXMultiSpeed_Impl>()->setDefrostEnergyInputRatioFunctionofTemperatureCurve(curve);
+}
+
+void CoilHeatingDXMultiSpeed::resetDefrostEnergyInputRatioFunctionofTemperatureCurve() {
+  getImpl<detail::CoilHeatingDXMultiSpeed_Impl>()->resetDefrostEnergyInputRatioFunctionofTemperatureCurve();
+}
+
+boost::optional<Curve> CoilHeatingDXMultiSpeed::crankcaseHeaterCapacityFunctionofTemperatureCurve() const {
+  return getImpl<detail::CoilHeatingDXMultiSpeed_Impl>()->crankcaseHeaterCapacityFunctionofTemperatureCurve();
+}
+
+bool CoilHeatingDXMultiSpeed::setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve) {
+  return getImpl<detail::CoilHeatingDXMultiSpeed_Impl>()->setCrankcaseHeaterCapacityFunctionofTemperatureCurve(curve);
+}
+
+void CoilHeatingDXMultiSpeed::resetCrankcaseHeaterCapacityFunctionofTemperatureCurve() {
+  getImpl<detail::CoilHeatingDXMultiSpeed_Impl>()->resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
 }
 
 double CoilHeatingDXMultiSpeed::minimumOutdoorDryBulbTemperatureforCompressorOperation() const {
@@ -199,6 +241,46 @@ bool CoilHeatingDXMultiSpeed_Impl::addToNode(Node& node) {
   }
 
   return StraightComponent_Impl::addToNode(node);
+}
+
+boost::optional<Schedule> CoilHeatingDXMultiSpeed_Impl::availabilitySchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Heating_DX_MultiSpeedFields::AvailabilityScheduleName);
+}
+
+bool CoilHeatingDXMultiSpeed_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return setPointer(openstudio::Coil_Heating_DX_MultiSpeedFields::AvailabilityScheduleName, schedule.handle(), false);
+}
+
+void CoilHeatingDXMultiSpeed_Impl::resetAvailabilitySchedule() {
+  OS_ASSERT(setPointer(openstudio::Coil_Heating_DX_MultiSpeedFields::AvailabilityScheduleName, openstudio::Handle(), false));
+}
+
+boost::optional<Curve> CoilHeatingDXMultiSpeed_Impl::defrostEnergyInputRatioFunctionofTemperatureCurve() const {
+  return getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Coil_Heating_DX_MultiSpeedFields::DefrostEnergyInputRatioFunctionofTemperatureCurveName);
+}
+
+bool CoilHeatingDXMultiSpeed_Impl::setDefrostEnergyInputRatioFunctionofTemperatureCurve(const Curve& curve) {
+  return setPointer(openstudio::Coil_Heating_DX_MultiSpeedFields::DefrostEnergyInputRatioFunctionofTemperatureCurveName, curve.handle(), false);
+}
+
+void CoilHeatingDXMultiSpeed_Impl::resetDefrostEnergyInputRatioFunctionofTemperatureCurve() {
+  OS_ASSERT(setPointer(openstudio::Coil_Heating_DX_MultiSpeedFields::DefrostEnergyInputRatioFunctionofTemperatureCurveName, openstudio::Handle(),
+                       false));
+}
+
+boost::optional<Curve> CoilHeatingDXMultiSpeed_Impl::crankcaseHeaterCapacityFunctionofTemperatureCurve() const {
+  return getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Coil_Heating_DX_MultiSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName);
+}
+
+bool CoilHeatingDXMultiSpeed_Impl::setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve) {
+  return setPointer(openstudio::Coil_Heating_DX_MultiSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName, curve.handle(), false);
+}
+
+void CoilHeatingDXMultiSpeed_Impl::resetCrankcaseHeaterCapacityFunctionofTemperatureCurve() {
+  OS_ASSERT(setPointer(openstudio::Coil_Heating_DX_MultiSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName,
+                       openstudio::Handle(), false));
 }
 
 double CoilHeatingDXMultiSpeed_Impl::minimumOutdoorDryBulbTemperatureforCompressorOperation() const {
@@ -344,6 +426,20 @@ int CoilHeatingDXMultiSpeed_Impl::regionnumberforCalculatingHSPF() const {
 
 bool CoilHeatingDXMultiSpeed_Impl::setRegionnumberforCalculatingHSPF(int regionnumberforCalculatingHSPF) {
   return setInt(openstudio::Coil_Heating_DX_MultiSpeedFields::RegionnumberforCalculatingHSPF, regionnumberforCalculatingHSPF);
+}
+
+std::vector<ModelObject> CoilHeatingDXMultiSpeed_Impl::children() const {
+  std::vector<ModelObject> children;
+
+  if (auto defrostCurve = defrostEnergyInputRatioFunctionofTemperatureCurve()) {
+    children.emplace_back(std::move(*defrostCurve));
+  }
+
+  if (auto crankcaseCurve = crankcaseHeaterCapacityFunctionofTemperatureCurve()) {
+    children.emplace_back(std::move(*crankcaseCurve));
+  }
+
+  return children;
 }
 
 }  // namespace detail

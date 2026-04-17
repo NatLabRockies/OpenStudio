@@ -30,6 +30,7 @@ class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl : public Str
   unsigned outletPort() const override;
   bool addToNode(Node& node) override;
   void doCanonicalize(LoadContext& context) override;
+  std::vector<ModelObject> children() const override;
 
   boost::optional<Schedule> availabilitySchedule() const;
   bool setAvailabilitySchedule(Schedule& schedule);

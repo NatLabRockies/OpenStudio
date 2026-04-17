@@ -20,7 +20,6 @@
 #include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
-#include "Schedule/ScheduleConstant.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Logger.hpp>
@@ -38,9 +37,19 @@ namespace epmodel {
     OS_ASSERT(impl);
     detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
     impl->canonicalize(context);
-    ScheduleConstant alwaysOn(model);
-    OS_ASSERT(alwaysOn.setValue(1.0));
+    auto alwaysOn = model.alwaysOnDiscreteSchedule();
     OS_ASSERT(setAvailabilitySchedule(alwaysOn));
+    autosizeMaximumAirFlowRate();
+  }
+
+  AirTerminalSingleDuctConstantVolumeNoReheat::AirTerminalSingleDuctConstantVolumeNoReheat(const Model& model, Schedule& availabilitySchedule)
+    : StraightComponent(AirTerminalSingleDuctConstantVolumeNoReheat::iddObjectType(), model) {
+    auto impl = getImpl<detail::AirTerminalSingleDuctConstantVolumeNoReheat_Impl>();
+    OS_ASSERT(impl);
+    detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
+    impl->canonicalize(context);
+    OS_ASSERT(setAvailabilitySchedule(availabilitySchedule));
+    autosizeMaximumAirFlowRate();
   }
 
   AirTerminalSingleDuctConstantVolumeNoReheat::AirTerminalSingleDuctConstantVolumeNoReheat(
@@ -77,6 +86,10 @@ namespace epmodel {
 
   void AirTerminalSingleDuctConstantVolumeNoReheat::autosizeMaximumAirFlowRate() {
     getImpl<detail::AirTerminalSingleDuctConstantVolumeNoReheat_Impl>()->autosizeMaximumAirFlowRate();
+  }
+
+  boost::optional<double> AirTerminalSingleDuctConstantVolumeNoReheat::autosizedMaximumAirFlowRate() const {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeNoReheat_Impl>()->autosizedMaximumAirFlowRate();
   }
 
 }  // namespace epmodel
@@ -138,6 +151,15 @@ namespace epmodel {
     Schedule AirTerminalSingleDuctConstantVolumeNoReheat_Impl::availabilitySchedule() const {
       auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
         AirTerminal_SingleDuct_ConstantVolume_NoReheatFields::AvailabilityScheduleName);
+      if (!schedule) {
+        LOG_FREE(Error, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeNoReheat",
+                 "Required availability schedule not set, repairing persisted state with the model always-on discrete schedule");
+        schedule = model().alwaysOnDiscreteSchedule();
+        const bool ok = const_cast<AirTerminalSingleDuctConstantVolumeNoReheat_Impl*>(this)->setAvailabilitySchedule(*schedule);
+        OS_ASSERT(ok);
+        schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+          AirTerminal_SingleDuct_ConstantVolume_NoReheatFields::AvailabilityScheduleName);
+      }
       OS_ASSERT(schedule);
       return *schedule;
     }
@@ -164,6 +186,10 @@ namespace epmodel {
 
     void AirTerminalSingleDuctConstantVolumeNoReheat_Impl::autosizeMaximumAirFlowRate() {
       OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_NoReheatFields::MaximumAirFlowRate, "autosize"));
+    }
+
+    boost::optional<double> AirTerminalSingleDuctConstantVolumeNoReheat_Impl::autosizedMaximumAirFlowRate() const {
+      return boost::none;
     }
 
     bool AirTerminalSingleDuctConstantVolumeNoReheat_Impl::addToNode(Node& node) {

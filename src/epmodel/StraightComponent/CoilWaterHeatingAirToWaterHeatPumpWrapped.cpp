@@ -7,6 +7,8 @@
 #include "StraightComponent/CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl.hpp"
 
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -19,7 +21,10 @@ namespace openstudio {
 namespace epmodel {
 
 CoilWaterHeatingAirToWaterHeatPumpWrapped::CoilWaterHeatingAirToWaterHeatPumpWrapped(const Model& model)
-  : StraightComponent(CoilWaterHeatingAirToWaterHeatPumpWrapped::iddObjectType(), model) {}
+  : StraightComponent(CoilWaterHeatingAirToWaterHeatPumpWrapped::iddObjectType(), model) {
+  auto alwaysOn = const_cast<Model&>(model).alwaysOnDiscreteSchedule();
+  OS_ASSERT(setAvailabilitySchedule(alwaysOn));
+}
 
 CoilWaterHeatingAirToWaterHeatPumpWrapped::CoilWaterHeatingAirToWaterHeatPumpWrapped(
   std::shared_ptr<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl> impl)
@@ -32,6 +37,14 @@ IddObjectType CoilWaterHeatingAirToWaterHeatPumpWrapped::iddObjectType() {
 std::vector<std::string> CoilWaterHeatingAirToWaterHeatPumpWrapped::evaporatorAirTemperatureTypeforCurveObjectsValues() {
   return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                         openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::EvaporatorAirTemperatureTypeforCurveObjects);
+}
+
+Schedule CoilWaterHeatingAirToWaterHeatPumpWrapped::availabilitySchedule() const {
+  return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->availabilitySchedule();
+}
+
+bool CoilWaterHeatingAirToWaterHeatPumpWrapped::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl>()->setAvailabilitySchedule(schedule);
 }
 
 double CoilWaterHeatingAirToWaterHeatPumpWrapped::ratedHeatingCapacity() const {
@@ -231,6 +244,24 @@ unsigned CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::outletPort() const {
 bool CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::addToNode(Node& node) {
   (void)node;
   return false;
+}
+
+Schedule CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::availabilitySchedule() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::AvailabilityScheduleName);
+  if (!value) {
+    value = this->model().alwaysOnDiscreteSchedule();
+    OS_ASSERT(value);
+    const_cast<CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl*>(this)->setAvailabilitySchedule(*value);
+    value = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+      openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::AvailabilityScheduleName);
+  }
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return setPointer(openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::AvailabilityScheduleName, schedule.handle(), false);
 }
 
 double CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl::ratedHeatingCapacity() const {

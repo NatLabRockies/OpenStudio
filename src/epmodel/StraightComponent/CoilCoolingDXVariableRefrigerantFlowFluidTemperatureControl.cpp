@@ -6,7 +6,13 @@
 #include "StraightComponent/CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl.hpp"
 #include "StraightComponent/CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl.hpp"
 
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
+#include "Curve/CurveQuadratic.hpp"
+#include "Curve/CurveQuadratic_Impl.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -18,7 +24,24 @@ namespace openstudio {
 namespace epmodel {
 
 CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl::CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl(const Model& model)
-  : StraightComponent(CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl::iddObjectType(), model) {}
+  : StraightComponent(CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl::iddObjectType(), model) {
+  OS_ASSERT(getImpl<detail::CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl>());
+
+  auto alwaysOn = model.alwaysOnDiscreteSchedule();
+  OS_ASSERT(setAvailabilitySchedule(alwaysOn));
+  autosizeRatedTotalCoolingCapacity();
+  autosizeRatedSensibleHeatRatio();
+  OS_ASSERT(setIndoorUnitReferenceSuperheating(5.0));
+
+  CurveQuadratic indoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve(model);
+  indoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve.setName("VRFIUEvapTempCurve");
+  indoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve.setCoefficient1Constant(0.0);
+  indoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve.setCoefficient2x(0.843);
+  indoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve.setCoefficient3xPOW2(0.0);
+  indoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve.setMinimumValueofx(0.0);
+  indoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve.setMaximumValueofx(15.0);
+  OS_ASSERT(setIndoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve(indoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve));
+}
 
 CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl::CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl(
   std::shared_ptr<detail::CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl> impl)
@@ -26,6 +49,14 @@ CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl::CoilCoolingDXVariab
 
 IddObjectType CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl::iddObjectType() {
   return IddObjectType::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControl;
+}
+
+Schedule CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl::availabilitySchedule() const {
+  return getImpl<detail::CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl>()->availabilitySchedule();
+}
+
+bool CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl>()->setAvailabilitySchedule(schedule);
 }
 
 boost::optional<double> CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl::ratedTotalCoolingCapacity() const {
@@ -71,12 +102,35 @@ bool CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl::setIndoorUnitR
     indoorUnitReferenceSuperheating);
 }
 
+Curve CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl::indoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve() const {
+  return getImpl<detail::CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl>()
+    ->indoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve();
+}
+
+bool CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl::setIndoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve(
+  const Curve& curve) {
+  return getImpl<detail::CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl>()
+    ->setIndoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve(curve);
+}
+
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+Schedule CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl::availabilitySchedule() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControlFields::AvailabilityScheduleName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return setPointer(openstudio::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControlFields::AvailabilityScheduleName,
+                    schedule.handle(), false);
+}
 
 unsigned CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl::inletPort() const {
   return openstudio::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControlFields::CoilAirInletNode;
@@ -148,6 +202,20 @@ bool CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl::setIndoor
   double indoorUnitReferenceSuperheating) {
   return setDouble(openstudio::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControlFields::IndoorUnitReferenceSuperheating,
                    indoorUnitReferenceSuperheating);
+}
+
+Curve CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl::indoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControlFields::IndoorUnitEvaporatingTemperatureFunctionofSuperheatingCurveName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl::setIndoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve(
+  const Curve& curve) {
+  return setPointer(openstudio::Coil_Cooling_DX_VariableRefrigerantFlow_FluidTemperatureControlFields::
+                      IndoorUnitEvaporatingTemperatureFunctionofSuperheatingCurveName,
+                    curve.handle());
 }
 
 }  // namespace detail

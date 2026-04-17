@@ -14,80 +14,95 @@
 #include <memory>
 
 namespace openstudio {
-namespace epmodel {
+  namespace epmodel {
 
-class Model;
-class Schedule;
-class HVACComponent;
+  class Model;
+  class Node;
+  class Schedule;
+  class HVACComponent;
 
-namespace detail {
-class AirTerminalSingleDuctConstantVolumeReheat_Impl;
-}
+  namespace detail {
+    class AirTerminalSingleDuctConstantVolumeReheat_Impl;
+  }
 
-class EPMODEL_API AirTerminalSingleDuctConstantVolumeReheat : public StraightComponent
-{
- public:
-  explicit AirTerminalSingleDuctConstantVolumeReheat(const Model& model);
+  class EPMODEL_API AirTerminalSingleDuctConstantVolumeReheat : public StraightComponent
+  {
+   public:
+    explicit AirTerminalSingleDuctConstantVolumeReheat(const Model& model);
+    AirTerminalSingleDuctConstantVolumeReheat(const Model& model, Schedule& availabilitySchedule, HVACComponent& reheatCoil);
 
-  virtual ~AirTerminalSingleDuctConstantVolumeReheat() override = default;
-  AirTerminalSingleDuctConstantVolumeReheat(const AirTerminalSingleDuctConstantVolumeReheat& other) = default;
-  AirTerminalSingleDuctConstantVolumeReheat(AirTerminalSingleDuctConstantVolumeReheat&& other) = default;
-  AirTerminalSingleDuctConstantVolumeReheat& operator=(const AirTerminalSingleDuctConstantVolumeReheat&) = default;
-  AirTerminalSingleDuctConstantVolumeReheat& operator=(AirTerminalSingleDuctConstantVolumeReheat&&) = default;
+    virtual ~AirTerminalSingleDuctConstantVolumeReheat() override = default;
+    AirTerminalSingleDuctConstantVolumeReheat(const AirTerminalSingleDuctConstantVolumeReheat& other) = default;
+    AirTerminalSingleDuctConstantVolumeReheat(AirTerminalSingleDuctConstantVolumeReheat&& other) = default;
+    AirTerminalSingleDuctConstantVolumeReheat& operator=(const AirTerminalSingleDuctConstantVolumeReheat&) = default;
+    AirTerminalSingleDuctConstantVolumeReheat& operator=(AirTerminalSingleDuctConstantVolumeReheat&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - Status: Scalar Parity. The constant-volume reheat scalar surface is aligned, while schedule, node-link, and coil helpers remain intentionally narrower.
-  // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctConstantVolumeReheat.
-  // - Implemented Parity: `maximumAirFlowRate`, `maximumHotWaterorSteamFlowRate`, `minimumHotWaterorSteamFlowRate`, `convergenceTolerance`, and `maximumReheatAirTemperature` preserve the canonical scalar contract.
-  // - Documented Delta: Inlet and outlet node conveniences continue to come from the shared straight-component topology.
-  // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:ConstantVolume:Reheat` fields, while the translator wires the topology links separately.
-  // - Evidence: `src/model/AirTerminalSingleDuctConstantVolumeReheat.hpp`, `src/model/AirTerminalSingleDuctConstantVolumeReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctConstantVolumeReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctConstantVolumeReheat_GTest.cpp`.
-  // - Remaining Parity Work: Add the omitted schedule, node-link, and coil helpers when relationship parity expands.
-  Schedule availabilitySchedule() const;
-  bool setAvailabilitySchedule(Schedule& schedule);
+    bool addToNode(Node& node);
 
-  HVACComponent reheatCoil() const;
-  bool setReheatCoil(const HVACComponent& coil);
-  void resetReheatCoil();
+    // Schema Alignment Notes:
+    // - Status: Partial Parity. Constructor, availability-schedule, reheat-coil, scalar field behavior, and loop-context insertion are aligned,
+    //   while autosized-result query helpers are not yet exposed in the public epmodel API.
+    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctConstantVolumeReheat.
+    // - Implemented Parity: The schedule-and-coil constructor, `availabilitySchedule`, validated `setReheatCoil`, the scalar accessors for
+    //   `maximumAirFlowRate`, `maximumHotWaterorSteamFlowRate`, `minimumHotWaterorSteamFlowRate`, `convergenceTolerance`, and
+    //   `maximumReheatAirTemperature`, and the wrapper-specific `addToNode` cover the current epmodel zone-branch insertion path and
+    //   zone-equipment registration through the shared helper.
+    // - Documented Delta: The `epmodel`-only default constructor is preserved, and the family-specific autosized-result query helpers are not
+    //   yet surfaced in the public API until shared sizing-result infrastructure exists.
+    // - Field/Storage Mapping: The availability-schedule pointer, reheat-coil pointer, preserved scalar fields, and the inherited
+    //   straight-component inlet/outlet node fields all store directly on the same EnergyPlus `AirTerminal:SingleDuct:ConstantVolume:Reheat`
+    //   object. If persisted availability-schedule storage is cleared, `availabilitySchedule()` repairs that stored pointer by rebinding the
+    //   model always-on discrete schedule onto the same object before returning it. `addToNode` wires the same object onto the current
+    //   epmodel zone-branch path, updates any linked zone air distribution unit outlet node to match the branch node, and registers the
+    //   terminal on the owning thermal-zone equipment list via the shared helper. Canonical model still accepts a broader local-topology
+    //   insertion surface than this wrapper-specific path.
+    // - Evidence: `src/model/AirTerminalSingleDuctConstantVolumeReheat.hpp`, `src/model/AirTerminalSingleDuctConstantVolumeReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctConstantVolumeReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctConstantVolumeReheat_GTest.cpp`.
+    // - Remaining Parity Work: Expose the autosized-result query helpers once shared sizing-result plumbing exists.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
 
-  boost::optional<double> maximumAirFlowRate() const;
-  bool isMaximumAirFlowRateAutosized() const;
-  bool setMaximumAirFlowRate(double maximumAirFlowRate);
-  void resetMaximumAirFlowRate();
-  void autosizeMaximumAirFlowRate();
+    HVACComponent reheatCoil() const;
+    bool setReheatCoil(const HVACComponent& coil);
+    void resetReheatCoil();
 
-  boost::optional<double> maximumHotWaterorSteamFlowRate() const;
-  bool isMaximumHotWaterorSteamFlowRateAutosized() const;
-  bool setMaximumHotWaterorSteamFlowRate(double maximumHotWaterorSteamFlowRate);
-  void resetMaximumHotWaterorSteamFlowRate();
-  void autosizeMaximumHotWaterorSteamFlowRate();
+    boost::optional<double> maximumAirFlowRate() const;
+    bool isMaximumAirFlowRateAutosized() const;
+    bool setMaximumAirFlowRate(double maximumAirFlowRate);
+    void resetMaximumAirFlowRate();
+    void autosizeMaximumAirFlowRate();
 
-  double minimumHotWaterorSteamFlowRate() const;
-  bool isMinimumHotWaterorSteamFlowRateDefaulted() const;
-  bool setMinimumHotWaterorSteamFlowRate(double minimumHotWaterorSteamFlowRate);
-  void resetMinimumHotWaterorSteamFlowRate();
+    boost::optional<double> maximumHotWaterorSteamFlowRate() const;
+    bool isMaximumHotWaterorSteamFlowRateAutosized() const;
+    bool setMaximumHotWaterorSteamFlowRate(double maximumHotWaterorSteamFlowRate);
+    void resetMaximumHotWaterorSteamFlowRate();
+    void autosizeMaximumHotWaterorSteamFlowRate();
 
-  double convergenceTolerance() const;
-  bool isConvergenceToleranceDefaulted() const;
-  bool setConvergenceTolerance(double convergenceTolerance);
-  void resetConvergenceTolerance();
+    double minimumHotWaterorSteamFlowRate() const;
+    bool isMinimumHotWaterorSteamFlowRateDefaulted() const;
+    bool setMinimumHotWaterorSteamFlowRate(double minimumHotWaterorSteamFlowRate);
+    void resetMinimumHotWaterorSteamFlowRate();
 
-  double maximumReheatAirTemperature() const;
-  bool isMaximumReheatAirTemperatureDefaulted() const;
-  bool setMaximumReheatAirTemperature(double maximumReheatAirTemperature);
-  void resetMaximumReheatAirTemperature();
+    double convergenceTolerance() const;
+    bool isConvergenceToleranceDefaulted() const;
+    bool setConvergenceTolerance(double convergenceTolerance);
+    void resetConvergenceTolerance();
 
- protected:
-  using ImplType = detail::AirTerminalSingleDuctConstantVolumeReheat_Impl;
+    double maximumReheatAirTemperature() const;
+    bool isMaximumReheatAirTemperatureDefaulted() const;
+    bool setMaximumReheatAirTemperature(double maximumReheatAirTemperature);
+    void resetMaximumReheatAirTemperature();
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+   protected:
+    using ImplType = detail::AirTerminalSingleDuctConstantVolumeReheat_Impl;
 
-  explicit AirTerminalSingleDuctConstantVolumeReheat(std::shared_ptr<detail::AirTerminalSingleDuctConstantVolumeReheat_Impl> impl);
-};
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
+    explicit AirTerminalSingleDuctConstantVolumeReheat(std::shared_ptr<detail::AirTerminalSingleDuctConstantVolumeReheat_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

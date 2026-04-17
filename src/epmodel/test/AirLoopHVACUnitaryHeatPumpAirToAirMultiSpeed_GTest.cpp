@@ -26,6 +26,28 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_DefaultConst
   EXPECT_EQ(AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::iddObjectType(), unitary.iddObject().type());
 }
 
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_RelationshipConstructorAndChildren) {
+  Model model;
+  FanOnOff fan(model);
+  CoilHeatingElectricMultiStage heating(model);
+  CoilCoolingDXMultiSpeed cooling(model);
+  CoilHeatingElectric supplemental(model);
+
+  AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed unitary(model, fan, heating, cooling, supplemental);
+
+  EXPECT_EQ(fan.handle(), unitary.supplyAirFan().handle());
+  EXPECT_EQ(heating.handle(), unitary.heatingCoil().handle());
+  EXPECT_EQ(cooling.handle(), unitary.coolingCoil().handle());
+  EXPECT_EQ(supplemental.handle(), unitary.supplementalHeatingCoil().handle());
+
+  const auto children = unitary.children();
+  ASSERT_EQ(4u, children.size());
+  EXPECT_EQ(fan.handle(), children[0].handle());
+  EXPECT_EQ(heating.handle(), children[1].handle());
+  EXPECT_EQ(cooling.handle(), children[2].handle());
+  EXPECT_EQ(supplemental.handle(), children[3].handle());
+}
+
 TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_ScalarAccessors_RoundTrip) {
   Model model;
   AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed unitary(model);

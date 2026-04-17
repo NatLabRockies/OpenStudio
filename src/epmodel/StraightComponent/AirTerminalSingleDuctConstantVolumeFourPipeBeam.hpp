@@ -15,6 +15,9 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class ModelObject;
+class Node;
+class Schedule;
 
 namespace detail {
 class AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl;
@@ -24,6 +27,7 @@ class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeBeam : public Strai
 {
  public:
   explicit AirTerminalSingleDuctConstantVolumeFourPipeBeam(const Model& model);
+  AirTerminalSingleDuctConstantVolumeFourPipeBeam(const Model& model, ModelObject& coolingCoil, ModelObject& heatingCoil);
 
   virtual ~AirTerminalSingleDuctConstantVolumeFourPipeBeam() override = default;
   AirTerminalSingleDuctConstantVolumeFourPipeBeam(const AirTerminalSingleDuctConstantVolumeFourPipeBeam& other) = default;
@@ -32,15 +36,33 @@ class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeBeam : public Strai
   AirTerminalSingleDuctConstantVolumeFourPipeBeam& operator=(AirTerminalSingleDuctConstantVolumeFourPipeBeam&&) = default;
 
   static IddObjectType iddObjectType();
+  bool addToNode(Node& node);
 
   // Schema Alignment Notes:
-  // - Status: Scalar Parity. The four-pipe beam scalar surface is aligned, while schedule, node, coil, and curve helpers remain intentionally narrower.
+  // - Status: Partial Parity. The scalar surface is aligned, and the availability-schedule, coil, and current zone-branch insertion path are exposed,
+  //   while the family-specific autosized-result helpers and broader canonical local-topology helpers remain intentionally narrower.
   // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctConstantVolumeFourPipeBeam.
-  // - Implemented Parity: `designPrimaryAirVolumeFlowRate`, `designChilledWaterVolumeFlowRate`, `designHotWaterVolumeFlowRate`, `zoneTotalBeamLength`, and `ratedPrimaryAirFlowRateperBeamLength` preserve the canonical scalar contract.
-  // - Documented Delta: Schedule, node, coil, and curve helpers, plus coil-owned scalar fields, are not exposed as public methods yet.
-  // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:ConstantVolume:FourPipeBeam` fields.
-  // - Evidence: `src/model/AirTerminalSingleDuctConstantVolumeFourPipeBeam.hpp`, `src/model/AirTerminalSingleDuctConstantVolumeFourPipeBeam.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctConstantVolumeFourPipeBeam.cpp`, and canonical equipment-list/topology behavior in `src/epmodel/test/IDF_SmallOffice_GTest.cpp`.
-  // - Remaining Parity Work: Add the omitted schedule, node, coil, and curve helpers when relationship parity expands.
+  // - Implemented Parity: `primaryAirAvailabilitySchedule`, `coolingAvailabilitySchedule`, `heatingAvailabilitySchedule`, `setCoolingCoil`,
+  //   `setHeatingCoil`, `addToNode`, `designPrimaryAirVolumeFlowRate`, `designChilledWaterVolumeFlowRate`, `designHotWaterVolumeFlowRate`,
+  //   `zoneTotalBeamLength`, and `ratedPrimaryAirFlowRateperBeamLength` preserve the canonical field contract that is practical here.
+  // - Documented Delta: The cooling and heating coils are surfaced as raw epmodel `ModelObject` targets because epmodel does not yet provide dedicated
+  //   `CoilCoolingFourPipeBeam` / `CoilHeatingFourPipeBeam` wrappers; the underlying object lists still enforce the correct target types.
+  // - Field/Storage Mapping: The availability schedules, coil targets, preserved scalars, and inherited straight-component inlet/outlet node fields all
+  //   store directly on the EnergyPlus `AirTerminal:SingleDuct:ConstantVolume:FourPipeBeam` object. `addToNode` uses the current epmodel zone-branch path
+  //   and registers the terminal on the owning thermal-zone equipment list when one is resolved.
+  // - Evidence: `src/model/AirTerminalSingleDuctConstantVolumeFourPipeBeam.hpp`, `src/model/AirTerminalSingleDuctConstantVolumeFourPipeBeam.cpp`,
+  //   `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctConstantVolumeFourPipeBeam.cpp`, and the focused epmodel tests.
+  // - Remaining Parity Work: Expose the family-specific autosized-result query helpers and the broader canonical local-topology helpers if shared
+  //   infrastructure or dedicated wrappers later make them practical.
+  Schedule primaryAirAvailabilitySchedule() const;
+  bool setPrimaryAirAvailabilitySchedule(Schedule& schedule);
+
+  Schedule coolingAvailabilitySchedule() const;
+  bool setCoolingAvailabilitySchedule(Schedule& schedule);
+
+  Schedule heatingAvailabilitySchedule() const;
+  bool setHeatingAvailabilitySchedule(Schedule& schedule);
+
   boost::optional<double> designPrimaryAirVolumeFlowRate() const;
   bool isDesignPrimaryAirVolumeFlowRateAutosized() const;
   bool setDesignPrimaryAirVolumeFlowRate(double designPrimaryAirVolumeFlowRate);
@@ -65,6 +87,12 @@ class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeBeam : public Strai
   bool isRatedPrimaryAirFlowRateperBeamLengthDefaulted() const;
   bool setRatedPrimaryAirFlowRateperBeamLength(double ratedPrimaryAirFlowRateperBeamLength);
   void resetRatedPrimaryAirFlowRateperBeamLength();
+
+  boost::optional<ModelObject> coolingCoil() const;
+  bool setCoolingCoil(ModelObject& coolingCoil);
+
+  boost::optional<ModelObject> heatingCoil() const;
+  bool setHeatingCoil(ModelObject& heatingCoil);
 
  protected:
   using ImplType = detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl;

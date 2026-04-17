@@ -17,6 +17,8 @@ namespace epmodel {
 
 class Model;
 class Node;
+class Schedule;
+class Curve;
 
 namespace detail {
 class CoilHeatingDXVariableSpeed_Impl;
@@ -26,6 +28,7 @@ class EPMODEL_API CoilHeatingDXVariableSpeed : public StraightComponent
 {
  public:
   explicit CoilHeatingDXVariableSpeed(const Model& model);
+  explicit CoilHeatingDXVariableSpeed(const Model& model, const Curve& partLoadFraction);
 
   virtual ~CoilHeatingDXVariableSpeed() override = default;
   CoilHeatingDXVariableSpeed(const CoilHeatingDXVariableSpeed& other) = default;
@@ -41,13 +44,22 @@ class EPMODEL_API CoilHeatingDXVariableSpeed : public StraightComponent
   bool addToNode(Node& node);
 
   // Schema Alignment Notes:
-  // - Status: Scalar Parity. The canonical scalar heating DX surface is largely present, while schedule, curve, speed-data, and node-link helpers remain out of scope.
+  // - Status: Partial Parity. Required availability / PLF-curve behavior, optional defrost / crankcase relationships, bounded child traversal,
+  //   and the current epmodel supply-side air-loop insertion path are present, while the canonical speed-data family and broader OA / DOAS topology
+  //   remain out of scope.
   // - Canonical Counterpart: openstudio::model::CoilHeatingDXVariableSpeed.
-  // - Implemented Parity: The speed-level heating-capacity, airflow, defrost, crankcase-heater, and resistive-defrost helpers preserve the canonical naming and autosize behavior.
-  // - Documented Delta: Availability schedule, curves, speed-data lists, and node-link helpers from canonical `openstudio::model::CoilHeatingDXVariableSpeed` are not exposed yet.
-  // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Heating:DX:VariableSpeed` fields.
+  // - Implemented Parity: The speed-level heating-capacity, airflow, defrost, crankcase-heater, and resistive-defrost helpers preserve the canonical
+  //   naming and autosize behavior; the required availability schedule, constructor-with-part-load-fraction curve, and energy-part-load-fraction curve
+  //   are now preserved; and optional defrost-EIR and crankcase-heater relationship helpers are exposed for the current bounded slice.
+  // - Documented Delta: Canonical variable-speed speed-data / speed-list parity remains deferred because epmodel does not yet expose the
+  //   `CoilHeatingDXVariableSpeedSpeedData` family or its owning list surface.
+  // - Field/Storage Mapping: Preserved scalars and the bounded relationship slice map directly to EnergyPlus `Coil:Heating:DX:VariableSpeed` fields.
   // - Evidence: `src/model/CoilHeatingDXVariableSpeed.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingDXVariableSpeed.cpp`, and `src/epmodel/test/CoilHeatingDXVariableSpeed_GTest.cpp`.
-  // - Remaining Parity Work: Add the omitted schedule, curve, speed-data, and relationship helpers without changing the preserved scalar signatures.
+  // - Remaining Parity Work: Add canonical speed-data / speed-list parity once epmodel has a viable representation for the `SpeedData` family, and widen
+  //   topology acceptance only where the current epmodel air-loop graph can prove it.
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+
   int nominalSpeedLevel() const;
   bool setNominalSpeedLevel(int nominalSpeedLevel);
 
@@ -61,6 +73,13 @@ class EPMODEL_API CoilHeatingDXVariableSpeed : public StraightComponent
   bool setRatedAirFlowRateAtSelectedNominalSpeedLevel(double ratedAirFlowRateAtSelectedNominalSpeedLevel);
   void autosizeRatedAirFlowRateAtSelectedNominalSpeedLevel();
 
+  Curve energyPartLoadFractionCurve() const;
+  bool setEnergyPartLoadFractionCurve(const Curve& curve);
+
+  boost::optional<Curve> defrostEnergyInputRatioFunctionofTemperatureCurve() const;
+  bool setDefrostEnergyInputRatioFunctionofTemperatureCurve(const Curve& curve);
+  void resetDefrostEnergyInputRatioFunctionofTemperatureCurve();
+
   double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
   bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);
 
@@ -73,6 +92,10 @@ class EPMODEL_API CoilHeatingDXVariableSpeed : public StraightComponent
 
   double crankcaseHeaterCapacity() const;
   bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
+
+  boost::optional<Curve> crankcaseHeaterCapacityFunctionofTemperatureCurve() const;
+  bool setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve);
+  void resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
 
   double maximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation() const;
   bool setMaximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation(double maximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation);

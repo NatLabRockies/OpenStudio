@@ -6,8 +6,15 @@
 #include "StraightComponent/CoilCoolingDXVariableSpeed.hpp"
 #include "StraightComponent/CoilCoolingDXVariableSpeed_Impl.hpp"
 
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
+#include "Curve/CurveQuadratic.hpp"
+#include "Curve/CurveQuadratic_Impl.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -23,6 +30,9 @@ namespace epmodel {
 CoilCoolingDXVariableSpeed::CoilCoolingDXVariableSpeed(const Model& model)
   : StraightComponent(CoilCoolingDXVariableSpeed::iddObjectType(), model) {
   bool ok = true;
+  auto availability = model.alwaysOnDiscreteSchedule();
+  ok = setAvailabilitySchedule(availability);
+  OS_ASSERT(ok);
   ok = setNominalSpeedLevel(1);
   OS_ASSERT(ok);
   autosizeGrossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevel();
@@ -37,6 +47,21 @@ CoilCoolingDXVariableSpeed::CoilCoolingDXVariableSpeed(const Model& model)
   OS_ASSERT(ok);
   ok = setFanDelayTime(60.0);
   OS_ASSERT(ok);
+
+  CurveQuadratic partLoadFraction(model);
+  ok = partLoadFraction.setCoefficient1Constant(0.85);
+  OS_ASSERT(ok);
+  ok = partLoadFraction.setCoefficient2x(0.15);
+  OS_ASSERT(ok);
+  ok = partLoadFraction.setCoefficient3xPOW2(0.0);
+  OS_ASSERT(ok);
+  ok = partLoadFraction.setMinimumValueofx(0.0);
+  OS_ASSERT(ok);
+  ok = partLoadFraction.setMaximumValueofx(1.0);
+  OS_ASSERT(ok);
+  ok = setEnergyPartLoadFractionCurve(partLoadFraction);
+  OS_ASSERT(ok);
+
   ok = setCondenserType("AirCooled");
   OS_ASSERT(ok);
   ok = setEvaporativeCondenserPumpRatedPowerConsumption(0.0);
@@ -53,6 +78,12 @@ CoilCoolingDXVariableSpeed::CoilCoolingDXVariableSpeed(const Model& model)
   OS_ASSERT(ok);
 }
 
+CoilCoolingDXVariableSpeed::CoilCoolingDXVariableSpeed(const Model& model, const Curve& partLoadFraction)
+  : CoilCoolingDXVariableSpeed(model) {
+  const bool ok = setEnergyPartLoadFractionCurve(partLoadFraction);
+  OS_ASSERT(ok);
+}
+
 CoilCoolingDXVariableSpeed::CoilCoolingDXVariableSpeed(std::shared_ptr<detail::CoilCoolingDXVariableSpeed_Impl> impl)
   : StraightComponent(std::move(impl)) {}
 
@@ -60,14 +91,22 @@ IddObjectType CoilCoolingDXVariableSpeed::iddObjectType() {
   return IddObjectType::Coil_Cooling_DX_VariableSpeed;
 }
 
-  std::vector<std::string> CoilCoolingDXVariableSpeed::condenserTypeValues() {
-    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                          openstudio::Coil_Cooling_DX_VariableSpeedFields::CondenserType);
-  }
+std::vector<std::string> CoilCoolingDXVariableSpeed::condenserTypeValues() {
+  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                        openstudio::Coil_Cooling_DX_VariableSpeedFields::CondenserType);
+}
 
-  bool CoilCoolingDXVariableSpeed::addToNode(Node& node) {
-    return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->addToNode(node);
-  }
+bool CoilCoolingDXVariableSpeed::addToNode(Node& node) {
+  return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->addToNode(node);
+}
+
+Schedule CoilCoolingDXVariableSpeed::availabilitySchedule() const {
+  return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->availabilitySchedule();
+}
+
+bool CoilCoolingDXVariableSpeed::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->setAvailabilitySchedule(schedule);
+}
 
 int CoilCoolingDXVariableSpeed::nominalSpeedLevel() const {
   return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->nominalSpeedLevel();
@@ -155,6 +194,14 @@ bool CoilCoolingDXVariableSpeed::setFanDelayTime(double fanDelayTime) {
   return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->setFanDelayTime(fanDelayTime);
 }
 
+Curve CoilCoolingDXVariableSpeed::energyPartLoadFractionCurve() const {
+  return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->energyPartLoadFractionCurve();
+}
+
+bool CoilCoolingDXVariableSpeed::setEnergyPartLoadFractionCurve(const Curve& curve) {
+  return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->setEnergyPartLoadFractionCurve(curve);
+}
+
 std::string CoilCoolingDXVariableSpeed::condenserType() const {
   return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->condenserType();
 }
@@ -188,6 +235,18 @@ bool CoilCoolingDXVariableSpeed::setCrankcaseHeaterCapacity(double crankcaseHeat
   return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->setCrankcaseHeaterCapacity(crankcaseHeaterCapacity);
 }
 
+boost::optional<Curve> CoilCoolingDXVariableSpeed::crankcaseHeaterCapacityFunctionofTemperatureCurve() const {
+  return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->crankcaseHeaterCapacityFunctionofTemperatureCurve();
+}
+
+bool CoilCoolingDXVariableSpeed::setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve) {
+  return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->setCrankcaseHeaterCapacityFunctionofTemperatureCurve(curve);
+}
+
+void CoilCoolingDXVariableSpeed::resetCrankcaseHeaterCapacityFunctionofTemperatureCurve() {
+  getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
+}
+
 double CoilCoolingDXVariableSpeed::maximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation() const {
   return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->maximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation();
 }
@@ -212,6 +271,18 @@ double CoilCoolingDXVariableSpeed::basinHeaterSetpointTemperature() const {
 
 bool CoilCoolingDXVariableSpeed::setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature) {
   return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->setBasinHeaterSetpointTemperature(basinHeaterSetpointTemperature);
+}
+
+boost::optional<Schedule> CoilCoolingDXVariableSpeed::basinHeaterOperatingSchedule() const {
+  return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->basinHeaterOperatingSchedule();
+}
+
+bool CoilCoolingDXVariableSpeed::setBasinHeaterOperatingSchedule(Schedule& schedule) {
+  return getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->setBasinHeaterOperatingSchedule(schedule);
+}
+
+void CoilCoolingDXVariableSpeed::resetBasinHeaterOperatingSchedule() {
+  getImpl<detail::CoilCoolingDXVariableSpeed_Impl>()->resetBasinHeaterOperatingSchedule();
 }
 
 double CoilCoolingDXVariableSpeed::minimumOutdoorDryBulbTemperatureforCompressorOperation() const {
@@ -242,12 +313,37 @@ bool isAutosized(const ModelObject_Impl& impl, int fieldIndex) {
 
 }  // namespace
 
+Schedule CoilCoolingDXVariableSpeed_Impl::availabilitySchedule() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Cooling_DX_VariableSpeedFields::AvailabilityScheduleName);
+  if (!value) {
+    value = this->model().alwaysOnDiscreteSchedule();
+    OS_ASSERT(value);
+    const_cast<CoilCoolingDXVariableSpeed_Impl*>(this)->setAvailabilitySchedule(*value);
+    value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Cooling_DX_VariableSpeedFields::AvailabilityScheduleName);
+  }
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool CoilCoolingDXVariableSpeed_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return setPointer(openstudio::Coil_Cooling_DX_VariableSpeedFields::AvailabilityScheduleName, schedule.handle(), false);
+}
+
 unsigned CoilCoolingDXVariableSpeed_Impl::inletPort() const {
   return openstudio::Coil_Cooling_DX_VariableSpeedFields::IndoorAirInletNodeName;
 }
 
 unsigned CoilCoolingDXVariableSpeed_Impl::outletPort() const {
   return openstudio::Coil_Cooling_DX_VariableSpeedFields::IndoorAirOutletNodeName;
+}
+
+std::vector<ModelObject> CoilCoolingDXVariableSpeed_Impl::children() const {
+  std::vector<ModelObject> result;
+  result.push_back(energyPartLoadFractionCurve());
+  if (const auto curve = crankcaseHeaterCapacityFunctionofTemperatureCurve()) {
+    result.push_back(*curve);
+  }
+  return result;
 }
 
 bool CoilCoolingDXVariableSpeed_Impl::addToNode(Node& node) {
@@ -368,6 +464,17 @@ bool CoilCoolingDXVariableSpeed_Impl::setFanDelayTime(double fanDelayTime) {
   return setDouble(openstudio::Coil_Cooling_DX_VariableSpeedFields::FanDelayTime, fanDelayTime);
 }
 
+Curve CoilCoolingDXVariableSpeed_Impl::energyPartLoadFractionCurve() const {
+  const auto curve = getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Coil_Cooling_DX_VariableSpeedFields::EnergyPartLoadFractionCurveName);
+  OS_ASSERT(curve);
+  return *curve;
+}
+
+bool CoilCoolingDXVariableSpeed_Impl::setEnergyPartLoadFractionCurve(const Curve& curve) {
+  return setPointer(openstudio::Coil_Cooling_DX_VariableSpeedFields::EnergyPartLoadFractionCurveName, curve.handle(), false);
+}
+
 std::vector<std::string> CoilCoolingDXVariableSpeed_Impl::condenserTypeValues() const {
   return CoilCoolingDXVariableSpeed::condenserTypeValues();
 }
@@ -410,6 +517,19 @@ bool CoilCoolingDXVariableSpeed_Impl::setCrankcaseHeaterCapacity(double crankcas
   return setDouble(openstudio::Coil_Cooling_DX_VariableSpeedFields::CrankcaseHeaterCapacity, crankcaseHeaterCapacity);
 }
 
+boost::optional<Curve> CoilCoolingDXVariableSpeed_Impl::crankcaseHeaterCapacityFunctionofTemperatureCurve() const {
+  return getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Coil_Cooling_DX_VariableSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName);
+}
+
+bool CoilCoolingDXVariableSpeed_Impl::setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve) {
+  return setPointer(openstudio::Coil_Cooling_DX_VariableSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName, curve.handle(), false);
+}
+
+void CoilCoolingDXVariableSpeed_Impl::resetCrankcaseHeaterCapacityFunctionofTemperatureCurve() {
+  OS_ASSERT(setPointer(openstudio::Coil_Cooling_DX_VariableSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName, Handle(), false));
+}
+
 double CoilCoolingDXVariableSpeed_Impl::maximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation() const {
   const auto value =
     getDouble(openstudio::Coil_Cooling_DX_VariableSpeedFields::MaximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation, true);
@@ -441,6 +561,19 @@ double CoilCoolingDXVariableSpeed_Impl::basinHeaterSetpointTemperature() const {
 
 bool CoilCoolingDXVariableSpeed_Impl::setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature) {
   return setDouble(openstudio::Coil_Cooling_DX_VariableSpeedFields::BasinHeaterSetpointTemperature, basinHeaterSetpointTemperature);
+}
+
+boost::optional<Schedule> CoilCoolingDXVariableSpeed_Impl::basinHeaterOperatingSchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::Coil_Cooling_DX_VariableSpeedFields::BasinHeaterOperatingScheduleName);
+}
+
+bool CoilCoolingDXVariableSpeed_Impl::setBasinHeaterOperatingSchedule(Schedule& schedule) {
+  return setPointer(openstudio::Coil_Cooling_DX_VariableSpeedFields::BasinHeaterOperatingScheduleName, schedule.handle(), false);
+}
+
+void CoilCoolingDXVariableSpeed_Impl::resetBasinHeaterOperatingSchedule() {
+  OS_ASSERT(setPointer(openstudio::Coil_Cooling_DX_VariableSpeedFields::BasinHeaterOperatingScheduleName, Handle(), false));
 }
 
 double CoilCoolingDXVariableSpeed_Impl::minimumOutdoorDryBulbTemperatureforCompressorOperation() const {

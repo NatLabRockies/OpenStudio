@@ -77,6 +77,23 @@ AirLoopHVACUnitaryHeatPumpAirToAir::AirLoopHVACUnitaryHeatPumpAirToAir(const Mod
 }
 
 AirLoopHVACUnitaryHeatPumpAirToAir::AirLoopHVACUnitaryHeatPumpAirToAir(
+  const Model& model, Schedule& availabilitySchedule, HVACComponent& supplyFan, HVACComponent& heatingCoil, HVACComponent& coolingCoil,
+  HVACComponent& supplementalHeatingCoil)
+  : AirLoopHVACUnitaryHeatPumpAirToAir(model) {
+  bool ok = true;
+  ok = setAvailabilitySchedule(availabilitySchedule);
+  OS_ASSERT(ok);
+  ok = setSupplyAirFan(supplyFan);
+  OS_ASSERT(ok);
+  ok = setHeatingCoil(heatingCoil);
+  OS_ASSERT(ok);
+  ok = setCoolingCoil(coolingCoil);
+  OS_ASSERT(ok);
+  ok = setSupplementalHeatingCoil(supplementalHeatingCoil);
+  OS_ASSERT(ok);
+}
+
+AirLoopHVACUnitaryHeatPumpAirToAir::AirLoopHVACUnitaryHeatPumpAirToAir(
   std::shared_ptr<detail::AirLoopHVACUnitaryHeatPumpAirToAir_Impl> impl)
   : StraightComponent(std::move(impl)) {}
 
@@ -337,6 +354,29 @@ bool AirLoopHVACUnitaryHeatPumpAirToAir_Impl::addToNode(Node& node) {
 
 void AirLoopHVACUnitaryHeatPumpAirToAir_Impl::doCanonicalize(LoadContext& context) {
   repairContainedAirPath(context);
+}
+
+std::vector<ModelObject> AirLoopHVACUnitaryHeatPumpAirToAir_Impl::children() const {
+  std::vector<ModelObject> result;
+
+  if (auto supplyFan = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+        openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::SupplyAirFanName)) {
+    result.emplace_back(*supplyFan);
+  }
+  if (auto heatingCoil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+        openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::HeatingCoilName)) {
+    result.emplace_back(*heatingCoil);
+  }
+  if (auto coolingCoil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+        openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::CoolingCoilName)) {
+    result.emplace_back(*coolingCoil);
+  }
+  if (auto supplementalHeatingCoil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+        openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAirFields::SupplementalHeatingCoilName)) {
+    result.emplace_back(*supplementalHeatingCoil);
+  }
+
+  return result;
 }
 
 Schedule AirLoopHVACUnitaryHeatPumpAirToAir_Impl::availabilitySchedule() const {

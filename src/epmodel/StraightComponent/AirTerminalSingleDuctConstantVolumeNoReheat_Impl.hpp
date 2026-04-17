@@ -37,6 +37,7 @@ namespace epmodel {
       bool isMaximumAirFlowRateAutosized() const;
       bool setMaximumAirFlowRate(double maximumAirFlowRate);
       void autosizeMaximumAirFlowRate();
+      boost::optional<double> autosizedMaximumAirFlowRate() const;
       //@}
     };
 

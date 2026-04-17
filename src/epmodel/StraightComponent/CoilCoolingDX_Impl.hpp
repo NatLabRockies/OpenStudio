@@ -11,6 +11,11 @@
 namespace openstudio {
 namespace epmodel {
 
+class Schedule;
+class ThermalZone;
+class CoilCoolingDXCurveFitPerformance;
+class Node;
+
 namespace detail {
 
 class EPMODEL_API CoilCoolingDX_Impl : public StraightComponent_Impl
@@ -21,6 +26,18 @@ class EPMODEL_API CoilCoolingDX_Impl : public StraightComponent_Impl
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+  bool addToNode(Node& node) override;
+  std::vector<ModelObject> children() const override;
+
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+
+  boost::optional<ThermalZone> condenserZone() const;
+  bool setCondenserZone(const ThermalZone& thermalZone);
+  void resetCondenserZone();
+
+  CoilCoolingDXCurveFitPerformance performanceObject() const;
+  bool setPerformanceObject(const CoilCoolingDXCurveFitPerformance& coilCoolingDXCurveFitPerformance);
 
   std::string condenserInletNodeName() const;
   bool setCondenserInletNodeName(const std::string& condenserInletNodeName);

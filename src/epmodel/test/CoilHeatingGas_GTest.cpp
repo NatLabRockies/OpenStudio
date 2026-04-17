@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 
+#include "../Curve/CurveQuadratic.hpp"
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
@@ -12,6 +13,8 @@
 #include "../StraightComponent/CoilHeatingGas.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -20,6 +23,10 @@ TEST_F(EPModelFixture, CoilHeatingGas_DefaultConstructor) {
   CoilHeatingGas coil(model);
   EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Coil_Heating_Fuel), coil.iddObject().type());
   EXPECT_FALSE(coil.nameString().empty());
+  auto availability = coil.availabilitySchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(availability);
+  EXPECT_DOUBLE_EQ(1.0, availability->value());
+  EXPECT_FALSE(coil.partLoadFractionCorrelationCurve());
 }
 
 TEST_F(EPModelFixture, CoilHeatingGas_ScalarAccessors_RoundTrip) {
@@ -60,6 +67,32 @@ TEST_F(EPModelFixture, CoilHeatingGas_ScalarAccessors_RoundTrip) {
   coil.autosizeNominalCapacity();
   EXPECT_TRUE(coil.isNominalCapacityAutosized());
   EXPECT_FALSE(coil.autosizedNominalCapacity());
+}
+
+TEST_F(EPModelFixture, CoilHeatingGas_RelationshipSetters_RoundTrip) {
+  Model model;
+  CoilHeatingGas coil(model);
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(availability.setValue(0.4));
+  CurveQuadratic plf(model);
+  ASSERT_TRUE(plf.setCoefficient1Constant(0.8));
+  ASSERT_TRUE(plf.setCoefficient2x(0.2));
+  ASSERT_TRUE(plf.setCoefficient3xPOW2(0.0));
+
+  EXPECT_TRUE(coil.setAvailabilitySchedule(availability));
+  EXPECT_EQ(availability.handle(), coil.availabilitySchedule().handle());
+
+  EXPECT_TRUE(coil.setPartLoadFractionCorrelationCurve(plf));
+  ASSERT_TRUE(coil.partLoadFractionCorrelationCurve());
+  EXPECT_EQ(plf.handle(), coil.partLoadFractionCorrelationCurve()->handle());
+
+  const auto children = coil.children();
+  ASSERT_EQ(1u, children.size());
+  EXPECT_EQ(plf.handle(), children[0].handle());
+
+  coil.resetPartLoadFractionCorrelationCurve();
+  EXPECT_FALSE(coil.partLoadFractionCorrelationCurve());
+  EXPECT_TRUE(coil.children().empty());
 }
 
 TEST_F(EPModelFixture, CoilHeatingGas_AddToNodeRejectsAirLoopDemandNode) {

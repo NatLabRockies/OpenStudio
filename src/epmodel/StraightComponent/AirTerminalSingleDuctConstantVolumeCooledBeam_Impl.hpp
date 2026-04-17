@@ -13,6 +13,10 @@
 namespace openstudio {
 namespace epmodel {
 
+class AirLoopHVAC;
+class ModelObject;
+class Schedule;
+
 namespace detail {
 
     class EPMODEL_API AirTerminalSingleDuctConstantVolumeCooledBeam_Impl : public StraightComponent_Impl
@@ -21,8 +25,17 @@ namespace detail {
       using StraightComponent_Impl::StraightComponent_Impl;
       virtual ~AirTerminalSingleDuctConstantVolumeCooledBeam_Impl() override = default;
 
+      boost::optional<openstudio::epmodel::AirLoopHVAC> airLoopHVAC() const override;
+
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
+      ModelObject coilCoolingCooledBeam() const;
+      bool setCoolingCoil(ModelObject& coilCoolingCooledBeam);
 
   std::string cooledBeamType() const;
   bool setCooledBeamType(const std::string& cooledBeamType);

@@ -5,10 +5,10 @@
 
 #include <gtest/gtest.h>
 
+#include "../Curve/CurveQuadratic.hpp"
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
-#include "../Loop/PlantLoop.hpp"
-#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
 #include "../StraightComponent/CoilCoolingDXMultiSpeed.hpp"
 #include "../StraightComponent/Node.hpp"
 
@@ -28,6 +28,9 @@ TEST_F(EPModelFixture, CoilCoolingDXMultiSpeed_DefaultConstructor) {
   EXPECT_DOUBLE_EQ(0.0, coil.basinHeaterCapacity());
   EXPECT_DOUBLE_EQ(2.0, coil.basinHeaterSetpointTemperature());
   EXPECT_EQ("NaturalGas", coil.fuelType());
+  EXPECT_FALSE(coil.availabilitySchedule());
+  EXPECT_FALSE(coil.crankcaseHeaterCapacityFunctionofTemperatureCurve());
+  EXPECT_FALSE(coil.basinHeaterOperatingSchedule());
 }
 
 TEST_F(EPModelFixture, CoilCoolingDXMultiSpeed_ScalarAccessors_RoundTrip) {
@@ -66,6 +69,34 @@ TEST_F(EPModelFixture, CoilCoolingDXMultiSpeed_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(coil.setFuelType("Electricity"));
   EXPECT_EQ("Electricity", coil.fuelType());
+}
+
+TEST_F(EPModelFixture, CoilCoolingDXMultiSpeed_RelationshipSetters_RoundTrip) {
+  Model model;
+  CoilCoolingDXMultiSpeed coil(model);
+
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(availability.setValue(0.25));
+  EXPECT_TRUE(coil.setAvailabilitySchedule(availability));
+  ASSERT_TRUE(coil.availabilitySchedule());
+  EXPECT_EQ(availability.handle(), coil.availabilitySchedule()->handle());
+  coil.resetAvailabilitySchedule();
+  EXPECT_FALSE(coil.availabilitySchedule());
+
+  CurveQuadratic crankcaseCurve(model);
+  EXPECT_TRUE(coil.setCrankcaseHeaterCapacityFunctionofTemperatureCurve(crankcaseCurve));
+  ASSERT_TRUE(coil.crankcaseHeaterCapacityFunctionofTemperatureCurve());
+  EXPECT_EQ(crankcaseCurve.handle(), coil.crankcaseHeaterCapacityFunctionofTemperatureCurve()->handle());
+  coil.resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
+  EXPECT_FALSE(coil.crankcaseHeaterCapacityFunctionofTemperatureCurve());
+
+  ScheduleConstant basinSchedule(model);
+  ASSERT_TRUE(basinSchedule.setValue(0.5));
+  EXPECT_TRUE(coil.setBasinHeaterOperatingSchedule(basinSchedule));
+  ASSERT_TRUE(coil.basinHeaterOperatingSchedule());
+  EXPECT_EQ(basinSchedule.handle(), coil.basinHeaterOperatingSchedule()->handle());
+  coil.resetBasinHeaterOperatingSchedule();
+  EXPECT_FALSE(coil.basinHeaterOperatingSchedule());
 }
 
 TEST_F(EPModelFixture, CoilCoolingDXMultiSpeed_AddToNodeSupplyOnly) {

@@ -6,8 +6,14 @@
 #include "StraightComponent/CoilHeatingDXVariableSpeed.hpp"
 #include "StraightComponent/CoilHeatingDXVariableSpeed_Impl.hpp"
 
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
+#include "Curve/CurveQuadratic.hpp"
+#include "Curve/CurveQuadratic_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -22,10 +28,29 @@ namespace epmodel {
 
 CoilHeatingDXVariableSpeed::CoilHeatingDXVariableSpeed(const Model& model)
   : StraightComponent(CoilHeatingDXVariableSpeed::iddObjectType(), model) {
-  // Preserve model-constructor scalar defaults while excluding relationship and speed-data fields.
-  OS_ASSERT(setNominalSpeedLevel(1));
+  bool ok = true;
+  auto availability = model.alwaysOnDiscreteSchedule();
+  ok = setAvailabilitySchedule(availability);
+  OS_ASSERT(ok);
+  ok = setNominalSpeedLevel(1);
+  OS_ASSERT(ok);
   autosizeRatedHeatingCapacityAtSelectedNominalSpeedLevel();
   autosizeRatedAirFlowRateAtSelectedNominalSpeedLevel();
+
+  CurveQuadratic partLoadFraction(model);
+  ok = partLoadFraction.setCoefficient1Constant(0.85);
+  OS_ASSERT(ok);
+  ok = partLoadFraction.setCoefficient2x(0.15);
+  OS_ASSERT(ok);
+  ok = partLoadFraction.setCoefficient3xPOW2(0.0);
+  OS_ASSERT(ok);
+  ok = partLoadFraction.setMinimumValueofx(0.0);
+  OS_ASSERT(ok);
+  ok = partLoadFraction.setMaximumValueofx(1.0);
+  OS_ASSERT(ok);
+  ok = setEnergyPartLoadFractionCurve(partLoadFraction);
+  OS_ASSERT(ok);
+
   OS_ASSERT(setMinimumOutdoorDryBulbTemperatureforCompressorOperation(-5.0));
   OS_ASSERT(setMaximumOutdoorDryBulbTemperatureforDefrostOperation(5.0));
   OS_ASSERT(setCrankcaseHeaterCapacity(200.0));
@@ -34,6 +59,12 @@ CoilHeatingDXVariableSpeed::CoilHeatingDXVariableSpeed(const Model& model)
   OS_ASSERT(setDefrostControl("OnDemand"));
   OS_ASSERT(setDefrostTimePeriodFraction(0.166667));
   autosizeResistiveDefrostHeaterCapacity();
+}
+
+CoilHeatingDXVariableSpeed::CoilHeatingDXVariableSpeed(const Model& model, const Curve& partLoadFraction)
+  : CoilHeatingDXVariableSpeed(model) {
+  const bool ok = setEnergyPartLoadFractionCurve(partLoadFraction);
+  OS_ASSERT(ok);
 }
 
 CoilHeatingDXVariableSpeed::CoilHeatingDXVariableSpeed(std::shared_ptr<detail::CoilHeatingDXVariableSpeed_Impl> impl)
@@ -55,6 +86,14 @@ std::vector<std::string> CoilHeatingDXVariableSpeed::defrostControlValues() {
 
 bool CoilHeatingDXVariableSpeed::addToNode(Node& node) {
   return getImpl<detail::CoilHeatingDXVariableSpeed_Impl>()->addToNode(node);
+}
+
+Schedule CoilHeatingDXVariableSpeed::availabilitySchedule() const {
+  return getImpl<detail::CoilHeatingDXVariableSpeed_Impl>()->availabilitySchedule();
+}
+
+bool CoilHeatingDXVariableSpeed::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::CoilHeatingDXVariableSpeed_Impl>()->setAvailabilitySchedule(schedule);
 }
 
 int CoilHeatingDXVariableSpeed::nominalSpeedLevel() const {
@@ -99,6 +138,26 @@ void CoilHeatingDXVariableSpeed::autosizeRatedAirFlowRateAtSelectedNominalSpeedL
   getImpl<detail::CoilHeatingDXVariableSpeed_Impl>()->autosizeRatedAirFlowRateAtSelectedNominalSpeedLevel();
 }
 
+Curve CoilHeatingDXVariableSpeed::energyPartLoadFractionCurve() const {
+  return getImpl<detail::CoilHeatingDXVariableSpeed_Impl>()->energyPartLoadFractionCurve();
+}
+
+bool CoilHeatingDXVariableSpeed::setEnergyPartLoadFractionCurve(const Curve& curve) {
+  return getImpl<detail::CoilHeatingDXVariableSpeed_Impl>()->setEnergyPartLoadFractionCurve(curve);
+}
+
+boost::optional<Curve> CoilHeatingDXVariableSpeed::defrostEnergyInputRatioFunctionofTemperatureCurve() const {
+  return getImpl<detail::CoilHeatingDXVariableSpeed_Impl>()->defrostEnergyInputRatioFunctionofTemperatureCurve();
+}
+
+bool CoilHeatingDXVariableSpeed::setDefrostEnergyInputRatioFunctionofTemperatureCurve(const Curve& curve) {
+  return getImpl<detail::CoilHeatingDXVariableSpeed_Impl>()->setDefrostEnergyInputRatioFunctionofTemperatureCurve(curve);
+}
+
+void CoilHeatingDXVariableSpeed::resetDefrostEnergyInputRatioFunctionofTemperatureCurve() {
+  getImpl<detail::CoilHeatingDXVariableSpeed_Impl>()->resetDefrostEnergyInputRatioFunctionofTemperatureCurve();
+}
+
 double CoilHeatingDXVariableSpeed::minimumOutdoorDryBulbTemperatureforCompressorOperation() const {
   return getImpl<detail::CoilHeatingDXVariableSpeed_Impl>()->minimumOutdoorDryBulbTemperatureforCompressorOperation();
 }
@@ -137,6 +196,18 @@ double CoilHeatingDXVariableSpeed::crankcaseHeaterCapacity() const {
 
 bool CoilHeatingDXVariableSpeed::setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity) {
   return getImpl<detail::CoilHeatingDXVariableSpeed_Impl>()->setCrankcaseHeaterCapacity(crankcaseHeaterCapacity);
+}
+
+boost::optional<Curve> CoilHeatingDXVariableSpeed::crankcaseHeaterCapacityFunctionofTemperatureCurve() const {
+  return getImpl<detail::CoilHeatingDXVariableSpeed_Impl>()->crankcaseHeaterCapacityFunctionofTemperatureCurve();
+}
+
+bool CoilHeatingDXVariableSpeed::setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve) {
+  return getImpl<detail::CoilHeatingDXVariableSpeed_Impl>()->setCrankcaseHeaterCapacityFunctionofTemperatureCurve(curve);
+}
+
+void CoilHeatingDXVariableSpeed::resetCrankcaseHeaterCapacityFunctionofTemperatureCurve() {
+  getImpl<detail::CoilHeatingDXVariableSpeed_Impl>()->resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
 }
 
 double CoilHeatingDXVariableSpeed::maximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation() const {
@@ -215,6 +286,34 @@ unsigned CoilHeatingDXVariableSpeed_Impl::outletPort() const {
   return openstudio::Coil_Heating_DX_VariableSpeedFields::IndoorAirOutletNodeName;
 }
 
+Schedule CoilHeatingDXVariableSpeed_Impl::availabilitySchedule() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Heating_DX_VariableSpeedFields::AvailabilityScheduleName);
+  if (!value) {
+    value = this->model().alwaysOnDiscreteSchedule();
+    OS_ASSERT(value);
+    const_cast<CoilHeatingDXVariableSpeed_Impl*>(this)->setAvailabilitySchedule(*value);
+    value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Heating_DX_VariableSpeedFields::AvailabilityScheduleName);
+  }
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool CoilHeatingDXVariableSpeed_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return setPointer(openstudio::Coil_Heating_DX_VariableSpeedFields::AvailabilityScheduleName, schedule.handle(), false);
+}
+
+std::vector<ModelObject> CoilHeatingDXVariableSpeed_Impl::children() const {
+  std::vector<ModelObject> result;
+  result.push_back(energyPartLoadFractionCurve());
+  if (const auto curve = defrostEnergyInputRatioFunctionofTemperatureCurve()) {
+    result.push_back(*curve);
+  }
+  if (const auto curve = crankcaseHeaterCapacityFunctionofTemperatureCurve()) {
+    result.push_back(*curve);
+  }
+  return result;
+}
+
 bool CoilHeatingDXVariableSpeed_Impl::addToNode(Node& node) {
   auto airLoop = node.airLoopHVAC();
 
@@ -277,6 +376,30 @@ void CoilHeatingDXVariableSpeed_Impl::autosizeRatedAirFlowRateAtSelectedNominalS
   OS_ASSERT(result);
 }
 
+Curve CoilHeatingDXVariableSpeed_Impl::energyPartLoadFractionCurve() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::Coil_Heating_DX_VariableSpeedFields::EnergyPartLoadFractionCurveName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool CoilHeatingDXVariableSpeed_Impl::setEnergyPartLoadFractionCurve(const Curve& curve) {
+  return setPointer(openstudio::Coil_Heating_DX_VariableSpeedFields::EnergyPartLoadFractionCurveName, curve.handle(), false);
+}
+
+boost::optional<Curve> CoilHeatingDXVariableSpeed_Impl::defrostEnergyInputRatioFunctionofTemperatureCurve() const {
+  return getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Coil_Heating_DX_VariableSpeedFields::DefrostEnergyInputRatioFunctionofTemperatureCurveName);
+}
+
+bool CoilHeatingDXVariableSpeed_Impl::setDefrostEnergyInputRatioFunctionofTemperatureCurve(const Curve& curve) {
+  return setPointer(openstudio::Coil_Heating_DX_VariableSpeedFields::DefrostEnergyInputRatioFunctionofTemperatureCurveName, curve.handle(), false);
+}
+
+void CoilHeatingDXVariableSpeed_Impl::resetDefrostEnergyInputRatioFunctionofTemperatureCurve() {
+  OS_ASSERT(setPointer(openstudio::Coil_Heating_DX_VariableSpeedFields::DefrostEnergyInputRatioFunctionofTemperatureCurveName,
+                       openstudio::Handle(), false));
+}
+
 double CoilHeatingDXVariableSpeed_Impl::minimumOutdoorDryBulbTemperatureforCompressorOperation() const {
   const auto value = getDouble(openstudio::Coil_Heating_DX_VariableSpeedFields::MinimumOutdoorDryBulbTemperatureforCompressorOperation, true);
   OS_ASSERT(value);
@@ -327,6 +450,20 @@ double CoilHeatingDXVariableSpeed_Impl::crankcaseHeaterCapacity() const {
 
 bool CoilHeatingDXVariableSpeed_Impl::setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity) {
   return setDouble(openstudio::Coil_Heating_DX_VariableSpeedFields::CrankcaseHeaterCapacity, crankcaseHeaterCapacity);
+}
+
+boost::optional<Curve> CoilHeatingDXVariableSpeed_Impl::crankcaseHeaterCapacityFunctionofTemperatureCurve() const {
+  return getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Coil_Heating_DX_VariableSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName);
+}
+
+bool CoilHeatingDXVariableSpeed_Impl::setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve) {
+  return setPointer(openstudio::Coil_Heating_DX_VariableSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName, curve.handle(), false);
+}
+
+void CoilHeatingDXVariableSpeed_Impl::resetCrankcaseHeaterCapacityFunctionofTemperatureCurve() {
+  OS_ASSERT(setPointer(openstudio::Coil_Heating_DX_VariableSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName,
+                       openstudio::Handle(), false));
 }
 
 double CoilHeatingDXVariableSpeed_Impl::maximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation() const {

@@ -17,6 +17,8 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Schedule;
+  class Curve;
 
   namespace detail {
     class CoilHeatingDXSingleSpeed_Impl;
@@ -26,6 +28,9 @@ namespace epmodel {
   {
    public:
     explicit CoilHeatingDXSingleSpeed(const Model& model);
+    explicit CoilHeatingDXSingleSpeed(const Model& model, Schedule& availabilitySchedule, Curve& totalHeatingCapacityFunctionofTemperatureCurve,
+                                      Curve& totalHeatingCapacityFunctionofFlowFractionCurve, Curve& energyInputRatioFunctionofTemperatureCurve,
+                                      Curve& energyInputRatioFunctionofFlowFractionCurve, Curve& partLoadFractionCorrelationCurve);
 
     virtual ~CoilHeatingDXSingleSpeed() override = default;
     CoilHeatingDXSingleSpeed(const CoilHeatingDXSingleSpeed& other) = default;
@@ -41,13 +46,41 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical scalar heating DX surface is largely present, while schedule, curve, and node-link helpers remain out of scope.
+    // - Status: Partial Parity. The canonical scalar heating DX surface plus the required schedule / curve relationships and the current epmodel
+    //   supply-side air-loop insertion path are present, while broader OA / DOAS topology and AFN helpers remain out of scope.
     // - Canonical Counterpart: openstudio::model::CoilHeatingDXSingleSpeed.
-    // - Implemented Parity: The heating-capacity, COP, fan-power, defrost, and crankcase-heater helpers preserve the canonical naming, including the 2017/2023 fan-power split.
-    // - Documented Delta: Availability schedule, curves, and node-link helpers from canonical `openstudio::model::CoilHeatingDXSingleSpeed` are not exposed yet.
-    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Heating:DX:SingleSpeed` fields.
+    // - Implemented Parity: The heating-capacity, COP, fan-power, defrost, and crankcase-heater helpers preserve the canonical naming, including the
+    //   2017/2023 fan-power split; `availabilitySchedule`, the five required performance curves, optional defrost and crankcase curves, child traversal,
+    //   and the relationship constructor preserve the bounded canonical slice.
+    // - Documented Delta: Broader OA / DOAS topology and AFN helpers from canonical `openstudio::model::CoilHeatingDXSingleSpeed` are not exposed yet.
+    // - Field/Storage Mapping: Preserved scalars and relationships map directly to EnergyPlus `Coil:Heating:DX:SingleSpeed` fields.
     // - Evidence: `src/model/CoilHeatingDXSingleSpeed.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingDXSingleSpeed.cpp`, and `src/epmodel/test/CoilHeatingDXSingleSpeed_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted schedule, curve, and relationship helpers without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Add broader OA / DOAS topology and AFN helpers without changing the preserved scalar signatures.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    Curve totalHeatingCapacityFunctionofTemperatureCurve() const;
+    bool setTotalHeatingCapacityFunctionofTemperatureCurve(const Curve& curve);
+
+    Curve totalHeatingCapacityFunctionofFlowFractionCurve() const;
+    bool setTotalHeatingCapacityFunctionofFlowFractionCurve(const Curve& curve);
+
+    Curve energyInputRatioFunctionofTemperatureCurve() const;
+    bool setEnergyInputRatioFunctionofTemperatureCurve(const Curve& curve);
+
+    Curve energyInputRatioFunctionofFlowFractionCurve() const;
+    bool setEnergyInputRatioFunctionofFlowFractionCurve(const Curve& curve);
+
+    Curve partLoadFractionCorrelationCurve() const;
+    bool setPartLoadFractionCorrelationCurve(const Curve& curve);
+
+    boost::optional<Curve> defrostEnergyInputRatioFunctionofTemperatureCurve() const;
+    bool setDefrostEnergyInputRatioFunctionofTemperatureCurve(const Curve& curve);
+    void resetDefrostEnergyInputRatioFunctionofTemperatureCurve();
+
+    boost::optional<Curve> crankcaseHeaterCapacityFunctionofTemperatureCurve() const;
+    bool setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve);
+    void resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
 
     boost::optional<double> ratedTotalHeatingCapacity() const;
     bool isRatedTotalHeatingCapacityAutosized() const;

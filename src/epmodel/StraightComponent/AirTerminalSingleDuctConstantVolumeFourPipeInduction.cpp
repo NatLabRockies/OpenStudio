@@ -6,23 +6,115 @@
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeInduction.hpp"
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl.hpp"
 
+#include "HVACComponent/HVACComponent.hpp"
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
+#include "Loop/AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
+#include "Mixer/AirLoopHVACZoneMixer.hpp"
+#include "Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "Model.hpp"
+#include "ModelObject.hpp"
+#include "ModelObject/ZoneHVACEquipmentConnections.hpp"
+#include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
+#include "ModelObject/ZoneHVACEquipmentList.hpp"
+#include "ModelObject/ZoneHVACEquipmentList_Impl.hpp"
+#include "Node.hpp"
+#include "Node_Impl.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/AirTerminal_SingleDuct_ConstantVolume_FourPipeInduction_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
+
+#include <algorithm>
+#include <iterator>
 
 namespace openstudio {
 namespace epmodel {
 
+namespace {
+
+  void applyConstructorDefaults(AirTerminalSingleDuctConstantVolumeFourPipeInduction& terminal) {
+    terminal.autosizeMaximumTotalAirFlowRate();
+    terminal.autosizeMaximumHotWaterFlowRate();
+    terminal.autosizeMaximumColdWaterFlowRate();
+    OS_ASSERT(terminal.setMinimumColdWaterFlowRate(0.0));
+    OS_ASSERT(terminal.setCoolingConvergenceTolerance(0.001));
+    OS_ASSERT(terminal.setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::ZoneMixerName, ""));
+  }
+
+  boost::optional<ThermalZone> owningThermalZoneForBranchNode(const Model& model, const Node& node) {
+    for (const auto& zone : model.getConcreteModelObjects<ThermalZone>()) {
+      if (zone.zoneAirNode() == node) {
+        return zone;
+      }
+    }
+    return boost::none;
+  }
+
+  bool registerTerminalWithThermalZone(const ModelObject& terminal, ThermalZone& thermalZone) {
+    auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
+    OS_ASSERT(zoneImpl);
+
+    auto zoneConnections = zoneImpl->getZoneHVACEquipmentConnections();
+    auto equipmentList = zoneImpl->zoneHVACEquipmentList();
+    if (!equipmentList) {
+      ZoneHVACEquipmentList newEquipmentList(thermalZone.model());
+      if (!newEquipmentList.name()) {
+        newEquipmentList.createName();
+      }
+      if (!zoneConnections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName, newEquipmentList.handle())) {
+        return false;
+      }
+      equipmentList = newEquipmentList;
+    }
+
+    auto equipmentListImpl = equipmentList->getImpl<detail::ZoneHVACEquipmentList_Impl>();
+    OS_ASSERT(equipmentListImpl);
+    return equipmentListImpl->addEquipment(terminal);
+  }
+
+  boost::optional<Node> zoneExhaustNodeForThermalZone(ThermalZone& thermalZone) {
+    auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
+    OS_ASSERT(zoneImpl);
+
+    auto zoneConnections = zoneImpl->getZoneHVACEquipmentConnections();
+    if (auto exhaustNode = zoneConnections.getModelObjectTarget<Node>(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName)) {
+      return exhaustNode;
+    }
+
+    auto exhaustNode = thermalZone.model().getOrCreateTransientByName<Node>(thermalZone.nameString() + " Exhaust Node");
+    if (!zoneConnections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName, exhaustNode.handle())) {
+      return boost::none;
+    }
+    return exhaustNode;
+  }
+
+}  // namespace
+
 AirTerminalSingleDuctConstantVolumeFourPipeInduction::AirTerminalSingleDuctConstantVolumeFourPipeInduction(const Model& model)
   : StraightComponent(AirTerminalSingleDuctConstantVolumeFourPipeInduction::iddObjectType(), model) {
-  autosizeMaximumTotalAirFlowRate();
-  autosizeMaximumHotWaterFlowRate();
-  autosizeMaximumColdWaterFlowRate();
-  OS_ASSERT(setMinimumColdWaterFlowRate(0.0));
-  OS_ASSERT(setCoolingConvergenceTolerance(0.001));
+  auto impl = getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>();
+  OS_ASSERT(impl);
+  detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
+  impl->canonicalize(context);
+  applyConstructorDefaults(*this);
+}
+
+AirTerminalSingleDuctConstantVolumeFourPipeInduction::AirTerminalSingleDuctConstantVolumeFourPipeInduction(const Model& model,
+                                                                                                           HVACComponent& heatingCoil)
+  : StraightComponent(AirTerminalSingleDuctConstantVolumeFourPipeInduction::iddObjectType(), model) {
+  auto impl = getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>();
+  OS_ASSERT(impl);
+  detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
+  impl->canonicalize(context);
+  applyConstructorDefaults(*this);
+  OS_ASSERT(setHeatingCoil(heatingCoil));
 }
 
 AirTerminalSingleDuctConstantVolumeFourPipeInduction::AirTerminalSingleDuctConstantVolumeFourPipeInduction(
@@ -31,6 +123,18 @@ AirTerminalSingleDuctConstantVolumeFourPipeInduction::AirTerminalSingleDuctConst
 
 IddObjectType AirTerminalSingleDuctConstantVolumeFourPipeInduction::iddObjectType() {
   return IddObjectType::AirTerminal_SingleDuct_ConstantVolume_FourPipeInduction;
+}
+
+boost::optional<Schedule> AirTerminalSingleDuctConstantVolumeFourPipeInduction::availabilitySchedule() const {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>()->availabilitySchedule();
+}
+
+bool AirTerminalSingleDuctConstantVolumeFourPipeInduction::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>()->setAvailabilitySchedule(schedule);
+}
+
+void AirTerminalSingleDuctConstantVolumeFourPipeInduction::resetAvailabilitySchedule() {
+  getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>()->resetAvailabilitySchedule();
 }
 
 boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeInduction::maximumTotalAirFlowRate() const {
@@ -63,6 +167,14 @@ bool AirTerminalSingleDuctConstantVolumeFourPipeInduction::setInductionRatio(dou
 
 void AirTerminalSingleDuctConstantVolumeFourPipeInduction::resetInductionRatio() {
   getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>()->resetInductionRatio();
+}
+
+HVACComponent AirTerminalSingleDuctConstantVolumeFourPipeInduction::heatingCoil() const {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>()->heatingCoil();
+}
+
+bool AirTerminalSingleDuctConstantVolumeFourPipeInduction::setHeatingCoil(const HVACComponent& heatingCoil) {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>()->setHeatingCoil(heatingCoil);
 }
 
 boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeInduction::maximumHotWaterFlowRate() const {
@@ -117,6 +229,18 @@ void AirTerminalSingleDuctConstantVolumeFourPipeInduction::resetHeatingConvergen
   getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>()->resetHeatingConvergenceTolerance();
 }
 
+boost::optional<HVACComponent> AirTerminalSingleDuctConstantVolumeFourPipeInduction::coolingCoil() const {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>()->coolingCoil();
+}
+
+bool AirTerminalSingleDuctConstantVolumeFourPipeInduction::setCoolingCoil(const boost::optional<HVACComponent>& coolingCoil) {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>()->setCoolingCoil(coolingCoil);
+}
+
+void AirTerminalSingleDuctConstantVolumeFourPipeInduction::resetCoolingCoil() {
+  getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>()->resetCoolingCoil();
+}
+
 boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeInduction::maximumColdWaterFlowRate() const {
   return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>()->maximumColdWaterFlowRate();
 }
@@ -169,12 +293,46 @@ void AirTerminalSingleDuctConstantVolumeFourPipeInduction::resetCoolingConvergen
   getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>()->resetCoolingConvergenceTolerance();
 }
 
+boost::optional<Node> AirTerminalSingleDuctConstantVolumeFourPipeInduction::inducedAirInletNode() const {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>()->inducedAirInletNode();
+}
+
+unsigned AirTerminalSingleDuctConstantVolumeFourPipeInduction::inducedAirInletPort() const {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>()->inducedAirInletPort();
+}
+
+bool AirTerminalSingleDuctConstantVolumeFourPipeInduction::addToNode(Node& node) {
+  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl>()->addToNode(node);
+}
+
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+boost::optional<Schedule> AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::availabilitySchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::AvailabilityScheduleName);
+}
+
+unsigned AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::inletPort() const {
+  return openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::SupplyAirInletNodeName;
+}
+
+unsigned AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::outletPort() const {
+  return openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::AirOutletNodeName;
+}
+
+bool AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return ModelObject_Impl::setSchedule(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::AvailabilityScheduleName,
+                                       "AirTerminalSingleDuctConstantVolumeFourPipeInduction", "Availability", schedule);
+}
+
+void AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::resetAvailabilitySchedule() {
+  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::AvailabilityScheduleName, ""));
+}
 
 boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::maximumTotalAirFlowRate() const {
   return getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::MaximumTotalAirFlowRate, true);
@@ -213,6 +371,20 @@ void AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::resetInductionRa
   OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::InductionRatio, ""));
 }
 
+HVACComponent AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::heatingCoil() const {
+  auto coil =
+    getObject<ModelObject>().getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::HeatingCoilName);
+  OS_ASSERT(coil);
+  return *coil;
+}
+
+bool AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::setHeatingCoil(const HVACComponent& heatingCoil) {
+  if (heatingCoil.model() != model()) {
+    return false;
+  }
+  return setPointer(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::HeatingCoilName, heatingCoil.handle(), false);
+}
+
 boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::maximumHotWaterFlowRate() const {
   return getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::MaximumHotWaterFlowRate, true);
 }
@@ -225,10 +397,7 @@ bool AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::isMaximumHotWate
 }
 
 bool AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::setMaximumHotWaterFlowRate(double maximumHotWaterFlowRate) {
-  const bool result =
-    setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::MaximumHotWaterFlowRate, maximumHotWaterFlowRate);
-  OS_ASSERT(result);
-  return result;
+  return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::MaximumHotWaterFlowRate, maximumHotWaterFlowRate);
 }
 
 void AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::resetMaximumHotWaterFlowRate() {
@@ -268,12 +437,31 @@ bool AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::isHeatingConverg
 }
 
 bool AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::setHeatingConvergenceTolerance(double heatingConvergenceTolerance) {
-  return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::HeatingConvergenceTolerance,
-                   heatingConvergenceTolerance);
+  return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::HeatingConvergenceTolerance, heatingConvergenceTolerance);
 }
 
 void AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::resetHeatingConvergenceTolerance() {
   OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::HeatingConvergenceTolerance, ""));
+}
+
+boost::optional<HVACComponent> AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::coolingCoil() const {
+  return getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+    openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::CoolingCoilName);
+}
+
+bool AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::setCoolingCoil(const boost::optional<HVACComponent>& coolingCoil) {
+  if (coolingCoil) {
+    if (coolingCoil->model() != model()) {
+      return false;
+    }
+    return setPointer(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::CoolingCoilName, coolingCoil->handle(), false);
+  }
+  resetCoolingCoil();
+  return true;
+}
+
+void AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::resetCoolingCoil() {
+  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::CoolingCoilName, ""));
 }
 
 boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::maximumColdWaterFlowRate() const {
@@ -288,10 +476,7 @@ bool AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::isMaximumColdWat
 }
 
 bool AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::setMaximumColdWaterFlowRate(double maximumColdWaterFlowRate) {
-  const bool result =
-    setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::MaximumColdWaterFlowRate, maximumColdWaterFlowRate);
-  OS_ASSERT(result);
-  return result;
+  return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::MaximumColdWaterFlowRate, maximumColdWaterFlowRate);
 }
 
 void AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::resetMaximumColdWaterFlowRate() {
@@ -331,20 +516,94 @@ bool AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::isCoolingConverg
 }
 
 bool AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::setCoolingConvergenceTolerance(double coolingConvergenceTolerance) {
-  return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::CoolingConvergenceTolerance,
-                   coolingConvergenceTolerance);
+  return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::CoolingConvergenceTolerance, coolingConvergenceTolerance);
 }
 
 void AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::resetCoolingConvergenceTolerance() {
   OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::CoolingConvergenceTolerance, ""));
 }
 
-unsigned AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::inletPort() const {
-  return openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::SupplyAirInletNodeName;
+boost::optional<Node> AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::inducedAirInletNode() const {
+  return getObject<ModelObject>().getModelObjectTarget<Node>(
+    openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::InducedAirInletNodeName);
 }
 
-unsigned AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::outletPort() const {
-  return openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::AirOutletNodeName;
+unsigned AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::inducedAirInletPort() const {
+  return openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeInductionFields::InducedAirInletNodeName;
+}
+
+bool AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl::addToNode(Node& node) {
+  if (node.model() != model()) {
+    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeInduction",
+             "addToNode requires a node in the same model as the four-pipe induction terminal.");
+    return false;
+  }
+
+  auto airLoop = node.airLoopHVAC();
+  if (!airLoop) {
+    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeInduction",
+             "addToNode requires a node that resolves to an AirLoopHVAC context.");
+    return false;
+  }
+
+  auto zoneSplitter = airLoop->zoneSplitter();
+  auto zoneMixer = airLoop->zoneMixer();
+  const auto thisNode = node.cast<ModelObject>();
+  const auto splitterOutlets = zoneSplitter.outletModelObjects();
+  const auto splitterIt = std::find(splitterOutlets.begin(), splitterOutlets.end(), thisNode);
+  if (splitterIt == splitterOutlets.end()) {
+    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeInduction",
+             "addToNode requires the drop node to be a ZoneSplitter outlet node for the target AirLoopHVAC.");
+    return false;
+  }
+  const auto splitterBranchIndex = static_cast<unsigned>(std::distance(splitterOutlets.begin(), splitterIt));
+
+  if (!zoneMixer.inletModelObject(splitterBranchIndex)) {
+    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeInduction",
+             "addToNode requires a corresponding ZoneMixer inlet for ZoneSplitter branch index " << splitterBranchIndex << ".");
+    return false;
+  }
+
+  auto thisObject = getObject<ModelObject>();
+  if (!thisObject.name()) {
+    thisObject.createName();
+    if (!thisObject.name()) {
+      return false;
+    }
+  }
+
+  const std::string inletNodeName = node.nameString() + " - " + thisObject.nameString() + " Inlet Node";
+  auto inletNode = model().getOrCreateTransientByName<Node>(inletNodeName);
+  if (!zoneSplitter.setOutletModelObject(splitterBranchIndex, inletNode.cast<ModelObject>())) {
+    return false;
+  }
+
+  if (!setPointer(inletPort(), inletNode.handle(), false)) {
+    return false;
+  }
+
+  if (!setPointer(outletPort(), node.handle(), false)) {
+    return false;
+  }
+
+  if (auto thermalZone = owningThermalZoneForBranchNode(model(), node)) {
+    auto exhaustNode = zoneExhaustNodeForThermalZone(*thermalZone);
+    if (!exhaustNode) {
+      return false;
+    }
+
+    if (!setPointer(inducedAirInletPort(), exhaustNode->handle())) {
+      return false;
+    }
+
+    if (!registerTerminalWithThermalZone(thisObject, *thermalZone)) {
+      LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeInduction",
+               "addToNode failed to register the four-pipe induction terminal with the owning thermal zone.");
+      return false;
+    }
+  }
+
+  return true;
 }
 
 }  // namespace detail

@@ -15,6 +15,11 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class StraightComponent;
+class HVACComponent;
+class CoilCoolingDXVariableSpeed;
+class CoilHeatingDXVariableSpeed;
+class CoilWaterHeatingAirToWaterHeatPumpVariableSpeed;
 
 namespace detail {
 class CoilSystemIntegratedHeatPumpAirSource_Impl;
@@ -24,6 +29,13 @@ class EPMODEL_API CoilSystemIntegratedHeatPumpAirSource : public StraightCompone
 {
  public:
   explicit CoilSystemIntegratedHeatPumpAirSource(const Model& model);
+  explicit CoilSystemIntegratedHeatPumpAirSource(const Model& model, const StraightComponent& spaceCoolingCoil,
+                                                 const StraightComponent& spaceHeatingCoil,
+                                                 const HVACComponent& dedicatedWaterHeatingCoil, const HVACComponent& scwhCoil,
+                                                 const StraightComponent& scdwhCoolingCoil,
+                                                 const HVACComponent& scdwhWaterHeatingCoil,
+                                                 const StraightComponent& shdwhHeatingCoil,
+                                                 const HVACComponent& shdwhWaterHeatingCoil);
 
   virtual ~CoilSystemIntegratedHeatPumpAirSource() override = default;
   CoilSystemIntegratedHeatPumpAirSource(const CoilSystemIntegratedHeatPumpAirSource& other) = default;
@@ -34,13 +46,40 @@ class EPMODEL_API CoilSystemIntegratedHeatPumpAirSource : public StraightCompone
   static IddObjectType iddObjectType();
 
   // Schema Alignment Notes:
-  // - Status: Partial Parity. The scalar control surface is present, but coil-reference and node-link helpers remain model-owned.
+  // - Status: Partial Parity. The scalar control surface and referenced-coil relationships are aligned, while standalone node-link behavior
+  //   remains intentionally rejected.
   // - Canonical Counterpart: openstudio::model::CoilSystemIntegratedHeatPumpAirSource.
-  // - Implemented Parity: The temperature-limit, load-control, speed-level, and water-flow control scalars preserve the canonical API.
-  // - Documented Delta: Coil references and node-link helpers from canonical `openstudio::model::CoilSystemIntegratedHeatPumpAirSource` are not exposed yet.
-  // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `CoilSystem:IntegratedHeatPump:AirSource` numeric fields.
-  // - Evidence: `src/model/CoilSystemIntegratedHeatPumpAirSource.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilSystemIntegratedHeatPumpAirSource.cpp`, and `src/epmodel/test/CoilSystemIntegratedHeatPumpAirSource_GTest.cpp`.
-  // - Remaining Parity Work: Add the omitted coil-reference and node-link helpers without changing the preserved scalar signatures.
+  // - Implemented Parity: The canonical temperature-limit, load-control, speed-level, and water-flow control scalars are preserved alongside
+  //   the eight coil-reference relationships (`spaceCoolingCoil`, `spaceHeatingCoil`, `dedicatedWaterHeatingCoil`, `scwhCoil`,
+  //   `scdwhCoolingCoil`, `scdwhWaterHeatingCoil`, `shdwhHeatingCoil`, and `shdwhWaterHeatingCoil`).
+  // - Documented Delta: epmodel keeps this as a serial `StraightComponent` for compound ownership, but `addToNode(...)` remains rejected
+  //   intentionally and no extra loop-placement surface is introduced.
+  // - Field/Storage Mapping: The preserved scalars and referenced-coil relationships map directly to EnergyPlus
+  //   `CoilSystem:IntegratedHeatPump:AirSource` storage.
+  // - Default Seeding: The no-arg constructor seeds canonical default subcomponents using existing epmodel wrappers, along with the scalar
+  //   defaults already carried by the integrated system.
+  // - Evidence: `src/model/CoilSystemIntegratedHeatPumpAirSource.hpp`, `src/model/CoilSystemIntegratedHeatPumpAirSource.cpp`,
+  //   `src/energyplus/ForwardTranslator/ForwardTranslateCoilSystemIntegratedHeatPumpAirSource.cpp`, and
+  //   `src/epmodel/test/CoilSystemIntegratedHeatPumpAirSource_GTest.cpp`.
+  // - Remaining Parity Work: Higher-level loop-link helpers remain outside this bounded slice.
+  StraightComponent spaceCoolingCoil() const;
+  StraightComponent spaceHeatingCoil() const;
+  HVACComponent dedicatedWaterHeatingCoil() const;
+  HVACComponent scwhCoil() const;
+  StraightComponent scdwhCoolingCoil() const;
+  HVACComponent scdwhWaterHeatingCoil() const;
+  StraightComponent shdwhHeatingCoil() const;
+  HVACComponent shdwhWaterHeatingCoil() const;
+
+  bool setSpaceCoolingCoil(const StraightComponent& spaceCoolingCoil);
+  bool setSpaceHeatingCoil(const StraightComponent& spaceHeatingCoil);
+  bool setDedicatedWaterHeatingCoil(const HVACComponent& dedicatedWaterHeatingCoil);
+  bool setSCWHCoil(const HVACComponent& scwhCoil);
+  bool setSCDWHCoolingCoil(const StraightComponent& scdwhCoolingCoil);
+  bool setSCDWHWaterHeatingCoil(const HVACComponent& scdwhWaterHeatingCoil);
+  bool setSHDWHHeatingCoil(const StraightComponent& shdwhHeatingCoil);
+  bool setSHDWHWaterHeatingCoil(const HVACComponent& shdwhWaterHeatingCoil);
+
   double indoorTemperatureLimitForSCWHMode() const;
   bool setIndoorTemperatureLimitForSCWHMode(double indoorTemperatureLimitForSCWHMode);
 

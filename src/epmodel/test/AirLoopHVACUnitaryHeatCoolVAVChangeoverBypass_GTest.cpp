@@ -24,6 +24,25 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_DefaultCons
   EXPECT_EQ(AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::iddObjectType(), unitary.iddObject().type());
 }
 
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_RelationshipConstructorAndChildren) {
+  Model model;
+  FanConstantVolume fan(model);
+  CoilCoolingDXSingleSpeed cooling(model);
+  CoilHeatingElectric heating(model);
+
+  AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass unitary(model, fan, cooling, heating);
+
+  EXPECT_EQ(fan.handle(), unitary.supplyAirFan().handle());
+  EXPECT_EQ(cooling.handle(), unitary.coolingCoil().handle());
+  EXPECT_EQ(heating.handle(), unitary.heatingCoil().handle());
+
+  const auto children = unitary.children();
+  ASSERT_EQ(3u, children.size());
+  EXPECT_EQ(fan.handle(), children[0].handle());
+  EXPECT_EQ(cooling.handle(), children[1].handle());
+  EXPECT_EQ(heating.handle(), children[2].handle());
+}
+
 TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_ScalarAccessors_RoundTrip) {
   Model model;
   AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass unitary(model);

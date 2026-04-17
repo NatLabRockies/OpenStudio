@@ -187,10 +187,10 @@ TEST_F(EPModelFixture, CoilCoolingWater_DoesNotCreateControllerWhenReferencedByC
   AirLoopHVAC airLoop(model);
   PlantLoop plantLoop(model);
 
-  ASSERT_TRUE(system.setPointer(openstudio::CoilSystem_Cooling_WaterFields::CoolingCoilName, coil.handle()));
+  ASSERT_TRUE(system.setCoolingCoil(coil));
 
-  auto supplyOutletNode = airLoop.supplyOutletNode();
-  ASSERT_TRUE(coil.addToNode(supplyOutletNode));
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(system.addToNode(supplyInletNode));
   ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil));
 
   EXPECT_FALSE(coil.controllerWaterCoil());

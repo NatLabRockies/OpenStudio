@@ -13,6 +13,8 @@
 namespace openstudio {
 namespace epmodel {
 class Node;
+class Schedule;
+class Curve;
 namespace detail {
 
 class EPMODEL_API CoilCoolingDXTwoSpeed_Impl : public StraightComponent_Impl
@@ -23,6 +25,10 @@ class EPMODEL_API CoilCoolingDXTwoSpeed_Impl : public StraightComponent_Impl
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+  std::vector<ModelObject> children() const override;
+
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
 
   boost::optional<double> ratedHighSpeedTotalCoolingCapacity() const;
   bool isRatedHighSpeedTotalCoolingCapacityAutosized() const;
@@ -48,6 +54,21 @@ class EPMODEL_API CoilCoolingDXTwoSpeed_Impl : public StraightComponent_Impl
   double ratedHighSpeedEvaporatorFanPowerPerVolumeFlowRate2023() const;
   bool setRatedHighSpeedEvaporatorFanPowerPerVolumeFlowRate2023(double ratedHighSpeedEvaporatorFanPowerPerVolumeFlowRate2023);
 
+  Curve totalCoolingCapacityFunctionOfTemperatureCurve() const;
+  bool setTotalCoolingCapacityFunctionOfTemperatureCurve(const Curve& curve);
+
+  Curve totalCoolingCapacityFunctionOfFlowFractionCurve() const;
+  bool setTotalCoolingCapacityFunctionOfFlowFractionCurve(const Curve& curve);
+
+  Curve energyInputRatioFunctionOfTemperatureCurve() const;
+  bool setEnergyInputRatioFunctionOfTemperatureCurve(const Curve& curve);
+
+  Curve energyInputRatioFunctionOfFlowFractionCurve() const;
+  bool setEnergyInputRatioFunctionOfFlowFractionCurve(const Curve& curve);
+
+  Curve partLoadFractionCorrelationCurve() const;
+  bool setPartLoadFractionCorrelationCurve(const Curve& curve);
+
   boost::optional<double> ratedLowSpeedTotalCoolingCapacity() const;
   bool isRatedLowSpeedTotalCoolingCapacityAutosized() const;
   bool setRatedLowSpeedTotalCoolingCapacity(double ratedLowSpeedTotalCoolingCapacity);
@@ -71,6 +92,12 @@ class EPMODEL_API CoilCoolingDXTwoSpeed_Impl : public StraightComponent_Impl
 
   double ratedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2023() const;
   bool setRatedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2023(double ratedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2023);
+
+  Curve lowSpeedTotalCoolingCapacityFunctionOfTemperatureCurve() const;
+  bool setLowSpeedTotalCoolingCapacityFunctionOfTemperatureCurve(const Curve& curve);
+
+  Curve lowSpeedEnergyInputRatioFunctionOfTemperatureCurve() const;
+  bool setLowSpeedEnergyInputRatioFunctionOfTemperatureCurve(const Curve& curve);
 
   std::vector<std::string> condenserTypeValues() const;
   std::string condenserType() const;
@@ -107,6 +134,10 @@ class EPMODEL_API CoilCoolingDXTwoSpeed_Impl : public StraightComponent_Impl
 
   double basinHeaterSetpointTemperature() const;
   bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
+
+  boost::optional<Schedule> basinHeaterOperatingSchedule() const;
+  bool setBasinHeaterOperatingSchedule(Schedule& schedule);
+  void resetBasinHeaterOperatingSchedule();
 
   double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
   bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);

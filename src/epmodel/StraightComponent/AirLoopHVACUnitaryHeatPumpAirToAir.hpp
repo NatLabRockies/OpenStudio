@@ -32,6 +32,8 @@ class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAir : public StraightComponent
 {
  public:
   explicit AirLoopHVACUnitaryHeatPumpAirToAir(const Model& model);
+  AirLoopHVACUnitaryHeatPumpAirToAir(const Model& model, Schedule& availabilitySchedule, HVACComponent& supplyFan, HVACComponent& heatingCoil,
+                                     HVACComponent& coolingCoil, HVACComponent& supplementalHeatingCoil);
 
   virtual ~AirLoopHVACUnitaryHeatPumpAirToAir() override = default;
   AirLoopHVACUnitaryHeatPumpAirToAir(const AirLoopHVACUnitaryHeatPumpAirToAir& other) = default;
@@ -48,9 +50,9 @@ class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAir : public StraightComponent
   // - Status: Partial Parity. The scalar controls and direct object-link fields are aligned, and the owned internal air path is now maintained through parent-owned epmodel nodes.
   // - Canonical Counterpart: openstudio::model::AirLoopHVACUnitaryHeatPumpAirToAir.
   // - Implemented Parity: Availability schedule, controlling zone, supply fan, heating coil, cooling coil, supplemental heating coil,
-  //   supply-air-fan operating mode schedule, and the scalar airflow/control fields preserve the main canonical wrapper contract. The owned
-  //   fan/cooling/heating/supplemental chain now shares a stable parent-maintained air path, with direct access to the meaningful outlet
-  //   node roles on the compound.
+  //   supply-air-fan operating mode schedule, constructor-with-components, and the scalar airflow/control fields preserve the main canonical
+  //   wrapper contract. The owned fan/cooling/heating/supplemental chain now shares a stable parent-maintained air path, with direct access
+  //   to the meaningful outlet node roles on the compound, and child traversal matches the canonical owned-component slice.
   // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are additive epmodel conveniences so
   //   callers can inspect and rename the meaningful internal outlet roles owned by the compound, even when those roles alias the parent
   //   outlet in a valid configuration. Broader topology convenience beyond the owned serial air path remains intentionally omitted.

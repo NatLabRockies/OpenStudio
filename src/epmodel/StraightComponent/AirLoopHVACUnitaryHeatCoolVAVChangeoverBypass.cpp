@@ -84,6 +84,18 @@ AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::AirLoopHVACUnitaryHeatCoolVAVChan
 }
 
 AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(
+  const Model& model, const HVACComponent& fan, const HVACComponent& coolingCoil, const HVACComponent& heatingCoil)
+  : AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(model) {
+  bool ok = true;
+  ok = setSupplyAirFan(fan);
+  OS_ASSERT(ok);
+  ok = setCoolingCoil(coolingCoil);
+  OS_ASSERT(ok);
+  ok = setHeatingCoil(heatingCoil);
+  OS_ASSERT(ok);
+}
+
+AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(
   std::shared_ptr<detail::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl> impl)
   : StraightComponent(std::move(impl)) {}
 
@@ -373,6 +385,25 @@ bool AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::addToNode(Node& node) {
 
 void AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::doCanonicalize(LoadContext& context) {
   repairContainedAirPath(context);
+}
+
+std::vector<ModelObject> AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::children() const {
+  std::vector<ModelObject> result;
+
+  if (auto supplyFan = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+        openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::SupplyAirFanName)) {
+    result.emplace_back(*supplyFan);
+  }
+  if (auto coolingCoil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+        openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::CoolingCoilName)) {
+    result.emplace_back(*coolingCoil);
+  }
+  if (auto heatingCoil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+        openstudio::AirLoopHVAC_UnitaryHeatCool_VAVChangeoverBypassFields::HeatingCoilName)) {
+    result.emplace_back(*heatingCoil);
+  }
+
+  return result;
 }
 
 boost::optional<Schedule> AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl::availabilitySchedule() const {

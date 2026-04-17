@@ -13,6 +13,8 @@
 namespace openstudio {
 namespace epmodel {
 
+class Schedule;
+
 namespace detail {
 
 class EPMODEL_API CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl : public StraightComponent_Impl
@@ -24,6 +26,9 @@ class EPMODEL_API CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl : public Straig
   unsigned inletPort() const override;
   unsigned outletPort() const override;
   bool addToNode(Node& node) override;
+
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
 
   double ratedHeatingCapacity() const;
   bool setRatedHeatingCapacity(double ratedHeatingCapacity);

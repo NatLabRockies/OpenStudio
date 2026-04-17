@@ -8,7 +8,10 @@
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
+#include "../StraightComponent/CoilCoolingDXSingleSpeed.hpp"
 #include "../StraightComponent/CoilHeatingDesuperheater.hpp"
 #include "../StraightComponent/Node.hpp"
 
@@ -27,6 +30,8 @@ TEST_F(EPModelFixture, CoilHeatingDesuperheater_DefaultConstructor) {
   EXPECT_DOUBLE_EQ(0.0, coil.parasiticElectricLoad());
   EXPECT_FALSE(coil.isOnCycleParasiticElectricLoadDefaulted());
   EXPECT_FALSE(coil.isParasiticElectricLoadDefaulted());
+  EXPECT_FALSE(coil.availabilitySchedule());
+  EXPECT_FALSE(coil.heatingSource());
 }
 
 TEST_F(EPModelFixture, CoilHeatingDesuperheater_ScalarAccessors_RoundTrip) {
@@ -63,13 +68,33 @@ TEST_F(EPModelFixture, CoilHeatingDesuperheater_ScalarAccessors_RoundTrip) {
   EXPECT_DOUBLE_EQ(44.0, coil.parasiticElectricLoad());
 }
 
+TEST_F(EPModelFixture, CoilHeatingDesuperheater_RelationshipSetters_RoundTrip) {
+  Model model;
+  CoilHeatingDesuperheater coil(model);
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(availability.setValue(0.4));
+  CoilCoolingDXSingleSpeed heatingSource(model);
+
+  EXPECT_TRUE(coil.setAvailabilitySchedule(availability));
+  ASSERT_TRUE(coil.availabilitySchedule());
+  EXPECT_EQ(availability.handle(), coil.availabilitySchedule()->handle());
+  coil.resetAvailabilitySchedule();
+  EXPECT_FALSE(coil.availabilitySchedule());
+
+  EXPECT_TRUE(coil.setHeatingSource(heatingSource));
+  ASSERT_TRUE(coil.heatingSource());
+  EXPECT_EQ(heatingSource.handle(), coil.heatingSource()->handle());
+  coil.resetHeatingSource();
+  EXPECT_FALSE(coil.heatingSource());
+}
+
 TEST_F(EPModelFixture, CoilHeatingDesuperheater_AddToNode_SupplyOnly) {
   Model model;
   CoilHeatingDesuperheater coil(model);
 
   AirLoopHVAC airLoop(model);
-  Node supplyOutletNode = airLoop.supplyOutletNode();
-  EXPECT_TRUE(coil.addToNode(supplyOutletNode));
+  auto supplyInletNode = airLoop.supplyInletNode();
+  EXPECT_TRUE(coil.addToNode(supplyInletNode));
 
   auto splitterBranch = airLoop.zoneSplitter().lastOutletModelObject();
   ASSERT_TRUE(splitterBranch);

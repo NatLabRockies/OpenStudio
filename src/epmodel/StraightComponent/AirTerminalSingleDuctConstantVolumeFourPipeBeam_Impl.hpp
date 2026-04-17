@@ -11,6 +11,9 @@
 namespace openstudio {
 namespace epmodel {
 
+class ModelObject;
+class Schedule;
+
 namespace detail {
 
     class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl : public StraightComponent_Impl
@@ -21,31 +24,47 @@ namespace detail {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToNode(Node& node);
 
-  boost::optional<double> designPrimaryAirVolumeFlowRate() const;
-  bool isDesignPrimaryAirVolumeFlowRateAutosized() const;
-  bool setDesignPrimaryAirVolumeFlowRate(double designPrimaryAirVolumeFlowRate);
-  void autosizeDesignPrimaryAirVolumeFlowRate();
+      Schedule primaryAirAvailabilitySchedule() const;
+      bool setPrimaryAirAvailabilitySchedule(Schedule& schedule);
 
-  boost::optional<double> designChilledWaterVolumeFlowRate() const;
-  bool isDesignChilledWaterVolumeFlowRateAutosized() const;
-  bool setDesignChilledWaterVolumeFlowRate(double designChilledWaterVolumeFlowRate);
-  void autosizeDesignChilledWaterVolumeFlowRate();
+      Schedule coolingAvailabilitySchedule() const;
+      bool setCoolingAvailabilitySchedule(Schedule& schedule);
 
-  boost::optional<double> designHotWaterVolumeFlowRate() const;
-  bool isDesignHotWaterVolumeFlowRateAutosized() const;
-  bool setDesignHotWaterVolumeFlowRate(double designHotWaterVolumeFlowRate);
-  void autosizeDesignHotWaterVolumeFlowRate();
+      Schedule heatingAvailabilitySchedule() const;
+      bool setHeatingAvailabilitySchedule(Schedule& schedule);
 
-  boost::optional<double> zoneTotalBeamLength() const;
-  bool isZoneTotalBeamLengthAutosized() const;
-  bool setZoneTotalBeamLength(double zoneTotalBeamLength);
-  void autosizeZoneTotalBeamLength();
+      boost::optional<ModelObject> coolingCoil() const;
+      bool setCoolingCoil(ModelObject& coolingCoil);
 
-  double ratedPrimaryAirFlowRateperBeamLength() const;
-  bool isRatedPrimaryAirFlowRateperBeamLengthDefaulted() const;
-  bool setRatedPrimaryAirFlowRateperBeamLength(double ratedPrimaryAirFlowRateperBeamLength);
-  void resetRatedPrimaryAirFlowRateperBeamLength();
+      boost::optional<ModelObject> heatingCoil() const;
+      bool setHeatingCoil(ModelObject& heatingCoil);
+
+      boost::optional<double> designPrimaryAirVolumeFlowRate() const;
+      bool isDesignPrimaryAirVolumeFlowRateAutosized() const;
+      bool setDesignPrimaryAirVolumeFlowRate(double designPrimaryAirVolumeFlowRate);
+      void autosizeDesignPrimaryAirVolumeFlowRate();
+
+      boost::optional<double> designChilledWaterVolumeFlowRate() const;
+      bool isDesignChilledWaterVolumeFlowRateAutosized() const;
+      bool setDesignChilledWaterVolumeFlowRate(double designChilledWaterVolumeFlowRate);
+      void autosizeDesignChilledWaterVolumeFlowRate();
+
+      boost::optional<double> designHotWaterVolumeFlowRate() const;
+      bool isDesignHotWaterVolumeFlowRateAutosized() const;
+      bool setDesignHotWaterVolumeFlowRate(double designHotWaterVolumeFlowRate);
+      void autosizeDesignHotWaterVolumeFlowRate();
+
+      boost::optional<double> zoneTotalBeamLength() const;
+      bool isZoneTotalBeamLengthAutosized() const;
+      bool setZoneTotalBeamLength(double zoneTotalBeamLength);
+      void autosizeZoneTotalBeamLength();
+
+      double ratedPrimaryAirFlowRateperBeamLength() const;
+      bool isRatedPrimaryAirFlowRateperBeamLengthDefaulted() const;
+      bool setRatedPrimaryAirFlowRateperBeamLength(double ratedPrimaryAirFlowRateperBeamLength);
+      void resetRatedPrimaryAirFlowRateperBeamLength();
 };
 
 }  // namespace detail

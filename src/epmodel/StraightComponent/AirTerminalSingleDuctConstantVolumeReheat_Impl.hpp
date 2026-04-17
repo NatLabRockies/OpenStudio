@@ -7,9 +7,11 @@
 #define EPMODEL_AIRTERMINALSINGLEDUCTCONSTANTVOLUMEREHEAT_IMPL_HPP
 
 #include "StraightComponent/StraightComponent_Impl.hpp"
+#include "Node.hpp"
+#include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
 
 namespace openstudio {
-namespace epmodel {
+  namespace epmodel {
 
   class Schedule;
   class HVACComponent;
@@ -24,6 +26,8 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
+      bool addToNode(Node& node);
 
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);

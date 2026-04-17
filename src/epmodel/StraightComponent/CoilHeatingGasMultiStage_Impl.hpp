@@ -8,9 +8,13 @@
 
 #include "StraightComponent/StraightComponent_Impl.hpp"
 
+#include <vector>
+
 namespace openstudio {
 namespace epmodel {
 class Node;
+class Schedule;
+class Curve;
 namespace detail {
 
 class EPMODEL_API CoilHeatingGasMultiStage_Impl : public StraightComponent_Impl
@@ -21,8 +25,16 @@ class EPMODEL_API CoilHeatingGasMultiStage_Impl : public StraightComponent_Impl
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+  std::vector<ModelObject> children() const override;
 
   bool addToNode(Node& node) override;
+
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+
+  boost::optional<Curve> partLoadFractionCorrelationCurve() const;
+  bool setPartLoadFractionCorrelationCurve(const Curve& curve);
+  void resetPartLoadFractionCorrelationCurve();
 
   boost::optional<double> offCycleParasiticGasLoad() const;
 

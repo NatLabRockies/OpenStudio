@@ -11,6 +11,7 @@
 namespace openstudio {
 namespace epmodel {
   class Node;
+  class Schedule;
   namespace detail {
 
     class EPMODEL_API CoilHeatingElectric_Impl : public StraightComponent_Impl
@@ -23,6 +24,13 @@ namespace epmodel {
       unsigned outletPort() const override;
 
       bool addToNode(Node& node) override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
+      boost::optional<Node> temperatureSetpointNode() const;
+      bool setTemperatureSetpointNode(Node& temperatureSetpointNode);
+      void resetTemperatureSetpointNode();
 
       double efficiency() const;
       bool isEfficiencyDefaulted() const;

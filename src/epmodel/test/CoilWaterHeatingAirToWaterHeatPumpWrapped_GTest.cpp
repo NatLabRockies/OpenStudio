@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "EPModelFixture.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
 #include "../StraightComponent/CoilWaterHeatingAirToWaterHeatPumpWrapped.hpp"
 #include "../StraightComponent/StraightComponent.hpp"
 #include "../StraightComponent/Node.hpp"
@@ -20,6 +21,7 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpWrapped_DefaultConstruc
   Model model;
   CoilWaterHeatingAirToWaterHeatPumpWrapped coil(model);
   EXPECT_EQ(CoilWaterHeatingAirToWaterHeatPumpWrapped::iddObjectType(), coil.iddObject().type());
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule().handle(), coil.availabilitySchedule().handle());
 }
 
 TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpWrapped_StraightComponentPortsWithoutLoopPlacement) {
@@ -35,6 +37,14 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpWrapped_StraightCompone
 TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpWrapped_ScalarAccessors_RoundTrip) {
   Model model;
   CoilWaterHeatingAirToWaterHeatPumpWrapped coil(model);
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(availability.setValue(1.0));
+
+  EXPECT_TRUE(coil.setAvailabilitySchedule(availability));
+  EXPECT_EQ(availability.handle(), coil.availabilitySchedule().handle());
+  ASSERT_TRUE(coil.getTarget(openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::AvailabilityScheduleName));
+  EXPECT_EQ(availability.handle(),
+            coil.getTarget(openstudio::Coil_WaterHeating_AirToWaterHeatPump_WrappedFields::AvailabilityScheduleName)->handle());
 
   EXPECT_TRUE(coil.setRatedHeatingCapacity(4000.0));
   EXPECT_DOUBLE_EQ(4000.0, coil.ratedHeatingCapacity());

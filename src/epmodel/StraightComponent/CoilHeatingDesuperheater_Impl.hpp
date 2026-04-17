@@ -10,6 +10,8 @@
 
 namespace openstudio {
 namespace epmodel {
+  class ModelObject;
+  class Schedule;
   namespace detail {
 
     class EPMODEL_API CoilHeatingDesuperheater_Impl : public StraightComponent_Impl
@@ -21,6 +23,14 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+
+      boost::optional<Schedule> availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+      void resetAvailabilitySchedule();
+
+      boost::optional<ModelObject> heatingSource() const;
+      bool setHeatingSource(const ModelObject& modelObject);
+      void resetHeatingSource();
 
       double heatReclaimRecoveryEfficiency() const;
       bool isHeatReclaimRecoveryEfficiencyDefaulted() const;

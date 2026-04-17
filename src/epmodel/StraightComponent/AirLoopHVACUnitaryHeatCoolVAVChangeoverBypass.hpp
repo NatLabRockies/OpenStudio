@@ -29,6 +29,8 @@ namespace epmodel {
   {
    public:
     explicit AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(const Model& model);
+    AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(const Model& model, const HVACComponent& fan, const HVACComponent& coolingCoil,
+                                                  const HVACComponent& heatingCoil);
 
     virtual ~AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass() override = default;
     AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass(const AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass& other) = default;
@@ -47,9 +49,10 @@ namespace epmodel {
     // Schema Alignment Notes:
 	    // - Status: Partial Parity. The core airflow/control scalars and direct object-link fields are aligned, and the owned internal air path is now maintained through parent-owned epmodel nodes.
     // - Canonical Counterpart: openstudio::model::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.
-	    // - Implemented Parity: Availability schedule, outdoor-air-flow-rate multiplier schedule, supply fan,
-	    //   supply-air-fan operating mode schedule, heating coil, cooling coil, and the scalar airflow/control fields preserve the main
-      //   canonical wrapper contract. The owned fan/cooling/heating chain now shares a stable parent-maintained air path, with direct
+      // - Implemented Parity: Availability schedule, outdoor-air-flow-rate multiplier schedule, supply fan,
+      //   supply-air-fan operating mode schedule, heating coil, cooling coil, and the scalar airflow/control fields preserve the main
+      //   canonical wrapper contract. The relationship constructor and child traversal now match the canonical wrapper's owned-component slice.
+      //   The owned fan/cooling/heating chain also shares a stable parent-maintained air path, with direct
       //   access to the meaningful outlet node roles on the compound.
 	    // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are additive epmodel conveniences
       //   for the owned serial air path. Node names and plenum-or-mixer topology conveniences beyond that owned chain remain intentionally

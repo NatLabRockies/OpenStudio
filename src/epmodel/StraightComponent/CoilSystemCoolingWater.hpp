@@ -16,6 +16,8 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
+  class HVACComponent;
   class Node;
 
   namespace detail {
@@ -26,6 +28,7 @@ namespace epmodel {
   {
    public:
     explicit CoilSystemCoolingWater(const Model& model);
+    explicit CoilSystemCoolingWater(const Model& model, const HVACComponent& coolingCoil);
 
     virtual ~CoilSystemCoolingWater() override = default;
     CoilSystemCoolingWater(const CoilSystemCoolingWater& other) = default;
@@ -40,13 +43,25 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The control and performance scalars are present, but coil, companion, schedule, and node-link helpers remain model-owned.
+    // - Status: Partial Parity. The canonical schedule, cooling-coil, companion-coil, constructor-default, and current insertion-path helpers are
+    //   now present, while broader model-owned topology conveniences remain out of scope.
     // - Canonical Counterpart: openstudio::model::CoilSystemCoolingWater.
-    // - Implemented Parity: `dehumidificationControlType`, run-on loads, temperature offset, economizer lockout, and heat-recovery limit preserve the canonical scalar API.
-    // - Documented Delta: Availability schedule, cooling-coil object/name, companion-coil, and air-node helpers from canonical `openstudio::model::CoilSystemCoolingWater` are not exposed yet.
-    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `CoilSystem:Cooling:Water` fields.
+    // - Implemented Parity: The default constructors, `availabilitySchedule`, `coolingCoil`, `companionCoilUsedForHeatRecovery`, their
+    //   relationship setters/reset, the main scalar controls, child traversal, and the current supply-side plus outboard-OA `addToNode(...)`
+    //   paths preserve the bounded canonical slice.
+    // - Documented Delta: Broader containing-component, clone/remove, and higher-level air-node convenience behavior from canonical
+    //   `openstudio::model::CoilSystemCoolingWater` are not exposed yet.
+    // - Field/Storage Mapping: Preserved schedule and coil relationships map directly to EnergyPlus `CoilSystem:Cooling:Water` object-list
+    //   fields, while the implemented scalars map directly to the remaining control fields.
     // - Evidence: `src/model/CoilSystemCoolingWater.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilSystemCoolingWater.cpp`, and `src/epmodel/test/CoilSystemCoolingWater_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted schedule, coil-link, companion-coil, and node-link helpers without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Add the remaining containing-component, clone/remove, and higher-level air-node conveniences without changing the
+    //   preserved relationship signatures.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    HVACComponent coolingCoil() const;
+    bool setCoolingCoil(const HVACComponent& coolingCoil);
+
     std::string dehumidificationControlType() const;
     bool setDehumidificationControlType(const std::string& dehumidificationControlType);
 
@@ -64,6 +79,10 @@ namespace epmodel {
 
     double minimumWaterLoopTemperatureForHeatRecovery() const;
     bool setMinimumWaterLoopTemperatureForHeatRecovery(double minimumWaterLoopTemperatureForHeatRecovery);
+
+    boost::optional<HVACComponent> companionCoilUsedForHeatRecovery() const;
+    bool setCompanionCoilUsedForHeatRecovery(const HVACComponent& companionCoilUsedForHeatRecovery);
+    void resetCompanionCoilUsedForHeatRecovery();
 
    protected:
     using ImplType = detail::CoilSystemCoolingWater_Impl;

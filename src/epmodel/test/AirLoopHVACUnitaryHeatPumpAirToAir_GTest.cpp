@@ -25,6 +25,31 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAir_DefaultConstructor) {
   EXPECT_EQ(AirLoopHVACUnitaryHeatPumpAirToAir::iddObjectType(), unitary.iddObject().type());
 }
 
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAir_RelationshipConstructorAndChildren) {
+  Model model;
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(availability.setValue(0.8));
+  FanOnOff fan(model);
+  CoilHeatingDXSingleSpeed heating(model);
+  CoilCoolingDXSingleSpeed cooling(model);
+  CoilHeatingElectric supplemental(model);
+
+  AirLoopHVACUnitaryHeatPumpAirToAir unitary(model, availability, fan, heating, cooling, supplemental);
+
+  EXPECT_EQ(availability.handle(), unitary.availabilitySchedule().handle());
+  EXPECT_EQ(fan.handle(), unitary.supplyAirFan().handle());
+  EXPECT_EQ(heating.handle(), unitary.heatingCoil().handle());
+  EXPECT_EQ(cooling.handle(), unitary.coolingCoil().handle());
+  EXPECT_EQ(supplemental.handle(), unitary.supplementalHeatingCoil().handle());
+
+  const auto children = unitary.children();
+  ASSERT_EQ(4u, children.size());
+  EXPECT_EQ(fan.handle(), children[0].handle());
+  EXPECT_EQ(heating.handle(), children[1].handle());
+  EXPECT_EQ(cooling.handle(), children[2].handle());
+  EXPECT_EQ(supplemental.handle(), children[3].handle());
+}
+
 TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAir_ScalarAccessors_RoundTrip) {
   Model model;
   AirLoopHVACUnitaryHeatPumpAirToAir unitary(model);

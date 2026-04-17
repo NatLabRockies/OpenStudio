@@ -15,6 +15,9 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
+  class Schedule;
+  class Curve;
 
   namespace detail {
     class CoilCoolingDXVariableRefrigerantFlow_Impl;
@@ -34,20 +37,25 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar rating surface is aligned, and epmodel now treats the coil as a serial air-side component, while
-    //   schedule and curve APIs are still omitted.
+    // - Status: Partial Parity. The scalar rating surface is aligned, the required schedule/curve relationships are exposed, and epmodel still
+    //   treats the coil as a serial air-side component with a deliberately rejected standalone insertion path.
     // - Canonical Counterpart: openstudio::model::CoilCoolingDXVariableRefrigerantFlow.
-    // - Implemented Parity: `ratedTotalCoolingCapacity`, `ratedSensibleHeatRatio`, `ratedAirFlowRate`, and their autosize helpers preserve the
-    //   canonical scalar rating contract. epmodel also exposes the inherited straight-component inlet and outlet surface because the EnergyPlus
-    //   object has a fixed one-inlet/one-outlet air path.
-    // - Documented Delta: Unlike the canonical model wrapper, epmodel promotes this coil to `StraightComponent` so compound terminal owners can
+    // - Implemented Parity: `availabilitySchedule`, the two cooling-capacity modifier curve relationships, the scalar rating surface, and their
+    //   autosize helpers preserve the canonical public contract. epmodel also exposes the inherited straight-component inlet and outlet surface
+    //   because the EnergyPlus object has a fixed one-inlet/one-outlet air path.
+    // - Documented Delta: Unlike the canonical model wrapper, epmodel promotes this coil to `StraightComponent` so compound component owners can
     //   rely on the standard serial air-path API. That additive base-class change does not make the coil general loop equipment here:
-    //   `addToNode(...)` is still rejected intentionally. Availability schedule and performance-curve APIs are also still omitted.
-    // - Field/Storage Mapping: The epmodel wrapper maps the preserved scalar fields directly to EnergyPlus
+    //   `addToNode(...)` is still rejected intentionally.
+    // - Field/Storage Mapping: The preserved scalar fields, required schedule pointer, and required curve pointers map directly to EnergyPlus
     //   `Coil:Cooling:DX:VariableRefrigerantFlow` storage, and the inherited straight-component topology uses the fixed coil air inlet/outlet
     //   node fields on that same object.
-    // - Evidence: `src/model/CoilCoolingDXVariableRefrigerantFlow.hpp`, `src/model/CoilCoolingDXVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXVariableRefrigerantFlow.cpp`, and `src/epmodel/test/CoilCoolingDXVariableRefrigerantFlow_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted schedule, curve, and object-link APIs after the relationship layer is available.
+    // - Evidence: `src/model/CoilCoolingDXVariableRefrigerantFlow.hpp`, `src/model/CoilCoolingDXVariableRefrigerantFlow.cpp`,
+    //   `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXVariableRefrigerantFlow.cpp`, and
+    //   `src/epmodel/test/CoilCoolingDXVariableRefrigerantFlow_GTest.cpp`.
+    // - Remaining Parity Work: Autosized-result query helpers remain omitted until shared sizing-result plumbing exists.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
     boost::optional<double> ratedTotalCoolingCapacity() const;
     bool setRatedTotalCoolingCapacity(double ratedTotalCoolingCapacity);
     bool isRatedTotalCoolingCapacityAutosized() const;
@@ -62,6 +70,12 @@ namespace epmodel {
     bool setRatedAirFlowRate(double ratedAirFlowRate);
     bool isRatedAirFlowRateAutosized() const;
     void autosizeRatedAirFlowRate();
+
+    Curve coolingCapacityRatioModifierFunctionofTemperatureCurve() const;
+    bool setCoolingCapacityRatioModifierFunctionofTemperatureCurve(const Curve& curve);
+
+    Curve coolingCapacityModifierCurveFunctionofFlowFraction() const;
+    bool setCoolingCapacityModifierCurveFunctionofFlowFraction(const Curve& curve);
 
    protected:
     using ImplType = detail::CoilCoolingDXVariableRefrigerantFlow_Impl;

@@ -10,6 +10,8 @@
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -29,6 +31,26 @@ namespace epmodel {
 
   bool CoilHeatingElectric::addToNode(Node& node) {
     return getImpl<detail::CoilHeatingElectric_Impl>()->addToNode(node);
+  }
+
+  Schedule CoilHeatingElectric::availabilitySchedule() const {
+    return getImpl<detail::CoilHeatingElectric_Impl>()->availabilitySchedule();
+  }
+
+  bool CoilHeatingElectric::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::CoilHeatingElectric_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  boost::optional<Node> CoilHeatingElectric::temperatureSetpointNode() const {
+    return getImpl<detail::CoilHeatingElectric_Impl>()->temperatureSetpointNode();
+  }
+
+  bool CoilHeatingElectric::setTemperatureSetpointNode(Node& temperatureSetpointNode) {
+    return getImpl<detail::CoilHeatingElectric_Impl>()->setTemperatureSetpointNode(temperatureSetpointNode);
+  }
+
+  void CoilHeatingElectric::resetTemperatureSetpointNode() {
+    getImpl<detail::CoilHeatingElectric_Impl>()->resetTemperatureSetpointNode();
   }
 
   double CoilHeatingElectric::efficiency() const {
@@ -99,6 +121,34 @@ namespace epmodel {
 
     unsigned CoilHeatingElectric_Impl::outletPort() const {
       return openstudio::Coil_Heating_ElectricFields::AirOutletNodeName;
+    }
+
+    Schedule CoilHeatingElectric_Impl::availabilitySchedule() const {
+      auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Heating_ElectricFields::AvailabilityScheduleName);
+      if (!value) {
+        value = this->model().alwaysOnDiscreteSchedule();
+        OS_ASSERT(value);
+        const_cast<CoilHeatingElectric_Impl*>(this)->setAvailabilitySchedule(*value);
+        value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Heating_ElectricFields::AvailabilityScheduleName);
+      }
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool CoilHeatingElectric_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return setPointer(openstudio::Coil_Heating_ElectricFields::AvailabilityScheduleName, schedule.handle(), false);
+    }
+
+    boost::optional<Node> CoilHeatingElectric_Impl::temperatureSetpointNode() const {
+      return getObject<ModelObject>().getModelObjectTarget<Node>(openstudio::Coil_Heating_ElectricFields::TemperatureSetpointNodeName);
+    }
+
+    bool CoilHeatingElectric_Impl::setTemperatureSetpointNode(Node& temperatureSetpointNode) {
+      return setPointer(openstudio::Coil_Heating_ElectricFields::TemperatureSetpointNodeName, temperatureSetpointNode.handle(), false);
+    }
+
+    void CoilHeatingElectric_Impl::resetTemperatureSetpointNode() {
+      OS_ASSERT(setPointer(openstudio::Coil_Heating_ElectricFields::TemperatureSetpointNodeName, openstudio::Handle(), false));
     }
 
     double CoilHeatingElectric_Impl::efficiency() const {

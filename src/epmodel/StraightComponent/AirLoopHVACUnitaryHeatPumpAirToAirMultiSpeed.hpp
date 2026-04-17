@@ -30,6 +30,8 @@ class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed : public Straight
 {
  public:
   explicit AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(const Model& model);
+  AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(const Model& model, const HVACComponent& supplyAirFan, const HVACComponent& heatingCoil,
+                                               const HVACComponent& coolingCoil, const HVACComponent& supplementalHeatingCoil);
 
   virtual ~AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed() override = default;
   AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(const AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed& other) = default;
@@ -45,9 +47,9 @@ class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed : public Straight
   // - Status: Partial Parity. The multi-speed scalar controls and direct object-link fields are aligned, and the owned internal air path is now maintained through parent-owned epmodel nodes.
   // - Canonical Counterpart: openstudio::model::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.
   // - Implemented Parity: Availability schedule, controlling zone, supply fan, supply-air-fan operating mode schedule, heating coil,
-  //   cooling coil, supplemental heating coil, and the scalar airflow/control fields preserve the main canonical wrapper contract. The
-  //   owned fan/cooling/heating/supplemental chain now shares a stable parent-maintained air path, with direct access to the meaningful
-  //   outlet node roles on the compound.
+  //   cooling coil, supplemental heating coil, constructor-with-components, and the scalar airflow/control fields preserve the main
+  //   canonical wrapper contract. The owned fan/cooling/heating/supplemental chain now shares a stable parent-maintained air path, with
+  //   direct access to the meaningful outlet node roles on the compound, and child traversal matches the canonical owned-component slice.
   // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are additive epmodel conveniences so
   //   callers can inspect and rename the meaningful internal outlet roles owned by the compound. Broader topology convenience beyond the
   //   owned serial air path remains intentionally omitted.

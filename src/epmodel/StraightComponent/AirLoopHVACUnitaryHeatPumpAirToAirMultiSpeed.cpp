@@ -96,6 +96,21 @@ AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::AirLoopHVACUnitaryHeatPumpAirToAir
 }
 
 AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(
+  const Model& model, const HVACComponent& supplyAirFan, const HVACComponent& heatingCoil, const HVACComponent& coolingCoil,
+  const HVACComponent& supplementalHeatingCoil)
+  : AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(model) {
+  bool ok = true;
+  ok = setSupplyAirFan(supplyAirFan);
+  OS_ASSERT(ok);
+  ok = setHeatingCoil(heatingCoil);
+  OS_ASSERT(ok);
+  ok = setCoolingCoil(coolingCoil);
+  OS_ASSERT(ok);
+  ok = setSupplementalHeatingCoil(supplementalHeatingCoil);
+  OS_ASSERT(ok);
+}
+
+AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(
   std::shared_ptr<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl> impl)
   : StraightComponent(std::move(impl)) {}
 
@@ -474,6 +489,29 @@ bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::addToNode(Node& node) {
 
 void AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::doCanonicalize(LoadContext& context) {
   repairContainedAirPath(context);
+}
+
+std::vector<ModelObject> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::children() const {
+  std::vector<ModelObject> result;
+
+  if (auto supplyFan = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+        openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanName)) {
+    result.emplace_back(*supplyFan);
+  }
+  if (auto heatingCoil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+        openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilName)) {
+    result.emplace_back(*heatingCoil);
+  }
+  if (auto coolingCoil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+        openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilName)) {
+    result.emplace_back(*coolingCoil);
+  }
+  if (auto supplementalHeatingCoil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+        openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilName)) {
+    result.emplace_back(*supplementalHeatingCoil);
+  }
+
+  return result;
 }
 
 boost::optional<Schedule> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::availabilitySchedule() const {

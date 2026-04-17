@@ -11,6 +11,9 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Curve;
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API CoilHeatingDXVariableRefrigerantFlow_Impl : public StraightComponent_Impl
@@ -23,6 +26,9 @@ namespace epmodel {
       unsigned outletPort() const override;
       bool addToNode(Node& node) override;
 
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
       boost::optional<double> ratedTotalHeatingCapacity() const;
       bool setRatedTotalHeatingCapacity(double ratedTotalHeatingCapacity);
       bool isRatedTotalHeatingCapacityAutosized() const;
@@ -32,6 +38,14 @@ namespace epmodel {
       bool setRatedAirFlowRate(double ratedAirFlowRate);
       bool isRatedAirFlowRateAutosized() const;
       void autosizeRatedAirFlowRate();
+
+      Curve heatingCapacityRatioModifierFunctionofTemperatureCurve() const;
+      bool setHeatingCapacityRatioModifierFunctionofTemperatureCurve(const Curve& curve);
+
+      Curve heatingCapacityModifierFunctionofFlowFractionCurve() const;
+      bool setHeatingCapacityModifierFunctionofFlowFractionCurve(const Curve& curve);
+
+      std::vector<ModelObject> children() const override;
     };
 
   }  // namespace detail
