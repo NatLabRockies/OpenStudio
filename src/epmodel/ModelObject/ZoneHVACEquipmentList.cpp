@@ -9,6 +9,8 @@
 #include "Model.hpp"
 #include "ModelObject.hpp"
 
+#include <optional>
+#include <stdexcept>
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/IddEnums.hxx>
@@ -68,6 +70,45 @@ namespace openstudio {
 namespace epmodel {
   namespace detail {
 
+    namespace {
+
+      boost::optional<openstudio::epmodel::ModelObject> resolveEquipmentTarget(const openstudio::WorkspaceExtensibleGroup& group,
+                                                                               const openstudio::epmodel::Model& model) {
+        if (auto target = group.getTarget(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentName)) {
+          if (auto modelObject = target->optionalCast<openstudio::epmodel::ModelObject>()) {
+            return *modelObject;
+          }
+        }
+
+        const auto objectType = group.getString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentObjectType, true);
+        const auto name = group.getString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentName, true);
+        if (!objectType || objectType->empty() || !name || name->empty()) {
+          return boost::none;
+        }
+
+        try {
+          const auto iddType = openstudio::IddObjectType(*objectType);
+          if (auto object = model.getObjectByTypeAndName(iddType, *name, true)) {
+            if (auto modelObject = object->optionalCast<openstudio::epmodel::ModelObject>()) {
+              return *modelObject;
+            }
+          }
+        } catch (const std::runtime_error&) {  // NOLINT
+          return boost::none;
+        }
+
+        return boost::none;
+      }
+
+      bool setEquipmentTarget(openstudio::WorkspaceExtensibleGroup& group, const openstudio::epmodel::ModelObject& component) {
+        if (group.setPointer(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentName, component.handle(), false)) {
+          return true;
+        }
+        return group.setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentName, component.nameString(), false);
+      }
+
+    }  // namespace
+
     std::string ZoneHVACEquipmentList_Impl::loadDistributionScheme() const {
       const auto value = getString(openstudio::ZoneHVAC_EquipmentListFields::LoadDistributionScheme, true);
       OS_ASSERT(value);
@@ -103,14 +144,12 @@ namespace epmodel {
           continue;
         }
 
-        auto target = workspaceGroup->getTarget(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentName);
+        auto target = resolveEquipmentTarget(*workspaceGroup, model());
         if (!target) {
           continue;
         }
 
-        if (auto modelObject = target->optionalCast<openstudio::epmodel::ModelObject>()) {
-          result.push_back(*modelObject);
-        }
+        result.push_back(*target);
       }
       return result;
     }
@@ -131,10 +170,10 @@ namespace epmodel {
         return false;
       }
 
-      if (!group->setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentObjectType, component.iddObject().name())) {
+      if (!group->setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentObjectType, component.iddObject().name(), false)) {
         return false;
       }
-      if (!group->setPointer(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentName, component.handle())) {
+      if (!setEquipmentTarget(*group, component)) {
         return false;
       }
 
@@ -154,12 +193,12 @@ namespace epmodel {
           continue;
         }
 
-        auto target = workspaceGroup->getTarget(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentName);
+        auto target = resolveEquipmentTarget(*workspaceGroup, model());
         if (!target || !(*target == component)) {
           continue;
         }
 
-        equipmentList.eraseExtensibleGroup(i);
+        equipmentList.getImpl<openstudio::epmodel::detail::ModelObject_Impl>()->eraseExtensibleGroup(workspaceGroup->groupIndex(), false);
 
         auto remainingGroups = equipmentList.extensibleGroups();
         for (unsigned j = 0; j < remainingGroups.size(); ++j) {

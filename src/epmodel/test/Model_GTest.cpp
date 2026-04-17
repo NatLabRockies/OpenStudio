@@ -5,6 +5,8 @@
 
 #include <gtest/gtest.h>
 
+#include <cmath>
+
 #include "EPModelFixture.hpp"
 
 #include "../Loop/AirLoopHVAC.hpp"
@@ -14,7 +16,10 @@
 #include "../ModelObject/BranchList_Impl.hpp"
 #include "../ModelObject/Branch_Impl.hpp"
 #include "../Model.hpp"
+#include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../StraightComponent/Node.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 
 #include "../../utilities/idf/IdfFile.hpp"
 #include "../../utilities/idf/IdfExtensibleGroup.hpp"
@@ -36,6 +41,45 @@ TEST_F(EPModelFixture, Model_TransientNodeFactory) {
   EXPECT_EQ("Node A", nodeA.nameString());
 
   EXPECT_THROW(model.getOrCreateTransientByName<Node>(""), openstudio::Exception);
+}
+
+TEST_F(EPModelFixture, Model_AlwaysOnContinuousSchedule) {
+  Model model;
+
+  auto schedule = model.alwaysOnContinuousSchedule();
+  EXPECT_EQ(model.alwaysOnContinuousScheduleName(), schedule.nameString());
+  EXPECT_DOUBLE_EQ(1.0, schedule.cast<ScheduleConstant>().value());
+
+  auto limits = schedule.scheduleTypeLimits();
+  ASSERT_TRUE(limits);
+  ASSERT_TRUE(limits->numericType());
+  EXPECT_EQ("Continuous", limits->numericType().get());
+  ASSERT_TRUE(limits->lowerLimitValue());
+  EXPECT_DOUBLE_EQ(0.0, limits->lowerLimitValue().get());
+  ASSERT_TRUE(limits->upperLimitValue());
+  EXPECT_DOUBLE_EQ(1.0, limits->upperLimitValue().get());
+  EXPECT_TRUE(limits->isUnitTypeDefaulted());
+
+  auto schedule2 = model.alwaysOnContinuousSchedule();
+  EXPECT_EQ(schedule.handle(), schedule2.handle());
+}
+
+TEST_F(EPModelFixture, Model_AlwaysOnContinuousSchedule_ReusesNearlyUnitSchedule) {
+  Model model;
+
+  ScheduleConstant schedule(model);
+  ASSERT_TRUE(schedule.setName(model.alwaysOnContinuousScheduleName()));
+  ASSERT_TRUE(schedule.setValue(std::nextafter(1.0, 2.0)));
+
+  ScheduleTypeLimits limits(model);
+  ASSERT_TRUE(limits.setNumericType("Continuous"));
+  limits.resetUnitType();
+  ASSERT_TRUE(limits.setLowerLimitValue(0.0));
+  ASSERT_TRUE(limits.setUpperLimitValue(1.0));
+  ASSERT_TRUE(schedule.setScheduleTypeLimits(limits));
+
+  auto reusedSchedule = model.alwaysOnContinuousSchedule();
+  EXPECT_EQ(schedule.handle(), reusedSchedule.handle());
 }
 
 TEST_F(EPModelFixture, Model_Canonicalize_RepairsHierarchicalAirLoopBranchListBranch) {

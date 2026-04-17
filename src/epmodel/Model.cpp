@@ -7,6 +7,7 @@
 #include "Model_Impl.hpp"
 
 #include <utilities/core/Compare.hpp>
+#include <utilities/math/FloatCompare.hpp>
 #include <utilities/idd/Refrigeration_Subcooler_FieldEnums.hxx>
 
 #include "ModelObject/AirLoopHVACReturnPath_Impl.hpp"
@@ -954,7 +955,7 @@ namespace epmodel {
 
     for (const auto& schedule : getConcreteModelObjects<ScheduleConstant>()) {
       if (auto candidateName = schedule.name()) {
-        if (openstudio::istringEqual(*candidateName, alwaysOnName) && (schedule.value() == 1.0)) {
+        if (openstudio::istringEqual(*candidateName, alwaysOnName) && openstudio::equal<double>(schedule.value(), 1.0)) {
           if (auto limits = schedule.scheduleTypeLimits()) {
             if (auto numericType = limits->numericType()) {
               if (openstudio::istringEqual(*numericType, "Discrete")) {
@@ -984,6 +985,43 @@ namespace epmodel {
 
   std::string Model::alwaysOnDiscreteScheduleName() const {
     return "Always On Discrete";
+  }
+
+  Schedule Model::alwaysOnContinuousSchedule() const {
+    const auto alwaysOnName = alwaysOnContinuousScheduleName();
+
+    for (const auto& schedule : getConcreteModelObjects<ScheduleConstant>()) {
+      if (auto candidateName = schedule.name()) {
+        if (openstudio::istringEqual(*candidateName, alwaysOnName) && openstudio::equal<double>(schedule.value(), 1.0)) {
+          if (auto limits = schedule.scheduleTypeLimits()) {
+            if (auto numericType = limits->numericType()) {
+              if (openstudio::istringEqual(*numericType, "Continuous")) {
+                return schedule;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    ScheduleConstant schedule(*this);
+    schedule.setName(alwaysOnName);
+
+    ScheduleTypeLimits limits(*this);
+    limits.setName("Fractional");
+    OS_ASSERT(limits.setNumericType("Continuous"));
+    limits.resetUnitType();
+    OS_ASSERT(limits.setLowerLimitValue(0.0));
+    OS_ASSERT(limits.setUpperLimitValue(1.0));
+
+    OS_ASSERT(schedule.setScheduleTypeLimits(limits));
+    OS_ASSERT(schedule.setValue(1.0));
+
+    return std::move(schedule);
+  }
+
+  std::string Model::alwaysOnContinuousScheduleName() const {
+    return "Always On Continuous";
   }
 
   // Internal bridge used when wrapping an already-constructed Model_Impl.
@@ -1154,7 +1192,8 @@ namespace epmodel {
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::AirTerminal_DualDuct_ConstantVolume, AirTerminalDualDuctConstantVolume_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::AirTerminal_DualDuct_VAV, AirTerminalDualDuctVAV_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::AirTerminal_DualDuct_VAV_OutdoorAir, AirTerminalDualDuctVAVOutdoorAir_Impl);
-      REGISTER_NEW_CONSTRUCTOR(IddObjectType::AirTerminal_SingleDuct_ConstantVolume_CooledBeam, AirTerminalSingleDuctConstantVolumeCooledBeam_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeam,
+                               AirTerminalSingleDuctConstantVolumeCooledBeam_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeam,
                                AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::AirTerminal_SingleDuct_ConstantVolume_FourPipeInduction,
@@ -2087,7 +2126,8 @@ namespace epmodel {
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::AirTerminal_DualDuct_ConstantVolume, AirTerminalDualDuctConstantVolume_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::AirTerminal_DualDuct_VAV, AirTerminalDualDuctVAV_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::AirTerminal_DualDuct_VAV_OutdoorAir, AirTerminalDualDuctVAVOutdoorAir_Impl);
-      REGISTER_COPY_CONSTRUCTOR(IddObjectType::AirTerminal_SingleDuct_ConstantVolume_CooledBeam, AirTerminalSingleDuctConstantVolumeCooledBeam_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeam,
+                                AirTerminalSingleDuctConstantVolumeCooledBeam_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeam,
                                 AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::AirTerminal_SingleDuct_ConstantVolume_FourPipeInduction,

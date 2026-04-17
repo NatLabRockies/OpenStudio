@@ -219,6 +219,14 @@ namespace epmodel {
 
       const auto thisName = thisObject.nameString();
 
+      auto thisComponent = getObject<openstudio::epmodel::HVACComponent>();
+      if (thisComponent.loop() && !removeFromLoop()) {
+        LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
+                 "Failed to detach " << thisObject.briefDescription()
+                                      << " from its existing loop topology before adding it to node '" << node.nameString() << "'.");
+        return false;
+      }
+
       if (auto oaSystem = node.airLoopHVACOutdoorAirSystem()) {
         return addToOutdoorAirSystem(*oaSystem, node);
       }
@@ -551,13 +559,39 @@ namespace epmodel {
         if (components[i] != thisObject) {
           continue;
         }
+
+        auto branchImpl = branch->getImpl<openstudio::epmodel::detail::Branch_Impl>();
+        OS_ASSERT(branchImpl);
         if (i + 1u < components.size()) {
-          if (!branch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentInletNode(i + 1u, *inletNode)) {
+          if (!branchImpl->setComponentInletNode(i + 1u, *inletNode)) {
+            return false;
+          }
+        } else if (i > 0u) {
+          if (!branchImpl->setComponentOutletNode(i - 1u, *outletNode)) {
             return false;
           }
         }
-        if (!branch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->removeComponent(i)) {
+        if (!branchImpl->removeComponent(i)) {
           return false;
+        }
+
+        // Re-anchor inlet/outlet branches so the surviving component row points back to the loop endpoint node.
+        const auto remainingComponents = branch->components();
+        if (!remainingComponents.empty()) {
+          if ((*branch == plantLoopImpl->supplyInletBranch()) && !branchImpl->setComponentInletNode(0u, plantLoop->supplyInletNode())) {
+            return false;
+          }
+          if ((*branch == plantLoopImpl->demandInletBranch()) && !branchImpl->setComponentInletNode(0u, plantLoop->demandInletNode())) {
+            return false;
+          }
+
+          const auto lastIndex = static_cast<unsigned>(remainingComponents.size() - 1u);
+          if ((*branch == plantLoopImpl->supplyOutletBranch()) && !branchImpl->setComponentOutletNode(lastIndex, plantLoop->supplyOutletNode())) {
+            return false;
+          }
+          if ((*branch == plantLoopImpl->demandOutletBranch()) && !branchImpl->setComponentOutletNode(lastIndex, plantLoop->demandOutletNode())) {
+            return false;
+          }
         }
         return true;
       }
@@ -575,6 +609,13 @@ namespace epmodel {
         LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
                  "Refusing to disconnect " << getObject<ModelObject>().briefDescription() << " because its air-side connectivity is owned by "
                                            << owner->briefDescription() << ".");
+        return;
+      }
+
+      const auto thisComponent = getObject<openstudio::epmodel::HVACComponent>();
+      if (thisComponent.loop() && !removeFromLoop()) {
+        LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
+                 "Failed to detach " << getObject<ModelObject>().briefDescription() << " from its loop topology before clearing node pointers.");
         return;
       }
 
