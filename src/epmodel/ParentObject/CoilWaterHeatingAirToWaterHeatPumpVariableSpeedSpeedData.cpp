@@ -179,24 +179,36 @@ bool CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData::setTotalWaterHeat
     ->setTotalWaterHeatingCapacityFunctionofWaterFlowFractionCurve(curve);
 }
 
-Curve CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData::cOPFunctionofTemperatureCurve() const {
+Curve CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData::copFunctionofTemperatureCurve() const {
   return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_Impl>()->cOPFunctionofTemperatureCurve();
+}
+
+Curve CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData::cOPFunctionofTemperatureCurve() const {
+  return copFunctionofTemperatureCurve();
 }
 
 bool CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData::setCOPFunctionofTemperatureCurve(const Curve& curve) {
   return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_Impl>()->setCOPFunctionofTemperatureCurve(curve);
 }
 
-Curve CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData::cOPFunctionofAirFlowFractionCurve() const {
+Curve CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData::copFunctionofAirFlowFractionCurve() const {
   return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_Impl>()->cOPFunctionofAirFlowFractionCurve();
+}
+
+Curve CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData::cOPFunctionofAirFlowFractionCurve() const {
+  return copFunctionofAirFlowFractionCurve();
 }
 
 bool CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData::setCOPFunctionofAirFlowFractionCurve(const Curve& curve) {
   return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_Impl>()->setCOPFunctionofAirFlowFractionCurve(curve);
 }
 
-Curve CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData::cOPFunctionofWaterFlowFractionCurve() const {
+Curve CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData::copFunctionofWaterFlowFractionCurve() const {
   return getImpl<detail::CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_Impl>()->cOPFunctionofWaterFlowFractionCurve();
+}
+
+Curve CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData::cOPFunctionofWaterFlowFractionCurve() const {
+  return copFunctionofWaterFlowFractionCurve();
 }
 
 bool CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData::setCOPFunctionofWaterFlowFractionCurve(const Curve& curve) {
@@ -424,6 +436,13 @@ std::vector<ModelObject> CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedDat
   return {totalWaterHeatingCapacityFunctionofTemperatureCurve(), totalWaterHeatingCapacityFunctionofAirFlowFractionCurve(),
           totalWaterHeatingCapacityFunctionofWaterFlowFractionCurve(), cOPFunctionofTemperatureCurve(),
           cOPFunctionofAirFlowFractionCurve(), cOPFunctionofWaterFlowFractionCurve()};
+}
+
+std::vector<IdfObject> CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_Impl::remove() {
+  if (auto currentParent = parent()) {
+    currentParent->removeSpeed(getObject<openstudio::epmodel::CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>());
+  }
+  return ParentObject_Impl::remove();
 }
 
 }  // namespace detail

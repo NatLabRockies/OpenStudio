@@ -115,6 +115,9 @@ namespace epmodel {
       boost::optional<double> autosizedRatedCondenserWaterFlowRate() const;
 
       std::vector<std::string> evaporatorAirTemperatureTypeforCurveObjectsValues() const;
+
+      std::vector<ModelObject> children() const override;
+      std::vector<IdfObject> remove() override;
     };
 
   }  // namespace detail

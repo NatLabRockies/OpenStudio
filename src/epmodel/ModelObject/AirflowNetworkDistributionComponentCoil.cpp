@@ -9,8 +9,11 @@
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/AirflowNetwork_Distribution_Component_Coil_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/IddFactory.hxx>
+#include <utilities/idd/IddObject.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -26,6 +29,19 @@ namespace epmodel {
     return IddObjectType::AirflowNetwork_Distribution_Component_Coil;
   }
 
+  std::vector<std::string> AirflowNetworkDistributionComponentCoil::coilObjectTypeValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::AirflowNetwork_Distribution_Component_CoilFields::CoilObjectType);
+  }
+
+  std::string AirflowNetworkDistributionComponentCoil::coilObjectType() const {
+    return getImpl<detail::AirflowNetworkDistributionComponentCoil_Impl>()->coilObjectType();
+  }
+
+  bool AirflowNetworkDistributionComponentCoil::setCoilObjectType(const std::string& coilObjectType) {
+    return getImpl<detail::AirflowNetworkDistributionComponentCoil_Impl>()->setCoilObjectType(coilObjectType);
+  }
+
   double AirflowNetworkDistributionComponentCoil::airPathLength() const {
     return getImpl<detail::AirflowNetworkDistributionComponentCoil_Impl>()->airPathLength();
   }
@@ -35,6 +51,20 @@ namespace epmodel {
   }
 
   namespace detail {
+
+    std::string AirflowNetworkDistributionComponentCoil_Impl::coilObjectType() const {
+      const auto value = getString(openstudio::AirflowNetwork_Distribution_Component_CoilFields::CoilObjectType, true);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool AirflowNetworkDistributionComponentCoil_Impl::setCoilObjectType(const std::string& coilObjectType) {
+      return setString(openstudio::AirflowNetwork_Distribution_Component_CoilFields::CoilObjectType, coilObjectType);
+    }
+
+    std::vector<std::string> AirflowNetworkDistributionComponentCoil_Impl::coilObjectTypeValues() const {
+      return openstudio::epmodel::AirflowNetworkDistributionComponentCoil::coilObjectTypeValues();
+    }
 
     double AirflowNetworkDistributionComponentCoil_Impl::airPathLength() const {
       const auto value = getDouble(openstudio::AirflowNetwork_Distribution_Component_CoilFields::AirPathLength, true);

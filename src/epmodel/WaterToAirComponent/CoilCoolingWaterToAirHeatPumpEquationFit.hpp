@@ -19,6 +19,7 @@ namespace epmodel {
   class Model;
   class Schedule;
   class Curve;
+  class AirflowNetworkDistributionComponentCoil;
 
   namespace detail {
     class CoilCoolingWaterToAirHeatPumpEquationFit_Impl;
@@ -46,13 +47,15 @@ namespace epmodel {
     // - Implemented Parity: `availabilitySchedule`, the three required curve relationships, `partLoadFractionCorrelationCurve`, the canonical
     //   constructors, the deprecated coefficient aliases that delegate through the stored curves, the scalar fit fields, and the autosized-value
     //   query helpers preserve the canonical public contract.
-    // - Documented Delta: `AirflowNetworkEquivalentDuct` helpers remain out of scope because `epmodel` does not yet have that wrapper family.
+    // - Implemented Parity: the canonical equivalent-duct helper surface lands on epmodel's
+    //   `AirflowNetworkDistributionComponentCoil`, which is the EnergyPlus object written by the
+    //   model-side `AirflowNetworkEquivalentDuct` translator path for coils.
     // - Field/Storage Mapping: Availability schedule and curve relationships are stored directly on the EnergyPlus
     //   `Coil:Cooling:WaterToAirHeatPump:EquationFit` object, and scalar fit fields map directly to the corresponding EnergyPlus fields.
     // - Evidence: `src/model/CoilCoolingWaterToAirHeatPumpEquationFit.hpp`, `src/model/CoilCoolingWaterToAirHeatPumpEquationFit.cpp`,
     //   `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingWaterToAirHeatPumpEquationFit.cpp`, and
     //   `src/epmodel/test/CoilCoolingWaterToAirHeatPumpEquationFit_GTest.cpp`.
-    // - Remaining Parity Work: Add the equivalent-duct helper surface when `epmodel` has first-class AirflowNetwork support.
+    // - Remaining Parity Work: Extend the same AFN mapping surface to the remaining water-to-air heat pump coil family wrappers when that campaign reaches them.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 
@@ -164,6 +167,9 @@ namespace epmodel {
 
     double fanDelayTime() const;
     bool setFanDelayTime(double fanDelayTime);
+
+    AirflowNetworkDistributionComponentCoil getAirflowNetworkEquivalentDuct(double length, double diameter);
+    boost::optional<AirflowNetworkDistributionComponentCoil> airflowNetworkEquivalentDuct() const;
 
    protected:
     using ImplType = detail::CoilCoolingWaterToAirHeatPumpEquationFit_Impl;

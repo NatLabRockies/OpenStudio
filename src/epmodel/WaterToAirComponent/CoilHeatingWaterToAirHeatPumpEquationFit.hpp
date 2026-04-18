@@ -19,6 +19,7 @@ namespace epmodel {
 class Model;
 class Schedule;
 class Curve;
+class AirflowNetworkDistributionComponentCoil;
 
 namespace detail {
 class CoilHeatingWaterToAirHeatPumpEquationFit_Impl;
@@ -46,8 +47,10 @@ class EPMODEL_API CoilHeatingWaterToAirHeatPumpEquationFit : public WaterToAirCo
   //   `partLoadFractionCorrelationCurve`, the canonical constructors, the deprecated coefficient aliases that delegate
   //   through the stored curves, the scalar fit fields, and the autosized-value query helpers preserve the canonical
   //   public contract.
-  // - Documented Delta: `AirflowNetworkEquivalentDuct` helpers remain out of scope because `epmodel` does not yet have
-  //   that wrapper family. Autosized-value query helpers currently return `none`, which is the same documented
+  // - Implemented Parity: the canonical equivalent-duct helper surface lands on epmodel's
+  //   `AirflowNetworkDistributionComponentCoil`, which is the EnergyPlus object written by the
+  //   model-side `AirflowNetworkEquivalentDuct` translator path for coils.
+  // - Documented Delta: Autosized-value query helpers currently return `none`, which is the same documented
   //   limitation already used by the nearby equation-fit cooling coil until epmodel grows canonical SQL-backed
   //   autosized results.
   // - Field/Storage Mapping: Availability schedule and curve relationships are stored directly on the EnergyPlus
@@ -57,8 +60,8 @@ class EPMODEL_API CoilHeatingWaterToAirHeatPumpEquationFit : public WaterToAirCo
   //   `src/model/CoilHeatingWaterToAirHeatPumpEquationFit.cpp`,
   //   `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingWaterToAirHeatPumpEquationFit.cpp`, and
   //   `src/epmodel/test/CoilHeatingWaterToAirHeatPumpEquationFit_GTest.cpp`.
-  // - Remaining Parity Work: Add the equivalent-duct helper surface when `epmodel` has first-class AirflowNetwork
-  //   support.
+  // - Remaining Parity Work: Extend the same AFN mapping surface to the remaining water-to-air heat pump coil family
+  //   wrappers when that campaign reaches them.
   Schedule availabilitySchedule() const;
   bool setAvailabilitySchedule(Schedule& schedule);
 
@@ -131,6 +134,9 @@ class EPMODEL_API CoilHeatingWaterToAirHeatPumpEquationFit : public WaterToAirCo
 
   double ratioofRatedHeatingCapacitytoRatedCoolingCapacity() const;
   bool setRatioofRatedHeatingCapacitytoRatedCoolingCapacity(double ratioofRatedHeatingCapacitytoRatedCoolingCapacity);
+
+  AirflowNetworkDistributionComponentCoil getAirflowNetworkEquivalentDuct(double length, double diameter);
+  boost::optional<AirflowNetworkDistributionComponentCoil> airflowNetworkEquivalentDuct() const;
 
  protected:
   using ImplType = detail::CoilHeatingWaterToAirHeatPumpEquationFit_Impl;

@@ -18,6 +18,8 @@
 #include "ZoneHVACComponent/ZoneHVACComponent.hpp"
 #include "ZoneHVACComponent/ZoneHVACComponent_Impl.hpp"
 
+#include <utilities/data/DataEnums.hpp>
+
 #include <algorithm>
 namespace openstudio {
 namespace epmodel {
@@ -70,6 +72,22 @@ namespace epmodel {
 
   std::vector<IdfObject> HVACComponent::remove() {
     return getImpl<detail::HVACComponent_Impl>()->remove();
+  }
+
+  ComponentType HVACComponent::componentType() const {
+    return getImpl<detail::HVACComponent_Impl>()->componentType();
+  }
+
+  std::vector<FuelType> HVACComponent::coolingFuelTypes() const {
+    return getImpl<detail::HVACComponent_Impl>()->coolingFuelTypes();
+  }
+
+  std::vector<FuelType> HVACComponent::heatingFuelTypes() const {
+    return getImpl<detail::HVACComponent_Impl>()->heatingFuelTypes();
+  }
+
+  std::vector<AppGFuelType> HVACComponent::appGHeatingFuelTypes() const {
+    return getImpl<detail::HVACComponent_Impl>()->appGHeatingFuelTypes();
   }
 
   namespace detail {
@@ -161,6 +179,22 @@ namespace epmodel {
       }
       disconnect();
       return ParentObject_Impl::remove();
+    }
+
+    openstudio::ComponentType HVACComponent_Impl::componentType() const {
+      return openstudio::ComponentType();
+    }
+
+    std::vector<openstudio::FuelType> HVACComponent_Impl::coolingFuelTypes() const {
+      return {};
+    }
+
+    std::vector<openstudio::FuelType> HVACComponent_Impl::heatingFuelTypes() const {
+      return {};
+    }
+
+    std::vector<openstudio::AppGFuelType> HVACComponent_Impl::appGHeatingFuelTypes() const {
+      return {};
     }
 
   }  // namespace detail

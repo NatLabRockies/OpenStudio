@@ -15,6 +15,7 @@ namespace epmodel {
   class Schedule;
   class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit;
   class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData;
+  class AirflowNetworkDistributionComponentCoil;
 
 namespace detail {
 
@@ -64,9 +65,13 @@ class EPMODEL_API CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl : p
   void removeSpeed(const CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData& speed);
   void removeAllSpeeds();
 
-  std::vector<ModelObject> children() const override;
+  AirflowNetworkDistributionComponentCoil getAirflowNetworkEquivalentDuct(double length, double diameter);
+  boost::optional<AirflowNetworkDistributionComponentCoil> airflowNetworkEquivalentDuct() const;
 
-  void setConstructorSharedDefaults(const Model& model);
+  std::vector<ModelObject> children() const override;
+  std::vector<IdfObject> remove() override;
+
+  void setConstructorFieldDefaults();
 };
 
 }  // namespace detail

@@ -16,6 +16,11 @@
 #include <vector>
 
 namespace openstudio {
+
+class AppGFuelType;
+class ComponentType;
+class FuelType;
+
 namespace epmodel {
 
   class AirLoopHVAC;
@@ -41,10 +46,13 @@ namespace epmodel {
     HVACComponent& operator=(HVACComponent&&) = default;
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. Core loop-membership, containment, connection-mutation, and removability APIs are present, but the canonical HVACComponent surface is still narrower in epmodel.
+    // - Status: Partial Parity. Core loop-membership, containment, connection-mutation, removability, and component/fuel-type helper APIs are present,
+    //   but the canonical HVACComponent surface is still narrower in epmodel.
     // - Canonical Counterpart: openstudio::model::HVACComponent.
-    // - Implemented Parity: `loop`, `airLoopHVAC`, `plantLoop`, `containingHVACComponent`, `containingZoneHVACComponent`, `addToNode`, `addToSplitter`, `disconnect`, `isRemovable`, and `remove` preserve the canonical model-facing topology contract.
-    // - Documented Delta: Public parity stops short of exposing `airLoopHVACOutdoorAirSystem`, `containingStraightComponent`, autosizing/apply-sizing helpers, and component/fuel-type helpers because epmodel topology coverage is not broad enough to support them with canonical semantics yet.
+    // - Implemented Parity: `loop`, `airLoopHVAC`, `plantLoop`, `containingHVACComponent`, `containingZoneHVACComponent`, `addToNode`, `addToSplitter`,
+    //   `disconnect`, `isRemovable`, `remove`, and the component/fuel-type helper accessors preserve the canonical model-facing topology contract.
+    // - Documented Delta: Public parity still stops short of exposing `airLoopHVACOutdoorAirSystem`, `containingStraightComponent`,
+    //   and autosizing/apply-sizing helpers because epmodel topology coverage is not broad enough to support them with canonical semantics yet.
     // - Field/Storage Mapping: Relationship queries are resolved from EnergyPlus-backed loop topology and transient epmodel connective-tissue objects rather than OpenStudio's `Connection`-based storage model.
     // - Evidence: `src/model/HVACComponent.hpp` and `src/model/HVACComponent.cpp` define the canonical surface and topology behavior that this wrapper is matching selectively.
     // - Remaining Parity Work: Add the omitted outdoor-air-system, containing-straight-component, sizing, and component/fuel-type APIs once topology and containment coverage can support canonical behavior.
@@ -66,10 +74,10 @@ namespace epmodel {
     std::vector<IdfObject> remove();
     // void autosize();
     // void applySizingValues();
-    // ComponentType componentType() const;
-    // std::vector<FuelType> coolingFuelTypes() const;
-    // std::vector<FuelType> heatingFuelTypes() const;
-    // std::vector<AppGFuelType> appGHeatingFuelTypes() const;
+    ComponentType componentType() const;
+    std::vector<FuelType> coolingFuelTypes() const;
+    std::vector<FuelType> heatingFuelTypes() const;
+    std::vector<AppGFuelType> appGHeatingFuelTypes() const;
 
    protected:
     HVACComponent(IddObjectType type, const Model& model, bool fastName = false, bool isTransient = false);

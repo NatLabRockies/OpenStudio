@@ -12,6 +12,8 @@
 #include "Curve/CurveLinear.hpp"
 #include "Curve/CurveQuadratic.hpp"
 #include "Model.hpp"
+#include "ModelObject/AirflowNetworkDistributionComponentCoil.hpp"
+#include "ModelObject/AirflowNetworkDistributionComponentCoil_Impl.hpp"
 #include "ParentObject/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData.hpp"
 #include "ParentObject/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData_Impl.hpp"
 #include "Schedule/Schedule.hpp"
@@ -19,6 +21,7 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/idd/AirflowNetwork_Distribution_Component_Coil_FieldEnums.hxx>
 #include <utilities/idd/Coil_Cooling_WaterToAirHeatPump_VariableSpeedEquationFit_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
@@ -32,7 +35,15 @@ CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit::CoilCoolingWaterToAirHeat
   : WaterToAirComponent(CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit::iddObjectType(), model) {
   auto alwaysOn = model.alwaysOnDiscreteSchedule();
   OS_ASSERT(setAvailabilitySchedule(alwaysOn));
-  getImpl<detail::CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()->setConstructorSharedDefaults(model);
+  getImpl<detail::CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()->setConstructorScalarDefaults();
+
+  CurveQuadratic partLoadFraction(model);
+  OS_ASSERT(partLoadFraction.setCoefficient1Constant(0.85));
+  OS_ASSERT(partLoadFraction.setCoefficient2x(0.15));
+  OS_ASSERT(partLoadFraction.setCoefficient3xPOW2(0.0));
+  OS_ASSERT(partLoadFraction.setMinimumValueofx(0.0));
+  OS_ASSERT(partLoadFraction.setMaximumValueofx(1.0));
+  OS_ASSERT(setEnergyPartLoadFractionCurve(partLoadFraction));
 }
 
 CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit::CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit(
@@ -40,7 +51,7 @@ CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit::CoilCoolingWaterToAirHeat
   : WaterToAirComponent(CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit::iddObjectType(), model) {
   auto alwaysOn = model.alwaysOnDiscreteSchedule();
   OS_ASSERT(setAvailabilitySchedule(alwaysOn));
-  getImpl<detail::CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()->setConstructorSharedDefaults(model);
+  getImpl<detail::CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()->setConstructorScalarDefaults();
   OS_ASSERT(setEnergyPartLoadFractionCurve(partLoadFraction));
 }
 
@@ -220,6 +231,15 @@ void CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit::removeAllSpeeds() {
   getImpl<detail::CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()->removeAllSpeeds();
 }
 
+AirflowNetworkDistributionComponentCoil CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit::getAirflowNetworkEquivalentDuct(double length,
+                                                                                                                             double diameter) {
+  return getImpl<detail::CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()->getAirflowNetworkEquivalentDuct(length, diameter);
+}
+
+boost::optional<AirflowNetworkDistributionComponentCoil> CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit::airflowNetworkEquivalentDuct() const {
+  return getImpl<detail::CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()->airflowNetworkEquivalentDuct();
+}
+
 std::vector<ModelObject> CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit::children() const {
   return getImpl<detail::CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl>()->children();
 }
@@ -235,6 +255,16 @@ namespace {
 
 using Fields = openstudio::Coil_Cooling_WaterToAirHeatPump_VariableSpeedEquationFitFields;
 using ExtensibleFields = openstudio::Coil_Cooling_WaterToAirHeatPump_VariableSpeedEquationFitExtensibleFields;
+
+std::vector<AirflowNetworkDistributionComponentCoil> attachedAirflowNetworkDistributionComponentCoils(const ModelObject& object) {
+  std::vector<AirflowNetworkDistributionComponentCoil> result;
+  for (const auto& source : object.getSources(AirflowNetworkDistributionComponentCoil::iddObjectType())) {
+    if (auto afnComponent = source.optionalCast<AirflowNetworkDistributionComponentCoil>()) {
+      result.push_back(*afnComponent);
+    }
+  }
+  return result;
+}
 
 // Transient speed-data wrappers are keyed by parent handle plus row index so
 // repeated `speeds()` calls can recover the same wrapper objects.
@@ -549,14 +579,71 @@ void CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::removeAllSpeeds
 
 std::vector<ModelObject> CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::children() const {
   std::vector<ModelObject> result;
-  result.push_back(energyPartLoadFractionCurve());
   for (const auto& speed : speeds()) {
     result.push_back(speed);
+  }
+  result.push_back(energyPartLoadFractionCurve());
+  for (const auto& afnComponent : attachedAirflowNetworkDistributionComponentCoils(getObject<ModelObject>())) {
+    result.push_back(afnComponent);
   }
   return result;
 }
 
-void CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::setConstructorSharedDefaults(const Model& model) {
+std::vector<IdfObject> CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::remove() {
+  if (!isRemovable()) {
+    return {};
+  }
+
+  auto speedWrappers = speeds();
+  for (auto& speed : speedWrappers) {
+    speed.remove();
+  }
+
+  for (auto& afnComponent : attachedAirflowNetworkDistributionComponentCoils(getObject<ModelObject>())) {
+    afnComponent.remove();
+  }
+
+  return WaterToAirComponent_Impl::remove();
+}
+
+AirflowNetworkDistributionComponentCoil CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::getAirflowNetworkEquivalentDuct(double length,
+                                                                                                                                     double diameter) {
+  constexpr const char* coilObjectType = "Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit";
+  if (auto component = airflowNetworkEquivalentDuct()) {
+    if (!openstudio::istringEqual(component->coilObjectType(), coilObjectType)) {
+      OS_ASSERT(component->setCoilObjectType(coilObjectType));
+    }
+    if (component->airPathLength() != length) {
+      component->setAirPathLength(length);
+    }
+    if (component->airPathHydraulicDiameter() != diameter) {
+      component->setAirPathHydraulicDiameter(diameter);
+    }
+    return *component;
+  }
+
+  AirflowNetworkDistributionComponentCoil component(model());
+  OS_ASSERT(component.setPointer(openstudio::AirflowNetwork_Distribution_Component_CoilFields::CoilName, handle()));
+  OS_ASSERT(component.setCoilObjectType(coilObjectType));
+  OS_ASSERT(component.setAirPathLength(length));
+  OS_ASSERT(component.setAirPathHydraulicDiameter(diameter));
+  return component;
+}
+
+boost::optional<AirflowNetworkDistributionComponentCoil> CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::airflowNetworkEquivalentDuct() const {
+  auto afnComponents = attachedAirflowNetworkDistributionComponentCoils(getObject<ModelObject>());
+  if (afnComponents.size() == 1u) {
+    return afnComponents.front();
+  }
+  if (afnComponents.size() > 1u) {
+    LOG_FREE(Warn, "openstudio.epmodel.CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit",
+             briefDescription() << " has more than one AirflowNetwork distribution component coil attached, returning first.");
+    return afnComponents.front();
+  }
+  return boost::none;
+}
+
+void CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::setConstructorScalarDefaults() {
   OS_ASSERT(setNominalSpeedLevel(1));
   autosizeGrossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevel();
   autosizeRatedAirFlowRateAtSelectedNominalSpeedLevel();
@@ -568,13 +655,6 @@ void CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl::setConstructorS
   OS_ASSERT(setFanDelayTime(60.0));
   OS_ASSERT(setUseHotGasReheat(false));
   OS_ASSERT(setString(Fields::NumberofSpeeds, ""));
-
-  CurveLinear partLoadFraction(model);
-  OS_ASSERT(partLoadFraction.setCoefficient1Constant(0.85));
-  OS_ASSERT(partLoadFraction.setCoefficient2x(0.15));
-  OS_ASSERT(partLoadFraction.setMinimumValueofx(0.0));
-  OS_ASSERT(partLoadFraction.setMaximumValueofx(1.0));
-  OS_ASSERT(setEnergyPartLoadFractionCurve(partLoadFraction));
 }
 
 }  // namespace detail

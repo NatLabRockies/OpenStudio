@@ -19,6 +19,10 @@ class EPMODEL_API AirflowNetworkDistributionComponentCoil_Impl : public ModelObj
   using ModelObject_Impl::ModelObject_Impl;
   virtual ~AirflowNetworkDistributionComponentCoil_Impl() override = default;
 
+  std::string coilObjectType() const;
+  bool setCoilObjectType(const std::string& coilObjectType);
+  std::vector<std::string> coilObjectTypeValues() const;
+
   double airPathLength() const;
   bool setAirPathLength(double airPathLength);
 

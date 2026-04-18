@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../ModelObject/AirflowNetworkDistributionComponentCoil.hpp"
 #include "../Curve/CurveLinear.hpp"
 #include "../Curve/CurveLinear_Impl.hpp"
 #include "../Curve/CurveQuadLinear.hpp"
@@ -137,6 +138,13 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpEquationFit_ScalarAccessors_
   Model model;
   CoilCoolingWaterToAirHeatPumpEquationFit coil(model);
 
+  EXPECT_DOUBLE_EQ(30.0, coil.ratedEnteringWaterTemperature());
+  EXPECT_DOUBLE_EQ(27.0, coil.ratedEnteringAirDryBulbTemperature());
+  EXPECT_DOUBLE_EQ(19.0, coil.ratedEnteringAirWetBulbTemperature());
+  EXPECT_DOUBLE_EQ(2.5, coil.maximumCyclingRate());
+  EXPECT_DOUBLE_EQ(60.0, coil.latentCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(60.0, coil.fanDelayTime());
+
   EXPECT_TRUE(coil.setRatedAirFlowRate(0.74));
   ASSERT_TRUE(coil.ratedAirFlowRate());
   EXPECT_DOUBLE_EQ(0.74, coil.ratedAirFlowRate().get());
@@ -205,12 +213,44 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpEquationFit_ScalarAccessors_
 
   EXPECT_TRUE(coil.setMaximumCyclingRate(2.7));
   EXPECT_DOUBLE_EQ(2.7, coil.maximumCyclingRate());
+  EXPECT_FALSE(coil.setMaximumCyclingRate(-1.0));
+  EXPECT_DOUBLE_EQ(2.7, coil.maximumCyclingRate());
 
   EXPECT_TRUE(coil.setLatentCapacityTimeConstant(60.0));
+  EXPECT_DOUBLE_EQ(60.0, coil.latentCapacityTimeConstant());
+  EXPECT_FALSE(coil.setLatentCapacityTimeConstant(-1.0));
   EXPECT_DOUBLE_EQ(60.0, coil.latentCapacityTimeConstant());
 
   EXPECT_TRUE(coil.setFanDelayTime(100.0));
   EXPECT_DOUBLE_EQ(100.0, coil.fanDelayTime());
+  EXPECT_FALSE(coil.setFanDelayTime(-1.0));
+  EXPECT_DOUBLE_EQ(100.0, coil.fanDelayTime());
+}
+
+TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpEquationFit_AirflowNetworkEquivalentDuctRoundTrip) {
+  Model model;
+  CoilCoolingWaterToAirHeatPumpEquationFit coil(model);
+
+  EXPECT_FALSE(coil.airflowNetworkEquivalentDuct());
+
+  auto afnComponent = coil.getAirflowNetworkEquivalentDuct(1.25, 0.41);
+  EXPECT_EQ(AirflowNetworkDistributionComponentCoil::iddObjectType(), afnComponent.iddObject().type());
+  EXPECT_EQ("Coil:Cooling:WaterToAirHeatPump:EquationFit", afnComponent.coilObjectType());
+  EXPECT_DOUBLE_EQ(1.25, afnComponent.airPathLength());
+  EXPECT_DOUBLE_EQ(0.41, afnComponent.airPathHydraulicDiameter());
+
+  auto attached = coil.airflowNetworkEquivalentDuct();
+  ASSERT_TRUE(attached);
+  EXPECT_EQ(afnComponent.handle(), attached->handle());
+
+  const auto children = coil.children();
+  ASSERT_EQ(1u, children.size());
+  EXPECT_EQ(afnComponent.handle(), children.front().handle());
+
+  auto updated = coil.getAirflowNetworkEquivalentDuct(2.5, 0.82);
+  EXPECT_EQ(afnComponent.handle(), updated.handle());
+  EXPECT_DOUBLE_EQ(2.5, updated.airPathLength());
+  EXPECT_DOUBLE_EQ(0.82, updated.airPathHydraulicDiameter());
 }
 
 TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpEquationFit_AddToNodeRejectsOutboardOANode) {

@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../ModelObject/AirflowNetworkDistributionComponentCoil.hpp"
 #include "../Curve/CurveBiquadratic.hpp"
 #include "../Curve/CurveBiquadratic_Impl.hpp"
 #include "../Curve/CurveLinear.hpp"
@@ -40,9 +41,27 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Def
   EXPECT_FALSE(coil.waterOutletModelObject());
 
   EXPECT_EQ(model.alwaysOnDiscreteSchedule(), coil.availabilitySchedule());
-  EXPECT_TRUE(coil.energyPartLoadFractionCurve().optionalCast<CurveLinear>());
-  EXPECT_TRUE(coil.children().size() == 1u);
+  EXPECT_EQ(1, coil.nominalSpeedLevel());
+  EXPECT_TRUE(coil.isGrossRatedTotalCoolingCapacityAtSelectedNominalSpeedLevelAutosized());
+  EXPECT_TRUE(coil.isRatedAirFlowRateAtSelectedNominalSpeedLevelAutosized());
+  EXPECT_TRUE(coil.isRatedWaterFlowRateAtSelectedNominalSpeedLevelAutosized());
+  EXPECT_DOUBLE_EQ(0.0, coil.nominalTimeforCondensatetoBeginLeavingtheCoil());
+  EXPECT_DOUBLE_EQ(0.0, coil.initialMoistureEvaporationRateDividedbySteadyStateACLatentCapacity());
+  EXPECT_DOUBLE_EQ(2.5, coil.maximumCyclingRate());
+  EXPECT_DOUBLE_EQ(60.0, coil.latentCapacityTimeConstant());
+  EXPECT_DOUBLE_EQ(60.0, coil.fanDelayTime());
+  EXPECT_FALSE(coil.useHotGasReheat());
+  auto partLoadFractionCurve = coil.energyPartLoadFractionCurve().cast<CurveQuadratic>();
+  EXPECT_DOUBLE_EQ(0.85, partLoadFractionCurve.coefficient1Constant());
+  EXPECT_DOUBLE_EQ(0.15, partLoadFractionCurve.coefficient2x());
+  EXPECT_DOUBLE_EQ(0.0, partLoadFractionCurve.coefficient3xPOW2());
+  EXPECT_DOUBLE_EQ(0.0, partLoadFractionCurve.minimumValueofx());
+  EXPECT_DOUBLE_EQ(1.0, partLoadFractionCurve.maximumValueofx());
+  const auto children = coil.children();
+  ASSERT_EQ(1u, children.size());
+  EXPECT_EQ(coil.energyPartLoadFractionCurve().handle(), children.front().handle());
   EXPECT_TRUE(coil.speeds().empty());
+  EXPECT_FALSE(coil.airflowNetworkEquivalentDuct());
 }
 
 TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_CurveConstructorAndSetterRoundTrip) {
@@ -52,12 +71,16 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Cur
   CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit coil(model, partLoadFraction);
 
   EXPECT_EQ(partLoadFraction, coil.energyPartLoadFractionCurve());
+  EXPECT_EQ(1u, model.getConcreteModelObjects<CurveLinear>().size());
+  EXPECT_TRUE(model.getConcreteModelObjects<CurveQuadratic>().empty());
   EXPECT_TRUE(coil.setAvailabilitySchedule(availability));
   EXPECT_EQ(availability, coil.availabilitySchedule());
 
   CurveLinear replacement(model);
   EXPECT_TRUE(coil.setEnergyPartLoadFractionCurve(replacement));
   EXPECT_EQ(replacement, coil.energyPartLoadFractionCurve());
+  EXPECT_EQ(2u, model.getConcreteModelObjects<CurveLinear>().size());
+  EXPECT_TRUE(model.getConcreteModelObjects<CurveQuadratic>().empty());
 }
 
 TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_ScalarAccessors_RoundTrip) {
@@ -99,11 +122,17 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Sca
 
   EXPECT_TRUE(coil.setMaximumCyclingRate(2.7));
   EXPECT_DOUBLE_EQ(2.7, coil.maximumCyclingRate());
+  EXPECT_FALSE(coil.setMaximumCyclingRate(-1.0));
+  EXPECT_DOUBLE_EQ(2.7, coil.maximumCyclingRate());
 
   EXPECT_TRUE(coil.setLatentCapacityTimeConstant(60.0));
   EXPECT_DOUBLE_EQ(60.0, coil.latentCapacityTimeConstant());
+  EXPECT_FALSE(coil.setLatentCapacityTimeConstant(-1.0));
+  EXPECT_DOUBLE_EQ(60.0, coil.latentCapacityTimeConstant());
 
   EXPECT_TRUE(coil.setFanDelayTime(100.0));
+  EXPECT_DOUBLE_EQ(100.0, coil.fanDelayTime());
+  EXPECT_FALSE(coil.setFanDelayTime(-1.0));
   EXPECT_DOUBLE_EQ(100.0, coil.fanDelayTime());
 
   EXPECT_TRUE(coil.setUseHotGasReheat(true));
@@ -124,7 +153,11 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Spe
   ASSERT_EQ(2u, coil.speeds().size());
   EXPECT_EQ(speed.handle(), coil.speeds()[0].handle());
   EXPECT_EQ(speed2.handle(), coil.speeds()[1].handle());
-  EXPECT_EQ(3u, coil.children().size());
+  const auto children = coil.children();
+  ASSERT_EQ(3u, children.size());
+  EXPECT_EQ(speed.handle(), children[0].handle());
+  EXPECT_EQ(speed2.handle(), children[1].handle());
+  EXPECT_EQ(coil.energyPartLoadFractionCurve().handle(), children[2].handle());
   EXPECT_TRUE(speed2.setReferenceUnitGrossRatedCoolingCOP(5.6));
   EXPECT_DOUBLE_EQ(5.6, coil.speeds()[1].referenceUnitGrossRatedCoolingCOP());
 
@@ -143,7 +176,65 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Spe
 
   coil.removeSpeed(coil.speeds().front());
   EXPECT_TRUE(coil.speeds().empty());
-  EXPECT_EQ(1u, coil.children().size());
+  const auto finalChildren = coil.children();
+  ASSERT_EQ(1u, finalChildren.size());
+  EXPECT_EQ(coil.energyPartLoadFractionCurve().handle(), finalChildren.front().handle());
+}
+
+TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_AirflowNetworkEquivalentDuctRoundTrip) {
+  Model model;
+  CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit coil(model);
+
+  EXPECT_FALSE(coil.airflowNetworkEquivalentDuct());
+
+  auto afnComponent = coil.getAirflowNetworkEquivalentDuct(1.25, 0.41);
+  EXPECT_EQ(AirflowNetworkDistributionComponentCoil::iddObjectType(), afnComponent.iddObject().type());
+  EXPECT_EQ("Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit", afnComponent.coilObjectType());
+  EXPECT_DOUBLE_EQ(1.25, afnComponent.airPathLength());
+  EXPECT_DOUBLE_EQ(0.41, afnComponent.airPathHydraulicDiameter());
+
+  auto attached = coil.airflowNetworkEquivalentDuct();
+  ASSERT_TRUE(attached);
+  EXPECT_EQ(afnComponent.handle(), attached->handle());
+
+  EXPECT_TRUE(afnComponent.setCoilObjectType("Coil:Heating:WaterToAirHeatPump:EquationFit"));
+
+  const auto children = coil.children();
+  ASSERT_EQ(2u, children.size());
+  EXPECT_EQ(coil.energyPartLoadFractionCurve().handle(), children[0].handle());
+  EXPECT_EQ(afnComponent.handle(), children[1].handle());
+
+  auto updated = coil.getAirflowNetworkEquivalentDuct(2.5, 0.82);
+  EXPECT_EQ(afnComponent.handle(), updated.handle());
+  EXPECT_EQ("Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit", updated.coilObjectType());
+  EXPECT_DOUBLE_EQ(2.5, updated.airPathLength());
+  EXPECT_DOUBLE_EQ(0.82, updated.airPathHydraulicDiameter());
+
+  auto reattached = coil.airflowNetworkEquivalentDuct();
+  ASSERT_TRUE(reattached);
+  EXPECT_EQ(afnComponent.handle(), reattached->handle());
+  EXPECT_DOUBLE_EQ(2.5, reattached->airPathLength());
+  EXPECT_DOUBLE_EQ(0.82, reattached->airPathHydraulicDiameter());
+}
+
+
+TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_RemoveCleansUpAttachedTransientSpeeds) {
+  Model model;
+  CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit coil(model);
+  CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData speed1(model);
+  CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData speed2(model);
+  coil.getAirflowNetworkEquivalentDuct(1.25, 0.41);
+
+  ASSERT_TRUE(coil.addSpeed(speed1));
+  ASSERT_TRUE(coil.addSpeed(speed2));
+  ASSERT_EQ(2u, coil.speeds().size());
+  EXPECT_EQ(2u, model.getConcreteModelObjects<CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData>(true).size());
+  EXPECT_EQ(1u, model.getConcreteModelObjects<AirflowNetworkDistributionComponentCoil>().size());
+
+  coil.remove();
+
+  EXPECT_TRUE(model.getConcreteModelObjects<CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData>(true).empty());
+  EXPECT_TRUE(model.getConcreteModelObjects<AirflowNetworkDistributionComponentCoil>().empty());
 }
 
 TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_AvailabilityScheduleGetterRepairsMissingRequiredReference) {

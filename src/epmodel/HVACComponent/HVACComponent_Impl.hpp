@@ -12,6 +12,11 @@
 #include <vector>
 
 namespace openstudio {
+
+class AppGFuelType;
+class ComponentType;
+class FuelType;
+
 namespace epmodel {
 class Node;
 class AirLoopHVAC;
@@ -39,6 +44,10 @@ class EPMODEL_API HVACComponent_Impl : public ParentObject_Impl
   virtual void disconnect();
   virtual bool isRemovable() const;
   virtual std::vector<IdfObject> remove();
+  virtual openstudio::ComponentType componentType() const;
+  virtual std::vector<openstudio::FuelType> coolingFuelTypes() const;
+  virtual std::vector<openstudio::FuelType> heatingFuelTypes() const;
+  virtual std::vector<openstudio::AppGFuelType> appGHeatingFuelTypes() const;
 };
 
 }  // namespace detail

@@ -13,7 +13,9 @@ namespace epmodel {
 
 class Curve;
 class Model;
+class ModelObject;
 class Schedule;
+class AirflowNetworkDistributionComponentCoil;
 
 namespace detail {
 
@@ -80,6 +82,11 @@ class EPMODEL_API CoilHeatingWaterToAirHeatPumpEquationFit_Impl : public WaterTo
 
   double ratioofRatedHeatingCapacitytoRatedCoolingCapacity() const;
   bool setRatioofRatedHeatingCapacitytoRatedCoolingCapacity(double ratioofRatedHeatingCapacitytoRatedCoolingCapacity);
+
+  std::vector<ModelObject> children() const override;
+
+  AirflowNetworkDistributionComponentCoil getAirflowNetworkEquivalentDuct(double length, double diameter);
+  boost::optional<AirflowNetworkDistributionComponentCoil> airflowNetworkEquivalentDuct() const;
 
   void setConstructorSharedDefaults(const Model& model);
 };

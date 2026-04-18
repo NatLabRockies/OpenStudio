@@ -48,12 +48,12 @@ namespace epmodel {
     static std::vector<std::string> evaporatorAirTemperatureTypeforCurveObjectsValues();
 
     // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical schedule, curve, constructor, and autosized-query
-    //   surface is preserved here.
+    // - Status: Parity with documented deltas. The canonical constructor, field-level getter/setter, required
+    //   schedule-repair, and curve-ownership surface is preserved here.
     // - Canonical Counterpart: openstudio::model::CoilWaterHeatingAirToWaterHeatPump.
-    // - Implemented Parity: `availabilitySchedule`, the seven required curve relationships, the canonical
-    //   constructors, the scalar rating getters/setters, pump/fan flags, and the flow autosize helpers preserve the
-    //   canonical public contract.
+    // - Implemented Parity: `availabilitySchedule`, the seven required curve relationships plus the optional
+    //   crankcase-heater curve when attached, the canonical constructors, the scalar rating getters/setters,
+    //   pump/fan flags, and the flow autosize-state helpers preserve the canonical field contract.
     // - Documented Delta: epmodel promotes this wrapper to `WaterToAirComponent` so the real evaporator-air and condenser-water ports are explicit. This is an additive hierarchy change compared to canonical model.
     // - Documented Delta: Despite the base-class promotion, generic loop-placement APIs remain intentionally rejected because this coil is normally owned by a compound heat-pump water-heater parent.
     // - Documented Delta: Autosized-value query helpers currently return `none`. That matches the documented pattern

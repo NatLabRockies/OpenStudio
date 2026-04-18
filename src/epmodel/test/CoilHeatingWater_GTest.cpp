@@ -5,13 +5,19 @@
 
 #include <gtest/gtest.h>
 
+#include <utilities/idd/AirflowNetwork_Distribution_Component_Coil_FieldEnums.hxx>
+#include <utilities/idd/Coil_Heating_Water_FieldEnums.hxx>
 #include <utilities/idd/Controller_WaterCoil_FieldEnums.hxx>
 
 #include "EPModelFixture.hpp"
+#include "../ModelObject/AirflowNetworkDistributionComponentCoil.hpp"
+#include "../ModelObject/AirflowNetworkDistributionComponentCoil_Impl.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../HVACComponent/ControllerWaterCoil.hpp"
+#include "../HVACComponent/ControllerWaterCoil_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../Schedule/Schedule.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
@@ -50,6 +56,10 @@ TEST_F(EPModelFixture, CoilHeatingWater_ScheduleConstructorAndSetter) {
 TEST_F(EPModelFixture, CoilHeatingWater_ScalarAccessors_RoundTrip) {
   Model model;
   CoilHeatingWater coil(model);
+
+  EXPECT_EQ(std::vector<std::string>({"UFactorTimesAreaAndDesignWaterFlowRate", "NominalCapacity"}),
+            CoilHeatingWater::performanceInputMethodValues());
+  EXPECT_EQ("UFactorTimesAreaAndDesignWaterFlowRate", coil.performanceInputMethod());
 
   EXPECT_TRUE(coil.setUFactorTimesAreaValue(512.0));
   ASSERT_TRUE(coil.uFactorTimesAreaValue());
@@ -92,6 +102,9 @@ TEST_F(EPModelFixture, CoilHeatingWater_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(coil.setRatedRatioForAirAndWaterConvection(0.45));
   EXPECT_DOUBLE_EQ(0.45, coil.ratedRatioForAirAndWaterConvection());
+
+  EXPECT_FALSE(coil.setPerformanceInputMethod("InvalidPerformanceInputMethod"));
+  EXPECT_EQ("NominalCapacity", coil.performanceInputMethod());
 }
 
 TEST_F(EPModelFixture, CoilHeatingWater_AddToNodeSupportsOutboardOANode) {
@@ -140,4 +153,97 @@ TEST_F(EPModelFixture, CoilHeatingWater_ControllerWaterCoil_IsInferredFromLoopNo
 
   ASSERT_TRUE(plantLoop.removeDemandBranchWithComponent(coil));
   EXPECT_FALSE(coil.controllerWaterCoil());
+}
+
+TEST_F(EPModelFixture, CoilHeatingWater_RemoveCleansUpAttachedControllerWaterCoil) {
+  Model model;
+  CoilHeatingWater coil(model);
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coil.addToNode(supplyOutletNode));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil));
+  ASSERT_EQ(1u, model.getConcreteModelObjects<ControllerWaterCoil>().size());
+
+  coil.remove();
+
+  EXPECT_TRUE(model.getConcreteModelObjects<ControllerWaterCoil>().empty());
+}
+
+TEST_F(EPModelFixture, CoilHeatingWater_AirflowNetworkEquivalentDuctRoundTrip) {
+  Model model;
+  CoilHeatingWater coil(model);
+
+  EXPECT_FALSE(coil.airflowNetworkEquivalentDuct());
+
+  auto afnComponent = coil.getAirflowNetworkEquivalentDuct(1.25, 0.41);
+  EXPECT_EQ(AirflowNetworkDistributionComponentCoil::iddObjectType(), afnComponent.iddObject().type());
+  EXPECT_EQ("Coil:Heating:Water", afnComponent.coilObjectType());
+  EXPECT_DOUBLE_EQ(1.25, afnComponent.airPathLength());
+  EXPECT_DOUBLE_EQ(0.41, afnComponent.airPathHydraulicDiameter());
+
+  auto attached = coil.airflowNetworkEquivalentDuct();
+  ASSERT_TRUE(attached);
+  EXPECT_EQ(afnComponent.handle(), attached->handle());
+
+  EXPECT_TRUE(afnComponent.setCoilObjectType("Coil:Cooling:WaterToAirHeatPump:EquationFit"));
+
+  const auto children = coil.children();
+  ASSERT_EQ(1u, children.size());
+  EXPECT_EQ(afnComponent.handle(), children.front().handle());
+
+  auto updated = coil.getAirflowNetworkEquivalentDuct(2.5, 0.82);
+  EXPECT_EQ(afnComponent.handle(), updated.handle());
+  EXPECT_EQ("Coil:Heating:Water", updated.coilObjectType());
+  EXPECT_DOUBLE_EQ(2.5, updated.airPathLength());
+  EXPECT_DOUBLE_EQ(0.82, updated.airPathHydraulicDiameter());
+}
+
+TEST_F(EPModelFixture, CoilHeatingWater_AirflowNetworkEquivalentDuctReturnsFirstAttachedComponentWhenMultipleAttachmentsExist) {
+  Model model;
+  CoilHeatingWater coil(model);
+
+  auto first = coil.getAirflowNetworkEquivalentDuct(1.25, 0.41);
+  AirflowNetworkDistributionComponentCoil duplicate(model);
+  ASSERT_TRUE(duplicate.setPointer(openstudio::AirflowNetwork_Distribution_Component_CoilFields::CoilName, coil.handle()));
+  ASSERT_TRUE(duplicate.setCoilObjectType("Coil:Heating:Water"));
+  ASSERT_TRUE(duplicate.setAirPathLength(3.5));
+  ASSERT_TRUE(duplicate.setAirPathHydraulicDiameter(0.63));
+
+  auto attached = coil.airflowNetworkEquivalentDuct();
+  ASSERT_TRUE(attached);
+  EXPECT_EQ(first.handle(), attached->handle());
+
+  const auto children = coil.children();
+  ASSERT_EQ(2u, children.size());
+  EXPECT_EQ(first.handle(), children[0].handle());
+  EXPECT_EQ(duplicate.handle(), children[1].handle());
+}
+
+TEST_F(EPModelFixture, CoilHeatingWater_RemoveCleansUpAttachedAirflowNetworkComponent) {
+  Model model;
+  CoilHeatingWater coil(model);
+  coil.getAirflowNetworkEquivalentDuct(1.25, 0.41);
+
+  ASSERT_EQ(1u, model.getConcreteModelObjects<AirflowNetworkDistributionComponentCoil>().size());
+
+  coil.remove();
+
+  EXPECT_TRUE(model.getConcreteModelObjects<AirflowNetworkDistributionComponentCoil>().empty());
+}
+
+TEST_F(EPModelFixture, CoilHeatingWater_AvailabilityScheduleGetterRepairsMissingRequiredReference) {
+  Model model;
+  CoilHeatingWater coil(model);
+
+  ASSERT_TRUE(coil.setPointer(openstudio::Coil_Heating_WaterFields::AvailabilityScheduleName, openstudio::Handle()));
+  EXPECT_FALSE(coil.getModelObjectTarget<Schedule>(openstudio::Coil_Heating_WaterFields::AvailabilityScheduleName));
+
+  const auto schedule = coil.availabilitySchedule();
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule().handle(), schedule.handle());
+
+  const auto repairedSchedule = coil.getModelObjectTarget<Schedule>(openstudio::Coil_Heating_WaterFields::AvailabilityScheduleName);
+  ASSERT_TRUE(repairedSchedule);
+  EXPECT_EQ(schedule.handle(), repairedSchedule->handle());
 }

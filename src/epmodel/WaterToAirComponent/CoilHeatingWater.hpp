@@ -18,6 +18,7 @@ namespace epmodel {
   class Model;
   class Schedule;
   class ControllerWaterCoil;
+  class AirflowNetworkDistributionComponentCoil;
 
   namespace detail {
     class CoilHeatingWater_Impl;
@@ -40,24 +41,31 @@ namespace epmodel {
     static std::vector<std::string> performanceInputMethodValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The scalar design fields, availability schedule surface, and inferred controller
-    //   linkage now align, while AFN/equivalent-duct helpers remain outside this wrapper surface.
+    // - Status: Parity with documented deltas. The scalar design fields, availability schedule surface, inferred
+    //   controller linkage, and equivalent-duct helper surface now align.
     // - Canonical Counterpart: openstudio::model::CoilHeatingWater.
     // - Implemented Parity: `availabilitySchedule`, `setAvailabilitySchedule`, deprecated availability aliases,
     //   `controllerWaterCoil`, `uFactorTimesAreaValue`, `maximumWaterFlowRate`, `performanceInputMethod`,
     //   `ratedCapacity`, `ratedInletWaterTemperature`, `ratedInletAirTemperature`, `ratedOutletWaterTemperature`,
-    //   `ratedOutletAirTemperature`, `ratedRatioForAirAndWaterConvection`, and the related autosize helpers preserve
-    //   the canonical coil-facing API.
-    // - Documented Delta: Node-name convenience helpers and AFN/equivalent-duct helpers are still not exposed here.
-    //   For malformed imported data with no persisted availability schedule, the getter returns the model always-on
-    //   discrete schedule without repairing storage. Autosized-value query accessors currently return `none` because
-    //   epmodel does not yet expose canonical SQL-backed autosized results.
+    //   `ratedOutletAirTemperature`, `ratedRatioForAirAndWaterConvection`, `getAirflowNetworkEquivalentDuct`,
+    //   `airflowNetworkEquivalentDuct`, and the related autosize helpers preserve the canonical coil-facing API.
+    // - Documented Delta: For malformed imported data with no persisted availability schedule, the getter repairs
+    //   storage to the model always-on discrete schedule before returning it. When the coil is attached to multiple
+    //   `AirflowNetwork:Distribution:Component:Coil` objects, `airflowNetworkEquivalentDuct()` warns and returns the
+    //   first attached component. Autosized-value query accessors currently return `none` because epmodel does not yet
+    //   expose canonical SQL-backed autosized results.
     // - Field/Storage Mapping: The availability schedule and scalar design fields map directly to EnergyPlus
     //   `Coil:Heating:Water`. Controller linkage is inferred from the persisted `Controller:WaterCoil` actuator and
     //   sensor nodes because EnergyPlus stores the relationship through shared nodes rather than a direct back-reference.
-    // - Evidence: `src/model/CoilHeatingWater.hpp`, `src/model/CoilHeatingWater.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingWater.cpp`, and `src/model/test/CoilHeatingWater_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted node-name and AFN/equivalent-duct helpers only if the supporting
-    //   epmodel wrappers are developed.
+    //   The equivalent-duct helper surface persists the linked `AirflowNetwork:Distribution:Component:Coil`
+    //   relationship and its scalar geometry fields; the impl-level `children()` traversal includes those attached
+    //   distribution components, and when reusing malformed imported data the helper repairs the stored `Coil Object
+    //   Type` field back to `Coil:Heating:Water`. If malformed imported data omits the required availability
+    //   schedule, the getter repairs the persisted schedule reference to the model always-on discrete schedule.
+    // - Evidence: `src/model/CoilHeatingWater.hpp`, `src/model/CoilHeatingWater.cpp`,
+    //   `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingWater.cpp`,
+    //   `src/energyplus/ForwardTranslator/ForwardTranslateAirflowNetwork.cpp`, and
+    //   `src/model/test/CoilHeatingWater_GTest.cpp`.
     Schedule availabilitySchedule() const;
 
     /** \deprecated */
@@ -105,6 +113,8 @@ namespace epmodel {
     bool setRatedRatioForAirAndWaterConvection(double value);
 
     boost::optional<ControllerWaterCoil> controllerWaterCoil() const;
+    AirflowNetworkDistributionComponentCoil getAirflowNetworkEquivalentDuct(double length, double diameter);
+    boost::optional<AirflowNetworkDistributionComponentCoil> airflowNetworkEquivalentDuct() const;
 
    protected:
     using ImplType = detail::CoilHeatingWater_Impl;

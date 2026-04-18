@@ -797,6 +797,33 @@ boost::optional<double> CoilWaterHeatingAirToWaterHeatPump_Impl::autosizedRatedC
   return boost::none;
 }
 
+std::vector<ModelObject> CoilWaterHeatingAirToWaterHeatPump_Impl::children() const {
+  std::vector<ModelObject> result;
+  result.push_back(heatingCapacityFunctionofTemperatureCurve());
+  result.push_back(heatingCapacityFunctionofAirFlowFractionCurve());
+  result.push_back(heatingCapacityFunctionofWaterFlowFractionCurve());
+  result.push_back(heatingCOPFunctionofTemperatureCurve());
+  result.push_back(heatingCOPFunctionofAirFlowFractionCurve());
+  result.push_back(heatingCOPFunctionofWaterFlowFractionCurve());
+  result.push_back(partLoadFractionCorrelationCurve());
+  if (auto crankcaseCurve = crankcaseHeaterCapacityFunctionofTemperatureCurve()) {
+    result.push_back(*crankcaseCurve);
+  }
+  return result;
+}
+
+std::vector<IdfObject> CoilWaterHeatingAirToWaterHeatPump_Impl::remove() {
+  if (!isRemovable()) {
+    return {};
+  }
+
+  for (auto& child : children()) {
+    child.remove();
+  }
+
+  return WaterToAirComponent_Impl::remove();
+}
+
 std::vector<std::string> CoilWaterHeatingAirToWaterHeatPump_Impl::evaporatorAirTemperatureTypeforCurveObjectsValues() const {
   return openstudio::epmodel::CoilWaterHeatingAirToWaterHeatPump::evaporatorAirTemperatureTypeforCurveObjectsValues();
 }

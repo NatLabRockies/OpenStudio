@@ -46,11 +46,13 @@ class EPMODEL_API CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData : pub
   // - Canonical Counterpart: openstudio::model::CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData.
   // - Implemented Parity: The canonical scalar and curve relationships are exposed here. Detached instances behave
   //   like the canonical OpenStudio speed-data object. Attached instances are transient views over one parent
-  //   EnergyPlus extensible row.
+  //   EnergyPlus extensible row, and removing an attached transient wrapper removes the parent speed row too.
   // - Documented Delta: This child is transient in epmodel because EnergyPlus does not persist a standalone
   //   speed-data object.
   // - Field/Storage Mapping: Detached instances store their own OS-style fields. Attached instances route through the
   //   parent's `Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed` extensible row using `WorkspaceExtensibleGroup`.
+  // - API Note: The lowercase `copFunctionof...` getters mirror the canonical model API. The legacy mixed-case
+  //   `cOPFunctionof...` getters remain as compatibility aliases over the same underlying fields.
   double ratedWaterHeatingCapacity() const;
   bool setRatedWaterHeatingCapacity(double ratedWaterHeatingCapacity);
 
@@ -78,12 +80,15 @@ class EPMODEL_API CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData : pub
   Curve totalWaterHeatingCapacityFunctionofWaterFlowFractionCurve() const;
   bool setTotalWaterHeatingCapacityFunctionofWaterFlowFractionCurve(const Curve& curve);
 
+  Curve copFunctionofTemperatureCurve() const;
   Curve cOPFunctionofTemperatureCurve() const;
   bool setCOPFunctionofTemperatureCurve(const Curve& curve);
 
+  Curve copFunctionofAirFlowFractionCurve() const;
   Curve cOPFunctionofAirFlowFractionCurve() const;
   bool setCOPFunctionofAirFlowFractionCurve(const Curve& curve);
 
+  Curve copFunctionofWaterFlowFractionCurve() const;
   Curve cOPFunctionofWaterFlowFractionCurve() const;
   bool setCOPFunctionofWaterFlowFractionCurve(const Curve& curve);
 
