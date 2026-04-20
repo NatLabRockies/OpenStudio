@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/AirflowNetworkMultiZoneWindPressureCoefficientArray.hpp"
+#include "../scaffolds/AirflowNetworkMultiZoneWindPressureCoefficientArray.hpp"
 
 using namespace openstudio::epmodel;
 

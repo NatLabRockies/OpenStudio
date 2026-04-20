@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/CoilCoolingWaterDetailedGeometry.hpp"
+#include "../scaffolds/CoilCoolingWaterDetailedGeometry.hpp"
 
 using namespace openstudio::epmodel;
 

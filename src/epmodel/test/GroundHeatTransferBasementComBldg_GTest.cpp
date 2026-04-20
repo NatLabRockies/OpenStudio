@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/GroundHeatTransferBasementComBldg.hpp"
+#include "../scaffolds/GroundHeatTransferBasementComBldg.hpp"
 
 using namespace openstudio::epmodel;
 

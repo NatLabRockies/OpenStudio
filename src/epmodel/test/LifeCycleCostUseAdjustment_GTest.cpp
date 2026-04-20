@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/LifeCycleCostUseAdjustment.hpp"
+#include "../scaffolds/LifeCycleCostUseAdjustment.hpp"
 
 using namespace openstudio::epmodel;
 

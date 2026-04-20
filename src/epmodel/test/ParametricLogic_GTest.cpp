@@ -7,7 +7,7 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../ModelObject/ParametricLogic.hpp"
+#include "../scaffolds/ParametricLogic.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/OutputPreprocessorMessage.hpp"
+#include "../scaffolds/OutputPreprocessorMessage.hpp"
 
 #include <algorithm>
 

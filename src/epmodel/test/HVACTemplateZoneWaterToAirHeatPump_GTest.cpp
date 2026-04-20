@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/HVACTemplateZoneWaterToAirHeatPump.hpp"
+#include "../scaffolds/HVACTemplateZoneWaterToAirHeatPump.hpp"
 
 using namespace openstudio::epmodel;
 

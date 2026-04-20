@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SizingPeriodWeatherFileConditionType.hpp"
+#include "../scaffolds/SizingPeriodWeatherFileConditionType.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/EvaporativeCoolerIndirectCelDekPad.hpp"
+#include "../scaffolds/EvaporativeCoolerIndirectCelDekPad.hpp"
 
 using namespace openstudio::epmodel;
 

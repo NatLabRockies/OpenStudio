@@ -8,7 +8,7 @@
 #include <algorithm>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/RoomAirSettingsCrossVentilation.hpp"
+#include "../scaffolds/RoomAirSettingsCrossVentilation.hpp"
 
 using namespace openstudio::epmodel;
 

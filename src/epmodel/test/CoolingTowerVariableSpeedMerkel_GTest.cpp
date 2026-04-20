@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/CoolingTowerVariableSpeedMerkel.hpp"
+#include "../scaffolds/CoolingTowerVariableSpeedMerkel.hpp"
 
 using namespace openstudio::epmodel;
 

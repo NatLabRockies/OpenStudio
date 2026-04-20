@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/PipingSystemUndergroundDomain.hpp"
+#include "../scaffolds/PipingSystemUndergroundDomain.hpp"
 
 #include <algorithm>
 

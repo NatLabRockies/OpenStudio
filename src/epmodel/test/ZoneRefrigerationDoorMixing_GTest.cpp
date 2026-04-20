@@ -7,7 +7,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ZoneRefrigerationDoorMixing.hpp"
+#include "../scaffolds/ZoneRefrigerationDoorMixing.hpp"
 
 using namespace openstudio::epmodel;
 

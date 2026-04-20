@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ChillerConstantCOP.hpp"
+#include "../scaffolds/ChillerConstantCOP.hpp"
 
 using namespace openstudio::epmodel;
 

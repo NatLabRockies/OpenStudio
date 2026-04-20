@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SiteWeatherStation.hpp"
+#include "../scaffolds/SiteWeatherStation.hpp"
 
 using namespace openstudio::epmodel;
 

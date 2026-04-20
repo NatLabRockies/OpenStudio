@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/CoilHeatingWaterToAirHeatPumpParameterEstimation.hpp"
+#include "../scaffolds/CoilHeatingWaterToAirHeatPumpParameterEstimation.hpp"
 
 using namespace openstudio::epmodel;
 

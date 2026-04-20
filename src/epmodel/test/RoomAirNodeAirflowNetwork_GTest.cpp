@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/RoomAirNodeAirflowNetwork.hpp"
+#include "../scaffolds/RoomAirNodeAirflowNetwork.hpp"
 
 using namespace openstudio::epmodel;
 

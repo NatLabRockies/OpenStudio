@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ZoneGroup.hpp"
+#include "../scaffolds/ZoneGroup.hpp"
 
 using namespace openstudio::epmodel;
 

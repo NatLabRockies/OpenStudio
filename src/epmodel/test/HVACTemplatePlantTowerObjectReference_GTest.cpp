@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/HVACTemplatePlantTowerObjectReference.hpp"
+#include "../scaffolds/HVACTemplatePlantTowerObjectReference.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/HVACTemplateThermostat.hpp"
+#include "../scaffolds/HVACTemplateThermostat.hpp"
 
 using namespace openstudio::epmodel;
 

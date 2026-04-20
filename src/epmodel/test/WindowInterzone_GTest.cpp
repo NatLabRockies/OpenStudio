@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/WindowInterzone.hpp"
+#include "../scaffolds/WindowInterzone.hpp"
 
 using namespace openstudio::epmodel;
 

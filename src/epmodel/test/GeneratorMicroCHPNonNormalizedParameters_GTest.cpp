@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/GeneratorMicroCHPNonNormalizedParameters.hpp"
+#include "../scaffolds/GeneratorMicroCHPNonNormalizedParameters.hpp"
 
 using namespace openstudio::epmodel;
 

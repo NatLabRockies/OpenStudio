@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/AirTerminalSingleDuctVAVReheatVariableSpeedFan.hpp"
+#include "../scaffolds/AirTerminalSingleDuctVAVReheatVariableSpeedFan.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/PipingSystemUndergroundPipeSegment.hpp"
+#include "../scaffolds/PipingSystemUndergroundPipeSegment.hpp"
 
 using namespace openstudio::epmodel;
 

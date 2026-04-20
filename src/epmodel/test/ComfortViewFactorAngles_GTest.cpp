@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ComfortViewFactorAngles.hpp"
+#include "../scaffolds/ComfortViewFactorAngles.hpp"
 
 using namespace openstudio::epmodel;
 

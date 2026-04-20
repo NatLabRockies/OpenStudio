@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/DesignSpecificationZoneHVACSizing.hpp"
+#include "../scaffolds/DesignSpecificationZoneHVACSizing.hpp"
 
 using namespace openstudio::epmodel;
 

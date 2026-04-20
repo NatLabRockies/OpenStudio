@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/GroundHeatExchangerVerticalArray.hpp"
+#include "../scaffolds/GroundHeatExchangerVerticalArray.hpp"
 
 using namespace openstudio::epmodel;
 

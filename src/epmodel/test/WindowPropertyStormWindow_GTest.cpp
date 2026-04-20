@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/WindowPropertyStormWindow.hpp"
+#include "../scaffolds/WindowPropertyStormWindow.hpp"
 
 using namespace openstudio::epmodel;
 

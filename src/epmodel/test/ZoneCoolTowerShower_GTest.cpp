@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ZoneCoolTowerShower.hpp"
+#include "../scaffolds/ZoneCoolTowerShower.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -7,7 +7,7 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../ModelObject/UtilityCostComputation.hpp"
+#include "../scaffolds/UtilityCostComputation.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/PipeAdiabaticSteam.hpp"
+#include "../scaffolds/PipeAdiabaticSteam.hpp"
 
 using namespace openstudio::epmodel;
 

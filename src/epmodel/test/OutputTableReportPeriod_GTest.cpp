@@ -7,7 +7,7 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../ModelObject/OutputTableReportPeriod.hpp"
+#include "../scaffolds/OutputTableReportPeriod.hpp"
 
 using namespace openstudio::epmodel;
 

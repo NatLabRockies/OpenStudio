@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/AirLoopHVACUnitaryFurnaceHeatCool.hpp"
+#include "../scaffolds/AirLoopHVACUnitaryFurnaceHeatCool.hpp"
 
 using namespace openstudio::epmodel;
 

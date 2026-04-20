@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SurfacePropertyHeatTransferAlgorithmSurfaceList.hpp"
+#include "../scaffolds/SurfacePropertyHeatTransferAlgorithmSurfaceList.hpp"
 
 using namespace openstudio::epmodel;
 

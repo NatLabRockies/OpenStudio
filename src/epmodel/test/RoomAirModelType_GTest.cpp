@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/RoomAirModelType.hpp"
+#include "../scaffolds/RoomAirModelType.hpp"
 
 using namespace openstudio::epmodel;
 

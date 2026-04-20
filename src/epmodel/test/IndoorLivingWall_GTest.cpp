@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/IndoorLivingWall.hpp"
+#include "../scaffolds/IndoorLivingWall.hpp"
 
 using namespace openstudio::epmodel;
 

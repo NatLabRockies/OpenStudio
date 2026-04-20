@@ -121,11 +121,11 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_HeatPumpWaterToWaterEquationFit) {
 
     auto coolingCapacityCurveTarget = idf_cc.getTarget(HeatPump_WaterToWater_EquationFit_CoolingFields::CoolingCapacityCurveName);
     ASSERT_TRUE(coolingCapacityCurveTarget);
-    EXPECT_EQ(IddObjectType::Curve_QuadLinear, coolingCapacityCurveTarget->iddObject().type());
+    EXPECT_EQ(IddObjectType(IddObjectType::Curve_QuadLinear), coolingCapacityCurveTarget->iddObject().type());
 
     auto coolingPowerCurveTarget = idf_cc.getTarget(HeatPump_WaterToWater_EquationFit_CoolingFields::CoolingCompressorPowerCurveName);
     ASSERT_TRUE(coolingPowerCurveTarget);
-    EXPECT_EQ(IddObjectType::Curve_QuadLinear, coolingPowerCurveTarget->iddObject().type());
+    EXPECT_EQ(IddObjectType(IddObjectType::Curve_QuadLinear), coolingPowerCurveTarget->iddObject().type());
 
     EXPECT_EQ(wwhp_htg.nameString(), idf_cc.getString(HeatPump_WaterToWater_EquationFit_CoolingFields::CompanionHeatingHeatPumpName).get());
   }
@@ -151,11 +151,11 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_HeatPumpWaterToWaterEquationFit) {
 
     auto heatingCapacityCurveTarget = idf_hc.getTarget(HeatPump_WaterToWater_EquationFit_HeatingFields::HeatingCapacityCurveName);
     ASSERT_TRUE(heatingCapacityCurveTarget);
-    EXPECT_EQ(IddObjectType::Curve_QuadLinear, heatingCapacityCurveTarget->iddObject().type());
+    EXPECT_EQ(IddObjectType(IddObjectType::Curve_QuadLinear), heatingCapacityCurveTarget->iddObject().type());
 
     auto heatingPowerCurveTarget = idf_hc.getTarget(HeatPump_WaterToWater_EquationFit_HeatingFields::HeatingCompressorPowerCurveName);
     ASSERT_TRUE(heatingPowerCurveTarget);
-    EXPECT_EQ(IddObjectType::Curve_QuadLinear, heatingPowerCurveTarget->iddObject().type());
+    EXPECT_EQ(IddObjectType(IddObjectType::Curve_QuadLinear), heatingPowerCurveTarget->iddObject().type());
 
     EXPECT_EQ(wwhp_clg.nameString(), idf_hc.getString(HeatPump_WaterToWater_EquationFit_HeatingFields::CompanionCoolingHeatPumpName).get());
   }

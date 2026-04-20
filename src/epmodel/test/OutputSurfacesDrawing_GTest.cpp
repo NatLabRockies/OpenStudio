@@ -7,7 +7,7 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../ModelObject/OutputSurfacesDrawing.hpp"
+#include "../scaffolds/OutputSurfacesDrawing.hpp"
 
 #include <algorithm>
 

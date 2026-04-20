@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/CoilDXASHRAE205Performance.hpp"
+#include "../scaffolds/CoilDXASHRAE205Performance.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ZoneCrossMixing.hpp"
+#include "../scaffolds/ZoneCrossMixing.hpp"
 
 using namespace openstudio::epmodel;
 

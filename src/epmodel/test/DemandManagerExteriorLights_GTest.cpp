@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/DemandManagerExteriorLights.hpp"
+#include "../scaffolds/DemandManagerExteriorLights.hpp"
 
 using namespace openstudio::epmodel;
 

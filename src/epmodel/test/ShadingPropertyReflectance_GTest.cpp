@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ShadingPropertyReflectance.hpp"
+#include "../scaffolds/ShadingPropertyReflectance.hpp"
 
 using namespace openstudio::epmodel;
 

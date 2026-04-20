@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/AirflowNetworkIntraZoneNode.hpp"
+#include "../scaffolds/AirflowNetworkIntraZoneNode.hpp"
 
 using namespace openstudio::epmodel;
 

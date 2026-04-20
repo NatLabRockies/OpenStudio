@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/AirflowNetworkZoneControlPressureController.hpp"
+#include "../scaffolds/AirflowNetworkZoneControlPressureController.hpp"
 
 using namespace openstudio::epmodel;
 

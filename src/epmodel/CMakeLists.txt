@@ -23,15 +23,15 @@ set(${target_name}_src
   ModelObject/WaterHeaterSizing.hpp
   ModelObject/WaterHeaterSizing_Impl.hpp
   ModelObject/WaterHeaterSizing.cpp
-  ModelObject/WaterUseRainCollector.hpp
-  ModelObject/WaterUseRainCollector_Impl.hpp
-  ModelObject/WaterUseRainCollector.cpp
-  ModelObject/WaterUseStorage.hpp
-  ModelObject/WaterUseStorage_Impl.hpp
-  ModelObject/WaterUseStorage.cpp
-  ModelObject/WaterUseWell.hpp
-  ModelObject/WaterUseWell_Impl.hpp
-  ModelObject/WaterUseWell.cpp
+  scaffolds/WaterUseRainCollector.hpp
+  scaffolds/WaterUseRainCollector_Impl.hpp
+  scaffolds/WaterUseRainCollector.cpp
+  scaffolds/WaterUseStorage.hpp
+  scaffolds/WaterUseStorage_Impl.hpp
+  scaffolds/WaterUseStorage.cpp
+  scaffolds/WaterUseWell.hpp
+  scaffolds/WaterUseWell_Impl.hpp
+  scaffolds/WaterUseWell.cpp
    PlantEquipmentOperationScheme/PlantEquipmentOperationScheme.hpp
    PlantEquipmentOperationScheme/PlantEquipmentOperationScheme_Impl.hpp
    PlantEquipmentOperationScheme/PlantEquipmentOperationScheme.cpp
@@ -77,27 +77,27 @@ set(${target_name}_src
   ModelObject/SolarCollectorPerformancePhotovoltaicThermalSimple.hpp
   ModelObject/SolarCollectorPerformancePhotovoltaicThermalSimple_Impl.hpp
   ModelObject/SolarCollectorPerformancePhotovoltaicThermalSimple.cpp
-  ModelObject/SolarCollectorUnglazedTranspired.hpp
-  ModelObject/SolarCollectorUnglazedTranspired_Impl.hpp
-  ModelObject/SolarCollectorUnglazedTranspired.cpp
-  ModelObject/SolarCollectorUnglazedTranspiredMultisystem.hpp
-  ModelObject/SolarCollectorUnglazedTranspiredMultisystem_Impl.hpp
-  ModelObject/SolarCollectorUnglazedTranspiredMultisystem.cpp
-  ModelObject/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion.hpp
-  ModelObject/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl.hpp
-  ModelObject/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion.cpp
-  ModelObject/SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink.hpp
-  ModelObject/SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink_Impl.hpp
-  ModelObject/SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink.cpp
-  ModelObject/SurfaceContaminantSourceAndSinkGenericPressureDriven.hpp
-  ModelObject/SurfaceContaminantSourceAndSinkGenericPressureDriven_Impl.hpp
-  ModelObject/SurfaceContaminantSourceAndSinkGenericPressureDriven.cpp
+  scaffolds/SolarCollectorUnglazedTranspired.hpp
+  scaffolds/SolarCollectorUnglazedTranspired_Impl.hpp
+  scaffolds/SolarCollectorUnglazedTranspired.cpp
+  scaffolds/SolarCollectorUnglazedTranspiredMultisystem.hpp
+  scaffolds/SolarCollectorUnglazedTranspiredMultisystem_Impl.hpp
+  scaffolds/SolarCollectorUnglazedTranspiredMultisystem.cpp
+  scaffolds/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion.hpp
+  scaffolds/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion_Impl.hpp
+  scaffolds/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion.cpp
+  scaffolds/SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink.hpp
+  scaffolds/SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink_Impl.hpp
+  scaffolds/SurfaceContaminantSourceAndSinkGenericDepositionVelocitySink.cpp
+  scaffolds/SurfaceContaminantSourceAndSinkGenericPressureDriven.hpp
+  scaffolds/SurfaceContaminantSourceAndSinkGenericPressureDriven_Impl.hpp
+  scaffolds/SurfaceContaminantSourceAndSinkGenericPressureDriven.cpp
   ModelObject/SurfaceControlMovableInsulation.hpp
   ModelObject/SurfaceControlMovableInsulation_Impl.hpp
   ModelObject/SurfaceControlMovableInsulation.cpp
-  ModelObject/SurfacePropertiesVaporCoefficients.hpp
-  ModelObject/SurfacePropertiesVaporCoefficients_Impl.hpp
-  ModelObject/SurfacePropertiesVaporCoefficients.cpp
+  scaffolds/SurfacePropertiesVaporCoefficients.hpp
+  scaffolds/SurfacePropertiesVaporCoefficients_Impl.hpp
+  scaffolds/SurfacePropertiesVaporCoefficients.cpp
   StraightComponent/HeatPumpAirToWater.hpp
   StraightComponent/HeatPumpAirToWater_Impl.hpp
   StraightComponent/HeatPumpAirToWater.cpp
@@ -206,27 +206,27 @@ set(${target_name}_src
   ZoneHVACComponent/ZoneHVACComponent.hpp
   ZoneHVACComponent/ZoneHVACComponent_Impl.hpp
   ZoneHVACComponent/ZoneHVACComponent.cpp
-  ModelObject/CoilCoolingWaterToAirHeatPumpParameterEstimation.hpp
-  ModelObject/CoilCoolingWaterToAirHeatPumpParameterEstimation_Impl.hpp
-  ModelObject/CoilCoolingWaterToAirHeatPumpParameterEstimation.cpp
-  ModelObject/CoilHeatingWaterToAirHeatPumpParameterEstimation.hpp
-  ModelObject/CoilHeatingWaterToAirHeatPumpParameterEstimation_Impl.hpp
-  ModelObject/CoilHeatingWaterToAirHeatPumpParameterEstimation.cpp
-  ModelObject/HeatPumpWaterToWaterParameterEstimationCooling.hpp
-  ModelObject/HeatPumpWaterToWaterParameterEstimationCooling_Impl.hpp
-  ModelObject/HeatPumpWaterToWaterParameterEstimationCooling.cpp
-  ModelObject/HeatPumpWaterToWaterParameterEstimationHeating.hpp
-  ModelObject/HeatPumpWaterToWaterParameterEstimationHeating_Impl.hpp
-  ModelObject/HeatPumpWaterToWaterParameterEstimationHeating.cpp
-  ModelObject/CoilCoolingWaterDetailedGeometry.hpp
-  ModelObject/CoilCoolingWaterDetailedGeometry_Impl.hpp
-  ModelObject/CoilCoolingWaterDetailedGeometry.cpp
-  ModelObject/CoilDXASHRAE205Performance.hpp
-  ModelObject/CoilDXASHRAE205Performance_Impl.hpp
-  ModelObject/CoilDXASHRAE205Performance.cpp
-  ModelObject/CoilHeatingSteam.hpp
-  ModelObject/CoilHeatingSteam_Impl.hpp
-  ModelObject/CoilHeatingSteam.cpp
+  scaffolds/CoilCoolingWaterToAirHeatPumpParameterEstimation.hpp
+  scaffolds/CoilCoolingWaterToAirHeatPumpParameterEstimation_Impl.hpp
+  scaffolds/CoilCoolingWaterToAirHeatPumpParameterEstimation.cpp
+  scaffolds/CoilHeatingWaterToAirHeatPumpParameterEstimation.hpp
+  scaffolds/CoilHeatingWaterToAirHeatPumpParameterEstimation_Impl.hpp
+  scaffolds/CoilHeatingWaterToAirHeatPumpParameterEstimation.cpp
+  scaffolds/HeatPumpWaterToWaterParameterEstimationCooling.hpp
+  scaffolds/HeatPumpWaterToWaterParameterEstimationCooling_Impl.hpp
+  scaffolds/HeatPumpWaterToWaterParameterEstimationCooling.cpp
+  scaffolds/HeatPumpWaterToWaterParameterEstimationHeating.hpp
+  scaffolds/HeatPumpWaterToWaterParameterEstimationHeating_Impl.hpp
+  scaffolds/HeatPumpWaterToWaterParameterEstimationHeating.cpp
+  scaffolds/CoilCoolingWaterDetailedGeometry.hpp
+  scaffolds/CoilCoolingWaterDetailedGeometry_Impl.hpp
+  scaffolds/CoilCoolingWaterDetailedGeometry.cpp
+  scaffolds/CoilDXASHRAE205Performance.hpp
+  scaffolds/CoilDXASHRAE205Performance_Impl.hpp
+  scaffolds/CoilDXASHRAE205Performance.cpp
+  scaffolds/CoilHeatingSteam.hpp
+  scaffolds/CoilHeatingSteam_Impl.hpp
+  scaffolds/CoilHeatingSteam.cpp
   StraightComponent/CoilWaterHeatingAirToWaterHeatPumpWrapped.hpp
   StraightComponent/CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl.hpp
   StraightComponent/CoilWaterHeatingAirToWaterHeatPumpWrapped.cpp
@@ -266,99 +266,99 @@ set(${target_name}_src
   ModelObject/AirflowNetworkDistributionComponentConstantPressureDrop.hpp
   ModelObject/AirflowNetworkDistributionComponentConstantPressureDrop_Impl.hpp
   ModelObject/AirflowNetworkDistributionComponentConstantPressureDrop.cpp
-  ModelObject/CeilingAdiabatic.hpp
-  ModelObject/CeilingAdiabatic_Impl.hpp
-  ModelObject/CeilingAdiabatic.cpp
-  ModelObject/CeilingInterzone.hpp
-  ModelObject/CeilingInterzone_Impl.hpp
-  ModelObject/CeilingInterzone.cpp
-   ModelObject/Roof.hpp
-   ModelObject/Roof_Impl.hpp
-   ModelObject/Roof.cpp
-   ModelObject/RoofIrrigation.hpp
-   ModelObject/RoofIrrigation_Impl.hpp
-   ModelObject/RoofIrrigation.cpp
-   ModelObject/RoofCeilingDetailed.hpp
-  ModelObject/RoofCeilingDetailed_Impl.hpp
-  ModelObject/RoofCeilingDetailed.cpp
-  ModelObject/Door.hpp
-  ModelObject/Door_Impl.hpp
-  ModelObject/Door.cpp
-  ModelObject/DoorInterzone.hpp
-  ModelObject/DoorInterzone_Impl.hpp
-  ModelObject/DoorInterzone.cpp
-  ModelObject/GlazedDoor.hpp
-  ModelObject/GlazedDoor_Impl.hpp
-  ModelObject/GlazedDoor.cpp
-  ModelObject/GlazedDoorInterzone.hpp
-  ModelObject/GlazedDoorInterzone_Impl.hpp
-  ModelObject/GlazedDoorInterzone.cpp
-  ModelObject/ComfortViewFactorAngles.hpp
-  ModelObject/ComfortViewFactorAngles_Impl.hpp
-  ModelObject/ComfortViewFactorAngles.cpp
-  ModelObject/ComplexFenestrationPropertySolarAbsorbedLayers.hpp
-  ModelObject/ComplexFenestrationPropertySolarAbsorbedLayers_Impl.hpp
-  ModelObject/ComplexFenestrationPropertySolarAbsorbedLayers.cpp
-  ModelObject/ConstructionComplexFenestrationState.hpp
-  ModelObject/ConstructionComplexFenestrationState_Impl.hpp
-  ModelObject/ConstructionComplexFenestrationState.cpp
-  ModelObject/ComplianceBuilding.hpp
-  ModelObject/ComplianceBuilding_Impl.hpp
-  ModelObject/ComplianceBuilding.cpp
-  ModelObject/ShadingBuilding.hpp
-  ModelObject/ShadingBuilding_Impl.hpp
-  ModelObject/ShadingBuilding.cpp
-  ModelObject/ShadingBuildingDetailed.hpp
-  ModelObject/ShadingBuildingDetailed_Impl.hpp
-  ModelObject/ShadingBuildingDetailed.cpp
-  ModelObject/ShadingFin.hpp
-  ModelObject/ShadingFin_Impl.hpp
-  ModelObject/ShadingFin.cpp
-  ModelObject/ShadingFinProjection.hpp
-  ModelObject/ShadingFinProjection_Impl.hpp
-  ModelObject/ShadingFinProjection.cpp
-  ModelObject/ShadingOverhang.hpp
-  ModelObject/ShadingOverhang_Impl.hpp
-  ModelObject/ShadingOverhang.cpp
-  ModelObject/ShadingOverhangProjection.hpp
-  ModelObject/ShadingOverhangProjection_Impl.hpp
-  ModelObject/ShadingOverhangProjection.cpp
-  ModelObject/ShadingSite.hpp
-  ModelObject/ShadingSite_Impl.hpp
-  ModelObject/ShadingSite.cpp
-  ModelObject/ShadingSiteDetailed.hpp
-  ModelObject/ShadingSiteDetailed_Impl.hpp
-  ModelObject/ShadingSiteDetailed.cpp
-  ModelObject/ShadingZoneDetailed.hpp
-  ModelObject/ShadingZoneDetailed_Impl.hpp
-  ModelObject/ShadingZoneDetailed.cpp
-  ModelObject/ShadingPropertyReflectance.hpp
-  ModelObject/ShadingPropertyReflectance_Impl.hpp
-  ModelObject/ShadingPropertyReflectance.cpp
-  ModelObject/WindowMaterialBlindEquivalentLayer.hpp
-  ModelObject/WindowMaterialBlindEquivalentLayer_Impl.hpp
-  ModelObject/WindowMaterialBlindEquivalentLayer.cpp
-  ModelObject/WindowMaterialComplexShade.hpp
-  ModelObject/WindowMaterialComplexShade_Impl.hpp
-  ModelObject/WindowMaterialComplexShade.cpp
-  ModelObject/WindowMaterialDrapeEquivalentLayer.hpp
-  ModelObject/WindowMaterialDrapeEquivalentLayer_Impl.hpp
-  ModelObject/WindowMaterialDrapeEquivalentLayer.cpp
-  ModelObject/WindowMaterialGap.hpp
-  ModelObject/WindowMaterialGap_Impl.hpp
-  ModelObject/WindowMaterialGap.cpp
-  ModelObject/WindowMaterialGapEquivalentLayer.hpp
-  ModelObject/WindowMaterialGapEquivalentLayer_Impl.hpp
-  ModelObject/WindowMaterialGapEquivalentLayer.cpp
-   ModelObject/WindowMaterialGlazingEquivalentLayer.hpp
-   ModelObject/WindowMaterialGlazingEquivalentLayer_Impl.hpp
-   ModelObject/WindowMaterialGlazingEquivalentLayer.cpp
-   ModelObject/WindowMaterialShadeEquivalentLayer.hpp
-   ModelObject/WindowMaterialShadeEquivalentLayer_Impl.hpp
-   ModelObject/WindowMaterialShadeEquivalentLayer.cpp
-   ModelObject/WindowMaterialScreenEquivalentLayer.hpp
-   ModelObject/WindowMaterialScreenEquivalentLayer_Impl.hpp
-   ModelObject/WindowMaterialScreenEquivalentLayer.cpp
+  scaffolds/CeilingAdiabatic.hpp
+  scaffolds/CeilingAdiabatic_Impl.hpp
+  scaffolds/CeilingAdiabatic.cpp
+  scaffolds/CeilingInterzone.hpp
+  scaffolds/CeilingInterzone_Impl.hpp
+  scaffolds/CeilingInterzone.cpp
+   scaffolds/Roof.hpp
+   scaffolds/Roof_Impl.hpp
+   scaffolds/Roof.cpp
+   scaffolds/RoofIrrigation.hpp
+   scaffolds/RoofIrrigation_Impl.hpp
+   scaffolds/RoofIrrigation.cpp
+   scaffolds/RoofCeilingDetailed.hpp
+  scaffolds/RoofCeilingDetailed_Impl.hpp
+  scaffolds/RoofCeilingDetailed.cpp
+  scaffolds/Door.hpp
+  scaffolds/Door_Impl.hpp
+  scaffolds/Door.cpp
+  scaffolds/DoorInterzone.hpp
+  scaffolds/DoorInterzone_Impl.hpp
+  scaffolds/DoorInterzone.cpp
+  scaffolds/GlazedDoor.hpp
+  scaffolds/GlazedDoor_Impl.hpp
+  scaffolds/GlazedDoor.cpp
+  scaffolds/GlazedDoorInterzone.hpp
+  scaffolds/GlazedDoorInterzone_Impl.hpp
+  scaffolds/GlazedDoorInterzone.cpp
+  scaffolds/ComfortViewFactorAngles.hpp
+  scaffolds/ComfortViewFactorAngles_Impl.hpp
+  scaffolds/ComfortViewFactorAngles.cpp
+  scaffolds/ComplexFenestrationPropertySolarAbsorbedLayers.hpp
+  scaffolds/ComplexFenestrationPropertySolarAbsorbedLayers_Impl.hpp
+  scaffolds/ComplexFenestrationPropertySolarAbsorbedLayers.cpp
+  scaffolds/ConstructionComplexFenestrationState.hpp
+  scaffolds/ConstructionComplexFenestrationState_Impl.hpp
+  scaffolds/ConstructionComplexFenestrationState.cpp
+  scaffolds/ComplianceBuilding.hpp
+  scaffolds/ComplianceBuilding_Impl.hpp
+  scaffolds/ComplianceBuilding.cpp
+  scaffolds/ShadingBuilding.hpp
+  scaffolds/ShadingBuilding_Impl.hpp
+  scaffolds/ShadingBuilding.cpp
+  scaffolds/ShadingBuildingDetailed.hpp
+  scaffolds/ShadingBuildingDetailed_Impl.hpp
+  scaffolds/ShadingBuildingDetailed.cpp
+  scaffolds/ShadingFin.hpp
+  scaffolds/ShadingFin_Impl.hpp
+  scaffolds/ShadingFin.cpp
+  scaffolds/ShadingFinProjection.hpp
+  scaffolds/ShadingFinProjection_Impl.hpp
+  scaffolds/ShadingFinProjection.cpp
+  scaffolds/ShadingOverhang.hpp
+  scaffolds/ShadingOverhang_Impl.hpp
+  scaffolds/ShadingOverhang.cpp
+  scaffolds/ShadingOverhangProjection.hpp
+  scaffolds/ShadingOverhangProjection_Impl.hpp
+  scaffolds/ShadingOverhangProjection.cpp
+  scaffolds/ShadingSite.hpp
+  scaffolds/ShadingSite_Impl.hpp
+  scaffolds/ShadingSite.cpp
+  scaffolds/ShadingSiteDetailed.hpp
+  scaffolds/ShadingSiteDetailed_Impl.hpp
+  scaffolds/ShadingSiteDetailed.cpp
+  scaffolds/ShadingZoneDetailed.hpp
+  scaffolds/ShadingZoneDetailed_Impl.hpp
+  scaffolds/ShadingZoneDetailed.cpp
+  scaffolds/ShadingPropertyReflectance.hpp
+  scaffolds/ShadingPropertyReflectance_Impl.hpp
+  scaffolds/ShadingPropertyReflectance.cpp
+  scaffolds/WindowMaterialBlindEquivalentLayer.hpp
+  scaffolds/WindowMaterialBlindEquivalentLayer_Impl.hpp
+  scaffolds/WindowMaterialBlindEquivalentLayer.cpp
+  scaffolds/WindowMaterialComplexShade.hpp
+  scaffolds/WindowMaterialComplexShade_Impl.hpp
+  scaffolds/WindowMaterialComplexShade.cpp
+  scaffolds/WindowMaterialDrapeEquivalentLayer.hpp
+  scaffolds/WindowMaterialDrapeEquivalentLayer_Impl.hpp
+  scaffolds/WindowMaterialDrapeEquivalentLayer.cpp
+  scaffolds/WindowMaterialGap.hpp
+  scaffolds/WindowMaterialGap_Impl.hpp
+  scaffolds/WindowMaterialGap.cpp
+  scaffolds/WindowMaterialGapEquivalentLayer.hpp
+  scaffolds/WindowMaterialGapEquivalentLayer_Impl.hpp
+  scaffolds/WindowMaterialGapEquivalentLayer.cpp
+   scaffolds/WindowMaterialGlazingEquivalentLayer.hpp
+   scaffolds/WindowMaterialGlazingEquivalentLayer_Impl.hpp
+   scaffolds/WindowMaterialGlazingEquivalentLayer.cpp
+   scaffolds/WindowMaterialShadeEquivalentLayer.hpp
+   scaffolds/WindowMaterialShadeEquivalentLayer_Impl.hpp
+   scaffolds/WindowMaterialShadeEquivalentLayer.cpp
+   scaffolds/WindowMaterialScreenEquivalentLayer.hpp
+   scaffolds/WindowMaterialScreenEquivalentLayer_Impl.hpp
+   scaffolds/WindowMaterialScreenEquivalentLayer.cpp
   GasLayer/Gas.hpp
   GasLayer/Gas_Impl.hpp
   GasLayer/Gas.cpp
@@ -380,27 +380,27 @@ set(${target_name}_src
   ModelObject/SkyTemperature.hpp
   ModelObject/SkyTemperature_Impl.hpp
   ModelObject/SkyTemperature.cpp
-  ModelObject/ComponentCostLineItem.hpp
-  ModelObject/ComponentCostLineItem_Impl.hpp
-  ModelObject/ComponentCostLineItem.cpp
-  ModelObject/ComponentCostReference.hpp
-  ModelObject/ComponentCostReference_Impl.hpp
-  ModelObject/ComponentCostReference.cpp
+  scaffolds/ComponentCostLineItem.hpp
+  scaffolds/ComponentCostLineItem_Impl.hpp
+  scaffolds/ComponentCostLineItem.cpp
+  scaffolds/ComponentCostReference.hpp
+  scaffolds/ComponentCostReference_Impl.hpp
+  scaffolds/ComponentCostReference.cpp
   ModelObject/LifeCycleCost.hpp
   ModelObject/LifeCycleCost_Impl.hpp
   ModelObject/LifeCycleCost.cpp
-  ModelObject/LifeCycleCostUseAdjustment.hpp
-  ModelObject/LifeCycleCostUseAdjustment_Impl.hpp
-  ModelObject/LifeCycleCostUseAdjustment.cpp
-  ModelObject/CondenserLoop.hpp
-  ModelObject/CondenserLoop_Impl.hpp
-  ModelObject/CondenserLoop.cpp
-  ModelObject/CondenserEquipmentList.hpp
-  ModelObject/CondenserEquipmentList_Impl.hpp
-  ModelObject/CondenserEquipmentList.cpp
-  ModelObject/CondenserEquipmentOperationSchemes.hpp
-  ModelObject/CondenserEquipmentOperationSchemes_Impl.hpp
-  ModelObject/CondenserEquipmentOperationSchemes.cpp
+  scaffolds/LifeCycleCostUseAdjustment.hpp
+  scaffolds/LifeCycleCostUseAdjustment_Impl.hpp
+  scaffolds/LifeCycleCostUseAdjustment.cpp
+  scaffolds/CondenserLoop.hpp
+  scaffolds/CondenserLoop_Impl.hpp
+  scaffolds/CondenserLoop.cpp
+  scaffolds/CondenserEquipmentList.hpp
+  scaffolds/CondenserEquipmentList_Impl.hpp
+  scaffolds/CondenserEquipmentList.cpp
+  scaffolds/CondenserEquipmentOperationSchemes.hpp
+  scaffolds/CondenserEquipmentOperationSchemes_Impl.hpp
+  scaffolds/CondenserEquipmentOperationSchemes.cpp
   ModelObject/ConvergenceLimits.hpp
   ModelObject/ConvergenceLimits_Impl.hpp
   ModelObject/ConvergenceLimits.cpp
@@ -410,12 +410,12 @@ set(${target_name}_src
   ModelObject/HeatBalanceAlgorithm.hpp
   ModelObject/HeatBalanceAlgorithm_Impl.hpp
   ModelObject/HeatBalanceAlgorithm.cpp
-  ModelObject/HybridModelZone.hpp
-  ModelObject/HybridModelZone_Impl.hpp
-  ModelObject/HybridModelZone.cpp
-  ModelObject/IndoorLivingWall.hpp
-  ModelObject/IndoorLivingWall_Impl.hpp
-  ModelObject/IndoorLivingWall.cpp
+  scaffolds/HybridModelZone.hpp
+  scaffolds/HybridModelZone_Impl.hpp
+  scaffolds/HybridModelZone.cpp
+  scaffolds/IndoorLivingWall.hpp
+  scaffolds/IndoorLivingWall_Impl.hpp
+  scaffolds/IndoorLivingWall.cpp
   AirToAirComponent/AirToAirComponent.hpp
   AirToAirComponent/AirToAirComponent_Impl.hpp
   AirToAirComponent/AirToAirComponent.cpp
@@ -425,126 +425,126 @@ set(${target_name}_src
   AirToAirComponent/HeatExchangerDesiccantBalancedFlow.hpp
   AirToAirComponent/HeatExchangerDesiccantBalancedFlow_Impl.hpp
   AirToAirComponent/HeatExchangerDesiccantBalancedFlow.cpp
-  ModelObject/HeatExchangerAirToAirFlatPlate.hpp
-  ModelObject/HeatExchangerAirToAirFlatPlate_Impl.hpp
-  ModelObject/HeatExchangerAirToAirFlatPlate.cpp
-  ModelObject/HeatBalanceSettingsConductionFiniteDifference.hpp
-  ModelObject/HeatBalanceSettingsConductionFiniteDifference_Impl.hpp
-  ModelObject/HeatBalanceSettingsConductionFiniteDifference.cpp
-  ModelObject/HVACTemplatePlantBoiler.hpp
-  ModelObject/HVACTemplatePlantBoiler_Impl.hpp
-  ModelObject/HVACTemplatePlantBoiler.cpp
-  ModelObject/HVACTemplatePlantBoilerObjectReference.hpp
-  ModelObject/HVACTemplatePlantBoilerObjectReference_Impl.hpp
-  ModelObject/HVACTemplatePlantBoilerObjectReference.cpp
-  ModelObject/HVACTemplatePlantChilledWaterLoop.hpp
-  ModelObject/HVACTemplatePlantChilledWaterLoop_Impl.hpp
-  ModelObject/HVACTemplatePlantChilledWaterLoop.cpp
-  ModelObject/HVACTemplatePlantChiller.hpp
-  ModelObject/HVACTemplatePlantChiller_Impl.hpp
-  ModelObject/HVACTemplatePlantChiller.cpp
-  ModelObject/HVACTemplatePlantChillerObjectReference.hpp
-  ModelObject/HVACTemplatePlantChillerObjectReference_Impl.hpp
-  ModelObject/HVACTemplatePlantChillerObjectReference.cpp
-  ModelObject/HVACTemplatePlantHotWaterLoop.hpp
-  ModelObject/HVACTemplatePlantHotWaterLoop_Impl.hpp
-  ModelObject/HVACTemplatePlantHotWaterLoop.cpp
-  ModelObject/HVACTemplatePlantMixedWaterLoop.hpp
-  ModelObject/HVACTemplatePlantMixedWaterLoop_Impl.hpp
-  ModelObject/HVACTemplatePlantMixedWaterLoop.cpp
-  ModelObject/HVACTemplatePlantTower.hpp
-  ModelObject/HVACTemplatePlantTower_Impl.hpp
-  ModelObject/HVACTemplatePlantTower.cpp
-  ModelObject/HVACTemplatePlantTowerObjectReference.hpp
-  ModelObject/HVACTemplatePlantTowerObjectReference_Impl.hpp
-  ModelObject/HVACTemplatePlantTowerObjectReference.cpp
-  ModelObject/HVACTemplateSystemConstantVolume.hpp
-  ModelObject/HVACTemplateSystemConstantVolume_Impl.hpp
-  ModelObject/HVACTemplateSystemConstantVolume.cpp
-  ModelObject/HVACTemplateSystemDedicatedOutdoorAir.hpp
-  ModelObject/HVACTemplateSystemDedicatedOutdoorAir_Impl.hpp
-  ModelObject/HVACTemplateSystemDedicatedOutdoorAir.cpp
-  ModelObject/HVACTemplateSystemDualDuct.hpp
-  ModelObject/HVACTemplateSystemDualDuct_Impl.hpp
-  ModelObject/HVACTemplateSystemDualDuct.cpp
-  ModelObject/HVACTemplateSystemPackagedVAV.hpp
-  ModelObject/HVACTemplateSystemPackagedVAV_Impl.hpp
-  ModelObject/HVACTemplateSystemPackagedVAV.cpp
-  ModelObject/HVACTemplateSystemVAV.hpp
-  ModelObject/HVACTemplateSystemVAV_Impl.hpp
-  ModelObject/HVACTemplateSystemVAV.cpp
-  ModelObject/HVACTemplateSystemVRF.hpp
-  ModelObject/HVACTemplateSystemVRF_Impl.hpp
-  ModelObject/HVACTemplateSystemVRF.cpp
-  ModelObject/HVACTemplateThermostat.hpp
-  ModelObject/HVACTemplateThermostat_Impl.hpp
-  ModelObject/HVACTemplateThermostat.cpp
-  ModelObject/HVACTemplateZoneBaseboardHeat.hpp
-  ModelObject/HVACTemplateZoneBaseboardHeat_Impl.hpp
-  ModelObject/HVACTemplateZoneBaseboardHeat.cpp
-  ModelObject/HVACTemplateZoneConstantVolume.hpp
-  ModelObject/HVACTemplateZoneConstantVolume_Impl.hpp
-  ModelObject/HVACTemplateZoneConstantVolume.cpp
-  ModelObject/HVACTemplateZoneDualDuct.hpp
-  ModelObject/HVACTemplateZoneDualDuct_Impl.hpp
-  ModelObject/HVACTemplateZoneDualDuct.cpp
-  ModelObject/HVACTemplateZoneFanCoil.hpp
-  ModelObject/HVACTemplateZoneFanCoil_Impl.hpp
-  ModelObject/HVACTemplateZoneFanCoil.cpp
-  ModelObject/HVACTemplateZonePTAC.hpp
-  ModelObject/HVACTemplateZonePTAC_Impl.hpp
-  ModelObject/HVACTemplateZonePTAC.cpp
-  ModelObject/HVACTemplateZonePTHP.hpp
-  ModelObject/HVACTemplateZonePTHP_Impl.hpp
-  ModelObject/HVACTemplateZonePTHP.cpp
-  ModelObject/HVACTemplateZoneWaterToAirHeatPump.hpp
-  ModelObject/HVACTemplateZoneWaterToAirHeatPump_Impl.hpp
-  ModelObject/HVACTemplateZoneWaterToAirHeatPump.cpp
-  ModelObject/HVACTemplateZoneVAV.hpp
-  ModelObject/HVACTemplateZoneVAV_Impl.hpp
-  ModelObject/HVACTemplateZoneVAV.cpp
-  ModelObject/HVACTemplateZoneVAVHeatAndCool.hpp
-  ModelObject/HVACTemplateZoneVAVHeatAndCool_Impl.hpp
-  ModelObject/HVACTemplateZoneVAVHeatAndCool.cpp
-  ModelObject/HVACTemplateZoneVAVFanPowered.hpp
-  ModelObject/HVACTemplateZoneVAVFanPowered_Impl.hpp
-  ModelObject/HVACTemplateZoneVAVFanPowered.cpp
-  ModelObject/HVACTemplateZoneVRF.hpp
-  ModelObject/HVACTemplateZoneVRF_Impl.hpp
-  ModelObject/HVACTemplateZoneVRF.cpp
-  ModelObject/HVACTemplateZoneUnitary.hpp
-  ModelObject/HVACTemplateZoneUnitary_Impl.hpp
-  ModelObject/HVACTemplateZoneUnitary.cpp
-  ModelObject/HVACTemplateSystemUnitaryHeatPumpAirToAir.hpp
-  ModelObject/HVACTemplateSystemUnitaryHeatPumpAirToAir_Impl.hpp
-  ModelObject/HVACTemplateSystemUnitaryHeatPumpAirToAir.cpp
-  ModelObject/HVACTemplateSystemUnitarySystem.hpp
-  ModelObject/HVACTemplateSystemUnitarySystem_Impl.hpp
-  ModelObject/HVACTemplateSystemUnitarySystem.cpp
-  ModelObject/HVACTemplateSystemUnitary.hpp
-  ModelObject/HVACTemplateSystemUnitary_Impl.hpp
-  ModelObject/HVACTemplateSystemUnitary.cpp
-  ModelObject/HVACSystemRootFindingAlgorithm.hpp
-  ModelObject/HVACSystemRootFindingAlgorithm_Impl.hpp
-  ModelObject/HVACSystemRootFindingAlgorithm.cpp
+  scaffolds/HeatExchangerAirToAirFlatPlate.hpp
+  scaffolds/HeatExchangerAirToAirFlatPlate_Impl.hpp
+  scaffolds/HeatExchangerAirToAirFlatPlate.cpp
+  scaffolds/HeatBalanceSettingsConductionFiniteDifference.hpp
+  scaffolds/HeatBalanceSettingsConductionFiniteDifference_Impl.hpp
+  scaffolds/HeatBalanceSettingsConductionFiniteDifference.cpp
+  scaffolds/HVACTemplatePlantBoiler.hpp
+  scaffolds/HVACTemplatePlantBoiler_Impl.hpp
+  scaffolds/HVACTemplatePlantBoiler.cpp
+  scaffolds/HVACTemplatePlantBoilerObjectReference.hpp
+  scaffolds/HVACTemplatePlantBoilerObjectReference_Impl.hpp
+  scaffolds/HVACTemplatePlantBoilerObjectReference.cpp
+  scaffolds/HVACTemplatePlantChilledWaterLoop.hpp
+  scaffolds/HVACTemplatePlantChilledWaterLoop_Impl.hpp
+  scaffolds/HVACTemplatePlantChilledWaterLoop.cpp
+  scaffolds/HVACTemplatePlantChiller.hpp
+  scaffolds/HVACTemplatePlantChiller_Impl.hpp
+  scaffolds/HVACTemplatePlantChiller.cpp
+  scaffolds/HVACTemplatePlantChillerObjectReference.hpp
+  scaffolds/HVACTemplatePlantChillerObjectReference_Impl.hpp
+  scaffolds/HVACTemplatePlantChillerObjectReference.cpp
+  scaffolds/HVACTemplatePlantHotWaterLoop.hpp
+  scaffolds/HVACTemplatePlantHotWaterLoop_Impl.hpp
+  scaffolds/HVACTemplatePlantHotWaterLoop.cpp
+  scaffolds/HVACTemplatePlantMixedWaterLoop.hpp
+  scaffolds/HVACTemplatePlantMixedWaterLoop_Impl.hpp
+  scaffolds/HVACTemplatePlantMixedWaterLoop.cpp
+  scaffolds/HVACTemplatePlantTower.hpp
+  scaffolds/HVACTemplatePlantTower_Impl.hpp
+  scaffolds/HVACTemplatePlantTower.cpp
+  scaffolds/HVACTemplatePlantTowerObjectReference.hpp
+  scaffolds/HVACTemplatePlantTowerObjectReference_Impl.hpp
+  scaffolds/HVACTemplatePlantTowerObjectReference.cpp
+  scaffolds/HVACTemplateSystemConstantVolume.hpp
+  scaffolds/HVACTemplateSystemConstantVolume_Impl.hpp
+  scaffolds/HVACTemplateSystemConstantVolume.cpp
+  scaffolds/HVACTemplateSystemDedicatedOutdoorAir.hpp
+  scaffolds/HVACTemplateSystemDedicatedOutdoorAir_Impl.hpp
+  scaffolds/HVACTemplateSystemDedicatedOutdoorAir.cpp
+  scaffolds/HVACTemplateSystemDualDuct.hpp
+  scaffolds/HVACTemplateSystemDualDuct_Impl.hpp
+  scaffolds/HVACTemplateSystemDualDuct.cpp
+  scaffolds/HVACTemplateSystemPackagedVAV.hpp
+  scaffolds/HVACTemplateSystemPackagedVAV_Impl.hpp
+  scaffolds/HVACTemplateSystemPackagedVAV.cpp
+  scaffolds/HVACTemplateSystemVAV.hpp
+  scaffolds/HVACTemplateSystemVAV_Impl.hpp
+  scaffolds/HVACTemplateSystemVAV.cpp
+  scaffolds/HVACTemplateSystemVRF.hpp
+  scaffolds/HVACTemplateSystemVRF_Impl.hpp
+  scaffolds/HVACTemplateSystemVRF.cpp
+  scaffolds/HVACTemplateThermostat.hpp
+  scaffolds/HVACTemplateThermostat_Impl.hpp
+  scaffolds/HVACTemplateThermostat.cpp
+  scaffolds/HVACTemplateZoneBaseboardHeat.hpp
+  scaffolds/HVACTemplateZoneBaseboardHeat_Impl.hpp
+  scaffolds/HVACTemplateZoneBaseboardHeat.cpp
+  scaffolds/HVACTemplateZoneConstantVolume.hpp
+  scaffolds/HVACTemplateZoneConstantVolume_Impl.hpp
+  scaffolds/HVACTemplateZoneConstantVolume.cpp
+  scaffolds/HVACTemplateZoneDualDuct.hpp
+  scaffolds/HVACTemplateZoneDualDuct_Impl.hpp
+  scaffolds/HVACTemplateZoneDualDuct.cpp
+  scaffolds/HVACTemplateZoneFanCoil.hpp
+  scaffolds/HVACTemplateZoneFanCoil_Impl.hpp
+  scaffolds/HVACTemplateZoneFanCoil.cpp
+  scaffolds/HVACTemplateZonePTAC.hpp
+  scaffolds/HVACTemplateZonePTAC_Impl.hpp
+  scaffolds/HVACTemplateZonePTAC.cpp
+  scaffolds/HVACTemplateZonePTHP.hpp
+  scaffolds/HVACTemplateZonePTHP_Impl.hpp
+  scaffolds/HVACTemplateZonePTHP.cpp
+  scaffolds/HVACTemplateZoneWaterToAirHeatPump.hpp
+  scaffolds/HVACTemplateZoneWaterToAirHeatPump_Impl.hpp
+  scaffolds/HVACTemplateZoneWaterToAirHeatPump.cpp
+  scaffolds/HVACTemplateZoneVAV.hpp
+  scaffolds/HVACTemplateZoneVAV_Impl.hpp
+  scaffolds/HVACTemplateZoneVAV.cpp
+  scaffolds/HVACTemplateZoneVAVHeatAndCool.hpp
+  scaffolds/HVACTemplateZoneVAVHeatAndCool_Impl.hpp
+  scaffolds/HVACTemplateZoneVAVHeatAndCool.cpp
+  scaffolds/HVACTemplateZoneVAVFanPowered.hpp
+  scaffolds/HVACTemplateZoneVAVFanPowered_Impl.hpp
+  scaffolds/HVACTemplateZoneVAVFanPowered.cpp
+  scaffolds/HVACTemplateZoneVRF.hpp
+  scaffolds/HVACTemplateZoneVRF_Impl.hpp
+  scaffolds/HVACTemplateZoneVRF.cpp
+  scaffolds/HVACTemplateZoneUnitary.hpp
+  scaffolds/HVACTemplateZoneUnitary_Impl.hpp
+  scaffolds/HVACTemplateZoneUnitary.cpp
+  scaffolds/HVACTemplateSystemUnitaryHeatPumpAirToAir.hpp
+  scaffolds/HVACTemplateSystemUnitaryHeatPumpAirToAir_Impl.hpp
+  scaffolds/HVACTemplateSystemUnitaryHeatPumpAirToAir.cpp
+  scaffolds/HVACTemplateSystemUnitarySystem.hpp
+  scaffolds/HVACTemplateSystemUnitarySystem_Impl.hpp
+  scaffolds/HVACTemplateSystemUnitarySystem.cpp
+  scaffolds/HVACTemplateSystemUnitary.hpp
+  scaffolds/HVACTemplateSystemUnitary_Impl.hpp
+  scaffolds/HVACTemplateSystemUnitary.cpp
+  scaffolds/HVACSystemRootFindingAlgorithm.hpp
+  scaffolds/HVACSystemRootFindingAlgorithm_Impl.hpp
+  scaffolds/HVACSystemRootFindingAlgorithm.cpp
   ModelObject/InsideSurfaceConvectionAlgorithm.hpp
   ModelObject/InsideSurfaceConvectionAlgorithm_Impl.hpp
   ModelObject/InsideSurfaceConvectionAlgorithm.cpp
   ModelObject/OutsideSurfaceConvectionAlgorithm.hpp
   ModelObject/OutsideSurfaceConvectionAlgorithm_Impl.hpp
   ModelObject/OutsideSurfaceConvectionAlgorithm.cpp
-  ModelObject/SurfaceConvectionAlgorithmInsideAdaptiveModelSelections.hpp
-  ModelObject/SurfaceConvectionAlgorithmInsideAdaptiveModelSelections_Impl.hpp
-  ModelObject/SurfaceConvectionAlgorithmInsideAdaptiveModelSelections.cpp
-  ModelObject/SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections.hpp
-  ModelObject/SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections_Impl.hpp
-  ModelObject/SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections.cpp
-  ModelObject/SurfaceConvectionAlgorithmInsideUserCurve.hpp
-  ModelObject/SurfaceConvectionAlgorithmInsideUserCurve_Impl.hpp
-  ModelObject/SurfaceConvectionAlgorithmInsideUserCurve.cpp
-  ModelObject/SurfaceConvectionAlgorithmOutsideUserCurve.hpp
-  ModelObject/SurfaceConvectionAlgorithmOutsideUserCurve_Impl.hpp
-  ModelObject/SurfaceConvectionAlgorithmOutsideUserCurve.cpp
+  scaffolds/SurfaceConvectionAlgorithmInsideAdaptiveModelSelections.hpp
+  scaffolds/SurfaceConvectionAlgorithmInsideAdaptiveModelSelections_Impl.hpp
+  scaffolds/SurfaceConvectionAlgorithmInsideAdaptiveModelSelections.cpp
+  scaffolds/SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections.hpp
+  scaffolds/SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections_Impl.hpp
+  scaffolds/SurfaceConvectionAlgorithmOutsideAdaptiveModelSelections.cpp
+  scaffolds/SurfaceConvectionAlgorithmInsideUserCurve.hpp
+  scaffolds/SurfaceConvectionAlgorithmInsideUserCurve_Impl.hpp
+  scaffolds/SurfaceConvectionAlgorithmInsideUserCurve.cpp
+  scaffolds/SurfaceConvectionAlgorithmOutsideUserCurve.hpp
+  scaffolds/SurfaceConvectionAlgorithmOutsideUserCurve_Impl.hpp
+  scaffolds/SurfaceConvectionAlgorithmOutsideUserCurve.cpp
   ModelObject/SurfacePropertyConvectionCoefficients.hpp
   ModelObject/SurfacePropertyConvectionCoefficients_Impl.hpp
   ModelObject/SurfacePropertyConvectionCoefficients.cpp
@@ -554,48 +554,48 @@ set(${target_name}_src
   ModelObject/SurfacePropertyExposedFoundationPerimeter.hpp
   ModelObject/SurfacePropertyExposedFoundationPerimeter_Impl.hpp
   ModelObject/SurfacePropertyExposedFoundationPerimeter.cpp
-  ModelObject/SurfacePropertyExteriorNaturalVentedCavity.hpp
-  ModelObject/SurfacePropertyExteriorNaturalVentedCavity_Impl.hpp
-  ModelObject/SurfacePropertyExteriorNaturalVentedCavity.cpp
+  scaffolds/SurfacePropertyExteriorNaturalVentedCavity.hpp
+  scaffolds/SurfacePropertyExteriorNaturalVentedCavity_Impl.hpp
+  scaffolds/SurfacePropertyExteriorNaturalVentedCavity.cpp
   ModelObject/SurfacePropertyGroundSurfaces.hpp
   ModelObject/SurfacePropertyGroundSurfaces_Impl.hpp
   ModelObject/SurfacePropertyGroundSurfaces.cpp
-  ModelObject/SurfacePropertyHeatBalanceSourceTerm.hpp
-  ModelObject/SurfacePropertyHeatBalanceSourceTerm_Impl.hpp
-  ModelObject/SurfacePropertyHeatBalanceSourceTerm.cpp
+  scaffolds/SurfacePropertyHeatBalanceSourceTerm.hpp
+  scaffolds/SurfacePropertyHeatBalanceSourceTerm_Impl.hpp
+  scaffolds/SurfacePropertyHeatBalanceSourceTerm.cpp
   ModelObject/SurfacePropertyIncidentSolarMultiplier.hpp
   ModelObject/SurfacePropertyIncidentSolarMultiplier_Impl.hpp
   ModelObject/SurfacePropertyIncidentSolarMultiplier.cpp
-  ModelObject/SurfacePropertyHeatTransferAlgorithm.hpp
-  ModelObject/SurfacePropertyHeatTransferAlgorithm_Impl.hpp
-  ModelObject/SurfacePropertyHeatTransferAlgorithm.cpp
-  ModelObject/SurfacePropertyHeatTransferAlgorithmConstruction.hpp
-  ModelObject/SurfacePropertyHeatTransferAlgorithmConstruction_Impl.hpp
-  ModelObject/SurfacePropertyHeatTransferAlgorithmConstruction.cpp
-  ModelObject/SurfacePropertyHeatTransferAlgorithmMultipleSurface.hpp
-  ModelObject/SurfacePropertyHeatTransferAlgorithmMultipleSurface_Impl.hpp
-  ModelObject/SurfacePropertyHeatTransferAlgorithmMultipleSurface.cpp
-  ModelObject/SurfacePropertyHeatTransferAlgorithmSurfaceList.hpp
-  ModelObject/SurfacePropertyHeatTransferAlgorithmSurfaceList_Impl.hpp
-  ModelObject/SurfacePropertyHeatTransferAlgorithmSurfaceList.cpp
+  scaffolds/SurfacePropertyHeatTransferAlgorithm.hpp
+  scaffolds/SurfacePropertyHeatTransferAlgorithm_Impl.hpp
+  scaffolds/SurfacePropertyHeatTransferAlgorithm.cpp
+  scaffolds/SurfacePropertyHeatTransferAlgorithmConstruction.hpp
+  scaffolds/SurfacePropertyHeatTransferAlgorithmConstruction_Impl.hpp
+  scaffolds/SurfacePropertyHeatTransferAlgorithmConstruction.cpp
+  scaffolds/SurfacePropertyHeatTransferAlgorithmMultipleSurface.hpp
+  scaffolds/SurfacePropertyHeatTransferAlgorithmMultipleSurface_Impl.hpp
+  scaffolds/SurfacePropertyHeatTransferAlgorithmMultipleSurface.cpp
+  scaffolds/SurfacePropertyHeatTransferAlgorithmSurfaceList.hpp
+  scaffolds/SurfacePropertyHeatTransferAlgorithmSurfaceList_Impl.hpp
+  scaffolds/SurfacePropertyHeatTransferAlgorithmSurfaceList.cpp
   ModelObject/SurfacePropertyLocalEnvironment.hpp
   ModelObject/SurfacePropertyLocalEnvironment_Impl.hpp
   ModelObject/SurfacePropertyLocalEnvironment.cpp
-  ModelObject/SurfacePropertySolarIncidentInside.hpp
-  ModelObject/SurfacePropertySolarIncidentInside_Impl.hpp
-  ModelObject/SurfacePropertySolarIncidentInside.cpp
+  scaffolds/SurfacePropertySolarIncidentInside.hpp
+  scaffolds/SurfacePropertySolarIncidentInside_Impl.hpp
+  scaffolds/SurfacePropertySolarIncidentInside.cpp
   ModelObject/SurfacePropertySurroundingSurfaces.hpp
   ModelObject/SurfacePropertySurroundingSurfaces_Impl.hpp
   ModelObject/SurfacePropertySurroundingSurfaces.cpp
-  ModelObject/SurfacePropertyUnderwater.hpp
-  ModelObject/SurfacePropertyUnderwater_Impl.hpp
-  ModelObject/SurfacePropertyUnderwater.cpp
-  ModelObject/GlobalGeometryRules.hpp
-  ModelObject/GlobalGeometryRules_Impl.hpp
-  ModelObject/GlobalGeometryRules.cpp
-  ModelObject/GeometryTransform.hpp
-  ModelObject/GeometryTransform_Impl.hpp
-  ModelObject/GeometryTransform.cpp
+  scaffolds/SurfacePropertyUnderwater.hpp
+  scaffolds/SurfacePropertyUnderwater_Impl.hpp
+  scaffolds/SurfacePropertyUnderwater.cpp
+  scaffolds/GlobalGeometryRules.hpp
+  scaffolds/GlobalGeometryRules_Impl.hpp
+  scaffolds/GlobalGeometryRules.cpp
+  scaffolds/GeometryTransform.hpp
+  scaffolds/GeometryTransform_Impl.hpp
+  scaffolds/GeometryTransform.cpp
   ModelObject/DaylightingDeviceLightWell.hpp
   ModelObject/DaylightingDeviceLightWell_Impl.hpp
   ModelObject/DaylightingDeviceLightWell.cpp
@@ -605,15 +605,15 @@ set(${target_name}_src
   ModelObject/DaylightingDeviceTubular.hpp
   ModelObject/DaylightingDeviceTubular_Impl.hpp
   ModelObject/DaylightingDeviceTubular.cpp
-  ModelObject/DaylightingDELightComplexFenestration.hpp
-  ModelObject/DaylightingDELightComplexFenestration_Impl.hpp
-  ModelObject/DaylightingDELightComplexFenestration.cpp
-  ModelObject/DehumidifierDesiccantNoFans.hpp
-  ModelObject/DehumidifierDesiccantNoFans_Impl.hpp
-  ModelObject/DehumidifierDesiccantNoFans.cpp
-  ModelObject/DehumidifierDesiccantSystem.hpp
-  ModelObject/DehumidifierDesiccantSystem_Impl.hpp
-  ModelObject/DehumidifierDesiccantSystem.cpp
+  scaffolds/DaylightingDELightComplexFenestration.hpp
+  scaffolds/DaylightingDELightComplexFenestration_Impl.hpp
+  scaffolds/DaylightingDELightComplexFenestration.cpp
+  scaffolds/DehumidifierDesiccantNoFans.hpp
+  scaffolds/DehumidifierDesiccantNoFans_Impl.hpp
+  scaffolds/DehumidifierDesiccantNoFans.cpp
+  scaffolds/DehumidifierDesiccantSystem.hpp
+  scaffolds/DehumidifierDesiccantSystem_Impl.hpp
+  scaffolds/DehumidifierDesiccantSystem.cpp
   Curve/CurveBicubic.hpp
   Curve/CurveBicubic_Impl.hpp
   Curve/CurveBicubic.cpp
@@ -683,9 +683,9 @@ set(${target_name}_src
   ModelObject/AirflowNetworkDistributionComponentDuct.hpp
   ModelObject/AirflowNetworkDistributionComponentDuct_Impl.hpp
   ModelObject/AirflowNetworkDistributionComponentDuct.cpp
-  ModelObject/AirflowNetworkDistributionDuctSizing.hpp
-  ModelObject/AirflowNetworkDistributionDuctSizing_Impl.hpp
-  ModelObject/AirflowNetworkDistributionDuctSizing.cpp
+  scaffolds/AirflowNetworkDistributionDuctSizing.hpp
+  scaffolds/AirflowNetworkDistributionDuctSizing_Impl.hpp
+  scaffolds/AirflowNetworkDistributionDuctSizing.cpp
   ModelObject/AirflowNetworkDistributionDuctViewFactors.hpp
   ModelObject/AirflowNetworkDistributionDuctViewFactors_Impl.hpp
   ModelObject/AirflowNetworkDistributionDuctViewFactors.cpp
@@ -695,12 +695,12 @@ set(${target_name}_src
   AirflowNetworkNode/AirflowNetworkDistributionNode.hpp
   AirflowNetworkNode/AirflowNetworkDistributionNode_Impl.hpp
   AirflowNetworkNode/AirflowNetworkDistributionNode.cpp
-  ModelObject/AirflowNetworkIntraZoneNode.hpp
-  ModelObject/AirflowNetworkIntraZoneNode_Impl.hpp
-  ModelObject/AirflowNetworkIntraZoneNode.cpp
-  ModelObject/AirflowNetworkIntraZoneLinkage.hpp
-  ModelObject/AirflowNetworkIntraZoneLinkage_Impl.hpp
-  ModelObject/AirflowNetworkIntraZoneLinkage.cpp
+  scaffolds/AirflowNetworkIntraZoneNode.hpp
+  scaffolds/AirflowNetworkIntraZoneNode_Impl.hpp
+  scaffolds/AirflowNetworkIntraZoneNode.cpp
+  scaffolds/AirflowNetworkIntraZoneLinkage.hpp
+  scaffolds/AirflowNetworkIntraZoneLinkage_Impl.hpp
+  scaffolds/AirflowNetworkIntraZoneLinkage.cpp
   ModelObject/AirflowNetworkMultiZoneExternalNode.hpp
   ModelObject/AirflowNetworkMultiZoneExternalNode_Impl.hpp
   ModelObject/AirflowNetworkMultiZoneExternalNode.cpp
@@ -713,12 +713,12 @@ set(${target_name}_src
   ModelObject/AirflowNetworkMultiZoneReferenceCrackConditions.hpp
   ModelObject/AirflowNetworkMultiZoneReferenceCrackConditions_Impl.hpp
   ModelObject/AirflowNetworkMultiZoneReferenceCrackConditions.cpp
-  ModelObject/AirflowNetworkMultiZoneWindPressureCoefficientArray.hpp
-  ModelObject/AirflowNetworkMultiZoneWindPressureCoefficientArray_Impl.hpp
-  ModelObject/AirflowNetworkMultiZoneWindPressureCoefficientArray.cpp
-  ModelObject/AirflowNetworkMultiZoneWindPressureCoefficientValues.hpp
-  ModelObject/AirflowNetworkMultiZoneWindPressureCoefficientValues_Impl.hpp
-  ModelObject/AirflowNetworkMultiZoneWindPressureCoefficientValues.cpp
+  scaffolds/AirflowNetworkMultiZoneWindPressureCoefficientArray.hpp
+  scaffolds/AirflowNetworkMultiZoneWindPressureCoefficientArray_Impl.hpp
+  scaffolds/AirflowNetworkMultiZoneWindPressureCoefficientArray.cpp
+  scaffolds/AirflowNetworkMultiZoneWindPressureCoefficientValues.hpp
+  scaffolds/AirflowNetworkMultiZoneWindPressureCoefficientValues_Impl.hpp
+  scaffolds/AirflowNetworkMultiZoneWindPressureCoefficientValues.cpp
   ModelObject/AirflowNetworkMultiZoneSurface.hpp
   ModelObject/AirflowNetworkMultiZoneSurface_Impl.hpp
   ModelObject/AirflowNetworkMultiZoneSurface.cpp
@@ -746,9 +746,9 @@ set(${target_name}_src
   ParentObject/AirflowNetworkSimulationControl.hpp
   ParentObject/AirflowNetworkSimulationControl_Impl.hpp
   ParentObject/AirflowNetworkSimulationControl.cpp
-  ModelObject/AirflowNetworkZoneControlPressureController.hpp
-  ModelObject/AirflowNetworkZoneControlPressureController_Impl.hpp
-  ModelObject/AirflowNetworkZoneControlPressureController.cpp
+  scaffolds/AirflowNetworkZoneControlPressureController.hpp
+  scaffolds/AirflowNetworkZoneControlPressureController_Impl.hpp
+  scaffolds/AirflowNetworkZoneControlPressureController.cpp
   AvailabilityManager/AvailabilityManagerDifferentialThermostat.hpp
   AvailabilityManager/AvailabilityManagerDifferentialThermostat_Impl.hpp
   AvailabilityManager/AvailabilityManagerDifferentialThermostat.cpp
@@ -785,18 +785,18 @@ set(${target_name}_src
   ModelObject/AirflowNetworkDistributionComponentHeatExchanger.hpp
   ModelObject/AirflowNetworkDistributionComponentHeatExchanger_Impl.hpp
   ModelObject/AirflowNetworkDistributionComponentHeatExchanger.cpp
-  ModelObject/AirflowNetworkDistributionComponentLeak.hpp
-  ModelObject/AirflowNetworkDistributionComponentLeak_Impl.hpp
-  ModelObject/AirflowNetworkDistributionComponentLeak.cpp
+  scaffolds/AirflowNetworkDistributionComponentLeak.hpp
+  scaffolds/AirflowNetworkDistributionComponentLeak_Impl.hpp
+  scaffolds/AirflowNetworkDistributionComponentLeak.cpp
   ModelObject/AirflowNetworkDistributionComponentLeakageRatio.hpp
   ModelObject/AirflowNetworkDistributionComponentLeakageRatio_Impl.hpp
   ModelObject/AirflowNetworkDistributionComponentLeakageRatio.cpp
   ModelObject/AirflowNetworkDistributionComponentOutdoorAirFlow.hpp
   ModelObject/AirflowNetworkDistributionComponentOutdoorAirFlow_Impl.hpp
   ModelObject/AirflowNetworkDistributionComponentOutdoorAirFlow.cpp
-  ModelObject/AirflowNetworkDistributionComponentReliefAirFlow.hpp
-  ModelObject/AirflowNetworkDistributionComponentReliefAirFlow_Impl.hpp
-  ModelObject/AirflowNetworkDistributionComponentReliefAirFlow.cpp
+  scaffolds/AirflowNetworkDistributionComponentReliefAirFlow.hpp
+  scaffolds/AirflowNetworkDistributionComponentReliefAirFlow_Impl.hpp
+  scaffolds/AirflowNetworkDistributionComponentReliefAirFlow.cpp
   ModelObject/AirflowNetworkDistributionComponentTerminalUnit.hpp
   ModelObject/AirflowNetworkDistributionComponentTerminalUnit_Impl.hpp
   ModelObject/AirflowNetworkDistributionComponentTerminalUnit.cpp
@@ -806,9 +806,9 @@ set(${target_name}_src
    ModelObject/ZoneCapacitanceMultiplierResearchSpecial.hpp
    ModelObject/ZoneCapacitanceMultiplierResearchSpecial.cpp
    ModelObject/ZoneCapacitanceMultiplierResearchSpecial_Impl.hpp
-   ModelObject/ZoneAirBalanceOutdoorAir.hpp
-  ModelObject/ZoneAirBalanceOutdoorAir.cpp
-  ModelObject/ZoneAirBalanceOutdoorAir_Impl.hpp
+   scaffolds/ZoneAirBalanceOutdoorAir.hpp
+  scaffolds/ZoneAirBalanceOutdoorAir.cpp
+  scaffolds/ZoneAirBalanceOutdoorAir_Impl.hpp
   ModelObject/ZoneAirContaminantBalance.hpp
   ModelObject/ZoneAirContaminantBalance.cpp
   ModelObject/ZoneAirContaminantBalance_Impl.hpp
@@ -818,15 +818,15 @@ set(${target_name}_src
    ModelObject/ZoneAirMassFlowConservation.hpp
    ModelObject/ZoneAirMassFlowConservation.cpp
    ModelObject/ZoneAirMassFlowConservation_Impl.hpp
-  ModelObject/ZoneCoolTowerShower.hpp
-  ModelObject/ZoneCoolTowerShower_Impl.hpp
-  ModelObject/ZoneCoolTowerShower.cpp
-  ModelObject/ZoneCrossMixing.hpp
-  ModelObject/ZoneCrossMixing_Impl.hpp
-  ModelObject/ZoneCrossMixing.cpp
-  ModelObject/ZoneRefrigerationDoorMixing.hpp
-  ModelObject/ZoneRefrigerationDoorMixing_Impl.hpp
-  ModelObject/ZoneRefrigerationDoorMixing.cpp
+  scaffolds/ZoneCoolTowerShower.hpp
+  scaffolds/ZoneCoolTowerShower_Impl.hpp
+  scaffolds/ZoneCoolTowerShower.cpp
+  scaffolds/ZoneCrossMixing.hpp
+  scaffolds/ZoneCrossMixing_Impl.hpp
+  scaffolds/ZoneCrossMixing.cpp
+  scaffolds/ZoneRefrigerationDoorMixing.hpp
+  scaffolds/ZoneRefrigerationDoorMixing_Impl.hpp
+  scaffolds/ZoneRefrigerationDoorMixing.cpp
   ModelObject/RefrigerationSystem.hpp
   ModelObject/RefrigerationSystem_Impl.hpp
   ModelObject/RefrigerationSystem.cpp
@@ -848,117 +848,117 @@ set(${target_name}_src
   ModelObject/RefrigerationTranscriticalSystem.hpp
   ModelObject/RefrigerationTranscriticalSystem_Impl.hpp
   ModelObject/RefrigerationTranscriticalSystem.cpp
-  ModelObject/ZoneThermalChimney.hpp
-  ModelObject/ZoneThermalChimney_Impl.hpp
-  ModelObject/ZoneThermalChimney.cpp
+  scaffolds/ZoneThermalChimney.hpp
+  scaffolds/ZoneThermalChimney_Impl.hpp
+  scaffolds/ZoneThermalChimney.cpp
   ModelObject/ZoneMixing.hpp
   ModelObject/ZoneMixing_Impl.hpp
   ModelObject/ZoneMixing.cpp
-   ModelObject/ZonePropertyLocalEnvironment.hpp
-   ModelObject/ZonePropertyLocalEnvironment_Impl.hpp
-   ModelObject/ZonePropertyLocalEnvironment.cpp
+   scaffolds/ZonePropertyLocalEnvironment.hpp
+   scaffolds/ZonePropertyLocalEnvironment_Impl.hpp
+   scaffolds/ZonePropertyLocalEnvironment.cpp
    ModelObject/ZonePropertyUserViewFactorsBySurfaceName.hpp
    ModelObject/ZonePropertyUserViewFactorsBySurfaceName_Impl.hpp
    ModelObject/ZonePropertyUserViewFactorsBySurfaceName.cpp
-   ModelObject/ZoneEarthtube.hpp
-  ModelObject/ZoneEarthtube_Impl.hpp
-  ModelObject/ZoneEarthtube.cpp
-  ModelObject/ZoneEarthtubeParameters.hpp
-  ModelObject/ZoneEarthtubeParameters_Impl.hpp
-  ModelObject/ZoneEarthtubeParameters.cpp
-  ModelObject/ZoneGroup.hpp
-  ModelObject/ZoneGroup_Impl.hpp
-  ModelObject/ZoneGroup.cpp
+   scaffolds/ZoneEarthtube.hpp
+  scaffolds/ZoneEarthtube_Impl.hpp
+  scaffolds/ZoneEarthtube.cpp
+  scaffolds/ZoneEarthtubeParameters.hpp
+  scaffolds/ZoneEarthtubeParameters_Impl.hpp
+  scaffolds/ZoneEarthtubeParameters.cpp
+  scaffolds/ZoneGroup.hpp
+  scaffolds/ZoneGroup_Impl.hpp
+  scaffolds/ZoneGroup.cpp
   ModelObject/ZoneControlContaminantController.hpp
   ModelObject/ZoneControlContaminantController_Impl.hpp
    ModelObject/ZoneControlContaminantController.cpp
    ModelObject/ZoneControlHumidistat.hpp
    ModelObject/ZoneControlHumidistat_Impl.hpp
    ModelObject/ZoneControlHumidistat.cpp
-   ModelObject/ZoneControlThermostatOperativeTemperature.hpp
-   ModelObject/ZoneControlThermostatOperativeTemperature_Impl.hpp
-   ModelObject/ZoneControlThermostatOperativeTemperature.cpp
-    ModelObject/ZoneControlThermostatTemperatureAndHumidity.hpp
-    ModelObject/ZoneControlThermostatTemperatureAndHumidity_Impl.hpp
-    ModelObject/ZoneControlThermostatTemperatureAndHumidity.cpp
-    ModelObject/ZoneControlThermostatThermalComfort.hpp
-    ModelObject/ZoneControlThermostatThermalComfort_Impl.hpp
-    ModelObject/ZoneControlThermostatThermalComfort.cpp
-   ModelObject/ZoneContaminantSourceAndSinkCarbonDioxide.hpp
-   ModelObject/ZoneContaminantSourceAndSinkCarbonDioxide.cpp
-   ModelObject/ZoneContaminantSourceAndSinkCarbonDioxide_Impl.hpp
-   ModelObject/ZoneContaminantSourceAndSinkGenericConstant.hpp
-   ModelObject/ZoneContaminantSourceAndSinkGenericConstant.cpp
-   ModelObject/ZoneContaminantSourceAndSinkGenericConstant_Impl.hpp
-   ModelObject/ZoneContaminantSourceAndSinkGenericCutoffModel.hpp
-   ModelObject/ZoneContaminantSourceAndSinkGenericCutoffModel.cpp
-   ModelObject/ZoneContaminantSourceAndSinkGenericCutoffModel_Impl.hpp
-    ModelObject/ZoneContaminantSourceAndSinkGenericDecaySource.hpp
-    ModelObject/ZoneContaminantSourceAndSinkGenericDecaySource.cpp
-    ModelObject/ZoneContaminantSourceAndSinkGenericDecaySource_Impl.hpp
-    ModelObject/ZoneContaminantSourceAndSinkGenericDepositionRateSink.hpp
-    ModelObject/ZoneContaminantSourceAndSinkGenericDepositionRateSink.cpp
-    ModelObject/ZoneContaminantSourceAndSinkGenericDepositionRateSink_Impl.hpp
-  ModelObject/ZoneBaseboardOutdoorTemperatureControlled.hpp
-  ModelObject/ZoneBaseboardOutdoorTemperatureControlled_Impl.hpp
-  ModelObject/ZoneBaseboardOutdoorTemperatureControlled.cpp
-  ModelObject/ZoneHVACBaseboardRadiantConvectiveSteam.hpp
-  ModelObject/ZoneHVACBaseboardRadiantConvectiveSteam_Impl.hpp
-  ModelObject/ZoneHVACBaseboardRadiantConvectiveSteam.cpp
-   ModelObject/ZoneHVACBaseboardRadiantConvectiveSteamDesign.hpp
-   ModelObject/ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl.hpp
-   ModelObject/ZoneHVACBaseboardRadiantConvectiveSteamDesign.cpp
-   ModelObject/ZoneHVACExhaustControl.hpp
-   ModelObject/ZoneHVACExhaustControl_Impl.hpp
-   ModelObject/ZoneHVACExhaustControl.cpp
-  ModelObject/ZoneHVACHybridUnitaryHVAC.hpp
-  ModelObject/ZoneHVACHybridUnitaryHVAC_Impl.hpp
-  ModelObject/ZoneHVACHybridUnitaryHVAC.cpp
-  ModelObject/ZoneHVACForcedAirUserDefined.hpp
-  ModelObject/ZoneHVACForcedAirUserDefined_Impl.hpp
-  ModelObject/ZoneHVACForcedAirUserDefined.cpp
-   ModelObject/ZoneHVACOutdoorAirUnit.hpp
-   ModelObject/ZoneHVACOutdoorAirUnit_Impl.hpp
-   ModelObject/ZoneHVACOutdoorAirUnit.cpp
-   ModelObject/ZoneHVACOutdoorAirUnitEquipmentList.hpp
-   ModelObject/ZoneHVACOutdoorAirUnitEquipmentList_Impl.hpp
-   ModelObject/ZoneHVACOutdoorAirUnitEquipmentList.cpp
-   ModelObject/ZoneHVACVentilatedSlab.hpp
-   ModelObject/ZoneHVACVentilatedSlab_Impl.hpp
-   ModelObject/ZoneHVACVentilatedSlab.cpp
-   ModelObject/ZoneHVACWindowAirConditioner.hpp
-   ModelObject/ZoneHVACWindowAirConditioner_Impl.hpp
-   ModelObject/ZoneHVACWindowAirConditioner.cpp
-   ModelObject/ZoneHVACVentilatedSlabSlabGroup.hpp
-   ModelObject/ZoneHVACVentilatedSlabSlabGroup_Impl.hpp
-   ModelObject/ZoneHVACVentilatedSlabSlabGroup.cpp
-  ModelObject/UtilityCostChargeBlock.hpp
-   ModelObject/UtilityCostChargeBlock_Impl.hpp
-   ModelObject/UtilityCostChargeBlock.cpp
-    ModelObject/UtilityCostChargeSimple.hpp
-    ModelObject/UtilityCostChargeSimple_Impl.hpp
-    ModelObject/UtilityCostChargeSimple.cpp
-    ModelObject/UtilityCostComputation.hpp
-    ModelObject/UtilityCostComputation_Impl.hpp
-     ModelObject/UtilityCostComputation.cpp
-     ModelObject/UtilityCostQualify.hpp
-     ModelObject/UtilityCostQualify_Impl.hpp
-     ModelObject/UtilityCostQualify.cpp
-      ModelObject/UtilityCostRatchet.hpp
-       ModelObject/UtilityCostRatchet_Impl.hpp
-       ModelObject/UtilityCostRatchet.cpp
-       ModelObject/UtilityCostTariff.hpp
-       ModelObject/UtilityCostTariff_Impl.hpp
-       ModelObject/UtilityCostTariff.cpp
-        ModelObject/UtilityCostVariable.hpp
-        ModelObject/UtilityCostVariable_Impl.hpp
-        ModelObject/UtilityCostVariable.cpp
-  ModelObject/DemandManagerElectricEquipment.hpp
-  ModelObject/DemandManagerElectricEquipment_Impl.hpp
-  ModelObject/DemandManagerElectricEquipment.cpp
-  ModelObject/DemandManagerExteriorLights.hpp
-  ModelObject/DemandManagerExteriorLights_Impl.hpp
-  ModelObject/DemandManagerExteriorLights.cpp
+   scaffolds/ZoneControlThermostatOperativeTemperature.hpp
+   scaffolds/ZoneControlThermostatOperativeTemperature_Impl.hpp
+   scaffolds/ZoneControlThermostatOperativeTemperature.cpp
+    scaffolds/ZoneControlThermostatTemperatureAndHumidity.hpp
+    scaffolds/ZoneControlThermostatTemperatureAndHumidity_Impl.hpp
+    scaffolds/ZoneControlThermostatTemperatureAndHumidity.cpp
+    scaffolds/ZoneControlThermostatThermalComfort.hpp
+    scaffolds/ZoneControlThermostatThermalComfort_Impl.hpp
+    scaffolds/ZoneControlThermostatThermalComfort.cpp
+   scaffolds/ZoneContaminantSourceAndSinkCarbonDioxide.hpp
+   scaffolds/ZoneContaminantSourceAndSinkCarbonDioxide.cpp
+   scaffolds/ZoneContaminantSourceAndSinkCarbonDioxide_Impl.hpp
+   scaffolds/ZoneContaminantSourceAndSinkGenericConstant.hpp
+   scaffolds/ZoneContaminantSourceAndSinkGenericConstant.cpp
+   scaffolds/ZoneContaminantSourceAndSinkGenericConstant_Impl.hpp
+   scaffolds/ZoneContaminantSourceAndSinkGenericCutoffModel.hpp
+   scaffolds/ZoneContaminantSourceAndSinkGenericCutoffModel.cpp
+   scaffolds/ZoneContaminantSourceAndSinkGenericCutoffModel_Impl.hpp
+    scaffolds/ZoneContaminantSourceAndSinkGenericDecaySource.hpp
+    scaffolds/ZoneContaminantSourceAndSinkGenericDecaySource.cpp
+    scaffolds/ZoneContaminantSourceAndSinkGenericDecaySource_Impl.hpp
+    scaffolds/ZoneContaminantSourceAndSinkGenericDepositionRateSink.hpp
+    scaffolds/ZoneContaminantSourceAndSinkGenericDepositionRateSink.cpp
+    scaffolds/ZoneContaminantSourceAndSinkGenericDepositionRateSink_Impl.hpp
+  scaffolds/ZoneBaseboardOutdoorTemperatureControlled.hpp
+  scaffolds/ZoneBaseboardOutdoorTemperatureControlled_Impl.hpp
+  scaffolds/ZoneBaseboardOutdoorTemperatureControlled.cpp
+  scaffolds/ZoneHVACBaseboardRadiantConvectiveSteam.hpp
+  scaffolds/ZoneHVACBaseboardRadiantConvectiveSteam_Impl.hpp
+  scaffolds/ZoneHVACBaseboardRadiantConvectiveSteam.cpp
+   scaffolds/ZoneHVACBaseboardRadiantConvectiveSteamDesign.hpp
+   scaffolds/ZoneHVACBaseboardRadiantConvectiveSteamDesign_Impl.hpp
+   scaffolds/ZoneHVACBaseboardRadiantConvectiveSteamDesign.cpp
+   scaffolds/ZoneHVACExhaustControl.hpp
+   scaffolds/ZoneHVACExhaustControl_Impl.hpp
+   scaffolds/ZoneHVACExhaustControl.cpp
+  scaffolds/ZoneHVACHybridUnitaryHVAC.hpp
+  scaffolds/ZoneHVACHybridUnitaryHVAC_Impl.hpp
+  scaffolds/ZoneHVACHybridUnitaryHVAC.cpp
+  scaffolds/ZoneHVACForcedAirUserDefined.hpp
+  scaffolds/ZoneHVACForcedAirUserDefined_Impl.hpp
+  scaffolds/ZoneHVACForcedAirUserDefined.cpp
+   scaffolds/ZoneHVACOutdoorAirUnit.hpp
+   scaffolds/ZoneHVACOutdoorAirUnit_Impl.hpp
+   scaffolds/ZoneHVACOutdoorAirUnit.cpp
+   scaffolds/ZoneHVACOutdoorAirUnitEquipmentList.hpp
+   scaffolds/ZoneHVACOutdoorAirUnitEquipmentList_Impl.hpp
+   scaffolds/ZoneHVACOutdoorAirUnitEquipmentList.cpp
+   scaffolds/ZoneHVACVentilatedSlab.hpp
+   scaffolds/ZoneHVACVentilatedSlab_Impl.hpp
+   scaffolds/ZoneHVACVentilatedSlab.cpp
+   scaffolds/ZoneHVACWindowAirConditioner.hpp
+   scaffolds/ZoneHVACWindowAirConditioner_Impl.hpp
+   scaffolds/ZoneHVACWindowAirConditioner.cpp
+   scaffolds/ZoneHVACVentilatedSlabSlabGroup.hpp
+   scaffolds/ZoneHVACVentilatedSlabSlabGroup_Impl.hpp
+   scaffolds/ZoneHVACVentilatedSlabSlabGroup.cpp
+  scaffolds/UtilityCostChargeBlock.hpp
+   scaffolds/UtilityCostChargeBlock_Impl.hpp
+   scaffolds/UtilityCostChargeBlock.cpp
+    scaffolds/UtilityCostChargeSimple.hpp
+    scaffolds/UtilityCostChargeSimple_Impl.hpp
+    scaffolds/UtilityCostChargeSimple.cpp
+    scaffolds/UtilityCostComputation.hpp
+    scaffolds/UtilityCostComputation_Impl.hpp
+     scaffolds/UtilityCostComputation.cpp
+     scaffolds/UtilityCostQualify.hpp
+     scaffolds/UtilityCostQualify_Impl.hpp
+     scaffolds/UtilityCostQualify.cpp
+      scaffolds/UtilityCostRatchet.hpp
+       scaffolds/UtilityCostRatchet_Impl.hpp
+       scaffolds/UtilityCostRatchet.cpp
+       scaffolds/UtilityCostTariff.hpp
+       scaffolds/UtilityCostTariff_Impl.hpp
+       scaffolds/UtilityCostTariff.cpp
+        scaffolds/UtilityCostVariable.hpp
+        scaffolds/UtilityCostVariable_Impl.hpp
+        scaffolds/UtilityCostVariable.cpp
+  scaffolds/DemandManagerElectricEquipment.hpp
+  scaffolds/DemandManagerElectricEquipment_Impl.hpp
+  scaffolds/DemandManagerElectricEquipment.cpp
+  scaffolds/DemandManagerExteriorLights.hpp
+  scaffolds/DemandManagerExteriorLights_Impl.hpp
+  scaffolds/DemandManagerExteriorLights.cpp
   ExteriorLoadInstance/ExteriorLights.hpp
   ExteriorLoadInstance/ExteriorLights_Impl.hpp
   ExteriorLoadInstance/ExteriorLights.cpp
@@ -1025,18 +1025,18 @@ set(${target_name}_src
   ScheduleInterval/ScheduleFile.hpp
   ScheduleInterval/ScheduleFile_Impl.hpp
   ScheduleInterval/ScheduleFile.cpp
-  ModelObject/ScheduleFileShading.hpp
-  ModelObject/ScheduleFileShading_Impl.hpp
-  ModelObject/ScheduleFileShading.cpp
-  ModelObject/ScheduleDayList.hpp
-  ModelObject/ScheduleDayList_Impl.hpp
-  ModelObject/ScheduleDayList.cpp
-  ModelObject/ScheduleDayHourly.hpp
-  ModelObject/ScheduleDayHourly_Impl.hpp
-  ModelObject/ScheduleDayHourly.cpp
-  ModelObject/ScheduleWeekCompact.hpp
-  ModelObject/ScheduleWeekCompact_Impl.hpp
-  ModelObject/ScheduleWeekCompact.cpp
+  scaffolds/ScheduleFileShading.hpp
+  scaffolds/ScheduleFileShading_Impl.hpp
+  scaffolds/ScheduleFileShading.cpp
+  scaffolds/ScheduleDayList.hpp
+  scaffolds/ScheduleDayList_Impl.hpp
+  scaffolds/ScheduleDayList.cpp
+  scaffolds/ScheduleDayHourly.hpp
+  scaffolds/ScheduleDayHourly_Impl.hpp
+  scaffolds/ScheduleDayHourly.cpp
+  scaffolds/ScheduleWeekCompact.hpp
+  scaffolds/ScheduleWeekCompact_Impl.hpp
+  scaffolds/ScheduleWeekCompact.cpp
   ResourceObject/DesignSpecificationOutdoorAir.hpp
   ResourceObject/DesignSpecificationOutdoorAir_Impl.hpp
   ResourceObject/DesignSpecificationOutdoorAir.cpp
@@ -1070,21 +1070,21 @@ set(${target_name}_src
   ResourceObject/WindowPropertyFrameAndDivider.hpp
   ResourceObject/WindowPropertyFrameAndDivider_Impl.hpp
   ResourceObject/WindowPropertyFrameAndDivider.cpp
-  ModelObject/DemandManagerLights.hpp
-  ModelObject/DemandManagerLights_Impl.hpp
-  ModelObject/DemandManagerLights.cpp
-  ModelObject/DemandManagerThermostats.hpp
-  ModelObject/DemandManagerThermostats_Impl.hpp
-  ModelObject/DemandManagerThermostats.cpp
-  ModelObject/DemandManagerVentilation.hpp
-  ModelObject/DemandManagerVentilation_Impl.hpp
-  ModelObject/DemandManagerVentilation.cpp
-  ModelObject/DemandManagerAssignmentList.hpp
-  ModelObject/DemandManagerAssignmentList_Impl.hpp
-  ModelObject/DemandManagerAssignmentList.cpp
-  ModelObject/MatrixTwoDimension.hpp
-  ModelObject/MatrixTwoDimension_Impl.hpp
-  ModelObject/MatrixTwoDimension.cpp
+  scaffolds/DemandManagerLights.hpp
+  scaffolds/DemandManagerLights_Impl.hpp
+  scaffolds/DemandManagerLights.cpp
+  scaffolds/DemandManagerThermostats.hpp
+  scaffolds/DemandManagerThermostats_Impl.hpp
+  scaffolds/DemandManagerThermostats.cpp
+  scaffolds/DemandManagerVentilation.hpp
+  scaffolds/DemandManagerVentilation_Impl.hpp
+  scaffolds/DemandManagerVentilation.cpp
+  scaffolds/DemandManagerAssignmentList.hpp
+  scaffolds/DemandManagerAssignmentList_Impl.hpp
+  scaffolds/DemandManagerAssignmentList.cpp
+  scaffolds/MatrixTwoDimension.hpp
+  scaffolds/MatrixTwoDimension_Impl.hpp
+  scaffolds/MatrixTwoDimension.cpp
   SpaceLoadInstance/ElectricEquipment.hpp
   SpaceLoadInstance/ElectricEquipment_Impl.hpp
   SpaceLoadInstance/ElectricEquipment.cpp
@@ -1136,96 +1136,96 @@ set(${target_name}_src
   ModelPartitionMaterial/InfraredTransparentMaterial.hpp
   ModelPartitionMaterial/InfraredTransparentMaterial_Impl.hpp
   ModelPartitionMaterial/InfraredTransparentMaterial.cpp
-  ModelObject/AirLoopHVACExhaustSystem.hpp
-  ModelObject/AirLoopHVACExhaustSystem_Impl.hpp
-  ModelObject/AirLoopHVACExhaustSystem.cpp
+  scaffolds/AirLoopHVACExhaustSystem.hpp
+  scaffolds/AirLoopHVACExhaustSystem_Impl.hpp
+  scaffolds/AirLoopHVACExhaustSystem.cpp
   ModelObject/AirLoopHVACMixer.hpp
   ModelObject/AirLoopHVACMixer_Impl.hpp
   ModelObject/AirLoopHVACMixer.cpp
-  ModelObject/PumpVariableSpeedCondensate.hpp
-  ModelObject/PumpVariableSpeedCondensate_Impl.hpp
-  ModelObject/PumpVariableSpeedCondensate.cpp
+  scaffolds/PumpVariableSpeedCondensate.hpp
+  scaffolds/PumpVariableSpeedCondensate_Impl.hpp
+  scaffolds/PumpVariableSpeedCondensate.cpp
   ModelObject/AirLoopHVACSplitter.hpp
   ModelObject/AirLoopHVACSplitter_Impl.hpp
   ModelObject/AirLoopHVACSplitter.cpp
-  ModelObject/SpaceHVACZoneReturnMixer.hpp
-  ModelObject/SpaceHVACZoneReturnMixer_Impl.hpp
-  ModelObject/SpaceHVACZoneReturnMixer.cpp
-  ModelObject/GroundHeatTransferControl.hpp
-  ModelObject/GroundHeatTransferControl_Impl.hpp
-  ModelObject/GroundHeatTransferControl.cpp
-  ModelObject/GroundHeatTransferBasementAutoGrid.hpp
-  ModelObject/GroundHeatTransferBasementAutoGrid_Impl.hpp
-  ModelObject/GroundHeatTransferBasementAutoGrid.cpp
-  ModelObject/GroundHeatTransferBasementBldgData.hpp
-  ModelObject/GroundHeatTransferBasementBldgData_Impl.hpp
-  ModelObject/GroundHeatTransferBasementBldgData.cpp
-  ModelObject/GroundHeatTransferBasementComBldg.hpp
-  ModelObject/GroundHeatTransferBasementComBldg_Impl.hpp
-  ModelObject/GroundHeatTransferBasementComBldg.cpp
-  ModelObject/GroundHeatTransferBasementEquivAutoGrid.hpp
-  ModelObject/GroundHeatTransferBasementEquivAutoGrid_Impl.hpp
-  ModelObject/GroundHeatTransferBasementEquivAutoGrid.cpp
-  ModelObject/GroundHeatTransferBasementMatlProps.hpp
-  ModelObject/GroundHeatTransferBasementMatlProps_Impl.hpp
-  ModelObject/GroundHeatTransferBasementMatlProps.cpp
-  ModelObject/GroundHeatTransferBasementInterior.hpp
-  ModelObject/GroundHeatTransferBasementInterior_Impl.hpp
-  ModelObject/GroundHeatTransferBasementInterior.cpp
-  ModelObject/GroundHeatTransferBasementInsulation.hpp
-  ModelObject/GroundHeatTransferBasementInsulation_Impl.hpp
-  ModelObject/GroundHeatTransferBasementInsulation.cpp
-  ModelObject/GroundHeatTransferBasementManualGrid.hpp
-  ModelObject/GroundHeatTransferBasementManualGrid_Impl.hpp
-  ModelObject/GroundHeatTransferBasementManualGrid.cpp
-  ModelObject/GroundHeatTransferBasementSimParameters.hpp
-  ModelObject/GroundHeatTransferBasementSimParameters_Impl.hpp
-  ModelObject/GroundHeatTransferBasementSimParameters.cpp
-  ModelObject/GroundHeatTransferBasementSurfaceProps.hpp
-  ModelObject/GroundHeatTransferBasementSurfaceProps_Impl.hpp
-  ModelObject/GroundHeatTransferBasementSurfaceProps.cpp
-  ModelObject/GroundHeatTransferBasementXFACE.hpp
-  ModelObject/GroundHeatTransferBasementXFACE_Impl.hpp
-  ModelObject/GroundHeatTransferBasementXFACE.cpp
-  ModelObject/GroundHeatTransferBasementYFACE.hpp
-  ModelObject/GroundHeatTransferBasementYFACE_Impl.hpp
-  ModelObject/GroundHeatTransferBasementYFACE.cpp
-  ModelObject/GroundHeatTransferBasementZFACE.hpp
-  ModelObject/GroundHeatTransferBasementZFACE_Impl.hpp
-  ModelObject/GroundHeatTransferBasementZFACE.cpp
-  ModelObject/ThermalStorageChilledWaterMixed.hpp
-  ModelObject/ThermalStorageChilledWaterMixed_Impl.hpp
-  ModelObject/ThermalStorageChilledWaterMixed.cpp
-  ModelObject/ThermalStorageHotWaterStratified.hpp
-  ModelObject/ThermalStorageHotWaterStratified_Impl.hpp
-  ModelObject/ThermalStorageHotWaterStratified.cpp
-  ModelObject/ThermalStorageIceSimple.hpp
-  ModelObject/ThermalStorageIceSimple_Impl.hpp
-  ModelObject/ThermalStorageIceSimple.cpp
+  scaffolds/SpaceHVACZoneReturnMixer.hpp
+  scaffolds/SpaceHVACZoneReturnMixer_Impl.hpp
+  scaffolds/SpaceHVACZoneReturnMixer.cpp
+  scaffolds/GroundHeatTransferControl.hpp
+  scaffolds/GroundHeatTransferControl_Impl.hpp
+  scaffolds/GroundHeatTransferControl.cpp
+  scaffolds/GroundHeatTransferBasementAutoGrid.hpp
+  scaffolds/GroundHeatTransferBasementAutoGrid_Impl.hpp
+  scaffolds/GroundHeatTransferBasementAutoGrid.cpp
+  scaffolds/GroundHeatTransferBasementBldgData.hpp
+  scaffolds/GroundHeatTransferBasementBldgData_Impl.hpp
+  scaffolds/GroundHeatTransferBasementBldgData.cpp
+  scaffolds/GroundHeatTransferBasementComBldg.hpp
+  scaffolds/GroundHeatTransferBasementComBldg_Impl.hpp
+  scaffolds/GroundHeatTransferBasementComBldg.cpp
+  scaffolds/GroundHeatTransferBasementEquivAutoGrid.hpp
+  scaffolds/GroundHeatTransferBasementEquivAutoGrid_Impl.hpp
+  scaffolds/GroundHeatTransferBasementEquivAutoGrid.cpp
+  scaffolds/GroundHeatTransferBasementMatlProps.hpp
+  scaffolds/GroundHeatTransferBasementMatlProps_Impl.hpp
+  scaffolds/GroundHeatTransferBasementMatlProps.cpp
+  scaffolds/GroundHeatTransferBasementInterior.hpp
+  scaffolds/GroundHeatTransferBasementInterior_Impl.hpp
+  scaffolds/GroundHeatTransferBasementInterior.cpp
+  scaffolds/GroundHeatTransferBasementInsulation.hpp
+  scaffolds/GroundHeatTransferBasementInsulation_Impl.hpp
+  scaffolds/GroundHeatTransferBasementInsulation.cpp
+  scaffolds/GroundHeatTransferBasementManualGrid.hpp
+  scaffolds/GroundHeatTransferBasementManualGrid_Impl.hpp
+  scaffolds/GroundHeatTransferBasementManualGrid.cpp
+  scaffolds/GroundHeatTransferBasementSimParameters.hpp
+  scaffolds/GroundHeatTransferBasementSimParameters_Impl.hpp
+  scaffolds/GroundHeatTransferBasementSimParameters.cpp
+  scaffolds/GroundHeatTransferBasementSurfaceProps.hpp
+  scaffolds/GroundHeatTransferBasementSurfaceProps_Impl.hpp
+  scaffolds/GroundHeatTransferBasementSurfaceProps.cpp
+  scaffolds/GroundHeatTransferBasementXFACE.hpp
+  scaffolds/GroundHeatTransferBasementXFACE_Impl.hpp
+  scaffolds/GroundHeatTransferBasementXFACE.cpp
+  scaffolds/GroundHeatTransferBasementYFACE.hpp
+  scaffolds/GroundHeatTransferBasementYFACE_Impl.hpp
+  scaffolds/GroundHeatTransferBasementYFACE.cpp
+  scaffolds/GroundHeatTransferBasementZFACE.hpp
+  scaffolds/GroundHeatTransferBasementZFACE_Impl.hpp
+  scaffolds/GroundHeatTransferBasementZFACE.cpp
+  scaffolds/ThermalStorageChilledWaterMixed.hpp
+  scaffolds/ThermalStorageChilledWaterMixed_Impl.hpp
+  scaffolds/ThermalStorageChilledWaterMixed.cpp
+  scaffolds/ThermalStorageHotWaterStratified.hpp
+  scaffolds/ThermalStorageHotWaterStratified_Impl.hpp
+  scaffolds/ThermalStorageHotWaterStratified.cpp
+  scaffolds/ThermalStorageIceSimple.hpp
+  scaffolds/ThermalStorageIceSimple_Impl.hpp
+  scaffolds/ThermalStorageIceSimple.cpp
   ModelObject/Version.hpp
   ModelObject/Version_Impl.hpp
   ModelObject/Version.cpp
-  ModelObject/ThermalStoragePCM.hpp
-  ModelObject/ThermalStoragePCM_Impl.hpp
-  ModelObject/ThermalStoragePCM.cpp
-  ModelObject/ThermalStorageSizing.hpp
-  ModelObject/ThermalStorageSizing_Impl.hpp
-  ModelObject/ThermalStorageSizing.cpp
-  ModelObject/ThermostatSetpointSingleHeatingOrCooling.hpp
-  ModelObject/ThermostatSetpointSingleHeatingOrCooling_Impl.hpp
-  ModelObject/ThermostatSetpointSingleHeatingOrCooling.cpp
-  ModelObject/ThermostatSetpointThermalComfortFangerDualSetpoint.hpp
-  ModelObject/ThermostatSetpointThermalComfortFangerDualSetpoint_Impl.hpp
-  ModelObject/ThermostatSetpointThermalComfortFangerDualSetpoint.cpp
-  ModelObject/ThermostatSetpointThermalComfortFangerSingleCooling.hpp
-  ModelObject/ThermostatSetpointThermalComfortFangerSingleCooling_Impl.hpp
-  ModelObject/ThermostatSetpointThermalComfortFangerSingleCooling.cpp
-  ModelObject/ThermostatSetpointThermalComfortFangerSingleHeating.hpp
-  ModelObject/ThermostatSetpointThermalComfortFangerSingleHeating_Impl.hpp
-  ModelObject/ThermostatSetpointThermalComfortFangerSingleHeating.cpp
-  ModelObject/ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling.hpp
-  ModelObject/ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling_Impl.hpp
-  ModelObject/ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling.cpp
+  scaffolds/ThermalStoragePCM.hpp
+  scaffolds/ThermalStoragePCM_Impl.hpp
+  scaffolds/ThermalStoragePCM.cpp
+  scaffolds/ThermalStorageSizing.hpp
+  scaffolds/ThermalStorageSizing_Impl.hpp
+  scaffolds/ThermalStorageSizing.cpp
+  scaffolds/ThermostatSetpointSingleHeatingOrCooling.hpp
+  scaffolds/ThermostatSetpointSingleHeatingOrCooling_Impl.hpp
+  scaffolds/ThermostatSetpointSingleHeatingOrCooling.cpp
+  scaffolds/ThermostatSetpointThermalComfortFangerDualSetpoint.hpp
+  scaffolds/ThermostatSetpointThermalComfortFangerDualSetpoint_Impl.hpp
+  scaffolds/ThermostatSetpointThermalComfortFangerDualSetpoint.cpp
+  scaffolds/ThermostatSetpointThermalComfortFangerSingleCooling.hpp
+  scaffolds/ThermostatSetpointThermalComfortFangerSingleCooling_Impl.hpp
+  scaffolds/ThermostatSetpointThermalComfortFangerSingleCooling.cpp
+  scaffolds/ThermostatSetpointThermalComfortFangerSingleHeating.hpp
+  scaffolds/ThermostatSetpointThermalComfortFangerSingleHeating_Impl.hpp
+  scaffolds/ThermostatSetpointThermalComfortFangerSingleHeating.cpp
+  scaffolds/ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling.hpp
+  scaffolds/ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling_Impl.hpp
+  scaffolds/ThermostatSetpointThermalComfortFangerSingleHeatingOrCooling.cpp
   Thermostat/Thermostat.hpp
   Thermostat/Thermostat_Impl.hpp
   Thermostat/Thermostat.cpp
@@ -1235,45 +1235,45 @@ set(${target_name}_src
   Thermostat/ZoneControlThermostatStagedDualSetpoint.hpp
   Thermostat/ZoneControlThermostatStagedDualSetpoint_Impl.hpp
   Thermostat/ZoneControlThermostatStagedDualSetpoint.cpp
-  ModelObject/GroundHeatTransferSlabAutoGrid.hpp
-  ModelObject/GroundHeatTransferSlabAutoGrid_Impl.hpp
-  ModelObject/GroundHeatTransferSlabAutoGrid.cpp
-  ModelObject/GroundHeatTransferSlabManualGrid.hpp
-  ModelObject/GroundHeatTransferSlabManualGrid_Impl.hpp
-  ModelObject/GroundHeatTransferSlabManualGrid.cpp
-  ModelObject/GroundHeatTransferSlabBoundConds.hpp
-  ModelObject/GroundHeatTransferSlabBoundConds_Impl.hpp
-  ModelObject/GroundHeatTransferSlabBoundConds.cpp
-  ModelObject/GroundHeatTransferSlabBldgProps.hpp
-  ModelObject/GroundHeatTransferSlabBldgProps_Impl.hpp
-  ModelObject/GroundHeatTransferSlabBldgProps.cpp
-  ModelObject/GroundHeatTransferSlabEquivalentSlab.hpp
-  ModelObject/GroundHeatTransferSlabEquivalentSlab_Impl.hpp
-  ModelObject/GroundHeatTransferSlabEquivalentSlab.cpp
-  ModelObject/GroundHeatTransferSlabMaterials.hpp
-  ModelObject/GroundHeatTransferSlabMaterials_Impl.hpp
-  ModelObject/GroundHeatTransferSlabMaterials.cpp
-  ModelObject/GroundHeatTransferSlabMatlProps.hpp
-  ModelObject/GroundHeatTransferSlabMatlProps_Impl.hpp
-  ModelObject/GroundHeatTransferSlabMatlProps.cpp
-  ModelObject/GroundHeatTransferSlabInsulation.hpp
-  ModelObject/GroundHeatTransferSlabInsulation_Impl.hpp
-  ModelObject/GroundHeatTransferSlabInsulation.cpp
-  ModelObject/GroundHeatTransferSlabXFACE.hpp
-  ModelObject/GroundHeatTransferSlabXFACE_Impl.hpp
-  ModelObject/GroundHeatTransferSlabXFACE.cpp
-  ModelObject/GroundHeatTransferSlabYFACE.hpp
-  ModelObject/GroundHeatTransferSlabYFACE_Impl.hpp
-  ModelObject/GroundHeatTransferSlabYFACE.cpp
-  ModelObject/GroundHeatTransferSlabZFACE.hpp
-  ModelObject/GroundHeatTransferSlabZFACE_Impl.hpp
-  ModelObject/GroundHeatTransferSlabZFACE.cpp
-  ModelObject/SiteGroundDomainBasement.hpp
-  ModelObject/SiteGroundDomainBasement_Impl.hpp
-  ModelObject/SiteGroundDomainBasement.cpp
-   ModelObject/SiteGroundDomainSlab.hpp
-   ModelObject/SiteGroundDomainSlab_Impl.hpp
-   ModelObject/SiteGroundDomainSlab.cpp
+  scaffolds/GroundHeatTransferSlabAutoGrid.hpp
+  scaffolds/GroundHeatTransferSlabAutoGrid_Impl.hpp
+  scaffolds/GroundHeatTransferSlabAutoGrid.cpp
+  scaffolds/GroundHeatTransferSlabManualGrid.hpp
+  scaffolds/GroundHeatTransferSlabManualGrid_Impl.hpp
+  scaffolds/GroundHeatTransferSlabManualGrid.cpp
+  scaffolds/GroundHeatTransferSlabBoundConds.hpp
+  scaffolds/GroundHeatTransferSlabBoundConds_Impl.hpp
+  scaffolds/GroundHeatTransferSlabBoundConds.cpp
+  scaffolds/GroundHeatTransferSlabBldgProps.hpp
+  scaffolds/GroundHeatTransferSlabBldgProps_Impl.hpp
+  scaffolds/GroundHeatTransferSlabBldgProps.cpp
+  scaffolds/GroundHeatTransferSlabEquivalentSlab.hpp
+  scaffolds/GroundHeatTransferSlabEquivalentSlab_Impl.hpp
+  scaffolds/GroundHeatTransferSlabEquivalentSlab.cpp
+  scaffolds/GroundHeatTransferSlabMaterials.hpp
+  scaffolds/GroundHeatTransferSlabMaterials_Impl.hpp
+  scaffolds/GroundHeatTransferSlabMaterials.cpp
+  scaffolds/GroundHeatTransferSlabMatlProps.hpp
+  scaffolds/GroundHeatTransferSlabMatlProps_Impl.hpp
+  scaffolds/GroundHeatTransferSlabMatlProps.cpp
+  scaffolds/GroundHeatTransferSlabInsulation.hpp
+  scaffolds/GroundHeatTransferSlabInsulation_Impl.hpp
+  scaffolds/GroundHeatTransferSlabInsulation.cpp
+  scaffolds/GroundHeatTransferSlabXFACE.hpp
+  scaffolds/GroundHeatTransferSlabXFACE_Impl.hpp
+  scaffolds/GroundHeatTransferSlabXFACE.cpp
+  scaffolds/GroundHeatTransferSlabYFACE.hpp
+  scaffolds/GroundHeatTransferSlabYFACE_Impl.hpp
+  scaffolds/GroundHeatTransferSlabYFACE.cpp
+  scaffolds/GroundHeatTransferSlabZFACE.hpp
+  scaffolds/GroundHeatTransferSlabZFACE_Impl.hpp
+  scaffolds/GroundHeatTransferSlabZFACE.cpp
+  scaffolds/SiteGroundDomainBasement.hpp
+  scaffolds/SiteGroundDomainBasement_Impl.hpp
+  scaffolds/SiteGroundDomainBasement.cpp
+   scaffolds/SiteGroundDomainSlab.hpp
+   scaffolds/SiteGroundDomainSlab_Impl.hpp
+   scaffolds/SiteGroundDomainSlab.cpp
    ModelObject/SiteGroundTemperatureDeep.hpp
    ModelObject/SiteGroundTemperatureDeep_Impl.hpp
    ModelObject/SiteGroundTemperatureDeep.cpp
@@ -1298,15 +1298,15 @@ set(${target_name}_src
    ModelObject/SiteGroundReflectance.hpp
    ModelObject/SiteGroundReflectance_Impl.hpp
    ModelObject/SiteGroundReflectance.cpp
-   ModelObject/SiteGroundReflectanceSnowModifier.hpp
-   ModelObject/SiteGroundReflectanceSnowModifier_Impl.hpp
-   ModelObject/SiteGroundReflectanceSnowModifier.cpp
-   ModelObject/SiteHeightVariation.hpp
-   ModelObject/SiteHeightVariation_Impl.hpp
-   ModelObject/SiteHeightVariation.cpp
-   ModelObject/SitePrecipitation.hpp
-   ModelObject/SitePrecipitation_Impl.hpp
-  ModelObject/SitePrecipitation.cpp
+   scaffolds/SiteGroundReflectanceSnowModifier.hpp
+   scaffolds/SiteGroundReflectanceSnowModifier_Impl.hpp
+   scaffolds/SiteGroundReflectanceSnowModifier.cpp
+   scaffolds/SiteHeightVariation.hpp
+   scaffolds/SiteHeightVariation_Impl.hpp
+   scaffolds/SiteHeightVariation.cpp
+   scaffolds/SitePrecipitation.hpp
+   scaffolds/SitePrecipitation_Impl.hpp
+  scaffolds/SitePrecipitation.cpp
   ModelObject/SizingPlant.hpp
   ModelObject/SizingPlant_Impl.hpp
   ModelObject/SizingPlant.cpp
@@ -1316,30 +1316,30 @@ set(${target_name}_src
   SizingPeriod/DesignDay.hpp
   SizingPeriod/DesignDay_Impl.hpp
   SizingPeriod/DesignDay.cpp
-  ModelObject/SizingPeriodWeatherFileConditionType.hpp
-  ModelObject/SizingPeriodWeatherFileConditionType_Impl.hpp
-  ModelObject/SizingPeriodWeatherFileConditionType.cpp
-  ModelObject/SizingPeriodWeatherFileDays.hpp
-  ModelObject/SizingPeriodWeatherFileDays_Impl.hpp
-  ModelObject/SizingPeriodWeatherFileDays.cpp
+  scaffolds/SizingPeriodWeatherFileConditionType.hpp
+  scaffolds/SizingPeriodWeatherFileConditionType_Impl.hpp
+  scaffolds/SizingPeriodWeatherFileConditionType.cpp
+  scaffolds/SizingPeriodWeatherFileDays.hpp
+  scaffolds/SizingPeriodWeatherFileDays_Impl.hpp
+  scaffolds/SizingPeriodWeatherFileDays.cpp
   ModelObject/SizingParameters.hpp
   ModelObject/SizingParameters_Impl.hpp
   ModelObject/SizingParameters.cpp
   ModelObject/SiteWaterMainsTemperature.hpp
   ModelObject/SiteWaterMainsTemperature_Impl.hpp
   ModelObject/SiteWaterMainsTemperature.cpp
-  ModelObject/SiteWeatherStation.hpp
-  ModelObject/SiteWeatherStation_Impl.hpp
-  ModelObject/SiteWeatherStation.cpp
-  ModelObject/SiteSolarAndVisibleSpectrum.hpp
-  ModelObject/SiteSolarAndVisibleSpectrum_Impl.hpp
-  ModelObject/SiteSolarAndVisibleSpectrum.cpp
-  ModelObject/SiteSpectrumData.hpp
-  ModelObject/SiteSpectrumData_Impl.hpp
-  ModelObject/SiteSpectrumData.cpp
-  ModelObject/SiteVariableLocation.hpp
-  ModelObject/SiteVariableLocation_Impl.hpp
-  ModelObject/SiteVariableLocation.cpp
+  scaffolds/SiteWeatherStation.hpp
+  scaffolds/SiteWeatherStation_Impl.hpp
+  scaffolds/SiteWeatherStation.cpp
+  scaffolds/SiteSolarAndVisibleSpectrum.hpp
+  scaffolds/SiteSolarAndVisibleSpectrum_Impl.hpp
+  scaffolds/SiteSolarAndVisibleSpectrum.cpp
+  scaffolds/SiteSpectrumData.hpp
+  scaffolds/SiteSpectrumData_Impl.hpp
+  scaffolds/SiteSpectrumData.cpp
+  scaffolds/SiteVariableLocation.hpp
+  scaffolds/SiteVariableLocation_Impl.hpp
+  scaffolds/SiteVariableLocation.cpp
   LayeredConstruction/Construction.hpp
   LayeredConstruction/Construction_Impl.hpp
   LayeredConstruction/Construction.cpp
@@ -1355,57 +1355,57 @@ set(${target_name}_src
   ConstructionBase/FFactorGroundFloorConstruction.hpp
   ConstructionBase/FFactorGroundFloorConstruction_Impl.hpp
   ConstructionBase/FFactorGroundFloorConstruction.cpp
-  ModelObject/ConstructionWindowDataFile.hpp
-  ModelObject/ConstructionWindowDataFile_Impl.hpp
-  ModelObject/ConstructionWindowDataFile.cpp
-  ModelObject/ConstructionWindowEquivalentLayer.hpp
-  ModelObject/ConstructionWindowEquivalentLayer_Impl.hpp
-  ModelObject/ConstructionWindowEquivalentLayer.cpp
-  ModelObject/Window.hpp
-  ModelObject/Window_Impl.hpp
-  ModelObject/Window.cpp
-  ModelObject/WindowInterzone.hpp
-  ModelObject/WindowInterzone_Impl.hpp
-  ModelObject/WindowInterzone.cpp
-  ModelObject/WindowGapDeflectionState.hpp
-  ModelObject/WindowGapDeflectionState_Impl.hpp
-  ModelObject/WindowGapDeflectionState.cpp
-   ModelObject/WindowGapSupportPillar.hpp
-   ModelObject/WindowGapSupportPillar_Impl.hpp
-   ModelObject/WindowGapSupportPillar.cpp
-   ModelObject/WindowPropertyAirflowControl.hpp
-    ModelObject/WindowPropertyAirflowControl_Impl.hpp
-    ModelObject/WindowPropertyAirflowControl.cpp
-   ModelObject/WindowPropertyStormWindow.hpp
-   ModelObject/WindowPropertyStormWindow_Impl.hpp
-   ModelObject/WindowPropertyStormWindow.cpp
-   ModelObject/WindowThermalModelParams.hpp
-   ModelObject/WindowThermalModelParams_Impl.hpp
-   ModelObject/WindowThermalModelParams.cpp
-   ModelObject/WindowsCalculationEngine.hpp
-   ModelObject/WindowsCalculationEngine_Impl.hpp
-   ModelObject/WindowsCalculationEngine.cpp
-  ModelObject/AirLoopHVACUnitaryFurnaceHeatCool.hpp
-  ModelObject/AirLoopHVACUnitaryFurnaceHeatCool_Impl.hpp
-  ModelObject/AirLoopHVACUnitaryFurnaceHeatCool.cpp
-  ModelObject/AirLoopHVACUnitaryFurnaceHeatOnly.hpp
-  ModelObject/AirLoopHVACUnitaryFurnaceHeatOnly_Impl.hpp
-  ModelObject/AirLoopHVACUnitaryFurnaceHeatOnly.cpp
-  ModelObject/AirLoopHVACUnitaryHeatOnly.hpp
-  ModelObject/AirLoopHVACUnitaryHeatOnly_Impl.hpp
-  ModelObject/AirLoopHVACUnitaryHeatOnly.cpp
+  scaffolds/ConstructionWindowDataFile.hpp
+  scaffolds/ConstructionWindowDataFile_Impl.hpp
+  scaffolds/ConstructionWindowDataFile.cpp
+  scaffolds/ConstructionWindowEquivalentLayer.hpp
+  scaffolds/ConstructionWindowEquivalentLayer_Impl.hpp
+  scaffolds/ConstructionWindowEquivalentLayer.cpp
+  scaffolds/Window.hpp
+  scaffolds/Window_Impl.hpp
+  scaffolds/Window.cpp
+  scaffolds/WindowInterzone.hpp
+  scaffolds/WindowInterzone_Impl.hpp
+  scaffolds/WindowInterzone.cpp
+  scaffolds/WindowGapDeflectionState.hpp
+  scaffolds/WindowGapDeflectionState_Impl.hpp
+  scaffolds/WindowGapDeflectionState.cpp
+   scaffolds/WindowGapSupportPillar.hpp
+   scaffolds/WindowGapSupportPillar_Impl.hpp
+   scaffolds/WindowGapSupportPillar.cpp
+   scaffolds/WindowPropertyAirflowControl.hpp
+    scaffolds/WindowPropertyAirflowControl_Impl.hpp
+    scaffolds/WindowPropertyAirflowControl.cpp
+   scaffolds/WindowPropertyStormWindow.hpp
+   scaffolds/WindowPropertyStormWindow_Impl.hpp
+   scaffolds/WindowPropertyStormWindow.cpp
+   scaffolds/WindowThermalModelParams.hpp
+   scaffolds/WindowThermalModelParams_Impl.hpp
+   scaffolds/WindowThermalModelParams.cpp
+   scaffolds/WindowsCalculationEngine.hpp
+   scaffolds/WindowsCalculationEngine_Impl.hpp
+   scaffolds/WindowsCalculationEngine.cpp
+  scaffolds/AirLoopHVACUnitaryFurnaceHeatCool.hpp
+  scaffolds/AirLoopHVACUnitaryFurnaceHeatCool_Impl.hpp
+  scaffolds/AirLoopHVACUnitaryFurnaceHeatCool.cpp
+  scaffolds/AirLoopHVACUnitaryFurnaceHeatOnly.hpp
+  scaffolds/AirLoopHVACUnitaryFurnaceHeatOnly_Impl.hpp
+  scaffolds/AirLoopHVACUnitaryFurnaceHeatOnly.cpp
+  scaffolds/AirLoopHVACUnitaryHeatOnly.hpp
+  scaffolds/AirLoopHVACUnitaryHeatOnly_Impl.hpp
+  scaffolds/AirLoopHVACUnitaryHeatOnly.cpp
   StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAir.hpp
   StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAir_Impl.hpp
   StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAir.cpp
-  ModelObject/AirLoopHVACUnitaryHeatPumpWaterToAir.hpp
-  ModelObject/AirLoopHVACUnitaryHeatPumpWaterToAir_Impl.hpp
-  ModelObject/AirLoopHVACUnitaryHeatPumpWaterToAir.cpp
+  scaffolds/AirLoopHVACUnitaryHeatPumpWaterToAir.hpp
+  scaffolds/AirLoopHVACUnitaryHeatPumpWaterToAir_Impl.hpp
+  scaffolds/AirLoopHVACUnitaryHeatPumpWaterToAir.cpp
   StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.hpp
   StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl.hpp
   StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.cpp
-  ModelObject/AirLoopHVACUnitaryHeatCool.hpp
-  ModelObject/AirLoopHVACUnitaryHeatCool_Impl.hpp
-  ModelObject/AirLoopHVACUnitaryHeatCool.cpp
+  scaffolds/AirLoopHVACUnitaryHeatCool.hpp
+  scaffolds/AirLoopHVACUnitaryHeatCool_Impl.hpp
+  scaffolds/AirLoopHVACUnitaryHeatCool.cpp
   StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.hpp
   StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl.hpp
   StraightComponent/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.cpp
@@ -1496,84 +1496,84 @@ set(${target_name}_src
      ZoneHVACComponent/ZoneHVACLowTemperatureRadiantElectric.hpp
     ZoneHVACComponent/ZoneHVACLowTemperatureRadiantElectric_Impl.hpp
     ZoneHVACComponent/ZoneHVACLowTemperatureRadiantElectric.cpp
-  ModelObject/FanPerformanceNightVentilation.hpp
-  ModelObject/FanPerformanceNightVentilation_Impl.hpp
-  ModelObject/FanPerformanceNightVentilation.cpp
-  ModelObject/FaultModelFoulingAirFilter.hpp
-  ModelObject/FaultModelFoulingAirFilter_Impl.hpp
-  ModelObject/FaultModelFoulingAirFilter.cpp
-  ModelObject/FaultModelFoulingBoiler.hpp
-  ModelObject/FaultModelFoulingBoiler_Impl.hpp
-  ModelObject/FaultModelFoulingBoiler.cpp
-  ModelObject/FaultModelFoulingChiller.hpp
-  ModelObject/FaultModelFoulingChiller_Impl.hpp
-  ModelObject/FaultModelFoulingChiller.cpp
-  ModelObject/FaultModelFoulingCoil.hpp
-  ModelObject/FaultModelFoulingCoil_Impl.hpp
-  ModelObject/FaultModelFoulingCoil.cpp
-  ModelObject/FaultModelFoulingCoolingTower.hpp
-  ModelObject/FaultModelFoulingCoolingTower_Impl.hpp
-  ModelObject/FaultModelFoulingCoolingTower.cpp
-  ModelObject/FaultModelFoulingEvaporativeCooler.hpp
-  ModelObject/FaultModelFoulingEvaporativeCooler_Impl.hpp
-  ModelObject/FaultModelFoulingEvaporativeCooler.cpp
-  ModelObject/FaultModelEnthalpySensorOffsetOutdoorAir.hpp
-  ModelObject/FaultModelEnthalpySensorOffsetOutdoorAir_Impl.hpp
-  ModelObject/FaultModelEnthalpySensorOffsetOutdoorAir.cpp
-  ModelObject/FaultModelEnthalpySensorOffsetReturnAir.hpp
-  ModelObject/FaultModelEnthalpySensorOffsetReturnAir_Impl.hpp
-  ModelObject/FaultModelEnthalpySensorOffsetReturnAir.cpp
-  ModelObject/FaultModelHumidistatOffset.hpp
-  ModelObject/FaultModelHumidistatOffset_Impl.hpp
-  ModelObject/FaultModelHumidistatOffset.cpp
-  ModelObject/FaultModelHumiditySensorOffsetOutdoorAir.hpp
-  ModelObject/FaultModelHumiditySensorOffsetOutdoorAir_Impl.hpp
-  ModelObject/FaultModelHumiditySensorOffsetOutdoorAir.cpp
-  ModelObject/FaultModelThermostatOffset.hpp
-  ModelObject/FaultModelThermostatOffset_Impl.hpp
-  ModelObject/FaultModelThermostatOffset.cpp
-  ModelObject/FaultModelTemperatureSensorOffsetChillerSupplyWater.hpp
-  ModelObject/FaultModelTemperatureSensorOffsetChillerSupplyWater_Impl.hpp
-  ModelObject/FaultModelTemperatureSensorOffsetChillerSupplyWater.cpp
-  ModelObject/FaultModelTemperatureSensorOffsetCoilSupplyAir.hpp
-  ModelObject/FaultModelTemperatureSensorOffsetCoilSupplyAir_Impl.hpp
-  ModelObject/FaultModelTemperatureSensorOffsetCoilSupplyAir.cpp
-  ModelObject/FaultModelTemperatureSensorOffsetCondenserSupplyWater.hpp
-  ModelObject/FaultModelTemperatureSensorOffsetCondenserSupplyWater_Impl.hpp
-  ModelObject/FaultModelTemperatureSensorOffsetCondenserSupplyWater.cpp
-  ModelObject/FaultModelTemperatureSensorOffsetOutdoorAir.hpp
-  ModelObject/FaultModelTemperatureSensorOffsetOutdoorAir_Impl.hpp
-  ModelObject/FaultModelTemperatureSensorOffsetOutdoorAir.cpp
-  ModelObject/FaultModelTemperatureSensorOffsetReturnAir.hpp
-  ModelObject/FaultModelTemperatureSensorOffsetReturnAir_Impl.hpp
-  ModelObject/FaultModelTemperatureSensorOffsetReturnAir.cpp
-  ModelObject/FloorAdiabatic.hpp
-  ModelObject/FloorAdiabatic_Impl.hpp
-  ModelObject/FloorAdiabatic.cpp
-  ModelObject/FloorDetailed.hpp
-  ModelObject/FloorDetailed_Impl.hpp
-  ModelObject/FloorDetailed.cpp
-  ModelObject/FloorGroundContact.hpp
-  ModelObject/FloorGroundContact_Impl.hpp
-  ModelObject/FloorGroundContact.cpp
-  ModelObject/FloorInterzone.hpp
-  ModelObject/FloorInterzone_Impl.hpp
-  ModelObject/FloorInterzone.cpp
-  ModelObject/WallAdiabatic.hpp
-  ModelObject/WallAdiabatic_Impl.hpp
-  ModelObject/WallAdiabatic.cpp
-   ModelObject/WallDetailed.hpp
-   ModelObject/WallDetailed_Impl.hpp
-   ModelObject/WallDetailed.cpp
-   ModelObject/WallExterior.hpp
-   ModelObject/WallExterior_Impl.hpp
-   ModelObject/WallExterior.cpp
-   ModelObject/WallInterzone.hpp
-   ModelObject/WallInterzone_Impl.hpp
-   ModelObject/WallInterzone.cpp
-   ModelObject/WallUnderground.hpp
-   ModelObject/WallUnderground_Impl.hpp
-   ModelObject/WallUnderground.cpp
+  scaffolds/FanPerformanceNightVentilation.hpp
+  scaffolds/FanPerformanceNightVentilation_Impl.hpp
+  scaffolds/FanPerformanceNightVentilation.cpp
+  scaffolds/FaultModelFoulingAirFilter.hpp
+  scaffolds/FaultModelFoulingAirFilter_Impl.hpp
+  scaffolds/FaultModelFoulingAirFilter.cpp
+  scaffolds/FaultModelFoulingBoiler.hpp
+  scaffolds/FaultModelFoulingBoiler_Impl.hpp
+  scaffolds/FaultModelFoulingBoiler.cpp
+  scaffolds/FaultModelFoulingChiller.hpp
+  scaffolds/FaultModelFoulingChiller_Impl.hpp
+  scaffolds/FaultModelFoulingChiller.cpp
+  scaffolds/FaultModelFoulingCoil.hpp
+  scaffolds/FaultModelFoulingCoil_Impl.hpp
+  scaffolds/FaultModelFoulingCoil.cpp
+  scaffolds/FaultModelFoulingCoolingTower.hpp
+  scaffolds/FaultModelFoulingCoolingTower_Impl.hpp
+  scaffolds/FaultModelFoulingCoolingTower.cpp
+  scaffolds/FaultModelFoulingEvaporativeCooler.hpp
+  scaffolds/FaultModelFoulingEvaporativeCooler_Impl.hpp
+  scaffolds/FaultModelFoulingEvaporativeCooler.cpp
+  scaffolds/FaultModelEnthalpySensorOffsetOutdoorAir.hpp
+  scaffolds/FaultModelEnthalpySensorOffsetOutdoorAir_Impl.hpp
+  scaffolds/FaultModelEnthalpySensorOffsetOutdoorAir.cpp
+  scaffolds/FaultModelEnthalpySensorOffsetReturnAir.hpp
+  scaffolds/FaultModelEnthalpySensorOffsetReturnAir_Impl.hpp
+  scaffolds/FaultModelEnthalpySensorOffsetReturnAir.cpp
+  scaffolds/FaultModelHumidistatOffset.hpp
+  scaffolds/FaultModelHumidistatOffset_Impl.hpp
+  scaffolds/FaultModelHumidistatOffset.cpp
+  scaffolds/FaultModelHumiditySensorOffsetOutdoorAir.hpp
+  scaffolds/FaultModelHumiditySensorOffsetOutdoorAir_Impl.hpp
+  scaffolds/FaultModelHumiditySensorOffsetOutdoorAir.cpp
+  scaffolds/FaultModelThermostatOffset.hpp
+  scaffolds/FaultModelThermostatOffset_Impl.hpp
+  scaffolds/FaultModelThermostatOffset.cpp
+  scaffolds/FaultModelTemperatureSensorOffsetChillerSupplyWater.hpp
+  scaffolds/FaultModelTemperatureSensorOffsetChillerSupplyWater_Impl.hpp
+  scaffolds/FaultModelTemperatureSensorOffsetChillerSupplyWater.cpp
+  scaffolds/FaultModelTemperatureSensorOffsetCoilSupplyAir.hpp
+  scaffolds/FaultModelTemperatureSensorOffsetCoilSupplyAir_Impl.hpp
+  scaffolds/FaultModelTemperatureSensorOffsetCoilSupplyAir.cpp
+  scaffolds/FaultModelTemperatureSensorOffsetCondenserSupplyWater.hpp
+  scaffolds/FaultModelTemperatureSensorOffsetCondenserSupplyWater_Impl.hpp
+  scaffolds/FaultModelTemperatureSensorOffsetCondenserSupplyWater.cpp
+  scaffolds/FaultModelTemperatureSensorOffsetOutdoorAir.hpp
+  scaffolds/FaultModelTemperatureSensorOffsetOutdoorAir_Impl.hpp
+  scaffolds/FaultModelTemperatureSensorOffsetOutdoorAir.cpp
+  scaffolds/FaultModelTemperatureSensorOffsetReturnAir.hpp
+  scaffolds/FaultModelTemperatureSensorOffsetReturnAir_Impl.hpp
+  scaffolds/FaultModelTemperatureSensorOffsetReturnAir.cpp
+  scaffolds/FloorAdiabatic.hpp
+  scaffolds/FloorAdiabatic_Impl.hpp
+  scaffolds/FloorAdiabatic.cpp
+  scaffolds/FloorDetailed.hpp
+  scaffolds/FloorDetailed_Impl.hpp
+  scaffolds/FloorDetailed.cpp
+  scaffolds/FloorGroundContact.hpp
+  scaffolds/FloorGroundContact_Impl.hpp
+  scaffolds/FloorGroundContact.cpp
+  scaffolds/FloorInterzone.hpp
+  scaffolds/FloorInterzone_Impl.hpp
+  scaffolds/FloorInterzone.cpp
+  scaffolds/WallAdiabatic.hpp
+  scaffolds/WallAdiabatic_Impl.hpp
+  scaffolds/WallAdiabatic.cpp
+   scaffolds/WallDetailed.hpp
+   scaffolds/WallDetailed_Impl.hpp
+   scaffolds/WallDetailed.cpp
+   scaffolds/WallExterior.hpp
+   scaffolds/WallExterior_Impl.hpp
+   scaffolds/WallExterior.cpp
+   scaffolds/WallInterzone.hpp
+   scaffolds/WallInterzone_Impl.hpp
+   scaffolds/WallInterzone.cpp
+   scaffolds/WallUnderground.hpp
+   scaffolds/WallUnderground_Impl.hpp
+   scaffolds/WallUnderground.cpp
    ZoneHVACComponent/FanZoneExhaust.hpp
   ZoneHVACComponent/FanZoneExhaust_Impl.hpp
   ZoneHVACComponent/FanZoneExhaust.cpp
@@ -1632,9 +1632,9 @@ set(${target_name}_src
   Inverter/ElectricLoadCenterInverterSimple.hpp
   Inverter/ElectricLoadCenterInverterSimple_Impl.hpp
   Inverter/ElectricLoadCenterInverterSimple.cpp
-  ModelObject/ElectricLoadCenterInverterFunctionOfPower.hpp
-  ModelObject/ElectricLoadCenterInverterFunctionOfPower_Impl.hpp
-  ModelObject/ElectricLoadCenterInverterFunctionOfPower.cpp
+  scaffolds/ElectricLoadCenterInverterFunctionOfPower.hpp
+  scaffolds/ElectricLoadCenterInverterFunctionOfPower_Impl.hpp
+  scaffolds/ElectricLoadCenterInverterFunctionOfPower.cpp
   ModelObject/ElectricLoadCenterTransformer.hpp
   ModelObject/ElectricLoadCenterTransformer_Impl.hpp
   ModelObject/ElectricLoadCenterTransformer.cpp
@@ -1662,9 +1662,9 @@ set(${target_name}_src
   ModelObject/OutputConstructions.hpp
   ModelObject/OutputConstructions_Impl.hpp
   ModelObject/OutputConstructions.cpp
-  ModelObject/OutputDaylightFactors.hpp
-  ModelObject/OutputDaylightFactors_Impl.hpp
-  ModelObject/OutputDaylightFactors.cpp
+  scaffolds/OutputDaylightFactors.hpp
+  scaffolds/OutputDaylightFactors_Impl.hpp
+  scaffolds/OutputDaylightFactors.cpp
   ModelObject/OutputDebuggingData.hpp
   ModelObject/OutputDebuggingData_Impl.hpp
   ModelObject/OutputDebuggingData.cpp
@@ -1680,57 +1680,57 @@ set(${target_name}_src
   ModelObject/OutputControlFiles.hpp
   ModelObject/OutputControlFiles_Impl.hpp
   ModelObject/OutputControlFiles.cpp
-  ModelObject/OutputControlIlluminanceMapStyle.hpp
-  ModelObject/OutputControlIlluminanceMapStyle_Impl.hpp
-  ModelObject/OutputControlIlluminanceMapStyle.cpp
+  scaffolds/OutputControlIlluminanceMapStyle.hpp
+  scaffolds/OutputControlIlluminanceMapStyle_Impl.hpp
+  scaffolds/OutputControlIlluminanceMapStyle.cpp
   ModelObject/OutputControlReportingTolerances.hpp
   ModelObject/OutputControlReportingTolerances_Impl.hpp
   ModelObject/OutputControlReportingTolerances.cpp
   ModelObject/OutputControlResilienceSummaries.hpp
   ModelObject/OutputControlResilienceSummaries_Impl.hpp
   ModelObject/OutputControlResilienceSummaries.cpp
-  ModelObject/OutputControlSizingStyle.hpp
-  ModelObject/OutputControlSizingStyle_Impl.hpp
-  ModelObject/OutputControlSizingStyle.cpp
+  scaffolds/OutputControlSizingStyle.hpp
+  scaffolds/OutputControlSizingStyle_Impl.hpp
+  scaffolds/OutputControlSizingStyle.cpp
   ModelObject/OutputControlTableStyle.hpp
   ModelObject/OutputControlTableStyle_Impl.hpp
   ModelObject/OutputControlTableStyle.cpp
   ModelObject/OutputControlTimestamp.hpp
   ModelObject/OutputControlTimestamp_Impl.hpp
   ModelObject/OutputControlTimestamp.cpp
-  ModelObject/ParametricFileNameSuffix.hpp
-  ModelObject/ParametricFileNameSuffix_Impl.hpp
-  ModelObject/ParametricFileNameSuffix.cpp
-  ModelObject/ParametricLogic.hpp
-  ModelObject/ParametricLogic_Impl.hpp
-  ModelObject/ParametricLogic.cpp
-  ModelObject/ParametricRunControl.hpp
-  ModelObject/ParametricRunControl_Impl.hpp
-  ModelObject/ParametricRunControl.cpp
-  ModelObject/ParametricSetValueForRun.hpp
-  ModelObject/ParametricSetValueForRun_Impl.hpp
-  ModelObject/ParametricSetValueForRun.cpp
-  ModelObject/OutputControlSurfaceColorScheme.hpp
-  ModelObject/OutputControlSurfaceColorScheme_Impl.hpp
-  ModelObject/OutputControlSurfaceColorScheme.cpp
+  scaffolds/ParametricFileNameSuffix.hpp
+  scaffolds/ParametricFileNameSuffix_Impl.hpp
+  scaffolds/ParametricFileNameSuffix.cpp
+  scaffolds/ParametricLogic.hpp
+  scaffolds/ParametricLogic_Impl.hpp
+  scaffolds/ParametricLogic.cpp
+  scaffolds/ParametricRunControl.hpp
+  scaffolds/ParametricRunControl_Impl.hpp
+  scaffolds/ParametricRunControl.cpp
+  scaffolds/ParametricSetValueForRun.hpp
+  scaffolds/ParametricSetValueForRun_Impl.hpp
+  scaffolds/ParametricSetValueForRun.cpp
+  scaffolds/OutputControlSurfaceColorScheme.hpp
+  scaffolds/OutputControlSurfaceColorScheme_Impl.hpp
+  scaffolds/OutputControlSurfaceColorScheme.cpp
   ModelObject/OutputJSON.hpp
   ModelObject/OutputJSON_Impl.hpp
   ModelObject/OutputJSON.cpp
-  ModelObject/OutputMeter.hpp
-  ModelObject/OutputMeter_Impl.hpp
-  ModelObject/OutputMeter.cpp
-  ModelObject/OutputMeterCumulative.hpp
-  ModelObject/OutputMeterCumulative_Impl.hpp
-  ModelObject/OutputMeterCumulative.cpp
-  ModelObject/OutputMeterCumulativeMeterFileOnly.hpp
-  ModelObject/OutputMeterCumulativeMeterFileOnly_Impl.hpp
-  ModelObject/OutputMeterCumulativeMeterFileOnly.cpp
-  ModelObject/OutputMeterMeterFileOnly.hpp
-  ModelObject/OutputMeterMeterFileOnly_Impl.hpp
-  ModelObject/OutputMeterMeterFileOnly.cpp
-  ModelObject/OutputPreprocessorMessage.hpp
-  ModelObject/OutputPreprocessorMessage_Impl.hpp
-  ModelObject/OutputPreprocessorMessage.cpp
+  scaffolds/OutputMeter.hpp
+  scaffolds/OutputMeter_Impl.hpp
+  scaffolds/OutputMeter.cpp
+  scaffolds/OutputMeterCumulative.hpp
+  scaffolds/OutputMeterCumulative_Impl.hpp
+  scaffolds/OutputMeterCumulative.cpp
+  scaffolds/OutputMeterCumulativeMeterFileOnly.hpp
+  scaffolds/OutputMeterCumulativeMeterFileOnly_Impl.hpp
+  scaffolds/OutputMeterCumulativeMeterFileOnly.cpp
+  scaffolds/OutputMeterMeterFileOnly.hpp
+  scaffolds/OutputMeterMeterFileOnly_Impl.hpp
+  scaffolds/OutputMeterMeterFileOnly.cpp
+  scaffolds/OutputPreprocessorMessage.hpp
+  scaffolds/OutputPreprocessorMessage_Impl.hpp
+  scaffolds/OutputPreprocessorMessage.cpp
   ModelObject/OutputSQLite.hpp
   ModelObject/OutputSQLite_Impl.hpp
   ModelObject/OutputSQLite.cpp
@@ -1743,27 +1743,27 @@ set(${target_name}_src
   ModelObject/OutputTableMonthly.hpp
   ModelObject/OutputTableMonthly_Impl.hpp
   ModelObject/OutputTableMonthly.cpp
-  ModelObject/OutputTableReportPeriod.hpp
-  ModelObject/OutputTableReportPeriod_Impl.hpp
-  ModelObject/OutputTableReportPeriod.cpp
+  scaffolds/OutputTableReportPeriod.hpp
+  scaffolds/OutputTableReportPeriod_Impl.hpp
+  scaffolds/OutputTableReportPeriod.cpp
   ModelObject/OutputTableSummaryReports.hpp
   ModelObject/OutputTableSummaryReports_Impl.hpp
   ModelObject/OutputTableSummaryReports.cpp
-  ModelObject/OutputTableTimeBins.hpp
-  ModelObject/OutputTableTimeBins_Impl.hpp
-  ModelObject/OutputTableTimeBins.cpp
+  scaffolds/OutputTableTimeBins.hpp
+  scaffolds/OutputTableTimeBins_Impl.hpp
+  scaffolds/OutputTableTimeBins.cpp
   ModelObject/OutputVariable.hpp
   ModelObject/OutputVariable_Impl.hpp
   ModelObject/OutputVariable.cpp
-  ModelObject/OutputVariableDictionary.hpp
-  ModelObject/OutputVariableDictionary_Impl.hpp
-  ModelObject/OutputVariableDictionary.cpp
-  ModelObject/OutputSurfacesList.hpp
-  ModelObject/OutputSurfacesList_Impl.hpp
-  ModelObject/OutputSurfacesList.cpp
-  ModelObject/OutputSurfacesDrawing.hpp
-  ModelObject/OutputSurfacesDrawing_Impl.hpp
-  ModelObject/OutputSurfacesDrawing.cpp
+  scaffolds/OutputVariableDictionary.hpp
+  scaffolds/OutputVariableDictionary_Impl.hpp
+  scaffolds/OutputVariableDictionary.cpp
+  scaffolds/OutputSurfacesList.hpp
+  scaffolds/OutputSurfacesList_Impl.hpp
+  scaffolds/OutputSurfacesList.cpp
+  scaffolds/OutputSurfacesDrawing.hpp
+  scaffolds/OutputSurfacesDrawing_Impl.hpp
+  scaffolds/OutputSurfacesDrawing.cpp
   ModelObject/PythonPluginVariable.hpp
   ModelObject/PythonPluginVariable_Impl.hpp
   ModelObject/PythonPluginVariable.cpp
@@ -1791,9 +1791,9 @@ set(${target_name}_src
   ModelObject/EnergyManagementSystemProgramCallingManager.hpp
   ModelObject/EnergyManagementSystemProgramCallingManager_Impl.hpp
   ModelObject/EnergyManagementSystemProgramCallingManager.cpp
-  ModelObject/ElectricLoadCenterStorageBattery.hpp
-  ModelObject/ElectricLoadCenterStorageBattery_Impl.hpp
-  ModelObject/ElectricLoadCenterStorageBattery.cpp
+  scaffolds/ElectricLoadCenterStorageBattery.hpp
+  scaffolds/ElectricLoadCenterStorageBattery_Impl.hpp
+  scaffolds/ElectricLoadCenterStorageBattery.cpp
   ElectricalStorage/ElectricLoadCenterStorageSimple.hpp
   ElectricalStorage/ElectricLoadCenterStorageSimple_Impl.hpp
   ElectricalStorage/ElectricLoadCenterStorageSimple.cpp
@@ -1806,63 +1806,63 @@ set(${target_name}_src
   ModelObject/DesignSpecificationOutdoorAirSpaceList.hpp
   ModelObject/DesignSpecificationOutdoorAirSpaceList_Impl.hpp
   ModelObject/DesignSpecificationOutdoorAirSpaceList.cpp
-  ModelObject/DesignSpecificationAirTerminalSizing.hpp
-  ModelObject/DesignSpecificationAirTerminalSizing_Impl.hpp
-  ModelObject/DesignSpecificationAirTerminalSizing.cpp
-  ModelObject/DesignSpecificationZoneHVACSizing.hpp
-  ModelObject/DesignSpecificationZoneHVACSizing_Impl.hpp
-  ModelObject/DesignSpecificationZoneHVACSizing.cpp
-  ModelObject/RoomAirTemperaturePatternConstantGradient.hpp
-  ModelObject/RoomAirTemperaturePatternConstantGradient_Impl.hpp
-  ModelObject/RoomAirTemperaturePatternConstantGradient.cpp
-  ModelObject/RoomAirTemperaturePatternNondimensionalHeight.hpp
-  ModelObject/RoomAirTemperaturePatternNondimensionalHeight_Impl.hpp
-  ModelObject/RoomAirTemperaturePatternNondimensionalHeight.cpp
-  ModelObject/RoomAirTemperaturePatternSurfaceMapping.hpp
-  ModelObject/RoomAirTemperaturePatternSurfaceMapping_Impl.hpp
-  ModelObject/RoomAirTemperaturePatternSurfaceMapping.cpp
-  ModelObject/RoomAirTemperaturePatternTwoGradient.hpp
-  ModelObject/RoomAirTemperaturePatternTwoGradient_Impl.hpp
-  ModelObject/RoomAirTemperaturePatternTwoGradient.cpp
-  ModelObject/RoomAirTemperaturePatternUserDefined.hpp
-  ModelObject/RoomAirTemperaturePatternUserDefined_Impl.hpp
-  ModelObject/RoomAirTemperaturePatternUserDefined.cpp
-  ModelObject/RoomAirModelType.hpp
-  ModelObject/RoomAirModelType_Impl.hpp
-  ModelObject/RoomAirModelType.cpp
-  ModelObject/RoomAirSettingsAirflowNetwork.hpp
-  ModelObject/RoomAirSettingsAirflowNetwork_Impl.hpp
-  ModelObject/RoomAirSettingsAirflowNetwork.cpp
-  ModelObject/RoomAirSettingsCrossVentilation.hpp
-  ModelObject/RoomAirSettingsCrossVentilation_Impl.hpp
-  ModelObject/RoomAirSettingsCrossVentilation.cpp
-  ModelObject/RoomAirSettingsOneNodeDisplacementVentilation.hpp
-  ModelObject/RoomAirSettingsOneNodeDisplacementVentilation_Impl.hpp
-  ModelObject/RoomAirSettingsOneNodeDisplacementVentilation.cpp
-  ModelObject/RoomAirSettingsThreeNodeDisplacementVentilation.hpp
-  ModelObject/RoomAirSettingsThreeNodeDisplacementVentilation_Impl.hpp
-  ModelObject/RoomAirSettingsThreeNodeDisplacementVentilation.cpp
-   ModelObject/RoomAirSettingsUnderFloorAirDistributionExterior.hpp
-   ModelObject/RoomAirSettingsUnderFloorAirDistributionExterior_Impl.hpp
-   ModelObject/RoomAirSettingsUnderFloorAirDistributionExterior.cpp
-   ModelObject/RoomAirSettingsUnderFloorAirDistributionInterior.hpp
-   ModelObject/RoomAirSettingsUnderFloorAirDistributionInterior_Impl.hpp
-   ModelObject/RoomAirSettingsUnderFloorAirDistributionInterior.cpp
-    ModelObject/RoomAirNode.hpp
-    ModelObject/RoomAirNode_Impl.hpp
-    ModelObject/RoomAirNode.cpp
-     ModelObject/RoomAirNodeAirflowNetwork.hpp
-     ModelObject/RoomAirNodeAirflowNetwork_Impl.hpp
-     ModelObject/RoomAirNodeAirflowNetwork.cpp
-      ModelObject/RoomAirNodeAirflowNetworkHVACEquipment.hpp
-     ModelObject/RoomAirNodeAirflowNetworkHVACEquipment_Impl.hpp
-      ModelObject/RoomAirNodeAirflowNetworkHVACEquipment.cpp
-    ModelObject/RoomAirNodeAirflowNetworkAdjacentSurfaceList.hpp
-    ModelObject/RoomAirNodeAirflowNetworkAdjacentSurfaceList_Impl.hpp
-    ModelObject/RoomAirNodeAirflowNetworkAdjacentSurfaceList.cpp
-    ModelObject/RoomAirNodeAirflowNetworkInternalGains.hpp
-    ModelObject/RoomAirNodeAirflowNetworkInternalGains_Impl.hpp
-    ModelObject/RoomAirNodeAirflowNetworkInternalGains.cpp
+  scaffolds/DesignSpecificationAirTerminalSizing.hpp
+  scaffolds/DesignSpecificationAirTerminalSizing_Impl.hpp
+  scaffolds/DesignSpecificationAirTerminalSizing.cpp
+  scaffolds/DesignSpecificationZoneHVACSizing.hpp
+  scaffolds/DesignSpecificationZoneHVACSizing_Impl.hpp
+  scaffolds/DesignSpecificationZoneHVACSizing.cpp
+  scaffolds/RoomAirTemperaturePatternConstantGradient.hpp
+  scaffolds/RoomAirTemperaturePatternConstantGradient_Impl.hpp
+  scaffolds/RoomAirTemperaturePatternConstantGradient.cpp
+  scaffolds/RoomAirTemperaturePatternNondimensionalHeight.hpp
+  scaffolds/RoomAirTemperaturePatternNondimensionalHeight_Impl.hpp
+  scaffolds/RoomAirTemperaturePatternNondimensionalHeight.cpp
+  scaffolds/RoomAirTemperaturePatternSurfaceMapping.hpp
+  scaffolds/RoomAirTemperaturePatternSurfaceMapping_Impl.hpp
+  scaffolds/RoomAirTemperaturePatternSurfaceMapping.cpp
+  scaffolds/RoomAirTemperaturePatternTwoGradient.hpp
+  scaffolds/RoomAirTemperaturePatternTwoGradient_Impl.hpp
+  scaffolds/RoomAirTemperaturePatternTwoGradient.cpp
+  scaffolds/RoomAirTemperaturePatternUserDefined.hpp
+  scaffolds/RoomAirTemperaturePatternUserDefined_Impl.hpp
+  scaffolds/RoomAirTemperaturePatternUserDefined.cpp
+  scaffolds/RoomAirModelType.hpp
+  scaffolds/RoomAirModelType_Impl.hpp
+  scaffolds/RoomAirModelType.cpp
+  scaffolds/RoomAirSettingsAirflowNetwork.hpp
+  scaffolds/RoomAirSettingsAirflowNetwork_Impl.hpp
+  scaffolds/RoomAirSettingsAirflowNetwork.cpp
+  scaffolds/RoomAirSettingsCrossVentilation.hpp
+  scaffolds/RoomAirSettingsCrossVentilation_Impl.hpp
+  scaffolds/RoomAirSettingsCrossVentilation.cpp
+  scaffolds/RoomAirSettingsOneNodeDisplacementVentilation.hpp
+  scaffolds/RoomAirSettingsOneNodeDisplacementVentilation_Impl.hpp
+  scaffolds/RoomAirSettingsOneNodeDisplacementVentilation.cpp
+  scaffolds/RoomAirSettingsThreeNodeDisplacementVentilation.hpp
+  scaffolds/RoomAirSettingsThreeNodeDisplacementVentilation_Impl.hpp
+  scaffolds/RoomAirSettingsThreeNodeDisplacementVentilation.cpp
+   scaffolds/RoomAirSettingsUnderFloorAirDistributionExterior.hpp
+   scaffolds/RoomAirSettingsUnderFloorAirDistributionExterior_Impl.hpp
+   scaffolds/RoomAirSettingsUnderFloorAirDistributionExterior.cpp
+   scaffolds/RoomAirSettingsUnderFloorAirDistributionInterior.hpp
+   scaffolds/RoomAirSettingsUnderFloorAirDistributionInterior_Impl.hpp
+   scaffolds/RoomAirSettingsUnderFloorAirDistributionInterior.cpp
+    scaffolds/RoomAirNode.hpp
+    scaffolds/RoomAirNode_Impl.hpp
+    scaffolds/RoomAirNode.cpp
+     scaffolds/RoomAirNodeAirflowNetwork.hpp
+     scaffolds/RoomAirNodeAirflowNetwork_Impl.hpp
+     scaffolds/RoomAirNodeAirflowNetwork.cpp
+      scaffolds/RoomAirNodeAirflowNetworkHVACEquipment.hpp
+     scaffolds/RoomAirNodeAirflowNetworkHVACEquipment_Impl.hpp
+      scaffolds/RoomAirNodeAirflowNetworkHVACEquipment.cpp
+    scaffolds/RoomAirNodeAirflowNetworkAdjacentSurfaceList.hpp
+    scaffolds/RoomAirNodeAirflowNetworkAdjacentSurfaceList_Impl.hpp
+    scaffolds/RoomAirNodeAirflowNetworkAdjacentSurfaceList.cpp
+    scaffolds/RoomAirNodeAirflowNetworkInternalGains.hpp
+    scaffolds/RoomAirNodeAirflowNetworkInternalGains_Impl.hpp
+    scaffolds/RoomAirNodeAirflowNetworkInternalGains.cpp
   ModelObject/RunPeriodControlDaylightSavingTime.hpp
   ModelObject/RunPeriodControlDaylightSavingTime_Impl.hpp
   ModelObject/RunPeriodControlDaylightSavingTime.cpp
@@ -1917,15 +1917,15 @@ set(${target_name}_src
   StraightComponent/AirTerminalSingleDuctVAVReheat.hpp
   StraightComponent/AirTerminalSingleDuctVAVReheat_Impl.hpp
   StraightComponent/AirTerminalSingleDuctVAVReheat.cpp
-  ModelObject/AirTerminalSingleDuctVAVReheatVariableSpeedFan.hpp
-  ModelObject/AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl.hpp
-  ModelObject/AirTerminalSingleDuctVAVReheatVariableSpeedFan.cpp
+  scaffolds/AirTerminalSingleDuctVAVReheatVariableSpeedFan.hpp
+  scaffolds/AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl.hpp
+  scaffolds/AirTerminalSingleDuctVAVReheatVariableSpeedFan.cpp
   StraightComponent/AirTerminalSingleDuctVAVHeatAndCoolReheat.hpp
   StraightComponent/AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl.hpp
   StraightComponent/AirTerminalSingleDuctVAVHeatAndCoolReheat.cpp
-  ModelObject/AirTerminalSingleDuctUserDefined.hpp
-  ModelObject/AirTerminalSingleDuctUserDefined_Impl.hpp
-  ModelObject/AirTerminalSingleDuctUserDefined.cpp
+  scaffolds/AirTerminalSingleDuctUserDefined.hpp
+  scaffolds/AirTerminalSingleDuctUserDefined_Impl.hpp
+  scaffolds/AirTerminalSingleDuctUserDefined.cpp
   ModelObject/Branch.hpp
   ModelObject/Branch_Impl.hpp
   ModelObject/Branch.cpp
@@ -1998,21 +1998,21 @@ set(${target_name}_src
   StraightComponent/PipeOutdoor.hpp
   StraightComponent/PipeOutdoor_Impl.hpp
   StraightComponent/PipeOutdoor.cpp
-  ModelObject/PipeAdiabaticSteam.hpp
-  ModelObject/PipeAdiabaticSteam_Impl.hpp
-  ModelObject/PipeAdiabaticSteam.cpp
-  ModelObject/PipeUnderground.hpp
-  ModelObject/PipeUnderground_Impl.hpp
-  ModelObject/PipeUnderground.cpp
-  ModelObject/PipingSystemUndergroundDomain.hpp
-  ModelObject/PipingSystemUndergroundDomain_Impl.hpp
-  ModelObject/PipingSystemUndergroundDomain.cpp
-  ModelObject/PipingSystemUndergroundPipeCircuit.hpp
-  ModelObject/PipingSystemUndergroundPipeCircuit_Impl.hpp
-  ModelObject/PipingSystemUndergroundPipeCircuit.cpp
-  ModelObject/PipingSystemUndergroundPipeSegment.hpp
-  ModelObject/PipingSystemUndergroundPipeSegment_Impl.hpp
-  ModelObject/PipingSystemUndergroundPipeSegment.cpp
+  scaffolds/PipeAdiabaticSteam.hpp
+  scaffolds/PipeAdiabaticSteam_Impl.hpp
+  scaffolds/PipeAdiabaticSteam.cpp
+  scaffolds/PipeUnderground.hpp
+  scaffolds/PipeUnderground_Impl.hpp
+  scaffolds/PipeUnderground.cpp
+  scaffolds/PipingSystemUndergroundDomain.hpp
+  scaffolds/PipingSystemUndergroundDomain_Impl.hpp
+  scaffolds/PipingSystemUndergroundDomain.cpp
+  scaffolds/PipingSystemUndergroundPipeCircuit.hpp
+  scaffolds/PipingSystemUndergroundPipeCircuit_Impl.hpp
+  scaffolds/PipingSystemUndergroundPipeCircuit.cpp
+  scaffolds/PipingSystemUndergroundPipeSegment.hpp
+  scaffolds/PipingSystemUndergroundPipeSegment_Impl.hpp
+  scaffolds/PipingSystemUndergroundPipeSegment.cpp
   StraightComponent/PumpConstantSpeed.hpp
   StraightComponent/PumpConstantSpeed_Impl.hpp
   StraightComponent/PumpConstantSpeed.cpp
@@ -2031,15 +2031,15 @@ set(${target_name}_src
   StraightComponent/HumidifierSteamGas.hpp
   StraightComponent/HumidifierSteamGas_Impl.hpp
   StraightComponent/HumidifierSteamGas.cpp
-  ModelObject/DuctLossConduction.hpp
-  ModelObject/DuctLossConduction_Impl.hpp
-  ModelObject/DuctLossConduction.cpp
-  ModelObject/DuctLossLeakage.hpp
-  ModelObject/DuctLossLeakage_Impl.hpp
-  ModelObject/DuctLossLeakage.cpp
-  ModelObject/DuctLossMakeupAir.hpp
-  ModelObject/DuctLossMakeupAir_Impl.hpp
-  ModelObject/DuctLossMakeupAir.cpp
+  scaffolds/DuctLossConduction.hpp
+  scaffolds/DuctLossConduction_Impl.hpp
+  scaffolds/DuctLossConduction.cpp
+  scaffolds/DuctLossLeakage.hpp
+  scaffolds/DuctLossLeakage_Impl.hpp
+  scaffolds/DuctLossLeakage.cpp
+  scaffolds/DuctLossMakeupAir.hpp
+  scaffolds/DuctLossMakeupAir_Impl.hpp
+  scaffolds/DuctLossMakeupAir.cpp
   StraightComponent/EvaporativeCoolerDirectResearchSpecial.hpp
   StraightComponent/EvaporativeCoolerDirectResearchSpecial_Impl.hpp
   StraightComponent/EvaporativeCoolerDirectResearchSpecial.cpp
@@ -2064,42 +2064,42 @@ set(${target_name}_src
   StraightComponent/GroundHeatExchangerVertical.hpp
   StraightComponent/GroundHeatExchangerVertical_Impl.hpp
   StraightComponent/GroundHeatExchangerVertical.cpp
-  ModelObject/GroundHeatExchangerVerticalArray.hpp
-  ModelObject/GroundHeatExchangerVerticalArray_Impl.hpp
-  ModelObject/GroundHeatExchangerVerticalArray.cpp
-  ModelObject/GroundHeatExchangerVerticalSingle.hpp
-  ModelObject/GroundHeatExchangerVerticalSingle_Impl.hpp
-  ModelObject/GroundHeatExchangerVerticalSingle.cpp
-  ModelObject/GroundHeatExchangerVerticalSizingRectangle.hpp
-  ModelObject/GroundHeatExchangerVerticalSizingRectangle_Impl.hpp
-  ModelObject/GroundHeatExchangerVerticalSizingRectangle.cpp
-  ModelObject/GroundHeatExchangerPond.hpp
-  ModelObject/GroundHeatExchangerPond_Impl.hpp
-  ModelObject/GroundHeatExchangerPond.cpp
-  ModelObject/GroundHeatExchangerSurface.hpp
-  ModelObject/GroundHeatExchangerSurface_Impl.hpp
-  ModelObject/GroundHeatExchangerSurface.cpp
-  ModelObject/GroundHeatExchangerSlinky.hpp
-  ModelObject/GroundHeatExchangerSlinky_Impl.hpp
-  ModelObject/GroundHeatExchangerSlinky.cpp
-  ModelObject/FluidPropertiesConcentration.hpp
-  ModelObject/FluidPropertiesConcentration_Impl.hpp
-  ModelObject/FluidPropertiesConcentration.cpp
-  ModelObject/FluidPropertiesGlycolConcentration.hpp
-  ModelObject/FluidPropertiesGlycolConcentration_Impl.hpp
-  ModelObject/FluidPropertiesGlycolConcentration.cpp
+  scaffolds/GroundHeatExchangerVerticalArray.hpp
+  scaffolds/GroundHeatExchangerVerticalArray_Impl.hpp
+  scaffolds/GroundHeatExchangerVerticalArray.cpp
+  scaffolds/GroundHeatExchangerVerticalSingle.hpp
+  scaffolds/GroundHeatExchangerVerticalSingle_Impl.hpp
+  scaffolds/GroundHeatExchangerVerticalSingle.cpp
+  scaffolds/GroundHeatExchangerVerticalSizingRectangle.hpp
+  scaffolds/GroundHeatExchangerVerticalSizingRectangle_Impl.hpp
+  scaffolds/GroundHeatExchangerVerticalSizingRectangle.cpp
+  scaffolds/GroundHeatExchangerPond.hpp
+  scaffolds/GroundHeatExchangerPond_Impl.hpp
+  scaffolds/GroundHeatExchangerPond.cpp
+  scaffolds/GroundHeatExchangerSurface.hpp
+  scaffolds/GroundHeatExchangerSurface_Impl.hpp
+  scaffolds/GroundHeatExchangerSurface.cpp
+  scaffolds/GroundHeatExchangerSlinky.hpp
+  scaffolds/GroundHeatExchangerSlinky_Impl.hpp
+  scaffolds/GroundHeatExchangerSlinky.cpp
+  scaffolds/FluidPropertiesConcentration.hpp
+  scaffolds/FluidPropertiesConcentration_Impl.hpp
+  scaffolds/FluidPropertiesConcentration.cpp
+  scaffolds/FluidPropertiesGlycolConcentration.hpp
+  scaffolds/FluidPropertiesGlycolConcentration_Impl.hpp
+  scaffolds/FluidPropertiesGlycolConcentration.cpp
   ModelObject/FluidPropertiesName.hpp
   ModelObject/FluidPropertiesName_Impl.hpp
   ModelObject/FluidPropertiesName.cpp
-  ModelObject/FluidPropertiesSaturated.hpp
-  ModelObject/FluidPropertiesSaturated_Impl.hpp
-  ModelObject/FluidPropertiesSaturated.cpp
-  ModelObject/FluidPropertiesSuperheated.hpp
-  ModelObject/FluidPropertiesSuperheated_Impl.hpp
-  ModelObject/FluidPropertiesSuperheated.cpp
-  ModelObject/FluidPropertiesTemperatures.hpp
-  ModelObject/FluidPropertiesTemperatures_Impl.hpp
-  ModelObject/FluidPropertiesTemperatures.cpp
+  scaffolds/FluidPropertiesSaturated.hpp
+  scaffolds/FluidPropertiesSaturated_Impl.hpp
+  scaffolds/FluidPropertiesSaturated.cpp
+  scaffolds/FluidPropertiesSuperheated.hpp
+  scaffolds/FluidPropertiesSuperheated_Impl.hpp
+  scaffolds/FluidPropertiesSuperheated.cpp
+  scaffolds/FluidPropertiesTemperatures.hpp
+  scaffolds/FluidPropertiesTemperatures_Impl.hpp
+  scaffolds/FluidPropertiesTemperatures.cpp
   ModelObject/FuelFactors.hpp
   ModelObject/FuelFactors_Impl.hpp
   ModelObject/FuelFactors.cpp
@@ -2115,15 +2115,15 @@ set(${target_name}_src
   ModelObject/FoundationKivaSettings.hpp
   ModelObject/FoundationKivaSettings_Impl.hpp
   ModelObject/FoundationKivaSettings.cpp
-  ModelObject/EvaporativeCoolerDirectCelDekPad.hpp
-  ModelObject/EvaporativeCoolerDirectCelDekPad_Impl.hpp
-  ModelObject/EvaporativeCoolerDirectCelDekPad.cpp
-  ModelObject/EvaporativeCoolerIndirectCelDekPad.hpp
-  ModelObject/EvaporativeCoolerIndirectCelDekPad_Impl.hpp
-  ModelObject/EvaporativeCoolerIndirectCelDekPad.cpp
-  ModelObject/EvaporativeCoolerIndirectWetCoil.hpp
-  ModelObject/EvaporativeCoolerIndirectWetCoil_Impl.hpp
-  ModelObject/EvaporativeCoolerIndirectWetCoil.cpp
+  scaffolds/EvaporativeCoolerDirectCelDekPad.hpp
+  scaffolds/EvaporativeCoolerDirectCelDekPad_Impl.hpp
+  scaffolds/EvaporativeCoolerDirectCelDekPad.cpp
+  scaffolds/EvaporativeCoolerIndirectCelDekPad.hpp
+  scaffolds/EvaporativeCoolerIndirectCelDekPad_Impl.hpp
+  scaffolds/EvaporativeCoolerIndirectCelDekPad.cpp
+  scaffolds/EvaporativeCoolerIndirectWetCoil.hpp
+  scaffolds/EvaporativeCoolerIndirectWetCoil_Impl.hpp
+  scaffolds/EvaporativeCoolerIndirectWetCoil.cpp
   StraightComponent/CoolingTowerSingleSpeed.hpp
   StraightComponent/CoolingTowerSingleSpeed_Impl.hpp
   StraightComponent/CoolingTowerSingleSpeed.cpp
@@ -2133,9 +2133,9 @@ set(${target_name}_src
   StraightComponent/CoolingTowerVariableSpeed.hpp
   StraightComponent/CoolingTowerVariableSpeed_Impl.hpp
   StraightComponent/CoolingTowerVariableSpeed.cpp
-  ModelObject/CoolingTowerVariableSpeedMerkel.hpp
-  ModelObject/CoolingTowerVariableSpeedMerkel_Impl.hpp
-  ModelObject/CoolingTowerVariableSpeedMerkel.cpp
+  scaffolds/CoolingTowerVariableSpeedMerkel.hpp
+  scaffolds/CoolingTowerVariableSpeedMerkel_Impl.hpp
+  scaffolds/CoolingTowerVariableSpeedMerkel.cpp
   ModelObject/CoolingTowerPerformanceCoolTools.hpp
   ModelObject/CoolingTowerPerformanceCoolTools_Impl.hpp
   ModelObject/CoolingTowerPerformanceCoolTools.cpp
@@ -2148,21 +2148,21 @@ set(${target_name}_src
   WaterToWaterComponent/ChillerAbsorptionIndirect.hpp
   WaterToWaterComponent/ChillerAbsorptionIndirect_Impl.hpp
   WaterToWaterComponent/ChillerAbsorptionIndirect.cpp
-  ModelObject/ChillerCombustionTurbine.hpp
-  ModelObject/ChillerCombustionTurbine_Impl.hpp
-  ModelObject/ChillerCombustionTurbine.cpp
-  ModelObject/GeneratorCombustionTurbine.hpp
-  ModelObject/GeneratorCombustionTurbine_Impl.hpp
-  ModelObject/GeneratorCombustionTurbine.cpp
-  ModelObject/GeneratorInternalCombustionEngine.hpp
-  ModelObject/GeneratorInternalCombustionEngine_Impl.hpp
-  ModelObject/GeneratorInternalCombustionEngine.cpp
-  ModelObject/GeneratorMicroCHP.hpp
-  ModelObject/GeneratorMicroCHP_Impl.hpp
-  ModelObject/GeneratorMicroCHP.cpp
-  ModelObject/GeneratorMicroCHPNonNormalizedParameters.hpp
-  ModelObject/GeneratorMicroCHPNonNormalizedParameters_Impl.hpp
-  ModelObject/GeneratorMicroCHPNonNormalizedParameters.cpp
+  scaffolds/ChillerCombustionTurbine.hpp
+  scaffolds/ChillerCombustionTurbine_Impl.hpp
+  scaffolds/ChillerCombustionTurbine.cpp
+  scaffolds/GeneratorCombustionTurbine.hpp
+  scaffolds/GeneratorCombustionTurbine_Impl.hpp
+  scaffolds/GeneratorCombustionTurbine.cpp
+  scaffolds/GeneratorInternalCombustionEngine.hpp
+  scaffolds/GeneratorInternalCombustionEngine_Impl.hpp
+  scaffolds/GeneratorInternalCombustionEngine.cpp
+  scaffolds/GeneratorMicroCHP.hpp
+  scaffolds/GeneratorMicroCHP_Impl.hpp
+  scaffolds/GeneratorMicroCHP.cpp
+  scaffolds/GeneratorMicroCHPNonNormalizedParameters.hpp
+  scaffolds/GeneratorMicroCHPNonNormalizedParameters_Impl.hpp
+  scaffolds/GeneratorMicroCHPNonNormalizedParameters.cpp
   Generator/GeneratorMicroTurbine.hpp
   Generator/GeneratorMicroTurbine_Impl.hpp
   Generator/GeneratorMicroTurbine.cpp
@@ -2211,12 +2211,12 @@ set(${target_name}_src
   StraightComponent/GeneratorFuelCellStackCooler.hpp
   StraightComponent/GeneratorFuelCellStackCooler_Impl.hpp
   StraightComponent/GeneratorFuelCellStackCooler.cpp
-  ModelObject/ChillerHeaterAbsorptionDirectFired.hpp
-  ModelObject/ChillerHeaterAbsorptionDirectFired_Impl.hpp
-  ModelObject/ChillerHeaterAbsorptionDirectFired.cpp
-  ModelObject/ChillerHeaterAbsorptionDoubleEffect.hpp
-  ModelObject/ChillerHeaterAbsorptionDoubleEffect_Impl.hpp
-  ModelObject/ChillerHeaterAbsorptionDoubleEffect.cpp
+  scaffolds/ChillerHeaterAbsorptionDirectFired.hpp
+  scaffolds/ChillerHeaterAbsorptionDirectFired_Impl.hpp
+  scaffolds/ChillerHeaterAbsorptionDirectFired.cpp
+  scaffolds/ChillerHeaterAbsorptionDoubleEffect.hpp
+  scaffolds/ChillerHeaterAbsorptionDoubleEffect_Impl.hpp
+  scaffolds/ChillerHeaterAbsorptionDoubleEffect.cpp
   ParentObject/ChillerHeaterPerformanceElectricEIR.hpp
   ParentObject/ChillerHeaterPerformanceElectricEIR_Impl.hpp
   ParentObject/ChillerHeaterPerformanceElectricEIR.cpp
@@ -2229,12 +2229,12 @@ set(${target_name}_src
   ParentObject/CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData.hpp
   ParentObject/CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData_Impl.hpp
   ParentObject/CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData.cpp
-  ModelObject/ChillerConstantCOP.hpp
-  ModelObject/ChillerConstantCOP_Impl.hpp
-  ModelObject/ChillerConstantCOP.cpp
-  ModelObject/ChillerEngineDriven.hpp
-  ModelObject/ChillerEngineDriven_Impl.hpp
-  ModelObject/ChillerEngineDriven.cpp
+  scaffolds/ChillerConstantCOP.hpp
+  scaffolds/ChillerConstantCOP_Impl.hpp
+  scaffolds/ChillerConstantCOP.cpp
+  scaffolds/ChillerEngineDriven.hpp
+  scaffolds/ChillerEngineDriven_Impl.hpp
+  scaffolds/ChillerEngineDriven.cpp
   WaterToWaterComponent/ChillerElectric.hpp
   WaterToWaterComponent/ChillerElectric_Impl.hpp
   WaterToWaterComponent/ChillerElectric.cpp
@@ -2394,33 +2394,33 @@ set(${target_name}_src
   Glazing/StandardGlazing.hpp
   Glazing/StandardGlazing_Impl.hpp
   Glazing/StandardGlazing.cpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferDiffusion.hpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferDiffusion_Impl.hpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferDiffusion.cpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferRedistribution.hpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferRedistribution_Impl.hpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferRedistribution.cpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferSettings.hpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferSettings_Impl.hpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferSettings.cpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferSorptionIsotherm.hpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_Impl.hpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferSorptionIsotherm.cpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferSuction.hpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferSuction_Impl.hpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferSuction.cpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferThermalConductivity.hpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferThermalConductivity_Impl.hpp
-  ModelObject/MaterialPropertyHeatAndMoistureTransferThermalConductivity.cpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferDiffusion.hpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferDiffusion_Impl.hpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferDiffusion.cpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferRedistribution.hpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferRedistribution_Impl.hpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferRedistribution.cpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferSettings.hpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferSettings_Impl.hpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferSettings.cpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferSorptionIsotherm.hpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferSorptionIsotherm_Impl.hpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferSorptionIsotherm.cpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferSuction.hpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferSuction_Impl.hpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferSuction.cpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferThermalConductivity.hpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferThermalConductivity_Impl.hpp
+  scaffolds/MaterialPropertyHeatAndMoistureTransferThermalConductivity.cpp
   ModelObject/MaterialPropertyMoisturePenetrationDepthSettings.hpp
   ModelObject/MaterialPropertyMoisturePenetrationDepthSettings_Impl.hpp
   ModelObject/MaterialPropertyMoisturePenetrationDepthSettings.cpp
-  ModelObject/MaterialPropertyVariableAbsorptance.hpp
-  ModelObject/MaterialPropertyVariableAbsorptance_Impl.hpp
-  ModelObject/MaterialPropertyVariableAbsorptance.cpp
-  ModelObject/MaterialPropertyVariableThermalConductivity.hpp
-  ModelObject/MaterialPropertyVariableThermalConductivity_Impl.hpp
-  ModelObject/MaterialPropertyVariableThermalConductivity.cpp
+  scaffolds/MaterialPropertyVariableAbsorptance.hpp
+  scaffolds/MaterialPropertyVariableAbsorptance_Impl.hpp
+  scaffolds/MaterialPropertyVariableAbsorptance.cpp
+  scaffolds/MaterialPropertyVariableThermalConductivity.hpp
+  scaffolds/MaterialPropertyVariableThermalConductivity_Impl.hpp
+  scaffolds/MaterialPropertyVariableThermalConductivity.cpp
   ModelObject/MaterialPropertyPhaseChange.hpp
   ModelObject/MaterialPropertyPhaseChange_Impl.hpp
   ModelObject/MaterialPropertyPhaseChange.cpp
@@ -2499,21 +2499,21 @@ set(${target_name}_src
   SetpointManager/SetpointManagerMultiZoneHumidityMinimum.hpp
   SetpointManager/SetpointManagerMultiZoneHumidityMinimum_Impl.hpp
   SetpointManager/SetpointManagerMultiZoneHumidityMinimum.cpp
-  ModelObject/SetpointManagerCondenserEnteringReset.hpp
-  ModelObject/SetpointManagerCondenserEnteringReset_Impl.hpp
-  ModelObject/SetpointManagerCondenserEnteringReset.cpp
-  ModelObject/SetpointManagerCondenserEnteringResetIdeal.hpp
-  ModelObject/SetpointManagerCondenserEnteringResetIdeal_Impl.hpp
-  ModelObject/SetpointManagerCondenserEnteringResetIdeal.cpp
-  ModelObject/SetpointManagerReturnAirBypassFlow.hpp
-  ModelObject/SetpointManagerReturnAirBypassFlow_Impl.hpp
-  ModelObject/SetpointManagerReturnAirBypassFlow.cpp
-  ModelObject/SetpointManagerReturnTemperatureChilledWater.hpp
-  ModelObject/SetpointManagerReturnTemperatureChilledWater_Impl.hpp
-  ModelObject/SetpointManagerReturnTemperatureChilledWater.cpp
-  ModelObject/SetpointManagerReturnTemperatureHotWater.hpp
-  ModelObject/SetpointManagerReturnTemperatureHotWater_Impl.hpp
-  ModelObject/SetpointManagerReturnTemperatureHotWater.cpp
+  scaffolds/SetpointManagerCondenserEnteringReset.hpp
+  scaffolds/SetpointManagerCondenserEnteringReset_Impl.hpp
+  scaffolds/SetpointManagerCondenserEnteringReset.cpp
+  scaffolds/SetpointManagerCondenserEnteringResetIdeal.hpp
+  scaffolds/SetpointManagerCondenserEnteringResetIdeal_Impl.hpp
+  scaffolds/SetpointManagerCondenserEnteringResetIdeal.cpp
+  scaffolds/SetpointManagerReturnAirBypassFlow.hpp
+  scaffolds/SetpointManagerReturnAirBypassFlow_Impl.hpp
+  scaffolds/SetpointManagerReturnAirBypassFlow.cpp
+  scaffolds/SetpointManagerReturnTemperatureChilledWater.hpp
+  scaffolds/SetpointManagerReturnTemperatureChilledWater_Impl.hpp
+  scaffolds/SetpointManagerReturnTemperatureChilledWater.cpp
+  scaffolds/SetpointManagerReturnTemperatureHotWater.hpp
+  scaffolds/SetpointManagerReturnTemperatureHotWater_Impl.hpp
+  scaffolds/SetpointManagerReturnTemperatureHotWater.cpp
   SetpointManager/SetpointManagerMixedAir.hpp
   SetpointManager/SetpointManagerMixedAir_Impl.hpp
   SetpointManager/SetpointManagerMixedAir.cpp
@@ -2562,15 +2562,15 @@ set(${target_name}_src
   PlanarSurfaceGroup/Space.hpp
   PlanarSurfaceGroup/Space_Impl.hpp
   PlanarSurfaceGroup/Space.cpp
-  ModelObject/SpaceHVACEquipmentConnections.hpp
-  ModelObject/SpaceHVACEquipmentConnections_Impl.hpp
-  ModelObject/SpaceHVACEquipmentConnections.cpp
-  ModelObject/SpaceHVACZoneEquipmentMixer.hpp
-  ModelObject/SpaceHVACZoneEquipmentMixer_Impl.hpp
-  ModelObject/SpaceHVACZoneEquipmentMixer.cpp
-  ModelObject/SpaceHVACZoneEquipmentSplitter.hpp
-  ModelObject/SpaceHVACZoneEquipmentSplitter_Impl.hpp
-  ModelObject/SpaceHVACZoneEquipmentSplitter.cpp
+  scaffolds/SpaceHVACEquipmentConnections.hpp
+  scaffolds/SpaceHVACEquipmentConnections_Impl.hpp
+  scaffolds/SpaceHVACEquipmentConnections.cpp
+  scaffolds/SpaceHVACZoneEquipmentMixer.hpp
+  scaffolds/SpaceHVACZoneEquipmentMixer_Impl.hpp
+  scaffolds/SpaceHVACZoneEquipmentMixer.cpp
+  scaffolds/SpaceHVACZoneEquipmentSplitter.hpp
+  scaffolds/SpaceHVACZoneEquipmentSplitter_Impl.hpp
+  scaffolds/SpaceHVACZoneEquipmentSplitter.cpp
   ModelObject/NodeList.hpp
   ModelObject/NodeList_Impl.hpp
   ModelObject/NodeList.cpp
@@ -2609,6 +2609,7 @@ set(${target_name}_depends ${${target_name}_depends} PARENT_SCOPE)
 target_compile_definitions(${target_name} PRIVATE openstudio_epmodel_EXPORTS SHARED_OS_LIBS)
 target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/HVACComponent
                                                  ${CMAKE_CURRENT_SOURCE_DIR}/ModelObject
+                                                 ${CMAKE_CURRENT_SOURCE_DIR}/scaffolds
                                                  ${CMAKE_CURRENT_SOURCE_DIR}/StraightComponent
                                                  ${CMAKE_CURRENT_SOURCE_DIR}/ShadingMaterial)
 target_link_libraries(${target_name} PUBLIC ${${target_name}_depends})

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/HVACTemplatePlantChilledWaterLoop.hpp"
+#include "../scaffolds/HVACTemplatePlantChilledWaterLoop.hpp"
 
 using namespace openstudio::epmodel;
 

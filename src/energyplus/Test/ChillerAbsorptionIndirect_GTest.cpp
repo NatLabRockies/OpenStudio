@@ -11,13 +11,16 @@
 
 #include "../../model/ChillerAbsorptionIndirect.hpp"
 #include "../../model/CurveCubic.hpp"
+#include "../../model/CurveCubic_Impl.hpp"
 #include "../../model/CurveQuadratic.hpp"
+#include "../../model/CurveQuadratic_Impl.hpp"
 #include "../../model/Model.hpp"
 #include "../../model/PlantLoop.hpp"
 
+#include "../../utilities/idf/WorkspaceObject_Impl.hpp"
 #include "../../utilities/idf/WorkspaceExtensibleGroup.hpp"
 
-#include <utilities/idd/BranchExtensibleFields.hxx>
+#include <utilities/idd/Branch_FieldEnums.hxx>
 #include <utilities/idd/BranchList_FieldEnums.hxx>
 #include <utilities/idd/Chiller_Absorption_Indirect_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>

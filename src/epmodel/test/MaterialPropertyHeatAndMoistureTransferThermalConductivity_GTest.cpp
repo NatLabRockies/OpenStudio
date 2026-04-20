@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/MaterialPropertyHeatAndMoistureTransferThermalConductivity.hpp"
+#include "../scaffolds/MaterialPropertyHeatAndMoistureTransferThermalConductivity.hpp"
 
 using namespace openstudio::epmodel;
 

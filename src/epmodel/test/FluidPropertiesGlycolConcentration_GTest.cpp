@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/FluidPropertiesGlycolConcentration.hpp"
+#include "../scaffolds/FluidPropertiesGlycolConcentration.hpp"
 
 using namespace openstudio::epmodel;
 

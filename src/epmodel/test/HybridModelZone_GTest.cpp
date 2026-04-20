@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/HybridModelZone.hpp"
+#include "../scaffolds/HybridModelZone.hpp"
 
 using namespace openstudio::epmodel;
 

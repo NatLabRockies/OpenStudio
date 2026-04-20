@@ -7,7 +7,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ZoneHVACHybridUnitaryHVAC.hpp"
+#include "../scaffolds/ZoneHVACHybridUnitaryHVAC.hpp"
 
 using namespace openstudio::epmodel;
 

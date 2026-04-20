@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ThermalStorageChilledWaterMixed.hpp"
+#include "../scaffolds/ThermalStorageChilledWaterMixed.hpp"
 
 using namespace openstudio::epmodel;
 

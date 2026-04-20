@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/PipeUnderground.hpp"
+#include "../scaffolds/PipeUnderground.hpp"
 #include <utilities/idd/Pipe_Underground_FieldEnums.hxx>
 #include <algorithm>
 

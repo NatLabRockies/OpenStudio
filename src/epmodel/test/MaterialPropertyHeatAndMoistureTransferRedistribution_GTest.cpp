@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/MaterialPropertyHeatAndMoistureTransferRedistribution.hpp"
+#include "../scaffolds/MaterialPropertyHeatAndMoistureTransferRedistribution.hpp"
 
 using namespace openstudio::epmodel;
 

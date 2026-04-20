@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/DemandManagerElectricEquipment.hpp"
+#include "../scaffolds/DemandManagerElectricEquipment.hpp"
 
 using namespace openstudio::epmodel;
 

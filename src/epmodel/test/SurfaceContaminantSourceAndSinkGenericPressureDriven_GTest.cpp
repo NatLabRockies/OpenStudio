@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SurfaceContaminantSourceAndSinkGenericPressureDriven.hpp"
+#include "../scaffolds/SurfaceContaminantSourceAndSinkGenericPressureDriven.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/GeometryTransform.hpp"
+#include "../scaffolds/GeometryTransform.hpp"
 
 using namespace openstudio::epmodel;
 

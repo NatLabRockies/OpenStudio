@@ -7,7 +7,7 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../ModelObject/OutputVariableDictionary.hpp"
+#include "../scaffolds/OutputVariableDictionary.hpp"
 
 #include <algorithm>
 

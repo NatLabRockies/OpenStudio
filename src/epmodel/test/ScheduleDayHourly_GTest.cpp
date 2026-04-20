@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ScheduleDayHourly.hpp"
+#include "../scaffolds/ScheduleDayHourly.hpp"
 
 using namespace openstudio::epmodel;
 

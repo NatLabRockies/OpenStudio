@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/RoomAirTemperaturePatternConstantGradient.hpp"
+#include "../scaffolds/RoomAirTemperaturePatternConstantGradient.hpp"
 
 using namespace openstudio::epmodel;
 

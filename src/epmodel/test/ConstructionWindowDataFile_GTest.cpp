@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ConstructionWindowDataFile.hpp"
+#include "../scaffolds/ConstructionWindowDataFile.hpp"
 
 using namespace openstudio::epmodel;
 

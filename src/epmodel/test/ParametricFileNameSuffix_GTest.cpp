@@ -7,7 +7,7 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../ModelObject/ParametricFileNameSuffix.hpp"
+#include "../scaffolds/ParametricFileNameSuffix.hpp"
 
 using namespace openstudio::epmodel;
 

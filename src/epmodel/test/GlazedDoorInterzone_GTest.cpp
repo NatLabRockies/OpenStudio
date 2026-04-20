@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/GlazedDoorInterzone.hpp"
+#include "../scaffolds/GlazedDoorInterzone.hpp"
 
 using namespace openstudio::epmodel;
 

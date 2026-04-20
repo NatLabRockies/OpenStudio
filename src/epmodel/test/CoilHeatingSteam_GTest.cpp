@@ -8,7 +8,7 @@
 #include <algorithm>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/CoilHeatingSteam.hpp"
+#include "../scaffolds/CoilHeatingSteam.hpp"
 
 using namespace openstudio::epmodel;
 

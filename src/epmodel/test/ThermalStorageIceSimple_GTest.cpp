@@ -8,7 +8,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ThermalStorageIceSimple.hpp"
+#include "../scaffolds/ThermalStorageIceSimple.hpp"
 
 using namespace openstudio::epmodel;
 

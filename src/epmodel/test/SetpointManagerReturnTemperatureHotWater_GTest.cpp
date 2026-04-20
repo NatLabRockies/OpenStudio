@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SetpointManagerReturnTemperatureHotWater.hpp"
+#include "../scaffolds/SetpointManagerReturnTemperatureHotWater.hpp"
 
 #include <algorithm>
 

@@ -7,7 +7,7 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../ModelObject/ParametricSetValueForRun.hpp"
+#include "../scaffolds/ParametricSetValueForRun.hpp"
 
 using namespace openstudio::epmodel;
 

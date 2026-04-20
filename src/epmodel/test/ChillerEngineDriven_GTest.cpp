@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ChillerEngineDriven.hpp"
+#include "../scaffolds/ChillerEngineDriven.hpp"
 
 using namespace openstudio::epmodel;
 

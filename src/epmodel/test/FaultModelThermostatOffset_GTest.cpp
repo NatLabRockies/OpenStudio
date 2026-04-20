@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/FaultModelThermostatOffset.hpp"
+#include "../scaffolds/FaultModelThermostatOffset.hpp"
 
 using namespace openstudio::epmodel;
 

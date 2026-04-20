@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/OutputControlSurfaceColorScheme.hpp"
+#include "../scaffolds/OutputControlSurfaceColorScheme.hpp"
 
 using namespace openstudio::epmodel;
 

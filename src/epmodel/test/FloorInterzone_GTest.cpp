@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/FloorInterzone.hpp"
+#include "../scaffolds/FloorInterzone.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/FanPerformanceNightVentilation.hpp"
+#include "../scaffolds/FanPerformanceNightVentilation.hpp"
 
 using namespace openstudio::epmodel;
 

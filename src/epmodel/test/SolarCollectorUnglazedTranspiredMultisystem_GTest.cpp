@@ -6,8 +6,8 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SolarCollectorUnglazedTranspired.hpp"
-#include "../ModelObject/SolarCollectorUnglazedTranspiredMultisystem.hpp"
+#include "../scaffolds/SolarCollectorUnglazedTranspired.hpp"
+#include "../scaffolds/SolarCollectorUnglazedTranspiredMultisystem.hpp"
 
 #include <utilities/idd/SolarCollector_UnglazedTranspired_Multisystem_FieldEnums.hxx>
 

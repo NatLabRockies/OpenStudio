@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/DemandManagerVentilation.hpp"
+#include "../scaffolds/DemandManagerVentilation.hpp"
 
 using namespace openstudio::epmodel;
 

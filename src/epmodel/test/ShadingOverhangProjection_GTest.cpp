@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ShadingOverhangProjection.hpp"
+#include "../scaffolds/ShadingOverhangProjection.hpp"
 
 using namespace openstudio::epmodel;
 

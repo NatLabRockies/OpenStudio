@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/FaultModelHumiditySensorOffsetOutdoorAir.hpp"
+#include "../scaffolds/FaultModelHumiditySensorOffsetOutdoorAir.hpp"
 
 using namespace openstudio::epmodel;
 

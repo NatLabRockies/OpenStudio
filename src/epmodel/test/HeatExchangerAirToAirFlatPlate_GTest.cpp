@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 #include "EPModelFixture.hpp"
-#include "../ModelObject/HeatExchangerAirToAirFlatPlate.hpp"
+#include "../scaffolds/HeatExchangerAirToAirFlatPlate.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SurfaceConvectionAlgorithmInsideUserCurve.hpp"
+#include "../scaffolds/SurfaceConvectionAlgorithmInsideUserCurve.hpp"
 
 using namespace openstudio::epmodel;
 

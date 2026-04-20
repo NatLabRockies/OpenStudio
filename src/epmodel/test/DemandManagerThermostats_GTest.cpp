@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/DemandManagerThermostats.hpp"
+#include "../scaffolds/DemandManagerThermostats.hpp"
 
 using namespace openstudio::epmodel;
 

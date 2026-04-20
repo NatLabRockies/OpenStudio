@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SiteSolarAndVisibleSpectrum.hpp"
+#include "../scaffolds/SiteSolarAndVisibleSpectrum.hpp"
 
 #include <utilities/core/StringHelpers.hpp>
 

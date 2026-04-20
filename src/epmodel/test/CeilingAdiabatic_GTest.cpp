@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/CeilingAdiabatic.hpp"
+#include "../scaffolds/CeilingAdiabatic.hpp"
 
 using namespace openstudio::epmodel;
 

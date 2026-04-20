@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ZoneContaminantSourceAndSinkGenericDecaySource.hpp"
+#include "../scaffolds/ZoneContaminantSourceAndSinkGenericDecaySource.hpp"
 
 using namespace openstudio::epmodel;
 

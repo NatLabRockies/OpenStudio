@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/GlobalGeometryRules.hpp"
+#include "../scaffolds/GlobalGeometryRules.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/WindowGapSupportPillar.hpp"
+#include "../scaffolds/WindowGapSupportPillar.hpp"
 
 using namespace openstudio::epmodel;
 
