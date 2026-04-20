@@ -8,9 +8,13 @@
 
 #include "ModelObject_Impl.hpp"
 
+#include <boost/optional.hpp>
+
 namespace openstudio {
 namespace epmodel {
   class ModelObject;
+  class Schedule;
+  class ThermalZone;
   namespace detail {
 
     class EPMODEL_API ZoneHVACEquipmentList_Impl : public ModelObject_Impl
@@ -24,8 +28,25 @@ namespace epmodel {
       bool isLoadDistributionSchemeDefaulted() const;
       void resetLoadDistributionScheme();
       std::vector<openstudio::epmodel::ModelObject> equipment() const;
+      std::vector<openstudio::epmodel::ModelObject> equipmentInHeatingOrder() const;
+      std::vector<openstudio::epmodel::ModelObject> equipmentInCoolingOrder() const;
+      openstudio::epmodel::ThermalZone thermalZone() const;
       bool addEquipment(const openstudio::epmodel::ModelObject& component);
       bool removeEquipment(const openstudio::epmodel::ModelObject& component);
+      bool setCoolingPriority(const openstudio::epmodel::ModelObject& component, unsigned priority);
+      bool setHeatingPriority(const openstudio::epmodel::ModelObject& component, unsigned priority);
+      unsigned heatingPriority(const openstudio::epmodel::ModelObject& component) const;
+      unsigned coolingPriority(const openstudio::epmodel::ModelObject& component) const;
+      boost::optional<double> sequentialCoolingFraction(const openstudio::epmodel::ModelObject& component) const;
+      boost::optional<openstudio::epmodel::Schedule> sequentialCoolingFractionSchedule(
+        const openstudio::epmodel::ModelObject& component) const;
+      boost::optional<double> sequentialHeatingFraction(const openstudio::epmodel::ModelObject& component) const;
+      boost::optional<openstudio::epmodel::Schedule> sequentialHeatingFractionSchedule(
+        const openstudio::epmodel::ModelObject& component) const;
+      bool setSequentialCoolingFraction(const openstudio::epmodel::ModelObject& component, double fraction);
+      bool setSequentialCoolingFractionSchedule(const openstudio::epmodel::ModelObject& component, openstudio::epmodel::Schedule& schedule);
+      bool setSequentialHeatingFraction(const openstudio::epmodel::ModelObject& component, double fraction);
+      bool setSequentialHeatingFractionSchedule(const openstudio::epmodel::ModelObject& component, openstudio::epmodel::Schedule& schedule);
     };
 
   }  // namespace detail
