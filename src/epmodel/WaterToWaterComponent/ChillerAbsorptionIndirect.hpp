@@ -40,16 +40,16 @@ class EPMODEL_API ChillerAbsorptionIndirect : public WaterToWaterComponent
   static std::vector<std::string> generatorHeatSourceTypeValues();
 
   // Schema Alignment Notes:
-  // - Status: Parity with documented deltas. The canonical scalar, curve, and generator-loop relationship surface is aligned.
+  // - Status: Near Parity. The canonical scalar, curve, topology, and autosized-helper surface is aligned.
   // - Canonical Counterpart: openstudio::model::ChillerAbsorptionIndirect.
-  // - Implemented Parity: Canonical constructor defaults, required curve relationships, chilled/condenser/generator loop conveniences, and
-  //   generator-loop routing semantics preserve the model-side API shape.
-  // - Documented Delta: Autosized-value helpers are present but remain epmodel stubs that return `none` until autosized results are surfaced here.
+  // - Implemented Parity: Canonical constructor defaults, required curve relationships, chilled/condenser/generator loop conveniences,
+  //   generator-loop routing semantics, HVAC classification, and SQL-backed autosized-value helpers preserve the model-side API shape.
   // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `Chiller:Absorption:Indirect` fields directly; curve and loop relationships are
-  //   persisted as normal object links on the same object and interpreted through the shared water-to-water topology layer.
+  //   persisted as normal object links on the same object and interpreted through the shared water-to-water topology layer, while autosized
+  //   helper queries resolve against the shared epmodel SQL-backed component-sizing lookup.
   // - Evidence: `src/model/ChillerAbsorptionIndirect.hpp`, `src/model/ChillerAbsorptionIndirect.cpp`, and
   //   `src/energyplus/ForwardTranslator/ForwardTranslateChillerAbsorptionIndirect.cpp`.
-  // - Remaining Parity Work: Further work should only factor shared chiller abstractions if multiple wrappers need the same non-generic behavior.
+  // - Remaining Parity Work: None within the current canonical public surface.
   boost::optional<double> nominalCapacity() const;
   bool isNominalCapacityAutosized() const;
   bool setNominalCapacity(double nominalCapacity);

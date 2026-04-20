@@ -73,6 +73,10 @@ namespace epmodel {
     return getImpl<detail::CentralHeatPumpSystem_Impl>()->sourcePlantLoop();
   }
 
+  boost::optional<PlantLoop> CentralHeatPumpSystem::heatingPlantLoop() const {
+    return getImpl<detail::CentralHeatPumpSystem_Impl>()->heatingPlantLoop();
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -145,7 +149,7 @@ namespace epmodel {
       auto tPlantLoop = node.plantLoop();
       if (tPlantLoop && tPlantLoop->supplyComponent(node.handle())) {
         if (auto coolingPlant = coolingPlantLoop()) {
-          if (tPlantLoop.get() != coolingPlant.get() && !tertiaryInletModelObject() && !tertiaryOutletModelObject()) {
+          if (tPlantLoop.get() != coolingPlant.get() && !heatingPlantLoop()) {
             return addToTertiaryNode(node);
           }
         }
@@ -167,6 +171,10 @@ namespace epmodel {
 
     boost::optional<PlantLoop> CentralHeatPumpSystem_Impl::sourcePlantLoop() const {
       return WaterToWaterComponent_Impl::secondaryPlantLoop();
+    }
+
+    boost::optional<PlantLoop> CentralHeatPumpSystem_Impl::heatingPlantLoop() const {
+      return WaterToWaterComponent_Impl::tertiaryPlantLoop();
     }
 
   }  // namespace detail

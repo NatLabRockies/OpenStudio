@@ -24,9 +24,12 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/data/DataEnums.hpp>
 #include <utilities/idd/Chiller_Electric_ASHRAE205_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
+
+#include <set>
 
 namespace {
 
@@ -60,7 +63,14 @@ namespace epmodel {
 
 ChillerElectricASHRAE205::ChillerElectricASHRAE205(const Model& model)
   : WaterToWaterComponent(ChillerElectricASHRAE205::iddObjectType(), model) {
+  OS_ASSERT(setPerformanceInterpolationMethod("Linear"));
+  autosizeRatedCapacity();
+  OS_ASSERT(setSizingFactor(1.0));
   OS_ASSERT(setString(openstudio::Chiller_Electric_ASHRAE205Fields::AmbientTemperatureIndicator, "Outdoors"));
+  autosizeChilledWaterMaximumRequestedFlowRate();
+  autosizeCondenserMaximumRequestedFlowRate();
+  OS_ASSERT(setChillerFlowMode("NotModulated"));
+  OS_ASSERT(setEndUseSubcategory("General"));
 }
 
 ChillerElectricASHRAE205::ChillerElectricASHRAE205(std::shared_ptr<detail::ChillerElectricASHRAE205_Impl> impl)
@@ -590,15 +600,15 @@ void ChillerElectricASHRAE205_Impl::resetEndUseSubcategory() {
 }
 
 boost::optional<double> ChillerElectricASHRAE205_Impl::autosizedRatedCapacity() const {
-  return boost::none;
+  return getAutosizedValue("Design Size Rated Capacity", "W");
 }
 
 boost::optional<double> ChillerElectricASHRAE205_Impl::autosizedChilledWaterMaximumRequestedFlowRate() const {
-  return boost::none;
+  return getAutosizedValue("Design Size Chilled Water Maximum Requested Flow Rate", "m3/s");
 }
 
 boost::optional<double> ChillerElectricASHRAE205_Impl::autosizedCondenserMaximumRequestedFlowRate() const {
-  return boost::none;
+  return getAutosizedValue("Design Size Condenser Maximum Requested Flow Rate", "m3/s");
 }
 
 std::vector<std::string> ChillerElectricASHRAE205_Impl::performanceInterpolationMethodValues() const {
@@ -892,6 +902,28 @@ bool ChillerElectricASHRAE205_Impl::addToNode(Node& node) {
 
 bool ChillerElectricASHRAE205_Impl::addToTertiaryNode(Node&) {
   return false;
+}
+
+ComponentType ChillerElectricASHRAE205_Impl::componentType() const {
+  return ComponentType::Cooling;
+}
+
+std::vector<FuelType> ChillerElectricASHRAE205_Impl::coolingFuelTypes() const {
+  std::set<FuelType> result{FuelType::Electricity};
+  if (auto condenserLoop_ = condenserWaterLoop()) {
+    for (const auto fuelType : condenserLoop_->coolingFuelTypes()) {
+      result.insert(fuelType);
+    }
+  }
+  return {result.begin(), result.end()};
+}
+
+std::vector<FuelType> ChillerElectricASHRAE205_Impl::heatingFuelTypes() const {
+  return {};
+}
+
+std::vector<AppGFuelType> ChillerElectricASHRAE205_Impl::appGHeatingFuelTypes() const {
+  return {};
 }
 
 }  // namespace detail

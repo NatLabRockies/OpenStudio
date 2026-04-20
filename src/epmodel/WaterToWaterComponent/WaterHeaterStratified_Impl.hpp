@@ -18,6 +18,8 @@ namespace epmodel {
   class Schedule;
   class ThermalZone;
   class WaterHeaterSizing;
+  class Node;
+  class PlantLoop;
 
   namespace detail {
 
@@ -28,10 +30,20 @@ namespace epmodel {
       virtual ~WaterHeaterStratified_Impl() override = default;
 
       std::vector<ModelObject> children() const override;
+      ModelObject clone(Model model) const;
       unsigned supplyInletPort() const override;
       unsigned supplyOutletPort() const override;
       unsigned demandInletPort() const override;
       unsigned demandOutletPort() const override;
+      boost::optional<PlantLoop> plantLoop() const override;
+      boost::optional<PlantLoop> secondaryPlantLoop() const override;
+      bool removeFromSecondaryPlantLoop() override;
+      bool addToNode(Node& node) override;
+      bool addToSourceSideNode(Node& node);
+      openstudio::ComponentType componentType() const override;
+      std::vector<openstudio::FuelType> coolingFuelTypes() const override;
+      std::vector<openstudio::FuelType> heatingFuelTypes() const override;
+      std::vector<openstudio::AppGFuelType> appGHeatingFuelTypes() const override;
 
       std::string endUseSubcategory() const;
       bool setEndUseSubcategory(const std::string& endUseSubcategory);

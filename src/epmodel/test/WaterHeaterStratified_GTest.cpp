@@ -5,15 +5,64 @@
 
 #include <gtest/gtest.h>
 
+#include <cstdio>
+
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../Loop/PlantLoop.hpp"
 #include "../ModelObject/WaterHeaterSizing.hpp"
+#include "../ModelObject/WaterHeaterSizing_Impl.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../WaterToWaterComponent/WaterHeaterStratified.hpp"
+#include "../WaterToWaterComponent/WaterHeaterStratified_Impl.hpp"
+
+#include <utilities/idd/WaterHeater_Stratified_FieldEnums.hxx>
+
+#include "../../utilities/core/Path.hpp"
+#include "../../utilities/core/UUID.hpp"
+#include "../../utilities/sql/SqlFile.hpp"
+#include <sqlite3.h>
+#include <utilities/data/DataEnums.hpp>
 
 #include <limits>
 
 using namespace openstudio::epmodel;
+
+namespace {
+
+std::string makeWaterHeaterStratifiedAutosizeSql(const openstudio::path& sqlPath) {
+  sqlite3* db = nullptr;
+  if (sqlite3_open(openstudio::toString(sqlPath).c_str(), &db) != SQLITE_OK) {
+    const std::string error = db ? sqlite3_errmsg(db) : "sqlite3_open failed";
+    if (db) {
+      sqlite3_close(db);
+    }
+    return error;
+  }
+
+  const char* sql = R"sql(
+    CREATE TABLE ComponentSizes (CompType TEXT, CompName TEXT, Description TEXT, Units TEXT, Value REAL);
+    INSERT INTO ComponentSizes VALUES ('WaterHeater:Stratified','AUTOSIZED STRATIFIED WATER HEATER','Design Size Tank Volume','m3',0.81);
+    INSERT INTO ComponentSizes VALUES ('WaterHeater:Stratified','AUTOSIZED STRATIFIED WATER HEATER','Design Size Tank Height','m',1.93);
+    INSERT INTO ComponentSizes VALUES ('WaterHeater:Stratified','AUTOSIZED STRATIFIED WATER HEATER','Design Size Heater 1 Capacity','W',65432.0);
+    INSERT INTO ComponentSizes VALUES ('WaterHeater:Stratified','AUTOSIZED STRATIFIED WATER HEATER','Design Size Use Side Design Flow Rate','m3/s',0.0041);
+    INSERT INTO ComponentSizes VALUES ('WaterHeater:Stratified','AUTOSIZED STRATIFIED WATER HEATER','Design Size Source Side Design Flow Rate','m3/s',0.0032);
+  )sql";
+
+  char* errorMessage = nullptr;
+  const int execResult = sqlite3_exec(db, sql, nullptr, nullptr, &errorMessage);
+  std::string result;
+  if (execResult != SQLITE_OK) {
+    result = errorMessage ? errorMessage : "sqlite3_exec failed";
+  }
+
+  sqlite3_free(errorMessage);
+  sqlite3_close(db);
+  return result;
+}
+
+}  // namespace
 
 TEST_F(EPModelFixture, WaterHeaterStratified_DefaultConstructor) {
   Model model;
@@ -165,4 +214,140 @@ TEST_F(EPModelFixture, WaterHeaterStratified_RelationshipAccessors_RoundTrip) {
 
   WaterHeaterSizing sizing = heater.waterHeaterSizing();
   EXPECT_EQ(heater.handle(), sizing.waterHeater().handle());
+}
+
+TEST_F(EPModelFixture, WaterHeaterStratified_CloneReattachesWaterHeaterSizing) {
+  Model model;
+  WaterHeaterStratified heater(model);
+
+  auto originalSizing = heater.waterHeaterSizing();
+  ASSERT_TRUE(originalSizing.setStorageCapacityperPerson(0.16));
+
+  auto cloneObject = heater.clone(model);
+  auto heaterClone = cloneObject.cast<WaterHeaterStratified>();
+  EXPECT_EQ(2u, model.getConcreteModelObjects<WaterHeaterSizing>().size());
+  EXPECT_NE(heater.handle(), heaterClone.handle());
+
+  auto cloneSizing = heaterClone.waterHeaterSizing();
+  EXPECT_NE(originalSizing.handle(), cloneSizing.handle());
+  EXPECT_EQ(heaterClone.handle(), cloneSizing.waterHeater().handle());
+  ASSERT_TRUE(cloneSizing.storageCapacityperPerson());
+  EXPECT_DOUBLE_EQ(0.16, cloneSizing.storageCapacityperPerson().get());
+
+  Model otherModel;
+  auto crossCloneObject = heater.clone(otherModel);
+  auto crossClone = crossCloneObject.cast<WaterHeaterStratified>();
+  EXPECT_EQ(1u, otherModel.getConcreteModelObjects<WaterHeaterSizing>().size());
+
+  auto crossCloneSizing = crossClone.waterHeaterSizing();
+  EXPECT_EQ(crossClone.handle(), crossCloneSizing.waterHeater().handle());
+  EXPECT_NE(originalSizing.handle(), crossCloneSizing.handle());
+  ASSERT_TRUE(crossCloneSizing.storageCapacityperPerson());
+  EXPECT_DOUBLE_EQ(0.16, crossCloneSizing.storageCapacityperPerson().get());
+}
+
+TEST_F(EPModelFixture, WaterHeaterStratified_WaterToWaterTopology) {
+  Model model;
+  WaterHeaterStratified heater(model);
+
+  EXPECT_EQ(openstudio::WaterHeater_StratifiedFields::UseSideInletNodeName, heater.supplyInletPort());
+  EXPECT_EQ(openstudio::WaterHeater_StratifiedFields::UseSideOutletNodeName, heater.supplyOutletPort());
+  EXPECT_EQ(openstudio::WaterHeater_StratifiedFields::SourceSideInletNodeName, heater.demandInletPort());
+  EXPECT_EQ(openstudio::WaterHeater_StratifiedFields::SourceSideOutletNodeName, heater.demandOutletPort());
+
+  EXPECT_FALSE(heater.tertiaryInletModelObject());
+  EXPECT_FALSE(heater.tertiaryOutletModelObject());
+
+  PlantLoop useLoop(model);
+  PlantLoop sourceLoop(model);
+  PlantLoop replacementSourceLoop(model);
+
+  EXPECT_TRUE(useLoop.addSupplyBranchForComponent(heater));
+
+  ASSERT_TRUE(heater.useSidePlantLoop());
+  EXPECT_EQ(useLoop.handle(), heater.useSidePlantLoop()->handle());
+  EXPECT_FALSE(heater.sourceSidePlantLoop());
+  ASSERT_TRUE(heater.useSideInletModelObject());
+  ASSERT_TRUE(heater.useSideOutletModelObject());
+  EXPECT_FALSE(heater.sourceSideInletModelObject());
+  EXPECT_FALSE(heater.sourceSideOutletModelObject());
+
+  EXPECT_TRUE(sourceLoop.addSupplyBranchForComponent(heater));
+
+  ASSERT_TRUE(heater.plantLoop());
+  EXPECT_EQ(useLoop.handle(), heater.plantLoop()->handle());
+  ASSERT_TRUE(heater.secondaryPlantLoop());
+  EXPECT_EQ(sourceLoop.handle(), heater.secondaryPlantLoop()->handle());
+  ASSERT_TRUE(heater.useSidePlantLoop());
+  EXPECT_EQ(useLoop.handle(), heater.useSidePlantLoop()->handle());
+  ASSERT_TRUE(heater.sourceSidePlantLoop());
+  EXPECT_EQ(sourceLoop.handle(), heater.sourceSidePlantLoop()->handle());
+
+  ASSERT_TRUE(heater.supplyInletModelObject());
+  ASSERT_TRUE(heater.supplyOutletModelObject());
+  ASSERT_TRUE(heater.demandInletModelObject());
+  ASSERT_TRUE(heater.demandOutletModelObject());
+  ASSERT_TRUE(heater.useSideInletModelObject());
+  ASSERT_TRUE(heater.useSideOutletModelObject());
+  ASSERT_TRUE(heater.sourceSideInletModelObject());
+  ASSERT_TRUE(heater.sourceSideOutletModelObject());
+
+  EXPECT_EQ(openstudio::ComponentType(openstudio::ComponentType::Heating), heater.componentType());
+  EXPECT_EQ(std::vector<openstudio::FuelType>{openstudio::FuelType::Electricity}, heater.heatingFuelTypes());
+  EXPECT_EQ(std::vector<openstudio::AppGFuelType>{openstudio::convertFuelTypeToAppG(openstudio::FuelType::Electricity)},
+            heater.appGHeatingFuelTypes());
+  EXPECT_TRUE(heater.coolingFuelTypes().empty());
+
+  EXPECT_TRUE(heater.removeFromSourceSidePlantLoop());
+  EXPECT_FALSE(heater.sourceSidePlantLoop());
+  EXPECT_FALSE(heater.sourceSideInletModelObject());
+  EXPECT_FALSE(heater.sourceSideOutletModelObject());
+  ASSERT_TRUE(heater.useSidePlantLoop());
+  EXPECT_EQ(useLoop.handle(), heater.useSidePlantLoop()->handle());
+
+  auto replacementSourceNode = replacementSourceLoop.demandInletNode();
+  EXPECT_TRUE(heater.addToSourceSideNode(replacementSourceNode));
+  ASSERT_TRUE(heater.sourceSidePlantLoop());
+  EXPECT_EQ(replacementSourceLoop.handle(), heater.sourceSidePlantLoop()->handle());
+}
+
+TEST_F(EPModelFixture, WaterHeaterStratified_AutosizedHelpersUseSqlFile) {
+  Model model;
+  WaterHeaterStratified heater(model);
+  ASSERT_TRUE(heater.setName("Autosized Stratified Water Heater"));
+
+  heater.autosizeTankVolume();
+  heater.autosizeTankHeight();
+  heater.autosizeHeater1Capacity();
+  heater.autosizeUseSideDesignFlowRate();
+  heater.autosizeSourceSideDesignFlowRate();
+
+  const openstudio::path sqlPath = openstudio::tempDir()
+                                   / openstudio::toPath("epmodel_water_heater_stratified_autosized_"
+                                                        + openstudio::toString(openstudio::createUUID()) + ".sqlite");
+  ASSERT_TRUE(makeWaterHeaterStratifiedAutosizeSql(sqlPath).empty());
+
+  openstudio::SqlFile sqlFile(sqlPath);
+  ASSERT_TRUE(sqlFile.connectionOpen());
+  EXPECT_TRUE(model.setSqlFile(sqlFile));
+
+  ASSERT_TRUE(heater.autosizedTankVolume());
+  EXPECT_DOUBLE_EQ(0.81, *heater.autosizedTankVolume());
+  ASSERT_TRUE(heater.autosizedTankHeight());
+  EXPECT_DOUBLE_EQ(1.93, *heater.autosizedTankHeight());
+  ASSERT_TRUE(heater.autosizedHeater1Capacity());
+  EXPECT_DOUBLE_EQ(65432.0, *heater.autosizedHeater1Capacity());
+  ASSERT_TRUE(heater.autosizedUseSideDesignFlowRate());
+  EXPECT_DOUBLE_EQ(0.0041, *heater.autosizedUseSideDesignFlowRate());
+  ASSERT_TRUE(heater.autosizedSourceSideDesignFlowRate());
+  EXPECT_DOUBLE_EQ(0.0032, *heater.autosizedSourceSideDesignFlowRate());
+
+  EXPECT_TRUE(model.resetSqlFile());
+  EXPECT_FALSE(heater.autosizedTankVolume());
+  EXPECT_FALSE(heater.autosizedTankHeight());
+  EXPECT_FALSE(heater.autosizedHeater1Capacity());
+  EXPECT_FALSE(heater.autosizedUseSideDesignFlowRate());
+  EXPECT_FALSE(heater.autosizedSourceSideDesignFlowRate());
+
+  EXPECT_EQ(0, std::remove(openstudio::toString(sqlPath).c_str()));
 }

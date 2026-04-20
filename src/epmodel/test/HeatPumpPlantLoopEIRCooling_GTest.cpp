@@ -14,6 +14,7 @@
 #include "../WaterToWaterComponent/HeatPumpPlantLoopEIRHeating.hpp"
 
 #include <limits>
+#include <utilities/idd/HeatPump_PlantLoop_EIR_Cooling_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -31,6 +32,10 @@ TEST_F(EPModelFixture, HeatPumpPlantLoopEIRCooling_DefaultConstructor) {
   EXPECT_TRUE(hp.isSourceSideReferenceFlowRateAutosized());
   EXPECT_TRUE(hp.isHeatRecoveryReferenceFlowRateAutosized());
   EXPECT_TRUE(hp.isReferenceCapacityAutosized());
+  EXPECT_FALSE(hp.autosizedLoadSideReferenceFlowRate());
+  EXPECT_FALSE(hp.autosizedSourceSideReferenceFlowRate());
+  EXPECT_FALSE(hp.autosizedHeatRecoveryReferenceFlowRate());
+  EXPECT_FALSE(hp.autosizedReferenceCapacity());
 
   EXPECT_FALSE(hp.loadSideReferenceFlowRate());
   EXPECT_FALSE(hp.sourceSideReferenceFlowRate());
@@ -150,24 +155,28 @@ TEST_F(EPModelFixture, HeatPumpPlantLoopEIRCooling_ScalarAccessors_RoundTrip) {
   EXPECT_DOUBLE_EQ(0.101, *hp.loadSideReferenceFlowRate());
   hp.autosizeLoadSideReferenceFlowRate();
   EXPECT_TRUE(hp.isLoadSideReferenceFlowRateAutosized());
+  EXPECT_FALSE(hp.autosizedLoadSideReferenceFlowRate());
 
   EXPECT_TRUE(hp.setSourceSideReferenceFlowRate(0.202));
   ASSERT_TRUE(hp.sourceSideReferenceFlowRate());
   EXPECT_DOUBLE_EQ(0.202, *hp.sourceSideReferenceFlowRate());
   hp.autosizeSourceSideReferenceFlowRate();
   EXPECT_TRUE(hp.isSourceSideReferenceFlowRateAutosized());
+  EXPECT_FALSE(hp.autosizedSourceSideReferenceFlowRate());
 
   EXPECT_TRUE(hp.setHeatRecoveryReferenceFlowRate(0.303));
   ASSERT_TRUE(hp.heatRecoveryReferenceFlowRate());
   EXPECT_DOUBLE_EQ(0.303, *hp.heatRecoveryReferenceFlowRate());
   hp.autosizeHeatRecoveryReferenceFlowRate();
   EXPECT_TRUE(hp.isHeatRecoveryReferenceFlowRateAutosized());
+  EXPECT_FALSE(hp.autosizedHeatRecoveryReferenceFlowRate());
 
   EXPECT_TRUE(hp.setReferenceCapacity(12450.0));
   ASSERT_TRUE(hp.referenceCapacity());
   EXPECT_DOUBLE_EQ(12450.0, *hp.referenceCapacity());
   hp.autosizeReferenceCapacity();
   EXPECT_TRUE(hp.isReferenceCapacityAutosized());
+  EXPECT_FALSE(hp.autosizedReferenceCapacity());
 
   EXPECT_TRUE(hp.setReferenceCoefficientofPerformance(6.9));
   EXPECT_DOUBLE_EQ(6.9, hp.referenceCoefficientofPerformance());
@@ -201,26 +210,38 @@ TEST_F(EPModelFixture, HeatPumpPlantLoopEIRCooling_PlantLoopAttachmentParity) {
   Model model;
   PlantLoop loadLoop(model);
   PlantLoop sourceLoop(model);
+  PlantLoop sourceLoop2(model);
   PlantLoop heatRecoveryLoop(model);
   HeatPumpPlantLoopEIRCooling hp(model);
 
+  EXPECT_EQ(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::LoadSideInletNodeName, hp.supplyInletPort());
+  EXPECT_EQ(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::LoadSideOutletNodeName, hp.supplyOutletPort());
+  EXPECT_EQ(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SourceSideInletNodeName, hp.demandInletPort());
+  EXPECT_EQ(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::SourceSideOutletNodeName, hp.demandOutletPort());
+  EXPECT_EQ(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryInletNodeName, hp.tertiaryInletPort());
+  EXPECT_EQ(openstudio::HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryOutletNodeName, hp.tertiaryOutletPort());
+
   EXPECT_TRUE(loadLoop.addSupplyBranchForComponent(hp));
   ASSERT_TRUE(hp.loadSideWaterLoop());
-  EXPECT_EQ(loadLoop.handle(), hp.loadSideWaterLoop()->handle());
+  EXPECT_EQ(loadLoop, hp.loadSideWaterLoop().get());
   ASSERT_TRUE(hp.loadSideWaterInletNode());
   EXPECT_EQ(hp.supplyInletModelObject()->cast<Node>(), hp.loadSideWaterInletNode().get());
   ASSERT_TRUE(hp.loadSideWaterOutletNode());
   EXPECT_EQ(hp.supplyOutletModelObject()->cast<Node>(), hp.loadSideWaterOutletNode().get());
 
+  EXPECT_FALSE(hp.sourceSideWaterLoop());
+  EXPECT_FALSE(hp.heatRecoveryLoop());
+
   EXPECT_TRUE(sourceLoop.addDemandBranchForComponent(hp));
   ASSERT_TRUE(hp.sourceSideWaterLoop());
-  EXPECT_EQ(sourceLoop.handle(), hp.sourceSideWaterLoop()->handle());
+  EXPECT_EQ(sourceLoop, hp.sourceSideWaterLoop().get());
   EXPECT_EQ("WaterSource", hp.condenserType());
   EXPECT_FALSE(hp.setCondenserType("AirSource"));
   ASSERT_TRUE(hp.sourceSideWaterInletNode());
   EXPECT_EQ(hp.demandInletModelObject()->cast<Node>(), hp.sourceSideWaterInletNode().get());
   ASSERT_TRUE(hp.sourceSideWaterOutletNode());
   EXPECT_EQ(hp.demandOutletModelObject()->cast<Node>(), hp.sourceSideWaterOutletNode().get());
+  EXPECT_FALSE(hp.heatRecoveryLoop());
 
   boost::optional<Node> heatRecoveryNode;
   for (const auto& component : heatRecoveryLoop.demandComponents()) {
@@ -232,14 +253,45 @@ TEST_F(EPModelFixture, HeatPumpPlantLoopEIRCooling_PlantLoopAttachmentParity) {
   ASSERT_TRUE(heatRecoveryNode);
   EXPECT_TRUE(hp.addToNode(*heatRecoveryNode));
   ASSERT_TRUE(hp.heatRecoveryLoop());
-  EXPECT_EQ(heatRecoveryLoop.handle(), hp.heatRecoveryLoop()->handle());
+  EXPECT_EQ(heatRecoveryLoop, hp.heatRecoveryLoop().get());
   ASSERT_TRUE(hp.heatRecoveryInletNode());
   EXPECT_EQ(hp.tertiaryInletModelObject()->cast<Node>(), hp.heatRecoveryInletNode().get());
   ASSERT_TRUE(hp.heatRecoveryOutletNode());
   EXPECT_EQ(hp.tertiaryOutletModelObject()->cast<Node>(), hp.heatRecoveryOutletNode().get());
 
+  boost::optional<Node> sourceLoop2DemandNode;
+  for (const auto& component : sourceLoop2.demandComponents()) {
+    if (auto node = component.optionalCast<Node>()) {
+      sourceLoop2DemandNode = *node;
+      break;
+    }
+  }
+  ASSERT_TRUE(sourceLoop2DemandNode);
+  EXPECT_TRUE(hp.addToNode(*sourceLoop2DemandNode));
+  ASSERT_TRUE(hp.loadSideWaterLoop());
+  EXPECT_EQ(loadLoop, hp.loadSideWaterLoop().get());
+  ASSERT_TRUE(hp.sourceSideWaterLoop());
+  EXPECT_EQ(sourceLoop2, hp.sourceSideWaterLoop().get());
+  ASSERT_TRUE(hp.heatRecoveryLoop());
+  EXPECT_EQ(heatRecoveryLoop, hp.heatRecoveryLoop().get());
+
+  EXPECT_TRUE(hp.removeFromTertiaryPlantLoop());
+  EXPECT_FALSE(hp.heatRecoveryLoop());
+  EXPECT_FALSE(hp.heatRecoveryInletNode());
+  EXPECT_FALSE(hp.heatRecoveryOutletNode());
+
   auto loadSupplyOutletNode = loadLoop.supplyOutletNode();
   EXPECT_FALSE(hp.addToTertiaryNode(loadSupplyOutletNode));
+  EXPECT_FALSE(hp.heatRecoveryLoop());
+
+  auto heatRecoveryDemandNode = heatRecoveryLoop.demandInletNode();
+  EXPECT_TRUE(hp.addToNode(heatRecoveryDemandNode));
+  ASSERT_TRUE(hp.loadSideWaterLoop());
+  EXPECT_EQ(loadLoop, hp.loadSideWaterLoop().get());
+  ASSERT_TRUE(hp.sourceSideWaterLoop());
+  EXPECT_EQ(sourceLoop2, hp.sourceSideWaterLoop().get());
+  ASSERT_TRUE(hp.heatRecoveryLoop());
+  EXPECT_EQ(heatRecoveryLoop, hp.heatRecoveryLoop().get());
 
   EXPECT_TRUE(hp.removeFromSecondaryPlantLoop());
   EXPECT_EQ("AirSource", hp.condenserType());

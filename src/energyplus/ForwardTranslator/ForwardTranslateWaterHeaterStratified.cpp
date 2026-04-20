@@ -230,6 +230,8 @@ namespace energyplus {
       idfObject.setDouble(WaterHeater_StratifiedFields::OnCycleParasiticHeight, value.get());
     }
 
+    boost::optional<std::string> ambientOutdoorAirNodeName;
+
     // Ambient Temperature Indicator
     s = modelObject.ambientTemperatureIndicator();
     if (s) {
@@ -261,8 +263,17 @@ namespace energyplus {
 
     // Ambient Temperature Outdoor Air Node Name
     s = modelObject.ambientTemperatureOutdoorAirNodeName();
-    if (s) {
-      idfObject.setString(WaterHeater_StratifiedFields::AmbientTemperatureOutdoorAirNodeName, s.get());
+    if (s && !s->empty()) {
+      ambientOutdoorAirNodeName = s;
+    } else if (istringEqual(modelObject.ambientTemperatureIndicator(), "Outdoors")) {
+      ambientOutdoorAirNodeName = modelObject.nameString() + " Ambient Temp OA Node";
+    }
+
+    if (ambientOutdoorAirNodeName) {
+      IdfObject oaNodeList(openstudio::IddObjectType::OutdoorAir_NodeList);
+      oaNodeList.setString(0, ambientOutdoorAirNodeName.get());
+      m_idfObjects.push_back(oaNodeList);
+      idfObject.setString(WaterHeater_StratifiedFields::AmbientTemperatureOutdoorAirNodeName, ambientOutdoorAirNodeName.get());
     }
 
     // Uniform Skin Loss Coefficient per Unit Area to Ambient Temperature

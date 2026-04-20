@@ -213,6 +213,9 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ChillerElectricEIR) {
     EXPECT_EQ("Condenser Inlet Node", woCh.getString(Chiller_Electric_EIRFields::CondenserInletNodeName).get());
     EXPECT_EQ("Condenser Outlet Node", woCh.getString(Chiller_Electric_EIRFields::CondenserOutletNodeName).get());
     EXPECT_EQ("WaterCooled", woCh.getString(Chiller_Electric_EIRFields::CondenserType).get());
+
+    auto oaNodeLists = w.getObjectsByType(IddObjectType::OutdoorAir_NodeList);
+    EXPECT_TRUE(oaNodeLists.empty());
     EXPECT_EQ(1.1, woCh.getDouble(Chiller_Electric_EIRFields::CondenserFanPowerRatio).get());
     EXPECT_EQ(0.957, woCh.getDouble(Chiller_Electric_EIRFields::FractionofCompressorElectricConsumptionRejectedbyCondenser).get());
     EXPECT_EQ(2.3, woCh.getDouble(Chiller_Electric_EIRFields::LeavingChilledWaterLowerTemperatureLimit).get());
@@ -314,4 +317,32 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_ChillerElectricEIR) {
       }
     }
   }
+}
+
+TEST_F(EnergyPlusFixture, ForwardTranslator_ChillerElectricEIR_AirCooledCondenserNodes) {
+  ForwardTranslator ft;
+  Model m;
+
+  PlantLoop chwLoop(m);
+  ChillerElectricEIR ch(m);
+  ch.setName("Air Cooled ChillerElectricEIR");
+
+  ASSERT_TRUE(chwLoop.addSupplyBranchForComponent(ch));
+  ASSERT_TRUE(ch.setCondenserType("AirCooled"));
+
+  Workspace w = ft.translateModel(m);
+
+  auto woChs = w.getObjectsByType(IddObjectType::Chiller_Electric_EIR);
+  ASSERT_EQ(1u, woChs.size());
+  const auto& woCh = woChs.front();
+
+  EXPECT_EQ("AirCooled", woCh.getString(Chiller_Electric_EIRFields::CondenserType).get());
+  EXPECT_EQ("Air Cooled ChillerElectricEIR Inlet Node For Condenser",
+            woCh.getString(Chiller_Electric_EIRFields::CondenserInletNodeName).get());
+  EXPECT_EQ("Air Cooled ChillerElectricEIR Outlet Node For Condenser",
+            woCh.getString(Chiller_Electric_EIRFields::CondenserOutletNodeName).get());
+
+  auto oaNodeLists = w.getObjectsByType(IddObjectType::OutdoorAir_NodeList);
+  ASSERT_EQ(1u, oaNodeLists.size());
+  EXPECT_EQ("Air Cooled ChillerElectricEIR Inlet Node For Condenser", oaNodeLists.front().nameString());
 }

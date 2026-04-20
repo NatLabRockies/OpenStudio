@@ -18,6 +18,7 @@
 #include "StraightComponent/Node_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/Chiller_Electric_EIR_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -889,6 +890,18 @@ bool ChillerElectricEIR_Impl::isCondenserTypeDefaulted() const {
 }
 
 bool ChillerElectricEIR_Impl::setCondenserType(const std::string& condenserType) {
+  if ((openstudio::istringEqual(condenserType, "AirCooled") || openstudio::istringEqual(condenserType, "EvaporativelyCooled"))
+      && secondaryPlantLoop()) {
+    LOG(Warn, "Cannot set condenserType to AirCooled or EvaporativelyCooled, chiller '" << name()
+                                                                                           << "' is connected to a secondaryPlantLoop");
+    return false;
+  }
+
+  if (openstudio::istringEqual(condenserType, "WaterCooled") && !secondaryPlantLoop()) {
+    LOG(Warn, "Cannot set condenserType to 'WaterCooled', chiller '" << name() << "' is not connected to a secondaryPlantLoop");
+    return false;
+  }
+
   return setString(openstudio::Chiller_Electric_EIRFields::CondenserType, condenserType);
 }
 

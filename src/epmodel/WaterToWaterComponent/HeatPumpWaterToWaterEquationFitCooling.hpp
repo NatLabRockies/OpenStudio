@@ -48,7 +48,7 @@ namespace epmodel {
     //   deprecated coefficient aliases preserve the canonical model API shape.
     // - Documented Delta: Autosized-value query helpers still return `none` because epmodel does not yet resolve
     //   SQL-backed autosized results for this family.
-    // - Field/Storage Mapping: Scalar wrappers target the EnergyPlus `WaterToWater` equation-fit cooling fields directly, with legacy rated/reference naming preserved where canonical model behavior expects it.
+    // - Field/Storage Mapping: The public wrapper preserves canonical openstudio::model load/source semantics while storing scalar values on the EnergyPlus equation-fit cooling fields directly; node-port topology intentionally maps supply ports to EnergyPlus load-side fields and demand ports to source-side fields.
     // - Evidence: `src/model/HeatPumpWaterToWaterEquationFitCooling.hpp`, `src/model/HeatPumpWaterToWaterEquationFitCooling.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatPumpWaterToWaterEquationFitCooling.cpp`.
     // - Remaining Parity Work: Loop-coupling ergonomics remain inherited from the shared water-to-water base.
 

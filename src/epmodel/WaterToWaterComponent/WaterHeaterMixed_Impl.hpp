@@ -195,6 +195,13 @@ namespace epmodel {
       unsigned demandOutletPort() const override;
       boost::optional<PlantLoop> plantLoop() const override;
       boost::optional<PlantLoop> secondaryPlantLoop() const override;
+      bool removeFromSecondaryPlantLoop() override;
+      bool addToNode(Node& node) override;
+      bool addToSourceSideNode(Node& node);
+      openstudio::ComponentType componentType() const override;
+      std::vector<openstudio::FuelType> coolingFuelTypes() const override;
+      std::vector<openstudio::FuelType> heatingFuelTypes() const override;
+      std::vector<openstudio::AppGFuelType> appGHeatingFuelTypes() const override;
       bool setIndirectWaterHeatingRecoveryTime(double indirectWaterHeatingRecoveryTime);
       void resetIndirectWaterHeatingRecoveryTime();
 

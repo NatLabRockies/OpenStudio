@@ -29,6 +29,11 @@ class Node;
       unsigned demandInletPort() const override;
       unsigned demandOutletPort() const override;
 
+      openstudio::ComponentType componentType() const override;
+      std::vector<openstudio::FuelType> coolingFuelTypes() const override;
+      std::vector<openstudio::FuelType> heatingFuelTypes() const override;
+      std::vector<openstudio::AppGFuelType> appGHeatingFuelTypes() const override;
+
       boost::optional<Schedule> availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);
       void resetAvailabilitySchedule();

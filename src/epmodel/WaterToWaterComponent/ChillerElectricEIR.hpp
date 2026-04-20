@@ -47,12 +47,14 @@ class EPMODEL_API ChillerElectricEIR : public WaterToWaterComponent
   // - Status: Parity with documented deltas. The canonical scalar, curve, schedule, and loop convenience surface is aligned.
   // - Canonical Counterpart: openstudio::model::ChillerElectricEIR.
   // - Implemented Parity: Canonical constructor defaults, required and optional relationship fields, chilled/condenser/heat-recovery loop conveniences,
-  //   and shared tertiary-routing behavior preserve the model-side API shape.
-  // - Documented Delta: Autosized-value helpers are present but remain epmodel stubs that return `none` until autosized results are surfaced here.
+  //   loop-aware condenser-type restrictions, and shared tertiary-routing behavior preserve the model-side API shape.
+  // - Documented Delta: Autosized-value helpers remain epmodel stubs that return `none` until autosized results are surfaced here, and the static
+  //   enum-helper names are `*Values()` instead of the canonical `valid*Values()` names.
   // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `Chiller:Electric:EIR` fields directly, while curve, schedule, and node relationships are
   //   persisted as ordinary object links on the same object and interpreted through the shared water-to-water topology layer.
-  // - Evidence: `src/model/ChillerElectricEIR.hpp`, `src/model/ChillerElectricEIR.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateChillerElectricEIR.cpp`.
-  // - Remaining Parity Work: Additional work should factor shared abstractions only when multiple chiller wrappers need the same non-generic behavior.
+  // - Evidence: `src/model/ChillerElectricEIR.hpp`, `src/model/ChillerElectricEIR.cpp`,
+  //   `src/energyplus/ForwardTranslator/ForwardTranslateChillerElectricEIR.cpp`, and `src/epmodel/test/ChillerElectricEIR_GTest.cpp`.
+  // - Remaining Parity Work: Surface real autosized values for the condenser-flow and heat-recovery sizing helpers instead of the current `none` stubs.
   boost::optional<double> referenceCapacity() const;
   bool isReferenceCapacityAutosized() const;
   bool setReferenceCapacity(boost::optional<double> referenceCapacity);

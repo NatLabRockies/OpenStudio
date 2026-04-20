@@ -15,6 +15,7 @@
 #include "../../utilities/core/StringHelpers.hpp"
 #include "../../utilities/idf/IdfObject.hpp"
 #include "../../utilities/idf/WorkspaceObject_Impl.hpp"
+#include "../../utilities/sql/SqlFile.hpp"
 
 #include <array>
 #include <string>
@@ -54,6 +55,10 @@ namespace epmodel {
 
   bool ModelObject::operator!=(const ModelObject& other) const {
     return (handle() != other.handle());
+  }
+
+  boost::optional<double> ModelObject::getAutosizedValue(const std::string& valueName, const std::string& units) const {
+    return getImpl<detail::ModelObject_Impl>()->getAutosizedValue(valueName, units);
   }
 
 }  // namespace epmodel
@@ -331,6 +336,112 @@ namespace epmodel {
     }
 
     void ModelObject_Impl::doCanonicalize(LoadContext&) {}
+
+    boost::optional<double> ModelObject_Impl::getAutosizedValueFromInitializationSummary(const std::string& valueName,
+                                                                                         const std::string& units) const {
+      if (!name()) {
+        LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
+                 "This object does not have a name, cannot retrieve the autosized value '" << valueName << "'.");
+        return boost::none;
+      }
+
+      if (!model().sqlFile()) {
+        LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
+                 "This model has no sql file, cannot retrieve the autosized value '" << valueName << "'.");
+        return boost::none;
+      }
+
+      std::string sqlName = name().get();
+      boost::to_upper(sqlName);
+
+      const std::string rowsQuery = R"(
+      SELECT RowName FROM TabularDataWithStrings
+        WHERE ReportName = 'InitializationSummary'
+        AND ReportForString = 'Entire Facility'
+        AND TableName = 'Component Sizing Information'
+        AND Value = ?;)";
+
+      auto rowNames = model().sqlFile()->execAndReturnVectorOfString(rowsQuery, sqlName);
+      if (!rowNames) {
+        LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
+                 "Could not find a component called '" << sqlName << "' in any rows of the InitializationSummary Component Sizing table.");
+        return boost::none;
+      }
+
+      std::string valueNameAndUnits = valueName;
+      if (units == "typo_in_energyplus") {
+        valueNameAndUnits += " []";
+      } else if (!units.empty()) {
+        valueNameAndUnits += " [" + units + "]";
+      }
+
+      for (const std::string& rowName : *rowNames) {
+        const std::string rowCheckQuery = R"(
+        SELECT Value FROM TabularDataWithStrings
+          WHERE ReportName = 'InitializationSummary'
+          AND ReportForString = 'Entire Facility'
+          AND TableName = 'Component Sizing Information'
+          AND RowName = ?
+          AND Value = ?;)";
+        const auto rowValueName = model().sqlFile()->execAndReturnFirstString(rowCheckQuery, rowName, valueNameAndUnits);
+        if (!rowValueName) {
+          continue;
+        }
+
+        const std::string valQuery = R"(
+        SELECT Value FROM TabularDataWithStrings
+          WHERE ReportName = 'InitializationSummary'
+          AND ReportForString = 'Entire Facility'
+          AND TableName = 'Component Sizing Information'
+          AND ColumnName='Value'
+          AND RowName = ?;)";
+        if (auto val = model().sqlFile()->execAndReturnFirstDouble(valQuery, rowName)) {
+          return val;
+        }
+      }
+
+      LOG_FREE(Debug, "openstudio.epmodel.ModelObject",
+               "The autosized value query for '" << valueNameAndUnits << "' of '" << sqlName << "' returned no value.");
+      return boost::none;
+    }
+
+    boost::optional<double> ModelObject_Impl::getAutosizedValue(const std::string& valueName, const std::string& units,
+                                                                std::string overrideCompType) const {
+      if (!name()) {
+        LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
+                 "This object does not have a name, cannot retrieve the autosized value '" << valueName << "'.");
+        return boost::none;
+      }
+
+      if (!model().sqlFile()) {
+        LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
+                 "This model has no sql file, cannot retrieve the autosized value '" << valueName << "'.");
+        return boost::none;
+      }
+
+      std::string sqlName = name().get();
+      boost::to_upper(sqlName);
+
+      if (overrideCompType.empty()) {
+        overrideCompType = iddObject().type().valueDescription();
+      }
+
+      const std::string directQuery = R"sql(
+      SELECT Value FROM ComponentSizes
+        WHERE CompType = ?
+          AND CompName = ?
+          AND Description = ?
+          AND Units = ?;
+    )sql";
+
+      auto val = model().sqlFile()->execAndReturnFirstDouble(directQuery, overrideCompType, sqlName, valueName, units);
+      if (!val) {
+        LOG_FREE(Debug, "openstudio.epmodel.ModelObject",
+                 "The direct autosized value query returned no value for component type '" << overrideCompType << "', component '" << sqlName
+                   << "', description '" << valueName << "', units '" << units << "'.");
+      }
+      return val;
+    }
 
     boost::optional<openstudio::epmodel::Node> ModelObject_Impl::resolvedNodeTarget(unsigned fieldIndex) const {
       if (auto node = getObject<openstudio::epmodel::ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(fieldIndex)) {

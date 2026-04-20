@@ -351,3 +351,231 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_HeatPumpPlantLoopEIR_WaterSource) {
     EXPECT_EQ(woCurve3->iddObject().type(), IddObjectType::Curve_Quadratic);
   }
 }
+
+
+TEST_F(EnergyPlusFixture, ForwardTranslator_HeatPumpPlantLoopEIRCooling_AirSourceAutosizeAndOutdoorAirNodes) {
+
+  Model m;
+
+  PlantLoop loadLoop(m);
+
+  HeatPumpPlantLoopEIRCooling plhpClg(m);
+  ASSERT_TRUE(plhpClg.setName("Cooling AirSource HP"));
+
+  EXPECT_TRUE(loadLoop.addSupplyBranchForComponent(plhpClg));
+
+  ASSERT_TRUE(plhpClg.supplyInletModelObject());
+  ASSERT_TRUE(plhpClg.supplyOutletModelObject());
+  EXPECT_TRUE(plhpClg.supplyInletModelObject()->setName("Cooling Load Inlet Node"));
+  EXPECT_TRUE(plhpClg.supplyOutletModelObject()->setName("Cooling Load Outlet Node"));
+
+  plhpClg.autosizeLoadSideReferenceFlowRate();
+  plhpClg.autosizeSourceSideReferenceFlowRate();
+  plhpClg.autosizeReferenceCapacity();
+
+  ForwardTranslator ft;
+  Workspace w = ft.translateModel(m);
+
+  EXPECT_EQ(0u, ft.errors().size());
+
+  WorkspaceObjectVector idfObjs(w.getObjectsByType(IddObjectType::HeatPump_PlantLoop_EIR_Cooling));
+  ASSERT_EQ(1u, idfObjs.size());
+  WorkspaceObject idfObj(idfObjs[0]);
+
+  EXPECT_EQ("Cooling AirSource HP", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::Name).get());
+  EXPECT_EQ("Cooling Load Inlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::LoadSideInletNodeName).get());
+  EXPECT_EQ("Cooling Load Outlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::LoadSideOutletNodeName).get());
+  EXPECT_EQ("Cooling AirSource HP Inlet Node For Source Side", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::SourceSideInletNodeName).get());
+  EXPECT_EQ("Cooling AirSource HP Outlet Node For Source Side", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::SourceSideOutletNodeName).get());
+  EXPECT_EQ("AirSource", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::CondenserType).get());
+  EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::LoadSideReferenceFlowRate).get());
+  EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::SourceSideReferenceFlowRate).get());
+  EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::ReferenceCapacity).get());
+  EXPECT_FALSE(idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryReferenceFlowRate));
+  EXPECT_FALSE(idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryInletNodeName));
+  EXPECT_FALSE(idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryOutletNodeName));
+
+  WorkspaceObjectVector oaNodeLists(w.getObjectsByType(IddObjectType::OutdoorAir_NodeList));
+  ASSERT_EQ(1u, oaNodeLists.size());
+  EXPECT_EQ("Cooling AirSource HP Inlet Node For Source Side", oaNodeLists[0].getString(0).get());
+}
+
+TEST_F(EnergyPlusFixture, ForwardTranslator_HeatPumpPlantLoopEIRHeating_AirSourceAutosizeAndOutdoorAirNodes) {
+
+  Model m;
+
+  PlantLoop loadLoop(m);
+
+  HeatPumpPlantLoopEIRHeating plhpHtg(m);
+  ASSERT_TRUE(plhpHtg.setName("Heating AirSource HP"));
+
+  EXPECT_TRUE(loadLoop.addSupplyBranchForComponent(plhpHtg));
+
+  ASSERT_TRUE(plhpHtg.supplyInletModelObject());
+  ASSERT_TRUE(plhpHtg.supplyOutletModelObject());
+  EXPECT_TRUE(plhpHtg.supplyInletModelObject()->setName("Heating Load Inlet Node"));
+  EXPECT_TRUE(plhpHtg.supplyOutletModelObject()->setName("Heating Load Outlet Node"));
+
+  plhpHtg.autosizeLoadSideReferenceFlowRate();
+  plhpHtg.autosizeSourceSideReferenceFlowRate();
+  plhpHtg.autosizeReferenceCapacity();
+
+  ForwardTranslator ft;
+  Workspace w = ft.translateModel(m);
+
+  EXPECT_EQ(0u, ft.errors().size());
+
+  WorkspaceObjectVector idfObjs(w.getObjectsByType(IddObjectType::HeatPump_PlantLoop_EIR_Heating));
+  ASSERT_EQ(1u, idfObjs.size());
+  WorkspaceObject idfObj(idfObjs[0]);
+
+  EXPECT_EQ("Heating AirSource HP", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::Name).get());
+  EXPECT_EQ("Heating Load Inlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::LoadSideInletNodeName).get());
+  EXPECT_EQ("Heating Load Outlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::LoadSideOutletNodeName).get());
+  EXPECT_EQ("Heating AirSource HP Inlet Node For Source Side", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::SourceSideInletNodeName).get());
+  EXPECT_EQ("Heating AirSource HP Outlet Node For Source Side", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::SourceSideOutletNodeName).get());
+  EXPECT_EQ("AirSource", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::CondenserType).get());
+  EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::LoadSideReferenceFlowRate).get());
+  EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::SourceSideReferenceFlowRate).get());
+  EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::ReferenceCapacity).get());
+  EXPECT_FALSE(idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::HeatRecoveryReferenceFlowRate));
+  EXPECT_FALSE(idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::HeatRecoveryInletNodeName));
+  EXPECT_FALSE(idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::HeatRecoveryOutletNodeName));
+
+  WorkspaceObjectVector oaNodeLists(w.getObjectsByType(IddObjectType::OutdoorAir_NodeList));
+  ASSERT_EQ(1u, oaNodeLists.size());
+  EXPECT_EQ("Heating AirSource HP Inlet Node For Source Side", oaNodeLists[0].getString(0).get());
+}
+
+TEST_F(EnergyPlusFixture, ForwardTranslator_HeatPumpPlantLoopEIRHeating_WaterSourceReconnectAndHeatRecovery) {
+
+  Model m;
+
+  PlantLoop loadLoop(m);
+  PlantLoop sourceLoop(m);
+  PlantLoop sourceLoop2(m);
+  PlantLoop heatRecoveryLoop(m);
+
+  HeatPumpPlantLoopEIRHeating plhpHtg(m);
+  ASSERT_TRUE(plhpHtg.setName("Heating WaterSource HP"));
+
+  EXPECT_TRUE(loadLoop.addSupplyBranchForComponent(plhpHtg));
+  EXPECT_TRUE(sourceLoop.addDemandBranchForComponent(plhpHtg));
+  EXPECT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(plhpHtg));
+
+  auto sourceReconnectNode = sourceLoop2.demandOutletNode();
+  EXPECT_TRUE(plhpHtg.addToNode(sourceReconnectNode));
+  ASSERT_TRUE(plhpHtg.sourceSideWaterLoop());
+  EXPECT_EQ(sourceLoop2, plhpHtg.sourceSideWaterLoop().get());
+  EXPECT_NE(sourceLoop, plhpHtg.sourceSideWaterLoop().get());
+  EXPECT_FALSE(sourceLoop.demandComponent(plhpHtg.handle()));
+  EXPECT_TRUE(sourceLoop2.demandComponent(plhpHtg.handle()));
+
+  ASSERT_TRUE(plhpHtg.supplyInletModelObject());
+  ASSERT_TRUE(plhpHtg.supplyOutletModelObject());
+  ASSERT_TRUE(plhpHtg.demandInletModelObject());
+  ASSERT_TRUE(plhpHtg.demandOutletModelObject());
+  ASSERT_TRUE(plhpHtg.tertiaryInletModelObject());
+  ASSERT_TRUE(plhpHtg.tertiaryOutletModelObject());
+
+  EXPECT_TRUE(plhpHtg.supplyInletModelObject()->setName("Heating Load Inlet Node"));
+  EXPECT_TRUE(plhpHtg.supplyOutletModelObject()->setName("Heating Load Outlet Node"));
+  EXPECT_TRUE(plhpHtg.demandInletModelObject()->setName("Heating Source 2 Inlet Node"));
+  EXPECT_TRUE(plhpHtg.demandOutletModelObject()->setName("Heating Source 2 Outlet Node"));
+  EXPECT_TRUE(plhpHtg.tertiaryInletModelObject()->setName("Heating Heat Recovery Inlet Node"));
+  EXPECT_TRUE(plhpHtg.tertiaryOutletModelObject()->setName("Heating Heat Recovery Outlet Node"));
+
+  plhpHtg.autosizeLoadSideReferenceFlowRate();
+  plhpHtg.autosizeSourceSideReferenceFlowRate();
+  plhpHtg.autosizeHeatRecoveryReferenceFlowRate();
+  plhpHtg.autosizeReferenceCapacity();
+
+  ForwardTranslator ft;
+  Workspace w = ft.translateModel(m);
+
+  EXPECT_EQ(0u, ft.errors().size());
+
+  WorkspaceObjectVector idfObjs(w.getObjectsByType(IddObjectType::HeatPump_PlantLoop_EIR_Heating));
+  ASSERT_EQ(1u, idfObjs.size());
+  WorkspaceObject idfObj(idfObjs[0]);
+
+  EXPECT_EQ("Heating WaterSource HP", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::Name).get());
+  EXPECT_EQ("Heating Load Inlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::LoadSideInletNodeName).get());
+  EXPECT_EQ("Heating Load Outlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::LoadSideOutletNodeName).get());
+  EXPECT_EQ("Heating Source 2 Inlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::SourceSideInletNodeName).get());
+  EXPECT_EQ("Heating Source 2 Outlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::SourceSideOutletNodeName).get());
+  EXPECT_EQ("Heating Heat Recovery Inlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::HeatRecoveryInletNodeName).get());
+  EXPECT_EQ("Heating Heat Recovery Outlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::HeatRecoveryOutletNodeName).get());
+  EXPECT_EQ("WaterSource", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::CondenserType).get());
+  EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::LoadSideReferenceFlowRate).get());
+  EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::SourceSideReferenceFlowRate).get());
+  EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::HeatRecoveryReferenceFlowRate).get());
+  EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::ReferenceCapacity).get());
+
+  WorkspaceObjectVector oaNodeLists(w.getObjectsByType(IddObjectType::OutdoorAir_NodeList));
+  EXPECT_TRUE(oaNodeLists.empty());
+}
+
+TEST_F(EnergyPlusFixture, ForwardTranslator_HeatPumpPlantLoopEIRCooling_WaterSourceReconnectAndHeatRecovery) {
+
+  Model m;
+
+  PlantLoop loadLoop(m);
+  PlantLoop sourceLoop(m);
+  PlantLoop sourceLoop2(m);
+  PlantLoop heatRecoveryLoop(m);
+
+  HeatPumpPlantLoopEIRCooling plhpClg(m);
+  ASSERT_TRUE(plhpClg.setName("Cooling WaterSource HP"));
+
+  EXPECT_TRUE(loadLoop.addSupplyBranchForComponent(plhpClg));
+  EXPECT_TRUE(sourceLoop.addDemandBranchForComponent(plhpClg));
+  EXPECT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(plhpClg));
+
+  auto sourceReconnectNode = sourceLoop2.demandOutletNode();
+  EXPECT_TRUE(plhpClg.addToNode(sourceReconnectNode));
+
+  ASSERT_TRUE(plhpClg.supplyInletModelObject());
+  ASSERT_TRUE(plhpClg.supplyOutletModelObject());
+  ASSERT_TRUE(plhpClg.demandInletModelObject());
+  ASSERT_TRUE(plhpClg.demandOutletModelObject());
+  ASSERT_TRUE(plhpClg.tertiaryInletModelObject());
+  ASSERT_TRUE(plhpClg.tertiaryOutletModelObject());
+
+  EXPECT_TRUE(plhpClg.supplyInletModelObject()->setName("Cooling Load Inlet Node"));
+  EXPECT_TRUE(plhpClg.supplyOutletModelObject()->setName("Cooling Load Outlet Node"));
+  EXPECT_TRUE(plhpClg.demandInletModelObject()->setName("Cooling Source 2 Inlet Node"));
+  EXPECT_TRUE(plhpClg.demandOutletModelObject()->setName("Cooling Source 2 Outlet Node"));
+  EXPECT_TRUE(plhpClg.tertiaryInletModelObject()->setName("Cooling Heat Recovery Inlet Node"));
+  EXPECT_TRUE(plhpClg.tertiaryOutletModelObject()->setName("Cooling Heat Recovery Outlet Node"));
+
+  plhpClg.autosizeLoadSideReferenceFlowRate();
+  plhpClg.autosizeSourceSideReferenceFlowRate();
+  plhpClg.autosizeHeatRecoveryReferenceFlowRate();
+  plhpClg.autosizeReferenceCapacity();
+
+  ForwardTranslator ft;
+  Workspace w = ft.translateModel(m);
+
+  EXPECT_EQ(0u, ft.errors().size());
+
+  WorkspaceObjectVector idfObjs(w.getObjectsByType(IddObjectType::HeatPump_PlantLoop_EIR_Cooling));
+  ASSERT_EQ(1u, idfObjs.size());
+  WorkspaceObject idfObj(idfObjs[0]);
+
+  EXPECT_EQ("Cooling WaterSource HP", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::Name).get());
+  EXPECT_EQ("Cooling Load Inlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::LoadSideInletNodeName).get());
+  EXPECT_EQ("Cooling Load Outlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::LoadSideOutletNodeName).get());
+  EXPECT_EQ("Cooling Source 2 Inlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::SourceSideInletNodeName).get());
+  EXPECT_EQ("Cooling Source 2 Outlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::SourceSideOutletNodeName).get());
+  EXPECT_EQ("Cooling Heat Recovery Inlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryInletNodeName).get());
+  EXPECT_EQ("Cooling Heat Recovery Outlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryOutletNodeName).get());
+  EXPECT_EQ("WaterSource", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::CondenserType).get());
+  EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::LoadSideReferenceFlowRate).get());
+  EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::SourceSideReferenceFlowRate).get());
+  EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::HeatRecoveryReferenceFlowRate).get());
+  EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::ReferenceCapacity).get());
+
+  WorkspaceObjectVector oaNodeLists(w.getObjectsByType(IddObjectType::OutdoorAir_NodeList));
+  EXPECT_TRUE(oaNodeLists.empty());
+}

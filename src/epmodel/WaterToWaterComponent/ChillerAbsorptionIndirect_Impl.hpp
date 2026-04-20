@@ -34,6 +34,12 @@ class EPMODEL_API ChillerAbsorptionIndirect_Impl : public WaterToWaterComponent_
   bool addToNode(Node& node) override;
   bool addToTertiaryNode(Node& node) override;
   bool removeFromTertiaryPlantLoop() override;
+  std::vector<ModelObject> children() const override;
+
+  ComponentType componentType() const override;
+  std::vector<FuelType> coolingFuelTypes() const override;
+  std::vector<FuelType> heatingFuelTypes() const override;
+  std::vector<AppGFuelType> appGHeatingFuelTypes() const override;
 
   boost::optional<PlantLoop> chilledWaterLoop() const;
   boost::optional<PlantLoop> condenserWaterLoop() const;

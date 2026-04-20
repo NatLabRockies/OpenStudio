@@ -126,6 +126,11 @@ class ThermalZone;
       bool addToNode(Node& node) override;
       bool addToTertiaryNode(Node& node) override;
 
+      ComponentType componentType() const override;
+      std::vector<FuelType> coolingFuelTypes() const override;
+      std::vector<FuelType> heatingFuelTypes() const override;
+      std::vector<AppGFuelType> appGHeatingFuelTypes() const override;
+
      private:
       bool setAmbientTemperatureIndicator(const std::string& ambientTemperatureIndicator);
     };

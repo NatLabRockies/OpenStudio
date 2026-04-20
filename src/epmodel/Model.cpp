@@ -9,6 +9,7 @@
 #include <utilities/core/Compare.hpp>
 #include <utilities/math/FloatCompare.hpp>
 #include <utilities/idd/Refrigeration_Subcooler_FieldEnums.hxx>
+#include <utilities/sql/SqlFile.hpp>
 
 #include "ModelObject/AirLoopHVACReturnPath_Impl.hpp"
 #include "Mixer/AirLoopHVACReturnPlenum_Impl.hpp"
@@ -1027,6 +1028,18 @@ namespace epmodel {
   // Internal bridge used when wrapping an already-constructed Model_Impl.
   Model::Model(std::shared_ptr<openstudio::epmodel::detail::Model_Impl> impl) : Workspace(std::move(impl)) {}
 
+  boost::optional<SqlFile> Model::sqlFile() const {
+    return getImpl<detail::Model_Impl>()->sqlFile();
+  }
+
+  bool Model::setSqlFile(const SqlFile& sqlFile) {
+    return getImpl<detail::Model_Impl>()->setSqlFile(sqlFile);
+  }
+
+  bool Model::resetSqlFile() {
+    return getImpl<detail::Model_Impl>()->resetSqlFile();
+  }
+
   SanitizationReport Model::canonicalize(SanitizationPolicy policy) {
     detail::LoadContext context{*this, policy, SanitizationReport{}, {}};
     if (policy == SanitizationPolicy::None) {
@@ -1102,10 +1115,13 @@ namespace epmodel {
       }
     }
 
-    Model_Impl::Model_Impl(const Model_Impl& other, bool keepHandles) : Workspace_Impl(other, keepHandles) {}
+    Model_Impl::Model_Impl(const Model_Impl& other, bool keepHandles)
+      : Workspace_Impl(other, keepHandles),
+        m_sqlFile((other.m_sqlFile) ? std::shared_ptr<SqlFile>(new SqlFile(*other.m_sqlFile)) : other.m_sqlFile) {}
 
     Model_Impl::Model_Impl(const Model_Impl& other, const std::vector<Handle>& hs, bool keepHandles, StrictnessLevel level)
-      : Workspace_Impl(other, hs, keepHandles, level) {}
+      : Workspace_Impl(other, hs, keepHandles, level),
+        m_sqlFile((other.m_sqlFile) ? std::shared_ptr<SqlFile>(new SqlFile(*other.m_sqlFile)) : other.m_sqlFile) {}
 
     std::shared_ptr<openstudio::detail::WorkspaceObject_Impl> Model_Impl::createObject(const IdfObject& object, bool keepHandle) {
       auto result = modelObjectCreator.getNew(this, object, keepHandle);
@@ -1119,6 +1135,23 @@ namespace epmodel {
       auto result = createObject(object, keepHandle);
       result->setTransient(isTransient);
       return result;
+    }
+
+    boost::optional<openstudio::SqlFile> Model_Impl::sqlFile() const {
+      if (m_sqlFile) {
+        return boost::optional<openstudio::SqlFile>(*m_sqlFile);
+      }
+      return boost::none;
+    }
+
+    bool Model_Impl::setSqlFile(const openstudio::SqlFile& sqlFile) {
+      m_sqlFile = std::shared_ptr<openstudio::SqlFile>(new openstudio::SqlFile(sqlFile));
+      return true;
+    }
+
+    bool Model_Impl::resetSqlFile() {
+      m_sqlFile.reset();
+      return true;
     }
 
     std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>

@@ -46,6 +46,7 @@ namespace epmodel {
 
       boost::optional<PlantLoop> coolingPlantLoop() const;
       boost::optional<PlantLoop> sourcePlantLoop() const;
+      boost::optional<PlantLoop> heatingPlantLoop() const;
     };
 
   }  // namespace detail

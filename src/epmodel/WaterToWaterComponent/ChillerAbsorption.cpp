@@ -652,23 +652,23 @@ boost::optional<PlantLoop> ChillerAbsorption_Impl::generatorLoop() const {
 }
 
 boost::optional<double> ChillerAbsorption_Impl::autosizedNominalCapacity() const {
-  return boost::none;
+  return getAutosizedValue("Design Size Nominal Capacity", "W");
 }
 
 boost::optional<double> ChillerAbsorption_Impl::autosizedNominalPumpingPower() const {
-  return boost::none;
+  return getAutosizedValue("Design Size Nominal Pumping Power", "W");
 }
 
 boost::optional<double> ChillerAbsorption_Impl::autosizedDesignChilledWaterFlowRate() const {
-  return boost::none;
+  return getAutosizedValue("Design Size Design Chilled Water Flow Rate", "m3/s");
 }
 
 boost::optional<double> ChillerAbsorption_Impl::autosizedDesignCondenserWaterFlowRate() const {
-  return boost::none;
+  return getAutosizedValue("Design Size Design Condenser Water Flow Rate", "m3/s");
 }
 
 boost::optional<double> ChillerAbsorption_Impl::autosizedDesignGeneratorFluidFlowRate() const {
-  return boost::none;
+  return getAutosizedValue("Design Size Design Generator Fluid Flow Rate", "m3/s");
 }
 
 }  // namespace detail

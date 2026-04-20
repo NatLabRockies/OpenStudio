@@ -66,6 +66,8 @@ class EPMODEL_API ModelObject : public openstudio::WorkspaceObject
   bool operator==(const ModelObject& other) const;
   bool operator!=(const ModelObject& other) const;
 
+  boost::optional<double> getAutosizedValue(const std::string& valueName, const std::string& units) const;
+
  protected:
   using ImplType = detail::ModelObject_Impl;
 

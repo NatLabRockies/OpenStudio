@@ -500,7 +500,7 @@ bool HeatPumpPlantLoopEIRCooling_Impl::addToNode(Node& node) {
   }
 
   const bool ok = WaterToWaterComponent_Impl::addToNode(node);
-  if (ok && sourceSideWaterLoop()) {
+  if (sourceSideWaterLoop()) {
     setCondenserType("WaterSource");
   }
   return ok;

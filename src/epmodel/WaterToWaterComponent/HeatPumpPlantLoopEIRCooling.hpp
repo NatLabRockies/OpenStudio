@@ -50,7 +50,8 @@ class EPMODEL_API HeatPumpPlantLoopEIRCooling : public WaterToWaterComponent
   // - Implemented Parity: Canonical constructors, condenser/source-loop coupling, companion heat-pump linkage, required and optional curve
   //   relationships, load/source/heat-recovery loop conveniences, node conveniences, and scalar accessors preserve the model-side API shape.
   // - Documented Delta: Autosized-value query helpers still return `none` until epmodel grows canonical SQL-backed autosized result support.
-  // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `HeatPump:PlantLoop:EIR:Cooling` fields directly, including autosized flow/capacity behavior.
+  // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `HeatPump:PlantLoop:EIR:Cooling` fields directly, including persisted autosize sentinels for
+  //   the flow/capacity fields.
   // - Evidence: `src/model/HeatPumpPlantLoopEIRCooling.hpp`, `src/model/HeatPumpPlantLoopEIRCooling.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatPumpPlantLoopEIRCooling.cpp`.
   // - Remaining Parity Work: Any further work should focus on shared water-to-water base behavior only if multiple wrappers need the same fix.
   std::string condenserType() const;

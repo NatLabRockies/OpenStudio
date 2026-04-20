@@ -5,9 +5,12 @@
 
 #include <gtest/gtest.h>
 
+#include <cstdio>
+
 #include "../Curve/CurveCubic.hpp"
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../ModelObject/WaterHeaterSizing.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
@@ -15,7 +18,47 @@
 
 #include <utilities/idd/WaterHeater_Mixed_FieldEnums.hxx>
 
+#include "../../utilities/core/Path.hpp"
+#include "../../utilities/core/UUID.hpp"
+#include "../../utilities/sql/SqlFile.hpp"
+#include <sqlite3.h>
+#include <utilities/data/DataEnums.hpp>
+
 using namespace openstudio::epmodel;
+
+namespace {
+
+std::string makeWaterHeaterMixedAutosizeSql(const openstudio::path& sqlPath) {
+  sqlite3* db = nullptr;
+  if (sqlite3_open(openstudio::toString(sqlPath).c_str(), &db) != SQLITE_OK) {
+    const std::string error = db ? sqlite3_errmsg(db) : "sqlite3_open failed";
+    if (db) {
+      sqlite3_close(db);
+    }
+    return error;
+  }
+
+  const char* sql = R"sql(
+    CREATE TABLE ComponentSizes (CompType TEXT, CompName TEXT, Description TEXT, Units TEXT, Value REAL);
+    INSERT INTO ComponentSizes VALUES ('WaterHeater:Mixed','AUTOSIZED MIXED WATER HEATER','Design Size Tank Volume','m3',0.77);
+    INSERT INTO ComponentSizes VALUES ('WaterHeater:Mixed','AUTOSIZED MIXED WATER HEATER','Design Size Heater Maximum Capacity','W',123456.0);
+    INSERT INTO ComponentSizes VALUES ('WaterHeater:Mixed','AUTOSIZED MIXED WATER HEATER','Design Size Use Side Design Flow Rate','m3/s',0.0045);
+    INSERT INTO ComponentSizes VALUES ('WaterHeater:Mixed','AUTOSIZED MIXED WATER HEATER','Design Size Source Side Design Flow Rate','m3/s',0.0034);
+  )sql";
+
+  char* errorMessage = nullptr;
+  const int execResult = sqlite3_exec(db, sql, nullptr, nullptr, &errorMessage);
+  std::string result;
+  if (execResult != SQLITE_OK) {
+    result = errorMessage ? errorMessage : "sqlite3_exec failed";
+  }
+
+  sqlite3_free(errorMessage);
+  sqlite3_close(db);
+  return result;
+}
+
+}  // namespace
 
 TEST_F(EPModelFixture, WaterHeaterMixed_DefaultConstructor) {
   Model model;
@@ -160,11 +203,6 @@ TEST_F(EPModelFixture, WaterHeaterMixed_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(heater.setEndUseSubcategory("DomesticHotWater"));
   EXPECT_EQ("DomesticHotWater", heater.endUseSubcategory());
-
-  EXPECT_FALSE(heater.autosizedTankVolume());
-  EXPECT_FALSE(heater.autosizedHeaterMaximumCapacity());
-  EXPECT_FALSE(heater.autosizedUseSideDesignFlowRate());
-  EXPECT_FALSE(heater.autosizedSourceSideDesignFlowRate());
 }
 
 TEST_F(EPModelFixture, WaterHeaterMixed_RelationshipAccessors_RoundTrip) {
@@ -239,6 +277,32 @@ TEST_F(EPModelFixture, WaterHeaterMixed_RelationshipAccessors_RoundTrip) {
   EXPECT_EQ(heater.handle(), sizing.waterHeater().handle());
 }
 
+TEST_F(EPModelFixture, WaterHeaterMixed_SourceSideFlowControlParity) {
+  Model model;
+  WaterHeaterMixed heater(model);
+  ScheduleConstant indirectAlternate(model);
+
+  ASSERT_TRUE(indirectAlternate.setValue(52.0));
+
+  EXPECT_EQ("IndirectHeatPrimarySetpoint", heater.sourceSideFlowControlMode());
+  EXPECT_FALSE(heater.indirectAlternateSetpointTemperatureSchedule());
+  EXPECT_FALSE(heater.setSourceSideFlowControlMode("IndirectHeatAlternateSetpoint"));
+
+  EXPECT_TRUE(heater.setIndirectAlternateSetpointTemperatureSchedule(indirectAlternate));
+  ASSERT_TRUE(heater.indirectAlternateSetpointTemperatureSchedule());
+  EXPECT_EQ(indirectAlternate.handle(), heater.indirectAlternateSetpointTemperatureSchedule()->handle());
+  EXPECT_EQ("IndirectHeatAlternateSetpoint", heater.sourceSideFlowControlMode());
+
+  EXPECT_TRUE(heater.setSourceSideFlowControlMode("StorageTank"));
+  EXPECT_EQ("StorageTank", heater.sourceSideFlowControlMode());
+  EXPECT_FALSE(heater.indirectAlternateSetpointTemperatureSchedule());
+
+  EXPECT_TRUE(heater.setIndirectAlternateSetpointTemperatureSchedule(indirectAlternate));
+  heater.resetIndirectAlternateSetpointTemperatureSchedule();
+  EXPECT_FALSE(heater.indirectAlternateSetpointTemperatureSchedule());
+  EXPECT_EQ("IndirectHeatPrimarySetpoint", heater.sourceSideFlowControlMode());
+}
+
 TEST_F(EPModelFixture, WaterHeaterMixed_WaterToWaterTopology) {
   Model model;
   WaterHeaterMixed heater(model);
@@ -253,17 +317,89 @@ TEST_F(EPModelFixture, WaterHeaterMixed_WaterToWaterTopology) {
 
   PlantLoop useLoop(model);
   PlantLoop sourceLoop(model);
+  PlantLoop replacementSourceLoop(model);
 
   EXPECT_TRUE(useLoop.addSupplyBranchForComponent(heater));
-  EXPECT_TRUE(sourceLoop.addDemandBranchForComponent(heater));
 
-  ASSERT_TRUE(heater.supplyInletModelObject());
-  ASSERT_TRUE(heater.supplyOutletModelObject());
-  ASSERT_TRUE(heater.demandInletModelObject());
-  ASSERT_TRUE(heater.demandOutletModelObject());
+  ASSERT_TRUE(heater.useSidePlantLoop());
+  EXPECT_EQ(useLoop.handle(), heater.useSidePlantLoop()->handle());
+  EXPECT_FALSE(heater.sourceSidePlantLoop());
+  ASSERT_TRUE(heater.useSideInletModelObject());
+  ASSERT_TRUE(heater.useSideOutletModelObject());
+  EXPECT_FALSE(heater.sourceSideInletModelObject());
+  EXPECT_FALSE(heater.sourceSideOutletModelObject());
+
+  EXPECT_TRUE(sourceLoop.addSupplyBranchForComponent(heater));
 
   ASSERT_TRUE(heater.plantLoop());
   EXPECT_EQ(useLoop.handle(), heater.plantLoop()->handle());
   ASSERT_TRUE(heater.secondaryPlantLoop());
   EXPECT_EQ(sourceLoop.handle(), heater.secondaryPlantLoop()->handle());
+  ASSERT_TRUE(heater.useSidePlantLoop());
+  EXPECT_EQ(useLoop.handle(), heater.useSidePlantLoop()->handle());
+  ASSERT_TRUE(heater.sourceSidePlantLoop());
+  EXPECT_EQ(sourceLoop.handle(), heater.sourceSidePlantLoop()->handle());
+
+  ASSERT_TRUE(heater.supplyInletModelObject());
+  ASSERT_TRUE(heater.supplyOutletModelObject());
+  ASSERT_TRUE(heater.demandInletModelObject());
+  ASSERT_TRUE(heater.demandOutletModelObject());
+  ASSERT_TRUE(heater.useSideInletModelObject());
+  ASSERT_TRUE(heater.useSideOutletModelObject());
+  ASSERT_TRUE(heater.sourceSideInletModelObject());
+  ASSERT_TRUE(heater.sourceSideOutletModelObject());
+
+  EXPECT_EQ(openstudio::ComponentType(openstudio::ComponentType::Heating), heater.componentType());
+  EXPECT_EQ(std::vector<openstudio::FuelType>{openstudio::FuelType::Gas}, heater.heatingFuelTypes());
+  EXPECT_EQ(std::vector<openstudio::AppGFuelType>{openstudio::convertFuelTypeToAppG(openstudio::FuelType::Gas)},
+            heater.appGHeatingFuelTypes());
+  EXPECT_TRUE(heater.coolingFuelTypes().empty());
+
+  EXPECT_TRUE(heater.removeFromSourceSidePlantLoop());
+  EXPECT_FALSE(heater.sourceSidePlantLoop());
+  EXPECT_FALSE(heater.sourceSideInletModelObject());
+  EXPECT_FALSE(heater.sourceSideOutletModelObject());
+  ASSERT_TRUE(heater.useSidePlantLoop());
+  EXPECT_EQ(useLoop.handle(), heater.useSidePlantLoop()->handle());
+
+  auto replacementSourceNode = replacementSourceLoop.demandInletNode();
+  EXPECT_TRUE(heater.addToSourceSideNode(replacementSourceNode));
+  ASSERT_TRUE(heater.sourceSidePlantLoop());
+  EXPECT_EQ(replacementSourceLoop.handle(), heater.sourceSidePlantLoop()->handle());
+}
+
+TEST_F(EPModelFixture, WaterHeaterMixed_AutosizedHelpersUseSqlFile) {
+  Model model;
+  WaterHeaterMixed heater(model);
+  ASSERT_TRUE(heater.setName("Autosized Mixed Water Heater"));
+
+  heater.autosizeTankVolume();
+  heater.autosizeHeaterMaximumCapacity();
+  heater.autosizeUseSideDesignFlowRate();
+  heater.autosizeSourceSideDesignFlowRate();
+
+  const openstudio::path sqlPath =
+    openstudio::tempDir() / openstudio::toPath("epmodel_water_heater_mixed_autosized_" + openstudio::toString(openstudio::createUUID()) + ".sqlite");
+  ASSERT_TRUE(makeWaterHeaterMixedAutosizeSql(sqlPath).empty());
+
+  openstudio::SqlFile sqlFile(sqlPath);
+  ASSERT_TRUE(sqlFile.connectionOpen());
+  EXPECT_TRUE(model.setSqlFile(sqlFile));
+
+  ASSERT_TRUE(heater.autosizedTankVolume());
+  EXPECT_DOUBLE_EQ(0.77, *heater.autosizedTankVolume());
+  ASSERT_TRUE(heater.autosizedHeaterMaximumCapacity());
+  EXPECT_DOUBLE_EQ(123456.0, *heater.autosizedHeaterMaximumCapacity());
+  ASSERT_TRUE(heater.autosizedUseSideDesignFlowRate());
+  EXPECT_DOUBLE_EQ(0.0045, *heater.autosizedUseSideDesignFlowRate());
+  ASSERT_TRUE(heater.autosizedSourceSideDesignFlowRate());
+  EXPECT_DOUBLE_EQ(0.0034, *heater.autosizedSourceSideDesignFlowRate());
+
+  EXPECT_TRUE(model.resetSqlFile());
+  EXPECT_FALSE(heater.autosizedTankVolume());
+  EXPECT_FALSE(heater.autosizedHeaterMaximumCapacity());
+  EXPECT_FALSE(heater.autosizedUseSideDesignFlowRate());
+  EXPECT_FALSE(heater.autosizedSourceSideDesignFlowRate());
+
+  EXPECT_EQ(0, std::remove(openstudio::toString(sqlPath).c_str()));
 }

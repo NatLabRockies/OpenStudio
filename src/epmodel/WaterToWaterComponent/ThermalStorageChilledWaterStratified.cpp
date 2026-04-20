@@ -1065,15 +1065,34 @@ namespace epmodel {
     }
 
     boost::optional<double> ThermalStorageChilledWaterStratified_Impl::autosizedNominalCoolingCapacity() const {
-      return boost::none;
+      return getAutosizedValue("Maximum Heater Capacity", "W");
     }
 
     boost::optional<double> ThermalStorageChilledWaterStratified_Impl::autosizedUseSideDesignFlowRate() const {
-      return boost::none;
+      return getAutosizedValue("Use Side Design Flow Rate", "m3/s");
     }
 
     boost::optional<double> ThermalStorageChilledWaterStratified_Impl::autosizedSourceSideDesignFlowRate() const {
-      return boost::none;
+      return getAutosizedValue("Source Side Design Flow Rate", "m3/s");
+    }
+
+    ComponentType ThermalStorageChilledWaterStratified_Impl::componentType() const {
+      return ComponentType::Cooling;
+    }
+
+    std::vector<FuelType> ThermalStorageChilledWaterStratified_Impl::coolingFuelTypes() const {
+      if (auto sourceLoop = secondaryPlantLoop()) {
+        return sourceLoop->coolingFuelTypes();
+      }
+      return {};
+    }
+
+    std::vector<FuelType> ThermalStorageChilledWaterStratified_Impl::heatingFuelTypes() const {
+      return {};
+    }
+
+    std::vector<AppGFuelType> ThermalStorageChilledWaterStratified_Impl::appGHeatingFuelTypes() const {
+      return {};
     }
 
     unsigned ThermalStorageChilledWaterStratified_Impl::supplyInletPort() const {

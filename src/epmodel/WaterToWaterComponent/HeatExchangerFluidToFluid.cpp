@@ -6,6 +6,7 @@
 #include "WaterToWaterComponent/HeatExchangerFluidToFluid.hpp"
 #include "WaterToWaterComponent/HeatExchangerFluidToFluid_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
@@ -14,6 +15,7 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/data/DataEnums.hpp>
 #include <utilities/idd/HeatExchanger_FluidToFluid_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
@@ -561,6 +563,82 @@ std::vector<std::string> HeatExchangerFluidToFluid_Impl::heatTransferMeteringEnd
 
 std::vector<std::string> HeatExchangerFluidToFluid_Impl::componentOverrideCoolingControlTemperatureModeValues() const {
   return openstudio::epmodel::HeatExchangerFluidToFluid::componentOverrideCoolingControlTemperatureModeValues();
+}
+
+openstudio::ComponentType HeatExchangerFluidToFluid_Impl::componentType() const {
+  const auto currentControlType = controlType();
+
+  if (openstudio::istringEqual(currentControlType, "HeatingSetpointModulated")
+      || openstudio::istringEqual(currentControlType, "HeatingSetpointOnOff")) {
+    return openstudio::ComponentType::Heating;
+  }
+
+  if (openstudio::istringEqual(currentControlType, "CoolingSetpointModulated")
+      || openstudio::istringEqual(currentControlType, "CoolingSetpointOnOff")
+      || openstudio::istringEqual(currentControlType, "CoolingDifferentialOnOff")
+      || openstudio::istringEqual(currentControlType, "CoolingSetpointOnOffWithComponentOverride")) {
+    return openstudio::ComponentType::Cooling;
+  }
+
+  if (openstudio::istringEqual(currentControlType, "DualDeadbandSetpointModulated")
+      || openstudio::istringEqual(currentControlType, "DualDeadbandSetpointOnOff")) {
+    return openstudio::ComponentType::Both;
+  }
+
+  if (openstudio::istringEqual(currentControlType, "UncontrolledOn")) {
+    if (auto secondaryLoop = secondaryPlantLoop()) {
+      return secondaryLoop->componentType();
+    }
+    return openstudio::ComponentType::None;
+  }
+
+  return openstudio::ComponentType::Both;
+}
+
+std::vector<openstudio::FuelType> HeatExchangerFluidToFluid_Impl::coolingFuelTypes() const {
+  const auto currentControlType = controlType();
+  if (openstudio::istringEqual(currentControlType, "HeatingSetpointModulated")
+      || openstudio::istringEqual(currentControlType, "HeatingSetpointOnOff")) {
+    return {};
+  }
+
+  if (auto secondaryLoop = secondaryPlantLoop()) {
+    return secondaryLoop->coolingFuelTypes();
+  }
+
+  return {};
+}
+
+std::vector<openstudio::FuelType> HeatExchangerFluidToFluid_Impl::heatingFuelTypes() const {
+  const auto currentControlType = controlType();
+  if (openstudio::istringEqual(currentControlType, "CoolingSetpointModulated")
+      || openstudio::istringEqual(currentControlType, "CoolingSetpointOnOff")
+      || openstudio::istringEqual(currentControlType, "CoolingDifferentialOnOff")
+      || openstudio::istringEqual(currentControlType, "CoolingSetpointOnOffWithComponentOverride")) {
+    return {};
+  }
+
+  if (auto secondaryLoop = secondaryPlantLoop()) {
+    return secondaryLoop->heatingFuelTypes();
+  }
+
+  return {};
+}
+
+std::vector<openstudio::AppGFuelType> HeatExchangerFluidToFluid_Impl::appGHeatingFuelTypes() const {
+  const auto currentControlType = controlType();
+  if (openstudio::istringEqual(currentControlType, "CoolingSetpointModulated")
+      || openstudio::istringEqual(currentControlType, "CoolingSetpointOnOff")
+      || openstudio::istringEqual(currentControlType, "CoolingDifferentialOnOff")
+      || openstudio::istringEqual(currentControlType, "CoolingSetpointOnOffWithComponentOverride")) {
+    return {};
+  }
+
+  if (auto secondaryLoop = secondaryPlantLoop()) {
+    return secondaryLoop->appGHeatingFuelTypes();
+  }
+
+  return {};
 }
 
 unsigned HeatExchangerFluidToFluid_Impl::supplyInletPort() const {

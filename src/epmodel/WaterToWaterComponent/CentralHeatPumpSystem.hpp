@@ -38,10 +38,10 @@ class EPMODEL_API CentralHeatPumpSystem : public WaterToWaterComponent
     static std::vector<std::string> controlMethodValues();
 
     // Schema Alignment Notes:
-    // - Status: Near Parity with documented deltas. The scalar, ancillary-schedule, and three-loop convenience surface is aligned, while the module-list graph remains outside current epmodel scope.
+    // - Status: Near Parity. The scalar, ancillary-schedule, and three-loop convenience surface is aligned, while the module-list graph remains outside current epmodel scope.
     // - Canonical Counterpart: openstudio::model::CentralHeatPumpSystem.
-    // - Implemented Parity: `controlMethod`, `ancillaryPower`, ancillary-operation schedule, cooling/source loop conveniences, and three-loop attachment behavior preserve the main canonical wrapper behavior that epmodel can support directly.
-    // - Documented Delta: Module-list/module-object APIs and direct heating-loop convenience lookup remain omitted because epmodel does not yet model `CentralHeatPumpSystemModule` or `ModelObjectList`, and the shared tertiary-loop plumbing does not yet provide a reliable canonical heating-loop resolver here.
+    // - Implemented Parity: `controlMethod`, `ancillaryPower`, ancillary-operation schedule, cooling/source/heating loop conveniences, and three-loop attachment behavior preserve the main canonical wrapper behavior that epmodel can support directly.
+    // - Documented Delta: Module-list/module-object APIs remain omitted because epmodel does not yet model `CentralHeatPumpSystemModule` or `ModelObjectList`.
     // - Field/Storage Mapping: Scalar and schedule wrappers map directly to EnergyPlus `CentralHeatPumpSystem` fields while the three loop ports continue to use the shared water-to-water topology layer.
     // - Evidence: `src/model/CentralHeatPumpSystem.hpp`, `src/model/CentralHeatPumpSystem.cpp`, and the matching forward translator for this type.
     // - Remaining Parity Work: Add the omitted module-list graph only once epmodel gains the missing supporting object families.
@@ -63,6 +63,7 @@ class EPMODEL_API CentralHeatPumpSystem : public WaterToWaterComponent
 
     boost::optional<PlantLoop> coolingPlantLoop() const;
     boost::optional<PlantLoop> sourcePlantLoop() const;
+    boost::optional<PlantLoop> heatingPlantLoop() const;
 
    protected:
     using ImplType = detail::CentralHeatPumpSystem_Impl;

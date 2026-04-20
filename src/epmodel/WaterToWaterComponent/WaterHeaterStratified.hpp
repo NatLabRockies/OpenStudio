@@ -25,6 +25,8 @@ namespace epmodel {
   class Schedule;
   class ThermalZone;
   class WaterHeaterSizing;
+  class Node;
+  class PlantLoop;
 
   namespace detail {
 
@@ -55,13 +57,15 @@ namespace epmodel {
     static std::vector<std::string> sourceSideFlowControlModeValues();
 
     // Schema Alignment Notes:
-    // - Status: Near Parity with documented deltas. The stratified water-heater scalar and relationship surface is aligned, while deeper clone and sizing workflows remain outside current epmodel scope.
+    // - Status: Near Parity with documented deltas. The stratified water-heater scalar, source/use-side topology surface, clone(Model)
+    //   sizing reattachment, and SQL-backed autosize helpers now align with the canonical wrapper; one epmodel-only ambient-indicator
+    //   alias remains outside current epmodel scope.
     // - Canonical Counterpart: openstudio::model::WaterHeaterStratified.
-    // - Implemented Parity: Scalar accessors plus heater, ambient, use-flow, cold-water, and indirect-alternate schedule links, ambient zone/object links, and WaterHeaterSizing ownership preserve the canonical model API shape.
-    // - Documented Delta: Deeper clone workflows and broader water-heater convenience aliases remain outside current epmodel scope.
-    // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `WaterHeater:Stratified` fields directly, and `ambientTemperatureIndicator` preserves the model-friendly `ThermalZone` vocabulary even where the IDD says `Zone`.
+    // - Implemented Parity: Scalar accessors, heater/ambient/use-flow/cold-water/indirect-alternate schedule links, ambient zone/object links, source/use-side plant-loop aliases, component classification and fuel reporting, clone(Model) sizing reattachment, SQL-backed autosized helpers, and WaterHeaterSizing ownership preserve the canonical model API shape.
+    // - Documented Delta: epmodel preserves a `ThermalZone` ambient-indicator alias where the canonical wrapper surfaces the raw `Zone` token.
+    // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `WaterHeater:Stratified` fields directly; epmodel normalizes `ambientTemperatureIndicator` between `ThermalZone` and stored `Zone`; the forward translator also synthesizes an `OutdoorAir:NodeList` when outdoors ambient mode has no explicit node name.
     // - Evidence: `src/model/WaterHeaterStratified.hpp`, `src/model/WaterHeaterStratified.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateWaterHeaterStratified.cpp`.
-    // - Remaining Parity Work: Expand only if later work needs model-side clone behavior or broader water-heater convenience aliases beyond the shared base topology surface.
+    // - Remaining Parity Work: Expand only if later work needs additional model-side clone parity beyond the aligned WaterHeaterSizing reattachment behavior.
     std::string endUseSubcategory() const;
     bool setEndUseSubcategory(const std::string& endUseSubcategory);
 
@@ -283,6 +287,18 @@ namespace epmodel {
     void resetIndirectAlternateSetpointTemperatureSchedule();
 
     WaterHeaterSizing waterHeaterSizing() const;
+    ModelObject clone(Model model) const;
+
+    bool addToSourceSideNode(Node& node);
+
+    boost::optional<PlantLoop> useSidePlantLoop() const;
+    boost::optional<PlantLoop> sourceSidePlantLoop() const;
+    bool removeFromSourceSidePlantLoop();
+
+    boost::optional<ModelObject> useSideInletModelObject() const;
+    boost::optional<ModelObject> useSideOutletModelObject() const;
+    boost::optional<ModelObject> sourceSideInletModelObject() const;
+    boost::optional<ModelObject> sourceSideOutletModelObject() const;
 
    protected:
     using ImplType = detail::WaterHeaterStratified_Impl;

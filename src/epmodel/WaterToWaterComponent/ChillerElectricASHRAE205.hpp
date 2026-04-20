@@ -45,14 +45,15 @@ class EPMODEL_API ChillerElectricASHRAE205 : public WaterToWaterComponent
   static std::vector<std::string> chillerFlowModeValues();
 
   // Schema Alignment Notes:
-  // - Status: Near Parity with documented deltas. Canonical ambient-temperature relationships, autosized stubs, plant/node conveniences,
-  //   and oil-cooler/auxiliary loop topology are aligned; representation-file linkage still remains excluded.
+  // - Status: Parity with documented deltas. Canonical scalar, ambient, autosized-helper, HVAC-classification, and loop convenience behavior is aligned
+  //   inside epmodel's supported wrapper surface.
   // - Canonical Counterpart: openstudio::model::ChillerElectricASHRAE205.
-  // - Implemented Parity: Scalar accessors, ambient schedule/zone relationships, autosized query stubs, loop/node conveniences, and oil-cooler/auxiliary
-  //   branch topology preserve the canonical model API shape wherever epmodel has the necessary wrapper types.
+  // - Implemented Parity: Scalar accessors, ambient schedule/zone relationships, SQL-backed autosized helpers, HVAC classification and fuel reporting,
+  //   and chilled/condenser/oil-cooler/auxiliary loop conveniences preserve the canonical model API shape wherever epmodel has the necessary wrapper types;
+  //   heat-recovery attachment remains disabled in line with current unsupported EnergyPlus behavior.
   // - Documented Delta: Representation-file linkage still remains excluded because epmodel does not yet wrap `ExternalFile`.
   // - Field/Storage Mapping: Public behavior targets EnergyPlus `Chiller:Electric:ASHRAE205` fields and plant topology; external-file linkage remains blocked
-  //   on missing epmodel storage wrappers.
+  //   on missing epmodel storage wrappers, while autosized helper queries resolve against the shared epmodel SQL-backed component-sizing lookup.
   // - Evidence: `src/model/ChillerElectricASHRAE205.hpp`, `src/model/ChillerElectricASHRAE205.cpp`, and
   //   `src/energyplus/ForwardTranslator/ForwardTranslateChillerElectricASHRAE205.cpp`.
   // - Remaining Parity Work: Add canonical representation-file support once epmodel gains an `ExternalFile` wrapper.

@@ -39,16 +39,15 @@ namespace epmodel {
     static std::vector<std::string> generatorHeatSourceTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Parity with documented deltas. The canonical scalar surface, loop conveniences, and generator-loop routing behavior are aligned.
+    // - Status: Near Parity. The canonical scalar surface, loop conveniences, generator-loop routing behavior, and autosized-value query helpers are aligned.
     // - Canonical Counterpart: openstudio::model::ChillerAbsorption.
-    // - Implemented Parity: Canonical constructor defaults, scalar accessors, chilled/condenser/generator loop conveniences, and generator-loop
-    //   routing semantics preserve the model-side API shape.
-    // - Documented Delta: Autosized-value helpers are present but still depend on epmodel having populated autosized results, so they may return
-    //   `none` in unit-test contexts without sizing output.
+    // - Implemented Parity: Canonical constructor defaults, scalar accessors, autosized-value query helpers, chilled/condenser/generator loop
+    //   conveniences, and generator-loop routing semantics preserve the model-side API shape, including the Steam/HotWater generator-heat-source
+    //   transitions when attaching or removing the tertiary generator loop.
     // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `Chiller:Absorption` fields directly, while loop conveniences read the underlying
     //   water-to-water topology links rather than duplicating them as separate persisted data.
     // - Evidence: `src/model/ChillerAbsorption.hpp`, `src/model/ChillerAbsorption.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateChillerAbsorption.cpp` establish the canonical scalar contract and field mapping.
-    // - Remaining Parity Work: Only shared water-to-water or broader chiller-family abstractions should be added next if multiple wrappers need the same fix.
+    // - Remaining Parity Work: None within the current canonical public surface.
 
     boost::optional<double> nominalCapacity() const;
     bool isNominalCapacityAutosized() const;

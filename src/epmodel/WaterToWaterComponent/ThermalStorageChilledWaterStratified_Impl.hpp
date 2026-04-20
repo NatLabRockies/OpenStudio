@@ -31,6 +31,10 @@ namespace epmodel {
       unsigned supplyOutletPort() const override;
       unsigned demandInletPort() const override;
       unsigned demandOutletPort() const override;
+      ComponentType componentType() const override;
+      std::vector<FuelType> coolingFuelTypes() const override;
+      std::vector<FuelType> heatingFuelTypes() const override;
+      std::vector<AppGFuelType> appGHeatingFuelTypes() const override;
 
       double tankVolume() const;
       bool setTankVolume(double tankVolume);

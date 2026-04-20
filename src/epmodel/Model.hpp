@@ -23,6 +23,7 @@
 
 namespace openstudio {
 class IdfFile;
+class SqlFile;
 
 namespace epmodel {
 
@@ -94,6 +95,9 @@ namespace epmodel {
     Schedule alwaysOnContinuousSchedule() const;
     std::string alwaysOnContinuousScheduleName() const;
     SanitizationReport canonicalize(SanitizationPolicy policy = SanitizationPolicy::Repair);
+    boost::optional<SqlFile> sqlFile() const;
+    bool setSqlFile(const SqlFile& sqlFile);
+    bool resetSqlFile();
 
     virtual ~Model() override = default;
     Model(const Model& other) = default;

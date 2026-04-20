@@ -10,6 +10,7 @@
 #include "Curve/CurveCubic_Impl.hpp"
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACComponent.hpp"
 #include "Model.hpp"
 #include "ModelObject/WaterHeaterSizing.hpp"
 #include "ModelObject/WaterHeaterSizing_Impl.hpp"
@@ -27,6 +28,7 @@
 #include <utilities/idd/WaterHeater_Mixed_FieldEnums.hxx>
 
 #include <algorithm>
+#include <set>
 #include <stdexcept>
 
 namespace openstudio {
@@ -665,6 +667,38 @@ namespace epmodel {
     return getImpl<detail::WaterHeaterMixed_Impl>()->waterHeaterSizing();
   }
 
+  bool WaterHeaterMixed::addToSourceSideNode(Node& node) {
+    return getImpl<detail::WaterHeaterMixed_Impl>()->addToSourceSideNode(node);
+  }
+
+  boost::optional<PlantLoop> WaterHeaterMixed::useSidePlantLoop() const {
+    return plantLoop();
+  }
+
+  boost::optional<PlantLoop> WaterHeaterMixed::sourceSidePlantLoop() const {
+    return secondaryPlantLoop();
+  }
+
+  bool WaterHeaterMixed::removeFromSourceSidePlantLoop() {
+    return removeFromSecondaryPlantLoop();
+  }
+
+  boost::optional<ModelObject> WaterHeaterMixed::useSideInletModelObject() const {
+    return supplyInletModelObject();
+  }
+
+  boost::optional<ModelObject> WaterHeaterMixed::useSideOutletModelObject() const {
+    return supplyOutletModelObject();
+  }
+
+  boost::optional<ModelObject> WaterHeaterMixed::sourceSideInletModelObject() const {
+    return demandInletModelObject();
+  }
+
+  boost::optional<ModelObject> WaterHeaterMixed::sourceSideOutletModelObject() const {
+    return demandOutletModelObject();
+  }
+
   namespace detail {
 
     namespace {
@@ -990,19 +1024,19 @@ namespace epmodel {
 #undef OS_IMPL_AUTOSIZE
 
     boost::optional<double> WaterHeaterMixed_Impl::autosizedTankVolume() const {
-      return boost::none;  // epmodel does not yet resolve autosized tank values from SQL
+      return getAutosizedValue("Design Size Tank Volume", "m3");
     }
 
     boost::optional<double> WaterHeaterMixed_Impl::autosizedHeaterMaximumCapacity() const {
-      return boost::none;  // epmodel does not yet resolve autosized heater maximum capacity from SQL
+      return getAutosizedValue("Design Size Heater Maximum Capacity", "W");
     }
 
     boost::optional<double> WaterHeaterMixed_Impl::autosizedUseSideDesignFlowRate() const {
-      return boost::none;  // epmodel does not yet resolve autosized use side design flow rates from SQL
+      return getAutosizedValue("Design Size Use Side Design Flow Rate", "m3/s");
     }
 
     boost::optional<double> WaterHeaterMixed_Impl::autosizedSourceSideDesignFlowRate() const {
-      return boost::none;  // epmodel does not yet resolve autosized source side design flow rates from SQL
+      return getAutosizedValue("Design Size Source Side Design Flow Rate", "m3/s");
     }
 
     bool WaterHeaterMixed_Impl::setSourceSideFlowControlMode(const std::string& sourceSideFlowControlMode) {
@@ -1092,6 +1126,99 @@ namespace epmodel {
       }
 
       return boost::none;
+    }
+
+    bool WaterHeaterMixed_Impl::removeFromSecondaryPlantLoop() {
+      return removeFromBranch(demandInletPort(), demandOutletPort(), secondaryPlantLoop());
+    }
+
+    bool WaterHeaterMixed_Impl::addToNode(Node& node) {
+      auto t_plantLoop = node.plantLoop();
+      if (t_plantLoop && t_plantLoop->supplyComponent(node.handle())) {
+        if (auto useSidePlant = plantLoop()) {
+          if (t_plantLoop->handle() != useSidePlant->handle()) {
+            return addToSourceSideNode(node);
+          }
+        }
+      }
+
+      return WaterToWaterComponent_Impl::addToNode(node);
+    }
+
+    bool WaterHeaterMixed_Impl::addToSourceSideNode(Node& node) {
+      auto t_plantLoop = node.plantLoop();
+      if (!t_plantLoop) {
+        return false;
+      }
+
+      auto branch = t_plantLoop->getImpl<detail::PlantLoop_Impl>()->branchForNode(node);
+      if (!branch) {
+        return false;
+      }
+
+      if (t_plantLoop->supplyComponent(node.handle()) || t_plantLoop->demandComponent(node.handle())) {
+        removeFromSecondaryPlantLoop();
+        return insertOnBranch(node, *branch, demandInletPort(), demandOutletPort());
+      }
+
+      return false;
+    }
+
+    openstudio::ComponentType WaterHeaterMixed_Impl::componentType() const {
+      if (auto heaterMaximumCapacity_ = heaterMaximumCapacity()) {
+        if (*heaterMaximumCapacity_ == 0.0) {
+          if (auto sourceSidePlantLoop_ = secondaryPlantLoop()) {
+            return sourceSidePlantLoop_->componentType();
+          }
+          if (containingZoneHVACComponent()) {
+            return openstudio::ComponentType::Heating;
+          }
+          return openstudio::ComponentType::None;
+        }
+
+        return openstudio::ComponentType::Heating;
+      }
+
+      return openstudio::ComponentType::Heating;
+    }
+
+    std::vector<openstudio::FuelType> WaterHeaterMixed_Impl::coolingFuelTypes() const {
+      std::set<openstudio::FuelType> result;
+      if (auto sourceSidePlantLoop_ = secondaryPlantLoop()) {
+        const auto plantFuelTypes = sourceSidePlantLoop_->coolingFuelTypes();
+        result.insert(plantFuelTypes.begin(), plantFuelTypes.end());
+      }
+      return {result.begin(), result.end()};
+    }
+
+    std::vector<openstudio::FuelType> WaterHeaterMixed_Impl::heatingFuelTypes() const {
+      std::set<openstudio::FuelType> result;
+      if (auto heaterMaximumCapacity_ = heaterMaximumCapacity(); heaterMaximumCapacity_ && (*heaterMaximumCapacity_ > 0.0)) {
+        result.insert(openstudio::FuelType(heaterFuelType()));
+      }
+      if (auto sourceSidePlantLoop_ = secondaryPlantLoop()) {
+        const auto plantFuelTypes = sourceSidePlantLoop_->heatingFuelTypes();
+        result.insert(plantFuelTypes.begin(), plantFuelTypes.end());
+      }
+      if (containingZoneHVACComponent()) {
+        result.insert(openstudio::FuelType::Electricity);
+      }
+      return {result.begin(), result.end()};
+    }
+
+    std::vector<openstudio::AppGFuelType> WaterHeaterMixed_Impl::appGHeatingFuelTypes() const {
+      std::set<openstudio::AppGFuelType> result;
+      if (auto heaterMaximumCapacity_ = heaterMaximumCapacity(); heaterMaximumCapacity_ && (*heaterMaximumCapacity_ > 0.0)) {
+        result.insert(convertFuelTypeToAppG(openstudio::FuelType(heaterFuelType())));
+      }
+      if (auto sourceSidePlantLoop_ = secondaryPlantLoop()) {
+        const auto plantFuelTypes = sourceSidePlantLoop_->appGHeatingFuelTypes();
+        result.insert(plantFuelTypes.begin(), plantFuelTypes.end());
+      }
+      if (containingZoneHVACComponent()) {
+        result.insert(openstudio::AppGFuelType::HeatPump);
+      }
+      return {result.begin(), result.end()};
     }
 
   }  // namespace detail

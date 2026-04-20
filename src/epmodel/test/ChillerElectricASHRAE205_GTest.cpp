@@ -5,6 +5,13 @@
 
 #include <gtest/gtest.h>
 
+#include <sqlite3.h>
+
+#undef SQLITE_DONE
+#undef SQLITE_ERROR
+
+#include <cstdio>
+
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../Loop/PlantLoop.hpp"
@@ -12,9 +19,47 @@
 #include "../StraightComponent/Node.hpp"
 #include "../WaterToWaterComponent/ChillerElectricASHRAE205.hpp"
 
+#include "../../utilities/core/Path.hpp"
+#include "../../utilities/core/UUID.hpp"
+#include "../../utilities/sql/SqlFile.hpp"
+
+#include <algorithm>
 #include <limits>
 
 using namespace openstudio::epmodel;
+
+namespace {
+
+std::string makeChillerElectricASHRAE205AutosizeSql(const openstudio::path& sqlPath) {
+  sqlite3* db = nullptr;
+  if (sqlite3_open(openstudio::toString(sqlPath).c_str(), &db) != SQLITE_OK) {
+    const std::string error = db ? sqlite3_errmsg(db) : "sqlite3_open failed";
+    if (db) {
+      sqlite3_close(db);
+    }
+    return error;
+  }
+
+  const char* sql = R"sql(
+    CREATE TABLE ComponentSizes (CompType TEXT, CompName TEXT, Description TEXT, Units TEXT, Value REAL);
+    INSERT INTO ComponentSizes VALUES ('Chiller:Electric:ASHRAE205','AUTOSIZED ASHRAE205 CHILLER','Design Size Rated Capacity','W',111111.0);
+    INSERT INTO ComponentSizes VALUES ('Chiller:Electric:ASHRAE205','AUTOSIZED ASHRAE205 CHILLER','Design Size Chilled Water Maximum Requested Flow Rate','m3/s',0.011);
+    INSERT INTO ComponentSizes VALUES ('Chiller:Electric:ASHRAE205','AUTOSIZED ASHRAE205 CHILLER','Design Size Condenser Maximum Requested Flow Rate','m3/s',0.022);
+  )sql";
+
+  char* errorMessage = nullptr;
+  const int execResult = sqlite3_exec(db, sql, nullptr, nullptr, &errorMessage);
+  std::string result;
+  if (execResult != SQLITE_OK) {
+    result = errorMessage ? errorMessage : "sqlite3_exec failed";
+  }
+
+  sqlite3_free(errorMessage);
+  sqlite3_close(db);
+  return result;
+}
+
+}  // namespace
 
 TEST_F(EPModelFixture, ChillerElectricASHRAE205_DefaultConstructor) {
   Model model;
@@ -29,16 +74,25 @@ TEST_F(EPModelFixture, ChillerElectricASHRAE205_DefaultConstructor) {
   EXPECT_NE(std::numeric_limits<unsigned>::max(), chiller.auxiliaryInletPort());
 
   EXPECT_EQ("Linear", chiller.performanceInterpolationMethod());
+  EXPECT_TRUE(chiller.isRatedCapacityAutosized());
   EXPECT_DOUBLE_EQ(1.0, chiller.sizingFactor());
   EXPECT_EQ("Outdoors", chiller.ambientTemperatureIndicator());
   EXPECT_FALSE(chiller.ambientTemperatureSchedule());
   EXPECT_FALSE(chiller.ambientTemperatureZone());
   EXPECT_FALSE(chiller.ambientTemperatureOutdoorAirNodeName());
+  EXPECT_TRUE(chiller.isChilledWaterMaximumRequestedFlowRateAutosized());
+  EXPECT_TRUE(chiller.isCondenserMaximumRequestedFlowRateAutosized());
+  EXPECT_EQ("NotModulated", chiller.chillerFlowMode());
   EXPECT_EQ("General", chiller.endUseSubcategory());
   EXPECT_TRUE(chiller.isEndUseSubcategoryDefaulted());
   EXPECT_FALSE(chiller.autosizedRatedCapacity());
   EXPECT_FALSE(chiller.autosizedChilledWaterMaximumRequestedFlowRate());
   EXPECT_FALSE(chiller.autosizedCondenserMaximumRequestedFlowRate());
+  EXPECT_EQ(openstudio::ComponentType(openstudio::ComponentType::Cooling), chiller.componentType());
+  ASSERT_EQ(1u, chiller.coolingFuelTypes().size());
+  EXPECT_EQ(openstudio::FuelType(openstudio::FuelType::Electricity), chiller.coolingFuelTypes().front());
+  EXPECT_TRUE(chiller.heatingFuelTypes().empty());
+  EXPECT_TRUE(chiller.appGHeatingFuelTypes().empty());
   EXPECT_FALSE(chiller.chilledWaterLoop());
   EXPECT_FALSE(chiller.condenserWaterLoop());
   EXPECT_FALSE(chiller.heatRecoveryLoop());
@@ -156,11 +210,19 @@ TEST_F(EPModelFixture, ChillerElectricASHRAE205_PlantLoopParity) {
   EXPECT_EQ(condenserLoop.handle(), chiller.condenserWaterLoop()->handle());
   EXPECT_TRUE(chiller.condenserInletNode());
   EXPECT_TRUE(chiller.condenserOutletNode());
+  EXPECT_EQ(openstudio::ComponentType::Cooling, chiller.componentType());
+  ASSERT_EQ(1u, chiller.coolingFuelTypes().size());
+  EXPECT_EQ(openstudio::FuelType::Electricity, chiller.coolingFuelTypes().front());
+  EXPECT_TRUE(chiller.heatingFuelTypes().empty());
+  EXPECT_TRUE(chiller.appGHeatingFuelTypes().empty());
 
   EXPECT_FALSE(heatRecoveryLoop.addDemandBranchForComponent(chiller));
   auto heatRecoveryDemandInletNode = heatRecoveryLoop.demandInletNode();
+  EXPECT_FALSE(chiller.addToNode(heatRecoveryDemandInletNode));
   EXPECT_FALSE(chiller.addToTertiaryNode(heatRecoveryDemandInletNode));
   EXPECT_FALSE(chiller.heatRecoveryLoop());
+  ASSERT_TRUE(chiller.condenserWaterLoop());
+  EXPECT_EQ(condenserLoop.handle(), chiller.condenserWaterLoop()->handle());
 
   EXPECT_TRUE(chiller.addDemandBranchOnOilCoolerLoop(oilCoolerLoop));
   ASSERT_TRUE(chiller.oilCoolerLoop());
@@ -176,7 +238,43 @@ TEST_F(EPModelFixture, ChillerElectricASHRAE205_PlantLoopParity) {
 
   EXPECT_TRUE(chiller.removeFromOilCoolerLoop());
   EXPECT_FALSE(chiller.oilCoolerLoop());
+  EXPECT_FALSE(chiller.oilCoolerInletNode());
+  EXPECT_FALSE(chiller.oilCoolerOutletNode());
 
   EXPECT_TRUE(chiller.removeFromAuxiliaryLoop());
   EXPECT_FALSE(chiller.auxiliaryLoop());
+  EXPECT_FALSE(chiller.auxiliaryInletNode());
+  EXPECT_FALSE(chiller.auxiliaryOutletNode());
+}
+
+TEST_F(EPModelFixture, ChillerElectricASHRAE205_AutosizedHelpersUseSqlFile) {
+  Model model;
+  ChillerElectricASHRAE205 chiller(model);
+  ASSERT_TRUE(chiller.setName("Autosized ASHRAE205 Chiller"));
+
+  chiller.autosizeRatedCapacity();
+  chiller.autosizeChilledWaterMaximumRequestedFlowRate();
+  chiller.autosizeCondenserMaximumRequestedFlowRate();
+
+  const openstudio::path sqlPath =
+    openstudio::tempDir() / openstudio::toPath("epmodel_chiller_electric_ashrae205_autosized_" + openstudio::toString(openstudio::createUUID()) + ".sqlite");
+  ASSERT_TRUE(makeChillerElectricASHRAE205AutosizeSql(sqlPath).empty());
+
+  openstudio::SqlFile sqlFile(sqlPath);
+  ASSERT_TRUE(sqlFile.connectionOpen());
+  EXPECT_TRUE(model.setSqlFile(sqlFile));
+
+  ASSERT_TRUE(chiller.autosizedRatedCapacity());
+  EXPECT_DOUBLE_EQ(111111.0, *chiller.autosizedRatedCapacity());
+  ASSERT_TRUE(chiller.autosizedChilledWaterMaximumRequestedFlowRate());
+  EXPECT_DOUBLE_EQ(0.011, *chiller.autosizedChilledWaterMaximumRequestedFlowRate());
+  ASSERT_TRUE(chiller.autosizedCondenserMaximumRequestedFlowRate());
+  EXPECT_DOUBLE_EQ(0.022, *chiller.autosizedCondenserMaximumRequestedFlowRate());
+
+  EXPECT_TRUE(model.resetSqlFile());
+  EXPECT_FALSE(chiller.autosizedRatedCapacity());
+  EXPECT_FALSE(chiller.autosizedChilledWaterMaximumRequestedFlowRate());
+  EXPECT_FALSE(chiller.autosizedCondenserMaximumRequestedFlowRate());
+
+  EXPECT_EQ(0, std::remove(openstudio::toString(sqlPath).c_str()));
 }

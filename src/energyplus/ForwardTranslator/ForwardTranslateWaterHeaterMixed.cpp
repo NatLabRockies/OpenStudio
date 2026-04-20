@@ -207,6 +207,7 @@ namespace energyplus {
 
     // AmbientTemperatureIndicator
 
+    boost::optional<std::string> ambientOutdoorAirNodeName;
     s = modelObject.ambientTemperatureIndicator();
     if (s) {
       if (istringEqual(s.get(), "ThermalZone")) {
@@ -224,16 +225,6 @@ namespace energyplus {
           idfObject.setString(WaterHeater_MixedFields::AmbientTemperatureScheduleName, schedule->name().get());
         }
       }
-
-      if (istringEqual(s.get(), "Outdoors")) {
-        if ((!modelObject.ambientTemperatureOutdoorAirNodeName()) || modelObject.ambientTemperatureOutdoorAirNodeName()->empty()) {
-          IdfObject oaNodeListIdf(openstudio::IddObjectType::OutdoorAir_NodeList);
-          auto name = modelObject.nameString() + " Outdoor Air Node";
-          oaNodeListIdf.setString(0, name);
-          m_idfObjects.push_back(oaNodeListIdf);
-          idfObject.setString(WaterHeater_MixedFields::AmbientTemperatureOutdoorAirNodeName, name);
-        }
-      }
     }
 
     // AmbientTemperatureZoneName
@@ -247,20 +238,16 @@ namespace energyplus {
     // AmbientTemperatureOutdoorAirNodeName
     s = modelObject.ambientTemperatureOutdoorAirNodeName();
     if (s && !s->empty()) {
+      ambientOutdoorAirNodeName = s;
+    } else if (istringEqual(modelObject.ambientTemperatureIndicator(), "Outdoors")) {
+      ambientOutdoorAirNodeName = modelObject.nameString() + " Ambient Temp OA Node";
+    }
+
+    if (ambientOutdoorAirNodeName) {
       IdfObject oaNodeList(openstudio::IddObjectType::OutdoorAir_NodeList);
-      oaNodeList.setString(0, s.get());
+      oaNodeList.setString(0, ambientOutdoorAirNodeName.get());
       m_idfObjects.push_back(oaNodeList);
-      idfObject.setString(WaterHeater_MixedFields::AmbientTemperatureOutdoorAirNodeName, s.get());
-    } else {
-      // Even if there is no node defined, if user chooses the outdoor air indicator we need to make a node
-      auto indicator = modelObject.ambientTemperatureIndicator();
-      if (istringEqual(indicator, "Outdoors")) {
-        std::string oaNodeName = modelObject.nameString() + " Ambient Temp OA Node";
-        IdfObject oaNodeList(openstudio::IddObjectType::OutdoorAir_NodeList);
-        oaNodeList.setString(0, oaNodeName);
-        m_idfObjects.push_back(oaNodeList);
-        idfObject.setString(WaterHeater_MixedFields::AmbientTemperatureOutdoorAirNodeName, oaNodeName);
-      }
+      idfObject.setString(WaterHeater_MixedFields::AmbientTemperatureOutdoorAirNodeName, ambientOutdoorAirNodeName.get());
     }
 
     // OffCycleLossCoefficienttoAmbientTemperature

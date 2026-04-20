@@ -32,6 +32,7 @@ TEST_F(EPModelFixture, ChillerElectricEIR_DefaultConstructor) {
   EXPECT_EQ(CurveQuadratic::iddObjectType(), chiller.electricInputToCoolingOutputRatioFunctionOfPLR().iddObject().type());
 
   EXPECT_DOUBLE_EQ(5.5, chiller.referenceCOP());
+  EXPECT_EQ("AirCooled", chiller.condenserType());
   EXPECT_TRUE(chiller.isReferenceCapacityAutosized());
   EXPECT_TRUE(chiller.isReferenceChilledWaterFlowRateAutosized());
   EXPECT_TRUE(chiller.isDesignHeatRecoveryWaterFlowRateAutosized());
@@ -163,8 +164,8 @@ TEST_F(EPModelFixture, ChillerElectricEIR_ScalarAccessors_RoundTrip) {
   chiller.resetMinimumUnloadingRatio();
   EXPECT_TRUE(chiller.isMinimumUnloadingRatioDefaulted());
 
-  EXPECT_TRUE(chiller.setCondenserType("WaterCooled"));
-  EXPECT_EQ("WaterCooled", chiller.condenserType());
+  EXPECT_TRUE(chiller.setCondenserType("EvaporativelyCooled"));
+  EXPECT_EQ("EvaporativelyCooled", chiller.condenserType());
   chiller.resetCondenserType();
   EXPECT_TRUE(chiller.isCondenserTypeDefaulted());
 
@@ -225,6 +226,47 @@ TEST_F(EPModelFixture, ChillerElectricEIR_ScalarAccessors_RoundTrip) {
   EXPECT_DOUBLE_EQ(0.3, chiller.thermosiphonMinimumTemperatureDifference());
 }
 
+TEST_F(EPModelFixture, ChillerElectricEIR_CondenserTypeParity) {
+  Model model;
+  PlantLoop chilledWaterLoop(model);
+  PlantLoop condenserLoop(model);
+  ChillerElectricEIR chiller(model);
+
+  EXPECT_EQ("AirCooled", chiller.condenserType());
+  EXPECT_TRUE(chiller.setCondenserType("EvaporativelyCooled"));
+  EXPECT_EQ("EvaporativelyCooled", chiller.condenserType());
+  EXPECT_TRUE(chiller.setCondenserType("AirCooled"));
+  EXPECT_EQ("AirCooled", chiller.condenserType());
+  EXPECT_FALSE(chiller.setCondenserType("WaterCooled"));
+  EXPECT_EQ("AirCooled", chiller.condenserType());
+
+  EXPECT_TRUE(chilledWaterLoop.addSupplyBranchForComponent(chiller));
+  EXPECT_TRUE(chiller.setCondenserType("EvaporativelyCooled"));
+  EXPECT_EQ("EvaporativelyCooled", chiller.condenserType());
+  EXPECT_TRUE(chiller.setCondenserType("AirCooled"));
+  EXPECT_EQ("AirCooled", chiller.condenserType());
+  EXPECT_FALSE(chiller.setCondenserType("WaterCooled"));
+  EXPECT_EQ("AirCooled", chiller.condenserType());
+
+  EXPECT_TRUE(condenserLoop.addDemandBranchForComponent(chiller));
+  ASSERT_TRUE(chiller.condenserWaterLoop());
+  EXPECT_EQ(condenserLoop.handle(), chiller.condenserWaterLoop()->handle());
+  EXPECT_EQ("WaterCooled", chiller.condenserType());
+  EXPECT_FALSE(chiller.setCondenserType("AirCooled"));
+  EXPECT_FALSE(chiller.setCondenserType("EvaporativelyCooled"));
+  EXPECT_EQ("WaterCooled", chiller.condenserType());
+
+  EXPECT_TRUE(chiller.removeFromSecondaryPlantLoop());
+  EXPECT_FALSE(chiller.condenserWaterLoop());
+  EXPECT_EQ("AirCooled", chiller.condenserType());
+  EXPECT_TRUE(chiller.setCondenserType("EvaporativelyCooled"));
+  EXPECT_EQ("EvaporativelyCooled", chiller.condenserType());
+  EXPECT_TRUE(chiller.setCondenserType("AirCooled"));
+  EXPECT_EQ("AirCooled", chiller.condenserType());
+  EXPECT_FALSE(chiller.setCondenserType("WaterCooled"));
+  EXPECT_EQ("AirCooled", chiller.condenserType());
+}
+
 TEST_F(EPModelFixture, ChillerElectricEIR_PlantLoopAttachmentParity) {
   Model model;
   PlantLoop chilledWaterLoop(model);
@@ -263,4 +305,57 @@ TEST_F(EPModelFixture, ChillerElectricEIR_PlantLoopAttachmentParity) {
   EXPECT_TRUE(chiller.removeFromSecondaryPlantLoop());
   EXPECT_FALSE(chiller.condenserWaterLoop());
   EXPECT_EQ("AirCooled", chiller.condenserType());
+}
+
+TEST_F(EPModelFixture, ChillerElectricEIR_AddToNodeDemandRoutingParity) {
+  Model model;
+  ChillerElectricEIR chiller(model);
+
+  PlantLoop chilledWaterLoop(model);
+  PlantLoop condenserLoop(model);
+  PlantLoop replacementCondenserLoop(model);
+  PlantLoop heatRecoveryLoop(model);
+
+  EXPECT_TRUE(chilledWaterLoop.addSupplyBranchForComponent(chiller));
+  ASSERT_TRUE(chiller.chilledWaterLoop());
+  EXPECT_EQ(chilledWaterLoop.handle(), chiller.chilledWaterLoop()->handle());
+  EXPECT_FALSE(chiller.condenserWaterLoop());
+  EXPECT_FALSE(chiller.heatRecoveryLoop());
+
+  EXPECT_TRUE(condenserLoop.addDemandBranchForComponent(chiller));
+  ASSERT_TRUE(chiller.condenserWaterLoop());
+  EXPECT_EQ(condenserLoop.handle(), chiller.condenserWaterLoop()->handle());
+  EXPECT_FALSE(chiller.heatRecoveryLoop());
+  EXPECT_EQ("WaterCooled", chiller.condenserType());
+
+  EXPECT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(chiller));
+  ASSERT_TRUE(chiller.heatRecoveryLoop());
+  EXPECT_EQ(heatRecoveryLoop.handle(), chiller.heatRecoveryLoop()->handle());
+  ASSERT_TRUE(chiller.condenserWaterLoop());
+  EXPECT_EQ(condenserLoop.handle(), chiller.condenserWaterLoop()->handle());
+
+  Node replacementDemandNode = replacementCondenserLoop.demandOutletNode();
+  EXPECT_TRUE(chiller.addToNode(replacementDemandNode));
+  ASSERT_TRUE(chiller.condenserWaterLoop());
+  EXPECT_EQ(replacementCondenserLoop.handle(), chiller.condenserWaterLoop()->handle());
+  ASSERT_TRUE(chiller.chilledWaterLoop());
+  EXPECT_EQ(chilledWaterLoop.handle(), chiller.chilledWaterLoop()->handle());
+  ASSERT_TRUE(chiller.heatRecoveryLoop());
+  EXPECT_EQ(heatRecoveryLoop.handle(), chiller.heatRecoveryLoop()->handle());
+
+  EXPECT_TRUE(chiller.removeFromTertiaryPlantLoop());
+  EXPECT_FALSE(chiller.heatRecoveryLoop());
+
+  Node heatRecoverySupplyNode = heatRecoveryLoop.supplyOutletNode();
+  EXPECT_FALSE(chiller.addToTertiaryNode(heatRecoverySupplyNode));
+  EXPECT_FALSE(chiller.heatRecoveryLoop());
+
+  Node heatRecoveryDemandNode = heatRecoveryLoop.demandInletNode();
+  EXPECT_TRUE(chiller.addToNode(heatRecoveryDemandNode));
+  ASSERT_TRUE(chiller.heatRecoveryLoop());
+  EXPECT_EQ(heatRecoveryLoop.handle(), chiller.heatRecoveryLoop()->handle());
+  ASSERT_TRUE(chiller.condenserWaterLoop());
+  EXPECT_EQ(replacementCondenserLoop.handle(), chiller.condenserWaterLoop()->handle());
+  ASSERT_TRUE(chiller.chilledWaterLoop());
+  EXPECT_EQ(chilledWaterLoop.handle(), chiller.chilledWaterLoop()->handle());
 }

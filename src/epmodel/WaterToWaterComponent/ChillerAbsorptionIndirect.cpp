@@ -413,7 +413,7 @@ void ChillerAbsorptionIndirect_Impl::autosizeNominalCapacity() {
 }
 
 boost::optional<double> ChillerAbsorptionIndirect_Impl::autosizedNominalCapacity() const {
-  return boost::none;
+  return getAutosizedValue("Design Size Nominal Capacity", "W");
 }
 
 boost::optional<double> ChillerAbsorptionIndirect_Impl::nominalPumpingPower() const {
@@ -436,7 +436,7 @@ void ChillerAbsorptionIndirect_Impl::autosizeNominalPumpingPower() {
 }
 
 boost::optional<double> ChillerAbsorptionIndirect_Impl::autosizedNominalPumpingPower() const {
-  return boost::none;
+  return getAutosizedValue("Design Size Nominal Pumping Power", "W");
 }
 
 double ChillerAbsorptionIndirect_Impl::minimumPartLoadRatio() const {
@@ -527,7 +527,7 @@ void ChillerAbsorptionIndirect_Impl::autosizeDesignChilledWaterFlowRate() {
 }
 
 boost::optional<double> ChillerAbsorptionIndirect_Impl::autosizedDesignChilledWaterFlowRate() const {
-  return boost::none;
+  return getAutosizedValue("Design Size Design Chilled Water Flow Rate", "m3/s");
 }
 
 boost::optional<double> ChillerAbsorptionIndirect_Impl::designCondenserWaterFlowRate() const {
@@ -550,7 +550,7 @@ void ChillerAbsorptionIndirect_Impl::autosizeDesignCondenserWaterFlowRate() {
 }
 
 boost::optional<double> ChillerAbsorptionIndirect_Impl::autosizedDesignCondenserWaterFlowRate() const {
-  return boost::none;
+  return getAutosizedValue("Design Size Design Condenser Water Flow Rate", "m3/s");
 }
 
 std::string ChillerAbsorptionIndirect_Impl::chillerFlowMode() const {
@@ -670,7 +670,7 @@ void ChillerAbsorptionIndirect_Impl::autosizeDesignGeneratorFluidFlowRate() {
 }
 
 boost::optional<double> ChillerAbsorptionIndirect_Impl::autosizedDesignGeneratorFluidFlowRate() const {
-  return boost::none;
+  return getAutosizedValue("Design Size Design Generator Fluid Flow Rate", "m3/s");
 }
 
 double ChillerAbsorptionIndirect_Impl::temperatureLowerLimitGeneratorInlet() const {
@@ -783,6 +783,32 @@ bool ChillerAbsorptionIndirect_Impl::removeFromTertiaryPlantLoop() {
     OS_ASSERT(setString(openstudio::Chiller_Absorption_IndirectFields::GeneratorHeatSourceType, "Steam"));
   }
   return ok;
+}
+
+std::vector<ModelObject> ChillerAbsorptionIndirect_Impl::children() const {
+  return {generatorHeatInputFunctionofPartLoadRatioCurve(),        pumpElectricInputFunctionofPartLoadRatioCurve(),
+          capacityCorrectionFunctionofCondenserTemperatureCurve(), capacityCorrectionFunctionofChilledWaterTemperatureCurve(),
+          capacityCorrectionFunctionofGeneratorTemperatureCurve(), generatorHeatInputCorrectionFunctionofCondenserTemperatureCurve(),
+          generatorHeatInputCorrectionFunctionofChilledWaterTemperatureCurve()};
+}
+
+ComponentType ChillerAbsorptionIndirect_Impl::componentType() const {
+  return ComponentType::Cooling;
+}
+
+std::vector<FuelType> ChillerAbsorptionIndirect_Impl::coolingFuelTypes() const {
+  if (auto generatorLoop_ = generatorLoop()) {
+    return generatorLoop_->heatingFuelTypes();
+  }
+  return {};
+}
+
+std::vector<FuelType> ChillerAbsorptionIndirect_Impl::heatingFuelTypes() const {
+  return {};
+}
+
+std::vector<AppGFuelType> ChillerAbsorptionIndirect_Impl::appGHeatingFuelTypes() const {
+  return {};
 }
 
 }  // namespace detail

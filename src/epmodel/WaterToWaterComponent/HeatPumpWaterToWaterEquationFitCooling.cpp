@@ -472,19 +472,19 @@ namespace epmodel {
     }
 
     unsigned HeatPumpWaterToWaterEquationFitCooling_Impl::supplyInletPort() const {
-      return openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::SourceSideInletNodeName;
-    }
-
-    unsigned HeatPumpWaterToWaterEquationFitCooling_Impl::supplyOutletPort() const {
-      return openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::SourceSideOutletNodeName;
-    }
-
-    unsigned HeatPumpWaterToWaterEquationFitCooling_Impl::demandInletPort() const {
       return openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::LoadSideInletNodeName;
     }
 
-    unsigned HeatPumpWaterToWaterEquationFitCooling_Impl::demandOutletPort() const {
+    unsigned HeatPumpWaterToWaterEquationFitCooling_Impl::supplyOutletPort() const {
       return openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::LoadSideOutletNodeName;
+    }
+
+    unsigned HeatPumpWaterToWaterEquationFitCooling_Impl::demandInletPort() const {
+      return openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::SourceSideInletNodeName;
+    }
+
+    unsigned HeatPumpWaterToWaterEquationFitCooling_Impl::demandOutletPort() const {
+      return openstudio::HeatPump_WaterToWater_EquationFit_CoolingFields::SourceSideOutletNodeName;
     }
 
   }  // namespace detail

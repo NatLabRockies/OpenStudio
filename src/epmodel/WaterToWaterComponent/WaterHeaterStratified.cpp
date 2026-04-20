@@ -8,12 +8,20 @@
 
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
+#include "Loop/PlantLoop.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject/WaterHeaterSizing.hpp"
 #include "ModelObject/WaterHeaterSizing_Impl.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/ScheduleConstant.hpp"
 #include "Schedule/Schedule_Impl.hpp"
+#include "StraightComponent/Node.hpp"
+#include "StraightComponent/Node_Impl.hpp"
+#include "ZoneHVACComponent/WaterHeaterHeatPump.hpp"
+#include "ZoneHVACComponent/WaterHeaterHeatPump_Impl.hpp"
+#include "ZoneHVACComponent/WaterHeaterHeatPumpWrappedCondenser.hpp"
+#include "ZoneHVACComponent/WaterHeaterHeatPumpWrappedCondenser_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -23,6 +31,7 @@
 
 #include <utility>
 
+#include <set>
 #include <stdexcept>
 
 namespace openstudio {
@@ -380,6 +389,39 @@ namespace epmodel {
 
   EPM_FORWARD_GET(WaterHeaterSizing, waterHeaterSizing)
 
+  ModelObject WaterHeaterStratified::clone(Model model) const {
+    return getImpl<detail::WaterHeaterStratified_Impl>()->clone(model);
+  }
+  EPM_FORWARD_SET(bool, addToSourceSideNode, (Node& node), (node))
+
+  boost::optional<PlantLoop> WaterHeaterStratified::useSidePlantLoop() const {
+    return plantLoop();
+  }
+
+  boost::optional<PlantLoop> WaterHeaterStratified::sourceSidePlantLoop() const {
+    return secondaryPlantLoop();
+  }
+
+  bool WaterHeaterStratified::removeFromSourceSidePlantLoop() {
+    return removeFromSecondaryPlantLoop();
+  }
+
+  boost::optional<ModelObject> WaterHeaterStratified::useSideInletModelObject() const {
+    return supplyInletModelObject();
+  }
+
+  boost::optional<ModelObject> WaterHeaterStratified::useSideOutletModelObject() const {
+    return supplyOutletModelObject();
+  }
+
+  boost::optional<ModelObject> WaterHeaterStratified::sourceSideInletModelObject() const {
+    return demandInletModelObject();
+  }
+
+  boost::optional<ModelObject> WaterHeaterStratified::sourceSideOutletModelObject() const {
+    return demandOutletModelObject();
+  }
+
   bool WaterHeaterStratified::setHeaterFuelType(const FuelType& heaterFuelType) {
     return getImpl<detail::WaterHeaterStratified_Impl>()->setHeaterFuelType(heaterFuelType.valueDescription());
   }
@@ -442,6 +484,24 @@ namespace epmodel {
 
     std::vector<ModelObject> WaterHeaterStratified_Impl::children() const {
       return {waterHeaterSizing()};
+    }
+
+    ModelObject WaterHeaterStratified_Impl::clone(Model model) const {
+      auto heaterCloneObject = model.addObject(idfObject());
+      OS_ASSERT(heaterCloneObject);
+      auto heaterClone = heaterCloneObject->cast<WaterHeaterStratified>();
+
+      OS_ASSERT(heaterClone.setString(heaterClone.supplyInletPort(), ""));
+      OS_ASSERT(heaterClone.setString(heaterClone.supplyOutletPort(), ""));
+      OS_ASSERT(heaterClone.setString(heaterClone.demandInletPort(), ""));
+      OS_ASSERT(heaterClone.setString(heaterClone.demandOutletPort(), ""));
+
+      auto sizingCloneObject = model.addObject(waterHeaterSizing().idfObject());
+      OS_ASSERT(sizingCloneObject);
+      auto sizingClone = sizingCloneObject->cast<WaterHeaterSizing>();
+      OS_ASSERT(sizingClone.getImpl<WaterHeaterSizing_Impl>()->setWaterHeater(heaterClone));
+
+      return heaterClone;
     }
 
 #define OS_IMPL_OPTIONAL_DOUBLE(method, field)                               \
@@ -618,19 +678,19 @@ namespace epmodel {
     }
 
     boost::optional<double> WaterHeaterStratified_Impl::autosizedTankVolume() const {
-      return boost::none;
+      return getAutosizedValue("Design Size Tank Volume", "m3");
     }
     boost::optional<double> WaterHeaterStratified_Impl::autosizedTankHeight() const {
-      return boost::none;
+      return getAutosizedValue("Design Size Tank Height", "m");
     }
     boost::optional<double> WaterHeaterStratified_Impl::autosizedHeater1Capacity() const {
-      return boost::none;
+      return getAutosizedValue("Design Size Heater 1 Capacity", "W");
     }
     boost::optional<double> WaterHeaterStratified_Impl::autosizedUseSideDesignFlowRate() const {
-      return boost::none;
+      return getAutosizedValue("Design Size Use Side Design Flow Rate", "m3/s");
     }
     boost::optional<double> WaterHeaterStratified_Impl::autosizedSourceSideDesignFlowRate() const {
-      return boost::none;
+      return getAutosizedValue("Design Size Source Side Design Flow Rate", "m3/s");
     }
 
     OS_IMPL_SET_STRING(setEndUseSubcategory, EndUseSubcategory)
@@ -792,6 +852,166 @@ namespace epmodel {
         }
       }
       throw std::runtime_error("WaterHeaterStratified missing WaterHeater:Sizing object.");
+    }
+
+    boost::optional<PlantLoop> WaterHeaterStratified_Impl::plantLoop() const {
+      if (auto sourceSidePlantLoop = secondaryPlantLoop()) {
+        for (const auto& plantLoop : model().getConcreteModelObjects<PlantLoop>()) {
+          const auto supplyComponents = plantLoop.supplyComponents(openstudio::IddObjectType::Catchall);
+          const auto matchesSourceLoop =
+            std::find_if(supplyComponents.begin(), supplyComponents.end(), [&](const auto& component) { return component.handle() == handle(); });
+          if (matchesSourceLoop != supplyComponents.end() && plantLoop.handle() != sourceSidePlantLoop->handle()) {
+            return plantLoop;
+          }
+        }
+      }
+
+      return WaterToWaterComponent_Impl::plantLoop();
+    }
+
+    boost::optional<PlantLoop> WaterHeaterStratified_Impl::secondaryPlantLoop() const {
+      if (auto secondaryLoop = WaterToWaterComponent_Impl::secondaryPlantLoop()) {
+        return secondaryLoop;
+      }
+
+      auto sourceSideOutletModelObject_ = demandOutletModelObject();
+      if (!sourceSideOutletModelObject_) {
+        return boost::none;
+      }
+
+      auto sourceSideOutletNode_ = sourceSideOutletModelObject_->optionalCast<Node>();
+      if (!sourceSideOutletNode_) {
+        return boost::none;
+      }
+
+      if (auto sourceSidePlantLoop = sourceSideOutletNode_->plantLoop()) {
+        const auto supplyComponents = sourceSidePlantLoop->supplyComponents(openstudio::IddObjectType::Catchall);
+        const auto matchesSourceLoop = std::find_if(supplyComponents.begin(), supplyComponents.end(),
+                                                    [&](const auto& component) { return component.handle() == handle(); });
+        if (matchesSourceLoop != supplyComponents.end()) {
+          return sourceSidePlantLoop;
+        }
+      }
+
+      return boost::none;
+    }
+
+    bool WaterHeaterStratified_Impl::removeFromSecondaryPlantLoop() {
+      return removeFromBranch(demandInletPort(), demandOutletPort(), secondaryPlantLoop());
+    }
+
+    bool WaterHeaterStratified_Impl::addToNode(Node& node) {
+      auto t_plantLoop = node.plantLoop();
+      if (t_plantLoop && t_plantLoop->supplyComponent(node.handle())) {
+        if (auto useSidePlant = plantLoop()) {
+          if (t_plantLoop->handle() != useSidePlant->handle()) {
+            return addToSourceSideNode(node);
+          }
+        }
+      }
+
+      return WaterToWaterComponent_Impl::addToNode(node);
+    }
+
+    bool WaterHeaterStratified_Impl::addToSourceSideNode(Node& node) {
+      auto t_plantLoop = node.plantLoop();
+      if (!t_plantLoop) {
+        return false;
+      }
+
+      auto branch = t_plantLoop->getImpl<detail::PlantLoop_Impl>()->branchForNode(node);
+      if (!branch) {
+        return false;
+      }
+
+      const auto branchComponents = branch->components();
+      if (std::ranges::find_if(branchComponents, [&](const auto& component) { return component.handle() == handle(); }) != branchComponents.end()) {
+        return false;
+      }
+
+      if (t_plantLoop->supplyComponent(node.handle()) || t_plantLoop->demandComponent(node.handle())) {
+        removeFromSecondaryPlantLoop();
+        return insertOnBranch(node, *branch, demandInletPort(), demandOutletPort());
+      }
+
+      return false;
+    }
+
+    openstudio::ComponentType WaterHeaterStratified_Impl::componentType() const {
+      if (isHeater1CapacityAutosized() || ((heater1Capacity().get() + heater2Capacity()) > 0.01)) {
+        return openstudio::ComponentType::Heating;
+      }
+
+      if (auto sourceSidePlantLoop_ = secondaryPlantLoop()) {
+        return sourceSidePlantLoop_->componentType();
+      }
+
+      for (const auto& hpwh : model().getConcreteModelObjects<WaterHeaterHeatPump>()) {
+        if (hpwh.tank().handle() == handle()) {
+          return openstudio::ComponentType::Heating;
+        }
+      }
+
+      for (const auto& hpwh : model().getConcreteModelObjects<WaterHeaterHeatPumpWrappedCondenser>()) {
+        if (hpwh.tank().handle() == handle()) {
+          return openstudio::ComponentType::Heating;
+        }
+      }
+
+      return openstudio::ComponentType::None;
+    }
+
+    std::vector<openstudio::FuelType> WaterHeaterStratified_Impl::coolingFuelTypes() const {
+      std::set<openstudio::FuelType> result;
+      if (auto sourceSidePlantLoop_ = secondaryPlantLoop()) {
+        const auto plantFuelTypes = sourceSidePlantLoop_->coolingFuelTypes();
+        result.insert(plantFuelTypes.begin(), plantFuelTypes.end());
+      }
+      return {result.begin(), result.end()};
+    }
+
+    std::vector<openstudio::FuelType> WaterHeaterStratified_Impl::heatingFuelTypes() const {
+      std::set<openstudio::FuelType> result;
+      if (isHeater1CapacityAutosized() || ((heater1Capacity().get() + heater2Capacity()) > 0.01)) {
+        result.insert(openstudio::FuelType(heaterFuelType()));
+      }
+      if (auto sourceSidePlantLoop_ = secondaryPlantLoop()) {
+        const auto plantFuelTypes = sourceSidePlantLoop_->heatingFuelTypes();
+        result.insert(plantFuelTypes.begin(), plantFuelTypes.end());
+      }
+      for (const auto& hpwh : model().getConcreteModelObjects<WaterHeaterHeatPump>()) {
+        if (hpwh.tank().handle() == handle()) {
+          result.insert(openstudio::FuelType::Electricity);
+        }
+      }
+      for (const auto& hpwh : model().getConcreteModelObjects<WaterHeaterHeatPumpWrappedCondenser>()) {
+        if (hpwh.tank().handle() == handle()) {
+          result.insert(openstudio::FuelType::Electricity);
+        }
+      }
+      return {result.begin(), result.end()};
+    }
+
+    std::vector<openstudio::AppGFuelType> WaterHeaterStratified_Impl::appGHeatingFuelTypes() const {
+      std::set<openstudio::AppGFuelType> result;
+      if (isHeater1CapacityAutosized() || ((heater1Capacity().get() + heater2Capacity()) > 0.01)) {
+        result.insert(openstudio::convertFuelTypeToAppG(openstudio::FuelType(heaterFuelType())));
+      }
+      if (auto sourceSidePlantLoop_ = secondaryPlantLoop()) {
+        const auto plantFuelTypes = sourceSidePlantLoop_->appGHeatingFuelTypes();
+        result.insert(plantFuelTypes.begin(), plantFuelTypes.end());
+      }
+      for (const auto& hpwh : model().getConcreteModelObjects<WaterHeaterHeatPump>()) {
+        if (hpwh.tank().handle() == handle()) {
+          result.insert(openstudio::AppGFuelType::HeatPump);
+        }
+      }
+      for (const auto& hpwh : model().getConcreteModelObjects<WaterHeaterHeatPumpWrappedCondenser>()) {
+        if (hpwh.tank().handle() == handle()) {
+          result.insert(openstudio::AppGFuelType::HeatPump);
+        }
+      }
+      return {result.begin(), result.end()};
     }
 
   }  // namespace detail
