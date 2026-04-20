@@ -8,6 +8,8 @@
 
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
+#include "Loop/PlantLoop.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject/WaterHeaterSizing.hpp"
 #include "ModelObject/WaterHeaterSizing_Impl.hpp"
@@ -17,6 +19,7 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/data/DataEnums.hpp>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/ThermalStorage_ChilledWater_Stratified_FieldEnums.hxx>

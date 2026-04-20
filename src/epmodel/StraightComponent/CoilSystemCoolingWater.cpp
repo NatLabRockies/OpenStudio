@@ -8,6 +8,7 @@
 
 #include "HVACComponent/HVACComponent.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
@@ -15,6 +16,7 @@
 #include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 #include "WaterToAirComponent/CoilCoolingWater.hpp"
+#include "WaterToAirComponent/CoilCoolingWater_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -189,6 +191,13 @@ namespace epmodel {
     }
 
     bool CoilSystemCoolingWater_Impl::addToNode(Node& node) {
+      for (auto oaSystem : model().getConcreteModelObjects<AirLoopHVACOutdoorAirSystem>()) {
+        auto outboardOANode = oaSystem.outboardOANode();
+        if (outboardOANode && (*outboardOANode == node)) {
+          return StraightComponent_Impl::addToOutdoorAirSystem(oaSystem, node);
+        }
+      }
+
       if (node.airLoopHVACOutdoorAirSystem()) {
         return StraightComponent_Impl::addToNode(node);
       }
@@ -199,7 +208,24 @@ namespace epmodel {
         return false;
       }
 
-      return StraightComponent_Impl::addToNode(node);
+      const bool ok = StraightComponent_Impl::addToNode(node);
+      if (!ok) {
+        return false;
+      }
+
+      auto inletNode = getObject<ModelObject>().getModelObjectTarget<Node>(inletPort());
+      auto outletNode = getObject<ModelObject>().getModelObjectTarget<Node>(outletPort());
+      if (inletNode && outletNode) {
+        if (auto companionCoil = companionCoilUsedForHeatRecovery()) {
+          if (auto coolingWaterCoil = companionCoil->optionalCast<CoilCoolingWater>()) {
+            auto coolingWaterCoilImpl = coolingWaterCoil->getImpl<detail::CoilCoolingWater_Impl>();
+            OS_ASSERT(coolingWaterCoilImpl->setPointer(coolingWaterCoil->airInletPort(), inletNode->handle(), false));
+            OS_ASSERT(coolingWaterCoilImpl->setPointer(coolingWaterCoil->airOutletPort(), outletNode->handle(), false));
+          }
+        }
+      }
+
+      return true;
     }
 
     std::vector<ModelObject> CoilSystemCoolingWater_Impl::children() const {

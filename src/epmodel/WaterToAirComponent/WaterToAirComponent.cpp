@@ -122,7 +122,8 @@ bool WaterToAirComponent_Impl::addToOutdoorAirSystem(AirLoopHVACOutdoorAirSystem
     return false;
   }
 
-  const bool onOutdoorAirStream = oaSystem.oaComponent(node.handle()).has_value();
+  const auto outboardOANode = oaSystem.outboardOANode();
+  const bool onOutdoorAirStream = oaSystem.oaComponent(node.handle()).has_value() || (outboardOANode && (*outboardOANode == node));
   const bool onReliefStream = oaSystem.reliefComponent(node.handle()).has_value();
   if (!onOutdoorAirStream && !onReliefStream) {
     return false;
@@ -374,6 +375,20 @@ bool WaterToAirComponent_Impl::addToNode(Node& node) {
     return addToOutdoorAirSystem(*oaSystem, node);
   }
 
+  if (auto plantLoop = node.plantLoop()) {
+    if (!plantLoop->demandComponent(node.handle())) {
+      return false;
+    }
+
+    auto branch = plantLoop->getImpl<detail::PlantLoop_Impl>()->branchForNode(node);
+    if (!branch) {
+      return false;
+    }
+
+    removeFromPlantLoop();
+    return insertOnBranch(node, *branch, waterInletPort(), waterOutletPort());
+  }
+
   if (auto airLoop = node.airLoopHVAC()) {
     if (containingHVACComponent()) {
       return false;
@@ -397,22 +412,7 @@ bool WaterToAirComponent_Impl::addToNode(Node& node) {
     return true;
   }
 
-  auto plantLoop = node.plantLoop();
-  if (!plantLoop) {
-    return false;
-  }
-
-  if (!plantLoop->demandComponent(node.handle())) {
-    return false;
-  }
-
-  auto branch = plantLoop->getImpl<detail::PlantLoop_Impl>()->branchForNode(node);
-  if (!branch) {
-    return false;
-  }
-
-  removeFromPlantLoop();
-  return insertOnBranch(node, *branch, waterInletPort(), waterOutletPort());
+  return false;
 }
 
 bool WaterToAirComponent_Impl::addToSplitter(Splitter&) {
@@ -504,6 +504,7 @@ bool WaterToAirComponent_Impl::removeFromAirLoopHVAC() {
     if (!branch.getImpl<detail::Branch_Impl>()->removeComponent(i)) {
       return false;
     }
+    disconnectAirSide();
     airLoop->getImpl<detail::AirLoopHVAC_Impl>()->syncSetpointManagerMixedAirFanNodes();
     return true;
   }

@@ -44,7 +44,8 @@ namespace epmodel {
         return false;
       }
 
-      const bool onOutdoorAirStream = oaSystem.oaComponent(node.handle()).has_value();
+      const auto outboardOANode = oaSystem.outboardOANode();
+      const bool onOutdoorAirStream = oaSystem.oaComponent(node.handle()).has_value() || (outboardOANode && (*outboardOANode == node));
       const bool onReliefStream = oaSystem.reliefComponent(node.handle()).has_value();
       if (!onOutdoorAirStream && !onReliefStream) {
         return false;

@@ -129,9 +129,10 @@ TEST_F(EPModelFixture, CoilSystemCoolingWater_AddToNodeCurrentPaths) {
   auto outboardOANode = oaSystem.outboardOANode();
   ASSERT_TRUE(outboardOANode);
   EXPECT_TRUE(outdoorAirCoilSystem.addToNode(*outboardOANode));
-  EXPECT_FALSE(oaSystem.oaComponents().empty());
-  EXPECT_TRUE(std::any_of(oaSystem.oaComponents().begin(), oaSystem.oaComponents().end(),
-                          [&](const auto& object) { return object.handle() == outdoorAirCoilSystem.handle(); }));
+  const auto oaComponents = oaSystem.oaComponents();
+  EXPECT_FALSE(oaComponents.empty());
+  EXPECT_TRUE(
+    std::any_of(oaComponents.begin(), oaComponents.end(), [&](const auto& object) { return object.handle() == outdoorAirCoilSystem.handle(); }));
 }
 
 TEST_F(EPModelFixture, CoilSystemCoolingWater_ContainedCoolingCoilDoesNotCreateStandaloneController) {

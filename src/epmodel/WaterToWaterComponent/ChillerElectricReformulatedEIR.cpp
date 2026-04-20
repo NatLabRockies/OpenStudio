@@ -32,10 +32,11 @@ namespace epmodel {
     OS_ASSERT(setCoolingCapacityFunctionOfTemperature(CCFofT));
     OS_ASSERT(setElectricInputToCoolingOutputRatioFunctionOfTemperature(EItoCORFofT));
     OS_ASSERT(setElectricInputToCoolingOutputRatioFunctionOfPLR(EItoCORFofPLR));
-    OS_ASSERT(setReferenceCOP(3.99));
-    autosizeReferenceCapacity();
-    autosizeReferenceChilledWaterFlowRate();
-    autosizeDesignHeatRecoveryWaterFlowRate();
+  OS_ASSERT(setReferenceCOP(3.99));
+  autosizeReferenceCapacity();
+  autosizeReferenceChilledWaterFlowRate();
+  autosizeReferenceCondenserWaterFlowRate();
+  autosizeDesignHeatRecoveryWaterFlowRate();
     OS_ASSERT(setCondenserHeatRecoveryRelativeCapacityFraction(1.0));
     resetHeatRecoveryLeavingTemperatureSetpointNode();
     resetHeatRecoveryInletHighTemperatureLimitSchedule();
@@ -90,10 +91,11 @@ namespace epmodel {
     OS_ASSERT(setCoolingCapacityFunctionOfTemperature(CCFofT));
     OS_ASSERT(setElectricInputToCoolingOutputRatioFunctionOfTemperature(EIRToCorfOfT));
     OS_ASSERT(setElectricInputToCoolingOutputRatioFunctionOfPLR(EIRToCorfOfPLR));
-    OS_ASSERT(setReferenceCOP(3.99));
-    autosizeReferenceCapacity();
-    autosizeReferenceChilledWaterFlowRate();
-    autosizeDesignHeatRecoveryWaterFlowRate();
+  OS_ASSERT(setReferenceCOP(3.99));
+  autosizeReferenceCapacity();
+  autosizeReferenceChilledWaterFlowRate();
+  autosizeReferenceCondenserWaterFlowRate();
+  autosizeDesignHeatRecoveryWaterFlowRate();
     OS_ASSERT(setCondenserHeatRecoveryRelativeCapacityFraction(1.0));
     resetHeatRecoveryLeavingTemperatureSetpointNode();
     resetHeatRecoveryInletHighTemperatureLimitSchedule();
@@ -713,7 +715,7 @@ bool ChillerElectricReformulatedEIR_Impl::setReferenceCondenserWaterFlowRate(dou
 }
 
 void ChillerElectricReformulatedEIR_Impl::resetReferenceCondenserWaterFlowRate() {
-  OS_ASSERT(setString(openstudio::Chiller_Electric_ReformulatedEIRFields::ReferenceCondenserWaterFlowRate, ""));
+  autosizeReferenceCondenserWaterFlowRate();
 }
 
 void ChillerElectricReformulatedEIR_Impl::autosizeReferenceCondenserWaterFlowRate() {

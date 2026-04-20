@@ -16,6 +16,7 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/data/DataEnums.hpp>
 #include <utilities/idd/Chiller_Absorption_Indirect_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>

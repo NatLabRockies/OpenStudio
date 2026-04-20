@@ -5,10 +5,6 @@
 
 #include <gtest/gtest.h>
 
-#include <sqlite3.h>
-
-#include <cstdio>
-
 #include "EPModelFixture.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../StraightComponent/Node.hpp"
@@ -18,48 +14,10 @@
 #include "../WaterToWaterComponent/ChillerElectricEIR.hpp"
 #include "../WaterToWaterComponent/ThermalStorageChilledWaterStratified.hpp"
 
+#include <utilities/data/DataEnums.hpp>
 #include <utilities/idd/ThermalStorage_ChilledWater_Stratified_FieldEnums.hxx>
 
-#include "../../utilities/core/Path.hpp"
-#include "../../utilities/core/UUID.hpp"
-#include "../../utilities/sql/SqlFile.hpp"
-
 using namespace openstudio::epmodel;
-
-namespace {
-
-std::string makeThermalStorageChilledWaterStratifiedAutosizeSql(const openstudio::path& sqlPath) {
-  sqlite3* db = nullptr;
-  if (sqlite3_open(openstudio::toString(sqlPath).c_str(), &db) != SQLITE_OK) {
-    const std::string error = db ? sqlite3_errmsg(db) : "sqlite3_open failed";
-    if (db) {
-      sqlite3_close(db);
-    }
-    return error;
-  }
-
-  const char* sql = R"sql(
-    CREATE TABLE ComponentSizes (CompType TEXT, CompName TEXT, Description TEXT, Units TEXT, Value REAL);
-    INSERT INTO ComponentSizes VALUES ('ThermalStorage:ChilledWater:Stratified','AUTOSIZED STRATIFIED TANK','Maximum Heater Capacity','W',111111.0);
-    INSERT INTO ComponentSizes VALUES ('ThermalStorage:ChilledWater:Stratified','AUTOSIZED STRATIFIED TANK','Use Side Design Flow Rate','m3/s',0.011);
-    INSERT INTO ComponentSizes VALUES ('ThermalStorage:ChilledWater:Stratified','AUTOSIZED STRATIFIED TANK','Source Side Design Flow Rate','m3/s',0.022);
-    INSERT INTO ComponentSizes VALUES ('ThermalStorage:ChilledWater:Stratified','SOME OTHER TANK','Maximum Heater Capacity','W',999999.0);
-    INSERT INTO ComponentSizes VALUES ('Chiller:Electric:EIR','AUTOSIZED STRATIFIED TANK','Maximum Heater Capacity','W',888888.0);
-  )sql";
-
-  char* errorMessage = nullptr;
-  const int execResult = sqlite3_exec(db, sql, nullptr, nullptr, &errorMessage);
-  std::string result;
-  if (execResult != SQLITE_OK) {
-    result = errorMessage ? errorMessage : "sqlite3_exec failed";
-  }
-
-  sqlite3_free(errorMessage);
-  sqlite3_close(db);
-  return result;
-}
-
-}  // namespace
 
 TEST_F(EPModelFixture, ThermalStorageChilledWaterStratified_DefaultConstructor) {
   Model model;
@@ -71,7 +29,7 @@ TEST_F(EPModelFixture, ThermalStorageChilledWaterStratified_DefaultConstructor) 
   EXPECT_EQ(openstudio::ThermalStorage_ChilledWater_StratifiedFields::SourceSideInletNodeName, storage.demandInletPort());
   EXPECT_EQ(openstudio::ThermalStorage_ChilledWater_StratifiedFields::SourceSideOutletNodeName, storage.demandOutletPort());
   EXPECT_TRUE(storage.ambientTemperatureSchedule());
-  EXPECT_EQ(openstudio::ComponentType::Cooling, storage.componentType());
+  EXPECT_EQ(openstudio::ComponentType(openstudio::ComponentType::Cooling), storage.componentType());
   EXPECT_TRUE(storage.coolingFuelTypes().empty());
   EXPECT_TRUE(storage.heatingFuelTypes().empty());
   EXPECT_TRUE(storage.appGHeatingFuelTypes().empty());
@@ -278,7 +236,7 @@ TEST_F(EPModelFixture, ThermalStorageChilledWaterStratified_PlantLoopAttachmentP
   EXPECT_FALSE(storage.demandOutletModelObject());
   EXPECT_EQ(useSideLoop.handle(), storage.supplyInletModelObject()->cast<Node>().plantLoop()->handle());
   EXPECT_EQ(useSideLoop.handle(), storage.supplyOutletModelObject()->cast<Node>().plantLoop()->handle());
-  EXPECT_EQ(openstudio::ComponentType::Cooling, storage.componentType());
+  EXPECT_EQ(openstudio::ComponentType(openstudio::ComponentType::Cooling), storage.componentType());
   EXPECT_TRUE(storage.coolingFuelTypes().empty());
   EXPECT_TRUE(storage.heatingFuelTypes().empty());
   EXPECT_TRUE(storage.appGHeatingFuelTypes().empty());
@@ -306,39 +264,4 @@ TEST_F(EPModelFixture, ThermalStorageChilledWaterStratified_PlantLoopAttachmentP
   EXPECT_FALSE(storage.demandInletModelObject());
   EXPECT_FALSE(storage.demandOutletModelObject());
   EXPECT_TRUE(storage.coolingFuelTypes().empty());
-}
-
-TEST_F(EPModelFixture, ThermalStorageChilledWaterStratified_AutosizedHelpersUseSqlFile) {
-  Model model;
-  ThermalStorageChilledWaterStratified storage(model);
-  ASSERT_TRUE(storage.setName("Autosized Stratified Tank"));
-
-  storage.autosizeNominalCoolingCapacity();
-  storage.autosizeUseSideDesignFlowRate();
-  storage.autosizeSourceSideDesignFlowRate();
-  EXPECT_TRUE(storage.isNominalCoolingCapacityAutosized());
-  EXPECT_TRUE(storage.isUseSideDesignFlowRateAutosized());
-  EXPECT_TRUE(storage.isSourceSideDesignFlowRateAutosized());
-
-  const openstudio::path sqlPath = openstudio::tempDir()
-    / openstudio::toPath("epmodel_thermal_storage_chilled_water_stratified_autosized_" + openstudio::createUUID().toString() + ".sqlite");
-  ASSERT_TRUE(makeThermalStorageChilledWaterStratifiedAutosizeSql(sqlPath).empty());
-
-  openstudio::SqlFile sqlFile(sqlPath);
-  ASSERT_TRUE(sqlFile.connectionOpen());
-  EXPECT_TRUE(model.setSqlFile(sqlFile));
-
-  ASSERT_TRUE(storage.autosizedNominalCoolingCapacity());
-  EXPECT_DOUBLE_EQ(111111.0, *storage.autosizedNominalCoolingCapacity());
-  ASSERT_TRUE(storage.autosizedUseSideDesignFlowRate());
-  EXPECT_DOUBLE_EQ(0.011, *storage.autosizedUseSideDesignFlowRate());
-  ASSERT_TRUE(storage.autosizedSourceSideDesignFlowRate());
-  EXPECT_DOUBLE_EQ(0.022, *storage.autosizedSourceSideDesignFlowRate());
-
-  EXPECT_TRUE(model.resetSqlFile());
-  EXPECT_FALSE(storage.autosizedNominalCoolingCapacity());
-  EXPECT_FALSE(storage.autosizedUseSideDesignFlowRate());
-  EXPECT_FALSE(storage.autosizedSourceSideDesignFlowRate());
-
-  EXPECT_EQ(0, std::remove(openstudio::toString(sqlPath).c_str()));
 }

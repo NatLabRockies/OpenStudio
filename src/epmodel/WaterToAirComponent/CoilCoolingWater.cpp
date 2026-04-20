@@ -144,11 +144,13 @@ bool isPrimaryCoolingCoilOfCoolingWaterSystem(const CoilCoolingWater& coil) {
 CoilCoolingWater::CoilCoolingWater(const Model& model, Schedule& availabilitySchedule)
   : WaterToAirComponent(CoilCoolingWater::iddObjectType(), model) {
   OS_ASSERT(setAvailabilitySchedule(availabilitySchedule));
+  OS_ASSERT(setHeatExchangerConfiguration("CrossFlow"));
 }
 
 CoilCoolingWater::CoilCoolingWater(const Model& model) : WaterToAirComponent(CoilCoolingWater::iddObjectType(), model) {
   auto schedule = model.alwaysOnDiscreteSchedule();
   OS_ASSERT(setAvailabilitySchedule(schedule));
+  OS_ASSERT(setHeatExchangerConfiguration("CrossFlow"));
 }
 
 CoilCoolingWater::CoilCoolingWater(std::shared_ptr<detail::CoilCoolingWater_Impl> impl) : WaterToAirComponent(std::move(impl)) {}
@@ -452,6 +454,10 @@ std::vector<ModelObject> CoilCoolingWater_Impl::children() const {
 std::vector<IdfObject> CoilCoolingWater_Impl::remove() {
   if (!isRemovable()) {
     return {};
+  }
+
+  if (auto controller = inferControllerForCoil(getObject<openstudio::epmodel::CoilCoolingWater>())) {
+    controller->remove();
   }
 
   for (auto& afnComponent : attachedAirflowNetworkDistributionComponentCoils(getObject<ModelObject>())) {

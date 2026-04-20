@@ -34,6 +34,8 @@
 #include "WaterToAirComponent/CoilCoolingWater_Impl.hpp"
 #include "WaterToAirComponent/CoilHeatingWater.hpp"
 #include "WaterToAirComponent/CoilHeatingWater_Impl.hpp"
+#include "WaterToAirComponent/CoilUserDefined.hpp"
+#include "WaterToAirComponent/CoilUserDefined_Impl.hpp"
 #include "StraightComponent/StraightComponent.hpp"
 #include "StraightComponent/CoilCoolingLowTempRadiantConstFlow.hpp"
 #include "StraightComponent/CoilCoolingLowTempRadiantConstFlow_Impl.hpp"
@@ -53,6 +55,10 @@
 #include "StraightComponent/GroundHeatExchangerVertical_Impl.hpp"
 #include "WaterToWaterComponent/WaterToWaterComponent.hpp"
 #include "WaterToWaterComponent/WaterToWaterComponent_Impl.hpp"
+#include "WaterToWaterComponent/WaterHeaterMixed.hpp"
+#include "WaterToWaterComponent/WaterHeaterMixed_Impl.hpp"
+#include "WaterToWaterComponent/WaterHeaterStratified.hpp"
+#include "WaterToWaterComponent/WaterHeaterStratified_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater.hpp"
 #include "ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACBaseboardConvectiveWater.hpp"
@@ -1447,7 +1453,11 @@ namespace detail {
       }
       if (auto waterToWater = hvacComponent.optionalCast<WaterToWaterComponent>()) {
         if (waterToWater->plantLoop()) {
-          return false;
+          const bool canRouteSupplySideToSource = (hvacComponent.optionalCast<WaterHeaterMixed>() || hvacComponent.optionalCast<WaterHeaterStratified>())
+                                                  && !waterToWater->secondaryPlantLoop();
+          if (!canRouteSupplySideToSource) {
+            return false;
+          }
         }
       }
 
@@ -1566,7 +1576,8 @@ namespace detail {
         return false;
       }
       if (!hvacComponent.optionalCast<StraightComponent>() && !hvacComponent.optionalCast<CoilHeatingWater>()
-          && !hvacComponent.optionalCast<CoilCoolingWater>() && !hvacComponent.optionalCast<WaterToWaterComponent>()) {
+          && !hvacComponent.optionalCast<CoilCoolingWater>() && !hvacComponent.optionalCast<CoilUserDefined>()
+          && !hvacComponent.optionalCast<WaterToWaterComponent>()) {
         return false;
       }
       if (auto waterToAir = hvacComponent.optionalCast<CoilHeatingWater>()) {
@@ -1574,6 +1585,10 @@ namespace detail {
           return false;
         }
       } else if (auto waterToAir = hvacComponent.optionalCast<CoilCoolingWater>()) {
+        if (tertiary || waterToAir->plantLoop()) {
+          return false;
+        }
+      } else if (auto waterToAir = hvacComponent.optionalCast<CoilUserDefined>()) {
         if (tertiary || waterToAir->plantLoop()) {
           return false;
         }

@@ -593,7 +593,8 @@ namespace epmodel {
       for (unsigned i = 0; i < groups.size(); ++i) {
         if (openstudio::istringEqual(*thisName, detail::transientSpeedDataName(parent, i))) {
           const auto previousCount = static_cast<unsigned>(groups.size());
-          const bool detached = speed.setName(detachedTransientSpeedDataName()).has_value();
+          auto detachedSpeed = speed;
+          const bool detached = detachedSpeed.setName(detachedTransientSpeedDataName()).has_value();
           OS_ASSERT(detached);
           getObject<ModelObject>().eraseExtensibleGroup(i);
           const auto remainingSpeeds = static_cast<int>(getObject<ModelObject>().numExtensibleGroups());

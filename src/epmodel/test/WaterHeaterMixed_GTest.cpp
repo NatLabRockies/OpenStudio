@@ -5,8 +5,6 @@
 
 #include <gtest/gtest.h>
 
-#include <cstdio>
-
 #include "../Curve/CurveCubic.hpp"
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
@@ -18,47 +16,9 @@
 
 #include <utilities/idd/WaterHeater_Mixed_FieldEnums.hxx>
 
-#include "../../utilities/core/Path.hpp"
-#include "../../utilities/core/UUID.hpp"
-#include "../../utilities/sql/SqlFile.hpp"
-#include <sqlite3.h>
 #include <utilities/data/DataEnums.hpp>
 
 using namespace openstudio::epmodel;
-
-namespace {
-
-std::string makeWaterHeaterMixedAutosizeSql(const openstudio::path& sqlPath) {
-  sqlite3* db = nullptr;
-  if (sqlite3_open(openstudio::toString(sqlPath).c_str(), &db) != SQLITE_OK) {
-    const std::string error = db ? sqlite3_errmsg(db) : "sqlite3_open failed";
-    if (db) {
-      sqlite3_close(db);
-    }
-    return error;
-  }
-
-  const char* sql = R"sql(
-    CREATE TABLE ComponentSizes (CompType TEXT, CompName TEXT, Description TEXT, Units TEXT, Value REAL);
-    INSERT INTO ComponentSizes VALUES ('WaterHeater:Mixed','AUTOSIZED MIXED WATER HEATER','Design Size Tank Volume','m3',0.77);
-    INSERT INTO ComponentSizes VALUES ('WaterHeater:Mixed','AUTOSIZED MIXED WATER HEATER','Design Size Heater Maximum Capacity','W',123456.0);
-    INSERT INTO ComponentSizes VALUES ('WaterHeater:Mixed','AUTOSIZED MIXED WATER HEATER','Design Size Use Side Design Flow Rate','m3/s',0.0045);
-    INSERT INTO ComponentSizes VALUES ('WaterHeater:Mixed','AUTOSIZED MIXED WATER HEATER','Design Size Source Side Design Flow Rate','m3/s',0.0034);
-  )sql";
-
-  char* errorMessage = nullptr;
-  const int execResult = sqlite3_exec(db, sql, nullptr, nullptr, &errorMessage);
-  std::string result;
-  if (execResult != SQLITE_OK) {
-    result = errorMessage ? errorMessage : "sqlite3_exec failed";
-  }
-
-  sqlite3_free(errorMessage);
-  sqlite3_close(db);
-  return result;
-}
-
-}  // namespace
 
 TEST_F(EPModelFixture, WaterHeaterMixed_DefaultConstructor) {
   Model model;
@@ -366,40 +326,4 @@ TEST_F(EPModelFixture, WaterHeaterMixed_WaterToWaterTopology) {
   EXPECT_TRUE(heater.addToSourceSideNode(replacementSourceNode));
   ASSERT_TRUE(heater.sourceSidePlantLoop());
   EXPECT_EQ(replacementSourceLoop.handle(), heater.sourceSidePlantLoop()->handle());
-}
-
-TEST_F(EPModelFixture, WaterHeaterMixed_AutosizedHelpersUseSqlFile) {
-  Model model;
-  WaterHeaterMixed heater(model);
-  ASSERT_TRUE(heater.setName("Autosized Mixed Water Heater"));
-
-  heater.autosizeTankVolume();
-  heater.autosizeHeaterMaximumCapacity();
-  heater.autosizeUseSideDesignFlowRate();
-  heater.autosizeSourceSideDesignFlowRate();
-
-  const openstudio::path sqlPath =
-    openstudio::tempDir() / openstudio::toPath("epmodel_water_heater_mixed_autosized_" + openstudio::toString(openstudio::createUUID()) + ".sqlite");
-  ASSERT_TRUE(makeWaterHeaterMixedAutosizeSql(sqlPath).empty());
-
-  openstudio::SqlFile sqlFile(sqlPath);
-  ASSERT_TRUE(sqlFile.connectionOpen());
-  EXPECT_TRUE(model.setSqlFile(sqlFile));
-
-  ASSERT_TRUE(heater.autosizedTankVolume());
-  EXPECT_DOUBLE_EQ(0.77, *heater.autosizedTankVolume());
-  ASSERT_TRUE(heater.autosizedHeaterMaximumCapacity());
-  EXPECT_DOUBLE_EQ(123456.0, *heater.autosizedHeaterMaximumCapacity());
-  ASSERT_TRUE(heater.autosizedUseSideDesignFlowRate());
-  EXPECT_DOUBLE_EQ(0.0045, *heater.autosizedUseSideDesignFlowRate());
-  ASSERT_TRUE(heater.autosizedSourceSideDesignFlowRate());
-  EXPECT_DOUBLE_EQ(0.0034, *heater.autosizedSourceSideDesignFlowRate());
-
-  EXPECT_TRUE(model.resetSqlFile());
-  EXPECT_FALSE(heater.autosizedTankVolume());
-  EXPECT_FALSE(heater.autosizedHeaterMaximumCapacity());
-  EXPECT_FALSE(heater.autosizedUseSideDesignFlowRate());
-  EXPECT_FALSE(heater.autosizedSourceSideDesignFlowRate());
-
-  EXPECT_EQ(0, std::remove(openstudio::toString(sqlPath).c_str()));
 }

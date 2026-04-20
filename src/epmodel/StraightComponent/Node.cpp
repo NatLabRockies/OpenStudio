@@ -144,7 +144,7 @@ namespace epmodel {
     boost::optional<PlantLoop> Node_Impl::plantLoop() const {
       const auto thisNode = getObject<openstudio::epmodel::Node>();
       for (const auto& plantLoop : model().getConcreteModelObjects<openstudio::epmodel::PlantLoop>()) {
-        if (plantLoop.component(thisNode.handle())) {
+        if (plantLoop.getImpl<detail::PlantLoop_Impl>()->branchForNode(thisNode)) {
           return plantLoop;
         }
       }

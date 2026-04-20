@@ -41,6 +41,7 @@ ChillerElectricEIR::ChillerElectricEIR(const Model& model, const Curve& CCFofT, 
   OS_ASSERT(setCondenserHeatRecoveryRelativeCapacityFraction(1.0));
   resetHeatRecoveryLeavingTemperatureSetpointNode();
   resetHeatRecoveryInletHighTemperatureLimitSchedule();
+  OS_ASSERT(setCondenserType("AirCooled"));
   OS_ASSERT(setEndUseSubcategory("General"));
   OS_ASSERT(setCondenserFlowControl("ConstantFlow"));
   OS_ASSERT(setCondenserMinimumFlowFraction(0.2));
@@ -91,6 +92,7 @@ ChillerElectricEIR::ChillerElectricEIR(const Model& model) : WaterToWaterCompone
   OS_ASSERT(setCondenserHeatRecoveryRelativeCapacityFraction(1.0));
   resetHeatRecoveryLeavingTemperatureSetpointNode();
   resetHeatRecoveryInletHighTemperatureLimitSchedule();
+  OS_ASSERT(setCondenserType("AirCooled"));
   OS_ASSERT(setEndUseSubcategory("General"));
   OS_ASSERT(setCondenserFlowControl("ConstantFlow"));
   OS_ASSERT(setCondenserMinimumFlowFraction(0.2));
@@ -892,13 +894,14 @@ bool ChillerElectricEIR_Impl::isCondenserTypeDefaulted() const {
 bool ChillerElectricEIR_Impl::setCondenserType(const std::string& condenserType) {
   if ((openstudio::istringEqual(condenserType, "AirCooled") || openstudio::istringEqual(condenserType, "EvaporativelyCooled"))
       && secondaryPlantLoop()) {
-    LOG(Warn, "Cannot set condenserType to AirCooled or EvaporativelyCooled, chiller '" << name()
-                                                                                           << "' is connected to a secondaryPlantLoop");
+    LOG_FREE(Warn, "openstudio.epmodel.ChillerElectricEIR",
+             "Cannot set condenserType to AirCooled or EvaporativelyCooled, chiller '" << name() << "' is connected to a secondaryPlantLoop");
     return false;
   }
 
   if (openstudio::istringEqual(condenserType, "WaterCooled") && !secondaryPlantLoop()) {
-    LOG(Warn, "Cannot set condenserType to 'WaterCooled', chiller '" << name() << "' is not connected to a secondaryPlantLoop");
+    LOG_FREE(Warn, "openstudio.epmodel.ChillerElectricEIR",
+             "Cannot set condenserType to 'WaterCooled', chiller '" << name() << "' is not connected to a secondaryPlantLoop");
     return false;
   }
 

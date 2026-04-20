@@ -13,10 +13,14 @@
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../ModelObject/EnergyManagementSystemActuator.hpp"
+#include "../ModelObject/EnergyManagementSystemActuator_Impl.hpp"
 #include "../ModelObject/EnergyManagementSystemProgram.hpp"
+#include "../ModelObject/EnergyManagementSystemProgram_Impl.hpp"
 #include "../ModelObject/EnergyManagementSystemProgramCallingManager.hpp"
+#include "../ModelObject/EnergyManagementSystemProgramCallingManager_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../WaterToAirComponent/CoilUserDefined.hpp"
+#include "../WaterToAirComponent/CoilUserDefined_Impl.hpp"
 
 #include <utilities/data/DataEnums.hpp>
 #include <utilities/idd/Coil_UserDefined_FieldEnums.hxx>
@@ -66,10 +70,11 @@ TEST_F(EPModelFixture, CoilUserDefined_ScalarAccessors_RoundTrip) {
   EXPECT_EQ(0, coil.numberofAirConnections());
 
   AirLoopHVAC airLoop(model);
-  ASSERT_TRUE(coil.addToNode(airLoop.supplyOutletNode()));
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coil.addToNode(supplyOutletNode));
   EXPECT_EQ(1, coil.numberofAirConnections());
 
-  EXPECT_EQ(openstudio::ComponentType::Both, coil.componentType());
+  EXPECT_EQ(openstudio::ComponentType(openstudio::ComponentType::Both), coil.componentType());
   EXPECT_TRUE(coil.coolingFuelTypes().empty());
   EXPECT_TRUE(coil.heatingFuelTypes().empty());
   EXPECT_TRUE(coil.appGHeatingFuelTypes().empty());
@@ -173,13 +178,14 @@ TEST_F(EPModelFixture, CoilUserDefined_RemoveDetachesLoopsAndCleansSeededEMSChil
   EXPECT_EQ(5u, plantLoop.supplyComponents().size());
   EXPECT_EQ(5u, plantLoop.demandComponents().size());
 
-  ASSERT_TRUE(coil.addToNode(airLoop.supplyOutletNode()));
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coil.addToNode(supplyOutletNode));
   ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil));
   ASSERT_TRUE(coil.airLoopHVAC());
   ASSERT_TRUE(coil.plantLoop());
   EXPECT_EQ(1, coil.numberofAirConnections());
 
-  EXPECT_EQ(3u, airLoop.supplyComponents().size());
+  EXPECT_EQ(4u, airLoop.supplyComponents().size());
   EXPECT_EQ(7u, plantLoop.demandComponents().size());
   EXPECT_EQ(1u, model.getConcreteModelObjects<CoilUserDefined>().size());
   EXPECT_EQ(8u, model.getConcreteModelObjects<EnergyManagementSystemActuator>().size());

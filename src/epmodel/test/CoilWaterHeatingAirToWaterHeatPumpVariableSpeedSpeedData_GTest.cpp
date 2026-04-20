@@ -93,7 +93,8 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_
   const auto speedHandle = speed.handle();
 
   EXPECT_EQ(1u, model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>(true).size());
-  EXPECT_EQ(6u, model.getConcreteModelObjects<Curve>(true).size());
+  EXPECT_EQ(2u, model.getObjectsByType(openstudio::IddObjectType::Curve_Biquadratic, true).size());
+  EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::Curve_Cubic, true).size());
 
   speed.remove();
 
@@ -101,5 +102,6 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_
   EXPECT_TRUE(std::none_of(remainingSpeeds.begin(), remainingSpeeds.end(),
                            [&](const auto& candidate) { return candidate.handle() == speedHandle; }));
   EXPECT_TRUE(remainingSpeeds.empty());
-  EXPECT_TRUE(model.getConcreteModelObjects<Curve>(true).empty());
+  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::Curve_Biquadratic, true).empty());
+  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::Curve_Cubic, true).empty());
 }

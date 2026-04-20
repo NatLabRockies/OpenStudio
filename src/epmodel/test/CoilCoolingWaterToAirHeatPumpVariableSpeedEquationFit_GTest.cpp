@@ -7,6 +7,7 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/AirflowNetworkDistributionComponentCoil.hpp"
+#include "../ModelObject/AirflowNetworkDistributionComponentCoil_Impl.hpp"
 #include "../Curve/CurveBiquadratic.hpp"
 #include "../Curve/CurveBiquadratic_Impl.hpp"
 #include "../Curve/CurveLinear.hpp"
@@ -16,6 +17,7 @@
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../ParentObject/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData.hpp"
+#include "../ParentObject/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData_Impl.hpp"
 #include "../Schedule/Schedule.hpp"
 #include "../Schedule/Schedule_Impl.hpp"
 #include "../Schedule/ScheduleConstant.hpp"

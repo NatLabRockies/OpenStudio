@@ -16,6 +16,7 @@
 #include "../ModelObject/AirflowNetworkDistributionComponentCoil_Impl.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../HVACComponent/ControllerWaterCoil.hpp"
+#include "../HVACComponent/ControllerWaterCoil_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../Schedule/Schedule.hpp"
@@ -233,7 +234,8 @@ TEST_F(EPModelFixture, CoilCoolingWater_RemoveCleansUpAttachedControllerWaterCoi
   AirLoopHVAC airLoop(model);
   PlantLoop plantLoop(model);
 
-  ASSERT_TRUE(coil.addToNode(airLoop.supplyOutletNode()));
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coil.addToNode(supplyOutletNode));
   ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil));
   ASSERT_EQ(1u, model.getConcreteModelObjects<ControllerWaterCoil>().size());
 

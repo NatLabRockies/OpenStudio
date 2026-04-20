@@ -570,7 +570,9 @@ bool ChillerElectric_Impl::removeFromSecondaryPlantLoop() {
 
 std::string ChillerElectric_Impl::condenserType() const {
   if (auto value = getString(openstudio::Chiller_ElectricFields::CondenserType, false)) {
-    return *value;
+    if (!value->empty()) {
+      return *value;
+    }
   }
   return "AirCooled";
 }
@@ -886,7 +888,9 @@ void ChillerElectric_Impl::resetChilledWaterOutletTemperatureLowerLimit() {
 
 std::string ChillerElectric_Impl::chillerFlowMode() const {
   if (auto value = getString(openstudio::Chiller_ElectricFields::ChillerFlowMode, false)) {
-    return *value;
+    if (!value->empty()) {
+      return *value;
+    }
   }
   return "NotModulated";
 }

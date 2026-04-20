@@ -10,8 +10,12 @@
 #include "EPModelFixture.hpp"
 #include "../Curve/Curve.hpp"
 #include "../Curve/CurveBiquadratic.hpp"
+#include "../Curve/CurveBiquadratic_Impl.hpp"
 #include "../Curve/CurveQuadratic.hpp"
+#include "../Curve/CurveQuadratic_Impl.hpp"
 #include "../Schedule/Schedule.hpp"
+#include "../Schedule/Schedule_Impl.hpp"
+#include "../Splitter/ConnectorSplitter.hpp"
 #include "../Splitter/Splitter.hpp"
 #include "../WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPump.hpp"
 #include "../StraightComponent/Node.hpp"
@@ -138,7 +142,7 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPump_WaterToAirPortsWithout
   Model model;
   CoilWaterHeatingAirToWaterHeatPump coil(model);
   Node node(model);
-  Splitter splitter(model);
+  ConnectorSplitter splitter(model);
 
   EXPECT_EQ(openstudio::Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::EvaporatorAirInletNodeName, coil.airInletPort());
   EXPECT_EQ(openstudio::Coil_WaterHeating_AirToWaterHeatPump_PumpedFields::EvaporatorAirOutletNodeName, coil.airOutletPort());
@@ -180,7 +184,7 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPump_ScalarAccessors_RoundT
   EXPECT_DOUBLE_EQ(0.52, coil.ratedEvaporatorAirFlowRate().get());
   coil.autosizeRatedEvaporatorAirFlowRate();
   EXPECT_TRUE(coil.isRatedEvaporatorAirFlowRateAutosized());
-  EXPECT_EQ(boost::none, coil.autosizedRatedEvaporatorAirFlowRate());
+  EXPECT_FALSE(coil.autosizedRatedEvaporatorAirFlowRate());
   EXPECT_TRUE(coil.setRatedEvaporatorAirFlowRate(0.53));
   EXPECT_FALSE(coil.isRatedEvaporatorAirFlowRateAutosized());
   ASSERT_TRUE(coil.ratedEvaporatorAirFlowRate());
@@ -192,7 +196,7 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPump_ScalarAccessors_RoundT
   EXPECT_DOUBLE_EQ(0.12, coil.ratedCondenserWaterFlowRate().get());
   coil.autosizeRatedCondenserWaterFlowRate();
   EXPECT_TRUE(coil.isRatedCondenserWaterFlowRateAutosized());
-  EXPECT_EQ(boost::none, coil.autosizedRatedCondenserWaterFlowRate());
+  EXPECT_FALSE(coil.autosizedRatedCondenserWaterFlowRate());
   EXPECT_TRUE(coil.setRatedCondenserWaterFlowRate(0.13));
   EXPECT_FALSE(coil.isRatedCondenserWaterFlowRateAutosized());
   ASSERT_TRUE(coil.ratedCondenserWaterFlowRate());

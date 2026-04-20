@@ -293,6 +293,10 @@ std::vector<IdfObject> CoilHeatingWater_Impl::remove() {
     return {};
   }
 
+  if (auto controller = inferControllerForCoil(getObject<openstudio::epmodel::CoilHeatingWater>())) {
+    controller->remove();
+  }
+
   for (auto& afnComponent : attachedAirflowNetworkDistributionComponentCoils(getObject<ModelObject>())) {
     afnComponent.remove();
   }

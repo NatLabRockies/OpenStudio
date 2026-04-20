@@ -393,8 +393,7 @@ unsigned CoilUserDefined_Impl::waterOutletPort() const {
 }
 
 int CoilUserDefined_Impl::numberofAirConnections() const {
-  if (getObject<openstudio::epmodel::CoilUserDefined>().airLoopHVAC()
-      || getObject<openstudio::epmodel::CoilUserDefined>().containingHVACComponent()) {
+  if (airInletModelObject() && airOutletModelObject()) {
     return 1;
   }
   return 0;

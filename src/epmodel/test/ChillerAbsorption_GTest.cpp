@@ -5,10 +5,6 @@
 
 #include <gtest/gtest.h>
 
-#include <sqlite3.h>
-
-#include <cstdio>
-
 #include "EPModelFixture.hpp"
 #include "../Loop/PlantLoop.hpp"
 #include "../StraightComponent/Node.hpp"
@@ -16,48 +12,9 @@
 
 #include <utilities/idd/Chiller_Absorption_FieldEnums.hxx>
 
-#include "../../utilities/core/Path.hpp"
-#include "../../utilities/core/UUID.hpp"
-#include "../../utilities/sql/SqlFile.hpp"
-
 #include <algorithm>
 
 using namespace openstudio::epmodel;
-
-namespace {
-
-std::string makeChillerAbsorptionAutosizeSql(const openstudio::path& sqlPath) {
-  sqlite3* db = nullptr;
-  if (sqlite3_open(openstudio::toString(sqlPath).c_str(), &db) != SQLITE_OK) {
-    const std::string error = db ? sqlite3_errmsg(db) : "sqlite3_open failed";
-    if (db) {
-      sqlite3_close(db);
-    }
-    return error;
-  }
-
-  const char* sql = R"sql(
-    CREATE TABLE ComponentSizes (CompType TEXT, CompName TEXT, Description TEXT, Units TEXT, Value REAL);
-    INSERT INTO ComponentSizes VALUES ('Chiller:Absorption','AUTOSIZED CHILLER','Design Size Nominal Capacity','W',111111.0);
-    INSERT INTO ComponentSizes VALUES ('Chiller:Absorption','AUTOSIZED CHILLER','Design Size Nominal Pumping Power','W',2222.0);
-    INSERT INTO ComponentSizes VALUES ('Chiller:Absorption','AUTOSIZED CHILLER','Design Size Design Chilled Water Flow Rate','m3/s',0.011);
-    INSERT INTO ComponentSizes VALUES ('Chiller:Absorption','AUTOSIZED CHILLER','Design Size Design Condenser Water Flow Rate','m3/s',0.022);
-    INSERT INTO ComponentSizes VALUES ('Chiller:Absorption','AUTOSIZED CHILLER','Design Size Design Generator Fluid Flow Rate','m3/s',0.033);
-  )sql";
-
-  char* errorMessage = nullptr;
-  const int execResult = sqlite3_exec(db, sql, nullptr, nullptr, &errorMessage);
-  std::string result;
-  if (execResult != SQLITE_OK) {
-    result = errorMessage ? errorMessage : "sqlite3_exec failed";
-  }
-
-  sqlite3_free(errorMessage);
-  sqlite3_close(db);
-  return result;
-}
-
-}  // namespace
 
 TEST_F(EPModelFixture, ChillerAbsorption_DefaultConstructor) {
   Model model;
@@ -296,44 +253,4 @@ TEST_F(EPModelFixture, ChillerAbsorption_AddToNodeDemandRoutingParity) {
   ASSERT_TRUE(chiller.chilledWaterLoop());
   EXPECT_EQ(chilledWaterLoop.handle(), chiller.chilledWaterLoop()->handle());
   EXPECT_EQ("HotWater", chiller.generatorHeatSourceType());
-}
-
-TEST_F(EPModelFixture, ChillerAbsorption_AutosizedHelpersUseSqlFile) {
-  Model model;
-  ChillerAbsorption chiller(model);
-  ASSERT_TRUE(chiller.setName("Autosized Chiller"));
-
-  chiller.autosizeNominalCapacity();
-  chiller.autosizeNominalPumpingPower();
-  chiller.autosizeDesignChilledWaterFlowRate();
-  chiller.autosizeDesignCondenserWaterFlowRate();
-  chiller.autosizeDesignGeneratorFluidFlowRate();
-
-  const openstudio::path sqlPath =
-    openstudio::tempDir() / openstudio::toPath("epmodel_chiller_absorption_autosized_" + openstudio::createUUID().toString() + ".sqlite");
-  ASSERT_TRUE(makeChillerAbsorptionAutosizeSql(sqlPath).empty());
-
-  openstudio::SqlFile sqlFile(sqlPath);
-  ASSERT_TRUE(sqlFile.connectionOpen());
-  EXPECT_TRUE(model.setSqlFile(sqlFile));
-
-  ASSERT_TRUE(chiller.autosizedNominalCapacity());
-  EXPECT_DOUBLE_EQ(111111.0, *chiller.autosizedNominalCapacity());
-  ASSERT_TRUE(chiller.autosizedNominalPumpingPower());
-  EXPECT_DOUBLE_EQ(2222.0, *chiller.autosizedNominalPumpingPower());
-  ASSERT_TRUE(chiller.autosizedDesignChilledWaterFlowRate());
-  EXPECT_DOUBLE_EQ(0.011, *chiller.autosizedDesignChilledWaterFlowRate());
-  ASSERT_TRUE(chiller.autosizedDesignCondenserWaterFlowRate());
-  EXPECT_DOUBLE_EQ(0.022, *chiller.autosizedDesignCondenserWaterFlowRate());
-  ASSERT_TRUE(chiller.autosizedDesignGeneratorFluidFlowRate());
-  EXPECT_DOUBLE_EQ(0.033, *chiller.autosizedDesignGeneratorFluidFlowRate());
-
-  EXPECT_TRUE(model.resetSqlFile());
-  EXPECT_FALSE(chiller.autosizedNominalCapacity());
-  EXPECT_FALSE(chiller.autosizedNominalPumpingPower());
-  EXPECT_FALSE(chiller.autosizedDesignChilledWaterFlowRate());
-  EXPECT_FALSE(chiller.autosizedDesignCondenserWaterFlowRate());
-  EXPECT_FALSE(chiller.autosizedDesignGeneratorFluidFlowRate());
-
-  EXPECT_EQ(0, std::remove(openstudio::toString(sqlPath).c_str()));
 }

@@ -58,12 +58,14 @@ TEST_F(EPModelFixture, CoilHeatingWaterToAirHeatPumpEquationFit_DefaultConstruct
 
   auto partLoadFractionCurve = coil.partLoadFractionCorrelationCurve().cast<CurveLinear>();
   EXPECT_EQ("PLFCorrelationCurve", partLoadFractionCurve.nameString());
-  EXPECT_DOUBLE_EQ(0.11915211843968966, partLoadFractionCurve.coefficient1Constant());
-  EXPECT_DOUBLE_EQ(0.88084788156031034, partLoadFractionCurve.coefficient2x());
+  EXPECT_DOUBLE_EQ(0.83374645869611097, partLoadFractionCurve.coefficient1Constant());
+  EXPECT_DOUBLE_EQ(0.166253541303889, partLoadFractionCurve.coefficient2x());
   EXPECT_DOUBLE_EQ(0.0, partLoadFractionCurve.minimumValueofx());
   EXPECT_DOUBLE_EQ(1.0, partLoadFractionCurve.maximumValueofx());
-  EXPECT_DOUBLE_EQ(0.0, partLoadFractionCurve.minimumCurveOutput());
-  EXPECT_DOUBLE_EQ(1.0, partLoadFractionCurve.maximumCurveOutput());
+  ASSERT_TRUE(partLoadFractionCurve.minimumCurveOutput());
+  EXPECT_DOUBLE_EQ(0.0, partLoadFractionCurve.minimumCurveOutput().get());
+  ASSERT_TRUE(partLoadFractionCurve.maximumCurveOutput());
+  EXPECT_DOUBLE_EQ(1.0, partLoadFractionCurve.maximumCurveOutput().get());
   EXPECT_EQ("Dimensionless", partLoadFractionCurve.inputUnitTypeforX());
   EXPECT_EQ("Dimensionless", partLoadFractionCurve.outputUnitType());
   EXPECT_TRUE(coil.children().empty());

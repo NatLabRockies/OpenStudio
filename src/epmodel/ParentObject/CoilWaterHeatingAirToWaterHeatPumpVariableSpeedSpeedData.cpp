@@ -22,6 +22,8 @@
 #include <utilities/idd/OS_Coil_WaterHeating_AirToWaterHeatPump_VariableSpeed_SpeedData_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
+#include <algorithm>
+
 namespace openstudio {
 namespace epmodel {
 
@@ -439,10 +441,25 @@ std::vector<ModelObject> CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedDat
 }
 
 std::vector<IdfObject> CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_Impl::remove() {
+  std::vector<ModelObject> detachedChildren;
+  if (!parent()) {
+    for (const auto& child : children()) {
+      if (std::ranges::none_of(detachedChildren, [&](const auto& existing) { return existing.handle() == child.handle(); })) {
+        detachedChildren.push_back(child);
+      }
+    }
+  }
+
   if (auto currentParent = parent()) {
     currentParent->removeSpeed(getObject<openstudio::epmodel::CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>());
   }
-  return ParentObject_Impl::remove();
+
+  auto result = ParentObject_Impl::remove();
+  for (auto& child : detachedChildren) {
+    const auto removedChildren = child.remove();
+    result.insert(result.end(), removedChildren.begin(), removedChildren.end());
+  }
+  return result;
 }
 
 }  // namespace detail

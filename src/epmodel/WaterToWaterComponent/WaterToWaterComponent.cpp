@@ -102,6 +102,46 @@ bool WaterToWaterComponent::addToTertiaryNode(Node& node) {
 
 namespace detail {
 
+bool branchContainsComponentPorts(const Branch& branch, const Handle& componentHandle, const Node& inletNode, const Node& outletNode) {
+  const auto components = branch.components();
+  for (unsigned i = 0; i < components.size(); ++i) {
+    if (components[i].handle() != componentHandle) {
+      continue;
+    }
+    const auto componentInletNode = branch.componentInletNode(i);
+    const auto componentOutletNode = branch.componentOutletNode(i);
+    return componentInletNode && componentOutletNode && (*componentInletNode == inletNode) && (*componentOutletNode == outletNode);
+  }
+  return false;
+}
+
+boost::optional<PlantLoop> loopForComponentPorts(const Model& model, const Handle& componentHandle, const Node& inletNode, const Node& outletNode,
+                                                 const boost::optional<PlantLoop>& excludedLoop, bool supplySide) {
+  for (const auto& plantLoop_ : model.getConcreteModelObjects<openstudio::epmodel::PlantLoop>()) {
+    if (excludedLoop && (excludedLoop->handle() == plantLoop_.handle())) {
+      continue;
+    }
+    const auto plantLoopImpl = plantLoop_.getImpl<detail::PlantLoop_Impl>();
+    std::vector<Branch> branches;
+    if (supplySide) {
+      branches.push_back(plantLoopImpl->supplyInletBranch());
+      const auto equipmentBranches = plantLoopImpl->supplyEquipmentBranches();
+      branches.insert(branches.end(), equipmentBranches.begin(), equipmentBranches.end());
+      branches.push_back(plantLoopImpl->supplyOutletBranch());
+    } else {
+      branches.push_back(plantLoopImpl->demandInletBranch());
+      const auto equipmentBranches = plantLoopImpl->demandEquipmentBranches();
+      branches.insert(branches.end(), equipmentBranches.begin(), equipmentBranches.end());
+      branches.push_back(plantLoopImpl->demandOutletBranch());
+    }
+
+    if (std::ranges::any_of(branches, [&](const auto& branch) { return branchContainsComponentPorts(branch, componentHandle, inletNode, outletNode); })) {
+      return plantLoop_;
+    }
+  }
+  return boost::none;
+}
+
 boost::optional<ModelObject> WaterToWaterComponent_Impl::supplyInletModelObject() const {
   return getObject<ModelObject>().getModelObjectTarget<ModelObject>(supplyInletPort());
 }
@@ -243,32 +283,26 @@ void WaterToWaterComponent_Impl::disconnect() {
 
 boost::optional<PlantLoop> WaterToWaterComponent_Impl::plantLoop() const {
   auto tertiaryLoop = tertiaryPlantLoop();
-  const auto plantLoops = model().getConcreteModelObjects<openstudio::epmodel::PlantLoop>();
-  for (const auto& plantLoop_ : plantLoops) {
-    if (tertiaryLoop && (tertiaryLoop->handle() == plantLoop_.handle())) {
-      continue;
-    }
-    const auto supplyComponents = plantLoop_.supplyComponents(openstudio::IddObjectType::Catchall);
-    if (std::ranges::find_if(supplyComponents, [&](const auto& component) { return component.handle() == handle(); }) != supplyComponents.end()) {
-      return plantLoop_;
-    }
+
+  auto inletNode = getObject<ModelObject>().getModelObjectTarget<Node>(supplyInletPort());
+  auto outletNode = getObject<ModelObject>().getModelObjectTarget<Node>(supplyOutletPort());
+  if (!inletNode || !outletNode) {
+    return boost::none;
   }
-  return boost::none;
+
+  return loopForComponentPorts(model(), handle(), *inletNode, *outletNode, tertiaryLoop, true);
 }
 
 boost::optional<PlantLoop> WaterToWaterComponent_Impl::secondaryPlantLoop() const {
   auto tertiaryLoop = tertiaryPlantLoop();
-  const auto plantLoops = model().getConcreteModelObjects<openstudio::epmodel::PlantLoop>();
-  for (const auto& plantLoop_ : plantLoops) {
-    if (tertiaryLoop && (tertiaryLoop->handle() == plantLoop_.handle())) {
-      continue;
-    }
-    const auto demandComponents = plantLoop_.demandComponents(openstudio::IddObjectType::Catchall);
-    if (std::ranges::find_if(demandComponents, [&](const auto& component) { return component.handle() == handle(); }) != demandComponents.end()) {
-      return plantLoop_;
-    }
+
+  auto inletNode = getObject<ModelObject>().getModelObjectTarget<Node>(demandInletPort());
+  auto outletNode = getObject<ModelObject>().getModelObjectTarget<Node>(demandOutletPort());
+  if (!inletNode || !outletNode) {
+    return boost::none;
   }
-  return boost::none;
+
+  return loopForComponentPorts(model(), handle(), *inletNode, *outletNode, tertiaryLoop, false);
 }
 
 bool WaterToWaterComponent_Impl::removeFromBranch(unsigned inletPort, unsigned outletPort, const boost::optional<PlantLoop>& plantLoop_) {
@@ -357,12 +391,10 @@ boost::optional<PlantLoop> WaterToWaterComponent_Impl::tertiaryPlantLoop() const
     return boost::none;
   }
 
-  auto inletLoop = inletNode->plantLoop();
-  auto outletLoop = outletNode->plantLoop();
-  if (inletLoop && outletLoop && (inletLoop->handle() == outletLoop->handle())) {
-    return inletLoop;
+  if (auto supplyLoop = loopForComponentPorts(model(), handle(), *inletNode, *outletNode, boost::none, true)) {
+    return supplyLoop;
   }
-  return boost::none;
+  return loopForComponentPorts(model(), handle(), *inletNode, *outletNode, boost::none, false);
 }
 
 bool WaterToWaterComponent_Impl::shouldRouteDemandSideNodeToTertiary(const Node& node) const {
