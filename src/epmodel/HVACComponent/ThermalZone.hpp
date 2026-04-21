@@ -24,6 +24,7 @@ namespace epmodel {
   class SizingZone;
   class Thermostat;
   class ThermostatSetpointDualSetpoint;
+  class ZoneHVACEquipmentConnections;
   class ZoneControlContaminantController;
   class ZoneControlHumidistat;
 
@@ -131,6 +132,7 @@ namespace epmodel {
     OptionalModelObject returnAirModelObject() const;
     std::vector<ModelObject> returnAirModelObjects() const;
     Node zoneAirNode() const;
+    boost::optional<ZoneHVACEquipmentConnections> zoneHVACEquipmentConnections() const;
 
     std::vector<ModelObject> equipment() const;
     boost::optional<HVACComponent> airLoopHVACTerminal() const;

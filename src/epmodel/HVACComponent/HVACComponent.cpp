@@ -6,6 +6,8 @@
 #include "HVACComponent.hpp"
 #include "HVACComponent_Impl.hpp"
 #include "Model.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Loop/Loop.hpp"
@@ -105,11 +107,15 @@ namespace epmodel {
     boost::optional<AirLoopHVAC> HVACComponent_Impl::airLoopHVAC() const {
       // Resolve ownership through AirLoopHVAC traversal APIs so topology logic
       // remains centralized in supply/demand components implementations.
+      const auto thisObject = getObject<openstudio::epmodel::ModelObject>();
       const auto airLoops = model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>();
       for (const auto& airLoop : airLoops) {
-        const auto components = airLoop.components(openstudio::IddObjectType::Catchall);
-        for (const auto& component : components) {
-          if (component.handle() == handle()) {
+        if (airLoop.component(thisObject.handle())) {
+          return airLoop;
+        }
+
+        if (auto oaSystem = airLoop.airLoopHVACOutdoorAirSystem()) {
+          if (oaSystem->component(thisObject.handle())) {
             return airLoop;
           }
         }

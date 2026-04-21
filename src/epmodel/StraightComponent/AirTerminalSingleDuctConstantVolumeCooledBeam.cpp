@@ -313,34 +313,6 @@ namespace openstudio {
 namespace epmodel {
 namespace detail {
 
-boost::optional<openstudio::epmodel::AirLoopHVAC> AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::airLoopHVAC() const {
-  auto outletObject = outletModelObject();
-  auto outletNode = outletObject ? outletObject->optionalCast<openstudio::epmodel::Node>() : boost::none;
-  if (!outletNode) {
-    return boost::none;
-  }
-
-  boost::optional<openstudio::epmodel::ThermalZone> thermalZone;
-  for (const auto& zone : model().getConcreteModelObjects<openstudio::epmodel::ThermalZone>()) {
-    if (zone.zoneAirNode() == *outletNode) {
-      thermalZone = zone;
-      break;
-    }
-  }
-  if (!thermalZone) {
-    return boost::none;
-  }
-
-  for (const auto& airLoop : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
-    const auto loopZones = airLoop.thermalZones();
-    if (std::ranges::find(loopZones, *thermalZone) != loopZones.end()) {
-      return airLoop;
-    }
-  }
-
-  return boost::none;
-}
-
 std::string AirTerminalSingleDuctConstantVolumeCooledBeam_Impl::cooledBeamType() const {
   const auto value = getString(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_CooledBeamFields::CooledBeamType, true);
   OS_ASSERT(value);

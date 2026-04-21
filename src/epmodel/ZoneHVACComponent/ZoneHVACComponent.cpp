@@ -21,291 +21,281 @@
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 
+#include <algorithm>
+
 namespace openstudio {
 namespace epmodel {
 
-ZoneHVACComponent::ZoneHVACComponent(std::shared_ptr<detail::ZoneHVACComponent_Impl> impl) : HVACComponent(std::move(impl)) {}
+  ZoneHVACComponent::ZoneHVACComponent(std::shared_ptr<detail::ZoneHVACComponent_Impl> impl) : HVACComponent(std::move(impl)) {}
 
-ZoneHVACComponent::ZoneHVACComponent(IddObjectType type, const Model& model) : HVACComponent(type, model) {}
+  ZoneHVACComponent::ZoneHVACComponent(IddObjectType type, const Model& model) : HVACComponent(type, model) {}
 
-unsigned ZoneHVACComponent::inletPort() const {
-  return getImpl<detail::ZoneHVACComponent_Impl>()->inletPort();
-}
+  unsigned ZoneHVACComponent::inletPort() const {
+    return getImpl<detail::ZoneHVACComponent_Impl>()->inletPort();
+  }
 
-boost::optional<Node> ZoneHVACComponent::inletNode() const {
-  return getImpl<detail::ZoneHVACComponent_Impl>()->inletNode();
-}
+  boost::optional<Node> ZoneHVACComponent::inletNode() const {
+    return getImpl<detail::ZoneHVACComponent_Impl>()->inletNode();
+  }
 
-unsigned ZoneHVACComponent::outletPort() const {
-  return getImpl<detail::ZoneHVACComponent_Impl>()->outletPort();
-}
+  unsigned ZoneHVACComponent::outletPort() const {
+    return getImpl<detail::ZoneHVACComponent_Impl>()->outletPort();
+  }
 
-boost::optional<Node> ZoneHVACComponent::outletNode() const {
-  return getImpl<detail::ZoneHVACComponent_Impl>()->outletNode();
-}
+  boost::optional<Node> ZoneHVACComponent::outletNode() const {
+    return getImpl<detail::ZoneHVACComponent_Impl>()->outletNode();
+  }
 
-boost::optional<ThermalZone> ZoneHVACComponent::thermalZone() const {
-  return getImpl<detail::ZoneHVACComponent_Impl>()->thermalZone();
-}
+  boost::optional<ThermalZone> ZoneHVACComponent::thermalZone() const {
+    return getImpl<detail::ZoneHVACComponent_Impl>()->thermalZone();
+  }
 
-bool ZoneHVACComponent::addToThermalZone(ThermalZone& thermalZone) {
-  return getImpl<detail::ZoneHVACComponent_Impl>()->addToThermalZone(thermalZone);
-}
+  bool ZoneHVACComponent::addToThermalZone(ThermalZone& thermalZone) {
+    return getImpl<detail::ZoneHVACComponent_Impl>()->addToThermalZone(thermalZone);
+  }
 
-void ZoneHVACComponent::removeFromThermalZone() {
-  getImpl<detail::ZoneHVACComponent_Impl>()->removeFromThermalZone();
-}
+  void ZoneHVACComponent::removeFromThermalZone() {
+    getImpl<detail::ZoneHVACComponent_Impl>()->removeFromThermalZone();
+  }
 
-bool ZoneHVACComponent::setReturnPlenum(const ThermalZone& plenumZone) {
-  return getImpl<detail::ZoneHVACComponent_Impl>()->setReturnPlenum(plenumZone);
-}
+  bool ZoneHVACComponent::setReturnPlenum(const ThermalZone& plenumZone) {
+    return getImpl<detail::ZoneHVACComponent_Impl>()->setReturnPlenum(plenumZone);
+  }
 
-void ZoneHVACComponent::removeReturnPlenum() {
-  getImpl<detail::ZoneHVACComponent_Impl>()->removeReturnPlenum();
-}
+  void ZoneHVACComponent::removeReturnPlenum() {
+    getImpl<detail::ZoneHVACComponent_Impl>()->removeReturnPlenum();
+  }
 
-boost::optional<AirLoopHVACReturnPlenum> ZoneHVACComponent::returnPlenum() const {
-  return getImpl<detail::ZoneHVACComponent_Impl>()->returnPlenum();
-}
+  boost::optional<AirLoopHVACReturnPlenum> ZoneHVACComponent::returnPlenum() const {
+    return getImpl<detail::ZoneHVACComponent_Impl>()->returnPlenum();
+  }
 
-bool ZoneHVACComponent::addToNode(Node& node) {
-  return getImpl<detail::ZoneHVACComponent_Impl>()->addToNode(node);
-}
+  bool ZoneHVACComponent::addToNode(Node& node) {
+    return getImpl<detail::ZoneHVACComponent_Impl>()->addToNode(node);
+  }
 
-boost::optional<AirLoopHVAC> ZoneHVACComponent::airLoopHVAC() const {
-  return getImpl<detail::ZoneHVACComponent_Impl>()->airLoopHVAC();
-}
+  boost::optional<AirLoopHVAC> ZoneHVACComponent::airLoopHVAC() const {
+    return getImpl<detail::ZoneHVACComponent_Impl>()->airLoopHVAC();
+  }
 
-bool ZoneHVACComponent::removeFromAirLoopHVAC() {
-  return getImpl<detail::ZoneHVACComponent_Impl>()->removeFromAirLoopHVAC();
-}
+  bool ZoneHVACComponent::removeFromAirLoopHVAC() {
+    return getImpl<detail::ZoneHVACComponent_Impl>()->removeFromAirLoopHVAC();
+  }
 
-boost::optional<ModelObject> ZoneHVACComponent::airInletModelObject() const {
-  return getImpl<detail::ZoneHVACComponent_Impl>()->airInletModelObject();
-}
+  boost::optional<ModelObject> ZoneHVACComponent::airInletModelObject() const {
+    return getImpl<detail::ZoneHVACComponent_Impl>()->airInletModelObject();
+  }
 
-boost::optional<ModelObject> ZoneHVACComponent::airOutletModelObject() const {
-  return getImpl<detail::ZoneHVACComponent_Impl>()->airOutletModelObject();
-}
+  boost::optional<ModelObject> ZoneHVACComponent::airOutletModelObject() const {
+    return getImpl<detail::ZoneHVACComponent_Impl>()->airOutletModelObject();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-unsigned ZoneHVACComponent_Impl::inletPort() const {
-  return 0u;
-}
-
-unsigned ZoneHVACComponent_Impl::outletPort() const {
-  return 0u;
-}
-
-boost::optional<Node> ZoneHVACComponent_Impl::inletNode() const {
-  if (inletPort() == 0u) {
-    return boost::none;
-  }
-  return getObject<ModelObject>().getModelObjectTarget<Node>(inletPort());
-}
-
-boost::optional<Node> ZoneHVACComponent_Impl::outletNode() const {
-  if (outletPort() == 0u) {
-    return boost::none;
-  }
-  return getObject<ModelObject>().getModelObjectTarget<Node>(outletPort());
-}
-
-boost::optional<ThermalZone> ZoneHVACComponent_Impl::thermalZone() const {
-  const auto thisObject = getObject<ModelObject>();
-  for (const auto& zone : model().getConcreteModelObjects<ThermalZone>()) {
-    auto equipmentList = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentList();
-    if (!equipmentList) {
-      continue;
+    unsigned ZoneHVACComponent_Impl::inletPort() const {
+      return 0u;
     }
 
-    const auto equipment = equipmentList->equipment();
-    if (std::ranges::find(equipment, thisObject) != equipment.end()) {
-      return zone;
+    unsigned ZoneHVACComponent_Impl::outletPort() const {
+      return 0u;
     }
-  }
-  return boost::none;
-}
 
-bool ZoneHVACComponent_Impl::addToThermalZone(ThermalZone& thermalZone) {
-  if (thermalZone.model() != model()) {
-    return false;
-  }
-
-  removeFromThermalZone();
-
-  thermalZone.setUseIdealAirLoads(false);
-
-  auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
-  auto connections = zoneImpl->getZoneHVACEquipmentConnections();
-  auto equipmentList = zoneImpl->zoneHVACEquipmentList();
-  if (!equipmentList) {
-    ZoneHVACEquipmentList newEquipmentList(model());
-    if (!newEquipmentList.name()) {
-      newEquipmentList.createName();
-    }
-    OS_ASSERT(connections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName, newEquipmentList.handle()));
-    equipmentList = newEquipmentList;
-  }
-
-  if (!equipmentList->getImpl<detail::ZoneHVACEquipmentList_Impl>()->addEquipment(getObject<ModelObject>())) {
-    return false;
-  }
-
-  if (inletPort() != 0u && outletPort() != 0u) {
-    const auto objectName = getObject<ModelObject>().nameString();
-    auto inlet = model().getOrCreateTransientByName<Node>(objectName + " Air Inlet Node");
-    auto outlet = model().getOrCreateTransientByName<Node>(objectName + " Air Outlet Node");
-
-    if (!setPointer(inletPort(), inlet.handle(), false)) {
-      return false;
-    }
-    if (!setPointer(outletPort(), outlet.handle(), false)) {
-      return false;
-    }
-    if (!connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->setZoneAirInletNode(outlet)) {
-      return false;
-    }
-    if (!connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->setZoneReturnAirNode(inlet)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-void ZoneHVACComponent_Impl::removeFromThermalZone() {
-  auto zone = thermalZone();
-  if (!zone) {
-    disconnect();
-    return;
-  }
-
-  auto zoneImpl = zone->getImpl<detail::ThermalZone_Impl>();
-  if (auto equipmentList = zoneImpl->zoneHVACEquipmentList()) {
-    equipmentList->getImpl<detail::ZoneHVACEquipmentList_Impl>()->removeEquipment(getObject<ModelObject>());
-  }
-
-  if (auto connections = zoneImpl->zoneHVACEquipmentConnections()) {
-    if (auto zoneInlet = connections->zoneAirInletNode()) {
-      if (auto thisOutlet = outletNode(); thisOutlet && (*zoneInlet == *thisOutlet)) {
-        connections->setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName, Handle());
+    boost::optional<Node> ZoneHVACComponent_Impl::inletNode() const {
+      if (inletPort() == 0u) {
+        return boost::none;
       }
+      return getObject<ModelObject>().getModelObjectTarget<Node>(inletPort());
     }
-    if (auto zoneReturn = connections->zoneReturnAirNode()) {
-      if (auto thisInlet = inletNode(); thisInlet && (*zoneReturn == *thisInlet)) {
-        connections->setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName, Handle());
+
+    boost::optional<Node> ZoneHVACComponent_Impl::outletNode() const {
+      if (outletPort() == 0u) {
+        return boost::none;
       }
-    }
-  }
-
-  if (inletPort() != 0u) {
-    setPointer(inletPort(), Handle());
-  }
-  if (outletPort() != 0u) {
-    setPointer(outletPort(), Handle());
-  }
-
-  disconnect();
-}
-
-std::vector<IdfObject> ZoneHVACComponent_Impl::remove() {
-  removeFromThermalZone();
-  return HVACComponent_Impl::remove();
-}
-
-bool ZoneHVACComponent_Impl::addToNode(Node& node) {
-  auto airLoop = node.airLoopHVAC();
-  if (!airLoop) {
-    return false;
-  }
-
-  boost::optional<ThermalZone> zone;
-  for (const auto& candidateZone : model().getConcreteModelObjects<ThermalZone>()) {
-    auto connections = candidateZone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
-    if (!connections) {
-      continue;
+      return getObject<ModelObject>().getModelObjectTarget<Node>(outletPort());
     }
 
-    auto inletNode = connections->zoneAirInletNode();
-    auto returnNode = connections->zoneReturnAirNode();
-    if (inletNode && returnNode && (*inletNode == node) && (*returnNode == node)) {
-      zone = candidateZone;
-      break;
+    boost::optional<ThermalZone> ZoneHVACComponent_Impl::thermalZone() const {
+      const auto thisObject = getObject<ModelObject>();
+      for (const auto& zone : model().getConcreteModelObjects<ThermalZone>()) {
+        auto equipmentList = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentList();
+        if (!equipmentList) {
+          continue;
+        }
+
+        const auto equipment = equipmentList->equipment();
+        if (std::ranges::find(equipment, thisObject) != equipment.end()) {
+          return zone;
+        }
+      }
+      return boost::none;
     }
-  }
-  if (!zone) {
-    return false;
-  }
 
-  if (this->thermalZone()) {
-    removeFromThermalZone();
-  }
+    bool ZoneHVACComponent_Impl::addToThermalZone(ThermalZone& thermalZone) {
+      if (thermalZone.model() != model()) {
+        return false;
+      }
 
-  if (!addToThermalZone(*zone)) {
-    return false;
-  }
+      removeFromThermalZone();
 
-  if (inletPort() == 0u || outletPort() == 0u) {
-    return true;
-  }
+      thermalZone.setUseIdealAirLoads(false);
 
-  auto outlet = model().getOrCreateTransientByName<Node>(getObject<ModelObject>().nameString() + " Outlet Node");
-  if (!setPointer(inletPort(), node.handle(), false)) {
-    return false;
-  }
-  if (!setPointer(outletPort(), outlet.handle(), false)) {
-    return false;
-  }
+      auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
+      auto connections = zoneImpl->getZoneHVACEquipmentConnections();
+      std::vector<Node> inletNodes;
+      std::vector<Node> returnNodes;
 
-  auto connections = zone->getImpl<detail::ThermalZone_Impl>()->getZoneHVACEquipmentConnections();
-  if (!connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->setZoneAirInletNode(outlet)) {
-    return false;
-  }
-  return connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->setZoneReturnAirNode(node);
-}
+      if (inletPort() != 0u && outletPort() != 0u) {
+        const auto objectName = getObject<ModelObject>().nameString();
+        auto inlet = model().getOrCreateTransientByName<Node>(objectName + " Air Inlet Node");
+        auto outlet = model().getOrCreateTransientByName<Node>(objectName + " Air Outlet Node");
 
-boost::optional<AirLoopHVAC> ZoneHVACComponent_Impl::airLoopHVAC() const {
-  if (auto node = inletNode()) {
-    return node->airLoopHVAC();
-  }
-  return boost::none;
-}
+        if (!setPointer(inletPort(), inlet.handle(), false)) {
+          return false;
+        }
+        if (!setPointer(outletPort(), outlet.handle(), false)) {
+          return false;
+        }
+        inletNodes.push_back(outlet);
+        returnNodes.push_back(inlet);
+      }
 
-bool ZoneHVACComponent_Impl::removeFromAirLoopHVAC() {
-  return false;
-}
+      return connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->addEquipment(getObject<ModelObject>(), inletNodes, {}, returnNodes);
+    }
 
-boost::optional<ModelObject> ZoneHVACComponent_Impl::airInletModelObject() const {
-  if (auto node = inletNode()) {
-    return node->cast<ModelObject>();
-  }
-  return boost::none;
-}
+    void ZoneHVACComponent_Impl::removeFromThermalZone() {
+      auto zone = thermalZone();
+      if (!zone) {
+        disconnect();
+        return;
+      }
 
-boost::optional<ModelObject> ZoneHVACComponent_Impl::airOutletModelObject() const {
-  if (auto node = outletNode()) {
-    return node->cast<ModelObject>();
-  }
-  return boost::none;
-}
+      auto zoneImpl = zone->getImpl<detail::ThermalZone_Impl>();
+      if (auto connections = zoneImpl->zoneHVACEquipmentConnections()) {
+        std::vector<Node> inletNodes;
+        std::vector<Node> returnNodes;
+        if (auto thisOutlet = outletNode()) {
+          inletNodes.push_back(*thisOutlet);
+        }
+        if (auto thisInlet = inletNode()) {
+          returnNodes.push_back(*thisInlet);
+        }
+        connections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->removeEquipment(getObject<ModelObject>(), inletNodes, {}, returnNodes);
+      }
 
-bool ZoneHVACComponent_Impl::setReturnPlenum(const ThermalZone&) {
-  return false;
-}
+      if (inletPort() != 0u) {
+        setPointer(inletPort(), Handle());
+      }
+      if (outletPort() != 0u) {
+        setPointer(outletPort(), Handle());
+      }
 
-void ZoneHVACComponent_Impl::removeReturnPlenum() {}
+      disconnect();
+    }
 
-boost::optional<AirLoopHVACReturnPlenum> ZoneHVACComponent_Impl::returnPlenum() const {
-  return boost::none;
-}
+    std::vector<IdfObject> ZoneHVACComponent_Impl::remove() {
+      removeFromThermalZone();
+      return HVACComponent_Impl::remove();
+    }
 
-}  // namespace detail
+    bool ZoneHVACComponent_Impl::addToNode(Node& node) {
+      auto airLoop = node.airLoopHVAC();
+      if (!airLoop) {
+        return false;
+      }
+
+      boost::optional<ThermalZone> zone;
+      for (const auto& candidateZone : model().getConcreteModelObjects<ThermalZone>()) {
+        auto connections = candidateZone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+        if (!connections) {
+          continue;
+        }
+
+        const auto inletNodes = connections->zoneAirInletNodes();
+        const auto returnNodes = connections->zoneReturnAirNodes();
+        if ((std::ranges::find(inletNodes, node) != inletNodes.end()) && (std::ranges::find(returnNodes, node) != returnNodes.end())) {
+          zone = candidateZone;
+          break;
+        }
+      }
+      if (!zone) {
+        return false;
+      }
+
+      if (this->thermalZone()) {
+        removeFromThermalZone();
+      }
+
+      if (!addToThermalZone(*zone)) {
+        return false;
+      }
+
+      if (inletPort() == 0u || outletPort() == 0u) {
+        return true;
+      }
+
+      auto connections = zone->getImpl<detail::ThermalZone_Impl>()->getZoneHVACEquipmentConnections();
+      auto connectionsImpl = connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+      if (auto previousOutlet = outletNode()) {
+        connectionsImpl->removeZoneAirInletNode(*previousOutlet);
+      }
+      if (auto previousInlet = inletNode()) {
+        connectionsImpl->removeZoneReturnAirNode(*previousInlet);
+      }
+
+      auto outlet = model().getOrCreateTransientByName<Node>(getObject<ModelObject>().nameString() + " Outlet Node");
+      if (!setPointer(inletPort(), node.handle(), false)) {
+        return false;
+      }
+      if (!setPointer(outletPort(), outlet.handle(), false)) {
+        return false;
+      }
+
+      if (!connectionsImpl->addZoneAirInletNode(outlet)) {
+        return false;
+      }
+      return connectionsImpl->addZoneReturnAirNode(node);
+    }
+
+    boost::optional<AirLoopHVAC> ZoneHVACComponent_Impl::airLoopHVAC() const {
+      if (auto node = inletNode()) {
+        return node->airLoopHVAC();
+      }
+      return boost::none;
+    }
+
+    bool ZoneHVACComponent_Impl::removeFromAirLoopHVAC() {
+      return false;
+    }
+
+    boost::optional<ModelObject> ZoneHVACComponent_Impl::airInletModelObject() const {
+      if (auto node = inletNode()) {
+        return node->cast<ModelObject>();
+      }
+      return boost::none;
+    }
+
+    boost::optional<ModelObject> ZoneHVACComponent_Impl::airOutletModelObject() const {
+      if (auto node = outletNode()) {
+        return node->cast<ModelObject>();
+      }
+      return boost::none;
+    }
+
+    bool ZoneHVACComponent_Impl::setReturnPlenum(const ThermalZone&) {
+      return false;
+    }
+
+    void ZoneHVACComponent_Impl::removeReturnPlenum() {}
+
+    boost::optional<AirLoopHVACReturnPlenum> ZoneHVACComponent_Impl::returnPlenum() const {
+      return boost::none;
+    }
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

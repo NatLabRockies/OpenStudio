@@ -25,8 +25,6 @@ namespace detail {
       using StraightComponent_Impl::StraightComponent_Impl;
       virtual ~AirTerminalSingleDuctConstantVolumeCooledBeam_Impl() override = default;
 
-      boost::optional<openstudio::epmodel::AirLoopHVAC> airLoopHVAC() const override;
-
       unsigned inletPort() const override;
       unsigned outletPort() const override;
       bool addToNode(Node& node) override;

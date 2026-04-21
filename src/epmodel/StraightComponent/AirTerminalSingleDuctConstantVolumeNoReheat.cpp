@@ -13,11 +13,8 @@
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "Node.hpp"
-#include "HVACComponent/ThermalZone.hpp"
 #include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
-#include "ModelObject/ZoneHVACEquipmentConnections.hpp"
-#include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 
@@ -107,36 +104,6 @@ namespace epmodel {
       return AirTerminal_SingleDuct_ConstantVolume_NoReheatFields::AirOutletNodeName;
     }
 
-    boost::optional<openstudio::epmodel::AirLoopHVAC> AirTerminalSingleDuctConstantVolumeNoReheat_Impl::airLoopHVAC() const {
-      auto outletObject = outletModelObject();
-      auto outletNode = outletObject ? outletObject->optionalCast<openstudio::epmodel::Node>() : boost::none;
-      if (!outletNode) {
-        return boost::none;
-      }
-
-      boost::optional<openstudio::epmodel::ThermalZone> thermalZone;
-      for (const auto& connections : model().getConcreteModelObjects<openstudio::epmodel::ZoneHVACEquipmentConnections>()) {
-        auto zoneInlet = connections.zoneAirInletNode();
-        auto zone = connections.thermalZone();
-        if (zoneInlet && zone && (*zoneInlet == *outletNode)) {
-          thermalZone = zone;
-          break;
-        }
-      }
-      if (!thermalZone) {
-        return boost::none;
-      }
-
-      for (const auto& airLoop : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
-        const auto loopZones = airLoop.thermalZones();
-        if (std::ranges::find(loopZones, *thermalZone) != loopZones.end()) {
-          return airLoop;
-        }
-      }
-
-      return boost::none;
-    }
-
     boost::optional<openstudio::epmodel::ZoneHVACAirDistributionUnit>
       AirTerminalSingleDuctConstantVolumeNoReheat_Impl::zoneHVACAirDistributionUnit() const {
       auto terminal = getObject<openstudio::epmodel::ModelObject>();
@@ -149,16 +116,16 @@ namespace epmodel {
     }
 
     Schedule AirTerminalSingleDuctConstantVolumeNoReheat_Impl::availabilitySchedule() const {
-      auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
-        AirTerminal_SingleDuct_ConstantVolume_NoReheatFields::AvailabilityScheduleName);
+      auto schedule =
+        getObject<ModelObject>().getModelObjectTarget<Schedule>(AirTerminal_SingleDuct_ConstantVolume_NoReheatFields::AvailabilityScheduleName);
       if (!schedule) {
         LOG_FREE(Error, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeNoReheat",
                  "Required availability schedule not set, repairing persisted state with the model always-on discrete schedule");
         schedule = model().alwaysOnDiscreteSchedule();
         const bool ok = const_cast<AirTerminalSingleDuctConstantVolumeNoReheat_Impl*>(this)->setAvailabilitySchedule(*schedule);
         OS_ASSERT(ok);
-        schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
-          AirTerminal_SingleDuct_ConstantVolume_NoReheatFields::AvailabilityScheduleName);
+        schedule =
+          getObject<ModelObject>().getModelObjectTarget<Schedule>(AirTerminal_SingleDuct_ConstantVolume_NoReheatFields::AvailabilityScheduleName);
       }
       OS_ASSERT(schedule);
       return *schedule;

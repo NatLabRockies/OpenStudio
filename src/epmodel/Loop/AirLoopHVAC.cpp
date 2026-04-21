@@ -51,6 +51,10 @@
 #include "SetpointManager/SetpointManagerMixedAir_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
+#include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
+#include "ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
+#include "ModelObject/ZoneHVACEquipmentList.hpp"
+#include "ModelObject/ZoneHVACEquipmentList_Impl.hpp"
 #include "Schedule/Schedule.hpp"
 
 #include <algorithm>
@@ -392,8 +396,8 @@ namespace epmodel {
       return true;
     }
 
-    void AirLoopHVAC_Impl::rollbackReservedDemandBranchSlot(AirLoopHVACZoneSplitter& splitter, AirLoopHVACZoneMixer& mixer, unsigned targetBranchIndex,
-                                                            bool createdNewBranch) {
+    void AirLoopHVAC_Impl::rollbackReservedDemandBranchSlot(AirLoopHVACZoneSplitter& splitter, AirLoopHVACZoneMixer& mixer,
+                                                            unsigned targetBranchIndex, bool createdNewBranch) {
       if (!createdNewBranch) {
         return;
       }
@@ -406,29 +410,8 @@ namespace epmodel {
       std::vector<ThermalZone> zones;
 
       const auto inletNameMatches = [&](const ZoneHVACEquipmentConnections& conn) -> bool {
-        if (auto directInlet = conn.zoneAirInletNode()) {
-          return (*directInlet == zoneInletNode);
-        }
-
-        const auto inletNodeOrListName = conn.getString(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirInletNodeorNodeListName);
-        if (!inletNodeOrListName || inletNodeOrListName->empty()) {
-          return false;
-        }
-
-        if (openstudio::istringEqual(*inletNodeOrListName, zoneInletNode.nameString())) {
-          return true;
-        }
-
-        if (auto nodeList = m.getObjectByTypeAndName(openstudio::IddObjectType::NodeList, *inletNodeOrListName)) {
-          for (const auto& group : nodeList->extensibleGroups()) {
-            const auto listedNodeName = group.getString(openstudio::NodeListExtensibleFields::NodeName);
-            if (listedNodeName && openstudio::istringEqual(*listedNodeName, zoneInletNode.nameString())) {
-              return true;
-            }
-          }
-        }
-
-        return false;
+        const auto inletNodes = conn.zoneAirInletNodes();
+        return std::ranges::find(inletNodes, zoneInletNode) != inletNodes.end();
       };
 
       for (const auto& conn : m.getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
@@ -457,29 +440,8 @@ namespace epmodel {
       std::vector<ThermalZone> zones;
 
       const auto outletNameMatches = [&](const ZoneHVACEquipmentConnections& conn) -> bool {
-        if (auto directOutlet = conn.zoneReturnAirNode()) {
-          return (*directOutlet == zoneReturnNode);
-        }
-
-        const auto outletNodeOrListName = conn.getString(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneReturnAirNodeorNodeListName);
-        if (!outletNodeOrListName || outletNodeOrListName->empty()) {
-          return false;
-        }
-
-        if (openstudio::istringEqual(*outletNodeOrListName, zoneReturnNode.nameString())) {
-          return true;
-        }
-
-        if (auto nodeList = m.getObjectByTypeAndName(openstudio::IddObjectType::NodeList, *outletNodeOrListName)) {
-          for (const auto& group : nodeList->extensibleGroups()) {
-            const auto listedNodeName = group.getString(openstudio::NodeListExtensibleFields::NodeName);
-            if (listedNodeName && openstudio::istringEqual(*listedNodeName, zoneReturnNode.nameString())) {
-              return true;
-            }
-          }
-        }
-
-        return false;
+        const auto returnNodes = conn.zoneReturnAirNodes();
+        return std::ranges::find(returnNodes, zoneReturnNode) != returnNodes.end();
       };
 
       for (const auto& conn : m.getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
@@ -605,11 +567,11 @@ namespace epmodel {
       // guess which duplicate "really" belongs to the loop.
       auto removeDuplicateModelObject = [&](ModelObject duplicate, const std::string& roleDescription) {
         if (duplicate.remove().empty()) {
-          detail::addLoadWarning(context, "Failed to remove duplicate " + roleDescription + " '" + duplicate.nameString() + "' for AirLoopHVAC '" + loopName
-                                            + "'.");
+          detail::addLoadWarning(context, "Failed to remove duplicate " + roleDescription + " '" + duplicate.nameString() + "' for AirLoopHVAC '"
+                                            + loopName + "'.");
         } else {
-          detail::addLoadWarning(context, "Removed duplicate " + roleDescription + " '" + duplicate.nameString() + "' for AirLoopHVAC '" + loopName
-                                            + "'.");
+          detail::addLoadWarning(context,
+                                 "Removed duplicate " + roleDescription + " '" + duplicate.nameString() + "' for AirLoopHVAC '" + loopName + "'.");
         }
       };
 
@@ -1009,8 +971,13 @@ namespace epmodel {
         return false;
       }
 
-      auto zoneNode = conn->zoneAirInletNode();
-      if (!zoneNode || !airTerminal.addToNode(*zoneNode)) {
+      const auto zoneNodes = conn->zoneAirInletNodes();
+      if (zoneNodes.empty()) {
+        removeBranchForZone(thermalZone);
+        return false;
+      }
+      auto zoneNode = zoneNodes.front();
+      if (!airTerminal.addToNode(zoneNode)) {
         // Same rollback rule: once the zone is on the branch, failed terminal
         // insertion must remove the partial branch rather than only clearing
         // the reserved splitter/mixer slot.
@@ -1033,10 +1000,11 @@ namespace epmodel {
         return false;
       }
 
-      auto zoneNode = conn->zoneAirInletNode();
-      if (!zoneNode) {
+      const auto zoneNodes = conn->zoneAirInletNodes();
+      if (zoneNodes.empty()) {
         return false;
       }
+      const auto zoneNode = zoneNodes.front();
 
       auto splitter = zoneSplitter();
       auto mixer = zoneMixer();
@@ -1045,7 +1013,7 @@ namespace epmodel {
       const auto count = std::min(mixerInlets.size(), splitterOutlets.size());
       boost::optional<unsigned> branchIndex;
       for (unsigned i = 0; i < count; ++i) {
-        if (mixerInlets[i] == zoneNode->cast<ModelObject>()) {
+        if (mixerInlets[i] == zoneNode.cast<ModelObject>()) {
           branchIndex = i;
           break;
         }
@@ -1059,7 +1027,7 @@ namespace epmodel {
         return false;
       }
 
-      auto branchStraightComponents = resolveDemandBranchChain(*splitterOutletNode, *zoneNode);
+      auto branchStraightComponents = resolveDemandBranchChain(*splitterOutletNode, zoneNode);
       if (!branchStraightComponents) {
         LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
                  "Unable to resolve branch-local straight components for zone '" << thermalZone.nameString() << "' during removeBranchForZone.");
@@ -1416,6 +1384,30 @@ namespace epmodel {
           }
         };
 
+        auto appendZoneAirTerminals = [&](const ThermalZone& zone) {
+          const auto equipmentList = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentList();
+          if (!equipmentList) {
+            return;
+          }
+
+          for (const auto& equipment : equipmentList->equipment()) {
+            if (equipment.optionalCast<StraightComponent>()) {
+              appendDistinct(equipment);
+              continue;
+            }
+
+            const auto adu = equipment.optionalCast<ZoneHVACAirDistributionUnit>();
+            if (!adu) {
+              continue;
+            }
+
+            const auto terminal = adu->airTerminal();
+            if (terminal && terminal->optionalCast<StraightComponent>()) {
+              appendDistinct(*terminal);
+            }
+          }
+        };
+
         appendDistinct(splitterOutletObject);
 
         // Resolve terminal-driven leg internals once to avoid ambiguous
@@ -1436,6 +1428,7 @@ namespace epmodel {
             if (auto terminalOutletNode = terminalOutlet->optionalCast<Node>()) {
               if (auto zone = resolveZoneServedByInletNode(*terminalOutletNode)) {
                 appendDistinct(zone.get().cast<ModelObject>());
+                appendZoneAirTerminals(*zone);
                 zoneAdded = true;
               }
             }
@@ -1448,6 +1441,7 @@ namespace epmodel {
           if (auto mixerInletNode = mixerInletObject.optionalCast<Node>()) {
             if (auto zone = resolveZoneServedByReturnNode(*mixerInletNode)) {
               appendDistinct(zone.get().cast<ModelObject>());
+              appendZoneAirTerminals(*zone);
             }
           }
         }

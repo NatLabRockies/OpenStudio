@@ -81,12 +81,12 @@ TEST_F(EPModelFixture, ThermalZone_AddToNode_DemandBranchNode) {
   ASSERT_TRUE(zoneImpl);
   auto zoneConnections = zoneImpl->zoneHVACEquipmentConnections();
   ASSERT_TRUE(zoneConnections);
-  auto inletNode = zoneConnections->zoneAirInletNode();
-  ASSERT_TRUE(inletNode);
-  auto returnNode = zoneConnections->zoneReturnAirNode();
-  ASSERT_TRUE(returnNode);
-  EXPECT_EQ(updatedNode.cast<ModelObject>(), inletNode->cast<ModelObject>());
-  EXPECT_EQ(updatedNode.cast<ModelObject>(), returnNode->cast<ModelObject>());
+  const auto inletNodes = zoneConnections->zoneAirInletNodes();
+  ASSERT_EQ(1u, inletNodes.size());
+  const auto returnNodes = zoneConnections->zoneReturnAirNodes();
+  ASSERT_EQ(1u, returnNodes.size());
+  EXPECT_EQ(updatedNode.cast<ModelObject>(), inletNodes.front().cast<ModelObject>());
+  EXPECT_EQ(updatedNode.cast<ModelObject>(), returnNodes.front().cast<ModelObject>());
 
   const auto demandComps = airLoop.demandComponents();
   ASSERT_EQ(6u, demandComps.size());
