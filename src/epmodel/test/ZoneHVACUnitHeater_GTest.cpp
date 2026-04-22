@@ -7,7 +7,10 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
+#include "../ModelObject/ZoneHVACEquipmentList.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
@@ -92,9 +95,19 @@ TEST_F(EPModelFixture, ZoneHVACUnitHeater_TopologyAndChildren) {
   EXPECT_TRUE(unitHeater.outletNode());
   EXPECT_TRUE(unitHeater.fanOutletNode());
 
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(connections);
+  auto equipmentList = connections->zoneHVACEquipmentList();
+  EXPECT_EQ(1u, equipmentList.equipment().size());
+  EXPECT_EQ(1u, connections->zoneAirInletNodes().size());
+  EXPECT_EQ(1u, connections->zoneAirExhaustNodes().size());
+
   unitHeater.removeFromThermalZone();
   EXPECT_TRUE(unitHeater.inletNode());
   EXPECT_TRUE(unitHeater.outletNode());
+  EXPECT_TRUE(equipmentList.equipment().empty());
+  EXPECT_TRUE(connections->zoneAirInletNodes().empty());
+  EXPECT_TRUE(connections->zoneAirExhaustNodes().empty());
 
   const auto children = unitHeater.children();
   ASSERT_EQ(2u, children.size());

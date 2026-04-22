@@ -10,8 +10,8 @@
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections.hpp"
+#include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentList.hpp"
-#include "ModelObject/ZoneHVACEquipmentList_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -19,7 +19,8 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
-#include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
+
+#include <algorithm>
 
 namespace openstudio {
 namespace epmodel {
@@ -110,29 +111,52 @@ bool FanZoneExhaust_Impl::addToThermalZone(ThermalZone& thermalZone) {
   removeFromThermalZone();
   thermalZone.setUseIdealAirLoads(false);
 
-  auto inletNode = model().getOrCreateTransientByName<Node>(getObject<ModelObject>().nameString() + " Air Inlet Node");
-  auto outletNode = model().getOrCreateTransientByName<Node>(getObject<ModelObject>().nameString() + " Air Outlet Node");
-
-  if (!setPointer(inletPort(), inletNode.handle(), false)) {
-    return false;
-  }
-  if (!setPointer(outletPort(), outletNode.handle(), false)) {
-    return false;
-  }
-
   auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
+  auto equipmentList = zoneImpl->getZoneHVACEquipmentList();
+  OS_ASSERT(equipmentList.addEquipment(getObject<ModelObject>()));
+
+  const auto objectName = getObject<ModelObject>().nameString();
+  auto inlet = model().getOrCreateTransientByName<Node>(objectName + " Air Inlet Node");
+  auto outlet = model().getOrCreateTransientByName<Node>(objectName + " Air Outlet Node");
+
+  OS_ASSERT(setPointer(inletPort(), inlet.handle(), false));
+  OS_ASSERT(setPointer(outletPort(), outlet.handle(), false));
+
   auto connections = zoneImpl->getZoneHVACEquipmentConnections();
-  auto equipmentList = zoneImpl->zoneHVACEquipmentList();
-  if (!equipmentList) {
-    ZoneHVACEquipmentList newEquipmentList(model());
-    if (!newEquipmentList.name()) {
-      newEquipmentList.createName();
-    }
-    OS_ASSERT(connections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName, newEquipmentList.handle()));
-    equipmentList = newEquipmentList;
+  auto connectionsImpl = connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+  OS_ASSERT(connectionsImpl);
+  OS_ASSERT(connectionsImpl->addZoneAirExhaustNode(inlet));
+  return true;
+}
+
+void FanZoneExhaust_Impl::removeFromThermalZone() {
+  auto zone = thermalZone();
+  if (!zone) {
+    disconnect();
+    return;
   }
 
-  return equipmentList->getImpl<detail::ZoneHVACEquipmentList_Impl>()->addEquipment(getObject<ModelObject>());
+  auto zoneImpl = zone->getImpl<detail::ThermalZone_Impl>();
+  if (auto connections = zoneImpl->zoneHVACEquipmentConnections()) {
+    auto connectionsImpl = connections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+    OS_ASSERT(connectionsImpl);
+    if (auto inlet = inletNode()) {
+      OS_ASSERT(connectionsImpl->removeZoneAirExhaustNode(*inlet));
+    }
+  }
+
+  if (auto equipmentList = zoneImpl->zoneHVACEquipmentList()) {
+    OS_ASSERT(equipmentList->removeEquipment(getObject<ModelObject>()));
+  }
+
+  if (inletPort() != 0u) {
+    setPointer(inletPort(), Handle(), false);
+  }
+  if (outletPort() != 0u) {
+    setPointer(outletPort(), Handle(), false);
+  }
+
+  disconnect();
 }
 
 unsigned FanZoneExhaust_Impl::inletPort() const {

@@ -29,11 +29,11 @@
 namespace openstudio {
 namespace epmodel {
 
-  ZoneHVACEquipmentConnections::ZoneHVACEquipmentConnections(const Model& model) : ModelObject(ZoneHVACEquipmentConnections::iddObjectType(), model) {
+  ZoneHVACEquipmentConnections::ZoneHVACEquipmentConnections(const ThermalZone& thermalZone)
+    : ModelObject(ZoneHVACEquipmentConnections::iddObjectType(), thermalZone.model()) {
     auto impl = getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
     OS_ASSERT(impl);
-    detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
-    impl->canonicalize(context);
+    OS_ASSERT(impl->setThermalZone(thermalZone));
   }
 
   ZoneHVACEquipmentConnections::ZoneHVACEquipmentConnections(std::shared_ptr<detail::ZoneHVACEquipmentConnections_Impl> impl)
@@ -43,15 +43,15 @@ namespace epmodel {
     return IddObjectType::ZoneHVAC_EquipmentConnections;
   }
 
-  boost::optional<ThermalZone> ZoneHVACEquipmentConnections::thermalZone() const {
+  ThermalZone ZoneHVACEquipmentConnections::thermalZone() const {
     return getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->thermalZone();
   }
 
-  boost::optional<ZoneHVACEquipmentList> ZoneHVACEquipmentConnections::zoneHVACEquipmentList() const {
+  ZoneHVACEquipmentList ZoneHVACEquipmentConnections::zoneHVACEquipmentList() const {
     return getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->zoneHVACEquipmentList();
   }
 
-  boost::optional<Node> ZoneHVACEquipmentConnections::zoneAirNode() const {
+  Node ZoneHVACEquipmentConnections::zoneAirNode() const {
     return getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->zoneAirNode();
   }
 
@@ -113,15 +113,25 @@ namespace epmodel {
           return connections.setPointer(field, Handle());
         }
 
-        openstudio::epmodel::NodeList nodeList(connections.model());
-        const auto baseName =
-          connections.nameString().empty() ? connections.model().nextName(connections.iddObject().type(), true) : connections.nameString();
-        if (!nodeList.setName(baseName + suffix)) {
-          nodeList.createName();
+        boost::optional<openstudio::epmodel::NodeList> existingNodeList;
+        if (auto target = connections.getTarget(field)) {
+          existingNodeList = target->optionalCast<openstudio::epmodel::NodeList>();
+        }
+
+        auto nodeList = existingNodeList ? *existingNodeList : openstudio::epmodel::NodeList(connections.model());
+        if (!existingNodeList) {
+          const auto baseName =
+            connections.nameString().empty() ? connections.model().nextName(connections.iddObject().type(), true) : connections.nameString();
+          if (!nodeList.setName(baseName + suffix)) {
+            nodeList.createName();
+          }
         }
 
         auto nodeListImpl = nodeList.getImpl<openstudio::epmodel::detail::NodeList_Impl>();
         OS_ASSERT(nodeListImpl);
+        while (!nodeList.extensibleGroups().empty()) {
+          nodeList.getImpl<openstudio::epmodel::detail::ModelObject_Impl>()->eraseExtensibleGroup(0, false);
+        }
         for (const auto& node : nodes) {
           if (!nodeListImpl->addNode(node)) {
             return false;
@@ -129,23 +139,6 @@ namespace epmodel {
         }
 
         return connections.setPointer(field, nodeList.handle());
-      }
-
-      boost::optional<openstudio::epmodel::ZoneHVACEquipmentList> getOrCreateEquipmentList(
-        openstudio::epmodel::ZoneHVACEquipmentConnections& connections) {
-        if (auto equipmentList = connections.getModelObjectTarget<openstudio::epmodel::ZoneHVACEquipmentList>(
-              openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName)) {
-          return equipmentList;
-        }
-
-        openstudio::epmodel::ZoneHVACEquipmentList equipmentList(connections.model());
-        if (!equipmentList.name()) {
-          equipmentList.createName();
-        }
-        if (!connections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName, equipmentList.handle())) {
-          return boost::none;
-        }
-        return equipmentList;
       }
 
       bool addNodeToField(const std::vector<openstudio::epmodel::Node>& currentNodes, const openstudio::epmodel::Node& node,
@@ -171,16 +164,86 @@ namespace epmodel {
 
     }  // namespace
 
-    boost::optional<openstudio::epmodel::ThermalZone> ZoneHVACEquipmentConnections_Impl::thermalZone() const {
-      const auto equipmentConnections = getObject<openstudio::epmodel::ZoneHVACEquipmentConnections>();
-      return equipmentConnections.getModelObjectTarget<openstudio::epmodel::ThermalZone>(
+    void ZoneHVACEquipmentConnections_Impl::doCanonicalize(LoadContext& context) {
+      auto equipmentConnections = getObject<openstudio::epmodel::ZoneHVACEquipmentConnections>();
+      if (!equipmentConnections.name() || equipmentConnections.name()->empty()) {
+        equipmentConnections.createName();
+        if (equipmentConnections.name() && !equipmentConnections.name()->empty()) {
+          detail::addLoadInfo(context, "Assigned missing ZoneHVAC:EquipmentConnections name '" + equipmentConnections.nameString() + "'.");
+        } else {
+          detail::addLoadWarning(context, "ZoneHVAC:EquipmentConnections object has no name and automatic name assignment failed.");
+        }
+      }
+
+      // `ZoneHVAC:EquipmentConnections` is a zone-owned topology object in epmodel. Raw/imported
+      // orphan objects are not meaningful steady-state API objects, so repair canonicalization
+      // removes them. Once a zone is attached, canonicalization fills derived required topology.
+      auto zone = equipmentConnections.getModelObjectTarget<openstudio::epmodel::ThermalZone>(
         openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName);
+      if (!zone) {
+        detail::addLoadWarning(context, "Removed orphan ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString()
+                                          + "' because it does not reference a ThermalZone.");
+        equipmentConnections.remove();
+        return;
+      }
+
+      detail::addLoadInfo(context, "Canonicalizing ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString()
+                                     + "' for ThermalZone '" + zone->nameString()
+                                     + "': ensuring required equipment list and zone air node references are present.");
+
+      if (auto equipmentList = equipmentConnections.getModelObjectTarget<openstudio::epmodel::ZoneHVACEquipmentList>(
+            openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName)) {
+        detail::addLoadInfo(context, "Preserved existing ZoneHVAC:EquipmentList '" + equipmentList->nameString()
+                                       + "' on ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString() + "'.");
+      } else {
+        openstudio::epmodel::ZoneHVACEquipmentList createdEquipmentList(model());
+        if (!equipmentConnections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName,
+                                             createdEquipmentList.handle())) {
+          detail::addLoadError(context, "Failed to attach created ZoneHVAC:EquipmentList '" + createdEquipmentList.nameString()
+                                          + "' to ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString() + "'.");
+          OS_ASSERT(false);
+        } else {
+          detail::addLoadInfo(context, "Created ZoneHVAC:EquipmentList '" + createdEquipmentList.nameString()
+                                         + "' for ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString() + "' serving ThermalZone '"
+                                         + zone->nameString() + "'.");
+        }
+      }
+
+      if (auto existingZoneAirNode = equipmentConnections.getModelObjectTarget<openstudio::epmodel::Node>(
+            openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName)) {
+        detail::addLoadInfo(context, "Preserved existing zone air node '" + existingZoneAirNode->nameString()
+                                       + "' on ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString() + "'.");
+      } else {
+        const auto zoneAirNodeName = zone->nameString() + " Demand Branch Node";
+        const bool zoneAirNodeAlreadyExisted =
+          static_cast<bool>(model().getObjectByTypeAndName(openstudio::IddObjectType::Node, zoneAirNodeName, true));
+        auto zoneAirNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(zoneAirNodeName);
+        if (!equipmentConnections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName, zoneAirNode.handle())) {
+          detail::addLoadError(context, "Failed to attach zone air node '" + zoneAirNode.nameString()
+                                          + "' to ZoneHVAC:EquipmentConnections '" + equipmentConnections.nameString() + "'.");
+          OS_ASSERT(false);
+        } else {
+          detail::addLoadInfo(context, std::string(zoneAirNodeAlreadyExisted ? "Reused" : "Created") + " zone air node '"
+                                         + zoneAirNode.nameString() + "' and attached it to ZoneHVAC:EquipmentConnections '"
+                                         + equipmentConnections.nameString() + "'.");
+        }
+      }
     }
 
-    boost::optional<openstudio::epmodel::ZoneHVACEquipmentList> ZoneHVACEquipmentConnections_Impl::zoneHVACEquipmentList() const {
+    openstudio::epmodel::ThermalZone ZoneHVACEquipmentConnections_Impl::thermalZone() const {
       const auto equipmentConnections = getObject<openstudio::epmodel::ZoneHVACEquipmentConnections>();
-      return equipmentConnections.getModelObjectTarget<openstudio::epmodel::ZoneHVACEquipmentList>(
+      auto zone = equipmentConnections.getModelObjectTarget<openstudio::epmodel::ThermalZone>(
+        openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName);
+      OS_ASSERT(zone);
+      return *zone;
+    }
+
+    openstudio::epmodel::ZoneHVACEquipmentList ZoneHVACEquipmentConnections_Impl::zoneHVACEquipmentList() const {
+      const auto equipmentConnections = getObject<openstudio::epmodel::ZoneHVACEquipmentConnections>();
+      auto equipmentList = equipmentConnections.getModelObjectTarget<openstudio::epmodel::ZoneHVACEquipmentList>(
         openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName);
+      OS_ASSERT(equipmentList);
+      return *equipmentList;
     }
 
     bool ZoneHVACEquipmentConnections_Impl::setThermalZone(const openstudio::epmodel::ThermalZone& zone) {
@@ -188,7 +251,14 @@ namespace epmodel {
       if (zone.model() != equipmentConnections.model()) {
         return false;
       }
-      return equipmentConnections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName, zone.handle());
+      if (!equipmentConnections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneName, zone.handle())) {
+        return false;
+      }
+
+      auto currentModel = model();
+      LoadContext context{currentModel, SanitizationPolicy::Repair, SanitizationReport{}, {}};
+      canonicalize(context);
+      return true;
     }
 
     bool ZoneHVACEquipmentConnections_Impl::setZoneHVACEquipmentList(const openstudio::epmodel::ZoneHVACEquipmentList& equipmentList) {
@@ -200,87 +270,15 @@ namespace epmodel {
                                              equipmentList.handle());
     }
 
-    bool ZoneHVACEquipmentConnections_Impl::setZoneAirNode(const openstudio::epmodel::Node& node) {
-      auto equipmentConnections = getObject<openstudio::epmodel::ZoneHVACEquipmentConnections>();
-      if (node.model() != equipmentConnections.model()) {
-        return false;
-      }
-      return equipmentConnections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName, node.handle());
-    }
-
-    bool ZoneHVACEquipmentConnections_Impl::addEquipment(const openstudio::epmodel::ModelObject& equipment,
-                                                        const std::vector<openstudio::epmodel::Node>& inletNodes,
-                                                        const std::vector<openstudio::epmodel::Node>& exhaustNodes,
-                                                        const std::vector<openstudio::epmodel::Node>& returnNodes) {
-      auto equipmentConnections = getObject<openstudio::epmodel::ZoneHVACEquipmentConnections>();
-      if (equipment.model() != equipmentConnections.model()) {
-        return false;
-      }
-
-      auto equipmentList = getOrCreateEquipmentList(equipmentConnections);
-      if (!equipmentList) {
-        return false;
-      }
-      if (!equipmentList->getImpl<openstudio::epmodel::detail::ZoneHVACEquipmentList_Impl>()->addEquipment(equipment)) {
-        return false;
-      }
-
-      for (const auto& node : inletNodes) {
-        if (!addZoneAirInletNode(node)) {
-          return false;
-        }
-      }
-      for (const auto& node : exhaustNodes) {
-        if (!addZoneAirExhaustNode(node)) {
-          return false;
-        }
-      }
-      for (const auto& node : returnNodes) {
-        if (!addZoneReturnAirNode(node)) {
-          return false;
-        }
-      }
-      return true;
-    }
-
-    bool ZoneHVACEquipmentConnections_Impl::removeEquipment(const openstudio::epmodel::ModelObject& equipment,
-                                                           const std::vector<openstudio::epmodel::Node>& inletNodes,
-                                                           const std::vector<openstudio::epmodel::Node>& exhaustNodes,
-                                                           const std::vector<openstudio::epmodel::Node>& returnNodes) {
-      auto equipmentConnections = getObject<openstudio::epmodel::ZoneHVACEquipmentConnections>();
-      if (equipment.model() != equipmentConnections.model()) {
-        return false;
-      }
-
-      if (auto equipmentList = zoneHVACEquipmentList()) {
-        equipmentList->getImpl<openstudio::epmodel::detail::ZoneHVACEquipmentList_Impl>()->removeEquipment(equipment);
-      }
-
-      for (const auto& node : inletNodes) {
-        if (!removeZoneAirInletNode(node)) {
-          return false;
-        }
-      }
-      for (const auto& node : exhaustNodes) {
-        if (!removeZoneAirExhaustNode(node)) {
-          return false;
-        }
-      }
-      for (const auto& node : returnNodes) {
-        if (!removeZoneReturnAirNode(node)) {
-          return false;
-        }
-      }
-      return true;
-    }
-
-    boost::optional<openstudio::epmodel::Node> ZoneHVACEquipmentConnections_Impl::zoneAirNode() const {
+    openstudio::epmodel::Node ZoneHVACEquipmentConnections_Impl::zoneAirNode() const {
       const auto equipmentConnections = getObject<openstudio::epmodel::ZoneHVACEquipmentConnections>();
       if (auto node = equipmentConnections.getModelObjectTarget<openstudio::epmodel::Node>(
             openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName)) {
-        return node;
+        return *node;
       }
-      return resolvedNodeTarget(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName);
+      auto node = resolvedNodeTarget(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirNodeName);
+      OS_ASSERT(node);
+      return *node;
     }
 
     std::vector<openstudio::epmodel::Node> ZoneHVACEquipmentConnections_Impl::zoneAirInletNodes() const {

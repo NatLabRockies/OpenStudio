@@ -7,6 +7,8 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../ZoneHVACComponent/FanZoneExhaust.hpp"
 
@@ -60,9 +62,21 @@ TEST_F(EPModelFixture, FanZoneExhaust_Topology) {
   EXPECT_TRUE(fan.addToThermalZone(zone));
   ASSERT_TRUE(fan.thermalZone());
   EXPECT_EQ(zone, fan.thermalZone().get());
-  EXPECT_TRUE(fan.inletNode());
-  EXPECT_TRUE(fan.outletNode());
+  auto inlet = fan.inletNode();
+  auto outlet = fan.outletNode();
+  ASSERT_TRUE(inlet);
+  ASSERT_TRUE(outlet);
+
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(connections);
+  EXPECT_TRUE(connections->zoneAirInletNodes().empty());
+  const auto exhaustNodes = connections->zoneAirExhaustNodes();
+  ASSERT_EQ(1u, exhaustNodes.size());
+  EXPECT_EQ(*inlet, exhaustNodes.front());
 
   fan.removeFromThermalZone();
   EXPECT_FALSE(fan.thermalZone());
+  EXPECT_FALSE(fan.inletNode());
+  EXPECT_FALSE(fan.outletNode());
+  EXPECT_TRUE(connections->zoneAirExhaustNodes().empty());
 }

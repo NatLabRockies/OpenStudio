@@ -497,27 +497,42 @@ water-heater families.
 
 ### Water-To-Air Families
 
-Much of the core water-to-air surface appears to be in place already. What may
-still require an active cleanup pass is:
+Most of the core water-to-air surface is now in place. The direct coil families
+generally expose their canonical schedules, curves, speed-data APIs, and
+air/water topology helpers through the current `WaterToAirComponent` base and
+derived wrappers. The remaining active cleanup work is narrower:
 
 - `HeatPumpAirToWater` now covers the wrapper-level operating-mode schedule, air-node-name, and direct curve-reference helpers, but the wrapper itself remains non-insertable and epmodel still lacks the canonical heating/cooling operation-mode child wrappers that own plant-loop placement.
 - `HeatPumpAirToWaterFuelFiredCooling` now covers the canonical companion-heating link and direct required/optional curve-reference helpers, and it stays plant-supply-only like the canonical straight-component wrapper; the remaining documented delta is the omitted air-source-node helper for the translator-emitted `OutdoorAir:Node` companion object.
 - `HeatPumpAirToWaterFuelFiredHeating` now matches the same heating-side parity slice: canonical default curves and explicit-curve constructor, companion-cooling and optional curve-reference helpers, and plant-supply-only placement are all preserved; the remaining documented delta is again the omitted air-source-node helper for the translator-emitted `OutdoorAir:Node` companion object.
-- performance curves
-- schedules and control relationships
-- speed, stage, and performance-data APIs
-- explicit air-side and plant-side coupling helpers
-- family-consistent companion-object access
+- `WaterToAirComponent` still documents missing base clone and remaining
+  canonical convenience behavior, even though the shared air/water topology
+  contract is present.
+- Some variable-speed wrappers still intentionally stub SQL-backed autosized
+  result lookups.
+- AirflowNetwork equivalent-duct mapping has been added for the equation-fit
+  water-to-air heat-pump coils and still needs to be extended where documented
+  on the remaining family wrappers.
 
 ### Water-To-Water Families
 
-The main remaining gaps are:
+Most water-to-water wrappers are now near parity or parity with documented
+deltas. The shared `WaterToWaterComponent` topology contract is in place, and
+many derived wrappers already expose their canonical curves, schedules,
+plant-loop conveniences, autosized-helper surface, and companion-object access
+where those concepts apply. The remaining work is mostly targeted:
 
-- performance curves
-- schedules and control relationships
-- staging and extensible performance data
-- explicit plant-loop coupling helpers
-- family-consistent companion-object access
+- SQL-backed autosized result lookup is still stubbed or incomplete on some
+  chiller and heat-pump wrappers.
+- `CentralHeatPumpSystem` still omits the canonical module-list/module-object
+  graph until epmodel has the supporting object families.
+- `ChillerElectricASHRAE205` still omits representation-file linkage until
+  epmodel exposes `ExternalFile`.
+- Some water-heater and thermal-storage clone, schedule-seeding, and
+  sizing-application workflows intentionally differ from the canonical model
+  implementation.
+- The base `WaterToWaterComponent` should only grow additional shared
+  convenience behavior when multiple derived wrappers need the same support.
 
 ### Outdoor-Air Completion
 

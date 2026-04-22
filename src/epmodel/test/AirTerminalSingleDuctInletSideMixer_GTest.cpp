@@ -10,13 +10,16 @@
 #include "EPModelFixture.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctInletSideMixer.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
 #include "../ModelObject/ModelObject.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
+#include "../ZoneHVACComponent/ZoneHVACUnitHeater.hpp"
 
 #include <utilities/idd/AirTerminal_SingleDuct_Mixer_FieldEnums.hxx>
 
@@ -229,4 +232,64 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctInletSideMixer_AddToNode_ResolvesAir
   const auto equipment = zone.equipment();
   ASSERT_EQ(1u, equipment.size());
   EXPECT_EQ(terminal.cast<ModelObject>(), equipment.front());
+}
+
+TEST_F(EPModelFixture, ZoneHVACComponent_AddToNode_IntegratesWithInletSideMixer) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  AirTerminalSingleDuctInletSideMixer terminal(model);
+  ZoneHVACUnitHeater unitHeater(model);
+
+  auto branchObject = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(branchObject);
+  auto branchNode = branchObject->optionalCast<Node>();
+  ASSERT_TRUE(branchNode);
+  ASSERT_TRUE(zone.addToNode(*branchNode));
+
+  auto terminalOutletNode = zone.zoneAirNode();
+  ASSERT_TRUE(terminal.addToNode(terminalOutletNode));
+  ASSERT_TRUE(unitHeater.addToNode(terminalOutletNode));
+
+  ASSERT_TRUE(unitHeater.inletNode());
+  EXPECT_EQ(terminalOutletNode, unitHeater.inletNode().get());
+  ASSERT_TRUE(unitHeater.outletNode());
+  const auto unitHeaterOutletNode = unitHeater.outletNode().get();
+
+  auto secondaryAirInlet = terminal.secondaryAirInletNode();
+  ASSERT_TRUE(secondaryAirInlet);
+
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(connections);
+  const auto inletNodes = connections->zoneAirInletNodes();
+  EXPECT_NE(std::ranges::find(inletNodes, unitHeaterOutletNode), inletNodes.end());
+  const auto exhaustNodes = connections->zoneAirExhaustNodes();
+  EXPECT_NE(std::ranges::find(exhaustNodes, secondaryAirInlet.get()), exhaustNodes.end());
+
+  const auto equipment = zone.equipment();
+  EXPECT_NE(std::ranges::find(equipment, terminal.cast<ModelObject>()), equipment.end());
+  EXPECT_NE(std::ranges::find(equipment, unitHeater.cast<ModelObject>()), equipment.end());
+
+  auto zoneHVACUnitType = terminal.getString(openstudio::AirTerminal_SingleDuct_MixerFields::ZoneHVACUnitObjectType, true);
+  ASSERT_TRUE(zoneHVACUnitType);
+  EXPECT_EQ(unitHeater.iddObject().name(), *zoneHVACUnitType);
+  auto zoneHVACUnitName = terminal.getString(openstudio::AirTerminal_SingleDuct_MixerFields::ZoneHVACUnitObjectName, true);
+  ASSERT_TRUE(zoneHVACUnitName);
+  EXPECT_EQ(unitHeater.nameString(), *zoneHVACUnitName);
+
+  const auto demandComponents = airLoop.demandComponents();
+  EXPECT_NE(std::ranges::find(demandComponents, unitHeater.cast<ModelObject>()), demandComponents.end());
+
+  unitHeater.removeFromThermalZone();
+
+  EXPECT_FALSE(unitHeater.thermalZone());
+  EXPECT_FALSE(unitHeater.inletNode());
+  EXPECT_FALSE(unitHeater.outletNode());
+  EXPECT_FALSE(terminal.secondaryAirInletNode());
+  const auto remainingEquipment = zone.equipment();
+  EXPECT_EQ(std::ranges::find(remainingEquipment, unitHeater.cast<ModelObject>()), remainingEquipment.end());
+  const auto remainingInletNodes = connections->zoneAirInletNodes();
+  EXPECT_EQ(std::ranges::find(remainingInletNodes, unitHeaterOutletNode), remainingInletNodes.end());
+  const auto remainingExhaustNodes = connections->zoneAirExhaustNodes();
+  EXPECT_EQ(std::ranges::find(remainingExhaustNodes, secondaryAirInlet.get()), remainingExhaustNodes.end());
 }

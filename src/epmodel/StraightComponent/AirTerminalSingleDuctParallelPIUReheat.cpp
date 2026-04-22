@@ -70,22 +70,7 @@ bool registerTerminalWithZone(ThermalZone& thermalZone, const ModelObject& termi
   auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
   OS_ASSERT(zoneImpl);
 
-  auto zoneConnections = zoneImpl->getZoneHVACEquipmentConnections();
-  auto equipmentList = zoneImpl->zoneHVACEquipmentList();
-  if (!equipmentList) {
-    ZoneHVACEquipmentList newEquipmentList(thermalZone.model());
-    if (!newEquipmentList.name()) {
-      newEquipmentList.createName();
-    }
-    if (!zoneConnections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName, newEquipmentList.handle())) {
-      return false;
-    }
-    equipmentList = newEquipmentList;
-  }
-
-  auto equipmentListImpl = equipmentList->getImpl<detail::ZoneHVACEquipmentList_Impl>();
-  OS_ASSERT(equipmentListImpl);
-  if (!equipmentListImpl->addEquipment(terminal)) {
+  if (!zoneImpl->getZoneHVACEquipmentList().addEquipment(terminal)) {
     LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctParallelPIUReheat",
              "Failed to register " << terminal.briefDescription() << " with thermal zone " << thermalZone.briefDescription() << ".");
     return false;

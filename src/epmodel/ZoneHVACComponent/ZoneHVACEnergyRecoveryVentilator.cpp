@@ -16,7 +16,6 @@
 #include "ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentList.hpp"
-#include "ModelObject/ZoneHVACEquipmentList_Impl.hpp"
 #include "ParentObject/ZoneHVACEnergyRecoveryVentilatorController.hpp"
 #include "ParentObject/ZoneHVACEnergyRecoveryVentilatorController_Impl.hpp"
 #include "Schedule/Schedule.hpp"
@@ -31,7 +30,6 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/OS_ZoneHVAC_EnergyRecoveryVentilator_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EnergyRecoveryVentilator_FieldEnums.hxx>
-#include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 
 #include <algorithm>
 
@@ -438,16 +436,21 @@ namespace epmodel {
       thermalZone.setUseIdealAirLoads(false);
 
       auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
+      auto equipmentList = zoneImpl->getZoneHVACEquipmentList();
+      OS_ASSERT(equipmentList.addEquipment(getObject<ModelObject>()));
+
+      OS_ASSERT(maintainContainedAirPath());
+
+      auto outlet = outletNode();
+      auto inlet = inletNode();
+      OS_ASSERT(outlet);
+      OS_ASSERT(inlet);
+
       auto connections = zoneImpl->getZoneHVACEquipmentConnections();
-      const auto objectName = getObject<ModelObject>().nameString();
-      auto inlet = model().getOrCreateTransientByName<Node>(objectName + " Air Inlet Node");
-      auto outlet = model().getOrCreateTransientByName<Node>(objectName + " Air Outlet Node");
-
-      if (!connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->addEquipment(getObject<ModelObject>(), {outlet}, {}, {inlet})) {
-        return false;
-      }
-
-      maintainContainedAirPath();
+      auto connectionsImpl = connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+      OS_ASSERT(connectionsImpl);
+      OS_ASSERT(connectionsImpl->addZoneAirInletNode(*outlet));
+      OS_ASSERT(connectionsImpl->addZoneReturnAirNode(*inlet));
       return true;
     }
 
@@ -458,19 +461,20 @@ namespace epmodel {
         return;
       }
 
-      auto inlet = inletNode();
-      auto outlet = outletNode();
       auto zoneImpl = zone->getImpl<detail::ThermalZone_Impl>();
       if (auto connections = zoneImpl->zoneHVACEquipmentConnections()) {
-        std::vector<Node> inletNodes;
-        std::vector<Node> returnNodes;
-        if (outlet) {
-          inletNodes.push_back(*outlet);
+        auto connectionsImpl = connections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+        OS_ASSERT(connectionsImpl);
+        if (auto outlet = outletNode()) {
+          OS_ASSERT(connectionsImpl->removeZoneAirInletNode(*outlet));
         }
-        if (inlet) {
-          returnNodes.push_back(*inlet);
+        if (auto inlet = inletNode()) {
+          OS_ASSERT(connectionsImpl->removeZoneReturnAirNode(*inlet));
         }
-        connections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->removeEquipment(getObject<ModelObject>(), inletNodes, {}, returnNodes);
+      }
+
+      if (auto equipmentList = zoneImpl->zoneHVACEquipmentList()) {
+        OS_ASSERT(equipmentList->removeEquipment(getObject<ModelObject>()));
       }
 
       maintainContainedAirPath();

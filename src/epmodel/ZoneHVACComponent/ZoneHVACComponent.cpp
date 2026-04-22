@@ -12,14 +12,17 @@
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "ModelObject/ModelObject_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentList.hpp"
 #include "ModelObject/ZoneHVACEquipmentList_Impl.hpp"
+#include "StraightComponent/AirTerminalSingleDuctInletSideMixer.hpp"
+#include "StraightComponent/AirTerminalSingleDuctInletSideMixer_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
-#include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
+#include <utilities/idd/AirTerminal_SingleDuct_Mixer_FieldEnums.hxx>
 
 #include <algorithm>
 
@@ -135,38 +138,48 @@ namespace epmodel {
       return boost::none;
     }
 
+    // Attach this component as ordinary zone HVAC equipment. The component is added to the zone equipment list and, when it
+    // exposes inlet/outlet ports, wired in the normal zone-equipment pattern: component inlet from a zone exhaust node and
+    // component outlet to a zone inlet node. This is intentionally separate from addToNode, which is only for the inlet-side
+    // mixer topology where the ZoneHVAC unit sits downstream of an air terminal.
     bool ZoneHVACComponent_Impl::addToThermalZone(ThermalZone& thermalZone) {
       if (thermalZone.model() != model()) {
         return false;
       }
+
+      auto thisComponent = getObject<ZoneHVACComponent>();
 
       removeFromThermalZone();
 
       thermalZone.setUseIdealAirLoads(false);
 
       auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
-      auto connections = zoneImpl->getZoneHVACEquipmentConnections();
-      std::vector<Node> inletNodes;
-      std::vector<Node> returnNodes;
+      auto equipmentList = zoneImpl->getZoneHVACEquipmentList();
+      equipmentList.addEquipment(thisComponent);
 
-      if (inletPort() != 0u && outletPort() != 0u) {
+      if (inletPort() != 0 && outletPort() != 0) {
         const auto objectName = getObject<ModelObject>().nameString();
         auto inlet = model().getOrCreateTransientByName<Node>(objectName + " Air Inlet Node");
         auto outlet = model().getOrCreateTransientByName<Node>(objectName + " Air Outlet Node");
 
-        if (!setPointer(inletPort(), inlet.handle(), false)) {
-          return false;
-        }
-        if (!setPointer(outletPort(), outlet.handle(), false)) {
-          return false;
-        }
-        inletNodes.push_back(outlet);
-        returnNodes.push_back(inlet);
+        OS_ASSERT(setPointer(inletPort(), inlet.handle(), false));
+        OS_ASSERT(setPointer(outletPort(), outlet.handle(), false));
+
+        auto connections = zoneImpl->getZoneHVACEquipmentConnections();
+        auto connectionsImpl = connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+        OS_ASSERT(connectionsImpl);
+        OS_ASSERT(connectionsImpl->addZoneAirInletNode(outlet));
+        OS_ASSERT(connectionsImpl->addZoneAirExhaustNode(inlet));
       }
 
-      return connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->addEquipment(getObject<ModelObject>(), inletNodes, {}, returnNodes);
+      return true;
     }
 
+    // Unregister this component from whichever zone-topology path attached it. Ordinary zone HVAC is listed on the
+    // ZoneHVAC:EquipmentList and wired between a zone exhaust node and a zone inlet node. The addToNode path is different:
+    // it inserts this component downstream of an AirTerminal:SingleDuct:Mixer, so removal also has to clear the mixer's
+    // secondary air inlet and ZoneHVAC unit fields. Both paths leave the component disconnected from zone nodes and no
+    // longer listed as zone equipment.
     void ZoneHVACComponent_Impl::removeFromThermalZone() {
       auto zone = thermalZone();
       if (!zone) {
@@ -175,23 +188,75 @@ namespace epmodel {
       }
 
       auto zoneImpl = zone->getImpl<detail::ThermalZone_Impl>();
+      boost::optional<AirTerminalSingleDuctInletSideMixer> inletSideMixer;
+      if (auto inlet = inletNode()) {
+        for (const auto& source : inlet->sources()) {
+          auto candidate = source.optionalCast<AirTerminalSingleDuctInletSideMixer>();
+          if (!candidate) {
+            continue;
+          }
+          auto terminalOutlet = candidate->outletModelObject();
+          if (terminalOutlet && (*terminalOutlet == inlet->cast<ModelObject>())) {
+            inletSideMixer = candidate;
+            break;
+          }
+        }
+      }
+
+      if (inletSideMixer) {
+        // This component was attached through addToNode as the downstream ZoneHVAC unit for an inlet-side mixer. In that
+        // topology the component outlet is a zone inlet node, while the mixer's secondary inlet is the zone exhaust node.
+        if (auto connections = zoneImpl->zoneHVACEquipmentConnections()) {
+          auto connectionsImpl = connections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+          OS_ASSERT(connectionsImpl);
+          if (auto outlet = outletNode()) {
+            connectionsImpl->removeZoneAirInletNode(*outlet);
+          }
+          if (auto secondaryAirInlet = inletSideMixer->secondaryAirInletNode()) {
+            connectionsImpl->removeZoneAirExhaustNode(*secondaryAirInlet);
+          }
+        }
+
+        if (auto equipmentList = zoneImpl->zoneHVACEquipmentList()) {
+          equipmentList->getImpl<detail::ZoneHVACEquipmentList_Impl>()->removeEquipment(getObject<ModelObject>());
+        }
+
+        auto terminalImpl = inletSideMixer->getImpl<detail::ModelObject_Impl>();
+        terminalImpl->setPointer(inletSideMixer->secondaryAirInletPort(), Handle(), false);
+        terminalImpl->setString(openstudio::AirTerminal_SingleDuct_MixerFields::ZoneHVACUnitObjectType, "", false);
+        terminalImpl->setString(openstudio::AirTerminal_SingleDuct_MixerFields::ZoneHVACUnitObjectName, "", false);
+
+        if (inletPort() != 0u) {
+          setPointer(inletPort(), Handle(), false);
+        }
+        if (outletPort() != 0u) {
+          setPointer(outletPort(), Handle(), false);
+        }
+
+        disconnect();
+        return;
+      }
+
       if (auto connections = zoneImpl->zoneHVACEquipmentConnections()) {
-        std::vector<Node> inletNodes;
-        std::vector<Node> returnNodes;
-        if (auto thisOutlet = outletNode()) {
-          inletNodes.push_back(*thisOutlet);
+        auto connectionsImpl = connections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+        OS_ASSERT(connectionsImpl);
+        if (auto outlet = outletNode()) {
+          OS_ASSERT(connectionsImpl->removeZoneAirInletNode(*outlet));
         }
-        if (auto thisInlet = inletNode()) {
-          returnNodes.push_back(*thisInlet);
+        if (auto inlet = inletNode()) {
+          OS_ASSERT(connectionsImpl->removeZoneAirExhaustNode(*inlet));
         }
-        connections->getImpl<detail::ZoneHVACEquipmentConnections_Impl>()->removeEquipment(getObject<ModelObject>(), inletNodes, {}, returnNodes);
+      }
+
+      if (auto equipmentList = zoneImpl->zoneHVACEquipmentList()) {
+        equipmentList->getImpl<detail::ZoneHVACEquipmentList_Impl>()->removeEquipment(getObject<ModelObject>());
       }
 
       if (inletPort() != 0u) {
-        setPointer(inletPort(), Handle());
+        setPointer(inletPort(), Handle(), false);
       }
       if (outletPort() != 0u) {
-        setPointer(outletPort(), Handle());
+        setPointer(outletPort(), Handle(), false);
       }
 
       disconnect();
@@ -202,7 +267,17 @@ namespace epmodel {
       return HVACComponent_Impl::remove();
     }
 
+    // This is the inlet-side-mixer integration path for air-based zone HVAC, not the ordinary zone-equipment attach path.
+    // Use addToThermalZone for equipment that simply participates between the zone exhaust and zone inlet nodes. Here `node`
+    // is the outlet of an AirTerminal:SingleDuct:Mixer that already serves a zone. The mixer outlet becomes this component's
+    // inlet, this component's outlet becomes a zone inlet, and a zone exhaust node feeds the mixer's secondary inlet. EnergyPlus
+    // also requires the mixer to name the downstream ZoneHVAC unit, so this method keeps the equipment connections object and
+    // the mixer's ZoneHVACUnitObjectType/Name fields aligned. Derived classes should override this when that topology is invalid.
     bool ZoneHVACComponent_Impl::addToNode(Node& node) {
+      if (node.model() != model()) {
+        return false;
+      }
+
       auto airLoop = node.airLoopHVAC();
       if (!airLoop) {
         return false;
@@ -216,8 +291,7 @@ namespace epmodel {
         }
 
         const auto inletNodes = connections->zoneAirInletNodes();
-        const auto returnNodes = connections->zoneReturnAirNodes();
-        if ((std::ranges::find(inletNodes, node) != inletNodes.end()) && (std::ranges::find(returnNodes, node) != returnNodes.end())) {
+        if (std::ranges::find(inletNodes, node) != inletNodes.end()) {
           zone = candidateZone;
           break;
         }
@@ -226,39 +300,66 @@ namespace epmodel {
         return false;
       }
 
-      if (this->thermalZone()) {
-        removeFromThermalZone();
+      boost::optional<AirTerminalSingleDuctInletSideMixer> inletSideMixer;
+      for (const auto& source : node.sources()) {
+        auto candidate = source.optionalCast<AirTerminalSingleDuctInletSideMixer>();
+        if (!candidate) {
+          continue;
+        }
+        auto terminalOutlet = candidate->outletModelObject();
+        if (terminalOutlet && (*terminalOutlet == node.cast<ModelObject>())) {
+          inletSideMixer = candidate;
+          break;
+        }
       }
-
-      if (!addToThermalZone(*zone)) {
+      if (!inletSideMixer) {
         return false;
       }
 
       if (inletPort() == 0u || outletPort() == 0u) {
-        return true;
+        return false;
       }
 
-      auto connections = zone->getImpl<detail::ThermalZone_Impl>()->getZoneHVACEquipmentConnections();
-      auto connectionsImpl = connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
-      if (auto previousOutlet = outletNode()) {
-        connectionsImpl->removeZoneAirInletNode(*previousOutlet);
-      }
-      if (auto previousInlet = inletNode()) {
-        connectionsImpl->removeZoneReturnAirNode(*previousInlet);
+      if (this->thermalZone()) {
+        removeFromThermalZone();
       }
 
-      auto outlet = model().getOrCreateTransientByName<Node>(getObject<ModelObject>().nameString() + " Outlet Node");
+      if (!zone->setUseIdealAirLoads(false)) {
+        return false;
+      }
+
+      const auto thisObject = getObject<ModelObject>();
+      auto outlet = model().getOrCreateTransientByName<Node>(thisObject.nameString() + " Outlet Node");
+      auto exhaust = model().getOrCreateTransientByName<Node>(zone->nameString() + " Exhaust Air Node");
       if (!setPointer(inletPort(), node.handle(), false)) {
         return false;
       }
       if (!setPointer(outletPort(), outlet.handle(), false)) {
         return false;
       }
+      auto terminalImpl = inletSideMixer->getImpl<detail::ModelObject_Impl>();
+      if (!terminalImpl->setPointer(inletSideMixer->secondaryAirInletPort(), exhaust.handle(), false)) {
+        return false;
+      }
+      if (!terminalImpl->setString(openstudio::AirTerminal_SingleDuct_MixerFields::ZoneHVACUnitObjectType, thisObject.iddObject().name(), false)) {
+        return false;
+      }
+      if (!terminalImpl->setString(openstudio::AirTerminal_SingleDuct_MixerFields::ZoneHVACUnitObjectName, thisObject.nameString(), false)) {
+        return false;
+      }
 
+      auto zoneImpl = zone->getImpl<detail::ThermalZone_Impl>();
+      auto connections = zoneImpl->getZoneHVACEquipmentConnections();
+      auto connectionsImpl = connections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
+      OS_ASSERT(connectionsImpl);
       if (!connectionsImpl->addZoneAirInletNode(outlet)) {
         return false;
       }
-      return connectionsImpl->addZoneReturnAirNode(node);
+      if (!connectionsImpl->addZoneAirExhaustNode(exhaust)) {
+        return false;
+      }
+
+      return zoneImpl->getZoneHVACEquipmentList().addEquipment(thisObject);
     }
 
     boost::optional<AirLoopHVAC> ZoneHVACComponent_Impl::airLoopHVAC() const {

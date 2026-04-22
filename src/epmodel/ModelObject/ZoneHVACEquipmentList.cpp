@@ -361,9 +361,7 @@ namespace epmodel {
         if (auto linkedList = conn.getModelObjectTarget<openstudio::epmodel::ZoneHVACEquipmentList>(
               openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName)) {
           if (*linkedList == equipmentList) {
-            if (auto zone = conn.thermalZone()) {
-              return *zone;
-            }
+            return conn.thermalZone();
           }
         }
       }

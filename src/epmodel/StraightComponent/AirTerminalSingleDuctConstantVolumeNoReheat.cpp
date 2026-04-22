@@ -10,11 +10,14 @@
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter.hpp"
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "Node.hpp"
 #include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
+#include "ModelObject/ZoneHVACEquipmentList.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 
@@ -27,6 +30,19 @@
 
 namespace openstudio {
 namespace epmodel {
+
+  namespace {
+
+    boost::optional<ThermalZone> owningThermalZoneForBranchNode(const Model& model, const Node& node) {
+      for (const auto& zone : model.getConcreteModelObjects<ThermalZone>()) {
+        if (zone.zoneAirNode() == node) {
+          return zone;
+        }
+      }
+      return boost::none;
+    }
+
+  }  // namespace
 
   AirTerminalSingleDuctConstantVolumeNoReheat::AirTerminalSingleDuctConstantVolumeNoReheat(const Model& model)
     : StraightComponent(AirTerminalSingleDuctConstantVolumeNoReheat::iddObjectType(), model) {
@@ -212,6 +228,12 @@ namespace epmodel {
       }
       if (auto adu = zoneHVACAirDistributionUnit()) {
         adu->getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>()->setOutletNode(node);
+      }
+
+      if (auto thermalZone = owningThermalZoneForBranchNode(model(), node)) {
+        if (!thermalZone->getImpl<detail::ThermalZone_Impl>()->getZoneHVACEquipmentList().addEquipment(thisObject)) {
+          return false;
+        }
       }
 
       return true;

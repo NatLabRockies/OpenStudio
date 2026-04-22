@@ -7,6 +7,9 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
+#include "../ModelObject/ZoneHVACEquipmentList.hpp"
 #include "../ZoneHVACComponent/ZoneHVACBaseboardConvectiveElectric.hpp"
 
 using namespace openstudio::epmodel;
@@ -48,6 +51,12 @@ TEST_F(EPModelFixture, ZoneHVACBaseboardConvectiveElectric_ZoneAttachmentRoundTr
   ASSERT_TRUE(baseboard.thermalZone());
   EXPECT_EQ(zone, *baseboard.thermalZone());
 
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(connections);
+  auto equipmentList = connections->zoneHVACEquipmentList();
+  EXPECT_EQ(1u, equipmentList.equipment().size());
+
   baseboard.removeFromThermalZone();
   EXPECT_FALSE(baseboard.thermalZone());
+  EXPECT_TRUE(equipmentList.equipment().empty());
 }

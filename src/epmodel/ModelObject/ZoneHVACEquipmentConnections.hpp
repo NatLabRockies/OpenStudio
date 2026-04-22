@@ -16,7 +16,6 @@
 namespace openstudio {
 namespace epmodel {
 
-  class Model;
   class Node;
   class ThermalZone;
   class ZoneHVACEquipmentList;
@@ -28,7 +27,7 @@ namespace epmodel {
   class EPMODEL_API ZoneHVACEquipmentConnections : public ModelObject
   {
    public:
-    explicit ZoneHVACEquipmentConnections(const Model& model);
+    explicit ZoneHVACEquipmentConnections(const ThermalZone& thermalZone);
 
     virtual ~ZoneHVACEquipmentConnections() override = default;
     ZoneHVACEquipmentConnections(const ZoneHVACEquipmentConnections& other) = default;
@@ -38,10 +37,10 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-    boost::optional<ThermalZone> thermalZone() const;
-    boost::optional<ZoneHVACEquipmentList> zoneHVACEquipmentList() const;
+    ThermalZone thermalZone() const;
+    ZoneHVACEquipmentList zoneHVACEquipmentList() const;
 
-    boost::optional<Node> zoneAirNode() const;
+    Node zoneAirNode() const;
     std::vector<Node> zoneAirInletNodes() const;
     std::vector<Node> zoneAirExhaustNodes() const;
     std::vector<Node> zoneReturnAirNodes() const;

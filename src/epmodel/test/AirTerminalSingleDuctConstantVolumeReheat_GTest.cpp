@@ -248,7 +248,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeReheat_AddToNode_Regis
   EXPECT_EQ(zone2.zoneAirNode(), *terminalOutlet);
 
   const auto zone1Equipment = zone1.equipment();
-  EXPECT_TRUE(zone1Equipment.empty());
+  ASSERT_EQ(1u, zone1Equipment.size());
+  EXPECT_EQ(dummyTerminal.cast<ModelObject>(), zone1Equipment.front());
 
   const auto zone2Equipment = zone2.equipment();
   ASSERT_EQ(1u, zone2Equipment.size());

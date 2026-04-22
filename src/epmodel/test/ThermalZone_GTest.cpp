@@ -24,12 +24,14 @@
 #include "../Thermostat/Thermostat_Impl.hpp"
 #include "../Thermostat/ThermostatSetpointDualSetpoint.hpp"
 #include "../Thermostat/ThermostatSetpointDualSetpoint_Impl.hpp"
+#include "../ZoneHVACComponent/FanZoneExhaust.hpp"
 #include "../ZoneHVACComponent/ZoneHVACBaseboardConvectiveElectric.hpp"
+#include "../ZoneHVACComponent/ZoneHVACIdealLoadsAirSystem.hpp"
+#include "../ZoneHVACComponent/ZoneHVACIdealLoadsAirSystem_Impl.hpp"
 #include "../../utilities/idf/IdfExtensibleGroup.hpp"
 #include "../../utilities/idf/IdfObject.hpp"
 #include <utilities/idd/Daylighting_Controls_FieldEnums.hxx>
 #include <utilities/idd/Daylighting_ReferencePoint_FieldEnums.hxx>
-#include <utilities/idd/HVACTemplate_Zone_IdealLoadsAirSystem_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/ZoneControl_Thermostat_FieldEnums.hxx>
 #include <utilities/idd/Output_IlluminanceMap_FieldEnums.hxx>
@@ -114,6 +116,52 @@ TEST_F(EPModelFixture, ThermalZone_AddToNode_FailsOnSupplyNode) {
 
   auto demandOutletNode = airLoop.demandOutletNode();
   EXPECT_FALSE(zone.addToNode(demandOutletNode));
+}
+
+TEST_F(EPModelFixture, ThermalZone_AddRemoveEquipment_CoordinatesEquipmentListAndConnections) {
+  Model model;
+  ThermalZone zone(model);
+  FanZoneExhaust fan(model);
+
+  ASSERT_TRUE(zone.addEquipment(fan.cast<ModelObject>()));
+
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(connections);
+
+  auto equipmentList = connections->zoneHVACEquipmentList();
+  const auto equipment = equipmentList.equipment();
+  ASSERT_EQ(1u, equipment.size());
+  EXPECT_EQ(fan.cast<ModelObject>(), equipment.front());
+
+  auto fanInlet = fan.inletNode();
+  ASSERT_TRUE(fanInlet);
+  const auto exhaustNodes = connections->zoneAirExhaustNodes();
+  ASSERT_EQ(1u, exhaustNodes.size());
+  EXPECT_EQ(*fanInlet, exhaustNodes.front());
+
+  fan.removeFromThermalZone();
+
+  EXPECT_TRUE(equipmentList.equipment().empty());
+  EXPECT_TRUE(connections->zoneAirExhaustNodes().empty());
+}
+
+TEST_F(EPModelFixture, ThermalZone_AddEquipment_ListOnlyEquipmentDoesNotMutateConnectionNodes) {
+  Model model;
+  ThermalZone zone(model);
+  ZoneHVACBaseboardConvectiveElectric baseboard(model);
+
+  ASSERT_TRUE(zone.addEquipment(baseboard.cast<ModelObject>()));
+
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(connections);
+  auto equipmentList = connections->zoneHVACEquipmentList();
+  const auto equipment = equipmentList.equipment();
+  ASSERT_EQ(1u, equipment.size());
+  EXPECT_EQ(baseboard.cast<ModelObject>(), equipment.front());
+
+  EXPECT_TRUE(connections->zoneAirInletNodes().empty());
+  EXPECT_TRUE(connections->zoneAirExhaustNodes().empty());
+  EXPECT_TRUE(connections->zoneReturnAirNodes().empty());
 }
 
 TEST_F(EPModelFixture, API_ThermalZone_DaylightingFractions_RoundTrip) {
@@ -246,39 +294,19 @@ TEST_F(EPModelFixture, API_ThermalZone_UseIdealAirLoads_RoundTrip) {
   ThermalZone zone(model);
 
   EXPECT_FALSE(zone.useIdealAirLoads());
-  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem).empty());
+  EXPECT_TRUE(model.getConcreteModelObjects<ZoneHVACIdealLoadsAirSystem>().empty());
 
   EXPECT_TRUE(zone.setUseIdealAirLoads(true));
   EXPECT_TRUE(zone.useIdealAirLoads());
 
-  const auto idealLoads = model.getObjectsByType(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem);
+  const auto idealLoads = model.getConcreteModelObjects<ZoneHVACIdealLoadsAirSystem>();
   ASSERT_EQ(1u, idealLoads.size());
-  auto mappedZoneName = idealLoads.front().getString(openstudio::HVACTemplate_Zone_IdealLoadsAirSystemFields::ZoneName, true);
-  ASSERT_TRUE(mappedZoneName);
-  EXPECT_EQ(zone.nameString(), *mappedZoneName);
+  ASSERT_TRUE(idealLoads.front().thermalZone());
+  EXPECT_EQ(zone, *idealLoads.front().thermalZone());
 
   EXPECT_TRUE(zone.setUseIdealAirLoads(false));
   EXPECT_FALSE(zone.useIdealAirLoads());
-  EXPECT_TRUE(model.getObjectsByType(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem).empty());
-}
-
-TEST_F(EPModelFixture, API_ThermalZone_ZoneConditioningEquipmentListName_RoundTrip) {
-  Model model;
-  ThermalZone zone(model);
-
-  EXPECT_TRUE(zone.zoneConditioningEquipmentListName().empty());
-  EXPECT_TRUE(zone.setZoneConditioningEquipmentListName("Zone Equipment A"));
-  EXPECT_EQ("Zone Equipment A", zone.zoneConditioningEquipmentListName());
-
-  auto equipmentListObject = model.getObjectByTypeAndName(openstudio::IddObjectType::ZoneHVAC_EquipmentList, "Zone Equipment A");
-  ASSERT_TRUE(equipmentListObject);
-
-  auto zoneImpl = zone.getImpl<detail::ThermalZone_Impl>();
-  ASSERT_TRUE(zoneImpl);
-  auto equipmentList = zoneImpl->zoneHVACEquipmentList();
-  ASSERT_TRUE(equipmentList);
-  EXPECT_EQ("Zone Equipment A", equipmentList->nameString());
-  EXPECT_EQ(equipmentListObject->cast<ModelObject>(), equipmentList->cast<ModelObject>());
+  EXPECT_TRUE(model.getConcreteModelObjects<ZoneHVACIdealLoadsAirSystem>().empty());
 }
 
 TEST_F(EPModelFixture, API_ThermalZone_ThermostatSetpointDualSetpoint_Relationships) {
@@ -380,7 +408,6 @@ TEST_F(EPModelFixture, API_ThermalZone_EquipmentAndTopologyHelpers_RoundTrip) {
   ZoneHVACBaseboardConvectiveElectric baseboard(model);
   AirTerminalSingleDuctConstantVolumeNoReheat terminal(model);
 
-  ASSERT_TRUE(zone.setZoneConditioningEquipmentListName("Zone Equipment List"));
   ASSERT_TRUE(baseboard.addToThermalZone(zone));
   ASSERT_EQ(1u, zone.equipment().size());
   EXPECT_EQ(baseboard.cast<ModelObject>(), zone.equipment().front());
@@ -431,11 +458,10 @@ TEST_F(EPModelFixture, API_ThermalZone_UseIdealAirLoads_RemovesAirLoopBranch) {
   EXPECT_TRUE(zone.useIdealAirLoads());
   EXPECT_TRUE(airLoop.thermalZones().empty());
 
-  const auto idealLoads = model.getObjectsByType(openstudio::IddObjectType::HVACTemplate_Zone_IdealLoadsAirSystem);
+  const auto idealLoads = model.getConcreteModelObjects<ZoneHVACIdealLoadsAirSystem>();
   ASSERT_EQ(1u, idealLoads.size());
-  auto mappedZoneName = idealLoads.front().getString(openstudio::HVACTemplate_Zone_IdealLoadsAirSystemFields::ZoneName, true);
-  ASSERT_TRUE(mappedZoneName);
-  EXPECT_EQ(zone.nameString(), *mappedZoneName);
+  ASSERT_TRUE(idealLoads.front().thermalZone());
+  EXPECT_EQ(zone, *idealLoads.front().thermalZone());
 }
 
 TEST_F(EPModelFixture, API_ThermalZone_OutputIlluminanceMapScalars_RoundTrip) {

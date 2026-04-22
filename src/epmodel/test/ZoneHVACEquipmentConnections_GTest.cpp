@@ -18,18 +18,20 @@
 
 using namespace openstudio::epmodel;
 
-TEST_F(EPModelFixture, API_ZoneHVACEquipmentConnections_DefaultConstructor) {
+TEST_F(EPModelFixture, API_ZoneHVACEquipmentConnections_ThermalZoneConstructor) {
   Model model;
-  ZoneHVACEquipmentConnections equipmentConnections(model);
+  ThermalZone zone(model);
+  ZoneHVACEquipmentConnections equipmentConnections(zone);
   EXPECT_EQ(ZoneHVACEquipmentConnections::iddObjectType(), equipmentConnections.iddObject().type());
+  EXPECT_EQ(zone, equipmentConnections.thermalZone());
+  EXPECT_EQ(zone.nameString() + " Demand Branch Node", equipmentConnections.zoneAirNode().nameString());
 }
 
 TEST_F(EPModelFixture, API_ZoneHVACEquipmentConnections_SettersAndGetters) {
   Model model;
   ThermalZone zone(model);
   ZoneHVACEquipmentList equipmentList(model);
-  ZoneHVACEquipmentConnections equipmentConnections(model);
-  auto zoneAirNode = model.getOrCreateTransientByName<Node>("Zone Air Node");
+  ZoneHVACEquipmentConnections equipmentConnections(zone);
   auto zoneInletNode = model.getOrCreateTransientByName<Node>("Zone Inlet Node");
   auto zoneExhaustNode = model.getOrCreateTransientByName<Node>("Zone Exhaust Node");
   auto zoneReturnNode = model.getOrCreateTransientByName<Node>("Zone Return Node");
@@ -37,24 +39,19 @@ TEST_F(EPModelFixture, API_ZoneHVACEquipmentConnections_SettersAndGetters) {
   auto equipmentConnectionsImpl = equipmentConnections.getImpl<detail::ZoneHVACEquipmentConnections_Impl>();
   ASSERT_TRUE(equipmentConnectionsImpl);
 
-  ASSERT_TRUE(equipmentConnectionsImpl->setThermalZone(zone));
   ASSERT_TRUE(equipmentConnectionsImpl->setZoneHVACEquipmentList(equipmentList));
-  ASSERT_TRUE(equipmentConnectionsImpl->setZoneAirNode(zoneAirNode));
   ASSERT_TRUE(equipmentConnectionsImpl->addZoneAirInletNode(zoneInletNode));
   ASSERT_TRUE(equipmentConnectionsImpl->addZoneAirExhaustNode(zoneExhaustNode));
   ASSERT_TRUE(equipmentConnectionsImpl->addZoneReturnAirNode(zoneReturnNode));
 
   auto linkedZone = equipmentConnections.thermalZone();
-  ASSERT_TRUE(linkedZone);
-  EXPECT_EQ(zone, linkedZone.get());
+  EXPECT_EQ(zone, linkedZone);
 
   auto linkedEquipmentList = equipmentConnections.zoneHVACEquipmentList();
-  ASSERT_TRUE(linkedEquipmentList);
-  EXPECT_EQ(equipmentList, linkedEquipmentList.get());
+  EXPECT_EQ(equipmentList, linkedEquipmentList);
 
   auto linkedZoneAirNode = equipmentConnections.zoneAirNode();
-  ASSERT_TRUE(linkedZoneAirNode);
-  EXPECT_EQ(zoneAirNode, linkedZoneAirNode.get());
+  EXPECT_EQ(zone.nameString() + " Demand Branch Node", linkedZoneAirNode.nameString());
 
   const auto zoneAirInletNodes = equipmentConnections.zoneAirInletNodes();
   ASSERT_EQ(1u, zoneAirInletNodes.size());
@@ -75,7 +72,8 @@ TEST_F(EPModelFixture, API_ZoneHVACEquipmentConnections_SettersAndGetters) {
 
 TEST_F(EPModelFixture, API_ZoneHVACEquipmentConnections_MultipleAggregateNodesUseNodeList) {
   Model model;
-  ZoneHVACEquipmentConnections equipmentConnections(model);
+  ThermalZone zone(model);
+  ZoneHVACEquipmentConnections equipmentConnections(zone);
   auto inlet1 = model.getOrCreateTransientByName<Node>("Zone Inlet 1");
   auto inlet2 = model.getOrCreateTransientByName<Node>("Zone Inlet 2");
 

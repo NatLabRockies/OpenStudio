@@ -60,23 +60,7 @@ namespace {
   bool registerTerminalWithThermalZone(const ModelObject& terminal, ThermalZone& thermalZone) {
     auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
     OS_ASSERT(zoneImpl);
-
-    auto zoneConnections = zoneImpl->getZoneHVACEquipmentConnections();
-    auto equipmentList = zoneImpl->zoneHVACEquipmentList();
-    if (!equipmentList) {
-      ZoneHVACEquipmentList newEquipmentList(thermalZone.model());
-      if (!newEquipmentList.name()) {
-        newEquipmentList.createName();
-      }
-      if (!zoneConnections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName, newEquipmentList.handle())) {
-        return false;
-      }
-      equipmentList = newEquipmentList;
-    }
-
-    auto equipmentListImpl = equipmentList->getImpl<detail::ZoneHVACEquipmentList_Impl>();
-    OS_ASSERT(equipmentListImpl);
-    return equipmentListImpl->addEquipment(terminal);
+    return zoneImpl->getZoneHVACEquipmentList().addEquipment(terminal);
   }
 
   boost::optional<Node> zoneExhaustNodeForThermalZone(ThermalZone& thermalZone) {

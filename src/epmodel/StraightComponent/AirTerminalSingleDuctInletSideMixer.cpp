@@ -157,23 +157,7 @@ namespace epmodel {
         auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
         OS_ASSERT(zoneImpl);
 
-        auto zoneConnections = zoneImpl->getZoneHVACEquipmentConnections();
-        auto equipmentList = zoneImpl->zoneHVACEquipmentList();
-        if (!equipmentList) {
-          ZoneHVACEquipmentList newEquipmentList(thermalZone.model());
-          if (!newEquipmentList.name()) {
-            newEquipmentList.createName();
-          }
-          if (!zoneConnections.setPointer(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName,
-                                          newEquipmentList.handle())) {
-            return false;
-          }
-          equipmentList = newEquipmentList;
-        }
-
-        auto equipmentListImpl = equipmentList->getImpl<detail::ZoneHVACEquipmentList_Impl>();
-        OS_ASSERT(equipmentListImpl);
-        if (!equipmentListImpl->addEquipment(thisObject)) {
+        if (!zoneImpl->getZoneHVACEquipmentList().addEquipment(thisObject)) {
           LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctInletSideMixer",
                    "addToNode failed to register the inlet-side mixer terminal with the owning thermal zone.");
           return false;

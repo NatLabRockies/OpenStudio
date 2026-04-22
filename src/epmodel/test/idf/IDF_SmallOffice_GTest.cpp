@@ -555,10 +555,8 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_ZoneHVACEquipmentConnectionsNonMut
   ASSERT_FALSE(equipmentConnections.empty());
 
   for (const auto& connection : equipmentConnections) {
-    auto thermalZone = connection.thermalZone();
     const auto zoneAirInletNodes = connection.zoneAirInletNodes();
     const auto zoneReturnAirNodes = connection.zoneReturnAirNodes();
-    EXPECT_TRUE(thermalZone);
     EXPECT_FALSE(zoneAirInletNodes.empty());
     EXPECT_FALSE(zoneReturnAirNodes.empty());
   }

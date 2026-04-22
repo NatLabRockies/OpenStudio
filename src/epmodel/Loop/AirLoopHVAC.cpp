@@ -41,6 +41,8 @@
 #include "StraightComponent/StraightComponent.hpp"
 #include "HVACComponent/ThermalZone.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
+#include "ZoneHVACComponent/ZoneHVACComponent.hpp"
+#include "ZoneHVACComponent/ZoneHVACComponent_Impl.hpp"
 #include "SizingZone.hpp"
 #include "SizingZone_Impl.hpp"
 #include "ModelObject/DesignSpecificationOutdoorAirSpaceList.hpp"
@@ -331,10 +333,8 @@ namespace epmodel {
 
     boost::optional<ZoneHVACEquipmentConnections> AirLoopHVAC_Impl::resolveZoneConnections(const ThermalZone& zone) {
       for (const auto& conn : zone.model().getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
-        if (auto linkedZone = conn.thermalZone()) {
-          if (*linkedZone == zone) {
-            return conn;
-          }
+        if (conn.thermalZone() == zone) {
+          return conn;
         }
       }
       return boost::none;
@@ -418,9 +418,7 @@ namespace epmodel {
         if (!inletNameMatches(conn)) {
           continue;
         }
-        if (auto zone = conn.thermalZone()) {
-          zones.push_back(*zone);
-        }
+        zones.push_back(conn.thermalZone());
       }
 
       if (zones.empty()) {
@@ -448,9 +446,7 @@ namespace epmodel {
         if (!outletNameMatches(conn)) {
           continue;
         }
-        if (auto zone = conn.thermalZone()) {
-          zones.push_back(*zone);
-        }
+        zones.push_back(conn.thermalZone());
       }
 
       if (zones.empty()) {
@@ -1393,6 +1389,14 @@ namespace epmodel {
           for (const auto& equipment : equipmentList->equipment()) {
             if (equipment.optionalCast<StraightComponent>()) {
               appendDistinct(equipment);
+              continue;
+            }
+
+            if (auto zoneHVAC = equipment.optionalCast<ZoneHVACComponent>()) {
+              auto inletNode = zoneHVAC->inletNode();
+              if (inletNode && (std::ranges::find(chain, inletNode->cast<ModelObject>()) != chain.end())) {
+                appendDistinct(equipment);
+              }
               continue;
             }
 

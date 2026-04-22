@@ -8,6 +8,8 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "../ModelObject/ZoneHVACEquipmentList.hpp"
 #include "../ModelObject/ZoneHVACEquipmentList_Impl.hpp"
 #include "../Schedule/Schedule.hpp"
@@ -68,7 +70,10 @@ TEST_F(EPModelFixture, API_ZoneHVACEquipmentList_ThermalZoneConstructor_LinksCon
   ZoneHVACEquipmentList equipmentList(zone);
 
   EXPECT_EQ(zone, equipmentList.thermalZone());
-  EXPECT_EQ(equipmentList.nameString(), zone.zoneConditioningEquipmentListName());
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(connections);
+  auto linkedEquipmentList = connections->zoneHVACEquipmentList();
+  EXPECT_EQ(equipmentList, linkedEquipmentList);
 }
 
 TEST_F(EPModelFixture, API_ZoneHVACEquipmentList_StringBackedEntry_ResolvesAndRemoves_ReheatTerminal) {
