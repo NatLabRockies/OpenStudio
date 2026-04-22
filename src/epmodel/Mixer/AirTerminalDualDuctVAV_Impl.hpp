@@ -22,6 +22,7 @@ class EPMODEL_API AirTerminalDualDuctVAV_Impl : public Mixer_Impl
   unsigned outletPort() const override;
   unsigned inletPort(unsigned branchIndex) const override;
   bool addToNode(openstudio::epmodel::Node& node) override;
+  std::vector<openstudio::IdfObject> remove() override;
   boost::optional<openstudio::epmodel::Node> hotAirInletNode() const;
   boost::optional<openstudio::epmodel::Node> coldAirInletNode() const;
   boost::optional<double> maximumDamperAirFlowRate() const;

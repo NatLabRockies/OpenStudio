@@ -34,6 +34,7 @@ class Mixer_Impl;
   // - Remaining Parity Work: Confirm remaining topology semantics and connector-specific behavior as the loop-branch family finishes normalization.
   virtual boost::optional<ModelObject> outletModelObject() const;
   virtual bool setOutletModelObject(const ModelObject& modelObject);
+  virtual void resetOutletModelObject();
   virtual unsigned outletPort() const;
   virtual unsigned inletPort(unsigned branchIndex) const;
   virtual unsigned nextInletPort() const;
@@ -45,6 +46,7 @@ class Mixer_Impl;
   virtual unsigned nextBranchIndex() const;
   virtual void removePortForBranch(unsigned branchIndex);
   virtual bool setInletModelObject(unsigned branchIndex, const ModelObject& modelObject);
+  virtual void resetInletModelObject(unsigned branchIndex);
 
   protected:
   using ImplType = detail::Mixer_Impl;

@@ -1268,6 +1268,79 @@ namespace epmodel {
       return true;
     }
 
+    bool AirLoopHVAC_Impl::removeDualDuctTerminalFromAirLoopHVAC(openstudio::epmodel::Mixer& terminal) {
+      auto airLoop = terminal.airLoopHVAC();
+      if (!airLoop) {
+        return false;
+      }
+
+      auto airLoopImpl = airLoop->getImpl<detail::AirLoopHVAC_Impl>();
+      OS_ASSERT(airLoopImpl);
+
+      auto primaryInlet = terminal.inletModelObject(0u);
+      auto secondaryInlet = terminal.inletModelObject(1u);
+      auto outlet = terminal.outletModelObject();
+      if (!primaryInlet || !secondaryInlet || !outlet) {
+        return false;
+      }
+
+      auto primaryInletNode = primaryInlet->optionalCast<Node>();
+      auto secondaryInletNode = secondaryInlet->optionalCast<Node>();
+      auto outletNode = outlet->optionalCast<Node>();
+      if (!primaryInletNode || !secondaryInletNode || !outletNode) {
+        return false;
+      }
+
+      auto primarySplitter = airLoopImpl->zoneSplitter();
+      const auto primaryOutlets = primarySplitter.outletModelObjects();
+      const auto primaryBranchIndex = primarySplitter.branchIndexForOutletModelObject(*primaryInlet);
+      if (primaryBranchIndex >= primaryOutlets.size() || !(primaryOutlets[primaryBranchIndex] == *primaryInlet)) {
+        return false;
+      }
+
+      const auto demandInlets = airLoopImpl->demandInletNodes();
+      if (demandInlets.size() < 2u) {
+        return false;
+      }
+
+      auto secondarySplitter = airLoopImpl->zoneSplitterForDemandInletNode(demandInlets[1]);
+      if (!secondarySplitter) {
+        return false;
+      }
+
+      const auto secondaryOutlets = secondarySplitter->outletModelObjects();
+      const auto secondaryBranchIndex = secondarySplitter->branchIndexForOutletModelObject(*secondaryInlet);
+      if (secondaryBranchIndex >= secondaryOutlets.size() || !(secondaryOutlets[secondaryBranchIndex] == *secondaryInlet)) {
+        return false;
+      }
+
+      terminal.resetInletModelObject(1u);
+      secondarySplitter->removePortForBranch(secondaryBranchIndex);
+      secondaryInletNode->remove();
+      if (!airLoopImpl->collapseSecondaryDemandPathIfEmpty(demandInlets[1], *secondarySplitter)) {
+        return false;
+      }
+
+      if (!primarySplitter.setOutletModelObject(primaryBranchIndex, outletNode->cast<ModelObject>())) {
+        return false;
+      }
+      terminal.resetInletModelObject(0u);
+      terminal.resetOutletModelObject();
+      primaryInletNode->remove();
+
+      const auto terminalObject = terminal.cast<ModelObject>();
+      for (auto& zone : terminal.model().getConcreteModelObjects<ThermalZone>()) {
+        if (auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections()) {
+          auto equipmentList = connections->zoneHVACEquipmentList();
+          equipmentList.removeEquipment(terminalObject);
+        }
+      }
+
+      airLoopImpl->syncControllerMechanicalVentilationZoneOutdoorAirEntries();
+      airLoopImpl->syncSetpointManagerMixedAirFanNodes();
+      return true;
+    }
+
     bool AirLoopHVAC_Impl::removeBranchForZone(openstudio::epmodel::ThermalZone& thermalZone) {
       if (thermalZone.model() != model()) {
         return false;

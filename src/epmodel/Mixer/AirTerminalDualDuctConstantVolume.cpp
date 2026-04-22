@@ -86,6 +86,12 @@ bool AirTerminalDualDuctConstantVolume_Impl::addToNode(openstudio::epmodel::Node
   return AirLoopHVAC_Impl::addDualDuctTerminalToNode(terminal, node);
 }
 
+std::vector<openstudio::IdfObject> AirTerminalDualDuctConstantVolume_Impl::remove() {
+  auto terminal = getObject<AirTerminalDualDuctConstantVolume>().cast<Mixer>();
+  AirLoopHVAC_Impl::removeDualDuctTerminalFromAirLoopHVAC(terminal);
+  return Mixer_Impl::remove();
+}
+
 boost::optional<openstudio::epmodel::Node> AirTerminalDualDuctConstantVolume_Impl::hotAirInletNode() const {
   if (auto object = inletModelObject(0u)) {
     return object->optionalCast<Node>();

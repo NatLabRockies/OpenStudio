@@ -106,6 +106,12 @@ bool AirTerminalDualDuctVAVOutdoorAir_Impl::addToNode(openstudio::epmodel::Node&
   return AirLoopHVAC_Impl::addDualDuctTerminalToNode(terminal, node);
 }
 
+std::vector<openstudio::IdfObject> AirTerminalDualDuctVAVOutdoorAir_Impl::remove() {
+  auto terminal = getObject<AirTerminalDualDuctVAVOutdoorAir>().cast<Mixer>();
+  AirLoopHVAC_Impl::removeDualDuctTerminalFromAirLoopHVAC(terminal);
+  return Mixer_Impl::remove();
+}
+
 boost::optional<openstudio::epmodel::Node> AirTerminalDualDuctVAVOutdoorAir_Impl::outdoorAirInletNode() const {
   if (auto object = inletModelObject(0u)) {
     return object->optionalCast<Node>();

@@ -66,6 +66,12 @@ namespace detail {
     return AirLoopHVAC_Impl::addDualDuctTerminalToNode(terminal, node);
   }
 
+  std::vector<openstudio::IdfObject> AirTerminalDualDuctVAV_Impl::remove() {
+    auto terminal = getObject<AirTerminalDualDuctVAV>().cast<Mixer>();
+    AirLoopHVAC_Impl::removeDualDuctTerminalFromAirLoopHVAC(terminal);
+    return Mixer_Impl::remove();
+  }
+
   boost::optional<openstudio::epmodel::Node> AirTerminalDualDuctVAV_Impl::hotAirInletNode() const {
     if (auto object = inletModelObject(0u)) {
       return object->optionalCast<Node>();

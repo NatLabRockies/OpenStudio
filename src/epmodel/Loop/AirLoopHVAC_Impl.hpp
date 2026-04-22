@@ -62,6 +62,7 @@ namespace epmodel {
       bool makeDualDuct();
       boost::optional<openstudio::epmodel::Branch> branchForSupplyNode(const openstudio::epmodel::Node& node) const;
       static bool addDualDuctTerminalToNode(openstudio::epmodel::Mixer& terminal, openstudio::epmodel::Node& node);
+      static bool removeDualDuctTerminalFromAirLoopHVAC(openstudio::epmodel::Mixer& terminal);
       std::vector<openstudio::epmodel::ModelObject> supplyComponents(const openstudio::epmodel::HVACComponent& inletComp,
                                                                      const openstudio::epmodel::HVACComponent& outletComp,
                                                                      openstudio::IddObjectType type) const override;

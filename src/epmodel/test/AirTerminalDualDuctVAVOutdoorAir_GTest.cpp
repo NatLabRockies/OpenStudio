@@ -93,6 +93,25 @@ TEST_F(EPModelFixture, AirTerminalDualDuctVAVOutdoorAir_AddToDualDuctAirLoop) {
   EXPECT_EQ(2u, airLoop.demandInletNodes().size());
   EXPECT_EQ(1u, airLoop.demandComponents(AirTerminalDualDuctVAVOutdoorAir::iddObjectType()).size());
 
+  terminal.remove();
+  EXPECT_EQ(0u, airLoop.demandComponents(AirTerminalDualDuctVAVOutdoorAir::iddObjectType()).size());
+  EXPECT_EQ(1u, airLoop.demandInletNodes().size());
+  ASSERT_TRUE(zone.airLoopHVAC());
+  EXPECT_EQ(airLoop.handle(), zone.airLoopHVAC()->handle());
+  EXPECT_FALSE(airLoop.addBranchForZone(zone));
+  EXPECT_TRUE(airLoop.removeBranchForZone(zone));
+  EXPECT_EQ(1u, airLoop.demandInletNodes().size());
+
+  AirTerminalDualDuctVAVOutdoorAir terminal2(model);
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal2));
+  EXPECT_EQ(2u, airLoop.demandInletNodes().size());
+  EXPECT_EQ(1u, airLoop.demandComponents(AirTerminalDualDuctVAVOutdoorAir::iddObjectType()).size());
+  EXPECT_TRUE(airLoop.removeBranchForZone(zone));
+  EXPECT_EQ(1u, airLoop.demandInletNodes().size());
+
+  AirTerminalDualDuctVAVOutdoorAir terminal3(model);
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal3));
+
   ThermalZone zone2(model);
   ASSERT_TRUE(airLoop.addBranchForZone(zone2));
   EXPECT_EQ(2u, airLoop.demandComponents(AirTerminalDualDuctVAVOutdoorAir::iddObjectType()).size());
