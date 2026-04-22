@@ -26,6 +26,7 @@ class EPMODEL_API Mixer_Impl : public HVACComponent_Impl
   virtual unsigned nextInletPort() const;
 
   virtual boost::optional<ModelObject> outletModelObject() const;
+  virtual bool setOutletModelObject(const ModelObject& modelObject);
   virtual boost::optional<ModelObject> inletModelObject(unsigned branchIndex) const;
   virtual boost::optional<ModelObject> lastInletModelObject() const;
   virtual std::vector<ModelObject> inletModelObjects() const;

@@ -6,19 +6,24 @@
 #include "Mixer/AirTerminalDualDuctVAV.hpp"
 #include "Mixer/AirTerminalDualDuctVAV_Impl.hpp"
 
+#include "Loop/AirLoopHVAC_Impl.hpp"
+#include "HVACComponent/HVACComponent.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/AirTerminal_DualDuct_VAV_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 
+#include <limits>
+
 namespace openstudio {
 namespace epmodel {
 
-AirTerminalDualDuctVAV::AirTerminalDualDuctVAV(const Model& model) : ModelObject(AirTerminalDualDuctVAV::iddObjectType(), model) {}
+AirTerminalDualDuctVAV::AirTerminalDualDuctVAV(const Model& model) : Mixer(AirTerminalDualDuctVAV::iddObjectType(), model) {}
 
-AirTerminalDualDuctVAV::AirTerminalDualDuctVAV(std::shared_ptr<detail::AirTerminalDualDuctVAV_Impl> impl) : ModelObject(std::move(impl)) {}
+AirTerminalDualDuctVAV::AirTerminalDualDuctVAV(std::shared_ptr<detail::AirTerminalDualDuctVAV_Impl> impl) : Mixer(std::move(impl)) {}
 
 IddObjectType AirTerminalDualDuctVAV::iddObjectType() {
   return IddObjectType::AirTerminal_DualDuct_VAV;
@@ -41,6 +46,39 @@ void AirTerminalDualDuctVAV::autosizeMaximumDamperAirFlowRate() {
 }
 
 namespace detail {
+
+  unsigned AirTerminalDualDuctVAV_Impl::outletPort() const {
+    return openstudio::AirTerminal_DualDuct_VAVFields::AirOutletNodeName;
+  }
+
+  unsigned AirTerminalDualDuctVAV_Impl::inletPort(unsigned branchIndex) const {
+    if (branchIndex == 0u) {
+      return openstudio::AirTerminal_DualDuct_VAVFields::HotAirInletNodeName;
+    }
+    if (branchIndex == 1u) {
+      return openstudio::AirTerminal_DualDuct_VAVFields::ColdAirInletNodeName;
+    }
+    return std::numeric_limits<unsigned>::max();
+  }
+
+  bool AirTerminalDualDuctVAV_Impl::addToNode(openstudio::epmodel::Node& node) {
+    auto terminal = getObject<AirTerminalDualDuctVAV>().cast<Mixer>();
+    return AirLoopHVAC_Impl::addDualDuctTerminalToNode(terminal, node);
+  }
+
+  boost::optional<openstudio::epmodel::Node> AirTerminalDualDuctVAV_Impl::hotAirInletNode() const {
+    if (auto object = inletModelObject(0u)) {
+      return object->optionalCast<Node>();
+    }
+    return boost::none;
+  }
+
+  boost::optional<openstudio::epmodel::Node> AirTerminalDualDuctVAV_Impl::coldAirInletNode() const {
+    if (auto object = inletModelObject(1u)) {
+      return object->optionalCast<Node>();
+    }
+    return boost::none;
+  }
 
   boost::optional<double> AirTerminalDualDuctVAV_Impl::maximumDamperAirFlowRate() const {
     return getDouble(openstudio::AirTerminal_DualDuct_VAVFields::MaximumDamperAirFlowRate, true);
@@ -69,6 +107,18 @@ double AirTerminalDualDuctVAV::zoneMinimumAirFlowFraction() const {
 
 bool AirTerminalDualDuctVAV::setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction) {
   return getImpl<detail::AirTerminalDualDuctVAV_Impl>()->setZoneMinimumAirFlowFraction(zoneMinimumAirFlowFraction);
+}
+
+boost::optional<Node> AirTerminalDualDuctVAV::hotAirInletNode() const {
+  return getImpl<detail::AirTerminalDualDuctVAV_Impl>()->hotAirInletNode();
+}
+
+boost::optional<Node> AirTerminalDualDuctVAV::coldAirInletNode() const {
+  return getImpl<detail::AirTerminalDualDuctVAV_Impl>()->coldAirInletNode();
+}
+
+bool AirTerminalDualDuctVAV::addToNode(Node& node) {
+  return getImpl<detail::AirTerminalDualDuctVAV_Impl>()->addToNode(node);
 }
 
 namespace detail {

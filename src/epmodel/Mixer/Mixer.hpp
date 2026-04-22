@@ -33,6 +33,7 @@ class Mixer_Impl;
   // - Evidence: `src/model/Mixer.hpp` defines the canonical branch API surface; the zone-mixer and loop topology wrappers exercise that contract in epmodel.
   // - Remaining Parity Work: Confirm remaining topology semantics and connector-specific behavior as the loop-branch family finishes normalization.
   virtual boost::optional<ModelObject> outletModelObject() const;
+  virtual bool setOutletModelObject(const ModelObject& modelObject);
   virtual unsigned outletPort() const;
   virtual unsigned inletPort(unsigned branchIndex) const;
   virtual unsigned nextInletPort() const;
@@ -43,6 +44,7 @@ class Mixer_Impl;
   virtual unsigned branchIndexForInletModelObject(const ModelObject& modelObject) const;
   virtual unsigned nextBranchIndex() const;
   virtual void removePortForBranch(unsigned branchIndex);
+  virtual bool setInletModelObject(unsigned branchIndex, const ModelObject& modelObject);
 
   protected:
   using ImplType = detail::Mixer_Impl;
@@ -55,7 +57,6 @@ class Mixer_Impl;
   explicit Mixer(const Model& model);
   Mixer(IddObjectType type, const Model& model);
   explicit Mixer(std::shared_ptr<ImplType> impl);
-  virtual bool setInletModelObject(unsigned branchIndex, const ModelObject& modelObject);
 };
 
 }  // namespace epmodel

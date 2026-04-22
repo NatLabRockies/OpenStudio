@@ -7,7 +7,7 @@
 #define EPMODEL_AIRTERMINALDUALDUCTCONSTANTVOLUME_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Mixer/Mixer.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -17,12 +17,13 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class AirTerminalDualDuctConstantVolume_Impl;
   }
 
-  class EPMODEL_API AirTerminalDualDuctConstantVolume : public ModelObject
+  class EPMODEL_API AirTerminalDualDuctConstantVolume : public Mixer
   {
    public:
     explicit AirTerminalDualDuctConstantVolume(const Model& model);
@@ -47,6 +48,9 @@ namespace epmodel {
     bool setMaximumAirFlowRate(double maximumAirFlowRate);
     bool isMaximumAirFlowRateAutosized() const;
     void autosizeMaximumAirFlowRate();
+    boost::optional<Node> hotAirInletNode() const;
+    boost::optional<Node> coldAirInletNode() const;
+    bool addToNode(Node& node);
 
    protected:
     using ImplType = detail::AirTerminalDualDuctConstantVolume_Impl;

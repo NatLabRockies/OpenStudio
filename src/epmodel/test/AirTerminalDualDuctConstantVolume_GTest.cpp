@@ -6,7 +6,10 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
 #include "../Mixer/AirTerminalDualDuctConstantVolume.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -28,4 +31,41 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_ScalarAccessors_RoundTr
 
   terminal.autosizeMaximumAirFlowRate();
   EXPECT_TRUE(terminal.isMaximumAirFlowRateAutosized());
+}
+
+TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_AddToDualDuctAirLoop) {
+  {
+    Model model;
+    AirLoopHVAC airLoop(model, true);
+    AirTerminalDualDuctConstantVolume terminal(model);
+
+    ASSERT_TRUE(airLoop.addBranchForHVACComponent(terminal));
+    EXPECT_EQ(2u, airLoop.demandInletNodes().size());
+    EXPECT_EQ(1u, airLoop.demandComponents(AirTerminalDualDuctConstantVolume::iddObjectType()).size());
+
+    ASSERT_TRUE(terminal.hotAirInletNode());
+    ASSERT_TRUE(terminal.inletModelObject(0u));
+    EXPECT_EQ(terminal.hotAirInletNode()->handle(), terminal.inletModelObject(0u)->handle());
+
+    ASSERT_TRUE(terminal.coldAirInletNode());
+    ASSERT_TRUE(terminal.inletModelObject(1u));
+    EXPECT_EQ(terminal.coldAirInletNode()->handle(), terminal.inletModelObject(1u)->handle());
+  }
+
+  Model model;
+  AirLoopHVAC airLoop(model, true);
+  ThermalZone zone(model);
+  AirTerminalDualDuctConstantVolume terminal(model);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  ASSERT_TRUE(terminal.hotAirInletNode());
+  ASSERT_TRUE(terminal.coldAirInletNode());
+  ASSERT_TRUE(terminal.airLoopHVAC());
+  EXPECT_EQ(airLoop.handle(), terminal.airLoopHVAC()->handle());
+  EXPECT_EQ(2u, airLoop.demandInletNodes().size());
+  EXPECT_EQ(1u, airLoop.demandComponents(AirTerminalDualDuctConstantVolume::iddObjectType()).size());
+
+  ThermalZone zone2(model);
+  ASSERT_TRUE(airLoop.addBranchForZone(zone2));
+  EXPECT_EQ(2u, airLoop.demandComponents(AirTerminalDualDuctConstantVolume::iddObjectType()).size());
 }

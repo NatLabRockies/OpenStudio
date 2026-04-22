@@ -237,8 +237,10 @@ namespace epmodel {
       boost::optional<openstudio::epmodel::Branch> branch;
 
       if (airLoop) {
-        const auto branchList = airLoop->getImpl<detail::AirLoopHVAC_Impl>()->branchList();
-        branch = branchList.branches().front();
+        branch = airLoop->getImpl<detail::AirLoopHVAC_Impl>()->branchForSupplyNode(node);
+        if (!branch) {
+          return false;
+        }
       } else {
         plantLoop = node.plantLoop();
         if (!plantLoop) {
@@ -258,15 +260,21 @@ namespace epmodel {
 
         if (airLoop) {
           const auto supplyInlet = airLoop->supplyInletNode();
-          const auto supplyOutlet = airLoop->supplyOutletNode();
-          if (!(node == supplyInlet || node == supplyOutlet)) {
+          const auto supplyOutletNodes = airLoop->supplyOutletNodes();
+          const bool isSupplyOutlet = std::find(supplyOutletNodes.begin(), supplyOutletNodes.end(), node) != supplyOutletNodes.end();
+          if (!(node == supplyInlet || isSupplyOutlet)) {
             LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
                      "Empty branch encountered, but drop node '" << nodeName.get() << "' is not a loop inlet or outlet for AirLoopHVAC '"
                                                                  << airLoop->nameString() << "'.");
             return false;
           }
-          newInletName = supplyInlet.nameString();
-          newOutletName = supplyOutlet.nameString();
+          if (isSupplyOutlet && airLoop->isDualDuct()) {
+            newInletName = *nodeName + " - " + thisName + " Inlet";
+            newOutletName = *nodeName;
+          } else {
+            newInletName = supplyInlet.nameString();
+            newOutletName = airLoop->supplyOutletNode().nameString();
+          }
         } else {
           auto plantLoopImpl = plantLoop->getImpl<openstudio::epmodel::detail::PlantLoop_Impl>();
 

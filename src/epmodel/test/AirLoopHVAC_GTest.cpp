@@ -21,6 +21,7 @@
 #include "../AvailabilityManager/AvailabilityManagerNightCycle_Impl.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer_Impl.hpp"
+#include "../Mixer/AirTerminalDualDuctConstantVolume.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter_Impl.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat.hpp"
@@ -125,6 +126,132 @@ TEST_F(EPModelFixture, AirLoopHVAC_DefaultConstructor) {
   AirLoopHVAC airLoop(model);
   EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::AirLoopHVAC), airLoop.iddObject().type());
   EXPECT_FALSE(airLoop.nameString().empty());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_DualDuctConstructorBuildsSupplySplitter) {
+  Model model;
+  AirLoopHVAC airLoop(model, true);
+
+  EXPECT_TRUE(airLoop.isDualDuct());
+  ASSERT_TRUE(airLoop.supplySplitter());
+  ASSERT_TRUE(airLoop.supplySplitterInletNode());
+  EXPECT_EQ(airLoop.supplyInletNode(), airLoop.supplySplitterInletNode().get());
+  EXPECT_EQ(2u, airLoop.supplyOutletNodes().size());
+  EXPECT_EQ(2u, airLoop.supplySplitterOutletNodes().size());
+
+  auto outlets = airLoop.supplyOutletNodes();
+  FanConstantVolume hotFan(model);
+  FanConstantVolume coldFan(model);
+  EXPECT_TRUE(hotFan.addToNode(outlets[0]));
+  EXPECT_TRUE(coldFan.addToNode(outlets[1]));
+
+  const auto fans = airLoop.supplyComponents(FanConstantVolume::iddObjectType());
+  ASSERT_EQ(2u, fans.size());
+  EXPECT_EQ(hotFan.handle(), fans[0].handle());
+  EXPECT_EQ(coldFan.handle(), fans[1].handle());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_DualDuctTerminalCanAttachToLaterZoneBranch) {
+  Model model;
+  AirLoopHVAC airLoop(model, true);
+  ThermalZone zone1(model);
+  ThermalZone zone2(model);
+  AirTerminalDualDuctConstantVolume terminal1(model);
+  AirTerminalDualDuctConstantVolume terminal2(model);
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone1, terminal1));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone2, terminal2));
+
+  EXPECT_EQ(2u, airLoop.thermalZones().size());
+  EXPECT_EQ(2u, airLoop.demandComponents(AirTerminalDualDuctConstantVolume::iddObjectType()).size());
+  EXPECT_TRUE(terminal2.hotAirInletNode());
+  EXPECT_TRUE(terminal2.coldAirInletNode());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_RemoveBranchForZone_DualDuctMaintainsBothDemandSplitters) {
+  Model model;
+  AirLoopHVAC airLoop(model, true);
+  ThermalZone zone1(model);
+  ThermalZone zone2(model);
+  AirTerminalDualDuctConstantVolume terminal1(model);
+  AirTerminalDualDuctConstantVolume terminal2(model);
+  const auto terminal1Handle = terminal1.handle();
+  const auto terminal2Handle = terminal2.handle();
+
+  ASSERT_TRUE(airLoop.addBranchForZone(zone1, terminal1));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone2, terminal2));
+  ASSERT_EQ(2u, airLoop.demandInletNodes().size());
+  ASSERT_EQ(2u, airLoop.demandComponents(AirTerminalDualDuctConstantVolume::iddObjectType()).size());
+
+  const auto secondaryDemandInlet = airLoop.demandInletNodes()[1];
+  const auto secondaryDemandInletHandle = secondaryDemandInlet.handle();
+  boost::optional<AirLoopHVACZoneSplitter> secondarySplitter;
+  for (const auto& splitter : model.getConcreteModelObjects<AirLoopHVACZoneSplitter>()) {
+    auto inletNode = splitter.getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->inletNode();
+    if (inletNode && *inletNode == secondaryDemandInlet) {
+      secondarySplitter = splitter;
+      break;
+    }
+  }
+  ASSERT_TRUE(secondarySplitter);
+  const auto secondarySplitterHandle = secondarySplitter->handle();
+  ASSERT_EQ(2u, secondarySplitter->outletModelObjects().size());
+
+  boost::optional<AirLoopHVACSupplyPath> secondarySupplyPath;
+  for (const auto& supplyPath : model.getConcreteModelObjects<AirLoopHVACSupplyPath>()) {
+    auto inletNode = supplyPath.getImpl<detail::AirLoopHVACSupplyPath_Impl>()->supplyAirPathInletNode();
+    if (inletNode && *inletNode == secondaryDemandInlet) {
+      secondarySupplyPath = supplyPath;
+      break;
+    }
+  }
+  ASSERT_TRUE(secondarySupplyPath);
+  const auto secondarySupplyPathHandle = secondarySupplyPath->handle();
+
+  ASSERT_TRUE(airLoop.removeBranchForZone(zone2));
+  expectDemandBranchParity(airLoop);
+  EXPECT_EQ(1u, airLoop.thermalZones().size());
+  EXPECT_EQ(1u, airLoop.demandComponents(AirTerminalDualDuctConstantVolume::iddObjectType()).size());
+  EXPECT_FALSE(model.getObject(terminal2Handle));
+  ASSERT_EQ(2u, airLoop.demandInletNodes().size());
+  EXPECT_TRUE(model.getObject(secondaryDemandInletHandle));
+  EXPECT_TRUE(model.getObject(secondarySupplyPathHandle));
+  EXPECT_TRUE(model.getObject(secondarySplitterHandle));
+  EXPECT_EQ(1u, secondarySplitter->outletModelObjects().size());
+
+  ASSERT_TRUE(airLoop.removeBranchForZone(zone1));
+  expectDemandBranchParity(airLoop);
+  EXPECT_TRUE(airLoop.thermalZones().empty());
+  EXPECT_EQ(0u, airLoop.demandComponents(AirTerminalDualDuctConstantVolume::iddObjectType()).size());
+  EXPECT_FALSE(model.getObject(terminal1Handle));
+  EXPECT_EQ(1u, airLoop.demandInletNodes().size());
+  EXPECT_FALSE(model.getObject(secondaryDemandInletHandle));
+  EXPECT_FALSE(model.getObject(secondarySupplyPathHandle));
+  EXPECT_FALSE(model.getObject(secondarySplitterHandle));
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_EnforcesTerminalTypeForDuctTopology) {
+  {
+    Model model;
+    AirLoopHVAC airLoop(model);
+    AirTerminalDualDuctConstantVolume terminal(model);
+
+    ASSERT_FALSE(airLoop.isDualDuct());
+    EXPECT_FALSE(airLoop.addBranchForHVACComponent(terminal));
+    EXPECT_FALSE(terminal.airLoopHVAC());
+    EXPECT_EQ(1u, airLoop.demandInletNodes().size());
+  }
+
+  {
+    Model model;
+    AirLoopHVAC airLoop(model, true);
+    AirTerminalSingleDuctConstantVolumeNoReheat terminal(model);
+
+    ASSERT_TRUE(airLoop.isDualDuct());
+    EXPECT_FALSE(airLoop.addBranchForHVACComponent(terminal));
+    EXPECT_FALSE(terminal.airLoopHVAC());
+    EXPECT_EQ(1u, airLoop.demandInletNodes().size());
+  }
 }
 
 TEST_F(EPModelFixture, AirLoopHVAC_ScalarAccessors_RoundTrip) {

@@ -21,6 +21,7 @@ class EPMODEL_API AirLoopHVACZoneSplitter_Impl : public Splitter_Impl
 
   unsigned inletPort() const override;
   unsigned outletPort(unsigned branchIndex) const override;
+  bool setOutletModelObject(unsigned branchIndex, const openstudio::epmodel::ModelObject& modelObject) override;
   boost::optional<openstudio::epmodel::Node> inletNode() const;
   bool setInletNode(const openstudio::epmodel::Node& node);
 };

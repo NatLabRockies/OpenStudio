@@ -29,6 +29,14 @@ boost::optional<ModelObject> Mixer_Impl::outletModelObject() const {
   return boost::none;
 }
 
+bool Mixer_Impl::setOutletModelObject(const ModelObject& modelObject) {
+  auto mixer = getObject<openstudio::epmodel::Mixer>();
+  if (modelObject.model() != mixer.model()) {
+    return false;
+  }
+  return mixer.setPointer(outletPort(), modelObject.handle());
+}
+
 boost::optional<ModelObject> Mixer_Impl::inletModelObject(unsigned branchIndex) const {
   auto mixer = getObject<openstudio::epmodel::Mixer>();
   if (auto node = mixer.getModelObjectTarget<openstudio::epmodel::Node>(inletPort(branchIndex))) {
@@ -130,6 +138,10 @@ Mixer::Mixer(std::shared_ptr<ImplType> impl) : HVACComponent(std::move(impl)) {}
 
 boost::optional<ModelObject> Mixer::outletModelObject() const {
   return getImpl<detail::Mixer_Impl>()->outletModelObject();
+}
+
+bool Mixer::setOutletModelObject(const ModelObject& modelObject) {
+  return getImpl<detail::Mixer_Impl>()->setOutletModelObject(modelObject);
 }
 
 unsigned Mixer::outletPort() const {

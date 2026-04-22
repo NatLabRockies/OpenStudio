@@ -21,6 +21,7 @@ class EPMODEL_API AirLoopHVACZoneMixer_Impl : public Mixer_Impl
 
   unsigned outletPort() const override;
   unsigned inletPort(unsigned branchIndex) const override;
+  bool setInletModelObject(unsigned branchIndex, const openstudio::epmodel::ModelObject& modelObject) override;
   boost::optional<openstudio::epmodel::Node> outletNode() const;
   bool setOutletNode(const openstudio::epmodel::Node& node);
 };

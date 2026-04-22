@@ -6,19 +6,24 @@
 #ifndef EPMODEL_AIRTERMINALDUALDUCTVAVOUTDOORAIR_IMPL_HPP
 #define EPMODEL_AIRTERMINALDUALDUCTVAVOUTDOORAIR_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "Mixer/Mixer_Impl.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
   namespace detail {
 
-    class EPMODEL_API AirTerminalDualDuctVAVOutdoorAir_Impl : public ModelObject_Impl
+    class EPMODEL_API AirTerminalDualDuctVAVOutdoorAir_Impl : public Mixer_Impl
     {
      public:
-      using ModelObject_Impl::ModelObject_Impl;
+      using Mixer_Impl::Mixer_Impl;
       virtual ~AirTerminalDualDuctVAVOutdoorAir_Impl() override = default;
 
+      unsigned outletPort() const override;
+      unsigned inletPort(unsigned branchIndex) const override;
+      bool addToNode(openstudio::epmodel::Node& node) override;
+      boost::optional<openstudio::epmodel::Node> outdoorAirInletNode() const;
+      boost::optional<openstudio::epmodel::Node> recirculatedAirInletNode() const;
       boost::optional<double> maximumTerminalAirFlowRate() const;
       bool setMaximumTerminalAirFlowRate(double maximumTerminalAirFlowRate);
       void autosizeMaximumTerminalAirFlowRate();

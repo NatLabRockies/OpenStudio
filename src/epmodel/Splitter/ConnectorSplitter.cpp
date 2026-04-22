@@ -8,6 +8,8 @@
 
 #include "Loop/PlantLoop.hpp"
 #include "Loop/PlantLoop_Impl.hpp"
+#include "Loop/AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject/Branch.hpp"
 #include "ModelObject/Branch_Impl.hpp"
@@ -82,6 +84,21 @@ namespace detail {
     }
 
     boost::optional<openstudio::epmodel::ModelObject> ConnectorSplitter_Impl::inletModelObject() const {
+      for (const auto& loop : model().getConcreteModelObjects<AirLoopHVAC>()) {
+        auto loopImpl = loop.getImpl<detail::AirLoopHVAC_Impl>();
+        auto splitter = loopImpl->supplySplitter();
+        if (!(splitter && splitter->handle() == handle())) {
+          continue;
+        }
+        const auto branch = loopImpl->branchList().branches().front();
+        const auto components = branch.components();
+        if (components.empty()) {
+          return loopImpl->supplyInletNode().cast<ModelObject>();
+        }
+        if (auto node = branch.componentOutletNode(static_cast<unsigned>(components.size() - 1u))) {
+          return node->cast<ModelObject>();
+        }
+      }
       if (auto loop = plantLoop()) {
         auto loopImpl = loop->getImpl<detail::PlantLoop_Impl>();
         const bool isSupplySplitter = (loop->supplySplitter().handle() == handle());
@@ -113,6 +130,24 @@ namespace detail {
 
     std::vector<openstudio::epmodel::ModelObject> ConnectorSplitter_Impl::outletModelObjects() const {
       std::vector<openstudio::epmodel::ModelObject> result;
+      for (const auto& loop : model().getConcreteModelObjects<AirLoopHVAC>()) {
+        auto loopImpl = loop.getImpl<detail::AirLoopHVAC_Impl>();
+        auto splitter = loopImpl->supplySplitter();
+        if (!(splitter && splitter->handle() == handle())) {
+          continue;
+        }
+        const auto branches = loopImpl->branchList().branches();
+        const auto outletNodes = loopImpl->supplyOutletNodes();
+        for (std::size_t i = 0; i < outletNodes.size() && (i + 1u) < branches.size(); ++i) {
+          const auto components = branches[i + 1u].components();
+          if (components.empty()) {
+            result.emplace_back(outletNodes[i].cast<ModelObject>());
+          } else if (auto node = branches[i + 1u].componentInletNode(0u)) {
+            result.emplace_back(node->cast<ModelObject>());
+          }
+        }
+        return result;
+      }
       if (auto loop = plantLoop()) {
         auto loopImpl = loop->getImpl<detail::PlantLoop_Impl>();
         const bool isSupplySplitter = (loop->supplySplitter().handle() == handle());
