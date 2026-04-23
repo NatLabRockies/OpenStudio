@@ -36,16 +36,19 @@ namespace energyplus {
     unsigned N = values.size();
     OS_ASSERT(N == times.size());
 
-    // Check if 24 hourly values
-    bool is_hourly = (N == 24);
+    // Check if 24 hourly values and not a constant value for every hour
+    bool use_hourly = (N == 24);
     for (unsigned i = 0; i < N; ++i) {
       int minutes = times[i].minutes() + (int)floor((times[i].seconds() / 60.0) + 0.5);
       if (minutes != 0) {
-        is_hourly = false;
+        use_hourly = false;
       }
     }
+    if (std::set<double>( values.begin(), values.end() ).size() == 1) {
+      use_hourly = false;
+    }
 
-    if (is_hourly) {
+    if (use_hourly) {
       // Use Schedule:Day:Hourly for simplicity
       IdfObject scheduleDay = createRegisterAndNameIdfObject(openstudio::IddObjectType::Schedule_Day_Hourly, modelObject);
 
