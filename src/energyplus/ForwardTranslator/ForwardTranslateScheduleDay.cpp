@@ -60,6 +60,8 @@ namespace energyplus {
       for (unsigned i = 0; i < 24; ++i) {
         scheduleDay.setDouble(Schedule_Day_HourlyFields::Hour1 + i, values[i]);
       }
+
+      return scheduleDay;
     }
     else {
       // Fallback to Schedule:Day:Interval
@@ -99,9 +101,9 @@ namespace energyplus {
         group.setString(Schedule_Day_IntervalExtensibleFields::Time, ss.str());
         group.setDouble(Schedule_Day_IntervalExtensibleFields::ValueUntilTime, values[i]);
       }
-    }
 
-    return scheduleDay;
+      return scheduleDay;
+    }
   }
 
 }  // namespace energyplus
