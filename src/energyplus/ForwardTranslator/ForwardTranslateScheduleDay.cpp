@@ -42,10 +42,9 @@ namespace energyplus {
       int minutes = times[i].minutes() + (int)floor((times[i].seconds() / 60.0) + 0.5);
       if (minutes != 0) {
         use_hourly = false;
+      } else if (values[i] != values[0]) {
+        use_hourly = false;
       }
-    }
-    if (std::set<double>( values.begin(), values.end() ).size() == 1) {
-      use_hourly = false;
     }
 
     if (use_hourly) {
