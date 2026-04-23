@@ -18,6 +18,7 @@
 #include "../../utilities/core/Assert.hpp"
 
 #include <utilities/idd/Schedule_Day_Interval_FieldEnums.hxx>
+#include <utilities/idd/Schedule_Day_Hourly_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 
 using namespace openstudio::model;
@@ -29,47 +30,75 @@ namespace openstudio {
 namespace energyplus {
 
   boost::optional<IdfObject> ForwardTranslator::translateScheduleDay(ScheduleDay& modelObject) {
-    IdfObject scheduleDay = createRegisterAndNameIdfObject(openstudio::IddObjectType::Schedule_Day_Interval, modelObject);
-
-    boost::optional<ScheduleTypeLimits> scheduleTypeLimits = modelObject.scheduleTypeLimits();
-    if (scheduleTypeLimits) {
-      boost::optional<IdfObject> idfScheduleTypeLimits = translateAndMapModelObject(*scheduleTypeLimits);
-      if (idfScheduleTypeLimits) {
-        scheduleDay.setString(Schedule_Day_IntervalFields::ScheduleTypeLimitsName, idfScheduleTypeLimits->name().get());
-      }
-    }
-
-    scheduleDay.setString(Schedule_Day_IntervalFields::InterpolatetoTimestep, modelObject.interpolatetoTimestep());
-
     std::vector<double> values = modelObject.values();
     std::vector<openstudio::Time> times = modelObject.times();
 
     unsigned N = values.size();
     OS_ASSERT(N == times.size());
 
-    scheduleDay.clearExtensibleGroups();
-
+    // Check if 24 hourly values
+    bool is_hourly = (N == 24);
     for (unsigned i = 0; i < N; ++i) {
-      IdfExtensibleGroup group = scheduleDay.pushExtensibleGroup();
-
-      std::string hourPrefix;
-      std::string minutePrefix;
-
-      int hours = times[i].hours() + 24 * times[i].days();
-      if (hours < 10) {
-        hourPrefix = "0";
-      }
-
       int minutes = times[i].minutes() + (int)floor((times[i].seconds() / 60.0) + 0.5);
-      if (minutes < 10) {
-        minutePrefix = "0";
+      if (minutes != 0) {
+        is_hourly = false;
+      }
+    }
+
+    if (is_hourly) {
+      // Use Schedule:Day:Hourly for simplicity
+      IdfObject scheduleDay = createRegisterAndNameIdfObject(openstudio::IddObjectType::Schedule_Day_Hourly, modelObject);
+
+      boost::optional<ScheduleTypeLimits> scheduleTypeLimits = modelObject.scheduleTypeLimits();
+      if (scheduleTypeLimits) {
+        boost::optional<IdfObject> idfScheduleTypeLimits = translateAndMapModelObject(*scheduleTypeLimits);
+        if (idfScheduleTypeLimits) {
+          scheduleDay.setString(Schedule_Day_HourlyFields::ScheduleTypeLimitsName, idfScheduleTypeLimits->name().get());
+        }
       }
 
-      std::stringstream ss;
-      ss << hourPrefix << hours << ":" << minutePrefix << minutes;
+      for (unsigned i = 0; i < 24; ++i) {
+        scheduleDay.setDouble(Schedule_Day_HourlyFields::Hour1 + i, values[i]);
+      }
+    }
+    else {
+      // Fallback to Schedule:Day:Interval
+      IdfObject scheduleDay = createRegisterAndNameIdfObject(openstudio::IddObjectType::Schedule_Day_Interval, modelObject);
 
-      group.setString(Schedule_Day_IntervalExtensibleFields::Time, ss.str());
-      group.setDouble(Schedule_Day_IntervalExtensibleFields::ValueUntilTime, values[i]);
+      boost::optional<ScheduleTypeLimits> scheduleTypeLimits = modelObject.scheduleTypeLimits();
+      if (scheduleTypeLimits) {
+        boost::optional<IdfObject> idfScheduleTypeLimits = translateAndMapModelObject(*scheduleTypeLimits);
+        if (idfScheduleTypeLimits) {
+          scheduleDay.setString(Schedule_Day_IntervalFields::ScheduleTypeLimitsName, idfScheduleTypeLimits->name().get());
+        }
+      }
+
+      scheduleDay.setString(Schedule_Day_IntervalFields::InterpolatetoTimestep, modelObject.interpolatetoTimestep());
+
+      scheduleDay.clearExtensibleGroups();
+
+      for (unsigned i = 0; i < N; ++i) {
+        IdfExtensibleGroup group = scheduleDay.pushExtensibleGroup();
+
+        std::string hourPrefix;
+        std::string minutePrefix;
+
+        int hours = times[i].hours() + 24 * times[i].days();
+        if (hours < 10) {
+          hourPrefix = "0";
+        }
+
+        int minutes = times[i].minutes() + (int)floor((times[i].seconds() / 60.0) + 0.5);
+        if (minutes < 10) {
+          minutePrefix = "0";
+        }
+
+        std::stringstream ss;
+        ss << hourPrefix << hours << ":" << minutePrefix << minutes;
+
+        group.setString(Schedule_Day_IntervalExtensibleFields::Time, ss.str());
+        group.setDouble(Schedule_Day_IntervalExtensibleFields::ValueUntilTime, values[i]);
+      }
     }
 
     return scheduleDay;
