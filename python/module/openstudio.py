@@ -19,6 +19,7 @@ if __package__ or "." in __name__:
     # from . import openstudiomodelzonehvac as momodelzonehvac
     from . import openstudioairflow as airflow
     from . import openstudioenergyplus as energyplus
+    from . import openstudioepmodel as epmodel
     from . import openstudioepjson as epjson
     from . import openstudiogbxml as gbxml
     from . import openstudiogltf as gltf
@@ -56,6 +57,7 @@ else:
 
     import openstudioairflow as airflow
     import openstudioenergyplus as energyplus
+    import openstudioepmodel as epmodel
     import openstudioepjson as epjson
     import openstudiogbxml as gbxml
     import openstudiogltf as gltf

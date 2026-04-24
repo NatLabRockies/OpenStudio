@@ -2596,6 +2596,11 @@ set(${target_name}_src
   Loop/Loop.cpp
   )
 
+set(${target_name}_swig_src
+  EPModel_Common_Include.i
+  EPModel.i
+)
+
 add_library(${target_name}
   OBJECT
   ${${target_name}_src}
@@ -2617,6 +2622,10 @@ target_link_libraries(${target_name} PUBLIC ${${target_name}_depends})
 add_dependencies(${target_name} GenerateIddFactoryRun)
 
 CREATE_SRC_GROUPS("${${target_name}_src}")
+CREATE_SRC_GROUPS("${${target_name}_swig_src}")
+
+include("${CMAKE_CURRENT_SOURCE_DIR}/EPModelSwig.cmake")
+make_epmodel_swig_bindings(OpenStudioEPModel EPModel "${CMAKE_CURRENT_SOURCE_DIR}/EPModel.i" "${${target_name}_swig_src}" ${target_name} OpenStudioUtilities)
 
 
 set(${target_name}_test_src

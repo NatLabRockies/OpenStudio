@@ -12,6 +12,7 @@ target_link_libraries(
  openstudio_model
  openstudio_modelica
  openstudio_energyplus
+ openstudio_epmodel
  openstudio_epjson
  openstudio_alfalfa
  openstudio_measure
