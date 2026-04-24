@@ -7,6 +7,8 @@
 #define EPMODEL_AIRTERMINALSINGLEDUCTVAVNOREHEAT_IMPL_HPP
 
 #include "StraightComponent/StraightComponent_Impl.hpp"
+#include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
+#include "Node.hpp"
 
 #include <vector>
 
@@ -23,6 +25,9 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool removeFromLoop() override;
+      boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
+      bool addToNode(Node& node) override;
 
       std::vector<std::string> zoneMinimumAirFlowInputMethodValues() const;
 

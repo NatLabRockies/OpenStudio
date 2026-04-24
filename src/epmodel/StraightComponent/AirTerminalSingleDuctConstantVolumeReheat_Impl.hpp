@@ -26,6 +26,9 @@ namespace openstudio {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      std::vector<ModelObject> children() const override;
+      std::vector<openstudio::IdfObject> remove() override;
+      bool removeFromLoop() override;
       boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
       bool addToNode(Node& node);
 

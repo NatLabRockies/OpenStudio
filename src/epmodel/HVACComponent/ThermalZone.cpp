@@ -1413,10 +1413,9 @@ namespace epmodel {
       return false;
     }
 
-    // Keep this symmetric with addEquipment. ThermalZone only owns direct attach/detach for ZoneHVACComponent objects;
-    // those components know how to remove their equipment-list entry and any ZoneHVAC:EquipmentConnections nodes they own.
-    // Air terminals and other node-participating equipment are registered by addToNode-style topology code, so their
-    // detachment must be handled by that topology owner rather than by this list-style entry point.
+    // Keep direct ZoneHVAC removal symmetric with addEquipment. For air terminals and other node-participating
+    // equipment, match canonical ThermalZone::removeEquipment semantics by allowing the zone equipment list entry
+    // to be cleared without forcing topology teardown here; the owning topology still performs the actual disconnect.
     bool ThermalZone_Impl::removeEquipment(const openstudio::epmodel::ModelObject& equipment) {
       if (equipment.model() != model()) {
         return false;
@@ -1432,12 +1431,7 @@ namespace epmodel {
         return !zoneHVAC->thermalZone();
       }
 
-      LOG_FREE(Warn, "openstudio.epmodel.ThermalZone",
-               "ThermalZone::removeEquipment only detaches ZoneHVACComponent objects directly. Refusing to remove "
-                 << equipment.briefDescription() << " of type '" << equipment.iddObject().type().valueName() << "' from "
-                 << getObject<openstudio::epmodel::ThermalZone>().briefDescription()
-                 << ". Air terminals and other node-participating equipment should be detached through their owning topology.");
-      return false;
+      return zoneHVACEquipmentList().removeEquipment(equipment);
     }
 
     std::vector<openstudio::epmodel::ModelObject> ThermalZone_Impl::equipment() const {

@@ -80,6 +80,9 @@
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeNoReheat_Impl.hpp"
 #include "StraightComponent/BoilerHotWater_Impl.hpp"
 #include "StraightComponent/BoilerSteam_Impl.hpp"
+#include "StraightComponent/CoilCoolingCooledBeam_Impl.hpp"
+#include "StraightComponent/CoilCoolingFourPipeBeam_Impl.hpp"
+#include "StraightComponent/CoilHeatingFourPipeBeam_Impl.hpp"
 #include "StraightComponent/DistrictCooling_Impl.hpp"
 #include "StraightComponent/DistrictHeatingSteam_Impl.hpp"
 #include "StraightComponent/DistrictHeatingWater_Impl.hpp"
@@ -1341,6 +1344,9 @@ namespace epmodel {
                                CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_ConstantFlow, CoilCoolingLowTempRadiantConstFlow_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_VariableFlow, CoilCoolingLowTempRadiantVarFlow_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_CooledBeam, CoilCoolingCooledBeam_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_FourPipeBeam, CoilCoolingFourPipeBeam_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Heating_FourPipeBeam, CoilHeatingFourPipeBeam_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_Water_Panel_Radiant, CoilCoolingWaterPanelRadiant_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_Cooling_DX_VariableSpeed, CoilCoolingDXVariableSpeed_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::Coil_Cooling_Water, CoilCoolingWater_Impl);
@@ -2276,6 +2282,9 @@ namespace epmodel {
                                 CoilCoolingDXVariableRefrigerantFlowFluidTemperatureControl_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_ConstantFlow, CoilCoolingLowTempRadiantConstFlow_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_LowTemperatureRadiant_VariableFlow, CoilCoolingLowTempRadiantVarFlow_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_CooledBeam, CoilCoolingCooledBeam_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_FourPipeBeam, CoilCoolingFourPipeBeam_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Heating_FourPipeBeam, CoilHeatingFourPipeBeam_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::OS_Coil_Cooling_Water_Panel_Radiant, CoilCoolingWaterPanelRadiant_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_Cooling_DX_VariableSpeed, CoilCoolingDXVariableSpeed_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::Coil_Cooling_Water, CoilCoolingWater_Impl);

@@ -42,6 +42,12 @@
 #include "StraightComponent/CoilCoolingLowTempRadiantVarFlow.hpp"
 #include "StraightComponent/CoilCoolingLowTempRadiantVarFlow_Impl.hpp"
 #include "StraightComponent/CoilCoolingWaterPanelRadiant.hpp"
+#include "StraightComponent/CoilCoolingCooledBeam.hpp"
+#include "StraightComponent/CoilCoolingCooledBeam_Impl.hpp"
+#include "StraightComponent/CoilCoolingFourPipeBeam.hpp"
+#include "StraightComponent/CoilCoolingFourPipeBeam_Impl.hpp"
+#include "StraightComponent/CoilHeatingFourPipeBeam.hpp"
+#include "StraightComponent/CoilHeatingFourPipeBeam_Impl.hpp"
 #include "StraightComponent/CoilCoolingWaterPanelRadiant_Impl.hpp"
 #include "StraightComponent/CoilHeatingLowTempRadiantConstFlow.hpp"
 #include "StraightComponent/CoilHeatingWaterBaseboard.hpp"
@@ -410,7 +416,7 @@ namespace epmodel {
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
     namespace {
 
@@ -420,40 +426,66 @@ namespace detail {
       // reusable APIs prematurely. Keep these helpers file-local unless and
       // until the same behavior is needed in more than one loop
       // implementation.
-      bool branchContainsNode(Model model, const Branch& branch, const Node& node, const Node& inletNode, const Node& outletNode,
-                              bool isInletBranch, bool isOutletBranch, bool isEquipmentBranch) {
-        // Empty equipment branches are represented by a transient branch node
-        // rather than a persisted component row. The inlet and outlet anchor
-        // branches use the loop's canonical inlet/outlet nodes instead.
-      const auto components = branch.components();
-      if (components.empty()) {
-        if (isEquipmentBranch) {
-          return model.getOrCreateTransientByName<Node>(branch.nameString() + " Node") == node;
-        }
-        if (isInletBranch) {
-          return inletNode == node;
-        }
-        if (isOutletBranch) {
-          return outletNode == node;
+      bool isBeamDemandBranchComponent(const HVACComponent& hvacComponent) {
+        return hvacComponent.optionalCast<CoilCoolingCooledBeam>() || hvacComponent.optionalCast<CoilCoolingFourPipeBeam>()
+               || hvacComponent.optionalCast<CoilHeatingFourPipeBeam>();
+      }
+
+      template <typename CoilType>
+      bool hasOtherBeamDemandComponentOnLoopOfType(const Model& model, const PlantLoop& thisLoop, const HVACComponent& hvacComponent) {
+        for (const auto& coil : model.getConcreteModelObjects<CoilType>()) {
+          if (coil.handle() == hvacComponent.handle()) {
+            continue;
+          }
+          if (auto loop = coil.plantLoop()) {
+            if (*loop == thisLoop) {
+              return true;
+            }
+          }
         }
         return false;
       }
 
-      if (auto firstInletNode = branch.componentInletNode(0u)) {
-        if (*firstInletNode == node) {
-          return true;
-        }
+      bool hasOtherBeamDemandComponentOnLoop(const Model& model, const PlantLoop& thisLoop, const HVACComponent& hvacComponent) {
+        return hasOtherBeamDemandComponentOnLoopOfType<CoilCoolingCooledBeam>(model, thisLoop, hvacComponent)
+               || hasOtherBeamDemandComponentOnLoopOfType<CoilCoolingFourPipeBeam>(model, thisLoop, hvacComponent)
+               || hasOtherBeamDemandComponentOnLoopOfType<CoilHeatingFourPipeBeam>(model, thisLoop, hvacComponent);
       }
 
-      for (unsigned i = 0; i < components.size(); ++i) {
-        if (auto branchOutletNode = branch.componentOutletNode(i)) {
-          if (*branchOutletNode == node) {
+      bool branchContainsNode(Model model, const Branch& branch, const Node& node, const Node& inletNode, const Node& outletNode, bool isInletBranch,
+                              bool isOutletBranch, bool isEquipmentBranch) {
+        // Empty equipment branches are represented by a transient branch node
+        // rather than a persisted component row. The inlet and outlet anchor
+        // branches use the loop's canonical inlet/outlet nodes instead.
+        const auto components = branch.components();
+        if (components.empty()) {
+          if (isEquipmentBranch) {
+            return model.getOrCreateTransientByName<Node>(branch.nameString() + " Node") == node;
+          }
+          if (isInletBranch) {
+            return inletNode == node;
+          }
+          if (isOutletBranch) {
+            return outletNode == node;
+          }
+          return false;
+        }
+
+        if (auto firstInletNode = branch.componentInletNode(0u)) {
+          if (*firstInletNode == node) {
             return true;
           }
         }
-      }
 
-      return false;
+        for (unsigned i = 0; i < components.size(); ++i) {
+          if (auto branchOutletNode = branch.componentOutletNode(i)) {
+            if (*branchOutletNode == node) {
+              return true;
+            }
+          }
+        }
+
+        return false;
       }
 
       // Plant-loop projection is driven by exact node-role matches, not by
@@ -569,8 +601,7 @@ namespace detail {
     // after branch edits. The BranchList is the source of truth: one inlet branch,
     // one or more equipment branches in the middle, and one outlet branch. The
     // splitter and mixer are rebuilt to match that ordering exactly.
-    bool PlantLoop_Impl::syncConnectorPorts(ConnectorSplitter& splitter, ConnectorMixer& mixer, const Branch& inletBranch,
-                                            const Branch& outletBranch,
+    bool PlantLoop_Impl::syncConnectorPorts(ConnectorSplitter& splitter, ConnectorMixer& mixer, const Branch& inletBranch, const Branch& outletBranch,
                                             const std::vector<Branch>& equipmentBranches) const {
       if (!splitter.getImpl<openstudio::epmodel::detail::ConnectorSplitter_Impl>()->setInletBranch(inletBranch)) {
         return false;
@@ -1340,9 +1371,8 @@ namespace detail {
     }
 
     bool PlantLoop_Impl::setPrimaryPlantEquipmentOperationSchemeSchedule(Schedule& schedule) {
-      return plantEquipmentOperationSchemes()
-        .getImpl<detail::PlantEquipmentOperationSchemes_Impl>()
-        ->setPrimaryPlantEquipmentOperationSchemeSchedule(schedule);
+      return plantEquipmentOperationSchemes().getImpl<detail::PlantEquipmentOperationSchemes_Impl>()->setPrimaryPlantEquipmentOperationSchemeSchedule(
+        schedule);
     }
 
     void PlantLoop_Impl::resetPrimaryPlantEquipmentOperationSchemeSchedule() {
@@ -1453,8 +1483,9 @@ namespace detail {
       }
       if (auto waterToWater = hvacComponent.optionalCast<WaterToWaterComponent>()) {
         if (waterToWater->plantLoop()) {
-          const bool canRouteSupplySideToSource = (hvacComponent.optionalCast<WaterHeaterMixed>() || hvacComponent.optionalCast<WaterHeaterStratified>())
-                                                  && !waterToWater->secondaryPlantLoop();
+          const bool canRouteSupplySideToSource =
+            (hvacComponent.optionalCast<WaterHeaterMixed>() || hvacComponent.optionalCast<WaterHeaterStratified>())
+            && !waterToWater->secondaryPlantLoop();
           if (!canRouteSupplySideToSource) {
             return false;
           }
@@ -1470,14 +1501,15 @@ namespace detail {
       // A newly canonicalized loop starts with one empty equipment branch. Reuse
       // that branch instead of manufacturing a second branch the first time
       // equipment is added.
-      if ((equipmentBranches.size() == 1u) && equipmentBranches.front().components().empty()) {
+      if (!isBeamDemandBranchComponent(hvacComponent) && (equipmentBranches.size() == 1u) && equipmentBranches.front().components().empty()) {
         auto node = model().getOrCreateTransientByName<Node>(equipmentBranches.front().nameString() + " Node");
         return hvacComponent.addToNode(node);
       }
 
       const auto insertIndex = static_cast<unsigned>(branchList.branches().size() - 1u);
       Branch branch(model());
-      if (!branch.setName(getObject<PlantLoop>().nameString() + " Supply Branch " + std::to_string(static_cast<unsigned>(equipmentBranches.size() + 1u)))) {
+      if (!branch.setName(getObject<PlantLoop>().nameString() + " Supply Branch "
+                          + std::to_string(static_cast<unsigned>(equipmentBranches.size() + 1u)))) {
         branch.setName(model().nextName(openstudio::IddObjectType::Branch, true));
       }
       if (!branchList.getImpl<detail::BranchList_Impl>()->insertBranch(insertIndex, branch)) {
@@ -1528,6 +1560,23 @@ namespace detail {
       }
 
       if (!targetBranch) {
+        if (auto straightComponent = hvacComponent.optionalCast<StraightComponent>()) {
+          if (auto inletObject = straightComponent->inletModelObject()) {
+            if (auto inletNode = inletObject->optionalCast<Node>()) {
+              targetBranch = branchForNode(*inletNode);
+            }
+          }
+          if (!targetBranch) {
+            if (auto outletObject = straightComponent->outletModelObject()) {
+              if (auto outletNode = outletObject->optionalCast<Node>()) {
+                targetBranch = branchForNode(*outletNode);
+              }
+            }
+          }
+        }
+      }
+
+      if (!targetBranch) {
         return false;
       }
 
@@ -1544,6 +1593,13 @@ namespace detail {
       }
 
       targetBranch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->clearComponents();
+
+      if (components.empty()) {
+        if (auto straightComponent = hvacComponent.optionalCast<StraightComponent>()) {
+          hvacComponent.setPointer(straightComponent->inletPort(), Handle());
+          hvacComponent.setPointer(straightComponent->outletPort(), Handle());
+        }
+      }
 
       for (auto component : components) {
         if (auto straightComponent = component.optionalCast<StraightComponent>()) {
@@ -1593,7 +1649,7 @@ namespace detail {
           return false;
         }
       }
-      if (hvacComponent.optionalCast<StraightComponent>() && hvacComponent.loop()) {
+      if (hvacComponent.optionalCast<StraightComponent>() && hvacComponent.loop() && !isBeamDemandBranchComponent(hvacComponent)) {
         return false;
       }
       if (auto waterToWater = hvacComponent.optionalCast<WaterToWaterComponent>()) {
@@ -1612,10 +1668,20 @@ namespace detail {
       auto splitter = demandSplitter().cast<ConnectorSplitter>();
       auto mixer = demandMixer().cast<ConnectorMixer>();
 
+      const auto thisLoop = getObject<PlantLoop>();
+      const bool hasBeamDemandComponent =
+        isBeamDemandBranchComponent(hvacComponent) && hasOtherBeamDemandComponentOnLoop(model(), thisLoop, hvacComponent);
+
+      if (isBeamDemandBranchComponent(hvacComponent) && !hasBeamDemandComponent && (equipmentBranches.size() == 1u)
+          && equipmentBranches.front().extensibleGroups().empty()) {
+        auto node = model().getOrCreateTransientByName<Node>(equipmentBranches.front().nameString() + " Node");
+        return hvacComponent.addToNode(node);
+      }
+
       // Mirror the supply-side behavior: the first real component should claim the
       // default empty equipment branch instead of forcing an unnecessary parallel
       // branch into existence.
-      if ((equipmentBranches.size() == 1u) && equipmentBranches.front().components().empty()) {
+      if (!isBeamDemandBranchComponent(hvacComponent) && (equipmentBranches.size() == 1u) && equipmentBranches.front().components().empty()) {
         auto node = model().getOrCreateTransientByName<Node>(equipmentBranches.front().nameString() + " Node");
         if (tertiary) {
           return hvacComponent.cast<WaterToWaterComponent>().addToTertiaryNode(node);
@@ -1625,7 +1691,8 @@ namespace detail {
 
       const auto insertIndex = static_cast<unsigned>(branchList.branches().size() - 1u);
       Branch branch(model());
-      if (!branch.setName(getObject<PlantLoop>().nameString() + " Demand Branch " + std::to_string(static_cast<unsigned>(equipmentBranches.size() + 1u)))) {
+      if (!branch.setName(getObject<PlantLoop>().nameString() + " Demand Branch "
+                          + std::to_string(static_cast<unsigned>(equipmentBranches.size() + 1u)))) {
         branch.setName(model().nextName(openstudio::IddObjectType::Branch, true));
       }
       if (!branchList.getImpl<detail::BranchList_Impl>()->insertBranch(insertIndex, branch)) {
@@ -1657,7 +1724,7 @@ namespace detail {
     }
 
     bool PlantLoop_Impl::removeDemandBranchWithComponent(HVACComponent hvacComponent) {
-      if (!demandComponent(hvacComponent.handle())) {
+      if (!demandComponent(hvacComponent.handle()) && !isBeamDemandBranchComponent(hvacComponent)) {
         return false;
       }
 
@@ -1682,6 +1749,23 @@ namespace detail {
       }
 
       if (!targetBranch) {
+        if (auto straightComponent = hvacComponent.optionalCast<StraightComponent>()) {
+          if (auto inletObject = straightComponent->inletModelObject()) {
+            if (auto inletNode = inletObject->optionalCast<Node>()) {
+              targetBranch = branchForNode(*inletNode);
+            }
+          }
+          if (!targetBranch) {
+            if (auto outletObject = straightComponent->outletModelObject()) {
+              if (auto outletNode = outletObject->optionalCast<Node>()) {
+                targetBranch = branchForNode(*outletNode);
+              }
+            }
+          }
+        }
+      }
+
+      if (!targetBranch) {
         return false;
       }
 
@@ -1691,6 +1775,13 @@ namespace detail {
       const bool keepAsDefaultBranch = (equipmentBranches.size() == 1u);
       auto splitter = demandSplitter().cast<ConnectorSplitter>();
       auto mixer = demandMixer().cast<ConnectorMixer>();
+
+      if (components.empty()) {
+        if (auto straightComponent = hvacComponent.optionalCast<StraightComponent>()) {
+          hvacComponent.setPointer(straightComponent->inletPort(), Handle());
+          hvacComponent.setPointer(straightComponent->outletPort(), Handle());
+        }
+      }
 
       for (auto component : components) {
         if (auto straightComponent = component.optionalCast<StraightComponent>()) {
@@ -1830,8 +1921,8 @@ namespace detail {
           outletBranch.setName(model().nextName(openstudio::IddObjectType::Branch, true));
         }
         supplyBranchListImpl->addBranch(outletBranch);
-        detail::addLoadWarning(context,
-                               "Plant-side BranchList for PlantLoop '" + loopName + "' only had one branch. Treated it as the equipment branch and added inlet and outlet branches.");
+        detail::addLoadWarning(context, "Plant-side BranchList for PlantLoop '" + loopName
+                                          + "' only had one branch. Treated it as the equipment branch and added inlet and outlet branches.");
         supplyBranches = supplyBranchListTarget.branches();
       } else if (supplyBranches.size() == 2u) {
         Branch inletBranch(model());
@@ -1907,8 +1998,8 @@ namespace detail {
           outletBranch.setName(model().nextName(openstudio::IddObjectType::Branch, true));
         }
         demandBranchListImpl->addBranch(outletBranch);
-        detail::addLoadWarning(context,
-                               "Demand-side BranchList for PlantLoop '" + loopName + "' only had one branch. Treated it as the equipment branch and added inlet and outlet branches.");
+        detail::addLoadWarning(context, "Demand-side BranchList for PlantLoop '" + loopName
+                                          + "' only had one branch. Treated it as the equipment branch and added inlet and outlet branches.");
         demandBranches = demandBranchListTarget.branches();
       } else if (demandBranches.size() == 2u) {
         Branch inletBranch(model());
@@ -2004,8 +2095,8 @@ namespace detail {
       if (!supplySplitterObject) {
         supplySplitterObject = ConnectorSplitter(model());
         supplySplitterObject->setName(loopName + " Supply Splitter");
-        detail::addLoadInfo(context,
-                            "Created missing plant-side Connector:Splitter '" + supplySplitterObject->nameString() + "' for PlantLoop '" + loopName + "'.");
+        detail::addLoadInfo(context, "Created missing plant-side Connector:Splitter '" + supplySplitterObject->nameString() + "' for PlantLoop '"
+                                       + loopName + "'.");
       }
 
       boost::optional<ConnectorMixer> supplyMixerObject;
@@ -2046,7 +2137,8 @@ namespace detail {
                                "Plant-side connector port count mismatch for PlantLoop '" + loopName + "'. Rebuilding ports from BranchList order.");
       }
 
-      OS_ASSERT(syncConnectorPorts(*supplySplitterObject, *supplyMixerObject, supplyInletBranchRef, supplyOutletBranchRef, supplyEquipmentBranchRefs));
+      OS_ASSERT(
+        syncConnectorPorts(*supplySplitterObject, *supplyMixerObject, supplyInletBranchRef, supplyOutletBranchRef, supplyEquipmentBranchRefs));
 
       // Demand-side splitter/mixer pair mirror the same branch contract.
       // Keep the branch ports synchronized to the BranchList instead of
@@ -2083,8 +2175,8 @@ namespace detail {
       if (!demandSplitterObject) {
         demandSplitterObject = ConnectorSplitter(model());
         demandSplitterObject->setName(loopName + " Demand Splitter");
-        detail::addLoadInfo(context,
-                            "Created missing demand-side Connector:Splitter '" + demandSplitterObject->nameString() + "' for PlantLoop '" + loopName + "'.");
+        detail::addLoadInfo(context, "Created missing demand-side Connector:Splitter '" + demandSplitterObject->nameString() + "' for PlantLoop '"
+                                       + loopName + "'.");
       }
 
       boost::optional<ConnectorMixer> demandMixerObject;
@@ -2115,8 +2207,8 @@ namespace detail {
       if (!demandMixerObject) {
         demandMixerObject = ConnectorMixer(model());
         demandMixerObject->setName(loopName + " Demand Mixer");
-        detail::addLoadInfo(context,
-                            "Created missing demand-side Connector:Mixer '" + demandMixerObject->nameString() + "' for PlantLoop '" + loopName + "'.");
+        detail::addLoadInfo(context, "Created missing demand-side Connector:Mixer '" + demandMixerObject->nameString() + "' for PlantLoop '"
+                                       + loopName + "'.");
       }
 
       if ((demandSplitterObject->nextBranchIndex() != demandEquipmentBranchRefs.size())
@@ -2125,7 +2217,8 @@ namespace detail {
                                "Demand-side connector port count mismatch for PlantLoop '" + loopName + "'. Rebuilding ports from BranchList order.");
       }
 
-      OS_ASSERT(syncConnectorPorts(*demandSplitterObject, *demandMixerObject, demandInletBranchRef, demandOutletBranchRef, demandEquipmentBranchRefs));
+      OS_ASSERT(
+        syncConnectorPorts(*demandSplitterObject, *demandMixerObject, demandInletBranchRef, demandOutletBranchRef, demandEquipmentBranchRefs));
 
       // PlantLoop owns one canonical setpoint anchor, one sizing object, and
       // one availability-manager assignment list. Create or repair them here so
@@ -2139,9 +2232,8 @@ namespace detail {
           for (const auto& candidate : model().getObjectsByName(*originalSetpointNodeName, true, true)) {
             if (auto node = candidate.optionalCast<Node>()) {
               OS_ASSERT(setPointer(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName, node->handle(), false));
-              detail::addLoadWarning(context,
-                                     "Recovered Loop Temperature Setpoint Node for PlantLoop '" + loopName + "' by matching Node '"
-                                       + node->nameString() + "' by name.");
+              detail::addLoadWarning(context, "Recovered Loop Temperature Setpoint Node for PlantLoop '" + loopName + "' by matching Node '"
+                                                + node->nameString() + "' by name.");
               repairedByName = true;
               break;
             }
@@ -2151,11 +2243,11 @@ namespace detail {
         if (!repairedByName) {
           OS_ASSERT(setPointer(openstudio::PlantLoopFields::LoopTemperatureSetpointNodeName, supplyOutletNode().handle(), false));
           if (originalSetpointNodeName && !originalSetpointNodeName->empty()) {
-            detail::addLoadWarning(context,
-                                   "PlantLoop '" + loopName + "' had an invalid Loop Temperature Setpoint Node reference. Reset it to the supply outlet node.");
+            detail::addLoadWarning(context, "PlantLoop '" + loopName
+                                              + "' had an invalid Loop Temperature Setpoint Node reference. Reset it to the supply outlet node.");
           } else {
-            detail::addLoadInfo(context,
-                                "Created default Loop Temperature Setpoint Node reference for PlantLoop '" + loopName + "' on the supply outlet node.");
+            detail::addLoadInfo(context, "Created default Loop Temperature Setpoint Node reference for PlantLoop '" + loopName
+                                           + "' on the supply outlet node.");
           }
         }
       }
@@ -2178,13 +2270,12 @@ namespace detail {
         for (unsigned i = 1u; i < sizingPlantsForLoop.size(); ++i) {
           OS_ASSERT(sizingPlantsForLoop[i].setString(openstudio::Sizing_PlantFields::PlantorCondenserLoopName, ""));
         }
-        detail::addLoadWarning(context,
-                               "PlantLoop '" + loopName + "' had multiple Sizing:Plant objects attached. Kept '"
-                                 + sizingPlantsForLoop.front().nameString() + "' and detached the extras.");
+        detail::addLoadWarning(context, "PlantLoop '" + loopName + "' had multiple Sizing:Plant objects attached. Kept '"
+                                          + sizingPlantsForLoop.front().nameString() + "' and detached the extras.");
       }
 
-      auto assignmentList =
-        getOrCreateTarget<AvailabilityManagerAssignmentList>(openstudio::PlantLoopFields::AvailabilityManagerListName, loopName + " Availability Manager List");
+      auto assignmentList = getOrCreateTarget<AvailabilityManagerAssignmentList>(openstudio::PlantLoopFields::AvailabilityManagerListName,
+                                                                                 loopName + " Availability Manager List");
       if (assignmentList.nameString().empty()) {
         assignmentList.setName(loopName + " Availability Manager List");
       }
@@ -2196,9 +2287,8 @@ namespace detail {
         operationSchemes.setName(loopName + " Operation Schemes");
       }
       operationSchemes.getImpl<detail::PlantEquipmentOperationSchemes_Impl>()->canonicalize(context);
-
     }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

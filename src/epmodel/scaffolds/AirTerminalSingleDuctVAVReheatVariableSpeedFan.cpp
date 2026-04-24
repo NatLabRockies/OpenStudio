@@ -6,18 +6,108 @@
 #include "AirTerminalSingleDuctVAVReheatVariableSpeedFan.hpp"
 #include "AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl.hpp"
 
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
+#include "HVACComponent.hpp"
+#include "Loop/AirLoopHVAC.hpp"
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "ModelObject.hpp"
+#include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
+#include "ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
+#include "ModelObject/ZoneHVACEquipmentList.hpp"
+#include "Node.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
+#include "Mixer/AirLoopHVACZoneMixer.hpp"
+#include "Splitter/AirLoopHVACZoneSplitter.hpp"
 
+#include <algorithm>
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFan_FieldEnums.hxx>
+#include <utilities/idd/Fan_ConstantVolume_FieldEnums.hxx>
+#include <utilities/idd/Fan_OnOff_FieldEnums.hxx>
+#include <utilities/idd/Fan_VariableVolume_FieldEnums.hxx>
+#include <utilities/idd/Fan_SystemModel_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/ZoneHVAC_AirDistributionUnit_FieldEnums.hxx>
 
 namespace openstudio {
 namespace epmodel {
 
+namespace {
+
+boost::optional<ThermalZone> owningThermalZoneForBranchNode(const Model& model, const Node& node) {
+  for (const auto& zone : model.getConcreteModelObjects<ThermalZone>()) {
+    if (zone.zoneAirNode() == node) {
+      return zone;
+    }
+  }
+  return boost::none;
+}
+
+boost::optional<ThermalZone> thermalZoneContainingTerminal(const Model& model, const ModelObject& terminal) {
+  for (const auto& zone : model.getConcreteModelObjects<ThermalZone>()) {
+    const auto equipment = zone.equipment();
+    if (std::ranges::find(equipment, terminal) != equipment.end()) {
+      return zone;
+    }
+  }
+  return boost::none;
+}
+
+bool registerTerminalWithThermalZone(const ModelObject& terminal, ThermalZone& thermalZone) {
+  auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
+  OS_ASSERT(zoneImpl);
+  return zoneImpl->getZoneHVACEquipmentList().addEquipment(terminal);
+}
+
+bool unregisterTerminalFromThermalZone(const ModelObject& terminal, ThermalZone& thermalZone) {
+  auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
+  OS_ASSERT(zoneImpl);
+  return zoneImpl->getZoneHVACEquipmentList().removeEquipment(terminal);
+}
+
+bool isValidFanType(const IddObjectType type) {
+  return (type == IddObjectType::Fan_ConstantVolume) || (type == IddObjectType::Fan_SystemModel) || (type == IddObjectType::Fan_OnOff)
+         || (type == IddObjectType::Fan_VariableVolume) || (type == IddObjectType::OS_Fan_ConstantVolume)
+         || (type == IddObjectType::OS_Fan_SystemModel) || (type == IddObjectType::OS_Fan_OnOff)
+         || (type == IddObjectType::OS_Fan_VariableVolume);
+}
+
+bool isValidHeatingCoilType(const IddObjectType type) {
+  return (type == IddObjectType::OS_Coil_Heating_Gas) || (type == IddObjectType::OS_Coil_Heating_Electric)
+         || (type == IddObjectType::OS_Coil_Heating_Water) || (type == IddObjectType::Coil_Heating_Fuel)
+         || (type == IddObjectType::Coil_Heating_Electric) || (type == IddObjectType::Coil_Heating_Water);
+}
+
+bool setFanAvailabilitySchedule(HVACComponent& fan, Schedule& schedule) {
+  const auto type = fan.iddObject().type();
+  if (type == IddObjectType::Fan_ConstantVolume || type == IddObjectType::OS_Fan_ConstantVolume) {
+    return fan.setPointer(openstudio::Fan_ConstantVolumeFields::AvailabilityScheduleName, schedule.handle());
+  }
+  if (type == IddObjectType::Fan_OnOff || type == IddObjectType::OS_Fan_OnOff) {
+    return fan.setPointer(openstudio::Fan_OnOffFields::AvailabilityScheduleName, schedule.handle());
+  }
+  if (type == IddObjectType::Fan_VariableVolume || type == IddObjectType::OS_Fan_VariableVolume) {
+    return fan.setPointer(openstudio::Fan_VariableVolumeFields::AvailabilityScheduleName, schedule.handle());
+  }
+  if (type == IddObjectType::Fan_SystemModel || type == IddObjectType::OS_Fan_SystemModel) {
+    return fan.setPointer(openstudio::Fan_SystemModelFields::AvailabilityScheduleName, schedule.handle());
+  }
+  return false;
+}
+
+}  // namespace
+
 AirTerminalSingleDuctVAVReheatVariableSpeedFan::AirTerminalSingleDuctVAVReheatVariableSpeedFan(const Model& model)
-  : ModelObject(AirTerminalSingleDuctVAVReheatVariableSpeedFan::iddObjectType(), model) {
+  : StraightComponent(AirTerminalSingleDuctVAVReheatVariableSpeedFan::iddObjectType(), model) {
+  ScheduleConstant alwaysOn(model);
+  OS_ASSERT(alwaysOn.setValue(1.0));
+  OS_ASSERT(setAvailabilitySchedule(alwaysOn));
   autosizeMaximumCoolingAirFlowRate();
   autosizeMaximumHeatingAirFlowRate();
   OS_ASSERT(setZoneMinimumAirFlowFraction(0.3));
@@ -28,10 +118,38 @@ AirTerminalSingleDuctVAVReheatVariableSpeedFan::AirTerminalSingleDuctVAVReheatVa
 
 AirTerminalSingleDuctVAVReheatVariableSpeedFan::AirTerminalSingleDuctVAVReheatVariableSpeedFan(
   std::shared_ptr<detail::AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : StraightComponent(std::move(impl)) {}
 
 IddObjectType AirTerminalSingleDuctVAVReheatVariableSpeedFan::iddObjectType() {
   return IddObjectType::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFan;
+}
+
+bool AirTerminalSingleDuctVAVReheatVariableSpeedFan::addToNode(Node& node) {
+  return getImpl<detail::AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl>()->addToNode(node);
+}
+
+boost::optional<Schedule> AirTerminalSingleDuctVAVReheatVariableSpeedFan::availabilitySchedule() const {
+  return getImpl<detail::AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl>()->availabilitySchedule();
+}
+
+bool AirTerminalSingleDuctVAVReheatVariableSpeedFan::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl>()->setAvailabilitySchedule(schedule);
+}
+
+HVACComponent AirTerminalSingleDuctVAVReheatVariableSpeedFan::fan() const {
+  return getImpl<detail::AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl>()->fan();
+}
+
+bool AirTerminalSingleDuctVAVReheatVariableSpeedFan::setFan(HVACComponent& fan) {
+  return getImpl<detail::AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl>()->setFan(fan);
+}
+
+HVACComponent AirTerminalSingleDuctVAVReheatVariableSpeedFan::heatingCoil() const {
+  return getImpl<detail::AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl>()->heatingCoil();
+}
+
+bool AirTerminalSingleDuctVAVReheatVariableSpeedFan::setHeatingCoil(HVACComponent& coil) {
+  return getImpl<detail::AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl>()->setHeatingCoil(coil);
 }
 
 boost::optional<double> AirTerminalSingleDuctVAVReheatVariableSpeedFan::maximumCoolingAirFlowRate() const {
@@ -128,6 +246,330 @@ void AirTerminalSingleDuctVAVReheatVariableSpeedFan::resetHeatingConvergenceTole
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+unsigned AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl::inletPort() const {
+  return openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::AirInletNodeName;
+}
+
+unsigned AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl::outletPort() const {
+  return openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::AirOutletNodeName;
+}
+
+boost::optional<ZoneHVACAirDistributionUnit> AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl::zoneHVACAirDistributionUnit() const {
+  auto terminal = getObject<openstudio::epmodel::ModelObject>();
+  for (const auto& source : terminal.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit)) {
+    if (auto adu = source.optionalCast<openstudio::epmodel::ZoneHVACAirDistributionUnit>()) {
+      return adu;
+    }
+  }
+  return boost::none;
+}
+
+std::vector<ModelObject> AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl::children() const {
+  std::vector<ModelObject> result;
+  auto thisObject = getObject<ModelObject>();
+  if (auto fanComponent =
+        thisObject.getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::FanName)) {
+    result.push_back(*fanComponent);
+  }
+  if (auto coil =
+        thisObject.getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::HeatingCoilName)) {
+    result.push_back(*coil);
+  }
+  return result;
+}
+
+std::vector<openstudio::IdfObject> AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl::remove() {
+  auto thisObject = getObject<openstudio::epmodel::ModelObject>();
+  auto coil = thisObject.getModelObjectTarget<openstudio::epmodel::HVACComponent>(
+    openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::HeatingCoilName);
+
+  removeFromLoop();
+
+  if (coil) {
+    if (auto plantLoop = coil->plantLoop()) {
+      plantLoop->removeDemandBranchWithComponent(*coil);
+    }
+  }
+
+  return HVACComponent_Impl::remove();
+}
+
+bool AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl::removeFromLoop() {
+  auto thisObject = getObject<openstudio::epmodel::ModelObject>();
+  auto thermalZone = thermalZoneContainingTerminal(model(), thisObject);
+  auto inletNode = inletModelObject();
+  auto outletNode = outletModelObject();
+  if (!thermalZone && outletNode) {
+    if (auto outletZoneNode = outletNode->optionalCast<Node>()) {
+      thermalZone = owningThermalZoneForBranchNode(model(), *outletZoneNode);
+    }
+  }
+  auto coil = thisObject.getModelObjectTarget<openstudio::epmodel::HVACComponent>(
+    openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::HeatingCoilName);
+  auto plantLoop = coil ? coil->plantLoop() : boost::optional<openstudio::epmodel::PlantLoop>{};
+
+  bool shouldRemoveTerminalInletNode = false;
+  if (auto terminal = thisObject.optionalCast<openstudio::epmodel::HVACComponent>()) {
+    if (auto airLoop = terminal->airLoopHVAC()) {
+      if (inletNode && outletNode) {
+        const auto splitter = airLoop->zoneSplitter();
+        const auto mixer = airLoop->zoneMixer();
+        const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(*inletNode);
+        shouldRemoveTerminalInletNode =
+          (splitter.outletModelObject(splitterBranchIndex) == *inletNode) && (mixer.inletModelObject(splitterBranchIndex) == *outletNode);
+      }
+    }
+  }
+
+  bool removedFromAirLoop = false;
+  if (inletNode && outletNode) {
+    if (!StraightComponent_Impl::removeFromLoop()) {
+      return false;
+    }
+    removedFromAirLoop = true;
+  }
+
+  if (thermalZone && !unregisterTerminalFromThermalZone(thisObject, *thermalZone)) {
+    return false;
+  }
+
+  bool cleanedADU = false;
+  if (auto adu = zoneHVACAirDistributionUnit()) {
+    if (!adu->setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName, openstudio::Handle())) {
+      return false;
+    }
+    if (!adu->setString(openstudio::ZoneHVAC_AirDistributionUnitFields::AirTerminalObjectType, "")) {
+      return false;
+    }
+    if (!adu->setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirTerminalName, openstudio::Handle())) {
+      return false;
+    }
+    cleanedADU = true;
+  }
+
+  if (!setPointer(inletPort(), openstudio::Handle(), false)) {
+    return false;
+  }
+  if (!setPointer(outletPort(), openstudio::Handle(), false)) {
+    return false;
+  }
+
+  if (shouldRemoveTerminalInletNode) {
+    if (auto node = inletNode->optionalCast<openstudio::epmodel::Node>()) {
+      node->remove();
+    }
+  }
+
+  if (plantLoop && coil) {
+    if (!plantLoop->removeDemandBranchWithComponent(*coil)) {
+      return false;
+    }
+  }
+
+  return removedFromAirLoop || static_cast<bool>(thermalZone) || cleanedADU || static_cast<bool>(plantLoop);
+}
+
+bool AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl::addToNode(Node& node) {
+  if (node.model() != model()) {
+    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctVAVReheatVariableSpeedFan",
+             "addToNode requires a node in the same model as the terminal.");
+    return false;
+  }
+
+  if (getObject<openstudio::epmodel::HVACComponent>().loop()) {
+    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctVAVReheatVariableSpeedFan",
+             "Refusing to add an already-connected terminal to node '" << node.nameString() << "'.");
+    return false;
+  }
+
+  auto airLoop = node.airLoopHVAC();
+  if (!airLoop) {
+    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctVAVReheatVariableSpeedFan",
+             "addToNode requires a node that resolves to an AirLoopHVAC context.");
+    return false;
+  }
+
+  auto zoneSplitter = airLoop->zoneSplitter();
+  auto zoneMixer = airLoop->zoneMixer();
+  const auto thisNode = node.cast<ModelObject>();
+  const auto splitterOutlets = zoneSplitter.outletModelObjects();
+  const auto splitterIt = std::ranges::find(splitterOutlets, thisNode);
+  if (splitterIt == splitterOutlets.end()) {
+    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctVAVReheatVariableSpeedFan",
+             "addToNode requires the drop node to be a ZoneSplitter outlet node for the target AirLoopHVAC.");
+    return false;
+  }
+  const auto splitterBranchIndex = static_cast<unsigned>(std::distance(splitterOutlets.begin(), splitterIt));
+
+  auto mixerInlet = zoneMixer.inletModelObject(splitterBranchIndex);
+  if (!mixerInlet) {
+    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctVAVReheatVariableSpeedFan",
+             "addToNode requires a corresponding ZoneMixer inlet for ZoneSplitter branch index " << splitterBranchIndex << ".");
+    return false;
+  }
+  if (*mixerInlet != thisNode) {
+    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctVAVReheatVariableSpeedFan",
+             "addToNode requires the ZoneMixer inlet for ZoneSplitter branch index " << splitterBranchIndex << " to match the drop node.");
+    return false;
+  }
+
+  auto thisObject = getObject<openstudio::epmodel::ModelObject>();
+  if (!thisObject.name()) {
+    thisObject.createName();
+    if (!thisObject.name()) {
+      return false;
+    }
+  }
+
+  auto thermalZone = owningThermalZoneForBranchNode(model(), node);
+  auto adu = zoneHVACAirDistributionUnit();
+  const auto previousADUOutletNode = adu ? adu->outletNode() : boost::optional<Node>{};
+
+  const std::string inletNodeName = node.nameString() + " - " + thisObject.nameString() + " Inlet Node";
+  auto inletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(inletNodeName);
+
+  bool splitterRewired = false;
+  bool inletAssigned = false;
+  bool outletAssigned = false;
+  bool aduUpdated = false;
+  bool zoneRegistered = false;
+
+  const auto rollback = [&]() {
+    if (zoneRegistered && thermalZone) {
+      (void)unregisterTerminalFromThermalZone(thisObject, *thermalZone);
+    }
+    if (adu && aduUpdated) {
+      if (previousADUOutletNode) {
+        (void)adu->getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>()->setOutletNode(*previousADUOutletNode);
+      } else {
+        (void)adu->setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName, openstudio::Handle());
+      }
+    }
+    if (outletAssigned) {
+      (void)setPointer(outletPort(), openstudio::Handle(), false);
+    }
+    if (inletAssigned) {
+      (void)setPointer(inletPort(), openstudio::Handle(), false);
+    }
+    if (splitterRewired) {
+      (void)zoneSplitter.setOutletModelObject(splitterBranchIndex, thisNode);
+    }
+    if (inletNode.sources().empty()) {
+      inletNode.remove();
+    }
+  };
+
+  if (!zoneSplitter.setOutletModelObject(splitterBranchIndex, inletNode.cast<ModelObject>())) {
+    return false;
+  }
+  splitterRewired = true;
+
+  if (!setPointer(inletPort(), inletNode.handle(), false)) {
+    rollback();
+    return false;
+  }
+  inletAssigned = true;
+
+  if (!setPointer(outletPort(), node.handle(), false)) {
+    rollback();
+    return false;
+  }
+  outletAssigned = true;
+
+  if (adu) {
+    if (!adu->getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>()->setOutletNode(node)) {
+      rollback();
+      return false;
+    }
+    aduUpdated = true;
+  }
+
+  if (thermalZone) {
+    if (!registerTerminalWithThermalZone(thisObject, *thermalZone)) {
+      rollback();
+      return false;
+    }
+    zoneRegistered = true;
+  }
+
+  return true;
+}
+
+boost::optional<Schedule> AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl::availabilitySchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::AvailabilityScheduleName);
+}
+
+bool AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  if (!ModelObject_Impl::setSchedule(openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::AvailabilityScheduleName,
+                                     "AirTerminalSingleDuctVAVReheatVariableSpeedFan", "Availability", schedule)) {
+    return false;
+  }
+
+  if (auto fanComponent = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+        openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::FanName)) {
+    if (!setFanAvailabilitySchedule(*fanComponent, schedule)) {
+      LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctVAVReheatVariableSpeedFan",
+               "Failed to synchronize the fan availability schedule for " << briefDescription() << ".");
+      return false;
+    }
+  }
+
+  return true;
+}
+
+HVACComponent AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl::fan() const {
+  auto fanComponent = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+    openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::FanName);
+  OS_ASSERT(fanComponent);
+  return *fanComponent;
+}
+
+bool AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl::setFan(HVACComponent& fanComponent) {
+  if (fanComponent.model() != model()) {
+    return false;
+  }
+  if (!isValidFanType(fanComponent.iddObject().type())) {
+    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctVAVReheatVariableSpeedFan",
+             "Unsupported fan type '" << fanComponent.iddObject().name() << "' for AirTerminalSingleDuctVAVReheatVariableSpeedFan.");
+    return false;
+  }
+  if (!setPointer(openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::FanName, fanComponent.handle(), false)) {
+    return false;
+  }
+  if (!setString(openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::FanObjectType, fanComponent.iddObject().name())) {
+    return false;
+  }
+  if (auto schedule = availabilitySchedule()) {
+    if (!setFanAvailabilitySchedule(fanComponent, *schedule)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+HVACComponent AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl::heatingCoil() const {
+  auto coil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+    openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::HeatingCoilName);
+  OS_ASSERT(coil);
+  return *coil;
+}
+
+bool AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl::setHeatingCoil(HVACComponent& coil) {
+  if (coil.model() != model()) {
+    return false;
+  }
+  if (!isValidHeatingCoilType(coil.iddObject().type())) {
+    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctVAVReheatVariableSpeedFan",
+             "Unsupported heating coil type '" << coil.iddObject().name() << "' for AirTerminalSingleDuctVAVReheatVariableSpeedFan.");
+    return false;
+  }
+  if (!setPointer(openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::HeatingCoilName, coil.handle(), false)) {
+    return false;
+  }
+  return setString(openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::HeatingCoilObjectType, coil.iddObject().name());
+}
 
 boost::optional<double> AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl::maximumCoolingAirFlowRate() const {
   return getDouble(openstudio::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFanFields::MaximumCoolingAirFlowRate, true);

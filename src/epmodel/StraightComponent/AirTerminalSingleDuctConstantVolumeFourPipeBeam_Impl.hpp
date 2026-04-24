@@ -7,14 +7,15 @@
 #define EPMODEL_AIRTERMINALSINGLEDUCTCONSTANTVOLUMEFOURPIPEBEAM_IMPL_HPP
 
 #include "StraightComponent/StraightComponent_Impl.hpp"
+#include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
-class ModelObject;
-class Schedule;
+  class ModelObject;
+  class Schedule;
 
-namespace detail {
+  namespace detail {
 
     class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl : public StraightComponent_Impl
     {
@@ -24,6 +25,10 @@ namespace detail {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      std::vector<ModelObject> children() const override;
+      std::vector<openstudio::IdfObject> remove() override;
+      bool removeFromLoop() override;
+      boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
       bool addToNode(Node& node);
 
       Schedule primaryAirAvailabilitySchedule() const;
@@ -65,9 +70,9 @@ namespace detail {
       bool isRatedPrimaryAirFlowRateperBeamLengthDefaulted() const;
       bool setRatedPrimaryAirFlowRateperBeamLength(double ratedPrimaryAirFlowRateperBeamLength);
       void resetRatedPrimaryAirFlowRateperBeamLength();
-};
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

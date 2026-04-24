@@ -6,49 +6,71 @@
 #ifndef EPMODEL_AIRTERMINALSINGLEDUCTVAVREHEATVARIABLESPEEDFAN_IMPL_HPP
 #define EPMODEL_AIRTERMINALSINGLEDUCTVAVREHEATVARIABLESPEEDFAN_IMPL_HPP
 
-#include "ModelObject_Impl.hpp"
+#include "StraightComponent/StraightComponent_Impl.hpp"
+#include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
+#include "Node.hpp"
 
 namespace openstudio {
 namespace epmodel {
 
-  namespace detail {
+class Schedule;
+class HVACComponent;
 
-    class EPMODEL_API AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl : public ModelObject_Impl
-    {
-     public:
-      using ModelObject_Impl::ModelObject_Impl;
-      virtual ~AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl() override = default;
+namespace detail {
 
-      boost::optional<double> maximumCoolingAirFlowRate() const;
-      bool setMaximumCoolingAirFlowRate(double maximumCoolingAirFlowRate);
-      bool isMaximumCoolingAirFlowRateAutosized() const;
-      void autosizeMaximumCoolingAirFlowRate();
+class EPMODEL_API AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl : public StraightComponent_Impl
+{
+ public:
+  using StraightComponent_Impl::StraightComponent_Impl;
+  virtual ~AirTerminalSingleDuctVAVReheatVariableSpeedFan_Impl() override = default;
 
-      boost::optional<double> maximumHeatingAirFlowRate() const;
-      bool setMaximumHeatingAirFlowRate(double maximumHeatingAirFlowRate);
-      bool isMaximumHeatingAirFlowRateAutosized() const;
-      void autosizeMaximumHeatingAirFlowRate();
+  unsigned inletPort() const override;
+  unsigned outletPort() const override;
+  std::vector<ModelObject> children() const override;
+  std::vector<openstudio::IdfObject> remove() override;
+  bool removeFromLoop() override;
+  boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
+  bool addToNode(Node& node) override;
 
-      double zoneMinimumAirFlowFraction() const;
-      bool setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction);
+  boost::optional<Schedule> availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
 
-      boost::optional<double> maximumHotWaterorSteamFlowRate() const;
-      bool setMaximumHotWaterorSteamFlowRate(double maximumHotWaterorSteamFlowRate);
-      bool isMaximumHotWaterorSteamFlowRateAutosized() const;
-      void autosizeMaximumHotWaterorSteamFlowRate();
+  HVACComponent fan() const;
+  bool setFan(HVACComponent& fan);
 
-      double minimumHotWaterorSteamFlowRate() const;
-      bool setMinimumHotWaterorSteamFlowRate(double minimumHotWaterorSteamFlowRate);
-      bool isMinimumHotWaterorSteamFlowRateDefaulted() const;
-      void resetMinimumHotWaterorSteamFlowRate();
+  HVACComponent heatingCoil() const;
+  bool setHeatingCoil(HVACComponent& coil);
 
-      double heatingConvergenceTolerance() const;
-      bool setHeatingConvergenceTolerance(double heatingConvergenceTolerance);
-      bool isHeatingConvergenceToleranceDefaulted() const;
-      void resetHeatingConvergenceTolerance();
-    };
+  boost::optional<double> maximumCoolingAirFlowRate() const;
+  bool setMaximumCoolingAirFlowRate(double maximumCoolingAirFlowRate);
+  bool isMaximumCoolingAirFlowRateAutosized() const;
+  void autosizeMaximumCoolingAirFlowRate();
 
-  }  // namespace detail
+  boost::optional<double> maximumHeatingAirFlowRate() const;
+  bool setMaximumHeatingAirFlowRate(double maximumHeatingAirFlowRate);
+  bool isMaximumHeatingAirFlowRateAutosized() const;
+  void autosizeMaximumHeatingAirFlowRate();
+
+  double zoneMinimumAirFlowFraction() const;
+  bool setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction);
+
+  boost::optional<double> maximumHotWaterorSteamFlowRate() const;
+  bool setMaximumHotWaterorSteamFlowRate(double maximumHotWaterorSteamFlowRate);
+  bool isMaximumHotWaterorSteamFlowRateAutosized() const;
+  void autosizeMaximumHotWaterorSteamFlowRate();
+
+  double minimumHotWaterorSteamFlowRate() const;
+  bool setMinimumHotWaterorSteamFlowRate(double minimumHotWaterorSteamFlowRate);
+  bool isMinimumHotWaterorSteamFlowRateDefaulted() const;
+  void resetMinimumHotWaterorSteamFlowRate();
+
+  double heatingConvergenceTolerance() const;
+  bool setHeatingConvergenceTolerance(double heatingConvergenceTolerance);
+  bool isHeatingConvergenceToleranceDefaulted() const;
+  void resetHeatingConvergenceTolerance();
+};
+
+}  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -13,6 +13,7 @@ namespace epmodel {
 
 class Node;
 class Schedule;
+class ZoneHVACAirDistributionUnit;
 
 namespace detail {
 
@@ -25,6 +26,10 @@ namespace detail {
     unsigned inletPort() const override;
     unsigned outletPort() const override;
     bool addToNode(Node& node) override;
+    std::vector<ModelObject> children() const override;
+    std::vector<openstudio::IdfObject> remove() override;
+    bool removeFromLoop() override;
+    boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
 
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);

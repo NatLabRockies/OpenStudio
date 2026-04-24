@@ -85,7 +85,7 @@ namespace epmodel {
                                             + std::to_string(groupIndex) + ".");
         }
 
-        if (!removeGroup && !model().getObjectByTypeAndName(iddType, *componentName)) {
+        if (!removeGroup && !model().getObjectByTypeAndName(iddType, *componentName, true)) {
           removeGroup = true;
           detail::addLoadWarning(context, "Branch '" + branch.nameString() + "' component '" + *componentName + "' (" + componentType.get()
                                             + ") references an object that could not be found in the model at extensible index "
@@ -129,13 +129,31 @@ namespace epmodel {
       const auto groups = extensibleGroups();
       result.reserve(groups.size());
       for (const auto& group : groups) {
-        auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
-        OS_ASSERT(workspaceGroup);
-        auto target = workspaceGroup->getTarget(BranchExtensibleFields::ComponentName);
-        OS_ASSERT(target);
-        auto component = target->optionalCast<openstudio::epmodel::ModelObject>();
-        OS_ASSERT(component);
-        result.push_back(*component);
+        if (auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>()) {
+          if (auto target = workspaceGroup->getTarget(BranchExtensibleFields::ComponentName)) {
+            if (auto component = target->optionalCast<openstudio::epmodel::ModelObject>()) {
+              result.push_back(*component);
+              continue;
+            }
+          }
+        }
+
+        const auto componentType = group.getString(BranchExtensibleFields::ComponentObjectType);
+        const auto componentName = group.getString(BranchExtensibleFields::ComponentName);
+        if (!componentType || !componentName || componentName->empty()) {
+          continue;
+        }
+
+        try {
+          const openstudio::IddObjectType iddType(*componentType);
+          if (auto component = model().getObjectByTypeAndName(iddType, *componentName, true)) {
+            if (auto modelObject = component->optionalCast<openstudio::epmodel::ModelObject>()) {
+              result.push_back(*modelObject);
+            }
+          }
+        } catch (const std::runtime_error&) {
+          continue;
+        }
       }
       return result;
     }
@@ -158,11 +176,14 @@ namespace epmodel {
       if (!workspaceGroup) {
         return false;
       }
-      workspaceGroup->setPointer(BranchExtensibleFields::ComponentName, component.handle());
       auto inletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(inletNodeName);
       auto outletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(outletNodeName);
+      workspaceGroup->setPointer(BranchExtensibleFields::ComponentName, component.handle());
       workspaceGroup->setPointer(BranchExtensibleFields::ComponentInletNodeName, inletNode.handle());
       workspaceGroup->setPointer(BranchExtensibleFields::ComponentOutletNodeName, outletNode.handle());
+      group.setString(BranchExtensibleFields::ComponentName, component.nameString());
+      group.setString(BranchExtensibleFields::ComponentInletNodeName, inletNodeName);
+      group.setString(BranchExtensibleFields::ComponentOutletNodeName, outletNodeName);
       return true;
     }
 

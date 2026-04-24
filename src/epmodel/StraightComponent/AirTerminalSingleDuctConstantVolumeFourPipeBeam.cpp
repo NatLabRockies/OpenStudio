@@ -7,14 +7,18 @@
 #include "StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl.hpp"
 
 #include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent.hpp"
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
+#include "Loop/PlantLoop.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
 #include "Mixer/AirLoopHVACZoneMixer_Impl.hpp"
 #include "Model.hpp"
 #include "Model_Impl.hpp"
 #include "ModelObject.hpp"
+#include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
+#include "ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentList.hpp"
@@ -35,6 +39,7 @@
 #include <utilities/idd/OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeam_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_AirDistributionUnit_FieldEnums.hxx>
 
 namespace openstudio {
 namespace epmodel {
@@ -63,472 +68,637 @@ namespace epmodel {
       return zoneImpl->getZoneHVACEquipmentList().addEquipment(terminal);
     }
 
+    boost::optional<ThermalZone> thermalZoneContainingTerminal(const Model& model, const ModelObject& terminal) {
+      for (const auto& zone : model.getConcreteModelObjects<ThermalZone>()) {
+        const auto equipment = zone.equipment();
+        if (std::ranges::find(equipment, terminal) != equipment.end()) {
+          return zone;
+        }
+      }
+      return boost::none;
+    }
+
+    bool unregisterTerminalFromThermalZone(const ModelObject& terminal, ThermalZone& thermalZone) {
+      auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
+      OS_ASSERT(zoneImpl);
+      return zoneImpl->getZoneHVACEquipmentList().removeEquipment(terminal);
+    }
+
   }  // namespace
 
-AirTerminalSingleDuctConstantVolumeFourPipeBeam::AirTerminalSingleDuctConstantVolumeFourPipeBeam(const Model& model)
-  : StraightComponent(AirTerminalSingleDuctConstantVolumeFourPipeBeam::iddObjectType(), model) {
-  auto impl = getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>();
-  OS_ASSERT(impl);
-  detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
-  impl->canonicalize(context);
+  AirTerminalSingleDuctConstantVolumeFourPipeBeam::AirTerminalSingleDuctConstantVolumeFourPipeBeam(const Model& model)
+    : StraightComponent(AirTerminalSingleDuctConstantVolumeFourPipeBeam::iddObjectType(), model) {
+    auto impl = getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>();
+    OS_ASSERT(impl);
+    detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
+    impl->canonicalize(context);
 
-  if (!name()) {
-    createName();
+    if (!name()) {
+      createName();
+    }
+
+    auto alwaysOn = model.alwaysOnDiscreteSchedule();
+    OS_ASSERT(setPrimaryAirAvailabilitySchedule(alwaysOn));
+    OS_ASSERT(setCoolingAvailabilitySchedule(alwaysOn));
+    OS_ASSERT(setHeatingAvailabilitySchedule(alwaysOn));
+
+    applyConstructorDefaults(*this);
   }
 
-  auto alwaysOn = model.alwaysOnDiscreteSchedule();
-  OS_ASSERT(setPrimaryAirAvailabilitySchedule(alwaysOn));
-  OS_ASSERT(setCoolingAvailabilitySchedule(alwaysOn));
-  OS_ASSERT(setHeatingAvailabilitySchedule(alwaysOn));
+  AirTerminalSingleDuctConstantVolumeFourPipeBeam::AirTerminalSingleDuctConstantVolumeFourPipeBeam(const Model& model, ModelObject& coolingCoil,
+                                                                                                   ModelObject& heatingCoil)
+    : StraightComponent(AirTerminalSingleDuctConstantVolumeFourPipeBeam::iddObjectType(), model) {
+    auto impl = getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>();
+    OS_ASSERT(impl);
+    detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
+    impl->canonicalize(context);
 
-  applyConstructorDefaults(*this);
-}
+    if (!name()) {
+      createName();
+    }
 
-AirTerminalSingleDuctConstantVolumeFourPipeBeam::AirTerminalSingleDuctConstantVolumeFourPipeBeam(
-  const Model& model, ModelObject& coolingCoil, ModelObject& heatingCoil)
-  : StraightComponent(AirTerminalSingleDuctConstantVolumeFourPipeBeam::iddObjectType(), model) {
-  auto impl = getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>();
-  OS_ASSERT(impl);
-  detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
-  impl->canonicalize(context);
+    auto alwaysOn = model.alwaysOnDiscreteSchedule();
+    OS_ASSERT(setPrimaryAirAvailabilitySchedule(alwaysOn));
+    OS_ASSERT(setCoolingAvailabilitySchedule(alwaysOn));
+    OS_ASSERT(setHeatingAvailabilitySchedule(alwaysOn));
+    applyConstructorDefaults(*this);
 
-  if (!name()) {
-    createName();
-  }
-
-  auto alwaysOn = model.alwaysOnDiscreteSchedule();
-  OS_ASSERT(setPrimaryAirAvailabilitySchedule(alwaysOn));
-  OS_ASSERT(setCoolingAvailabilitySchedule(alwaysOn));
-  OS_ASSERT(setHeatingAvailabilitySchedule(alwaysOn));
-  applyConstructorDefaults(*this);
-
-  if (!setCoolingCoil(coolingCoil)) {
-    remove();
-    LOG_FREE_AND_THROW("openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
-                       "Cannot set the cooling coil, make sure you use OS_Coil_Cooling_FourPipeBeam");
-  }
-  if (!setHeatingCoil(heatingCoil)) {
-    remove();
-    LOG_FREE_AND_THROW("openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
-                       "Cannot set the heating coil, make sure you use OS_Coil_Heating_FourPipeBeam");
-  }
-}
-
-AirTerminalSingleDuctConstantVolumeFourPipeBeam::AirTerminalSingleDuctConstantVolumeFourPipeBeam(
-  std::shared_ptr<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl> impl)
-  : StraightComponent(std::move(impl)) {}
-
-IddObjectType AirTerminalSingleDuctConstantVolumeFourPipeBeam::iddObjectType() {
-  return IddObjectType::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeam;
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::addToNode(Node& node) {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->addToNode(node);
-}
-
-Schedule AirTerminalSingleDuctConstantVolumeFourPipeBeam::primaryAirAvailabilitySchedule() const {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->primaryAirAvailabilitySchedule();
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setPrimaryAirAvailabilitySchedule(Schedule& schedule) {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setPrimaryAirAvailabilitySchedule(schedule);
-}
-
-Schedule AirTerminalSingleDuctConstantVolumeFourPipeBeam::coolingAvailabilitySchedule() const {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->coolingAvailabilitySchedule();
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setCoolingAvailabilitySchedule(Schedule& schedule) {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setCoolingAvailabilitySchedule(schedule);
-}
-
-Schedule AirTerminalSingleDuctConstantVolumeFourPipeBeam::heatingAvailabilitySchedule() const {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->heatingAvailabilitySchedule();
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setHeatingAvailabilitySchedule(Schedule& schedule) {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setHeatingAvailabilitySchedule(schedule);
-}
-
-boost::optional<ModelObject> AirTerminalSingleDuctConstantVolumeFourPipeBeam::coolingCoil() const {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->coolingCoil();
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setCoolingCoil(ModelObject& coolingCoil) {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setCoolingCoil(coolingCoil);
-}
-
-boost::optional<ModelObject> AirTerminalSingleDuctConstantVolumeFourPipeBeam::heatingCoil() const {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->heatingCoil();
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setHeatingCoil(ModelObject& heatingCoil) {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setHeatingCoil(heatingCoil);
-}
-
-boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeBeam::designPrimaryAirVolumeFlowRate() const {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->designPrimaryAirVolumeFlowRate();
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::isDesignPrimaryAirVolumeFlowRateAutosized() const {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->isDesignPrimaryAirVolumeFlowRateAutosized();
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setDesignPrimaryAirVolumeFlowRate(double designPrimaryAirVolumeFlowRate) {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setDesignPrimaryAirVolumeFlowRate(designPrimaryAirVolumeFlowRate);
-}
-
-void AirTerminalSingleDuctConstantVolumeFourPipeBeam::autosizeDesignPrimaryAirVolumeFlowRate() {
-  getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->autosizeDesignPrimaryAirVolumeFlowRate();
-}
-
-boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeBeam::designChilledWaterVolumeFlowRate() const {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->designChilledWaterVolumeFlowRate();
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::isDesignChilledWaterVolumeFlowRateAutosized() const {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->isDesignChilledWaterVolumeFlowRateAutosized();
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setDesignChilledWaterVolumeFlowRate(double designChilledWaterVolumeFlowRate) {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setDesignChilledWaterVolumeFlowRate(
-    designChilledWaterVolumeFlowRate);
-}
-
-void AirTerminalSingleDuctConstantVolumeFourPipeBeam::autosizeDesignChilledWaterVolumeFlowRate() {
-  getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->autosizeDesignChilledWaterVolumeFlowRate();
-}
-
-boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeBeam::designHotWaterVolumeFlowRate() const {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->designHotWaterVolumeFlowRate();
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::isDesignHotWaterVolumeFlowRateAutosized() const {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->isDesignHotWaterVolumeFlowRateAutosized();
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setDesignHotWaterVolumeFlowRate(double designHotWaterVolumeFlowRate) {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setDesignHotWaterVolumeFlowRate(designHotWaterVolumeFlowRate);
-}
-
-void AirTerminalSingleDuctConstantVolumeFourPipeBeam::autosizeDesignHotWaterVolumeFlowRate() {
-  getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->autosizeDesignHotWaterVolumeFlowRate();
-}
-
-boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeBeam::zoneTotalBeamLength() const {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->zoneTotalBeamLength();
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::isZoneTotalBeamLengthAutosized() const {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->isZoneTotalBeamLengthAutosized();
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setZoneTotalBeamLength(double zoneTotalBeamLength) {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setZoneTotalBeamLength(zoneTotalBeamLength);
-}
-
-void AirTerminalSingleDuctConstantVolumeFourPipeBeam::autosizeZoneTotalBeamLength() {
-  getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->autosizeZoneTotalBeamLength();
-}
-
-double AirTerminalSingleDuctConstantVolumeFourPipeBeam::ratedPrimaryAirFlowRateperBeamLength() const {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->ratedPrimaryAirFlowRateperBeamLength();
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::isRatedPrimaryAirFlowRateperBeamLengthDefaulted() const {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->isRatedPrimaryAirFlowRateperBeamLengthDefaulted();
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setRatedPrimaryAirFlowRateperBeamLength(double ratedPrimaryAirFlowRateperBeamLength) {
-  return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setRatedPrimaryAirFlowRateperBeamLength(
-    ratedPrimaryAirFlowRateperBeamLength);
-}
-
-void AirTerminalSingleDuctConstantVolumeFourPipeBeam::resetRatedPrimaryAirFlowRateperBeamLength() {
-  getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->resetRatedPrimaryAirFlowRateperBeamLength();
-}
-
-unsigned detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::inletPort() const {
-  return openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::PrimaryAirInletNodeName;
-}
-
-unsigned detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::outletPort() const {
-  return openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::PrimaryAirOutletNodeName;
-}
-
-bool detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::addToNode(Node& node) {
-  if (node.model() != model()) {
-    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
-             "addToNode requires a node in the same model as the four-pipe beam.");
-    return false;
-  }
-
-  auto airLoop = node.airLoopHVAC();
-  if (!airLoop) {
-    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
-             "addToNode requires a node that resolves to an AirLoopHVAC context.");
-    return false;
-  }
-
-  auto zoneSplitter = airLoop->zoneSplitter();
-  const auto thisNode = node.cast<ModelObject>();
-  const auto splitterOutlets = zoneSplitter.outletModelObjects();
-  const auto splitterIt = std::ranges::find(splitterOutlets, thisNode);
-  if (splitterIt == splitterOutlets.end()) {
-    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
-             "addToNode requires the drop node to be a ZoneSplitter outlet node for the target AirLoopHVAC.");
-    return false;
-  }
-  const auto splitterBranchIndex = static_cast<unsigned>(std::distance(splitterOutlets.begin(), splitterIt));
-
-  if (!airLoop->zoneMixer().inletModelObject(splitterBranchIndex)) {
-    LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
-             "addToNode requires a corresponding ZoneMixer inlet for ZoneSplitter branch index " << splitterBranchIndex << ".");
-    return false;
-  }
-
-  auto thisObject = getObject<openstudio::epmodel::ModelObject>();
-  if (!thisObject.name()) {
-    thisObject.createName();
-    if (!thisObject.name()) {
-      return false;
+    if (!setCoolingCoil(coolingCoil)) {
+      remove();
+      LOG_FREE_AND_THROW("openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
+                         "Cannot set the cooling coil, make sure you use OS_Coil_Cooling_FourPipeBeam");
+    }
+    if (!setHeatingCoil(heatingCoil)) {
+      remove();
+      LOG_FREE_AND_THROW("openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
+                         "Cannot set the heating coil, make sure you use OS_Coil_Heating_FourPipeBeam");
     }
   }
 
-  const std::string inletNodeName = node.nameString() + " - " + thisObject.nameString() + " Inlet Node";
-  auto inletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(inletNodeName);
+  AirTerminalSingleDuctConstantVolumeFourPipeBeam::AirTerminalSingleDuctConstantVolumeFourPipeBeam(
+    std::shared_ptr<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl> impl)
+    : StraightComponent(std::move(impl)) {}
 
-  if (!zoneSplitter.setOutletModelObject(splitterBranchIndex, inletNode.cast<ModelObject>())) {
-    return false;
+  IddObjectType AirTerminalSingleDuctConstantVolumeFourPipeBeam::iddObjectType() {
+    return IddObjectType::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeam;
   }
 
-  if (!setPointer(inletPort(), inletNode.handle(), false)) {
-    return false;
+  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::addToNode(Node& node) {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->addToNode(node);
   }
 
-  if (!setPointer(outletPort(), node.handle(), false)) {
-    return false;
+  Schedule AirTerminalSingleDuctConstantVolumeFourPipeBeam::primaryAirAvailabilitySchedule() const {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->primaryAirAvailabilitySchedule();
   }
 
-  if (auto thermalZone = owningThermalZoneForBranchNode(model(), node)) {
-    if (!registerTerminalWithThermalZone(thisObject, *thermalZone)) {
+  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setPrimaryAirAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setPrimaryAirAvailabilitySchedule(schedule);
+  }
+
+  Schedule AirTerminalSingleDuctConstantVolumeFourPipeBeam::coolingAvailabilitySchedule() const {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->coolingAvailabilitySchedule();
+  }
+
+  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setCoolingAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setCoolingAvailabilitySchedule(schedule);
+  }
+
+  Schedule AirTerminalSingleDuctConstantVolumeFourPipeBeam::heatingAvailabilitySchedule() const {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->heatingAvailabilitySchedule();
+  }
+
+  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setHeatingAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setHeatingAvailabilitySchedule(schedule);
+  }
+
+  boost::optional<ModelObject> AirTerminalSingleDuctConstantVolumeFourPipeBeam::coolingCoil() const {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->coolingCoil();
+  }
+
+  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setCoolingCoil(ModelObject& coolingCoil) {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setCoolingCoil(coolingCoil);
+  }
+
+  boost::optional<ModelObject> AirTerminalSingleDuctConstantVolumeFourPipeBeam::heatingCoil() const {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->heatingCoil();
+  }
+
+  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setHeatingCoil(ModelObject& heatingCoil) {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setHeatingCoil(heatingCoil);
+  }
+
+  boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeBeam::designPrimaryAirVolumeFlowRate() const {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->designPrimaryAirVolumeFlowRate();
+  }
+
+  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::isDesignPrimaryAirVolumeFlowRateAutosized() const {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->isDesignPrimaryAirVolumeFlowRateAutosized();
+  }
+
+  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setDesignPrimaryAirVolumeFlowRate(double designPrimaryAirVolumeFlowRate) {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setDesignPrimaryAirVolumeFlowRate(designPrimaryAirVolumeFlowRate);
+  }
+
+  void AirTerminalSingleDuctConstantVolumeFourPipeBeam::autosizeDesignPrimaryAirVolumeFlowRate() {
+    getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->autosizeDesignPrimaryAirVolumeFlowRate();
+  }
+
+  boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeBeam::designChilledWaterVolumeFlowRate() const {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->designChilledWaterVolumeFlowRate();
+  }
+
+  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::isDesignChilledWaterVolumeFlowRateAutosized() const {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->isDesignChilledWaterVolumeFlowRateAutosized();
+  }
+
+  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setDesignChilledWaterVolumeFlowRate(double designChilledWaterVolumeFlowRate) {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setDesignChilledWaterVolumeFlowRate(
+      designChilledWaterVolumeFlowRate);
+  }
+
+  void AirTerminalSingleDuctConstantVolumeFourPipeBeam::autosizeDesignChilledWaterVolumeFlowRate() {
+    getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->autosizeDesignChilledWaterVolumeFlowRate();
+  }
+
+  boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeBeam::designHotWaterVolumeFlowRate() const {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->designHotWaterVolumeFlowRate();
+  }
+
+  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::isDesignHotWaterVolumeFlowRateAutosized() const {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->isDesignHotWaterVolumeFlowRateAutosized();
+  }
+
+  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setDesignHotWaterVolumeFlowRate(double designHotWaterVolumeFlowRate) {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setDesignHotWaterVolumeFlowRate(designHotWaterVolumeFlowRate);
+  }
+
+  void AirTerminalSingleDuctConstantVolumeFourPipeBeam::autosizeDesignHotWaterVolumeFlowRate() {
+    getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->autosizeDesignHotWaterVolumeFlowRate();
+  }
+
+  boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeBeam::zoneTotalBeamLength() const {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->zoneTotalBeamLength();
+  }
+
+  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::isZoneTotalBeamLengthAutosized() const {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->isZoneTotalBeamLengthAutosized();
+  }
+
+  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setZoneTotalBeamLength(double zoneTotalBeamLength) {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setZoneTotalBeamLength(zoneTotalBeamLength);
+  }
+
+  void AirTerminalSingleDuctConstantVolumeFourPipeBeam::autosizeZoneTotalBeamLength() {
+    getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->autosizeZoneTotalBeamLength();
+  }
+
+  double AirTerminalSingleDuctConstantVolumeFourPipeBeam::ratedPrimaryAirFlowRateperBeamLength() const {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->ratedPrimaryAirFlowRateperBeamLength();
+  }
+
+  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::isRatedPrimaryAirFlowRateperBeamLengthDefaulted() const {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->isRatedPrimaryAirFlowRateperBeamLengthDefaulted();
+  }
+
+  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam::setRatedPrimaryAirFlowRateperBeamLength(double ratedPrimaryAirFlowRateperBeamLength) {
+    return getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->setRatedPrimaryAirFlowRateperBeamLength(
+      ratedPrimaryAirFlowRateperBeamLength);
+  }
+
+  void AirTerminalSingleDuctConstantVolumeFourPipeBeam::resetRatedPrimaryAirFlowRateperBeamLength() {
+    getImpl<detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl>()->resetRatedPrimaryAirFlowRateperBeamLength();
+  }
+
+  unsigned detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::inletPort() const {
+    return openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::PrimaryAirInletNodeName;
+  }
+
+  unsigned detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::outletPort() const {
+    return openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::PrimaryAirOutletNodeName;
+  }
+
+  bool detail::AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::addToNode(Node& node) {
+    if (node.model() != model()) {
       LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
-               "addToNode failed to register the four-pipe beam with the owning thermal zone.");
+               "addToNode requires a node in the same model as the four-pipe beam.");
       return false;
     }
-  }
 
-  return true;
-}
+    if (getObject<openstudio::epmodel::HVACComponent>().loop()) {
+      LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
+               "Refusing to add an already-connected four-pipe beam terminal.");
+      return false;
+    }
+
+    auto airLoop = node.airLoopHVAC();
+    if (!airLoop) {
+      LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
+               "addToNode requires a node that resolves to an AirLoopHVAC context.");
+      return false;
+    }
+
+    auto zoneSplitter = airLoop->zoneSplitter();
+    const auto thisNode = node.cast<ModelObject>();
+    const auto splitterOutlets = zoneSplitter.outletModelObjects();
+    const auto splitterIt = std::ranges::find(splitterOutlets, thisNode);
+    if (splitterIt == splitterOutlets.end()) {
+      LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
+               "addToNode requires the drop node to be a ZoneSplitter outlet node for the target AirLoopHVAC.");
+      return false;
+    }
+    const auto splitterBranchIndex = static_cast<unsigned>(std::distance(splitterOutlets.begin(), splitterIt));
+
+    auto zoneMixer = airLoop->zoneMixer();
+    auto mixerInlet = zoneMixer.inletModelObject(splitterBranchIndex);
+    if (!mixerInlet) {
+      LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
+               "addToNode requires a corresponding ZoneMixer inlet for ZoneSplitter branch index " << splitterBranchIndex << ".");
+      return false;
+    }
+    if (*mixerInlet != thisNode) {
+      LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
+               "addToNode requires the ZoneMixer inlet for ZoneSplitter branch index " << splitterBranchIndex << " to match the drop node.");
+      return false;
+    }
+
+    auto thisObject = getObject<openstudio::epmodel::ModelObject>();
+    if (!thisObject.name()) {
+      thisObject.createName();
+      if (!thisObject.name()) {
+        return false;
+      }
+    }
+
+    const std::string inletNodeName = node.nameString() + " - " + thisObject.nameString() + " Inlet Node";
+    auto inletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(inletNodeName);
+
+    if (!zoneSplitter.setOutletModelObject(splitterBranchIndex, inletNode.cast<ModelObject>())) {
+      return false;
+    }
+
+    if (!setPointer(inletPort(), inletNode.handle(), false)) {
+      return false;
+    }
+
+    if (!setPointer(outletPort(), node.handle(), false)) {
+      return false;
+    }
+
+    if (auto adu = zoneHVACAirDistributionUnit()) {
+      adu->getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>()->setOutletNode(node);
+    }
+
+    if (auto thermalZone = owningThermalZoneForBranchNode(model(), node)) {
+      if (!registerTerminalWithThermalZone(thisObject, *thermalZone)) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
+                 "addToNode failed to register the four-pipe beam with the owning thermal zone.");
+        return false;
+      }
+    }
+
+    return true;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-  Schedule AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::primaryAirAvailabilitySchedule() const {
-    auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
-      openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::PrimaryAirAvailabilityScheduleName);
-    if (!schedule) {
-      LOG_FREE(Error, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
-               "Required primary air availability schedule not set, repairing persisted state with the model always-on discrete schedule");
-      schedule = model().alwaysOnDiscreteSchedule();
-      OS_ASSERT(schedule);
-      const bool ok = const_cast<AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl*>(this)->setPrimaryAirAvailabilitySchedule(*schedule);
-      OS_ASSERT(ok);
-      schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    boost::optional<ZoneHVACAirDistributionUnit> AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::zoneHVACAirDistributionUnit() const {
+      auto terminal = getObject<openstudio::epmodel::ModelObject>();
+      for (const auto& source : terminal.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit)) {
+        if (auto adu = source.optionalCast<openstudio::epmodel::ZoneHVACAirDistributionUnit>()) {
+          return adu;
+        }
+      }
+      return boost::none;
+    }
+
+    std::vector<ModelObject> AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::children() const {
+      std::vector<ModelObject> result;
+      auto coolingCoil = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+        openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::CoolingCoilName);
+      if (coolingCoil) {
+        result.push_back(*coolingCoil);
+      }
+      auto heatingCoil = getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+        openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::HeatingCoilName);
+      if (heatingCoil) {
+        result.push_back(*heatingCoil);
+      }
+      return result;
+    }
+
+    std::vector<openstudio::IdfObject> AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::remove() {
+      auto thisObject = getObject<openstudio::epmodel::ModelObject>();
+      auto coolingCoilObject = thisObject.getModelObjectTarget<openstudio::epmodel::ModelObject>(
+        openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::CoolingCoilName);
+      auto heatingCoilObject = thisObject.getModelObjectTarget<openstudio::epmodel::ModelObject>(
+        openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::HeatingCoilName);
+      auto coolingCoil = coolingCoilObject ? coolingCoilObject->optionalCast<openstudio::epmodel::HVACComponent>()
+                                           : boost::optional<openstudio::epmodel::HVACComponent>{};
+      auto heatingCoil = heatingCoilObject ? heatingCoilObject->optionalCast<openstudio::epmodel::HVACComponent>()
+                                           : boost::optional<openstudio::epmodel::HVACComponent>{};
+
+      removeFromLoop();
+
+      if (coolingCoil) {
+        if (auto plantLoop = coolingCoil->plantLoop()) {
+          plantLoop->removeDemandBranchWithComponent(*coolingCoil);
+        }
+      }
+      if (heatingCoil) {
+        if (auto plantLoop = heatingCoil->plantLoop()) {
+          plantLoop->removeDemandBranchWithComponent(*heatingCoil);
+        }
+      }
+
+      return HVACComponent_Impl::remove();
+    }
+
+    bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::removeFromLoop() {
+      auto thisObject = getObject<openstudio::epmodel::ModelObject>();
+      auto thermalZone = thermalZoneContainingTerminal(model(), thisObject);
+      auto inletNode = inletModelObject();
+      auto outletNode = outletModelObject();
+      auto coolingCoilObject = thisObject.getModelObjectTarget<openstudio::epmodel::ModelObject>(
+        openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::CoolingCoilName);
+      auto heatingCoilObject = thisObject.getModelObjectTarget<openstudio::epmodel::ModelObject>(
+        openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::HeatingCoilName);
+      auto coolingCoil = coolingCoilObject ? coolingCoilObject->optionalCast<openstudio::epmodel::HVACComponent>()
+                                           : boost::optional<openstudio::epmodel::HVACComponent>{};
+      auto heatingCoil = heatingCoilObject ? heatingCoilObject->optionalCast<openstudio::epmodel::HVACComponent>()
+                                           : boost::optional<openstudio::epmodel::HVACComponent>{};
+      auto chilledWaterPlantLoop = coolingCoil ? coolingCoil->plantLoop() : boost::optional<openstudio::epmodel::PlantLoop>{};
+      auto hotWaterPlantLoop = heatingCoil ? heatingCoil->plantLoop() : boost::optional<openstudio::epmodel::PlantLoop>{};
+
+      bool shouldRemoveTerminalInletNode = false;
+      if (auto terminal = thisObject.optionalCast<openstudio::epmodel::HVACComponent>()) {
+        if (auto airLoop = terminal->airLoopHVAC()) {
+          if (inletNode && outletNode) {
+            const auto splitter = airLoop->zoneSplitter();
+            const auto mixer = airLoop->zoneMixer();
+            const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(*inletNode);
+            shouldRemoveTerminalInletNode =
+              (splitter.outletModelObject(splitterBranchIndex) == *inletNode) && (mixer.inletModelObject(splitterBranchIndex) == *outletNode);
+          }
+        }
+      }
+
+      bool removedFromAirLoop = false;
+      if (inletNode && outletNode) {
+        if (!StraightComponent_Impl::removeFromLoop()) {
+          return false;
+        }
+        removedFromAirLoop = true;
+      }
+
+      if (thermalZone && !unregisterTerminalFromThermalZone(thisObject, *thermalZone)) {
+        return false;
+      }
+
+      if (auto adu = zoneHVACAirDistributionUnit()) {
+        if (!adu->setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName, openstudio::Handle())) {
+          return false;
+        }
+        if (!adu->setString(openstudio::ZoneHVAC_AirDistributionUnitFields::AirTerminalObjectType, "")) {
+          return false;
+        }
+        if (!adu->setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirTerminalName, openstudio::Handle())) {
+          return false;
+        }
+      }
+
+      setPointer(inletPort(), openstudio::Handle(), false);
+      setPointer(outletPort(), openstudio::Handle(), false);
+
+      if (shouldRemoveTerminalInletNode) {
+        if (auto node = inletNode->optionalCast<openstudio::epmodel::Node>()) {
+          node->remove();
+        }
+      }
+
+      bool removedFromPlantLoop = false;
+      if (chilledWaterPlantLoop && coolingCoil) {
+        if (!chilledWaterPlantLoop->removeDemandBranchWithComponent(*coolingCoil)) {
+          return false;
+        }
+        removedFromPlantLoop = true;
+      }
+      if (hotWaterPlantLoop && heatingCoil) {
+        if (!hotWaterPlantLoop->removeDemandBranchWithComponent(*heatingCoil)) {
+          return false;
+        }
+        removedFromPlantLoop = true;
+      }
+
+      return removedFromAirLoop || static_cast<bool>(thermalZone) || removedFromPlantLoop;
+    }
+
+    Schedule AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::primaryAirAvailabilitySchedule() const {
+      auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
         openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::PrimaryAirAvailabilityScheduleName);
-    }
-    OS_ASSERT(schedule);
-    return *schedule;
-  }
-
-  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setPrimaryAirAvailabilitySchedule(Schedule& schedule) {
-    return ModelObject_Impl::setSchedule(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::PrimaryAirAvailabilityScheduleName,
-                                         "AirTerminalSingleDuctConstantVolumeFourPipeBeam", "Primary Air Availability", schedule);
-  }
-
-  Schedule AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::coolingAvailabilitySchedule() const {
-    auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
-      openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::CoolingAvailabilityScheduleName);
-    if (!schedule) {
-      LOG_FREE(Error, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
-               "Required cooling availability schedule not set, repairing persisted state with the model always-on discrete schedule");
-      schedule = model().alwaysOnDiscreteSchedule();
+      if (!schedule) {
+        LOG_FREE(Error, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
+                 "Required primary air availability schedule not set, repairing persisted state with the model always-on discrete schedule");
+        schedule = model().alwaysOnDiscreteSchedule();
+        OS_ASSERT(schedule);
+        const bool ok = const_cast<AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl*>(this)->setPrimaryAirAvailabilitySchedule(*schedule);
+        OS_ASSERT(ok);
+        schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+          openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::PrimaryAirAvailabilityScheduleName);
+      }
       OS_ASSERT(schedule);
-      const bool ok = const_cast<AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl*>(this)->setCoolingAvailabilitySchedule(*schedule);
-      OS_ASSERT(ok);
-      schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+      return *schedule;
+    }
+
+    bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setPrimaryAirAvailabilitySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::PrimaryAirAvailabilityScheduleName,
+                                           "AirTerminalSingleDuctConstantVolumeFourPipeBeam", "Primary Air Availability", schedule);
+    }
+
+    Schedule AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::coolingAvailabilitySchedule() const {
+      auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
         openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::CoolingAvailabilityScheduleName);
-    }
-    OS_ASSERT(schedule);
-    return *schedule;
-  }
-
-  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setCoolingAvailabilitySchedule(Schedule& schedule) {
-    return ModelObject_Impl::setSchedule(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::CoolingAvailabilityScheduleName,
-                                         "AirTerminalSingleDuctConstantVolumeFourPipeBeam", "Cooling Availability", schedule);
-  }
-
-  Schedule AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::heatingAvailabilitySchedule() const {
-    auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
-      openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::HeatingAvailabilityScheduleName);
-    if (!schedule) {
-      LOG_FREE(Error, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
-               "Required heating availability schedule not set, repairing persisted state with the model always-on discrete schedule");
-      schedule = model().alwaysOnDiscreteSchedule();
+      if (!schedule) {
+        LOG_FREE(Error, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
+                 "Required cooling availability schedule not set, repairing persisted state with the model always-on discrete schedule");
+        schedule = model().alwaysOnDiscreteSchedule();
+        OS_ASSERT(schedule);
+        const bool ok = const_cast<AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl*>(this)->setCoolingAvailabilitySchedule(*schedule);
+        OS_ASSERT(ok);
+        schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+          openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::CoolingAvailabilityScheduleName);
+      }
       OS_ASSERT(schedule);
-      const bool ok = const_cast<AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl*>(this)->setHeatingAvailabilitySchedule(*schedule);
-      OS_ASSERT(ok);
-      schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+      return *schedule;
+    }
+
+    bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setCoolingAvailabilitySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::CoolingAvailabilityScheduleName,
+                                           "AirTerminalSingleDuctConstantVolumeFourPipeBeam", "Cooling Availability", schedule);
+    }
+
+    Schedule AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::heatingAvailabilitySchedule() const {
+      auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
         openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::HeatingAvailabilityScheduleName);
+      if (!schedule) {
+        LOG_FREE(Error, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
+                 "Required heating availability schedule not set, repairing persisted state with the model always-on discrete schedule");
+        schedule = model().alwaysOnDiscreteSchedule();
+        OS_ASSERT(schedule);
+        const bool ok = const_cast<AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl*>(this)->setHeatingAvailabilitySchedule(*schedule);
+        OS_ASSERT(ok);
+        schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+          openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::HeatingAvailabilityScheduleName);
+      }
+      OS_ASSERT(schedule);
+      return *schedule;
     }
-    OS_ASSERT(schedule);
-    return *schedule;
-  }
 
-  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setHeatingAvailabilitySchedule(Schedule& schedule) {
-    return ModelObject_Impl::setSchedule(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::HeatingAvailabilityScheduleName,
-                                         "AirTerminalSingleDuctConstantVolumeFourPipeBeam", "Heating Availability", schedule);
-  }
+    bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setHeatingAvailabilitySchedule(Schedule& schedule) {
+      return ModelObject_Impl::setSchedule(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::HeatingAvailabilityScheduleName,
+                                           "AirTerminalSingleDuctConstantVolumeFourPipeBeam", "Heating Availability", schedule);
+    }
 
-  boost::optional<ModelObject> AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::coolingCoil() const {
-    return getObject<ModelObject>().getModelObjectTarget<ModelObject>(
-      openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::CoolingCoilName);
-  }
+    boost::optional<ModelObject> AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::coolingCoil() const {
+      return getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+        openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::CoolingCoilName);
+    }
 
-  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setCoolingCoil(ModelObject& coolingCoil) {
-    if (coolingCoil.model() != model()) {
-      LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
-               "Unsupported cooling coil from a different model for AirTerminalSingleDuctConstantVolumeFourPipeBeam.");
+    bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setCoolingCoil(ModelObject& coolingCoil) {
+      if (coolingCoil.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
+                 "Unsupported cooling coil from a different model for AirTerminalSingleDuctConstantVolumeFourPipeBeam.");
+        return false;
+      }
+      if (coolingCoil.iddObject().type() != IddObjectType::OS_Coil_Cooling_FourPipeBeam) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
+                 "Unsupported cooling coil type '" << coolingCoil.iddObject().name() << "' for AirTerminalSingleDuctConstantVolumeFourPipeBeam.");
+        return false;
+      }
+      return setPointer(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::CoolingCoilName, coolingCoil.handle(), false);
+    }
+
+    boost::optional<ModelObject> AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::heatingCoil() const {
+      return getObject<ModelObject>().getModelObjectTarget<ModelObject>(
+        openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::HeatingCoilName);
+    }
+
+    bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setHeatingCoil(ModelObject& heatingCoil) {
+      if (heatingCoil.model() != model()) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
+                 "Unsupported heating coil from a different model for AirTerminalSingleDuctConstantVolumeFourPipeBeam.");
+        return false;
+      }
+      if (heatingCoil.iddObject().type() != IddObjectType::OS_Coil_Heating_FourPipeBeam) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
+                 "Unsupported heating coil type '" << heatingCoil.iddObject().name() << "' for AirTerminalSingleDuctConstantVolumeFourPipeBeam.");
+        return false;
+      }
+      return setPointer(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::HeatingCoilName, heatingCoil.handle(), false);
+    }
+
+    boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::designPrimaryAirVolumeFlowRate() const {
+      return getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignPrimaryAirVolumeFlowRate, true);
+    }
+
+    bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::isDesignPrimaryAirVolumeFlowRateAutosized() const {
+      if (auto value = getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignPrimaryAirVolumeFlowRate, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
       return false;
     }
-    if (coolingCoil.iddObject().type() != IddObjectType::OS_Coil_Cooling_FourPipeBeam) {
-      LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
-               "Unsupported cooling coil type '" << coolingCoil.iddObject().name() << "' for AirTerminalSingleDuctConstantVolumeFourPipeBeam.");
+
+    bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setDesignPrimaryAirVolumeFlowRate(double designPrimaryAirVolumeFlowRate) {
+      return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignPrimaryAirVolumeFlowRate,
+                       designPrimaryAirVolumeFlowRate);
+    }
+
+    void AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::autosizeDesignPrimaryAirVolumeFlowRate() {
+      OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignPrimaryAirVolumeFlowRate, "autosize"));
+    }
+
+    boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::designChilledWaterVolumeFlowRate() const {
+      return getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignChilledWaterVolumeFlowRate, true);
+    }
+
+    bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::isDesignChilledWaterVolumeFlowRateAutosized() const {
+      if (auto value = getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignChilledWaterVolumeFlowRate, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
       return false;
     }
-    return setPointer(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::CoolingCoilName, coolingCoil.handle(), false);
-  }
 
-  boost::optional<ModelObject> AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::heatingCoil() const {
-    return getObject<ModelObject>().getModelObjectTarget<ModelObject>(
-      openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::HeatingCoilName);
-  }
+    bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setDesignChilledWaterVolumeFlowRate(double designChilledWaterVolumeFlowRate) {
+      return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignChilledWaterVolumeFlowRate,
+                       designChilledWaterVolumeFlowRate);
+    }
 
-  bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setHeatingCoil(ModelObject& heatingCoil) {
-    if (heatingCoil.model() != model()) {
-      LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
-               "Unsupported heating coil from a different model for AirTerminalSingleDuctConstantVolumeFourPipeBeam.");
+    void AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::autosizeDesignChilledWaterVolumeFlowRate() {
+      OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignChilledWaterVolumeFlowRate, "autosize"));
+    }
+
+    boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::designHotWaterVolumeFlowRate() const {
+      return getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignHotWaterVolumeFlowRate, true);
+    }
+
+    bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::isDesignHotWaterVolumeFlowRateAutosized() const {
+      if (auto value = getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignHotWaterVolumeFlowRate, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
       return false;
     }
-    if (heatingCoil.iddObject().type() != IddObjectType::OS_Coil_Heating_FourPipeBeam) {
-      LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeFourPipeBeam",
-               "Unsupported heating coil type '" << heatingCoil.iddObject().name() << "' for AirTerminalSingleDuctConstantVolumeFourPipeBeam.");
+
+    bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setDesignHotWaterVolumeFlowRate(double designHotWaterVolumeFlowRate) {
+      return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignHotWaterVolumeFlowRate,
+                       designHotWaterVolumeFlowRate);
+    }
+
+    void AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::autosizeDesignHotWaterVolumeFlowRate() {
+      OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignHotWaterVolumeFlowRate, "autosize"));
+    }
+
+    boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::zoneTotalBeamLength() const {
+      return getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::ZoneTotalBeamLength, true);
+    }
+
+    bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::isZoneTotalBeamLengthAutosized() const {
+      if (auto value = getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::ZoneTotalBeamLength, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
       return false;
     }
-    return setPointer(openstudio::OS_AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::HeatingCoilName, heatingCoil.handle(), false);
-  }
 
-boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::designPrimaryAirVolumeFlowRate() const {
-  return getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignPrimaryAirVolumeFlowRate, true);
-}
+    bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setZoneTotalBeamLength(double zoneTotalBeamLength) {
+      return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::ZoneTotalBeamLength, zoneTotalBeamLength);
+    }
 
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::isDesignPrimaryAirVolumeFlowRateAutosized() const {
-  if (auto value = getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignPrimaryAirVolumeFlowRate, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    void AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::autosizeZoneTotalBeamLength() {
+      OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::ZoneTotalBeamLength, "autosize"));
+    }
 
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setDesignPrimaryAirVolumeFlowRate(double designPrimaryAirVolumeFlowRate) {
-  return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignPrimaryAirVolumeFlowRate,
-                   designPrimaryAirVolumeFlowRate);
-}
+    double AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::ratedPrimaryAirFlowRateperBeamLength() const {
+      const auto value = getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::RatedPrimaryAirFlowRateperBeamLength, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-void AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::autosizeDesignPrimaryAirVolumeFlowRate() {
-  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignPrimaryAirVolumeFlowRate, "autosize"));
-}
+    bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::isRatedPrimaryAirFlowRateperBeamLengthDefaulted() const {
+      return isEmpty(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::RatedPrimaryAirFlowRateperBeamLength);
+    }
 
-boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::designChilledWaterVolumeFlowRate() const {
-  return getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignChilledWaterVolumeFlowRate, true);
-}
+    bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setRatedPrimaryAirFlowRateperBeamLength(double ratedPrimaryAirFlowRateperBeamLength) {
+      return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::RatedPrimaryAirFlowRateperBeamLength,
+                       ratedPrimaryAirFlowRateperBeamLength);
+    }
 
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::isDesignChilledWaterVolumeFlowRateAutosized() const {
-  if (auto value = getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignChilledWaterVolumeFlowRate, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    void AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::resetRatedPrimaryAirFlowRateperBeamLength() {
+      OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::RatedPrimaryAirFlowRateperBeamLength, ""));
+    }
 
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setDesignChilledWaterVolumeFlowRate(double designChilledWaterVolumeFlowRate) {
-  return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignChilledWaterVolumeFlowRate,
-                   designChilledWaterVolumeFlowRate);
-}
-
-void AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::autosizeDesignChilledWaterVolumeFlowRate() {
-  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignChilledWaterVolumeFlowRate, "autosize"));
-}
-
-boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::designHotWaterVolumeFlowRate() const {
-  return getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignHotWaterVolumeFlowRate, true);
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::isDesignHotWaterVolumeFlowRateAutosized() const {
-  if (auto value = getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignHotWaterVolumeFlowRate, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setDesignHotWaterVolumeFlowRate(double designHotWaterVolumeFlowRate) {
-  return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignHotWaterVolumeFlowRate, designHotWaterVolumeFlowRate);
-}
-
-void AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::autosizeDesignHotWaterVolumeFlowRate() {
-  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::DesignHotWaterVolumeFlowRate, "autosize"));
-}
-
-boost::optional<double> AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::zoneTotalBeamLength() const {
-  return getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::ZoneTotalBeamLength, true);
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::isZoneTotalBeamLengthAutosized() const {
-  if (auto value = getString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::ZoneTotalBeamLength, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setZoneTotalBeamLength(double zoneTotalBeamLength) {
-  return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::ZoneTotalBeamLength, zoneTotalBeamLength);
-}
-
-void AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::autosizeZoneTotalBeamLength() {
-  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::ZoneTotalBeamLength, "autosize"));
-}
-
-double AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::ratedPrimaryAirFlowRateperBeamLength() const {
-  const auto value = getDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::RatedPrimaryAirFlowRateperBeamLength, true);
-  OS_ASSERT(value);
-  return *value;
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::isRatedPrimaryAirFlowRateperBeamLengthDefaulted() const {
-  return isEmpty(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::RatedPrimaryAirFlowRateperBeamLength);
-}
-
-bool AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::setRatedPrimaryAirFlowRateperBeamLength(double ratedPrimaryAirFlowRateperBeamLength) {
-  return setDouble(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::RatedPrimaryAirFlowRateperBeamLength,
-                   ratedPrimaryAirFlowRateperBeamLength);
-}
-
-void AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl::resetRatedPrimaryAirFlowRateperBeamLength() {
-  OS_ASSERT(setString(openstudio::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeamFields::RatedPrimaryAirFlowRateperBeamLength, ""));
-}
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

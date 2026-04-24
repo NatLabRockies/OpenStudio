@@ -13,27 +13,33 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  class ZoneHVACAirDistributionUnit;
 
-class EPMODEL_API AirTerminalSingleDuctInletSideMixer_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~AirTerminalSingleDuctInletSideMixer_Impl() override = default;
+  namespace detail {
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
-  bool addToNode(Node& node) override;
+    class EPMODEL_API AirTerminalSingleDuctInletSideMixer_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~AirTerminalSingleDuctInletSideMixer_Impl() override = default;
 
-  std::string perPersonVentilationRateMode() const;
-  bool setPerPersonVentilationRateMode(const std::string& perPersonVentilationRateMode);
-  unsigned secondaryAirInletPort() const;
-  boost::optional<Node> secondaryAirInletNode() const;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
+      bool removeFromLoop() override;
+      std::vector<openstudio::IdfObject> remove() override;
 
-  std::vector<std::string> perPersonVentilationRateModeValues() const;
-};
+      boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
 
-}  // namespace detail
+      std::string perPersonVentilationRateMode() const;
+      bool setPerPersonVentilationRateMode(const std::string& perPersonVentilationRateMode);
+      unsigned secondaryAirInletPort() const;
+      boost::optional<Node> secondaryAirInletNode() const;
+
+      std::vector<std::string> perPersonVentilationRateModeValues() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 
