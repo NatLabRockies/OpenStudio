@@ -36,13 +36,11 @@ namespace energyplus {
     unsigned N = values.size();
     OS_ASSERT(N == times.size());
 
-    // Check if 24 hourly values and not a constant value for every hour
+    // Check if 24 hourly values
     bool use_hourly = (N == 24);
     for (unsigned i = 0; i < N; ++i) {
       int minutes = times[i].minutes() + (int)floor((times[i].seconds() / 60.0) + 0.5);
       if (minutes != 0) {
-        use_hourly = false;
-      } else if (values[i] != values[0]) {
         use_hourly = false;
       }
     }
@@ -82,6 +80,13 @@ namespace energyplus {
       scheduleDay.clearExtensibleGroups();
 
       for (unsigned i = 0; i < N; ++i) {
+        // Skip if same as the next value
+        if (i < N - 1) {
+          if (std::abs(values[i] - values[i+1]) < 0.000001) {
+            continue;
+          }
+        }
+
         IdfExtensibleGroup group = scheduleDay.pushExtensibleGroup();
 
         std::string hourPrefix;
