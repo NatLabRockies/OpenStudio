@@ -561,8 +561,16 @@ namespace epmodel {
     return getImpl<detail::StandardGlazing_Impl>()->interiorVisibleReflectance();
   }
 
+  bool StandardGlazing::setInteriorVisibleReflectance(double value) {
+    return getImpl<detail::StandardGlazing_Impl>()->setBackSideVisibleReflectanceatNormalIncidence(value);
+  }
+
   double StandardGlazing::exteriorVisibleReflectance() const {
     return getImpl<detail::StandardGlazing_Impl>()->exteriorVisibleReflectance();
+  }
+
+  bool StandardGlazing::setExteriorVisibleReflectance(double value) {
+    return getImpl<detail::StandardGlazing_Impl>()->setFrontSideVisibleReflectanceatNormalIncidence(value);
   }
 
   boost::optional<double> StandardGlazing::interiorVisibleAbsorptance() const {
