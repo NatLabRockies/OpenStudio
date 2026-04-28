@@ -1,0 +1,37 @@
+#ifndef EPMODEL_ParentObject_I
+#define EPMODEL_ParentObject_I
+
+#ifdef SWIGPYTHON
+  %module openstudioepmodelparentobject
+#endif
+
+%include <epmodel/EPModel_Common_Include.i>
+%import <epmodel/EPModel.i>
+
+EPMODELOBJECT_WRAP(CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData, <epmodel/ParentObject/CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData.hpp>)
+EPMODELOBJECT_WRAP(AirflowNetworkSimulationControl, <epmodel/ParentObject/AirflowNetworkSimulationControl.hpp>)
+EPMODELOBJECT_WRAP(ParentObject, <epmodel/ParentObject/ParentObject.hpp>)
+EPMODELOBJECT_WRAP(ControllerOutdoorAir, <epmodel/ParentObject/ControllerOutdoorAir.hpp>)
+EPMODELOBJECT_WRAP(ZoneHVACEnergyRecoveryVentilatorController, <epmodel/ParentObject/ZoneHVACEnergyRecoveryVentilatorController.hpp>)
+EPMODELOBJECT_WRAP(ElectricLoadCenterDistribution, <epmodel/ParentObject/ElectricLoadCenterDistribution.hpp>)
+EPMODELOBJECT_WRAP(ElectricLoadCenterStorageConverter, <epmodel/ParentObject/ElectricLoadCenterStorageConverter.hpp>)
+EPMODELOBJECT_WRAP(RefrigerationCase, <epmodel/ParentObject/RefrigerationCase.hpp>)
+EPMODELOBJECT_WRAP(RefrigerationCondenserAirCooled, <epmodel/ParentObject/RefrigerationCondenserAirCooled.hpp>)
+EPMODELOBJECT_WRAP(RefrigerationCondenserEvaporativeCooled, <epmodel/ParentObject/RefrigerationCondenserEvaporativeCooled.hpp>)
+EPMODELOBJECT_WRAP(RefrigerationGasCoolerAirCooled, <epmodel/ParentObject/RefrigerationGasCoolerAirCooled.hpp>)
+EPMODELOBJECT_WRAP(RefrigerationCompressor, <epmodel/ParentObject/RefrigerationCompressor.hpp>)
+EPMODELOBJECT_WRAP(RefrigerationSecondarySystem, <epmodel/ParentObject/RefrigerationSecondarySystem.hpp>)
+EPMODELOBJECT_WRAP(Building, <epmodel/ParentObject/Building.hpp>)
+EPMODELOBJECT_WRAP(Site, <epmodel/ParentObject/Site.hpp>)
+EPMODELOBJECT_WRAP(ComponentCostAdjustments, <epmodel/ParentObject/ComponentCostAdjustments.hpp>)
+EPMODELOBJECT_WRAP(CurrencyType, <epmodel/ParentObject/CurrencyType.hpp>)
+EPMODELOBJECT_WRAP(RunPeriod, <epmodel/ParentObject/RunPeriod.hpp>)
+EPMODELOBJECT_WRAP(LifeCycleCostParameters, <epmodel/ParentObject/LifeCycleCostParameters.hpp>)
+EPMODELOBJECT_WRAP(LifeCycleCostUsePriceEscalation, <epmodel/ParentObject/LifeCycleCostUsePriceEscalation.hpp>)
+EPMODELOBJECT_WRAP(SimulationControl, <epmodel/ParentObject/SimulationControl.hpp>)
+EPMODELOBJECT_WRAP(ChillerHeaterPerformanceElectricEIR, <epmodel/ParentObject/ChillerHeaterPerformanceElectricEIR.hpp>)
+EPMODELOBJECT_WRAP(CoilPerformanceDXCooling, <epmodel/ParentObject/CoilPerformanceDXCooling.hpp>)
+EPMODELOBJECT_WRAP(CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData, <epmodel/ParentObject/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData.hpp>)
+EPMODELOBJECT_WRAP(CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData, <epmodel/ParentObject/CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData.hpp>)
+
+#endif

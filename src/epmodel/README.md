@@ -611,6 +611,18 @@ Those notes should compare epmodel types to the canonical
 - meaningful public API or behavior deltas relative to `openstudio::model`
 - EnergyPlus-backed storage mapping when that mapping is not obvious
 
+## SWIG Binding Checklist
+
+- Add the C++ header/source files to `src/epmodel/CMakeLists.txt`.
+- Add the public non-impl header to `EPModelObjectIncludes.hpp`.
+- Add `EPMODELOBJECT_FORWARD_DECLARE(TypeName)` to
+  `EPModel_Common_Include.i`.
+- Add `EPMODELOBJECT_WRAP(TypeName, <epmodel/Subdir/TypeName.hpp>)` to the
+  owning submodule `.i` file.
+- If the owning submodule is new, wire it into CMake, Python submodule imports,
+  and the EPModel Ruby initializer.
+- Do not add scaffold types to the binding set.
+
 ## Reference Docs
 
 - `src/epmodel/AGENTS.md`: implementation guidance for agents and reviewers

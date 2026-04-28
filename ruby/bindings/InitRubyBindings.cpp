@@ -39,7 +39,6 @@ extern "C"
   void Init_openstudioutilitiescore(void);
   void Init_openstudioutilitiesplot(void);
   void Init_openstudioenergyplus(void);
-  void Init_openstudioepmodel(void);
   void Init_openstudioepjson(void);
   void Init_openstudioosversion(void);
   void Init_openstudioutilitiesdata(void);
@@ -78,6 +77,8 @@ extern "C"
 
 namespace openstudio {
 namespace ruby {
+
+  void initEpModelRubyBindings();
 
   void initBasicRubyBindings() {
     rb_provide("openstudio");
@@ -177,9 +178,7 @@ namespace ruby {
     Init_openstudioenergyplus();
     rb_provide("openstudioenergyplus");
     rb_provide("openstudioenergyplus.so");
-    Init_openstudioepmodel();
-    rb_provide("openstudioepmodel");
-    rb_provide("openstudioepmodel.so");
+    initEpModelRubyBindings();
     Init_openstudioepjson();
     rb_provide("openstudioepjson");
     rb_provide("openstudioepjson.so");

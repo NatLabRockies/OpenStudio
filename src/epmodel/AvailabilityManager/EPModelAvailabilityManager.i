@@ -1,0 +1,24 @@
+#ifndef EPMODEL_AvailabilityManager_I
+#define EPMODEL_AvailabilityManager_I
+
+#ifdef SWIGPYTHON
+  %module openstudioepmodelavailabilitymanager
+#endif
+
+%include <epmodel/EPModel_Common_Include.i>
+%import <epmodel/EPModel.i>
+
+EPMODELOBJECT_WRAP(AvailabilityManagerDifferentialThermostat, <epmodel/AvailabilityManager/AvailabilityManagerDifferentialThermostat.hpp>)
+EPMODELOBJECT_WRAP(AvailabilityManagerHighTemperatureTurnOff, <epmodel/AvailabilityManager/AvailabilityManagerHighTemperatureTurnOff.hpp>)
+EPMODELOBJECT_WRAP(AvailabilityManagerHighTemperatureTurnOn, <epmodel/AvailabilityManager/AvailabilityManagerHighTemperatureTurnOn.hpp>)
+EPMODELOBJECT_WRAP(AvailabilityManagerLowTemperatureTurnOff, <epmodel/AvailabilityManager/AvailabilityManagerLowTemperatureTurnOff.hpp>)
+EPMODELOBJECT_WRAP(AvailabilityManagerLowTemperatureTurnOn, <epmodel/AvailabilityManager/AvailabilityManagerLowTemperatureTurnOn.hpp>)
+EPMODELOBJECT_WRAP(AvailabilityManagerHybridVentilation, <epmodel/AvailabilityManager/AvailabilityManagerHybridVentilation.hpp>)
+EPMODELOBJECT_WRAP(AvailabilityManagerNightVentilation, <epmodel/AvailabilityManager/AvailabilityManagerNightVentilation.hpp>)
+EPMODELOBJECT_WRAP(AvailabilityManagerOptimumStart, <epmodel/AvailabilityManager/AvailabilityManagerOptimumStart.hpp>)
+EPMODELOBJECT_WRAP(AvailabilityManagerScheduledOff, <epmodel/AvailabilityManager/AvailabilityManagerScheduledOff.hpp>)
+EPMODELOBJECT_WRAP(AvailabilityManagerScheduledOn, <epmodel/AvailabilityManager/AvailabilityManagerScheduledOn.hpp>)
+EPMODELOBJECT_WRAP(AvailabilityManager, <epmodel/AvailabilityManager/AvailabilityManager.hpp>)
+EPMODELOBJECT_WRAP(AvailabilityManagerNightCycle, <epmodel/AvailabilityManager/AvailabilityManagerNightCycle.hpp>)
+
+#endif

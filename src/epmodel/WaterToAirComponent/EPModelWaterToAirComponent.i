@@ -1,0 +1,23 @@
+#ifndef EPMODEL_WaterToAirComponent_I
+#define EPMODEL_WaterToAirComponent_I
+
+#ifdef SWIGPYTHON
+  %module openstudioepmodelwatertoaircomponent
+#endif
+
+%include <epmodel/EPModel_Common_Include.i>
+%import <epmodel/EPModel.i>
+%import <epmodel/HVACComponent/EPModelHVACComponent.i>
+
+EPMODELOBJECT_WRAP(CoilWaterHeatingAirToWaterHeatPumpVariableSpeed, <epmodel/WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.hpp>)
+EPMODELOBJECT_WRAP(CoilWaterHeatingAirToWaterHeatPump, <epmodel/WaterToAirComponent/CoilWaterHeatingAirToWaterHeatPump.hpp>)
+EPMODELOBJECT_WRAP(WaterToAirComponent, <epmodel/WaterToAirComponent/WaterToAirComponent.hpp>)
+EPMODELOBJECT_WRAP(CoilCoolingWater, <epmodel/WaterToAirComponent/CoilCoolingWater.hpp>)
+EPMODELOBJECT_WRAP(CoilHeatingWater, <epmodel/WaterToAirComponent/CoilHeatingWater.hpp>)
+EPMODELOBJECT_WRAP(CoilCoolingWaterToAirHeatPumpEquationFit, <epmodel/WaterToAirComponent/CoilCoolingWaterToAirHeatPumpEquationFit.hpp>)
+EPMODELOBJECT_WRAP(CoilHeatingWaterToAirHeatPumpEquationFit, <epmodel/WaterToAirComponent/CoilHeatingWaterToAirHeatPumpEquationFit.hpp>)
+EPMODELOBJECT_WRAP(CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit, <epmodel/WaterToAirComponent/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit.hpp>)
+EPMODELOBJECT_WRAP(CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit, <epmodel/WaterToAirComponent/CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit.hpp>)
+EPMODELOBJECT_WRAP(CoilUserDefined, <epmodel/WaterToAirComponent/CoilUserDefined.hpp>)
+
+#endif

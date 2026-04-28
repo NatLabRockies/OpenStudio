@@ -3,6 +3,7 @@ find_package(antlr4-runtime REQUIRED CONFIG)
 add_library( rubybindings OBJECT
   InitRubyBindings.hpp
   InitRubyBindings.cpp
+  InitEPModelRubyBindings.cpp
   ModelicaAntlrCleanup.hpp
   ModelicaAntlrCleanup.cpp
 )

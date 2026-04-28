@@ -1,0 +1,40 @@
+#ifndef EPMODEL_SetpointManager_I
+#define EPMODEL_SetpointManager_I
+
+#ifdef SWIGPYTHON
+  %module openstudioepmodelsetpointmanager
+#endif
+
+%include <epmodel/EPModel_Common_Include.i>
+%import <epmodel/EPModel.i>
+%import <epmodel/HVACComponent/EPModelHVACComponent.i>
+
+EPMODELOBJECT_WRAP(SetpointManager, <epmodel/SetpointManager/SetpointManager.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerColdest, <epmodel/SetpointManager/SetpointManagerColdest.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerFollowGroundTemperature, <epmodel/SetpointManager/SetpointManagerFollowGroundTemperature.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerFollowOutdoorAirTemperature, <epmodel/SetpointManager/SetpointManagerFollowOutdoorAirTemperature.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerOutdoorAirPretreat, <epmodel/SetpointManager/SetpointManagerOutdoorAirPretreat.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerOutdoorAirReset, <epmodel/SetpointManager/SetpointManagerOutdoorAirReset.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerFollowSystemNodeTemperature, <epmodel/SetpointManager/SetpointManagerFollowSystemNodeTemperature.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerSystemNodeResetHumidity, <epmodel/SetpointManager/SetpointManagerSystemNodeResetHumidity.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerSystemNodeResetTemperature, <epmodel/SetpointManager/SetpointManagerSystemNodeResetTemperature.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerWarmest, <epmodel/SetpointManager/SetpointManagerWarmest.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerWarmestTemperatureFlow, <epmodel/SetpointManager/SetpointManagerWarmestTemperatureFlow.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerMultiZoneCoolingAverage, <epmodel/SetpointManager/SetpointManagerMultiZoneCoolingAverage.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerMultiZoneHeatingAverage, <epmodel/SetpointManager/SetpointManagerMultiZoneHeatingAverage.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerMultiZoneMaximumHumidityAverage, <epmodel/SetpointManager/SetpointManagerMultiZoneMaximumHumidityAverage.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerMultiZoneMinimumHumidityAverage, <epmodel/SetpointManager/SetpointManagerMultiZoneMinimumHumidityAverage.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerMultiZoneHumidityMaximum, <epmodel/SetpointManager/SetpointManagerMultiZoneHumidityMaximum.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerMultiZoneHumidityMinimum, <epmodel/SetpointManager/SetpointManagerMultiZoneHumidityMinimum.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerMixedAir, <epmodel/SetpointManager/SetpointManagerMixedAir.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerScheduled, <epmodel/SetpointManager/SetpointManagerScheduled.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerScheduledDualSetpoint, <epmodel/SetpointManager/SetpointManagerScheduledDualSetpoint.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerSingleZoneCooling, <epmodel/SetpointManager/SetpointManagerSingleZoneCooling.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerSingleZoneOneStageCooling, <epmodel/SetpointManager/SetpointManagerSingleZoneOneStageCooling.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerSingleZoneOneStageHeating, <epmodel/SetpointManager/SetpointManagerSingleZoneOneStageHeating.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerSingleZoneHeating, <epmodel/SetpointManager/SetpointManagerSingleZoneHeating.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerSingleZoneHumidityMaximum, <epmodel/SetpointManager/SetpointManagerSingleZoneHumidityMaximum.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerSingleZoneHumidityMinimum, <epmodel/SetpointManager/SetpointManagerSingleZoneHumidityMinimum.hpp>)
+EPMODELOBJECT_WRAP(SetpointManagerSingleZoneReheat, <epmodel/SetpointManager/SetpointManagerSingleZoneReheat.hpp>)
+
+#endif

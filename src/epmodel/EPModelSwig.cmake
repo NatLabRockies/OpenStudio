@@ -79,7 +79,14 @@ macro(make_epmodel_swig_bindings NAME SIMPLENAME KEY_I_FILE I_FILES PARENT_TARGE
   set(common_swig_include_dirs
     "${PROJECT_SOURCE_DIR}/src"
     "${PROJECT_BINARY_DIR}/src"
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${CMAKE_CURRENT_BINARY_DIR}"
   )
+  get_target_property(parent_include_dirs ${PARENT_TARGET} INCLUDE_DIRECTORIES)
+  if(parent_include_dirs)
+    list(APPEND common_swig_include_dirs ${parent_include_dirs})
+    list(REMOVE_DUPLICATES common_swig_include_dirs)
+  endif()
   if(DEFINED OpenStudioCore_SWIG_INCLUDE_DIR)
     list(APPEND common_swig_include_dirs "${OpenStudioCore_SWIG_INCLUDE_DIR}")
   endif()
@@ -109,7 +116,9 @@ macro(make_epmodel_swig_bindings NAME SIMPLENAME KEY_I_FILE I_FILES PARENT_TARGE
     target_include_directories(${ruby_target} PRIVATE ${common_swig_include_dirs} "${PROJECT_SOURCE_DIR}/ruby")
     target_include_directories(${ruby_target} SYSTEM PRIVATE ${Ruby_INCLUDE_DIRS})
     target_compile_definitions(${ruby_target} PRIVATE SHARED_OS_LIBS RUBY_DONT_SUBST)
-    target_link_libraries(${ruby_target} PRIVATE ${PARENT_TARGET} ${${PARENT_TARGET}_depends})
+    # Keep these wrapper archives small: openstudio_rb links the parent library
+    # once, so per-submodule Ruby wrappers should not embed it repeatedly.
+    target_link_libraries(${ruby_target} PRIVATE ${${PARENT_TARGET}_depends})
     add_dependencies(${ruby_target} ${PARENT_TARGET})
 
     if(MSVC)
@@ -174,6 +183,13 @@ macro(make_epmodel_swig_bindings NAME SIMPLENAME KEY_I_FILE I_FILES PARENT_TARGE
       POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${PYTHON_GENERATED_SRC}" "${COPY_PYTHON_GENERATED_SRC}"
     )
+    add_custom_command(
+      OUTPUT "${COPY_PYTHON_GENERATED_SRC}"
+      COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${PYTHON_GENERATED_SRC}" "${COPY_PYTHON_GENERATED_SRC}"
+      DEPENDS ${python_target} "${PYTHON_GENERATED_SRC}"
+      VERBATIM
+    )
+    add_custom_target(${python_target}_python_source ALL DEPENDS "${COPY_PYTHON_GENERATED_SRC}")
 
     if(APPLE)
       set_target_properties(${python_target}
