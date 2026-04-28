@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ThermalStorageSizing.hpp"
+#include "../scaffolds/ThermalStorageSizing.hpp"
 
 using namespace openstudio::epmodel;
 

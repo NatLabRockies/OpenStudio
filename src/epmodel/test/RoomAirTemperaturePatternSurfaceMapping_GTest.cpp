@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/RoomAirTemperaturePatternSurfaceMapping.hpp"
+#include "../scaffolds/RoomAirTemperaturePatternSurfaceMapping.hpp"
 
 using namespace openstudio::epmodel;
 

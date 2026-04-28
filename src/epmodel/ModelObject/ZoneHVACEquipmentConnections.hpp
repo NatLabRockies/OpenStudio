@@ -16,44 +16,44 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
-class Node;
-class ThermalZone;
+  class Node;
+  class ThermalZone;
+  class ZoneHVACEquipmentList;
 
-namespace detail {
-class ZoneHVACEquipmentConnections_Impl;
-}
+  namespace detail {
+    class ZoneHVACEquipmentConnections_Impl;
+  }
 
-class EPMODEL_API ZoneHVACEquipmentConnections : public ModelObject
-{
- public:
-  explicit ZoneHVACEquipmentConnections(const Model& model);
+  class EPMODEL_API ZoneHVACEquipmentConnections : public ModelObject
+  {
+   public:
+    explicit ZoneHVACEquipmentConnections(const ThermalZone& thermalZone);
 
-  virtual ~ZoneHVACEquipmentConnections() override = default;
-  ZoneHVACEquipmentConnections(const ZoneHVACEquipmentConnections& other) = default;
-  ZoneHVACEquipmentConnections(ZoneHVACEquipmentConnections&& other) = default;
-  ZoneHVACEquipmentConnections& operator=(const ZoneHVACEquipmentConnections&) = default;
-  ZoneHVACEquipmentConnections& operator=(ZoneHVACEquipmentConnections&&) = default;
+    virtual ~ZoneHVACEquipmentConnections() override = default;
+    ZoneHVACEquipmentConnections(const ZoneHVACEquipmentConnections& other) = default;
+    ZoneHVACEquipmentConnections(ZoneHVACEquipmentConnections&& other) = default;
+    ZoneHVACEquipmentConnections& operator=(const ZoneHVACEquipmentConnections&) = default;
+    ZoneHVACEquipmentConnections& operator=(ZoneHVACEquipmentConnections&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  boost::optional<ThermalZone> thermalZone() const;
+    ThermalZone thermalZone() const;
+    ZoneHVACEquipmentList zoneHVACEquipmentList() const;
 
-  boost::optional<Node> zoneAirInletNode() const;
-  std::vector<Node> zoneAirInletNodes() const;
+    Node zoneAirNode() const;
+    std::vector<Node> zoneAirInletNodes() const;
+    std::vector<Node> zoneAirExhaustNodes() const;
+    std::vector<Node> zoneReturnAirNodes() const;
 
-  boost::optional<Node> zoneReturnAirNode() const;
-  std::vector<Node> zoneReturnAirNodes() const;
+   protected:
+    using ImplType = detail::ZoneHVACEquipmentConnections_Impl;
 
- protected:
-  using ImplType = detail::ZoneHVACEquipmentConnections_Impl;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+    friend class openstudio::epmodel::Model;
 
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-  friend class openstudio::epmodel::Model;
-
-  explicit ZoneHVACEquipmentConnections(std::shared_ptr<detail::ZoneHVACEquipmentConnections_Impl> impl);
-};
+    explicit ZoneHVACEquipmentConnections(std::shared_ptr<detail::ZoneHVACEquipmentConnections_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

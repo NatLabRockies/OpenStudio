@@ -6,8 +6,8 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/WallDetailed.hpp"
-#include "../ModelObject/WallDetailed_Impl.hpp"
+#include "../scaffolds/WallDetailed.hpp"
+#include "../scaffolds/WallDetailed_Impl.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -8,7 +8,7 @@
 #include <algorithm>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/RoomAirSettingsUnderFloorAirDistributionInterior.hpp"
+#include "../scaffolds/RoomAirSettingsUnderFloorAirDistributionInterior.hpp"
 
 using namespace openstudio::epmodel;
 

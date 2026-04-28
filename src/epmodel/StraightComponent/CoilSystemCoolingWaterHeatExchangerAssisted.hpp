@@ -16,6 +16,9 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
+  class AirToAirComponent;
+  class WaterToAirComponent;
 
   namespace detail {
     class CoilSystemCoolingWaterHeatExchangerAssisted_Impl;
@@ -25,6 +28,7 @@ namespace epmodel {
   {
    public:
     explicit CoilSystemCoolingWaterHeatExchangerAssisted(const Model& model);
+    explicit CoilSystemCoolingWaterHeatExchangerAssisted(const Model& model, const AirToAirComponent& heatExchanger);
 
     virtual ~CoilSystemCoolingWaterHeatExchangerAssisted() override = default;
     CoilSystemCoolingWaterHeatExchangerAssisted(const CoilSystemCoolingWaterHeatExchangerAssisted& other) = default;
@@ -38,13 +42,24 @@ namespace epmodel {
     static std::vector<std::string> coolingCoilObjectTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The object-type choice surface is present, but the child-object and topology helpers remain model-owned.
+    // - Status: Partial Parity. The canonical child-object relationships, object-type helpers, and topology gate used by this wrapper are
+    //   present, while the heat-exchanger link remains a raw-name/object-type field per the underlying schema.
     // - Canonical Counterpart: openstudio::model::CoilSystemCoolingWaterHeatExchangerAssisted.
-    // - Implemented Parity: `heatExchangerObjectType` and `coolingCoilObjectType` preserve the canonical object-choice API.
-    // - Documented Delta: Heat-exchanger name, cooling-coil name, and node-link helpers from canonical `openstudio::model::CoilSystemCoolingWaterHeatExchangerAssisted` are not exposed yet.
-    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `CoilSystem:Cooling:Water:HeatExchangerAssisted` choice fields.
+    // - Implemented Parity: The default constructors, `coolingCoil`, its tracked relationship setter, `heatExchanger`, and child traversal
+    //   preserve the wrapper slice that the EnergyPlus schema supports for this object.
+    // - Documented Delta: The heat-exchanger slot is stored as a schema-valid name plus object-type pair rather than a tracked object-list
+    //   relationship; broader model-owned behavior outside this wrapper remains out of scope.
+    // - Field/Storage Mapping: Cooling-coil targets map through the EnergyPlus object-list field, while the heat-exchanger target is resolved
+    //   by name and synchronized through the companion object-type field.
     // - Evidence: `src/model/CoilSystemCoolingWaterHeatExchangerAssisted.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilSystemCoolingWaterHeatExchangerAssisted.cpp`, and `src/epmodel/test/CoilSystemCoolingWaterHeatExchangerAssisted_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted child-object and topology helpers without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Extend the wrapper only if additional canonical surfaces are explicitly needed.
+    AirToAirComponent heatExchanger() const;
+    bool setHeatExchanger(const AirToAirComponent& heatExchanger);
+
+    WaterToAirComponent coolingCoil() const;
+    bool setCoolingCoil(const WaterToAirComponent& coolingCoil);
+
+    bool addToNode(Node& node);
     /** @name Heat exchanger object type */
     //@{
     std::string heatExchangerObjectType() const;

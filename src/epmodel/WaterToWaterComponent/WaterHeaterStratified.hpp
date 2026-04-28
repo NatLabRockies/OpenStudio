@@ -22,6 +22,11 @@ class FuelType;
 namespace epmodel {
 
   class Model;
+  class Schedule;
+  class ThermalZone;
+  class WaterHeaterSizing;
+  class Node;
+  class PlantLoop;
 
   namespace detail {
 
@@ -52,13 +57,15 @@ namespace epmodel {
     static std::vector<std::string> sourceSideFlowControlModeValues();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The stratified water-heater scalar surface is aligned, while surface, schedule, node, and plant behavior remains excluded.
+    // - Status: Near Parity with documented deltas. The stratified water-heater scalar, source/use-side topology surface, clone(Model)
+    //   sizing reattachment, and SQL-backed autosize helpers now align with the canonical wrapper; one epmodel-only ambient-indicator
+    //   alias remains outside current epmodel scope.
     // - Canonical Counterpart: openstudio::model::WaterHeaterStratified.
-    // - Implemented Parity: Scalar accessors for tank geometry, heaters, parasitics, ambient settings, effectiveness, inlet/outlet heights, flows, destratification, and node-loss coefficients preserve the canonical model API shape.
-    // - Documented Delta: Surface, schedule, node, and plant relationship APIs are intentionally excluded in this pass.
-    // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `WaterHeater:Stratified` fields directly, and `ambientTemperatureIndicator` preserves the model-friendly `ThermalZone` vocabulary even where the IDD says `Zone`.
+    // - Implemented Parity: Scalar accessors, heater/ambient/use-flow/cold-water/indirect-alternate schedule links, ambient zone/object links, source/use-side plant-loop aliases, component classification and fuel reporting, clone(Model) sizing reattachment, SQL-backed autosized helpers, and WaterHeaterSizing ownership preserve the canonical model API shape.
+    // - Documented Delta: epmodel preserves a `ThermalZone` ambient-indicator alias where the canonical wrapper surfaces the raw `Zone` token.
+    // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `WaterHeater:Stratified` fields directly; epmodel normalizes `ambientTemperatureIndicator` between `ThermalZone` and stored `Zone`; the forward translator also synthesizes an `OutdoorAir:NodeList` when outdoors ambient mode has no explicit node name.
     // - Evidence: `src/model/WaterHeaterStratified.hpp`, `src/model/WaterHeaterStratified.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateWaterHeaterStratified.cpp`.
-    // - Remaining Parity Work: Add the excluded relationship APIs only if the family advances beyond scalar parity.
+    // - Remaining Parity Work: Expand only if later work needs additional model-side clone parity beyond the aligned WaterHeaterSizing reattachment behavior.
     std::string endUseSubcategory() const;
     bool setEndUseSubcategory(const std::string& endUseSubcategory);
 
@@ -87,6 +94,10 @@ namespace epmodel {
     std::string heaterPriorityControl() const;
     bool setHeaterPriorityControl(const std::string& heaterPriorityControl);
 
+    boost::optional<Schedule> heater1SetpointTemperatureSchedule() const;
+    bool setHeater1SetpointTemperatureSchedule(Schedule& schedule);
+    void resetHeater1SetpointTemperatureSchedule();
+
     double heater1DeadbandTemperatureDifference() const;
     bool setHeater1DeadbandTemperatureDifference(double heater1DeadbandTemperatureDifference);
 
@@ -98,6 +109,10 @@ namespace epmodel {
 
     double heater1Height() const;
     bool setHeater1Height(double heater1Height);
+
+    boost::optional<Schedule> heater2SetpointTemperatureSchedule() const;
+    bool setHeater2SetpointTemperatureSchedule(Schedule& schedule);
+    void resetHeater2SetpointTemperatureSchedule();
 
     double heater2DeadbandTemperatureDifference() const;
     bool setHeater2DeadbandTemperatureDifference(double heater2DeadbandTemperatureDifference);
@@ -144,6 +159,14 @@ namespace epmodel {
     std::string ambientTemperatureIndicator() const;
     bool setAmbientTemperatureIndicator(const std::string& ambientTemperatureIndicator);
 
+    boost::optional<Schedule> ambientTemperatureSchedule() const;
+    bool setAmbientTemperatureSchedule(Schedule& schedule);
+    void resetAmbientTemperatureSchedule();
+
+    boost::optional<ThermalZone> ambientTemperatureThermalZone() const;
+    bool setAmbientTemperatureThermalZone(const ThermalZone& thermalZone);
+    void resetAmbientTemperatureThermalZone();
+
     boost::optional<std::string> ambientTemperatureOutdoorAirNodeName() const;
     bool setAmbientTemperatureOutdoorAirNodeName(const std::string& ambientTemperatureOutdoorAirNodeName);
     void resetAmbientTemperatureOutdoorAirNodeName();
@@ -165,6 +188,14 @@ namespace epmodel {
     boost::optional<double> peakUseFlowRate() const;
     bool setPeakUseFlowRate(double peakUseFlowRate);
     void resetPeakUseFlowRate();
+
+    boost::optional<Schedule> useFlowRateFractionSchedule() const;
+    bool setUseFlowRateFractionSchedule(Schedule& schedule);
+    void resetUseFlowRateFractionSchedule();
+
+    boost::optional<Schedule> coldWaterSupplyTemperatureSchedule() const;
+    bool setColdWaterSupplyTemperatureSchedule(Schedule& schedule);
+    void resetColdWaterSupplyTemperatureSchedule();
 
     double useSideEffectiveness() const;
     bool setUseSideEffectiveness(double useSideEffectiveness);
@@ -250,6 +281,24 @@ namespace epmodel {
 
     std::string sourceSideFlowControlMode() const;
     bool setSourceSideFlowControlMode(const std::string& sourceSideFlowControlMode);
+
+    boost::optional<Schedule> indirectAlternateSetpointTemperatureSchedule() const;
+    bool setIndirectAlternateSetpointTemperatureSchedule(Schedule& schedule);
+    void resetIndirectAlternateSetpointTemperatureSchedule();
+
+    WaterHeaterSizing waterHeaterSizing() const;
+    ModelObject clone(Model model) const;
+
+    bool addToSourceSideNode(Node& node);
+
+    boost::optional<PlantLoop> useSidePlantLoop() const;
+    boost::optional<PlantLoop> sourceSidePlantLoop() const;
+    bool removeFromSourceSidePlantLoop();
+
+    boost::optional<ModelObject> useSideInletModelObject() const;
+    boost::optional<ModelObject> useSideOutletModelObject() const;
+    boost::optional<ModelObject> sourceSideInletModelObject() const;
+    boost::optional<ModelObject> sourceSideOutletModelObject() const;
 
    protected:
     using ImplType = detail::WaterHeaterStratified_Impl;

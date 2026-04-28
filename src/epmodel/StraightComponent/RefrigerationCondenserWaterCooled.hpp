@@ -17,6 +17,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
 
   namespace detail {
     class RefrigerationCondenserWaterCooled_Impl;
@@ -37,13 +38,13 @@ namespace epmodel {
     static std::vector<std::string> waterCooledLoopFlowTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical water-cooled refrigeration-condenser scalar surface is present, while the water-outlet schedule helper remains out of scope.
+    // - Status: Parity with documented deltas. The canonical public wrapper surface is aligned, with only the parent-system convenience lookup and model-side impl hooks documented as deltas.
     // - Canonical Counterpart: openstudio::model::RefrigerationCondenserWaterCooled.
-    // - Implemented Parity: The preserved scalar API matches the rated heat-rejection, condensing-temperature, subcooling, loop-flow, flow-rate, temperature-limit, and inventory accessors with matching default behavior.
-    // - Documented Delta: The water-outlet-temperature schedule remains intentionally excluded from this scalar pass.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Refrigeration:Condenser:WaterCooled` scalar fields used by the forward translator.
+    // - Implemented Parity: Constructor defaults, plant-demand-only `addToNode(...)`, the water-outlet-temperature schedule helper, and the rated heat-rejection, condensing-temperature, subcooling, loop-flow, flow-rate, temperature-limit, and inventory wrapper accessors all match canonical behavior.
+    // - Documented Delta: The canonical `system()` convenience lookup is still omitted because epmodel's `RefrigerationSystem` relationship surface has not yet been expanded to expose refrigeration-condenser ownership through typed APIs. Canonical model-side impl hooks such as output-variable reporting and fuel-type classification are also not mirrored as epmodel wrapper contracts today.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Refrigeration:Condenser:WaterCooled` fields, including the water-outlet schedule and plant node pointers used for persisted topology.
     // - Evidence: `src/model/RefrigerationCondenserWaterCooled.hpp`, `src/model/RefrigerationCondenserWaterCooled.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateRefrigerationCondenserWaterCooled.cpp`.
-    // - Remaining Parity Work: Add the omitted schedule helper without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Add the canonical `system()` convenience lookup once epmodel's refrigeration-system relationship APIs are in place, and revisit the omitted model-side impl hooks only if epmodel grows equivalent wrapper-facing reporting or fuel-classification interfaces.
 
     boost::optional<double> ratedEffectiveTotalHeatRejectionRate() const;
     bool setRatedEffectiveTotalHeatRejectionRate(double ratedEffectiveTotalHeatRejectionRate);
@@ -64,6 +65,10 @@ namespace epmodel {
     bool setWaterCooledLoopFlowType(const std::string& waterCooledLoopFlowType);
     void resetWaterCooledLoopFlowType();
     bool isWaterCooledLoopFlowTypeDefaulted() const;
+
+    boost::optional<Schedule> waterOutletTemperatureSchedule() const;
+    bool setWaterOutletTemperatureSchedule(Schedule& waterOutletTemperatureSchedule);
+    void resetWaterOutletTemperatureSchedule();
 
     boost::optional<double> waterDesignFlowRate() const;
     bool setWaterDesignFlowRate(double waterDesignFlowRate);

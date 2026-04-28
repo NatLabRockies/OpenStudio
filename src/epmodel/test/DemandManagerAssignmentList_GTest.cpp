@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/DemandManagerAssignmentList.hpp"
+#include "../scaffolds/DemandManagerAssignmentList.hpp"
 
 using namespace openstudio::epmodel;
 

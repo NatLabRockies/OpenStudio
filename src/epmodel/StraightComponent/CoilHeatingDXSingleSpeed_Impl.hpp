@@ -13,6 +13,8 @@
 namespace openstudio {
 namespace epmodel {
   class Node;
+  class Schedule;
+  class Curve;
   namespace detail {
 
     class EPMODEL_API CoilHeatingDXSingleSpeed_Impl : public StraightComponent_Impl
@@ -24,6 +26,29 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      std::vector<ModelObject> children() const override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
+      Curve totalHeatingCapacityFunctionofTemperatureCurve() const;
+      bool setTotalHeatingCapacityFunctionofTemperatureCurve(const Curve& curve);
+
+      Curve totalHeatingCapacityFunctionofFlowFractionCurve() const;
+      bool setTotalHeatingCapacityFunctionofFlowFractionCurve(const Curve& curve);
+
+      Curve energyInputRatioFunctionofTemperatureCurve() const;
+      bool setEnergyInputRatioFunctionofTemperatureCurve(const Curve& curve);
+
+      Curve energyInputRatioFunctionofFlowFractionCurve() const;
+      bool setEnergyInputRatioFunctionofFlowFractionCurve(const Curve& curve);
+
+      Curve partLoadFractionCorrelationCurve() const;
+      bool setPartLoadFractionCorrelationCurve(const Curve& curve);
+
+      boost::optional<Curve> defrostEnergyInputRatioFunctionofTemperatureCurve() const;
+      bool setDefrostEnergyInputRatioFunctionofTemperatureCurve(const Curve& curve);
+      void resetDefrostEnergyInputRatioFunctionofTemperatureCurve();
 
       boost::optional<double> ratedTotalHeatingCapacity() const;
       bool isRatedTotalHeatingCapacityAutosized() const;
@@ -58,6 +83,10 @@ namespace epmodel {
       bool isCrankcaseHeaterCapacityDefaulted() const;
       bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
       void resetCrankcaseHeaterCapacity();
+
+      boost::optional<Curve> crankcaseHeaterCapacityFunctionofTemperatureCurve() const;
+      bool setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve);
+      void resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
 
       double maximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation() const;
       bool isMaximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperationDefaulted() const;

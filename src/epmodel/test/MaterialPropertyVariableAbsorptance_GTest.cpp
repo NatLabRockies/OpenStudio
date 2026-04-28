@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/MaterialPropertyVariableAbsorptance.hpp"
+#include "../scaffolds/MaterialPropertyVariableAbsorptance.hpp"
 
 using namespace openstudio::epmodel;
 

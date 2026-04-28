@@ -30,6 +30,11 @@ class EPMODEL_API CoilUserDefined_Impl : public WaterToAirComponent_Impl
   unsigned waterOutletPort() const override;
 
   int numberofAirConnections() const;
+  std::vector<IdfObject> remove() override;
+  ComponentType componentType() const override;
+  std::vector<FuelType> coolingFuelTypes() const override;
+  std::vector<FuelType> heatingFuelTypes() const override;
+  std::vector<AppGFuelType> appGHeatingFuelTypes() const override;
 
   EnergyManagementSystemProgramCallingManager overallModelSimulationProgramCallingManager() const;
   bool setOverallModelSimulationProgramCallingManager(const EnergyManagementSystemProgramCallingManager& emsProgramCallingManager);

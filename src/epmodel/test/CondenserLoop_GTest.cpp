@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/CondenserLoop.hpp"
+#include "../scaffolds/CondenserLoop.hpp"
 
 using namespace openstudio::epmodel;
 

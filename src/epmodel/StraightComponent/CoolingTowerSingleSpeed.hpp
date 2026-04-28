@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Schedule;
 
 namespace detail {
 class CoolingTowerSingleSpeed_Impl;
@@ -41,13 +42,13 @@ class EPMODEL_API CoolingTowerSingleSpeed : public StraightComponent
   static std::vector<std::string> cellControlValues();
 
   // Schema Alignment Notes:
-  // - Status: Scalar Parity. The canonical single-speed cooling-tower scalar surface is present, while node, schedule, tank, and object-link helpers remain out of scope.
+  // - Status: Loop and Schedule Parity. The canonical single-speed cooling-tower scalar surface plus plant supply insertion and schedule relationships are present, while tank/object-link helpers remain out of scope.
   // - Canonical Counterpart: openstudio::model::CoolingTowerSingleSpeed.
-  // - Implemented Parity: The preserved scalar API matches the tower performance, flow, free-convection, and control accessors with matching autosize/default behavior.
-  // - Documented Delta: Node-name, schedule, storage-tank, and other relationship helpers remain intentionally excluded from this scalar pass.
+  // - Implemented Parity: The preserved scalar API matches the tower performance, flow, free-convection, and control accessors with matching autosize/default behavior, and the basin/blowdown schedule relationships plus plant supply `addToNode(...)` path now match the current canonical slice.
+  // - Documented Delta: Storage-tank and other object-link helpers remain intentionally excluded from this pass.
   // - Field/Storage Mapping: These accessors map directly to EnergyPlus `CoolingTower:SingleSpeed` scalar fields used by the forward translator.
   // - Evidence: `src/model/CoolingTowerSingleSpeed.hpp`, `src/model/CoolingTowerSingleSpeed.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateCoolingTowerSingleSpeed.cpp`.
-  // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
+  // - Remaining Parity Work: Add the omitted storage-tank/object-link helpers without changing the preserved scalar signatures.
   boost::optional<double> designWaterFlowRate() const;
   bool isDesignWaterFlowRateAutosized() const;
   bool setDesignWaterFlowRate(double designWaterFlowRate);
@@ -106,6 +107,9 @@ class EPMODEL_API CoolingTowerSingleSpeed : public StraightComponent
   bool isBasinHeaterSetpointTemperatureDefaulted() const;
   bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
   void resetBasinHeaterSetpointTemperature();
+  boost::optional<Schedule> basinHeaterOperatingSchedule() const;
+  bool setBasinHeaterOperatingSchedule(Schedule& basinHeaterOperatingSchedule);
+  void resetBasinHeaterOperatingSchedule();
 
   std::string evaporationLossMode() const;
   bool isEvaporationLossModeDefaulted() const;
@@ -131,6 +135,9 @@ class EPMODEL_API CoolingTowerSingleSpeed : public StraightComponent
   bool isBlowdownConcentrationRatioDefaulted() const;
   bool setBlowdownConcentrationRatio(double blowdownConcentrationRatio);
   void resetBlowdownConcentrationRatio();
+  boost::optional<Schedule> blowdownMakeupWaterUsageSchedule() const;
+  bool setBlowdownMakeupWaterUsageSchedule(Schedule& blowdownMakeupWaterUsageSchedule);
+  void resetBlowdownMakeupWaterUsageSchedule();
 
   std::string capacityControl() const;
   bool isCapacityControlDefaulted() const;

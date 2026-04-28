@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/HVACTemplateZoneDualDuct.hpp"
+#include "../scaffolds/HVACTemplateZoneDualDuct.hpp"
 
 using namespace openstudio::epmodel;
 

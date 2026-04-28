@@ -13,6 +13,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API CentralHeatPumpSystem_Impl : public WaterToWaterComponent_Impl
@@ -27,6 +29,8 @@ namespace epmodel {
       unsigned demandOutletPort() const override;
       unsigned tertiaryInletPort() const override;
       unsigned tertiaryOutletPort() const override;
+      bool addToNode(Node& node) override;
+      bool addToTertiaryNode(Node& node) override;
 
       std::vector<std::string> controlMethodValues() const;
 
@@ -35,6 +39,14 @@ namespace epmodel {
 
       double ancillaryPower() const;
       bool setAncillaryPower(double ancillaryPower);
+
+      boost::optional<Schedule> ancillaryOperationSchedule() const;
+      bool setAncillaryOperationSchedule(Schedule& schedule);
+      void resetAncillaryOperationSchedule();
+
+      boost::optional<PlantLoop> coolingPlantLoop() const;
+      boost::optional<PlantLoop> sourcePlantLoop() const;
+      boost::optional<PlantLoop> heatingPlantLoop() const;
     };
 
   }  // namespace detail

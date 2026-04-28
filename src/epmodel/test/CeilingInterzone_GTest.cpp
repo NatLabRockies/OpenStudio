@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/CeilingInterzone.hpp"
+#include "../scaffolds/CeilingInterzone.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -17,6 +17,10 @@ namespace epmodel {
 
 class Model;
 class Node;
+class HVACComponent;
+class ModelObject;
+class Schedule;
+class ThermalZone;
 
 namespace detail {
 class AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl;
@@ -26,6 +30,8 @@ class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed : public Straight
 {
  public:
   explicit AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(const Model& model);
+  AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(const Model& model, const HVACComponent& supplyAirFan, const HVACComponent& heatingCoil,
+                                               const HVACComponent& coolingCoil, const HVACComponent& supplementalHeatingCoil);
 
   virtual ~AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed() override = default;
   AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(const AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed& other) = default;
@@ -38,18 +44,51 @@ class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed : public Straight
   static std::vector<std::string> supplyAirFanPlacementValues();
 
   // Schema Alignment Notes:
-  // - Status: Partial Parity. The multi-speed scalar controls are aligned, but the schedule, fan, coil, node, and zone-link surface is still intentionally narrower.
+  // - Status: Partial Parity. The multi-speed scalar controls and direct object-link fields are aligned, and the owned internal air path is now maintained through parent-owned epmodel nodes.
   // - Canonical Counterpart: openstudio::model::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.
-  // - Implemented Parity: `supplyAirFanPlacement`, `dXHeatingCoilSizingRatio`, `maximumSupplyAirTemperaturefromSupplementalHeater`, `maximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation`, `auxiliaryOnCycleElectricPower`, `auxiliaryOffCycleElectricPower`, `designHeatRecoveryWaterFlowRate`, `maximumTemperatureforHeatRecovery`, `supplyAirFlowRateWhenNoCoolingorHeatingisNeeded`, `numberofSpeedsforHeating`, `numberofSpeedsforCooling`, and the per-speed flow setters preserve the canonical scalar contract.
-  // - Documented Delta: Supply fan, schedule, coil, node, and controlling-zone linkage fields are not exposed as public accessors yet.
-  // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus multi-speed unitary fields; the forward translator wires the equipment graph separately.
+  // - Implemented Parity: Availability schedule, controlling zone, supply fan, supply-air-fan operating mode schedule, heating coil,
+  //   cooling coil, supplemental heating coil, constructor-with-components, and the scalar airflow/control fields preserve the main
+  //   canonical wrapper contract. The owned fan/cooling/heating/supplemental chain now shares a stable parent-maintained air path, with
+  //   direct access to the meaningful outlet node roles on the compound, and child traversal matches the canonical owned-component slice.
+  // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are additive epmodel conveniences so
+  //   callers can inspect and rename the meaningful internal outlet roles owned by the compound. Broader topology convenience beyond the
+  //   owned serial air path remains intentionally omitted.
+  // - Field/Storage Mapping: Scalar values map directly to EnergyPlus multi-speed unitary fields, while schedule, fan, coil, zone, and
+  //   internal-node relationships are explicit parent-owned object links in epmodel.
   // - Evidence: `src/model/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.hpp`, `src/model/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.cpp`, and `src/epmodel/test/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_GTest.cpp`.
-  // - Remaining Parity Work: Add the omitted fan, schedule, coil, node, and controlling-zone helpers when relationship parity expands.
+  // - Remaining Parity Work: Add any remaining topology conveniences only if the canonical wrapper still exposes them directly.
+  boost::optional<Schedule> availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+  void resetAvailabilitySchedule();
+
+  boost::optional<ThermalZone> controllingZoneorThermostatLocation() const;
+  bool setControllingZoneorThermostatLocation(const ThermalZone& thermalZone);
+  void resetControllingZoneorThermostatLocation();
+
+  HVACComponent supplyAirFan() const;
+  bool setSupplyAirFan(const HVACComponent& fan);
+
   std::string supplyAirFanPlacement() const;
   bool setSupplyAirFanPlacement(const std::string& supplyAirFanPlacement);
 
+  Schedule supplyAirFanOperatingModeSchedule() const;
+  bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+
+  HVACComponent heatingCoil() const;
+  bool setHeatingCoil(const HVACComponent& coil);
+
   double dXHeatingCoilSizingRatio() const;
   bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);
+
+  HVACComponent coolingCoil() const;
+  bool setCoolingCoil(const HVACComponent& coil);
+
+  HVACComponent supplementalHeatingCoil() const;
+  bool setSupplementalHeatingCoil(const HVACComponent& coil);
+
+  boost::optional<Node> fanOutletNode() const;
+  boost::optional<Node> coolingCoilOutletNode() const;
+  boost::optional<Node> heatingCoilOutletNode() const;
 
   boost::optional<double> maximumSupplyAirTemperaturefromSupplementalHeater() const;
   bool isMaximumSupplyAirTemperaturefromSupplementalHeaterAutosized() const;

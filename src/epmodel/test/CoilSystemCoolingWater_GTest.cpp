@@ -9,11 +9,14 @@
 
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ControllerWaterCoil.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/PlantLoop.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
 #include "../WaterToAirComponent/CoilCoolingWater.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/CoilSystemCoolingWater.hpp"
+#include "../StraightComponent/CoilSystemCoolingWaterHeatExchangerAssisted.hpp"
 #include <utilities/idd/CoilSystem_Cooling_Water_FieldEnums.hxx>
 #include "../StraightComponent/Node.hpp"
 
@@ -31,6 +34,8 @@ TEST_F(EPModelFixture, CoilSystemCoolingWater_DefaultConstructor) {
   EXPECT_DOUBLE_EQ(0.0, coilSystem.minimumAirToWaterTemperatureOffset());
   EXPECT_TRUE(coilSystem.economizerLockout());
   EXPECT_DOUBLE_EQ(0.0, coilSystem.minimumWaterLoopTemperatureForHeatRecovery());
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule().handle(), coilSystem.availabilitySchedule().handle());
+  EXPECT_EQ("Coil:Cooling:Water", coilSystem.coolingCoil().iddObject().name());
 }
 
 TEST_F(EPModelFixture, CoilSystemCoolingWater_ScalarAccessors_RoundTrip) {
@@ -62,11 +67,52 @@ TEST_F(EPModelFixture, CoilSystemCoolingWater_ScalarAccessors_RoundTrip) {
   EXPECT_DOUBLE_EQ(1.2, coilSystem.minimumWaterLoopTemperatureForHeatRecovery());
 }
 
-TEST_F(EPModelFixture, CoilSystemCoolingWater_AddToNodeSupplyOnly) {
+TEST_F(EPModelFixture, CoilSystemCoolingWater_RelationshipAccessors_RoundTrip) {
+  Model model;
+  CoilSystemCoolingWater coilSystem(model);
+  ScheduleConstant availabilitySchedule(model);
+  CoilSystemCoolingWaterHeatExchangerAssisted heatExchangerAssisted(model);
+  CoilCoolingWater companionCoil(model);
+  CoilSystemCoolingWaterHeatExchangerAssisted invalidCompanion(model);
+
+  EXPECT_TRUE(coilSystem.setAvailabilitySchedule(availabilitySchedule));
+  EXPECT_EQ(availabilitySchedule.handle(), coilSystem.availabilitySchedule().handle());
+
+  EXPECT_TRUE(coilSystem.setCoolingCoil(heatExchangerAssisted));
+  EXPECT_EQ(heatExchangerAssisted.handle(), coilSystem.coolingCoil().handle());
+
+  EXPECT_TRUE(coilSystem.setCompanionCoilUsedForHeatRecovery(companionCoil));
+  ASSERT_TRUE(coilSystem.companionCoilUsedForHeatRecovery());
+  EXPECT_EQ(companionCoil.handle(), coilSystem.companionCoilUsedForHeatRecovery()->handle());
+
+  EXPECT_FALSE(coilSystem.setCompanionCoilUsedForHeatRecovery(invalidCompanion));
+  EXPECT_EQ(companionCoil.handle(), coilSystem.companionCoilUsedForHeatRecovery()->handle());
+
+  coilSystem.resetCompanionCoilUsedForHeatRecovery();
+  EXPECT_FALSE(coilSystem.companionCoilUsedForHeatRecovery());
+
+  const auto children = coilSystem.children();
+  ASSERT_EQ(1u, children.size());
+  EXPECT_EQ(heatExchangerAssisted.handle(), children.front().handle());
+}
+
+TEST_F(EPModelFixture, CoilSystemCoolingWater_ExplicitConstructor) {
+  Model model;
+  CoilSystemCoolingWaterHeatExchangerAssisted heatExchangerAssisted(model);
+  CoilSystemCoolingWater coilSystem(model, heatExchangerAssisted);
+
+  EXPECT_EQ(heatExchangerAssisted.handle(), coilSystem.coolingCoil().handle());
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule().handle(), coilSystem.availabilitySchedule().handle());
+  EXPECT_EQ("None", coilSystem.dehumidificationControlType());
+}
+
+TEST_F(EPModelFixture, CoilSystemCoolingWater_AddToNodeCurrentPaths) {
   Model model;
   AirLoopHVAC airLoop(model);
   CoilSystemCoolingWater supplyCoilSystem(model);
+  CoilSystemCoolingWater outdoorAirCoilSystem(model);
   CoilSystemCoolingWater demandCoilSystem(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
 
   auto supplyInletNode = airLoop.supplyInletNode();
   EXPECT_TRUE(supplyCoilSystem.addToNode(supplyInletNode));
@@ -77,6 +123,16 @@ TEST_F(EPModelFixture, CoilSystemCoolingWater_AddToNodeSupplyOnly) {
   auto demandInletNode = airLoop.demandInletNode();
   EXPECT_FALSE(demandCoilSystem.addToNode(demandInletNode));
   EXPECT_FALSE(demandCoilSystem.airLoopHVAC());
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(oaSystem.addToNode(supplyOutletNode));
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+  EXPECT_TRUE(outdoorAirCoilSystem.addToNode(*outboardOANode));
+  const auto oaComponents = oaSystem.oaComponents();
+  EXPECT_FALSE(oaComponents.empty());
+  EXPECT_TRUE(
+    std::any_of(oaComponents.begin(), oaComponents.end(), [&](const auto& object) { return object.handle() == outdoorAirCoilSystem.handle(); }));
 }
 
 TEST_F(EPModelFixture, CoilSystemCoolingWater_ContainedCoolingCoilDoesNotCreateStandaloneController) {
@@ -86,10 +142,10 @@ TEST_F(EPModelFixture, CoilSystemCoolingWater_ContainedCoolingCoilDoesNotCreateS
   AirLoopHVAC airLoop(model);
   PlantLoop plantLoop(model);
 
-  ASSERT_TRUE(system.setPointer(openstudio::CoilSystem_Cooling_WaterFields::CoolingCoilName, coil.handle()));
+  ASSERT_TRUE(system.setCoolingCoil(coil));
 
-  auto supplyOutletNode = airLoop.supplyOutletNode();
-  ASSERT_TRUE(coil.addToNode(supplyOutletNode));
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(system.addToNode(supplyInletNode));
   ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil));
 
   EXPECT_FALSE(coil.controllerWaterCoil());

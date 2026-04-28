@@ -9,6 +9,9 @@
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -34,6 +37,18 @@ IddObjectType HumidifierSteamGas::iddObjectType() {
 
 bool HumidifierSteamGas::addToNode(Node& node) {
   return getImpl<detail::HumidifierSteamGas_Impl>()->addToNode(node);
+}
+
+boost::optional<Schedule> HumidifierSteamGas::availabilitySchedule() const {
+  return getImpl<detail::HumidifierSteamGas_Impl>()->availabilitySchedule();
+}
+
+bool HumidifierSteamGas::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::HumidifierSteamGas_Impl>()->setAvailabilitySchedule(schedule);
+}
+
+void HumidifierSteamGas::resetAvailabilitySchedule() {
+  getImpl<detail::HumidifierSteamGas_Impl>()->resetAvailabilitySchedule();
 }
 
 std::vector<std::string> HumidifierSteamGas::inletWaterTemperatureOptionValues() {
@@ -165,11 +180,25 @@ bool HumidifierSteamGas_Impl::addToNode(Node& node) {
 
   auto airLoop = node.airLoopHVAC();
 
+  // This family is intentionally limited to air-loop supply placement unless it is being
+  // inserted onto an OA-system outboard stream node through the shared straight-component path.
   if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
     return false;
   }
 
   return StraightComponent_Impl::addToNode(node);
+}
+
+boost::optional<Schedule> HumidifierSteamGas_Impl::availabilitySchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Humidifier_Steam_GasFields::AvailabilityScheduleName);
+}
+
+bool HumidifierSteamGas_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return ModelObject_Impl::setSchedule(openstudio::Humidifier_Steam_GasFields::AvailabilityScheduleName, "HumidifierSteamGas", "Availability", schedule);
+}
+
+void HumidifierSteamGas_Impl::resetAvailabilitySchedule() {
+  OS_ASSERT(setString(openstudio::Humidifier_Steam_GasFields::AvailabilityScheduleName, ""));
 }
 
 boost::optional<double> HumidifierSteamGas_Impl::ratedCapacity() const {

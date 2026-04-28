@@ -8,13 +8,25 @@
 #include <algorithm>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Mixer/AirLoopHVACZoneMixer.hpp"
+#include "../ModelObject/NodeList.hpp"
+#include "../ModelObject/NodeList_Impl.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
+#include "../StraightComponent/CoilHeatingGas.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
+#include "../StraightComponent/FanSystemModel.hpp"
+#include "../StraightComponent/FanVariableVolume.hpp"
 #include "../StraightComponent/Node.hpp"
 #include <utilities/idd/AirTerminal_SingleDuct_ParallelPIU_Reheat_FieldEnums.hxx>
+#include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 #include "../StraightComponent/AirTerminalSingleDuctParallelPIUReheat.hpp"
 
 using namespace openstudio::epmodel;
@@ -24,6 +36,27 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_DefaultConstructor
   AirTerminalSingleDuctParallelPIUReheat terminal(model);
   EXPECT_EQ(AirTerminalSingleDuctParallelPIUReheat::iddObjectType(), terminal.iddObject().type());
   EXPECT_FALSE(terminal.nameString().empty());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_ConstructorAndRelationshipParity) {
+  Model model;
+  ScheduleCompact availability(model);
+  ASSERT_TRUE(availability.setToConstantValue(0.5));
+
+  FanConstantVolume fan(model, availability);
+  CoilHeatingElectric reheatCoil(model);
+  AirTerminalSingleDuctParallelPIUReheat terminal(model, availability, fan, reheatCoil);
+
+  EXPECT_EQ(availability.handle(), terminal.availabilitySchedule().handle());
+  EXPECT_EQ(fan.handle(), terminal.fan().handle());
+  EXPECT_EQ(reheatCoil.handle(), terminal.reheatCoil().handle());
+  EXPECT_EQ("ConstantSpeed", terminal.fanControlType());
+  EXPECT_EQ(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::SecondaryAirInletNodeName, terminal.secondaryAirInletPort());
+
+  Node secondary(model);
+  EXPECT_TRUE(terminal.setPointer(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::SecondaryAirInletNodeName, secondary.handle()));
+  ASSERT_TRUE(terminal.secondaryAirInletNode());
+  EXPECT_EQ(secondary.handle(), terminal.secondaryAirInletNode()->handle());
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_ScalarAccessors_RoundTrip) {
@@ -128,4 +161,187 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_Relationships_Roun
   EXPECT_EQ(reheatCoil.handle(), terminal.reheatCoil().handle());
   ASSERT_TRUE(terminal.secondaryAirInletNode());
   EXPECT_EQ(secondaryNode.handle(), terminal.secondaryAirInletNode()->handle());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_InvalidComponentValidation) {
+  Model model;
+  AirTerminalSingleDuctParallelPIUReheat terminal(model);
+
+  FanVariableVolume invalidFan(model);
+  FanConstantVolume invalidCoil(model);
+  EXPECT_FALSE(terminal.setFan(invalidFan));
+  EXPECT_FALSE(terminal.setReheatCoil(invalidCoil));
+
+  Model otherModel;
+  FanConstantVolume otherFan(otherModel);
+  CoilHeatingGas otherCoil(otherModel);
+  EXPECT_FALSE(terminal.setFan(otherFan));
+  EXPECT_FALSE(terminal.setReheatCoil(otherCoil));
+
+  FanConstantVolume validFan(model);
+  CoilHeatingGas validCoil(model);
+  EXPECT_TRUE(terminal.setFan(validFan));
+  EXPECT_TRUE(terminal.setReheatCoil(validCoil));
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_AddToNode_RejectsInvalidNodesAndContexts) {
+  Model model;
+  ScheduleCompact availability(model);
+  ASSERT_TRUE(availability.setToConstantValue(1.0));
+
+  FanSystemModel fan(model);
+  CoilHeatingGas reheatCoil(model);
+  AirTerminalSingleDuctParallelPIUReheat terminal(model, availability, fan, reheatCoil);
+
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  Node standaloneNode(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  auto zoneAirNode = zone.zoneAirNode();
+
+  EXPECT_FALSE(terminal.addToNode(standaloneNode));
+  EXPECT_FALSE(terminal.addToNode(supplyInletNode));
+  EXPECT_FALSE(terminal.addToNode(zoneAirNode));
+  EXPECT_FALSE(terminal.inletModelObject());
+  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_FALSE(terminal.secondaryAirInletNode());
+  EXPECT_FALSE(terminal.airLoopHVAC());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_FanControlCompatibility) {
+  Model model;
+  ScheduleCompact availability(model);
+  ASSERT_TRUE(availability.setToConstantValue(1.0));
+
+  FanConstantVolume constantVolumeFan(model, availability);
+  CoilHeatingElectric reheatCoil(model);
+  AirTerminalSingleDuctParallelPIUReheat terminal(model, availability, constantVolumeFan, reheatCoil);
+
+  EXPECT_FALSE(terminal.setFanControlType("VariableSpeed"));
+  EXPECT_EQ("ConstantSpeed", terminal.fanControlType());
+
+  FanSystemModel systemModelFan(model);
+  EXPECT_TRUE(terminal.setFan(systemModelFan));
+  EXPECT_TRUE(terminal.setFanControlType("VariableSpeed"));
+  EXPECT_EQ("VariableSpeed", terminal.fanControlType());
+
+  EXPECT_TRUE(terminal.setFan(constantVolumeFan));
+  EXPECT_EQ("ConstantSpeed", terminal.fanControlType());
+  EXPECT_FALSE(terminal.setFanControlType("VariableSpeed"));
+  EXPECT_EQ("ConstantSpeed", terminal.fanControlType());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_AddToNode_ZoneBranchInsertion_NodeListApproximation) {
+  Model model;
+  ScheduleCompact availability(model);
+  ASSERT_TRUE(availability.setToConstantValue(1.0));
+
+  FanSystemModel fan(model);
+  CoilHeatingGas reheatCoil(model);
+  AirTerminalSingleDuctParallelPIUReheat terminal(model, availability, fan, reheatCoil);
+
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+
+  EXPECT_TRUE(airLoop.addBranchForZone(zone, terminal));
+
+  ASSERT_TRUE(terminal.airLoopHVAC());
+  EXPECT_EQ(airLoop.handle(), terminal.airLoopHVAC()->handle());
+
+  ASSERT_TRUE(terminal.inletModelObject());
+  ASSERT_TRUE(terminal.outletModelObject());
+  auto outletNode = terminal.outletModelObject()->optionalCast<Node>();
+  ASSERT_TRUE(outletNode);
+  EXPECT_EQ(zone.zoneAirNode(), *outletNode);
+
+  auto inletNode = terminal.inletModelObject()->optionalCast<Node>();
+  ASSERT_TRUE(inletNode);
+  EXPECT_NE(*inletNode, *outletNode);
+
+  auto splitterOutletObject = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(splitterOutletObject);
+  auto splitterOutletNode = splitterOutletObject->optionalCast<Node>();
+  ASSERT_TRUE(splitterOutletNode);
+  EXPECT_EQ(*inletNode, *splitterOutletNode);
+
+  auto mixerInletObject = airLoop.zoneMixer().lastInletModelObject();
+  ASSERT_TRUE(mixerInletObject);
+  auto mixerInletNode = mixerInletObject->optionalCast<Node>();
+  ASSERT_TRUE(mixerInletNode);
+  EXPECT_EQ(*outletNode, *mixerInletNode);
+
+  ASSERT_TRUE(terminal.secondaryAirInletNode());
+  auto secondaryNode = terminal.secondaryAirInletNode().get();
+  EXPECT_NE(secondaryNode, *inletNode);
+  EXPECT_NE(secondaryNode, *outletNode);
+
+  auto persistedInlet = terminal.getString(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::SupplyAirInletNodeName, true);
+  ASSERT_TRUE(persistedInlet);
+  EXPECT_EQ(inletNode->nameString(), *persistedInlet);
+
+  auto persistedOutlet = terminal.getString(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::OutletNodeName, true);
+  ASSERT_TRUE(persistedOutlet);
+  EXPECT_EQ(outletNode->nameString(), *persistedOutlet);
+
+  auto persistedSecondary = terminal.getString(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::SecondaryAirInletNodeName, true);
+  ASSERT_TRUE(persistedSecondary);
+  EXPECT_EQ(secondaryNode.nameString(), *persistedSecondary);
+
+  auto inletFieldNode =
+    terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::SupplyAirInletNodeName);
+  ASSERT_TRUE(inletFieldNode);
+  EXPECT_EQ(*inletNode, *inletFieldNode);
+
+  auto outletFieldNode = terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::OutletNodeName);
+  ASSERT_TRUE(outletFieldNode);
+  EXPECT_EQ(*outletNode, *outletFieldNode);
+
+  auto secondaryFieldNode =
+    terminal.getModelObjectTarget<Node>(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::SecondaryAirInletNodeName);
+  ASSERT_TRUE(secondaryFieldNode);
+  EXPECT_EQ(secondaryNode, *secondaryFieldNode);
+
+  EXPECT_EQ(AirTerminalSingleDuctParallelPIUReheat::iddObjectType(), terminal.iddObject().type());
+  EXPECT_EQ(openstudio::AirTerminal_SingleDuct_ParallelPIU_ReheatFields::SecondaryAirInletNodeName, terminal.secondaryAirInletPort());
+
+  const auto equipment = zone.equipment();
+  ASSERT_EQ(1u, equipment.size());
+  EXPECT_EQ(terminal.handle(), equipment.front().handle());
+
+  ASSERT_EQ(1u, zone.airLoopHVACTerminals().size());
+  EXPECT_EQ(terminal.handle(), zone.airLoopHVACTerminals().front().handle());
+
+  auto zoneImpl = zone.getImpl<detail::ThermalZone_Impl>();
+  ASSERT_TRUE(zoneImpl);
+  auto zoneConnections = zoneImpl->getZoneHVACEquipmentConnections();
+  auto exhaustTarget = zoneConnections.getTarget(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName);
+  ASSERT_TRUE(exhaustTarget);
+  auto exhaustNodeList = exhaustTarget->optionalCast<NodeList>();
+  ASSERT_TRUE(exhaustNodeList);
+  const auto exhaustNodes = exhaustNodeList->nodes();
+  ASSERT_GE(exhaustNodes.size(), 2u);
+  EXPECT_TRUE(std::find(exhaustNodes.begin(), exhaustNodes.end(), secondaryNode) != exhaustNodes.end());
+  EXPECT_TRUE(std::find_if(exhaustNodes.begin(), exhaustNodes.end(), [&](const auto& nodeInList) { return nodeInList != secondaryNode; })
+              != exhaustNodes.end());
+  EXPECT_EQ(secondaryNode, exhaustNodes.back());
+
+  EXPECT_EQ(availability.handle(), terminal.availabilitySchedule().handle());
+  EXPECT_EQ(airLoop.availabilitySchedule().handle(), fan.availabilitySchedule().handle());
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_AddToNode_ZoneBranchInsertion_SyncsConstantVolumeFanSchedule) {
+  Model model;
+  ScheduleCompact terminalAvailability(model);
+  ASSERT_TRUE(terminalAvailability.setToConstantValue(0.4));
+
+  FanConstantVolume fan(model, terminalAvailability);
+  CoilHeatingGas reheatCoil(model);
+  AirTerminalSingleDuctParallelPIUReheat terminal(model, terminalAvailability, fan, reheatCoil);
+
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+
+  EXPECT_TRUE(airLoop.addBranchForZone(zone, terminal));
+  EXPECT_EQ(airLoop.availabilitySchedule().handle(), fan.availabilitySchedule().handle());
+  ASSERT_TRUE(terminal.secondaryAirInletNode());
 }

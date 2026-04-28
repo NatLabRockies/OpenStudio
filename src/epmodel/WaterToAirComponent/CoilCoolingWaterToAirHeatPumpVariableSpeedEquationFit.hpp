@@ -21,6 +21,7 @@ namespace epmodel {
   class Schedule;
   class Curve;
   class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData;
+  class AirflowNetworkDistributionComponentCoil;
 
   namespace detail {
     class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl;
@@ -43,19 +44,20 @@ class EPMODEL_API CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit : public
     // Schema Alignment Notes:
     // - Status: Parity with documented deltas.
     // - Canonical Counterpart: openstudio::model::CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit.
-    // - Implemented Parity: The canonical availability schedule, part-load curve, scalar speed-level fields, autosized query helpers, and
-    //   speed-data child APIs are exposed here. epmodel preserves the canonical speed-data children as transient ParentObject wrappers:
-    //   detached transient wrappers hold their own OpenStudio-style fields until added to a parent coil, while attached transient wrappers
-    //   read and write a specific EnergyPlus extensible speed row on the parent object.
-    // - Documented Delta: `AirflowNetworkEquivalentDuct` parity is still deferred. High-level child traversal therefore returns the energy
-    //   part-load curve and speed-data children, but not the canonical AirflowNetwork companion. The autosized query methods are also
-    //   API-preserving stubs for now: they return `none` until epmodel grows the SQL-backed autosized result lookup used by the canonical
-    //   model layer.
+    // - Implemented Parity: The canonical availability schedule, part-load curve, scalar speed-level fields, autosized query helpers,
+    //   speed-data child APIs, and equivalent-duct helper surface are exposed here. epmodel preserves the canonical speed-data children as
+    //   transient ParentObject wrappers: detached transient wrappers hold their own OpenStudio-style fields until added to a parent coil,
+    //   while attached transient wrappers read and write a specific EnergyPlus extensible speed row on the parent object.
+    // - Implemented Parity: the canonical equivalent-duct helper surface lands on epmodel's
+    //   `AirflowNetworkDistributionComponentCoil`, which is the EnergyPlus object written by the model-side
+    //   `AirflowNetworkEquivalentDuct` translator path for coils.
+    // - Documented Delta: The autosized query methods are API-preserving stubs for now: they return `none` until epmodel grows the
+    //   SQL-backed autosized result lookup used by the canonical model layer.
     // - Field/Storage Mapping: Scalar fields map directly to the corresponding EnergyPlus
     //   `Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit` fields. The canonical speed-data children are backed by the parent's real
     //   EnergyPlus extensible speed rows, not by separate persisted EnergyPlus objects.
     // - Evidence: `src/model/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit.hpp`, `src/model/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit.cpp`, and `src/epmodel/test/CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_GTest.cpp`.
-    // - Remaining Parity Work: Add `AirflowNetworkEquivalentDuct` once that family is built out in epmodel.
+    // - Remaining Parity Work: Add SQL-backed autosized result lookup if epmodel needs canonical autosized-value parity.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 
@@ -106,6 +108,9 @@ class EPMODEL_API CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit : public
     bool addSpeed(const CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData& speed);
     void removeSpeed(const CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData& speed);
     void removeAllSpeeds();
+
+    AirflowNetworkDistributionComponentCoil getAirflowNetworkEquivalentDuct(double length, double diameter);
+    boost::optional<AirflowNetworkDistributionComponentCoil> airflowNetworkEquivalentDuct() const;
 
     std::vector<ModelObject> children() const;
 

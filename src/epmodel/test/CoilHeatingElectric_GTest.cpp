@@ -9,6 +9,8 @@
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/CoilHeatingElectric.hpp"
 #include "../StraightComponent/Node.hpp"
@@ -26,6 +28,10 @@ TEST_F(EPModelFixture, CoilHeatingElectric_DefaultConstructor) {
   EXPECT_FALSE(coil.nominalCapacity());
   EXPECT_TRUE(coil.isNominalCapacityDefaulted());
   EXPECT_FALSE(coil.isNominalCapacityAutosized());
+  auto availability = coil.availabilitySchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(availability);
+  EXPECT_DOUBLE_EQ(1.0, availability->value());
+  EXPECT_FALSE(coil.temperatureSetpointNode());
 }
 
 TEST_F(EPModelFixture, CoilHeatingElectric_ScalarAccessors_RoundTrip) {
@@ -55,6 +61,23 @@ TEST_F(EPModelFixture, CoilHeatingElectric_ScalarAccessors_RoundTrip) {
   EXPECT_FALSE(coil.nominalCapacity());
 
   EXPECT_FALSE(coil.autosizedNominalCapacity());
+}
+
+TEST_F(EPModelFixture, CoilHeatingElectric_RelationshipSetters_RoundTrip) {
+  Model model;
+  CoilHeatingElectric coil(model);
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(availability.setValue(0.25));
+  Node setpointNode(model);
+
+  EXPECT_TRUE(coil.setAvailabilitySchedule(availability));
+  EXPECT_EQ(availability.handle(), coil.availabilitySchedule().handle());
+
+  EXPECT_TRUE(coil.setTemperatureSetpointNode(setpointNode));
+  ASSERT_TRUE(coil.temperatureSetpointNode());
+  EXPECT_EQ(setpointNode.handle(), coil.temperatureSetpointNode()->handle());
+  coil.resetTemperatureSetpointNode();
+  EXPECT_FALSE(coil.temperatureSetpointNode());
 }
 
 TEST_F(EPModelFixture, CoilHeatingElectric_AddToNodeRejectsAirLoopDemandNode) {

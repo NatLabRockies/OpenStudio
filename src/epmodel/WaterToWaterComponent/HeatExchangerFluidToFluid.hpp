@@ -16,6 +16,8 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Schedule;
+class Node;
 
 namespace detail {
 class HeatExchangerFluidToFluid_Impl;
@@ -40,13 +42,22 @@ class EPMODEL_API HeatExchangerFluidToFluid : public WaterToWaterComponent
   static std::vector<std::string> componentOverrideCoolingControlTemperatureModeValues();
 
   // Schema Alignment Notes:
-  // - Status: Scalar Parity. The scalar heat-exchanger surface is aligned, while relationship and loop-coupling behavior remains omitted.
+  // - Status: Parity with documented deltas. The canonical scalar, relationship, and control-type classification surface is aligned locally.
   // - Canonical Counterpart: openstudio::model::HeatExchangerFluidToFluid.
-  // - Implemented Parity: Scalar accessors for design flow rates, model type, heat-transfer metering, control type, temperature limits, and sizing preserve the canonical model API shape.
-  // - Documented Delta: Relationship, node, and reference-link APIs are intentionally excluded in this pass.
-  // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `HeatExchanger:FluidToFluid` fields directly, with the excluded linkage remaining in loop topology.
+  // - Implemented Parity: Scalar accessors, availability schedule, the two component-override inlet-node reference links, and the
+  //   control-type-driven `componentType` and loop-fuel delegation overrides preserve the canonical model API shape.
+  // - Documented Delta: Broader loop-coupling behavior remains delegated to the shared water-to-water topology layer rather than adding extra
+  //   wrapper-local policy here.
+  // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `HeatExchanger:FluidToFluid` fields directly, and the schedule/node relationships
+  //   are stored as direct object references on the same object. Classification and fuel reporting are derived from `ControlType` plus the
+  //   attached secondary plant loop, matching the canonical model implementation.
   // - Evidence: `src/model/HeatExchangerFluidToFluid.hpp`, `src/model/HeatExchangerFluidToFluid.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatExchangerFluidToFluid.cpp`.
-  // - Remaining Parity Work: Add the excluded non-scalar APIs and loop-coupling behavior when the water-loop relationship layer is extended.
+  // - Remaining Parity Work: Wrapper-local parity is closed for this iteration; any future gaps should come from shared plant-loop fuel/type
+  //   reporting infrastructure rather than this wrapper.
+  boost::optional<Schedule> availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+  void resetAvailabilitySchedule();
+
   boost::optional<double> loopDemandSideDesignFlowRate() const;
   bool isLoopDemandSideDesignFlowRateAutosized() const;
   bool setLoopDemandSideDesignFlowRate(double loopDemandSideDesignFlowRate);
@@ -81,6 +92,14 @@ class EPMODEL_API HeatExchangerFluidToFluid : public WaterToWaterComponent
   bool isHeatTransferMeteringEndUseTypeDefaulted() const;
   bool setHeatTransferMeteringEndUseType(const std::string& heatTransferMeteringEndUseType);
   void resetHeatTransferMeteringEndUseType();
+
+  boost::optional<Node> componentOverrideLoopSupplySideInletNode() const;
+  bool setComponentOverrideLoopSupplySideInletNode(const Node& node);
+  void resetComponentOverrideLoopSupplySideInletNode();
+
+  boost::optional<Node> componentOverrideLoopDemandSideInletNode() const;
+  bool setComponentOverrideLoopDemandSideInletNode(const Node& node);
+  void resetComponentOverrideLoopDemandSideInletNode();
 
   std::string componentOverrideCoolingControlTemperatureMode() const;
   bool isComponentOverrideCoolingControlTemperatureModeDefaulted() const;

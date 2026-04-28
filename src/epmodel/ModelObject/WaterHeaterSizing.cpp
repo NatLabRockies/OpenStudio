@@ -7,15 +7,34 @@
 #include "WaterHeaterSizing_Impl.hpp"
 
 #include "Model.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent.hpp"
+#include "WaterToWaterComponent/WaterToWaterComponent_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/WaterHeater_Sizing_FieldEnums.hxx>
 
+#include <stdexcept>
 #include <utility>
 
 namespace openstudio {
 namespace epmodel {
+
+  WaterHeaterSizing::WaterHeaterSizing(const WaterToWaterComponent& waterHeater)
+    : ModelObject(WaterHeaterSizing::iddObjectType(), waterHeater.model()) {
+    OS_ASSERT(getImpl<detail::WaterHeaterSizing_Impl>());
+
+    const bool ok = setWaterHeater(waterHeater);
+    if (!ok) {
+      remove();
+      throw std::runtime_error("Unable to set WaterHeaterSizing WaterHeater relationship.");
+    }
+
+    setDesignMode("PeakDraw");
+    setTimeStorageCanMeetPeakDraw(0.538503);
+    setTimeforTankRecovery(0.0);
+    setNominalTankVolumeforAutosizingPlantConnections(1.0);
+  }
 
   WaterHeaterSizing::WaterHeaterSizing(const Model& model) : ModelObject(WaterHeaterSizing::iddObjectType(), model) {
     setDesignMode("PeakDraw");
@@ -32,6 +51,14 @@ namespace epmodel {
 
   std::vector<std::string> WaterHeaterSizing::designModeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), WaterHeater_SizingFields::DesignMode);
+  }
+
+  WaterToWaterComponent WaterHeaterSizing::waterHeater() const {
+    return getImpl<detail::WaterHeaterSizing_Impl>()->waterHeater();
+  }
+
+  bool WaterHeaterSizing::setWaterHeater(const WaterToWaterComponent& waterHeater) {
+    return getImpl<detail::WaterHeaterSizing_Impl>()->setWaterHeater(waterHeater);
   }
 
   boost::optional<std::string> WaterHeaterSizing::designMode() const {
@@ -216,6 +243,18 @@ namespace epmodel {
   }
 
   namespace detail {
+
+    WaterToWaterComponent WaterHeaterSizing_Impl::waterHeater() const {
+      auto value = getObject<ModelObject>().getModelObjectTarget<WaterToWaterComponent>(WaterHeater_SizingFields::WaterHeaterName);
+      if (!value) {
+        throw std::runtime_error("WaterHeaterSizing does not have a Water Heater attached.");
+      }
+      return *value;
+    }
+
+    bool WaterHeaterSizing_Impl::setWaterHeater(const WaterToWaterComponent& waterHeater) {
+      return setPointer(WaterHeater_SizingFields::WaterHeaterName, waterHeater.handle());
+    }
 
     boost::optional<std::string> WaterHeaterSizing_Impl::designMode() const {
       return getString(WaterHeater_SizingFields::DesignMode, true);

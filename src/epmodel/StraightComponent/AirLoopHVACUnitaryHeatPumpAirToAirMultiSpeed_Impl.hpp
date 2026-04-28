@@ -14,8 +14,12 @@ namespace openstudio {
 namespace epmodel {
 
 class Node;
+class HVACComponent;
+class Schedule;
+class ThermalZone;
 
 namespace detail {
+struct LoadContext;
 
 class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl : public StraightComponent_Impl
 {
@@ -25,12 +29,41 @@ class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl : public Str
   unsigned inletPort() const override;
   unsigned outletPort() const override;
   bool addToNode(Node& node) override;
+  void doCanonicalize(LoadContext& context) override;
+  std::vector<ModelObject> children() const override;
+
+  boost::optional<Schedule> availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+  void resetAvailabilitySchedule();
+
+  boost::optional<ThermalZone> controllingZoneorThermostatLocation() const;
+  bool setControllingZoneorThermostatLocation(const ThermalZone& thermalZone);
+  void resetControllingZoneorThermostatLocation();
+
+  HVACComponent supplyAirFan() const;
+  bool setSupplyAirFan(const HVACComponent& fan);
 
   std::string supplyAirFanPlacement() const;
   bool setSupplyAirFanPlacement(const std::string& supplyAirFanPlacement);
 
+  Schedule supplyAirFanOperatingModeSchedule() const;
+  bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+
+  HVACComponent heatingCoil() const;
+  bool setHeatingCoil(const HVACComponent& coil);
+
   double dXHeatingCoilSizingRatio() const;
   bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);
+
+  HVACComponent coolingCoil() const;
+  bool setCoolingCoil(const HVACComponent& coil);
+
+  HVACComponent supplementalHeatingCoil() const;
+  bool setSupplementalHeatingCoil(const HVACComponent& coil);
+
+  boost::optional<Node> fanOutletNode() const;
+  boost::optional<Node> coolingCoilOutletNode() const;
+  boost::optional<Node> heatingCoilOutletNode() const;
 
   boost::optional<double> maximumSupplyAirTemperaturefromSupplementalHeater() const;
   bool isMaximumSupplyAirTemperaturefromSupplementalHeaterAutosized() const;
@@ -104,6 +137,11 @@ class EPMODEL_API AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl : public Str
   void autosizeSpeed4SupplyAirFlowRateDuringCoolingOperation();
 
   std::vector<std::string> supplyAirFanPlacementValues() const;
+
+ private:
+  bool maintainContainedAirPath();
+  bool repairContainedAirPath(LoadContext& context);
+  bool reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context = nullptr);
 };
 
 }  // namespace detail

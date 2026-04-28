@@ -18,6 +18,7 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Schedule;
 
 namespace detail {
 class CoilWaterHeatingAirToWaterHeatPumpWrapped_Impl;
@@ -39,14 +40,17 @@ class EPMODEL_API CoilWaterHeatingAirToWaterHeatPumpWrapped : public StraightCom
   static std::vector<std::string> evaporatorAirTemperatureTypeforCurveObjectsValues();
 
   // Schema Alignment Notes:
-  // - Status: Scalar Parity. The scalar rating and control surface is aligned, while availability-schedule and curve APIs are still omitted.
+  // - Status: Partial Parity. The scalar rating/control surface plus the required availability-schedule relationship are aligned, while curve APIs are still omitted.
   // - Canonical Counterpart: openstudio::model::CoilWaterHeatingAirToWaterHeatPumpWrapped.
-  // - Implemented Parity: The wrapped-coil scalar getters/setters preserve the canonical scalar contract.
+  // - Implemented Parity: The wrapped-coil scalar getters/setters plus the required availability-schedule relationship preserve the canonical bounded contract.
   // - Documented Delta: epmodel promotes this wrapper to `StraightComponent` so the real evaporator-air ports are explicit. This is an additive hierarchy change compared to canonical model.
   // - Documented Delta: Despite the base-class promotion, generic loop-placement APIs remain intentionally rejected because this coil is normally owned by a compound wrapped-condenser parent.
-  // - Field/Storage Mapping: Scalar APIs map directly to EnergyPlus `Coil:WaterHeating:AirToWaterHeatPump:Wrapped` storage, including the real evaporator-air node fields.
+  // - Field/Storage Mapping: The availability schedule and scalar APIs map directly to EnergyPlus `Coil:WaterHeating:AirToWaterHeatPump:Wrapped` storage, including the real evaporator-air node fields.
   // - Evidence: `src/model/CoilWaterHeatingAirToWaterHeatPumpWrapped.hpp`, `src/model/CoilWaterHeatingAirToWaterHeatPumpWrapped.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilWaterHeatingAirToWaterHeatPumpWrapped.cpp`, and `src/epmodel/test/CoilWaterHeatingAirToWaterHeatPumpWrapped_GTest.cpp`.
-  // - Remaining Parity Work: Add the omitted availability-schedule, curve, and other relationship APIs after the relationship layer is available.
+  // - Remaining Parity Work: Add the omitted curve and other relationship APIs after the relationship layer is available.
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+
   double ratedHeatingCapacity() const;
   bool setRatedHeatingCapacity(double ratedHeatingCapacity);
 

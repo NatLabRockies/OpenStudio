@@ -13,6 +13,8 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API RefrigerationCondenserWaterCooled_Impl : public StraightComponent_Impl
@@ -27,6 +29,7 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
 
       boost::optional<double> ratedEffectiveTotalHeatRejectionRate() const;
       bool setRatedEffectiveTotalHeatRejectionRate(boost::optional<double> ratedEffectiveTotalHeatRejectionRate);
@@ -47,6 +50,10 @@ namespace epmodel {
       bool isWaterCooledLoopFlowTypeDefaulted() const;
       bool setWaterCooledLoopFlowType(const std::string& waterCooledLoopFlowType);
       void resetWaterCooledLoopFlowType();
+
+      boost::optional<Schedule> waterOutletTemperatureSchedule() const;
+      bool setWaterOutletTemperatureSchedule(Schedule& waterOutletTemperatureSchedule);
+      void resetWaterOutletTemperatureSchedule();
 
       boost::optional<double> waterDesignFlowRate() const;
       bool setWaterDesignFlowRate(boost::optional<double> waterDesignFlowRate);

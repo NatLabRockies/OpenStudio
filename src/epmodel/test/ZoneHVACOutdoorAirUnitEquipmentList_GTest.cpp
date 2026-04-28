@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ZoneHVACOutdoorAirUnitEquipmentList.hpp"
+#include "../scaffolds/ZoneHVACOutdoorAirUnitEquipmentList.hpp"
 
 using namespace openstudio::epmodel;
 

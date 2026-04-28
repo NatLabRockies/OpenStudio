@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ZoneHVACExhaustControl.hpp"
+#include "../scaffolds/ZoneHVACExhaustControl.hpp"
 
 using namespace openstudio::epmodel;
 

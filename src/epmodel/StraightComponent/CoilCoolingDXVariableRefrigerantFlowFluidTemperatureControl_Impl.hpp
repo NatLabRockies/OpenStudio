@@ -23,6 +23,9 @@ namespace epmodel {
       unsigned outletPort() const override;
       bool addToNode(Node& node) override;
 
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
       boost::optional<double> ratedTotalCoolingCapacity() const;
       bool setRatedTotalCoolingCapacity(double ratedTotalCoolingCapacity);
       bool isRatedTotalCoolingCapacityAutosized() const;
@@ -35,6 +38,9 @@ namespace epmodel {
 
       double indoorUnitReferenceSuperheating() const;
       bool setIndoorUnitReferenceSuperheating(double indoorUnitReferenceSuperheating);
+
+      Curve indoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve() const;
+      bool setIndoorUnitEvaporatingTemperatureFunctionofSuperheatingCurve(const Curve& curve);
     };
 
   }  // namespace detail

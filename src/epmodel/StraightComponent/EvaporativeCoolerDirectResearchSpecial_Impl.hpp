@@ -10,7 +10,9 @@
 
 namespace openstudio {
 namespace epmodel {
+  class Curve;
   class Node;
+  class Schedule;
   namespace detail {
 
     class EPMODEL_API EvaporativeCoolerDirectResearchSpecial_Impl : public StraightComponent_Impl
@@ -23,6 +25,9 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
 
       double coolerDesignEffectiveness() const;
       bool setCoolerDesignEffectiveness(double value);
@@ -39,14 +44,25 @@ namespace epmodel {
       bool isPrimaryAirDesignFlowRateAutosized() const;
       boost::optional<double> autosizedPrimaryAirDesignFlowRate() const;
 
+      boost::optional<Node> sensorNode() const;
+      bool setSensorNode(const Node& node);
+
       double driftLossFraction() const;
       bool setDriftLossFraction(double value);
 
       double blowdownConcentrationRatio() const;
       bool setBlowdownConcentrationRatio(double value);
 
+      boost::optional<Curve> effectivenessFlowRatioModifierCurve() const;
+      bool setEffectivenessFlowRatioModifierCurve(const Curve& curve);
+      void resetEffectivenessFlowRatioModifierCurve();
+
       double waterPumpPowerSizingFactor() const;
       bool setWaterPumpPowerSizingFactor(double waterPumpPowerSizingFactor);
+
+      boost::optional<Curve> waterPumpPowerModifierCurve() const;
+      bool setWaterPumpPowerModifierCurve(const Curve& curve);
+      void resetWaterPumpPowerModifierCurve();
 
       double evaporativeOperationMinimumDrybulbTemperature() const;
       bool setEvaporativeOperationMinimumDrybulbTemperature(double evaporativeOperationMinimumDrybulbTemperature);

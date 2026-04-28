@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ThermalStorageHotWaterStratified.hpp"
+#include "../scaffolds/ThermalStorageHotWaterStratified.hpp"
 
 using namespace openstudio::epmodel;
 

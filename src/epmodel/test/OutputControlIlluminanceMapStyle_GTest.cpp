@@ -7,7 +7,7 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../ModelObject/OutputControlIlluminanceMapStyle.hpp"
+#include "../scaffolds/OutputControlIlluminanceMapStyle.hpp"
 
 #include <algorithm>
 

@@ -1,82 +1,140 @@
-/***********************************************************************************************************************
-*  OpenStudio(R), Copyright (c) Alliance for Energy Innovation, LLC.
-*  See also https://openstudio.net/license
-***********************************************************************************************************************/
-
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+
+#include "../HVACComponent/HVACComponent.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
 #include "../StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeInduction.hpp"
+#include "../WaterToAirComponent/CoilCoolingWater.hpp"
+#include "../WaterToAirComponent/CoilHeatingWater.hpp"
+#include "../StraightComponent/Node.hpp"
+
+#include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_DefaultConstructor) {
   Model model;
-  AirTerminalSingleDuctConstantVolumeFourPipeInduction airTerminal(model);
-  EXPECT_EQ(AirTerminalSingleDuctConstantVolumeFourPipeInduction::iddObjectType(), airTerminal.iddObject().type());
-  EXPECT_FALSE(airTerminal.nameString().empty());
+  AirTerminalSingleDuctConstantVolumeFourPipeInduction terminal(model);
+
+  EXPECT_EQ(AirTerminalSingleDuctConstantVolumeFourPipeInduction::iddObjectType(), terminal.iddObject().type());
+  EXPECT_FALSE(terminal.nameString().empty());
+  EXPECT_FALSE(terminal.availabilitySchedule());
+  EXPECT_TRUE(terminal.isMaximumTotalAirFlowRateAutosized());
+  EXPECT_DOUBLE_EQ(2.5, terminal.inductionRatio());
+  EXPECT_TRUE(terminal.isMaximumHotWaterFlowRateAutosized());
+  EXPECT_DOUBLE_EQ(0.0, terminal.minimumHotWaterFlowRate());
+  EXPECT_DOUBLE_EQ(0.001, terminal.heatingConvergenceTolerance());
+  EXPECT_FALSE(terminal.coolingCoil());
+  EXPECT_TRUE(terminal.isMaximumColdWaterFlowRateAutosized());
+  EXPECT_DOUBLE_EQ(0.0, terminal.minimumColdWaterFlowRate());
+  EXPECT_DOUBLE_EQ(0.001, terminal.coolingConvergenceTolerance());
 }
 
-TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_ScalarAccessors_RoundTrip) {
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_HeatingCoilConstructor) {
   Model model;
-  AirTerminalSingleDuctConstantVolumeFourPipeInduction airTerminal(model);
+  CoilHeatingWater heatingCoil(model);
+  AirTerminalSingleDuctConstantVolumeFourPipeInduction terminal(model, heatingCoil);
 
-  EXPECT_TRUE(airTerminal.isMaximumTotalAirFlowRateAutosized());
-  EXPECT_TRUE(airTerminal.isMaximumHotWaterFlowRateAutosized());
-  EXPECT_TRUE(airTerminal.isMaximumColdWaterFlowRateAutosized());
+  EXPECT_EQ(heatingCoil.handle(), terminal.heatingCoil().handle());
+  EXPECT_FALSE(terminal.availabilitySchedule());
+  EXPECT_FALSE(terminal.coolingCoil());
+}
 
-  EXPECT_TRUE(airTerminal.setMaximumTotalAirFlowRate(0.52));
-  ASSERT_TRUE(airTerminal.maximumTotalAirFlowRate());
-  EXPECT_DOUBLE_EQ(0.52, airTerminal.maximumTotalAirFlowRate().get());
-  EXPECT_FALSE(airTerminal.isMaximumTotalAirFlowRateAutosized());
-  airTerminal.autosizeMaximumTotalAirFlowRate();
-  EXPECT_TRUE(airTerminal.isMaximumTotalAirFlowRateAutosized());
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_AvailabilityAndCoils_RoundTripAndValidation) {
+  Model model;
+  CoilHeatingWater heatingCoil(model);
+  AirTerminalSingleDuctConstantVolumeFourPipeInduction terminal(model, heatingCoil);
 
-  EXPECT_TRUE(airTerminal.setInductionRatio(2.7));
-  EXPECT_DOUBLE_EQ(2.7, airTerminal.inductionRatio());
-  EXPECT_FALSE(airTerminal.isInductionRatioDefaulted());
-  airTerminal.resetInductionRatio();
-  EXPECT_TRUE(airTerminal.isInductionRatioDefaulted());
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(availability.setValue(1.0));
+  EXPECT_TRUE(terminal.setAvailabilitySchedule(availability));
+  ASSERT_TRUE(terminal.availabilitySchedule());
+  EXPECT_EQ(availability.handle(), terminal.availabilitySchedule()->handle());
+  terminal.resetAvailabilitySchedule();
+  EXPECT_FALSE(terminal.availabilitySchedule());
 
-  EXPECT_TRUE(airTerminal.setMaximumHotWaterFlowRate(0.04));
-  ASSERT_TRUE(airTerminal.maximumHotWaterFlowRate());
-  EXPECT_DOUBLE_EQ(0.04, airTerminal.maximumHotWaterFlowRate().get());
-  EXPECT_FALSE(airTerminal.isMaximumHotWaterFlowRateAutosized());
-  airTerminal.autosizeMaximumHotWaterFlowRate();
-  EXPECT_TRUE(airTerminal.isMaximumHotWaterFlowRateAutosized());
-  airTerminal.resetMaximumHotWaterFlowRate();
-  EXPECT_FALSE(airTerminal.maximumHotWaterFlowRate());
+  CoilCoolingWater coolingCoil(model);
+  EXPECT_TRUE(terminal.setCoolingCoil(coolingCoil));
+  ASSERT_TRUE(terminal.coolingCoil());
+  EXPECT_EQ(coolingCoil.handle(), terminal.coolingCoil()->handle());
+  terminal.resetCoolingCoil();
+  EXPECT_FALSE(terminal.coolingCoil());
 
-  EXPECT_TRUE(airTerminal.setMinimumHotWaterFlowRate(0.003));
-  EXPECT_DOUBLE_EQ(0.003, airTerminal.minimumHotWaterFlowRate());
-  EXPECT_FALSE(airTerminal.isMinimumHotWaterFlowRateDefaulted());
-  airTerminal.resetMinimumHotWaterFlowRate();
-  EXPECT_TRUE(airTerminal.isMinimumHotWaterFlowRateDefaulted());
+  CoilHeatingWater replacementHeating(model);
+  EXPECT_TRUE(terminal.setHeatingCoil(replacementHeating));
+  EXPECT_EQ(replacementHeating.handle(), terminal.heatingCoil().handle());
 
-  EXPECT_TRUE(airTerminal.setHeatingConvergenceTolerance(0.0018));
-  EXPECT_DOUBLE_EQ(0.0018, airTerminal.heatingConvergenceTolerance());
-  EXPECT_FALSE(airTerminal.isHeatingConvergenceToleranceDefaulted());
-  airTerminal.resetHeatingConvergenceTolerance();
-  EXPECT_TRUE(airTerminal.isHeatingConvergenceToleranceDefaulted());
+  Model foreignModel;
+  CoilCoolingWater foreignCooling(foreignModel);
+  CoilHeatingWater foreignHeating(foreignModel);
+  boost::optional<HVACComponent> foreignCoolingAsComponent = foreignCooling.cast<HVACComponent>();
+  EXPECT_FALSE(terminal.setCoolingCoil(foreignCoolingAsComponent));
+  EXPECT_FALSE(terminal.setHeatingCoil(foreignHeating.cast<HVACComponent>()));
+}
 
-  EXPECT_TRUE(airTerminal.setMaximumColdWaterFlowRate(0.03));
-  ASSERT_TRUE(airTerminal.maximumColdWaterFlowRate());
-  EXPECT_DOUBLE_EQ(0.03, airTerminal.maximumColdWaterFlowRate().get());
-  EXPECT_FALSE(airTerminal.isMaximumColdWaterFlowRateAutosized());
-  airTerminal.autosizeMaximumColdWaterFlowRate();
-  EXPECT_TRUE(airTerminal.isMaximumColdWaterFlowRateAutosized());
-  airTerminal.resetMaximumColdWaterFlowRate();
-  EXPECT_FALSE(airTerminal.maximumColdWaterFlowRate());
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_AddToNode_RejectsInvalidNodesAndContexts) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  CoilHeatingWater heatingCoil(model);
+  AirTerminalSingleDuctConstantVolumeFourPipeInduction terminal(model, heatingCoil);
+  Node standaloneNode(model);
+  auto supplyInletNode = airLoop.supplyInletNode();
+  auto zoneAirNode = zone.zoneAirNode();
 
-  EXPECT_TRUE(airTerminal.setMinimumColdWaterFlowRate(0.001));
-  EXPECT_DOUBLE_EQ(0.001, airTerminal.minimumColdWaterFlowRate());
-  EXPECT_FALSE(airTerminal.isMinimumColdWaterFlowRateDefaulted());
-  airTerminal.resetMinimumColdWaterFlowRate();
-  EXPECT_TRUE(airTerminal.isMinimumColdWaterFlowRateDefaulted());
+  EXPECT_FALSE(terminal.addToNode(standaloneNode));
+  EXPECT_FALSE(terminal.addToNode(supplyInletNode));
+  EXPECT_FALSE(terminal.addToNode(zoneAirNode));
+  EXPECT_FALSE(terminal.inletModelObject());
+  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_FALSE(terminal.inducedAirInletNode());
+  EXPECT_FALSE(terminal.airLoopHVAC());
+}
 
-  EXPECT_TRUE(airTerminal.setCoolingConvergenceTolerance(0.0012));
-  EXPECT_DOUBLE_EQ(0.0012, airTerminal.coolingConvergenceTolerance());
-  EXPECT_FALSE(airTerminal.isCoolingConvergenceToleranceDefaulted());
-  airTerminal.resetCoolingConvergenceTolerance();
-  EXPECT_TRUE(airTerminal.isCoolingConvergenceToleranceDefaulted());
+TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeFourPipeInduction_AddToNode_ResolvesAirLoopHVACRegistersZoneEquipmentAndExhaustNode) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  CoilHeatingWater heatingCoil(model);
+  CoilCoolingWater coolingCoil(model);
+  AirTerminalSingleDuctConstantVolumeFourPipeInduction terminal(model, heatingCoil);
+  EXPECT_TRUE(terminal.setCoolingCoil(coolingCoil));
+
+  EXPECT_TRUE(airLoop.addBranchForZone(zone, terminal));
+
+  auto linkedAirLoop = terminal.airLoopHVAC();
+  ASSERT_TRUE(linkedAirLoop);
+  EXPECT_EQ(airLoop, *linkedAirLoop);
+
+  auto inletObject = terminal.inletModelObject();
+  ASSERT_TRUE(inletObject);
+  auto inletNode = inletObject->optionalCast<Node>();
+  ASSERT_TRUE(inletNode);
+
+  auto outletObject = terminal.outletModelObject();
+  ASSERT_TRUE(outletObject);
+  auto outletNode = outletObject->optionalCast<Node>();
+  ASSERT_TRUE(outletNode);
+  EXPECT_EQ(zone.zoneAirNode(), *outletNode);
+
+  ASSERT_TRUE(terminal.inducedAirInletNode());
+  auto zoneImpl = zone.getImpl<detail::ThermalZone_Impl>();
+  ASSERT_TRUE(zoneImpl);
+  auto zoneConnections = zoneImpl->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(zoneConnections);
+  auto exhaustNode = zoneConnections->getModelObjectTarget<Node>(openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneAirExhaustNodeorNodeListName);
+  ASSERT_TRUE(exhaustNode);
+  EXPECT_EQ(*exhaustNode, terminal.inducedAirInletNode().get());
+
+  const auto equipment = zone.equipment();
+  ASSERT_EQ(1u, equipment.size());
+  EXPECT_EQ(terminal.cast<ModelObject>(), equipment.front());
+  ASSERT_TRUE(zone.airLoopHVACTerminal());
+  EXPECT_EQ(terminal.cast<HVACComponent>(), *zone.airLoopHVACTerminal());
 }

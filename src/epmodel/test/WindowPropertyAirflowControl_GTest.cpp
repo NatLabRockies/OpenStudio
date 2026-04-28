@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/WindowPropertyAirflowControl.hpp"
+#include "../scaffolds/WindowPropertyAirflowControl.hpp"
 
 using namespace openstudio::epmodel;
 

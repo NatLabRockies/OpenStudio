@@ -43,13 +43,18 @@ namespace epmodel {
     static std::vector<std::string> blowdownCalculationModeValues();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical single-speed evaporative-fluid-cooler scalar surface is present, while node, schedule, and storage-tank helpers remain out of scope.
+    // - Status: Parity with documented deltas. The canonical scalar surface and plant-supply placement rule are present, while the blowdown schedule
+    //   relationship helper and legacy storage-tank placeholder remain out of scope.
     // - Canonical Counterpart: openstudio::model::EvaporativeFluidCoolerSingleSpeed.
-    // - Implemented Parity: The preserved scalar API matches the design-flow, fan-power, spray-water, performance, and capacity accessors with matching autosize/default behavior.
-    // - Documented Delta: Node-name, schedule, and storage-tank helpers remain intentionally excluded from this scalar pass.
+    // - Implemented Parity: The preserved API matches the canonical design-flow, fan-power, spray-water, performance, and capacity accessors with
+    //   matching autosize/default behavior, and inherited `addToNode(...)` now follows the canonical plant-supply-only insertion contract.
+    // - Documented Delta: The public wrapper still omits `blowdownMakeupWaterUsageSchedule()` and its mutators, and the legacy storage-tank helper
+    //   remains intentionally absent.
     // - Field/Storage Mapping: These accessors map directly to EnergyPlus `EvaporativeFluidCooler:SingleSpeed` scalar fields used by the forward translator.
-    // - Evidence: `src/model/EvaporativeFluidCoolerSingleSpeed.hpp`, `src/model/EvaporativeFluidCoolerSingleSpeed.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateEvaporativeFluidCoolerSingleSpeed.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
+    // - Evidence: `src/model/EvaporativeFluidCoolerSingleSpeed.hpp`, `src/model/EvaporativeFluidCoolerSingleSpeed.cpp`, and
+    //   `src/energyplus/ForwardTranslator/ForwardTranslateEvaporativeFluidCoolerSingleSpeed.cpp`.
+    // - Remaining Parity Work: Add the omitted blowdown schedule relationship helper and decide whether the legacy storage-tank placeholder should
+    //   remain intentionally unsupported.
 
     boost::optional<double> designAirFlowRate() const;
     bool isDesignAirFlowRateAutosized() const;

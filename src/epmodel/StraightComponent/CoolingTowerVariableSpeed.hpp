@@ -16,6 +16,9 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class ModelObject;
+  class Schedule;
+  class CurveCubic;
 
   namespace detail {
     class CoolingTowerVariableSpeed_Impl;
@@ -40,16 +43,25 @@ namespace epmodel {
     static std::vector<std::string> cellControlValues();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical variable-speed cooling-tower scalar surface is present, while node, schedule, curve, and model-coefficient helpers remain out of scope.
+    // - Status: Parity with documented deltas. The canonical variable-speed cooling-tower wrapper surface is present, including the
+    //   model-coefficient, fan-power curve, basin-heater, blowdown, and plant-supply insertion helpers.
     // - Canonical Counterpart: openstudio::model::CoolingTowerVariableSpeed.
-    // - Implemented Parity: The preserved scalar API covers the tower performance, fan power, flow, blowdown, basin-heater, and cell-control fields with matching default/autosize behavior.
-    // - Documented Delta: Node-link, schedule, curve, and model-coefficient helpers remain intentionally excluded from this scalar pass.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `CoolingTower:VariableSpeed` scalar fields used by the forward translator.
-    // - Evidence: `src/model/CoolingTowerVariableSpeed.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateCoolingTowerVariableSpeed.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
+    // - Implemented Parity: The preserved API matches the canonical constructor defaults, autosize/default behavior, object relationships,
+    //   and plant supply `addToNode(...)` path for the current public wrapper surface.
+    // - Documented Delta: epmodel still inherits the shared HVACComponent/StraightComponent base-surface gaps around broader canonical
+    //   convenience re-exposure; this wrapper does not add type-local divergence.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `CoolingTower:VariableSpeed` scalar and object-list fields used by
+    //   the forward translator.
+    // - Evidence: `src/model/CoolingTowerVariableSpeed.hpp`, `src/model/CoolingTowerVariableSpeed.cpp`, and
+    //   `src/energyplus/ForwardTranslator/ForwardTranslateCoolingTowerVariableSpeed.cpp`.
+    // - Remaining Parity Work: None within the current canonical public surface.
     boost::optional<std::string> modelType() const;
     bool setModelType(const std::string& modelType);
     void resetModelType();
+
+    boost::optional<ModelObject> modelCoefficient() const;
+    bool setModelCoefficient(const ModelObject& modelCoefficient);
+    void resetModelCoefficient();
 
     boost::optional<double> designInletAirWetBulbTemperature() const;
     bool setDesignInletAirWetBulbTemperature(double designInletAirWetBulbTemperature);
@@ -78,6 +90,10 @@ namespace epmodel {
     bool setDesignFanPower(double designFanPower);
     void autosizeDesignFanPower();
 
+    boost::optional<CurveCubic> fanPowerRatioFunctionofAirFlowRateRatioCurve() const;
+    bool setFanPowerRatioFunctionofAirFlowRateRatioCurve(const CurveCubic& curve);
+    void resetFanPowerRatioFunctionofAirFlowRateRatioCurve();
+
     boost::optional<double> minimumAirFlowRateRatio() const;
     bool setMinimumAirFlowRateRatio(double minimumAirFlowRateRatio);
     void resetMinimumAirFlowRateRatio();
@@ -93,6 +109,10 @@ namespace epmodel {
     boost::optional<double> basinHeaterSetpointTemperature() const;
     bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
     void resetBasinHeaterSetpointTemperature();
+
+    boost::optional<Schedule> basinHeaterOperatingSchedule() const;
+    bool setBasinHeaterOperatingSchedule(Schedule& basinHeaterOperatingSchedule);
+    void resetBasinHeaterOperatingSchedule();
 
     std::string evaporationLossMode() const;
     bool setEvaporationLossMode(const std::string& evaporationLossMode);
@@ -117,6 +137,10 @@ namespace epmodel {
     bool setBlowdownConcentrationRatio(double blowdownConcentrationRatio);
     void resetBlowdownConcentrationRatio();
 
+    boost::optional<Schedule> blowdownMakeupWaterUsageSchedule() const;
+    bool setBlowdownMakeupWaterUsageSchedule(Schedule& blowdownMakeupWaterUsageSchedule);
+    void resetBlowdownMakeupWaterUsageSchedule();
+
     boost::optional<int> numberofCells() const;
     bool setNumberofCells(int numberofCells);
     void resetNumberofCells();
@@ -137,6 +161,10 @@ namespace epmodel {
     boost::optional<double> sizingFactor() const;
     bool setSizingFactor(double sizingFactor);
     void resetSizingFactor();
+
+    boost::optional<double> autosizedDesignWaterFlowRate() const;
+    boost::optional<double> autosizedDesignAirFlowRate() const;
+    boost::optional<double> autosizedDesignFanPower() const;
 
     std::string endUseSubcategory() const;
     bool setEndUseSubcategory(const std::string& endUseSubcategory);

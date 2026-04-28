@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/HVACTemplateZoneVRF.hpp"
+#include "../scaffolds/HVACTemplateZoneVRF.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/HVACTemplateZoneConstantVolume.hpp"
+#include "../scaffolds/HVACTemplateZoneConstantVolume.hpp"
 
 using namespace openstudio::epmodel;
 

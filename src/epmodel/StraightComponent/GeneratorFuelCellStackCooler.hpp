@@ -17,6 +17,8 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class GeneratorFuelCell;
+  class Node;
 
   namespace detail {
     class GeneratorFuelCellStackCooler_Impl;
@@ -36,13 +38,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical fuel-cell stack-cooler scalar surface is present, while node and parent-link helpers remain out of scope.
+    // - Status: Near Parity. The canonical scalar surface, plant-loop-only placement rule, and parent-generator lookup are present, while OS App clone/child conveniences remain out of scope.
     // - Canonical Counterpart: openstudio::model::GeneratorFuelCellStackCooler.
-    // - Implemented Parity: The preserved scalar API matches the stack-temperature, flow, heat-transfer, pump, and fan-coefficient accessors with matching scalar behavior.
-    // - Documented Delta: Heat-recovery node names and parent `Generator:FuelCell` linkage remain intentionally excluded from this scalar pass.
+    // - Implemented Parity: The wrapper now preserves the canonical plant-loop-only `addToNode(...)` behavior on either supply or demand side, the parent `GeneratorFuelCell` lookup, and the stack-temperature, flow, heat-transfer, pump, and fan-coefficient scalar accessors.
+    // - Documented Delta: epmodel does not currently preserve the canonical OS App-oriented clone/child behavior that clones through the owning `GeneratorFuelCell`.
     // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Generator:FuelCell:StackCooler` scalar fields used by the forward translator.
     // - Evidence: `src/model/GeneratorFuelCellStackCooler.hpp`, `src/model/GeneratorFuelCellStackCooler.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateGeneratorFuelCellStackCooler.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Preserve the canonical parent-owned clone/child behavior if epmodel later needs the same library-dragging semantics.
     double nominalStackTemperature() const;
     bool setNominalStackTemperature(double nominalStackTemperature);
     void resetNominalStackTemperature();
@@ -114,6 +116,8 @@ namespace epmodel {
     double stackAirCoolerFanCoefficientf2() const;
     bool setStackAirCoolerFanCoefficientf2(double stackAirCoolerFanCoefficientf2);
     void resetStackAirCoolerFanCoefficientf2();
+
+    boost::optional<GeneratorFuelCell> fuelCell() const;
 
    protected:
     using ImplType = detail::GeneratorFuelCellStackCooler_Impl;

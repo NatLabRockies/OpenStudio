@@ -98,6 +98,33 @@ TEST_F(EnergyPlusFixture, ForwardTranslatorWaterHeaterMixed_Condition) {
   }
 }
 
+TEST_F(EnergyPlusFixture, ForwardTranslatorWaterHeaterMixed_AmbientTemperatureOutdoors_CreatesOneNodeList) {
+  ForwardTranslator ft;
+  Model m;
+
+  WaterHeaterMixed wh(m);
+  PlantLoop p(m);
+  EXPECT_TRUE(p.addSupplyBranchForComponent(wh));
+
+  EXPECT_TRUE(wh.setAmbientTemperatureIndicator("Outdoors"));
+  wh.resetAmbientTemperatureOutdoorAirNodeName();
+
+  Workspace w = ft.translateModel(m);
+
+  std::vector<WorkspaceObject> idfWHMixeds(w.getObjectsByType(IddObjectType::WaterHeater_Mixed));
+  ASSERT_EQ(1u, idfWHMixeds.size());
+  WorkspaceObject idfWHMixed(idfWHMixeds[0]);
+
+  EXPECT_EQ("Outdoors", idfWHMixed.getString(WaterHeater_MixedFields::AmbientTemperatureIndicator, false).get());
+  ASSERT_FALSE(idfWHMixed.isEmpty(WaterHeater_MixedFields::AmbientTemperatureOutdoorAirNodeName));
+  const std::string outdoorAirNodeName =
+    idfWHMixed.getString(WaterHeater_MixedFields::AmbientTemperatureOutdoorAirNodeName, false).get();
+
+  std::vector<WorkspaceObject> oaNodeLists(w.getObjectsByType(IddObjectType::OutdoorAir_NodeList));
+  ASSERT_EQ(1u, oaNodeLists.size());
+  EXPECT_EQ(outdoorAirNodeName, oaNodeLists[0].getString(0, false).get());
+}
+
 TEST_F(EnergyPlusFixture, ForwardTranslatorWaterHeaterMixed_PlantLoopConnections) {
   ForwardTranslator ft;
   Model m;

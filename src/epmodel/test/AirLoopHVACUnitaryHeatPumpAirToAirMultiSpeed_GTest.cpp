@@ -6,9 +6,16 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/ThermalZone.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.hpp"
+#include "../StraightComponent/CoilCoolingDXMultiSpeed.hpp"
+#include "../StraightComponent/CoilHeatingElectric.hpp"
+#include "../StraightComponent/CoilHeatingElectricMultiStage.hpp"
+#include "../StraightComponent/FanOnOff.hpp"
 #include "../StraightComponent/Node.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../WaterToAirComponent/CoilHeatingWater.hpp"
 #include <utilities/idd/IddEnums.hxx>
 
 using namespace openstudio::epmodel;
@@ -17,6 +24,28 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_DefaultConst
   Model model;
   AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed unitary(model);
   EXPECT_EQ(AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::iddObjectType(), unitary.iddObject().type());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_RelationshipConstructorAndChildren) {
+  Model model;
+  FanOnOff fan(model);
+  CoilHeatingElectricMultiStage heating(model);
+  CoilCoolingDXMultiSpeed cooling(model);
+  CoilHeatingElectric supplemental(model);
+
+  AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed unitary(model, fan, heating, cooling, supplemental);
+
+  EXPECT_EQ(fan.handle(), unitary.supplyAirFan().handle());
+  EXPECT_EQ(heating.handle(), unitary.heatingCoil().handle());
+  EXPECT_EQ(cooling.handle(), unitary.coolingCoil().handle());
+  EXPECT_EQ(supplemental.handle(), unitary.supplementalHeatingCoil().handle());
+
+  const auto children = unitary.children();
+  ASSERT_EQ(4u, children.size());
+  EXPECT_EQ(fan.handle(), children[0].handle());
+  EXPECT_EQ(heating.handle(), children[1].handle());
+  EXPECT_EQ(cooling.handle(), children[2].handle());
+  EXPECT_EQ(supplemental.handle(), children[3].handle());
 }
 
 TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_ScalarAccessors_RoundTrip) {
@@ -121,6 +150,48 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_ScalarAccess
   EXPECT_TRUE(unitary.isSpeed4SupplyAirFlowRateDuringCoolingOperationAutosized());
 }
 
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_RelationshipAccessors_RoundTrip) {
+  Model model;
+  AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed unitary(model);
+  ScheduleConstant availability(model);
+  ScheduleConstant fanMode(model);
+  ThermalZone zone(model);
+  FanOnOff fan(model);
+  CoilHeatingElectricMultiStage heating(model);
+  CoilCoolingDXMultiSpeed cooling(model);
+  CoilHeatingElectric supplemental(model);
+
+  ASSERT_TRUE(availability.setValue(0.8));
+  ASSERT_TRUE(fanMode.setValue(1.0));
+
+  EXPECT_TRUE(unitary.setAvailabilitySchedule(availability));
+  ASSERT_TRUE(unitary.availabilitySchedule());
+  EXPECT_EQ(availability, unitary.availabilitySchedule().get());
+  unitary.resetAvailabilitySchedule();
+  EXPECT_FALSE(unitary.availabilitySchedule());
+
+  EXPECT_TRUE(unitary.setControllingZoneorThermostatLocation(zone));
+  ASSERT_TRUE(unitary.controllingZoneorThermostatLocation());
+  EXPECT_EQ(zone, unitary.controllingZoneorThermostatLocation().get());
+  unitary.resetControllingZoneorThermostatLocation();
+  EXPECT_FALSE(unitary.controllingZoneorThermostatLocation());
+
+  EXPECT_TRUE(unitary.setSupplyAirFan(fan));
+  EXPECT_EQ(fan, unitary.supplyAirFan());
+
+  EXPECT_TRUE(unitary.setSupplyAirFanOperatingModeSchedule(fanMode));
+  EXPECT_EQ(fanMode, unitary.supplyAirFanOperatingModeSchedule());
+
+  EXPECT_TRUE(unitary.setHeatingCoil(heating));
+  EXPECT_EQ(heating, unitary.heatingCoil());
+
+  EXPECT_TRUE(unitary.setCoolingCoil(cooling));
+  EXPECT_EQ(cooling, unitary.coolingCoil());
+
+  EXPECT_TRUE(unitary.setSupplementalHeatingCoil(supplemental));
+  EXPECT_EQ(supplemental, unitary.supplementalHeatingCoil());
+}
+
 TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_AddToNodeSupplyOnly) {
   Model model;
   AirLoopHVAC airLoop(model);
@@ -146,4 +217,155 @@ TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_AddToNodeRej
   auto demandInlet = airLoop.demandInletNode();
   EXPECT_FALSE(unitary.addToNode(demandInlet));
   EXPECT_FALSE(unitary.airLoopHVAC());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_TopologyAndInternalNodes) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  FanOnOff fan(model);
+  CoilHeatingElectricMultiStage heating(model);
+  CoilCoolingDXMultiSpeed cooling(model);
+  CoilHeatingWater supplemental(model);
+  AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed unitary(model);
+
+  ASSERT_TRUE(unitary.setSupplyAirFanPlacement("DrawThrough"));
+  ASSERT_TRUE(unitary.setSupplyAirFan(fan));
+  ASSERT_TRUE(unitary.setHeatingCoil(heating));
+  ASSERT_TRUE(unitary.setCoolingCoil(cooling));
+  ASSERT_TRUE(unitary.setSupplementalHeatingCoil(supplemental));
+  auto supplyInletNode = airLoop.supplyInletNode();
+  ASSERT_TRUE(unitary.addToNode(supplyInletNode));
+
+  auto unitaryInlet = unitary.inletModelObject()->optionalCast<Node>();
+  auto unitaryOutlet = unitary.outletModelObject()->optionalCast<Node>();
+  auto fanInlet = fan.inletModelObject()->optionalCast<Node>();
+  auto fanOutlet = fan.outletModelObject()->optionalCast<Node>();
+  auto coolingInlet = cooling.inletModelObject()->optionalCast<Node>();
+  auto coolingOutlet = cooling.outletModelObject()->optionalCast<Node>();
+  auto heatingInlet = heating.inletModelObject()->optionalCast<Node>();
+  auto heatingOutlet = heating.outletModelObject()->optionalCast<Node>();
+  auto supplementalInlet = supplemental.airInletModelObject()->optionalCast<Node>();
+  auto supplementalOutlet = supplemental.airOutletModelObject()->optionalCast<Node>();
+  ASSERT_TRUE(unitaryInlet);
+  ASSERT_TRUE(unitaryOutlet);
+  ASSERT_TRUE(fanInlet);
+  ASSERT_TRUE(fanOutlet);
+  ASSERT_TRUE(coolingInlet);
+  ASSERT_TRUE(coolingOutlet);
+  ASSERT_TRUE(heatingInlet);
+  ASSERT_TRUE(heatingOutlet);
+  ASSERT_TRUE(supplementalInlet);
+  ASSERT_TRUE(supplementalOutlet);
+  ASSERT_TRUE(unitary.fanOutletNode());
+  ASSERT_TRUE(unitary.coolingCoilOutletNode());
+  ASSERT_TRUE(unitary.heatingCoilOutletNode());
+
+  EXPECT_EQ(*unitaryInlet, *coolingInlet);
+  EXPECT_EQ(*unitary.coolingCoilOutletNode(), *coolingOutlet);
+  EXPECT_EQ(*unitary.coolingCoilOutletNode(), *heatingInlet);
+  EXPECT_EQ(*unitary.heatingCoilOutletNode(), *heatingOutlet);
+  EXPECT_EQ(*unitary.heatingCoilOutletNode(), *fanInlet);
+  EXPECT_EQ(*unitary.fanOutletNode(), *fanOutlet);
+  EXPECT_EQ(*unitary.fanOutletNode(), *supplementalInlet);
+  EXPECT_EQ(*unitaryOutlet, *supplementalOutlet);
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_NodeRolesFollowBlowThroughOrder) {
+  Model model;
+  FanOnOff fan(model);
+  CoilHeatingElectricMultiStage heating(model);
+  CoilCoolingDXMultiSpeed cooling(model);
+  CoilHeatingElectric supplemental(model);
+  AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed unitary(model);
+
+  ASSERT_TRUE(unitary.setSupplyAirFanPlacement("BlowThrough"));
+  ASSERT_TRUE(unitary.setSupplyAirFan(fan));
+  ASSERT_TRUE(unitary.setHeatingCoil(heating));
+  ASSERT_TRUE(unitary.setCoolingCoil(cooling));
+  ASSERT_TRUE(unitary.setSupplementalHeatingCoil(supplemental));
+
+  ASSERT_TRUE(unitary.fanOutletNode());
+  ASSERT_TRUE(unitary.coolingCoilOutletNode());
+  ASSERT_TRUE(unitary.heatingCoilOutletNode());
+  ASSERT_TRUE(unitary.outletModelObject());
+
+  EXPECT_EQ(*unitary.fanOutletNode(), *cooling.inletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*unitary.coolingCoilOutletNode(), *heating.inletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*unitary.heatingCoilOutletNode(), *supplemental.inletModelObject()->optionalCast<Node>());
+  EXPECT_EQ(*unitary.outletModelObject()->optionalCast<Node>(), *supplemental.outletModelObject()->optionalCast<Node>());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_InternalNodeRenamesSurviveCanonicalize) {
+  Model model;
+  FanOnOff fan(model);
+  CoilHeatingElectricMultiStage heating(model);
+  CoilCoolingDXMultiSpeed cooling(model);
+  CoilHeatingElectric supplemental(model);
+  AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed unitary(model);
+
+  ASSERT_TRUE(unitary.setSupplyAirFanPlacement("DrawThrough"));
+  ASSERT_TRUE(unitary.setSupplyAirFan(fan));
+  ASSERT_TRUE(unitary.setHeatingCoil(heating));
+  ASSERT_TRUE(unitary.setCoolingCoil(cooling));
+  ASSERT_TRUE(unitary.setSupplementalHeatingCoil(supplemental));
+
+  ASSERT_TRUE(unitary.fanOutletNode());
+  ASSERT_TRUE(unitary.coolingCoilOutletNode());
+  ASSERT_TRUE(unitary.heatingCoilOutletNode());
+  ASSERT_TRUE(unitary.fanOutletNode()->setName("Custom MultiSpeed Fan Outlet"));
+  ASSERT_TRUE(unitary.coolingCoilOutletNode()->setName("Custom MultiSpeed Cooling Outlet"));
+  ASSERT_TRUE(unitary.heatingCoilOutletNode()->setName("Custom MultiSpeed Heating Outlet"));
+
+  auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+
+  ASSERT_TRUE(unitary.fanOutletNode());
+  ASSERT_TRUE(unitary.coolingCoilOutletNode());
+  ASSERT_TRUE(unitary.heatingCoilOutletNode());
+  EXPECT_EQ("Custom MultiSpeed Fan Outlet", unitary.fanOutletNode()->nameString());
+  EXPECT_EQ("Custom MultiSpeed Cooling Outlet", unitary.coolingCoilOutletNode()->nameString());
+  EXPECT_EQ("Custom MultiSpeed Heating Outlet", unitary.heatingCoilOutletNode()->nameString());
+}
+
+TEST_F(EPModelFixture, AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_CanonicalizeRepairsContainedNodePath) {
+  Model model;
+  FanOnOff fan(model);
+  CoilHeatingElectricMultiStage heating(model);
+  CoilCoolingDXMultiSpeed cooling(model);
+  CoilHeatingElectric supplemental(model);
+  AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed unitary(model);
+
+  ASSERT_TRUE(unitary.setSupplyAirFanPlacement("DrawThrough"));
+  ASSERT_TRUE(unitary.setSupplyAirFan(fan));
+  ASSERT_TRUE(unitary.setHeatingCoil(heating));
+  ASSERT_TRUE(unitary.setCoolingCoil(cooling));
+  ASSERT_TRUE(unitary.setSupplementalHeatingCoil(supplemental));
+
+  auto expectedCoolingOutlet = unitary.coolingCoilOutletNode();
+  auto expectedHeatingOutlet = unitary.heatingCoilOutletNode();
+  auto expectedFanOutlet = unitary.fanOutletNode();
+  ASSERT_TRUE(expectedCoolingOutlet);
+  ASSERT_TRUE(expectedHeatingOutlet);
+  ASSERT_TRUE(expectedFanOutlet);
+
+  auto unitaryInlet = unitary.inletModelObject()->optionalCast<Node>();
+  auto unitaryOutlet = unitary.outletModelObject()->optionalCast<Node>();
+  ASSERT_TRUE(unitaryInlet);
+  ASSERT_TRUE(unitaryOutlet);
+  ASSERT_TRUE(cooling.setPointer(cooling.outletPort(), unitaryInlet->handle()));
+  ASSERT_TRUE(heating.setPointer(heating.inletPort(), unitaryInlet->handle()));
+  ASSERT_TRUE(heating.setPointer(heating.outletPort(), unitaryOutlet->handle()));
+  ASSERT_TRUE(fan.setPointer(fan.inletPort(), unitaryOutlet->handle()));
+  ASSERT_TRUE(fan.setPointer(fan.outletPort(), unitaryInlet->handle()));
+  ASSERT_TRUE(supplemental.setPointer(supplemental.inletPort(), unitaryInlet->handle()));
+
+  auto report = model.canonicalize();
+  EXPECT_EQ(0u, report.errorCount);
+
+  ASSERT_TRUE(unitary.coolingCoilOutletNode());
+  ASSERT_TRUE(unitary.heatingCoilOutletNode());
+  ASSERT_TRUE(unitary.fanOutletNode());
+  EXPECT_EQ(*expectedCoolingOutlet, *unitary.coolingCoilOutletNode());
+  EXPECT_EQ(*expectedHeatingOutlet, *unitary.heatingCoilOutletNode());
+  EXPECT_EQ(*expectedFanOutlet, *unitary.fanOutletNode());
 }

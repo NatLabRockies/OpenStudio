@@ -18,6 +18,7 @@
 namespace openstudio {
 namespace epmodel {
 
+  class AirLoopHVAC;
   class HVACComponent;
   class Model;
   class Node;
@@ -100,15 +101,12 @@ namespace epmodel {
     // - Canonical Counterpart: openstudio::model::ThermalZone.
     // - Implemented Parity: `useIdealAirLoads` and `setUseIdealAirLoads` preserve the canonical boolean-facing convenience API and clear active
     //   air-loop attachment before enabling ideal loads.
-    // - Documented Delta: epmodel still models the behavior through `HVACTemplate:Zone:IdealLoadsAirSystem` presence instead of a dedicated `ZoneHVACIdealLoadsAirSystem` parity object.
-    // - Field/Storage Mapping: API delegates to presence of `HVACTemplate:Zone:IdealLoadsAirSystem` objects that point back to this zone.
-    // - Evidence: `src/energyplus/ForwardTranslator/ForwardTranslateThermalZone.cpp` shows the same derived-object wiring, and the related epmodel tests exercise the zone attachment path.
-    // - Remaining Parity Work: Add the explicit zone-HVAC parity path if epmodel grows a first-class ideal-loads object.
+    // - Documented Delta: epmodel stores this through a `ZoneHVAC:IdealLoadsAirSystem` object because that is the EnergyPlus schema representation.
+    // - Field/Storage Mapping: API delegates to a `ZoneHVACIdealLoadsAirSystem` attached to this zone through the zone equipment topology.
+    // - Evidence: `src/epmodel/ZoneHVACComponent/ZoneHVACIdealLoadsAirSystem.*` and related epmodel tests exercise the zone attachment path.
+    // - Remaining Parity Work: None for the boolean convenience API.
     bool useIdealAirLoads() const;
     bool setUseIdealAirLoads(bool useIdealAirLoads);
-
-    std::string zoneConditioningEquipmentListName() const;
-    bool setZoneConditioningEquipmentListName(const std::string& zoneConditioningEquipmentListName);
 
     boost::optional<Thermostat> thermostat() const;
     bool setThermostat(const Thermostat& thermostat);
@@ -132,7 +130,10 @@ namespace epmodel {
     std::vector<ModelObject> returnAirModelObjects() const;
     Node zoneAirNode() const;
 
+    bool addEquipment(const ModelObject& equipment);
+    bool removeEquipment(const ModelObject& equipment);
     std::vector<ModelObject> equipment() const;
+    boost::optional<AirLoopHVAC> airLoopHVAC() const;
     boost::optional<HVACComponent> airLoopHVACTerminal() const;
     std::vector<HVACComponent> airLoopHVACTerminals() const;
 

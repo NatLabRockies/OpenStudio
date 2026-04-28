@@ -13,15 +13,21 @@
 namespace openstudio {
 namespace epmodel {
 
+  class CurveCubic;
   class PlantLoop;
+  class Schedule;
+  class ThermalZone;
+  class WaterHeaterSizing;
 
   namespace detail {
 
     class EPMODEL_API WaterHeaterMixed_Impl : public WaterToWaterComponent_Impl
     {
      public:
-      using WaterToWaterComponent_Impl::WaterToWaterComponent_Impl;
+     using WaterToWaterComponent_Impl::WaterToWaterComponent_Impl;
       virtual ~WaterHeaterMixed_Impl() override = default;
+
+      std::vector<ModelObject> children() const override;
 
       boost::optional<double> tankVolume() const;
       bool isTankVolumeDefaulted() const;
@@ -30,6 +36,10 @@ namespace epmodel {
       void resetTankVolume();
       void autosizeTankVolume();
       boost::optional<double> autosizedTankVolume() const;
+
+      boost::optional<Schedule> setpointTemperatureSchedule() const;
+      bool setSetpointTemperatureSchedule(Schedule& schedule);
+      void resetSetpointTemperatureSchedule();
 
       double deadbandTemperatureDifference() const;
       bool isDeadbandTemperatureDifferenceDefaulted() const;
@@ -74,6 +84,10 @@ namespace epmodel {
       bool setHeaterThermalEfficiency(double heaterThermalEfficiency);
       void resetHeaterThermalEfficiency();
 
+      boost::optional<CurveCubic> partLoadFactorCurve() const;
+      bool setPartLoadFactorCurve(const CurveCubic& partLoadFactorCurve);
+      void resetPartLoadFactorCurve();
+
       double offCycleParasiticFuelConsumptionRate() const;
       bool isOffCycleParasiticFuelConsumptionRateDefaulted() const;
       bool setOffCycleParasiticFuelConsumptionRate(double offCycleParasiticFuelConsumptionRate);
@@ -105,6 +119,18 @@ namespace epmodel {
       std::string ambientTemperatureIndicator() const;
       bool setAmbientTemperatureIndicator(const std::string& ambientTemperatureIndicator);
 
+      boost::optional<Schedule> ambientTemperatureSchedule() const;
+      bool setAmbientTemperatureSchedule(Schedule& schedule);
+      void resetAmbientTemperatureSchedule();
+
+      boost::optional<ThermalZone> ambientTemperatureThermalZone() const;
+      bool setAmbientTemperatureThermalZone(const ThermalZone& ambientTemperatureThermalZone);
+      void resetAmbientTemperatureThermalZone();
+
+      boost::optional<std::string> ambientTemperatureOutdoorAirNodeName() const;
+      bool setAmbientTemperatureOutdoorAirNodeName(const std::string& ambientTemperatureOutdoorAirNodeName);
+      void resetAmbientTemperatureOutdoorAirNodeName();
+
       boost::optional<double> offCycleLossCoefficienttoAmbientTemperature() const;
       bool setOffCycleLossCoefficienttoAmbientTemperature(double offCycleLossCoefficienttoAmbientTemperature);
       void resetOffCycleLossCoefficienttoAmbientTemperature();
@@ -126,6 +152,14 @@ namespace epmodel {
       boost::optional<double> peakUseFlowRate() const;
       bool setPeakUseFlowRate(double peakUseFlowRate);
       void resetPeakUseFlowRate();
+
+      boost::optional<Schedule> useFlowRateFractionSchedule() const;
+      bool setUseFlowRateFractionSchedule(Schedule& schedule);
+      void resetUseFlowRateFractionSchedule();
+
+      boost::optional<Schedule> coldWaterSupplyTemperatureSchedule() const;
+      bool setColdWaterSupplyTemperatureSchedule(Schedule& schedule);
+      void resetColdWaterSupplyTemperatureSchedule();
 
       double useSideEffectiveness() const;
       bool isUseSideEffectivenessDefaulted() const;
@@ -161,14 +195,27 @@ namespace epmodel {
       unsigned demandOutletPort() const override;
       boost::optional<PlantLoop> plantLoop() const override;
       boost::optional<PlantLoop> secondaryPlantLoop() const override;
+      bool removeFromSecondaryPlantLoop() override;
+      bool addToNode(Node& node) override;
+      bool addToSourceSideNode(Node& node);
+      openstudio::ComponentType componentType() const override;
+      std::vector<openstudio::FuelType> coolingFuelTypes() const override;
+      std::vector<openstudio::FuelType> heatingFuelTypes() const override;
+      std::vector<openstudio::AppGFuelType> appGHeatingFuelTypes() const override;
       bool setIndirectWaterHeatingRecoveryTime(double indirectWaterHeatingRecoveryTime);
       void resetIndirectWaterHeatingRecoveryTime();
 
       std::string sourceSideFlowControlMode() const;
       bool setSourceSideFlowControlMode(const std::string& sourceSideFlowControlMode);
 
+      boost::optional<Schedule> indirectAlternateSetpointTemperatureSchedule() const;
+      bool setIndirectAlternateSetpointTemperatureSchedule(Schedule& indirectAlternateSetpointTemperatureSchedule);
+      void resetIndirectAlternateSetpointTemperatureSchedule();
+
       std::string endUseSubcategory() const;
       bool setEndUseSubcategory(const std::string& endUseSubcategory);
+
+      WaterHeaterSizing waterHeaterSizing() const;
     };
 
   }  // namespace detail

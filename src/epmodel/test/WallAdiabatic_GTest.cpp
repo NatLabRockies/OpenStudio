@@ -7,8 +7,8 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../ModelObject/WallAdiabatic.hpp"
-#include "../ModelObject/WallAdiabatic_Impl.hpp"
+#include "../scaffolds/WallAdiabatic.hpp"
+#include "../scaffolds/WallAdiabatic_Impl.hpp"
 
 using namespace openstudio::epmodel;
 

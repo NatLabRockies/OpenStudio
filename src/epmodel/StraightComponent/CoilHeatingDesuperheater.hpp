@@ -15,6 +15,8 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class ModelObject;
+  class Schedule;
 
   namespace detail {
     class CoilHeatingDesuperheater_Impl;
@@ -34,13 +36,23 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical desuperheater scalar surface is largely present, while schedule, heating-source, and node-link helpers remain out of scope.
+    // - Status: Partial Parity. The canonical scalar desuperheater surface plus optional availability / heating-source relationships and the current
+    //   epmodel supply-side air-loop insertion path are present, while OA insertion and AFN helpers remain out of scope.
     // - Canonical Counterpart: openstudio::model::CoilHeatingDesuperheater.
-    // - Implemented Parity: `heatReclaimRecoveryEfficiency`, `parasiticElectricLoad`, and `onCycleParasiticElectricLoad` preserve the canonical scalar API, including the required-field no-op resets.
-    // - Documented Delta: Availability schedule, heating-source, and node-link helpers from canonical `openstudio::model::CoilHeatingDesuperheater` are not exposed yet.
-    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Heating:Desuperheater` fields.
+    // - Implemented Parity: `heatReclaimRecoveryEfficiency`, `parasiticElectricLoad`, and `onCycleParasiticElectricLoad` preserve the canonical
+    //   scalar API, including the required-field no-op resets; `availabilitySchedule` and `heatingSource` preserve the bounded relationship slice;
+    //   `addToNode` preserves the current epmodel supply-side air-loop insertion path.
+    // - Documented Delta: OA insertion and AFN helpers from canonical `openstudio::model::CoilHeatingDesuperheater` are not exposed yet.
+    // - Field/Storage Mapping: Preserved scalars and relationships map directly to EnergyPlus `Coil:Heating:Desuperheater` fields.
     // - Evidence: `src/model/CoilHeatingDesuperheater.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingDesuperheater.cpp`, and `src/epmodel/test/CoilHeatingDesuperheater_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted schedule, heating-source, and relationship helpers without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Add AFN helpers without changing the preserved scalar signatures.
+    boost::optional<Schedule> availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+    void resetAvailabilitySchedule();
+
+    boost::optional<ModelObject> heatingSource() const;
+    bool setHeatingSource(const ModelObject& modelObject);
+    void resetHeatingSource();
 
     double heatReclaimRecoveryEfficiency() const;
     bool isHeatReclaimRecoveryEfficiencyDefaulted() const;

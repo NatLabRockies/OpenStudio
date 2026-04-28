@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ElectricLoadCenterStorageBattery.hpp"
+#include "../scaffolds/ElectricLoadCenterStorageBattery.hpp"
 
 using namespace openstudio::epmodel;
 

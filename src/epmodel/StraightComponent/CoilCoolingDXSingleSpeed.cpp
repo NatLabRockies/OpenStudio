@@ -6,12 +6,18 @@
 #include "StraightComponent/CoilCoolingDXSingleSpeed.hpp"
 #include "StraightComponent/CoilCoolingDXSingleSpeed_Impl.hpp"
 
+#include "Curve/CurveBiquadratic.hpp"
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
+#include "Curve/CurveQuadratic.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "ModelObject/CoilSystemCoolingDX.hpp"
 #include "ModelObject/CoilSystemCoolingDX_Impl.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -24,10 +30,110 @@ namespace openstudio {
 namespace epmodel {
 
 CoilCoolingDXSingleSpeed::CoilCoolingDXSingleSpeed(const Model& model) : StraightComponent(CoilCoolingDXSingleSpeed::iddObjectType(), model) {
-  auto impl = getImpl<detail::CoilCoolingDXSingleSpeed_Impl>();
-  OS_ASSERT(impl);
-  detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
-  impl->canonicalize(context);
+  CurveBiquadratic coolingCurveFofTemp = CurveBiquadratic(model);
+  coolingCurveFofTemp.setCoefficient1Constant(0.942587793);
+  coolingCurveFofTemp.setCoefficient2x(0.009543347);
+  coolingCurveFofTemp.setCoefficient3xPOW2(0.000683770);
+  coolingCurveFofTemp.setCoefficient4y(-0.011042676);
+  coolingCurveFofTemp.setCoefficient5yPOW2(0.000005249);
+  coolingCurveFofTemp.setCoefficient6xTIMESY(-0.000009720);
+  coolingCurveFofTemp.setMinimumValueofx(17.0);
+  coolingCurveFofTemp.setMaximumValueofx(22.0);
+  coolingCurveFofTemp.setMinimumValueofy(13.0);
+  coolingCurveFofTemp.setMaximumValueofy(46.0);
+
+  CurveQuadratic coolingCurveFofFlow = CurveQuadratic(model);
+  coolingCurveFofFlow.setCoefficient1Constant(0.8);
+  coolingCurveFofFlow.setCoefficient2x(0.2);
+  coolingCurveFofFlow.setCoefficient3xPOW2(0.0);
+  coolingCurveFofFlow.setMinimumValueofx(0.5);
+  coolingCurveFofFlow.setMaximumValueofx(1.5);
+
+  CurveBiquadratic energyInputRatioFofTemp = CurveBiquadratic(model);
+  energyInputRatioFofTemp.setCoefficient1Constant(0.342414409);
+  energyInputRatioFofTemp.setCoefficient2x(0.034885008);
+  energyInputRatioFofTemp.setCoefficient3xPOW2(-0.000623700);
+  energyInputRatioFofTemp.setCoefficient4y(0.004977216);
+  energyInputRatioFofTemp.setCoefficient5yPOW2(0.000437951);
+  energyInputRatioFofTemp.setCoefficient6xTIMESY(-0.000728028);
+  energyInputRatioFofTemp.setMinimumValueofx(17.0);
+  energyInputRatioFofTemp.setMaximumValueofx(22.0);
+  energyInputRatioFofTemp.setMinimumValueofy(13.0);
+  energyInputRatioFofTemp.setMaximumValueofy(46.0);
+
+  CurveQuadratic energyInputRatioFofFlow = CurveQuadratic(model);
+  energyInputRatioFofFlow.setCoefficient1Constant(1.1552);
+  energyInputRatioFofFlow.setCoefficient2x(-0.1808);
+  energyInputRatioFofFlow.setCoefficient3xPOW2(0.0256);
+  energyInputRatioFofFlow.setMinimumValueofx(0.5);
+  energyInputRatioFofFlow.setMaximumValueofx(1.5);
+
+  CurveQuadratic partLoadFraction = CurveQuadratic(model);
+  partLoadFraction.setCoefficient1Constant(0.85);
+  partLoadFraction.setCoefficient2x(0.15);
+  partLoadFraction.setCoefficient3xPOW2(0.0);
+  partLoadFraction.setMinimumValueofx(0.0);
+  partLoadFraction.setMaximumValueofx(1.0);
+
+  auto schedule = model.alwaysOnDiscreteSchedule();
+  OS_ASSERT(setAvailabilitySchedule(schedule));
+  autosizeRatedTotalCoolingCapacity();
+  autosizeRatedSensibleHeatRatio();
+  autosizeRatedAirFlowRate();
+  OS_ASSERT(setRatedCOP(3.0));
+  OS_ASSERT(setRatedEvaporatorFanPowerPerVolumeFlowRate2017(773.3));
+  OS_ASSERT(setRatedEvaporatorFanPowerPerVolumeFlowRate2023(934.4));
+  OS_ASSERT(setTotalCoolingCapacityFunctionOfTemperatureCurve(coolingCurveFofTemp));
+  OS_ASSERT(setTotalCoolingCapacityFunctionOfFlowFractionCurve(coolingCurveFofFlow));
+  OS_ASSERT(setEnergyInputRatioFunctionOfTemperatureCurve(energyInputRatioFofTemp));
+  OS_ASSERT(setEnergyInputRatioFunctionOfFlowFractionCurve(energyInputRatioFofFlow));
+  OS_ASSERT(setPartLoadFractionCorrelationCurve(partLoadFraction));
+  autosizeEvaporativeCondenserAirFlowRate();
+  autosizeEvaporativeCondenserPumpRatedPowerConsumption();
+  OS_ASSERT(setMinimumOutdoorDryBulbTemperatureforCompressorOperation(-25.0));
+  OS_ASSERT(setNominalTimeForCondensateRemovalToBegin(0.0));
+  OS_ASSERT(setRatioOfInitialMoistureEvaporationRateAndSteadyStateLatentCapacity(0.0));
+  OS_ASSERT(setMaximumCyclingRate(0.0));
+  OS_ASSERT(setLatentCapacityTimeConstant(0.0));
+  OS_ASSERT(setCondenserType("AirCooled"));
+  OS_ASSERT(setEvaporativeCondenserEffectiveness(0.9));
+  OS_ASSERT(setCrankcaseHeaterCapacity(0.0));
+  OS_ASSERT(setMaximumOutdoorDryBulbTemperatureForCrankcaseHeaterOperation(10.0));
+  OS_ASSERT(setBasinHeaterCapacity(0.0));
+  OS_ASSERT(setBasinHeaterSetpointTemperature(2.0));
+}
+
+CoilCoolingDXSingleSpeed::CoilCoolingDXSingleSpeed(const Model& model, Schedule& availabilitySchedule, const Curve& coolingCurveFofTemp,
+                                                   const Curve& coolingCurveFofFlow, const Curve& energyInputRatioFofTemp,
+                                                   const Curve& energyInputRatioFofFlow, const Curve& partLoadFraction)
+  : StraightComponent(CoilCoolingDXSingleSpeed::iddObjectType(), model) {
+  OS_ASSERT(getImpl<detail::CoilCoolingDXSingleSpeed_Impl>());
+
+  OS_ASSERT(setAvailabilitySchedule(availabilitySchedule));
+  autosizeRatedTotalCoolingCapacity();
+  autosizeRatedSensibleHeatRatio();
+  autosizeRatedAirFlowRate();
+  OS_ASSERT(setRatedCOP(3.0));
+  OS_ASSERT(setRatedEvaporatorFanPowerPerVolumeFlowRate2017(773.3));
+  OS_ASSERT(setRatedEvaporatorFanPowerPerVolumeFlowRate2023(934.4));
+  OS_ASSERT(setTotalCoolingCapacityFunctionOfTemperatureCurve(coolingCurveFofTemp));
+  OS_ASSERT(setTotalCoolingCapacityFunctionOfFlowFractionCurve(coolingCurveFofFlow));
+  OS_ASSERT(setEnergyInputRatioFunctionOfTemperatureCurve(energyInputRatioFofTemp));
+  OS_ASSERT(setEnergyInputRatioFunctionOfFlowFractionCurve(energyInputRatioFofFlow));
+  OS_ASSERT(setPartLoadFractionCorrelationCurve(partLoadFraction));
+  autosizeEvaporativeCondenserAirFlowRate();
+  autosizeEvaporativeCondenserPumpRatedPowerConsumption();
+  OS_ASSERT(setMinimumOutdoorDryBulbTemperatureforCompressorOperation(-25.0));
+  OS_ASSERT(setNominalTimeForCondensateRemovalToBegin(0.0));
+  OS_ASSERT(setRatioOfInitialMoistureEvaporationRateAndSteadyStateLatentCapacity(0.0));
+  OS_ASSERT(setMaximumCyclingRate(0.0));
+  OS_ASSERT(setLatentCapacityTimeConstant(0.0));
+  OS_ASSERT(setCondenserType("AirCooled"));
+  OS_ASSERT(setEvaporativeCondenserEffectiveness(0.9));
+  OS_ASSERT(setCrankcaseHeaterCapacity(0.0));
+  OS_ASSERT(setMaximumOutdoorDryBulbTemperatureForCrankcaseHeaterOperation(10.0));
+  OS_ASSERT(setBasinHeaterCapacity(0.0));
+  OS_ASSERT(setBasinHeaterSetpointTemperature(2.0));
 }
 
 CoilCoolingDXSingleSpeed::CoilCoolingDXSingleSpeed(std::shared_ptr<detail::CoilCoolingDXSingleSpeed_Impl> impl)
@@ -40,6 +146,78 @@ IddObjectType CoilCoolingDXSingleSpeed::iddObjectType() {
 std::vector<std::string> CoilCoolingDXSingleSpeed::condenserTypeValues() {
   return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                         openstudio::Coil_Cooling_DX_SingleSpeedFields::CondenserType);
+}
+
+Schedule CoilCoolingDXSingleSpeed::availabilitySchedule() const {
+  return getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->availabilitySchedule();
+}
+
+bool CoilCoolingDXSingleSpeed::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->setAvailabilitySchedule(schedule);
+}
+
+Curve CoilCoolingDXSingleSpeed::totalCoolingCapacityFunctionOfTemperatureCurve() const {
+  return getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->totalCoolingCapacityFunctionOfTemperatureCurve();
+}
+
+bool CoilCoolingDXSingleSpeed::setTotalCoolingCapacityFunctionOfTemperatureCurve(const Curve& curve) {
+  return getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->setTotalCoolingCapacityFunctionOfTemperatureCurve(curve);
+}
+
+Curve CoilCoolingDXSingleSpeed::totalCoolingCapacityFunctionOfFlowFractionCurve() const {
+  return getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->totalCoolingCapacityFunctionOfFlowFractionCurve();
+}
+
+bool CoilCoolingDXSingleSpeed::setTotalCoolingCapacityFunctionOfFlowFractionCurve(const Curve& curve) {
+  return getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->setTotalCoolingCapacityFunctionOfFlowFractionCurve(curve);
+}
+
+Curve CoilCoolingDXSingleSpeed::energyInputRatioFunctionOfTemperatureCurve() const {
+  return getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->energyInputRatioFunctionOfTemperatureCurve();
+}
+
+bool CoilCoolingDXSingleSpeed::setEnergyInputRatioFunctionOfTemperatureCurve(const Curve& curve) {
+  return getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->setEnergyInputRatioFunctionOfTemperatureCurve(curve);
+}
+
+Curve CoilCoolingDXSingleSpeed::energyInputRatioFunctionOfFlowFractionCurve() const {
+  return getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->energyInputRatioFunctionOfFlowFractionCurve();
+}
+
+bool CoilCoolingDXSingleSpeed::setEnergyInputRatioFunctionOfFlowFractionCurve(const Curve& curve) {
+  return getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->setEnergyInputRatioFunctionOfFlowFractionCurve(curve);
+}
+
+Curve CoilCoolingDXSingleSpeed::partLoadFractionCorrelationCurve() const {
+  return getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->partLoadFractionCorrelationCurve();
+}
+
+bool CoilCoolingDXSingleSpeed::setPartLoadFractionCorrelationCurve(const Curve& curve) {
+  return getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->setPartLoadFractionCorrelationCurve(curve);
+}
+
+boost::optional<Curve> CoilCoolingDXSingleSpeed::crankcaseHeaterCapacityFunctionofTemperatureCurve() const {
+  return getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->crankcaseHeaterCapacityFunctionofTemperatureCurve();
+}
+
+bool CoilCoolingDXSingleSpeed::setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve) {
+  return getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->setCrankcaseHeaterCapacityFunctionofTemperatureCurve(curve);
+}
+
+void CoilCoolingDXSingleSpeed::resetCrankcaseHeaterCapacityFunctionofTemperatureCurve() {
+  getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
+}
+
+boost::optional<Schedule> CoilCoolingDXSingleSpeed::basinHeaterOperatingSchedule() const {
+  return getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->basinHeaterOperatingSchedule();
+}
+
+bool CoilCoolingDXSingleSpeed::setBasinHeaterOperatingSchedule(Schedule& schedule) {
+  return getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->setBasinHeaterOperatingSchedule(schedule);
+}
+
+void CoilCoolingDXSingleSpeed::resetBasinHeaterOperatingSchedule() {
+  getImpl<detail::CoilCoolingDXSingleSpeed_Impl>()->resetBasinHeaterOperatingSchedule();
 }
 
 std::string CoilCoolingDXSingleSpeed::condenserType() const {
@@ -262,6 +440,85 @@ unsigned CoilCoolingDXSingleSpeed_Impl::outletPort() const {
   return openstudio::Coil_Cooling_DX_SingleSpeedFields::AirOutletNodeName;
 }
 
+std::vector<ModelObject> CoilCoolingDXSingleSpeed_Impl::children() const {
+  std::vector<ModelObject> result{
+    totalCoolingCapacityFunctionOfTemperatureCurve(),
+    totalCoolingCapacityFunctionOfFlowFractionCurve(),
+    energyInputRatioFunctionOfTemperatureCurve(),
+    energyInputRatioFunctionOfFlowFractionCurve(),
+    partLoadFractionCorrelationCurve(),
+  };
+  if (auto crankcaseCurve = crankcaseHeaterCapacityFunctionofTemperatureCurve()) {
+    result.push_back(*crankcaseCurve);
+  }
+  return result;
+}
+
+Schedule CoilCoolingDXSingleSpeed_Impl::availabilitySchedule() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Cooling_DX_SingleSpeedFields::AvailabilityScheduleName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool CoilCoolingDXSingleSpeed_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::AvailabilityScheduleName, schedule.handle(), false);
+}
+
+Curve CoilCoolingDXSingleSpeed_Impl::totalCoolingCapacityFunctionOfTemperatureCurve() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Coil_Cooling_DX_SingleSpeedFields::TotalCoolingCapacityFunctionofTemperatureCurveName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool CoilCoolingDXSingleSpeed_Impl::setTotalCoolingCapacityFunctionOfTemperatureCurve(const Curve& curve) {
+  return setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::TotalCoolingCapacityFunctionofTemperatureCurveName, curve.handle(), false);
+}
+
+Curve CoilCoolingDXSingleSpeed_Impl::totalCoolingCapacityFunctionOfFlowFractionCurve() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Coil_Cooling_DX_SingleSpeedFields::TotalCoolingCapacityFunctionofFlowFractionCurveName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool CoilCoolingDXSingleSpeed_Impl::setTotalCoolingCapacityFunctionOfFlowFractionCurve(const Curve& curve) {
+  return setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::TotalCoolingCapacityFunctionofFlowFractionCurveName, curve.handle(), false);
+}
+
+Curve CoilCoolingDXSingleSpeed_Impl::energyInputRatioFunctionOfTemperatureCurve() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Coil_Cooling_DX_SingleSpeedFields::EnergyInputRatioFunctionofTemperatureCurveName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool CoilCoolingDXSingleSpeed_Impl::setEnergyInputRatioFunctionOfTemperatureCurve(const Curve& curve) {
+  return setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::EnergyInputRatioFunctionofTemperatureCurveName, curve.handle(), false);
+}
+
+Curve CoilCoolingDXSingleSpeed_Impl::energyInputRatioFunctionOfFlowFractionCurve() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Coil_Cooling_DX_SingleSpeedFields::EnergyInputRatioFunctionofFlowFractionCurveName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool CoilCoolingDXSingleSpeed_Impl::setEnergyInputRatioFunctionOfFlowFractionCurve(const Curve& curve) {
+  return setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::EnergyInputRatioFunctionofFlowFractionCurveName, curve.handle(), false);
+}
+
+Curve CoilCoolingDXSingleSpeed_Impl::partLoadFractionCorrelationCurve() const {
+  auto value =
+    getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::Coil_Cooling_DX_SingleSpeedFields::PartLoadFractionCorrelationCurveName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool CoilCoolingDXSingleSpeed_Impl::setPartLoadFractionCorrelationCurve(const Curve& curve) {
+  return setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::PartLoadFractionCorrelationCurveName, curve.handle(), false);
+}
+
 std::vector<std::string> CoilCoolingDXSingleSpeed_Impl::condenserTypeValues() const {
   return CoilCoolingDXSingleSpeed::condenserTypeValues();
 }
@@ -476,6 +733,20 @@ bool CoilCoolingDXSingleSpeed_Impl::setCrankcaseHeaterCapacity(double crankcaseH
   return setDouble(openstudio::Coil_Cooling_DX_SingleSpeedFields::CrankcaseHeaterCapacity, crankcaseHeaterCapacity);
 }
 
+boost::optional<Curve> CoilCoolingDXSingleSpeed_Impl::crankcaseHeaterCapacityFunctionofTemperatureCurve() const {
+  return getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Coil_Cooling_DX_SingleSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName);
+}
+
+bool CoilCoolingDXSingleSpeed_Impl::setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve) {
+  return setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName, curve.handle(), false);
+}
+
+void CoilCoolingDXSingleSpeed_Impl::resetCrankcaseHeaterCapacityFunctionofTemperatureCurve() {
+  OS_ASSERT(setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName, openstudio::Handle(),
+                       false));
+}
+
 double CoilCoolingDXSingleSpeed_Impl::maximumOutdoorDryBulbTemperatureForCrankcaseHeaterOperation() const {
   const auto value =
     getDouble(openstudio::Coil_Cooling_DX_SingleSpeedFields::MaximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation, true);
@@ -507,6 +778,18 @@ double CoilCoolingDXSingleSpeed_Impl::basinHeaterSetpointTemperature() const {
 
 bool CoilCoolingDXSingleSpeed_Impl::setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature) {
   return setDouble(openstudio::Coil_Cooling_DX_SingleSpeedFields::BasinHeaterSetpointTemperature, basinHeaterSetpointTemperature);
+}
+
+boost::optional<Schedule> CoilCoolingDXSingleSpeed_Impl::basinHeaterOperatingSchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Cooling_DX_SingleSpeedFields::BasinHeaterOperatingScheduleName);
+}
+
+bool CoilCoolingDXSingleSpeed_Impl::setBasinHeaterOperatingSchedule(Schedule& schedule) {
+  return setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::BasinHeaterOperatingScheduleName, schedule.handle(), false);
+}
+
+void CoilCoolingDXSingleSpeed_Impl::resetBasinHeaterOperatingSchedule() {
+  OS_ASSERT(setPointer(openstudio::Coil_Cooling_DX_SingleSpeedFields::BasinHeaterOperatingScheduleName, openstudio::Handle(), false));
 }
 
 double CoilCoolingDXSingleSpeed_Impl::minimumOutdoorDryBulbTemperatureforCompressorOperation() const {

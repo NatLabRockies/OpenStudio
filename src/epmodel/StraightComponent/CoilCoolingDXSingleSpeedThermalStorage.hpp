@@ -17,6 +17,7 @@ namespace epmodel {
 
 class Model;
 class Node;
+class Schedule;
 
 namespace detail {
 class CoilCoolingDXSingleSpeedThermalStorage_Impl;
@@ -40,15 +41,27 @@ class EPMODEL_API CoilCoolingDXSingleSpeedThermalStorage : public StraightCompon
   static std::vector<std::string> condenserTypeValues();
 
   // Schema Alignment Notes:
-  // - Status: Partial Parity. The scalar thermal-storage surface is present, but storage relationships and topology helpers are still missing.
+  // - Status: Partial Parity. The scalar thermal-storage surface, bounded schedule relationships, and the current epmodel supply-side air-loop
+  //   insertion path are present, but the wider storage relationship and topology surface is still missing.
   // - Canonical Counterpart: openstudio::model::CoilCoolingDXSingleSpeedThermalStorage.
-  // - Implemented Parity: The scalar operating-mode, storage, glycol, and capacity helpers preserve the canonical naming and autosize behavior.
-  // - Documented Delta: Availability schedule, curves, tank links, and other relationship helpers from canonical `openstudio::model::CoilCoolingDXSingleSpeedThermalStorage` are not exposed yet.
+  // - Implemented Parity: The scalar operating-mode, storage, glycol, and capacity helpers preserve the canonical naming and autosize behavior;
+  //   `availabilitySchedule`, `operationModeControlSchedule`, and `basinHeaterAvailabilitySchedule` are exposed, and the current supply-side
+  //   air-loop `addToNode` path preserves the bounded canonical slice used by current epmodel loop insertion.
+  // - Documented Delta: The broader curve, tank-link, and storage-topology helpers from canonical
+  //   `openstudio::model::CoilCoolingDXSingleSpeedThermalStorage` are not exposed yet.
   // - Field/Storage Mapping: `glycolConcentration` is preserved through the user-defined fluid type encoding because EnergyPlus has no direct concentration field.
   // - Evidence: `src/model/CoilCoolingDXSingleSpeedThermalStorage.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXSingleSpeedThermalStorage.cpp`, and `src/epmodel/test/CoilCoolingDXSingleSpeedThermalStorage_GTest.cpp`.
-  // - Remaining Parity Work: Add the omitted schedule, curve, tank-link, and relationship helpers without changing the preserved scalar signatures.
+  // - Remaining Parity Work: Add the omitted curve, tank-link, and broader storage relationship helpers without changing the preserved scalar
+  //   signatures.
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+
   std::string operatingModeControlMethod() const;
   bool setOperatingModeControlMethod(const std::string& operatingModeControlMethod);
+
+  boost::optional<Schedule> operationModeControlSchedule() const;
+  bool setOperationModeControlSchedule(Schedule& schedule);
+  void resetOperationModeControlSchedule();
 
   std::string storageType() const;
   bool setStorageType(const std::string& storageType);
@@ -216,6 +229,10 @@ class EPMODEL_API CoilCoolingDXSingleSpeedThermalStorage : public StraightCompon
 
   double basinHeaterSetpointTemperature() const;
   bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
+
+  boost::optional<Schedule> basinHeaterAvailabilitySchedule() const;
+  bool setBasinHeaterAvailabilitySchedule(Schedule& schedule);
+  void resetBasinHeaterAvailabilitySchedule();
 
   bool addToNode(Node& node);
 

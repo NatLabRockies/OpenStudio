@@ -17,6 +17,7 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/core/UUID.hpp>
 #include <utilities/idd/Coil_WaterHeating_AirToWaterHeatPump_VariableSpeed_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
@@ -260,6 +261,10 @@ namespace epmodel {
 
       std::string transientSpeedDataPrefix(const openstudio::epmodel::CoilWaterHeatingAirToWaterHeatPumpVariableSpeed& parent) {
         return "__transient__" + openstudio::toString(parent.handle()) + "__water_heating_air_to_water_hp_vs_speed_";
+      }
+
+      std::string detachedTransientSpeedDataName() {
+        return "__transient__wh_air_to_water_hp_vs_speed_data_detached_" + openstudio::toString(openstudio::createUUID());
       }
 
       boost::optional<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData> transientSpeedDataByName(const Model& model,
@@ -571,13 +576,6 @@ namespace epmodel {
         return false;
       }
       OS_ASSERT(setInt(Fields::NumberofSpeeds, static_cast<int>(getObject<ModelObject>().numExtensibleGroups())));
-      if (const auto nominalSpeed = getInt(Fields::NominalSpeedLevel, false)) {
-        if (*nominalSpeed < 1) {
-          OS_ASSERT(setInt(Fields::NominalSpeedLevel, 1));
-        }
-      } else {
-        OS_ASSERT(setInt(Fields::NominalSpeedLevel, 1));
-      }
       auto attachedSpeed = speed;
       const bool renamed = attachedSpeed.setName(detail::transientSpeedDataName(parent, group.groupIndex())).has_value();
       OS_ASSERT(renamed);
@@ -595,6 +593,9 @@ namespace epmodel {
       for (unsigned i = 0; i < groups.size(); ++i) {
         if (openstudio::istringEqual(*thisName, detail::transientSpeedDataName(parent, i))) {
           const auto previousCount = static_cast<unsigned>(groups.size());
+          auto detachedSpeed = speed;
+          const bool detached = detachedSpeed.setName(detachedTransientSpeedDataName()).has_value();
+          OS_ASSERT(detached);
           getObject<ModelObject>().eraseExtensibleGroup(i);
           const auto remainingSpeeds = static_cast<int>(getObject<ModelObject>().numExtensibleGroups());
           for (unsigned oldIndex = i + 1; oldIndex < previousCount; ++oldIndex) {
@@ -605,17 +606,19 @@ namespace epmodel {
           } else {
             OS_ASSERT(setString(Fields::NumberofSpeeds, ""));
           }
-          if (remainingSpeeds > 0 && nominalSpeedLevel() > remainingSpeeds) {
-            OS_ASSERT(setNominalSpeedLevel(remainingSpeeds));
-          }
           return;
         }
       }
     }
 
     void CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::removeAllSpeeds() {
+      auto speedWrappers = speeds();
       getObject<ModelObject>().clearExtensibleGroups();
       OS_ASSERT(setString(Fields::NumberofSpeeds, ""));
+      for (auto& speed : speedWrappers) {
+        const bool renamed = speed.setName(detachedTransientSpeedDataName()).has_value();
+        OS_ASSERT(renamed);
+      }
     }
 
     std::vector<ModelObject> CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::children() const {
@@ -628,6 +631,19 @@ namespace epmodel {
         result.push_back(speed);
       }
       return result;
+    }
+
+    std::vector<IdfObject> CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::remove() {
+      if (!isRemovable()) {
+        return {};
+      }
+
+      auto speedWrappers = speeds();
+      for (auto& speed : speedWrappers) {
+        speed.remove();
+      }
+
+      return WaterToAirComponent_Impl::remove();
     }
 
     void CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::setConstructorSharedDefaults(const Model& model) {

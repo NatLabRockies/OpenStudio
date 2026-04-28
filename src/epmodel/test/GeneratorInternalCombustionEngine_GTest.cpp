@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/GeneratorInternalCombustionEngine.hpp"
+#include "../scaffolds/GeneratorInternalCombustionEngine.hpp"
 
 using namespace openstudio::epmodel;
 

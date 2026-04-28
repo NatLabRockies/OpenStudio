@@ -6,7 +6,13 @@
 #include "StraightComponent/CoilWaterHeatingDesuperheater.hpp"
 #include "StraightComponent/CoilWaterHeatingDesuperheater_Impl.hpp"
 
+#include "Curve/CurveBiquadratic.hpp"
+#include "Curve/CurveBiquadratic_Impl.hpp"
 #include "Model.hpp"
+#include "ModelObject/ModelObject.hpp"
+#include "StraightComponent/Node.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/Coil_WaterHeating_Desuperheater_FieldEnums.hxx>
@@ -18,6 +24,9 @@ namespace epmodel {
   CoilWaterHeatingDesuperheater::CoilWaterHeatingDesuperheater(const Model& model)
     : StraightComponent(CoilWaterHeatingDesuperheater::iddObjectType(), model) {
     bool ok = true;
+    auto alwaysOn = const_cast<Model&>(model).alwaysOnDiscreteSchedule();
+    ok = setAvailabilitySchedule(alwaysOn);
+    OS_ASSERT(ok);
     ok = setDeadBandTemperatureDifference(5.0);
     OS_ASSERT(ok);
     ok = setRatedInletWaterTemperature(50.0);
@@ -43,6 +52,42 @@ namespace epmodel {
 
   IddObjectType CoilWaterHeatingDesuperheater::iddObjectType() {
     return IddObjectType::Coil_WaterHeating_Desuperheater;
+  }
+
+  Schedule CoilWaterHeatingDesuperheater::availabilitySchedule() const {
+    return getImpl<detail::CoilWaterHeatingDesuperheater_Impl>()->availabilitySchedule();
+  }
+
+  bool CoilWaterHeatingDesuperheater::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::CoilWaterHeatingDesuperheater_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  boost::optional<CurveBiquadratic> CoilWaterHeatingDesuperheater::heatReclaimEfficiencyFunctionofTemperatureCurve() const {
+    return getImpl<detail::CoilWaterHeatingDesuperheater_Impl>()->heatReclaimEfficiencyFunctionofTemperatureCurve();
+  }
+
+  bool CoilWaterHeatingDesuperheater::setHeatReclaimEfficiencyFunctionofTemperatureCurve(const CurveBiquadratic& curveBiquadratic) {
+    return getImpl<detail::CoilWaterHeatingDesuperheater_Impl>()->setHeatReclaimEfficiencyFunctionofTemperatureCurve(curveBiquadratic);
+  }
+
+  void CoilWaterHeatingDesuperheater::resetHeatReclaimEfficiencyFunctionofTemperatureCurve() {
+    getImpl<detail::CoilWaterHeatingDesuperheater_Impl>()->resetHeatReclaimEfficiencyFunctionofTemperatureCurve();
+  }
+
+  boost::optional<ModelObject> CoilWaterHeatingDesuperheater::heatingSource() const {
+    return getImpl<detail::CoilWaterHeatingDesuperheater_Impl>()->heatingSource();
+  }
+
+  bool CoilWaterHeatingDesuperheater::setHeatingSource(const ModelObject& heatingSource) {
+    return getImpl<detail::CoilWaterHeatingDesuperheater_Impl>()->setHeatingSource(heatingSource);
+  }
+
+  void CoilWaterHeatingDesuperheater::resetHeatingSource() {
+    getImpl<detail::CoilWaterHeatingDesuperheater_Impl>()->resetHeatingSource();
+  }
+
+  bool CoilWaterHeatingDesuperheater::addToNode(Node& node) {
+    return getImpl<detail::CoilWaterHeatingDesuperheater_Impl>()->addToNode(node);
   }
 
   double CoilWaterHeatingDesuperheater::deadBandTemperatureDifference() const {
@@ -183,6 +228,76 @@ namespace epmodel {
 
     unsigned CoilWaterHeatingDesuperheater_Impl::outletPort() const {
       return openstudio::Coil_WaterHeating_DesuperheaterFields::WaterOutletNodeName;
+    }
+
+    std::vector<ModelObject> CoilWaterHeatingDesuperheater_Impl::children() const {
+      std::vector<ModelObject> result;
+      if (auto curve = heatReclaimEfficiencyFunctionofTemperatureCurve()) {
+        result.push_back(*curve);
+      }
+      return result;
+    }
+
+    Schedule CoilWaterHeatingDesuperheater_Impl::availabilitySchedule() const {
+      auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName);
+      if (!value) {
+        value = this->model().alwaysOnDiscreteSchedule();
+        OS_ASSERT(value);
+        const_cast<CoilWaterHeatingDesuperheater_Impl*>(this)->setAvailabilitySchedule(*value);
+        value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName);
+      }
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool CoilWaterHeatingDesuperheater_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return setPointer(openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName, schedule.handle(), false);
+    }
+
+    boost::optional<CurveBiquadratic> CoilWaterHeatingDesuperheater_Impl::heatReclaimEfficiencyFunctionofTemperatureCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<CurveBiquadratic>(
+        openstudio::Coil_WaterHeating_DesuperheaterFields::HeatReclaimEfficiencyFunctionofTemperatureCurveName);
+    }
+
+    bool CoilWaterHeatingDesuperheater_Impl::setHeatReclaimEfficiencyFunctionofTemperatureCurve(const CurveBiquadratic& curveBiquadratic) {
+      return setPointer(openstudio::Coil_WaterHeating_DesuperheaterFields::HeatReclaimEfficiencyFunctionofTemperatureCurveName,
+                        curveBiquadratic.handle(), false);
+    }
+
+    void CoilWaterHeatingDesuperheater_Impl::resetHeatReclaimEfficiencyFunctionofTemperatureCurve() {
+      OS_ASSERT(setPointer(openstudio::Coil_WaterHeating_DesuperheaterFields::HeatReclaimEfficiencyFunctionofTemperatureCurveName,
+                           openstudio::Handle(), false));
+    }
+
+    boost::optional<ModelObject> CoilWaterHeatingDesuperheater_Impl::heatingSource() const {
+      return getObject<ModelObject>().getModelObjectTarget<ModelObject>(openstudio::Coil_WaterHeating_DesuperheaterFields::HeatingSourceName);
+    }
+
+    bool CoilWaterHeatingDesuperheater_Impl::setHeatingSource(const ModelObject& heatingSource) {
+      const bool result = setPointer(openstudio::Coil_WaterHeating_DesuperheaterFields::HeatingSourceName, heatingSource.handle(), false);
+
+      if (auto rated = ratedHeatReclaimRecoveryEfficiency()) {
+        const auto heatingSourceIddObjectType = heatingSource.iddObject().type();
+        if ((heatingSourceIddObjectType == IddObjectType::Refrigeration_Condenser_AirCooled)
+            || (heatingSourceIddObjectType == IddObjectType::Refrigeration_Condenser_EvaporativeCooled)
+            || (heatingSourceIddObjectType == IddObjectType::Refrigeration_Condenser_WaterCooled)) {
+          if (*rated > 0.9) {
+            setDouble(openstudio::Coil_WaterHeating_DesuperheaterFields::RatedHeatReclaimRecoveryEfficiency, 0.8);
+          }
+        } else if (*rated > 0.3) {
+          setDouble(openstudio::Coil_WaterHeating_DesuperheaterFields::RatedHeatReclaimRecoveryEfficiency, 0.25);
+        }
+      }
+
+      return result;
+    }
+
+    void CoilWaterHeatingDesuperheater_Impl::resetHeatingSource() {
+      OS_ASSERT(setPointer(openstudio::Coil_WaterHeating_DesuperheaterFields::HeatingSourceName, openstudio::Handle(), false));
+    }
+
+    bool CoilWaterHeatingDesuperheater_Impl::addToNode(Node& /*node*/) {
+      return false;
     }
 
     double CoilWaterHeatingDesuperheater_Impl::deadBandTemperatureDifference() const {

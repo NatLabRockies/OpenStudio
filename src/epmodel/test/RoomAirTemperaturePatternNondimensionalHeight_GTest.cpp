@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/RoomAirTemperaturePatternNondimensionalHeight.hpp"
+#include "../scaffolds/RoomAirTemperaturePatternNondimensionalHeight.hpp"
 
 using namespace openstudio::epmodel;
 

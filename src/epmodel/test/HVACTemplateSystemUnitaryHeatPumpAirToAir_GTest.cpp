@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/HVACTemplateSystemUnitaryHeatPumpAirToAir.hpp"
+#include "../scaffolds/HVACTemplateSystemUnitaryHeatPumpAirToAir.hpp"
 
 using namespace openstudio::epmodel;
 

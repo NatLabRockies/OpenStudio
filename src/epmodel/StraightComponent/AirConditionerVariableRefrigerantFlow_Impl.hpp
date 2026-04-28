@@ -23,6 +23,7 @@ class EPMODEL_API AirConditionerVariableRefrigerantFlow_Impl : public StraightCo
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+  bool addToNode(Node& node) override;
 
   boost::optional<double> grossRatedTotalCoolingCapacity() const;
   bool isGrossRatedTotalCoolingCapacityAutosized() const;

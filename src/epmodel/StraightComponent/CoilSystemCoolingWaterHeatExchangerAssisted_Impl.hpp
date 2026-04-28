@@ -12,6 +12,10 @@
 
 namespace openstudio {
 namespace epmodel {
+  class AirToAirComponent;
+  class ModelObject;
+  class Node;
+  class WaterToAirComponent;
   namespace detail {
 
     class EPMODEL_API CoilSystemCoolingWaterHeatExchangerAssisted_Impl : public StraightComponent_Impl
@@ -24,11 +28,18 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      std::vector<ModelObject> children() const override;
+
+      AirToAirComponent heatExchanger() const;
+      bool setHeatExchanger(const AirToAirComponent& heatExchanger);
+
+      WaterToAirComponent coolingCoil() const;
+      bool setCoolingCoil(const WaterToAirComponent& coolingCoil);
 
       std::vector<std::string> heatExchangerObjectTypeValues() const;
       std::vector<std::string> coolingCoilObjectTypeValues() const;
 
-      // Scalar-only parity surface: relationship fields remain excluded by contract.
+      // Cooling-coil targets are tracked directly; the heat-exchanger side stays as schema-valid name/object-type storage.
       /** @name Heat exchanger object type */
       //@{
       std::string heatExchangerObjectType() const;

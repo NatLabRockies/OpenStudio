@@ -7,7 +7,7 @@
 #define EPMODEL_AIRTERMINALDUALDUCTVAVOUTDOORAIR_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Mixer/Mixer.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -18,12 +18,13 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class AirTerminalDualDuctVAVOutdoorAir_Impl;
   }
 
-  class EPMODEL_API AirTerminalDualDuctVAVOutdoorAir : public ModelObject
+  class EPMODEL_API AirTerminalDualDuctVAVOutdoorAir : public Mixer
   {
    public:
     explicit AirTerminalDualDuctVAVOutdoorAir(const Model& model);
@@ -53,6 +54,9 @@ namespace epmodel {
 
     std::string perPersonVentilationRateMode() const;
     bool setPerPersonVentilationRateMode(const std::string& perPersonVentilationRateMode);
+    boost::optional<Node> outdoorAirInletNode() const;
+    boost::optional<Node> recirculatedAirInletNode() const;
+    bool addToNode(Node& node);
 
    protected:
     using ImplType = detail::AirTerminalDualDuctVAVOutdoorAir_Impl;

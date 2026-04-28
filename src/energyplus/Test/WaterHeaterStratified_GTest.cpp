@@ -13,6 +13,7 @@
 #include "../../model/WaterHeaterStratified.hpp"
 // #include "../../model/WaterHeaterStratified_Impl.hpp"
 #include "../../model/Schedule.hpp"
+#include "../../model/ThermalZone.hpp"
 
 #include "../../model/PlantLoop.hpp"
 #include "../../model/PlantLoop_Impl.hpp"
@@ -94,6 +95,78 @@ TEST_F(EnergyPlusFixture, ForwardTranslatorWaterHeaterStratified_Condition) {
     Workspace w = ft.translateModel(m);
     EXPECT_EQ(1u, w.getObjectsByType(IddObjectType::WaterHeater_Stratified).size());
   }
+}
+
+TEST_F(EnergyPlusFixture, ForwardTranslatorWaterHeaterStratified_AmbientTemperatureOutdoors_CreatesOneNodeList) {
+  ForwardTranslator ft;
+  Model m;
+
+  WaterHeaterStratified wh(m);
+  PlantLoop p(m);
+  EXPECT_TRUE(p.addSupplyBranchForComponent(wh));
+
+  EXPECT_TRUE(wh.setAmbientTemperatureIndicator("Outdoors"));
+  wh.resetAmbientTemperatureOutdoorAirNodeName();
+
+  Workspace w = ft.translateModel(m);
+
+  std::vector<WorkspaceObject> idfWHStratifieds(w.getObjectsByType(IddObjectType::WaterHeater_Stratified));
+  ASSERT_EQ(1u, idfWHStratifieds.size());
+  WorkspaceObject idfWHStratified(idfWHStratifieds[0]);
+
+  EXPECT_EQ("Outdoors", idfWHStratified.getString(WaterHeater_StratifiedFields::AmbientTemperatureIndicator, false).get());
+  ASSERT_FALSE(idfWHStratified.isEmpty(WaterHeater_StratifiedFields::AmbientTemperatureOutdoorAirNodeName));
+  const std::string outdoorAirNodeName =
+    idfWHStratified.getString(WaterHeater_StratifiedFields::AmbientTemperatureOutdoorAirNodeName, false).get();
+
+  std::vector<WorkspaceObject> oaNodeLists(w.getObjectsByType(IddObjectType::OutdoorAir_NodeList));
+  ASSERT_EQ(1u, oaNodeLists.size());
+  EXPECT_EQ(outdoorAirNodeName, oaNodeLists[0].getString(0, false).get());
+}
+
+TEST_F(EnergyPlusFixture, ForwardTranslatorWaterHeaterStratified_AmbientTemperatureAliasesAndAutosizeTokens) {
+  ForwardTranslator ft;
+  Model m;
+
+  WaterHeaterStratified wh(m);
+  PlantLoop p(m);
+  EXPECT_TRUE(p.addSupplyBranchForComponent(wh));
+
+  Workspace w = ft.translateModel(m);
+
+  std::vector<WorkspaceObject> idfWHStratifieds(w.getObjectsByType(IddObjectType::WaterHeater_Stratified));
+  ASSERT_EQ(1u, idfWHStratifieds.size());
+  WorkspaceObject idfWHStratified(idfWHStratifieds[0]);
+
+  EXPECT_EQ("Autosize", idfWHStratified.getString(WaterHeater_StratifiedFields::TankVolume, false).get());
+  EXPECT_EQ("Autosize", idfWHStratified.getString(WaterHeater_StratifiedFields::TankHeight, false).get());
+  EXPECT_EQ("Autosize", idfWHStratified.getString(WaterHeater_StratifiedFields::Heater1Capacity, false).get());
+  EXPECT_EQ("Autocalculate", idfWHStratified.getString(WaterHeater_StratifiedFields::UseSideOutletHeight, false).get());
+  EXPECT_EQ("Autocalculate", idfWHStratified.getString(WaterHeater_StratifiedFields::SourceSideInletHeight, false).get());
+  EXPECT_EQ("Autosize", idfWHStratified.getString(WaterHeater_StratifiedFields::UseSideDesignFlowRate, false).get());
+  EXPECT_EQ("Autosize", idfWHStratified.getString(WaterHeater_StratifiedFields::SourceSideDesignFlowRate, false).get());
+
+  ThermalZone zone(m);
+  EXPECT_TRUE(wh.setAmbientTemperatureIndicator("ThermalZone"));
+  EXPECT_TRUE(wh.setAmbientTemperatureThermalZone(zone));
+
+  Workspace zoneWorkspace = ft.translateModel(m);
+  idfWHStratified = zoneWorkspace.getObjectsByType(IddObjectType::WaterHeater_Stratified)[0];
+  EXPECT_EQ("Zone", idfWHStratified.getString(WaterHeater_StratifiedFields::AmbientTemperatureIndicator, false).get());
+  EXPECT_EQ(zone.nameString(), idfWHStratified.getString(WaterHeater_StratifiedFields::AmbientTemperatureZoneName, false).get());
+
+  EXPECT_TRUE(wh.setAmbientTemperatureIndicator("Outdoors"));
+  EXPECT_TRUE(wh.setAmbientTemperatureOutdoorAirNodeName("Explicit Stratified OA Node"));
+
+  Workspace outdoorsWorkspace = ft.translateModel(m);
+  idfWHStratified = outdoorsWorkspace.getObjectsByType(IddObjectType::WaterHeater_Stratified)[0];
+  EXPECT_EQ("Outdoors", idfWHStratified.getString(WaterHeater_StratifiedFields::AmbientTemperatureIndicator, false).get());
+  EXPECT_EQ("Explicit Stratified OA Node",
+            idfWHStratified.getString(WaterHeater_StratifiedFields::AmbientTemperatureOutdoorAirNodeName, false).get());
+
+  std::vector<WorkspaceObject> oaNodeLists(outdoorsWorkspace.getObjectsByType(IddObjectType::OutdoorAir_NodeList));
+  ASSERT_EQ(1u, oaNodeLists.size());
+  EXPECT_EQ("Explicit Stratified OA Node", oaNodeLists[0].getString(0, false).get());
 }
 
 TEST_F(EnergyPlusFixture, ForwardTranslatorWaterHeaterStratified_PlantLoopConnections) {

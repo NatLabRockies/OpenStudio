@@ -7,6 +7,7 @@
 
 #include "EPModelFixture.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -33,4 +34,21 @@ TEST_F(EPModelFixture, API_AirLoopHVACZoneSplitter_ScalarAccessors_RoundTrip) {
   EXPECT_TRUE(splitter.setName("Zone Splitter Roundtrip"));
   ASSERT_TRUE(splitter.name());
   EXPECT_EQ("Zone Splitter Roundtrip", splitter.nameString());
+}
+
+TEST_F(EPModelFixture, API_AirLoopHVACZoneSplitter_SetOutletModelObjectCreatesMissingBranchRows) {
+  Model model;
+  AirLoopHVACZoneSplitter splitter(model);
+  Node branchNode0(model);
+  Node branchNode1(model);
+
+  ASSERT_TRUE(splitter.setOutletModelObject(0u, branchNode0.cast<ModelObject>()));
+  ASSERT_TRUE(splitter.setOutletModelObject(1u, branchNode1.cast<ModelObject>()));
+
+  ASSERT_EQ(2u, splitter.outletModelObjects().size());
+  ASSERT_TRUE(splitter.outletModelObject(0u));
+  ASSERT_TRUE(splitter.outletModelObject(1u));
+  EXPECT_EQ(branchNode0.cast<ModelObject>(), *splitter.outletModelObject(0u));
+  EXPECT_EQ(branchNode1.cast<ModelObject>(), *splitter.outletModelObject(1u));
+  EXPECT_EQ(2u, splitter.nextBranchIndex());
 }

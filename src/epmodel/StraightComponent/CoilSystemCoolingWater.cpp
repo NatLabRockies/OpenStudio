@@ -6,9 +6,17 @@
 #include "StraightComponent/CoilSystemCoolingWater.hpp"
 #include "StraightComponent/CoilSystemCoolingWater_Impl.hpp"
 
+#include "HVACComponent/HVACComponent.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
+#include "WaterToAirComponent/CoilCoolingWater.hpp"
+#include "WaterToAirComponent/CoilCoolingWater_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -17,11 +25,43 @@
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
 
+#include <stdexcept>
+
 namespace openstudio {
 namespace epmodel {
 
+  namespace {
+
+    constexpr auto kAvailabilityScheduleField = openstudio::CoilSystem_Cooling_WaterFields::AvailabilityScheduleName;
+    constexpr auto kCoolingCoilField = openstudio::CoilSystem_Cooling_WaterFields::CoolingCoilName;
+    constexpr auto kCompanionCoilField = openstudio::CoilSystem_Cooling_WaterFields::CompanionCoilUsedForHeatRecovery;
+
+  }  // namespace
+
   CoilSystemCoolingWater::CoilSystemCoolingWater(const Model& model) : StraightComponent(CoilSystemCoolingWater::iddObjectType(), model) {
+    auto alwaysOn = const_cast<Model&>(model).alwaysOnDiscreteSchedule();
+    OS_ASSERT(setAvailabilitySchedule(alwaysOn));
+
+    CoilCoolingWater coolingCoil(model);
+    OS_ASSERT(setCoolingCoil(coolingCoil));
+
     // Keep strict scalar getters populated for model-parity behavior.
+    OS_ASSERT(setDehumidificationControlType("None"));
+    OS_ASSERT(setRunonSensibleLoad(true));
+    OS_ASSERT(setRunonLatentLoad(false));
+    OS_ASSERT(setMinimumAirToWaterTemperatureOffset(0.0));
+    OS_ASSERT(setEconomizerLockout(true));
+    OS_ASSERT(setMinimumWaterLoopTemperatureForHeatRecovery(0.0));
+  }
+
+  CoilSystemCoolingWater::CoilSystemCoolingWater(const Model& model, const HVACComponent& coolingCoil)
+    : StraightComponent(CoilSystemCoolingWater::iddObjectType(), model) {
+    auto alwaysOn = const_cast<Model&>(model).alwaysOnDiscreteSchedule();
+    OS_ASSERT(setAvailabilitySchedule(alwaysOn));
+    if (!setCoolingCoil(coolingCoil)) {
+      throw std::runtime_error("Unable to set cooling coil for CoilSystemCoolingWater.");
+    }
+
     OS_ASSERT(setDehumidificationControlType("None"));
     OS_ASSERT(setRunonSensibleLoad(true));
     OS_ASSERT(setRunonLatentLoad(false));
@@ -43,6 +83,22 @@ namespace epmodel {
 
   bool CoilSystemCoolingWater::addToNode(Node& node) {
     return getImpl<detail::CoilSystemCoolingWater_Impl>()->addToNode(node);
+  }
+
+  Schedule CoilSystemCoolingWater::availabilitySchedule() const {
+    return getImpl<detail::CoilSystemCoolingWater_Impl>()->availabilitySchedule();
+  }
+
+  bool CoilSystemCoolingWater::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::CoilSystemCoolingWater_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  HVACComponent CoilSystemCoolingWater::coolingCoil() const {
+    return getImpl<detail::CoilSystemCoolingWater_Impl>()->coolingCoil();
+  }
+
+  bool CoilSystemCoolingWater::setCoolingCoil(const HVACComponent& coolingCoil) {
+    return getImpl<detail::CoilSystemCoolingWater_Impl>()->setCoolingCoil(coolingCoil);
   }
 
   std::string CoilSystemCoolingWater::dehumidificationControlType() const {
@@ -93,6 +149,18 @@ namespace epmodel {
     return getImpl<detail::CoilSystemCoolingWater_Impl>()->setMinimumWaterLoopTemperatureForHeatRecovery(minimumWaterLoopTemperatureForHeatRecovery);
   }
 
+  boost::optional<HVACComponent> CoilSystemCoolingWater::companionCoilUsedForHeatRecovery() const {
+    return getImpl<detail::CoilSystemCoolingWater_Impl>()->companionCoilUsedForHeatRecovery();
+  }
+
+  bool CoilSystemCoolingWater::setCompanionCoilUsedForHeatRecovery(const HVACComponent& companionCoilUsedForHeatRecovery) {
+    return getImpl<detail::CoilSystemCoolingWater_Impl>()->setCompanionCoilUsedForHeatRecovery(companionCoilUsedForHeatRecovery);
+  }
+
+  void CoilSystemCoolingWater::resetCompanionCoilUsedForHeatRecovery() {
+    getImpl<detail::CoilSystemCoolingWater_Impl>()->resetCompanionCoilUsedForHeatRecovery();
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -123,13 +191,70 @@ namespace epmodel {
     }
 
     bool CoilSystemCoolingWater_Impl::addToNode(Node& node) {
+      for (auto oaSystem : model().getConcreteModelObjects<AirLoopHVACOutdoorAirSystem>()) {
+        auto outboardOANode = oaSystem.outboardOANode();
+        if (outboardOANode && (*outboardOANode == node)) {
+          return StraightComponent_Impl::addToOutdoorAirSystem(oaSystem, node);
+        }
+      }
+
+      if (node.airLoopHVACOutdoorAirSystem()) {
+        return StraightComponent_Impl::addToNode(node);
+      }
+
       auto airLoop = node.airLoopHVAC();
 
       if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
         return false;
       }
 
-      return StraightComponent_Impl::addToNode(node);
+      const bool ok = StraightComponent_Impl::addToNode(node);
+      if (!ok) {
+        return false;
+      }
+
+      auto inletNode = getObject<ModelObject>().getModelObjectTarget<Node>(inletPort());
+      auto outletNode = getObject<ModelObject>().getModelObjectTarget<Node>(outletPort());
+      if (inletNode && outletNode) {
+        if (auto companionCoil = companionCoilUsedForHeatRecovery()) {
+          if (auto coolingWaterCoil = companionCoil->optionalCast<CoilCoolingWater>()) {
+            auto coolingWaterCoilImpl = coolingWaterCoil->getImpl<detail::CoilCoolingWater_Impl>();
+            OS_ASSERT(coolingWaterCoilImpl->setPointer(coolingWaterCoil->airInletPort(), inletNode->handle(), false));
+            OS_ASSERT(coolingWaterCoilImpl->setPointer(coolingWaterCoil->airOutletPort(), outletNode->handle(), false));
+          }
+        }
+      }
+
+      return true;
+    }
+
+    std::vector<ModelObject> CoilSystemCoolingWater_Impl::children() const {
+      std::vector<ModelObject> result;
+      result.push_back(coolingCoil().cast<ModelObject>());
+      if (auto companionCoil = companionCoilUsedForHeatRecovery()) {
+        result.push_back(companionCoil->cast<ModelObject>());
+      }
+      return result;
+    }
+
+    Schedule CoilSystemCoolingWater_Impl::availabilitySchedule() const {
+      auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(kAvailabilityScheduleField);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool CoilSystemCoolingWater_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return setPointer(kAvailabilityScheduleField, schedule.handle());
+    }
+
+    HVACComponent CoilSystemCoolingWater_Impl::coolingCoil() const {
+      auto value = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(kCoolingCoilField);
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool CoilSystemCoolingWater_Impl::setCoolingCoil(const HVACComponent& coolingCoil) {
+      return setPointer(kCoolingCoilField, coolingCoil.handle());
     }
 
     std::string CoilSystemCoolingWater_Impl::dehumidificationControlType() const {
@@ -193,6 +318,21 @@ namespace epmodel {
         setDouble(openstudio::CoilSystem_Cooling_WaterFields::MinimumWaterLoopTemperatureForHeatRecovery, minimumWaterLoopTemperatureForHeatRecovery);
       OS_ASSERT(result);
       return result;
+    }
+
+    boost::optional<HVACComponent> CoilSystemCoolingWater_Impl::companionCoilUsedForHeatRecovery() const {
+      return getObject<ModelObject>().getModelObjectTarget<HVACComponent>(kCompanionCoilField);
+    }
+
+    bool CoilSystemCoolingWater_Impl::setCompanionCoilUsedForHeatRecovery(const HVACComponent& companionCoilUsedForHeatRecovery) {
+      if (companionCoilUsedForHeatRecovery.iddObject().name() != "Coil:Cooling:Water") {
+        return false;
+      }
+      return setPointer(kCompanionCoilField, companionCoilUsedForHeatRecovery.handle());
+    }
+
+    void CoilSystemCoolingWater_Impl::resetCompanionCoilUsedForHeatRecovery() {
+      OS_ASSERT(setString(kCompanionCoilField, ""));
     }
 
     std::vector<std::string> CoilSystemCoolingWater_Impl::dehumidificationControlTypeValues() const {

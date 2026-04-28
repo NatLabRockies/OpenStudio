@@ -34,12 +34,16 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical photovoltaic-thermal solar-collector scalar surface is present, while performance, surface, photovoltaic, and node helpers remain out of scope.
+    // - Status: Scalar Parity.
     // - Canonical Counterpart: openstudio::model::SolarCollectorFlatPlatePhotovoltaicThermal.
-    // - Implemented Parity: The preserved scalar API matches the design-flow accessor with matching reset/autosize behavior.
-    // - Documented Delta: Performance, surface, photovoltaic, inlet, and outlet relationship helpers remain intentionally excluded from this scalar pass.
-    // - Field/Storage Mapping: This accessor maps directly to the EnergyPlus `SolarCollector:FlatPlate:PhotovoltaicThermal` design-flow field used by the forward translator.
-    // - Evidence: `src/model/SolarCollectorFlatPlatePhotovoltaicThermal.hpp`, `src/model/SolarCollectorFlatPlatePhotovoltaicThermal.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateSolarCollectorFlatPlatePhotovoltaicThermal.cpp`.
+    // - Implemented Parity: The preserved scalar API matches the canonical design-flow accessor and autosize flag behavior, and the impl now routes
+    //   node insertion through the correct EnergyPlus air or water port pair based on the loop placement.
+    // - Documented Delta: `autosizedDesignFlowRate()` is still a placeholder until epmodel resolves autosized SQL values, and performance, surface,
+    //   photovoltaic, and explicit inlet/outlet relationship helpers remain intentionally excluded from this scalar pass.
+    // - Field/Storage Mapping: This accessor maps directly to the EnergyPlus `SolarCollector:FlatPlate:PhotovoltaicThermal` design-flow field used by
+    //   the forward translator.
+    // - Evidence: `src/model/SolarCollectorFlatPlatePhotovoltaicThermal.hpp`, `src/model/SolarCollectorFlatPlatePhotovoltaicThermal.cpp`, and
+    //   `src/energyplus/ForwardTranslator/ForwardTranslateSolarCollectorFlatPlatePhotovoltaicThermal.cpp`.
     // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
     boost::optional<double> designFlowRate() const;
     bool setDesignFlowRate(double designFlowRate);

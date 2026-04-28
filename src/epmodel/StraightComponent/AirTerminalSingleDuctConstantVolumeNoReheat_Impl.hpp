@@ -23,7 +23,6 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
-      boost::optional<openstudio::epmodel::AirLoopHVAC> airLoopHVAC() const override;
 
       boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
       bool addToNode(Node& node);
@@ -37,6 +36,7 @@ namespace epmodel {
       bool isMaximumAirFlowRateAutosized() const;
       bool setMaximumAirFlowRate(double maximumAirFlowRate);
       void autosizeMaximumAirFlowRate();
+      boost::optional<double> autosizedMaximumAirFlowRate() const;
       //@}
     };
 

@@ -18,6 +18,10 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class HVACComponent;
+class Node;
+class Schedule;
+class ThermalZone;
 
 namespace detail {
 class AirLoopHVACUnitarySystem_Impl;
@@ -45,31 +49,61 @@ class EPMODEL_API AirLoopHVACUnitarySystem : public ZoneHVACComponent
   static std::vector<std::string> supplyAirFlowRateMethodWhenNoCoolingorHeatingisRequiredValues();
 
   // Schema Alignment Notes:
-  // - Status: Partial Parity. The unitary-system scalar fields are aligned, but the node/schedule/object-reference wiring remains relationship-driven.
+  // - Status: Partial Parity. The unitary-system scalar fields and direct object-link fields are aligned, and the owned internal air path is now maintained through parent-owned epmodel nodes.
   // - Canonical Counterpart: openstudio::model::AirLoopHVACUnitarySystem.
-  // - Implemented Parity: Control/dehumidification/fan-placement scalars, DX sizing ratios, DOAS cooling limits, latent-load control, and supply-air-flow-rate method fields map directly to the EnergyPlus object.
-  // - Documented Delta: Node, schedule, and object-reference fields remain outside the scalar surface.
-  // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while the omitted wiring is handled through child-object and topology state.
+  // - Implemented Parity: Controlling-zone, schedule, fan, heating/cooling/supplemental-heating coil, and the control/airflow scalar
+  //   fields preserve the main canonical wrapper contract. The owned fan/cooling/heating/supplemental chain now shares a stable
+  //   parent-maintained air path, with direct access to the meaningful outlet node roles on the compound.
+  // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are additive epmodel conveniences for
+  //   the owned serial air path. Broader node-level topology convenience and deeper child-family validation remain intentionally omitted.
+  // - Field/Storage Mapping: Scalar values live directly on the EnergyPlus object while schedules, fan, coil, and internal-node
+  //   relationships are explicit parent-owned object links in epmodel.
   // - Evidence: `src/model/AirLoopHVACUnitarySystem.hpp`, `src/model/AirLoopHVACUnitarySystem.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACUnitarySystem.cpp`, and `src/epmodel/test/AirLoopHVACUnitarySystem_GTest.cpp`.
-  // - Remaining Parity Work: Add the missing relationship helpers only if the canonical wrapper still exposes them directly.
+  // - Remaining Parity Work: Add any remaining node-level conveniences only if the canonical wrapper still exposes them directly.
   std::string controlType() const;
   bool isControlTypeDefaulted() const;
   bool setControlType(const std::string& controlType);
   void resetControlType();
+
+  boost::optional<ThermalZone> controllingZoneorThermostatLocation() const;
+  bool setControllingZoneorThermostatLocation(const ThermalZone& thermalZone);
+  void resetControllingZoneorThermostatLocation();
 
   std::string dehumidificationControlType() const;
   bool isDehumidificationControlTypeDefaulted() const;
   bool setDehumidificationControlType(const std::string& dehumidificationControlType);
   void resetDehumidificationControlType();
 
+  boost::optional<Schedule> availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+  void resetAvailabilitySchedule();
+
+  boost::optional<HVACComponent> supplyFan() const;
+  bool setSupplyFan(const HVACComponent& supplyFan);
+  void resetSupplyFan();
+
   boost::optional<std::string> fanPlacement() const;
   bool setFanPlacement(const std::string& fanPlacement);
   void resetFanPlacement();
+
+  boost::optional<Schedule> supplyAirFanOperatingModeSchedule() const;
+  bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+  void resetSupplyAirFanOperatingModeSchedule();
+
+  bool hasHeatingCoil() const;
+  boost::optional<HVACComponent> heatingCoil() const;
+  bool setHeatingCoil(const HVACComponent& heatingCoil);
+  void resetHeatingCoil();
 
   double dXHeatingCoilSizingRatio() const;
   bool isDXHeatingCoilSizingRatioDefaulted() const;
   bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);
   void resetDXHeatingCoilSizingRatio();
+
+  bool hasCoolingCoil() const;
+  boost::optional<HVACComponent> coolingCoil() const;
+  bool setCoolingCoil(const HVACComponent& coolingCoil);
+  void resetCoolingCoil();
 
   bool useDOASDXCoolingCoil() const;
   bool isUseDOASDXCoolingCoilDefaulted() const;
@@ -87,6 +121,14 @@ class EPMODEL_API AirLoopHVACUnitarySystem : public ZoneHVACComponent
   bool isLatentLoadControlDefaulted() const;
   bool setLatentLoadControl(const std::string& latentLoadControl);
   void resetLatentLoadControl();
+
+  boost::optional<HVACComponent> supplementalHeatingCoil() const;
+  bool setSupplementalHeatingCoil(const HVACComponent& supplementalHeatingCoil);
+  void resetSupplementalHeatingCoil();
+
+  boost::optional<Node> fanOutletNode() const;
+  boost::optional<Node> coolingCoilOutletNode() const;
+  boost::optional<Node> heatingCoilOutletNode() const;
 
   std::string supplyAirFlowRateMethodDuringCoolingOperation() const;
   bool setSupplyAirFlowRateMethodDuringCoolingOperation(const std::string& supplyAirFlowRateMethodDuringCoolingOperation);

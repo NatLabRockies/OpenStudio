@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ComponentCostReference.hpp"
+#include "../scaffolds/ComponentCostReference.hpp"
 
 using namespace openstudio::epmodel;
 

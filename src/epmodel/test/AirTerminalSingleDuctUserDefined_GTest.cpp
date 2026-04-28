@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/AirTerminalSingleDuctUserDefined.hpp"
+#include "../scaffolds/AirTerminalSingleDuctUserDefined.hpp"
 
 using namespace openstudio::epmodel;
 

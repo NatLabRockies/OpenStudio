@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/AirflowNetworkDistributionComponentReliefAirFlow.hpp"
+#include "../scaffolds/AirflowNetworkDistributionComponentReliefAirFlow.hpp"
 
 using namespace openstudio::epmodel;
 

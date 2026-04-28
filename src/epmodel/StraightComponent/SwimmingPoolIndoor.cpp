@@ -6,7 +6,9 @@
 #include "StraightComponent/SwimmingPoolIndoor.hpp"
 #include "StraightComponent/SwimmingPoolIndoor_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/SwimmingPool_Indoor_FieldEnums.hxx>
@@ -14,7 +16,14 @@
 namespace openstudio {
 namespace epmodel {
 
-  SwimmingPoolIndoor::SwimmingPoolIndoor(const Model& model) : StraightComponent(SwimmingPoolIndoor::iddObjectType(), model) {}
+  SwimmingPoolIndoor::SwimmingPoolIndoor(const Model& model) : StraightComponent(SwimmingPoolIndoor::iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::SwimmingPoolIndoor_Impl>());
+
+    OS_ASSERT(setAverageDepth(2.0));
+    OS_ASSERT(setPoolHeatingSystemMaximumWaterFlowRate(0.1));
+    OS_ASSERT(setPoolMiscellaneousEquipmentPower(0.0));
+    OS_ASSERT(setMaximumNumberofPeople(15.0));
+  }
 
   SwimmingPoolIndoor::SwimmingPoolIndoor(std::shared_ptr<detail::SwimmingPoolIndoor_Impl> impl) : StraightComponent(std::move(impl)) {}
 
@@ -94,7 +103,7 @@ namespace epmodel {
     getImpl<detail::SwimmingPoolIndoor_Impl>()->resetCoverLongWavelengthRadiationFactor();
   }
 
-  boost::optional<double> SwimmingPoolIndoor::poolHeatingSystemMaximumWaterFlowRate() const {
+  double SwimmingPoolIndoor::poolHeatingSystemMaximumWaterFlowRate() const {
     return getImpl<detail::SwimmingPoolIndoor_Impl>()->poolHeatingSystemMaximumWaterFlowRate();
   }
 
@@ -102,20 +111,12 @@ namespace epmodel {
     return getImpl<detail::SwimmingPoolIndoor_Impl>()->setPoolHeatingSystemMaximumWaterFlowRate(poolHeatingSystemMaximumWaterFlowRate);
   }
 
-  void SwimmingPoolIndoor::resetPoolHeatingSystemMaximumWaterFlowRate() {
-    getImpl<detail::SwimmingPoolIndoor_Impl>()->resetPoolHeatingSystemMaximumWaterFlowRate();
-  }
-
-  boost::optional<double> SwimmingPoolIndoor::poolMiscellaneousEquipmentPower() const {
+  double SwimmingPoolIndoor::poolMiscellaneousEquipmentPower() const {
     return getImpl<detail::SwimmingPoolIndoor_Impl>()->poolMiscellaneousEquipmentPower();
   }
 
   bool SwimmingPoolIndoor::setPoolMiscellaneousEquipmentPower(double poolMiscellaneousEquipmentPower) {
     return getImpl<detail::SwimmingPoolIndoor_Impl>()->setPoolMiscellaneousEquipmentPower(poolMiscellaneousEquipmentPower);
-  }
-
-  void SwimmingPoolIndoor::resetPoolMiscellaneousEquipmentPower() {
-    getImpl<detail::SwimmingPoolIndoor_Impl>()->resetPoolMiscellaneousEquipmentPower();
   }
 
   double SwimmingPoolIndoor::maximumNumberofPeople() const {
@@ -126,12 +127,29 @@ namespace epmodel {
     return getImpl<detail::SwimmingPoolIndoor_Impl>()->setMaximumNumberofPeople(maximumNumberofPeople);
   }
 
+  boost::optional<Node> SwimmingPoolIndoor::poolWaterInletNode() const {
+    return getImpl<detail::SwimmingPoolIndoor_Impl>()->poolWaterInletNode();
+  }
+
+  boost::optional<Node> SwimmingPoolIndoor::poolWaterOutletNode() const {
+    return getImpl<detail::SwimmingPoolIndoor_Impl>()->poolWaterOutletNode();
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    bool SwimmingPoolIndoor_Impl::addToNode(Node& node) {
+      if (auto plantLoop = node.plantLoop()) {
+        if (plantLoop->demandComponent(node.handle())) {
+          return StraightComponent_Impl::addToNode(node);
+        }
+      }
+      return false;
+    }
 
     unsigned SwimmingPoolIndoor_Impl::inletPort() const {
       return openstudio::SwimmingPool_IndoorFields::PoolWaterInletNode;
@@ -225,28 +243,24 @@ namespace epmodel {
       OS_ASSERT(setString(openstudio::SwimmingPool_IndoorFields::CoverLongWavelengthRadiationFactor, ""));
     }
 
-    boost::optional<double> SwimmingPoolIndoor_Impl::poolHeatingSystemMaximumWaterFlowRate() const {
-      return getDouble(openstudio::SwimmingPool_IndoorFields::PoolHeatingSystemMaximumWaterFlowRate, true);
+    double SwimmingPoolIndoor_Impl::poolHeatingSystemMaximumWaterFlowRate() const {
+      const auto value = getDouble(openstudio::SwimmingPool_IndoorFields::PoolHeatingSystemMaximumWaterFlowRate, true);
+      OS_ASSERT(value);
+      return *value;
     }
 
     bool SwimmingPoolIndoor_Impl::setPoolHeatingSystemMaximumWaterFlowRate(double poolHeatingSystemMaximumWaterFlowRate) {
       return setDouble(openstudio::SwimmingPool_IndoorFields::PoolHeatingSystemMaximumWaterFlowRate, poolHeatingSystemMaximumWaterFlowRate);
     }
 
-    void SwimmingPoolIndoor_Impl::resetPoolHeatingSystemMaximumWaterFlowRate() {
-      OS_ASSERT(setString(openstudio::SwimmingPool_IndoorFields::PoolHeatingSystemMaximumWaterFlowRate, ""));
-    }
-
-    boost::optional<double> SwimmingPoolIndoor_Impl::poolMiscellaneousEquipmentPower() const {
-      return getDouble(openstudio::SwimmingPool_IndoorFields::PoolMiscellaneousEquipmentPower, true);
+    double SwimmingPoolIndoor_Impl::poolMiscellaneousEquipmentPower() const {
+      const auto value = getDouble(openstudio::SwimmingPool_IndoorFields::PoolMiscellaneousEquipmentPower, true);
+      OS_ASSERT(value);
+      return *value;
     }
 
     bool SwimmingPoolIndoor_Impl::setPoolMiscellaneousEquipmentPower(double poolMiscellaneousEquipmentPower) {
       return setDouble(openstudio::SwimmingPool_IndoorFields::PoolMiscellaneousEquipmentPower, poolMiscellaneousEquipmentPower);
-    }
-
-    void SwimmingPoolIndoor_Impl::resetPoolMiscellaneousEquipmentPower() {
-      OS_ASSERT(setString(openstudio::SwimmingPool_IndoorFields::PoolMiscellaneousEquipmentPower, ""));
     }
 
     double SwimmingPoolIndoor_Impl::maximumNumberofPeople() const {
@@ -257,6 +271,14 @@ namespace epmodel {
 
     bool SwimmingPoolIndoor_Impl::setMaximumNumberofPeople(double maximumNumberofPeople) {
       return setDouble(openstudio::SwimmingPool_IndoorFields::MaximumNumberofPeople, maximumNumberofPeople);
+    }
+
+    boost::optional<Node> SwimmingPoolIndoor_Impl::poolWaterInletNode() const {
+      return resolvedNodeTarget(inletPort());
+    }
+
+    boost::optional<Node> SwimmingPoolIndoor_Impl::poolWaterOutletNode() const {
+      return resolvedNodeTarget(outletPort());
     }
 
   }  // namespace detail

@@ -7,8 +7,8 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../ModelObject/WallInterzone.hpp"
-#include "../ModelObject/WallInterzone_Impl.hpp"
+#include "../scaffolds/WallInterzone.hpp"
+#include "../scaffolds/WallInterzone_Impl.hpp"
 
 using namespace openstudio::epmodel;
 

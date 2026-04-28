@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SpaceHVACZoneEquipmentSplitter.hpp"
+#include "../scaffolds/SpaceHVACZoneEquipmentSplitter.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -16,9 +16,12 @@
 namespace openstudio {
 namespace epmodel {
 
+  class AirLoopHVAC;
   class HVACComponent;
+  class Node;
   class ZoneHVACEquipmentConnections;
   class ZoneHVACEquipmentList;
+  class ZoneHVACIdealLoadsAirSystem;
   class SizingZone;
   class Space;
   class DesignSpecificationOutdoorAir;
@@ -43,6 +46,9 @@ namespace epmodel {
       openstudio::epmodel::ZoneHVACEquipmentConnections getZoneHVACEquipmentConnections();
 
       boost::optional<openstudio::epmodel::ZoneHVACEquipmentList> zoneHVACEquipmentList() const;
+      openstudio::epmodel::ZoneHVACEquipmentList getZoneHVACEquipmentList();
+
+      bool addToNode(openstudio::epmodel::Node& node);
 
       boost::optional<openstudio::epmodel::SizingZone> optionalSizingZone() const;
       openstudio::epmodel::SizingZone sizingZone();
@@ -77,11 +83,9 @@ namespace epmodel {
       bool setZoneOutsideConvectionAlgorithm(const std::string& zoneOutsideConvectionAlgorithm);
       void resetZoneOutsideConvectionAlgorithm();
 
+      std::vector<openstudio::epmodel::ZoneHVACIdealLoadsAirSystem> idealAirLoadsObjects() const;
       bool useIdealAirLoads() const;
       bool setUseIdealAirLoads(bool useIdealAirLoads);
-
-      std::string zoneConditioningEquipmentListName() const;
-      bool setZoneConditioningEquipmentListName(const std::string& zoneConditioningEquipmentListName);
 
       boost::optional<openstudio::epmodel::Thermostat> thermostat() const;
       bool setThermostat(const openstudio::epmodel::Thermostat& thermostat);
@@ -103,7 +107,10 @@ namespace epmodel {
       std::vector<openstudio::epmodel::ModelObject> returnAirModelObjects() const;
       openstudio::epmodel::Node zoneAirNode() const;
 
+      bool addEquipment(const openstudio::epmodel::ModelObject& equipment);
+      bool removeEquipment(const openstudio::epmodel::ModelObject& equipment);
       std::vector<openstudio::epmodel::ModelObject> equipment() const;
+      boost::optional<openstudio::epmodel::AirLoopHVAC> airLoopHVAC() const;
       boost::optional<openstudio::epmodel::HVACComponent> airLoopHVACTerminal() const;
       std::vector<openstudio::epmodel::HVACComponent> airLoopHVACTerminals() const;
 

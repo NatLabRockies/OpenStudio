@@ -52,9 +52,13 @@ class EPMODEL_API WaterToWaterComponent_Impl : public HVACComponent_Impl
   virtual bool removeFromTertiaryPlantLoop();
   virtual bool addToTertiaryNode(Node& node);
 
- private:
+ protected:
+  bool shouldRouteDemandSideNodeToTertiary(const Node& node) const;
+  bool addToDemandSideTertiaryNode(Node& node);
   bool insertOnBranch(Node& node, const Branch& branch, unsigned inletPort, unsigned outletPort);
   bool removeFromBranch(unsigned inletPort, unsigned outletPort, const boost::optional<PlantLoop>& plantLoop_);
+
+ private:
 };
 
 }  // namespace detail

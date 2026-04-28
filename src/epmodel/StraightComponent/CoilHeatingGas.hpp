@@ -16,6 +16,8 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Schedule;
+  class Curve;
 
   namespace detail {
     class CoilHeatingGas_Impl;
@@ -37,13 +39,22 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical gas-coil scalar surface is largely present, while schedule, curve, and node-link helpers remain out of scope.
+    // - Status: Partial Parity. The canonical gas-coil scalar surface plus the required availability-schedule and optional part-load-fraction-curve
+    //   relationships are present, while broader AFN helpers remain out of scope.
     // - Canonical Counterpart: openstudio::model::CoilHeatingGas.
-    // - Implemented Parity: `fuelType`, burner efficiency, parasitic loads, and nominal-capacity helpers preserve the canonical naming and autosize behavior.
-    // - Documented Delta: Availability schedule, curves, temperature-setpoint node, and other relationship helpers from canonical `openstudio::model::CoilHeatingGas` are not exposed yet.
-    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Heating:Fuel` fields.
+    // - Implemented Parity: `fuelType`, burner efficiency, parasitic loads, and nominal-capacity helpers preserve the canonical naming and autosize
+    //   behavior; `availabilitySchedule`, the optional `partLoadFractionCorrelationCurve`, and child traversal preserve the bounded relationship slice.
+    // - Documented Delta: Other curve, node-link, and AFN helpers from canonical `openstudio::model::CoilHeatingGas` are not exposed yet.
+    // - Field/Storage Mapping: Preserved scalars and relationships map directly to EnergyPlus `Coil:Heating:Fuel` fields.
     // - Evidence: `src/model/CoilHeatingGas.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingGas.cpp`, and `src/epmodel/test/CoilHeatingGas_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted schedule, curve, and relationship helpers without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Add the remaining relationship and AFN helpers without changing the preserved scalar signatures.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    boost::optional<Curve> partLoadFractionCorrelationCurve() const;
+    bool setPartLoadFractionCorrelationCurve(const Curve& curve);
+    void resetPartLoadFractionCorrelationCurve();
+
     static std::vector<std::string> validFuelTypeValues();
 
     std::string fuelType() const;

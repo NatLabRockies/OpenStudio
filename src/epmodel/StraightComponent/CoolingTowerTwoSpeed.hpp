@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Schedule;
 
 namespace detail {
 class CoolingTowerTwoSpeed_Impl;
@@ -40,13 +41,13 @@ class EPMODEL_API CoolingTowerTwoSpeed : public StraightComponent
   static std::vector<std::string> cellControlValues();
 
   // Schema Alignment Notes:
-  // - Status: Scalar Parity. The canonical two-speed cooling-tower scalar surface is present, while node, schedule, and object-link helpers remain out of scope.
+  // - Status: Parity with documented deltas. The canonical two-speed cooling-tower scalar surface, plant-supply insertion rule, and schedule relationships are present, while the storage-tank object link remains out of scope.
   // - Canonical Counterpart: openstudio::model::CoolingTowerTwoSpeed.
-  // - Implemented Parity: The preserved scalar API covers the tower performance, fan-power, flow, blowdown, cell-control, and basin-heater fields with matching default/autosize behavior.
-  // - Documented Delta: Node-link, schedule, and object-link helpers remain intentionally excluded from this scalar pass.
+  // - Implemented Parity: The preserved API covers the canonical tower performance, fan-power, flow, blowdown, cell-control, basin-heater, thermal-design, and end-use fields with matching default/autosize behavior, and the basin/blowdown schedule relationships plus plant supply `addToNode(...)` path match the current canonical slice.
+  // - Documented Delta: The supply-water-storage-tank object link remains intentionally excluded from this pass.
   // - Field/Storage Mapping: These accessors map directly to EnergyPlus `CoolingTower:TwoSpeed` scalar fields used by the forward translator.
   // - Evidence: `src/model/CoolingTowerTwoSpeed.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateCoolingTowerTwoSpeed.cpp`.
-  // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
+  // - Remaining Parity Work: None within the current canonical public surface; the non-public storage-tank linkage remains intentionally excluded.
   boost::optional<double> designWaterFlowRate() const;
   bool isDesignWaterFlowRateAutosized() const;
   bool setDesignWaterFlowRate(double designWaterFlowRate);
@@ -169,6 +170,9 @@ class EPMODEL_API CoolingTowerTwoSpeed : public StraightComponent
   bool isBasinHeaterSetpointTemperatureDefaulted() const;
   bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
   void resetBasinHeaterSetpointTemperature();
+  boost::optional<Schedule> basinHeaterOperatingSchedule() const;
+  bool setBasinHeaterOperatingSchedule(Schedule& basinHeaterOperatingSchedule);
+  void resetBasinHeaterOperatingSchedule();
 
   std::string evaporationLossMode() const;
   bool isEvaporationLossModeDefaulted() const;
@@ -194,6 +198,9 @@ class EPMODEL_API CoolingTowerTwoSpeed : public StraightComponent
   bool isBlowdownConcentrationRatioDefaulted() const;
   bool setBlowdownConcentrationRatio(double blowdownConcentrationRatio);
   void resetBlowdownConcentrationRatio();
+  boost::optional<Schedule> blowdownMakeupWaterUsageSchedule() const;
+  bool setBlowdownMakeupWaterUsageSchedule(Schedule& blowdownMakeupWaterUsageSchedule);
+  void resetBlowdownMakeupWaterUsageSchedule();
 
   int numberofCells() const;
   bool isNumberofCellsDefaulted() const;

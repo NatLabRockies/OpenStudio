@@ -7,6 +7,8 @@
 #include "StraightComponent/AirConditionerVariableRefrigerantFlow_Impl.hpp"
 
 #include "Model.hpp"
+#include "Loop/PlantLoop.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -37,6 +39,10 @@ std::vector<std::string> AirConditionerVariableRefrigerantFlow::defrostStrategyV
 
 std::vector<std::string> AirConditionerVariableRefrigerantFlow::condenserTypeValues() {
   return {"AirCooled", "EvaporativelyCooled", "WaterCooled"};
+}
+
+bool AirConditionerVariableRefrigerantFlow::addToNode(Node& node) {
+  return getImpl<detail::AirConditionerVariableRefrigerantFlow_Impl>()->addToNode(node);
 }
 
 boost::optional<double> AirConditionerVariableRefrigerantFlow::grossRatedTotalCoolingCapacity() const {
@@ -248,10 +254,12 @@ bool AirConditionerVariableRefrigerantFlow_Impl::setDefrostStrategy(const std::s
 }
 
 std::string AirConditionerVariableRefrigerantFlow_Impl::condenserType() const {
-  if (auto value = getString(openstudio::AirConditioner_VariableRefrigerantFlowFields::CondenserType, false)) {
-    return *value;
+  if (!isCondenserTypeDefaulted()) {
+    if (auto value = getString(openstudio::AirConditioner_VariableRefrigerantFlowFields::CondenserType, false)) {
+      return *value;
+    }
   }
-  return "";
+  return plantLoop() ? "WaterCooled" : "AirCooled";
 }
 
 bool AirConditionerVariableRefrigerantFlow_Impl::setCondenserType(const std::string& condenserType) {
@@ -259,11 +267,20 @@ bool AirConditionerVariableRefrigerantFlow_Impl::setCondenserType(const std::str
 }
 
 bool AirConditionerVariableRefrigerantFlow_Impl::isCondenserTypeDefaulted() const {
-  return !getString(openstudio::AirConditioner_VariableRefrigerantFlowFields::CondenserType, false);
+  return isEmpty(openstudio::AirConditioner_VariableRefrigerantFlowFields::CondenserType);
 }
 
 void AirConditionerVariableRefrigerantFlow_Impl::resetCondenserType() {
   OS_ASSERT(setString(openstudio::AirConditioner_VariableRefrigerantFlowFields::CondenserType, ""));
+}
+
+bool AirConditionerVariableRefrigerantFlow_Impl::addToNode(Node& node) {
+  auto plantLoop_ = node.plantLoop();
+  if (!plantLoop_ || !plantLoop_->demandComponent(node.handle())) {
+    return false;
+  }
+
+  return StraightComponent_Impl::addToNode(node);
 }
 
 std::vector<std::string> AirConditionerVariableRefrigerantFlow_Impl::heatingPerformanceCurveOutdoorTemperatureTypeValues() const {

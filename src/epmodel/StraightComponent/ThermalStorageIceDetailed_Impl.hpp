@@ -10,9 +10,13 @@
 
 #include <boost/optional.hpp>
 #include <string>
+#include <vector>
 
 namespace openstudio {
 namespace epmodel {
+  class Node;
+  class Schedule;
+  class Curve;
   namespace detail {
 
     class EPMODEL_API ThermalStorageIceDetailed_Impl : public StraightComponent_Impl
@@ -24,6 +28,19 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      std::vector<ModelObject> children() const override;
+
+      bool addToNode(Node& node) override;
+
+      boost::optional<Schedule> availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+      void resetAvailabilitySchedule();
+
+      Curve dischargingCurve() const;
+      bool setDischargingCurve(const Curve& dischargingCurve);
+
+      Curve chargingCurve() const;
+      bool setChargingCurve(const Curve& chargingCurve);
 
       double capacity() const;
       bool setCapacity(double capacity);
@@ -61,6 +78,10 @@ namespace epmodel {
       bool setThawProcessIndicator(const std::string& thawProcessIndicator);
       bool isThawProcessIndicatorDefaulted() const;
       void resetThawProcessIndicator();
+
+     private:
+      boost::optional<Curve> optionalDischargingCurve() const;
+      boost::optional<Curve> optionalChargingCurve() const;
     };
 
   }  // namespace detail

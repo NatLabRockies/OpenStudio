@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/MaterialPropertyVariableThermalConductivity.hpp"
+#include "../scaffolds/MaterialPropertyVariableThermalConductivity.hpp"
 #include "../OpaqueMaterial/MasslessOpaqueMaterial.hpp"
 #include <utilities/idd/MaterialProperty_VariableThermalConductivity_FieldEnums.hxx>
 

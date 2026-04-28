@@ -14,8 +14,11 @@ namespace openstudio {
 namespace epmodel {
 
 class Node;
+class HVACComponent;
+class Schedule;
 
 namespace detail {
+struct LoadContext;
 
 class EPMODEL_API AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl : public StraightComponent_Impl
 {
@@ -26,6 +29,12 @@ class EPMODEL_API AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl : public St
   virtual ~AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl() override = default;
 
   bool addToNode(Node& node) override;
+  void doCanonicalize(LoadContext& context) override;
+  std::vector<ModelObject> children() const override;
+
+  boost::optional<Schedule> availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+  void resetAvailabilitySchedule();
 
   boost::optional<double> systemAirFlowRateDuringCoolingOperation() const;
   bool isSystemAirFlowRateDuringCoolingOperationAutosized() const;
@@ -57,8 +66,29 @@ class EPMODEL_API AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl : public St
   bool setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(double outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded);
   void autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
 
+  boost::optional<Schedule> outdoorAirFlowRateMultiplierSchedule() const;
+  bool setOutdoorAirFlowRateMultiplierSchedule(Schedule& outdoorAirFlowRateMultiplierSchedule);
+  void resetOutdoorAirFlowRateMultiplierSchedule();
+
+  HVACComponent supplyAirFan() const;
+  bool setSupplyAirFan(const HVACComponent& fansCVandOnOff);
+
   std::string supplyAirFanPlacement() const;
   bool setSupplyAirFanPlacement(const std::string& supplyAirFanPlacement);
+
+  boost::optional<Schedule> supplyAirFanOperatingModeSchedule() const;
+  bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+  void resetSupplyAirFanOperatingModeSchedule();
+
+  HVACComponent coolingCoil() const;
+  bool setCoolingCoil(const HVACComponent& coolingCoilName);
+
+  HVACComponent heatingCoil() const;
+  bool setHeatingCoil(const HVACComponent& heatingCoilName);
+
+  boost::optional<Node> fanOutletNode() const;
+  boost::optional<Node> coolingCoilOutletNode() const;
+  boost::optional<Node> heatingCoilOutletNode() const;
 
   std::string priorityControlMode() const;
   bool setPriorityControlMode(const std::string& priorityControlMode);
@@ -78,6 +108,11 @@ class EPMODEL_API AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl : public St
   std::vector<std::string> supplyAirFanPlacementValues() const;
   std::vector<std::string> priorityControlModeValues() const;
   std::vector<std::string> dehumidificationControlTypeValues() const;
+
+ private:
+  bool maintainContainedAirPath();
+  bool repairContainedAirPath(LoadContext& context);
+  bool reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context = nullptr);
 };
 
 }  // namespace detail

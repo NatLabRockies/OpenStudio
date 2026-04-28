@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/HVACTemplatePlantChiller.hpp"
+#include "../scaffolds/HVACTemplatePlantChiller.hpp"
 
 using namespace openstudio::epmodel;
 

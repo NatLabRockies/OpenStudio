@@ -16,6 +16,8 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
+  class Curve;
 
   namespace detail {
     class HeatPumpAirToWater_Impl;
@@ -40,13 +42,13 @@ namespace epmodel {
     static std::vector<std::string> controlTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical air-to-water heat-pump scalar surface is present, while schedule, curve, node, and speed-data helpers remain out of scope.
+    // - Status: Partial Parity. The canonical scalar surface plus direct schedule, curve, and air-node helpers are present, while plant-side operation-mode helpers remain out of scope.
     // - Canonical Counterpart: openstudio::model::HeatPumpAirToWater.
-    // - Implemented Parity: The preserved scalar API matches the operating-mode, defrost, control, part-load, crankcase-heater, and multiplier accessors with matching default behavior.
-    // - Documented Delta: Schedule, curve, node, and speed-data helpers remain intentionally excluded from this scalar pass.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `HeatPump:AirToWater` scalar fields used by the forward translator.
+    // - Implemented Parity: The wrapper now matches the canonical operating-mode, defrost, control, part-load, crankcase-heater, multiplier, operating-mode schedule, air-node-name, and direct curve relationship helpers with matching constructor defaults.
+    // - Documented Delta: Heating/cooling operation-mode child wrappers and loop lookup helpers remain intentionally omitted because epmodel does not yet expose those canonical child types for `HeatPump:AirToWater`.
+    // - Field/Storage Mapping: These APIs map directly to persisted `HeatPump:AirToWater` fields used by the forward translator, including the wrapper-level schedule, air-node, and curve references.
     // - Evidence: `src/model/HeatPumpAirToWater.hpp`, `src/model/HeatPumpAirToWater.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateHeatPumpAirToWater.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Add the omitted heating/cooling operation-mode and loop lookup helpers without changing the preserved relationship signatures.
     std::string operatingModeControlMethod() const;
     bool setOperatingModeControlMethod(const std::string& operatingModeControlMethod);
     bool isOperatingModeControlMethodDefaulted() const;
@@ -57,10 +59,22 @@ namespace epmodel {
     bool isOperatingModeControlOptionforMultipleUnitDefaulted() const;
     void resetOperatingModeControlOptionforMultipleUnit();
 
+    boost::optional<Schedule> operatingModeControlSchedule() const;
+    bool setOperatingModeControlSchedule(Schedule& operatingModeControlSchedule);
+    void resetOperatingModeControlSchedule();
+
     double minimumPartLoadRatio() const;
     bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
     bool isMinimumPartLoadRatioDefaulted() const;
     void resetMinimumPartLoadRatio();
+
+    boost::optional<std::string> airInletNodeName() const;
+    bool setAirInletNodeName(const std::string& airInletNodeName);
+    void resetAirInletNodeName();
+
+    boost::optional<std::string> airOutletNodeName() const;
+    bool setAirOutletNodeName(const std::string& airOutletNodeName);
+    void resetAirOutletNodeName();
 
     double maximumOutdoorDryBulbTemperatureForDefrostOperation() const;
     bool setMaximumOutdoorDryBulbTemperatureForDefrostOperation(double maximumOutdoorDryBulbTemperatureForDefrostOperation);
@@ -82,6 +96,10 @@ namespace epmodel {
     bool isResistiveDefrostHeaterCapacityDefaulted() const;
     void resetResistiveDefrostHeaterCapacity();
 
+    boost::optional<Curve> defrostEnergyInputRatioFunctionofTemperatureCurve() const;
+    bool setDefrostEnergyInputRatioFunctionofTemperatureCurve(const Curve& defrostEnergyInputRatioFunctionofTemperatureCurve);
+    void resetDefrostEnergyInputRatioFunctionofTemperatureCurve();
+
     int heatPumpMultiplier() const;
     bool setHeatPumpMultiplier(int heatPumpMultiplier);
     bool isHeatPumpMultiplierDefaulted() const;
@@ -96,6 +114,10 @@ namespace epmodel {
     bool setCrankcaseHeaterCapacity(double crankcaseHeaterCapacity);
     bool isCrankcaseHeaterCapacityDefaulted() const;
     void resetCrankcaseHeaterCapacity();
+
+    boost::optional<Curve> crankcaseHeaterCapacityFunctionofTemperatureCurve() const;
+    bool setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& crankcaseHeaterCapacityFunctionofTemperatureCurve);
+    void resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
 
     double maximumAmbientTemperatureforCrankcaseHeaterOperation() const;
     bool setMaximumAmbientTemperatureforCrankcaseHeaterOperation(double maximumAmbientTemperatureforCrankcaseHeaterOperation);

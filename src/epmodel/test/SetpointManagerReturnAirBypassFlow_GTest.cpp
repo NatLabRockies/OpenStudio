@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SetpointManagerReturnAirBypassFlow.hpp"
+#include "../scaffolds/SetpointManagerReturnAirBypassFlow.hpp"
 
 using namespace openstudio::epmodel;
 

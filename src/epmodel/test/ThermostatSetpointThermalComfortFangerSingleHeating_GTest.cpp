@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ThermostatSetpointThermalComfortFangerSingleHeating.hpp"
+#include "../scaffolds/ThermostatSetpointThermalComfortFangerSingleHeating.hpp"
 
 using namespace openstudio::epmodel;
 

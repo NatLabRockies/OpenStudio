@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/EvaporativeCoolerIndirectWetCoil.hpp"
+#include "../scaffolds/EvaporativeCoolerIndirectWetCoil.hpp"
 
 using namespace openstudio::epmodel;
 

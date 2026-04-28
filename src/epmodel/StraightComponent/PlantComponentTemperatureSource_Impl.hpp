@@ -13,6 +13,9 @@
 
 namespace openstudio {
 namespace epmodel {
+
+  class Schedule;
+
   namespace detail {
 
     class EPMODEL_API PlantComponentTemperatureSource_Impl : public StraightComponent_Impl
@@ -37,6 +40,10 @@ namespace epmodel {
       boost::optional<double> sourceTemperature() const;
       bool setSourceTemperature(double sourceTemperature);
       void resetSourceTemperature();
+
+      boost::optional<Schedule> sourceTemperatureSchedule() const;
+      bool setSourceTemperatureSchedule(Schedule& schedule);
+      void resetSourceTemperatureSchedule();
     };
 
   }  // namespace detail

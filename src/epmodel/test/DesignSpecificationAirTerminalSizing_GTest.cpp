@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/DesignSpecificationAirTerminalSizing.hpp"
+#include "../scaffolds/DesignSpecificationAirTerminalSizing.hpp"
 
 using namespace openstudio::epmodel;
 

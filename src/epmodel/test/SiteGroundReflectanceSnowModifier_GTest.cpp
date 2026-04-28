@@ -7,7 +7,7 @@
 
 #include <array>
 
-#include "../ModelObject/SiteGroundReflectanceSnowModifier.hpp"
+#include "../scaffolds/SiteGroundReflectanceSnowModifier.hpp"
 #include "EPModelFixture.hpp"
 
 using namespace openstudio::epmodel;

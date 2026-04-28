@@ -7,6 +7,8 @@
 
 #include "EPModelFixture.hpp"
 #include "../StraightComponent/AirConditionerVariableRefrigerantFlow.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -15,6 +17,8 @@ TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_DefaultConstructor)
   AirConditionerVariableRefrigerantFlow vrf(model);
   EXPECT_EQ(AirConditionerVariableRefrigerantFlow::iddObjectType(), vrf.iddObject().type());
   EXPECT_FALSE(vrf.nameString().empty());
+  EXPECT_TRUE(vrf.isCondenserTypeDefaulted());
+  EXPECT_EQ("AirCooled", vrf.condenserType());
 }
 
 TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_ScalarAccessors_RoundTrip) {
@@ -67,5 +71,40 @@ TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_ScalarAccessors_Rou
   EXPECT_FALSE(vrf.isCondenserTypeDefaulted());
   EXPECT_EQ(condenserValues.front(), vrf.condenserType());
   vrf.resetCondenserType();
-  EXPECT_TRUE(vrf.condenserType().empty());
+  EXPECT_TRUE(vrf.isCondenserTypeDefaulted());
+  EXPECT_EQ("AirCooled", vrf.condenserType());
+}
+
+TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_AddToNode_DemandSideDefaultedCondenserType) {
+  Model model;
+  PlantLoop plantLoop(model);
+  AirConditionerVariableRefrigerantFlow vrf(model);
+
+  Node supplyOutletNode = plantLoop.supplyOutletNode();
+  EXPECT_FALSE(vrf.addToNode(supplyOutletNode));
+  EXPECT_FALSE(vrf.plantLoop());
+  EXPECT_TRUE(vrf.isCondenserTypeDefaulted());
+  EXPECT_EQ("AirCooled", vrf.condenserType());
+
+  Node demandOutletNode = plantLoop.demandOutletNode();
+  EXPECT_TRUE(vrf.addToNode(demandOutletNode));
+  EXPECT_TRUE(vrf.plantLoop());
+  EXPECT_TRUE(vrf.isCondenserTypeDefaulted());
+  EXPECT_EQ("WaterCooled", vrf.condenserType());
+  EXPECT_EQ(7u, plantLoop.demandComponents().size());
+  EXPECT_EQ(1u, plantLoop.demandComponents(AirConditionerVariableRefrigerantFlow::iddObjectType()).size());
+
+  ASSERT_TRUE(vrf.inletModelObject());
+  ASSERT_TRUE(vrf.outletModelObject());
+  EXPECT_NE(vrf.inletModelObject()->handle(), vrf.outletModelObject()->handle());
+  EXPECT_EQ(demandOutletNode.handle(), vrf.outletModelObject()->handle());
+  EXPECT_EQ(1u, plantLoop.demandComponents(vrf.inletModelObject()->cast<Node>(), vrf.outletModelObject()->cast<Node>(),
+                                           AirConditionerVariableRefrigerantFlow::iddObjectType())
+                  .size());
+
+  EXPECT_TRUE(vrf.removeFromLoop());
+  EXPECT_FALSE(vrf.plantLoop());
+  EXPECT_TRUE(vrf.isCondenserTypeDefaulted());
+  EXPECT_EQ("AirCooled", vrf.condenserType());
+  EXPECT_EQ(5u, plantLoop.demandComponents().size());
 }

@@ -6,22 +6,27 @@
 #include "Mixer/AirTerminalDualDuctConstantVolume.hpp"
 #include "Mixer/AirTerminalDualDuctConstantVolume_Impl.hpp"
 
+#include "Loop/AirLoopHVAC_Impl.hpp"
+#include "HVACComponent/HVACComponent.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/AirTerminal_DualDuct_ConstantVolume_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 
+#include <limits>
+
 namespace openstudio {
 namespace epmodel {
 
 AirTerminalDualDuctConstantVolume::AirTerminalDualDuctConstantVolume(const Model& model)
-  : ModelObject(AirTerminalDualDuctConstantVolume::iddObjectType(), model) {}
+  : Mixer(AirTerminalDualDuctConstantVolume::iddObjectType(), model) {}
 
 AirTerminalDualDuctConstantVolume::AirTerminalDualDuctConstantVolume(
   std::shared_ptr<detail::AirTerminalDualDuctConstantVolume_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : Mixer(std::move(impl)) {}
 
 IddObjectType AirTerminalDualDuctConstantVolume::iddObjectType() {
   return IddObjectType::AirTerminal_DualDuct_ConstantVolume;
@@ -43,12 +48,63 @@ void AirTerminalDualDuctConstantVolume::autosizeMaximumAirFlowRate() {
   getImpl<detail::AirTerminalDualDuctConstantVolume_Impl>()->autosizeMaximumAirFlowRate();
 }
 
+boost::optional<Node> AirTerminalDualDuctConstantVolume::hotAirInletNode() const {
+  return getImpl<detail::AirTerminalDualDuctConstantVolume_Impl>()->hotAirInletNode();
+}
+
+boost::optional<Node> AirTerminalDualDuctConstantVolume::coldAirInletNode() const {
+  return getImpl<detail::AirTerminalDualDuctConstantVolume_Impl>()->coldAirInletNode();
+}
+
+bool AirTerminalDualDuctConstantVolume::addToNode(Node& node) {
+  return getImpl<detail::AirTerminalDualDuctConstantVolume_Impl>()->addToNode(node);
+}
+
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+unsigned AirTerminalDualDuctConstantVolume_Impl::outletPort() const {
+  return openstudio::AirTerminal_DualDuct_ConstantVolumeFields::AirOutletNodeName;
+}
+
+unsigned AirTerminalDualDuctConstantVolume_Impl::inletPort(unsigned branchIndex) const {
+  if (branchIndex == 0u) {
+    return openstudio::AirTerminal_DualDuct_ConstantVolumeFields::HotAirInletNodeName;
+  }
+  if (branchIndex == 1u) {
+    return openstudio::AirTerminal_DualDuct_ConstantVolumeFields::ColdAirInletNodeName;
+  }
+  return std::numeric_limits<unsigned>::max();
+}
+
+bool AirTerminalDualDuctConstantVolume_Impl::addToNode(openstudio::epmodel::Node& node) {
+  auto terminal = getObject<AirTerminalDualDuctConstantVolume>().cast<Mixer>();
+  return AirLoopHVAC_Impl::addDualDuctTerminalToNode(terminal, node);
+}
+
+std::vector<openstudio::IdfObject> AirTerminalDualDuctConstantVolume_Impl::remove() {
+  auto terminal = getObject<AirTerminalDualDuctConstantVolume>().cast<Mixer>();
+  AirLoopHVAC_Impl::removeDualDuctTerminalFromAirLoopHVAC(terminal);
+  return Mixer_Impl::remove();
+}
+
+boost::optional<openstudio::epmodel::Node> AirTerminalDualDuctConstantVolume_Impl::hotAirInletNode() const {
+  if (auto object = inletModelObject(0u)) {
+    return object->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<openstudio::epmodel::Node> AirTerminalDualDuctConstantVolume_Impl::coldAirInletNode() const {
+  if (auto object = inletModelObject(1u)) {
+    return object->optionalCast<Node>();
+  }
+  return boost::none;
+}
 
 boost::optional<double> AirTerminalDualDuctConstantVolume_Impl::maximumAirFlowRate() const {
   return getDouble(openstudio::AirTerminal_DualDuct_ConstantVolumeFields::MaximumAirFlowRate, true);

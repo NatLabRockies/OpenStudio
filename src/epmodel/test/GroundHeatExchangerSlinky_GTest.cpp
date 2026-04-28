@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/GroundHeatExchangerSlinky.hpp"
+#include "../scaffolds/GroundHeatExchangerSlinky.hpp"
 
 using namespace openstudio::epmodel;
 

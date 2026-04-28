@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/RoomAirSettingsThreeNodeDisplacementVentilation.hpp"
+#include "../scaffolds/RoomAirSettingsThreeNodeDisplacementVentilation.hpp"
 
 using namespace openstudio::epmodel;
 

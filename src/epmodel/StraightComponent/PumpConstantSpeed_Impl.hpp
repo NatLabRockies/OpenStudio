@@ -13,6 +13,7 @@
 
 namespace openstudio {
 namespace epmodel {
+  class Node;
   namespace detail {
 
     class EPMODEL_API PumpConstantSpeed_Impl : public StraightComponent_Impl
@@ -23,6 +24,7 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
 
       boost::optional<double> ratedFlowRate() const;
       bool isRatedFlowRateAutosized() const;

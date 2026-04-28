@@ -10,6 +10,8 @@
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -24,6 +26,9 @@ namespace epmodel {
 CoilCoolingDXSingleSpeedThermalStorage::CoilCoolingDXSingleSpeedThermalStorage(const Model& model)
   : StraightComponent(CoilCoolingDXSingleSpeedThermalStorage::iddObjectType(), model) {
   bool ok = true;
+  auto availability = model.alwaysOnDiscreteSchedule();
+  ok = setAvailabilitySchedule(availability);
+  OS_ASSERT(ok);
 
   ok = setOperatingModeControlMethod("ScheduledModes");
   OS_ASSERT(ok);
@@ -140,6 +145,14 @@ std::vector<std::string> CoilCoolingDXSingleSpeedThermalStorage::condenserTypeVa
                         openstudio::Coil_Cooling_DX_SingleSpeed_ThermalStorageFields::CondenserType);
 }
 
+Schedule CoilCoolingDXSingleSpeedThermalStorage::availabilitySchedule() const {
+  return getImpl<detail::CoilCoolingDXSingleSpeedThermalStorage_Impl>()->availabilitySchedule();
+}
+
+bool CoilCoolingDXSingleSpeedThermalStorage::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::CoilCoolingDXSingleSpeedThermalStorage_Impl>()->setAvailabilitySchedule(schedule);
+}
+
 #define EPMODEL_IMPL_FORWARD_0(ret, name) \
   ret CoilCoolingDXSingleSpeedThermalStorage::name() const { return getImpl<detail::CoilCoolingDXSingleSpeedThermalStorage_Impl>()->name(); }
 #define EPMODEL_IMPL_FORWARD_1(ret, name, t1, a1) \
@@ -149,6 +162,9 @@ std::vector<std::string> CoilCoolingDXSingleSpeedThermalStorage::condenserTypeVa
 
 EPMODEL_IMPL_FORWARD_0(std::string, operatingModeControlMethod)
 EPMODEL_IMPL_FORWARD_1(bool, setOperatingModeControlMethod, const std::string&, operatingModeControlMethod)
+EPMODEL_IMPL_FORWARD_0(boost::optional<Schedule>, operationModeControlSchedule)
+EPMODEL_IMPL_FORWARD_1(bool, setOperationModeControlSchedule, Schedule&, schedule)
+EPMODEL_IMPL_FORWARD_V(resetOperationModeControlSchedule)
 EPMODEL_IMPL_FORWARD_0(std::string, storageType)
 EPMODEL_IMPL_FORWARD_1(bool, setStorageType, const std::string&, storageType)
 EPMODEL_IMPL_FORWARD_0(int, glycolConcentration)
@@ -273,6 +289,9 @@ EPMODEL_IMPL_FORWARD_0(double, basinHeaterCapacity)
 EPMODEL_IMPL_FORWARD_1(bool, setBasinHeaterCapacity, double, basinHeaterCapacity)
 EPMODEL_IMPL_FORWARD_0(double, basinHeaterSetpointTemperature)
 EPMODEL_IMPL_FORWARD_1(bool, setBasinHeaterSetpointTemperature, double, basinHeaterSetpointTemperature)
+EPMODEL_IMPL_FORWARD_0(boost::optional<Schedule>, basinHeaterAvailabilitySchedule)
+EPMODEL_IMPL_FORWARD_1(bool, setBasinHeaterAvailabilitySchedule, Schedule&, schedule)
+EPMODEL_IMPL_FORWARD_V(resetBasinHeaterAvailabilitySchedule)
 EPMODEL_IMPL_FORWARD_1(bool, addToNode, Node&, node)
 
 #undef EPMODEL_IMPL_FORWARD_0
@@ -307,6 +326,24 @@ bool setBooleanFieldValue(ModelObject_Impl& impl, int fieldIndex, bool value) {
 
 }  // namespace
 
+Schedule CoilCoolingDXSingleSpeedThermalStorage_Impl::availabilitySchedule() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::Coil_Cooling_DX_SingleSpeed_ThermalStorageFields::AvailabilityScheduleName);
+  if (!value) {
+    value = this->model().alwaysOnDiscreteSchedule();
+    OS_ASSERT(value);
+    const_cast<CoilCoolingDXSingleSpeedThermalStorage_Impl*>(this)->setAvailabilitySchedule(*value);
+    value = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+      openstudio::Coil_Cooling_DX_SingleSpeed_ThermalStorageFields::AvailabilityScheduleName);
+  }
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool CoilCoolingDXSingleSpeedThermalStorage_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return setPointer(openstudio::Coil_Cooling_DX_SingleSpeed_ThermalStorageFields::AvailabilityScheduleName, schedule.handle(), false);
+}
+
 unsigned CoilCoolingDXSingleSpeedThermalStorage_Impl::inletPort() const {
   return openstudio::Coil_Cooling_DX_SingleSpeed_ThermalStorageFields::EvaporatorAirInletNodeName;
 }
@@ -335,6 +372,19 @@ std::string CoilCoolingDXSingleSpeedThermalStorage_Impl::operatingModeControlMet
 
 bool CoilCoolingDXSingleSpeedThermalStorage_Impl::setOperatingModeControlMethod(const std::string& operatingModeControlMethod) {
   return setString(openstudio::Coil_Cooling_DX_SingleSpeed_ThermalStorageFields::OperatingModeControlMethod, operatingModeControlMethod);
+}
+
+boost::optional<Schedule> CoilCoolingDXSingleSpeedThermalStorage_Impl::operationModeControlSchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::Coil_Cooling_DX_SingleSpeed_ThermalStorageFields::OperationModeControlScheduleName);
+}
+
+bool CoilCoolingDXSingleSpeedThermalStorage_Impl::setOperationModeControlSchedule(Schedule& schedule) {
+  return setPointer(openstudio::Coil_Cooling_DX_SingleSpeed_ThermalStorageFields::OperationModeControlScheduleName, schedule.handle(), false);
+}
+
+void CoilCoolingDXSingleSpeedThermalStorage_Impl::resetOperationModeControlSchedule() {
+  OS_ASSERT(setPointer(openstudio::Coil_Cooling_DX_SingleSpeed_ThermalStorageFields::OperationModeControlScheduleName, Handle(), false));
 }
 
 std::string CoilCoolingDXSingleSpeedThermalStorage_Impl::storageType() const {
@@ -945,6 +995,19 @@ double CoilCoolingDXSingleSpeedThermalStorage_Impl::basinHeaterSetpointTemperatu
 
 bool CoilCoolingDXSingleSpeedThermalStorage_Impl::setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature) {
   return setDouble(openstudio::Coil_Cooling_DX_SingleSpeed_ThermalStorageFields::BasinHeaterSetpointTemperature, basinHeaterSetpointTemperature);
+}
+
+boost::optional<Schedule> CoilCoolingDXSingleSpeedThermalStorage_Impl::basinHeaterAvailabilitySchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::Coil_Cooling_DX_SingleSpeed_ThermalStorageFields::BasinHeaterAvailabilityScheduleName);
+}
+
+bool CoilCoolingDXSingleSpeedThermalStorage_Impl::setBasinHeaterAvailabilitySchedule(Schedule& schedule) {
+  return setPointer(openstudio::Coil_Cooling_DX_SingleSpeed_ThermalStorageFields::BasinHeaterAvailabilityScheduleName, schedule.handle(), false);
+}
+
+void CoilCoolingDXSingleSpeedThermalStorage_Impl::resetBasinHeaterAvailabilitySchedule() {
+  OS_ASSERT(setPointer(openstudio::Coil_Cooling_DX_SingleSpeed_ThermalStorageFields::BasinHeaterAvailabilityScheduleName, Handle(), false));
 }
 
 bool CoilCoolingDXSingleSpeedThermalStorage_Impl::addToNode(Node& node) {

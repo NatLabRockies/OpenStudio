@@ -25,6 +25,7 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
 
       std::vector<std::string> performanceInputMethodValues() const;
 

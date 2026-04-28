@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/CondenserEquipmentOperationSchemes.hpp"
+#include "../scaffolds/CondenserEquipmentOperationSchemes.hpp"
 
 using namespace openstudio::epmodel;
 

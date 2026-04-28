@@ -13,6 +13,9 @@
 namespace openstudio {
 namespace epmodel {
 
+class Schedule;
+class Node;
+
   namespace detail {
 
     class EPMODEL_API HeatExchangerFluidToFluid_Impl : public WaterToWaterComponent_Impl
@@ -25,6 +28,15 @@ namespace epmodel {
       unsigned supplyOutletPort() const override;
       unsigned demandInletPort() const override;
       unsigned demandOutletPort() const override;
+
+      openstudio::ComponentType componentType() const override;
+      std::vector<openstudio::FuelType> coolingFuelTypes() const override;
+      std::vector<openstudio::FuelType> heatingFuelTypes() const override;
+      std::vector<openstudio::AppGFuelType> appGHeatingFuelTypes() const override;
+
+      boost::optional<Schedule> availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+      void resetAvailabilitySchedule();
 
       boost::optional<double> loopDemandSideDesignFlowRate() const;
       bool isLoopDemandSideDesignFlowRateAutosized() const;
@@ -63,6 +75,14 @@ namespace epmodel {
       bool isHeatTransferMeteringEndUseTypeDefaulted() const;
       bool setHeatTransferMeteringEndUseType(const std::string& heatTransferMeteringEndUseType);
       void resetHeatTransferMeteringEndUseType();
+
+      boost::optional<Node> componentOverrideLoopSupplySideInletNode() const;
+      bool setComponentOverrideLoopSupplySideInletNode(const Node& node);
+      void resetComponentOverrideLoopSupplySideInletNode();
+
+      boost::optional<Node> componentOverrideLoopDemandSideInletNode() const;
+      bool setComponentOverrideLoopDemandSideInletNode(const Node& node);
+      void resetComponentOverrideLoopDemandSideInletNode();
 
       std::string componentOverrideCoolingControlTemperatureMode() const;
       bool isComponentOverrideCoolingControlTemperatureModeDefaulted() const;

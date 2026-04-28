@@ -45,7 +45,9 @@ namespace epmodel {
     // - Status: Parity with documented deltas.
     // - Canonical Counterpart: openstudio::model::CoilWaterHeatingAirToWaterHeatPumpVariableSpeed.
     // - Implemented Parity: The canonical availability schedule, part-load curve, optional crankcase-heater curve,
-    //   scalar rating surface, autosized-query stubs, and speed-data child APIs are exposed here. epmodel preserves the
+    //   scalar rating surface, autosized-query stubs, and speed-data child APIs are exposed here. The required
+    //   availability-schedule reference also follows the canonical getter-repair pattern: a missing target is repaired
+    //   on read by wiring the model always-on discrete schedule. epmodel preserves the
     //   canonical speed-data children as transient ParentObject wrappers: detached transient wrappers hold their own
     //   OpenStudio-style fields until added to a parent coil, while attached transient wrappers read and write a specific
     //   EnergyPlus extensible speed row on the parent object.
@@ -57,9 +59,12 @@ namespace epmodel {
     //   returns the part-load curve, optional crankcase-heater curve, and speed-data children, but not the canonical
     //   AirflowNetwork companion. The autosized query methods are also API-preserving stubs for now: they return `none`
     //   until epmodel grows the SQL-backed autosized result lookup used by the canonical model layer.
-    // - Field/Storage Mapping: Scalar fields map directly to the corresponding EnergyPlus
-    //   `Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed` fields. The canonical speed-data children are backed by the
-    //   parent's real EnergyPlus extensible speed rows, not by separate persisted EnergyPlus objects.
+    // - Field/Storage Mapping: Most scalar fields map directly to the corresponding EnergyPlus
+    //   `Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed` fields. `Number of Speeds` remains an EnergyPlus parent
+    //   field but epmodel derives and maintains it from the current extensible-row count instead of exposing a direct
+    //   accessor. When the coil has no speeds, epmodel clears the field rather than writing `0`, matching the current
+    //   translator expectation that zero-speed coils stay untranslated. The canonical speed-data children are backed by the parent's real EnergyPlus extensible speed rows,
+    //   not by separate persisted EnergyPlus objects.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 

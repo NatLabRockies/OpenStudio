@@ -7,8 +7,8 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../ModelObject/WallExterior.hpp"
-#include "../ModelObject/WallExterior_Impl.hpp"
+#include "../scaffolds/WallExterior.hpp"
+#include "../scaffolds/WallExterior_Impl.hpp"
 
 using namespace openstudio::epmodel;
 

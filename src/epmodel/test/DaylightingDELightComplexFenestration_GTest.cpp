@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/DaylightingDELightComplexFenestration.hpp"
+#include "../scaffolds/DaylightingDELightComplexFenestration.hpp"
 
 using namespace openstudio::epmodel;
 

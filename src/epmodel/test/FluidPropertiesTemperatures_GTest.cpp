@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/FluidPropertiesTemperatures.hpp"
+#include "../scaffolds/FluidPropertiesTemperatures.hpp"
 
 using namespace openstudio::epmodel;
 

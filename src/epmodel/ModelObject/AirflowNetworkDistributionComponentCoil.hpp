@@ -12,6 +12,7 @@
 #include <utilities/idd/IddEnums.hxx>
 
 #include <memory>
+#include <vector>
 
 namespace openstudio {
 namespace epmodel {
@@ -37,13 +38,20 @@ class EPMODEL_API AirflowNetworkDistributionComponentCoil : public ModelObject
 
   // Schema Alignment Notes:
   // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: airPathLength and airPathHydraulicDiameter map directly to EnergyPlus
-  //   AirflowNetwork:Distribution:Component:Coil scalar fields.
-  // - Field Mapping: Coil Name and Coil Object Type are relationship-like target-link fields
-  //   and are intentionally excluded from scalar accessors.
+  // - Field Mapping: coilObjectType, airPathLength, and airPathHydraulicDiameter map directly to
+  //   EnergyPlus AirflowNetwork:Distribution:Component:Coil scalar fields.
+  // - Field Mapping: Coil Name remains a relationship-like target-link field and is intentionally
+  //   excluded from scalar accessors.
   // - ForwardTranslator evidence: translateAirflowNetworkEquivalentDuct writes Coil Name/
-  //   Coil Object Type from linked model objects, and writes these two scalar fields directly.
-  // - TODO(parity): Add relationship APIs after scalar scaffold saturation.
+  //   Coil Object Type from linked model objects, and writes these scalar fields directly.
+  // - Allowed Values: `coilObjectTypeValues()` returns the EnergyPlus-facing `Coil Object Type`
+  //   keys declared on `AirflowNetwork:Distribution:Component:Coil`, including the water-to-air
+  //   heat pump equation-fit and variable-speed equation-fit coil strings.
+  static std::vector<std::string> coilObjectTypeValues();
+
+  std::string coilObjectType() const;
+  bool setCoilObjectType(const std::string& coilObjectType);
+
   double airPathLength() const;
   bool setAirPathLength(double airPathLength);
 

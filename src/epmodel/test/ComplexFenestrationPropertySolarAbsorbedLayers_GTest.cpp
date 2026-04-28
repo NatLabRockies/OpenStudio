@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ComplexFenestrationPropertySolarAbsorbedLayers.hpp"
+#include "../scaffolds/ComplexFenestrationPropertySolarAbsorbedLayers.hpp"
 
 using namespace openstudio::epmodel;
 

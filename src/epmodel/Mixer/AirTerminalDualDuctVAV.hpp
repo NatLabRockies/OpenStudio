@@ -7,7 +7,7 @@
 #define EPMODEL_AIRTERMINALDUALDUCTVAV_HPP
 
 #include "EPModelAPI.hpp"
-#include "ModelObject.hpp"
+#include "Mixer/Mixer.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -17,12 +17,13 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Node;
 
 namespace detail {
 class AirTerminalDualDuctVAV_Impl;
 }
 
-class EPMODEL_API AirTerminalDualDuctVAV : public ModelObject
+class EPMODEL_API AirTerminalDualDuctVAV : public Mixer
 {
  public:
   explicit AirTerminalDualDuctVAV(const Model& model);
@@ -50,6 +51,9 @@ class EPMODEL_API AirTerminalDualDuctVAV : public ModelObject
 
   double zoneMinimumAirFlowFraction() const;
   bool setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction);
+  boost::optional<Node> hotAirInletNode() const;
+  boost::optional<Node> coldAirInletNode() const;
+  bool addToNode(Node& node);
 
  protected:
   using ImplType = detail::AirTerminalDualDuctVAV_Impl;

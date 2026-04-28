@@ -6,6 +6,8 @@
 #include "HVACComponent.hpp"
 #include "HVACComponent_Impl.hpp"
 #include "Model.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Loop/Loop.hpp"
@@ -17,6 +19,8 @@
 #include "StraightComponent/StraightComponent.hpp"
 #include "ZoneHVACComponent/ZoneHVACComponent.hpp"
 #include "ZoneHVACComponent/ZoneHVACComponent_Impl.hpp"
+
+#include <utilities/data/DataEnums.hpp>
 
 #include <algorithm>
 namespace openstudio {
@@ -72,6 +76,22 @@ namespace epmodel {
     return getImpl<detail::HVACComponent_Impl>()->remove();
   }
 
+  ComponentType HVACComponent::componentType() const {
+    return getImpl<detail::HVACComponent_Impl>()->componentType();
+  }
+
+  std::vector<FuelType> HVACComponent::coolingFuelTypes() const {
+    return getImpl<detail::HVACComponent_Impl>()->coolingFuelTypes();
+  }
+
+  std::vector<FuelType> HVACComponent::heatingFuelTypes() const {
+    return getImpl<detail::HVACComponent_Impl>()->heatingFuelTypes();
+  }
+
+  std::vector<AppGFuelType> HVACComponent::appGHeatingFuelTypes() const {
+    return getImpl<detail::HVACComponent_Impl>()->appGHeatingFuelTypes();
+  }
+
   namespace detail {
 
     boost::optional<Loop> HVACComponent_Impl::loop() const {
@@ -87,11 +107,15 @@ namespace epmodel {
     boost::optional<AirLoopHVAC> HVACComponent_Impl::airLoopHVAC() const {
       // Resolve ownership through AirLoopHVAC traversal APIs so topology logic
       // remains centralized in supply/demand components implementations.
+      const auto thisObject = getObject<openstudio::epmodel::ModelObject>();
       const auto airLoops = model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>();
       for (const auto& airLoop : airLoops) {
-        const auto components = airLoop.components(openstudio::IddObjectType::Catchall);
-        for (const auto& component : components) {
-          if (component.handle() == handle()) {
+        if (airLoop.component(thisObject.handle())) {
+          return airLoop;
+        }
+
+        if (auto oaSystem = airLoop.airLoopHVACOutdoorAirSystem()) {
+          if (oaSystem->component(thisObject.handle())) {
             return airLoop;
           }
         }
@@ -161,6 +185,22 @@ namespace epmodel {
       }
       disconnect();
       return ParentObject_Impl::remove();
+    }
+
+    openstudio::ComponentType HVACComponent_Impl::componentType() const {
+      return openstudio::ComponentType();
+    }
+
+    std::vector<openstudio::FuelType> HVACComponent_Impl::coolingFuelTypes() const {
+      return {};
+    }
+
+    std::vector<openstudio::FuelType> HVACComponent_Impl::heatingFuelTypes() const {
+      return {};
+    }
+
+    std::vector<openstudio::AppGFuelType> HVACComponent_Impl::appGHeatingFuelTypes() const {
+      return {};
     }
 
   }  // namespace detail

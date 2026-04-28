@@ -11,6 +11,10 @@
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "Node.hpp"
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <algorithm>
 #include <utilities/core/Assert.hpp>
@@ -36,6 +40,9 @@ namespace epmodel {
     OS_ASSERT(ok);
     ok = setOffCycleParasiticGasLoad(0.0);
     OS_ASSERT(ok);
+    auto alwaysOn = model.alwaysOnDiscreteSchedule();
+    ok = setAvailabilitySchedule(alwaysOn);
+    OS_ASSERT(ok);
 
     detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
     impl->canonicalize(context);
@@ -49,6 +56,26 @@ namespace epmodel {
 
   bool CoilHeatingGas::addToNode(Node& node) {
     return getImpl<detail::CoilHeatingGas_Impl>()->addToNode(node);
+  }
+
+  Schedule CoilHeatingGas::availabilitySchedule() const {
+    return getImpl<detail::CoilHeatingGas_Impl>()->availabilitySchedule();
+  }
+
+  bool CoilHeatingGas::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::CoilHeatingGas_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  boost::optional<Curve> CoilHeatingGas::partLoadFractionCorrelationCurve() const {
+    return getImpl<detail::CoilHeatingGas_Impl>()->partLoadFractionCorrelationCurve();
+  }
+
+  bool CoilHeatingGas::setPartLoadFractionCorrelationCurve(const Curve& curve) {
+    return getImpl<detail::CoilHeatingGas_Impl>()->setPartLoadFractionCorrelationCurve(curve);
+  }
+
+  void CoilHeatingGas::resetPartLoadFractionCorrelationCurve() {
+    getImpl<detail::CoilHeatingGas_Impl>()->resetPartLoadFractionCorrelationCurve();
   }
 
   std::vector<std::string> CoilHeatingGas::validFuelTypeValues() {
@@ -146,6 +173,14 @@ namespace epmodel {
       return openstudio::Coil_Heating_FuelFields::AirOutletNodeName;
     }
 
+    std::vector<ModelObject> CoilHeatingGas_Impl::children() const {
+      std::vector<ModelObject> result;
+      if (auto partLoadCurve = partLoadFractionCorrelationCurve()) {
+        result.push_back(*partLoadCurve);
+      }
+      return result;
+    }
+
     bool CoilHeatingGas_Impl::addToNode(Node& node) {
       if (node.airLoopHVACOutdoorAirSystem()) {
         return StraightComponent_Impl::addToNode(node);
@@ -158,6 +193,34 @@ namespace epmodel {
       }
 
       return StraightComponent_Impl::addToNode(node);
+    }
+
+    Schedule CoilHeatingGas_Impl::availabilitySchedule() const {
+      auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Heating_FuelFields::AvailabilityScheduleName);
+      if (!value) {
+        value = this->model().alwaysOnDiscreteSchedule();
+        OS_ASSERT(value);
+        const_cast<CoilHeatingGas_Impl*>(this)->setAvailabilitySchedule(*value);
+        value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Heating_FuelFields::AvailabilityScheduleName);
+      }
+      OS_ASSERT(value);
+      return *value;
+    }
+
+    bool CoilHeatingGas_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return setPointer(openstudio::Coil_Heating_FuelFields::AvailabilityScheduleName, schedule.handle(), false);
+    }
+
+    boost::optional<Curve> CoilHeatingGas_Impl::partLoadFractionCorrelationCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::Coil_Heating_FuelFields::PartLoadFractionCorrelationCurveName);
+    }
+
+    bool CoilHeatingGas_Impl::setPartLoadFractionCorrelationCurve(const Curve& curve) {
+      return setPointer(openstudio::Coil_Heating_FuelFields::PartLoadFractionCorrelationCurveName, curve.handle(), false);
+    }
+
+    void CoilHeatingGas_Impl::resetPartLoadFractionCorrelationCurve() {
+      OS_ASSERT(setPointer(openstudio::Coil_Heating_FuelFields::PartLoadFractionCorrelationCurveName, openstudio::Handle(), false));
     }
 
     std::string CoilHeatingGas_Impl::fuelType() const {

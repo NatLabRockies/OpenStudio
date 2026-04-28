@@ -7,7 +7,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SurfacePropertyExteriorNaturalVentedCavity.hpp"
+#include "../scaffolds/SurfacePropertyExteriorNaturalVentedCavity.hpp"
 
 using namespace openstudio::epmodel;
 

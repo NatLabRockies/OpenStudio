@@ -25,6 +25,14 @@ namespace epmodel {
     OS_ASSERT(impl);
     detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
     impl->canonicalize(context);
+
+    OS_ASSERT(setPumpControlType("Intermittent"));
+    OS_ASSERT(setSkinLossRadiativeFraction(0.5));
+    OS_ASSERT(setDesignPowerSizingMethod("PowerPerFlowPerPressure"));
+    OS_ASSERT(setDesignElectricPowerPerUnitFlowRate(348701.1));
+    OS_ASSERT(setDesignShaftPowerPerUnitFlowRatePerUnitHead(1.282051282));
+    OS_ASSERT(setDesignMinimumFlowRateFraction(0.0));
+    OS_ASSERT(setEndUseSubcategory("General"));
   }
 
   PumpVariableSpeed::PumpVariableSpeed(std::shared_ptr<detail::PumpVariableSpeed_Impl> impl) : StraightComponent(std::move(impl)) {}

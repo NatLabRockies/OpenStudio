@@ -8,6 +8,8 @@
 
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -20,6 +22,8 @@ namespace epmodel {
 CoilHeatingElectricMultiStage::CoilHeatingElectricMultiStage(const Model& model)
   : StraightComponent(CoilHeatingElectricMultiStage::iddObjectType(), model) {
   // Keep required scalar field populated for strict non-optional getter behavior.
+  auto availabilitySchedule = model.alwaysOnDiscreteSchedule();
+  OS_ASSERT(getImpl<detail::CoilHeatingElectricMultiStage_Impl>()->setAvailabilitySchedule(availabilitySchedule));
   OS_ASSERT(getImpl<detail::CoilHeatingElectricMultiStage_Impl>()->setNumberOfStages(1u));
 }
 
@@ -32,6 +36,14 @@ IddObjectType CoilHeatingElectricMultiStage::iddObjectType() {
 
 bool CoilHeatingElectricMultiStage::addToNode(Node& node) {
   return getImpl<detail::CoilHeatingElectricMultiStage_Impl>()->addToNode(node);
+}
+
+Schedule CoilHeatingElectricMultiStage::availabilitySchedule() const {
+  return getImpl<detail::CoilHeatingElectricMultiStage_Impl>()->availabilitySchedule();
+}
+
+bool CoilHeatingElectricMultiStage::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::CoilHeatingElectricMultiStage_Impl>()->setAvailabilitySchedule(schedule);
 }
 
 unsigned CoilHeatingElectricMultiStage::numberOfStages() const {
@@ -54,13 +66,25 @@ unsigned CoilHeatingElectricMultiStage_Impl::outletPort() const {
 }
 
 bool CoilHeatingElectricMultiStage_Impl::addToNode(Node& node) {
-  auto airLoop = node.airLoopHVAC();
+  return false;
+}
 
-  if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
-    return false;
+Schedule CoilHeatingElectricMultiStage_Impl::availabilitySchedule() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::Coil_Heating_Electric_MultiStageFields::AvailabilityScheduleName);
+  if (!value) {
+    value = this->model().alwaysOnDiscreteSchedule();
+    OS_ASSERT(value);
+    const_cast<CoilHeatingElectricMultiStage_Impl*>(this)->setAvailabilitySchedule(*value);
+    value = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+      openstudio::Coil_Heating_Electric_MultiStageFields::AvailabilityScheduleName);
   }
+  OS_ASSERT(value);
+  return *value;
+}
 
-  return StraightComponent_Impl::addToNode(node);
+bool CoilHeatingElectricMultiStage_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return setPointer(openstudio::Coil_Heating_Electric_MultiStageFields::AvailabilityScheduleName, schedule.handle(), false);
 }
 
 unsigned CoilHeatingElectricMultiStage_Impl::numberOfStages() const {

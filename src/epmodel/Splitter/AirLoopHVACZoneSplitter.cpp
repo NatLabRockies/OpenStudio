@@ -17,7 +17,6 @@
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/AirLoopHVAC_ZoneSplitter_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
-#include <utilities/idf/IdfExtensibleGroup.hpp>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 namespace openstudio {
@@ -92,6 +91,25 @@ namespace detail {
 
     unsigned AirLoopHVACZoneSplitter_Impl::outletPort(unsigned branchIndex) const {
       return getObject<openstudio::epmodel::AirLoopHVACZoneSplitter>().numNonextensibleFields() + branchIndex;
+    }
+
+    bool AirLoopHVACZoneSplitter_Impl::setOutletModelObject(unsigned branchIndex, const openstudio::epmodel::ModelObject& modelObject) {
+      auto splitter = getObject<openstudio::epmodel::AirLoopHVACZoneSplitter>();
+      if (modelObject.model() != splitter.model()) {
+        return false;
+      }
+
+      while (splitter.extensibleGroups().size() <= branchIndex) {
+        splitter.pushExtensibleGroup();
+      }
+
+      const auto groups = splitter.extensibleGroups();
+      auto workspaceGroup = groups[branchIndex].optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!workspaceGroup) {
+        return false;
+      }
+
+      return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ZoneSplitterExtensibleFields::OutletNodeName, modelObject.handle(), false);
     }
 
     boost::optional<openstudio::epmodel::Node> AirLoopHVACZoneSplitter_Impl::inletNode() const {

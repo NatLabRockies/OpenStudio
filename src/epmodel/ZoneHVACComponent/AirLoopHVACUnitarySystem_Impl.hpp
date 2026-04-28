@@ -13,7 +13,13 @@
 namespace openstudio {
 namespace epmodel {
 
+class HVACComponent;
+class Node;
+class Schedule;
+class ThermalZone;
+
 namespace detail {
+struct LoadContext;
 
 class EPMODEL_API AirLoopHVACUnitarySystem_Impl : public ZoneHVACComponent_Impl
 {
@@ -21,24 +27,56 @@ class EPMODEL_API AirLoopHVACUnitarySystem_Impl : public ZoneHVACComponent_Impl
   using ZoneHVACComponent_Impl::ZoneHVACComponent_Impl;
   virtual ~AirLoopHVACUnitarySystem_Impl() override = default;
 
+  unsigned inletPort() const override;
+  unsigned outletPort() const override;
+  bool addToThermalZone(ThermalZone& thermalZone) override;
+  void removeFromThermalZone() override;
+  void doCanonicalize(LoadContext& context) override;
+
   std::string controlType() const;
   bool isControlTypeDefaulted() const;
   bool setControlType(const std::string& controlType);
   void resetControlType();
+
+  boost::optional<ThermalZone> controllingZoneorThermostatLocation() const;
+  bool setControllingZoneorThermostatLocation(const ThermalZone& thermalZone);
+  void resetControllingZoneorThermostatLocation();
 
   std::string dehumidificationControlType() const;
   bool isDehumidificationControlTypeDefaulted() const;
   bool setDehumidificationControlType(const std::string& dehumidificationControlType);
   void resetDehumidificationControlType();
 
+  boost::optional<Schedule> availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+  void resetAvailabilitySchedule();
+
+  boost::optional<HVACComponent> supplyFan() const;
+  bool setSupplyFan(const HVACComponent& supplyFan);
+  void resetSupplyFan();
+
   boost::optional<std::string> fanPlacement() const;
   bool setFanPlacement(const std::string& fanPlacement);
   void resetFanPlacement();
+
+  boost::optional<Schedule> supplyAirFanOperatingModeSchedule() const;
+  bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+  void resetSupplyAirFanOperatingModeSchedule();
+
+  bool hasHeatingCoil() const;
+  boost::optional<HVACComponent> heatingCoil() const;
+  bool setHeatingCoil(const HVACComponent& heatingCoil);
+  void resetHeatingCoil();
 
   double dXHeatingCoilSizingRatio() const;
   bool isDXHeatingCoilSizingRatioDefaulted() const;
   bool setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio);
   void resetDXHeatingCoilSizingRatio();
+
+  bool hasCoolingCoil() const;
+  boost::optional<HVACComponent> coolingCoil() const;
+  bool setCoolingCoil(const HVACComponent& coolingCoil);
+  void resetCoolingCoil();
 
   bool useDOASDXCoolingCoil() const;
   bool isUseDOASDXCoolingCoilDefaulted() const;
@@ -56,6 +94,14 @@ class EPMODEL_API AirLoopHVACUnitarySystem_Impl : public ZoneHVACComponent_Impl
   bool isLatentLoadControlDefaulted() const;
   bool setLatentLoadControl(const std::string& latentLoadControl);
   void resetLatentLoadControl();
+
+  boost::optional<HVACComponent> supplementalHeatingCoil() const;
+  bool setSupplementalHeatingCoil(const HVACComponent& supplementalHeatingCoil);
+  void resetSupplementalHeatingCoil();
+
+  boost::optional<Node> fanOutletNode() const;
+  boost::optional<Node> coolingCoilOutletNode() const;
+  boost::optional<Node> heatingCoilOutletNode() const;
 
   std::string supplyAirFlowRateMethodDuringCoolingOperation() const;
   bool setSupplyAirFlowRateMethodDuringCoolingOperation(const std::string& supplyAirFlowRateMethodDuringCoolingOperation);
@@ -167,6 +213,11 @@ class EPMODEL_API AirLoopHVACUnitarySystem_Impl : public ZoneHVACComponent_Impl
   std::vector<std::string> supplyAirFlowRateMethodDuringCoolingOperationValues() const;
   std::vector<std::string> supplyAirFlowRateMethodDuringHeatingOperationValues() const;
   std::vector<std::string> supplyAirFlowRateMethodWhenNoCoolingorHeatingisRequiredValues() const;
+
+ private:
+  bool maintainContainedAirPath();
+  bool repairContainedAirPath(LoadContext& context);
+  bool reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context = nullptr);
 };
 
 }  // namespace detail

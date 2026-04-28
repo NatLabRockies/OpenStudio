@@ -18,6 +18,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class HeaderedPumpsConstantSpeed_Impl;
@@ -41,10 +42,10 @@ namespace epmodel {
     static std::vector<std::string> designPowerSizingMethodValues();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical scalar pump-bank surface is largely present, while schedule, zone, and richer relationship helpers remain out of scope.
+    // - Status: Partial Parity. The canonical scalar pump-bank surface and plant-loop placement contract are present, while schedule, zone, and richer relationship helpers remain out of scope.
     // - Canonical Counterpart: openstudio::model::HeaderedPumpsConstantSpeed.
-    // - Implemented Parity: Preserved scalar accessor names/signatures cover total flow, pump-bank count, sequencing scheme, head, power, efficiency, control type, radiative fraction, design-power sizing, and end-use metadata with matching autosize behavior.
-    // - Documented Delta: `pumpFlowRateSchedule`, thermal-zone linkage, and explicit node-link convenience APIs from canonical `openstudio::model::HeaderedPumpsConstantSpeed` are not exposed yet.
+    // - Implemented Parity: Preserved scalar accessor names/signatures cover total flow, pump-bank count, sequencing scheme, head, power, efficiency, control type, radiative fraction, design-power sizing, and end-use metadata with matching autosize behavior; `addToNode(...)` is limited to plant-loop placement like the canonical wrapper.
+    // - Documented Delta: `pumpFlowRateSchedule` and thermal-zone linkage helpers from canonical `openstudio::model::HeaderedPumpsConstantSpeed` are not exposed yet.
     // - Field/Storage Mapping: The preserved scalar APIs map directly to EnergyPlus `HeaderedPumps:ConstantSpeed` scalar fields used by the forward translator.
     // - Evidence: `src/model/HeaderedPumpsConstantSpeed.hpp` defines the canonical wrapper surface, and `src/energyplus/ForwardTranslator/ForwardTranslateHeaderedPumpsConstantSpeed.cpp` confirms the direct scalar mapping and autosize tokens.
     // - Remaining Parity Work: Add the omitted schedule, thermal-zone, and relationship helpers without changing the preserved scalar signatures.
@@ -93,6 +94,8 @@ namespace epmodel {
 
     std::string endUseSubcategory() const;
     bool setEndUseSubcategory(const std::string& endUseSubcategory);
+
+    bool addToNode(Node& node);
 
    protected:
     using ImplType = detail::HeaderedPumpsConstantSpeed_Impl;

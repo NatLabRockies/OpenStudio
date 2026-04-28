@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/FloorGroundContact.hpp"
+#include "../scaffolds/FloorGroundContact.hpp"
 
 using namespace openstudio::epmodel;
 

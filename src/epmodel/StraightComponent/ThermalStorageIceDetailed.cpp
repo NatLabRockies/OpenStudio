@@ -6,7 +6,15 @@
 #include "StraightComponent/ThermalStorageIceDetailed.hpp"
 #include "StraightComponent/ThermalStorageIceDetailed_Impl.hpp"
 
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
+#include "Curve/CurveQuadraticLinear.hpp"
+#include "Curve/CurveQuadraticLinear_Impl.hpp"
 #include "Model.hpp"
+#include "Loop/PlantLoop.hpp"
+#include "StraightComponent/Node.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 
 #include <memory>
 #include <utility>
@@ -17,10 +25,57 @@
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/ThermalStorage_Ice_Detailed_FieldEnums.hxx>
 
+#include <sstream>
+#include <stdexcept>
+
 namespace openstudio {
 namespace epmodel {
 
-  ThermalStorageIceDetailed::ThermalStorageIceDetailed(const Model& model) : StraightComponent(iddObjectType(), model) {}
+  ThermalStorageIceDetailed::ThermalStorageIceDetailed(const Model& model) : StraightComponent(iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::ThermalStorageIceDetailed_Impl>());
+
+    {
+      CurveQuadraticLinear curve(model);
+      curve.setCoefficient1Constant(0.0);
+      curve.setCoefficient2x(0.09);
+      curve.setCoefficient3xPOW2(-0.15);
+      curve.setCoefficient4y(0.612);
+      curve.setCoefficient5xTIMESY(-0.324);
+      curve.setCoefficient6xPOW2TIMESY(-0.216);
+      curve.setMinimumValueofx(0.0);
+      curve.setMaximumValueofx(1.0);
+      curve.setMinimumValueofy(0.0);
+      curve.setMaximumValueofy(9.9);
+
+      OS_ASSERT(getImpl<detail::ThermalStorageIceDetailed_Impl>()->setDischargingCurveVariableSpecifications("FractionDischargedLMTD"));
+      OS_ASSERT(getImpl<detail::ThermalStorageIceDetailed_Impl>()->setDischargingCurve(curve));
+    }
+
+    {
+      CurveQuadraticLinear curve(model);
+      curve.setCoefficient1Constant(0.0);
+      curve.setCoefficient2x(0.09);
+      curve.setCoefficient3xPOW2(-0.15);
+      curve.setCoefficient4y(0.612);
+      curve.setCoefficient5xTIMESY(-0.324);
+      curve.setCoefficient6xPOW2TIMESY(-0.216);
+      curve.setMinimumValueofx(0.0);
+      curve.setMaximumValueofx(1.0);
+      curve.setMinimumValueofy(0.0);
+      curve.setMaximumValueofy(9.9);
+
+      OS_ASSERT(getImpl<detail::ThermalStorageIceDetailed_Impl>()->setChargingCurveVariableSpecifications("FractionChargedLMTD"));
+      OS_ASSERT(getImpl<detail::ThermalStorageIceDetailed_Impl>()->setChargingCurve(curve));
+    }
+
+    OS_ASSERT(getImpl<detail::ThermalStorageIceDetailed_Impl>()->setCapacity(0.5));
+    OS_ASSERT(getImpl<detail::ThermalStorageIceDetailed_Impl>()->setTimestepoftheCurveData(1.0));
+    OS_ASSERT(getImpl<detail::ThermalStorageIceDetailed_Impl>()->setParasiticElectricLoadDuringDischarging(0.0001));
+    OS_ASSERT(getImpl<detail::ThermalStorageIceDetailed_Impl>()->setParasiticElectricLoadDuringCharging(0.0002));
+    OS_ASSERT(getImpl<detail::ThermalStorageIceDetailed_Impl>()->setTankLossCoefficient(0.0003));
+    OS_ASSERT(getImpl<detail::ThermalStorageIceDetailed_Impl>()->setFreezingTemperatureofStorageMedium(0.0));
+    OS_ASSERT(getImpl<detail::ThermalStorageIceDetailed_Impl>()->setThawProcessIndicator("OutsideMelt"));
+  }
 
   ThermalStorageIceDetailed::ThermalStorageIceDetailed(std::shared_ptr<detail::ThermalStorageIceDetailed_Impl> impl)
     : StraightComponent(std::static_pointer_cast<detail::StraightComponent_Impl>(std::move(impl))) {}
@@ -42,6 +97,34 @@ namespace epmodel {
   std::vector<std::string> ThermalStorageIceDetailed::thawProcessIndicatorValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                           openstudio::ThermalStorage_Ice_DetailedFields::ThawProcessIndicator);
+  }
+
+  boost::optional<Schedule> ThermalStorageIceDetailed::availabilitySchedule() const {
+    return getImpl<detail::ThermalStorageIceDetailed_Impl>()->availabilitySchedule();
+  }
+
+  bool ThermalStorageIceDetailed::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::ThermalStorageIceDetailed_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  void ThermalStorageIceDetailed::resetAvailabilitySchedule() {
+    getImpl<detail::ThermalStorageIceDetailed_Impl>()->resetAvailabilitySchedule();
+  }
+
+  Curve ThermalStorageIceDetailed::dischargingCurve() const {
+    return getImpl<detail::ThermalStorageIceDetailed_Impl>()->dischargingCurve();
+  }
+
+  bool ThermalStorageIceDetailed::setDischargingCurve(const Curve& dischargingCurve) {
+    return getImpl<detail::ThermalStorageIceDetailed_Impl>()->setDischargingCurve(dischargingCurve);
+  }
+
+  Curve ThermalStorageIceDetailed::chargingCurve() const {
+    return getImpl<detail::ThermalStorageIceDetailed_Impl>()->chargingCurve();
+  }
+
+  bool ThermalStorageIceDetailed::setChargingCurve(const Curve& chargingCurve) {
+    return getImpl<detail::ThermalStorageIceDetailed_Impl>()->setChargingCurve(chargingCurve);
   }
 
   double ThermalStorageIceDetailed::capacity() const {
@@ -156,6 +239,10 @@ namespace epmodel {
     getImpl<detail::ThermalStorageIceDetailed_Impl>()->resetThawProcessIndicator();
   }
 
+  bool ThermalStorageIceDetailed::addToNode(Node& node) {
+    return getImpl<detail::ThermalStorageIceDetailed_Impl>()->addToNode(node);
+  }
+
   namespace detail {
 
     unsigned ThermalStorageIceDetailed_Impl::inletPort() const {
@@ -164,6 +251,64 @@ namespace epmodel {
 
     unsigned ThermalStorageIceDetailed_Impl::outletPort() const {
       return openstudio::ThermalStorage_Ice_DetailedFields::OutletNodeName;
+    }
+
+    std::vector<ModelObject> ThermalStorageIceDetailed_Impl::children() const {
+      std::vector<ModelObject> result;
+      result.push_back(dischargingCurve());
+      result.push_back(chargingCurve());
+      return result;
+    }
+
+    bool ThermalStorageIceDetailed_Impl::addToNode(Node& node) {
+      if (auto plant = node.plantLoop()) {
+        if (!plant->demandComponent(node.handle())) {
+          return false;
+        }
+        return StraightComponent_Impl::addToNode(node);
+      }
+
+      return false;
+    }
+
+    boost::optional<Schedule> ThermalStorageIceDetailed_Impl::availabilitySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::ThermalStorage_Ice_DetailedFields::AvailabilityScheduleName);
+    }
+
+    bool ThermalStorageIceDetailed_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return setPointer(openstudio::ThermalStorage_Ice_DetailedFields::AvailabilityScheduleName, schedule.handle(), false);
+    }
+
+    void ThermalStorageIceDetailed_Impl::resetAvailabilitySchedule() {
+      OS_ASSERT(setPointer(openstudio::ThermalStorage_Ice_DetailedFields::AvailabilityScheduleName, openstudio::Handle(), false));
+    }
+
+    Curve ThermalStorageIceDetailed_Impl::dischargingCurve() const {
+      auto value = optionalDischargingCurve();
+      if (!value) {
+        std::ostringstream message;
+        message << briefDescription() << " does not have a Discharging Curve attached.";
+        throw std::runtime_error(message.str());
+      }
+      return *value;
+    }
+
+    bool ThermalStorageIceDetailed_Impl::setDischargingCurve(const Curve& dischargingCurve) {
+      return setPointer(openstudio::ThermalStorage_Ice_DetailedFields::DischargingCurveName, dischargingCurve.handle(), false);
+    }
+
+    Curve ThermalStorageIceDetailed_Impl::chargingCurve() const {
+      auto value = optionalChargingCurve();
+      if (!value) {
+        std::ostringstream message;
+        message << briefDescription() << " does not have a Charging Curve attached.";
+        throw std::runtime_error(message.str());
+      }
+      return *value;
+    }
+
+    bool ThermalStorageIceDetailed_Impl::setChargingCurve(const Curve& chargingCurve) {
+      return setPointer(openstudio::ThermalStorage_Ice_DetailedFields::ChargingCurveName, chargingCurve.handle(), false);
     }
 
     double ThermalStorageIceDetailed_Impl::capacity() const {
@@ -289,6 +434,14 @@ namespace epmodel {
 
     void ThermalStorageIceDetailed_Impl::resetThawProcessIndicator() {
       OS_ASSERT(setString(openstudio::ThermalStorage_Ice_DetailedFields::ThawProcessIndicator, ""));
+    }
+
+    boost::optional<Curve> ThermalStorageIceDetailed_Impl::optionalDischargingCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::ThermalStorage_Ice_DetailedFields::DischargingCurveName);
+    }
+
+    boost::optional<Curve> ThermalStorageIceDetailed_Impl::optionalChargingCurve() const {
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::ThermalStorage_Ice_DetailedFields::ChargingCurveName);
     }
 
   }  // namespace detail

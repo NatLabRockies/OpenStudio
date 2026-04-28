@@ -6,7 +6,9 @@
 #include "StraightComponent/EvaporativeFluidCoolerTwoSpeed.hpp"
 #include "StraightComponent/EvaporativeFluidCoolerTwoSpeed_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -472,6 +474,16 @@ unsigned EvaporativeFluidCoolerTwoSpeed_Impl::inletPort() const {
 
 unsigned EvaporativeFluidCoolerTwoSpeed_Impl::outletPort() const {
   return openstudio::EvaporativeFluidCooler_TwoSpeedFields::WaterOutletNodeName;
+}
+
+bool EvaporativeFluidCoolerTwoSpeed_Impl::addToNode(Node& node) {
+  if (auto plantLoop = node.plantLoop()) {
+    if (plantLoop->supplyComponent(node.handle())) {
+      return StraightComponent_Impl::addToNode(node);
+    }
+  }
+
+  return false;
 }
 
 std::vector<std::string> EvaporativeFluidCoolerTwoSpeed_Impl::performanceInputMethodValues() const {

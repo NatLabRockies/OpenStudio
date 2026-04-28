@@ -5,8 +5,14 @@
 
 #include <gtest/gtest.h>
 
+#include <utilities/idd/FluidCooler_SingleSpeed_FieldEnums.hxx>
+
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/FluidCoolerSingleSpeed.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -43,7 +49,10 @@ TEST_F(EPModelFixture, FluidCoolerSingleSpeed_ScalarAccessors_RoundTrip) {
   Model model;
   FluidCoolerSingleSpeed fluidCooler(model);
 
-  EXPECT_FALSE(FluidCoolerSingleSpeed::performanceInputMethodValues().empty());
+  const auto performanceInputMethods = FluidCoolerSingleSpeed::performanceInputMethodValues();
+  ASSERT_EQ(2u, performanceInputMethods.size());
+  EXPECT_EQ("UFactorTimesAreaAndDesignWaterFlowRate", performanceInputMethods[0]);
+  EXPECT_EQ("NominalCapacity", performanceInputMethods[1]);
 
   EXPECT_TRUE(fluidCooler.setPerformanceInputMethod("UFactorTimesAreaAndDesignWaterFlowRate"));
   EXPECT_EQ("UFactorTimesAreaAndDesignWaterFlowRate", fluidCooler.performanceInputMethod());
@@ -96,4 +105,47 @@ TEST_F(EPModelFixture, FluidCoolerSingleSpeed_ScalarAccessors_RoundTrip) {
   EXPECT_FALSE(fluidCooler.autosizedDesignWaterFlowRate());
   EXPECT_FALSE(fluidCooler.autosizedDesignAirFlowRate());
   EXPECT_FALSE(fluidCooler.autosizedDesignAirFlowRateFanPower());
+}
+
+TEST_F(EPModelFixture, FluidCoolerSingleSpeed_AddToNode_PlantSupplyOnly) {
+  Model model;
+  FluidCoolerSingleSpeed fluidCooler(model);
+
+  AirLoopHVAC airLoop(model);
+  Node airSupplyOutletNode = airLoop.supplyOutletNode();
+  EXPECT_FALSE(fluidCooler.addToNode(airSupplyOutletNode));
+  EXPECT_FALSE(fluidCooler.loop());
+  EXPECT_FALSE(fluidCooler.inletModelObject());
+  EXPECT_FALSE(fluidCooler.outletModelObject());
+
+  auto splitterBranch = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(splitterBranch);
+  auto demandBranchNode = splitterBranch->optionalCast<Node>();
+  ASSERT_TRUE(demandBranchNode);
+  EXPECT_FALSE(fluidCooler.addToNode(*demandBranchNode));
+  EXPECT_FALSE(fluidCooler.loop());
+  EXPECT_FALSE(fluidCooler.inletModelObject());
+  EXPECT_FALSE(fluidCooler.outletModelObject());
+
+  PlantLoop plantLoop(model);
+  Node plantSupplyOutletNode = plantLoop.supplyOutletNode();
+  EXPECT_TRUE(fluidCooler.addToNode(plantSupplyOutletNode));
+  ASSERT_TRUE(fluidCooler.loop());
+  EXPECT_EQ(plantLoop.handle(), fluidCooler.loop()->handle());
+  ASSERT_TRUE(fluidCooler.inletModelObject());
+  ASSERT_TRUE(fluidCooler.outletModelObject());
+
+  auto inletNode = fluidCooler.getModelObjectTarget<Node>(openstudio::FluidCooler_SingleSpeedFields::WaterInletNodeName);
+  auto outletNode = fluidCooler.getModelObjectTarget<Node>(openstudio::FluidCooler_SingleSpeedFields::WaterOutletNodeName);
+  ASSERT_TRUE(inletNode);
+  ASSERT_TRUE(outletNode);
+  EXPECT_EQ(fluidCooler.inletModelObject()->handle(), inletNode->handle());
+  EXPECT_EQ(fluidCooler.outletModelObject()->handle(), outletNode->handle());
+
+  FluidCoolerSingleSpeed secondFluidCooler(model);
+  Node plantDemandOutletNode = plantLoop.demandOutletNode();
+  EXPECT_FALSE(secondFluidCooler.addToNode(plantDemandOutletNode));
+  EXPECT_FALSE(secondFluidCooler.loop());
+  EXPECT_FALSE(secondFluidCooler.inletModelObject());
+  EXPECT_FALSE(secondFluidCooler.outletModelObject());
 }

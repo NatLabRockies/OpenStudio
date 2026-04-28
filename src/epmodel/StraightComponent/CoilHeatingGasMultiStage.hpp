@@ -16,6 +16,8 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Schedule;
+  class Curve;
 
   namespace detail {
     class CoilHeatingGasMultiStage_Impl;
@@ -37,13 +39,23 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The stage-count and parasitic-load surface is present, but stage-data and relationship helpers remain model-owned.
+    // - Status: Partial Parity. The bounded availability-schedule and optional part-load-fraction-curve relationships are present, but the canonical
+    //   stage-data family remains model-owned.
     // - Canonical Counterpart: openstudio::model::CoilHeatingGasMultiStage.
-    // - Implemented Parity: `parasiticGasLoad`, `offCycleParasiticGasLoad`, and `numberOfStages` preserve the canonical scalar API.
-    // - Documented Delta: Availability schedule, curve links, stage-data, and node-link helpers from canonical `openstudio::model::CoilHeatingGasMultiStage` are not exposed yet.
-    // - Field/Storage Mapping: The preserved API maps directly to EnergyPlus `Coil:Heating:Gas:MultiStage` storage.
+    // - Implemented Parity: `availabilitySchedule` and the optional `partLoadFractionCorrelationCurve` preserve the bounded canonical relationship slice
+    //   for this campaign; `parasiticGasLoad`, `offCycleParasiticGasLoad`, and `numberOfStages` preserve the current scalar field mirror.
+    // - Documented Delta: Stage-data ownership and extensible stage-list APIs from canonical `openstudio::model::CoilHeatingGasMultiStage` are not
+    //   exposed yet, and standalone `addToNode(...)` remains intentionally rejected to match the canonical wrapper.
+    // - Field/Storage Mapping: The preserved relationship and scalar APIs map directly to EnergyPlus `Coil:Heating:Gas:MultiStage` storage.
     // - Evidence: `src/model/CoilHeatingGasMultiStage.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingGasMultiStage.cpp`, and `src/epmodel/test/CoilHeatingGasMultiStage_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted stage-data and relationship helpers without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Add the canonical stage-data family and owning extensible-list behavior without changing the preserved scalar signatures.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    boost::optional<Curve> partLoadFractionCorrelationCurve() const;
+    bool setPartLoadFractionCorrelationCurve(const Curve& curve);
+    void resetPartLoadFractionCorrelationCurve();
+
     boost::optional<double> parasiticGasLoad() const;
     bool setParasiticGasLoad(double parasiticGasLoad);
     void resetParasiticGasLoad();

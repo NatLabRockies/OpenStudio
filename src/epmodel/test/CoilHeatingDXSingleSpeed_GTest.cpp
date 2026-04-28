@@ -6,6 +6,14 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "Curve/CurveBiquadratic.hpp"
+#include "Curve/CurveBiquadratic_Impl.hpp"
+#include "Curve/CurveCubic.hpp"
+#include "Curve/CurveCubic_Impl.hpp"
+#include "Curve/CurveQuadratic.hpp"
+#include "Curve/CurveQuadratic_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
+#include "Schedule/ScheduleConstant_Impl.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "StraightComponent/Node.hpp"
@@ -32,6 +40,16 @@ TEST_F(EPModelFixture, CoilHeatingDXSingleSpeed_DefaultConstructor) {
   EXPECT_EQ("Resistive", coil.defrostStrategy());
   EXPECT_EQ("Timed", coil.defrostControl());
   EXPECT_NEAR(0.166667, coil.defrostTimePeriodFraction(), 1e-6);
+  auto availability = coil.availabilitySchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(availability);
+  EXPECT_DOUBLE_EQ(1.0, availability->value());
+  ASSERT_TRUE(coil.totalHeatingCapacityFunctionofTemperatureCurve().optionalCast<CurveCubic>());
+  ASSERT_TRUE(coil.totalHeatingCapacityFunctionofFlowFractionCurve().optionalCast<CurveCubic>());
+  ASSERT_TRUE(coil.energyInputRatioFunctionofTemperatureCurve().optionalCast<CurveCubic>());
+  ASSERT_TRUE(coil.energyInputRatioFunctionofFlowFractionCurve().optionalCast<CurveQuadratic>());
+  ASSERT_TRUE(coil.partLoadFractionCorrelationCurve().optionalCast<CurveQuadratic>());
+  EXPECT_FALSE(coil.defrostEnergyInputRatioFunctionofTemperatureCurve());
+  EXPECT_FALSE(coil.crankcaseHeaterCapacityFunctionofTemperatureCurve());
   ASSERT_TRUE(coil.resistiveDefrostHeaterCapacity());
   EXPECT_DOUBLE_EQ(2000.0, *coil.resistiveDefrostHeaterCapacity());
   EXPECT_FALSE(coil.isResistiveDefrostHeaterCapacityAutosized());
@@ -40,6 +58,14 @@ TEST_F(EPModelFixture, CoilHeatingDXSingleSpeed_DefaultConstructor) {
   EXPECT_TRUE(coil.isMaximumOutdoorDryBulbTemperatureforDefrostOperationDefaulted());
   EXPECT_TRUE(coil.isCrankcaseHeaterCapacityDefaulted());
   EXPECT_TRUE(coil.isMaximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperationDefaulted());
+
+  const auto children = coil.children();
+  ASSERT_EQ(5u, children.size());
+  EXPECT_EQ(coil.totalHeatingCapacityFunctionofTemperatureCurve().handle(), children[0].handle());
+  EXPECT_EQ(coil.totalHeatingCapacityFunctionofFlowFractionCurve().handle(), children[1].handle());
+  EXPECT_EQ(coil.energyInputRatioFunctionofTemperatureCurve().handle(), children[2].handle());
+  EXPECT_EQ(coil.energyInputRatioFunctionofFlowFractionCurve().handle(), children[3].handle());
+  EXPECT_EQ(coil.partLoadFractionCorrelationCurve().handle(), children[4].handle());
 }
 
 TEST_F(EPModelFixture, CoilHeatingDXSingleSpeed_ScalarAccessors_RoundTrip) {
@@ -97,6 +123,20 @@ TEST_F(EPModelFixture, CoilHeatingDXSingleSpeed_ScalarAccessors_RoundTrip) {
   coil.resetMaximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation();
   EXPECT_TRUE(coil.isMaximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperationDefaulted());
 
+  CurveBiquadratic defrostCurve(model);
+  EXPECT_TRUE(coil.setDefrostEnergyInputRatioFunctionofTemperatureCurve(defrostCurve));
+  ASSERT_TRUE(coil.defrostEnergyInputRatioFunctionofTemperatureCurve());
+  EXPECT_EQ(defrostCurve.handle(), coil.defrostEnergyInputRatioFunctionofTemperatureCurve()->handle());
+  coil.resetDefrostEnergyInputRatioFunctionofTemperatureCurve();
+  EXPECT_FALSE(coil.defrostEnergyInputRatioFunctionofTemperatureCurve());
+
+  CurveCubic crankcaseCurve(model);
+  EXPECT_TRUE(coil.setCrankcaseHeaterCapacityFunctionofTemperatureCurve(crankcaseCurve));
+  ASSERT_TRUE(coil.crankcaseHeaterCapacityFunctionofTemperatureCurve());
+  EXPECT_EQ(crankcaseCurve.handle(), coil.crankcaseHeaterCapacityFunctionofTemperatureCurve()->handle());
+  coil.resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
+  EXPECT_FALSE(coil.crankcaseHeaterCapacityFunctionofTemperatureCurve());
+
   EXPECT_TRUE(coil.setDefrostStrategy("ReverseCycle"));
   EXPECT_EQ("ReverseCycle", coil.defrostStrategy());
   EXPECT_FALSE(coil.isDefrostStrategyDefaulted());
@@ -129,6 +169,28 @@ TEST_F(EPModelFixture, CoilHeatingDXSingleSpeed_ScalarAccessors_RoundTrip) {
   EXPECT_TRUE(coil.isResistiveDefrostHeaterCapacityDefaulted());
   ASSERT_TRUE(coil.resistiveDefrostHeaterCapacity());
   EXPECT_DOUBLE_EQ(0.0, *coil.resistiveDefrostHeaterCapacity());
+}
+
+TEST_F(EPModelFixture, CoilHeatingDXSingleSpeed_RelationshipConstructor) {
+  Model model;
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(availability.setValue(0.3));
+  CurveCubic totalHeatingTemp(model);
+  CurveCubic totalHeatingFlow(model);
+  CurveCubic eirTemp(model);
+  CurveQuadratic eirFlow(model);
+  CurveQuadratic plf(model);
+
+  CoilHeatingDXSingleSpeed coil(model, availability, totalHeatingTemp, totalHeatingFlow, eirTemp, eirFlow, plf);
+
+  EXPECT_EQ(availability.handle(), coil.availabilitySchedule().handle());
+  EXPECT_EQ(totalHeatingTemp.handle(), coil.totalHeatingCapacityFunctionofTemperatureCurve().handle());
+  EXPECT_EQ(totalHeatingFlow.handle(), coil.totalHeatingCapacityFunctionofFlowFractionCurve().handle());
+  EXPECT_EQ(eirTemp.handle(), coil.energyInputRatioFunctionofTemperatureCurve().handle());
+  EXPECT_EQ(eirFlow.handle(), coil.energyInputRatioFunctionofFlowFractionCurve().handle());
+  EXPECT_EQ(plf.handle(), coil.partLoadFractionCorrelationCurve().handle());
+  EXPECT_TRUE(coil.isRatedTotalHeatingCapacityAutosized());
+  EXPECT_TRUE(coil.isRatedAirFlowRateAutosized());
 }
 
 TEST_F(EPModelFixture, CoilHeatingDXSingleSpeed_AddToSupplyNode) {

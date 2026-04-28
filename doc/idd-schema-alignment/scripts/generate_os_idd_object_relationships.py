@@ -10,9 +10,9 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 IDD_PATH = ROOT / "resources/model/OpenStudio.idd"
-HVAC_MAPPING_PATH = ROOT / "doc/idd-schema-alignment/idd_mapping_appendix.generated.md"
+HVAC_MAPPING_PATH = ROOT / "doc/idd-schema-alignment/idd_mapping.generated.md"
 OUT_PATH = ROOT / "doc/idd-schema-alignment/os_idd_object_relationships.md"
 
 SUPPRESS_LISTS = {"AllObjects"}
@@ -27,14 +27,16 @@ OBJ_RE = re.compile(r"^\s*([A-Za-z0-9:_]+),\s*$")
 
 
 def parse_hvac_objects(text: str) -> list[str]:
-    os_tokens = re.findall(r"`(OS_[A-Za-z0-9_]+)`", text)
+    os_tokens = re.findall(r"`(OS:[A-Za-z0-9:]+|OS_[A-Za-z0-9_]+)`", text)
     seen: set[str] = set()
     hvac_os: list[str] = []
     for token in os_tokens:
+        if token.startswith("OS_"):
+            token = "OS:" + token[3:].replace("_", ":")
         if token not in seen:
             seen.add(token)
             hvac_os.append(token)
-    return ["OS:" + token[3:].replace("_", ":") for token in hvac_os]
+    return hvac_os
 
 
 def parse_attrs(line: str, field: dict) -> None:
@@ -156,7 +158,7 @@ def main() -> None:
     lines.append("## How this was derived")
     lines.append("")
     lines.append("- Source of truth: `resources/model/OpenStudio.idd`.")
-    lines.append("- mapping object set: `doc/idd-schema-alignment/idd_mapping_appendix.generated.md` (all `OS_*` entries).")
+    lines.append("- mapping object set: `doc/idd-schema-alignment/idd_mapping.generated.md` (all `OS:*` rows).")
     lines.append("- For each object, fields with `\\object-list` are treated as outgoing references.")
     lines.append(
         "- Target objects are inferred by matching `\\object-list <ListName>` to objects whose fields declare `\\reference <ListName>`."
@@ -167,7 +169,7 @@ def main() -> None:
     lines.append("")
     lines.append("- Parse `resources/model/OpenStudio.idd` into object blocks and fields.")
     lines.append(
-        "- Collect HVAC object types from `doc/idd-schema-alignment/idd_mapping_appendix.generated.md` (`OS_*` entries), then convert to IDD names (`OS:*`)."
+        "- Collect HVAC object types from `doc/idd-schema-alignment/idd_mapping.generated.md` (`OS:*` rows)."
     )
     lines.append("- For each HVAC object, list each field that declares `\\object-list`; emit one row per field/object-list pair.")
     lines.append(
@@ -179,7 +181,7 @@ def main() -> None:
     lines.append("")
 
     if missing:
-        lines.append("Note: The following HVAC objects from `idd_mapping_appendix.generated.md` were not found in `OpenStudio.idd`:")
+        lines.append("Note: The following HVAC objects from `idd_mapping.generated.md` were not found in `OpenStudio.idd`:")
         lines.append("")
         lines.append(", ".join(f"`{obj}`" for obj in missing))
         lines.append("")

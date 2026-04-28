@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/FaultModelFoulingCoil.hpp"
+#include "../scaffolds/FaultModelFoulingCoil.hpp"
 
 using namespace openstudio::epmodel;
 

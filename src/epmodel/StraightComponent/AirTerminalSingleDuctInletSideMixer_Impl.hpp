@@ -23,9 +23,12 @@ class EPMODEL_API AirTerminalSingleDuctInletSideMixer_Impl : public StraightComp
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+  bool addToNode(Node& node) override;
 
   std::string perPersonVentilationRateMode() const;
   bool setPerPersonVentilationRateMode(const std::string& perPersonVentilationRateMode);
+  unsigned secondaryAirInletPort() const;
+  boost::optional<Node> secondaryAirInletNode() const;
 
   std::vector<std::string> perPersonVentilationRateModeValues() const;
 };

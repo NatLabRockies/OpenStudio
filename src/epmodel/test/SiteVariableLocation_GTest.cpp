@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SiteVariableLocation.hpp"
+#include "../scaffolds/SiteVariableLocation.hpp"
 
 using namespace openstudio::epmodel;
 

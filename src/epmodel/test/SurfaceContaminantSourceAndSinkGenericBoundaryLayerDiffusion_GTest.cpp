@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion.hpp"
+#include "../scaffolds/SurfaceContaminantSourceAndSinkGenericBoundaryLayerDiffusion.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/WindowGapDeflectionState.hpp"
+#include "../scaffolds/WindowGapDeflectionState.hpp"
 
 using namespace openstudio::epmodel;
 

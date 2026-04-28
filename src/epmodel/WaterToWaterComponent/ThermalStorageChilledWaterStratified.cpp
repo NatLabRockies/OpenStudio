@@ -6,19 +6,67 @@
 #include "WaterToWaterComponent/ThermalStorageChilledWaterStratified.hpp"
 #include "WaterToWaterComponent/ThermalStorageChilledWaterStratified_Impl.hpp"
 
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
+#include "Loop/PlantLoop.hpp"
+#include "Loop/PlantLoop_Impl.hpp"
 #include "Model.hpp"
+#include "ModelObject/WaterHeaterSizing.hpp"
+#include "ModelObject/WaterHeaterSizing_Impl.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/data/DataEnums.hpp>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/ThermalStorage_ChilledWater_Stratified_FieldEnums.hxx>
+
+#include <stdexcept>
 
 namespace openstudio {
 namespace epmodel {
 
   ThermalStorageChilledWaterStratified::ThermalStorageChilledWaterStratified(const Model& model)
-    : WaterToWaterComponent(ThermalStorageChilledWaterStratified::iddObjectType(), model) {}
+    : WaterToWaterComponent(ThermalStorageChilledWaterStratified::iddObjectType(), model) {
+    OS_ASSERT(setTankVolume(50.0));
+    OS_ASSERT(setTankHeight(8.0));
+    OS_ASSERT(setTankShape("VerticalCylinder"));
+    OS_ASSERT(setDeadbandTemperatureDifference(2.5));
+    autosizeNominalCoolingCapacity();
+    OS_ASSERT(setAmbientTemperatureIndicator("Outdoors"));
+
+    ScheduleConstant ambientTemperatureSchedule(model);
+    OS_ASSERT(ambientTemperatureSchedule.setValue(48.89));
+    OS_ASSERT(setAmbientTemperatureSchedule(ambientTemperatureSchedule));
+
+    OS_ASSERT(setUseSideHeatTransferEffectiveness(1.0));
+    autocalculateUseSideInletHeight();
+    OS_ASSERT(setUseSideOutletHeight(0.0));
+    autosizeUseSideDesignFlowRate();
+    OS_ASSERT(setSourceSideHeatTransferEffectiveness(1.0));
+    OS_ASSERT(setSourceSideInletHeight(0.0));
+    autocalculateSourceSideOutletHeight();
+    autosizeSourceSideDesignFlowRate();
+    OS_ASSERT(setTankRecoveryTime(4.0));
+    OS_ASSERT(setInletMode("Fixed"));
+    OS_ASSERT(setNumberofNodes(6));
+    OS_ASSERT(setAdditionalDestratificationConductivity(0.0));
+    OS_ASSERT(setNode1AdditionalLossCoefficient(0.0));
+    OS_ASSERT(setNode2AdditionalLossCoefficient(0.0));
+    OS_ASSERT(setNode3AdditionalLossCoefficient(0.0));
+    OS_ASSERT(setNode4AdditionalLossCoefficient(0.0));
+    OS_ASSERT(setNode5AdditionalLossCoefficient(0.0));
+    OS_ASSERT(setNode6AdditionalLossCoefficient(0.0));
+    OS_ASSERT(setNode7AdditionalLossCoefficient(0.0));
+    OS_ASSERT(setNode8AdditionalLossCoefficient(0.0));
+    OS_ASSERT(setNode9AdditionalLossCoefficient(0.0));
+    OS_ASSERT(setNode10AdditionalLossCoefficient(0.0));
+
+    WaterHeaterSizing waterHeaterSizing(*this);
+  }
 
   ThermalStorageChilledWaterStratified::ThermalStorageChilledWaterStratified(std::shared_ptr<detail::ThermalStorageChilledWaterStratified_Impl> impl)
     : WaterToWaterComponent(std::move(impl)) {}
@@ -78,6 +126,18 @@ namespace epmodel {
     getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->resetTankPerimeter();
   }
 
+  boost::optional<Schedule> ThermalStorageChilledWaterStratified::setpointTemperatureSchedule() const {
+    return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->setpointTemperatureSchedule();
+  }
+
+  bool ThermalStorageChilledWaterStratified::setSetpointTemperatureSchedule(Schedule& schedule) {
+    return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->setSetpointTemperatureSchedule(schedule);
+  }
+
+  void ThermalStorageChilledWaterStratified::resetSetpointTemperatureSchedule() {
+    getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->resetSetpointTemperatureSchedule();
+  }
+
   double ThermalStorageChilledWaterStratified::deadbandTemperatureDifference() const {
     return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->deadbandTemperatureDifference();
   }
@@ -134,6 +194,43 @@ namespace epmodel {
     return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->setAmbientTemperatureIndicator(ambientTemperatureIndicator);
   }
 
+  boost::optional<Schedule> ThermalStorageChilledWaterStratified::ambientTemperatureSchedule() const {
+    return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->ambientTemperatureSchedule();
+  }
+
+  bool ThermalStorageChilledWaterStratified::setAmbientTemperatureSchedule(Schedule& schedule) {
+    return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->setAmbientTemperatureSchedule(schedule);
+  }
+
+  void ThermalStorageChilledWaterStratified::resetAmbientTemperatureSchedule() {
+    getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->resetAmbientTemperatureSchedule();
+  }
+
+  boost::optional<ThermalZone> ThermalStorageChilledWaterStratified::ambientTemperatureThermalZone() const {
+    return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->ambientTemperatureThermalZone();
+  }
+
+  bool ThermalStorageChilledWaterStratified::setAmbientTemperatureThermalZone(const ThermalZone& thermalZone) {
+    return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->setAmbientTemperatureThermalZone(thermalZone);
+  }
+
+  void ThermalStorageChilledWaterStratified::resetAmbientTemperatureThermalZone() {
+    getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->resetAmbientTemperatureThermalZone();
+  }
+
+  boost::optional<std::string> ThermalStorageChilledWaterStratified::ambientTemperatureOutdoorAirNodeName() const {
+    return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->ambientTemperatureOutdoorAirNodeName();
+  }
+
+  bool ThermalStorageChilledWaterStratified::setAmbientTemperatureOutdoorAirNodeName(const std::string& ambientTemperatureOutdoorAirNodeName) {
+    return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->setAmbientTemperatureOutdoorAirNodeName(
+      ambientTemperatureOutdoorAirNodeName);
+  }
+
+  void ThermalStorageChilledWaterStratified::resetAmbientTemperatureOutdoorAirNodeName() {
+    getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->resetAmbientTemperatureOutdoorAirNodeName();
+  }
+
   boost::optional<double> ThermalStorageChilledWaterStratified::uniformSkinLossCoefficientperUnitAreatoAmbientTemperature() const {
     return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->uniformSkinLossCoefficientperUnitAreatoAmbientTemperature();
   }
@@ -162,6 +259,18 @@ namespace epmodel {
 
   void ThermalStorageChilledWaterStratified::resetUseSideHeatTransferEffectiveness() {
     getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->resetUseSideHeatTransferEffectiveness();
+  }
+
+  boost::optional<Schedule> ThermalStorageChilledWaterStratified::useSideAvailabilitySchedule() const {
+    return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->useSideAvailabilitySchedule();
+  }
+
+  bool ThermalStorageChilledWaterStratified::setUseSideAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->setUseSideAvailabilitySchedule(schedule);
+  }
+
+  void ThermalStorageChilledWaterStratified::resetUseSideAvailabilitySchedule() {
+    getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->resetUseSideAvailabilitySchedule();
   }
 
   boost::optional<double> ThermalStorageChilledWaterStratified::useSideInletHeight() const {
@@ -226,6 +335,18 @@ namespace epmodel {
 
   void ThermalStorageChilledWaterStratified::resetSourceSideHeatTransferEffectiveness() {
     getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->resetSourceSideHeatTransferEffectiveness();
+  }
+
+  boost::optional<Schedule> ThermalStorageChilledWaterStratified::sourceSideAvailabilitySchedule() const {
+    return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->sourceSideAvailabilitySchedule();
+  }
+
+  bool ThermalStorageChilledWaterStratified::setSourceSideAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->setSourceSideAvailabilitySchedule(schedule);
+  }
+
+  void ThermalStorageChilledWaterStratified::resetSourceSideAvailabilitySchedule() {
+    getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->resetSourceSideAvailabilitySchedule();
   }
 
   double ThermalStorageChilledWaterStratified::sourceSideInletHeight() const {
@@ -389,7 +510,27 @@ namespace epmodel {
     return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->setNode10AdditionalLossCoefficient(node10AdditionalLossCoefficient);
   }
 
+  WaterHeaterSizing ThermalStorageChilledWaterStratified::waterHeaterSizing() const {
+    return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->waterHeaterSizing();
+  }
+
+  boost::optional<double> ThermalStorageChilledWaterStratified::autosizedNominalCoolingCapacity() const {
+    return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->autosizedNominalCoolingCapacity();
+  }
+
+  boost::optional<double> ThermalStorageChilledWaterStratified::autosizedUseSideDesignFlowRate() const {
+    return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->autosizedUseSideDesignFlowRate();
+  }
+
+  boost::optional<double> ThermalStorageChilledWaterStratified::autosizedSourceSideDesignFlowRate() const {
+    return getImpl<detail::ThermalStorageChilledWaterStratified_Impl>()->autosizedSourceSideDesignFlowRate();
+  }
+
   namespace detail {
+
+    std::vector<ModelObject> ThermalStorageChilledWaterStratified_Impl::children() const {
+      return {waterHeaterSizing()};
+    }
 
     double ThermalStorageChilledWaterStratified_Impl::tankVolume() const {
       auto value = getDouble(openstudio::ThermalStorage_ChilledWater_StratifiedFields::TankVolume, true);
@@ -431,6 +572,20 @@ namespace epmodel {
 
     void ThermalStorageChilledWaterStratified_Impl::resetTankPerimeter() {
       OS_ASSERT(setString(openstudio::ThermalStorage_ChilledWater_StratifiedFields::TankPerimeter, ""));
+    }
+
+    boost::optional<Schedule> ThermalStorageChilledWaterStratified_Impl::setpointTemperatureSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::ThermalStorage_ChilledWater_StratifiedFields::SetpointTemperatureScheduleName);
+    }
+
+    bool ThermalStorageChilledWaterStratified_Impl::setSetpointTemperatureSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::ThermalStorage_ChilledWater_StratifiedFields::SetpointTemperatureScheduleName,
+                         "ThermalStorageChilledWaterStratified", "Setpoint Temperature", schedule);
+    }
+
+    void ThermalStorageChilledWaterStratified_Impl::resetSetpointTemperatureSchedule() {
+      OS_ASSERT(setString(openstudio::ThermalStorage_ChilledWater_StratifiedFields::SetpointTemperatureScheduleName, ""));
     }
 
     double ThermalStorageChilledWaterStratified_Impl::deadbandTemperatureDifference() const {
@@ -496,6 +651,51 @@ namespace epmodel {
       return setString(openstudio::ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureIndicator, ambientTemperatureIndicator);
     }
 
+    boost::optional<Schedule> ThermalStorageChilledWaterStratified_Impl::ambientTemperatureSchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureScheduleName);
+    }
+
+    bool ThermalStorageChilledWaterStratified_Impl::setAmbientTemperatureSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureScheduleName,
+                         "ThermalStorageChilledWaterStratified", "Ambient Temperature", schedule);
+    }
+
+    void ThermalStorageChilledWaterStratified_Impl::resetAmbientTemperatureSchedule() {
+      OS_ASSERT(setString(openstudio::ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureScheduleName, ""));
+    }
+
+    boost::optional<ThermalZone> ThermalStorageChilledWaterStratified_Impl::ambientTemperatureThermalZone() const {
+      return getObject<ModelObject>().getModelObjectTarget<ThermalZone>(
+        openstudio::ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureZoneName);
+    }
+
+    bool ThermalStorageChilledWaterStratified_Impl::setAmbientTemperatureThermalZone(const ThermalZone& thermalZone) {
+      return setPointer(openstudio::ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureZoneName, thermalZone.handle());
+    }
+
+    void ThermalStorageChilledWaterStratified_Impl::resetAmbientTemperatureThermalZone() {
+      OS_ASSERT(setString(openstudio::ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureZoneName, ""));
+    }
+
+    boost::optional<std::string> ThermalStorageChilledWaterStratified_Impl::ambientTemperatureOutdoorAirNodeName() const {
+      auto value = getString(openstudio::ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureOutdoorAirNodeName, true);
+      if (value && value->empty()) {
+        return boost::none;
+      }
+      return value;
+    }
+
+    bool ThermalStorageChilledWaterStratified_Impl::setAmbientTemperatureOutdoorAirNodeName(
+      const std::string& ambientTemperatureOutdoorAirNodeName) {
+      return setString(openstudio::ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureOutdoorAirNodeName,
+                       ambientTemperatureOutdoorAirNodeName);
+    }
+
+    void ThermalStorageChilledWaterStratified_Impl::resetAmbientTemperatureOutdoorAirNodeName() {
+      OS_ASSERT(setString(openstudio::ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureOutdoorAirNodeName, ""));
+    }
+
     boost::optional<double> ThermalStorageChilledWaterStratified_Impl::uniformSkinLossCoefficientperUnitAreatoAmbientTemperature() const {
       return getDouble(openstudio::ThermalStorage_ChilledWater_StratifiedFields::UniformSkinLossCoefficientperUnitAreatoAmbientTemperature, true);
     }
@@ -526,6 +726,20 @@ namespace epmodel {
 
     void ThermalStorageChilledWaterStratified_Impl::resetUseSideHeatTransferEffectiveness() {
       OS_ASSERT(setString(openstudio::ThermalStorage_ChilledWater_StratifiedFields::UseSideHeatTransferEffectiveness, ""));
+    }
+
+    boost::optional<Schedule> ThermalStorageChilledWaterStratified_Impl::useSideAvailabilitySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::ThermalStorage_ChilledWater_StratifiedFields::UseSideAvailabilityScheduleName);
+    }
+
+    bool ThermalStorageChilledWaterStratified_Impl::setUseSideAvailabilitySchedule(Schedule& schedule) {
+      return setSchedule(openstudio::ThermalStorage_ChilledWater_StratifiedFields::UseSideAvailabilityScheduleName,
+                         "ThermalStorageChilledWaterStratified", "Use Side Availability", schedule);
+    }
+
+    void ThermalStorageChilledWaterStratified_Impl::resetUseSideAvailabilitySchedule() {
+      OS_ASSERT(setString(openstudio::ThermalStorage_ChilledWater_StratifiedFields::UseSideAvailabilityScheduleName, ""));
     }
 
     boost::optional<double> ThermalStorageChilledWaterStratified_Impl::useSideInletHeight() const {
@@ -601,6 +815,20 @@ namespace epmodel {
 
     void ThermalStorageChilledWaterStratified_Impl::resetSourceSideHeatTransferEffectiveness() {
       OS_ASSERT(setString(openstudio::ThermalStorage_ChilledWater_StratifiedFields::SourceSideHeatTransferEffectiveness, ""));
+    }
+
+    boost::optional<Schedule> ThermalStorageChilledWaterStratified_Impl::sourceSideAvailabilitySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::ThermalStorage_ChilledWater_StratifiedFields::SourceSideAvailabilityScheduleName);
+    }
+
+    bool ThermalStorageChilledWaterStratified_Impl::setSourceSideAvailabilitySchedule(Schedule& schedule) {
+      return setSchedule(openstudio::ThermalStorage_ChilledWater_StratifiedFields::SourceSideAvailabilityScheduleName,
+                         "ThermalStorageChilledWaterStratified", "Source Side Availability", schedule);
+    }
+
+    void ThermalStorageChilledWaterStratified_Impl::resetSourceSideAvailabilitySchedule() {
+      OS_ASSERT(setString(openstudio::ThermalStorage_ChilledWater_StratifiedFields::SourceSideAvailabilityScheduleName, ""));
     }
 
     double ThermalStorageChilledWaterStratified_Impl::sourceSideInletHeight() const {
@@ -828,6 +1056,46 @@ namespace epmodel {
         setDouble(openstudio::ThermalStorage_ChilledWater_StratifiedFields::Node10AdditionalLossCoefficient, node10AdditionalLossCoefficient);
       OS_ASSERT(result);
       return result;
+    }
+
+    WaterHeaterSizing ThermalStorageChilledWaterStratified_Impl::waterHeaterSizing() const {
+      for (const auto& sizing : model().getConcreteModelObjects<WaterHeaterSizing>()) {
+        if (sizing.waterHeater().handle() == handle()) {
+          return sizing;
+        }
+      }
+      throw std::runtime_error("ThermalStorageChilledWaterStratified missing WaterHeater:Sizing object.");
+    }
+
+    boost::optional<double> ThermalStorageChilledWaterStratified_Impl::autosizedNominalCoolingCapacity() const {
+      return getAutosizedValue("Maximum Heater Capacity", "W");
+    }
+
+    boost::optional<double> ThermalStorageChilledWaterStratified_Impl::autosizedUseSideDesignFlowRate() const {
+      return getAutosizedValue("Use Side Design Flow Rate", "m3/s");
+    }
+
+    boost::optional<double> ThermalStorageChilledWaterStratified_Impl::autosizedSourceSideDesignFlowRate() const {
+      return getAutosizedValue("Source Side Design Flow Rate", "m3/s");
+    }
+
+    ComponentType ThermalStorageChilledWaterStratified_Impl::componentType() const {
+      return ComponentType::Cooling;
+    }
+
+    std::vector<FuelType> ThermalStorageChilledWaterStratified_Impl::coolingFuelTypes() const {
+      if (auto sourceLoop = secondaryPlantLoop()) {
+        return sourceLoop->coolingFuelTypes();
+      }
+      return {};
+    }
+
+    std::vector<FuelType> ThermalStorageChilledWaterStratified_Impl::heatingFuelTypes() const {
+      return {};
+    }
+
+    std::vector<AppGFuelType> ThermalStorageChilledWaterStratified_Impl::appGHeatingFuelTypes() const {
+      return {};
     }
 
     unsigned ThermalStorageChilledWaterStratified_Impl::supplyInletPort() const {

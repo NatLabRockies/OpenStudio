@@ -6,7 +6,12 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/CoolingTowerSingleSpeed.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -15,6 +20,10 @@ TEST_F(EPModelFixture, CoolingTowerSingleSpeed_DefaultConstructor) {
   CoolingTowerSingleSpeed coolingTower(model);
   EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::CoolingTower_SingleSpeed), coolingTower.iddObject().type());
   EXPECT_FALSE(coolingTower.nameString().empty());
+  EXPECT_EQ("UFactorTimesAreaAndDesignWaterFlowRate", coolingTower.performanceInputMethod());
+  EXPECT_FALSE(coolingTower.isPerformanceInputMethodDefaulted());
+  EXPECT_FALSE(coolingTower.basinHeaterOperatingSchedule());
+  EXPECT_FALSE(coolingTower.blowdownMakeupWaterUsageSchedule());
 }
 
 TEST_F(EPModelFixture, CoolingTowerSingleSpeed_ScalarAccessors_RoundTrip) {
@@ -84,4 +93,55 @@ TEST_F(EPModelFixture, CoolingTowerSingleSpeed_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(coolingTower.setEndUseSubcategory("Heat Rejection"));
   EXPECT_EQ("Heat Rejection", coolingTower.endUseSubcategory());
+}
+
+TEST_F(EPModelFixture, CoolingTowerSingleSpeed_RelationshipSetters_RoundTrip) {
+  Model model;
+  CoolingTowerSingleSpeed coolingTower(model);
+  ScheduleConstant basinSchedule(model);
+  ScheduleConstant blowdownSchedule(model);
+  ASSERT_TRUE(basinSchedule.setValue(0.25));
+  ASSERT_TRUE(blowdownSchedule.setValue(0.5));
+
+  EXPECT_TRUE(coolingTower.setBasinHeaterOperatingSchedule(basinSchedule));
+  ASSERT_TRUE(coolingTower.basinHeaterOperatingSchedule());
+  EXPECT_EQ(basinSchedule.handle(), coolingTower.basinHeaterOperatingSchedule()->handle());
+
+  EXPECT_TRUE(coolingTower.setBlowdownMakeupWaterUsageSchedule(blowdownSchedule));
+  ASSERT_TRUE(coolingTower.blowdownMakeupWaterUsageSchedule());
+  EXPECT_EQ(blowdownSchedule.handle(), coolingTower.blowdownMakeupWaterUsageSchedule()->handle());
+
+  coolingTower.resetBasinHeaterOperatingSchedule();
+  coolingTower.resetBlowdownMakeupWaterUsageSchedule();
+  EXPECT_FALSE(coolingTower.basinHeaterOperatingSchedule());
+  EXPECT_FALSE(coolingTower.blowdownMakeupWaterUsageSchedule());
+}
+
+TEST_F(EPModelFixture, CoolingTowerSingleSpeed_AddToNode_PlantSupplyOnly) {
+  Model model;
+  CoolingTowerSingleSpeed coolingTower(model);
+
+  AirLoopHVAC airLoop(model);
+  auto airSupplyOutletNode = airLoop.supplyOutletNode();
+  EXPECT_FALSE(coolingTower.addToNode(airSupplyOutletNode));
+  EXPECT_EQ(2u, airLoop.supplyComponents().size());
+
+  auto splitterBranch = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(splitterBranch);
+  auto demandBranchNode = splitterBranch->optionalCast<Node>();
+  ASSERT_TRUE(demandBranchNode);
+  EXPECT_FALSE(coolingTower.addToNode(*demandBranchNode));
+  EXPECT_EQ(5u, airLoop.demandComponents().size());
+
+  PlantLoop plantLoop(model);
+  auto plantSupplyOutletNode = plantLoop.supplyOutletNode();
+  EXPECT_TRUE(coolingTower.addToNode(plantSupplyOutletNode));
+  EXPECT_EQ(7u, plantLoop.supplyComponents().size());
+  ASSERT_TRUE(coolingTower.inletModelObject());
+  ASSERT_TRUE(coolingTower.outletModelObject());
+
+  CoolingTowerSingleSpeed secondTower(model);
+  auto plantDemandOutletNode = plantLoop.demandOutletNode();
+  EXPECT_FALSE(secondTower.addToNode(plantDemandOutletNode));
+  EXPECT_EQ(5u, plantLoop.demandComponents().size());
 }

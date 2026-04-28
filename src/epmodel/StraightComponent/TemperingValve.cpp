@@ -8,7 +8,13 @@
 
 #include "Model.hpp"
 
+#include "Loop/PlantLoop.hpp"
+#include "Mixer/Mixer.hpp"
+#include "StraightComponent/HeaderedPumpsConstantSpeed.hpp"
+#include "StraightComponent/HeaderedPumpsVariableSpeed.hpp"
 #include "StraightComponent/Node.hpp"
+#include "StraightComponent/PumpConstantSpeed.hpp"
+#include "StraightComponent/PumpVariableSpeed.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/idd/IddEnums.hxx>
@@ -27,6 +33,16 @@ namespace epmodel {
       return openstudio::TemperingValveFields::OutletNodeName;
     }
 
+    bool TemperingValve_Impl::addToNode(Node& node) {
+      if (auto plant = node.plantLoop()) {
+        if (plant->supplyComponent(node.handle()) && StraightComponent_Impl::addToNode(node)) {
+          return setControlNodes();
+        }
+      }
+
+      return false;
+    }
+
     boost::optional<Node> TemperingValve_Impl::stream2SourceNode() const {
       return getObject<ModelObject>().getModelObjectTarget<Node>(openstudio::TemperingValveFields::Stream2SourceNodeName);
     }
@@ -36,7 +52,7 @@ namespace epmodel {
     }
 
     void TemperingValve_Impl::resetStream2SourceNode() {
-      const bool result = setString(openstudio::TemperingValveFields::Stream2SourceNodeName, "");
+      const bool result = setPointer(openstudio::TemperingValveFields::Stream2SourceNodeName, Handle(), false);
       OS_ASSERT(result);
     }
 
@@ -49,7 +65,7 @@ namespace epmodel {
     }
 
     void TemperingValve_Impl::resetTemperatureSetpointNode() {
-      const bool result = setString(openstudio::TemperingValveFields::TemperatureSetpointNodeName, "");
+      const bool result = setPointer(openstudio::TemperingValveFields::TemperatureSetpointNodeName, Handle(), false);
       OS_ASSERT(result);
     }
 
@@ -62,13 +78,65 @@ namespace epmodel {
     }
 
     void TemperingValve_Impl::resetPumpOutletNode() {
-      const bool result = setString(openstudio::TemperingValveFields::PumpOutletNodeName, "");
+      const bool result = setPointer(openstudio::TemperingValveFields::PumpOutletNodeName, Handle(), false);
       OS_ASSERT(result);
+    }
+
+    bool TemperingValve_Impl::setControlNodes() {
+      auto plant = plantLoop();
+      if (!plant) {
+        return false;
+      }
+
+      bool ok = true;
+
+      if (!pumpOutletNode()) {
+        std::vector<ModelObject> allPumps;
+
+        auto pumps = plant->supplyComponents(openstudio::epmodel::PumpVariableSpeed::iddObjectType());
+        allPumps.insert(allPumps.end(), pumps.begin(), pumps.end());
+        pumps = plant->supplyComponents(openstudio::epmodel::PumpConstantSpeed::iddObjectType());
+        allPumps.insert(allPumps.end(), pumps.begin(), pumps.end());
+        pumps = plant->supplyComponents(openstudio::epmodel::HeaderedPumpsConstantSpeed::iddObjectType());
+        allPumps.insert(allPumps.end(), pumps.begin(), pumps.end());
+        pumps = plant->supplyComponents(openstudio::epmodel::HeaderedPumpsVariableSpeed::iddObjectType());
+        allPumps.insert(allPumps.end(), pumps.begin(), pumps.end());
+
+        if (!allPumps.empty()) {
+          if (auto mo = allPumps.back().optionalCast<StraightComponent>()) {
+            if (auto outlet = mo->outletModelObject()) {
+              if (auto node = outlet->optionalCast<Node>()) {
+                ok = setPumpOutletNode(*node) && ok;
+              }
+            }
+          }
+        }
+      }
+
+      if (!temperatureSetpointNode()) {
+        ok = setTemperatureSetpointNode(plant->supplyOutletNode()) && ok;
+      }
+
+      if (!stream2SourceNode()) {
+        auto mixer = plant->supplyMixer();
+        const auto thisObject = getObject<TemperingValve>();
+        for (const auto& inletObject : mixer.inletModelObjects()) {
+          if (auto node = inletObject.optionalCast<Node>()) {
+            if (plant->supplyComponents(thisObject, *node).empty()) {
+              ok = setStream2SourceNode(*node) && ok;
+            }
+          }
+        }
+      }
+
+      return ok;
     }
 
   }  // namespace detail
 
-  TemperingValve::TemperingValve(const Model& model) : StraightComponent(TemperingValve::iddObjectType(), model) {}
+  TemperingValve::TemperingValve(const Model& model) : StraightComponent(TemperingValve::iddObjectType(), model) {
+    OS_ASSERT(getImpl<detail::TemperingValve_Impl>());
+  }
 
   TemperingValve::TemperingValve(std::shared_ptr<detail::TemperingValve_Impl> impl) : StraightComponent(std::move(impl)) {}
 

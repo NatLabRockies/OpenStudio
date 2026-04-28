@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/FaultModelTemperatureSensorOffsetCoilSupplyAir.hpp"
+#include "../scaffolds/FaultModelTemperatureSensorOffsetCoilSupplyAir.hpp"
 
 using namespace openstudio::epmodel;
 

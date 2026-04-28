@@ -29020,6 +29020,7 @@ AirTerminal:DualDuct:VAV:OutdoorAir,
        \object-list ScheduleNames
   A3 , \field Air Outlet Node Name
        \required-field
+       \type node
        \note The outlet node of the terminal unit.
        \note This is also the zone inlet node.
   A4 , \field Outdoor Air Inlet Node Name

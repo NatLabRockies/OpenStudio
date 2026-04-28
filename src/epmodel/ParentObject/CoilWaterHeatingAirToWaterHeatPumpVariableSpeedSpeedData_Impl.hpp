@@ -59,6 +59,7 @@ class EPMODEL_API CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_Impl 
   bool setCOPFunctionofWaterFlowFractionCurve(const Curve& curve);
 
   std::vector<ModelObject> children() const override;
+  std::vector<IdfObject> remove() override;
 
   boost::optional<CoilWaterHeatingAirToWaterHeatPumpVariableSpeed> parent() const;
   boost::optional<unsigned> attachedSpeedIndex() const;

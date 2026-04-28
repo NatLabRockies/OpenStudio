@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/WindowMaterialGapEquivalentLayer.hpp"
+#include "../scaffolds/WindowMaterialGapEquivalentLayer.hpp"
 
 using namespace openstudio::epmodel;
 

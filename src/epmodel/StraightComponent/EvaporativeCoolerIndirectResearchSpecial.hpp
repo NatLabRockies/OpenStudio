@@ -18,6 +18,8 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
+  class Curve;
 
   namespace detail {
     class EvaporativeCoolerIndirectResearchSpecial_Impl;
@@ -37,13 +39,23 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical indirect-research-special scalar surface is present, with secondary-fan and relationship helpers left out of this pass.
+    // - Status: Near Parity. The canonical indirect-research-special wrapper surface and placement behavior are present, with only the EnergyPlus-only
+    //   secondary-fan pair storage gap and autosized-value lookup still documented.
     // - Canonical Counterpart: openstudio::model::EvaporativeCoolerIndirectResearchSpecial.
-    // - Implemented Parity: The preserved scalar API matches the effectiveness, pump-power, fan-flow, fan-power, and blowdown accessors with matching autosize/default behavior.
-    // - Documented Delta: The legacy secondary-fan dual-API mapping is preserved for compatibility, and schedule/node/storage-tank/curve helpers remain intentionally excluded.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `EvaporativeCooler:Indirect:ResearchSpecial` scalar fields used by the forward translator.
+    // - Implemented Parity: Availability schedule, curve relationships, scalar field accessors, and `addToNode(...)` now follow the canonical
+    //   indirect-research evaporative-cooler behavior, including outlet-sensor propagation on supply-side and OA-system placement.
+    // - Documented Delta: EnergyPlus persists only `Secondary Air Fan Sizing Specific Power`, so wrappers rebuilt only from bare persisted storage must
+    //   reconstruct the legacy `secondaryFanTotalEfficiency()` / `secondaryFanDeltaPressure()` pair from that single value; and
+    //   `autosizedRecirculatingWaterPumpPowerConsumption()` / `autosizedSecondaryFanFlowRate()` / `autosizedSecondaryAirFanDesignPower()` /
+    //   `autosizedPrimaryDesignAirFlowRate()` still return none because epmodel does not yet resolve autosized sizing results from SQL output.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `EvaporativeCooler:Indirect:ResearchSpecial` fields and object-list targets.
     // - Evidence: `src/model/EvaporativeCoolerIndirectResearchSpecial.hpp`, `src/model/EvaporativeCoolerIndirectResearchSpecial.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateEvaporativeCoolerIndirectResearchSpecial.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Replace the current reconstructed secondary-fan pair fallback with shared infrastructure that can preserve the canonical
+    //   total-efficiency and delta-pressure values across all EnergyPlus-backed rematerialization paths.
+
+    boost::optional<Schedule> availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+    void resetAvailabilitySchedule();
 
     double coolerMaximumEffectiveness() const;
     bool setCoolerMaximumEffectiveness(double coolerMaximumEffectiveness);
@@ -78,12 +90,24 @@ namespace epmodel {
     bool setBlowdownConcentrationRatio(double blowdownConcentrationRatio);
     void resetBlowdownConcentrationRatio();
 
+    boost::optional<Curve> wetbulbEffectivenessFlowRatioModifierCurve() const;
+    bool setWetbulbEffectivenessFlowRatioModifierCurve(const Curve& curve);
+    void resetWetbulbEffectivenessFlowRatioModifierCurve();
+
     boost::optional<double> coolerDrybulbDesignEffectiveness() const;
     bool setCoolerDrybulbDesignEffectiveness(double coolerDrybulbDesignEffectiveness);
     void resetCoolerDrybulbDesignEffectiveness();
 
+    boost::optional<Curve> drybulbEffectivenessFlowRatioModifierCurve() const;
+    bool setDrybulbEffectivenessFlowRatioModifierCurve(const Curve& curve);
+    void resetDrybulbEffectivenessFlowRatioModifierCurve();
+
     double waterPumpPowerSizingFactor() const;
     bool setWaterPumpPowerSizingFactor(double waterPumpPowerSizingFactor);
+
+    boost::optional<Curve> waterPumpPowerModifierCurve() const;
+    bool setWaterPumpPowerModifierCurve(const Curve& curve);
+    void resetWaterPumpPowerModifierCurve();
 
     double secondaryAirFlowScalingFactor() const;
     bool setSecondaryAirFlowScalingFactor(double secondaryAirFlowScalingFactor);
@@ -93,6 +117,10 @@ namespace epmodel {
     bool setSecondaryAirFanDesignPower(double secondaryAirFanDesignPower);
     void autosizeSecondaryAirFanDesignPower();
     boost::optional<double> autosizedSecondaryAirFanDesignPower() const;
+
+    boost::optional<Curve> secondaryAirFanPowerModifierCurve() const;
+    bool setSecondaryAirFanPowerModifierCurve(const Curve& curve);
+    void resetSecondaryAirFanPowerModifierCurve();
 
     boost::optional<double> primaryDesignAirFlowRate() const;
     bool isPrimaryDesignAirFlowRateAutosized() const;

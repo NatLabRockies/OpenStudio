@@ -26,6 +26,7 @@ namespace epmodel {
   class AirLoopHVACZoneSplitter;
   class Schedule;
   class SizingSystem;
+  class Splitter;
   class ThermalZone;
 
   namespace detail {
@@ -37,7 +38,7 @@ namespace epmodel {
   class EPMODEL_API AirLoopHVAC : public Loop
   {
    public:
-    explicit AirLoopHVAC(const Model& model);
+    explicit AirLoopHVAC(const Model& model, bool dualDuct = false);
 
     ~AirLoopHVAC() override = default;
     AirLoopHVAC(const AirLoopHVAC& other) = default;
@@ -70,6 +71,10 @@ namespace epmodel {
     Node demandInletNode() const override;
     Node demandOutletNode() const override;
     std::vector<Node> demandInletNodes() const override;
+    bool isDualDuct() const;
+    boost::optional<Splitter> supplySplitter() const;
+    boost::optional<Node> supplySplitterInletNode() const;
+    std::vector<Node> supplySplitterOutletNodes() const;
     AirLoopHVACZoneSplitter zoneSplitter() const;
     AirLoopHVACZoneMixer zoneMixer() const;
 

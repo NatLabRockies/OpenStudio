@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SiteSpectrumData.hpp"
+#include "../scaffolds/SiteSpectrumData.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -6,9 +6,14 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Curve/CurveQuadLinear.hpp"
+#include "../Curve/CurveQuadLinear_Impl.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../StraightComponent/Node.hpp"
+#include "../WaterToWaterComponent/HeatPumpWaterToWaterEquationFitCooling.hpp"
 #include "../WaterToWaterComponent/HeatPumpWaterToWaterEquationFitHeating.hpp"
 
-#include <limits>
+#include <utilities/idd/HeatPump_WaterToWater_EquationFit_Heating_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -17,8 +22,10 @@ TEST_F(EPModelFixture, HeatPumpWaterToWaterEquationFitHeating_DefaultConstructor
   HeatPumpWaterToWaterEquationFitHeating hp(model);
 
   EXPECT_EQ(HeatPumpWaterToWaterEquationFitHeating::iddObjectType(), hp.iddObject().type());
-  EXPECT_NE(std::numeric_limits<unsigned>::max(), hp.supplyInletPort());
-  EXPECT_NE(std::numeric_limits<unsigned>::max(), hp.demandInletPort());
+  EXPECT_EQ(openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::SourceSideInletNodeName, hp.supplyInletPort());
+  EXPECT_EQ(openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::SourceSideOutletNodeName, hp.supplyOutletPort());
+  EXPECT_EQ(openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::LoadSideInletNodeName, hp.demandInletPort());
+  EXPECT_EQ(openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::LoadSideOutletNodeName, hp.demandOutletPort());
 
   EXPECT_TRUE(hp.isReferenceLoadSideFlowRateAutosized());
   EXPECT_TRUE(hp.isReferenceSourceSideFlowRateAutosized());
@@ -31,9 +38,106 @@ TEST_F(EPModelFixture, HeatPumpWaterToWaterEquationFitHeating_DefaultConstructor
   EXPECT_FALSE(hp.ratedHeatingPowerConsumption());
   EXPECT_DOUBLE_EQ(-999.0, hp.ratedLoadSideFlowRate());
   EXPECT_DOUBLE_EQ(-999.0, hp.ratedSourceSideFlowRate());
+  EXPECT_EQ(CurveQuadLinear::iddObjectType(), hp.heatingCapacityCurve().iddObject().type());
+  EXPECT_EQ(CurveQuadLinear::iddObjectType(), hp.heatingCompressorPowerCurve().iddObject().type());
+  EXPECT_FALSE(hp.companionCoolingHeatPump());
 
   EXPECT_DOUBLE_EQ(7.5, hp.referenceCoefficientofPerformance());
   EXPECT_DOUBLE_EQ(1.0, hp.sizingFactor());
+}
+
+TEST_F(EPModelFixture, HeatPumpWaterToWaterEquationFitHeating_CurveConstructorAndSetters) {
+  Model model;
+  CurveQuadLinear capacityCurve(model);
+  CurveQuadLinear powerCurve(model);
+
+  HeatPumpWaterToWaterEquationFitHeating hp(model, capacityCurve, powerCurve);
+  EXPECT_EQ(capacityCurve, hp.heatingCapacityCurve());
+  EXPECT_EQ(powerCurve, hp.heatingCompressorPowerCurve());
+
+  CurveQuadLinear replacementCapacity(model);
+  CurveQuadLinear replacementPower(model);
+
+  EXPECT_TRUE(hp.setHeatingCapacityCurve(replacementCapacity));
+  EXPECT_TRUE(hp.setHeatingCompressorPowerCurve(replacementPower));
+
+  EXPECT_EQ(replacementCapacity, hp.heatingCapacityCurve());
+  EXPECT_EQ(replacementPower, hp.heatingCompressorPowerCurve());
+}
+
+TEST_F(EPModelFixture, HeatPumpWaterToWaterEquationFitHeating_CompanionCoolingHeatPumpRoundTrip) {
+  Model model;
+  HeatPumpWaterToWaterEquationFitHeating heating(model);
+  HeatPumpWaterToWaterEquationFitCooling cooling(model);
+
+  EXPECT_FALSE(heating.companionCoolingHeatPump());
+  EXPECT_TRUE(heating.setCompanionCoolingHeatPump(cooling));
+  ASSERT_TRUE(heating.companionCoolingHeatPump());
+  EXPECT_EQ(cooling, heating.companionCoolingHeatPump().get());
+}
+
+TEST_F(EPModelFixture, HeatPumpWaterToWaterEquationFitHeating_DeprecatedCoefficientAliasesDelegateThroughStoredCurves) {
+  Model model;
+  HeatPumpWaterToWaterEquationFitHeating hp(model);
+
+  EXPECT_TRUE(hp.setHeatingCapacityCoefficient1(1.1));
+  EXPECT_TRUE(hp.setHeatingCapacityCoefficient2(1.2));
+  EXPECT_TRUE(hp.setHeatingCapacityCoefficient3(1.3));
+  EXPECT_TRUE(hp.setHeatingCapacityCoefficient4(1.4));
+  EXPECT_TRUE(hp.setHeatingCapacityCoefficient5(1.5));
+  EXPECT_DOUBLE_EQ(1.1, hp.heatingCapacityCoefficient1());
+  EXPECT_DOUBLE_EQ(1.2, hp.heatingCapacityCoefficient2());
+  EXPECT_DOUBLE_EQ(1.3, hp.heatingCapacityCoefficient3());
+  EXPECT_DOUBLE_EQ(1.4, hp.heatingCapacityCoefficient4());
+  EXPECT_DOUBLE_EQ(1.5, hp.heatingCapacityCoefficient5());
+
+  EXPECT_TRUE(hp.setHeatingCompressorPowerCoefficient1(2.1));
+  EXPECT_TRUE(hp.setHeatingCompressorPowerCoefficient2(2.2));
+  EXPECT_TRUE(hp.setHeatingCompressorPowerCoefficient3(2.3));
+  EXPECT_TRUE(hp.setHeatingCompressorPowerCoefficient4(2.4));
+  EXPECT_TRUE(hp.setHeatingCompressorPowerCoefficient5(2.5));
+  EXPECT_DOUBLE_EQ(2.1, hp.heatingCompressorPowerCoefficient1());
+  EXPECT_DOUBLE_EQ(2.2, hp.heatingCompressorPowerCoefficient2());
+  EXPECT_DOUBLE_EQ(2.3, hp.heatingCompressorPowerCoefficient3());
+  EXPECT_DOUBLE_EQ(2.4, hp.heatingCompressorPowerCoefficient4());
+  EXPECT_DOUBLE_EQ(2.5, hp.heatingCompressorPowerCoefficient5());
+}
+
+TEST_F(EPModelFixture, HeatPumpWaterToWaterEquationFitHeating_PlantLoopAttachmentParity) {
+  Model model;
+  PlantLoop sourceLoop(model);
+  PlantLoop loadLoop(model);
+  HeatPumpWaterToWaterEquationFitHeating hp(model);
+
+  EXPECT_TRUE(sourceLoop.addSupplyBranchForComponent(hp));
+  ASSERT_TRUE(hp.plantLoop());
+  EXPECT_EQ(sourceLoop.handle(), hp.plantLoop()->handle());
+
+  EXPECT_TRUE(loadLoop.addDemandBranchForComponent(hp));
+  ASSERT_TRUE(hp.secondaryPlantLoop());
+  EXPECT_EQ(loadLoop.handle(), hp.secondaryPlantLoop()->handle());
+
+  ASSERT_TRUE(hp.supplyInletModelObject());
+  ASSERT_TRUE(hp.supplyOutletModelObject());
+  ASSERT_TRUE(hp.demandInletModelObject());
+  ASSERT_TRUE(hp.demandOutletModelObject());
+
+  const auto sourceInletNode = hp.supplyInletModelObject()->cast<Node>();
+  const auto sourceOutletNode = hp.supplyOutletModelObject()->cast<Node>();
+  const auto loadInletNode = hp.demandInletModelObject()->cast<Node>();
+  const auto loadOutletNode = hp.demandOutletModelObject()->cast<Node>();
+
+  ASSERT_TRUE(loadInletNode.plantLoop());
+  EXPECT_EQ(loadLoop.handle(), loadInletNode.plantLoop()->handle());
+  ASSERT_TRUE(loadOutletNode.plantLoop());
+  EXPECT_EQ(loadLoop.handle(), loadOutletNode.plantLoop()->handle());
+  ASSERT_TRUE(sourceInletNode.plantLoop());
+  EXPECT_EQ(sourceLoop.handle(), sourceInletNode.plantLoop()->handle());
+  ASSERT_TRUE(sourceOutletNode.plantLoop());
+  EXPECT_EQ(sourceLoop.handle(), sourceOutletNode.plantLoop()->handle());
+
+  EXPECT_NE(loadInletNode, sourceInletNode);
+  EXPECT_NE(loadOutletNode, sourceOutletNode);
 }
 
 TEST_F(EPModelFixture, HeatPumpWaterToWaterEquationFitHeating_ScalarAccessors_RoundTrip) {

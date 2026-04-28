@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/RoofIrrigation.hpp"
+#include "../scaffolds/RoofIrrigation.hpp"
 #include <boost/optional/optional_io.hpp>
 
 using namespace openstudio::epmodel;

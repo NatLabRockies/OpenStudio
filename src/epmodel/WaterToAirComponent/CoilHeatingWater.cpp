@@ -9,6 +9,8 @@
 #include "HVACComponent/ControllerWaterCoil.hpp"
 #include "HVACComponent/ControllerWaterCoil_Impl.hpp"
 #include "Model.hpp"
+#include "ModelObject/AirflowNetworkDistributionComponentCoil.hpp"
+#include "ModelObject/AirflowNetworkDistributionComponentCoil_Impl.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
@@ -16,6 +18,7 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/idd/AirflowNetwork_Distribution_Component_Coil_FieldEnums.hxx>
 #include <utilities/idd/Coil_Heating_Water_FieldEnums.hxx>
 #include <utilities/idd/Controller_WaterCoil_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -46,6 +49,16 @@ boost::optional<ControllerWaterCoil> inferControllerForCoil(const CoilHeatingWat
   }
 
   return boost::none;
+}
+
+std::vector<AirflowNetworkDistributionComponentCoil> attachedAirflowNetworkDistributionComponentCoils(const ModelObject& object) {
+  std::vector<AirflowNetworkDistributionComponentCoil> result;
+  for (const auto& source : object.getSources(AirflowNetworkDistributionComponentCoil::iddObjectType())) {
+    if (auto afnComponent = source.optionalCast<AirflowNetworkDistributionComponentCoil>()) {
+      result.push_back(*afnComponent);
+    }
+  }
+  return result;
 }
 
 }  // namespace
@@ -198,6 +211,14 @@ boost::optional<ControllerWaterCoil> CoilHeatingWater::controllerWaterCoil() con
   return inferControllerForCoil(*this);
 }
 
+AirflowNetworkDistributionComponentCoil CoilHeatingWater::getAirflowNetworkEquivalentDuct(double length, double diameter) {
+  return getImpl<detail::CoilHeatingWater_Impl>()->getAirflowNetworkEquivalentDuct(length, diameter);
+}
+
+boost::optional<AirflowNetworkDistributionComponentCoil> CoilHeatingWater::airflowNetworkEquivalentDuct() const {
+  return getImpl<detail::CoilHeatingWater_Impl>()->airflowNetworkEquivalentDuct();
+}
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -267,12 +288,38 @@ bool CoilHeatingWater_Impl::removeFromPlantLoop() {
   return WaterToAirComponent_Impl::removeFromPlantLoop();
 }
 
+std::vector<IdfObject> CoilHeatingWater_Impl::remove() {
+  if (!isRemovable()) {
+    return {};
+  }
+
+  if (auto controller = inferControllerForCoil(getObject<openstudio::epmodel::CoilHeatingWater>())) {
+    controller->remove();
+  }
+
+  for (auto& afnComponent : attachedAirflowNetworkDistributionComponentCoils(getObject<ModelObject>())) {
+    afnComponent.remove();
+  }
+
+  return WaterToAirComponent_Impl::remove();
+}
+
+std::vector<ModelObject> CoilHeatingWater_Impl::children() const {
+  std::vector<ModelObject> result;
+  for (const auto& afnComponent : attachedAirflowNetworkDistributionComponentCoils(getObject<ModelObject>())) {
+    result.push_back(afnComponent);
+  }
+  return result;
+}
+
 Schedule CoilHeatingWater_Impl::availabilitySchedule() const {
   auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Heating_WaterFields::AvailabilityScheduleName);
   if (!schedule) {
-    LOG_FREE(Error, "openstudio.epmodel.CoilHeatingWater",
-             "Required availability schedule not set, returning the model always-on discrete schedule without repairing persisted state");
+    LOG_FREE(Error, "openstudio.epmodel.CoilHeatingWater", "Required availability schedule not set, using 'Always On' schedule");
     schedule = model().alwaysOnDiscreteSchedule();
+    OS_ASSERT(schedule);
+    OS_ASSERT(const_cast<CoilHeatingWater_Impl*>(this)->setAvailabilitySchedule(*schedule));
+    schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Heating_WaterFields::AvailabilityScheduleName);
   }
   OS_ASSERT(schedule);
   return *schedule;
@@ -413,6 +460,42 @@ bool CoilHeatingWater_Impl::setRatedRatioForAirAndWaterConvection(double value) 
 
 std::vector<std::string> CoilHeatingWater_Impl::performanceInputMethodValues() const {
   return CoilHeatingWater::performanceInputMethodValues();
+}
+
+AirflowNetworkDistributionComponentCoil CoilHeatingWater_Impl::getAirflowNetworkEquivalentDuct(double length, double diameter) {
+  constexpr const char* coilObjectType = "Coil:Heating:Water";
+  if (auto component = airflowNetworkEquivalentDuct()) {
+    if (!openstudio::istringEqual(component->coilObjectType(), coilObjectType)) {
+      OS_ASSERT(component->setCoilObjectType(coilObjectType));
+    }
+    if (component->airPathLength() != length) {
+      component->setAirPathLength(length);
+    }
+    if (component->airPathHydraulicDiameter() != diameter) {
+      component->setAirPathHydraulicDiameter(diameter);
+    }
+    return *component;
+  }
+
+  AirflowNetworkDistributionComponentCoil component(model());
+  OS_ASSERT(component.setPointer(openstudio::AirflowNetwork_Distribution_Component_CoilFields::CoilName, handle()));
+  OS_ASSERT(component.setCoilObjectType(coilObjectType));
+  OS_ASSERT(component.setAirPathLength(length));
+  OS_ASSERT(component.setAirPathHydraulicDiameter(diameter));
+  return component;
+}
+
+boost::optional<AirflowNetworkDistributionComponentCoil> CoilHeatingWater_Impl::airflowNetworkEquivalentDuct() const {
+  auto afnComponents = attachedAirflowNetworkDistributionComponentCoils(getObject<ModelObject>());
+  if (afnComponents.size() == 1u) {
+    return afnComponents.front();
+  }
+  if (afnComponents.size() > 1u) {
+    LOG_FREE(Warn, "openstudio.epmodel.CoilHeatingWater",
+             briefDescription() << " has more than one AirflowNetwork distribution component coil attached, returning first.");
+    return afnComponents.front();
+  }
+  return boost::none;
 }
 
 }  // namespace detail

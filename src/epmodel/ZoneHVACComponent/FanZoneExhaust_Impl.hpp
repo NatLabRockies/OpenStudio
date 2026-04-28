@@ -25,6 +25,7 @@ namespace epmodel {
       virtual ~FanZoneExhaust_Impl() override = default;
 
       bool addToThermalZone(ThermalZone& thermalZone) override;
+      void removeFromThermalZone() override;
       unsigned inletPort() const override;
       unsigned outletPort() const override;
 

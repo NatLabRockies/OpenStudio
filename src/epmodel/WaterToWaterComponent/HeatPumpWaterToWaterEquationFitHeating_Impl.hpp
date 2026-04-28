@@ -11,6 +11,9 @@
 namespace openstudio {
 namespace epmodel {
 
+  class CurveQuadLinear;
+  class HeatPumpWaterToWaterEquationFitCooling;
+
   namespace detail {
 
     class EPMODEL_API HeatPumpWaterToWaterEquationFitHeating_Impl : public WaterToWaterComponent_Impl
@@ -54,11 +57,20 @@ namespace epmodel {
       void autosizeRatedHeatingPowerConsumption();
       boost::optional<double> autosizedRatedHeatingPowerConsumption() const;
 
+      CurveQuadLinear heatingCapacityCurve() const;
+      bool setHeatingCapacityCurve(const CurveQuadLinear& heatingCapacityCurve);
+
+      CurveQuadLinear heatingCompressorPowerCurve() const;
+      bool setHeatingCompressorPowerCurve(const CurveQuadLinear& heatingCompressorPowerCurve);
+
       double referenceCoefficientofPerformance() const;
       bool setReferenceCoefficientofPerformance(double referenceCoefficientofPerformance);
 
       double sizingFactor() const;
       bool setSizingFactor(double sizingFactor);
+
+      boost::optional<HeatPumpWaterToWaterEquationFitCooling> companionCoolingHeatPump() const;
+      bool setCompanionCoolingHeatPump(const HeatPumpWaterToWaterEquationFitCooling& companionCoolingHeatPump);
     };
 
   }  // namespace detail

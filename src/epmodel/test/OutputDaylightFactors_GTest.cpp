@@ -7,7 +7,7 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../ModelObject/OutputDaylightFactors.hpp"
+#include "../scaffolds/OutputDaylightFactors.hpp"
 
 #include <algorithm>
 

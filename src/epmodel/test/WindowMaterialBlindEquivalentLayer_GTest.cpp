@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/WindowMaterialBlindEquivalentLayer.hpp"
+#include "../scaffolds/WindowMaterialBlindEquivalentLayer.hpp"
 
 using namespace openstudio::epmodel;
 

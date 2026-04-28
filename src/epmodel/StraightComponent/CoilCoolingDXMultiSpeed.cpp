@@ -6,8 +6,12 @@
 #include "StraightComponent/CoilCoolingDXMultiSpeed.hpp"
 #include "StraightComponent/CoilCoolingDXMultiSpeed_Impl.hpp"
 
+#include "Curve/Curve.hpp"
+#include "Curve/Curve_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -52,6 +56,42 @@ std::vector<std::string> CoilCoolingDXMultiSpeed::fuelTypeValues() {
 
 bool CoilCoolingDXMultiSpeed::addToNode(Node& node) {
   return getImpl<detail::CoilCoolingDXMultiSpeed_Impl>()->addToNode(node);
+}
+
+boost::optional<Schedule> CoilCoolingDXMultiSpeed::availabilitySchedule() const {
+  return getImpl<detail::CoilCoolingDXMultiSpeed_Impl>()->availabilitySchedule();
+}
+
+bool CoilCoolingDXMultiSpeed::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::CoilCoolingDXMultiSpeed_Impl>()->setAvailabilitySchedule(schedule);
+}
+
+void CoilCoolingDXMultiSpeed::resetAvailabilitySchedule() {
+  getImpl<detail::CoilCoolingDXMultiSpeed_Impl>()->resetAvailabilitySchedule();
+}
+
+boost::optional<Curve> CoilCoolingDXMultiSpeed::crankcaseHeaterCapacityFunctionofTemperatureCurve() const {
+  return getImpl<detail::CoilCoolingDXMultiSpeed_Impl>()->crankcaseHeaterCapacityFunctionofTemperatureCurve();
+}
+
+bool CoilCoolingDXMultiSpeed::setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve) {
+  return getImpl<detail::CoilCoolingDXMultiSpeed_Impl>()->setCrankcaseHeaterCapacityFunctionofTemperatureCurve(curve);
+}
+
+void CoilCoolingDXMultiSpeed::resetCrankcaseHeaterCapacityFunctionofTemperatureCurve() {
+  getImpl<detail::CoilCoolingDXMultiSpeed_Impl>()->resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
+}
+
+boost::optional<Schedule> CoilCoolingDXMultiSpeed::basinHeaterOperatingSchedule() const {
+  return getImpl<detail::CoilCoolingDXMultiSpeed_Impl>()->basinHeaterOperatingSchedule();
+}
+
+bool CoilCoolingDXMultiSpeed::setBasinHeaterOperatingSchedule(Schedule& schedule) {
+  return getImpl<detail::CoilCoolingDXMultiSpeed_Impl>()->setBasinHeaterOperatingSchedule(schedule);
+}
+
+void CoilCoolingDXMultiSpeed::resetBasinHeaterOperatingSchedule() {
+  getImpl<detail::CoilCoolingDXMultiSpeed_Impl>()->resetBasinHeaterOperatingSchedule();
 }
 
 std::string CoilCoolingDXMultiSpeed::condenserType() const {
@@ -161,6 +201,44 @@ bool CoilCoolingDXMultiSpeed_Impl::addToNode(Node& node) {
   }
 
   return StraightComponent_Impl::addToNode(node);
+}
+
+boost::optional<Schedule> CoilCoolingDXMultiSpeed_Impl::availabilitySchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Cooling_DX_MultiSpeedFields::AvailabilityScheduleName);
+}
+
+bool CoilCoolingDXMultiSpeed_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return setPointer(openstudio::Coil_Cooling_DX_MultiSpeedFields::AvailabilityScheduleName, schedule.handle(), false);
+}
+
+void CoilCoolingDXMultiSpeed_Impl::resetAvailabilitySchedule() {
+  OS_ASSERT(setPointer(openstudio::Coil_Cooling_DX_MultiSpeedFields::AvailabilityScheduleName, openstudio::Handle(), false));
+}
+
+boost::optional<Curve> CoilCoolingDXMultiSpeed_Impl::crankcaseHeaterCapacityFunctionofTemperatureCurve() const {
+  return getObject<ModelObject>().getModelObjectTarget<Curve>(
+    openstudio::Coil_Cooling_DX_MultiSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName);
+}
+
+bool CoilCoolingDXMultiSpeed_Impl::setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve) {
+  return setPointer(openstudio::Coil_Cooling_DX_MultiSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName, curve.handle(), false);
+}
+
+void CoilCoolingDXMultiSpeed_Impl::resetCrankcaseHeaterCapacityFunctionofTemperatureCurve() {
+  OS_ASSERT(setPointer(openstudio::Coil_Cooling_DX_MultiSpeedFields::CrankcaseHeaterCapacityFunctionofTemperatureCurveName, openstudio::Handle(),
+                       false));
+}
+
+boost::optional<Schedule> CoilCoolingDXMultiSpeed_Impl::basinHeaterOperatingSchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Cooling_DX_MultiSpeedFields::BasinHeaterOperatingScheduleName);
+}
+
+bool CoilCoolingDXMultiSpeed_Impl::setBasinHeaterOperatingSchedule(Schedule& schedule) {
+  return setPointer(openstudio::Coil_Cooling_DX_MultiSpeedFields::BasinHeaterOperatingScheduleName, schedule.handle(), false);
+}
+
+void CoilCoolingDXMultiSpeed_Impl::resetBasinHeaterOperatingSchedule() {
+  OS_ASSERT(setPointer(openstudio::Coil_Cooling_DX_MultiSpeedFields::BasinHeaterOperatingScheduleName, openstudio::Handle(), false));
 }
 
 std::string CoilCoolingDXMultiSpeed_Impl::condenserType() const {

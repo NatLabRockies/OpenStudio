@@ -5,7 +5,7 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../ModelObject/ZoneHVACVentilatedSlab.hpp"
+#include "../scaffolds/ZoneHVACVentilatedSlab.hpp"
 
 #include <algorithm>
 

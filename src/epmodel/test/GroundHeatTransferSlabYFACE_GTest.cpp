@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/GroundHeatTransferSlabYFACE.hpp"
+#include "../scaffolds/GroundHeatTransferSlabYFACE.hpp"
 
 using namespace openstudio::epmodel;
 

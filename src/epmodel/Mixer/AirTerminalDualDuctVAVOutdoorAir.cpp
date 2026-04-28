@@ -6,7 +6,10 @@
 #include "Mixer/AirTerminalDualDuctVAVOutdoorAir.hpp"
 #include "Mixer/AirTerminalDualDuctVAVOutdoorAir_Impl.hpp"
 
+#include "Loop/AirLoopHVAC_Impl.hpp"
+#include "HVACComponent/HVACComponent.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -15,11 +18,13 @@
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/IddObject.hpp>
 
+#include <limits>
+
 namespace openstudio {
 namespace epmodel {
 
 AirTerminalDualDuctVAVOutdoorAir::AirTerminalDualDuctVAVOutdoorAir(const Model& model)
-  : ModelObject(AirTerminalDualDuctVAVOutdoorAir::iddObjectType(), model) {
+  : Mixer(AirTerminalDualDuctVAVOutdoorAir::iddObjectType(), model) {
   // Keep non-optional scalar getter strictness aligned with preserved model API.
   OS_ASSERT(setPerPersonVentilationRateMode("CurrentOccupancy"));
 
@@ -28,7 +33,7 @@ AirTerminalDualDuctVAVOutdoorAir::AirTerminalDualDuctVAVOutdoorAir(const Model& 
 }
 
 AirTerminalDualDuctVAVOutdoorAir::AirTerminalDualDuctVAVOutdoorAir(std::shared_ptr<detail::AirTerminalDualDuctVAVOutdoorAir_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  : Mixer(std::move(impl)) {}
 
 IddObjectType AirTerminalDualDuctVAVOutdoorAir::iddObjectType() {
   return IddObjectType::AirTerminal_DualDuct_VAV_OutdoorAir;
@@ -63,12 +68,63 @@ bool AirTerminalDualDuctVAVOutdoorAir::setPerPersonVentilationRateMode(const std
   return getImpl<detail::AirTerminalDualDuctVAVOutdoorAir_Impl>()->setPerPersonVentilationRateMode(perPersonVentilationRateMode);
 }
 
+boost::optional<Node> AirTerminalDualDuctVAVOutdoorAir::outdoorAirInletNode() const {
+  return getImpl<detail::AirTerminalDualDuctVAVOutdoorAir_Impl>()->outdoorAirInletNode();
+}
+
+boost::optional<Node> AirTerminalDualDuctVAVOutdoorAir::recirculatedAirInletNode() const {
+  return getImpl<detail::AirTerminalDualDuctVAVOutdoorAir_Impl>()->recirculatedAirInletNode();
+}
+
+bool AirTerminalDualDuctVAVOutdoorAir::addToNode(Node& node) {
+  return getImpl<detail::AirTerminalDualDuctVAVOutdoorAir_Impl>()->addToNode(node);
+}
+
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+unsigned AirTerminalDualDuctVAVOutdoorAir_Impl::outletPort() const {
+  return openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::AirOutletNodeName;
+}
+
+unsigned AirTerminalDualDuctVAVOutdoorAir_Impl::inletPort(unsigned branchIndex) const {
+  if (branchIndex == 0u) {
+    return openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::OutdoorAirInletNodeName;
+  }
+  if (branchIndex == 1u) {
+    return openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::RecirculatedAirInletNodeName;
+  }
+  return std::numeric_limits<unsigned>::max();
+}
+
+bool AirTerminalDualDuctVAVOutdoorAir_Impl::addToNode(openstudio::epmodel::Node& node) {
+  auto terminal = getObject<AirTerminalDualDuctVAVOutdoorAir>().cast<Mixer>();
+  return AirLoopHVAC_Impl::addDualDuctTerminalToNode(terminal, node);
+}
+
+std::vector<openstudio::IdfObject> AirTerminalDualDuctVAVOutdoorAir_Impl::remove() {
+  auto terminal = getObject<AirTerminalDualDuctVAVOutdoorAir>().cast<Mixer>();
+  AirLoopHVAC_Impl::removeDualDuctTerminalFromAirLoopHVAC(terminal);
+  return Mixer_Impl::remove();
+}
+
+boost::optional<openstudio::epmodel::Node> AirTerminalDualDuctVAVOutdoorAir_Impl::outdoorAirInletNode() const {
+  if (auto object = inletModelObject(0u)) {
+    return object->optionalCast<Node>();
+  }
+  return boost::none;
+}
+
+boost::optional<openstudio::epmodel::Node> AirTerminalDualDuctVAVOutdoorAir_Impl::recirculatedAirInletNode() const {
+  if (auto object = inletModelObject(1u)) {
+    return object->optionalCast<Node>();
+  }
+  return boost::none;
+}
 
 boost::optional<double> AirTerminalDualDuctVAVOutdoorAir_Impl::maximumTerminalAirFlowRate() const {
   return getDouble(openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::MaximumTerminalAirFlowRate, true);

@@ -6,7 +6,11 @@
 #include "StraightComponent/GeneratorFuelCellExhaustGasToWaterHeatExchanger.hpp"
 #include "StraightComponent/GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl.hpp"
 
+#include "Generator/GeneratorFuelCell.hpp"
+#include "Generator/GeneratorFuelCell_Impl.hpp"
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -18,10 +22,25 @@
 namespace openstudio {
 namespace epmodel {
 
+GeneratorFuelCellExhaustGasToWaterHeatExchanger::GeneratorFuelCellExhaustGasToWaterHeatExchanger(const Model& model, const Node& exhaustOutletAirNode)
+  : StraightComponent(GeneratorFuelCellExhaustGasToWaterHeatExchanger::iddObjectType(), model) {
+  OS_ASSERT(setExhaustOutletAirNode(exhaustOutletAirNode));
+  OS_ASSERT(setHeatRecoveryWaterMaximumFlowRate(0.0004));
+  OS_ASSERT(setHeatExchangerCalculationMethod("FixedEffectiveness"));
+}
+
 GeneratorFuelCellExhaustGasToWaterHeatExchanger::GeneratorFuelCellExhaustGasToWaterHeatExchanger(const Model& model)
   : StraightComponent(GeneratorFuelCellExhaustGasToWaterHeatExchanger::iddObjectType(), model) {
   OS_ASSERT(setHeatRecoveryWaterMaximumFlowRate(0.0004));
   OS_ASSERT(setHeatExchangerCalculationMethod("Condensing"));
+  OS_ASSERT(setMethod2Parameterhxs0(83.1));
+  OS_ASSERT(setMethod2Parameterhxs1(4798.0));
+  OS_ASSERT(setMethod2Parameterhxs2(-138e3));
+  OS_ASSERT(setMethod2Parameterhxs3(-353.8e3));
+  OS_ASSERT(setMethod2Parameterhxs4(5.15e8));
+  OS_ASSERT(setMethod4hxl1Coefficient(-0.000196));
+  OS_ASSERT(setMethod4hxl2Coefficient(0.0031));
+  OS_ASSERT(setMethod4CondensationThreshold(35.0));
 }
 
 GeneratorFuelCellExhaustGasToWaterHeatExchanger::GeneratorFuelCellExhaustGasToWaterHeatExchanger(
@@ -41,6 +60,10 @@ double GeneratorFuelCellExhaustGasToWaterHeatExchanger::heatRecoveryWaterMaximum
   return getImpl<detail::GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl>()->heatRecoveryWaterMaximumFlowRate();
 }
 
+boost::optional<Node> GeneratorFuelCellExhaustGasToWaterHeatExchanger::exhaustOutletAirNode() const {
+  return getImpl<detail::GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl>()->exhaustOutletAirNode();
+}
+
 bool GeneratorFuelCellExhaustGasToWaterHeatExchanger::setHeatRecoveryWaterMaximumFlowRate(double heatRecoveryWaterMaximumFlowRate) {
   return getImpl<detail::GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl>()->setHeatRecoveryWaterMaximumFlowRate(
     heatRecoveryWaterMaximumFlowRate);
@@ -48,6 +71,14 @@ bool GeneratorFuelCellExhaustGasToWaterHeatExchanger::setHeatRecoveryWaterMaximu
 
 void GeneratorFuelCellExhaustGasToWaterHeatExchanger::resetHeatRecoveryWaterMaximumFlowRate() {
   getImpl<detail::GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl>()->resetHeatRecoveryWaterMaximumFlowRate();
+}
+
+bool GeneratorFuelCellExhaustGasToWaterHeatExchanger::setExhaustOutletAirNode(const Node& node) {
+  return getImpl<detail::GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl>()->setExhaustOutletAirNode(node);
+}
+
+void GeneratorFuelCellExhaustGasToWaterHeatExchanger::resetExhaustOutletAirNode() {
+  getImpl<detail::GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl>()->resetExhaustOutletAirNode();
 }
 
 std::string GeneratorFuelCellExhaustGasToWaterHeatExchanger::heatExchangerCalculationMethod() const {
@@ -283,6 +314,10 @@ void GeneratorFuelCellExhaustGasToWaterHeatExchanger::resetMethod4CondensationTh
   getImpl<detail::GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl>()->resetMethod4CondensationThreshold();
 }
 
+boost::optional<GeneratorFuelCell> GeneratorFuelCellExhaustGasToWaterHeatExchanger::fuelCell() const {
+  return getImpl<detail::GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl>()->fuelCell();
+}
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -316,6 +351,19 @@ bool GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl::setHeatRecoveryWaterM
 
 void GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl::resetHeatRecoveryWaterMaximumFlowRate() {
   OS_ASSERT(setDouble(openstudio::Generator_FuelCell_ExhaustGasToWaterHeatExchangerFields::HeatRecoveryWaterMaximumFlowRate, 0.0));
+}
+
+boost::optional<openstudio::epmodel::Node> GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl::exhaustOutletAirNode() const {
+  return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Node>(
+    openstudio::Generator_FuelCell_ExhaustGasToWaterHeatExchangerFields::ExhaustOutletAirNodeName);
+}
+
+bool GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl::setExhaustOutletAirNode(const openstudio::epmodel::Node& node) {
+  return setPointer(openstudio::Generator_FuelCell_ExhaustGasToWaterHeatExchangerFields::ExhaustOutletAirNodeName, node.handle(), false);
+}
+
+void GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl::resetExhaustOutletAirNode() {
+  OS_ASSERT(setPointer(openstudio::Generator_FuelCell_ExhaustGasToWaterHeatExchangerFields::ExhaustOutletAirNodeName, Handle(), false));
 }
 
 std::string GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl::heatExchangerCalculationMethod() const {
@@ -621,6 +669,35 @@ bool GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl::setMethod4Condensatio
 
 void GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl::resetMethod4CondensationThreshold() {
   OS_ASSERT(setString(openstudio::Generator_FuelCell_ExhaustGasToWaterHeatExchangerFields::Method4CondensationThreshold, ""));
+}
+
+boost::optional<openstudio::epmodel::GeneratorFuelCell> GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl::fuelCell() const {
+  boost::optional<openstudio::epmodel::GeneratorFuelCell> result;
+  unsigned count = 0;
+
+  for (const auto& source : getObject<ModelObject>().sources()) {
+    if (auto generator = source.optionalCast<openstudio::epmodel::GeneratorFuelCell>()) {
+      ++count;
+      if (!result) {
+        result = generator;
+      }
+    }
+  }
+
+  if (count > 1u) {
+    LOG_FREE(Error, "openstudio.epmodel.GeneratorFuelCellExhaustGasToWaterHeatExchanger",
+             briefDescription() << " is referenced by more than one GeneratorFuelCell, returning the first");
+  }
+
+  return result;
+}
+
+bool GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl::addToNode(Node& node) {
+  if (node.plantLoop()) {
+    return StraightComponent_Impl::addToNode(node);
+  }
+
+  return false;
 }
 
 std::vector<std::string> GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl::heatExchangerCalculationMethodValues() const {

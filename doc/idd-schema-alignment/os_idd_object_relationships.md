@@ -5,7 +5,7 @@ This document lists **object-list based relationships** between HVAC-related Ope
 ## How this was derived
 
 - Source of truth: `resources/model/OpenStudio.idd`.
-- HVAC object set: `doc/idd-schema-alignment/idd_mapping_appendix.generated.md` (all `OS_*` entries).
+- mapping object set: `doc/idd-schema-alignment/idd_mapping.generated.md` (all `OS:*` rows).
 - For each object, fields with `\object-list` are treated as outgoing references.
 - Target objects are inferred by matching `\object-list <ListName>` to objects whose fields declare `\reference <ListName>`.
 - Relationships are **schema-based only** (no implicit C++ translator relationships).
@@ -13,13 +13,19 @@ This document lists **object-list based relationships** between HVAC-related Ope
 ## Update / Reproduce
 
 - Parse `resources/model/OpenStudio.idd` into object blocks and fields.
-- Collect HVAC object types from `doc/idd-schema-alignment/idd_mapping_appendix.generated.md` (`OS_*` entries), then convert to IDD names (`OS:*`).
+- Collect HVAC object types from `doc/idd-schema-alignment/idd_mapping.generated.md` (`OS:*` rows).
 - For each HVAC object, list each field that declares `\object-list`; emit one row per field/object-list pair.
 - Resolve targets by linking `\object-list <ListName>` to objects that declare `\reference <ListName>`.
 - If a target list is very large (more than 25 entries) or is `AllObjects`, suppress the expanded list and report the count instead.
 - Record HVAC objects missing from `OpenStudio.idd` and those with no `\object-list` fields.
 
 ## Relationships
+
+### `OS:AdditionalProperties`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A2` Object Name | `AllObjects` | 6 targets (suppressed; list is `AllObjects`) |
 
 ### `OS:AirConditioner:VariableRefrigerantFlow`
 
@@ -143,6 +149,15 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A3` Thermal Zone | `ThermalZoneNames` | `OS:ThermalZone` |
 | `A4` Inlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
 | `A5` Outlet 1 Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+
+### `OS:AirLoopHVAC:UnitaryCoolOnly`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` DX Cooling Coil System Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A5` DX Cooling Coil System Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A8` Cooling Coil Name | `CoolingCoilsDX` | `OS:Coil:Cooling:DX:SingleSpeed`, `OS:Coil:Cooling:DX:TwoSpeed`, `OS:Coil:Cooling:DX:TwoStageWithHumidityControlMode`, `OS:CoilSystem:Cooling:DX:HeatExchangerAssisted` |
 
 ### `OS:AirLoopHVAC:UnitaryHeatCool:VAVChangeoverBypass`
 
@@ -419,6 +434,14 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A2` Linkage Name | `AirflowNetworkComponentNames` | `OS:AirflowNetworkConstantPressureDrop`, `OS:AirflowNetworkDuct`, `OS:AirflowNetworkEquivalentDuct`, `OS:AirflowNetworkFan`, `OS:AirflowNetworkLeak`, `OS:AirflowNetworkLeakageRatio` |
 | `A3` Surface 1 Name | `AllHeatTranSurfNames` | `OS:InternalMass`, `OS:SubSurface`, `OS:Surface` |
 
+### `OS:AirflowNetworkEquivalentDuct`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Component Name | `AFNCoilNames` | `OS:Coil:Cooling:DX`, `OS:Coil:Cooling:DX:MultiSpeed`, `OS:Coil:Cooling:DX:SingleSpeed`, `OS:Coil:Cooling:DX:TwoSpeed`, `OS:Coil:Cooling:DX:TwoStageWithHumidityControlMode`, `OS:Coil:Cooling:DX:VariableSpeed`, `OS:Coil:Cooling:Water`, `OS:Coil:Cooling:WaterToAirHeatPump:EquationFit`, `OS:Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit`, `OS:Coil:Heating:DX:SingleSpeed`, `OS:Coil:Heating:DX:VariableSpeed`, `OS:Coil:Heating:Desuperheater`, `OS:Coil:Heating:Electric`, `OS:Coil:Heating:Gas`, `OS:Coil:Heating:Water`, `OS:Coil:Heating:WaterToAirHeatPump:EquationFit`, `OS:Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit` |
+| `A3` Component Name | `AFNHeatExchangerNames` | `OS:HeatExchanger:AirToAir:SensibleAndLatent`, `OS:HeatExchanger:Desiccant:BalancedFlow` |
+| `A3` Component Name | `AFNTerminalUnitNames` | No `\reference` matches found |
+
 ### `OS:AirflowNetworkExternalNode`
 
 | Field | Object List | Target OS IddObjectTypes |
@@ -447,6 +470,22 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | --- | --- | --- |
 | `A2` Name | `OutdoorAirController` | `OS:Controller:OutdoorAir` |
 | `A3` Crack Name | `CrackNames` | `OS:AirflowNetworkCrack` |
+
+### `OS:AirflowNetworkPressureController`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Control Zone Name | `ZoneNames` | No `\reference` matches found |
+| `A5` Control Object Name | `AFNReliefAirFlowNames` | `OS:AirflowNetworkReliefAirFlow` |
+| `A5` Control Object Name | `FansZoneExhaust` | `OS:Fan:ZoneExhaust` |
+| `A6` Pressure Control Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A7` Pressure Setpoint Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:AirflowNetworkReliefAirFlow`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Reference Crack Conditions | `ReferenceCrackConditions` | `OS:AirflowNetworkReferenceCrackConditions` |
 
 ### `OS:AirflowNetworkSurface`
 
@@ -576,6 +615,28 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | --- | --- | --- |
 | `N10` Steam Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
 
+### `OS:Building`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A4` Space Type Name | `SpaceTypeNames` | `OS:SpaceType` |
+| `A5` Default Construction Set Name | `DefaultConstructionSetNames` | `OS:DefaultConstructionSet` |
+| `A6` Default Schedule Set Name | `DefaultScheduleSetNames` | `OS:DefaultScheduleSet` |
+
+### `OS:BuildingStory`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Default Construction Set Name | `DefaultConstructionSetNames` | `OS:DefaultConstructionSet` |
+| `A4` Default Schedule Set Name | `DefaultScheduleSetNames` | `OS:DefaultScheduleSet` |
+| `A5` Group Rendering Name | `GroupRenderingNames` | `OS:Rendering:Color` |
+
+### `OS:BuildingUnit`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Rendering Color | `GroupRenderingNames` | `OS:Rendering:Color` |
+
 ### `OS:CentralHeatPumpSystem`
 
 | Field | Object List | Target OS IddObjectTypes |
@@ -686,6 +747,18 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | --- | --- | --- |
 | `A2` Chilled Water Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
 
+### `OS:Coil:Cooling:DX`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Evaporator Inlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A4` Evaporator Outlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A5` Availability Schedule | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A6` Condenser Zone | `ThermalZoneNames` | `OS:ThermalZone` |
+| `A9` Performance Object | `DXCoolingPerformanceNames` | `OS:Coil:Cooling:DX:CurveFit:Performance` |
+| `A10` Condensate Collection Water Storage Tank Name | `WaterStorageTankNames` | No `\reference` matches found |
+| `A11` Evaporative Condenser Supply Water Storage Tank Name | `WaterStorageTankNames` | No `\reference` matches found |
+
 ### `OS:Coil:Cooling:DX:CurveFit:OperatingMode`
 
 | Field | Object List | Target OS IddObjectTypes |
@@ -717,6 +790,17 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A9` Sensible Heat Ratio Modifier Function of Temperature Curve | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
 | `A10` Sensible Heat Ratio Modifier Function of Flow Fraction Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
 
+### `OS:Coil:Cooling:DX:MultiSpeed`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Apply Part Load Fraction to Speeds Greater than 1 | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A1` Apply Part Load Fraction to Speeds Greater than 1 | `Node` | `OS:Node` |
+| `A1` Apply Part Load Fraction to Speeds Greater than 1 | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A12` Maximum Outdoor Dry-Bulb Temperature for Crankcase Heater Operation | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A13` Basin Heater Operating Schedule | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A15` Stage 1 | `CoilCoolingDXMultiSpeedStageData` | `OS:Coil:Cooling:DX:MultiSpeed:StageData` |
+
 ### `OS:Coil:Cooling:DX:MultiSpeed:StageData`
 
 | Field | Object List | Target OS IddObjectTypes |
@@ -727,6 +811,109 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A6` Energy Input Ratio Function of Flow Fraction Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
 | `A7` Part Load Fraction Correlation Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
 | `A8` Waste Heat Function of Temperature Curve | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+
+### `OS:Coil:Cooling:DX:SingleSpeed`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Air Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A5` Air Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A6` Total Cooling Capacity Function of Temperature Curve Name | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A7` Total Cooling Capacity Function of Flow Fraction Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A8` Energy Input Ratio Function of Temperature Curve Name | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A9` Energy Input Ratio Function of Flow Fraction Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A10` Part Load Fraction Correlation Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A13` Crankcase Heater Capacity Function of Temperature Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A14` Supply Water Storage Tank Name | `WaterStorageTankNames` | No `\reference` matches found |
+| `A15` Condensate Collection Water Storage Tank Name | `WaterStorageTankNames` | No `\reference` matches found |
+| `A16` Basin Heater Operating Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:Coil:Cooling:DX:SingleSpeed:ThermalStorage`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `N6` Evaporator Air Inlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A9` Cooling Only Mode Rated Sensible Heat Ratio | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A11` Cooling Only Mode Total Evaporator Cooling Capacity Function of Temperature Curve | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A12` Cooling Only Mode Total Evaporator Cooling Capacity Function of Flow Fraction Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A13` Cooling Only Mode Energy Input Ratio Function of Temperature Curve | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A14` Cooling Only Mode Energy Input Ratio Function of Flow Fraction Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A15` Cooling Only Mode Part Load Fraction Correlation Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A16` Cooling Only Mode Sensible Heat Ratio Function of Temperature Curve | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A17` Cooling Only Mode Sensible Heat Ratio Function of Flow Fraction Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A19` Cooling And Charge Mode Total Evaporator Cooling Capacity Function of Temperature Curve | `TrivariateFunctions` | `OS:Curve:Triquadratic`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A20` Cooling And Charge Mode Total Evaporator Cooling Capacity Function of Flow Fraction Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A21` Cooling And Charge Mode Evaporator Energy Input Ratio Function of Temperature Curve | `TrivariateFunctions` | `OS:Curve:Triquadratic`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A22` Cooling And Charge Mode Evaporator Energy Input Ratio Function of Flow Fraction Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A23` Cooling And Charge Mode Evaporator Part Load Fraction Correlation Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A24` Cooling And Charge Mode Storage Charge Capacity Function of Temperature Curve | `TrivariateFunctions` | `OS:Curve:Triquadratic`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A25` Cooling And Charge Mode Storage Charge Capacity Function of Total Evaporator PLR Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A26` Cooling And Charge Mode Storage Energy Input Ratio Function of Temperature Curve | `TrivariateFunctions` | `OS:Curve:Triquadratic`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A27` Cooling And Charge Mode Storage Energy Input Ratio Function of Flow Fraction Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A28` Cooling And Charge Mode Storage Energy Part Load Fraction Correlation Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A29` Cooling And Charge Mode Sensible Heat Ratio Function of Temperature Curve | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A29` Cooling And Charge Mode Sensible Heat Ratio Function of Temperature Curve | `TrivariateFunctions` | `OS:Curve:Triquadratic`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A30` Cooling And Charge Mode Sensible Heat Ratio Function of Flow Fraction Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A32` Cooling And Discharge Mode Total Evaporator Cooling Capacity Function of Temperature Curve | `TrivariateFunctions` | `OS:Curve:Triquadratic`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A33` Cooling And Discharge Mode Total Evaporator Cooling Capacity Function of Flow Fraction Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A34` Cooling And Discharge Mode Evaporator Energy Input Ratio Function of Temperature Curve | `TrivariateFunctions` | `OS:Curve:Triquadratic`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A35` Cooling And Discharge Mode Evaporator Energy Input Ratio Function of Flow Fraction Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A36` Cooling And Discharge Mode Evaporator Part Load Fraction Correlation Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A37` Cooling And Discharge Mode Storage Discharge Capacity Function of Temperature Curve | `TrivariateFunctions` | `OS:Curve:Triquadratic`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A38` Cooling And Discharge Mode Storage Discharge Capacity Function of Flow Fraction Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A39` Cooling And Discharge Mode Storage Discharge Capacity Function of Total Evaporator PLR Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A40` Cooling And Discharge Mode Storage Energy Input Ratio Function of Temperature Curve | `TrivariateFunctions` | `OS:Curve:Triquadratic`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A41` Cooling And Discharge Mode Storage Energy Input Ratio Function of Flow Fraction Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A42` Cooling And Discharge Mode Storage Energy Part Load Fraction Correlation Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A43` Cooling And Discharge Mode Sensible Heat Ratio Function of Temperature Curve | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A43` Cooling And Discharge Mode Sensible Heat Ratio Function of Temperature Curve | `TrivariateFunctions` | `OS:Curve:Triquadratic`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A44` Cooling And Discharge Mode Sensible Heat Ratio Function of Flow Fraction Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A46` Charge Only Mode Storage Charge Capacity Function of Temperature Curve | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A47` Charge Only Mode Storage Energy Input Ratio Function of Temperature Curve | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A49` Discharge Only Mode Storage Discharge Capacity Function of Temperature Curve | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A50` Discharge Only Mode Storage Discharge Capacity Function of Flow Fraction Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A51` Discharge Only Mode Energy Input Ratio Function of Temperature Curve | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A52` Discharge Only Mode Energy Input Ratio Function of Flow Fraction Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A53` Discharge Only Mode Part Load Fraction Correlation Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A54` Discharge Only Mode Sensible Heat Ratio Function of Temperature Curve | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A54` Discharge Only Mode Sensible Heat Ratio Function of Temperature Curve | `TrivariateFunctions` | `OS:Curve:Triquadratic`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A55` Discharge Only Mode Sensible Heat Ratio Function of Flow Fraction Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A59` Basin Heater Availability Schedule | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A60` Supply Water Storage Tank | `WaterStorageTankNames` | No `\reference` matches found |
+| `A61` Condensate Collection Water Storage Tank | `WaterStorageTankNames` | No `\reference` matches found |
+
+### `OS:Coil:Cooling:DX:TwoSpeed`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Air Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A5` Air Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A6` Total Cooling Capacity Function of Temperature Curve Name | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A7` Total Cooling Capacity Function of Flow Fraction Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A8` Energy Input Ratio Function of Temperature Curve Name | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A9` Energy Input Ratio Function of Flow Fraction Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A10` Part Load Fraction Correlation Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A11` Low Speed Total Cooling Capacity Function of Temperature Curve Name | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A12` Low Speed Energy Input Ratio Function of Temperature Curve Name | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A15` Supply Water Storage Tank Name | `WaterStorageTankNames` | No `\reference` matches found |
+| `A16` Condensate Collection Water Storage Tank Name | `WaterStorageTankNames` | No `\reference` matches found |
+| `A17` Basin Heater Operating Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:Coil:Cooling:DX:TwoStageWithHumidityControlMode`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Normal Mode Stage 1 Plus 2 Coil Performance | `CoilPerformanceDX` | `OS:CoilPerformance:DX:Cooling` |
+| `A1` Normal Mode Stage 1 Plus 2 Coil Performance | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A1` Normal Mode Stage 1 Plus 2 Coil Performance | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A1` Normal Mode Stage 1 Plus 2 Coil Performance | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A9` Dehumidification Mode 1 Stage 1 Coil Performance | `CoilPerformanceDX` | `OS:CoilPerformance:DX:Cooling` |
+| `A10` Dehumidification Mode 1 Stage 1 Plus 2 Coil Performance | `CoilPerformanceDX` | `OS:CoilPerformance:DX:Cooling` |
+| `A11` Supply Water Storage Tank | `WaterStorageTankNames` | No `\reference` matches found |
+| `A12` Condensate Collection Water Storage Tank | `WaterStorageTankNames` | No `\reference` matches found |
+| `A13` Basin Heater Operating Schedule | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
 
 ### `OS:Coil:Cooling:DX:VariableRefrigerantFlow`
 
@@ -745,6 +932,20 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A4` Coil Air Inlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
 | `A5` Coil Air Outlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
 | `A6` Indoor Unit Evaporating Temperature Function of Superheating Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+
+### `OS:Coil:Cooling:DX:VariableSpeed`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Indoor Air Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A5` Indoor Air Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A6` Energy Part Load Fraction Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A9` Crankcase Heater Capacity Function of Temperature Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A10` Supply Water Storage Tank Name | `WaterStorageTankNames` | No `\reference` matches found |
+| `A11` Condensate Collection Water Storage Tank Name | `WaterStorageTankNames` | No `\reference` matches found |
+| `A12` Basin Heater Operating Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A13` Speed Data List | `ModelObjectLists` | `OS:ModelObjectList` |
 
 ### `OS:Coil:Cooling:DX:VariableSpeed:SpeedData`
 
@@ -773,6 +974,42 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A7` Cooling High Control Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
 | `A8` Cooling Low Control Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
 
+### `OS:Coil:Cooling:Water`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Water Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A5` Water Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A6` Air Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A7` Air Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+
+### `OS:Coil:Cooling:WaterToAirHeatPump:EquationFit`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Water Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A5` Water Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A6` Air Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A7` Air Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A8` Total Cooling Capacity Curve Name | `QuadvariateFunctions` | `OS:Curve:QuadLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A9` Sensible Cooling Capacity Curve Name | `QuintvariateFunctions` | `OS:Curve:QuintLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A10` Cooling Power Consumption Curve Name | `QuadvariateFunctions` | `OS:Curve:QuadLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A11` Part Load Fraction Correlation Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+
+### `OS:Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Water-to-Refrigerant HX Water Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A5` Water-to-Refrigerant HX Water Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A6` Indoor Air Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A7` Indoor Air Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A9` Energy Part Load Fraction Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A10` Speed Data List | `ModelObjectLists` | `OS:ModelObjectList` |
+
 ### `OS:Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit:SpeedData`
 
 | Field | Object List | Target OS IddObjectTypes |
@@ -784,6 +1021,29 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A7` Energy Input Ratio Function of Air Flow Fraction Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
 | `A8` Energy Input Ratio Function of Water Flow Fraction Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
 | `A9` Waste Heat Function of Temperature Curve Name | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+
+### `OS:Coil:Heating:DX:MultiSpeed`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A12` Stage 1 | `CoilHeatingDXMultiSpeedStageData` | No `\reference` matches found |
+
+### `OS:Coil:Heating:DX:SingleSpeed`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Air Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A5` Air Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A6` Total Heating Capacity Function of Temperature Curve Name | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A6` Total Heating Capacity Function of Temperature Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A7` Total Heating Capacity Function of Flow Fraction Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A8` Energy Input Ratio Function of Temperature Curve Name | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A8` Energy Input Ratio Function of Temperature Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A9` Energy Input Ratio Function of Flow Fraction Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A10` Part Load Fraction Correlation Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A11` Defrost Energy Input Ratio Function of Temperature Curve Name | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A12` Crankcase Heater Capacity Function of Temperature Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
 
 ### `OS:Coil:Heating:DX:VariableRefrigerantFlow`
 
@@ -803,6 +1063,18 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A5` Coil Air Outlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
 | `A6` Indoor Unit Condensing Temperature Function of Subcooling Curve | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
 
+### `OS:Coil:Heating:DX:VariableSpeed`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Indoor Air Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A5` Indoor Air Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A6` Energy Part Load Fraction Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A7` Defrost Energy Input Ratio Function of Temperature Curve Name | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A8` Crankcase Heater Capacity Function of Temperature Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A11` Speed Data List | `ModelObjectLists` | `OS:ModelObjectList` |
+
 ### `OS:Coil:Heating:DX:VariableSpeed:SpeedData`
 
 | Field | Object List | Target OS IddObjectTypes |
@@ -811,6 +1083,15 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A4` Total  Heating Capacity Function of Air Flow Fraction Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
 | `A5` Energy Input Ratio Function of Temperature Curve Name | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
 | `A6` Energy Input Ratio Function of Air Flow Fraction Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+
+### `OS:Coil:Heating:Desuperheater`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Air Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A5` Air Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A6` Heating Source Name | `DesuperHeatingCoilSources` | `OS:Coil:Cooling:DX`, `OS:Coil:Cooling:DX:SingleSpeed`, `OS:Coil:Cooling:DX:TwoSpeed`, `OS:Coil:Cooling:DX:TwoStageWithHumidityControlMode`, `OS:Coil:Cooling:DX:VariableSpeed`, `OS:Refrigeration:CompressorRack`, `OS:Refrigeration:Condenser:AirCooled`, `OS:Refrigeration:Condenser:EvaporativeCooled`, `OS:Refrigeration:Condenser:WaterCooled` |
 
 ### `OS:Coil:Heating:Electric`
 
@@ -879,6 +1160,31 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | --- | --- | --- |
 | `A3` Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
 | `A4` Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+
+### `OS:Coil:Heating:WaterToAirHeatPump:EquationFit`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Water Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A5` Water Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A6` Air Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A7` Air Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A8` Heating Capacity Curve Name | `QuadvariateFunctions` | `OS:Curve:QuadLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A9` Heating Power Consumption Curve Name | `QuadvariateFunctions` | `OS:Curve:QuadLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A10` Part Load Fraction Correlation Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+
+### `OS:Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Water-to-Refrigerant HX Water Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A5` Water-to-Refrigerant HX Water Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A6` Indoor Air Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A7` Indoor Air Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A8` Energy Part Load Fraction Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A9` Speed Data List | `ModelObjectLists` | `OS:ModelObjectList` |
 
 ### `OS:Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit:SpeedData`
 
@@ -1041,12 +1347,71 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A12` SHDWH Heating Coil | `HeatingCoilsDXVariableSpeed` | `OS:Coil:Heating:DX:VariableSpeed` |
 | `A13` SHDWH Water Heating Coil | `HeatPumpWaterHeaterDXCoilsVariableSpeed` | `OS:Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed` |
 
+### `OS:ComponentData`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A7` Name of Object | `AllObjects` | 6 targets (suppressed; list is `AllObjects`) |
+
 ### `OS:Connection`
 
 | Field | Object List | Target OS IddObjectTypes |
 | --- | --- | --- |
 | `A2` Source Object | `ConnectionObject` | 140 targets (suppressed; list is `ConnectionObject`) |
 | `A3` Target Object | `ConnectionObject` | 140 targets (suppressed; list is `ConnectionObject`) |
+
+### `OS:Connector:Mixer`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Outlet Branch Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A4` Inlet Branch Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+
+### `OS:Connector:Splitter`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Inlet Branch Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A4` Outlet Branch Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+
+### `OS:Construction`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Surface Rendering Name | `SurfaceRenderingNames` | `OS:Rendering:Color` |
+| `A4` Layer | `MaterialNames` | `OS:Material`, `OS:Material:AirGap`, `OS:Material:InfraredTransparent`, `OS:Material:NoMass`, `OS:Material:RoofVegetation`, `OS:WindowMaterial:Blind`, `OS:WindowMaterial:DaylightRedirectionDevice`, `OS:WindowMaterial:Gas`, `OS:WindowMaterial:GasMixture`, `OS:WindowMaterial:Glazing`, `OS:WindowMaterial:Glazing:RefractionExtinctionMethod`, `OS:WindowMaterial:GlazingGroup:Thermochromic`, `OS:WindowMaterial:Screen`, `OS:WindowMaterial:Shade`, `OS:WindowMaterial:SimpleGlazingSystem` |
+
+### `OS:Construction:AirBoundary`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A4` Simple Mixing Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A5` Surface Rendering Name | `SurfaceRenderingNames` | `OS:Rendering:Color` |
+
+### `OS:Construction:CfactorUndergroundWall`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Surface Rendering Name | `SurfaceRenderingNames` | `OS:Rendering:Color` |
+
+### `OS:Construction:FfactorGroundFloor`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Surface Rendering Name | `SurfaceRenderingNames` | `OS:Rendering:Color` |
+
+### `OS:Construction:InternalSource`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Surface Rendering Name | `SurfaceRenderingNames` | `OS:Rendering:Color` |
+| `A4` Layer | `MaterialNames` | `OS:Material`, `OS:Material:AirGap`, `OS:Material:InfraredTransparent`, `OS:Material:NoMass`, `OS:Material:RoofVegetation`, `OS:WindowMaterial:Blind`, `OS:WindowMaterial:DaylightRedirectionDevice`, `OS:WindowMaterial:Gas`, `OS:WindowMaterial:GasMixture`, `OS:WindowMaterial:Glazing`, `OS:WindowMaterial:Glazing:RefractionExtinctionMethod`, `OS:WindowMaterial:GlazingGroup:Thermochromic`, `OS:WindowMaterial:Screen`, `OS:WindowMaterial:Shade`, `OS:WindowMaterial:SimpleGlazingSystem` |
+
+### `OS:Construction:WindowDataFile`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A4` Surface Rendering Name | `SurfaceRenderingNames` | `OS:Rendering:Color` |
 
 ### `OS:Controller:MechanicalVentilation`
 
@@ -1104,11 +1469,96 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A12` Supply Water Storage Tank | `WaterStorageTankNames` | No `\reference` matches found |
 | `A13` Outdoor Air Inlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
 
+### `OS:Daylighting:Control`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Space Name | `SpaceNames` | `OS:Space` |
+
+### `OS:DaylightingDevice:LightWell`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Exterior Window Name | `SubSurfNames` | `OS:SubSurface` |
+
+### `OS:DaylightingDevice:Shelf`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Window Name | `SubSurfNames` | `OS:SubSurface` |
+| `A4` Inside Shelf Name | `InteriorPartitionSurfaceNames` | `OS:InteriorPartitionSurface` |
+| `A5` Outside Shelf Name | `AttachedShadingSurfNames` | `OS:ShadingSurface` |
+
+### `OS:DaylightingDevice:Tubular`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Transition Zone Length 1 | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A1` Transition Zone Length 1 | `SubSurfNames` | `OS:SubSurface` |
+| `A1` Transition Zone Length 1 | `ThermalZoneNames` | `OS:ThermalZone` |
+
+### `OS:DefaultConstructionSet`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Default Exterior Surface Constructions Name | `DefaultSurfaceConstructionsNames` | `OS:DefaultSurfaceConstructions` |
+| `A4` Default Interior Surface Constructions Name | `DefaultSurfaceConstructionsNames` | `OS:DefaultSurfaceConstructions` |
+| `A5` Default Ground Contact Surface Constructions Name | `DefaultSurfaceConstructionsNames` | `OS:DefaultSurfaceConstructions` |
+| `A6` Default Exterior SubSurface Constructions Name | `DefaultSubSurfaceConstructionsNames` | `OS:DefaultSubSurfaceConstructions` |
+| `A7` Default Interior SubSurface Constructions Name | `DefaultSubSurfaceConstructionsNames` | `OS:DefaultSubSurfaceConstructions` |
+| `A8` Interior Partition Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A9` Space Shading Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A10` Building Shading Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A11` Site Shading Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A12` Adiabatic Surface Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+
+### `OS:DefaultScheduleSet`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Hours of Operation Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Number of People Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A5` People Activity Level Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A6` Lighting Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A7` Electric Equipment Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A8` Gas Equipment Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A9` Hot Water Equipment Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A10` Infiltration Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A11` Steam Equipment Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A12` Other Equipment Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:DefaultSubSurfaceConstructions`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Fixed Window Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A4` Operable Window Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A5` Door Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A6` Glass Door Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A7` Overhead Door Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A8` Skylight Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A9` Tubular Daylight Dome Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A10` Tubular Daylight Diffuser Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+
+### `OS:DefaultSurfaceConstructions`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Floor Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A4` Wall Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A5` Roof Ceiling Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+
 ### `OS:DesignSpecification:OutdoorAir`
 
 | Field | Object List | Target OS IddObjectTypes |
 | --- | --- | --- |
 | `A4` Outdoor Air Flow Rate Fraction Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:DesignSpecification:ZoneAirDistribution`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Zone Air Distribution Effectiveness Schedule | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
 
 ### `OS:DistrictHeating:Steam`
 
@@ -1123,6 +1573,124 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | --- | --- | --- |
 | `A1` Capacity Fraction Schedule | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
 | `A1` Capacity Fraction Schedule | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:Duct`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Inlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A4` Outlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+
+### `OS:ElectricEquipment`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Electric Equipment Definition Name | `ElectricEquipmentDefinitionNames` | `OS:ElectricEquipment:Definition` |
+| `A4` Space or SpaceType Name | `SpaceAndSpaceTypeNames` | `OS:Space`, `OS:SpaceType` |
+| `A5` Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:ElectricEquipment:ITE:AirCooled`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Electric Equipment ITE AirCooled Definition Name | `ElectricEquipmentITEAirCooledDefinitionNames` | `OS:ElectricEquipment:ITE:AirCooled:Definition` |
+| `A4` Space or SpaceType Name | `SpaceAndSpaceTypeNames` | `OS:Space`, `OS:SpaceType` |
+| `A5` Design Power Input Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A6` CPU Loading Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:ElectricEquipment:ITE:AirCooled:Definition`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Design Fan Power Input Fraction | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `N4` Fan Power Input Function of Flow Curve Name | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `N4` Fan Power Input Function of Flow Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A10` Design Electric Power Supply Efficiency | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A11` Fraction of Electric Power Supply Losses to Zone | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A12` Supply Temperature Difference Schedule | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A13` Return Temperature Difference Schedule | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:ElectricLoadCenter:Distribution`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A10` Transformer Object Name | `TransformerNames` | `OS:ElectricLoadCenter:Transformer` |
+| `A13` Design Storage Control Charge Power | `ConverterList` | No `\reference` matches found |
+| `A14` Design Storage Control Discharge Power | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A15` Storage Discharge Power Fraction Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A16` Storage Control Utility Demand Target Fraction Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:ElectricLoadCenter:Storage:Converter`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `N2` Radiative Fraction | `ThermalZoneNames` | `OS:ThermalZone` |
+| `N2` Radiative Fraction | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+
+### `OS:ElectricLoadCenter:Storage:LiIonNMCBattery`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Zone Name | `ThermalZoneNames` | `OS:ThermalZone` |
+
+### `OS:ElectricLoadCenter:Storage:Simple`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Radiative Fraction for Zone Heat Gains | `ThermalZoneNames` | `OS:ThermalZone` |
+
+### `OS:ElectricLoadCenter:Transformer`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A5` Zone Name | `ThermalZoneNames` | `OS:ThermalZone` |
+
+### `OS:EnergyManagementSystem:Actuator`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Actuated Component Name | `AllObjects` | 6 targets (suppressed; list is `AllObjects`) |
+| `A6` Zone or Space Name | `SpaceNames` | `OS:Space` |
+| `A6` Zone or Space Name | `ThermalZoneNames` | `OS:ThermalZone` |
+
+### `OS:EnergyManagementSystem:ConstructionIndexVariable`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Construction Object Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+
+### `OS:EnergyManagementSystem:CurveOrTableIndexVariable`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Curve or Table Object Name | `AllCurves` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:FanPressureRise`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:QuadLinear`, `OS:Curve:Quadratic`, `OS:Curve:QuadraticLinear`, `OS:Curve:Quartic`, `OS:Curve:QuintLinear`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Curve:Triquadratic`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+
+### `OS:EnergyManagementSystem:MeteredOutputVariable`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A5` EMS Program or Subroutine Name | `ErlProgramSubroutineNames` | `OS:EnergyManagementSystem:Program`, `OS:EnergyManagementSystem:Subroutine` |
+
+### `OS:EnergyManagementSystem:OutputVariable`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A6` EMS Program or Subroutine Name | `ErlProgramSubroutineNames` | `OS:EnergyManagementSystem:Program`, `OS:EnergyManagementSystem:Subroutine` |
+
+### `OS:EnergyManagementSystem:ProgramCallingManager`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A4` Program Name | `ErlProgramNames` | `OS:EnergyManagementSystem:Program` |
+
+### `OS:EnergyManagementSystem:TrendVariable`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` EMS Variable Name | `ErlVariableNames` | `OS:EnergyManagementSystem:Actuator`, `OS:EnergyManagementSystem:ConstructionIndexVariable`, `OS:EnergyManagementSystem:CurveOrTableIndexVariable`, `OS:EnergyManagementSystem:GlobalVariable`, `OS:EnergyManagementSystem:InternalVariable`, `OS:EnergyManagementSystem:Sensor`, `OS:EnergyManagementSystem:TrendVariable`, `OS:ExternalInterface:Actuator`, `OS:ExternalInterface:FunctionalMockupUnitExport:To:Actuator`, `OS:ExternalInterface:FunctionalMockupUnitExport:To:Variable`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Actuator`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Variable`, `OS:ExternalInterface:Variable` |
 
 ### `OS:EvaporativeCooler:Direct:ResearchSpecial`
 
@@ -1150,6 +1718,77 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | Field | Object List | Target OS IddObjectTypes |
 | --- | --- | --- |
 | `A1` Standard Design Capacity | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+
+### `OS:Exterior:FuelEquipment`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Exterior Fuel Equipment Definition Name | `ExteriorFuelEquipmentDefinitionNames` | `OS:Exterior:FuelEquipment:Definition` |
+| `A4` Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:Exterior:Lights`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Exterior Lights Definition Name | `ExteriorLightsDefinitionNames` | `OS:Exterior:Lights:Definition` |
+| `A4` Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:Exterior:WaterEquipment`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Exterior Water Equipment Definition Name | `ExteriorWaterEquipmentDefinitionNames` | `OS:Exterior:WaterEquipment:Definition` |
+| `A4` Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:ExternalInterface:Actuator`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Actuated Component Control Type | `AllObjects` | 6 targets (suppressed; list is `AllObjects`) |
+
+### `OS:ExternalInterface:FunctionalMockupUnitExport:To:Actuator`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Initial Value | `AllObjects` | 6 targets (suppressed; list is `AllObjects`) |
+
+### `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Initial Value | `ScheduleTypeLimitsNames` | `OS:ScheduleTypeLimits` |
+
+### `OS:ExternalInterface:FunctionalMockupUnitImport:From:Variable`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` FMU Variable Name | `FMUFileName` | `OS:ExternalInterface:FunctionalMockupUnitImport` |
+
+### `OS:ExternalInterface:FunctionalMockupUnitImport:To:Actuator`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Initial Value | `AllObjects` | 6 targets (suppressed; list is `AllObjects`) |
+| `A1` Initial Value | `FMUFileName` | `OS:ExternalInterface:FunctionalMockupUnitImport` |
+
+### `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Initial Value | `FMUFileName` | `OS:ExternalInterface:FunctionalMockupUnitImport` |
+| `A1` Initial Value | `ScheduleTypeLimitsNames` | `OS:ScheduleTypeLimits` |
+
+### `OS:ExternalInterface:FunctionalMockupUnitImport:To:Variable`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Initial Value | `FMUFileName` | `OS:ExternalInterface:FunctionalMockupUnitImport` |
+
+### `OS:ExternalInterface:Schedule`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Schedule Type Limits Name | `ScheduleTypeLimitsNames` | `OS:ScheduleTypeLimits` |
 
 ### `OS:Fan:ComponentModel`
 
@@ -1206,6 +1845,64 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A7` Flow Fraction Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
 | `A9` Minimum Zone Temperature Limit Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
 | `A10` Balanced Exhaust Fraction Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:FluidCooler:SingleSpeed`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Water Inlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A4` Water Outlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `N8` Outdoor Air Inlet Node | `Node` | `OS:Node` |
+
+### `OS:FluidCooler:TwoSpeed`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Water Inlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A4` Water Outlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A6` Outdoor Air Inlet Node | `Node` | `OS:Node` |
+
+### `OS:Foundation:Kiva`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Interior Horizontal Insulation Material Name | `MaterialNames` | `OS:Material`, `OS:Material:AirGap`, `OS:Material:InfraredTransparent`, `OS:Material:NoMass`, `OS:Material:RoofVegetation`, `OS:WindowMaterial:Blind`, `OS:WindowMaterial:DaylightRedirectionDevice`, `OS:WindowMaterial:Gas`, `OS:WindowMaterial:GasMixture`, `OS:WindowMaterial:Glazing`, `OS:WindowMaterial:Glazing:RefractionExtinctionMethod`, `OS:WindowMaterial:GlazingGroup:Thermochromic`, `OS:WindowMaterial:Screen`, `OS:WindowMaterial:Shade`, `OS:WindowMaterial:SimpleGlazingSystem` |
+| `A4` Interior Vertical Insulation Material Name | `MaterialNames` | `OS:Material`, `OS:Material:AirGap`, `OS:Material:InfraredTransparent`, `OS:Material:NoMass`, `OS:Material:RoofVegetation`, `OS:WindowMaterial:Blind`, `OS:WindowMaterial:DaylightRedirectionDevice`, `OS:WindowMaterial:Gas`, `OS:WindowMaterial:GasMixture`, `OS:WindowMaterial:Glazing`, `OS:WindowMaterial:Glazing:RefractionExtinctionMethod`, `OS:WindowMaterial:GlazingGroup:Thermochromic`, `OS:WindowMaterial:Screen`, `OS:WindowMaterial:Shade`, `OS:WindowMaterial:SimpleGlazingSystem` |
+| `A5` Exterior Horizontal Insulation Material Name | `MaterialNames` | `OS:Material`, `OS:Material:AirGap`, `OS:Material:InfraredTransparent`, `OS:Material:NoMass`, `OS:Material:RoofVegetation`, `OS:WindowMaterial:Blind`, `OS:WindowMaterial:DaylightRedirectionDevice`, `OS:WindowMaterial:Gas`, `OS:WindowMaterial:GasMixture`, `OS:WindowMaterial:Glazing`, `OS:WindowMaterial:Glazing:RefractionExtinctionMethod`, `OS:WindowMaterial:GlazingGroup:Thermochromic`, `OS:WindowMaterial:Screen`, `OS:WindowMaterial:Shade`, `OS:WindowMaterial:SimpleGlazingSystem` |
+| `A6` Exterior Vertical Insulation Material Name | `MaterialNames` | `OS:Material`, `OS:Material:AirGap`, `OS:Material:InfraredTransparent`, `OS:Material:NoMass`, `OS:Material:RoofVegetation`, `OS:WindowMaterial:Blind`, `OS:WindowMaterial:DaylightRedirectionDevice`, `OS:WindowMaterial:Gas`, `OS:WindowMaterial:GasMixture`, `OS:WindowMaterial:Glazing`, `OS:WindowMaterial:Glazing:RefractionExtinctionMethod`, `OS:WindowMaterial:GlazingGroup:Thermochromic`, `OS:WindowMaterial:Screen`, `OS:WindowMaterial:Shade`, `OS:WindowMaterial:SimpleGlazingSystem` |
+| `A7` Footing Wall Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A8` Footing Material Name | `MaterialNames` | `OS:Material`, `OS:Material:AirGap`, `OS:Material:InfraredTransparent`, `OS:Material:NoMass`, `OS:Material:RoofVegetation`, `OS:WindowMaterial:Blind`, `OS:WindowMaterial:DaylightRedirectionDevice`, `OS:WindowMaterial:Gas`, `OS:WindowMaterial:GasMixture`, `OS:WindowMaterial:Glazing`, `OS:WindowMaterial:Glazing:RefractionExtinctionMethod`, `OS:WindowMaterial:GlazingGroup:Thermochromic`, `OS:WindowMaterial:Screen`, `OS:WindowMaterial:Shade`, `OS:WindowMaterial:SimpleGlazingSystem` |
+| `A9` Custom Block Material Name 1 | `MaterialNames` | `OS:Material`, `OS:Material:AirGap`, `OS:Material:InfraredTransparent`, `OS:Material:NoMass`, `OS:Material:RoofVegetation`, `OS:WindowMaterial:Blind`, `OS:WindowMaterial:DaylightRedirectionDevice`, `OS:WindowMaterial:Gas`, `OS:WindowMaterial:GasMixture`, `OS:WindowMaterial:Glazing`, `OS:WindowMaterial:Glazing:RefractionExtinctionMethod`, `OS:WindowMaterial:GlazingGroup:Thermochromic`, `OS:WindowMaterial:Screen`, `OS:WindowMaterial:Shade`, `OS:WindowMaterial:SimpleGlazingSystem` |
+
+### `OS:FuelFactors`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Source Energy Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` CO2 Emission Factor Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A5` CO Emission Factor Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A6` CH4 Emission Factor Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A7` NOx Emission Factor Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A8` N2O Emission Factor Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A9` SO2 Emission Factor Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A10` PM Emission Factor Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A11` PM10 Emission Factor Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A12` PM2.5 Emission Factor Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A13` NH3 Emission Factor Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A14` NMVOC Emission Factor Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A15` Hg Emission Factor Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A16` Pb Emission Factor Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A17` Water Emission Factor Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A18` Nuclear High Level Emission Factor Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A19` Nuclear Low Level Emission Factor Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:GasEquipment`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Gas Equipment Definition Name | `GasEquipmentDefinitionNames` | `OS:GasEquipment:Definition` |
+| `A4` Space or SpaceType Name | `SpaceAndSpaceTypeNames` | `OS:Space`, `OS:SpaceType` |
+| `A5` Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
 
 ### `OS:Generator:FuelCell`
 
@@ -1322,6 +2019,12 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | --- | --- | --- |
 | `A3` Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
 
+### `OS:Glare:Sensor`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Space Name | `SpaceNames` | `OS:Space` |
+
 ### `OS:GroundHeatExchanger:HorizontalTrench`
 
 | Field | Object List | Target OS IddObjectTypes |
@@ -1336,6 +2039,12 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A3` Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
 | `A4` Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
 | `A5` Undisturbed Ground Temperature Model | `UndisturbedGroundTempModels` | `OS:Site:GroundTemperature:Undisturbed:KusudaAchenbach`, `OS:Site:GroundTemperature:Undisturbed:Xing` |
+
+### `OS:HVACComponentList`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A2` HVACComponent 1 | `AllObjects` | 6 targets (suppressed; list is `AllObjects`) |
 
 ### `OS:HeaderedPumps:ConstantSpeed`
 
@@ -1352,6 +2061,20 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A1` Coefficient 3 of the Part Load Performance Curve | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
 | `N11` Thermal Zone | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
 | `N11` Thermal Zone | `ThermalZoneNames` | `OS:ThermalZone` |
+
+### `OS:HeatExchanger:AirToAir:SensibleAndLatent`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Availability Schedule | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Supply Air Inlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A5` Supply Air Outlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A6` Exhaust Air Inlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A7` Exhaust Air Outlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A12` Sensible Effectiveness of Heating Air Flow Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A13` Latent Effectiveness of Heating Air Flow Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A14` Sensible Effectiveness of Cooling Air Flow Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A15` Latent Effectiveness of Cooling Air Flow Curve Name | `UnivariateFunctions` | `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:Quadratic`, `OS:Curve:Quartic`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
 
 ### `OS:HeatExchanger:Desiccant:BalancedFlow`
 
@@ -1509,6 +2232,14 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A8` Heating Compressor Power Curve Name | `QuadvariateFunctions` | `OS:Curve:QuadLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
 | `N6` Companion Cooling Heat Pump Name | `WWHPCoolingNames` | `OS:HeatPump:WaterToWater:EquationFit:Cooling` |
 
+### `OS:HotWaterEquipment`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Hot Water Equipment Definition Name | `HotWaterEquipmentDefinitionNames` | `OS:HotWaterEquipment:Definition` |
+| `A4` Space or SpaceType Name | `SpaceAndSpaceTypeNames` | `OS:Space`, `OS:SpaceType` |
+| `A5` Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
 ### `OS:Humidifier:Steam:Electric`
 
 | Field | Object List | Target OS IddObjectTypes |
@@ -1527,6 +2258,133 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A5` Air Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
 | `A6` Air Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
 | `A7` Water Storage Tank Name | `WaterStorageTankNames` | No `\reference` matches found |
+
+### `OS:IlluminanceMap`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Space Name | `SpaceNames` | `OS:Space` |
+
+### `OS:InteriorPartitionSurface`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A4` Interior Partition Surface Group Name | `InteriorPartitionSurfaceGroupNames` | `OS:InteriorPartitionSurfaceGroup` |
+
+### `OS:InteriorPartitionSurfaceGroup`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Space Name | `SpaceNames` | `OS:Space` |
+
+### `OS:InternalMass`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Internal Mass Definition Name | `InternalMassDefinitionNames` | `OS:InternalMass:Definition` |
+| `A4` Space or SpaceType Name | `SpaceAndSpaceTypeNames` | `OS:Space`, `OS:SpaceType` |
+
+### `OS:InternalMass:Definition`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+
+### `OS:LifeCycleCost`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A5` Item Name | `AllObjects` | 6 targets (suppressed; list is `AllObjects`) |
+
+### `OS:LightingSimulationZone`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Group Rendering Name | `GroupRenderingNames` | `OS:Rendering:Color` |
+| `A4` Planar Surface Group Name | `PlanarSurfaceGroupNames` | `OS:InteriorPartitionSurfaceGroup`, `OS:ShadingSurfaceGroup`, `OS:Space` |
+
+### `OS:Lights`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Lights Definition Name | `LightsDefinitionNames` | `OS:Lights:Definition` |
+| `A4` Space or SpaceType Name | `SpaceAndSpaceTypeNames` | `OS:Space`, `OS:SpaceType` |
+| `A5` Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:Luminaire`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Luminaire Definition Name | `LuminaireDefinitionNames` | `OS:Luminaire:Definition` |
+| `A4` Space or SpaceType Name | `SpaceAndSpaceTypeNames` | `OS:Space`, `OS:SpaceType` |
+| `A5` Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:MaterialProperty:MoisturePenetrationDepth:Settings`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A2` Material Name | `MaterialWithPropertyNames` | `OS:Material`, `OS:Material:NoMass` |
+
+### `OS:MaterialProperty:PhaseChange`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A2` Material Name | `MaterialWithPropertyNames` | `OS:Material`, `OS:Material:NoMass` |
+
+### `OS:MaterialProperty:PhaseChangeHysteresis`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A2` Material Name | `MaterialWithPropertyNames` | `OS:Material`, `OS:Material:NoMass` |
+
+### `OS:ModelObjectList`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Model Object 1 | `AllObjects` | 6 targets (suppressed; list is `AllObjects`) |
+
+### `OS:Node`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `N1` Inlet Port | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `N2` Outlet Port | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+
+### `OS:OtherEquipment`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Other Equipment Definition Name | `OtherEquipmentDefinitionNames` | `OS:OtherEquipment:Definition` |
+| `A4` Space or SpaceType Name | `SpaceAndSpaceTypeNames` | `OS:Space`, `OS:SpaceType` |
+| `A5` Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:Output:Table:Annual`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A4` Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:Output:Variable`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A6` Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:People`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` People Definition Name | `PeopleDefinitionNames` | `OS:People:Definition` |
+| `A4` Space or SpaceType Name | `SpaceAndSpaceTypeNames` | `OS:Space`, `OS:SpaceType` |
+| `A5` Number of People Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A6` Activity Level Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A7` Surface Name/Angle Factor List Name | `AllHeatTranAngFacNames` | `OS:InternalMass`, `OS:SubSurface`, `OS:Surface` |
+| `A8` Work Efficiency Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A10` Clothing Insulation Calculation Method Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A11` Clothing Insulation Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A12` Air Velocity Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A13` Ankle Level Air Velocity Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
 
 ### `OS:Pipe:Adiabatic`
 
@@ -1554,6 +2412,27 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A4` Fluid Inlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
 | `A5` Fluid Outlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
 | `A6` Ambient Temperature Outdoor Air Node | `Node` | `OS:Node` |
+
+### `OS:PlantComponent:UserDefined`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Main Model Program Calling Manager Name | `ErlProgramCallingManagerNames` | `OS:EnergyManagementSystem:ProgramCallingManager` |
+| `A4` Main Model Program Name | `ErlProgramNames` | `OS:EnergyManagementSystem:Program` |
+| `A5` Plant Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A6` Plant Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A9` Plant Initialization Program Calling Manager Name | `ErlProgramCallingManagerNames` | `OS:EnergyManagementSystem:ProgramCallingManager` |
+| `A10` Plant Initialization Program Name | `ErlProgramNames` | `OS:EnergyManagementSystem:Program` |
+| `A11` Plant Simulation Program Calling Manager Name | `ErlProgramCallingManagerNames` | `OS:EnergyManagementSystem:ProgramCallingManager` |
+| `A12` Plant Simulation Program Name | `ErlProgramNames` | `OS:EnergyManagementSystem:Program` |
+| `A13` Design Volume Flow Rate Actuator | `ErlActuatorNames` | `OS:EnergyManagementSystem:Actuator` |
+| `A14` Minimum Mass Flow Rate Actuator | `ErlActuatorNames` | `OS:EnergyManagementSystem:Actuator` |
+| `A15` Maximum Mass Flow Rate Actuator | `ErlActuatorNames` | `OS:EnergyManagementSystem:Actuator` |
+| `A16` Minimum Loading Capacity Actuator | `ErlActuatorNames` | `OS:EnergyManagementSystem:Actuator` |
+| `A17` Maximum Loading Capacity Actuator | `ErlActuatorNames` | `OS:EnergyManagementSystem:Actuator` |
+| `A18` Optimal Loading Capacity Actuator | `ErlActuatorNames` | `OS:EnergyManagementSystem:Actuator` |
+| `A19` Outlet Temperature Actuator | `ErlActuatorNames` | `OS:EnergyManagementSystem:Actuator` |
+| `A20` Mass Flow Rate Actuator | `ErlActuatorNames` | `OS:EnergyManagementSystem:Actuator` |
 
 ### `OS:PlantEquipmentOperation:CoolingLoad`
 
@@ -1637,6 +2516,13 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A27` Supply Mixer Name | `ConnectionObject` | 140 targets (suppressed; list is `ConnectionObject`) |
 | `A28` Supply Splitter Name | `ConnectionObject` | 140 targets (suppressed; list is `ConnectionObject`) |
 
+### `OS:PortList`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A2` HVAC Component | `ConnectionObject` | 140 targets (suppressed; list is `ConnectionObject`) |
+| `A3` Port 1 | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+
 ### `OS:Pump:ConstantSpeed`
 
 | Field | Object List | Target OS IddObjectTypes |
@@ -1660,6 +2546,24 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A12` Minimum RPM Schedule | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
 | `A13` Maximum RPM Schedule | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
 | `A14` Zone Name | `ThermalZoneNames` | `OS:ThermalZone` |
+
+### `OS:PythonPlugin:Instance`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A4` External File Name | `ExternalFileNames` | `OS:External:File` |
+
+### `OS:PythonPlugin:OutputVariable`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Python Plugin Variable Name | `PythonPluginVariables` | `OS:PythonPlugin:OutputVariable`, `OS:PythonPlugin:TrendVariable`, `OS:PythonPlugin:Variable` |
+
+### `OS:PythonPlugin:TrendVariable`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Number of Timesteps to be Logged | `PythonPluginVariables` | `OS:PythonPlugin:OutputVariable`, `OS:PythonPlugin:TrendVariable`, `OS:PythonPlugin:Variable` |
 
 ### `OS:Refrigeration:AirChiller`
 
@@ -1799,6 +2703,87 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A4` Glass Reach In Door Opening Schedule Name Facing Zone | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
 | `A5` Stocking Door Opening Schedule Name Facing Zone | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
 
+### `OS:Schedule:Compact`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Schedule Type Limits Name | `ScheduleTypeLimitsNames` | `OS:ScheduleTypeLimits` |
+
+### `OS:Schedule:Constant`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Schedule Type Limits Name | `ScheduleTypeLimitsNames` | `OS:ScheduleTypeLimits` |
+
+### `OS:Schedule:Day`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Schedule Type Limits Name | `ScheduleTypeLimitsNames` | `OS:ScheduleTypeLimits` |
+
+### `OS:Schedule:File`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Schedule Type Limits Name | `ScheduleTypeLimitsNames` | `OS:ScheduleTypeLimits` |
+| `A4` External File Name | `ExternalFileNames` | `OS:External:File` |
+
+### `OS:Schedule:FixedInterval`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Schedule Type Limits Name | `ScheduleTypeLimitsNames` | `OS:ScheduleTypeLimits` |
+
+### `OS:Schedule:Rule`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Schedule Ruleset Name | `ScheduleRulesetNames` | `OS:Schedule:Ruleset` |
+| `A4` Day Schedule Name | `DayScheduleNames` | `OS:Schedule:Day` |
+
+### `OS:Schedule:Ruleset`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Schedule Type Limits Name | `ScheduleTypeLimitsNames` | `OS:ScheduleTypeLimits` |
+| `A4` Default Day Schedule Name | `DayScheduleNames` | `OS:Schedule:Day` |
+| `A5` Summer Design Day Schedule Name | `DayScheduleNames` | `OS:Schedule:Day` |
+| `A6` Winter Design Day Schedule Name | `DayScheduleNames` | `OS:Schedule:Day` |
+| `A7` Holiday Schedule Name | `DayScheduleNames` | `OS:Schedule:Day` |
+| `A8` Custom Day 1 Schedule Name | `DayScheduleNames` | `OS:Schedule:Day` |
+| `A9` Custom Day 2 Schedule Name | `DayScheduleNames` | `OS:Schedule:Day` |
+
+### `OS:Schedule:VariableInterval`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Schedule Type Limits Name | `ScheduleTypeLimitsNames` | `OS:ScheduleTypeLimits` |
+
+### `OS:Schedule:Week`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Schedule Rendering Name | `ScheduleRenderingNames` | No `\reference` matches found |
+| `A4` Sunday Schedule:Day Name | `DayScheduleNames` | `OS:Schedule:Day` |
+| `A5` Monday Schedule:Day Name | `DayScheduleNames` | `OS:Schedule:Day` |
+| `A6` Tuesday Schedule:Day Name | `DayScheduleNames` | `OS:Schedule:Day` |
+| `A7` Wednesday Schedule:Day Name | `DayScheduleNames` | `OS:Schedule:Day` |
+| `A8` Thursday Schedule:Day Name | `DayScheduleNames` | `OS:Schedule:Day` |
+| `A9` Friday Schedule:Day Name | `DayScheduleNames` | `OS:Schedule:Day` |
+| `A10` Saturday Schedule:Day Name | `DayScheduleNames` | `OS:Schedule:Day` |
+| `A11` Holiday Schedule:Day Name | `DayScheduleNames` | `OS:Schedule:Day` |
+| `A12` SummerDesignDay Schedule:Day Name | `DayScheduleNames` | `OS:Schedule:Day` |
+| `A13` WinterDesignDay Schedule:Day Name | `DayScheduleNames` | `OS:Schedule:Day` |
+| `A14` CustomDay1 Schedule:Day Name | `DayScheduleNames` | `OS:Schedule:Day` |
+| `A15` CustomDay2 Schedule:Day Name | `DayScheduleNames` | `OS:Schedule:Day` |
+
+### `OS:Schedule:Year`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Schedule Type Limits Name | `ScheduleTypeLimitsNames` | `OS:ScheduleTypeLimits` |
+| `A4` Week Schedule Until Date | `WeekScheduleNames` | `OS:Schedule:Week` |
+
 ### `OS:SetpointManager:FollowOutdoorAirTemperature`
 
 | Field | Object List | Target OS IddObjectTypes |
@@ -1890,6 +2875,42 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | --- | --- | --- |
 | `A1` Minimum Turndown Ratio | `Node` | `OS:Node` |
 
+### `OS:ShadingControl`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A5` Glare Control Is Active | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A5` Glare Control Is Active | `WindowShadesScreensAndBlinds` | `OS:WindowMaterial:Blind`, `OS:WindowMaterial:DaylightRedirectionDevice`, `OS:WindowMaterial:Screen`, `OS:WindowMaterial:Shade` |
+| `A11` Setpoint 2 | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A13` Sub Surface Name 1 | `GlazedExtSubSurfNames` | `OS:SubSurface` |
+
+### `OS:ShadingSurface`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A4` Shading Surface Group Name | `ShadingSurfaceGroupNames` | `OS:ShadingSurfaceGroup` |
+| `A5` Transmittance Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:ShadingSurfaceGroup`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A4` Space Name | `SpaceNames` | `OS:Space` |
+| `A5` Shaded Object Name | `SurfAndSubSurfNames` | `OS:SubSurface`, `OS:Surface` |
+
+### `OS:ShadowCalculation`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Shading Zone Group | `ModelObjectLists` | `OS:ModelObjectList` |
+
+### `OS:Site:WaterMainsTemperature`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
 ### `OS:Sizing:Plant`
 
 | Field | Object List | Target OS IddObjectTypes |
@@ -1919,6 +2940,221 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A12` Beam Solar Day Schedule Name | `DayScheduleNames` | `OS:Schedule:Day` |
 | `A13` Diffuse Solar Day Schedule Name | `DayScheduleNames` | `OS:Schedule:Day` |
 
+### `OS:SolarCollector:FlatPlate:PhotovoltaicThermal`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Design Flow Rate | `AllShadingAndHTSurfNames` | `OS:ShadingSurface`, `OS:SubSurface`, `OS:Surface` |
+| `A1` Design Flow Rate | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A1` Design Flow Rate | `FlatPlatePVTParameters` | `OS:SolarCollectorPerformance:PhotovoltaicThermal:BIPVT`, `OS:SolarCollectorPerformance:PhotovoltaicThermal:Simple` |
+| `A1` Design Flow Rate | `PVGeneratorNames` | No `\reference` matches found |
+
+### `OS:SolarCollector:FlatPlate:Water`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Maximum Flow Rate | `AllShadingAndHTSurfNames` | `OS:ShadingSurface`, `OS:SubSurface`, `OS:Surface` |
+| `A1` Maximum Flow Rate | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A1` Maximum Flow Rate | `FlatPlateSolarCollectorParameters` | `OS:SolarCollectorPerformance:FlatPlate` |
+
+### `OS:SolarCollector:IntegralCollectorStorage`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Maximum Flow Rate | `AllShadingAndHTSurfNames` | `OS:ShadingSurface`, `OS:SubSurface`, `OS:Surface` |
+| `A1` Maximum Flow Rate | `CollectorStoragePerformance` | `OS:SolarCollectorPerformance:IntegralCollectorStorage` |
+| `A1` Maximum Flow Rate | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+
+### `OS:SolarCollectorPerformance:PhotovoltaicThermal:BIPVT`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Glass Extinction Coefficient | `OSCMNames` | `OS:SurfaceProperty:OtherSideConditionsModel` |
+| `A3` Glass Extinction Coefficient | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:SolarCollectorPerformance:PhotovoltaicThermal:Simple`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Front Surface Emittance | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:Space`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Space Type Name | `SpaceTypeNames` | `OS:SpaceType` |
+| `A4` Default Construction Set Name | `DefaultConstructionSetNames` | `OS:DefaultConstructionSet` |
+| `A5` Default Schedule Set Name | `DefaultScheduleSetNames` | `OS:DefaultScheduleSet` |
+| `A6` Building Story Name | `BuildingStoryNames` | `OS:BuildingStory` |
+| `A7` Thermal Zone Name | `ThermalZoneNames` | `OS:ThermalZone` |
+| `A9` Design Specification Outdoor Air Object Name | `DesignSpecificationOutdoorAirNames` | `OS:DesignSpecification:OutdoorAir` |
+| `A10` Building Unit Name | `BuildingUnitNames` | `OS:BuildingUnit` |
+
+### `OS:SpaceInfiltration:DesignFlowRate`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Space or SpaceType Name | `SpaceAndSpaceTypeNames` | `OS:Space`, `OS:SpaceType` |
+| `A4` Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:SpaceInfiltration:EffectiveLeakageArea`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Wind Coefficient | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A1` Wind Coefficient | `SpaceAndSpaceTypeNames` | `OS:Space`, `OS:SpaceType` |
+
+### `OS:SpaceInfiltration:FlowCoefficient`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Shelter Factor | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A3` Shelter Factor | `SpaceAndSpaceTypeNames` | `OS:Space`, `OS:SpaceType` |
+
+### `OS:SpaceType`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Default Construction Set Name | `DefaultConstructionSetNames` | `OS:DefaultConstructionSet` |
+| `A4` Default Schedule Set Name | `DefaultScheduleSetNames` | `OS:DefaultScheduleSet` |
+| `A5` Group Rendering Name | `GroupRenderingNames` | `OS:Rendering:Color` |
+| `A6` Design Specification Outdoor Air Object Name | `DesignSpecificationOutdoorAirNames` | `OS:DesignSpecification:OutdoorAir` |
+
+### `OS:StandardsInformation:Construction`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A2` Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+
+### `OS:StandardsInformation:Material`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A2` Material Name | `MaterialNames` | `OS:Material`, `OS:Material:AirGap`, `OS:Material:InfraredTransparent`, `OS:Material:NoMass`, `OS:Material:RoofVegetation`, `OS:WindowMaterial:Blind`, `OS:WindowMaterial:DaylightRedirectionDevice`, `OS:WindowMaterial:Gas`, `OS:WindowMaterial:GasMixture`, `OS:WindowMaterial:Glazing`, `OS:WindowMaterial:Glazing:RefractionExtinctionMethod`, `OS:WindowMaterial:GlazingGroup:Thermochromic`, `OS:WindowMaterial:Screen`, `OS:WindowMaterial:Shade`, `OS:WindowMaterial:SimpleGlazingSystem` |
+
+### `OS:SteamEquipment`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Steam Equipment Definition Name | `SteamEquipmentDefinitionNames` | `OS:SteamEquipment:Definition` |
+| `A4` Space or SpaceType Name | `SpaceAndSpaceTypeNames` | `OS:Space`, `OS:SpaceType` |
+| `A5` Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:SubSurface`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A4` Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A5` Surface Name | `SurfaceNames` | `OS:Surface` |
+| `A6` Outside Boundary Condition Object | `OutFaceEnvNames` | `OS:Foundation:Kiva`, `OS:SubSurface`, `OS:Surface`, `OS:SurfaceProperty:OtherSideCoefficients`, `OS:SurfaceProperty:OtherSideConditionsModel` |
+| `A7` Frame and Divider Name | `WindowFrameAndDividerNames` | No `\reference` matches found |
+
+### `OS:Surface`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A4` Construction Name | `ConstructionNames` | `OS:Construction`, `OS:Construction:AirBoundary`, `OS:Construction:CfactorUndergroundWall`, `OS:Construction:FfactorGroundFloor`, `OS:Construction:InternalSource`, `OS:Construction:WindowDataFile` |
+| `A5` Space Name | `SpaceNames` | `OS:Space` |
+| `A7` Outside Boundary Condition Object | `OutFaceEnvNames` | `OS:Foundation:Kiva`, `OS:SubSurface`, `OS:Surface`, `OS:SurfaceProperty:OtherSideCoefficients`, `OS:SurfaceProperty:OtherSideConditionsModel` |
+
+### `OS:SurfaceControl:MovableInsulation`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Surface Name | `SurfaceNames` | `OS:Surface` |
+| `A4` Material Name | `MaterialNames` | `OS:Material`, `OS:Material:AirGap`, `OS:Material:InfraredTransparent`, `OS:Material:NoMass`, `OS:Material:RoofVegetation`, `OS:WindowMaterial:Blind`, `OS:WindowMaterial:DaylightRedirectionDevice`, `OS:WindowMaterial:Gas`, `OS:WindowMaterial:GasMixture`, `OS:WindowMaterial:Glazing`, `OS:WindowMaterial:Glazing:RefractionExtinctionMethod`, `OS:WindowMaterial:GlazingGroup:Thermochromic`, `OS:WindowMaterial:Screen`, `OS:WindowMaterial:Shade`, `OS:WindowMaterial:SimpleGlazingSystem` |
+| `A5` Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:SurfaceProperty:ConvectionCoefficients`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A2` Surface Name | `AllHeatTranSurfNames` | `OS:InternalMass`, `OS:SubSurface`, `OS:Surface` |
+| `A5` Convection Coefficient 1 Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A6` Convection Coefficient 1 User Curve Name | `UserConvectionModels` | No `\reference` matches found |
+| `A9` Convection Coefficient 2 Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A10` Convection Coefficient 2 User Curve Name | `UserConvectionModels` | No `\reference` matches found |
+
+### `OS:SurfaceProperty:ConvectionCoefficients:MultipleSurface`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A5` Convection Coefficient 1 Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A6` Convection Coefficient 1 User Curve Name | `UserConvectionModels` | No `\reference` matches found |
+| `A9` Convection Coefficient 2 Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A10` Convection Coefficient 2 User Curve Name | `UserConvectionModels` | No `\reference` matches found |
+
+### `OS:SurfaceProperty:ExposedFoundationPerimeter`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A2` Surface Name | `FloorSurfaceNames` | `OS:Surface` |
+
+### `OS:SurfaceProperty:GroundSurfaces`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A4` Ground Surface 1 Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A5` Ground Surface 1 Reflectance Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:SurfaceProperty:IncidentSolarMultiplier`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A2` Surface Name | `GlazedExtSubSurfNames` | `OS:SubSurface` |
+| `A3` Incident Solar Multiplier Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:SurfaceProperty:LocalEnvironment`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Exterior Surface Name | `AllHeatTranSurfNames` | `OS:InternalMass`, `OS:SubSurface`, `OS:Surface` |
+| `A4` External Shading Fraction Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A5` Surrounding Surfaces Object Name | `SurroundingSurfacesNames` | `OS:SurfaceProperty:SurroundingSurfaces` |
+| `A6` Outdoor Air Node Name | `OutdoorAirNodeNames` | No `\reference` matches found |
+| `A7` Ground Surfaces Object Name | `GroundSurfacesNames` | `OS:SurfaceProperty:GroundSurfaces` |
+
+### `OS:SurfaceProperty:OtherSideCoefficients`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Constant Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:SurfaceProperty:SurroundingSurfaces`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Sky Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Ground Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A6` Surrounding Surface 1 Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:SwimmingPool:Indoor`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Surface Name | `FloorSurfaceNames` | `OS:Surface` |
+| `A4` Activity Factor Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A5` Make-up Water Supply Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A6` Cover Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A7` Pool Water Inlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A8` Pool Water Outlet Node | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A9` Setpoint Temperature Schedule | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A10` People Schedule | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A11` People Heat Gain Schedule | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:Table:IndependentVariable`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A6` External File Name | `ExternalFileNames` | `OS:External:File` |
+
+### `OS:Table:Lookup`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Independent Variable List Name | `ModelObjectLists` | `OS:ModelObjectList` |
+| `A6` External File Name | `ExternalFileNames` | `OS:External:File` |
+
 ### `OS:TemperingValve`
 
 | Field | Object List | Target OS IddObjectTypes |
@@ -1928,6 +3164,96 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A5` Stream 2 Source Node | `Node` | `OS:Node` |
 | `A6` Temperature Setpoint Node | `Node` | `OS:Node` |
 | `A7` Pump Outlet Node | `Node` | `OS:Node` |
+
+### `OS:ThermalStorage:ChilledWater:Stratified`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `N5` Ambient Temperature Outdoor Air Node Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `N5` Ambient Temperature Outdoor Air Node Name | `ThermalZoneNames` | `OS:ThermalZone` |
+| `N8` Use Side Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A10` Use Side Heat Transfer Effectiveness | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A11` Use Side Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A12` Source Side Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A13` Source Side Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A14` Source Side Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:ThermalStorage:Ice:Detailed`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Thaw Process Indicator | `BivariateFunctions` | `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:FanPressureRise`, `OS:Curve:QuadraticLinear`, `OS:Table:Lookup`, `OS:Table:MultiVariableLookup` |
+| `A1` Thaw Process Indicator | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A1` Thaw Process Indicator | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:ThermalZone`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A6` Zone Air Inlet Port List | `PortLists` | No `\reference` matches found |
+| `A7` Zone Air Exhaust Port List | `PortLists` | No `\reference` matches found |
+| `A8` Zone Air Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A9` Zone Return Air Port List | `PortLists` | No `\reference` matches found |
+| `A10` Primary Daylighting Control Name | `DaylightingControlNames` | `OS:Daylighting:Control` |
+| `A11` Secondary Daylighting Control Name | `DaylightingControlNames` | `OS:Daylighting:Control` |
+| `A12` Illuminance Map Name | `IlluminanceMapNames` | `OS:IlluminanceMap` |
+| `A13` Group Rendering Name | `GroupRenderingNames` | `OS:Rendering:Color` |
+| `A14` Thermostat Name | `ThermostatNames` | `OS:ThermostatSetpoint:DualSetpoint`, `OS:ZoneControl:Thermostat:StagedDualSetpoint` |
+| `A16` Humidistat Name | `HumidistatNames` | `OS:ZoneControl:Humidistat` |
+| `A17` Daylighting Controls Availability Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:ThermostatSetpoint:DualSetpoint`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Heating Setpoint Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Cooling Setpoint Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:UtilityCost:Charge:Block`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Tariff Name | `UtilityCostTariffs` | `OS:UtilityCost:Tariff` |
+
+### `OS:UtilityCost:Charge:Simple`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Tariff Name | `UtilityCostTariffs` | `OS:UtilityCost:Tariff` |
+
+### `OS:UtilityCost:Computation`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Tariff Name | `UtilityCostTariffs` | `OS:UtilityCost:Tariff` |
+
+### `OS:UtilityCost:Qualify`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A2` Tariff Name | `UtilityCostTariffs` | `OS:UtilityCost:Tariff` |
+
+### `OS:UtilityCost:Ratchet`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Tariff Name | `UtilityCostTariffs` | `OS:UtilityCost:Tariff` |
+
+### `OS:UtilityCost:Tariff`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A5` Time of Use Period Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A6` Season Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A7` Month Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A11` Real Time Pricing Charge Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A12` Customer Baseline Load Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:UtilityCost:Variable`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Tariff Name | `UtilityCostTariffs` | `OS:UtilityCost:Tariff` |
 
 ### `OS:WaterHeater:HeatPump`
 
@@ -2004,12 +3330,76 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A20` Source Side Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
 | `A23` Indirect Alternate Setpoint Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
 
+### `OS:WaterUse:Connections`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Inlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A4` Outlet Node Name | `ConnectionNames` | Hardcoded reference in IddObject (ConnectionNames); targets not declared in IDD |
+| `A5` Supply Water Storage Tank Name | `WaterStorageTankNames` | No `\reference` matches found |
+| `A6` Reclamation Water Storage Tank Name | `WaterStorageTankNames` | No `\reference` matches found |
+| `A7` Hot Water Supply Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A8` Cold Water Supply Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A11` Water Use Equipment 1 Name | `WaterUseEquipmentNames` | `OS:WaterUse:Equipment` |
+
+### `OS:WaterUse:Equipment`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Water Use Equipment Definition Name | `WaterUseEquipmentDefinitionNames` | `OS:WaterUse:Equipment:Definition` |
+| `A4` Space Name | `SpaceNames` | `OS:Space` |
+| `A5` Flow Rate Fraction Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:WaterUse:Equipment:Definition`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Latent Fraction Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:WeatherProperty:SkyTemperature`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A2` Name | `RunPeriodsAndDesignDays` | `OS:RunPeriod`, `OS:SizingPeriod:DesignDay`, `OS:SizingPeriod:WeatherFileConditionType`, `OS:SizingPeriod:WeatherFileDays` |
+| `A4` Schedule Name | `ScheduleAndDayScheduleNames` | `OS:Schedule:Day` |
+
+### `OS:WindowMaterial:Glazing`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A4` Window Glass Spectral Data Set Name | `SpectralDataSets` | `OS:MaterialProperty:GlazingSpectralData` |
+
+### `OS:WindowMaterial:GlazingGroup:Thermochromic`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Window Material Glazing Name | `GlazingMaterialNames` | `OS:WindowMaterial:Glazing`, `OS:WindowMaterial:Glazing:RefractionExtinctionMethod`, `OS:WindowMaterial:GlazingGroup:Thermochromic`, `OS:WindowMaterial:SimpleGlazingSystem` |
+
+### `OS:ZoneAirContaminantBalance`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Outdoor Carbon Dioxide Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
 ### `OS:ZoneControl:ContaminantController`
 
 | Field | Object List | Target OS IddObjectTypes |
 | --- | --- | --- |
 | `A1` Generic Contaminant Setpoint Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
 | `A1` Generic Contaminant Setpoint Schedule Name | `ThermalZoneNames` | `OS:ThermalZone` |
+
+### `OS:ZoneControl:Humidistat`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A3` Humidifying Relative Humidity Setpoint Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A4` Dehumidifying Relative Humidity Setpoint Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:ZoneControl:Thermostat:StagedDualSetpoint`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Stage 1 Cooling Temperature Offset | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
 
 ### `OS:ZoneHVAC:Baseboard:Convective:Water`
 
@@ -2186,7 +3576,43 @@ This document lists **object-list based relationships** between HVAC-related Ope
 | `A15` Availability Manager List Name | `SystemAvailabilityManagerLists` | `OS:AvailabilityManagerAssignmentList` |
 | `A17` Design Specification ZoneHVAC Sizing Object Name | `DesignSpecificationZoneHVACSizingName` | No `\reference` matches found |
 
+### `OS:ZoneMixing`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Minimum Source Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A1` Minimum Source Temperature Schedule Name | `SpaceNames` | `OS:Space` |
+| `A1` Minimum Source Temperature Schedule Name | `ThermalZoneNames` | `OS:ThermalZone` |
+| `A11` Maximum Source Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A12` Minimum Outdoor Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A13` Maximum Outdoor Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:ZoneProperty:UserViewFactors:BySurfaceName`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A2` Thermal Zone Name | `ThermalZoneNames` | `OS:ThermalZone` |
+| `A3` From Surface Name 1 | `AllHeatTranSurfNames` | `OS:InternalMass`, `OS:SubSurface`, `OS:Surface` |
+| `A4` To Surface Name 1 | `AllHeatTranSurfNames` | `OS:InternalMass`, `OS:SubSurface`, `OS:Surface` |
+
+### `OS:ZoneVentilation:DesignFlowRate`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `A1` Velocity Term Coefficient | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `N11` Minimum Indoor Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `N12` Maximum Indoor Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `N13` Delta Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `N14` Minimum Outdoor Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+| `A10` Maximum Outdoor Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
+### `OS:ZoneVentilation:WindandStackOpenArea`
+
+| Field | Object List | Target OS IddObjectTypes |
+| --- | --- | --- |
+| `N10` Maximum Outdoor Temperature Schedule Name | `ScheduleNames` | `OS:ExternalInterface:FunctionalMockupUnitExport:To:Schedule`, `OS:ExternalInterface:FunctionalMockupUnitImport:To:Schedule`, `OS:ExternalInterface:Schedule`, `OS:Schedule:Compact`, `OS:Schedule:Constant`, `OS:Schedule:File`, `OS:Schedule:FixedInterval`, `OS:Schedule:Ruleset`, `OS:Schedule:VariableInterval`, `OS:Schedule:Year` |
+
 ## HVAC Objects Without Object-List References
 
-`OS:AirflowNetworkConstantPressureDrop`, `OS:AirflowNetworkDetailedOpening`, `OS:AirflowNetworkDuct`, `OS:AirflowNetworkEffectiveLeakageArea`, `OS:AirflowNetworkHorizontalOpening`, `OS:AirflowNetworkLeakageRatio`, `OS:AirflowNetworkReferenceCrackConditions`, `OS:AirflowNetworkSimpleOpening`, `OS:AirflowNetworkSimulationControl`, `OS:AirflowNetworkSpecifiedFlowRate`, `OS:CentralHeatPumpSystem:Module`, `OS:Coil:Cooling:LowTemperatureRadiant:VariableFlow`, `OS:Coil:Cooling:Water:Panel:Radiant`, `OS:Coil:Heating:DX:MultiSpeed:StageData`, `OS:Coil:Heating:Electric:MultiStage:StageData`, `OS:Coil:Heating:Gas:MultiStage:StageData`, `OS:Coil:Heating:LowTemperatureRadiant:ConstantFlow`, `OS:Coil:Heating:LowTemperatureRadiant:VariableFlow`, `OS:CoolingTowerPerformance:CoolTools`, `OS:CoolingTowerPerformance:YorkCalc`, `OS:Curve:FanPressureRise`, `OS:DistrictCooling`, `OS:EvaporativeFluidCooler:TwoSpeed`, `OS:Generator:FuelCell:ElectricalStorage`, `OS:Generator:Photovoltaic`, `OS:HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1`, `OS:Refrigeration:Condenser:Cascade`, `OS:Refrigeration:DefrostCycleParameters`, `OS:Refrigeration:Subcooler:LiquidSuction`, `OS:SetpointManager:Coldest`, `OS:SetpointManager:FollowGroundTemperature`, `OS:SetpointManager:MultiZone:Cooling:Average`, `OS:SetpointManager:MultiZone:Heating:Average`, `OS:SetpointManager:MultiZone:Humidity:Maximum`, `OS:SetpointManager:MultiZone:MaximumHumidity:Average`, `OS:SetpointManager:SingleZone:Cooling`, `OS:SetpointManager:SingleZone:Heating`, `OS:SetpointManager:SingleZone:Humidity:Maximum`, `OS:SetpointManager:SingleZone:OneStageCooling`, `OS:SetpointManager:SingleZone:OneStageHeating`, `OS:SetpointManager:SystemNodeReset:Humidity`, `OS:SetpointManager:SystemNodeReset:Temperature`, `OS:Sizing:Parameters`, `OS:SizingPeriod:WeatherFileConditionType`, `OS:SizingPeriod:WeatherFileDays`, `OS:UnitarySystemPerformance:Multispeed`, `OS:ZoneHVAC:Baseboard:Convective:Electric`, `OS:ZoneHVAC:Baseboard:RadiantConvective:Electric`, `OS:ZoneHVAC:CoolingPanel:RadiantConvective:Water`, `OS:ZoneHVAC:EnergyRecoveryVentilator:Controller`, `OS:ZoneHVAC:UnitHeater`
+`OS:AirflowNetworkConstantPressureDrop`, `OS:AirflowNetworkDetailedOpening`, `OS:AirflowNetworkDuct`, `OS:AirflowNetworkEffectiveLeakageArea`, `OS:AirflowNetworkHorizontalOpening`, `OS:AirflowNetworkLeak`, `OS:AirflowNetworkLeakageRatio`, `OS:AirflowNetworkReferenceCrackConditions`, `OS:AirflowNetworkSimpleOpening`, `OS:AirflowNetworkSimulationControl`, `OS:AirflowNetworkSpecifiedFlowRate`, `OS:CentralHeatPumpSystem:Module`, `OS:ClimateZones`, `OS:Coil:Cooling:LowTemperatureRadiant:VariableFlow`, `OS:Coil:Cooling:Water:Panel:Radiant`, `OS:Coil:Heating:DX:MultiSpeed:StageData`, `OS:Coil:Heating:Electric:MultiStage:StageData`, `OS:Coil:Heating:Gas:MultiStage:StageData`, `OS:Coil:Heating:LowTemperatureRadiant:ConstantFlow`, `OS:Coil:Heating:LowTemperatureRadiant:VariableFlow`, `OS:ComponentCost:Adjustments`, `OS:ConvergenceLimits`, `OS:CoolingTowerPerformance:CoolTools`, `OS:CoolingTowerPerformance:YorkCalc`, `OS:CurrencyType`, `OS:Curve:Bicubic`, `OS:Curve:Biquadratic`, `OS:Curve:Cubic`, `OS:Curve:DoubleExponentialDecay`, `OS:Curve:Exponent`, `OS:Curve:ExponentialDecay`, `OS:Curve:ExponentialSkewNormal`, `OS:Curve:FanPressureRise`, `OS:Curve:Functional:PressureDrop`, `OS:Curve:Linear`, `OS:Curve:QuadLinear`, `OS:Curve:Quadratic`, `OS:Curve:QuadraticLinear`, `OS:Curve:Quartic`, `OS:Curve:QuintLinear`, `OS:Curve:RectangularHyperbola1`, `OS:Curve:RectangularHyperbola2`, `OS:Curve:Sigmoid`, `OS:Curve:Triquadratic`, `OS:DistrictCooling`, `OS:ElectricEquipment:Definition`, `OS:ElectricLoadCenter:Inverter:LookUpTable`, `OS:ElectricLoadCenter:Inverter:PVWatts`, `OS:ElectricLoadCenter:Inverter:Simple`, `OS:EnergyManagementSystem:GlobalVariable`, `OS:EnergyManagementSystem:InternalVariable`, `OS:EnergyManagementSystem:Program`, `OS:EnergyManagementSystem:Sensor`, `OS:EnergyManagementSystem:Subroutine`, `OS:EnvironmentalImpactFactors`, `OS:EvaporativeFluidCooler:TwoSpeed`, `OS:Exterior:FuelEquipment:Definition`, `OS:Exterior:Lights:Definition`, `OS:Exterior:WaterEquipment:Definition`, `OS:External:File`, `OS:ExternalInterface`, `OS:ExternalInterface:FunctionalMockupUnitExport:From:Variable`, `OS:ExternalInterface:FunctionalMockupUnitExport:To:Variable`, `OS:ExternalInterface:FunctionalMockupUnitImport`, `OS:ExternalInterface:Variable`, `OS:Facility`, `OS:Foundation:Kiva:Settings`, `OS:GasEquipment:Definition`, `OS:Generator:FuelCell:ElectricalStorage`, `OS:Generator:Photovoltaic`, `OS:HeatBalanceAlgorithm`, `OS:HeatExchanger:Desiccant:BalancedFlow:PerformanceDataType1`, `OS:HotWaterEquipment:Definition`, `OS:LifeCycleCost:Parameters`, `OS:LifeCycleCost:UsePriceEscalation`, `OS:LightingDesignDay`, `OS:LightingSimulationControl`, `OS:Lights:Definition`, `OS:LoadProfile:Plant`, `OS:Luminaire:Definition`, `OS:Material`, `OS:Material:AirGap`, `OS:Material:InfraredTransparent`, `OS:Material:NoMass`, `OS:Material:RoofVegetation`, `OS:MaterialProperty:GlazingSpectralData`, `OS:Meter:Custom`, `OS:Meter:CustomDecrement`, `OS:OtherEquipment:Definition`, `OS:Output:Constructions`, `OS:Output:DebuggingData`, `OS:Output:Diagnostics`, `OS:Output:EnergyManagementSystem`, `OS:Output:EnvironmentalImpactFactors`, `OS:Output:JSON`, `OS:Output:Meter`, `OS:Output:SQLite`, `OS:Output:Schedules`, `OS:Output:Table:Monthly`, `OS:Output:Table:SummaryReports`, `OS:OutputControl:Files`, `OS:OutputControl:ReportingTolerances`, `OS:OutputControl:ResilienceSummaries`, `OS:OutputControl:Table:Style`, `OS:OutputControl:Timestamp`, `OS:People:Definition`, `OS:PerformancePrecisionTradeoffs`, `OS:PhotovoltaicPerformance:Sandia`, `OS:PhotovoltaicPerformance:Simple`, `OS:PlantComponent:TemperatureSource`, `OS:ProgramControl`, `OS:PythonPlugin:SearchPaths`, `OS:PythonPlugin:Variable`, `OS:RadianceParameters`, `OS:Refrigeration:Condenser:Cascade`, `OS:Refrigeration:DefrostCycleParameters`, `OS:Refrigeration:Subcooler:LiquidSuction`, `OS:Rendering:Color`, `OS:RunPeriod`, `OS:RunPeriodControl:DaylightSavingTime`, `OS:RunPeriodControl:SpecialDays`, `OS:ScheduleTypeLimits`, `OS:SetpointManager:Coldest`, `OS:SetpointManager:FollowGroundTemperature`, `OS:SetpointManager:MultiZone:Cooling:Average`, `OS:SetpointManager:MultiZone:Heating:Average`, `OS:SetpointManager:MultiZone:Humidity:Maximum`, `OS:SetpointManager:MultiZone:MaximumHumidity:Average`, `OS:SetpointManager:SingleZone:Cooling`, `OS:SetpointManager:SingleZone:Heating`, `OS:SetpointManager:SingleZone:Humidity:Maximum`, `OS:SetpointManager:SingleZone:OneStageCooling`, `OS:SetpointManager:SingleZone:OneStageHeating`, `OS:SetpointManager:SystemNodeReset:Humidity`, `OS:SetpointManager:SystemNodeReset:Temperature`, `OS:SimulationControl`, `OS:Site`, `OS:Site:GroundReflectance`, `OS:Site:GroundTemperature:BuildingSurface`, `OS:Site:GroundTemperature:Deep`, `OS:Site:GroundTemperature:FCfactorMethod`, `OS:Site:GroundTemperature:Shallow`, `OS:Site:GroundTemperature:Undisturbed:KusudaAchenbach`, `OS:Site:GroundTemperature:Undisturbed:Xing`, `OS:Sizing:Parameters`, `OS:SizingPeriod:WeatherFileConditionType`, `OS:SizingPeriod:WeatherFileDays`, `OS:SolarCollectorPerformance:FlatPlate`, `OS:SolarCollectorPerformance:IntegralCollectorStorage`, `OS:Splitter`, `OS:SteamEquipment:Definition`, `OS:SurfaceConvectionAlgorithm:Inside`, `OS:SurfaceConvectionAlgorithm:Outside`, `OS:SurfaceProperty:OtherSideConditionsModel`, `OS:Table:MultiVariableLookup`, `OS:Timestep`, `OS:UnitarySystemPerformance:Multispeed`, `OS:UtilityBill`, `OS:Version`, `OS:WeatherFile`, `OS:WindowMaterial:Blind`, `OS:WindowMaterial:DaylightRedirectionDevice`, `OS:WindowMaterial:Gas`, `OS:WindowMaterial:GasMixture`, `OS:WindowMaterial:Glazing:RefractionExtinctionMethod`, `OS:WindowMaterial:Screen`, `OS:WindowMaterial:Shade`, `OS:WindowMaterial:SimpleGlazingSystem`, `OS:WindowProperty:FrameAndDivider`, `OS:YearDescription`, `OS:ZoneAirHeatBalanceAlgorithm`, `OS:ZoneAirMassFlowConservation`, `OS:ZoneCapacitanceMultiplier:ResearchSpecial`, `OS:ZoneHVAC:Baseboard:Convective:Electric`, `OS:ZoneHVAC:Baseboard:RadiantConvective:Electric`, `OS:ZoneHVAC:CoolingPanel:RadiantConvective:Water`, `OS:ZoneHVAC:EnergyRecoveryVentilator:Controller`, `OS:ZoneHVAC:UnitHeater`
 

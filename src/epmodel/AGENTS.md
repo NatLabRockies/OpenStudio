@@ -7,7 +7,6 @@ These notes are specific to work under `src/epmodel/`.
 When working on epmodel parity or topology behavior, read these first:
 
 - `src/epmodel/README.md`
-- `.opencode/hvac-parity-docs/hvac-api-roadmap.md`
 - `doc/idd-schema-alignment/os_hvac_concepts.md`
 
 Also keep these references available when needed:
@@ -17,8 +16,8 @@ Also keep these references available when needed:
 - `resources/energyplus/` for authoritative EnergyPlus schema shape, field
   order, extensibles, and object-list relationships
 
-Status, queue order, and next-task planning belong in the roadmap file, not
-in README documents.
+Status, queue order, and next-task planning belong in campaign state or
+dedicated campaign notes, not in README documents.
 
 ## Working Style Preferences
 

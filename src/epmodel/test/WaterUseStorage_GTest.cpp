@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/WaterUseStorage.hpp"
+#include "../scaffolds/WaterUseStorage.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -7,7 +7,7 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../ModelObject/OutputControlSizingStyle.hpp"
+#include "../scaffolds/OutputControlSizingStyle.hpp"
 
 #include <algorithm>
 

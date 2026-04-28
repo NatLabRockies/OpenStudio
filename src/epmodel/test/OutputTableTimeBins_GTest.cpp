@@ -7,7 +7,7 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../ModelObject/OutputTableTimeBins.hpp"
+#include "../scaffolds/OutputTableTimeBins.hpp"
 
 #include <algorithm>
 

@@ -101,6 +101,7 @@ namespace epmodel {
       void removeAllSpeeds();
 
       std::vector<ModelObject> children() const override;
+      std::vector<IdfObject> remove() override;
 
       std::vector<std::string> evaporatorAirTemperatureTypeforCurveObjectsValues() const;
     };

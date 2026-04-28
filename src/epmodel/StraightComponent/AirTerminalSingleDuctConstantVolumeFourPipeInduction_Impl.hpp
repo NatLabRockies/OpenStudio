@@ -11,59 +11,77 @@
 namespace openstudio {
 namespace epmodel {
 
+class Node;
+class Schedule;
+
 namespace detail {
 
-    class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl : public StraightComponent_Impl
-    {
-     public:
-      using StraightComponent_Impl::StraightComponent_Impl;
-      virtual ~AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl() override = default;
+  class EPMODEL_API AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl : public StraightComponent_Impl
+  {
+   public:
+    using StraightComponent_Impl::StraightComponent_Impl;
+    virtual ~AirTerminalSingleDuctConstantVolumeFourPipeInduction_Impl() override = default;
 
-      unsigned inletPort() const override;
-      unsigned outletPort() const override;
+    unsigned inletPort() const override;
+    unsigned outletPort() const override;
+    bool addToNode(Node& node) override;
 
-  boost::optional<double> maximumTotalAirFlowRate() const;
-  bool isMaximumTotalAirFlowRateAutosized() const;
-  bool setMaximumTotalAirFlowRate(double maximumTotalAirFlowRate);
-  void autosizeMaximumTotalAirFlowRate();
+    boost::optional<Schedule> availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+    void resetAvailabilitySchedule();
 
-  double inductionRatio() const;
-  bool isInductionRatioDefaulted() const;
-  bool setInductionRatio(double inductionRatio);
-  void resetInductionRatio();
+    boost::optional<double> maximumTotalAirFlowRate() const;
+    bool isMaximumTotalAirFlowRateAutosized() const;
+    bool setMaximumTotalAirFlowRate(double maximumTotalAirFlowRate);
+    void autosizeMaximumTotalAirFlowRate();
 
-  boost::optional<double> maximumHotWaterFlowRate() const;
-  bool isMaximumHotWaterFlowRateAutosized() const;
-  bool setMaximumHotWaterFlowRate(double maximumHotWaterFlowRate);
-  void resetMaximumHotWaterFlowRate();
-  void autosizeMaximumHotWaterFlowRate();
+    double inductionRatio() const;
+    bool isInductionRatioDefaulted() const;
+    bool setInductionRatio(double inductionRatio);
+    void resetInductionRatio();
 
-  double minimumHotWaterFlowRate() const;
-  bool isMinimumHotWaterFlowRateDefaulted() const;
-  bool setMinimumHotWaterFlowRate(double minimumHotWaterFlowRate);
-  void resetMinimumHotWaterFlowRate();
+    HVACComponent heatingCoil() const;
+    bool setHeatingCoil(const HVACComponent& heatingCoil);
 
-  double heatingConvergenceTolerance() const;
-  bool isHeatingConvergenceToleranceDefaulted() const;
-  bool setHeatingConvergenceTolerance(double heatingConvergenceTolerance);
-  void resetHeatingConvergenceTolerance();
+    boost::optional<double> maximumHotWaterFlowRate() const;
+    bool isMaximumHotWaterFlowRateAutosized() const;
+    bool setMaximumHotWaterFlowRate(double maximumHotWaterFlowRate);
+    void resetMaximumHotWaterFlowRate();
+    void autosizeMaximumHotWaterFlowRate();
 
-  boost::optional<double> maximumColdWaterFlowRate() const;
-  bool isMaximumColdWaterFlowRateAutosized() const;
-  bool setMaximumColdWaterFlowRate(double maximumColdWaterFlowRate);
-  void resetMaximumColdWaterFlowRate();
-  void autosizeMaximumColdWaterFlowRate();
+    double minimumHotWaterFlowRate() const;
+    bool isMinimumHotWaterFlowRateDefaulted() const;
+    bool setMinimumHotWaterFlowRate(double minimumHotWaterFlowRate);
+    void resetMinimumHotWaterFlowRate();
 
-  double minimumColdWaterFlowRate() const;
-  bool isMinimumColdWaterFlowRateDefaulted() const;
-  bool setMinimumColdWaterFlowRate(double minimumColdWaterFlowRate);
-  void resetMinimumColdWaterFlowRate();
+    double heatingConvergenceTolerance() const;
+    bool isHeatingConvergenceToleranceDefaulted() const;
+    bool setHeatingConvergenceTolerance(double heatingConvergenceTolerance);
+    void resetHeatingConvergenceTolerance();
 
-  double coolingConvergenceTolerance() const;
-  bool isCoolingConvergenceToleranceDefaulted() const;
-  bool setCoolingConvergenceTolerance(double coolingConvergenceTolerance);
-  void resetCoolingConvergenceTolerance();
-};
+    boost::optional<HVACComponent> coolingCoil() const;
+    bool setCoolingCoil(const boost::optional<HVACComponent>& coolingCoil);
+    void resetCoolingCoil();
+
+    boost::optional<double> maximumColdWaterFlowRate() const;
+    bool isMaximumColdWaterFlowRateAutosized() const;
+    bool setMaximumColdWaterFlowRate(double maximumColdWaterFlowRate);
+    void resetMaximumColdWaterFlowRate();
+    void autosizeMaximumColdWaterFlowRate();
+
+    double minimumColdWaterFlowRate() const;
+    bool isMinimumColdWaterFlowRateDefaulted() const;
+    bool setMinimumColdWaterFlowRate(double minimumColdWaterFlowRate);
+    void resetMinimumColdWaterFlowRate();
+
+    double coolingConvergenceTolerance() const;
+    bool isCoolingConvergenceToleranceDefaulted() const;
+    bool setCoolingConvergenceTolerance(double coolingConvergenceTolerance);
+    void resetCoolingConvergenceTolerance();
+
+    boost::optional<Node> inducedAirInletNode() const;
+    unsigned inducedAirInletPort() const;
+  };
 
 }  // namespace detail
 }  // namespace epmodel

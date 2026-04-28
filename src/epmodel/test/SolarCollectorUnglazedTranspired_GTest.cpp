@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SolarCollectorUnglazedTranspired.hpp"
+#include "../scaffolds/SolarCollectorUnglazedTranspired.hpp"
 
 using namespace openstudio::epmodel;
 

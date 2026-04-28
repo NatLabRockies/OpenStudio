@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ZoneHVACBaseboardRadiantConvectiveSteam.hpp"
+#include "../scaffolds/ZoneHVACBaseboardRadiantConvectiveSteam.hpp"
 
 using namespace openstudio::epmodel;
 

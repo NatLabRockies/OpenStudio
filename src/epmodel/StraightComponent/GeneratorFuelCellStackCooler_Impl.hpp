@@ -10,6 +10,9 @@
 
 namespace openstudio {
 namespace epmodel {
+  class GeneratorFuelCell;
+  class Node;
+
   namespace detail {
 
     class EPMODEL_API GeneratorFuelCellStackCooler_Impl : public StraightComponent_Impl
@@ -93,6 +96,10 @@ namespace epmodel {
       double stackAirCoolerFanCoefficientf2() const;
       bool setStackAirCoolerFanCoefficientf2(double stackAirCoolerFanCoefficientf2);
       void resetStackAirCoolerFanCoefficientf2();
+
+      boost::optional<openstudio::epmodel::GeneratorFuelCell> fuelCell() const;
+
+      bool addToNode(Node& node) override;
     };
 
   }  // namespace detail

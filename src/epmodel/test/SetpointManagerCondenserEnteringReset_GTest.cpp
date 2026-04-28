@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SetpointManagerCondenserEnteringReset.hpp"
+#include "../scaffolds/SetpointManagerCondenserEnteringReset.hpp"
 
 using namespace openstudio::epmodel;
 

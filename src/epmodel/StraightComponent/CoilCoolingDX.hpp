@@ -15,6 +15,10 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Node;
+class Schedule;
+class ThermalZone;
+class CoilCoolingDXCurveFitPerformance;
 
 namespace detail {
 class CoilCoolingDX_Impl;
@@ -24,6 +28,7 @@ class EPMODEL_API CoilCoolingDX : public StraightComponent
 {
  public:
   explicit CoilCoolingDX(const Model& model);
+  explicit CoilCoolingDX(const Model& model, const CoilCoolingDXCurveFitPerformance& coilCoolingDXCurveFitPerformance);
 
   virtual ~CoilCoolingDX() override = default;
   CoilCoolingDX(const CoilCoolingDX& other) = default;
@@ -33,14 +38,33 @@ class EPMODEL_API CoilCoolingDX : public StraightComponent
 
   static IddObjectType iddObjectType();
 
+  bool addToNode(Node& node);
+
   // Schema Alignment Notes:
-  // - Status: Partial Parity. The canonical wrapper surface is mostly relationship-heavy and only the condenser node links are surfaced in epmodel so far.
+  // - Status: Partial Parity. The canonical schedule/performance/condenser-zone surface plus the current epmodel supply-side air-loop
+  //   insertion path are now exposed, while the existing condenser-node scalar shim remains and the broader AFN/tank-link and DOAS
+  //   insertion surfaces are still intentionally deferred.
   // - Canonical Counterpart: openstudio::model::CoilCoolingDX.
-  // - Implemented Parity: `condenserInletNodeName` and `condenserOutletNodeName` preserve the existing node-link portion of the canonical API.
-  // - Documented Delta: Availability schedule, performance-object, condenser-zone, and tank-link accessors from canonical `openstudio::model::CoilCoolingDX` are not exposed yet.
-  // - Field/Storage Mapping: The preserved API maps directly to EnergyPlus `Coil:Cooling:DX` condenser node-name fields.
+  // - Implemented Parity: `availabilitySchedule`, `setAvailabilitySchedule`, `performanceObject`, `setPerformanceObject`, `condenserZone`,
+  //   `setCondenserZone`, `resetCondenserZone`, `addToNode` for the current supply-side air-loop path, the inherited straight-component ports,
+  //   and the existing condenser inlet/outlet node-name scalar accessors preserve the bounded canonical contract.
+  // - Documented Delta: AirflowNetworkEquivalentDuct, condensate/evaporative tank-link parity, and the canonical dedicated-outdoor-air
+  //   insertion path remain explicitly deferred for this slice.
+  // - Field/Storage Mapping: The preserved API maps directly to EnergyPlus `Coil:Cooling:DX` schedule, performance-object, condenser-zone,
+  //   condenser node-name fields, plus the inherited inlet/outlet node wiring used for the current air-loop insertion path.
   // - Evidence: `src/model/CoilCoolingDX.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDX.cpp`.
-  // - Remaining Parity Work: Add the omitted schedule, performance-object, condenser-zone, and tank-link helpers when relationship parity is extended.
+  // - Remaining Parity Work: Add the deferred AFN, tank-link, and dedicated-outdoor-air insertion helpers when the relationship surface is
+  //   expanded further.
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+
+  boost::optional<ThermalZone> condenserZone() const;
+  bool setCondenserZone(const ThermalZone& thermalZone);
+  void resetCondenserZone();
+
+  CoilCoolingDXCurveFitPerformance performanceObject() const;
+  bool setPerformanceObject(const CoilCoolingDXCurveFitPerformance& coilCoolingDXCurveFitPerformance);
+
   std::string condenserInletNodeName() const;
   bool setCondenserInletNodeName(const std::string& condenserInletNodeName);
 

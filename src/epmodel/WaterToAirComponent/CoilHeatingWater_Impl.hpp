@@ -15,6 +15,7 @@ namespace epmodel {
 
   class Node;
   class Schedule;
+  class AirflowNetworkDistributionComponentCoil;
 
   namespace detail {
 
@@ -29,7 +30,9 @@ namespace epmodel {
       unsigned waterInletPort() const override;
       unsigned waterOutletPort() const override;
       bool addToNode(Node& node) override;
+      std::vector<IdfObject> remove() override;
       bool removeFromPlantLoop() override;
+      std::vector<ModelObject> children() const override;
 
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);
@@ -70,6 +73,9 @@ namespace epmodel {
 
       double ratedRatioForAirAndWaterConvection() const;
       bool setRatedRatioForAirAndWaterConvection(double value);
+
+      AirflowNetworkDistributionComponentCoil getAirflowNetworkEquivalentDuct(double length, double diameter);
+      boost::optional<AirflowNetworkDistributionComponentCoil> airflowNetworkEquivalentDuct() const;
     };
 
   }  // namespace detail

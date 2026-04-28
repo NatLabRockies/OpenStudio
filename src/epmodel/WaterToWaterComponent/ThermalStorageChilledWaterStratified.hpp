@@ -18,6 +18,9 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
+  class ThermalZone;
+  class WaterHeaterSizing;
 
   namespace detail {
     class ThermalStorageChilledWaterStratified_Impl;
@@ -41,13 +44,13 @@ namespace epmodel {
     static std::vector<std::string> inletModeValues();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The stratified thermal-storage scalar surface is aligned, while schedule, zone, and node-link behavior remains excluded.
+    // - Status: Near Parity with documented deltas. The canonical scalar, relationship, loop-classification, and autosized-helper surface is aligned, while the default ambient schedule subtype and deeper model-side clone/sizing-application workflows still differ.
     // - Canonical Counterpart: openstudio::model::ThermalStorageChilledWaterStratified.
-    // - Implemented Parity: Scalar accessors for tank geometry, losses, limits, cooling capacity, effectiveness, inlet/outlet heights, flows, and destratification metadata preserve the canonical model API shape.
-    // - Documented Delta: Relationship-like schedule, zone, node/object-reference, and availability APIs are intentionally excluded in this pass.
-    // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `ThermalStorage:ChilledWater:Stratified` fields directly, while the excluded links remain in storage-level topology.
+    // - Implemented Parity: Scalar accessors plus setpoint/ambient/use-side/source-side schedules, ambient zone/object links, WaterHeaterSizing ownership, cooling classification/fuel reporting, and SQL-backed autosized helpers preserve the canonical model API shape.
+    // - Documented Delta: The constructor seeds the default ambient schedule with `ScheduleConstant` because epmodel does not yet expose canonical `ScheduleRuleset`; clone and sizing-application behavior also remains inherited rather than matching the model-side override.
+    // - Field/Storage Mapping: Wrappers target EnergyPlus `ThermalStorage:ChilledWater:Stratified` fields directly, including schedule and thermal-zone object references; autosized helpers resolve against shared epmodel SQL-backed component-sizing results.
     // - Evidence: `src/model/ThermalStorageChilledWaterStratified.hpp`, `src/model/ThermalStorageChilledWaterStratified.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateThermalStorageChilledWaterStratified.cpp`.
-    // - Remaining Parity Work: Add the excluded relationship APIs only if the family moves beyond scalar parity.
+    // - Remaining Parity Work: Add canonical `ScheduleRuleset` support for the seeded ambient schedule if epmodel adopts that schedule family, and expand only if later work needs model-side clone behavior or richer sizing application helpers.
 
     double tankVolume() const;
     bool setTankVolume(double tankVolume);
@@ -61,6 +64,10 @@ namespace epmodel {
     boost::optional<double> tankPerimeter() const;
     bool setTankPerimeter(double tankPerimeter);
     void resetTankPerimeter();
+
+    boost::optional<Schedule> setpointTemperatureSchedule() const;
+    bool setSetpointTemperatureSchedule(Schedule& schedule);
+    void resetSetpointTemperatureSchedule();
 
     double deadbandTemperatureDifference() const;
     bool setDeadbandTemperatureDifference(double deadbandTemperatureDifference);
@@ -81,6 +88,18 @@ namespace epmodel {
     std::string ambientTemperatureIndicator() const;
     bool setAmbientTemperatureIndicator(const std::string& ambientTemperatureIndicator);
 
+    boost::optional<Schedule> ambientTemperatureSchedule() const;
+    bool setAmbientTemperatureSchedule(Schedule& schedule);
+    void resetAmbientTemperatureSchedule();
+
+    boost::optional<ThermalZone> ambientTemperatureThermalZone() const;
+    bool setAmbientTemperatureThermalZone(const ThermalZone& thermalZone);
+    void resetAmbientTemperatureThermalZone();
+
+    boost::optional<std::string> ambientTemperatureOutdoorAirNodeName() const;
+    bool setAmbientTemperatureOutdoorAirNodeName(const std::string& ambientTemperatureOutdoorAirNodeName);
+    void resetAmbientTemperatureOutdoorAirNodeName();
+
     boost::optional<double> uniformSkinLossCoefficientperUnitAreatoAmbientTemperature() const;
     bool setUniformSkinLossCoefficientperUnitAreatoAmbientTemperature(double uniformSkinLossCoefficientperUnitAreatoAmbientTemperature);
     void resetUniformSkinLossCoefficientperUnitAreatoAmbientTemperature();
@@ -89,6 +108,10 @@ namespace epmodel {
     bool setUseSideHeatTransferEffectiveness(double useSideHeatTransferEffectiveness);
     bool isUseSideHeatTransferEffectivenessDefaulted() const;
     void resetUseSideHeatTransferEffectiveness();
+
+    boost::optional<Schedule> useSideAvailabilitySchedule() const;
+    bool setUseSideAvailabilitySchedule(Schedule& schedule);
+    void resetUseSideAvailabilitySchedule();
 
     boost::optional<double> useSideInletHeight() const;
     bool setUseSideInletHeight(double useSideInletHeight);
@@ -109,6 +132,10 @@ namespace epmodel {
     bool setSourceSideHeatTransferEffectiveness(double sourceSideHeatTransferEffectiveness);
     bool isSourceSideHeatTransferEffectivenessDefaulted() const;
     void resetSourceSideHeatTransferEffectiveness();
+
+    boost::optional<Schedule> sourceSideAvailabilitySchedule() const;
+    bool setSourceSideAvailabilitySchedule(Schedule& schedule);
+    void resetSourceSideAvailabilitySchedule();
 
     double sourceSideInletHeight() const;
     bool setSourceSideInletHeight(double sourceSideInletHeight);
@@ -166,6 +193,11 @@ namespace epmodel {
 
     double node10AdditionalLossCoefficient() const;
     bool setNode10AdditionalLossCoefficient(double node10AdditionalLossCoefficient);
+
+    WaterHeaterSizing waterHeaterSizing() const;
+    boost::optional<double> autosizedNominalCoolingCapacity() const;
+    boost::optional<double> autosizedUseSideDesignFlowRate() const;
+    boost::optional<double> autosizedSourceSideDesignFlowRate() const;
 
    protected:
     using ImplType = detail::ThermalStorageChilledWaterStratified_Impl;

@@ -29,6 +29,19 @@ boost::optional<ModelObject> Mixer_Impl::outletModelObject() const {
   return boost::none;
 }
 
+bool Mixer_Impl::setOutletModelObject(const ModelObject& modelObject) {
+  auto mixer = getObject<openstudio::epmodel::Mixer>();
+  if (modelObject.model() != mixer.model()) {
+    return false;
+  }
+  return mixer.setPointer(outletPort(), modelObject.handle());
+}
+
+void Mixer_Impl::resetOutletModelObject() {
+  auto mixer = getObject<openstudio::epmodel::Mixer>();
+  mixer.setPointer(outletPort(), Handle());
+}
+
 boost::optional<ModelObject> Mixer_Impl::inletModelObject(unsigned branchIndex) const {
   auto mixer = getObject<openstudio::epmodel::Mixer>();
   if (auto node = mixer.getModelObjectTarget<openstudio::epmodel::Node>(inletPort(branchIndex))) {
@@ -120,6 +133,11 @@ bool Mixer_Impl::setInletModelObject(unsigned branchIndex, const ModelObject& mo
   return mixer.setPointer(inletPort(branchIndex), modelObject.handle());
 }
 
+void Mixer_Impl::resetInletModelObject(unsigned branchIndex) {
+  auto mixer = getObject<openstudio::epmodel::Mixer>();
+  mixer.setPointer(inletPort(branchIndex), Handle());
+}
+
 }  // namespace detail
 
 Mixer::Mixer(const Model& model) : HVACComponent(openstudio::IddObjectType::Catchall, model) {}
@@ -130,6 +148,14 @@ Mixer::Mixer(std::shared_ptr<ImplType> impl) : HVACComponent(std::move(impl)) {}
 
 boost::optional<ModelObject> Mixer::outletModelObject() const {
   return getImpl<detail::Mixer_Impl>()->outletModelObject();
+}
+
+bool Mixer::setOutletModelObject(const ModelObject& modelObject) {
+  return getImpl<detail::Mixer_Impl>()->setOutletModelObject(modelObject);
+}
+
+void Mixer::resetOutletModelObject() {
+  getImpl<detail::Mixer_Impl>()->resetOutletModelObject();
 }
 
 unsigned Mixer::outletPort() const {
@@ -174,6 +200,10 @@ void Mixer::removePortForBranch(unsigned branchIndex) {
 
 bool Mixer::setInletModelObject(unsigned branchIndex, const ModelObject& modelObject) {
   return getImpl<detail::Mixer_Impl>()->setInletModelObject(branchIndex, modelObject);
+}
+
+void Mixer::resetInletModelObject(unsigned branchIndex) {
+  getImpl<detail::Mixer_Impl>()->resetInletModelObject(branchIndex);
 }
 
 }  // namespace epmodel

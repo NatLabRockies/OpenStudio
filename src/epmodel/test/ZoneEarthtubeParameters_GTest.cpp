@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ZoneEarthtubeParameters.hpp"
+#include "../scaffolds/ZoneEarthtubeParameters.hpp"
 
 using namespace openstudio::epmodel;
 

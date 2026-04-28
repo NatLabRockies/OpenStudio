@@ -16,6 +16,8 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
+  class AirToAirComponent;
 
   namespace detail {
     class CoilSystemCoolingDXHeatExchangerAssisted_Impl;
@@ -25,6 +27,7 @@ namespace epmodel {
   {
    public:
     explicit CoilSystemCoolingDXHeatExchangerAssisted(const Model& model);
+    explicit CoilSystemCoolingDXHeatExchangerAssisted(const Model& model, const AirToAirComponent& heatExchanger);
 
     virtual ~CoilSystemCoolingDXHeatExchangerAssisted() override = default;
     CoilSystemCoolingDXHeatExchangerAssisted(const CoilSystemCoolingDXHeatExchangerAssisted& other) = default;
@@ -38,13 +41,26 @@ namespace epmodel {
     static std::vector<std::string> coolingCoilObjectTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The object-type choice surface is present, but the child-object and topology helpers remain model-owned.
+    // - Status: Partial Parity. The canonical child-object relationships and constructor defaults are now present, while standalone branch
+    //   insertion remains intentionally rejected and broader model-owned topology helpers remain out of scope.
     // - Canonical Counterpart: openstudio::model::CoilSystemCoolingDXHeatExchangerAssisted.
-    // - Implemented Parity: `heatExchangerObjectType` and `coolingCoilObjectType` preserve the canonical object-choice API.
-    // - Documented Delta: Heat-exchanger name, cooling-coil name, and node-link helpers from canonical `openstudio::model::CoilSystemCoolingDXHeatExchangerAssisted` are not exposed yet.
-    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `CoilSystem:Cooling:DX:HeatExchangerAssisted` choice fields.
+    // - Implemented Parity: The default constructors, `heatExchanger`, `coolingCoil`, their relationship setters, child traversal, and
+    //   standalone `addToNode(...)` rejection preserve the bounded canonical slice for the assisted DX coil-system wrapper.
+    // - Documented Delta: Heat-exchanger name, cooling-coil name, and broader model-owned topology helpers from canonical
+    //   `openstudio::model::CoilSystemCoolingDXHeatExchangerAssisted` are not exposed yet.
+    // - Field/Storage Mapping: Relationship targets map directly to the EnergyPlus heat-exchanger and cooling-coil name fields, while the
+    //   object-type choices are synchronized from the linked targets' IDD object names.
     // - Evidence: `src/model/CoilSystemCoolingDXHeatExchangerAssisted.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilSystemCoolingDXHeatExchangerAssisted.cpp`, and `src/epmodel/test/CoilSystemCoolingDXHeatExchangerAssisted_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted child-object and topology helpers without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Add the omitted name conveniences and any broader model-owned topology helpers without changing the preserved
+    //   relationship signatures.
+
+    AirToAirComponent heatExchanger() const;
+    bool setHeatExchanger(const AirToAirComponent& heatExchanger);
+
+    StraightComponent coolingCoil() const;
+    bool setCoolingCoil(const StraightComponent& coolingCoil);
+
+    bool addToNode(Node& node);
 
     // Heat exchanger object-type accessors
     std::string heatExchangerObjectType() const;

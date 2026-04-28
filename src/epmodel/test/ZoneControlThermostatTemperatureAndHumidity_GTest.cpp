@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ZoneControlThermostatTemperatureAndHumidity.hpp"
+#include "../scaffolds/ZoneControlThermostatTemperatureAndHumidity.hpp"
 
 using namespace openstudio::epmodel;
 

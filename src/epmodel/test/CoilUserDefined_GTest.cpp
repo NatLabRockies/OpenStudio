@@ -5,16 +5,24 @@
 
 #include <gtest/gtest.h>
 
+#include <set>
+
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
 #include "../ModelObject/EnergyManagementSystemActuator.hpp"
+#include "../ModelObject/EnergyManagementSystemActuator_Impl.hpp"
 #include "../ModelObject/EnergyManagementSystemProgram.hpp"
+#include "../ModelObject/EnergyManagementSystemProgram_Impl.hpp"
 #include "../ModelObject/EnergyManagementSystemProgramCallingManager.hpp"
+#include "../ModelObject/EnergyManagementSystemProgramCallingManager_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 #include "../WaterToAirComponent/CoilUserDefined.hpp"
+#include "../WaterToAirComponent/CoilUserDefined_Impl.hpp"
 
+#include <utilities/data/DataEnums.hpp>
 #include <utilities/idd/Coil_UserDefined_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
@@ -43,7 +51,12 @@ TEST_F(EPModelFixture, CoilUserDefined_DefaultConstructor) {
   EXPECT_EQ(coil.handle(), coil.plantOutletTemperatureActuator().actuatedComponent()->handle());
 
   const auto children = coil.children();
-  EXPECT_EQ(12u, children.size());
+  ASSERT_EQ(12u, children.size());
+  std::set<openstudio::Handle> childHandles;
+  for (const auto& child : children) {
+    childHandles.insert(child.handle());
+  }
+  EXPECT_EQ(children.size(), childHandles.size());
 }
 
 TEST_F(EPModelFixture, CoilUserDefined_ScalarAccessors_RoundTrip) {
@@ -51,10 +64,20 @@ TEST_F(EPModelFixture, CoilUserDefined_ScalarAccessors_RoundTrip) {
   CoilUserDefined coil(model);
 
   ASSERT_TRUE(coil.setInt(openstudio::Coil_UserDefinedFields::NumberofAirConnections, 1));
-  EXPECT_EQ(1, coil.numberofAirConnections());
+  EXPECT_EQ(0, coil.numberofAirConnections());
 
   ASSERT_TRUE(coil.setInt(openstudio::Coil_UserDefinedFields::NumberofAirConnections, 2));
-  EXPECT_EQ(2, coil.numberofAirConnections());
+  EXPECT_EQ(0, coil.numberofAirConnections());
+
+  AirLoopHVAC airLoop(model);
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coil.addToNode(supplyOutletNode));
+  EXPECT_EQ(1, coil.numberofAirConnections());
+
+  EXPECT_EQ(openstudio::ComponentType(openstudio::ComponentType::Both), coil.componentType());
+  EXPECT_TRUE(coil.coolingFuelTypes().empty());
+  EXPECT_TRUE(coil.heatingFuelTypes().empty());
+  EXPECT_TRUE(coil.appGHeatingFuelTypes().empty());
 }
 
 TEST_F(EPModelFixture, CoilUserDefined_EMSRelationshipsAndRename) {
@@ -97,6 +120,13 @@ TEST_F(EPModelFixture, CoilUserDefined_EMSRelationshipsAndRename) {
   EXPECT_EQ("My_CoilUserDefined_overallSimulationProgram", coil.overallSimulationProgram().nameString());
   EXPECT_EQ("My_CoilUserDefined_initializationSimulationProgram", coil.initializationSimulationProgram().nameString());
   EXPECT_EQ("My_CoilUserDefined_airOutletTemperatureActuator", coil.airOutletTemperatureActuator().nameString());
+  EXPECT_EQ("My_CoilUserDefined_airOutletHumidityRatioActuator", coil.airOutletHumidityRatioActuator().nameString());
+  EXPECT_EQ("My_CoilUserDefined_airMassFlowRateActuator", coil.airMassFlowRateActuator().nameString());
+  EXPECT_EQ("My_CoilUserDefined_plantMinimumMassFlowRateActuator", coil.plantMinimumMassFlowRateActuator().nameString());
+  EXPECT_EQ("My_CoilUserDefined_plantMaximumMassFlowRateActuator", coil.plantMaximumMassFlowRateActuator().nameString());
+  EXPECT_EQ("My_CoilUserDefined_plantDesignVolumeFlowRateActuator", coil.plantDesignVolumeFlowRateActuator().nameString());
+  EXPECT_EQ("My_CoilUserDefined_plantMassFlowRateActuator", coil.plantMassFlowRateActuator().nameString());
+  EXPECT_EQ("My_CoilUserDefined_plantOutletTemperatureActuator", coil.plantOutletTemperatureActuator().nameString());
 }
 
 TEST_F(EPModelFixture, CoilUserDefined_AddToNodeSupportsOutboardOANode) {
@@ -134,4 +164,43 @@ TEST_F(EPModelFixture, CoilUserDefined_AddToAndRemoveFromLoops_PreserveTopologyA
   EXPECT_TRUE(coil.removeFromAirLoopHVAC());
   EXPECT_EQ(0, coil.numberofAirConnections());
   EXPECT_FALSE(coil.airLoopHVAC());
+}
+
+TEST_F(EPModelFixture, CoilUserDefined_RemoveDetachesLoopsAndCleansSeededEMSChildren) {
+  Model model;
+  CoilUserDefined coil(model);
+
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+
+  EXPECT_EQ(2u, airLoop.supplyComponents().size());
+  EXPECT_EQ(5u, airLoop.demandComponents().size());
+  EXPECT_EQ(5u, plantLoop.supplyComponents().size());
+  EXPECT_EQ(5u, plantLoop.demandComponents().size());
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coil.addToNode(supplyOutletNode));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil));
+  ASSERT_TRUE(coil.airLoopHVAC());
+  ASSERT_TRUE(coil.plantLoop());
+  EXPECT_EQ(1, coil.numberofAirConnections());
+
+  EXPECT_EQ(4u, airLoop.supplyComponents().size());
+  EXPECT_EQ(7u, plantLoop.demandComponents().size());
+  EXPECT_EQ(1u, model.getConcreteModelObjects<CoilUserDefined>().size());
+  EXPECT_EQ(8u, model.getConcreteModelObjects<EnergyManagementSystemActuator>().size());
+  EXPECT_EQ(2u, model.getConcreteModelObjects<EnergyManagementSystemProgram>().size());
+  EXPECT_EQ(2u, model.getConcreteModelObjects<EnergyManagementSystemProgramCallingManager>().size());
+
+  auto removed = coil.remove();
+  EXPECT_FALSE(removed.empty());
+
+  EXPECT_TRUE(model.getConcreteModelObjects<CoilUserDefined>().empty());
+  EXPECT_TRUE(model.getConcreteModelObjects<EnergyManagementSystemActuator>().empty());
+  EXPECT_TRUE(model.getConcreteModelObjects<EnergyManagementSystemProgram>().empty());
+  EXPECT_TRUE(model.getConcreteModelObjects<EnergyManagementSystemProgramCallingManager>().empty());
+  EXPECT_EQ(2u, airLoop.supplyComponents().size());
+  EXPECT_EQ(5u, airLoop.demandComponents().size());
+  EXPECT_EQ(5u, plantLoop.supplyComponents().size());
+  EXPECT_EQ(5u, plantLoop.demandComponents().size());
 }

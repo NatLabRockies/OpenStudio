@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/FluidPropertiesSuperheated.hpp"
+#include "../scaffolds/FluidPropertiesSuperheated.hpp"
 
 using namespace openstudio::epmodel;
 

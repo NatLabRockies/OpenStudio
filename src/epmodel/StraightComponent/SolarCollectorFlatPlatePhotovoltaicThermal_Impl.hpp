@@ -21,10 +21,11 @@ namespace epmodel {
 
       // Schema Alignment Notes:
       // - API: The model counterpart abstracts inlet/outlet node naming, while E+ has air and water node field pairs.
-      // - Field Mapping: inletPort/outletPort select the air or water node pair based on ThermalWorkingFluidType value.
-      // - TODO(parity): revisit loop-specific behaviors when non-scalar APIs are added.
+      // - Field Mapping: inletPort/outletPort select the air or water node pair based on ThermalWorkingFluidType, and addToNode updates that field
+      //   to match canonical plant-supply or outdoor-air-stream placement before wiring the ports.
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
 
       boost::optional<double> designFlowRate() const;
       bool setDesignFlowRate(double designFlowRate);

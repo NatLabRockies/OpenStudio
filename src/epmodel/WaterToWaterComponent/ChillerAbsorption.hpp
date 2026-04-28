@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class PlantLoop;
 
   namespace detail {
     class ChillerAbsorption_Impl;
@@ -38,13 +39,15 @@ namespace epmodel {
     static std::vector<std::string> generatorHeatSourceTypeValues();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The scalar chiller surface is aligned with canonical model naming, while generator and plant-link behavior remains deferred.
+    // - Status: Near Parity. The canonical scalar surface, loop conveniences, generator-loop routing behavior, and autosized-value query helpers are aligned.
     // - Canonical Counterpart: openstudio::model::ChillerAbsorption.
-    // - Implemented Parity: Scalar accessors for nominal capacity, flows, part-load ratios, temperatures, curve coefficients, flow mode, and heat-source metadata preserve the canonical model API shape.
-    // - Documented Delta: Generator-side and plant-loop/reference-node relationship APIs are intentionally excluded from this pass because epmodel is still scalars-first for this family.
-    // - Field/Storage Mapping: The scalar wrappers target EnergyPlus `Chiller:Absorption` fields directly, with relationship data remaining in the underlying loop topology rather than public string accessors.
+    // - Implemented Parity: Canonical constructor defaults, scalar accessors, autosized-value query helpers, chilled/condenser/generator loop
+    //   conveniences, and generator-loop routing semantics preserve the model-side API shape, including the Steam/HotWater generator-heat-source
+    //   transitions when attaching or removing the tertiary generator loop.
+    // - Field/Storage Mapping: Scalar wrappers target EnergyPlus `Chiller:Absorption` fields directly, while loop conveniences read the underlying
+    //   water-to-water topology links rather than duplicating them as separate persisted data.
     // - Evidence: `src/model/ChillerAbsorption.hpp`, `src/model/ChillerAbsorption.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateChillerAbsorption.cpp` establish the canonical scalar contract and field mapping.
-    // - Remaining Parity Work: Add the excluded node, generator, and loop-coupling APIs when the non-scalar water-to-water relationship layer is being expanded.
+    // - Remaining Parity Work: None within the current canonical public surface.
 
     boost::optional<double> nominalCapacity() const;
     bool isNominalCapacityAutosized() const;
@@ -115,6 +118,16 @@ namespace epmodel {
 
     double sizingFactor() const;
     bool setSizingFactor(double sizingFactor);
+
+    boost::optional<double> autosizedNominalCapacity() const;
+    boost::optional<double> autosizedNominalPumpingPower() const;
+    boost::optional<double> autosizedDesignChilledWaterFlowRate() const;
+    boost::optional<double> autosizedDesignCondenserWaterFlowRate() const;
+    boost::optional<double> autosizedDesignGeneratorFluidFlowRate() const;
+
+    boost::optional<PlantLoop> chilledWaterLoop() const;
+    boost::optional<PlantLoop> condenserWaterLoop() const;
+    boost::optional<PlantLoop> generatorLoop() const;
 
    protected:
     using ImplType = detail::ChillerAbsorption_Impl;

@@ -8,6 +8,8 @@
 #include "EPModelFixture.hpp"
 #include "../AirToAirComponent/HeatExchangerAirToAirSensibleAndLatent.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../HVACComponent/ThermalZone_Impl.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "../ParentObject/ZoneHVACEnergyRecoveryVentilatorController.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../StraightComponent/FanOnOff.hpp"
@@ -55,11 +57,25 @@ TEST_F(EPModelFixture, ZoneHVACEnergyRecoveryVentilator_ThermalZoneAttachDetach)
   EXPECT_TRUE(ventilator.addToThermalZone(zone));
   ASSERT_TRUE(ventilator.thermalZone());
   EXPECT_EQ(zone, ventilator.thermalZone().get());
-  EXPECT_TRUE(ventilator.inletNode());
-  EXPECT_TRUE(ventilator.outletNode());
+  auto inlet = ventilator.inletNode();
+  auto outlet = ventilator.outletNode();
+  ASSERT_TRUE(inlet);
+  ASSERT_TRUE(outlet);
+
+  auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
+  ASSERT_TRUE(connections);
+  const auto inletNodes = connections->zoneAirInletNodes();
+  ASSERT_EQ(1u, inletNodes.size());
+  EXPECT_EQ(*outlet, inletNodes.front());
+  EXPECT_TRUE(connections->zoneAirExhaustNodes().empty());
+  const auto returnNodes = connections->zoneReturnAirNodes();
+  ASSERT_EQ(1u, returnNodes.size());
+  EXPECT_EQ(*inlet, returnNodes.front());
 
   ventilator.removeFromThermalZone();
   EXPECT_FALSE(ventilator.thermalZone());
+  EXPECT_TRUE(connections->zoneAirInletNodes().empty());
+  EXPECT_TRUE(connections->zoneReturnAirNodes().empty());
   EXPECT_TRUE(ventilator.inletNode());
   EXPECT_TRUE(ventilator.outletNode());
   EXPECT_TRUE(ventilator.outdoorAirNode());

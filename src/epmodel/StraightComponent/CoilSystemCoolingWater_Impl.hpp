@@ -12,7 +12,10 @@
 
 namespace openstudio {
 namespace epmodel {
+  class HVACComponent;
   class Node;
+  class ModelObject;
+  class Schedule;
   namespace detail {
 
     class EPMODEL_API CoilSystemCoolingWater_Impl : public StraightComponent_Impl
@@ -25,6 +28,13 @@ namespace epmodel {
       unsigned outletPort() const override;
 
       bool addToNode(Node& node) override;
+      std::vector<ModelObject> children() const override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
+      HVACComponent coolingCoil() const;
+      bool setCoolingCoil(const HVACComponent& coolingCoil);
 
       std::string dehumidificationControlType() const;
       bool setDehumidificationControlType(const std::string& dehumidificationControlType);
@@ -44,6 +54,10 @@ namespace epmodel {
 
       double minimumWaterLoopTemperatureForHeatRecovery() const;
       bool setMinimumWaterLoopTemperatureForHeatRecovery(double minimumWaterLoopTemperatureForHeatRecovery);
+
+      boost::optional<HVACComponent> companionCoilUsedForHeatRecovery() const;
+      bool setCompanionCoilUsedForHeatRecovery(const HVACComponent& companionCoilUsedForHeatRecovery);
+      void resetCompanionCoilUsedForHeatRecovery();
     };
 
   }  // namespace detail

@@ -34,7 +34,7 @@ class EPMODEL_API StraightComponent_Impl : public HVACComponent_Impl
 
   virtual bool addToNode(Node& node) override;
 
- private:
+ protected:
   bool addToOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem, Node& node);
   bool removeFromOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem);
 };

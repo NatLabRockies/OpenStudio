@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/HeatPumpWaterToWaterParameterEstimationHeating.hpp"
+#include "../scaffolds/HeatPumpWaterToWaterParameterEstimationHeating.hpp"
 
 using namespace openstudio::epmodel;
 

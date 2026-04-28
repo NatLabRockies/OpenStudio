@@ -8,45 +8,61 @@
 
 #include "StraightComponent/StraightComponent_Impl.hpp"
 
+#include <boost/optional.hpp>
+
 #include <string>
 #include <vector>
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
 
-class EPMODEL_API LoadProfilePlant_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~LoadProfilePlant_Impl() override = default;
+  class Node;
+  class Schedule;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
+  namespace detail {
 
-  double peakFlowRate() const;
-  bool setPeakFlowRate(double peakFlowRate);
+    class EPMODEL_API LoadProfilePlant_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~LoadProfilePlant_Impl() override = default;
 
-  std::string plantLoopFluidType() const;
-  bool setPlantLoopFluidType(const std::string& plantLoopFluidType);
-  bool isPlantLoopFluidTypeDefaulted() const;
-  void resetPlantLoopFluidType();
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
 
-  std::vector<std::string> plantLoopFluidTypeValues() const;
+      Schedule loadSchedule() const;
+      bool setLoadSchedule(Schedule& schedule);
 
-  double degreeofSubCooling() const;
-  bool setDegreeofSubCooling(double degreeofSubCooling);
-  bool isDegreeofSubCoolingDefaulted() const;
-  void resetDegreeofSubCooling();
+      double peakFlowRate() const;
+      bool setPeakFlowRate(double peakFlowRate);
 
-  double degreeofLoopSubCooling() const;
-  bool setDegreeofLoopSubCooling(double degreeofLoopSubCooling);
-  bool isDegreeofLoopSubCoolingDefaulted() const;
-  void resetDegreeofLoopSubCooling();
+      Schedule flowRateFractionSchedule() const;
+      bool setFlowRateFractionSchedule(Schedule& schedule);
 
-};
+      std::string plantLoopFluidType() const;
+      bool setPlantLoopFluidType(const std::string& plantLoopFluidType);
+      bool isPlantLoopFluidTypeDefaulted() const;
+      void resetPlantLoopFluidType();
 
-}  // namespace detail
+      std::vector<std::string> plantLoopFluidTypeValues() const;
+
+      double degreeofSubCooling() const;
+      bool setDegreeofSubCooling(double degreeofSubCooling);
+      bool isDegreeofSubCoolingDefaulted() const;
+      void resetDegreeofSubCooling();
+
+      double degreeofLoopSubCooling() const;
+      bool setDegreeofLoopSubCooling(double degreeofLoopSubCooling);
+      bool isDegreeofLoopSubCoolingDefaulted() const;
+      void resetDegreeofLoopSubCooling();
+
+     private:
+      boost::optional<Schedule> optionalLoadSchedule() const;
+      boost::optional<Schedule> optionalFlowRateFractionSchedule() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

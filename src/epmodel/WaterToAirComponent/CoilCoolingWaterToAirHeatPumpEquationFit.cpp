@@ -15,11 +15,14 @@
 #include "Curve/CurveQuintLinear.hpp"
 #include "Curve/CurveQuintLinear_Impl.hpp"
 #include "Model.hpp"
+#include "ModelObject/AirflowNetworkDistributionComponentCoil.hpp"
+#include "ModelObject/AirflowNetworkDistributionComponentCoil_Impl.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/idd/AirflowNetwork_Distribution_Component_Coil_FieldEnums.hxx>
 #include <utilities/idd/Coil_Cooling_WaterToAirHeatPump_EquationFit_FieldEnums.hxx>
 #include <utilities/idd/Curve_Linear_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
@@ -29,6 +32,20 @@
 
 namespace openstudio {
 namespace epmodel {
+
+namespace {
+
+std::vector<AirflowNetworkDistributionComponentCoil> attachedAirflowNetworkDistributionComponentCoils(const ModelObject& object) {
+  std::vector<AirflowNetworkDistributionComponentCoil> result;
+  for (const auto& source : object.getSources(AirflowNetworkDistributionComponentCoil::iddObjectType())) {
+    if (auto afnComponent = source.optionalCast<AirflowNetworkDistributionComponentCoil>()) {
+      result.push_back(*afnComponent);
+    }
+  }
+  return result;
+}
+
+}  // namespace
 
 CoilCoolingWaterToAirHeatPumpEquationFit::CoilCoolingWaterToAirHeatPumpEquationFit(
   const Model& model, const Curve& totalCoolingCapacityCurve, const Curve& sensibleCoolingCapacityCurve, const Curve& coolingPowerConsumptionCurve)
@@ -497,6 +514,14 @@ bool CoilCoolingWaterToAirHeatPumpEquationFit::setFanDelayTime(double fanDelayTi
   return getImpl<detail::CoilCoolingWaterToAirHeatPumpEquationFit_Impl>()->setFanDelayTime(fanDelayTime);
 }
 
+AirflowNetworkDistributionComponentCoil CoilCoolingWaterToAirHeatPumpEquationFit::getAirflowNetworkEquivalentDuct(double length, double diameter) {
+  return getImpl<detail::CoilCoolingWaterToAirHeatPumpEquationFit_Impl>()->getAirflowNetworkEquivalentDuct(length, diameter);
+}
+
+boost::optional<AirflowNetworkDistributionComponentCoil> CoilCoolingWaterToAirHeatPumpEquationFit::airflowNetworkEquivalentDuct() const {
+  return getImpl<detail::CoilCoolingWaterToAirHeatPumpEquationFit_Impl>()->airflowNetworkEquivalentDuct();
+}
+
 }  // namespace epmodel
 }  // namespace openstudio
 
@@ -832,6 +857,46 @@ double CoilCoolingWaterToAirHeatPumpEquationFit_Impl::fanDelayTime() const {
 
 bool CoilCoolingWaterToAirHeatPumpEquationFit_Impl::setFanDelayTime(double fanDelayTime) {
   return setDouble(openstudio::Coil_Cooling_WaterToAirHeatPump_EquationFitFields::FanDelayTime, fanDelayTime);
+}
+
+std::vector<ModelObject> CoilCoolingWaterToAirHeatPumpEquationFit_Impl::children() const {
+  std::vector<ModelObject> result;
+  for (const auto& afnComponent : attachedAirflowNetworkDistributionComponentCoils(getObject<ModelObject>())) {
+    result.push_back(afnComponent);
+  }
+  return result;
+}
+
+AirflowNetworkDistributionComponentCoil CoilCoolingWaterToAirHeatPumpEquationFit_Impl::getAirflowNetworkEquivalentDuct(double length, double diameter) {
+  if (auto component = airflowNetworkEquivalentDuct()) {
+    if (component->airPathLength() != length) {
+      component->setAirPathLength(length);
+    }
+    if (component->airPathHydraulicDiameter() != diameter) {
+      component->setAirPathHydraulicDiameter(diameter);
+    }
+    return *component;
+  }
+
+  AirflowNetworkDistributionComponentCoil component(model());
+  OS_ASSERT(component.setPointer(openstudio::AirflowNetwork_Distribution_Component_CoilFields::CoilName, handle()));
+  OS_ASSERT(component.setCoilObjectType("Coil:Cooling:WaterToAirHeatPump:EquationFit"));
+  OS_ASSERT(component.setAirPathLength(length));
+  OS_ASSERT(component.setAirPathHydraulicDiameter(diameter));
+  return component;
+}
+
+boost::optional<AirflowNetworkDistributionComponentCoil> CoilCoolingWaterToAirHeatPumpEquationFit_Impl::airflowNetworkEquivalentDuct() const {
+  auto afnComponents = attachedAirflowNetworkDistributionComponentCoils(getObject<ModelObject>());
+  if (afnComponents.size() == 1u) {
+    return afnComponents.front();
+  }
+  if (afnComponents.size() > 1u) {
+    LOG_FREE(Warn, "openstudio.epmodel.CoilCoolingWaterToAirHeatPumpEquationFit",
+             briefDescription() << " has more than one AirflowNetwork distribution component coil attached, returning first.");
+    return afnComponents.front();
+  }
+  return boost::none;
 }
 
 void CoilCoolingWaterToAirHeatPumpEquationFit_Impl::setConstructorSharedDefaults(const Model& model) {

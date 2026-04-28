@@ -12,7 +12,12 @@
 
 namespace openstudio {
 namespace epmodel {
+
+class Node;
+class GeneratorFuelCell;
+
 namespace detail {
+
 
 class EPMODEL_API GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl : public StraightComponent_Impl
 {
@@ -26,6 +31,10 @@ class EPMODEL_API GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl : public 
   double heatRecoveryWaterMaximumFlowRate() const;
   bool setHeatRecoveryWaterMaximumFlowRate(double heatRecoveryWaterMaximumFlowRate);
   void resetHeatRecoveryWaterMaximumFlowRate();
+
+  boost::optional<openstudio::epmodel::Node> exhaustOutletAirNode() const;
+  bool setExhaustOutletAirNode(const openstudio::epmodel::Node& node);
+  void resetExhaustOutletAirNode();
 
   std::string heatExchangerCalculationMethod() const;
   bool setHeatExchangerCalculationMethod(const std::string& heatExchangerCalculationMethod);
@@ -102,6 +111,10 @@ class EPMODEL_API GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl : public 
   boost::optional<double> method4CondensationThreshold() const;
   bool setMethod4CondensationThreshold(double method4CondensationThreshold);
   void resetMethod4CondensationThreshold();
+
+  boost::optional<openstudio::epmodel::GeneratorFuelCell> fuelCell() const;
+
+  bool addToNode(Node& node) override;
 
   std::vector<std::string> heatExchangerCalculationMethodValues() const;
 };

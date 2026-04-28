@@ -6,42 +6,49 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Curve/CurveBiquadratic.hpp"
+#include "../Curve/CurveBiquadratic_Impl.hpp"
+#include "../Curve/CurveQuadratic.hpp"
+#include "../Curve/CurveQuadratic_Impl.hpp"
+#include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../StraightComponent/CoilCoolingDXTwoSpeed.hpp"
+#include "../StraightComponent/Node.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_DefaultConstructor) {
   Model model;
   CoilCoolingDXTwoSpeed coil(model);
+
   EXPECT_EQ(CoilCoolingDXTwoSpeed::iddObjectType(), coil.iddObject().type());
   EXPECT_FALSE(coil.nameString().empty());
 
-  EXPECT_TRUE(coil.isRatedHighSpeedTotalCoolingCapacityAutosized());
-  EXPECT_TRUE(coil.isRatedHighSpeedSensibleHeatRatioAutosized());
-  EXPECT_DOUBLE_EQ(3.0, coil.ratedHighSpeedCOP());
-  EXPECT_TRUE(coil.isRatedHighSpeedAirFlowRateAutosized());
-  EXPECT_DOUBLE_EQ(773.3, coil.ratedHighSpeedEvaporatorFanPowerPerVolumeFlowRate2017());
-  EXPECT_DOUBLE_EQ(934.4, coil.ratedHighSpeedEvaporatorFanPowerPerVolumeFlowRate2023());
+  auto availability = coil.availabilitySchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(availability);
+  EXPECT_DOUBLE_EQ(1.0, availability->value());
 
-  EXPECT_TRUE(coil.isRatedLowSpeedTotalCoolingCapacityAutosized());
-  EXPECT_DOUBLE_EQ(0.69, coil.ratedLowSpeedSensibleHeatRatio().get());
-  EXPECT_DOUBLE_EQ(3.0, coil.ratedLowSpeedCOP());
-  EXPECT_TRUE(coil.isRatedLowSpeedAirFlowRateAutosized());
-  EXPECT_DOUBLE_EQ(773.3, coil.ratedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2017());
-  EXPECT_DOUBLE_EQ(934.4, coil.ratedLowSpeedEvaporatorFanPowerPerVolumeFlowRate2023());
+  ASSERT_TRUE(coil.totalCoolingCapacityFunctionOfTemperatureCurve().optionalCast<CurveBiquadratic>());
+  ASSERT_TRUE(coil.totalCoolingCapacityFunctionOfFlowFractionCurve().optionalCast<CurveQuadratic>());
+  ASSERT_TRUE(coil.energyInputRatioFunctionOfTemperatureCurve().optionalCast<CurveBiquadratic>());
+  ASSERT_TRUE(coil.energyInputRatioFunctionOfFlowFractionCurve().optionalCast<CurveQuadratic>());
+  ASSERT_TRUE(coil.partLoadFractionCorrelationCurve().optionalCast<CurveQuadratic>());
+  ASSERT_TRUE(coil.lowSpeedTotalCoolingCapacityFunctionOfTemperatureCurve().optionalCast<CurveBiquadratic>());
+  ASSERT_TRUE(coil.lowSpeedEnergyInputRatioFunctionOfTemperatureCurve().optionalCast<CurveBiquadratic>());
 
-  EXPECT_EQ("AirCooled", coil.condenserType());
-  EXPECT_DOUBLE_EQ(0.9, coil.highSpeedEvaporativeCondenserEffectiveness());
-  EXPECT_TRUE(coil.isHighSpeedEvaporativeCondenserAirFlowRateAutosized());
-  EXPECT_TRUE(coil.isHighSpeedEvaporativeCondenserPumpRatedPowerConsumptionAutosized());
-  EXPECT_DOUBLE_EQ(0.9, coil.lowSpeedEvaporativeCondenserEffectiveness());
-  EXPECT_TRUE(coil.isLowSpeedEvaporativeCondenserAirFlowRateAutosized());
-  EXPECT_TRUE(coil.isLowSpeedEvaporativeCondenserPumpRatedPowerConsumptionAutosized());
+  EXPECT_FALSE(coil.basinHeaterOperatingSchedule());
 
-  EXPECT_DOUBLE_EQ(0.0, coil.basinHeaterCapacity());
-  EXPECT_DOUBLE_EQ(2.0, coil.basinHeaterSetpointTemperature());
-  EXPECT_DOUBLE_EQ(-25.0, coil.minimumOutdoorDryBulbTemperatureforCompressorOperation());
-  EXPECT_DOUBLE_EQ(773.3, coil.unitInternalStaticAirPressure());
+  const auto children = coil.children();
+  ASSERT_EQ(7u, children.size());
+  EXPECT_EQ(coil.totalCoolingCapacityFunctionOfTemperatureCurve().handle(), children[0].handle());
+  EXPECT_EQ(coil.totalCoolingCapacityFunctionOfFlowFractionCurve().handle(), children[1].handle());
+  EXPECT_EQ(coil.energyInputRatioFunctionOfTemperatureCurve().handle(), children[2].handle());
+  EXPECT_EQ(coil.energyInputRatioFunctionOfFlowFractionCurve().handle(), children[3].handle());
+  EXPECT_EQ(coil.partLoadFractionCorrelationCurve().handle(), children[4].handle());
+  EXPECT_EQ(coil.lowSpeedTotalCoolingCapacityFunctionOfTemperatureCurve().handle(), children[5].handle());
+  EXPECT_EQ(coil.lowSpeedEnergyInputRatioFunctionOfTemperatureCurve().handle(), children[6].handle());
 }
 
 TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_ScalarAccessors_RoundTrip) {
@@ -151,4 +158,114 @@ TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(coil.setUnitInternalStaticAirPressure(710.0));
   EXPECT_DOUBLE_EQ(710.0, coil.unitInternalStaticAirPressure());
+}
+
+TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_RelationshipSetters_RoundTrip) {
+  Model model;
+  CoilCoolingDXTwoSpeed coil(model);
+
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(availability.setValue(0.25));
+  ScheduleConstant basinSchedule(model);
+  ASSERT_TRUE(basinSchedule.setValue(0.75));
+
+  CurveBiquadratic totalCoolingTemp(model);
+  CurveQuadratic totalCoolingFlow(model);
+  CurveBiquadratic eirTemp(model);
+  CurveQuadratic eirFlow(model);
+  CurveQuadratic plf(model);
+  CurveBiquadratic lowSpeedTemp(model);
+  CurveBiquadratic lowSpeedEirTemp(model);
+
+  EXPECT_TRUE(coil.setAvailabilitySchedule(availability));
+  EXPECT_EQ(availability.handle(), coil.availabilitySchedule().handle());
+
+  EXPECT_TRUE(coil.setTotalCoolingCapacityFunctionOfTemperatureCurve(totalCoolingTemp));
+  EXPECT_EQ(totalCoolingTemp.handle(), coil.totalCoolingCapacityFunctionOfTemperatureCurve().handle());
+  EXPECT_TRUE(coil.setTotalCoolingCapacityFunctionOfFlowFractionCurve(totalCoolingFlow));
+  EXPECT_EQ(totalCoolingFlow.handle(), coil.totalCoolingCapacityFunctionOfFlowFractionCurve().handle());
+  EXPECT_TRUE(coil.setEnergyInputRatioFunctionOfTemperatureCurve(eirTemp));
+  EXPECT_EQ(eirTemp.handle(), coil.energyInputRatioFunctionOfTemperatureCurve().handle());
+  EXPECT_TRUE(coil.setEnergyInputRatioFunctionOfFlowFractionCurve(eirFlow));
+  EXPECT_EQ(eirFlow.handle(), coil.energyInputRatioFunctionOfFlowFractionCurve().handle());
+  EXPECT_TRUE(coil.setPartLoadFractionCorrelationCurve(plf));
+  EXPECT_EQ(plf.handle(), coil.partLoadFractionCorrelationCurve().handle());
+  EXPECT_TRUE(coil.setLowSpeedTotalCoolingCapacityFunctionOfTemperatureCurve(lowSpeedTemp));
+  EXPECT_EQ(lowSpeedTemp.handle(), coil.lowSpeedTotalCoolingCapacityFunctionOfTemperatureCurve().handle());
+  EXPECT_TRUE(coil.setLowSpeedEnergyInputRatioFunctionOfTemperatureCurve(lowSpeedEirTemp));
+  EXPECT_EQ(lowSpeedEirTemp.handle(), coil.lowSpeedEnergyInputRatioFunctionOfTemperatureCurve().handle());
+
+  EXPECT_TRUE(coil.setBasinHeaterOperatingSchedule(basinSchedule));
+  ASSERT_TRUE(coil.basinHeaterOperatingSchedule());
+  EXPECT_EQ(basinSchedule.handle(), coil.basinHeaterOperatingSchedule()->handle());
+
+  const auto children = coil.children();
+  ASSERT_EQ(7u, children.size());
+  EXPECT_EQ(totalCoolingTemp.handle(), children[0].handle());
+  EXPECT_EQ(totalCoolingFlow.handle(), children[1].handle());
+  EXPECT_EQ(eirTemp.handle(), children[2].handle());
+  EXPECT_EQ(eirFlow.handle(), children[3].handle());
+  EXPECT_EQ(plf.handle(), children[4].handle());
+  EXPECT_EQ(lowSpeedTemp.handle(), children[5].handle());
+  EXPECT_EQ(lowSpeedEirTemp.handle(), children[6].handle());
+
+  coil.resetBasinHeaterOperatingSchedule();
+  EXPECT_FALSE(coil.basinHeaterOperatingSchedule());
+}
+
+TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_RelationshipConstructor) {
+  Model model;
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(availability.setValue(0.6));
+
+  CurveBiquadratic totalCoolingTemp(model);
+  CurveQuadratic totalCoolingFlow(model);
+  CurveBiquadratic eirTemp(model);
+  CurveQuadratic eirFlow(model);
+  CurveQuadratic plf(model);
+  CurveBiquadratic lowSpeedTemp(model);
+  CurveBiquadratic lowSpeedEirTemp(model);
+
+  CoilCoolingDXTwoSpeed coil(model, availability, totalCoolingTemp, totalCoolingFlow, eirTemp, eirFlow, plf, lowSpeedTemp, lowSpeedEirTemp);
+
+  EXPECT_EQ(availability.handle(), coil.availabilitySchedule().handle());
+  EXPECT_EQ(totalCoolingTemp.handle(), coil.totalCoolingCapacityFunctionOfTemperatureCurve().handle());
+  EXPECT_EQ(totalCoolingFlow.handle(), coil.totalCoolingCapacityFunctionOfFlowFractionCurve().handle());
+  EXPECT_EQ(eirTemp.handle(), coil.energyInputRatioFunctionOfTemperatureCurve().handle());
+  EXPECT_EQ(eirFlow.handle(), coil.energyInputRatioFunctionOfFlowFractionCurve().handle());
+  EXPECT_EQ(plf.handle(), coil.partLoadFractionCorrelationCurve().handle());
+  EXPECT_EQ(lowSpeedTemp.handle(), coil.lowSpeedTotalCoolingCapacityFunctionOfTemperatureCurve().handle());
+  EXPECT_EQ(lowSpeedEirTemp.handle(), coil.lowSpeedEnergyInputRatioFunctionOfTemperatureCurve().handle());
+  EXPECT_TRUE(coil.isRatedHighSpeedTotalCoolingCapacityAutosized());
+  EXPECT_TRUE(coil.isRatedHighSpeedSensibleHeatRatioAutosized());
+  EXPECT_TRUE(coil.isRatedHighSpeedAirFlowRateAutosized());
+  EXPECT_TRUE(coil.isRatedLowSpeedTotalCoolingCapacityAutosized());
+  ASSERT_TRUE(coil.ratedLowSpeedSensibleHeatRatio());
+  EXPECT_DOUBLE_EQ(0.69, *coil.ratedLowSpeedSensibleHeatRatio());
+  EXPECT_TRUE(coil.isRatedLowSpeedAirFlowRateAutosized());
+}
+
+TEST_F(EPModelFixture, CoilCoolingDXTwoSpeed_AddToNodeSupplyOnly) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  AirLoopHVACOutdoorAirSystem oaSystem(model);
+  CoilCoolingDXTwoSpeed supplyCoil(model);
+  CoilCoolingDXTwoSpeed demandCoil(model);
+  CoilCoolingDXTwoSpeed oaCoil(model);
+
+  auto supplyInletNode = airLoop.supplyInletNode();
+  EXPECT_TRUE(supplyCoil.addToNode(supplyInletNode));
+  ASSERT_TRUE(supplyCoil.inletModelObject());
+  EXPECT_EQ(supplyInletNode, supplyCoil.inletModelObject()->cast<Node>());
+  EXPECT_TRUE(supplyCoil.outletModelObject());
+
+  auto demandInletNode = airLoop.demandInletNode();
+  EXPECT_FALSE(demandCoil.addToNode(demandInletNode));
+  EXPECT_FALSE(demandCoil.airLoopHVAC());
+
+  ASSERT_TRUE(oaSystem.addToNode(supplyInletNode));
+  auto outboardOANode = oaSystem.outboardOANode();
+  ASSERT_TRUE(outboardOANode);
+  EXPECT_FALSE(oaCoil.addToNode(*outboardOANode));
+  EXPECT_FALSE(oaCoil.airLoopHVAC());
 }

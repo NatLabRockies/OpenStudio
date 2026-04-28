@@ -36,13 +36,13 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The canonical tempering-valve node surface is present, but broader loop-topology helpers are still missing.
+    // - Status: Near Parity. The canonical tempering-valve node surface and plant-supply placement contract are now preserved in epmodel.
     // - Canonical Counterpart: openstudio::model::TemperingValve.
-    // - Implemented Parity: The preserved node accessors match the stream/source, setpoint, and pump-outlet relationships already covered by the canonical model.
-    // - Documented Delta: Inlet/outlet port topology helpers are still managed by StraightComponent plumbing and remain intentionally limited in this pass.
+    // - Implemented Parity: The preserved node accessors match the stream/source, setpoint, and pump-outlet relationships from the canonical model; `addToNode(...)` is limited to plant-loop supply placement and seeds the required control nodes from the attached plant topology.
+    // - Documented Delta: TemperingValve still inherits the shared epmodel HVACComponent/StraightComponent base-surface gaps around the broader canonical component/fuel-type conveniences; this wrapper does not add a type-local workaround.
     // - Field/Storage Mapping: These accessors map directly to EnergyPlus `TemperingValve` node fields used by the forward translator.
     // - Evidence: `src/model/TemperingValve.hpp`, `src/model/TemperingValve.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateTemperingValve.cpp`.
-    // - Remaining Parity Work: Add pump and plant-loop topology helpers once the broader plumbing surface is available.
+    // - Remaining Parity Work: Close the remaining shared HVACComponent base-surface gaps so TemperingValve can inherit the missing canonical component/fuel-type conveniences without adding type-local divergence.
     boost::optional<Node> stream2SourceNode() const;
     bool setStream2SourceNode(const Node& stream2SourceNode);
     void resetStream2SourceNode();

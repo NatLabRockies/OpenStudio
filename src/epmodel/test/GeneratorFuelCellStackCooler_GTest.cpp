@@ -6,7 +6,17 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Generator/GeneratorFuelCell.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/GeneratorFuelCellStackCooler.hpp"
+#include "../StraightComponent/Node.hpp"
+
+#include <utilities/idd/Generator_FuelCell_FieldEnums.hxx>
+
+#include <algorithm>
+#include <array>
 
 using namespace openstudio::epmodel;
 
@@ -103,4 +113,96 @@ TEST_F(EPModelFixture, GeneratorFuelCellStackCooler_ScalarAccessors_RoundTrip) {
   EXPECT_DOUBLE_EQ(0.0, stackCooler.stackAirCoolerFanCoefficientf0());
   EXPECT_DOUBLE_EQ(0.0, stackCooler.stackAirCoolerFanCoefficientf1());
   EXPECT_DOUBLE_EQ(0.0, stackCooler.stackAirCoolerFanCoefficientf2());
+}
+
+
+TEST_F(EPModelFixture, GeneratorFuelCellStackCooler_RelationshipsAndAddToNode_PlantLoopOnly) {
+  Model model;
+  GeneratorFuelCellStackCooler stackCooler(model);
+
+  EXPECT_FALSE(stackCooler.fuelCell());
+
+  GeneratorFuelCell generator(model);
+  EXPECT_TRUE(generator.setPointer(openstudio::Generator_FuelCellFields::StackCoolerName, stackCooler.handle()));
+  ASSERT_TRUE(stackCooler.fuelCell());
+  EXPECT_EQ(generator, stackCooler.fuelCell().get());
+
+  GeneratorFuelCell replacementGenerator(model);
+  EXPECT_TRUE(replacementGenerator.setPointer(openstudio::Generator_FuelCellFields::StackCoolerName, stackCooler.handle()));
+  ASSERT_TRUE(generator.getTarget(openstudio::Generator_FuelCellFields::StackCoolerName));
+  ASSERT_TRUE(replacementGenerator.getTarget(openstudio::Generator_FuelCellFields::StackCoolerName));
+  EXPECT_EQ(stackCooler.handle(), generator.getTarget(openstudio::Generator_FuelCellFields::StackCoolerName)->handle());
+  EXPECT_EQ(stackCooler.handle(), replacementGenerator.getTarget(openstudio::Generator_FuelCellFields::StackCoolerName)->handle());
+  const std::array<GeneratorFuelCell, 2> candidateOwners{generator, replacementGenerator};
+  const auto expectedFallbackOwner = *std::max_element(candidateOwners.begin(), candidateOwners.end());
+  ASSERT_TRUE(stackCooler.fuelCell());
+  EXPECT_EQ(expectedFallbackOwner, stackCooler.fuelCell().get());
+
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+  GeneratorFuelCellStackCooler demandStackCooler(model);
+  Node unconnectedNode(model);
+
+  auto airSupplyNode = airLoop.supplyOutletNode();
+  auto airDemandNode = airLoop.zoneSplitter().lastOutletModelObject()->cast<Node>();
+  auto plantSupplyNode = plantLoop.supplyOutletNode();
+  auto plantDemandNode = plantLoop.demandInletNode();
+
+  EXPECT_FALSE(stackCooler.addToNode(airSupplyNode));
+  EXPECT_FALSE(stackCooler.loop());
+  EXPECT_FALSE(stackCooler.inletModelObject());
+  EXPECT_FALSE(stackCooler.outletModelObject());
+
+  EXPECT_FALSE(stackCooler.addToNode(airDemandNode));
+  EXPECT_FALSE(stackCooler.loop());
+  EXPECT_FALSE(stackCooler.inletModelObject());
+  EXPECT_FALSE(stackCooler.outletModelObject());
+
+  EXPECT_FALSE(stackCooler.addToNode(unconnectedNode));
+  EXPECT_FALSE(stackCooler.loop());
+  EXPECT_FALSE(stackCooler.inletModelObject());
+  EXPECT_FALSE(stackCooler.outletModelObject());
+
+  EXPECT_TRUE(stackCooler.addToNode(plantSupplyNode));
+  ASSERT_TRUE(stackCooler.loop());
+  EXPECT_EQ(plantLoop.handle(), stackCooler.loop()->handle());
+  ASSERT_TRUE(stackCooler.inletModelObject());
+  ASSERT_TRUE(stackCooler.outletModelObject());
+  const auto stackCoolerInletHandle = stackCooler.inletModelObject()->handle();
+  const auto stackCoolerOutletHandle = stackCooler.outletModelObject()->handle();
+  EXPECT_TRUE(plantLoop.supplyComponent(stackCooler.handle()));
+  EXPECT_FALSE(plantLoop.demandComponent(stackCooler.handle()));
+
+  EXPECT_FALSE(stackCooler.addToNode(airSupplyNode));
+  ASSERT_TRUE(stackCooler.loop());
+  EXPECT_EQ(plantLoop.handle(), stackCooler.loop()->handle());
+  ASSERT_TRUE(stackCooler.inletModelObject());
+  ASSERT_TRUE(stackCooler.outletModelObject());
+  EXPECT_EQ(stackCoolerInletHandle, stackCooler.inletModelObject()->handle());
+  EXPECT_EQ(stackCoolerOutletHandle, stackCooler.outletModelObject()->handle());
+  EXPECT_TRUE(plantLoop.supplyComponent(stackCooler.handle()));
+  EXPECT_FALSE(plantLoop.demandComponent(stackCooler.handle()));
+
+  EXPECT_TRUE(demandStackCooler.addToNode(plantDemandNode));
+  ASSERT_TRUE(demandStackCooler.loop());
+  EXPECT_EQ(plantLoop.handle(), demandStackCooler.loop()->handle());
+  ASSERT_TRUE(demandStackCooler.inletModelObject());
+  ASSERT_TRUE(demandStackCooler.outletModelObject());
+  EXPECT_TRUE(plantLoop.demandComponent(demandStackCooler.handle()));
+  EXPECT_FALSE(plantLoop.supplyComponent(demandStackCooler.handle()));
+
+  PlantLoop secondPlantLoop(model);
+  auto secondPlantSupplyNode = secondPlantLoop.supplyOutletNode();
+  EXPECT_TRUE(stackCooler.addToNode(secondPlantSupplyNode));
+  ASSERT_TRUE(stackCooler.loop());
+  EXPECT_EQ(secondPlantLoop.handle(), stackCooler.loop()->handle());
+  EXPECT_FALSE(plantLoop.supplyComponent(stackCooler.handle()));
+  EXPECT_FALSE(plantLoop.demandComponent(stackCooler.handle()));
+  EXPECT_TRUE(secondPlantLoop.supplyComponent(stackCooler.handle()));
+  EXPECT_FALSE(secondPlantLoop.demandComponent(stackCooler.handle()));
+
+  EXPECT_TRUE(stackCooler.removeFromLoop());
+  EXPECT_FALSE(stackCooler.loop());
+  EXPECT_TRUE(demandStackCooler.removeFromLoop());
+  EXPECT_FALSE(demandStackCooler.loop());
 }

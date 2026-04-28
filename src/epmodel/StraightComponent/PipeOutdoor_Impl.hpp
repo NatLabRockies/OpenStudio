@@ -10,6 +10,9 @@
 
 namespace openstudio {
 namespace epmodel {
+  class Construction;
+  class Node;
+
   namespace detail {
 
     class EPMODEL_API PipeOutdoor_Impl : public StraightComponent_Impl
@@ -20,6 +23,15 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
+
+      boost::optional<Construction> construction() const;
+      bool setConstruction(const Construction& construction);
+      void resetConstruction();
+
+      boost::optional<Node> ambientTemperatureOutdoorAirNode() const;
+      bool setAmbientTemperatureOutdoorAirNode(const Node& node);
+      void resetAmbientTemperatureOutdoorAirNode();
 
       /** @name Pipe Inside Diameter */
       //@{

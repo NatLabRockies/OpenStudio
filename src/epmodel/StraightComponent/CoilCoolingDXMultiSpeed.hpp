@@ -17,6 +17,8 @@ namespace epmodel {
 
 class Model;
 class Node;
+class Schedule;
+class Curve;
 
 namespace detail {
 class CoilCoolingDXMultiSpeed_Impl;
@@ -41,13 +43,30 @@ class EPMODEL_API CoilCoolingDXMultiSpeed : public StraightComponent
   bool addToNode(Node& node);
 
   // Schema Alignment Notes:
-  // - Status: Scalar Parity. The canonical scalar DX-coil surface is largely present, while schedule, curve, stage, and node-link helpers remain out of scope.
+  // - Status: Partial Parity. The canonical scalar DX-coil surface plus the current epmodel schedule / crankcase-curve relationship slice and
+  //   supply-side air-loop insertion path are present, while stage-data, AFN, and tank-link helpers remain out of scope.
   // - Canonical Counterpart: openstudio::model::CoilCoolingDXMultiSpeed.
-  // - Implemented Parity: The scalar condenser, fuel, basin-heater, and compressor/capacity helpers preserve the canonical naming, defaults, and autosize behavior.
-  // - Documented Delta: Availability schedule, curves, stage data, and node-link helpers from canonical `openstudio::model::CoilCoolingDXMultiSpeed` are not exposed yet.
-  // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Cooling:DX:MultiSpeed` fields.
+  // - Implemented Parity: The scalar condenser, fuel, basin-heater, and compressor/capacity helpers preserve the canonical naming, defaults,
+  //   and autosize behavior; `availabilitySchedule`, `basinHeaterOperatingSchedule`, and
+  //   `crankcaseHeaterCapacityFunctionofTemperatureCurve` preserve the bounded relationship slice; `addToNode` preserves the current epmodel
+  //   supply-side air-loop insertion path.
+  // - Documented Delta: Stage data, AFN, tank-link helpers, and broader node-link topology from canonical `openstudio::model::CoilCoolingDXMultiSpeed`
+  //   are not exposed yet.
+  // - Field/Storage Mapping: Preserved scalars and the bounded relationship slice map directly to EnergyPlus `Coil:Cooling:DX:MultiSpeed` fields.
   // - Evidence: `src/model/CoilCoolingDXMultiSpeed.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilCoolingDXMultiSpeed.cpp`, and `src/epmodel/test/CoilCoolingDXMultiSpeed_GTest.cpp`.
-  // - Remaining Parity Work: Add the omitted schedule, stage, and relationship helpers without changing the preserved scalar signatures.
+  // - Remaining Parity Work: Add stage-data, AFN, tank-link, and broader topology helpers without changing the preserved scalar signatures.
+  boost::optional<Schedule> availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+  void resetAvailabilitySchedule();
+
+  boost::optional<Curve> crankcaseHeaterCapacityFunctionofTemperatureCurve() const;
+  bool setCrankcaseHeaterCapacityFunctionofTemperatureCurve(const Curve& curve);
+  void resetCrankcaseHeaterCapacityFunctionofTemperatureCurve();
+
+  boost::optional<Schedule> basinHeaterOperatingSchedule() const;
+  bool setBasinHeaterOperatingSchedule(Schedule& schedule);
+  void resetBasinHeaterOperatingSchedule();
+
   std::string condenserType() const;
   bool setCondenserType(const std::string& condenserType);
 

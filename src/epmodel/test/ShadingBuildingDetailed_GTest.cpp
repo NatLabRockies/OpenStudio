@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ShadingBuildingDetailed.hpp"
+#include "../scaffolds/ShadingBuildingDetailed.hpp"
 
 using namespace openstudio::epmodel;
 

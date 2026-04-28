@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/AirflowNetworkDistributionDuctSizing.hpp"
+#include "../scaffolds/AirflowNetworkDistributionDuctSizing.hpp"
 
 using namespace openstudio::epmodel;
 

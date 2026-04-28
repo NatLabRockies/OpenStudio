@@ -34,6 +34,8 @@
 #include "WaterToAirComponent/CoilCoolingWater_Impl.hpp"
 #include "WaterToAirComponent/CoilHeatingWater.hpp"
 #include "WaterToAirComponent/CoilHeatingWater_Impl.hpp"
+#include "WaterToAirComponent/CoilUserDefined.hpp"
+#include "WaterToAirComponent/CoilUserDefined_Impl.hpp"
 #include "StraightComponent/StraightComponent.hpp"
 #include "StraightComponent/CoilCoolingLowTempRadiantConstFlow.hpp"
 #include "StraightComponent/CoilCoolingLowTempRadiantConstFlow_Impl.hpp"
@@ -49,8 +51,14 @@
 #include "StraightComponent/CoilHeatingWaterBaseboardRadiant_Impl.hpp"
 #include "StraightComponent/CoilHeatingLowTempRadiantVarFlow.hpp"
 #include "StraightComponent/CoilHeatingLowTempRadiantVarFlow_Impl.hpp"
+#include "StraightComponent/GroundHeatExchangerVertical.hpp"
+#include "StraightComponent/GroundHeatExchangerVertical_Impl.hpp"
 #include "WaterToWaterComponent/WaterToWaterComponent.hpp"
 #include "WaterToWaterComponent/WaterToWaterComponent_Impl.hpp"
+#include "WaterToWaterComponent/WaterHeaterMixed.hpp"
+#include "WaterToWaterComponent/WaterHeaterMixed_Impl.hpp"
+#include "WaterToWaterComponent/WaterHeaterStratified.hpp"
+#include "WaterToWaterComponent/WaterHeaterStratified_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater.hpp"
 #include "ZoneHVACComponent/ZoneHVACCoolingPanelRadiantConvectiveWater_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACBaseboardConvectiveWater.hpp"
@@ -67,6 +75,7 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/idd/GroundHeatExchanger_System_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/OS_PlantLoop_FieldEnums.hxx>
 #include <utilities/idd/PlantLoop_FieldEnums.hxx>
@@ -521,6 +530,18 @@ namespace detail {
           const auto coolingOutlet = coolingCoil.outletModelObject() ? coolingCoil.outletModelObject()->optionalCast<Node>() : boost::none;
           if (sameNodeTargets(branchInletNode, coolingInlet) && sameNodeTargets(branchOutletNode, coolingOutlet)) {
             return coolingCoil.cast<ModelObject>();
+          }
+        }
+
+        if (component.iddObject().type() == IddObjectType::GroundHeatExchanger_System) {
+          if (auto target = component.getTarget(openstudio::GroundHeatExchanger_SystemFields::GHE_Vertical_ResponseFactorsObjectName)) {
+            if (auto vertical = target->optionalCast<GroundHeatExchangerVertical>()) {
+              const auto verticalInlet = vertical->inletModelObject() ? vertical->inletModelObject()->optionalCast<Node>() : boost::none;
+              const auto verticalOutlet = vertical->outletModelObject() ? vertical->outletModelObject()->optionalCast<Node>() : boost::none;
+              if (sameNodeTargets(branchInletNode, verticalInlet) && sameNodeTargets(branchOutletNode, verticalOutlet)) {
+                return vertical->cast<ModelObject>();
+              }
+            }
           }
         }
 
@@ -1432,7 +1453,11 @@ namespace detail {
       }
       if (auto waterToWater = hvacComponent.optionalCast<WaterToWaterComponent>()) {
         if (waterToWater->plantLoop()) {
-          return false;
+          const bool canRouteSupplySideToSource = (hvacComponent.optionalCast<WaterHeaterMixed>() || hvacComponent.optionalCast<WaterHeaterStratified>())
+                                                  && !waterToWater->secondaryPlantLoop();
+          if (!canRouteSupplySideToSource) {
+            return false;
+          }
         }
       }
 
@@ -1486,7 +1511,7 @@ namespace detail {
       const auto targetComponent = hvacComponent.cast<ModelObject>();
       boost::optional<Branch> targetBranch;
       for (const auto& branch : equipmentBranches) {
-        const auto components = branch.components();
+        const auto components = projectedBranchComponents(branch);
         if (std::ranges::find(components, targetComponent) != components.end()) {
           targetBranch = branch;
           break;
@@ -1506,7 +1531,7 @@ namespace detail {
         return false;
       }
 
-      const auto components = targetBranch->components();
+      const auto components = projectedBranchComponents(*targetBranch);
 
       auto branchList = supplyBranchList();
       const bool keepAsDefaultBranch = (equipmentBranches.size() == 1u);
@@ -1551,7 +1576,8 @@ namespace detail {
         return false;
       }
       if (!hvacComponent.optionalCast<StraightComponent>() && !hvacComponent.optionalCast<CoilHeatingWater>()
-          && !hvacComponent.optionalCast<CoilCoolingWater>() && !hvacComponent.optionalCast<WaterToWaterComponent>()) {
+          && !hvacComponent.optionalCast<CoilCoolingWater>() && !hvacComponent.optionalCast<CoilUserDefined>()
+          && !hvacComponent.optionalCast<WaterToWaterComponent>()) {
         return false;
       }
       if (auto waterToAir = hvacComponent.optionalCast<CoilHeatingWater>()) {
@@ -1559,6 +1585,10 @@ namespace detail {
           return false;
         }
       } else if (auto waterToAir = hvacComponent.optionalCast<CoilCoolingWater>()) {
+        if (tertiary || waterToAir->plantLoop()) {
+          return false;
+        }
+      } else if (auto waterToAir = hvacComponent.optionalCast<CoilUserDefined>()) {
         if (tertiary || waterToAir->plantLoop()) {
           return false;
         }
@@ -1635,7 +1665,7 @@ namespace detail {
       const auto targetComponent = hvacComponent.cast<ModelObject>();
       boost::optional<Branch> targetBranch;
       for (const auto& branch : equipmentBranches) {
-        const auto components = branch.components();
+        const auto components = projectedBranchComponents(branch);
         if (std::ranges::find(components, targetComponent) != components.end()) {
           targetBranch = branch;
           break;
@@ -1655,7 +1685,7 @@ namespace detail {
         return false;
       }
 
-      const auto components = targetBranch->components();
+      const auto components = projectedBranchComponents(*targetBranch);
 
       auto branchList = demandBranchList();
       const bool keepAsDefaultBranch = (equipmentBranches.size() == 1u);
@@ -1664,7 +1694,11 @@ namespace detail {
 
       for (auto component : components) {
         if (auto straightComponent = component.optionalCast<StraightComponent>()) {
-          straightComponent->disconnect();
+          // Demand-branch removal already owns the branch edit, so clear the
+          // straight-component node pointers directly instead of recursively
+          // calling removeFromLoop() through disconnect().
+          component.setPointer(straightComponent->inletPort(), Handle());
+          component.setPointer(straightComponent->outletPort(), Handle());
         } else if (auto waterToAir = component.optionalCast<CoilHeatingWater>()) {
           if (!waterToAir->removeFromPlantLoop()) {
             return false;

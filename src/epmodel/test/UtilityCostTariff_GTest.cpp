@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "ModelObject/UtilityCostTariff.hpp"
+#include "scaffolds/UtilityCostTariff.hpp"
 
 using namespace openstudio::epmodel;
 

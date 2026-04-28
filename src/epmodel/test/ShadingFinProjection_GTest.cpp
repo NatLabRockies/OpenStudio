@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ShadingFinProjection.hpp"
+#include "../scaffolds/ShadingFinProjection.hpp"
 
 using namespace openstudio::epmodel;
 

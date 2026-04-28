@@ -8,6 +8,9 @@
 
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "ModelObject.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -30,6 +33,30 @@ namespace epmodel {
 
   IddObjectType CoilHeatingDesuperheater::iddObjectType() {
     return IddObjectType::Coil_Heating_Desuperheater;
+  }
+
+  boost::optional<Schedule> CoilHeatingDesuperheater::availabilitySchedule() const {
+    return getImpl<detail::CoilHeatingDesuperheater_Impl>()->availabilitySchedule();
+  }
+
+  bool CoilHeatingDesuperheater::setAvailabilitySchedule(Schedule& schedule) {
+    return getImpl<detail::CoilHeatingDesuperheater_Impl>()->setAvailabilitySchedule(schedule);
+  }
+
+  void CoilHeatingDesuperheater::resetAvailabilitySchedule() {
+    getImpl<detail::CoilHeatingDesuperheater_Impl>()->resetAvailabilitySchedule();
+  }
+
+  boost::optional<ModelObject> CoilHeatingDesuperheater::heatingSource() const {
+    return getImpl<detail::CoilHeatingDesuperheater_Impl>()->heatingSource();
+  }
+
+  bool CoilHeatingDesuperheater::setHeatingSource(const ModelObject& modelObject) {
+    return getImpl<detail::CoilHeatingDesuperheater_Impl>()->setHeatingSource(modelObject);
+  }
+
+  void CoilHeatingDesuperheater::resetHeatingSource() {
+    getImpl<detail::CoilHeatingDesuperheater_Impl>()->resetHeatingSource();
   }
 
   double CoilHeatingDesuperheater::heatReclaimRecoveryEfficiency() const {
@@ -90,11 +117,11 @@ namespace epmodel {
     bool CoilHeatingDesuperheater_Impl::addToNode(Node& node) {
       auto airLoop = node.airLoopHVAC();
 
-      if (!(airLoop && airLoop->supplyComponent(node.handle()))) {
-        return false;
+      if (airLoop && airLoop->supplyComponent(node.handle())) {
+        return StraightComponent_Impl::addToNode(node);
       }
 
-      return StraightComponent_Impl::addToNode(node);
+      return false;
     }
 
     unsigned CoilHeatingDesuperheater_Impl::inletPort() const {
@@ -103,6 +130,18 @@ namespace epmodel {
 
     unsigned CoilHeatingDesuperheater_Impl::outletPort() const {
       return openstudio::Coil_Heating_DesuperheaterFields::AirOutletNodeName;
+    }
+
+    boost::optional<Schedule> CoilHeatingDesuperheater_Impl::availabilitySchedule() const {
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Heating_DesuperheaterFields::AvailabilityScheduleName);
+    }
+
+    bool CoilHeatingDesuperheater_Impl::setAvailabilitySchedule(Schedule& schedule) {
+      return setPointer(openstudio::Coil_Heating_DesuperheaterFields::AvailabilityScheduleName, schedule.handle(), false);
+    }
+
+    void CoilHeatingDesuperheater_Impl::resetAvailabilitySchedule() {
+      OS_ASSERT(setPointer(openstudio::Coil_Heating_DesuperheaterFields::AvailabilityScheduleName, openstudio::Handle(), false));
     }
 
     double CoilHeatingDesuperheater_Impl::heatReclaimRecoveryEfficiency() const {
@@ -121,6 +160,18 @@ namespace epmodel {
 
     void CoilHeatingDesuperheater_Impl::resetHeatReclaimRecoveryEfficiency() {
       // Retained for API compatibility: this field is required in the current EnergyPlus schema.
+    }
+
+    boost::optional<ModelObject> CoilHeatingDesuperheater_Impl::heatingSource() const {
+      return getObject<ModelObject>().getModelObjectTarget<ModelObject>(openstudio::Coil_Heating_DesuperheaterFields::HeatingSourceName);
+    }
+
+    bool CoilHeatingDesuperheater_Impl::setHeatingSource(const ModelObject& modelObject) {
+      return setPointer(openstudio::Coil_Heating_DesuperheaterFields::HeatingSourceName, modelObject.handle(), false);
+    }
+
+    void CoilHeatingDesuperheater_Impl::resetHeatingSource() {
+      OS_ASSERT(setPointer(openstudio::Coil_Heating_DesuperheaterFields::HeatingSourceName, openstudio::Handle(), false));
     }
 
     double CoilHeatingDesuperheater_Impl::parasiticElectricLoad() const {

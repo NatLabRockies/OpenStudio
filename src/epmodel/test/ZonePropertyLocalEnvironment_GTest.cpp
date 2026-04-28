@@ -7,7 +7,7 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../ModelObject/ZonePropertyLocalEnvironment.hpp"
+#include "../scaffolds/ZonePropertyLocalEnvironment.hpp"
 
 using namespace openstudio::epmodel;
 

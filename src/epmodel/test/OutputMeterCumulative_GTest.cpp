@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/OutputMeterCumulative.hpp"
+#include "../scaffolds/OutputMeterCumulative.hpp"
 
 #include <utilities/core/StringHelpers.hpp>
 

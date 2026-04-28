@@ -20,6 +20,7 @@ namespace openstudio {
 
 class IdfFile;
 class IdfObject;
+class SqlFile;
 
 namespace epmodel {
 
@@ -45,6 +46,9 @@ namespace epmodel {
         createObject(const std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>& originalObjectImplPtr, bool keepHandle) override;
 
       openstudio::epmodel::Model model() const;
+      boost::optional<openstudio::SqlFile> sqlFile() const;
+      bool setSqlFile(const openstudio::SqlFile& sqlFile);
+      bool resetSqlFile();
 
       using CopyConstructorFunction = std::function<std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(
         Model_Impl*, const std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>&, bool)>;
@@ -68,6 +72,9 @@ namespace epmodel {
       static const ModelObjectCreator modelObjectCreator;
 
       REGISTER_LOGGER("openstudio.epmodel.Model");
+
+     private:
+      std::shared_ptr<openstudio::SqlFile> m_sqlFile;
     };
 
   }  // namespace detail

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SiteGroundDomainSlab.hpp"
+#include "../scaffolds/SiteGroundDomainSlab.hpp"
 
 using namespace openstudio::epmodel;
 

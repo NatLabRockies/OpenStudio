@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/DuctLossConduction.hpp"
+#include "../scaffolds/DuctLossConduction.hpp"
 
 using namespace openstudio::epmodel;
 

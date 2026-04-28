@@ -16,7 +16,6 @@
 #include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
 #include <utilities/idd/AirLoopHVAC_ZoneMixer_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
-#include <utilities/idf/IdfExtensibleGroup.hpp>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 namespace openstudio {
@@ -92,6 +91,25 @@ namespace detail {
 
     unsigned AirLoopHVACZoneMixer_Impl::inletPort(unsigned branchIndex) const {
       return getObject<openstudio::epmodel::AirLoopHVACZoneMixer>().numNonextensibleFields() + branchIndex;
+    }
+
+    bool AirLoopHVACZoneMixer_Impl::setInletModelObject(unsigned branchIndex, const openstudio::epmodel::ModelObject& modelObject) {
+      auto mixer = getObject<openstudio::epmodel::AirLoopHVACZoneMixer>();
+      if (modelObject.model() != mixer.model()) {
+        return false;
+      }
+
+      while (mixer.extensibleGroups().size() <= branchIndex) {
+        mixer.pushExtensibleGroup();
+      }
+
+      const auto groups = mixer.extensibleGroups();
+      auto workspaceGroup = groups[branchIndex].optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      if (!workspaceGroup) {
+        return false;
+      }
+
+      return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ZoneMixerExtensibleFields::InletNodeName, modelObject.handle(), false);
     }
 
     boost::optional<openstudio::epmodel::Node> AirLoopHVACZoneMixer_Impl::outletNode() const {

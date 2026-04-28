@@ -12,6 +12,10 @@
 
 namespace openstudio {
 namespace epmodel {
+class Node;
+class PlantLoop;
+class Schedule;
+class ThermalZone;
 
   namespace detail {
 
@@ -44,6 +48,12 @@ namespace epmodel {
       bool setSizingFactor(double sizingFactor);
 
       std::string ambientTemperatureIndicator() const;
+      boost::optional<Schedule> ambientTemperatureSchedule() const;
+      bool setAmbientTemperatureSchedule(Schedule& schedule);
+      void resetAmbientTemperatureSchedule();
+      boost::optional<ThermalZone> ambientTemperatureZone() const;
+      bool setAmbientTemperatureZone(const ThermalZone& thermalZone);
+      void resetAmbientTemperatureZone();
 
       boost::optional<std::string> ambientTemperatureOutdoorAirNodeName() const;
       bool setAmbientTemperatureOutdoorAirNodeName(const std::string& ambientTemperatureOutdoorAirNodeName);
@@ -74,6 +84,52 @@ namespace epmodel {
       bool isEndUseSubcategoryDefaulted() const;
       bool setEndUseSubcategory(const std::string& endUseSubcategory);
       void resetEndUseSubcategory();
+
+      boost::optional<double> autosizedRatedCapacity() const;
+      boost::optional<double> autosizedChilledWaterMaximumRequestedFlowRate() const;
+      boost::optional<double> autosizedCondenserMaximumRequestedFlowRate() const;
+
+      boost::optional<PlantLoop> chilledWaterLoop() const;
+      boost::optional<Node> chilledWaterInletNode() const;
+      boost::optional<Node> chilledWaterOutletNode() const;
+
+      boost::optional<PlantLoop> condenserWaterLoop() const;
+      boost::optional<Node> condenserInletNode() const;
+      boost::optional<Node> condenserOutletNode() const;
+
+      boost::optional<PlantLoop> heatRecoveryLoop() const;
+      boost::optional<Node> heatRecoveryInletNode() const;
+      boost::optional<Node> heatRecoveryOutletNode() const;
+
+      unsigned oilCoolerInletPort() const;
+      boost::optional<ModelObject> oilCoolerInletModelObject() const;
+      boost::optional<Node> oilCoolerInletNode() const;
+      unsigned oilCoolerOutletPort() const;
+      boost::optional<ModelObject> oilCoolerOutletModelObject() const;
+      boost::optional<Node> oilCoolerOutletNode() const;
+      boost::optional<PlantLoop> oilCoolerLoop() const;
+      bool addDemandBranchOnOilCoolerLoop(PlantLoop& plantLoop);
+      bool addToOilCoolerLoopNode(Node& node);
+      bool removeFromOilCoolerLoop();
+
+      unsigned auxiliaryInletPort() const;
+      boost::optional<ModelObject> auxiliaryInletModelObject() const;
+      boost::optional<Node> auxiliaryInletNode() const;
+      unsigned auxiliaryOutletPort() const;
+      boost::optional<ModelObject> auxiliaryOutletModelObject() const;
+      boost::optional<Node> auxiliaryOutletNode() const;
+      boost::optional<PlantLoop> auxiliaryLoop() const;
+      bool addDemandBranchOnAuxiliaryLoop(PlantLoop& plantLoop);
+      bool addToAuxiliaryLoopNode(Node& node);
+      bool removeFromAuxiliaryLoop();
+
+      bool addToNode(Node& node) override;
+      bool addToTertiaryNode(Node& node) override;
+
+      ComponentType componentType() const override;
+      std::vector<FuelType> coolingFuelTypes() const override;
+      std::vector<FuelType> heatingFuelTypes() const override;
+      std::vector<AppGFuelType> appGHeatingFuelTypes() const override;
 
      private:
       bool setAmbientTemperatureIndicator(const std::string& ambientTemperatureIndicator);

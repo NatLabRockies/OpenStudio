@@ -20,6 +20,7 @@
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Logger.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/data/DataEnums.hpp>
 #include <utilities/idd/Coil_UserDefined_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 
@@ -392,14 +393,10 @@ unsigned CoilUserDefined_Impl::waterOutletPort() const {
 }
 
 int CoilUserDefined_Impl::numberofAirConnections() const {
-  if (getObject<openstudio::epmodel::CoilUserDefined>().airLoopHVAC() || getObject<openstudio::epmodel::CoilUserDefined>().containingHVACComponent()) {
+  if (airInletModelObject() && airOutletModelObject()) {
     return 1;
   }
-  const auto value = getInt(openstudio::Coil_UserDefinedFields::NumberofAirConnections, true);
-  if (!value) {
-    return 0;
-  }
-  return *value;
+  return 0;
 }
 
 EnergyManagementSystemProgramCallingManager CoilUserDefined_Impl::overallModelSimulationProgramCallingManager() const {
@@ -573,10 +570,25 @@ bool CoilUserDefined_Impl::setPlantMassFlowRateActuator(const EnergyManagementSy
                           kPlantMassFlowRateControlType);
 }
 
+openstudio::ComponentType CoilUserDefined_Impl::componentType() const {
+  return openstudio::ComponentType::Both;
+}
+
+std::vector<openstudio::FuelType> CoilUserDefined_Impl::coolingFuelTypes() const {
+  return {};
+}
+
+std::vector<openstudio::FuelType> CoilUserDefined_Impl::heatingFuelTypes() const {
+  return {};
+}
+
+std::vector<openstudio::AppGFuelType> CoilUserDefined_Impl::appGHeatingFuelTypes() const {
+  return {};
+}
+
 std::vector<ModelObject> CoilUserDefined_Impl::children() const {
   std::vector<ModelObject> result;
   std::set<Handle> seenHandles;
-  const auto coil = getObject<openstudio::epmodel::CoilUserDefined>();
 
   appendUniqueChild(result, seenHandles, overallModelSimulationProgramCallingManager());
   appendUniqueChild(result, seenHandles, modelSetupandSizingProgramCallingManager());
@@ -592,6 +604,18 @@ std::vector<ModelObject> CoilUserDefined_Impl::children() const {
   appendUniqueChild(result, seenHandles, plantOutletTemperatureActuator());
 
   return result;
+}
+
+std::vector<IdfObject> CoilUserDefined_Impl::remove() {
+  if (!isRemovable()) {
+    return {};
+  }
+
+  for (auto& child : children()) {
+    child.remove();
+  }
+
+  return WaterToAirComponent_Impl::remove();
 }
 
 }  // namespace detail

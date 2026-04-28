@@ -16,6 +16,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
 
   namespace detail {
     class AirConditionerVariableRefrigerantFlow_Impl;
@@ -38,12 +39,14 @@ namespace epmodel {
     static std::vector<std::string> defrostStrategyValues();
     static std::vector<std::string> condenserTypeValues();
 
+    bool addToNode(Node& node);
+
     // Schema Alignment Notes:
     // - Status: Partial Parity. Core VRF scalar controls and sizing/performance fields are aligned, but terminal, schedule, curve, and zone-link APIs remain intentionally hidden.
     // - Canonical Counterpart: openstudio::model::AirConditionerVariableRefrigerantFlow.
-    // - Implemented Parity: `grossRatedTotalCoolingCapacity`, `grossRatedCoolingCOP`, `grossRatedHeatingCapacity`, `ratedHeatingCapacitySizingRatio`, `heatingPerformanceCurveOutdoorTemperatureType`, `heatPumpWasteHeatRecovery`, `numberofCompressors`, `defrostStrategy`, and `condenserType` preserve the canonical scalar contract with matching default/reset behavior.
-    // - Documented Delta: Terminal attachments, schedules, curves, and other relationship-style helpers are not exposed yet, so the public API remains narrower than canonical `openstudio::model`.
-    // - Field/Storage Mapping: Scalar methods map directly to EnergyPlus `AirConditioner:VariableRefrigerantFlow` fields; the translator wires terminals and curves separately from these scalar fields.
+    // - Implemented Parity: `grossRatedTotalCoolingCapacity`, `grossRatedCoolingCOP`, `grossRatedHeatingCapacity`, `ratedHeatingCapacitySizingRatio`, `heatingPerformanceCurveOutdoorTemperatureType`, `heatPumpWasteHeatRecovery`, `numberofCompressors`, `defrostStrategy`, `condenserType`, and demand-side `addToNode` preserve the canonical scalar contract and current plant-loop insertion behavior.
+    // - Documented Delta: Terminal attachments, schedules, curves, and other relationship-style helpers are not exposed yet. `addToNode` is intentionally limited to PlantLoop demand-side insertion, and no broader VRF topology parity is claimed here.
+    // - Field/Storage Mapping: Most preserved scalar methods map directly to EnergyPlus `AirConditioner:VariableRefrigerantFlow` fields. `condenserType()` follows the canonical defaulted readback behavior by deriving `AirCooled` versus `WaterCooled` from current plant-loop attachment when the stored field is blank.
     // - Evidence: `src/model/AirConditionerVariableRefrigerantFlow.hpp`, `src/model/AirConditionerVariableRefrigerantFlow.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirConditionerVariableRefrigerantFlow.cpp`, and `src/epmodel/test/AirConditionerVariableRefrigerantFlow_GTest.cpp`.
     // - Remaining Parity Work: Add the omitted terminal, schedule, curve, and zone-link accessors when relationship parity is in scope.
     boost::optional<double> grossRatedTotalCoolingCapacity() const;

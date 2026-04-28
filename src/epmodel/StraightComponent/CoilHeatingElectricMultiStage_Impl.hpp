@@ -11,6 +11,7 @@
 namespace openstudio {
 namespace epmodel {
 class Node;
+class Schedule;
 namespace detail {
 
 class EPMODEL_API CoilHeatingElectricMultiStage_Impl : public StraightComponent_Impl
@@ -23,6 +24,9 @@ class EPMODEL_API CoilHeatingElectricMultiStage_Impl : public StraightComponent_
   unsigned outletPort() const override;
 
   bool addToNode(Node& node) override;
+
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
 
   unsigned numberOfStages() const;
   bool setNumberOfStages(unsigned numberOfStages);

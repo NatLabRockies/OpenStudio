@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/FaultModelFoulingAirFilter.hpp"
+#include "../scaffolds/FaultModelFoulingAirFilter.hpp"
 
 using namespace openstudio::epmodel;
 

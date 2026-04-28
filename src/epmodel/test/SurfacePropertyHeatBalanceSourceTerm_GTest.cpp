@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SurfacePropertyHeatBalanceSourceTerm.hpp"
+#include "../scaffolds/SurfacePropertyHeatBalanceSourceTerm.hpp"
 
 using namespace openstudio::epmodel;
 

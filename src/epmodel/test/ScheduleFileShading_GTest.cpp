@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ScheduleFileShading.hpp"
+#include "../scaffolds/ScheduleFileShading.hpp"
 
 using namespace openstudio::epmodel;
 

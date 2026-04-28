@@ -18,6 +18,8 @@ namespace openstudio {
 namespace epmodel {
 
 class Model;
+class Node;
+class GeneratorFuelCell;
 
 namespace detail {
 class GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl;
@@ -27,6 +29,7 @@ class EPMODEL_API GeneratorFuelCellExhaustGasToWaterHeatExchanger : public Strai
 {
  public:
   explicit GeneratorFuelCellExhaustGasToWaterHeatExchanger(const Model& model);
+  explicit GeneratorFuelCellExhaustGasToWaterHeatExchanger(const Model& model, const Node& exhaustOutletAirNode);
 
   virtual ~GeneratorFuelCellExhaustGasToWaterHeatExchanger() override = default;
   GeneratorFuelCellExhaustGasToWaterHeatExchanger(const GeneratorFuelCellExhaustGasToWaterHeatExchanger& other) = default;
@@ -39,16 +42,20 @@ class EPMODEL_API GeneratorFuelCellExhaustGasToWaterHeatExchanger : public Strai
   static std::vector<std::string> heatExchangerCalculationMethodValues();
 
   // Schema Alignment Notes:
-  // - Status: Scalar Parity. The canonical fuel-cell exhaust-gas heat-exchanger scalar surface is present, while node and parent-link helpers remain out of scope.
+  // - Status: Near Parity. The canonical scalar surface, exhaust-air-node helper, and parent-generator lookup are present, while OS App clone/child conveniences remain out of scope.
   // - Canonical Counterpart: openstudio::model::GeneratorFuelCellExhaustGasToWaterHeatExchanger.
-  // - Implemented Parity: The preserved scalar API matches the heat-recovery, method-selection, and method-parameter accessors with matching scalar behavior.
-  // - Documented Delta: Heat-recovery node names, exhaust-air node name, and parent `Generator:FuelCell` linkage remain intentionally excluded from this scalar pass.
+  // - Implemented Parity: The wrapper now preserves the canonical constructor overload, exhaust-air node relationship API, parent `GeneratorFuelCell` lookup, plant-loop-only `addToNode(...)` behavior on either supply or demand side, and the heat-recovery / method-parameter scalar accessors.
+  // - Documented Delta: epmodel does not currently preserve the canonical OS App-oriented clone/child behavior that clones through the owning `GeneratorFuelCell`.
   // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Generator:FuelCell:ExhaustGasToWaterHeatExchanger` scalar fields used by the forward translator.
   // - Evidence: `src/model/GeneratorFuelCellExhaustGasToWaterHeatExchanger.hpp`, `src/model/GeneratorFuelCellExhaustGasToWaterHeatExchanger.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateGeneratorFuelCellExhaustGasToWaterHeatExchanger.cpp`.
-  // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
+  // - Remaining Parity Work: Preserve the canonical parent-owned clone/child behavior if epmodel later needs the same library-dragging semantics.
   double heatRecoveryWaterMaximumFlowRate() const;
   bool setHeatRecoveryWaterMaximumFlowRate(double heatRecoveryWaterMaximumFlowRate);
   void resetHeatRecoveryWaterMaximumFlowRate();
+
+  boost::optional<Node> exhaustOutletAirNode() const;
+  bool setExhaustOutletAirNode(const Node& node);
+  void resetExhaustOutletAirNode();
 
   std::string heatExchangerCalculationMethod() const;
   bool setHeatExchangerCalculationMethod(const std::string& heatExchangerCalculationMethod);
@@ -125,6 +132,8 @@ class EPMODEL_API GeneratorFuelCellExhaustGasToWaterHeatExchanger : public Strai
   boost::optional<double> method4CondensationThreshold() const;
   bool setMethod4CondensationThreshold(double method4CondensationThreshold);
   void resetMethod4CondensationThreshold();
+
+  boost::optional<GeneratorFuelCell> fuelCell() const;
 
  protected:
   using ImplType = detail::GeneratorFuelCellExhaustGasToWaterHeatExchanger_Impl;

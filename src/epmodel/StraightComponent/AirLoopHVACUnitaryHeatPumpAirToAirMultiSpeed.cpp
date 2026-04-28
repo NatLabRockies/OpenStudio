@@ -6,9 +6,20 @@
 #include "StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed.hpp"
 #include "StraightComponent/AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl.hpp"
 
+#include "HVACComponent.hpp"
+#include "HVACComponent/ThermalZone.hpp"
+#include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Model.hpp"
+#include "ModelObject/ModelObject.hpp"
+#include "ModelObject/ModelObject_Impl.hpp"
 #include "Node.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "Schedule/ScheduleConstant.hpp"
+#include "StraightComponent/StraightComponent.hpp"
+#include "WaterToAirComponent/WaterToAirComponent.hpp"
+#include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -20,8 +31,48 @@
 namespace openstudio {
 namespace epmodel {
 
+namespace {
+
+bool isUnitaryHeatPumpMultiSpeedAirPathComponent(const HVACComponent& component) {
+  return static_cast<bool>(component.optionalCast<StraightComponent>()) || static_cast<bool>(component.optionalCast<WaterToAirComponent>());
+}
+
+unsigned unitaryHeatPumpMultiSpeedAirInletPort(const HVACComponent& component) {
+  if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+    return straightComponent->inletPort();
+  }
+  if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+    return waterToAirComponent->airInletPort();
+  }
+  return 0u;
+}
+
+unsigned unitaryHeatPumpMultiSpeedAirOutletPort(const HVACComponent& component) {
+  if (auto straightComponent = component.optionalCast<StraightComponent>()) {
+    return straightComponent->outletPort();
+  }
+  if (auto waterToAirComponent = component.optionalCast<WaterToAirComponent>()) {
+    return waterToAirComponent->airOutletPort();
+  }
+  return 0u;
+}
+
+boost::optional<Node> unitaryHeatPumpMultiSpeedAirOutletNode(const HVACComponent& component) {
+  const auto outletPort = unitaryHeatPumpMultiSpeedAirOutletPort(component);
+  if (outletPort == 0u) {
+    return boost::none;
+  }
+  return component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(outletPort);
+}
+
+}  // namespace
+
 AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(const Model& model)
   : StraightComponent(AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::iddObjectType(), model) {
+  ScheduleConstant alwaysOn(model);
+  OS_ASSERT(alwaysOn.setValue(1.0));
+  OS_ASSERT(setSupplyAirFanOperatingModeSchedule(alwaysOn));
+
   // Mirror model scalar constructor defaults while excluding relationship fields.
   OS_ASSERT(setSupplyAirFanPlacement("DrawThrough"));
   OS_ASSERT(setDXHeatingCoilSizingRatio(1.0));
@@ -45,6 +96,21 @@ AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::AirLoopHVACUnitaryHeatPumpAirToAir
 }
 
 AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(
+  const Model& model, const HVACComponent& supplyAirFan, const HVACComponent& heatingCoil, const HVACComponent& coolingCoil,
+  const HVACComponent& supplementalHeatingCoil)
+  : AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(model) {
+  bool ok = true;
+  ok = setSupplyAirFan(supplyAirFan);
+  OS_ASSERT(ok);
+  ok = setHeatingCoil(heatingCoil);
+  OS_ASSERT(ok);
+  ok = setCoolingCoil(coolingCoil);
+  OS_ASSERT(ok);
+  ok = setSupplementalHeatingCoil(supplementalHeatingCoil);
+  OS_ASSERT(ok);
+}
+
+AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed(
   std::shared_ptr<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl> impl)
   : StraightComponent(std::move(impl)) {}
 
@@ -61,6 +127,38 @@ std::vector<std::string> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::supplyAir
                         openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanPlacement);
 }
 
+boost::optional<Schedule> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::availabilitySchedule() const {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->availabilitySchedule();
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->setAvailabilitySchedule(schedule);
+}
+
+void AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::resetAvailabilitySchedule() {
+  getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->resetAvailabilitySchedule();
+}
+
+boost::optional<ThermalZone> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::controllingZoneorThermostatLocation() const {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->controllingZoneorThermostatLocation();
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::setControllingZoneorThermostatLocation(const ThermalZone& thermalZone) {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->setControllingZoneorThermostatLocation(thermalZone);
+}
+
+void AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::resetControllingZoneorThermostatLocation() {
+  getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->resetControllingZoneorThermostatLocation();
+}
+
+HVACComponent AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::supplyAirFan() const {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->supplyAirFan();
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::setSupplyAirFan(const HVACComponent& fan) {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->setSupplyAirFan(fan);
+}
+
 std::string AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::supplyAirFanPlacement() const {
   return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->supplyAirFanPlacement();
 }
@@ -69,12 +167,56 @@ bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::setSupplyAirFanPlacement(cons
   return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->setSupplyAirFanPlacement(supplyAirFanPlacement);
 }
 
+Schedule AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::supplyAirFanOperatingModeSchedule() const {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->supplyAirFanOperatingModeSchedule();
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::setSupplyAirFanOperatingModeSchedule(Schedule& schedule) {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->setSupplyAirFanOperatingModeSchedule(schedule);
+}
+
+HVACComponent AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::heatingCoil() const {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->heatingCoil();
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::setHeatingCoil(const HVACComponent& coil) {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->setHeatingCoil(coil);
+}
+
 double AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::dXHeatingCoilSizingRatio() const {
   return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->dXHeatingCoilSizingRatio();
 }
 
 bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio) {
   return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->setDXHeatingCoilSizingRatio(dXHeatingCoilSizingRatio);
+}
+
+HVACComponent AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::coolingCoil() const {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->coolingCoil();
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::setCoolingCoil(const HVACComponent& coil) {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->setCoolingCoil(coil);
+}
+
+HVACComponent AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::supplementalHeatingCoil() const {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->supplementalHeatingCoil();
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::setSupplementalHeatingCoil(const HVACComponent& coil) {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->setSupplementalHeatingCoil(coil);
+}
+
+boost::optional<Node> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::fanOutletNode() const {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->fanOutletNode();
+}
+
+boost::optional<Node> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::coolingCoilOutletNode() const {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->coolingCoilOutletNode();
+}
+
+boost::optional<Node> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::heatingCoilOutletNode() const {
+  return getImpl<detail::AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl>()->heatingCoilOutletNode();
 }
 
 boost::optional<double> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed::maximumSupplyAirTemperaturefromSupplementalHeater() const {
@@ -337,7 +479,82 @@ bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::addToNode(Node& node) {
     return false;
   }
 
-  return StraightComponent_Impl::addToNode(node);
+  if (!StraightComponent_Impl::addToNode(node)) {
+    return false;
+  }
+
+  maintainContainedAirPath();
+  return true;
+}
+
+void AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::doCanonicalize(LoadContext& context) {
+  repairContainedAirPath(context);
+}
+
+std::vector<ModelObject> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::children() const {
+  std::vector<ModelObject> result;
+
+  if (auto supplyFan = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+        openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanName)) {
+    result.emplace_back(*supplyFan);
+  }
+  if (auto heatingCoil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+        openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilName)) {
+    result.emplace_back(*heatingCoil);
+  }
+  if (auto coolingCoil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+        openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilName)) {
+    result.emplace_back(*coolingCoil);
+  }
+  if (auto supplementalHeatingCoil = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+        openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilName)) {
+    result.emplace_back(*supplementalHeatingCoil);
+  }
+
+  return result;
+}
+
+boost::optional<Schedule> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::availabilitySchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::AvailabilityScheduleName);
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return setSchedule(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::AvailabilityScheduleName,
+                     "AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed", "Availability Schedule", schedule);
+}
+
+void AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::resetAvailabilitySchedule() {
+  OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::AvailabilityScheduleName, ""));
+}
+
+boost::optional<ThermalZone> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::controllingZoneorThermostatLocation() const {
+  return getObject<ModelObject>().getModelObjectTarget<ThermalZone>(
+    openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::ControllingZoneorThermostatLocation);
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::setControllingZoneorThermostatLocation(const ThermalZone& thermalZone) {
+  return setPointer(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::ControllingZoneorThermostatLocation,
+                    thermalZone.handle());
+}
+
+void AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::resetControllingZoneorThermostatLocation() {
+  OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::ControllingZoneorThermostatLocation, ""));
+}
+
+HVACComponent AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::supplyAirFan() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+    openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::setSupplyAirFan(const HVACComponent& fan) {
+  const bool result = setPointer(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanName, fan.handle());
+  if (result) {
+    maintainContainedAirPath();
+  }
+  return result;
 }
 
 std::string AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::supplyAirFanPlacement() const {
@@ -347,7 +564,38 @@ std::string AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::supplyAirFanPlace
 }
 
 bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::setSupplyAirFanPlacement(const std::string& supplyAirFanPlacement) {
-  return setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanPlacement, supplyAirFanPlacement);
+  const bool result = setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanPlacement, supplyAirFanPlacement);
+  if (result) {
+    maintainContainedAirPath();
+  }
+  return result;
+}
+
+Schedule AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::supplyAirFanOperatingModeSchedule() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanOperatingModeScheduleName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::setSupplyAirFanOperatingModeSchedule(Schedule& schedule) {
+  return setSchedule(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanOperatingModeScheduleName,
+                     "AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed", "Supply Air Fan Operating Mode Schedule", schedule);
+}
+
+HVACComponent AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::heatingCoil() const {
+  auto value =
+    getObject<ModelObject>().getModelObjectTarget<HVACComponent>(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::setHeatingCoil(const HVACComponent& coil) {
+  const bool result = setPointer(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilName, coil.handle());
+  if (result) {
+    maintainContainedAirPath();
+  }
+  return result;
 }
 
 double AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::dXHeatingCoilSizingRatio() const {
@@ -358,6 +606,72 @@ double AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::dXHeatingCoilSizingRat
 
 bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::setDXHeatingCoilSizingRatio(double dXHeatingCoilSizingRatio) {
   return setDouble(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::DXHeatingCoilSizingRatio, dXHeatingCoilSizingRatio);
+}
+
+HVACComponent AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::coolingCoil() const {
+  auto value =
+    getObject<ModelObject>().getModelObjectTarget<HVACComponent>(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::setCoolingCoil(const HVACComponent& coil) {
+  const bool result = setPointer(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilName, coil.handle());
+  if (result) {
+    maintainContainedAirPath();
+  }
+  return result;
+}
+
+HVACComponent AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::supplementalHeatingCoil() const {
+  auto value = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+    openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilName);
+  OS_ASSERT(value);
+  return *value;
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::setSupplementalHeatingCoil(const HVACComponent& coil) {
+  const bool result = setPointer(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilName, coil.handle());
+  if (result) {
+    maintainContainedAirPath();
+  }
+  return result;
+}
+
+boost::optional<Node> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::fanOutletNode() const {
+  auto fanObject =
+    getObject<ModelObject>().getModelObjectTarget<HVACComponent>(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanName);
+  auto fan = fanObject ? fanObject->optionalCast<StraightComponent>() : boost::none;
+  if (!fan) {
+    return boost::none;
+  }
+
+  auto fanOutlet = fan->outletModelObject();
+  return fanOutlet ? fanOutlet->optionalCast<Node>() : boost::none;
+}
+
+boost::optional<Node> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::coolingCoilOutletNode() const {
+  auto coolingObject = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+    openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilName);
+  auto cooling = (coolingObject && isUnitaryHeatPumpMultiSpeedAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject)
+                                                                                                 : boost::none;
+  if (!cooling) {
+    return boost::none;
+  }
+
+  return unitaryHeatPumpMultiSpeedAirOutletNode(*cooling);
+}
+
+boost::optional<Node> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::heatingCoilOutletNode() const {
+  auto heatingObject = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(
+    openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilName);
+  auto heating = (heatingObject && isUnitaryHeatPumpMultiSpeedAirPathComponent(*heatingObject)) ? boost::optional<HVACComponent>(*heatingObject)
+                                                                                                 : boost::none;
+  if (!heating) {
+    return boost::none;
+  }
+
+  return unitaryHeatPumpMultiSpeedAirOutletNode(*heating);
 }
 
 boost::optional<double> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::maximumSupplyAirTemperaturefromSupplementalHeater() const {
@@ -648,6 +962,148 @@ bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::setSpeed4SupplyAirFlowRa
 
 void AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::autosizeSpeed4SupplyAirFlowRateDuringCoolingOperation() {
   OS_ASSERT(setString(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingSpeed4SupplyAirFlowRate, "autosize"));
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::maintainContainedAirPath() {
+  return reconcileContainedAirPath(false, nullptr);
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::repairContainedAirPath(LoadContext& context) {
+  return reconcileContainedAirPath(true, &context);
+}
+
+bool AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::reconcileContainedAirPath(bool allowChildNodeRecovery, LoadContext* context) {
+  auto thisObject = getObject<ModelObject>();
+  if (!thisObject.name()) {
+    thisObject.createName();
+  }
+
+  auto fanObject =
+    thisObject.getModelObjectTarget<HVACComponent>(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplyAirFanName);
+  auto heatingObject =
+    thisObject.getModelObjectTarget<HVACComponent>(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::HeatingCoilName);
+  auto coolingObject =
+    thisObject.getModelObjectTarget<HVACComponent>(openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::CoolingCoilName);
+  auto supplementalObject = thisObject.getModelObjectTarget<HVACComponent>(
+    openstudio::AirLoopHVAC_UnitaryHeatPump_AirToAir_MultiSpeedFields::SupplementalHeatingCoilName);
+
+  auto fan = fanObject ? fanObject->optionalCast<StraightComponent>() : boost::none;
+  auto heating = (heatingObject && isUnitaryHeatPumpMultiSpeedAirPathComponent(*heatingObject)) ? boost::optional<HVACComponent>(*heatingObject)
+                                                                                                 : boost::none;
+  auto cooling = (coolingObject && isUnitaryHeatPumpMultiSpeedAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject)
+                                                                                                 : boost::none;
+  auto supplemental = (supplementalObject && isUnitaryHeatPumpMultiSpeedAirPathComponent(*supplementalObject))
+                        ? boost::optional<HVACComponent>(*supplementalObject)
+                        : boost::none;
+
+  bool changed = false;
+  bool nodeWiringChanged = false;
+  auto trackNodeChange = [&](bool value) {
+    nodeWiringChanged = nodeWiringChanged || value;
+    changed = changed || value;
+    return value;
+  };
+
+  if (!fan && !heating && !cooling && !supplemental) {
+    return changed;
+  }
+
+  const auto baseName = thisObject.nameString();
+  auto inletNode = resolvedOrCreatedNodeTarget(inletPort(), baseName + " Air Inlet Node");
+  auto outletNode = resolvedOrCreatedNodeTarget(outletPort(), baseName + " Air Outlet Node");
+  trackNodeChange(setPointer(inletPort(), inletNode.handle(), false));
+  trackNodeChange(setPointer(outletPort(), outletNode.handle(), false));
+
+  const bool blowThrough = openstudio::istringEqual(supplyAirFanPlacement(), "BlowThrough");
+
+  std::vector<HVACComponent> orderedComponents;
+  if (blowThrough) {
+    if (fan) {
+      orderedComponents.push_back(*fan);
+    }
+    if (cooling) {
+      orderedComponents.push_back(*cooling);
+    }
+    if (heating) {
+      orderedComponents.push_back(*heating);
+    }
+  } else {
+    if (cooling) {
+      orderedComponents.push_back(*cooling);
+    }
+    if (heating) {
+      orderedComponents.push_back(*heating);
+    }
+    if (fan) {
+      orderedComponents.push_back(*fan);
+    }
+  }
+  if (supplemental) {
+    orderedComponents.push_back(*supplemental);
+  }
+
+  if (orderedComponents.empty()) {
+    return changed;
+  }
+
+  auto connectorName = [&](const HVACComponent& component) {
+    if (fan && (component.handle() == fan->handle())) {
+      return baseName + " Fan Outlet Node";
+    }
+    if (cooling && (component.handle() == cooling->handle())) {
+      return baseName + " Cooling Coil Outlet Node";
+    }
+    if (heating && (component.handle() == heating->handle())) {
+      return baseName + " Heating Coil Outlet Node";
+    }
+    return component.nameString() + " Outlet Node";
+  };
+
+  Node upstreamNode = inletNode;
+  for (std::size_t i = 0; i < orderedComponents.size(); ++i) {
+    auto component = orderedComponents[i];
+    const auto inletPort = unitaryHeatPumpMultiSpeedAirInletPort(component);
+    const auto outletPort = unitaryHeatPumpMultiSpeedAirOutletPort(component);
+    if ((inletPort == 0u) || (outletPort == 0u)) {
+      continue;
+    }
+
+    trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(inletPort, upstreamNode.handle(), false));
+
+    Node downstreamNode = outletNode;
+    if ((i + 1u) < orderedComponents.size()) {
+      auto downstream = orderedComponents[i + 1u];
+      boost::optional<Node> connectorNode;
+
+      if (allowChildNodeRecovery) {
+        if (auto currentOutlet = component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(outletPort)) {
+          const auto downstreamInletPort = unitaryHeatPumpMultiSpeedAirInletPort(downstream);
+          if (auto downstreamInlet = downstream.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(downstreamInletPort)) {
+            if ((*currentOutlet == *downstreamInlet) && (*currentOutlet != inletNode) && (*currentOutlet != outletNode)) {
+              connectorNode = currentOutlet;
+            }
+          }
+        }
+      }
+
+      if (!connectorNode) {
+        connectorNode = model().getOrCreateTransientByName<Node>(connectorName(component));
+      }
+
+      downstreamNode = *connectorNode;
+      const auto downstreamInletPort = unitaryHeatPumpMultiSpeedAirInletPort(downstream);
+      trackNodeChange(downstream.getImpl<detail::ModelObject_Impl>()->setPointer(downstreamInletPort, connectorNode->handle(), false));
+    }
+
+    trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(outletPort, downstreamNode.handle(), false));
+    upstreamNode = downstreamNode;
+  }
+
+  if (nodeWiringChanged && context) {
+    detail::addLoadInfo(*context, "Reconciled internal node wiring for AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed '" + baseName + "'.");
+  }
+
+  return changed;
 }
 
 std::vector<std::string> AirLoopHVACUnitaryHeatPumpAirToAirMultiSpeed_Impl::supplyAirFanPlacementValues() const {

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/AirLoopHVACUnitaryHeatOnly.hpp"
+#include "../scaffolds/AirLoopHVACUnitaryHeatOnly.hpp"
 
 using namespace openstudio::epmodel;
 

@@ -15,6 +15,9 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Schedule;
+  class Node;
+  class Curve;
 
   namespace detail {
     class EvaporativeCoolerDirectResearchSpecial_Impl;
@@ -34,13 +37,25 @@ namespace epmodel {
     static IddObjectType iddObjectType();
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical direct-research evaporative-cooler scalar surface is present, while schedule, node, and curve helpers remain out of scope.
+    // - Status: Parity with documented deltas. The canonical direct-research evaporative-cooler wrapper surface and placement behavior are present, with
+    //   only epmodel-wide autosized-value lookup still deferred.
     // - Canonical Counterpart: openstudio::model::EvaporativeCoolerDirectResearchSpecial.
-    // - Implemented Parity: The preserved scalar API covers the cooler effectiveness, pump power, flow, drift/blowdown, sizing, and operating-temperature fields with matching default/autosize behavior.
-    // - Documented Delta: Availability-schedule, node-link, sensor-node, and curve-name helpers remain intentionally excluded from this scalar pass.
-    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `EvaporativeCooler:Direct:ResearchSpecial` scalar fields used by the forward translator.
-    // - Evidence: `src/model/EvaporativeCoolerDirectResearchSpecial.hpp` and `src/energyplus/ForwardTranslator/ForwardTranslateEvaporativeCoolerDirectResearchSpecial.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
+    // - Implemented Parity: Availability schedule, sensor-node/curve relationships, scalar field accessors, and `addToNode(...)` now follow the
+    //   canonical direct-research evaporative-cooler behavior, including outlet-sensor propagation on supply-side and OA-system placement.
+    // - Documented Delta: The constructor seeds `blowdownConcentrationRatio()` to the EnergyPlus minimum of `2.0` because the persisted schema does not
+    //   accept the canonical model-side `0.0` placeholder; epmodel still exposes only the single-argument constructor and therefore defaults the required
+    //   availability schedule to `Model::alwaysOnDiscreteSchedule()` instead of accepting the canonical `(Model, Schedule&)` constructor; and
+    //   `autosizedRecirculatingWaterPumpPowerConsumption()` / `autosizedPrimaryAirDesignFlowRate()` still return none because epmodel does not yet resolve
+    //   autosized sizing results from SQL output.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `EvaporativeCooler:Direct:ResearchSpecial` fields and node/object-list targets.
+    // - Evidence: `src/model/EvaporativeCoolerDirectResearchSpecial.hpp`, `src/model/EvaporativeCoolerDirectResearchSpecial.cpp`, and
+    //   `src/energyplus/ForwardTranslator/ForwardTranslateEvaporativeCoolerDirectResearchSpecial.cpp`.
+    // - Remaining Parity Work: Wire these autosized accessors to epmodel sizing-result lookup once that shared infrastructure exists.
+    Schedule availabilitySchedule() const;
+    Schedule availableSchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+    bool setAvailableSchedule(Schedule& schedule);
+
     double coolerDesignEffectiveness() const;
     double coolerEffectiveness() const;
     bool setCoolerDesignEffectiveness(double value);
@@ -58,14 +73,25 @@ namespace epmodel {
     bool isPrimaryAirDesignFlowRateAutosized() const;
     boost::optional<double> autosizedPrimaryAirDesignFlowRate() const;
 
+    boost::optional<Node> sensorNode() const;
+    bool setSensorNode(const Node& node);
+
     double driftLossFraction() const;
     bool setDriftLossFraction(double value);
 
     double blowdownConcentrationRatio() const;
     bool setBlowdownConcentrationRatio(double value);
 
+    boost::optional<Curve> effectivenessFlowRatioModifierCurve() const;
+    bool setEffectivenessFlowRatioModifierCurve(const Curve& curve);
+    void resetEffectivenessFlowRatioModifierCurve();
+
     double waterPumpPowerSizingFactor() const;
     bool setWaterPumpPowerSizingFactor(double waterPumpPowerSizingFactor);
+
+    boost::optional<Curve> waterPumpPowerModifierCurve() const;
+    bool setWaterPumpPowerModifierCurve(const Curve& curve);
+    void resetWaterPumpPowerModifierCurve();
 
     double evaporativeOperationMinimumDrybulbTemperature() const;
     bool setEvaporativeOperationMinimumDrybulbTemperature(double evaporativeOperationMinimumDrybulbTemperature);

@@ -8,7 +8,7 @@
 #include <algorithm>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/FloorDetailed.hpp"
+#include "../scaffolds/FloorDetailed.hpp"
 
 using namespace openstudio::epmodel;
 

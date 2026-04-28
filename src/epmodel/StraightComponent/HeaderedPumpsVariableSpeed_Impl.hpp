@@ -24,6 +24,7 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
 
       boost::optional<double> totalRatedFlowRate() const;
       bool isTotalRatedFlowRateAutosized() const;

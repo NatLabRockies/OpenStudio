@@ -20,6 +20,10 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class WaterToWaterComponent;
+  class WaterHeaterMixed;
+  class WaterHeaterStratified;
+  class ThermalStorageChilledWaterStratified;
 
   namespace detail {
     class WaterHeaterSizing_Impl;
@@ -43,11 +47,13 @@ namespace epmodel {
     // Schema Alignment Notes:
     // - API: Preserve the openstudio::model scalar accessor names/signatures for this model-counterpart class.
     // - Field Mapping: All declared scalars map directly to the EnergyPlus WaterHeater:Sizing fields referenced in ForwardTranslateWaterHeaterSizing.cpp.
-    // - Field Mapping: Water Heater Name is a relationship-like object-list field and remains intentionally excluded from this scalar-only scaffold.
-    // - TODO(parity): Add the non-scalar Water Heater linkage API once the translator/relationships are wired into epmodel.
+    // - Field Mapping: Water Heater Name preserves the canonical owning WaterToWaterComponent relationship via the same object-list field.
+    // - Evidence: `src/model/WaterHeaterSizing.hpp`, `src/model/WaterHeaterSizing.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateWaterHeaterSizing.cpp`.
 
     /** @name Field accessors */
     //@{
+    WaterToWaterComponent waterHeater() const;
+
     boost::optional<std::string> designMode() const;
     bool setDesignMode(const std::string& designMode);
     void resetDesignMode();
@@ -112,10 +118,15 @@ namespace epmodel {
    protected:
     using ImplType = detail::WaterHeaterSizing_Impl;
 
+    friend class WaterHeaterMixed;
+    friend class WaterHeaterStratified;
+    friend class ThermalStorageChilledWaterStratified;
     friend class Model;
     friend class openstudio::IdfObject;
     friend class openstudio::detail::IdfObject_Impl;
 
+    explicit WaterHeaterSizing(const WaterToWaterComponent& waterHeater);
+    bool setWaterHeater(const WaterToWaterComponent& waterHeater);
     explicit WaterHeaterSizing(std::shared_ptr<detail::WaterHeaterSizing_Impl> impl);
   };
 

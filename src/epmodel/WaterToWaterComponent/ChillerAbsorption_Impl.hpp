@@ -13,6 +13,9 @@
 namespace openstudio {
 namespace epmodel {
 
+  class PlantLoop;
+  class Node;
+
   namespace detail {
 
     class EPMODEL_API ChillerAbsorption_Impl : public WaterToWaterComponent_Impl
@@ -27,16 +30,25 @@ namespace epmodel {
       unsigned demandOutletPort() const override;
       unsigned tertiaryInletPort() const override;
       unsigned tertiaryOutletPort() const override;
+      bool addToNode(Node& node) override;
+      bool addToTertiaryNode(Node& node) override;
+      bool removeFromTertiaryPlantLoop() override;
+
+      boost::optional<PlantLoop> chilledWaterLoop() const;
+      boost::optional<PlantLoop> condenserWaterLoop() const;
+      boost::optional<PlantLoop> generatorLoop() const;
 
       boost::optional<double> nominalCapacity() const;
       bool isNominalCapacityAutosized() const;
       bool setNominalCapacity(double nominalCapacity);
       void autosizeNominalCapacity();
+      boost::optional<double> autosizedNominalCapacity() const;
 
       boost::optional<double> nominalPumpingPower() const;
       bool isNominalPumpingPowerAutosized() const;
       bool setNominalPumpingPower(double nominalPumpingPower);
       void autosizeNominalPumpingPower();
+      boost::optional<double> autosizedNominalPumpingPower() const;
 
       double minimumPartLoadRatio() const;
       bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
@@ -54,11 +66,13 @@ namespace epmodel {
       bool isDesignChilledWaterFlowRateAutosized() const;
       bool setDesignChilledWaterFlowRate(double designChilledWaterFlowRate);
       void autosizeDesignChilledWaterFlowRate();
+      boost::optional<double> autosizedDesignChilledWaterFlowRate() const;
 
       boost::optional<double> designCondenserWaterFlowRate() const;
       bool isDesignCondenserWaterFlowRateAutosized() const;
       bool setDesignCondenserWaterFlowRate(double designCondenserWaterFlowRate);
       void autosizeDesignCondenserWaterFlowRate();
+      boost::optional<double> autosizedDesignCondenserWaterFlowRate() const;
 
       double coefficient1oftheHotWaterorSteamUsePartLoadRatioCurve() const;
       bool setCoefficient1oftheHotWaterorSteamUsePartLoadRatioCurve(double coefficient1oftheHotWaterorSteamUsePartLoadRatioCurve);
@@ -93,6 +107,7 @@ namespace epmodel {
       bool isDesignGeneratorFluidFlowRateAutosized() const;
       bool setDesignGeneratorFluidFlowRate(double designGeneratorFluidFlowRate);
       void autosizeDesignGeneratorFluidFlowRate();
+      boost::optional<double> autosizedDesignGeneratorFluidFlowRate() const;
 
       double degreeofSubcoolinginSteamGenerator() const;
       bool setDegreeofSubcoolinginSteamGenerator(double degreeofSubcoolinginSteamGenerator);

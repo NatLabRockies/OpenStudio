@@ -10,6 +10,9 @@
 
 namespace openstudio {
 namespace epmodel {
+  class Schedule;
+  class CurveBiquadratic;
+  class ModelObject;
   namespace detail {
 
     class EPMODEL_API CoilWaterHeatingDesuperheater_Impl : public StraightComponent_Impl
@@ -20,6 +23,20 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      std::vector<ModelObject> children() const override;
+
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+
+      boost::optional<CurveBiquadratic> heatReclaimEfficiencyFunctionofTemperatureCurve() const;
+      bool setHeatReclaimEfficiencyFunctionofTemperatureCurve(const CurveBiquadratic& curveBiquadratic);
+      void resetHeatReclaimEfficiencyFunctionofTemperatureCurve();
+
+      boost::optional<ModelObject> heatingSource() const;
+      bool setHeatingSource(const ModelObject& heatingSource);
+      void resetHeatingSource();
+
+      bool addToNode(Node& node) override;
 
       double deadBandTemperatureDifference() const;
       bool isDeadBandTemperatureDifferenceDefaulted() const;

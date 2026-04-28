@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/GeneratorCombustionTurbine.hpp"
+#include "../scaffolds/GeneratorCombustionTurbine.hpp"
 
 using namespace openstudio::epmodel;
 

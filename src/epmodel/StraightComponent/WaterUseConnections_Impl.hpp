@@ -15,6 +15,9 @@
 namespace openstudio {
 namespace epmodel {
 
+  class Schedule;
+  class WaterUseEquipment;
+
   namespace detail {
 
     class EPMODEL_API WaterUseConnections_Impl : public StraightComponent_Impl
@@ -26,6 +29,18 @@ namespace epmodel {
       std::vector<std::string> drainWaterHeatExchangerTypeValues() const;
       std::vector<std::string> drainWaterHeatExchangerDestinationValues() const;
 
+      boost::optional<Schedule> hotWaterSupplyTemperatureSchedule() const;
+      bool setHotWaterSupplyTemperatureSchedule(Schedule& hotWaterSupplyTemperatureSchedule);
+      void resetHotWaterSupplyTemperatureSchedule();
+
+      boost::optional<Schedule> coldWaterSupplyTemperatureSchedule() const;
+      bool setColdWaterSupplyTemperatureSchedule(Schedule& coldWaterSupplyTemperatureSchedule);
+      void resetColdWaterSupplyTemperatureSchedule();
+
+      std::vector<WaterUseEquipment> waterUseEquipment() const;
+      bool addWaterUseEquipment(const WaterUseEquipment& waterUseEquipment);
+      bool removeWaterUseEquipment(WaterUseEquipment& waterUseEquipment);
+
       std::string drainWaterHeatExchangerType() const;
       bool setDrainWaterHeatExchangerType(const std::string& drainWaterHeatExchangerType);
 
@@ -36,6 +51,7 @@ namespace epmodel {
       bool setDrainWaterHeatExchangerUFactorTimesArea(double drainWaterHeatExchangerUFactorTimesArea);
       void resetDrainWaterHeatExchangerUFactorTimesArea();
 
+      bool addToNode(Node& node) override;
       unsigned inletPort() const override;
       unsigned outletPort() const override;
     };

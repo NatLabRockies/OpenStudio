@@ -6,7 +6,19 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
+#include "../Curve/CurveBiquadratic.hpp"
+#include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../ParentObject/RefrigerationCondenserAirCooled.hpp"
+#include "../Schedule/Schedule.hpp"
+#include "../Schedule/Schedule_Impl.hpp"
+#include "../Schedule/ScheduleConstant.hpp"
+#include "../Schedule/ScheduleConstant_Impl.hpp"
+#include "../Splitter/AirLoopHVACZoneSplitter.hpp"
+#include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/CoilWaterHeatingDesuperheater.hpp"
+
+#include <utilities/idd/Coil_WaterHeating_Desuperheater_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;
 
@@ -15,10 +27,13 @@ TEST_F(EPModelFixture, CoilWaterHeatingDesuperheater_DefaultConstructor) {
   CoilWaterHeatingDesuperheater coil(model);
   EXPECT_EQ(CoilWaterHeatingDesuperheater::iddObjectType(), coil.iddObject().type());
   EXPECT_FALSE(coil.nameString().empty());
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule().handle(), coil.availabilitySchedule().handle());
 
   EXPECT_DOUBLE_EQ(5.0, coil.deadBandTemperatureDifference());
   EXPECT_FALSE(coil.isDeadBandTemperatureDifferenceDefaulted());
   EXPECT_FALSE(coil.ratedHeatReclaimRecoveryEfficiency());
+  EXPECT_FALSE(coil.heatReclaimEfficiencyFunctionofTemperatureCurve());
+  EXPECT_FALSE(coil.heatingSource());
 
   EXPECT_DOUBLE_EQ(50.0, coil.ratedInletWaterTemperature());
   EXPECT_DOUBLE_EQ(35.0, coil.ratedOutdoorAirTemperature());
@@ -36,9 +51,52 @@ TEST_F(EPModelFixture, CoilWaterHeatingDesuperheater_DefaultConstructor) {
   EXPECT_FALSE(coil.isOffCycleParasiticElectricLoadDefaulted());
 }
 
+TEST_F(EPModelFixture, CoilWaterHeatingDesuperheater_AvailabilityScheduleGetterRepairsMissingRequiredReference) {
+  Model model;
+  CoilWaterHeatingDesuperheater coil(model);
+
+  ASSERT_TRUE(coil.setPointer(openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName, openstudio::Handle()));
+  EXPECT_FALSE(coil.getModelObjectTarget<Schedule>(openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName));
+
+  const auto repairedAvailability = coil.availabilitySchedule().optionalCast<ScheduleConstant>();
+  ASSERT_TRUE(repairedAvailability);
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule().handle(), repairedAvailability->handle());
+  EXPECT_DOUBLE_EQ(1.0, repairedAvailability->value());
+  ASSERT_TRUE(coil.getModelObjectTarget<Schedule>(openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName));
+  EXPECT_EQ(model.alwaysOnDiscreteSchedule().handle(),
+            coil.getModelObjectTarget<Schedule>(openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName)->handle());
+}
+
 TEST_F(EPModelFixture, CoilWaterHeatingDesuperheater_ScalarAccessors_RoundTrip) {
   Model model;
   CoilWaterHeatingDesuperheater coil(model);
+  ScheduleConstant availability(model);
+  ASSERT_TRUE(availability.setValue(0.5));
+  CurveBiquadratic curve(model);
+  ASSERT_TRUE(curve.setCoefficient1Constant(0.8));
+  ASSERT_TRUE(curve.setCoefficient2x(0.1));
+  ASSERT_TRUE(curve.setCoefficient3xPOW2(0.0));
+  ASSERT_TRUE(curve.setCoefficient4y(0.1));
+  ASSERT_TRUE(curve.setCoefficient5yPOW2(0.0));
+  ASSERT_TRUE(curve.setCoefficient6xTIMESY(0.0));
+  RefrigerationCondenserAirCooled condenser(model);
+
+  EXPECT_TRUE(coil.setAvailabilitySchedule(availability));
+  EXPECT_EQ(availability.handle(), coil.availabilitySchedule().handle());
+  ASSERT_TRUE(coil.getTarget(openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName));
+  EXPECT_EQ(availability.handle(), coil.getTarget(openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName)->handle());
+
+  EXPECT_TRUE(coil.setHeatReclaimEfficiencyFunctionofTemperatureCurve(curve));
+  ASSERT_TRUE(coil.heatReclaimEfficiencyFunctionofTemperatureCurve());
+  EXPECT_EQ(curve.handle(), coil.heatReclaimEfficiencyFunctionofTemperatureCurve()->handle());
+
+  EXPECT_TRUE(coil.setHeatingSource(condenser));
+  ASSERT_TRUE(coil.heatingSource());
+  EXPECT_EQ(condenser.handle(), coil.heatingSource()->handle());
+
+  const auto children = coil.children();
+  ASSERT_EQ(1u, children.size());
+  EXPECT_EQ(curve.handle(), children[0].handle());
 
   EXPECT_TRUE(coil.setDeadBandTemperatureDifference(3.3));
   EXPECT_DOUBLE_EQ(3.3, coil.deadBandTemperatureDifference());
@@ -84,4 +142,37 @@ TEST_F(EPModelFixture, CoilWaterHeatingDesuperheater_ScalarAccessors_RoundTrip) 
   EXPECT_FALSE(coil.isOffCycleParasiticElectricLoadDefaulted());
   coil.resetOffCycleParasiticElectricLoad();
   EXPECT_TRUE(coil.isOffCycleParasiticElectricLoadDefaulted());
+
+  coil.resetHeatReclaimEfficiencyFunctionofTemperatureCurve();
+  EXPECT_FALSE(coil.heatReclaimEfficiencyFunctionofTemperatureCurve());
+  EXPECT_TRUE(coil.children().empty());
+
+  coil.resetHeatingSource();
+  EXPECT_FALSE(coil.heatingSource());
+}
+
+TEST_F(EPModelFixture, CoilWaterHeatingDesuperheater_AddToNode_RejectedAcrossLoopTypes) {
+  Model model;
+  CoilWaterHeatingDesuperheater coil(model);
+
+  AirLoopHVAC airLoop(model);
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  EXPECT_FALSE(coil.addToNode(supplyOutletNode));
+  EXPECT_EQ((unsigned)2, airLoop.supplyComponents().size());
+
+  auto splitterBranch = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(splitterBranch);
+  auto splitterBranchNode = splitterBranch->optionalCast<Node>();
+  ASSERT_TRUE(splitterBranchNode);
+  EXPECT_FALSE(coil.addToNode(*splitterBranchNode));
+  EXPECT_EQ((unsigned)5, airLoop.demandComponents().size());
+
+  PlantLoop plantLoop(model);
+  auto plantSupplyNode = plantLoop.supplyOutletNode();
+  EXPECT_FALSE(coil.addToNode(plantSupplyNode));
+  EXPECT_EQ((unsigned)5, plantLoop.supplyComponents().size());
+
+  auto plantDemandNode = plantLoop.demandOutletNode();
+  EXPECT_FALSE(coil.addToNode(plantDemandNode));
+  EXPECT_EQ((unsigned)5, plantLoop.demandComponents().size());
 }

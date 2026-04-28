@@ -7,7 +7,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ZoneAirBalanceOutdoorAir.hpp"
+#include "../scaffolds/ZoneAirBalanceOutdoorAir.hpp"
 
 using namespace openstudio::epmodel;
 

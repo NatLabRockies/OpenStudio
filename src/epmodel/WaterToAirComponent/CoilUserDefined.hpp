@@ -43,7 +43,8 @@ class EPMODEL_API CoilUserDefined : public WaterToAirComponent
   //   storage layout instead of the OpenStudio-only direct pointer fields.
   // - Canonical Counterpart: openstudio::model::CoilUserDefined.
   // - Implemented Parity: the required program calling managers, derived overall/initialization programs, actuator helpers, ambient-zone relationship,
-  //   `children`, and `renameEMSSubComponents` now match the canonical public contract.
+  //   topology-derived `numberofAirConnections`, shared component/fuel-type helpers, `children`, seeded-child cleanup on `remove`,
+  //   and `renameEMSSubComponents` match the canonical bounded wrapper contract.
   // - Field/Storage Mapping: the two program-calling-manager relationships map directly to the EnergyPlus `Coil:UserDefined` fields, while
   //   `overallSimulationProgram` and `initializationSimulationProgram` are derived from the first program row on those managers because EnergyPlus
   //   stores the program relationship there instead of on the coil object itself.

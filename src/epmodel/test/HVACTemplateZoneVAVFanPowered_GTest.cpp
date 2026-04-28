@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/HVACTemplateZoneVAVFanPowered.hpp"
+#include "../scaffolds/HVACTemplateZoneVAVFanPowered.hpp"
 
 using namespace openstudio::epmodel;
 

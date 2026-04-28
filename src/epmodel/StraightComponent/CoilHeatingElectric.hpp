@@ -16,6 +16,7 @@ namespace epmodel {
 
   class Model;
   class Node;
+  class Schedule;
 
   namespace detail {
     class CoilHeatingElectric_Impl;
@@ -37,13 +38,22 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - Status: Scalar Parity. The canonical electric-coil scalar surface is largely present, while schedule and node-link helpers remain out of scope.
+    // - Status: Partial Parity. The canonical electric-coil scalar surface plus the required availability-schedule and optional temperature-setpoint-node
+    //   relationships are present, while broader AFN helpers remain out of scope.
     // - Canonical Counterpart: openstudio::model::CoilHeatingElectric.
-    // - Implemented Parity: `efficiency` and `nominalCapacity` preserve the canonical scalar API and autosize behavior.
-    // - Documented Delta: Availability schedule, temperature-setpoint node, and other relationship helpers from canonical `openstudio::model::CoilHeatingElectric` are not exposed yet.
-    // - Field/Storage Mapping: Preserved scalars map directly to EnergyPlus `Coil:Heating:Electric` fields.
+    // - Implemented Parity: `efficiency` and `nominalCapacity` preserve the canonical scalar API and autosize behavior; `availabilitySchedule` and
+    //   `temperatureSetpointNode` preserve the bounded relationship slice; `addToNode` preserves the current epmodel supply-side and OA-system insertion
+    //   paths.
+    // - Documented Delta: AFN helpers from canonical `openstudio::model::CoilHeatingElectric` are not exposed yet.
+    // - Field/Storage Mapping: Preserved scalars and relationships map directly to EnergyPlus `Coil:Heating:Electric` fields.
     // - Evidence: `src/model/CoilHeatingElectric.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateCoilHeatingElectric.cpp`, and `src/epmodel/test/CoilHeatingElectric_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted schedule and node-link helpers without changing the preserved scalar signatures.
+    // - Remaining Parity Work: Add AFN helpers without changing the preserved scalar signatures.
+    Schedule availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+
+    boost::optional<Node> temperatureSetpointNode() const;
+    bool setTemperatureSetpointNode(Node& temperatureSetpointNode);
+    void resetTemperatureSetpointNode();
 
     /** Efficiency */
     double efficiency() const;

@@ -22,6 +22,7 @@ class EPMODEL_API CoolingTowerSingleSpeed_Impl : public StraightComponent_Impl
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+  bool addToNode(Node& node) override;
 
   std::vector<std::string> performanceInputMethodValues() const;
   std::vector<std::string> evaporationLossModeValues() const;
@@ -87,6 +88,9 @@ class EPMODEL_API CoolingTowerSingleSpeed_Impl : public StraightComponent_Impl
   bool isBasinHeaterSetpointTemperatureDefaulted() const;
   bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
   void resetBasinHeaterSetpointTemperature();
+  boost::optional<Schedule> basinHeaterOperatingSchedule() const;
+  bool setBasinHeaterOperatingSchedule(Schedule& basinHeaterOperatingSchedule);
+  void resetBasinHeaterOperatingSchedule();
 
   std::string evaporationLossMode() const;
   bool isEvaporationLossModeDefaulted() const;
@@ -112,6 +116,9 @@ class EPMODEL_API CoolingTowerSingleSpeed_Impl : public StraightComponent_Impl
   bool isBlowdownConcentrationRatioDefaulted() const;
   bool setBlowdownConcentrationRatio(double blowdownConcentrationRatio);
   void resetBlowdownConcentrationRatio();
+  boost::optional<Schedule> blowdownMakeupWaterUsageSchedule() const;
+  bool setBlowdownMakeupWaterUsageSchedule(Schedule& blowdownMakeupWaterUsageSchedule);
+  void resetBlowdownMakeupWaterUsageSchedule();
 
   std::string capacityControl() const;
   bool isCapacityControlDefaulted() const;

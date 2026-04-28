@@ -6,7 +6,13 @@
 #include "StraightComponent/CoolingTowerVariableSpeed.hpp"
 #include "StraightComponent/CoolingTowerVariableSpeed_Impl.hpp"
 
+#include "Curve/CurveCubic.hpp"
+#include "Curve/CurveCubic_Impl.hpp"
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
@@ -17,7 +23,39 @@
 namespace openstudio {
 namespace epmodel {
 
-CoolingTowerVariableSpeed::CoolingTowerVariableSpeed(const Model& model) : StraightComponent(CoolingTowerVariableSpeed::iddObjectType(), model) {}
+CoolingTowerVariableSpeed::CoolingTowerVariableSpeed(const Model& model)
+  : StraightComponent(CoolingTowerVariableSpeed::iddObjectType(), model) {
+  OS_ASSERT(getImpl<detail::CoolingTowerVariableSpeed_Impl>());
+
+  OS_ASSERT(setModelType("CoolToolsCrossFlow"));
+  OS_ASSERT(setDesignInletAirWetBulbTemperature(25.5556));
+  OS_ASSERT(setDesignApproachTemperature(3.8889));
+  OS_ASSERT(setDesignRangeTemperature(5.5556));
+  autosizeDesignWaterFlowRate();
+  autosizeDesignAirFlowRate();
+  autosizeDesignFanPower();
+  OS_ASSERT(setMinimumAirFlowRateRatio(0.2));
+  OS_ASSERT(setFractionofTowerCapacityinFreeConvectionRegime(0.125));
+  OS_ASSERT(setBasinHeaterCapacity(0.0));
+  OS_ASSERT(setBasinHeaterSetpointTemperature(2.0));
+  OS_ASSERT(setEvaporationLossMode("SaturatedExit"));
+  OS_ASSERT(setEvaporationLossFactor(0.2));
+  OS_ASSERT(setDriftLossPercent(0.008));
+  OS_ASSERT(setBlowdownCalculationMode("ConcentrationRatio"));
+  OS_ASSERT(setBlowdownConcentrationRatio(3.0));
+  OS_ASSERT(setSizingFactor(1.0));
+  OS_ASSERT(setEndUseSubcategory("General"));
+
+  CurveCubic curve(model);
+  OS_ASSERT(curve.setName(nameString() + " Fan Power Ratio Curve"));
+  OS_ASSERT(curve.setCoefficient1Constant(-0.0093));
+  OS_ASSERT(curve.setCoefficient2x(0.0512));
+  OS_ASSERT(curve.setCoefficient3xPOW2(-0.0838));
+  OS_ASSERT(curve.setCoefficient4xPOW3(1.0419));
+  OS_ASSERT(curve.setMinimumValueofx(0.15));
+  OS_ASSERT(curve.setMaximumValueofx(1.0));
+  OS_ASSERT(setFanPowerRatioFunctionofAirFlowRateRatioCurve(curve));
+}
 
 CoolingTowerVariableSpeed::CoolingTowerVariableSpeed(std::shared_ptr<detail::CoolingTowerVariableSpeed_Impl> impl) : StraightComponent(std::move(impl)) {}
 
@@ -52,6 +90,18 @@ bool CoolingTowerVariableSpeed::setModelType(const std::string& modelType) {
 
 void CoolingTowerVariableSpeed::resetModelType() {
   getImpl<detail::CoolingTowerVariableSpeed_Impl>()->resetModelType();
+}
+
+boost::optional<ModelObject> CoolingTowerVariableSpeed::modelCoefficient() const {
+  return getImpl<detail::CoolingTowerVariableSpeed_Impl>()->modelCoefficient();
+}
+
+bool CoolingTowerVariableSpeed::setModelCoefficient(const ModelObject& modelCoefficient) {
+  return getImpl<detail::CoolingTowerVariableSpeed_Impl>()->setModelCoefficient(modelCoefficient);
+}
+
+void CoolingTowerVariableSpeed::resetModelCoefficient() {
+  getImpl<detail::CoolingTowerVariableSpeed_Impl>()->resetModelCoefficient();
 }
 
 boost::optional<double> CoolingTowerVariableSpeed::designInletAirWetBulbTemperature() const {
@@ -138,6 +188,18 @@ void CoolingTowerVariableSpeed::autosizeDesignFanPower() {
   getImpl<detail::CoolingTowerVariableSpeed_Impl>()->autosizeDesignFanPower();
 }
 
+boost::optional<CurveCubic> CoolingTowerVariableSpeed::fanPowerRatioFunctionofAirFlowRateRatioCurve() const {
+  return getImpl<detail::CoolingTowerVariableSpeed_Impl>()->fanPowerRatioFunctionofAirFlowRateRatioCurve();
+}
+
+bool CoolingTowerVariableSpeed::setFanPowerRatioFunctionofAirFlowRateRatioCurve(const CurveCubic& curve) {
+  return getImpl<detail::CoolingTowerVariableSpeed_Impl>()->setFanPowerRatioFunctionofAirFlowRateRatioCurve(curve);
+}
+
+void CoolingTowerVariableSpeed::resetFanPowerRatioFunctionofAirFlowRateRatioCurve() {
+  getImpl<detail::CoolingTowerVariableSpeed_Impl>()->resetFanPowerRatioFunctionofAirFlowRateRatioCurve();
+}
+
 boost::optional<double> CoolingTowerVariableSpeed::minimumAirFlowRateRatio() const {
   return getImpl<detail::CoolingTowerVariableSpeed_Impl>()->minimumAirFlowRateRatio();
 }
@@ -185,6 +247,18 @@ bool CoolingTowerVariableSpeed::setBasinHeaterSetpointTemperature(double basinHe
 
 void CoolingTowerVariableSpeed::resetBasinHeaterSetpointTemperature() {
   getImpl<detail::CoolingTowerVariableSpeed_Impl>()->resetBasinHeaterSetpointTemperature();
+}
+
+boost::optional<Schedule> CoolingTowerVariableSpeed::basinHeaterOperatingSchedule() const {
+  return getImpl<detail::CoolingTowerVariableSpeed_Impl>()->basinHeaterOperatingSchedule();
+}
+
+bool CoolingTowerVariableSpeed::setBasinHeaterOperatingSchedule(Schedule& basinHeaterOperatingSchedule) {
+  return getImpl<detail::CoolingTowerVariableSpeed_Impl>()->setBasinHeaterOperatingSchedule(basinHeaterOperatingSchedule);
+}
+
+void CoolingTowerVariableSpeed::resetBasinHeaterOperatingSchedule() {
+  getImpl<detail::CoolingTowerVariableSpeed_Impl>()->resetBasinHeaterOperatingSchedule();
 }
 
 std::string CoolingTowerVariableSpeed::evaporationLossMode() const {
@@ -259,6 +333,18 @@ void CoolingTowerVariableSpeed::resetBlowdownConcentrationRatio() {
   getImpl<detail::CoolingTowerVariableSpeed_Impl>()->resetBlowdownConcentrationRatio();
 }
 
+boost::optional<Schedule> CoolingTowerVariableSpeed::blowdownMakeupWaterUsageSchedule() const {
+  return getImpl<detail::CoolingTowerVariableSpeed_Impl>()->blowdownMakeupWaterUsageSchedule();
+}
+
+bool CoolingTowerVariableSpeed::setBlowdownMakeupWaterUsageSchedule(Schedule& blowdownMakeupWaterUsageSchedule) {
+  return getImpl<detail::CoolingTowerVariableSpeed_Impl>()->setBlowdownMakeupWaterUsageSchedule(blowdownMakeupWaterUsageSchedule);
+}
+
+void CoolingTowerVariableSpeed::resetBlowdownMakeupWaterUsageSchedule() {
+  getImpl<detail::CoolingTowerVariableSpeed_Impl>()->resetBlowdownMakeupWaterUsageSchedule();
+}
+
 boost::optional<int> CoolingTowerVariableSpeed::numberofCells() const {
   return getImpl<detail::CoolingTowerVariableSpeed_Impl>()->numberofCells();
 }
@@ -323,6 +409,18 @@ void CoolingTowerVariableSpeed::resetSizingFactor() {
   getImpl<detail::CoolingTowerVariableSpeed_Impl>()->resetSizingFactor();
 }
 
+boost::optional<double> CoolingTowerVariableSpeed::autosizedDesignWaterFlowRate() const {
+  return getImpl<detail::CoolingTowerVariableSpeed_Impl>()->autosizedDesignWaterFlowRate();
+}
+
+boost::optional<double> CoolingTowerVariableSpeed::autosizedDesignAirFlowRate() const {
+  return getImpl<detail::CoolingTowerVariableSpeed_Impl>()->autosizedDesignAirFlowRate();
+}
+
+boost::optional<double> CoolingTowerVariableSpeed::autosizedDesignFanPower() const {
+  return getImpl<detail::CoolingTowerVariableSpeed_Impl>()->autosizedDesignFanPower();
+}
+
 std::string CoolingTowerVariableSpeed::endUseSubcategory() const {
   return getImpl<detail::CoolingTowerVariableSpeed_Impl>()->endUseSubcategory();
 }
@@ -344,6 +442,16 @@ unsigned CoolingTowerVariableSpeed_Impl::inletPort() const {
 
 unsigned CoolingTowerVariableSpeed_Impl::outletPort() const {
   return openstudio::CoolingTower_VariableSpeedFields::WaterOutletNodeName;
+}
+
+bool CoolingTowerVariableSpeed_Impl::addToNode(Node& node) {
+  if (auto plantLoop = node.plantLoop()) {
+    if (plantLoop->supplyComponent(node.handle())) {
+      return StraightComponent_Impl::addToNode(node);
+    }
+  }
+
+  return false;
 }
 
 std::vector<std::string> CoolingTowerVariableSpeed_Impl::modelTypeValues() const {
@@ -372,6 +480,18 @@ bool CoolingTowerVariableSpeed_Impl::setModelType(const std::string& modelType) 
 
 void CoolingTowerVariableSpeed_Impl::resetModelType() {
   OS_ASSERT(setString(openstudio::CoolingTower_VariableSpeedFields::ModelType, ""));
+}
+
+boost::optional<ModelObject> CoolingTowerVariableSpeed_Impl::modelCoefficient() const {
+  return getObject<ModelObject>().getModelObjectTarget<ModelObject>(openstudio::CoolingTower_VariableSpeedFields::ModelCoefficientName);
+}
+
+bool CoolingTowerVariableSpeed_Impl::setModelCoefficient(const ModelObject& modelCoefficient) {
+  return setPointer(openstudio::CoolingTower_VariableSpeedFields::ModelCoefficientName, modelCoefficient.handle());
+}
+
+void CoolingTowerVariableSpeed_Impl::resetModelCoefficient() {
+  OS_ASSERT(setPointer(openstudio::CoolingTower_VariableSpeedFields::ModelCoefficientName, openstudio::Handle(), false));
 }
 
 boost::optional<double> CoolingTowerVariableSpeed_Impl::designInletAirWetBulbTemperature() const {
@@ -467,6 +587,19 @@ void CoolingTowerVariableSpeed_Impl::autosizeDesignFanPower() {
   OS_ASSERT(setString(openstudio::CoolingTower_VariableSpeedFields::DesignFanPower, "autosize"));
 }
 
+boost::optional<CurveCubic> CoolingTowerVariableSpeed_Impl::fanPowerRatioFunctionofAirFlowRateRatioCurve() const {
+  return getObject<ModelObject>().getModelObjectTarget<CurveCubic>(
+    openstudio::CoolingTower_VariableSpeedFields::FanPowerRatioFunctionofAirFlowRateRatioCurveName);
+}
+
+bool CoolingTowerVariableSpeed_Impl::setFanPowerRatioFunctionofAirFlowRateRatioCurve(const CurveCubic& curve) {
+  return setPointer(openstudio::CoolingTower_VariableSpeedFields::FanPowerRatioFunctionofAirFlowRateRatioCurveName, curve.handle());
+}
+
+void CoolingTowerVariableSpeed_Impl::resetFanPowerRatioFunctionofAirFlowRateRatioCurve() {
+  OS_ASSERT(setPointer(openstudio::CoolingTower_VariableSpeedFields::FanPowerRatioFunctionofAirFlowRateRatioCurveName, openstudio::Handle(), false));
+}
+
 boost::optional<double> CoolingTowerVariableSpeed_Impl::minimumAirFlowRateRatio() const {
   return getDouble(openstudio::CoolingTower_VariableSpeedFields::MinimumAirFlowRateRatio, true);
 }
@@ -514,6 +647,19 @@ bool CoolingTowerVariableSpeed_Impl::setBasinHeaterSetpointTemperature(double ba
 
 void CoolingTowerVariableSpeed_Impl::resetBasinHeaterSetpointTemperature() {
   OS_ASSERT(setString(openstudio::CoolingTower_VariableSpeedFields::BasinHeaterSetpointTemperature, ""));
+}
+
+boost::optional<Schedule> CoolingTowerVariableSpeed_Impl::basinHeaterOperatingSchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::CoolingTower_VariableSpeedFields::BasinHeaterOperatingScheduleName);
+}
+
+bool CoolingTowerVariableSpeed_Impl::setBasinHeaterOperatingSchedule(Schedule& basinHeaterOperatingSchedule) {
+  return setSchedule(openstudio::CoolingTower_VariableSpeedFields::BasinHeaterOperatingScheduleName, "CoolingTowerVariableSpeed",
+                     "Basin Heater Operating Schedule", basinHeaterOperatingSchedule);
+}
+
+void CoolingTowerVariableSpeed_Impl::resetBasinHeaterOperatingSchedule() {
+  OS_ASSERT(setPointer(openstudio::CoolingTower_VariableSpeedFields::BasinHeaterOperatingScheduleName, openstudio::Handle(), false));
 }
 
 std::string CoolingTowerVariableSpeed_Impl::evaporationLossMode() const {
@@ -594,8 +740,22 @@ void CoolingTowerVariableSpeed_Impl::resetBlowdownConcentrationRatio() {
   OS_ASSERT(setString(openstudio::CoolingTower_VariableSpeedFields::BlowdownConcentrationRatio, ""));
 }
 
+boost::optional<Schedule> CoolingTowerVariableSpeed_Impl::blowdownMakeupWaterUsageSchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+    openstudio::CoolingTower_VariableSpeedFields::BlowdownMakeupWaterUsageScheduleName);
+}
+
+bool CoolingTowerVariableSpeed_Impl::setBlowdownMakeupWaterUsageSchedule(Schedule& blowdownMakeupWaterUsageSchedule) {
+  return setSchedule(openstudio::CoolingTower_VariableSpeedFields::BlowdownMakeupWaterUsageScheduleName, "CoolingTowerVariableSpeed",
+                     "Blowdown Makeup Water Usage Schedule", blowdownMakeupWaterUsageSchedule);
+}
+
+void CoolingTowerVariableSpeed_Impl::resetBlowdownMakeupWaterUsageSchedule() {
+  OS_ASSERT(setPointer(openstudio::CoolingTower_VariableSpeedFields::BlowdownMakeupWaterUsageScheduleName, openstudio::Handle(), false));
+}
+
 boost::optional<int> CoolingTowerVariableSpeed_Impl::numberofCells() const {
-  return getInt(openstudio::CoolingTower_VariableSpeedFields::NumberofCells, true);
+  return getInt(openstudio::CoolingTower_VariableSpeedFields::NumberofCells, false);
 }
 
 bool CoolingTowerVariableSpeed_Impl::setNumberofCells(int numberofCells) {
@@ -607,9 +767,12 @@ void CoolingTowerVariableSpeed_Impl::resetNumberofCells() {
 }
 
 std::string CoolingTowerVariableSpeed_Impl::cellControl() const {
-  const auto value = getString(openstudio::CoolingTower_VariableSpeedFields::CellControl, true);
-  OS_ASSERT(value);
-  return *value;
+  if (const auto value = getString(openstudio::CoolingTower_VariableSpeedFields::CellControl, false)) {
+    if (!value->empty()) {
+      return *value;
+    }
+  }
+  return "MinimalCell";
 }
 
 bool CoolingTowerVariableSpeed_Impl::isCellControlDefaulted() const {
@@ -625,7 +788,7 @@ void CoolingTowerVariableSpeed_Impl::resetCellControl() {
 }
 
 boost::optional<double> CoolingTowerVariableSpeed_Impl::cellMinimumWaterFlowRateFraction() const {
-  return getDouble(openstudio::CoolingTower_VariableSpeedFields::CellMinimumWaterFlowRateFraction, true);
+  return getDouble(openstudio::CoolingTower_VariableSpeedFields::CellMinimumWaterFlowRateFraction, false);
 }
 
 bool CoolingTowerVariableSpeed_Impl::setCellMinimumWaterFlowRateFraction(double cellMinimumWaterFlowRateFraction) {
@@ -637,7 +800,7 @@ void CoolingTowerVariableSpeed_Impl::resetCellMinimumWaterFlowRateFraction() {
 }
 
 boost::optional<double> CoolingTowerVariableSpeed_Impl::cellMaximumWaterFlowRateFraction() const {
-  return getDouble(openstudio::CoolingTower_VariableSpeedFields::CellMaximumWaterFlowRateFraction, true);
+  return getDouble(openstudio::CoolingTower_VariableSpeedFields::CellMaximumWaterFlowRateFraction, false);
 }
 
 bool CoolingTowerVariableSpeed_Impl::setCellMaximumWaterFlowRateFraction(double cellMaximumWaterFlowRateFraction) {
@@ -658,6 +821,18 @@ bool CoolingTowerVariableSpeed_Impl::setSizingFactor(double sizingFactor) {
 
 void CoolingTowerVariableSpeed_Impl::resetSizingFactor() {
   OS_ASSERT(setString(openstudio::CoolingTower_VariableSpeedFields::SizingFactor, ""));
+}
+
+boost::optional<double> CoolingTowerVariableSpeed_Impl::autosizedDesignWaterFlowRate() const {
+  return boost::none;
+}
+
+boost::optional<double> CoolingTowerVariableSpeed_Impl::autosizedDesignAirFlowRate() const {
+  return boost::none;
+}
+
+boost::optional<double> CoolingTowerVariableSpeed_Impl::autosizedDesignFanPower() const {
+  return boost::none;
 }
 
 std::string CoolingTowerVariableSpeed_Impl::endUseSubcategory() const {

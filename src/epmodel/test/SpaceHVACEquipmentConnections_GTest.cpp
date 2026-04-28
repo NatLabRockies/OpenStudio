@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/SpaceHVACEquipmentConnections.hpp"
+#include "../scaffolds/SpaceHVACEquipmentConnections.hpp"
 #include <utilities/idd/SpaceHVAC_EquipmentConnections_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;

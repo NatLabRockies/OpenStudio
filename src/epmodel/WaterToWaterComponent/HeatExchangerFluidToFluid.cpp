@@ -6,10 +6,16 @@
 #include "WaterToWaterComponent/HeatExchangerFluidToFluid.hpp"
 #include "WaterToWaterComponent/HeatExchangerFluidToFluid_Impl.hpp"
 
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
+#include "Schedule/Schedule_Impl.hpp"
+#include "StraightComponent/Node.hpp"
+#include "StraightComponent/Node_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/data/DataEnums.hpp>
 #include <utilities/idd/HeatExchanger_FluidToFluid_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
@@ -58,6 +64,18 @@ std::vector<std::string> HeatExchangerFluidToFluid::heatTransferMeteringEndUseTy
 std::vector<std::string> HeatExchangerFluidToFluid::componentOverrideCoolingControlTemperatureModeValues() {
   return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
                         openstudio::HeatExchanger_FluidToFluidFields::ComponentOverrideCoolingControlTemperatureMode);
+}
+
+boost::optional<Schedule> HeatExchangerFluidToFluid::availabilitySchedule() const {
+  return getImpl<detail::HeatExchangerFluidToFluid_Impl>()->availabilitySchedule();
+}
+
+bool HeatExchangerFluidToFluid::setAvailabilitySchedule(Schedule& schedule) {
+  return getImpl<detail::HeatExchangerFluidToFluid_Impl>()->setAvailabilitySchedule(schedule);
+}
+
+void HeatExchangerFluidToFluid::resetAvailabilitySchedule() {
+  getImpl<detail::HeatExchangerFluidToFluid_Impl>()->resetAvailabilitySchedule();
 }
 
 boost::optional<double> HeatExchangerFluidToFluid::loopDemandSideDesignFlowRate() const {
@@ -173,6 +191,30 @@ void HeatExchangerFluidToFluid::resetHeatTransferMeteringEndUseType() {
   getImpl<detail::HeatExchangerFluidToFluid_Impl>()->resetHeatTransferMeteringEndUseType();
 }
 
+boost::optional<Node> HeatExchangerFluidToFluid::componentOverrideLoopSupplySideInletNode() const {
+  return getImpl<detail::HeatExchangerFluidToFluid_Impl>()->componentOverrideLoopSupplySideInletNode();
+}
+
+bool HeatExchangerFluidToFluid::setComponentOverrideLoopSupplySideInletNode(const Node& node) {
+  return getImpl<detail::HeatExchangerFluidToFluid_Impl>()->setComponentOverrideLoopSupplySideInletNode(node);
+}
+
+void HeatExchangerFluidToFluid::resetComponentOverrideLoopSupplySideInletNode() {
+  getImpl<detail::HeatExchangerFluidToFluid_Impl>()->resetComponentOverrideLoopSupplySideInletNode();
+}
+
+boost::optional<Node> HeatExchangerFluidToFluid::componentOverrideLoopDemandSideInletNode() const {
+  return getImpl<detail::HeatExchangerFluidToFluid_Impl>()->componentOverrideLoopDemandSideInletNode();
+}
+
+bool HeatExchangerFluidToFluid::setComponentOverrideLoopDemandSideInletNode(const Node& node) {
+  return getImpl<detail::HeatExchangerFluidToFluid_Impl>()->setComponentOverrideLoopDemandSideInletNode(node);
+}
+
+void HeatExchangerFluidToFluid::resetComponentOverrideLoopDemandSideInletNode() {
+  getImpl<detail::HeatExchangerFluidToFluid_Impl>()->resetComponentOverrideLoopDemandSideInletNode();
+}
+
 std::string HeatExchangerFluidToFluid::componentOverrideCoolingControlTemperatureMode() const {
   return getImpl<detail::HeatExchangerFluidToFluid_Impl>()->componentOverrideCoolingControlTemperatureMode();
 }
@@ -249,6 +291,18 @@ boost::optional<double> HeatExchangerFluidToFluid::autosizedHeatExchangerUFactor
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+boost::optional<Schedule> HeatExchangerFluidToFluid_Impl::availabilitySchedule() const {
+  return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::HeatExchanger_FluidToFluidFields::AvailabilityScheduleName);
+}
+
+bool HeatExchangerFluidToFluid_Impl::setAvailabilitySchedule(Schedule& schedule) {
+  return setSchedule(openstudio::HeatExchanger_FluidToFluidFields::AvailabilityScheduleName, "HeatExchangerFluidToFluid", "Availability", schedule);
+}
+
+void HeatExchangerFluidToFluid_Impl::resetAvailabilitySchedule() {
+  OS_ASSERT(setString(openstudio::HeatExchanger_FluidToFluidFields::AvailabilityScheduleName, ""));
+}
 
 boost::optional<double> HeatExchangerFluidToFluid_Impl::loopDemandSideDesignFlowRate() const {
   return getDouble(openstudio::HeatExchanger_FluidToFluidFields::LoopDemandSideDesignFlowRate, true);
@@ -388,6 +442,32 @@ void HeatExchangerFluidToFluid_Impl::resetHeatTransferMeteringEndUseType() {
   OS_ASSERT(result);
 }
 
+boost::optional<Node> HeatExchangerFluidToFluid_Impl::componentOverrideLoopSupplySideInletNode() const {
+  return getObject<ModelObject>().getModelObjectTarget<Node>(
+    openstudio::HeatExchanger_FluidToFluidFields::ComponentOverrideLoopSupplySideInletNodeName);
+}
+
+bool HeatExchangerFluidToFluid_Impl::setComponentOverrideLoopSupplySideInletNode(const Node& node) {
+  return setPointer(openstudio::HeatExchanger_FluidToFluidFields::ComponentOverrideLoopSupplySideInletNodeName, node.handle());
+}
+
+void HeatExchangerFluidToFluid_Impl::resetComponentOverrideLoopSupplySideInletNode() {
+  OS_ASSERT(setPointer(openstudio::HeatExchanger_FluidToFluidFields::ComponentOverrideLoopSupplySideInletNodeName, Handle(), false));
+}
+
+boost::optional<Node> HeatExchangerFluidToFluid_Impl::componentOverrideLoopDemandSideInletNode() const {
+  return getObject<ModelObject>().getModelObjectTarget<Node>(
+    openstudio::HeatExchanger_FluidToFluidFields::ComponentOverrideLoopDemandSideInletNodeName);
+}
+
+bool HeatExchangerFluidToFluid_Impl::setComponentOverrideLoopDemandSideInletNode(const Node& node) {
+  return setPointer(openstudio::HeatExchanger_FluidToFluidFields::ComponentOverrideLoopDemandSideInletNodeName, node.handle());
+}
+
+void HeatExchangerFluidToFluid_Impl::resetComponentOverrideLoopDemandSideInletNode() {
+  OS_ASSERT(setPointer(openstudio::HeatExchanger_FluidToFluidFields::ComponentOverrideLoopDemandSideInletNodeName, Handle(), false));
+}
+
 std::string HeatExchangerFluidToFluid_Impl::componentOverrideCoolingControlTemperatureMode() const {
   const auto value = getString(openstudio::HeatExchanger_FluidToFluidFields::ComponentOverrideCoolingControlTemperatureMode, true);
   OS_ASSERT(value);
@@ -483,6 +563,82 @@ std::vector<std::string> HeatExchangerFluidToFluid_Impl::heatTransferMeteringEnd
 
 std::vector<std::string> HeatExchangerFluidToFluid_Impl::componentOverrideCoolingControlTemperatureModeValues() const {
   return openstudio::epmodel::HeatExchangerFluidToFluid::componentOverrideCoolingControlTemperatureModeValues();
+}
+
+openstudio::ComponentType HeatExchangerFluidToFluid_Impl::componentType() const {
+  const auto currentControlType = controlType();
+
+  if (openstudio::istringEqual(currentControlType, "HeatingSetpointModulated")
+      || openstudio::istringEqual(currentControlType, "HeatingSetpointOnOff")) {
+    return openstudio::ComponentType::Heating;
+  }
+
+  if (openstudio::istringEqual(currentControlType, "CoolingSetpointModulated")
+      || openstudio::istringEqual(currentControlType, "CoolingSetpointOnOff")
+      || openstudio::istringEqual(currentControlType, "CoolingDifferentialOnOff")
+      || openstudio::istringEqual(currentControlType, "CoolingSetpointOnOffWithComponentOverride")) {
+    return openstudio::ComponentType::Cooling;
+  }
+
+  if (openstudio::istringEqual(currentControlType, "DualDeadbandSetpointModulated")
+      || openstudio::istringEqual(currentControlType, "DualDeadbandSetpointOnOff")) {
+    return openstudio::ComponentType::Both;
+  }
+
+  if (openstudio::istringEqual(currentControlType, "UncontrolledOn")) {
+    if (auto secondaryLoop = secondaryPlantLoop()) {
+      return secondaryLoop->componentType();
+    }
+    return openstudio::ComponentType::None;
+  }
+
+  return openstudio::ComponentType::Both;
+}
+
+std::vector<openstudio::FuelType> HeatExchangerFluidToFluid_Impl::coolingFuelTypes() const {
+  const auto currentControlType = controlType();
+  if (openstudio::istringEqual(currentControlType, "HeatingSetpointModulated")
+      || openstudio::istringEqual(currentControlType, "HeatingSetpointOnOff")) {
+    return {};
+  }
+
+  if (auto secondaryLoop = secondaryPlantLoop()) {
+    return secondaryLoop->coolingFuelTypes();
+  }
+
+  return {};
+}
+
+std::vector<openstudio::FuelType> HeatExchangerFluidToFluid_Impl::heatingFuelTypes() const {
+  const auto currentControlType = controlType();
+  if (openstudio::istringEqual(currentControlType, "CoolingSetpointModulated")
+      || openstudio::istringEqual(currentControlType, "CoolingSetpointOnOff")
+      || openstudio::istringEqual(currentControlType, "CoolingDifferentialOnOff")
+      || openstudio::istringEqual(currentControlType, "CoolingSetpointOnOffWithComponentOverride")) {
+    return {};
+  }
+
+  if (auto secondaryLoop = secondaryPlantLoop()) {
+    return secondaryLoop->heatingFuelTypes();
+  }
+
+  return {};
+}
+
+std::vector<openstudio::AppGFuelType> HeatExchangerFluidToFluid_Impl::appGHeatingFuelTypes() const {
+  const auto currentControlType = controlType();
+  if (openstudio::istringEqual(currentControlType, "CoolingSetpointModulated")
+      || openstudio::istringEqual(currentControlType, "CoolingSetpointOnOff")
+      || openstudio::istringEqual(currentControlType, "CoolingDifferentialOnOff")
+      || openstudio::istringEqual(currentControlType, "CoolingSetpointOnOffWithComponentOverride")) {
+    return {};
+  }
+
+  if (auto secondaryLoop = secondaryPlantLoop()) {
+    return secondaryLoop->appGHeatingFuelTypes();
+  }
+
+  return {};
 }
 
 unsigned HeatExchangerFluidToFluid_Impl::supplyInletPort() const {

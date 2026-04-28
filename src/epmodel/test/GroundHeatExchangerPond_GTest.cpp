@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/GroundHeatExchangerPond.hpp"
+#include "../scaffolds/GroundHeatExchangerPond.hpp"
 
 using namespace openstudio::epmodel;
 

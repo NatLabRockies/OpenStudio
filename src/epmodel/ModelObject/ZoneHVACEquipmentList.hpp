@@ -9,6 +9,8 @@
 #include "EPModelAPI.hpp"
 #include "ModelObject.hpp"
 
+#include <boost/optional.hpp>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -18,6 +20,8 @@ namespace epmodel {
 
   class Model;
   class ModelObject;
+  class Schedule;
+  class ThermalZone;
 
   namespace detail {
     class ZoneHVACEquipmentList_Impl;
@@ -27,6 +31,7 @@ namespace epmodel {
   {
    public:
     explicit ZoneHVACEquipmentList(const Model& model);
+    explicit ZoneHVACEquipmentList(const ThermalZone& thermalZone);
 
     virtual ~ZoneHVACEquipmentList() override = default;
     ZoneHVACEquipmentList(const ZoneHVACEquipmentList& other) = default;
@@ -47,7 +52,30 @@ namespace epmodel {
     bool isLoadDistributionSchemeDefaulted() const;
     void resetLoadDistributionScheme();
 
+    bool addEquipment(const ModelObject& equipment);
+    bool removeEquipment(const ModelObject& equipment);
+
+    bool setCoolingPriority(const ModelObject& equipment, unsigned priority);
+    bool setHeatingPriority(const ModelObject& equipment, unsigned priority);
+
     std::vector<ModelObject> equipment() const;
+    std::vector<ModelObject> equipmentInHeatingOrder() const;
+    std::vector<ModelObject> equipmentInCoolingOrder() const;
+
+    ThermalZone thermalZone() const;
+
+    unsigned heatingPriority(const ModelObject& equipment) const;
+    unsigned coolingPriority(const ModelObject& equipment) const;
+
+    boost::optional<double> sequentialCoolingFraction(const ModelObject& equipment) const;
+    boost::optional<Schedule> sequentialCoolingFractionSchedule(const ModelObject& equipment) const;
+    boost::optional<double> sequentialHeatingFraction(const ModelObject& equipment) const;
+    boost::optional<Schedule> sequentialHeatingFractionSchedule(const ModelObject& equipment) const;
+
+    bool setSequentialCoolingFraction(const ModelObject& equipment, double fraction);
+    bool setSequentialCoolingFractionSchedule(const ModelObject& equipment, Schedule& schedule);
+    bool setSequentialHeatingFraction(const ModelObject& equipment, double fraction);
+    bool setSequentialHeatingFractionSchedule(const ModelObject& equipment, Schedule& schedule);
 
    protected:
     using ImplType = detail::ZoneHVACEquipmentList_Impl;

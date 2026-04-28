@@ -13,6 +13,7 @@
 namespace openstudio {
 namespace epmodel {
 class Node;
+class Schedule;
 namespace detail {
 
 class EPMODEL_API CoilCoolingDXSingleSpeedThermalStorage_Impl : public StraightComponent_Impl
@@ -28,8 +29,15 @@ class EPMODEL_API CoilCoolingDXSingleSpeedThermalStorage_Impl : public StraightC
   std::vector<std::string> storageTypeValues() const;
   std::vector<std::string> condenserTypeValues() const;
 
+  Schedule availabilitySchedule() const;
+  bool setAvailabilitySchedule(Schedule& schedule);
+
   std::string operatingModeControlMethod() const;
   bool setOperatingModeControlMethod(const std::string& operatingModeControlMethod);
+
+  boost::optional<Schedule> operationModeControlSchedule() const;
+  bool setOperationModeControlSchedule(Schedule& schedule);
+  void resetOperationModeControlSchedule();
 
   std::string storageType() const;
   bool setStorageType(const std::string& storageType);
@@ -197,6 +205,10 @@ class EPMODEL_API CoilCoolingDXSingleSpeedThermalStorage_Impl : public StraightC
 
   double basinHeaterSetpointTemperature() const;
   bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
+
+  boost::optional<Schedule> basinHeaterAvailabilitySchedule() const;
+  bool setBasinHeaterAvailabilitySchedule(Schedule& schedule);
+  void resetBasinHeaterAvailabilitySchedule();
 
   bool addToNode(Node& node);
 };

@@ -7,8 +7,8 @@
 
 #include "EPModelFixture.hpp"
 
-#include "../ModelObject/WallUnderground.hpp"
-#include "../ModelObject/WallUnderground_Impl.hpp"
+#include "../scaffolds/WallUnderground.hpp"
+#include "../scaffolds/WallUnderground_Impl.hpp"
 
 using namespace openstudio::epmodel;
 

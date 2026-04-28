@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/ComplianceBuilding.hpp"
+#include "../scaffolds/ComplianceBuilding.hpp"
 
 using namespace openstudio::epmodel;
 

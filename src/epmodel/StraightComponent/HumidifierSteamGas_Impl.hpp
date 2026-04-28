@@ -13,6 +13,7 @@
 namespace openstudio {
 namespace epmodel {
   class Node;
+  class Schedule;
   namespace detail {
 
     class EPMODEL_API HumidifierSteamGas_Impl : public StraightComponent_Impl
@@ -25,6 +26,10 @@ namespace epmodel {
       unsigned outletPort() const override;
 
       bool addToNode(Node& node) override;
+
+      boost::optional<Schedule> availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
+      void resetAvailabilitySchedule();
 
       // Rated Capacity
       boost::optional<double> ratedCapacity() const;

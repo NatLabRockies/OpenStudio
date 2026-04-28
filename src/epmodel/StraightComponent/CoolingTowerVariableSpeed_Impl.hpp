@@ -12,6 +12,12 @@
 
 namespace openstudio {
 namespace epmodel {
+
+class ModelObject;
+class CurveCubic;
+class Schedule;
+class Node;
+
 namespace detail {
 
 class EPMODEL_API CoolingTowerVariableSpeed_Impl : public StraightComponent_Impl
@@ -22,6 +28,7 @@ class EPMODEL_API CoolingTowerVariableSpeed_Impl : public StraightComponent_Impl
 
   unsigned inletPort() const override;
   unsigned outletPort() const override;
+  bool addToNode(Node& node) override;
 
   std::vector<std::string> modelTypeValues() const;
   std::vector<std::string> evaporationLossModeValues() const;
@@ -31,6 +38,10 @@ class EPMODEL_API CoolingTowerVariableSpeed_Impl : public StraightComponent_Impl
   boost::optional<std::string> modelType() const;
   bool setModelType(const std::string& modelType);
   void resetModelType();
+
+  boost::optional<ModelObject> modelCoefficient() const;
+  bool setModelCoefficient(const ModelObject& modelCoefficient);
+  void resetModelCoefficient();
 
   boost::optional<double> designInletAirWetBulbTemperature() const;
   bool setDesignInletAirWetBulbTemperature(double designInletAirWetBulbTemperature);
@@ -59,6 +70,10 @@ class EPMODEL_API CoolingTowerVariableSpeed_Impl : public StraightComponent_Impl
   bool setDesignFanPower(double designFanPower);
   void autosizeDesignFanPower();
 
+  boost::optional<CurveCubic> fanPowerRatioFunctionofAirFlowRateRatioCurve() const;
+  bool setFanPowerRatioFunctionofAirFlowRateRatioCurve(const CurveCubic& curve);
+  void resetFanPowerRatioFunctionofAirFlowRateRatioCurve();
+
   boost::optional<double> minimumAirFlowRateRatio() const;
   bool setMinimumAirFlowRateRatio(double minimumAirFlowRateRatio);
   void resetMinimumAirFlowRateRatio();
@@ -74,6 +89,10 @@ class EPMODEL_API CoolingTowerVariableSpeed_Impl : public StraightComponent_Impl
   boost::optional<double> basinHeaterSetpointTemperature() const;
   bool setBasinHeaterSetpointTemperature(double basinHeaterSetpointTemperature);
   void resetBasinHeaterSetpointTemperature();
+
+  boost::optional<Schedule> basinHeaterOperatingSchedule() const;
+  bool setBasinHeaterOperatingSchedule(Schedule& basinHeaterOperatingSchedule);
+  void resetBasinHeaterOperatingSchedule();
 
   std::string evaporationLossMode() const;
   bool isEvaporationLossModeDefaulted() const;
@@ -98,6 +117,10 @@ class EPMODEL_API CoolingTowerVariableSpeed_Impl : public StraightComponent_Impl
   bool setBlowdownConcentrationRatio(double blowdownConcentrationRatio);
   void resetBlowdownConcentrationRatio();
 
+  boost::optional<Schedule> blowdownMakeupWaterUsageSchedule() const;
+  bool setBlowdownMakeupWaterUsageSchedule(Schedule& blowdownMakeupWaterUsageSchedule);
+  void resetBlowdownMakeupWaterUsageSchedule();
+
   boost::optional<int> numberofCells() const;
   bool setNumberofCells(int numberofCells);
   void resetNumberofCells();
@@ -118,6 +141,10 @@ class EPMODEL_API CoolingTowerVariableSpeed_Impl : public StraightComponent_Impl
   boost::optional<double> sizingFactor() const;
   bool setSizingFactor(double sizingFactor);
   void resetSizingFactor();
+
+  boost::optional<double> autosizedDesignWaterFlowRate() const;
+  boost::optional<double> autosizedDesignAirFlowRate() const;
+  boost::optional<double> autosizedDesignFanPower() const;
 
   std::string endUseSubcategory() const;
   bool setEndUseSubcategory(const std::string& endUseSubcategory);

@@ -12,6 +12,12 @@
 
 namespace openstudio {
 namespace epmodel {
+
+  class AirToAirComponent;
+  class ModelObject;
+  class Node;
+  class StraightComponent;
+
   namespace detail {
 
     class EPMODEL_API CoilSystemCoolingDXHeatExchangerAssisted_Impl : public StraightComponent_Impl
@@ -22,6 +28,14 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
+      std::vector<ModelObject> children() const override;
+
+      AirToAirComponent heatExchanger() const;
+      bool setHeatExchanger(const AirToAirComponent& heatExchanger);
+
+      StraightComponent coolingCoil() const;
+      bool setCoolingCoil(const StraightComponent& coolingCoil);
 
       std::vector<std::string> heatExchangerObjectTypeValues() const;
       std::string heatExchangerObjectType() const;

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "EPModelFixture.hpp"
-#include "../ModelObject/MatrixTwoDimension.hpp"
+#include "../scaffolds/MatrixTwoDimension.hpp"
 
 using namespace openstudio::epmodel;
 

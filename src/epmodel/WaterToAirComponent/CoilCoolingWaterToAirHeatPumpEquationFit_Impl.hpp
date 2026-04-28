@@ -15,6 +15,7 @@ class Curve;
 class Model;
 class ModelObject;
 class Schedule;
+class AirflowNetworkDistributionComponentCoil;
 
 namespace detail {
 
@@ -108,6 +109,11 @@ class EPMODEL_API CoilCoolingWaterToAirHeatPumpEquationFit_Impl : public WaterTo
 
   double fanDelayTime() const;
   bool setFanDelayTime(double fanDelayTime);
+
+  std::vector<ModelObject> children() const override;
+
+  AirflowNetworkDistributionComponentCoil getAirflowNetworkEquivalentDuct(double length, double diameter);
+  boost::optional<AirflowNetworkDistributionComponentCoil> airflowNetworkEquivalentDuct() const;
 
   void setConstructorSharedDefaults(const Model& model);
 };
