@@ -14,6 +14,8 @@
 #include "../../utilities/time/Time.hpp"
 
 #include "../../model/Model.hpp"
+#include "../../model/ScheduleCompact.hpp"
+#include "../../model/ScheduleCompact_Impl.hpp"
 #include "../../model/ScheduleInterval.hpp"
 #include "../../model/ScheduleInterval_Impl.hpp"
 #include "../../model/ScheduleFixedInterval.hpp"
@@ -1990,4 +1992,60 @@ TEST_F(EnergyPlusFixture, ScheduleFileRelativePath) {
     EXPECT_TRUE(toPath(fileName.get()).is_relative());  // rel path
     EXPECT_EQ(externalfile.filePath(), fileName.get());
   }
+}
+
+void Run_RoundTrip_IDF_to_IDF(const std::string& filename, Workspace& w) {
+  w.save(filename + "_1.idf", true);
+
+  ReverseTranslator rt;
+  Model m = rt.translateWorkspace(w);
+
+  m.save(filename + "_2.osm", true);
+
+  EXPECT_EQ(0, m.getConcreteModelObjects<ScheduleCompact>().size());
+  EXPECT_EQ(1, m.getConcreteModelObjects<ScheduleFixedInterval>().size());
+  EXPECT_EQ(0, m.getConcreteModelObjects<ScheduleVariableInterval>().size());
+
+  ForwardTranslator ft;
+  Workspace w2 = ft.translateModel(m);
+
+  w2.save(filename + "_3.idf", true);
+
+  std::vector<WorkspaceObject> scheduleCompacts = w.getObjectsByType(IddObjectType::Schedule_Compact);
+  std::vector<WorkspaceObject> scheduleCompacts2 = w2.getObjectsByType(IddObjectType::Schedule_Compact);
+  EXPECT_EQ(scheduleCompacts.size(), scheduleCompacts2.size());
+
+  std::vector<WorkspaceObject> scheduleTypeLimitss = w.getObjectsByType(IddObjectType::ScheduleTypeLimits);
+  std::vector<WorkspaceObject> scheduleTypeLimitss2 = w2.getObjectsByType(IddObjectType::ScheduleTypeLimits);
+  EXPECT_EQ(scheduleTypeLimitss.size(), scheduleTypeLimitss2.size() - 3); // OnOff, OnOff 1, Fractional 1
+}
+
+TEST_F(EnergyPlusFixture, RoundTrip_IDF_ScheduleInterval) {
+  Workspace w(StrictnessLevel::Minimal, IddFileType::EnergyPlus);
+
+  IdfObject scheduleTypeLimits(openstudio::IddObjectType::ScheduleTypeLimits);
+  scheduleTypeLimits.setString(0, "Temperature");
+  scheduleTypeLimits.setString(3, "Continuous");
+  scheduleTypeLimits.setString(4, "temperature");
+
+  IdfObject scheduleCompact(openstudio::IddObjectType::Schedule_Compact);
+  scheduleCompact.setString(0, "mains temperature schedule");
+  scheduleCompact.setString(1, "Temperature");
+  scheduleCompact.setString(2, "Through: 01/01");
+  scheduleCompact.setString(3, "For: AllDays");
+  scheduleCompact.setString(4, "Until: 24:00");
+  scheduleCompact.setDouble(5, 10.0422222222222);
+  scheduleCompact.setString(6, "Through: 01/02");
+  scheduleCompact.setString(7, "For: AllDays");
+  scheduleCompact.setString(8, "Until: 24:00");
+  scheduleCompact.setDouble(9, 9.98111111111111);
+  scheduleCompact.setString(10, "Through: 01/03");
+  scheduleCompact.setString(11, "For: AllDays");
+  scheduleCompact.setString(12, "Until: 24:00");
+  scheduleCompact.setDouble(13, 9.92111111111111);
+
+  w.addObject(scheduleTypeLimits);
+  w.addObject(scheduleCompact);
+
+  Run_RoundTrip_IDF_to_IDF("RoundTrip_ScheduleFixedInterval", w);
 }
