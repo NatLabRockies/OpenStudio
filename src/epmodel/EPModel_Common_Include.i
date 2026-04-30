@@ -30,50 +30,53 @@
 %enddef
 
 %define EPMODELOBJECT_TO_HELPER(_name)
-namespace openstudio {
-namespace epmodel {
-boost::optional<_name> to##_name(const openstudio::IdfObject& idfObject);
-}
-}
+  namespace openstudio {
+    namespace epmodel {
+      boost::optional<_name> to##_name(const openstudio::IdfObject& idfObject);
+    }
+  }
 
-%inline {
-namespace openstudio {
-namespace epmodel {
-boost::optional<_name> to##_name(const openstudio::IdfObject& idfObject) {
-  return idfObject.optionalCast<_name>();
-}
-}
-}
-}
+  %inline {
+    namespace openstudio {
+      namespace epmodel {
+        boost::optional<_name> to##_name(const openstudio::IdfObject& idfObject) {
+          return idfObject.optionalCast<_name>();
+        }
+      }
+    }
+  }
 
 #if defined SWIGPYTHON
+// Patch EPModel's ModelObject instead of the shared IdfObject base. Canonical
+// model bindings also install to_<Type> helpers on IdfObject, and using that
+// shared surface here would make same-named helpers such as to_Node collide
+// across openstudio.model and openstudio.epmodel.
   %pythoncode %{
-def _to_##_name(self):
-    """Try to cast the EPModel object to _name."""
-    return to##_name(self)
-# Patch EPModel's ModelObject instead of the shared IdfObject base. Canonical
-# model bindings also install to_<Type> helpers on IdfObject, and using that
-# shared surface here would make same-named helpers such as to_Node collide
-# across openstudio.model and openstudio.epmodel.
-openstudioepmodel.ModelObject.to_##_name = _to_##_name
+    def _to_##_name(self) -> Optional##_name:
+        """Try to cast the ModelObject to a _name.
+
+        :return: An Optional _name.
+        """
+        return to##_name(self)
+    openstudioepmodel.ModelObject.to_##_name = _to_##_name
   %}
 #endif
 %enddef
 
 %define EPMODELOBJECT_FORWARD_DECLARE(_name)
-namespace openstudio {
-namespace epmodel {
-class _name;
-%feature("valuewrapper") _name;
-%nodefaultctor _name;
-%ignore _name::_name();
-}
-}
+  namespace openstudio {
+    namespace epmodel {
+      class _name;
+      %feature("valuewrapper") _name; // Allow by-value returns without needing a default ctor
+      %nodefaultctor _name; // Do not generate **implicit** default constructors
+      %ignore _name::_name(); // Ignore **explicit** default constructors too
+    }
+  }
 %enddef
 
 %define EPMODELOBJECT_WRAP(_name, _header)
-  %include _header
   EPMODELOBJECT_TEMPLATES(_name)
+  %include _header
 %enddef
 
 EPMODELOBJECT_FORWARD_DECLARE(AirConditionerVariableRefrigerantFlow)
