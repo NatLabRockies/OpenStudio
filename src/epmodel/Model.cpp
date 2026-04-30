@@ -1124,7 +1124,7 @@ namespace epmodel {
         m_sqlFile((other.m_sqlFile) ? std::shared_ptr<SqlFile>(new SqlFile(*other.m_sqlFile)) : other.m_sqlFile) {}
 
     std::shared_ptr<openstudio::detail::WorkspaceObject_Impl> Model_Impl::createObject(const IdfObject& object, bool keepHandle) {
-      auto result = modelObjectCreator.getNew(this, object, keepHandle);
+      auto result = modelObjectCreator().getNew(this, object, keepHandle);
       if (!result) {
         result = std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ModelObject_Impl(object, this, keepHandle));
       }
@@ -1157,7 +1157,7 @@ namespace epmodel {
     std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>
       Model_Impl::createObject(const std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>& originalObjectImplPtr, bool keepHandle) {
 
-      auto result = modelObjectCreator.getCopy(this, originalObjectImplPtr, keepHandle);
+      auto result = modelObjectCreator().getCopy(this, originalObjectImplPtr, keepHandle);
       if (!result) {
         result = std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>(new ModelObject_Impl(*originalObjectImplPtr, this, keepHandle));
       }
@@ -3066,7 +3066,16 @@ namespace epmodel {
       };
     }
 
-    const detail::Model_Impl::ModelObjectCreator detail::Model_Impl::modelObjectCreator;
+    const detail::Model_Impl::ModelObjectCreator& detail::Model_Impl::modelObjectCreator() {
+      // The creator owns two large maps of std::function objects. In the epmodel test binary,
+      // destroying those maps during shared-library shutdown can run after enough other global
+      // state has already been torn down that glibc reports a double free. The registry is pure
+      // process-wide construction metadata, so it is better treated as process-lifetime data:
+      // build it once on first use and let the operating system reclaim it at exit.
+      static const auto* result = new ModelObjectCreator();
+      return *result;
+    }
+
     openstudio::epmodel::Model Model_Impl::model() const {
       return Model(std::dynamic_pointer_cast<Model_Impl>(std::const_pointer_cast<openstudio::detail::Workspace_Impl>(this->shared_from_this())));
     }
