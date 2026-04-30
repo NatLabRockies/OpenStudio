@@ -16,6 +16,7 @@
 %import <utilities/core/CommonImport.i>
 %import <utilities/Utilities.i>
 %import <model/Model.i>
+%import <epmodel/EPModel.i>
 %import <alfalfa/Alfalfa.i>
 
 %ignore openstudio::detail;
@@ -56,6 +57,7 @@
 
   #include <model/Component.hpp>
   #include <model/ConcreteModelObjects.hpp>
+  #include <epmodel/Model.hpp>
 
   #include <utilities/core/Path.hpp>
   #include <utilities/bcl/BCLMeasure.hpp>

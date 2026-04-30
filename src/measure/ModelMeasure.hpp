@@ -13,7 +13,7 @@
 
 namespace openstudio {
 
-namespace model {
+namespace epmodel {
   class Model;
 }
 
@@ -37,7 +37,7 @@ namespace measure {
    *  to this script's run method. The same basic steps should happen in applications with non-
    *  interactive scripts, but in that case an entity other than an OSRunner may be in charge of
    *  collecting user arguments. The base class implementation returns an empty vector. */
-    virtual std::vector<OSArgument> arguments(const openstudio::model::Model& model) const;
+    virtual std::vector<OSArgument> arguments(const openstudio::epmodel::Model& model) const;
 
     /** Returns the outputs for this script. The base class implementation returns an empty vector. */
     virtual std::vector<OSOutput> outputs() const;
@@ -51,7 +51,7 @@ namespace measure {
    *  beginning of derived class implementations of this method. (In C++, that call looks like
    *  ModelMeasure::run(model, runner, user_arguments). In Ruby that call looks like
    *  super(model, runner, user_arguments). */
-    virtual bool run(openstudio::model::Model& model, OSRunner& runner, const std::map<std::string, OSArgument>& user_arguments) const;
+    virtual bool run(openstudio::epmodel::Model& model, OSRunner& runner, const std::map<std::string, OSArgument>& user_arguments) const;
 
     //@}
     //

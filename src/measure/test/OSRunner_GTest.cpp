@@ -11,6 +11,7 @@
 #include "../ModelMeasure.hpp"
 #include "../OSArgument.hpp"
 
+#include "../../epmodel/Model.hpp"
 #include "../../model/Model.hpp"
 #include "../../model/BoilerHotWater.hpp"
 
@@ -31,7 +32,7 @@ class TestModelMeasure : public ModelMeasure
     return "TestModelMeasure";
   }
 
-  virtual bool run(model::Model& model, OSRunner& runner, const std::map<std::string, OSArgument>& user_arguments) const override {
+  virtual bool run(epmodel::Model& model, OSRunner& runner, const std::map<std::string, OSArgument>& user_arguments) const override {
     ModelMeasure::run(model, runner, user_arguments);
     return true;
   }

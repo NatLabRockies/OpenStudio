@@ -16,6 +16,7 @@
 #include "../measure/OSRunner.hpp"
 #include "../model/Model.hpp"
 #include "../model/Model_Impl.hpp"
+#include "../epmodel/Model.hpp"
 #include "../utilities/bcl/BCLMeasure.hpp"
 #include "../utilities/core/Assert.hpp"
 #include "../utilities/core/Filesystem.hpp"
@@ -103,6 +104,8 @@ OSWorkflow::OSWorkflow(const WorkflowRunOptions& t_workflowRunOptions, ScriptEng
     fmt::print("workflowJSON={}\n", workflowJSON.string());
   }
 }
+
+OSWorkflow::~OSWorkflow() = default;
 
 void OSWorkflow::initializeWeatherFileFromOSW() {
   LOG(Debug, "Initialize the weather file from osw");

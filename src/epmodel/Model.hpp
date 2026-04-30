@@ -89,6 +89,7 @@ namespace epmodel {
     Model();
     explicit Model(const openstudio::IdfFile& idfFile);
     explicit Model(const openstudio::Workspace& workspace);
+    Model clone(bool keepHandles = false) const;
     static boost::optional<Model> load(const openstudio::path& idfPath);
     Schedule alwaysOnDiscreteSchedule() const;
     std::string alwaysOnDiscreteScheduleName() const;

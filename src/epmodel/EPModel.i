@@ -44,7 +44,7 @@ EPMODELOBJECT_TEMPLATES(Schedule)
 %include <epmodel/Model.hpp>
 
 #ifdef SWIGPYTHON
-  %include <EPModel_Python_Submodules.i>
+  %include <epmodel/EPModel_Python_Submodules.i>
 #endif
 
 %template(OptionalEPModel) boost::optional<openstudio::epmodel::Model>;

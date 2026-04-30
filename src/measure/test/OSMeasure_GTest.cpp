@@ -11,6 +11,9 @@
 #include "../OSMeasure.hpp"
 #include "../ModelMeasure.hpp"
 
+#include "../../epmodel/Model.hpp"
+#include "../../epmodel/ModelObject/Timestep.hpp"
+#include "../../epmodel/ModelObject/Timestep_Impl.hpp"
 #include "../../model/Model.hpp"
 #include "../../model/Space.hpp"
 #include "../../model/Space_Impl.hpp"
@@ -20,6 +23,8 @@
 #include "../../utilities/idd/IddEnums.hpp"
 #include <utilities/idd/IddEnums.hxx>
 
+#include "../../utilities/idf/IdfObject.hpp"
+#include "../../utilities/idf/WorkspaceObject.hpp"
 #include "../../utilities/core/Finder.hpp"
 #include "../../utilities/core/StringStreamLogSink.hpp"
 #include "../../utilities/filetypes/WorkflowJSON.hpp"
@@ -47,6 +52,16 @@ class TestOSRunner : public OSRunner
   }
 };
 
+namespace {
+
+openstudio::epmodel::Timestep addTimestep(openstudio::epmodel::Model& model, int numberOfTimestepsPerHour) {
+  openstudio::epmodel::Timestep object(model);
+  OS_ASSERT(object.setNumberOfTimestepsPerHour(numberOfTimestepsPerHour));
+  return object;
+}
+
+}  // namespace
+
 // derive some test classes
 class TestModelUserScript1 : public ModelMeasure
 {
@@ -55,8 +70,8 @@ class TestModelUserScript1 : public ModelMeasure
     return "TestModelUserScript1";
   }
 
-  // remove all spaces and add a new one
-  virtual bool run(Model& model, OSRunner& runner, const std::map<std::string, OSArgument>& user_arguments) const override {
+  // remove all objects and add a new one
+  virtual bool run(openstudio::epmodel::Model& model, OSRunner& runner, const std::map<std::string, OSArgument>& user_arguments) const override {
     ModelMeasure::run(model, runner, user_arguments);
 
     if (!runner.validateUserArguments(arguments(model), user_arguments)) {
@@ -65,20 +80,20 @@ class TestModelUserScript1 : public ModelMeasure
 
     std::stringstream ss;
 
-    // remove old spaces
-    int count(0);
-    for (openstudio::model::Space space : model.getConcreteModelObjects<openstudio::model::Space>()) {
-      space.remove();
-      ++count;
+    // remove old objects
+    const auto objects = model.objects();
+    int count = static_cast<int>(objects.size());
+    for (auto object : objects) {
+      object.remove();
     }
-    ss << "Initial model had " << count << " spaces.";
+    ss << "Initial model had " << count << " objects.";
     runner.registerInitialCondition(ss.str());
     ss.str("");
 
     // add a new one
-    openstudio::model::Space space(model);
+    addTimestep(model, 6);
 
-    ss << "Removed the " << count << " original spaces, and added one new one named '" << space.name().get() << "'.";
+    ss << "Removed the " << count << " original objects, and added one new Timestep object.";
     runner.registerFinalCondition(ss.str());
 
     // success
@@ -100,11 +115,11 @@ TEST_F(MeasureFixture, UserScript_TestModelUserScript1) {
   std::map<std::string, OSArgument> user_arguments;
 
   // test with empty model
-  openstudio::model::Model model1;
-  EXPECT_EQ(0u, model1.getConcreteModelObjects<openstudio::model::Space>().size());
+  openstudio::epmodel::Model model1;
+  EXPECT_EQ(0u, model1.numObjects());
   EXPECT_EQ(0u, script.arguments(model1).size());
   script.run(model1, runner, user_arguments);
-  EXPECT_EQ(1u, model1.getConcreteModelObjects<openstudio::model::Space>().size());
+  EXPECT_EQ(1u, model1.numObjects());
   WorkflowStepResult result = runner.result();
   ASSERT_TRUE(result.stepResult());
   EXPECT_TRUE(result.stepResult()->value() == StepResult::Success);
@@ -112,18 +127,22 @@ TEST_F(MeasureFixture, UserScript_TestModelUserScript1) {
   EXPECT_EQ(0u, result.stepWarnings().size());
   EXPECT_EQ(0u, result.stepInfo().size());
   ASSERT_TRUE(result.initialCondition());
-  EXPECT_EQ("Initial model had 0 spaces.", result.initialCondition()->logMessage());
+  EXPECT_EQ("Initial model had 0 objects.", result.initialCondition()->logMessage());
   ASSERT_TRUE(result.finalCondition());
-  EXPECT_EQ("Removed the 0 original spaces, and added one new one named 'Space 1'.", result.finalCondition()->logMessage());
+  EXPECT_EQ("Removed the 0 original objects, and added one new Timestep object.", result.finalCondition()->logMessage());
 
   // test with populated model
-  openstudio::model::Model model2;
-  openstudio::model::Space space1(model2);
-  openstudio::model::Space space2(model2);
-  EXPECT_EQ(2u, model2.getConcreteModelObjects<openstudio::model::Space>().size());
+  openstudio::epmodel::Model model2;
+  addTimestep(model2, 4);
+  openstudio::IdfObject outputVariable(openstudio::IddObjectType::Output_Variable);
+  outputVariable.setString(0, "*");
+  outputVariable.setString(1, "Site Outdoor Air Drybulb Temperature");
+  outputVariable.setString(2, "Hourly");
+  ASSERT_TRUE(model2.addObject(outputVariable));
+  EXPECT_EQ(2u, model2.numObjects());
   EXPECT_EQ(0u, script.arguments(model2).size());
   script.run(model2, runner, user_arguments);
-  EXPECT_EQ(1u, model2.getConcreteModelObjects<openstudio::model::Space>().size());
+  EXPECT_EQ(1u, model2.numObjects());
   result = runner.result();
   ASSERT_TRUE(result.stepResult());
   EXPECT_TRUE(result.stepResult()->value() == StepResult::Success);
@@ -131,9 +150,9 @@ TEST_F(MeasureFixture, UserScript_TestModelUserScript1) {
   EXPECT_EQ(0u, result.stepWarnings().size());
   EXPECT_EQ(0u, result.stepInfo().size());
   ASSERT_TRUE(result.initialCondition());
-  EXPECT_EQ("Initial model had 2 spaces.", result.initialCondition()->logMessage());
+  EXPECT_EQ("Initial model had 2 objects.", result.initialCondition()->logMessage());
   ASSERT_TRUE(result.finalCondition());
-  EXPECT_EQ("Removed the 2 original spaces, and added one new one named 'Space 1'.", result.finalCondition()->logMessage());
+  EXPECT_EQ("Removed the 2 original objects, and added one new Timestep object.", result.finalCondition()->logMessage());
 }
 
 class TestModelUserScript2 : public ModelMeasure
@@ -143,10 +162,10 @@ class TestModelUserScript2 : public ModelMeasure
     return "TestModelUserScript2";
   }
 
-  virtual std::vector<OSArgument> arguments(const Model& model) const override {
+  virtual std::vector<OSArgument> arguments(const openstudio::epmodel::Model& model) const override {
     std::vector<OSArgument> result;
 
-    OSArgument arg = makeChoiceArgumentOfWorkspaceObjects("lights_definition", IddObjectType::OS_Lights_Definition, model);
+    OSArgument arg = makeChoiceArgumentOfWorkspaceObjects("timestep", IddObjectType::Timestep, model);
     result.push_back(arg);
 
     arg = OSArgument::makeDoubleArgument("multiplier", false);
@@ -156,17 +175,16 @@ class TestModelUserScript2 : public ModelMeasure
     return result;
   }
 
-  // remove all spaces and add a new one
-  virtual bool run(Model& model, OSRunner& runner, const std::map<std::string, OSArgument>& user_arguments) const override {
+  virtual bool run(openstudio::epmodel::Model& model, OSRunner& runner, const std::map<std::string, OSArgument>& user_arguments) const override {
     ModelMeasure::run(model, runner, user_arguments);  // initializes runner
 
-    // calls runner.registerAttribute for 'lights_definition' and 'multiplier'
+    // calls runner.registerAttribute for 'timestep' and 'multiplier'
     if (!runner.validateUserArguments(arguments(model), user_arguments)) {
       return false;
     }
 
-    // lights_definition argument value will be object handle
-    Handle h = toUUID(runner.getStringArgumentValue("lights_definition", user_arguments));
+    // timestep argument value will be object handle
+    Handle h = toUUID(runner.getStringArgumentValue("timestep", user_arguments));
 
     OptionalWorkspaceObject wo = model.getObject(h);
     if (!wo) {
@@ -176,21 +194,21 @@ class TestModelUserScript2 : public ModelMeasure
       return false;
     }
 
-    OptionalLightsDefinition lightsDef = wo->optionalCast<LightsDefinition>();
-    if (!lightsDef) {
+    auto timestep = wo->optionalCast<openstudio::epmodel::Timestep>();
+    if (!timestep) {
       std::stringstream ss;
-      ss << wo->briefDescription() << " is not a LightsDefinition.";
+      ss << wo->briefDescription() << " is not a Timestep.";
       runner.registerError(ss.str());
       return false;
     }
-    // save name of lights definition
-    runner.registerValue("lights_definition_name", lightsDef->name().get());
 
-    if (!(lightsDef->designLevelCalculationMethod() == "Watts/Area")) {
+    runner.registerValue("timestep_handle", toString(timestep->handle()));
+    const int originalValue = timestep->numberOfTimestepsPerHour();
+
+    if (originalValue < 2) {
       std::stringstream ss;
-      ss << "This measure only applies to lights definitions that are in units of Watts/Area. ";
-      ss << lightsDef->briefDescription() << " is in units of ";
-      ss << lightsDef->designLevelCalculationMethod() << ".";
+      ss << "This measure only applies when there are at least 2 timesteps per hour. ";
+      ss << timestep->briefDescription() << " has " << originalValue << ".";
       runner.registerAsNotApplicable(ss.str());
       return true;
     }
@@ -199,38 +217,30 @@ class TestModelUserScript2 : public ModelMeasure
 
     if (multiplier < 0.0) {
       std::stringstream ss;
-      ss << "The lighting power density multiplier must be greater than or equal to 0. ";
+      ss << "The timestep multiplier must be greater than or equal to 0. ";
       ss << "Instead, it is " << toString(multiplier) << ".";
       runner.registerError(ss.str());
       return false;
     }
 
-    double originalValue = lightsDef->wattsperSpaceFloorArea().get();
-    double newValue = multiplier * originalValue;
-
-    lightsDef->setWattsperSpaceFloorArea(newValue);
+    int newValue = static_cast<int>(multiplier * originalValue);
+    timestep->setNumberOfTimestepsPerHour(newValue);
 
     // register effects of this measure
 
     // human-readable
     std::stringstream ss;
-    ss << "The lighting power density of " << lightsDef->briefDescription();
-    ss << ", which is used by " << lightsDef->quantity() << " instances covering ";
-    ss << lightsDef->floorArea() << " m^2 of floor area, was " << originalValue << ".";
+    ss << "The timestep count of " << timestep->briefDescription() << " was " << originalValue << ".";
     runner.registerInitialCondition(ss.str());
     ss.str("");
-    ss << "The lighting power density of " << lightsDef->briefDescription();
+    ss << "The timestep count of " << timestep->briefDescription();
     ss << " has been changed to " << newValue << ".";
     runner.registerFinalCondition(ss.str());
     ss.str("");
 
     // machine-readable
-    runner.registerValue("lpd_in", "Input Lighting Power Density", originalValue, "W/m^2");
-    runner.registerValue("lpd_out", "Output Lighting Power Density", newValue, "W/m^2");
-    runner.registerValue("lights_definition_num_instances", lightsDef->quantity());
-    runner.registerValue("lights_definition_floor_area", "Floor Area using this Lights Definition (SI)", lightsDef->floorArea(), "m^2");
-    runner.registerValue("lights_definition_floor_area_ip", "Floor Area using this Lights Definition (IP)",
-                         convert(lightsDef->floorArea(), "m^2", "ft^2").get(), "ft^2");
+    runner.registerValue("timesteps_in", "Input Timesteps per Hour", originalValue);
+    runner.registerValue("timesteps_out", "Output Timesteps per Hour", newValue);
 
     return true;
   }
@@ -240,7 +250,7 @@ TEST_F(MeasureFixture, UserScript_TestModelUserScript2) {
   TestModelUserScript2 script;
   EXPECT_EQ("TestModelUserScript2", script.name());
 
-  Model model;
+  openstudio::epmodel::Model model;
 
   // serialize ossrs
   openstudio::path fileDir = toPath("./OSResultOSSRs");
@@ -267,15 +277,15 @@ TEST_F(MeasureFixture, UserScript_TestModelUserScript2) {
   EXPECT_FALSE(result.finalCondition());
   EXPECT_TRUE(result.stepValues().empty());
 
-  // call with required argument, but no lights definitions in model
+  // call with required argument, but no timestep object in model
   runner.reset();
-  LightsDefinition lightsDef(model);
+  auto timestep = addTimestep(model, 6);
   OSArgumentVector definitions = script.arguments(model);
   user_arguments = runner.getUserInput(definitions);
   OSArgument arg = definitions[0];
-  arg.setValue(toString(lightsDef.handle()));
-  user_arguments["lights_definition"] = arg;
-  lightsDef.remove();
+  arg.setValue(toString(timestep.handle()));
+  user_arguments["timestep"] = arg;
+  timestep.remove();
   EXPECT_EQ(0u, model.numObjects());
   ok = script.run(model, runner, user_arguments);
   EXPECT_FALSE(ok);
@@ -289,15 +299,14 @@ TEST_F(MeasureFixture, UserScript_TestModelUserScript2) {
   EXPECT_FALSE(result.finalCondition());
   EXPECT_EQ(2u, result.stepValues().size());  // registers argument values
 
-  // call properly using default multiplier, but lights definition not Watts/Area
+  // call properly using default multiplier, but timestep object is not applicable
   runner.reset();
-  lightsDef = LightsDefinition(model);
-  lightsDef.setLightingLevel(700.0);
+  timestep = addTimestep(model, 1);
   definitions = script.arguments(model);
   user_arguments = runner.getUserInput(definitions);
   arg = definitions[0];
-  arg.setValue(toString(lightsDef.handle()));
-  user_arguments["lights_definition"] = arg;
+  arg.setValue(toString(timestep.handle()));
+  user_arguments["timestep"] = arg;
   ok = script.run(model, runner, user_arguments);
   EXPECT_TRUE(ok);
   result = runner.result();
@@ -308,11 +317,11 @@ TEST_F(MeasureFixture, UserScript_TestModelUserScript2) {
   EXPECT_EQ(1u, result.stepInfo().size());  // Measure not applicable as called
   EXPECT_FALSE(result.initialCondition());
   EXPECT_FALSE(result.finalCondition());
-  EXPECT_EQ(3u, result.stepValues().size());  // Registers lights definition name, then fails
+  EXPECT_EQ(3u, result.stepValues().size());  // Registers argument values and timestep handle, then exits
 
   // call properly using default multiplier
   runner.reset();
-  lightsDef.setWattsperSpaceFloorArea(10.0);
+  EXPECT_TRUE(timestep.setNumberOfTimestepsPerHour(10));
   ok = script.run(model, runner, user_arguments);
   EXPECT_TRUE(ok);
   result = runner.result();
@@ -323,9 +332,9 @@ TEST_F(MeasureFixture, UserScript_TestModelUserScript2) {
   EXPECT_EQ(0u, result.stepInfo().size());
   EXPECT_TRUE(result.initialCondition());  // describes original state
   EXPECT_TRUE(result.finalCondition());    // describes changes
-  EXPECT_EQ(8u, result.stepValues().size());
+  EXPECT_EQ(5u, result.stepValues().size());
 
-  EXPECT_DOUBLE_EQ(8.0, lightsDef.wattsperSpaceFloorArea().get());
+  EXPECT_EQ(8, timestep.numberOfTimestepsPerHour());
 
   // call properly using different multiplier
   runner.reset();
@@ -342,9 +351,22 @@ TEST_F(MeasureFixture, UserScript_TestModelUserScript2) {
   EXPECT_EQ(0u, result.stepInfo().size());
   EXPECT_TRUE(result.initialCondition());  // describes original state
   EXPECT_TRUE(result.finalCondition());    // describes changes
-  EXPECT_EQ(8u, result.stepValues().size());
+  EXPECT_EQ(5u, result.stepValues().size());
 
-  EXPECT_DOUBLE_EQ(4.0, lightsDef.wattsperSpaceFloorArea().get());
+  EXPECT_EQ(4, timestep.numberOfTimestepsPerHour());
+}
+
+TEST_F(MeasureFixture, EPModelMeasureParity_RestoreTypedSpaceMeasureCoverage) {
+  ADD_FAILURE() << "Temporary epmodel workflow reminder: UserScript_TestModelUserScript1 was reduced from canonical Space construction/removal "
+                   "to generic IDF object mutation so the clean-break workflow target would compile. Restore this test to use epmodel::Space "
+                   "once the typed Space creation/removal path is ready to carry the same measure-facing contract as canonical Model.";
+}
+
+TEST_F(MeasureFixture, EPModelMeasureParity_ResolveLightsDefinitionAbstraction) {
+  ADD_FAILURE() << "Temporary epmodel workflow reminder: UserScript_TestModelUserScript2 used to exercise canonical LightsDefinition, "
+                   "makeChoiceArgumentOfWorkspaceObjects, optionalCast<LightsDefinition>, wattsperSpaceFloorArea, quantity, and floorArea. "
+                   "The current epmodel test uses a Timestep object only to keep the target compiling. Decide how IDD-backed epmodel should "
+                   "represent this canonical load-definition measure pattern, then restore equivalent coverage.";
 }
 
 TEST_F(MeasureFixture, RegisterValueNames) {
@@ -377,7 +399,7 @@ class TestModelUserScriptDomain : public ModelMeasure
     return "TestModelUserScriptDomain";
   }
 
-  virtual std::vector<OSArgument> arguments(const Model& model) const override {
+  virtual std::vector<OSArgument> arguments(const openstudio::epmodel::Model& model) const override {
     std::vector<OSArgument> result;
 
     OSArgument arg = OSArgument::makeDoubleArgument("double_arg", true);
@@ -391,8 +413,7 @@ class TestModelUserScriptDomain : public ModelMeasure
     return result;
   }
 
-  // remove all spaces and add a new one
-  virtual bool run(Model& model, OSRunner& runner, const std::map<std::string, OSArgument>& user_arguments) const override {
+  virtual bool run(openstudio::epmodel::Model& model, OSRunner& runner, const std::map<std::string, OSArgument>& user_arguments) const override {
     ModelMeasure::run(model, runner, user_arguments);  // initializes runner
 
     if (!runner.validateUserArguments(arguments(model), user_arguments)) {
@@ -407,7 +428,7 @@ TEST_F(MeasureFixture, UserScript_TestModelUserScriptDomain) {
   TestModelUserScriptDomain script;
   EXPECT_EQ("TestModelUserScriptDomain", script.name());
 
-  Model model;
+  openstudio::epmodel::Model model;
 
   std::vector<WorkflowStep> steps;
   steps.push_back(MeasureStep("dummy"));
@@ -467,7 +488,7 @@ class ModelMeasureWithSeparator : public ModelMeasure
     return "ModelMeasureWithSeparator";
   }
 
-  virtual std::vector<OSArgument> arguments(const Model& /*model*/) const override {
+  virtual std::vector<OSArgument> arguments(const openstudio::epmodel::Model& /*model*/) const override {
     std::vector<OSArgument> result;
 
     OSArgument arg = OSArgument::makeDoubleArgument("double_arg", true);
@@ -484,8 +505,7 @@ class ModelMeasureWithSeparator : public ModelMeasure
     return result;
   }
 
-  // remove all spaces and add a new one
-  virtual bool run(Model& model, OSRunner& runner, const std::map<std::string, OSArgument>& user_arguments) const override {
+  virtual bool run(openstudio::epmodel::Model& model, OSRunner& runner, const std::map<std::string, OSArgument>& user_arguments) const override {
     ModelMeasure::run(model, runner, user_arguments);  // initializes runner
 
     return runner.validateUserArguments(arguments(model), user_arguments);
@@ -496,7 +516,7 @@ TEST_F(MeasureFixture, ModelMeasureWithSeparator) {
   ModelMeasureWithSeparator measure;
   EXPECT_EQ("ModelMeasureWithSeparator", measure.name());
 
-  Model model;
+  openstudio::epmodel::Model model;
 
   std::vector<WorkflowStep> steps;
   steps.push_back(MeasureStep("dummy"));

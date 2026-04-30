@@ -6,6 +6,7 @@
 #include "Util.hpp"
 
 #include "../model/Model.hpp"
+#include "../epmodel/Model.hpp"
 #include "../osversion/VersionTranslator.hpp"
 #include "../utilities/core/Logger.hpp"
 #include "../utilities/core/Filesystem.hpp"
@@ -64,6 +65,17 @@ Workspace loadIDF(const openstudio::filesystem::path& idfPath) {
   }
   return idf_.get();
 };
+
+epmodel::Model loadEPModel(const openstudio::filesystem::path& idfPath) {
+  LOG_FREE(Info, "openstudio.worklow.Util", "Loading IDF as epmodel");
+  LOG_FREE(Info, "openstudio.worklow.Util", "Reading in epmodel seed " << idfPath);
+
+  auto model_ = epmodel::Model::load(idfPath);
+  if (!model_) {
+    throw std::runtime_error(fmt::format("Failed to load IDF file as epmodel {}\n", openstudio::toString(idfPath)));
+  }
+  return model_.get();
+}
 
 void gatherReports(const openstudio::filesystem::path& runDirPath, const openstudio::filesystem::path& rootDirPath) {
   namespace fs = openstudio::filesystem;

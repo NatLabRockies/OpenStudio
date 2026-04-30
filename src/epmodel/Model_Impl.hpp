@@ -44,6 +44,7 @@ namespace epmodel {
                                                                                      bool isTransient) override;
       virtual std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>
         createObject(const std::shared_ptr<openstudio::detail::WorkspaceObject_Impl>& originalObjectImplPtr, bool keepHandle) override;
+      virtual Workspace clone(bool keepHandles = false) const override;
 
       openstudio::epmodel::Model model() const;
       boost::optional<openstudio::SqlFile> sqlFile() const;

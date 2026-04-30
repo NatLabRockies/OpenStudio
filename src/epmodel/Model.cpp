@@ -933,6 +933,10 @@ namespace epmodel {
     canonicalize(SanitizationPolicy::Repair);
   }
 
+  Model Model::clone(bool keepHandles) const {
+    return Workspace::clone(keepHandles).cast<Model>();
+  }
+
   // Convenience loader for disk-based IDF files.
   // Internally this delegates to the IdfFile constructor above (typed object materialization
   // plus canonicalization with Repair policy).
@@ -1122,6 +1126,13 @@ namespace epmodel {
     Model_Impl::Model_Impl(const Model_Impl& other, const std::vector<Handle>& hs, bool keepHandles, StrictnessLevel level)
       : Workspace_Impl(other, hs, keepHandles, level),
         m_sqlFile((other.m_sqlFile) ? std::shared_ptr<SqlFile>(new SqlFile(*other.m_sqlFile)) : other.m_sqlFile) {}
+
+    Workspace Model_Impl::clone(bool keepHandles) const {
+      std::shared_ptr<Model_Impl> cloneImpl(new Model_Impl(*this, keepHandles));
+      createAndAddClonedObjects(model().getImpl<Model_Impl>(), cloneImpl, keepHandles);
+      Model result(cloneImpl);
+      return result.cast<Workspace>();
+    }
 
     std::shared_ptr<openstudio::detail::WorkspaceObject_Impl> Model_Impl::createObject(const IdfObject& object, bool keepHandle) {
       auto result = modelObjectCreator().getNew(this, object, keepHandle);

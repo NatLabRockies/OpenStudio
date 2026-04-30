@@ -8,6 +8,7 @@
 #include "Util.hpp"
 
 #include "../model/Model.hpp"
+#include "../epmodel/Model.hpp"
 #include "../utilities/idf/Workspace.hpp"
 
 #include "../utilities/filetypes/WorkflowJSON.hpp"
@@ -31,6 +32,12 @@ void OSWorkflow::runReportingMeasures() {
       if (auto p = runDirPath / "in.osm"; openstudio::filesystem::is_regular_file(p)) {
         LOG(Debug, "Attempting to load " << p);
         model = openstudio::workflow::util::loadOSM(p);
+      }
+    }
+    if (!epModel_) {
+      if (auto p = runDirPath / "in.idf"; openstudio::filesystem::is_regular_file(p)) {
+        LOG(Debug, "Attempting to load " << p << " as epmodel");
+        epModel_ = std::make_unique<openstudio::epmodel::Model>(openstudio::workflow::util::loadEPModel(p));
       }
     }
     if (!workspace_) {
