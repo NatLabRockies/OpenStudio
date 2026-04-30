@@ -92,13 +92,13 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_
   CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData speed(model);
   const auto speedHandle = speed.handle();
 
-  EXPECT_EQ(1u, model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>(true).size());
+  EXPECT_EQ(1u, model.getModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>(false, true).size());
   EXPECT_EQ(2u, model.getObjectsByType(openstudio::IddObjectType::Curve_Biquadratic, true).size());
   EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::Curve_Cubic, true).size());
 
   speed.remove();
 
-  const auto remainingSpeeds = model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>(true);
+  const auto remainingSpeeds = model.getModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>(false, true);
   EXPECT_TRUE(std::none_of(remainingSpeeds.begin(), remainingSpeeds.end(),
                            [&](const auto& candidate) { return candidate.handle() == speedHandle; }));
   EXPECT_TRUE(remainingSpeeds.empty());

@@ -216,7 +216,7 @@ std::string transientSpeedDataPrefix(const openstudio::epmodel::CoilHeatingWater
 
 boost::optional<CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData> transientSpeedDataByName(const Model& model,
                                                                                                            const std::string& name) {
-  for (const auto& speed : model.getConcreteModelObjects<CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData>(true)) {
+  for (const auto& speed : model.getModelObjects<CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData>(false, true)) {
     if (const auto speedName = speed.name()) {
       if (openstudio::istringEqual(*speedName, name)) {
         return speed;
