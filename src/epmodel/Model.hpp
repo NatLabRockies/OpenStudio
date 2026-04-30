@@ -158,10 +158,10 @@ namespace epmodel {
       return getOrCreateTransientByName<T>(generatedName);
     }
 
-    template <typename T>
-    std::vector<T> getModelObjects(bool sorted = false) const {
+    template <AnyModelObject T>
+    std::vector<T> getModelObjects(bool sorted = false, bool includeTransient = false) const {
       std::vector<T> result;
-      std::vector<WorkspaceObject> objects = this->objects(sorted);
+      std::vector<WorkspaceObject> objects = this->objects(sorted, includeTransient);
       result.reserve(objects.size());
       for (const auto& wo : objects) {
         std::shared_ptr<typename T::ImplType> p = wo.getImpl<typename T::ImplType>();
@@ -208,10 +208,13 @@ namespace epmodel {
 
     /// Returns all model objects of type T using T::iddObjectType() to speed up the search.
     /// This only works for concrete model objects.
-    template <typename T>
-    std::vector<T> getConcreteModelObjects(bool includeTransient = false) const {
+    template <ConcreteModelObject T>
+    std::vector<T> getModelObjects(bool sorted = false, bool includeTransient = false) const {
       std::vector<T> result;
       std::vector<WorkspaceObject> objects = this->getObjectsByType(T::iddObjectType(), includeTransient);
+      if (sorted) {
+        objects = this->sort(objects);  // Call Workspace::sort
+      }
       result.reserve(objects.size());
       for (const auto& wo : objects) {
         std::shared_ptr<typename T::ImplType> p = wo.getImpl<typename T::ImplType>();
