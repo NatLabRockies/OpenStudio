@@ -25,6 +25,8 @@ namespace epmodel {
   class EPMODEL_API OutputControlReportingTolerances : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     explicit OutputControlReportingTolerances(const Model& model);
 
     virtual ~OutputControlReportingTolerances() override = default;

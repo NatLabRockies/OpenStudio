@@ -23,6 +23,8 @@ namespace epmodel {
   class EPMODEL_API SiteGroundTemperatureBuildingSurface : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     explicit SiteGroundTemperatureBuildingSurface(const Model& model);
 
     virtual ~SiteGroundTemperatureBuildingSurface() override = default;

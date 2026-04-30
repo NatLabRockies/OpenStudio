@@ -29,6 +29,8 @@ class LifeCycleCostParameters_Impl;
 class EPMODEL_API LifeCycleCostParameters : public ParentObject
 {
  public:
+  static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
   explicit LifeCycleCostParameters(const Model& model);
 
   virtual ~LifeCycleCostParameters() override = default;

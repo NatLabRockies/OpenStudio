@@ -25,6 +25,8 @@ namespace epmodel {
   class EPMODEL_API RunPeriodControlDaylightSavingTime : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     explicit RunPeriodControlDaylightSavingTime(const Model& model);
 
     virtual ~RunPeriodControlDaylightSavingTime() override = default;

@@ -26,6 +26,8 @@ namespace epmodel {
   class EPMODEL_API HeatBalanceAlgorithm : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     explicit HeatBalanceAlgorithm(const Model& model);
 
     virtual ~HeatBalanceAlgorithm() override = default;

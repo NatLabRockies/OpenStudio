@@ -25,6 +25,8 @@ namespace epmodel {
   class EPMODEL_API ZoneAirHeatBalanceAlgorithm : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     explicit ZoneAirHeatBalanceAlgorithm(const Model& model);
 
     virtual ~ZoneAirHeatBalanceAlgorithm() override = default;

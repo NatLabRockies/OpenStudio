@@ -23,6 +23,8 @@ namespace epmodel {
   class EPMODEL_API OutsideSurfaceConvectionAlgorithm : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     explicit OutsideSurfaceConvectionAlgorithm(const Model& model);
 
     virtual ~OutsideSurfaceConvectionAlgorithm() override = default;

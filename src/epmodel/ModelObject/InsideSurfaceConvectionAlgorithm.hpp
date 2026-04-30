@@ -23,6 +23,8 @@ namespace epmodel {
   class EPMODEL_API InsideSurfaceConvectionAlgorithm : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     explicit InsideSurfaceConvectionAlgorithm(const Model& model);
 
     virtual ~InsideSurfaceConvectionAlgorithm() override = default;

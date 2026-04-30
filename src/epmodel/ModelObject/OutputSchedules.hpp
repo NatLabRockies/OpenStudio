@@ -26,6 +26,8 @@ namespace epmodel {
   class EPMODEL_API OutputSchedules : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     explicit OutputSchedules(const Model& model);
 
     virtual ~OutputSchedules() override = default;

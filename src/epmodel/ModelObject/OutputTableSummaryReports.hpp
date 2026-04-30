@@ -25,6 +25,8 @@ class OutputTableSummaryReports_Impl;
 class EPMODEL_API OutputTableSummaryReports : public ModelObject
 {
  public:
+  static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
   explicit OutputTableSummaryReports(const Model& model);
 
   virtual ~OutputTableSummaryReports() override = default;

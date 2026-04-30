@@ -24,6 +24,8 @@ class FoundationKivaSettings_Impl;
 class EPMODEL_API FoundationKivaSettings : public ModelObject
 {
  public:
+  static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
   explicit FoundationKivaSettings(const Model& model);
 
   virtual ~FoundationKivaSettings() override = default;

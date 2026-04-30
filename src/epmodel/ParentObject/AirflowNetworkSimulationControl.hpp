@@ -26,6 +26,8 @@ class AirflowNetworkSimulationControl_Impl;
 class EPMODEL_API AirflowNetworkSimulationControl : public ModelObject
 {
  public:
+  static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
   explicit AirflowNetworkSimulationControl(const Model& model);
 
   virtual ~AirflowNetworkSimulationControl() override = default;

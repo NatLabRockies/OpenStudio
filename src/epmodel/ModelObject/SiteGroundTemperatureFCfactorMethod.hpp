@@ -23,6 +23,8 @@ class SiteGroundTemperatureFCfactorMethod_Impl;
 class EPMODEL_API SiteGroundTemperatureFCfactorMethod : public ModelObject
 {
  public:
+  static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
   explicit SiteGroundTemperatureFCfactorMethod(const Model& model);
 
   virtual ~SiteGroundTemperatureFCfactorMethod() override = default;

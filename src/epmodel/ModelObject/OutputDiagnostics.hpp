@@ -25,6 +25,8 @@ class OutputDiagnostics_Impl;
 class EPMODEL_API OutputDiagnostics : public ModelObject
 {
  public:
+  static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
   explicit OutputDiagnostics(const Model& model);
 
   virtual ~OutputDiagnostics() override = default;

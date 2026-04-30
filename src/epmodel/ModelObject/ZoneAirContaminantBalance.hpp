@@ -23,6 +23,8 @@ namespace epmodel {
   class EPMODEL_API ZoneAirContaminantBalance : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     explicit ZoneAirContaminantBalance(const Model& model);
 
     virtual ~ZoneAirContaminantBalance() override = default;

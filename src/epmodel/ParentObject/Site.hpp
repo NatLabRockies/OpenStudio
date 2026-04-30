@@ -27,6 +27,8 @@ class Site_Impl;
 class EPMODEL_API Site : public ParentObject
 {
  public:
+  static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
   explicit Site(const Model& model);
 
   virtual ~Site() override = default;

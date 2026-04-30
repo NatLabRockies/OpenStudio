@@ -23,6 +23,8 @@ class SiteGroundTemperatureShallow_Impl;
 class EPMODEL_API SiteGroundTemperatureShallow : public ModelObject
 {
  public:
+  static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
   explicit SiteGroundTemperatureShallow(const Model& model);
 
   virtual ~SiteGroundTemperatureShallow() override = default;

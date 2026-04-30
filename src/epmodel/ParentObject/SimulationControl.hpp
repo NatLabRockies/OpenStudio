@@ -25,6 +25,8 @@ class SimulationControl_Impl;
 class EPMODEL_API SimulationControl : public ParentObject
 {
  public:
+  static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
   explicit SimulationControl(const Model& model);
 
   virtual ~SimulationControl() override = default;

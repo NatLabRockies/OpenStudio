@@ -26,6 +26,8 @@ namespace epmodel {
   class EPMODEL_API OutputEnergyManagementSystem : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     explicit OutputEnergyManagementSystem(const Model& model);
 
     virtual ~OutputEnergyManagementSystem() override = default;

@@ -13,75 +13,102 @@
 
 #include <boost/optional.hpp>
 
+#include <concepts>
 #include <memory>
+#include <type_traits>
 #include <vector>
 
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-  class ModelObject_Impl;
-}
-
-class EPMODEL_API ModelObject : public openstudio::WorkspaceObject
-{
- public:
-  virtual ~ModelObject() override = default;
-  ModelObject(const ModelObject& other) = default;
-  ModelObject(ModelObject&& other) = default;
-  ModelObject& operator=(const ModelObject&) = default;
-  ModelObject& operator=(ModelObject&&) = default;
-
-  Model model() const;
-  static ModelObject create(IddObjectType type, const Model& model, bool fastName = false);
-  using openstudio::IdfObject::getImpl;
-
-  template <typename T>
-  boost::optional<T> getModelObjectTarget(unsigned index) const {
-    boost::optional<T> result;
-    auto candidate = getTarget(index);
-    if (candidate) {
-      result = candidate->template optionalCast<T>();
-    }
-    return result;
+  namespace detail {
+    class ModelObject_Impl;
   }
 
+  class ModelObject;
+
+  template <class T>
+  concept AnyModelObject = std::derived_from<T, ModelObject>;
+
+  template <class T>
+  concept AnyChildOfModelObject = AnyModelObject<T> && !std::same_as<ModelObject, T>;
+
   template <typename T>
-  std::vector<T> getModelObjectTargets() const {
-    std::vector<T> result;
-    auto wos = targets();
-    result.reserve(wos.size());
-    for (const auto& wo : wos) {
-      auto target = wo.template optionalCast<T>();
-      if (target) {
-        result.emplace_back(*target);
+  concept ConcreteModelObject = AnyChildOfModelObject<T> && requires {
+    T::iddObjectType();  // required static member function
+  };
+
+  template <typename T>
+  constexpr bool is_concrete_v = ConcreteModelObject<T>;
+
+  template <typename T>
+  concept UniqueModelObject = ConcreteModelObject<T> && requires {
+    { T::is_unique } -> std::convertible_to<bool>;
+    requires T::is_unique;
+  };
+
+  template <typename T>
+  constexpr bool is_unique_model_object_v = UniqueModelObject<T>;
+
+  class EPMODEL_API ModelObject : public openstudio::WorkspaceObject
+  {
+   public:
+    virtual ~ModelObject() override = default;
+    ModelObject(const ModelObject& other) = default;
+    ModelObject(ModelObject&& other) = default;
+    ModelObject& operator=(const ModelObject&) = default;
+    ModelObject& operator=(ModelObject&&) = default;
+
+    Model model() const;
+    static ModelObject create(IddObjectType type, const Model& model, bool fastName = false);
+    using openstudio::IdfObject::getImpl;
+
+    template <typename T>
+    boost::optional<T> getModelObjectTarget(unsigned index) const {
+      boost::optional<T> result;
+      auto candidate = getTarget(index);
+      if (candidate) {
+        result = candidate->template optionalCast<T>();
       }
+      return result;
     }
-    return result;
-  }
 
-  bool operator<(const ModelObject& right) const;
-  bool operator==(const ModelObject& other) const;
-  bool operator!=(const ModelObject& other) const;
+    template <typename T>
+    std::vector<T> getModelObjectTargets() const {
+      std::vector<T> result;
+      auto wos = targets();
+      result.reserve(wos.size());
+      for (const auto& wo : wos) {
+        auto target = wo.template optionalCast<T>();
+        if (target) {
+          result.emplace_back(*target);
+        }
+      }
+      return result;
+    }
 
-  boost::optional<double> getAutosizedValue(const std::string& valueName, const std::string& units) const;
+    bool operator<(const ModelObject& right) const;
+    bool operator==(const ModelObject& other) const;
+    bool operator!=(const ModelObject& other) const;
 
- protected:
-  using ImplType = detail::ModelObject_Impl;
+    boost::optional<double> getAutosizedValue(const std::string& valueName, const std::string& units) const;
 
-  friend class openstudio::IdfObject;
-  friend class openstudio::IdfExtensibleGroup;
-  friend class openstudio::detail::IdfObject_Impl;
-  friend class detail::ModelObject_Impl;
+   protected:
+    using ImplType = detail::ModelObject_Impl;
 
-  explicit ModelObject(IddObjectType type, const Model& model, bool fastName = false, bool isTransient = false);
-  explicit ModelObject(std::shared_ptr<ImplType> impl);
-  std::shared_ptr<ImplType> getImpl() const;
-};
+    friend class openstudio::IdfObject;
+    friend class openstudio::IdfExtensibleGroup;
+    friend class openstudio::detail::IdfObject_Impl;
+    friend class detail::ModelObject_Impl;
 
-using OptionalModelObject = boost::optional<ModelObject>;
+    explicit ModelObject(IddObjectType type, const Model& model, bool fastName = false, bool isTransient = false);
+    explicit ModelObject(std::shared_ptr<ImplType> impl);
+    std::shared_ptr<ImplType> getImpl() const;
+  };
+
+  using OptionalModelObject = boost::optional<ModelObject>;
 
 }  // namespace epmodel
 }  // namespace openstudio

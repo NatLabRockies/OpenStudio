@@ -26,6 +26,8 @@ namespace epmodel {
   class EPMODEL_API OutputSQLite : public ModelObject
   {
    public:
+    static constexpr bool is_unique = true;  // This is a Unique ModelObject
+
     explicit OutputSQLite(const Model& model);
 
     virtual ~OutputSQLite() override = default;
