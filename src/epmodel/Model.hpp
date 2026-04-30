@@ -158,20 +158,6 @@ namespace epmodel {
       return getOrCreateTransientByName<T>(generatedName);
     }
 
-    template <AnyModelObject T>
-    std::vector<T> getModelObjects(bool sorted = false, bool includeTransient = false) const {
-      std::vector<T> result;
-      std::vector<WorkspaceObject> objects = this->objects(sorted, includeTransient);
-      result.reserve(objects.size());
-      for (const auto& wo : objects) {
-        std::shared_ptr<typename T::ImplType> p = wo.getImpl<typename T::ImplType>();
-        if (p) {
-          result.push_back(T(std::move(p)));
-        }
-      }
-      return result;
-    }
-
     /// Returns a model object of type T by exact name, if it exists.
     /// For non-concrete types, scans all objects; for concrete types, prefer the constrained overload below.
     template <AnyModelObject T>
@@ -204,6 +190,20 @@ namespace epmodel {
         return wo->optionalCast<T>();
       }
       return boost::none;
+    }
+
+    template <AnyModelObject T>
+    std::vector<T> getModelObjects(bool sorted = false, bool includeTransient = false) const {
+      std::vector<T> result;
+      std::vector<WorkspaceObject> objects = this->objects(sorted, includeTransient);
+      result.reserve(objects.size());
+      for (const auto& wo : objects) {
+        std::shared_ptr<typename T::ImplType> p = wo.getImpl<typename T::ImplType>();
+        if (p) {
+          result.push_back(T(std::move(p)));
+        }
+      }
+      return result;
     }
 
     /// Returns all model objects of type T using T::iddObjectType() to speed up the search.
