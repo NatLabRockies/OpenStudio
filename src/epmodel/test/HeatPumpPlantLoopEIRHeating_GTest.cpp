@@ -177,7 +177,7 @@ TEST_F(EPModelFixture, HeatPumpPlantLoopEIRHeating_Remove) {
   const auto initialObjects = model.objects().size();
   EXPECT_FALSE(hp.remove().empty());
   EXPECT_EQ(initialObjects - 1, model.objects().size());
-  EXPECT_TRUE(model.getConcreteModelObjects<HeatPumpPlantLoopEIRHeating>().empty());
+  EXPECT_TRUE(model.getModelObjects<HeatPumpPlantLoopEIRHeating>().empty());
 }
 
 TEST_F(EPModelFixture, HeatPumpPlantLoopEIRHeating_Clone) {
@@ -187,8 +187,8 @@ TEST_F(EPModelFixture, HeatPumpPlantLoopEIRHeating_Clone) {
   CurveQuadratic eirFPLR(model);
 
   HeatPumpPlantLoopEIRHeating hp(model, capacityCurve, eirFT, eirFPLR);
-  EXPECT_EQ(2u, model.getConcreteModelObjects<CurveBiquadratic>().size());
-  EXPECT_EQ(1u, model.getConcreteModelObjects<CurveQuadratic>().size());
+  EXPECT_EQ(2u, model.getModelObjects<CurveBiquadratic>().size());
+  EXPECT_EQ(1u, model.getModelObjects<CurveQuadratic>().size());
 
   {
     auto hpCloneObject = model.addObject(hp.idfObject());
@@ -197,8 +197,8 @@ TEST_F(EPModelFixture, HeatPumpPlantLoopEIRHeating_Clone) {
     EXPECT_EQ(capacityCurve, hpClone.capacityModifierFunctionofTemperatureCurve());
     EXPECT_EQ(eirFT, hpClone.electricInputtoOutputRatioModifierFunctionofTemperatureCurve());
     EXPECT_EQ(eirFPLR, hpClone.electricInputtoOutputRatioModifierFunctionofPartLoadRatioCurve());
-    EXPECT_EQ(2u, model.getConcreteModelObjects<CurveBiquadratic>().size());
-    EXPECT_EQ(1u, model.getConcreteModelObjects<CurveQuadratic>().size());
+    EXPECT_EQ(2u, model.getModelObjects<CurveBiquadratic>().size());
+    EXPECT_EQ(1u, model.getModelObjects<CurveQuadratic>().size());
   }
 
   {
@@ -206,14 +206,14 @@ TEST_F(EPModelFixture, HeatPumpPlantLoopEIRHeating_Clone) {
     const auto hpIdfObject = hp.idfObject();
     const auto hpCloneObjects = model2.addObjects({capacityCurve.idfObject(), eirFT.idfObject(), eirFPLR.idfObject(), hpIdfObject});
     ASSERT_EQ(4u, hpCloneObjects.size());
-    auto hpClones = model2.getConcreteModelObjects<HeatPumpPlantLoopEIRHeating>();
+    auto hpClones = model2.getModelObjects<HeatPumpPlantLoopEIRHeating>();
     ASSERT_EQ(1u, hpClones.size());
     auto hpClone = hpClones.front();
     EXPECT_EQ(CurveBiquadratic::iddObjectType(), hpClone.capacityModifierFunctionofTemperatureCurve().iddObject().type());
     EXPECT_EQ(CurveBiquadratic::iddObjectType(), hpClone.electricInputtoOutputRatioModifierFunctionofTemperatureCurve().iddObject().type());
     EXPECT_EQ(CurveQuadratic::iddObjectType(), hpClone.electricInputtoOutputRatioModifierFunctionofPartLoadRatioCurve().iddObject().type());
-    EXPECT_EQ(2u, model2.getConcreteModelObjects<CurveBiquadratic>().size());
-    EXPECT_EQ(1u, model2.getConcreteModelObjects<CurveQuadratic>().size());
+    EXPECT_EQ(2u, model2.getModelObjects<CurveBiquadratic>().size());
+    EXPECT_EQ(1u, model2.getModelObjects<CurveQuadratic>().size());
   }
 }
 

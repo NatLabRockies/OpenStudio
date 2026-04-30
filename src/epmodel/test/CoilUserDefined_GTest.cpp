@@ -187,18 +187,18 @@ TEST_F(EPModelFixture, CoilUserDefined_RemoveDetachesLoopsAndCleansSeededEMSChil
 
   EXPECT_EQ(4u, airLoop.supplyComponents().size());
   EXPECT_EQ(7u, plantLoop.demandComponents().size());
-  EXPECT_EQ(1u, model.getConcreteModelObjects<CoilUserDefined>().size());
-  EXPECT_EQ(8u, model.getConcreteModelObjects<EnergyManagementSystemActuator>().size());
-  EXPECT_EQ(2u, model.getConcreteModelObjects<EnergyManagementSystemProgram>().size());
-  EXPECT_EQ(2u, model.getConcreteModelObjects<EnergyManagementSystemProgramCallingManager>().size());
+  EXPECT_EQ(1u, model.getModelObjects<CoilUserDefined>().size());
+  EXPECT_EQ(8u, model.getModelObjects<EnergyManagementSystemActuator>().size());
+  EXPECT_EQ(2u, model.getModelObjects<EnergyManagementSystemProgram>().size());
+  EXPECT_EQ(2u, model.getModelObjects<EnergyManagementSystemProgramCallingManager>().size());
 
   auto removed = coil.remove();
   EXPECT_FALSE(removed.empty());
 
-  EXPECT_TRUE(model.getConcreteModelObjects<CoilUserDefined>().empty());
-  EXPECT_TRUE(model.getConcreteModelObjects<EnergyManagementSystemActuator>().empty());
-  EXPECT_TRUE(model.getConcreteModelObjects<EnergyManagementSystemProgram>().empty());
-  EXPECT_TRUE(model.getConcreteModelObjects<EnergyManagementSystemProgramCallingManager>().empty());
+  EXPECT_TRUE(model.getModelObjects<CoilUserDefined>().empty());
+  EXPECT_TRUE(model.getModelObjects<EnergyManagementSystemActuator>().empty());
+  EXPECT_TRUE(model.getModelObjects<EnergyManagementSystemProgram>().empty());
+  EXPECT_TRUE(model.getModelObjects<EnergyManagementSystemProgramCallingManager>().empty());
   EXPECT_EQ(2u, airLoop.supplyComponents().size());
   EXPECT_EQ(5u, airLoop.demandComponents().size());
   EXPECT_EQ(5u, plantLoop.supplyComponents().size());

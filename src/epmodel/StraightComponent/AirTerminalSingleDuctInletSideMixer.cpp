@@ -149,7 +149,7 @@ namespace epmodel {
         break;
       }
 
-      for (auto& thermalZone : model().getConcreteModelObjects<ThermalZone>()) {
+      for (auto& thermalZone : model().getModelObjects<ThermalZone>()) {
         if (thermalZone.zoneAirNode() != node) {
           continue;
         }

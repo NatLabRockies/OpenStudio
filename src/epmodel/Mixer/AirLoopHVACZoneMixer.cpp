@@ -40,7 +40,7 @@ namespace epmodel {
       return boost::none;
     }
 
-    const auto airLoops = model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>();
+    const auto airLoops = model().getModelObjects<openstudio::epmodel::AirLoopHVAC>();
     const auto it = std::ranges::find_if(airLoops, [&](const auto& airLoop) { return *outletNode == airLoop.demandOutletNode(); });
 
     if (it != airLoops.end()) {

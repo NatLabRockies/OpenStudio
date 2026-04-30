@@ -221,11 +221,11 @@ TEST_F(EPModelFixture, CoilCoolingWater_RemoveCleansUpAttachedAirflowNetworkComp
   CoilCoolingWater coil(model);
   coil.getAirflowNetworkEquivalentDuct(1.25, 0.41);
 
-  ASSERT_EQ(1u, model.getConcreteModelObjects<AirflowNetworkDistributionComponentCoil>().size());
+  ASSERT_EQ(1u, model.getModelObjects<AirflowNetworkDistributionComponentCoil>().size());
 
   coil.remove();
 
-  EXPECT_TRUE(model.getConcreteModelObjects<AirflowNetworkDistributionComponentCoil>().empty());
+  EXPECT_TRUE(model.getModelObjects<AirflowNetworkDistributionComponentCoil>().empty());
 }
 
 TEST_F(EPModelFixture, CoilCoolingWater_RemoveCleansUpAttachedControllerWaterCoil) {
@@ -237,11 +237,11 @@ TEST_F(EPModelFixture, CoilCoolingWater_RemoveCleansUpAttachedControllerWaterCoi
   auto supplyOutletNode = airLoop.supplyOutletNode();
   ASSERT_TRUE(coil.addToNode(supplyOutletNode));
   ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coil));
-  ASSERT_EQ(1u, model.getConcreteModelObjects<ControllerWaterCoil>().size());
+  ASSERT_EQ(1u, model.getModelObjects<ControllerWaterCoil>().size());
 
   coil.remove();
 
-  EXPECT_TRUE(model.getConcreteModelObjects<ControllerWaterCoil>().empty());
+  EXPECT_TRUE(model.getModelObjects<ControllerWaterCoil>().empty());
 }
 
 TEST_F(EPModelFixture, CoilCoolingWater_ControllerWaterCoil_IsInferredFromLoopNodes) {
@@ -333,7 +333,7 @@ TEST_F(EPModelFixture, CoilCoolingWater_RemoveFromPlantLoopClearsInferredControl
 
   ASSERT_TRUE(plantLoop.removeDemandBranchWithComponent(coil));
   EXPECT_FALSE(coil.controllerWaterCoil());
-  EXPECT_TRUE(model.getConcreteModelObjects<ControllerWaterCoil>().empty());
+  EXPECT_TRUE(model.getModelObjects<ControllerWaterCoil>().empty());
 }
 
 TEST_F(EPModelFixture, CoilCoolingWater_AddToNodeRejectsAirLoopInsertionWhenReferencedByStandaloneHeatExchangerAssistedSystem) {

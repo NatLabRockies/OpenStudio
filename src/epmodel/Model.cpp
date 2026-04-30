@@ -954,7 +954,7 @@ namespace epmodel {
   Schedule Model::alwaysOnDiscreteSchedule() const {
     const auto alwaysOnName = alwaysOnDiscreteScheduleName();
 
-    for (const auto& schedule : getConcreteModelObjects<ScheduleConstant>()) {
+    for (const auto& schedule : getModelObjects<ScheduleConstant>()) {
       if (auto candidateName = schedule.name()) {
         if (openstudio::istringEqual(*candidateName, alwaysOnName) && openstudio::equal<double>(schedule.value(), 1.0)) {
           if (auto limits = schedule.scheduleTypeLimits()) {
@@ -991,7 +991,7 @@ namespace epmodel {
   Schedule Model::alwaysOnContinuousSchedule() const {
     const auto alwaysOnName = alwaysOnContinuousScheduleName();
 
-    for (const auto& schedule : getConcreteModelObjects<ScheduleConstant>()) {
+    for (const auto& schedule : getModelObjects<ScheduleConstant>()) {
       if (auto candidateName = schedule.name()) {
         if (openstudio::istringEqual(*candidateName, alwaysOnName) && openstudio::equal<double>(schedule.value(), 1.0)) {
           if (auto limits = schedule.scheduleTypeLimits()) {

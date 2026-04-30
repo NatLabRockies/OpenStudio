@@ -36,7 +36,7 @@ namespace epmodel {
 
     boost::optional<openstudio::epmodel::Loop> AvailabilityManager_Impl::loop() const {
       const auto thisAvm = getObject<openstudio::epmodel::AvailabilityManager>();
-      for (const auto& assignmentList : model().getConcreteModelObjects<openstudio::epmodel::AvailabilityManagerAssignmentList>()) {
+      for (const auto& assignmentList : model().getModelObjects<openstudio::epmodel::AvailabilityManagerAssignmentList>()) {
         for (const auto& avm : assignmentList.availabilityManagers()) {
           if (avm == thisAvm) {
             return assignmentList.loop();

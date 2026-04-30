@@ -54,15 +54,15 @@ TEST_F(EPModelFixture, SolarCollectorFlatPlateWater_PerformanceLifecycle_RoundTr
   EXPECT_NE(replacement.handle(), assignedPerformance.handle());
   EXPECT_EQ(1u, object.children().size());
   EXPECT_EQ(assignedPerformance.handle(), object.children()[0].handle());
-  EXPECT_EQ(2u, model.getConcreteModelObjects<SolarCollectorPerformanceFlatPlate>().size());
+  EXPECT_EQ(2u, model.getModelObjects<SolarCollectorPerformanceFlatPlate>().size());
 
   object.resetSolarCollectorPerformance();
   auto resetPerformance = object.solarCollectorPerformance();
   EXPECT_NE(assignedPerformance.handle(), resetPerformance.handle());
-  EXPECT_EQ(2u, model.getConcreteModelObjects<SolarCollectorPerformanceFlatPlate>().size());
+  EXPECT_EQ(2u, model.getModelObjects<SolarCollectorPerformanceFlatPlate>().size());
 
   object.remove();
-  EXPECT_EQ(1u, model.getConcreteModelObjects<SolarCollectorPerformanceFlatPlate>().size());
+  EXPECT_EQ(1u, model.getModelObjects<SolarCollectorPerformanceFlatPlate>().size());
 }
 
 TEST_F(EPModelFixture, SolarCollectorFlatPlateWater_AddToNode_PlantSupplyOnly) {

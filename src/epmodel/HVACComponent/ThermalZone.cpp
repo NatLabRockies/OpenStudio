@@ -848,7 +848,7 @@ namespace epmodel {
 
     boost::optional<openstudio::epmodel::ZoneHVACEquipmentConnections> ThermalZone_Impl::zoneHVACEquipmentConnections() const {
       auto zone = getObject<openstudio::epmodel::ThermalZone>();
-      for (const auto& conn : model().getConcreteModelObjects<openstudio::epmodel::ZoneHVACEquipmentConnections>()) {
+      for (const auto& conn : model().getModelObjects<openstudio::epmodel::ZoneHVACEquipmentConnections>()) {
         if (conn.thermalZone() == zone) {
           return conn;
         }
@@ -936,7 +936,7 @@ namespace epmodel {
         return false;
       }
 
-      for (const auto& airLoop : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
+      for (const auto& airLoop : model().getModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
         airLoop.getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>()->syncControllerMechanicalVentilationZoneOutdoorAirEntries();
       }
 
@@ -945,7 +945,7 @@ namespace epmodel {
 
     boost::optional<openstudio::epmodel::SizingZone> ThermalZone_Impl::optionalSizingZone() const {
       auto zone = getObject<openstudio::epmodel::ThermalZone>();
-      for (const auto& sizingZone : model().getConcreteModelObjects<openstudio::epmodel::SizingZone>()) {
+      for (const auto& sizingZone : model().getModelObjects<openstudio::epmodel::SizingZone>()) {
         auto sizingZoneImpl = sizingZone.getImpl<openstudio::epmodel::detail::SizingZone_Impl>();
         OS_ASSERT(sizingZoneImpl);
         auto sizingZoneThermalZone = sizingZoneImpl->optionalThermalZone();
@@ -1118,7 +1118,7 @@ namespace epmodel {
     std::vector<openstudio::epmodel::ZoneHVACIdealLoadsAirSystem> ThermalZone_Impl::idealAirLoadsObjects() const {
       auto zone = getObject<openstudio::epmodel::ThermalZone>();
       std::vector<openstudio::epmodel::ZoneHVACIdealLoadsAirSystem> result;
-      for (const auto& system : model().getConcreteModelObjects<openstudio::epmodel::ZoneHVACIdealLoadsAirSystem>()) {
+      for (const auto& system : model().getModelObjects<openstudio::epmodel::ZoneHVACIdealLoadsAirSystem>()) {
         if (auto systemZone = system.thermalZone()) {
           if (*systemZone == zone) {
             result.emplace_back(system);
@@ -1271,7 +1271,7 @@ namespace epmodel {
 
     boost::optional<openstudio::epmodel::ZoneControlHumidistat> ThermalZone_Impl::zoneControlHumidistat() const {
       const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-      for (const auto& humidistat : model().getConcreteModelObjects<openstudio::epmodel::ZoneControlHumidistat>()) {
+      for (const auto& humidistat : model().getModelObjects<openstudio::epmodel::ZoneControlHumidistat>()) {
         if (auto target = humidistat.getTarget(openstudio::ZoneControl_HumidistatFields::ZoneName)) {
           if (*target == zone) {
             return humidistat;
@@ -1320,7 +1320,7 @@ namespace epmodel {
 
     boost::optional<openstudio::epmodel::ZoneControlContaminantController> ThermalZone_Impl::zoneControlContaminantController() const {
       const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-      for (const auto& controller : model().getConcreteModelObjects<openstudio::epmodel::ZoneControlContaminantController>()) {
+      for (const auto& controller : model().getModelObjects<openstudio::epmodel::ZoneControlContaminantController>()) {
         if (auto target = controller.getTarget(openstudio::ZoneControl_ContaminantControllerFields::ZoneName)) {
           if (*target == zone) {
             return controller;
@@ -1449,7 +1449,7 @@ namespace epmodel {
 
     boost::optional<openstudio::epmodel::AirLoopHVAC> ThermalZone_Impl::airLoopHVAC() const {
       const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-      for (const auto& airLoop : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
+      for (const auto& airLoop : model().getModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
         const auto zones = airLoop.thermalZones();
         if (std::ranges::find(zones, zone) != zones.end()) {
           return airLoop;
@@ -1487,7 +1487,7 @@ namespace epmodel {
     std::vector<openstudio::epmodel::Space> ThermalZone_Impl::spaces() const {
       std::vector<openstudio::epmodel::Space> result;
       const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-      for (const auto& space : model().getConcreteModelObjects<openstudio::epmodel::Space>()) {
+      for (const auto& space : model().getModelObjects<openstudio::epmodel::Space>()) {
         if (auto zoneForSpace = space.thermalZone()) {
           if (*zoneForSpace == zone) {
             result.emplace_back(space);

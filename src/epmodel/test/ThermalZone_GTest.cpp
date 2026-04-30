@@ -294,19 +294,19 @@ TEST_F(EPModelFixture, API_ThermalZone_UseIdealAirLoads_RoundTrip) {
   ThermalZone zone(model);
 
   EXPECT_FALSE(zone.useIdealAirLoads());
-  EXPECT_TRUE(model.getConcreteModelObjects<ZoneHVACIdealLoadsAirSystem>().empty());
+  EXPECT_TRUE(model.getModelObjects<ZoneHVACIdealLoadsAirSystem>().empty());
 
   EXPECT_TRUE(zone.setUseIdealAirLoads(true));
   EXPECT_TRUE(zone.useIdealAirLoads());
 
-  const auto idealLoads = model.getConcreteModelObjects<ZoneHVACIdealLoadsAirSystem>();
+  const auto idealLoads = model.getModelObjects<ZoneHVACIdealLoadsAirSystem>();
   ASSERT_EQ(1u, idealLoads.size());
   ASSERT_TRUE(idealLoads.front().thermalZone());
   EXPECT_EQ(zone, *idealLoads.front().thermalZone());
 
   EXPECT_TRUE(zone.setUseIdealAirLoads(false));
   EXPECT_FALSE(zone.useIdealAirLoads());
-  EXPECT_TRUE(model.getConcreteModelObjects<ZoneHVACIdealLoadsAirSystem>().empty());
+  EXPECT_TRUE(model.getModelObjects<ZoneHVACIdealLoadsAirSystem>().empty());
 }
 
 TEST_F(EPModelFixture, API_ThermalZone_ThermostatSetpointDualSetpoint_Relationships) {
@@ -458,7 +458,7 @@ TEST_F(EPModelFixture, API_ThermalZone_UseIdealAirLoads_RemovesAirLoopBranch) {
   EXPECT_TRUE(zone.useIdealAirLoads());
   EXPECT_TRUE(airLoop.thermalZones().empty());
 
-  const auto idealLoads = model.getConcreteModelObjects<ZoneHVACIdealLoadsAirSystem>();
+  const auto idealLoads = model.getModelObjects<ZoneHVACIdealLoadsAirSystem>();
   ASSERT_EQ(1u, idealLoads.size());
   ASSERT_TRUE(idealLoads.front().thermalZone());
   EXPECT_EQ(zone, *idealLoads.front().thermalZone());

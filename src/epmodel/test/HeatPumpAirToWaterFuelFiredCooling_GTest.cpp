@@ -229,7 +229,7 @@ TEST_F(EPModelFixture, HeatPumpAirToWaterFuelFiredCooling_ExplicitCurveConstruct
   CurveQuadratic eirFPLR(foreignModel);
 
   EXPECT_THROW(HeatPumpAirToWaterFuelFiredCooling(model, normalizedCapacityCurve, eirFT, eirFPLR), openstudio::Exception);
-  EXPECT_TRUE(model.getConcreteModelObjects<HeatPumpAirToWaterFuelFiredCooling>().empty());
+  EXPECT_TRUE(model.getModelObjects<HeatPumpAirToWaterFuelFiredCooling>().empty());
 }
 
 TEST_F(EPModelFixture, HeatPumpAirToWaterFuelFiredCooling_AddToNode_PlantSupplyOnly) {

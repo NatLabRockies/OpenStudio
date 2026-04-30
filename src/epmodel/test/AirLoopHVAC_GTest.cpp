@@ -54,7 +54,7 @@ unsigned demandCount(const AirLoopHVAC& airLoop, openstudio::IddObjectType type)
 
 unsigned matchingSupplyPathCount(const Model& model, const AirLoopHVAC& airLoop) {
   unsigned count = 0u;
-  for (const auto& supplyPath : model.getConcreteModelObjects<AirLoopHVACSupplyPath>()) {
+  for (const auto& supplyPath : model.getModelObjects<AirLoopHVACSupplyPath>()) {
     auto inletNode = supplyPath.getImpl<detail::AirLoopHVACSupplyPath_Impl>()->supplyAirPathInletNode();
     if (inletNode && *inletNode == airLoop.demandInletNode()) {
       ++count;
@@ -65,7 +65,7 @@ unsigned matchingSupplyPathCount(const Model& model, const AirLoopHVAC& airLoop)
 
 unsigned matchingReturnPathCount(const Model& model, const AirLoopHVAC& airLoop) {
   unsigned count = 0u;
-  for (const auto& returnPath : model.getConcreteModelObjects<AirLoopHVACReturnPath>()) {
+  for (const auto& returnPath : model.getModelObjects<AirLoopHVACReturnPath>()) {
     auto outletNode = returnPath.getImpl<detail::AirLoopHVACReturnPath_Impl>()->returnAirPathOutletNode();
     if (outletNode && *outletNode == airLoop.demandOutletNode()) {
       ++count;
@@ -76,7 +76,7 @@ unsigned matchingReturnPathCount(const Model& model, const AirLoopHVAC& airLoop)
 
 unsigned matchingZoneSplitterCount(const Model& model, const AirLoopHVAC& airLoop) {
   unsigned count = 0u;
-  for (const auto& zoneSplitter : model.getConcreteModelObjects<AirLoopHVACZoneSplitter>()) {
+  for (const auto& zoneSplitter : model.getModelObjects<AirLoopHVACZoneSplitter>()) {
     auto inletNode = zoneSplitter.getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->inletNode();
     if (inletNode && *inletNode == airLoop.demandInletNode()) {
       ++count;
@@ -87,7 +87,7 @@ unsigned matchingZoneSplitterCount(const Model& model, const AirLoopHVAC& airLoo
 
 unsigned matchingZoneMixerCount(const Model& model, const AirLoopHVAC& airLoop) {
   unsigned count = 0u;
-  for (const auto& zoneMixer : model.getConcreteModelObjects<AirLoopHVACZoneMixer>()) {
+  for (const auto& zoneMixer : model.getModelObjects<AirLoopHVACZoneMixer>()) {
     auto outletNode = zoneMixer.getImpl<detail::AirLoopHVACZoneMixer_Impl>()->outletNode();
     if (outletNode && *outletNode == airLoop.demandOutletNode()) {
       ++count;
@@ -98,7 +98,7 @@ unsigned matchingZoneMixerCount(const Model& model, const AirLoopHVAC& airLoop) 
 
 unsigned matchingSizingSystemCount(const Model& model, const AirLoopHVAC& airLoop) {
   unsigned count = 0u;
-  for (const auto& sizingSystem : model.getConcreteModelObjects<SizingSystem>()) {
+  for (const auto& sizingSystem : model.getModelObjects<SizingSystem>()) {
     auto linkedAirLoop = sizingSystem.getModelObjectTarget<AirLoopHVAC>(openstudio::Sizing_SystemFields::AirLoopName);
     if (linkedAirLoop && *linkedAirLoop == airLoop) {
       ++count;
@@ -186,7 +186,7 @@ TEST_F(EPModelFixture, AirLoopHVAC_RemoveBranchForZone_DualDuctMaintainsBothDema
   const auto secondaryDemandInlet = airLoop.demandInletNodes()[1];
   const auto secondaryDemandInletHandle = secondaryDemandInlet.handle();
   boost::optional<AirLoopHVACZoneSplitter> secondarySplitter;
-  for (const auto& splitter : model.getConcreteModelObjects<AirLoopHVACZoneSplitter>()) {
+  for (const auto& splitter : model.getModelObjects<AirLoopHVACZoneSplitter>()) {
     auto inletNode = splitter.getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->inletNode();
     if (inletNode && *inletNode == secondaryDemandInlet) {
       secondarySplitter = splitter;
@@ -198,7 +198,7 @@ TEST_F(EPModelFixture, AirLoopHVAC_RemoveBranchForZone_DualDuctMaintainsBothDema
   ASSERT_EQ(2u, secondarySplitter->outletModelObjects().size());
 
   boost::optional<AirLoopHVACSupplyPath> secondarySupplyPath;
-  for (const auto& supplyPath : model.getConcreteModelObjects<AirLoopHVACSupplyPath>()) {
+  for (const auto& supplyPath : model.getModelObjects<AirLoopHVACSupplyPath>()) {
     auto inletNode = supplyPath.getImpl<detail::AirLoopHVACSupplyPath_Impl>()->supplyAirPathInletNode();
     if (inletNode && *inletNode == secondaryDemandInlet) {
       secondarySupplyPath = supplyPath;
@@ -1053,7 +1053,7 @@ TEST_F(EPModelFixture, AirLoopHVAC_SizingSystem_IsLoopOwnedCompanionObject) {
   auto sizingSystem = airLoop.sizingSystem();
   EXPECT_EQ(SizingSystem::iddObjectType(), sizingSystem.iddObject().type());
 
-  const auto sizingSystems = model.getConcreteModelObjects<SizingSystem>();
+  const auto sizingSystems = model.getModelObjects<SizingSystem>();
   ASSERT_EQ(1u, sizingSystems.size());
   EXPECT_EQ(sizingSystem, sizingSystems.front());
 }

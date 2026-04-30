@@ -469,7 +469,7 @@ boost::optional<ZoneHVACCoolingPanelRadiantConvectiveWater> CoilCoolingWaterPane
   // handle today, so the deterministic name is the mechanism that lets the
   // view find its owning cooling panel without inventing fake relationship
   // fields.
-  for (const auto& candidate : model().getConcreteModelObjects<openstudio::epmodel::ZoneHVACCoolingPanelRadiantConvectiveWater>()) {
+  for (const auto& candidate : model().getModelObjects<openstudio::epmodel::ZoneHVACCoolingPanelRadiantConvectiveWater>()) {
     if (openstudio::istringEqual(*thisName, detail::transientCoolingCoilName(candidate))) {
       return candidate;
     }

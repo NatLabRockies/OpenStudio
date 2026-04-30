@@ -82,7 +82,7 @@ boost::optional<EnergyManagementSystemActuator> resolveActuatorForRole(
   const CoilUserDefined& coil, const std::string_view componentType, const std::string_view controlType, const std::string_view defaultName,
   const std::string_view renamedSuffix) {
   std::vector<EnergyManagementSystemActuator> matches;
-  for (const auto& actuator : coil.model().getConcreteModelObjects<EnergyManagementSystemActuator>()) {
+  for (const auto& actuator : coil.model().getModelObjects<EnergyManagementSystemActuator>()) {
     const auto actuatedComponent = actuator.actuatedComponent();
     if (!actuatedComponent || actuatedComponent->handle() != coil.handle()) {
       continue;

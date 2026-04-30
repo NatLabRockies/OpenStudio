@@ -117,7 +117,7 @@ bool branchContainsComponentPorts(const Branch& branch, const Handle& componentH
 
 boost::optional<PlantLoop> loopForComponentPorts(const Model& model, const Handle& componentHandle, const Node& inletNode, const Node& outletNode,
                                                  const boost::optional<PlantLoop>& excludedLoop, bool supplySide) {
-  for (const auto& plantLoop_ : model.getConcreteModelObjects<openstudio::epmodel::PlantLoop>()) {
+  for (const auto& plantLoop_ : model.getModelObjects<openstudio::epmodel::PlantLoop>()) {
     if (excludedLoop && (excludedLoop->handle() == plantLoop_.handle())) {
       continue;
     }

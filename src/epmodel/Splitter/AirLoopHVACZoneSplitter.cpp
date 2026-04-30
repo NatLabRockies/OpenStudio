@@ -37,7 +37,7 @@ namespace epmodel {
 
   boost::optional<AirLoopHVAC> AirLoopHVACZoneSplitter::airLoopHVAC() const {
     const auto self = cast<ModelObject>();
-    const auto airLoops = model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>();
+    const auto airLoops = model().getModelObjects<openstudio::epmodel::AirLoopHVAC>();
     const auto it = std::ranges::find_if(airLoops, [&](const openstudio::epmodel::AirLoopHVAC& airLoop) {
       auto impl = airLoop.getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>();
       const auto supplyPath = impl->airLoopHVACSupplyPath();

@@ -1076,7 +1076,7 @@ namespace epmodel {
     }
 
     WaterHeaterSizing WaterHeaterMixed_Impl::waterHeaterSizing() const {
-      for (const auto& sizing : model().getConcreteModelObjects<WaterHeaterSizing>()) {
+      for (const auto& sizing : model().getModelObjects<WaterHeaterSizing>()) {
         if (sizing.waterHeater().handle() == handle()) {
           return sizing;
         }
@@ -1086,7 +1086,7 @@ namespace epmodel {
 
     boost::optional<PlantLoop> WaterHeaterMixed_Impl::plantLoop() const {
       if (auto sourceSidePlantLoop = secondaryPlantLoop()) {
-        for (const auto& plantLoop : model().getConcreteModelObjects<PlantLoop>()) {
+        for (const auto& plantLoop : model().getModelObjects<PlantLoop>()) {
           const auto supplyComponents = plantLoop.supplyComponents(openstudio::IddObjectType::Catchall);
           const auto matchesSourceLoop = std::find_if(supplyComponents.begin(), supplyComponents.end(), [&](const auto& component) {
             return component.handle() == handle();

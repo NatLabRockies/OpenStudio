@@ -47,7 +47,7 @@ boost::optional<ControllerWaterCoil> inferControllerForCoil(const CoilCoolingWat
     return boost::none;
   }
 
-  for (const auto& controller : coil.model().getConcreteModelObjects<ControllerWaterCoil>()) {
+  for (const auto& controller : coil.model().getModelObjects<ControllerWaterCoil>()) {
     const auto actuatorNode = controller.actuatorNode();
     const auto sensorNode = controller.sensorNode();
     if (actuatorNode && sensorNode && actuatorNode->handle() == waterInlet->handle() && sensorNode->handle() == airOutlet->handle()) {
@@ -74,7 +74,7 @@ std::vector<AirflowNetworkDistributionComponentCoil> attachedAirflowNetworkDistr
 }
 
 bool isContainedByCoolingWaterSystem(const CoilCoolingWater& coil) {
-  for (const auto& system : coil.model().getConcreteModelObjects<CoilSystemCoolingWater>()) {
+  for (const auto& system : coil.model().getModelObjects<CoilSystemCoolingWater>()) {
     const auto directTarget =
       system.getModelObjectTarget<ModelObject>(openstudio::CoilSystem_Cooling_WaterFields::CoolingCoilName);
     if (directTarget && directTarget->handle() == coil.handle()) {
@@ -104,7 +104,7 @@ bool isContainedByCoolingWaterSystem(const CoilCoolingWater& coil) {
 }
 
 bool isCoolingCoilOfHeatExchangerAssisted(const CoilCoolingWater& coil) {
-  for (const auto& hxAssisted : coil.model().getConcreteModelObjects<CoilSystemCoolingWaterHeatExchangerAssisted>()) {
+  for (const auto& hxAssisted : coil.model().getModelObjects<CoilSystemCoolingWaterHeatExchangerAssisted>()) {
     const auto coolingCoil =
       hxAssisted.getModelObjectTarget<ModelObject>(openstudio::CoilSystem_Cooling_Water_HeatExchangerAssistedFields::CoolingCoilName);
     if (coolingCoil && coolingCoil->handle() == coil.handle()) {
@@ -116,7 +116,7 @@ bool isCoolingCoilOfHeatExchangerAssisted(const CoilCoolingWater& coil) {
 }
 
 bool isPrimaryCoolingCoilOfCoolingWaterSystem(const CoilCoolingWater& coil) {
-  for (const auto& system : coil.model().getConcreteModelObjects<CoilSystemCoolingWater>()) {
+  for (const auto& system : coil.model().getModelObjects<CoilSystemCoolingWater>()) {
     const auto directTarget =
       system.getModelObjectTarget<ModelObject>(openstudio::CoilSystem_Cooling_WaterFields::CoolingCoilName);
     if (directTarget && directTarget->handle() == coil.handle()) {

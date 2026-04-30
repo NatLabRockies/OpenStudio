@@ -58,7 +58,7 @@ bool isSupportedParallelPIUReheatCoil(const HVACComponent& hvacComponent) {
 }
 
 boost::optional<ThermalZone> owningThermalZoneForZoneNode(const Model& model, const Node& node) {
-  for (const auto& thermalZone : model.getConcreteModelObjects<ThermalZone>()) {
+  for (const auto& thermalZone : model.getModelObjects<ThermalZone>()) {
     if (thermalZone.zoneAirNode() == node) {
       return thermalZone;
     }

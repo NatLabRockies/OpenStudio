@@ -171,7 +171,7 @@ TEST_F(EPModelFixture, GroundHeatExchangerHorizontalTrench_RejectsIncompatibleUn
 
   EXPECT_FALSE(ghx.setUndisturbedGroundTemperatureModel(invalidModel));
   EXPECT_THROW(GroundHeatExchangerHorizontalTrench(model, invalidModel), openstudio::Exception);
-  EXPECT_EQ(1u, model.getConcreteModelObjects<GroundHeatExchangerHorizontalTrench>().size());
+  EXPECT_EQ(1u, model.getModelObjects<GroundHeatExchangerHorizontalTrench>().size());
 }
 
 TEST_F(EPModelFixture, GroundHeatExchangerHorizontalTrench_AddToNodeCloneAndRemove_PlantNonDemandOnly) {
@@ -223,7 +223,7 @@ TEST_F(EPModelFixture, GroundHeatExchangerHorizontalTrench_AddToNodeCloneAndRemo
   EXPECT_EQ(linkedGroundModel.handle(), clone.undisturbedGroundTemperatureModel().handle());
 
   ghx.remove();
-  EXPECT_EQ(3u, model.getConcreteModelObjects<GroundHeatExchangerHorizontalTrench>().size());
+  EXPECT_EQ(3u, model.getModelObjects<GroundHeatExchangerHorizontalTrench>().size());
   EXPECT_EQ(5u, plantLoop.supplyComponents().size());
   EXPECT_EQ(linkedGroundModel.handle(), clone.undisturbedGroundTemperatureModel().handle());
 }

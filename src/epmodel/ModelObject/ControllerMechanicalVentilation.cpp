@@ -150,7 +150,7 @@ boost::optional<openstudio::epmodel::ControllerOutdoorAir> ControllerMechanicalV
   // Use the impl-only optional lookup to avoid side effects from the public
   // ControllerOutdoorAir::controllerMechanicalVentilation() getter, which can
   // synthesize a CMV on demand.
-  for (const auto& oaController : model().getConcreteModelObjects<openstudio::epmodel::ControllerOutdoorAir>()) {
+  for (const auto& oaController : model().getModelObjects<openstudio::epmodel::ControllerOutdoorAir>()) {
     if (auto target = oaController.getImpl<openstudio::epmodel::detail::ControllerOutdoorAir_Impl>()->optionalControllerMechanicalVentilation()) {
       if (*target == thisController) {
         return oaController;

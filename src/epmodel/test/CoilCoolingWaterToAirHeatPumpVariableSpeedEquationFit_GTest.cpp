@@ -73,16 +73,16 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Cur
   CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit coil(model, partLoadFraction);
 
   EXPECT_EQ(partLoadFraction, coil.energyPartLoadFractionCurve());
-  EXPECT_EQ(1u, model.getConcreteModelObjects<CurveLinear>().size());
-  EXPECT_TRUE(model.getConcreteModelObjects<CurveQuadratic>().empty());
+  EXPECT_EQ(1u, model.getModelObjects<CurveLinear>().size());
+  EXPECT_TRUE(model.getModelObjects<CurveQuadratic>().empty());
   EXPECT_TRUE(coil.setAvailabilitySchedule(availability));
   EXPECT_EQ(availability, coil.availabilitySchedule());
 
   CurveLinear replacement(model);
   EXPECT_TRUE(coil.setEnergyPartLoadFractionCurve(replacement));
   EXPECT_EQ(replacement, coil.energyPartLoadFractionCurve());
-  EXPECT_EQ(2u, model.getConcreteModelObjects<CurveLinear>().size());
-  EXPECT_TRUE(model.getConcreteModelObjects<CurveQuadratic>().empty());
+  EXPECT_EQ(2u, model.getModelObjects<CurveLinear>().size());
+  EXPECT_TRUE(model.getModelObjects<CurveQuadratic>().empty());
 }
 
 TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_ScalarAccessors_RoundTrip) {
@@ -231,12 +231,12 @@ TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Rem
   ASSERT_TRUE(coil.addSpeed(speed2));
   ASSERT_EQ(2u, coil.speeds().size());
   EXPECT_EQ(2u, model.getModelObjects<CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData>(false, true).size());
-  EXPECT_EQ(1u, model.getConcreteModelObjects<AirflowNetworkDistributionComponentCoil>().size());
+  EXPECT_EQ(1u, model.getModelObjects<AirflowNetworkDistributionComponentCoil>().size());
 
   coil.remove();
 
   EXPECT_TRUE(model.getModelObjects<CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData>(false, true).empty());
-  EXPECT_TRUE(model.getConcreteModelObjects<AirflowNetworkDistributionComponentCoil>().empty());
+  EXPECT_TRUE(model.getModelObjects<AirflowNetworkDistributionComponentCoil>().empty());
 }
 
 TEST_F(EPModelFixture, CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_AvailabilityScheduleGetterRepairsMissingRequiredReference) {

@@ -84,7 +84,7 @@ namespace detail {
     }
 
     boost::optional<openstudio::epmodel::ModelObject> ConnectorSplitter_Impl::inletModelObject() const {
-      for (const auto& loop : model().getConcreteModelObjects<AirLoopHVAC>()) {
+      for (const auto& loop : model().getModelObjects<AirLoopHVAC>()) {
         auto loopImpl = loop.getImpl<detail::AirLoopHVAC_Impl>();
         auto splitter = loopImpl->supplySplitter();
         if (!(splitter && splitter->handle() == handle())) {
@@ -130,7 +130,7 @@ namespace detail {
 
     std::vector<openstudio::epmodel::ModelObject> ConnectorSplitter_Impl::outletModelObjects() const {
       std::vector<openstudio::epmodel::ModelObject> result;
-      for (const auto& loop : model().getConcreteModelObjects<AirLoopHVAC>()) {
+      for (const auto& loop : model().getModelObjects<AirLoopHVAC>()) {
         auto loopImpl = loop.getImpl<detail::AirLoopHVAC_Impl>();
         auto splitter = loopImpl->supplySplitter();
         if (!(splitter && splitter->handle() == handle())) {

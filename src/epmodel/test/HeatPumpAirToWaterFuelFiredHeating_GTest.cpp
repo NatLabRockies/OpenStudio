@@ -257,7 +257,7 @@ TEST_F(EPModelFixture, HeatPumpAirToWaterFuelFiredHeating_ExplicitCurveConstruct
   CurveQuadratic eirFPLR(foreignModel);
 
   EXPECT_THROW(HeatPumpAirToWaterFuelFiredHeating(model, normalizedCapacityCurve, eirFT, eirFPLR), openstudio::Exception);
-  EXPECT_TRUE(model.getConcreteModelObjects<HeatPumpAirToWaterFuelFiredHeating>().empty());
+  EXPECT_TRUE(model.getModelObjects<HeatPumpAirToWaterFuelFiredHeating>().empty());
 }
 
 TEST_F(EPModelFixture, HeatPumpAirToWaterFuelFiredHeating_Remove_ClearsCompanionRelationship) {
@@ -274,8 +274,8 @@ TEST_F(EPModelFixture, HeatPumpAirToWaterFuelFiredHeating_Remove_ClearsCompanion
   EXPECT_FALSE(heating.remove().empty());
   EXPECT_EQ(initialObjectCount - 1, model.objects().size());
   EXPECT_FALSE(cooling.companionHeatingHeatPump());
-  EXPECT_EQ(0u, model.getConcreteModelObjects<HeatPumpAirToWaterFuelFiredHeating>().size());
-  EXPECT_EQ(1u, model.getConcreteModelObjects<HeatPumpAirToWaterFuelFiredCooling>().size());
+  EXPECT_EQ(0u, model.getModelObjects<HeatPumpAirToWaterFuelFiredHeating>().size());
+  EXPECT_EQ(1u, model.getModelObjects<HeatPumpAirToWaterFuelFiredCooling>().size());
 }
 
 TEST_F(EPModelFixture, HeatPumpAirToWaterFuelFiredHeating_AddToNode_PlantSupplyOnly) {

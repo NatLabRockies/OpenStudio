@@ -204,12 +204,12 @@ TEST_F(EPModelFixture, CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Rem
   ASSERT_TRUE(coil.addSpeed(speed2));
   ASSERT_EQ(2u, coil.speeds().size());
   EXPECT_EQ(2u, model.getModelObjects<CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData>(false, true).size());
-  EXPECT_EQ(1u, model.getConcreteModelObjects<AirflowNetworkDistributionComponentCoil>().size());
+  EXPECT_EQ(1u, model.getModelObjects<AirflowNetworkDistributionComponentCoil>().size());
 
   coil.remove();
 
   EXPECT_TRUE(model.getModelObjects<CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData>(false, true).empty());
-  EXPECT_TRUE(model.getConcreteModelObjects<AirflowNetworkDistributionComponentCoil>().empty());
+  EXPECT_TRUE(model.getModelObjects<AirflowNetworkDistributionComponentCoil>().empty());
 }
 
 TEST_F(EPModelFixture, CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_AvailabilityScheduleGetterRepairsMissingRequiredReference) {

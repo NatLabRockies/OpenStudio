@@ -60,7 +60,7 @@ namespace epmodel {
         return boost::none;
       }
 
-      const auto airLoops = model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>();
+      const auto airLoops = model().getModelObjects<openstudio::epmodel::AirLoopHVAC>();
       const auto it = std::ranges::find_if(airLoops, [&](const openstudio::epmodel::AirLoopHVAC& airLoop) {
         const auto demandInlets = airLoop.getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>()->demandInletNodes();
         return std::ranges::find(demandInlets, *inletNode) != demandInlets.end();
@@ -190,7 +190,7 @@ namespace epmodel {
       // node-name linkage is the association contract. Recover that contract
       // here so later topology calls can rely on a complete path record.
       boost::optional<openstudio::epmodel::AirLoopHVACZoneSplitter> zoneSplitter;
-      for (const auto& splitter : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACZoneSplitter>()) {
+      for (const auto& splitter : model().getModelObjects<openstudio::epmodel::AirLoopHVACZoneSplitter>()) {
         if (auto splitterInlet = splitter.getImpl<openstudio::epmodel::detail::AirLoopHVACZoneSplitter_Impl>()->inletNode()) {
           if (*splitterInlet == *inletNode) {
             zoneSplitter = splitter;

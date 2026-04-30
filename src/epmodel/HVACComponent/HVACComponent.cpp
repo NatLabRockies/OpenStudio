@@ -108,7 +108,7 @@ namespace epmodel {
       // Resolve ownership through AirLoopHVAC traversal APIs so topology logic
       // remains centralized in supply/demand components implementations.
       const auto thisObject = getObject<openstudio::epmodel::ModelObject>();
-      const auto airLoops = model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>();
+      const auto airLoops = model().getModelObjects<openstudio::epmodel::AirLoopHVAC>();
       for (const auto& airLoop : airLoops) {
         if (airLoop.component(thisObject.handle())) {
           return airLoop;
@@ -124,7 +124,7 @@ namespace epmodel {
     }
 
     boost::optional<PlantLoop> HVACComponent_Impl::plantLoop() const {
-      const auto plantLoops = model().getConcreteModelObjects<openstudio::epmodel::PlantLoop>();
+      const auto plantLoops = model().getModelObjects<openstudio::epmodel::PlantLoop>();
       for (const auto& plantLoop : plantLoops) {
         const auto supplyComponents = plantLoop.supplyComponents(openstudio::IddObjectType::Catchall);
         if (std::ranges::find_if(supplyComponents, [&](const auto& component) { return component.handle() == handle(); }) != supplyComponents.end()) {

@@ -33,7 +33,7 @@ namespace epmodel {
         return boost::none;
       }
 
-      for (const auto& coil : controllerImpl.model().getConcreteModelObjects<CoilType>()) {
+      for (const auto& coil : controllerImpl.model().getModelObjects<CoilType>()) {
         const auto waterInlet = coil.waterInletModelObject();
         const auto airOutlet = coil.airOutletModelObject();
         if (waterInlet && airOutlet && waterInlet->handle() == actuatorNode->handle() && airOutlet->handle() == sensorNode->handle()) {

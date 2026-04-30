@@ -319,7 +319,7 @@ boost::optional<CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit> CoilHeati
   // EnergyPlus, and epmodel does not yet carry an explicit transient parent
   // handle for this pattern.
   if (const auto thisName = getObject<ModelObject>().name()) {
-    for (const auto& candidate : model().getConcreteModelObjects<CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit>()) {
+    for (const auto& candidate : model().getModelObjects<CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit>()) {
       const auto groups = candidate.extensibleGroups();
       for (unsigned i = 0; i < groups.size(); ++i) {
         if (openstudio::istringEqual(*thisName, detail::transientSpeedDataName(candidate, i))) {

@@ -600,7 +600,7 @@ boost::optional<ZoneHVACBaseboardConvectiveWater> CoilHeatingWaterBaseboard_Impl
   // deterministic transient name is how we recover the owner without inventing
   // fake persisted relationship fields.
   const auto expectedName = getObject<CoilHeatingWaterBaseboard>().nameString();
-  for (const auto& candidate : model().getConcreteModelObjects<ZoneHVACBaseboardConvectiveWater>()) {
+  for (const auto& candidate : model().getModelObjects<ZoneHVACBaseboardConvectiveWater>()) {
     if (detail::transientHeatingCoilName(candidate) == expectedName) {
       return candidate;
     }

@@ -49,7 +49,7 @@ namespace {
   }
 
   boost::optional<ThermalZone> owningThermalZoneForBranchNode(const Model& model, const Node& node) {
-    for (const auto& zone : model.getConcreteModelObjects<ThermalZone>()) {
+    for (const auto& zone : model.getModelObjects<ThermalZone>()) {
       if (zone.zoneAirNode() == node) {
         return zone;
       }

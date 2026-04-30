@@ -60,7 +60,7 @@ namespace epmodel {
         return boost::none;
       }
 
-      const auto airLoops = model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>();
+      const auto airLoops = model().getModelObjects<openstudio::epmodel::AirLoopHVAC>();
       const auto it = std::ranges::find_if(airLoops, [&](const openstudio::epmodel::AirLoopHVAC& airLoop) {
         if (auto demandOutlet = airLoop.getModelObjectTarget<openstudio::epmodel::Node>(openstudio::AirLoopHVACFields::DemandSideOutletNodeName)) {
           return *demandOutlet == *outletNode;
@@ -194,7 +194,7 @@ namespace epmodel {
       // Re-establish that association here so demand-side traversal has a stable
       // anchor object.
       boost::optional<openstudio::epmodel::AirLoopHVACZoneMixer> zoneMixer;
-      for (const auto& mixer : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACZoneMixer>()) {
+      for (const auto& mixer : model().getModelObjects<openstudio::epmodel::AirLoopHVACZoneMixer>()) {
         if (auto mixerOutlet = mixer.getImpl<openstudio::epmodel::detail::AirLoopHVACZoneMixer_Impl>()->outletNode()) {
           if (*mixerOutlet == *outletNode) {
             zoneMixer = mixer;

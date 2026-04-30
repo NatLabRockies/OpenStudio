@@ -310,7 +310,7 @@ boost::optional<ZoneHVACLowTempRadiantConstFlow> CoilHeatingLowTempRadiantConstF
   // to recover the owning radiant parent without inventing fake persisted
   // relationship fields. It works, but it is also a sign that a future
   // transient-ownership mechanism could be cleaner than reverse name matching.
-  for (const auto& candidate : model().getConcreteModelObjects<openstudio::epmodel::ZoneHVACLowTempRadiantConstFlow>()) {
+  for (const auto& candidate : model().getModelObjects<openstudio::epmodel::ZoneHVACLowTempRadiantConstFlow>()) {
     if (openstudio::istringEqual(*thisName, detail::transientHeatingCoilName(candidate))) {
       return candidate;
     }

@@ -116,7 +116,7 @@ void TableIndependentVariable_Impl::resetUnitType() {
 
 std::vector<TableLookup> TableIndependentVariable_Impl::tableLookups() const {
   std::vector<TableLookup> result;
-  for (const auto& tableLookup : model().getConcreteModelObjects<TableLookup>()) {
+  for (const auto& tableLookup : model().getModelObjects<TableLookup>()) {
     for (const auto& independentVariable : tableLookup.independentVariables()) {
       if (independentVariable.handle() == handle()) {
         result.push_back(tableLookup);

@@ -189,7 +189,7 @@ TEST_F(EPModelFixture, GroundHeatExchangerVertical_RejectsUnsupportedUndisturbed
 
   EXPECT_FALSE(ghx.setUndisturbedGroundTemperatureModel(unsupportedModelObject));
   EXPECT_THROW(GroundHeatExchangerVertical(model, unsupportedModelObject), openstudio::Exception);
-  EXPECT_EQ(1u, model.getConcreteModelObjects<GroundHeatExchangerVertical>().size());
+  EXPECT_EQ(1u, model.getModelObjects<GroundHeatExchangerVertical>().size());
   EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::GroundHeatExchanger_System).size());
   EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::GroundHeatExchanger_Vertical_Properties).size());
 }
@@ -198,17 +198,17 @@ TEST_F(EPModelFixture, GroundHeatExchangerVertical_Remove_CleansCompanionObjects
   Model model;
   GroundHeatExchangerVertical ghx(model);
 
-  EXPECT_EQ(1u, model.getConcreteModelObjects<GroundHeatExchangerVertical>().size());
+  EXPECT_EQ(1u, model.getModelObjects<GroundHeatExchangerVertical>().size());
   EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::GroundHeatExchanger_System).size());
   EXPECT_EQ(1u, model.getObjectsByType(openstudio::IddObjectType::GroundHeatExchanger_Vertical_Properties).size());
-  EXPECT_EQ(1u, model.getConcreteModelObjects<SiteGroundTemperatureUndisturbedKusudaAchenbach>().size());
+  EXPECT_EQ(1u, model.getModelObjects<SiteGroundTemperatureUndisturbedKusudaAchenbach>().size());
 
   ghx.remove();
 
-  EXPECT_EQ(0u, model.getConcreteModelObjects<GroundHeatExchangerVertical>().size());
+  EXPECT_EQ(0u, model.getModelObjects<GroundHeatExchangerVertical>().size());
   EXPECT_EQ(0u, model.getObjectsByType(openstudio::IddObjectType::GroundHeatExchanger_System).size());
   EXPECT_EQ(0u, model.getObjectsByType(openstudio::IddObjectType::GroundHeatExchanger_Vertical_Properties).size());
-  EXPECT_EQ(1u, model.getConcreteModelObjects<SiteGroundTemperatureUndisturbedKusudaAchenbach>().size());
+  EXPECT_EQ(1u, model.getModelObjects<SiteGroundTemperatureUndisturbedKusudaAchenbach>().size());
 }
 
 TEST_F(EPModelFixture, GroundHeatExchangerVertical_RemoveWhileAttached_CleansLoopAndCompanionObjects) {

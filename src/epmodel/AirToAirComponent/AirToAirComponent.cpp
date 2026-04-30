@@ -445,7 +445,7 @@ namespace epmodel {
         return {};
       }
 
-      for (auto oaSystem : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
+      for (auto oaSystem : model().getModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
         if (oaSystem.component(handle())) {
           if (removeFromOutdoorAirSystem(oaSystem)) {
             return HVACComponent_Impl::remove();

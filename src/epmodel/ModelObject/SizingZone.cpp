@@ -1311,7 +1311,7 @@ namespace epmodel {
       }
 
       std::vector<openstudio::epmodel::Space> zoneSpaces;
-      for (const auto& space : model().getConcreteModelObjects<openstudio::epmodel::Space>()) {
+      for (const auto& space : model().getModelObjects<openstudio::epmodel::Space>()) {
         auto spaceZone = space.thermalZone();
         if (spaceZone && (*spaceZone == *zone)) {
           zoneSpaces.push_back(space);

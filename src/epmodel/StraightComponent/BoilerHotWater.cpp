@@ -502,7 +502,7 @@ bool BoilerHotWater_Impl::setOffCycleParasiticFuelLoad(double offCycleParasiticF
 }
 
 bool BoilerHotWater_Impl::addToNode(Node& node) {
-  for (auto& plant : model().getConcreteModelObjects<openstudio::epmodel::PlantLoop>()) {
+  for (auto& plant : model().getModelObjects<openstudio::epmodel::PlantLoop>()) {
     if (!plant.supplyComponent(node.handle())) {
       continue;
     }

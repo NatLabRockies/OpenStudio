@@ -477,7 +477,7 @@ namespace epmodel {
       }
 
       boost::optional<AirLoopHVACSupplyPath> secondarySupplyPath;
-      for (const auto& supplyPath : model().getConcreteModelObjects<AirLoopHVACSupplyPath>()) {
+      for (const auto& supplyPath : model().getModelObjects<AirLoopHVACSupplyPath>()) {
         if (auto inletNode = supplyPath.getImpl<detail::AirLoopHVACSupplyPath_Impl>()->supplyAirPathInletNode()) {
           if (*inletNode == secondaryDemandInletNode) {
             secondarySupplyPath = supplyPath;
@@ -539,7 +539,7 @@ namespace epmodel {
         return std::ranges::find(inletNodes, zoneInletNode) != inletNodes.end();
       };
 
-      for (const auto& conn : m.getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
+      for (const auto& conn : m.getModelObjects<ZoneHVACEquipmentConnections>()) {
         if (!inletNameMatches(conn)) {
           continue;
         }
@@ -571,7 +571,7 @@ namespace epmodel {
         return std::ranges::find(returnNodes, zoneReturnNode) != returnNodes.end();
       };
 
-      for (const auto& conn : m.getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
+      for (const auto& conn : m.getModelObjects<ZoneHVACEquipmentConnections>()) {
         if (!outletNameMatches(conn)) {
           continue;
         }
@@ -797,7 +797,7 @@ namespace epmodel {
          // This reproduces openstudio::model topology assumptions while storing
          // the association using E+ node-linkage semantics.
         std::vector<AirLoopHVACZoneSplitter> matches;
-        for (auto& zp : model().getConcreteModelObjects<AirLoopHVACZoneSplitter>()) {
+        for (auto& zp : model().getModelObjects<AirLoopHVACZoneSplitter>()) {
           if (zp.getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->inletNode() == demandInlet) {
             matches.push_back(zp);
           }
@@ -827,7 +827,7 @@ namespace epmodel {
       {  // Demand-side mixer anchor keyed by demand outlet node.
          // Splitter + mixer pair define branch fan-out/fan-in boundaries.
         std::vector<AirLoopHVACZoneMixer> matches;
-        for (auto& zm : model().getConcreteModelObjects<AirLoopHVACZoneMixer>()) {
+        for (auto& zm : model().getModelObjects<AirLoopHVACZoneMixer>()) {
           if (zm.getImpl<detail::AirLoopHVACZoneMixer_Impl>()->outletNode() == demandOutlet) {
             matches.push_back(zm);
           }
@@ -855,7 +855,7 @@ namespace epmodel {
          // Path objects are connective tissue in E+ schema; we keep them
          // explicit so traversal and mutation do not infer hidden links.
         std::vector<AirLoopHVACSupplyPath> matches;
-        for (auto& sp : model().getConcreteModelObjects<AirLoopHVACSupplyPath>()) {
+        for (auto& sp : model().getModelObjects<AirLoopHVACSupplyPath>()) {
           if (sp.getImpl<detail::AirLoopHVACSupplyPath_Impl>()->supplyAirPathInletNode() == demandInlet) {
             matches.push_back(sp);
           }
@@ -884,7 +884,7 @@ namespace epmodel {
          // Together with SupplyPath this keeps demand topology round-trippable
          // through IDF connective-tissue objects.
         std::vector<AirLoopHVACReturnPath> matches;
-        for (auto& rp : model().getConcreteModelObjects<AirLoopHVACReturnPath>()) {
+        for (auto& rp : model().getModelObjects<AirLoopHVACReturnPath>()) {
           if (rp.getImpl<detail::AirLoopHVACReturnPath_Impl>()->returnAirPathOutletNode() == demandOutlet) {
             matches.push_back(rp);
           }
@@ -954,7 +954,7 @@ namespace epmodel {
          // Loop-level sizing APIs assume one companion object per AirLoopHVAC,
          // so canonicalization creates it when missing.
         std::vector<SizingSystem> matches;
-        for (const auto& sizingSystem : model().getConcreteModelObjects<SizingSystem>()) {
+        for (const auto& sizingSystem : model().getModelObjects<SizingSystem>()) {
           auto linkedAirLoop = sizingSystem.getModelObjectTarget<AirLoopHVAC>(openstudio::Sizing_SystemFields::AirLoopName);
           if (linkedAirLoop && *linkedAirLoop == airLoop) {
             matches.push_back(sizingSystem);
@@ -1329,7 +1329,7 @@ namespace epmodel {
       primaryInletNode->remove();
 
       const auto terminalObject = terminal.cast<ModelObject>();
-      for (auto& zone : terminal.model().getConcreteModelObjects<ThermalZone>()) {
+      for (auto& zone : terminal.model().getModelObjects<ThermalZone>()) {
         if (auto connections = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections()) {
           auto equipmentList = connections->zoneHVACEquipmentList();
           equipmentList.removeEquipment(terminalObject);
@@ -1486,7 +1486,7 @@ namespace epmodel {
         }
       }
 
-      for (auto& mixedAirSPM : model().getConcreteModelObjects<openstudio::epmodel::SetpointManagerMixedAir>()) {
+      for (auto& mixedAirSPM : model().getModelObjects<openstudio::epmodel::SetpointManagerMixedAir>()) {
         auto setpointNode = mixedAirSPM.setpointNode();
         if (!setpointNode) {
           continue;
@@ -1558,7 +1558,7 @@ namespace epmodel {
         return boost::none;
       }
 
-      for (const auto& supplyPath : model().getConcreteModelObjects<AirLoopHVACSupplyPath>()) {
+      for (const auto& supplyPath : model().getModelObjects<AirLoopHVACSupplyPath>()) {
         const auto supplyPathImpl = supplyPath.getImpl<detail::AirLoopHVACSupplyPath_Impl>();
         if (auto inletNode = supplyPathImpl->supplyAirPathInletNode()) {
           if (*inletNode != demandInletNode) {
@@ -1586,7 +1586,7 @@ namespace epmodel {
 
       auto airLoop = getObject<AirLoopHVAC>();
       boost::optional<AirLoopHVACSupplyPath> supplyPath;
-      for (const auto& candidate : model().getConcreteModelObjects<AirLoopHVACSupplyPath>()) {
+      for (const auto& candidate : model().getModelObjects<AirLoopHVACSupplyPath>()) {
         if (auto inletNode = candidate.getImpl<detail::AirLoopHVACSupplyPath_Impl>()->supplyAirPathInletNode()) {
           if (*inletNode == secondaryDemandInletNode) {
             supplyPath = candidate;
@@ -1603,7 +1603,7 @@ namespace epmodel {
       }
 
       boost::optional<AirLoopHVACZoneSplitter> splitter;
-      for (const auto& candidate : model().getConcreteModelObjects<AirLoopHVACZoneSplitter>()) {
+      for (const auto& candidate : model().getModelObjects<AirLoopHVACZoneSplitter>()) {
         if (auto inletNode = candidate.getImpl<detail::AirLoopHVACZoneSplitter_Impl>()->inletNode()) {
           if (*inletNode == secondaryDemandInletNode) {
             splitter = candidate;
@@ -1644,7 +1644,7 @@ namespace epmodel {
         return boost::none;
       }
       const auto mainBranchHandle = branches.front().handle();
-      for (const auto& splitter : model().getConcreteModelObjects<ConnectorSplitter>()) {
+      for (const auto& splitter : model().getModelObjects<ConnectorSplitter>()) {
         auto inletBranch = splitter.getImpl<detail::ConnectorSplitter_Impl>()->inletBranch();
         if (inletBranch && inletBranch->handle() == mainBranchHandle) {
           return splitter.cast<Splitter>();
@@ -1773,7 +1773,7 @@ namespace epmodel {
       boost::optional<AirLoopHVACReturnPath> result;
 
       // First try to find an existing ReturnPath already keyed to this demand outlet node.
-      for (const auto& returnPath : model().getConcreteModelObjects<AirLoopHVACReturnPath>()) {
+      for (const auto& returnPath : model().getModelObjects<AirLoopHVACReturnPath>()) {
         if (auto target = returnPath.getTarget(AirLoopHVAC_ReturnPathFields::ReturnAirPathOutletNodeName)) {
           if (*target == demandOutlet) {
             result = returnPath;
@@ -1791,7 +1791,7 @@ namespace epmodel {
       boost::optional<AirLoopHVACSupplyPath> result;
 
       // First try to find an existing SupplyPath already keyed to this demand inlet node.
-      for (const auto& supplyPath : model().getConcreteModelObjects<AirLoopHVACSupplyPath>()) {
+      for (const auto& supplyPath : model().getModelObjects<AirLoopHVACSupplyPath>()) {
         if (auto target = supplyPath.getTarget(AirLoopHVAC_SupplyPathFields::SupplyAirPathInletNodeName)) {
           if (*target == demandInlet) {
             result = supplyPath;
@@ -2178,7 +2178,7 @@ namespace epmodel {
 
     SizingSystem AirLoopHVAC_Impl::sizingSystem() const {
       const auto airLoop = getObject<AirLoopHVAC>();
-      for (const auto& sizingSystem : model().getConcreteModelObjects<SizingSystem>()) {
+      for (const auto& sizingSystem : model().getModelObjects<SizingSystem>()) {
         auto linkedAirLoop = sizingSystem.getModelObjectTarget<AirLoopHVAC>(openstudio::Sizing_SystemFields::AirLoopName);
         if (linkedAirLoop && *linkedAirLoop == airLoop) {
           return sizingSystem;

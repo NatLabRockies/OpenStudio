@@ -184,7 +184,7 @@ TEST_F(EPModelFixture, WaterHeaterStratified_CloneReattachesWaterHeaterSizing) {
 
   auto cloneObject = heater.clone(model);
   auto heaterClone = cloneObject.cast<WaterHeaterStratified>();
-  EXPECT_EQ(2u, model.getConcreteModelObjects<WaterHeaterSizing>().size());
+  EXPECT_EQ(2u, model.getModelObjects<WaterHeaterSizing>().size());
   EXPECT_NE(heater.handle(), heaterClone.handle());
 
   auto cloneSizing = heaterClone.waterHeaterSizing();
@@ -196,7 +196,7 @@ TEST_F(EPModelFixture, WaterHeaterStratified_CloneReattachesWaterHeaterSizing) {
   Model otherModel;
   auto crossCloneObject = heater.clone(otherModel);
   auto crossClone = crossCloneObject.cast<WaterHeaterStratified>();
-  EXPECT_EQ(1u, otherModel.getConcreteModelObjects<WaterHeaterSizing>().size());
+  EXPECT_EQ(1u, otherModel.getModelObjects<WaterHeaterSizing>().size());
 
   auto crossCloneSizing = crossClone.waterHeaterSizing();
   EXPECT_EQ(crossClone.handle(), crossCloneSizing.waterHeater().handle());

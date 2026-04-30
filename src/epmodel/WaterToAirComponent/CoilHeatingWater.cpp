@@ -40,7 +40,7 @@ boost::optional<ControllerWaterCoil> inferControllerForCoil(const CoilHeatingWat
     return boost::none;
   }
 
-  for (const auto& controller : coil.model().getConcreteModelObjects<ControllerWaterCoil>()) {
+  for (const auto& controller : coil.model().getModelObjects<ControllerWaterCoil>()) {
     const auto actuatorNode = controller.actuatorNode();
     const auto sensorNode = controller.sensorNode();
     if (actuatorNode && sensorNode && actuatorNode->handle() == waterInlet->handle() && sensorNode->handle() == airOutlet->handle()) {

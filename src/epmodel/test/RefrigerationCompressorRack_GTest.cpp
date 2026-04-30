@@ -278,8 +278,8 @@ TEST_F(EPModelFixture, RefrigerationCompressorRack_Remove_RemovesOwnedCurves) {
   Model model;
   RefrigerationCompressorRack rack(model);
 
-  const auto initialRacks = model.getConcreteModelObjects<RefrigerationCompressorRack>().size();
-  const auto initialCurves = model.getConcreteModelObjects<CurveQuadratic>().size();
+  const auto initialRacks = model.getModelObjects<RefrigerationCompressorRack>().size();
+  const auto initialCurves = model.getModelObjects<CurveQuadratic>().size();
   auto defaultCurve = rack.compressorRackCOPFunctionofTemperatureCurve();
   ASSERT_TRUE(defaultCurve.optionalCast<CurveQuadratic>());
 
@@ -294,8 +294,8 @@ TEST_F(EPModelFixture, RefrigerationCompressorRack_Remove_RemovesOwnedCurves) {
   EXPECT_FALSE(rack.remove().empty());
   EXPECT_FALSE(model.getModelObject<CurveQuadratic>(defaultCurve.handle()));
   EXPECT_FALSE(model.getModelObject<CurveQuadratic>(fanCurve.handle()));
-  EXPECT_EQ(initialRacks - 1u, model.getConcreteModelObjects<RefrigerationCompressorRack>().size());
-  EXPECT_EQ(initialCurves - 1u, model.getConcreteModelObjects<CurveQuadratic>().size());
+  EXPECT_EQ(initialRacks - 1u, model.getModelObjects<RefrigerationCompressorRack>().size());
+  EXPECT_EQ(initialCurves - 1u, model.getModelObjects<CurveQuadratic>().size());
 }
 
 TEST_F(EPModelFixture, RefrigerationCompressorRack_Remove_PreservesReferencedSchedules) {
@@ -308,11 +308,11 @@ TEST_F(EPModelFixture, RefrigerationCompressorRack_Remove_PreservesReferencedSch
   ASSERT_TRUE(evaporativeSchedule.setValue(1.0));
   ASSERT_TRUE(rack.setWaterCooledCondenserOutletTemperatureSchedule(outletSchedule));
   ASSERT_TRUE(rack.setEvaporativeCondenserAvailabilitySchedule(evaporativeSchedule));
-  EXPECT_EQ(1u, model.getConcreteModelObjects<RefrigerationCompressorRack>().size());
+  EXPECT_EQ(1u, model.getModelObjects<RefrigerationCompressorRack>().size());
   EXPECT_EQ(2u, model.getModelObjects<Schedule>().size());
 
   rack.remove();
 
-  EXPECT_TRUE(model.getConcreteModelObjects<RefrigerationCompressorRack>().empty());
+  EXPECT_TRUE(model.getModelObjects<RefrigerationCompressorRack>().empty());
   EXPECT_EQ(2u, model.getModelObjects<Schedule>().size());
 }

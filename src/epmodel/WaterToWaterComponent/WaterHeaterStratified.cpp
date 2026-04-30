@@ -846,7 +846,7 @@ namespace epmodel {
     }
 
     WaterHeaterSizing WaterHeaterStratified_Impl::waterHeaterSizing() const {
-      for (const auto& sizing : model().getConcreteModelObjects<WaterHeaterSizing>()) {
+      for (const auto& sizing : model().getModelObjects<WaterHeaterSizing>()) {
         if (sizing.waterHeater().handle() == handle()) {
           return sizing;
         }
@@ -856,7 +856,7 @@ namespace epmodel {
 
     boost::optional<PlantLoop> WaterHeaterStratified_Impl::plantLoop() const {
       if (auto sourceSidePlantLoop = secondaryPlantLoop()) {
-        for (const auto& plantLoop : model().getConcreteModelObjects<PlantLoop>()) {
+        for (const auto& plantLoop : model().getModelObjects<PlantLoop>()) {
           const auto supplyComponents = plantLoop.supplyComponents(openstudio::IddObjectType::Catchall);
           const auto matchesSourceLoop =
             std::find_if(supplyComponents.begin(), supplyComponents.end(), [&](const auto& component) { return component.handle() == handle(); });
@@ -946,13 +946,13 @@ namespace epmodel {
         return sourceSidePlantLoop_->componentType();
       }
 
-      for (const auto& hpwh : model().getConcreteModelObjects<WaterHeaterHeatPump>()) {
+      for (const auto& hpwh : model().getModelObjects<WaterHeaterHeatPump>()) {
         if (hpwh.tank().handle() == handle()) {
           return openstudio::ComponentType::Heating;
         }
       }
 
-      for (const auto& hpwh : model().getConcreteModelObjects<WaterHeaterHeatPumpWrappedCondenser>()) {
+      for (const auto& hpwh : model().getModelObjects<WaterHeaterHeatPumpWrappedCondenser>()) {
         if (hpwh.tank().handle() == handle()) {
           return openstudio::ComponentType::Heating;
         }
@@ -979,12 +979,12 @@ namespace epmodel {
         const auto plantFuelTypes = sourceSidePlantLoop_->heatingFuelTypes();
         result.insert(plantFuelTypes.begin(), plantFuelTypes.end());
       }
-      for (const auto& hpwh : model().getConcreteModelObjects<WaterHeaterHeatPump>()) {
+      for (const auto& hpwh : model().getModelObjects<WaterHeaterHeatPump>()) {
         if (hpwh.tank().handle() == handle()) {
           result.insert(openstudio::FuelType::Electricity);
         }
       }
-      for (const auto& hpwh : model().getConcreteModelObjects<WaterHeaterHeatPumpWrappedCondenser>()) {
+      for (const auto& hpwh : model().getModelObjects<WaterHeaterHeatPumpWrappedCondenser>()) {
         if (hpwh.tank().handle() == handle()) {
           result.insert(openstudio::FuelType::Electricity);
         }
@@ -1001,12 +1001,12 @@ namespace epmodel {
         const auto plantFuelTypes = sourceSidePlantLoop_->appGHeatingFuelTypes();
         result.insert(plantFuelTypes.begin(), plantFuelTypes.end());
       }
-      for (const auto& hpwh : model().getConcreteModelObjects<WaterHeaterHeatPump>()) {
+      for (const auto& hpwh : model().getModelObjects<WaterHeaterHeatPump>()) {
         if (hpwh.tank().handle() == handle()) {
           result.insert(openstudio::AppGFuelType::HeatPump);
         }
       }
-      for (const auto& hpwh : model().getConcreteModelObjects<WaterHeaterHeatPumpWrappedCondenser>()) {
+      for (const auto& hpwh : model().getModelObjects<WaterHeaterHeatPumpWrappedCondenser>()) {
         if (hpwh.tank().handle() == handle()) {
           result.insert(openstudio::AppGFuelType::HeatPump);
         }

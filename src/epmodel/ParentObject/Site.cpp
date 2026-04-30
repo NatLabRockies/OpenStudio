@@ -138,7 +138,7 @@ namespace detail {
 namespace {
 
 boost::optional<openstudio::epmodel::Building> optionalBuildingForSite(const openstudio::epmodel::Model& model) {
-  auto buildings = model.getConcreteModelObjects<openstudio::epmodel::Building>();
+  auto buildings = model.getModelObjects<openstudio::epmodel::Building>();
   if (!buildings.empty()) {
     return buildings.front();
   }

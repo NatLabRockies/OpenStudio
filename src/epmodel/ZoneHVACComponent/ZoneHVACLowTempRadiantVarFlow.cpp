@@ -100,7 +100,7 @@ static bool surfaceHasInternalSourceConstruction(const openstudio::epmodel::Surf
     return false;
   }
 
-  for (const auto& internalSourceProperty : surface.model().getConcreteModelObjects<openstudio::epmodel::ConstructionWithInternalSource>()) {
+  for (const auto& internalSourceProperty : surface.model().getModelObjects<openstudio::epmodel::ConstructionWithInternalSource>()) {
     if (auto propertyConstruction =
           internalSourceProperty.getModelObjectTarget<openstudio::epmodel::ModelObject>(openstudio::ConstructionProperty_InternalHeatSourceFields::ConstructionName)) {
       if (propertyConstruction->handle() == construction->handle()) {
@@ -142,7 +142,7 @@ static std::vector<openstudio::epmodel::Surface> eligibleRadiantSurfaces(const o
                                                                          const std::string& radiantSurfaceType) {
   std::vector<openstudio::epmodel::Surface> result;
 
-  for (const auto& surface : model.getConcreteModelObjects<openstudio::epmodel::Surface>()) {
+  for (const auto& surface : model.getModelObjects<openstudio::epmodel::Surface>()) {
     bool belongsToZone = false;
     if (auto space = surface.getModelObjectTarget<openstudio::epmodel::Space>(SurfaceFields::SpaceName)) {
       if (auto surfaceZone = space->thermalZone()) {

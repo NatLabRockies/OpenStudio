@@ -259,11 +259,11 @@ TEST_F(EPModelFixture, RefrigerationCondenserWaterCooled_Remove_PreservesReferen
 
   ASSERT_TRUE(outletTemperatureSchedule.setValue(31.0));
   ASSERT_TRUE(condenser.setWaterOutletTemperatureSchedule(outletTemperatureSchedule));
-  EXPECT_EQ(1u, model.getConcreteModelObjects<RefrigerationCondenserWaterCooled>().size());
+  EXPECT_EQ(1u, model.getModelObjects<RefrigerationCondenserWaterCooled>().size());
   EXPECT_EQ(1u, model.getModelObjects<Schedule>().size());
 
   condenser.remove();
 
-  EXPECT_TRUE(model.getConcreteModelObjects<RefrigerationCondenserWaterCooled>().empty());
+  EXPECT_TRUE(model.getModelObjects<RefrigerationCondenserWaterCooled>().empty());
   EXPECT_EQ(1u, model.getModelObjects<Schedule>().size());
 }

@@ -704,7 +704,7 @@ namespace epmodel {
     }
 
     bool PumpVariableSpeed_Impl::addToNode(Node& node) {
-      for (const auto& plant : model().getConcreteModelObjects<openstudio::epmodel::PlantLoop>()) {
+      for (const auto& plant : model().getModelObjects<openstudio::epmodel::PlantLoop>()) {
         if (plant.component(node.handle())) {
           return StraightComponent_Impl::addToNode(node);
         }

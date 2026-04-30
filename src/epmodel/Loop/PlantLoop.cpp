@@ -738,7 +738,7 @@ namespace detail {
       const auto inletBranch = supplyInletBranch();
       const auto equipmentBranches = supplyEquipmentBranches();
       boost::optional<ConnectorSplitter> result;
-      for (const auto& splitter : model().getConcreteModelObjects<ConnectorSplitter>()) {
+      for (const auto& splitter : model().getModelObjects<ConnectorSplitter>()) {
         auto inlet = splitter.getModelObjectTarget<Branch>(splitter.inletPort());
         if (!inlet || !(*inlet == inletBranch)) {
           continue;
@@ -770,7 +770,7 @@ namespace detail {
       const auto outletBranch = supplyOutletBranch();
       const auto equipmentBranches = supplyEquipmentBranches();
       boost::optional<ConnectorMixer> result;
-      for (const auto& mixer : model().getConcreteModelObjects<ConnectorMixer>()) {
+      for (const auto& mixer : model().getModelObjects<ConnectorMixer>()) {
         auto outlet = mixer.getModelObjectTarget<Branch>(mixer.outletPort());
         if (!outlet || !(*outlet == outletBranch)) {
           continue;
@@ -802,7 +802,7 @@ namespace detail {
       const auto inletBranch = demandInletBranch();
       const auto equipmentBranches = demandEquipmentBranches();
       boost::optional<ConnectorSplitter> result;
-      for (const auto& splitter : model().getConcreteModelObjects<ConnectorSplitter>()) {
+      for (const auto& splitter : model().getModelObjects<ConnectorSplitter>()) {
         auto inlet = splitter.getModelObjectTarget<Branch>(splitter.inletPort());
         if (!inlet || !(*inlet == inletBranch)) {
           continue;
@@ -834,7 +834,7 @@ namespace detail {
       const auto outletBranch = demandOutletBranch();
       const auto equipmentBranches = demandEquipmentBranches();
       boost::optional<ConnectorMixer> result;
-      for (const auto& mixer : model().getConcreteModelObjects<ConnectorMixer>()) {
+      for (const auto& mixer : model().getModelObjects<ConnectorMixer>()) {
         auto outlet = mixer.getModelObjectTarget<Branch>(mixer.outletPort());
         if (!outlet || !(*outlet == outletBranch)) {
           continue;
@@ -1368,7 +1368,7 @@ namespace detail {
 
     SizingPlant PlantLoop_Impl::sizingPlant() const {
       boost::optional<SizingPlant> result;
-      for (const auto& candidate : model().getConcreteModelObjects<SizingPlant>()) {
+      for (const auto& candidate : model().getModelObjects<SizingPlant>()) {
         auto plantLoop = candidate.getModelObjectTarget<PlantLoop>(openstudio::Sizing_PlantFields::PlantorCondenserLoopName);
         if (!plantLoop || !(*plantLoop == getObject<PlantLoop>())) {
           continue;
@@ -1977,7 +1977,7 @@ namespace detail {
       const auto supplyEquipmentBranchRefs = supplyEquipmentBranches();
 
       boost::optional<ConnectorSplitter> supplySplitterObject;
-      for (const auto& candidate : model().getConcreteModelObjects<ConnectorSplitter>()) {
+      for (const auto& candidate : model().getModelObjects<ConnectorSplitter>()) {
         auto inlet = candidate.getModelObjectTarget<Branch>(candidate.inletPort());
         if (!inlet || !(*inlet == supplyInletBranchRef)) {
           continue;
@@ -2009,7 +2009,7 @@ namespace detail {
       }
 
       boost::optional<ConnectorMixer> supplyMixerObject;
-      for (const auto& candidate : model().getConcreteModelObjects<ConnectorMixer>()) {
+      for (const auto& candidate : model().getModelObjects<ConnectorMixer>()) {
         auto outlet = candidate.getModelObjectTarget<Branch>(candidate.outletPort());
         if (!outlet || !(*outlet == supplyOutletBranchRef)) {
           continue;
@@ -2056,7 +2056,7 @@ namespace detail {
       const auto demandEquipmentBranchRefs = demandEquipmentBranches();
 
       boost::optional<ConnectorSplitter> demandSplitterObject;
-      for (const auto& candidate : model().getConcreteModelObjects<ConnectorSplitter>()) {
+      for (const auto& candidate : model().getModelObjects<ConnectorSplitter>()) {
         auto inlet = candidate.getModelObjectTarget<Branch>(candidate.inletPort());
         if (!inlet || !(*inlet == demandInletBranchRef)) {
           continue;
@@ -2088,7 +2088,7 @@ namespace detail {
       }
 
       boost::optional<ConnectorMixer> demandMixerObject;
-      for (const auto& candidate : model().getConcreteModelObjects<ConnectorMixer>()) {
+      for (const auto& candidate : model().getModelObjects<ConnectorMixer>()) {
         auto outlet = candidate.getModelObjectTarget<Branch>(candidate.outletPort());
         if (!outlet || !(*outlet == demandOutletBranchRef)) {
           continue;
@@ -2161,7 +2161,7 @@ namespace detail {
       }
 
       std::vector<SizingPlant> sizingPlantsForLoop;
-      for (const auto& candidate : model().getConcreteModelObjects<SizingPlant>()) {
+      for (const auto& candidate : model().getModelObjects<SizingPlant>()) {
         auto ownedLoop = candidate.getModelObjectTarget<PlantLoop>(openstudio::Sizing_PlantFields::PlantorCondenserLoopName);
         if (ownedLoop && (*ownedLoop == plantLoop)) {
           sizingPlantsForLoop.push_back(candidate);

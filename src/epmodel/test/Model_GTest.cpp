@@ -108,7 +108,7 @@ TEST_F(EPModelFixture, Model_Canonicalize_RepairsHierarchicalAirLoopBranchListBr
 
   EXPECT_GT(report.infoCount, 0u);
 
-  auto airLoops = model.getConcreteModelObjects<AirLoopHVAC>();
+  auto airLoops = model.getModelObjects<AirLoopHVAC>();
   ASSERT_EQ(1u, airLoops.size());
 
   auto branchListName = airLoops.front().getString(openstudio::AirLoopHVACFields::BranchListName);

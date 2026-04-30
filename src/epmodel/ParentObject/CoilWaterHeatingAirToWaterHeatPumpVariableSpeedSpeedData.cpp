@@ -271,7 +271,7 @@ Curve requiredAttachedCurve(const WorkspaceExtensibleGroup& group, unsigned fiel
 
 boost::optional<CoilWaterHeatingAirToWaterHeatPumpVariableSpeed> CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData_Impl::parent() const {
   if (const auto thisName = getObject<ModelObject>().name()) {
-    for (const auto& candidate : model().getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeed>()) {
+    for (const auto& candidate : model().getModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeed>()) {
       const auto groups = candidate.extensibleGroups();
       for (unsigned i = 0; i < groups.size(); ++i) {
         if (openstudio::istringEqual(*thisName, detail::transientSpeedDataName(candidate, i))) {

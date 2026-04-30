@@ -191,7 +191,7 @@ namespace epmodel {
     }
 
     bool CoilSystemCoolingWater_Impl::addToNode(Node& node) {
-      for (auto oaSystem : model().getConcreteModelObjects<AirLoopHVACOutdoorAirSystem>()) {
+      for (auto oaSystem : model().getModelObjects<AirLoopHVACOutdoorAirSystem>()) {
         auto outboardOANode = oaSystem.outboardOANode();
         if (outboardOANode && (*outboardOANode == node)) {
           return StraightComponent_Impl::addToOutdoorAirSystem(oaSystem, node);

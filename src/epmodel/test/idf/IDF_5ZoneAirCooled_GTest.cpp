@@ -46,7 +46,7 @@ TEST_F(FiveZoneAirCooledIDFFixture, PlantLoop_IDF_LoopsLoadAndExposeTopologyApis
   auto model = loadFiveZoneAirCooledModel();
   ASSERT_TRUE(model);
 
-  auto plantLoops = model->getConcreteModelObjects<PlantLoop>();
+  auto plantLoops = model->getModelObjects<PlantLoop>();
   ASSERT_EQ(2u, plantLoops.size());
 
   auto hotWaterLoopIt = std::find_if(plantLoops.begin(), plantLoops.end(),
@@ -126,7 +126,7 @@ TEST_F(FiveZoneAirCooledIDFFixture, PlantLoop_IDF_SupplyAndDemandComponentsExpos
   auto model = loadFiveZoneAirCooledModel();
   ASSERT_TRUE(model);
 
-  const auto plantLoops = model->getConcreteModelObjects<PlantLoop>();
+  const auto plantLoops = model->getModelObjects<PlantLoop>();
   ASSERT_EQ(2u, plantLoops.size());
 
   for (const auto& plantLoop : plantLoops) {
@@ -161,12 +161,12 @@ TEST_F(FiveZoneAirCooledIDFFixture, PlantLoop_IDF_ConcretePlantComponentsResolve
   auto model = loadFiveZoneAirCooledModel();
   ASSERT_TRUE(model);
 
-  const auto boilers = model->getConcreteModelObjects<BoilerHotWater>();
-  const auto chillers = model->getConcreteModelObjects<ChillerElectric>();
-  const auto pumps = model->getConcreteModelObjects<PumpVariableSpeed>();
-  const auto heatingCoils = model->getConcreteModelObjects<CoilHeatingWater>();
-  const auto coolingCoils = model->getConcreteModelObjects<CoilCoolingWater>();
-  const auto pipes = model->getConcreteModelObjects<PipeAdiabatic>();
+  const auto boilers = model->getModelObjects<BoilerHotWater>();
+  const auto chillers = model->getModelObjects<ChillerElectric>();
+  const auto pumps = model->getModelObjects<PumpVariableSpeed>();
+  const auto heatingCoils = model->getModelObjects<CoilHeatingWater>();
+  const auto coolingCoils = model->getModelObjects<CoilCoolingWater>();
+  const auto pipes = model->getModelObjects<PipeAdiabatic>();
 
   ASSERT_EQ(1u, boilers.size());
   ASSERT_EQ(1u, chillers.size());

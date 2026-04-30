@@ -473,7 +473,7 @@ bool WaterToAirComponent_Impl::removeFromAirLoopHVAC() {
     return false;
   }
 
-  for (auto oaSystem : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
+  for (auto oaSystem : model().getModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
     if (oaSystem.component(handle())) {
       return removeFromOutdoorAirSystem(oaSystem);
     }

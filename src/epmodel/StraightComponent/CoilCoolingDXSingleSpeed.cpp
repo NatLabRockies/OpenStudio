@@ -822,7 +822,7 @@ bool CoilCoolingDXSingleSpeed_Impl::addToNode(Node& node) {
 boost::optional<CoilSystemCoolingDX> CoilCoolingDXSingleSpeed_Impl::coilSystemCoolingDX() const {
   const auto thisHandle = handle();
 
-  for (const auto& system : model().getConcreteModelObjects<CoilSystemCoolingDX>()) {
+  for (const auto& system : model().getModelObjects<CoilSystemCoolingDX>()) {
     auto systemImpl = system.getImpl<openstudio::epmodel::detail::CoilSystemCoolingDX_Impl>();
     OS_ASSERT(systemImpl);
     auto coolingCoil = systemImpl->coolingCoil();

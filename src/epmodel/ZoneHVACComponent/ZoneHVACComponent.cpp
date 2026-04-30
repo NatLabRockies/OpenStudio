@@ -124,7 +124,7 @@ namespace epmodel {
 
     boost::optional<ThermalZone> ZoneHVACComponent_Impl::thermalZone() const {
       const auto thisObject = getObject<ModelObject>();
-      for (const auto& zone : model().getConcreteModelObjects<ThermalZone>()) {
+      for (const auto& zone : model().getModelObjects<ThermalZone>()) {
         auto equipmentList = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentList();
         if (!equipmentList) {
           continue;
@@ -284,7 +284,7 @@ namespace epmodel {
       }
 
       boost::optional<ThermalZone> zone;
-      for (const auto& candidateZone : model().getConcreteModelObjects<ThermalZone>()) {
+      for (const auto& candidateZone : model().getModelObjects<ThermalZone>()) {
         auto connections = candidateZone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections();
         if (!connections) {
           continue;

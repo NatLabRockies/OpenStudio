@@ -511,7 +511,7 @@ void ZoneHVACCoolingPanelRadiantConvectiveWater_Impl::resetCondensationControlDe
 std::vector<Surface> ZoneHVACCoolingPanelRadiantConvectiveWater_Impl::zoneSurfaces() const {
   std::vector<Surface> result;
   if (auto zone = thermalZone()) {
-    for (const auto& surface : model().getConcreteModelObjects<openstudio::epmodel::Surface>()) {
+    for (const auto& surface : model().getModelObjects<openstudio::epmodel::Surface>()) {
       bool belongsToZone = false;
       if (auto space = surface.getModelObjectTarget<openstudio::epmodel::Space>(SurfaceFields::SpaceName)) {
         if (auto surfaceZone = space->thermalZone()) {

@@ -146,7 +146,7 @@ namespace epmodel {
       constexpr const char* orphanDSOASpaceListName = "Orphan Spaces DSOA Space List";
 
       void syncAllAirLoopCMVEntries(const openstudio::epmodel::Model& model) {
-        for (const auto& airLoop : model.getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
+        for (const auto& airLoop : model.getModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
           airLoop.getImpl<openstudio::epmodel::detail::AirLoopHVAC_Impl>()->syncControllerMechanicalVentilationZoneOutdoorAirEntries();
         }
       }
@@ -154,7 +154,7 @@ namespace epmodel {
       boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList> findListContainingSpace(const openstudio::epmodel::Model& model,
                                                                                                            const openstudio::epmodel::Space& space) {
         boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList> result;
-        for (const auto& list : model.getConcreteModelObjects<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>()) {
+        for (const auto& list : model.getModelObjects<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>()) {
           if (list.designSpecificationOutdoorAir(space)) {
             if (result) {
               OS_ASSERT(result->handle() == list.handle());
@@ -191,7 +191,7 @@ namespace epmodel {
       }
 
       void removeSpaceFromAllListsExcept(const openstudio::epmodel::Space& space, openstudio::Handle keepListHandle) {
-        for (const auto& list : space.model().getConcreteModelObjects<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>()) {
+        for (const auto& list : space.model().getModelObjects<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>()) {
           if (list.handle() == keepListHandle) {
             continue;
           }
@@ -361,7 +361,7 @@ namespace epmodel {
 
       std::vector<std::pair<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList, openstudio::epmodel::DesignSpecificationOutdoorAir>>
         assignments;
-      for (const auto& list : model().getConcreteModelObjects<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>()) {
+      for (const auto& list : model().getModelObjects<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>()) {
         if (auto dsoa = list.designSpecificationOutdoorAir(thisSpace)) {
           assignments.emplace_back(list, *dsoa);
         }

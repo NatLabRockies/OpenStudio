@@ -88,7 +88,7 @@ TEST_F(EPModelFixture, API_Space_SetDesignSpecificationOutdoorAir_UnzonedSpace_P
   ASSERT_TRUE(assigned);
   EXPECT_EQ(dsoa, *assigned);
 
-  const auto lists = model.getConcreteModelObjects<DesignSpecificationOutdoorAirSpaceList>();
+  const auto lists = model.getModelObjects<DesignSpecificationOutdoorAirSpaceList>();
   ASSERT_FALSE(lists.empty());
   bool found = false;
   for (const auto& list : lists) {

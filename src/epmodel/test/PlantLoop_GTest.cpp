@@ -335,7 +335,7 @@ TEST_F(EPModelFixture, PlantLoop_Canonicalize_RepairsSetpointAndDeduplicatesSizi
   SizingPlant duplicateSizingPlant(model, plantLoop);
 
   unsigned attachedSizingPlantCount = 0u;
-  for (const auto& sizingPlant : model.getConcreteModelObjects<SizingPlant>()) {
+  for (const auto& sizingPlant : model.getModelObjects<SizingPlant>()) {
     auto sizingPlantLoop = sizingPlant.getModelObjectTarget<PlantLoop>(openstudio::Sizing_PlantFields::PlantorCondenserLoopName);
     if (sizingPlantLoop && (*sizingPlantLoop == plantLoop)) {
       ++attachedSizingPlantCount;
@@ -348,7 +348,7 @@ TEST_F(EPModelFixture, PlantLoop_Canonicalize_RepairsSetpointAndDeduplicatesSizi
   EXPECT_EQ(plantLoop.supplyOutletNode(), plantLoop.loopTemperatureSetpointNode());
 
   attachedSizingPlantCount = 0u;
-  for (const auto& sizingPlant : model.getConcreteModelObjects<SizingPlant>()) {
+  for (const auto& sizingPlant : model.getModelObjects<SizingPlant>()) {
     auto sizingPlantLoop = sizingPlant.getModelObjectTarget<PlantLoop>(openstudio::Sizing_PlantFields::PlantorCondenserLoopName);
     if (sizingPlantLoop && (*sizingPlantLoop == plantLoop)) {
       ++attachedSizingPlantCount;

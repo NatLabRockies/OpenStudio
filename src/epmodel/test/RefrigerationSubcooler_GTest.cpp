@@ -53,9 +53,9 @@ TEST_F(EPModelFixture, RefrigerationSubcooler_TypedQueriesFilterBySubtypeImpl) {
   RefrigerationSubcoolerMechanical mechanical(model);
   RefrigerationSubcooler generic(model);
 
-  auto liquidObjects = model.getConcreteModelObjects<RefrigerationSubcoolerLiquidSuction>();
-  auto mechanicalObjects = model.getConcreteModelObjects<RefrigerationSubcoolerMechanical>();
-  auto allSubcoolers = model.getConcreteModelObjects<RefrigerationSubcooler>();
+  auto liquidObjects = model.getModelObjects<RefrigerationSubcoolerLiquidSuction>();
+  auto mechanicalObjects = model.getModelObjects<RefrigerationSubcoolerMechanical>();
+  auto allSubcoolers = model.getModelObjects<RefrigerationSubcooler>();
 
   EXPECT_EQ(1u, liquidObjects.size());
   EXPECT_EQ(1u, mechanicalObjects.size());

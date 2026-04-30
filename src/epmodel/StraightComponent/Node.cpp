@@ -113,7 +113,7 @@ namespace epmodel {
     boost::optional<AirLoopHVAC> Node_Impl::airLoopHVAC() const {
       const auto thisNode = getObject<openstudio::epmodel::Node>();
       const auto thisNodeObject = thisNode.cast<openstudio::epmodel::ModelObject>();
-      for (const auto& airLoop : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
+      for (const auto& airLoop : model().getModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
         // Use loop-owned traversal APIs as the single source of truth for
         // topology membership instead of duplicating node-role checks here.
         if (airLoop.component(thisNode.handle())) {
@@ -143,7 +143,7 @@ namespace epmodel {
 
     boost::optional<PlantLoop> Node_Impl::plantLoop() const {
       const auto thisNode = getObject<openstudio::epmodel::Node>();
-      for (const auto& plantLoop : model().getConcreteModelObjects<openstudio::epmodel::PlantLoop>()) {
+      for (const auto& plantLoop : model().getModelObjects<openstudio::epmodel::PlantLoop>()) {
         if (plantLoop.getImpl<detail::PlantLoop_Impl>()->branchForNode(thisNode)) {
           return plantLoop;
         }
@@ -159,7 +159,7 @@ namespace epmodel {
       // topology surface on AirLoopHVACOutdoorAirSystem. That keeps node
       // ownership aligned with the same traversal APIs used elsewhere instead
       // of maintaining a second ad hoc graph here.
-      for (const auto& oaSystem : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
+      for (const auto& oaSystem : model().getModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
         if (auto returnNode = oaSystem.returnAirModelObject(); returnNode && (*returnNode == thisNodeObject)) {
           return oaSystem;
         }

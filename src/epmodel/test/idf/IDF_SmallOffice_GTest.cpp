@@ -75,7 +75,7 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_SupplyComponentsIncludeFanConstant
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  auto fans = model->getConcreteModelObjects<FanConstantVolume>();
+  auto fans = model->getModelObjects<FanConstantVolume>();
   ASSERT_FALSE(fans.empty());
 
   for (auto& fan : fans) {
@@ -94,7 +94,7 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_PathAndZoneObjectsResolveAndLink) 
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  auto airLoops = model->getConcreteModelObjects<AirLoopHVAC>();
+  auto airLoops = model->getModelObjects<AirLoopHVAC>();
   ASSERT_FALSE(airLoops.empty());
 
   for (auto& airLoop : airLoops) {
@@ -149,8 +149,8 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_AirDistributionUnitWrapsNoReheatTe
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  const auto terminals = model->getConcreteModelObjects<AirTerminalSingleDuctConstantVolumeNoReheat>();
-  const auto airDistributionUnits = model->getConcreteModelObjects<ZoneHVACAirDistributionUnit>();
+  const auto terminals = model->getModelObjects<AirTerminalSingleDuctConstantVolumeNoReheat>();
+  const auto airDistributionUnits = model->getModelObjects<ZoneHVACAirDistributionUnit>();
   ASSERT_FALSE(terminals.empty());
   ASSERT_EQ(terminals.size(), airDistributionUnits.size());
 
@@ -200,7 +200,7 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_DemandComponentsBuildPathPerLoop) 
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  const auto airLoops = model->getConcreteModelObjects<AirLoopHVAC>();
+  const auto airLoops = model->getModelObjects<AirLoopHVAC>();
   ASSERT_FALSE(airLoops.empty());
 
   for (const auto& airLoop : airLoops) {
@@ -220,8 +220,8 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_ZoneHVACEquipmentListObjectsLoad) 
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  const auto equipmentLists = model->getConcreteModelObjects<ZoneHVACEquipmentList>();
-  const auto equipmentConnections = model->getConcreteModelObjects<ZoneHVACEquipmentConnections>();
+  const auto equipmentLists = model->getModelObjects<ZoneHVACEquipmentList>();
+  const auto equipmentConnections = model->getModelObjects<ZoneHVACEquipmentConnections>();
   ASSERT_FALSE(equipmentLists.empty());
   EXPECT_EQ(equipmentConnections.size(), equipmentLists.size());
 }
@@ -230,7 +230,7 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_LoopNonMutationApis) {
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  const auto airLoops = model->getConcreteModelObjects<AirLoopHVAC>();
+  const auto airLoops = model->getModelObjects<AirLoopHVAC>();
   ASSERT_FALSE(airLoops.empty());
 
   for (const auto& airLoop : airLoops) {
@@ -278,8 +278,8 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_OutdoorAirSystemNonMutationApis) {
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  const auto airLoops = model->getConcreteModelObjects<AirLoopHVAC>();
-  const auto outdoorAirSystems = model->getConcreteModelObjects<AirLoopHVACOutdoorAirSystem>();
+  const auto airLoops = model->getModelObjects<AirLoopHVAC>();
+  const auto outdoorAirSystems = model->getModelObjects<AirLoopHVACOutdoorAirSystem>();
   ASSERT_FALSE(airLoops.empty());
   ASSERT_FALSE(outdoorAirSystems.empty());
 
@@ -326,12 +326,12 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_LoadsSetpointManagersAndCoilsAsCon
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  const auto mixedAirManagers = model->getConcreteModelObjects<SetpointManagerMixedAir>();
-  const auto scheduledManagers = model->getConcreteModelObjects<SetpointManagerScheduled>();
-  const auto singleZoneReheatManagers = model->getConcreteModelObjects<SetpointManagerSingleZoneReheat>();
-  const auto dxCoils = model->getConcreteModelObjects<CoilCoolingDXSingleSpeed>();
-  const auto gasHeatingCoils = model->getConcreteModelObjects<CoilHeatingGas>();
-  const auto dxCoilSystems = model->getConcreteModelObjects<CoilSystemCoolingDX>();
+  const auto mixedAirManagers = model->getModelObjects<SetpointManagerMixedAir>();
+  const auto scheduledManagers = model->getModelObjects<SetpointManagerScheduled>();
+  const auto singleZoneReheatManagers = model->getModelObjects<SetpointManagerSingleZoneReheat>();
+  const auto dxCoils = model->getModelObjects<CoilCoolingDXSingleSpeed>();
+  const auto gasHeatingCoils = model->getModelObjects<CoilHeatingGas>();
+  const auto dxCoilSystems = model->getModelObjects<CoilSystemCoolingDX>();
 
   EXPECT_FALSE(mixedAirManagers.empty());
   EXPECT_FALSE(scheduledManagers.empty());
@@ -345,8 +345,8 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_LoadsAvailabilityManagersAsConcret
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  const auto availabilityManagerAssignmentLists = model->getConcreteModelObjects<AvailabilityManagerAssignmentList>();
-  const auto nightCycleManagers = model->getConcreteModelObjects<AvailabilityManagerNightCycle>();
+  const auto availabilityManagerAssignmentLists = model->getModelObjects<AvailabilityManagerAssignmentList>();
+  const auto nightCycleManagers = model->getModelObjects<AvailabilityManagerNightCycle>();
 
   EXPECT_FALSE(availabilityManagerAssignmentLists.empty());
   EXPECT_FALSE(nightCycleManagers.empty());
@@ -356,8 +356,8 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_AvailabilityManagersRoundTrip) {
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  const auto airLoops = model->getConcreteModelObjects<AirLoopHVAC>();
-  const auto assignmentLists = model->getConcreteModelObjects<AvailabilityManagerAssignmentList>();
+  const auto airLoops = model->getModelObjects<AirLoopHVAC>();
+  const auto assignmentLists = model->getModelObjects<AvailabilityManagerAssignmentList>();
   ASSERT_FALSE(airLoops.empty());
   ASSERT_FALSE(assignmentLists.empty());
 
@@ -386,8 +386,8 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_CoilSystemCoolingDX_ImplOnlyNaviga
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  const auto coilSystems = model->getConcreteModelObjects<CoilSystemCoolingDX>();
-  const auto dxCoils = model->getConcreteModelObjects<CoilCoolingDXSingleSpeed>();
+  const auto coilSystems = model->getModelObjects<CoilSystemCoolingDX>();
+  const auto dxCoils = model->getModelObjects<CoilCoolingDXSingleSpeed>();
   ASSERT_FALSE(coilSystems.empty());
   ASSERT_FALSE(dxCoils.empty());
 
@@ -420,9 +420,9 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_NodeSetpointManagersRoundTrip) {
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  const auto mixedAirManagers = model->getConcreteModelObjects<SetpointManagerMixedAir>();
-  const auto scheduledManagers = model->getConcreteModelObjects<SetpointManagerScheduled>();
-  const auto singleZoneReheatManagers = model->getConcreteModelObjects<SetpointManagerSingleZoneReheat>();
+  const auto mixedAirManagers = model->getModelObjects<SetpointManagerMixedAir>();
+  const auto scheduledManagers = model->getModelObjects<SetpointManagerScheduled>();
+  const auto singleZoneReheatManagers = model->getModelObjects<SetpointManagerSingleZoneReheat>();
 
   const auto nodeContains = [](const Node& node, const SetpointManager& targetSPM) {
     const auto nodeSPMs = node.setpointManagers();
@@ -465,7 +465,7 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_TerminalAndNodeNonMutationApis) {
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  const auto terminals = model->getConcreteModelObjects<AirTerminalSingleDuctConstantVolumeNoReheat>();
+  const auto terminals = model->getModelObjects<AirTerminalSingleDuctConstantVolumeNoReheat>();
   ASSERT_FALSE(terminals.empty());
 
   for (const auto& terminal : terminals) {
@@ -480,7 +480,7 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_TerminalAndNodeNonMutationApis) {
     EXPECT_TRUE(outletObject->optionalCast<Node>());
   }
 
-  const auto fans = model->getConcreteModelObjects<FanConstantVolume>();
+  const auto fans = model->getModelObjects<FanConstantVolume>();
   ASSERT_FALSE(fans.empty());
   for (const auto& fan : fans) {
     auto inletObject = fan.inletModelObject();
@@ -497,9 +497,9 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_SpacesAndSizingZonesLinkToThermalZ
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  const auto spaces = model->getConcreteModelObjects<Space>();
-  const auto thermalZones = model->getConcreteModelObjects<ThermalZone>();
-  const auto sizingZones = model->getConcreteModelObjects<SizingZone>();
+  const auto spaces = model->getModelObjects<Space>();
+  const auto thermalZones = model->getModelObjects<ThermalZone>();
+  const auto sizingZones = model->getModelObjects<SizingZone>();
   ASSERT_FALSE(thermalZones.empty());
   ASSERT_FALSE(sizingZones.empty());
 
@@ -524,7 +524,7 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_BranchAndBranchListNonMutationApis
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  const auto airLoops = model->getConcreteModelObjects<AirLoopHVAC>();
+  const auto airLoops = model->getModelObjects<AirLoopHVAC>();
   ASSERT_FALSE(airLoops.empty());
 
   bool sawBranchViaList = false;
@@ -551,7 +551,7 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_ZoneHVACEquipmentConnectionsNonMut
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  const auto equipmentConnections = model->getConcreteModelObjects<ZoneHVACEquipmentConnections>();
+  const auto equipmentConnections = model->getModelObjects<ZoneHVACEquipmentConnections>();
   ASSERT_FALSE(equipmentConnections.empty());
 
   for (const auto& connection : equipmentConnections) {
@@ -566,11 +566,11 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_NodeRenamesPreserveTopologyLinks) 
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  const auto airLoops = model->getConcreteModelObjects<AirLoopHVAC>();
-  const auto supplyPaths = model->getConcreteModelObjects<AirLoopHVACSupplyPath>();
-  const auto returnPaths = model->getConcreteModelObjects<AirLoopHVACReturnPath>();
-  const auto terminals = model->getConcreteModelObjects<AirTerminalSingleDuctConstantVolumeNoReheat>();
-  const auto fans = model->getConcreteModelObjects<FanConstantVolume>();
+  const auto airLoops = model->getModelObjects<AirLoopHVAC>();
+  const auto supplyPaths = model->getModelObjects<AirLoopHVACSupplyPath>();
+  const auto returnPaths = model->getModelObjects<AirLoopHVACReturnPath>();
+  const auto terminals = model->getModelObjects<AirTerminalSingleDuctConstantVolumeNoReheat>();
+  const auto fans = model->getModelObjects<FanConstantVolume>();
 
   ASSERT_FALSE(airLoops.empty());
   ASSERT_FALSE(supplyPaths.empty());
@@ -675,10 +675,10 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_HvacComponentRenamesPreserveTopolo
   auto model = loadSmallOfficeModel();
   ASSERT_TRUE(model);
 
-  const auto airLoops = model->getConcreteModelObjects<AirLoopHVAC>();
-  const auto terminals = model->getConcreteModelObjects<AirTerminalSingleDuctConstantVolumeNoReheat>();
-  const auto fans = model->getConcreteModelObjects<FanConstantVolume>();
-  const auto airDistributionUnits = model->getConcreteModelObjects<ZoneHVACAirDistributionUnit>();
+  const auto airLoops = model->getModelObjects<AirLoopHVAC>();
+  const auto terminals = model->getModelObjects<AirTerminalSingleDuctConstantVolumeNoReheat>();
+  const auto fans = model->getModelObjects<FanConstantVolume>();
+  const auto airDistributionUnits = model->getModelObjects<ZoneHVACAirDistributionUnit>();
 
   ASSERT_FALSE(airLoops.empty());
   ASSERT_FALSE(terminals.empty());
@@ -708,13 +708,13 @@ TEST_F(SmallOfficeIDFFixture, AirLoopHVAC_IDF_HvacComponentRenamesPreserveTopolo
     aduToTerminalName.emplace_back(adu, *terminalName);
   }
 
-  for (auto& fan : model->getConcreteModelObjects<FanConstantVolume>()) {
+  for (auto& fan : model->getModelObjects<FanConstantVolume>()) {
     ASSERT_TRUE(fan.setName(fan.nameString() + " Renamed"));
   }
-  for (auto& terminal : model->getConcreteModelObjects<AirTerminalSingleDuctConstantVolumeNoReheat>()) {
+  for (auto& terminal : model->getModelObjects<AirTerminalSingleDuctConstantVolumeNoReheat>()) {
     ASSERT_TRUE(terminal.setName(terminal.nameString() + " Renamed"));
   }
-  for (auto& airLoop : model->getConcreteModelObjects<AirLoopHVAC>()) {
+  for (auto& airLoop : model->getModelObjects<AirLoopHVAC>()) {
     auto zoneSplitter = airLoop.zoneSplitter();
     auto zoneMixer = airLoop.zoneMixer();
     ASSERT_TRUE(zoneSplitter.setName(zoneSplitter.nameString() + " Renamed"));

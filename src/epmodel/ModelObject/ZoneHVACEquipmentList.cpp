@@ -357,7 +357,7 @@ namespace epmodel {
 
     openstudio::epmodel::ThermalZone ZoneHVACEquipmentList_Impl::thermalZone() const {
       const auto equipmentList = getObject<openstudio::epmodel::ZoneHVACEquipmentList>();
-      for (const auto& conn : model().getConcreteModelObjects<openstudio::epmodel::ZoneHVACEquipmentConnections>()) {
+      for (const auto& conn : model().getModelObjects<openstudio::epmodel::ZoneHVACEquipmentConnections>()) {
         if (auto linkedList = conn.getModelObjectTarget<openstudio::epmodel::ZoneHVACEquipmentList>(
               openstudio::ZoneHVAC_EquipmentConnectionsFields::ZoneConditioningEquipmentListName)) {
           if (*linkedList == equipmentList) {

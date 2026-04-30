@@ -234,7 +234,7 @@ namespace epmodel {
       auto assignmentList = getObject<openstudio::epmodel::AvailabilityManagerAssignmentList>();
       boost::optional<openstudio::epmodel::AirLoopHVAC> result;
 
-      for (const auto& airLoop : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
+      for (const auto& airLoop : model().getModelObjects<openstudio::epmodel::AirLoopHVAC>()) {
         auto target = airLoop.getModelObjectTarget<openstudio::epmodel::AvailabilityManagerAssignmentList>(
           openstudio::AirLoopHVACFields::AvailabilityManagerListName);
         if (!target) {

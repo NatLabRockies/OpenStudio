@@ -423,7 +423,7 @@ TEST_F(EPModelFixture, SetpointManagerScheduled_AddToNodeReplacesSameControlVari
   ASSERT_TRUE(first.addToNode(node));
   ASSERT_TRUE(second.addToNode(node));
 
-  auto scheduledManagers = model.getConcreteModelObjects<SetpointManagerScheduled>();
+  auto scheduledManagers = model.getModelObjects<SetpointManagerScheduled>();
   ASSERT_EQ(1u, scheduledManagers.size());
   EXPECT_EQ(second, scheduledManagers.front());
 }

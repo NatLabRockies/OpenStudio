@@ -253,7 +253,7 @@ namespace {
 
 boost::optional<openstudio::epmodel::AirLoopHVACOutdoorAirSystem> findOwningOutdoorAirSystemForCanonicalize(
   const openstudio::epmodel::ControllerOutdoorAir& controller) {
-  for (const auto& oaSystem : controller.model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
+  for (const auto& oaSystem : controller.model().getModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
     // Canonicalization path may run before OA-system invariants are fully
     // established on every instance, so use a tolerant lookup here.
     auto controllerList = oaSystem.getModelObjectTarget<openstudio::epmodel::AirLoopHVACControllerList>(
@@ -275,7 +275,7 @@ bool hasServedZoneWithDesignSpecificationOutdoorAir(const openstudio::epmodel::C
     return false;
   }
 
-  for (const auto& zone : controller.model().getConcreteModelObjects<openstudio::epmodel::ThermalZone>()) {
+  for (const auto& zone : controller.model().getModelObjects<openstudio::epmodel::ThermalZone>()) {
     zone.getImpl<openstudio::epmodel::detail::ThermalZone_Impl>()->canonicalize(context);
 
     auto sizingZone = zone.sizingZone();
@@ -520,7 +520,7 @@ bool ControllerOutdoorAir_Impl::setControllerMechanicalVentilation(
 
 boost::optional<openstudio::epmodel::AirLoopHVACOutdoorAirSystem> ControllerOutdoorAir_Impl::airLoopHVACOutdoorAirSystem() const {
   const auto thisController = getObject<openstudio::epmodel::ControllerOutdoorAir>();
-  for (const auto& oaSystem : model().getConcreteModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
+  for (const auto& oaSystem : model().getModelObjects<openstudio::epmodel::AirLoopHVACOutdoorAirSystem>()) {
     // This accessor is used by canonicalization flows (eg CMV rebuild),
     // where other OA systems in the same model may not yet satisfy
     // getControllerOutdoorAir() invariants. Use tolerant relationship

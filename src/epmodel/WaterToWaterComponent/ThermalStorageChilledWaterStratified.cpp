@@ -1059,7 +1059,7 @@ namespace epmodel {
     }
 
     WaterHeaterSizing ThermalStorageChilledWaterStratified_Impl::waterHeaterSizing() const {
-      for (const auto& sizing : model().getConcreteModelObjects<WaterHeaterSizing>()) {
+      for (const auto& sizing : model().getModelObjects<WaterHeaterSizing>()) {
         if (sizing.waterHeater().handle() == handle()) {
           return sizing;
         }
