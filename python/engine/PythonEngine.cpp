@@ -10,6 +10,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <type_traits>
 
 #ifdef __GNUC__
@@ -37,6 +38,29 @@ extern "C"
 #endif
 
 namespace openstudio {
+
+namespace {
+  std::wstring decodeForPythonInitialization(std::string_view value) {
+    const std::string buffer(value);
+
+    // The legacy CPython initialization APIs used below take wchar_t pointers,
+    // and CPython documents Py_DecodeLocale as the matching conversion for
+    // program names, Python home, and module search paths. This is not just a
+    // cosmetic string widening: it preserves Python's locale/error-handling
+    // rules for paths that are not plain ASCII.
+    wchar_t* decoded = Py_DecodeLocale(buffer.c_str(), nullptr);
+    if (decoded == nullptr) {
+      throw std::runtime_error(fmt::format("Unable to decode '{}' for Python initialization", buffer));
+    }
+
+    // Py_SetProgramName, Py_SetPythonHome, and Py_SetPath borrow their input
+    // buffers. Copy the decoded text into PythonEngine-owned storage before
+    // releasing this temporary CPython allocation.
+    std::wstring result(decoded);
+    PyMem_RawFree(decoded);
+    return result;
+  }
+}  // namespace
 
 void addToPythonPath(const openstudio::path& includePath) {
 
@@ -82,7 +106,7 @@ void PythonEngine::setupPythonPath(const std::vector<openstudio::path>& includeD
   }
 }
 
-PythonEngine::PythonEngine(int argc, char* argv[]) : ScriptEngine(argc, argv), program(Py_DecodeLocale(pythonProgramName, nullptr)) {
+PythonEngine::PythonEngine(int argc, char* argv[]) : ScriptEngine(argc, argv), m_programName(decodeForPythonInitialization(pythonProgramName)) {
   // TODO: modernize and use PyConfig (new in 3.8): https://docs.python.org/3/c-api/init_config.html
 
   // this frozen flag tells Python that the package and library have been frozen for embedding, so it shouldn't warn about missing prefixes
@@ -103,15 +127,15 @@ PythonEngine::PythonEngine(int argc, char* argv[]) : ScriptEngine(argc, argv), p
   auto it = std::find(args.cbegin(), args.cend(), "--python_home");
   if (it != args.cend()) {
     openstudio::path pythonHomeDir(*std::next(it));
-    wchar_t* h = Py_DecodeLocale(pythonHomeDir.make_preferred().string().c_str(), nullptr);
-    Py_SetPythonHome(h);
+    m_pythonHome = decodeForPythonInitialization(pythonHomeDir.make_preferred().string());
+    Py_SetPythonHome(m_pythonHome.c_str());
     pythonHomePassed = true;
   } else {
-    wchar_t* a = Py_DecodeLocale(pathToPythonPackages.make_preferred().string().c_str(), nullptr);
-    Py_SetPath(a);
+    m_pythonPath = decodeForPythonInitialization(pathToPythonPackages.make_preferred().string());
+    Py_SetPath(m_pythonPath.c_str());
   }
 
-  Py_SetProgramName(program);  // optional but recommended
+  Py_SetProgramName(m_programName.c_str());  // optional but recommended
 
   Py_Initialize();
 
@@ -135,9 +159,10 @@ PythonEngine::PythonEngine(int argc, char* argv[]) : ScriptEngine(argc, argv), p
 
 PythonEngine::~PythonEngine() {
   if (Py_FinalizeEx() < 0) {
+    // CPython's embedding examples use 120 when finalization fails, usually
+    // because flushing buffered Python I/O reported an error.
     exit(120);
   }
-  PyMem_RawFree(program);
 }
 
 void PythonEngine::importOpenStudio() {

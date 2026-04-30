@@ -146,6 +146,10 @@ class ScriptEngineInstance
  public:
   ScriptEngineInstance(std::string_view libraryBaseName, std::vector<std::string> t_args) : libraryName(libraryBaseName), args(std::move(t_args)) {}
 
+  ~ScriptEngineInstance() {
+    reset();
+  }
+
   ScriptEngineInstance(const ScriptEngineInstance&) = delete;
   ScriptEngineInstance(ScriptEngineInstance&&) = delete;
   ScriptEngineInstance& operator=(const ScriptEngineInstance&) = delete;
@@ -178,10 +182,12 @@ class ScriptEngineInstance
     return (bool)instance;
   }
   void reset() {
+    // The engine object's concrete destructor lives in engineLib. If the library is closed first,
+    // the remaining unique_ptr would later try to delete an object whose vtable points at unloaded
+    // code. Keep this explicit ordering even though member destruction would look simpler.
     instance.reset();
     engineLib.reset();
   }
-
  private:
   std::string libraryName;
   std::vector<std::string> args;
