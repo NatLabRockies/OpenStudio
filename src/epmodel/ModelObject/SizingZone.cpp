@@ -1342,7 +1342,7 @@ namespace epmodel {
       boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList> canonicalSpaceList = sourceSpaceList;
       if (!canonicalSpaceList) {
         canonicalSpaceList =
-          model().getConcreteModelObjectByName<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>(canonicalSpaceListName);
+          model().getModelObjectByName<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>(canonicalSpaceListName);
       }
       if (!canonicalSpaceList) {
         canonicalSpaceList = openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList(model());

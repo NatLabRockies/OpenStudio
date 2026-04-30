@@ -167,7 +167,7 @@ namespace epmodel {
 
       openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList getOrCreateOrphanSpaceList(const openstudio::epmodel::Model& model) {
         if (auto existing =
-              model.getConcreteModelObjectByName<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>(orphanDSOASpaceListName)) {
+              model.getModelObjectByName<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>(orphanDSOASpaceListName)) {
           return *existing;
         }
         auto created = openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList(model);
@@ -412,7 +412,7 @@ namespace epmodel {
       }
 
       if (auto orphanList =
-            model().getConcreteModelObjectByName<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>(orphanDSOASpaceListName)) {
+            model().getModelObjectByName<openstudio::epmodel::DesignSpecificationOutdoorAirSpaceList>(orphanDSOASpaceListName)) {
         if (orphanList->numExtensibleGroups() == 0u) {
           orphanList->remove();
           detail::addLoadInfo(context,

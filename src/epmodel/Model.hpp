@@ -8,6 +8,7 @@
 
 #include "EPModelAPI.hpp"
 #include "Model_Impl.hpp"
+#include "ModelObject/ModelObject.hpp"
 #include "StraightComponent/Node_Impl.hpp"
 
 #include "../utilities/idf/Workspace.hpp"
@@ -172,7 +173,8 @@ namespace epmodel {
     }
 
     /// Returns a model object of type T by exact name, if it exists.
-    template <typename T>
+    /// For non-concrete types, scans all objects; for concrete types, prefer the constrained overload below.
+    template <AnyModelObject T>
     boost::optional<T> getModelObjectByName(const std::string& name) const {
       std::vector<WorkspaceObject> objects = this->getObjectsByName(name, true, true);
       for (const auto& wo : objects) {
@@ -184,9 +186,9 @@ namespace epmodel {
       return boost::none;
     }
 
-    /// Returns a concrete model object of type T by exact name, if it exists.
-    template <typename T>
-    boost::optional<T> getConcreteModelObjectByName(const std::string& name) const {
+    /// Returns a concrete model object of type T by exact name, using T::iddObjectType() for a fast lookup.
+    template <ConcreteModelObject T>
+    boost::optional<T> getModelObjectByName(const std::string& name) const {
       if (auto object = this->getObjectByTypeAndName(T::iddObjectType(), name)) {
         if (auto p = object->template getImpl<typename T::ImplType>()) {
           return T(std::move(p));
@@ -196,7 +198,7 @@ namespace epmodel {
     }
 
     /// Returns a single model object of type T by handle, if it exists.
-    template <typename T>
+    template <AnyModelObject T>
     boost::optional<T> getModelObject(const Handle& handle) const {
       if (auto wo = this->getObject(handle)) {
         return wo->optionalCast<T>();

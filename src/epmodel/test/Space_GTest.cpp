@@ -144,19 +144,19 @@ TEST_F(EPModelFixture, API_Space_Canonicalize_RemovesEmptyOrphanDSOASpaceList) {
   DesignSpecificationOutdoorAir dsoa(model);
   ASSERT_TRUE(space.setDesignSpecificationOutdoorAir(dsoa));
 
-  auto orphanList = model.getConcreteModelObjectByName<DesignSpecificationOutdoorAirSpaceList>("Orphan Spaces DSOA Space List");
+  auto orphanList = model.getModelObjectByName<DesignSpecificationOutdoorAirSpaceList>("Orphan Spaces DSOA Space List");
   ASSERT_TRUE(orphanList);
   ASSERT_GT(orphanList->numExtensibleGroups(), 0u);
 
   ThermalZone zone(model);
   ASSERT_TRUE(space.setThermalZone(zone));
 
-  orphanList = model.getConcreteModelObjectByName<DesignSpecificationOutdoorAirSpaceList>("Orphan Spaces DSOA Space List");
+  orphanList = model.getModelObjectByName<DesignSpecificationOutdoorAirSpaceList>("Orphan Spaces DSOA Space List");
   ASSERT_TRUE(orphanList);
   EXPECT_EQ(0u, orphanList->numExtensibleGroups());
 
   model.canonicalize(SanitizationPolicy::Repair);
-  orphanList = model.getConcreteModelObjectByName<DesignSpecificationOutdoorAirSpaceList>("Orphan Spaces DSOA Space List");
+  orphanList = model.getModelObjectByName<DesignSpecificationOutdoorAirSpaceList>("Orphan Spaces DSOA Space List");
   EXPECT_FALSE(orphanList);
 }
 
@@ -167,7 +167,7 @@ TEST_F(EPModelFixture, API_Space_Canonicalize_MigratesZonedSpaceAssignmentFromOr
   ASSERT_TRUE(space.setThermalZone(zone));
   DesignSpecificationOutdoorAir dsoa(model);
 
-  auto orphanList = model.getConcreteModelObjectByName<DesignSpecificationOutdoorAirSpaceList>("Orphan Spaces DSOA Space List");
+  auto orphanList = model.getModelObjectByName<DesignSpecificationOutdoorAirSpaceList>("Orphan Spaces DSOA Space List");
   if (!orphanList) {
     orphanList = DesignSpecificationOutdoorAirSpaceList(model);
     orphanList->setName("Orphan Spaces DSOA Space List");
@@ -205,7 +205,7 @@ TEST_F(EPModelFixture, API_Space_Canonicalize_MigratesUnzonedSpaceAssignmentFrom
   auto zoneAssignment = zoneList.designSpecificationOutdoorAir(unzonedSpace);
   EXPECT_FALSE(zoneAssignment);
 
-  auto orphanList = model.getConcreteModelObjectByName<DesignSpecificationOutdoorAirSpaceList>("Orphan Spaces DSOA Space List");
+  auto orphanList = model.getModelObjectByName<DesignSpecificationOutdoorAirSpaceList>("Orphan Spaces DSOA Space List");
   ASSERT_TRUE(orphanList);
   auto orphanAssignment = orphanList->designSpecificationOutdoorAir(unzonedSpace);
   ASSERT_TRUE(orphanAssignment);

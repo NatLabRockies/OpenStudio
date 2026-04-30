@@ -92,13 +92,13 @@ namespace epmodel {
 
       auto currentName = owner.getString(fieldIndex, true);
       if (currentName && !currentName->empty()) {
-        if (auto existing = owner.model().getConcreteModelObjectByName<OutdoorAirMixer>(*currentName)) {
+        if (auto existing = owner.model().getModelObjectByName<OutdoorAirMixer>(*currentName)) {
           return *existing;
         }
       }
 
       if (!preferredName.empty()) {
-        if (auto existing = owner.model().getConcreteModelObjectByName<OutdoorAirMixer>(preferredName)) {
+        if (auto existing = owner.model().getModelObjectByName<OutdoorAirMixer>(preferredName)) {
           return *existing;
         }
       }

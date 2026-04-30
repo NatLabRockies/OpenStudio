@@ -94,11 +94,11 @@ boost::optional<EnergyManagementSystemActuator> resolveActuatorForRole(
   }
 
   if (matches.empty()) {
-    if (auto namedActuator = coil.model().getConcreteModelObjectByName<EnergyManagementSystemActuator>(std::string(defaultName))) {
+    if (auto namedActuator = coil.model().getModelObjectByName<EnergyManagementSystemActuator>(std::string(defaultName))) {
       return namedActuator;
     }
     if (auto renamedActuator =
-          coil.model().getConcreteModelObjectByName<EnergyManagementSystemActuator>(prefixedChildName(coil, renamedSuffix))) {
+          coil.model().getModelObjectByName<EnergyManagementSystemActuator>(prefixedChildName(coil, renamedSuffix))) {
       return renamedActuator;
     }
     return boost::none;
