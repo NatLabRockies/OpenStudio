@@ -41,15 +41,19 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-    // - Status: Partial Parity. The persisted mixer scalar/relationship fields and the current epmodel zone-branch insertion path are aligned,
-    //   but the broader canonical local-topology surface remains intentionally narrower.
+    // - Status: Partial Parity. The persisted mixer node/object references plus the bounded epmodel zone-branch add/remove path are aligned,
+    //   but the broader canonical local-topology surface and the OS-only outdoor-air control API remain intentionally narrower.
     // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctInletSideMixer.
-    // - Implemented Parity: `perPersonVentilationRateMode`, `secondaryAirInletNode`, and `addToNode` preserve the persisted
-    //   `AirTerminal:SingleDuct:Mixer` scalar/relationship contract on the current epmodel zone-branch path.
-    // - Documented Delta: The wrapper preserves the epmodel-only default constructor, and the canonical public `controlForOutdoorAir`
-    //   toggle is intentionally omitted because this EnergyPlus-backed wrapper has no dedicated persisted boolean field for that OS-only setting.
+    // - Implemented Parity: `perPersonVentilationRateMode`, `secondaryAirInletNode`, `addToNode`, and `removeFromLoop` preserve the
+    //   current epmodel AirLoopHVAC zone-branch contract for this `AirTerminal:SingleDuct:Mixer` wrapper.
+    // - Topology Gate: `addToNode` only accepts a node that is already the matched ZoneSplitter/ZoneMixer branch node for an AirLoopHVAC demand branch;
+    //   it rejects foreign-model, non-loop, and mismatched-branch nodes, then rewires the splitter outlet, terminal inlet/outlet, ADU outlet, and zone equipment list.
+    // - Cleanup Surface: `remove` and `removeFromLoop` reverse those entity-owned branch side effects by restoring the original branch node, clearing stale ADU and zone-equipment references,
+    //   and deleting the transient inlet node when this wrapper created it.
+    // - Documented Delta: This wrapper keeps the same default-constructor shape as the canonical model object, but it intentionally omits the canonical
+    //   `controlForOutdoorAir` API plus the associated DesignSpecificationOutdoorAir export path from the openstudio::model surface.
     // - Field/Storage Mapping: The preserved scalar and direct object links map directly to the EnergyPlus `AirTerminal:SingleDuct:Mixer` fields,
-    //   and `addToNode` rewires the current epmodel zone branch by updating the same primary-air and outlet node fields.
+    //   while the connectivity methods update those node/object references to match the current zone-branch topology.
     // - Evidence: `src/model/AirTerminalSingleDuctInletSideMixer.hpp`, `src/model/AirTerminalSingleDuctInletSideMixer.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctInletSideMixer.cpp`, and `src/epmodel/test/AirTerminalSingleDuctInletSideMixer_GTest.cpp`.
     // - Remaining Parity Work: Broaden the local-topology surface only if canonical insertion behavior needs to be mirrored more fully.
 

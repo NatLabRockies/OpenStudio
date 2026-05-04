@@ -7,8 +7,8 @@
 #include "Mixer/AirTerminalDualDuctVAVOutdoorAir_Impl.hpp"
 
 #include "Loop/AirLoopHVAC_Impl.hpp"
-#include "HVACComponent/HVACComponent.hpp"
 #include "Model.hpp"
+#include "Schedule/Schedule.hpp"
 #include "StraightComponent/Node.hpp"
 
 #include <utilities/core/Assert.hpp>
@@ -25,6 +25,9 @@ namespace epmodel {
 
 AirTerminalDualDuctVAVOutdoorAir::AirTerminalDualDuctVAVOutdoorAir(const Model& model)
   : Mixer(AirTerminalDualDuctVAVOutdoorAir::iddObjectType(), model) {
+  auto alwaysOn = model.alwaysOnDiscreteSchedule();
+  OS_ASSERT(setPointer(openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::AvailabilityScheduleName, alwaysOn.handle()));
+
   // Keep non-optional scalar getter strictness aligned with preserved model API.
   OS_ASSERT(setPerPersonVentilationRateMode("CurrentOccupancy"));
 

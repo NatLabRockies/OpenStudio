@@ -10,6 +10,7 @@
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "HVACComponent.hpp"
 #include "Loop/AirLoopHVAC.hpp"
+#include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
 #include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
@@ -29,6 +30,7 @@
 #include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/AirTerminal_SingleDuct_ConstantVolume_Reheat_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
+#include <utilities/idd/ZoneHVAC_AirDistributionUnit_FieldEnums.hxx>
 #include <utilities/idd/ZoneHVAC_EquipmentConnections_FieldEnums.hxx>
 
 namespace openstudio {
@@ -53,10 +55,26 @@ namespace epmodel {
       return boost::none;
     }
 
+    boost::optional<ThermalZone> thermalZoneContainingTerminal(const Model& model, const ModelObject& terminal) {
+      for (const auto& zone : model.getConcreteModelObjects<ThermalZone>()) {
+        const auto equipment = zone.equipment();
+        if (std::ranges::find(equipment, terminal) != equipment.end()) {
+          return zone;
+        }
+      }
+      return boost::none;
+    }
+
     bool registerTerminalWithThermalZone(const ModelObject& terminal, ThermalZone& thermalZone) {
       auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
       OS_ASSERT(zoneImpl);
       return zoneImpl->getZoneHVACEquipmentList().addEquipment(terminal);
+    }
+
+    bool unregisterTerminalFromThermalZone(const ModelObject& terminal, ThermalZone& thermalZone) {
+      auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
+      OS_ASSERT(zoneImpl);
+      return zoneImpl->getZoneHVACEquipmentList().removeEquipment(terminal);
     }
 
   }  // namespace
@@ -231,8 +249,102 @@ namespace epmodel {
       return boost::none;
     }
 
+    std::vector<ModelObject> AirTerminalSingleDuctConstantVolumeReheat_Impl::children() const {
+      std::vector<ModelObject> result;
+      auto coil =
+        getObject<ModelObject>().getModelObjectTarget<HVACComponent>(openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName);
+      if (coil) {
+        result.push_back(*coil);
+      }
+      return result;
+    }
+
+    std::vector<openstudio::IdfObject> AirTerminalSingleDuctConstantVolumeReheat_Impl::remove() {
+      auto thisObject = getObject<openstudio::epmodel::ModelObject>();
+      auto coil = thisObject.getModelObjectTarget<openstudio::epmodel::HVACComponent>(
+        openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName);
+
+      removeFromLoop();
+
+      if (coil) {
+        if (auto plantLoop = coil->plantLoop()) {
+          plantLoop->removeDemandBranchWithComponent(*coil);
+        }
+      }
+
+      return HVACComponent_Impl::remove();
+    }
+
+    bool AirTerminalSingleDuctConstantVolumeReheat_Impl::removeFromLoop() {
+      auto thisObject = getObject<openstudio::epmodel::ModelObject>();
+      auto thermalZone = thermalZoneContainingTerminal(model(), thisObject);
+      auto inletNode = inletModelObject();
+      auto outletNode = outletModelObject();
+      auto coil = thisObject.getModelObjectTarget<openstudio::epmodel::HVACComponent>(
+        openstudio::AirTerminal_SingleDuct_ConstantVolume_ReheatFields::ReheatCoilName);
+      auto plantLoop = coil ? coil->plantLoop() : boost::optional<openstudio::epmodel::PlantLoop>{};
+
+      bool shouldRemoveTerminalInletNode = false;
+      if (auto terminal = thisObject.optionalCast<openstudio::epmodel::HVACComponent>()) {
+        if (auto airLoop = terminal->airLoopHVAC()) {
+          if (inletNode && outletNode) {
+            const auto splitter = airLoop->zoneSplitter();
+            const auto mixer = airLoop->zoneMixer();
+            const auto splitterBranchIndex = splitter.branchIndexForOutletModelObject(*inletNode);
+            shouldRemoveTerminalInletNode =
+              (splitter.outletModelObject(splitterBranchIndex) == *inletNode) && (mixer.inletModelObject(splitterBranchIndex) == *outletNode);
+          }
+        }
+      }
+
+      bool removedFromAirLoop = false;
+      if (inletNode && outletNode) {
+        if (!StraightComponent_Impl::removeFromLoop()) {
+          return false;
+        }
+        removedFromAirLoop = true;
+      }
+
+      if (thermalZone && !unregisterTerminalFromThermalZone(thisObject, *thermalZone)) {
+        return false;
+      }
+
+      if (auto adu = zoneHVACAirDistributionUnit()) {
+        if (!adu->setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirDistributionUnitOutletNodeName, openstudio::Handle())) {
+          return false;
+        }
+        if (!adu->setString(openstudio::ZoneHVAC_AirDistributionUnitFields::AirTerminalObjectType, "")) {
+          return false;
+        }
+        if (!adu->setPointer(openstudio::ZoneHVAC_AirDistributionUnitFields::AirTerminalName, openstudio::Handle())) {
+          return false;
+        }
+      }
+
+      setPointer(inletPort(), openstudio::Handle(), false);
+      setPointer(outletPort(), openstudio::Handle(), false);
+
+      if (shouldRemoveTerminalInletNode) {
+        if (auto node = inletNode->optionalCast<openstudio::epmodel::Node>()) {
+          node->remove();
+        }
+      }
+
+      if (plantLoop && coil && !plantLoop->removeDemandBranchWithComponent(*coil)) {
+        return false;
+      }
+
+      return removedFromAirLoop || static_cast<bool>(thermalZone) || static_cast<bool>(plantLoop);
+    }
+
     bool AirTerminalSingleDuctConstantVolumeReheat_Impl::addToNode(Node& node) {
       if (node.model() != model()) {
+        return false;
+      }
+
+      if (getObject<openstudio::epmodel::HVACComponent>().loop()) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeReheat",
+                 "Refusing to add an already-connected terminal to node '" << node.nameString() << "'.");
         return false;
       }
 
@@ -257,6 +369,11 @@ namespace epmodel {
       if (!mixerInlet) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeReheat",
                  "addToNode requires a corresponding ZoneMixer inlet for ZoneSplitter branch index " << splitterBranchIndex << ".");
+        return false;
+      }
+      if (*mixerInlet != thisNode) {
+        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctConstantVolumeReheat",
+                 "addToNode requires the ZoneMixer inlet for ZoneSplitter branch index " << splitterBranchIndex << " to match the drop node.");
         return false;
       }
 

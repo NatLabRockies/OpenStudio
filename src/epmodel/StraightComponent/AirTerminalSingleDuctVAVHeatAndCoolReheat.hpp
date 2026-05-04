@@ -19,6 +19,7 @@ namespace epmodel {
   class Model;
   class Schedule;
   class HVACComponent;
+  class Node;
 
   namespace detail {
     class AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl;
@@ -37,14 +38,21 @@ namespace epmodel {
 
     static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - Status: Scalar Parity. The scalar VAV heat-and-cool reheat contract is aligned; relationship and node plumbing remain narrower.
-  // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctVAVHeatAndCoolReheat.
-  // - Implemented Parity: `maximumAirFlowRate`, `zoneMinimumAirFlowFraction`, `maximumHotWaterorSteamFlowRate`, `minimumHotWaterorSteamFlowRate`, `convergenceTolerance`, and `maximumReheatAirTemperature` preserve the canonical scalar contract.
-  // - Documented Delta: Damper/air inlet/air outlet node names remain outside this public surface.
-  // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:VAV:HeatAndCool:Reheat` fields; the translator handles links separately.
-  // - Evidence: `src/model/AirTerminalSingleDuctVAVHeatAndCoolReheat.hpp`, `src/model/AirTerminalSingleDuctVAVHeatAndCoolReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctVAVHeatAndCoolReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctVAVHeatAndCoolReheat_GTest.cpp`.
-  // - Remaining Parity Work: Add the omitted relationship helpers when this type moves beyond scalar parity.
+    bool addToNode(Node& node);
+
+    // Schema Alignment Notes:
+    // - Status: Connectivity-focused parity for the campaign scope.
+    // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctVAVHeatAndCoolReheat.
+    // - Implemented Parity: `addToNode`, zone equipment registration/cleanup, splitter/mixer branch rewiring, ADU outlet synchronization,
+    //   reheat-coil child ownership, and terminal removal implement canonical-style zone-branch connectivity behavior, including rollback of
+    //   entity-local `addToNode()` mutations on late failure, with epmodel-specific guards for already-connected terminals and mismatched
+    //   splitter/mixer branches plus explicit `removeFromLoop()` cleanup after supported detach or stale-reference recovery paths.
+    // - Documented Delta: This wrapper still omits the canonical constructor that requires a reheat coil, allows late coil assignment through
+    //   `setReheatCoil`, and does not claim broader autosizing or clone-helper parity.
+    // - Evidence: `src/model/AirTerminalSingleDuctVAVHeatAndCoolReheat.cpp`,
+    //   `src/epmodel/StraightComponent/AirTerminalSingleDuctVAVHeatAndCoolReheat.cpp`,
+    //   `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctVAVHeatAndCoolReheat.cpp`, and
+    //   `src/epmodel/test/AirTerminalSingleDuctVAVHeatAndCoolReheat_GTest.cpp`.
     boost::optional<Schedule> availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
     void resetAvailabilitySchedule();
@@ -78,7 +86,7 @@ namespace epmodel {
     double maximumReheatAirTemperature() const;
     bool setMaximumReheatAirTemperature(double maximumReheatAirTemperature);
 
-  protected:
+   protected:
     using ImplType = detail::AirTerminalSingleDuctVAVHeatAndCoolReheat_Impl;
 
     friend class Model;

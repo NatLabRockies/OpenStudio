@@ -2181,6 +2181,15 @@ set(${target_name}_src
   StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam.hpp
   StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam_Impl.hpp
   StraightComponent/AirTerminalSingleDuctConstantVolumeCooledBeam.cpp
+  StraightComponent/CoilCoolingCooledBeam.hpp
+  StraightComponent/CoilCoolingCooledBeam_Impl.hpp
+  StraightComponent/CoilCoolingCooledBeam.cpp
+  StraightComponent/CoilCoolingFourPipeBeam.hpp
+  StraightComponent/CoilCoolingFourPipeBeam_Impl.hpp
+  StraightComponent/CoilCoolingFourPipeBeam.cpp
+  StraightComponent/CoilHeatingFourPipeBeam.hpp
+  StraightComponent/CoilHeatingFourPipeBeam_Impl.hpp
+  StraightComponent/CoilHeatingFourPipeBeam.cpp
   StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeBeam.hpp
   StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeBeam_Impl.hpp
   StraightComponent/AirTerminalSingleDuctConstantVolumeFourPipeBeam.cpp

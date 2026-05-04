@@ -114,10 +114,9 @@ namespace epmodel {
       void doCanonicalize(LoadContext& context) override;
 
      private:
-      static boost::optional<openstudio::epmodel::ModelObject> resolveTerminalOnDemandBranchNodes(
-        const openstudio::epmodel::Node& splitterOutletNode, const openstudio::epmodel::Node& mixerInletNode);
-      static boost::optional<openstudio::epmodel::ModelObject> resolveTerminalOutletObject(
-        const openstudio::epmodel::ModelObject& terminalObject);
+      static boost::optional<openstudio::epmodel::ModelObject> resolveTerminalOnDemandBranchNodes(const openstudio::epmodel::Node& splitterOutletNode,
+                                                                                                  const openstudio::epmodel::Node& mixerInletNode);
+      static boost::optional<openstudio::epmodel::ModelObject> resolveTerminalOutletObject(const openstudio::epmodel::ModelObject& terminalObject);
       static boost::optional<openstudio::epmodel::ThermalZone> resolveZoneServedByInletNode(const openstudio::epmodel::Node& zoneInletNode);
       static boost::optional<openstudio::epmodel::ThermalZone> resolveZoneServedByReturnNode(const openstudio::epmodel::Node& zoneReturnNode);
       bool isTerminalTypeValid(const openstudio::epmodel::HVACComponent& airTerminal) const;
@@ -139,15 +138,15 @@ namespace epmodel {
       bool collapseSecondaryDemandPathIfEmpty(openstudio::epmodel::Node secondaryDemandInletNode,
                                               openstudio::epmodel::AirLoopHVACZoneSplitter secondarySplitter);
       bool ensureDefaultDemandBranch();
+      boost::optional<openstudio::epmodel::Node> reusableDualDuctTerminalBranchNodeForZone() const;
       bool detachZoneFromDemandNodes(openstudio::epmodel::ZoneHVACEquipmentConnections& connections);
       bool ensureSecondaryDemandInletNode(const openstudio::epmodel::Node& node);
-      boost::optional<openstudio::epmodel::AirLoopHVACZoneSplitter> zoneSplitterForDemandInletNode(
-        const openstudio::epmodel::Node& demandInletNode) const;
-      boost::optional<openstudio::epmodel::AirLoopHVACZoneSplitter> ensureSecondarySupplyPathAndZoneSplitter(
-        const openstudio::epmodel::Node& secondaryDemandInletNode);
+      boost::optional<openstudio::epmodel::AirLoopHVACZoneSplitter>
+        zoneSplitterForDemandInletNode(const openstudio::epmodel::Node& demandInletNode) const;
+      boost::optional<openstudio::epmodel::AirLoopHVACZoneSplitter>
+        ensureSecondarySupplyPathAndZoneSplitter(const openstudio::epmodel::Node& secondaryDemandInletNode);
       static bool isSupportedMixedAirFanType(openstudio::IddObjectType objectType);
-      static boost::optional<openstudio::epmodel::HVACComponent> lastSupportedFan(
-        const std::vector<openstudio::epmodel::ModelObject>& components);
+      static boost::optional<openstudio::epmodel::HVACComponent> lastSupportedFan(const std::vector<openstudio::epmodel::ModelObject>& components);
       // AirLoopHVAC availability-schedule APIs are mapped onto one canonical
       // AvailabilityManager:ScheduledOn entry in the loop assignment list.
       // These helpers centralize that policy so public APIs and availability
@@ -159,8 +158,8 @@ namespace epmodel {
       // - API: AirLoopHVAC exposes Connector:Splitter behavior through zoneSplitter()/zoneMixer() and demand topology traversal.
       // - Field Mapping: Connector:Splitter Inlet/Outlet Branch rows are represented by branch node wiring and
       //   AirLoopHVAC:ZoneSplitter/AirLoopHVAC:ZoneMixer relationships, not scalar accessors.
-      static boost::optional<std::vector<openstudio::epmodel::StraightComponent>> resolveDemandBranchChain(
-        const openstudio::epmodel::Node& branchStartNode, const openstudio::epmodel::Node& branchEndNode);
+      static boost::optional<std::vector<openstudio::epmodel::StraightComponent>>
+        resolveDemandBranchChain(const openstudio::epmodel::Node& branchStartNode, const openstudio::epmodel::Node& branchEndNode);
     };
 
   }  // namespace detail

@@ -7,6 +7,8 @@
 #define EPMODEL_AIRTERMINALSINGLEDUCTVAVREHEAT_IMPL_HPP
 
 #include "StraightComponent/StraightComponent_Impl.hpp"
+#include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
+#include "Node.hpp"
 
 #include <vector>
 
@@ -24,6 +26,11 @@ namespace epmodel {
 
       unsigned inletPort() const override;
       unsigned outletPort() const override;
+      std::vector<ModelObject> children() const override;
+      std::vector<openstudio::IdfObject> remove() override;
+      bool removeFromLoop() override;
+      boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
+      bool addToNode(Node& node) override;
 
       HVACComponent reheatCoil() const;
       bool setReheatCoil(HVACComponent& coil);

@@ -7,7 +7,6 @@
 #include "Mixer/AirTerminalDualDuctVAV_Impl.hpp"
 
 #include "Loop/AirLoopHVAC_Impl.hpp"
-#include "HVACComponent/HVACComponent.hpp"
 #include "Model.hpp"
 #include "StraightComponent/Node.hpp"
 
@@ -21,7 +20,10 @@
 namespace openstudio {
 namespace epmodel {
 
-AirTerminalDualDuctVAV::AirTerminalDualDuctVAV(const Model& model) : Mixer(AirTerminalDualDuctVAV::iddObjectType(), model) {}
+AirTerminalDualDuctVAV::AirTerminalDualDuctVAV(const Model& model) : Mixer(AirTerminalDualDuctVAV::iddObjectType(), model) {
+  autosizeMaximumDamperAirFlowRate();
+  OS_ASSERT(setZoneMinimumAirFlowFraction(0.3));
+}
 
 AirTerminalDualDuctVAV::AirTerminalDualDuctVAV(std::shared_ptr<detail::AirTerminalDualDuctVAV_Impl> impl) : Mixer(std::move(impl)) {}
 
@@ -62,6 +64,10 @@ namespace detail {
   }
 
   bool AirTerminalDualDuctVAV_Impl::addToNode(openstudio::epmodel::Node& node) {
+    if (node.model() != model()) {
+      return false;
+    }
+
     auto terminal = getObject<AirTerminalDualDuctVAV>().cast<Mixer>();
     return AirLoopHVAC_Impl::addDualDuctTerminalToNode(terminal, node);
   }

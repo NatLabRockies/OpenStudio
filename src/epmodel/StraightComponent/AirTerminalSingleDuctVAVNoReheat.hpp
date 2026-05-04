@@ -18,6 +18,7 @@ namespace openstudio {
 namespace epmodel {
 
   class Model;
+  class Node;
   class Schedule;
 
   namespace detail {
@@ -39,14 +40,22 @@ namespace epmodel {
 
     static std::vector<std::string> zoneMinimumAirFlowInputMethodValues();
 
-    // Schema Alignment Notes:
-    // - Status: Scalar Parity. The scalar VAV no-reheat contract is aligned; relationship and node plumbing remain narrower.
+    bool addToNode(Node& node);
+
+    // Connectivity Notes:
     // - Canonical Counterpart: openstudio::model::AirTerminalSingleDuctVAVNoReheat.
-    // - Implemented Parity: `maximumAirFlowRate`, `zoneMinimumAirFlowInputMethod`, `constantMinimumAirFlowFraction`, and `fixedMinimumAirFlowRate` preserve the canonical scalar contract.
-    // - Documented Delta: Air inlet/outlet node names and design-specification-outdoor-air behavior remain outside this public surface.
-    // - Field/Storage Mapping: The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:VAV:NoReheat` fields; the translator handles links separately.
+    // - `addToNode` is scoped to an AirLoopHVAC demand-side zone branch node: it creates a terminal inlet node, rewires the
+    //   ZoneSplitter branch outlet to that inlet node, points the terminal outlet at the zone air node, updates an owning ADU outlet when
+    //   present, and registers the terminal on the served zone equipment list.
+    // - `removeFromLoop` reverses those side effects by reconnecting the ZoneSplitter branch to the zone air node through the shared
+    //   StraightComponent removal path, removing the zone equipment-list entry, clearing any ADU outlet/terminal references, clearing this
+    //   terminal's node pointers, and removing the temporary inlet node.
+    // - The preserved scalars map directly to EnergyPlus `AirTerminal:SingleDuct:VAV:NoReheat` fields; connectivity is represented by paired
+    //   inlet/outlet node relationships.
+    // - Documented Delta: canonical `model` accepts a broader set of demand insertion paths. This epmodel wrapper currently requires the
+    //   target node to already be the ZoneSplitter/Mixer branch node produced by the epmodel AirLoopHVAC zone-branch topology.
+    // - DSOA/OA-control behavior remains outside this public surface.
     // - Evidence: `src/model/AirTerminalSingleDuctVAVNoReheat.hpp`, `src/model/AirTerminalSingleDuctVAVNoReheat.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalSingleDuctVAVNoReheat.cpp`, and `src/epmodel/test/AirTerminalSingleDuctVAVNoReheat_GTest.cpp`.
-    // - Remaining Parity Work: Add the omitted relationship helpers when this type moves beyond scalar parity.
     Schedule availabilitySchedule() const;
     bool setAvailabilitySchedule(Schedule& schedule);
 
@@ -82,7 +91,7 @@ namespace epmodel {
     void autosizeFixedMinimumAirFlowRate();
     void resetFixedMinimumAirFlowRate();
 
-  protected:
+   protected:
     using ImplType = detail::AirTerminalSingleDuctVAVNoReheat_Impl;
 
     friend class Model;

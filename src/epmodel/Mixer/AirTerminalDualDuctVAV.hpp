@@ -37,13 +37,13 @@ class EPMODEL_API AirTerminalDualDuctVAV : public Mixer
   static IddObjectType iddObjectType();
 
   // Schema Alignment Notes:
-  // - Status: Scalar Parity. The scalar surface is aligned, but the canonical wrapper still exposes schedule, node, and DSOA relationship convenience APIs that epmodel has not reintroduced.
+  // - Status: Connectivity parity for the tested dual-duct add/remove path and inlet-node wiring.
   // - Canonical Counterpart: openstudio::model::AirTerminalDualDuctVAV.
-  // - Implemented Parity: `maximumDamperAirFlowRate` and `zoneMinimumAirFlowFraction` preserve the canonical scalar behavior and autosize semantics.
-  // - Documented Delta: epmodel still omits the availability-schedule, node, DSOA, and turndown-schedule wrappers that canonical model code exposes.
-  // - Field/Storage Mapping: Availability Schedule Name, Air Outlet Node Name, Hot Air Inlet Node Name, Cold Air Inlet Node Name, Design Specification Outdoor Air Object Name, and Minimum Air Flow Turndown Schedule Name are relationship fields and intentionally excluded from scalar accessors.
-  // - Evidence: `src/model/AirTerminalDualDuctVAV.hpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalDualDuctVAV.cpp`, and `src/epmodel/test/AirTerminalDualDuctVAV_GTest.cpp` show the same scalar mapping and omitted relationship surface.
-  // - Remaining Parity Work: Reintroduce the schedule, DSOA, and node-relationship wrappers if full model-side parity is needed.
+  // - Implemented Connectivity Surface: constructor defaults used by the dual-duct path, `hotAirInletNode`, `coldAirInletNode`, and the shared `addToNode`/`remove` topology behavior are implemented here.
+  // - Documented Delta: epmodel still does not expose canonical `availabilitySchedule()`, DSOA, minimum-air-flow-turndown, or autosized-value convenience wrappers even though the underlying IDD relationship fields remain stored.
+  // - Field/Storage Mapping: `AvailabilityScheduleName`, `DesignSpecificationOutdoorAirObjectName`, and `MinimumAirFlowTurndownScheduleName` remain underlying relationship fields; Air Outlet/Hot Air Inlet/Cold Air Inlet node fields are surfaced through node accessors and shared AirLoopHVAC topology helpers.
+  // - Evidence: `src/model/AirTerminalDualDuctVAV.cpp` and `src/energyplus/ForwardTranslator/ForwardTranslateAirTerminalDualDuctVAV.cpp` document the canonical field mapping; `src/model/test/AirTerminalDualDuctVAV_GTest.cpp` and `src/epmodel/test/AirTerminalDualDuctVAV_GTest.cpp` cover the tested insertion, removal, reuse, and cleanup behavior.
+  // - Remaining Parity Work: Reintroduce the omitted schedule, DSOA, and turndown wrappers only if broader model API parity is needed outside this connectivity campaign.
   boost::optional<double> maximumDamperAirFlowRate() const;
   bool isMaximumDamperAirFlowRateAutosized() const;
   bool setMaximumDamperAirFlowRate(double maximumDamperAirFlowRate);

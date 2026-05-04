@@ -13,11 +13,12 @@
 namespace openstudio {
 namespace epmodel {
 
-class AirLoopHVAC;
-class ModelObject;
-class Schedule;
+  class AirLoopHVAC;
+  class ModelObject;
+  class Schedule;
+  class ZoneHVACAirDistributionUnit;
 
-namespace detail {
+  namespace detail {
 
     class EPMODEL_API AirTerminalSingleDuctConstantVolumeCooledBeam_Impl : public StraightComponent_Impl
     {
@@ -28,6 +29,9 @@ namespace detail {
       unsigned inletPort() const override;
       unsigned outletPort() const override;
       bool addToNode(Node& node) override;
+      bool removeFromLoop() override;
+      std::vector<openstudio::IdfObject> remove() override;
+      std::vector<ModelObject> children() const override;
 
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);
@@ -35,58 +39,60 @@ namespace detail {
       ModelObject coilCoolingCooledBeam() const;
       bool setCoolingCoil(ModelObject& coilCoolingCooledBeam);
 
-  std::string cooledBeamType() const;
-  bool setCooledBeamType(const std::string& cooledBeamType);
+      std::string cooledBeamType() const;
+      bool setCooledBeamType(const std::string& cooledBeamType);
 
-  boost::optional<double> supplyAirVolumetricFlowRate() const;
-  bool isSupplyAirVolumetricFlowRateDefaulted() const;
-  bool isSupplyAirVolumetricFlowRateAutosized() const;
-  bool setSupplyAirVolumetricFlowRate(double supplyAirVolumetricFlowRate);
-  void resetSupplyAirVolumetricFlowRate();
-  void autosizeSupplyAirVolumetricFlowRate();
+      boost::optional<double> supplyAirVolumetricFlowRate() const;
+      bool isSupplyAirVolumetricFlowRateDefaulted() const;
+      bool isSupplyAirVolumetricFlowRateAutosized() const;
+      bool setSupplyAirVolumetricFlowRate(double supplyAirVolumetricFlowRate);
+      void resetSupplyAirVolumetricFlowRate();
+      void autosizeSupplyAirVolumetricFlowRate();
 
-  boost::optional<double> maximumTotalChilledWaterVolumetricFlowRate() const;
-  bool isMaximumTotalChilledWaterVolumetricFlowRateDefaulted() const;
-  bool isMaximumTotalChilledWaterVolumetricFlowRateAutosized() const;
-  bool setMaximumTotalChilledWaterVolumetricFlowRate(double maximumTotalChilledWaterVolumetricFlowRate);
-  void resetMaximumTotalChilledWaterVolumetricFlowRate();
-  void autosizeMaximumTotalChilledWaterVolumetricFlowRate();
+      boost::optional<double> maximumTotalChilledWaterVolumetricFlowRate() const;
+      bool isMaximumTotalChilledWaterVolumetricFlowRateDefaulted() const;
+      bool isMaximumTotalChilledWaterVolumetricFlowRateAutosized() const;
+      bool setMaximumTotalChilledWaterVolumetricFlowRate(double maximumTotalChilledWaterVolumetricFlowRate);
+      void resetMaximumTotalChilledWaterVolumetricFlowRate();
+      void autosizeMaximumTotalChilledWaterVolumetricFlowRate();
 
-  boost::optional<int> numberofBeams() const;
-  bool isNumberofBeamsDefaulted() const;
-  bool isNumberofBeamsAutosized() const;
-  bool setNumberofBeams(int numberofBeams);
-  void resetNumberofBeams();
-  void autosizeNumberofBeams();
+      boost::optional<int> numberofBeams() const;
+      bool isNumberofBeamsDefaulted() const;
+      bool isNumberofBeamsAutosized() const;
+      bool setNumberofBeams(int numberofBeams);
+      void resetNumberofBeams();
+      void autosizeNumberofBeams();
 
-  boost::optional<double> beamLength() const;
-  bool isBeamLengthDefaulted() const;
-  bool isBeamLengthAutosized() const;
-  bool setBeamLength(double beamLength);
-  void resetBeamLength();
-  void autosizeBeamLength();
+      boost::optional<double> beamLength() const;
+      bool isBeamLengthDefaulted() const;
+      bool isBeamLengthAutosized() const;
+      bool setBeamLength(double beamLength);
+      void resetBeamLength();
+      void autosizeBeamLength();
 
-  double designInletWaterTemperature() const;
-  bool isDesignInletWaterTemperatureDefaulted() const;
-  bool setDesignInletWaterTemperature(double designInletWaterTemperature);
-  void resetDesignInletWaterTemperature();
+      double designInletWaterTemperature() const;
+      bool isDesignInletWaterTemperatureDefaulted() const;
+      bool setDesignInletWaterTemperature(double designInletWaterTemperature);
+      void resetDesignInletWaterTemperature();
 
-  double designOutletWaterTemperature() const;
-  bool isDesignOutletWaterTemperatureDefaulted() const;
-  bool setDesignOutletWaterTemperature(double designOutletWaterTemperature);
-  void resetDesignOutletWaterTemperature();
+      double designOutletWaterTemperature() const;
+      bool isDesignOutletWaterTemperatureDefaulted() const;
+      bool setDesignOutletWaterTemperature(double designOutletWaterTemperature);
+      void resetDesignOutletWaterTemperature();
 
-  boost::optional<double> coefficientofInductionKin() const;
-  bool isCoefficientofInductionKinDefaulted() const;
-  bool isCoefficientofInductionKinAutocalculated() const;
-  bool setCoefficientofInductionKin(double coefficientofInductionKin);
-  void resetCoefficientofInductionKin();
-  void autocalculateCoefficientofInductionKin();
+      boost::optional<double> coefficientofInductionKin() const;
+      bool isCoefficientofInductionKinDefaulted() const;
+      bool isCoefficientofInductionKinAutocalculated() const;
+      bool setCoefficientofInductionKin(double coefficientofInductionKin);
+      void resetCoefficientofInductionKin();
+      void autocalculateCoefficientofInductionKin();
 
-  std::vector<std::string> cooledBeamTypeValues() const;
-};
+      std::vector<std::string> cooledBeamTypeValues() const;
 
-}  // namespace detail
+      boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
+    };
+
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 
