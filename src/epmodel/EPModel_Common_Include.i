@@ -22,17 +22,34 @@
   using namespace openstudio::epmodel;
 %}
 
-%define EPMODELOBJECT_TEMPLATES(_name)
+// Vector/Optional directives
+%define EPMODELOBJECT_TEMPLATES(_name, _isUnique)
+#if !(_isUnique)
   %ignore std::vector<openstudio::epmodel::_name>::vector(size_type);
   %ignore std::vector<openstudio::epmodel::_name>::resize(size_type);
   %template(_name##Vector) std::vector<openstudio::epmodel::_name>;
+#endif
   %template(Optional##_name) boost::optional<openstudio::epmodel::_name>;
+%enddef // EPMODELOBJECT_TEMPLATES
+
+%define EPMODELEXTENSIBLEGROUP_TEMPLATES(_name)
+  EPMODELOBJECT_TEMPLATES(_name, 0)
 %enddef
 
-%define EPMODELOBJECT_TO_HELPER(_name)
+// C++ methods for extending, so we can call from wrapper. Such as to_XXX, model.getXXXByName, etc
+%define EPMODELOBJECT_CPP_EXTENSION(_name, _isUnique, _isConcrete)
   namespace openstudio {
     namespace epmodel {
       boost::optional<_name> to##_name(const openstudio::IdfObject& idfObject);
+#if _isUnique
+      _name get##_name(openstudio::epmodel::Model& t_model);
+      boost::optional<_name> getOptional##_name(const openstudio::epmodel::Model& t_model);
+#else
+      boost::optional<_name> get##_name(const Model &t_model, const openstudio::Handle &t_handle);
+      std::vector<_name> get##_name##s(const Model &t_model);
+      boost::optional<_name> get##_name##ByName(const Model &t_model, const std::string &t_name);
+      std::vector<_name> get##_name##sByName(const Model &t_model, const std::string &t_name, bool t_exactMatch);
+#endif
     }
   }
 
@@ -42,11 +59,95 @@
         boost::optional<_name> to##_name(const openstudio::IdfObject& idfObject) {
           return idfObject.optionalCast<_name>();
         }
+
+#if _isUnique
+        _name get##_name(openstudio::epmodel::Model& t_model) {
+          return t_model.getUniqueModelObject<openstudio::epmodel::##_name>();
+        }
+        boost::optional<_name> getOptional##_name(const openstudio::epmodel::Model& t_model) {
+          return t_model.getOptionalUniqueModelObject<openstudio::epmodel::##_name>();
+        }
+#else
+        boost::optional<_name> get##_name(const Model &t_model, const openstudio::Handle &t_handle) {
+          return t_model.getModelObject<_name>(t_handle);
+        }
+
+        std::vector<_name> get##_name##s(const Model &t_model) {
+          #if _isConcrete
+            return t_model.getConcreteModelObjects<_name>();
+          #else
+            return t_model.getModelObjects<_name>();
+          #endif
+        }
+        boost::optional<_name> get##_name##ByName(const Model &t_model, const std::string &t_name) {
+          #if _isConcrete
+            return t_model.getConcreteModelObjectByName<_name>(t_name);
+          #else
+            return t_model.getModelObjectByName<_name>(t_name);
+          #endif
+        }
+        std::vector<_name> get##_name##sByName(const Model &t_model, const std::string &t_name, bool t_exactMatch) {
+          #if _isConcrete
+            if (t_exactMatch){
+              return t_model.getModelObjectsByName<_name>(t_name, t_exactMatch);
+            }
+            return t_model.getConcreteModelObjectsByName<_name>(t_name);
+          #else
+            return t_model.getModelObjectsByName<_name>(t_name, t_exactMatch);
+          #endif
+        }
+#endif
       }
     }
   }
+%enddef
 
-#if defined SWIGPYTHON
+
+#if defined SWIGRUBY
+// Patch EPModel's ModelObject instead of the shared IdfObject base. Canonical
+// model bindings also install to_<Type> helpers on IdfObject, and using that
+// shared surface here would make same-named helpers such as to_Node collide
+// across openstudio.model and openstudio.epmodel.
+  %define EPMODELOBJECT_WRAPPER_EXTENSION(_name, _isUnique)
+  %init %{
+    rb_eval_string("OpenStudio::EPModel::ModelObject.class_eval { define_method(:to_" #_name ") { OpenStudio::EPModel::to" #_name "(self); } }");
+  %}
+#  if _isUnique
+  %init %{
+    rb_eval_string("OpenStudio::EPModel::Model.class_eval { define_method(:get" #_name ") { OpenStudio::EPModel::get" #_name "(self); } }");
+    rb_eval_string("OpenStudio::EPModel::Model.class_eval { define_method(:getOptional" #_name ") { OpenStudio::EPModel::getOptional" #_name "(self); } }");
+  %}
+#  else
+  %init %{
+    rb_eval_string("OpenStudio::EPModel::Model.class_eval { define_method(:get" #_name ") { |handle| OpenStudio::EPModel::get" #_name "(self, handle); } }");
+    rb_eval_string("OpenStudio::EPModel::Model.class_eval { define_method(:get" #_name "s) { OpenStudio::EPModel::get" #_name "s(self); } }");
+    rb_eval_string("OpenStudio::EPModel::Model.class_eval { define_method(:get" #_name "ByName) { |name| OpenStudio::EPModel::get" #_name "ByName(self, name); } }");
+    rb_eval_string("OpenStudio::EPModel::Model.class_eval { define_method(:get" #_name "sByName) { |name, exactMatch| OpenStudio::EPModel::get" #_name "sByName(self, name, exactMatch); } }");
+  %}
+#  endif
+  %enddef // EPMODELOBJECT_WRAPPER_EXTENSION
+
+  %define EPMODELOBJECT_ALIAS_CLASS_DEPRECATED_AT(_oldName, _newName, _deprecatedAtVersionMajor, _deprecatedAtVersionMinor, _deprecatedAtVersionPatch)
+  %init %{
+    rb_eval_string("OpenStudio::EPModel::" #_oldName " = OpenStudio::EPModel::" #_newName "");
+
+    rb_eval_string("OpenStudio::EPModel::ModelObject.class_eval { define_method(:to_" #_oldName ") { OpenStudio::logFree(OpenStudio::Warn, 'openstudio.model._oldName', 'Deprecated at _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch, use _newName'); OpenStudio::EPModel::to" #_newName "(self); } }");
+    rb_eval_string("OpenStudio::EPModel::Model.class_eval { define_method(:get" #_oldName ") { |handle| OpenStudio::logFree(OpenStudio::Warn, 'openstudio.model._oldName', 'Deprecated at _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch, use _newName');OpenStudio::EPModel::get" #_newName "(self, handle); } }");
+    rb_eval_string("OpenStudio::EPModel::Model.class_eval { define_method(:get" #_oldName "s) { OpenStudio::logFree(OpenStudio::Warn, 'openstudio.model._oldName', 'Deprecated at _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch, use _newName'); OpenStudio::EPModel::get" #_newName "s(self); } }");
+    rb_eval_string("OpenStudio::EPModel::Model.class_eval { define_method(:get" #_oldName "ByName) { |name| OpenStudio::logFree(OpenStudio::Warn, 'openstudio.model._oldName', 'Deprecated at _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch, use _newName'); OpenStudio::EPModel::get" #_newName "ByName(self, name); } }");
+    rb_eval_string("OpenStudio::EPModel::Model.class_eval { define_method(:get" #_oldName "sByName) { |name, exactMatch| OpenStudio::logFree(OpenStudio::Warn, 'openstudio.model._oldName', 'Deprecated at _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch, use _newName'); OpenStudio::EPModel::get" #_newName "sByName(self, name, exactMatch); } }");
+  %}
+  %enddef
+
+#elif defined SWIGPYTHON
+
+    %pythoncode %{
+# Import common modules
+import typing
+import warnings
+%}
+
+  %define EPMODELOBJECT_WRAPPER_EXTENSION(_name, _isUnique)
 // Patch EPModel's ModelObject instead of the shared IdfObject base. Canonical
 // model bindings also install to_<Type> helpers on IdfObject, and using that
 // shared surface here would make same-named helpers such as to_Node collide
@@ -60,8 +161,155 @@
         return to##_name(self)
     openstudioepmodel.ModelObject.to_##_name = _to_##_name
   %}
+
+#  if _isUnique
+  %pythoncode %{
+    def _get##_name(self) -> _name:
+        """Get or instantiate a UniqueModelObject of type _name.
+
+        :return: An existing _name or a newly instantiated one.
+        """
+        return get##_name(self)
+    openstudioepmodel.Model.get##_name = _get##_name
+
+    def _getOptional##_name(self) -> Optional##_name:
+        """Return a UniqueModelObject of type _name only if it's already present in the Model.
+
+        :return: An Optional _name.
+        """
+        return getOptional##_name(self)
+    openstudioepmodel.Model.getOptional##_name = _getOptional##_name
+  %}
+#  else
+  %pythoncode %{
+    def _get##_name(self, t_handle: typing.Union[openstudioutilitiescore.UUID, str]) -> Optional##_name:
+        """Try to get an object of type _name referenced by its handle.
+
+        :param t_handle: The object's handle
+        :return: An Optional _name.
+        """
+        if isinstance(t_handle, str):
+            t_handle = openstudioutilitiescore.toUUID(t_handle)
+        return get##_name(self, t_handle)
+    openstudioepmodel.Model.get##_name = _get##_name
+
+    def _get##_name##s(self) -> _name##Vector:
+        """Get a vector of all objects of type _name in the model.
+
+        :return: A vector of _name.
+        """
+        return get##_name##s(self)
+    openstudioepmodel.Model.get##_name##s = _get##_name##s
+
+    def _get##_name##ByName(self, t_name: str) -> Optional##_name:
+        """Try to get an object of type _name that has this specific name (case-insentive).
+
+        :param t_name: The object's name
+        :return: An Optional _name.
+        """
+        return get##_name##ByName(self, t_name)
+    openstudioepmodel.Model.get##_name##ByName = _get##_name##ByName
+
+    def _get##_name##sByName(self, t_name: str, t_exactMatch: bool) -> _name##Vector:
+        """Returns all objects of type _name named t_name (case insensitive).
+
+        :param t_name: The object's name
+        :param t_exactMatch: if false, will return all objects with name or name plus an integer suffix
+
+        :return: A vector of matches.
+        """
+        return get##_name##sByName(self, t_name, t_exactMatch)
+    openstudioepmodel.Model.get##_name##sByName = _get##_name##sByName
+  %}
+#  endif
+  %enddef // EPMODELOBJECT_WRAPPER_EXTENSION
+
+  %define EPMODELOBJECT_ALIAS_CLASS_DEPRECATED_AT(_oldName, _newName, _deprecatedAtVersionMajor, _deprecatedAtVersionMinor, _deprecatedAtVersionPatch)
+  %pythoncode %{
+
+    _oldName = _newName
+
+    def _to_##_oldName(self) -> Optional##_newName:
+        """Try to cast the ModelObject to a _newName.
+
+        :return: An Optional _newName.
+
+        .. deprecated:: _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch
+           Use :meth:`"IdfObject.to_##_newName"`.
+        """
+        warnings.warn("_oldName was deprecated at _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch, use _newName.", category=FutureWarning)
+        openstudioutilitiescore.logFree(openstudioutilitiescore.Warn, "openstudio.model._oldName", "Deprecated at _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch, use _newName.")
+        return to##_newName(self)
+    openstudioutilitiesidf.IdfObject.to_##_oldName = _to_##_oldName
+
+    def _get##_oldName(self, t_handle: typing.Union[openstudioutilitiescore.UUID, str]) -> Optional##_newName:
+        """Try to get an object of type _newName referenced by its handle.
+
+        :param t_handle: The object's handle
+        :return: An Optional _newName.
+
+        .. deprecated:: _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch
+           Use :meth:`"Model.get##_newName"`.
+        """
+        warnings.warn("_oldName was deprecated at _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch, use _newName.", category=FutureWarning)
+        if isinstance(t_handle, str):
+            t_handle = openstudioutilitiescore.toUUID(t_handle)
+        openstudioutilitiescore.logFree(openstudioutilitiescore.Warn, "openstudio.model._oldName", "Deprecated at _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch, use _newName.")
+        return get##_newName(self, t_handle)
+    openstudioepmodel.Model.get##_oldName = _get##_oldName
+
+    def _get##_oldName##s(self) -> _newName##Vector:
+        """Get a vector of all objects of type _newName in the model.
+
+        :return: A vector of _newName.
+
+        .. deprecated:: _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch
+           Use :meth:`"Model.get##_newName##s"`.
+        """
+        warnings.warn("_oldName was deprecated at _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch, use _newName.", category=FutureWarning)
+        openstudioutilitiescore.logFree(openstudioutilitiescore.Warn, "openstudio.model._oldName", "Deprecated at _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch, use _newName.")
+        return get##_newName##s(self)
+    openstudioepmodel.Model.get##_oldName##s = _get##_oldName##s
+
+    def _get##_oldName##ByName(self, t_name: str) -> Optional##_newName:
+        """Try to get an object of type _newName that has this specific name (case-insentive).
+
+        :param t_name: The object's name
+        :return: An Optional _newName.
+
+        .. deprecated:: _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch
+           Use :meth:`"Model.get##_newName##ByName"`.
+        """
+        warnings.warn("_oldName was deprecated at _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch, use _newName.", category=FutureWarning)
+        openstudioutilitiescore.logFree(openstudioutilitiescore.Warn, "openstudio.model._oldName", "Deprecated at _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch, use _newName.")
+        return get##_newName##ByName(self, t_name)
+    openstudioepmodel.Model.get##_oldName##ByName = _get##_oldName##ByName
+
+    def _get##_oldName##sByName(self, t_name: str, t_exactMatch: bool) -> _newName##Vector:
+        """Returns all objects of type _newName named t_name (case insensitive).
+
+        :param t_name: The object's name
+        :param t_exactMatch: if false, will return all objects with name or name plus an integer suffix
+
+        :return: A vector of matches.
+
+        .. deprecated:: _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch
+           Use :meth:`"Model.get##_newName##sByName"`.
+        """
+        warnings.warn("_oldName was deprecated at _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch, use _newName.", category=FutureWarning)
+        openstudioutilitiescore.logFree(openstudioutilitiescore.Warn, "openstudio.model._oldName", "Deprecated at _deprecatedAtVersionMajor._deprecatedAtVersionMinor._deprecatedAtVersionPatch, use _newName.")
+        return get##_newName##sByName(self, t_name, t_exactMatch)
+    openstudioepmodel.Model.get##_oldName##sByName = _get##_oldName##sByName
+  %}
+  %enddef
+
+#else
+
+  #define EPMODELOBJECT_WRAPPER_EXTENSION(_name, _isUnique)
+  #define EPMODELOBJECT_ALIAS_CLASS_DEPRECATED_AT(_oldName, _newName, _deprecatedAtVersionMajor, _deprecatedAtVersionMinor, _deprecatedAtVersionPatch)
+
 #endif
-%enddef
+
 
 %define EPMODELOBJECT_FORWARD_DECLARE(_name)
   namespace openstudio {
@@ -74,9 +322,12 @@
   }
 %enddef
 
-%define EPMODELOBJECT_WRAP(_name, _header)
-  EPMODELOBJECT_TEMPLATES(_name)
+
+%define EPMODELOBJECT_WRAP(_name, _header, _isUnique, _isConcrete)
+  EPMODELOBJECT_TEMPLATES(_name, _isUnique)
   %include _header
+  EPMODELOBJECT_CPP_EXTENSION(_name, _isUnique, _isConcrete)
+  EPMODELOBJECT_WRAPPER_EXTENSION(_name, _isUnique)
 %enddef
 
 EPMODELOBJECT_FORWARD_DECLARE(AirConditionerVariableRefrigerantFlow)
