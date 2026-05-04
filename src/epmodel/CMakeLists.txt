@@ -2782,9 +2782,12 @@ foreach(epmodel_swig_i IN LISTS ${target_name}_sub_swig_src)
      OR epmodel_swig_suffix STREQUAL "Splitter"
      OR epmodel_swig_suffix STREQUAL "StraightComponent"
      OR epmodel_swig_suffix STREQUAL "WaterToAirComponent"
-     OR epmodel_swig_suffix STREQUAL "WaterToWaterComponent"
-     OR epmodel_swig_suffix STREQUAL "ZoneHVACComponent")
+     OR epmodel_swig_suffix STREQUAL "WaterToWaterComponent")
     list(APPEND epmodel_parent_swig_targets OpenStudioEPModelHVACComponent)
+  endif()
+
+  if(epmodel_swig_suffix STREQUAL "ZoneHVACComponent")
+    list(APPEND epmodel_parent_swig_targets OpenStudioEPModelStraightComponent)
   endif()
 
   make_epmodel_swig_bindings(${epmodel_swig_target} EPModel "${CMAKE_CURRENT_SOURCE_DIR}/${epmodel_swig_i}" "${${target_name}_swig_src}" ${target_name} "${epmodel_parent_swig_targets}")

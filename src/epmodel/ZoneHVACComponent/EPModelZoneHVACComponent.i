@@ -8,6 +8,7 @@
 %include <epmodel/EPModel_Common_Include.i>
 %import <epmodel/EPModel.i>
 %import <epmodel/HVACComponent/EPModelHVACComponent.i>
+%import <epmodel/StraightComponent/EPModelStraightComponent.i>
 
 EPMODELOBJECT_WRAP(ZoneHVACComponent, <epmodel/ZoneHVACComponent/ZoneHVACComponent.hpp>, 0, 0)
 EPMODELOBJECT_WRAP(AirLoopHVACUnitarySystem, <epmodel/ZoneHVACComponent/AirLoopHVACUnitarySystem.hpp>, 0, 1)
