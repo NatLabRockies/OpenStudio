@@ -8,6 +8,8 @@
 
 #include "HVACComponent/ControllerWaterCoil.hpp"
 #include "HVACComponent/ControllerWaterCoil_Impl.hpp"
+#include "Loop/AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject/AirflowNetworkDistributionComponentCoil.hpp"
 #include "ModelObject/AirflowNetworkDistributionComponentCoil_Impl.hpp"
@@ -137,6 +139,12 @@ bool isPrimaryCoolingCoilOfCoolingWaterSystem(const CoilCoolingWater& coil) {
   }
 
   return false;
+}
+
+void syncAirLoopWaterCoilControllers(const CoilCoolingWater& coil) {
+  if (auto airLoop = coil.airLoopHVAC()) {
+    airLoop->getImpl<detail::AirLoopHVAC_Impl>()->syncSupplyWaterCoilControllers();
+  }
 }
 
 }  // namespace
@@ -411,6 +419,7 @@ bool CoilCoolingWater_Impl::addToNode(Node& node) {
   if (isContainedByCoolingWaterSystem(thisCoil)) {
     if (auto controller = inferControllerForCoil(thisCoil)) {
       controller->remove();
+      syncAirLoopWaterCoilControllers(thisCoil);
     }
     return true;
   }
@@ -433,6 +442,7 @@ bool CoilCoolingWater_Impl::addToNode(Node& node) {
     }
     OS_ASSERT(controller->setActuatorNode(*actuatorNode));
     OS_ASSERT(controller->setSensorNode(*sensorNode));
+    syncAirLoopWaterCoilControllers(thisCoil);
     return true;
   }
 
@@ -440,6 +450,7 @@ bool CoilCoolingWater_Impl::addToNode(Node& node) {
   OS_ASSERT(controller.setAction("Reverse"));
   OS_ASSERT(controller.setActuatorNode(*actuatorNode));
   OS_ASSERT(controller.setSensorNode(*sensorNode));
+  syncAirLoopWaterCoilControllers(thisCoil);
   return true;
 }
 
@@ -458,6 +469,7 @@ std::vector<IdfObject> CoilCoolingWater_Impl::remove() {
 
   if (auto controller = inferControllerForCoil(getObject<openstudio::epmodel::CoilCoolingWater>())) {
     controller->remove();
+    syncAirLoopWaterCoilControllers(getObject<openstudio::epmodel::CoilCoolingWater>());
   }
 
   for (auto& afnComponent : attachedAirflowNetworkDistributionComponentCoils(getObject<ModelObject>())) {
@@ -470,6 +482,7 @@ std::vector<IdfObject> CoilCoolingWater_Impl::remove() {
 bool CoilCoolingWater_Impl::removeFromPlantLoop() {
   if (auto controller = inferControllerForCoil(getObject<openstudio::epmodel::CoilCoolingWater>())) {
     controller->remove();
+    syncAirLoopWaterCoilControllers(getObject<openstudio::epmodel::CoilCoolingWater>());
   }
   return WaterToAirComponent_Impl::removeFromPlantLoop();
 }

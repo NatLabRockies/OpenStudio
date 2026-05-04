@@ -26,6 +26,7 @@ class EPMODEL_API ChillerElectricEIR_Impl : public WaterToWaterComponent_Impl
   using WaterToWaterComponent_Impl::WaterToWaterComponent_Impl;
   virtual ~ChillerElectricEIR_Impl() override = default;
 
+  void doCanonicalize(LoadContext& context) override;
   bool addToNode(Node& node) override;
   bool addToTertiaryNode(Node& node) override;
   bool removeFromSecondaryPlantLoop() override;

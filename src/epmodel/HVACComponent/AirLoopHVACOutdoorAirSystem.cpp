@@ -39,6 +39,7 @@
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Compare.hpp>
 #include <utilities/idd/AirLoopHVAC_OutdoorAirSystem_FieldEnums.hxx>
+#include <utilities/idd/Controller_OutdoorAir_FieldEnums.hxx>
 #include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
 #include <utilities/idf/IdfExtensibleGroup.hpp>
 
@@ -704,6 +705,8 @@ namespace epmodel {
         OS_ASSERT(mixerImpl->setReliefAirNode(reliefAirNode));
       }
 
+      oaController->getImpl<openstudio::epmodel::detail::ControllerOutdoorAir_Impl>()->canonicalize(context);
+
       OS_ASSERT(rewriteEquipmentListOrder(context));
     }
 
@@ -786,9 +789,15 @@ namespace epmodel {
             if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentInletNode(insertIndex + 1u, newNode)) {
               return false;
             }
+            if (!updateAdjacentStreamNode(components[i], OAStream::OutdoorAir, true, newNode)) {
+              return false;
+            }
           } else {
             auto newNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(newNodeName);
             if (!branch.getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentOutletNode(insertIndex - 1u, newNode)) {
+              return false;
+            }
+            if (!updateAdjacentStreamNode(components[i], OAStream::OutdoorAir, false, newNode)) {
               return false;
             }
           }
@@ -809,6 +818,16 @@ namespace epmodel {
         return false;
       }
       if (!mixerObject.setPointer(mixedAirPort(), mixedNode.handle())) {
+        return false;
+      }
+
+      auto controller = getControllerOutdoorAir();
+      if (!controller.setPointer(openstudio::Controller_OutdoorAirFields::ReliefAirOutletNodeName,
+                                 mixerObject.getImpl<openstudio::epmodel::detail::OutdoorAirMixer_Impl>()->reliefAirNode()->handle())
+          || !controller.setPointer(openstudio::Controller_OutdoorAirFields::ReturnAirNodeName, returnNode.handle())
+          || !controller.setPointer(openstudio::Controller_OutdoorAirFields::MixedAirNodeName, mixedNode.handle())
+          || !controller.setPointer(openstudio::Controller_OutdoorAirFields::ActuatorNodeName,
+                                    mixerObject.getImpl<openstudio::epmodel::detail::OutdoorAirMixer_Impl>()->outdoorAirNode()->handle())) {
         return false;
       }
 

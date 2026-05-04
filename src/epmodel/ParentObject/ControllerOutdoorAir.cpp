@@ -11,9 +11,13 @@
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "ModelObject/AirLoopHVACControllerList.hpp"
 #include "ModelObject/AirLoopHVACControllerList_Impl.hpp"
+#include "ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.hpp"
+#include "ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
 #include "ModelObject/ControllerMechanicalVentilation.hpp"
 #include "ModelObject/ControllerMechanicalVentilation_Impl.hpp"
+#include "ModelObject/OutdoorAirMixer.hpp"
+#include "ModelObject/OutdoorAirMixer_Impl.hpp"
 #include "Model.hpp"
 #include "SizingZone.hpp"
 #include "HVACComponent/ThermalZone.hpp"
@@ -414,7 +418,7 @@ bool ControllerOutdoorAir_Impl::setMinimumLimitType(const std::string& value) {
 
 boost::optional<bool> ControllerOutdoorAir_Impl::getHighHumidityControl() const {
   const auto value = getString(openstudio::Controller_OutdoorAirFields::HighHumidityControl, true);
-  if (!value) {
+  if (!value || value->empty()) {
     return boost::none;
   }
   return openstudio::istringEqual(*value, "Yes") || openstudio::istringEqual(*value, "True");
@@ -540,6 +544,61 @@ boost::optional<openstudio::epmodel::AirLoopHVACOutdoorAirSystem> ControllerOutd
 
 void ControllerOutdoorAir_Impl::doCanonicalize(LoadContext& context) {
   auto thisController = getObject<openstudio::epmodel::ControllerOutdoorAir>();
+
+  if (!maximumOutdoorAirFlowRate() && !isMaximumOutdoorAirFlowRateAutosized()) {
+    autosizeMaximumOutdoorAirFlowRate();
+  }
+  if (!minimumOutdoorAirFlowRate() && !isMinimumOutdoorAirFlowRateAutosized()) {
+    OS_ASSERT(setMinimumOutdoorAirFlowRate(0.0));
+  }
+  if (getEconomizerControlType().empty()) {
+    OS_ASSERT(setEconomizerControlType("NoEconomizer"));
+  }
+  if (getEconomizerControlActionType().empty()) {
+    OS_ASSERT(setEconomizerControlActionType("ModulateFlow"));
+  }
+  if (getLockoutType().empty()) {
+    OS_ASSERT(setLockoutType("NoLockout"));
+  }
+  if (getMinimumLimitType().empty()) {
+    OS_ASSERT(setMinimumLimitType("FixedMinimum"));
+  }
+  if (!getHighHumidityControl()) {
+    OS_ASSERT(setString(openstudio::Controller_OutdoorAirFields::HighHumidityControl, "No"));
+  }
+  if (!getDouble(openstudio::Controller_OutdoorAirFields::HighHumidityOutdoorAirFlowRatio, true)) {
+    OS_ASSERT(setHighHumidityOutdoorAirFlowRatio(1.0));
+  }
+  if (auto value = getString(openstudio::Controller_OutdoorAirFields::ControlHighIndoorHumidityBasedonOutdoorHumidityRatio, true);
+      !value || value->empty()) {
+    OS_ASSERT(setControlHighIndoorHumidityBasedOnOutdoorHumidityRatio(true));
+  }
+  if (auto value = getHeatRecoveryBypassControlType(); !value || value->empty()) {
+    OS_ASSERT(setHeatRecoveryBypassControlType("BypassWhenWithinEconomizerLimits"));
+  }
+  if (economizerOperationStaging().empty()) {
+    OS_ASSERT(setEconomizerOperationStaging("InterlockedWithMechanicalCooling"));
+  }
+
+  if (auto oaSystem = findOwningOutdoorAirSystemForCanonicalize(thisController)) {
+    auto equipmentList = oaSystem->getModelObjectTarget<openstudio::epmodel::AirLoopHVACOutdoorAirSystemEquipmentList>(
+      openstudio::AirLoopHVAC_OutdoorAirSystemFields::OutdoorAirEquipmentListName);
+    if (equipmentList && !subsetCastVector<openstudio::epmodel::OutdoorAirMixer>(equipmentList->equipment()).empty()) {
+      if (auto node = oaSystem->outdoorAirModelObject()) {
+        OS_ASSERT(setPointer(openstudio::Controller_OutdoorAirFields::ActuatorNodeName, node->handle(), false));
+      }
+      if (auto node = oaSystem->mixedAirModelObject()) {
+        OS_ASSERT(setPointer(openstudio::Controller_OutdoorAirFields::MixedAirNodeName, node->handle(), false));
+      }
+      if (auto node = oaSystem->reliefAirModelObject()) {
+        OS_ASSERT(setPointer(openstudio::Controller_OutdoorAirFields::ReliefAirOutletNodeName, node->handle(), false));
+      }
+      if (auto node = oaSystem->returnAirModelObject()) {
+        OS_ASSERT(setPointer(openstudio::Controller_OutdoorAirFields::ReturnAirNodeName, node->handle(), false));
+      }
+    }
+  }
+
   auto target = optionalControllerMechanicalVentilation();
 
   if (!target && hasServedZoneWithDesignSpecificationOutdoorAir(thisController, context)) {

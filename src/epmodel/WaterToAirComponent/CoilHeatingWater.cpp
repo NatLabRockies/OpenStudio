@@ -8,6 +8,8 @@
 
 #include "HVACComponent/ControllerWaterCoil.hpp"
 #include "HVACComponent/ControllerWaterCoil_Impl.hpp"
+#include "Loop/AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject/AirflowNetworkDistributionComponentCoil.hpp"
 #include "ModelObject/AirflowNetworkDistributionComponentCoil_Impl.hpp"
@@ -59,6 +61,12 @@ std::vector<AirflowNetworkDistributionComponentCoil> attachedAirflowNetworkDistr
     }
   }
   return result;
+}
+
+void syncAirLoopWaterCoilControllers(const CoilHeatingWater& coil) {
+  if (auto airLoop = coil.airLoopHVAC()) {
+    airLoop->getImpl<detail::AirLoopHVAC_Impl>()->syncSupplyWaterCoilControllers();
+  }
 }
 
 }  // namespace
@@ -271,6 +279,7 @@ bool CoilHeatingWater_Impl::addToNode(Node& node) {
     }
     OS_ASSERT(controller->setActuatorNode(*actuatorNode));
     OS_ASSERT(controller->setSensorNode(*sensorNode));
+    syncAirLoopWaterCoilControllers(thisCoil);
     return true;
   }
 
@@ -278,12 +287,14 @@ bool CoilHeatingWater_Impl::addToNode(Node& node) {
   OS_ASSERT(controller.setAction("Normal"));
   OS_ASSERT(controller.setActuatorNode(*actuatorNode));
   OS_ASSERT(controller.setSensorNode(*sensorNode));
+  syncAirLoopWaterCoilControllers(thisCoil);
   return true;
 }
 
 bool CoilHeatingWater_Impl::removeFromPlantLoop() {
   if (auto controller = inferControllerForCoil(getObject<openstudio::epmodel::CoilHeatingWater>())) {
     controller->remove();
+    syncAirLoopWaterCoilControllers(getObject<openstudio::epmodel::CoilHeatingWater>());
   }
   return WaterToAirComponent_Impl::removeFromPlantLoop();
 }
@@ -295,6 +306,7 @@ std::vector<IdfObject> CoilHeatingWater_Impl::remove() {
 
   if (auto controller = inferControllerForCoil(getObject<openstudio::epmodel::CoilHeatingWater>())) {
     controller->remove();
+    syncAirLoopWaterCoilControllers(getObject<openstudio::epmodel::CoilHeatingWater>());
   }
 
   for (auto& afnComponent : attachedAirflowNetworkDistributionComponentCoils(getObject<ModelObject>())) {

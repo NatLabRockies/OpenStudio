@@ -35,7 +35,7 @@ ChillerElectricEIR::ChillerElectricEIR(const Model& model, const Curve& CCFofT, 
   OS_ASSERT(setReferenceCOP(5.5));
   autosizeReferenceCapacity();
   autosizeReferenceChilledWaterFlowRate();
-  autosizeDesignHeatRecoveryWaterFlowRate();
+  OS_ASSERT(setDesignHeatRecoveryWaterFlowRate(0.0));
   OS_ASSERT(setBasinHeaterSetpointTemperature(10.0));
   resetBasinHeaterSchedule();
   OS_ASSERT(setCondenserHeatRecoveryRelativeCapacityFraction(1.0));
@@ -86,7 +86,7 @@ ChillerElectricEIR::ChillerElectricEIR(const Model& model) : WaterToWaterCompone
   OS_ASSERT(setReferenceCOP(5.5));
   autosizeReferenceCapacity();
   autosizeReferenceChilledWaterFlowRate();
-  autosizeDesignHeatRecoveryWaterFlowRate();
+  OS_ASSERT(setDesignHeatRecoveryWaterFlowRate(0.0));
   OS_ASSERT(setBasinHeaterSetpointTemperature(10.0));
   resetBasinHeaterSchedule();
   OS_ASSERT(setCondenserHeatRecoveryRelativeCapacityFraction(1.0));
@@ -630,6 +630,16 @@ boost::optional<Node> ChillerElectricEIR::heatRecoveryOutletNode() const {
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+void ChillerElectricEIR_Impl::doCanonicalize(LoadContext& context) {
+  WaterToWaterComponent_Impl::doCanonicalize(context);
+
+  if (!heatRecoveryLoop()) {
+    if (isDesignHeatRecoveryWaterFlowRateAutosized()) {
+      OS_ASSERT(setDesignHeatRecoveryWaterFlowRate(0.0));
+    }
+  }
+}
 
 boost::optional<double> ChillerElectricEIR_Impl::referenceCapacity() const {
   return getDouble(openstudio::Chiller_Electric_EIRFields::ReferenceCapacity, true);
@@ -1274,7 +1284,11 @@ bool ChillerElectricEIR_Impl::addToNode(Node& node) {
 }
 
 bool ChillerElectricEIR_Impl::addToTertiaryNode(Node& node) {
-  return addToDemandSideTertiaryNode(node);
+  const bool ok = addToDemandSideTertiaryNode(node);
+  if (ok && !isDesignHeatRecoveryWaterFlowRateAutosized()) {
+    autosizeDesignHeatRecoveryWaterFlowRate();
+  }
+  return ok;
 }
 
 bool ChillerElectricEIR_Impl::removeFromSecondaryPlantLoop() {

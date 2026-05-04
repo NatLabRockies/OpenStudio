@@ -6,21 +6,26 @@
 #include "WaterToAirComponent/WaterToAirComponent.hpp"
 #include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
 
+#include "AirToAirComponent/AirToAirComponent.hpp"
+#include "AirToAirComponent/AirToAirComponent_Impl.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem_Impl.hpp"
 #include "Loop/AirLoopHVAC.hpp"
 #include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
 #include "Loop/PlantLoop_Impl.hpp"
-#include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "Model.hpp"
 #include "ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList.hpp"
 #include "ModelObject/AirLoopHVACOutdoorAirSystemEquipmentList_Impl.hpp"
 #include "ModelObject/Branch_Impl.hpp"
+#include "ModelObject/OutdoorAirMixer.hpp"
+#include "ParentObject/ControllerOutdoorAir.hpp"
 #include "StraightComponent/Node.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 #include "Splitter/Splitter.hpp"
 
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/idd/Controller_OutdoorAir_FieldEnums.hxx>
 
 #include <algorithm>
 
@@ -105,6 +110,41 @@ bool WaterToAirComponent::removeFromPlantLoop() {
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+namespace {
+
+bool updateAdjacentBranchComponentNode(const ModelObject& object, const Node& node, bool inlet, bool airSide) {
+  auto mutableObject = object;
+
+  if (airSide) {
+    if (auto oaSystem = mutableObject.optionalCast<AirLoopHVACOutdoorAirSystem>()) {
+      auto mixer = oaSystem->getImpl<AirLoopHVACOutdoorAirSystem_Impl>()->outdoorAirMixer();
+      auto controller = oaSystem->getControllerOutdoorAir();
+      if (inlet) {
+        return mixer.setPointer(oaSystem->returnAirPort(), node.handle())
+               && controller.setPointer(openstudio::Controller_OutdoorAirFields::ReturnAirNodeName, node.handle());
+      }
+      return mixer.setPointer(oaSystem->mixedAirPort(), node.handle())
+             && controller.setPointer(openstudio::Controller_OutdoorAirFields::MixedAirNodeName, node.handle());
+    }
+    if (auto waterToAir = mutableObject.optionalCast<WaterToAirComponent>()) {
+      return waterToAir->setPointer(inlet ? waterToAir->airInletPort() : waterToAir->airOutletPort(), node.handle());
+    }
+    if (auto airToAir = mutableObject.optionalCast<AirToAirComponent>()) {
+      return airToAir->setPointer(inlet ? airToAir->primaryAirInletPort() : airToAir->primaryAirOutletPort(), node.handle());
+    }
+  } else if (auto waterToAir = mutableObject.optionalCast<WaterToAirComponent>()) {
+    return waterToAir->setPointer(inlet ? waterToAir->waterInletPort() : waterToAir->waterOutletPort(), node.handle());
+  }
+
+  if (auto straight = mutableObject.optionalCast<StraightComponent>()) {
+    return straight->setPointer(inlet ? straight->inletPort() : straight->outletPort(), node.handle());
+  }
+
+  return true;
+}
+
+}  // namespace
 
 bool WaterToAirComponent_Impl::addToOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem, Node& node) {
   auto thisObject = getObject<ModelObject>();
@@ -337,10 +377,13 @@ bool WaterToAirComponent_Impl::insertOnBranch(Node& node, const Branch& branch, 
     setPointer(outletPort, newOutletNode.handle(), false);
 
     auto newNode = model().getOrCreateTransientByName<Node>(newNodeName);
+    const bool airSide = (inletPort == airInletPort()) && (outletPort == airOutletPort());
     if (matchesInlet) {
-      return branch.getImpl<detail::Branch_Impl>()->setComponentInletNode(insertIndex + 1u, newNode);
+      return branch.getImpl<detail::Branch_Impl>()->setComponentInletNode(insertIndex + 1u, newNode)
+             && updateAdjacentBranchComponentNode(components[i], newNode, true, airSide);
     }
-    return branch.getImpl<detail::Branch_Impl>()->setComponentOutletNode(insertIndex - 1u, newNode);
+    return branch.getImpl<detail::Branch_Impl>()->setComponentOutletNode(insertIndex - 1u, newNode)
+           && updateAdjacentBranchComponentNode(components[i], newNode, false, airSide);
   }
 
   return false;
@@ -368,13 +411,6 @@ bool WaterToAirComponent_Impl::addToNode(Node& node) {
       || waterOutletModelObject() == nodeObject) {
     return false;
   }
-  if (auto oaSystem = node.airLoopHVACOutdoorAirSystem()) {
-    if (containingHVACComponent()) {
-      return false;
-    }
-    return addToOutdoorAirSystem(*oaSystem, node);
-  }
-
   if (auto plantLoop = node.plantLoop()) {
     if (!plantLoop->demandComponent(node.handle())) {
       return false;
@@ -391,6 +427,12 @@ bool WaterToAirComponent_Impl::addToNode(Node& node) {
 
   if (auto airLoop = node.airLoopHVAC()) {
     if (containingHVACComponent()) {
+      return false;
+    }
+    if (!airLoop->supplyComponent(node.handle())) {
+      if (auto oaSystem = node.airLoopHVACOutdoorAirSystem()) {
+        return addToOutdoorAirSystem(*oaSystem, node);
+      }
       return false;
     }
     if (airLoop->demandComponent(node.handle())) {
