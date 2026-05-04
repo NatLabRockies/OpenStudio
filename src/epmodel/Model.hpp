@@ -255,6 +255,52 @@ namespace epmodel {
       return result;
     }
 
+    /** Returns the unique ModelObject of type T, creates a one if none are found.
+   *
+   *  \todo Use of this template method requires knowledge of the size of the implementation object.
+   *  Therefore, to use model.getUniqueModelObject<Facility>() the user must include both
+   *  Facility.hpp and Facility_Impl.hpp. It may be better to instantiate each version of this
+   *  template method to avoid exposing the implementation objects, this is an open question.
+   *
+   *  Note that template specilizations are provided below for objects were there is a
+   *  performance gain to be had by caching the unique model object
+   *  eg: getUniqueModelObject<YearDescription>() */
+    template <typename T>
+    T getUniqueModelObject() {
+      // NOTE: all UniqueModelObjects are Concrete. Call getObjectsByType to avoid returning a huge vector
+      std::vector<WorkspaceObject> objects = this->getObjectsByType(T::iddObjectType());
+      // std::vector<WorkspaceObject> objects = this->allObjects();
+      for (const auto& wo : objects) {
+        std::shared_ptr<typename T::ImplType> p = wo.getImpl<typename T::ImplType>();
+        if (p) {
+          return T(std::move(p));
+        }
+      }
+      return T(*this);  // make a new T
+    }
+
+    /** Returns the unique ModelObject of type T if it is found.
+   *
+   *  \todo Use of this template method requires knowledge of the size of the implementation object.
+   *  Therefore, to use model.getOptionalUniqueModelObject<Facility>() the user must include both
+   *  Facility.hpp and Facility_Impl.hpp.  It may be better to instantiate each version of this
+   *  template method to avoid exposing the implementation objects, this is an open question. */
+    template <typename T>
+    boost::optional<T> getOptionalUniqueModelObject() const {
+      boost::optional<T> result;
+      // NOTE: all UniqueModelObjects are Concrete. Call getObjectsByType to avoid returning a huge vector
+      std::vector<WorkspaceObject> objects = this->getObjectsByType(T::iddObjectType());
+      // std::vector<WorkspaceObject> objects = this->allObjects();
+      for (const auto& wo : objects) {
+        std::shared_ptr<typename T::ImplType> p = wo.getImpl<typename T::ImplType>();
+        if (p) {
+          result = T(std::move(p));
+          break;
+        }
+      }
+      return result;
+    }
+
    protected:
     using ImplType = detail::Model_Impl;
 
