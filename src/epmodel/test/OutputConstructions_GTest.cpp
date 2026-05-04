@@ -8,12 +8,13 @@
 #include "EPModelFixture.hpp"
 
 #include "../ModelObject/OutputConstructions.hpp"
+#include "../ModelObject/OutputConstructions_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, OutputConstructions_DefaultConstructor) {
   Model model;
-  OutputConstructions outputConstructions(model);
+  auto outputConstructions = model.getUniqueModelObject<OutputConstructions>();
 
   EXPECT_EQ(OutputConstructions::iddObjectType(), outputConstructions.iddObject().type());
   EXPECT_TRUE(outputConstructions.reportConstructions());
@@ -22,7 +23,7 @@ TEST_F(EPModelFixture, OutputConstructions_DefaultConstructor) {
 
 TEST_F(EPModelFixture, OutputConstructions_ScalarAccessors_RoundTrip) {
   Model model;
-  OutputConstructions outputConstructions(model);
+  auto outputConstructions = model.getUniqueModelObject<OutputConstructions>();
 
   EXPECT_TRUE(outputConstructions.setReportConstructions(false));
   EXPECT_FALSE(outputConstructions.reportConstructions());

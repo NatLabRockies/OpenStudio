@@ -8,12 +8,13 @@
 #include "EPModelFixture.hpp"
 
 #include "../ModelObject/OutputSQLite.hpp"
+#include "../ModelObject/OutputSQLite_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, OutputSQLite_DefaultConstructor) {
   Model model;
-  OutputSQLite outputSQLite(model);
+  auto outputSQLite = model.getUniqueModelObject<OutputSQLite>();
 
   EXPECT_EQ(OutputSQLite::iddObjectType(), outputSQLite.iddObject().type());
   EXPECT_EQ("SimpleAndTabular", outputSQLite.optionType());
@@ -22,7 +23,7 @@ TEST_F(EPModelFixture, OutputSQLite_DefaultConstructor) {
 
 TEST_F(EPModelFixture, OutputSQLite_ScalarAccessors_RoundTrip) {
   Model model;
-  OutputSQLite outputSQLite(model);
+  auto outputSQLite = model.getUniqueModelObject<OutputSQLite>();
 
   EXPECT_FALSE(OutputSQLite::optionTypeValues().empty());
   EXPECT_FALSE(OutputSQLite::unitConversionforTabularDataValues().empty());

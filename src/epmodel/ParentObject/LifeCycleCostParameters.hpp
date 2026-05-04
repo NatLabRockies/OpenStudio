@@ -29,8 +29,6 @@ class LifeCycleCostParameters_Impl;
 class EPMODEL_API LifeCycleCostParameters : public ParentObject
 {
  public:
-  explicit LifeCycleCostParameters(const Model& model);
-
   virtual ~LifeCycleCostParameters() override = default;
   LifeCycleCostParameters(const LifeCycleCostParameters& other) = default;
   LifeCycleCostParameters(LifeCycleCostParameters&& other) = default;
@@ -113,6 +111,8 @@ class EPMODEL_API LifeCycleCostParameters : public ParentObject
   void resetDepreciationMethod();
 
  protected:
+  explicit LifeCycleCostParameters(const Model& model);
+
   using ImplType = detail::LifeCycleCostParameters_Impl;
 
   friend class Model;

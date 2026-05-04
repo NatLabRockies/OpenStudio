@@ -23,8 +23,6 @@ namespace epmodel {
   class EPMODEL_API OutsideSurfaceConvectionAlgorithm : public ModelObject
   {
    public:
-    explicit OutsideSurfaceConvectionAlgorithm(const Model& model);
-
     virtual ~OutsideSurfaceConvectionAlgorithm() override = default;
     OutsideSurfaceConvectionAlgorithm(const OutsideSurfaceConvectionAlgorithm& other) = default;
     OutsideSurfaceConvectionAlgorithm(OutsideSurfaceConvectionAlgorithm&& other) = default;
@@ -47,6 +45,8 @@ namespace epmodel {
     //@}
 
    protected:
+    explicit OutsideSurfaceConvectionAlgorithm(const Model& model);
+
     using ImplType = detail::OutsideSurfaceConvectionAlgorithm_Impl;
 
     friend class Model;

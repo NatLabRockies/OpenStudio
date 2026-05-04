@@ -8,12 +8,13 @@
 #include "EPModelFixture.hpp"
 
 #include "../ModelObject/OutputControlFiles.hpp"
+#include "../ModelObject/OutputControlFiles_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, OutputControlFiles_DefaultConstructor) {
   Model model;
-  OutputControlFiles outputControlFiles(model);
+  auto outputControlFiles = model.getUniqueModelObject<OutputControlFiles>();
 
   EXPECT_EQ(OutputControlFiles::iddObjectType(), outputControlFiles.iddObject().type());
   EXPECT_FALSE(outputControlFiles.outputCSV());
@@ -26,7 +27,7 @@ TEST_F(EPModelFixture, OutputControlFiles_DefaultConstructor) {
 
 TEST_F(EPModelFixture, OutputControlFiles_ScalarAccessors_RoundTrip) {
   Model model;
-  OutputControlFiles outputControlFiles(model);
+  auto outputControlFiles = model.getUniqueModelObject<OutputControlFiles>();
 
   EXPECT_TRUE(outputControlFiles.setOutputCSV(true));
   EXPECT_TRUE(outputControlFiles.outputCSV());

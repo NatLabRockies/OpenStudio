@@ -7,12 +7,13 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/SizingParameters.hpp"
+#include "../ModelObject/SizingParameters_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, SizingParameters_DefaultConstructor) {
   Model model;
-  SizingParameters object(model);
+  auto object = model.getUniqueModelObject<SizingParameters>();
 
   EXPECT_EQ(SizingParameters::iddObjectType(), object.iddObject().type());
 
@@ -27,7 +28,7 @@ TEST_F(EPModelFixture, SizingParameters_DefaultConstructor) {
 
 TEST_F(EPModelFixture, SizingParameters_ScalarAccessors_RoundTrip) {
   Model model;
-  SizingParameters object(model);
+  auto object = model.getUniqueModelObject<SizingParameters>();
 
   EXPECT_TRUE(object.setHeatingSizingFactor(1.4));
   EXPECT_FALSE(object.isHeatingSizingFactorDefaulted());

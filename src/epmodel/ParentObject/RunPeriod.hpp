@@ -25,8 +25,6 @@ namespace epmodel {
   class EPMODEL_API RunPeriod : public ParentObject
   {
    public:
-    explicit RunPeriod(const Model& model);
-
     virtual ~RunPeriod() override = default;
     RunPeriod(const RunPeriod& other) = default;
     RunPeriod(RunPeriod&& other) = default;
@@ -83,6 +81,8 @@ namespace epmodel {
     bool isRepeated() const;
 
    protected:
+    explicit RunPeriod(const Model& model);
+
     using ImplType = detail::RunPeriod_Impl;
 
     friend class Model;

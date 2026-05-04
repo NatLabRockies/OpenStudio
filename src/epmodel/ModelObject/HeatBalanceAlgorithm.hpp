@@ -26,8 +26,6 @@ namespace epmodel {
   class EPMODEL_API HeatBalanceAlgorithm : public ModelObject
   {
    public:
-    explicit HeatBalanceAlgorithm(const Model& model);
-
     virtual ~HeatBalanceAlgorithm() override = default;
     HeatBalanceAlgorithm(const HeatBalanceAlgorithm& other) = default;
     HeatBalanceAlgorithm(HeatBalanceAlgorithm&& other) = default;
@@ -65,6 +63,8 @@ namespace epmodel {
     void resetMaximumSurfaceConvectionHeatTransferCoefficientValue();
 
    protected:
+    explicit HeatBalanceAlgorithm(const Model& model);
+
     using ImplType = detail::HeatBalanceAlgorithm_Impl;
 
     friend class Model;

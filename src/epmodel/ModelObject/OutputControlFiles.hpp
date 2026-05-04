@@ -25,8 +25,6 @@ namespace epmodel {
   class EPMODEL_API OutputControlFiles : public ModelObject
   {
    public:
-    explicit OutputControlFiles(const Model& model);
-
     virtual ~OutputControlFiles() override = default;
     OutputControlFiles(const OutputControlFiles& other) = default;
     OutputControlFiles(OutputControlFiles&& other) = default;
@@ -138,6 +136,8 @@ namespace epmodel {
     bool setOutputPlantComponentSizing(bool outputPlantComponentSizing);
 
    protected:
+    explicit OutputControlFiles(const Model& model);
+
     using ImplType = detail::OutputControlFiles_Impl;
 
     friend class Model;

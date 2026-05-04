@@ -7,12 +7,13 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/EnvironmentalImpactFactors.hpp"
+#include "../ModelObject/EnvironmentalImpactFactors_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, EnvironmentalImpactFactors_DefaultConstructor) {
   Model model;
-  EnvironmentalImpactFactors environmentalImpactFactors(model);
+  auto environmentalImpactFactors = model.getUniqueModelObject<EnvironmentalImpactFactors>();
 
   EXPECT_EQ(EnvironmentalImpactFactors::iddObjectType(), environmentalImpactFactors.iddObject().type());
   EXPECT_DOUBLE_EQ(0.3, environmentalImpactFactors.districtHeatingWaterEfficiency());
@@ -29,7 +30,7 @@ TEST_F(EPModelFixture, EnvironmentalImpactFactors_DefaultConstructor) {
 
 TEST_F(EPModelFixture, EnvironmentalImpactFactors_ScalarAccessors_RoundTrip) {
   Model model;
-  EnvironmentalImpactFactors environmentalImpactFactors(model);
+  auto environmentalImpactFactors = model.getUniqueModelObject<EnvironmentalImpactFactors>();
 
   EXPECT_TRUE(environmentalImpactFactors.setDistrictHeatingWaterEfficiency(0.35));
   EXPECT_TRUE(environmentalImpactFactors.setDistrictCoolingCOP(3.3));

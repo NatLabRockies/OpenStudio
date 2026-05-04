@@ -7,18 +7,19 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/SiteGroundTemperatureFCfactorMethod.hpp"
+#include "../ModelObject/SiteGroundTemperatureFCfactorMethod_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, SiteGroundTemperatureFCfactorMethod_DefaultConstructor) {
   Model model;
-  SiteGroundTemperatureFCfactorMethod object(model);
+  auto object = model.getUniqueModelObject<SiteGroundTemperatureFCfactorMethod>();
   EXPECT_EQ(SiteGroundTemperatureFCfactorMethod::iddObjectType(), object.iddObject().type());
 }
 
 TEST_F(EPModelFixture, SiteGroundTemperatureFCfactorMethod_ScalarAccessors_RoundTrip) {
   Model model;
-  SiteGroundTemperatureFCfactorMethod object(model);
+  auto object = model.getUniqueModelObject<SiteGroundTemperatureFCfactorMethod>();
 
   EXPECT_TRUE(object.isJanuaryGroundTemperatureDefaulted());
   EXPECT_TRUE(object.setJanuaryGroundTemperature(10.0));

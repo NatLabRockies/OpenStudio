@@ -25,8 +25,6 @@ class OutputTableSummaryReports_Impl;
 class EPMODEL_API OutputTableSummaryReports : public ModelObject
 {
  public:
-  explicit OutputTableSummaryReports(const Model& model);
-
   virtual ~OutputTableSummaryReports() override = default;
   OutputTableSummaryReports(const OutputTableSummaryReports& other) = default;
   OutputTableSummaryReports(OutputTableSummaryReports&& other) = default;
@@ -43,6 +41,8 @@ class EPMODEL_API OutputTableSummaryReports : public ModelObject
   // - TODO(parity): Add non-scalar extensible-group APIs incrementally without breaking class identity and base scalar behavior.
 
  protected:
+  explicit OutputTableSummaryReports(const Model& model);
+
   using ImplType = detail::OutputTableSummaryReports_Impl;
 
   friend class Model;

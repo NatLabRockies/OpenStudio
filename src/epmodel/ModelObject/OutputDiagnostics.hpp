@@ -25,8 +25,6 @@ class OutputDiagnostics_Impl;
 class EPMODEL_API OutputDiagnostics : public ModelObject
 {
  public:
-  explicit OutputDiagnostics(const Model& model);
-
   virtual ~OutputDiagnostics() override = default;
   OutputDiagnostics(const OutputDiagnostics& other) = default;
   OutputDiagnostics(OutputDiagnostics&& other) = default;
@@ -42,6 +40,8 @@ class EPMODEL_API OutputDiagnostics : public ModelObject
   // - TODO(parity): Add non-scalar key list APIs (keys/addKey/setKeys/clearKeys) in a later parity pass without breaking this class identity.
 
  protected:
+  explicit OutputDiagnostics(const Model& model);
+
   using ImplType = detail::OutputDiagnostics_Impl;
 
   friend class Model;

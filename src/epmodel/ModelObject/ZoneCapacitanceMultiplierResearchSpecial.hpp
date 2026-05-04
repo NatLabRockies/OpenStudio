@@ -23,8 +23,6 @@ namespace epmodel {
   class EPMODEL_API ZoneCapacitanceMultiplierResearchSpecial : public ModelObject
   {
    public:
-    explicit ZoneCapacitanceMultiplierResearchSpecial(const Model& model);
-
     virtual ~ZoneCapacitanceMultiplierResearchSpecial() override = default;
     ZoneCapacitanceMultiplierResearchSpecial(const ZoneCapacitanceMultiplierResearchSpecial& other) = default;
     ZoneCapacitanceMultiplierResearchSpecial(ZoneCapacitanceMultiplierResearchSpecial&& other) = default;
@@ -55,6 +53,8 @@ namespace epmodel {
     void resetCarbonDioxideCapacityMultiplier();
 
    protected:
+    explicit ZoneCapacitanceMultiplierResearchSpecial(const Model& model);
+
     using ImplType = detail::ZoneCapacitanceMultiplierResearchSpecial_Impl;
 
     friend class Model;

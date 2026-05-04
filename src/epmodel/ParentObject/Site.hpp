@@ -27,8 +27,6 @@ class Site_Impl;
 class EPMODEL_API Site : public ParentObject
 {
  public:
-  explicit Site(const Model& model);
-
   virtual ~Site() override = default;
   Site(const Site& other) = default;
   Site(Site&& other) = default;
@@ -80,6 +78,8 @@ class EPMODEL_API Site : public ParentObject
   void resetKeepSiteLocationInformation();
 
  protected:
+  explicit Site(const Model& model);
+
   using ImplType = detail::Site_Impl;
 
   friend class Model;

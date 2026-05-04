@@ -17,6 +17,7 @@
 #include "../StraightComponent/PumpVariableSpeed.hpp"
 #include "../StraightComponent/TemperingValve.hpp"
 #include "../StraightComponent/TemperingValve_Impl.hpp"
+
 #include <utilities/idd/TemperingValve_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;

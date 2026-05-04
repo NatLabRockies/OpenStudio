@@ -25,8 +25,6 @@ namespace epmodel {
   class EPMODEL_API OutputControlReportingTolerances : public ModelObject
   {
    public:
-    explicit OutputControlReportingTolerances(const Model& model);
-
     virtual ~OutputControlReportingTolerances() override = default;
     OutputControlReportingTolerances(const OutputControlReportingTolerances& other) = default;
     OutputControlReportingTolerances(OutputControlReportingTolerances&& other) = default;
@@ -53,6 +51,8 @@ namespace epmodel {
     void resetToleranceforTimeCoolingSetpointNotMet();
 
    protected:
+    explicit OutputControlReportingTolerances(const Model& model);
+
     using ImplType = detail::OutputControlReportingTolerances_Impl;
 
     friend class Model;

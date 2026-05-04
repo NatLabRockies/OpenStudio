@@ -26,8 +26,6 @@ namespace epmodel {
   class EPMODEL_API ExternalInterface : public ModelObject
   {
    public:
-    explicit ExternalInterface(const Model& model);
-
     virtual ~ExternalInterface() override = default;
     ExternalInterface(const ExternalInterface& other) = default;
     ExternalInterface(ExternalInterface&& other) = default;
@@ -49,6 +47,8 @@ namespace epmodel {
     //@}
 
    protected:
+    explicit ExternalInterface(const Model& model);
+
     using ImplType = detail::ExternalInterface_Impl;
 
     friend class Model;

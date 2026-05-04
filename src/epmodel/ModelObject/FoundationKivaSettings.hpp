@@ -24,8 +24,6 @@ class FoundationKivaSettings_Impl;
 class EPMODEL_API FoundationKivaSettings : public ModelObject
 {
  public:
-  explicit FoundationKivaSettings(const Model& model);
-
   virtual ~FoundationKivaSettings() override = default;
   FoundationKivaSettings(const FoundationKivaSettings& other) = default;
   FoundationKivaSettings(FoundationKivaSettings&& other) = default;
@@ -103,6 +101,8 @@ class EPMODEL_API FoundationKivaSettings : public ModelObject
   void resetSimulationTimestep();
 
  protected:
+  explicit FoundationKivaSettings(const Model& model);
+
   using ImplType = detail::FoundationKivaSettings_Impl;
 
   friend class Model;

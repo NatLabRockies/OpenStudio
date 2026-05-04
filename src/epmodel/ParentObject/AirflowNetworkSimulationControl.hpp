@@ -26,8 +26,6 @@ class AirflowNetworkSimulationControl_Impl;
 class EPMODEL_API AirflowNetworkSimulationControl : public ModelObject
 {
  public:
-  explicit AirflowNetworkSimulationControl(const Model& model);
-
   virtual ~AirflowNetworkSimulationControl() override = default;
   AirflowNetworkSimulationControl(const AirflowNetworkSimulationControl& other) = default;
   AirflowNetworkSimulationControl(AirflowNetworkSimulationControl&& other) = default;
@@ -121,6 +119,8 @@ class EPMODEL_API AirflowNetworkSimulationControl : public ModelObject
   void resetAllowUnsupportedZoneEquipment();
 
  protected:
+  explicit AirflowNetworkSimulationControl(const Model& model);
+
   using ImplType = detail::AirflowNetworkSimulationControl_Impl;
 
   friend class Model;

@@ -26,8 +26,6 @@ namespace epmodel {
   class EPMODEL_API OutputEnergyManagementSystem : public ModelObject
   {
    public:
-    explicit OutputEnergyManagementSystem(const Model& model);
-
     virtual ~OutputEnergyManagementSystem() override = default;
     OutputEnergyManagementSystem(const OutputEnergyManagementSystem& other) = default;
     OutputEnergyManagementSystem(OutputEnergyManagementSystem&& other) = default;
@@ -61,6 +59,8 @@ namespace epmodel {
     void resetEMSRuntimeLanguageDebugOutputLevel();
 
    protected:
+    explicit OutputEnergyManagementSystem(const Model& model);
+
     using ImplType = detail::OutputEnergyManagementSystem_Impl;
 
     friend class Model;

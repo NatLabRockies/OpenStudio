@@ -25,8 +25,6 @@ namespace epmodel {
   class EPMODEL_API ZoneAirMassFlowConservation : public ModelObject
   {
    public:
-    explicit ZoneAirMassFlowConservation(const Model& model);
-
     virtual ~ZoneAirMassFlowConservation() override = default;
     ZoneAirMassFlowConservation(const ZoneAirMassFlowConservation& other) = default;
     ZoneAirMassFlowConservation(ZoneAirMassFlowConservation&& other) = default;
@@ -60,6 +58,8 @@ namespace epmodel {
     void resetInfiltrationBalancingZones();
 
    protected:
+    explicit ZoneAirMassFlowConservation(const Model& model);
+
     using ImplType = detail::ZoneAirMassFlowConservation_Impl;
 
     friend class Model;

@@ -25,8 +25,6 @@ namespace epmodel {
   class EPMODEL_API RunPeriodControlDaylightSavingTime : public ModelObject
   {
    public:
-    explicit RunPeriodControlDaylightSavingTime(const Model& model);
-
     virtual ~RunPeriodControlDaylightSavingTime() override = default;
     RunPeriodControlDaylightSavingTime(const RunPeriodControlDaylightSavingTime& other) = default;
     RunPeriodControlDaylightSavingTime(RunPeriodControlDaylightSavingTime&& other) = default;
@@ -49,6 +47,8 @@ namespace epmodel {
     bool setEndDate(const std::string& endDate);
 
    protected:
+    explicit RunPeriodControlDaylightSavingTime(const Model& model);
+
     using ImplType = detail::RunPeriodControlDaylightSavingTime_Impl;
 
     friend class Model;

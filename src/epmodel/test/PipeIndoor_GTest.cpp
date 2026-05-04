@@ -16,6 +16,7 @@
 #include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/PipeIndoor.hpp"
 #include "../StraightComponent/PipeIndoor_Impl.hpp"
+
 #include <utilities/idd/Pipe_Indoor_FieldEnums.hxx>
 #include <algorithm>
 

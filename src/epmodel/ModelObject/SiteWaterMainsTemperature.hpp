@@ -26,8 +26,6 @@ namespace epmodel {
   class EPMODEL_API SiteWaterMainsTemperature : public ModelObject
   {
    public:
-    explicit SiteWaterMainsTemperature(const Model& model);
-
     virtual ~SiteWaterMainsTemperature() override = default;
     SiteWaterMainsTemperature(const SiteWaterMainsTemperature& other) = default;
     SiteWaterMainsTemperature(SiteWaterMainsTemperature&& other) = default;
@@ -65,6 +63,8 @@ namespace epmodel {
     bool setTemperatureOffset(double temperatureOffset);
 
    protected:
+    explicit SiteWaterMainsTemperature(const Model& model);
+
     using ImplType = detail::SiteWaterMainsTemperature_Impl;
 
     friend class Model;

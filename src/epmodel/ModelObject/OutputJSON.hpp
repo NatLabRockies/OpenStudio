@@ -26,8 +26,6 @@ namespace epmodel {
   class EPMODEL_API OutputJSON : public ModelObject
   {
    public:
-    explicit OutputJSON(const Model& model);
-
     virtual ~OutputJSON() override = default;
     OutputJSON(const OutputJSON& other) = default;
     OutputJSON(OutputJSON&& other) = default;
@@ -61,6 +59,8 @@ namespace epmodel {
     bool setOutputMessagePack(bool outputMessagePack);
 
    protected:
+    explicit OutputJSON(const Model& model);
+
     using ImplType = detail::OutputJSON_Impl;
 
     friend class Model;

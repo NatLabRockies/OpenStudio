@@ -7,12 +7,13 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/PerformancePrecisionTradeoffs.hpp"
+#include "../ModelObject/PerformancePrecisionTradeoffs_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, PerformancePrecisionTradeoffs_DefaultConstructor) {
   Model model;
-  PerformancePrecisionTradeoffs object(model);
+  auto object = model.getUniqueModelObject<PerformancePrecisionTradeoffs>();
 
   EXPECT_EQ(PerformancePrecisionTradeoffs::iddObjectType(), object.iddObject().type());
 
@@ -37,7 +38,7 @@ TEST_F(EPModelFixture, PerformancePrecisionTradeoffs_DefaultConstructor) {
 
 TEST_F(EPModelFixture, PerformancePrecisionTradeoffs_ScalarAccessors_RoundTrip) {
   Model model;
-  PerformancePrecisionTradeoffs object(model);
+  auto object = model.getUniqueModelObject<PerformancePrecisionTradeoffs>();
 
   EXPECT_TRUE(object.setUseCoilDirectSolutions(true));
   EXPECT_FALSE(object.isUseCoilDirectSolutionsDefaulted());

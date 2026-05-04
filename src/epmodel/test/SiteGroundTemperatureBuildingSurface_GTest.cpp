@@ -9,12 +9,13 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/SiteGroundTemperatureBuildingSurface.hpp"
+#include "../ModelObject/SiteGroundTemperatureBuildingSurface_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, SiteGroundTemperatureBuildingSurface_DefaultConstructor) {
   Model model;
-  SiteGroundTemperatureBuildingSurface object(model);
+  auto object = model.getUniqueModelObject<SiteGroundTemperatureBuildingSurface>();
 
   EXPECT_EQ(SiteGroundTemperatureBuildingSurface::iddObjectType(), object.iddObject().type());
   EXPECT_TRUE(object.isJanuaryGroundTemperatureDefaulted());
@@ -32,7 +33,7 @@ struct MonthAccessor
 
 TEST_F(EPModelFixture, SiteGroundTemperatureBuildingSurface_ScalarAccessors_RoundTrip) {
   Model model;
-  SiteGroundTemperatureBuildingSurface object(model);
+  auto object = model.getUniqueModelObject<SiteGroundTemperatureBuildingSurface>();
 
   constexpr double defaultValue = 18.0;
   constexpr double updatedValue = 23.0;

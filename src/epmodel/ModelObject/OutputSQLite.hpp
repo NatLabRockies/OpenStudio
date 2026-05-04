@@ -26,8 +26,6 @@ namespace epmodel {
   class EPMODEL_API OutputSQLite : public ModelObject
   {
    public:
-    explicit OutputSQLite(const Model& model);
-
     virtual ~OutputSQLite() override = default;
     OutputSQLite(const OutputSQLite& other) = default;
     OutputSQLite(OutputSQLite&& other) = default;
@@ -51,6 +49,8 @@ namespace epmodel {
     bool setUnitConversionforTabularData(const std::string& unitConversionforTabularData);
 
    protected:
+    explicit OutputSQLite(const Model& model);
+
     using ImplType = detail::OutputSQLite_Impl;
 
     friend class Model;

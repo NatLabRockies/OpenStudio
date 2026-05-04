@@ -7,18 +7,19 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/InsideSurfaceConvectionAlgorithm.hpp"
+#include "../ModelObject/InsideSurfaceConvectionAlgorithm_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, InsideSurfaceConvectionAlgorithm_DefaultConstructor) {
   Model model;
-  InsideSurfaceConvectionAlgorithm object(model);
+  auto object = model.getUniqueModelObject<InsideSurfaceConvectionAlgorithm>();
   EXPECT_EQ(InsideSurfaceConvectionAlgorithm::iddObjectType(), object.iddObject().type());
 }
 
 TEST_F(EPModelFixture, InsideSurfaceConvectionAlgorithm_ScalarAccessors_RoundTrip) {
   Model model;
-  InsideSurfaceConvectionAlgorithm object(model);
+  auto object = model.getUniqueModelObject<InsideSurfaceConvectionAlgorithm>();
 
   EXPECT_FALSE(object.isAlgorithmDefaulted());
   EXPECT_EQ("TARP", object.algorithm());

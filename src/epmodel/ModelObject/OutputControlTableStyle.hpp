@@ -26,8 +26,6 @@ namespace epmodel {
   class EPMODEL_API OutputControlTableStyle : public ModelObject
   {
    public:
-    explicit OutputControlTableStyle(const Model& model);
-
     virtual ~OutputControlTableStyle() override = default;
     OutputControlTableStyle(const OutputControlTableStyle& other) = default;
     OutputControlTableStyle(OutputControlTableStyle&& other) = default;
@@ -51,6 +49,8 @@ namespace epmodel {
     bool setUnitConversion(const std::string& unitConversion);
 
    protected:
+    explicit OutputControlTableStyle(const Model& model);
+
     using ImplType = detail::OutputControlTableStyle_Impl;
 
     friend class Model;

@@ -8,12 +8,13 @@
 #include "EPModelFixture.hpp"
 
 #include "../ModelObject/OutputControlTimestamp.hpp"
+#include "../ModelObject/OutputControlTimestamp_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, OutputControlTimestamp_DefaultConstructor) {
   Model model;
-  OutputControlTimestamp object(model);
+  auto object = model.getUniqueModelObject<OutputControlTimestamp>();
 
   EXPECT_EQ(OutputControlTimestamp::iddObjectType(), object.iddObject().type());
   EXPECT_FALSE(object.iso8601Format());
@@ -22,7 +23,7 @@ TEST_F(EPModelFixture, OutputControlTimestamp_DefaultConstructor) {
 
 TEST_F(EPModelFixture, OutputControlTimestamp_ScalarAccessors_RoundTrip) {
   Model model;
-  OutputControlTimestamp object(model);
+  auto object = model.getUniqueModelObject<OutputControlTimestamp>();
 
   EXPECT_TRUE(object.setISO8601Format(true));
   EXPECT_TRUE(object.iso8601Format());
