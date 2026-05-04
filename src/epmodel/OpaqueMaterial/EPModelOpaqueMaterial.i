@@ -8,9 +8,9 @@
 %include <epmodel/EPModel_Common_Include.i>
 %import <epmodel/EPModel.i>
 
-EPMODELOBJECT_WRAP(StandardOpaqueMaterial, <epmodel/OpaqueMaterial/StandardOpaqueMaterial.hpp>)
-EPMODELOBJECT_WRAP(AirGap, <epmodel/OpaqueMaterial/AirGap.hpp>)
-EPMODELOBJECT_WRAP(MasslessOpaqueMaterial, <epmodel/OpaqueMaterial/MasslessOpaqueMaterial.hpp>)
-EPMODELOBJECT_WRAP(RoofVegetation, <epmodel/OpaqueMaterial/RoofVegetation.hpp>)
+EPMODELOBJECT_WRAP(StandardOpaqueMaterial, <epmodel/OpaqueMaterial/StandardOpaqueMaterial.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(AirGap, <epmodel/OpaqueMaterial/AirGap.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(MasslessOpaqueMaterial, <epmodel/OpaqueMaterial/MasslessOpaqueMaterial.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(RoofVegetation, <epmodel/OpaqueMaterial/RoofVegetation.hpp>, 0, 1)
 
 #endif

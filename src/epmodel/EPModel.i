@@ -25,9 +25,9 @@ class Model;
 // so emit their vector/optional wrappers here. This matches canonical model's
 // ModelObjectVector treatment and keeps APIs returning std::vector<ModelObject>
 // from degrading to opaque SwigPyObject values in Python.
-EPMODELOBJECT_TEMPLATES(ModelObject)
-EPMODELOBJECT_TEMPLATES(ResourceObject)
-EPMODELOBJECT_TEMPLATES(Schedule)
+EPMODELOBJECT_TEMPLATES(ModelObject, 0)
+EPMODELOBJECT_TEMPLATES(ResourceObject, 0)
+EPMODELOBJECT_TEMPLATES(Schedule, 0)
 
 // These templated C++ helper APIs are used internally by EPModel objects and are
 // not directly representable as useful Ruby/Python binding methods.

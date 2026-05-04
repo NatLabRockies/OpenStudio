@@ -8,8 +8,8 @@
 %include <epmodel/EPModel_Common_Include.i>
 %import <epmodel/EPModel.i>
 
-EPMODELOBJECT_WRAP(ElectricLoadCenterInverterLookUpTable, <epmodel/Inverter/ElectricLoadCenterInverterLookUpTable.hpp>)
-EPMODELOBJECT_WRAP(ElectricLoadCenterInverterPVWatts, <epmodel/Inverter/ElectricLoadCenterInverterPVWatts.hpp>)
-EPMODELOBJECT_WRAP(ElectricLoadCenterInverterSimple, <epmodel/Inverter/ElectricLoadCenterInverterSimple.hpp>)
+EPMODELOBJECT_WRAP(ElectricLoadCenterInverterLookUpTable, <epmodel/Inverter/ElectricLoadCenterInverterLookUpTable.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(ElectricLoadCenterInverterPVWatts, <epmodel/Inverter/ElectricLoadCenterInverterPVWatts.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(ElectricLoadCenterInverterSimple, <epmodel/Inverter/ElectricLoadCenterInverterSimple.hpp>, 0, 1)
 
 #endif
