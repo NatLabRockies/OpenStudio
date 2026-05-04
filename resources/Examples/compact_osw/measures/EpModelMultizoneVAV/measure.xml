@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<measure>
+  <schema_version>3.1</schema_version>
+  <name>ep_model_multizone_vav</name>
+  <uid>9f5554bb-3317-4c1a-a4fc-52945656604e</uid>
+  <version_id>08743561-1150-42cb-8f7a-522cec0cfac0</version_id>
+  <version_modified>2026-04-30T22:34:18Z</version_modified>
+  <xml_checksum>D3A389D8</xml_checksum>
+  <class_name>EpModelMultizoneVAV</class_name>
+  <display_name>EpModel Multizone VAV</display_name>
+  <description>Replace existing air loops with one multizone VAV system served by central hot water and chilled water plants.</description>
+  <modeler_description>Finds zones served by existing AirLoopHVAC objects, removes those air loops, and reconnects the zones to a new multizone air system with water heating, water cooling, a boiler hot water loop, and an air-cooled chiller chilled water loop.</modeler_description>
+  <arguments />
+  <outputs />
+  <provenances />
+  <tags>
+    <tag>Whole Building.Space Types</tag>
+  </tags>
+  <attributes>
+    <attribute>
+      <name>Measure Type</name>
+      <value>ModelMeasure</value>
+      <datatype>string</datatype>
+    </attribute>
+    <attribute>
+      <name>Measure Language</name>
+      <value>Ruby</value>
+      <datatype>string</datatype>
+    </attribute>
+  </attributes>
+  <files>
+    <file>
+      <version>
+        <software_program>OpenStudio</software_program>
+        <identifier>4.0.0</identifier>
+        <min_compatible>4.0.0</min_compatible>
+      </version>
+      <filename>measure.rb</filename>
+      <filetype>rb</filetype>
+      <usage_type>script</usage_type>
+      <checksum>9FD60E09</checksum>
+    </file>
+  </files>
+</measure>
