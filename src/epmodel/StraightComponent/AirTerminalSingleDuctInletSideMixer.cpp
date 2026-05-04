@@ -26,6 +26,7 @@
 #include "Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "Splitter/AirLoopHVACZoneSplitter_Impl.hpp"
 #include "ZoneHVACComponent/ZoneHVACComponent.hpp"
+#include "ZoneHVACComponent/ZoneHVACComponent_Impl.hpp"
 
 #include <algorithm>
 #include <utilities/core/Assert.hpp>

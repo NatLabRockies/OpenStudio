@@ -12,8 +12,10 @@
 #include "../Mixer/AirTerminalDualDuctVAVOutdoorAir.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "../ModelObject/ZoneHVACEquipmentList.hpp"
 #include "../Schedule/Schedule.hpp"
+#include "../Schedule/Schedule_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 
 #include <utilities/idd/AirTerminal_DualDuct_VAV_OutdoorAir_FieldEnums.hxx>
@@ -233,14 +235,10 @@ TEST_F(EPModelFixture, AirTerminalDualDuctVAVOutdoorAir_RemoveBranchForZone_With
   ASSERT_EQ(1u, equipmentList.equipment().size());
   ASSERT_EQ(1u, connections->zoneAirInletNodes().size());
   ASSERT_EQ(1u, connections->zoneReturnAirNodes().size());
+  const auto terminalHandle = terminal.handle();
 
   EXPECT_TRUE(airLoop.removeBranchForZone(zone));
-  EXPECT_FALSE(terminal.airLoopHVAC());
-  EXPECT_FALSE(terminal.outdoorAirInletNode());
-  EXPECT_FALSE(terminal.recirculatedAirInletNode());
-  EXPECT_FALSE(terminal.inletModelObject(0u));
-  EXPECT_FALSE(terminal.inletModelObject(1u));
-  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_FALSE(model.getObject(terminalHandle));
   EXPECT_TRUE(equipmentList.equipment().empty());
   EXPECT_TRUE(connections->zoneAirInletNodes().empty());
   EXPECT_TRUE(connections->zoneReturnAirNodes().empty());
@@ -258,14 +256,10 @@ TEST_F(EPModelFixture, AirTerminalDualDuctVAVOutdoorAir_RemoveDirectDualDuctBran
   ASSERT_TRUE(terminal.outdoorAirInletNode());
   ASSERT_TRUE(terminal.recirculatedAirInletNode());
   ASSERT_TRUE(terminal.outletModelObject());
+  const auto terminalHandle = terminal.handle();
 
   terminal.remove();
-  EXPECT_FALSE(terminal.airLoopHVAC());
-  EXPECT_FALSE(terminal.outdoorAirInletNode());
-  EXPECT_FALSE(terminal.recirculatedAirInletNode());
-  EXPECT_FALSE(terminal.inletModelObject(0u));
-  EXPECT_FALSE(terminal.inletModelObject(1u));
-  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_FALSE(model.getObject(terminalHandle));
   EXPECT_EQ(0u, airLoop.demandComponents(AirTerminalDualDuctVAVOutdoorAir::iddObjectType()).size());
   EXPECT_EQ(1u, airLoop.demandInletNodes().size());
 }
@@ -292,45 +286,36 @@ TEST_F(EPModelFixture, AirTerminalDualDuctVAVOutdoorAir_RemoveClearsConnectivity
   ASSERT_TRUE(terminal.outletModelObject());
   ASSERT_EQ(1u, connections->zoneAirInletNodes().size());
   ASSERT_EQ(1u, connections->zoneReturnAirNodes().size());
+  const auto terminalHandle = terminal.handle();
 
   terminal.remove();
-  EXPECT_FALSE(terminal.airLoopHVAC());
-  EXPECT_FALSE(terminal.outdoorAirInletNode());
-  EXPECT_FALSE(terminal.recirculatedAirInletNode());
-  EXPECT_FALSE(terminal.inletModelObject(0u));
-  EXPECT_FALSE(terminal.inletModelObject(1u));
-  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_FALSE(model.getObject(terminalHandle));
   EXPECT_TRUE(equipmentList.equipment().empty());
-  EXPECT_TRUE(connections->zoneAirInletNodes().empty());
-  EXPECT_TRUE(connections->zoneReturnAirNodes().empty());
   EXPECT_EQ(0u, airLoop.demandComponents(AirTerminalDualDuctVAVOutdoorAir::iddObjectType()).size());
   EXPECT_EQ(1u, airLoop.demandInletNodes().size());
-  ASSERT_TRUE(terminal.maximumTerminalAirFlowRate());
-  EXPECT_DOUBLE_EQ(2.468, terminal.maximumTerminalAirFlowRate().get());
-  EXPECT_FALSE(terminal.isMaximumTerminalAirFlowRateAutosized());
-  EXPECT_EQ("DesignOccupancy", terminal.perPersonVentilationRateMode());
-  auto availabilitySchedule =
-    terminal.getModelObjectTarget<Schedule>(openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::AvailabilityScheduleName);
-  ASSERT_TRUE(availabilitySchedule);
-  EXPECT_EQ(expectedAvailabilitySchedule->handle(), availabilitySchedule->handle());
 
   ASSERT_TRUE(airLoop.removeBranchForZone(zone));
+  EXPECT_TRUE(connections->zoneAirInletNodes().empty());
+  EXPECT_TRUE(connections->zoneReturnAirNodes().empty());
   EXPECT_EQ(1u, airLoop.demandInletNodes().size());
 
   ThermalZone zone2(model);
-  ASSERT_TRUE(airLoop.addBranchForZone(zone2, terminal));
-  ASSERT_TRUE(terminal.airLoopHVAC());
-  ASSERT_TRUE(terminal.outdoorAirInletNode());
-  ASSERT_TRUE(terminal.recirculatedAirInletNode());
-  EXPECT_EQ(airLoop.handle(), terminal.airLoopHVAC()->handle());
+  AirTerminalDualDuctVAVOutdoorAir terminal2(model);
+  ASSERT_TRUE(terminal2.setMaximumTerminalAirFlowRate(2.468));
+  ASSERT_TRUE(terminal2.setPerPersonVentilationRateMode("DesignOccupancy"));
+  ASSERT_TRUE(airLoop.addBranchForZone(zone2, terminal2));
+  ASSERT_TRUE(terminal2.airLoopHVAC());
+  ASSERT_TRUE(terminal2.outdoorAirInletNode());
+  ASSERT_TRUE(terminal2.recirculatedAirInletNode());
+  EXPECT_EQ(airLoop.handle(), terminal2.airLoopHVAC()->handle());
   EXPECT_EQ(2u, airLoop.demandInletNodes().size());
   EXPECT_EQ(1u, airLoop.demandComponents(AirTerminalDualDuctVAVOutdoorAir::iddObjectType()).size());
-  ASSERT_TRUE(terminal.maximumTerminalAirFlowRate());
-  EXPECT_DOUBLE_EQ(2.468, terminal.maximumTerminalAirFlowRate().get());
-  EXPECT_FALSE(terminal.isMaximumTerminalAirFlowRateAutosized());
-  EXPECT_EQ("DesignOccupancy", terminal.perPersonVentilationRateMode());
-  availabilitySchedule =
-    terminal.getModelObjectTarget<Schedule>(openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::AvailabilityScheduleName);
+  ASSERT_TRUE(terminal2.maximumTerminalAirFlowRate());
+  EXPECT_DOUBLE_EQ(2.468, terminal2.maximumTerminalAirFlowRate().get());
+  EXPECT_FALSE(terminal2.isMaximumTerminalAirFlowRateAutosized());
+  EXPECT_EQ("DesignOccupancy", terminal2.perPersonVentilationRateMode());
+  auto availabilitySchedule =
+    terminal2.getModelObjectTarget<Schedule>(openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::AvailabilityScheduleName);
   ASSERT_TRUE(availabilitySchedule);
   EXPECT_EQ(expectedAvailabilitySchedule->handle(), availabilitySchedule->handle());
 }
@@ -344,10 +329,9 @@ TEST_F(EPModelFixture, AirTerminalDualDuctVAVOutdoorAir_RemoveClearsStaleZoneEqu
   ASSERT_TRUE(equipmentList.addEquipment(terminal.cast<ModelObject>()));
   ASSERT_EQ(1u, equipmentList.equipment().size());
   EXPECT_FALSE(terminal.airLoopHVAC());
+  const auto terminalHandle = terminal.handle();
 
   terminal.remove();
   EXPECT_TRUE(equipmentList.equipment().empty());
-  EXPECT_FALSE(terminal.airLoopHVAC());
-  EXPECT_FALSE(terminal.outdoorAirInletNode());
-  EXPECT_FALSE(terminal.recirculatedAirInletNode());
+  EXPECT_FALSE(model.getObject(terminalHandle));
 }

@@ -8,10 +8,16 @@
 #include "EPModelFixture.hpp"
 #include "../Loop/AirLoopHVAC.hpp"
 #include "../Loop/AirLoopHVAC_Impl.hpp"
+#include "../ModelObject/Branch.hpp"
+#include "../ModelObject/Branch_Impl.hpp"
+#include "../ModelObject/BranchList.hpp"
+#include "../ModelObject/BranchList_Impl.hpp"
 #include "../ModelObject/AirLoopHVACReturnPath.hpp"
 #include "../ModelObject/AirLoopHVACReturnPath_Impl.hpp"
 #include "../ModelObject/AirLoopHVACSupplyPath.hpp"
 #include "../ModelObject/AirLoopHVACSupplyPath_Impl.hpp"
+#include "../ModelObject/NodeList.hpp"
+#include "../ModelObject/NodeList_Impl.hpp"
 #include "../ModelObject/SizingSystem.hpp"
 #include "../ModelObject/SizingSystem_Impl.hpp"
 #include "../AvailabilityManager/AvailabilityManagerScheduledOn.hpp"
@@ -19,8 +25,14 @@
 #include "../ResourceObject/ScheduleTypeLimits.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightCycle.hpp"
 #include "../AvailabilityManager/AvailabilityManagerNightCycle_Impl.hpp"
+#include "../HVACComponent/ControllerWaterCoil.hpp"
+#include "../HVACComponent/ControllerWaterCoil_Impl.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer.hpp"
 #include "../Mixer/AirLoopHVACZoneMixer_Impl.hpp"
+#include "../Loop/PlantLoop.hpp"
+#include "../ModelObject/AirLoopHVACControllerList.hpp"
+#include "../ModelObject/AirLoopHVACControllerList_Impl.hpp"
+#include "../ParentObject/ControllerOutdoorAir.hpp"
 #include "../Mixer/AirTerminalDualDuctConstantVolume.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter_Impl.hpp"
@@ -32,13 +44,18 @@
 #include "../StraightComponent/Node.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
+#include "../WaterToAirComponent/CoilCoolingWater.hpp"
+#include "../WaterToAirComponent/CoilHeatingWater.hpp"
 #include "../Schedule/ScheduleCompact.hpp"
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Schedule/ScheduleConstant_Impl.hpp"
 #include "../Schedule/ScheduleYear.hpp"
 #include "../SetpointManager/SetpointManagerMixedAir.hpp"
+#include "../SetpointManager/SetpointManagerSingleZoneReheat.hpp"
+#include "../SetpointManager/SetpointManagerSingleZoneReheat_Impl.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "../ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
+#include <utilities/idd/AirLoopHVAC_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/Sizing_System_FieldEnums.hxx>
 #include <algorithm>
@@ -126,6 +143,8 @@ TEST_F(EPModelFixture, AirLoopHVAC_DefaultConstructor) {
   AirLoopHVAC airLoop(model);
   EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::AirLoopHVAC), airLoop.iddObject().type());
   EXPECT_FALSE(airLoop.nameString().empty());
+  EXPECT_TRUE(airLoop.isDesignSupplyAirFlowRateAutosized());
+  EXPECT_DOUBLE_EQ(1.0, airLoop.designReturnAirFlowFractionofSupplyAirFlow());
 }
 
 TEST_F(EPModelFixture, AirLoopHVAC_DualDuctConstructorBuildsSupplySplitter) {
@@ -273,6 +292,50 @@ TEST_F(EPModelFixture, AirLoopHVAC_ScalarAccessors_RoundTrip) {
 
   EXPECT_TRUE(airLoop.setDesignReturnAirFlowFractionofSupplyAirFlow(0.5));
   EXPECT_DOUBLE_EQ(0.5, airLoop.designReturnAirFlowFractionofSupplyAirFlow());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_RemoveRemovesSetpointManagersOnLoopNodes) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  SetpointManagerSingleZoneReheat setpointManager(model);
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(setpointManager.addToNode(supplyOutletNode));
+  EXPECT_EQ(1u, supplyOutletNode.setpointManagers().size());
+
+  airLoop.remove();
+
+  EXPECT_TRUE(model.getConcreteModelObjects<SetpointManagerSingleZoneReheat>().empty());
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_RemoveRemovesCanonicalTopologyObjects) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  FanConstantVolume fan(model);
+  ThermalZone zone(model);
+  auto demandBranchNode = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(demandBranchNode);
+  auto demandBranchNodeAsNode = demandBranchNode->optionalCast<Node>();
+  ASSERT_TRUE(demandBranchNodeAsNode);
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(fan.addToNode(supplyOutletNode));
+  ASSERT_TRUE(zone.addToNode(*demandBranchNodeAsNode));
+  const auto supplyOutletNodeListName = airLoop.getModelObjectTarget<NodeList>(openstudio::AirLoopHVACFields::SupplySideOutletNodeNames)->nameString();
+  const auto demandInletNodeListName = airLoop.getModelObjectTarget<NodeList>(openstudio::AirLoopHVACFields::DemandSideInletNodeNames)->nameString();
+
+  airLoop.remove();
+
+  EXPECT_TRUE(model.getObjectsByType(AirLoopHVAC::iddObjectType(), true).empty());
+  EXPECT_TRUE(model.getObjectsByType(AirLoopHVACSupplyPath::iddObjectType(), true).empty());
+  EXPECT_TRUE(model.getObjectsByType(AirLoopHVACReturnPath::iddObjectType(), true).empty());
+  EXPECT_TRUE(model.getObjectsByType(AirLoopHVACZoneSplitter::iddObjectType(), true).empty());
+  EXPECT_TRUE(model.getObjectsByType(AirLoopHVACZoneMixer::iddObjectType(), true).empty());
+  EXPECT_TRUE(model.getObjectsByType(BranchList::iddObjectType(), true).empty());
+  EXPECT_TRUE(model.getObjectsByType(Branch::iddObjectType(), true).empty());
+  EXPECT_FALSE(model.getObjectByTypeAndName(openstudio::IddObjectType::NodeList, supplyOutletNodeListName));
+  EXPECT_FALSE(model.getObjectByTypeAndName(openstudio::IddObjectType::NodeList, demandInletNodeListName));
+  EXPECT_TRUE(model.getObjectsByType(FanConstantVolume::iddObjectType(), true).empty());
+  EXPECT_EQ(1u, model.getObjectsByType(ThermalZone::iddObjectType(), true).size());
 }
 
 TEST_F(EPModelFixture, AirLoopHVACSupplyPath_DefaultConstructor) {
@@ -1187,6 +1250,41 @@ TEST_F(EPModelFixture, AirLoopHVAC_Canonicalize_RepairsDemandBranchCountMismatch
   EXPECT_EQ(1u, airLoop.zoneMixer().inletModelObjects().size());
   EXPECT_EQ(airLoop.zoneSplitter().outletModelObjects().front(), airLoop.zoneMixer().inletModelObjects().front());
   EXPECT_GT(report.warningCount, 0u);
+}
+
+TEST_F(EPModelFixture, AirLoopHVAC_Canonicalize_AddsSupplyWaterCoilControllersToControllerList) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  PlantLoop plantLoop(model);
+  CoilCoolingWater coolingCoil(model);
+  CoilHeatingWater heatingCoil(model);
+
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(coolingCoil));
+  ASSERT_TRUE(plantLoop.addDemandBranchForComponent(heatingCoil));
+
+  auto supplyOutletNode = airLoop.supplyOutletNode();
+  ASSERT_TRUE(coolingCoil.addToNode(supplyOutletNode));
+  ASSERT_TRUE(heatingCoil.addToNode(supplyOutletNode));
+  ASSERT_TRUE(coolingCoil.controllerWaterCoil());
+  ASSERT_TRUE(heatingCoil.controllerWaterCoil());
+
+  auto controllerList = airLoop.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVACFields::ControllerListName);
+  ASSERT_TRUE(controllerList);
+
+  auto report = model.canonicalize(SanitizationPolicy::Repair);
+  EXPECT_EQ(0u, report.errorCount);
+
+  controllerList = airLoop.getModelObjectTarget<AirLoopHVACControllerList>(openstudio::AirLoopHVACFields::ControllerListName);
+  ASSERT_TRUE(controllerList);
+
+  const auto controllers = subsetCastVector<ControllerWaterCoil>(controllerList->controllers());
+  ASSERT_EQ(2u, controllers.size());
+  EXPECT_TRUE(std::ranges::any_of(controllers, [&](const auto& controller) {
+    return controller.handle() == coolingCoil.controllerWaterCoil()->handle();
+  }));
+  EXPECT_TRUE(std::ranges::any_of(controllers, [&](const auto& controller) {
+    return controller.handle() == heatingCoil.controllerWaterCoil()->handle();
+  }));
 }
 
 TEST_F(EPModelFixture, AirLoopHVAC_NightCycleControlType_UsesAvailabilityManagerNightCycle) {

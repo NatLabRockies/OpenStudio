@@ -290,7 +290,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctInletSideMixer_RemoveFromLoop_Cleans
   ASSERT_TRUE(aduImpl->setAirTerminal(terminal.cast<ModelObject>()));
 
   ASSERT_TRUE(airLoop.addBranchForZone(zone, terminal));
-  const auto zoneAirNode = zone.zoneAirNode();
+  auto zoneAirNode = zone.zoneAirNode();
 
   auto inletObject = terminal.inletModelObject();
   ASSERT_TRUE(inletObject);

@@ -490,7 +490,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_RemoveFromLoop_Cle
   ASSERT_TRUE(zone.removeEquipment(terminal));
   EXPECT_TRUE(zone.equipment().empty());
 
-  const auto zoneAirNode = zone.zoneAirNode();
+  auto zoneAirNode = zone.zoneAirNode();
   ASSERT_TRUE(terminal.secondaryAirInletNode());
   const auto secondaryNodeHandle = terminal.secondaryAirInletNode()->handle();
   ASSERT_TRUE(terminal.inletModelObject());
@@ -573,7 +573,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctParallelPIUReheat_AddToNode_RejectsM
   Node rogueMixerNode(model);
   ASSERT_TRUE(airLoop.zoneMixer().setInletModelObject(0u, rogueMixerNode.cast<ModelObject>()));
 
-  const auto zoneAirNode = zone.zoneAirNode();
+  auto zoneAirNode = zone.zoneAirNode();
   EXPECT_FALSE(terminal.addToNode(zoneAirNode));
   EXPECT_TRUE(zone.equipment().empty());
   EXPECT_FALSE(zone.airLoopHVACTerminal());

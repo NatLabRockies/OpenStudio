@@ -10,8 +10,10 @@
 #include "../Mixer/AirTerminalDualDuctConstantVolume.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
+#include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "../ModelObject/ZoneHVACEquipmentList.hpp"
 #include "../Schedule/Schedule.hpp"
+#include "../Schedule/Schedule_Impl.hpp"
 #include "../StraightComponent/Node.hpp"
 
 #include <utilities/idd/AirTerminal_DualDuct_ConstantVolume_FieldEnums.hxx>
@@ -153,7 +155,7 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_AddToNode_RejectsInvali
   ASSERT_TRUE(originalHotInlet);
   ASSERT_TRUE(originalColdInlet);
 
-  EXPECT_FALSE(terminal.addToNode(zone.zoneAirNode()));
+  EXPECT_FALSE(terminal.addToNode(zoneAirNode));
   ASSERT_TRUE(terminal.hotAirInletNode());
   ASSERT_TRUE(terminal.coldAirInletNode());
   EXPECT_EQ(originalHotInlet->handle(), terminal.hotAirInletNode()->handle());
@@ -170,14 +172,10 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_RemoveDirectDualDuctBra
   ASSERT_TRUE(terminal.hotAirInletNode());
   ASSERT_TRUE(terminal.coldAirInletNode());
   ASSERT_TRUE(terminal.outletModelObject());
+  const auto terminalHandle = terminal.handle();
 
   terminal.remove();
-  EXPECT_FALSE(terminal.airLoopHVAC());
-  EXPECT_FALSE(terminal.hotAirInletNode());
-  EXPECT_FALSE(terminal.coldAirInletNode());
-  EXPECT_FALSE(terminal.inletModelObject(0u));
-  EXPECT_FALSE(terminal.inletModelObject(1u));
-  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_FALSE(model.getObject(terminalHandle));
   EXPECT_EQ(0u, airLoop.demandComponents(AirTerminalDualDuctConstantVolume::iddObjectType()).size());
   EXPECT_EQ(1u, airLoop.demandInletNodes().size());
 }
@@ -195,14 +193,10 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_RemoveClearsConnectivit
   ASSERT_TRUE(terminal.hotAirInletNode());
   ASSERT_TRUE(terminal.coldAirInletNode());
   ASSERT_TRUE(terminal.outletModelObject());
+  const auto terminalHandle = terminal.handle();
 
   terminal.remove();
-  EXPECT_FALSE(terminal.airLoopHVAC());
-  EXPECT_FALSE(terminal.hotAirInletNode());
-  EXPECT_FALSE(terminal.coldAirInletNode());
-  EXPECT_FALSE(terminal.inletModelObject(0u));
-  EXPECT_FALSE(terminal.inletModelObject(1u));
-  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_FALSE(model.getObject(terminalHandle));
   EXPECT_TRUE(equipmentList.equipment().empty());
   EXPECT_EQ(0u, airLoop.demandComponents(AirTerminalDualDuctConstantVolume::iddObjectType()).size());
   EXPECT_EQ(1u, airLoop.demandInletNodes().size());
@@ -211,11 +205,12 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_RemoveClearsConnectivit
   EXPECT_EQ(1u, airLoop.demandInletNodes().size());
 
   ThermalZone zone2(model);
-  ASSERT_TRUE(airLoop.addBranchForZone(zone2, terminal));
-  ASSERT_TRUE(terminal.airLoopHVAC());
-  ASSERT_TRUE(terminal.hotAirInletNode());
-  ASSERT_TRUE(terminal.coldAirInletNode());
-  EXPECT_EQ(airLoop.handle(), terminal.airLoopHVAC()->handle());
+  AirTerminalDualDuctConstantVolume terminal2(model);
+  ASSERT_TRUE(airLoop.addBranchForZone(zone2, terminal2));
+  ASSERT_TRUE(terminal2.airLoopHVAC());
+  ASSERT_TRUE(terminal2.hotAirInletNode());
+  ASSERT_TRUE(terminal2.coldAirInletNode());
+  EXPECT_EQ(airLoop.handle(), terminal2.airLoopHVAC()->handle());
   EXPECT_EQ(2u, airLoop.demandInletNodes().size());
   EXPECT_EQ(1u, airLoop.demandComponents(AirTerminalDualDuctConstantVolume::iddObjectType()).size());
 }
@@ -229,10 +224,9 @@ TEST_F(EPModelFixture, AirTerminalDualDuctConstantVolume_RemoveClearsStaleZoneEq
   ASSERT_TRUE(equipmentList.addEquipment(terminal.cast<ModelObject>()));
   ASSERT_EQ(1u, equipmentList.equipment().size());
   EXPECT_FALSE(terminal.airLoopHVAC());
+  const auto terminalHandle = terminal.handle();
 
   terminal.remove();
   EXPECT_TRUE(equipmentList.equipment().empty());
-  EXPECT_FALSE(terminal.airLoopHVAC());
-  EXPECT_FALSE(terminal.hotAirInletNode());
-  EXPECT_FALSE(terminal.coldAirInletNode());
+  EXPECT_FALSE(model.getObject(terminalHandle));
 }

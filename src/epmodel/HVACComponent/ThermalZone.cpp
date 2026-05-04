@@ -821,27 +821,11 @@ namespace epmodel {
       }
 
       bool setZoneSplitterBranchNode(AirLoopHVACZoneSplitter& splitter, unsigned branchIndex, const Node& branchNode) {
-        auto groups = splitter.extensibleGroups();
-        IdfExtensibleGroup group = (branchIndex < groups.size()) ? groups[branchIndex] : splitter.pushExtensibleGroup();
-
-        auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
-        if (!workspaceGroup) {
-          return false;
-        }
-
-        return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ZoneSplitterExtensibleFields::OutletNodeName, branchNode.handle());
+        return splitter.setOutletModelObject(branchIndex, branchNode.cast<ModelObject>());
       }
 
       bool setZoneMixerBranchNode(AirLoopHVACZoneMixer& mixer, unsigned branchIndex, const Node& branchNode) {
-        auto groups = mixer.extensibleGroups();
-        IdfExtensibleGroup group = (branchIndex < groups.size()) ? groups[branchIndex] : mixer.pushExtensibleGroup();
-
-        auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
-        if (!workspaceGroup) {
-          return false;
-        }
-
-        return workspaceGroup->setPointer(openstudio::AirLoopHVAC_ZoneMixerExtensibleFields::InletNodeName, branchNode.handle());
+        return mixer.setInletModelObject(branchIndex, branchNode.cast<ModelObject>());
       }
 
     }  // namespace
@@ -1431,7 +1415,10 @@ namespace epmodel {
         return !zoneHVAC->thermalZone();
       }
 
-      return zoneHVACEquipmentList().removeEquipment(equipment);
+      if (auto equipmentList = zoneHVACEquipmentList()) {
+        return equipmentList->removeEquipment(equipment);
+      }
+      return false;
     }
 
     std::vector<openstudio::epmodel::ModelObject> ThermalZone_Impl::equipment() const {

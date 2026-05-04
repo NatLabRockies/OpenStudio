@@ -71,6 +71,7 @@ namespace epmodel {
                                                                      const openstudio::epmodel::HVACComponent& outletComp,
                                                                      openstudio::IddObjectType type) const override;
       std::vector<openstudio::epmodel::ModelObject> demandComponents(openstudio::IddObjectType type) const override;
+      std::vector<openstudio::IdfObject> remove() override;
       std::vector<openstudio::epmodel::ModelObject> oaComponents(openstudio::IddObjectType type) const;
       boost::optional<openstudio::epmodel::Node> outdoorAirNode() const;
       boost::optional<openstudio::epmodel::Node> reliefAirNode() const;
@@ -84,6 +85,7 @@ namespace epmodel {
       openstudio::epmodel::Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(openstudio::epmodel::Schedule& schedule);
       std::vector<openstudio::epmodel::ThermalZone> thermalZones() const;
+      std::vector<openstudio::epmodel::ModelObject> children() const override;
       // Schema Alignment Notes:
       // - Field Mapping: AirLoopHVAC::AvailabilityManagerListName stores a relationship target.
       // - API: preserve model-style availability manager list operations via AvailabilityManagerAssignmentList object API.
@@ -105,6 +107,7 @@ namespace epmodel {
       bool removeBranchForZone(openstudio::epmodel::ThermalZone& thermalZone);
       void syncControllerMechanicalVentilationZoneOutdoorAirEntries();
       void syncSetpointManagerMixedAirFanNodes();
+      void syncSupplyWaterCoilControllers();
 
       openstudio::epmodel::AirLoopHVACReturnPath airLoopHVACReturnPath() const;
       openstudio::epmodel::AirLoopHVACSupplyPath airLoopHVACSupplyPath() const;

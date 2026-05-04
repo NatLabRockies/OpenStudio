@@ -260,9 +260,10 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_AddToNode_RejectsMis
   AirLoopHVAC airLoop(model);
   ThermalZone zone(model);
   Node mismatchedMixerNode(model);
+  auto zoneAirNode = zone.zoneAirNode();
 
   ASSERT_TRUE(airLoop.zoneMixer().setInletModelObject(0u, mismatchedMixerNode));
-  EXPECT_FALSE(terminal.addToNode(zone.zoneAirNode()));
+  EXPECT_FALSE(terminal.addToNode(zoneAirNode));
   EXPECT_FALSE(terminal.inletModelObject());
   EXPECT_FALSE(terminal.outletModelObject());
   EXPECT_FALSE(terminal.secondaryAirInletNode());
@@ -295,6 +296,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_AddToNode_RejectsAlr
   ASSERT_TRUE(terminal.inletModelObject());
   ASSERT_TRUE(terminal.outletModelObject());
   ASSERT_TRUE(terminal.secondaryAirInletNode());
+  auto zoneAirNode = zone.zoneAirNode();
   const auto inletNodeHandle = terminal.inletModelObject()->handle();
   const auto outletNodeHandle = terminal.outletModelObject()->handle();
   const auto secondaryNodeHandle = terminal.secondaryAirInletNode()->handle();
@@ -302,7 +304,7 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_AddToNode_RejectsAlr
   const auto equipmentBefore = zone.equipment();
   ASSERT_EQ(1u, equipmentBefore.size());
 
-  EXPECT_FALSE(terminal.addToNode(zone.zoneAirNode()));
+  EXPECT_FALSE(terminal.addToNode(zoneAirNode));
   ASSERT_TRUE(terminal.inletModelObject());
   EXPECT_EQ(inletNodeHandle, terminal.inletModelObject()->handle());
   ASSERT_TRUE(terminal.outletModelObject());
@@ -507,6 +509,6 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctSeriesPIUReheat_RemoveFromLoop_Recov
   EXPECT_FALSE(zone.airLoopHVACTerminal());
   EXPECT_FALSE(terminal.airLoopHVAC());
 
-  const auto exhaustNodesAfter = zoneImpl->zoneHVACEquipmentConnections()->zoneAirExhaustNodes();
+  const auto exhaustNodesAfter = zone.getImpl<detail::ThermalZone_Impl>()->zoneHVACEquipmentConnections()->zoneAirExhaustNodes();
   EXPECT_EQ(std::ranges::find_if(exhaustNodesAfter, [&](const auto& node) { return node.handle() == secondaryNodeHandle; }), exhaustNodesAfter.end());
 }

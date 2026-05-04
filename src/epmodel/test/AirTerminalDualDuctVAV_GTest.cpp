@@ -178,14 +178,10 @@ TEST_F(EPModelFixture, AirTerminalDualDuctVAV_RemoveBranchForZone_WithAttachedTe
   ASSERT_EQ(1u, equipmentList.equipment().size());
   ASSERT_EQ(1u, connections->zoneAirInletNodes().size());
   ASSERT_EQ(1u, connections->zoneReturnAirNodes().size());
+  const auto terminalHandle = terminal.handle();
 
   EXPECT_TRUE(airLoop.removeBranchForZone(zone));
-  EXPECT_FALSE(terminal.airLoopHVAC());
-  EXPECT_FALSE(terminal.hotAirInletNode());
-  EXPECT_FALSE(terminal.coldAirInletNode());
-  EXPECT_FALSE(terminal.inletModelObject(0u));
-  EXPECT_FALSE(terminal.inletModelObject(1u));
-  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_FALSE(model.getObject(terminalHandle));
   EXPECT_TRUE(equipmentList.equipment().empty());
   EXPECT_TRUE(connections->zoneAirInletNodes().empty());
   EXPECT_TRUE(connections->zoneReturnAirNodes().empty());
@@ -203,14 +199,10 @@ TEST_F(EPModelFixture, AirTerminalDualDuctVAV_RemoveDirectDualDuctBranchClearsCo
   ASSERT_TRUE(terminal.hotAirInletNode());
   ASSERT_TRUE(terminal.coldAirInletNode());
   ASSERT_TRUE(terminal.outletModelObject());
+  const auto terminalHandle = terminal.handle();
 
   terminal.remove();
-  EXPECT_FALSE(terminal.airLoopHVAC());
-  EXPECT_FALSE(terminal.hotAirInletNode());
-  EXPECT_FALSE(terminal.coldAirInletNode());
-  EXPECT_FALSE(terminal.inletModelObject(0u));
-  EXPECT_FALSE(terminal.inletModelObject(1u));
-  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_FALSE(model.getObject(terminalHandle));
   EXPECT_EQ(0u, airLoop.demandComponents(AirTerminalDualDuctVAV::iddObjectType()).size());
   EXPECT_EQ(1u, airLoop.demandInletNodes().size());
 }
@@ -232,29 +224,26 @@ TEST_F(EPModelFixture, AirTerminalDualDuctVAV_RemoveClearsConnectivityAndSupport
   ASSERT_TRUE(terminal.outletModelObject());
   ASSERT_EQ(1u, connections->zoneAirInletNodes().size());
   ASSERT_EQ(1u, connections->zoneReturnAirNodes().size());
+  const auto terminalHandle = terminal.handle();
 
   terminal.remove();
-  EXPECT_FALSE(terminal.airLoopHVAC());
-  EXPECT_FALSE(terminal.hotAirInletNode());
-  EXPECT_FALSE(terminal.coldAirInletNode());
-  EXPECT_FALSE(terminal.inletModelObject(0u));
-  EXPECT_FALSE(terminal.inletModelObject(1u));
-  EXPECT_FALSE(terminal.outletModelObject());
+  EXPECT_FALSE(model.getObject(terminalHandle));
   EXPECT_TRUE(equipmentList.equipment().empty());
-  EXPECT_TRUE(connections->zoneAirInletNodes().empty());
-  EXPECT_TRUE(connections->zoneReturnAirNodes().empty());
   EXPECT_EQ(0u, airLoop.demandComponents(AirTerminalDualDuctVAV::iddObjectType()).size());
   EXPECT_EQ(1u, airLoop.demandInletNodes().size());
 
   ASSERT_TRUE(airLoop.removeBranchForZone(zone));
+  EXPECT_TRUE(connections->zoneAirInletNodes().empty());
+  EXPECT_TRUE(connections->zoneReturnAirNodes().empty());
   EXPECT_EQ(1u, airLoop.demandInletNodes().size());
 
   ThermalZone zone2(model);
-  ASSERT_TRUE(airLoop.addBranchForZone(zone2, terminal));
-  ASSERT_TRUE(terminal.airLoopHVAC());
-  ASSERT_TRUE(terminal.hotAirInletNode());
-  ASSERT_TRUE(terminal.coldAirInletNode());
-  EXPECT_EQ(airLoop.handle(), terminal.airLoopHVAC()->handle());
+  AirTerminalDualDuctVAV terminal2(model);
+  ASSERT_TRUE(airLoop.addBranchForZone(zone2, terminal2));
+  ASSERT_TRUE(terminal2.airLoopHVAC());
+  ASSERT_TRUE(terminal2.hotAirInletNode());
+  ASSERT_TRUE(terminal2.coldAirInletNode());
+  EXPECT_EQ(airLoop.handle(), terminal2.airLoopHVAC()->handle());
   EXPECT_EQ(2u, airLoop.demandInletNodes().size());
   EXPECT_EQ(1u, airLoop.demandComponents(AirTerminalDualDuctVAV::iddObjectType()).size());
 }
@@ -268,10 +257,9 @@ TEST_F(EPModelFixture, AirTerminalDualDuctVAV_RemoveClearsStaleZoneEquipmentWith
   ASSERT_TRUE(equipmentList.addEquipment(terminal.cast<ModelObject>()));
   ASSERT_EQ(1u, equipmentList.equipment().size());
   EXPECT_FALSE(terminal.airLoopHVAC());
+  const auto terminalHandle = terminal.handle();
 
   terminal.remove();
   EXPECT_TRUE(equipmentList.equipment().empty());
-  EXPECT_FALSE(terminal.airLoopHVAC());
-  EXPECT_FALSE(terminal.hotAirInletNode());
-  EXPECT_FALSE(terminal.coldAirInletNode());
+  EXPECT_FALSE(model.getObject(terminalHandle));
 }
