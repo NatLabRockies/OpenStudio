@@ -78,6 +78,8 @@ extern "C"
 namespace openstudio {
 namespace ruby {
 
+  void initEpModelRubyBindings();
+
   void initBasicRubyBindings() {
     rb_provide("openstudio");
     rb_provide("openstudio.so");
@@ -176,6 +178,7 @@ namespace ruby {
     Init_openstudioenergyplus();
     rb_provide("openstudioenergyplus");
     rb_provide("openstudioenergyplus.so");
+    initEpModelRubyBindings();
     Init_openstudioepjson();
     rb_provide("openstudioepjson");
     rb_provide("openstudioepjson.so");

@@ -26,8 +26,6 @@ namespace epmodel {
   class EPMODEL_API OutputControlResilienceSummaries : public ModelObject
   {
    public:
-    explicit OutputControlResilienceSummaries(const Model& model);
-
     virtual ~OutputControlResilienceSummaries() override = default;
     OutputControlResilienceSummaries(const OutputControlResilienceSummaries& other) = default;
     OutputControlResilienceSummaries(OutputControlResilienceSummaries&& other) = default;
@@ -56,6 +54,8 @@ namespace epmodel {
     //@}
 
    protected:
+    explicit OutputControlResilienceSummaries(const Model& model);
+
     using ImplType = detail::OutputControlResilienceSummaries_Impl;
 
     friend class Model;

@@ -152,7 +152,7 @@ namespace epmodel {
 
     friend class detail::RefrigerationCondenserEvaporativeCooled_Impl;
     friend class Model;
-    friend class IdfObject;
+    friend class openstudio::IdfObject;
     friend class openstudio::detail::IdfObject_Impl;
 
    private:

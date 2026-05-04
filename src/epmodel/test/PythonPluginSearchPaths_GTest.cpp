@@ -7,19 +7,20 @@
 
 #include "EPModelFixture.hpp"
 #include "../ResourceObject/PythonPluginSearchPaths.hpp"
+#include "../ResourceObject/PythonPluginSearchPaths_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, PythonPluginSearchPaths_DefaultConstructor) {
   Model model;
-  PythonPluginSearchPaths pythonPluginSearchPaths(model);
+  auto pythonPluginSearchPaths = model.getUniqueModelObject<PythonPluginSearchPaths>();
   EXPECT_EQ(PythonPluginSearchPaths::iddObjectType(), pythonPluginSearchPaths.iddObject().type());
   EXPECT_FALSE(pythonPluginSearchPaths.nameString().empty());
 }
 
 TEST_F(EPModelFixture, PythonPluginSearchPaths_ScalarAccessors_RoundTrip) {
   Model model;
-  PythonPluginSearchPaths searchPaths(model);
+  auto searchPaths = model.getUniqueModelObject<PythonPluginSearchPaths>();
 
   EXPECT_TRUE(searchPaths.setAddCurrentWorkingDirectoryToSearchPath(false));
   EXPECT_FALSE(searchPaths.addCurrentWorkingDirectoryToSearchPath());

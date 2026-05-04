@@ -44,7 +44,7 @@ class EPMODEL_API OutdoorAirMixer : public ModelObject
 
   friend class openstudio::IdfObject;
   friend class openstudio::detail::IdfObject_Impl;
-  friend class openstudio::epmodel::Model;
+  friend class Model;
 
   explicit OutdoorAirMixer(std::shared_ptr<detail::OutdoorAirMixer_Impl> impl);
 };

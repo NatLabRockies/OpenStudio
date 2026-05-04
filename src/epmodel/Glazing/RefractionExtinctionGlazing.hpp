@@ -88,6 +88,8 @@ namespace epmodel {
 
     friend class detail::RefractionExtinctionGlazing_Impl;
     friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
   };
 
 }  // namespace epmodel

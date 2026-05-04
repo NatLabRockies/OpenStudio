@@ -215,7 +215,7 @@ class EPMODEL_API SizingZone : public ModelObject
 
   friend class openstudio::IdfObject;
   friend class openstudio::detail::IdfObject_Impl;
-  friend class openstudio::epmodel::Model;
+  friend class Model;
 
   explicit SizingZone(std::shared_ptr<detail::SizingZone_Impl> impl);
 };

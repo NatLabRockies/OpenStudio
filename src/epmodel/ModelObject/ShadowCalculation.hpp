@@ -26,8 +26,6 @@ namespace epmodel {
   class EPMODEL_API ShadowCalculation : public ModelObject
   {
    public:
-    explicit ShadowCalculation(const Model& model);
-
     virtual ~ShadowCalculation() override = default;
     ShadowCalculation(const ShadowCalculation& other) = default;
     ShadowCalculation(ShadowCalculation&& other) = default;
@@ -92,6 +90,8 @@ namespace epmodel {
     bool setDisableSelfShadingFromShadingZoneGroupstoOtherZones(bool disableSelfShadingFromShadingZoneGroupstoOtherZones);
 
    protected:
+    explicit ShadowCalculation(const Model& model);
+
     using ImplType = detail::ShadowCalculation_Impl;
 
     friend class Model;

@@ -26,8 +26,6 @@ namespace epmodel {
   class EPMODEL_API OutputSchedules : public ModelObject
   {
    public:
-    explicit OutputSchedules(const Model& model);
-
     virtual ~OutputSchedules() override = default;
     OutputSchedules(const OutputSchedules& other) = default;
     OutputSchedules(OutputSchedules&& other) = default;
@@ -48,6 +46,8 @@ namespace epmodel {
     bool setKeyField(const std::string& keyField);
 
    protected:
+    explicit OutputSchedules(const Model& model);
+
     using ImplType = detail::OutputSchedules_Impl;
 
     friend class Model;

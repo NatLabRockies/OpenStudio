@@ -69,7 +69,7 @@ namespace epmodel {
         NewConstructorMap m_newMap;
       };
 
-      static const ModelObjectCreator modelObjectCreator;
+      static const ModelObjectCreator& modelObjectCreator();
 
       REGISTER_LOGGER("openstudio.epmodel.Model");
 

@@ -8,6 +8,7 @@
 #include "EPModelFixture.hpp"
 
 #include "../ModelObject/OutputControlResilienceSummaries.hpp"
+#include "../ModelObject/OutputControlResilienceSummaries_Impl.hpp"
 
 #include <algorithm>
 
@@ -15,7 +16,7 @@ using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, OutputControlResilienceSummaries_DefaultConstructor) {
   Model model;
-  OutputControlResilienceSummaries object(model);
+  auto object = model.getUniqueModelObject<OutputControlResilienceSummaries>();
 
   EXPECT_EQ(OutputControlResilienceSummaries::iddObjectType(), object.iddObject().type());
   EXPECT_EQ("Simplified", object.heatIndexAlgorithm());
@@ -23,7 +24,7 @@ TEST_F(EPModelFixture, OutputControlResilienceSummaries_DefaultConstructor) {
 
 TEST_F(EPModelFixture, OutputControlResilienceSummaries_ScalarAccessors_RoundTrip) {
   Model model;
-  OutputControlResilienceSummaries object(model);
+  auto object = model.getUniqueModelObject<OutputControlResilienceSummaries>();
 
   const auto values = OutputControlResilienceSummaries::heatIndexAlgorithmValues();
   EXPECT_NE(values.end(), std::find(values.begin(), values.end(), "Simplified"));

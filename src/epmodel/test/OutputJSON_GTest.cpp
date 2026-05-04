@@ -8,12 +8,13 @@
 #include "EPModelFixture.hpp"
 
 #include "../ModelObject/OutputJSON.hpp"
+#include "../ModelObject/OutputJSON_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, OutputJSON_DefaultConstructor) {
   Model model;
-  OutputJSON outputJSON(model);
+  auto outputJSON = model.getUniqueModelObject<OutputJSON>();
 
   EXPECT_EQ(OutputJSON::iddObjectType(), outputJSON.iddObject().type());
   EXPECT_EQ("TimeSeriesAndTabular", outputJSON.optionType());
@@ -24,7 +25,7 @@ TEST_F(EPModelFixture, OutputJSON_DefaultConstructor) {
 
 TEST_F(EPModelFixture, OutputJSON_ScalarAccessors_RoundTrip) {
   Model model;
-  OutputJSON outputJSON(model);
+  auto outputJSON = model.getUniqueModelObject<OutputJSON>();
 
   EXPECT_FALSE(OutputJSON::optionTypeValues().empty());
 

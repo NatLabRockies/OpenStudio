@@ -7,6 +7,7 @@
 
 #include "EPModelFixture.hpp"
 #include "../ParentObject/Site.hpp"
+#include "../ParentObject/Site_Impl.hpp"
 
 #include <algorithm>
 
@@ -14,13 +15,13 @@ using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, Site_DefaultConstructor) {
   Model model;
-  Site site(model);
+  auto site = model.getUniqueModelObject<Site>();
   EXPECT_EQ(Site::iddObjectType(), site.iddObject().type());
 }
 
 TEST_F(EPModelFixture, Site_ScalarAccessors_RoundTrip) {
   Model model;
-  Site site(model);
+  auto site = model.getUniqueModelObject<Site>();
 
   const double defaultLatitude = site.latitude();
   EXPECT_TRUE(site.isLatitudeDefaulted());

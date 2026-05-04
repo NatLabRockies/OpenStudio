@@ -145,11 +145,11 @@ boost::optional<openstudio::epmodel::Building> optionalBuildingForSite(const ope
   return boost::none;
 }
 
-openstudio::epmodel::Building ensureBuildingForSite(const openstudio::epmodel::Model& model) {
+openstudio::epmodel::Building ensureBuildingForSite(openstudio::epmodel::Model model) {
   if (auto existing = optionalBuildingForSite(model)) {
     return *existing;
   }
-  return openstudio::epmodel::Building(model);
+  return model.getUniqueModelObject<Building>();
 }
 
 std::string defaultBuildingTerrain() {

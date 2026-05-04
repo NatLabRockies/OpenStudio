@@ -25,8 +25,6 @@ class SimulationControl_Impl;
 class EPMODEL_API SimulationControl : public ParentObject
 {
  public:
-  explicit SimulationControl(const Model& model);
-
   virtual ~SimulationControl() override = default;
   SimulationControl(const SimulationControl& other) = default;
   SimulationControl(SimulationControl&& other) = default;
@@ -86,6 +84,8 @@ class EPMODEL_API SimulationControl : public ParentObject
   void resetMaximumNumberofHVACSizingSimulationPasses();
 
  protected:
+  explicit SimulationControl(const Model& model);
+
   using ImplType = detail::SimulationControl_Impl;
 
   friend class Model;

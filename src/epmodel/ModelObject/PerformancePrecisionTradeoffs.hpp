@@ -26,8 +26,6 @@ namespace epmodel {
   class EPMODEL_API PerformancePrecisionTradeoffs : public ModelObject
   {
    public:
-    explicit PerformancePrecisionTradeoffs(const Model& model);
-
     virtual ~PerformancePrecisionTradeoffs() override = default;
     PerformancePrecisionTradeoffs(const PerformancePrecisionTradeoffs& other) = default;
     PerformancePrecisionTradeoffs(PerformancePrecisionTradeoffs&& other) = default;
@@ -78,6 +76,8 @@ namespace epmodel {
     void resetUseRepresentativeSurfacesforCalculations();
 
    protected:
+    explicit PerformancePrecisionTradeoffs(const Model& model);
+
     using ImplType = detail::PerformancePrecisionTradeoffs_Impl;
 
     friend class Model;

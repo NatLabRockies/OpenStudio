@@ -23,8 +23,6 @@ namespace epmodel {
   class EPMODEL_API InsideSurfaceConvectionAlgorithm : public ModelObject
   {
    public:
-    explicit InsideSurfaceConvectionAlgorithm(const Model& model);
-
     virtual ~InsideSurfaceConvectionAlgorithm() override = default;
     InsideSurfaceConvectionAlgorithm(const InsideSurfaceConvectionAlgorithm& other) = default;
     InsideSurfaceConvectionAlgorithm(InsideSurfaceConvectionAlgorithm&& other) = default;
@@ -44,6 +42,8 @@ namespace epmodel {
     void resetAlgorithm();
 
    protected:
+    explicit InsideSurfaceConvectionAlgorithm(const Model& model);
+
     using ImplType = detail::InsideSurfaceConvectionAlgorithm_Impl;
 
     friend class Model;

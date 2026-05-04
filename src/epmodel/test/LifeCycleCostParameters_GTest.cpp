@@ -7,6 +7,7 @@
 
 #include "EPModelFixture.hpp"
 #include "../ParentObject/LifeCycleCostParameters.hpp"
+#include "../ParentObject/LifeCycleCostParameters_Impl.hpp"
 
 #include <utilities/time/Date.hpp>
 
@@ -14,13 +15,13 @@ using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, LifeCycleCostParameters_DefaultConstructor) {
   Model model;
-  LifeCycleCostParameters lifeCycleCostParameters(model);
+  auto lifeCycleCostParameters = model.getUniqueModelObject<LifeCycleCostParameters>();
   EXPECT_EQ(LifeCycleCostParameters::iddObjectType(), lifeCycleCostParameters.iddObject().type());
 }
 
 TEST_F(EPModelFixture, LifeCycleCostParameters_ScalarAccessors_RoundTrip) {
   Model model;
-  LifeCycleCostParameters lcc(model);
+  auto lcc = model.getUniqueModelObject<LifeCycleCostParameters>();
 
   EXPECT_TRUE(lcc.setDiscountingConvention("MidYear"));
   EXPECT_EQ("MidYear", lcc.discountingConvention());

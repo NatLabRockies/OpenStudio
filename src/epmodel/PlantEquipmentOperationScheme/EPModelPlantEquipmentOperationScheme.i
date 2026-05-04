@@ -1,0 +1,27 @@
+#ifndef EPMODEL_PlantEquipmentOperationScheme_I
+#define EPMODEL_PlantEquipmentOperationScheme_I
+
+#ifdef SWIGPYTHON
+  %module openstudioepmodelplantequipmentoperationscheme
+#endif
+
+%include <epmodel/EPModel_Common_Include.i>
+%import <epmodel/EPModel.i>
+
+EPMODELOBJECT_WRAP(PlantEquipmentOperationScheme, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationScheme.hpp>, 0, 0)
+EPMODELOBJECT_WRAP(PlantEquipmentOperationChillerHeaterChangeover, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationChillerHeaterChangeover.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(PlantEquipmentOperationComponentSetpoint, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationComponentSetpoint.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(PlantEquipmentOperationThermalEnergyStorage, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationThermalEnergyStorage.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(PlantEquipmentOperationUncontrolled, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationUncontrolled.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(PlantEquipmentOperationUserDefined, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationUserDefined.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(PlantEquipmentOperationCoolingLoad, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationCoolingLoad.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(PlantEquipmentOperationHeatingLoad, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationHeatingLoad.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(PlantEquipmentOperationOutdoorDewpoint, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorDewpoint.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(PlantEquipmentOperationOutdoorDewpointDifference, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorDewpointDifference.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(PlantEquipmentOperationOutdoorDryBulbDifference, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorDryBulbDifference.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(PlantEquipmentOperationOutdoorWetBulbDifference, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorWetBulbDifference.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(PlantEquipmentOperationOutdoorDryBulb, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorDryBulb.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(PlantEquipmentOperationOutdoorRelativeHumidity, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorRelativeHumidity.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(PlantEquipmentOperationOutdoorWetBulb, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorWetBulb.hpp>, 0, 1)
+
+#endif

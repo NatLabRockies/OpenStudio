@@ -25,8 +25,6 @@ namespace epmodel {
   class EPMODEL_API ZoneAirHeatBalanceAlgorithm : public ModelObject
   {
    public:
-    explicit ZoneAirHeatBalanceAlgorithm(const Model& model);
-
     virtual ~ZoneAirHeatBalanceAlgorithm() override = default;
     ZoneAirHeatBalanceAlgorithm(const ZoneAirHeatBalanceAlgorithm& other) = default;
     ZoneAirHeatBalanceAlgorithm(ZoneAirHeatBalanceAlgorithm&& other) = default;
@@ -58,6 +56,8 @@ namespace epmodel {
     void resetDoSpaceHeatBalanceforSimulation();
 
    protected:
+    explicit ZoneAirHeatBalanceAlgorithm(const Model& model);
+
     using ImplType = detail::ZoneAirHeatBalanceAlgorithm_Impl;
 
     friend class Model;

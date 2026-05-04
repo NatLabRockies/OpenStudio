@@ -121,7 +121,7 @@ namespace epmodel {
 
     friend class openstudio::IdfObject;
     friend class openstudio::detail::IdfObject_Impl;
-    friend class openstudio::epmodel::Model;
+    friend class Model;
 
     explicit AirLoopHVAC(std::shared_ptr<detail::AirLoopHVAC_Impl> impl);
 

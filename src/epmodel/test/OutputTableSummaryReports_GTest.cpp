@@ -7,6 +7,7 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/OutputTableSummaryReports.hpp"
+#include "../ModelObject/OutputTableSummaryReports_Impl.hpp"
 
 #include <utilities/idd/Output_Table_SummaryReports_FieldEnums.hxx>
 #include <utilities/idf/IdfExtensibleGroup.hpp>
@@ -15,13 +16,13 @@ using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, OutputTableSummaryReports_DefaultConstructor) {
   Model model;
-  OutputTableSummaryReports outputTableSummaryReports(model);
+  auto outputTableSummaryReports = model.getUniqueModelObject<OutputTableSummaryReports>();
   EXPECT_EQ(OutputTableSummaryReports::iddObjectType(), outputTableSummaryReports.iddObject().type());
 }
 
 TEST_F(EPModelFixture, OutputTableSummaryReports_ScalarAccessors_RoundTrip) {
   Model model;
-  OutputTableSummaryReports outputTableSummaryReports(model);
+  auto outputTableSummaryReports = model.getUniqueModelObject<OutputTableSummaryReports>();
 
   auto eg = outputTableSummaryReports.pushExtensibleGroup();
   ASSERT_TRUE(eg.setString(openstudio::Output_Table_SummaryReportsExtensibleFields::ReportName, "AllSummary"));

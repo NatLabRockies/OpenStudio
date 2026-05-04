@@ -329,7 +329,7 @@ namespace epmodel {
 
     friend class openstudio::IdfObject;
     friend class openstudio::detail::IdfObject_Impl;
-    friend class openstudio::epmodel::Model;
+    friend class Model;
 
     explicit ThermalZone(std::shared_ptr<detail::ThermalZone_Impl> impl);
   };

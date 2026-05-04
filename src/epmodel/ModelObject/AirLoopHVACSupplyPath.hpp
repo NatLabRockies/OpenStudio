@@ -50,7 +50,7 @@ class EPMODEL_API AirLoopHVACSupplyPath : public ModelObject
 
   friend class openstudio::IdfObject;
   friend class openstudio::detail::IdfObject_Impl;
-  friend class openstudio::epmodel::Model;
+  friend class Model;
 
   explicit AirLoopHVACSupplyPath(std::shared_ptr<detail::AirLoopHVACSupplyPath_Impl> impl);
 };

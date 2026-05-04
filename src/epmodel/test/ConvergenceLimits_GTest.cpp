@@ -7,12 +7,13 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/ConvergenceLimits.hpp"
+#include "../ModelObject/ConvergenceLimits_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, ConvergenceLimits_DefaultConstructor) {
   Model model;
-  ConvergenceLimits convergenceLimits(model);
+  auto convergenceLimits = model.getUniqueModelObject<ConvergenceLimits>();
   EXPECT_EQ(ConvergenceLimits::iddObjectType(), convergenceLimits.iddObject().type());
 
   ASSERT_TRUE(convergenceLimits.minimumSystemTimestep());
@@ -21,7 +22,7 @@ TEST_F(EPModelFixture, ConvergenceLimits_DefaultConstructor) {
 
 TEST_F(EPModelFixture, ConvergenceLimits_ScalarAccessors_RoundTrip) {
   Model model;
-  ConvergenceLimits convergenceLimits(model);
+  auto convergenceLimits = model.getUniqueModelObject<ConvergenceLimits>();
 
   EXPECT_TRUE(convergenceLimits.setMinimumSystemTimestep(2));
   ASSERT_TRUE(convergenceLimits.minimumSystemTimestep());

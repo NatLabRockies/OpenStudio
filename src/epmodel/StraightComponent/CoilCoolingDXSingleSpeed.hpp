@@ -156,6 +156,8 @@ class EPMODEL_API CoilCoolingDXSingleSpeed : public StraightComponent
   using ImplType = detail::CoilCoolingDXSingleSpeed_Impl;
 
   friend class Model;
+  friend class openstudio::IdfObject;
+  friend class openstudio::detail::IdfObject_Impl;
 
   explicit CoilCoolingDXSingleSpeed(std::shared_ptr<detail::CoilCoolingDXSingleSpeed_Impl> impl);
 };

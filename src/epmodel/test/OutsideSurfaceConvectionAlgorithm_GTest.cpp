@@ -7,18 +7,19 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/OutsideSurfaceConvectionAlgorithm.hpp"
+#include "../ModelObject/OutsideSurfaceConvectionAlgorithm_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, OutsideSurfaceConvectionAlgorithm_DefaultConstructor) {
   Model model;
-  OutsideSurfaceConvectionAlgorithm object(model);
+  auto object = model.getUniqueModelObject<OutsideSurfaceConvectionAlgorithm>();
   EXPECT_EQ(OutsideSurfaceConvectionAlgorithm::iddObjectType(), object.iddObject().type());
 }
 
 TEST_F(EPModelFixture, OutsideSurfaceConvectionAlgorithm_ScalarAccessors_RoundTrip) {
   Model model;
-  OutsideSurfaceConvectionAlgorithm object(model);
+  auto object = model.getUniqueModelObject<OutsideSurfaceConvectionAlgorithm>();
 
   EXPECT_FALSE(object.isAlgorithmDefaulted());
   EXPECT_EQ("DOE-2", object.algorithm());

@@ -23,8 +23,6 @@ namespace epmodel {
   class EPMODEL_API SiteGroundReflectance : public ModelObject
   {
    public:
-    explicit SiteGroundReflectance(const Model& model);
-
     virtual ~SiteGroundReflectance() override = default;
     SiteGroundReflectance(const SiteGroundReflectance& other) = default;
     SiteGroundReflectance(SiteGroundReflectance&& other) = default;
@@ -97,6 +95,8 @@ namespace epmodel {
     void resetDecemberGroundReflectance();
 
    protected:
+    explicit SiteGroundReflectance(const Model& model);
+
     using ImplType = detail::SiteGroundReflectance_Impl;
 
     friend class Model;

@@ -7,12 +7,13 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/ZoneAirMassFlowConservation.hpp"
+#include "../ModelObject/ZoneAirMassFlowConservation_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, ZoneAirMassFlowConservation_DefaultConstructor) {
   Model model;
-  ZoneAirMassFlowConservation zamfc(model);
+  auto zamfc = model.getUniqueModelObject<ZoneAirMassFlowConservation>();
 
   EXPECT_EQ(ZoneAirMassFlowConservation::iddObjectType(), zamfc.iddObject().type());
   EXPECT_FALSE(zamfc.handle().isNull());
@@ -20,7 +21,7 @@ TEST_F(EPModelFixture, ZoneAirMassFlowConservation_DefaultConstructor) {
 
 TEST_F(EPModelFixture, ZoneAirMassFlowConservation_ScalarAccessors_RoundTrip) {
   Model model;
-  ZoneAirMassFlowConservation zamfc(model);
+  auto zamfc = model.getUniqueModelObject<ZoneAirMassFlowConservation>();
 
   EXPECT_TRUE(zamfc.setAdjustZoneMixingandReturnForAirMassFlowBalance("AdjustReturnThenMixing"));
   EXPECT_FALSE(zamfc.isAdjustZoneMixingandReturnForAirMassFlowBalanceDefaulted());

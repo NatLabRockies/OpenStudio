@@ -7,18 +7,19 @@
 
 #include "EPModelFixture.hpp"
 #include "../ParentObject/AirflowNetworkSimulationControl.hpp"
+#include "../ParentObject/AirflowNetworkSimulationControl_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, AirflowNetworkSimulationControl_DefaultConstructor) {
   Model model;
-  AirflowNetworkSimulationControl simulationControl(model);
+  auto simulationControl = model.getUniqueModelObject<AirflowNetworkSimulationControl>();
   EXPECT_EQ(AirflowNetworkSimulationControl::iddObjectType(), simulationControl.iddObject().type());
 }
 
 TEST_F(EPModelFixture, AirflowNetworkSimulationControl_ScalarAccessors_RoundTrip) {
   Model model;
-  AirflowNetworkSimulationControl simulationControl(model);
+  auto simulationControl = model.getUniqueModelObject<AirflowNetworkSimulationControl>();
 
   EXPECT_FALSE(AirflowNetworkSimulationControl::airflowNetworkControlValues().empty());
   EXPECT_EQ("NoMultizoneOrDistribution", simulationControl.airflowNetworkControl());

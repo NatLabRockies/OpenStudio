@@ -25,8 +25,6 @@ namespace epmodel {
   class EPMODEL_API PythonPluginSearchPaths : public ModelObject
   {
    public:
-    explicit PythonPluginSearchPaths(const Model& model);
-
     virtual ~PythonPluginSearchPaths() override = default;
     PythonPluginSearchPaths(const PythonPluginSearchPaths& other) = default;
     PythonPluginSearchPaths(PythonPluginSearchPaths&& other) = default;
@@ -60,6 +58,8 @@ namespace epmodel {
     void resetAddEpinEnvironmentVariableToSearchPath();
 
    protected:
+    explicit PythonPluginSearchPaths(const Model& model);
+
     using ImplType = detail::PythonPluginSearchPaths_Impl;
 
     friend class Model;

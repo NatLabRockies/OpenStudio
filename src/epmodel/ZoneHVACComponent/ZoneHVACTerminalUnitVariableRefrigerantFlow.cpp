@@ -191,6 +191,10 @@ namespace epmodel {
     impl(this)->autosizeSupplyAirFlowRateDuringCoolingOperation();
   }
 
+  boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow::autosizedSupplyAirFlowRateDuringCoolingOperation() const {
+    return impl(this)->autosizedSupplyAirFlowRateDuringCoolingOperation();
+  }
+
   boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow::supplyAirFlowRateWhenNoCoolingisNeeded() const {
     return impl(this)->supplyAirFlowRateWhenNoCoolingisNeeded();
   }
@@ -211,6 +215,10 @@ namespace epmodel {
     impl(this)->autosizeSupplyAirFlowRateWhenNoCoolingisNeeded();
   }
 
+  boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow::autosizedSupplyAirFlowRateWhenNoCoolingisNeeded() const {
+    return impl(this)->autosizedSupplyAirFlowRateWhenNoCoolingisNeeded();
+  }
+
   boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow::supplyAirFlowRateDuringHeatingOperation() const {
     return impl(this)->supplyAirFlowRateDuringHeatingOperation();
   }
@@ -225,6 +233,10 @@ namespace epmodel {
 
   void ZoneHVACTerminalUnitVariableRefrigerantFlow::autosizeSupplyAirFlowRateDuringHeatingOperation() {
     impl(this)->autosizeSupplyAirFlowRateDuringHeatingOperation();
+  }
+
+  boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow::autosizedSupplyAirFlowRateDuringHeatingOperation() const {
+    return impl(this)->autosizedSupplyAirFlowRateDuringHeatingOperation();
   }
 
   boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow::supplyAirFlowRateWhenNoHeatingisNeeded() const {
@@ -247,6 +259,10 @@ namespace epmodel {
     impl(this)->autosizeSupplyAirFlowRateWhenNoHeatingisNeeded();
   }
 
+  boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow::autosizedSupplyAirFlowRateWhenNoHeatingisNeeded() const {
+    return impl(this)->autosizedSupplyAirFlowRateWhenNoHeatingisNeeded();
+  }
+
   boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow::outdoorAirFlowRateDuringCoolingOperation() const {
     return impl(this)->outdoorAirFlowRateDuringCoolingOperation();
   }
@@ -263,6 +279,10 @@ namespace epmodel {
     impl(this)->autosizeOutdoorAirFlowRateDuringCoolingOperation();
   }
 
+  boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow::autosizedOutdoorAirFlowRateDuringCoolingOperation() const {
+    return impl(this)->autosizedOutdoorAirFlowRateDuringCoolingOperation();
+  }
+
   boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow::outdoorAirFlowRateDuringHeatingOperation() const {
     return impl(this)->outdoorAirFlowRateDuringHeatingOperation();
   }
@@ -277,6 +297,10 @@ namespace epmodel {
 
   void ZoneHVACTerminalUnitVariableRefrigerantFlow::autosizeOutdoorAirFlowRateDuringHeatingOperation() {
     impl(this)->autosizeOutdoorAirFlowRateDuringHeatingOperation();
+  }
+
+  boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow::autosizedOutdoorAirFlowRateDuringHeatingOperation() const {
+    return impl(this)->autosizedOutdoorAirFlowRateDuringHeatingOperation();
   }
 
   boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow::outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
@@ -298,6 +322,10 @@ namespace epmodel {
 
   void ZoneHVACTerminalUnitVariableRefrigerantFlow::autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() {
     impl(this)->autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
+  }
+
+  boost::optional<double> ZoneHVACTerminalUnitVariableRefrigerantFlow::autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const {
+    return impl(this)->autosizedOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
   }
 
   double ZoneHVACTerminalUnitVariableRefrigerantFlow::zoneTerminalUnitOnParasiticElectricEnergyUse() const {

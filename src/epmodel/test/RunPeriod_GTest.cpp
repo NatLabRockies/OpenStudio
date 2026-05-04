@@ -7,20 +7,22 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/RunPeriodControlDaylightSavingTime.hpp"
+#include "../ModelObject/RunPeriodControlDaylightSavingTime_Impl.hpp"
 #include "../ModelObject/RunPeriodControlSpecialDays.hpp"
 #include "../ParentObject/RunPeriod.hpp"
+#include "../ParentObject/RunPeriod_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, RunPeriod_DefaultConstructor) {
   Model model;
-  RunPeriod runPeriod(model);
+  auto runPeriod = model.getUniqueModelObject<RunPeriod>();
   EXPECT_EQ(RunPeriod::iddObjectType(), runPeriod.iddObject().type());
 }
 
 TEST_F(EPModelFixture, RunPeriod_ScalarAccessors_RoundTrip) {
   Model model;
-  RunPeriod runPeriod(model);
+  auto runPeriod = model.getUniqueModelObject<RunPeriod>();
 
   EXPECT_EQ(1, runPeriod.getBeginMonth());
   EXPECT_EQ(1, runPeriod.getBeginDayOfMonth());
@@ -62,13 +64,13 @@ TEST_F(EPModelFixture, RunPeriod_ScalarAccessors_RoundTrip) {
 
 TEST_F(EPModelFixture, RunPeriodControlDaylightSavingTime_DefaultConstructor) {
   Model model;
-  RunPeriodControlDaylightSavingTime runPeriodControlDaylightSavingTime(model);
+  auto runPeriodControlDaylightSavingTime = model.getUniqueModelObject<RunPeriodControlDaylightSavingTime>();
   EXPECT_EQ(RunPeriodControlDaylightSavingTime::iddObjectType(), runPeriodControlDaylightSavingTime.iddObject().type());
 }
 
 TEST_F(EPModelFixture, RunPeriodControlDaylightSavingTime_ScalarAccessors_RoundTrip) {
   Model model;
-  RunPeriodControlDaylightSavingTime runPeriodControlDaylightSavingTime(model);
+  auto runPeriodControlDaylightSavingTime = model.getUniqueModelObject<RunPeriodControlDaylightSavingTime>();
 
   EXPECT_EQ("2nd Sunday in March", runPeriodControlDaylightSavingTime.startDate());
   EXPECT_EQ("1st Sunday in November", runPeriodControlDaylightSavingTime.endDate());

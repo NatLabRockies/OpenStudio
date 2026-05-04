@@ -9,18 +9,19 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/ShadowCalculation.hpp"
+#include "../ModelObject/ShadowCalculation_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, ShadowCalculation_DefaultConstructor) {
   Model model;
-  ShadowCalculation shadowCalculation(model);
+  auto shadowCalculation = model.getUniqueModelObject<ShadowCalculation>();
   EXPECT_EQ(ShadowCalculation::iddObjectType(), shadowCalculation.iddObject().type());
 }
 
 TEST_F(EPModelFixture, ShadowCalculation_ScalarAccessors_RoundTrip) {
   Model model;
-  ShadowCalculation shadowCalculation(model);
+  auto shadowCalculation = model.getUniqueModelObject<ShadowCalculation>();
 
   EXPECT_EQ("PolygonClipping", shadowCalculation.shadingCalculationMethod());
   EXPECT_EQ("Periodic", shadowCalculation.shadingCalculationUpdateFrequencyMethod());

@@ -173,6 +173,8 @@ namespace epmodel {
     using ImplType = detail::CoolingTowerVariableSpeed_Impl;
 
     friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
     explicit CoolingTowerVariableSpeed(std::shared_ptr<detail::CoolingTowerVariableSpeed_Impl> impl);
   };

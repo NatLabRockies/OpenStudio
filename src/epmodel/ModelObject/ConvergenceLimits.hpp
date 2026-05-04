@@ -25,8 +25,6 @@ namespace epmodel {
   class EPMODEL_API ConvergenceLimits : public ModelObject
   {
    public:
-    explicit ConvergenceLimits(const Model& model);
-
     virtual ~ConvergenceLimits() override = default;
     ConvergenceLimits(const ConvergenceLimits& other) = default;
     ConvergenceLimits(ConvergenceLimits&& other) = default;
@@ -61,6 +59,8 @@ namespace epmodel {
     void resetMaximumPlantIterations();
 
    protected:
+    explicit ConvergenceLimits(const Model& model);
+
     using ImplType = detail::ConvergenceLimits_Impl;
 
     friend class Model;

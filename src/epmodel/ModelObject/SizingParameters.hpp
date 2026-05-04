@@ -25,8 +25,6 @@ namespace epmodel {
   class EPMODEL_API SizingParameters : public ModelObject
   {
    public:
-    explicit SizingParameters(const Model& model);
-
     virtual ~SizingParameters() override = default;
     SizingParameters(const SizingParameters& other) = default;
     SizingParameters(SizingParameters&& other) = default;
@@ -56,6 +54,8 @@ namespace epmodel {
     void resetTimestepsinAveragingWindow();
 
    protected:
+    explicit SizingParameters(const Model& model);
+
     using ImplType = detail::SizingParameters_Impl;
 
     friend class Model;

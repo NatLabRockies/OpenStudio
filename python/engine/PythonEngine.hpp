@@ -9,6 +9,8 @@
 #include <ScriptEngine.hpp>
 #include <ScriptEngineAPI.hpp>
 
+#include <string>
+
 #ifndef PyObject_HEAD
 struct _object;
 using PyObject = _object;
@@ -52,7 +54,13 @@ class PythonEngine final : public ScriptEngine
   void pyimport(const std::string& importName, const std::string& includePath);
 
  private:
-  wchar_t* program;
+  // CPython's legacy initialization setters borrow these buffers. They must stay
+  // alive until after Py_FinalizeEx returns; freeing a Py_DecodeLocale buffer in
+  // the destructor after handing it to Py_SetProgramName corrupted the Python
+  // debug allocator during shutdown.
+  std::wstring m_programName;
+  std::wstring m_pythonHome;
+  std::wstring m_pythonPath;
   PyObject* m_globalDict;
 };
 

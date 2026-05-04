@@ -130,10 +130,8 @@ namespace epmodel {
     bool setExteriorVisibleReflectance(double value);
 
     boost::optional<double> interiorVisibleAbsorptance() const;
-    bool setInteriorVisibleAbsorptance(double value);
 
     boost::optional<double> exteriorVisibleAbsorptance() const;
-    bool setExteriorVisibleAbsorptance(double value);
 
    protected:
     using ImplType = detail::StandardGlazing_Impl;

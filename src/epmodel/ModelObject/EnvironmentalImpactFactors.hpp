@@ -26,8 +26,6 @@ namespace epmodel {
   class EPMODEL_API EnvironmentalImpactFactors : public ModelObject
   {
    public:
-    explicit EnvironmentalImpactFactors(const Model& model);
-
     virtual ~EnvironmentalImpactFactors() override = default;
     EnvironmentalImpactFactors(const EnvironmentalImpactFactors& other) = default;
     EnvironmentalImpactFactors(EnvironmentalImpactFactors&& other) = default;
@@ -65,6 +63,8 @@ namespace epmodel {
     bool setTotalCarbonEquivalentEmissionFactorFromCO2(double totalCarbonEquivalentEmissionFactorFromCO2);
 
    protected:
+    explicit EnvironmentalImpactFactors(const Model& model);
+
     using ImplType = detail::EnvironmentalImpactFactors_Impl;
 
     friend class Model;

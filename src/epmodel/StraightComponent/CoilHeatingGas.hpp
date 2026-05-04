@@ -87,6 +87,8 @@ namespace epmodel {
     using ImplType = detail::CoilHeatingGas_Impl;
 
     friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
     explicit CoilHeatingGas(std::shared_ptr<detail::CoilHeatingGas_Impl> impl);
   };

@@ -72,10 +72,8 @@ namespace epmodel {
     bool setThermalTransmittance(double thermalTransmittance);
 
     double solarAbsorptance() const;
-    bool setSolarAbsorptance(double solarAbsorptance);
 
     double visibleAbsorptance() const;
-    bool setVisibleAbsorptance(double visibleAbsorptance);
 
     double thickness() const;
     bool setThickness(double thickness);

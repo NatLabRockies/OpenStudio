@@ -7,12 +7,13 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/SiteWaterMainsTemperature.hpp"
+#include "../ModelObject/SiteWaterMainsTemperature_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, SiteWaterMainsTemperature_DefaultConstructor) {
   Model model;
-  SiteWaterMainsTemperature object(model);
+  auto object = model.getUniqueModelObject<SiteWaterMainsTemperature>();
   EXPECT_EQ(SiteWaterMainsTemperature::iddObjectType(), object.iddObject().type());
   EXPECT_EQ("CorrelationFromWeatherFile", object.calculationMethod());
   EXPECT_DOUBLE_EQ(1.0, object.temperatureMultiplier());
@@ -21,7 +22,7 @@ TEST_F(EPModelFixture, SiteWaterMainsTemperature_DefaultConstructor) {
 
 TEST_F(EPModelFixture, SiteWaterMainsTemperature_ScalarAccessors_RoundTrip) {
   Model model;
-  SiteWaterMainsTemperature object(model);
+  auto object = model.getUniqueModelObject<SiteWaterMainsTemperature>();
 
   const auto calculationMethodValues = SiteWaterMainsTemperature::calculationMethodValues();
   ASSERT_FALSE(calculationMethodValues.empty());

@@ -23,8 +23,6 @@ class SiteGroundTemperatureFCfactorMethod_Impl;
 class EPMODEL_API SiteGroundTemperatureFCfactorMethod : public ModelObject
 {
  public:
-  explicit SiteGroundTemperatureFCfactorMethod(const Model& model);
-
   virtual ~SiteGroundTemperatureFCfactorMethod() override = default;
   SiteGroundTemperatureFCfactorMethod(const SiteGroundTemperatureFCfactorMethod& other) = default;
   SiteGroundTemperatureFCfactorMethod(SiteGroundTemperatureFCfactorMethod&& other) = default;
@@ -99,6 +97,8 @@ class EPMODEL_API SiteGroundTemperatureFCfactorMethod : public ModelObject
   void resetDecemberGroundTemperature();
 
  protected:
+  explicit SiteGroundTemperatureFCfactorMethod(const Model& model);
+
   using ImplType = detail::SiteGroundTemperatureFCfactorMethod_Impl;
 
   friend class Model;

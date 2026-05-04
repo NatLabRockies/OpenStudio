@@ -7,6 +7,7 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/ZoneAirHeatBalanceAlgorithm.hpp"
+#include "../ModelObject/ZoneAirHeatBalanceAlgorithm_Impl.hpp"
 
 #include <algorithm>
 #include <string>
@@ -15,7 +16,7 @@ using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, ZoneAirHeatBalanceAlgorithm_DefaultConstructor) {
   Model model;
-  ZoneAirHeatBalanceAlgorithm algorithm(model);
+  auto algorithm = model.getUniqueModelObject<ZoneAirHeatBalanceAlgorithm>();
 
   EXPECT_EQ(ZoneAirHeatBalanceAlgorithm::iddObjectType(), algorithm.iddObject().type());
   EXPECT_FALSE(algorithm.algorithm().empty());
@@ -28,7 +29,7 @@ TEST_F(EPModelFixture, ZoneAirHeatBalanceAlgorithm_DefaultConstructor) {
 
 TEST_F(EPModelFixture, ZoneAirHeatBalanceAlgorithm_ScalarAccessors_RoundTrip) {
   Model model;
-  ZoneAirHeatBalanceAlgorithm algorithm(model);
+  auto algorithm = model.getUniqueModelObject<ZoneAirHeatBalanceAlgorithm>();
 
   const auto initialAlgorithm = algorithm.algorithm();
   const auto validValues = ZoneAirHeatBalanceAlgorithm::validAlgorithmValues();

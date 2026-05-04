@@ -8,19 +8,20 @@
 #include "EPModelFixture.hpp"
 
 #include "../ModelObject/OutputControlReportingTolerances.hpp"
+#include "../ModelObject/OutputControlReportingTolerances_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, OutputControlReportingTolerances_DefaultConstructor) {
   Model model;
-  OutputControlReportingTolerances object(model);
+  auto object = model.getUniqueModelObject<OutputControlReportingTolerances>();
 
   EXPECT_EQ(OutputControlReportingTolerances::iddObjectType(), object.iddObject().type());
 }
 
 TEST_F(EPModelFixture, OutputControlReportingTolerances_ScalarAccessors_RoundTrip) {
   Model model;
-  OutputControlReportingTolerances object(model);
+  auto object = model.getUniqueModelObject<OutputControlReportingTolerances>();
 
   EXPECT_TRUE(object.setToleranceforTimeHeatingSetpointNotMet(1.16));
   EXPECT_FALSE(object.isToleranceforTimeHeatingSetpointNotMetDefaulted());
