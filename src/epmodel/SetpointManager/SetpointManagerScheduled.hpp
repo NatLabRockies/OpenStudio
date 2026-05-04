@@ -17,6 +17,7 @@ namespace epmodel {
 
 class Model;
 class ModelObject;
+class Schedule;
 
 namespace detail {
 class SetpointManagerScheduled_Impl;
@@ -39,13 +40,16 @@ class EPMODEL_API SetpointManagerScheduled : public SetpointManager
   // Schema Alignment Notes:
   // - API: Preserves openstudio::model naming for controlVariableValues plus existing schedule presence helpers.
   // - Field Mapping: controlVariable delegates to E+ SetpointManager:Scheduled Control Variable.
-  // - Field Mapping: Relationship fields Schedule Name and Setpoint Node or NodeList Name are intentionally
-  //   excluded from scalar-only accessors.
-  // - TODO(parity): Add explicit schedule object parity accessors in a follow-up pass.
+  // - Implemented Parity: `schedule`, `setSchedule`, and `setControlVariableAndSchedule` expose the canonical
+  //   schedule relationship surface; setpoint-node attachment is inherited from SetpointManager::addToNode.
   bool isControlVariableDefaulted() const;
   void resetControlVariable();
 
+  Schedule schedule() const;
   bool hasSchedule() const;
+  bool setSchedule(Schedule& schedule);
+  bool setControlVariableAndSchedule(const std::string& controlVariable, Schedule& schedule);
+
   boost::optional<ModelObject> scheduleAsModelObject() const;
 
  protected:

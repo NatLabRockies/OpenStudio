@@ -80,10 +80,13 @@ namespace epmodel {
     };
 
     const ScheduleTypeSpec* findScheduleTypeSpec(const std::string& className, const std::string& scheduleDisplayName) {
-      static const std::array<ScheduleTypeSpec, 130> specs{{
+      static const std::array<ScheduleTypeSpec, 133> specs{{
         {"AirLoopHVAC", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOn", "Availability Manager Scheduled On", false, true, "Availability", 0.0, 1.0},
         {"AvailabilityManagerScheduledOff", "Availability Manager Scheduled Off", false, true, "Availability", 0.0, 1.0},
+        {"SetpointManagerScheduled", "(Exact, Min, Max) Temperature", true, true, "Temperature", boost::none, boost::none},
+        {"SetpointManagerScheduled", "(Exact, Min, Max) Humidity Ratio", true, true, "Dimensionless", 0.0, boost::none},
+        {"SetpointManagerScheduled", "(Exact, Min, Max) Mass Flow Rate", true, true, "MassFlowRate", 0.0, boost::none},
         {"ThermostatSetpointDualSetpoint", "Heating Setpoint Temperature", true, true, "Temperature", boost::none, boost::none},
         {"ThermostatSetpointDualSetpoint", "Cooling Setpoint Temperature", true, true, "Temperature", boost::none, boost::none},
         {"ZoneControlThermostatStagedDualSetpoint", "Heating Temperature Setpoint Schedule", true, true, "Temperature", boost::none, boost::none},

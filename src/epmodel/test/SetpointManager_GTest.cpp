@@ -8,6 +8,7 @@
 #include "EPModelFixture.hpp"
 
 #include "../Loop/AirLoopHVAC.hpp"
+#include "../Loop/PlantLoop.hpp"
 #include "../HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
 #include "../Splitter/AirLoopHVACZoneSplitter.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
@@ -62,6 +63,30 @@ TEST_F(EPModelFixture, SetpointManagerScheduled_ScalarAccessors_RoundTrip) {
   EXPECT_EQ("", spm.controlVariable());
 }
 
+TEST_F(EPModelFixture, SetpointManagerScheduled_ScheduleAccessors_RoundTrip) {
+  Model model;
+  ScheduleCompact compactSchedule(model);
+  ASSERT_TRUE(compactSchedule.setName("SPM Schedule"));
+  ASSERT_TRUE(compactSchedule.setToConstantValue(12.5));
+
+  SetpointManagerScheduled spm(model);
+  ASSERT_TRUE(spm.setSchedule(compactSchedule));
+
+  EXPECT_TRUE(spm.hasSchedule());
+  EXPECT_EQ(compactSchedule, spm.schedule());
+
+  auto scheduleObject = spm.scheduleAsModelObject();
+  ASSERT_TRUE(scheduleObject);
+  EXPECT_EQ(compactSchedule.cast<ModelObject>(), *scheduleObject);
+
+  EXPECT_TRUE(spm.setControlVariableAndSchedule("MaximumTemperature", compactSchedule));
+  EXPECT_EQ("MaximumTemperature", spm.controlVariable());
+  EXPECT_EQ(compactSchedule, spm.schedule());
+
+  EXPECT_FALSE(spm.setControlVariable("DefinitelyInvalid"));
+  EXPECT_EQ("MaximumTemperature", spm.controlVariable());
+}
+
 TEST_F(EPModelFixture, SetpointManagerScheduled_CanonicalizeReattachesNamedSchedule) {
   Model model;
   ScheduleCompact compactSchedule(model);
@@ -78,6 +103,24 @@ TEST_F(EPModelFixture, SetpointManagerScheduled_CanonicalizeReattachesNamedSched
   auto scheduleObject = spm.scheduleAsModelObject();
   ASSERT_TRUE(scheduleObject);
   EXPECT_EQ(compactSchedule.cast<ModelObject>(), *scheduleObject);
+}
+
+TEST_F(EPModelFixture, SetpointManagerScheduled_AddToPlantSupplyNode) {
+  Model model;
+  PlantLoop plantLoop(model);
+
+  ScheduleCompact compactSchedule(model);
+  ASSERT_TRUE(compactSchedule.setToConstantValue(12.5));
+
+  SetpointManagerScheduled spm(model);
+  ASSERT_TRUE(spm.setSchedule(compactSchedule));
+
+  auto node = plantLoop.supplyOutletNode();
+  ASSERT_TRUE(spm.addToNode(node));
+
+  auto setpointNode = spm.setpointNode();
+  ASSERT_TRUE(setpointNode);
+  EXPECT_EQ(node, *setpointNode);
 }
 
 TEST_F(EPModelFixture, SetpointManagerScheduledDualSetpoint_DefaultConstructor) {

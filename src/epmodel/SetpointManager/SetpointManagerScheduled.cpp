@@ -11,13 +11,17 @@
 #include "Schedule/Schedule_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
+#include <utilities/idd/IddField.hpp>
+#include <utilities/idd/IddKey.hpp>
 #include <utilities/idd/SetpointManager_Scheduled_FieldEnums.hxx>
+
+#include <boost/regex.hpp>
 
 namespace openstudio {
 namespace epmodel {
-
 SetpointManagerScheduled::SetpointManagerScheduled(const Model& model) : SetpointManager(SetpointManagerScheduled::iddObjectType(), model) {
   auto impl = getImpl<detail::SetpointManagerScheduled_Impl>();
   OS_ASSERT(impl);
@@ -45,8 +49,20 @@ void SetpointManagerScheduled::resetControlVariable() {
   getImpl<detail::SetpointManagerScheduled_Impl>()->resetControlVariable();
 }
 
+Schedule SetpointManagerScheduled::schedule() const {
+  return getImpl<detail::SetpointManagerScheduled_Impl>()->schedule();
+}
+
 bool SetpointManagerScheduled::hasSchedule() const {
   return static_cast<bool>(getModelObjectTarget<openstudio::epmodel::Schedule>(openstudio::SetpointManager_ScheduledFields::ScheduleName));
+}
+
+bool SetpointManagerScheduled::setSchedule(Schedule& schedule) {
+  return getImpl<detail::SetpointManagerScheduled_Impl>()->setSchedule(schedule);
+}
+
+bool SetpointManagerScheduled::setControlVariableAndSchedule(const std::string& controlVariable, Schedule& schedule) {
+  return getImpl<detail::SetpointManagerScheduled_Impl>()->setControlVariableAndSchedule(controlVariable, schedule);
 }
 
 boost::optional<ModelObject> SetpointManagerScheduled::scheduleAsModelObject() const {
@@ -62,6 +78,10 @@ boost::optional<ModelObject> SetpointManagerScheduled::scheduleAsModelObject() c
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+bool SetpointManagerScheduled_Impl::isAllowedOnPlantLoop() const {
+  return true;
+}
 
 bool SetpointManagerScheduled_Impl::isControlVariableDefaulted() const {
   return isEmpty(openstudio::SetpointManager_ScheduledFields::ControlVariable);
@@ -84,7 +104,80 @@ std::string SetpointManagerScheduled_Impl::controlVariable() const {
 }
 
 bool SetpointManagerScheduled_Impl::setControlVariable(const std::string& value) {
-  return setString(openstudio::SetpointManager_ScheduledFields::ControlVariable, value);
+  std::string result;
+  if (istringEqual(value, "Temperature")) {
+    result = "Temperature";
+  } else if (istringEqual(value, "MaximumTemperature")) {
+    result = "MaximumTemperature";
+  } else if (istringEqual(value, "MinimumTemperature")) {
+    result = "MinimumTemperature";
+  } else if (istringEqual(value, "HumidityRatio")) {
+    result = "HumidityRatio";
+  } else if (istringEqual(value, "MaximumHumidityRatio")) {
+    result = "MaximumHumidityRatio";
+  } else if (istringEqual(value, "MinimumHumidityRatio")) {
+    result = "MinimumHumidityRatio";
+  } else if (istringEqual(value, "MassFlowRate")) {
+    result = "MassFlowRate";
+  } else if (istringEqual(value, "MaximumMassFlowRate")) {
+    result = "MaximumMassFlowRate";
+  } else if (istringEqual(value, "MinimumMassFlowRate")) {
+    result = "MinimumMassFlowRate";
+  }
+
+  if (!result.empty()) {
+    return setString(openstudio::SetpointManager_ScheduledFields::ControlVariable, result);
+  }
+
+  return false;
+}
+
+openstudio::epmodel::Schedule SetpointManagerScheduled_Impl::schedule() const {
+  auto schedule = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Schedule>(
+    openstudio::SetpointManager_ScheduledFields::ScheduleName);
+  OS_ASSERT(schedule);
+  return *schedule;
+}
+
+bool SetpointManagerScheduled_Impl::setSchedule(openstudio::epmodel::Schedule& schedule) {
+  return ModelObject_Impl::setSchedule(openstudio::SetpointManager_ScheduledFields::ScheduleName, "SetpointManagerScheduled",
+                                       scheduleDisplayName(), schedule);
+}
+
+bool SetpointManagerScheduled_Impl::setControlVariableAndSchedule(const std::string& controlVariable,
+                                                                  openstudio::epmodel::Schedule& schedule) {
+  if (auto field = iddObject().getField(openstudio::SetpointManager_ScheduledFields::ControlVariable)) {
+    if (auto key = field->getKey(controlVariable)) {
+      bool result = ModelObject_Impl::setSchedule(openstudio::SetpointManager_ScheduledFields::ScheduleName, "SetpointManagerScheduled",
+                                                  scheduleDisplayName(key->name()), schedule);
+      if (result) {
+        result = setString(openstudio::SetpointManager_ScheduledFields::ControlVariable, key->name());
+        OS_ASSERT(result);
+      }
+      return result;
+    }
+  }
+
+  return false;
+}
+
+std::string SetpointManagerScheduled_Impl::scheduleDisplayName() const {
+  return scheduleDisplayName(controlVariable());
+}
+
+std::string SetpointManagerScheduled_Impl::scheduleDisplayName(const std::string& candidateControlVariable) const {
+  std::string result;
+  static const boost::regex temperatureRegex("Temperature");
+  static const boost::regex humidityRatioRegex("HumidityRatio");
+  static const boost::regex massFlowRateRegex("MassFlowRate");
+  if (boost::regex_search(candidateControlVariable, temperatureRegex)) {
+    result = "(Exact, Min, Max) Temperature";
+  } else if (boost::regex_search(candidateControlVariable, humidityRatioRegex)) {
+    result = "(Exact, Min, Max) Humidity Ratio";
+  } else if (boost::regex_search(candidateControlVariable, massFlowRateRegex)) {
+    result = "(Exact, Min, Max) Mass Flow Rate";
+  }
+  return result;
 }
 
 bool SetpointManagerScheduled_Impl::setSetpointNode(const openstudio::epmodel::Node& node) {

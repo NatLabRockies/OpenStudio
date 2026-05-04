@@ -8,11 +8,16 @@
 
 #include "Loop/AirLoopHVAC.hpp"
 #include "HVACComponent/AirLoopHVACOutdoorAirSystem.hpp"
+#include "Loop/PlantLoop.hpp"
+#include "Mixer/Mixer.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
+#include "Splitter/Splitter.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Compare.hpp>
+
+#include <algorithm>
 
 namespace openstudio {
 namespace epmodel {
@@ -97,6 +102,24 @@ namespace epmodel {
           }
         }
         return setSetpointNode(node);
+      }
+
+      if (auto plant = node.plantLoop()) {
+        if (!isAllowedOnPlantLoop()) {
+          return false;
+        }
+
+        if (plant->supplyComponent(node.handle())) {
+          return setSetpointNode(node);
+        }
+
+        const auto splitter = plant->demandSplitter();
+        const auto mixer = plant->demandMixer();
+        const auto branchComponents = plant->demandComponents(splitter, mixer);
+        const auto nodeObject = node.cast<ModelObject>();
+        if (std::find(branchComponents.begin(), branchComponents.end(), nodeObject) == branchComponents.end()) {
+          return setSetpointNode(node);
+        }
       }
 
       return false;
