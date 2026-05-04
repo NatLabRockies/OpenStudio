@@ -7,9 +7,11 @@
 #include "SizingSystem_Impl.hpp"
 
 #include "Loop/AirLoopHVAC.hpp"
+#include "Loop/AirLoopHVAC_Impl.hpp"
 #include "Model.hpp"
 
 #include <utilities/core/Assert.hpp>
+#include <utilities/core/StringHelpers.hpp>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/IddFactory.hxx>
 #include <utilities/idd/Sizing_System_FieldEnums.hxx>
@@ -551,6 +553,23 @@ bool SizingSystem::setMaximumHeatingCapacityToCoolingCapacitySizingRatio(double 
 namespace openstudio {
 namespace epmodel {
 namespace detail {
+
+void SizingSystem_Impl::doCanonicalize(LoadContext& context) {
+  ModelObject_Impl::doCanonicalize(context);
+
+  auto sizingSystem = getObject<ModelObject>();
+  if (airLoopHVAC()) {
+    return;
+  }
+
+  auto objectName = sizingSystem.nameString();
+  if (objectName.empty()) {
+    objectName = "unnamed";
+  }
+  // TODO: This orphan-pruning may belong in a future finalize pass once that API exists.
+  sizingSystem.remove();
+  detail::addLoadInfo(context, "Removed orphan Sizing:System '" + objectName + "' with no resolvable AirLoopHVAC.");
+}
 
 std::string SizingSystem_Impl::typeofLoadtoSizeOn() const {
   auto value = getString(openstudio::Sizing_SystemFields::TypeofLoadtoSizeOn, true);
@@ -1135,6 +1154,10 @@ double SizingSystem_Impl::maximumHeatingCapacityToCoolingCapacitySizingRatio() c
 bool SizingSystem_Impl::setMaximumHeatingCapacityToCoolingCapacitySizingRatio(double maximumHeatingCapacityToCoolingCapacitySizingRatio) {
   return setDouble(openstudio::Sizing_SystemFields::MaximumHeatingCapacityToCoolingCapacitySizingRatio,
                    maximumHeatingCapacityToCoolingCapacitySizingRatio);
+}
+
+boost::optional<openstudio::epmodel::AirLoopHVAC> SizingSystem_Impl::airLoopHVAC() const {
+  return getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::AirLoopHVAC>(openstudio::Sizing_SystemFields::AirLoopName);
 }
 
 bool SizingSystem_Impl::setAirLoopHVAC(const openstudio::epmodel::AirLoopHVAC& airLoopHVAC) {

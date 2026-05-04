@@ -81,11 +81,13 @@
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/StringHelpers.hpp>
+#include <utilities/idd/ConnectorList_FieldEnums.hxx>
 #include <utilities/idd/GroundHeatExchanger_System_FieldEnums.hxx>
 #include <utilities/idd/IddEnums.hxx>
 #include <utilities/idd/OS_PlantLoop_FieldEnums.hxx>
 #include <utilities/idd/PlantLoop_FieldEnums.hxx>
 #include <utilities/idd/Sizing_Plant_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -1503,7 +1505,10 @@ namespace epmodel {
       // equipment is added.
       if (!isBeamDemandBranchComponent(hvacComponent) && (equipmentBranches.size() == 1u) && equipmentBranches.front().components().empty()) {
         auto node = model().getOrCreateTransientByName<Node>(equipmentBranches.front().nameString() + " Node");
-        return hvacComponent.addToNode(node);
+        if (!hvacComponent.addToNode(node)) {
+          return false;
+        }
+        return true;
       }
 
       const auto insertIndex = static_cast<unsigned>(branchList.branches().size() - 1u);
@@ -1845,6 +1850,22 @@ namespace epmodel {
       OS_ASSERT(!plantLoop.nameString().empty());
       const auto loopName = plantLoop.nameString();
 
+      if (auto value = getString(openstudio::PlantLoopFields::MaximumLoopTemperature, true); !value || value->empty()) {
+        OS_ASSERT(setMaximumLoopTemperature(100.0));
+      }
+      if (auto value = getString(openstudio::PlantLoopFields::MinimumLoopTemperature, true); !value || value->empty()) {
+        OS_ASSERT(setMinimumLoopTemperature(0.0));
+      }
+      if (auto value = getString(openstudio::PlantLoopFields::MaximumLoopFlowRate, true); !value || value->empty()) {
+        autosizeMaximumLoopFlowRate();
+      }
+      if (auto value = getString(openstudio::PlantLoopFields::MinimumLoopFlowRate, true); !value || value->empty()) {
+        OS_ASSERT(setMinimumLoopFlowRate(0.0));
+      }
+      if (auto value = getString(openstudio::PlantLoopFields::PlantLoopVolume, true); !value || value->empty()) {
+        autocalculatePlantLoopVolume();
+      }
+
       // Canonical PlantLoop shape:
       // - each side has an inlet node and an outlet node on the PlantLoop object
       // - each side has a BranchList ordered as inlet branch, equipment branches,
@@ -2140,6 +2161,26 @@ namespace epmodel {
       OS_ASSERT(
         syncConnectorPorts(*supplySplitterObject, *supplyMixerObject, supplyInletBranchRef, supplyOutletBranchRef, supplyEquipmentBranchRefs));
 
+      auto ensureConnectorList = [&](int field, const std::string& listName, const ModelObject& splitter, const ModelObject& mixer) {
+        auto connectorList = plantLoop.getModelObjectTarget<ModelObject>(field);
+        if (!connectorList || connectorList->iddObject().type() != openstudio::IddObjectType::ConnectorList) {
+          connectorList = ModelObject::create(openstudio::IddObjectType::ConnectorList, model());
+          connectorList->setName(listName);
+          OS_ASSERT(setPointer(field, connectorList->handle(), false));
+        }
+
+        connectorList->clearExtensibleGroups();
+        for (const auto& connector : {splitter, mixer}) {
+          auto group = connectorList->pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+          OS_ASSERT(group);
+          OS_ASSERT(group->setString(openstudio::ConnectorListExtensibleFields::ConnectorObjectType, connector.iddObject().name()));
+          OS_ASSERT(group->setPointer(openstudio::ConnectorListExtensibleFields::ConnectorName, connector.handle(), false));
+        }
+      };
+
+      ensureConnectorList(openstudio::PlantLoopFields::PlantSideConnectorListName, loopName + " Supply Connector List",
+                          supplySplitterObject->cast<ModelObject>(), supplyMixerObject->cast<ModelObject>());
+
       // Demand-side splitter/mixer pair mirror the same branch contract.
       // Keep the branch ports synchronized to the BranchList instead of
       // letting connector extensibles become an independent source of truth.
@@ -2217,8 +2258,9 @@ namespace epmodel {
                                "Demand-side connector port count mismatch for PlantLoop '" + loopName + "'. Rebuilding ports from BranchList order.");
       }
 
-      OS_ASSERT(
-        syncConnectorPorts(*demandSplitterObject, *demandMixerObject, demandInletBranchRef, demandOutletBranchRef, demandEquipmentBranchRefs));
+      OS_ASSERT(syncConnectorPorts(*demandSplitterObject, *demandMixerObject, demandInletBranchRef, demandOutletBranchRef, demandEquipmentBranchRefs));
+      ensureConnectorList(openstudio::PlantLoopFields::DemandSideConnectorListName, loopName + " Demand Connector List",
+                          demandSplitterObject->cast<ModelObject>(), demandMixerObject->cast<ModelObject>());
 
       // PlantLoop owns one canonical setpoint anchor, one sizing object, and
       // one availability-manager assignment list. Create or repair them here so
