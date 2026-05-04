@@ -8,6 +8,7 @@
 #include "EPModelFixture.hpp"
 
 #include "../ModelObject/OutputControlTableStyle.hpp"
+#include "../ModelObject/OutputControlTableStyle_Impl.hpp"
 
 #include <algorithm>
 
@@ -15,7 +16,7 @@ using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, OutputControlTableStyle_DefaultConstructor) {
   Model model;
-  OutputControlTableStyle object(model);
+  auto object = model.getUniqueModelObject<OutputControlTableStyle>();
 
   EXPECT_EQ(OutputControlTableStyle::iddObjectType(), object.iddObject().type());
   EXPECT_EQ("HTML", object.columnSeparator());
@@ -24,7 +25,7 @@ TEST_F(EPModelFixture, OutputControlTableStyle_DefaultConstructor) {
 
 TEST_F(EPModelFixture, OutputControlTableStyle_ScalarAccessors_RoundTrip) {
   Model model;
-  OutputControlTableStyle object(model);
+  auto object = model.getUniqueModelObject<OutputControlTableStyle>();
 
   const auto columnSeparatorValues = OutputControlTableStyle::columnSeparatorValues();
   EXPECT_NE(columnSeparatorValues.end(), std::find(columnSeparatorValues.begin(), columnSeparatorValues.end(), "Tab"));

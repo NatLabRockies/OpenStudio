@@ -23,8 +23,6 @@ namespace epmodel {
   class EPMODEL_API Timestep : public ModelObject
   {
    public:
-    explicit Timestep(const Model& model);
-
     virtual ~Timestep() override = default;
     Timestep(const Timestep& other) = default;
     Timestep(Timestep&& other) = default;
@@ -45,6 +43,8 @@ namespace epmodel {
     void resetNumberOfTimestepsPerHour();
 
    protected:
+    explicit Timestep(const Model& model);
+
     using ImplType = detail::Timestep_Impl;
 
     friend class Model;

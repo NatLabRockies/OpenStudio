@@ -13,6 +13,7 @@
 #include "../Schedule/ScheduleConstant.hpp"
 #include "../Thermostat/ThermostatSetpointDualSetpoint.hpp"
 #include "../Thermostat/ThermostatSetpointDualSetpoint_Impl.hpp"
+
 #include <utilities/idd/IddEnums.hxx>
 
 using namespace openstudio::epmodel;

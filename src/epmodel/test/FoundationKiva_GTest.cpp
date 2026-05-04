@@ -8,6 +8,7 @@
 #include "EPModelFixture.hpp"
 #include "../ModelObject/FoundationKiva.hpp"
 #include "../ModelObject/FoundationKivaSettings.hpp"
+#include "../ModelObject/FoundationKivaSettings_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -74,13 +75,13 @@ TEST_F(EPModelFixture, FoundationKiva_ScalarAccessors_RoundTrip) {
 
 TEST_F(EPModelFixture, FoundationKivaSettings_DefaultConstructor) {
   Model model;
-  FoundationKivaSettings foundationKivaSettings(model);
+  auto foundationKivaSettings = model.getUniqueModelObject<FoundationKivaSettings>();
   EXPECT_EQ(FoundationKivaSettings::iddObjectType(), foundationKivaSettings.iddObject().type());
 }
 
 TEST_F(EPModelFixture, FoundationKivaSettings_ScalarAccessors_RoundTrip) {
   Model model;
-  FoundationKivaSettings foundationKivaSettings(model);
+  auto foundationKivaSettings = model.getUniqueModelObject<FoundationKivaSettings>();
 
   EXPECT_TRUE(foundationKivaSettings.setSoilConductivity(1.75));
   EXPECT_DOUBLE_EQ(1.75, foundationKivaSettings.soilConductivity());

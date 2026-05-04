@@ -368,7 +368,6 @@ end
           throw;
         }
       }
-
     }
 
     if (was_patched) {

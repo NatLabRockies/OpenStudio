@@ -7,12 +7,13 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/ZoneCapacitanceMultiplierResearchSpecial.hpp"
+#include "../ModelObject/ZoneCapacitanceMultiplierResearchSpecial_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, ZoneCapacitanceMultiplierResearchSpecial_DefaultConstructor) {
   Model model;
-  ZoneCapacitanceMultiplierResearchSpecial zoneCapacitanceMultiplierResearchSpecial(model);
+  auto zoneCapacitanceMultiplierResearchSpecial = model.getUniqueModelObject<ZoneCapacitanceMultiplierResearchSpecial>();
   EXPECT_EQ(ZoneCapacitanceMultiplierResearchSpecial::iddObjectType(), zoneCapacitanceMultiplierResearchSpecial.iddObject().type());
 
   EXPECT_TRUE(zoneCapacitanceMultiplierResearchSpecial.isTemperatureCapacityMultiplierDefaulted());
@@ -25,7 +26,7 @@ TEST_F(EPModelFixture, ZoneCapacitanceMultiplierResearchSpecial_DefaultConstruct
 
 TEST_F(EPModelFixture, ZoneCapacitanceMultiplierResearchSpecial_ScalarAccessors_RoundTrip) {
   Model model;
-  ZoneCapacitanceMultiplierResearchSpecial zoneCapacitanceMultiplierResearchSpecial(model);
+  auto zoneCapacitanceMultiplierResearchSpecial = model.getUniqueModelObject<ZoneCapacitanceMultiplierResearchSpecial>();
 
   EXPECT_TRUE(zoneCapacitanceMultiplierResearchSpecial.setTemperatureCapacityMultiplier(2.0));
   EXPECT_FALSE(zoneCapacitanceMultiplierResearchSpecial.isTemperatureCapacityMultiplierDefaulted());

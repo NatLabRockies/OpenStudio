@@ -8,6 +8,6 @@
 %include <epmodel/EPModel_Common_Include.i>
 %import <epmodel/EPModel.i>
 
-EPMODELOBJECT_WRAP(AirflowNetworkDistributionLinkage, <epmodel/AirflowNetworkLinkage/AirflowNetworkDistributionLinkage.hpp>)
+EPMODELOBJECT_WRAP(AirflowNetworkDistributionLinkage, <epmodel/AirflowNetworkLinkage/AirflowNetworkDistributionLinkage.hpp>, 0, 1)
 
 #endif

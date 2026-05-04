@@ -7,18 +7,19 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/SiteGroundTemperatureShallow.hpp"
+#include "../ModelObject/SiteGroundTemperatureShallow_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, SiteGroundTemperatureShallow_DefaultConstructor) {
   Model model;
-  SiteGroundTemperatureShallow object(model);
+  auto object = model.getUniqueModelObject<SiteGroundTemperatureShallow>();
   EXPECT_EQ(SiteGroundTemperatureShallow::iddObjectType(), object.iddObject().type());
 }
 
 TEST_F(EPModelFixture, SiteGroundTemperatureShallow_ScalarAccessors_RoundTrip) {
   Model model;
-  SiteGroundTemperatureShallow object(model);
+  auto object = model.getUniqueModelObject<SiteGroundTemperatureShallow>();
 
   EXPECT_TRUE(object.isJanuarySurfaceGroundTemperatureDefaulted());
   EXPECT_TRUE(object.setJanuarySurfaceGroundTemperature(10.0));

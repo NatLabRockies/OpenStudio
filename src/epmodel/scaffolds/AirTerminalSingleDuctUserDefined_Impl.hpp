@@ -14,32 +14,32 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirTerminalSingleDuctUserDefined_Impl : public StraightComponent_Impl
-{
- public:
-  enum class AddToNodeFailureStage
-  {
-    None,
-    AfterADUUpdateBeforeZoneRegistration,
-  };
+    class EPMODEL_API AirTerminalSingleDuctUserDefined_Impl : public StraightComponent_Impl
+    {
+     public:
+      enum class AddToNodeFailureStage
+      {
+        None,
+        AfterADUUpdateBeforeZoneRegistration,
+      };
 
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~AirTerminalSingleDuctUserDefined_Impl() override = default;
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~AirTerminalSingleDuctUserDefined_Impl() override = default;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
-  bool addToNode(Node& node) override;
-  bool addToNode(Node& node, AddToNodeFailureStage failureStage);
-  bool removeFromLoop() override;
-  boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
+      bool addToNode(Node& node, AddToNodeFailureStage failureStage);
+      bool removeFromLoop() override;
+      boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
 
-  int numberofPlantLoopConnections() const;
-  bool setNumberofPlantLoopConnections(int numberofPlantLoopConnections);
-};
+      int numberofPlantLoopConnections() const;
+      bool setNumberofPlantLoopConnections(int numberofPlantLoopConnections);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

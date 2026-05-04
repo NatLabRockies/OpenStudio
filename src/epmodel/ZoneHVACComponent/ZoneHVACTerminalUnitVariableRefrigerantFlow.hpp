@@ -167,6 +167,10 @@ namespace epmodel {
    protected:
     using ImplType = detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl;
 
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
     explicit ZoneHVACTerminalUnitVariableRefrigerantFlow(std::shared_ptr<detail::ZoneHVACTerminalUnitVariableRefrigerantFlow_Impl> impl);
   };
 

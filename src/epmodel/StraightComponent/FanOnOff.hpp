@@ -97,6 +97,8 @@ class EPMODEL_API FanOnOff : public StraightComponent
   using ImplType = detail::FanOnOff_Impl;
 
   friend class Model;
+  friend class openstudio::IdfObject;
+  friend class openstudio::detail::IdfObject_Impl;
 
   explicit FanOnOff(std::shared_ptr<detail::FanOnOff_Impl> impl);
 };

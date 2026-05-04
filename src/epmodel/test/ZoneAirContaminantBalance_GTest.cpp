@@ -7,12 +7,13 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/ZoneAirContaminantBalance.hpp"
+#include "../ModelObject/ZoneAirContaminantBalance_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, ZoneAirContaminantBalance_DefaultConstructor) {
   Model model;
-  ZoneAirContaminantBalance cab(model);
+  auto cab = model.getUniqueModelObject<ZoneAirContaminantBalance>();
   EXPECT_EQ(ZoneAirContaminantBalance::iddObjectType(), cab.iddObject().type());
   EXPECT_FALSE(cab.carbonDioxideConcentration());
   EXPECT_FALSE(cab.genericContaminantConcentration());
@@ -20,7 +21,7 @@ TEST_F(EPModelFixture, ZoneAirContaminantBalance_DefaultConstructor) {
 
 TEST_F(EPModelFixture, ZoneAirContaminantBalance_ScalarAccessors_RoundTrip) {
   Model model;
-  ZoneAirContaminantBalance cab(model);
+  auto cab = model.getUniqueModelObject<ZoneAirContaminantBalance>();
 
   EXPECT_TRUE(cab.setCarbonDioxideConcentration(true));
   EXPECT_TRUE(cab.carbonDioxideConcentration());

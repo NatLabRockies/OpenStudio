@@ -25,8 +25,6 @@ namespace epmodel {
   class EPMODEL_API OutputConstructions : public ModelObject
   {
    public:
-    explicit OutputConstructions(const Model& model);
-
     virtual ~OutputConstructions() override = default;
     OutputConstructions(const OutputConstructions& other) = default;
     OutputConstructions(OutputConstructions&& other) = default;
@@ -47,6 +45,8 @@ namespace epmodel {
     bool setReportMaterials(bool reportMaterials);
 
    protected:
+    explicit OutputConstructions(const Model& model);
+
     using ImplType = detail::OutputConstructions_Impl;
 
     friend class Model;

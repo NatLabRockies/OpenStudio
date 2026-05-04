@@ -205,8 +205,7 @@ TEST_F(EPModelFixture, AirTerminalDualDuctVAVOutdoorAir_AddToNode_RejectsInvalid
   EXPECT_DOUBLE_EQ(1.234, terminal.maximumTerminalAirFlowRate().get());
   EXPECT_FALSE(terminal.isMaximumTerminalAirFlowRateAutosized());
   EXPECT_EQ("DesignOccupancy", terminal.perPersonVentilationRateMode());
-  availabilitySchedule =
-    terminal.getModelObjectTarget<Schedule>(openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::AvailabilityScheduleName);
+  availabilitySchedule = terminal.getModelObjectTarget<Schedule>(openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::AvailabilityScheduleName);
   ASSERT_TRUE(availabilitySchedule);
   EXPECT_EQ(expectedAvailabilitySchedule->handle(), availabilitySchedule->handle());
 
@@ -216,8 +215,7 @@ TEST_F(EPModelFixture, AirTerminalDualDuctVAVOutdoorAir_AddToNode_RejectsInvalid
   EXPECT_DOUBLE_EQ(1.234, terminal.maximumTerminalAirFlowRate().get());
   EXPECT_FALSE(terminal.isMaximumTerminalAirFlowRateAutosized());
   EXPECT_EQ("DesignOccupancy", terminal.perPersonVentilationRateMode());
-  availabilitySchedule =
-    terminal.getModelObjectTarget<Schedule>(openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::AvailabilityScheduleName);
+  availabilitySchedule = terminal.getModelObjectTarget<Schedule>(openstudio::AirTerminal_DualDuct_VAV_OutdoorAirFields::AvailabilityScheduleName);
   ASSERT_TRUE(availabilitySchedule);
   EXPECT_EQ(expectedAvailabilitySchedule->handle(), availabilitySchedule->handle());
 }

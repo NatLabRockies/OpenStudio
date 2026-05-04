@@ -25,8 +25,6 @@ namespace epmodel {
   class EPMODEL_API OutputDebuggingData : public ModelObject
   {
    public:
-    explicit OutputDebuggingData(const Model& model);
-
     virtual ~OutputDebuggingData() override = default;
     OutputDebuggingData(const OutputDebuggingData& other) = default;
     OutputDebuggingData(OutputDebuggingData&& other) = default;
@@ -47,6 +45,8 @@ namespace epmodel {
     bool setReportDuringWarmup(bool reportDuringWarmup);
 
    protected:
+    explicit OutputDebuggingData(const Model& model);
+
     using ImplType = detail::OutputDebuggingData_Impl;
 
     friend class Model;

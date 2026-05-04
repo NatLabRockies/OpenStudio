@@ -320,7 +320,8 @@ TEST_F(EPModelFixture, AirLoopHVAC_RemoveRemovesCanonicalTopologyObjects) {
   auto supplyOutletNode = airLoop.supplyOutletNode();
   ASSERT_TRUE(fan.addToNode(supplyOutletNode));
   ASSERT_TRUE(zone.addToNode(*demandBranchNodeAsNode));
-  const auto supplyOutletNodeListName = airLoop.getModelObjectTarget<NodeList>(openstudio::AirLoopHVACFields::SupplySideOutletNodeNames)->nameString();
+  const auto supplyOutletNodeListName =
+    airLoop.getModelObjectTarget<NodeList>(openstudio::AirLoopHVACFields::SupplySideOutletNodeNames)->nameString();
   const auto demandInletNodeListName = airLoop.getModelObjectTarget<NodeList>(openstudio::AirLoopHVACFields::DemandSideInletNodeNames)->nameString();
 
   airLoop.remove();
@@ -1279,12 +1280,10 @@ TEST_F(EPModelFixture, AirLoopHVAC_Canonicalize_AddsSupplyWaterCoilControllersTo
 
   const auto controllers = subsetCastVector<ControllerWaterCoil>(controllerList->controllers());
   ASSERT_EQ(2u, controllers.size());
-  EXPECT_TRUE(std::ranges::any_of(controllers, [&](const auto& controller) {
-    return controller.handle() == coolingCoil.controllerWaterCoil()->handle();
-  }));
-  EXPECT_TRUE(std::ranges::any_of(controllers, [&](const auto& controller) {
-    return controller.handle() == heatingCoil.controllerWaterCoil()->handle();
-  }));
+  EXPECT_TRUE(
+    std::ranges::any_of(controllers, [&](const auto& controller) { return controller.handle() == coolingCoil.controllerWaterCoil()->handle(); }));
+  EXPECT_TRUE(
+    std::ranges::any_of(controllers, [&](const auto& controller) { return controller.handle() == heatingCoil.controllerWaterCoil()->handle(); }));
 }
 
 TEST_F(EPModelFixture, AirLoopHVAC_NightCycleControlType_UsesAvailabilityManagerNightCycle) {

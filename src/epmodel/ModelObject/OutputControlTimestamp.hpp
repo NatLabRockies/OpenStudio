@@ -25,8 +25,6 @@ namespace epmodel {
   class EPMODEL_API OutputControlTimestamp : public ModelObject
   {
    public:
-    explicit OutputControlTimestamp(const Model& model);
-
     virtual ~OutputControlTimestamp() override = default;
     OutputControlTimestamp(const OutputControlTimestamp& other) = default;
     OutputControlTimestamp(OutputControlTimestamp&& other) = default;
@@ -49,6 +47,8 @@ namespace epmodel {
     bool setTimestampAtBeginningOfInterval(bool timestampAtBeginningOfInterval);
 
    protected:
+    explicit OutputControlTimestamp(const Model& model);
+
     using ImplType = detail::OutputControlTimestamp_Impl;
 
     friend class Model;

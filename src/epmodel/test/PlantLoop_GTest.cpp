@@ -58,7 +58,8 @@ TEST_F(EPModelFixture, PlantLoop_DefaultConstructor_CreatesCanonicalCompanions) 
   ASSERT_TRUE(assignmentList);
   EXPECT_TRUE(plantLoop.availabilityManagers().empty());
 
-  auto operationSchemes = plantLoop.getModelObjectTarget<PlantEquipmentOperationSchemes>(openstudio::PlantLoopFields::PlantEquipmentOperationSchemeName);
+  auto operationSchemes =
+    plantLoop.getModelObjectTarget<PlantEquipmentOperationSchemes>(openstudio::PlantLoopFields::PlantEquipmentOperationSchemeName);
   ASSERT_TRUE(operationSchemes);
   EXPECT_FALSE(plantLoop.plantEquipmentOperationHeatingLoad());
   EXPECT_FALSE(plantLoop.primaryPlantEquipmentOperationScheme());

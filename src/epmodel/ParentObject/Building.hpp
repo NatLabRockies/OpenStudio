@@ -25,8 +25,6 @@ namespace epmodel {
   class EPMODEL_API Building : public ModelObject
   {
    public:
-    explicit Building(const Model& model);
-
     virtual ~Building() override = default;
     Building(const Building& other) = default;
     Building(Building&& other) = default;
@@ -47,6 +45,8 @@ namespace epmodel {
     void resetNorthAxis();
 
    protected:
+    explicit Building(const Model& model);
+
     using ImplType = detail::Building_Impl;
 
     friend class Model;

@@ -51,7 +51,7 @@ class EPMODEL_API AirLoopHVACControllerList : public ModelObject
 
   friend class openstudio::IdfObject;
   friend class openstudio::detail::IdfObject_Impl;
-  friend class openstudio::epmodel::Model;
+  friend class Model;
 
   explicit AirLoopHVACControllerList(std::shared_ptr<detail::AirLoopHVACControllerList_Impl> impl);
 };

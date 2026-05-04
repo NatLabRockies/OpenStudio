@@ -9,12 +9,13 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/SiteGroundReflectance.hpp"
+#include "../ModelObject/SiteGroundReflectance_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, SiteGroundReflectance_DefaultConstructor) {
   Model model;
-  SiteGroundReflectance object(model);
+  auto object = model.getUniqueModelObject<SiteGroundReflectance>();
 
   EXPECT_EQ(SiteGroundReflectance::iddObjectType(), object.iddObject().type());
   EXPECT_TRUE(object.isJanuaryGroundReflectanceDefaulted());
@@ -32,7 +33,7 @@ struct MonthAccessor
 
 TEST_F(EPModelFixture, SiteGroundReflectance_ScalarAccessors_RoundTrip) {
   Model model;
-  SiteGroundReflectance object(model);
+  auto object = model.getUniqueModelObject<SiteGroundReflectance>();
 
   constexpr double defaultValue = 0.2;
   constexpr double updatedValue = 0.13;

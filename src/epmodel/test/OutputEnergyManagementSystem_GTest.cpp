@@ -8,12 +8,13 @@
 #include "EPModelFixture.hpp"
 
 #include "../ModelObject/OutputEnergyManagementSystem.hpp"
+#include "../ModelObject/OutputEnergyManagementSystem_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, OutputEnergyManagementSystem_DefaultConstructor) {
   Model model;
-  OutputEnergyManagementSystem outputEnergyManagementSystem(model);
+  auto outputEnergyManagementSystem = model.getUniqueModelObject<OutputEnergyManagementSystem>();
 
   EXPECT_EQ(OutputEnergyManagementSystem::iddObjectType(), outputEnergyManagementSystem.iddObject().type());
   EXPECT_TRUE(outputEnergyManagementSystem.isActuatorAvailabilityDictionaryReportingDefaulted());
@@ -23,7 +24,7 @@ TEST_F(EPModelFixture, OutputEnergyManagementSystem_DefaultConstructor) {
 
 TEST_F(EPModelFixture, OutputEnergyManagementSystem_ScalarAccessors_RoundTrip) {
   Model model;
-  OutputEnergyManagementSystem outputEnergyManagementSystem(model);
+  auto outputEnergyManagementSystem = model.getUniqueModelObject<OutputEnergyManagementSystem>();
 
   EXPECT_FALSE(OutputEnergyManagementSystem::actuatorAvailabilityDictionaryReportingValues().empty());
   EXPECT_FALSE(OutputEnergyManagementSystem::internalVariableAvailabilityDictionaryReportingValues().empty());

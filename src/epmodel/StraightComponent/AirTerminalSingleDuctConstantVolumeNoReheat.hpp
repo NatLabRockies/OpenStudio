@@ -65,7 +65,9 @@ namespace epmodel {
    protected:
     using ImplType = detail::AirTerminalSingleDuctConstantVolumeNoReheat_Impl;
 
-    friend class openstudio::epmodel::Model;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
     explicit AirTerminalSingleDuctConstantVolumeNoReheat(std::shared_ptr<detail::AirTerminalSingleDuctConstantVolumeNoReheat_Impl> impl);
   };

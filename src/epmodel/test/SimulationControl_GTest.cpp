@@ -7,18 +7,19 @@
 
 #include "EPModelFixture.hpp"
 #include "../ParentObject/SimulationControl.hpp"
+#include "../ParentObject/SimulationControl_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, SimulationControl_DefaultConstructor) {
   Model model;
-  SimulationControl simulationControl(model);
+  auto simulationControl = model.getUniqueModelObject<SimulationControl>();
   EXPECT_EQ(SimulationControl::iddObjectType(), simulationControl.iddObject().type());
 }
 
 TEST_F(EPModelFixture, SimulationControl_ScalarAccessors_RoundTrip) {
   Model model;
-  SimulationControl simulationControl(model);
+  auto simulationControl = model.getUniqueModelObject<SimulationControl>();
 
   const bool defaultDoZoneSizingCalculation = simulationControl.doZoneSizingCalculation();
   EXPECT_TRUE(simulationControl.isDoZoneSizingCalculationDefaulted());

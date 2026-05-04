@@ -23,8 +23,6 @@ namespace epmodel {
   class EPMODEL_API SiteGroundTemperatureBuildingSurface : public ModelObject
   {
    public:
-    explicit SiteGroundTemperatureBuildingSurface(const Model& model);
-
     virtual ~SiteGroundTemperatureBuildingSurface() override = default;
     SiteGroundTemperatureBuildingSurface(const SiteGroundTemperatureBuildingSurface& other) = default;
     SiteGroundTemperatureBuildingSurface(SiteGroundTemperatureBuildingSurface&& other) = default;
@@ -98,6 +96,8 @@ namespace epmodel {
     void resetDecemberGroundTemperature();
 
    protected:
+    explicit SiteGroundTemperatureBuildingSurface(const Model& model);
+
     using ImplType = detail::SiteGroundTemperatureBuildingSurface_Impl;
 
     friend class Model;

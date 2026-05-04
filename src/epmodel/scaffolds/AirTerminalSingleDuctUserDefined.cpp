@@ -29,40 +29,40 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace {
+  namespace {
 
-boost::optional<ThermalZone> owningThermalZoneForBranchNode(const Model& model, const Node& node) {
-  for (const auto& zone : model.getConcreteModelObjects<ThermalZone>()) {
-    if (zone.zoneAirNode() == node) {
-      return zone;
+    boost::optional<ThermalZone> owningThermalZoneForBranchNode(const Model& model, const Node& node) {
+      for (const auto& zone : model.getConcreteModelObjects<ThermalZone>()) {
+        if (zone.zoneAirNode() == node) {
+          return zone;
+        }
+      }
+      return boost::none;
     }
-  }
-  return boost::none;
-}
 
-boost::optional<ThermalZone> thermalZoneContainingTerminal(const Model& model, const ModelObject& terminal) {
-  for (const auto& zone : model.getConcreteModelObjects<ThermalZone>()) {
-    const auto equipment = zone.equipment();
-    if (std::ranges::find(equipment, terminal) != equipment.end()) {
-      return zone;
+    boost::optional<ThermalZone> thermalZoneContainingTerminal(const Model& model, const ModelObject& terminal) {
+      for (const auto& zone : model.getConcreteModelObjects<ThermalZone>()) {
+        const auto equipment = zone.equipment();
+        if (std::ranges::find(equipment, terminal) != equipment.end()) {
+          return zone;
+        }
+      }
+      return boost::none;
     }
-  }
-  return boost::none;
-}
 
-bool registerTerminalWithThermalZone(const ModelObject& terminal, ThermalZone& thermalZone) {
-  auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
-  OS_ASSERT(zoneImpl);
-  return zoneImpl->getZoneHVACEquipmentList().addEquipment(terminal);
-}
+    bool registerTerminalWithThermalZone(const ModelObject& terminal, ThermalZone& thermalZone) {
+      auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
+      OS_ASSERT(zoneImpl);
+      return zoneImpl->getZoneHVACEquipmentList().addEquipment(terminal);
+    }
 
-bool unregisterTerminalFromThermalZone(const ModelObject& terminal, ThermalZone& thermalZone) {
-  auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
-  OS_ASSERT(zoneImpl);
-  return zoneImpl->getZoneHVACEquipmentList().removeEquipment(terminal);
-}
+    bool unregisterTerminalFromThermalZone(const ModelObject& terminal, ThermalZone& thermalZone) {
+      auto zoneImpl = thermalZone.getImpl<detail::ThermalZone_Impl>();
+      OS_ASSERT(zoneImpl);
+      return zoneImpl->getZoneHVACEquipmentList().removeEquipment(terminal);
+    }
 
-}  // namespace
+  }  // namespace
 
   AirTerminalSingleDuctUserDefined::AirTerminalSingleDuctUserDefined(const Model& model)
     : StraightComponent(AirTerminalSingleDuctUserDefined::iddObjectType(), model) {
@@ -115,8 +115,7 @@ bool unregisterTerminalFromThermalZone(const ModelObject& terminal, ThermalZone&
 
     bool AirTerminalSingleDuctUserDefined_Impl::addToNode(Node& node, AddToNodeFailureStage failureStage) {
       if (node.model() != model()) {
-        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctUserDefined",
-                 "addToNode requires a node in the same model as the terminal.");
+        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctUserDefined", "addToNode requires a node in the same model as the terminal.");
         return false;
       }
 
@@ -128,8 +127,7 @@ bool unregisterTerminalFromThermalZone(const ModelObject& terminal, ThermalZone&
 
       auto airLoop = node.airLoopHVAC();
       if (!airLoop) {
-        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctUserDefined",
-                 "addToNode requires a node that resolves to an AirLoopHVAC context.");
+        LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctUserDefined", "addToNode requires a node that resolves to an AirLoopHVAC context.");
         return false;
       }
 

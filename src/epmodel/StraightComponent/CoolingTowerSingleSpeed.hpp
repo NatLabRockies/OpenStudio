@@ -204,6 +204,8 @@ class EPMODEL_API CoolingTowerSingleSpeed : public StraightComponent
   using ImplType = detail::CoolingTowerSingleSpeed_Impl;
 
   friend class Model;
+  friend class openstudio::IdfObject;
+  friend class openstudio::detail::IdfObject_Impl;
 
   explicit CoolingTowerSingleSpeed(std::shared_ptr<detail::CoolingTowerSingleSpeed_Impl> impl);
 };

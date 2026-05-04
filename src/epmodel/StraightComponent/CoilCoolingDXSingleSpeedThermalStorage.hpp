@@ -240,6 +240,8 @@ class EPMODEL_API CoilCoolingDXSingleSpeedThermalStorage : public StraightCompon
   using ImplType = detail::CoilCoolingDXSingleSpeedThermalStorage_Impl;
 
   friend class Model;
+  friend class openstudio::IdfObject;
+  friend class openstudio::detail::IdfObject_Impl;
 
   explicit CoilCoolingDXSingleSpeedThermalStorage(std::shared_ptr<detail::CoilCoolingDXSingleSpeedThermalStorage_Impl> impl);
 };

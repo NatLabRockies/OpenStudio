@@ -8,12 +8,13 @@
 #include "EPModelFixture.hpp"
 
 #include "../ModelObject/OutputDebuggingData.hpp"
+#include "../ModelObject/OutputDebuggingData_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, OutputDebuggingData_DefaultConstructor) {
   Model model;
-  OutputDebuggingData outputDebuggingData(model);
+  auto outputDebuggingData = model.getUniqueModelObject<OutputDebuggingData>();
 
   EXPECT_EQ(OutputDebuggingData::iddObjectType(), outputDebuggingData.iddObject().type());
   EXPECT_FALSE(outputDebuggingData.reportDebuggingData());
@@ -22,7 +23,7 @@ TEST_F(EPModelFixture, OutputDebuggingData_DefaultConstructor) {
 
 TEST_F(EPModelFixture, OutputDebuggingData_ScalarAccessors_RoundTrip) {
   Model model;
-  OutputDebuggingData outputDebuggingData(model);
+  auto outputDebuggingData = model.getUniqueModelObject<OutputDebuggingData>();
 
   EXPECT_TRUE(outputDebuggingData.setReportDebuggingData(true));
   EXPECT_TRUE(outputDebuggingData.reportDebuggingData());

@@ -11,7 +11,7 @@
 #include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
 
 namespace openstudio {
-  namespace epmodel {
+namespace epmodel {
 
   class Schedule;
   class HVACComponent;

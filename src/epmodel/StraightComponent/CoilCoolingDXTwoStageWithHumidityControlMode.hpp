@@ -106,6 +106,8 @@ class EPMODEL_API CoilCoolingDXTwoStageWithHumidityControlMode : public Straight
   using ImplType = detail::CoilCoolingDXTwoStageWithHumidityControlMode_Impl;
 
   friend class Model;
+  friend class openstudio::IdfObject;
+  friend class openstudio::detail::IdfObject_Impl;
 
   explicit CoilCoolingDXTwoStageWithHumidityControlMode(std::shared_ptr<detail::CoilCoolingDXTwoStageWithHumidityControlMode_Impl> impl);
 };

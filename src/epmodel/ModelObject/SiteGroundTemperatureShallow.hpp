@@ -23,8 +23,6 @@ class SiteGroundTemperatureShallow_Impl;
 class EPMODEL_API SiteGroundTemperatureShallow : public ModelObject
 {
  public:
-  explicit SiteGroundTemperatureShallow(const Model& model);
-
   virtual ~SiteGroundTemperatureShallow() override = default;
   SiteGroundTemperatureShallow(const SiteGroundTemperatureShallow& other) = default;
   SiteGroundTemperatureShallow(SiteGroundTemperatureShallow&& other) = default;
@@ -99,6 +97,8 @@ class EPMODEL_API SiteGroundTemperatureShallow : public ModelObject
   void resetDecemberSurfaceGroundTemperature();
 
  protected:
+  explicit SiteGroundTemperatureShallow(const Model& model);
+
   using ImplType = detail::SiteGroundTemperatureShallow_Impl;
 
   friend class Model;

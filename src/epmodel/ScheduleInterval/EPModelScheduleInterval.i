@@ -8,6 +8,6 @@
 %include <epmodel/EPModel_Common_Include.i>
 %import <epmodel/EPModel.i>
 
-EPMODELOBJECT_WRAP(ScheduleFile, <epmodel/ScheduleInterval/ScheduleFile.hpp>)
+EPMODELOBJECT_WRAP(ScheduleFile, <epmodel/ScheduleInterval/ScheduleFile.hpp>, 0, 1)
 
 #endif

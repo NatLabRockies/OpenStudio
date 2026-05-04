@@ -8,6 +8,7 @@
 #include "EPModelFixture.hpp"
 
 #include "../ModelObject/OutputDiagnostics.hpp"
+#include "../ModelObject/OutputDiagnostics_Impl.hpp"
 
 #include <utilities/idd/Output_Diagnostics_FieldEnums.hxx>
 #include <utilities/idf/WorkspaceExtensibleGroup.hpp>
@@ -16,14 +17,14 @@ using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, OutputDiagnostics_DefaultConstructor) {
   Model model;
-  OutputDiagnostics outputDiagnostics(model);
+  auto outputDiagnostics = model.getUniqueModelObject<OutputDiagnostics>();
 
   EXPECT_EQ(OutputDiagnostics::iddObjectType(), outputDiagnostics.iddObject().type());
 }
 
 TEST_F(EPModelFixture, OutputDiagnostics_ScalarAccessors_RoundTrip) {
   Model model;
-  OutputDiagnostics outputDiagnostics(model);
+  auto outputDiagnostics = model.getUniqueModelObject<OutputDiagnostics>();
 
   // Output:Diagnostics has no fixed scalar fields; validate scalar roundtrip on extensible Key entries.
   auto group = outputDiagnostics.pushExtensibleGroup();

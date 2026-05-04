@@ -56,7 +56,7 @@ class EPMODEL_API ConnectorSplitter : public Splitter
 
   friend class openstudio::IdfObject;
   friend class openstudio::detail::IdfObject_Impl;
-  friend class openstudio::epmodel::Model;
+  friend class Model;
 
   explicit ConnectorSplitter(std::shared_ptr<detail::ConnectorSplitter_Impl> impl);
 };

@@ -14,7 +14,7 @@
 #include <memory>
 
 namespace openstudio {
-  namespace epmodel {
+namespace epmodel {
 
   class Model;
   class Node;

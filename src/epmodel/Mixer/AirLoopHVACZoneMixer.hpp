@@ -58,7 +58,7 @@ class EPMODEL_API AirLoopHVACZoneMixer : public Mixer
 
   friend class openstudio::IdfObject;
   friend class openstudio::detail::IdfObject_Impl;
-  friend class openstudio::epmodel::Model;
+  friend class Model;
 
   explicit AirLoopHVACZoneMixer(std::shared_ptr<detail::AirLoopHVACZoneMixer_Impl> impl);
 };

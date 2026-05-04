@@ -2405,9 +2405,7 @@ namespace epmodel {
       const auto thisLoop = getObject<AirLoopHVAC>();
       const auto thisLoopName = thisLoop.nameString();
 
-      const auto appendRemoved = [&result](std::vector<IdfObject>&& removed) {
-        result.insert(result.end(), removed.begin(), removed.end());
-      };
+      const auto appendRemoved = [&result](std::vector<IdfObject>&& removed) { result.insert(result.end(), removed.begin(), removed.end()); };
 
       std::vector<SetpointManager> loopSetpointManagers;
       for (const auto& component : components(openstudio::IddObjectType::Node)) {
@@ -2416,9 +2414,8 @@ namespace epmodel {
           continue;
         }
         for (const auto& setpointManager : node->setpointManagers()) {
-          if (std::ranges::none_of(loopSetpointManagers, [&setpointManager](const auto& existing) {
-                return existing.handle() == setpointManager.handle();
-              })) {
+          if (std::ranges::none_of(loopSetpointManagers,
+                                   [&setpointManager](const auto& existing) { return existing.handle() == setpointManager.handle(); })) {
             loopSetpointManagers.push_back(setpointManager);
           }
         }

@@ -90,7 +90,8 @@ namespace epmodel {
         {"ThermostatSetpointDualSetpoint", "Heating Setpoint Temperature", true, true, "Temperature", boost::none, boost::none},
         {"ThermostatSetpointDualSetpoint", "Cooling Setpoint Temperature", true, true, "Temperature", boost::none, boost::none},
         {"ZoneControlThermostatStagedDualSetpoint", "Heating Temperature Setpoint Schedule", true, true, "Temperature", boost::none, boost::none},
-        {"ZoneControlThermostatStagedDualSetpoint", "Cooling Temperature Setpoint Base Schedule", true, true, "Temperature", boost::none, boost::none},
+        {"ZoneControlThermostatStagedDualSetpoint", "Cooling Temperature Setpoint Base Schedule", true, true, "Temperature", boost::none,
+         boost::none},
         {"FanConstantVolume", "Availability", false, true, "Availability", 0.0, 1.0},
         {"FanOnOff", "Availability", false, true, "Availability", 0.0, 1.0},
         {"FanVariableVolume", "Availability", false, true, "Availability", 0.0, 1.0},
@@ -349,8 +350,7 @@ namespace epmodel {
       }
 
       if (!model().sqlFile()) {
-        LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
-                 "This model has no sql file, cannot retrieve the autosized value '" << valueName << "'.");
+        LOG_FREE(Warn, "openstudio.epmodel.ModelObject", "This model has no sql file, cannot retrieve the autosized value '" << valueName << "'.");
         return boost::none;
       }
 
@@ -417,8 +417,7 @@ namespace epmodel {
       }
 
       if (!model().sqlFile()) {
-        LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
-                 "This model has no sql file, cannot retrieve the autosized value '" << valueName << "'.");
+        LOG_FREE(Warn, "openstudio.epmodel.ModelObject", "This model has no sql file, cannot retrieve the autosized value '" << valueName << "'.");
         return boost::none;
       }
 
@@ -440,8 +439,8 @@ namespace epmodel {
       auto val = model().sqlFile()->execAndReturnFirstDouble(directQuery, overrideCompType, sqlName, valueName, units);
       if (!val) {
         LOG_FREE(Debug, "openstudio.epmodel.ModelObject",
-                 "The direct autosized value query returned no value for component type '" << overrideCompType << "', component '" << sqlName
-                   << "', description '" << valueName << "', units '" << units << "'.");
+                 "The direct autosized value query returned no value for component type '"
+                   << overrideCompType << "', component '" << sqlName << "', description '" << valueName << "', units '" << units << "'.");
       }
       return val;
     }

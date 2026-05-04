@@ -23,8 +23,6 @@ namespace epmodel {
   class EPMODEL_API ZoneAirContaminantBalance : public ModelObject
   {
    public:
-    explicit ZoneAirContaminantBalance(const Model& model);
-
     virtual ~ZoneAirContaminantBalance() override = default;
     ZoneAirContaminantBalance(const ZoneAirContaminantBalance& other) = default;
     ZoneAirContaminantBalance(ZoneAirContaminantBalance&& other) = default;
@@ -51,6 +49,8 @@ namespace epmodel {
     void resetGenericContaminantConcentration();
 
    protected:
+    explicit ZoneAirContaminantBalance(const Model& model);
+
     using ImplType = detail::ZoneAirContaminantBalance_Impl;
 
     friend class Model;

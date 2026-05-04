@@ -152,8 +152,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctUserDefined_AddToNode_RollsBackLateF
 
   auto terminalImpl = terminal.getImpl<detail::AirTerminalSingleDuctUserDefined_Impl>();
   ASSERT_TRUE(terminalImpl);
-  EXPECT_FALSE(terminalImpl->addToNode(
-    zoneAirNode, detail::AirTerminalSingleDuctUserDefined_Impl::AddToNodeFailureStage::AfterADUUpdateBeforeZoneRegistration));
+  EXPECT_FALSE(
+    terminalImpl->addToNode(zoneAirNode, detail::AirTerminalSingleDuctUserDefined_Impl::AddToNodeFailureStage::AfterADUUpdateBeforeZoneRegistration));
 
   auto splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);

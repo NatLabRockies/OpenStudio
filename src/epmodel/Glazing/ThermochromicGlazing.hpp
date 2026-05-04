@@ -46,6 +46,8 @@ namespace epmodel {
 
     friend class detail::ThermochromicGlazing_Impl;
     friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
   };
 
 }  // namespace epmodel

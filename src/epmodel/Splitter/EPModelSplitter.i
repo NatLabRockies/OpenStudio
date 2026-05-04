@@ -9,9 +9,9 @@
 %import <epmodel/EPModel.i>
 %import <epmodel/HVACComponent/EPModelHVACComponent.i>
 
-EPMODELOBJECT_WRAP(Splitter, <epmodel/Splitter/Splitter.hpp>)
-EPMODELOBJECT_WRAP(AirLoopHVACSupplyPlenum, <epmodel/Splitter/AirLoopHVACSupplyPlenum.hpp>)
-EPMODELOBJECT_WRAP(AirLoopHVACZoneSplitter, <epmodel/Splitter/AirLoopHVACZoneSplitter.hpp>)
-EPMODELOBJECT_WRAP(ConnectorSplitter, <epmodel/Splitter/ConnectorSplitter.hpp>)
+EPMODELOBJECT_WRAP(Splitter, <epmodel/Splitter/Splitter.hpp>, 0, 0)
+EPMODELOBJECT_WRAP(AirLoopHVACSupplyPlenum, <epmodel/Splitter/AirLoopHVACSupplyPlenum.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(AirLoopHVACZoneSplitter, <epmodel/Splitter/AirLoopHVACZoneSplitter.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(ConnectorSplitter, <epmodel/Splitter/ConnectorSplitter.hpp>, 0, 1)
 
 #endif

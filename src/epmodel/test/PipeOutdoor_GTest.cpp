@@ -13,6 +13,7 @@
 #include "../StraightComponent/Node.hpp"
 #include "../StraightComponent/PipeOutdoor.hpp"
 #include "../StraightComponent/PipeOutdoor_Impl.hpp"
+
 #include <utilities/idd/Pipe_Outdoor_FieldEnums.hxx>
 
 using namespace openstudio::epmodel;

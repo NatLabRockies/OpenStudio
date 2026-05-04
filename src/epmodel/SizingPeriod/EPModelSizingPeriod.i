@@ -8,6 +8,6 @@
 %include <epmodel/EPModel_Common_Include.i>
 %import <epmodel/EPModel.i>
 
-EPMODELOBJECT_WRAP(DesignDay, <epmodel/SizingPeriod/DesignDay.hpp>)
+EPMODELOBJECT_WRAP(DesignDay, <epmodel/SizingPeriod/DesignDay.hpp>, 0, 1)
 
 #endif

@@ -18,34 +18,38 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
-  class ParentObject_Impl;
-}
+  namespace detail {
+    class ParentObject_Impl;
+  }
 
-class EPMODEL_API ParentObject : public ModelObject
-{
- public:
-  virtual ~ParentObject() override = default;
-  ParentObject(const ParentObject& other) = default;
-  ParentObject(ParentObject&& other) = default;
-  ParentObject& operator=(const ParentObject&) = default;
-  ParentObject& operator=(ParentObject&&) = default;
+  class EPMODEL_API ParentObject : public ModelObject
+  {
+   public:
+    virtual ~ParentObject() override = default;
+    ParentObject(const ParentObject& other) = default;
+    ParentObject(ParentObject&& other) = default;
+    ParentObject& operator=(const ParentObject&) = default;
+    ParentObject& operator=(ParentObject&&) = default;
 
- std::vector<ModelObject> children() const;
+    std::vector<ModelObject> children() const;
 
- protected:
-  ParentObject(IddObjectType type, const Model& model, bool fastName = false, bool isTransient = false);
+   protected:
+    ParentObject(IddObjectType type, const Model& model, bool fastName = false, bool isTransient = false);
 
-  using ImplType = detail::ParentObject_Impl;
+    using ImplType = detail::ParentObject_Impl;
 
-  explicit ParentObject(std::shared_ptr<ImplType> impl);
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
- private:
-  REGISTER_LOGGER("openstudio.epmodel.ParentObject");
-};
+    explicit ParentObject(std::shared_ptr<ImplType> impl);
 
-using OptionalParentObject = boost::optional<ParentObject>;
-using ParentObjectVector = std::vector<ParentObject>;
+   private:
+    REGISTER_LOGGER("openstudio.epmodel.ParentObject");
+  };
+
+  using OptionalParentObject = boost::optional<ParentObject>;
+  using ParentObjectVector = std::vector<ParentObject>;
 
 }  // namespace epmodel
 }  // namespace openstudio

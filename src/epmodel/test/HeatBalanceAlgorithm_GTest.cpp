@@ -7,12 +7,13 @@
 
 #include "EPModelFixture.hpp"
 #include "../ModelObject/HeatBalanceAlgorithm.hpp"
+#include "../ModelObject/HeatBalanceAlgorithm_Impl.hpp"
 
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, HeatBalanceAlgorithm_DefaultConstructor) {
   Model model;
-  HeatBalanceAlgorithm object(model);
+  auto object = model.getUniqueModelObject<HeatBalanceAlgorithm>();
 
   EXPECT_EQ(HeatBalanceAlgorithm::iddObjectType(), object.iddObject().type());
 
@@ -24,7 +25,7 @@ TEST_F(EPModelFixture, HeatBalanceAlgorithm_DefaultConstructor) {
 
 TEST_F(EPModelFixture, HeatBalanceAlgorithm_ScalarAccessors_RoundTrip) {
   Model model;
-  HeatBalanceAlgorithm object(model);
+  auto object = model.getUniqueModelObject<HeatBalanceAlgorithm>();
 
   EXPECT_TRUE(object.setAlgorithm("MoisturePenetrationDepthConductionTransferFunction"));
   EXPECT_EQ("MoisturePenetrationDepthConductionTransferFunction", object.algorithm());

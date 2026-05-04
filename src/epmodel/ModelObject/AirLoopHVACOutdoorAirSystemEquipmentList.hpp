@@ -46,7 +46,7 @@ class EPMODEL_API AirLoopHVACOutdoorAirSystemEquipmentList : public ModelObject
 
   friend class openstudio::IdfObject;
   friend class openstudio::detail::IdfObject_Impl;
-  friend class openstudio::epmodel::Model;
+  friend class Model;
 
   explicit AirLoopHVACOutdoorAirSystemEquipmentList(std::shared_ptr<detail::AirLoopHVACOutdoorAirSystemEquipmentList_Impl> impl);
 };

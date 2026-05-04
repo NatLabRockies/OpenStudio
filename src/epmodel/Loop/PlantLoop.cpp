@@ -2258,7 +2258,8 @@ namespace epmodel {
                                "Demand-side connector port count mismatch for PlantLoop '" + loopName + "'. Rebuilding ports from BranchList order.");
       }
 
-      OS_ASSERT(syncConnectorPorts(*demandSplitterObject, *demandMixerObject, demandInletBranchRef, demandOutletBranchRef, demandEquipmentBranchRefs));
+      OS_ASSERT(
+        syncConnectorPorts(*demandSplitterObject, *demandMixerObject, demandInletBranchRef, demandOutletBranchRef, demandEquipmentBranchRefs));
       ensureConnectorList(openstudio::PlantLoopFields::DemandSideConnectorListName, loopName + " Demand Connector List",
                           demandSplitterObject->cast<ModelObject>(), demandMixerObject->cast<ModelObject>());
 
