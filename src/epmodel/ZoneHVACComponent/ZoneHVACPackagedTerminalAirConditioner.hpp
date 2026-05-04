@@ -123,6 +123,10 @@ namespace epmodel {
    protected:
     using ImplType = detail::ZoneHVACPackagedTerminalAirConditioner_Impl;
 
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
     explicit ZoneHVACPackagedTerminalAirConditioner(std::shared_ptr<detail::ZoneHVACPackagedTerminalAirConditioner_Impl> impl);
   };
 

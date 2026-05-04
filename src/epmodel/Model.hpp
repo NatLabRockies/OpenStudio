@@ -220,6 +220,41 @@ namespace epmodel {
       return result;
     }
 
+    /** Returns all \link ModelObject ModelObjects \endlink of type T with given name. This method can
+     *  be used with T as a concrete type (e.g. Zone) or as an abstract class (e.g. ParentObject).
+     *
+     *  \todo Use of this template method requires knowledge of the size of the implementation object.
+     *  Therefore, to use model.getModelObjectsByName<Zone>("Zone1") the user must include both
+     *  Zone.hpp and Zone_Impl.hpp. It may be better to instantiate each version of this template
+     *  method to avoid exposing the implementation objects, this is an open question. */
+    template <typename T>
+    std::vector<T> getModelObjectsByName(const std::string& name, bool exactMatch = true) const {
+      std::vector<T> result;
+      std::vector<WorkspaceObject> objects = this->getObjectsByName(name, exactMatch);
+      result.reserve(objects.size());
+      for (auto& wo : objects) {
+        std::shared_ptr<typename T::ImplType> p = wo.getImpl<typename T::ImplType>();
+        if (p) {
+          result.push_back(T(p));
+        }
+      }
+      return result;
+    }
+
+    template <typename T>
+    std::vector<T> getConcreteModelObjectsByName(const std::string& name) const {
+      std::vector<T> result;
+      std::vector<WorkspaceObject> objects = this->getObjectsByTypeAndName(T::iddObjectType(), name);
+      result.reserve(objects.size());
+      for (auto& wo : objects) {
+        std::shared_ptr<typename T::ImplType> p = wo.getImpl<typename T::ImplType>();
+        if (p) {
+          result.push_back(T(p));
+        }
+      }
+      return result;
+    }
+
    protected:
     using ImplType = detail::Model_Impl;
 

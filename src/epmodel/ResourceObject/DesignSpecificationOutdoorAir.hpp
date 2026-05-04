@@ -55,7 +55,7 @@ class EPMODEL_API DesignSpecificationOutdoorAir : public ModelObject
 
   friend class openstudio::IdfObject;
   friend class openstudio::detail::IdfObject_Impl;
-  friend class openstudio::epmodel::Model;
+  friend class Model;
 
   explicit DesignSpecificationOutdoorAir(std::shared_ptr<detail::DesignSpecificationOutdoorAir_Impl> impl);
 };

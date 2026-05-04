@@ -52,6 +52,8 @@ class EPMODEL_API SetpointManagerScheduled : public SetpointManager
   using ImplType = detail::SetpointManagerScheduled_Impl;
 
   friend class Model;
+  friend class openstudio::IdfObject;
+  friend class openstudio::detail::IdfObject_Impl;
 
   explicit SetpointManagerScheduled(std::shared_ptr<detail::SetpointManagerScheduled_Impl> impl);
 };

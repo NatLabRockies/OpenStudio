@@ -161,6 +161,10 @@ namespace epmodel {
    protected:
     using ImplType = detail::ZoneHVACPackagedTerminalHeatPump_Impl;
 
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+
     explicit ZoneHVACPackagedTerminalHeatPump(std::shared_ptr<detail::ZoneHVACPackagedTerminalHeatPump_Impl> impl);
   };
 

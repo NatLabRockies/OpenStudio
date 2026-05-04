@@ -43,7 +43,7 @@ class EPMODEL_API ZoneHVACAirDistributionUnit : public ModelObject
 
   friend class openstudio::IdfObject;
   friend class openstudio::detail::IdfObject_Impl;
-  friend class openstudio::epmodel::Model;
+  friend class Model;
 
   explicit ZoneHVACAirDistributionUnit(std::shared_ptr<detail::ZoneHVACAirDistributionUnit_Impl> impl);
 };

@@ -58,7 +58,7 @@ namespace epmodel {
 
     friend class openstudio::IdfObject;
     friend class openstudio::detail::IdfObject_Impl;
-    friend class openstudio::epmodel::Model;
+    friend class Model;
 
     explicit AirLoopHVACZoneSplitter(std::shared_ptr<detail::AirLoopHVACZoneSplitter_Impl> impl);
   };

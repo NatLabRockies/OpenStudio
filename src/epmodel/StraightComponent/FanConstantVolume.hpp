@@ -80,7 +80,9 @@ namespace epmodel {
    protected:
     using ImplType = detail::FanConstantVolume_Impl;
 
-    friend class openstudio::epmodel::Model;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
     explicit FanConstantVolume(std::shared_ptr<detail::FanConstantVolume_Impl> impl);
   };

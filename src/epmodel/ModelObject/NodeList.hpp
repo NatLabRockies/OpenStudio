@@ -44,7 +44,7 @@ class EPMODEL_API NodeList : public ModelObject
 
   friend class openstudio::IdfObject;
   friend class openstudio::detail::IdfObject_Impl;
-  friend class openstudio::epmodel::Model;
+  friend class Model;
 
   explicit NodeList(std::shared_ptr<detail::NodeList_Impl> impl);
 };

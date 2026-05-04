@@ -42,6 +42,8 @@ class EPMODEL_API SetpointManagerMixedAir : public SetpointManager
   using ImplType = detail::SetpointManagerMixedAir_Impl;
 
   friend class Model;
+  friend class openstudio::IdfObject;
+  friend class openstudio::detail::IdfObject_Impl;
 
   explicit SetpointManagerMixedAir(std::shared_ptr<detail::SetpointManagerMixedAir_Impl> impl);
 };
