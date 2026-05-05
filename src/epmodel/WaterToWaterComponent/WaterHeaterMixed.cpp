@@ -712,6 +712,20 @@ namespace epmodel {
 
     }  // namespace
 
+    void WaterHeaterMixed_Impl::doCanonicalize(LoadContext& context) {
+      WaterToWaterComponent_Impl::doCanonicalize(context);
+
+      try {
+        waterHeaterSizing();
+        return;
+      } catch (const std::exception&) {
+      }
+
+      const auto waterHeater = getObject<WaterHeaterMixed>();
+      WaterHeaterSizing sizing(waterHeater);
+      detail::addLoadInfo(context, "Created default WaterHeater:Sizing object for WaterHeater:Mixed '" + waterHeater.nameString() + "'.");
+    }
+
     std::vector<ModelObject> WaterHeaterMixed_Impl::children() const {
       return {waterHeaterSizing()};
     }
@@ -1076,9 +1090,14 @@ namespace epmodel {
     }
 
     WaterHeaterSizing WaterHeaterMixed_Impl::waterHeaterSizing() const {
-      for (const auto& sizing : model().getConcreteModelObjects<WaterHeaterSizing>()) {
-        if (sizing.waterHeater().handle() == handle()) {
-          return sizing;
+      for (const auto& source : getObject<ModelObject>().getSources(WaterHeaterSizing::iddObjectType())) {
+        if (auto sizing = source.optionalCast<WaterHeaterSizing>()) {
+          try {
+            if (sizing->waterHeater().handle() == handle()) {
+              return *sizing;
+            }
+          } catch (const std::exception&) {
+          }
         }
       }
       throw std::runtime_error("WaterHeaterMixed missing WaterHeater:Sizing object.");

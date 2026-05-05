@@ -29,6 +29,7 @@ namespace epmodel {
       using WaterToWaterComponent_Impl::WaterToWaterComponent_Impl;
       virtual ~WaterHeaterStratified_Impl() override = default;
 
+      void doCanonicalize(LoadContext& context) override;
       std::vector<ModelObject> children() const override;
       ModelObject clone(Model model) const;
       unsigned supplyInletPort() const override;

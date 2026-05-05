@@ -38,6 +38,30 @@ TEST_F(EPModelFixture, WaterHeaterStratified_DefaultConstructor) {
   EXPECT_EQ(heater.waterHeaterSizing().handle(), heater.children().front().handle());
 }
 
+TEST_F(EPModelFixture, WaterHeaterStratified_CanonicalizeCreatesMissingWaterHeaterSizing) {
+  Model model;
+  WaterHeaterStratified heater(model);
+  heater.waterHeaterSizing().remove();
+  ASSERT_EQ(0u, model.getConcreteModelObjects<WaterHeaterSizing>().size());
+
+  auto report = model.canonicalize();
+
+  EXPECT_EQ(0u, report.errorCount);
+  ASSERT_EQ(1u, model.getConcreteModelObjects<WaterHeaterSizing>().size());
+  auto sizing = heater.waterHeaterSizing();
+  EXPECT_EQ(heater.handle(), sizing.waterHeater().handle());
+  EXPECT_EQ("PeakDraw", sizing.designMode().get());
+  ASSERT_TRUE(sizing.timeStorageCanMeetPeakDraw());
+  EXPECT_DOUBLE_EQ(0.538503, sizing.timeStorageCanMeetPeakDraw().get());
+  ASSERT_TRUE(sizing.timeforTankRecovery());
+  EXPECT_DOUBLE_EQ(0.0, sizing.timeforTankRecovery().get());
+  ASSERT_TRUE(sizing.nominalTankVolumeforAutosizingPlantConnections());
+  EXPECT_DOUBLE_EQ(1.0, sizing.nominalTankVolumeforAutosizingPlantConnections().get());
+
+  model.canonicalize();
+  EXPECT_EQ(1u, model.getConcreteModelObjects<WaterHeaterSizing>().size());
+}
+
 TEST_F(EPModelFixture, WaterHeaterStratified_ScalarAccessors_RoundTrip) {
   Model model;
   WaterHeaterStratified heater(model);

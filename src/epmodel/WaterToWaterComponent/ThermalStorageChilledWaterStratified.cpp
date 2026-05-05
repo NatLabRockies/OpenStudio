@@ -528,6 +528,21 @@ namespace epmodel {
 
   namespace detail {
 
+    void ThermalStorageChilledWaterStratified_Impl::doCanonicalize(LoadContext& context) {
+      WaterToWaterComponent_Impl::doCanonicalize(context);
+
+      try {
+        waterHeaterSizing();
+        return;
+      } catch (const std::exception&) {
+      }
+
+      const auto storage = getObject<ThermalStorageChilledWaterStratified>();
+      WaterHeaterSizing sizing(storage);
+      detail::addLoadInfo(context,
+                          "Created default WaterHeater:Sizing object for ThermalStorage:ChilledWater:Stratified '" + storage.nameString() + "'.");
+    }
+
     std::vector<ModelObject> ThermalStorageChilledWaterStratified_Impl::children() const {
       return {waterHeaterSizing()};
     }
@@ -1059,9 +1074,14 @@ namespace epmodel {
     }
 
     WaterHeaterSizing ThermalStorageChilledWaterStratified_Impl::waterHeaterSizing() const {
-      for (const auto& sizing : model().getConcreteModelObjects<WaterHeaterSizing>()) {
-        if (sizing.waterHeater().handle() == handle()) {
-          return sizing;
+      for (const auto& source : getObject<ModelObject>().getSources(WaterHeaterSizing::iddObjectType())) {
+        if (auto sizing = source.optionalCast<WaterHeaterSizing>()) {
+          try {
+            if (sizing->waterHeater().handle() == handle()) {
+              return *sizing;
+            }
+          } catch (const std::exception&) {
+          }
         }
       }
       throw std::runtime_error("ThermalStorageChilledWaterStratified missing WaterHeater:Sizing object.");
