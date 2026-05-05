@@ -56,24 +56,24 @@ permissions:
   id-token: write
 
 env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  BUILD_TYPE: Release
-  OPENSTUDIO_BUILD: build
-  OPENSTUDIO_SOURCE: OpenStudio
-  PYTHON_REQUIRED_VERSION: "3.12.2"
-  SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
-  AWS_S3_BUCKET: openstudio-ci-builds
-  TEST_DASHBOARD_RELATIVE: Testing/dashboard/test-dashboard.md
-  CCACHE_SLOPPINESS: pch_defines,time_macros,include_file_mtime,include_file_ctime
-  CCACHE_BASEDIR: ${{ github.workspace }}
-  CCACHE_COMPRESS: "true"
-  CCACHE_COMPRESSLEVEL: "3"
-  CCACHE_MAXSIZE: "10G"
-  CCACHE_DEPEND: "true"
-  CCACHE_NOHASHDIR: "true"
-  SCCACHE_GHA_ENABLED: "false"
-  SCCACHE_DIR: "${{ github.workspace }}\\.sccache"
-  SCCACHE_CACHE_SIZE: "10G"
+   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+   BUILD_TYPE: Release
+   OPENSTUDIO_BUILD: /mnt/build
+   OPENSTUDIO_SOURCE: /mnt/OpenStudio
+   PYTHON_REQUIRED_VERSION: "3.12.2"
+   SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+   AWS_S3_BUCKET: openstudio-ci-builds
+   TEST_DASHBOARD_RELATIVE: Testing/dashboard/test-dashboard.md
+   CCACHE_SLOPPINESS: pch_defines,time_macros,include_file_mtime,include_file_ctime
+   CCACHE_BASEDIR: /mnt/OpenStudio
+   CCACHE_COMPRESS: "true"
+   CCACHE_COMPRESSLEVEL: "3"
+   CCACHE_MAXSIZE: "10G"
+   CCACHE_DEPEND: "true"
+   CCACHE_NOHASHDIR: "true"
+   SCCACHE_GHA_ENABLED: "false"
+   SCCACHE_DIR: "/mnt/.sccache"
+   SCCACHE_CACHE_SIZE: "10G"
 
 jobs:
   linux-build:
@@ -81,6 +81,7 @@ jobs:
     if: |
       (!inputs.jobs || contains(inputs.jobs, 'linux-build')) &&
       (github.event_name == 'push' || github.event_name == 'schedule' ||
+       github.event_name == 'workflow_dispatch' ||
        (github.event_name == 'pull_request' && (github.base_ref == 'develop' || github.base_ref == 'master')))
     runs-on: ${{ matrix.os }}
     container:
@@ -196,57 +197,33 @@ jobs:
           df -h || true
           echo
 
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
+- name: Checkout repository
+         uses: actions/checkout@v6
+         with:
+           fetch-depth: 1
+           path: ${{ env.OPENSTUDIO_SOURCE }}
 
       - name: Restore ccache cache
         uses: actions/cache@v4
         with:
-          path: ~/.ccache
+          path: /mnt/.ccache
           key: ccache-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
           restore-keys: |
             ccache-${{ matrix.os }}-${{ matrix.platform }}-
 
       - name: Restore Conan cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.conan2
-          key: conan-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
-          restore-keys: |
-            conan-${{ matrix.os }}-${{ matrix.platform }}-
+         uses: actions/cache@v4
+         with:
+           path: /mnt/.conan2
+           key: conan-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
+           restore-keys: |
+             conan-${{ matrix.os }}-${{ matrix.platform }}-
 
-      - name: Prepare workspace
-        run: |
-          set -euo pipefail
-          
-          # Git safe directory
-          if command -v git >/dev/null 2>&1; then
-            git config --global --add safe.directory '*'
-          fi
-
-          # Use /mnt for build and caches to avoid running out of space on root partition
-          prepare_dir() {
-            local target=$1
-            local dest=$2
-            mkdir -p "$dest"
-            if [ -d "$target" ] && [ ! -L "$target" ]; then
-              echo "Moving existing $target to $dest"
-              cp -a "$target/." "$dest/"
-              rm -rf "$target"
-            fi
-            mkdir -p "$(dirname "$target")"
-            ln -sfn "$dest" "$target"
-          }
-
-          prepare_dir "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}" "/mnt/build"
-          prepare_dir "$HOME/.ccache" "/mnt/.ccache"
-          prepare_dir "$HOME/.conan2" "/mnt/.conan2"
-          if command -v ccache >/dev/null 2>&1; then
-            ccache -M ${{ env.CCACHE_MAXSIZE }} || true
-            echo "Configured ccache:"; ccache -s | sed -n '1,10p'
-          fi
+      - name: Configure ccache
+         if: command -v ccache >/dev/null 2>&1
+         run: |
+           ccache -M ${{ env.CCACHE_MAXSIZE }} || true
+           echo "Configured ccache:"; ccache -s | sed -n '1,10p'
 
       - name: Resolve build path
         id: build_path
@@ -634,6 +611,7 @@ jobs:
     if: |
       (!inputs.jobs || contains(inputs.jobs, 'macos-build')) &&
       (github.event_name == 'push' || github.event_name == 'schedule' ||
+       github.event_name == 'workflow_dispatch' ||
        (github.event_name == 'pull_request' && (github.base_ref == 'develop' || github.base_ref == 'master')))
     runs-on: ${{ matrix.os }}
     timeout-minutes: 720
@@ -709,7 +687,7 @@ jobs:
     - name: Restore Conan cache
       uses: actions/cache@v4
       with:
-        path: ~/.conan2
+        path: /mnt/.conan2
         key: conan-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
         restore-keys: |
           conan-${{ matrix.os }}-${{ matrix.platform }}-
@@ -1200,6 +1178,7 @@ jobs:
     if: |
       (!inputs.jobs || contains(inputs.jobs, 'windows-build')) &&
       (github.event_name == 'push' || github.event_name == 'schedule' ||
+       github.event_name == 'workflow_dispatch' ||
        (github.event_name == 'pull_request' && (github.base_ref == 'develop' || github.base_ref == 'master')))
     runs-on: ${{ matrix.os }}
     timeout-minutes: 720
@@ -1247,7 +1226,7 @@ jobs:
       - name: Restore sccache cache
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}\.sccache
+          path: /mnt/.sccache
           key: sccache-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
           restore-keys: |
             sccache-${{ matrix.os }}-${{ matrix.platform }}-
@@ -1278,18 +1257,13 @@ jobs:
             $new_content | Set-Content $os_py
           }
 
-      - name: Prepare workspace
-        run: |
-          git config --global --add safe.directory "*"
-          New-Item -ItemType Directory -Path "${{ env.OPENSTUDIO_BUILD }}" -Force
-
       - name: Setup sccache
         uses: Mozilla-Actions/sccache-action@v0.0.5
 
       - name: Restore Conan cache
         uses: actions/cache@v4
         with:
-          path: ~/.conan2
+          path: /mnt/.conan2
           key: conan-${{ matrix.os }}-windows-${{ hashFiles('conan.lock') }}
           restore-keys: |
             conan-${{ matrix.os }}-windows-
