@@ -35,17 +35,10 @@ namespace epmodel {
     OS_ASSERT(setReferenceCOP(5.5));
     autosizeReferenceCapacity();
     autosizeReferenceChilledWaterFlowRate();
-    OS_ASSERT(setDesignHeatRecoveryWaterFlowRate(0.0));
+    autosizeDesignHeatRecoveryWaterFlowRate();
     OS_ASSERT(setBasinHeaterSetpointTemperature(10.0));
     resetBasinHeaterSchedule();
-    OS_ASSERT(setCondenserHeatRecoveryRelativeCapacityFraction(1.0));
-    resetHeatRecoveryLeavingTemperatureSetpointNode();
-    resetHeatRecoveryInletHighTemperatureLimitSchedule();
     OS_ASSERT(setCondenserType("AirCooled"));
-    OS_ASSERT(setEndUseSubcategory("General"));
-    OS_ASSERT(setCondenserFlowControl("ConstantFlow"));
-    OS_ASSERT(setCondenserMinimumFlowFraction(0.2));
-    OS_ASSERT(setThermosiphonMinimumTemperatureDifference(0.0));
   }
 
   ChillerElectricEIR::ChillerElectricEIR(const Model& model) : WaterToWaterComponent(ChillerElectricEIR::iddObjectType(), model) {
@@ -86,17 +79,10 @@ namespace epmodel {
     OS_ASSERT(setReferenceCOP(5.5));
     autosizeReferenceCapacity();
     autosizeReferenceChilledWaterFlowRate();
-    OS_ASSERT(setDesignHeatRecoveryWaterFlowRate(0.0));
+    autosizeDesignHeatRecoveryWaterFlowRate();
     OS_ASSERT(setBasinHeaterSetpointTemperature(10.0));
     resetBasinHeaterSchedule();
-    OS_ASSERT(setCondenserHeatRecoveryRelativeCapacityFraction(1.0));
-    resetHeatRecoveryLeavingTemperatureSetpointNode();
-    resetHeatRecoveryInletHighTemperatureLimitSchedule();
     OS_ASSERT(setCondenserType("AirCooled"));
-    OS_ASSERT(setEndUseSubcategory("General"));
-    OS_ASSERT(setCondenserFlowControl("ConstantFlow"));
-    OS_ASSERT(setCondenserMinimumFlowFraction(0.2));
-    OS_ASSERT(setThermosiphonMinimumTemperatureDifference(0.0));
   }
 
   ChillerElectricEIR::ChillerElectricEIR(std::shared_ptr<detail::ChillerElectricEIR_Impl> impl) : WaterToWaterComponent(std::move(impl)) {}
