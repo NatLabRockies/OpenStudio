@@ -25,6 +25,9 @@
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../WaterToAirComponent/CoilHeatingWater.hpp"
 
+#include <utilities/idd/AirTerminal_SingleDuct_VAV_Reheat_FieldEnums.hxx>
+#include <utilities/idd/Coil_Heating_Water_FieldEnums.hxx>
+
 using namespace openstudio::epmodel;
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_DefaultConstructor) {
@@ -239,6 +242,34 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_AddToNode_ResolvesAirLoopH
   auto splitterOutlet = airLoop.zoneSplitter().outletModelObject(0u);
   ASSERT_TRUE(splitterOutlet);
   EXPECT_EQ(inletNode->cast<ModelObject>(), *splitterOutlet);
+}
+
+TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_AddToNode_PopulatesDirectReheatCoilAirPathFields) {
+  Model model;
+  AirLoopHVAC airLoop(model);
+  ThermalZone zone(model);
+  CoilHeatingWater reheatCoil(model);
+  AirTerminalSingleDuctVAVReheat terminal(model);
+
+  ASSERT_TRUE(terminal.setReheatCoil(reheatCoil));
+
+  auto branchObject = airLoop.zoneSplitter().lastOutletModelObject();
+  ASSERT_TRUE(branchObject);
+  auto branchNode = branchObject->optionalCast<Node>();
+  ASSERT_TRUE(branchNode);
+  ASSERT_TRUE(zone.addToNode(*branchNode));
+
+  auto zoneAirNode = zone.zoneAirNode();
+  ASSERT_TRUE(terminal.addToNode(zoneAirNode));
+
+  const std::string damperOutletNodeName = terminal.nameString() + " Damper Outlet";
+  EXPECT_EQ(damperOutletNodeName,
+            terminal.getString(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName, true).get());
+  EXPECT_EQ(reheatCoil.iddObject().name(),
+            terminal.getString(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::ReheatCoilObjectType, true).get());
+  EXPECT_EQ(damperOutletNodeName, reheatCoil.getString(openstudio::Coil_Heating_WaterFields::AirInletNodeName, true).get());
+  ASSERT_TRUE(reheatCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName));
+  EXPECT_EQ(zoneAirNode, reheatCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName).get());
 }
 
 TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_AddToNode_RegistersSecondBranchZoneEquipment) {
