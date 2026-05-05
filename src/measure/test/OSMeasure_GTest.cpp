@@ -55,7 +55,7 @@ class TestOSRunner : public OSRunner
 namespace {
 
 openstudio::epmodel::Timestep addTimestep(openstudio::epmodel::Model& model, int numberOfTimestepsPerHour) {
-  openstudio::epmodel::Timestep object(model);
+  auto object = model.getUniqueModelObject<openstudio::epmodel::Timestep>();
   OS_ASSERT(object.setNumberOfTimestepsPerHour(numberOfTimestepsPerHour));
   return object;
 }

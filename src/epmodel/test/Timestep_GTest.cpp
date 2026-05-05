@@ -36,7 +36,7 @@ TEST_F(EPModelFixture, Timestep_ScalarAccessors_RoundTrip) {
 
 TEST_F(EPModelFixture, Timestep_ModelClone_PreservesTypedObject) {
   Model model;
-  Timestep object(model);
+  auto object = model.getUniqueModelObject<Timestep>();
   ASSERT_TRUE(object.setNumberOfTimestepsPerHour(12));
 
   Model clone = model.clone(true);

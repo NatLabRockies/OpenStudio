@@ -255,6 +255,7 @@ if(BUILD_TESTING)
   set(rubyengine_test_depends
     openstudio_scriptengine
     openstudiolib
+    openstudio_epmodel
     fmt::fmt
   )
 

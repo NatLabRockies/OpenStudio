@@ -71,6 +71,7 @@ if(BUILD_TESTING)
   set(pythonengine_test_depends
     openstudio_scriptengine
     openstudiolib
+    openstudio_epmodel
     fmt::fmt
   )
 
@@ -104,4 +105,3 @@ elseif(WIN32)
   # Windows does not have RPATH handling, so just copy the DLL to the bin folder
   install(IMPORTED_RUNTIME_ARTIFACTS Python::Python LIBRARY DESTINATION ${LIB_DESTINATION_DIR} COMPONENT "CLI")
 endif()
-
