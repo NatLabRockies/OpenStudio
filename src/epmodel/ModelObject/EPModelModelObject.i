@@ -13,6 +13,7 @@
 EPMODELOBJECT_WRAP(Timestep, <epmodel/ModelObject/Timestep.hpp>, 1, 1)
 EPMODELOBJECT_WRAP(WaterHeaterSizing, <epmodel/ModelObject/WaterHeaterSizing.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(PlantEquipmentOperationSchemes, <epmodel/ModelObject/PlantEquipmentOperationSchemes.hpp>, 0, 1)
+EPMODELOBJECT_WRAP(PlantEquipmentList, <epmodel/ModelObject/PlantEquipmentList.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(SolarCollectorPerformanceFlatPlate, <epmodel/ModelObject/SolarCollectorPerformanceFlatPlate.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(SolarCollectorPerformanceIntegralCollectorStorage, <epmodel/ModelObject/SolarCollectorPerformanceIntegralCollectorStorage.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(SolarCollectorPerformancePhotovoltaicThermalBIPVT, <epmodel/ModelObject/SolarCollectorPerformancePhotovoltaicThermalBIPVT.hpp>, 0, 1)

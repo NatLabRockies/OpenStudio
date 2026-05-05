@@ -574,6 +574,7 @@
 #include "PlantEquipmentOperationScheme/PlantEquipmentOperationComponentSetpoint_Impl.hpp"
 #include "PlantEquipmentOperationScheme/PlantEquipmentOperationThermalEnergyStorage_Impl.hpp"
 #include "ModelObject/PlantEquipmentOperationSchemes_Impl.hpp"
+#include "ModelObject/PlantEquipmentList_Impl.hpp"
 #include "PlantEquipmentOperationScheme/PlantEquipmentOperationCoolingLoad_Impl.hpp"
 #include "PlantEquipmentOperationScheme/PlantEquipmentOperationHeatingLoad_Impl.hpp"
 #include "PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorDewpoint_Impl.hpp"
@@ -1776,6 +1777,7 @@ namespace epmodel {
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::PlantComponent_TemperatureSource, PlantComponentTemperatureSource_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::PlantComponent_UserDefined, PlantComponentUserDefined_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::PlantEquipmentOperationSchemes, PlantEquipmentOperationSchemes_Impl);
+      REGISTER_NEW_CONSTRUCTOR(IddObjectType::PlantEquipmentList, PlantEquipmentList_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::PlantEquipmentOperation_ChillerHeaterChangeover, PlantEquipmentOperationChillerHeaterChangeover_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::PlantEquipmentOperation_ComponentSetpoint, PlantEquipmentOperationComponentSetpoint_Impl);
       REGISTER_NEW_CONSTRUCTOR(IddObjectType::PlantEquipmentOperation_CoolingLoad, PlantEquipmentOperationCoolingLoad_Impl);
@@ -2718,6 +2720,7 @@ namespace epmodel {
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::PlantComponent_TemperatureSource, PlantComponentTemperatureSource_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::PlantComponent_UserDefined, PlantComponentUserDefined_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::PlantEquipmentOperationSchemes, PlantEquipmentOperationSchemes_Impl);
+      REGISTER_COPY_CONSTRUCTOR(IddObjectType::PlantEquipmentList, PlantEquipmentList_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::PlantEquipmentOperation_ChillerHeaterChangeover, PlantEquipmentOperationChillerHeaterChangeover_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::PlantEquipmentOperation_ComponentSetpoint, PlantEquipmentOperationComponentSetpoint_Impl);
       REGISTER_COPY_CONSTRUCTOR(IddObjectType::PlantEquipmentOperation_CoolingLoad, PlantEquipmentOperationCoolingLoad_Impl);

@@ -39,6 +39,11 @@ class EpModelMultizoneVAV < OpenStudio::Measure::ModelMeasure
     boiler.autosizeDesignWaterFlowRate
     loop.addSupplyBranchForComponent(boiler)
 
+    heating_operation = OpenStudio::EPModel::PlantEquipmentOperationHeatingLoad.new(model)
+    heating_operation.setName("#{SYSTEM_PREFIX} Hot Water Heating Operation Scheme")
+    heating_operation.addEquipment(boiler)
+    loop.setPlantEquipmentOperationHeatingLoad(heating_operation)
+
     supply_bypass = OpenStudio::EPModel::PipeAdiabatic.new(model)
     supply_bypass.setName("#{SYSTEM_PREFIX} Hot Water Supply Bypass")
     loop.addSupplyBranchForComponent(supply_bypass)
@@ -74,6 +79,11 @@ class EpModelMultizoneVAV < OpenStudio::Measure::ModelMeasure
     chiller = OpenStudio::EPModel::ChillerElectricEIR.new(model)
     chiller.setName("#{SYSTEM_PREFIX} Air-Cooled Chiller")
     loop.addSupplyBranchForComponent(chiller)
+
+    cooling_operation = OpenStudio::EPModel::PlantEquipmentOperationCoolingLoad.new(model)
+    cooling_operation.setName("#{SYSTEM_PREFIX} Chilled Water Cooling Operation Scheme")
+    cooling_operation.addEquipment(chiller)
+    loop.setPlantEquipmentOperationCoolingLoad(cooling_operation)
 
     supply_bypass = OpenStudio::EPModel::PipeAdiabatic.new(model)
     supply_bypass.setName("#{SYSTEM_PREFIX} Chilled Water Supply Bypass")

@@ -586,6 +586,9 @@ set(${target_name}_src
   ModelObject/PlantEquipmentOperationSchemes.hpp
   ModelObject/PlantEquipmentOperationSchemes_Impl.hpp
   ModelObject/PlantEquipmentOperationSchemes.cpp
+  ModelObject/PlantEquipmentList.hpp
+  ModelObject/PlantEquipmentList_Impl.hpp
+  ModelObject/PlantEquipmentList.cpp
   ModelObject/PythonPluginOutputVariable.hpp
   ModelObject/PythonPluginOutputVariable_Impl.hpp
   ModelObject/PythonPluginOutputVariable.cpp
@@ -903,6 +906,9 @@ set(${target_name}_src
   PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorWetBulbDifference.hpp
   PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorWetBulbDifference_Impl.hpp
   PlantEquipmentOperationScheme/PlantEquipmentOperationOutdoorWetBulbDifference.cpp
+  PlantEquipmentOperationScheme/PlantEquipmentOperationRangeBasedScheme.hpp
+  PlantEquipmentOperationScheme/PlantEquipmentOperationRangeBasedScheme_Impl.hpp
+  PlantEquipmentOperationScheme/PlantEquipmentOperationRangeBasedScheme.cpp
   PlantEquipmentOperationScheme/PlantEquipmentOperationScheme.hpp
   PlantEquipmentOperationScheme/PlantEquipmentOperationScheme_Impl.hpp
   PlantEquipmentOperationScheme/PlantEquipmentOperationScheme.cpp
@@ -3301,6 +3307,7 @@ set(${target_name}_test_src
   test/PipingSystemUndergroundPipeSegment_GTest.cpp
   test/PlantComponentTemperatureSource_GTest.cpp
   test/PlantComponentUserDefined_GTest.cpp
+  test/PlantEquipmentList_GTest.cpp
   test/PlantEquipmentOperationChillerHeaterChangeover_GTest.cpp
   test/PlantEquipmentOperationComponentSetpoint_GTest.cpp
   test/PlantEquipmentOperationCoolingLoad_GTest.cpp

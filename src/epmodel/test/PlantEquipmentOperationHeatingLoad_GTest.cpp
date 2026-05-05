@@ -4,11 +4,11 @@
 ***********************************************************************************************************************/
 
 #include <gtest/gtest.h>
-#include <utilities/idd/PlantEquipmentOperation_HeatingLoad_FieldEnums.hxx>
-#include <utilities/idf/IdfExtensibleGroup.hpp>
 
 #include "EPModelFixture.hpp"
+#include "../HVACComponent/HVACComponent.hpp"
 #include "../PlantEquipmentOperationScheme/PlantEquipmentOperationHeatingLoad.hpp"
+#include "../StraightComponent/BoilerHotWater.hpp"
 
 using namespace openstudio::epmodel;
 
@@ -19,27 +19,31 @@ TEST_F(EPModelFixture, PlantEquipmentOperationHeatingLoad_DefaultConstructor) {
   EXPECT_FALSE(heatingLoad.nameString().empty());
 }
 
-TEST_F(EPModelFixture, PlantEquipmentOperationHeatingLoad_ScalarAccessors_RoundTrip) {
+TEST_F(EPModelFixture, PlantEquipmentOperationHeatingLoad_RangeEquipmentApi) {
   Model model;
   PlantEquipmentOperationHeatingLoad heatingLoad(model);
+  BoilerHotWater boiler(model);
+  BoilerHotWater boiler2(model);
 
   EXPECT_DOUBLE_EQ(1e9, heatingLoad.maximumUpperLimit());
   EXPECT_DOUBLE_EQ(0.0, heatingLoad.minimumLowerLimit());
+  ASSERT_EQ(1u, heatingLoad.loadRangeUpperLimits().size());
+  EXPECT_TRUE(heatingLoad.equipment(heatingLoad.maximumUpperLimit()).empty());
 
-  const auto lowerField = openstudio::PlantEquipmentOperation_HeatingLoadExtensibleFields::LoadRangeLowerLimit;
-  const auto upperField = openstudio::PlantEquipmentOperation_HeatingLoadExtensibleFields::LoadRangeUpperLimit;
+  EXPECT_TRUE(heatingLoad.addEquipment(boiler));
+  EXPECT_FALSE(heatingLoad.addEquipment(boiler));
+  ASSERT_EQ(1u, heatingLoad.equipment(heatingLoad.maximumUpperLimit()).size());
+  EXPECT_EQ(boiler.cast<HVACComponent>(), heatingLoad.equipment(heatingLoad.maximumUpperLimit()).front());
 
-  auto firstGroup = heatingLoad.pushExtensibleGroup();
-  ASSERT_FALSE(firstGroup.empty());
-  ASSERT_TRUE(firstGroup.setDouble(lowerField, 5.0));
-  ASSERT_TRUE(firstGroup.setDouble(upperField, 123.4));
-  EXPECT_DOUBLE_EQ(123.4, heatingLoad.maximumUpperLimit());
-  EXPECT_DOUBLE_EQ(5.0, heatingLoad.minimumLowerLimit());
+  EXPECT_TRUE(heatingLoad.addLoadRange(1000.0, {boiler2}));
+  auto upperLimits = heatingLoad.loadRangeUpperLimits();
+  ASSERT_EQ(2u, upperLimits.size());
+  EXPECT_DOUBLE_EQ(1000.0, upperLimits.front());
+  ASSERT_EQ(1u, heatingLoad.equipment(1000.0).size());
+  EXPECT_EQ(boiler2.cast<HVACComponent>(), heatingLoad.equipment(1000.0).front());
 
-  auto secondGroup = heatingLoad.pushExtensibleGroup();
-  ASSERT_FALSE(secondGroup.empty());
-  ASSERT_TRUE(secondGroup.setDouble(lowerField, 50.0));
-  ASSERT_TRUE(secondGroup.setDouble(upperField, 500.0));
-  EXPECT_DOUBLE_EQ(500.0, heatingLoad.maximumUpperLimit());
-  EXPECT_DOUBLE_EQ(5.0, heatingLoad.minimumLowerLimit());
+  auto removed = heatingLoad.removeLoadRange(1000.0);
+  ASSERT_EQ(1u, removed.size());
+  EXPECT_EQ(boiler2.cast<HVACComponent>(), removed.front());
+  EXPECT_EQ(1u, heatingLoad.loadRangeUpperLimits().size());
 }

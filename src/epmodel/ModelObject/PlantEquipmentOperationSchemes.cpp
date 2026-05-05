@@ -286,7 +286,16 @@ namespace epmodel {
       }
 
       if (!group->setPointer(ExtensibleFields::ControlSchemeName, controlScheme.handle(), false)) {
-        return group->setString(ExtensibleFields::ControlSchemeName, controlScheme.nameString());
+        if (!group->setString(ExtensibleFields::ControlSchemeName, controlScheme.nameString())) {
+          return false;
+        }
+      }
+
+      if (!groupHasControlSchemeSchedule(schemeIndex)) {
+        auto alwaysOn = model().alwaysOnDiscreteSchedule();
+        if (!setControlSchemeSchedule(schemeIndex, alwaysOn)) {
+          return false;
+        }
       }
 
       return true;

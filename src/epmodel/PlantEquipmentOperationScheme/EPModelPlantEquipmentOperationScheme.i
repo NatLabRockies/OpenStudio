@@ -9,6 +9,7 @@
 %import <epmodel/EPModel.i>
 
 EPMODELOBJECT_WRAP(PlantEquipmentOperationScheme, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationScheme.hpp>, 0, 0)
+EPMODELOBJECT_WRAP(PlantEquipmentOperationRangeBasedScheme, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationRangeBasedScheme.hpp>, 0, 0)
 EPMODELOBJECT_WRAP(PlantEquipmentOperationChillerHeaterChangeover, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationChillerHeaterChangeover.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(PlantEquipmentOperationComponentSetpoint, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationComponentSetpoint.hpp>, 0, 1)
 EPMODELOBJECT_WRAP(PlantEquipmentOperationThermalEnergyStorage, <epmodel/PlantEquipmentOperationScheme/PlantEquipmentOperationThermalEnergyStorage.hpp>, 0, 1)

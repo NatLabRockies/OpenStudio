@@ -6,7 +6,7 @@
 #ifndef EPMODEL_PLANTEQUIPMENTOPERATIONCOOLINGLOAD_IMPL_HPP
 #define EPMODEL_PLANTEQUIPMENTOPERATIONCOOLINGLOAD_IMPL_HPP
 
-#include "PlantEquipmentOperationScheme/PlantEquipmentOperationScheme_Impl.hpp"
+#include "PlantEquipmentOperationScheme/PlantEquipmentOperationRangeBasedScheme_Impl.hpp"
 
 namespace openstudio {
 class IdfObject;
@@ -21,7 +21,7 @@ namespace epmodel {
 
     class Model_Impl;
 
-    class EPMODEL_API PlantEquipmentOperationCoolingLoad_Impl : public PlantEquipmentOperationScheme_Impl
+    class EPMODEL_API PlantEquipmentOperationCoolingLoad_Impl : public PlantEquipmentOperationRangeBasedScheme_Impl
     {
      public:
       PlantEquipmentOperationCoolingLoad_Impl(const openstudio::IdfObject& idfObject, Model_Impl* model, bool keepHandle);
@@ -29,8 +29,6 @@ namespace epmodel {
       PlantEquipmentOperationCoolingLoad_Impl(const PlantEquipmentOperationCoolingLoad_Impl& other, Model_Impl* model, bool keepHandle);
       virtual ~PlantEquipmentOperationCoolingLoad_Impl() override = default;
 
-      double maximumUpperLimit() const;
-      double minimumLowerLimit() const;
     };
 
   }  // namespace detail
