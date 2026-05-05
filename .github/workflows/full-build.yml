@@ -78,10 +78,11 @@ env:
 jobs:
   linux-build:
     name: Build ${{ matrix.pretty }}
-    if: |
-      (!inputs.jobs || contains(inputs.jobs, 'linux-build')) &&
-      (github.event_name == 'push' || github.event_name == 'schedule' ||
-       (github.event_name == 'pull_request' && (github.base_ref == 'develop' || github.base_ref == 'master')))
+if: |
+  (!inputs.jobs || contains(inputs.jobs, 'linux-build')) &&
+  (github.event_name == 'push' || github.event_name == 'schedule' ||
+   github.event_name == 'workflow_dispatch' ||
+   (github.event_name == 'pull_request' && (github.base_ref == 'develop' || github.base_ref == 'master')))
     runs-on: ${{ matrix.os }}
     container:
       image: ${{ matrix.container_image }}
@@ -631,10 +632,11 @@ jobs:
 
   macos-build:
     name: Build Packages for ${{ matrix.pretty }}
-    if: |
-      (!inputs.jobs || contains(inputs.jobs, 'macos-build')) &&
-      (github.event_name == 'push' || github.event_name == 'schedule' ||
-       (github.event_name == 'pull_request' && (github.base_ref == 'develop' || github.base_ref == 'master')))
+if: |
+  (!inputs.jobs || contains(inputs.jobs, 'macos-build')) &&
+  (github.event_name == 'push' || github.event_name == 'schedule' ||
+   github.event_name == 'workflow_dispatch' ||
+   (github.event_name == 'pull_request' && (github.base_ref == 'develop' || github.base_ref == 'master')))
     runs-on: ${{ matrix.os }}
     timeout-minutes: 720
     continue-on-error: ${{ matrix.allow_failure }}
@@ -1197,10 +1199,11 @@ jobs:
 
   windows-build:
     name: Build ${{ matrix.pretty }}
-    if: |
-      (!inputs.jobs || contains(inputs.jobs, 'windows-build')) &&
-      (github.event_name == 'push' || github.event_name == 'schedule' ||
-       (github.event_name == 'pull_request' && (github.base_ref == 'develop' || github.base_ref == 'master')))
+if: |
+  (!inputs.jobs || contains(inputs.jobs, 'windows-build')) &&
+  (github.event_name == 'push' || github.event_name == 'schedule' ||
+   github.event_name == 'workflow_dispatch' ||
+   (github.event_name == 'pull_request' && (github.base_ref == 'develop' || github.base_ref == 'master')))
     runs-on: ${{ matrix.os }}
     timeout-minutes: 720
     strategy:
