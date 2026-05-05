@@ -21,6 +21,8 @@
 #include "BranchList.hpp"
 #include "Model.hpp"
 #include "Node.hpp"
+#include "WaterToAirComponent/WaterToAirComponent.hpp"
+#include "WaterToAirComponent/WaterToAirComponent_Impl.hpp"
 
 #include <utilities/core/Assert.hpp>
 #include <utilities/core/Compare.hpp>
@@ -370,11 +372,31 @@ namespace epmodel {
             if (!branch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentInletNode(insertIndex + 1u, newNode)) {
               return false;
             }
+            if (auto straightComponent = components[i].optionalCast<openstudio::epmodel::StraightComponent>()) {
+              if (!straightComponent->setPointer(straightComponent->inletPort(), newNode.handle())) {
+                return false;
+              }
+            } else if (auto waterToAirComponent = components[i].optionalCast<openstudio::epmodel::WaterToAirComponent>()) {
+              const auto port = airLoop ? waterToAirComponent->airInletPort() : waterToAirComponent->waterInletPort();
+              if (!waterToAirComponent->setPointer(port, newNode.handle())) {
+                return false;
+              }
+            }
           } else {
             // The upstream component currently uses nodeName as its outlet; reroute it to newNodeName.
             auto newNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(newNodeName);
             if (!branch->getImpl<openstudio::epmodel::detail::Branch_Impl>()->setComponentOutletNode(insertIndex - 1u, newNode)) {
               return false;
+            }
+            if (auto straightComponent = components[i].optionalCast<openstudio::epmodel::StraightComponent>()) {
+              if (!straightComponent->setPointer(straightComponent->outletPort(), newNode.handle())) {
+                return false;
+              }
+            } else if (auto waterToAirComponent = components[i].optionalCast<openstudio::epmodel::WaterToAirComponent>()) {
+              const auto port = airLoop ? waterToAirComponent->airOutletPort() : waterToAirComponent->waterOutletPort();
+              if (!waterToAirComponent->setPointer(port, newNode.handle())) {
+                return false;
+              }
             }
           }
 
