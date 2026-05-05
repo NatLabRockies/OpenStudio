@@ -7,6 +7,7 @@
 #include "Loop/PlantLoop_Impl.hpp"
 
 #include "Model.hpp"
+#include "ModelObject/ModelObject_Impl.inl"
 #include "AvailabilityManager/AvailabilityManager.hpp"
 #include "PlantEquipmentOperationScheme/PlantEquipmentOperationScheme.hpp"
 #include "ModelObject/AvailabilityManagerAssignmentList.hpp"

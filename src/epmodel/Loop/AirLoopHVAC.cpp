@@ -48,6 +48,7 @@
 #include "Loop/Loop_Impl.hpp"
 #include "Loop/PlantLoop.hpp"
 #include "Model.hpp"
+#include "ModelObject/ModelObject_Impl.inl"
 #include "Node.hpp"
 #include "ModelObject/NodeList.hpp"
 #include "ModelObject/NodeList_Impl.hpp"

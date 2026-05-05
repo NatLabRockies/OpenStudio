@@ -57,7 +57,7 @@ namespace epmodel {
       boost::optional<double> getAutosizedValueFromInitializationSummary(const std::string& valueName, const std::string& units) const;
 
      protected:
-      // Bodies are in ModelObject_Impl.inl (included at the bottom of Model.hpp)
+      // Bodies are in ModelObject_Impl.inl — include it after Model.hpp
       // so that Model is complete when the template bodies are parsed.
       template <typename T>
       T getOrCreateTarget(unsigned fieldIndex);
