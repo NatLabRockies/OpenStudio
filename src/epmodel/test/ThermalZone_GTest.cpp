@@ -74,10 +74,12 @@ TEST_F(EPModelFixture, ThermalZone_AddToNode_DemandBranchNode) {
   const auto mixerInlets = airLoop.zoneMixer().inletModelObjects();
   ASSERT_EQ(splitterOutlets.size(), mixerInlets.size());
   ASSERT_EQ(1u, splitterOutlets.size());
-  EXPECT_EQ(splitterOutlets[0], mixerInlets[0]);
+  EXPECT_NE(splitterOutlets[0], mixerInlets[0]);
 
   auto updatedNode = splitterOutlets[0].cast<Node>();
   EXPECT_EQ(zone.nameString() + " Demand Branch Node", updatedNode.nameString());
+  auto returnNode = mixerInlets[0].cast<Node>();
+  EXPECT_EQ(zone.nameString() + " Demand Return Node", returnNode.nameString());
 
   auto zoneImpl = zone.getImpl<detail::ThermalZone_Impl>();
   ASSERT_TRUE(zoneImpl);
@@ -88,16 +90,17 @@ TEST_F(EPModelFixture, ThermalZone_AddToNode_DemandBranchNode) {
   const auto returnNodes = zoneConnections->zoneReturnAirNodes();
   ASSERT_EQ(1u, returnNodes.size());
   EXPECT_EQ(updatedNode.cast<ModelObject>(), inletNodes.front().cast<ModelObject>());
-  EXPECT_EQ(updatedNode.cast<ModelObject>(), returnNodes.front().cast<ModelObject>());
+  EXPECT_EQ(returnNode.cast<ModelObject>(), returnNodes.front().cast<ModelObject>());
 
   const auto demandComps = airLoop.demandComponents();
-  ASSERT_EQ(6u, demandComps.size());
+  ASSERT_EQ(7u, demandComps.size());
   EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Node), demandComps[0].iddObject().type());
   EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::AirLoopHVAC_ZoneSplitter), demandComps[1].iddObject().type());
   EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Node), demandComps[2].iddObject().type());
   EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Zone), demandComps[3].iddObject().type());
-  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::AirLoopHVAC_ZoneMixer), demandComps[4].iddObject().type());
-  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Node), demandComps[5].iddObject().type());
+  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Node), demandComps[4].iddObject().type());
+  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::AirLoopHVAC_ZoneMixer), demandComps[5].iddObject().type());
+  EXPECT_EQ(openstudio::IddObjectType(openstudio::IddObjectType::Node), demandComps[6].iddObject().type());
 }
 
 TEST_F(EPModelFixture, ThermalZone_AddToNode_FailsOnSupplyNode) {

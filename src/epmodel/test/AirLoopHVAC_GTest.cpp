@@ -675,11 +675,11 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctConstantVolumeNoReheat_AddToNode_Bra
   ASSERT_TRUE(mixerInletObject);
   auto mixerInletNode = mixerInletObject->optionalCast<Node>();
   ASSERT_TRUE(mixerInletNode);
-  EXPECT_EQ(*zoneBranchNode, *mixerInletNode);
+  EXPECT_NE(*zoneBranchNode, *mixerInletNode);
   EXPECT_NE(*splitterOutletNode, *mixerInletNode);
 
   const auto demandAfter = airLoop.demandComponents();
-  EXPECT_EQ(demandBefore.size() + 2u, demandAfter.size());
+  EXPECT_EQ(demandBefore.size() + 1u, demandAfter.size());
   const auto terminalCountAfter = std::count_if(demandAfter.begin(), demandAfter.end(), [](const ModelObject& mo) {
     return mo.iddObject().type() == openstudio::IddObjectType::AirTerminal_SingleDuct_ConstantVolume_NoReheat;
   });

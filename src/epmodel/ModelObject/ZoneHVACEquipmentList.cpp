@@ -10,12 +10,18 @@
 #include "HVACComponent/ThermalZone_Impl.hpp"
 #include "Model.hpp"
 #include "ModelObject.hpp"
+#include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
+#include "ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
+#include "Mixer/Mixer.hpp"
+#include "Mixer/Mixer_Impl.hpp"
+#include "Node.hpp"
 #include "Schedule/Schedule.hpp"
 #include "Schedule/Schedule_Impl.hpp"
 #include "Schedule/ScheduleConstant.hpp"
 #include "Schedule/ScheduleConstant_Impl.hpp"
+#include "StraightComponent/StraightComponent.hpp"
 
 #include <optional>
 #include <stdexcept>
@@ -199,6 +205,109 @@ namespace epmodel {
         return group.setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentName, component.nameString(), false);
       }
 
+      bool isAirTerminal(const openstudio::epmodel::ModelObject& component) {
+        switch (component.iddObject().type().value()) {
+          case openstudio::IddObjectType::AirTerminal_DualDuct_ConstantVolume:
+          case openstudio::IddObjectType::AirTerminal_DualDuct_VAV:
+          case openstudio::IddObjectType::AirTerminal_DualDuct_VAV_OutdoorAir:
+          case openstudio::IddObjectType::AirTerminal_SingleDuct_ConstantVolume_CooledBeam:
+          case openstudio::IddObjectType::AirTerminal_SingleDuct_ConstantVolume_FourPipeBeam:
+          case openstudio::IddObjectType::AirTerminal_SingleDuct_ConstantVolume_FourPipeInduction:
+          case openstudio::IddObjectType::AirTerminal_SingleDuct_ConstantVolume_NoReheat:
+          case openstudio::IddObjectType::AirTerminal_SingleDuct_ConstantVolume_Reheat:
+          case openstudio::IddObjectType::AirTerminal_SingleDuct_Mixer:
+          case openstudio::IddObjectType::AirTerminal_SingleDuct_ParallelPIU_Reheat:
+          case openstudio::IddObjectType::AirTerminal_SingleDuct_SeriesPIU_Reheat:
+          case openstudio::IddObjectType::AirTerminal_SingleDuct_UserDefined:
+          case openstudio::IddObjectType::AirTerminal_SingleDuct_VAV_HeatAndCool_NoReheat:
+          case openstudio::IddObjectType::AirTerminal_SingleDuct_VAV_HeatAndCool_Reheat:
+          case openstudio::IddObjectType::AirTerminal_SingleDuct_VAV_NoReheat:
+          case openstudio::IddObjectType::AirTerminal_SingleDuct_VAV_Reheat:
+          case openstudio::IddObjectType::AirTerminal_SingleDuct_VAV_Reheat_VariableSpeedFan:
+            return true;
+          default:
+            return false;
+        }
+      }
+
+      boost::optional<openstudio::epmodel::ModelObject> modelEquipmentObject(const openstudio::epmodel::ModelObject& equipmentListTarget) {
+        if (auto airDistributionUnit = equipmentListTarget.optionalCast<openstudio::epmodel::ZoneHVACAirDistributionUnit>()) {
+          if (auto terminal = airDistributionUnit->airTerminal()) {
+            return *terminal;
+          }
+          return boost::none;
+        }
+        return equipmentListTarget;
+      }
+
+      boost::optional<openstudio::epmodel::Node> airTerminalOutletNode(const openstudio::epmodel::ModelObject& terminal) {
+        boost::optional<openstudio::epmodel::ModelObject> outletObject;
+        if (auto component = terminal.optionalCast<openstudio::epmodel::StraightComponent>()) {
+          outletObject = component->outletModelObject();
+        } else if (auto mixer = terminal.optionalCast<openstudio::epmodel::Mixer>()) {
+          outletObject = mixer->outletModelObject();
+        }
+
+        if (!outletObject) {
+          return boost::none;
+        }
+        return outletObject->optionalCast<openstudio::epmodel::Node>();
+      }
+
+      boost::optional<openstudio::epmodel::ZoneHVACAirDistributionUnit>
+        airDistributionUnitForTerminal(const openstudio::epmodel::ModelObject& terminal) {
+        for (const auto& source : terminal.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit)) {
+          if (auto airDistributionUnit = source.optionalCast<openstudio::epmodel::ZoneHVACAirDistributionUnit>()) {
+            return *airDistributionUnit;
+          }
+        }
+
+        openstudio::epmodel::ZoneHVACAirDistributionUnit airDistributionUnit(terminal.model());
+        if (!terminal.nameString().empty()) {
+          airDistributionUnit.setName(terminal.nameString() + " Air Distribution Unit");
+        }
+
+        auto airDistributionUnitImpl = airDistributionUnit.getImpl<openstudio::epmodel::detail::ZoneHVACAirDistributionUnit_Impl>();
+        OS_ASSERT(airDistributionUnitImpl);
+        if (!airDistributionUnitImpl->setAirTerminal(terminal)) {
+          airDistributionUnit.remove();
+          return boost::none;
+        }
+
+        if (auto outletNode = airTerminalOutletNode(terminal)) {
+          if (!airDistributionUnitImpl->setOutletNode(*outletNode)) {
+            airDistributionUnit.remove();
+            return boost::none;
+          }
+        }
+
+        return airDistributionUnit;
+      }
+
+      boost::optional<openstudio::epmodel::ModelObject> equipmentListTargetFor(const openstudio::epmodel::ModelObject& component) {
+        if (!isAirTerminal(component)) {
+          return component;
+        }
+
+        auto airDistributionUnit = airDistributionUnitForTerminal(component);
+        if (!airDistributionUnit) {
+          return boost::none;
+        }
+        return airDistributionUnit->cast<openstudio::epmodel::ModelObject>();
+      }
+
+      bool equipmentListTargetMatches(const openstudio::epmodel::ModelObject& equipmentListTarget,
+                                      const openstudio::epmodel::ModelObject& component) {
+        if (equipmentListTarget == component) {
+          return true;
+        }
+        if (auto airDistributionUnit = equipmentListTarget.optionalCast<openstudio::epmodel::ZoneHVACAirDistributionUnit>()) {
+          auto terminal = airDistributionUnit->airTerminal();
+          return terminal && (*terminal == component);
+        }
+        return false;
+      }
+
       boost::optional<openstudio::WorkspaceExtensibleGroup> groupForModelObject(const openstudio::epmodel::ZoneHVACEquipmentList& equipmentList,
                                                                                 const openstudio::epmodel::ModelObject& component) {
         for (const auto& group : equipmentList.extensibleGroups()) {
@@ -208,7 +317,7 @@ namespace epmodel {
           }
 
           auto target = resolveEquipmentTarget(*workspaceGroup, equipmentList.model());
-          if (target && (*target == component)) {
+          if (target && equipmentListTargetMatches(*target, component)) {
             return workspaceGroup;
           }
         }
@@ -295,7 +404,9 @@ namespace epmodel {
           continue;
         }
 
-        result.push_back(*target);
+        if (auto equipmentObject = modelEquipmentObject(*target)) {
+          result.push_back(*equipmentObject);
+        }
       }
       return result;
     }
@@ -312,7 +423,9 @@ namespace epmodel {
           workspaceGroup->getUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence);
         auto target = resolveEquipmentTarget(*workspaceGroup, model());
         if (priority && (*priority > 0u) && target) {
-          equipmentByPriority.emplace_back(*priority, *target);
+          if (auto equipmentObject = modelEquipmentObject(*target)) {
+            equipmentByPriority.emplace_back(*priority, *equipmentObject);
+          }
         }
       }
 
@@ -339,7 +452,9 @@ namespace epmodel {
         auto priority = workspaceGroup->getUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentCoolingSequence);
         auto target = resolveEquipmentTarget(*workspaceGroup, model());
         if (priority && (*priority > 0u) && target) {
-          equipmentByPriority.emplace_back(*priority, *target);
+          if (auto equipmentObject = modelEquipmentObject(*target)) {
+            equipmentByPriority.emplace_back(*priority, *equipmentObject);
+          }
         }
       }
 
@@ -379,16 +494,22 @@ namespace epmodel {
         return true;
       }
 
+      auto equipmentListTarget = equipmentListTargetFor(component);
+      if (!equipmentListTarget) {
+        return false;
+      }
+
       auto equipmentList = getObject<openstudio::epmodel::ZoneHVACEquipmentList>();
       auto group = equipmentList.pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
       if (!group) {
         return false;
       }
 
-      if (!group->setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentObjectType, component.iddObject().name(), false)) {
+      if (!group->setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentObjectType, equipmentListTarget->iddObject().name(),
+                            false)) {
         return false;
       }
-      if (!setEquipmentTarget(*group, component)) {
+      if (!setEquipmentTarget(*group, *equipmentListTarget)) {
         return false;
       }
 
@@ -404,6 +525,10 @@ namespace epmodel {
       auto equipmentList = getObject<openstudio::epmodel::ZoneHVACEquipmentList>();
       auto coolingEquipment = equipmentInCoolingOrder();
       auto heatingEquipment = equipmentInHeatingOrder();
+      auto priorityComponent = modelEquipmentObject(component);
+      if (!priorityComponent) {
+        priorityComponent = component;
+      }
       const auto groups = equipmentList.extensibleGroups();
       for (unsigned i = 0; i < groups.size(); ++i) {
         auto workspaceGroup = groups[i].optionalCast<openstudio::WorkspaceExtensibleGroup>();
@@ -412,14 +537,14 @@ namespace epmodel {
         }
 
         auto target = resolveEquipmentTarget(*workspaceGroup, model());
-        if (!target || !(*target == component)) {
+        if (!target || !equipmentListTargetMatches(*target, component)) {
           continue;
         }
 
         equipmentList.getImpl<openstudio::epmodel::detail::ModelObject_Impl>()->eraseExtensibleGroup(workspaceGroup->groupIndex(), false);
 
-        coolingEquipment.erase(std::remove(coolingEquipment.begin(), coolingEquipment.end(), component), coolingEquipment.end());
-        heatingEquipment.erase(std::remove(heatingEquipment.begin(), heatingEquipment.end(), component), heatingEquipment.end());
+        coolingEquipment.erase(std::remove(coolingEquipment.begin(), coolingEquipment.end(), *priorityComponent), coolingEquipment.end());
+        heatingEquipment.erase(std::remove(heatingEquipment.begin(), heatingEquipment.end(), *priorityComponent), heatingEquipment.end());
 
         for (unsigned j = 0; j < coolingEquipment.size(); ++j) {
           auto remainingGroup = groupForModelObject(equipmentList, coolingEquipment[j]);

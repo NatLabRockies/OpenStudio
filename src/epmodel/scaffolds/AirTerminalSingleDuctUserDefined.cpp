@@ -14,6 +14,8 @@
 #include "ModelObject.hpp"
 #include "ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "ModelObject/ZoneHVACAirDistributionUnit_Impl.hpp"
+#include "ModelObject/ZoneHVACEquipmentConnections.hpp"
+#include "ModelObject/ZoneHVACEquipmentConnections_Impl.hpp"
 #include "ModelObject/ZoneHVACEquipmentList.hpp"
 #include "Node.hpp"
 #include "Mixer/AirLoopHVACZoneMixer.hpp"
@@ -32,12 +34,30 @@ namespace epmodel {
   namespace {
 
     boost::optional<ThermalZone> owningThermalZoneForBranchNode(const Model& model, const Node& node) {
-      for (const auto& zone : model.getConcreteModelObjects<ThermalZone>()) {
-        if (zone.zoneAirNode() == node) {
-          return zone;
+      for (const auto& connections : model.getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
+        const auto inletNodes = connections.zoneAirInletNodes();
+        if (std::ranges::find(inletNodes, node) != inletNodes.end()) {
+          return connections.thermalZone();
         }
       }
       return boost::none;
+    }
+
+    bool isServedZoneReturnNode(const boost::optional<ThermalZone>& thermalZone, const ModelObject& nodeObject) {
+      auto node = nodeObject.optionalCast<Node>();
+      if (!thermalZone || !node) {
+        return false;
+      }
+
+      auto zoneImpl = thermalZone->getImpl<detail::ThermalZone_Impl>();
+      OS_ASSERT(zoneImpl);
+      auto connections = zoneImpl->zoneHVACEquipmentConnections();
+      if (!connections) {
+        return false;
+      }
+
+      const auto returnNodes = connections->zoneReturnAirNodes();
+      return std::ranges::find(returnNodes, *node) != returnNodes.end();
     }
 
     boost::optional<ThermalZone> thermalZoneContainingTerminal(const Model& model, const ModelObject& terminal) {
@@ -149,9 +169,10 @@ namespace epmodel {
                  "addToNode requires a corresponding ZoneMixer inlet for ZoneSplitter branch index " << splitterBranchIndex << ".");
         return false;
       }
-      if (*mixerInlet != thisNode) {
+      auto thermalZone = owningThermalZoneForBranchNode(model(), node);
+      if ((*mixerInlet != thisNode) && !isServedZoneReturnNode(thermalZone, *mixerInlet)) {
         LOG_FREE(Warn, "openstudio.epmodel.AirTerminalSingleDuctUserDefined",
-                 "addToNode requires the ZoneMixer inlet for ZoneSplitter branch index " << splitterBranchIndex << " to match the drop node.");
+                 "addToNode requires the drop node to either feed the ZoneMixer directly or be the served zone inlet node.");
         return false;
       }
 
@@ -163,7 +184,6 @@ namespace epmodel {
         }
       }
 
-      auto thermalZone = owningThermalZoneForBranchNode(model(), node);
       auto adu = zoneHVACAirDistributionUnit();
       const auto previousADUOutletNode = adu ? adu->outletNode() : boost::optional<Node>{};
 

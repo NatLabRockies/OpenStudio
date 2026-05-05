@@ -894,29 +894,31 @@ namespace epmodel {
       }
 
       const auto zone = getObject<openstudio::epmodel::ThermalZone>();
-      const std::string zoneBranchNodeName = zone.nameString() + " Demand Branch Node";
-      auto zoneBranchNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(zoneBranchNodeName);
+      const std::string zoneInletNodeName = zone.nameString() + " Demand Branch Node";
+      auto zoneInletNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(zoneInletNodeName);
+      const std::string zoneReturnNodeName = zone.nameString() + " Demand Return Node";
+      auto zoneReturnNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(zoneReturnNodeName);
 
-      if ((splitterOutlets[*targetBranchIndex] == zoneBranchNode.cast<openstudio::epmodel::ModelObject>())
-          && (mixerInlets[*targetBranchIndex] == zoneBranchNode.cast<openstudio::epmodel::ModelObject>())) {
+      if ((splitterOutlets[*targetBranchIndex] == zoneInletNode.cast<openstudio::epmodel::ModelObject>())
+          && (mixerInlets[*targetBranchIndex] == zoneReturnNode.cast<openstudio::epmodel::ModelObject>())) {
         return false;
       }
 
-      if (!setZoneSplitterBranchNode(zoneSplitter, *targetBranchIndex, zoneBranchNode)) {
+      if (!setZoneSplitterBranchNode(zoneSplitter, *targetBranchIndex, zoneInletNode)) {
         return false;
       }
 
-      if (!setZoneMixerBranchNode(zoneMixer, *targetBranchIndex, zoneBranchNode)) {
+      if (!setZoneMixerBranchNode(zoneMixer, *targetBranchIndex, zoneReturnNode)) {
         return false;
       }
 
       auto zoneConnections = getZoneHVACEquipmentConnections();
       auto zoneConnectionsImpl = zoneConnections.getImpl<openstudio::epmodel::detail::ZoneHVACEquipmentConnections_Impl>();
       OS_ASSERT(zoneConnectionsImpl);
-      if (!zoneConnectionsImpl->addZoneAirInletNode(zoneBranchNode)) {
+      if (!zoneConnectionsImpl->addZoneAirInletNode(zoneInletNode)) {
         return false;
       }
-      if (!zoneConnectionsImpl->addZoneReturnAirNode(zoneBranchNode)) {
+      if (!zoneConnectionsImpl->addZoneReturnAirNode(zoneReturnNode)) {
         return false;
       }
 

@@ -340,6 +340,21 @@ namespace epmodel {
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+    namespace {
+      boost::optional<ZoneHVACAirDistributionUnit> airDistributionUnitForZoneEquipment(const ModelObject& equipment) {
+        if (auto airDistributionUnit = equipment.optionalCast<ZoneHVACAirDistributionUnit>()) {
+          return *airDistributionUnit;
+        }
+
+        for (const auto& source : equipment.getSources(openstudio::IddObjectType::ZoneHVAC_AirDistributionUnit)) {
+          if (auto airDistributionUnit = source.optionalCast<ZoneHVACAirDistributionUnit>()) {
+            return *airDistributionUnit;
+          }
+        }
+
+        return boost::none;
+      }
+    }  // namespace
 
     boost::optional<double> AirLoopHVAC_Impl::designSupplyAirFlowRate() const {
       return getDouble(openstudio::AirLoopHVACFields::DesignSupplyAirFlowRate, true);
@@ -437,10 +452,15 @@ namespace epmodel {
         return boost::none;
       }
 
-      const auto mixerInlets = zoneMixer().inletModelObjects();
-      for (unsigned i = 0; i < mixerInlets.size(); ++i) {
-        if (mixerInlets[i] == zoneInletNode.cast<ModelObject>()) {
+      const auto splitterOutlets = zoneSplitter().outletModelObjects();
+      for (unsigned i = 0; i < splitterOutlets.size(); ++i) {
+        if (splitterOutlets[i] == zoneInletNode.cast<ModelObject>()) {
           return i;
+        }
+        if (auto splitterOutletNode = splitterOutlets[i].optionalCast<Node>()) {
+          if (!demandComponents(*splitterOutletNode, zoneInletNode, openstudio::IddObjectType::Catchall).empty()) {
+            return i;
+          }
         }
       }
 
@@ -1303,7 +1323,7 @@ namespace epmodel {
         return false;
       }
 
-      auto terminalNodeObject = zoneMixer().inletModelObject(targetBranchIndex);
+      auto terminalNodeObject = zoneSplitter().outletModelObject(targetBranchIndex);
       auto terminalNode = terminalNodeObject ? terminalNodeObject->optionalCast<Node>() : boost::optional<Node>();
       if (!terminalNode) {
         removeBranchForZone(thermalZone);
@@ -1536,6 +1556,21 @@ namespace epmodel {
         }
       }
       if (!branchIndex) {
+        const auto mixerInlets = zoneMixer().inletModelObjects();
+        for (const auto& returnNode : conn->zoneReturnAirNodes()) {
+          for (unsigned i = 0; i < mixerInlets.size(); ++i) {
+            if (mixerInlets[i] == returnNode.cast<ModelObject>()) {
+              branchIndex = i;
+              zoneNode = zoneNodes.front();
+              break;
+            }
+          }
+          if (branchIndex) {
+            break;
+          }
+        }
+      }
+      if (!branchIndex) {
         return false;
       }
 
@@ -1550,6 +1585,13 @@ namespace epmodel {
 
       auto branchPath = demandComponents(*splitterOutletNode, *zoneNode, openstudio::IddObjectType::Catchall);
       if (branchPath.empty()) {
+        const auto mixerInletObject = zoneMixer().inletModelObject(*branchIndex);
+        auto mixerInletNode = mixerInletObject ? mixerInletObject->optionalCast<openstudio::epmodel::Node>() : boost::optional<Node>();
+        if (mixerInletNode) {
+          branchPath = demandComponents(*splitterOutletNode, *mixerInletNode, openstudio::IddObjectType::Catchall);
+        }
+      }
+      if (branchPath.empty()) {
         LOG_FREE(Warn, "openstudio.epmodel.AirLoopHVAC",
                  "Unable to resolve branch-local demand components for zone '" << thermalZone.nameString() << "' during removeBranchForZone.");
         return false;
@@ -1562,25 +1604,30 @@ namespace epmodel {
 
       auto equipmentList = conn->zoneHVACEquipmentList();
       for (const auto& equipment : equipmentList.equipment()) {
-        auto airDistributionUnit = equipment.optionalCast<ZoneHVACAirDistributionUnit>();
+        auto airDistributionUnit = airDistributionUnitForZoneEquipment(equipment);
         if (!airDistributionUnit) {
           continue;
         }
 
         auto airTerminal = airDistributionUnit->airTerminal();
         auto outletNode = airDistributionUnit->outletNode();
+        const bool equipmentOnBranch = branchPathHandles.contains(equipment.handle());
         const bool terminalOnBranch = airTerminal && branchPathHandles.contains(airTerminal->handle());
         const bool outletOnBranch = outletNode && branchZoneInletNodeHandles.contains(outletNode->handle());
-        if (!terminalOnBranch && !outletOnBranch) {
+        if (!equipmentOnBranch && !terminalOnBranch && !outletOnBranch) {
           continue;
         }
 
-        equipmentList.removeEquipment(*airDistributionUnit);
-        airDistributionUnit->remove();
+        if (equipmentList.removeEquipment(equipment)) {
+          airDistributionUnit->remove();
+        }
       }
 
       for (auto& component : branchPath) {
         if (component.iddObject().type() == openstudio::IddObjectType::Node) {
+          continue;
+        }
+        if (component.optionalCast<ThermalZone>()) {
           continue;
         }
         component.remove();
@@ -2181,16 +2228,6 @@ namespace epmodel {
               }
               continue;
             }
-
-            const auto adu = equipment.optionalCast<ZoneHVACAirDistributionUnit>();
-            if (!adu) {
-              continue;
-            }
-
-            const auto terminal = adu->airTerminal();
-            if (terminal && terminal->optionalCast<StraightComponent>()) {
-              appendDistinct(*terminal);
-            }
           }
         };
 
@@ -2555,16 +2592,17 @@ namespace epmodel {
       for (const auto& conn : model().getConcreteModelObjects<ZoneHVACEquipmentConnections>()) {
         auto equipmentList = conn.zoneHVACEquipmentList();
         for (const auto& equipment : equipmentList.equipment()) {
-          auto airDistributionUnit = equipment.optionalCast<ZoneHVACAirDistributionUnit>();
+          auto airDistributionUnit = airDistributionUnitForZoneEquipment(equipment);
           if (!airDistributionUnit) {
             continue;
           }
 
           auto airTerminal = airDistributionUnit->airTerminal();
           auto outletNode = airDistributionUnit->outletNode();
+          const bool equipmentOnRemovedLoop = loopRemovalHandles.contains(equipment.handle());
           const bool terminalOnRemovedLoop = airTerminal && loopRemovalHandles.contains(airTerminal->handle());
           const bool outletOnRemovedLoop = outletNode && loopRemovalHandles.contains(outletNode->handle());
-          if (!terminalOnRemovedLoop && !outletOnRemovedLoop) {
+          if (!equipmentOnRemovedLoop && !terminalOnRemovedLoop && !outletOnRemovedLoop) {
             continue;
           }
 
@@ -2573,8 +2611,9 @@ namespace epmodel {
             OS_ASSERT(connectionsImpl);
             connectionsImpl->removeZoneAirInletNode(*outletNode);
           }
-          equipmentList.removeEquipment(*airDistributionUnit);
-          collectRemovalObject(airDistributionUnit->cast<ModelObject>());
+          if (equipmentList.removeEquipment(equipment)) {
+            collectRemovalObject(airDistributionUnit->cast<ModelObject>());
+          }
         }
       }
 

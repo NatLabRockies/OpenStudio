@@ -9,6 +9,7 @@
 #include "EPModelFixture.hpp"
 #include "../HVACComponent/ThermalZone.hpp"
 #include "../HVACComponent/ThermalZone_Impl.hpp"
+#include "../ModelObject/ZoneHVACAirDistributionUnit.hpp"
 #include "../ModelObject/ZoneHVACEquipmentConnections.hpp"
 #include "../ModelObject/ZoneHVACEquipmentList.hpp"
 #include "../ModelObject/ZoneHVACEquipmentList_Impl.hpp"
@@ -58,6 +59,13 @@ TEST_F(EPModelFixture, API_ZoneHVACEquipmentList_AddEquipment_RoundTripAndDedupe
   const auto equipment = equipmentList.equipment();
   ASSERT_EQ(1u, equipment.size());
   EXPECT_EQ(terminal.cast<ModelObject>(), equipment.front());
+
+  const auto groups = equipmentList.extensibleGroups();
+  ASSERT_EQ(1u, groups.size());
+  auto group = groups.front().optionalCast<openstudio::WorkspaceExtensibleGroup>();
+  ASSERT_TRUE(group);
+  EXPECT_EQ("ZoneHVAC:AirDistributionUnit",
+            group->getString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentObjectType, false).get());
 
   EXPECT_TRUE(equipmentList.removeEquipment(terminal.cast<ModelObject>()));
   EXPECT_TRUE(equipmentList.equipment().empty());
