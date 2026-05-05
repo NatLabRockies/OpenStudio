@@ -23,7 +23,6 @@ class EpModelMultizoneVAV < OpenStudio::Measure::ModelMeasure
     hot_water_schedule.setValue(82.0)
 
     loop = OpenStudio::EPModel::PlantLoop.new(model)
-    loop.setName("#{SYSTEM_PREFIX} Hot Water Loop")
     loop.sizingPlant.setLoopType('Heating')
     loop.sizingPlant.setDesignLoopExitTemperature(82.0)
     loop.sizingPlant.setLoopDesignTemperatureDifference(11.0)
@@ -48,9 +47,21 @@ class EpModelMultizoneVAV < OpenStudio::Measure::ModelMeasure
     supply_bypass.setName("#{SYSTEM_PREFIX} Hot Water Supply Bypass")
     loop.addSupplyBranchForComponent(supply_bypass)
 
+    supply_outlet_pipe = OpenStudio::EPModel::PipeAdiabatic.new(model)
+    supply_outlet_pipe.setName("#{SYSTEM_PREFIX} Hot Water Supply Outlet Pipe")
+    supply_outlet_pipe.addToNode(loop.supplyOutletNode)
+
+    demand_inlet_pipe = OpenStudio::EPModel::PipeAdiabatic.new(model)
+    demand_inlet_pipe.setName("#{SYSTEM_PREFIX} Hot Water Demand Inlet Pipe")
+    demand_inlet_pipe.addToNode(loop.demandInletNode)
+
     demand_bypass = OpenStudio::EPModel::PipeAdiabatic.new(model)
     demand_bypass.setName("#{SYSTEM_PREFIX} Hot Water Demand Bypass")
     loop.addDemandBranchForComponent(demand_bypass)
+
+    demand_outlet_pipe = OpenStudio::EPModel::PipeAdiabatic.new(model)
+    demand_outlet_pipe.setName("#{SYSTEM_PREFIX} Hot Water Demand Outlet Pipe")
+    demand_outlet_pipe.addToNode(loop.demandOutletNode)
 
     spm = OpenStudio::EPModel::SetpointManagerScheduled.new(model)
     spm.setName("#{SYSTEM_PREFIX} Hot Water Setpoint Manager")
@@ -67,7 +78,6 @@ class EpModelMultizoneVAV < OpenStudio::Measure::ModelMeasure
     chilled_water_schedule.setValue(7.22)
 
     loop = OpenStudio::EPModel::PlantLoop.new(model)
-    loop.setName("#{SYSTEM_PREFIX} Chilled Water Loop")
     loop.sizingPlant.setLoopType('Cooling')
     loop.sizingPlant.setDesignLoopExitTemperature(7.22)
     loop.sizingPlant.setLoopDesignTemperatureDifference(6.67)
@@ -89,9 +99,21 @@ class EpModelMultizoneVAV < OpenStudio::Measure::ModelMeasure
     supply_bypass.setName("#{SYSTEM_PREFIX} Chilled Water Supply Bypass")
     loop.addSupplyBranchForComponent(supply_bypass)
 
+    supply_outlet_pipe = OpenStudio::EPModel::PipeAdiabatic.new(model)
+    supply_outlet_pipe.setName("#{SYSTEM_PREFIX} Chilled Water Supply Outlet Pipe")
+    supply_outlet_pipe.addToNode(loop.supplyOutletNode)
+
+    demand_inlet_pipe = OpenStudio::EPModel::PipeAdiabatic.new(model)
+    demand_inlet_pipe.setName("#{SYSTEM_PREFIX} Chilled Water Demand Inlet Pipe")
+    demand_inlet_pipe.addToNode(loop.demandInletNode)
+
     demand_bypass = OpenStudio::EPModel::PipeAdiabatic.new(model)
     demand_bypass.setName("#{SYSTEM_PREFIX} Chilled Water Demand Bypass")
     loop.addDemandBranchForComponent(demand_bypass)
+
+    demand_outlet_pipe = OpenStudio::EPModel::PipeAdiabatic.new(model)
+    demand_outlet_pipe.setName("#{SYSTEM_PREFIX} Chilled Water Demand Outlet Pipe")
+    demand_outlet_pipe.addToNode(loop.demandOutletNode)
 
     spm = OpenStudio::EPModel::SetpointManagerScheduled.new(model)
     spm.setName("#{SYSTEM_PREFIX} Chilled Water Setpoint Manager")
@@ -144,6 +166,16 @@ class EpModelMultizoneVAV < OpenStudio::Measure::ModelMeasure
     spm.setSchedule(deck_schedule)
     spm.addToNode(supply_outlet_node)
 
+    cooling_coil_outlet_spm = OpenStudio::EPModel::SetpointManagerScheduled.new(model)
+    cooling_coil_outlet_spm.setName("#{SYSTEM_PREFIX} Cooling Coil Outlet Setpoint Manager")
+    cooling_coil_outlet_spm.setSchedule(deck_schedule)
+    cooling_coil_outlet_spm.addToNode(heating_coil.airInletModelObject.get.to_Node.get)
+
+    heating_coil_outlet_spm = OpenStudio::EPModel::SetpointManagerScheduled.new(model)
+    heating_coil_outlet_spm.setName("#{SYSTEM_PREFIX} Heating Coil Outlet Setpoint Manager")
+    heating_coil_outlet_spm.setSchedule(deck_schedule)
+    heating_coil_outlet_spm.addToNode(fan.inletModelObject.get.to_Node.get)
+
     return air_loop
   end
 
@@ -163,6 +195,8 @@ class EpModelMultizoneVAV < OpenStudio::Measure::ModelMeasure
 
     hot_water_loop = build_hot_water_loop(model)
     chilled_water_loop = build_chilled_water_loop(model)
+    hot_water_loop.setName("#{SYSTEM_PREFIX} Hot Water Loop")
+    chilled_water_loop.setName("#{SYSTEM_PREFIX} Chilled Water Loop")
     air_loop = build_multizone_air_loop(model, hot_water_loop, chilled_water_loop)
 
     zones.each do |zone|
