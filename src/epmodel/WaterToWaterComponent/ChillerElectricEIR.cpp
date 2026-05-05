@@ -35,7 +35,6 @@ namespace epmodel {
     OS_ASSERT(setReferenceCOP(5.5));
     autosizeReferenceCapacity();
     autosizeReferenceChilledWaterFlowRate();
-    autosizeDesignHeatRecoveryWaterFlowRate();
     OS_ASSERT(setBasinHeaterSetpointTemperature(10.0));
     resetBasinHeaterSchedule();
     OS_ASSERT(setCondenserType("AirCooled"));
@@ -79,7 +78,6 @@ namespace epmodel {
     OS_ASSERT(setReferenceCOP(5.5));
     autosizeReferenceCapacity();
     autosizeReferenceChilledWaterFlowRate();
-    autosizeDesignHeatRecoveryWaterFlowRate();
     OS_ASSERT(setBasinHeaterSetpointTemperature(10.0));
     resetBasinHeaterSchedule();
     OS_ASSERT(setCondenserType("AirCooled"));

@@ -37,7 +37,7 @@ TEST_F(EPModelFixture, ChillerElectricEIR_DefaultConstructor) {
   EXPECT_EQ("AirCooled", chiller.condenserType());
   EXPECT_TRUE(chiller.isReferenceCapacityAutosized());
   EXPECT_TRUE(chiller.isReferenceChilledWaterFlowRateAutosized());
-  EXPECT_TRUE(chiller.isDesignHeatRecoveryWaterFlowRateAutosized());
+  EXPECT_TRUE(chiller.isEmpty(openstudio::Chiller_Electric_EIRFields::DesignHeatRecoveryWaterFlowRate));
   EXPECT_DOUBLE_EQ(10.0, chiller.basinHeaterSetpointTemperature());
   EXPECT_FALSE(chiller.basinHeaterSchedule());
 
@@ -289,6 +289,8 @@ TEST_F(EPModelFixture, ChillerElectricEIR_PlantLoopAttachmentParity) {
   EXPECT_TRUE(heatRecoveryLoop.addDemandBranchForComponent(chiller));
   ASSERT_TRUE(chiller.heatRecoveryLoop());
   EXPECT_EQ(heatRecoveryLoop.handle(), chiller.heatRecoveryLoop()->handle());
+  EXPECT_FALSE(chiller.isEmpty(openstudio::Chiller_Electric_EIRFields::DesignHeatRecoveryWaterFlowRate));
+  EXPECT_TRUE(chiller.isDesignHeatRecoveryWaterFlowRateAutosized());
   ASSERT_TRUE(chiller.condenserWaterLoop());
   EXPECT_EQ(condenserLoop.handle(), chiller.condenserWaterLoop()->handle());
 
