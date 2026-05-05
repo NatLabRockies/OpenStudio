@@ -12,7 +12,9 @@
 #include "../ParentObject/ControllerOutdoorAir.hpp"
 #include "../StraightComponent/FanConstantVolume.hpp"
 #include "../StraightComponent/Node.hpp"
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
 #include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 using namespace openstudio::epmodel;
 
@@ -112,6 +114,28 @@ TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_OutboardNodeAccessors) {
 
   EXPECT_EQ(*outboardOA, *outdoorNode);
   EXPECT_EQ(*outboardRelief, *reliefNode);
+}
+
+TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_DefaultCreatesOutdoorAirNodeList) {
+  Model model;
+  AirLoopHVACOutdoorAirSystem outdoorAirSystem(model);
+
+  auto outboardOA = outdoorAirSystem.outboardOANode();
+  ASSERT_TRUE(outboardOA);
+
+  bool found = false;
+  for (const auto& object : model.getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+    for (const auto& group : object.extensibleGroups()) {
+      auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+      ASSERT_TRUE(workspaceGroup);
+      auto nodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+      if (nodeName && openstudio::istringEqual(*nodeName, outboardOA->nameString())) {
+        found = true;
+      }
+    }
+  }
+
+  EXPECT_TRUE(found);
 }
 
 TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_AddToNodeWiresMainPathNodes) {

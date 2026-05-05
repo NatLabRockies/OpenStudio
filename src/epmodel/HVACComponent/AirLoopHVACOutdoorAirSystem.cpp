@@ -40,8 +40,10 @@
 #include <utilities/core/Compare.hpp>
 #include <utilities/idd/AirLoopHVAC_OutdoorAirSystem_FieldEnums.hxx>
 #include <utilities/idd/Controller_OutdoorAir_FieldEnums.hxx>
+#include <utilities/idd/OutdoorAir_NodeList_FieldEnums.hxx>
 #include <utilities/idd/OutdoorAir_Mixer_FieldEnums.hxx>
 #include <utilities/idf/IdfExtensibleGroup.hpp>
+#include <utilities/idf/WorkspaceExtensibleGroup.hpp>
 
 namespace openstudio {
 namespace epmodel {
@@ -703,6 +705,37 @@ namespace epmodel {
       if (!mixerImpl->reliefAirNode()) {
         auto reliefAirNode = model().getOrCreateTransientByName<openstudio::epmodel::Node>(oaSystemName + " Relief Node");
         OS_ASSERT(mixerImpl->setReliefAirNode(reliefAirNode));
+      }
+
+      if (auto outboardNode = outboardOANode()) {
+        const auto outboardNodeName = outboardNode->nameString();
+        bool nodeListFound = false;
+        for (const auto& object : model().getObjectsByType(openstudio::IddObjectType::OutdoorAir_NodeList)) {
+          for (const auto& group : object.extensibleGroups()) {
+            auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+            if (!workspaceGroup) {
+              continue;
+            }
+            auto nodeName = workspaceGroup->getString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName);
+            if (nodeName && openstudio::istringEqual(*nodeName, outboardNodeName)) {
+              nodeListFound = true;
+              break;
+            }
+          }
+          if (nodeListFound) {
+            break;
+          }
+        }
+
+        if (!nodeListFound) {
+          auto oaNodeList = openstudio::epmodel::ModelObject::create(openstudio::IddObjectType::OutdoorAir_NodeList, model());
+          auto group = oaNodeList.pushExtensibleGroup();
+          auto workspaceGroup = group.optionalCast<openstudio::WorkspaceExtensibleGroup>();
+          OS_ASSERT(workspaceGroup);
+          OS_ASSERT(workspaceGroup->setString(openstudio::OutdoorAir_NodeListExtensibleFields::NodeorNodeListName, outboardNodeName));
+          detail::addLoadInfo(context, "Created OutdoorAir:NodeList entry for outdoor air node '" + outboardNodeName
+                                         + "' on AirLoopHVAC:OutdoorAirSystem '" + oaSystem.nameString() + "'.");
+        }
       }
 
       oaController->getImpl<openstudio::epmodel::detail::ControllerOutdoorAir_Impl>()->canonicalize(context);
