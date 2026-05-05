@@ -13,15 +13,14 @@
 namespace openstudio {
 namespace epmodel {
 
-SpaceHVACZoneEquipmentMixer::SpaceHVACZoneEquipmentMixer(const Model& model)
-  : ModelObject(SpaceHVACZoneEquipmentMixer::iddObjectType(), model) {}
+  SpaceHVACZoneEquipmentMixer::SpaceHVACZoneEquipmentMixer(const Model& model) : ModelObject(SpaceHVACZoneEquipmentMixer::iddObjectType(), model) {}
 
-SpaceHVACZoneEquipmentMixer::SpaceHVACZoneEquipmentMixer(std::shared_ptr<detail::SpaceHVACZoneEquipmentMixer_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  SpaceHVACZoneEquipmentMixer::SpaceHVACZoneEquipmentMixer(std::shared_ptr<detail::SpaceHVACZoneEquipmentMixer_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType SpaceHVACZoneEquipmentMixer::iddObjectType() {
-  return IddObjectType::SpaceHVAC_ZoneEquipmentMixer;
-}
+  IddObjectType SpaceHVACZoneEquipmentMixer::iddObjectType() {
+    return IddObjectType::SpaceHVAC_ZoneEquipmentMixer;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

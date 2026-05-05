@@ -11,46 +11,46 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AvailabilityManagerHybridVentilation_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AvailabilityManagerHybridVentilation_Impl() override = default;
+    class EPMODEL_API AvailabilityManagerHybridVentilation_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AvailabilityManagerHybridVentilation_Impl() override = default;
 
-  bool useWeatherFileRainIndicators() const;
-  bool setUseWeatherFileRainIndicators(bool useWeatherFileRainIndicators);
+      bool useWeatherFileRainIndicators() const;
+      bool setUseWeatherFileRainIndicators(bool useWeatherFileRainIndicators);
 
-  double maximumWindSpeed() const;
-  bool setMaximumWindSpeed(double maximumWindSpeed);
+      double maximumWindSpeed() const;
+      bool setMaximumWindSpeed(double maximumWindSpeed);
 
-  double minimumOutdoorTemperature() const;
-  bool setMinimumOutdoorTemperature(double minimumOutdoorTemperature);
+      double minimumOutdoorTemperature() const;
+      bool setMinimumOutdoorTemperature(double minimumOutdoorTemperature);
 
-  double maximumOutdoorTemperature() const;
-  bool setMaximumOutdoorTemperature(double maximumOutdoorTemperature);
+      double maximumOutdoorTemperature() const;
+      bool setMaximumOutdoorTemperature(double maximumOutdoorTemperature);
 
-  double minimumOutdoorEnthalpy() const;
-  bool setMinimumOutdoorEnthalpy(double minimumOutdoorEnthalpy);
+      double minimumOutdoorEnthalpy() const;
+      bool setMinimumOutdoorEnthalpy(double minimumOutdoorEnthalpy);
 
-  double maximumOutdoorEnthalpy() const;
-  bool setMaximumOutdoorEnthalpy(double maximumOutdoorEnthalpy);
+      double maximumOutdoorEnthalpy() const;
+      bool setMaximumOutdoorEnthalpy(double maximumOutdoorEnthalpy);
 
-  double minimumOutdoorDewpoint() const;
-  bool setMinimumOutdoorDewpoint(double minimumOutdoorDewpoint);
+      double minimumOutdoorDewpoint() const;
+      bool setMinimumOutdoorDewpoint(double minimumOutdoorDewpoint);
 
-  double maximumOutdoorDewpoint() const;
-  bool setMaximumOutdoorDewpoint(double maximumOutdoorDewpoint);
+      double maximumOutdoorDewpoint() const;
+      bool setMaximumOutdoorDewpoint(double maximumOutdoorDewpoint);
 
-  double minimumHVACOperationTime() const;
-  bool setMinimumHVACOperationTime(double minimumHVACOperationTime);
+      double minimumHVACOperationTime() const;
+      bool setMinimumHVACOperationTime(double minimumHVACOperationTime);
 
-  double minimumVentilationTime() const;
-  bool setMinimumVentilationTime(double minimumVentilationTime);
-};
+      double minimumVentilationTime() const;
+      bool setMinimumVentilationTime(double minimumVentilationTime);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

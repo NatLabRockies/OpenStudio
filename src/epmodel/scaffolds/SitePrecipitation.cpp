@@ -17,39 +17,39 @@
 namespace openstudio {
 namespace epmodel {
 
-SitePrecipitation::SitePrecipitation(const Model& model) : ModelObject(SitePrecipitation::iddObjectType(), model) {}
+  SitePrecipitation::SitePrecipitation(const Model& model) : ModelObject(SitePrecipitation::iddObjectType(), model) {}
 
-SitePrecipitation::SitePrecipitation(std::shared_ptr<detail::SitePrecipitation_Impl> impl) : ModelObject(std::move(impl)) {}
+  SitePrecipitation::SitePrecipitation(std::shared_ptr<detail::SitePrecipitation_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType SitePrecipitation::iddObjectType() {
+  IddObjectType SitePrecipitation::iddObjectType() {
     return IddObjectType::Site_Precipitation;
-}
+  }
 
-std::vector<std::string> SitePrecipitation::precipitationModelTypeValues() {
+  std::vector<std::string> SitePrecipitation::precipitationModelTypeValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Site_PrecipitationFields::PrecipitationModelType);
-}
+  }
 
-namespace detail {
+  namespace detail {
 
     std::vector<std::string> SitePrecipitation_Impl::precipitationModelTypeValues() const {
       return openstudio::epmodel::SitePrecipitation::precipitationModelTypeValues();
     }
 
-}  // namespace detail
+  }  // namespace detail
 
-boost::optional<std::string> SitePrecipitation::precipitationModelType() const {
+  boost::optional<std::string> SitePrecipitation::precipitationModelType() const {
     return getImpl<detail::SitePrecipitation_Impl>()->precipitationModelType();
-}
+  }
 
-bool SitePrecipitation::setPrecipitationModelType(const std::string& precipitationModelType) {
+  bool SitePrecipitation::setPrecipitationModelType(const std::string& precipitationModelType) {
     return getImpl<detail::SitePrecipitation_Impl>()->setPrecipitationModelType(precipitationModelType);
-}
+  }
 
-void SitePrecipitation::resetPrecipitationModelType() {
+  void SitePrecipitation::resetPrecipitationModelType() {
     getImpl<detail::SitePrecipitation_Impl>()->resetPrecipitationModelType();
-}
+  }
 
-namespace detail {
+  namespace detail {
 
     boost::optional<std::string> SitePrecipitation_Impl::precipitationModelType() const {
       return getString(openstudio::Site_PrecipitationFields::PrecipitationModelType, true);
@@ -63,21 +63,21 @@ namespace detail {
       OS_ASSERT(setString(openstudio::Site_PrecipitationFields::PrecipitationModelType, ""));
     }
 
-}  // namespace detail
+  }  // namespace detail
 
-boost::optional<double> SitePrecipitation::designLevelforTotalAnnualPrecipitation() const {
+  boost::optional<double> SitePrecipitation::designLevelforTotalAnnualPrecipitation() const {
     return getImpl<detail::SitePrecipitation_Impl>()->designLevelforTotalAnnualPrecipitation();
-}
+  }
 
-bool SitePrecipitation::setDesignLevelforTotalAnnualPrecipitation(double designLevelforTotalAnnualPrecipitation) {
+  bool SitePrecipitation::setDesignLevelforTotalAnnualPrecipitation(double designLevelforTotalAnnualPrecipitation) {
     return getImpl<detail::SitePrecipitation_Impl>()->setDesignLevelforTotalAnnualPrecipitation(designLevelforTotalAnnualPrecipitation);
-}
+  }
 
-void SitePrecipitation::resetDesignLevelforTotalAnnualPrecipitation() {
+  void SitePrecipitation::resetDesignLevelforTotalAnnualPrecipitation() {
     getImpl<detail::SitePrecipitation_Impl>()->resetDesignLevelforTotalAnnualPrecipitation();
-}
+  }
 
-namespace detail {
+  namespace detail {
 
     boost::optional<double> SitePrecipitation_Impl::designLevelforTotalAnnualPrecipitation() const {
       return getDouble(openstudio::Site_PrecipitationFields::DesignLevelforTotalAnnualPrecipitation, true);
@@ -94,21 +94,21 @@ namespace detail {
       OS_ASSERT(setString(openstudio::Site_PrecipitationFields::DesignLevelforTotalAnnualPrecipitation, ""));
     }
 
-}  // namespace detail
+  }  // namespace detail
 
-boost::optional<double> SitePrecipitation::averageTotalAnnualPrecipitation() const {
+  boost::optional<double> SitePrecipitation::averageTotalAnnualPrecipitation() const {
     return getImpl<detail::SitePrecipitation_Impl>()->averageTotalAnnualPrecipitation();
-}
+  }
 
-bool SitePrecipitation::setAverageTotalAnnualPrecipitation(double averageTotalAnnualPrecipitation) {
+  bool SitePrecipitation::setAverageTotalAnnualPrecipitation(double averageTotalAnnualPrecipitation) {
     return getImpl<detail::SitePrecipitation_Impl>()->setAverageTotalAnnualPrecipitation(averageTotalAnnualPrecipitation);
-}
+  }
 
-void SitePrecipitation::resetAverageTotalAnnualPrecipitation() {
+  void SitePrecipitation::resetAverageTotalAnnualPrecipitation() {
     getImpl<detail::SitePrecipitation_Impl>()->resetAverageTotalAnnualPrecipitation();
-}
+  }
 
-namespace detail {
+  namespace detail {
 
     boost::optional<double> SitePrecipitation_Impl::averageTotalAnnualPrecipitation() const {
       return getDouble(openstudio::Site_PrecipitationFields::AverageTotalAnnualPrecipitation, true);
@@ -122,7 +122,7 @@ namespace detail {
       OS_ASSERT(setString(openstudio::Site_PrecipitationFields::AverageTotalAnnualPrecipitation, ""));
     }
 
-}  // namespace detail
+  }  // namespace detail
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -12,6 +12,6 @@ namespace openstudio {
 
 constexpr auto pythonProgramName = "${Python_PROGRAM_NAME}";
 
-} // namespace openstudio
+}  // namespace openstudio
 
-#endif // PythonConfig_Included
+#endif  // PythonConfig_Included

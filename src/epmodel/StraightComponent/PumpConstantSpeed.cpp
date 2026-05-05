@@ -419,8 +419,8 @@ namespace epmodel {
     }
 
     bool PumpConstantSpeed_Impl::setFractionofMotorInefficienciestoFluidStream(double fractionofMotorInefficienciestoFluidStream) {
-      return setDouble(openstudio::Pump_ConstantSpeedFields::FractionofMotorInefficienciestoFluidStream,
-                       fractionofMotorInefficienciestoFluidStream, false);
+      return setDouble(openstudio::Pump_ConstantSpeedFields::FractionofMotorInefficienciestoFluidStream, fractionofMotorInefficienciestoFluidStream,
+                       false);
     }
 
     void PumpConstantSpeed_Impl::resetFractionofMotorInefficienciestoFluidStream() {
@@ -472,8 +472,8 @@ namespace epmodel {
     }
 
     bool PumpConstantSpeed_Impl::setDesignShaftPowerPerUnitFlowRatePerUnitHead(double designShaftPowerPerUnitFlowRatePerUnitHead) {
-      return setDouble(openstudio::Pump_ConstantSpeedFields::DesignShaftPowerperUnitFlowRateperUnitHead,
-                       designShaftPowerPerUnitFlowRatePerUnitHead, false);
+      return setDouble(openstudio::Pump_ConstantSpeedFields::DesignShaftPowerperUnitFlowRateperUnitHead, designShaftPowerPerUnitFlowRatePerUnitHead,
+                       false);
     }
 
     bool PumpConstantSpeed_Impl::setEndUseSubcategory(const std::string& endUseSubcategory) {

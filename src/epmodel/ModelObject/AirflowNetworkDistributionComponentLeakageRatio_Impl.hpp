@@ -11,31 +11,31 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirflowNetworkDistributionComponentLeakageRatio_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirflowNetworkDistributionComponentLeakageRatio_Impl() override = default;
+    class EPMODEL_API AirflowNetworkDistributionComponentLeakageRatio_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirflowNetworkDistributionComponentLeakageRatio_Impl() override = default;
 
-  boost::optional<double> effectiveLeakageRatio() const;
-  bool setEffectiveLeakageRatio(double effectiveLeakageRatio);
-  void resetEffectiveLeakageRatio();
+      boost::optional<double> effectiveLeakageRatio() const;
+      bool setEffectiveLeakageRatio(double effectiveLeakageRatio);
+      void resetEffectiveLeakageRatio();
 
-  double maximumFlowRate() const;
-  bool setMaximumFlowRate(double maximumFlowRate);
+      double maximumFlowRate() const;
+      bool setMaximumFlowRate(double maximumFlowRate);
 
-  double referencePressureDifference() const;
-  bool setReferencePressureDifference(double referencePressureDifference);
+      double referencePressureDifference() const;
+      bool setReferencePressureDifference(double referencePressureDifference);
 
-  double airMassFlowExponent() const;
-  bool isAirMassFlowExponentDefaulted() const;
-  bool setAirMassFlowExponent(double airMassFlowExponent);
-  void resetAirMassFlowExponent();
-};
+      double airMassFlowExponent() const;
+      bool isAirMassFlowExponentDefaulted() const;
+      bool setAirMassFlowExponent(double airMassFlowExponent);
+      void resetAirMassFlowExponent();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

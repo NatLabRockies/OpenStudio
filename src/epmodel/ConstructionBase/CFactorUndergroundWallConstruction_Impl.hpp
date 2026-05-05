@@ -10,22 +10,22 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API CFactorUndergroundWallConstruction_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~CFactorUndergroundWallConstruction_Impl() override = default;
+    class EPMODEL_API CFactorUndergroundWallConstruction_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~CFactorUndergroundWallConstruction_Impl() override = default;
 
-  double cFactor() const;
-  bool setCFactor(double cFactor);
+      double cFactor() const;
+      bool setCFactor(double cFactor);
 
-  double height() const;
-  bool setHeight(double height);
-};
+      double height() const;
+      bool setHeight(double height);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

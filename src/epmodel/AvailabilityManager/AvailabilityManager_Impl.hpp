@@ -11,20 +11,20 @@
 namespace openstudio {
 namespace epmodel {
 
-class Loop;
+  class Loop;
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AvailabilityManager_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AvailabilityManager_Impl() override = default;
+    class EPMODEL_API AvailabilityManager_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AvailabilityManager_Impl() override = default;
 
-  boost::optional<openstudio::epmodel::Loop> loop() const;
-};
+      boost::optional<openstudio::epmodel::Loop> loop() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

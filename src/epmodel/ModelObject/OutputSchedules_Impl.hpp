@@ -13,23 +13,23 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API OutputSchedules_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~OutputSchedules_Impl() override = default;
+    class EPMODEL_API OutputSchedules_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~OutputSchedules_Impl() override = default;
 
-  std::string keyField() const;
+      std::string keyField() const;
 
-  bool setKeyField(const std::string& keyField);
+      bool setKeyField(const std::string& keyField);
 
-  std::vector<std::string> keyFieldValues() const;
-  std::vector<std::string> validKeyFieldValues() const;
-};
+      std::vector<std::string> keyFieldValues() const;
+      std::vector<std::string> validKeyFieldValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

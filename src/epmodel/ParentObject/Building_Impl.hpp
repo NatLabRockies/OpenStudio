@@ -11,21 +11,21 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API Building_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~Building_Impl() override = default;
+    class EPMODEL_API Building_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~Building_Impl() override = default;
 
-  double northAxis() const;
-  bool isNorthAxisDefaulted() const;
-  bool setNorthAxis(double northAxis);
-  void resetNorthAxis();
-};
+      double northAxis() const;
+      bool isNorthAxisDefaulted() const;
+      bool setNorthAxis(double northAxis);
+      void resetNorthAxis();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

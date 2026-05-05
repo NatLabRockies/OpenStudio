@@ -19,12 +19,12 @@ namespace epmodel {
       using Mixer_Impl::Mixer_Impl;
       virtual ~AirTerminalDualDuctVAVOutdoorAir_Impl() override = default;
 
-  unsigned outletPort() const override;
-  unsigned inletPort(unsigned branchIndex) const override;
-  bool addToNode(openstudio::epmodel::Node& node) override;
-  std::vector<openstudio::IdfObject> remove() override;
-  boost::optional<openstudio::epmodel::Node> outdoorAirInletNode() const;
-  boost::optional<openstudio::epmodel::Node> recirculatedAirInletNode() const;
+      unsigned outletPort() const override;
+      unsigned inletPort(unsigned branchIndex) const override;
+      bool addToNode(openstudio::epmodel::Node& node) override;
+      std::vector<openstudio::IdfObject> remove() override;
+      boost::optional<openstudio::epmodel::Node> outdoorAirInletNode() const;
+      boost::optional<openstudio::epmodel::Node> recirculatedAirInletNode() const;
       boost::optional<double> maximumTerminalAirFlowRate() const;
       bool setMaximumTerminalAirFlowRate(double maximumTerminalAirFlowRate);
       void autosizeMaximumTerminalAirFlowRate();

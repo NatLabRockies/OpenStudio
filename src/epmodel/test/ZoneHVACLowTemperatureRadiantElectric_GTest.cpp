@@ -113,8 +113,7 @@ TEST_F(EPModelFixture, ZoneHVACLowTemperatureRadiantElectric_RadiantSurfaceType_
   ConstructionWithInternalSource radiantConstruction(model);
   ASSERT_TRUE(radiantConstruction.setPointer(openstudio::ConstructionProperty_InternalHeatSourceFields::ConstructionName, construction.handle()));
 
-  auto makeSurface = [&](const std::string& name, const std::string& surfaceType,
-                         const std::vector<std::array<double, 3>>& vertices) -> Surface {
+  auto makeSurface = [&](const std::string& name, const std::string& surfaceType, const std::vector<std::array<double, 3>>& vertices) -> Surface {
     Surface surface(model);
     EXPECT_TRUE(surface.setName(name));
     EXPECT_TRUE(surface.setSurfaceType(surfaceType));
@@ -175,8 +174,7 @@ TEST_F(EPModelFixture, ZoneHVACLowTemperatureRadiantElectric_RadiantSurfaceType_
   ASSERT_EQ(3u, radiant.surfaces().size());
   EXPECT_EQ(sortedExpected({ceiling.handle(), floor.handle(), wall.handle()}), sortedHandles(radiant.surfaces()));
 
-  auto surfaceGroupImpl =
-    radiant.surfaceGroup()->getImpl<openstudio::epmodel::detail::ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl>();
+  auto surfaceGroupImpl = radiant.surfaceGroup()->getImpl<openstudio::epmodel::detail::ZoneHVACLowTemperatureRadiantSurfaceGroup_Impl>();
   surfaceGroupImpl->clearSurfaces();
   ASSERT_TRUE(surfaceGroupImpl->addSurface(floor, 0.5));
   ASSERT_TRUE(surfaceGroupImpl->addSurface(wall, 0.5));

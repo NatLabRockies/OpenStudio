@@ -12,26 +12,26 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API FaultModelFoulingChiller_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~FaultModelFoulingChiller_Impl() override = default;
+    class EPMODEL_API FaultModelFoulingChiller_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~FaultModelFoulingChiller_Impl() override = default;
 
-  std::string chillerObjectType() const;
-  bool setChillerObjectType(const std::string& chillerObjectType);
+      std::string chillerObjectType() const;
+      bool setChillerObjectType(const std::string& chillerObjectType);
 
-  double foulingFactor() const;
-  bool isFoulingFactorDefaulted() const;
-  bool setFoulingFactor(double foulingFactor);
-  void resetFoulingFactor();
+      double foulingFactor() const;
+      bool isFoulingFactorDefaulted() const;
+      bool setFoulingFactor(double foulingFactor);
+      void resetFoulingFactor();
 
-  std::vector<std::string> chillerObjectTypeValues() const;
-};
+      std::vector<std::string> chillerObjectTypeValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

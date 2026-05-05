@@ -11,22 +11,22 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API MaterialPropertyHeatAndMoistureTransferRedistribution_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~MaterialPropertyHeatAndMoistureTransferRedistribution_Impl() override = default;
+    class EPMODEL_API MaterialPropertyHeatAndMoistureTransferRedistribution_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~MaterialPropertyHeatAndMoistureTransferRedistribution_Impl() override = default;
 
-  /** @name Number of Redistribution points */
-  //@{
-  int numberofRedistributionpoints() const;
-  bool setNumberofRedistributionpoints(int numberofRedistributionpoints);
-  //@}
-};
+      /** @name Number of Redistribution points */
+      //@{
+      int numberofRedistributionpoints() const;
+      bool setNumberofRedistributionpoints(int numberofRedistributionpoints);
+      //@}
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

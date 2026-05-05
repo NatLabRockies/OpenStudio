@@ -352,7 +352,6 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_HeatPumpPlantLoopEIR_WaterSource) {
   }
 }
 
-
 TEST_F(EnergyPlusFixture, ForwardTranslator_HeatPumpPlantLoopEIRCooling_AirSourceAutosizeAndOutdoorAirNodes) {
 
   Model m;
@@ -386,7 +385,8 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_HeatPumpPlantLoopEIRCooling_AirSourc
   EXPECT_EQ("Cooling Load Inlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::LoadSideInletNodeName).get());
   EXPECT_EQ("Cooling Load Outlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::LoadSideOutletNodeName).get());
   EXPECT_EQ("Cooling AirSource HP Inlet Node For Source Side", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::SourceSideInletNodeName).get());
-  EXPECT_EQ("Cooling AirSource HP Outlet Node For Source Side", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::SourceSideOutletNodeName).get());
+  EXPECT_EQ("Cooling AirSource HP Outlet Node For Source Side",
+            idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::SourceSideOutletNodeName).get());
   EXPECT_EQ("AirSource", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::CondenserType).get());
   EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::LoadSideReferenceFlowRate).get());
   EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_CoolingFields::SourceSideReferenceFlowRate).get());
@@ -433,7 +433,8 @@ TEST_F(EnergyPlusFixture, ForwardTranslator_HeatPumpPlantLoopEIRHeating_AirSourc
   EXPECT_EQ("Heating Load Inlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::LoadSideInletNodeName).get());
   EXPECT_EQ("Heating Load Outlet Node", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::LoadSideOutletNodeName).get());
   EXPECT_EQ("Heating AirSource HP Inlet Node For Source Side", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::SourceSideInletNodeName).get());
-  EXPECT_EQ("Heating AirSource HP Outlet Node For Source Side", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::SourceSideOutletNodeName).get());
+  EXPECT_EQ("Heating AirSource HP Outlet Node For Source Side",
+            idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::SourceSideOutletNodeName).get());
   EXPECT_EQ("AirSource", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::CondenserType).get());
   EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::LoadSideReferenceFlowRate).get());
   EXPECT_EQ("Autosize", idfObj.getString(HeatPump_PlantLoop_EIR_HeatingFields::SourceSideReferenceFlowRate).get());

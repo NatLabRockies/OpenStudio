@@ -13,16 +13,15 @@
 namespace openstudio {
 namespace epmodel {
 
-RoomAirTemperaturePatternUserDefined::RoomAirTemperaturePatternUserDefined(const Model& model)
-  : ModelObject(RoomAirTemperaturePatternUserDefined::iddObjectType(), model) {}
+  RoomAirTemperaturePatternUserDefined::RoomAirTemperaturePatternUserDefined(const Model& model)
+    : ModelObject(RoomAirTemperaturePatternUserDefined::iddObjectType(), model) {}
 
-RoomAirTemperaturePatternUserDefined::RoomAirTemperaturePatternUserDefined(
-  std::shared_ptr<detail::RoomAirTemperaturePatternUserDefined_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  RoomAirTemperaturePatternUserDefined::RoomAirTemperaturePatternUserDefined(std::shared_ptr<detail::RoomAirTemperaturePatternUserDefined_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType RoomAirTemperaturePatternUserDefined::iddObjectType() {
-  return IddObjectType::RoomAir_TemperaturePattern_UserDefined;
-}
+  IddObjectType RoomAirTemperaturePatternUserDefined::iddObjectType() {
+    return IddObjectType::RoomAir_TemperaturePattern_UserDefined;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

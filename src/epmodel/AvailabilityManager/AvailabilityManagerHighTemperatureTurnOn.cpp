@@ -15,46 +15,46 @@
 namespace openstudio {
 namespace epmodel {
 
-AvailabilityManagerHighTemperatureTurnOn::AvailabilityManagerHighTemperatureTurnOn(const Model& model)
-  : ModelObject(AvailabilityManagerHighTemperatureTurnOn::iddObjectType(), model) {
-  setTemperature(30.0);
-}
+  AvailabilityManagerHighTemperatureTurnOn::AvailabilityManagerHighTemperatureTurnOn(const Model& model)
+    : ModelObject(AvailabilityManagerHighTemperatureTurnOn::iddObjectType(), model) {
+    setTemperature(30.0);
+  }
 
-AvailabilityManagerHighTemperatureTurnOn::AvailabilityManagerHighTemperatureTurnOn(
-  std::shared_ptr<detail::AvailabilityManagerHighTemperatureTurnOn_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  AvailabilityManagerHighTemperatureTurnOn::AvailabilityManagerHighTemperatureTurnOn(
+    std::shared_ptr<detail::AvailabilityManagerHighTemperatureTurnOn_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType AvailabilityManagerHighTemperatureTurnOn::iddObjectType() {
-  return IddObjectType::AvailabilityManager_HighTemperatureTurnOn;
-}
+  IddObjectType AvailabilityManagerHighTemperatureTurnOn::iddObjectType() {
+    return IddObjectType::AvailabilityManager_HighTemperatureTurnOn;
+  }
 
-double AvailabilityManagerHighTemperatureTurnOn::temperature() const {
-  return getImpl<detail::AvailabilityManagerHighTemperatureTurnOn_Impl>()->temperature();
-}
+  double AvailabilityManagerHighTemperatureTurnOn::temperature() const {
+    return getImpl<detail::AvailabilityManagerHighTemperatureTurnOn_Impl>()->temperature();
+  }
 
-bool AvailabilityManagerHighTemperatureTurnOn::setTemperature(double temperature) {
-  return getImpl<detail::AvailabilityManagerHighTemperatureTurnOn_Impl>()->setTemperature(temperature);
-}
+  bool AvailabilityManagerHighTemperatureTurnOn::setTemperature(double temperature) {
+    return getImpl<detail::AvailabilityManagerHighTemperatureTurnOn_Impl>()->setTemperature(temperature);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-double AvailabilityManagerHighTemperatureTurnOn_Impl::temperature() const {
-  const auto value = getDouble(openstudio::AvailabilityManager_HighTemperatureTurnOnFields::Temperature, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    double AvailabilityManagerHighTemperatureTurnOn_Impl::temperature() const {
+      const auto value = getDouble(openstudio::AvailabilityManager_HighTemperatureTurnOnFields::Temperature, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool AvailabilityManagerHighTemperatureTurnOn_Impl::setTemperature(double temperature) {
-  const bool result = setDouble(openstudio::AvailabilityManager_HighTemperatureTurnOnFields::Temperature, temperature);
-  OS_ASSERT(result);
-  return result;
-}
+    bool AvailabilityManagerHighTemperatureTurnOn_Impl::setTemperature(double temperature) {
+      const bool result = setDouble(openstudio::AvailabilityManager_HighTemperatureTurnOnFields::Temperature, temperature);
+      OS_ASSERT(result);
+      return result;
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

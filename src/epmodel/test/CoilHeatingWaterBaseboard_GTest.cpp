@@ -40,10 +40,10 @@ TEST_F(EPModelFixture, CoilHeatingWaterBaseboard_PlantLoopTraversalProjectsTrans
   EXPECT_FALSE(baseboard.plantLoop());
 
   const auto demandComponents = plantLoop.demandComponents();
-  EXPECT_TRUE(std::any_of(demandComponents.begin(), demandComponents.end(),
-                          [&](const auto& object) { return object.handle() == heatingCoil.handle(); }));
-  EXPECT_FALSE(std::any_of(demandComponents.begin(), demandComponents.end(),
-                           [&](const auto& object) { return object.handle() == baseboard.handle(); }));
+  EXPECT_TRUE(
+    std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == heatingCoil.handle(); }));
+  EXPECT_FALSE(
+    std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == baseboard.handle(); }));
 
   auto inletNode = heatingCoil.inletModelObject()->cast<Node>();
   ASSERT_TRUE(inletNode.outletModelObject());

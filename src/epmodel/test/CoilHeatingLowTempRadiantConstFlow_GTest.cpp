@@ -44,8 +44,10 @@ TEST_F(EPModelFixture, CoilHeatingLowTempRadiantConstFlow_PlantLoopTraversalProj
   EXPECT_FALSE(radiant.plantLoop());
 
   const auto demandComponents = plantLoop.demandComponents();
-  EXPECT_TRUE(std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == heatingCoil.handle(); }));
-  EXPECT_FALSE(std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == radiant.handle(); }));
+  EXPECT_TRUE(
+    std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == heatingCoil.handle(); }));
+  EXPECT_FALSE(
+    std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == radiant.handle(); }));
 
   auto inletNode = heatingCoil.inletModelObject()->cast<Node>();
   ASSERT_TRUE(inletNode.outletModelObject());
@@ -85,26 +87,30 @@ TEST_F(EPModelFixture, CoilHeatingLowTempRadiantConstFlow_ScheduleRelationshipsW
   EXPECT_EQ(highControl.handle(), heatingCoil.heatingHighControlTemperatureSchedule()->handle());
   EXPECT_EQ(lowControl.handle(), heatingCoil.heatingLowControlTemperatureSchedule()->handle());
 
-  ASSERT_TRUE(radiant.getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingHighWaterTemperatureScheduleName));
-  ASSERT_TRUE(radiant.getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingLowWaterTemperatureScheduleName));
+  ASSERT_TRUE(
+    radiant.getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingHighWaterTemperatureScheduleName));
+  ASSERT_TRUE(
+    radiant.getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingLowWaterTemperatureScheduleName));
   ASSERT_TRUE(
     radiant.getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingHighControlTemperatureScheduleName));
   ASSERT_TRUE(
     radiant.getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingLowControlTemperatureScheduleName));
-  EXPECT_EQ(highWater.handle(),
-            radiant.getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingHighWaterTemperatureScheduleName)
-              ->handle());
-  EXPECT_EQ(lowWater.handle(),
-            radiant.getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingLowWaterTemperatureScheduleName)
-              ->handle());
-  EXPECT_EQ(highControl.handle(),
-            radiant
-              .getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingHighControlTemperatureScheduleName)
-              ->handle());
-  EXPECT_EQ(lowControl.handle(),
-            radiant
-              .getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingLowControlTemperatureScheduleName)
-              ->handle());
+  EXPECT_EQ(
+    highWater.handle(),
+    radiant.getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingHighWaterTemperatureScheduleName)
+      ->handle());
+  EXPECT_EQ(
+    lowWater.handle(),
+    radiant.getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingLowWaterTemperatureScheduleName)
+      ->handle());
+  EXPECT_EQ(
+    highControl.handle(),
+    radiant.getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingHighControlTemperatureScheduleName)
+      ->handle());
+  EXPECT_EQ(
+    lowControl.handle(),
+    radiant.getModelObjectTarget<Schedule>(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlowFields::HeatingLowControlTemperatureScheduleName)
+      ->handle());
 
   heatingCoil.resetHeatingHighWaterTemperatureSchedule();
   heatingCoil.resetHeatingLowWaterTemperatureSchedule();

@@ -10,16 +10,16 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ScheduleYear_Impl : public Schedule_Impl
-{
- public:
-  using Schedule_Impl::Schedule_Impl;
-  virtual ~ScheduleYear_Impl() override = default;
-};
+    class EPMODEL_API ScheduleYear_Impl : public Schedule_Impl
+    {
+     public:
+      using Schedule_Impl::Schedule_Impl;
+      virtual ~ScheduleYear_Impl() override = default;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

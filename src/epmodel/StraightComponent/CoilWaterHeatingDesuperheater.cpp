@@ -239,7 +239,8 @@ namespace epmodel {
     }
 
     Schedule CoilWaterHeatingDesuperheater_Impl::availabilitySchedule() const {
-      auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName);
+      auto value =
+        getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_WaterHeating_DesuperheaterFields::AvailabilityScheduleName);
       if (!value) {
         value = this->model().alwaysOnDiscreteSchedule();
         OS_ASSERT(value);

@@ -558,8 +558,8 @@ namespace epmodel {
         }
       }
 
-      if (auto coil =
-            thisObject.getModelObjectTarget<openstudio::epmodel::HVACComponent>(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::ReheatCoilName)) {
+      if (auto coil = thisObject.getModelObjectTarget<openstudio::epmodel::HVACComponent>(
+            openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::ReheatCoilName)) {
         if (!updateReheatCoilAirPath(thisObject, *coil)) {
           return false;
         }

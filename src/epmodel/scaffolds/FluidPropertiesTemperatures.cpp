@@ -13,15 +13,14 @@
 namespace openstudio {
 namespace epmodel {
 
-FluidPropertiesTemperatures::FluidPropertiesTemperatures(const Model& model)
-  : ModelObject(FluidPropertiesTemperatures::iddObjectType(), model) {}
+  FluidPropertiesTemperatures::FluidPropertiesTemperatures(const Model& model) : ModelObject(FluidPropertiesTemperatures::iddObjectType(), model) {}
 
-FluidPropertiesTemperatures::FluidPropertiesTemperatures(std::shared_ptr<detail::FluidPropertiesTemperatures_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  FluidPropertiesTemperatures::FluidPropertiesTemperatures(std::shared_ptr<detail::FluidPropertiesTemperatures_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType FluidPropertiesTemperatures::iddObjectType() {
-  return IddObjectType::FluidProperties_Temperatures;
-}
+  IddObjectType FluidPropertiesTemperatures::iddObjectType() {
+    return IddObjectType::FluidProperties_Temperatures;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

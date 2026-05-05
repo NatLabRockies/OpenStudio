@@ -263,10 +263,8 @@ TEST_F(EPModelFixture, AirTerminalSingleDuctVAVReheat_AddToNode_PopulatesDirectR
   ASSERT_TRUE(terminal.addToNode(zoneAirNode));
 
   const std::string damperOutletNodeName = terminal.nameString() + " Damper Outlet";
-  EXPECT_EQ(damperOutletNodeName,
-            terminal.getString(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName, true).get());
-  EXPECT_EQ(reheatCoil.iddObject().name(),
-            terminal.getString(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::ReheatCoilObjectType, true).get());
+  EXPECT_EQ(damperOutletNodeName, terminal.getString(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::DamperAirOutletNodeName, true).get());
+  EXPECT_EQ(reheatCoil.iddObject().name(), terminal.getString(openstudio::AirTerminal_SingleDuct_VAV_ReheatFields::ReheatCoilObjectType, true).get());
   EXPECT_EQ(damperOutletNodeName, reheatCoil.getString(openstudio::Coil_Heating_WaterFields::AirInletNodeName, true).get());
   ASSERT_TRUE(reheatCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName));
   EXPECT_EQ(zoneAirNode, reheatCoil.getModelObjectTarget<Node>(openstudio::Coil_Heating_WaterFields::AirOutletNodeName).get());

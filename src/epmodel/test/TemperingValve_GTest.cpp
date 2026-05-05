@@ -299,4 +299,3 @@ TEST_F(EPModelFixture, TemperingValve_SetControlNodes_UsesHeaderedPumpOutlets) {
   ASSERT_TRUE(variableValve.pumpOutletNode());
   EXPECT_EQ(headeredVariablePump.outletModelObject()->cast<Node>().handle(), variableValve.pumpOutletNode()->handle());
 }
-

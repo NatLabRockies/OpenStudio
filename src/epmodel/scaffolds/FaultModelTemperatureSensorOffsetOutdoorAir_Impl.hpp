@@ -10,21 +10,21 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API FaultModelTemperatureSensorOffsetOutdoorAir_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~FaultModelTemperatureSensorOffsetOutdoorAir_Impl() override = default;
+    class EPMODEL_API FaultModelTemperatureSensorOffsetOutdoorAir_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~FaultModelTemperatureSensorOffsetOutdoorAir_Impl() override = default;
 
-  double temperatureSensorOffset() const;
-  bool isTemperatureSensorOffsetDefaulted() const;
-  bool setTemperatureSensorOffset(double temperatureSensorOffset);
-  void resetTemperatureSensorOffset();
-};
+      double temperatureSensorOffset() const;
+      bool isTemperatureSensorOffsetDefaulted() const;
+      bool setTemperatureSensorOffset(double temperatureSensorOffset);
+      void resetTemperatureSensorOffset();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

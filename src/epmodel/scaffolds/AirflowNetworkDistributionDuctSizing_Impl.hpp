@@ -13,50 +13,49 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirflowNetworkDistributionDuctSizing_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirflowNetworkDistributionDuctSizing_Impl() override = default;
+    class EPMODEL_API AirflowNetworkDistributionDuctSizing_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirflowNetworkDistributionDuctSizing_Impl() override = default;
 
-  std::vector<std::string> ductSizingMethodValues() const;
+      std::vector<std::string> ductSizingMethodValues() const;
 
-  std::string ductSizingMethod() const;
-  bool isDuctSizingMethodDefaulted() const;
-  bool setDuctSizingMethod(const std::string& ductSizingMethod);
-  void resetDuctSizingMethod();
+      std::string ductSizingMethod() const;
+      bool isDuctSizingMethodDefaulted() const;
+      bool setDuctSizingMethod(const std::string& ductSizingMethod);
+      void resetDuctSizingMethod();
 
-  double ductSizingFactor() const;
-  bool isDuctSizingFactorDefaulted() const;
-  bool setDuctSizingFactor(double ductSizingFactor);
-  void resetDuctSizingFactor();
+      double ductSizingFactor() const;
+      bool isDuctSizingFactorDefaulted() const;
+      bool setDuctSizingFactor(double ductSizingFactor);
+      void resetDuctSizingFactor();
 
-  double maximumAirflowVelocity() const;
-  bool isMaximumAirflowVelocityDefaulted() const;
-  bool setMaximumAirflowVelocity(double maximumAirflowVelocity);
-  void resetMaximumAirflowVelocity();
+      double maximumAirflowVelocity() const;
+      bool isMaximumAirflowVelocityDefaulted() const;
+      bool setMaximumAirflowVelocity(double maximumAirflowVelocity);
+      void resetMaximumAirflowVelocity();
 
-  boost::optional<double> totalPressureLossAcrossSupplyTrunk() const;
-  bool setTotalPressureLossAcrossSupplyTrunk(double totalPressureLossAcrossSupplyTrunk);
-  void resetTotalPressureLossAcrossSupplyTrunk();
+      boost::optional<double> totalPressureLossAcrossSupplyTrunk() const;
+      bool setTotalPressureLossAcrossSupplyTrunk(double totalPressureLossAcrossSupplyTrunk);
+      void resetTotalPressureLossAcrossSupplyTrunk();
 
-  boost::optional<double> totalPressureLossAcrossSupplyBranch() const;
-  bool setTotalPressureLossAcrossSupplyBranch(double totalPressureLossAcrossSupplyBranch);
-  void resetTotalPressureLossAcrossSupplyBranch();
+      boost::optional<double> totalPressureLossAcrossSupplyBranch() const;
+      bool setTotalPressureLossAcrossSupplyBranch(double totalPressureLossAcrossSupplyBranch);
+      void resetTotalPressureLossAcrossSupplyBranch();
 
-  boost::optional<double> totalPressureLossAcrossReturnTrunk() const;
-  bool setTotalPressureLossAcrossReturnTrunk(double totalPressureLossAcrossReturnTrunk);
-  void resetTotalPressureLossAcrossReturnTrunk();
+      boost::optional<double> totalPressureLossAcrossReturnTrunk() const;
+      bool setTotalPressureLossAcrossReturnTrunk(double totalPressureLossAcrossReturnTrunk);
+      void resetTotalPressureLossAcrossReturnTrunk();
 
-  boost::optional<double> totalPressureLossAcrossReturnBranch() const;
-  bool setTotalPressureLossAcrossReturnBranch(double totalPressureLossAcrossReturnBranch);
-  void resetTotalPressureLossAcrossReturnBranch();
+      boost::optional<double> totalPressureLossAcrossReturnBranch() const;
+      bool setTotalPressureLossAcrossReturnBranch(double totalPressureLossAcrossReturnBranch);
+      void resetTotalPressureLossAcrossReturnBranch();
+    };
 
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

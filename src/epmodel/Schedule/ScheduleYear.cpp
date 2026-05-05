@@ -13,13 +13,13 @@
 namespace openstudio {
 namespace epmodel {
 
-ScheduleYear::ScheduleYear(const Model& model) : Schedule(ScheduleYear::iddObjectType(), model) {}
+  ScheduleYear::ScheduleYear(const Model& model) : Schedule(ScheduleYear::iddObjectType(), model) {}
 
-ScheduleYear::ScheduleYear(std::shared_ptr<detail::ScheduleYear_Impl> impl) : Schedule(std::move(impl)) {}
+  ScheduleYear::ScheduleYear(std::shared_ptr<detail::ScheduleYear_Impl> impl) : Schedule(std::move(impl)) {}
 
-IddObjectType ScheduleYear::iddObjectType() {
-  return IddObjectType::Schedule_Year;
-}
+  IddObjectType ScheduleYear::iddObjectType() {
+    return IddObjectType::Schedule_Year;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

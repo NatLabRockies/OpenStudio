@@ -16,41 +16,41 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class FluidPropertiesTemperatures_Impl;
-}
+  namespace detail {
+    class FluidPropertiesTemperatures_Impl;
+  }
 
-class EPMODEL_API FluidPropertiesTemperatures : public ModelObject
-{
- public:
-  explicit FluidPropertiesTemperatures(const Model& model);
+  class EPMODEL_API FluidPropertiesTemperatures : public ModelObject
+  {
+   public:
+    explicit FluidPropertiesTemperatures(const Model& model);
 
-  virtual ~FluidPropertiesTemperatures() override = default;
-  FluidPropertiesTemperatures(const FluidPropertiesTemperatures& other) = default;
-  FluidPropertiesTemperatures(FluidPropertiesTemperatures&& other) = default;
-  FluidPropertiesTemperatures& operator=(const FluidPropertiesTemperatures&) = default;
-  FluidPropertiesTemperatures& operator=(FluidPropertiesTemperatures&&) = default;
+    virtual ~FluidPropertiesTemperatures() override = default;
+    FluidPropertiesTemperatures(const FluidPropertiesTemperatures& other) = default;
+    FluidPropertiesTemperatures(FluidPropertiesTemperatures&& other) = default;
+    FluidPropertiesTemperatures& operator=(const FluidPropertiesTemperatures&) = default;
+    FluidPropertiesTemperatures& operator=(FluidPropertiesTemperatures&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Name is provided by base ModelObject name APIs and is intentionally excluded.
-  // - Field Mapping: Temperature values are extensible-only and intentionally excluded from
-  //   simple scalar accessors in this scaffold cycle.
-  // - TODO(parity): Add extensible list APIs for Temperature entries after scalar saturation.
+    // Schema Alignment Notes:
+    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Name is provided by base ModelObject name APIs and is intentionally excluded.
+    // - Field Mapping: Temperature values are extensible-only and intentionally excluded from
+    //   simple scalar accessors in this scaffold cycle.
+    // - TODO(parity): Add extensible list APIs for Temperature entries after scalar saturation.
 
- protected:
-  using ImplType = detail::FluidPropertiesTemperatures_Impl;
+   protected:
+    using ImplType = detail::FluidPropertiesTemperatures_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit FluidPropertiesTemperatures(std::shared_ptr<detail::FluidPropertiesTemperatures_Impl> impl);
-};
+    explicit FluidPropertiesTemperatures(std::shared_ptr<detail::FluidPropertiesTemperatures_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

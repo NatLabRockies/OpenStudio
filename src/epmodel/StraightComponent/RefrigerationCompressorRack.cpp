@@ -348,7 +348,8 @@ namespace epmodel {
     }
 
     std::vector<IdfObject> RefrigerationCompressorRack_Impl::remove() {
-      auto compressorCurve = getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::Refrigeration_CompressorRackFields::CompressorRackCOPFunctionofTemperatureCurveName);
+      auto compressorCurve = getObject<ModelObject>().getModelObjectTarget<Curve>(
+        openstudio::Refrigeration_CompressorRackFields::CompressorRackCOPFunctionofTemperatureCurveName);
       auto fanCurve = condenserFanPowerFunctionofTemperatureCurve();
       auto result = StraightComponent_Impl::remove();
       if (!result.empty()) {
@@ -387,7 +388,8 @@ namespace epmodel {
     }
 
     Curve RefrigerationCompressorRack_Impl::compressorRackCOPFunctionofTemperatureCurve() const {
-      auto curve = getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::Refrigeration_CompressorRackFields::CompressorRackCOPFunctionofTemperatureCurveName);
+      auto curve = getObject<ModelObject>().getModelObjectTarget<Curve>(
+        openstudio::Refrigeration_CompressorRackFields::CompressorRackCOPFunctionofTemperatureCurveName);
       OS_ASSERT(curve);
       return *curve;
     }
@@ -411,7 +413,8 @@ namespace epmodel {
     }
 
     boost::optional<Curve> RefrigerationCompressorRack_Impl::condenserFanPowerFunctionofTemperatureCurve() const {
-      return getObject<ModelObject>().getModelObjectTarget<Curve>(openstudio::Refrigeration_CompressorRackFields::CondenserFanPowerFunctionofTemperatureCurveName);
+      return getObject<ModelObject>().getModelObjectTarget<Curve>(
+        openstudio::Refrigeration_CompressorRackFields::CondenserFanPowerFunctionofTemperatureCurveName);
     }
 
     bool RefrigerationCompressorRack_Impl::setCondenserFanPowerFunctionofTemperatureCurve(const Curve& curve) {
@@ -450,7 +453,8 @@ namespace epmodel {
     }
 
     boost::optional<Schedule> RefrigerationCompressorRack_Impl::waterCooledCondenserOutletTemperatureSchedule() const {
-      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserOutletTemperatureScheduleName);
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserOutletTemperatureScheduleName);
     }
 
     bool RefrigerationCompressorRack_Impl::setWaterCooledCondenserOutletTemperatureSchedule(Schedule& schedule) {
@@ -495,7 +499,8 @@ namespace epmodel {
     }
 
     double RefrigerationCompressorRack_Impl::waterCooledCondenserMaximumWaterOutletTemperature() const {
-      boost::optional<double> value = getDouble(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserMaximumWaterOutletTemperature, true);
+      boost::optional<double> value =
+        getDouble(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserMaximumWaterOutletTemperature, true);
       OS_ASSERT(value);
       return value.get();
     }
@@ -509,12 +514,14 @@ namespace epmodel {
     }
 
     double RefrigerationCompressorRack_Impl::waterCooledCondenserMinimumWaterInletTemperature() const {
-      boost::optional<double> value = getDouble(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserMinimumWaterInletTemperature, true);
+      boost::optional<double> value =
+        getDouble(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserMinimumWaterInletTemperature, true);
       OS_ASSERT(value);
       return value.get();
     }
 
-    bool RefrigerationCompressorRack_Impl::setWaterCooledCondenserMinimumWaterInletTemperature(double waterCooledCondenserMinimumWaterInletTemperature) {
+    bool
+      RefrigerationCompressorRack_Impl::setWaterCooledCondenserMinimumWaterInletTemperature(double waterCooledCondenserMinimumWaterInletTemperature) {
       bool result = setDouble(openstudio::Refrigeration_CompressorRackFields::WaterCooledCondenserMinimumWaterInletTemperature,
                               waterCooledCondenserMinimumWaterInletTemperature);
       OS_ASSERT(result);
@@ -522,12 +529,13 @@ namespace epmodel {
     }
 
     boost::optional<Schedule> RefrigerationCompressorRack_Impl::evaporativeCondenserAvailabilitySchedule() const {
-      return getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Refrigeration_CompressorRackFields::EvaporativeCondenserAvailabilityScheduleName);
+      return getObject<ModelObject>().getModelObjectTarget<Schedule>(
+        openstudio::Refrigeration_CompressorRackFields::EvaporativeCondenserAvailabilityScheduleName);
     }
 
     bool RefrigerationCompressorRack_Impl::setEvaporativeCondenserAvailabilitySchedule(Schedule& schedule) {
-      return setSchedule(openstudio::Refrigeration_CompressorRackFields::EvaporativeCondenserAvailabilityScheduleName,
-                         "RefrigerationCompressorRack", "Evaporative Condenser Availability", schedule);
+      return setSchedule(openstudio::Refrigeration_CompressorRackFields::EvaporativeCondenserAvailabilityScheduleName, "RefrigerationCompressorRack",
+                         "Evaporative Condenser Availability", schedule);
     }
 
     void RefrigerationCompressorRack_Impl::resetEvaporativeCondenserAvailabilitySchedule() {

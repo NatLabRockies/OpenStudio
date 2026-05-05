@@ -145,16 +145,16 @@ namespace epmodel {
   namespace detail {
 
     Schedule ZoneHVACBaseboardRadiantConvectiveElectric_Impl::availabilitySchedule() const {
-      if (auto target = getObject<ModelObject>().getModelObjectTarget<Schedule>(
-            ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::AvailabilityScheduleName)) {
+      if (auto target =
+            getObject<ModelObject>().getModelObjectTarget<Schedule>(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::AvailabilityScheduleName)) {
         return *target;
       }
       throw std::runtime_error("Baseboard radiant convective electric is missing its availability schedule.");
     }
 
     bool ZoneHVACBaseboardRadiantConvectiveElectric_Impl::setAvailabilitySchedule(Schedule& schedule) {
-      return setSchedule(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::AvailabilityScheduleName,
-                         "ZoneHVACBaseboardRadiantConvectiveElectric", "Availability", schedule);
+      return setSchedule(ZoneHVAC_Baseboard_RadiantConvective_ElectricFields::AvailabilityScheduleName, "ZoneHVACBaseboardRadiantConvectiveElectric",
+                         "Availability", schedule);
     }
 
     std::string ZoneHVACBaseboardRadiantConvectiveElectric_Impl::heatingDesignCapacityMethod() const {

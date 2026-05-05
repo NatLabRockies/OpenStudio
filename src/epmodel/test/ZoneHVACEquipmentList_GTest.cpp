@@ -91,8 +91,7 @@ TEST_F(EPModelFixture, API_ZoneHVACEquipmentList_StringBackedEntry_ResolvesAndRe
 
   auto group = equipmentList.pushExtensibleGroup().optionalCast<openstudio::WorkspaceExtensibleGroup>();
   ASSERT_TRUE(group);
-  ASSERT_TRUE(group->setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentObjectType,
-                               terminal.iddObject().name(), false));
+  ASSERT_TRUE(group->setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentObjectType, terminal.iddObject().name(), false));
   ASSERT_TRUE(group->setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentName, terminal.nameString(), false));
   ASSERT_TRUE(group->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentCoolingSequence, 1u));
   ASSERT_TRUE(group->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence, 1u));

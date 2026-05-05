@@ -27,7 +27,7 @@ namespace epmodel {
     class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl;
   }
 
-class EPMODEL_API CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit : public WaterToAirComponent
+  class EPMODEL_API CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit : public WaterToAirComponent
   {
    public:
     explicit CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit(const Model& model);

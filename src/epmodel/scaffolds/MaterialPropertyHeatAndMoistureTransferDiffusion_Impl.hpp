@@ -11,19 +11,19 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API MaterialPropertyHeatAndMoistureTransferDiffusion_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~MaterialPropertyHeatAndMoistureTransferDiffusion_Impl() override = default;
+    class EPMODEL_API MaterialPropertyHeatAndMoistureTransferDiffusion_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~MaterialPropertyHeatAndMoistureTransferDiffusion_Impl() override = default;
 
-  int numberofDataPairs() const;
-  bool setNumberofDataPairs(int numberofDataPairs);
-};
+      int numberofDataPairs() const;
+      bool setNumberofDataPairs(int numberofDataPairs);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

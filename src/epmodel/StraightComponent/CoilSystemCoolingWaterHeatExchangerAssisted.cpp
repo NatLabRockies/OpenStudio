@@ -49,8 +49,7 @@ namespace epmodel {
     OS_ASSERT(setHeatExchanger(heatExchanger));
   }
 
-  CoilSystemCoolingWaterHeatExchangerAssisted::CoilSystemCoolingWaterHeatExchangerAssisted(const Model& model,
-                                                                                           const AirToAirComponent& heatExchanger)
+  CoilSystemCoolingWaterHeatExchangerAssisted::CoilSystemCoolingWaterHeatExchangerAssisted(const Model& model, const AirToAirComponent& heatExchanger)
     : StraightComponent(CoilSystemCoolingWaterHeatExchangerAssisted::iddObjectType(), model) {
     if (!setHeatExchanger(heatExchanger)) {
       remove();

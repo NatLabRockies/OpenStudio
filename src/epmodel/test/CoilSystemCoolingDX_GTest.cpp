@@ -30,8 +30,8 @@ TEST_F(EPModelFixture, CoilSystemCoolingDX_ScalarAccessors_RoundTrip) {
 
   const auto coolingCoilObjectTypeChoices = CoilSystemCoolingDX::coolingCoilObjectTypeValues();
   EXPECT_FALSE(coolingCoilObjectTypeChoices.empty());
-  EXPECT_TRUE(std::find(coolingCoilObjectTypeChoices.begin(), coolingCoilObjectTypeChoices.end(), "Coil:Cooling:DX:SingleSpeed") !=
-              coolingCoilObjectTypeChoices.end());
+  EXPECT_TRUE(std::find(coolingCoilObjectTypeChoices.begin(), coolingCoilObjectTypeChoices.end(), "Coil:Cooling:DX:SingleSpeed")
+              != coolingCoilObjectTypeChoices.end());
   ASSERT_GE(coolingCoilObjectTypeChoices.size(), 2u);
 
   const auto dehumidificationChoices = CoilSystemCoolingDX::dehumidificationControlTypeValues();

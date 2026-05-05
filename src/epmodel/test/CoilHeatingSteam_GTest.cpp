@@ -24,8 +24,7 @@ TEST_F(EPModelFixture, CoilHeatingSteam_ScalarAccessors_RoundTrip) {
 
   const auto coilControlTypeChoices = CoilHeatingSteam::coilControlTypeValues();
   EXPECT_FALSE(coilControlTypeChoices.empty());
-  EXPECT_TRUE(std::find(coilControlTypeChoices.begin(), coilControlTypeChoices.end(), "TemperatureSetpointControl")
-              != coilControlTypeChoices.end());
+  EXPECT_TRUE(std::find(coilControlTypeChoices.begin(), coilControlTypeChoices.end(), "TemperatureSetpointControl") != coilControlTypeChoices.end());
   ASSERT_GE(coilControlTypeChoices.size(), 2u);
 
   EXPECT_FALSE(coil.maximumSteamFlowRate());

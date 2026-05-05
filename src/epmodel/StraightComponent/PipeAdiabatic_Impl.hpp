@@ -10,21 +10,21 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API PipeAdiabatic_Impl : public StraightComponent_Impl
-{
- public:
-  using StraightComponent_Impl::StraightComponent_Impl;
-  virtual ~PipeAdiabatic_Impl() override = default;
+    class EPMODEL_API PipeAdiabatic_Impl : public StraightComponent_Impl
+    {
+     public:
+      using StraightComponent_Impl::StraightComponent_Impl;
+      virtual ~PipeAdiabatic_Impl() override = default;
 
-  // Pipe:Adiabatic has no type-specific scalar fields; only relationship-like node-link fields.
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
-  bool addToNode(Node& node) override;
-};
+      // Pipe:Adiabatic has no type-specific scalar fields; only relationship-like node-link fields.
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+      bool addToNode(Node& node) override;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

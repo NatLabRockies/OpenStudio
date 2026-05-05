@@ -20,8 +20,8 @@
 namespace openstudio {
 namespace epmodel {
 
-  HeatPumpWaterToWaterEquationFitHeating::HeatPumpWaterToWaterEquationFitHeating(
-    const Model& model, const CurveQuadLinear& heatingCapacityCurve, const CurveQuadLinear& heatingCompressorPowerCurve)
+  HeatPumpWaterToWaterEquationFitHeating::HeatPumpWaterToWaterEquationFitHeating(const Model& model, const CurveQuadLinear& heatingCapacityCurve,
+                                                                                 const CurveQuadLinear& heatingCompressorPowerCurve)
     : WaterToWaterComponent(HeatPumpWaterToWaterEquationFitHeating::iddObjectType(), model) {
     autosizeReferenceLoadSideFlowRate();
     autosizeReferenceSourceSideFlowRate();
@@ -280,8 +280,7 @@ namespace epmodel {
     return getImpl<detail::HeatPumpWaterToWaterEquationFitHeating_Impl>()->companionCoolingHeatPump();
   }
 
-  bool HeatPumpWaterToWaterEquationFitHeating::setCompanionCoolingHeatPump(
-    const HeatPumpWaterToWaterEquationFitCooling& companionCoolingHeatPump) {
+  bool HeatPumpWaterToWaterEquationFitHeating::setCompanionCoolingHeatPump(const HeatPumpWaterToWaterEquationFitCooling& companionCoolingHeatPump) {
     return getImpl<detail::HeatPumpWaterToWaterEquationFitHeating_Impl>()->setCompanionCoolingHeatPump(companionCoolingHeatPump);
   }
 
@@ -447,8 +446,7 @@ namespace epmodel {
 
     bool HeatPumpWaterToWaterEquationFitHeating_Impl::setCompanionCoolingHeatPump(
       const HeatPumpWaterToWaterEquationFitCooling& companionCoolingHeatPump) {
-      return setPointer(openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::CompanionCoolingHeatPumpName,
-                        companionCoolingHeatPump.handle());
+      return setPointer(openstudio::HeatPump_WaterToWater_EquationFit_HeatingFields::CompanionCoolingHeatPumpName, companionCoolingHeatPump.handle());
     }
 
     boost::optional<double> HeatPumpWaterToWaterEquationFitHeating_Impl::autosizedReferenceLoadSideFlowRate() const {

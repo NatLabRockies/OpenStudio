@@ -135,8 +135,7 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_ScalarAcc
 
   const auto temperatureTypeChoices = CoilWaterHeatingAirToWaterHeatPumpVariableSpeed::evaporatorAirTemperatureTypeforCurveObjectsValues();
   EXPECT_FALSE(temperatureTypeChoices.empty());
-  EXPECT_TRUE(std::find(temperatureTypeChoices.begin(), temperatureTypeChoices.end(), "WetBulbTemperature") !=
-              temperatureTypeChoices.end());
+  EXPECT_TRUE(std::find(temperatureTypeChoices.begin(), temperatureTypeChoices.end(), "WetBulbTemperature") != temperatureTypeChoices.end());
 
   EXPECT_TRUE(coil.setEvaporatorAirTemperatureTypeforCurveObjects("WetBulbTemperature"));
   EXPECT_EQ("WetBulbTemperature", coil.evaporatorAirTemperatureTypeforCurveObjects());
@@ -165,8 +164,7 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_SpeedChil
 
   EXPECT_TRUE(speed2.setRatedWaterHeatingCOP(5.6));
   EXPECT_DOUBLE_EQ(5.6, coil.speeds()[1].ratedWaterHeatingCOP());
-  EXPECT_EQ(coil.speeds()[1].copFunctionofAirFlowFractionCurve().handle(),
-            coil.speeds()[1].cOPFunctionofAirFlowFractionCurve().handle());
+  EXPECT_EQ(coil.speeds()[1].copFunctionofAirFlowFractionCurve().handle(), coil.speeds()[1].cOPFunctionofAirFlowFractionCurve().handle());
 
   auto attachedSpeed = coil.speeds()[0];
   EXPECT_DOUBLE_EQ(400.0, attachedSpeed.ratedWaterHeatingCapacity());
@@ -234,10 +232,8 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Availabil
   Model model;
   CoilWaterHeatingAirToWaterHeatPumpVariableSpeed coil(model);
 
-  ASSERT_TRUE(
-    coil.setPointer(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::AvailabilityScheduleName, openstudio::Handle()));
-  EXPECT_FALSE(
-    coil.getModelObjectTarget<Schedule>(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::AvailabilityScheduleName));
+  ASSERT_TRUE(coil.setPointer(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::AvailabilityScheduleName, openstudio::Handle()));
+  EXPECT_FALSE(coil.getModelObjectTarget<Schedule>(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::AvailabilityScheduleName));
 
   const auto schedule = coil.availabilitySchedule();
   EXPECT_EQ(model.alwaysOnDiscreteSchedule(), schedule);
@@ -267,6 +263,5 @@ TEST_F(EPModelFixture, CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_AttachedS
   EXPECT_EQ(1, coil.getInt(openstudio::Coil_WaterHeating_AirToWaterHeatPump_VariableSpeedFields::NumberofSpeeds).get());
   const auto remainingSpeeds = model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>(true);
   EXPECT_EQ(1u, remainingSpeeds.size());
-  EXPECT_TRUE(std::none_of(remainingSpeeds.begin(), remainingSpeeds.end(),
-                           [&](const auto& speed) { return speed.handle() == attachedHandle; }));
+  EXPECT_TRUE(std::none_of(remainingSpeeds.begin(), remainingSpeeds.end(), [&](const auto& speed) { return speed.handle() == attachedHandle; }));
 }

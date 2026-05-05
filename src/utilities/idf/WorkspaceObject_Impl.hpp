@@ -314,7 +314,7 @@ namespace detail {
 
     virtual bool fieldIsNonnullIfRequired(unsigned index) const override;
 
-  private:
+   private:
     bool m_isTransient = false;
     bool m_initialized;
     Workspace_Impl* m_workspace;

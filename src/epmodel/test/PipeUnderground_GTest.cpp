@@ -36,11 +36,9 @@ TEST_F(EPModelFixture, PipeUnderground_ScalarAccessors_RoundTrip) {
   EXPECT_TRUE(std::find(sunExposureValues.begin(), sunExposureValues.end(), "NoSun") != sunExposureValues.end());
 
   const auto groundTempModelTypeValues = PipeUnderground::undisturbedGroundTemperatureModelTypeValues();
-  EXPECT_TRUE(std::find(groundTempModelTypeValues.begin(), groundTempModelTypeValues.end(),
-                        "Site:GroundTemperature:Undisturbed:FiniteDifference")
+  EXPECT_TRUE(std::find(groundTempModelTypeValues.begin(), groundTempModelTypeValues.end(), "Site:GroundTemperature:Undisturbed:FiniteDifference")
               != groundTempModelTypeValues.end());
-  EXPECT_TRUE(std::find(groundTempModelTypeValues.begin(), groundTempModelTypeValues.end(),
-                        "Site:GroundTemperature:Undisturbed:KusudaAchenbach")
+  EXPECT_TRUE(std::find(groundTempModelTypeValues.begin(), groundTempModelTypeValues.end(), "Site:GroundTemperature:Undisturbed:KusudaAchenbach")
               != groundTempModelTypeValues.end());
   EXPECT_TRUE(std::find(groundTempModelTypeValues.begin(), groundTempModelTypeValues.end(), "Site:GroundTemperature:Undisturbed:Xing")
               != groundTempModelTypeValues.end());

@@ -22,27 +22,27 @@
 namespace openstudio {
 namespace epmodel {
 
-FanConstantVolume::FanConstantVolume(const Model& model) : StraightComponent(FanConstantVolume::iddObjectType(), model) {
-  auto impl = getImpl<detail::FanConstantVolume_Impl>();
-  OS_ASSERT(impl);
-  detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
-  impl->canonicalize(context);
-  ScheduleConstant schedule(model);
-  OS_ASSERT(schedule.setValue(1.0));
-  OS_ASSERT(setAvailabilitySchedule(schedule));
-  autosizeMaximumFlowRate();
-  OS_ASSERT(setEndUseSubcategory(""));
-}
+  FanConstantVolume::FanConstantVolume(const Model& model) : StraightComponent(FanConstantVolume::iddObjectType(), model) {
+    auto impl = getImpl<detail::FanConstantVolume_Impl>();
+    OS_ASSERT(impl);
+    detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
+    impl->canonicalize(context);
+    ScheduleConstant schedule(model);
+    OS_ASSERT(schedule.setValue(1.0));
+    OS_ASSERT(setAvailabilitySchedule(schedule));
+    autosizeMaximumFlowRate();
+    OS_ASSERT(setEndUseSubcategory(""));
+  }
 
-FanConstantVolume::FanConstantVolume(const Model& model, Schedule& schedule) : StraightComponent(FanConstantVolume::iddObjectType(), model) {
-  auto impl = getImpl<detail::FanConstantVolume_Impl>();
-  OS_ASSERT(impl);
-  detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
-  impl->canonicalize(context);
-  OS_ASSERT(setAvailabilitySchedule(schedule));
-  autosizeMaximumFlowRate();
-  OS_ASSERT(setEndUseSubcategory(""));
-}
+  FanConstantVolume::FanConstantVolume(const Model& model, Schedule& schedule) : StraightComponent(FanConstantVolume::iddObjectType(), model) {
+    auto impl = getImpl<detail::FanConstantVolume_Impl>();
+    OS_ASSERT(impl);
+    detail::LoadContext context{const_cast<Model&>(model), SanitizationPolicy::Repair, SanitizationReport{}, {}};  // NOLINT
+    impl->canonicalize(context);
+    OS_ASSERT(setAvailabilitySchedule(schedule));
+    autosizeMaximumFlowRate();
+    OS_ASSERT(setEndUseSubcategory(""));
+  }
 
   FanConstantVolume::FanConstantVolume(std::shared_ptr<detail::FanConstantVolume_Impl> impl) : StraightComponent(std::move(impl)) {}
 
@@ -169,15 +169,15 @@ namespace epmodel {
     }
 
     openstudio::epmodel::Schedule FanConstantVolume_Impl::availabilitySchedule() const {
-      auto value = getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Schedule>(
-        openstudio::Fan_ConstantVolumeFields::AvailabilityScheduleName);
+      auto value =
+        getObject<ModelObject>().getModelObjectTarget<openstudio::epmodel::Schedule>(openstudio::Fan_ConstantVolumeFields::AvailabilityScheduleName);
       OS_ASSERT(value);
       return *value;
     }
 
     bool FanConstantVolume_Impl::setAvailabilitySchedule(openstudio::epmodel::Schedule& schedule) {
-      return ModelObject_Impl::setSchedule(openstudio::Fan_ConstantVolumeFields::AvailabilityScheduleName, "FanConstantVolume",
-                                           "Availability", schedule);
+      return ModelObject_Impl::setSchedule(openstudio::Fan_ConstantVolumeFields::AvailabilityScheduleName, "FanConstantVolume", "Availability",
+                                           schedule);
     }
 
     double FanConstantVolume_Impl::fanTotalEfficiency() const {

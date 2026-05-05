@@ -13,15 +13,15 @@
 namespace openstudio {
 namespace epmodel {
 
-OutputControlSurfaceColorScheme::OutputControlSurfaceColorScheme(const Model& model)
-  : ModelObject(OutputControlSurfaceColorScheme::iddObjectType(), model) {}
+  OutputControlSurfaceColorScheme::OutputControlSurfaceColorScheme(const Model& model)
+    : ModelObject(OutputControlSurfaceColorScheme::iddObjectType(), model) {}
 
-OutputControlSurfaceColorScheme::OutputControlSurfaceColorScheme(std::shared_ptr<detail::OutputControlSurfaceColorScheme_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  OutputControlSurfaceColorScheme::OutputControlSurfaceColorScheme(std::shared_ptr<detail::OutputControlSurfaceColorScheme_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType OutputControlSurfaceColorScheme::iddObjectType() {
-  return IddObjectType::OutputControl_SurfaceColorScheme;
-}
+  IddObjectType OutputControlSurfaceColorScheme::iddObjectType() {
+    return IddObjectType::OutputControl_SurfaceColorScheme;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -11,30 +11,30 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirTerminalDualDuctVAV_Impl : public Mixer_Impl
-{
- public:
-  using Mixer_Impl::Mixer_Impl;
-  virtual ~AirTerminalDualDuctVAV_Impl() override = default;
+    class EPMODEL_API AirTerminalDualDuctVAV_Impl : public Mixer_Impl
+    {
+     public:
+      using Mixer_Impl::Mixer_Impl;
+      virtual ~AirTerminalDualDuctVAV_Impl() override = default;
 
-  unsigned outletPort() const override;
-  unsigned inletPort(unsigned branchIndex) const override;
-  bool addToNode(openstudio::epmodel::Node& node) override;
-  std::vector<openstudio::IdfObject> remove() override;
-  boost::optional<openstudio::epmodel::Node> hotAirInletNode() const;
-  boost::optional<openstudio::epmodel::Node> coldAirInletNode() const;
-  boost::optional<double> maximumDamperAirFlowRate() const;
-  bool setMaximumDamperAirFlowRate(double maximumDamperAirFlowRate);
-  bool isMaximumDamperAirFlowRateAutosized() const;
-  void autosizeMaximumDamperAirFlowRate();
+      unsigned outletPort() const override;
+      unsigned inletPort(unsigned branchIndex) const override;
+      bool addToNode(openstudio::epmodel::Node& node) override;
+      std::vector<openstudio::IdfObject> remove() override;
+      boost::optional<openstudio::epmodel::Node> hotAirInletNode() const;
+      boost::optional<openstudio::epmodel::Node> coldAirInletNode() const;
+      boost::optional<double> maximumDamperAirFlowRate() const;
+      bool setMaximumDamperAirFlowRate(double maximumDamperAirFlowRate);
+      bool isMaximumDamperAirFlowRateAutosized() const;
+      void autosizeMaximumDamperAirFlowRate();
 
-  double zoneMinimumAirFlowFraction() const;
-  bool setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction);
-};
+      double zoneMinimumAirFlowFraction() const;
+      bool setZoneMinimumAirFlowFraction(double zoneMinimumAirFlowFraction);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

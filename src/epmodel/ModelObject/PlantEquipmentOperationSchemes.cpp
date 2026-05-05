@@ -158,8 +158,7 @@ namespace epmodel {
 
     boost::optional<std::string> PlantEquipmentOperationSchemes_Impl::controlSchemeRawField(unsigned schemeIndex, unsigned fieldIndex) const {
       const auto& schemes = getObject<openstudio::epmodel::PlantEquipmentOperationSchemes>();
-      const unsigned absoluteIndex =
-        schemes.numNonextensibleFields() + (schemeIndex * schemes.iddObject().properties().numExtensible) + fieldIndex;
+      const unsigned absoluteIndex = schemes.numNonextensibleFields() + (schemeIndex * schemes.iddObject().properties().numExtensible) + fieldIndex;
       return openstudio::detail::IdfObject_Impl::getField(absoluteIndex, true);
     }
 
@@ -665,15 +664,14 @@ namespace epmodel {
           mergeGroupState(schemeIndex, keptIndex->second);
           groupsToErase.push_back(keptIndex->second);
           keptIndexBySlot[slotKey] = schemeIndex;
-          keptScoreBySlot[slotKey] =
-            (groupHasControlScheme(schemeIndex) ? 2 : 0) + (groupHasControlSchemeSchedule(schemeIndex) ? 1 : 0);
+          keptScoreBySlot[slotKey] = (groupHasControlScheme(schemeIndex) ? 2 : 0) + (groupHasControlSchemeSchedule(schemeIndex) ? 1 : 0);
           detail::addLoadWarning(context, "Removed lower-fidelity duplicate PlantEquipmentOperationSchemes entry for slot '" + slotKey + "' from '"
                                             + ownerName + "'.");
         } else {
           mergeGroupState(keptIndex->second, schemeIndex);
           groupsToErase.push_back(schemeIndex);
-          detail::addLoadWarning(context, "Removed duplicate PlantEquipmentOperationSchemes entry for slot '" + slotKey + "' from '" + ownerName
-                                            + "'.");
+          detail::addLoadWarning(context,
+                                 "Removed duplicate PlantEquipmentOperationSchemes entry for slot '" + slotKey + "' from '" + ownerName + "'.");
         }
       }
 

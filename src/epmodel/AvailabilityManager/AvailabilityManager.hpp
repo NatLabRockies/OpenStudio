@@ -14,34 +14,34 @@
 namespace openstudio {
 namespace epmodel {
 
-class Loop;
-class Model;
+  class Loop;
+  class Model;
 
-namespace detail {
-class AvailabilityManager_Impl;
-}
+  namespace detail {
+    class AvailabilityManager_Impl;
+  }
 
-class EPMODEL_API AvailabilityManager : public ModelObject
-{
- public:
-  virtual ~AvailabilityManager() override = default;
-  AvailabilityManager(const AvailabilityManager& other) = default;
-  AvailabilityManager(AvailabilityManager&& other) = default;
-  AvailabilityManager& operator=(const AvailabilityManager&) = default;
-  AvailabilityManager& operator=(AvailabilityManager&&) = default;
+  class EPMODEL_API AvailabilityManager : public ModelObject
+  {
+   public:
+    virtual ~AvailabilityManager() override = default;
+    AvailabilityManager(const AvailabilityManager& other) = default;
+    AvailabilityManager(AvailabilityManager&& other) = default;
+    AvailabilityManager& operator=(const AvailabilityManager&) = default;
+    AvailabilityManager& operator=(AvailabilityManager&&) = default;
 
-  boost::optional<Loop> loop() const;
+    boost::optional<Loop> loop() const;
 
- protected:
-  using ImplType = detail::AvailabilityManager_Impl;
+   protected:
+    using ImplType = detail::AvailabilityManager_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  AvailabilityManager(IddObjectType type, const Model& model);
-  explicit AvailabilityManager(std::shared_ptr<detail::AvailabilityManager_Impl> impl);
-};
+    AvailabilityManager(IddObjectType type, const Model& model);
+    explicit AvailabilityManager(std::shared_ptr<detail::AvailabilityManager_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

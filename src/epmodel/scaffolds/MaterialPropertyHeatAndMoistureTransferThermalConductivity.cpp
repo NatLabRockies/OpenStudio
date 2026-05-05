@@ -15,44 +15,44 @@
 namespace openstudio {
 namespace epmodel {
 
-MaterialPropertyHeatAndMoistureTransferThermalConductivity::MaterialPropertyHeatAndMoistureTransferThermalConductivity(const Model& model)
-  : ModelObject(MaterialPropertyHeatAndMoistureTransferThermalConductivity::iddObjectType(), model) {}
+  MaterialPropertyHeatAndMoistureTransferThermalConductivity::MaterialPropertyHeatAndMoistureTransferThermalConductivity(const Model& model)
+    : ModelObject(MaterialPropertyHeatAndMoistureTransferThermalConductivity::iddObjectType(), model) {}
 
-MaterialPropertyHeatAndMoistureTransferThermalConductivity::MaterialPropertyHeatAndMoistureTransferThermalConductivity(
-  std::shared_ptr<detail::MaterialPropertyHeatAndMoistureTransferThermalConductivity_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  MaterialPropertyHeatAndMoistureTransferThermalConductivity::MaterialPropertyHeatAndMoistureTransferThermalConductivity(
+    std::shared_ptr<detail::MaterialPropertyHeatAndMoistureTransferThermalConductivity_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType MaterialPropertyHeatAndMoistureTransferThermalConductivity::iddObjectType() {
-  return IddObjectType::MaterialProperty_HeatAndMoistureTransfer_ThermalConductivity;
-}
+  IddObjectType MaterialPropertyHeatAndMoistureTransferThermalConductivity::iddObjectType() {
+    return IddObjectType::MaterialProperty_HeatAndMoistureTransfer_ThermalConductivity;
+  }
 
-int MaterialPropertyHeatAndMoistureTransferThermalConductivity::numberofThermalCoordinates() const {
-  return getImpl<detail::MaterialPropertyHeatAndMoistureTransferThermalConductivity_Impl>()->numberofThermalCoordinates();
-}
+  int MaterialPropertyHeatAndMoistureTransferThermalConductivity::numberofThermalCoordinates() const {
+    return getImpl<detail::MaterialPropertyHeatAndMoistureTransferThermalConductivity_Impl>()->numberofThermalCoordinates();
+  }
 
-bool MaterialPropertyHeatAndMoistureTransferThermalConductivity::setNumberofThermalCoordinates(int numberofThermalCoordinates) {
-  return getImpl<detail::MaterialPropertyHeatAndMoistureTransferThermalConductivity_Impl>()->setNumberofThermalCoordinates(
-    numberofThermalCoordinates);
-}
+  bool MaterialPropertyHeatAndMoistureTransferThermalConductivity::setNumberofThermalCoordinates(int numberofThermalCoordinates) {
+    return getImpl<detail::MaterialPropertyHeatAndMoistureTransferThermalConductivity_Impl>()->setNumberofThermalCoordinates(
+      numberofThermalCoordinates);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-int MaterialPropertyHeatAndMoistureTransferThermalConductivity_Impl::numberofThermalCoordinates() const {
-  const auto value = getInt(openstudio::MaterialProperty_HeatAndMoistureTransfer_ThermalConductivityFields::NumberofThermalCoordinates, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    int MaterialPropertyHeatAndMoistureTransferThermalConductivity_Impl::numberofThermalCoordinates() const {
+      const auto value = getInt(openstudio::MaterialProperty_HeatAndMoistureTransfer_ThermalConductivityFields::NumberofThermalCoordinates, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool MaterialPropertyHeatAndMoistureTransferThermalConductivity_Impl::setNumberofThermalCoordinates(int numberofThermalCoordinates) {
-  return setInt(openstudio::MaterialProperty_HeatAndMoistureTransfer_ThermalConductivityFields::NumberofThermalCoordinates,
-                numberofThermalCoordinates);
-}
+    bool MaterialPropertyHeatAndMoistureTransferThermalConductivity_Impl::setNumberofThermalCoordinates(int numberofThermalCoordinates) {
+      return setInt(openstudio::MaterialProperty_HeatAndMoistureTransfer_ThermalConductivityFields::NumberofThermalCoordinates,
+                    numberofThermalCoordinates);
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

@@ -16,41 +16,41 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class AirflowNetworkMultiZoneWindPressureCoefficientArray_Impl;
-}
+  namespace detail {
+    class AirflowNetworkMultiZoneWindPressureCoefficientArray_Impl;
+  }
 
-class EPMODEL_API AirflowNetworkMultiZoneWindPressureCoefficientArray : public ModelObject
-{
- public:
-  explicit AirflowNetworkMultiZoneWindPressureCoefficientArray(const Model& model);
+  class EPMODEL_API AirflowNetworkMultiZoneWindPressureCoefficientArray : public ModelObject
+  {
+   public:
+    explicit AirflowNetworkMultiZoneWindPressureCoefficientArray(const Model& model);
 
-  virtual ~AirflowNetworkMultiZoneWindPressureCoefficientArray() override = default;
-  AirflowNetworkMultiZoneWindPressureCoefficientArray(const AirflowNetworkMultiZoneWindPressureCoefficientArray& other) = default;
-  AirflowNetworkMultiZoneWindPressureCoefficientArray(AirflowNetworkMultiZoneWindPressureCoefficientArray&& other) = default;
-  AirflowNetworkMultiZoneWindPressureCoefficientArray& operator=(const AirflowNetworkMultiZoneWindPressureCoefficientArray&) = default;
-  AirflowNetworkMultiZoneWindPressureCoefficientArray& operator=(AirflowNetworkMultiZoneWindPressureCoefficientArray&&) = default;
+    virtual ~AirflowNetworkMultiZoneWindPressureCoefficientArray() override = default;
+    AirflowNetworkMultiZoneWindPressureCoefficientArray(const AirflowNetworkMultiZoneWindPressureCoefficientArray& other) = default;
+    AirflowNetworkMultiZoneWindPressureCoefficientArray(AirflowNetworkMultiZoneWindPressureCoefficientArray&& other) = default;
+    AirflowNetworkMultiZoneWindPressureCoefficientArray& operator=(const AirflowNetworkMultiZoneWindPressureCoefficientArray&) = default;
+    AirflowNetworkMultiZoneWindPressureCoefficientArray& operator=(AirflowNetworkMultiZoneWindPressureCoefficientArray&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
-  // - Field Mapping: No type-specific non-name scalar fields exist for this object.
-  // - Field Mapping: Extensible Wind Direction entries are intentionally excluded from simple scalar accessor scaffolding.
-  // - TODO(parity): Add non-scalar extensible APIs if/when extensible-field parity is in scope.
+    // Schema Alignment Notes:
+    // - API: This no-counterpart epmodel type uses IDD-derived class/accessor naming.
+    // - Field Mapping: No type-specific non-name scalar fields exist for this object.
+    // - Field Mapping: Extensible Wind Direction entries are intentionally excluded from simple scalar accessor scaffolding.
+    // - TODO(parity): Add non-scalar extensible APIs if/when extensible-field parity is in scope.
 
- protected:
-  using ImplType = detail::AirflowNetworkMultiZoneWindPressureCoefficientArray_Impl;
+   protected:
+    using ImplType = detail::AirflowNetworkMultiZoneWindPressureCoefficientArray_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit AirflowNetworkMultiZoneWindPressureCoefficientArray(
-    std::shared_ptr<detail::AirflowNetworkMultiZoneWindPressureCoefficientArray_Impl> impl);
-};
+    explicit AirflowNetworkMultiZoneWindPressureCoefficientArray(
+      std::shared_ptr<detail::AirflowNetworkMultiZoneWindPressureCoefficientArray_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -38,8 +38,8 @@ TEST_F(EPModelFixture, PipingSystemUndergroundDomain_ScalarAccessors_RoundTrip) 
   EXPECT_TRUE(std::find(xMeshTypeValues.begin(), xMeshTypeValues.end(), "SymmetricGeometric") != xMeshTypeValues.end());
 
   const auto groundTempValues = PipingSystemUndergroundDomain::undisturbedGroundTemperatureModelTypeValues();
-  EXPECT_TRUE(std::find(groundTempValues.begin(), groundTempValues.end(), "Site:GroundTemperature:Undisturbed:FiniteDifference") !=
-              groundTempValues.end());
+  EXPECT_TRUE(std::find(groundTempValues.begin(), groundTempValues.end(), "Site:GroundTemperature:Undisturbed:FiniteDifference")
+              != groundTempValues.end());
 
   EXPECT_TRUE(domain.setXmax(10.0));
   EXPECT_TRUE(domain.setYmax(11.0));

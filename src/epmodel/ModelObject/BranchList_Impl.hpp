@@ -13,25 +13,25 @@
 namespace openstudio {
 namespace epmodel {
 
-class Branch;
+  class Branch;
 
-namespace detail {
-struct LoadContext;
+  namespace detail {
+    struct LoadContext;
 
-class EPMODEL_API BranchList_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~BranchList_Impl() override = default;
+    class EPMODEL_API BranchList_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~BranchList_Impl() override = default;
 
-  std::vector<openstudio::epmodel::Branch> branches() const;
-  bool insertBranch(unsigned index, const openstudio::epmodel::Branch& branch);
-  bool addBranch(const openstudio::epmodel::Branch& branch);
-  bool removeBranch(const openstudio::epmodel::Branch& branch);
-  void doCanonicalize(LoadContext& context) override;
-};
+      std::vector<openstudio::epmodel::Branch> branches() const;
+      bool insertBranch(unsigned index, const openstudio::epmodel::Branch& branch);
+      bool addBranch(const openstudio::epmodel::Branch& branch);
+      bool removeBranch(const openstudio::epmodel::Branch& branch);
+      void doCanonicalize(LoadContext& context) override;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

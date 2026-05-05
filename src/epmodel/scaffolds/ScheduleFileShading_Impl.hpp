@@ -10,19 +10,19 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ScheduleFileShading_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ScheduleFileShading_Impl() override = default;
+    class EPMODEL_API ScheduleFileShading_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ScheduleFileShading_Impl() override = default;
 
-  std::string fileName() const;
-  bool setFileName(const std::string& fileName);
-};
+      std::string fileName() const;
+      bool setFileName(const std::string& fileName);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

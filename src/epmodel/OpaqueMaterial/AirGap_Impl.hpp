@@ -11,21 +11,21 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirGap_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirGap_Impl() override = default;
+    class EPMODEL_API AirGap_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirGap_Impl() override = default;
 
-  double thermalResistance() const;
+      double thermalResistance() const;
 
-  bool setThermalResistance(double thermalResistance);
-  void resetThermalResistance();
-};
+      bool setThermalResistance(double thermalResistance);
+      void resetThermalResistance();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

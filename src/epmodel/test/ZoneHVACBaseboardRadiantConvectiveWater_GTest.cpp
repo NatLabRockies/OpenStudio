@@ -44,7 +44,6 @@ TEST_F(EPModelFixture, ZoneHVACBaseboardRadiantConvectiveWater_CanonicalParentSu
 
   ASSERT_EQ(1u, baseboard.children().size());
   EXPECT_EQ(baseboard.heatingCoil().handle(), baseboard.children()[0].handle());
-
 }
 
 TEST_F(EPModelFixture, ZoneHVACBaseboardRadiantConvectiveWater_FlattenedAndCanonicalViewsStayAligned) {

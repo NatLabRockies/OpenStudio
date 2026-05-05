@@ -18,17 +18,17 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
-class ThermalZone;
+  class Model;
+  class ThermalZone;
 
-namespace detail {
-class SizingZone_Impl;
-}
+  namespace detail {
+    class SizingZone_Impl;
+  }
 
-class EPMODEL_API SizingZone : public ModelObject
-{
- public:
-  explicit SizingZone(const Model& model, const ThermalZone& thermalZone);
+  class EPMODEL_API SizingZone : public ModelObject
+  {
+   public:
+    explicit SizingZone(const Model& model, const ThermalZone& thermalZone);
 
     virtual ~SizingZone() override = default;
     SizingZone(const SizingZone& other) = default;
@@ -210,15 +210,15 @@ class EPMODEL_API SizingZone : public ModelObject
     double maximumHeatingCapacityToCoolingLoadSizingRatio() const;
     bool setMaximumHeatingCapacityToCoolingLoadSizingRatio(double maximumHeatingCapacityToCoolingLoadSizingRatio);
 
- protected:
-  using ImplType = detail::SizingZone_Impl;
+   protected:
+    using ImplType = detail::SizingZone_Impl;
 
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
-  friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
 
-  explicit SizingZone(std::shared_ptr<detail::SizingZone_Impl> impl);
-};
+    explicit SizingZone(std::shared_ptr<detail::SizingZone_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -280,8 +280,7 @@ TEST_F(EPModelFixture, ZoneHVACLowTempRadiantVarFlow_RadiantSurfaceType_Rewrites
   ConstructionWithInternalSource radiantConstruction(model);
   ASSERT_TRUE(radiantConstruction.setPointer(openstudio::ConstructionProperty_InternalHeatSourceFields::ConstructionName, construction.handle()));
 
-  auto makeSurface = [&](const std::string& name, const std::string& surfaceType,
-                         const std::vector<std::array<double, 3>>& vertices) -> Surface {
+  auto makeSurface = [&](const std::string& name, const std::string& surfaceType, const std::vector<std::array<double, 3>>& vertices) -> Surface {
     Surface surface(model);
     EXPECT_TRUE(surface.setName(name));
     EXPECT_TRUE(surface.setSurfaceType(surfaceType));

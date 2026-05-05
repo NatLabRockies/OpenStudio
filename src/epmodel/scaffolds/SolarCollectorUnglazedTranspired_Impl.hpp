@@ -13,74 +13,73 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SolarCollectorUnglazedTranspired_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~SolarCollectorUnglazedTranspired_Impl() override = default;
+    class EPMODEL_API SolarCollectorUnglazedTranspired_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~SolarCollectorUnglazedTranspired_Impl() override = default;
 
-  double diameterofPerforationsinCollector() const;
-  bool setDiameterofPerforationsinCollector(double diameterofPerforationsinCollector);
+      double diameterofPerforationsinCollector() const;
+      bool setDiameterofPerforationsinCollector(double diameterofPerforationsinCollector);
 
-  double distanceBetweenPerforationsinCollector() const;
-  bool setDistanceBetweenPerforationsinCollector(double distanceBetweenPerforationsinCollector);
+      double distanceBetweenPerforationsinCollector() const;
+      bool setDistanceBetweenPerforationsinCollector(double distanceBetweenPerforationsinCollector);
 
-  double thermalEmissivityofCollectorSurface() const;
-  bool setThermalEmissivityofCollectorSurface(double thermalEmissivityofCollectorSurface);
+      double thermalEmissivityofCollectorSurface() const;
+      bool setThermalEmissivityofCollectorSurface(double thermalEmissivityofCollectorSurface);
 
-  double solarAbsorbtivityofCollectorSurface() const;
-  bool setSolarAbsorbtivityofCollectorSurface(double solarAbsorbtivityofCollectorSurface);
+      double solarAbsorbtivityofCollectorSurface() const;
+      bool setSolarAbsorbtivityofCollectorSurface(double solarAbsorbtivityofCollectorSurface);
 
-  double effectiveOverallHeightofCollector() const;
-  bool setEffectiveOverallHeightofCollector(double effectiveOverallHeightofCollector);
+      double effectiveOverallHeightofCollector() const;
+      bool setEffectiveOverallHeightofCollector(double effectiveOverallHeightofCollector);
 
-  double effectiveGapThicknessofPlenumBehindCollector() const;
-  bool setEffectiveGapThicknessofPlenumBehindCollector(double effectiveGapThicknessofPlenumBehindCollector);
+      double effectiveGapThicknessofPlenumBehindCollector() const;
+      bool setEffectiveGapThicknessofPlenumBehindCollector(double effectiveGapThicknessofPlenumBehindCollector);
 
-  double effectiveCrossSectionAreaofPlenumBehindCollector() const;
-  bool setEffectiveCrossSectionAreaofPlenumBehindCollector(double effectiveCrossSectionAreaofPlenumBehindCollector);
+      double effectiveCrossSectionAreaofPlenumBehindCollector() const;
+      bool setEffectiveCrossSectionAreaofPlenumBehindCollector(double effectiveCrossSectionAreaofPlenumBehindCollector);
 
-  std::string holeLayoutPatternforPitch() const;
-  bool setHoleLayoutPatternforPitch(const std::string& holeLayoutPatternforPitch);
-  bool isHoleLayoutPatternforPitchDefaulted() const;
-  void resetHoleLayoutPatternforPitch();
+      std::string holeLayoutPatternforPitch() const;
+      bool setHoleLayoutPatternforPitch(const std::string& holeLayoutPatternforPitch);
+      bool isHoleLayoutPatternforPitchDefaulted() const;
+      void resetHoleLayoutPatternforPitch();
 
-  std::string heatExchangeEffectivenessCorrelation() const;
-  bool setHeatExchangeEffectivenessCorrelation(const std::string& heatExchangeEffectivenessCorrelation);
-  bool isHeatExchangeEffectivenessCorrelationDefaulted() const;
-  void resetHeatExchangeEffectivenessCorrelation();
+      std::string heatExchangeEffectivenessCorrelation() const;
+      bool setHeatExchangeEffectivenessCorrelation(const std::string& heatExchangeEffectivenessCorrelation);
+      bool isHeatExchangeEffectivenessCorrelationDefaulted() const;
+      void resetHeatExchangeEffectivenessCorrelation();
 
-  double ratioofActualCollectorSurfaceAreatoProjectedSurfaceArea() const;
-  bool setRatioofActualCollectorSurfaceAreatoProjectedSurfaceArea(double ratioofActualCollectorSurfaceAreatoProjectedSurfaceArea);
-  bool isRatioofActualCollectorSurfaceAreatoProjectedSurfaceAreaDefaulted() const;
-  void resetRatioofActualCollectorSurfaceAreatoProjectedSurfaceArea();
+      double ratioofActualCollectorSurfaceAreatoProjectedSurfaceArea() const;
+      bool setRatioofActualCollectorSurfaceAreatoProjectedSurfaceArea(double ratioofActualCollectorSurfaceAreatoProjectedSurfaceArea);
+      bool isRatioofActualCollectorSurfaceAreatoProjectedSurfaceAreaDefaulted() const;
+      void resetRatioofActualCollectorSurfaceAreatoProjectedSurfaceArea();
 
-  std::string roughnessofCollector() const;
-  bool setRoughnessofCollector(const std::string& roughnessofCollector);
+      std::string roughnessofCollector() const;
+      bool setRoughnessofCollector(const std::string& roughnessofCollector);
 
-  boost::optional<double> collectorThickness() const;
-  bool setCollectorThickness(double collectorThickness);
-  void resetCollectorThickness();
+      boost::optional<double> collectorThickness() const;
+      bool setCollectorThickness(double collectorThickness);
+      void resetCollectorThickness();
 
-  double effectivenessforPerforationswithRespecttoWind() const;
-  bool setEffectivenessforPerforationswithRespecttoWind(double effectivenessforPerforationswithRespecttoWind);
-  bool isEffectivenessforPerforationswithRespecttoWindDefaulted() const;
-  void resetEffectivenessforPerforationswithRespecttoWind();
+      double effectivenessforPerforationswithRespecttoWind() const;
+      bool setEffectivenessforPerforationswithRespecttoWind(double effectivenessforPerforationswithRespecttoWind);
+      bool isEffectivenessforPerforationswithRespecttoWindDefaulted() const;
+      void resetEffectivenessforPerforationswithRespecttoWind();
 
-  double dischargeCoefficientforOpeningswithRespecttoBuoyancyDrivenFlow() const;
-  bool setDischargeCoefficientforOpeningswithRespecttoBuoyancyDrivenFlow(
-    double dischargeCoefficientforOpeningswithRespecttoBuoyancyDrivenFlow);
-  bool isDischargeCoefficientforOpeningswithRespecttoBuoyancyDrivenFlowDefaulted() const;
-  void resetDischargeCoefficientforOpeningswithRespecttoBuoyancyDrivenFlow();
+      double dischargeCoefficientforOpeningswithRespecttoBuoyancyDrivenFlow() const;
+      bool setDischargeCoefficientforOpeningswithRespecttoBuoyancyDrivenFlow(double dischargeCoefficientforOpeningswithRespecttoBuoyancyDrivenFlow);
+      bool isDischargeCoefficientforOpeningswithRespecttoBuoyancyDrivenFlowDefaulted() const;
+      void resetDischargeCoefficientforOpeningswithRespecttoBuoyancyDrivenFlow();
 
-  std::vector<std::string> holeLayoutPatternforPitchValues() const;
-  std::vector<std::string> heatExchangeEffectivenessCorrelationValues() const;
-  std::vector<std::string> roughnessofCollectorValues() const;
-};
+      std::vector<std::string> holeLayoutPatternforPitchValues() const;
+      std::vector<std::string> heatExchangeEffectivenessCorrelationValues() const;
+      std::vector<std::string> roughnessofCollectorValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

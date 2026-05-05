@@ -13,41 +13,41 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API DemandManagerExteriorLights_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~DemandManagerExteriorLights_Impl() override = default;
+    class EPMODEL_API DemandManagerExteriorLights_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~DemandManagerExteriorLights_Impl() override = default;
 
-  std::string limitControl() const;
-  bool setLimitControl(const std::string& limitControl);
+      std::string limitControl() const;
+      bool setLimitControl(const std::string& limitControl);
 
-  boost::optional<int> minimumLimitDuration() const;
-  bool setMinimumLimitDuration(int minimumLimitDuration);
-  void resetMinimumLimitDuration();
+      boost::optional<int> minimumLimitDuration() const;
+      bool setMinimumLimitDuration(int minimumLimitDuration);
+      void resetMinimumLimitDuration();
 
-  boost::optional<double> maximumLimitFraction() const;
-  bool setMaximumLimitFraction(double maximumLimitFraction);
-  void resetMaximumLimitFraction();
+      boost::optional<double> maximumLimitFraction() const;
+      bool setMaximumLimitFraction(double maximumLimitFraction);
+      void resetMaximumLimitFraction();
 
-  boost::optional<double> limitStepChange() const;
-  bool setLimitStepChange(double limitStepChange);
-  void resetLimitStepChange();
+      boost::optional<double> limitStepChange() const;
+      bool setLimitStepChange(double limitStepChange);
+      void resetLimitStepChange();
 
-  std::string selectionControl() const;
-  bool setSelectionControl(const std::string& selectionControl);
+      std::string selectionControl() const;
+      bool setSelectionControl(const std::string& selectionControl);
 
-  boost::optional<int> rotationDuration() const;
-  bool setRotationDuration(int rotationDuration);
-  void resetRotationDuration();
+      boost::optional<int> rotationDuration() const;
+      bool setRotationDuration(int rotationDuration);
+      void resetRotationDuration();
 
-  std::vector<std::string> limitControlValues() const;
-  std::vector<std::string> selectionControlValues() const;
-};
+      std::vector<std::string> limitControlValues() const;
+      std::vector<std::string> selectionControlValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

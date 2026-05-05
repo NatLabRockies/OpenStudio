@@ -35,13 +35,12 @@ namespace openstudio {
 namespace epmodel {
 
   static constexpr std::array<std::pair<double, double>, 35> defaultGroundHeatExchangerVerticalGFunctions{{
-    {-15.2996, -0.348322}, {-14.201, 0.022208},  {-13.2202, 0.412345}, {-12.2086, 0.867498}, {-11.1888, 1.357839},
-    {-10.1816, 1.852024},  {-9.1815, 2.345656},  {-8.6809, 2.593958},  {-8.5, 2.679},        {-7.8, 3.023},
-    {-7.2, 3.32},          {-6.5, 3.681},        {-5.9, 4.071},        {-5.2, 4.828},        {-4.5, 6.253},
-    {-3.963, 7.894},       {-3.27, 11.82},       {-2.864, 15.117},     {-2.577, 18.006},     {-2.171, 22.887},
-    {-1.884, 26.924},      {-1.191, 38.004},     {-0.497, 49.919},     {-0.274, 53.407},     {-0.051, 56.632},
-    {0.196, 59.825},       {0.419, 62.349},      {0.642, 64.524},      {0.873, 66.412},      {1.112, 67.993},
-    {1.335, 69.162},       {1.679, 70.476},      {2.028, 71.361},      {2.275, 71.79},       {3.003, 72.511},
+    {-15.2996, -0.348322}, {-14.201, 0.022208}, {-13.2202, 0.412345}, {-12.2086, 0.867498}, {-11.1888, 1.357839}, {-10.1816, 1.852024},
+    {-9.1815, 2.345656},   {-8.6809, 2.593958}, {-8.5, 2.679},        {-7.8, 3.023},        {-7.2, 3.32},         {-6.5, 3.681},
+    {-5.9, 4.071},         {-5.2, 4.828},       {-4.5, 6.253},        {-3.963, 7.894},      {-3.27, 11.82},       {-2.864, 15.117},
+    {-2.577, 18.006},      {-2.171, 22.887},    {-1.884, 26.924},     {-1.191, 38.004},     {-0.497, 49.919},     {-0.274, 53.407},
+    {-0.051, 56.632},      {0.196, 59.825},     {0.419, 62.349},      {0.642, 64.524},      {0.873, 66.412},      {1.112, 67.993},
+    {1.335, 69.162},       {1.679, 70.476},     {2.028, 71.361},      {2.275, 71.79},       {3.003, 72.511},
   }};
 
   GFunction::GFunction(double lnValue, double gValue) : m_lnValue(lnValue), m_gValue(gValue) {}
@@ -70,9 +69,9 @@ namespace epmodel {
     bool ok = setUndisturbedGroundTemperatureModel(undisturbedGroundTemperatureModel);
     if (!ok) {
       remove();
-      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerVertical",
-                         "Unable to set " << briefDescription() << "'s Undisturbed Ground Temperature Model to "
-                                           << undisturbedGroundTemperatureModel.briefDescription() << ".");
+      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerVertical", "Unable to set "
+                                                                             << briefDescription() << "'s Undisturbed Ground Temperature Model to "
+                                                                             << undisturbedGroundTemperatureModel.briefDescription() << ".");
     }
 
     ok = setDesignFlowRate(0.0033);
@@ -369,7 +368,8 @@ namespace epmodel {
     }
 
     boost::optional<openstudio::WorkspaceObject> GroundHeatExchangerVertical_Impl::groundHeatExchangerVerticalProperties() const {
-      if (auto target = getObject<ModelObject>().getTarget(openstudio::GroundHeatExchanger_ResponseFactorsFields::GHE_Vertical_PropertiesObjectName)) {
+      if (auto target =
+            getObject<ModelObject>().getTarget(openstudio::GroundHeatExchanger_ResponseFactorsFields::GHE_Vertical_PropertiesObjectName)) {
         return *target;
       }
       return boost::none;
@@ -425,8 +425,8 @@ namespace epmodel {
       auto thisComponent = thisObject.cast<openstudio::epmodel::HVACComponent>();
       if (thisComponent.loop() && !removeFromLoop()) {
         LOG_FREE(Warn, "openstudio.epmodel.GroundHeatExchangerVertical",
-                 "Failed to detach " << thisObject.briefDescription()
-                                      << " from its existing loop topology before adding it to node '" << node.nameString() << "'.");
+                 "Failed to detach " << thisObject.briefDescription() << " from its existing loop topology before adding it to node '"
+                                     << node.nameString() << "'.");
         return false;
       }
 
@@ -488,8 +488,8 @@ namespace epmodel {
             if (auto compInletName = compInlet->name()) {
               if (inletNode && !openstudio::istringEqual(*compInletName, inletNode->nameString())) {
                 LOG_FREE(Warn, "openstudio.epmodel.GroundHeatExchangerVertical",
-                         "Branch inlet node '" << inletNode->nameString() << "' does not match component inlet node '" << *compInletName
-                                                << "' for '" << comp->nameString() << "'.");
+                         "Branch inlet node '" << inletNode->nameString() << "' does not match component inlet node '" << *compInletName << "' for '"
+                                               << comp->nameString() << "'.");
               }
             }
           }
@@ -498,7 +498,7 @@ namespace epmodel {
               if (outletNode && !openstudio::istringEqual(*compOutletName, outletNode->nameString())) {
                 LOG_FREE(Warn, "openstudio.epmodel.GroundHeatExchangerVertical",
                          "Branch outlet node '" << outletNode->nameString() << "' does not match component outlet node '" << *compOutletName
-                                                 << "' for '" << comp->nameString() << "'.");
+                                                << "' for '" << comp->nameString() << "'.");
               }
             }
           }
@@ -652,7 +652,7 @@ namespace epmodel {
           if ((*branch == plantLoopImpl->supplyInletBranch())
               && (remainingComponents[0].iddObject().type() == openstudio::IddObjectType::GroundHeatExchanger_System)
               && !remainingComponents[0].setPointer(openstudio::GroundHeatExchanger_SystemFields::InletNodeName,
-                                                   plantLoop->supplyInletNode().handle())) {
+                                                    plantLoop->supplyInletNode().handle())) {
             return false;
           }
           if ((*branch == plantLoopImpl->demandInletBranch()) && !branchImpl->setComponentInletNode(0u, plantLoop->demandInletNode())) {
@@ -661,7 +661,7 @@ namespace epmodel {
           if ((*branch == plantLoopImpl->demandInletBranch())
               && (remainingComponents[0].iddObject().type() == openstudio::IddObjectType::GroundHeatExchanger_System)
               && !remainingComponents[0].setPointer(openstudio::GroundHeatExchanger_SystemFields::InletNodeName,
-                                                   plantLoop->demandInletNode().handle())) {
+                                                    plantLoop->demandInletNode().handle())) {
             return false;
           }
 
@@ -672,7 +672,7 @@ namespace epmodel {
           if ((*branch == plantLoopImpl->supplyOutletBranch())
               && (remainingComponents[lastIndex].iddObject().type() == openstudio::IddObjectType::GroundHeatExchanger_System)
               && !remainingComponents[lastIndex].setPointer(openstudio::GroundHeatExchanger_SystemFields::OutletNodeName,
-                                                           plantLoop->supplyOutletNode().handle())) {
+                                                            plantLoop->supplyOutletNode().handle())) {
             return false;
           }
           if ((*branch == plantLoopImpl->demandOutletBranch()) && !branchImpl->setComponentOutletNode(lastIndex, plantLoop->demandOutletNode())) {
@@ -681,7 +681,7 @@ namespace epmodel {
           if ((*branch == plantLoopImpl->demandOutletBranch())
               && (remainingComponents[lastIndex].iddObject().type() == openstudio::IddObjectType::GroundHeatExchanger_System)
               && !remainingComponents[lastIndex].setPointer(openstudio::GroundHeatExchanger_SystemFields::OutletNodeName,
-                                                           plantLoop->demandOutletNode().handle())) {
+                                                            plantLoop->demandOutletNode().handle())) {
             return false;
           }
         }
@@ -713,7 +713,7 @@ namespace epmodel {
       if (auto owner = getObject<openstudio::epmodel::HVACComponent>().containingHVACComponent()) {
         LOG_FREE(Warn, "openstudio.epmodel.GroundHeatExchangerVertical",
                  "Refusing to disconnect " << getObject<ModelObject>().briefDescription() << " because its air-side connectivity is owned by "
-                                            << owner->briefDescription() << ".");
+                                           << owner->briefDescription() << ".");
         return;
       }
 
@@ -1028,8 +1028,8 @@ namespace epmodel {
           }
         }
       }
-      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerVertical",
-                         briefDescription() << " does not have an Undisturbed Ground Temperature Model attached.");
+      LOG_FREE_AND_THROW("openstudio.epmodel.GroundHeatExchangerVertical", briefDescription()
+                                                                             << " does not have an Undisturbed Ground Temperature Model attached.");
     }
 
     bool GroundHeatExchangerVertical_Impl::setUndisturbedGroundTemperatureModel(const ModelObject& undisturbedGroundTemperatureModel) {

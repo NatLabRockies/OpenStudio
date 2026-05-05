@@ -16,40 +16,40 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SiteVariableLocation_Impl;
-}
+  namespace detail {
+    class SiteVariableLocation_Impl;
+  }
 
-class EPMODEL_API SiteVariableLocation : public ModelObject
-{
- public:
-  explicit SiteVariableLocation(const Model& model);
+  class EPMODEL_API SiteVariableLocation : public ModelObject
+  {
+   public:
+    explicit SiteVariableLocation(const Model& model);
 
-  virtual ~SiteVariableLocation() override = default;
-  SiteVariableLocation(const SiteVariableLocation& other) = default;
-  SiteVariableLocation(SiteVariableLocation&& other) = default;
-  SiteVariableLocation& operator=(const SiteVariableLocation&) = default;
-  SiteVariableLocation& operator=(SiteVariableLocation&&) = default;
+    virtual ~SiteVariableLocation() override = default;
+    SiteVariableLocation(const SiteVariableLocation& other) = default;
+    SiteVariableLocation(SiteVariableLocation&& other) = default;
+    SiteVariableLocation& operator=(const SiteVariableLocation&) = default;
+    SiteVariableLocation& operator=(SiteVariableLocation&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Name remains available through base ModelObject scalar API.
-  // - Field Mapping: Building Location Latitude/Longitude/Orientation Schedule are relationship-like object-list fields and are excluded.
-  // - TODO(parity): Add typed schedule-link APIs when non-scalar parity is in scope.
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Name remains available through base ModelObject scalar API.
+    // - Field Mapping: Building Location Latitude/Longitude/Orientation Schedule are relationship-like object-list fields and are excluded.
+    // - TODO(parity): Add typed schedule-link APIs when non-scalar parity is in scope.
 
- protected:
-  using ImplType = detail::SiteVariableLocation_Impl;
+   protected:
+    using ImplType = detail::SiteVariableLocation_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit SiteVariableLocation(std::shared_ptr<detail::SiteVariableLocation_Impl> impl);
-};
+    explicit SiteVariableLocation(std::shared_ptr<detail::SiteVariableLocation_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

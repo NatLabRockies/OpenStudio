@@ -268,7 +268,7 @@ namespace epmodel {
       }
 
       boost::optional<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData> transientSpeedDataByName(const Model& model,
-                                                                                                          const std::string& name) {
+                                                                                                         const std::string& name) {
         for (const auto& speed : model.getConcreteModelObjects<CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData>(true)) {
           if (const auto speedName = speed.name()) {
             if (openstudio::istringEqual(*speedName, name)) {
@@ -295,8 +295,7 @@ namespace epmodel {
 
     }  // namespace
 
-    std::string transientSpeedDataName(const openstudio::epmodel::CoilWaterHeatingAirToWaterHeatPumpVariableSpeed& parent,
-                                       unsigned speedIndex) {
+    std::string transientSpeedDataName(const openstudio::epmodel::CoilWaterHeatingAirToWaterHeatPumpVariableSpeed& parent, unsigned speedIndex) {
       return transientSpeedDataPrefix(parent) + openstudio::toString(speedIndex);
     }
 
@@ -472,7 +471,8 @@ namespace epmodel {
 
     bool CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::setCondenserPumpHeatIncludedinRatedHeatingCapacityandRatedCOP(
       const std::string& condenserPumpHeatIncludedinRatedHeatingCapacityandRatedCOP) {
-      return setString(Fields::CondenserPumpHeatIncludedinRatedHeatingCapacityandRatedCOP, condenserPumpHeatIncludedinRatedHeatingCapacityandRatedCOP);
+      return setString(Fields::CondenserPumpHeatIncludedinRatedHeatingCapacityandRatedCOP,
+                       condenserPumpHeatIncludedinRatedHeatingCapacityandRatedCOP);
     }
 
     double CoilWaterHeatingAirToWaterHeatPumpVariableSpeed_Impl::fractionofCondenserPumpHeattoWater() const {
@@ -561,16 +561,21 @@ namespace epmodel {
       ok = group.setDouble(ExtensibleFields::SpeedReferenceUnitRatedAirFlowRate, speed.referenceUnitRatedAirFlowRate()) && ok;
       ok = group.setDouble(ExtensibleFields::SpeedReferenceUnitRatedWaterFlowRate, speed.referenceUnitRatedWaterFlowRate()) && ok;
       ok = group.setDouble(ExtensibleFields::SpeedReferenceUnitWaterPumpInputPowerAtRatedConditions,
-                           speed.referenceUnitWaterPumpInputPowerAtRatedConditions()) && ok;
+                           speed.referenceUnitWaterPumpInputPowerAtRatedConditions())
+           && ok;
       ok = group.setPointer(ExtensibleFields::SpeedTotalWHCapacityFunctionofTemperatureCurveName,
-                            speed.totalWaterHeatingCapacityFunctionofTemperatureCurve().handle()) && ok;
+                            speed.totalWaterHeatingCapacityFunctionofTemperatureCurve().handle())
+           && ok;
       ok = group.setPointer(ExtensibleFields::SpeedTotalWHCapacityFunctionofAirFlowFractionCurveName,
-                            speed.totalWaterHeatingCapacityFunctionofAirFlowFractionCurve().handle()) && ok;
+                            speed.totalWaterHeatingCapacityFunctionofAirFlowFractionCurve().handle())
+           && ok;
       ok = group.setPointer(ExtensibleFields::SpeedTotalWHCapacityFunctionofWaterFlowFractionCurveName,
-                            speed.totalWaterHeatingCapacityFunctionofWaterFlowFractionCurve().handle()) && ok;
+                            speed.totalWaterHeatingCapacityFunctionofWaterFlowFractionCurve().handle())
+           && ok;
       ok = group.setPointer(ExtensibleFields::SpeedCOPFunctionofTemperatureCurveName, speed.cOPFunctionofTemperatureCurve().handle()) && ok;
       ok = group.setPointer(ExtensibleFields::SpeedCOPFunctionofAirFlowFractionCurveName, speed.cOPFunctionofAirFlowFractionCurve().handle()) && ok;
-      ok = group.setPointer(ExtensibleFields::SpeedCOPFunctionofWaterFlowFractionCurveName, speed.cOPFunctionofWaterFlowFractionCurve().handle()) && ok;
+      ok =
+        group.setPointer(ExtensibleFields::SpeedCOPFunctionofWaterFlowFractionCurveName, speed.cOPFunctionofWaterFlowFractionCurve().handle()) && ok;
       if (!ok) {
         getObject<ModelObject>().eraseExtensibleGroup(group.groupIndex());
         return false;

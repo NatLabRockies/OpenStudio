@@ -12,25 +12,25 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
-struct LoadContext;
+  namespace detail {
+    struct LoadContext;
 
-class EPMODEL_API AirLoopHVACOutdoorAirSystemEquipmentList_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirLoopHVACOutdoorAirSystemEquipmentList_Impl() override = default;
+    class EPMODEL_API AirLoopHVACOutdoorAirSystemEquipmentList_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirLoopHVACOutdoorAirSystemEquipmentList_Impl() override = default;
 
- std::vector<openstudio::epmodel::ModelObject> equipment() const;
-  static bool isValidOASystemEquipmentTypeName(std::string_view typeName);
-  static bool isValidOASystemEquipment(const openstudio::epmodel::ModelObject& component);
-  bool addEquipment(const openstudio::epmodel::ModelObject& component);
-  bool containsEquipment(const openstudio::epmodel::ModelObject& component) const;
-  bool removeEquipment(const openstudio::epmodel::ModelObject& component);
-  void doCanonicalize(LoadContext& context) override;
-};
+      std::vector<openstudio::epmodel::ModelObject> equipment() const;
+      static bool isValidOASystemEquipmentTypeName(std::string_view typeName);
+      static bool isValidOASystemEquipment(const openstudio::epmodel::ModelObject& component);
+      bool addEquipment(const openstudio::epmodel::ModelObject& component);
+      bool containsEquipment(const openstudio::epmodel::ModelObject& component) const;
+      bool removeEquipment(const openstudio::epmodel::ModelObject& component);
+      void doCanonicalize(LoadContext& context) override;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

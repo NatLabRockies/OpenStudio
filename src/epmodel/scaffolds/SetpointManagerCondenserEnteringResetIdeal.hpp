@@ -17,56 +17,56 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SetpointManagerCondenserEnteringResetIdeal_Impl;
-}
+  namespace detail {
+    class SetpointManagerCondenserEnteringResetIdeal_Impl;
+  }
 
-class EPMODEL_API SetpointManagerCondenserEnteringResetIdeal : public ModelObject
-{
- public:
-  explicit SetpointManagerCondenserEnteringResetIdeal(const Model& model);
+  class EPMODEL_API SetpointManagerCondenserEnteringResetIdeal : public ModelObject
+  {
+   public:
+    explicit SetpointManagerCondenserEnteringResetIdeal(const Model& model);
 
-  virtual ~SetpointManagerCondenserEnteringResetIdeal() override = default;
-  SetpointManagerCondenserEnteringResetIdeal(const SetpointManagerCondenserEnteringResetIdeal& other) = default;
-  SetpointManagerCondenserEnteringResetIdeal(SetpointManagerCondenserEnteringResetIdeal&& other) = default;
-  SetpointManagerCondenserEnteringResetIdeal& operator=(const SetpointManagerCondenserEnteringResetIdeal&) = default;
-  SetpointManagerCondenserEnteringResetIdeal& operator=(SetpointManagerCondenserEnteringResetIdeal&&) = default;
+    virtual ~SetpointManagerCondenserEnteringResetIdeal() override = default;
+    SetpointManagerCondenserEnteringResetIdeal(const SetpointManagerCondenserEnteringResetIdeal& other) = default;
+    SetpointManagerCondenserEnteringResetIdeal(SetpointManagerCondenserEnteringResetIdeal&& other) = default;
+    SetpointManagerCondenserEnteringResetIdeal& operator=(const SetpointManagerCondenserEnteringResetIdeal&) = default;
+    SetpointManagerCondenserEnteringResetIdeal& operator=(SetpointManagerCondenserEnteringResetIdeal&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> controlVariableValues();
+    static std::vector<std::string> controlVariableValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type uses IDD-derived class/accessor naming.
-  // - Field Mapping: Scalar APIs map directly to SetpointManager:CondenserEnteringReset:Ideal fields.
-  // - Field Mapping: Setpoint Node or NodeList Name is a relationship field and is excluded.
-  // - TODO(parity): Add relationship APIs incrementally after scalar saturation.
-  std::string controlVariable() const;
-  bool isControlVariableDefaulted() const;
-  bool setControlVariable(const std::string& controlVariable);
-  void resetControlVariable();
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type uses IDD-derived class/accessor naming.
+    // - Field Mapping: Scalar APIs map directly to SetpointManager:CondenserEnteringReset:Ideal fields.
+    // - Field Mapping: Setpoint Node or NodeList Name is a relationship field and is excluded.
+    // - TODO(parity): Add relationship APIs incrementally after scalar saturation.
+    std::string controlVariable() const;
+    bool isControlVariableDefaulted() const;
+    bool setControlVariable(const std::string& controlVariable);
+    void resetControlVariable();
 
-  double minimumLift() const;
-  bool isMinimumLiftDefaulted() const;
-  bool setMinimumLift(double minimumLift);
-  void resetMinimumLift();
+    double minimumLift() const;
+    bool isMinimumLiftDefaulted() const;
+    bool setMinimumLift(double minimumLift);
+    void resetMinimumLift();
 
-  double maximumCondenserEnteringWaterTemperature() const;
-  bool isMaximumCondenserEnteringWaterTemperatureDefaulted() const;
-  bool setMaximumCondenserEnteringWaterTemperature(double maximumCondenserEnteringWaterTemperature);
-  void resetMaximumCondenserEnteringWaterTemperature();
+    double maximumCondenserEnteringWaterTemperature() const;
+    bool isMaximumCondenserEnteringWaterTemperatureDefaulted() const;
+    bool setMaximumCondenserEnteringWaterTemperature(double maximumCondenserEnteringWaterTemperature);
+    void resetMaximumCondenserEnteringWaterTemperature();
 
- protected:
-  using ImplType = detail::SetpointManagerCondenserEnteringResetIdeal_Impl;
+   protected:
+    using ImplType = detail::SetpointManagerCondenserEnteringResetIdeal_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit SetpointManagerCondenserEnteringResetIdeal(std::shared_ptr<detail::SetpointManagerCondenserEnteringResetIdeal_Impl> impl);
-};
+    explicit SetpointManagerCondenserEnteringResetIdeal(std::shared_ptr<detail::SetpointManagerCondenserEnteringResetIdeal_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

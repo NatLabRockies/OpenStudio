@@ -13,28 +13,29 @@
 namespace openstudio {
 namespace epmodel {
 
-class Space;
-class DesignSpecificationOutdoorAir;
+  class Space;
+  class DesignSpecificationOutdoorAir;
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API DesignSpecificationOutdoorAirSpaceList_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~DesignSpecificationOutdoorAirSpaceList_Impl() override = default;
+    class EPMODEL_API DesignSpecificationOutdoorAirSpaceList_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~DesignSpecificationOutdoorAirSpaceList_Impl() override = default;
 
-  std::vector<openstudio::epmodel::Space> spaces() const;
-  boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAir> designSpecificationOutdoorAir(const openstudio::epmodel::Space& space) const;
-  bool setDesignSpecificationOutdoorAir(const openstudio::epmodel::Space& space,
-                                        const openstudio::epmodel::DesignSpecificationOutdoorAir& designSpecificationOutdoorAir);
-  void clearDesignSpecificationOutdoorAirEntries();
-  bool removeSpace(const openstudio::epmodel::Space& space);
+      std::vector<openstudio::epmodel::Space> spaces() const;
+      boost::optional<openstudio::epmodel::DesignSpecificationOutdoorAir>
+        designSpecificationOutdoorAir(const openstudio::epmodel::Space& space) const;
+      bool setDesignSpecificationOutdoorAir(const openstudio::epmodel::Space& space,
+                                            const openstudio::epmodel::DesignSpecificationOutdoorAir& designSpecificationOutdoorAir);
+      void clearDesignSpecificationOutdoorAirEntries();
+      bool removeSpace(const openstudio::epmodel::Space& space);
 
-  void doCanonicalize(LoadContext& context) override;
-};
+      void doCanonicalize(LoadContext& context) override;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

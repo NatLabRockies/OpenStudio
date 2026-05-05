@@ -53,10 +53,9 @@ namespace epmodel {
       // Node with the caller's suggested name and link it immediately.
       boost::optional<openstudio::epmodel::Node> resolvedNodeTarget(unsigned fieldIndex) const;
       openstudio::epmodel::Node resolvedOrCreatedNodeTarget(unsigned fieldIndex, const std::string& suggestedName);
-      boost::optional<double> getAutosizedValue(const std::string& valueName, const std::string& units,
-                                                std::string overrideCompType = "") const;
-      boost::optional<double> getAutosizedValueFromInitializationSummary(const std::string& valueName,
-                                                                         const std::string& units) const;
+      boost::optional<double> getAutosizedValue(const std::string& valueName, const std::string& units, std::string overrideCompType = "") const;
+      boost::optional<double> getAutosizedValueFromInitializationSummary(const std::string& valueName, const std::string& units) const;
+
      protected:
       template <typename T>
       T getOrCreateTarget(unsigned fieldIndex) {

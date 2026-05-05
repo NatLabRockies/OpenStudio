@@ -13,15 +13,15 @@
 namespace openstudio {
 namespace epmodel {
 
-MaterialPropertyGlazingSpectralData::MaterialPropertyGlazingSpectralData(const Model& model)
-  : ModelObject(MaterialPropertyGlazingSpectralData::iddObjectType(), model) {}
+  MaterialPropertyGlazingSpectralData::MaterialPropertyGlazingSpectralData(const Model& model)
+    : ModelObject(MaterialPropertyGlazingSpectralData::iddObjectType(), model) {}
 
-MaterialPropertyGlazingSpectralData::MaterialPropertyGlazingSpectralData(std::shared_ptr<detail::MaterialPropertyGlazingSpectralData_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  MaterialPropertyGlazingSpectralData::MaterialPropertyGlazingSpectralData(std::shared_ptr<detail::MaterialPropertyGlazingSpectralData_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType MaterialPropertyGlazingSpectralData::iddObjectType() {
-  return IddObjectType::MaterialProperty_GlazingSpectralData;
-}
+  IddObjectType MaterialPropertyGlazingSpectralData::iddObjectType() {
+    return IddObjectType::MaterialProperty_GlazingSpectralData;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -16,40 +16,40 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class CondenserEquipmentList_Impl;
-}
+  namespace detail {
+    class CondenserEquipmentList_Impl;
+  }
 
-class EPMODEL_API CondenserEquipmentList : public ModelObject
-{
- public:
-  explicit CondenserEquipmentList(const Model& model);
+  class EPMODEL_API CondenserEquipmentList : public ModelObject
+  {
+   public:
+    explicit CondenserEquipmentList(const Model& model);
 
-  virtual ~CondenserEquipmentList() override = default;
-  CondenserEquipmentList(const CondenserEquipmentList& other) = default;
-  CondenserEquipmentList(CondenserEquipmentList&& other) = default;
-  CondenserEquipmentList& operator=(const CondenserEquipmentList&) = default;
-  CondenserEquipmentList& operator=(CondenserEquipmentList&&) = default;
+    virtual ~CondenserEquipmentList() override = default;
+    CondenserEquipmentList(const CondenserEquipmentList& other) = default;
+    CondenserEquipmentList(CondenserEquipmentList&& other) = default;
+    CondenserEquipmentList& operator=(const CondenserEquipmentList&) = default;
+    CondenserEquipmentList& operator=(CondenserEquipmentList&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart type keeps IDD-derived class/API naming.
-  // - Field Mapping: Name remains available through base ModelObject scalar API.
-  // - Field Mapping: Equipment 1 Object Type and Equipment 1 Name are relationship-like extensible link fields and excluded from scalar accessors.
-  // - TODO(parity): Add relationship APIs incrementally after scalar saturation.
+    // Schema Alignment Notes:
+    // - API: This no-counterpart type keeps IDD-derived class/API naming.
+    // - Field Mapping: Name remains available through base ModelObject scalar API.
+    // - Field Mapping: Equipment 1 Object Type and Equipment 1 Name are relationship-like extensible link fields and excluded from scalar accessors.
+    // - TODO(parity): Add relationship APIs incrementally after scalar saturation.
 
- protected:
-  using ImplType = detail::CondenserEquipmentList_Impl;
+   protected:
+    using ImplType = detail::CondenserEquipmentList_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit CondenserEquipmentList(std::shared_ptr<detail::CondenserEquipmentList_Impl> impl);
-};
+    explicit CondenserEquipmentList(std::shared_ptr<detail::CondenserEquipmentList_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

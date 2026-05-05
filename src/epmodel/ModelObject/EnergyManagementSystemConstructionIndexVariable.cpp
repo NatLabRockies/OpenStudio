@@ -13,16 +13,16 @@
 namespace openstudio {
 namespace epmodel {
 
-EnergyManagementSystemConstructionIndexVariable::EnergyManagementSystemConstructionIndexVariable(const Model& model)
-  : ModelObject(EnergyManagementSystemConstructionIndexVariable::iddObjectType(), model) {}
+  EnergyManagementSystemConstructionIndexVariable::EnergyManagementSystemConstructionIndexVariable(const Model& model)
+    : ModelObject(EnergyManagementSystemConstructionIndexVariable::iddObjectType(), model) {}
 
-EnergyManagementSystemConstructionIndexVariable::EnergyManagementSystemConstructionIndexVariable(
-  std::shared_ptr<detail::EnergyManagementSystemConstructionIndexVariable_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  EnergyManagementSystemConstructionIndexVariable::EnergyManagementSystemConstructionIndexVariable(
+    std::shared_ptr<detail::EnergyManagementSystemConstructionIndexVariable_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType EnergyManagementSystemConstructionIndexVariable::iddObjectType() {
-  return IddObjectType::EnergyManagementSystem_ConstructionIndexVariable;
-}
+  IddObjectType EnergyManagementSystemConstructionIndexVariable::iddObjectType() {
+    return IddObjectType::EnergyManagementSystem_ConstructionIndexVariable;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -340,8 +340,8 @@ namespace epmodel {
     }
 
     bool RefrigerationCondenserWaterCooled_Impl::setWaterOutletTemperatureSchedule(Schedule& waterOutletTemperatureSchedule) {
-      return setSchedule(Refrigeration_Condenser_WaterCooledFields::WaterOutletTemperatureScheduleName,
-                         "RefrigerationCondenserWaterCooled", "Water Outlet Temperature", waterOutletTemperatureSchedule);
+      return setSchedule(Refrigeration_Condenser_WaterCooledFields::WaterOutletTemperatureScheduleName, "RefrigerationCondenserWaterCooled",
+                         "Water Outlet Temperature", waterOutletTemperatureSchedule);
     }
 
     void RefrigerationCondenserWaterCooled_Impl::resetWaterOutletTemperatureSchedule() {

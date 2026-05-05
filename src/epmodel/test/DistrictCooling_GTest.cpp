@@ -30,8 +30,7 @@ TEST_F(EPModelFixture, DistrictCooling_DefaultConstructor) {
   EXPECT_FALSE(districtCooling.nominalCapacity());
   EXPECT_EQ(model.alwaysOnContinuousSchedule().handle(), districtCooling.capacityFractionSchedule().handle());
 
-  auto capacityFractionSchedule =
-    districtCooling.getModelObjectTarget<Schedule>(openstudio::DistrictCoolingFields::CapacityFractionScheduleName);
+  auto capacityFractionSchedule = districtCooling.getModelObjectTarget<Schedule>(openstudio::DistrictCoolingFields::CapacityFractionScheduleName);
   ASSERT_TRUE(capacityFractionSchedule);
   EXPECT_EQ(districtCooling.capacityFractionSchedule().handle(), capacityFractionSchedule->handle());
 }

@@ -13,16 +13,16 @@
 namespace openstudio {
 namespace epmodel {
 
-EnergyManagementSystemCurveOrTableIndexVariable::EnergyManagementSystemCurveOrTableIndexVariable(const Model& model)
-  : ModelObject(EnergyManagementSystemCurveOrTableIndexVariable::iddObjectType(), model) {}
+  EnergyManagementSystemCurveOrTableIndexVariable::EnergyManagementSystemCurveOrTableIndexVariable(const Model& model)
+    : ModelObject(EnergyManagementSystemCurveOrTableIndexVariable::iddObjectType(), model) {}
 
-EnergyManagementSystemCurveOrTableIndexVariable::EnergyManagementSystemCurveOrTableIndexVariable(
-  std::shared_ptr<detail::EnergyManagementSystemCurveOrTableIndexVariable_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  EnergyManagementSystemCurveOrTableIndexVariable::EnergyManagementSystemCurveOrTableIndexVariable(
+    std::shared_ptr<detail::EnergyManagementSystemCurveOrTableIndexVariable_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType EnergyManagementSystemCurveOrTableIndexVariable::iddObjectType() {
-  return IddObjectType::EnergyManagementSystem_CurveOrTableIndexVariable;
-}
+  IddObjectType EnergyManagementSystemCurveOrTableIndexVariable::iddObjectType() {
+    return IddObjectType::EnergyManagementSystem_CurveOrTableIndexVariable;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

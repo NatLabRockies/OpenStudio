@@ -130,8 +130,7 @@ namespace epmodel {
     OS_ASSERT(setControlSensor1Weight(1.0));
   }
 
-  WaterHeaterHeatPump::WaterHeaterHeatPump(std::shared_ptr<detail::WaterHeaterHeatPump_Impl> impl)
-    : ZoneHVACComponent(std::move(impl)) {}
+  WaterHeaterHeatPump::WaterHeaterHeatPump(std::shared_ptr<detail::WaterHeaterHeatPump_Impl> impl) : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType WaterHeaterHeatPump::iddObjectType() {
     return IddObjectType::WaterHeater_HeatPump_PumpedCondenser;
@@ -535,8 +534,8 @@ namespace epmodel {
     }
 
     bool WaterHeaterHeatPump_Impl::setInletAirTemperatureSchedule(Schedule& schedule) {
-      return setSchedule(WaterHeater_HeatPump_PumpedCondenserFields::InletAirTemperatureScheduleName, "WaterHeaterHeatPump",
-                         "Inlet Air Temperature", schedule);
+      return setSchedule(WaterHeater_HeatPump_PumpedCondenserFields::InletAirTemperatureScheduleName, "WaterHeaterHeatPump", "Inlet Air Temperature",
+                         schedule);
     }
 
     void WaterHeaterHeatPump_Impl::resetInletAirTemperatureSchedule() {
@@ -548,8 +547,8 @@ namespace epmodel {
     }
 
     bool WaterHeaterHeatPump_Impl::setInletAirHumiditySchedule(Schedule& schedule) {
-      return setSchedule(WaterHeater_HeatPump_PumpedCondenserFields::InletAirHumidityScheduleName, "WaterHeaterHeatPump",
-                         "Inlet Air Humidity", schedule);
+      return setSchedule(WaterHeater_HeatPump_PumpedCondenserFields::InletAirHumidityScheduleName, "WaterHeaterHeatPump", "Inlet Air Humidity",
+                         schedule);
     }
 
     void WaterHeaterHeatPump_Impl::resetInletAirHumiditySchedule() {
@@ -631,8 +630,7 @@ namespace epmodel {
     }
 
     bool WaterHeaterHeatPump_Impl::setInletAirMixerSchedule(Schedule& schedule) {
-      return setSchedule(WaterHeater_HeatPump_PumpedCondenserFields::InletAirMixerScheduleName, "WaterHeaterHeatPump",
-                         "Inlet Air Mixer", schedule);
+      return setSchedule(WaterHeater_HeatPump_PumpedCondenserFields::InletAirMixerScheduleName, "WaterHeaterHeatPump", "Inlet Air Mixer", schedule);
     }
 
     boost::optional<Node> WaterHeaterHeatPump_Impl::fanOutletNode() const {
@@ -773,12 +771,12 @@ namespace epmodel {
           openstudio::istringEqual(inletAirConfiguration(), "Schedule") ? baseName + " Outlet" : baseName + " Air Outlet Node";
         airInlet = resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_PumpedCondenserFields::AirInletNodeName, inletName);
         airOutlet = resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_PumpedCondenserFields::AirOutletNodeName, outletName);
-        changed =
-          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_PumpedCondenserFields::AirInletNodeName, airInlet->handle(), false)
-          || changed;
-        changed =
-          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_PumpedCondenserFields::AirOutletNodeName, airOutlet->handle(), false)
-          || changed;
+        changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_PumpedCondenserFields::AirInletNodeName,
+                                                                             airInlet->handle(), false)
+                  || changed;
+        changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_PumpedCondenserFields::AirOutletNodeName,
+                                                                             airOutlet->handle(), false)
+                  || changed;
       } else {
         changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_PumpedCondenserFields::AirInletNodeName) || changed;
         changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_PumpedCondenserFields::AirOutletNodeName) || changed;
@@ -803,12 +801,12 @@ namespace epmodel {
       if (outdoorOnly || zoneAndOutdoorAir) {
         outdoorAir = resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_PumpedCondenserFields::OutdoorAirNodeName, baseName + " Outdoor Air");
         reliefAir = resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_PumpedCondenserFields::ExhaustAirNodeName, baseName + " Exhaust Air");
-        changed =
-          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_PumpedCondenserFields::OutdoorAirNodeName, outdoorAir->handle(), false)
-          || changed;
-        changed =
-          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_PumpedCondenserFields::ExhaustAirNodeName, reliefAir->handle(), false)
-          || changed;
+        changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_PumpedCondenserFields::OutdoorAirNodeName,
+                                                                             outdoorAir->handle(), false)
+                  || changed;
+        changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_PumpedCondenserFields::ExhaustAirNodeName,
+                                                                             reliefAir->handle(), false)
+                  || changed;
       } else {
         changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_PumpedCondenserFields::OutdoorAirNodeName) || changed;
         changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_PumpedCondenserFields::ExhaustAirNodeName) || changed;
@@ -818,13 +816,12 @@ namespace epmodel {
         mixedAir = resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_PumpedCondenserFields::InletAirMixerNodeName, baseName + " Mixed Air Node");
         splitterNode =
           resolvedOrCreatedNodeTarget(WaterHeater_HeatPump_PumpedCondenserFields::OutletAirSplitterNodeName, baseName + " Fan Outlet Node");
-        changed =
-          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_PumpedCondenserFields::InletAirMixerNodeName, mixedAir->handle(), false)
-          || changed;
-        changed =
-          thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_PumpedCondenserFields::OutletAirSplitterNodeName,
-                                                                     splitterNode->handle(), false)
-          || changed;
+        changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_PumpedCondenserFields::InletAirMixerNodeName,
+                                                                             mixedAir->handle(), false)
+                  || changed;
+        changed = thisObject.getImpl<detail::ModelObject_Impl>()->setPointer(WaterHeater_HeatPump_PumpedCondenserFields::OutletAirSplitterNodeName,
+                                                                             splitterNode->handle(), false)
+                  || changed;
       } else {
         changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_PumpedCondenserFields::InletAirMixerNodeName) || changed;
         changed = clearStringIfNeeded(thisObject, WaterHeater_HeatPump_PumpedCondenserFields::OutletAirSplitterNodeName) || changed;
@@ -838,8 +835,7 @@ namespace epmodel {
       if (drawThrough) {
         evaporatorInlet = outdoorOnly ? outdoorAir : (zoneAndOutdoorAir ? mixedAir : airInlet);
         if (allowNodeRecovery) {
-          evaporatorOutlet =
-            dxCoil->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(dxCoil->airOutletPort());
+          evaporatorOutlet = dxCoil->getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(dxCoil->airOutletPort());
         }
         if (!evaporatorOutlet) {
           evaporatorOutlet = model().getOrCreateTransientByName<Node>(baseName + " Evaporator Outlet - Fan Inlet");
@@ -874,16 +870,12 @@ namespace epmodel {
                                                                            condenserWaterOutlet.handle(), false)
                 || changed;
 
-      changed =
-        tankComponent->getImpl<detail::ModelObject_Impl>()->setPointer(tankComponent->demandOutletPort(), condenserWaterInlet.handle(), false)
-        || changed;
-      changed =
-        tankComponent->getImpl<detail::ModelObject_Impl>()->setPointer(tankComponent->demandInletPort(), condenserWaterOutlet.handle(), false)
-        || changed;
-      changed = dxCoil->getImpl<detail::ModelObject_Impl>()->setPointer(dxCoil->waterInletPort(), condenserWaterInlet.handle(), false)
+      changed = tankComponent->getImpl<detail::ModelObject_Impl>()->setPointer(tankComponent->demandOutletPort(), condenserWaterInlet.handle(), false)
                 || changed;
-      changed = dxCoil->getImpl<detail::ModelObject_Impl>()->setPointer(dxCoil->waterOutletPort(), condenserWaterOutlet.handle(), false)
+      changed = tankComponent->getImpl<detail::ModelObject_Impl>()->setPointer(tankComponent->demandInletPort(), condenserWaterOutlet.handle(), false)
                 || changed;
+      changed = dxCoil->getImpl<detail::ModelObject_Impl>()->setPointer(dxCoil->waterInletPort(), condenserWaterInlet.handle(), false) || changed;
+      changed = dxCoil->getImpl<detail::ModelObject_Impl>()->setPointer(dxCoil->waterOutletPort(), condenserWaterOutlet.handle(), false) || changed;
 
       return changed;
     }

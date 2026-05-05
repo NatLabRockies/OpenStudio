@@ -12,46 +12,46 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API FaultModelFoulingCoil_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~FaultModelFoulingCoil_Impl() override = default;
+    class EPMODEL_API FaultModelFoulingCoil_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~FaultModelFoulingCoil_Impl() override = default;
 
-  std::string foulingInputMethod() const;
-  bool isFoulingInputMethodDefaulted() const;
-  bool setFoulingInputMethod(const std::string& foulingInputMethod);
-  void resetFoulingInputMethod();
+      std::string foulingInputMethod() const;
+      bool isFoulingInputMethodDefaulted() const;
+      bool setFoulingInputMethod(const std::string& foulingInputMethod);
+      void resetFoulingInputMethod();
 
-  boost::optional<double> uAFouled() const;
-  bool setUAFouled(double uAFouled);
-  void resetUAFouled();
+      boost::optional<double> uAFouled() const;
+      bool setUAFouled(double uAFouled);
+      void resetUAFouled();
 
-  double waterSideFoulingFactor() const;
-  bool isWaterSideFoulingFactorDefaulted() const;
-  bool setWaterSideFoulingFactor(double waterSideFoulingFactor);
-  void resetWaterSideFoulingFactor();
+      double waterSideFoulingFactor() const;
+      bool isWaterSideFoulingFactorDefaulted() const;
+      bool setWaterSideFoulingFactor(double waterSideFoulingFactor);
+      void resetWaterSideFoulingFactor();
 
-  double airSideFoulingFactor() const;
-  bool isAirSideFoulingFactorDefaulted() const;
-  bool setAirSideFoulingFactor(double airSideFoulingFactor);
-  void resetAirSideFoulingFactor();
+      double airSideFoulingFactor() const;
+      bool isAirSideFoulingFactorDefaulted() const;
+      bool setAirSideFoulingFactor(double airSideFoulingFactor);
+      void resetAirSideFoulingFactor();
 
-  boost::optional<double> outsideCoilSurfaceArea() const;
-  bool setOutsideCoilSurfaceArea(double outsideCoilSurfaceArea);
-  void resetOutsideCoilSurfaceArea();
+      boost::optional<double> outsideCoilSurfaceArea() const;
+      bool setOutsideCoilSurfaceArea(double outsideCoilSurfaceArea);
+      void resetOutsideCoilSurfaceArea();
 
-  double insidetoOutsideCoilSurfaceAreaRatio() const;
-  bool isInsidetoOutsideCoilSurfaceAreaRatioDefaulted() const;
-  bool setInsidetoOutsideCoilSurfaceAreaRatio(double insidetoOutsideCoilSurfaceAreaRatio);
-  void resetInsidetoOutsideCoilSurfaceAreaRatio();
+      double insidetoOutsideCoilSurfaceAreaRatio() const;
+      bool isInsidetoOutsideCoilSurfaceAreaRatioDefaulted() const;
+      bool setInsidetoOutsideCoilSurfaceAreaRatio(double insidetoOutsideCoilSurfaceAreaRatio);
+      void resetInsidetoOutsideCoilSurfaceAreaRatio();
 
-  std::vector<std::string> foulingInputMethodValues() const;
-};
+      std::vector<std::string> foulingInputMethodValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

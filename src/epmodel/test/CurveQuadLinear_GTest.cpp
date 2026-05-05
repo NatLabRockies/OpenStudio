@@ -18,9 +18,7 @@ using namespace openstudio::epmodel;
 namespace {
 
 std::string firstNonEmpty(const std::vector<std::string>& values) {
-  auto it = std::find_if(values.begin(), values.end(), [](const auto& value) {
-    return !value.empty();
-  });
+  auto it = std::find_if(values.begin(), values.end(), [](const auto& value) { return !value.empty(); });
   if (it != values.end()) {
     return *it;
   }
@@ -28,9 +26,8 @@ std::string firstNonEmpty(const std::vector<std::string>& values) {
 }
 
 std::string firstNonEmptyDifferentFrom(const std::vector<std::string>& values, const std::string& baseline) {
-  auto it = std::find_if(values.begin(), values.end(), [&](const auto& value) {
-    return !value.empty() && !openstudio::istringEqual(value, baseline);
-  });
+  auto it =
+    std::find_if(values.begin(), values.end(), [&](const auto& value) { return !value.empty() && !openstudio::istringEqual(value, baseline); });
   if (it != values.end()) {
     return *it;
   }
@@ -128,23 +125,19 @@ TEST_F(EPModelFixture, CurveQuadLinear_ScalarAccessors_RoundTrip) {
   curve.resetMaximumCurveOutput();
   EXPECT_FALSE(curve.maximumCurveOutput());
 
-  expectSetAndResetUnitType(curve, CurveQuadLinear::inputUnitTypeforwValues(), curve.inputUnitTypeforw(),
-                            [&](const std::string& v) { return curve.setInputUnitTypeforw(v); },
-                            [&]() { return curve.inputUnitTypeforw(); }, [&]() { return curve.isInputUnitTypeforwDefaulted(); },
-                            [&]() { curve.resetInputUnitTypeforw(); });
+  expectSetAndResetUnitType(
+    curve, CurveQuadLinear::inputUnitTypeforwValues(), curve.inputUnitTypeforw(), [&](const std::string& v) { return curve.setInputUnitTypeforw(v); },
+    [&]() { return curve.inputUnitTypeforw(); }, [&]() { return curve.isInputUnitTypeforwDefaulted(); }, [&]() { curve.resetInputUnitTypeforw(); });
 
-  expectSetAndResetUnitType(curve, CurveQuadLinear::inputUnitTypeforxValues(), curve.inputUnitTypeforx(),
-                            [&](const std::string& v) { return curve.setInputUnitTypeforx(v); },
-                            [&]() { return curve.inputUnitTypeforx(); }, [&]() { return curve.isInputUnitTypeforxDefaulted(); },
-                            [&]() { curve.resetInputUnitTypeforx(); });
+  expectSetAndResetUnitType(
+    curve, CurveQuadLinear::inputUnitTypeforxValues(), curve.inputUnitTypeforx(), [&](const std::string& v) { return curve.setInputUnitTypeforx(v); },
+    [&]() { return curve.inputUnitTypeforx(); }, [&]() { return curve.isInputUnitTypeforxDefaulted(); }, [&]() { curve.resetInputUnitTypeforx(); });
 
-  expectSetAndResetUnitType(curve, CurveQuadLinear::inputUnitTypeforyValues(), curve.inputUnitTypefory(),
-                            [&](const std::string& v) { return curve.setInputUnitTypefory(v); },
-                            [&]() { return curve.inputUnitTypefory(); }, [&]() { return curve.isInputUnitTypeforyDefaulted(); },
-                            [&]() { curve.resetInputUnitTypefory(); });
+  expectSetAndResetUnitType(
+    curve, CurveQuadLinear::inputUnitTypeforyValues(), curve.inputUnitTypefory(), [&](const std::string& v) { return curve.setInputUnitTypefory(v); },
+    [&]() { return curve.inputUnitTypefory(); }, [&]() { return curve.isInputUnitTypeforyDefaulted(); }, [&]() { curve.resetInputUnitTypefory(); });
 
-  expectSetAndResetUnitType(curve, CurveQuadLinear::inputUnitTypeforzValues(), curve.inputUnitTypeforz(),
-                            [&](const std::string& v) { return curve.setInputUnitTypeforz(v); },
-                            [&]() { return curve.inputUnitTypeforz(); }, [&]() { return curve.isInputUnitTypeforzDefaulted(); },
-                            [&]() { curve.resetInputUnitTypeforz(); });
+  expectSetAndResetUnitType(
+    curve, CurveQuadLinear::inputUnitTypeforzValues(), curve.inputUnitTypeforz(), [&](const std::string& v) { return curve.setInputUnitTypeforz(v); },
+    [&]() { return curve.inputUnitTypeforz(); }, [&]() { return curve.isInputUnitTypeforzDefaulted(); }, [&]() { curve.resetInputUnitTypeforz(); });
 }

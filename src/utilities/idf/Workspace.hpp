@@ -183,25 +183,21 @@ class UTILITIES_API Workspace
 
   /** Returns the first object found of type objectType and named name (case insensitive,
    *  exact match). */
-  boost::optional<WorkspaceObject> getObjectByTypeAndName(IddObjectType objectType, const std::string& name,
-                                                          bool includeTransient = false) const;
+  boost::optional<WorkspaceObject> getObjectByTypeAndName(IddObjectType objectType, const std::string& name, bool includeTransient = false) const;
 
   /** Returns all objects named name or name plus an integer suffix (case insensitive). */
-  std::vector<WorkspaceObject> getObjectsByTypeAndName(IddObjectType objectType, const std::string& name,
-                                                       bool includeTransient = false) const;
+  std::vector<WorkspaceObject> getObjectsByTypeAndName(IddObjectType objectType, const std::string& name, bool includeTransient = false) const;
 
   /** Returns all objects in the reference list referenceName */
   std::vector<WorkspaceObject> getObjectsByReference(const std::string& referenceName, bool includeTransient = false) const;
 
   /** Returns all objects in at least one of the reference lists in referenceNames. */
-  std::vector<WorkspaceObject> getObjectsByReference(const std::vector<std::string>& referenceNames,
-                                                     bool includeTransient = false) const;
+  std::vector<WorkspaceObject> getObjectsByReference(const std::vector<std::string>& referenceNames, bool includeTransient = false) const;
 
   /** Returns the first object found that is in at least one of the reference lists in
    *  referenceNames and named name (case insensitive, but exact match). Does not look for
    *  conflicts. */
-  boost::optional<WorkspaceObject> getObjectByNameAndReference(const std::string& name,
-                                                               const std::vector<std::string>& referenceNames,
+  boost::optional<WorkspaceObject> getObjectByNameAndReference(const std::string& name, const std::vector<std::string>& referenceNames,
                                                                bool includeTransient = false) const;
 
   /** Overloaded functions that take in a std::string instead of an IddObjectType.

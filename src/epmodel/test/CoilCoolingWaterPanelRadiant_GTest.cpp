@@ -86,29 +86,24 @@ TEST_F(EPModelFixture, CoilCoolingWaterPanelRadiant_ResolvesParentWaterNodesAndW
   EXPECT_EQ("autosize", panel.getString(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingDesignCapacity, false).get());
   ASSERT_TRUE(panel.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingDesignCapacityPerFloorArea, false));
   EXPECT_DOUBLE_EQ(10.0,
-                   panel.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingDesignCapacityPerFloorArea, false)
-                     .get());
+                   panel.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingDesignCapacityPerFloorArea, false).get());
   ASSERT_TRUE(panel.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::FractionofAutosizedCoolingDesignCapacity, false));
   EXPECT_DOUBLE_EQ(
-    0.9,
-    panel.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::FractionofAutosizedCoolingDesignCapacity, false).get());
+    0.9, panel.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::FractionofAutosizedCoolingDesignCapacity, false).get());
   ASSERT_TRUE(panel.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::MaximumChilledWaterFlowRate, false));
   EXPECT_DOUBLE_EQ(0.09, panel.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::MaximumChilledWaterFlowRate, false).get());
   ASSERT_TRUE(panel.getString(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::ControlType, false));
-  EXPECT_EQ("OutdoorDryBulbTemperature",
-            panel.getString(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::ControlType, false).get());
+  EXPECT_EQ("OutdoorDryBulbTemperature", panel.getString(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::ControlType, false).get());
   ASSERT_TRUE(panel.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingControlThrottlingRange, false));
-  EXPECT_DOUBLE_EQ(
-    0.8, panel.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingControlThrottlingRange, false).get());
+  EXPECT_DOUBLE_EQ(0.8, panel.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingControlThrottlingRange, false).get());
   ASSERT_TRUE(panel.getTarget(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingControlTemperatureScheduleName));
   EXPECT_EQ(controlSchedule.handle(),
             panel.getTarget(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingControlTemperatureScheduleName)->handle());
   ASSERT_TRUE(panel.getString(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CondensationControlType, false));
-  EXPECT_EQ("VariableOff",
-            panel.getString(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CondensationControlType, false).get());
+  EXPECT_EQ("VariableOff", panel.getString(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CondensationControlType, false).get());
   ASSERT_TRUE(panel.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CondensationControlDewpointOffset, false));
-  EXPECT_DOUBLE_EQ(
-    1.7, panel.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CondensationControlDewpointOffset, false).get());
+  EXPECT_DOUBLE_EQ(1.7,
+                   panel.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CondensationControlDewpointOffset, false).get());
 
   coil.resetRatedInletWaterTemperature();
   coil.resetRatedInletSpaceTemperature();
@@ -145,8 +140,7 @@ TEST_F(EPModelFixture, CoilCoolingWaterPanelRadiant_ResolvesParentWaterNodesAndW
   ASSERT_TRUE(panel.getString(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingDesignCapacity, false));
   EXPECT_EQ("autosize", panel.getString(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingDesignCapacity, false).get());
   ASSERT_TRUE(panel.getString(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::MaximumChilledWaterFlowRate, false));
-  EXPECT_EQ("autosize",
-            panel.getString(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::MaximumChilledWaterFlowRate, false).get());
+  EXPECT_EQ("autosize", panel.getString(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::MaximumChilledWaterFlowRate, false).get());
   ASSERT_TRUE(panel.getString(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::ControlType, false));
   EXPECT_TRUE(panel.getString(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::ControlType, false)->empty());
   EXPECT_FALSE(panel.getDouble(openstudio::ZoneHVAC_CoolingPanel_RadiantConvective_WaterFields::CoolingControlThrottlingRange, false));

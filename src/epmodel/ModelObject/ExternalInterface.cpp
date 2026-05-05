@@ -17,50 +17,50 @@
 namespace openstudio {
 namespace epmodel {
 
-ExternalInterface::ExternalInterface(const Model& model) : ModelObject(ExternalInterface::iddObjectType(), model) {
-  // Preserve model counterpart behavior for this required choice field.
-  OS_ASSERT(setNameofExternalInterface("PtolemyServer"));
-}
+  ExternalInterface::ExternalInterface(const Model& model) : ModelObject(ExternalInterface::iddObjectType(), model) {
+    // Preserve model counterpart behavior for this required choice field.
+    OS_ASSERT(setNameofExternalInterface("PtolemyServer"));
+  }
 
-ExternalInterface::ExternalInterface(std::shared_ptr<detail::ExternalInterface_Impl> impl) : ModelObject(std::move(impl)) {}
+  ExternalInterface::ExternalInterface(std::shared_ptr<detail::ExternalInterface_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType ExternalInterface::iddObjectType() {
-  return IddObjectType::ExternalInterface;
-}
+  IddObjectType ExternalInterface::iddObjectType() {
+    return IddObjectType::ExternalInterface;
+  }
 
-std::vector<std::string> ExternalInterface::nameofExternalInterfaceValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::ExternalInterfaceFields::NameofExternalInterface);
-}
+  std::vector<std::string> ExternalInterface::nameofExternalInterfaceValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::ExternalInterfaceFields::NameofExternalInterface);
+  }
 
-std::string ExternalInterface::nameofExternalInterface() const {
-  return getImpl<detail::ExternalInterface_Impl>()->nameofExternalInterface();
-}
+  std::string ExternalInterface::nameofExternalInterface() const {
+    return getImpl<detail::ExternalInterface_Impl>()->nameofExternalInterface();
+  }
 
-bool ExternalInterface::setNameofExternalInterface(const std::string& nameofExternalInterface) {
-  return getImpl<detail::ExternalInterface_Impl>()->setNameofExternalInterface(nameofExternalInterface);
-}
+  bool ExternalInterface::setNameofExternalInterface(const std::string& nameofExternalInterface) {
+    return getImpl<detail::ExternalInterface_Impl>()->setNameofExternalInterface(nameofExternalInterface);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string ExternalInterface_Impl::nameofExternalInterface() const {
-  const auto value = getString(openstudio::ExternalInterfaceFields::NameofExternalInterface, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string ExternalInterface_Impl::nameofExternalInterface() const {
+      const auto value = getString(openstudio::ExternalInterfaceFields::NameofExternalInterface, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool ExternalInterface_Impl::setNameofExternalInterface(const std::string& nameofExternalInterface) {
-  return setString(openstudio::ExternalInterfaceFields::NameofExternalInterface, nameofExternalInterface);
-}
+    bool ExternalInterface_Impl::setNameofExternalInterface(const std::string& nameofExternalInterface) {
+      return setString(openstudio::ExternalInterfaceFields::NameofExternalInterface, nameofExternalInterface);
+    }
 
-std::vector<std::string> ExternalInterface_Impl::nameofExternalInterfaceValues() const {
-  return openstudio::epmodel::ExternalInterface::nameofExternalInterfaceValues();
-}
+    std::vector<std::string> ExternalInterface_Impl::nameofExternalInterfaceValues() const {
+      return openstudio::epmodel::ExternalInterface::nameofExternalInterfaceValues();
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

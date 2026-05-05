@@ -134,7 +134,7 @@ namespace epmodel {
       } else {
         OS_ASSERT(setDouble(openstudio::SetpointManager_MultiZone_Cooling_AverageFields::MaximumSetpointTemperature, 18.0));
         detail::addLoadInfo(context, "Set default Maximum Setpoint Temperature to 18 for SetpointManager:MultiZone:Cooling:Average '"
-                                      + getObject<ModelObject>().nameString() + "'.");
+                                       + getObject<ModelObject>().nameString() + "'.");
       }
     }
 

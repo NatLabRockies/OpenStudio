@@ -75,8 +75,8 @@ namespace epmodel {
                                                                                                Model_Impl* model, bool keepHandle)
       : PlantEquipmentOperationScheme_Impl(idfObject, model, keepHandle) {}
 
-    PlantEquipmentOperationRangeBasedScheme_Impl::PlantEquipmentOperationRangeBasedScheme_Impl(
-      const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model, bool keepHandle)
+    PlantEquipmentOperationRangeBasedScheme_Impl::PlantEquipmentOperationRangeBasedScheme_Impl(const openstudio::detail::WorkspaceObject_Impl& other,
+                                                                                               Model_Impl* model, bool keepHandle)
       : PlantEquipmentOperationScheme_Impl(other, model, keepHandle) {}
 
     PlantEquipmentOperationRangeBasedScheme_Impl::PlantEquipmentOperationRangeBasedScheme_Impl(
@@ -241,8 +241,8 @@ namespace epmodel {
       return addEquipment(upperLimits.back(), equipment);
     }
 
-    bool PlantEquipmentOperationRangeBasedScheme_Impl::replaceEquipment(
-      double upperLimit, const std::vector<openstudio::epmodel::HVACComponent>& equipment) {
+    bool PlantEquipmentOperationRangeBasedScheme_Impl::replaceEquipment(double upperLimit,
+                                                                        const std::vector<openstudio::epmodel::HVACComponent>& equipment) {
       for (const auto& group : getObject<openstudio::epmodel::PlantEquipmentOperationRangeBasedScheme>().extensibleGroups()) {
         const auto value = group.getDouble(LOADRANGEFIELDS_UPPERLIMIT, true);
         OS_ASSERT(value);
@@ -261,15 +261,13 @@ namespace epmodel {
       return false;
     }
 
-    bool PlantEquipmentOperationRangeBasedScheme_Impl::replaceEquipment(
-      const std::vector<openstudio::epmodel::HVACComponent>& equipment) {
+    bool PlantEquipmentOperationRangeBasedScheme_Impl::replaceEquipment(const std::vector<openstudio::epmodel::HVACComponent>& equipment) {
       const auto upperLimits = loadRangeUpperLimits();
       OS_ASSERT(!upperLimits.empty());
       return replaceEquipment(upperLimits.back(), equipment);
     }
 
-    bool PlantEquipmentOperationRangeBasedScheme_Impl::removeEquipment(double upperLimit,
-                                                                       const openstudio::epmodel::HVACComponent& equipment) {
+    bool PlantEquipmentOperationRangeBasedScheme_Impl::removeEquipment(double upperLimit, const openstudio::epmodel::HVACComponent& equipment) {
       for (const auto& group : getObject<openstudio::epmodel::PlantEquipmentOperationRangeBasedScheme>().extensibleGroups()) {
         const auto value = group.getDouble(LOADRANGEFIELDS_UPPERLIMIT, true);
         OS_ASSERT(value);

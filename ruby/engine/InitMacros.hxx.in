@@ -3,7 +3,6 @@
 *  See also https://openstudio.net/license
 ***********************************************************************************************************************/
 
-#define INIT_DECLARATIONS @INIT_DECLARATIONS@
+#define INIT_DECLARATIONS @INIT_DECLARATIONS @
 
-#define INIT_CALLS  @INIT_CALLS@
-
+#define INIT_CALLS @INIT_CALLS @

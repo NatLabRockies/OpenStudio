@@ -10,25 +10,25 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ExternalInterfaceFunctionalMockupUnitExportFromVariable_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ExternalInterfaceFunctionalMockupUnitExportFromVariable_Impl() override = default;
+    class EPMODEL_API ExternalInterfaceFunctionalMockupUnitExportFromVariable_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ExternalInterfaceFunctionalMockupUnitExportFromVariable_Impl() override = default;
 
-  std::string outputVariableIndexKeyName() const;
-  bool setOutputVariableIndexKeyName(const std::string& outputVariableIndexKeyName);
+      std::string outputVariableIndexKeyName() const;
+      bool setOutputVariableIndexKeyName(const std::string& outputVariableIndexKeyName);
 
-  std::string outputVariableName() const;
-  bool setOutputVariableName(const std::string& outputVariableName);
+      std::string outputVariableName() const;
+      bool setOutputVariableName(const std::string& outputVariableName);
 
-  std::string fMUVariableName() const;
-  bool setFMUVariableName(const std::string& fMUVariableName);
-};
+      std::string fMUVariableName() const;
+      bool setFMUVariableName(const std::string& fMUVariableName);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

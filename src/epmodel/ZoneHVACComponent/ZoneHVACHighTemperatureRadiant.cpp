@@ -80,8 +80,7 @@ namespace epmodel {
     }
 
     bool ZoneHVACHighTemperatureRadiant_Impl::setAvailabilitySchedule(Schedule& schedule) {
-      return setSchedule(ZoneHVAC_HighTemperatureRadiantFields::AvailabilityScheduleName, "ZoneHVACHighTemperatureRadiant", "Availability",
-                         schedule);
+      return setSchedule(ZoneHVAC_HighTemperatureRadiantFields::AvailabilityScheduleName, "ZoneHVACHighTemperatureRadiant", "Availability", schedule);
     }
 
     void ZoneHVACHighTemperatureRadiant_Impl::resetAvailabilitySchedule() {

@@ -13,13 +13,13 @@
 namespace openstudio {
 namespace epmodel {
 
-ComfortViewFactorAngles::ComfortViewFactorAngles(const Model& model) : ModelObject(ComfortViewFactorAngles::iddObjectType(), model) {}
+  ComfortViewFactorAngles::ComfortViewFactorAngles(const Model& model) : ModelObject(ComfortViewFactorAngles::iddObjectType(), model) {}
 
-ComfortViewFactorAngles::ComfortViewFactorAngles(std::shared_ptr<detail::ComfortViewFactorAngles_Impl> impl) : ModelObject(std::move(impl)) {}
+  ComfortViewFactorAngles::ComfortViewFactorAngles(std::shared_ptr<detail::ComfortViewFactorAngles_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType ComfortViewFactorAngles::iddObjectType() {
-  return IddObjectType::ComfortViewFactorAngles;
-}
+  IddObjectType ComfortViewFactorAngles::iddObjectType() {
+    return IddObjectType::ComfortViewFactorAngles;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

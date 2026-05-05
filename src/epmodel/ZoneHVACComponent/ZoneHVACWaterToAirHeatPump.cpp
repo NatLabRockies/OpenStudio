@@ -132,8 +132,7 @@ namespace epmodel {
 
   }  // namespace
 
-  ZoneHVACWaterToAirHeatPump::ZoneHVACWaterToAirHeatPump(const Model& model)
-    : ZoneHVACComponent(ZoneHVACWaterToAirHeatPump::iddObjectType(), model) {
+  ZoneHVACWaterToAirHeatPump::ZoneHVACWaterToAirHeatPump(const Model& model) : ZoneHVACComponent(ZoneHVACWaterToAirHeatPump::iddObjectType(), model) {
     OS_ASSERT(getImpl<detail::ZoneHVACWaterToAirHeatPump_Impl>());
     ScheduleConstant alwaysOn(model);
     OS_ASSERT(alwaysOn.setValue(1.0));
@@ -518,8 +517,8 @@ namespace epmodel {
     }
 
     bool ZoneHVACWaterToAirHeatPump_Impl::setAvailabilitySchedule(Schedule& schedule) {
-      return ModelObject_Impl::setSchedule(ZoneHVAC_WaterToAirHeatPumpFields::AvailabilityScheduleName, "ZoneHVACWaterToAirHeatPump",
-                                           "Availability", schedule);
+      return ModelObject_Impl::setSchedule(ZoneHVAC_WaterToAirHeatPumpFields::AvailabilityScheduleName, "ZoneHVACWaterToAirHeatPump", "Availability",
+                                           schedule);
     }
 
     bool ZoneHVACWaterToAirHeatPump_Impl::addToThermalZone(ThermalZone& thermalZone) {
@@ -570,8 +569,8 @@ namespace epmodel {
     }
 
     bool ZoneHVACWaterToAirHeatPump_Impl::setSupplyAirFanOperatingModeSchedule(Schedule& schedule) {
-      return ModelObject_Impl::setSchedule(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanOperatingModeScheduleName,
-                                           "ZoneHVACWaterToAirHeatPump", "Supply Air Fan Operating Mode", schedule);
+      return ModelObject_Impl::setSchedule(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanOperatingModeScheduleName, "ZoneHVACWaterToAirHeatPump",
+                                           "Supply Air Fan Operating Mode", schedule);
     }
 
     void ZoneHVACWaterToAirHeatPump_Impl::resetSupplyAirFanOperatingModeSchedule() {
@@ -668,8 +667,8 @@ namespace epmodel {
 
     boost::optional<Node> ZoneHVACWaterToAirHeatPump_Impl::coolingCoilOutletNode() const {
       auto coolingObject = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_WaterToAirHeatPumpFields::CoolingCoilName);
-      auto cooling = (coolingObject && isWaterToAirHeatPumpAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject)
-                                                                                              : boost::none;
+      auto cooling =
+        (coolingObject && isWaterToAirHeatPumpAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject) : boost::none;
       if (!cooling) {
         return boost::none;
       }
@@ -679,8 +678,8 @@ namespace epmodel {
 
     boost::optional<Node> ZoneHVACWaterToAirHeatPump_Impl::heatingCoilOutletNode() const {
       auto heatingObject = getObject<ModelObject>().getModelObjectTarget<HVACComponent>(ZoneHVAC_WaterToAirHeatPumpFields::HeatingCoilName);
-      auto heating = (heatingObject && isWaterToAirHeatPumpAirPathComponent(*heatingObject)) ? boost::optional<HVACComponent>(*heatingObject)
-                                                                                              : boost::none;
+      auto heating =
+        (heatingObject && isWaterToAirHeatPumpAirPathComponent(*heatingObject)) ? boost::optional<HVACComponent>(*heatingObject) : boost::none;
       if (!heating) {
         return boost::none;
       }
@@ -718,8 +717,7 @@ namespace epmodel {
       if (auto child = getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_WaterToAirHeatPumpFields::CoolingCoilName)) {
         result.push_back(*child);
       }
-      if (auto child =
-            getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_WaterToAirHeatPumpFields::SupplementalHeatingCoilName)) {
+      if (auto child = getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_WaterToAirHeatPumpFields::SupplementalHeatingCoilName)) {
         result.push_back(*child);
       }
       if (auto child = getObject<ModelObject>().getModelObjectTarget<ModelObject>(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerName)) {
@@ -764,10 +762,10 @@ namespace epmodel {
 
       auto fan = thisObject.getModelObjectTarget<StraightComponent>(ZoneHVAC_WaterToAirHeatPumpFields::SupplyAirFanName);
       auto fanObject = fan ? boost::optional<HVACComponent>(fan->cast<HVACComponent>()) : boost::none;
-      auto heating = (heatingObject && isWaterToAirHeatPumpAirPathComponent(*heatingObject)) ? boost::optional<HVACComponent>(*heatingObject)
-                                                                                              : boost::none;
-      auto cooling = (coolingObject && isWaterToAirHeatPumpAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject)
-                                                                                              : boost::none;
+      auto heating =
+        (heatingObject && isWaterToAirHeatPumpAirPathComponent(*heatingObject)) ? boost::optional<HVACComponent>(*heatingObject) : boost::none;
+      auto cooling =
+        (coolingObject && isWaterToAirHeatPumpAirPathComponent(*coolingObject)) ? boost::optional<HVACComponent>(*coolingObject) : boost::none;
       auto supplemental = (supplementalObject && isWaterToAirHeatPumpAirPathComponent(*supplementalObject))
                             ? boost::optional<HVACComponent>(*supplementalObject)
                             : boost::none;
@@ -818,8 +816,7 @@ namespace epmodel {
         changed = true;
       }
 
-      const auto currentSupplementalType =
-        thisObject.getString(ZoneHVAC_WaterToAirHeatPumpFields::SupplementalHeatingCoilObjectType, true);
+      const auto currentSupplementalType = thisObject.getString(ZoneHVAC_WaterToAirHeatPumpFields::SupplementalHeatingCoilObjectType, true);
       const auto expectedSupplementalType =
         supplementalObject ? boost::optional<std::string>(supplementalObject->iddObject().name()) : boost::optional<std::string>();
       if (expectedSupplementalType) {
@@ -880,8 +877,7 @@ namespace epmodel {
           sourceNode = model().getOrCreateTransientByName<Node>(baseName + " Mixed Air Node");
         }
 
-        outdoorAirMixer =
-          getOrCreateOwnedOutdoorAirMixer(thisObject, ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerName, baseName + " OA Mixer");
+        outdoorAirMixer = getOrCreateOwnedOutdoorAirMixer(thisObject, ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerName, baseName + " OA Mixer");
         changed = setPointer(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerName, outdoorAirMixer->handle()) || changed;
 
         const auto currentMixerType = thisObject.getString(ZoneHVAC_WaterToAirHeatPumpFields::OutdoorAirMixerObjectType, true);
@@ -952,8 +948,8 @@ namespace epmodel {
       Node upstreamNode = sourceNode ? *sourceNode : inletNode;
       for (std::size_t i = 0; i < orderedComponents.size(); ++i) {
         auto component = orderedComponents[i];
-        trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(waterToAirHeatPumpAirInletPort(component), upstreamNode.handle(),
-                                                                                 false));
+        trackNodeChange(
+          component.getImpl<detail::ModelObject_Impl>()->setPointer(waterToAirHeatPumpAirInletPort(component), upstreamNode.handle(), false));
 
         Node downstreamNode = outletNode;
         if ((i + 1u) < orderedComponents.size()) {
@@ -964,8 +960,7 @@ namespace epmodel {
             // Canonicalization keeps an existing shared connector when adjacent
             // children already agree on it and it is not one of the parent-owned
             // boundary or mixed-air nodes.
-            if (auto currentOutlet =
-                  component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(waterToAirHeatPumpAirOutletPort(component))) {
+            if (auto currentOutlet = component.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(waterToAirHeatPumpAirOutletPort(component))) {
               if (auto downstreamInlet =
                     downstream.getImpl<detail::ModelObject_Impl>()->resolvedNodeTarget(waterToAirHeatPumpAirInletPort(downstream))) {
                 if ((*currentOutlet == *downstreamInlet) && (*currentOutlet != inletNode) && (*currentOutlet != outletNode)
@@ -982,8 +977,8 @@ namespace epmodel {
           downstreamNode = *connectorNode;
         }
 
-        trackNodeChange(component.getImpl<detail::ModelObject_Impl>()->setPointer(waterToAirHeatPumpAirOutletPort(component),
-                                                                                 downstreamNode.handle(), false));
+        trackNodeChange(
+          component.getImpl<detail::ModelObject_Impl>()->setPointer(waterToAirHeatPumpAirOutletPort(component), downstreamNode.handle(), false));
         upstreamNode = downstreamNode;
       }
 

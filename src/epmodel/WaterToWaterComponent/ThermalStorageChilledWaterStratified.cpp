@@ -701,8 +701,7 @@ namespace epmodel {
       return value;
     }
 
-    bool ThermalStorageChilledWaterStratified_Impl::setAmbientTemperatureOutdoorAirNodeName(
-      const std::string& ambientTemperatureOutdoorAirNodeName) {
+    bool ThermalStorageChilledWaterStratified_Impl::setAmbientTemperatureOutdoorAirNodeName(const std::string& ambientTemperatureOutdoorAirNodeName) {
       return setString(openstudio::ThermalStorage_ChilledWater_StratifiedFields::AmbientTemperatureOutdoorAirNodeName,
                        ambientTemperatureOutdoorAirNodeName);
     }

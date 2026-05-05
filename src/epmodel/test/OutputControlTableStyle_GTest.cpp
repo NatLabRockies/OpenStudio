@@ -33,8 +33,7 @@ TEST_F(EPModelFixture, OutputControlTableStyle_ScalarAccessors_RoundTrip) {
 
   const auto unitConversionValues = OutputControlTableStyle::unitConversionValues();
   EXPECT_NE(unitConversionValues.end(), std::find(unitConversionValues.begin(), unitConversionValues.end(), "JtoKWH"));
-  EXPECT_NE(unitConversionValues.end(),
-            std::find(unitConversionValues.begin(), unitConversionValues.end(), "InchPoundExceptElectricity"));
+  EXPECT_NE(unitConversionValues.end(), std::find(unitConversionValues.begin(), unitConversionValues.end(), "InchPoundExceptElectricity"));
 
   EXPECT_FALSE(object.setColumnSeparator("bad value"));
   EXPECT_FALSE(object.setUnitConversion("bad value"));

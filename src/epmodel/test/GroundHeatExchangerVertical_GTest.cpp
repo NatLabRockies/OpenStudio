@@ -89,7 +89,8 @@ TEST_F(EPModelFixture, GroundHeatExchangerVertical_RelationshipAndGFunctionAcces
   EXPECT_EQ(initialXing.handle(), ghx.undisturbedGroundTemperatureModel().handle());
   auto systems = model.getObjectsByType(openstudio::IddObjectType::GroundHeatExchanger_System);
   ASSERT_EQ(1u, systems.size());
-  EXPECT_EQ(initialXing.handle(), systems[0].getTarget(openstudio::GroundHeatExchanger_SystemFields::UndisturbedGroundTemperatureModelName)->handle());
+  EXPECT_EQ(initialXing.handle(),
+            systems[0].getTarget(openstudio::GroundHeatExchanger_SystemFields::UndisturbedGroundTemperatureModelName)->handle());
   ASSERT_TRUE(systems[0].getString(openstudio::GroundHeatExchanger_SystemFields::UndisturbedGroundTemperatureModelType, true));
   EXPECT_EQ(initialXing.iddObject().name(),
             systems[0].getString(openstudio::GroundHeatExchanger_SystemFields::UndisturbedGroundTemperatureModelType, true).get());
@@ -176,7 +177,8 @@ TEST_F(EPModelFixture, GroundHeatExchangerVertical_RelationshipAndGFunctionAcces
   SiteGroundTemperatureUndisturbedFiniteDifference finiteDifference(model);
   EXPECT_TRUE(ghx.setUndisturbedGroundTemperatureModel(finiteDifference));
   EXPECT_EQ(finiteDifference.handle(), ghx.undisturbedGroundTemperatureModel().handle());
-  EXPECT_EQ(finiteDifference.handle(), systems[0].getTarget(openstudio::GroundHeatExchanger_SystemFields::UndisturbedGroundTemperatureModelName)->handle());
+  EXPECT_EQ(finiteDifference.handle(),
+            systems[0].getTarget(openstudio::GroundHeatExchanger_SystemFields::UndisturbedGroundTemperatureModelName)->handle());
   ASSERT_TRUE(systems[0].getString(openstudio::GroundHeatExchanger_SystemFields::UndisturbedGroundTemperatureModelType, true));
   EXPECT_EQ(finiteDifference.iddObject().name(),
             systems[0].getString(openstudio::GroundHeatExchanger_SystemFields::UndisturbedGroundTemperatureModelType, true).get());

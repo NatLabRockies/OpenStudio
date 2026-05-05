@@ -113,14 +113,12 @@ namespace epmodel {
     }
 
     Schedule CoilHeatingGasMultiStage_Impl::availabilitySchedule() const {
-      auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(
-        openstudio::Coil_Heating_Gas_MultiStageFields::AvailabilityScheduleName);
+      auto value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Heating_Gas_MultiStageFields::AvailabilityScheduleName);
       if (!value) {
         value = this->model().alwaysOnDiscreteSchedule();
         OS_ASSERT(value);
         const_cast<CoilHeatingGasMultiStage_Impl*>(this)->setAvailabilitySchedule(*value);
-        value = getObject<ModelObject>().getModelObjectTarget<Schedule>(
-          openstudio::Coil_Heating_Gas_MultiStageFields::AvailabilityScheduleName);
+        value = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::Coil_Heating_Gas_MultiStageFields::AvailabilityScheduleName);
       }
       OS_ASSERT(value);
       return *value;

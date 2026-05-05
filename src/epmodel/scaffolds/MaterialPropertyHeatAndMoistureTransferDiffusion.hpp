@@ -16,43 +16,43 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class MaterialPropertyHeatAndMoistureTransferDiffusion_Impl;
-}
+  namespace detail {
+    class MaterialPropertyHeatAndMoistureTransferDiffusion_Impl;
+  }
 
-/** MaterialPropertyHeatAndMoistureTransferDiffusion is a ModelObject that wraps the EnergyPlus IDD object
+  /** MaterialPropertyHeatAndMoistureTransferDiffusion is a ModelObject that wraps the EnergyPlus IDD object
  * 'MaterialProperty:HeatAndMoistureTransfer:Diffusion'. */
-class EPMODEL_API MaterialPropertyHeatAndMoistureTransferDiffusion : public ModelObject
-{
- public:
-  explicit MaterialPropertyHeatAndMoistureTransferDiffusion(const Model& model);
+  class EPMODEL_API MaterialPropertyHeatAndMoistureTransferDiffusion : public ModelObject
+  {
+   public:
+    explicit MaterialPropertyHeatAndMoistureTransferDiffusion(const Model& model);
 
-  virtual ~MaterialPropertyHeatAndMoistureTransferDiffusion() override = default;
-  MaterialPropertyHeatAndMoistureTransferDiffusion(const MaterialPropertyHeatAndMoistureTransferDiffusion& other) = default;
-  MaterialPropertyHeatAndMoistureTransferDiffusion(MaterialPropertyHeatAndMoistureTransferDiffusion&& other) = default;
-  MaterialPropertyHeatAndMoistureTransferDiffusion& operator=(const MaterialPropertyHeatAndMoistureTransferDiffusion&) = default;
-  MaterialPropertyHeatAndMoistureTransferDiffusion& operator=(MaterialPropertyHeatAndMoistureTransferDiffusion&&) = default;
+    virtual ~MaterialPropertyHeatAndMoistureTransferDiffusion() override = default;
+    MaterialPropertyHeatAndMoistureTransferDiffusion(const MaterialPropertyHeatAndMoistureTransferDiffusion& other) = default;
+    MaterialPropertyHeatAndMoistureTransferDiffusion(MaterialPropertyHeatAndMoistureTransferDiffusion&& other) = default;
+    MaterialPropertyHeatAndMoistureTransferDiffusion& operator=(const MaterialPropertyHeatAndMoistureTransferDiffusion&) = default;
+    MaterialPropertyHeatAndMoistureTransferDiffusion& operator=(MaterialPropertyHeatAndMoistureTransferDiffusion&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  // Schema Alignment Notes:
-  // - API: No openstudio::model counterpart exists; use IDD-derived scalar accessor naming.
-  // - Field Mapping: numberofDataPairs maps to EnergyPlus field Number of Data Pairs.
-  // - TODO(parity): Add non-scalar extensible diffusion pair APIs in a dedicated parity pass.
-  int numberofDataPairs() const;
-  bool setNumberofDataPairs(int numberofDataPairs);
+    // Schema Alignment Notes:
+    // - API: No openstudio::model counterpart exists; use IDD-derived scalar accessor naming.
+    // - Field Mapping: numberofDataPairs maps to EnergyPlus field Number of Data Pairs.
+    // - TODO(parity): Add non-scalar extensible diffusion pair APIs in a dedicated parity pass.
+    int numberofDataPairs() const;
+    bool setNumberofDataPairs(int numberofDataPairs);
 
- protected:
-  using ImplType = detail::MaterialPropertyHeatAndMoistureTransferDiffusion_Impl;
+   protected:
+    using ImplType = detail::MaterialPropertyHeatAndMoistureTransferDiffusion_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit MaterialPropertyHeatAndMoistureTransferDiffusion(std::shared_ptr<detail::MaterialPropertyHeatAndMoistureTransferDiffusion_Impl> impl);
-};
+    explicit MaterialPropertyHeatAndMoistureTransferDiffusion(std::shared_ptr<detail::MaterialPropertyHeatAndMoistureTransferDiffusion_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -43,7 +43,6 @@ TEST_F(EPModelFixture, CoilSystemIntegratedHeatPumpAirSource_DefaultConstructor)
   EXPECT_EQ(coilSystem.scdwhWaterHeatingCoil().handle(), children[5].handle());
   EXPECT_EQ(coilSystem.shdwhHeatingCoil().handle(), children[6].handle());
   EXPECT_EQ(coilSystem.shdwhWaterHeatingCoil().handle(), children[7].handle());
-
 }
 
 TEST_F(EPModelFixture, CoilSystemIntegratedHeatPumpAirSource_ScalarAccessors_RoundTrip) {
@@ -143,8 +142,8 @@ TEST_F(EPModelFixture, CoilSystemIntegratedHeatPumpAirSource_RelationshipConstru
   CoilHeatingDXVariableSpeed shdwhHeatingCoil(model);
   CoilWaterHeatingAirToWaterHeatPumpVariableSpeed shdwhWaterHeatingCoil(model);
 
-  CoilSystemIntegratedHeatPumpAirSource coilSystem(model, spaceCoolingCoil, spaceHeatingCoil, dedicatedWaterHeatingCoil, scwhCoil,
-                                                    scdwhCoolingCoil, scdwhWaterHeatingCoil, shdwhHeatingCoil, shdwhWaterHeatingCoil);
+  CoilSystemIntegratedHeatPumpAirSource coilSystem(model, spaceCoolingCoil, spaceHeatingCoil, dedicatedWaterHeatingCoil, scwhCoil, scdwhCoolingCoil,
+                                                   scdwhWaterHeatingCoil, shdwhHeatingCoil, shdwhWaterHeatingCoil);
 
   EXPECT_EQ(spaceCoolingCoil.handle(), coilSystem.spaceCoolingCoil().handle());
   EXPECT_EQ(spaceHeatingCoil.handle(), coilSystem.spaceHeatingCoil().handle());

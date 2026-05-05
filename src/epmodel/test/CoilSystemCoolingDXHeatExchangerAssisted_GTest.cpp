@@ -44,13 +44,12 @@ TEST_F(EPModelFixture, CoilSystemCoolingDXHeatExchangerAssisted_ScalarAccessors_
 
   const auto heatExchangerObjectTypes = CoilSystemCoolingDXHeatExchangerAssisted::heatExchangerObjectTypeValues();
   EXPECT_FALSE(heatExchangerObjectTypes.empty());
-  EXPECT_TRUE(std::find(heatExchangerObjectTypes.begin(), heatExchangerObjectTypes.end(), "HeatExchanger:AirToAir:SensibleAndLatent") !=
-              heatExchangerObjectTypes.end());
+  EXPECT_TRUE(std::find(heatExchangerObjectTypes.begin(), heatExchangerObjectTypes.end(), "HeatExchanger:AirToAir:SensibleAndLatent")
+              != heatExchangerObjectTypes.end());
 
   const auto coolingCoilObjectTypes = CoilSystemCoolingDXHeatExchangerAssisted::coolingCoilObjectTypeValues();
   EXPECT_FALSE(coolingCoilObjectTypes.empty());
-  EXPECT_TRUE(std::find(coolingCoilObjectTypes.begin(), coolingCoilObjectTypes.end(), "Coil:Cooling:DX:SingleSpeed") !=
-              coolingCoilObjectTypes.end());
+  EXPECT_TRUE(std::find(coolingCoilObjectTypes.begin(), coolingCoilObjectTypes.end(), "Coil:Cooling:DX:SingleSpeed") != coolingCoilObjectTypes.end());
 
   EXPECT_TRUE(coilSystem.setHeatExchangerObjectType("HeatExchanger:AirToAir:SensibleAndLatent"));
   EXPECT_EQ("HeatExchanger:AirToAir:SensibleAndLatent", coilSystem.heatExchangerObjectType());

@@ -49,10 +49,10 @@ TEST_F(FiveZoneAirCooledIDFFixture, PlantLoop_IDF_LoopsLoadAndExposeTopologyApis
   auto plantLoops = model->getConcreteModelObjects<PlantLoop>();
   ASSERT_EQ(2u, plantLoops.size());
 
-  auto hotWaterLoopIt = std::find_if(plantLoops.begin(), plantLoops.end(),
-                                     [](const PlantLoop& plantLoop) { return plantLoop.nameString() == "Hot Water Loop"; });
-  auto chilledWaterLoopIt = std::find_if(plantLoops.begin(), plantLoops.end(),
-                                         [](const PlantLoop& plantLoop) { return plantLoop.nameString() == "Chilled Water Loop"; });
+  auto hotWaterLoopIt =
+    std::find_if(plantLoops.begin(), plantLoops.end(), [](const PlantLoop& plantLoop) { return plantLoop.nameString() == "Hot Water Loop"; });
+  auto chilledWaterLoopIt =
+    std::find_if(plantLoops.begin(), plantLoops.end(), [](const PlantLoop& plantLoop) { return plantLoop.nameString() == "Chilled Water Loop"; });
   ASSERT_NE(plantLoops.end(), hotWaterLoopIt);
   ASSERT_NE(plantLoops.end(), chilledWaterLoopIt);
 
@@ -136,7 +136,8 @@ TEST_F(FiveZoneAirCooledIDFFixture, PlantLoop_IDF_SupplyAndDemandComponentsExpos
     ASSERT_FALSE(demandComponents.empty());
 
     if (plantLoop.nameString() == "Hot Water Loop") {
-      EXPECT_TRUE(std::ranges::any_of(supplyComponents, [](const ModelObject& object) { return object.optionalCast<PumpVariableSpeed>().has_value(); }));
+      EXPECT_TRUE(
+        std::ranges::any_of(supplyComponents, [](const ModelObject& object) { return object.optionalCast<PumpVariableSpeed>().has_value(); }));
       EXPECT_TRUE(std::ranges::any_of(supplyComponents, [](const ModelObject& object) { return object.optionalCast<BoilerHotWater>().has_value(); }));
       EXPECT_TRUE(std::ranges::any_of(supplyComponents, [](const ModelObject& object) { return object.optionalCast<PipeAdiabatic>().has_value(); }));
 
@@ -144,8 +145,10 @@ TEST_F(FiveZoneAirCooledIDFFixture, PlantLoop_IDF_SupplyAndDemandComponentsExpos
                                   [](const ModelObject& object) { return object.optionalCast<CoilHeatingWater>().has_value(); }));
       EXPECT_TRUE(std::ranges::any_of(demandComponents, [](const ModelObject& object) { return object.optionalCast<PipeAdiabatic>().has_value(); }));
     } else if (plantLoop.nameString() == "Chilled Water Loop") {
-      EXPECT_TRUE(std::ranges::any_of(supplyComponents, [](const ModelObject& object) { return object.optionalCast<PumpVariableSpeed>().has_value(); }));
-      EXPECT_TRUE(std::ranges::any_of(supplyComponents, [](const ModelObject& object) { return object.optionalCast<ChillerElectric>().has_value(); }));
+      EXPECT_TRUE(
+        std::ranges::any_of(supplyComponents, [](const ModelObject& object) { return object.optionalCast<PumpVariableSpeed>().has_value(); }));
+      EXPECT_TRUE(
+        std::ranges::any_of(supplyComponents, [](const ModelObject& object) { return object.optionalCast<ChillerElectric>().has_value(); }));
       EXPECT_TRUE(std::ranges::any_of(supplyComponents, [](const ModelObject& object) { return object.optionalCast<PipeAdiabatic>().has_value(); }));
 
       EXPECT_EQ(2u, std::count_if(demandComponents.begin(), demandComponents.end(),

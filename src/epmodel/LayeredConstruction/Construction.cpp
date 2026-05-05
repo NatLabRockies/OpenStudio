@@ -13,13 +13,13 @@
 namespace openstudio {
 namespace epmodel {
 
-Construction::Construction(const Model& model) : ModelObject(Construction::iddObjectType(), model) {}
+  Construction::Construction(const Model& model) : ModelObject(Construction::iddObjectType(), model) {}
 
-Construction::Construction(std::shared_ptr<detail::Construction_Impl> impl) : ModelObject(std::move(impl)) {}
+  Construction::Construction(std::shared_ptr<detail::Construction_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType Construction::iddObjectType() {
-  return IddObjectType::Construction;
-}
+  IddObjectType Construction::iddObjectType() {
+    return IddObjectType::Construction;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -13,16 +13,16 @@
 namespace openstudio {
 namespace epmodel {
 
-SolarCollectorUnglazedTranspiredMultisystem::SolarCollectorUnglazedTranspiredMultisystem(const Model& model)
-  : ModelObject(SolarCollectorUnglazedTranspiredMultisystem::iddObjectType(), model) {}
+  SolarCollectorUnglazedTranspiredMultisystem::SolarCollectorUnglazedTranspiredMultisystem(const Model& model)
+    : ModelObject(SolarCollectorUnglazedTranspiredMultisystem::iddObjectType(), model) {}
 
-SolarCollectorUnglazedTranspiredMultisystem::SolarCollectorUnglazedTranspiredMultisystem(
-  std::shared_ptr<detail::SolarCollectorUnglazedTranspiredMultisystem_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  SolarCollectorUnglazedTranspiredMultisystem::SolarCollectorUnglazedTranspiredMultisystem(
+    std::shared_ptr<detail::SolarCollectorUnglazedTranspiredMultisystem_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType SolarCollectorUnglazedTranspiredMultisystem::iddObjectType() {
-  return IddObjectType::SolarCollector_UnglazedTranspired_Multisystem;
-}
+  IddObjectType SolarCollectorUnglazedTranspiredMultisystem::iddObjectType() {
+    return IddObjectType::SolarCollector_UnglazedTranspired_Multisystem;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

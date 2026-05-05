@@ -93,8 +93,7 @@ namespace epmodel {
     autosizeMaximumSupplyAirTemperatureInHeatingMode();
   }
 
-  ZoneHVACFourPipeFanCoil::ZoneHVACFourPipeFanCoil(std::shared_ptr<detail::ZoneHVACFourPipeFanCoil_Impl> impl)
-    : ZoneHVACComponent(std::move(impl)) {}
+  ZoneHVACFourPipeFanCoil::ZoneHVACFourPipeFanCoil(std::shared_ptr<detail::ZoneHVACFourPipeFanCoil_Impl> impl) : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType ZoneHVACFourPipeFanCoil::iddObjectType() {
     return IddObjectType::ZoneHVAC_FourPipeFanCoil;
@@ -429,8 +428,8 @@ namespace epmodel {
     }
 
     bool ZoneHVACFourPipeFanCoil_Impl::setAvailabilitySchedule(Schedule& schedule) {
-      return ModelObject_Impl::setSchedule(ZoneHVAC_FourPipeFanCoilFields::AvailabilityScheduleName, "ZoneHVACFourPipeFanCoil",
-                                           "Availability", schedule);
+      return ModelObject_Impl::setSchedule(ZoneHVAC_FourPipeFanCoilFields::AvailabilityScheduleName, "ZoneHVACFourPipeFanCoil", "Availability",
+                                           schedule);
     }
 
     std::string ZoneHVACFourPipeFanCoil_Impl::capacityControlMethod() const {
@@ -627,8 +626,8 @@ namespace epmodel {
       if (fanType == IddObjectType::OS_Fan_SystemModel || fanType == IddObjectType::Fan_SystemModel) {
         isAllowedType = true;
       } else if (istringEqual(capacityControlMethod(), "ConstantFanVariableFlow")) {
-        if (fanType == IddObjectType::OS_Fan_ConstantVolume || fanType == IddObjectType::OS_Fan_OnOff
-            || fanType == IddObjectType::Fan_ConstantVolume || fanType == IddObjectType::Fan_OnOff) {
+        if (fanType == IddObjectType::OS_Fan_ConstantVolume || fanType == IddObjectType::OS_Fan_OnOff || fanType == IddObjectType::Fan_ConstantVolume
+            || fanType == IddObjectType::Fan_OnOff) {
           isAllowedType = true;
         }
       } else if (istringEqual(capacityControlMethod(), "CyclingFan")) {
@@ -680,10 +679,9 @@ namespace epmodel {
       }
 
       const auto heatingCoilType = heatingCoil.iddObject().type();
-      const bool isAllowedType = (heatingCoilType == IddObjectType::OS_Coil_Heating_Water)
-                                 || (heatingCoilType == IddObjectType::OS_Coil_Heating_Electric)
-                                 || (heatingCoilType == IddObjectType::Coil_Heating_Water)
-                                 || (heatingCoilType == IddObjectType::Coil_Heating_Electric);
+      const bool isAllowedType =
+        (heatingCoilType == IddObjectType::OS_Coil_Heating_Water) || (heatingCoilType == IddObjectType::OS_Coil_Heating_Electric)
+        || (heatingCoilType == IddObjectType::Coil_Heating_Water) || (heatingCoilType == IddObjectType::Coil_Heating_Electric);
       if (!isAllowedType) {
         return false;
       }
@@ -991,12 +989,10 @@ namespace epmodel {
       if (cooling && heating) {
         if (!allowChildNodeRecovery) {
           auto currentCoolingOutlet = fourPipeFanCoilAirOutletNode(*cooling);
-          auto currentHeatingInlet = fourPipeFanCoilAirInletPort(*heating) != 0u
-                                       ? heating->getModelObjectTarget<Node>(fourPipeFanCoilAirInletPort(*heating))
-                                       : boost::none;
-          if (currentCoolingOutlet && currentHeatingInlet && (*currentCoolingOutlet == *currentHeatingInlet)
-              && (*currentCoolingOutlet != inletNode) && (*currentCoolingOutlet != outletNode)
-              && (!fanOutlet || (*currentCoolingOutlet != *fanOutlet))) {
+          auto currentHeatingInlet =
+            fourPipeFanCoilAirInletPort(*heating) != 0u ? heating->getModelObjectTarget<Node>(fourPipeFanCoilAirInletPort(*heating)) : boost::none;
+          if (currentCoolingOutlet && currentHeatingInlet && (*currentCoolingOutlet == *currentHeatingInlet) && (*currentCoolingOutlet != inletNode)
+              && (*currentCoolingOutlet != outletNode) && (!fanOutlet || (*currentCoolingOutlet != *fanOutlet))) {
             coolingOutlet = currentCoolingOutlet;
           }
         } else {

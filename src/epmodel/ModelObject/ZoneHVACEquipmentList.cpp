@@ -377,8 +377,10 @@ namespace epmodel {
           if (!workspaceGroup) {
             continue;
           }
-          workspaceGroup->setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentSequentialCoolingFractionScheduleName, "", false);
-          workspaceGroup->setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentSequentialHeatingFractionScheduleName, "", false);
+          workspaceGroup->setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentSequentialCoolingFractionScheduleName, "",
+                                    false);
+          workspaceGroup->setString(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentSequentialHeatingFractionScheduleName, "",
+                                    false);
         }
       }
 
@@ -419,8 +421,7 @@ namespace epmodel {
           continue;
         }
 
-        auto priority =
-          workspaceGroup->getUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence);
+        auto priority = workspaceGroup->getUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence);
         auto target = resolveEquipmentTarget(*workspaceGroup, model());
         if (priority && (*priority > 0u) && target) {
           if (auto equipmentObject = modelEquipmentObject(*target)) {
@@ -429,9 +430,8 @@ namespace epmodel {
         }
       }
 
-      std::stable_sort(equipmentByPriority.begin(), equipmentByPriority.end(), [](const auto& lhs, const auto& rhs) {
-        return lhs.first < rhs.first;
-      });
+      std::stable_sort(equipmentByPriority.begin(), equipmentByPriority.end(),
+                       [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
 
       std::vector<openstudio::epmodel::ModelObject> result;
       result.reserve(equipmentByPriority.size());
@@ -458,9 +458,8 @@ namespace epmodel {
         }
       }
 
-      std::stable_sort(equipmentByPriority.begin(), equipmentByPriority.end(), [](const auto& lhs, const auto& rhs) {
-        return lhs.first < rhs.first;
-      });
+      std::stable_sort(equipmentByPriority.begin(), equipmentByPriority.end(),
+                       [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
 
       std::vector<openstudio::epmodel::ModelObject> result;
       result.reserve(equipmentByPriority.size());
@@ -554,8 +553,7 @@ namespace epmodel {
         for (unsigned j = 0; j < heatingEquipment.size(); ++j) {
           auto remainingGroup = groupForModelObject(equipmentList, heatingEquipment[j]);
           OS_ASSERT(remainingGroup);
-          OS_ASSERT(
-            remainingGroup->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence, j + 1u));
+          OS_ASSERT(remainingGroup->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence, j + 1u));
         }
         return true;
       }
@@ -615,8 +613,7 @@ namespace epmodel {
       for (unsigned i = 0; i < equipmentVector.size(); ++i) {
         auto equipmentGroup = groupForModelObject(equipmentList, equipmentVector[i]);
         OS_ASSERT(equipmentGroup);
-        OS_ASSERT(
-          equipmentGroup->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence, i + 1u));
+        OS_ASSERT(equipmentGroup->setUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentHeatingorNoLoadSequence, i + 1u));
       }
       return true;
     }
@@ -637,8 +634,8 @@ namespace epmodel {
       return group->getUnsigned(openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentCoolingSequence).get_value_or(0u);
     }
 
-    boost::optional<openstudio::epmodel::Schedule> ZoneHVACEquipmentList_Impl::sequentialCoolingFractionSchedule(
-      const openstudio::epmodel::ModelObject& component) const {
+    boost::optional<openstudio::epmodel::Schedule>
+      ZoneHVACEquipmentList_Impl::sequentialCoolingFractionSchedule(const openstudio::epmodel::ModelObject& component) const {
       if (!openstudio::istringEqual(loadDistributionScheme(), "SequentialLoad") || (coolingPriority(component) == 0u)) {
         return boost::none;
       }
@@ -650,8 +647,8 @@ namespace epmodel {
                                    openstudio::ZoneHVAC_EquipmentListExtensibleFields::ZoneEquipmentSequentialCoolingFractionScheduleName);
     }
 
-    boost::optional<openstudio::epmodel::Schedule> ZoneHVACEquipmentList_Impl::sequentialHeatingFractionSchedule(
-      const openstudio::epmodel::ModelObject& component) const {
+    boost::optional<openstudio::epmodel::Schedule>
+      ZoneHVACEquipmentList_Impl::sequentialHeatingFractionSchedule(const openstudio::epmodel::ModelObject& component) const {
       if (!openstudio::istringEqual(loadDistributionScheme(), "SequentialLoad") || (heatingPriority(component) == 0u)) {
         return boost::none;
       }
@@ -683,7 +680,8 @@ namespace epmodel {
 
     bool ZoneHVACEquipmentList_Impl::setSequentialCoolingFractionSchedule(const openstudio::epmodel::ModelObject& component,
                                                                           openstudio::epmodel::Schedule& schedule) {
-      if (schedule.model() != model() || !openstudio::istringEqual(loadDistributionScheme(), "SequentialLoad") || (coolingPriority(component) == 0u)) {
+      if (schedule.model() != model() || !openstudio::istringEqual(loadDistributionScheme(), "SequentialLoad")
+          || (coolingPriority(component) == 0u)) {
         return false;
       }
       auto group = groupForModelObject(getObject<openstudio::epmodel::ZoneHVACEquipmentList>(), component);
@@ -696,7 +694,8 @@ namespace epmodel {
 
     bool ZoneHVACEquipmentList_Impl::setSequentialHeatingFractionSchedule(const openstudio::epmodel::ModelObject& component,
                                                                           openstudio::epmodel::Schedule& schedule) {
-      if (schedule.model() != model() || !openstudio::istringEqual(loadDistributionScheme(), "SequentialLoad") || (heatingPriority(component) == 0u)) {
+      if (schedule.model() != model() || !openstudio::istringEqual(loadDistributionScheme(), "SequentialLoad")
+          || (heatingPriority(component) == 0u)) {
         return false;
       }
       auto group = groupForModelObject(getObject<openstudio::epmodel::ZoneHVACEquipmentList>(), component);

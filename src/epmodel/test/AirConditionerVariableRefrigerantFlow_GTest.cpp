@@ -98,8 +98,9 @@ TEST_F(EPModelFixture, AirConditionerVariableRefrigerantFlow_AddToNode_DemandSid
   ASSERT_TRUE(vrf.outletModelObject());
   EXPECT_NE(vrf.inletModelObject()->handle(), vrf.outletModelObject()->handle());
   EXPECT_EQ(demandOutletNode.handle(), vrf.outletModelObject()->handle());
-  EXPECT_EQ(1u, plantLoop.demandComponents(vrf.inletModelObject()->cast<Node>(), vrf.outletModelObject()->cast<Node>(),
-                                           AirConditionerVariableRefrigerantFlow::iddObjectType())
+  EXPECT_EQ(1u, plantLoop
+                  .demandComponents(vrf.inletModelObject()->cast<Node>(), vrf.outletModelObject()->cast<Node>(),
+                                    AirConditionerVariableRefrigerantFlow::iddObjectType())
                   .size());
 
   EXPECT_TRUE(vrf.removeFromLoop());

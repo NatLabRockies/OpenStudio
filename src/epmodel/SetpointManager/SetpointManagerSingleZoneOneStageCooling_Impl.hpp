@@ -21,8 +21,8 @@ namespace epmodel {
       double coolingStageOnSupplyAirSetpointTemperature() const;
       bool setCoolingStageOnSupplyAirSetpointTemperature(double coolingStageOnSupplyAirSetpointTemperature);
 
-     double coolingStageOffSupplyAirSetpointTemperature() const;
-     bool setCoolingStageOffSupplyAirSetpointTemperature(double coolingStageOffSupplyAirSetpointTemperature);
+      double coolingStageOffSupplyAirSetpointTemperature() const;
+      bool setCoolingStageOffSupplyAirSetpointTemperature(double coolingStageOffSupplyAirSetpointTemperature);
 
       boost::optional<openstudio::epmodel::Node> setpointNode() const override;
       std::string controlVariable() const override;

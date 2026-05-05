@@ -19,8 +19,7 @@ namespace epmodel {
 
   namespace detail {
 
-    std::string transientSpeedDataName(const openstudio::epmodel::CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit& parent,
-                                       unsigned speedIndex);
+    std::string transientSpeedDataName(const openstudio::epmodel::CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit& parent, unsigned speedIndex);
 
     class EPMODEL_API CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFit_Impl : public WaterToAirComponent_Impl
     {

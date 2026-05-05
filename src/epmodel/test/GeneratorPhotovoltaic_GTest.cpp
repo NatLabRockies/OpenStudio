@@ -49,5 +49,4 @@ TEST_F(EPModelFixture, GeneratorPhotovoltaic_ScalarAccessors_RoundTrip) {
   generator.resetNumberOfModulesInSeries();
   EXPECT_TRUE(generator.isNumberOfModulesInSeriesDefaulted());
   EXPECT_DOUBLE_EQ(1.0, generator.numberOfModulesInSeries());
-
 }

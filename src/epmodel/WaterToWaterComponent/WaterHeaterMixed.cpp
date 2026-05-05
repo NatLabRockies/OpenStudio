@@ -890,7 +890,8 @@ namespace epmodel {
     }
 
     bool WaterHeaterMixed_Impl::setUseFlowRateFractionSchedule(Schedule& schedule) {
-      return setSchedule(openstudio::WaterHeater_MixedFields::UseFlowRateFractionScheduleName, "WaterHeaterMixed", "Use Flow Rate Fraction", schedule);
+      return setSchedule(openstudio::WaterHeater_MixedFields::UseFlowRateFractionScheduleName, "WaterHeaterMixed", "Use Flow Rate Fraction",
+                         schedule);
     }
 
     void WaterHeaterMixed_Impl::resetUseFlowRateFractionSchedule() {
@@ -1107,9 +1108,8 @@ namespace epmodel {
       if (auto sourceSidePlantLoop = secondaryPlantLoop()) {
         for (const auto& plantLoop : model().getConcreteModelObjects<PlantLoop>()) {
           const auto supplyComponents = plantLoop.supplyComponents(openstudio::IddObjectType::Catchall);
-          const auto matchesSourceLoop = std::find_if(supplyComponents.begin(), supplyComponents.end(), [&](const auto& component) {
-            return component.handle() == handle();
-          });
+          const auto matchesSourceLoop =
+            std::find_if(supplyComponents.begin(), supplyComponents.end(), [&](const auto& component) { return component.handle() == handle(); });
           if (matchesSourceLoop != supplyComponents.end() && plantLoop.handle() != sourceSidePlantLoop->handle()) {
             return plantLoop;
           }
@@ -1136,9 +1136,8 @@ namespace epmodel {
 
       if (auto sourceSidePlantLoop = sourceSideOutletNode_->plantLoop()) {
         const auto supplyComponents = sourceSidePlantLoop->supplyComponents(openstudio::IddObjectType::Catchall);
-        const auto matchesSourceLoop = std::find_if(supplyComponents.begin(), supplyComponents.end(), [&](const auto& component) {
-          return component.handle() == handle();
-        });
+        const auto matchesSourceLoop =
+          std::find_if(supplyComponents.begin(), supplyComponents.end(), [&](const auto& component) { return component.handle() == handle(); });
         if (matchesSourceLoop != supplyComponents.end()) {
           return sourceSidePlantLoop;
         }

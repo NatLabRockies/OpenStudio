@@ -13,8 +13,8 @@
 namespace openstudio {
 namespace epmodel {
 
-class Schedule;
-class Node;
+  class Schedule;
+  class Node;
 
   namespace detail {
 

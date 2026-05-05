@@ -17,52 +17,52 @@
 namespace openstudio {
 namespace epmodel {
 
-OutputEnvironmentalImpactFactors::OutputEnvironmentalImpactFactors(const Model& model)
-  : ModelObject(OutputEnvironmentalImpactFactors::iddObjectType(), model) {
-  OS_ASSERT(setReportingFrequency("Monthly"));
-}
+  OutputEnvironmentalImpactFactors::OutputEnvironmentalImpactFactors(const Model& model)
+    : ModelObject(OutputEnvironmentalImpactFactors::iddObjectType(), model) {
+    OS_ASSERT(setReportingFrequency("Monthly"));
+  }
 
-OutputEnvironmentalImpactFactors::OutputEnvironmentalImpactFactors(std::shared_ptr<detail::OutputEnvironmentalImpactFactors_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  OutputEnvironmentalImpactFactors::OutputEnvironmentalImpactFactors(std::shared_ptr<detail::OutputEnvironmentalImpactFactors_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType OutputEnvironmentalImpactFactors::iddObjectType() {
-  return IddObjectType::Output_EnvironmentalImpactFactors;
-}
+  IddObjectType OutputEnvironmentalImpactFactors::iddObjectType() {
+    return IddObjectType::Output_EnvironmentalImpactFactors;
+  }
 
-std::vector<std::string> OutputEnvironmentalImpactFactors::reportingFrequencyValues() {
-  return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
-                        openstudio::Output_EnvironmentalImpactFactorsFields::ReportingFrequency);
-}
+  std::vector<std::string> OutputEnvironmentalImpactFactors::reportingFrequencyValues() {
+    return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(),
+                          openstudio::Output_EnvironmentalImpactFactorsFields::ReportingFrequency);
+  }
 
-std::string OutputEnvironmentalImpactFactors::reportingFrequency() const {
-  return getImpl<detail::OutputEnvironmentalImpactFactors_Impl>()->reportingFrequency();
-}
+  std::string OutputEnvironmentalImpactFactors::reportingFrequency() const {
+    return getImpl<detail::OutputEnvironmentalImpactFactors_Impl>()->reportingFrequency();
+  }
 
-bool OutputEnvironmentalImpactFactors::setReportingFrequency(const std::string& reportingFrequency) {
-  return getImpl<detail::OutputEnvironmentalImpactFactors_Impl>()->setReportingFrequency(reportingFrequency);
-}
+  bool OutputEnvironmentalImpactFactors::setReportingFrequency(const std::string& reportingFrequency) {
+    return getImpl<detail::OutputEnvironmentalImpactFactors_Impl>()->setReportingFrequency(reportingFrequency);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string OutputEnvironmentalImpactFactors_Impl::reportingFrequency() const {
-  const auto value = getString(openstudio::Output_EnvironmentalImpactFactorsFields::ReportingFrequency, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    std::string OutputEnvironmentalImpactFactors_Impl::reportingFrequency() const {
+      const auto value = getString(openstudio::Output_EnvironmentalImpactFactorsFields::ReportingFrequency, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool OutputEnvironmentalImpactFactors_Impl::setReportingFrequency(const std::string& reportingFrequency) {
-  return setString(openstudio::Output_EnvironmentalImpactFactorsFields::ReportingFrequency, reportingFrequency);
-}
+    bool OutputEnvironmentalImpactFactors_Impl::setReportingFrequency(const std::string& reportingFrequency) {
+      return setString(openstudio::Output_EnvironmentalImpactFactorsFields::ReportingFrequency, reportingFrequency);
+    }
 
-std::vector<std::string> OutputEnvironmentalImpactFactors_Impl::reportingFrequencyValues() const {
-  return openstudio::epmodel::OutputEnvironmentalImpactFactors::reportingFrequencyValues();
-}
+    std::vector<std::string> OutputEnvironmentalImpactFactors_Impl::reportingFrequencyValues() const {
+      return openstudio::epmodel::OutputEnvironmentalImpactFactors::reportingFrequencyValues();
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

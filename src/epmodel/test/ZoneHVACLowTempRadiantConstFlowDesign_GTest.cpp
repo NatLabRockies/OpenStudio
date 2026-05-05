@@ -44,19 +44,17 @@ TEST_F(EPModelFixture, ZoneHVACLowTempRadiantConstFlowDesign_ScalarAccessors_Rou
   ASSERT_TRUE(design.changeoverDelayTimePeriodSchedule());
   EXPECT_EQ(schedule.handle(), design.changeoverDelayTimePeriodSchedule()->handle());
 
-  EXPECT_TRUE(design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::FluidtoRadiantSurfaceHeatTransferModel,
-                               "ISOStandard"));
+  EXPECT_TRUE(
+    design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::FluidtoRadiantSurfaceHeatTransferModel, "ISOStandard"));
   EXPECT_EQ("ISOStandard", design.fluidtoRadiantSurfaceHeatTransferModel());
 
-  EXPECT_TRUE(design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::TemperatureControlType,
-                               "SurfaceFaceTemperature"));
+  EXPECT_TRUE(
+    design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::TemperatureControlType, "SurfaceFaceTemperature"));
   EXPECT_EQ("SurfaceFaceTemperature", design.temperatureControlType());
 
-  EXPECT_TRUE(design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::CondensationControlType,
-                               "VariableOff"));
+  EXPECT_TRUE(design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::CondensationControlType, "VariableOff"));
   EXPECT_EQ("VariableOff", design.condensationControlType());
 
-  EXPECT_TRUE(
-    design.setDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::CondensationControlDewpointOffset, 1.5));
+  EXPECT_TRUE(design.setDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::CondensationControlDewpointOffset, 1.5));
   EXPECT_DOUBLE_EQ(1.5, design.condensationControlDewpointOffset());
 }

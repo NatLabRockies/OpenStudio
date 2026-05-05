@@ -171,14 +171,14 @@ TEST_F(EPModelFixture, PlantEquipmentOperationSchemes_SetPrimaryUsesCanonicalPri
 
   auto firstGroup = schemes.pushExtensibleGroup();
   ASSERT_FALSE(firstGroup.empty());
-  ASSERT_TRUE(firstGroup.setString(openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeObjectType,
-                                   originalPrimary.iddObject().name()));
+  ASSERT_TRUE(
+    firstGroup.setString(openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeObjectType, originalPrimary.iddObject().name()));
   ASSERT_TRUE(firstGroup.setString(openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeName, originalPrimary.nameString()));
 
   auto secondGroup = schemes.pushExtensibleGroup();
   ASSERT_FALSE(secondGroup.empty());
-  ASSERT_TRUE(secondGroup.setString(openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeObjectType,
-                                    newPrimary.iddObject().name()));
+  ASSERT_TRUE(
+    secondGroup.setString(openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeObjectType, newPrimary.iddObject().name()));
   ASSERT_TRUE(secondGroup.setString(openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeName, newPrimary.nameString()));
 
   ASSERT_TRUE(impl->setPrimaryPlantEquipmentOperationScheme(newPrimary));
@@ -204,8 +204,8 @@ TEST_F(EPModelFixture, PlantEquipmentOperationSchemes_CanonicalizeMergesPrimaryS
     scheduleOnlyGroupStartIndex + openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeObjectType,
     "PlantEquipmentOperation:Uncontrolled", false));
   ASSERT_TRUE(impl->openstudio::detail::IdfObject_Impl::setString(
-    scheduleOnlyGroupStartIndex + openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeScheduleName,
-    primarySchedule.nameString(), false));
+    scheduleOnlyGroupStartIndex + openstudio::PlantEquipmentOperationSchemesExtensibleFields::ControlSchemeScheduleName, primarySchedule.nameString(),
+    false));
 
   auto schemeOnlyGroup = schemes.pushExtensibleGroup();
   ASSERT_FALSE(schemeOnlyGroup.empty());

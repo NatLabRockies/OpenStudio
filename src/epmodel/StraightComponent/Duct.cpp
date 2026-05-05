@@ -14,31 +14,31 @@
 namespace openstudio {
 namespace epmodel {
 
-Duct::Duct(const Model& model) : StraightComponent(Duct::iddObjectType(), model) {}
+  Duct::Duct(const Model& model) : StraightComponent(Duct::iddObjectType(), model) {}
 
-Duct::Duct(std::shared_ptr<detail::Duct_Impl> impl) : StraightComponent(std::move(impl)) {}
+  Duct::Duct(std::shared_ptr<detail::Duct_Impl> impl) : StraightComponent(std::move(impl)) {}
 
-IddObjectType Duct::iddObjectType() {
-  return IddObjectType::Duct;
-}
+  IddObjectType Duct::iddObjectType() {
+    return IddObjectType::Duct;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-unsigned Duct_Impl::inletPort() const {
-  // Relationship mapping only: Duct Inlet Node Name
-  return openstudio::DuctFields::InletNodeName;
-}
+    unsigned Duct_Impl::inletPort() const {
+      // Relationship mapping only: Duct Inlet Node Name
+      return openstudio::DuctFields::InletNodeName;
+    }
 
-unsigned Duct_Impl::outletPort() const {
-  // Relationship mapping only: Duct Outlet Node Name
-  return openstudio::DuctFields::OutletNodeName;
-}
+    unsigned Duct_Impl::outletPort() const {
+      // Relationship mapping only: Duct Outlet Node Name
+      return openstudio::DuctFields::OutletNodeName;
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

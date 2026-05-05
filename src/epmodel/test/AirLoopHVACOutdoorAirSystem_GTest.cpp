@@ -199,8 +199,8 @@ TEST_F(EPModelFixture, API_AirLoopHVACOutdoorAirSystem_AddToNodeInsertsBeforeFir
   ASSERT_TRUE(outdoorAirSystem.addToNode(supplyInletNode));
 
   const auto supplyComponents = airLoop.supplyComponents();
-  auto oaPos = std::find_if(supplyComponents.begin(), supplyComponents.end(),
-                            [&](const ModelObject& mo) { return mo == outdoorAirSystem.cast<ModelObject>(); });
+  auto oaPos =
+    std::find_if(supplyComponents.begin(), supplyComponents.end(), [&](const ModelObject& mo) { return mo == outdoorAirSystem.cast<ModelObject>(); });
   auto fanPos = std::find_if(supplyComponents.begin(), supplyComponents.end(), [&](const ModelObject& mo) { return mo == fan.cast<ModelObject>(); });
   ASSERT_NE(supplyComponents.end(), oaPos);
   ASSERT_NE(supplyComponents.end(), fanPos);

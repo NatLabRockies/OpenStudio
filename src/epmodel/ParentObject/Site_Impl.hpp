@@ -14,48 +14,48 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API Site_Impl : public ParentObject_Impl
-{
- public:
-  using ParentObject_Impl::ParentObject_Impl;
-  virtual ~Site_Impl() override = default;
+    class EPMODEL_API Site_Impl : public ParentObject_Impl
+    {
+     public:
+      using ParentObject_Impl::ParentObject_Impl;
+      virtual ~Site_Impl() override = default;
 
-  double latitude() const;
-  bool isLatitudeDefaulted() const;
-  bool setLatitude(double latitude);
-  void resetLatitude();
+      double latitude() const;
+      bool isLatitudeDefaulted() const;
+      bool setLatitude(double latitude);
+      void resetLatitude();
 
-  double longitude() const;
-  bool isLongitudeDefaulted() const;
-  bool setLongitude(double longitude);
-  void resetLongitude();
+      double longitude() const;
+      bool isLongitudeDefaulted() const;
+      bool setLongitude(double longitude);
+      void resetLongitude();
 
-  double timeZone() const;
-  bool isTimeZoneDefaulted() const;
-  bool setTimeZone(double timeZone);
-  void resetTimeZone();
+      double timeZone() const;
+      bool isTimeZoneDefaulted() const;
+      bool setTimeZone(double timeZone);
+      void resetTimeZone();
 
-  double elevation() const;
-  bool isElevationDefaulted() const;
-  bool setElevation(double elevation);
-  void resetElevation();
+      double elevation() const;
+      bool isElevationDefaulted() const;
+      bool setElevation(double elevation);
+      void resetElevation();
 
-  std::string terrain() const;
-  bool isTerrainDefaulted() const;
-  bool setTerrain(const std::string& terrain);
-  void resetTerrain();
+      std::string terrain() const;
+      bool isTerrainDefaulted() const;
+      bool setTerrain(const std::string& terrain);
+      void resetTerrain();
 
-  bool keepSiteLocationInformation() const;
-  bool isKeepSiteLocationInformationDefaulted() const;
-  bool setKeepSiteLocationInformation(bool keepSiteLocationInformation);
-  void resetKeepSiteLocationInformation();
+      bool keepSiteLocationInformation() const;
+      bool isKeepSiteLocationInformationDefaulted() const;
+      bool setKeepSiteLocationInformation(bool keepSiteLocationInformation);
+      void resetKeepSiteLocationInformation();
 
-  std::vector<std::string> validTerrainValues() const;
-};
+      std::vector<std::string> validTerrainValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

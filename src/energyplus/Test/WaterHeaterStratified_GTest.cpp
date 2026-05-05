@@ -116,8 +116,7 @@ TEST_F(EnergyPlusFixture, ForwardTranslatorWaterHeaterStratified_AmbientTemperat
 
   EXPECT_EQ("Outdoors", idfWHStratified.getString(WaterHeater_StratifiedFields::AmbientTemperatureIndicator, false).get());
   ASSERT_FALSE(idfWHStratified.isEmpty(WaterHeater_StratifiedFields::AmbientTemperatureOutdoorAirNodeName));
-  const std::string outdoorAirNodeName =
-    idfWHStratified.getString(WaterHeater_StratifiedFields::AmbientTemperatureOutdoorAirNodeName, false).get();
+  const std::string outdoorAirNodeName = idfWHStratified.getString(WaterHeater_StratifiedFields::AmbientTemperatureOutdoorAirNodeName, false).get();
 
   std::vector<WorkspaceObject> oaNodeLists(w.getObjectsByType(IddObjectType::OutdoorAir_NodeList));
   ASSERT_EQ(1u, oaNodeLists.size());

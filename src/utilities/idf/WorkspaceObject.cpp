@@ -120,9 +120,9 @@ namespace detail {
     return result;
   }
 
-	  void WorkspaceObject_Impl::initializeOnAdd(bool expectToLosePointers) {
-	    OS_ASSERT(m_workspace);
-	    bool ptrsAsHandles = iddObject().hasHandleField();
+  void WorkspaceObject_Impl::initializeOnAdd(bool expectToLosePointers) {
+    OS_ASSERT(m_workspace);
+    bool ptrsAsHandles = iddObject().hasHandleField();
     // loop through object list fields
     UnsignedVector fields = objectListFields();
     for (unsigned index : fields) {

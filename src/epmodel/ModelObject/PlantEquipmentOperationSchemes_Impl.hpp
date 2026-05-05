@@ -79,8 +79,7 @@ namespace epmodel {
       // from live pointers or explicit typed setters, not by resolving raw
       // imported field strings on demand.
       boost::optional<openstudio::epmodel::ModelObject> resolveAndAttachControlScheme(unsigned schemeIndex);
-      bool setControlScheme(unsigned schemeIndex, const std::string& controlSchemeObjectType,
-                            const openstudio::epmodel::ModelObject& controlScheme);
+      bool setControlScheme(unsigned schemeIndex, const std::string& controlSchemeObjectType, const openstudio::epmodel::ModelObject& controlScheme);
       bool setControlScheme(const std::string& controlSchemeObjectType, const openstudio::epmodel::ModelObject& controlScheme);
       void resetControlScheme(const std::string& controlSchemeObjectType);
       boost::optional<openstudio::epmodel::Schedule> controlSchemeSchedule(const std::string& controlSchemeObjectType) const;

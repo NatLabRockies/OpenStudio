@@ -34,10 +34,9 @@ namespace epmodel {
   {
    public:
     explicit ZoneHVACLowTempRadiantConstFlow(const Model& model);
-    ZoneHVACLowTempRadiantConstFlow(const Model& model, Schedule& availabilitySchedule, HVACComponent& heatingCoil,
-                                    HVACComponent& coolingCoil, double hydronicTubingLength);
-    ZoneHVACLowTempRadiantConstFlow(const Model& model, Schedule& availabilitySchedule, HVACComponent& heatingCoil,
-                                    HVACComponent& coolingCoil);
+    ZoneHVACLowTempRadiantConstFlow(const Model& model, Schedule& availabilitySchedule, HVACComponent& heatingCoil, HVACComponent& coolingCoil,
+                                    double hydronicTubingLength);
+    ZoneHVACLowTempRadiantConstFlow(const Model& model, Schedule& availabilitySchedule, HVACComponent& heatingCoil, HVACComponent& coolingCoil);
 
     virtual ~ZoneHVACLowTempRadiantConstFlow() override = default;
     ZoneHVACLowTempRadiantConstFlow(const ZoneHVACLowTempRadiantConstFlow& other) = default;

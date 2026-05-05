@@ -102,8 +102,7 @@ TEST_F(EPModelFixture, CoilHeatingWaterToAirHeatPumpEquationFit_AvailabilitySche
   CoilHeatingWaterToAirHeatPumpEquationFit coil(model);
 
   ASSERT_TRUE(coil.setPointer(openstudio::Coil_Heating_WaterToAirHeatPump_EquationFitFields::AvailabilityScheduleName, openstudio::Handle()));
-  EXPECT_FALSE(
-    coil.getModelObjectTarget<Schedule>(openstudio::Coil_Heating_WaterToAirHeatPump_EquationFitFields::AvailabilityScheduleName));
+  EXPECT_FALSE(coil.getModelObjectTarget<Schedule>(openstudio::Coil_Heating_WaterToAirHeatPump_EquationFitFields::AvailabilityScheduleName));
 
   const auto schedule = coil.availabilitySchedule();
   EXPECT_EQ(model.alwaysOnDiscreteSchedule(), schedule);

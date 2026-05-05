@@ -11,22 +11,22 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API EnergyManagementSystemTrendVariable_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~EnergyManagementSystemTrendVariable_Impl() override = default;
+    class EPMODEL_API EnergyManagementSystemTrendVariable_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~EnergyManagementSystemTrendVariable_Impl() override = default;
 
-  std::string emsVariableName() const;
-  bool setEMSVariableName(const std::string& eMSVariableName);
+      std::string emsVariableName() const;
+      bool setEMSVariableName(const std::string& eMSVariableName);
 
-  int numberOfTimestepsToBeLogged() const;
-  bool setNumberOfTimestepsToBeLogged(int numberofTimestepstobeLogged);
-};
+      int numberOfTimestepsToBeLogged() const;
+      bool setNumberOfTimestepsToBeLogged(int numberofTimestepstobeLogged);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

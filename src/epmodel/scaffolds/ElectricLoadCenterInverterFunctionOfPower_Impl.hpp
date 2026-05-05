@@ -11,44 +11,44 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ElectricLoadCenterInverterFunctionOfPower_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ElectricLoadCenterInverterFunctionOfPower_Impl() override = default;
+    class EPMODEL_API ElectricLoadCenterInverterFunctionOfPower_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ElectricLoadCenterInverterFunctionOfPower_Impl() override = default;
 
-  boost::optional<double> radiativeFraction() const;
-  bool setRadiativeFraction(double radiativeFraction);
-  void resetRadiativeFraction();
+      boost::optional<double> radiativeFraction() const;
+      bool setRadiativeFraction(double radiativeFraction);
+      void resetRadiativeFraction();
 
-  boost::optional<double> ratedMaximumContinuousInputPower() const;
-  bool setRatedMaximumContinuousInputPower(double ratedMaximumContinuousInputPower);
-  void resetRatedMaximumContinuousInputPower();
+      boost::optional<double> ratedMaximumContinuousInputPower() const;
+      bool setRatedMaximumContinuousInputPower(double ratedMaximumContinuousInputPower);
+      void resetRatedMaximumContinuousInputPower();
 
-  boost::optional<double> minimumEfficiency() const;
-  bool setMinimumEfficiency(double minimumEfficiency);
-  void resetMinimumEfficiency();
+      boost::optional<double> minimumEfficiency() const;
+      bool setMinimumEfficiency(double minimumEfficiency);
+      void resetMinimumEfficiency();
 
-  boost::optional<double> maximumEfficiency() const;
-  bool setMaximumEfficiency(double maximumEfficiency);
-  void resetMaximumEfficiency();
+      boost::optional<double> maximumEfficiency() const;
+      bool setMaximumEfficiency(double maximumEfficiency);
+      void resetMaximumEfficiency();
 
-  boost::optional<double> minimumPowerOutput() const;
-  bool setMinimumPowerOutput(double minimumPowerOutput);
-  void resetMinimumPowerOutput();
+      boost::optional<double> minimumPowerOutput() const;
+      bool setMinimumPowerOutput(double minimumPowerOutput);
+      void resetMinimumPowerOutput();
 
-  boost::optional<double> maximumPowerOutput() const;
-  bool setMaximumPowerOutput(double maximumPowerOutput);
-  void resetMaximumPowerOutput();
+      boost::optional<double> maximumPowerOutput() const;
+      bool setMaximumPowerOutput(double maximumPowerOutput);
+      void resetMaximumPowerOutput();
 
-  boost::optional<double> ancillaryPowerConsumedInStandby() const;
-  bool setAncillaryPowerConsumedInStandby(double ancillaryPowerConsumedInStandby);
-  void resetAncillaryPowerConsumedInStandby();
-};
+      boost::optional<double> ancillaryPowerConsumedInStandby() const;
+      bool setAncillaryPowerConsumedInStandby(double ancillaryPowerConsumedInStandby);
+      void resetAncillaryPowerConsumedInStandby();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -38,11 +38,9 @@ namespace epmodel {
       unsigned heatingPriority(const openstudio::epmodel::ModelObject& component) const;
       unsigned coolingPriority(const openstudio::epmodel::ModelObject& component) const;
       boost::optional<double> sequentialCoolingFraction(const openstudio::epmodel::ModelObject& component) const;
-      boost::optional<openstudio::epmodel::Schedule> sequentialCoolingFractionSchedule(
-        const openstudio::epmodel::ModelObject& component) const;
+      boost::optional<openstudio::epmodel::Schedule> sequentialCoolingFractionSchedule(const openstudio::epmodel::ModelObject& component) const;
       boost::optional<double> sequentialHeatingFraction(const openstudio::epmodel::ModelObject& component) const;
-      boost::optional<openstudio::epmodel::Schedule> sequentialHeatingFractionSchedule(
-        const openstudio::epmodel::ModelObject& component) const;
+      boost::optional<openstudio::epmodel::Schedule> sequentialHeatingFractionSchedule(const openstudio::epmodel::ModelObject& component) const;
       bool setSequentialCoolingFraction(const openstudio::epmodel::ModelObject& component, double fraction);
       bool setSequentialCoolingFractionSchedule(const openstudio::epmodel::ModelObject& component, openstudio::epmodel::Schedule& schedule);
       bool setSequentialHeatingFraction(const openstudio::epmodel::ModelObject& component, double fraction);

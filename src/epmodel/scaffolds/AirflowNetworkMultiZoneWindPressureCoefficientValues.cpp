@@ -13,16 +13,16 @@
 namespace openstudio {
 namespace epmodel {
 
-AirflowNetworkMultiZoneWindPressureCoefficientValues::AirflowNetworkMultiZoneWindPressureCoefficientValues(const Model& model)
-  : ModelObject(AirflowNetworkMultiZoneWindPressureCoefficientValues::iddObjectType(), model) {}
+  AirflowNetworkMultiZoneWindPressureCoefficientValues::AirflowNetworkMultiZoneWindPressureCoefficientValues(const Model& model)
+    : ModelObject(AirflowNetworkMultiZoneWindPressureCoefficientValues::iddObjectType(), model) {}
 
-AirflowNetworkMultiZoneWindPressureCoefficientValues::AirflowNetworkMultiZoneWindPressureCoefficientValues(
-  std::shared_ptr<detail::AirflowNetworkMultiZoneWindPressureCoefficientValues_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  AirflowNetworkMultiZoneWindPressureCoefficientValues::AirflowNetworkMultiZoneWindPressureCoefficientValues(
+    std::shared_ptr<detail::AirflowNetworkMultiZoneWindPressureCoefficientValues_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType AirflowNetworkMultiZoneWindPressureCoefficientValues::iddObjectType() {
-  return IddObjectType::AirflowNetwork_MultiZone_WindPressureCoefficientValues;
-}
+  IddObjectType AirflowNetworkMultiZoneWindPressureCoefficientValues::iddObjectType() {
+    return IddObjectType::AirflowNetwork_MultiZone_WindPressureCoefficientValues;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -17,121 +17,121 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class ChillerHeaterPerformanceElectricEIR_Impl;
-}
+  namespace detail {
+    class ChillerHeaterPerformanceElectricEIR_Impl;
+  }
 
-class EPMODEL_API ChillerHeaterPerformanceElectricEIR : public ParentObject
-{
- public:
-  explicit ChillerHeaterPerformanceElectricEIR(const Model& model);
+  class EPMODEL_API ChillerHeaterPerformanceElectricEIR : public ParentObject
+  {
+   public:
+    explicit ChillerHeaterPerformanceElectricEIR(const Model& model);
 
-  virtual ~ChillerHeaterPerformanceElectricEIR() override = default;
-  ChillerHeaterPerformanceElectricEIR(const ChillerHeaterPerformanceElectricEIR& other) = default;
-  ChillerHeaterPerformanceElectricEIR(ChillerHeaterPerformanceElectricEIR&& other) = default;
-  ChillerHeaterPerformanceElectricEIR& operator=(const ChillerHeaterPerformanceElectricEIR&) = default;
-  ChillerHeaterPerformanceElectricEIR& operator=(ChillerHeaterPerformanceElectricEIR&&) = default;
+    virtual ~ChillerHeaterPerformanceElectricEIR() override = default;
+    ChillerHeaterPerformanceElectricEIR(const ChillerHeaterPerformanceElectricEIR& other) = default;
+    ChillerHeaterPerformanceElectricEIR(ChillerHeaterPerformanceElectricEIR&& other) = default;
+    ChillerHeaterPerformanceElectricEIR& operator=(const ChillerHeaterPerformanceElectricEIR&) = default;
+    ChillerHeaterPerformanceElectricEIR& operator=(ChillerHeaterPerformanceElectricEIR&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> chilledWaterFlowModeTypeValues();
-  static std::vector<std::string> condenserTypeValues();
-  static std::vector<std::string> coolingModeTemperatureCurveCondenserWaterIndependentVariableValues();
-  static std::vector<std::string> heatingModeTemperatureCurveCondenserWaterIndependentVariableValues();
+    static std::vector<std::string> chilledWaterFlowModeTypeValues();
+    static std::vector<std::string> condenserTypeValues();
+    static std::vector<std::string> coolingModeTemperatureCurveCondenserWaterIndependentVariableValues();
+    static std::vector<std::string> heatingModeTemperatureCurveCondenserWaterIndependentVariableValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserve openstudio::model::ChillerHeaterPerformanceElectricEIR scalar API names/signatures for counterpart compatibility.
-  // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus ChillerHeaterPerformance:Electric:EIR scalar fields.
-  // - Field Mapping: Curve-name relationship fields are intentionally excluded from this scalar-only scaffold.
-  // - ForwardTranslator evidence: translateChillerHeaterPerformanceElectricEIR writes autosize and scalar values directly to matching fields.
-  // - TODO(parity): Add excluded relationship/reverse-lookup APIs in a dedicated parity pass.
-  boost::optional<double> referenceCoolingModeEvaporatorCapacity() const;
-  bool isReferenceCoolingModeEvaporatorCapacityAutosized() const;
-  bool setReferenceCoolingModeEvaporatorCapacity(double referenceCoolingModeEvaporatorCapacity);
-  void autosizeReferenceCoolingModeEvaporatorCapacity();
+    // Schema Alignment Notes:
+    // - API: Preserve openstudio::model::ChillerHeaterPerformanceElectricEIR scalar API names/signatures for counterpart compatibility.
+    // - Field Mapping: Preserved scalar APIs map directly to EnergyPlus ChillerHeaterPerformance:Electric:EIR scalar fields.
+    // - Field Mapping: Curve-name relationship fields are intentionally excluded from this scalar-only scaffold.
+    // - ForwardTranslator evidence: translateChillerHeaterPerformanceElectricEIR writes autosize and scalar values directly to matching fields.
+    // - TODO(parity): Add excluded relationship/reverse-lookup APIs in a dedicated parity pass.
+    boost::optional<double> referenceCoolingModeEvaporatorCapacity() const;
+    bool isReferenceCoolingModeEvaporatorCapacityAutosized() const;
+    bool setReferenceCoolingModeEvaporatorCapacity(double referenceCoolingModeEvaporatorCapacity);
+    void autosizeReferenceCoolingModeEvaporatorCapacity();
 
-  double referenceCoolingModeCOP() const;
-  bool setReferenceCoolingModeCOP(double referenceCoolingModeCOP);
+    double referenceCoolingModeCOP() const;
+    bool setReferenceCoolingModeCOP(double referenceCoolingModeCOP);
 
-  double referenceCoolingModeLeavingChilledWaterTemperature() const;
-  bool setReferenceCoolingModeLeavingChilledWaterTemperature(double referenceCoolingModeLeavingChilledWaterTemperature);
+    double referenceCoolingModeLeavingChilledWaterTemperature() const;
+    bool setReferenceCoolingModeLeavingChilledWaterTemperature(double referenceCoolingModeLeavingChilledWaterTemperature);
 
-  double referenceCoolingModeEnteringCondenserFluidTemperature() const;
-  bool setReferenceCoolingModeEnteringCondenserFluidTemperature(double referenceCoolingModeEnteringCondenserFluidTemperature);
+    double referenceCoolingModeEnteringCondenserFluidTemperature() const;
+    bool setReferenceCoolingModeEnteringCondenserFluidTemperature(double referenceCoolingModeEnteringCondenserFluidTemperature);
 
-  double referenceCoolingModeLeavingCondenserWaterTemperature() const;
-  bool setReferenceCoolingModeLeavingCondenserWaterTemperature(double referenceCoolingModeLeavingCondenserWaterTemperature);
+    double referenceCoolingModeLeavingCondenserWaterTemperature() const;
+    bool setReferenceCoolingModeLeavingCondenserWaterTemperature(double referenceCoolingModeLeavingCondenserWaterTemperature);
 
-  double referenceHeatingModeCoolingCapacityRatio() const;
-  bool setReferenceHeatingModeCoolingCapacityRatio(double referenceHeatingModeCoolingCapacityRatio);
+    double referenceHeatingModeCoolingCapacityRatio() const;
+    bool setReferenceHeatingModeCoolingCapacityRatio(double referenceHeatingModeCoolingCapacityRatio);
 
-  double referenceHeatingModeCoolingPowerInputRatio() const;
-  bool setReferenceHeatingModeCoolingPowerInputRatio(double referenceHeatingModeCoolingPowerInputRatio);
+    double referenceHeatingModeCoolingPowerInputRatio() const;
+    bool setReferenceHeatingModeCoolingPowerInputRatio(double referenceHeatingModeCoolingPowerInputRatio);
 
-  double referenceHeatingModeLeavingChilledWaterTemperature() const;
-  bool setReferenceHeatingModeLeavingChilledWaterTemperature(double referenceHeatingModeLeavingChilledWaterTemperature);
+    double referenceHeatingModeLeavingChilledWaterTemperature() const;
+    bool setReferenceHeatingModeLeavingChilledWaterTemperature(double referenceHeatingModeLeavingChilledWaterTemperature);
 
-  double referenceHeatingModeLeavingCondenserWaterTemperature() const;
-  bool setReferenceHeatingModeLeavingCondenserWaterTemperature(double referenceHeatingModeLeavingCondenserWaterTemperature);
+    double referenceHeatingModeLeavingCondenserWaterTemperature() const;
+    bool setReferenceHeatingModeLeavingCondenserWaterTemperature(double referenceHeatingModeLeavingCondenserWaterTemperature);
 
-  double referenceHeatingModeEnteringCondenserFluidTemperature() const;
-  bool setReferenceHeatingModeEnteringCondenserFluidTemperature(double referenceHeatingModeEnteringCondenserFluidTemperature);
+    double referenceHeatingModeEnteringCondenserFluidTemperature() const;
+    bool setReferenceHeatingModeEnteringCondenserFluidTemperature(double referenceHeatingModeEnteringCondenserFluidTemperature);
 
-  double heatingModeEnteringChilledWaterTemperatureLowLimit() const;
-  bool setHeatingModeEnteringChilledWaterTemperatureLowLimit(double heatingModeEnteringChilledWaterTemperatureLowLimit);
+    double heatingModeEnteringChilledWaterTemperatureLowLimit() const;
+    bool setHeatingModeEnteringChilledWaterTemperatureLowLimit(double heatingModeEnteringChilledWaterTemperatureLowLimit);
 
-  std::string chilledWaterFlowModeType() const;
-  bool setChilledWaterFlowModeType(const std::string& chilledWaterFlowModeType);
+    std::string chilledWaterFlowModeType() const;
+    bool setChilledWaterFlowModeType(const std::string& chilledWaterFlowModeType);
 
-  boost::optional<double> designChilledWaterFlowRate() const;
-  bool isDesignChilledWaterFlowRateAutosized() const;
-  bool setDesignChilledWaterFlowRate(double designChilledWaterFlowRate);
-  void resetDesignChilledWaterFlowRate();
-  void autosizeDesignChilledWaterFlowRate();
+    boost::optional<double> designChilledWaterFlowRate() const;
+    bool isDesignChilledWaterFlowRateAutosized() const;
+    bool setDesignChilledWaterFlowRate(double designChilledWaterFlowRate);
+    void resetDesignChilledWaterFlowRate();
+    void autosizeDesignChilledWaterFlowRate();
 
-  boost::optional<double> designCondenserWaterFlowRate() const;
-  bool isDesignCondenserWaterFlowRateAutosized() const;
-  bool setDesignCondenserWaterFlowRate(double designCondenserWaterFlowRate);
-  void resetDesignCondenserWaterFlowRate();
-  void autosizeDesignCondenserWaterFlowRate();
+    boost::optional<double> designCondenserWaterFlowRate() const;
+    bool isDesignCondenserWaterFlowRateAutosized() const;
+    bool setDesignCondenserWaterFlowRate(double designCondenserWaterFlowRate);
+    void resetDesignCondenserWaterFlowRate();
+    void autosizeDesignCondenserWaterFlowRate();
 
-  double designHotWaterFlowRate() const;
-  bool setDesignHotWaterFlowRate(double designHotWaterFlowRate);
+    double designHotWaterFlowRate() const;
+    bool setDesignHotWaterFlowRate(double designHotWaterFlowRate);
 
-  double compressorMotorEfficiency() const;
-  bool setCompressorMotorEfficiency(double compressorMotorEfficiency);
+    double compressorMotorEfficiency() const;
+    bool setCompressorMotorEfficiency(double compressorMotorEfficiency);
 
-  std::string condenserType() const;
-  bool setCondenserType(const std::string& condenserType);
+    std::string condenserType() const;
+    bool setCondenserType(const std::string& condenserType);
 
-  std::string coolingModeTemperatureCurveCondenserWaterIndependentVariable() const;
-  bool setCoolingModeTemperatureCurveCondenserWaterIndependentVariable(
-    const std::string& coolingModeTemperatureCurveCondenserWaterIndependentVariable);
+    std::string coolingModeTemperatureCurveCondenserWaterIndependentVariable() const;
+    bool setCoolingModeTemperatureCurveCondenserWaterIndependentVariable(
+      const std::string& coolingModeTemperatureCurveCondenserWaterIndependentVariable);
 
-  double coolingModeCoolingCapacityOptimumPartLoadRatio() const;
-  bool setCoolingModeCoolingCapacityOptimumPartLoadRatio(double coolingModeCoolingCapacityOptimumPartLoadRatio);
+    double coolingModeCoolingCapacityOptimumPartLoadRatio() const;
+    bool setCoolingModeCoolingCapacityOptimumPartLoadRatio(double coolingModeCoolingCapacityOptimumPartLoadRatio);
 
-  std::string heatingModeTemperatureCurveCondenserWaterIndependentVariable() const;
-  bool setHeatingModeTemperatureCurveCondenserWaterIndependentVariable(
-    const std::string& heatingModeTemperatureCurveCondenserWaterIndependentVariable);
+    std::string heatingModeTemperatureCurveCondenserWaterIndependentVariable() const;
+    bool setHeatingModeTemperatureCurveCondenserWaterIndependentVariable(
+      const std::string& heatingModeTemperatureCurveCondenserWaterIndependentVariable);
 
-  double heatingModeCoolingCapacityOptimumPartLoadRatio() const;
-  bool setHeatingModeCoolingCapacityOptimumPartLoadRatio(double heatingModeCoolingCapacityOptimumPartLoadRatio);
+    double heatingModeCoolingCapacityOptimumPartLoadRatio() const;
+    bool setHeatingModeCoolingCapacityOptimumPartLoadRatio(double heatingModeCoolingCapacityOptimumPartLoadRatio);
 
-  double sizingFactor() const;
-  bool setSizingFactor(double sizingFactor);
+    double sizingFactor() const;
+    bool setSizingFactor(double sizingFactor);
 
- protected:
-  using ImplType = detail::ChillerHeaterPerformanceElectricEIR_Impl;
+   protected:
+    using ImplType = detail::ChillerHeaterPerformanceElectricEIR_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit ChillerHeaterPerformanceElectricEIR(std::shared_ptr<detail::ChillerHeaterPerformanceElectricEIR_Impl> impl);
-};
+    explicit ChillerHeaterPerformanceElectricEIR(std::shared_ptr<detail::ChillerHeaterPerformanceElectricEIR_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

@@ -415,8 +415,7 @@ namespace detail {
     return result;
   }
 
-  std::vector<WorkspaceObject> Workspace_Impl::getObjectsByReference(const std::vector<std::string>& referenceNames,
-                                                                     bool includeTransient) const {
+  std::vector<WorkspaceObject> Workspace_Impl::getObjectsByReference(const std::vector<std::string>& referenceNames, bool includeTransient) const {
     WorkspaceObjectMap objectMap;
     for (const std::string& referenceName : referenceNames) {
       auto loc = m_idfReferencesMap.find(referenceName);
@@ -2526,13 +2525,11 @@ std::vector<WorkspaceObject> Workspace::getObjectsByType(const IddObject& object
   return m_impl->getObjectsByType(objectType, includeTransient);
 }
 
-boost::optional<WorkspaceObject> Workspace::getObjectByTypeAndName(IddObjectType objectType, const std::string& name,
-                                                                   bool includeTransient) const {
+boost::optional<WorkspaceObject> Workspace::getObjectByTypeAndName(IddObjectType objectType, const std::string& name, bool includeTransient) const {
   return m_impl->getObjectByTypeAndName(objectType, name, includeTransient);
 }
 
-std::vector<WorkspaceObject> Workspace::getObjectsByTypeAndName(IddObjectType objectType, const std::string& name,
-                                                                bool includeTransient) const {
+std::vector<WorkspaceObject> Workspace::getObjectsByTypeAndName(IddObjectType objectType, const std::string& name, bool includeTransient) const {
   return m_impl->getObjectsByTypeAndName(objectType, name, includeTransient);
 }
 
@@ -2540,8 +2537,7 @@ std::vector<WorkspaceObject> Workspace::getObjectsByReference(const std::string&
   return m_impl->getObjectsByReference(referenceName, includeTransient);
 }
 
-std::vector<WorkspaceObject> Workspace::getObjectsByReference(const std::vector<std::string>& referenceNames,
-                                                              bool includeTransient) const {
+std::vector<WorkspaceObject> Workspace::getObjectsByReference(const std::vector<std::string>& referenceNames, bool includeTransient) const {
   return m_impl->getObjectsByReference(referenceNames, includeTransient);
 }
 

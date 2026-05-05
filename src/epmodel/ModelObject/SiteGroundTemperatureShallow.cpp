@@ -58,7 +58,8 @@ namespace epmodel {
     }
 
     bool SiteGroundTemperatureShallow_Impl::setJanuarySurfaceGroundTemperature(double januarySurfaceGroundTemperature) {
-      const bool result = setDouble(openstudio::Site_GroundTemperature_ShallowFields::JanuarySurfaceGroundTemperature, januarySurfaceGroundTemperature);
+      const bool result =
+        setDouble(openstudio::Site_GroundTemperature_ShallowFields::JanuarySurfaceGroundTemperature, januarySurfaceGroundTemperature);
       OS_ASSERT(result);
       return result;
     }
@@ -99,7 +100,8 @@ namespace epmodel {
     }
 
     bool SiteGroundTemperatureShallow_Impl::setFebruarySurfaceGroundTemperature(double februarySurfaceGroundTemperature) {
-      const bool result = setDouble(openstudio::Site_GroundTemperature_ShallowFields::FebruarySurfaceGroundTemperature, februarySurfaceGroundTemperature);
+      const bool result =
+        setDouble(openstudio::Site_GroundTemperature_ShallowFields::FebruarySurfaceGroundTemperature, februarySurfaceGroundTemperature);
       OS_ASSERT(result);
       return result;
     }
@@ -386,7 +388,8 @@ namespace epmodel {
     }
 
     bool SiteGroundTemperatureShallow_Impl::setSeptemberSurfaceGroundTemperature(double septemberSurfaceGroundTemperature) {
-      const bool result = setDouble(openstudio::Site_GroundTemperature_ShallowFields::SeptemberSurfaceGroundTemperature, septemberSurfaceGroundTemperature);
+      const bool result =
+        setDouble(openstudio::Site_GroundTemperature_ShallowFields::SeptemberSurfaceGroundTemperature, septemberSurfaceGroundTemperature);
       OS_ASSERT(result);
       return result;
     }
@@ -427,7 +430,8 @@ namespace epmodel {
     }
 
     bool SiteGroundTemperatureShallow_Impl::setOctoberSurfaceGroundTemperature(double octoberSurfaceGroundTemperature) {
-      const bool result = setDouble(openstudio::Site_GroundTemperature_ShallowFields::OctoberSurfaceGroundTemperature, octoberSurfaceGroundTemperature);
+      const bool result =
+        setDouble(openstudio::Site_GroundTemperature_ShallowFields::OctoberSurfaceGroundTemperature, octoberSurfaceGroundTemperature);
       OS_ASSERT(result);
       return result;
     }
@@ -468,7 +472,8 @@ namespace epmodel {
     }
 
     bool SiteGroundTemperatureShallow_Impl::setNovemberSurfaceGroundTemperature(double novemberSurfaceGroundTemperature) {
-      const bool result = setDouble(openstudio::Site_GroundTemperature_ShallowFields::NovemberSurfaceGroundTemperature, novemberSurfaceGroundTemperature);
+      const bool result =
+        setDouble(openstudio::Site_GroundTemperature_ShallowFields::NovemberSurfaceGroundTemperature, novemberSurfaceGroundTemperature);
       OS_ASSERT(result);
       return result;
     }
@@ -509,7 +514,8 @@ namespace epmodel {
     }
 
     bool SiteGroundTemperatureShallow_Impl::setDecemberSurfaceGroundTemperature(double decemberSurfaceGroundTemperature) {
-      const bool result = setDouble(openstudio::Site_GroundTemperature_ShallowFields::DecemberSurfaceGroundTemperature, decemberSurfaceGroundTemperature);
+      const bool result =
+        setDouble(openstudio::Site_GroundTemperature_ShallowFields::DecemberSurfaceGroundTemperature, decemberSurfaceGroundTemperature);
       OS_ASSERT(result);
       return result;
     }

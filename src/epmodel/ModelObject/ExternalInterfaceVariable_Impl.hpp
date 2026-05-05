@@ -10,19 +10,19 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API ExternalInterfaceVariable_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~ExternalInterfaceVariable_Impl() override = default;
+    class EPMODEL_API ExternalInterfaceVariable_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~ExternalInterfaceVariable_Impl() override = default;
 
-  double initialValue() const;
-  bool setInitialValue(double initialValue);
-};
+      double initialValue() const;
+      bool setInitialValue(double initialValue);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

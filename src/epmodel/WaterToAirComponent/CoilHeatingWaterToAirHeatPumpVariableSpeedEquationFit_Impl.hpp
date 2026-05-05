@@ -17,64 +17,64 @@ namespace epmodel {
   class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData;
   class AirflowNetworkDistributionComponentCoil;
 
-namespace detail {
+  namespace detail {
 
-std::string transientSpeedDataName(const openstudio::epmodel::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit& parent, unsigned speedIndex);
+    std::string transientSpeedDataName(const openstudio::epmodel::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit& parent, unsigned speedIndex);
 
-class EPMODEL_API CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl : public WaterToAirComponent_Impl
-{
- public:
-  using WaterToAirComponent_Impl::WaterToAirComponent_Impl;
-  virtual ~CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl() override = default;
+    class EPMODEL_API CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl : public WaterToAirComponent_Impl
+    {
+     public:
+      using WaterToAirComponent_Impl::WaterToAirComponent_Impl;
+      virtual ~CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFit_Impl() override = default;
 
-  unsigned airInletPort() const override;
-  unsigned airOutletPort() const override;
-  unsigned waterInletPort() const override;
-  unsigned waterOutletPort() const override;
+      unsigned airInletPort() const override;
+      unsigned airOutletPort() const override;
+      unsigned waterInletPort() const override;
+      unsigned waterOutletPort() const override;
 
-  Schedule availabilitySchedule() const;
-  bool setAvailabilitySchedule(Schedule& schedule);
+      Schedule availabilitySchedule() const;
+      bool setAvailabilitySchedule(Schedule& schedule);
 
-  int nominalSpeedLevel() const;
-  bool setNominalSpeedLevel(int nominalSpeedLevel);
+      int nominalSpeedLevel() const;
+      bool setNominalSpeedLevel(int nominalSpeedLevel);
 
-  boost::optional<double> ratedHeatingCapacityAtSelectedNominalSpeedLevel() const;
-  bool setRatedHeatingCapacityAtSelectedNominalSpeedLevel(double ratedHeatingCapacityAtSelectedNominalSpeedLevel);
-  bool isRatedHeatingCapacityAtSelectedNominalSpeedLevelAutosized() const;
-  void autosizeRatedHeatingCapacityAtSelectedNominalSpeedLevel();
-  boost::optional<double> autosizedRatedHeatingCapacityAtSelectedNominalSpeedLevel() const;
+      boost::optional<double> ratedHeatingCapacityAtSelectedNominalSpeedLevel() const;
+      bool setRatedHeatingCapacityAtSelectedNominalSpeedLevel(double ratedHeatingCapacityAtSelectedNominalSpeedLevel);
+      bool isRatedHeatingCapacityAtSelectedNominalSpeedLevelAutosized() const;
+      void autosizeRatedHeatingCapacityAtSelectedNominalSpeedLevel();
+      boost::optional<double> autosizedRatedHeatingCapacityAtSelectedNominalSpeedLevel() const;
 
-  boost::optional<double> ratedAirFlowRateAtSelectedNominalSpeedLevel() const;
-  bool setRatedAirFlowRateAtSelectedNominalSpeedLevel(double ratedAirFlowRateAtSelectedNominalSpeedLevel);
-  bool isRatedAirFlowRateAtSelectedNominalSpeedLevelAutosized() const;
-  void autosizeRatedAirFlowRateAtSelectedNominalSpeedLevel();
-  boost::optional<double> autosizedRatedAirFlowRateAtSelectedNominalSpeedLevel() const;
+      boost::optional<double> ratedAirFlowRateAtSelectedNominalSpeedLevel() const;
+      bool setRatedAirFlowRateAtSelectedNominalSpeedLevel(double ratedAirFlowRateAtSelectedNominalSpeedLevel);
+      bool isRatedAirFlowRateAtSelectedNominalSpeedLevelAutosized() const;
+      void autosizeRatedAirFlowRateAtSelectedNominalSpeedLevel();
+      boost::optional<double> autosizedRatedAirFlowRateAtSelectedNominalSpeedLevel() const;
 
-  boost::optional<double> ratedWaterFlowRateAtSelectedNominalSpeedLevel() const;
-  bool setRatedWaterFlowRateAtSelectedNominalSpeedLevel(double ratedWaterFlowRateAtSelectedNominalSpeedLevel);
-  bool isRatedWaterFlowRateAtSelectedNominalSpeedLevelAutosized() const;
-  void autosizeRatedWaterFlowRateAtSelectedNominalSpeedLevel();
+      boost::optional<double> ratedWaterFlowRateAtSelectedNominalSpeedLevel() const;
+      bool setRatedWaterFlowRateAtSelectedNominalSpeedLevel(double ratedWaterFlowRateAtSelectedNominalSpeedLevel);
+      bool isRatedWaterFlowRateAtSelectedNominalSpeedLevelAutosized() const;
+      void autosizeRatedWaterFlowRateAtSelectedNominalSpeedLevel();
 
-  boost::optional<double> autosizedRatedWaterFlowRateAtSelectedNominalSpeedLevel() const;
+      boost::optional<double> autosizedRatedWaterFlowRateAtSelectedNominalSpeedLevel() const;
 
-  Curve energyPartLoadFractionCurve() const;
-  bool setEnergyPartLoadFractionCurve(const Curve& curve);
+      Curve energyPartLoadFractionCurve() const;
+      bool setEnergyPartLoadFractionCurve(const Curve& curve);
 
-  std::vector<CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData> speeds() const;
-  bool addSpeed(const CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData& speed);
-  void removeSpeed(const CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData& speed);
-  void removeAllSpeeds();
+      std::vector<CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData> speeds() const;
+      bool addSpeed(const CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData& speed);
+      void removeSpeed(const CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData& speed);
+      void removeAllSpeeds();
 
-  AirflowNetworkDistributionComponentCoil getAirflowNetworkEquivalentDuct(double length, double diameter);
-  boost::optional<AirflowNetworkDistributionComponentCoil> airflowNetworkEquivalentDuct() const;
+      AirflowNetworkDistributionComponentCoil getAirflowNetworkEquivalentDuct(double length, double diameter);
+      boost::optional<AirflowNetworkDistributionComponentCoil> airflowNetworkEquivalentDuct() const;
 
-  std::vector<ModelObject> children() const override;
-  std::vector<IdfObject> remove() override;
+      std::vector<ModelObject> children() const override;
+      std::vector<IdfObject> remove() override;
 
-  void setConstructorFieldDefaults();
-};
+      void setConstructorFieldDefaults();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

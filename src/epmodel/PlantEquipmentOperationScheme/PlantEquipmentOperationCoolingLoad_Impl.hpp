@@ -28,7 +28,6 @@ namespace epmodel {
       PlantEquipmentOperationCoolingLoad_Impl(const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model, bool keepHandle);
       PlantEquipmentOperationCoolingLoad_Impl(const PlantEquipmentOperationCoolingLoad_Impl& other, Model_Impl* model, bool keepHandle);
       virtual ~PlantEquipmentOperationCoolingLoad_Impl() override = default;
-
     };
 
   }  // namespace detail

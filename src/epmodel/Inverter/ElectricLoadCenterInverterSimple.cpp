@@ -15,73 +15,73 @@
 namespace openstudio {
 namespace epmodel {
 
-ElectricLoadCenterInverterSimple::ElectricLoadCenterInverterSimple(const Model& model)
-  : ModelObject(ElectricLoadCenterInverterSimple::iddObjectType(), model) {}
+  ElectricLoadCenterInverterSimple::ElectricLoadCenterInverterSimple(const Model& model)
+    : ModelObject(ElectricLoadCenterInverterSimple::iddObjectType(), model) {}
 
-ElectricLoadCenterInverterSimple::ElectricLoadCenterInverterSimple(std::shared_ptr<detail::ElectricLoadCenterInverterSimple_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  ElectricLoadCenterInverterSimple::ElectricLoadCenterInverterSimple(std::shared_ptr<detail::ElectricLoadCenterInverterSimple_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType ElectricLoadCenterInverterSimple::iddObjectType() {
-  return IddObjectType::ElectricLoadCenter_Inverter_Simple;
-}
+  IddObjectType ElectricLoadCenterInverterSimple::iddObjectType() {
+    return IddObjectType::ElectricLoadCenter_Inverter_Simple;
+  }
 
-boost::optional<double> ElectricLoadCenterInverterSimple::radiativeFraction() const {
-  return getImpl<detail::ElectricLoadCenterInverterSimple_Impl>()->radiativeFraction();
-}
+  boost::optional<double> ElectricLoadCenterInverterSimple::radiativeFraction() const {
+    return getImpl<detail::ElectricLoadCenterInverterSimple_Impl>()->radiativeFraction();
+  }
 
-bool ElectricLoadCenterInverterSimple::setRadiativeFraction(double radiativeFraction) {
-  return getImpl<detail::ElectricLoadCenterInverterSimple_Impl>()->setRadiativeFraction(radiativeFraction);
-}
+  bool ElectricLoadCenterInverterSimple::setRadiativeFraction(double radiativeFraction) {
+    return getImpl<detail::ElectricLoadCenterInverterSimple_Impl>()->setRadiativeFraction(radiativeFraction);
+  }
 
-void ElectricLoadCenterInverterSimple::resetRadiativeFraction() {
-  getImpl<detail::ElectricLoadCenterInverterSimple_Impl>()->resetRadiativeFraction();
-}
+  void ElectricLoadCenterInverterSimple::resetRadiativeFraction() {
+    getImpl<detail::ElectricLoadCenterInverterSimple_Impl>()->resetRadiativeFraction();
+  }
 
-boost::optional<double> ElectricLoadCenterInverterSimple::inverterEfficiency() const {
-  return getImpl<detail::ElectricLoadCenterInverterSimple_Impl>()->inverterEfficiency();
-}
+  boost::optional<double> ElectricLoadCenterInverterSimple::inverterEfficiency() const {
+    return getImpl<detail::ElectricLoadCenterInverterSimple_Impl>()->inverterEfficiency();
+  }
 
-bool ElectricLoadCenterInverterSimple::setInverterEfficiency(double inverterEfficiency) {
-  return getImpl<detail::ElectricLoadCenterInverterSimple_Impl>()->setInverterEfficiency(inverterEfficiency);
-}
+  bool ElectricLoadCenterInverterSimple::setInverterEfficiency(double inverterEfficiency) {
+    return getImpl<detail::ElectricLoadCenterInverterSimple_Impl>()->setInverterEfficiency(inverterEfficiency);
+  }
 
-void ElectricLoadCenterInverterSimple::resetInverterEfficiency() {
-  getImpl<detail::ElectricLoadCenterInverterSimple_Impl>()->resetInverterEfficiency();
-}
+  void ElectricLoadCenterInverterSimple::resetInverterEfficiency() {
+    getImpl<detail::ElectricLoadCenterInverterSimple_Impl>()->resetInverterEfficiency();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-boost::optional<double> ElectricLoadCenterInverterSimple_Impl::radiativeFraction() const {
-  return getDouble(openstudio::ElectricLoadCenter_Inverter_SimpleFields::RadiativeFraction, true);
-}
+    boost::optional<double> ElectricLoadCenterInverterSimple_Impl::radiativeFraction() const {
+      return getDouble(openstudio::ElectricLoadCenter_Inverter_SimpleFields::RadiativeFraction, true);
+    }
 
-bool ElectricLoadCenterInverterSimple_Impl::setRadiativeFraction(double radiativeFraction) {
-  const bool result = setDouble(openstudio::ElectricLoadCenter_Inverter_SimpleFields::RadiativeFraction, radiativeFraction);
-  return result;
-}
+    bool ElectricLoadCenterInverterSimple_Impl::setRadiativeFraction(double radiativeFraction) {
+      const bool result = setDouble(openstudio::ElectricLoadCenter_Inverter_SimpleFields::RadiativeFraction, radiativeFraction);
+      return result;
+    }
 
-void ElectricLoadCenterInverterSimple_Impl::resetRadiativeFraction() {
-  OS_ASSERT(setString(openstudio::ElectricLoadCenter_Inverter_SimpleFields::RadiativeFraction, ""));
-}
+    void ElectricLoadCenterInverterSimple_Impl::resetRadiativeFraction() {
+      OS_ASSERT(setString(openstudio::ElectricLoadCenter_Inverter_SimpleFields::RadiativeFraction, ""));
+    }
 
-boost::optional<double> ElectricLoadCenterInverterSimple_Impl::inverterEfficiency() const {
-  return getDouble(openstudio::ElectricLoadCenter_Inverter_SimpleFields::InverterEfficiency, true);
-}
+    boost::optional<double> ElectricLoadCenterInverterSimple_Impl::inverterEfficiency() const {
+      return getDouble(openstudio::ElectricLoadCenter_Inverter_SimpleFields::InverterEfficiency, true);
+    }
 
-bool ElectricLoadCenterInverterSimple_Impl::setInverterEfficiency(double inverterEfficiency) {
-  const bool result = setDouble(openstudio::ElectricLoadCenter_Inverter_SimpleFields::InverterEfficiency, inverterEfficiency);
-  return result;
-}
+    bool ElectricLoadCenterInverterSimple_Impl::setInverterEfficiency(double inverterEfficiency) {
+      const bool result = setDouble(openstudio::ElectricLoadCenter_Inverter_SimpleFields::InverterEfficiency, inverterEfficiency);
+      return result;
+    }
 
-void ElectricLoadCenterInverterSimple_Impl::resetInverterEfficiency() {
-  OS_ASSERT(setString(openstudio::ElectricLoadCenter_Inverter_SimpleFields::InverterEfficiency, ""));
-}
+    void ElectricLoadCenterInverterSimple_Impl::resetInverterEfficiency() {
+      OS_ASSERT(setString(openstudio::ElectricLoadCenter_Inverter_SimpleFields::InverterEfficiency, ""));
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

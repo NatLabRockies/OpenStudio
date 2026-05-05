@@ -13,35 +13,35 @@ namespace epmodel {
   class Model;
   class AirLoopHVACOutdoorAirSystem;
   class PlantLoop;
-namespace detail {
-  class Model_Impl;
-}  // namespace detail
+  namespace detail {
+    class Model_Impl;
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API Node_Impl : public StraightComponent_Impl
-{
- public:
-  Node_Impl(const openstudio::IdfObject& idfObject, Model_Impl* model, bool keepHandle);
-  Node_Impl(const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model, bool keepHandle);
-  Node_Impl(const Node_Impl& other, Model_Impl* model, bool keepHandle);
-  virtual ~Node_Impl() override = default;
+    class EPMODEL_API Node_Impl : public StraightComponent_Impl
+    {
+     public:
+      Node_Impl(const openstudio::IdfObject& idfObject, Model_Impl* model, bool keepHandle);
+      Node_Impl(const openstudio::detail::WorkspaceObject_Impl& other, Model_Impl* model, bool keepHandle);
+      Node_Impl(const Node_Impl& other, Model_Impl* model, bool keepHandle);
+      virtual ~Node_Impl() override = default;
 
-  boost::optional<AirLoopHVAC> airLoopHVAC() const override;
-  boost::optional<PlantLoop> plantLoop() const override;
-  boost::optional<AirLoopHVACOutdoorAirSystem> airLoopHVACOutdoorAirSystem() const;
-  boost::optional<ModelObject> inletModelObject() const override;
-  boost::optional<ModelObject> outletModelObject() const override;
+      boost::optional<AirLoopHVAC> airLoopHVAC() const override;
+      boost::optional<PlantLoop> plantLoop() const override;
+      boost::optional<AirLoopHVACOutdoorAirSystem> airLoopHVACOutdoorAirSystem() const;
+      boost::optional<ModelObject> inletModelObject() const override;
+      boost::optional<ModelObject> outletModelObject() const override;
 
-  unsigned inletPort() const override;
-  unsigned outletPort() const override;
-};
+      unsigned inletPort() const override;
+      unsigned outletPort() const override;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

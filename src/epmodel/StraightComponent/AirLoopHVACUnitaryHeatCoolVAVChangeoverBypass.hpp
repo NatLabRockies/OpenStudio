@@ -15,11 +15,11 @@
 namespace openstudio {
 namespace epmodel {
 
-	  class Model;
-	  class Node;
-    class HVACComponent;
-    class ModelObject;
-    class Schedule;
+  class Model;
+  class Node;
+  class HVACComponent;
+  class ModelObject;
+  class Schedule;
 
   namespace detail {
     class AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl;
@@ -47,27 +47,27 @@ namespace epmodel {
     bool addToNode(Node& node);
 
     // Schema Alignment Notes:
-	    // - Status: Partial Parity. The core airflow/control scalars and direct object-link fields are aligned, and the owned internal air path is now maintained through parent-owned epmodel nodes.
+    // - Status: Partial Parity. The core airflow/control scalars and direct object-link fields are aligned, and the owned internal air path is now maintained through parent-owned epmodel nodes.
     // - Canonical Counterpart: openstudio::model::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.
-      // - Implemented Parity: Availability schedule, outdoor-air-flow-rate multiplier schedule, supply fan,
-      //   supply-air-fan operating mode schedule, heating coil, cooling coil, and the scalar airflow/control fields preserve the main
-      //   canonical wrapper contract. The relationship constructor and child traversal now match the canonical wrapper's owned-component slice.
-      //   The owned fan/cooling/heating chain also shares a stable parent-maintained air path, with direct
-      //   access to the meaningful outlet node roles on the compound.
-	    // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are additive epmodel conveniences
-      //   for the owned serial air path. Node names and plenum-or-mixer topology conveniences beyond that owned chain remain intentionally
-      //   omitted.
-	    // - Field/Storage Mapping: Scalar values map directly to EnergyPlus unitary-system flow and control fields, while schedule, fan/coil,
-      //   and internal-node relationships are explicit parent-owned object links in epmodel.
-	    // - Evidence: `src/model/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.hpp`, `src/model/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.cpp`, and `src/epmodel/test/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_GTest.cpp`.
-	    // - Remaining Parity Work: Add the omitted node and plenum-link helpers only if the canonical wrapper still exposes them directly.
-      boost::optional<Schedule> availabilitySchedule() const;
-      bool setAvailabilitySchedule(Schedule& schedule);
-      void resetAvailabilitySchedule();
+    // - Implemented Parity: Availability schedule, outdoor-air-flow-rate multiplier schedule, supply fan,
+    //   supply-air-fan operating mode schedule, heating coil, cooling coil, and the scalar airflow/control fields preserve the main
+    //   canonical wrapper contract. The relationship constructor and child traversal now match the canonical wrapper's owned-component slice.
+    //   The owned fan/cooling/heating chain also shares a stable parent-maintained air path, with direct
+    //   access to the meaningful outlet node roles on the compound.
+    // - Documented Delta: `fanOutletNode()`, `coolingCoilOutletNode()`, and `heatingCoilOutletNode()` are additive epmodel conveniences
+    //   for the owned serial air path. Node names and plenum-or-mixer topology conveniences beyond that owned chain remain intentionally
+    //   omitted.
+    // - Field/Storage Mapping: Scalar values map directly to EnergyPlus unitary-system flow and control fields, while schedule, fan/coil,
+    //   and internal-node relationships are explicit parent-owned object links in epmodel.
+    // - Evidence: `src/model/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.hpp`, `src/model/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.cpp`, `src/energyplus/ForwardTranslator/ForwardTranslateAirLoopHVACUnitaryHeatCoolVAVChangeoverBypass.cpp`, and `src/epmodel/test/AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_GTest.cpp`.
+    // - Remaining Parity Work: Add the omitted node and plenum-link helpers only if the canonical wrapper still exposes them directly.
+    boost::optional<Schedule> availabilitySchedule() const;
+    bool setAvailabilitySchedule(Schedule& schedule);
+    void resetAvailabilitySchedule();
 
-	    boost::optional<double> systemAirFlowRateDuringCoolingOperation() const;
-	    bool setSystemAirFlowRateDuringCoolingOperation(double systemAirFlowRateDuringCoolingOperation);
-	    bool isSystemAirFlowRateDuringCoolingOperationAutosized() const;
+    boost::optional<double> systemAirFlowRateDuringCoolingOperation() const;
+    bool setSystemAirFlowRateDuringCoolingOperation(double systemAirFlowRateDuringCoolingOperation);
+    bool isSystemAirFlowRateDuringCoolingOperationAutosized() const;
     void autosizeSystemAirFlowRateDuringCoolingOperation();
 
     boost::optional<double> systemAirFlowRateDuringHeatingOperation() const;
@@ -90,37 +90,37 @@ namespace epmodel {
     bool isOutdoorAirFlowRateDuringHeatingOperationAutosized() const;
     void autosizeOutdoorAirFlowRateDuringHeatingOperation();
 
-	    boost::optional<double> outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
-	    bool setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(double outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded);
-	    bool isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const;
-	    void autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
+    boost::optional<double> outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
+    bool setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(double outdoorAirFlowRateWhenNoCoolingorHeatingisNeeded);
+    bool isOutdoorAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const;
+    void autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded();
 
-      boost::optional<Schedule> outdoorAirFlowRateMultiplierSchedule() const;
-      bool setOutdoorAirFlowRateMultiplierSchedule(Schedule& outdoorAirFlowRateMultiplierSchedule);
-      void resetOutdoorAirFlowRateMultiplierSchedule();
+    boost::optional<Schedule> outdoorAirFlowRateMultiplierSchedule() const;
+    bool setOutdoorAirFlowRateMultiplierSchedule(Schedule& outdoorAirFlowRateMultiplierSchedule);
+    void resetOutdoorAirFlowRateMultiplierSchedule();
 
-      HVACComponent supplyAirFan() const;
-      bool setSupplyAirFan(const HVACComponent& fansCVandOnOff);
+    HVACComponent supplyAirFan() const;
+    bool setSupplyAirFan(const HVACComponent& fansCVandOnOff);
 
-	    std::string supplyAirFanPlacement() const;
-	    bool setSupplyAirFanPlacement(const std::string& supplyAirFanPlacement);
+    std::string supplyAirFanPlacement() const;
+    bool setSupplyAirFanPlacement(const std::string& supplyAirFanPlacement);
 
-      boost::optional<Schedule> supplyAirFanOperatingModeSchedule() const;
-      bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
-      void resetSupplyAirFanOperatingModeSchedule();
+    boost::optional<Schedule> supplyAirFanOperatingModeSchedule() const;
+    bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
+    void resetSupplyAirFanOperatingModeSchedule();
 
-      HVACComponent coolingCoil() const;
-      bool setCoolingCoil(const HVACComponent& coolingCoilName);
+    HVACComponent coolingCoil() const;
+    bool setCoolingCoil(const HVACComponent& coolingCoilName);
 
-      HVACComponent heatingCoil() const;
-      bool setHeatingCoil(const HVACComponent& heatingCoilName);
+    HVACComponent heatingCoil() const;
+    bool setHeatingCoil(const HVACComponent& heatingCoilName);
 
-      boost::optional<Node> fanOutletNode() const;
-      boost::optional<Node> coolingCoilOutletNode() const;
-      boost::optional<Node> heatingCoilOutletNode() const;
+    boost::optional<Node> fanOutletNode() const;
+    boost::optional<Node> coolingCoilOutletNode() const;
+    boost::optional<Node> heatingCoilOutletNode() const;
 
-	    std::string priorityControlMode() const;
-	    bool setPriorityControlMode(const std::string& priorityControlMode);
+    std::string priorityControlMode() const;
+    bool setPriorityControlMode(const std::string& priorityControlMode);
 
     double minimumOutletAirTemperatureDuringCoolingOperation() const;
     bool setMinimumOutletAirTemperatureDuringCoolingOperation(double minimumOutletAirTemperatureDuringCoolingOperation);
@@ -131,8 +131,8 @@ namespace epmodel {
     std::string dehumidificationControlType() const;
     bool setDehumidificationControlType(const std::string& dehumidificationControlType);
 
-      double minimumRuntimeBeforeOperatingModeChange() const;
-      bool setMinimumRuntimeBeforeOperatingModeChange(double runtime);
+    double minimumRuntimeBeforeOperatingModeChange() const;
+    bool setMinimumRuntimeBeforeOperatingModeChange(double runtime);
 
    protected:
     using ImplType = detail::AirLoopHVACUnitaryHeatCoolVAVChangeoverBypass_Impl;

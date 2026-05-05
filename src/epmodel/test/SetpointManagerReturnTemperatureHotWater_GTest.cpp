@@ -30,9 +30,9 @@ TEST_F(EPModelFixture, SetpointManagerReturnTemperatureHotWater_ScalarAccessors_
               != returnTemperatureSetpointInputTypeValues.cend());
   EXPECT_TRUE(std::find(returnTemperatureSetpointInputTypeValues.cbegin(), returnTemperatureSetpointInputTypeValues.cend(), "Scheduled")
               != returnTemperatureSetpointInputTypeValues.cend());
-  EXPECT_TRUE(std::find(returnTemperatureSetpointInputTypeValues.cbegin(), returnTemperatureSetpointInputTypeValues.cend(),
-                        "ReturnTemperatureSetpoint")
-              != returnTemperatureSetpointInputTypeValues.cend());
+  EXPECT_TRUE(
+    std::find(returnTemperatureSetpointInputTypeValues.cbegin(), returnTemperatureSetpointInputTypeValues.cend(), "ReturnTemperatureSetpoint")
+    != returnTemperatureSetpointInputTypeValues.cend());
 
   EXPECT_DOUBLE_EQ(77.0, setpointManager.minimumSupplyTemperatureSetpoint());
   EXPECT_TRUE(setpointManager.isMinimumSupplyTemperatureSetpointDefaulted());

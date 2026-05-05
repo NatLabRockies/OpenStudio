@@ -10,21 +10,21 @@
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API FaultModelTemperatureSensorOffsetChillerSupplyWater_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~FaultModelTemperatureSensorOffsetChillerSupplyWater_Impl() override = default;
+    class EPMODEL_API FaultModelTemperatureSensorOffsetChillerSupplyWater_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~FaultModelTemperatureSensorOffsetChillerSupplyWater_Impl() override = default;
 
-  double referenceSensorOffset() const;
-  bool isReferenceSensorOffsetDefaulted() const;
-  bool setReferenceSensorOffset(double referenceSensorOffset);
-  void resetReferenceSensorOffset();
-};
+      double referenceSensorOffset() const;
+      bool isReferenceSensorOffsetDefaulted() const;
+      bool setReferenceSensorOffset(double referenceSensorOffset);
+      void resetReferenceSensorOffset();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

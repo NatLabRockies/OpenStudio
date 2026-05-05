@@ -13,9 +13,9 @@
 namespace openstudio {
 namespace epmodel {
 
-class Node;
-class Schedule;
-class AirflowNetworkDistributionComponentCoil;
+  class Node;
+  class Schedule;
+  class AirflowNetworkDistributionComponentCoil;
 
   namespace detail {
 

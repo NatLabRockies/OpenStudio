@@ -31,8 +31,8 @@ namespace epmodel {
       void doCanonicalize(LoadContext& context) override;
       std::vector<ModelObject> children() const override;
 
-	      std::vector<std::string> validFanPlacementValues() const;
-	      std::vector<std::string> validDehumidificationControlTypeValues() const;
+      std::vector<std::string> validFanPlacementValues() const;
+      std::vector<std::string> validDehumidificationControlTypeValues() const;
 
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);
@@ -53,8 +53,8 @@ namespace epmodel {
       boost::optional<double> supplyAirFlowRateWhenNoCoolingorHeatingisNeeded() const;
       bool isSupplyAirFlowRateWhenNoCoolingorHeatingisNeededAutosized() const;
       bool setSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded(double supplyAirFlowRateWhenNoCoolingorHeatingisNeeded);
-	      void resetSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded();
-	      void autosizeSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded();
+      void resetSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded();
+      void autosizeSupplyAirFlowRateWhenNoCoolingorHeatingisNeeded();
 
       boost::optional<ThermalZone> controllingZone() const;
       bool setControllingZone(ThermalZone& zone);
@@ -91,14 +91,14 @@ namespace epmodel {
       // Fan placement selection
       std::string fanPlacement() const;
       bool isFanPlacementDefaulted() const;
-	      bool setFanPlacement(const std::string& fanPlacement);
-	      void resetFanPlacement();
+      bool setFanPlacement(const std::string& fanPlacement);
+      void resetFanPlacement();
 
       boost::optional<Schedule> supplyAirFanOperatingModeSchedule() const;
       bool setSupplyAirFanOperatingModeSchedule(Schedule& schedule);
       void resetSupplyAirFanOperatingModeSchedule();
 
-	      // Dehumidification control
+      // Dehumidification control
       std::string dehumidificationControlType() const;
       bool isDehumidificationControlTypeDefaulted() const;
       bool setDehumidificationControlType(const std::string& dehumidificationControlType);

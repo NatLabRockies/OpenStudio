@@ -81,18 +81,18 @@ inline std::string rubyOpenStudioDir() {
 namespace openstudio {
 namespace detail {
 
-inline constexpr int cx_openStudioVersionMajor() {
-  return ${PROJECT_VERSION_MAJOR};
-}
-inline constexpr int cx_openStudioVersionMinor() {
-  return ${PROJECT_VERSION_MINOR};
-}
-inline constexpr int cx_openStudioVersionPatch() {
-  return ${PROJECT_VERSION_PATCH};
-}
-inline constexpr std::string_view cx_openStudioVersion() {
-  return "${OPENSTUDIO_VERSION}";
-}
+  inline constexpr int cx_openStudioVersionMajor() {
+    return ${PROJECT_VERSION_MAJOR};
+  }
+  inline constexpr int cx_openStudioVersionMinor() {
+    return ${PROJECT_VERSION_MINOR};
+  }
+  inline constexpr int cx_openStudioVersionPatch() {
+    return ${PROJECT_VERSION_PATCH};
+  }
+  inline constexpr std::string_view cx_openStudioVersion() {
+    return "${OPENSTUDIO_VERSION}";
+  }
 
 }  // namespace detail
 }  // namespace openstudio

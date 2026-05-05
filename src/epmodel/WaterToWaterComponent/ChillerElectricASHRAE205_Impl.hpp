@@ -12,14 +12,14 @@
 
 namespace openstudio {
 namespace epmodel {
-class Node;
-class PlantLoop;
-class Schedule;
-class ThermalZone;
+  class Node;
+  class PlantLoop;
+  class Schedule;
+  class ThermalZone;
 
   namespace detail {
 
-  class EPMODEL_API ChillerElectricASHRAE205_Impl : public WaterToWaterComponent_Impl
+    class EPMODEL_API ChillerElectricASHRAE205_Impl : public WaterToWaterComponent_Impl
     {
      public:
       using WaterToWaterComponent_Impl::WaterToWaterComponent_Impl;

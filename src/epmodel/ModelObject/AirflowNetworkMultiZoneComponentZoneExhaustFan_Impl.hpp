@@ -11,25 +11,25 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirflowNetworkMultiZoneComponentZoneExhaustFan_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirflowNetworkMultiZoneComponentZoneExhaustFan_Impl() override = default;
+    class EPMODEL_API AirflowNetworkMultiZoneComponentZoneExhaustFan_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirflowNetworkMultiZoneComponentZoneExhaustFan_Impl() override = default;
 
-  double airMassFlowCoefficientWhentheZoneExhaustFanisOffatReferenceConditions() const;
-  bool setAirMassFlowCoefficientWhentheZoneExhaustFanisOffatReferenceConditions(
-    double airMassFlowCoefficientWhentheZoneExhaustFanisOffatReferenceConditions);
+      double airMassFlowCoefficientWhentheZoneExhaustFanisOffatReferenceConditions() const;
+      bool setAirMassFlowCoefficientWhentheZoneExhaustFanisOffatReferenceConditions(
+        double airMassFlowCoefficientWhentheZoneExhaustFanisOffatReferenceConditions);
 
-  double airMassFlowExponentWhentheZoneExhaustFanisOff() const;
-  bool isAirMassFlowExponentWhentheZoneExhaustFanisOffDefaulted() const;
-  bool setAirMassFlowExponentWhentheZoneExhaustFanisOff(double airMassFlowExponentWhentheZoneExhaustFanisOff);
-  void resetAirMassFlowExponentWhentheZoneExhaustFanisOff();
-};
+      double airMassFlowExponentWhentheZoneExhaustFanisOff() const;
+      bool isAirMassFlowExponentWhentheZoneExhaustFanisOffDefaulted() const;
+      bool setAirMassFlowExponentWhentheZoneExhaustFanisOff(double airMassFlowExponentWhentheZoneExhaustFanisOff);
+      void resetAirMassFlowExponentWhentheZoneExhaustFanisOff();
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

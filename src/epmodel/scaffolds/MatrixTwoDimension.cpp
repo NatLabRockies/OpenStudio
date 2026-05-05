@@ -15,61 +15,61 @@
 namespace openstudio {
 namespace epmodel {
 
-MatrixTwoDimension::MatrixTwoDimension(const Model& model) : ModelObject(MatrixTwoDimension::iddObjectType(), model) {}
+  MatrixTwoDimension::MatrixTwoDimension(const Model& model) : ModelObject(MatrixTwoDimension::iddObjectType(), model) {}
 
-MatrixTwoDimension::MatrixTwoDimension(std::shared_ptr<detail::MatrixTwoDimension_Impl> impl) : ModelObject(std::move(impl)) {}
+  MatrixTwoDimension::MatrixTwoDimension(std::shared_ptr<detail::MatrixTwoDimension_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType MatrixTwoDimension::iddObjectType() {
-  return IddObjectType::Matrix_TwoDimension;
-}
+  IddObjectType MatrixTwoDimension::iddObjectType() {
+    return IddObjectType::Matrix_TwoDimension;
+  }
 
-int MatrixTwoDimension::numberofRows() const {
-  return getImpl<detail::MatrixTwoDimension_Impl>()->numberofRows();
-}
+  int MatrixTwoDimension::numberofRows() const {
+    return getImpl<detail::MatrixTwoDimension_Impl>()->numberofRows();
+  }
 
-bool MatrixTwoDimension::setNumberofRows(int numberofRows) {
-  return getImpl<detail::MatrixTwoDimension_Impl>()->setNumberofRows(numberofRows);
-}
+  bool MatrixTwoDimension::setNumberofRows(int numberofRows) {
+    return getImpl<detail::MatrixTwoDimension_Impl>()->setNumberofRows(numberofRows);
+  }
 
-int MatrixTwoDimension::numberofColumns() const {
-  return getImpl<detail::MatrixTwoDimension_Impl>()->numberofColumns();
-}
+  int MatrixTwoDimension::numberofColumns() const {
+    return getImpl<detail::MatrixTwoDimension_Impl>()->numberofColumns();
+  }
 
-bool MatrixTwoDimension::setNumberofColumns(int numberofColumns) {
-  return getImpl<detail::MatrixTwoDimension_Impl>()->setNumberofColumns(numberofColumns);
-}
+  bool MatrixTwoDimension::setNumberofColumns(int numberofColumns) {
+    return getImpl<detail::MatrixTwoDimension_Impl>()->setNumberofColumns(numberofColumns);
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-int MatrixTwoDimension_Impl::numberofRows() const {
-  const auto value = getInt(openstudio::Matrix_TwoDimensionFields::NumberofRows, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    int MatrixTwoDimension_Impl::numberofRows() const {
+      const auto value = getInt(openstudio::Matrix_TwoDimensionFields::NumberofRows, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool MatrixTwoDimension_Impl::setNumberofRows(int numberofRows) {
-  const bool result = setInt(openstudio::Matrix_TwoDimensionFields::NumberofRows, numberofRows);
-  OS_ASSERT(result);
-  return result;
-}
+    bool MatrixTwoDimension_Impl::setNumberofRows(int numberofRows) {
+      const bool result = setInt(openstudio::Matrix_TwoDimensionFields::NumberofRows, numberofRows);
+      OS_ASSERT(result);
+      return result;
+    }
 
-int MatrixTwoDimension_Impl::numberofColumns() const {
-  const auto value = getInt(openstudio::Matrix_TwoDimensionFields::NumberofColumns, true);
-  OS_ASSERT(value);
-  return *value;
-}
+    int MatrixTwoDimension_Impl::numberofColumns() const {
+      const auto value = getInt(openstudio::Matrix_TwoDimensionFields::NumberofColumns, true);
+      OS_ASSERT(value);
+      return *value;
+    }
 
-bool MatrixTwoDimension_Impl::setNumberofColumns(int numberofColumns) {
-  const bool result = setInt(openstudio::Matrix_TwoDimensionFields::NumberofColumns, numberofColumns);
-  OS_ASSERT(result);
-  return result;
-}
+    bool MatrixTwoDimension_Impl::setNumberofColumns(int numberofColumns) {
+      const bool result = setInt(openstudio::Matrix_TwoDimensionFields::NumberofColumns, numberofColumns);
+      OS_ASSERT(result);
+      return result;
+    }
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

@@ -11,24 +11,24 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AvailabilityManagerDifferentialThermostat_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AvailabilityManagerDifferentialThermostat_Impl() override = default;
+    class EPMODEL_API AvailabilityManagerDifferentialThermostat_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AvailabilityManagerDifferentialThermostat_Impl() override = default;
 
-  // Temperature Difference On Limit accessors
-  double temperatureDifferenceOnLimit() const;
-  bool setTemperatureDifferenceOnLimit(double temperatureDifferenceOnLimit);
+      // Temperature Difference On Limit accessors
+      double temperatureDifferenceOnLimit() const;
+      bool setTemperatureDifferenceOnLimit(double temperatureDifferenceOnLimit);
 
-  // Temperature Difference Off Limit accessors
-  double temperatureDifferenceOffLimit() const;
-  bool setTemperatureDifferenceOffLimit(double temperatureDifferenceOffLimit);
-};
+      // Temperature Difference Off Limit accessors
+      double temperatureDifferenceOffLimit() const;
+      bool setTemperatureDifferenceOffLimit(double temperatureDifferenceOffLimit);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -13,13 +13,13 @@
 namespace openstudio {
 namespace epmodel {
 
-ParametricRunControl::ParametricRunControl(const Model& model) : ModelObject(ParametricRunControl::iddObjectType(), model) {}
+  ParametricRunControl::ParametricRunControl(const Model& model) : ModelObject(ParametricRunControl::iddObjectType(), model) {}
 
-ParametricRunControl::ParametricRunControl(std::shared_ptr<detail::ParametricRunControl_Impl> impl) : ModelObject(std::move(impl)) {}
+  ParametricRunControl::ParametricRunControl(std::shared_ptr<detail::ParametricRunControl_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType ParametricRunControl::iddObjectType() {
-  return IddObjectType::Parametric_RunControl;
-}
+  IddObjectType ParametricRunControl::iddObjectType() {
+    return IddObjectType::Parametric_RunControl;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

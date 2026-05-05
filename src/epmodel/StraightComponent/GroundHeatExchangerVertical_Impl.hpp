@@ -11,8 +11,8 @@
 namespace openstudio {
 class WorkspaceObject;
 namespace epmodel {
-class ModelObject;
-namespace detail {
+  class ModelObject;
+  namespace detail {
 
     class EPMODEL_API GroundHeatExchangerVertical_Impl : public StraightComponent_Impl
     {

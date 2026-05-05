@@ -83,7 +83,7 @@ namespace epmodel {
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
     unsigned AirLoopHVACZoneMixer_Impl::outletPort() const {
       return static_cast<unsigned>(openstudio::AirLoopHVAC_ZoneMixerFields::OutletNodeName);

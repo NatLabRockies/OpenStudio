@@ -13,31 +13,30 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API SitePrecipitation_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~SitePrecipitation_Impl() override = default;
+    class EPMODEL_API SitePrecipitation_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~SitePrecipitation_Impl() override = default;
 
-  std::vector<std::string> precipitationModelTypeValues() const;
+      std::vector<std::string> precipitationModelTypeValues() const;
 
-  boost::optional<std::string> precipitationModelType() const;
-  bool setPrecipitationModelType(const std::string& precipitationModelType);
-  void resetPrecipitationModelType();
+      boost::optional<std::string> precipitationModelType() const;
+      bool setPrecipitationModelType(const std::string& precipitationModelType);
+      void resetPrecipitationModelType();
 
-  boost::optional<double> designLevelforTotalAnnualPrecipitation() const;
-  bool setDesignLevelforTotalAnnualPrecipitation(double designLevelforTotalAnnualPrecipitation);
-  void resetDesignLevelforTotalAnnualPrecipitation();
+      boost::optional<double> designLevelforTotalAnnualPrecipitation() const;
+      bool setDesignLevelforTotalAnnualPrecipitation(double designLevelforTotalAnnualPrecipitation);
+      void resetDesignLevelforTotalAnnualPrecipitation();
 
-  boost::optional<double> averageTotalAnnualPrecipitation() const;
-  bool setAverageTotalAnnualPrecipitation(double averageTotalAnnualPrecipitation);
-  void resetAverageTotalAnnualPrecipitation();
+      boost::optional<double> averageTotalAnnualPrecipitation() const;
+      bool setAverageTotalAnnualPrecipitation(double averageTotalAnnualPrecipitation);
+      void resetAverageTotalAnnualPrecipitation();
+    };
 
-};
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

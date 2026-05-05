@@ -12,46 +12,46 @@
 
 namespace openstudio {
 namespace epmodel {
-class AirLoopHVACOutdoorAirSystem;
-namespace detail {
+  class AirLoopHVACOutdoorAirSystem;
+  namespace detail {
 
-class EPMODEL_API WaterToAirComponent_Impl : public HVACComponent_Impl
-{
- public:
-  using HVACComponent_Impl::HVACComponent_Impl;
-  virtual ~WaterToAirComponent_Impl() override = default;
+    class EPMODEL_API WaterToAirComponent_Impl : public HVACComponent_Impl
+    {
+     public:
+      using HVACComponent_Impl::HVACComponent_Impl;
+      virtual ~WaterToAirComponent_Impl() override = default;
 
-  virtual unsigned airInletPort() const = 0;
-  virtual unsigned airOutletPort() const = 0;
+      virtual unsigned airInletPort() const = 0;
+      virtual unsigned airOutletPort() const = 0;
 
-  virtual boost::optional<ModelObject> airInletModelObject() const;
-  virtual boost::optional<ModelObject> airOutletModelObject() const;
+      virtual boost::optional<ModelObject> airInletModelObject() const;
+      virtual boost::optional<ModelObject> airOutletModelObject() const;
 
-  virtual unsigned waterInletPort() const = 0;
-  virtual unsigned waterOutletPort() const = 0;
+      virtual unsigned waterInletPort() const = 0;
+      virtual unsigned waterOutletPort() const = 0;
 
-  virtual boost::optional<ModelObject> waterInletModelObject() const;
-  virtual boost::optional<ModelObject> waterOutletModelObject() const;
+      virtual boost::optional<ModelObject> waterInletModelObject() const;
+      virtual boost::optional<ModelObject> waterOutletModelObject() const;
 
-  bool addToNode(Node& node) override;
-  bool addToSplitter(Splitter& splitter) override;
+      bool addToNode(Node& node) override;
+      bool addToSplitter(Splitter& splitter) override;
 
-  std::vector<IdfObject> remove() override;
+      std::vector<IdfObject> remove() override;
 
-  void disconnectWaterSide();
-  void disconnectAirSide();
-  void disconnect() override;
+      void disconnectWaterSide();
+      void disconnectAirSide();
+      void disconnect() override;
 
-  virtual bool removeFromAirLoopHVAC();
-  virtual bool removeFromPlantLoop();
+      virtual bool removeFromAirLoopHVAC();
+      virtual bool removeFromPlantLoop();
 
- private:
-  bool addToOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem, Node& node);
-  bool removeFromOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem);
-  bool insertOnBranch(Node& node, const Branch& branch, unsigned inletPort, unsigned outletPort);
-};
+     private:
+      bool addToOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem, Node& node);
+      bool removeFromOutdoorAirSystem(AirLoopHVACOutdoorAirSystem& oaSystem);
+      bool insertOnBranch(Node& node, const Branch& branch, unsigned inletPort, unsigned outletPort);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

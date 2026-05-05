@@ -423,8 +423,7 @@ namespace {
     if (const char* raw = std::getenv(kModelicaCompilerEnv)) {
       if (auto parsed = parseCompilerType(raw)) {
         if (*parsed != ModelicaCompilerType::OpenModelica) {
-          LOG_FREE(Warn, "ApplicationPathHelpers",
-                   fmt::format("Only OpenModelica is supported; ignoring {}='{}'", kModelicaCompilerEnv, raw));
+          LOG_FREE(Warn, "ApplicationPathHelpers", fmt::format("Only OpenModelica is supported; ignoring {}='{}'", kModelicaCompilerEnv, raw));
           return std::nullopt;
         }
         return parsed;
@@ -513,8 +512,7 @@ namespace {
       }
     }
 
-    LOG_FREE(Info, "ApplicationPathHelpers",
-             fmt::format("Modelica Buildings Library not found in {} entries", kModelicaPathEnv));
+    LOG_FREE(Info, "ApplicationPathHelpers", fmt::format("Modelica Buildings Library not found in {} entries", kModelicaPathEnv));
     return std::nullopt;
   }
 }  // namespace

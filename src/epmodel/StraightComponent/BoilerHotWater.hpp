@@ -15,115 +15,115 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class BoilerHotWater_Impl;
-}
+  namespace detail {
+    class BoilerHotWater_Impl;
+  }
 
-class EPMODEL_API BoilerHotWater : public StraightComponent
-{
- public:
-  explicit BoilerHotWater(const Model& model);
+  class EPMODEL_API BoilerHotWater : public StraightComponent
+  {
+   public:
+    explicit BoilerHotWater(const Model& model);
 
-  virtual ~BoilerHotWater() override = default;
-  BoilerHotWater(const BoilerHotWater& other) = default;
-  BoilerHotWater(BoilerHotWater&& other) = default;
-  BoilerHotWater& operator=(const BoilerHotWater&) = default;
-  BoilerHotWater& operator=(BoilerHotWater&&) = default;
+    virtual ~BoilerHotWater() override = default;
+    BoilerHotWater(const BoilerHotWater& other) = default;
+    BoilerHotWater(BoilerHotWater&& other) = default;
+    BoilerHotWater& operator=(const BoilerHotWater&) = default;
+    BoilerHotWater& operator=(BoilerHotWater&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> validFuelTypeValues();
-  static std::vector<std::string> validEfficiencyCurveTemperatureEvaluationVariableValues();
-  static std::vector<std::string> validBoilerFlowModeValues();
+    static std::vector<std::string> validFuelTypeValues();
+    static std::vector<std::string> validEfficiencyCurveTemperatureEvaluationVariableValues();
+    static std::vector<std::string> validBoilerFlowModeValues();
 
-  static std::vector<std::string> fuelTypeValues();
-  static std::vector<std::string> efficiencyCurveTemperatureEvaluationVariableValues();
-  static std::vector<std::string> boilerFlowModeValues();
+    static std::vector<std::string> fuelTypeValues();
+    static std::vector<std::string> efficiencyCurveTemperatureEvaluationVariableValues();
+    static std::vector<std::string> boilerFlowModeValues();
 
-  // Schema Alignment Notes:
-  // - Status: Scalar Parity. The canonical boiler-hot-water scalar surface is present, with one legacy flow-mode alias preserved for compatibility.
-  // - Canonical Counterpart: openstudio::model::BoilerHotWater.
-  // - Implemented Parity: The preserved scalar API matches the canonical fuel, capacity, efficiency, flow, and part-load accessors with matching autosize/default behavior.
-  // - Documented Delta: `setBoilerFlowMode("VariableFlow")` still normalizes to `LeavingSetpointModulated` to preserve legacy compatibility; node and curve helpers remain intentionally excluded.
-  // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Boiler:HotWater` scalar fields used by the forward translator.
-  // - Evidence: `src/model/BoilerHotWater.hpp`, `src/model/BoilerHotWater.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateBoilerHotWater.cpp`.
-  // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
-  std::string fuelType() const;
-  bool setFuelType(const std::string& fuelType);
+    // Schema Alignment Notes:
+    // - Status: Scalar Parity. The canonical boiler-hot-water scalar surface is present, with one legacy flow-mode alias preserved for compatibility.
+    // - Canonical Counterpart: openstudio::model::BoilerHotWater.
+    // - Implemented Parity: The preserved scalar API matches the canonical fuel, capacity, efficiency, flow, and part-load accessors with matching autosize/default behavior.
+    // - Documented Delta: `setBoilerFlowMode("VariableFlow")` still normalizes to `LeavingSetpointModulated` to preserve legacy compatibility; node and curve helpers remain intentionally excluded.
+    // - Field/Storage Mapping: These accessors map directly to EnergyPlus `Boiler:HotWater` scalar fields used by the forward translator.
+    // - Evidence: `src/model/BoilerHotWater.hpp`, `src/model/BoilerHotWater.cpp`, and `src/energyplus/ForwardTranslator/ForwardTranslateBoilerHotWater.cpp`.
+    // - Remaining Parity Work: Add the omitted relationship helpers without changing the preserved scalar signatures.
+    std::string fuelType() const;
+    bool setFuelType(const std::string& fuelType);
 
-  boost::optional<double> nominalCapacity() const;
-  bool isNominalCapacityAutosized() const;
-  bool setNominalCapacity(double nominalCapacity);
-  void resetNominalCapacity();
-  void autosizeNominalCapacity();
+    boost::optional<double> nominalCapacity() const;
+    bool isNominalCapacityAutosized() const;
+    bool setNominalCapacity(double nominalCapacity);
+    void resetNominalCapacity();
+    void autosizeNominalCapacity();
 
-  double nominalThermalEfficiency() const;
-  bool setNominalThermalEfficiency(double nominalThermalEfficiency);
+    double nominalThermalEfficiency() const;
+    bool setNominalThermalEfficiency(double nominalThermalEfficiency);
 
-  boost::optional<std::string> efficiencyCurveTemperatureEvaluationVariable() const;
-  bool setEfficiencyCurveTemperatureEvaluationVariable(const std::string& efficiencyCurveTemperatureEvaluationVariable);
-  void resetEfficiencyCurveTemperatureEvaluationVariable();
+    boost::optional<std::string> efficiencyCurveTemperatureEvaluationVariable() const;
+    bool setEfficiencyCurveTemperatureEvaluationVariable(const std::string& efficiencyCurveTemperatureEvaluationVariable);
+    void resetEfficiencyCurveTemperatureEvaluationVariable();
 
-  boost::optional<double> designWaterFlowRate() const;
-  bool isDesignWaterFlowRateAutosized() const;
-  bool setDesignWaterFlowRate(double designWaterFlowRate);
-  void resetDesignWaterFlowRate();
-  void autosizeDesignWaterFlowRate();
+    boost::optional<double> designWaterFlowRate() const;
+    bool isDesignWaterFlowRateAutosized() const;
+    bool setDesignWaterFlowRate(double designWaterFlowRate);
+    void resetDesignWaterFlowRate();
+    void autosizeDesignWaterFlowRate();
 
-  double minimumPartLoadRatio() const;
-  bool isMinimumPartLoadRatioDefaulted() const;
-  bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
-  void resetMinimumPartLoadRatio();
+    double minimumPartLoadRatio() const;
+    bool isMinimumPartLoadRatioDefaulted() const;
+    bool setMinimumPartLoadRatio(double minimumPartLoadRatio);
+    void resetMinimumPartLoadRatio();
 
-  double maximumPartLoadRatio() const;
-  bool isMaximumPartLoadRatioDefaulted() const;
-  bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
-  void resetMaximumPartLoadRatio();
+    double maximumPartLoadRatio() const;
+    bool isMaximumPartLoadRatioDefaulted() const;
+    bool setMaximumPartLoadRatio(double maximumPartLoadRatio);
+    void resetMaximumPartLoadRatio();
 
-  double optimumPartLoadRatio() const;
-  bool isOptimumPartLoadRatioDefaulted() const;
-  bool setOptimumPartLoadRatio(double optimumPartLoadRatio);
-  void resetOptimumPartLoadRatio();
+    double optimumPartLoadRatio() const;
+    bool isOptimumPartLoadRatioDefaulted() const;
+    bool setOptimumPartLoadRatio(double optimumPartLoadRatio);
+    void resetOptimumPartLoadRatio();
 
-  double waterOutletUpperTemperatureLimit() const;
-  bool isWaterOutletUpperTemperatureLimitDefaulted() const;
-  bool setWaterOutletUpperTemperatureLimit(double waterOutletUpperTemperatureLimit);
-  void resetWaterOutletUpperTemperatureLimit();
+    double waterOutletUpperTemperatureLimit() const;
+    bool isWaterOutletUpperTemperatureLimitDefaulted() const;
+    bool setWaterOutletUpperTemperatureLimit(double waterOutletUpperTemperatureLimit);
+    void resetWaterOutletUpperTemperatureLimit();
 
-  std::string boilerFlowMode() const;
-  bool isBoilerFlowModeDefaulted() const;
-  bool setBoilerFlowMode(const std::string& boilerFlowMode);
-  void resetBoilerFlowMode();
+    std::string boilerFlowMode() const;
+    bool isBoilerFlowModeDefaulted() const;
+    bool setBoilerFlowMode(const std::string& boilerFlowMode);
+    void resetBoilerFlowMode();
 
-  boost::optional<double> parasiticElectricLoad() const;
-  bool setParasiticElectricLoad(double parasiticElectricLoad);
-  void resetParasiticElectricLoad();
+    boost::optional<double> parasiticElectricLoad() const;
+    bool setParasiticElectricLoad(double parasiticElectricLoad);
+    void resetParasiticElectricLoad();
 
-  double onCycleParasiticElectricLoad() const;
-  bool setOnCycleParasiticElectricLoad(double onCycleParasiticElectricLoad);
+    double onCycleParasiticElectricLoad() const;
+    bool setOnCycleParasiticElectricLoad(double onCycleParasiticElectricLoad);
 
-  double sizingFactor() const;
-  bool isSizingFactorDefaulted() const;
-  bool setSizingFactor(double sizingFactor);
-  void resetSizingFactor();
+    double sizingFactor() const;
+    bool isSizingFactorDefaulted() const;
+    bool setSizingFactor(double sizingFactor);
+    void resetSizingFactor();
 
-  std::string endUseSubcategory() const;
-  bool setEndUseSubcategory(const std::string& endUseSubcategory);
+    std::string endUseSubcategory() const;
+    bool setEndUseSubcategory(const std::string& endUseSubcategory);
 
-  double offCycleParasiticFuelLoad() const;
-  bool setOffCycleParasiticFuelLoad(double offCycleParasiticFuelLoad);
+    double offCycleParasiticFuelLoad() const;
+    bool setOffCycleParasiticFuelLoad(double offCycleParasiticFuelLoad);
 
- protected:
-  using ImplType = detail::BoilerHotWater_Impl;
+   protected:
+    using ImplType = detail::BoilerHotWater_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit BoilerHotWater(std::shared_ptr<detail::BoilerHotWater_Impl> impl);
-};
+    explicit BoilerHotWater(std::shared_ptr<detail::BoilerHotWater_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

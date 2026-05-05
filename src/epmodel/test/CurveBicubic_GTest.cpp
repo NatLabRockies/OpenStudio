@@ -15,9 +15,7 @@ using namespace openstudio::epmodel;
 namespace {
 
 std::string firstNonEmpty(const std::vector<std::string>& values) {
-  auto it = std::find_if(values.begin(), values.end(), [](const auto& value) {
-    return !value.empty();
-  });
+  auto it = std::find_if(values.begin(), values.end(), [](const auto& value) { return !value.empty(); });
   if (it != values.end()) {
     return *it;
   }

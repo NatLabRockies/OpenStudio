@@ -13,15 +13,14 @@
 namespace openstudio {
 namespace epmodel {
 
-InfraredTransparentMaterial::InfraredTransparentMaterial(const Model& model)
-  : ModelObject(InfraredTransparentMaterial::iddObjectType(), model) {}
+  InfraredTransparentMaterial::InfraredTransparentMaterial(const Model& model) : ModelObject(InfraredTransparentMaterial::iddObjectType(), model) {}
 
-InfraredTransparentMaterial::InfraredTransparentMaterial(std::shared_ptr<detail::InfraredTransparentMaterial_Impl> impl)
-  : ModelObject(std::move(impl)) {}
+  InfraredTransparentMaterial::InfraredTransparentMaterial(std::shared_ptr<detail::InfraredTransparentMaterial_Impl> impl)
+    : ModelObject(std::move(impl)) {}
 
-IddObjectType InfraredTransparentMaterial::iddObjectType() {
-  return IddObjectType::Material_InfraredTransparent;
-}
+  IddObjectType InfraredTransparentMaterial::iddObjectType() {
+    return IddObjectType::Material_InfraredTransparent;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

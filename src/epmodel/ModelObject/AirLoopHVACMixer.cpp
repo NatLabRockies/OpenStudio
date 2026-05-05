@@ -13,13 +13,13 @@
 namespace openstudio {
 namespace epmodel {
 
-AirLoopHVACMixer::AirLoopHVACMixer(const Model& model) : ModelObject(AirLoopHVACMixer::iddObjectType(), model) {}
+  AirLoopHVACMixer::AirLoopHVACMixer(const Model& model) : ModelObject(AirLoopHVACMixer::iddObjectType(), model) {}
 
-AirLoopHVACMixer::AirLoopHVACMixer(std::shared_ptr<detail::AirLoopHVACMixer_Impl> impl) : ModelObject(std::move(impl)) {}
+  AirLoopHVACMixer::AirLoopHVACMixer(std::shared_ptr<detail::AirLoopHVACMixer_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType AirLoopHVACMixer::iddObjectType() {
-  return IddObjectType::AirLoopHVAC_Mixer;
-}
+  IddObjectType AirLoopHVACMixer::iddObjectType() {
+    return IddObjectType::AirLoopHVAC_Mixer;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

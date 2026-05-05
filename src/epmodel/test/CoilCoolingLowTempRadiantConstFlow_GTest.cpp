@@ -44,8 +44,10 @@ TEST_F(EPModelFixture, CoilCoolingLowTempRadiantConstFlow_PlantLoopTraversalProj
   EXPECT_FALSE(radiant.plantLoop());
 
   const auto demandComponents = plantLoop.demandComponents();
-  EXPECT_TRUE(std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == coolingCoil.handle(); }));
-  EXPECT_FALSE(std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == radiant.handle(); }));
+  EXPECT_TRUE(
+    std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == coolingCoil.handle(); }));
+  EXPECT_FALSE(
+    std::any_of(demandComponents.begin(), demandComponents.end(), [&](const auto& object) { return object.handle() == radiant.handle(); }));
 
   auto inletNode = coolingCoil.inletModelObject()->cast<Node>();
   ASSERT_TRUE(inletNode.outletModelObject());
@@ -146,7 +148,6 @@ TEST_F(EPModelFixture, CoilCoolingLowTempRadiantConstFlow_CondensationControlsWr
   EXPECT_EQ("SimpleOff", coolingCoil.condensationControlType());
   EXPECT_DOUBLE_EQ(1.0, coolingCoil.condensationControlDewpointOffset());
   ASSERT_TRUE(design->getString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::CondensationControlType, false));
-  EXPECT_TRUE(
-    design->getString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::CondensationControlType, false)->empty());
+  EXPECT_TRUE(design->getString(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::CondensationControlType, false)->empty());
   EXPECT_FALSE(design->getDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_ConstantFlow_DesignFields::CondensationControlDewpointOffset, false));
 }

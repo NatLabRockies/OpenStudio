@@ -16,8 +16,7 @@
 namespace openstudio {
 namespace epmodel {
 
-  RefrigerationAirChiller::RefrigerationAirChiller(const Model& model)
-    : ZoneHVACComponent(RefrigerationAirChiller::iddObjectType(), model) {
+  RefrigerationAirChiller::RefrigerationAirChiller(const Model& model) : ZoneHVACComponent(RefrigerationAirChiller::iddObjectType(), model) {
     OS_ASSERT(setCapacityRatingType("UnitLoadFactorSensibleOnly"));
     OS_ASSERT(setRatedCoolingSourceTemperature(0.0));
     OS_ASSERT(setRatedTemperatureDifferenceDT1(10.0));
@@ -30,8 +29,7 @@ namespace epmodel {
     OS_ASSERT(setVerticalLocation("Middle"));
   }
 
-  RefrigerationAirChiller::RefrigerationAirChiller(std::shared_ptr<detail::RefrigerationAirChiller_Impl> impl)
-    : ZoneHVACComponent(std::move(impl)) {}
+  RefrigerationAirChiller::RefrigerationAirChiller(std::shared_ptr<detail::RefrigerationAirChiller_Impl> impl) : ZoneHVACComponent(std::move(impl)) {}
 
   IddObjectType RefrigerationAirChiller::iddObjectType() {
     return IddObjectType::Refrigeration_AirChiller;
@@ -360,9 +358,9 @@ namespace epmodel {
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-std::string RefrigerationAirChiller_Impl::capacityRatingType() const {
+    std::string RefrigerationAirChiller_Impl::capacityRatingType() const {
       auto value = getString(Refrigeration_AirChillerFields::CapacityRatingType, true);
       OS_ASSERT(value);
       return value.get();

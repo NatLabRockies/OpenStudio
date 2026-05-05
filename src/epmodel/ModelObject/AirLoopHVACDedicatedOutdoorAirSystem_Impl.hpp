@@ -11,28 +11,28 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API AirLoopHVACDedicatedOutdoorAirSystem_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~AirLoopHVACDedicatedOutdoorAirSystem_Impl() override = default;
+    class EPMODEL_API AirLoopHVACDedicatedOutdoorAirSystem_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~AirLoopHVACDedicatedOutdoorAirSystem_Impl() override = default;
 
-  double preheatDesignTemperature() const;
-  bool setPreheatDesignTemperature(double preheatDesignTemperature);
+      double preheatDesignTemperature() const;
+      bool setPreheatDesignTemperature(double preheatDesignTemperature);
 
-  double preheatDesignHumidityRatio() const;
-  bool setPreheatDesignHumidityRatio(double preheatDesignHumidityRatio);
+      double preheatDesignHumidityRatio() const;
+      bool setPreheatDesignHumidityRatio(double preheatDesignHumidityRatio);
 
-  double precoolDesignTemperature() const;
-  bool setPrecoolDesignTemperature(double precoolDesignTemperature);
+      double precoolDesignTemperature() const;
+      bool setPrecoolDesignTemperature(double precoolDesignTemperature);
 
-  double precoolDesignHumidityRatio() const;
-  bool setPrecoolDesignHumidityRatio(double precoolDesignHumidityRatio);
-};
+      double precoolDesignHumidityRatio() const;
+      bool setPrecoolDesignHumidityRatio(double precoolDesignHumidityRatio);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

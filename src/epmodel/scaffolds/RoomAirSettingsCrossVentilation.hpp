@@ -17,60 +17,60 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class RoomAirSettingsCrossVentilation_Impl;
-}
+  namespace detail {
+    class RoomAirSettingsCrossVentilation_Impl;
+  }
 
-class EPMODEL_API RoomAirSettingsCrossVentilation : public ModelObject
-{
- public:
-  explicit RoomAirSettingsCrossVentilation(const Model& model);
+  class EPMODEL_API RoomAirSettingsCrossVentilation : public ModelObject
+  {
+   public:
+    explicit RoomAirSettingsCrossVentilation(const Model& model);
 
-  virtual ~RoomAirSettingsCrossVentilation() override = default;
-  RoomAirSettingsCrossVentilation(const RoomAirSettingsCrossVentilation& other) = default;
-  RoomAirSettingsCrossVentilation(RoomAirSettingsCrossVentilation&& other) = default;
-  RoomAirSettingsCrossVentilation& operator=(const RoomAirSettingsCrossVentilation&) = default;
-  RoomAirSettingsCrossVentilation& operator=(RoomAirSettingsCrossVentilation&&) = default;
+    virtual ~RoomAirSettingsCrossVentilation() override = default;
+    RoomAirSettingsCrossVentilation(const RoomAirSettingsCrossVentilation& other) = default;
+    RoomAirSettingsCrossVentilation(RoomAirSettingsCrossVentilation&& other) = default;
+    RoomAirSettingsCrossVentilation& operator=(const RoomAirSettingsCrossVentilation&) = default;
+    RoomAirSettingsCrossVentilation& operator=(RoomAirSettingsCrossVentilation&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> airflowRegionUsedforThermalComfortEvaluationValues();
+    static std::vector<std::string> airflowRegionUsedforThermalComfortEvaluationValues();
 
-  // Schema Alignment Notes:
-  // - API: This no-counterpart epmodel type uses IDD-derived class and accessor naming.
-  // - Field Mapping: airflowRegionUsedforThermalComfortEvaluation maps directly to EnergyPlus
-  //   RoomAirSettings:CrossVentilation / Airflow Region Used for Thermal Comfort Evaluation.
-  // - Field Mapping: Zone Name and Gain Distribution Schedule Name are object-list relationship
-  //   fields and intentionally excluded from scalar accessors in this scaffold pass.
-  // - Field Mapping: Name remains available via ModelObject base name APIs.
-  // - TODO(parity): Add typed relationship APIs for excluded fields after scalar saturation.
+    // Schema Alignment Notes:
+    // - API: This no-counterpart epmodel type uses IDD-derived class and accessor naming.
+    // - Field Mapping: airflowRegionUsedforThermalComfortEvaluation maps directly to EnergyPlus
+    //   RoomAirSettings:CrossVentilation / Airflow Region Used for Thermal Comfort Evaluation.
+    // - Field Mapping: Zone Name and Gain Distribution Schedule Name are object-list relationship
+    //   fields and intentionally excluded from scalar accessors in this scaffold pass.
+    // - Field Mapping: Name remains available via ModelObject base name APIs.
+    // - TODO(parity): Add typed relationship APIs for excluded fields after scalar saturation.
 
-  /** @name Getters */
-  //@{
+    /** @name Getters */
+    //@{
 
-  boost::optional<std::string> airflowRegionUsedforThermalComfortEvaluation() const;
+    boost::optional<std::string> airflowRegionUsedforThermalComfortEvaluation() const;
 
-  //@}
+    //@}
 
-  /** @name Setters */
-  //@{
+    /** @name Setters */
+    //@{
 
-  bool setAirflowRegionUsedforThermalComfortEvaluation(const std::string& airflowRegionUsedforThermalComfortEvaluation);
-  void resetAirflowRegionUsedforThermalComfortEvaluation();
+    bool setAirflowRegionUsedforThermalComfortEvaluation(const std::string& airflowRegionUsedforThermalComfortEvaluation);
+    void resetAirflowRegionUsedforThermalComfortEvaluation();
 
-  //@}
+    //@}
 
- protected:
-  using ImplType = detail::RoomAirSettingsCrossVentilation_Impl;
+   protected:
+    using ImplType = detail::RoomAirSettingsCrossVentilation_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit RoomAirSettingsCrossVentilation(std::shared_ptr<detail::RoomAirSettingsCrossVentilation_Impl> impl);
-};
+    explicit RoomAirSettingsCrossVentilation(std::shared_ptr<detail::RoomAirSettingsCrossVentilation_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

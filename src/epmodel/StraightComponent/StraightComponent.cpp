@@ -225,8 +225,8 @@ namespace epmodel {
       auto thisComponent = getObject<openstudio::epmodel::HVACComponent>();
       if (thisComponent.loop() && !removeFromLoop()) {
         LOG_FREE(Warn, "openstudio.epmodel.StraightComponent",
-                 "Failed to detach " << thisObject.briefDescription()
-                                      << " from its existing loop topology before adding it to node '" << node.nameString() << "'.");
+                 "Failed to detach " << thisObject.briefDescription() << " from its existing loop topology before adding it to node '"
+                                     << node.nameString() << "'.");
         return false;
       }
 

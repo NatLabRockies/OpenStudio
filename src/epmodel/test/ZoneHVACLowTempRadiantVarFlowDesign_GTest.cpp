@@ -42,13 +42,13 @@ TEST_F(EPModelFixture, ZoneHVACLowTempRadiantVarFlowDesign_ScalarAccessors_Round
   // This EnergyPlus-only companion wrapper is intentionally read-oriented in
   // the public API. Set up persisted storage directly here and verify that the
   // typed getter surface reads it back correctly.
-  EXPECT_TRUE(
-    design.setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields::HeatingControlTemperatureScheduleName, schedule.handle()));
+  EXPECT_TRUE(design.setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields::HeatingControlTemperatureScheduleName,
+                                schedule.handle()));
   ASSERT_TRUE(design.heatingControlTemperatureSchedule());
   EXPECT_EQ(schedule.handle(), design.heatingControlTemperatureSchedule()->handle());
 
-  EXPECT_TRUE(
-    design.setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields::CoolingControlTemperatureScheduleName, schedule.handle()));
+  EXPECT_TRUE(design.setPointer(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields::CoolingControlTemperatureScheduleName,
+                                schedule.handle()));
   ASSERT_TRUE(design.coolingControlTemperatureSchedule());
   EXPECT_EQ(schedule.handle(), design.coolingControlTemperatureSchedule()->handle());
 
@@ -61,18 +61,16 @@ TEST_F(EPModelFixture, ZoneHVACLowTempRadiantVarFlowDesign_ScalarAccessors_Round
     design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields::FluidtoRadiantSurfaceHeatTransferModel, "ISOStandard"));
   EXPECT_EQ("ISOStandard", design.fluidtoRadiantSurfaceHeatTransferModel());
 
-  EXPECT_TRUE(design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields::TemperatureControlType,
-                               "SurfaceFaceTemperature"));
+  EXPECT_TRUE(
+    design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields::TemperatureControlType, "SurfaceFaceTemperature"));
   EXPECT_EQ("SurfaceFaceTemperature", design.temperatureControlType());
 
   EXPECT_TRUE(design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields::SetpointControlType, "ZeroFlowPower"));
   EXPECT_EQ("ZeroFlowPower", design.setpointControlType());
 
-  EXPECT_TRUE(
-    design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields::CondensationControlType, "VariableOff"));
+  EXPECT_TRUE(design.setString(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields::CondensationControlType, "VariableOff"));
   EXPECT_EQ("VariableOff", design.condensationControlType());
 
-  EXPECT_TRUE(
-    design.setDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields::CondensationControlDewpointOffset, 1.5));
+  EXPECT_TRUE(design.setDouble(openstudio::ZoneHVAC_LowTemperatureRadiant_VariableFlow_DesignFields::CondensationControlDewpointOffset, 1.5));
   EXPECT_DOUBLE_EQ(1.5, design.condensationControlDewpointOffset());
 }

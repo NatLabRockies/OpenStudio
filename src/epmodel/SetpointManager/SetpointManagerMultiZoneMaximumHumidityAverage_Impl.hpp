@@ -21,8 +21,8 @@ namespace epmodel {
       double minimumSetpointHumidityRatio() const;
       bool setMinimumSetpointHumidityRatio(double minimumSetpointHumidityRatio);
 
-     double maximumSetpointHumidityRatio() const;
-     bool setMaximumSetpointHumidityRatio(double maximumSetpointHumidityRatio);
+      double maximumSetpointHumidityRatio() const;
+      bool setMaximumSetpointHumidityRatio(double maximumSetpointHumidityRatio);
 
       boost::optional<openstudio::epmodel::Node> setpointNode() const override;
       std::string controlVariable() const override;

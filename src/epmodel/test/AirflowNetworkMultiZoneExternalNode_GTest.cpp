@@ -51,5 +51,4 @@ TEST_F(EPModelFixture, AirflowNetworkMultiZoneExternalNode_ScalarAccessors_Round
   externalNode.resetWindAngleType();
   EXPECT_TRUE(externalNode.isWindAngleTypeDefaulted());
   EXPECT_EQ("Absolute", externalNode.windAngleType());
-
 }

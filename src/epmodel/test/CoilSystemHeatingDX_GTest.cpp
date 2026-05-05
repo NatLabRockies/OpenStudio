@@ -25,10 +25,9 @@ TEST_F(EPModelFixture, CoilSystemHeatingDX_ScalarAccessors_RoundTrip) {
 
   const auto heatingCoilObjectTypes = CoilSystemHeatingDX::heatingCoilObjectTypeValues();
   EXPECT_FALSE(heatingCoilObjectTypes.empty());
-  EXPECT_TRUE(std::find(heatingCoilObjectTypes.begin(), heatingCoilObjectTypes.end(), "Coil:Heating:DX:SingleSpeed") !=
-              heatingCoilObjectTypes.end());
-  EXPECT_TRUE(std::find(heatingCoilObjectTypes.begin(), heatingCoilObjectTypes.end(), "Coil:Heating:DX:VariableSpeed") !=
-              heatingCoilObjectTypes.end());
+  EXPECT_TRUE(std::find(heatingCoilObjectTypes.begin(), heatingCoilObjectTypes.end(), "Coil:Heating:DX:SingleSpeed") != heatingCoilObjectTypes.end());
+  EXPECT_TRUE(std::find(heatingCoilObjectTypes.begin(), heatingCoilObjectTypes.end(), "Coil:Heating:DX:VariableSpeed")
+              != heatingCoilObjectTypes.end());
 
   EXPECT_TRUE(coilSystem.setHeatingCoilObjectType("Coil:Heating:DX:SingleSpeed"));
   EXPECT_EQ("Coil:Heating:DX:SingleSpeed", coilSystem.heatingCoilObjectType());

@@ -18,55 +18,55 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
-class EnergyManagementSystemProgram;
+  class Model;
+  class EnergyManagementSystemProgram;
 
-namespace detail {
-class EnergyManagementSystemProgramCallingManager_Impl;
-}
+  namespace detail {
+    class EnergyManagementSystemProgramCallingManager_Impl;
+  }
 
-class EPMODEL_API EnergyManagementSystemProgramCallingManager : public ModelObject
-{
- public:
-  explicit EnergyManagementSystemProgramCallingManager(const Model& model);
+  class EPMODEL_API EnergyManagementSystemProgramCallingManager : public ModelObject
+  {
+   public:
+    explicit EnergyManagementSystemProgramCallingManager(const Model& model);
 
-  virtual ~EnergyManagementSystemProgramCallingManager() override = default;
-  EnergyManagementSystemProgramCallingManager(const EnergyManagementSystemProgramCallingManager& other) = default;
-  EnergyManagementSystemProgramCallingManager(EnergyManagementSystemProgramCallingManager&& other) = default;
-  EnergyManagementSystemProgramCallingManager& operator=(const EnergyManagementSystemProgramCallingManager&) = default;
-  EnergyManagementSystemProgramCallingManager& operator=(EnergyManagementSystemProgramCallingManager&&) = default;
+    virtual ~EnergyManagementSystemProgramCallingManager() override = default;
+    EnergyManagementSystemProgramCallingManager(const EnergyManagementSystemProgramCallingManager& other) = default;
+    EnergyManagementSystemProgramCallingManager(EnergyManagementSystemProgramCallingManager&& other) = default;
+    EnergyManagementSystemProgramCallingManager& operator=(const EnergyManagementSystemProgramCallingManager&) = default;
+    EnergyManagementSystemProgramCallingManager& operator=(EnergyManagementSystemProgramCallingManager&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> validCallingPointValues();
+    static std::vector<std::string> validCallingPointValues();
 
-  // Schema Alignment Notes:
-  // - API: Preserves the canonical calling-point and program-list surface.
-  // - Field Mapping: `callingPoint` -> EnergyPlus `Energy Plus Model Calling Point`.
-  // - Field Mapping: `programs` and related mutators use the real EnergyPlus extensible `Program Name` rows through `WorkspaceExtensibleGroup`.
-  // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemProgramCallingManager.cpp writes the calling point and copies the same
-  //   extensible program rows.
-  std::string callingPoint() const;
-  bool setCallingPoint(const std::string& callingPoint);
+    // Schema Alignment Notes:
+    // - API: Preserves the canonical calling-point and program-list surface.
+    // - Field Mapping: `callingPoint` -> EnergyPlus `Energy Plus Model Calling Point`.
+    // - Field Mapping: `programs` and related mutators use the real EnergyPlus extensible `Program Name` rows through `WorkspaceExtensibleGroup`.
+    // - ForwardTranslator evidence: ForwardTranslateEnergyManagementSystemProgramCallingManager.cpp writes the calling point and copies the same
+    //   extensible program rows.
+    std::string callingPoint() const;
+    bool setCallingPoint(const std::string& callingPoint);
 
-  std::vector<EnergyManagementSystemProgram> programs() const;
-  boost::optional<EnergyManagementSystemProgram> getProgram(unsigned index) const;
+    std::vector<EnergyManagementSystemProgram> programs() const;
+    boost::optional<EnergyManagementSystemProgram> getProgram(unsigned index) const;
 
-  bool eraseProgram(unsigned index);
-  void erasePrograms();
-  bool addProgram(const EnergyManagementSystemProgram& program);
-  bool setProgram(const EnergyManagementSystemProgram& program, unsigned index);
-  bool setPrograms(const std::vector<EnergyManagementSystemProgram>& programs);
+    bool eraseProgram(unsigned index);
+    void erasePrograms();
+    bool addProgram(const EnergyManagementSystemProgram& program);
+    bool setProgram(const EnergyManagementSystemProgram& program, unsigned index);
+    bool setPrograms(const std::vector<EnergyManagementSystemProgram>& programs);
 
- protected:
-  using ImplType = detail::EnergyManagementSystemProgramCallingManager_Impl;
+   protected:
+    using ImplType = detail::EnergyManagementSystemProgramCallingManager_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit EnergyManagementSystemProgramCallingManager(std::shared_ptr<detail::EnergyManagementSystemProgramCallingManager_Impl> impl);
-};
+    explicit EnergyManagementSystemProgramCallingManager(std::shared_ptr<detail::EnergyManagementSystemProgramCallingManager_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

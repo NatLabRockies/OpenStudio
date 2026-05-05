@@ -10,23 +10,23 @@
 
 namespace openstudio {
 namespace epmodel {
-class Node;
-namespace detail {
+  class Node;
+  namespace detail {
 
-class EPMODEL_API AirLoopHVACZoneMixer_Impl : public Mixer_Impl
-{
- public:
-  using Mixer_Impl::Mixer_Impl;
-  virtual ~AirLoopHVACZoneMixer_Impl() override = default;
+    class EPMODEL_API AirLoopHVACZoneMixer_Impl : public Mixer_Impl
+    {
+     public:
+      using Mixer_Impl::Mixer_Impl;
+      virtual ~AirLoopHVACZoneMixer_Impl() override = default;
 
-  unsigned outletPort() const override;
-  unsigned inletPort(unsigned branchIndex) const override;
-  bool setInletModelObject(unsigned branchIndex, const openstudio::epmodel::ModelObject& modelObject) override;
-  boost::optional<openstudio::epmodel::Node> outletNode() const;
-  bool setOutletNode(const openstudio::epmodel::Node& node);
-};
+      unsigned outletPort() const override;
+      unsigned inletPort(unsigned branchIndex) const override;
+      bool setInletModelObject(unsigned branchIndex, const openstudio::epmodel::ModelObject& modelObject) override;
+      boost::optional<openstudio::epmodel::Node> outletNode() const;
+      bool setOutletNode(const openstudio::epmodel::Node& node);
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

@@ -29,40 +29,40 @@ namespace epmodel {
 
   namespace {
 
-  void applyConstructorDefaults(CoilCoolingDX& coil) {
-    ScheduleConstant alwaysOn(coil.model());
-    OS_ASSERT(alwaysOn.setValue(1.0));
-    OS_ASSERT(coil.setAvailabilitySchedule(alwaysOn));
-  }
+    void applyConstructorDefaults(CoilCoolingDX& coil) {
+      ScheduleConstant alwaysOn(coil.model());
+      OS_ASSERT(alwaysOn.setValue(1.0));
+      OS_ASSERT(coil.setAvailabilitySchedule(alwaysOn));
+    }
 
-  void applyDefaultPerformanceDefaults(CoilCoolingDXCurveFitPerformance& performance, const Model& model) {
-    CoilCoolingDXCurveFitOperatingMode baseOperatingMode(model);
-    baseOperatingMode.autosizeRatedGrossTotalCoolingCapacity();
-    baseOperatingMode.autosizeRatedEvaporatorAirFlowRate();
-    baseOperatingMode.autosizeRatedCondenserAirFlowRate();
-    OS_ASSERT(baseOperatingMode.setMaximumCyclingRate(0.0));
-    OS_ASSERT(baseOperatingMode.setRatioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity(0.0));
-    OS_ASSERT(baseOperatingMode.setLatentCapacityTimeConstant(0.0));
-    OS_ASSERT(baseOperatingMode.setNominalTimeforCondensateRemovaltoBegin(0.0));
-    OS_ASSERT(!baseOperatingMode.applyLatentDegradationtoSpeedsGreaterthan1());
-    OS_ASSERT(baseOperatingMode.setCondenserType("AirCooled"));
-    baseOperatingMode.autosizeNominalEvaporativeCondenserPumpPower();
+    void applyDefaultPerformanceDefaults(CoilCoolingDXCurveFitPerformance& performance, const Model& model) {
+      CoilCoolingDXCurveFitOperatingMode baseOperatingMode(model);
+      baseOperatingMode.autosizeRatedGrossTotalCoolingCapacity();
+      baseOperatingMode.autosizeRatedEvaporatorAirFlowRate();
+      baseOperatingMode.autosizeRatedCondenserAirFlowRate();
+      OS_ASSERT(baseOperatingMode.setMaximumCyclingRate(0.0));
+      OS_ASSERT(baseOperatingMode.setRatioofInitialMoistureEvaporationRateandSteadyStateLatentCapacity(0.0));
+      OS_ASSERT(baseOperatingMode.setLatentCapacityTimeConstant(0.0));
+      OS_ASSERT(baseOperatingMode.setNominalTimeforCondensateRemovaltoBegin(0.0));
+      OS_ASSERT(!baseOperatingMode.applyLatentDegradationtoSpeedsGreaterthan1());
+      OS_ASSERT(baseOperatingMode.setCondenserType("AirCooled"));
+      baseOperatingMode.autosizeNominalEvaporativeCondenserPumpPower();
 
-    OS_ASSERT(performance.setCrankcaseHeaterCapacity(0.0));
-    OS_ASSERT(performance.setMinimumOutdoorDryBulbTemperatureforCompressorOperation(-25.0));
-    OS_ASSERT(performance.setMaximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation(10.0));
-    OS_ASSERT(performance.setUnitInternalStaticAirPressure(773.3));
-    OS_ASSERT(performance.setCapacityControlMethod("Discrete"));
-    OS_ASSERT(performance.setEvaporativeCondenserBasinHeaterCapacity(0.0));
-    OS_ASSERT(performance.setEvaporativeCondenserBasinHeaterSetpointTemperature(2.0));
-    auto heaterSchedule = model.alwaysOnDiscreteSchedule();
-    OS_ASSERT(performance.getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->setPointer(
-      openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::EvaporativeCondenserBasinHeaterOperatingScheduleName, heaterSchedule.handle(),
-      false));
-    OS_ASSERT(performance.setCompressorFuelType("Electricity"));
-    OS_ASSERT(performance.getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->setPointer(
-      openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::BaseOperatingMode, baseOperatingMode.handle()));
-  }
+      OS_ASSERT(performance.setCrankcaseHeaterCapacity(0.0));
+      OS_ASSERT(performance.setMinimumOutdoorDryBulbTemperatureforCompressorOperation(-25.0));
+      OS_ASSERT(performance.setMaximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation(10.0));
+      OS_ASSERT(performance.setUnitInternalStaticAirPressure(773.3));
+      OS_ASSERT(performance.setCapacityControlMethod("Discrete"));
+      OS_ASSERT(performance.setEvaporativeCondenserBasinHeaterCapacity(0.0));
+      OS_ASSERT(performance.setEvaporativeCondenserBasinHeaterSetpointTemperature(2.0));
+      auto heaterSchedule = model.alwaysOnDiscreteSchedule();
+      OS_ASSERT(performance.getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->setPointer(
+        openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::EvaporativeCondenserBasinHeaterOperatingScheduleName, heaterSchedule.handle(),
+        false));
+      OS_ASSERT(performance.setCompressorFuelType("Electricity"));
+      OS_ASSERT(performance.getImpl<detail::CoilCoolingDXCurveFitPerformance_Impl>()->setPointer(
+        openstudio::Coil_Cooling_DX_CurveFit_PerformanceFields::BaseOperatingMode, baseOperatingMode.handle()));
+    }
 
   }  // namespace
 

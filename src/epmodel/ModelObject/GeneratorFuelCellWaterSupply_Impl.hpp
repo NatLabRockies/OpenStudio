@@ -13,26 +13,26 @@
 namespace openstudio {
 namespace epmodel {
 
-namespace detail {
+  namespace detail {
 
-class EPMODEL_API GeneratorFuelCellWaterSupply_Impl : public ModelObject_Impl
-{
- public:
-  using ModelObject_Impl::ModelObject_Impl;
-  virtual ~GeneratorFuelCellWaterSupply_Impl() override = default;
+    class EPMODEL_API GeneratorFuelCellWaterSupply_Impl : public ModelObject_Impl
+    {
+     public:
+      using ModelObject_Impl::ModelObject_Impl;
+      virtual ~GeneratorFuelCellWaterSupply_Impl() override = default;
 
-  double pumpHeatLossFactor() const;
-  bool setPumpHeatLossFactor(double pumpHeatLossFactor);
-  void resetPumpHeatLossFactor();
+      double pumpHeatLossFactor() const;
+      bool setPumpHeatLossFactor(double pumpHeatLossFactor);
+      void resetPumpHeatLossFactor();
 
-  std::string waterTemperatureModelingMode() const;
-  bool setWaterTemperatureModelingMode(const std::string& waterTemperatureModelingMode);
-  void resetWaterTemperatureModelingMode();
+      std::string waterTemperatureModelingMode() const;
+      bool setWaterTemperatureModelingMode(const std::string& waterTemperatureModelingMode);
+      void resetWaterTemperatureModelingMode();
 
-  std::vector<std::string> waterTemperatureModelingModeValues() const;
-};
+      std::vector<std::string> waterTemperatureModelingModeValues() const;
+    };
 
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio
 

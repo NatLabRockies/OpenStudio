@@ -13,13 +13,13 @@
 namespace openstudio {
 namespace epmodel {
 
-DuctLossMakeupAir::DuctLossMakeupAir(const Model& model) : ModelObject(DuctLossMakeupAir::iddObjectType(), model) {}
+  DuctLossMakeupAir::DuctLossMakeupAir(const Model& model) : ModelObject(DuctLossMakeupAir::iddObjectType(), model) {}
 
-DuctLossMakeupAir::DuctLossMakeupAir(std::shared_ptr<detail::DuctLossMakeupAir_Impl> impl) : ModelObject(std::move(impl)) {}
+  DuctLossMakeupAir::DuctLossMakeupAir(std::shared_ptr<detail::DuctLossMakeupAir_Impl> impl) : ModelObject(std::move(impl)) {}
 
-IddObjectType DuctLossMakeupAir::iddObjectType() {
-  return IddObjectType::Duct_Loss_MakeupAir;
-}
+  IddObjectType DuctLossMakeupAir::iddObjectType() {
+    return IddObjectType::Duct_Loss_MakeupAir;
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio

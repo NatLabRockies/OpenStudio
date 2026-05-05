@@ -17,47 +17,47 @@
 namespace openstudio {
 namespace epmodel {
 
-class Model;
+  class Model;
 
-namespace detail {
-class SiteSpectrumData_Impl;
-}
+  namespace detail {
+    class SiteSpectrumData_Impl;
+  }
 
-class EPMODEL_API SiteSpectrumData : public ModelObject
-{
- public:
-  explicit SiteSpectrumData(const Model& model);
+  class EPMODEL_API SiteSpectrumData : public ModelObject
+  {
+   public:
+    explicit SiteSpectrumData(const Model& model);
 
-  virtual ~SiteSpectrumData() override = default;
-  SiteSpectrumData(const SiteSpectrumData& other) = default;
-  SiteSpectrumData(SiteSpectrumData&& other) = default;
-  SiteSpectrumData& operator=(const SiteSpectrumData&) = default;
-  SiteSpectrumData& operator=(SiteSpectrumData&&) = default;
+    virtual ~SiteSpectrumData() override = default;
+    SiteSpectrumData(const SiteSpectrumData& other) = default;
+    SiteSpectrumData(SiteSpectrumData&& other) = default;
+    SiteSpectrumData& operator=(const SiteSpectrumData&) = default;
+    SiteSpectrumData& operator=(SiteSpectrumData&&) = default;
 
-  static IddObjectType iddObjectType();
+    static IddObjectType iddObjectType();
 
-  static std::vector<std::string> spectrumDataTypeValues();
+    static std::vector<std::string> spectrumDataTypeValues();
 
-  /** Schema Alignment Notes:
+    /** Schema Alignment Notes:
    * - API: This no-counterpart type uses IDD-derived class/accessor naming.
    * - Field Mapping: Scalar API maps directly to EnergyPlus Site:SpectrumData Spectrum Data Type.
    * - Field Mapping: Extensible [Wavelength, Spectrum] groups are excluded in this scalar-only scaffold.
    * - TODO(parity): Add typed helpers for extensible spectrum data pairs in a dedicated non-scalar parity pass.
    */
-  //@{
-  std::string spectrumDataType() const;
-  bool setSpectrumDataType(const std::string& spectrumDataType);
-  //@}
+    //@{
+    std::string spectrumDataType() const;
+    bool setSpectrumDataType(const std::string& spectrumDataType);
+    //@}
 
- protected:
-  using ImplType = detail::SiteSpectrumData_Impl;
+   protected:
+    using ImplType = detail::SiteSpectrumData_Impl;
 
-  friend class Model;
-  friend class openstudio::IdfObject;
-  friend class openstudio::detail::IdfObject_Impl;
+    friend class Model;
+    friend class openstudio::IdfObject;
+    friend class openstudio::detail::IdfObject_Impl;
 
-  explicit SiteSpectrumData(std::shared_ptr<detail::SiteSpectrumData_Impl> impl);
-};
+    explicit SiteSpectrumData(std::shared_ptr<detail::SiteSpectrumData_Impl> impl);
+  };
 
 }  // namespace epmodel
 }  // namespace openstudio

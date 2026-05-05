@@ -20,110 +20,111 @@
 namespace openstudio {
 namespace epmodel {
 
-DistrictHeatingWater::DistrictHeatingWater(const Model& model) : StraightComponent(DistrictHeatingWater::iddObjectType(), model) {
-  autosizeNominalCapacity();
+  DistrictHeatingWater::DistrictHeatingWater(const Model& model) : StraightComponent(DistrictHeatingWater::iddObjectType(), model) {
+    autosizeNominalCapacity();
 
-  auto capacityFractionSchedule = model.alwaysOnContinuousSchedule();
-  OS_ASSERT(getImpl<detail::DistrictHeatingWater_Impl>()->setCapacityFractionSchedule(capacityFractionSchedule));
-}
+    auto capacityFractionSchedule = model.alwaysOnContinuousSchedule();
+    OS_ASSERT(getImpl<detail::DistrictHeatingWater_Impl>()->setCapacityFractionSchedule(capacityFractionSchedule));
+  }
 
-DistrictHeatingWater::DistrictHeatingWater(std::shared_ptr<detail::DistrictHeatingWater_Impl> impl) : StraightComponent(std::move(impl)) {}
+  DistrictHeatingWater::DistrictHeatingWater(std::shared_ptr<detail::DistrictHeatingWater_Impl> impl) : StraightComponent(std::move(impl)) {}
 
-IddObjectType DistrictHeatingWater::iddObjectType() {
-  return IddObjectType::DistrictHeating_Water;
-}
+  IddObjectType DistrictHeatingWater::iddObjectType() {
+    return IddObjectType::DistrictHeating_Water;
+  }
 
-boost::optional<double> DistrictHeatingWater::nominalCapacity() const {
-  return getImpl<detail::DistrictHeatingWater_Impl>()->nominalCapacity();
-}
+  boost::optional<double> DistrictHeatingWater::nominalCapacity() const {
+    return getImpl<detail::DistrictHeatingWater_Impl>()->nominalCapacity();
+  }
 
-Schedule DistrictHeatingWater::capacityFractionSchedule() const {
-  return getImpl<detail::DistrictHeatingWater_Impl>()->capacityFractionSchedule();
-}
+  Schedule DistrictHeatingWater::capacityFractionSchedule() const {
+    return getImpl<detail::DistrictHeatingWater_Impl>()->capacityFractionSchedule();
+  }
 
-bool DistrictHeatingWater::isNominalCapacityAutosized() const {
-  return getImpl<detail::DistrictHeatingWater_Impl>()->isNominalCapacityAutosized();
-}
+  bool DistrictHeatingWater::isNominalCapacityAutosized() const {
+    return getImpl<detail::DistrictHeatingWater_Impl>()->isNominalCapacityAutosized();
+  }
 
-bool DistrictHeatingWater::setNominalCapacity(double nominalCapacity) {
-  return getImpl<detail::DistrictHeatingWater_Impl>()->setNominalCapacity(nominalCapacity);
-}
+  bool DistrictHeatingWater::setNominalCapacity(double nominalCapacity) {
+    return getImpl<detail::DistrictHeatingWater_Impl>()->setNominalCapacity(nominalCapacity);
+  }
 
-bool DistrictHeatingWater::setCapacityFractionSchedule(Schedule& schedule) {
-  return getImpl<detail::DistrictHeatingWater_Impl>()->setCapacityFractionSchedule(schedule);
-}
+  bool DistrictHeatingWater::setCapacityFractionSchedule(Schedule& schedule) {
+    return getImpl<detail::DistrictHeatingWater_Impl>()->setCapacityFractionSchedule(schedule);
+  }
 
-void DistrictHeatingWater::autosizeNominalCapacity() {
-  getImpl<detail::DistrictHeatingWater_Impl>()->autosizeNominalCapacity();
-}
+  void DistrictHeatingWater::autosizeNominalCapacity() {
+    getImpl<detail::DistrictHeatingWater_Impl>()->autosizeNominalCapacity();
+  }
 
-bool DistrictHeatingWater::addToNode(Node& node) {
-  return getImpl<detail::DistrictHeatingWater_Impl>()->addToNode(node);
-}
+  bool DistrictHeatingWater::addToNode(Node& node) {
+    return getImpl<detail::DistrictHeatingWater_Impl>()->addToNode(node);
+  }
 
-boost::optional<double> DistrictHeatingWater::autosizedNominalCapacity() const {
-  return getImpl<detail::DistrictHeatingWater_Impl>()->autosizedNominalCapacity();
-}
+  boost::optional<double> DistrictHeatingWater::autosizedNominalCapacity() const {
+    return getImpl<detail::DistrictHeatingWater_Impl>()->autosizedNominalCapacity();
+  }
 
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
-namespace detail {
+  namespace detail {
 
-bool DistrictHeatingWater_Impl::addToNode(Node& node) {
-  if (auto plant = node.plantLoop()) {
-    if (plant->supplyComponent(node.handle())) {
-      return StraightComponent_Impl::addToNode(node);
+    bool DistrictHeatingWater_Impl::addToNode(Node& node) {
+      if (auto plant = node.plantLoop()) {
+        if (plant->supplyComponent(node.handle())) {
+          return StraightComponent_Impl::addToNode(node);
+        }
+      }
+
+      return false;
     }
-  }
 
-  return false;
-}
+    unsigned DistrictHeatingWater_Impl::inletPort() const {
+      return openstudio::DistrictHeating_WaterFields::HotWaterInletNodeName;
+    }
 
-unsigned DistrictHeatingWater_Impl::inletPort() const {
-  return openstudio::DistrictHeating_WaterFields::HotWaterInletNodeName;
-}
+    unsigned DistrictHeatingWater_Impl::outletPort() const {
+      return openstudio::DistrictHeating_WaterFields::HotWaterOutletNodeName;
+    }
 
-unsigned DistrictHeatingWater_Impl::outletPort() const {
-  return openstudio::DistrictHeating_WaterFields::HotWaterOutletNodeName;
-}
+    boost::optional<double> DistrictHeatingWater_Impl::nominalCapacity() const {
+      return getDouble(openstudio::DistrictHeating_WaterFields::NominalCapacity, true);
+    }
 
-boost::optional<double> DistrictHeatingWater_Impl::nominalCapacity() const {
-  return getDouble(openstudio::DistrictHeating_WaterFields::NominalCapacity, true);
-}
+    Schedule DistrictHeatingWater_Impl::capacityFractionSchedule() const {
+      auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::DistrictHeating_WaterFields::CapacityFractionScheduleName);
+      OS_ASSERT(schedule);
+      return *schedule;
+    }
 
-Schedule DistrictHeatingWater_Impl::capacityFractionSchedule() const {
-  auto schedule = getObject<ModelObject>().getModelObjectTarget<Schedule>(openstudio::DistrictHeating_WaterFields::CapacityFractionScheduleName);
-  OS_ASSERT(schedule);
-  return *schedule;
-}
+    bool DistrictHeatingWater_Impl::isNominalCapacityAutosized() const {
+      if (auto value = getString(openstudio::DistrictHeating_WaterFields::NominalCapacity, true)) {
+        return openstudio::istringEqual(*value, "autosize");
+      }
+      return false;
+    }
 
-bool DistrictHeatingWater_Impl::isNominalCapacityAutosized() const {
-  if (auto value = getString(openstudio::DistrictHeating_WaterFields::NominalCapacity, true)) {
-    return openstudio::istringEqual(*value, "autosize");
-  }
-  return false;
-}
+    bool DistrictHeatingWater_Impl::setNominalCapacity(double nominalCapacity) {
+      return setDouble(openstudio::DistrictHeating_WaterFields::NominalCapacity, nominalCapacity);
+    }
 
-bool DistrictHeatingWater_Impl::setNominalCapacity(double nominalCapacity) {
-  return setDouble(openstudio::DistrictHeating_WaterFields::NominalCapacity, nominalCapacity);
-}
+    bool DistrictHeatingWater_Impl::setCapacityFractionSchedule(Schedule& schedule) {
+      return setSchedule(openstudio::DistrictHeating_WaterFields::CapacityFractionScheduleName, "DistrictHeatingWater", "Capacity Fraction",
+                         schedule);
+    }
 
-bool DistrictHeatingWater_Impl::setCapacityFractionSchedule(Schedule& schedule) {
-  return setSchedule(openstudio::DistrictHeating_WaterFields::CapacityFractionScheduleName, "DistrictHeatingWater", "Capacity Fraction", schedule);
-}
+    void DistrictHeatingWater_Impl::autosizeNominalCapacity() {
+      OS_ASSERT(setString(openstudio::DistrictHeating_WaterFields::NominalCapacity, "Autosize"));
+    }
 
-void DistrictHeatingWater_Impl::autosizeNominalCapacity() {
-  OS_ASSERT(setString(openstudio::DistrictHeating_WaterFields::NominalCapacity, "Autosize"));
-}
+    boost::optional<double> DistrictHeatingWater_Impl::autosizedNominalCapacity() const {
+      // epmodel does not currently resolve autosized values from SQL results.
+      return boost::none;
+    }
 
-boost::optional<double> DistrictHeatingWater_Impl::autosizedNominalCapacity() const {
-  // epmodel does not currently resolve autosized values from SQL results.
-  return boost::none;
-}
-
-}  // namespace detail
+  }  // namespace detail
 }  // namespace epmodel
 }  // namespace openstudio

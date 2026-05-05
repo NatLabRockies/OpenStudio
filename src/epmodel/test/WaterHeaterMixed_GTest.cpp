@@ -336,8 +336,7 @@ TEST_F(EPModelFixture, WaterHeaterMixed_WaterToWaterTopology) {
 
   EXPECT_EQ(openstudio::ComponentType(openstudio::ComponentType::Heating), heater.componentType());
   EXPECT_EQ(std::vector<openstudio::FuelType>{openstudio::FuelType::Gas}, heater.heatingFuelTypes());
-  EXPECT_EQ(std::vector<openstudio::AppGFuelType>{openstudio::convertFuelTypeToAppG(openstudio::FuelType::Gas)},
-            heater.appGHeatingFuelTypes());
+  EXPECT_EQ(std::vector<openstudio::AppGFuelType>{openstudio::convertFuelTypeToAppG(openstudio::FuelType::Gas)}, heater.appGHeatingFuelTypes());
   EXPECT_TRUE(heater.coolingFuelTypes().empty());
 
   EXPECT_TRUE(heater.removeFromSourceSidePlantLoop());
