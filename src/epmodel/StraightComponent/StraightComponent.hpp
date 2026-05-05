@@ -27,7 +27,7 @@ namespace epmodel {
   {
    public:
     virtual ~StraightComponent() override = default;
-    StraightComponent() = default;
+    StraightComponent() = delete;
     StraightComponent(const StraightComponent& other) = default;
     StraightComponent(StraightComponent&& other) = default;
     StraightComponent& operator=(const StraightComponent&) = default;
