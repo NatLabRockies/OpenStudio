@@ -20,7 +20,15 @@
 namespace openstudio {
 namespace epmodel {
 
-BoilerHotWater::BoilerHotWater(const Model& model) : StraightComponent(BoilerHotWater::iddObjectType(), model) {}
+BoilerHotWater::BoilerHotWater(const Model& model) : StraightComponent(BoilerHotWater::iddObjectType(), model) {
+  OS_ASSERT(setNominalThermalEfficiency(0.8));
+  OS_ASSERT(setWaterOutletUpperTemperatureLimit(99.0));
+  OS_ASSERT(setBoilerFlowMode("ConstantFlow"));
+  OS_ASSERT(setSizingFactor(1.0));
+  OS_ASSERT(setEndUseSubcategory("General"));
+  OS_ASSERT(setOnCycleParasiticElectricLoad(0.0));
+  OS_ASSERT(setOffCycleParasiticFuelLoad(0.0));
+}
 
 BoilerHotWater::BoilerHotWater(std::shared_ptr<detail::BoilerHotWater_Impl> impl) : StraightComponent(std::move(impl)) {}
 
