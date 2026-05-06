@@ -9,12 +9,6 @@
 %import <utilities/Utilities.i>
 
 %ignore openstudio::epmodel::detail;
-// IdfObject::getImpl is a template<T> method with no SWIG-visible instantiations.
-// The combination of the public `using openstudio::IdfObject::getImpl` and the
-// protected concrete `getImpl()` in ModelObject triggers a null-pointer crash in
-// SWIG's Allocate::usingDeclaration when it tries to splice a zero-member overload
-// list (allocate.cxx clean_overloaded called with firstoverloaded==null).
-%ignore openstudio::epmodel::ModelObject::getImpl;
 
 %{
   #include <epmodel/Model.hpp>

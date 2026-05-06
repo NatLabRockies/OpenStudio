@@ -33,10 +33,6 @@ namespace epmodel {
 
   ModelObject::ModelObject(std::shared_ptr<ImplType> impl) : WorkspaceObject(std::move(impl)) {}
 
-  std::shared_ptr<ModelObject::ImplType> ModelObject::getImpl() const {
-    return openstudio::IdfObject::getImpl<detail::ModelObject_Impl>();
-  }
-
   Model ModelObject::model() const {
     return getImpl<detail::ModelObject_Impl>()->model();
   }

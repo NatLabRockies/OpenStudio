@@ -36,7 +36,6 @@ namespace epmodel {
 
     Model model() const;
     static ModelObject create(IddObjectType type, const Model& model, bool fastName = false);
-    using openstudio::IdfObject::getImpl;
 
     template <typename T>
     boost::optional<T> getModelObjectTarget(unsigned index) const {
@@ -79,7 +78,6 @@ namespace epmodel {
 
     explicit ModelObject(IddObjectType type, const Model& model, bool fastName = false, bool isTransient = false);
     explicit ModelObject(std::shared_ptr<ImplType> impl);
-    std::shared_ptr<ImplType> getImpl() const;
   };
 
   using OptionalModelObject = boost::optional<ModelObject>;
