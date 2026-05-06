@@ -374,4 +374,8 @@ namespace epmodel {
 }  // namespace epmodel
 }  // namespace openstudio
 
+#ifndef SWIG
+#  include "ModelObject/ModelObject_Impl.inl"
+#endif
+
 #endif

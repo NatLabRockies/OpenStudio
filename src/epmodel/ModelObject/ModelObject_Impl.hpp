@@ -57,77 +57,13 @@ namespace epmodel {
       boost::optional<double> getAutosizedValueFromInitializationSummary(const std::string& valueName, const std::string& units) const;
 
      protected:
+      // Bodies are in ModelObject_Impl.inl (included at the bottom of Model.hpp)
+      // so that Model is complete when the template bodies are parsed.
       template <typename T>
-      T getOrCreateTarget(unsigned fieldIndex) {
-        if (auto target = getTarget(fieldIndex)) {
-          if (auto typed = target->template optionalCast<T>()) {
-            return *typed;
-          }
-        }
-
-        auto name = getString(fieldIndex);
-        if (name && !name->empty()) {
-          if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), *name, true)) {
-            if (auto typed = obj->template optionalCast<T>()) {
-              setPointer(fieldIndex, typed->handle(), false);
-              return *typed;
-            }
-          }
-        }
-
-        T created(model());
-        if (name && !name->empty()) {
-          if (!created.setName(*name)) {
-            LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
-                     "Failed to apply existing name '" << *name << "' to newly created target at field index " << fieldIndex << ".");
-          }
-        }
-        setPointer(fieldIndex, created.handle(), false);
-        return created;
-      }
+      T getOrCreateTarget(unsigned fieldIndex);
 
       template <typename T>
-      T getOrCreateTarget(unsigned fieldIndex, const std::string& preferredName) {
-        if (auto target = getTarget(fieldIndex)) {
-          if (auto typed = target->template optionalCast<T>()) {
-            return *typed;
-          }
-        }
-
-        if (!preferredName.empty()) {
-          if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), preferredName, true)) {
-            if (auto typed = obj->template optionalCast<T>()) {
-              setPointer(fieldIndex, typed->handle(), false);
-              return *typed;
-            }
-          }
-        }
-
-        auto name = getString(fieldIndex);
-        if (name && !name->empty()) {
-          if (auto obj = workspace().getObjectByTypeAndName(T::iddObjectType(), *name, true)) {
-            if (auto typed = obj->template optionalCast<T>()) {
-              setPointer(fieldIndex, typed->handle(), false);
-              return *typed;
-            }
-          }
-        }
-
-        T created(model());
-        if (!preferredName.empty()) {
-          if (!created.setName(preferredName)) {
-            LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
-                     "Failed to apply preferred name '" << preferredName << "' to newly created target at field index " << fieldIndex << ".");
-          }
-        } else if (name && !name->empty()) {
-          if (!created.setName(*name)) {
-            LOG_FREE(Warn, "openstudio.epmodel.ModelObject",
-                     "Failed to apply existing name '" << *name << "' to newly created target at field index " << fieldIndex << ".");
-          }
-        }
-        setPointer(fieldIndex, created.handle(), false);
-        return created;
-      }
+      T getOrCreateTarget(unsigned fieldIndex, const std::string& preferredName);
       bool setSchedule(unsigned fieldIndex, const std::string& className, const std::string& scheduleDisplayName,
                        openstudio::epmodel::Schedule& schedule);
 
