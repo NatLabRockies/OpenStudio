@@ -46,13 +46,13 @@ class OpenStudioBuildRecipe(ConanFile):
         self.requires("libxslt/1.1.37")  # TODO use libxslt/1.1.43 after porting the libxml2 code
         self.requires("jsoncpp/1.9.6")
         self.requires("fmt/12.1.0")
-        self.requires("sqlite3/3.51.3")
+        self.requires("sqlite3/3.53.0")
         self.requires("cpprestsdk/2.10.19")  # df2f6ac88e47cadd9c9e8e0971e00d89
         self.requires("websocketpp/0.8.2")  # 3fd704c4c5388d9c08b11af86f79f616
         self.requires("geographiclib/2.6")
         self.requires("swig/4.4.0")
         self.requires("tinygltf/2.9.7")
-        self.requires("cli11/2.6.0")
+        self.requires("cli11/2.6.2")
         self.requires("antlr4-cppruntime/4.13.2")
 
         self.requires(
