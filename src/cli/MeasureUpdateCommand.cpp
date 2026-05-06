@@ -9,6 +9,12 @@
 #include "../utilities/core/Filesystem.hpp"
 #include "../utilities/bcl/BCLMeasure.hpp"
 #include "../scriptengine/ScriptEngine.hpp"
+
+// CLI headers must come after ScriptEngine.hpp so that windows.h (and winnls.h) is
+// pulled in before CLI11's windef.h, avoiding a missing LCTYPE in boost/regex's w32_regex_traits.hpp.
+// https://github.com/NatLabRockies/OpenStudio/pull/5606#issuecomment-4391907202
+#include <CLI/App.hpp>
+#include <CLI/ExtraValidators.hpp>
 #include "../measure/OSMeasure.hpp"
 #include "../measure/ModelMeasure.hpp"
 #include "../measure/EnergyPlusMeasure.hpp"

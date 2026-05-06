@@ -27,6 +27,7 @@
 #include <utilities/idd/IddEnums.hxx>
 
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 #include <json/json.h>
 #include <resources.hxx>
 #include <algorithm>

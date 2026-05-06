@@ -70,12 +70,12 @@ path completePathToFile(const path& p, const path& base, const std::string& ext,
   }
 
   // complete path
-  if (!result.is_complete()) {
+  if (!result.is_absolute()) {
     try {
       if (!base.empty()) {
-        result = openstudio::filesystem::complete(result, base);
+        result = openstudio::filesystem::absolute(result, base);
       } else {
-        result = openstudio::filesystem::complete(result);
+        result = openstudio::filesystem::absolute(result);
       }
     } catch (...) {
       LOG_FREE(Info, "openstudio.completePathToFile", "Unable to compete path '" << toString(p) << "'. Returning an empty path.");
@@ -94,7 +94,7 @@ path completePathToFile(const path& p, const path& base, const std::string& ext,
 }
 
 std::string getFileExtension(const path& p) {
-  std::string pext = openstudio::filesystem::extension(p);
+  std::string pext = p.extension().string();
   if (!pext.empty()) {
     // remove '.'
     pext = std::string(++pext.begin(), pext.end());
@@ -127,9 +127,9 @@ bool makeParentFolder(const path& p, const path& base, bool recursive) {
   // get path to last directory
   path wp(p);
   if (base.empty()) {
-    wp = openstudio::filesystem::complete(wp);
+    wp = openstudio::filesystem::absolute(wp);
   } else {
-    wp = openstudio::filesystem::complete(wp, base);
+    wp = openstudio::filesystem::absolute(wp, base);
   }
   if (wp.has_filename()) {
     wp = wp.parent_path();
@@ -172,8 +172,8 @@ path relativePath(const path& p, const path& base) {
   }
   // p is not an extension of base, try to complete, then return p
   if (!((wBaseIt == wBaseEnd) || (toString(*wBaseIt) == "."))) {
-    path completeP = openstudio::filesystem::complete(p);
-    path completeBase = openstudio::filesystem::complete(base);
+    path completeP = openstudio::filesystem::absolute(p);
+    path completeBase = openstudio::filesystem::absolute(base);
     if ((completeP != wp) || (completeBase != wBase)) {
       LOG_FREE(Debug, "openstudio.utilities.core",
                "Path '" << toString(p) << "' does not extend base '" << toString(base) << "'. Try again after completing both paths.");
@@ -337,9 +337,9 @@ std::ostream& printPathInformation(std::ostream& os, const path& p) {
   os << "p.extension() = " << toString(p.extension()) << '\n';
 
   os << "p.empty() = " << std::boolalpha << p.empty() << '\n';
-  os << "p.is_complete() = " << p.is_complete() << '\n';
+  os << "p.is_absolute() = " << p.is_absolute() << '\n';
 
-  os << "openstudio::filesystem::complete(p) = " << toString(openstudio::filesystem::complete(p)) << '\n';
+  os << "openstudio::filesystem::absolute(p) = " << toString(openstudio::filesystem::absolute(p)) << '\n';
   os << "openstudio::filesystem::system_complete(p) = " << toString(openstudio::filesystem::system_complete(p)) << '\n';
 
   return os;

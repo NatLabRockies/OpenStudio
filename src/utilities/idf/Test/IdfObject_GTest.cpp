@@ -28,6 +28,7 @@
 #include <boost/lexical_cast.hpp>
 #include <nano/nano_signal_slot.hpp>
 
+#include <iomanip>
 #include <limits>
 #include <type_traits>
 #include <sstream>

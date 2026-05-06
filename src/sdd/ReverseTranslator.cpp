@@ -1800,8 +1800,8 @@ namespace sdd {
     }
 
     openstudio::path ddyFilePath = toPath(ddWeatherFileElement.text().as_string());
-    if (!ddyFilePath.is_complete()) {
-      ddyFilePath = complete(ddyFilePath, m_path.parent_path());
+    if (!ddyFilePath.is_absolute()) {
+      ddyFilePath = openstudio::filesystem::absolute(ddyFilePath, m_path.parent_path());
     }
 
     if (!exists(ddyFilePath)) {
@@ -1838,8 +1838,8 @@ namespace sdd {
     }
 
     openstudio::path epwFilePath = toPath(annualWeatherFileElement.text().as_string());
-    if (!epwFilePath.is_complete()) {
-      epwFilePath = complete(epwFilePath, m_path.parent_path());
+    if (!epwFilePath.is_absolute()) {
+      epwFilePath = openstudio::filesystem::absolute(epwFilePath, m_path.parent_path());
     }
 
     if (!exists(epwFilePath)) {

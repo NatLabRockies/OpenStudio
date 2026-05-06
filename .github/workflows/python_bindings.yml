@@ -290,17 +290,10 @@ jobs:
           PYTHON_VERSION=${{ steps.setup-python-macos.outputs.python-version }}
           if [ "${{ matrix.name }}" == "macOS_arm64" ]; then
             PYTHON_ARCH=arm64
-            # Avoid "builtin __has_nothrow_assign is deprecated; use __is_nothrow_assignable instead" in boost/1.79 with recent clang
-            conan install . --output-folder=./build --build=missing \
-              -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release \
-              -o with_testing=False -o with_benchmark=False -o with_ruby=False \
-              -c tools.build:cxxflags="['-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION -Wno-enum-constexpr-conversion']"
-          else
-            conan install . --output-folder=./build --build=missing \
-              -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release \
-              -o with_testing=False -o with_benchmark=False -o with_ruby=False \
-              -c tools.build:cxxflags="['-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION']"
           fi
+          conan install . --output-folder=./build --build=missing \
+            -c tools.cmake.cmaketoolchain:generator=Ninja -s compiler.cppstd=20 -s build_type=Release \
+            -o with_testing=False -o with_benchmark=False -o with_ruby=False
         else
           if [ "${{ matrix.name }}" == "Ubuntu_arm64" ]; then
             PYTHON_ARCH=arm64

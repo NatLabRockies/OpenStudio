@@ -57,7 +57,7 @@
 
     // complete the path and return an absolute path, behavior is portable
     path complete(const path& p, const path& base=path()){
-      return boost::filesystem::complete(p, base);
+      return boost::filesystem::absolute(p, base);
     }
 
     // complete the path according to system rules and return an absolute path, behavior is not portable
@@ -123,7 +123,7 @@ namespace openstudio {
     path extension() const;
 
     bool empty() const;
-    bool is_complete() const;
+    bool is_absolute() const;
     bool has_root_path() const;
     bool has_root_name() const;
     bool has_root_directory() const;

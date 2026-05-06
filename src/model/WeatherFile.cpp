@@ -247,7 +247,7 @@ namespace model {
       if (currentPath) {
 
         // try to load absolute path
-        if (currentPath->is_complete() && openstudio::filesystem::exists(*currentPath)) {
+        if (currentPath->is_absolute() && openstudio::filesystem::exists(*currentPath)) {
           try {
             result = EpwFile(*currentPath);
             return result;
@@ -260,7 +260,7 @@ namespace model {
 
         // try relative path
         if (!dir.empty()) {
-          openstudio::path newPath = openstudio::filesystem::complete(*currentPath, dir);
+          openstudio::path newPath = openstudio::filesystem::absolute(*currentPath, dir);
           if (openstudio::filesystem::exists(newPath)) {
             try {
               result = EpwFile(newPath);
@@ -295,12 +295,12 @@ namespace model {
     bool WeatherFile_Impl::makeUrlAbsolute(const openstudio::path& searchDirectory) {
       boost::optional<openstudio::path> currentPath = this->path();
       if (currentPath) {
-        if (currentPath->is_complete() && openstudio::filesystem::exists(*currentPath)) {
+        if (currentPath->is_absolute() && openstudio::filesystem::exists(*currentPath)) {
           return true;
         }
         openstudio::path newPath;
         openstudio::path workingPath(*currentPath);
-        if (!currentPath->is_complete()) {
+        if (!currentPath->is_absolute()) {
           newPath = openstudio::filesystem::system_complete(workingPath);
           LOG(Debug, "Current path '" << toString(*currentPath) << "' not complete. " << "After calling system_complete have '" << toString(newPath)
                                       << "'.");

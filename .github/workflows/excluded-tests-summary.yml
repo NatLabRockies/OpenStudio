@@ -63,7 +63,7 @@ jobs:
                   job = data.get('jobs', {}).get(job_key, {})
                   # We target the 'include' list specifically
                   matrix_data = job.get('strategy', {}).get('matrix', {}).get('include', [])
-                  
+
                   filtered = []
                   for item in matrix_data:
                       regex = item.get('exclude_regex')
@@ -77,7 +77,7 @@ jobs:
                           filtered.append(item)
                       else:
                           print(f"  Skipping {item.get('pretty')} (no exclude regex)")
-                  
+
                   return {'include': filtered}
               except Exception as e:
                   print(f"Error processing {job_key}: {e}")
@@ -85,10 +85,10 @@ jobs:
 
           print("\nProcessing Linux Matrix:")
           linux = get_filtered_matrix('linux-build')
-          
+
           print("\nProcessing MacOS Matrix:")
           macos = get_filtered_matrix('macos-build')
-          
+
           print("\nProcessing Windows Matrix:")
           windows = get_filtered_matrix('windows-build')
 
@@ -150,7 +150,6 @@ jobs:
 
       - name: Prepare workspace
         run: |
-          set -euo pipefail
           if command -v git >/dev/null 2>&1; then git config --global --add safe.directory '*'; fi
           prepare_dir() {
             local target=$1
@@ -195,7 +194,6 @@ jobs:
 
       - name: Configure Conan remotes
         run: |
-          set -euo pipefail
           conan remote remove conancenter || true
           conan remote add conancenter https://center2.conan.io
           conan remote remove nrel-v2 || true
@@ -208,7 +206,6 @@ jobs:
 
       - name: Conan install
         run: |
-          set -euo pipefail
           conan install . \
             --output-folder="${{ env.OPENSTUDIO_BUILD }}" \
             --build=missing \
@@ -229,7 +226,6 @@ jobs:
       - name: Configure with CMake
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          set -euo pipefail
           . ./conanbuild.sh
           CCACHE_ARGS=()
           if command -v ccache >/dev/null 2>&1; then
@@ -252,7 +248,6 @@ jobs:
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          set -euo pipefail
           . ./conanbuild.sh
           cmake --build . --parallel ${{ matrix.max_jobs }}
 
@@ -260,24 +255,23 @@ jobs:
         id: ctest
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          set -o pipefail
           . ./conanbuild.sh
-          
+
           exclude_regex="${{ matrix.exclude_regex }}"
-          
+
           # Double check just in case, though the matrix setup should filter these
           if [ -z "$exclude_regex" ] || [ "$exclude_regex" == '""' ]; then
             echo "No excluded tests defined. Skipping."
             echo "has_tests=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           echo "has_tests=true" >> $GITHUB_OUTPUT
           echo "Running excluded tests matching: $exclude_regex"
-          
+
           # Run sequentially (-j 1) to avoid resource contentions for these specific problem tests
           ctest -C ${{ env.BUILD_TYPE }} -R "$exclude_regex" --output-on-failure -j 1 -T test | tee excluded_tests.log
-          
+
           exit_code=${PIPESTATUS[0]}
           echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
 
@@ -336,7 +330,7 @@ jobs:
         uses: jmarrec/setup-python@v5.4.0
         with:
           python-version: ${{ env.PYTHON_REQUIRED_VERSION }}
-        
+
       - name: Install Python dependencies
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
@@ -356,7 +350,7 @@ jobs:
         run: |
           echo MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos_dev_target }} >> $GITHUB_ENV
           brew install ninja
-        
+
       - name: Create Build Directory
         run: cmake -E make_directory ${{ env.OPENSTUDIO_BUILD }}
 
@@ -385,7 +379,6 @@ jobs:
 
       - name: Configure Conan remotes
         run: |
-          set -euo pipefail
           conan remote remove nrel-v2 || true
           conan remote add --index 0 nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2
           conan remote remove conancenter || true
@@ -396,7 +389,6 @@ jobs:
       - name: Conan install
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
-          set -euo pipefail
           CMAKE_POLICY_VERSION_MINIMUM=3.5 conan install . \
             --output-folder=../${{ env.OPENSTUDIO_BUILD }} \
             --build=missing \
@@ -419,7 +411,6 @@ jobs:
       - name: Configure with CMake
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          set -e
           chmod +x ./conanbuild.sh
           . ./conanbuild.sh
           CCACHE_ARGS=()
@@ -452,22 +443,21 @@ jobs:
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         shell: bash
         run: |
-          set -euo pipefail
           gem install bundler -v 2.4.10 --conservative --no-document
-          
+
           exclude_regex="${{ matrix.exclude_regex }}"
-          
+
           if [ -z "$exclude_regex" ] || [ "$exclude_regex" == '""' ]; then
             echo "No excluded tests defined. Skipping."
             echo "has_tests=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           echo "has_tests=true" >> $GITHUB_OUTPUT
           echo "Running excluded tests matching: $exclude_regex"
 
           ctest -C ${{ env.BUILD_TYPE }} -R "$exclude_regex" --output-on-failure -j 1 -T test | tee excluded_tests.log
-          
+
           exit_code=${PIPESTATUS[0]}
           echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
 
@@ -496,18 +486,18 @@ jobs:
       CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
       RUBYOPT: "-Eutf-8:utf-8"
       PYTHONUTF8: "1"
-  
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           path: ${{ env.OPENSTUDIO_SOURCE }}
           fetch-depth: 1
-          
+
       - name: Git safe directory
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: git config --global --add safe.directory '*'
-      
+
       - name: Restore sccache cache
         uses: actions/cache@v4
         with:
@@ -515,7 +505,7 @@ jobs:
           key: sccache-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
           restore-keys: |
             sccache-${{ matrix.os }}-${{ matrix.platform }}-
-      
+
       - name: Patch tests for Windows
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
@@ -555,7 +545,7 @@ jobs:
         with:
           python-version: '3.12.2'
           cache: 'pip'
-  
+
       - name: Install Python dependencies
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
@@ -572,7 +562,7 @@ jobs:
         with:
           ruby-version: '3.2.2'
           bundler-cache: true
-        
+
       - name: Create Build Directory
         run: cmake -E make_directory ${{ env.OPENSTUDIO_BUILD }}
 
@@ -620,7 +610,7 @@ jobs:
           & $env:ComSpec /c "call conanbuild.bat && cmake --build . --parallel ${{ matrix.max_jobs }}"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           if (Get-Command sccache -ErrorAction SilentlyContinue) { sccache -s }
-        
+
       - name: Run Excluded Tests
         id: ctest
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
@@ -633,10 +623,10 @@ jobs:
               if ($name -ne "" -and $name -notmatch "^=") { [Environment]::SetEnvironmentVariable($name, $value, "Process") }
             }
           }
-          
+
           $products_dir = Join-Path (Get-Location) "Products"
           $env:Path = "$products_dir;" + $env:Path
-          
+
           $exclude_regex = "${{ matrix.exclude_regex }}"
           $env:CTEST_OUTPUT_ON_FAILURE = "1"
 
@@ -648,9 +638,9 @@ jobs:
 
           "has_tests=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host "Running excluded tests matching: $exclude_regex"
-          
+
           ctest -C ${{ env.BUILD_TYPE }} -R "$exclude_regex" --output-on-failure -j 1 -T test | Tee-Object -FilePath "excluded_tests.log"
-          
+
           $exit_code = $LASTEXITCODE
           "exit_code=$exit_code" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 

@@ -14,6 +14,8 @@
 
 #include <boost/algorithm/string/replace.hpp>
 
+#include <iomanip>
+
 namespace openstudio {
 
 LocalBCL::LocalBCL(const path& libraryPath)

@@ -416,8 +416,11 @@ endif()
 
 if(WIN32)
   add_definitions(-DNOMINMAX)
-  # Set the BOOST_USE_WINAPI_VERSION to Windows10
-  add_compile_definitions(BOOST_USE_WINAPI_VERSION=BOOST_WINAPI_VERSION_WIN7)
+  # Set the BOOST_USE_WINAPI_VERSION to >= Windows8 to avoid the wrong namespace being used for boost log and leading unresolved externals such as 
+  # UnitFactory.cpp.obj : error LNK2001: unresolved external symbol "public: __cdecl boost::log::v2s_mt_nt6::attribute_set::~attribute_set(void)"
+  # The boost binaries we have on artifactory have the v2s_mt_nt62 namespace
+  # https://github.com/boostorg/log/blob/9a906e2f540680ff35a20207f9a1a9a3b889f52b/include/boost/log/detail/config.hpp#L337-L343
+  add_compile_definitions(BOOST_USE_WINAPI_VERSION=BOOST_WINAPI_VERSION_WIN8)
   # This will also align _WIN32_WINNT and WINVER
   # add_compile_definitions(BOOST_USE_WINDOWS_H) # Getting a confict with `typedef GUID UUID` from windows.h
   add_compile_definitions(BOOST_WINAPI_DEFINE_VERSION_MACROS)
@@ -452,9 +455,10 @@ configure_file("${PROJECT_SOURCE_DIR}/dependencies/cpprestsdk_char_traits_workar
 find_package(websocketpp)
 find_package(Boost)
 find_package(geographiclib)
-find_package(SWIG 4.1.1 EXACT REQUIRED CONFIG)
+find_package(SWIG 4.4.0 EXACT REQUIRED CONFIG)
 message("SWIG_EXECUTABLE=${SWIG_EXECUTABLE}")
 message("SWIG_DIR=${SWIG_DIR}")
+message("SWIG_LIB=${SWIG_LIB}")
 find_package(TinyGLTF)
 find_package(CLI11)
 find_package(minizip)
@@ -553,8 +557,6 @@ if(UNIX)
   # Note: CMAKE_CXX_STANDARD (with no extensions) already sets -std=c++17 (or std=c++1z).
   if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-    # TODO: workaround for #5398, remove when updating boost
-    AddCXXFlagIfSupported(-Wno-enum-constexpr-conversion COMPILER_SUPPORTS_enum_constexpr_conversion) # Clang 16.0+ and Apple Clang 15+ only
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
   endif()
 endif()

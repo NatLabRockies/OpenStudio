@@ -103,7 +103,7 @@ jobs:
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "RPM;TGZ"
             max_jobs: 4
-            exclude_regex: "^(BCLFixture.RemoteBCLMetaSearchTest|BCLFixture.BCLMeasure)$"
+            exclude_regex: "BCLFixture.RemoteBCLMetaSearchTest|BCLFixture.BCLMeasure|BCLFixture.RemoteBCL_BCLSearchResult"
           - platform: ubuntu-2204-x64
             pretty: Ubuntu 22.04 x64
             os: ubuntu-22.04
@@ -117,7 +117,7 @@ jobs:
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 3
-            exclude_regex: "^(ModelFixture.PythonPluginInstance_NotPYFile|BCLFixture.BCLMeasure)$"
+            exclude_regex: "ModelFixture.PythonPluginInstance_NotPYFile|BCLFixture.BCLMeasure|BCLFixture.RemoteBCL_BCLSearchResult"
           - platform: ubuntu-2404-x64
             pretty: Ubuntu 24.04 x64
             os: ubuntu-24.04
@@ -131,7 +131,7 @@ jobs:
               *OpenStudio*x86_64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 4
-            exclude_regex: "^BCLFixture.BCLMeasure$"
+            exclude_regex: "BCLFixture.(BCLMeasure|RemoteBCL_BCLSearchResult)"
           - platform: ubuntu-2204-arm64
             pretty: Ubuntu 22.04 ARM64
             os: ubuntu-22.04-arm
@@ -145,7 +145,7 @@ jobs:
               *OpenStudio*arm64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 3
-            exclude_regex: "^(GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager|BCLFixture.BCLMeasure)$"
+            exclude_regex: "GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager|BCLFixture.BCLMeasure|BCLFixture.RemoteBCL_BCLSearchResult"
           - platform: ubuntu-2404-arm64
             pretty: Ubuntu 24.04 ARM64
             os: ubuntu-24.04-arm
@@ -159,18 +159,17 @@ jobs:
               *OpenStudio*arm64.tar.gz
             cpack_generators: "DEB;TGZ"
             max_jobs: 4
-            exclude_regex: "^(GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager|BCLFixture.BCLMeasure)$"
+            exclude_regex: "GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|SqlFileFixture.AnnualTotalCosts|OpenStudioCLI.*test_measure_manager|BCLFixture.BCLMeasure|BCLFixture.RemoteBCL_BCLSearchResult"
     defaults:
       run:
         shell: bash
     env:
       MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
-      CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
 
     permissions:
       # Needed permission to upload the release asset
       contents: write
-      
+
     steps:
       - name: Enable Swap and Verify space
         run: |
@@ -180,7 +179,7 @@ jobs:
           chmod 600 /mnt/swapfile_extra
           mkswap /mnt/swapfile_extra
           swapon /mnt/swapfile_extra
-          
+
           echo
           echo "Memory and swap:"
           # Check if free exists before running it, or ignore failure
@@ -219,8 +218,7 @@ jobs:
 
       - name: Prepare workspace
         run: |
-          set -euo pipefail
-          
+
           # Git safe directory
           if command -v git >/dev/null 2>&1; then
             git config --global --add safe.directory '*'
@@ -240,21 +238,12 @@ jobs:
             ln -sfn "$dest" "$target"
           }
 
-          prepare_dir "$GITHUB_WORKSPACE/${{ env.OPENSTUDIO_BUILD }}" "/mnt/build"
           prepare_dir "$HOME/.ccache" "/mnt/.ccache"
           prepare_dir "$HOME/.conan2" "/mnt/.conan2"
           if command -v ccache >/dev/null 2>&1; then
             ccache -M ${{ env.CCACHE_MAXSIZE }} || true
             echo "Configured ccache:"; ccache -s | sed -n '1,10p'
           fi
-
-      - name: Resolve build path
-        id: build_path
-        run: |
-          # actions/upload-artifact@v4 does not follow symlinks at the start of a path.
-          # We resolve the build directory to its real location to ensure globbing works.
-          REAL_PATH=$(readlink -f "${{ env.OPENSTUDIO_BUILD }}")
-          echo "path=$REAL_PATH" >> $GITHUB_OUTPUT
 
       - name: Fix CMake Path (CentOS)
         if: matrix.platform == 'centos-9-x64'
@@ -289,7 +278,6 @@ jobs:
 
       - name: Configure Conan remotes
         run: |
-          set -euo pipefail
           conan remote remove conancenter || true
           conan remote add conancenter https://center2.conan.io
           conan remote remove nrel-v2 || true
@@ -308,7 +296,6 @@ jobs:
 
       - name: Conan install
         run: |
-          set -euo pipefail
           conan install . \
             --output-folder="${{ env.OPENSTUDIO_BUILD }}" \
             --build=missing \
@@ -327,19 +314,15 @@ jobs:
           echo "SYSTEM_PYTHON_PATH=$python_path" >> $GITHUB_ENV
 
       - name: Configure with CMake
-        working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          set -euo pipefail
-          . ./conanbuild.sh
           # Use absolute path for ccache to avoid resolution issues in containers with symlinked build dirs
           CCACHE_ARGS=()
           if command -v ccache >/dev/null 2>&1; then
             CCACHE_EXE=$(command -v ccache)
             CCACHE_ARGS=("-DCMAKE_C_COMPILER_LAUNCHER=$CCACHE_EXE" "-DCMAKE_CXX_COMPILER_LAUNCHER=$CCACHE_EXE")
           fi
-          cmake -G Ninja \
+          cmake --preset conan-release \
             "${CCACHE_ARGS[@]}" \
-            -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
             -DCMAKE_BUILD_TYPE:STRING=${{ env.BUILD_TYPE }} \
             -DBUILD_TESTING:BOOL=ON \
             -DCPACK_GENERATOR:STRING="${{ matrix.cpack_generators }}" \
@@ -348,21 +331,19 @@ jobs:
             -DPython_EXECUTABLE:FILEPATH="$SYSTEM_PYTHON_PATH" \
             -DPYTHON_VERSION:STRING=${{ env.PYTHON_REQUIRED_VERSION }} \
             -DSYSTEM_RUBY_EXECUTABLE="$SYSTEM_RUBY_PATH" \
-            -DCMAKE_JOB_POOL_LINK:STRING=console \
-            "$GITHUB_WORKSPACE"
+            -DCMAKE_JOB_POOL_LINK:STRING=console
 
       - name: Build with Ninja
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          set -euo pipefail
           . ./conanbuild.sh
           export NINJA_STATUS="[%f/%t | %es elapsed | %o objs/sec]"
           # Start resource monitor (records RSS samples for later summary)
           echo "timestamp PID RSS_KB COMM" > mem_samples.log
-          ( while true; do 
-              sleep 60; 
-              stamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ"); 
-              if command -v ps >/dev/null 2>&1; then ps -eo pid,rsz,comm --sort=-rsz | head -n 5 | awk -v s="$stamp" '{print s" "$1" "$2" "$3}' >> mem_samples.log; fi; 
+          ( while true; do
+              sleep 60;
+              stamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ");
+              if command -v ps >/dev/null 2>&1; then ps -eo pid,rsz,comm --sort=-rsz | head -n 5 | awk -v s="$stamp" '{print s" "$1" "$2" "$3}' >> mem_samples.log; fi;
             done ) &
           HB_PID=$!
           cmake --build . --parallel ${{ matrix.max_jobs }} 2>&1 | tee build.log
@@ -376,37 +357,58 @@ jobs:
         continue-on-error: true
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          set -euo pipefail
-          . ./conanbuild.sh
-          
-          # Conflicting tests that must run sequentially
-          resource_locked_tests="ModelFixture.ScheduleFile|ModelFixture.ScheduleFileAltCtor|ModelFixture.PythonPluginInstance|ModelFixture.PythonPluginInstance_NotPYFile|ModelFixture.PythonPluginInstance_ClassNameValidation|ModelFixture.ChillerElectricASHRAE205_GettersSetters|ModelFixture.ChillerElectricASHRAE205_Loops|ModelFixture.ChillerElectricASHRAE205_NotCBORFile|ModelFixture.ChillerElectricASHRAE205_Clone"
-
           overall_exit_code=0
-          exclude_regex="${{ matrix.exclude_regex }}"
 
-          echo "Running sequential tests..."
+          begin_group() { echo -e "::group::\033[93m$1\033[0m"; }
+
           export CTEST_OUTPUT_ON_FAILURE=1
-          
-          if [ "$exclude_regex" == '""' ] || [ -z "$exclude_regex" ]; then
-            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -j 1 -T test || overall_exit_code=1
+          exclude_pattern="${{ matrix.exclude_regex }}"
+
+          . ./conanbuild.sh
+
+          # Conflicting tests that must run sequentially
+          resource_locked_tests=(
+            ModelFixture.ScheduleFile
+            ModelFixture.ScheduleFileAltCtor
+            ModelFixture.PythonPluginInstance
+            ModelFixture.PythonPluginInstance_NotPYFile
+            ModelFixture.PythonPluginInstance_ClassNameValidation
+            ModelFixture.ChillerElectricASHRAE205_GettersSetters
+            ModelFixture.ChillerElectricASHRAE205_Loops
+            ModelFixture.ChillerElectricASHRAE205_NotCBORFile
+            ModelFixture.ChillerElectricASHRAE205_Clone
+          )
+          resource_locked_pattern=$(IFS='|'; echo "${resource_locked_tests[*]}")
+
+          ctest_command=(ctest -C ${{ env.BUILD_TYPE }} -T test --no-compress-output)
+          seq_exclude_args=()
+          if [ -n "$exclude_pattern" ]; then
+            seq_exclude_args=(-E "^($exclude_pattern)$")
+            final_exclude="$exclude_pattern|$resource_locked_pattern"
           else
-            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -E "$exclude_regex" -j 1 -T test || overall_exit_code=1
+            final_exclude="$resource_locked_pattern"
           fi
 
-          echo "Running all other tests in parallel..."
-          if [ "$exclude_regex" == '""' ] || [ -z "$exclude_regex" ]; then
-            final_exclude="^($resource_locked_tests)$"
-          else
-            final_exclude="($exclude_regex|$resource_locked_tests)"
-          fi
+          begin_group "Running sequential tests..."
+          echo "Running: ${ctest_command[@]} ${seq_exclude_args[@]} -R '^($resource_locked_pattern)$' -j 1"
+          "${ctest_command[@]}" "${seq_exclude_args[@]}" -R "^($resource_locked_pattern)$" -j 1 || overall_exit_code=$?
+          echo "::endgroup::"
 
-          ctest -C ${{ env.BUILD_TYPE }} -E "$final_exclude" -j ${{ matrix.max_jobs }} -T test || overall_exit_code=$?
-          
+
+          ctest_command+=(-E "^($final_exclude)$")
+
+          begin_group "Running all other tests in parallel..."
+          echo "Running: ${ctest_command[@]} -j ${{ matrix.max_jobs }}"
+          "${ctest_command[@]}" -j ${{ matrix.max_jobs }} || overall_exit_code=$?
+          echo "::endgroup::"
+
           if [ $overall_exit_code -ne 0 ]; then
-            echo "Rerunning failing tests..."
-            ctest -C ${{ env.BUILD_TYPE }} --rerun-failed -T test --no-compress-output && overall_exit_code=0 || overall_exit_code=$?
+            begin_group "Rerunning failing tests..."
+            echo "Running: ${ctest_command[@]} --rerun-failed --output-on-failure"
+            "${ctest_command[@]}" --rerun-failed --output-on-failure && overall_exit_code=0 || overall_exit_code=$?
+            echo "::endgroup::"
           fi
+
           echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
 
       - name: Wait for network stability
@@ -419,16 +421,15 @@ jobs:
         with:
           name: build-diag-${{ matrix.platform }}-${{ github.sha }}
           path: |
-            ${{ steps.build_path.outputs.path }}/build.log
-            ${{ steps.build_path.outputs.path }}/.ninja_log
-            ${{ steps.build_path.outputs.path }}/CTestTestfile.cmake
+            ${{ env.OPENSTUDIO_BUILD }}/build.log
+            ${{ env.OPENSTUDIO_BUILD }}/.ninja_log
+            ${{ env.OPENSTUDIO_BUILD }}/CTestTestfile.cmake
           if-no-files-found: warn
 
       - name: Copy Testing tree with suffix
         if: always()
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          set -euo pipefail
           if [ -d "Testing" ]; then
             cp -r Testing "Testing-${{ matrix.test_suffix }}"
           fi
@@ -437,11 +438,10 @@ jobs:
         if: always()
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          set -euo pipefail
-          
+
           # Generate a simple markdown summary from CTest results
           mkdir -p "$(dirname '${{ env.TEST_DASHBOARD_RELATIVE }}')"
-          
+
           echo "# OpenStudio Test Results - ${{ matrix.test_suffix }}" > "${{ env.TEST_DASHBOARD_RELATIVE }}"
           echo "" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
           echo "**Build:** \`${{ github.sha }}\`" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
@@ -449,7 +449,7 @@ jobs:
           echo "**Platform:** ${{ matrix.pretty }}" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
           echo "**Date:** $(date -u)" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
           echo "" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
-          
+
           if [ -f Testing/Temporary/LastTest.log ]; then
             echo "## Test Log (Last 50 lines)" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
             echo '```' >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
@@ -471,7 +471,6 @@ jobs:
         if: ${{ success() && !cancelled() }}
         working-directory: ${{ env.OPENSTUDIO_BUILD }}
         run: |
-          set -euo pipefail
           . ./conanbuild.sh
           cpack -C ${{ env.BUILD_TYPE }}
 
@@ -493,7 +492,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: OS-Installers-${{ matrix.platform }}-DEB-${{ github.sha }}
-          path: ${{ steps.build_path.outputs.path }}/*.deb
+          path: ${{ env.OPENSTUDIO_BUILD }}/*.deb
           if-no-files-found: ignore
 
       - name: Upload RPM installer
@@ -501,14 +500,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: OS-Installers-${{ matrix.platform }}-RPM-${{ github.sha }}
-          path: ${{ steps.build_path.outputs.path }}/*.rpm
+          path: ${{ env.OPENSTUDIO_BUILD }}/*.rpm
           if-no-files-found: ignore
 
       - name: Upload TGZ installer
         uses: actions/upload-artifact@v4
         with:
           name: OS-Installers-${{ matrix.platform }}-TGZ-${{ github.sha }}
-          path: ${{ steps.build_path.outputs.path }}/OpenStudio-*.tar.gz
+          path: ${{ env.OPENSTUDIO_BUILD }}/OpenStudio-*.tar.gz
           if-no-files-found: ignore
 
       - name: Upload WHEEL installer
@@ -516,7 +515,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: OS-Installers-${{ matrix.platform }}-WHEEL-${{ github.sha }}
-          path: ${{ steps.build_path.outputs.path }}/*.whl
+          path: ${{ env.OPENSTUDIO_BUILD }}/*.whl
           if-no-files-found: ignore
 
   linux-publish:
@@ -544,7 +543,6 @@ jobs:
         env:
           S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}', github.ref_name) || format('{0}', github.ref_name) }}
         run: |
-          set -euo pipefail
           echo "Uploading artifacts to s3://${AWS_S3_BUCKET}/${S3_PREFIX}"
           for file in *; do
             [ -e "$file" ] || continue
@@ -563,8 +561,7 @@ jobs:
           BRANCH_NAME: ${{ github.ref_name }}
           S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}', github.ref_name) || format('{0}', github.ref_name) }}
         run: |
-          set -euo pipefail
-          
+
           # Find the 22.04 deb file locally
           DEB_FILE=$(find . -name "*22.04*.deb" | head -n 1)
           if [ -z "$DEB_FILE" ]; then
@@ -572,16 +569,16 @@ jobs:
             ls -la
             exit 1
           fi
-          
+
           FILENAME=$(basename "$DEB_FILE")
           echo "Found file: $FILENAME"
-          
+
           # Construct S3 URL
           # Replace + with %2B
           ENCODED_FILENAME=${FILENAME//+/%2B}
           BINARY_URL="https://${AWS_S3_BUCKET}.s3.amazonaws.com/${S3_PREFIX}/${ENCODED_FILENAME}"
           echo "Binary URL: $BINARY_URL"
-          
+
           # Parse version from filename
           # Expected format: OpenStudio-<Version>-<Platform>.deb
           if [[ "$FILENAME" =~ OpenStudio-(.+)-Ubuntu-22\.04.*\.deb ]]; then
@@ -592,13 +589,13 @@ jobs:
              echo "::error::Could not parse version from filename: $FILENAME"
              exit 1
           fi
-          
+
           echo "Full Version: $OS_VERSION_FULL"
-          
+
           # Logic from Jenkins:
           # Split by +
           IFS='+' read -r VER_PART SHA_PART <<< "$OS_VERSION_FULL"
-          
+
           if [[ "$VER_PART" == *"-"* ]]; then
              # 3.3.0-rc1 -> Ver: 3.3.0, Ext: rc1
              IFS='-' read -r OS_VERSION OS_VERSION_EXT <<< "$VER_PART"
@@ -607,10 +604,10 @@ jobs:
              OS_VERSION="$VER_PART"
              OS_VERSION_EXT="$SHA_PART"
           fi
-          
+
           echo "OS Version: $OS_VERSION"
           echo "OS Version Ext: $OS_VERSION_EXT"
-          
+
           # Docker Tag Logic
           if [[ "$BRANCH_NAME" == "develop" ]]; then
              DOCKER_IMAGE_TAG="develop"
@@ -618,7 +615,7 @@ jobs:
              DOCKER_IMAGE_TAG="${OS_VERSION}-${OS_VERSION_EXT}"
           fi
           echo "Docker Image Tag: $DOCKER_IMAGE_TAG"
-          
+
           # Trigger Workflow
           echo "Triggering manual_update_develop workflow in NREL/docker-openstudio..."
           gh workflow run 'manual_update_develop' \
@@ -653,7 +650,7 @@ jobs:
             python-arch: x64
             dmg_glob: "*.dmg"
             tar_glob: "*OpenStudio*x86_64.tar.gz"
-            exclude_regex: "^BCLFixture.BCLMeasure$"
+            exclude_regex: "BCLFixture.(BCLMeasure|RemoteBCL_BCLSearchResult)"
             max_jobs: 3
           - macos_dev_target: "13.0"
             platform: macos-arm64
@@ -665,16 +662,15 @@ jobs:
             python-arch: arm64
             dmg_glob: "*.dmg"
             tar_glob: "*OpenStudio*arm64.tar.gz"
-            exclude_regex: "^(GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|BCLFixture.BCLMeasure)$"
+            exclude_regex: "GeometryFixture.Plane_RayIntersection|ISOModelFixture.SimModel|BCLFixture.BCLMeasure|BCLFixture.RemoteBCL_BCLSearchResult"
             max_jobs: 3
     env:
       MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
-      CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
 
     permissions:
       # Needed permission to upload the release asset
       contents: write
-  
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v6
@@ -726,7 +722,7 @@ jobs:
       with:
         python-version: ${{ env.PYTHON_REQUIRED_VERSION }}
         # check-latest: true # Force pick up the python I built instead of the (potential) toolcache one. I could also do `rm -Rf $RUNNER_TOOL_CACHE/Python/3.12.2` before this action
-      
+
     - name: Install Python dependencies
       working-directory: ${{ env.OPENSTUDIO_SOURCE }}
       run: |
@@ -743,7 +739,6 @@ jobs:
 
     - name: Set up Qt IFW
       run: |
-        set -euo pipefail
         cd $RUNNER_TEMP
         mkdir QtIFW && cd QtIFW
         aria2c https://github.com/jmarrec/QtIFW-fixup/releases/download/v5.0.0-dev-with-fixup/QtIFW-5.0.0-${{ matrix.arch }}.zip
@@ -761,7 +756,7 @@ jobs:
         # We use cmake commands to build some subprojects, so setting it globally
         echo MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos_dev_target }} >> $GITHUB_ENV
         brew install ninja
-      
+
     - name: Create Build Directory
       run: cmake -E make_directory ${{ env.OPENSTUDIO_BUILD }}
 
@@ -790,7 +785,6 @@ jobs:
 
     - name: Configure Conan remotes
       run: |
-        set -euo pipefail
         conan remote remove nrel-v2 || true
         conan remote add --index 0 nrel-v2 https://conan.openstudio.net/artifactory/api/conan/conan-v2
         conan remote remove conancenter || true
@@ -803,12 +797,10 @@ jobs:
     - name: Conan install
       working-directory: ${{ env.OPENSTUDIO_SOURCE }}
       run: |
-        set -euo pipefail
         CMAKE_POLICY_VERSION_MINIMUM=3.5 conan install . \
           --output-folder=../${{ env.OPENSTUDIO_BUILD }} \
           --build=missing \
           -c tools.cmake.cmaketoolchain:generator=Ninja \
-          -c tools.build:cxxflags='["-Wno-enum-constexpr-conversion", "-D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION"]' \
           -s compiler.cppstd=20 \
           -s build_type=${{ env.BUILD_TYPE }} \
           -s os.version=${{ matrix.macos_dev_target }} \
@@ -913,37 +905,55 @@ jobs:
       shell: bash
       continue-on-error: true
       run: |
-        set -euo pipefail
         gem install bundler -v 2.4.10 --conservative --no-document
 
-        # Conflicting tests that must run sequentially
-        resource_locked_tests="ModelFixture.ScheduleFile|ModelFixture.ScheduleFileAltCtor|ModelFixture.PythonPluginInstance|ModelFixture.PythonPluginInstance_NotPYFile|ModelFixture.PythonPluginInstance_ClassNameValidation|ModelFixture.ChillerElectricASHRAE205_GettersSetters|ModelFixture.ChillerElectricASHRAE205_Loops|ModelFixture.ChillerElectricASHRAE205_NotCBORFile|ModelFixture.ChillerElectricASHRAE205_Clone"
-
         overall_exit_code=0
-        exclude_regex="${{ matrix.exclude_regex }}"
 
-        echo "Running sequential tests..."
-        if [ "$exclude_regex" == '""' ] || [ -z "$exclude_regex" ]; then
-          ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -j 1 -T test || overall_exit_code=1
-        else
-          ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -E "$exclude_regex" -j 1 -T test || overall_exit_code=1
-        fi
+        begin_group() { echo -e "::group::\033[93m$1\033[0m"; }
 
-        echo "Running all other tests in parallel..."
         export CTEST_OUTPUT_ON_FAILURE=1
-        export CTEST_PARALLEL_LEVEL=${{ matrix.max_jobs }}
-        
-        if [ -n "$exclude_regex" ] && [ "$exclude_regex" != '""' ]; then
-          final_exclude="($exclude_regex|$resource_locked_tests)"
+        exclude_pattern="${{ matrix.exclude_regex }}"
+
+        # Conflicting tests that must run sequentially
+        resource_locked_tests=(
+          ModelFixture.ScheduleFile
+          ModelFixture.ScheduleFileAltCtor
+          ModelFixture.PythonPluginInstance
+          ModelFixture.PythonPluginInstance_NotPYFile
+          ModelFixture.PythonPluginInstance_ClassNameValidation
+          ModelFixture.ChillerElectricASHRAE205_GettersSetters
+          ModelFixture.ChillerElectricASHRAE205_Loops
+          ModelFixture.ChillerElectricASHRAE205_NotCBORFile
+          ModelFixture.ChillerElectricASHRAE205_Clone
+        )
+        resource_locked_pattern=$(IFS='|'; echo "${resource_locked_tests[*]}")
+
+        ctest_command=(ctest -C ${{ env.BUILD_TYPE }} -T test --no-compress-output)
+        seq_exclude_args=()
+        if [ -n "$exclude_pattern" ]; then
+          seq_exclude_args=(-E "^($exclude_pattern)$")
+          final_exclude="$exclude_pattern|$resource_locked_pattern"
         else
-          final_exclude="^($resource_locked_tests)$"
+          final_exclude="$resource_locked_pattern"
         fi
 
-        ctest -C ${{ env.BUILD_TYPE }} -E "$final_exclude" -T test || overall_exit_code=$?
+        begin_group "Running sequential tests..."
+        echo "Running: ${ctest_command[@]} ${seq_exclude_args[@]} -R '^($resource_locked_pattern)$' -j 1"
+        "${ctest_command[@]}" "${seq_exclude_args[@]}" -R "^($resource_locked_pattern)$" -j 1 || overall_exit_code=$?
+        echo "::endgroup::"
+
+        ctest_command+=(-E "^($final_exclude)$")
+
+        begin_group "Running all other tests in parallel..."
+        echo "Running: ${ctest_command[@]} -j ${{ matrix.max_jobs }}"
+        "${ctest_command[@]}" -j ${{ matrix.max_jobs }} || overall_exit_code=$?
+        echo "::endgroup::"
 
         if [ $overall_exit_code -ne 0 ]; then
-          echo "Rerunning failing tests..."
-          ctest -C ${{ env.BUILD_TYPE }} --rerun-failed -T test --no-compress-output --output-on-failure && overall_exit_code=0 || overall_exit_code=$?
+          begin_group "Rerunning failing tests..."
+          echo "Running: ${ctest_command[@]} --rerun-failed --output-on-failure"
+          "${ctest_command[@]}" --rerun-failed --output-on-failure && overall_exit_code=0 || overall_exit_code=$?
+          echo "::endgroup::"
         fi
 
         echo "exit_code=${overall_exit_code}" >> $GITHUB_OUTPUT
@@ -954,7 +964,6 @@ jobs:
         APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
         APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
       run: |
-        set -euo pipefail
         if [ -n "$APPLE_CERT_DATA" ] && [ -n "$APPLE_CERT_PASSWORD" ]; then
           # Create temporary keychain
           KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain"
@@ -962,13 +971,13 @@ jobs:
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          
+
           # Import certificate
           CERT_PATH="$RUNNER_TEMP/certificate.p12"
           echo "$APPLE_CERT_DATA" | base64 --decode > "$CERT_PATH"
           security import "$CERT_PATH" -k "$KEYCHAIN_PATH" -P "$APPLE_CERT_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          
+
           echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
         fi
 
@@ -978,7 +987,6 @@ jobs:
       env:
         COPYFILE_DISABLE: 1
       run: |
-        set -euo pipefail
         . ./conanbuild.sh
         cpack -C ${{ env.BUILD_TYPE }}
 
@@ -996,8 +1004,7 @@ jobs:
         # Check if we have a real ID; if not, we must patch the installer
         APPLE_DEV_ID: ${{ secrets.APPLE_DEV_ID }}
       run: |
-        set -euo pipefail
-        
+
         # Only run this fix if we DO NOT have a valid Developer ID.
         if [ -n "$APPLE_DEV_ID" ]; then
           echo "Valid Developer ID detected. Skipping ad-hoc patch."
@@ -1021,8 +1028,7 @@ jobs:
         APPLE_ID_USERNAME: ${{ secrets.APPLE_ID_USERNAME }}
         APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
       run: |
-        set -euo pipefail
-        
+
         # Check if signing credentials are configured
         if [ -z "$APPLE_CERT_DATA" ] || [ -z "$APPLE_DEV_ID" ]; then
           echo "::warning::Apple signing certificates not configured. Falling back to ad-hoc signing."
@@ -1030,16 +1036,16 @@ jobs:
         else
           export AD_HOC_SIGNING=false
         fi
-        
+
         # Sign DMG files
         mkdir -p signed
         for dmg in ${{ matrix.dmg_glob }}; do
           if [ -f "$dmg" ]; then
             echo "Processing $dmg..."
-            
+
             # The inner app should already be signed by CPack if configured correctly
             # We now sign the DMG itself (or ad-hoc sign if needed)
-            
+
             echo "Signing $dmg..."
             if [ "$AD_HOC_SIGNING" = "false" ]; then
               codesign --force --sign "$APPLE_DEV_ID" --timestamp --options runtime "$dmg" || {
@@ -1055,7 +1061,7 @@ jobs:
                   continue
                 }
             fi
-            
+
             # Notarize if credentials available (Skip for ad-hoc)
             if [ "$AD_HOC_SIGNING" = "false" ] && [ -n "$APPLE_ID_USERNAME" ] && [ -n "$APPLE_ID_PASSWORD" ]; then
               echo "Notarizing $dmg..."
@@ -1064,29 +1070,28 @@ jobs:
                 --password "$APPLE_ID_PASSWORD" \
                 --team-id "$APPLE_TEAM_ID" \
                 --wait || echo "::warning::Notarization failed for $dmg"
-              
+
               # Staple the notarization ticket
               xcrun stapler staple "$dmg" || echo "::warning::Stapling failed for $dmg"
             elif [ "$AD_HOC_SIGNING" = "true" ]; then
                 echo "Skipping notarization due to ad-hoc signing."
             fi
-            
+
             cp "$dmg" "signed/$(basename "$dmg")"
           fi
         done
-        
+
         # Cleanup
         if [ -n "$KEYCHAIN_PATH" ]; then
           security delete-keychain "$KEYCHAIN_PATH" || true
         fi
-        
+
         echo "Code signing completed"
 
     - name: Copy Testing tree with suffix
       if: always()
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       run: |
-        set -euo pipefail
         if [ -d "Testing" ]; then
           cp -r Testing "Testing-${{ matrix.test_suffix }}"
         fi
@@ -1095,11 +1100,10 @@ jobs:
       if: always()
       working-directory: ${{ env.OPENSTUDIO_BUILD }}
       run: |
-        set -euo pipefail
-        
+
         # Generate a simple markdown summary from CTest results
         mkdir -p "$(dirname '${{ env.TEST_DASHBOARD_RELATIVE }}')"
-        
+
         echo "# OpenStudio Test Results - ${{ matrix.test_suffix }}" > "${{ env.TEST_DASHBOARD_RELATIVE }}"
         echo "" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
         echo "**Build:** \`${{ github.sha }}\`" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
@@ -1107,7 +1111,7 @@ jobs:
         echo "**Platform:** ${{ matrix.pretty }}" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
         echo "**Date:** $(date -u)" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
         echo "" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
-        
+
         if [ -f Testing/Temporary/LastTest.log ]; then
           echo "## Test Log (Last 50 lines)" >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
           echo '```' >> "${{ env.TEST_DASHBOARD_RELATIVE }}"
@@ -1184,7 +1188,6 @@ jobs:
           S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}/signed', github.ref_name) || format('{0}/signed', github.ref_name) }}
           AWS_S3_BUCKET: openstudio-ci-builds
         run: |
-          set -euo pipefail
           echo "Uploading artifacts to s3://${AWS_S3_BUCKET}/${S3_PREFIX}"
           for file in *; do
             [ -e "$file" ] || continue
@@ -1216,34 +1219,33 @@ jobs:
             python-arch: x64
             allow_failure: false
             max_jobs: 4
-            exclude_regex: "^(RubyTest-Date_Test-ymd_constructor|BCLFixture.BCLMeasure)$"
+            exclude_regex: "RubyTest-Date_Test-ymd_constructor|BCLFixture.BCLMeasure|BCLFixture.RemoteBCL_BCLSearchResult"
     defaults:
       run:
         shell: pwsh
     env:
       MAX_BUILD_THREADS: ${{ matrix.max_jobs }}
-      CTEST_PARALLEL_LEVEL: ${{ matrix.max_jobs }}
       RUBYOPT: "-Eutf-8:utf-8"
       PYTHONUTF8: "1"
     permissions:
       contents: write
-  
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           path: ${{ env.OPENSTUDIO_SOURCE }}
           fetch-depth: 1
-          
+
       - name: Verify space
         run: |
           Get-PSDrive C | Select-Object Used,Free
           Get-CimInstance Win32_OperatingSystem | Select-Object TotalVisibleMemorySize,FreePhysicalMemory,TotalVirtualMemorySize,FreeVirtualMemory
-          
+
       - name: Git safe directory
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: git config --global --add safe.directory '*'
-      
+
       - name: Restore sccache cache
         uses: actions/cache@v4
         with:
@@ -1251,7 +1253,7 @@ jobs:
           key: sccache-${{ matrix.os }}-${{ matrix.platform }}-${{ hashFiles('conan.lock') }}
           restore-keys: |
             sccache-${{ matrix.os }}-${{ matrix.platform }}-
-      
+
       - name: Patch tests for Windows
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
@@ -1299,7 +1301,7 @@ jobs:
         with:
           python-version: '3.12.2'
           cache: 'pip'
-  
+
       - name: Install Python dependencies
         working-directory: ${{ env.OPENSTUDIO_SOURCE }}
         run: |
@@ -1352,7 +1354,7 @@ jobs:
           # Avoid annoying warning: "xelatex: major issue: So far, you have not checked for updates as a MiKTeX user."
           mpm --find-updates
           mpm --admin --find-updates
-        
+
       - name: Create Build Directory
         run: cmake -E make_directory ${{ env.OPENSTUDIO_BUILD }}
 
@@ -1369,7 +1371,7 @@ jobs:
           conan remote add conancenter https://center2.conan.io
           if ($LASTEXITCODE -ne 0) { throw "Failed to add conancenter remote" }
           conan remote enable conancenter
-          
+
           if (-not (Test-Path "$env:USERPROFILE/.conan2/profiles/default")) {
             conan profile detect
           }
@@ -1384,7 +1386,9 @@ jobs:
             --build=missing `
             -c tools.cmake.cmaketoolchain:generator=Ninja `
             -s compiler.cppstd=20 `
-            -s build_type=${{ env.BUILD_TYPE }}
+            -s build_type=${{ env.BUILD_TYPE }} `
+            --lockfile-partial --lockfile-out=conan.lock
+          git diff conan.lock
 
       - name: Locate Ruby
         run: |
@@ -1409,14 +1413,14 @@ jobs:
           if (Get-Command sccache -ErrorAction SilentlyContinue) { sccache -s }
           # Use $env:ComSpec to ensure we call the Windows Command Prompt, not the MSYS2 cmd found in PATH
           & $env:ComSpec /c "call conanbuild.bat && cmake --build . --parallel ${{ matrix.max_jobs }} -- -d stats 2>&1" | Tee-Object -FilePath "build.log"
-          
+
           # Check the exit code of the cmd process, not Tee-Object
           if ($LASTEXITCODE -ne 0) {
             Write-Error "Build failed with exit code $LASTEXITCODE"
             exit $LASTEXITCODE
           }
           if (Get-Command sccache -ErrorAction SilentlyContinue) { sccache -s }
-          
+
       - name: Wait for network stability
         if: always()
         run: Start-Sleep -Seconds 5
@@ -1431,7 +1435,7 @@ jobs:
             ${{ env.OPENSTUDIO_BUILD }}/.ninja_log
             ${{ env.OPENSTUDIO_BUILD }}/CTestTestfile.cmake
           if-no-files-found: warn
-        
+
       - name: Run CTest suite
         id: ctest
         continue-on-error: true
@@ -1448,41 +1452,62 @@ jobs:
               }
             }
           }
-          
+
           # Add build Products directory to Path so Python can find _openstudioairflow.pyd and its dependencies
           $products_dir = Join-Path (Get-Location) "Products"
           $env:Path = "$products_dir;" + $env:Path
-          
+
           # Conflicting tests that must run sequentially
-          $resource_locked_tests = "ModelFixture.ScheduleFile|ModelFixture.ScheduleFileAltCtor|ModelFixture.PythonPluginInstance|ModelFixture.PythonPluginInstance_NotPYFile|ModelFixture.PythonPluginInstance_ClassNameValidation|ModelFixture.ChillerElectricASHRAE205_GettersSetters|ModelFixture.ChillerElectricASHRAE205_Loops|ModelFixture.ChillerElectricASHRAE205_NotCBORFile|ModelFixture.ChillerElectricASHRAE205_Clone"
-          
+          $resource_locked_tests = @(
+            "ModelFixture.ScheduleFile",
+            "ModelFixture.ScheduleFileAltCtor",
+            "ModelFixture.PythonPluginInstance",
+            "ModelFixture.PythonPluginInstance_NotPYFile",
+            "ModelFixture.PythonPluginInstance_ClassNameValidation",
+            "ModelFixture.ChillerElectricASHRAE205_GettersSetters",
+            "ModelFixture.ChillerElectricASHRAE205_Loops",
+            "ModelFixture.ChillerElectricASHRAE205_NotCBORFile",
+            "ModelFixture.ChillerElectricASHRAE205_Clone"
+          )
+          $resource_locked_pattern = $resource_locked_tests -join "|"
+
           $overall_exit_code = 0
-          $exclude_regex = "${{ matrix.exclude_regex }}"
-          
+          $exclude_pattern = "${{ matrix.exclude_regex }}"
+
           $env:CTEST_OUTPUT_ON_FAILURE = "1"
 
-          Write-Host "Running sequential tests..."
-          if ([string]::IsNullOrEmpty($exclude_regex) -or $exclude_regex -eq '""') {
-            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -j 1 -T test
-          } else {
-            ctest -C ${{ env.BUILD_TYPE }} -R "^($resource_locked_tests)$" -E "$exclude_regex" -j 1 -T test
-          }
-          if ($LASTEXITCODE -ne 0) { $overall_exit_code = 1 }
+          function begin_group($msg) { Write-Host "::group::$([char]27)[93m$msg$([char]27)[0m" }
 
-          Write-Host "Running all other tests in parallel..."
-          if ([string]::IsNullOrEmpty($exclude_regex) -or $exclude_regex -eq '""') {
-             $final_exclude = "^($resource_locked_tests)$"
+          $ctest_command = @("ctest", "-C", "${{ env.BUILD_TYPE }}", "-T", "test", "--no-compress-output")
+
+          $seq_exclude_args = @()
+          if (-not [string]::IsNullOrEmpty($exclude_pattern)) {
+            $seq_exclude_args = @("-E", "^($exclude_pattern)$")
+            $final_exclude = "$exclude_pattern|$resource_locked_pattern"
           } else {
-             $final_exclude = "($exclude_regex|$resource_locked_tests)"
+            $final_exclude = $resource_locked_pattern
           }
-          
-          ctest -C ${{ env.BUILD_TYPE }} -E "$final_exclude" -j ${{ matrix.max_jobs }} -T test
-          if ($LASTEXITCODE -ne 0) { $overall_exit_code = 1 }
+
+          begin_group "Running sequential tests..."
+          Write-Host "Running: $($ctest_command -join ' ') $($seq_exclude_args -join ' ') -R '^($resource_locked_pattern)$' -j 1"
+          & $ctest_command[0] $ctest_command[1..($ctest_command.Length-1)] @seq_exclude_args -R "^($resource_locked_pattern)$" -j 1
+          if ($LASTEXITCODE -ne 0) { $overall_exit_code = $LASTEXITCODE }
+          Write-Host "::endgroup::"
+
+          $ctest_command += @("-E", "^($final_exclude)$")
+
+          begin_group "Running all other tests in parallel..."
+          Write-Host "Running: $($ctest_command -join ' ') -j ${{ matrix.max_jobs }}"
+          & $ctest_command[0] $ctest_command[1..($ctest_command.Length-1)] -j ${{ matrix.max_jobs }}
+          if ($LASTEXITCODE -ne 0) { $overall_exit_code = $LASTEXITCODE }
+          Write-Host "::endgroup::"
 
           if ($overall_exit_code -ne 0) {
-            Write-Host "Rerunning failing tests..."
-            ctest -C ${{ env.BUILD_TYPE }} --rerun-failed -T test
-            if ($LASTEXITCODE -eq 0) { $overall_exit_code = 0 } else { $overall_exit_code = 1 }
+            begin_group "Rerunning failing tests..."
+            Write-Host "Running: $($ctest_command -join ' ') --rerun-failed --output-on-failure"
+            & $ctest_command[0] $ctest_command[1..($ctest_command.Length-1)] --rerun-failed --output-on-failure
+            if ($LASTEXITCODE -eq 0) { $overall_exit_code = 0 } else { $overall_exit_code = $LASTEXITCODE }
+            Write-Host "::endgroup::"
           }
           "exit_code=$overall_exit_code" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
@@ -1501,7 +1526,7 @@ jobs:
           $dashboardPath = "${{ env.TEST_DASHBOARD_RELATIVE }}"
           $dashboardDir = Split-Path -Parent $dashboardPath
           if (-not (Test-Path $dashboardDir)) { New-Item -ItemType Directory -Path $dashboardDir -Force }
-          
+
           "# OpenStudio Test Results - ${{ matrix.test_suffix }}" | Out-File -FilePath $dashboardPath -Encoding utf8
           "" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
           "**Build:** ``${{ github.sha }}``" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
@@ -1509,7 +1534,7 @@ jobs:
           "**Platform:** ${{ matrix.pretty }}" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
           "**Date:** $(Get-Date -Format u)" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
           "" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
-          
+
           if (Test-Path "Testing/Temporary/LastTest.log") {
             "## Test Log (Last 50 lines)" | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
             '```' | Out-File -FilePath $dashboardPath -Encoding utf8 -Append
@@ -1565,30 +1590,30 @@ jobs:
             Write-Host "------------------------------------------------------------"
             Write-Host "Signing Binaries (Pre-CPack)"
             Write-Host "------------------------------------------------------------"
-            
+
             $pathsToSign = @()
             if (Test-Path "bin") { $pathsToSign += "bin" }
             if (Test-Path "Products") { $pathsToSign += "Products" }
-            
+
             if ($pathsToSign.Count -gt 0) {
               $binZip = "binaries_to_sign.zip"
               $signedBinZip = "binaries_to_sign.signed.zip"
-              
+
               Write-Host "Archiving binaries from: $pathsToSign"
               Compress-Archive -Path $pathsToSign -DestinationPath $binZip -Force
-              
+
               Write-Host "Sending binaries for signing..."
               node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $binZip -t 4800000
-              
+
               if (Test-Path $signedBinZip) {
                 Write-Host "Extracting and overwriting signed binaries..."
                 $tempDir = "temp_signed_binaries"
                 if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
                 Expand-Archive -Path $signedBinZip -DestinationPath $tempDir -Force
-                
+
                 # Copy back to overwrite
                 Copy-Item -Path "$tempDir\*" -Destination . -Recurse -Force
-                
+
                 # Cleanup
                 Remove-Item $tempDir -Recurse -Force
                 Remove-Item $binZip -Force
@@ -1628,48 +1653,48 @@ jobs:
             Write-Host "------------------------------------------------------------"
             Write-Host "Signing Final Installer"
             Write-Host "------------------------------------------------------------"
-            
+
             $installerZip = "installer_to_sign_${{ github.sha }}.zip"
             $signedInstallerZip = "installer_to_sign_${{ github.sha }}.signed.zip"
-            
+
             $installers = Get-ChildItem -Filter "OpenStudio-*.exe"
             if ($installers.Count -gt 0) {
                Write-Host "Found installer(s): $($installers.Name)"
-               
+
                # Calculate hash of original installer before compression
                $originalHash = (Get-FileHash -Path $installers[0].FullName -Algorithm SHA256).Hash
                Write-Host "Original installer hash (SHA256): $originalHash"
-               
+
                Compress-Archive -Path $installers.FullName -DestinationPath $installerZip -Force
-               
+
                Write-Host "Sending installer for signing..."
                node "../${{ env.OPENSTUDIO_SOURCE }}/.github/signing-client/code-signing.js" $installerZip -t 4800000
-               
+
                if (Test-Path $signedInstallerZip) {
                   Write-Host "Extracting signed installer..."
                   if (-not (Test-Path signed)) { New-Item -ItemType Directory -Path signed | Out-Null }
                   Expand-Archive -Path $signedInstallerZip -DestinationPath signed -Force
-                  
+
                   # Verify the extracted file exists and matches expected name
                   $extractedFiles = Get-ChildItem -Path signed -Filter "*.exe"
                   if ($extractedFiles.Count -eq 0) {
                      Write-Host "::error::No EXE file found in signed archive!"
                      exit 1
                   }
-                  
+
                   $extractedFile = $extractedFiles[0]
                   $expectedName = $installers[0].Name
                   if ($extractedFile.Name -ne $expectedName) {
                      Write-Host "::warning::Signed file name mismatch!"
                      Write-Host "  Expected: $expectedName"
                      Write-Host "  Got: $($extractedFile.Name)"
-                     
+
                      # Rename to match the original filename to prevent distributing misnamed file
                      $newPath = Join-Path -Path signed -ChildPath $expectedName
                      Rename-Item -Path $extractedFile.FullName -NewName $newPath -Force
                      Write-Host "  Renamed to match original: $expectedName"
                   }
-                  
+
                   # Cleanup
                   Remove-Item $installerZip -Force
                   Remove-Item $signedInstallerZip -Force
@@ -1735,13 +1760,12 @@ jobs:
           S3_PREFIX: ${{ github.ref_type == 'tag' && format('releases/{0}/signed', github.ref_name) || format('{0}/signed', github.ref_name) }}
           AWS_S3_BUCKET: openstudio-ci-builds
         run: |
-          set -euo pipefail
           echo "Uploading artifacts to s3://${AWS_S3_BUCKET}/${S3_PREFIX}"
 
           # Find installers in artifact subdirectories
           SIGNED_EXE=$(find . -name "*.exe" | grep "SIGNED" | head -n 1 || true)
           UNSIGNED_EXE=$(find . -name "*.exe" | grep -v "SIGNED" | head -n 1 || true)
-          
+
           if [ -n "$SIGNED_EXE" ]; then
             echo "Uploading signed installer: $SIGNED_EXE"
             filename=$(basename "$SIGNED_EXE")

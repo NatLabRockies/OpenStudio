@@ -117,18 +117,18 @@ void FileReference::setPath(const openstudio::path& newPath) {
 bool FileReference::makePathAbsolute(const openstudio::path& searchDirectory) {
   // trivial completion
   openstudio::path currentPath = path();
-  if (currentPath.is_complete() && openstudio::filesystem::exists(currentPath)) {
+  if (currentPath.is_absolute() && openstudio::filesystem::exists(currentPath)) {
     return true;
   }
   openstudio::path workingPath(currentPath);
   // if currentPath is complete but does not exist, go to extreme measures
-  if (currentPath.is_complete()) {
+  if (currentPath.is_absolute()) {
     workingPath = currentPath.filename();
   }
   if (searchDirectory.empty()) {
     return false;
   }
-  openstudio::path newPath = openstudio::filesystem::complete(workingPath, searchDirectory);
+  openstudio::path newPath = openstudio::filesystem::absolute(workingPath, searchDirectory);
   if (newPath.empty() || !openstudio::filesystem::exists(newPath)) {
     return false;
   }

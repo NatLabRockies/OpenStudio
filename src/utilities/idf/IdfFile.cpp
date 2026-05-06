@@ -321,7 +321,7 @@ OptionalIdfFile IdfFile::load(const path& p, ProgressBar* progressBar) {
   IddFileType iddType(IddFileType::EnergyPlus);  // default
 
   // switch if file extension equal to modelFileExtension() or componentFileExtension()
-  std::string pext = toString(openstudio::filesystem::extension(p));
+  std::string pext = p.extension().string();
   if (!pext.empty()) {
     // remove '.'
     pext = std::string(++pext.begin(), pext.end());

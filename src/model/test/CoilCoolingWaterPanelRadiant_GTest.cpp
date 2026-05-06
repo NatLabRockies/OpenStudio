@@ -19,6 +19,8 @@
 #include "../ScheduleConstant_Impl.hpp"
 #include "../AirLoopHVAC.hpp"
 #include "../AirLoopHVACZoneSplitter.hpp"
+#include "../ScheduleRuleset.hpp"
+#include "../ScheduleTypeLimits.hpp"
 
 using namespace openstudio;
 using namespace openstudio::model;
@@ -110,4 +112,23 @@ TEST_F(ModelFixture, CoilCoolingWaterPanelRadiant_SetGetFields) {
 
   coil.resetCoolingControlTemperatureSchedule();
   EXPECT_FALSE(coil.coolingControlTemperatureSchedule());
+}
+
+TEST_F(ModelFixture, CoilCoolingWaterPanelRadiant_CoolingControlTemperatureSchedule) {
+  // Address #5595, "CoilCoolingWaterPanelRadiant.setCoolingControlTemperatureSchedule" but
+  // keep getting 'incompatible ScheduleTypeLimits' error.
+
+  Model m;
+  CoilCoolingWaterPanelRadiant coil(m);
+
+  ScheduleTypeLimits temperatureLimits(m);
+  EXPECT_TRUE(temperatureLimits.setLowerLimitValue(-60));
+  EXPECT_TRUE(temperatureLimits.setUpperLimitValue(200));
+  EXPECT_TRUE(temperatureLimits.setNumericType("Continuous"));
+  EXPECT_TRUE(temperatureLimits.setUnitType("Temperature"));
+
+  ScheduleRuleset temperatureSchedule(m);
+  EXPECT_TRUE(temperatureSchedule.setScheduleTypeLimits(temperatureLimits));
+
+  EXPECT_TRUE(coil.setCoolingControlTemperatureSchedule(temperatureSchedule));
 }

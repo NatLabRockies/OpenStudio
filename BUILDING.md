@@ -142,6 +142,21 @@ conan install . --output-folder=../OS-build-release --build=missing \
    --lockfile-partial --lockfile-out=conan.lock
 ```
 
+You can pass `--update` to the above command so make it look for newest revisions in the remotes (probably use conancenter first in line)
+
+
+---
+
+**If you want to pull the latest revision from the remote, ignoring your local cache**, instead of actually installing packages which takes a while, you probably want to do this instead.
+
+While doing so, I suggest you make the conancenter remote first in line, so it doesn't find the revision from the NLR Artifactory which are likely outdated.
+
+You'll need to remove conan.lock first, or maybe keep only a couple of requires references in there (eg: libxslt/libxml2 to help it resolve conflicts)
+
+```shell
+conan lock create conanfile.py --update --lockfile=conan.lock --lockfile-out=conan.lock
+```
+
 ## Running Tests
 
 After building, you can run the test suite using CTest:

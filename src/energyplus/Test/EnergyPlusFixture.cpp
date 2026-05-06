@@ -42,7 +42,7 @@ void EnergyPlusFixture::SetUpTestSuite() {
     // delete any *.osc and oscomponent.xml files in the directory
     for (openstudio::filesystem::directory_iterator it(idfComponent.first), itEnd; it != itEnd; ++it) {
       if (openstudio::filesystem::is_regular_file(it->status())) {
-        std::string ext = openstudio::toString(openstudio::filesystem::extension(*it));
+        std::string ext = it->path().extension().string();
         if (ext == ".osc") {
           openstudio::filesystem::remove(it->path());
         }

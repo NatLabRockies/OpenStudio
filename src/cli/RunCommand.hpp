@@ -6,7 +6,9 @@
 #ifndef CLI_RUNCOMMAND_HPP
 #define CLI_RUNCOMMAND_HPP
 
-#include <CLI/App.hpp>
+namespace CLI {
+class App;
+}  // namespace CLI
 
 #include <functional>
 
