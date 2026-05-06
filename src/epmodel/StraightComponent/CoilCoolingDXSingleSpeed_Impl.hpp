@@ -123,7 +123,7 @@ namespace epmodel {
       double minimumOutdoorDryBulbTemperatureforCompressorOperation() const;
       bool setMinimumOutdoorDryBulbTemperatureforCompressorOperation(double minimumOutdoorDryBulbTemperatureforCompressorOperation);
 
-      bool addToNode(Node& node);
+      bool addToNode(Node& node) override;
       boost::optional<CoilSystemCoolingDX> coilSystemCoolingDX() const;
     };
 

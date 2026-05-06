@@ -145,7 +145,7 @@ namespace epmodel {
       double unitInternalStaticAirPressure() const;
       bool setUnitInternalStaticAirPressure(double unitInternalStaticAirPressure);
 
-      bool addToNode(Node& node);
+      bool addToNode(Node& node) override;
     };
 
   }  // namespace detail

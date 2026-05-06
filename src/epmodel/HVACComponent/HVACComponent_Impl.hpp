@@ -43,7 +43,7 @@ namespace epmodel {
       virtual bool addToSplitter(Splitter& splitter);
       virtual void disconnect();
       virtual bool isRemovable() const;
-      virtual std::vector<IdfObject> remove();
+      virtual std::vector<IdfObject> remove() override;
       virtual openstudio::ComponentType componentType() const;
       virtual std::vector<openstudio::FuelType> coolingFuelTypes() const;
       virtual std::vector<openstudio::FuelType> heatingFuelTypes() const;

@@ -210,7 +210,7 @@ namespace epmodel {
       bool setBasinHeaterAvailabilitySchedule(Schedule& schedule);
       void resetBasinHeaterAvailabilitySchedule();
 
-      bool addToNode(Node& node);
+      bool addToNode(Node& node) override;
     };
 
   }  // namespace detail

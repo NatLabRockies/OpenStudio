@@ -31,7 +31,7 @@ namespace epmodel {
       unsigned waterOutletPort() const override;
       bool addToNode(Node& node) override;
       std::vector<IdfObject> remove() override;
-      bool removeFromPlantLoop();
+      bool removeFromPlantLoop() override;
 
       std::vector<ModelObject> children() const override;
 

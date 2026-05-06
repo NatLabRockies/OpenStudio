@@ -29,7 +29,7 @@ namespace epmodel {
       std::vector<openstudio::IdfObject> remove() override;
       bool removeFromLoop() override;
       boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
-      bool addToNode(Node& node);
+      bool addToNode(Node& node) override;
 
       Schedule primaryAirAvailabilitySchedule() const;
       bool setPrimaryAirAvailabilitySchedule(Schedule& schedule);

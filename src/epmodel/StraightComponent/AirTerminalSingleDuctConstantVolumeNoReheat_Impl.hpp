@@ -26,7 +26,7 @@ namespace epmodel {
 
       boost::optional<ZoneHVACAirDistributionUnit> zoneHVACAirDistributionUnit() const;
       bool removeFromLoop() override;
-      bool addToNode(Node& node);
+      bool addToNode(Node& node) override;
 
       Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(Schedule& schedule);

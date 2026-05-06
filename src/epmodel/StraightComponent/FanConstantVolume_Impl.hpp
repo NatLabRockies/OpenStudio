@@ -26,7 +26,7 @@ namespace epmodel {
       unsigned inletPort() const override;
       unsigned outletPort() const override;
 
-      bool addToNode(Node& node);
+      bool addToNode(Node& node) override;
       openstudio::epmodel::Schedule availabilitySchedule() const;
       bool setAvailabilitySchedule(openstudio::epmodel::Schedule& schedule);
 

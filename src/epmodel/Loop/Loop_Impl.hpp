@@ -60,11 +60,11 @@ namespace epmodel {
       virtual boost::optional<openstudio::epmodel::ModelObject> demandComponent(openstudio::Handle handle) const;
       virtual boost::optional<openstudio::epmodel::ModelObject> supplyComponent(openstudio::Handle handle) const;
 
-      virtual std::vector<openstudio::IdfObject> remove();
+      virtual std::vector<openstudio::IdfObject> remove() override;
       virtual openstudio::epmodel::Splitter demandSplitter() const;
       virtual openstudio::epmodel::Mixer demandMixer() const;
       virtual openstudio::epmodel::ModelObject clone(openstudio::epmodel::Model model) const;
-      virtual std::vector<openstudio::epmodel::ModelObject> children() const;
+      virtual std::vector<openstudio::epmodel::ModelObject> children() const override;
 
       virtual void autosize();
       virtual void applySizingValues();

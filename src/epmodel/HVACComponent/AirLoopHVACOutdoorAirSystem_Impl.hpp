@@ -59,7 +59,7 @@ namespace epmodel {
       boost::optional<openstudio::epmodel::Node> outboardReliefNode() const;
 
       void doCanonicalize(LoadContext& context) override;
-      bool addToNode(Node& node);
+      bool addToNode(Node& node) override;
       bool setOutdoorAirStreamNode(const Node& node);
       bool setReliefAirStreamNode(const Node& node);
       bool updateOutdoorAirStreamInletNode(const ModelObject& object, const Node& node);
