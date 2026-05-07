@@ -22,7 +22,7 @@ namespace openstudio {
 class AppGFuelType;
 class ComponentType;
 class FuelType;
-class IddObjectType;
+struct IddObjectType;
 class IdfObject;
 
 namespace epmodel {

@@ -14,6 +14,8 @@
 #include <utilities/idd/IddObject.hpp>
 #include <utilities/idd/Schedule_File_FieldEnums.hxx>
 
+#include "../utilities/data/TimeSeries.hpp"
+
 namespace openstudio {
 namespace epmodel {
 
@@ -22,6 +24,22 @@ namespace epmodel {
     bool ok = true;
     ok &= setColumnNumber(1);
     ok &= setRowstoSkipatTop(0);
+    OS_ASSERT(ok);
+  }
+
+  ScheduleFile::ScheduleFile(const Model& model, openstudio::path& filePath, int column, int rowsToSkip) : Schedule(ScheduleFile::iddObjectType(), model) {
+
+    if (!exists(filePath)) {
+      LOG_FREE(Warn, "openstudio.epmodel.Model", "Cannot find file \"" << filePath << "\"");
+    } else {
+      // make the path correct for this system
+      filePath = system_complete(filePath);
+    }
+
+    bool ok = true;
+    ok &= setFileName(toString(filePath));
+    ok &= setColumnNumber(column);
+    ok &= setRowstoSkipatTop(rowsToSkip);
     OS_ASSERT(ok);
   }
 
@@ -37,6 +55,14 @@ namespace epmodel {
 
   std::vector<std::string> ScheduleFile::minutesperItemValues() {
     return getIddKeyNames(IddFactory::instance().getObject(iddObjectType()).get(), openstudio::Schedule_FileFields::MinutesperItem);
+  }
+
+  std::string ScheduleFile::fileName() const {
+    return getImpl<detail::ScheduleFile_Impl>()->fileName();
+  }
+  
+  bool ScheduleFile::setFileName(std::string fileName) {
+    return getImpl<detail::ScheduleFile_Impl>()->setFileName(fileName);
   }
 
   int ScheduleFile::columnNumber() const {
@@ -139,12 +165,45 @@ namespace epmodel {
     getImpl<detail::ScheduleFile_Impl>()->resetAdjustScheduleforDaylightSavings();
   }
 
+  boost::optional<ScheduleFile> ScheduleFile::fromTimeSeries(const openstudio::TimeSeries& timeSeries, Model& model) {
+    boost::optional<ScheduleFile> result;
+
+    if (timeSeries.intervalLength()) {
+      //const std::string name = result.nameString();
+      const std::string name = "temp"; // FIXME: can we find out what the Schedule:File object's name is going to be?
+      openstudio::path filePath = toPath(name + ".csv");
+
+      CSVFile csvFile;
+      csvFile.addColumn(timeSeries.dateTimes());
+      csvFile.addColumn(timeSeries.values());
+      csvFile.saveAs(filePath);
+
+      result = ScheduleFile(model, filePath);
+    } else {
+      // FIXME: deprecate ScheduleVariableInterval?
+    }
+
+    return result;
+  }
+
 }  // namespace epmodel
 }  // namespace openstudio
 
 namespace openstudio {
 namespace epmodel {
   namespace detail {
+
+    std::string ScheduleFile_Impl::fileName() const {
+      const auto value = getString(openstudio::Schedule_FileFields::FileName, true);
+      OS_ASSERT(value);
+      return *value;
+    }
+    
+    bool ScheduleFile_Impl::setFileName(std::string fileName) {
+      const bool result = setString(openstudio::Schedule_FileFields::FileName, fileName);
+      OS_ASSERT(result);
+      return result;
+    }
 
     int ScheduleFile_Impl::columnNumber() const {
       const auto value = getInt(openstudio::Schedule_FileFields::ColumnNumber, true);

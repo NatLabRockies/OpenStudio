@@ -8,6 +8,8 @@
 
 #include "EPModelAPI.hpp"
 #include "Schedule/Schedule.hpp"
+#include "../../utilities/core/Path.hpp"
+#include "../../utilities/filetypes/CSVFile.hpp"
 
 #include <utilities/idd/IddEnums.hxx>
 
@@ -15,6 +17,7 @@
 #include <vector>
 
 namespace openstudio {
+
 namespace epmodel {
 
   class Model;
@@ -27,6 +30,7 @@ namespace epmodel {
   {
    public:
     explicit ScheduleFile(const Model& model);
+    explicit ScheduleFile(const Model& model, openstudio::path& filePath, int column = 1, int rowsToSkip = 0);
 
     virtual ~ScheduleFile() override = default;
     ScheduleFile(const ScheduleFile& other) = default;
@@ -47,6 +51,9 @@ namespace epmodel {
     // - Field Mapping: ScheduleTypeLimitsName and FileName are intentionally excluded in this scalar-only pass
     //   (relationship/file-path behavior is handled separately from scalar accessors).
     // - TODO(parity): Add relationship and path-translation parity APIs incrementally after scalar scaffold saturation.
+    std::string fileName() const;
+    bool setFileName(std::string fileName);
+    
     int columnNumber() const;
     bool setColumnNumber(int columnNumber);
 
@@ -77,6 +84,8 @@ namespace epmodel {
     bool isAdjustScheduleforDaylightSavingsDefaulted() const;
     bool setAdjustScheduleforDaylightSavings(bool adjustScheduleforDaylightSavings);
     void resetAdjustScheduleforDaylightSavings();
+
+    static boost::optional<ScheduleFile> fromTimeSeries(const openstudio::TimeSeries& timeSeries, Model& model);
 
    protected:
     using ImplType = detail::ScheduleFile_Impl;

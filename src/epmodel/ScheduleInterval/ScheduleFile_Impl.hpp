@@ -20,6 +20,9 @@ namespace epmodel {
       using Schedule_Impl::Schedule_Impl;
       virtual ~ScheduleFile_Impl() override = default;
 
+      std::string fileName() const;
+      bool setFileName(std::string fileName);
+
       int columnNumber() const;
       bool setColumnNumber(int columnNumber);
 
