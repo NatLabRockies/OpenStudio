@@ -92,7 +92,7 @@ namespace epmodel {
     template <TransientModelObject T>
     T getOrCreateTransientByName(const std::string& name) const {
       if (name.empty()) {
-        LOG_FREE_AND_THROW("openstudio.epmodel.Model", "Transient model objects require a non-empty name.");
+        LOG_AND_THROW("Transient model objects require a non-empty name.");
       }
 
       auto objects = this->getObjectsByType(T::iddObjectType());
@@ -110,7 +110,7 @@ namespace epmodel {
       openstudio::IdfObject idfObject(T::iddObjectType());
       auto actualName = idfObject.setName(name);
       if (!actualName || !openstudio::istringEqual(*actualName, name)) {
-        LOG_FREE_AND_THROW("openstudio.epmodel.Model", "Failed to assign transient model object name '" << name << "'.");
+        LOG_AND_THROW("Failed to assign transient model object name '" << name << "'.");
       }
 
       auto impl = modelImpl->createObject(idfObject, false, true);
@@ -120,7 +120,7 @@ namespace epmodel {
 
       auto typedImpl = std::dynamic_pointer_cast<typename T::ImplType>(impl);
       if (!typedImpl) {
-        LOG_FREE_AND_THROW("openstudio.epmodel.Model", "Failed to create transient model object of requested type.");
+        LOG_AND_THROW("Failed to create transient model object of requested type.");
       }
       return T(std::move(typedImpl));
     }
@@ -133,7 +133,7 @@ namespace epmodel {
       }
 
       const auto generatedName = nextName(T::iddObjectType(), true);
-      LOG_FREE(Warn, "openstudio.epmodel.Model", "Transient model object name missing; generated '" << generatedName << "'.");
+      LOG(Warn, "Transient model object name missing; generated '" << generatedName << "'.");
       return getOrCreateTransientByName<T>(generatedName);
     }
 
@@ -317,6 +317,9 @@ namespace epmodel {
     friend class detail::Model_Impl;
 
     Model(std::shared_ptr<openstudio::epmodel::detail::Model_Impl> impl);
+
+   private:
+    REGISTER_LOGGER("openstudio.epmodel.Model");
   };
 
 }  // namespace epmodel
