@@ -8,6 +8,7 @@
 
 #include "EPModelAPI.hpp"
 #include "Model_Impl.hpp"
+#include "EPModelConcepts.hpp"
 #include "StraightComponent/Node_Impl.hpp"
 
 #include "../utilities/idf/Workspace.hpp"
@@ -16,7 +17,6 @@
 #include "../utilities/core/Compare.hpp"
 #include "../utilities/core/Logger.hpp"
 
-#include <type_traits>
 #include <string>
 #include <set>
 #include <vector>
@@ -64,24 +64,7 @@ namespace epmodel {
     void addLoadInfo(LoadContext& ctx, const std::string& message);
     void addLoadWarning(LoadContext& ctx, const std::string& message);
     void addLoadError(LoadContext& ctx, const std::string& message);
-
-    template <typename T>
-    struct is_transient_factory_type : std::false_type
-    {
-    };
   }  // namespace detail
-
-  class Node;
-  class CoilHeatingLowTempRadiantConstFlow;
-  class CoilHeatingWaterBaseboard;
-  class CoilHeatingWaterBaseboardRadiant;
-  class CoilCoolingLowTempRadiantConstFlow;
-  class CoilHeatingLowTempRadiantVarFlow;
-  class CoilCoolingLowTempRadiantVarFlow;
-  class CoilCoolingWaterPanelRadiant;
-  class CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData;
-  class CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData;
-  class CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData;
 
   class EPMODEL_API Model : public openstudio::Workspace
   {
@@ -106,10 +89,8 @@ namespace epmodel {
     Model& operator=(const Model&) = default;
     Model& operator=(Model&&) = default;
 
-    template <typename T>
+    template <TransientModelObject T>
     T getOrCreateTransientByName(const std::string& name) const {
-      static_assert(detail::is_transient_factory_type<T>::value, "getOrCreateTransientByName is only permitted for transient factory types.");
-
       if (name.empty()) {
         LOG_FREE_AND_THROW("openstudio.epmodel.Model", "Transient model objects require a non-empty name.");
       }
@@ -145,10 +126,8 @@ namespace epmodel {
     }
 
     /// Returns a transient model object by name, generating a name when missing.
-    template <typename T>
+    template <TransientModelObject T>
     T getOrCreateTransientByNameOrCreate(const boost::optional<std::string>& name) const {
-      static_assert(detail::is_transient_factory_type<T>::value, "getOrCreateTransientByNameOrCreate is only permitted for transient factory types.");
-
       if (name && !name->empty()) {
         return getOrCreateTransientByName<T>(*name);
       }
@@ -158,7 +137,7 @@ namespace epmodel {
       return getOrCreateTransientByName<T>(generatedName);
     }
 
-    template <typename T>
+    template <AnyModelObject T>
     std::vector<T> getModelObjects(bool sorted = false) const {
       std::vector<T> result;
       std::vector<WorkspaceObject> objects = this->objects(sorted);
@@ -173,7 +152,7 @@ namespace epmodel {
     }
 
     /// Returns a model object of type T by exact name, if it exists.
-    template <typename T>
+    template <AnyModelObject T>
     boost::optional<T> getModelObjectByName(const std::string& name) const {
       std::vector<WorkspaceObject> objects = this->getObjectsByName(name, true, true);
       for (const auto& wo : objects) {
@@ -186,7 +165,7 @@ namespace epmodel {
     }
 
     /// Returns a concrete model object of type T by exact name, if it exists.
-    template <typename T>
+    template <ConcreteModelObject T>
     boost::optional<T> getConcreteModelObjectByName(const std::string& name) const {
       if (auto object = this->getObjectByTypeAndName(T::iddObjectType(), name)) {
         if (auto p = object->template getImpl<typename T::ImplType>()) {
@@ -197,7 +176,7 @@ namespace epmodel {
     }
 
     /// Returns a single model object of type T by handle, if it exists.
-    template <typename T>
+    template <AnyModelObject T>
     boost::optional<T> getModelObject(const Handle& handle) const {
       if (auto wo = this->getObject(handle)) {
         return wo->optionalCast<T>();
@@ -207,7 +186,7 @@ namespace epmodel {
 
     /// Returns all model objects of type T using T::iddObjectType() to speed up the search.
     /// This only works for concrete model objects.
-    template <typename T>
+    template <ConcreteModelObject T>
     std::vector<T> getConcreteModelObjects(bool includeTransient = false) const {
       std::vector<T> result;
       std::vector<WorkspaceObject> objects = this->getObjectsByType(T::iddObjectType(), includeTransient);
@@ -228,7 +207,7 @@ namespace epmodel {
      *  Therefore, to use model.getModelObjectsByName<Zone>("Zone1") the user must include both
      *  Zone.hpp and Zone_Impl.hpp. It may be better to instantiate each version of this template
      *  method to avoid exposing the implementation objects, this is an open question. */
-    template <typename T>
+    template <AnyModelObject T>
     std::vector<T> getModelObjectsByName(const std::string& name, bool exactMatch = true) const {
       std::vector<T> result;
       std::vector<WorkspaceObject> objects = this->getObjectsByName(name, exactMatch);
@@ -242,7 +221,7 @@ namespace epmodel {
       return result;
     }
 
-    template <typename T>
+    template <ConcreteModelObject T>
     std::vector<T> getConcreteModelObjectsByName(const std::string& name) const {
       std::vector<T> result;
       std::vector<WorkspaceObject> objects = this->getObjectsByTypeAndName(T::iddObjectType(), name);
@@ -266,7 +245,7 @@ namespace epmodel {
    *  Note that template specilizations are provided below for objects were there is a
    *  performance gain to be had by caching the unique model object
    *  eg: getUniqueModelObject<YearDescription>() */
-    template <typename T>
+    template <UniqueModelObject T>
     T getUniqueModelObject() {
       // NOTE: all UniqueModelObjects are Concrete. Call getObjectsByType to avoid returning a huge vector
       std::vector<WorkspaceObject> objects = this->getObjectsByType(T::iddObjectType());
@@ -286,7 +265,7 @@ namespace epmodel {
    *  Therefore, to use model.getOptionalUniqueModelObject<Facility>() the user must include both
    *  Facility.hpp and Facility_Impl.hpp.  It may be better to instantiate each version of this
    *  template method to avoid exposing the implementation objects, this is an open question. */
-    template <typename T>
+    template <UniqueModelObject T>
     boost::optional<T> getOptionalUniqueModelObject() const {
       boost::optional<T> result;
       // NOTE: all UniqueModelObjects are Concrete. Call getObjectsByType to avoid returning a huge vector
@@ -313,63 +292,6 @@ namespace epmodel {
 
     Model(std::shared_ptr<openstudio::epmodel::detail::Model_Impl> impl);
   };
-
-  namespace detail {
-    template <>
-    struct is_transient_factory_type<openstudio::epmodel::Node> : std::true_type
-    {
-    };
-
-    template <>
-    struct is_transient_factory_type<openstudio::epmodel::CoilHeatingLowTempRadiantConstFlow> : std::true_type
-    {
-    };
-
-    template <>
-    struct is_transient_factory_type<openstudio::epmodel::CoilHeatingWaterBaseboard> : std::true_type
-    {
-    };
-
-    template <>
-    struct is_transient_factory_type<openstudio::epmodel::CoilHeatingWaterBaseboardRadiant> : std::true_type
-    {
-    };
-
-    template <>
-    struct is_transient_factory_type<openstudio::epmodel::CoilCoolingLowTempRadiantConstFlow> : std::true_type
-    {
-    };
-
-    template <>
-    struct is_transient_factory_type<openstudio::epmodel::CoilHeatingLowTempRadiantVarFlow> : std::true_type
-    {
-    };
-
-    template <>
-    struct is_transient_factory_type<openstudio::epmodel::CoilCoolingLowTempRadiantVarFlow> : std::true_type
-    {
-    };
-
-    template <>
-    struct is_transient_factory_type<openstudio::epmodel::CoilCoolingWaterPanelRadiant> : std::true_type
-    {
-    };
-
-    template <>
-    struct is_transient_factory_type<openstudio::epmodel::CoilCoolingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData> : std::true_type
-    {
-    };
-
-    template <>
-    struct is_transient_factory_type<openstudio::epmodel::CoilHeatingWaterToAirHeatPumpVariableSpeedEquationFitSpeedData> : std::true_type
-    {
-    };
-
-    template <>
-    struct is_transient_factory_type<openstudio::epmodel::CoilWaterHeatingAirToWaterHeatPumpVariableSpeedSpeedData> : std::true_type
-    {
-    };
-  }  // namespace detail
 
 }  // namespace epmodel
 }  // namespace openstudio
